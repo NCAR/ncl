@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.95 2002-10-12 13:36:31 haley Exp $
+;      $Id: gsn_code.ncl,v 1.96 2002-10-13 23:56:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4994,7 +4994,7 @@ begin
 ; outside the range of our new_binlocs.
 ;
   if(minmaxbins) then
-    new_num_in_bins = new((/nsets,nbars+2/),integer)
+    new_num_in_bins            = new((/nsets,nbars+2/),integer)
     new_num_in_bins(:,1:nbars) = num_in_bins
     do j = 0,nsets-1
       new_num_in_bins(j,0)       = num(x(j,:).lt.new_binlocs(0))
@@ -5003,6 +5003,7 @@ begin
     delete(num_in_bins)
     num_in_bins = new_num_in_bins
     delete(new_num_in_bins)
+    nbars = nbars + 2
   end if
 
 ;
@@ -5090,7 +5091,7 @@ end
 ;  gsnHistogramMinMaxBinsOn - If this is True, then two extra bins will ;
 ;      be added that count all the values less than the smallest bin,   ;
 ;      and greater than the largest bin.  This resource can only be     ;
-;      used when BinIntervals or ClassIntervals are set.                ;a
+;      used when BinIntervals or ClassIntervals are set.                ;
 ;                                                                       ;
 ;  gsnHistogramDiscreteClassValues - By default, gsn_histogram will bin ;
 ;       your data into ranges.  If you set this resource, then your data;
@@ -5155,24 +5156,24 @@ begin
   setdiscrete= False
   setinterval= False
 ;
-; Check if user explicitly specifyied bin values. If so, and they represent
-; end points, then make sure there are at least two values, and sort them.
+; Check if user explicitly specified bin values. If so, and they represent
+; end points, then make sure there are at least two values and sort them.
 ;
   if(isatt(res2,"gsnHistogramClassIntervals").or. \
      isatt(res2,"gsnHistogramBinIntervals"))
     setinterval = True
     if(isatt(res2,"gsnHistogramClassIntervals"))
-      bins = tofloat(get_res_value(res2,"gsnHistogramClassIntervals",1))
+      bins = tofloat(get_res_value(res2,"gsnHistogramClassIntervals",1.))
     else
       bins = tofloat(get_res_value(res2,"gsnHistogramBinIntervals",1.))
     end if
     nbins = dimsizes(bins)
     if(nbins.lt.2)
-      print("Error: gsn_histogram: There must be at least two values in the bin intervals.")
+      print("Error: gsn_histogram: There must be at least two values in the bin intervals. No plot will be drawn.")
       return(dummy)
     end if
     if(max(bins).lt.min(xdata).or.min(bins).gt.max(xdata))
-      print("Error: gsn_histogram: The bin values you picked are out of range.")
+      print("Error: gsn_histogram: The bin values you picked are out of range. No plot will be drawn.")
       return(dummy)
     end if
     qsort(bins)    ; Sort the bins and put back into "bins" variable.
@@ -5187,11 +5188,12 @@ begin
       print("warning: gsn_histogram: You already set gsnHistogramClassIntervals,")
       print("so ignoring gsnHistogramDiscreteClassValues.")
 ;
-; Delete so it doesn't get passed on to other routines.
+; Delete so they don't get passed on to other routines.
 ;
       if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
         delete(res2@gsnHistogramDiscreteBinValues)
-      else
+      end if
+      if(isatt(res2,"ggsnHistogramDiscreteClassValues")) then
         delete(res2@gsnHistogramDiscreteClassValues)
       end if
     else
@@ -5202,7 +5204,7 @@ begin
         bins = tofloat(get_res_value(res2,"gsnHistogramDiscreteClassValues",1))
       end if
       if(max(bins).lt.min(xdata).or.min(bins).gt.max(xdata))
-        print("Error: gsn_histogram: The bin values you picked are out of range.")
+        print("Error: gsn_histogram: The bin values you picked are out of range. No plot will be drawn.")
         return(dummy)
       end if
     end if
@@ -5220,7 +5222,7 @@ begin
   end if
 ;
 ; If xdata is 2-dimensional, then automatically kick into compare
-; mode
+; mode.
 ;
   dims = dimsizes(xdata)
   if(.not.compare.and.dimsizes(dims).eq.2.and.dims(0).eq.2) then
@@ -5234,7 +5236,7 @@ begin
     dims = dimsizes(xdata)
     if(dims(0).ne.2.or.dimsizes(dims).eq.1) then
       print("Error: gsn_histogram: If comparing two fields, then the first dimension")
-      print("of the input array must be 2, and there must be at least two dimensions.")
+      print("of the input array must be 2, and there must be at least two dimensions. No plot will be drawn.")
       return(dummy)
     end if
     delete(dims)
@@ -5247,12 +5249,12 @@ begin
                                   setdiscrete,minmaxbins,isnice,compare)
 
   if(all(ismissing(num_in_bins)))
-    print("Error: gsn_histogram: Unable to calculate bin values.")
+    print("Error: gsn_histogram: Unable to calculate bin values. No plot will be drawn.")
     return(dummy)
   end if
 
   if(all(num_in_bins.eq.0))
-    print("Error: gsn_histogram: No data found in selected bins. No histogram will be drawn.")
+    print("Error: gsn_histogram: No data found in selected bins. No plot will be drawn.")
     return(dummy)
   end if
 ;
@@ -5526,10 +5528,14 @@ begin
       txside  = "right"
     end if
 
+    perc_string = "Percent"
     if(perc_nomiss) then
-      perc_string = "Percent (missing values not counted)"
+      perc_string = perc_string + " (missing values not counted)"
     else
-      perc_string = "Percent (missing values counted)"
+      if(num_in_bins@NumMissing(0).gt.1.or. \
+        (compare.and.num_in_bins@NumMissing(1).gt.1)) then
+        perc_string = perc_string + " (missing values counted)"
+      end if
     end if
     axis_string = create "axis_string" textItemClass wks
       "txString"      : perc_string
