@@ -1,5 +1,5 @@
 C
-C $Id: cpchcf.f,v 1.3 1994-05-18 16:16:01 kennison Exp $
+C $Id: cpchcf.f,v 1.4 1994-09-12 22:10:14 kennison Exp $
 C
       SUBROUTINE CPCHCF (IFLG)
 C

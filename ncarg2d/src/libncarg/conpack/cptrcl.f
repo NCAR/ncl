@@ -1,5 +1,5 @@
 C
-C $Id: cptrcl.f,v 1.3 1994-05-18 16:17:33 kennison Exp $
+C $Id: cptrcl.f,v 1.4 1994-09-12 22:10:53 kennison Exp $
 C
       SUBROUTINE CPTRCL (ZDAT,RWRK,IWRK,CLVL,IJMP,IRW1,IRW2,NRWK)
 C
@@ -72,14 +72,14 @@ C
       COMMON /CPCOM2/ CHEX,CLBL(256),CLDP(259),CTMA,CTMB,FRMT
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
-      CHARACTER*40 CLBL
+      CHARACTER*64 CLBL
       CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
-      CHARACTER*40 TXCF
-      CHARACTER*20 TXHI
-      CHARACTER*100 TXIL
-      CHARACTER*20 TXLO
+      CHARACTER*64 TXCF
+      CHARACTER*32 TXHI
+      CHARACTER*128 TXIL
+      CHARACTER*32 TXLO
 C
 C Because of the way this routine is entered and reentered, we need to
 C save every variable it uses.

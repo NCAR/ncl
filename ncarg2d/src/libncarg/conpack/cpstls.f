@@ -1,5 +1,5 @@
 C
-C $Id: cpstls.f,v 1.4 1994-07-18 19:16:05 kennison Exp $
+C $Id: cpstls.f,v 1.5 1994-09-12 22:10:52 kennison Exp $
 C
       SUBROUTINE CPSTLS (ZDAT,RWRK,IWRK)
 C
@@ -57,14 +57,14 @@ C
       COMMON /CPCOM2/ CHEX,CLBL(256),CLDP(259),CTMA,CTMB,FRMT
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
-      CHARACTER*40 CLBL
+      CHARACTER*64 CLBL
       CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
-      CHARACTER*40 TXCF
-      CHARACTER*20 TXHI
-      CHARACTER*100 TXIL
-      CHARACTER*20 TXLO
+      CHARACTER*64 TXCF
+      CHARACTER*32 TXHI
+      CHARACTER*128 TXIL
+      CHARACTER*32 TXLO
       SAVE   /CPCOM2/
 C
 C Fill in the internal parameters giving the number of characters in

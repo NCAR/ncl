@@ -1,5 +1,5 @@
 C
-C $Id: cpblda.f,v 1.3 1994-05-18 16:15:58 kennison Exp $
+C $Id: cpblda.f,v 1.4 1994-09-12 22:10:13 kennison Exp $
 C
       BLOCK DATA CPBLDA
 C
@@ -46,14 +46,14 @@ C
       COMMON /CPCOM2/ CHEX,CLBL(256),CLDP(259),CTMA,CTMB,FRMT
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
-      CHARACTER*40 CLBL
+      CHARACTER*64 CLBL
       CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
-      CHARACTER*40 TXCF
-      CHARACTER*20 TXHI
-      CHARACTER*100 TXIL
-      CHARACTER*20 TXLO
+      CHARACTER*64 TXCF
+      CHARACTER*32 TXHI
+      CHARACTER*128 TXIL
+      CHARACTER*32 TXLO
       SAVE   /CPCOM2/
 C
 C Below are descriptions of all the COMMON variables and default values
@@ -332,10 +332,12 @@ C pointer, in ICLP, of the current contour level.  ICLP(ICLW-1) is then
 C the index of the next smaller contour level and ICLP(ICLW+1) is the
 C index of the next larger contour level.
 C
-C IDUF is the parameter 'DPU', the dash pattern use flag.  The default
-C value says to use dash patterns, to draw contour lines by means of
-C calls to CURVED, and to use 3 repetitions of each dash pattern between
-C labels to be drawn by the dash package.
+C IDUF is the parameter 'DPU', the dash pattern use flag.  The value
+C zero says to draw contour lines using no dash patterns, by calling
+C CURVE.  A non-zero value says to use dash patterns: a negative value
+C says to call DPCURV and a positive value says to call CURVED.  When
+C 'DPU' is non-zero, its absolute value is the number of repetitions of
+C the dash pattern to use between each occurrence of a label.
 C
       DATA IDUF / 3 /
 C

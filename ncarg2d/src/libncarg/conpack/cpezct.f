@@ -1,5 +1,5 @@
 C
-C $Id: cpezct.f,v 1.3 1994-05-18 16:16:25 kennison Exp $
+C $Id: cpezct.f,v 1.4 1994-09-12 22:10:24 kennison Exp $
 C
       SUBROUTINE CPEZCT (ZDAT,MZDT,NZDT)
 C

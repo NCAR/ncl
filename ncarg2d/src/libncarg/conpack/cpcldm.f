@@ -1,5 +1,5 @@
 C
-C $Id: cpcldm.f,v 1.4 1994-07-18 19:16:00 kennison Exp $
+C $Id: cpcldm.f,v 1.5 1994-09-12 22:10:19 kennison Exp $
 C
       SUBROUTINE CPCLDM (ZDAT,RWRK,IWRK,IAMA,RTPL)
 C
@@ -61,20 +61,26 @@ C
       COMMON /CPCOM2/ CHEX,CLBL(256),CLDP(259),CTMA,CTMB,FRMT
       COMMON /CPCOM2/ TXCF,TXHI,TXIL,TXLO
       CHARACTER*13 CHEX
-      CHARACTER*40 CLBL
+      CHARACTER*64 CLBL
       CHARACTER*128 CLDP
       CHARACTER*500 CTMA,CTMB
       CHARACTER*8 FRMT
-      CHARACTER*40 TXCF
-      CHARACTER*20 TXHI
-      CHARACTER*100 TXIL
-      CHARACTER*20 TXLO
+      CHARACTER*64 TXCF
+      CHARACTER*32 TXHI
+      CHARACTER*128 TXIL
+      CHARACTER*32 TXLO
       SAVE   /CPCOM2/
 C
 C Declare the dash-package common block which contains the smoothing
 C flag, so that it may be temporarily turned off as needed.
 C
       COMMON /SMFLAG/ ISMO
+C
+C Declare local variables in which to manipulate DASHPACK parameters.
+C
+      CHARACTER*1 CHRB,CHRG,CHRS
+      CHARACTER*16 CDPS
+      CHARACTER*256 CHDP
 C
 C Check for an uncleared prior error.
 C
@@ -111,21 +117,57 @@ C
       CALL CPGIWS (IWRK,2,2*LIWM,IWSE)
       IF (IWSE.NE.0.OR.ICFELL('CPCLDM',6).NE.0) RETURN
 C
-C If CURVED is to be used, compute ILDA, which is the curve length,
-C in plotter address units, per dollar sign or apostrophe in a dash
-C pattern, and ILCH, which is the curve length, in plotter address
-C units, per other user character in a dash pattern, initialize to
-C an all-solid pattern, and turn off the dash-package smoother.
+C Initialize whichever dash package (if any) is to be used.
 C
-      IF (IDUF.NE.0) THEN
-        CALL GETSI (IP2X,IP2Y)
+      IF (IDUF.LT.0) THEN
+C
+        CALL DPGETC ('CRB',CHRB)
         IF (ICFELL('CPCLDM',7).NE.0) RETURN
+        CALL DPGETC ('CRG',CHRG)
+        IF (ICFELL('CPCLDM',8).NE.0) RETURN
+        CALL DPGETC ('CRS',CHRS)
+        IF (ICFELL('CPCLDM',9).NE.0) RETURN
+        CALL DPGETI ('DPL',IDPL)
+        IF (ICFELL('CPCLDM',10).NE.0) RETURN
+        CALL DPGETI ('DPS',IDPS)
+        IF (ICFELL('CPCLDM',11).NE.0) RETURN
+        CALL DPGETC ('DPT',CHDP)
+        IF (ICFELL('CPCLDM',12).NE.0) RETURN
+        CALL DPGETR ('TCS',RTCS)
+        IF (ICFELL('CPCLDM',13).NE.0) RETURN
+        CALL DPGETR ('WOC',RWOC)
+        IF (ICFELL('CPCLDM',14).NE.0) RETURN
+        CALL DPGETR ('WOG',RWOG)
+        IF (ICFELL('CPCLDM',15).NE.0) RETURN
+        CALL DPGETR ('WOS',RWOS)
+        IF (ICFELL('CPCLDM',16).NE.0) RETURN
+C
+        CALL DPSETI ('DPS',0)
+        IF (ICFELL('CPCLDM',17).NE.0) RETURN
+        CDPS=CHRS//CHRS//CHRS//CHRS//CHRS//CHRS//CHRS//CHRS//
+     +       CHRS//CHRS//CHRS//CHRS//CHRS//CHRS//CHRS//CHRS
+        CALL DPSETC ('DPT',CDPS)
+        IF (ICFELL('CPCLDM',18).NE.0) RETURN
+        CALL DPSETR ('TCS',-1.)
+        IF (ICFELL('CPCLDM',19).NE.0) RETURN
+        CALL DPSETR ('WOC',CHWM*WOCH*(XVPR-XVPL))
+        IF (ICFELL('CPCLDM',20).NE.0) RETURN
+        CALL DPSETR ('WOG',CHWM*WODA*(XVPR-XVPL))
+        IF (ICFELL('CPCLDM',21).NE.0) RETURN
+        CALL DPSETR ('WOS',CHWM*WODA*(XVPR-XVPL))
+        IF (ICFELL('CPCLDM',22).NE.0) RETURN
+C
+      ELSE IF (IDUF.GT.0) THEN
+C
+        CALL GETSI (IP2X,IP2Y)
+        IF (ICFELL('CPCLDM',23).NE.0) RETURN
         ILDA=MAX(1,INT(CHWM*WODA*(XVPR-XVPL)*(2.**IP2X-1.)+.5))
         ILCH=MAX(4,INT(CHWM*WOCH*(XVPR-XVPL)*(2.**IP2X-1.)+.5))
         CALL DASHDC ('$$$$$$$$$$$$$$$$',ILDA,ILCH)
-        IF (ICFELL('CPCLDM',8).NE.0) RETURN
+        IF (ICFELL('CPCLDM',24).NE.0) RETURN
         ISMS=ISMO
         ISMO=1
+C
       END IF
 C
 C If the constant-field flag is set, just output a warning message.
@@ -133,7 +175,7 @@ C
       IF (.NOT.(ICFF.NE.0)) GO TO 10001
 C
         CALL CPCFLB (1,RWRK,IWRK)
-        IF (ICFELL('CPCLDM',9).NE.0) RETURN
+        IF (ICFELL('CPCLDM',25).NE.0) RETURN
 C
 C Otherwise, draw contours.
 C
@@ -145,9 +187,9 @@ C are completely defined.
 C
         IF (.NOT.(ABS(IPLL).EQ.1)) GO TO 10003
           CALL CPPKLB (ZDAT,RWRK,IWRK)
-          IF (ICFELL('CPCLDM',10).NE.0) RETURN
+          IF (ICFELL('CPCLDM',26).NE.0) RETURN
           CALL CPSTLS (ZDAT,RWRK,IWRK)
-          IF (ICFELL('CPCLDM',11).NE.0) RETURN
+          IF (ICFELL('CPCLDM',27).NE.0) RETURN
 10003   CONTINUE
 C
 C Loop through the selected contour levels, drawing contour lines for
@@ -172,78 +214,112 @@ C
 10009         CONTINUE
 10008       CONTINUE
 C
-C If only the line is being drawn, the dash-pattern use flag determines
-C whether it will be done using CURVE or CURVED.
+C If only the line is being drawn, the dash-pattern-use flag determines
+C whether it will be done using CURVE, DPCURV, or CURVED.
 C
             IF (.NOT.(MOD(ICLU(ICLV),4).EQ.1)) GO TO 10011
 C
-              IF (.NOT.(IDUF.NE.0)) GO TO 10012
-                CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
-                IF (ICFELL('CPCLDM',12).NE.0) RETURN
+              IF (.NOT.(IDUF.LT.0)) GO TO 10012
+                CALL DPSETC ('DPT',CLDP(ICLV)(1:LCLD))
+                IF (ICFELL('CPCLDM',28).NE.0) RETURN
+              GO TO 10013
 10012         CONTINUE
-C
-              L10014=    1
-              GO TO 10014
+              IF (.NOT.(IDUF.GT.0)) GO TO 10014
+                CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
+                IF (ICFELL('CPCLDM',29).NE.0) RETURN
 10013         CONTINUE
+10014         CONTINUE
 C
-C If only the labels are being drawn, it can only be handled here if
-C the dash-pattern flag indicates that CURVED is to be used and the
-C label-positioning flag implies that it is to draw them.
+              L10016=    1
+              GO TO 10016
+10015         CONTINUE
 C
-            GO TO 10015
+C If only the labels are being drawn, it can be handled here only if
+C the dash-pattern use flag indicates that DPCURV or CURVED is to be
+C used and the label-positioning flag implies that the labels are to
+C be incorporated into the dash pattern.
+C
+            GO TO 10017
 10011       CONTINUE
-            IF (.NOT.(MOD(ICLU(ICLV),4).EQ.2)) GO TO 10016
+            IF (.NOT.(MOD(ICLU(ICLV),4).EQ.2)) GO TO 10018
 C
-              IF (.NOT.(IDUF.NE.0.AND.ABS(IPLL).EQ.1)) GO TO 10017
+              IF (.NOT.(ABS(IPLL).EQ.1.AND.IDUF.NE.0)) GO TO 10019
                 NCHL=NCLB(ICLV)
-                NCHD=MAX(1,MIN(IDUF*LCLD,500-NCHL))
+                NCHD=MAX(1,MIN(ABS(IDUF)*LCLD,500-NCHL))
                 CTMA=' '
-                DO 10018 ICHD=1,NCHD
-                  CTMA(ICHD:ICHD)=''''
-10018           CONTINUE
-                LCTM=NCHD+NCHL
-                CTMA(NCHD+1:LCTM)=CLBL(ICLV)(1:NCHL)
-                CALL DASHDC (CTMA(1:LCTM),ILDA,ILCH)
-                IF (ICFELL('CPCLDM',13).NE.0) RETURN
-                L10014=    2
-                GO TO 10014
-10019           CONTINUE
-10017         CONTINUE
-C
-C If both lines and labels are being drawn, there are various cases,
-C depending on whether the dash package is being used and how labels
-C are being positioned.
-C
-            GO TO 10015
-10016       CONTINUE
-            IF (.NOT.(MOD(ICLU(ICLV),4).EQ.3)) GO TO 10020
-C
-              IF (.NOT.(IDUF.NE.0)) GO TO 10021
-                IF (.NOT.(ABS(IPLL).EQ.1)) GO TO 10022
-                  NCHL=NCLB(ICLV)
-                  NCHD=MAX(1,MIN(IDUF*LCLD,500-NCHL))
-                  CTMA=' '
-                  DO 10023 ICHD=1,NCHD
-                    JCHD=MOD(ICHD-1,LCLD)+1
-                    CTMA(ICHD:ICHD)=CLDP(ICLV)(JCHD:JCHD)
-10023             CONTINUE
+                IF (.NOT.(IDUF.LT.0)) GO TO 10020
+                  DO 10021 ICHD=1,NCHD
+                    CTMA(ICHD:ICHD)=CHRG
+10021             CONTINUE
+                  LCTM=NCHD+NCHL
+                  CTMA(NCHD+1:LCTM)=CLBL(ICLV)(1:NCHL)
+                  CALL DPSETC ('DPT',CTMA(1:LCTM))
+                  IF (ICFELL('CPCLDM',30).NE.0) RETURN
+                GO TO 10022
+10020           CONTINUE
+                IF (.NOT.(IDUF.GT.0)) GO TO 10023
+                  DO 10024 ICHD=1,NCHD
+                    CTMA(ICHD:ICHD)=''''
+10024             CONTINUE
                   LCTM=NCHD+NCHL
                   CTMA(NCHD+1:LCTM)=CLBL(ICLV)(1:NCHL)
                   CALL DASHDC (CTMA(1:LCTM),ILDA,ILCH)
-                  IF (ICFELL('CPCLDM',14).NE.0) RETURN
-                GO TO 10024
+                  IF (ICFELL('CPCLDM',31).NE.0) RETURN
 10022           CONTINUE
-                  CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
-                  IF (ICFELL('CPCLDM',15).NE.0) RETURN
-10024           CONTINUE
-10021         CONTINUE
+10023           CONTINUE
+                L10016=    2
+                GO TO 10016
+10025           CONTINUE
+10019         CONTINUE
 C
-              L10014=    3
-              GO TO 10014
-10025         CONTINUE
+C If both lines and labels are being drawn, there are various cases,
+C depending on whether dashed lines are being used and how labels are
+C being positioned.
 C
-10015       CONTINUE
-10020       CONTINUE
+            GO TO 10017
+10018       CONTINUE
+            IF (.NOT.(MOD(ICLU(ICLV),4).EQ.3)) GO TO 10026
+C
+              IF (.NOT.(IDUF.NE.0)) GO TO 10027
+                IF (.NOT.(ABS(IPLL).EQ.1)) GO TO 10028
+                  NCHL=NCLB(ICLV)
+                  NCHD=MAX(1,MIN(ABS(IDUF)*LCLD,500-NCHL))
+                  CTMA=' '
+                  DO 10029 ICHD=1,NCHD
+                    JCHD=MOD(ICHD-1,LCLD)+1
+                    CTMA(ICHD:ICHD)=CLDP(ICLV)(JCHD:JCHD)
+10029             CONTINUE
+                  IF (.NOT.(IDUF.LT.0)) GO TO 10030
+                    LCTM=NCHD+NCHL
+                    CTMA(NCHD+1:LCTM)=CLBL(ICLV)(1:NCHL)
+                    CALL DPSETC ('DPT',CTMA(1:LCTM))
+                    IF (ICFELL('CPCLDM',32).NE.0) RETURN
+                  GO TO 10031
+10030             CONTINUE
+                    LCTM=NCHD+NCHL
+                    CTMA(NCHD+1:LCTM)=CLBL(ICLV)(1:NCHL)
+                    CALL DASHDC (CTMA(1:LCTM),ILDA,ILCH)
+                    IF (ICFELL('CPCLDM',33).NE.0) RETURN
+10031             CONTINUE
+                GO TO 10032
+10028           CONTINUE
+                  IF (.NOT.(IDUF.LT.0)) GO TO 10033
+                    CALL DPSETC ('DPT',CLDP(ICLV)(1:LCLD))
+                    IF (ICFELL('CPCLDM',34).NE.0) RETURN
+                  GO TO 10034
+10033             CONTINUE
+                    CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
+                    IF (ICFELL('CPCLDM',35).NE.0) RETURN
+10034             CONTINUE
+10032           CONTINUE
+10027         CONTINUE
+C
+              L10016=    3
+              GO TO 10016
+10035         CONTINUE
+C
+10017       CONTINUE
+10026       CONTINUE
 C
 10007     CONTINUE
 C
@@ -254,112 +330,146 @@ C
 C
 C Draw boundaries for areas filled with special values.
 C
-      IF (.NOT.(ICLU(258).NE.0)) GO TO 10026
+      IF (.NOT.(ICLU(258).NE.0)) GO TO 10036
         ICLV=258
-        IF (.NOT.(IDUF.NE.0)) GO TO 10027
+        IF (.NOT.(IDUF.NE.0)) GO TO 10037
           L10010=    2
           GO TO 10010
-10028     CONTINUE
-          CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
-          IF (ICFELL('CPCLDM',16).NE.0) RETURN
-10027   CONTINUE
-        L10030=    1
-        GO TO 10030
-10029   CONTINUE
+10038     CONTINUE
+          IF (.NOT.(IDUF.LT.0)) GO TO 10039
+            CALL DPSETC ('DPT',CLDP(ICLV)(1:LCLD))
+            IF (ICFELL('CPCLDM',36).NE.0) RETURN
+          GO TO 10040
+10039     CONTINUE
+            CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
+            IF (ICFELL('CPCLDM',37).NE.0) RETURN
+10040     CONTINUE
+10037   CONTINUE
+        L10042=    1
+        GO TO 10042
+10041   CONTINUE
         IJMP=0
-10031   CONTINUE
+10043   CONTINUE
           CALL CPTRES (ZDAT,RWRK,IWRK,IJMP,-9,IRW1,IRW2,NRWK)
-          IF (ICFELL('CPCLDM',17).NE.0) RETURN
-          IF (IJMP.EQ.0) GO TO 10032
+          IF (ICFELL('CPCLDM',38).NE.0) RETURN
+          IF (IJMP.EQ.0) GO TO 10044
           CALL ARDRLN (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,
      +                 RWRK(IR02+1),RWRK(IR02+1+LRWM),LRWM,
      +                 IWRK(II02+1),IWRK(II02+1+LIWM),LIWM,RTPL)
-          IF (ICFELL('CPCLDM',18).NE.0) RETURN
-        GO TO 10031
-10032   CONTINUE
-        L10034=    1
-        GO TO 10034
-10033   CONTINUE
-10026 CONTINUE
+          IF (ICFELL('CPCLDM',39).NE.0) RETURN
+        GO TO 10043
+10044   CONTINUE
+        L10046=    1
+        GO TO 10046
+10045   CONTINUE
+10036 CONTINUE
 C
 C Draw boundaries for areas which are invisible.
 C
       IF (.NOT.(ICLU(259).NE.0.AND.IMPF.NE.0.AND.OORV.NE.0.))
-     +GO TO 10035
+     +GO TO 10047
         TST1=REAL(IMPF)
         TST2=0.
         CALL CPMPXY (0,TST1,TST2,TST3,TST4)
-        IF (ICFELL('CPCLDM',19).NE.0) RETURN
+        IF (ICFELL('CPCLDM',40).NE.0) RETURN
         ICLV=259
-        IF (.NOT.(IDUF.NE.0)) GO TO 10036
+        IF (.NOT.(IDUF.NE.0)) GO TO 10048
           L10010=    3
           GO TO 10010
-10037     CONTINUE
-          CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
-          IF (ICFELL('CPCLDM',20).NE.0) RETURN
-10036   CONTINUE
-        L10030=    2
-        GO TO 10030
-10038   CONTINUE
+10049     CONTINUE
+          IF (.NOT.(IDUF.LT.0)) GO TO 10050
+            CALL DPSETC ('DPT',CLDP(ICLV)(1:LCLD))
+            IF (ICFELL('CPCLDM',41).NE.0) RETURN
+          GO TO 10051
+10050     CONTINUE
+            CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
+            IF (ICFELL('CPCLDM',42).NE.0) RETURN
+10051     CONTINUE
+10048   CONTINUE
+        L10042=    2
+        GO TO 10042
+10052   CONTINUE
         IJMP=0
-10039   CONTINUE
-          IF (.NOT.(TST2.NE.2..AND.TST2.NE.3.)) GO TO 10040
+10053   CONTINUE
+          IF (.NOT.(TST2.NE.2..AND.TST2.NE.3.)) GO TO 10054
             CALL CPTREV (ZDAT,RWRK,IWRK,IJMP,-9,IRW1,IRW2,NRWK)
-            IF (ICFELL('CPCLDM',21).NE.0) RETURN
-          GO TO 10041
-10040     CONTINUE
+            IF (ICFELL('CPCLDM',43).NE.0) RETURN
+          GO TO 10055
+10054     CONTINUE
             CALL CPTRVE (ZDAT,RWRK,IWRK,IJMP,-9,IRW1,IRW2,NRWK)
-            IF (ICFELL('CPCLDM',22).NE.0) RETURN
-10041     CONTINUE
-          IF (IJMP.EQ.0) GO TO 10042
+            IF (ICFELL('CPCLDM',44).NE.0) RETURN
+10055     CONTINUE
+          IF (IJMP.EQ.0) GO TO 10056
           CALL ARDRLN (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,
      +                 RWRK(IR02+1),RWRK(IR02+1+LRWM),LRWM,
      +                 IWRK(II02+1),IWRK(II02+1+LIWM),LIWM,RTPL)
-          IF (ICFELL('CPCLDM',23).NE.0) RETURN
-        GO TO 10039
-10042   CONTINUE
-        L10034=    2
-        GO TO 10034
-10043   CONTINUE
-10035 CONTINUE
+          IF (ICFELL('CPCLDM',45).NE.0) RETURN
+        GO TO 10053
+10056   CONTINUE
+        L10046=    2
+        GO TO 10046
+10057   CONTINUE
+10047 CONTINUE
 C
 C Draw the edge of the grid.
 C
-      IF (.NOT.(ICLU(257).NE.0)) GO TO 10044
+      IF (.NOT.(ICLU(257).NE.0)) GO TO 10058
         ICLV=257
-        IF (.NOT.(IDUF.NE.0)) GO TO 10045
+        IF (.NOT.(IDUF.NE.0)) GO TO 10059
           L10010=    4
           GO TO 10010
-10046     CONTINUE
-          CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
-          IF (ICFELL('CPCLDM',24).NE.0) RETURN
-10045   CONTINUE
-        L10030=    3
-        GO TO 10030
-10047   CONTINUE
+10060     CONTINUE
+          IF (.NOT.(IDUF.LT.0)) GO TO 10061
+            CALL DPSETC ('DPT',CLDP(ICLV)(1:LCLD))
+            IF (ICFELL('CPCLDM',46).NE.0) RETURN
+          GO TO 10062
+10061     CONTINUE
+            CALL DASHDC (CLDP(ICLV)(1:LCLD),ILDA,ILCH)
+            IF (ICFELL('CPCLDM',47).NE.0) RETURN
+10062     CONTINUE
+10059   CONTINUE
+        L10042=    3
+        GO TO 10042
+10063   CONTINUE
         IJMP=0
-10048   CONTINUE
+10064   CONTINUE
           CALL CPTREG (ZDAT,RWRK,IWRK,IJMP,-9,IRW1,IRW2,NRWK)
-          IF (ICFELL('CPCLDM',25).NE.0) RETURN
-          IF (IJMP.EQ.0) GO TO 10049
+          IF (ICFELL('CPCLDM',48).NE.0) RETURN
+          IF (IJMP.EQ.0) GO TO 10065
           CALL ARDRLN (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,
      +                 RWRK(IR02+1),RWRK(IR02+1+LRWM),LRWM,
      +                 IWRK(II02+1),IWRK(II02+1+LIWM),LIWM,RTPL)
-          IF (ICFELL('CPCLDM',26).NE.0) RETURN
-        GO TO 10048
-10049   CONTINUE
-        L10034=    3
-        GO TO 10034
-10050   CONTINUE
-10044 CONTINUE
+          IF (ICFELL('CPCLDM',49).NE.0) RETURN
+        GO TO 10064
+10065   CONTINUE
+        L10046=    3
+        GO TO 10046
+10066   CONTINUE
+10058 CONTINUE
 C
-C If CURVED is being used, go back to a solid pattern and restore the
-C smoothing flag in the dash package to its entry value.
+C Restore the state of the dash package (if any) that was used.
 C
-      IF (IDUF.NE.0) THEN
+      IF (IDUF.LT.0) THEN
+C
+        CALL DPSETI ('DPS',IDPS)
+        IF (ICFELL('CPCLDM',50).NE.0) RETURN
+        CALL DPSETC ('DPT',CHDP(1:IDPL))
+        IF (ICFELL('CPCLDM',51).NE.0) RETURN
+        CALL DPSETR ('TCS',RTCS)
+        IF (ICFELL('CPCLDM',52).NE.0) RETURN
+        CALL DPSETR ('WOC',RWOC)
+        IF (ICFELL('CPCLDM',53).NE.0) RETURN
+        CALL DPSETR ('WOG',RWOG)
+        IF (ICFELL('CPCLDM',54).NE.0) RETURN
+        CALL DPSETR ('WOS',RWOS)
+        IF (ICFELL('CPCLDM',55).NE.0) RETURN
+C
+      ELSE IF (IDUF.GT.0) THEN
+C
         CALL DASHDC ('$$$$$$$$$$$$$$$$',ILDA,ILCH)
-        IF (ICFELL('CPCLDM',27).NE.0) RETURN
+        IF (ICFELL('CPCLDM',56).NE.0) RETURN
         ISMO=ISMS
+C
       END IF
 C
 C Release the workspaces used in the calls to ARDRLN.
@@ -375,55 +485,55 @@ C The following internal procedure finds the length of a dash pattern.
 C
 10010 CONTINUE
         LCLD=1
-        DO 10051 I=1,128
+        DO 10067 I=1,128
           IF (CLDP(ICLV)(I:I).NE.' ') LCLD=I
-10051   CONTINUE
-      GO TO (10009,10028,10037,10046) , L10010
+10067   CONTINUE
+      GO TO (10009,10038,10049,10060) , L10010
 C
 C The following internal procedure calls CPTRCL to draw the contour
 C line at a given level.  The user-change routine is called before
 C and after the calls to CPTRCL.
 C
-10014 CONTINUE
-        L10030=    4
-        GO TO 10030
-10052   CONTINUE
+10016 CONTINUE
+        L10042=    4
+        GO TO 10042
+10068   CONTINUE
         IJMP=0
-10053   CONTINUE
+10069   CONTINUE
           CALL CPTRCL (ZDAT,RWRK,IWRK,CLEV(ICLV),IJMP,IRW1,IRW2,NRWK)
-          IF (ICFELL('CPCLDM',28).NE.0) RETURN
-          IF (IJMP.EQ.0) GO TO 10054
+          IF (ICFELL('CPCLDM',57).NE.0) RETURN
+          IF (IJMP.EQ.0) GO TO 10070
           CALL ARDRLN (IAMA,RWRK(IRW1+1),RWRK(IRW2+1),NRWK,
      +                 RWRK(IR02+1),RWRK(IR02+1+LRWM),LRWM,
      +                 IWRK(II02+1),IWRK(II02+1+LIWM),LIWM,RTPL)
-          IF (ICFELL('CPCLDM',29).NE.0) RETURN
+          IF (ICFELL('CPCLDM',58).NE.0) RETURN
           IF (IHCF.NE.0) THEN
             CALL CPHCHM (RWRK,IRW1,IRW2,NRWK,IAMA,IWRK,RTPL)
-            IF (ICFELL('CPCLDM',30).NE.0) RETURN
+            IF (ICFELL('CPCLDM',59).NE.0) RETURN
           END IF
-        GO TO 10053
-10054   CONTINUE
-        L10034=    4
-        GO TO 10034
-10055   CONTINUE
-      GO TO (10013,10019,10025) , L10014
+        GO TO 10069
+10070   CONTINUE
+        L10046=    4
+        GO TO 10046
+10071   CONTINUE
+      GO TO (10015,10025,10035) , L10016
 C
 C The following internal procedures set and reset line color and width
 C before and after a particular line is drawn.
 C
-10030 CONTINUE
+10042 CONTINUE
         CALL PLOTIF (0.,0.,2)
-        IF (ICFELL('CPCLDM',31).NE.0) RETURN
+        IF (ICFELL('CPCLDM',60).NE.0) RETURN
         JCCL=ICCL(ICLV)
         IF (JCCL.GE.0) THEN
           CALL GQPLCI (IGER,ISLC)
           IF (IGER.NE.0) THEN
-            CALL SETER ('CPCLDM - ERROR EXIT FROM GQPLCI',32,1)
+            CALL SETER ('CPCLDM - ERROR EXIT FROM GQPLCI',61,1)
             RETURN
           END IF
           CALL GQTXCI (IGER,ISTC)
           IF (IGER.NE.0) THEN
-            CALL SETER ('CPCLDM - ERROR EXIT FROM GQTXCI',33,1)
+            CALL SETER ('CPCLDM - ERROR EXIT FROM GQTXCI',62,1)
             RETURN
           END IF
           CALL GSPLCI (JCCL)
@@ -433,7 +543,7 @@ C
         IF (CLWS.GT.0.) THEN
           CALL GQLWSC (IGER,SFLW)
           IF (IGER.NE.0) THEN
-            CALL SETER ('CPCLDM - ERROR EXIT FROM GQLWSC',34,1)
+            CALL SETER ('CPCLDM - ERROR EXIT FROM GQLWSC',63,1)
             RETURN
           END IF
           CALL GSLWSC (CLWS)
@@ -441,16 +551,16 @@ C
         IPAI=ICLV
         IF (IPAI.GT.256) IPAI=256-IPAI
         CALL CPCHCL (+1)
-        IF (ICFELL('CPCLDM',35).NE.0) RETURN
-      GO TO (10029,10038,10047,10052) , L10030
+        IF (ICFELL('CPCLDM',64).NE.0) RETURN
+      GO TO (10041,10052,10063,10068) , L10042
 C
-10034 CONTINUE
+10046 CONTINUE
         CALL PLOTIF (0.,0.,2)
-        IF (ICFELL('CPCLDM',36).NE.0) RETURN
+        IF (ICFELL('CPCLDM',65).NE.0) RETURN
         IPAI=ICLV
         IF (IPAI.GT.256) IPAI=256-IPAI
         CALL CPCHCL (-1)
-        IF (ICFELL('CPCLDM',37).NE.0) RETURN
+        IF (ICFELL('CPCLDM',66).NE.0) RETURN
         IF (JCCL.GE.0) THEN
           CALL GSPLCI (ISLC)
           CALL GSTXCI (ISTC)
@@ -458,6 +568,6 @@ C
         IF (CLWS.GT.0.) THEN
           CALL GSLWSC (SFLW)
         END IF
-      GO TO (10033,10043,10050,10055) , L10034
+      GO TO (10045,10057,10066,10071) , L10046
 C
       END
