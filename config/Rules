@@ -1,5 +1,5 @@
 /*
- *	$Id: Rules,v 1.28 1995-06-13 21:04:29 haley Exp $
+ *	$Id: Rules,v 1.29 1995-06-26 18:00:13 boote Exp $
  */
 /* 
    This file contains Makefile macros.  Proper spacing is achieved
@@ -378,12 +378,12 @@ _CLinkProgram(program,objects,NullArgument)
 #endif	/* FNotInstalledTarget */
 
 /*
- * Macro:	LibraryTarget
+ * Macro:	BuildLibTarget
  *
- * Description:	This rule is build's and installs a library.
+ * Description: Build a library
  */
-#ifndef	LibraryTarget
-#define LibraryTarget(library,objects)\
+#ifndef	BuildLibTarget
+#define	BuildLibTarget(library,objects)\
 ]\
 all::]\
 ]\
@@ -394,8 +394,17 @@ library:: objects]\
 	@$(AR_QUICK) library objects]\
 	$(RANLIB) library]\
 ]\
-InstallLibTarget(library)]\
 CleanFilesTarget(library objects)
+
+/*
+ * Macro:	LibraryTarget
+ *
+ * Description:	This rule is build's and installs a library.
+ */
+#ifndef	LibraryTarget
+#define LibraryTarget(library,objects)\
+BuildLibTarget(library,objects)]\
+InstallLibTarget(library)
 #endif	/* LibraryTarget */
 
 /*
