@@ -8,18 +8,21 @@ static char	*ProgramName		= (char *) NULL;
 static struct {
 	boolean		help;
 	boolean		version;
+	char		*ifmt;
 } opt;
 
 /* Options we want parsed. */
 
 static  OptDescRec      set_options[] = {
 	{"help",	0, NULL, "Print help message"},
+	{"ifmt", 	1, NULL, "Input file format"},
 	{"Version",	0, NULL, "Print version number and exit"},
 	{NULL}
 };
 
 static	Option	get_options[] = {
 {"help",    NCARGCvtToBoolean, (Voidptr) &opt.help,   sizeof(opt.help)},
+{"ifmt", NCARGCvtToString, (Voidptr) &opt.ifmt,sizeof(opt.ifmt)},
 {"Version", NCARGCvtToBoolean, (Voidptr) &opt.version,sizeof(opt.version)},
 {NULL}
 };
@@ -113,24 +116,25 @@ main(argc, argv)
 	}
 
 	if (dstfile == (char *) NULL) {
-		PrintPalette(srcfile, "stdout");
+		PrintPalette(srcfile, "stdout", opt.ifmt);
 	}
 	else {
-		PrintPalette(srcfile, dstfile);
+		PrintPalette(srcfile, dstfile, opt.ifmt);
 	}
 
 	return(0);
 }
 
-static int PrintPalette(rasfile, palfile)
+static int PrintPalette(rasfile, palfile, ifmt)
 	char	*rasfile;
 	char	*palfile;
+	char	*ifmt;
 {
 	int		i, status;
 	Raster		*ras, *RasterOpen();
 	unsigned char	colors[768];
 
-	ras = RasterOpen(rasfile, (char *) NULL);
+	ras = RasterOpen(rasfile, ifmt);
 	if (ras == (Raster *) NULL) {
 		(void) RasterPrintError();
 		return(RAS_ERROR);
