@@ -223,7 +223,7 @@ static void HLUObjDestroy
 #ifdef MAKEAPI
 		_NclAddToDelList(hlu_obj->hlu.hlu_id,NrmStringToQuark(NhlName(hlu_obj->hlu.hlu_id)),hlu_obj->hlu.class_ptr);
 #endif /* MAKEAPI */
-			_NclRemoveAllRefs(hlu_obj->hlu.hlu_id);
+			_NclRemoveAllRefs(hlu_obj->obj.id);
 			NhlDestroy(hlu_obj->hlu.hlu_id);
 		}
 		if(self->obj.cblist != NULL) {
