@@ -1,5 +1,5 @@
 /*
- *	$Id: gcapdev.c,v 1.23 1993-05-13 19:49:35 clyne Exp $
+ *	$Id: gcapdev.c,v 1.24 1994-03-07 22:39:32 clyne Exp $
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +39,7 @@ static	int	simulate_bg_color()
 
 
 	Etype	fill_style = INT_STYLE;
+	Etype	clip_flag = CLIPFLAG;
 	CItype	fill_color = FILL_COLOUR.index;
 
         /*
@@ -81,6 +82,14 @@ static	int	simulate_bg_color()
         cgmc.Enum = 1;
         (void) Process(&cgmc);
 
+        /* turn off clipping	*/
+        cgmc.class = CON_ELEMENT;
+        cgmc.command = CLIP_INDICATOR_ID;
+        cgmc.e[0] = 0;
+        cgmc.Enum = 1;
+        (void) Process(&cgmc);
+
+
 	/*
 	 * draw a big rectangle
 	 */
@@ -111,6 +120,13 @@ static	int	simulate_bg_color()
         cgmc.class = ATT_ELEMENT;
         cgmc.command = INTERIOR_STYLE_ID;
         cgmc.e[0] = fill_style;
+        cgmc.Enum = 1;
+        (void) Process(&cgmc);
+
+        /* restore clipping	*/
+        cgmc.class = CON_ELEMENT;
+        cgmc.command = CLIP_INDICATOR_ID;
+        cgmc.e[0] = clip_flag;
         cgmc.Enum = 1;
         (void) Process(&cgmc);
 
