@@ -16,21 +16,19 @@ typedef	struct {
 	DCtype	x,y; 
 	} DCPoint;		/* Device Coordinate Pair (a point)	*/ 
 
+extern	int		ySoftFillOffset;
+#define	XC_INDEX(y)	(y - ySoftFillOffset)
+
 /*
  * a table to represent the coordinate pairs in the polyline outlining
  * the polygon 
  */
 typedef	struct	{ 
-	DCtype	**x_coord;	/* a list of x coords for each y coord 
-				 * (0 - max_y) 
-				 */ 
+	DCtype	**x_coord;	/* a list of x coords for each y coord  */
 	DCtype	y_first,	/* index in x_coord of first coord	*/ 
 		y_last;		/* index in x_coord of last coord	*/
 	int	*x_count;	/* num x coords in each *x_coord	*/
-	int	x_extent, 
-		height;		/* current overall dimensions of 
-				 * x_coord (memory allocated
-				 */
+	int	x_coord_size	/* mem allocated to each *x_coord	*/
 	} FillTable;
 #endif
 

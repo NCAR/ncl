@@ -1,5 +1,5 @@
 /*
- *	$Id: sun_view.c,v 1.10 1992-01-27 12:51:53 clyne Exp $
+ *	$Id: sun_view.c,v 1.11 1992-02-07 16:23:26 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -275,7 +275,7 @@ CGMC *c;
 		 * (re)initialize the software fill module. This needs to 
 		 * be initialized every time the window changes sizes
 		 */
-		initSoftSim(dev.height, dev.width);
+		initSoftSim(0, dev.width-1, 0, dev.height-1);
 
 
 		/*
@@ -936,12 +936,13 @@ static	sim_polygon(sun_pt_list, n, op)
 
 	for (i = fill_table->y_first; i < (fill_table->y_last + 1); i++)
 	{
-		for ( j = 0; j < (fill_table->x_count[i] - 1); j+=2) {
+		for ( j = 0; j < (fill_table->x_count[XC_INDEX(i)] - 1); j+=2) {
 
-			pw_line(pixReg, (int) fill_table->x_coord[i][j],
-					(int) i,
-					(int) fill_table->x_coord[i][j+1],
-					(int) i, NULL, NULL, op);
+			pw_line(pixReg, 
+				(int) fill_table->x_coord[XC_INDEX(i)][j],
+				(int) i,
+				(int) fill_table->x_coord[XC_INDEX(i)][j+1],
+				(int) i, NULL, NULL, op);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.11 1992-01-27 12:51:40 clyne Exp $
+ *	$Id: X11_class4.c,v 1.12 1992-02-07 16:22:21 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1193,13 +1193,13 @@ static	sim_polygon(xp_list,n)
 
 	for (i = fill_table->y_first; i < (fill_table->y_last + 1); i++)
 	{
-		for ( j = 0; j < (fill_table->x_count[i] - 1); j+=2) {
+		for ( j = 0; j < (fill_table->x_count[XC_INDEX(i)] - 1); j+=2) {
 
 			XDrawLine(dpy, drawable, polygonGC,
-					(short) fill_table->x_coord[i][j],
-					(short) i,
-					(short) fill_table->x_coord[i][j+1],
-					(short) i);
+				(short) fill_table->x_coord[XC_INDEX(i)][j],
+				(short) i,
+				(short) fill_table->x_coord[XC_INDEX(i)][j+1],
+				(short) i);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrandef.h,v 1.6 1991-08-16 10:48:03 clyne Exp $
+ *	$Id: ctrandef.h,v 1.7 1992-02-07 16:22:37 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -63,7 +63,7 @@
 #define	ROUND(A)	((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
 #endif
 
-typedef	float	Matrix2d[3][3];
+typedef	double	Matrix2d[3][3];
 
 /*
  *	This manifest constant is used to index the ClearDevice() function

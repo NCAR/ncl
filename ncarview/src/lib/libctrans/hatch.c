@@ -33,16 +33,16 @@
  *	p_list		: list of points describing the polygon
  *	n		: num elements in p_list
  *	hatch_index	: valid CGM hatch indece
- *	file_scale_factor	: space between two horizontal lines on device
+ *	fill_scale_factor	: space between two horizontal lines on device
  *	dev		: describes the device
  * on exit
  *	p_list		: is undefined
  */
-ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
+ComSimHatch(p_list, n, hatch_index, hatch_spacing, dev)
 	Ptype	*p_list;
 	long	n;
 	IXtype	hatch_index;
-	int	fill_scale_factor;
+	int	hatch_spacing;
 	ComDev	*dev;
 {
 	FillTable       *fill_table;
@@ -51,12 +51,12 @@ ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
 	DCtype	i;
 	Matrix2d	M[2], 		/* matrix for rotating polygon	*/
 			Minv[2];	/* matrix for restoring polygon	*/
-	float		sin_theta[2],	/* cosine of angle of rotation	*/
+	double		sin_theta[2],	/* cosine of angle of rotation	*/
 			cos_theta[2];	/* sine of angle of rotation	*/
-	float		sin_theta_inv[2],	/* cos of angle inverse	*/
+	double		sin_theta_inv[2],	/* cos of angle inverse	*/
 			cos_theta_inv[2];	/* sin of angle inverse	*/
-	int	x1, y1, x2, y2;
-	int	x1_, y1_, x2_, y2_;
+	double	x1, y1, x2, y2;
+	double	x1_, y1_, x2_, y2_;
 	int	x,y;
 	DCtype	xmin, xmax,		/* x,y extent of polygon	*/
 		ymin, ymax;
@@ -64,7 +64,7 @@ ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
 		y_cen;
 	DCtype	x_scr_cen,		/* center of screen		*/
 		y_scr_cen;
-	float	scale = 2.0;
+	double	scale = 2.0;
 
 	extern  FillTable       *buildFillTable();
 
@@ -78,7 +78,6 @@ ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
 	dev->setlinecolour(FILL_COLOUR.index);/* set LINE color */
 	LINE_COLOUR_DAMAGE = TRUE;
 
-
 	/*
 	 * convert VDC coordinates to DC (device) coordinates. Find the 
 	 * x and y extents of polygon so we can determine its center.
@@ -91,7 +90,8 @@ ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
 	ymax = YConvert(YMIN);
 	for (i = 0; i < n; i++) {
 		p_list[i].x = XConvert(p_list[i].x);
-		p_list[i].y = YConvert(p_list[i].y) / fill_scale_factor;
+		p_list[i].y = YConvert(p_list[i].y);
+
                 if (xmax < p_list[i].x) xmax = (DCtype) p_list[i].x;
                 if (ymax < p_list[i].y) ymax = (DCtype) p_list[i].y;
                 if (xmin > p_list[i].x) xmin = (DCtype) p_list[i].x;
@@ -203,13 +203,13 @@ ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
 		/*
 		 * draw hatch lines between using even-odd fill rule
 		 */
-		for (i=fill_table->y_first; i < (fill_table->y_last + 1); i+=4)
-		for (j = 0; j < (fill_table->x_count[i] - 1); j+=2) {
+		for (i=fill_table->y_first; i < (fill_table->y_last + 1); i+=hatch_spacing) 
+		for (j = 0; j < (fill_table->x_count[XC_INDEX(i)] - 1); j+=2) {
 
-			x1_ = fill_table->x_coord[i][j];
-			y1_ = i * fill_scale_factor;
-			x2_ = fill_table->x_coord[i][j+1];
-			y2_ = y1_;
+			x1_ = (double) fill_table->x_coord[XC_INDEX(i)][j];
+			y1_ = (double) i;
+			x2_ = (double) fill_table->x_coord[XC_INDEX(i)][j+1];
+			y2_ = (double) i;
 
 			x1 = (x1_ * Minv[k][0][0])+(y1_ * Minv[k][0][1]) 
 								+ Minv[k][0][2];
@@ -219,7 +219,8 @@ ComSimHatch(p_list, n, hatch_index, fill_scale_factor, dev)
 								+ Minv[k][0][2];
 			y2 = (x2_ * Minv[k][1][0])+(y2_ * Minv[k][1][1]) 
 								+ Minv[k][1][2];
-			dev->devline( x1, y1, x2, y2);
+
+			dev->devline(ROUND(x1),ROUND(y1),ROUND(x2),ROUND(y2));
 		}
 
 		/*
@@ -283,9 +284,9 @@ static	void	identity_matrix(A)
  */
 static	set_up_matrix(xo, yo, cos_theta, sin_theta, scale, xprime, yprime, M)
 	int	xo, yo;			/* translation to origin	*/
-	float	cos_theta, 
+	double	cos_theta, 
 		sin_theta;		/* angle of rotation	*/
-	float	scale;
+	double	scale;
 	int	xprime, yprime;		/* final translation destinatin	*/
 	Matrix2d	M;
 {

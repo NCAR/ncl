@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.13 1992-01-27 13:22:05 clyne Exp $
+ *	$Id: ctrans.c,v 1.14 1992-02-07 16:22:41 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -36,7 +36,7 @@
  * rev 1.01 clyne 4/18/90	: expanded application programmer interace
  */
 #ifndef lint
-static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.13 1992-01-27 13:22:05 clyne Exp $";
+static char *RCSid = "$Header: /home/brownrig/SVN/CVS/ncarg/ncarview/src/lib/libctrans/ctrans.c,v 1.14 1992-02-07 16:22:41 clyne Exp $";
 #endif
 
 
@@ -894,7 +894,7 @@ close_ctrans()
 	 * already been invoked and we are not in debug mode.
 	 */
 	if (deviceIsInit && ! (*deBug)) {
-		(void)(*cmdtab[devnum][DEL_ELEMENT][CLEAR_DEV])(&command);
+		(void)(*cmdtab[devnum][DEL_ELEMENT][CLEAR_DEVICE])(&command);
 		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF])(&command);
 	}
 

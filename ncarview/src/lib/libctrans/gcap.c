@@ -1,5 +1,5 @@
 /*
- *	$Id: gcap.c,v 1.11 1991-10-04 15:19:18 clyne Exp $
+ *	$Id: gcap.c,v 1.12 1992-02-07 16:23:00 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -95,10 +95,8 @@ CGMC *c;
 	CoordRect	dev_extent;
 	CoordModifier	coord_mod;
 
-	int	fill_scale_factor;
-	DCtype	x_extent;
-
 	extern	int	commFillScaleFactor;
+	extern	int	commHatchScaleFactor;
 
 	void	SetDevWin();
 	
@@ -150,18 +148,23 @@ CGMC *c;
 	 * if device is incapable of drawing filled polygons or they
 	 * are too big than use software simulation
 	 */
-	fill_scale_factor = YScale(POLY_SIM_SPACING) + 1;
-	fill_scale_factor = fill_scale_factor == 0 ? 1 : fill_scale_factor;
-	
-	x_extent = (DCtype) MAX(UPPER_RIGHT_X, LOWER_LEFT_X);
-	initSoftSim((DCtype) ABS(UPPER_RIGHT_Y - LOWER_LEFT_Y) 
-			/ fill_scale_factor,
-			x_extent);
+	commFillScaleFactor = YScale(POLY_SIM_SPACING) + 1;
+	commFillScaleFactor = commFillScaleFactor == 0? 1 : commFillScaleFactor;
 
 	/*
-	 * change the fill scale factor used by ComPolySim in commondev.c
+	 * divide hatch spacing by 2 to make things consistent with 
+	 * ftrans output
 	 */
-	commFillScaleFactor = fill_scale_factor;
+	commHatchScaleFactor = YScale(POLY_HATCH_SPACE) / 2;
+	commHatchScaleFactor = commHatchScaleFactor==0?1: commHatchScaleFactor;
+	
+	initSoftSim(
+		(DCtype) XConvert(XMIN),
+		(DCtype) XConvert(XMAX),
+		(DCtype) YConvert(YMIN),
+		(DCtype) YConvert(YMAX)
+	);
+
 
 	/*
 	 * tweek soft fill option to do software filling if device has no

@@ -1,5 +1,5 @@
 /*
- *	$Id: commondev.c,v 1.8 1991-10-04 15:18:51 clyne Exp $
+ *	$Id: commondev.c,v 1.9 1992-02-07 16:22:32 clyne Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -49,6 +49,7 @@ static	long	coordBufSize = 0;       /* amount mem allocated         */
 static	unsigned long	maxPolyPoints = ~0;
 
 int	commFillScaleFactor = 1;
+int	commHatchScaleFactor = 1;
 
 ComSetDevice(name)
 	char	*name;
@@ -101,9 +102,10 @@ init_common()
  *	sim_polygon
  *	use software to simulate a filled polygon
  */
-ComSimPoly(p_list, n)
+ComSimPoly(p_list, n, skip)
 	Ptype	*p_list;
 	int	n;
+	int	skip;
 {
 	FillTable       *fill_table;
 	int     j;
@@ -127,7 +129,7 @@ ComSimPoly(p_list, n)
 	 */
 	for (i = 0; i < n; i++) {
 		p_list[i].x = XConvert(p_list[i].x);
-		p_list[i].y = YConvert(p_list[i].y) / commFillScaleFactor;
+		p_list[i].y = YConvert(p_list[i].y);
 	}
 
 	/*
@@ -140,13 +142,16 @@ ComSimPoly(p_list, n)
 	/*
 	 * fill with horizontal lines between every other point
 	 */
-	for (i = fill_table->y_first; i < (fill_table->y_last + 1); i++) {
-		for (j = 0; j < (fill_table->x_count[i] - 1); j+=2) {
+	for (i = fill_table->y_first; i < (fill_table->y_last + 1); i+=skip) {
 
-			dev->devline( fill_table->x_coord[i][j], 
-				i * commFillScaleFactor,
-				fill_table->x_coord[i][j+1], 
-				i * commFillScaleFactor);
+		for (j=0; j<(fill_table->x_count[XC_INDEX(i)] - 1); j+=2) {
+
+			dev->devline(
+				fill_table->x_coord[XC_INDEX(i)][j], 
+				i,
+				fill_table->x_coord[XC_INDEX(i)][j+1], 
+				i
+			);
 		}
 	}
 }
@@ -598,7 +603,9 @@ CGMC *c;
 		 * Or if -softfill option given on command line
 		 */
 		if (*softFill || coordBufNum > maxPolyPoints) {
-			ComSimPoly(coordBuf, (int) coordBufNum);
+			ComSimPoly(
+				coordBuf,(int) coordBufNum, commFillScaleFactor
+			);
 			coordBufNum = 0;
 		}
 		else {
@@ -621,8 +628,10 @@ CGMC *c;
 		break;
 
 	case	HATCH_S:
-		ComSimHatch(coordBuf, coordBufNum, HATCH_IND,
-					commFillScaleFactor, dev);
+		ComSimHatch(
+			coordBuf, coordBufNum, HATCH_IND,
+			commHatchScaleFactor, dev
+		);
 		break;
 
 	case    EMPTY_S:

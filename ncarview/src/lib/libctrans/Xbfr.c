@@ -1,5 +1,5 @@
 /*
- *	$Id: Xbfr.c,v 1.5 1991-08-16 10:48:20 clyne Exp $
+ *	$Id: Xbfr.c,v 1.6 1992-02-07 16:22:28 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -251,7 +251,7 @@ CGMC *c;
 	 * initialize soft sim module with new height and width
 	 */
 	if (*softFill) {
-		initSoftSim(xsh.height, xsh.width);
+		initSoftSim(0, xsh.width-1, 0, xsh.height-1);
 	}
 
 	/*

@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class0.c,v 1.7 1991-10-04 15:18:36 clyne Exp $
+ *	$Id: X11_class0.c,v 1.8 1992-02-07 16:22:17 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -497,7 +497,7 @@ CGMC *c;
 		 * initialize soft sim module with new height and width
 		 */
 		if (*softFill) {
-			initSoftSim(dev.height, dev.width);
+			initSoftSim(0, dev.width-1, 0, dev.height-1);
 		}
 
 		if (fontstruct != NULL && !Batch) {

@@ -120,6 +120,15 @@ install::
 MakefileTarget
 CleanTarget
 
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
+
+
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1
 #	lint $(SRCS) $(LIBS) > lint.out

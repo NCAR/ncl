@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.7 1992-01-27 12:51:50 clyne Exp $
+ *	$Id: rast.c,v 1.8 1992-02-07 16:23:11 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -119,7 +119,7 @@ CGMC *c;
 	 * initialize the software fill module. This needs to
 	 * be initialized every time the window changes sizes
 	 */
-	initSoftSim(height, width);
+	initSoftSim(0, width-1, 0, height-1);
 
 	/*
 	 * tweek soft fill option to do software filling 

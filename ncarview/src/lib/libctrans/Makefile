@@ -9,15 +9,15 @@
 
 SYSTEM_INCLUDE		= Sun4
 
-PARFIL_INIT     = /u2/clyne/tags/lib/params3.1.3.alpha
-PARFIL_PERM     = /u2/clyne/tags/lib/params3.1.3.alpha
+PARFIL_INIT     = /u1/clyne/testlib/params3.1.3
+PARFIL_PERM     = /u1/clyne/testlib/params3.1.3
 
-BINDIR		= /u2/clyne/tags/bin
-LIBDIR		= /u2/clyne/tags/lib
-MANDIR		= /u2/clyne/tags/man
+BINDIR		= /u1/clyne/testbin
+LIBDIR		= /u1/clyne/testlib
+MANDIR		= /u1/clyne/testman
 MAN_SECTION     = l
 TMPDIR          = /tmp
-XAPPDIR		= /u2/clyne/tags/lib
+XAPPDIR		= /u1/clyne/testlib
 BITSDIR         = /usr/include/X11/bitmaps
 
 INCLUDEDIR      = $(NCARG)/include
@@ -190,6 +190,14 @@ clean::
 	@-$(RM) *.o core
 
 cleanbin:: clean
+
+saber_src: $(SRCS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(SRCS) $(LIBS)
+
+saber_obj: $(OBJS)
+	#setopt load_flags $(CFLAGS) $(CINCS)
+	#load $(OBJS) $(LIBS)
 
 lint: $(HDR) $(SRCS)
 	lint $(CDEFINES) $(LINTLIBS) $(SRCS)  1> lint.out 2>&1

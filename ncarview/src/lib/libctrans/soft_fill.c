@@ -1,5 +1,5 @@
 /*
- *	$Id: soft_fill.c,v 1.4 1991-03-12 17:39:30 clyne Exp $
+ *	$Id: soft_fill.c,v 1.5 1992-02-07 16:23:18 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -10,12 +10,6 @@
 *                      NCAR View V3.01 - UNIX Release                  *
 *                                                                      *
 ***********************************************************************/
-#include	<stdio.h>
-#include	<ncarv.h>
-#include	"soft_fill.h"
-#include	"ctrandef.h"
-#include	"cgmc.h"
-
 
 /*
  *	soft_fill.c
@@ -37,13 +31,38 @@
  *				  plots
  */
 	
+#include	<stdio.h>
+#include	<ncarv.h>
+#include	"soft_fill.h"
+#include	"ctrandef.h"
+#include	"cgmc.h"
 
-static	FillTable	fillTable =  { /* the fill table		*/
-				NULL, 0, 0, NULL, 0, 0
-			};
+/*
+ * becuase device coordinates may not begin at zero, or worse yet even
+ * be negative, the x_coord field of FillTable is indexed by adding
+ * 'ySoftFillOffset' to the devices 'y' coordinate via the XC_INDEX()
+ * macro. This way the x_coord array can always begin at zero regardless
+ * of what coord system the devices uses
+ */
+int	ySoftFillOffset;
 
-static	unsigned	Height;		/* height of display (dev coord)*/
-static	unsigned	xExtent;	/* X extent of display (dev coord*/
+/*
+ * the fill table
+ */
+static	FillTable	fillTable;
+
+
+/*
+ * device extents
+ */
+static	DCtype		minX, maxX, minY, maxY;
+/*
+ * magnitude of device extents
+ */
+static	unsigned	xExtent, yExtent;
+
+static	int		*tableWidths;
+
 static	unsigned	isInit = 0;	/* boolean is initializec	*/
 
 /*
@@ -53,13 +72,15 @@ static	unsigned	isInit = 0;	/* boolean is initializec	*/
  *		initialize the software fill simulation module. Sets the
  *	dispay dimensions. Must be called whenever the display changes 
  *	dimensions (this usually only 	happens in a window environment)
+ *
  * on entry
- *	height		: height of display in device coordinates
- *	x_extent	: maximum valid device coord in x direction
+ *	minx		: minimum x extent in device coords
+ *	maxx		: maximum x extent in device coords
+ *	minx		: minimum y extent in device coords
+ *	maxx		: maximum y extent in device coords
  */
-initSoftSim(height, x_extent)
-	DCtype	height,
-		x_extent;
+initSoftSim(minx, maxx, miny, maxy)
+	DCtype	minx, maxx, miny, maxy;
 {
 	int	i;
 
@@ -68,28 +89,21 @@ initSoftSim(height, x_extent)
 	 */
 	if (isInit) {
 		free_fill_table();
-		cfree ((char *) fillTable.x_coord); 
-		cfree((char *) fillTable.x_count);
 	}
 
-	fillTable.x_coord = (DCtype **) icMalloc ((unsigned) 
-			(2 * height * sizeof(DCtype *)));
-	fillTable.x_count = (int *) icMalloc ((unsigned) 
-			(2 * height * sizeof (int)));
-	Height = height;	/* height of the display */
-	xExtent = x_extent;	/* width of the display		*/
+	maxX = maxx;
+	minX = minx;
+	maxY = maxy;
+	minY = miny;
+	xExtent = ABS(maxx - minx) + 1;
+	yExtent = ABS(maxy - miny) + 1;
 
 	/*
-	 * malloc enough memmory for twice display height. This kludge
-	 * allows for coordinates that extend past view surface
+	 * make an initial memory allocation that should handle any
+	 * convex polygons.
 	 */
-	for (i = 0; i < (2 * Height); i++) {
-		fillTable.x_coord[i] = NULL;
-		fillTable.x_count[i] = 0;
-	}
+	alloc_fill_table(yExtent, 3);
 
-	fillTable.x_extent = 0;		/* mem allocated to x_coord[i]	*/
-	fillTable.height = height;	/* mem allocated to x_coord	*/
 	fillTable.y_first = fillTable.y_last = 0;
 
 	isInit = 1;
@@ -112,10 +126,12 @@ static	free_fill_table()
 
 	if (!isInit) return;
 
-	for (i = 0; i < Height; i++) {
-		if (fillTable.x_coord[i]) cfree((char *) fillTable.x_coord[i]);
-		fillTable.x_coord[i] = NULL;
+	for (i = 0; i < yExtent; i++) {
+		if (fillTable.x_coord[i]) free((char *) fillTable.x_coord[i]);
 	}
+	free((char *) fillTable.x_coord);
+	free((char *) fillTable.x_count);
+	free((char *) tableWidths);
 }
 
 /* 
@@ -136,85 +152,74 @@ static	free_fill_table()
  *	point_list	: list of n coord. pairs describing a polygon
  *			  point_list[0] != point_list[n-1]
  *	count		: num elements in point_list, n
+ *
+ * on exit
+ *	return		: NULL => count < 3, else the address of the
+ *			  fill table is returned.
  */
 FillTable	*buildFillTable(point_list, count)
 	Ptype		*point_list;
 	unsigned	count;
 {
 
-	int	i;
-	DCtype	xmax = 0;
+	int	i,j;
 	DCtype	ymax = 0; 
-	DCtype	xmin = xExtent;
-	DCtype	ymin = Height;
-	DCtype	xwidth;		/* how wide a table we need	*/
+	DCtype	ymin = maxY;
+	int	xwidth;		/* how wide a table we need	*/
+	int	inc;
 
-	DCtype	*hit_list;	/* which X points are used in point_list */
+	if (count < 2) return((FillTable *) NULL);
 
-	if (count < 2)
-		return((FillTable *) NULL);
-
-	if ((hit_list = (DCtype *) icMalloc 
-		((unsigned) (xExtent * sizeof (DCtype)))) == NULL) {
-
-		perror("");
-		exit(1);
-	}
-	bzero((char *) hit_list, (int) xExtent * sizeof(DCtype));
+	bzero((char *) fillTable.x_count, yExtent * sizeof(int));
 
 	/*
-	 * find max x and y and min x and y and record all X values used
+	 * find max y and min y.
 	 */
 	for (i = 0; i < count; i++) {
-		if (xmax < point_list[i].x) xmax = (DCtype) point_list[i].x;
 		if (ymax < point_list[i].y) ymax = (DCtype) point_list[i].y;
-		if (xmin > point_list[i].x) xmin = (DCtype) point_list[i].x;
 		if (ymin > point_list[i].y) ymin = (DCtype) point_list[i].y;
 
-		hit_list[point_list[i].x] = 1; 
 	}
-
-
-#ifdef	DEAD
 	/*
-	 *	find out how wide our table needs to be based on how many
-	 *	x values are used. This is conservative but is guaranteed
-	 *	to give us enough memory
+	 * clip to device extents
 	 */
-	for (i = 0, xwidth = 0; i < xExtent; i++) {
-		if (hit_list[i]) xwidth++;
-	}
-#else
-	xwidth = xmax;
-#endif
+	ymax = ymax > maxY ? maxY : ymax;
+	ymin = ymin < minY ? minY : ymin;
 
-	cfree ((char *) hit_list);
+	ySoftFillOffset = ymin;		/* offset for XC_INDEX()	*/
+
+	
+	/*
+	 * calculate the number of x intercepts for all the polygon
+	 * edges
+	 */
+	bzero((char *) tableWidths, (int) yExtent * sizeof(int));
+	for(i=1; i<count; i++) {
+		inc = point_list[i-1].y < point_list[i].y ? 1 : -1;
+		for(j=point_list[i-1].y; j!=point_list[i].y; j+=inc) {
+			if (j >= ymin && j <= ymax) {
+				tableWidths[j-ymin]++;
+			}
+		}
+	}
+
+
+	/*
+	 * find "widest" run of X values
+	 */
+	xwidth = max_array_val(tableWidths, yExtent) + 1; 
+	
 
 	/*
 	 * see if filltable is wide enough for widest data. 
 	 */
-	if (fillTable.x_extent < xwidth) {
+	if (fillTable.x_coord_size < xwidth) {
 		free_fill_table();
-
-		fillTable.x_extent = xwidth;
+		alloc_fill_table(yExtent, xwidth);
 	}
 
 	fillTable.y_first = ymin;	/* first and last y coordinate	*/
 	fillTable.y_last = ymax;
-
-	/*
-	 * malloc memory for the x coordinates. This is a little wastefull
-	 * since for all y coordinates we give the maximum memory needed
-	 * for the largest set of x coords at a given y. But is fast
-	 */
-	for (i = ymin; i < (ymax + 1); i++) {
-		if (!(fillTable.x_coord[i])) {
-			fillTable.x_coord[i] = (DCtype *) icMalloc 
-				((unsigned) fillTable.x_extent *sizeof(DCtype));
-		}
-
-		fillTable.x_count[i] = 0;	/* no x coordinates	*/
-	}
 
 	/*
 	 * make sure first and last points are not equal
@@ -232,7 +237,8 @@ FillTable	*buildFillTable(point_list, count)
 		add_line((DCtype) point_list[i].x, 
 			(DCtype) point_list[i].y,
 			(DCtype) point_list[i+1].x, 
-			(DCtype) point_list[i+1].y);
+			(DCtype) point_list[i+1].y,
+			ySoftFillOffset);
 	}
 
 	/*
@@ -241,7 +247,8 @@ FillTable	*buildFillTable(point_list, count)
 	add_line((DCtype) point_list[count-1].x, 
 		(DCtype) point_list[count-1].y,
 		(DCtype) point_list[0].x, 
-		(DCtype) point_list[0].y);
+		(DCtype) point_list[0].y,
+		ySoftFillOffset);
 
 	/*
 	 * add_line does not supply coorinates for the polygon verticies
@@ -249,13 +256,13 @@ FillTable	*buildFillTable(point_list, count)
 	 * vertices that form local extrema need to be left out for the
 	 * parity fill algorithm
 	 */
-	add_end_points(point_list, count);
+	add_end_points(point_list, count, ySoftFillOffset);
 
 
 	/*
 	 *	sort the table so x coordinates are in ascending order
 	 */
-	sort_table();
+	sort_table(ySoftFillOffset);
 
 #ifdef	DEBUG
 	print_fill_table ();
@@ -273,8 +280,9 @@ FillTable	*buildFillTable(point_list, count)
  *	each horizontal segment is treated like an end point. This is 
  *	necessary for the fill algorithm.
  */
-static	add_line(x1, y1, x2, y2)
+static	add_line(x1, y1, x2, y2, yoff)
 	DCtype	x1, y1, x2, y2;
+	int	yoff;
 {
 
 	DCtype	dx, dy;		/* difference between endpoints	*/
@@ -324,11 +332,14 @@ static	add_line(x1, y1, x2, y2)
 			 * from the last point inserted and is not the 
 			 * end point (the last y value)
 			 */
-			if (ploty != lasty && ploty != y2) {
+			if (ploty != lasty && ploty != y2 &&
+				ploty >= minY && ploty <= maxY &&
+				plotx >= minX && plotx <= maxX) {
+
 				/* insert	*/
-			fillTable.x_coord[ploty][fillTable.x_count[ploty]] = 
+			fillTable.x_coord[ploty-yoff][fillTable.x_count[ploty-yoff]] = 
 									plotx;
-			fillTable.x_count[ploty]++;
+			fillTable.x_count[ploty-yoff]++;
 			}
 
 			lasty = ploty;	/* keep track of previous point	*/
@@ -353,12 +364,13 @@ static	add_line(x1, y1, x2, y2)
  *	horizontal lines) to the fill Table that are NOT extrema and were not 
  *	inserted by add_line().
  */
-static	add_end_points(point_list, count)
+static	add_end_points(point_list, count, yoff)
 	Ptype		*point_list;
 	unsigned	count;
+	int		yoff;
 {
 	int	i;
-	DCtype	y;
+	DCtype	y, x;
 
 	/*
 	 * check for extrema at point i+1 for all points except
@@ -370,6 +382,11 @@ static	add_end_points(point_list, count)
 		 *	check for maxima
 		 */
 		y = (DCtype) point_list[i+1].y;
+		x = (DCtype) point_list[i+1].x;
+		if (x < minX || x > maxX || y < minY || y > maxY) {
+			continue;	/* clipped	*/
+		}
+
 		if (!(point_list[i].y < y && point_list[i+2].y < y)) {
 
 			/*
@@ -380,10 +397,8 @@ static	add_end_points(point_list, count)
 				/*
 				 * no extrema
 				 */
-				fillTable.x_coord[y][fillTable.x_count[y]] =
-					(DCtype) point_list[i+1].x;
-
-				fillTable.x_count[y]++;
+				fillTable.x_coord[y-yoff][fillTable.x_count[y-yoff]] = x;
+				fillTable.x_count[y-yoff]++;
 			}
 		}
 	}
@@ -392,27 +407,29 @@ static	add_end_points(point_list, count)
 	 * now check first and last point
 	 */
 	y = (DCtype) point_list[0].y;
+	x = (DCtype) point_list[0].x;
+	if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
 	if (!(point_list[count-1].y < y && point_list[1].y < y)) {
 
 		if (!(point_list[count-1].y >= y && point_list[1].y >= y)){
 			
-			fillTable.x_coord[y][fillTable.x_count[y]] =
-				(DCtype) point_list[0].x;
-
-			fillTable.x_count[y]++;
+			fillTable.x_coord[y-yoff][fillTable.x_count[y-yoff]] =x;
+			fillTable.x_count[y-yoff]++;
 		}
+	}
 	}
 
 	y = (DCtype) point_list[count-1].y;
+	x = (DCtype) point_list[count-1].x;
+	if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
 	if (!(point_list[count-2].y < y && point_list[0].y < y)) {
 
 		if (!(point_list[count-2].y >= y && point_list[0].y >= y)){
 			
-			fillTable.x_coord[y][fillTable.x_count[y]] =
-				(DCtype) point_list[count-1].x;
-
-			fillTable.x_count[y]++;
+			fillTable.x_coord[y-yoff][fillTable.x_count[y-yoff]] =x;
+			fillTable.x_count[y-yoff]++;
 		}
+	}
 	}
 }
 
@@ -425,7 +442,8 @@ static	add_end_points(point_list, count)
  *		sort each x coordinate list into ascending order. Duplicate
  *	entries are allowed.
  */
-static	sort_table()
+static	sort_table(yoff)
+	int	yoff;
 {
 
 	int	i, j, k, gap;
@@ -438,8 +456,8 @@ static	sort_table()
 		/*
 		 * sort fillTable.xcoord[i] 
 		 */
-		n = fillTable.x_count[i];
-		ptr = fillTable.x_coord[i];
+		n = fillTable.x_count[i-yoff];
+		ptr = fillTable.x_coord[i-yoff];
 		for (gap = n/2; gap > 0; gap /=2) {
 			for (k = gap; k < n; k++) {
 				for (j = k - gap; j >= 0; j -= gap) {
@@ -456,6 +474,39 @@ static	sort_table()
 	}
 }
 
+static	int	max_array_val(a, n)
+	int	*a;
+	int	n;
+{
+	int	i, max;
+
+	max = a[0];
+	for(i=1; i<n; i++) {
+		max = max < a[i] ? a[i] : max;
+	}
+	return(max);
+}
+
+static	alloc_fill_table(ys, xs)
+	int	ys, xs;
+{
+	int	i;
+
+	fillTable.x_coord = (DCtype **) icMalloc ((unsigned) 
+			(ys * sizeof(DCtype *)));
+	fillTable.x_count = (int *) icMalloc ((unsigned) 
+			(ys * sizeof (int)));
+
+	fillTable.x_coord_size = xs;
+	for (i = 0; i < ys; i++) {
+		fillTable.x_coord[i] = (DCtype *) icMalloc(xs * sizeof(DCtype));
+		fillTable.x_count[i] = 0;
+	}
+	tableWidths = (int *) icMalloc(sizeof(int) * ys);
+
+}
+
+#define	DEBUG
 #ifdef	DEBUG
 static	print_fill_table ()
 {
@@ -464,12 +515,12 @@ static	print_fill_table ()
 
 	for (i = fillTable.y_first; i < (fillTable.y_last + 1); i++) {
 		(void) fprintf(stderr, "\nY = %d, X are ...", i);
-		for (j = 0; j < fillTable.x_count[i]; j++) {
+		for (j = 0; j < fillTable.x_count[i-ySoftFillOffset]; j++) {
 
-			(void) fprintf(stderr, " %d", fillTable.x_coord[i][j]);
+			(void) fprintf(stderr, 
+				" %d", fillTable.x_coord[i-ySoftFillOffset][j]);
 		}
 	}
-
 }
 #endif	DEBUG
 
