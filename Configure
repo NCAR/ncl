@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.13 1998-01-07 23:12:23 haley Exp $
+#      $Id: Configure,v 1.14 2000-09-05 21:46:49 haley Exp $
 #
 #########################################################################
 #									#
@@ -95,7 +95,7 @@ if (-e ./config/Site.local) then
 	echo ""
 	echo "Overwrite existing configuration? (n)"
 	echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-	set answer=$<
+	set answer="$<"
 	if ("$answer" == "q") goto cleanup
 	if ("$answer" == "y") then
 		if ($?ncar_option) then
@@ -174,7 +174,7 @@ if ($?verbose_option) then
 "EOF"
 
   echo -n "Enter Return to continue, or q(quit) > "
-  set answer=$<
+  set answer="$<"
   if ("$answer" == "q") goto cleanup
 
   cat <<"EOF"
@@ -189,7 +189,7 @@ if ($?verbose_option) then
 "EOF"
 
   echo -n "Enter Return to continue, or q(quit) > "
-  set answer=$<
+  set answer="$<"
   if ("$answer" == "q") goto cleanup
 
 endif
@@ -215,7 +215,7 @@ cat <<"EOF"
 "EOF"
 
 echo -n "Enter Return to continue, or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 
 #
@@ -238,7 +238,7 @@ endif
 echo ""
 echo "Executable installation directory : $bindir"
 echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set bindir="$answer"
@@ -258,7 +258,7 @@ if (-d $bindir) then
     echo "<$bindir> is not writable."
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_bin
   endif
@@ -268,7 +268,7 @@ else
     echo "  *** Warning: <$parent> is not writable."
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_bin
   endif
@@ -296,7 +296,7 @@ endif
 echo ""
 echo "Library installation directory    : $libdir"
 echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set libdir="$answer"
@@ -315,7 +315,7 @@ if (-d $libdir) then
     echo "<$libdir> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_lib
   endif
@@ -325,7 +325,7 @@ else
     echo "  *** Warning: <$parent> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_lib
   endif
@@ -352,7 +352,7 @@ endif
 echo ""
 echo "Include file installation directory    : $incdir"
 echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set incdir="$answer"
@@ -371,7 +371,7 @@ if (-d $incdir) then
     echo "<$incdir> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_inc
   endif
@@ -382,7 +382,7 @@ else
     echo "  *** Warning: <$parent> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_inc
   endif
@@ -410,7 +410,7 @@ endif
 echo ""
 echo "Man page installation directory   : $mandir"
 echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set mandir="$answer"
@@ -430,7 +430,7 @@ if (-d "$mandir") then
     echo "<$mandir> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_man
   endif
@@ -440,7 +440,7 @@ else
     echo "  *** Warning: <$mandir:h> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_man
   endif
@@ -469,7 +469,7 @@ endif
 echo ""
 echo "System temp space directory   : $tmpdir"
 echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set tmpdir="$answer"
@@ -482,7 +482,7 @@ if (-d "$tmpdir") then
     echo "<$tmpdir> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_tmp
   endif
@@ -496,7 +496,7 @@ else
     echo "  *** Warning: <$tmpdir:h> is not writable"
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer=$<
+    set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_tmp
   endif
@@ -519,7 +519,7 @@ endif
 echo ""
 echo "Use Fortran 90 to build Fortran libraries? ($buildf90)"
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if (("$answer" != "") && ("$answer" != "$buildf90")) then
 	set buildf90 = $answer
@@ -531,7 +531,7 @@ if ("$buildf90" == "y") then
   echo ""
   echo "What is the name of your Fortran 90 compiler? ($f90comp)"
   echo -n "Enter Return (default), name of Fortran 90 compiler, or q(quit) > "
-  set answer=$<
+  set answer="$<"
   if ("$answer" == "q") goto cleanup
   if (("$answer" != "") && ("$answer" != "$buildf90")) then
 	set f90comp = $answer
@@ -571,7 +571,7 @@ endif
 echo ""
 echo "Build X support into ctrans/ictrans? ($buildxlibstuff)"
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   if ("$answer" != "$buildxlibstuff") then
@@ -601,7 +601,7 @@ echo ""
 echo "Build HDF support into raster library? ($buildhdf)"
 echo "(requires the external library 'libdf.a') "
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if (("$answer" != "") && ("$answer" != "$buildhdf")) then
 	set buildhdf = $answer
@@ -630,7 +630,8 @@ proc_loclibdir:
 echo ""
 echo "Enter local library search path(s) : $loclibdir"
 echo -n "Enter Return (default), new directories, or q(quit) > "
-set answer=$<
+set answer="$<"
+
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set loclibdir = "$answer"
@@ -676,7 +677,7 @@ proc_locincdir:
 echo ""
 echo "Enter local include search path(s) : $locincdir"
 echo -n "Enter Return (default), new directories, or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
   set locincdir = "$answer"
@@ -734,7 +735,7 @@ endif
 echo ""
 echo "Go back and make more changes or review? (n) "
 echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" == "y") goto QuestionAndAnswer
 
@@ -746,7 +747,7 @@ proc_save:
 echo ""
 echo "Save current configuration ? (y) "
 echo -n "Enter Return(default), y(yes), or q(quit) > "
-set answer=$<
+set answer="$<"
 if ("$answer" == "q") goto cleanup
 
 if ("$answer" != "y" && "$answer" != "") then
