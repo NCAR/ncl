@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.34 2000-04-17 22:48:40 haley Exp $
+;      $Id: gsn_code.ncl,v 1.35 2000-05-10 17:31:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -65,7 +65,6 @@ undef("gsn_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_polymarker_ndc")
 undef("gsn_panel")
-undef("gsn_panel_labelbar")
 undef("gsn_contour")
 undef("gsn_contour_map")
 undef("gsn_labelbar_ndc")
@@ -81,7 +80,6 @@ undef("gsn_vector_map")
 undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
-
 
 
 ;***********************************************************************;
@@ -585,7 +583,7 @@ end
 procedure gsnp_scale_plot(plot:graphic)
 local xfont, yfont, xbfont, xlength, xmlength, ylfont, ylength, ymlength
 begin
-  end if	
+  getvalues plot
     "tiXAxisFontHeightF"   : xfont
     "tiYAxisFontHeightF"   : yfont
     "tmXBLabelFontHeightF" : xbfont
@@ -723,36 +721,33 @@ begin
         "wkPause" : True
       end create
     end if
+    return(window)
+end
 
-  if(lbres.and.isatt(lbres,"lbPerimOn"))
-    perim_on = lbres@lbPerimOn
-    delete(lbres@lbPerimOn)
-  else
-    perim_on = False
-  end if
 
-  if(lbres.and.isatt(lbres,"lbMonoFillPattern"))
-    mono_fill_pat = lbres@lbMonoFillPattern
-    delete(lbres@lbMonoFillPattern)
-  else
-    mono_fill_pat = True
-  end if
-
-  if(lbres.and.isatt(lbres,"lbLabelAlignment"))
-    label_align = lbres@lbLabelAlignment
-    delete(lbres@lbLabelAlignment)
-  else
-    label_align = "InteriorEdges"
-  end if
+;***********************************************************************;
+; Function : create_labelbar                                            ;
+;                wks: graphic                                           ;
+;               nbox: integer                                           ;
+;             colors: array                                             ;
+;             labels: array                                             ;
+;              lbres: logical                                           ;
+;                                                                       ;
 ; This function creates a labelbar given a workstation, the number of   ;
 ; boxes, the colors and labels to use, and an optional list of          ;
+; labelbar resources. By default, lbAutoManage is set to False, the     ;
+; perimeter is turned off, and the fill patterns are set to solid.      ;
+;***********************************************************************;
+function create_labelbar(wks:graphic, nbox:integer, colors, labels, \
 lbres:logical)
 local perim_on, mono_fill_pat, label_align, labelbar_object
 begin
-    "lbAutoManage"      : False
+;
 ; Set some defaults
 ;
+  perim_on      = get_res_value(lbres,"lbPerimOn",False)
   mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
+  label_align   = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
   font_height   = get_res_value(lbres,"lbLabelFontHeightF",0.1)
   orientation   = get_res_value(lbres,"lbOrientation","horizontal")
   if(lbres.and..not.any(ismissing(getvaratts(lbres))))
@@ -850,6 +845,8 @@ begin
       "wkDeviceUpperY" : upper_y
     end create
 
+    return(ps)
+end
 
 ;***********************************************************************;
 ; Function : gsn_open_wks                                               ;
@@ -907,10 +904,10 @@ begin
     ps_file = get_res_value_keep(type,"wkPSFileName",res_file + "." + type)
     ps_file@res_file = res_file
 
-            wks = gsn_open_ps(type,ps_file)
+    x_file = res_file
 
 ;
-                wks = gsn_open_ncgm(ncgm_file)
+; Check if color map being set.  The PostScript color map will get 
 ; passed automatically through "type".
 ;
     if(isatt(type,"wkColorMap"))
@@ -1296,6 +1293,20 @@ end
     "amResizeNotify" : True
     "amTrackData"    : True
     "amJust"         : just
+;                                                                       ;
+end
+
+;***********************************************************************;
+; Procedure : gsn_panel                                                 ;
+;               plot : array of plots to put on one page.               ;
+;               dims : a 2-D array indicating number of rows and columns;
+;             resources: optional resources                             ;
+;                                                                       ;
+; This procedure takes the array of plots and draws them all on one     ;
+; workstation in the configuration specified by dims.                   ;
+;                                                                       ;
+; plots will be drawn in 2 rows and 3 columns.                          ;
+;                                                                       ;
 ; However, if you set gsnPanelRowSpec to True, and dims to an array of  ;
 procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[2]:float,\
                     resources:logical )
@@ -1310,98 +1321,67 @@ begin
     cols = floattointeger(dims(1))
     xrows = dims(0)
     xcols = dims(1)
-    xwsp_perc = 1.0   ; White space is 1% of total length of plot.
-    ywsp_perc = 1.0   ; This can be changed with an attribute.
-    x_lft = 0.0
-    y_top = 1.0
-    x_rgt = 1.0
-    y_bot = 0.0
-    callframe = True
-    panel_labelbar = False
-    draw_boxes     = False
     res = resources              ; Make copy of resources
-    orths = (/     1.0,          -1.0,      -1.0,        1.0/)
-    panel_center = get_res_value(res,"gsnPanelCenter",True)
-; title string which is also set with tx* resources. We have to figure
-    if(res)
-      if(isatt(res,"gsnFrame").and..not.res@gsnFrame)
-          callframe = False
-      end if
+    end do
   else
-      if(isatt(res,"gsnPanelLabelbar").and.res@gsnPanelLabelbar)
-        set_attr(res,"gsnPanelBottom",0.11) ; Leave room for labelbar
-                                                  ; at bottom.
-        panel_labelbar = True
-      end if
+    if(ddims.ne.2)
+    panel_center   = get_res_value(res,"gsnPanelCenter",True)
+    panel_labelbar = get_res_value(res,"gsnPanelLabelBar",False)
+    callframe      = get_res_value(res,"gsnFrame",True)
+    xwsp_perc      = get_res_value(res,"gsnPanelXWhiteSpacePercent",1.)
+    ywsp_perc      = get_res_value(res,"gsnPanelYWhiteSpacePercent",1.)
+    draw_boxes     = get_res_value(res,"gsnPanelBoxes",False)
+    x_lft          = get_res_value(res,"gsnPanelLeft",0.)
+    x_rgt          = get_res_value(res,"gsnPanelRight",1.)
+    y_bot          = get_res_value(res,"gsnPanelBottom",0.)
+    y_top          = get_res_value(res,"gsnPanelTop",1.)
+    orths = (/     1.0,          -1.0,      -1.0,        1.0/)
+    if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
+      print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
+      print("Defaulting to 1.")
+      xwsp_perc = 1.
+    end if
+; title string which is also set with tx* resources. We have to figure
+    if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
+      print("Warning: gsn_panel: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
+      print("Defaulting to 1.")
+      ywsp_perc = 1.
+    end if
+  else
+    if(x_lft.lt.0..or.x_lft.ge.1.)
+      print("Warning: gsn_panel: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
+      print("Defaulting to 0.")
+      x_lft = 0.0
+    end if
     print("Defaulting to 1.")
-      if(isatt(res,"gsnPanelXWhiteSpacePercent"))
-        xwsp_perc = res@gsnPanelXWhiteSpacePercent
-        if(xwsp_perc.lt.0.or.xwsp_perc.ge.100.)
-          print("Warning: gsn_panel: attribute gsnPanelXWhiteSpacePercent must be >= 0 and < 100.")
-          print("Defaulting to 1.")
-          xwsp_perc = 1.
-        end if
-      end if
-      if(isatt(res,"gsnPanelYWhiteSpacePercent"))
-        ywsp_perc = res@gsnPanelYWhiteSpacePercent
-        if(ywsp_perc.lt.0.or.ywsp_perc.ge.100.)
-          print("Warning: gsn_panel: attribute gsnPanelYWhiteSpacePercent must be >= 0 and < 100.")
-          print("Defaulting to 1.")
-          ywsp_perc = 1.
-        end if
-      end if
+    if(x_rgt.le.0..or.x_rgt.gt.1.)
+      print("Warning: gsn_panel: attribute gsnPanelRight must be > 0.0 and <= 1.0")
+      print("Defaulting to 1.")
+      x_rgt = 1.0
+    end if
     print("Defaulting to 1.")
-      if(isatt(res,"gsnPanelBoxes").and.res@gsnPanelBoxes)
-        draw_boxes = True
-      end if
+    if(y_top.le.0..or.y_top.gt.1.)
+      print("Warning: gsn_panel: attribute gsnPanelTop must be > 0.0 and <= 1.0")
+      print("Defaulting to 1.")
+      y_top = 1.0
+    end if
     print("Defaulting to 0.")
-      if(isatt(res,"gsnPanelLeft"))
-        x_lft = res@gsnPanelLeft
-        if(x_lft.lt.0..or.x_lft.ge.1.)
-          print("Warning: gsn_panel: attribute gsnPanelLeft must be >= 0.0 and < 1.0")
-          print("Defaulting to 0.")
-          x_lft = 0.0
-        end if
-      end if
+    if(y_bot.lt.0..or.y_bot.ge.1.)
+      print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
+      print("Defaulting to 0.")
+      y_bot = 0.0
+    end if
     print("Defaulting to 1.")
-      if(isatt(res,"gsnPanelRight"))
-        x_rgt = res@gsnPanelRight
-        if(x_rgt.le.0..or.x_rgt.gt.1.)
-          print("Warning: gsn_panel: attribute gsnPanelRight must be > 0.0 and <= 1.0")
-          print("Defaulting to 1.")
-          x_rgt = 1.0
-        end if
-      end if
+    if(x_rgt.le.x_lft)
+      print("Error: gsn_panel: attribute gsnPanelRight ("+x_rgt+") must be greater")
+      print("than gsnPanelLeft ("+x_lft+").")
+      exit
+    end if
 
-      if(isatt(res,"gsnPanelTop"))
-        y_top = res@gsnPanelTop
-        if(y_top.le.0..or.y_top.gt.1.)
-          print("Warning: gsn_panel: attribute gsnPanelTop must be > 0.0 and <= 1.0")
-          print("Defaulting to 1.")
-          y_top = 1.0
-        end if
-      end if
-
-      if(isatt(res,"gsnPanelBottom"))
-        y_bot = res@gsnPanelBottom
-        if(y_bot.lt.0..or.y_bot.ge.1.)
-          print("Warning: gsn_panel: attribute gsnPanelBottom must be >= 0.0 and < 1.0")
-          print("Defaulting to 0.")
-          y_bot = 0.0
-        end if
-      end if
-
-      if(x_rgt.le.x_lft)
-        print("Error: gsn_panel: attribute gsnPanelRight ("+x_rgt+") must be greater")
-        print("than gsnPanelLeft ("+x_lft+").")
-        exit
-      end if
-
-      if(y_top.le.y_bot)
-        print("Error: gsn_panel: attribute gsnPanelTop ("+y_top+") must be greater")
-        print("than gsnPanelBottom ("+y_bot+").")
-        exit
-      end if
+    if(y_top.le.y_bot)
+      print("Error: gsn_panel: attribute gsnPanelTop ("+y_top+") must be greater")
+      print("than gsnPanelBottom ("+y_bot+").")
+      exit
     end if
     y_bot = 0.0
 ;
@@ -1417,13 +1397,6 @@ begin
       end getvalues
     else
       if(plot_type.eq."vector") then
-    getvalues plot(0)
-      "vpXF"      : vpx       ; Get original view port coordinates.
-      "vpYF"      : vpy
-      "vpWidthF"  : vpwidth
-      "vpHeightF" : vpheight
-    end getvalues
-
     bb = NhlGetBB(plot(0))   ; Get bounding box of plot with
     top    = bb(0)           ; all of its annotations.
     bottom = bb(1)
@@ -1431,7 +1404,9 @@ begin
     right  = bb(3)
           getvalues xy_plot
             "tiXAxisFontHeightF" : font_height
+          end getvalues
           font_height = 0.6*font_height
+        else
           font_height = 0.01
     plot_width  = right - left     ; Calculate total width of plot.
     plot_height = top - bottom     ; Calculate total height of plot.
@@ -1442,10 +1417,28 @@ begin
     total_width  = 2.*xwsp + plot_width   ; Calculate total width and height
     total_height = 2.*ywsp + plot_height  ; with white space added.
 ; the first one, this should be the size of all of them.
+; If we are putting a global labelbar  at the bottom, make it 2/10
+; the height of the plot.
+  top    = bb(0)           ; all of its annotations.
+    if(panel_labelbar) then
+      getvalues plot(0)
+        "vpWidthF"  : vpwidth
+        "vpHeightF" : vpheight
+      end getvalues
+  total_height = 2.*ywsp + plot_height  ; with white space added.
+      labelbar_height = 0.20 * vpheight + 2.*ywsp
+      labelbar_width  = vpwidth
+    else
+      labelbar_height = 0.
+      labelbar_width  = 0.
+;
+      else
         labelbar_height  = plot_height
       end if
     else         
       set_attr(lbres,"lbOrientation","Horizontal")
+
+      labelbar_height = 0.20 * plot_height + 2.*ywsp
 ;
 ; Adjust width depending on whether we have one column or multiple 
 ; columns.
@@ -1454,8 +1447,9 @@ begin
     yrange = y_top - y_bot
     col_scale = min((/xrange/(ncols*total_width), xrange/))
     col_scale = min((/xrange/(xcols*total_width), xrange/))
-    row_scale = min((/yrange/(xrows*total_height),yrange/))
+    row_scale = min((/yrange/(xrows*total_height+labelbar_height),yrange/))
     scale = min((/col_scale,row_scale/))
+    yrange = yrange - scale * labelbar_height
 
     new_plot_width  = scale*plot_width    ; Calculate new width
     new_plot_height = scale*plot_height   ; and height.
@@ -1469,6 +1463,11 @@ begin
     xsp = xrange - new_total_width*cols   ; Calculate total amt of white space
     ysp = yrange - new_total_height*rows  ; left in both X and Y directions.
 
+    getvalues plot(0)
+      "vpXF" : vpx
+      "vpYF" : vpy
+    end getvalues
+    xrange = xrange - scale * labelbar_width
     dx = scale * (vpx - left) ; Calculate distance from plot's left position
                               ; to its leftmost annotation
     dy = scale * (top - vpy) ; Calculate distance from plot's top position
@@ -1477,7 +1476,6 @@ begin
     xpos = x_lft + xwsp + dx +(xsp/2.+new_total_width*ispan(0,cols-1,1))
     ypos = y_top - ywsp - dy -(ysp/2.+new_total_height*ispan(0,rows-1,1))
 
-    labelbar_width = scale*vpwidth
   ywsp = ywsp_perc/100. * new_plot_height
 ; Loop through each plot and draw it in the new scaled-down size.
     end if
@@ -1522,14 +1520,16 @@ begin
     new_ncols = min((/num_plots_left,row_spec(nr)/))
             draw(plot(i*cols+j))  ; Draw the scaled down plot.
 
-            if(draw_boxes) then
-              bb = NhlGetBB(plot(i*cols+j)) ; Get bounding box of plot with
-              top = bb(0)                   ; all of its annotations.
+            if(panel_labelbar.or.draw_boxes) then
+              bb = NhlGetBB(plot(i*cols+j)) ; Get bounding box of plot
               bot = bb(1)
-              lft = bb(2)
-              rgt = bb(3)
-              gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
-                                   (/bot,bot,top,top,bot/),False)
+              if(draw_boxes)
+                top = bb(0)
+                lft = bb(2)
+                rgt = bb(3)
+                gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
+                                     (/bot,bot,top,top,bot/),False)
+              end if
             end if
 
             setvalues plot(i*cols+j)
@@ -1542,21 +1542,89 @@ begin
 ; Save this plot.
       end do  ; end of columns
     end do    ; end of rows
-
-    if(panel_labelbar)
-      lbres = get_res_eq(res,"lb")
-      class_name = NhlClassName(plot@contour)   ; Get the type of plot.
-
-      if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass")
-        getvalues plot@contour
-          "cnLevels"          : levels
-          "cnFillColors"      : colors
-          "cnFillPatterns"    : fill_patterns
-          "cnFillScales"      : fill_scales
-          "cnMonoFillPattern" : mono_fill_pat
-          "cnMonoFillScale"   : mono_fill_scl
-          "cnMonoFillColor"   : mono_fill_col
+            gsres = True
+            gsres@gsLineThicknessF = 5.0
+            gsn_polyline_ndc(wks,(/lft,rgt,rgt,lft,lft/), \
+    if(panel_labelbar) then
+      lbres = get_res_eq(res,(/"lb","vp"/))  ; Get labelbar resources.
+          end if
+; "plot" can be a map, in which case the vector or contour plot overlaid
+; on it will be indicated by "plot@contour" or "plot@vector"
+;
+      plot_type = "unknown"
+      class = NhlClassName(plot)
+      if(class(0).ne."contourPlotClass".and.class(0).ne."vectorPlotClass") then
+        if(isatt(plot,"contour")) then
+          contour_plot = plot@contour
+          plot_type = "contour"
+        else
+          if(isatt(plot,"vector")) then
+            vector_plot = plot@vector
+            plot_type = "vector"
+          end if
+        end if
+      else
+        if(class(0).eq."contourPlotClass") then
+          contour_plot = plot(0)
+          plot_type = "contour"
+        else
+          vector_plot = plot(0)
+          plot_type = "vector"
+        end if
+      end if
+;
+; If plot type is unknown, then we can't get labelbar information.
+      end if
+      if(plot_type.ne."unknown") then
+        if(plot_type.eq."contour") then
+;
+; Retain the smallest x position.
+;
+    if(nr.eq.0)
+          getvalues contour_plot
+            "cnLevels"               : levels
+            "cnFillColors"           : colors
+            "cnFillPatterns"         : fill_patterns
+            "cnFillScales"           : fill_scales
+            "cnMonoFillPattern"      : mono_fill_pat
+            "cnMonoFillScale"        : mono_fill_scl
+            "cnMonoFillColor"        : mono_fill_col
+            "cnInfoLabelFontHeightF" : labelbar_font_height
+          end getvalues
+        else
+;
+  if(panel_labelbar) then
+;
+          mono_fill_pat = True
+          mono_fill_scl = True
+          getvalues vector_plot
+            "vcLevels"                 : levels
+            "vcLevelColors"            : colors
+            "vcMonoFillArrowFillColor" : mono_fill_col
+            "vcRefAnnoFontHeightF"    : labelbar_font_height
+          end getvalues
+        end if
+        getvalues contour_plot
+          "cnLevels"               : levels
+          "cnFillColors"           : colors
+        labelbar_height      = scale * labelbar_height
+        labelbar_width       = scale * labelbar_width
+        labelbar_font_height = scale * labelbar_font_height
+          "cnMonoFillScale"        : mono_fill_scl
+          "cnMonoFillColor"        : mono_fill_col
         end getvalues
+        lbres = True
+
+        set_attr(lbres,"vpYF",     max ((/ywsp+labelbar_height,bot-ywsp/)))
+        set_attr(lbres,"vpWidthF", labelbar_width)
+        set_attr(lbres,"vpHeightF",labelbar_height)
+        set_attr(lbres,"lbOrientation","Horizontal")
+        set_attr(lbres,"lbLabelFontHeightF",labelbar_font_height)
+        if(cols.eq.1.and.lbres@vpWidthF.le.scale*old_vpwidth)
+          set_attr(lbres,"vpXF",xpos(0)+(scale*old_vpwidth - lbres@vpWidthF)/2.)
+; Set some labelbar resources.
+          set_attr(lbres,"vpXF",(1. - lbres@vpWidthF)/2.)
+      set_attr(lbres,"vpWidthF", labelbar_width)
 ; Set position of labelbar depending on whether it's horizontal or
 ; vertical.
 ;
@@ -1570,23 +1638,14 @@ begin
           set_attr(lbres,"lbMonoFillScale", False)
           set_attr(lbres,"lbFillScales",    fill_scales)
         end if
+        if(nrows.eq.1.and.lbres@vpHeightF.le.scale*max(old_vp(:,3)))
+; Create and draw the labelbar.
+          set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
+        labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
+        draw(labelbar)
       else
-        getvalues plot@vector
-          "vcLevels"      : levels
-          "vcLevelColors" : colors
-        end getvalues
+        print("Warning: gsn_panel: unrecognized plot type, thus unable to extract information for creating a labelbar.")
       end if
-
-      lbres = True
-      lbres@vpYF          = max((/0.1,ypos(dimsizes(ypos)-1)-.2/))
-      lbres@vpWidthF      = labelbar_width
-      lbres@vpXF          = (1. - labelbar_width)/2.
-;      lbres@vpWidthF      = 0.75   ; Width of labelbar
-      lbres@vpHeightF     = 0.10   ; Height of labelbar
-      lbres@lbOrientation = "Horizontal"
-      labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
-
-      draw(labelbar)
 ;
        print("Warning: gsn_panel: unrecognized plot type for getting labelbar information. Ignoring labelbar request.")
     if(callframe)
@@ -1594,87 +1653,6 @@ begin
     end if
 ; objects.                                                              ; 
 ;***********************************************************************;
-
-;***********************************************************************;
-; Procedure : gsn_panel_labelbar                                        ;
-;                 wks: workstation object                               ;
-;               plots : array of plots to put on one page.              ;
-;                plot : plot to retrieve labelbar information from      ;
-;               dims : a 2-D array indicating number of rows and columns;
-;             resources: optional resources                             ;
-;                                                                       ;
-; This procedure takes the array of plots and draws them all on one     ;
-; workstation in the configuration specified by dims. It also draws a   ;
-; labelbar at the bottom.                                               ;
-;                                                                       ;
-;***********************************************************************;
-procedure gsn_panel_labelbar(wks:graphic,plots[*]:graphic,plot:graphic,\
-                             dims[2]:float,resources:logical )
-local class_name, first_plot, levels, colors, fill_patterns, mono_fill_pat,\
-mono_fill_scl, mono_fill_col, dims_plot, res, callframe, lbres, labelbar
-begin
-
-  res   = resources
-  lbres = get_res_eq(res,"lb")
-
-  if(isatt(res,"gsnFrame").and..not.res@gsnFrame)
-    callframe = False
-  else
-    callframe = True
-  end if
-
-  set_attr(res,"gsnPanelBottom",0.11) ; Leave room for labelbar at bottom
-  set_attr(res,"gsnFrame",False)      ; Don't advance frame
-  gsn_panel(wks,plots,dims,res)
-  
-  class_name = NhlClassName(plot)   ; Get the type of plot.
-
-  if(class_name.eq."contourPlotClass".or.class_name.eq."logLinPlotClass")
-    getvalues plot
-      "cnLevels"          : levels
-      "cnFillColors"      : colors
-      "cnFillPatterns"    : fill_patterns
-      "cnFillScales"      : fill_scales
-      "cnMonoFillPattern" : mono_fill_pat
-      "cnMonoFillScale"   : mono_fill_scl
-      "cnMonoFillColor"   : mono_fill_col
-    end getvalues
-;
-; Check if we want different fill patterns or fill scales.  If so, we
-; have to pass these on to the labelbar.
-;
-    set_attr(lbres,"lbMonoFillColor",mono_fill_col)
-    if(.not.mono_fill_pat)
-      set_attr(lbres,"lbMonoFillPattern", False)
-      set_attr(lbres,"lbFillPatterns",    fill_patterns)
-    end if
-    if(.not.mono_fill_scl)
-      set_attr(lbres,"lbMonoFillScale", False)
-      set_attr(lbres,"lbFillScales",    fill_scales)
-    end if
-  else
-    getvalues plot
-      "vcLevels"      : levels
-      "vcLevelColors" : colors
-    end getvalues
-  end if
-
-  lbres = True
-  lbres@vpYF          = 0.1    ; Position of labelbar
-  lbres@vpXF          = 0.125
-  lbres@vpWidthF      = 0.75   ; Width of labelbar
-  lbres@vpHeightF     = 0.10   ; Height of labelbar
-  lbres@lbOrientation = "Horizontal"
-
-  labelbar = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
-
-  draw(labelbar)
-  if(callframe)
-    frame(wks)   ; Advance the frame.
-  end if
-  return
-end
-
 procedure draw_bb(wks:graphic,plot:graphic)
 ;
 ; Color names start in the 14th column of the rgb.txt file.
@@ -1728,6 +1706,17 @@ begin
   draw_and_frame(wks,histogram,calldraw,callframe,maxbb)
 
 ; Return histogram.
+
+  if(compare)
+    histogram@NumMissing1 = buck@NumMissing1
+    histogram@NumMissing2 = buck@NumMissing2
+  else
+    histogram@NumMissing = buck@NumMissing
+  end if
+  return(histogram)
+end
+
+
 ;***********************************************************************;
 
 ; Function : gsn_contour                                                ;
@@ -1805,6 +1794,7 @@ begin
     end if
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
@@ -1872,6 +1862,17 @@ begin
 
       overlay(plot_object,overlay_plot_object)
       plot_object@contour = overlay_plot_object
+    end if
+
+    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    plot_object@data = data_object
+    return(plot_object)
+end
+
+;***********************************************************************;
 ; Function : gsn_contour_map                                            ;
 
 ;                   wks: workstation object                             ;
@@ -2034,6 +2035,12 @@ begin
     if(scale)
       gsnp_scale_plot(contour_object)
     end if
+
+    draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@data = data_object
     map_object@contour = contour_object
 
     return(map_object)
@@ -2081,6 +2088,14 @@ begin
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
 
+    attsetvalues_check(plot_object,res2)
+
+    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+
+; Return plot object.
+
+    return(plot_object)
+end
 
 
 ;***********************************************************************;
@@ -2217,6 +2232,14 @@ begin
       overlay(plot_object,overlay_plot_object)
       plot_object@contour = overlay_plot_object
     end if
+
+    draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    plot_object@data = data_object
+    return(plot_object)
+end
 
 
 ;***********************************************************************;
@@ -2427,6 +2450,17 @@ begin
     frame(wks)   ; Advance the frame.
   end do
 ;
+; Put the original color map back.
+;
+  setvalues wks
+    "wkColorMap" : cmap
+  end setvalues
+  delete(cmap)
+
+end
+
+;***********************************************************************;
+; Function : gsn_vector                                                 ;
 ;                   wks: workstation object                             ;
 
 ;                     u: 2-dimensional U array                          ;
@@ -2573,6 +2607,17 @@ begin
     end if
 ; "resources" is an optional list of resources. The id of the map plot  ;
 ; is returned.                                                          ;
+
+; Return plot object and data object (as attribute of plot object).
+
+    plot_object@data = data_object
+    return(plot_object)
+end
+
+;***********************************************************************;
+; Function : gsn_vector_contour                                         ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
 
 ;                  data: 2-dimensional scalar field                     ;
@@ -2665,15 +2710,14 @@ begin
         "cnScalarFieldData" : sfdata_object
     end create
 
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
     shape     = get_res_value(res2,"gsnShape",False)
-      attsetvalues(contour_object,cnres2)
-    end if
-
-    if(sprdcols)
-      vcres2 = True
     scale     = get_res_value(res2,"gsnScale",shape)
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
@@ -2711,6 +2755,17 @@ begin
     draw_and_frame(wks,stream_object,calldraw,callframe,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
+
+    stream_object@vfdata = vfdata_object
+    stream_object@sfdata = sfdata_object
+    stream_object@contour = contour_object
+    return(stream_object)
+end
+
+;***********************************************************************;
+; Function : gsn_vector_contour_map                                     ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
 
 ;                  data: 2-dimensional scalar field                     ;
@@ -2811,15 +2866,14 @@ begin
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+    shape     = get_res_value(res2,"gsnShape",False)
     scale     = get_res_value(res2,"gsnScale",shape)
     sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
-      attsetvalues(contour_object,cnres2)
-    end if
-
-    if(sprdcols)
-      vcres2 = True
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,"cn")
     mpres = get_res_eq(res2,(/"mp","vp"/))
@@ -2857,6 +2911,17 @@ begin
 
     draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
 
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@vfdata = vfdata_object
+    map_object@sfdata = sfdata_object
+    map_object@vector = vector_object
+    map_object@contour = contour_object
+    return(map_object)
+end
+
+;***********************************************************************;
+; Function : gsn_vector_map                                             ;
 ;                   wks: workstation object                             ;
 
 ;                     : 2-dimensional U data                            ;
@@ -2963,6 +3028,17 @@ begin
     end if
 
     draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@data = data_object
+    map_object@vector = vector_object
+    return(map_object)
+end
+
+;***********************************************************************;
+; Function : gsn_vector_scalar                                          ;
+;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U array                          ;
 
 ;                     v: 2-dimensional V array                          ;
@@ -3133,6 +3209,17 @@ begin
 
     draw_and_frame(wks,plot_object,calldraw,callframe,maxbb)
 
+; Return plot object and data object (as attribute of plot object).
+
+    plot_object@vfdata = vfdata_object
+    plot_object@sfdata = sfdata_object
+    return(plot_object)
+end
+
+;***********************************************************************;
+; Function : gsn_vector_scalar_map                                      ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional U data                           ;
 ;                     v: 2-dimensional V data                           ;
 
 ;                  data: 2-dimensional scalar field                     ;
@@ -3223,6 +3310,7 @@ begin
     if(vcres.and..not.any(ismissing(getvaratts(vcres))))
       attsetvalues(vector_object,vcres)
     end if
+
     map_object = create wksname + "_map" mapPlotClass wks end create
 
     calldraw  = get_res_value(res2,"gsnDraw", True)
@@ -3262,6 +3350,14 @@ begin
     end if
 
     draw_and_frame(wks,map_object,calldraw,callframe,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@vfdata = vfdata_object
+    map_object@sfdata = sfdata_object
+    map_object@vector = vector_object
+    return(map_object)
+end
 
 
 ;***********************************************************************;
