@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.161 2004-04-14 16:22:26 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.162 2004-04-29 20:10:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3563,6 +3563,20 @@ begin
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
     res2 = get_resources(resources)
+;
+; Make sure user is not calling this function, and then trying to
+; change the map projection, because this can cause problems later.
+;
+    if(isatt(res2,"mpProjection")) then
+      iproj = res2@mpProjection
+      if( (typeof(iproj).eq."integer".and.iproj.ne.8).or.\
+          (typeof(iproj).eq."string".and.lower_case(iproj).ne. \
+                                             "cylindricalequidistant")) then
+        print("gsn_csm_map_ce: Warning: you are calling one of the CE map functions,")
+        print("but setting the map projection to something other than")
+        print("'CylindricalEquidistant'. You may get errors or unexpected results.")
+      end if
+    end if                
 
 ; This section tests for more special resources: those that start
 ; with "gsn."
@@ -7222,7 +7236,7 @@ begin
       vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
 
-    map_object = gsn_csm_map(wks,mpres)            ; Create map.
+    map_object = gsn_csm_map_ce(wks,mpres)          ; Create map.
     overlay(map_object,vector_object)               ; Overlay vectors on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -7479,7 +7493,7 @@ begin
     else
       vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
-    map_object    = gsn_csm_map(wks,mpres)          ; Create map.
+    map_object    = gsn_csm_map_polar(wks,mpres)    ; Create map.
     overlay(map_object,vector_object)               ; Overlay vectors on map.
 
 ; Retrieve plot height so we can compute font height.
@@ -7697,7 +7711,7 @@ begin
       vector_object = gsn_vector_scalar(wks,unew,vnew,datanew,vcres)
     end if
 
-    map_object = gsn_csm_map(wks,mpres)         ; Create map.
+    map_object = gsn_csm_map_other(wks,mpres)   ; Create map.
     overlay(map_object,vector_object)           ; Overlay vectors on map.
 
 ; Retrieve plot height so we can compute font height.
