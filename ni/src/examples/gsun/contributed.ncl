@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.41 2004-05-14 13:53:25 shea Exp $
+;      $Id: contributed.ncl,v 1.42 2004-05-20 16:21:37 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3995,6 +3995,55 @@ begin
   end if
 
   return(eof)
+end
+
+undef ("EOF_Wrap")
+function EOF_Wrap (data:numeric, neval:integer, optEOF:logical) 
+; wrapper for NCL function "EOF"  that copies attributes and coordinate vars
+local eofx
+begin
+  eofx = EOF(data, neval, optEOF)       ; invoke built-in function
+  eofMeta (data, neval, eofx)           ; add meta information
+  return  (eofx)                        ; return
+end
+
+undef ("eofcov_tr_Wrap")                ; hidden [for debug]
+function eofcov_tr_Wrap (data:numeric, neval:integer, opt:logical) 
+; wrapper for NCL function "eofcov_tr"  that copies attributes and coordinate vars
+local eofx
+begin
+  eofx = eofcov_tr(data, neval, opt)    ; invoke built-in function
+  eofMeta (data, neval, eofx)           ; add meta information
+  return  (eofx)                        ; return
+end
+ 
+undef ("eofcor_tr_Wrap")                ; hidden [for debug]
+function eofcor_tr_Wrap (data:numeric, neval:integer, opt:logical) 
+; wrapper for NCL function "eofcor"  that copies attributes and coordinate vars
+local eofx
+begin
+  eofx  = eofcov_tr(data, neval, opt)
+  eofMeta (data, neval, eofx)
+  return (eofx)
+end
+
+undef ("EOF_TS_Wrap")
+function EOF_TS_Wrap (data:numeric, eof:numeric, optETS:logical)
+local eofTS 
+begin
+  eofTs = EOF_TS(data, eof, optETS) ; invoke built-in function
+  eofTsMeta (data, eof, eofTs)      ; add meta information
+  return  (eofTs)                   ; return
+end
+
+undef ("EOF_VARIMAX_Wrap")
+function EOF_VARIMAX_Wrap (data:numeric, eof:numeric, optEVX:logical)
+local eofEMX
+begin
+  eofEVX = eof
+  eofEVX = EOF_VRAIMAX(data, eof, optEVX) ; invoke built-in function
+  eofEVX@op = "Kaiser Varimax Rotation"
+  return  (eofEVX)                        ; return
 end
 
 ; **************************************************************
