@@ -185,9 +185,6 @@ main()
         printf( "c_vvgetr test UNSUCCESSFUL\n" );
         printf( "    rval should be 0.8, rval is really %g\n", rval );
     }
-    else {
-        printf( "c_vvgetr test SUCCESSFUL\n" );
-    }
 /*
  * Test vvgetc
  */
@@ -197,9 +194,6 @@ main()
         printf( "stmp should be 'hello', stmp is really '%s'\n", stmp );
         printf( "c_vvgetc test UNSUCCESSFUL\n" );
     }
-    else {
-        printf( "c_vvgetc test SUCCESSFUL\n" );
-    }
 /*
  * Test vvgeti
  */
@@ -208,9 +202,6 @@ main()
     if( ival != 1 ) {
         printf( "ival should be 1, ival is really %d\n", ival );
         printf( "c_vvgeti test UNSUCCESSFUL\n" );
-    }
-    else {
-        printf( "c_vvgeti test SUCCESSFUL\n" );
     }
 /*
  *     Deactivate and close workstation, close GKS.
