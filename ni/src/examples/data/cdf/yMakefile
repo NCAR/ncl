@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.1 1995-04-08 03:01:32 haley Exp $
+#   $Id: yMakefile,v 1.2 1995-04-11 23:00:00 scheitln Exp $
 #
 #   Makefile for HLU XYPlot examples
 #
@@ -11,7 +11,8 @@ DATA  = 95031800_sao.cdf 95031801_sao.cdf 95031802_sao.cdf 95031803_sao.cdf \
 		95031808_sao.cdf 95031809_sao.cdf 95031810_sao.cdf 95031811_sao.cdf \
 		95031812_sao.cdf 95031813_sao.cdf 95031814_sao.cdf 95031815_sao.cdf \
 		95031816_sao.cdf 95031817_sao.cdf 95031818_sao.cdf 95031819_sao.cdf \
-		95031820_sao.cdf 95031821_sao.cdf 95031822_sao.cdf 95031823_sao.cdf
+		95031820_sao.cdf 95031821_sao.cdf 95031822_sao.cdf 95031823_sao.cdf \
+                meccatemp.cdf
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/cdf)
 
