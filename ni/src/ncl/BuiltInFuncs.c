@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.72 1997-06-05 17:39:11 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.73 1997-06-12 19:22:21 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2281,6 +2281,144 @@ NhlErrorTypes _NclIfbinnumrec
 	
 }
 
+
+NhlErrorTypes _NclIfbinrecwrite
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	string *fpath;
+	int	*recnum;
+	int	*dimensions;
+	int	dimsizes[NCL_MAX_DIMENSIONS];
+	NclScalar missing;
+	NclMultiDValData tmp_md;
+	NclStackEntry data;
+	int 	has_missing = 0;
+	NclTypeClass type;
+	char 	control_word[4];
+	void *value;
+	int i;
+	int ind;
+	int fd = -1;
+	int size = 1;
+	int n;
+	int n_dims;
+	int cur_off = 0;
+	NhlErrorTypes ret = NhlNOERROR;
+	int rsize = 0;
+	NclBasicDataTypes datai_type;
+	int total;
+
+
+	control_word[0] = (char)0;
+	control_word[1] = (char)0;
+	
+	fpath = (string*)NclGetArgValue(
+		0,
+		3,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+	if(has_missing &&(missing.stringval == *fpath)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: path is a missing value, can't continue");
+		return(NhlFATAL);
+	}
+
+	recnum = (int*) NclGetArgValue(
+		1,
+		3,
+		NULL,
+		NULL,
+		&missing,
+		&has_missing,
+		NULL,
+		0);
+	if(has_missing &&(missing.intval == *recnum)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: record number  is a missing value, can't continue");
+		return(NhlFATAL);
+	}
+	
+	value = (void*)NclGetArgValue(
+		2,
+		3,
+		&n_dims,
+		dimsizes,
+		&missing,
+		&has_missing,
+		&datai_type,
+		0);
+	
+	type = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(datai_type)));
+
+	total = 1;
+	for(i = 0; i < n_dims; i++) {
+		total *= dimsizes[i];
+	}
+	total *= type->type_class.size;
+
+
+	fd = open(_NGResolvePath(NrmQuarkToString(*fpath)),(O_CREAT | O_RDWR),0777);
+	if(fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: could not open (%s) check path and permissions, can't continue",NrmQuarkToString(*fpath));
+		return(NhlFATAL);
+	}
+
+	i = 0;
+	cur_off = 0;
+	if(*recnum != -1) {
+		while(i != *recnum + 1) {	
+			lseek(fd,cur_off,SEEK_SET);
+			n = read(fd,(control_word),4);
+			if(n != 4) {
+/*
+* end of file reached
+*/	
+				rsize = -1;
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"fbinrecwrite: end of file reached before record number, writing record as last record in file");
+				break;
+			}
+			ind = *(int*)control_word;
+			lseek(fd,cur_off + ind + 4,SEEK_SET);
+			n = read(fd,(control_word),4);
+			if(n != 4) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
+				close(fd);
+				return(NhlFATAL);
+				break;
+			}
+			if(ind ==  *(int*)control_word ) {
+					i++;
+					cur_off += ind + 8;
+					rsize = ind;
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
+				close(fd);
+				return(NhlFATAL);
+			}
+		}
+	} else {
+		rsize = -1;
+		lseek(fd,cur_off,SEEK_END);
+	}
+	if((rsize == -1)||(rsize== total)){
+		n = write(fd,&total,4);
+		n = write(fd,value,total);
+		n = write(fd,&total,4);
+		close(fd);
+		return(NhlNOERROR);
+	} else {
+		close(fd);
+		return(NhlFATAL);
+	}
+	
+
+}
 NhlErrorTypes _NclIfbinrecread
 #if	NhlNeedProto
 (void)
