@@ -1,0 +1,11 @@
+
+To get the latest versions of the I1MACH and R1MACH routines:
+------------------------------------------------------------
+Send email to netlib@ornl.gov with the following request in the
+subject header or text body:
+
+  send i1mach from slatec/src
+
+You'll promptly (depending on Internet traffic) receive e-mail from
+netlib, containing the I1MACH source code.  Of course, you can do this
+for D1MACH as well.
