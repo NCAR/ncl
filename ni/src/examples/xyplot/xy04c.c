@@ -1,5 +1,5 @@
 /*
-**      $Id: xy04c.c,v 1.6 1995-02-26 14:19:58 haley Exp $
+**      $Id: xy04c.c,v 1.7 1995-03-17 20:56:41 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -26,8 +26,8 @@
 **
 **                 The "CoordArrays" object is used to set up the data,
 **                 and the resource file is used to set up attributes
-**                 of the data being plotted, like the line color and
-**                 the dash patterns.
+**                 of the data being plotted, like the line color, the 
+**                 dash patterns, and line label colors.
 **
 */
 
@@ -40,6 +40,9 @@
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
+/*
+ * Define the number of curves and points in each curve.
+ */
 #define NPTS  500
 #define NCURVE  4
 #define PI100 0.031415926535898
@@ -59,7 +62,7 @@ main()
     for( j = 0; j < NCURVE; j++ ) {
         for( i = 0; i < NPTS; i++ ) {
             theta = PI100*(float)(i);
-            ydra[j][i] = (j+1)*100.+.9*(float)(i)*sin(theta);
+            ydra[j][i] = (j*200.)+(i*.9)*sin(theta);
         }
     }
 /*
@@ -91,16 +94,17 @@ main()
               rlist);
 /*
  * This new DataItem object is now the resource value for xyCoordData.
- * Tweak some XYPlot resources as well (in the resource file).
- * Also tweak some XyDataSpecific resource in the resource file as well.
+ * Tweak some XyPlot resources as well (in the resource file).
+ * Also tweak some XyDataSpec resources in the resource file.
  * When Data is added to an XyPlot object, an XyDataSpec object is
  * created internally to the XyPlot.  It has the same name as the Data
- * object that is added, and so you can set XyDataSpec (XyPlot Data Specific)
- * resources for each piece of data added to the xyCoordData resource.
+ * object that is added, and so you can set XyDataSpec (XyPlot Data
+ * Specific) resources for each piece of data added to the xyCoordData
+ * resource.
  *
  * Create the XyPlot object which is created as a child of the
  * XWorkstation object.  The resources that are being changed are done
- * in the "xy04.res" file, and they will affect this XyPlot object.
+ * in the "xy04.res" file.
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);

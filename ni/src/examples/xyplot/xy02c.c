@@ -1,5 +1,5 @@
 /*
-**      $Id: xy02c.c,v 1.10 1995-03-01 18:37:40 haley Exp $
+**      $Id: xy02c.c,v 1.11 1995-03-17 20:56:35 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -20,9 +20,7 @@
 ** Description:    This program shows how to create an XyPlot object
 **                 and how to tweak some of the XyPlot resources to
 **                 change the appearance of the plot.  A resource file
-**                 is used to change the resources except in those
-**                 cases where a resource is an array and can only be
-**                 changed programmatically.
+**                 is used to change the resources.
 **
 **                 The "CoordArrays" object is used to set up the data.
 */
@@ -36,6 +34,9 @@
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
+/*
+ * Define the number of points in the curve.
+ */
 #define NPTS  500
 #define PI100 .031415926535898
 
@@ -70,10 +71,10 @@ main()
     NhlCreate(&xworkid,"xy02Work",NhlxWorkstationLayerClass,
               NhlDEFAULT_APP,0);
 /*
- * Define the data object.  Since only the Y values are specified here, each
- * Y value will be paired with its integer array index.  The id for this
- * object will later be used as the value for the XYPlot object resource,
- * "xyCoordData".
+ * Define the data object.  Since only the Y values are specified here,
+ * each Y value will be paired with its integer array index.  The id
+ * for this object will later be used as the value for the XyPlot
+ * object resource, "xyCoordData".
  */
     NhlRLClear(rlist);
     NhlRLSetFloatArray(rlist,NhlNcaYArray,ydra,NhlNumber(ydra));
@@ -82,7 +83,7 @@ main()
 /*
  * Create the XyPlot object which is created as a child of the
  * XWorkstation object.  The resources that are being changed are done
- * in the "xy02.res" file, and they will affect this XyPlot object.
+ * in the "xy02.res" file.
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);
@@ -94,7 +95,7 @@ main()
     NhlFrame(xworkid);
 /*
  * NhlDestroy destroys the given id and all of its children
- * so destroying "xworkid" will also destroy plotid".
+ * so destroying "xworkid" will also destroy "plotid".
  */
     NhlRLDestroy(rlist);
     NhlDestroy(xworkid);

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.4 1995-03-01 22:10:43 haley Exp $
+;      $Id: xy04n.ncl,v 1.5 1995-03-17 20:56:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -47,7 +47,7 @@ begin
   do j = 0, ncurve-1
     do i = 0, npts-1
       theta = 0.031415926535898*i
-      y(j,i) = (j+1)*100.+.9*i*sin(theta)
+      y(j,i) = j*200.+i*.9*sin(theta)
     end do
   end do
 end

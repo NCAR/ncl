@@ -1,5 +1,5 @@
 C     
-C      $Id: xy03f.f,v 1.6 1995-02-22 16:35:38 haley Exp $
+C      $Id: xy03f.f,v 1.7 1995-03-17 20:56:39 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -19,9 +19,7 @@ C  Date:       Wed Feb  8 11:44:39 MST 1995
 C
 C  Description:    This program shows how to create an XyPlot object
 C                  with some of the XyPlot line resources tweaked.  A
-C                  resource file is used to changed the resources 
-C                  except in those cases where a resource is an array
-C                  and can only be changed programmatically.
+C                  resource file is used to changed the resources. 
 C                  This program uses the same Y-axis dataset as the
 C                  example "xy02", but this time values for the X
 C                  axis are specified, changing the look of the plot.
@@ -32,7 +30,9 @@ C
       external nhlfxworkstationlayerclass
       external nhlfxyplotlayerclass
       external nhlfcoordarrayslayerclass
-
+C
+C Define the number of points in the curve.
+C
       parameter(NPTS=500)
       parameter(PI100=.031415926535898)
 
@@ -76,7 +76,7 @@ C
 C
 C Create the XyPlot object which is created as a child of the
 C Xworkstation object.  The resources that are being changed are done
-C in the "xy03.res" file, and they will affect this XyPlot object.
+C in the "xy03.res" file.
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetinteger(rlist,'xyCoordData',dataid,ierr)

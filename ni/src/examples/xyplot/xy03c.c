@@ -1,5 +1,5 @@
 /*
-**      $Id: xy03c.c,v 1.8 1995-02-22 16:35:37 haley Exp $
+**      $Id: xy03c.c,v 1.9 1995-03-17 20:56:38 haley Exp $
 */
 /***********************************************************************
 *                                                                      *
@@ -19,9 +19,7 @@
 **
 ** Description:    This program shows how to create an XyPlot object
 **                 with some of the XyPlot line resources tweaked.  A
-**                 resource file is used to changed the resources 
-**                 except in those cases where a resource is an array
-**                 and can only be changed programmatically.
+**                 resource file is used to changed the resources.
 **                 This program uses the same Y-axis dataset as the
 **                 example "xy02", but this time values for the X
 **                 axis are specified, changing the look of the plot.
@@ -29,7 +27,6 @@
 **                 The "CoordArrays" object is used to set up the data.
 **
 */
-
 
 #include <stdio.h>
 #include <math.h>
@@ -40,6 +37,9 @@
 #include <ncarg/hlu/XyPlot.h>
 #include <ncarg/hlu/CoordArrays.h>
 
+/*
+ * Define the number of points in the curve.
+ */
 #define NPTS  500
 #define PI100 .031415926535898
 
@@ -75,7 +75,7 @@ main()
     NhlCreate(&xworkid,"xy03Work",NhlxWorkstationLayerClass,
                NhlDEFAULT_APP,0);
 /*
- * Define the data object.  The id for this object will then later be used
+ * Define the data object.  The id for this object will later be used
  * as the value for the XyPlot data resource, "xyCoordData".
  */
     NhlRLClear(rlist);
@@ -86,7 +86,7 @@ main()
 /*
  * Create the XyPlot object which is created as a child of the
  * Xworkstation object.  The resources that are being changed are done
- * in the "xy03.res" file, and they will affect this XyPlot object.
+ * in the "xy03.res" file.
  */
     NhlRLClear(rlist);
     NhlRLSetInteger(rlist,NhlNxyCoordData,dataid);

@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.5 1995-03-01 22:10:39 haley Exp $
+;      $Id: xy01n.ncl,v 1.6 1995-03-17 20:56:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -33,7 +33,9 @@
 ;
 begin
 
-
+;
+; Procedure for initializing data array.
+;
 procedure assigndata(
     y[*]:float,
     npts:integer

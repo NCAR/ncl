@@ -1,5 +1,5 @@
 C
-C      $Id: xy01f.f,v 1.6 1995-02-22 16:35:30 haley Exp $
+C      $Id: xy01f.f,v 1.7 1995-03-17 20:56:32 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -19,19 +19,21 @@ C  Date:       Wed Feb  8 11:44:39 MST 1995
 C
 C  Description:    This program shows how to create an XyPlot object
 C                  with all the default resources being used, with the
-C                  exception of the data resource.  There's no "default
-C                  data", so we need to create some.  A resource file
-C                  is included with this example, but only to show what
-C                  all the XyPlot resources are and what their defaults
-C                  are set to. The whole resource file is commented out.
-C
+C                  using all the default resources except for the data
+C                  resource; since there's no "default data", we need
+C                  to create some.  A resource file is included with
+C                  this example, but only to show what all the XyPlot
+C                  resources are and what their defaults are set to.
+**                 The whole resource file is commented out.
 C                  The "CoordArrays" object is used to set up the data.
 C
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
       external nhlfxyplotlayerclass
       external nhlfcoordarrayslayerclass
-
+C
+C Define the number of points in the curve.
+C
       parameter(NPTS=500)
       parameter(PI100=.031415926535898)
 
@@ -39,7 +41,7 @@ C
       integer rlist, i
       real   ydra(NPTS), theta
 C
-C Initialize some data for the XY plot
+C Initialize some data for the XY plot.
 C
       do 10 i = 1,NPTS
          theta = PI100*real(i-1)
@@ -65,8 +67,8 @@ C
 C
 C Define the data object.  Since only the Y values are specified here,
 C each Y value will be paired with its integer array index.  The id for
-C this object will later be used as the value for the XYPlot data
-C resource, 'xyCoordData'.
+C this object will later be used as the value for the XyPlot data
+C resource, "xyCoordData".
 C
       call nhlfrlclear(rlist)
       call nhlfrlsetfloatarray(rlist,'caYArray',ydra,NPTS,ierr)
@@ -98,4 +100,3 @@ C
       call nhlfclose
       stop
       end
-
