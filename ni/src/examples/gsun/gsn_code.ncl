@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.64 2001-03-19 17:57:09 haley Exp $
+;      $Id: gsn_code.ncl,v 1.65 2001-03-28 17:46:47 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -42,6 +42,7 @@ undef("smooth92d")
 undef("smooth93d")
 undef("hsv2rgb")
 undef("tofloat")
+undef("tointeger")
 undef("lower_case")
 undef("set_attr")
 undef("check_attr")
@@ -303,6 +304,34 @@ begin
     xf = x
   end if
   return(xf)
+end
+
+;***********************************************************************;
+; function : tointeger                                                  ;
+;                x:numeric                                              ;
+;                                                                       ;
+; Convert input to integer.                                             ;
+;                                                                       ;
+;***********************************************************************;
+function tointeger(x:numeric)
+local xi
+begin
+  if(typeof(x).eq."double")
+    xi = doubletointeger(x)
+  else
+    if(typeof(x).eq."float")
+      xi = floattointeger(x)
+    else
+      if(isatt(x,"_FillValue"))
+        xi = new(dimsizes(x),integer,x@_FillValue)
+      else
+        xi = new(dimsizes(x),integer)
+        delete(xi@_FillValue)
+      end if
+      xi = x
+    end if
+  end if
+  return(xi)
 end
 
 ;***********************************************************************;
@@ -649,7 +678,7 @@ begin
 ;
   minix = min((/ncols-1,max((/0,minix/))/))
   maxix = min((/ncols-1,max((/0,maxix/))/))
-  icols = floattointeger(fcols + 0.5)
+;
 ; If maxix < minix, then colors are to be reversed.
 ;
   reverse = False
@@ -1215,7 +1244,7 @@ begin
 ;
 ; If plot is wider than it is high, then default to landscape if
 ; orientation is not specified.
-  coords = floattointeger((/lx,ly,ux,uy/))
+;
     lc_orient = "landscape"
     if (pw / ph .gt. dh / dw) then
                                              ; paper height limits size
@@ -3660,42 +3689,139 @@ begin
     end if
   end if
 ;
+; Create new merged colormap.
+;
+  len_cmap = len_cmap1+len_cmap2
+  new_cmap = new((/len_cmap,3/),float)
+
+  new_cmap(0:len_cmap1-1,:) = new_cmap1(0:len_cmap1-1,:)
+  if(len_cmap2.gt.0)
+    new_cmap(len_cmap1:,:) = new_cmap2(0:len_cmap2-1,:)
   end if
 
   gsn_define_colormap(wks,new_cmap)
 end
 
 ;***********************************************************************;
-                      binvalues[*]:numeric, width[1]:numeric, \
-                      colors[*]:integer)
-local i, gsres, points
+; Function : hist_columns                                               ;
+                      colors[*]:integer, sprd:numeric,gsres:logical)
+;                    xy: graphic                                        ;
 ;                  bins: numeric                                        ;
+;             binvalues: numeric                                        ;
+;                 width: numeric                                        ;
+;                colors: numeric                                        ;
+;                 gsres: logical                                        ;
+;                                                                       ;
+;    xy      - xy plot id to draw columns on                            ;
+;  bins      - the center of each bin range.                            ;
+;  binvalues - the number of values in the corresponding bin            ;
+;  width     - half the width of the bar                                ;
+;  colors    - array of color indices to use                            ; 
+;  gsres     - optional primitive resources                             ;
+;                                                                       ;
 ; This function creates the columns for a histogram plot. The Y axis    ;
-  if(dimsizes(colors).ne.dimsizes(bins).or.dimsizes(bins).ne.dimsizes(binvalues))
-    print("Error: columns: Dimension sizes of bins (" + dimsizes(bins)+ ") ,binvalues(" + dimsizes(binvalues) + ") and colors (" + dimsizes(colors) + ") must be the same")
+; will represent the number of values in a bin and a percentage.        ;
+;                                                                       ;
+;***********************************************************************;
 function hist_columns(wks[1]:graphic,xy[1]:graphic,bins[*]:numeric, \
                       binvalues:numeric, width[*]:numeric, \
                       colors[*]:integer, gsres:logical)
-  dims = dimsizes(binvalues)
-  xpoints = new(5,float)
-  ypoints = new(5,float)
+local i, gsres, points, compare
+begin
+;
+; If binvalues is 2-dimensional, then comparing two fields.
+;
+  nbins = dimsizes(bins)
+  dims  = dimsizes(binvalues)
+  if(dims(0).eq.2.and.dimsizes(dims).eq.2)
+    nbinvalues  = dims(1)
+    compare     = True
   else
-  polygons = new(dims(0),graphic)
     nbinvalues  = dims(0)
-  gsres@gsEdgesOn = True
+    compare     = False
   end if
-  do i = 0, dims(0) - 1
-    gsres@gsFillColor = colors(i)
 
-    ypoints((/0,3,4/)) = (/0/)
-    ypoints((/1,2/))   = (/binvalues(i)/)
-    xpoints((/0,1,4/)) = (/bins(i) - width/)
-    xpoints((/2,3/))   = (/bins(i) + width/)
+  ncols = dimsizes(colors)
+  if(ncols.ne.nbins.or.nbins.ne.nbinvalues)
+    print("Error: columns: Dimension sizes of bins (" +nbins+ ") ,binvalues(" +nbinvalues + ") and colors (" + ncols + ") must be the same")
+    return
+  end if
 
-    polygons(i) = gsn_add_polygon(wks,xy,xpoints,ypoints,gsres);
+  if(compare)
+    xpoints   = new((/2,nbins,5/),float)
+    ypoints   = new((/2,nbins,5/),float)
+    polygons0 = new(nbins,graphic)
+    polygons1 = new(nbins,graphic)
+  else
+    xpoints  = new((/nbins,5/),float)
+    ypoints  = new((/nbins,5/),float)
+    polygons = new(nbins,graphic)
+  end if
+
+  gsres           = True
+  set_attr(gsres,"gsEdgesOn",True)
+
+  if(compare)
+    width23 = 0.6667 * width
+    nsprd = dimsizes(sprd)
+    ypoints(0,:,0) = (/0/)
+    ypoints(1,:,0) = (/0/)
+    ypoints(0,:,1) = (/binvalues(0,:)/)
+    ypoints(1,:,1) = (/binvalues(1,:)/)
+    ypoints(0,:,2) = (/ypoints(0,:,1)/)
+    ypoints(1,:,2) = (/ypoints(1,:,1)/)
+    ypoints(0,:,3) = (/0/)
+    ypoints(1,:,3) = (/0/)
+    ypoints(0,:,4) = (/0/)
+    ypoints(1,:,4) = (/0/)
+    xpoints(0,:,0) = (/bins - width/)
+    xpoints(1,:,0) = xpoints(0,:,0) + width23
+    xpoints(0,:,1) = (/xpoints(0,:,0)/)
+    xpoints(1,:,1) = xpoints(0,:,1) + width23
+    xpoints(0,:,2) = (/bins + width/)
+    xpoints(1,:,2) = xpoints(0,:,2) + width23
+    xpoints(0,:,3) = (/xpoints(0,:,2)/)
+    xpoints(1,:,3) = xpoints(0,:,3) + width23
+    xpoints(0,:,4) = (/xpoints(0,:,0)/)
+    xpoints(1,:,4) = xpoints(0,:,4) + width23
+  else
+    ypoints(:,0) = (/0/)
+    ypoints(:,1) = (/binvalues/)
+    ypoints(:,2) = (/ypoints(:,1)/)
+    ypoints(:,3) = (/0/)
+    ypoints(:,4) = (/0/)
+    xpoints(:,0) = (/bins - width/)
+    xpoints(:,1) = (/xpoints(:,0)/)
+    xpoints(:,2) = (/bins + width/)
+    xpoints(:,3) = (/xpoints(:,2)/)
+    xpoints(:,4) = (/xpoints(:,0)/)
+  end if
+
+  newcolors = get_res_value(gsres,"gsFillColor",colors)
+  ncol      = dimsizes(newcolors)
+      polygons1(i) = gsn_add_polygon(wks,xy,xpoints(1,i,:),ypoints(1,i,:), \
+                                     gsres)
+    fillindex2 = min((/max((/fillindex(1),0/)),17/))
+      polygons0(i) = gsn_add_polygon(wks,xy,xpoints(0,i,:),ypoints(0,i,:), \
+                                     gsres)
+    if(compare) 
+;
+      polygons(i) = gsn_add_polygon(wks,xy,xpoints(i,:),ypoints(i,:),gsres)
+        polygons1(i) = gsn_add_polygon(wks,xy,ypoints(1,i,:), \
                                        xpoints(1,i,:), gsres)
-  var_string = systemfunc("echo polygons$$")
-  xy@$var_string$ = polygons
+      else
+        polygons1(i) = gsn_add_polygon(wks,xy,xpoints(1,i,:), \
+                                       ypoints(1,i,:), gsres)
+      end if
+      gsres@gsFillIndex = fillindex1
+      if(binvalues@horizontal) then
+        polygons0(i) = gsn_add_polygon(wks,xy,ypoints(0,i,:), \
+                                       xpoints(0,i,:), gsres)
+      else
+        polygons0(i) = gsn_add_polygon(wks,xy,xpoints(0,i,:), \
+                                       ypoints(0,i,:), gsres)
+      end if
+    else
       gsres@gsFillIndex = fillindex1
       if(binvalues@horizontal) then
         polygons(i) = gsn_add_polygon(wks,xy,ypoints(i,:),xpoints(i,:),gsres)
@@ -3718,11 +3844,12 @@ function hist_columns(wks[1]:graphic,xy[1]:graphic,bins[*]:numeric, \
     xy@$var_string$ = polygons
   end if
   return(xy)
-                           setendpts:logical,setmidpts:logical,isnice:logical)
+end
+
 ;***********************************************************************;
 ; Function : compute_hist_vals                                          ;
-  xmin = min(x)
-  xmax = max(x)
+;                     x: numeric                                        ;
+;                  bins: numeric                                        ;
 ;                 nbins: integer                                        ;
 ;             setendpts: logical                                        ;
 ;             setmidpts: integer                                        ;
@@ -3738,7 +3865,18 @@ function hist_columns(wks[1]:graphic,xy[1]:graphic,bins[*]:numeric, \
 ;                                                                       ;
 ;***********************************************************************;
 function compute_hist_vals(x:numeric,bins:numeric,nbins[1]:integer, \
-       if(isnice) then
+                           bin_width:numeric,setendpts:logical,setmidpts:logical, \
+                           isnice:logical,compare:logical)
+local xmin, xmax, sprd, nbuckets, buckets, xx, i
+begin
+  xmin = tofloat(min(x))
+  xmax = tofloat(max(x))
+;
+; If the bins are set, need to determine if you want to have the bins
+; represent ranges of values or discrete values.
+;
+  if(setmidpts)
+    sprd     = bins
     nbuckets = dimsizes(sprd)
   else
 ;
@@ -3754,34 +3892,84 @@ function compute_hist_vals(x:numeric,bins:numeric,nbins[1]:integer, \
         else 
          nbins = floattointeger(((xmax - xmin)/bin_width))
           if(nbins.le.0) then
-   end if
+            print("Warning: compute_hist_vals: cannot use select bin width. Defaulting...")
             nbins = 10 
           end if
         end if
       end if
-  num_in_bins = new(nbuckets,integer)
+      if(isnice) then
+;
+; Based on min and max of data, compute a new min/max/step that will
+; give us "nice" values.
+;
          nicevals = nice_mnmxintvl(xmin,xmax,nbins,True)
          nvals    = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
          sprd     = fspan(nicevals(0),nicevals(1),nvals)
        else
 ;
+; Don't bother with "nice" values; just span the data. 
+;
+         sprd = fspan(xmin,xmax,nbins+1)
+       end if
+    end if
+    nbuckets = dimsizes(sprd)-1              ; Number of bins
+  end if
+;
+; Set up variable to hold bucket (or bin) values. Bin values can have
+; unequal spacing.
+;
+  if(compare) then
     num_in_bins = new((/2,nbuckets/),integer)
-    do i = 0, nbuckets-1
-      num_in_bins(i) = num(xx.eq.sprd(i))
-    end do
+  else
+    num_in_bins = new(nbuckets,integer)
+  end if
+;
+; Count number of values in a particular bin range, or exactly
+; equal to a bin value if discrete.
+;
+  xx = ndtooned(x)
+
+  if(compare) then
     xdims = dimsizes(x)
-    numind = new((/nbuckets,2/),integer)
-    do i = 0, nbuckets-1
-      num_in_bins(i) = num(xx.gt.sprd(i).and.xx.le.sprd(i+1))
+    elems = 1
+    do i = 1,dimsizes(xdims)-1
+      elems = elems * xdims(i)
     end do
+
+    xx1 = xx(0:elems-1)
+    xx2 = xx(elems:)
+  end if
+
+  if(setmidpts)
+      num_in_bins(0,nbuckets-1) = num(xx1.ge.sprd(nbuckets-2).and. \
+                                      xx1.le.sprd(nbuckets-1))
+      num_in_bins(1,nbuckets-1) = num(xx2.ge.sprd(nbuckets-2).and. \
+                                      xx2.le.sprd(nbuckets-1))
+        num_in_bins(i) = num(xx.eq.sprd(i))
+      end do
+    end if
+  else
+      num_in_bins(nbuckets-1) = num(xx.ge.sprd(nbuckets-2).and. \
+                                    xx.le.sprd(nbuckets-1))
+    if(compare) then
       do i = 0, nbuckets-2
         num_in_bins(0,i) = num(xx1.ge.sprd(i).and.xx1.lt.sprd(i+1))
-; Count number if missing values
+        num_in_bins(1,i) = num(xx2.ge.sprd(i).and.xx2.lt.sprd(i+1))
       end do
-  if(isatt(xx,"_FillValue")) then
-    num_missing = num(ismissing(xx))
+;
+; Special case for very last bin.
+;
+      num_in_bins(0,nbuckets-1) = num(xx1.ge.sprd(nbuckets-1).and. \
+                                      xx1.le.sprd(nbuckets))
+      num_in_bins(1,nbuckets-1) = num(xx2.ge.sprd(nbuckets-1).and. \
+                                      xx2.le.sprd(nbuckets))
+    else
       do i = 0, nbuckets-2
-    num_missing = new(1,integer,-999)
+        num_in_bins(i) = num(xx.ge.sprd(i).and.xx.lt.sprd(i+1))
+      end do
+;
+; Special case for very last bin.
+;
       num_in_bins(nbuckets-1) = num(xx.ge.sprd(nbuckets-1).and. \
                                     xx.le.sprd(nbuckets))
     end if
@@ -3792,15 +3980,16 @@ function compute_hist_vals(x:numeric,bins:numeric,nbins[1]:integer, \
   if(compare)
     if(isatt(xx,"_FillValue")) then
       num_missing1 = 0
-  do i=1,nsprd-1
-    num_in_bins@dx(i-1) = sprd(i) - sprd(i-1)
+      num_missing2 = 0
+    else
       num_missing1 = num(ismissing(xx1))
       num_missing2 = num(ismissing(xx2))
     end if
   else
     if(isatt(xx,"_FillValue")) then
-  if(ismissing(num_missing))
-    num_in_bins@NumMissing = 0
+      num_missing = num(ismissing(xx))
+    else
+      num_missing = 0
     end if
   end if
 
@@ -3811,60 +4000,77 @@ function compute_hist_vals(x:numeric,bins:numeric,nbins[1]:integer, \
 ; determine the width of the histogram bars later.
 ;
   nsprd            = dimsizes(sprd)
-;                 nbins: number of bins                                 ;
   num_in_bins@dx   = new(nsprd-1,float)
   do i=0,nsprd-2
     num_in_bins@dx(i) = sprd(i+1) - sprd(i)
   end do
-;  gsnHistogramSelectNiceEndPoints - Indicates whether we want          ;
+;
+; Return this information
+; 
+  num_in_bins@sprd       = sprd
+  if(compare)
+    num_in_bins@NumMissing1 = num_missing1
+    num_in_bins@NumMissing2 = num_missing2
+  else
+    num_in_bins@NumMissing = num_missing
   end if
   return(num_in_bins)
 end 
 
 ;***********************************************************************;
-;  gsnHistogramBinEndPoints - By default, gsn_histogram will pick the   ;
-;       bin end points for you. If you set this, then it will use these ;
-;       values for the bin ranges.                                      ;
+; Function : gsn_histogram                                              ;
+;                   wks: workstation object                             ;
+;                 xdata: numeric                                        ;
+;                   res: resources                                      ;
 ;                                                                       ;
-;  gsnHistogramBinMidPoints - By default, gsn_histogram will bin your   ;
-;       data into ranges.  If you set this resource, then your data is  ;
-;       assumed to already be "binned", and it just counts the number of;
-;       values exactly equal to the mid points.                         ;
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;  gsnHistogramNumberOfBins - Indicates number of bin intervals you     ;
+;       want. The default is around 10.                                 ;
+;                                                                       ;
+;  gsnHistogramBinWidth - Instead of indicating number of bins, you can ;
+;       specify a bin width. Depending on whether SelectNiceIntervals   ;
+;       is set to True, you will either get exactly bins of this size,  ;
+;       or approximately this size.                                     ; 
+;                                                                       ;
 ;  gsnHistogramSelectNiceIntervals - Indicates whether we want          ;
 ;  gsnHistogramComputePercentages - If True, then percentage values     ;
-; "NumMissing".                                                         ;
+;       will be put on right axis. Default is False.                    ;
+;                                                                       ;
 ;  gsnHistogramClassIntervals - By default, gsn_histogram will pick the ;
-function gsn_histogram(wks[1]:graphic,xdata:numeric,nbins[1]:integer, \
-                       res:logical)
+;       bin class intervals for you. If you set this, then it will use  ;
 ;       these values for the bin ranges.                                ;
 ;                                                                       ;
 ;  gsnHistogramBinIntervals   - Same as gsnHistogramClassIntervals.     ;
 ;                                                                       ;
 ;  gsnHistogramDiscreteClassValues - By default, gsn_histogram will bin ;
 ;       your data into ranges.  If you set this resource, then your data;
-;
-; Set gsnMaximize to True, because otherwise the histogram can 
-; fall off the page.  
-;
-  set_attr(res2,"gsnMaximize",True)
 ;       is assumed to already be "binned", and it just counts the number;
 ;       of values exactly equal to the discrete values.                 ;
 ;                                                                       ;
 ;  gsnHistogramDiscreteBinValues - Same as                              ;
+;                                  gsnHistogramDiscreteClassValues.     ;
+;                                                                       ;
 ;  gsnHistogramCompare - Compare two fields.                            ;
-  isnice     = get_res_value(res2,"gsnHistogramSelectNiceEndPoints",True)
+;  gsnHistogramHorizontal - Draw horizontal bars.  Default is False     ;
+;                                                                       ;
 ; called "NumMissing" (or "NumMissing1" and "NumMissing2" if comparing  ;
 ; two fields.)                                                          ;
 ;***********************************************************************;
 function gsn_histogram(wks[1]:graphic,xdata:numeric, res:logical)
 local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
       bins, nbucks, nsprd, xmin, top, botton, left, right, lenc, tmp, \
-  if(isatt(res2,"gsnHistogramBinEndPoints"))
+      colors, locs, lbs
+begin
   dummy = new(1,graphic)      ; Dummy graphic to return if things go wrong.
-    bins      = get_res_value(res2,"gsnHistogramBinEndPoints",1)
-    nbins     = dimsizes(bins)
+  res2  = res
+
+  calldraw   = get_res_value(res2,"gsnDraw", True)
+  callframe  = get_res_value(res2,"gsnFrame",True)
+  maxbb      = get_bb_res(res2)
+  nbins      = get_res_value(res2,"gsnHistogramNumberOfBins",-1)
   bin_width  = get_res_value(res2,"gsnHistogramBinWidth",-1)
-      print("Error: gsn_histogram: There must be at least two values in the bin ranges.")
+  ispercent  = get_res_value(res2,"gsnHistogramComputePercentages",False)
   percentsign= get_res_value(res2,"gsnHistogramPercentSign",False)
   isnice     = get_res_value(res2,"gsnHistogramSelectNiceIntervals",True)
   compare    = get_res_value(res2,"gsnHistogramCompare",False)
@@ -3875,16 +4081,27 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
 ; Check if user explicitly specifying bin values. If so, and they represent
 ; end points, then make sure there are at least two values, and sort them.
 ;
-; But, you can't be setting both End and Mid points.
+  if(isatt(res2,"gsnHistogramClassIntervals").or. \
      isatt(res2,"gsnHistogramBinIntervals"))
-  if(isatt(res2,"gsnHistogramBinMidPoints"))
+    setendpts = True
+    if(isatt(res2,"gsnHistogramClassIntervals"))
       bins = get_res_value(res2,"gsnHistogramClassIntervals",1)
-      print("warning: gsn_histogram: You already set gsnHistogramBinEndPoints, so ignoring gsnHistogramBinMidPoints.")
-      delete(res2@gsnHistogramBinMidPoints)  ; Delete so it doesn't get 
-                                             ; passed on to other routines.
+    else
+      bins = get_res_value(res2,"gsnHistogramBinIntervals",1)
+    end if
+    nbins = dimsizes(bins)
+    if(nbins.lt.2)
+      print("Error: gsn_histogram: There must be at least two values in the bin intervals.")
+      return(dummy)
+    end if
+    if(max(bins).lt.min(xdata).or.min(bins).gt.max(xdata))
       print("Error: gsn_histogram: The bin values you picked are out of range.")
       return(dummy)
-      bins      = get_res_value(res2,"gsnHistogramBinMidPoints",1)
+    end if
+    qsort(bins)    ; Sort the bins and put back into "bins" variable.
+  end if
+;
+; If setting the mid point values, then you only need at least one value.
 ; But, you can't be setting both Intervals and Discrete values.
 ;
   if(isatt(res2,"gsnHistogramDiscreteClassValues").or. \
@@ -3896,9 +4113,21 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
 ;
       if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
         delete(res2@gsnHistogramDiscreteBinValues)
+      else
+        delete(res2@gsnHistogramDiscreteClassValues)
+      end if
+    else
+      setmidpts = True
+      if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
+        bins = get_res_value(res2,"gsnHistogramDiscreteBinValues",1)
+      else
+        bins = get_res_value(res2,"gsnHistogramDiscreteClassValues",1)
+      end if
+      if(max(bins).lt.min(xdata).or.min(bins).gt.max(xdata))
         print("Error: gsn_histogram: The bin values you picked are out of range.")
         return(dummy)
-  buck = compute_hist_vals(xdata,bins,nbins,setendpts,setmidpts,isnice)
+      end if
+    end if
   end if
     bins = 0
   end if
@@ -3909,17 +4138,43 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
     dims = dimsizes(xdata)
     if(dims(0).ne.2.or.dimsizes(dims).eq.1) then
       print("Error: gsn_histogram: If comparing two fields, then the first dimension of the input array must be 2, and there must be at least two dimensions.")
+      return(dummy)
+    end if
+    delete(dims)
+  end if    
+;
+; Get number of values in each bin and bin values (buck@sprd).
+;
+  buck = compute_hist_vals(xdata,bins,nbins,bin_width,setendpts,setmidpts, \
+                           isnice,compare)
+
+  buck@horizontal = horizontal    ; horizontal or vertical bars
+
   if(all(ismissing(buck)))
     print("Error: gsn_histogram: Unable to calculate bin values.")
-; width of the histogram bars (width).
-;
+    return(dummy)
+  end if
+
+  if(all(buck.eq.0))
+    print("Error: gsn_histogram: No data found in selected bins. No histogram will be drawn.")
+    return(dummy)
+  end if
+
   nsprd  = dimsizes(buck@sprd)
-  nbucks = dimsizes(buck)
   xmin   = min(xdata)
-  width  = min(buck@dx/3.0)
+;
+; Count the number of bins.
+;
+  if(compare)
+    dimbucks = dimsizes(buck)
+    nbucks   = dimbucks(1)
+  else
+    nbucks = dimsizes(buck)
+  end if
+;
 ; Calculate values for setting up X and Y axis limits, and the
 ; width of the histogram bars (width).  If doing intervals, then the
-  range = buck@sprd(nsprd-1)-buck@sprd(0)
+; bar widths should be proportional to the range they represent.
 ; Otherwise, if doing mid points, use the smallest width.
 ;
 ; If comparing two fields, then the histogram columns must be
@@ -3937,7 +4192,7 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
     else
       width = min(buck@dx/3.0)
     end if
-    print("Warning: gsn_histogram: not enough colors using single color")
+  end if
   top    = max(buck) * 1.1
   bottom = 0
   range  = buck@sprd(nsprd-1)-buck@sprd(0)
@@ -3954,14 +4209,20 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
 ;
   getvalues wks
     "wkColorMapLen" : lenc
-; Calculate locations of center of bins and 
-; labels and values for tick marks.
+  end getvalues
+
+  tmp = (lenc-2)/nbucks
+  if(tmp .eq. 0 )
     print("Warning: gsn_histogram: not enough colors, using single color")
     colors = new(nbucks,integer)
     colors = 2
   else 
     if(setmidpts)
-    locs = buck@sprd(0:nbucks-1) + buck@dx(0:nbucks-1)/2.
+      colors = new(nsprd,integer)
+    else
+      colors = new(nsprd-1,integer)
+    end if
+    tmpc   = ispan(2,lenc,tmp)
     if(dimsizes(tmpc).ne.dimsizes(colors))
       colors = tmpc(0:dimsizes(colors)-1)
     else
@@ -3977,14 +4238,17 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
 ; labels to the right axis.
   end if
   lbs = buck@sprd
-    npts = dimsizes(ndtooned(xdata))    ; Total number of points. 
+
+  if(horizontal) then
+    xy = create "xy" xyPlotClass wks
+      "trYMinF" : get_res_value(res2,"trYMinF",left)
+      "trYMaxF" : get_res_value(res2,"trYMaxF",right)
       "trXMinF" : get_res_value(res2,"trXMinF",bottom)
       "trXMaxF" : get_res_value(res2,"trXMaxF",top)
     end create
   else
     xy = create "xy" xyPlotClass wks
       "trXMinF" : get_res_value(res2,"trXMinF",left)
-
       "trXMaxF" : get_res_value(res2,"trXMaxF",right)
       "trYMinF" : get_res_value(res2,"trYMinF",bottom)
       "trYMaxF" : get_res_value(res2,"trYMaxF",top)
@@ -4015,6 +4279,10 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
         set_attr(res2,"tmXTLabels",pnice+"%")
       else
     set_attr(res2,"tiXAxisString",xdata@long_name)
+      set_attr(res2,"tmYRLabelsOn",True)
+      set_attr(res2,"tmYRMode","Explicit")
+      set_attr(res2,"tiXAxisString","Class Intervals")
+        set_attr(res2,"tmYRLabels",pnice)
       end if  
     end if  
   end if
@@ -4024,10 +4292,10 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
   set_attr(res2,"tmXBMode","EXPLICIT")
   set_attr(res2,"tmXBValues",lbs)
   set_attr(res2,"tmXBLabels",lbs)
-  set_attr(res2,"tmXBLabelAngleF",270 )
-  set_attr(res2,"tmXBLabelJust","CenterLeft")
-
-  attsetvalues_check(xy,res2)
+;  set_attr(res2,"tmXBLabelAngleF",270 )
+;  set_attr(res2,"tmXBLabelJust","CenterLeft")
+      else
+        set_attr(res2,"tiXAxisString","Class Intervals")
       end if
     end if
 ; Add a right Y axis "Percent Occurence" or "Percent of Maximum" label.
@@ -4056,16 +4324,21 @@ local res2, calldraw, callframe, maxbb, ispercent, setmidpts, setendpts, \
       end getvalues
       txangle = 90.
       txside  = "right"
-
     end if
 
     axis_string = create "axis_string" textItemClass wks
-  histogram = hist_columns(wks,xy,locs,buck,width,colors)
+      "txString"      : "Percent"
+  histogram = hist_columns(wks,xy,locs,buck,width,colors,buck@sprd,gsres)
       "txAngleF"      : txangle
     end create
 
     anno = NhlAddAnnotation(xy,axis_string)
-  histogram@NumMissing = buck@NumMissing
+
+    setvalues anno
+      "amZone"          : 3      ; Just outside plot area
+      "amJust"          : "centercenter"
+      "amSide"          : txside
+      "amParallelPosF"  : 0.5
       "amOrthogonalPosF": 0.03
       "amResizeNotify"  : True     ; Resize if plot resized.
     end setvalues
