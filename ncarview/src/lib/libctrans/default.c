@@ -1,5 +1,5 @@
 /*
- *	$Id: default.c,v 1.16 1993-01-08 21:17:53 clyne Exp $
+ *	$Id: default.c,v 1.17 1993-01-11 19:08:55 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -1146,8 +1146,17 @@ CGMC *c;
 	dt->fill_r_pt.x = c->p[0].x;
 	dt->fill_r_pt.y = c->p[0].y;
 
+/*
+ *	ifdef out this warning message because this element appears
+ *	in so many of pre-ncarg3.2 NCGMs even though we have never
+ *	supported it.
+ */
+#ifdef	DEAD
 	ESprintf(ENOSYS, "Unsupported CGM element");
 	return (-1);
+#else
+	return(0);
+#endif
 }
 
 /*ARGSUSED*/
@@ -1162,8 +1171,18 @@ CGMC *c;
 int PatSize(c)
 CGMC *c;
 {
+
+/*
+ *	ifdef out this warning message because this element appears
+ *	in so many of pre-ncarg3.2 NCGMs even though we have never
+ *	supported it.
+ */
+#ifdef	DEAD
 	ESprintf(ENOSYS, "Unsupported CGM element");
 	return (-1);
+#else
+	return(0);
+#endif
 }
 
 /*ARGSUSED*/
