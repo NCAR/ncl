@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.49 1998-05-29 22:52:30 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.50 1998-06-02 20:33:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1790,7 +1790,7 @@ VectorPlotInitialize
 	vcp->ovfp = NULL;
 	vcp->sfp = NULL;
 	vcp->osfp = NULL;
-	vcp->fws_id = NhlNULLOBJID;
+	vcp->fws_id = -1;
         vcp->gks_level_colors = NULL;
         
 /*
@@ -2714,7 +2714,7 @@ NhlLayer inst;
 	if (vcp->postdraw_dat != NULL)
 		_NhlDeleteViewSegment(inst,vcp->postdraw_dat);
 
-        if (vcp->fws_id >= 0)
+        if (vcp->fws_id > 0)
                 _NhlFreeWorkspace(vcp->fws_id);
   
 	return(ret);
@@ -2850,10 +2850,10 @@ static NhlErrorTypes vcInitDraw
 		       NULL);
 
 	if (vcp->min_distance > 0.0) {
-		if (vcp->fws_id == NhlNULLOBJID) {
+		if (vcp->fws_id < 1) {
 			if ((vcp->fws_id = 
 			     _NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
-					    100*sizeof(float))) < 0) {
+					    100*sizeof(float))) < 1) {
 				e_text = 
 					"%s: float workspace allocation error";
 				NhlPError(NhlFATAL,

@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.44 1998-05-27 22:50:23 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.45 1998-06-02 20:32:54 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -2347,10 +2347,10 @@ int n;
 	aws_id = mptransclass->mptrans_class.aws_id;
 
 
-	if (aws_id == -1) {
+	if (aws_id < 1) {
 		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsNONE,
 					  1000*sizeof(int));
-		if (aws_id < 0) 
+		if (aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)aws_id);
 		mptransclass->mptrans_class.aws_id = aws_id;
 	}

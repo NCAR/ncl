@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.4 1998-06-01 17:46:03 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.5 1998-06-02 20:32:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1146,9 +1146,9 @@ static NhlErrorTypes    MapV40DHDestroy
 		NhlFree(mv40p->fill_recs);
 	if (mv40p->outline_recs != NULL)
 		NhlFree(mv40p->outline_recs);
-	if (mv40p->co_aws_id >= 0)
+	if (mv40p->co_aws_id > 0)
 		_NhlFreeWorkspace(mv40p->co_aws_id);
-	if (mv40p->us_aws_id >= 0)
+	if (mv40p->us_aws_id > 0)
 		_NhlFreeWorkspace(mv40p->us_aws_id);
 
         return NhlNOERROR;
@@ -2558,10 +2558,10 @@ static NhlErrorTypes mpSetUpAreamap
 		break;
 	}
 
-	if (aws_id < 0) {
+	if (aws_id < 1) {
 		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsDISK,
                                           mpWORKSPACE_SIZE_REQ);
-		if (aws_id < 0) 
+		if (aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)aws_id);
 	}
 	if ((*aws = _NhlUseWorkspace(aws_id)) == NULL) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.43 1998-05-29 22:52:27 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.44 1998-06-02 20:32:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1215,7 +1215,7 @@ StreamlinePlotInitialize
 	stp->zero_field = False;
 	stp->vfp = NULL;
 	stp->ovfp = NULL;
-	stp->fws_id = NhlNULLOBJID;
+	stp->fws_id = -1;
 
 /*
  * Set up the data
@@ -1713,7 +1713,7 @@ NhlLayer inst;
 	if (stp->postdraw_dat != NULL)
 		_NhlDeleteViewSegment(inst,stp->postdraw_dat);
         
-        if (stp->fws_id >= 0)
+        if (stp->fws_id > 0)
                 _NhlFreeWorkspace(stp->fws_id);
 
 	return(ret);
@@ -1826,11 +1826,11 @@ static NhlErrorTypes stInitDraw
 		       _NhlNwkReset,	True,
 		       NULL);
 
-	if (stp->fws_id == NhlNULLOBJID) {
+	if (stp->fws_id < 1) {
 		if ((stp->fws_id = 
 		     _NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
 			       2 * stp->vfp->fast_len * stp->vfp->slow_len *
-				      sizeof(float))) < 0) {
+				      sizeof(float))) < 1) {
 			e_text = "%s: float workspace allocation error";
 			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 			return NhlFATAL;

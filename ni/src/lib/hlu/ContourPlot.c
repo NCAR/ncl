@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.74 1998-04-16 03:08:25 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.75 1998-06-02 20:32:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2881,9 +2881,9 @@ NhlLayer inst;
 	
 	_NhlFreeWorkspace(cnp->fws_id);
 	_NhlFreeWorkspace(cnp->iws_id);
-	if (cnp->cws_id >= 0)
+	if (cnp->cws_id > 0)
 		_NhlFreeWorkspace(cnp->cws_id);
-	if (cnp->aws_id >= 0)
+	if (cnp->aws_id > 0)
 		_NhlFreeWorkspace(cnp->aws_id);
 
         if (cnp->max_data_format.fstring != NULL)
@@ -3127,11 +3127,11 @@ static NhlErrorTypes cnInitAreamap
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnl->contourplot);
 
-	if (cnp->aws_id < 0) {
+	if (cnp->aws_id < 1) {
 		cnp->aws_id = 
 			_NhlNewWorkspace(NhlwsAREAMAP,
 					 NhlwsNONE,200000*sizeof(int));
-		if (cnp->aws_id < 0) 
+		if (cnp->aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)cnp->aws_id);
 	}
 	if ((cnp->aws = _NhlUseWorkspace(cnp->aws_id)) == NULL) {
@@ -3431,11 +3431,11 @@ static NhlErrorTypes cnInitCellArray
                 cnp->cell_size = (bbox->r - bbox->l) / (float) *msize;
         }
 	
-	if (cnp->cws_id < 0) {
+	if (cnp->cws_id < 1) {
 		cnp->cws_id = 
 			_NhlNewWorkspace(NhlwsOTHER,NhlwsNONE,
 					 (*msize * *nsize) * sizeof(int));
-		if (cnp->cws_id < 0) 
+		if (cnp->cws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)cnp->cws_id);
 	}
 	if ((cnp->cws = _NhlUseWorkspace(cnp->cws_id)) == NULL) {

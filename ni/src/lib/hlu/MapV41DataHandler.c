@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.5 1998-06-01 17:46:03 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.6 1998-06-02 20:32:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -521,7 +521,6 @@ static NhlErrorTypes Init_Entity_Recs
                 }
                 Mv41cp->long_alpha_recs[i] = lname_recs[i].erec;
 		Mv41cp->long_alpha_recs[i]->canonical_ix = i;
-                NhlFree(lname_recs[i].lname);
 #if 0                
                 printf("%s\n",Mv41cp->long_alpha_recs[i]->name);
                 
@@ -542,6 +541,17 @@ static NhlErrorTypes Init_Entity_Recs
                 }
                 printf("%s\n",buf);
 #endif
+        }
+        for (i = 0; i < Mv41cp->entity_rec_count; i++) {
+#if 0                
+                if (Mv41cp->long_alpha_recs[i]->unique) {
+                        printf("%s\n",lname_recs[i].lname);
+                }
+                else {
+                        printf("! %s\n",lname_recs[i].lname);
+                }
+#endif                
+                NhlFree(lname_recs[i].lname);
         }
         NhlFree(lname_recs);
         
@@ -1392,7 +1402,7 @@ static NhlErrorTypes    MapV41DHDestroy
 		NhlFree(mv41p->fill_recs);
 	if (mv41p->outline_recs != NULL)
 		NhlFree(mv41p->outline_recs);
-	if (mv41p->aws_id >= 0)
+	if (mv41p->aws_id > 0)
 		_NhlFreeWorkspace(mv41p->aws_id);
 
         return NhlNOERROR;
@@ -2270,10 +2280,10 @@ static NhlErrorTypes mpSetUpAreamap
 	c_arseti("RC",1);
 	aws_id = mv41p->aws_id;
 
-	if (aws_id < 0) {
+	if (aws_id < 1) {
 		aws_id = _NhlNewWorkspace(NhlwsAREAMAP,NhlwsDISK,
 					  mpWORKSPACE_SIZE_REQ);
-		if (aws_id < 0) 
+		if (aws_id < 1) 
 			return MIN(ret,(NhlErrorTypes)aws_id);
 	}
 	if ((*aws = _NhlUseWorkspace(aws_id)) == NULL) {
