@@ -1,5 +1,5 @@
 /*
- *      $Id: app.c,v 1.22 1999-06-16 22:28:09 dbrown Exp $
+ *      $Id: app.c,v 1.23 1999-07-16 18:01:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -249,6 +249,7 @@ static void GetColormapsInPath
 			}
 		}
 		fclose(fp);
+
 		count = i;
 		if (max_cval > 1.0) {
 			if (max_cval < 256.0) {
@@ -283,6 +284,7 @@ static void GetColormapsInPath
 				  (NhlColor *)colormap,count / 3);
 		
 	}
+
 	closedir(dp);
 
 	return;
@@ -325,7 +327,7 @@ static void ReadUserColormaps
 		}
 		*cp = '\0';
 		if (cp > buf) {
-			cp = strrchr(cp - 1, ':');
+			cp = strrchr(buf, ':');
 			if (! cp) {
 				GetColormapsInPath(_NGResolvePath(buf));
 			}
