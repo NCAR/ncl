@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.32 1996-03-20 21:47:14 haley Exp $
+.\"	$Id: ncargex.m,v 1.33 1996-10-05 04:37:40 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1995" NCAR "NCAR GRAPHICS"
@@ -390,7 +390,8 @@ fcell fcell0 fgke01 fgke02 fgke03 fgke04 fgkgpl fgkgpm
 fgkgtx fgklnclr fgklnwth fcirc fgpm01 pgkex01 pgkex02
 pgkex03 pgkex04 pgkex05 pgkex06 pgkex07 pgkex08 pgkex09
 pgkex10 pgkex11 pgkex12 pgkex13 pgkex14 pgkex15 pgkex16
-pgkex17 pgkex18 pgkex19 pgkex20 pgkex21 c_gtxpac c_pgkex21
+pgkex17 pgkex18 pgkex19 pgkex20 pgkex21 pgkex22 pgkex23
+pgkex24 pgkex25 pgkex26 pgkex27 c_gtxpac c_pgkex21
 .sp
 .I "GRIDALL Example:"
 .sp
