@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.102 2003-07-14 23:12:10 dbrown Exp $
+ *      $Id: Workstation.c,v 1.103 2003-07-15 21:36:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4407,14 +4407,14 @@ WorkstationFill
 		c_sfseti("DO", Fill_Specs[ix].dots_on);
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		if (Fill_Specs[ix].dots_on) {
-			/*
-			gset_marker_colr_ind(fill_color);
-			*/
 			if (wkfp->fill_dot_size > 0.0) {
 				c_sfseti("DO", -1);
 				c_sfsetr("DS",wkfp->fill_dot_size);
+				c_sfseti("DC",fill_color);
 			}
-			c_sfseti("DC",fill_color);
+			else {
+				gset_marker_colr_ind(fill_color);
+			}
 			c_sfsgfa(x,y,num_points,dst,nst,ind,nnd,-1);
 			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
 		}
