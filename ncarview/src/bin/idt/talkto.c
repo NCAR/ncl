@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.7 1991-08-20 15:55:03 clyne Exp $
+ *	$Id: talkto.c,v 1.8 1991-08-26 16:09:43 clyne Exp $
  */
 /*
  *	talkto.c
@@ -58,6 +58,7 @@ static	struct	{
 	int	wfd;		/* a fd for writing to the process	*/
 	int	rfd;		/* fd for reading responses from trans	*/
 	int	r_err_fd;	/* standard error from the process	*/
+	int	pending;	/* outstanding commands with no acks	*/
 	} Translators[MAX_DISPLAYS];	
 
 static	int	hFD = -1;	/* history file file descriptor	*/
@@ -192,6 +193,7 @@ OpenTranslator(channel, argv, hfd)
 		Translators[channel].wfd = to_child[1];
 		Translators[channel].rfd = to_parent[0];
 		Translators[channel].r_err_fd = stderr_to_parent[0];
+		Translators[channel].pending = 1;
 
 		(void) close(to_child[0]); 
 		(void) close(to_parent[1]);
@@ -274,6 +276,8 @@ char	*TalkTo(id, command_string, mode)
 
 	if (Translators[id].pid == -1) return (NULL);
 
+	do {
+
 	/*
 	 * read any previous messages from the translator that may still
 	 * be waiting in the pipe
@@ -292,8 +296,11 @@ char	*TalkTo(id, command_string, mode)
 		}
 	}
 	buf[n] = '\0';
-	
-	(void) strip_prompt(buf);/* remove translator prompt from message */
+
+	/* 
+	 * remove translator prompt from message
+	 */
+	Translators[id].pending -= strip_prompt(buf);
 
 	if (s = strrchr(buf, '\n')) *s = '\0'; 
 
@@ -301,6 +308,8 @@ char	*TalkTo(id, command_string, mode)
 	 * Post any old messages
 	 */
 	if (strlen(buf)) Message(id, buf);
+
+	} while (mode == SYNC && Translators[id].pending > 0);
 
 	/*
 	 * see if there were any error messages
@@ -331,6 +340,7 @@ char	*TalkTo(id, command_string, mode)
 	if (hFD != -1) {
 		(void) write(hFD, command_string, strlen(command_string));
 	}
+	Translators[id].pending += 1;
 
 	if (mode == ASYNC) {	/* don't wait for response	*/
 		return("");
@@ -371,7 +381,10 @@ char	*TalkTo(id, command_string, mode)
 				}
 			}
 			buf[n] = '\0';
-			if (strip_prompt(buf)) break;	/* get a prompt yet? */
+			if (strip_prompt(buf)) {
+				Translators[id].pending -= 1;
+				break;	/* get a prompt yet? */
+			}
 
 		}
 		
@@ -409,7 +422,7 @@ static	strip_prompt(s)
 		if (strncmp(s, PROMPT, prompt_len) == 0) {
 			t2 = s + prompt_len;
 			t1 = s;
-			match = 1;
+			match++;
 			while(*t1++ = *t2++)
 				;
 		}

@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.7 1991-08-20 15:57:24 clyne Exp $
+ *	$Id: commands.c,v 1.8 1991-08-26 16:09:39 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -415,14 +415,7 @@ int	iCPlot(ic)
 
 		while (! loopAbort) {	/* loop until SIGINT		*/
 
-			frame = ic->cmd.src_frames.fc[i].start_frame % inc;
-			if (inc < 0) {
-				frame = ((icState.stop_segment - frame)/abs_inc)
-				* abs_inc + frame;
-			} 
-
-			num_frames = 
-				icState.stop_segment - icState.start_segment +1;
+			frame = ic->cmd.src_frames.fc[i].start_frame;
 
 			for (j = 0; j < num_frames && ! loopAbort; 
 				j += abs_inc, frame += inc) {
@@ -762,8 +755,8 @@ int	iCStartSegment(ic)
 		}
 		else {
 			icState.start_segment = start;
-			(void) fprintf(stderr, 
-				"segment begins at frame %d \n", start);
+			(void)sprintf(buf,"segment begins at frame %d\n",start);
+			(void) write (fd, buf, strlen(buf));
 
 			if (start > ic->current_frame) {
 				ic->current_frame = start;
@@ -797,8 +790,8 @@ int	iCStopSegment(ic)
 		}
 		else {
 			icState.stop_segment = stop;
-			(void) fprintf(stderr,
-				"segment ends at frame %d \n",stop);
+			(void) sprintf(buf, "segment ends at frame %d \n",stop);
+			(void) write (fd, buf, strlen(buf));
 
 			if (stop < ic->current_frame) {
 				ic->current_frame = stop;
