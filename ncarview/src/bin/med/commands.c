@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.3 1991-10-01 15:58:46 clyne Exp $
+ *	$Id: commands.c,v 1.4 1992-04-20 22:01:59 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -241,7 +241,7 @@ medEdit(med_data)
 	/*
 	 * execute the command
 	 */
-	if ((toc = CGM_initMetaEdit(c_data->file, 1440, localTmp)) == NULL) {
+	if ((toc = CGM_initMetaEdit(c_data->file,1440,localTmp,TRUE)) == NULL) {
 		command_error_message (
 				med_data, errno, 0, (char *) NULL, MED_WARN);
 		return;
@@ -668,7 +668,7 @@ medRead(med_data)
 	 * execute the command
 	 */
 	if ((tmp_toc = CGM_readFrames (
-		c_data->file, 0, -1, start_frame, 1440 )) == NULL) {
+		c_data->file, 0, -1, start_frame, 1440)) == NULL) {
 
 		command_error_message (
 			med_data, errno, 0, (char *) NULL, MED_WARN);
@@ -715,10 +715,19 @@ medWrite(med_data)
 
 	whole_buffer = c_data->add1 == -1 ? TRUE : FALSE;
 
+
 	/*
-	 * calculate address for write. use current frame for default
+	 * calculate address for write. use entire buffer as default
 	 */
-	DEFAULT_FRAME(med_data->current_frame, c_data);
+	if (c_data->add2 == -1) {
+		if (c_data->add1 == -1) {
+			c_data->add1 = 1;
+			c_data->add2 = med_data->last_frame;
+		}
+		else {
+			c_data->add2 = c_data->add1;
+		}
+	}
 
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
@@ -785,8 +794,15 @@ medAppend(med_data)
 	/*
 	 * calculate address for write. use entire buffer as default
 	 */
-	c_data->add1 = c_data->add1 == -1 ? 1 : c_data->add1;
-	c_data->add2 = c_data->add2 == -1 ? med_data->last_frame : c_data->add2;
+	if (c_data->add2 == -1) {
+		if (c_data->add1 == -1) {
+			c_data->add1 = 1;
+			c_data->add2 = med_data->last_frame;
+		}
+		else {
+			c_data->add2 = c_data->add1;
+		}
+	}
 
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
@@ -890,8 +906,19 @@ medSplit(med_data)
 		return;
 	}
 
-	c_data->add1 = c_data->add1 == -1 ? 1 : c_data->add1;
-	c_data->add2 = c_data->add2 == -1 ? med_data->last_frame : c_data->add2;
+	/*
+	 * calculate address for write. use entire buffer as default
+	 */
+	if (c_data->add2 == -1) {
+		if (c_data->add1 == -1) {
+			c_data->add1 = 1;
+			c_data->add2 = med_data->last_frame;
+		}
+		else {
+			c_data->add2 = c_data->add1;
+		}
+	}
+
 	c_data->file = c_data->file == NULL ? SPLIT_PREFIX : c_data->file;
 
 	start_frame = c_data->add1;
