@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: nhlex.csh,v 1.2 1994-10-20 18:08:06 dbrown Exp $
+#   $Id: nhlex.csh,v 1.3 1994-10-20 18:18:30 dbrown Exp $
 #
 
 if (SED_VERBOSE) then
@@ -79,7 +79,7 @@ set rmfiles
 ################################################################
 
 echo ""
-echo "NCAR Graphics <Pre-Alpha\!> High Level Utility Example <$name>"
+echo "NCAR Graphics High Level Utility Example <$name>"
 
 set c_files = $name.c
 set m_files = Makefile.$name
