@@ -9,6 +9,7 @@ C
       PARAMETER (MREG=50,NREG=50)
       REAL XRAN(NRAN), YRAN(NRAN), ZRAN(NRAN)
       REAL XREG(MREG), YREG(NREG), ZREG(MREG,NREG), RWRK(LRWK)
+      REAL XDELTA(MREG)
       INTEGER IWRK(LIWK)
 
       DATA XRAN /12., 60., 14., 33.,  8., 12., 43., 57., 22., 15.,
@@ -20,6 +21,11 @@ C
       DATA ZRAN /1.0, 1.5, 1.7, 1.4, 1.9, 1.0, 1.5, 1.2, 1.8, 1.4,
      +     1.8, 1.7, 1.9, 1.5, 1.2, 1.1, 1.3, 1.7, 1.2, 1.6,
      +     1.9, 1.0, 1.6, 1.3, 1.4, 1.8, 1.7, 1.5, 1.1, 1.0/
+      DATA XDELTA/.00,.02,.04,.06,.08,.10,.12,.14,.16,.18,.20,
+     +            .22,.24,.26,.28,.30,.32,.34,.36,.38,.40,.42,
+     +            .44,.46,.48,.50,.52,.54,.56,.58,.60,.62,.64,
+     +            .66,.68,.70,.72,.74,.76,.78,.80,.82,.84,.86,
+     +            .88,.90,.92,.94,.96,.98/
 C
 C Open GKS
 C
@@ -39,12 +45,12 @@ C regular grid.
 C
       XREG(1)=XMIN
       DO 101 I=2,MREG
-         XREG(I)=XMIN + (XMAX - XMIN)* REAL(I-1)/(MREG-1)
+         XREG(I)=XMIN + (XMAX - XMIN)*XDELTA(I)
  101  CONTINUE
 C
       YREG(1)=YMIN
       DO 102 I=2,NREG
-         YREG(I)=YMIN + (YMAX - YMIN)* REAL(I-1)/(NREG-1)
+         YREG(I)=YMIN + (YMAX - YMIN)*XDELTA(I)
  102  CONTINUE
 C
 C Interpolate data onto a regular grid
