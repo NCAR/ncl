@@ -1,5 +1,5 @@
 C
-C $Id: ngezlogo.f,v 1.1 2002-04-04 22:04:16 fred Exp $
+C $Id: ngezlogo.f,v 1.2 2002-04-05 17:40:28 fred Exp $
 C                                                                      
 C                Copyright (C)  2002
 C        University Corporation for Atmospheric Research
@@ -31,7 +31,6 @@ C
 C
 C  Check for an uncleared prior error.
 C
-      IDR = ' '
       IF (ICFELL('NGEZLOGO - Uncleared prior error',1) .NE. 0) RETURN
 C
       CALL GQCNTN(IER,NTNR)
