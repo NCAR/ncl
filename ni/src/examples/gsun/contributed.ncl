@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.21 2003-10-23 20:17:26 shea Exp $
+;      $Id: contributed.ncl,v 1.22 2003-11-01 00:06:13 shea Exp $
 ;
 ; -------------- added Feb 14 2002
 ; copy_VarMeta
@@ -1865,35 +1865,6 @@ begin
  end if
                         ; ----end DJS personal
  return (xzon)
-end
-
-; **********************************************************
-; D. Shea
-; same arguments as NCL function smth9
-; usually: p=0.50 and q={-0.25 [light], 0 [5-pt], 0.25[heavy]} 
-
-; This is a "wrapper" for smth9. It copies all attributes
-; coordinate dimensions etc to the smoothed variable.
-; Also it adds an attribute or two.
-
-; Basically it ensures that the return variable will have all the
-; corrects meta info with it. 
-; [eg:     xSmth = smth9_Wrap (x,p,q,False)  then xSmth will be "correct"]
-
-
-undef("smth9_Wrap")
-function smth9_Wrap(var:float, p[1]:float, q[1]:float, cyclic:logical)
-local var_out
-begin
-  if (isatt(var,"missing_value") .and. .not.isatt(var,"_FillValue")) then
-     var@_FillValue = var@missing_value
-  end if
-  var_out = var   ; transfer all coordinate variables, attributes etc
-  var_out = smth9 (var, p, q, cyclic) ; add info on operation performed
-  var_out@spatial_op_ncl = "smth9; nine-pt smoother applied; " + \
-                               "p="+p+"  q="+q+"  cyclic="+cyclic
-
-  return(var_out)
 end
 
 
@@ -5464,3 +5435,41 @@ begin
          secElapseTime+" seconds <====="+NLINE)
 
 end 
+
+
+undef("partitionString")
+function partitionString(s:string , fs:string)
+; D Shea
+; subset a string into part depending upon a strting separator
+;
+;    code = "apple:orange:cider:peach"     ; 4 components
+;    a    = partitionString(code, ":")
+; result will be a 1D array of length 4 containing
+;    a    = (/"apple","orange","cider","peach"/)
+
+local cs, cfs, i, nStr, str, n, iStrt, iLast
+begin
+  cs  = stringtochar(s)     ; string to individual characters   
+  cfs = stringtochar(fs)    ; string separator as character
+ 
+  i   = ind(cs .eq. cfs(0)) ; indices where fs occurs
+  
+  if (.not.any(ismissing(i)) ) then 
+      nStr  = dimsizes(i) + 1
+      str   = new ( nStr, "string")
+
+      iStrt = 0
+      do n=0,nStr-2
+         iLast  = i(n)-1
+         str(n) =  chartostring((/cs(iStrt:iLast)/)) 
+         iStrt  = i(n)+1
+      end do
+      iLast = dimsizes(cs)-2
+      str(nStr-1) =  chartostring((/cs(iStrt:iLast)/)) 
+  else
+      str = s     ; string separator found
+  end if
+
+  return(str)
+end
+
