@@ -54,10 +54,10 @@ required for this subroutine. Required only if MSK is set
 to a non-zero value; otherwise it is ignored and may be
 assigned a dummy value.
 .IP WRK 12
-(REAL array, dimensioned as specified in last call to
-VVINIT, input/output): Array intended for future
-enhancement of the Vectors utility. It is currently ignored
-and may be assigned a dummy value.
+(REAL array, dimensioned as specified in last call to VVINIT,
+input/output): Work array required only if the parameter VMD is set to
+a value greater than 0.0. Otherwise may be set to a dummy value.
+
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions.
@@ -73,12 +73,13 @@ may also modify the color array parameters, in between multiple
 invocations of VVECTR.
 .sp
 Arguments to VVINIT establish the sizes of the two or three data
-arrays. VVINIT places these values into common block variables where
-they become available to VVECTR.  Therefore no size arguments need
-appear in the VVECTR argument list. When there is no scalar data
-array, and area masking is not enabled, all but the first two
-arguments to VVECTR may have dummy values and the invocation would be
-something like:
+arrays, as well as the possible work array. VVINIT places these values
+into common block variables where they become available to VVECTR.
+Therefore no size arguments need appear in the VVECTR argument
+list. When there is no scalar data array, area masking is not enabled,
+and VMD is less than or equal to 0.0, all but the first two arguments
+to VVECTR may have dummy values and the invocation would be something
+like:
 .in 15
 .sp
 CALL VVECTR(U,V,IDM,IDM,IDM,IDM)
@@ -107,9 +108,14 @@ subroutine.  A simple version of this subroutine, named VVUDMV, is
 supplied with the Vectors utility, and may suffice for basic masked
 drawing operations. See the vvudmv man page for more information.
 .sp
-The last argument in the calling sequence, WRK, is intended for future
-enhancement of the Vectors utility. It is currently ignored, and may
-always be passed a dummy argument value.
+The last argument in the calling sequence, WRK, is used only when the
+parameter VMD (Vector Minimum Distance) is given a value greater than
+0.0. In this case, Vectors uses the array to keep track of the
+location of each vector in NDC space so that the distances between
+vectors can be compared. Based on these comparisons, Vectors
+eliminates some vectors such that the remaining vectors are separated
+by at least the specified distance.  Otherwise the WRK argument is
+ignored, and may be passed a dummy argument value.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples:
 bnchmk,

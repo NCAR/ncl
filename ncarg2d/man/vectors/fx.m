@@ -26,7 +26,7 @@ components. In order to ease the transition for users of the old
 packages who depend on existing custom mappings using FX and FX,
 however, both utilities have implemented a number of compatibility
 levels. By modifying the compatibility mode parameter, CPM, you can
-choose to map coordinates either using the old FX and FY routines, of
+choose to map coordinates either using the old FX and FY routines, or
 using the new Version 3.2 routines.
 .sp
 If you need to create new custom coordinate space mappings, you should

@@ -11,41 +11,185 @@ description begins with a line giving the three-character
 mnemonic name of the parameter, the phrase for which the
 mnemonic stands, the intrinsic type of the parameter, and
 an indication of whether or not it is an array.
+.IP "ACM - Arrow Color Mode - Integer"
+ACM controls how color is applied to filled vector arrows. It does not
+apply to line-drawn vector arrows (AST set to 0). Its behavior also
+depends on the setting of the parameter CTV. Assuming that CTV is set
+to a non-zero value, implying that multi-colored vectors are desired,
+ACM has the following settings:
+.sp
+.TS
+tab(/);
+l l l l.
+Value/Effect
+-----/------
+-2/Multi-colored fill; outline off
+-1/Fill off; multi-colored outline
+0/Multi-colored fill; mono-colored outline
+1/Mono-colored fill; multi-colored outline
+2/Multi-colored fill; multi-colored outline
+.TE
+.sp
+Mono-colored outlines use the current GKS polyline color index. Mono-colored
+fill uses the current GKS fill color index. When CTV is set to 0, both the
+fill and the outlines become mono-colored, and therefore only modes
+-2, -1, and 0 remain distinguishable. The default value is 0.
+.IP "AFO - Arrow Fill Over Arrow Lines - Integer"
+If AFO is set to 1, the perimeter outline of a filled vector arrow is
+drawn first, underneath the fill. In this case, the line must be drawn
+using a line thickness greater than unity in order for the line to
+appear. The advantage of drawing the line underneath is that the full
+extent of the fill appears, resulting in a crisper, more sharply
+defined arrow; when the line is drawn on top of the fill using a
+different color index, the fill color may be partially or completely
+obscured, especially for small vector arrows. AFO has an effect only
+when the parameter AST is set to 1.  The default value of AFO is 1.
+.IP "AIR - Arrow Interior Reference Fraction  - Real"
+AIR specifies the distance from the point of the arrowhead of a filled
+vector arrow drawn at the reference length to the point where the
+arrowhead joins with the line extending to the tail of the arrow. Its
+value represents a fraction of the reference length.  This distance is
+adjusted proportionally to the X component of the arrowhead size for
+vector arrows whose length differs from the reference length.  See
+VRL for an explanation of how the reference length is
+determined.  AIR has an effect only when AST is set to 1. Its default
+value is 0.33.
 .IP "AMN - Arrow Head Minimum Size - Real"
-Specifies a minimum length for the two lines representing
-the point of the vector arrow head, as a fraction of the
-viewport width. Normally the arrow head size is scaled
-proportionally to the length of the vector. This parameter
-allows you to ensure that the arrow head will remain
-recognizable even for very short vectors. The default value
-is 0.005.
+Specifies a minimum length for the two lines representing the point of
+the vector arrow head, as a fraction of the viewport width. AMN has an
+effect only for line-drawn vector arrows (parameter AST set to
+0). Normally the arrow head size is scaled proportionally to the
+length of the vector. This parameter allows you to ensure that the
+arrow head will remain recognizable even for very short vectors. Note
+that you can cause all the arrowheads in the plot to be drawn at the
+same size if you set AMN and AMX to the same value. If you set both AMN
+and AMX to 0.0 the arrowheads will not be drawn at all.
+The default value is 0.005. 
 .IP "AMX - Arrow Head Maximum Size - Real"
-Specifies a maximum length for the two lines representing
-the point of the vector arrow head, as a fraction of the
-viewport width. Normally the arrow head is scaled
-proportionally to the length of the vector. This parameter
-allows you to ensure that the arrow heads do not
-become excessively large for high magnitude vectors. The
+Specifies a maximum length for the two lines representing the point of
+the vector arrow head, as a fraction of the viewport width.  AMX has
+an effect only for line-drawn vector arrows (parameter AST set to
+0). Normally the arrow head is scaled proportionally to the length of
+the vector. This parameter allows you to ensure that the arrow heads
+do not become excessively large for high magnitude vectors. Note
+that you can cause all the arrowheads in the plot to be drawn at the
+same size if you set AMN and AMX to the same value. If you set both AMN
+and AMX to 0.0 the arrowheads will not be drawn at all. The
 default value is 0.05.
+.IP "AST - Arrow Style - Integer"
+When AST is set to 1, the vectors are plotted using variable width
+filled arrows. Otherwise, the vector arrows are drawn using lines
+only.  Filled arrows may also have an outline drawn around their
+perimeter. The outline may be drawn either underneath or on top of the
+filled portion of the arrow.  There is a different set of parameters
+for controlling the appearance of filled arrows from those used to
+control line-drawn arrows. However, certain parameters apply to both
+arrow types. Here is a table of parameters whose behavior is
+affected by the setting of AST:
+.sp
+.TS
+tab(/);
+l l l l.
+Parameter/Line-Drawn Arrows/Filled Arrows
+---------/-----------------/-------------
+ACM//x
+AFO//x
+AIR//x
+AMN/x//
+AMX/x//
+AWF//x
+AWR//x
+AXF//x
+AXR//x
+AYF//x
+AYR//x
+CLR/x/x
+CTV/x/x
+LWD/x/x
+NLV/x/x
+PAI/x/x
+TVL/x/x
+.TE
+.sp
+When filled arrows are used, colors associated with the threshold
+levels may be applied to either or both the fill or the outline of the
+arrow.  When fill is drawn over the outline (AFO set to 1), LWD should
+be set to a value greater than 1.0 in order for the outline to be fully
+visible.  The default value of AST is 0.
+.IP "AWF - Arrow Width Fractional Minimum - Real"
+AWF specifies the width of a filled arrow drawn at the minimum length,
+as a fraction of the width of an arrow drawn at the reference
+length. If AWF has the value 0.0, then the ratio of the arrow width to
+the arrow length will be constant for all arrows in the plot.  If
+given the value 1.0, the width will itself be constant for all arrows
+in the plot, regardless of length. See VFR for a discussion of
+how the minimum length is determined. AWF has an effect only when AST
+is set to 1.  Its default value is 0.0.
+.IP "AWR - Arrow Width Reference Fraction - Real"
+AWR specifies the width of a filled vector arrow drawn at the
+reference length, as a fraction of the reference length.  See VRL
+for an explanation of how the reference length is determined.  AWR
+has an effect only when AST is set to 1. Its default value is 0.03.
+.IP "AXF - Arrow X-Coord Fractional Minimum - Real"
+AXF specifies the X component of the head of a filled vector arrow
+drawn at the minimum length, as a fraction of the X component of the
+head of an arrow drawn at the reference length. The X component of the
+arrowhead is the distance from the point of the arrowhead to a point
+along the centerline of the arrow perpendicular the arrowhead\'s rear
+tips. If AXF has the value 0.0, then the ratio of the X component of
+the arrowhead size to the arrow length will be constant for all
+vectors in the plot. If given the value 1.0, the arrowhead X component
+will itself be constant for all arrows in the plot, regardless of their
+length. See VRL for an explanation of how the reference length
+is determined.  AXF has an effect only when AST is set to 1.  Its
+default value is 0.0.
+.IP "AXR - Arrow X-Coord Reference Fraction - Real"
+AXR specifies the X component of the head of a filled vector arrow
+drawn at the reference length, as a fraction of reference length. The
+X component of the arrowhead is the distance from the point of the
+arrowhead to a point along the centerline of the arrow perpendicular
+the arrowhead\'s rear tips.   See VRL for an explanation of how
+the reference length is determined.  AXR has an effect only when AST
+is set to 1. Its default value is 0.36.
+.IP "AYF - Arrow Y-Coord Fractional Minimum - Real"
+AYF specifies the Y component of the head of a filled vector arrow
+drawn at the minimum length, as a fraction of the Y component value of
+an arrow drawn at the reference length. The Y component of the
+arrowhead is considered to be the perpendicular distance from an edge
+parallel to the arrow\'s centerline to one of the arrowhead\'s rear
+tips.  If AYF has the value 0.0, then the ratio of the Y component of
+the arrowhead size to the arrow length will be constant for all
+vectors in the plot. If given the value 1.0, the arrowhead Y component
+will itself be constant for all arrows in the plot, regardless of
+length or width. See VFR for a discussion of how the minimum length is
+determined.  AYF has an effect only when AST is set to 1.  Its 
+default value is 0.0.
+.IP "AYR - Arrow Y-Coord Reference Fraction - Real"
+This resource specifies the Y component of a filled vector arrow drawn
+at the reference length, as a fraction of the reference length.  The Y
+component of the arrowhead is considered to be the perpendicular
+distance from an edge parallel to the arrow\'s centerline to one of the
+arrowhead\'s rear tips. See VRL for an explanation of how the
+reference length is determined.  AYF has an effect only when AST is
+set to 1.  Its default value is 0.12.
 .IP "CLR - Array of GKS Color Indices - Integer Array"
-This parameter represents an array containing the GKS color
-index to use for coloring the vector when the scalar
-quantity is less than or equal to the threshold value with
-the same index in the TVL threshold value array. In order
-to access a particular element of the CLR array, you
-must first set the value of PAI, the parameter array index
-parameter, to the value of the array element\'s index. All
-elements of the array are set to one initially. Note that
-the Vectors utility makes no calls to set the GKS color
-representation (GSCR), nor ever modifies the contents of
-the CLR array; therefore you are responsible for
-creating a suitably graduated color palette and assigning
-the color index values into the CLR array, prior to calling
-VVECTR. Typically, assuming the desired RGB values have
-been previously stored in a 2 dimensional 3 x n array
-called RGB, you loop through the calls that set up the
-color representation and color index as in the following
-example for a fourteen color palette:
+This parameter represents an array containing the GKS color index to
+use for coloring the vector when the scalar quantity is less than or
+equal to the threshold value with the same index in the TVL threshold
+value array. Depending on the settings of AST and ACM it may specify a
+set of fill color indexes, a set of line color indexes, or both. In
+order to access a particular element of the CLR array, you must first
+set the value of PAI, the parameter array index parameter, to the
+value of the array element\'s index. All elements of the array are set
+to one initially. Note that the Vectors utility makes no calls to set
+the GKS color representation (GSCR), nor ever modifies the contents of
+the CLR array; therefore you are responsible for creating a suitably
+graduated color palette and assigning the color index values into the
+CLR array, prior to calling VVECTR. Typically, assuming the desired
+RGB values have been previously stored in a 2 dimensional 3 x n array
+called RGB, you loop through the calls that set up the color
+representation and color index as in the following example for a
+fourteen color palette:
 .sp
 .in 15
 .nf
@@ -217,13 +361,19 @@ This parameter specifies the size of the characters used
 for the vector magnitude labels as a fraction of the
 viewport width. The default value is 0.007.
 .IP "LWD - Vector Linewidth - Real"
-LWD controls the linewidth used to draw the vectors. Note that since
+LWD controls the linewidth used to draw the lines that form the vector
+arrows. When the arrows are filled (AST is set to 1) LWD controls the
+width of the arrow's outline. If the fill is drawn over the outline
+(AFO set to 1) then LWD must be set to a value greater than 1.0 in
+order for the outline to appear properly. When AST is set to 0,
+specifying line-drawn vector arrows, the linewidth applies equally to
+the body of the vector and the arrowhead. Overly thick lines may cause
+the arrow heads to appear smudged. This was part of the motivation for
+developing the option of filled vector arrows. Note that since
 linewidth in NCAR Graphics is always calculated relative to a unit
 linewidth that is dependent on the output device, you may need to
-adjust the linewidth value depending on the output conditions to
-obtain a pleasing plot. Currently linewidth applies equally to the
-body of the vector and the arrowhead. Overly thick lines may cause the
-arrow heads to appear smudged. The default is 1.0, specifying a
+adjust the linewidth value depending on the intended output device to
+obtain a pleasing plot. The default is 1.0, specifying a
 device-dependent minimum linewidth.
 .IP "MAP - Map Transformation Code - Integer"
 MAP defines the transformation between the data and user
@@ -383,67 +533,55 @@ to MNY depends on the value assigned to MNP. See the descriptions of
 MNT and MNP for more information about the minimum vector text
 block. The default value of MNY is -0.01.
 .IP "MSK - Mask To Area Map Flag - Integer"
-Use this parameter to control masking of vectors to an
-existing area map created by routines in the Areas utility.
-When MSK is greater than 0, masking is enabled and an the
-area map must be set up prior to the call to VVECTR. The
-area map array and, in addition, the name of a 
+Use this parameter to control masking of vectors to an existing area
+map created by routines in the Areas utility.  When MSK is greater
+than 0, masking is enabled and an the area map must be set up prior to
+the call to VVECTR. The area map array and, in addition, the name of a
 user-definable masked drawing routine, must be passed as input
-parameters to VVECTR. Various values of the MSK parameter
-have the following effects:
+parameters to VVECTR. Various values of the MSK parameter have the
+following effects:
 .RS
 .IP Value 15
 Effect
 .IP "<= 0 (default)" 15
 No masking of vectors.
 .IP 1 15
-The subroutine ARDRLN is called internally
-to decompose the vectors into segments
-contained entirely within a single area.
-ARDRLN calls the user-definable masked
-drawing subroutine.
+The subroutine ARDRLN is called internally to decompose the vectors
+into segments contained entirely within a single area.  ARDRLN calls
+the user-definable masked drawing subroutine.
 .IP >1 15
-Low precision masking. ARGTAI is called
-internally to get the area identifiers for
-the vector base position point. Then the
-user-definable masked drawing subroutine
-is called to draw the vector. Vectors with
-nearby base points may encroach into the
-intended mask area.
+Low precision masking. ARGTAI is called internally to get the area
+identifiers for the vector base position point. Then the
+user-definable masked drawing subroutine is called to draw the
+vector. Vectors with nearby base points may encroach into the intended
+mask area.
 .RE
 .IP ""
 See the man page vvudmv 
 for further explanation of
 masked drawing of vectors
 .IP "MXC - Maximum Vector Text Block Color - Integer"
-MXC specifies the color of the maximum vector graphical
-text output block as follows:
+MXC specifies the color of the maximum vector graphical text output
+block as follows:
 .RS
 .IP Value 15
 Action
 .IP <-2 15
-Both the vector arrow and the text are
-colored using the current text color index.
+Both the vector arrow and the text are colored using the current text
+color index.
 .IP -2 15
-If the vectors are colored by magnitude,
-both the vector arrow and the text use the
-GKS color index associated with the
-minimum vector magnitude. Otherwise, the
-vector arrow uses the current polyline
-color index and the text uses the current
-text color index.
+If the vectors are colored by magnitude, both the vector arrow and the
+text use the GKS color index associated with the minimum vector
+magnitude. Otherwise, the vector arrow uses the current polyline color
+index and the text uses the current text color index.
 .IP "-1 (default)" 15
-If the vectors are colored by magnitude,
-the vector arrow uses the GKS color index
-associated with the minimum vector
-magnitude. Otherwise the vector arrow uses
-the current polyline color index. The text
-is colored using the current text color
-index in either case.
+If the vectors are colored by magnitude, the vector arrow uses the GKS
+color index associated with the minimum vector magnitude. Otherwise
+the vector arrow uses the current polyline color index. The text is
+colored using the current text color index in either case.
 .IP ">= 0" 15
-The value of MXC is used as the color
-index for both the text and the vector
-arrow
+The value of MXC is used as the color index for both the text and the
+vector arrow
 .RE
 .IP " "
 See the description of MXT for more information about the maximum
@@ -457,29 +595,21 @@ available, as follows:
 .IP Mode 15
 Justification
 .IP -4 15
-The lower left corner of the text block is
-positioned at MXX, MXY.
+The lower left corner of the text block is positioned at MXX, MXY.
 .IP -3 15
-The center of the bottom edge is
-positioned at MXX, MXY.
+The center of the bottom edge is positioned at MXX, MXY.
 .IP -2 15
-The lower right corner is positioned at
-MXX, MXY.
+The lower right corner is positioned at MXX, MXY.
 .IP -1 15
-The center of the left edge is positioned
-at MXX, MXY.
+The center of the left edge is positioned at MXX, MXY.
 .IP 0 15
-The text block is centered along both axes
-at MXX, MXY.
+The text block is centered along both axes at MXX, MXY.
 .IP 1 15
-The center of the right edge is positioned
-at MXX, MXY.
+The center of the right edge is positioned at MXX, MXY.
 .IP 2 (default) 15
-The top left corner is positioned at MXX,
-MXY.
+The top left corner is positioned at MXX, MXY.
 .IP 3 15
-The center of the top edge is positioned
-at MXX, MXY.
+The center of the top edge is positioned at MXX, MXY.
 .IP 4 15
 The top right corner is positioned at MXX,
 MXY.
@@ -502,13 +632,16 @@ size of the largest vector in the plot. Directly above
 the arrow is a numeric string in exponential format that represents
 the magnitude of this vector. 
 .sp
-Use MXT to modify the text appearing below the vector in
-the maximum vector graphics text block. Currently the
-string length is limited to 36 characters. Set MXT to a
-single space (\' \') to completely remove the text block,
-including the vector arrow and the numeric magnitude
-string, from the plot. The default value is '\Maximum
-Vector\'.
+Use MXT to modify the text appearing below the vector in the maximum
+vector graphics text block. Currently the string length is limited to
+36 characters. Set MXT to a single space (\' \') to completely remove
+the text block, including the vector arrow and the numeric magnitude
+string, from the plot. Note that the name "Maximum Vector Text Block"
+is no longer accurate, since using the parameter VRM it is now
+possible to establish a reference magnitude that is smaller than the
+maximum magnitude in the data set. A more accurate name would be
+"Reference Vector Text Block".  The default value of MXT is
+\'Maximum Vector\'.
 .IP "MXX - Maximum Vector Text Block X Coordinate - Real"
 MXX establishes the X coordinate of the maximum vector graphics text
 block as a fraction of the viewport width.  Values less than 0.0 or
@@ -541,11 +674,11 @@ effect, regardless of the value of CTV.  If CTV is greater than 0, you
 must initialize Vectors with a call to VVINIT after modifying this
 parameter.
 .IP "PAI - Parameter Array Index - Integer"
-The value of PAI must be set before calling VVGETC, VVGETI,
-VVGETR, VVSETC, VVSETI, or VVSETR to access any parameter
-which is an array; it acts as a subscript to identify the
-intended array element. For example, to set the 10th color
-threshold array element to 7, use code like this:
+The value of PAI must be set before calling VVGETC, VVGETI, VVGETR,
+VVSETC, VVSETI, or VVSETR to access any parameter which is an array;
+it acts as a subscript to identify the intended array element. For
+example, to set the 10th color threshold array element to 7, use code
+like this:
 .sp
 .in 15
 CALL VVSETI (\'PAI - PARAMETER ARRAY INDEX\',10)
@@ -555,13 +688,12 @@ CALL VVSETI (\'CLR - Color Index\',7)
 .IP ""
 The default value of PAI is one.
 .IP "PLR - Polar Input Mode - Integer"
-When PLR is greater than zero, the vector component arrays
-are considered to contain the field data in polar
-coordinate form: the U array is treated as containing the
-vector magnitude and the V array as containing the vector
-angle. Be careful not to confuse the PLR parameter with the
-MAP parameter set to polar coordinate mode (2). The MAP
-parameter relates to the location of the vector, not its
+When PLR is greater than zero, the vector component arrays are
+considered to contain the field data in polar coordinate form: the U
+array is treated as containing the vector magnitude and the V array as
+containing the vector angle. Be careful not to confuse the PLR
+parameter with the MAP parameter set to polar coordinate mode (2). The
+MAP parameter relates to the location of the vector, not its
 value. Here is a table of values for PLR:
 .RS
 .IP Value 15
@@ -570,11 +702,11 @@ Meaning
 U and V arrays contain data in cartesian
 component form.
 .IP 1 15
-U array contains vector magnitudes; V
-array contains vector angles in degrees.
+U array contains vector magnitudes; V array contains vector angles in
+degrees.
 .IP 2 15
-U array contain vector magnitudes; V array
-contains vector angles in radians.
+U array contain vector magnitudes; V array contains vector angles in
+radians.
 .RE
 .IP " "
 You must initialize Vectors with a call to VVINIT after modifying this
@@ -629,11 +761,11 @@ locations are drawn using color index SPC.
 You must initialize Vectors with a call to VVINIT after modifying this
 parameter.
 .IP "SVF - Special Value Flag - Integer"
-The special value flag controls special value processing
-for the U and V vector component data arrays. Special
-values may appear in either the U or V array or in both of
-them. Five different options are available (although the
-usefulness of some of the choices is debatable):
+The special value flag controls special value processing for the U and
+V vector component data arrays. Special values may appear in either
+the U or V array or in both of them. Five different options are
+available (although the usefulness of some of the choices is
+debatable):
 .RS
 .IP Value 15
 Effect
@@ -655,8 +787,8 @@ and V arrays are not drawn
 .RE
 .IP ""
 The U and V special values are defined by setting parameters USV and
-VSV. You must initialize Vectors with
-a call to VVINIT after modifying this parameter.
+VSV. You must initialize Vectors with a call to VVINIT after modifying
+this parameter.
 .IP "TRT - Transformation Type - Integer"
 As currently implemented, TRT further qualifies the mapping
 transformation specified by the MAP parameter, as follows:
@@ -664,51 +796,46 @@ transformation specified by the MAP parameter, as follows:
 .IP Value 15
 Effect
 .IP -1 15
-Direction, magnitude, and location are all
-transformed. This option is not currently
-supported by any of the pre-defined
-coordinate system mappings.
+Direction, magnitude, and location are all transformed. This option is
+not currently supported by any of the pre-defined coordinate system
+mappings.
 .IP 0 15
 Only location is transformed
 .IP "1 (default)" 15
 Direction and location are transformed
 .RE
 .IP ""
-This parameter allows you to distinguish between a
-system that provides a mapping of location only into an
-essentially cartesian space, and one in which the space
-itself mapped. To understand the difference, using polar
-coordinates as an example, imagine a set of wind speed
-monitoring units located on a radial grid around some
-central point such as an airport control tower. Each unit\'s
-position is defined in terms of its distance from the tower
-and its angular direction from due east. However, the data
-collected by each monitoring unit is represented as
-conventional eastward and northward wind components.
-Assuming the towers\'s location is at a moderate latitude,
-and the monitoring units are reasonably \'local\', this is an
-example of mapping a radially defined location into a
-nearly cartesian space (i.e. the eastward components taken
-alone all point in a single direction on the plot,
-outlining a series of parallel straight lines). One would
-set MAP to two (for the polar transformation) and TRT to
-zero to model this data on a plot generated by the Vectors
-utility.
+This parameter allows you to distinguish between a system that
+provides a mapping of location only into an essentially cartesian
+space, and one in which the space itself mapped. To understand the
+difference, using polar coordinates as an example, imagine a set of
+wind speed monitoring units located on a radial grid around some
+central point such as an airport control tower. Each unit\'s position
+is defined in terms of its distance from the tower and its angular
+direction from due east. However, the data collected by each
+monitoring unit is represented as conventional eastward and northward
+wind components.  Assuming the towers\'s location is at a moderate
+latitude, and the monitoring units are reasonably \'local\', this is
+an example of mapping a radially defined location into a nearly
+cartesian space (i.e. the eastward components taken alone all point in
+a single direction on the plot, outlining a series of parallel
+straight lines). One would set MAP to two (for the polar
+transformation) and TRT to zero to model this data on a plot generated
+by the Vectors utility.
 .sp
-On the other hand, picture a set of wind data, again given
-as eastward and northward wind components, but this time
-the center of the polar map is actually the south pole. In
-this case, the eastward components do not point in a single
-direction; instead they outline a series of circles around
-the pole. This is a space mapping transformation: one would
-again set MAP to two, but TRT would be set to one to
-transform both direction and location.
+On the other hand, picture a set of wind data, again given as eastward
+and northward wind components, but this time the center of the polar
+map is actually the south pole. In this case, the eastward components
+do not point in a single direction; instead they outline a series of
+circles around the pole. This is a space mapping transformation: one
+would again set MAP to two, but TRT would be set to one to transform
+both direction and location.
 .sp
-Changing the setting of this parameter affects the end
-results only when a non-uniform non-linear mapping occurs
-at some point in the transformation pipeline. For this
-discussion a uniform linear transformation is defined as
-one which satisfies the following equations:
+Changing the setting of this parameter affects the end results only
+when a non-uniform non-linear mapping occurs at some point in the
+transformation pipeline. For this discussion a uniform linear
+transformation is defined as one which satisfies the following
+equations:
 .sp
 .in 15
 x_out = x_offset + scale_constant * x_in
@@ -731,7 +858,7 @@ whenever the LL input parameter is other than one, or when LL equals
 one, but the viewport and the user coordinate boundaries do not have
 the same aspect ratio. Thus for a MAP value of 2, TRT affects the
 mapping between data and user space, whereas for MAP set to 0, TRT
-influences the mapping between user and NDC space. 
+influences the mapping between user and NDC space.
 .IP "TVL - Array of Threshold Values - Real Array"
 TVL is an array of threshold values that is used to determine the
 individual vector color, when CTV and NLV are both non-zero. For each
@@ -800,17 +927,25 @@ extremes. Where there is a wide variation in magnitude within the
 vector field, you can use this parameter to increase the size of the
 smallest vectors to a usefully visible level. Where the variation is
 small, you can use the parameter to exaggerate the differences that do
-exist. See also the descriptions of VRL, VLC, and VHC. The default
+exist. See also the descriptions of VRL, VLC, VHC, and VRM. The default
 value is 0.0.
 .IP "VHC - Vector High Cutoff Value - Real"
-Use this parameter to specify the reference maximum magnitude
-represented by an arrow of length VRL (as a fraction of the viewport
-width). The realized length of each individual vector in the plot is
-based on its magnitude relative to the reference maximum magnitude
-and, if VFR is non-zero, the reference minimum magnitude (as specified
-by VLC). Note that the reference maximum magnitude may be greater than
-the magnitude of any vector in the dataset. The effect of this
-parameter varies depending on its value, as follows:
+If the parameter VRM is set to a value greater than 0.0, it supercedes
+the use of VHC to specify the reference magnitude. VRM allows greater
+flexibility in that it can be used to specify an arbitrary reference
+magnitude that need not be the maximum magnitude contained in the data
+set. VHC can still be used to set a high cutoff value -- no vectors
+with magnitude greater than the cutoff value will be displayed in the
+plot.
+.sp
+If VRM has its default value, 0.0, VHC specifies the reference maximum
+magnitude represented by an arrow of length VRL (as a fraction of the
+viewport width). The realized length of each individual vector in the
+plot is based on its magnitude relative to the reference maximum
+magnitude and, if VFR is non-zero, the reference minimum magnitude (as
+specified by VLC). Note that the reference maximum magnitude may be
+greater than the magnitude of any vector in the dataset. The effect of
+this parameter varies depending on its value, as follows:
 .RS
 .IP Value 15
 Effect
@@ -833,7 +968,7 @@ greater than any expected vector magnitude in the series. You can turn
 on Vectors statistics reporting using the parameter VST in order to
 see if any vectors in the datasets do exceed the maximum magnitude you
 have specified. See also the descriptions of the parameters VRL, DMX,
-VLC, and VFR.
+VLC, VFR, and VRM.
 .IP "VLC - Vector Low Cutoff Value - Real"
 Use this parameter to prevent vectors smaller than the specified
 magnitude from appearing in the output plot. VLC also specifies the
@@ -890,7 +1025,24 @@ any vectors from the plot, make VLC smaller in absolute value than any
 expected magnitude. You can turn on Vectors statistics reporting using
 the parameter VST in order to see if any vectors in the datasets
 are less the minimum magnitude you have specified. See also the
-descriptions of parameters VFR, VRL, VHC and DMN.
+descriptions of parameters VFR, VRL, VHC, DMN, and VRM.
+.IP "VMD - Vector Minimum Distance - Real"
+If VMD is set to a value greater than 0.0, it specifies, as a fraction
+of the viewport width, a minimum distance between adjacent vectors
+arrows in the plot. The distribution of vectors is analyzed and then
+vectors are selectively removed in order to ensure that the remaining
+vectors are separated by at least the specified distance. The thinning
+algorithm requires that you supply Vectors with a work array twice the
+size of the VVINIT arguments N and M multiplied together. Use of this
+capability adds some processing time to the execution of Vectors. If
+VMD is set to a value greater than 0.0 and no work array is provided,
+an error condition results. 
+.sp
+If the data grid is transformed in such a way that
+adjacent grid cells become very close in NDC space, as for instance in
+many map projections near the poles, you can use this parameter to
+reduce the otherwise cluttered appearance of these regions of the
+plot. The default value of VMD is 0.0.
 .IP "VMN - Minimum Vector Magnitude - Real, Read-Only"
 After a call to VVINIT, VMN contains the value of the minimum vector
 magnitude in the U and V vector component arrays. Later, after VVECTR
@@ -1006,10 +1158,10 @@ the viewport top edge used in the plot may be less than the value of
 VPT, depending on the setting of the Viewport Shape parameter, VPS.
 You must initialize Vectors with a call to VVINIT after modifying this
 parameter. The default value of VPT is 0.95.
-.IP "VRL - Maximum Vector Realized Length - Real"
+.IP "VRL - Vector Reference Length - Real"
 Use this parameter to specify the realized length of the reference
-maximum magnitude vector as a fraction of the viewport width. Based on
-this value a reference unit length in NDC units is established, from
+magnitude vector as a fraction of the viewport width. Based on
+this value a reference length in NDC units is established, from
 which the length of all vectors in the plot is derived. The
 relationship between magnitude and length also depends on the setting
 of the minimum vector magnitude fraction parameter, VFR, but, given
@@ -1018,9 +1170,12 @@ proportional to its relative magnitude. Note that the arrow size
 parameters, AMN and AMX, allow independent control over the
 minimum and maximum size of the vector arrowheads.
 .sp
-The NDC reference unit length is accessible via the read-only
-parameter, DMX. If VRL is less than or equal to 0.0, VVINIT calculates
-a default value for DMX, based on the size of a grid box assuming a
+Given a reference length, Vectors calculates a maximum length based on
+the ratio of the reference magnitude to the larger of the maximum
+magnitude in the data set and the reference magnitude itself. This
+length is accessible in units of NDC via the read-only parameter,
+DMX. If VRL is set less than or equal to 0.0, VVINIT calculates a
+default value for DMX, based on the size of a grid box assuming a
 linear mapping from grid coordinates to NDC space. The value chosen is
 one half the diagonal length of a grid box. By retrieving the value of
 DMX and calling GETSET to retrieve the viewport boundaries after the
@@ -1043,13 +1198,28 @@ CALL VVECTR(...
 .in -15
 .IP ""
 When VVECTR sees that VRL is greater than 0.0, it will calculate a new
-value for DMX. Do not rely on the internal parameters used for setting
-the viewport, VPL, VPR, VPB and VPT to retrieve information about
-viewport in lieu of using the GETSET call. These values are ignored
-entirely if the SET parameter is zero, and even if used, the viewport
-may be adjusted from the specified values depending on the setting of
-the viewport shape parameter, VPS. See also the descriptions of VFR
-and VHC. The default value of VRL is 0.0.
+value for DMX. If VRL is never set, the initially calculated value of
+DMX is used as the reference length. Do not rely on the internal
+parameters used for setting the viewport, VPL, VPR, VPB and VPT to
+retrieve information about viewport in lieu of using the GETSET
+call. These values are ignored entirely if the SET parameter is zero,
+and even if used, the viewport may be adjusted from the specified
+values depending on the setting of the viewport shape parameter,
+VPS. See also the descriptions of VFR, VRM, and VHC. The default value
+of VRL is 0.0.
+.IP "VRM - Vector Reference Magnitude - Real"
+The introduction of the parameter VRM means that it is now possible to
+specify an arbitrary vector magnitude as the reference magnitude
+appearing in the "Maximum Vector Text Block" annotation. The reference
+magnitude no longer needs to be greater or equal to the largest
+magnitude in the data set.  When VRM has a value greater than 0.0, it
+specifies the magnitude of the vector arrow drawn at the reference
+length. See VRL for an explanation of how the reference length is
+determined. If VRM is less than or equal to 0.0, the reference
+magnitude is determined by the value of VHC, the vector high cutoff
+value. If, in turn, VHC is equal to 0.0 the maximum magnitude in the
+vector field data set becomes the reference magnitude. The default
+value of VRM is 0.0.
 .IP "VST - Vector Statistics Output Flag - Integer"
 If VST is set to one, VVECTR writes a summary of its
 operation to the default logical output unit, including the

@@ -57,12 +57,14 @@ second dimensional axis containing data to be processed in
 each of the arrays, U, V, and P (if used).
 .IP WRK 12
 (REAL, array dimensioned n: n >= LW, input/output):
-Array intended for future enhancement of the Vectors
-utility. It is currently ignored and may always be assigned
-a dummy value.
+Work array required only if the parameter VMD is set to a value
+greater than 0.0. If required must be dimensioned greater or equal to
+2 * M * N. Otherwise may be set to a dummy value.
 .IP LW 12
-(INTEGER, input): Assumed size of the array WRK. Not currently used,
-this argument should be assigned the integer value 0.
+(INTEGER, input): Assumed size of the array WRK. If the parameter VMD
+is set to a value greater than 0.0, must be set to a value less than
+or equal to the dimension of the WRK array, but greater or equal to 
+2 * M * N. Otherwise, this argument should be assigned the integer value 0.
 .SH C-BINDING DESCRIPTION
 The C-binding argument descriptions are the same as the FORTRAN
 argument descriptions with the following exceptions:
@@ -105,10 +107,15 @@ of the second dimension. The only requirement for the actual second
 dimension size is that it be greater than or equal to N for each
 array.
 .sp
-The WRK argument and its associated size specifier, LW, are intended
-for future enhancement of the Vectors utility. Assign any arbitrary
-dummy value to WRK, but for maximum assurance of future compatibility
-give LW the integer value 0.
+The array specified by the WRK argument and its associated size
+specifier, LW, are used only when the parameter VMD (Vector Minimum
+Distance) is given a value greater than 0.0. In this case, Vectors
+uses the array to keep track of the location of each vector in NDC
+space so that the distances between vectors can be compared. Based on
+these comparisons, Vectors eliminates some vectors such that the
+remaining vectors are separated by at least the specified distance. If
+VMD is less than or equal to 0.0, you may assign an arbitrary dummy
+value to WRK, but you should set LW to the integer value 0.
 .SH C-BINDING USAGE
 C-Binding usage is the same as FORTRAN usage discussed above if
 the references to "first dimension" and "second dimension" are exchanged.
