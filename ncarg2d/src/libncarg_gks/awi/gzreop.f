@@ -41,7 +41,6 @@ C
 C
 C  Check if the workstation identifier is valid.
 C
-      print *,'Got to GZREOP'
       IF (WKID .LT. 0) THEN
         ERS = 1
         CALL GERHND(-401,ENAM,ERF)
