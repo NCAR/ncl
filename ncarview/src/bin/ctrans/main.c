@@ -1,5 +1,5 @@
 /*
- *	$Id: main.c,v 1.30 1993-03-25 01:48:08 clyne Exp $
+ *	$Id: main.c,v 1.31 1993-10-11 14:55:10 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -177,7 +177,7 @@ static	void	close_log()
 	int	c;
 
 	if (doLogToFile) {
-		(void) fclose(logFP);
+		if (logFP != stderr) (void) fclose(logFP);
 		if ((logFP = fopen(logFile,"r")) == NULL) {
 			logFP = stderr;	/* use stderr instead	*/
 			fprintf(logFP, "%s: fopen(%s, r)\n", progName, logFile);
@@ -188,7 +188,7 @@ static	void	close_log()
 	while ((c = getc(logFP)) != EOF) {
 		putc(c, stderr);
 	}
-	(void) close(logFP);
+	if (logFP != stderr) (void) fclose(logFP);
 
 	doLogToFile = FALSE;
 	logFP = stderr;
