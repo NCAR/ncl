@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.61 1996-05-15 22:51:40 ethan Exp $
+ *      $Id: Execute.c,v 1.62 1996-05-16 00:21:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -3927,6 +3927,7 @@ NclExecuteReturnStatus _NclExecute
 						lhs_var->u.data_var->var.thesym = lhs_sym;
 						(void)_NclChangeSymbolType(lhs_sym,VAR);
 						lhs_var->u.data_var->var.var_type = NORMAL;
+						_NclCallCallBacks((NclObj)lhs_var->u.data_var,CREATED);
 /*
 *-----> end of questionable code
 */
