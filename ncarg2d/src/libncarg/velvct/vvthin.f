@@ -1,5 +1,5 @@
 C
-C       $Id: vvthin.f,v 1.3 1997-04-01 04:15:56 dbrown Exp $
+C       $Id: vvthin.f,v 1.4 1997-04-10 21:42:07 dbrown Exp $
 C
       SUBROUTINE VVTHIN (U,V,P,UFR,VFR)
 C
@@ -302,7 +302,7 @@ C
 C
  405        CONTINUE
 C
-            JJMX = JJ
+            JJMX = MIN(JJ,IYDN)
             MNI = I - 2*IXIN
             DO 411 JJ=J+IYIN,JJMX,IYIN
                IF (MNI.GE.I) THEN
