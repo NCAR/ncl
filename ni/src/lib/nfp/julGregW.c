@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
 #include "wrapper.h"
 
 extern double NGCALLF(greg2juld,GREG2JULD)(int *,int *,int *,int *);

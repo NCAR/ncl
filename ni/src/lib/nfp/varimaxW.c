@@ -10,12 +10,19 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Input array variables
  */
-  void *evec;
+  NclStackEntry data;
+  NclMultiDValData tmp_md = NULL;
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+
+  void *evec = NULL, *trace = NULL;
   double *devec;
-  int ndims_evec, dsizes_evec[NCL_MAX_DIMENSIONS], has_missing_evec;
+  int has_missing_evec;
   NclScalar missing_evec, missing_devec;
-  NclBasicDataTypes type_evec;
   int nvar, nfac, ldevec, total_size_evec;
+  NclBasicDataTypes type_evec;
+  NclTypeClass type_trace_class;
+
 /*
  * Work array variables.
  */
@@ -24,36 +31,106 @@ NhlErrorTypes eof_varimax_W( void )
  * Output array variable
  */
   void  *evec_out;
-  int i;
   NclBasicDataTypes type_evec_out;
+  NclTypeClass type_evec_out_class;
+
 /*
- * Retrieve parameters
+ * Variables for returning attributes.
  */
-  evec = (void*)NclGetArgValue(
-           0,
-           1,
-           &ndims_evec, 
-           dsizes_evec,
-           &missing_evec,
-           &has_missing_evec,
-           &type_evec,
-           2);
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
+  int i, is_trace;
+
+/*
+ * Retrieve evec
+ */
+  data = _NclGetArg(0,1,DONT_CARE);
+
+  switch(data.kind) {
+  case NclStk_VAR:
+    tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+    break;
+  case NclStk_VAL:
+    tmp_md = (NclMultiDValData)data.u.data_obj;
+    break;
+  }
+ 
+  evec             = tmp_md->multidval.val;
+  has_missing_evec = tmp_md->multidval.missing_value.has_missing;
+  missing_evec     = tmp_md->multidval.missing_value.value;
 
 /*
  * Check dimensions.
  */
-  if( ndims_evec < 2 ) {
+  if( tmp_md->multidval.n_dims < 2 ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
 
 /*
+ * Check for "trace" attribute. If exists, then make sure it is returned
+ * with this function. 
+ */
+  is_trace = 0;
+
+  switch(data.kind) {
+  case NclStk_VAR:
+    if (data.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(data.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1, no attributes.
+ */
+      break;
+    }
+/* 
+ * Check attributes for "trace". If none, then just procede as normal.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      break;
+    }
+    else {
+/* 
+ * att_n_atts > 0, retrieve optional arguments 
+ */
+      attr_list = attr_obj->att.att_list;
+      while (attr_list != NULL && !is_trace) {
+        if ((strcmp(attr_list->attname, "trace")) == 0) {
+          is_trace   = 1;
+          trace      = attr_list->attvalue->multidval.val;
+          type_trace_class = (NclTypeClass)(_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(attr_list->attvalue->multidval.data_type))));
+        }
+        attr_list = attr_list->next;
+      }
+    }
+    
+  default:
+    break;
+  }
+
+/*
+ * Get type.
+ */
+
+  type_evec = tmp_md->multidval.data_type;
+
+/*
  * Calculate size of output array.
  */
-  nfac = dsizes_evec[0];
+  nfac = tmp_md->multidval.dim_sizes[0];
 
   nvar = 1;
-  for( i = 1; i <= ndims_evec-1; i++ ) nvar *= dsizes_evec[i];
+  for( i = 1; i <= tmp_md->multidval.n_dims-1; i++ ) {
+    nvar *= tmp_md->multidval.dim_sizes[i];
+  }
   ldevec = nvar;
 
   if( nvar < 1 || nfac < 1 ) {
@@ -65,7 +142,7 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Coerce missing values, if any.
  */
-  coerce_missing(type_evec,has_missing_evec,&missing_evec,
+  coerce_missing(tmp_md->multidval.data_type,has_missing_evec,&missing_evec,
                  &missing_devec,NULL);
 /*
  * Coerce evec to double no matter what, since we need to make a copy of
@@ -76,7 +153,7 @@ NhlErrorTypes eof_varimax_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for coercing evec array to double precision");
     return(NhlFATAL);
   }
-  coerce_subset_input_double(evec,devec,0,type_evec,total_size_evec,
+  coerce_subset_input_double(evec,devec,0,tmp_md->multidval.data_type,total_size_evec,
                              has_missing_evec,&missing_evec,&missing_devec);
 /*
  * Check for a missing value.
@@ -90,7 +167,7 @@ NhlErrorTypes eof_varimax_W( void )
 /*
  * Allocate space for output array.
  */
-  if(type_evec != NCL_double) {
+  if(tmp_md->multidval.data_type != NCL_double) {
     type_evec_out = NCL_float;
     evec_out      = (void*)calloc(total_size_evec,sizeof(float));
   }
@@ -128,7 +205,73 @@ NhlErrorTypes eof_varimax_W( void )
     coerce_output_float_only(evec_out,devec,total_size_evec,0);
     NclFree(devec);
   }
+/*
+ * Set up return value.
+ */
+  type_evec_out_class = (NclTypeClass)(_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_evec_out))));
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            evec_out,
+                            NULL,
+                            tmp_md->multidval.n_dims,
+                            tmp_md->multidval.dim_sizes,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)type_evec_out_class
+                            );
 
-  return(NclReturnValue(evec_out,ndims_evec,dsizes_evec,NULL,
-                        type_evec_out,0));
+/*
+ * Return "trace" attribute, if it exists.
+ */
+  if(is_trace) {
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+    dsizes[0] = 1;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           trace,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)type_trace_class
+                           );
+    _NclAddAtt(
+               att_id,
+               "trace",
+               att_md,
+               NULL
+               );
+
+  }
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }

@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
 #include "wrapper.h"
 /*
  * This wrapper takes the output returned from the "ind" function

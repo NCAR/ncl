@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
 #include "wrapper.h"
 
 extern int day_of_year (int, int, int);

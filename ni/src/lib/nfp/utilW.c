@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
 #include "wrapper.h"
 
 extern void NGCALLF(rndncl,RNDNCL)(int*,double*,int*,double*,double*,int*);
