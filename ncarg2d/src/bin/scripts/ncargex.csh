@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.67 1994-08-11 19:15:44 haley Exp $
+#   $Id: ncargex.csh,v 1.68 1994-08-19 20:37:31 haley Exp $
 #
 
 #********************#
@@ -438,10 +438,8 @@ set names
 # Default workstation type is "1" #
 #                                 #
 #*********************************#
+set ncgmfile
 set ws_type = "1"
-set default_file = "gmeta"
-set graphic_type = "ncgm"
-set message = "Metafile is named"
 
 while ($#argv > 0)
     
@@ -670,6 +668,7 @@ while ($#argv > 0)
             
             case  "1":
             case "10":
+                set ncgmfile
             breaksw
 
             case "8":
@@ -680,27 +679,24 @@ while ($#argv > 0)
             case "23":
             case "26":
             case "29":
-                set default_file = "gmeta1.ps"
-                set graphic_type = "ps"
-                set message = "PostScript file is named"
+                unset ncgmfile
+                set psfile
             breaksw
 
             case "21":
             case "24":
             case "27":
             case "30":
-                set default_file = "gmeta1.eps"
-                set graphic_type = "eps"
-                set message = "Encapsulated PostScript file is named"
+                unset ncgmfile
+                set epsfile
             breaksw
 
             case "22":
             case "25":
             case "28":
             case "31":
-                set default_file = "gmeta1.epsi"
-                set graphic_type = "epsi"
-                set message = "Interchange Encapsulated PostScript file is named"
+                unset ncgmfile
+                set epsifile
             breaksw
 
             default:
@@ -771,6 +767,37 @@ endif
 #                       #
 #***********************#
 foreach name ($names)
+
+switch($name)
+    case pgkex19:
+    case pgkex20:
+    case pgkex21:
+        unset ncgmfile
+        set graphic_type = "ps"
+        set default_file = "gmeta1.ps"
+        set message = "PostScript file is named"
+    breaksw
+
+    default:
+        if ($?psfile) then
+            set default_file = "gmeta1.ps"
+            set graphic_type = "ps"
+            set message = "PostScript file is named"
+        else if ($?epsfile) then
+            set default_file = "gmeta1.eps"
+            set graphic_type = "eps"
+            set message = "Encapsulated PostScript file is named"
+        else if ($?epsifile) then
+            set default_file = "gmeta1.epsi"
+            set graphic_type = "epsi"
+            set message = "Interchange Encapsulated PostScript file is named"
+        else 
+            set default_file = "gmeta"
+            set graphic_type = "ncgm"
+            set message = "Metafile file is named"
+        endif
+    breaksw
+endsw
 
 set graphic_file = $name.$graphic_type
 
