@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.51 1997-04-11 19:31:23 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.52 1997-05-15 01:08:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8501,6 +8501,7 @@ static NhlErrorTypes    ManageDynamicArrays
 		}
 		NhlFree(cnp->levels->data);
 		cnp->levels->data = (NhlPointer) levels;
+		cnp->levels->num_elements = count;
 #if 0
 		printf("no of levels: %d\n", cnp->level_count);
 		for (i= 0; i < cnp->level_count; i++)
