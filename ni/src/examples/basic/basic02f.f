@@ -12,7 +12,6 @@ C
         implicit none
 
         external NhlFappLayerClass
-        external NhlFResListLayerClass
         external NhlFXWorkstationLayerClass
         external NhlFContourLayerClass
 

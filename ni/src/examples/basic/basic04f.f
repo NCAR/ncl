@@ -13,7 +13,6 @@ C   6. Clean up memory.
 	implicit none
 
         external NhlFappLayerClass
-        external NhlFResListLayerClass
         external NhlFXWorkstationLayerClass
         external NhlFNcgmWorkstationLayerClass
         external NhlFContourLayerClass

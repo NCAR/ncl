@@ -9,11 +9,8 @@ C
 	implicit none
 
         external NhlFappLayerClass
-        external NhlFResListLayerClass
         external NhlFXWorkstationLayerClass
-        external NhlFWorkstationLayerClass
         external NhlFLabelBarLayerClass
-        external NhlFhluLayerClass
 
 	integer i,j,ierr
 	integer num_dims,len_dims(100)
