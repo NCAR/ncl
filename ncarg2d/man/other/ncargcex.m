@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargcex.m,v 1.7 1994-10-26 14:53:44 haley Exp $
+.\"	$Id: ncargcex.m,v 1.8 1994-11-03 17:39:16 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCEX 1NCARG "October 1994" NCAR "NCAR GRAPHICS"
@@ -8,7 +8,6 @@ ncargcex \- NCAR Graphics C Examples
 .SH SYNOPSIS
 \fBncargcex\fP 
 [\fB\-A\fR]
-[\fB\-x11\fR]
 [\fB\-W workstation_type\fR]
 [\f\B\-autograph\fR]
 [\f\B\-bivar\fR]
@@ -136,116 +135,32 @@ as one of them is the PostScript file type.
 Generate all available examples, tests, programmer doc, fundamental and
 tutorial examples.
 .sp
-.IP \-E " " ""
-Generate all available examples.
-.sp
-.IP \-F " " ""
-Generate all available fundamental examples.
-.sp
-.IP \-P " " ""
-Generate all available programmer doc examples.
-.sp
-.IP \-T " " ""
-Generate all available tests.
-.sp
-.IP \-U " " ""
-Generate all available tutorial examples.
-.sp
-.IP \-class " " ""
-Generate all available class examples.
-.sp
-.IP \-ps " " ""
-Generate all examples that use the PostScript driver.
-.sp
-.IP \-x11 " " ""
-Generate all examples that use the X11 driver.
-.sp
-.IP \-areas " " ""
-Generate all areas examples.
-.sp
 .IP \-autograph " " ""
 Generate all autograph examples.
 .sp
 .IP \-bivar " " ""
 Generate all bivar examples.
 .sp
-.IP \-colconv " " ""
-Generate all colconv examples.
-.sp
 .IP \-conpack " " ""
 Generate all conpack examples.
-.sp
-.IP \-dashline " " ""
-Generate all dashline examples.
-.sp
-.IP \-dashpack " " ""
-Generate all dashpack examples.
 .sp
 .IP \-ezmap " " ""
 Generate all ezmap examples.
 .sp
-.IP \-field_flow " " ""
-Generate all field_flow examples.  Includes streamlines and vectors examples.
-.sp
-.IP \-gflash " " ""
-Generate all gflash examples.
-.sp
 .IP \-gks " " ""
 Generate all gks examples.
-.sp
-.IP \-gridall " " ""
-Generate all gridall examples.
-.sp
-.IP \-halftone " " ""
-Generate all halftone examples.
-.sp
-.IP \-histogram " " ""
-Generate all histogram examples.
-.sp
-.IP \-isosurface " " ""
-Generate all isosurface examples.
 .sp
 .IP \-labelbar " " ""
 Generate all labelbar examples.
 .sp
-.IP \-ngmisc " " ""
-Generate all ngmisc examples.
-.sp
 .IP \-plotchar " " ""
 Generate all plotchar examples.
-.sp
-.IP \-polypack " " ""
-Generate all polypack examples.
 .sp
 .IP \-scrolled_title " " ""
 Generate all scrolled examples.
 .sp
-.IP \-seter " " ""
-Generate all seter examples.
-.sp
 .IP \-softfill " " ""
 Generate all softfill examples.
-.sp
-.IP \-spps " " ""
-Generate all spps examples.
-.sp
-.IP \-streamlines " " ""
-Generate all streamlines examples.
-.sp
-.IP \-surface " " ""
-Generate all surface examples.
-.sp
-.IP \-threed " " ""
-Generate all threed examples.
-.sp
-.IP \-vectors " " ""
-Generate all vectors examples.
-.sp
-.IP \-wmap " " ""
-Generate all weather map examples.
-.sp
-.IP \-misc " " ""
-Generate all miscellaneous examples.
 .sp
 .IP \-clean " " ""
 Remove everything but the ".ncgm" file.
