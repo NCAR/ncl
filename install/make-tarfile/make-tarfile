@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tarfile,v 1.8 1995-06-09 14:20:21 haley Exp $
+#      $Id: make-tarfile,v 1.9 1995-10-06 14:30:02 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -10,110 +10,104 @@
 #                                                                       #
 #########################################################################
 #
-#	File:		make-tarfile
+#   File:       make-tarfile
 #
-#	Author:		John Clyne
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
+#   Author:     John Clyne
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
 #
-#	Date:		Wed Dec 9 15:46:42 MST 1992
+#   Date:       Wed Dec 9 15:46:42 MST 1992
 #
-#	Description:	Write an NCAR G binary distribution tarfile.
+#   Description:    Write an NCAR G binary distribution tarfile.
 #
-#	Usage:		make-tarfile [-doc] [-<platform> directory]
+#   Usage:      make-tarfile -<platform> directory
 #
-#	Environment:
+#   Environment:
 #
-#	Files:		
-#		$build_root		: root of ncarg build directory 
-#					(currently /cyclone/ncargd/dist/binaries)
+#   Files:      
+#       $build_root     : root of ncarg build directory 
+#                   (currently /cyclone/ncargd/dist/binaries)
 #
-#		$build_root/INSTALL/INSTALL.TAR	: install script
+#       $build_root/INSTALL/INSTALL.TAR : install script
 #
-#		$build_root/$platform/{BIN,INC,LIB,MAN}.TAR	: distribution tar files
-#		$build_root/$platform/{HTML,PS}.TAR	: documentation tar files
+#       $build_root/$platform/{BIN,INC,LIB,MAN}.TAR : distribution tar files
 #
+#   Options:    
 #
-#	Options:	  -doc - generate documentation tarfile only
 
 #
-#	execute a command via system(). If $doDebug is set just print the 
-#	command
+#   execute a command via system(). If $doDebug is set just print the 
+#   command
 #
 #$doDebug = 1;
-sub	my_system {
-	local ($cmd) = @_;
+sub my_system {
+    local ($cmd) = @_;
 
-	if ($doDebug) {
-		print STDERR "$cmd\n";
-	}
-	else {
-		system ($cmd);
-		if ($? != 0) {
-			print "\"$cmd\" exited with error\n";
-			exit 1;
-		}
-	}
+    if ($doDebug) {
+        print STDERR "$cmd\n";
+    }
+    else {
+        system ($cmd);
+        if ($? != 0) {
+            print "\"$cmd\" exited with error\n";
+            exit 1;
+        }
+    }
 }
 
 
 ##
 ##
-##	M A I N
+##  M A I N
 ##
 ##
 
-$do_inter = 0;			# do interactive mode?
-$build_root = "/cyclone/ncargd/dist/binaries";	
+$do_inter = 0;          # do interactive mode?
+$build_root = "/cyclone/ncargd/dist/binaries";  
 $install_dir = "INSTALL";
 $toc_file = "$build_root/INSTALL/var/TOC";
-$usage = "-doc/-<platform> directory";
-$version;			# ncarg version
-$tarfile;			# path to tarfile we'll create.
+@platforms;             # platforms to write binaries for
+$usage = "-<platform> directory";
+$version;           # ncarg version
+$tarfile;           # path to tarfile we'll create.
 
-
-if (@ARGV < 1) {
-        print STDERR "Usage: make-tarfile $usage\nn";
-	exit 1;
-}
 
 #
 # Tar files we write for each requested platform
 # N.B. order is important
 #
-$firstarg = $ARGV[0];
-if ($firstarg == "-doc") {
-  @tars = ("HTML.TAR", "PS.TAR");	
-  $platform = "NGDOC";
-}
-else {
-  @tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
-  $platform = $firstarg;
-  $platform =~ s/^-//;
+@tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");   
+
+
+if (@ARGV != 2) {
+        print STDERR "Usage: make-tarfile $usage\nn";
+    exit 1;
 }
 
+$platform = $ARGV[0];
+$platform =~ s/^-//;
 $directory = $ARGV[1];
 
 $cmd = "cat $build_root/$platform/version";
 $version = `$cmd`;
 if ($? != 0) {
-  print STDERR "\"$cmd\" exited with error : $!\n";
-  exit 1;
+    print STDERR "\"$cmd\" exited with error : $!\n";
+    exit 1;
 }
 chop $version;
-
 $tarfile = "$directory/ncarg$version.$platform.tar";
+
 print "platform=$platform, build_root=$build_root, tarfile=$tarfile\n";
 
 #
-#	generate the tar file with the install script
+#   generate the tar file with the install script
 #
-	
+    
 chdir $build_root;
 
 $tars = "$install_dir";
 foreach $tar (@tars) {
-	$tars = "$tars $platform/$tar";
+    $tars = "$tars $platform/$tar";
 }
 $cmd = "tar cbf 20 $tarfile $tars";
 do my_system("$cmd");

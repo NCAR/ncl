@@ -1,13 +1,13 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-cdrom,v 1.8 1995-06-09 14:19:02 haley Exp $
+#      $Id: make-cdrom,v 1.9 1995-10-06 14:31:25 haley Exp $
 #
 #########################################################################
-#									                                    #
-#			   Copyright (C)  1993				                        #
-#	     University Corporation for Atmospheric Research		        #
-#			   All Rights Reserved				                        #
-#									                                    #
+#									#
+#			   Copyright (C)  1993				#
+#	     University Corporation for Atmospheric Research		#
+#			   All Rights Reserved				#
+#									#
 #########################################################################
 #
 #	File:		make-cdrom
@@ -18,8 +18,8 @@
 #
 #	Date:		Tue Mar 16 20:24:07 MST 1993
 #
-#	Description:	Write an NCAR G binary distribution or documentation
-#                   cdrom tarfile to tape.
+#	Description:	Write an NCAR G binary distribution cdrom tarfile
+#			to tape.
 #
 #	Usage:		make-cdrom 	[-debug] 
 #					[-root <directory>]
@@ -27,7 +27,6 @@
 #					[-device <device>] 
 #					[-rhost <rhost>] 
 #					[-save] 
-#					[-doc>]
 #					[-<arch>]
 #
 #	Environment:
@@ -40,7 +39,7 @@
 #		$build_root/INSTALL/INSTALL.TAR	: install script
 #
 #		$build_root/$arch/{BIN,INC,LIB,MAN}.TAR	: distribution tar files
-#		$build_root/NGDOC/{HTML,PS}.TAR	: documentation tar files
+#
 #
 #	Options:	-debug			: print tape writing commands 
 #						  and exit.
@@ -51,7 +50,6 @@
 #			-device <device>	: tape device
 #			-rhost <rhost>		: remote host 
 #			-save 			: Don't remove scratch dir
-#			-doc		: write documentation tar files
 #			-arch <arch>		: platforms to include.
 #
 #	globals
@@ -59,9 +57,12 @@
 #
 #
 #
+#
+#
+#
 $doDebug = 0;
 $do_src = 0;		# do we record the distribution src to cd-rom
-$do_doc = 0;        # do we write documentation
+
 
 #
 #	map system names into ISO 9660 legal names
@@ -75,8 +76,7 @@ $do_doc = 0;        # do we write documentation
 	'OSF1_alpha',		'OSF1_ALF',
 	'IRIX_IP',		'IRIX_IP',
 	'UNICOS_YMP',		'UCOS_YMP',
-	'src',			'UNUSED',
-	'NGDOC',			'NGDOC'
+	'src',			'UNUSED'
 );
 
 @Archs = keys %archMap;
@@ -214,8 +214,8 @@ sub	get_archs {
 ##
 
 
-$device = "/dev/rst0";		# tape device
-$rhost = "dillon";		# remote tapedrive host
+$device = "/dev/rst8";		# tape device
+$rhost = "windom";		# remote tapedrive host
 
 $do_inter = 0;			# do interactive mode?
 $build_root = "/cyclone/ncargd/dist/binaries";	
@@ -224,14 +224,13 @@ $rsh;				# remote shell command (undefine if local)
 @archs;				# architectures to write binaries for
 $index = 0;			# index for toc
 $scratch_dir = "/tmp/make-cdrom.$$";	# scratch directory.
-$usage = "[-debug] [-root <path>] [-inter] [-device <device>] [-rhost <rhost>] [-save] [-doc] [-<arch>]";
+$usage = "[-debug] [-root <path>] [-inter] [-device <device>] [-rhost <rhost>] [-save]  [-<arch>]";
 
 
 #
 # Tar files we write for each requested architecture
 # N.B. order is important
 #
-@doctars = ("HTML.TAR", "PS.TAR");
 @tars = ("BIN.TAR", "INCLUDE.TAR", "LIB.TAR", "MAN.TAR");	
 
 #
@@ -273,9 +272,6 @@ while ($ARGV[0] =~ /-/) {
 	elsif (/-save/) {
 		$saveScratch = 1;
 	}
-	elsif (/-doc/) {
-		@archs = split(' ',join(' ',@archs,"NGDOC"));
-	}
 	else {
 		foreach $arch (@Archs) {
 			if (/-$arch/) {
@@ -290,7 +286,7 @@ while ($ARGV[0] =~ /-/) {
 
 
 if (@ARGV) {
-        print STDERR "Usage: $make-cdrom $usage\n";
+        print STDERR "Usage: $make-cdrom [-debug]\n";
 	do cleanup(1);
 }
 
@@ -315,9 +311,6 @@ if (! defined (@archs)) {
 $do_src = grep(/^src$/, @archs);        # Do we record the src?
 @archs = grep(!/^src$/, @archs);        # remove 'src' from @archs if exists
 
-$do_doc = grep(/^NGDOC/, @archs);	# Do we record the documentation?
-@archs = grep(!/^NGDOC/, @archs);	# remove 'NGDOC' from @archs if exists
-
 
 $rsh = "rsh $rhost" if (! ($rhost eq ""));
 
@@ -335,22 +328,11 @@ $cmd = "cd $build_root/$install_dir; tar -cfb $scratch_dir/INSTALL.TAR 20 .";
 do my_system("$cmd");
 
 #
-#	jam a symlink in pointing to the src and documentation tar files
+#	jam a symlink in pointing to the src tar file
 #
 if ($do_src) {
 	$cmd = "ln -s $build_root/SRC.TAR $scratch_dir/SRC.TAR";
 	do my_system($cmd);
-}
-
-if ($do_doc) {
-	$arch = "NGDOC";
-	$cd_arch = $archMap{$arch};
-	$dir = "$scratch_dir/$cd_arch";
-	mkdir("$dir", 0777) || die "mkdir ($dir, 0777) : $!\n";
-	foreach $tar (@doctars) {
-		$cmd = "ln -s $build_root/$arch/$tar $dir/$tar";
-		do my_system($cmd);
-	}
 }
 
 #
