@@ -9,6 +9,6 @@ OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
 
 PROG_LIBS = $(NCARGLIBS)
 DEP_LIBS = $(DEPNCARGLIBS)
-SYS_LIBS = $(XLIB)
+SYS_LIBS = $(XLIB) -lm
 
 FortranProgram($(MYNAME),$(OBJS),$(DEP_LIBS))
