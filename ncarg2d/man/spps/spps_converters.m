@@ -100,7 +100,7 @@ argument description.
 .SH EXAMPLES
 Use the ncargex command to see the following relevant examples
 which use coordinate converters:
-mpex10, cbex10, sfex02, epltch.
+mpex10, cbex01, sfex02, epltch.
 .sp
 The command "ncargex -n mpex10" will load the driver mpex10.f into
 your current working directory where you can examine the file using

@@ -33,7 +33,7 @@ CALL SETI (IX,IY)
 coordinates defining a range of 1 to 2**IX - 1.  IX has a default value
 of 10.
 .IP IY 12
-(an input expresssion of type INTEGER) is the Y axis exponent for plotter
+(an input expression of type INTEGER) is the Y axis exponent for plotter
 coordinates defining a range of 1 to 2**IY - 1.  IY has a default value
 of 10.
 .SH ACCESS

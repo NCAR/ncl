@@ -74,7 +74,7 @@ sprevx shows the use of routine SET for an X axis scaling reversal,
 splogy shows the use of routine SET for logarithmic scaling of the Y axis,
 spset1 shows the mapping from GKS world coordinates to GKS normalized
 device coordinates, and
-spset2 shows the mapping from NCAR Grapics user coordinates to GKS
+spset2 shows the mapping from NCAR Graphics user coordinates to GKS
 normalized device coordinates.
 .SH ACCESS
 To use SET, load the NCAR Graphics libraries ncarg, ncarg_gks,

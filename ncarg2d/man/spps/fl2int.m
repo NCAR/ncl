@@ -33,7 +33,7 @@ routine PLOTIT and are returned in calls to FL2INT.
 CALL FL2INT (PX,PY,IX,IY)
 .SH DESCRIPTION 
 .IP PX 12
-(an input experssion of type REAL) is the X coordinate of a point in
+(an input expression of type REAL) is the X coordinate of a point in
 user coordinates.
 .IP PY 12
 (an input expression of type REAL) is the Y coordinate of a point in
