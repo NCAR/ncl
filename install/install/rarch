@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rarch,v 1.14 2002-06-10 21:51:34 haley Exp $
+#      $Id: rarch,v 1.15 2003-05-16 14:53:13 haley Exp $
 #
 #########################################################################
 #									#
@@ -101,7 +101,14 @@ case HP-UX:
 
 case Linux:
 case LINUX:
-	echo LINUX_PC
+	switch ("$a[12]")
+	case	*86:
+		echo LINUX_PC
+		breaksw
+	case	ia64:
+		echo LINUX_IA64
+		breaksw
+	endsw
 	exit 0
 
 case Darwin:

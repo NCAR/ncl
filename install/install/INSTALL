@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.19 2002-06-10 21:51:34 haley Exp $
+#      $Id: INSTALL,v 1.20 2003-05-16 14:53:12 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -58,7 +58,7 @@ cat <<EOF
 
 
                  NCAR Graphics Unix Version $VERSION
-                     Copyright (C) 1987-2002
+                     Copyright (C) 1987-2003
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 
@@ -85,7 +85,7 @@ cat <<EOF
 
 
                  NCAR Graphics Unix Version $VERSION
-                     Copyright (C) 1987-2002
+                     Copyright (C) 1987-2003
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 
@@ -227,7 +227,7 @@ cat <<EOF
 
 
                  NCAR Graphics Unix Version $VERSION
-                     Copyright (C) 1987-2002
+                     Copyright (C) 1987-2003
           University Corporation for Atmospheric Research
      The use of this Software is governed by a License Agreement.
 
@@ -235,7 +235,8 @@ cat <<EOF
 
         1.  Ordering information
         2.  Install software for a(n) $SYSTEM_TO_INSTALL system
-        3.  Help
+        3.  Remove installed software
+        4.  Help
 
         0.  Exit
 
@@ -276,6 +277,13 @@ EOF
         breaksw
 
     case "3":
+        $LOCALDIR/remove_soft
+        if ($status != 0) then
+            $LOCALDIR/pause
+        endif
+        breaksw
+
+    case "4":
 
         clear
         cat <<EOF
@@ -288,7 +296,9 @@ EOF
 
         2. Install NCAR Graphics software.
 
-        3. Print this help message.
+        3. Remove previously installed versions of NCAR Graphics.
+
+        4. Print this help message.
 
         0. Exit the INSTALL program.
 EOF

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rm3_2,v 1.6 2003-02-27 06:13:55 haley Exp $
+#      $Id: rm3_2,v 1.7 2003-05-16 14:53:13 haley Exp $
 #
 #########################################################################
 #									#
@@ -253,6 +253,7 @@ if ($?bindir) then
 	foreach file ($bins)
 		if (-e "$bindir/$file.$version") then
 			/bin/rm -r $bindir/$file.$version
+			/bin/rm -r $bindir/$file
 		endif
 	end
 endif
@@ -261,6 +262,7 @@ if ($?incdir) then
 	foreach file ($incs)
 		if (-e "$incdir/$file.$version") then
 			/bin/rm -r $incdir/$file.$version
+			/bin/rm -r $incdir/$file
 		endif
 	end
 endif
@@ -269,6 +271,7 @@ if ($?libdir) then
 	foreach file ($libs)
 		if (-e "$libdir/$file.$version") then
 			/bin/rm -r $libdir/$file.$version
+			/bin/rm -r $libdir/$file
 		endif
 	end
 endif
@@ -277,6 +280,7 @@ if ($?man1dir) then
 	foreach file ($man1s)
 		if (-e "$man1dir/$file.1.$version") then
 			/bin/rm -r $man1dir/$file.1.$version
+			/bin/rm -r $man1dir/$file.1
 		endif
 	end
 endif
@@ -285,6 +289,7 @@ if ($?man3dir) then
 	foreach file ($man3s)
 		if (-e "$man3dir/$file.3.$version") then
 			/bin/rm -r $man3dir/$file.3.$version
+			/bin/rm -r $man3dir/$file.3
 		endif
 	end
 endif
@@ -293,6 +298,7 @@ if ($?man5dir) then
 	foreach file ($man5s)
 		if (-e "$man5dir/$file.5.$version") then
 			/bin/rm -r $man5dir/$file.5.$version
+			/bin/rm -r $man5dir/$file.5
 		endif
 	end
 endif
@@ -301,6 +307,7 @@ if ($?man8dir) then
 	foreach file ($man8s)
 		if (-e "$man8dir/$file.8.$version") then
 			/bin/rm -r $man8dir/$file.8.$version
+			/bin/rm -r $man8dir/$file.8
 		endif
 	end
 endif
@@ -309,6 +316,7 @@ if ($?manldir) then
 	foreach file ($manls)
 		if (-e "$manldir/$file.l.$version") then
 			/bin/rm -r $manldir/$file.l.$version
+			/bin/rm -r $manldir/$file.l
 		endif
 	end
 endif

@@ -1,13 +1,11 @@
-ROOT_DIR = /fs/scd/home1/haley/tmp
+ROOT_DIR = /ptmp/haley
 INS_DIR	= $(ROOT_DIR)/INSTALL
 SRC_TAR	= $(ROOT_DIR)/SRC.TAR
-DOC_DIR = /fs/scd/home1/ncargd/nidt/http/droot/ngdoc/ng4.0.1
-DOC_TAR = $(ROOT_DIR)/DOC.TAR
 
-TARGETS		=	HPUX_HP9000_8xx HPUX_HP9000_7xx AIX_RS6000 SunOS_sun4 \
-			Solaris_sun4 ULTRIX_RISC IRIX_n32_IP IRIX_64_IP LINUX_alpha \
-			OSF1_alpha UNICOS_YMP UNICOS_J90 UNICOS_C90 LINUX_PC Solaris_PC \
-		    CYGWIN_PC DARWIN_MAC
+TARGETS		= HPUX_HP9000_8xx HPUX_HP9000_7xx AIX_32_RS6000 AIX_64_RS6000 \
+		Solaris_sun4 ULTRIX_RISC IRIX_n32_IP IRIX_64_IP LINUX_alpha \
+		OSF1_alpha UNICOS_YMP UNICOS_J90 UNICOS_C90 LINUX_PC LINUX_IA64 \
+		Solaris_PC CYGWIN_PC DARWIN_MAC
 
 SHELL		= /bin/sh
 
@@ -30,14 +28,6 @@ dirs::
 
 install::	all
 	tar -cf - . | (cd $(ROOT_DIR)/INSTALL; tar -xf -)
-
-src:
-	@echo "Generating distribution source from $(NCARG)
-	(cd $(NCARG); tar -cbf 20 $(SRC_TAR) .)
-
-doc:
-	@echo "Generating distribution documentation from $(DOC_DIR)
-	(cd $(DOC_DIR); tar -cbf 20 $(DOC_TAR) .)
 
 clean::
 	/bin/rm -f var/*

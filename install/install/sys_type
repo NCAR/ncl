@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: sys_type,v 1.19 2002-03-18 04:04:57 haley Exp $
+#      $Id: sys_type,v 1.20 2003-05-16 14:53:13 haley Exp $
 #
 #########################################################################
 #									#
@@ -46,11 +46,12 @@ endif
 #set systems = ( \
 #		HPUX_HP9000_7xx HPUX_HP9000_8xx AIX_RS6000 SunOS_sun4 Solaris_sun4 \
 #        ULTRIX_RISC IRIX_IP IRIX64_IP UNICOS_YMP UNICOS_J90 UNICOS_C90 \
-#        UNICOS_T90 OSF1_alpha LINUX_PC DARWIN_MAC CYGWIN_PC LINUX_alpha \
-#        Solaris_PC UNIXSV_Fujitsu300)
+#        UNICOS_T90 OSF1_alpha LINUX_PC LINUX_IA64 DARWIN_MAC CYGWIN_PC \
+#        LINUX_alpha Solaris_PC UNIXSV_Fujitsu300)
 set systems = ( \
 		HPUX_HP9000_7xx AIX_RS6000 Solaris_sun4 IRIX_IP UNICOS_J90 \
-		UNICOS_C90 OSF1_alpha LINUX_PC DARWIN_MAC CYGWIN_PC LINUX_alpha)
+		UNICOS_C90 OSF1_alpha LINUX_PC LINUX_IA64 DARWIN_MAC CYGWIN_PC \
+		LINUX_alpha)
 
 #
 # auto-detect the system type

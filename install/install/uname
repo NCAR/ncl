@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.20 2002-06-10 21:51:35 haley Exp $
+#      $Id: uname,v 1.21 2003-05-16 14:53:13 haley Exp $
 #
 #########################################################################
 #									#
@@ -245,6 +245,9 @@ while($#argv)
 			switch ("$mach")
 			case	*86:
 				set arch = PC
+				breaksw
+			case	ia64:
+				set arch = IA64
 				breaksw
 			case alpha
 				set arch = alpha
