@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.6 1995-04-07 10:41:05 boote Exp $
+ *      $Id: ContourPlot.c,v 1.7 1995-04-08 01:52:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1524,8 +1524,8 @@ static NrmQuark	Qlb_label_strings = NrmNULLQUARK;
 #define NhlDASHBUFSIZE	128
 #define cnNODATA_STRING "NO CONTOUR DATA"
 
-static NhlContourPlotLayer	Cnl;
-static NhlContourPlotLayerPart	*Cnp;
+static NhlContourPlotLayer	Cnl = NULL;
+static NhlContourPlotLayerPart	*Cnp = NULL;
 
 /*
  * Function:	nhlfcontourplotlayerclass
@@ -3085,18 +3085,26 @@ static NhlErrorTypes ContourPlotPreDraw
 	Cnp = cnp;
 	Cnl = cnl;
 
-	if (! cnp->data_init) return NhlNOERROR;
-
-	if (cnl->view.use_segments && ! cnp->new_draw_req)
-		return cnSegDraw(cnl,NhlPREDRAW);
-
-	if (cnp->display_constf)
+	if (! cnp->data_init || cnp->display_constf) {
+		Cnp = NULL;
 		return NhlNOERROR;
+	}
+
+	if (cnl->view.use_segments && ! cnp->new_draw_req) {
+		ret = cnSegDraw(cnl,NhlPREDRAW);
+		Cnp = NULL;
+		return ret;
+	}
 
 	subret = cnInitDraw(cnl,entry_name);
-	if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Cnp = NULL;
+		return ret;
+	}
 
 	subret = cnDraw(cnl,NhlPREDRAW);
+
+	Cnp = NULL;
 	return MIN(subret,ret);
 }
 
@@ -3122,18 +3130,27 @@ static NhlErrorTypes ContourPlotDraw
         NhlLayer layer;
 #endif
 {
-	NhlContourPlotLayer		cnl = (NhlContourPlotLayer) layer;
+	NhlErrorTypes ret;
+	NhlContourPlotLayer	cnl = (NhlContourPlotLayer) layer;
 	NhlContourPlotLayerPart	*cnp = &cnl->contourplot;
 
 	Cnp = cnp;
 	Cnl = cnl;
 
-	if (! cnp->data_init || cnp->display_constf) return NhlNOERROR;
+	if (! cnp->data_init || cnp->display_constf) {
+		Cnp = NULL;
+		return NhlNOERROR;
+	}
 
-	if (cnl->view.use_segments && ! cnp->new_draw_req)
-		return cnSegDraw(cnl,NhlDRAW);
+	if (cnl->view.use_segments && ! cnp->new_draw_req) {
+		ret = cnSegDraw(cnl,NhlDRAW);
+		Cnp = NULL;
+		return ret;
+	}
 
-	return cnDraw((NhlContourPlotLayer) layer,NhlDRAW);
+	ret = cnDraw((NhlContourPlotLayer) layer,NhlDRAW);
+	Cnp = NULL;
+	return ret;
 }
 
 /*
@@ -3169,16 +3186,24 @@ static NhlErrorTypes ContourPlotPostDraw
 	if (cnp->display_constf) {
 		if (tfp->overlay_status == _tfNotInOverlay) {
 			subret = NhlDraw(cnp->constf_lbl_rec.id);
-			if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+			if ((ret = MIN(subret,ret)) < NhlWARNING) {
+				Cnp = NULL;
+				return ret;
+			}
 		}
+		Cnp = NULL;
 		return ret;
 	}
 
-	if (cnl->view.use_segments && ! cnp->new_draw_req)
-		return cnSegDraw(cnl,NhlPOSTDRAW);
+	if (cnl->view.use_segments && ! cnp->new_draw_req) {
+		ret = cnSegDraw(cnl,NhlPOSTDRAW);
+		Cnp = NULL;
+		return ret;
+	}
 
 	ret = cnDraw((NhlContourPlotLayer) layer,NhlPOSTDRAW);
 	cnp->new_draw_req = False;
+	Cnp = NULL;
 
 	if (tfp->overlay_status == _tfNotInOverlay) {
 		if (cnp->info_lbl.on) {
@@ -8601,6 +8626,8 @@ int (_NHLCALLF(nhlfll,NHLFLL))
 	int *colp, *patp;
 	float *sclp;
 
+	if (Cnp == NULL) return 0;
+
 	for (i = 0; i < *nai; i++) {
 		if (iag[i] == 17 && iai[i] == 9999) {
 			return 0;
@@ -8685,8 +8712,13 @@ void   (_NHLCALLF(cpchcl,CPCHCL))
 	char buffer[NhlDASHBUFSIZE];
 	int lcol;
 	float thickness, tf;
-	float *thp = (float *) Cnp->line_thicknesses->data;
-	int   *dpp = (int *) Cnp->line_dash_patterns->data;
+	float *thp;
+	int   *dpp;
+
+	if (Cnp == NULL) return;
+
+	dpp = (int *) Cnp->line_dash_patterns->data;
+	thp = (float *) Cnp->line_thicknesses->data;
 
 	if (*iflg != 1) return;
 
@@ -8847,6 +8879,8 @@ void   (_NHLCALLF(cpchhl,CPCHHL))
 	char buf[128];
 	char *fstr,*sub;
 	float zdv;
+
+	if (Cnp == NULL) return;
 
 	switch (*iflg) {
 	case 1:
@@ -9030,6 +9064,8 @@ void   (_NHLCALLF(cpchll,CPCHLL))
 	int pai;
 	static int llcol;
 
+	if (Cnp == NULL) return;
+
 	if (*iflg == 2) {
 		if (Cnp->line_lbls.gks_bcolor > NhlTRANSPARENT)
 			gset_fill_colr_ind(Cnp->line_lbls.gks_bcolor);
@@ -9102,6 +9138,31 @@ void   (_NHLCALLF(cpmpxy,CPMPXY))
 
 {
 	int status;
+
+	if (Cnp == NULL) {
+		if (*imap == 0) {
+			*yinp = (*xinp >= 1.0 && *xinp <= 3) ? 3.0 : 0.0;
+		}
+		else if (*imap == 1) {
+			c_maptra(*yinp,*xinp,xotp,yotp);
+		}
+		else if (*imap == -1) {
+			c_maptri(*xinp,*yinp,yotp,xotp);
+		}
+		else if (*imap == 2) {
+			*xotp = *xinp * cos(.017453292519943 * *yinp);
+			*yotp = *xinp * sin(.017453292519943 * *yinp);
+		}
+		else if (*imap == -2) {
+			*xotp = sqrt(*xinp * *xinp + *yinp * *yinp);
+			*yotp = 57.2957795130823 * atan2(*yinp,*xinp);
+		}
+		else {
+			*xotp = *xinp;
+			*yotp = *yinp;
+		}
+		return;
+	}
 
         if (*imap == 0) {
                 if ((int) *xinp == NhlcnMAPVAL)

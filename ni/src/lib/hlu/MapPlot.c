@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.32 1995-04-07 10:42:52 boote Exp $
+ *      $Id: MapPlot.c,v 1.33 1995-04-08 01:52:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -867,7 +867,7 @@ static NrmQuark Qfill_colors = NrmNULLQUARK;
 static NrmQuark Qfill_patterns = NrmNULLQUARK;
 static NrmQuark Qfill_scales = NrmNULLQUARK;
 
-static NhlMapPlotLayerPart *Mpp, *Ompp;
+static NhlMapPlotLayerPart *Mpp = NULL, *Ompp;
 static NhlMapPlotLayer Mpl, Ompl;
 static NhlBoolean Global_Amap_Inited;
 static NhlBoolean US_Amap_Inited;
@@ -1518,6 +1518,7 @@ MapPlotInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
 
+	Mpp = NULL;
 	return ret;
 }
 
@@ -1669,6 +1670,7 @@ static NhlErrorTypes MapPlotSetValues
 
 	Mpp->update_req = False;
 
+	Mpp = NULL;
 	return ret;
 }
 
@@ -2246,6 +2248,7 @@ static NhlErrorTypes mpDraw
 	default:
 		e_text = "%s: internal enumeration error";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text, entry_name);
+		Mpp = NULL;
 		return(NhlFATAL);
 	}
 
@@ -2256,6 +2259,7 @@ static NhlErrorTypes mpDraw
 				_NhlWorkstationId(mp->base.wkptr));
 		if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
                 subret = _NhlDeactivateWorkstation(mp->base.wkptr);
+		Mpp = NULL;
 		return MIN(subret,ret);
 	}
 
@@ -2284,6 +2288,7 @@ static NhlErrorTypes mpDraw
 	}
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Mpp = NULL;
 		e_text = "%s: Error activating workstation";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -2296,6 +2301,7 @@ static NhlErrorTypes mpDraw
 	subret = _NhlSetTrans((NhlLayer)tfp->trans_obj,(NhlLayer)mp);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+		Mpp = NULL;
 		e_text = "%s: Error setting transformation";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
@@ -2353,13 +2359,16 @@ static NhlErrorTypes mpDraw
 	if (mp->view.use_segments) {
 		_NhlEndSegment();
 	}
+	Mpp = NULL;
 	subret = _NhlDeactivateWorkstation(mp->base.wkptr);
 
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
+
 		e_text = "%s: Error setting deactivating workstation";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		return NhlFATAL;
 	}
+
 	return ret;
 }
 
@@ -5268,6 +5277,8 @@ void   (_NHLCALLF(mapusr,MAPUSR))
 	int	slen;
 	char	buffer[128];
 
+	if (Mpp == NULL) return;
+
 	switch (*iprt) {
 	case 1:		/* perimeter */
 		thickness = Mpp->perim.thickness;
@@ -5360,6 +5371,8 @@ void   (_NHLCALLF(mapeod,MAPEOD))
 {
 	int ir,il;
 	NhlBoolean keep = False;
+
+	if (Mpp == NULL) return;
 
 	switch (Draw_Op) {
 	case mpDRAWOUTLINE:
@@ -5463,6 +5476,8 @@ int (_NHLCALLF(nhlmaskgrid,NHLMASKGRID))
 	NhlBoolean draw_line = False;
 	int i,id,ix = 0;
 	mpOutlineSet type;
+
+	if (Mpp == NULL) return 0;
 
 	id = *iai - Id_Offset[Outline_Set];
 	if (id < 0)
@@ -5630,10 +5645,15 @@ int (_NHLCALLF(nhlezmapfill,NHLEZMAPFILL))
 	int ix, pat_ix, col_ix, id;
 	float fscale;
 	unsigned char s_ix;
+	int *fcp;
+	int *fpp;
+	float *fsp;
 
-	int *fcp = (int *) Mpp->fill_colors->data;
-	int *fpp = (int *) Mpp->fill_patterns->data;
-	float *fsp = (float *) Mpp->fill_scales->data;
+	if (Mpp == NULL) return 0;
+
+	fcp = (int *) Mpp->fill_colors->data;
+	fpp = (int *) Mpp->fill_patterns->data;
+	fsp = (float *) Mpp->fill_scales->data;
 
 	if (*iai < 1) return 0;
 	id = *iai - Id_Offset[Outline_Set];
