@@ -66,13 +66,13 @@ char *cur_load_file = NULL;
 
 %token	<void> EOLN 
 %token  <void> EOFF
-%token	<void> RP LP RBC LBC RBK LBK COLON ',' '*' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING ASTRING CSTRING
+%token	<void> RP LP RBC LBC RBK LBK COLON ',' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING ASTRING CSTRING
 %token <integer> INT DIMNUM
 %token <real> REAL
 %token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR CCFP
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
-%token <sym> UNDEF VAR WHILE DO QUIT PROC  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL
-%token <sym> BGIN END FUNC  NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
+%token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL
+%token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL RETURN VSBLKGET NEW
 %token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE DLIB
 %token '='
@@ -800,23 +800,6 @@ procedure : IPROC opt_arg_list    {
 						$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
 					}
 				}
-	| PROC opt_arg_list	{ 
-					NclSrcListNode *step;
-					int count = 0;
-				
-					step = $2;
-					while(step != NULL) {
-						count++;
-						step = step->next;
-					}
-					if(count != $1->u.procfunc->nargs) {
-						is_error += 1;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
-						$$ = NULL;
-					} else {
-						$$ = _NclMakeProcCall($1,$2,Ncl_BUILTINPROCCALL); 
-					}
-				}
 	| NPROC opt_arg_list	{ 
 					NclSrcListNode *step;
 					int count = 0;
@@ -850,15 +833,6 @@ procedure : IPROC opt_arg_list    {
 						$$ = NULL;
 					} else {
 						$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
-					}
-				}
-	| PROC 			{ 
-					if($1->u.procfunc->nargs != 0) {
-						is_error += 1;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
-						$$ = NULL;
-					} else {
-						$$ = _NclMakeProcCall($1,NULL,Ncl_BUILTINPROCCALL); 
 					}
 				}
 	| NPROC 		{ 
@@ -931,7 +905,8 @@ procedure : IPROC opt_arg_list    {
 /*
 	| identifier opt_arg_list	{ ERROR("syntax error: <identifier> IS NOT A PROCEDURE"); }
 */
-	| FUNC opt_arg_list	{ ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
+	| IFUNC opt_arg_list	{ ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
+	| NFUNC opt_arg_list	{ ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
 ;
 
 opt_arg_list : LP arg_list RP			{ $$ = $2;    }
@@ -1163,13 +1138,7 @@ pfname : IFUNC		{
 	| NFUNC		{		
 				$$ = $1;
 			}
-	| FUNC		{
-				$$ = $1;
-			}
 	| NPROC		{
-				$$ = $1;
-			}
-	| PROC		{
 				$$ = $1;
 			}
 ;
@@ -1422,8 +1391,12 @@ subscript0:  subexpr 			{
 						 
 					}
 	|  DIM subexpr			{ 
-						$$ = _NclMakeIntSubscript($2,$1);
+						$$ = _NclMakeIntSubscript($2,_NclMakeStringExpr($1));
 						  
+					}
+	|  EFSTRING primary EFSTRING "|" subexpr {
+						_NclValOnly($2);
+						$$ = _NclMakeIntSubscript($5,$2);
 					}
 ;
 
@@ -1432,8 +1405,12 @@ subscript1:  subexpr	 		{
 						 
 					}
 	|  DIM subexpr			{ 
-						$$ = _NclMakeCoordSubscript($2,$1);
+						$$ = _NclMakeCoordSubscript($2,_NclMakeStringExpr($1));
 						  
+					}
+	|  EFSTRING primary EFSTRING "|" subexpr {
+						_NclValOnly($2);
+						$$ = _NclMakeCoordSubscript($5,$2);
 					}
 
 ;
@@ -1493,6 +1470,9 @@ subexpr: expr				{
 	| COLON COLON expr		{				
 						_NclValOnly($3);
 						$$ = _NclMakeRangeIndex(NULL,NULL,$3);
+					}
+	| '*'				{
+						$$ = _NclMakeWildCardIndex();
 					}
 ;
 expr :  primary				{
@@ -1643,24 +1623,7 @@ primary : REAL				{
 						$$ = _NclMakeNewOp($3,$5,NULL);
 					}
 ;
-function: FUNC opt_arg_list		{	
-						NclSrcListNode *step;
-						int count = 0;
-					
-						step = $2;
-						while(step != NULL) {
-							count++;
-							step = step->next;
-						}
-						if(count != $1->u.procfunc->nargs) {
-							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
-							$$ = NULL;
-						} else {
-							$$ = _NclMakeFuncCall($1,$2,Ncl_BUILTINFUNCCALL);
-						}
-					}
-	| IFUNC opt_arg_list		{
+function:  IFUNC opt_arg_list		{
 						NclSrcListNode *step;
 						int count = 0;
 					
@@ -1701,15 +1664,6 @@ function: FUNC opt_arg_list		{
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_INTRINSICFUNCCALL);
-						}
-					}
-	| FUNC 				{
-						if($1->u.procfunc->nargs != 0) {
-							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
-							$$ = NULL;
-						} else {
-							$$ = _NclMakeFuncCall($1,NULL,Ncl_BUILTINFUNCCALL);
 						}
 					}
 	| NFUNC 			{

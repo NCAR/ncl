@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.32 1997-05-23 20:47:57 ethan Exp $
+ *      $Id: SrcTree.c,v 1.33 1997-06-11 20:03:48 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,7 @@ int cur_node_list_size = NCL_SRC_TREE_NODE_LIST_SIZE;
 char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
                         "Ncl_IFTHENELSE", "Ncl_VISBLKSET", "Ncl_VISBLKGET",
 			"Ncl_VISBLKCREATE", "Ncl_DOFROMTO",
-                        "Ncl_DOFROMTOSTRIDE", "Ncl_BUILTINPROCCALL", "Ncl_INTRINSICPROCCALL",
+                        "Ncl_DOFROMTOSTRIDE",  "Ncl_INTRINSICPROCCALL",
                         "Ncl_EXTERNALPROCCALL", "Ncl_PROCCALL", "Ncl_FUNCDEF",
                         "Ncl_EXTERNFUNCDEF",    "Ncl_LOCALVARDEC",
                         "Ncl_DIMSIZELISTNODE","Ncl_PROCDEF","Ncl_EXTERNPROCDEF",
@@ -59,7 +59,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
                         "Ncl_MATMULEXPR", "Ncl_DIVEXPR", "Ncl_EXPEXPR",
                         "Ncl_LEEXPR", "Ncl_GEEXPR", "Ncl_GTEXPR", "Ncl_LTEXPR",
                         "Ncl_EQEXPR", "Ncl_NEEXPR", "Ncl_REAL", "Ncl_INT",
-                        "Ncl_STRING", "Ncl_BUILTINFUNCCALL", "Ncl_INTRINSICFUNCCALL",
+                        "Ncl_STRING",  "Ncl_INTRINSICFUNCCALL",
                         "Ncl_EXTERNFUNCCALL", "Ncl_FUNCCALL", "Ncl_ARRAY",
                         "Ncl_ROWLIST","Ncl_ROWCOLUMNNODE","Ncl_DOWHILE",
 			"Ncl_VAR", "Ncl_VARDIM", "Ncl_VARATT",
@@ -67,7 +67,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 			"Ncl_RESOURCE","Ncl_GETRESOURCE", "Ncl_OBJ",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
-			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT"
+			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT","Ncl_WILDCARDINDEX"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -1372,11 +1372,11 @@ NclSrcListNode *subscript_list;
  */
 void* _NclMakeIntSubscript
 #if	NhlNeedProto
-(void * subexpr, char * dimname )
+(void * subexpr, void  * dimname )
 #else  
 (subexpr,dimname)
 void * subexpr; 
-char * dimname;
+void  * dimname;
 #endif
 {
 	NclSubscript *tmp = (NclSubscript*)NclMalloc(
@@ -1391,11 +1391,14 @@ char * dimname;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
 	tmp->subexpr = subexpr;
+/*
 	if(dimname != NULL) {
 		tmp->dimname_q = NrmStringToQuark(dimname);
 	} else {
 		tmp->dimname_q = -1;
 	}	
+*/
+	tmp->dimname_expr = dimname;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -1427,11 +1430,11 @@ void _NclCoordSubscriptDestroy
  */
 void* _NclMakeCoordSubscript
 #if	NhlNeedProto
-(void *subexpr, char *dimname)
+(void *subexpr, void *dimname)
 #else
 (subexpr, dimname)
 void *subexpr;
-char *dimname;
+void *dimname;
 #endif
 {
 	NclSubscript *tmp = (NclSubscript*)NclMalloc(
@@ -1446,11 +1449,14 @@ char *dimname;
 	tmp->file = cur_load_file;
 	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclCoordSubscriptDestroy;
 	tmp->subexpr =subexpr;
+/*
 	if(dimname != NULL) {
                 tmp->dimname_q = NrmStringToQuark(dimname);
         } else {
                 tmp->dimname_q = -1;
         }       
+*/
+	tmp->dimname_expr = dimname;
 	_NclRegisterNode((NclGenericNode*)tmp);
         return((void*)tmp);
 }
@@ -1494,7 +1500,27 @@ void* _NclMakeSingleIndex
 	return((void*)tmp);
 }
 
-
+void *_NclMakeWildCardIndex 
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclWildCardIndex *tmp = (NclWildCardIndex*)NclMalloc((unsigned)
+					sizeof(NclWildCardIndex));
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_WILDCARDINDEX;
+	tmp->name = src_tree_names[Ncl_WILDCARDINDEX];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclGenericDestroy;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
 /*
  * Function:	_NclMakeRangeIndex
  *
@@ -2149,9 +2175,6 @@ void _NclPrintSymbol
 	case QUIT:
 		fprintf(fp,"%s\t","QUIT");
 		break;
-	case PROC:
-		fprintf(fp,"%s\t","PROC");
-		break;
 	case NPROC:
 		fprintf(fp,"%s\t","NPROC");
 		break;
@@ -2160,9 +2183,6 @@ void _NclPrintSymbol
 		break;
 	case END:
 		fprintf(fp,"%s\t","END");
-		break;
-	case FUNC:
-		fprintf(fp,"%s\t","FUNC");
 		break;
 	case DLIB:
 		fprintf(fp,"%s\t","DLIB");
@@ -2426,7 +2446,6 @@ if(groot != NULL) {
 			i--;
 		}
 			break;
-		case Ncl_BUILTINPROCCALL:
 		case Ncl_INTRINSICPROCCALL:
 		case Ncl_EXTERNALPROCCALL:
 		case Ncl_PROCCALL:
@@ -2607,9 +2626,14 @@ if(groot != NULL) {
 			putspace(i,fp);
 			fprintf(fp,"%s\n",subscript->name);
 			i++;
+/*
 			if(subscript->dimname_q != -1) {
 				putspace(i,fp);
 				fprintf(fp,"%s\n",NrmQuarkToString(subscript->dimname_q));
+			}
+*/
+			if(subscript->dimname_expr != NULL) {
+				_NclPrintTree(subscript->dimname_expr,fp);
 			}
 			if(subscript->subexpr != NULL) {
 				_NclPrintTree(subscript->subexpr,fp);
@@ -2738,7 +2762,6 @@ if(groot != NULL) {
 			fprintf(fp,"%s\n",NrmQuarkToString(str->string_q));
 		}
 			break;
-		case Ncl_BUILTINFUNCCALL:
 		case Ncl_INTRINSICFUNCCALL:
 		case Ncl_EXTERNFUNCCALL:
 		case Ncl_FUNCCALL:

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.20 1996-12-20 00:42:14 ethan Exp $
+ *      $Id: SrcTree.h,v 1.21 1997-06-11 20:03:49 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@ extern "C" {
 typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_VISBLKSET, Ncl_VISBLKGET, Ncl_VISBLKCREATE, 
 			Ncl_DOFROMTO, Ncl_DOFROMTOSTRIDE, 
-			Ncl_BUILTINPROCCALL,Ncl_INTRINSICPROCCALL, Ncl_EXTERNALPROCCALL, 
+			Ncl_INTRINSICPROCCALL, Ncl_EXTERNALPROCCALL, 
 			Ncl_PROCCALL, Ncl_FUNCDEF, Ncl_EXTERNFUNCDEF,	
 			Ncl_LOCALVARDEC, Ncl_DIMSIZELISTNODE, Ncl_PROCDEF,
 			Ncl_EXTERNPROCDEF, Ncl_ASSIGN, Ncl_IDNREF,
@@ -42,7 +42,7 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_MULEXPR, Ncl_MATMULEXPR, Ncl_DIVEXPR,
 			Ncl_EXPEXPR, Ncl_LEEXPR, Ncl_GEEXPR, Ncl_GTEXPR,
 			Ncl_LTEXPR, Ncl_EQEXPR, Ncl_NEEXPR, Ncl_REAL,
-			Ncl_INT, Ncl_STRING, Ncl_BUILTINFUNCCALL, Ncl_INTRINSICFUNCCALL,
+			Ncl_INT, Ncl_STRING, Ncl_INTRINSICFUNCCALL,
 			Ncl_EXTERNFUNCCALL, Ncl_FUNCCALL, Ncl_ARRAY,
 			Ncl_ROWLIST,Ncl_ROWCOLUMNNODE, Ncl_DOWHILE,
 			Ncl_VAR, Ncl_VARDIM, Ncl_VARATT,
@@ -50,12 +50,12 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
 			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
 			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD, Ncl_NEW,
-			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT
+			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT,Ncl_WILDCARDINDEX
                         } NclSrcTreeTypes;
 
 typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT, Ncl_VALONLY } NclReferenceTypes;
 
-typedef struct ncl_genericnode NclGenericNode, NclBreak, NclContinue;
+typedef struct ncl_genericnode NclGenericNode, NclBreak, NclContinue,NclWildCardIndex;
 typedef struct ncl_genericrefnode NclGenericRefNode;
 
 typedef void (*NclSrcTreeDestroyProc)(
@@ -536,8 +536,9 @@ typedef struct ncl_subscript{
 	void *subexpr;
 /*
 	char *dimname;
-*/
 	int dimname_q;
+*/
+	void *dimname_expr;
 } NclSubscript; 
 
 typedef struct ncl_singleindex{
@@ -548,6 +549,7 @@ typedef struct ncl_singleindex{
 	NclSrcTreeDestroyProc destroy_it;
 	void *expr;
 } NclSingleIndex;
+
 
 typedef struct ncl_rangeindex{
 	NclSrcTreeTypes kind;
@@ -756,14 +758,14 @@ NclSrcListNode * /* subscript_list */
 extern void* _NclMakeIntSubscript(
 #if	NhlNeedProto
 void * /* subexpr */,
-char * /* dimname */
+void * /* dimname */
 #endif
 );
 
 extern void* _NclMakeCoordSubscript(
 #if	NhlNeedProto
 	void * /*subexpr*/,
-	char * /* dimname */
+	void * /* dimname */
 #endif
 );
 
@@ -773,6 +775,11 @@ extern void* _NclMakeSingleIndex(
 #endif
 );
 
+extern void* _NclMakeWildCardIndex(
+#if	NhlNeedProto
+void
+#endif
+);
 extern void* _NclMakeRangeIndex(
 #if	NhlNeedProto
 	void * /*start_expr*/,

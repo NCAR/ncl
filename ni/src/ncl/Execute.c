@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.92 1997-05-23 20:47:53 ethan Exp $
+ *      $Id: Execute.c,v 1.93 1997-06-11 20:03:42 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -977,9 +977,6 @@ NclExecuteReturnStatus _NclExecute
 				estatus = _NclProcCallOp(proc,caller_level);
 			}
 				break;
-			case BPROC_CALL_OP:
-				ptr++;lptr++;fptr++;
-				break;
 			case INTRINSIC_FUNC_CALL:
 			{
 				int i;
@@ -1092,9 +1089,6 @@ NclExecuteReturnStatus _NclExecute
 				}
 				ptr++;lptr++;fptr++;
 			}
-				break;
-			case BFUNC_CALL_OP:
-				ptr++;lptr++;fptr++;
 				break;
 			case DUP_TOFS: {
 				NclStackEntry data;
@@ -1623,7 +1617,13 @@ NclExecuteReturnStatus _NclExecute
 					_NclCleanUpStack(nsubs);
 					estatus = NhlFATAL;
 				} else if(nsubs == 0) {
-					estatus = _NclPush(*var);
+					data1.kind = NclStk_VAL;
+					data1.u.data_obj= _NclVarValueRead(var->u.data_var,NULL,NULL);
+					if(data1.u.data_obj != NULL) {
+						estatus = _NclPush(data1);
+					} else {
+						estatus = NhlFATAL;
+					}
 				} else if(nsubs != var->u.data_var->var.n_dims) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimesions of variable,(%d) Subscripts used, (%d) Subscripts expected",nsubs,var->u.data_var->var.n_dims);
 					estatus = NhlFATAL;
@@ -2016,8 +2016,6 @@ NclExecuteReturnStatus _NclExecute
 				case IPROC:
 				case PIPROC:
 				case IFUNC:
-				case FUNC:
-				case PROC:
 					pfinfo = (NclGenProcFuncInfo*)thesym->u.bproc;
 					break;
 				case NFUNC:
@@ -3614,8 +3612,173 @@ NclExecuteReturnStatus _NclExecute
 				}
 				break;
 			}
+			case FILE_VARVAL_OP : {
+/*
+* Changed to a two operand function 1/31/96
+*/
+				NclSymbol *dfile = NULL;
+				NclQuark var;
+				int nsubs,subs_expected;
+				NclStackEntry *file_ptr = NULL;
+				NclStackEntry out_var,data;
+				NclStackEntry fvar;
+				NclMultiDValData value,thevalue;
+				NclFile file = NULL;
+				int i;
+				int dim_is_ref[NCL_MAX_DIMENSIONS];
+				int index = -1;
+/*
+				int kind;
+*/
+				NclSelectionRecord* sel_ptr = NULL;
+				NhlErrorTypes ret = NhlNOERROR;
+/*
+				kind = *(int*)ptr;
+*/
+				fvar = _NclPop();
+				switch(fvar.kind) {
+				case NclStk_VAL: 
+					thevalue = fvar.u.data_obj;
+					break;
+				case NclStk_VAR:
+					thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+					break;
+				default:
+					thevalue = NULL;
+					estatus = NhlFATAL;
+					break;
+				}
+				if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+					estatus = NhlFATAL;
+				} else {
+					var = *(NclQuark*)thevalue->multidval.val;
+					if(fvar.u.data_obj->obj.status != PERMANENT) {
+						_NclDestroyObj((NclObj)fvar.u.data_obj);
+					}
+				}
+				ptr++;lptr++;fptr++;
+				dfile = (NclSymbol*)*ptr;
+				ptr++;lptr++;fptr++;
+/*
+				var = *(NclQuark*)ptr;
+				ptr++;lptr++;fptr++;
+*/
+				nsubs = *(int*)ptr;
+				file_ptr =  _NclRetrieveRec(dfile,READ_IT);
+				if((file_ptr != NULL)&&(file_ptr->kind == NclStk_VAR)&&(estatus != NhlFATAL)) {
+					value = _NclVarValueRead(file_ptr->u.data_var,NULL,NULL);
+					if(value->obj.obj_type_mask & Ncl_MultiDValnclfileData) {
+						if(value != NULL) 
+							file = (NclFile)_NclGetObj((int)*(obj*)value->multidval.val);
+						if((file != NULL)&&((index = _NclFileIsVar(file,var)) != -1)) {
+							for(i = 0 ; i < file->file.var_info[index]->num_dimensions; i++) {
+								dim_is_ref[i] = 0;
+							}
+							subs_expected = 0;
+							for(i = 0; i < file->file.var_info[index]->num_dimensions; i++) {
+                                                        	if(file->file.file_dim_info[file->file.var_info[index]->file_dim_num[i]]->dim_size != 1) {
+                                                               		subs_expected += 1;
+                                                                }
+                                                        }
+
+							if((nsubs != 0)&&(nsubs ==  file->file.var_info[index]->num_dimensions)){
+								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
+								sel_ptr->n_entries = nsubs;
+							} else if(nsubs == subs_expected) {
+								sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
+								sel_ptr->n_entries = file->file.var_info[index]->num_dimensions;
+									
+							} else if(nsubs==0){
+								sel_ptr = NULL;
+							} else {
+								NhlPError(NhlFATAL,NhlEUNKNOWN,"Number of subscripts do not match number of dimensions of variable, (%d) subscripts used, (%d) subscripts expected",nsubs,file->file.var_info[index]->num_dimensions);
+								estatus = NhlFATAL;
+								_NclCleanUpStack(nsubs);
+							}
+							if(estatus != NhlFATAL) {
+								if(sel_ptr != NULL) {
+									for(i=0;i<sel_ptr->n_entries;i++) {
+										if((file->file.file_dim_info[file->file.var_info[index]->file_dim_num[sel_ptr->n_entries - i - 1]]->dim_size != 1)||(nsubs == file->file.var_info[index]->num_dimensions)){
+											data =_NclPop();
+											switch(data.u.sub_rec.sub_type) {
+											case INT_VECT:
+												ret = _NclBuildFileVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+												break;
+											case INT_RANGE:
+												ret = _NclBuildFileRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+												break;
+											case COORD_VECT:
+												estatus = _NclBuildFileCoordVSelection(file,var,&data.u.sub_rec.u.vec,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+												break;
+											case COORD_RANGE:
+												estatus = _NclBuildFileCoordRSelection(file,var,&data.u.sub_rec.u.range,&(sel_ptr->selection[sel_ptr->n_entries - i - 1]),sel_ptr->n_entries - i - 1,data.u.sub_rec.name);
+												break;
+											}
+											_NclFreeSubRec(&data.u.sub_rec);
+											if(ret < NhlWARNING) {
+												estatus = NhlFATAL;
+											}
+											if(estatus < NhlWARNING) 
+												break;
+										} else {
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].sel_type = Ncl_SUBSCR;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.start = 0;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.finish= 0;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].u.sub.stride = 1;
+											sel_ptr->selection[sel_ptr->n_entries - i - 1].dim_num = sel_ptr->n_entries - i - 1;
+
+										}
+										if(!dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num]) {
+											dim_is_ref[(sel_ptr->selection[sel_ptr->n_entries - i - 1]).dim_num] = 1;
+										} else {
+											NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript # %d, dimension is referenced more that once",i);
+											estatus = NhlFATAL;
+										}
+									}
+								}
+								if(estatus != NhlFATAL) {
+									out_var.kind = NclStk_VAL;
+									out_var.u.data_obj = _NclFileReadVarValue(file,var,sel_ptr);
+									if(sel_ptr != NULL) {
+										
+										for(i = 0; i <  sel_ptr->n_entries; i++) { 
+											if(sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+												NclFree(sel_ptr->selection[i].u.vec.ind);
+											}
+										}
+										NclFree(sel_ptr);
+									}
+									if((estatus != NhlFATAL)&&(out_var.u.data_obj != NULL)) {
+										estatus = _NclPush(out_var);
+									} else 	{
+										estatus = NhlFATAL;
+									}
+								}	
+							}
+						} else {
+							NhlPError(NhlFATAL,NhlEUNKNOWN,"Either file (%s) isn't defined or variable (%s) is not a variable in the file",dfile->name,NrmQuarkToString(var));
+							_NclCleanUpStack(nsubs);
+							estatus = NhlFATAL;
+							out_var.kind = NclStk_NOVAL;	
+							out_var.u.data_obj = NULL;
+						}
+					} else {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) does not reference a file",dfile->name);
+						_NclCleanUpStack(nsubs);
+						estatus = NhlFATAL;
+					}
+				} else {
+					if((file_ptr == NULL)||(file_ptr->kind != NclStk_VAR)) { 
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"(%s) is undefined or does not reference a file",dfile->name);
+						estatus = NhlFATAL;
+					}
+					_NclCleanUpStack(nsubs);
+				}
+				
+				break;
+			}
 			case PARAM_FILE_VAR_OP:
-			case FILE_VARVAL_OP : 
 			case FILE_VAR_OP : {
 /*
 * Changed to a two operand function 1/31/96

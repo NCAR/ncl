@@ -680,13 +680,16 @@ if(groot != NULL) {
 		{
 			NclSubscript *subscript = (NclSubscript*)
 					root;
-			if(subscript->dimname_q != -1) {
+			if(subscript->dimname_expr != NULL) {
+/*
 				off1 = _NclPutInstr(PUSH_STRING_LIT_OP,subscript->line,subscript->file);
 				tmp_val = NclMalloc(sizeof(NclQuark));
 				*(NclQuark*)tmp_val = subscript->dimname_q;
 				tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
 					(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 				_NclPutIntInstr(tmp_md->obj.id,subscript->line,subscript->file);
+*/
+				off1 = _NclTranslate(subscript->dimname_expr,fp);
 				_NclTranslate(subscript->subexpr,fp);
 				_NclPutInstr(NAMED_INT_SUBSCRIPT_OP,subscript->line,subscript->file);
 			} else {
@@ -699,13 +702,16 @@ if(groot != NULL) {
 		{
 			NclSubscript *subscript = (NclSubscript*)
 					root;
-			if(subscript->dimname_q != -1) {
+			if(subscript->dimname_expr != NULL) {
+/*
 				off1 = _NclPutInstr(PUSH_STRING_LIT_OP,subscript->line,subscript->file);
 				tmp_val = NclMalloc(sizeof(NclQuark));
 				*(NclQuark*)tmp_val = subscript->dimname_q;
 				tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0,
 					(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 				_NclPutIntInstr(tmp_md->obj.id,subscript->line,subscript->file);
+*/
+				off1 = _NclTranslate(subscript->dimname_expr,fp);
 				_NclTranslate(subscript->subexpr,fp);
 				_NclPutInstr(NAMED_COORD_SUBSCRIPT_OP,subscript->line,subscript->file);
 			} else {
@@ -1032,35 +1038,6 @@ Unneeded translations
 			_NclPutInstrAt(off2,_NclGetCurrentOffset(),proccall->line,proccall->file);
 			break;
 		}
-		case Ncl_BUILTINPROCCALL:
-		{	
-			NclProcCall *proccall = (NclProcCall*)root;	
-			int i = 0;
-
-
-			off1 = _NclPutInstr(NEW_FRAME_OP,proccall->line,proccall->file);
-			_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-			off2 = _NclPutInstr(NOOP,proccall->line,proccall->file);
-
-
-			step = proccall->arg_list;
-			while(step != NULL) {
-				(void)_NclTranslate(step->node,fp);
-				step= step->next;
-				_NclPutInstr(CONVERT_TO_LOCAL,proccall->line,proccall->file);
-				_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-				_NclPutIntInstr(i,proccall->line,proccall->file);
-				i++;
-			}
-/*
-* Checks types of arguments and takes care of coercion if needed
-*/
-			_NclPutInstr(BPROC_CALL_OP,proccall->line,proccall->file);
-			
-			_NclPutInstr((NclValue)proccall->proc,proccall->line,proccall->file);
-			_NclPutInstrAt(off2,_NclGetCurrentOffset(),proccall->line,proccall->file);
-			break;
-		}
 		case Ncl_EXTERNALPROCCALL:
 		{	
 			NclProcCall *proccall = (NclProcCall*)root;
@@ -1167,33 +1144,6 @@ Unneeded translations
 			}
 			_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
 			_NclPutIntInstr(i,funccall->line,funccall->file);
-			_NclPutInstrAt(off2,_NclGetCurrentOffset(),funccall->line,funccall->file);
-			break;
-		}
-		case Ncl_BUILTINFUNCCALL:
-		{	
-			NclFuncCall *funccall = (NclFuncCall*)root;
-			int i = 0;
-
-			off1 = _NclPutInstr(NEW_FRAME_OP,funccall->line,funccall->file);
-			_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-			off2 = _NclPutInstr(NOOP,funccall->line,funccall->file);
-
-
-			step = funccall->arg_list;
-			while(step != NULL) {
-				(void)_NclTranslate(step->node,fp);
-				step= step->next;
-				_NclPutInstr(CONVERT_TO_LOCAL,funccall->line,funccall->file);
-				_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
-				_NclPutIntInstr(i,funccall->line,funccall->file);
-				i++;
-			}
-/*
-* Checks types of arguments and takes care of coercion if needed
-*/
-			_NclPutInstr(BFUNC_CALL_OP,funccall->line,funccall->file);
-			_NclPutInstr((NclValue)funccall->func,funccall->line,funccall->file);
 			_NclPutInstrAt(off2,_NclGetCurrentOffset(),funccall->line,funccall->file);
 			break;
 		}

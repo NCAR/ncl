@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.60 1997-04-01 23:45:18 ethan Exp $
+ *      $Id: Machine.c,v 1.61 1997-06-11 20:03:45 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -92,7 +92,6 @@ static void SetUpOpsStrings() {
 	ops_strings[RETURN_OP] = "RETURN_OP";
 	ops_strings[FPDEF] = "FPDEF";
 	ops_strings[NEW_FRAME_OP] = "NEW_FRAME_OP";
-	ops_strings[BPROC_CALL_OP] = "BPROC_CALL_OP";
 	ops_strings[FUNC_CALL_OP] = "FUNC_CALL_OP";
 	ops_strings[INTRINSIC_FUNC_CALL] = "INTRINSIC_FUNC_CALL";
 	ops_strings[INTRINSIC_PROC_CALL] = "INTRINSIC_PROC_CALL";
@@ -117,7 +116,6 @@ static void SetUpOpsStrings() {
 	ops_strings[COORD_SUBSCRIPT_OP] = "COORD_SUBSCRIPT_OP";
 	ops_strings[SINGLE_INDEX_OP] = "SINGLE_INDEX_OP";
 	ops_strings[DEFAULT_RANGE_OP] = "DEFAULT_RANGE_OP";
-	ops_strings[BFUNC_CALL_OP] = "BFUNC_CALL_OP";
 	ops_strings[RANGE_INDEX_OP] = "RANGE_INDEX_OP";
 	ops_strings[NEG_OP] = "NEG_OP";
 	ops_strings[NOT_OP] = "NOT_OP";
@@ -679,14 +677,14 @@ void _NclAbortFrame
 			tmp_fp = (NclFrame*)(thestack + tmp->fp);
         		sb_off = sb - tmp->fp + sb_off;
         		sb = tmp->fp;
-			if((tmp_fp->parameter_map.u.the_list->fpsym != NULL) 
+			if((tmp_fp->parameter_map.u.the_list !=NULL)&&(tmp_fp->parameter_map.u.the_list->fpsym != NULL) 
 				&&(tmp_fp->parameter_map.u.the_list->fpsym->u.procfunc->thescope != NULL)) {
 				(void)_NclPopScope();
 			}
 			flist.next = flist.next->next;
 			NclFree(tmp);
 			_NclCleanUpStack(sb_off - 5);
-			_NclPopFrame(BPROC_CALL_OP);
+			_NclPopFrame(INTRINSIC_PROC_CALL);
 
 		}
 		sb_off = sb_off + (sb - fp);
@@ -708,7 +706,7 @@ int caller_level;
 	_NclPopScope();
 	_NclLeaveFrame(caller_level);
 	_NclCleanUpStack(n);
-	_NclPopFrame(BPROC_CALL_OP);
+	_NclPopFrame(INTRINSIC_PROC_CALL);
 	
 }
 
@@ -755,7 +753,6 @@ void _NclPopFrame
 	switch(popping_from) {
 	case FUNC_CALL_OP:	
 	case INTRINSIC_FUNC_CALL:
-	case BFUNC_CALL_OP:
 		for(i = 0;i<(sizeof(NclFrame)/sizeof(NclStackEntry))-1; i++) {
 			data = _NclPop();
 			if(data.kind == NclStk_PARAMLIST) {
@@ -1205,9 +1202,7 @@ void _NclPrintMachine
 				fprintf(fp,"\t%d\n",*(int*)ptr);
 				break;
 			case PROC_CALL_OP:
-			case BPROC_CALL_OP:
 			case FUNC_CALL_OP:
-			case BFUNC_CALL_OP:
 			case ISDEFINED_OP:
 			case NEW_OP:
 			case NEW_WM_OP:
@@ -1523,7 +1518,6 @@ void _NclRemapIntrParameters
 	switch(from) {
 	case FUNC_CALL_OP:
 	case INTRINSIC_FUNC_CALL:
-	case BFUNC_CALL_OP:
 		check_ret_status = 1;
 		break;
 	default:
@@ -1914,7 +1908,6 @@ void _NclRemapParameters
 	switch(from) {
 	case FUNC_CALL_OP:
 	case INTRINSIC_FUNC_CALL:
-	case BFUNC_CALL_OP:
 		check_ret_status = 1;
 		break;
 	default:

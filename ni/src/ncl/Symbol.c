@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.46 1997-05-23 20:47:58 ethan Exp $
+ *      $Id: Symbol.c,v 1.47 1997-06-11 20:03:50 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -119,9 +119,6 @@ NhlErrorTypes _NclWalkSymTable
 					case UNDEF:
 						fprintf(stdout,"UNDEF: %s\n",s->name);
 						break;
-					case FUNC:
-						fprintf(stdout,"FUNC: %s\n",s->name);
-						break;
 					case NPROC: 
 						fprintf(stdout,"NPROC: %s\n",s->name);
 						_NclPushMachine(s->u.procfunc->mach_rec_ptr);
@@ -133,9 +130,6 @@ NhlErrorTypes _NclWalkSymTable
 						_NclPushMachine(s->u.procfunc->mach_rec_ptr);
 						_NclPrintMachine(-1,-1,stdout);
 						(void) _NclPopMachine();
-						break;
-					case PROC:
-						fprintf(stdout,"PROC: %s\n",s->name);
 						break;
 					case IPROC: 
 						fprintf(stdout,"IPROC: %s\n",s->name);
@@ -828,11 +822,9 @@ void _NclDeleteSym
 		}
 	}
 	break;
-	case PROC:
 	case UNDEFFILEVAR:
 	case FILEVAR:
 	case NPROC:
-	case FUNC:
 	case NFUNC:
 	case VBLKNAME:
 	default:
@@ -1426,9 +1418,7 @@ int     *num_names;
 				s = st->sr->this_scope[i].thelist;
                                 while(s != NULL) {
 					switch(s->type) {
-					case FUNC:
 					case NPROC: 
-					case PROC:
 					case NFUNC:
 					case IPROC: 
 					case IFUNC: {
@@ -1871,9 +1861,7 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 				s = st->sr->this_scope[i].thelist;
 				while(s != NULL) {
 					switch(s->type) {
-					case FUNC:
 					case NPROC: 
-					case PROC:
 					case NFUNC:{
 					
 						tmp = (NclApiDataList*)NclMalloc(sizeof(NclApiDataList));
@@ -1881,7 +1869,7 @@ NclApiDataList *_NclGetDefinedProcFuncInfo
 						tmp->u.func = (NclApiFuncInfoRec*)NclMalloc(sizeof(NclApiFuncInfoRec));
 						tmp->u.func->name = NrmStringToQuark(s->name);
 						tmp->u.func->nparams = s->u.procfunc->nargs;
-						if((s->type == FUNC)||(s->type == NFUNC)) {
+						if(s->type == NFUNC) {
 							tmp->u.func->kind = 1;
 						} else {
 							tmp->u.func->kind = 0;

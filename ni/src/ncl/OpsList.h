@@ -4,7 +4,7 @@
 #define RETURN_OP			4
 #define FPDEF 			5
 #define NEW_FRAME_OP			6
-#define BPROC_CALL_OP			7
+/*#define BPROC_CALL_OP			7 */
 #define FUNC_CALL_OP			8
 #define PROC_CALL_OP			9
 #define JMP			10
@@ -29,7 +29,7 @@
 #define COORD_SUBSCRIPT_OP			29
 #define SINGLE_INDEX_OP				30
 #define DEFAULT_RANGE_OP			31
-#define BFUNC_CALL_OP			32
+/*#define BFUNC_CALL_OP			32*/
 #define RANGE_INDEX_OP			33
 #define NEG_OP			34
 #define NOT_OP			35
