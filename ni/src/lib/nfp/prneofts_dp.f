@@ -1,7 +1,9 @@
-c --------------------------------------------------------------
-      SUBROUTINE DEOFTS7(X,NROW,NCOL,NOBS,MSTA,XMSG
-     +                  ,NEVAL,EVEC,JOPT,IFLAG,XX,WRK,EVECTS,IER)
-      IMPLICIT NONE
+      SUBROUTINE DEOFTS7(X,NROW,NCOL,NOBS,MSTA,XMSG,NEVAL,EVEC,JOPT,
+     +                   IFLAG,XX,WRK,EVECTS,EVTSAV,IER)
+      DOUBLE PRECISION XBAR
+      DOUBLE PRECISION XVAR
+      DOUBLE PRECISION XSTD
+      DOUBLE PRECISION CON
 
 c f77
 
@@ -9,15 +11,16 @@ c takes output of prneof.f and creates a time series of the
 c .   eof amplitudes
 
 c nomenclature :
-c .   x         - matrix containing the data.  it contains n observations
-c .               for each of m stations or grid pts.
-c .   nrow,ncol - exact row (observation) and column (station) dimensions
-c .               of x in the calling routine.
+c .   x         - matrix containing the data.  it contains n
+c .               observations for each of m stations or grid pts.
+c .   nrow,ncol - exact row (observation) and column (station)
+c .               dimensions of x in the calling routine.
 c .   nobs      - actual number of observations (nobs <= nrow)
 c .   msta      - actual number of stations     (msta <= ncol)
 c .   xmsg      - missing code (if no obs are missing set to some
 c .               number which will not be encountered)
-c .   neval     - no. of eigenvalues and eigen vectors computed by prneof.
+c .   neval     - no. of eigenvalues and eigen vectors computed by
+c .               prneof.
 c .   evec      - array created by prneof
 c .               this must be dimensioned at least (ncol,neval) in the
 c .               calling routine.
@@ -28,19 +31,26 @@ c .   wrk       - work vector of length nobs
 c .   evects    - time series of eof amplitudes for each eigenvalue
 c .   ier       - error code
 
+C INPUT
 
+C dimensions of x
       INTEGER NROW,NCOL,NOBS,MSTA
-      INTEGER NEVAL, JOPT, IFLAG, IER
 
+C monthly data from station/grid pt
+C work array
+C missing code (if any)
       DOUBLE PRECISION X(NROW,NCOL),EVEC(NCOL,NEVAL),XX(NROW,NCOL),
      +                 WRK(NOBS),XMSG
-      DOUBLE PRECISION EVECTS(NROW,NEVAL)
+      INTEGER NEVAL,IFLAG
 
-      DOUBLE PRECISION XBAR
-      DOUBLE PRECISION XVAR
-      DOUBLE PRECISION XSTD
-      DOUBLE PRECISION CON
-      INTEGER M, N, K, KNTX
+C OUTPUT
+
+C monthly anomalies from long term monthly mean
+      DOUBLE PRECISION EVECTS(NROW,NEVAL)
+      DOUBLE PRECISION EVTSAV(NEVAL)
+C error code
+      INTEGER IER
+
 
       IER = 0
       IF (NROW.LE.0 .OR. NCOL.LE.0) IER = IER + 1
@@ -48,6 +58,7 @@ c .   ier       - error code
       IF (IER.NE.0) THEN
           WRITE (*,FMT='(/,'' sub eofts7: ier='',5i5)') IER,NROW,NCOL,
      +      NOBS,MSTA
+c          stop
           RETURN
       END IF
 
@@ -59,63 +70,72 @@ c set to msg as default
           END DO
       END DO
 
-      DO K = 1,NEVAL
-          DO M = 1,NROW
-              EVECTS(M,K) = XMSG
-          END DO
-      END DO
+c the following was added in Sept 2003 so that the
+c 'normalization' that follows the "if" would
+c not be done.
 
-c this if added Sept 2003 to allow computation without
-c removing the mean.
+c c c if (iflag.eq.1 .and. jopt.eq.0) go to 10
+      IF (JOPT.EQ.1) THEN
 
-      IF (JOPT.EQ.0 .AND. IFLAG.EQ.1) GO TO 10
+c calculate mean/stddev at each station/grid-pt
 
-c calculate at each station/grid-pt: long-term mean + std. dev.
 
-      DO M = 1,MSTA
-          DO N = 1,NOBS
-              WRK(N) = X(N,M)
-          END DO
+          DO M = 1,MSTA
+              DO N = 1,NOBS
+                  WRK(N) = X(N,M)
+              END DO
 
-          CALL DSTAT2(WRK,NOBS,XMSG,XBAR,XVAR,XSTD,KNTX,IER)
-          CON = 1.0D0
-          IF (JOPT.EQ.1 .AND. XSTD.GT.0.D0) THEN
-              CON = 1.D0/XSTD
-          END IF
-
-c c c    write (*,"(' eofts7: m,nobs,kntx,xbar,xstd=',3i5,2f8.2)")
-c c c*                        m,nobs,kntx,xbar,xstd
-
-          DO N = 1,NOBS
-              IF (X(N,M).NE.XMSG .AND. XBAR.NE.XMSG) THEN
-                  XX(N,M) = (X(N,M)-XBAR)*CON
-              ELSE
-                  XX(N,M) = XMSG
+              CALL DSTAT2(WRK,NOBS,XMSG,XBAR,XVAR,XSTD,KNTX,IER)
+              CON = 1.0D0
+              IF (JOPT.EQ.1 .AND. XSTD.GT.0.D0) THEN
+                  CON = 1.D0/XSTD
               END IF
+
+c         write (*,"(' eofts7: m,nobs,kntx,xbar,xstd=',3i5,2f8.2)")
+c     *                        m,nobs,kntx,xbar,xstd
+
+              DO N = 1,NOBS
+                  IF (X(N,M).NE.XMSG .AND. XBAR.NE.XMSG) THEN
+                      XX(N,M) = (X(N,M)-XBAR)*CON
+                  ELSE
+                      XX(N,M) = XMSG
+                  END IF
+              END DO
+
+C end msta
           END DO
 
-      END DO
-
-c c c write (*,"(//,'ANOMAILIES',/)")
+c c c write (*,"(//,'ANOMALIES',/)")
 c c c do n=1,nobs
 c c c     write (*,"(i5 , 10(1x,f9.3) )") n, (xx(n,m),m=1,msta)
 c c c enddo
-   10 CONTINUE
+
+      END IF
 
 c calculate the amplitude time series
 
-      DO K = 1,NEVAL
+   10 DO K = 1,NEVAL
           DO N = 1,NOBS
               KNTX = 0
               EVECTS(N,K) = 0.0D0
               DO M = 1,MSTA
-                  IF (XX(N,M).NE.XMSG.AND.EVEC(M,K).NE.XMSG) THEN
+                  IF (XX(N,M).NE.XMSG .AND. EVEC(M,K).NE.XMSG) THEN
                       KNTX = KNTX + 1
                       EVECTS(N,K) = EVECTS(N,K) + EVEC(M,K)*XX(N,M)
                   END IF
               END DO
               IF (KNTX.EQ.0) EVECTS(N,K) = XMSG
           END DO
+          CALL DSTAT2(EVECTS(1,K),NOBS,XMSG,EVTSAV(K),XVAR,XSTD,KNTX,
+     +                IER)
+C      print *, "test=",k, evtsav(k)
+          IF (IFLAG.EQ.0 .AND. EVTSAV(K).NE.XMSG) THEN
+              DO N = 1,NOBS
+                  IF (EVECTS(N,K).NE.XMSG) THEN
+                      EVECTS(N,K) = EVECTS(N,K) - EVTSAV(K)
+                  END IF
+              END DO
+          END IF
       END DO
 
       RETURN

@@ -11,12 +11,14 @@ extern void NGCALLF(ddrveof,DDRVEOF)(double *,int *,int *,int *,int *,
 extern void NGCALLF(dncldrv,DNCLDRV)(double *,double *,int *,int *,int *,
                                      int *,double *,int *,double *,double *,
                                      float *,double *,int *,int *,double *,
-                                     double *,double *,long *,double *, int *,
-                                     double *,int *,int *,int *,int *,int*);
+                                     double *,double *,long *,double *, 
+                                     int *,double *,int *,int *,int *,int *,
+                                     int*);
 
 extern void NGCALLF(deofts7,DEOFTS7)(double *,int *,int *,int *,int *,
                                      double *,int *, double *,int *, int *,
-                                     double *,double *,double *,int *);
+                                     double *,double *,double *,double *,
+                                     int *);
 
 extern void NGCALLF(deoftsca,DEOFTSCA)(double *,int *,int *,int *,int *,
                                        double *,int *,double *,int *, int*,
@@ -49,7 +51,7 @@ NhlErrorTypes eofcov_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -473,7 +475,7 @@ NhlErrorTypes eofcor_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -897,7 +899,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1405,7 +1407,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
  * Attribute variables
  */
   int att_id;
-  int dsizes[NCL_MAX_DIMENSIONS];
+  int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -1909,15 +1911,19 @@ NhlErrorTypes eofcov_ts_W( void )
 /*
  * Output array variables
  */
-  double *evec_ts;
-  float *revec_ts;      
+  double *evec_ts, *evtsav;
+  float *revec_ts, *revtsav;      
   int dsizes_evec_ts[2];
 /*
- * Variables for retrieving attributes from "evec".
+ * Attribute variables
  */
-  NclAttList  *attr_list;
-  NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
+
 /*
  * Retrieve parameters
  */
@@ -1939,40 +1945,6 @@ NhlErrorTypes eofcov_ts_W( void )
            &has_missing_evec,
            &type_evec,
            2);
-/*
- * Check if the "evec" variable coming in has a tsflag attribute riding
- * along with it.
- *
- * First, retrieve "evec" again, this time getting all the stuff that
- * might be attached to it (attributes).
- */
-  stack_entry = _NclGetArg(1, 2, DONT_CARE);
-  if(stack_entry.kind == NclStk_VAR ) {
-    if (stack_entry.u.data_var->var.att_id != -1) {
-      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
-/* 
- * Retrieve attributes
- */
-        attr_list = attr_obj->att.att_list;
-        while (attr_list != NULL) {
-          if (strcmp(attr_list->attname, "tsflag") == 0) {
-            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
-            break;
-          }
-          attr_list = attr_list->next;
-        }
-      }
-    }
-  }
-/*
- * Currently, we only recognize the case where iflag = 1, so reset to
- * 0 otherwise.
- */
-  if(iflag != 1) {
-    iflag = 0;
-  }
-
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -2020,13 +1992,14 @@ NhlErrorTypes eofcov_ts_W( void )
     return(NhlFATAL);
   }
 /*
- * Allocate memory for return variable.
+ * Allocate memory for return variables.
  */
   dsizes_evec_ts[0] = neval;
   dsizes_evec_ts[1] = ntime;
   evec_ts = (double *)calloc(ntime*neval,sizeof(double));
-  if( evec_ts == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: Unable to allocate memory for output array");
+  evtsav  = (double *)calloc(neval,sizeof(double));
+  if( evec_ts == NULL || evtsav == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
 /*
@@ -2039,20 +2012,21 @@ NhlErrorTypes eofcov_ts_W( void )
   wrk  = (double *)calloc(lwrk,sizeof(double));
   wx   = (double *)calloc(lwx,sizeof(double));
   if( wrk == NULL || wx == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: Unable to allocate memory for work arrays");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 /*
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
   NGCALLF(deofts7,DEOFTS7)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,&ier);
+                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,evtsav,
+                           &ier);
 /*
  * Check various possible error messages.
  */
   if (ier != 0) {
-    if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: cssm contains one or more missing values\n" );
+    if (ier == -1) { 
+       NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: cssm contains one or more missing values\n" );
     }
     else if (ier == -88) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_ts: trace is equal to zero\n" );
@@ -2081,29 +2055,131 @@ NhlErrorTypes eofcov_ts_W( void )
  * First copy double values to float values.
  */
     revec_ts = (float *)calloc(ntime*neval,sizeof(float));
-    if( revec_ts == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: Unable to allocate memory for output array");
+    revtsav  = (float *)calloc(neval,sizeof(float));
+    if( revec_ts == NULL || revtsav == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_ts: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
     for( i = 0; i < ntime*neval; i++ ) revec_ts[i] = (float)evec_ts[i];
+    for( i = 0; i < neval; i++ )       revtsav[i]  = (float)evtsav[i];
 /*
- * Free up double precision array.
+ * Free up double precision arrays.
  */
     NclFree(evec_ts);
+    NclFree(evtsav);
+/*
+ * Set up return value.
+ */
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)revec_ts,
+                              &missing_rx,
+                              2,
+                              dsizes_evec_ts,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypefloatClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 
 /*
- * Return float values. 
+ * Attribute "ts_mean".
  */
-    return(NclReturnValue((void*)revec_ts,2,dsizes_evec_ts,&missing_rx,
-                          NCL_float,0));
+    dsizes[0] = neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)revtsav,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "ts_mean",
+               att_md,
+               NULL
+               );
+
   }
   else {
 /*
- * Return double values. 
+ * Set up return value.
  */
-    return(NclReturnValue((void*)evec_ts,2,dsizes_evec_ts,&missing_dx,
-                          NCL_double,0));
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)evec_ts,
+                              &missing_dx,
+                              2,
+                              dsizes_evec_ts,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypedoubleClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Attribute "ts_mean".
+ */
+    dsizes[0] = neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)evtsav,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "ts_mean",
+               att_md,
+               NULL
+               );
   }
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 
@@ -2128,15 +2204,19 @@ NhlErrorTypes eofcor_ts_W( void )
 /*
  * Output array variables
  */
-  double *evec_ts;
-  float *revec_ts;      
+  double *evec_ts, *evtsav;
+  float *revec_ts, *revtsav;      
   int dsizes_evec_ts[2];
+
 /*
- * Variables for retrieving attributes from "evec".
+ * Attribute variables
  */
-  NclAttList  *attr_list;
-  NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
 /*
  * Retrieve parameters
  */
@@ -2158,45 +2238,6 @@ NhlErrorTypes eofcor_ts_W( void )
            &has_missing_evec,
            &type_evec,
            2);
-/*
- * Check if the "evec" variable coming in has a tsflag attribute riding
- * along with it.
- *
- * First, retrieve "evec" again, this time getting all the stuff that
- * might be attached to it (attributes).
- */
-/*
- * This code is not executed, because for iflag = 1, jopt must also
- * be = 0 for iflag to even have effect.  So, leave iflag = 0 for now.
- */
-  /*
-  stack_entry = _NclGetArg(1, 2, DONT_CARE);
-  if(stack_entry.kind == NclStk_VAR ) {
-    if (stack_entry.u.data_var->var.att_id != -1) {
-      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
-        attr_list = attr_obj->att.att_list;
-        while (attr_list != NULL) {
-          if (strcmp(attr_list->attname, "tsflag") == 0) {
-            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
-            break;
-          }
-          attr_list = attr_list->next;
-        }
-      }
-    }
-  }
- */
-/*
- * Currently, we only recognize the case where iflag = 1, so reset to
- * 0 otherwise.
- */
-/*
-  if(iflag != 1) {
-    iflag = 0;
-  }
- */
-
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -2244,13 +2285,14 @@ NhlErrorTypes eofcor_ts_W( void )
     return(NhlFATAL);
   }
 /*
- * Allocate memory for return variable.
+ * Allocate memory for return variables.
  */
   dsizes_evec_ts[0] = neval;
   dsizes_evec_ts[1] = ntime;
   evec_ts = (double *)calloc(ntime*neval,sizeof(double));
-  if( evec_ts == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: Unable to allocate memory for output array");
+  evtsav  = (double *)calloc(neval,sizeof(double));
+  if( evec_ts == NULL || evtsav == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
 /*
@@ -2270,7 +2312,8 @@ NhlErrorTypes eofcor_ts_W( void )
  * Call the Fortran 77 version of 'drveof' with the full argument list.
  */
   NGCALLF(deofts7,DEOFTS7)(dx,&nrow,&ncol,&nobs,&msta,&missing_dx.doubleval,
-                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,&ier);
+                           &neval,devec,&jopt,&iflag,wx,wrk,evec_ts,evtsav,
+                           &ier);
 /*
  * Check various possible error messages.
  */
@@ -2305,29 +2348,132 @@ NhlErrorTypes eofcor_ts_W( void )
  * First copy double values to float values.
  */
     revec_ts = (float *)calloc(ntime*neval,sizeof(float));
-    if( revec_ts == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: Unable to allocate memory for output array");
+    revtsav  = (float *)calloc(neval,sizeof(float));
+    if( revec_ts == NULL || revtsav == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcor_ts: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
     for( i = 0; i < ntime*neval; i++ ) revec_ts[i] = (float)evec_ts[i];
+    for( i = 0; i < neval; i++ )       revtsav[i]  = (float)evtsav[i];
 /*
- * Free up double precision array.
+ * Free up double precision arrays.
  */
     NclFree(evec_ts);
+    NclFree(evtsav);
 
 /*
- * Return float values. 
+ * Set up return value.
  */
-    return(NclReturnValue((void*)revec_ts,2,dsizes_evec_ts,&missing_rx,
-                          NCL_float,0));
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)revec_ts,
+                              &missing_rx,
+                              2,
+                              dsizes_evec_ts,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypefloatClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Attribute "ts_mean".
+ */
+    dsizes[0] = neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)revtsav,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypefloatClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "ts_mean",
+               att_md,
+               NULL
+               );
+
   }
   else {
 /*
- * Return double values. 
+ * Set up return value.
  */
-    return(NclReturnValue((void*)evec_ts,2,dsizes_evec_ts,&missing_dx,
-                          NCL_double,0));
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)evec_ts,
+                              &missing_dx,
+                              2,
+                              dsizes_evec_ts,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypedoubleClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Attribute "ts_mean".
+ */
+    dsizes[0] = neval;
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)evtsav,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypedoubleClass
+                           );
+    _NclAddAtt(
+               att_id,
+               "ts_mean",
+               att_md,
+               NULL
+               );
   }
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 
@@ -2355,12 +2501,7 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
   double *evec_ts;
   float *revec_ts;      
   int dsizes_evec_ts[2];
-/*
- * Variables for retrieving attributes from "evec".
- */
-  NclAttList  *attr_list;
-  NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
+
 /*
  * Retrieve parameters
  */
@@ -2391,40 +2532,6 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
             NULL,
             &type_pcmsg,
             2);
-/*
- * Check if the "evec" variable coming in has a tsflag attribute riding
- * along with it.
- *
- * First, retrieve "evec" again, this time getting all the stuff that
- * might be attached to it (attributes).
- */
-  stack_entry = _NclGetArg(1, 3, DONT_CARE);
-  if(stack_entry.kind == NclStk_VAR ) {
-    if (stack_entry.u.data_var->var.att_id != -1) {
-      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
-/* 
- * Retrieve attributes
- */
-        attr_list = attr_obj->att.att_list;
-        while (attr_list != NULL) {
-          if (strcmp(attr_list->attname, "tsflag") == 0) {
-            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
-            break;
-          }
-          attr_list = attr_list->next;
-        }
-      }
-    }
-  }
-/*
- * Currently, we only recognize the case where iflag = 1, so reset to
- * 0 otherwise.
- */
-  if(iflag != 1) {
-    iflag = 0;
-  }
-
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -2593,12 +2700,7 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
   double *evec_ts;
   float *revec_ts;      
   int dsizes_evec_ts[2];
-/*
- * Variables for retrieving attributes from "evec".
- */
-  NclAttList  *attr_list;
-  NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
+
 /*
  * Retrieve parameters
  */
@@ -2629,45 +2731,6 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
             NULL,
             &type_pcmsg,
             2);
-/*
- * Check if the "evec" variable coming in has a tsflag attribute riding
- * along with it.
- *
- * First, retrieve "evec" again, this time getting all the stuff that
- * might be attached to it (attributes).
- */
-/*
- * This code is not executed, because for iflag = 1, jopt must also
- * be = 0 for iflag to even have effect.  So, leave iflag = 0 for now.
- */
-  /*
-  stack_entry = _NclGetArg(1, 3, DONT_CARE);
-  if(stack_entry.kind == NclStk_VAR ) {
-    if (stack_entry.u.data_var->var.att_id != -1) {
-      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-      if (attr_obj != NULL && attr_obj->att.n_atts > 0) {
-        attr_list = attr_obj->att.att_list;
-        while (attr_list != NULL) {
-          if (strcmp(attr_list->attname, "tsflag") == 0) {
-            iflag = (int)(*(int *) attr_list->attvalue->multidval.val);
-            break;
-          }
-          attr_list = attr_list->next;
-        }
-      }
-    }
-  }
- */
-/*
- * Currently, we only recognize the case where iflag = 1, so reset to
- * 0 otherwise.
- */
-/*
-  if(iflag != 1) {
-    iflag = 0;
-  }
-
- */
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -2884,15 +2947,15 @@ NhlErrorTypes eof2data_W( void )
  * Coerce missing values, if any.
  */
   coerce_missing(type_evec,has_missing_evec,&missing_evec,&missing_devec,
-		 &missing_revec);
+                 &missing_revec);
 /*
  * Coerce evec/evects to double if necessary.
  */
   devec = coerce_input_double(evec,type_evec,total_size_evec,
-			      has_missing_evec,&missing_evec,
-			      &missing_devec);
+                              has_missing_evec,&missing_evec,
+                              &missing_devec);
   devects = coerce_input_double(evects,type_evects,total_size_evects,
-				0,NULL,NULL);
+                                0,NULL,NULL);
   if(devec == NULL || devects == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof2data: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
@@ -2924,7 +2987,7 @@ NhlErrorTypes eof2data_W( void )
  * Call the Fortran 77 version of 'deof2data' with the full argument list.
  */
   NGCALLF(deof2data,DEOF2DATA)(&neval,&npts,&ntim,devec,devects,dx,
-			       &missing_devec.doubleval);
+                               &missing_devec.doubleval);
 /*
  * Free unneeded memory.
  */
@@ -2959,5 +3022,3 @@ NhlErrorTypes eof2data_W( void )
     }
   }
 }
-
-
