@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.76 1997-07-02 18:02:25 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.77 1997-07-21 22:50:16 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2489,7 +2489,7 @@ NhlErrorTypes _NclIfbinrecread
 
 	if(*dimensions!= -1) {
 		for(i = 0; i < 	dimsize; i++) {
-			if(missing.intval == *(dimensions + i)) {
+			if(has_missing&&(missing.intval == *(dimensions + i))) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: dimension size contains a missing value, can't continue");
 				return(NhlFATAL);
 			}
@@ -10534,7 +10534,158 @@ NhlErrorTypes _NclIGetVarAtts
 	return(ret);
 
 }
+NhlErrorTypes _NclIFileVarDimsizes
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	string *name;
+	string fname;
+	NclScalar name_missing;
+	int name_has_missing;
+	int out_val = -1;
+	int dimsizes;
+	NclApiDataList *data;
+	NhlErrorTypes ret;
+	NclStackEntry val;
+	NclVar tmp_var;
+	int dim_sizes[NCL_MAX_DIMENSIONS];
+	int i;
 
+
+
+        val = _NclGetArg(0,2,DONT_CARE);
+        switch(val.kind) {
+		case NclStk_VAR:
+                	tmp_var = val.u.data_var;
+			if(tmp_var->var.var_quark > 0) {
+				fname = tmp_var->var.var_quark;
+			} else {
+				dimsizes = 1;
+				return(NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1));
+			}
+			break;
+        	case NclStk_VAL:
+		default:
+			dimsizes = 1;
+			return(NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1));
+	}
+
+        name = (string*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &name_missing,
+                        &name_has_missing,
+                        NULL,
+                        0);
+	if(name_has_missing) {
+		if(*name == name_missing.stringval) {
+			dimsizes = 1;
+		        return(NclReturnValue(
+               			name,
+                		1,
+                		&dimsizes,
+                		&name_missing,
+                		((NclTypeClass)nclTypeintClass)->type_class.data_type,
+                		1
+        		));
+		}
+	}
+	data = _NclGetFileVarInfo(fname,*name);
+	if((data != NULL)&&(data->u.var->n_dims != 0)) {
+		for(i = 0; i < data->u.var->n_dims; i++) {
+		 	dim_sizes[i] = data->u.var->dim_info[i].dim_size;
+		}
+		ret = NclReturnValue((void*)dim_sizes, 1, &data->u.var->n_dims, NULL, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1);
+		_NclFreeApiDataList((void*)data);
+		return(ret);
+	} else {
+		dimsizes = 1;
+		ret = NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1);
+		_NclFreeApiDataList((void*)data);
+		return(ret);
+	}
+}
+NhlErrorTypes _NclIGetFileVarDims
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	string *name;
+	string fname;
+	NclScalar name_missing;
+	int name_has_missing;
+	string out_val = -1;
+	int dimsizes;
+	NclApiDataList *data;
+	NhlErrorTypes ret;
+	NclStackEntry val;
+	NclVar tmp_var;
+	NclQuark dim_names[NCL_MAX_DIMENSIONS];
+	int i;
+
+
+
+        val = _NclGetArg(0,2,DONT_CARE);
+        switch(val.kind) {
+		case NclStk_VAR:
+                	tmp_var = val.u.data_var;
+			if(tmp_var->var.var_quark > 0) {
+				fname = tmp_var->var.var_quark;
+			} else {
+				dimsizes = 1;
+				return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+			}
+			break;
+        	case NclStk_VAL:
+		default:
+			dimsizes = 1;
+			return(NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1));
+	}
+
+        name = (string*)NclGetArgValue(
+                        1,
+                        2,
+                        NULL,
+                        NULL,
+                        &name_missing,
+                        &name_has_missing,
+                        NULL,
+                        0);
+	if(name_has_missing) {
+		if(*name == name_missing.stringval) {
+			dimsizes = 1;
+		        return(NclReturnValue(
+               			name,
+                		1,
+                		&dimsizes,
+                		&name_missing,
+                		((NclTypeClass)nclTypestringClass)->type_class.data_type,
+                		1
+        		));
+		}
+	}
+	data = _NclGetFileVarInfo(fname,*name);
+	if((data != NULL)&&(data->u.var->n_dims != 0)) {
+		for(i = 0; i < data->u.var->n_dims; i++) {
+		 	dim_names[i] = data->u.var->dim_info[i].dim_quark;
+		}
+		ret = NclReturnValue((void*)dim_names, 1, &data->u.var->n_dims, NULL, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		_NclFreeApiDataList((void*)data);
+		return(ret);
+	} else {
+		dimsizes = 1;
+		ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
+		_NclFreeApiDataList((void*)data);
+		return(ret);
+	}
+}
 NhlErrorTypes _NclIGetFileVarAtts
 #if	NhlNeedProto
 (void)

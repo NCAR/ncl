@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.32 1997-06-05 17:39:08 ethan Exp $
+ *      $Id: AddBuiltIns.c,v 1.33 1997-07-21 22:50:14 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -514,6 +514,17 @@ void
 );
 
 extern NhlErrorTypes _NclINhlAppGetDefaultParentId(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclIFileVarDimsizes(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIGetFileVarDims(
 #if     NhlNeedProto
 void
 #endif
@@ -1257,6 +1268,19 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
 	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_NclIGetFileVarAtts,args,"getfilevaratts",nargs);
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIGetFileVarDims,args,"getfilevardims",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,0,"file",NclANY,NclANY);nargs++;
+	SetArgTemplate(args,1,"string",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIFileVarDimsizes,args,"filevardimsizes",nargs);
 /*
 	nargs = 0;
 	args = NewArgs(1);
