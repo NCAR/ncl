@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.29 1994-12-23 01:17:38 ethan Exp $
+ *      $Id: Machine.c,v 1.30 1995-01-04 01:55:39 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -701,11 +701,12 @@ NhlErrorTypes _NclPushFrame
 		tmp->static_link.u.offset  = (unsigned long)fp;
 		tmp->static_link.kind = NclStk_STATIC_LINK;
 	} else if(new_scope_level == current_scope_level) {
-		tmp->static_link = ((NclFrame*)(thestack + fp))->static_link;
+		tmp->static_link.u.offset = ((NclFrame*)(thestack + fp))->static_link.u.offset;
+		tmp->static_link.kind = NclStk_STATIC_LINK;
 	} else  {	
 		previous = (NclFrame*)(thestack + fp);
 		i = current_scope_level - new_scope_level;
-		while(i-- >= 1) {
+		while(i-- >= 0) {
 			previous = (NclFrame*)((NclStackEntry*)thestack + previous->static_link.u.offset);
 		}
 		tmp->static_link.u.offset = (unsigned long)((NclStackEntry*)previous - (NclStackEntry*)thestack);
@@ -1297,7 +1298,7 @@ int from;
 #endif
 {
 	int i;
-	NclFrame *tmp_fp;
+	NclFrame *tmp_fp = (NclFrame*)previous_fp;
 	NclStackEntry data;
 	int check_ret_status = 1;
 	NclVar tmp_var,tmp_var1;
@@ -1321,7 +1322,9 @@ int from;
 			}
 		}
 	} else {
+/*
 		tmp_fp = (NclFrame*)(thestack + fp);
+*/
 		if(tmp_fp->func_ret_value.u.data_var == NULL) {
 			tmp_fp->func_ret_value.u.data_var = NULL;
 			tmp_fp->func_ret_value.kind = NclStk_NOVAL;
@@ -1330,8 +1333,8 @@ int from;
 			data = _NclPop();
 			switch(data.kind) {
 			case NclStk_VAR:
-				if((data.u.data_var != NULL)&&(data.u.data_var->obj.status != PERMANENT)){
-					if(check_ret_status&&((tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id != data.u.data_var->obj.id))) {
+				if(data.u.data_var != NULL){
+					if(check_ret_status&&((tmp_fp->func_ret_value.kind == NclStk_VAR)&&(tmp_fp->func_ret_value.u.data_var->obj.id == data.u.data_var->obj.id))) {
 						tmp_var1 = (NclVar)_NclGetObj(data.u.data_var->obj.id);
 						tmp_var = _NclVarNclCreate(
 							NULL,
@@ -1348,7 +1351,8 @@ int from;
 						_NclDestroyObj((NclObj)tmp_var1);
 						tmp_fp->func_ret_value.u.data_var = tmp_var;
 					} else {
-						_NclDestroyObj((NclObj)data.u.data_var);
+						if(data.u.data_var->obj.status != PERMANENT)
+							_NclDestroyObj((NclObj)data.u.data_var);
 					}
 				}
 				break;

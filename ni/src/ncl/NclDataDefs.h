@@ -9,6 +9,7 @@
 */
 #define ASSERT(expr)
 #else
+#define ASSERT(expr)
 #endif
 
 typedef enum  {

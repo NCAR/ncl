@@ -700,7 +700,7 @@ NhlErrorTypes _NclIAll
 				data_out.kind = NclStk_VAL;
 				data_out.u.data_obj =_NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
 				_NclPlaceReturn(data_out);
-				
+				return(NhlNOERROR);
 			}
 		}
 		tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
@@ -708,6 +708,7 @@ NhlErrorTypes _NclIAll
 		data_out.kind = NclStk_VAL;
 		data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
 		_NclPlaceReturn(data_out);
+		return(NhlNOERROR);
 	} else {
 		tmp_val = (logical*)tmp_md->multidval.val;
 		i = 0;
@@ -724,15 +725,16 @@ NhlErrorTypes _NclIAll
 			data_out.kind = NclStk_VAL;
 			data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
 			_NclPlaceReturn(data_out);
+			return(NhlNOERROR);
 		} else {
 			tmp_val = (logical*)NclMalloc((unsigned)_NclSizeOf(NCL_logical));
 			*tmp_val = 0;
 			data_out.kind = NclStk_VAL;
 			data_out.u.data_obj = _NclMultiDVallogicalCreate(NULL,NULL,Ncl_MultiDVallogicalData,0,tmp_val,NULL,1,&dim_size,TEMPORARY,NULL);
 			_NclPlaceReturn(data_out);
+			return(NhlNOERROR);
 		}
 	}
-	return(NhlNOERROR);
 }
 
 NhlErrorTypes _NclISizeOf

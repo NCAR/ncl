@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.25 1994-12-23 01:19:35 ethan Exp $
+#      $Id: yMakefile,v 1.26 1995-01-04 01:55:18 ethan Exp $
 #
 #########################################################################
 #									#
@@ -86,7 +86,7 @@ GEN_SRCS	=	NclMultiDValdoubleData.c NclMultiDValfloatData.c \
 			NclMultiDVallongData.c NclMultiDValnclfileData.c \
 			NclMultiDValshortData.c NclMultiDValstringData.c \
 			scanner.c parser.c NclMultiDValbyteData.c \
-			NclMultiDValcharData.c scanapi.c parseapi.c yywrap.c
+			NclMultiDValcharData.c scanapi.c parseapi.c
 
 STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			AddIntrinsics.c AttSupport.c DataSupport.c Execute.c \
@@ -95,10 +95,10 @@ STATIC_SRCS	=	AddBuiltIns.c AddFileFormats.c AddHLUObjs.c \
 			NclMultiDValData.c NclMultiDValHLUObjData.c \
 			NclNetCdf.c NclVar.c OpsFuncs.c Printtoken.c SrcTree.c \
 			Symbol.c Translate.c VarSupport.c NclFileVar.c \
-			NclHLUVar.c HLUSupport.c NclCoordVar.c
+			NclHLUVar.c HLUSupport.c NclCoordVar.c yywrap.c
 
-API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o
-EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o
+API_OBJS	=	NclApi.o scanapi.o parseapi.o ioapi.o NclHLUObjapi.o 
+EXE_OBJS	=	Ncl.o scanner.o parser.o io.o NclHLUObj.o 
 
 APIOBJS		=	$(API_OBJS) $(OBJS)
 EXEOBJS		=	$(EXE_OBJS) $(OBJS)
