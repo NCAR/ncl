@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.164 2003-12-03 20:11:26 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.165 2003-12-12 21:51:40 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -4200,69 +4200,57 @@ NhlErrorTypes _NclIncargpath
 	));
 	
 }
+
 NhlErrorTypes _NclIgetenv
-#if	NhlNeedProto
+# if NhlNeedProto
 (void)
-#else
+# else
 ()
-#endif
+# endif
 {
-	NclStackEntry args;
-	NclMultiDValData tmp_md= NULL;
-	char *str;
-	char *tmp;
-	string outval;
-	int dimsize = 1;
+    /* Local Arguments */
+    NclStackEntry   args;
+    NclMultiDValData    tmp_md= NULL;
+    char    *str;
+    char    *tmp;
+    string  outval;
+    int dimsize = 1;
 
 
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
-	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
-		break;
-	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
-		break;
-	default:
-		return(NhlFATAL);
-	}
-	str = NrmQuarkToString(*(string*)tmp_md->multidval.val);
-	if(str != NULL) {
-		tmp = getenv(str);
-		if(tmp == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"getenv : (%s) is not a defined environment parameter",str);
-			outval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
-			return(NclReturnValue(
-				&outval,
-				1,
-				&dimsize,
-				&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
-				NCL_string,
-				1
-			));
-		} else {
-			outval = NrmStringToQuark(tmp);
-			return(NclReturnValue(
-				&outval,
-				1,
-				&dimsize,
-				NULL,
-				NCL_string,
-				1
-			));
-		}
-	} else {
-		outval = ((NclTypeClass)nclTypestringClass)->type_class.default_mis.stringval;
-		return(NclReturnValue(
-			&outval,
-			1,
-			&dimsize,
-			&((NclTypeClass)nclTypestringClass)->type_class.default_mis,
-			NCL_string,
-			1
-		));
-	}
-	
+    /* get the environment variable */
+    args  = _NclGetArg(0, 1, DONT_CARE);
+    switch(args.kind) {
+        case NclStk_VAL:
+            tmp_md = args.u.data_obj;
+            break;
+
+        case NclStk_VAR:
+            tmp_md = _NclVarValueRead(args.u.data_var, NULL, NULL);
+            break;
+
+        default:
+            return(NhlFATAL);
+    }
+
+    /* convert to an NCL string and verify it exists */
+    str = NrmQuarkToString(*(string *) tmp_md->multidval.val);
+    if(str != NULL) {
+        tmp = getenv(str);
+
+        /* environment variable not set; return default missing value */
+        if(tmp == NULL) {
+            outval = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+            return NclReturnValue(&outval, 1, &dimsize,
+                    &((NclTypeClass) nclTypestringClass)->type_class.default_mis, NCL_string, 1);
+        } else {
+            outval = NrmStringToQuark(tmp);
+            return NclReturnValue(&outval, 1, &dimsize, NULL, NCL_string, 1);
+        }
+    } else {
+        outval = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+        return NclReturnValue(&outval, 1, &dimsize,
+                &((NclTypeClass)nclTypestringClass)->type_class.default_mis, NCL_string, 1);
+    }
 }
 
 NhlErrorTypes _NclIushorttoint
