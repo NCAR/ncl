@@ -16,7 +16,11 @@
 #ifndef _boolean_
 #define _boolean_
 
+#ifndef	CRAY
 typedef	unsigned char	boolean;
+#else
+typedef	unsigned int	boolean;
+#endif
 
 #ifndef	TRUE
 
