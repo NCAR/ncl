@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.5 1994-07-13 17:21:15 fred Exp $
+C	$Id: ngseti.f,v 1.6 1994-07-29 17:07:09 fred Exp $
 C
       SUBROUTINE NGSETI (CNP,IVP)
 C
@@ -351,6 +351,14 @@ C
         ICOSCL = MAX(IVP,1)
         WRITE(IDR(1:5), 500) ICOSCL
         CALL GESC(-1522,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  CT - Flag to indicate if NGDOTS draws circles or filled dots (0=dots;
+C       1=circles).
+C
+      ELSE IF (CNP(1:2).EQ.'CT' .OR. CNP(1:2).EQ.'ct' .OR.
+     +         CNP(1:2).EQ.'Ct') THEN
+        ICDFLG = MIN(IVP,1)
         GO TO 120
       ELSE
         CTM(1:36) = 'NGSETI - Parameter name not known - '

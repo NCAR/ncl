@@ -19,6 +19,8 @@ C  The number of points used for the circle is adjusted depending
 C  on the relative size of the circle.  The maximum number of points
 C  is 512 and the minimum is 8.
 C
+      include 'ngcomn.h'
+C
       DIMENSION X(NUM),Y(NUM),TWIN(4),TVPT(4)
       DIMENSION CIRCX(513),CIRCY(513),CIRCXX(513),CIRCYY(513)
       INTEGER   OLDASF(13),NEWASF(13)
@@ -145,14 +147,18 @@ C
         CALL GSFAIS(1)
         CALL GSFACI(ICOLOR)
 C
-C  Draw the dots.
+C  Draw the dots or circles, depending on ICDFLG.
 C
         DO 60 I=1,NUM
           DO 70 J=1,NP
             CIRCXX(J) = X(I) + CIRCX(J)
             CIRCYY(J) = Y(I) + CIRCY(J)
    70     CONTINUE
-          CALL GFA(NP,CIRCXX,CIRCYY)
+          IF (ICDFLG .EQ. 0) THEN
+            CALL GFA(NP,CIRCXX,CIRCYY)
+          ELSE
+            CALL GPL(NP,CIRCXX,CIRCYY)
+          ENDIF
    60   CONTINUE
 C
 C  Restore the fill color and style.

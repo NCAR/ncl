@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.4 1994-06-23 00:39:50 fred Exp $
+C	$Id: ngblda.f,v 1.5 1994-07-29 17:07:02 fred Exp $
 C
       BLOCKDATA NGBLDA
 C
@@ -68,5 +68,9 @@ C
 C  File name and picture name.
 C
       DATA CFILNM,CPICNM/'DEFAULT',' '/
+C
+C  Flag to NGDOTS to indicate whether to draw dots (=0) or circles (=1).
+C
+      DATA ICDFLG/0/
 C
       END

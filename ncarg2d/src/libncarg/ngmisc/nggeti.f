@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.4 1994-06-23 00:39:54 fred Exp $
+C	$Id: nggeti.f,v 1.5 1994-07-29 17:07:07 fred Exp $
 C
       SUBROUTINE NGGETI (CNP,IVP)
 C
@@ -108,6 +108,10 @@ C
       ELSE IF (CNP(1:2).EQ.'CO' .OR. CNP(1:2).EQ.'co' .OR. 
      +    CNP(1:2).EQ.'Co') THEN
         IVP = ICOSCL
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'CT' .OR. CNP(1:2).EQ.'ct' .OR. 
+     +    CNP(1:2).EQ.'Ct') THEN
+        IVP = ICDFLG
         GO TO 110
       ELSE
         CTM(1:36) = 'NGGETI - Parameter name not known - '
