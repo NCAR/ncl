@@ -1,0 +1,33 @@
+#
+#   $Id: yMakefile,v 1.1 1996-05-08 23:21:23 haley Exp $
+#
+#   Makefile for HLU Primitives examples
+#
+
+MYNAME   = primitives
+
+PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
+EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
+SYS_LIBS    =   $(CTOFLIBS) -lm
+
+CSRCS    = pr01c.c pr02c.c
+FSRCS    = pr01f.f pr02f.f
+NSRCS    = pr01n.ncl pr02n.ncl
+COBJS    = pr01c.o pr02c.o
+FOBJS    = pr01f.o pr02f.o
+SRCS     = $(CSRCS) $(FSRCS)
+OBJS     = $(COBJS) $(FOBJS)
+RESFILES = pr02.res
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
+InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
+
+CExampleTarget(pr01c,pr01c.o)
+CExampleTarget(pr02c,pr02c.o)
+
+FExampleTarget(pr01f,pr01f.o)
+FExampleTarget(pr02f,pr02f.o)
+
+CleanFilesTarget($(OBJS))
+DependTarget($(SRCS))
