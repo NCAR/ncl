@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.4 1991-03-12 17:39:57 clyne Exp $
+ *	$Id: text.c,v 1.5 1991-04-22 13:02:54 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -49,8 +49,8 @@ extern	Ct_err	Init_Readfont();
 extern	float	X_scale();
 
 /* coordinate transformation matrix necessary for scaling and rotating of
- *characters within each characters space. The matrix is global in order
- *to avoid recalculating its value for each "text" command if it is not 
+ * characters within each characters space. The matrix is global in order
+ * to avoid recalculating its value for each "text" command if it is not 
  * explicitly changed.
  */
 static	float	matrix[2][2];	
@@ -75,10 +75,10 @@ static	int	Widtharray2[WDTH_SPACE];/* array containing widths of each
 
 
 /* the following vars retain default values that are stored in "default.c".
- *the values are compared against the default.c values to determine if any
- *changes have been made. This will prevent the need to recalculate the 
- *transformation matrix between text commands if the font attributes have not
- *changed.
+ * the values are compared against the default.c values to determine if any
+ * changes have been made. This will prevent the need to recalculate the 
+ * transformation matrix between text commands if the font attributes have not
+ * changed.
  */
 static	Rtype	Char_space = 0.0;	/* character spacing	*/
 static	Rtype 	Char_expan = 1.0;	/* char expansion factor	*/
@@ -101,6 +101,16 @@ static	CGMC	tempcgmc;		/* since text is stroked with lines
 					 */					
 static	boolean FontIsInit = FALSE;	/* fontcap sucessfully processed? */
 
+static	float	cosBase,
+		sinBase,	/* sin and cos of angle of rotation of 
+				 * base vector	
+				 */
+		cosUp,
+		sinUp;		/* sin and cos of angle of rotation of 
+				 * "up vector" with  respect to the y 
+				 * coordinate  of the screen.
+			 	 */
+
 /* 	make_matrix:
  *		This routine calculates the transformation matrix necessary
  *		for handling character orientation, character expansion and
@@ -112,16 +122,7 @@ static	boolean FontIsInit = FALSE;	/* fontcap sucessfully processed? */
  */
 static	make_matrix()
 {
-	float	sx,sy,		/* scale in x and y direction	*/
-		cos_base,
-		sin_base,	/* sin and cos of angle of rotation of 
-				 * base vector	
-				 */
-		cos_up,
-		sin_up;		/* sin and cos of angle of rotation of 
-				 * "up vector" with  respect to the y 
-				 * coordinate  of the screen.
-			 	 */
+	float	sx,sy;		/* scale in x and y direction	*/
 
 
 	sy = Y_SCALE(F_CHAR_HEIGHT(fcap_template));
@@ -132,16 +133,16 @@ static	make_matrix()
 	 * x = y = 0
 	 */
 
-	cos_base = (float) CHAR_X_BASE / MAG(CHAR_X_BASE,CHAR_Y_BASE);
-	sin_base = (float) CHAR_Y_BASE / MAG(CHAR_X_BASE,CHAR_Y_BASE);
-	cos_up = (float)   CHAR_Y_UP / MAG(CHAR_X_UP,CHAR_Y_UP);
-	sin_up = (float) -(CHAR_X_UP) / MAG(CHAR_X_UP,CHAR_Y_UP);
+	cosBase = (float) CHAR_X_BASE / MAG(CHAR_X_BASE,CHAR_Y_BASE);
+	sinBase = (float) CHAR_Y_BASE / MAG(CHAR_X_BASE,CHAR_Y_BASE);
+	cosUp = (float)   CHAR_Y_UP / MAG(CHAR_X_UP,CHAR_Y_UP);
+	sinUp = (float) -(CHAR_X_UP) / MAG(CHAR_X_UP,CHAR_Y_UP);
 
 	/* calculate transformation matrix	*/
-	matrix[0][0] =  sx * cos_base; 
-	matrix[1][0] = -(sy) * sin_base; 
-	matrix[0][1] = sx * sin_up; 
-	matrix[1][1] = sy * cos_up; 
+	matrix[0][0] = sx * cosBase; 
+	matrix[0][1] = sx * sinBase; 
+	matrix[1][0] = -sy * sinUp; 
+	matrix[1][1] = sy * cosUp; 
 }
   
 /* 	trans_coord:
@@ -583,27 +584,18 @@ static int	str_height(strlen)
  */
 static void	text_align(transx,transy, strlen,s)
 
-	int	*transx,*transy;
+	long	*transx,*transy;
 	int	strlen;
 	char	*s;
 {
-	int	x,y;	/*temp storage	*/
+	float	x,y;	/*temp storage	*/
 
-	x = str_width(strlen,s);	/*translation of x	*/
-	y = str_height(strlen);		/*translation of y	*/
+	x = (float) str_width(strlen,s);	/*translation of x	*/
+	y = (float) str_height(strlen);		/*translation of y	*/
 
-	/*
-	 * rotation of x coordinate
-	 */
-	*transx = (int) (
-		-(( (float) (x * CHAR_X_BASE) / MAG(CHAR_X_BASE,CHAR_Y_BASE)) -
-		( (float) (y * CHAR_Y_BASE) / MAG(CHAR_X_BASE,CHAR_Y_BASE)))); 
 
-	/*rotation of y	coordinate	*/
-	*transy = (int) (
-		-(( (float) ((-x) * CHAR_X_UP) / MAG(CHAR_X_UP,CHAR_Y_UP)) +
-		( (float) (y * CHAR_Y_UP) / MAG(CHAR_X_UP,CHAR_Y_UP)))); 
-
+	*transx = -((x * cosBase) - (y * sinUp));
+	*transy = -((x * sinBase) + (y * cosUp)); 
 }
 
 
@@ -667,7 +659,7 @@ Ct_err	Text(cgmc)
 	int	x_space = 0;	/* spacing in x and y direction		*/
 	int	y_space = 0;
 	int	i,k;
-	int	trans_x, trans_y;
+	long	trans_x, trans_y;
 	int	numstroke;	/* number of strokes making up the font	*/
 	int	char_ind;
 	int	str_ind;	/* index to the current string		*/
