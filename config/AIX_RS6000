@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000,v 1.6 1993-10-19 17:13:11 boote Exp $
+ *      $Id: AIX_RS6000,v 1.7 1994-03-31 01:05:41 boote Exp $
  */
 /************************************************************************
 *									*
@@ -27,3 +27,4 @@
 #define	FCompiler	xlf
 #define Cstatic		-bnso
 #define Cdynamic	-bso
+#define	CtoFLibraries	-lm -lxlf

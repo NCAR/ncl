@@ -1,7 +1,7 @@
 .\" The first line of this file must contain the '\"[e][r][t][v] line
 .\" to tell man to run the appropriate filter "t" for table.
 .\"
-.\"	$Id: ymake.man,v 1.9 1994-03-11 20:30:13 boote Exp $
+.\"	$Id: ymake.man,v 1.10 1994-03-31 01:05:49 boote Exp $
 .\"
 .\"######################################################################
 .\"#									#
@@ -543,7 +543,7 @@ symbols are defined to, for the currently supported systems:
 .nf
 VENDOR	HP	IBM	SUN	SUN	CRAY	SGI	DEC	DEC
 ARCH	HP9k7xx	RS6kxx	sun[34]	sun4	YMP	IPxx	RISC	alpha
-OS	HPUX	AIX	SunOs	Solaris	UNICOS	IRIX	ULTRIX	OSF1
+OS	HPUX	AIX	SunOS	Solaris	UNICOS	IRIX	ULTRIX	OSF1
 MAJOR=	A	3	4,5	5	6	4	4	1
 MINOR=	09	1	1,?	?	1	0	3	1
 SUBMINOR=	01	null	2,3,?	?	null	5[C-F]	null	null
