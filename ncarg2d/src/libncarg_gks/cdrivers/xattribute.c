@@ -1,5 +1,5 @@
 /*
- *	$Id: xattribute.c,v 1.9 1997-01-17 18:55:47 boote Exp $
+ *	$Id: xattribute.c,v 1.10 1997-01-21 21:26:38 boote Exp $
  */
 /*
  *      File:		xattribute.c
@@ -724,12 +724,14 @@ X11_SetColorRepresentation
 		 * unable to allocate a new color cell.
 		 * Dither to one of our current colors.
 		 */
-		int	minindx = -1;
-		float	minval = 0;
+		int	minindx;
+		float	minval;
 		float	curval;
 		float	tfloat;
 		int	j;
 TROUBLE:
+		minindx = -1;
+		minval = 0;
 
 		for(j=0;j<MAX_COLORS;j++){
 			if(color_status[j].ref_count > 0){

@@ -1,5 +1,5 @@
 /*
- *	$Id: ps.c,v 1.12 1996-05-09 00:05:30 fred Exp $
+ *	$Id: ps.c,v 1.13 1997-01-21 21:26:37 boote Exp $
  */
 /*
  *
@@ -3281,7 +3281,7 @@ ps_Esc(gksc)
 	case -1518:  /* Line joins */
 		strng = strtok(sptr, " ");
 		strng = strtok((char *) NULL, " ");
-		psa->line_join = (int) atoi(strng);
+		psa->line_join = (linejoin_type) atoi(strng);
 		if (psa->pict_empty == FALSE) {
 			(void) fprintf(psa->file_pointer, 
 				"%d J\n", psa->line_join);
@@ -3294,7 +3294,7 @@ ps_Esc(gksc)
 	case -1519:  /* Line caps */
 		strng = strtok(sptr, " ");
 		strng = strtok((char *) NULL, " ");
-		psa->line_cap = (int) atoi(strng);
+		psa->line_cap = (linecap_type) atoi(strng);
 		if (psa->pict_empty == FALSE) {
 			(void) fprintf(psa->file_pointer, 
 				"%d C\n", psa->line_cap);

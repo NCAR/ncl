@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.14 1996-08-24 19:38:11 boote Exp $
+ *	$Id: xcontrol.c,v 1.15 1997-01-21 21:26:39 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -629,7 +629,7 @@ X11_OpenWorkstation
 	switch(iptr[1]){
 		case XREG:
 		case XUSRWIN:
-			xi->xwtype = iptr[1];
+			xi->xwtype = (XWorkType)iptr[1];
 			break;
 
 		default:
@@ -959,7 +959,7 @@ X11_Esc
 			 * It just means GSCR reacts differently on a
 			 * color fault.
 			 */
-			xi->color_model = tint;
+			xi->color_model = (XColModel)tint;
 		}
 		else if(tint == CM_PRIVATE){
 			/*
@@ -970,7 +970,7 @@ X11_Esc
 			 * SetColorRepresentation for CM_MIXED.
 			 */
 			X11_private_color(xi);
-			xi->color_model = tint;
+			xi->color_model = (XColModel)tint;
 		}
 		else if(xi->mycmap){
 			/*
@@ -984,7 +984,7 @@ X11_Esc
 			 * moving to shared from mixed without already
 			 * having allocated a cmap - no work.
 			 */
-			xi->color_model = tint;
+			xi->color_model = (XColModel)tint;
 		}
 		break;
 
@@ -992,7 +992,7 @@ X11_Esc
 		switch(cesc->type){
 		case NGC_XGETXPIX:
 			gxpix = (_NGCXGetXPix*)cesc;
-			if((gxpix->gksci > (MAX_COLORS - 1))||(gxpix->gksci<0))
+			if(gxpix->gksci > (MAX_COLORS - 1))
 				return ERR_MAX_COLOR;
 			gxpix->xpixnum = xi->color_pal[gxpix->gksci];
 			break;

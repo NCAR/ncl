@@ -1,5 +1,5 @@
 /*
- *	$Id: font.c,v 1.5 1995-04-29 19:36:53 boote Exp $
+ *	$Id: font.c,v 1.6 1997-01-21 21:26:36 boote Exp $
  */
 /*
  *	File		font.c
@@ -68,7 +68,7 @@ static	char	*fontList[] = {
 		"font20",	/* HERSHEY:SYMBOL_SET2		*/
 	};
 
-static	fonttblsize = sizeof (fontList) / sizeof (char *);
+static	unsigned int fonttblsize = sizeof (fontList) / sizeof (char *);
 
 #ifdef	DEBUG_FCAP
 /*

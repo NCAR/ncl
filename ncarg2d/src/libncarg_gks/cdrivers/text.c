@@ -1,5 +1,5 @@
 /*
- *	$Id: text.c,v 1.3 1994-06-08 16:57:49 boote Exp $
+ *	$Id: text.c,v 1.4 1997-01-21 21:26:38 boote Exp $
  */
 /*
  *	File		text.c
@@ -759,16 +759,25 @@ static int	str_height(strlen, s)
  *		transx : calculated adjustment of x coordinate
  *		transy : calculated adjustment of y coordinate
  */
-static void	text_align(transx,transy, strlen,s)
-
-	long	*transx,*transy;
-	int	strlen;
-	char	*s;
+static void	text_align
+#ifdef	NeedFuncProto
+(
+	long		*transx,
+	long		*transy,
+	int		slen,
+	char		*s
+)
+#else
+(transx,transy,slen,s)
+	long		*transx,*transy;
+	int		slen;
+	char		*s;
+#endif
 {
 	float	x,y;	/*temp storage	*/
 
-	x = (float) str_width(strlen,s);	/*translation of x	*/
-	y = (float) str_height(strlen,s);	/*translation of y	*/
+	x = (float) str_width(slen,s);	/*translation of x	*/
+	y = (float) str_height(slen,s);	/*translation of y	*/
 
 
 	*transx = -((x * TextInfo.cos_base) - (y * TextInfo.sin_up));
