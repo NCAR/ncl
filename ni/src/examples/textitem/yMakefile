@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.6 1995-02-08 17:21:38 haley Exp $
+#   $Id: yMakefile,v 1.7 1995-02-08 18:00:34 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
@@ -10,6 +10,7 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 
 SRCS        = tx01c.c tx02c.c tx03c.c tx04c.c tx01f.f tx02f.f tx03f.f tx04f.f \
 				tx01n.ncl tx02n.ncl tx03n.ncl tx04n.ncl
+OBJS        = tx01c.o tx02c.o tx03c.o tx04c.o tx01f.o tx02f.o tx03f.o tx04f.o
 RES         = tx01.res tx02.res tx03.res
 EXFILES     = $(SRCS) $(RES)
 
@@ -25,7 +26,7 @@ HLUFExampleTarget(tx02f,tx02f.o)
 HLUFExampleTarget(tx03f,tx03f.o)
 HLUFExampleTarget(tx04f,tx04f.o)
 
-CleanFilesTarget($(NCGMS))
+CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
 
 

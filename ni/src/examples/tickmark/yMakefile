@@ -1,16 +1,15 @@
 #
-#   $Id: yMakefile,v 1.1 1995-01-26 18:01:00 haley Exp $
+#   $Id: yMakefile,v 1.2 1995-02-08 18:01:13 haley Exp $
 #
 #   Makefile for HLU TickMark examples
 #
-
-NCGMS   =   tm01c.ncgm tm02c.ncgm tm03c.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 SRCS        = tm01c.c tm02c.c tm03c.c
+OBJS        = tm01c.o tm02c.o tm03c.o
 RES			= tm01.res tm02.res tm03.res
 INCLUDES	= tm03c.h
 EXFILES     = $(SRCS) $(RES) $(INCLUDES)
@@ -21,6 +20,6 @@ HLUCExampleTarget(tm01c,tm01c.o)
 HLUCExampleTarget(tm02c,tm02c.o)
 HLUCExampleTarget(tm03c,tm03c.o)
 
-CleanFilesTarget($(NCGMS))
+CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
 

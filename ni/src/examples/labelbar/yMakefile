@@ -1,16 +1,15 @@
 #
-#   $Id: yMakefile,v 1.3 1995-02-08 17:14:05 haley Exp $
+#   $Id: yMakefile,v 1.4 1995-02-08 17:58:01 haley Exp $
 #
 #   Makefile for HLU LabeBar examples
 #
-
-NCGMS   =   lb01c.ncgm lb02c.ncgm lb01f.ncgm lb02f.ncgm lb01n.ncgm lb02n.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
 SRCS        = lb01c.c lb02c.c lb01f.f lb02f.f lb01n.ncl lb02n.ncl
+SRCS        = lb01c.o lb02c.o lb01f.o lb02f.o
 RES         = lb01.res lb02.res
 EXFILES     = $(SRCS) $(RES)
 
@@ -22,6 +21,6 @@ HLUCExampleTarget(lb02c,lb02c.o)
 HLUFExampleTarget(lb01f,lb01f.o)
 HLUFExampleTarget(lb02f,lb02f.o)
 
-CleanFilesTarget($(NCGMS))
+CleanFilesTarget($(OBJS))
 DependTarget($(SRCS))
 
