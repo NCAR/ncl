@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.127 2003-05-12 16:26:12 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.128 2003-05-13 15:19:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4029,19 +4029,6 @@ begin
 ; Tickmarks.
 ;
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
-;
-; If gsnPolar* resources are set, be sure to retrieve them with
-; "get_res_value" so that they don't get passed onto the contour plot.
-;
-    if(isatt(res2,"gsnPolarLabelSpacing"))
-      mpres@gsnPolarLabelSpacing = get_res_value(res2,  \
-                                                 "gsnPolarLabelSpacing",0)
-    end if
-
-    if(isatt(res2,"gsnPolarLabelDistance"))
-      mpres@gsnPolarLabelDistance = get_res_value(res2,  \
-                                                 "gsnPolarLabelDistance",0)
-    end if
 
 ; Create data object and use coordinate variables if they exist.
 
@@ -4066,8 +4053,9 @@ begin
 ; This section tests for regular resources.
 
     lbres = get_res_eq(res2,(/"lb","pm"/))
-    mpres = get_res_eq(res2,(/"mp","ti","vp","tx","am","pmA","pmO","pmT"/))
-    cnres = get_res_ne(res2,(/"mp","vp","lb","tx","am"/))
+    mpres = get_res_eq(res2,(/"mp","ti","vp","tx","am","pmA","pmO","pmT",\
+                              "gsnPolar"/))
+    cnres = get_res_ne(res2,(/"mp","vp","lb","tx","am","gsnPolar"/))
 
     if(cnres)
       if(check_attr(cnres,"cnFillOn",True,False))
@@ -5005,8 +4993,9 @@ begin
     check_for_lon_coord(unew,res2,"vector_map")
 
 ; This section tests for regular resources.
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO", \
+                       "pmT","gsnPolar"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm","gsnPolar"/))
     lbres = get_res_eq(res2,(/"lb","pm"/))
 
     if(vcres)
@@ -5497,8 +5486,9 @@ begin
     check_for_lon_coord(unew,res2,"vector_map")
 
 ; This section tests for regular resources.
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO", \
+                              "pmT","gsnPolar"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","gsnPolar"/))
 
 ; Before we create the objects, turn off draw and frame for them.
     stres = True
@@ -6018,8 +6008,9 @@ begin
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
 
 ; This section tests for regular resources.
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO", \
+                              "pmT","gsnPolar"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm","gsnPolar"/))
 
 ; Before we create the objects, turn off draw and frame for them.
     stres = True
@@ -6970,8 +6961,9 @@ begin
     mpres@gsnTickMarksOn = get_res_value(res2,"gsnTickMarksOn",True)
 
 ; This section tests for regular resources.
-    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm"/))
+    mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO",\
+                              "pmT","gsnPolar"/))
+    vcres = get_res_ne(res2,(/"mp","vp","tm","tx","am","lb","pm","gsnPolar"/))
 
 ; Before we create the objects, turn off draw and frame for them.
     vcres = True
