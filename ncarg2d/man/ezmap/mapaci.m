@@ -22,7 +22,7 @@ argument description.
 .SH USAGE
 ICIR = MAPACI (IAID)
 .sp
-Gives ICI a value between 1 and 7, inclusive, that may be used to select
+Gives ICIR a value between 1 and 7, inclusive, that may be used to select
 a color index for the area whose area identifier is IAID.  It is guaranteed
 that MAPACI will not return the same value for adjacent areas; this fact
 can be used to ensure that adjacent areas will have different colors.
