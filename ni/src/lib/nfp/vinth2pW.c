@@ -209,6 +209,7 @@ NhlErrorTypes vinth2p_W
 		} else {
 			plevo = (char*)((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val;
 		}
+		tmp_md = plevo_val.u.data_obj;
 		break;
 	case NclStk_VAR:
                 tmp_md = _NclVarValueRead(plevo_val.u.data_var,NULL,NULL);
@@ -223,18 +224,18 @@ NhlErrorTypes vinth2p_W
 		plevo_type_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(plevo_type)));
 		if(plevo_type != NCL_double ) {
 			plevo = (char*)NclMalloc(sizeof(double) * plevo_dimsizes);
-			_Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)plevo,((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val,plevo_dimsizes,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(plevo_type))));
+			_Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)plevo,tmp_md->multidval.val,plevo_dimsizes,NULL,NULL,(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(plevo_type))));
 		} else {
-			plevo = (char*)((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val;
+			plevo = (char*)tmp_md->multidval.val;
 		}
 		break;
 	}
 	if(plevo_type != NCL_double) {
-		plevo2 = (char*)NclMalloc(((NclMultiDValData)(plevo_val.u.data_obj))->multidval.totalsize);
-		memcpy(plevo2,((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val,((NclMultiDValData)(plevo_val.u.data_obj))->multidval.totalsize);
+		plevo2 = (char*)NclMalloc(tmp_md->multidval.totalsize);
+		memcpy(plevo2,tmp_md->multidval.val,tmp_md->multidval.totalsize);
 	} else {
-		plevo2 = (char*)NclMalloc(((NclMultiDValData)(plevo_val.u.data_obj))->multidval.totalsize);
-		memcpy(plevo2,((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val,((NclMultiDValData)(plevo_val.u.data_obj))->multidval.totalsize);
+		plevo2 = (char*)NclMalloc(tmp_md->multidval.totalsize);
+		memcpy(plevo2,tmp_md->multidval.val,tmp_md->multidval.totalsize);
 	}
 	nblk_out = plevo_dimsizes * datai_md->multidval.dim_sizes[ datai_md->multidval.n_dims -1] * datai_md->multidval.dim_sizes[ datai_md->multidval.n_dims -2];
 	
@@ -359,7 +360,7 @@ NhlErrorTypes vinth2p_W
 	NclFree(plevi);
 
 
-	if(((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val != plevo) {
+	if(tmp_md->multidval.val != plevo) {
 		NclFree(plevo);
 	}
 	if((char*)hbcofa != hbcofa_ptr) {
