@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.44 1996-03-12 00:59:56 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.45 1996-04-16 17:28:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -275,7 +275,7 @@ static NhlResource resources[] = {
 {NhlNlbTitleOn, NhlClbTitleOn, NhlTBoolean, 
 	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.title_on),
 	 NhlTProcedure,_NhlUSET((NhlPointer)SetTitleOn),0,NULL},
-{NhlNlbTitlePosition, NhlClbTitlePosition, NhlTInteger, 
+{NhlNlbTitlePosition, NhlClbTitlePosition, NhlTPosition, 
 	 sizeof(NhlPosition), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.title_pos),
 	 NhlTImmediate,_NhlUSET((NhlPointer) NhlTOP),0,NULL},

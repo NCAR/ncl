@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.12 1996-04-06 03:49:11 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.13 1996-04-16 17:28:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -376,7 +376,7 @@ static NhlResource resources[] = {
 
 	{NhlNvcRefAnnoZone,NhlCvcRefAnnoZone,NhlTInteger,
 		 sizeof(int),Oset(refvec_anno_rec.zone),NhlTImmediate,
-		 _NhlUSET((NhlPointer) 3),0,NULL},
+		 _NhlUSET((NhlPointer) 4),0,NULL},
 	{NhlNvcRefAnnoSide,NhlCvcRefAnnoSide,NhlTPosition,
 		 sizeof(NhlPosition),Oset(refvec_anno_rec.side),NhlTImmediate,
 		 _NhlUSET((NhlPointer)NhlBOTTOM),0,NULL},
