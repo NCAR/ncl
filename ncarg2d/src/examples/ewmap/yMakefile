@@ -1,12 +1,14 @@
 #
-#       $Id: yMakefile,v 1.5 1995-06-14 13:57:34 haley Exp $
+#       $Id: yMakefile,v 1.6 2001-02-09 01:58:43 fred Exp $
 #
 MYNAME  = ewmap
 
 SRCS = wmex01.f wmex02.f wmex03.f wmex04.f wmex05.f wmex06.f wmex07.f \
-	wmex08.f wmex09.f wmex10.f wmex11.f wmex12.f wmex13.f wmex14.f
+	wmex08.f wmex09.f wmex10.f wmex11.f wmex12.f wmex13.f wmex14.f \
+	wmex15.f
 OBJS = wmex01.o wmex02.o wmex03.o wmex04.o wmex05.o wmex06.o wmex07.o \
-	wmex08.o wmex09.o wmex10.o wmex11.o wmex12.o wmex13.o wmex14.o
+	wmex08.o wmex09.o wmex10.o wmex11.o wmex12.o wmex13.o wmex14.o \
+	wmex15.o
 
 PROG_LIBS		= $(NCARGLIBS)
 SYS_LIBS		= -lm
@@ -28,3 +30,4 @@ FExampleTarget(wmex11,wmex11.o)
 FExampleTarget(wmex12,wmex12.o)
 FExampleTarget(wmex13,wmex13.o)
 FExampleTarget(wmex14,wmex14.o)
+FExampleTarget(wmex15,wmex15.o)
