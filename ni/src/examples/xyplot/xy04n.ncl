@@ -1,5 +1,5 @@
 ;
-;      $Id: xy04n.ncl,v 1.11 1995-06-22 21:09:32 haley Exp $
+;      $Id: xy04n.ncl,v 1.12 1996-05-02 22:27:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -35,23 +35,6 @@
 ;
 begin
 
-procedure assigndata(
-    y[*][*]:float,
-    ncurve:integer,
-    npts:integer
-) 
-local
-    i,
-    theta
-begin
-  do j = 0, ncurve-1
-    do i = 0, npts-1
-      theta = 0.031415926535898*i
-      y(j,i) = j*200.+i*.9*sin(theta)
-    end do
-  end do
-end
-
 ;
 ; Create variables to contain data.
 ;
@@ -62,7 +45,16 @@ ydra = new((/ncurve,npts/), float)
 ;
 ; Initialize data for the XyPlot object.
 ; 
-assigndata(ydra,ncurve,npts)
+ii = new((/ncurve,npts/),float)
+do i = 0,npts-1
+  ii(:,i) = i
+end do
+
+ydra = ii*.9*sin(0.031415926535898*ii)
+do i = 0,ncurve-1
+  ii(i,:) = i
+end do
+ydra = ii*200.+ydra
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background

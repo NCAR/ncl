@@ -1,5 +1,5 @@
 ;
-;      $Id: xy08n.ncl,v 1.3 1996-04-22 23:43:32 haley Exp $
+;      $Id: xy08n.ncl,v 1.4 1996-05-02 22:27:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -85,9 +85,7 @@ len_dims = new(1,integer)
 len_dims(0) = npts2
 xcoord = asciiread("xy08.asc",len_dims,"float")
 
-do i = 0, npts2-1
-  xcoord(i) = 2. ^ ((xcoord(i)-15.)/2.5)
-end do
+xcoord = 2. ^ ((xcoord-15.)/2.5)
 
 assigndata(xcoord,xdra,ydra,len,npts,ncurve)
 

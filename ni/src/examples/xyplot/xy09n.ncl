@@ -1,5 +1,5 @@
 ;
-;      $Id: xy09n.ncl,v 1.2 1995-06-22 21:09:47 haley Exp $
+;      $Id: xy09n.ncl,v 1.3 1996-05-02 22:27:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -29,28 +29,13 @@
 ;
 begin
 
-procedure assigndata(
-    x[*]:float,
-    y[*]:float,
-    npts:integer
-) 
-local
-    i,
-    theta
-begin
-  do i = 0, npts-1
-    theta = 0.031415926535898*i
-    x(i) = 500.+.9*i*cos(theta)
-    y(i) = 500.+.9*i*sin(theta)
-  end do
-end
-
 ;
 ; Create variables to contain data.
 ;
 npts = 501
 xdra = new(npts, float)
 ydra = new(npts, float)
+ii = new(npts,float)
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
@@ -67,7 +52,11 @@ cmap(5,:) = (/0.6,0.2,0.2/)
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-assigndata(xdra,ydra,npts)
+do i = 0, npts-1
+  ii(i) = i
+end do
+xdra = 500.+.9*ii*cos(0.031415926535898*ii)
+ydra = 500.+.9*ii*sin(0.031415926535898*ii)
 
 ;
 ; Create Application object.  The Application object name is used to

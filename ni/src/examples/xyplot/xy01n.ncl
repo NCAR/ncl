@@ -1,5 +1,5 @@
 ;
-;      $Id: xy01n.ncl,v 1.11 1995-06-22 21:09:21 haley Exp $
+;      $Id: xy01n.ncl,v 1.12 1996-05-02 22:27:14 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -34,23 +34,6 @@
 begin
 
 ;
-; Procedure for initializing data array.
-;
-procedure assigndata(
-    y[*]:float,
-    npts:integer
-) 
-local
-    i,
-    theta
-begin
-  do i = 0, npts-1
-    theta = 0.031415926535898*i
-    y(i) = 500.+.9*i*sin(theta)
-  end do
-end
-
-;
 ; Create variable to contain data.
 ;
 npts = 500
@@ -59,7 +42,11 @@ ydra = new(npts, float)
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-assigndata(ydra,npts)
+ii = new(npts,float)
+do i = 0, npts-1
+  ii(i) = i
+end do
+ydra = 500.+.9*ii*sin(0.031415926535898*ii)
 
 ;
 ; Create Application object.  The Application object name is used to

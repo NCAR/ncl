@@ -1,5 +1,5 @@
 ;
-;      $Id: xy15n.ncl,v 1.1 1995-10-19 14:48:59 haley Exp $
+;      $Id: xy15n.ncl,v 1.2 1996-05-02 22:27:18 haley Exp $
 ;
 ;***********************************************************************
 ;                                                                      *
@@ -42,16 +42,17 @@ ydra1 = new(NPTS,float)
 ydra2 = new(NPTS,float)
 ydra3 = new(NPTS,float)
 ydra4 = new(NPTS,float)
+theta = new(NPTS,float)
 ;
 ; Initialize data for the XyPlot object.
 ;
 do i = 0,NPTS-1
-    theta = PI100*i
-    ydra1(i) = sin(theta)
-    ydra2(i) = sin(theta * theta)
-    ydra3(i) = sin(EXP^theta)
-    ydra4(i) = sin(3*sqrt(fabs(theta)))
+    theta(i) = PI100*i
 end do
+ydra1 = sin(theta)
+ydra2 = sin(theta * theta)
+ydra3 = sin(EXP^theta)
+ydra4 = sin(3*sqrt(fabs(theta)))
 ;
 ; Create an Application object so we are set up to use the "xy15.res"
 ; resource file.

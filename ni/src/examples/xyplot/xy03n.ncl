@@ -1,5 +1,5 @@
 ;
-;      $Id: xy03n.ncl,v 1.11 1995-06-22 21:09:27 haley Exp $
+;      $Id: xy03n.ncl,v 1.12 1996-05-02 22:27:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -34,22 +34,6 @@
 ;
 begin
 
-procedure assigndata(
-    x[*]:float,
-    y[*]:float,
-    npts:integer
-) 
-local
-    i,
-    theta
-begin
-  do i = 0, npts-1
-    theta = 0.031415926535898*i
-    x(i) = 500.+.9*i*cos(theta)
-    y(i) = 500.+.9*i*sin(theta)
-  end do
-end
-
 ;
 ; Create variables to contain data.
 ;
@@ -70,7 +54,12 @@ cmap(3,:) = (/0.0,1.0,0.0/)
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-assigndata(xdra,ydra,npts)
+ii = new(npts,float)
+do i = 0, npts-1
+  ii(i) = i
+end do
+xdra = 500.+.9*ii*cos(0.031415926535898*ii)
+ydra = 500.+.9*ii*sin(0.031415926535898*ii)
 
 ;
 ; Create Application object.  The Application object name is used to

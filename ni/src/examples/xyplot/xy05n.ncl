@@ -1,5 +1,5 @@
 ;
-;      $Id: xy05n.ncl,v 1.12 1995-06-22 21:09:35 haley Exp $
+;      $Id: xy05n.ncl,v 1.13 1996-05-02 22:27:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                     ;
@@ -32,33 +32,12 @@
 ;
 begin
 
-procedure assigndata(
-    y[*][*]:float,
-    length[*]:integer,
-    npts:integer,
-    ncurve:integer
-) 
-local
-    i,
-    j,
-    pi
-begin
-  pi = 3.14159
-  do j = 0, ncurve-1
-    length(j) = npts - j*10
-    do i = 0, npts-1
-      y(j,i) = (j+1)*sin((2.*i*pi)/(length(j)-1))
-    end do
-  end do
-end
-
 ;
 ; Create variables to contain data.
 ;
 ncurve = 10
 npts = 100
 y = new((/ncurve,npts/),float)
-length = new(ncurve,integer)
 
 ;
 ; Create array to contain dataitem ids.
@@ -68,7 +47,18 @@ dataid = new(ncurve,graphic)
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-assigndata(y,length,npts,ncurve)
+
+ii = new((/ncurve,npts/),float)
+jj = new((/ncurve,npts/),float)
+do i=0,npts-1
+  ii(:,i) = i
+end do
+do j=0,ncurve-1
+  jj(j,:) = j+1
+end do
+
+pi = 3.14159
+y = jj*sin((2.*ii*pi)/((npts-(jj-1)*10)-1))
 
 ;
 ; Modify the color map.  Color indices '0' and '1' are the background
@@ -102,8 +92,8 @@ end create
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=0
-X11=1
+NCGM=1
+X11=0
 PS=0
 
 if (NCGM .eq. 1) then
@@ -143,7 +133,7 @@ end if
 ;
 do i=0,ncurve-1
   dataid(i) = create "xyData"+i coordArraysClass defaultapp
-    "caYArray": y(i,0:length(i)-1)
+    "caYArray": y(i,0:(npts-i*10)-1)
   end create
 end do
 
