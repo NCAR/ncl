@@ -1,5 +1,5 @@
 C
-C	$Id: ngpswk.f,v 1.4 2000-08-22 15:05:12 haley Exp $
+C	$Id: ngpswk.f,v 1.5 2003-05-22 16:03:46 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -68,7 +68,9 @@ C  so that the values can be differentiated.  For example, to
 C  specify color, using 'C' as the third argument would be sufficient.
 C  Either upper case or lower case is accepted.
 C
-      CHARACTER *(*) PSTYPE, ORIENT, COLOR
+      CHARACTER *(*) PSTYPE
+      CHARACTER *(*) ORIENT
+      CHARACTER *(*) COLOR
       CHARACTER*80 IFMT
 C
       DIMENSION ITYPES(3,2,2)
@@ -98,7 +100,7 @@ C
         ELSE
           WRITE (I1MACH(4),500) PSTYPE(1:3)
   500     FORMAT(
-     +      'NGPSWK - ''',A3,''' unrecognized, defaulted to ''PS''')       
+     +      'NGPSWK - ''',A3,''' unrecognized, defaulted to ''PS''')
           IPST = 1
           GO TO 200
         ENDIF
@@ -112,8 +114,8 @@ C
         ELSE
           ILEN = LEN(PSTYPE)
           WRITE(IFMT,660) ILEN
-  660     FORMAT('(''NGPSWK - '''''',A',I3,','''''' unrecognized, defaulte
-     +d to ''''PS'''''')')
+  660     FORMAT('(''NGPSWK - '''''',A',I3,','''''' unrecognized, defaul
+     +ted to ''''PS'''''')')
           WRITE (I1MACH(4),IFMT) PSTYPE(1:ILEN)
           IPST = 1
           GO TO 200
@@ -167,7 +169,6 @@ C
       ENDIF
   220 CONTINUE
 C
-  120 CONTINUE
       NGPSWK = ITYPES(IPST, IORN, ICLR)
       RETURN
       END

@@ -1,5 +1,5 @@
 C
-C $Id: ngwsym.f,v 1.4 2000-08-22 15:05:14 haley Exp $
+C $Id: ngwsym.f,v 1.5 2003-05-22 16:03:46 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -182,9 +182,10 @@ C
         ENDIF
       ELSE
         WRITE(6,100) FTMP,NUM
-  100   FORMAT(' NGWSYM -- Error in font or glyph number specification:',
-     +       / '             Font = ',A2,
-     +       / '             Glyph number =',I3)
+  100   FORMAT(
+     +     ' NGWSYM -- Error in font or glyph number specification:',
+     +     / '             Font = ',A2,
+     +     / '             Glyph number =',I3)
         GO TO 10
       ENDIF
 C
