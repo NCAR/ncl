@@ -1,5 +1,5 @@
 /*
- *	$Id: hppcl.c,v 1.3 1995-03-16 22:56:54 haley Exp $
+ *	$Id: hppcl.c,v 1.4 1996-05-09 22:05:03 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -413,7 +413,8 @@ HPPCLOpenWrite(name, nx, ny, comment, encoding)
 	ras->format = (char *) ras_calloc((unsigned) strlen(FormatName) + 1,1);
 	(void) strcpy(ras->format, FormatName);
 
-	ras->text = Comment;
+	ras->text = ras_malloc(strlen(Comment + 1));
+	(void) strcpy(ras->text, Comment);
 
 	ras->nx	= nx;
 	ras->ny	= ny;
@@ -516,12 +517,14 @@ HPPCLClose(ras)
 	Raster	*ras;
 {
 	int		status;
+#ifdef	DEAD
 	HPPCL_Info	*hppcl = (HPPCL_Info *) ras->dep;
 
 	if (hppcl) {
 		ras_free( (char *) hppcl);
 	}
 
+#endif
 	status = GenericClose(ras);
 	return(status);
 }
