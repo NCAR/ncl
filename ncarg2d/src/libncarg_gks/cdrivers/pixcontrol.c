@@ -1,5 +1,5 @@
 /*
- *      $Id: pixcontrol.c,v 1.2 2004-03-20 00:06:55 dbrown Exp $
+ *      $Id: pixcontrol.c,v 1.3 2004-03-22 21:22:40 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -521,8 +521,9 @@ CreateXWorkWindow
 	{
 		Status s;
 		Window root;
-		int x,y,width,height,bw,depth;
-		       
+		int x,y;
+		unsigned int width,height,bw,depth;
+
 		s = XGetGeometry(dpy,win,&root,&x,&y,&width,&height,
 				 &bw,&depth);
 
@@ -823,10 +824,17 @@ PIX_ActivateWorkstation
 
         XWindowAttributes       xwa;    /* Get window attributes        */
         CoordSpace      square_screen;
+	int x,y;
+	unsigned int width,height,bw,depth;
+	Status s;
+	Window root;
+		       
+	s = XGetGeometry(dpy,xi->pix,&root,&x,&y,&width,&height,
+			 &bw,&depth);
 	
 	if (xi->clear) {
 		XFillRectangle
-			(xi->dpy,xi->pix,xi->bg_gc,0,0,xwa.width,xwa.height);
+			(xi->dpy,xi->pix,xi->bg_gc,0,0,width,height);
 		xi->clear = 0;
 	}
 
@@ -889,8 +897,9 @@ PIX_UpdateWorkstation
         Display *dpy = xi->dpy;
 	Status s;
 	Window root;
-	int x,y,width,height,bw,depth;
-	int pix_width,pix_height;
+	int x,y;
+	unsigned int width,height,bw,depth;
+	unsigned int pix_width,pix_height;
 		       
 	s = XGetGeometry(dpy,xi->pix,&root,&x,&y,&pix_width,&pix_height,
 			 &bw,&depth);
@@ -953,6 +962,8 @@ int OutputFrame
 	case PIX_PNG:
 		return PIX_Write_PNG(xi);
 	}
+	ESprintf(ERR_INV_INDEX,"Invalid PIX driver format");
+	return(ERR_INV_INDEX);
 }
 
 int
@@ -972,8 +983,12 @@ PIX_ClearWorkstation
 
         XWindowAttributes       xwa;    /* Get window attributes        */
         CoordSpace      square_screen;
+	int ret;
 
-	OutputFrame(xi);
+	ret = OutputFrame(xi);
+	if (ret != 0) {
+		return ret;
+	}
 	xi->frame_count++;
 
         /* 

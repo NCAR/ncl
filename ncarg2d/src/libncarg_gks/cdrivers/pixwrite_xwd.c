@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_xwd.c,v 1.1 2004-03-20 00:06:55 dbrown Exp $
+ *      $Id: pixwrite_xwd.c,v 1.2 2004-03-22 21:22:40 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -59,7 +59,7 @@ typedef unsigned long Pixel;
 
 static void _swapshort (bp, n)
     register char *bp;
-    register unsigned n;
+    register unsigned int n;
 {
     register char c;
     register char *ep = bp + n;
@@ -74,7 +74,7 @@ static void _swapshort (bp, n)
 
 static void _swaplong (bp, n)
     register char *bp;
-    register unsigned n;
+    register unsigned int n;
 {
     register char c;
     register char *ep = bp + n;
@@ -183,7 +183,8 @@ int PIX_Write_XWD
 {
 	Status s;
 	Window root;
-	int x,y,width,height,bw,depth;
+	int x,y;
+	unsigned int width,height,bw,depth;
 	XImage *image;	       
 	int image_size;
 	unsigned long swaptest = 1;
@@ -259,10 +260,12 @@ int PIX_Write_XWD
 	header.window_bdrwidth = 0;
 
 	if (*(char *) &swaptest) {
-		_swaplong((char *) &header, sizeof(header));
+		_swaplong((char *) &header, (unsigned int)sizeof(header));
 		for (i = 0; i < ncolors; i++) {
-			_swaplong((char *) &colors[i].pixel, sizeof(long));
-			_swapshort((char *) &colors[i].red, 3 * sizeof(short));
+			_swaplong((char *) &colors[i].pixel, 
+				  (unsigned int) sizeof(long));
+			_swapshort((char *) &colors[i].red, 
+				   (unsigned int)(3 * sizeof(short)));
 		}
 	}
 	
