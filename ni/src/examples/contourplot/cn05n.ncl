@@ -1,0 +1,258 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                      ;
+;                Copyright (C)  1993                                   ;
+;        University Corporation for Atmospheric Research               ;
+;                All Rights Reserved                                   ;
+;                                                                      ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;   File:       cn05n.ncl
+;
+;   Author:     Tim Scheitlin
+;           National Center for Atmospheric Research
+;           PO 3000, Boulder, Colorado
+;
+;
+;   Date:       Wed Apr 12 10:40:27 MDT 1995
+;
+;   Description: Demonstrates how to create a map plot animation with a 
+;		 contour overlay and labelbar annotation.
+;
+
+
+procedure gen_colormap( cmap[*][*]:float )
+begin
+        ;This procedure explicitly sets the red, green, and blue
+ 	;intensities for each element in a colormap array.
+
+	; Set the color map
+	cmap( 63,:) = (/1.00,.000,.000/)
+	cmap( 62,:) = (/1.00,.000,.000/)
+	cmap( 61,:) = (/.990,.000,.000/)
+	cmap( 60,:) = (/.950,.010,.000/)
+	cmap( 59,:) = (/.900,.030,.000/)
+	cmap( 58,:) = (/.870,.050,.000/)
+	cmap( 57,:) = (/.830,.070,.000/)
+	cmap( 56,:) = (/.800,.090,.000/)
+	cmap( 55,:) = (/.750,.090,.000/)
+	cmap( 54,:) = (/.700,.090,.000/)
+	cmap( 53,:) = (/.700,.100,.000/)
+	cmap( 52,:) = (/.700,.120,.000/)
+	cmap( 51,:) = (/.700,.130,.000/)
+	cmap( 50,:) = (/.700,.180,.000/)
+	cmap( 49,:) = (/.700,.240,.000/)
+	cmap( 48,:) = (/.700,.260,.000/)
+	cmap( 47,:) = (/.700,.270,.000/)
+	cmap( 46,:) = (/.700,.285,.000/)
+	cmap( 45,:) = (/.690,.300,.000/)
+	cmap( 44,:) = (/.680,.330,.000/)
+	cmap( 43,:) = (/.675,.375,.000/)
+	cmap( 42,:) = (/.570,.420,.000/)
+	cmap( 41,:) = (/.565,.485,.000/)
+	cmap( 40,:) = (/.560,.530,.000/)
+	cmap( 39,:) = (/.555,.545,.000/)
+	cmap( 38,:) = (/.550,.550,.000/)
+	cmap( 37,:) = (/.160,.565,.000/)
+	cmap( 36,:) = (/.130,.570,.000/)
+	cmap( 35,:) = (/.100,.575,.000/)
+	cmap( 34,:) = (/.060,.680,.000/)
+	cmap( 33,:) = (/.030,.685,.000/)
+	cmap( 32,:) = (/.000,.690,.000/)
+	cmap( 31,:) = (/.000,.725,.000/)
+	cmap( 30,:) = (/.000,.700,.100/)
+	cmap( 29,:) = (/.000,.650,.200/)
+	cmap( 28,:) = (/.000,.600,.300/)
+	cmap( 27,:) = (/.000,.550,.400/)
+	cmap( 26,:) = (/.000,.500,.500/)
+	cmap( 25,:) = (/.000,.450,.600/)
+	cmap( 24,:) = (/.000,.400,.700/)
+	cmap( 23,:) = (/.000,.350,.700/)
+	cmap( 22,:) = (/.000,.300,.700/)
+	cmap( 21,:) = (/.000,.250,.700/)
+	cmap( 20,:) = (/.000,.200,.700/)
+	cmap( 19,:) = (/.000,.150,.700/)
+	cmap( 18,:) = (/.000,.100,.700/)
+	cmap( 17,:) = (/.000,.050,.700/)
+	cmap( 16,:) = (/.000,.000,.700/)
+	cmap( 15,:) = (/.050,.050,.700/)
+	cmap( 14,:) = (/.100,.100,.700/)
+	cmap( 13,:) = (/.150,.150,.700/)
+	cmap( 12,:) = (/.200,.200,.700/)
+	cmap( 11,:) = (/.250,.250,.700/)
+	cmap( 10,:) = (/.300,.300,.700/)
+	cmap(  9,:) = (/.350,.350,.700/)
+	cmap(  8,:) = (/.420,.400,.700/)
+	cmap(  7,:) = (/.450,.450,.700/)
+	cmap(  6,:) = (/.560,.500,.700/)
+	cmap(  5,:) = (/.550,.550,.700/)
+	cmap(  4,:) = (/.610,.600,.700/)
+	cmap(  3,:) = (/.650,.650,.700/)
+	cmap(  2,:) = (/.700,.700,.700/)
+	cmap(  1,:) = (/.800,.800,.800/)
+	; Entry 0 is the foreground color.
+	; The continental outlines in the map object use this color 
+        ; as a default.
+	cmap(  0,:) = (/.0,.0,.0/)
+end
+
+begin
+; Load a file record from the netCDF file as a read only data set.
+mfile =  addfile ("meccatemp.cdf","r")
+
+; Create an ncgm workstation using the defaults.
+wks = create "wks" ncgmWorkstationClass noparent end create
+
+; Create a 64x3 array for the colormap (the first dimension is arbitrary).
+; The second dimension represents each component of an RGB triple.
+cmap = new ((/64,3/), float)
+
+; Generate a colormap.
+gen_colormap(cmap)
+
+; Assign the colormap to the workstation.
+setvalues wks
+   "wkColorMap" : cmap
+end setvalues
+
+; Create a scalar field object that will be used as the
+; dataset for the contour object.
+field1 = create "field1" scalarFieldClass noparent
+	; Read the first temperature field.
+        "sfDataArray" : mfile->t(0,:,:)  
+	; Assign the X and Y start and end coordinates.
+        "sfXCStartV" : mfile->lon(0)  
+        "sfXCEndV": mfile->lon(dimsizes(mfile->lon) - 1)
+        "sfYCStartV" : mfile->lat(0)
+        "sfYCEndV": mfile->lat(dimsizes(mfile->lat) - 1)
+end create
+
+
+; Create an array that will contain the indices into the 
+; colormap defined earlier.
+fillindices = new (62, integer)
+
+; Assign the indices, skipping the first two colormap entries
+; that contain the default background and foreground color. 
+do i = 0, 61
+   fillindices(i) = i+2
+end do
+
+; Create a contour plot object.
+con1 = create "con1" contourPlotClass wks
+         ; Assign the data that was read earlier.
+         "cnScalarFieldData" : field1
+         ; Assign the colormap fill indices
+         "cnFillColors": fillindices
+         ; Set the range and spacing of the contour levels.
+         "cnLevelSelectionMode" : "ManualLevels"
+         "cnMinLevelValF" :  195.0
+         "cnMaxLevelValF" :  328.0
+         "cnLevelSpacingF" : 2.18
+         ; Turn on contour fills.
+         "cnFillOn" : "True"
+         ; Turn off the contour lines and labels.
+         "cnLinesOn" : "False"
+         "cnLineLabelsOn" : "False"
+         "cnHighLabelsOn" : "False"
+         "cnLowLabelsOn" : "False"
+         "cnInfoLabelOn" : "False"
+         ; Turn on the overlay labelbar.
+         "pmLabelBarDisplayMode" : "ALWAYS"
+         ; Set the labelbar size
+         "pmLabelBarHeightF" : .15
+         "pmLabelBarWidthF" : .6
+         ; Set the location and orientation of the labelbar.
+         "pmLabelBarSide" : "bottom"
+         "lbOrientation" : "horizontal"
+         ; Set the lablebar title, font, and color.
+         "lbTitleString" : "Day 1"
+         "lbTitleFont" : 22  ; Helvetica-bold
+         "lbTitleFontColor" : 28
+         ; Turn off the labelbar perimeter box 
+         "lbPerimOn" : "False"
+         ; Turn off lines that separate each color in the labelbar.
+         "lbBoxLinesOn" : 0
+         ; Turn off labelbar labels
+         "lbLabelsOn" : "False"
+end create
+
+; Create map object
+map = create "map" mapPlotClass wks
+	; Allow the map to be stretched along 
+	; the horizontal and vertical view axes.
+	"mpShapeMode" : "FreeAspect"
+        ; Set the viewport position and size. This will
+        ; stretch the map along its axes.
+        "vpXF": .03
+        "vpYF": .90
+        "vpWidthF" : .94
+        "vpHeightF" : .68
+        ; Set the center of projection.
+        "mpCenterLatF": 0.0
+        "mpCenterLonF": 150.0
+        ; Set the projection type.
+        "mpProjection": "CYLINDRICALEQUIDISTANT"
+        ; Turn off grid and limb lines, labels, and permimeter.
+        "mpGridAndLimbOn": "False"
+        "mpLabelsOn": "False"
+        "mpPerimOn": "False"
+        ; Turn on main title and set its value, font, and color.
+        "pmTitleDisplayMode" : "Always"
+        "tiMainString" : "January Global Surface Temperature"
+        "tiMainFont" : 22
+        "tiMainFontColor" : 28
+end create
+
+; Overlay function used to assign the object "con1" to
+; the overlay base
+
+overlay(map,con1)
+
+; Create two labels (high and low values) for labelbar.
+lbarlo = create "lbarlo" textItemClass wks
+        "txString": "195 K"
+        "txPosXF": .05
+        "txPosYF": .03
+        "txFont": 22
+        "txFontColor": 28
+        "txFontHeightF": .03
+        "txJust": "CENTERLEFT"
+end create
+
+lbarhi = create "lbarhi" textItemClass wks
+        "txString": "328 K"
+        "txPosXF": .85
+        "txPosYF": .03
+        "txFont": 22
+        "txFontColor": 28
+        "txFontHeightF": .03
+        "txJust": "CENTERLEFT"
+end create
+
+; Draw all objects.
+draw (map)
+draw (lbarlo)
+draw (lbarhi)
+frame(wks)
+
+; Loop on remaining time steps
+
+ do i = 1, dimsizes(mfile->time) - 1
+         print("Plotting Day " + (i+1))
+         ; Read the next data field (next day).
+         setvalues field1
+                 "sfDataArray" : mfile->t(i,:,:)
+         end setvalues
+         d=i+1
+         ; Increment day string.
+         setvalues con1
+		 "lbTitleString": "Day " + d
+         end setvalues
+         ; draw another plot.
+         draw(map)
+         draw(lbarlo)
+         draw(lbarhi)
+         frame(wks)
+ end do
+
+end
