@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 #
-#      $Id: config.perl,v 1.4 1993-02-11 23:59:51 clyne Exp $
+#      $Id: config.perl,v 1.5 1993-02-22 15:54:38 clyne Exp $
 #
 #########################################################################
 #									#
@@ -73,7 +73,7 @@ sub	get_system {
 
 	local($line, @result, $system, $defines);
 
-	$line = `./uname -M -s`;
+	$line = `$instDir/uname -M -s`;
 	@result = split(/\s+/,$line);
 
 	#	get arch type and os
@@ -443,6 +443,7 @@ if ($ncarg ne $pwd) {
 }
 
 $confDir = "$ncarg/config";
+$instDir = "$ncarg/install/install";
 
 while ($ARGV[0] =~ /-/) {
 	$_ = shift @ARGV;
