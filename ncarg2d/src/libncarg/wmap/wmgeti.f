@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.1 1994-09-09 23:55:01 fred Exp $
+C	$Id: wmgeti.f,v 1.2 1994-09-12 19:07:33 fred Exp $
 C
       SUBROUTINE WMGETI (CNP,IVP)
 C
@@ -67,7 +67,7 @@ C
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'RFC' .OR. CNP(1:3).EQ.'rfc' .OR. 
      +    CNP(1:3).EQ.'Rfc') THEN
-        IVP = IBGTRG
+        IVP = IFGTRG
         GO TO 110
       ELSE IF (CNP(1:3).EQ.'DTC' .OR. CNP(1:3).EQ.'dtc' .OR. 
      +    CNP(1:3).EQ.'Dtc') THEN

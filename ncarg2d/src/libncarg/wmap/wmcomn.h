@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.1 1994-09-09 23:54:46 fred Exp $
+C	$Id: wmcomn.h,v 1.2 1994-09-12 19:07:31 fred Exp $
 C
 C
 C  Size of the symbol type array.  This is a hardwired maximum.
@@ -53,7 +53,7 @@ C    CDOTSZ  -  Diameter of dot used to mark cities.
 C    CTYMRG  -  Margin to use for background of city/temp labels.
 C    TMPMRG  -  Margin to use for background of regional temperature labels.
 C    IBGCTY  -  Color index to use for background of city/temp labels.
-C    IFGTRG  -  Color index to use for background of regional
+C    IFGTRG  -  Color index to use for foreground of regional
 C               temperature labels.
 C    IDOTCO  -  Color index for the dots that mark cities.
 C    WBSHFT  -  Length of the shaft of a wind barb as a fraction of the
@@ -84,12 +84,6 @@ C
      +                WBCLMR, WBBANG, WBXL  , WBXR  , WBYB  , WBYT  ,
      +                WBBASE, IWBBAS, WBLSIZ,
      +                ISTYPE(ISDIM)
-C
-C  WMCOMC contains the values for all settable CHARACTER valued
-C         parameters.
-C
-      COMMON /WMCOMC/ FNTTYP
-      CHARACTER       FNTTYP*3
 C
 C  WMARRS contains arrray space.
 C

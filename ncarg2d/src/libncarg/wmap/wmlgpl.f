@@ -1,10 +1,12 @@
 C
-C	$Id: wmlgpl.f,v 1.1 1994-09-09 23:55:24 fred Exp $
+C	$Id: wmlgpl.f,v 1.2 1994-09-12 19:07:38 fred Exp $
 C
       SUBROUTINE WMLGPL(N,X,Y)
 C
 C  Draws polylines either using GPL (IWDTYP=0) or WMDRFL
 C  (IWDTYP=1).
+C
+      DIMENSION X(N),Y(N)
 C
       include 'wmcomn.h'
 C

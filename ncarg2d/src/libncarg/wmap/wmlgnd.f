@@ -1,5 +1,5 @@
 C
-C	$Id: wmlgnd.f,v 1.1 1994-09-09 23:55:21 fred Exp $
+C	$Id: wmlgnd.f,v 1.2 1994-09-12 19:07:36 fred Exp $
 C
       SUBROUTINE WMLGND(X,Y,NTYPE,IROWS,ICOLS)
 C
@@ -117,7 +117,7 @@ C    Example fronts
           YPOS = YN+WSIZEW+(I-1)*1.5*YB(3)*WSIZEW
           YF(1) = YPOS
           YF(2) = YPOS
-          LL = WMGTLN(LBSF(I),LEN(LBSF),0)
+          LL = WMGTLN(LBSF(I),LEN(LBSF(1)),0)
           CALL WMSETC('FRO',LBSF(I))
           IF (I.EQ.1 .OR. I.EQ.2) CALL WMSETI('REV',1)
           CALL WMDRFT(2,XF,YF)

@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.1 1994-09-09 23:55:40 fred Exp $
+C	$Id: wmstnm.f,v 1.2 1994-09-12 19:07:40 fred Exp $
 C
       SUBROUTINE WMSTNM(X,Y,IMDAT)
 C
@@ -1083,11 +1083,9 @@ C
      +              SIZ,0.,0.)       
       ENDIF
    75 CONTINUE
-   50 CONTINUE
 C
 C  Restore original settings.
 C
-   55 CONTINUE
       CALL GSELNT(NTRO)
       CALL PCSETI('FN',IFOLD)
       CALL PCSETI('TE',ITEOLD)

@@ -1,5 +1,5 @@
 C
-C	$Id: wmlabt.f,v 1.1 1994-09-09 23:55:13 fred Exp $
+C	$Id: wmlabt.f,v 1.2 1994-09-12 19:07:35 fred Exp $
 C
       SUBROUTINE WMLABT(X,Y,LABEL,IFLG,IBGCLR)
 C
@@ -155,7 +155,7 @@ C
         CALL PCGETI('SC - shadow color',ISHOLD)
 C
         CALL PCSETI('CC - character color',0)
-        CALL PCGETI('FN - font name',22)
+        CALL PCSETI('FN - font name',22)
         CALL PCSETI('SF - shadow flag',1)
         CALL PCSETR('OL - outline width',0.5)
         CALL PCSETI('OF - outline flag',1)
@@ -167,7 +167,7 @@ C
 C
         CALL PCSETI('CC',ICOLD)
         CALL PCSETI('FN',IFNOLD)
-        CALL PCSETI('SF - shadow flag',SFOLD)
+        CALL PCSETI('SF - shadow flag',ISFOLD)
         CALL PCSETR('OL - outline width',WIDOLD)
         CALL PCSETI('OF - outline flag',IOFOLD)
         CALL PCSETI('SC - shadow color',ISHOLD)
