@@ -60,7 +60,7 @@ C
       CALL GACWK (IWKID)
 C
       CALL TDEZ3D(NX, NY, NZ, XO, YO, ZO, OUTPUT, 3.0, 
-     +            2., -35., 65., 0., 6)       
+     +            2., -35., 65., 6)       
       CALL FRAME()
 C
 C  2D Example.
