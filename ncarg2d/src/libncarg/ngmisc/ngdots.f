@@ -168,9 +168,11 @@ C
       ENDIF
 C
 C  Draw polymarkers if the size is small enough (note that there is
-C  an overlap where both dots and markers are drawn).
+C  an overlap where both dots and markers are drawn).  The polymarkers
+C  are drawn only when filled dots are requested and not when circles
+C  are requested.
 C
-      IF (SD .LT. DM) THEN
+      IF (SD.LT.DM .AND. ICDFLG.EQ.0) THEN
 C
 C  Save current GKS attributes.
 C
