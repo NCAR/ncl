@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.65 2002-07-18 19:28:18 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.66 2002-11-08 00:48:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3101,7 +3101,7 @@ static NhlErrorTypes InitCoordBounds
         if (stp->trans_type == stIRREGULAR) {
                 if (stp->vfp->x_arr && ! tfp->x_axis_type_set) {
 			if (! stp->ovfp || (stp->data_changed  &&
-			    (stp->vfp->changed & _NhlsfXARR_CHANGED)))
+			    (stp->vfp->changed & _NhlvfXARR_CHANGED)))
 				tfp->x_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! stp->vfp->x_arr && tfp->x_axis_type == NhlIRREGULARAXIS)
@@ -3112,7 +3112,7 @@ static NhlErrorTypes InitCoordBounds
                 }
                 if (stp->vfp->y_arr && ! tfp->y_axis_type_set) {
 			if (! stp->ovfp || (stp->data_changed  &&
-			    (stp->vfp->changed & _NhlsfYARR_CHANGED)))
+			    (stp->vfp->changed & _NhlvfYARR_CHANGED)))
 				tfp->y_axis_type = NhlIRREGULARAXIS;
 		}
                 if (! stp->vfp->y_arr && tfp->y_axis_type == NhlIRREGULARAXIS)
@@ -3378,7 +3378,7 @@ static NhlErrorTypes SetUpIrrTransObj
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrXCoordPoints,stp->vfp->x_arr);
                 if (stp->data_changed && stp->vfp->y_arr &&
-		    (stp->vfp->changed & _NhlvfXARR_CHANGED))
+		    (stp->vfp->changed & _NhlvfYARR_CHANGED))
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrYCoordPoints,stp->vfp->y_arr);
         
@@ -3569,11 +3569,11 @@ static NhlErrorTypes SetUpCrvTransObj
 	}
         else {
                 if (stp->data_changed &&stp->vfp->x_arr &&
-                    (stp->vfp->changed & _NhlsfXARR_CHANGED))
+                    (stp->vfp->changed & _NhlvfXARR_CHANGED))
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrXCoordPoints,stp->vfp->x_arr);
                 if (stp->data_changed && stp->vfp->y_arr &&
-		    (stp->vfp->changed & _NhlsfYARR_CHANGED))
+		    (stp->vfp->changed & _NhlvfYARR_CHANGED))
                         NhlSetSArg(&sargs[nargs++],
                                    NhlNtrYCoordPoints,stp->vfp->y_arr);
         
