@@ -18,8 +18,6 @@ C      Description:    Demonstrates the textitem object
 C                      writing "NCAR Graphics" in a filled
 C                      colored font.  Turn on the bounding box.
 C
-      external nhlfhlulayerclass
-      external nhlfreslistlayerclass
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
       external nhlftextitemlayerclass

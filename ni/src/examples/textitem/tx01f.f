@@ -17,8 +17,6 @@ C
 C      Description:    Demonstrates the textitem object
 C                      defaults.
 C
-      external nhlfhlulayerclass
-      external nhlfreslistlayerclass
       external nhlfapplayerclass
       external nhlfxworkstationlayerclass
       external nhlftextitemlayerclass
