@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin.f77,v 1.1 2002-02-22 03:28:32 haley Exp $
+ *      $Id: Darwin.f77,v 1.2 2002-02-23 02:35:12 haley Exp $
  */
 /************************************************************************
 *									*
@@ -27,7 +27,7 @@
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   cc
-#define CtoFLibraries   -lU77 -lf77math -lfio
+#define CtoFLibraries   -lU77 -lfio -lf77math
 #define FCompiler   f77
 #define CcOptions      -DAbsoftProFortran -ansi
 #define FcOptions      -s -f -N15
