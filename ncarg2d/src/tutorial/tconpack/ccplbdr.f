@@ -54,7 +54,7 @@ C Close frame and close GKS
 	REAL Z(K,N)
 	INTEGER I,J,K,M,N
 
-	OPEN (10,FILE='ccpall.dat',STATUS='OLD')
+	OPEN (10,FILE='ccpex.dat',STATUS='OLD')
 	M=K
 	DO 10, I=1,M
 	  READ (10,*) (Z(I,J),J=1,N)
