@@ -1,12 +1,37 @@
-.TH NCARGINTRO 5NCARG "November 1994" NCAR "NCAR GRAPHICS"
+.TH NCARGINTRO 5NCARG "June 1995" NCAR "NCAR GRAPHICS"
 .SH NAME
 ncargintro \- NCAR Graphics Overview
 .SH SYNOPSIS
 \fBncargintro\fP 
 .SH DESCRIPTION
 NCAR Graphics is a collection of graphics libraries that supports the
-display of scientific data. A level 0a GKS package that generates an
-NCGM (NCAR Graphics Computer Graphics Metafile) is also included along with
+display of scientific data. Several interfaces are available for
+visualizing your data:
+.sp
+1. The low-level utilities (LLUs) are the traditional C and Fortran
+interfaces for contouring, mapping, drawing field flows, drawing
+surfaces, drawing histograms, drawing X/Y plots, labeling, and more.
+.sp
+2. The high-level utilities (HLUs) are a high level programmatic
+interface with both C and Fortran bindings. The range of functionality
+of the HLUs is exercised by setting option switches, called
+resources. Resources can be set in a text file, so a plot can be
+redrawn without a recompile.
+.sp
+3. The NCAR Command Language (NCL) is a full programming language
+including looping and conditionals for data selection, manipulation,
+and display. NCL commands can be executed one at a time from the
+command line, or can be gathered into a series of commands, called a
+script, and executed in a batch mode.
+.sp
+4. The prototype GUI interface is an X11-based "point and click"
+interface. The prototype qualifier means that this version of the GUI
+will not be supported, but is there if you can use it.
+.sp
+Output from these interfaces can be directed in a combination of three
+ways: an NCGM (NCAR Graphics Computer Graphics Metafile), an X11
+window, or one of many PostScript outputs (regular, Encapsulated, or
+Interchange PostScript format).  Other formats are available through
 NCGM translators and accompanying device drivers.
 .SH ENVIRONMENT VARIABLES
 Every user of NCAR Graphics will either need to set the environment
@@ -18,23 +43,18 @@ If the NCAR Graphics binaries, libraries, and include files were installed
 under one root directory, say for example /usr/local/bin, /usr/local/lib, 
 and /usr/local/include respectively, then you'll need to do the following:
 .sp
-.in .5i
 setenv NCARG_ROOT /usr/local
-.in -.5i
-.fi
 .sp
 If the binaries, libraries, and include files were NOT installed under
 one root directory, say for example /usr/local/ncarg/bin, /usr/local/ncarg/lib,
 and /usr/local/include, then you'll need to do the following:
-.nf
 .sp
-.in .5i
 setenv NCARG_BIN /usr/local/ncarg/bin
+.sp
 setenv NCARG_LIB /usr/local/ncarg/lib
+.sp
 setenv NCARG_INCLUDE /usr/local/include
 .sp
-.in -.5i
-.fi
 The environment variable NCARG_GKS_OUTPUT may be used to direct the metafile
 output from the NCAR Graphics GKS package to a file (use just the file name)
 or to pipe it to a translator (give the name of the translator, preceded by
@@ -64,7 +84,7 @@ Commands which facilitate compiling and running with NCAR Graphics:
 .BR ncargpath(1NCARG),
 .BR ncargrun(1NCARG)
 .sp
-FORTRAN utilities in NCAR Graphics:
+Fortran utilities in NCAR Graphics:
 .sp
 .BR areas(3NCARG),
 .BR autograph(3NCARG),
@@ -106,7 +126,7 @@ Raster formats and applications:
 .BR rasls(1NCARG),
 .BR rasgetpal(1NCARG)
 .sp
-NCAR Graphics C-binding:
+LLU NCAR Graphics C-binding:
 .sp
 .BR ncarg_cbind(3NCARG)
 .BR ncarg_gks_cbind(3NCARG)
@@ -124,40 +144,40 @@ Descriptions of fontcaps and graphcaps:
 .sp
 Metafile filters:
 .sp
+.BR cgm2ncgm(1NCARG)
+.BR ncgm2cgm(1NCARG),
 .BR pre2ncgm(1NCARG),
 .BR psblack(1NCARG),
 .BR pswhite(1NCARG),
-.BR ncgm2cgm(1NCARG),
-.BR cgm2ncgm(1NCARG)
 .sp
 A command which tells you what version of NCAR Graphics
 you are using:
 .sp
 .BR ncargversion(1NCARG)
 .sp
-A command which tells you what version of NCAR View
-you are using:
+Utilities for generating NCAR Graphics Fortran, C, and NCL examples:
 .sp
-.BR ncarvversion(1NCARG)
-.sp
-Utilities for generating NCAR Graphics Fortran, C, and NCL LLU and HLU
-examples:
-.sp
-.BR ncargex(1NCARG),
 .BR ng4ex(1NCARG)
+.BR ncargex(1NCARG),
 .sp
 Utilities for giving you access to special NCAR Graphics files and/or tables.
 .sp
 .BR ncargfile(1NCARG)
 .sp
-Hardcopy:
+Programs for generating sample NCGMs:
+.BR ncargworld, tgks0a
 .sp
-NCAR Graphics Fundamentals;
-NCAR Graphics Contouring and Mapping Tutorial;
-User's Guide for NCAR GKS-0A Graphics;
-NCAR Graphics Installer's Guide
+Online documentation:
+.sp
+NCAR Graphics User Guide,
+NCAR Graphics Reference Manual,
+NCAR Graphics Quick Start Guide,
+NCAR Graphics Contouring and Mapping Tutorial,
+NCAR Graphics Fundamentals,
+User's Guide for NCAR GKS-0A Graphics,
+NCAR Graphics Release Notes
 .SH COPYRIGHT
-Copyright 1987, 1988, 1989, 1991, 1993 University Corporation 
+Copyright 1987, 1988, 1989, 1991, 1993, 1994, 1995 University Corporation 
 for Atmospheric Research
 .br
 All Rights Reserved
