@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: findg.m,v 1.9 2000-08-22 04:16:26 haley Exp $
+.\"	$Id: findg.m,v 1.10 2002-06-05 22:02:18 haley Exp $
 .\"
 .\"	findg.l 3.00 11/15/89 NCAR Graphics
 .TH FINDG lNCARG "NOVEMBER 1989" NCAR "NCAR Graphics"
@@ -25,7 +25,7 @@ column 1 of any input line, then a complete
 list of the entry points being searched for
 is printed, and execution is terminated.
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2002
 .br
 University Corporation for Atmospheric Research
 .br

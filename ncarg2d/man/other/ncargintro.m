@@ -4,25 +4,12 @@ ncargintro \- NCAR Graphics Overview
 .SH SYNOPSIS
 \fBncargintro\fP 
 .SH DESCRIPTION
+
 NCAR Graphics is a collection of graphics libraries that supports the
-display of scientific data. Several interfaces are available for
-visualizing your data:
-.sp
-1. The NCAR Command Language (NCL) is a full programming language
-including looping and conditionals for data selection, manipulation,
-and display. NCL commands can be executed one at a time from the
-command line, or can be gathered into a series of commands, called a
-script, and executed in a batch mode.
-.sp
-2. The high-level utilities (HLUs) are a high level programmatic
-interface with both C and Fortran bindings. The range of functionality
-of the HLUs is exercised by setting option switches, called
-resources. Resources can be set in a text file, so a plot can be
-redrawn without a recompile.
-.sp
-3. The low-level utilities (LLUs) are the traditional C and Fortran
-interfaces for contouring, mapping, drawing field flows, drawing
-surfaces, drawing histograms, drawing X/Y plots, labeling, and more.
+display of scientific data. The low-level utilities (LLUs) are the
+traditional C and Fortran interfaces for contouring, mapping, drawing
+field flows, drawing surfaces, drawing histograms, drawing X/Y plots,
+labeling, and more.
 .sp
 Output from these interfaces can be directed in a combination of three
 ways: an NCGM (NCAR Graphics Computer Graphics Metafile), an X11
@@ -33,17 +20,29 @@ NCGM translators and accompanying device drivers.
 As of March, 1998 the Ngmath library contains a collection of
 interpolators for one-dimensional, two-dimensional, and
 three-dimensional data. The packages are:
-.sp
-natgrid -- a two-dimensional random data interpolation package based
-on Dave Watson's package nngridr.
-.sp
 dsgrid -- a three-dimensional random data interpolator based on a
 simple inverse distance weighting algorithm.
+.sp
+csagrid -- an approximation package for one-dimensional, two-dimensional,
+and three-dimensional random data based on David    Fulker's package
+Splpack. Csagrid uses cubic splines to calculate its approximation
+function. 
+.sp
+cssgrid -- an interpolation package for random data on the surface of
+a sphere. Cssgrid uses cubic splines to calculate its interpolation
+function. Cssgrid is based on the work of Robert Renka.
 .sp
 fitgrid -- an interpolation package for one-dimensional and
 two-dimensional gridded data based on Alan Cline's package Fitpack, an
 early version of which is available from netlib. Fitpack uses splines
 under tension to interpolate in one and two dimensions.
+.sp
+natgrid -- a two-dimensional random data interpolation package based
+on Dave Watson's package nngridr.
+.sp
+shgrid -- an interpolation package for random data in 3-space. Shgrid
+uses a modified Shepard's algorithm to calculate its interpolation
+function. Shgrid is based on the work of Robert Renka. 
 .sp
 .SH ENVIRONMENT VARIABLES
 Every user of NCAR Graphics will either need to set the environment
@@ -171,9 +170,8 @@ you are using:
 .sp
 .BR ncargversion(1NCARG)
 .sp
-Utilities for generating NCAR Graphics Fortran, C, and NCL examples:
+Utility for generating NCAR Graphics Fortran and C examples:
 .sp
-.BR ng4ex(1NCARG)
 .BR ncargex(1NCARG),
 .sp
 Utilities for giving you access to special NCAR Graphics files and/or tables.
@@ -187,7 +185,7 @@ Online documentation:
 .sp
 http://ngwww.ucar.edu/ngdoc/ng/
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2002
 .br
 University Corporation for Atmospheric Research
 .br

@@ -163,7 +163,7 @@ NCGM using \fIcgm2ncgm\fP.
 .BR ncargintro(5NCARG),
 .BR ncarg_env(5NCARG)
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2002
 .br
 University Corporation for Atmospheric Research
 .br

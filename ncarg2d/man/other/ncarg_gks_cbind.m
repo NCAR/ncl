@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncarg_gks_cbind.m,v 1.12 2000-08-22 04:16:26 haley Exp $
+.\"	$Id: ncarg_gks_cbind.m,v 1.13 2002-06-05 22:02:18 haley Exp $
 .\"
 .TH NCARG_GKS_CBIND 3NCARG "February 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -139,7 +139,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-2000
+Copyright (C) 1987-2002
 .br
 University Corporation for Atmospheric Research
 .br
