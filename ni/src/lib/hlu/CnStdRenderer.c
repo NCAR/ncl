@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.4 2004-10-08 23:37:39 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.5 2004-12-23 23:29:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2690,6 +2690,7 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_pcsetc("FC",Cnp->high_lbls.fcode);
 		gset_linewidth((float)Cnp->high_lbls.thickness);
 
+		Cnp->high_lbls.count++;
 		strcpy(buf,(char *)Cnp->high_lbls.text);
 		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
 			return;
@@ -2704,7 +2705,6 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
-		Cnp->high_lbls.count++;
 		break;
 	case 4:
 		gset_line_colr_ind(Cnp->high_lbls.gks_plcolor);
@@ -2765,6 +2765,8 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 		c_pcseti("QU",Cnp->low_lbls.quality);
 		c_pcsetc("FC",Cnp->low_lbls.fcode);
 		gset_linewidth((float)Cnp->low_lbls.thickness);
+
+		Cnp->low_lbls.count++;
 		strcpy(buf,(char *)Cnp->low_lbls.text);
 		if ((sub = strstr(buf,"$ZDV$")) == NULL) {
 			return;
@@ -2779,7 +2781,6 @@ void   (_NHLCALLF(hlucpchhl,HLUCPCHHL))
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
 		c_cpsetc("CTM",buf);
-		Cnp->low_lbls.count++;
 		break;
 	case 8:
 		gset_line_colr_ind(Cnp->low_lbls.gks_plcolor);
