@@ -113,7 +113,7 @@ NhlErrorTypes vibeta_W( void )
   total_size_psfc = 1;
   for( i = 0; i < ndims_x-1; i++ ) {
     if( dsizes_psfc[i] != dsizes_x[i] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: The leftmost dimensions of x and psfc must be the same size" );
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vibeta: If psfc is not a constant, then its dimension sizes must be equal to all but the last (rightmost) dimension sizes of x");
       return(NhlFATAL);
     }
     total_size_psfc *= dsizes_psfc[i];
