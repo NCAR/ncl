@@ -1,5 +1,5 @@
 /*
- *	$Id: commands.c,v 1.2 1991-01-09 10:58:32 clyne Exp $
+ *	$Id: commands.c,v 1.3 1991-10-01 15:58:46 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -783,9 +783,10 @@ medAppend(med_data)
 	}
 
 	/*
-	 * calculate address for write. use current frame for default
+	 * calculate address for write. use entire buffer as default
 	 */
-	DEFAULT_FRAME(med_data->current_frame, c_data);
+	c_data->add1 = c_data->add1 == -1 ? 1 : c_data->add1;
+	c_data->add2 = c_data->add2 == -1 ? med_data->last_frame : c_data->add2;
 
 	start_frame = c_data->add1;
 	num_frames = c_data->add2 - start_frame + 1;
