@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.14 2000-11-11 02:35:30 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.15 2001-07-09 23:56:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -285,6 +285,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlNcnOutOfRangePerimColor	"cnOutOfRangePerimColor"
 
 #define NhlNcnDumpAreaMap		"cnDumpAreaMap"
+#define NhlNcnFixFillBleed		"cnFixFillBleed"
 #define NhlNcnAreaMapCRange		"cnAreaMapCRange"
 #define NhlNcnConpackParams		"cnConpackParams"
 
@@ -381,6 +382,7 @@ typedef enum _NhlcnHighLowLabelOverlapMode {
 #define NhlCcnConstFLabelOrthogonalPosF	"CnConstFLabelOrthogonalPosF"
 
 #define NhlCcnDumpAreaMap		"CnDumpAreaMap"
+#define NhlCcnFixFillBleed		"CnFixFillBleed"
 #define NhlCcnAreaMapCRange		"CnAreaMapCRange"
 #define NhlCcnConpackParams		"CnConpackParams"
 

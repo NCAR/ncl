@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.103 2001-06-13 23:53:52 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.104 2001-07-09 23:56:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -708,6 +708,11 @@ static NhlResource resources[] = {
 	{NhlNcnOutOfRangePerimColor,NhlCEdgeColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(out_of_range.perim_color),
 		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
+	{NhlNcnConpackParams, NhlCcnConpackParams,NhlTStringGenArray,
+		 sizeof(NhlPointer),Oset(conpack_params),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),
+	 	 _NhlRES_PRIVATE | _NhlRES_NOGACCESS,
+		 (NhlFreeFunc)NhlFreeGenArray},
 
 /* End-documented-resources */
 
@@ -716,14 +721,12 @@ static NhlResource resources[] = {
 	{NhlNcnDumpAreaMap, NhlCcnDumpAreaMap,NhlTBoolean,
 		 sizeof(NhlBoolean),Oset(dump_area_map),NhlTImmediate,
 		 _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
+	{NhlNcnFixFillBleed, NhlCcnFixFillBleed,NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(fix_fill_bleed),NhlTImmediate,
+		 _NhlUSET((NhlPointer) False),_NhlRES_PRIVATE,NULL},
 	{NhlNcnAreaMapCRange, NhlCcnAreaMapCRange,NhlTInteger,
 		 sizeof(int),Oset(amap_crange),NhlTImmediate,
 		 _NhlUSET((NhlPointer) 100000),_NhlRES_PRIVATE,NULL},
-	{NhlNcnConpackParams, NhlCcnConpackParams,NhlTStringGenArray,
-		 sizeof(NhlPointer),Oset(conpack_params),
-		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),
-	 	 _NhlRES_PRIVATE | _NhlRES_NOGACCESS,
-		 (NhlFreeFunc)NhlFreeGenArray},
 	{NhlNcnDataChanged,NhlCcnDataChanged,NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(data_changed),NhlTImmediate,
 		 _NhlUSET((NhlPointer) True),_NhlRES_PRIVATE,NULL},
@@ -4819,6 +4822,9 @@ static NhlErrorTypes AddDataBoundToAreamap
 		float		xinc,yinc; 
 		int		j;
 		char		cval[4];
+
+		if (! cnp->fix_fill_bleed)
+			return NhlNOERROR;
 
 		xa[0] = xa[1] = xa[4] = cnp->xlb;
 		xa[2] = xa[3] = cnp->xub;
