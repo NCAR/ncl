@@ -112,6 +112,7 @@ static void HLUObjDestroy
 				if(tmp_obj != NULL){
 					_NclDestroyObj(tmp_obj);
 				}
+				hlu_obj->hlu.c_list = hlu_obj->hlu.c_list->next;
 			}
 		}
 		if(hlu_obj->hlu.parent_hluobj_id > -1) {
@@ -176,11 +177,15 @@ int child_id;
 #endif
 {
 	NclHLUChildList *tmp;
+	NclHLUObj chi = (NclHLUObj)_NclGetObj(child_id);
 
 	tmp = self->hlu.c_list;
 	self->hlu.c_list = (NclHLUChildList*)NclMalloc((unsigned)sizeof(NclHLUChildList));
 	self->hlu.c_list->next = tmp;
 	self->hlu.c_list->child_id = child_id;
+	if(chi->hlu.parent_hluobj_id != self->obj.id) {
+		chi->hlu.parent_hluobj_id  = self->obj.id;
+	}
 	return(NhlNOERROR);
 }
 
@@ -221,11 +226,15 @@ unsigned int type;
 {
 	NclHLUObjClassInfo *tmp = NclMalloc(sizeof(NclHLUObjClassInfo));
 	NclHLUObj hlu = (NclHLUObj)obj;
+	NclHLUObj parent = NULL;
 
 	tmp->obj.obj_id = obj->obj.id;
 	tmp->obj.obj_type = NCLHLUObj;
 	tmp->hluobj.hlu_id = hlu->hlu.hlu_id;
-	tmp->hluobj.parent_hluobj_id = hlu->hlu.parent_hluobj_id;
+	if(hlu->hlu.parent_hluobj_id > 0) {
+		parent = (NclHLUObj)_NclGetObj(hlu->hlu.parent_hluobj_id);
+		tmp->hluobj.parent_hluobj_id = parent->hlu.hlu_id;
+	}
 	tmp->hluobj.class_ptr = hlu->hlu.class_ptr;
 	tmp->hluobj.hlu_name = NrmStringToQuark(NhlName(hlu->hlu.hlu_id));
 
@@ -304,10 +313,10 @@ NhlClass class_ptr;
 	_NclAddToNewList(tmp->hlu.hlu_id,NrmStringToQuark(NhlName(tmp->hlu.hlu_id)),tmp->hlu.class_ptr);
 #endif /*MAKEAPI*/
         (void)_NclObjCreate((NclObj)tmp , cptr , obj_type ,(obj_type_mask | Ncl_HLUObj), status);
+	tmp->hlu.parent_hluobj_id = parentid;
 	if(parentid > -1) {
 		ptmp = (NclHLUObj)_NclGetObj(parentid);
 		_NclAddHLUChild(ptmp,tmp->obj.id);
-		tmp->hlu.parent_hluobj_id = ptmp->hlu.hlu_id;
 	}
 	if(cptr == nclHLUObjClass) {
 		_NclCallCallBacks((NclObj)tmp,CREATED);

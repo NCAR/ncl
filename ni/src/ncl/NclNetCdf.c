@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.12 1995-06-21 00:52:06 ethan Exp $
+ *      $Id: NclNetCdf.c,v 1.13 1995-06-22 21:37:03 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1463,7 +1463,7 @@ NclFormatFunctionRec NetCdfRec = {
 /* NclAddAttFunc           add_att; */			NetAddAtt,
 /* NclAddVarAttFunc        add_var_att; */		NetAddVarAtt,
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	NetMapToNcl,
-/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl,
+/* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl
 };
 NclFormatFunctionRecPtr NetCdfAddFileFormat 
 #if	NhlNeedProto

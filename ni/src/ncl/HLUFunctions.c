@@ -90,6 +90,10 @@ NhlErrorTypes _NclIChangeWorkstation
 	}
 	for( i = 0; i < j; i++) {
 		if(tmp_hlu_ptr[i] != NULL) {
+			if(tmp_hlu_ptr[i]->hlu.parent_hluobj_id != -1) {
+				_NclDelHLUChild(_NclGetObj(tmp_hlu_ptr[i]->hlu.parent_hluobj_id),tmp_hlu_ptr[i]->obj.id);
+			}
+			_NclAddHLUChild(wk_ptr,tmp_hlu_ptr[i]->obj.id);
 			NhlChangeWorkstation(tmp_hlu_ptr[i]->hlu.hlu_id,wk_ptr->hlu.hlu_id);
 		}
 	}

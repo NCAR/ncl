@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.17 1995-06-17 00:03:42 boote Exp $
+ *      $Id: NclVar.c,v 1.18 1995-06-22 21:37:05 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -1365,6 +1365,9 @@ NclSelectionRecord *sel_ptr;
 							tmp_att = (NclAtt)_NclGetObj(_NclAttCreate(NULL,NULL,Ncl_Att,0,NULL));
 						}
 						_NclAddAtt(tmp_att->obj.id,NrmQuarkToString(self->var.dim_info[sel_ptr->selection[i].dim_num].dim_quark),_NclVarValueRead(coord_var,NULL,NULL),NULL);
+						if(coord_var->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)coord_var);
+						}
 					}
 					single = 0;
 				} else {

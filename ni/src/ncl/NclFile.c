@@ -1571,7 +1571,7 @@ int vtype;
 			}
 		} 
 	} 
-	if(FileIsVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT)!=-1)){
+	if(FileIsVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT))!=-1){
 		mis_md = FileReadVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
 		if(mis_md != NULL) {
 			memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
@@ -1729,6 +1729,10 @@ struct _NclSelectionRecord* sel_ptr;
 							att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
 						} 
 						_NclAddAtt(att_id,NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark),_NclVarValueRead(tmp_var,NULL,NULL),&tmp_sel);
+						coords[j] = -1;
+						if(tmp_var->obj.status != PERMANENT) {
+							_NclDestroyObj((NclObj)tmp_var);
+						}
 					}
 					single = 0;
 				} else {
@@ -3494,7 +3498,7 @@ struct _NclSelectionRecord* sel_ptr;
 				att_id = -1;
 			}
 		} else if(thefile->file.var_att_info[index] != NULL) {
-			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)thefile);
+			att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,(NclObj)NULL);
 			step = thefile->file.var_att_info[index];
 			while(step != NULL) {
 				tmp_att_md = FileReadVarAtt(thefile,thefile->file.var_info[index]->var_name_quark,step->the_att->att_name_quark,NULL);
