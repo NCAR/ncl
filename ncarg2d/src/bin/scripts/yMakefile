@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.36 1995-07-14 22:01:50 haley Exp $
+#	$Id: yMakefile,v 1.37 1996-04-04 23:52:36 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -16,12 +16,14 @@ InstallTarget($(FILES),$(INSTALL_LIB),$(WWWPATH))
 
 CleanFilesTarget(ncargf77 ncargcc nhlcc nhlf77 ncargex ncargcex ncargsrc ncargsrcy ncargversion ncargfile)
 
-ncargversion:	sedscript
-	@sed -f sedscript < version.sed > ncargversion
-	@$(RM) sedscript
+ncargversion:	version.sed
+	@sed \
+	-e 's+VERSION+$(VERSION)+' \
+	-e 's+NCARGDIR+$(NCARGDIR)+' \
+	-e 's+NCARGSITEFILE+$(NCARGSITEFILE)+' \
+	< version.sed > ncargversion
 
 sedscript:      Makefile
-	@echo 's+VERSION+$(VERSION)+' > $@
 
 ncargf77: ncargf77.csh Makefile
 	@sed \
