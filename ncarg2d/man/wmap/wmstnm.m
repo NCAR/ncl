@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmstnm.m,v 1.5 1999-03-23 16:54:35 haley Exp $
+.\"	$Id: wmstnm.m,v 1.6 2000-07-11 23:04:48 haley Exp $
 .\"
 .TH WMSTNM 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -42,8 +42,22 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-1999
+Copyright (C) 1987-2000
 .br
 University Corporation for Atmospheric Research
 .br
-The use of this Software is governed by a License Agreement.
+
+This documentation is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation; either version 2.1 of the
+License, or (at your option) any later version.
+
+This software is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this software; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+USA.

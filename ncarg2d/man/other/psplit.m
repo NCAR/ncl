@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: psplit.m,v 1.2 1999-03-12 19:08:01 fred Exp $
+.\"     $Id: psplit.m,v 1.3 2000-07-11 23:04:00 haley Exp $
 .\"
 .TH psplit 1NCARG "January 1999" UNIX "NCAR GRAPHICS"
 .na
@@ -25,3 +25,24 @@ By default the output files are named in sequence as "pict0001.eps",
 "pict0001.eps", and so forth.  If you want to specify a different
 root name for the output files (i.e. a name different from "pict"),
 you can specify that by entering the optional second argument.
+.SH COPYRIGHT
+Copyright (C) 2000
+.br
+University Corporation for Atmospheric Research
+.br
+
+This documentation is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation; either version 2.1 of the
+License, or (at your option) any later version.
+
+This software is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this software; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+USA.
+
