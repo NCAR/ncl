@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 1995-09-26 23:38:29 haley Exp $
+#      $Id: yMakefile,v 1.5 1995-09-28 14:24:57 haley Exp $
 #
 #########################################################################
 #									#
@@ -26,7 +26,7 @@ SYS_LIBS    =   $(CTOFLIBS) -lm
 
 CSRCS     = ap01c.c
 FSRCS     = ap01f.f
-NSRCS     =
+NSRCS     = ap01n.ncl
 COBJS     = ap01c.o
 FOBJS     = ap01f.o
 SRCS      = $(CSRCS) $(FSRCS)
@@ -35,6 +35,7 @@ NCGMS     = ap01c.ncgm ap01f.ncgm
 RESFILES  = ap01.res
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(HLUEXROOT)/$(MYNAME))
+InstallTarget($(NSRCS),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 
 CExampleTarget(ap01c,ap01c.o)
