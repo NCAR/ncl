@@ -1,5 +1,5 @@
 /*
- *      $Id: PlotManager.c,v 1.64 2000-06-14 23:07:07 dbrown Exp $
+ *      $Id: PlotManager.c,v 1.65 2000-10-25 18:54:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -855,6 +855,7 @@ PlotManagerInitialize
 	}
 	ovnew->trans.overlay_object = new;
 	ovnew->trans.trans_obj = parent->trans.trans_obj;
+	ovnew->trans.do_ndc_overlay = parent->trans.do_ndc_overlay;
 	ovnew->trans.overlay_trans_obj = ovnew->trans.trans_obj;
 	ovp->trans_change_count = 0;
 	ovp->trans_changed = True;
@@ -1067,6 +1068,7 @@ static NhlErrorTypes PlotManagerSetValues
 	NhlPlotManagerLayer		ovnew = (NhlPlotManagerLayer) new;
 	NhlPlotManagerLayer		ovold = (NhlPlotManagerLayer) old;
 	NhlPlotManagerLayerPart	*ovp = &(ovnew->plotmanager);
+	NhlTransformLayer	parent = (NhlTransformLayer)ovnew->base.parent;
 	int			i;
 	int			trans_change_count;
 	NhlBoolean		is_map;
@@ -1101,6 +1103,7 @@ static NhlErrorTypes PlotManagerSetValues
 	
 	ovnew->trans.trans_obj = ovnew->trans.overlay_trans_obj;
 	ovp->trans_change_count = trans_change_count;
+	ovnew->trans.do_ndc_overlay = parent->trans.do_ndc_overlay;
 /* 
  * The annotation children can only be created during initialization;
  * If NOCREATE is set after annotation created, silently change it to NEVER
