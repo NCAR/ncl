@@ -4,7 +4,7 @@ C This program demonstrates the use of hachures
 C
         PARAMETER (M=20,N=30,LRWK=3500,LIWK=3500)
 	REAL ZREG(M,N), RWRK(LRWK)
-	INTEGER M, IWRK(LIWK)
+	INTEGER IWRK(LIWK)
 
 C Create some data
 	CALL GENDAT (ZREG,M,M,N,5,15,5.,15.)
