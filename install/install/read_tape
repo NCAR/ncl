@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: read_tape,v 1.3 1993-05-19 22:04:52 clyne Exp $
+#      $Id: read_tape,v 1.4 1996-05-24 17:18:18 haley Exp $
 #
 #########################################################################
 #									#
@@ -62,16 +62,25 @@ set tar	= "$TAR_READ"	# tar command for reading from a pipe (block size = 20)
 #	parse the user if specified from $device
 #
 set ruser = `expr $device : '\(.*\)@.*'`
-if ($ruser != "") then
+if ($ruser != 0 && $ruser != "") then
 	set ruser = "-l $ruser"
+endif
+
+if ($ruser == 0) then
+  set ruser = ""
 endif
 
 #
 #	parse the remote host if defined
 #
 set rhost = `expr \( $device : '.*@\(.*\):.*' \)`
+
 if ($rhost == "") then 
 	set rhost = `expr \( $device : '\(.*\):.*' \)`
+endif
+
+if ($rhost == 0) then
+  set rhost = ""
 endif
 
 #

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.13 1996-05-24 14:26:37 haley Exp $
+#      $Id: install_soft,v 1.14 1996-05-24 17:18:17 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -62,7 +62,7 @@ cat <<EOF
     the top right corner of the cover of the NCAR Graphics Installer's
     Guide. This number is the one that the NCAR Graphics consulting office
     will ask for when the site rep or site installer calls for help. If
-    you don't have the Installer's Guide, or you don't see a number, just
+    you don't have the Installer's Guide, or you don't see any such number,
     hit return twice and you will be given instructions later on what to do.
 
 EOF
@@ -81,7 +81,11 @@ if ("$answer1" != "$answer2") then
   $LOCALDIR/pause
   goto getsiteid
 else
-  setenv NCARG_SITE_ID $answer1
+  if ($answer1 == "") then
+    setenv NCARG_SITE_ID ""
+  else
+    setenv NCARG_SITE_ID $answer1
+  endif 
 endif
 
 #
