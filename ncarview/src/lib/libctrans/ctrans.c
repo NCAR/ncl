@@ -1,5 +1,5 @@
 /*
- *	$Id: ctrans.c,v 1.22 1992-07-30 00:47:29 clyne Exp $
+ *	$Id: ctrans.c,v 1.23 1992-07-30 15:27:19 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -881,7 +881,13 @@ void	close_metafile()
 	 * already been invoked and we are not in debug mode.
 	 */
 	if (deviceIsInit && ! (*deBug)) {
+#ifdef  DEAD
+		/*
+		 * #ifdef'd out  because on when ctrans is run in random
+		 * access mode two CLEAR_DEVICES's end up getting called
+		 */
 		(void)(*cmdtab[devnum][DEL_ELEMENT][CLEAR_DEVICE])(&command);
+#endif
 		(void)(*cmdtab[devnum][DEL_ELEMENT][END_MF_ID])(&command);
 	}
 }
