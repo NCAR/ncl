@@ -52,7 +52,7 @@ begin
 ; The resource file sets most of the Contour resources that remain fixed
 ; throughout the life of the Contour object.
 ;
-    appid = create "mp03" appLayerClass noparent
+    appid = create "mp03" appClass noparent
         "appUsrDir" : "./"
         "appDefaultParent" : "True"
     end create
@@ -65,14 +65,14 @@ begin
 ;
 ; Create an ncgmWorkstation object.
 ;
-        wid = create "mp03Work" ncgmWorkstationLayerClass noparent
+        wid = create "mp03Work" ncgmWorkstationClass noparent
            "wkMetaName" : "./mp03n.ncgm"
         end create
     else
 ;
 ; Create an XWorkstation object.
 ;
-        wid = create "mp03Work" xWorkstationLayerClass defaultapp
+        wid = create "mp03Work" xWorkstationClass defaultapp
             "wkPause" : "True"
         end create
     end if
@@ -83,7 +83,7 @@ begin
 ; 'getdat'. Define the extent of the data coordinates as the whole globe 
 ; 
     getdat(Z,M,N)
-    dataid = create "Gendat" scalarFieldLayerClass appid
+    dataid = create "Gendat" scalarFieldClass appid
         "sfDataArray" : Z
         "sfXCStartV" : -180
         "sfXCEndV" : 180
@@ -94,7 +94,7 @@ begin
 ; Create a Contour object, supplying the ScalarField object as data,
 ; and setting the size of the viewport.
 ;
-    cnid = create "Contour1" contourPlotLayerClass wid
+    cnid = create "Contour1" contourPlotClass wid
         "cnScalarFieldData" : dataid
         "cnLabelDrawOrder" : "postdraw"
     end create
@@ -102,7 +102,7 @@ begin
 ; Create a MapPlot object, setting the fill to draw over the main draw,
 ; and masking out the oceans.
 ;
-    mapid = create "Map1" mapPlotLayerClass wid
+    mapid = create "Map1" mapPlotClass wid
         "mpFillOn" : "true"
         "pmTitleDisplayMode" : "always"
         "tiMainString" : "mp03n"
