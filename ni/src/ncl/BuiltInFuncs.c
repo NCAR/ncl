@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.59 1997-02-18 20:03:09 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.60 1997-03-11 16:20:33 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -2678,8 +2678,8 @@ NhlErrorTypes _NclIasciiread
 				}
 			}
 			if(i < totalsize) {
-				if(feof(fd)) i++;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+				if(feof(fd)) i++;
 				for(;i<totalsize;i++) {
 					memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
 					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
@@ -2692,8 +2692,8 @@ NhlErrorTypes _NclIasciiread
 				tmp_ptr = (void*)((char*)tmp_ptr+1);
 			}
 			if(i < totalsize) {	
-				if(feof(fd)) i++;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+				if(feof(fd)) i++;
 				for(;i<totalsize;i++) {
 					*(char*)tmp_ptr = thetype->type_class.default_mis.charval;
 					tmp_ptr = (void*)((char*)tmp_ptr+1);
@@ -2730,8 +2730,8 @@ NhlErrorTypes _NclIasciiread
 				} 
 			}
 			if( i < totalsize ) {
-				if(feof(fd)) i++;
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: End of file reached and only (%d) elements were read from the file, filling remaining elements with the default missing value for the requested type",i+1);
+				if(feof(fd)) i++;
 				for(;i<totalsize;i++) {
 					*(NclQuark*)tmp_ptr = thetype->type_class.default_mis.stringval; 
                                         tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
