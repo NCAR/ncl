@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.70 2003-06-10 23:26:26 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.71 2003-08-18 14:56:42 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1652,9 +1652,9 @@ void _NclAddBuiltIns
     nargs = 0;
     args = NewArgs(2);
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"string",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    NclRegisterFunc(sprintf_W,args,"sprintf",nargs);
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    NclRegisterFunc(sprintf_W, args, "sprintf", nargs);
 
     nargs = 0;
     args = NewArgs(2);

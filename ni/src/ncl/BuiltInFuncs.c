@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.161 2003-06-06 20:59:55 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.162 2003-08-18 14:56:42 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -11480,62 +11480,100 @@ NhlErrorTypes sprinti_W( void )
   
   return(NclReturnValue((void*)output_var,ndims_input_var,dsizes_input_var,NULL,NCL_string,0));
 }
+
+
 NhlErrorTypes sprintf_W( void )
 {
-/*
- * Input array variables
- */
-  float *input_var;
-  string *format_string;
-  int ndims_input_var, dsizes_input_var[NCL_MAX_DIMENSIONS], nlata, nlona, igrida[2];
-  NclScalar missing_input_var;
-  int has_missing_input_var, total_elements,i;
-  char buffer[80];
-/*
- * Output array variables
- */
-  string *output_var;
-/*
- * Retrieve parameters
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value.
- */
+    /* Input */
+    string  *format_string;
+    double  *input_var;
 
-  format_string = (string*)NclGetArgValue(
-           0,
-           2,
-           NULL, 
-           NULL,
-	   NULL,
-	   NULL,
-           NULL,
-           2);
+    int ndims_input_var,
+        dsizes_input_var[NCL_MAX_DIMENSIONS];
 
-  input_var = (float*)NclGetArgValue(
-           1,
-           2,
-           &ndims_input_var, 
-           dsizes_input_var,
-	   &missing_input_var,
-	   &has_missing_input_var,
-           NULL,
-           2);
-  /*
-  * compute total number of elements
-  */
-  total_elements = 1;
-  for(i = 0; i < ndims_input_var; i++) {
-	total_elements *= dsizes_input_var[i];
-  }
-  output_var = (string*)malloc(sizeof(string)*total_elements);
+    NclScalar   missing_input_var;
+    int has_missing_input_var,
+        total_elements;
+    NclBasicDataTypes   type;
 
-  for(i = 0; i < total_elements; i++) {
-	sprintf(buffer,NrmQuarkToString(*format_string),input_var[i]);
-	output_var[i] = NrmStringToQuark(buffer);
-  }
+    /* Output */
+    double  *output_var;
+    string  *output_str;
+
+    int i;
+    char buffer[80];
+
+
+    /*
+     * Retrieve parameters
+     *
+     * Note any of the pointer parameters can be set to NULL, which
+     * implies you don't care about its value.
+     */
+    format_string = (string *) NclGetArgValue(
+        0,
+        2,
+        NULL, 
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        2);
+
+    /*
+     * sprintf() converts any floating point argument to C type double,
+     * so accept arguments as type double, and coerce as necessary
+     */
+    input_var = (double *) NclGetArgValue(
+        1,
+        2,
+        &ndims_input_var, 
+        dsizes_input_var,
+        &missing_input_var,
+        &has_missing_input_var,
+        &type, 
+        2);
+
+    /*
+     * compute total number of elements based on input
+     */
+    total_elements = 1;
+    for (i = 0; i < ndims_input_var; i++) {
+        total_elements *= dsizes_input_var[i];
+    }
+
+    /*
+     * Output data spaces: (possibly) converted numerical values and
+     * the formatted output string.
+     */
+    output_var = (double *) NclMalloc((unsigned int) sizeof(double) * total_elements);
+    if (output_var == (double *) NULL) {
+        NhlPError(NhlFATAL, errno, " sprintf(): memory allocation error (var)");
+        return NhlFATAL;
+    }
+
+    output_str = (string *) NclMalloc((unsigned int) sizeof(string) * total_elements);
+    if (output_str == (string *) NULL) {
+        NhlPError(NhlFATAL, errno, " sprintf(): memory allocation error (str)");
+        return NhlFATAL;
+    }
+
+    /*
+     * Build formatted output; if necessary, convert any numeric type
+     * (short, int, long, float) to type double.
+     */
+    for (i = 0; i < total_elements; i++) {
+        if ((type == NCL_short) || (type == NCL_int) || (type == NCL_long) || (type == NCL_float))
+            (void) _NclScalarCoerce(&(input_var[i]), type, &(output_var[i]), NCL_double);
+        else
+            output_var[i] = input_var[i];
+
+        (void) sprintf(buffer, NrmQuarkToString(*format_string), output_var[i]);
+        output_str[i] = NrmStringToQuark(buffer);
+    }
   
-  return(NclReturnValue((void*)output_var,ndims_input_var,dsizes_input_var,NULL,NCL_string,0));
+    return NclReturnValue((void *) output_str, ndims_input_var, dsizes_input_var,
+            NULL, NCL_string, 0);
 }
 
 NhlErrorTypes _NclIAttSetValues( void )
