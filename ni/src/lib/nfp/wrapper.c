@@ -429,7 +429,7 @@ extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
 
-extern NhlErrorTypes print2d_W(void);
+extern NhlErrorTypes write_matrix_W(void);
 
 
 void NclAddUserFuncs(void)
@@ -5422,10 +5422,10 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(tempnam_W, args, "tempnam", nargs);
 
 /*
- * Register "print2d"
+ * Register "write_matrix"
  *
- * There are three functions associated with print2d() -- see the
- * source file $NCARG_ROOT/ni/src/lib/nfp/writeAscii2d.f
+ * There are three functions associated with write_matrix() -- see the
+ * source file $NCARG_ROOT/ni/src/lib/nfp/writeMatrix.f
  *
  * Supported numeric data types:
  *      integer data (type: NCL_short, NCL_int, NCL_long)
@@ -5433,7 +5433,7 @@ void NclAddUserFuncs(void)
  *      double precision data (type: NCL_double)
  */
     nargs = 0;
-    args = NewArgs(6);
+    args = NewArgs(3);
 
     /* Incoming data may only be 2D, dimensioned to any size */
     SetArgTemplate(args, nargs, "numeric", 2, NclANY); nargs++;
@@ -5442,15 +5442,10 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
 
-    /* Output filename (stdout or file) and title are string scalar */
-    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
-    SetArgTemplate(args, nargs, "string", 1, dimsizes);  nargs++;
+    /* Determine if further arguments are provided. */
+    SetArgTemplate(args, nargs, "logical", 1, NULL);  nargs++;
 
-    /* Spaces before the title and printing row numbers are integer scalar */
-    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
-    SetArgTemplate(args, nargs, "integer", 1, NclANY); nargs++;
-
-    NclRegisterProc(print2d_W, args, "print2d", nargs);
+    NclRegisterProc(write_matrix_W, args, "write_matrix", nargs);
 
     return;
 }
