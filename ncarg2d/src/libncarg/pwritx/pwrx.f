@@ -1,10 +1,6 @@
-C
-C	$Id: pwrx.f,v 1.1.1.1 1992-04-17 22:31:33 ncargd Exp $
-C
       SUBROUTINE PWRX (X,Y,ID,N,SIZE,THETA,ICNT)
 C
-C PWRX IS AN OLD ENTRY POINT AND HAS BEEN REMOVED - USE PWRITX
-C ENTRY POINT
+C PWRX IS AN OLD ENTRY POINT AND HAS BEEN REMOVED - USE PLOTCHAR
 C
       WRITE (I1MACH(4),1001)
       WRITE (I1MACH(4),1002)
@@ -15,9 +11,8 @@ C
      1        ' *                                      *'/
      2        ' *                                      *'/
      3        ' *   THE ENTRY POINT PWRX IS NO LONGER  *'/
-     4        ' *   SUPPORTED.  PLEASE USE THE MORE    *'/
-     5        ' *   RECENT VERSION  PWRITX.            *'/
+     4        ' *   SUPPORTED.  PLEASE USE PLOTCHAR.   *'/
+     5        ' *                                      *'/
      6        ' *                                      *'/
-     7        ' *                                      *'/
-     8        ' ****************************************')
+     7        ' ****************************************')
       END
