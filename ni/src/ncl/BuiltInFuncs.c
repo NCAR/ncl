@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.93 1998-02-03 00:26:57 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.94 1998-03-27 19:37:32 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7297,6 +7297,7 @@ NhlErrorTypes _Ncldim_avg
 		if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
 		}
+		sum_val = (void*)NclMalloc(sz);
 	} else {
 		out_val = (void*)NclMalloc(sizeof(float)* n);
 		div_val = (void*)NclMalloc(sizeof(float));
@@ -10746,7 +10747,7 @@ NhlErrorTypes _NclIvinth2p
 	int ids[3];
 	NclDimRec dim_info[3];
 
-	NclStackEntry data,val;
+	NclStackEntry data,val,plevo_val;
 	NclMultiDValData tmp_md;
 	float *datai = NULL,*datao;
 	int datao_dimsizes[3];
@@ -10754,6 +10755,7 @@ NhlErrorTypes _NclIvinth2p
 	NclBasicDataTypes datai_type;
 	int datai_dimsizes[3];
 	NclScalar datai_missing;
+	NclQuark plevo_quark;
 
 	float *hbcofa = NULL;
 	int hbcofa_n_dims,hbcofa_has_missing;
@@ -10773,6 +10775,7 @@ NhlErrorTypes _NclIvinth2p
 	NclBasicDataTypes plevo_type;
 	int plevo_dimsizes;
 	NclScalar plevo_missing;
+	
 
 	int *intyp = NULL;
 	int intyp_has_missing;
@@ -10849,6 +10852,31 @@ NhlErrorTypes _NclIvinth2p
                         &hbcofb_has_missing,
                         &hbcofb_type,
                         0);
+        plevo_val = _NclGetArg(3,9,DONT_CARE);
+	switch(plevo_val.kind) {
+	case NclStk_VAL:
+		plevo_n_dims = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.n_dims;
+		plevo_dimsizes = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.dim_sizes[0];
+		plevo_missing = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.missing_value.value;
+		plevo_has_missing = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.missing_value.has_missing;
+		plevo_type = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.data_type;
+		plevo_quark = NrmStringToQuark("lev");
+		break;
+	case NclStk_VAR:
+		plevo_n_dims = ((NclVarRec*)(plevo_val.u.data_var))->var.n_dims;
+		plevo_dimsizes = ((NclVarRec*)(plevo_val.u.data_var))->var.dim_info[0].dim_size;
+                tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
+		plevo_missing = tmp_md->multidval.missing_value.value;
+		plevo_has_missing = tmp_md->multidval.missing_value.has_missing;
+		plevo_type = tmp_md->multidval.data_type;
+		plevo_quark = ((NclVarRec*)(plevo_val.u.data_var))->var.dim_info[0].dim_quark;
+		if(plevo_quark == -1) 
+			plevo_quark = NrmStringToQuark("lev");
+		break;
+	}
+
+	
+/*
 	plevo = (float*)NclGetArgValue(
                         3,
                         9,
@@ -10858,6 +10886,7 @@ NhlErrorTypes _NclIvinth2p
                         &plevo_has_missing,
                         &plevo_type,
                         0);
+*/
 	plevo2 = (float*)NclMalloc(sizeof(float)*plevo_dimsizes);
 	memcpy(plevo2,plevo,sizeof(float)*plevo_dimsizes);
         psfc = (float*)NclGetArgValue(
@@ -10919,7 +10948,7 @@ NhlErrorTypes _NclIvinth2p
 
 	NclFree(plevi);
 	if(was_val) {
-		dim_info[0].dim_quark = NrmStringToQuark("lev");
+		dim_info[0].dim_quark =plevo_quark; 
 		dim_info[0].dim_num= 0 ; 
 		dim_info[0].dim_size = plevo_dimsizes ; 
 		dim_info[1].dim_quark = NrmStringToQuark("lat");
@@ -10929,7 +10958,7 @@ NhlErrorTypes _NclIvinth2p
 		dim_info[2].dim_size = datai_dimsizes[2] ;
 		dim_info[2].dim_num= 2 ; 
 		lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&(plevo_dimsizes),TEMPORARY,NULL,(NclObjClass)nclTypefloatClass);
-		lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,dim_info,-1,NULL,COORD,"lev",TEMPORARY);
+		lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,dim_info,-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
 		ids[0] = lev_coord_var->obj.id;
 		ids[1] = -1;
 		ids[2] = -1;
@@ -10941,7 +10970,7 @@ NhlErrorTypes _NclIvinth2p
 		data.kind = NclStk_VAR;
 		_NclPlaceReturn(data);
 	} else {
-		dim_info[0].dim_quark = NrmStringToQuark("lev");
+		dim_info[0].dim_quark = plevo_quark;;
 		dim_info[0].dim_num= 0 ; 
 		dim_info[0].dim_size = plevo_dimsizes ; 
 		dim_info[1].dim_quark = val.u.data_var->var.dim_info[1].dim_quark;
@@ -10951,7 +10980,7 @@ NhlErrorTypes _NclIvinth2p
 		dim_info[2].dim_size = val.u.data_var->var.dim_info[2].dim_size; 
 		dim_info[2].dim_num= 2 ; 
 		lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&(plevo_dimsizes),TEMPORARY,NULL,(NclObjClass)nclTypefloatClass);
-		lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,dim_info,-1,NULL,COORD,"lev",TEMPORARY);
+		lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,dim_info,-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
 		ids[0] = lev_coord_var->obj.id;
 		ids[1] = -1;
 		ids[2] = -1;
