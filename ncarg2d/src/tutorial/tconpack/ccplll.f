@@ -136,8 +136,8 @@ C Interpolate data onto a regular grid
 
 	RETURN
 	END
-      SUBROUTINE COLOR(N)
-C
+        SUBROUTINE COLOR (N)
+
 C BACKGROUND COLOR
 C BLACK
         CALL GSCR(1,0,0.,0.,0.)
@@ -148,11 +148,15 @@ C Second foreground color is gray
 C Choose other foreground colors spaced equally around the spectrum
         ICNT=0
         HUES=360./N
+C REDLN is intended to be the line between red and violet values
+	REDLN=36.0
+	LAP=INT(REDLN/HUES)
         DO 10, I=1,N
           XHUE=I*HUES
           CALL HLSRGB(XHUE,60.,75.,RED,GREEN,BLUE)
-          IF (XHUE.LE.36.0) THEN
-            CALL GSCR(1,N+3-I,RED,GREEN,BLUE)
+C Sort colors so that the redest is first, and violetest is last
+          IF (XHUE.LE.REDLN) THEN
+            CALL GSCR(1,(N+2)-(LAP-I),RED,GREEN,BLUE)
             ICNT=ICNT+1
           ELSE
             CALL GSCR(1,I-ICNT+2,RED,GREEN,BLUE)
@@ -161,3 +165,4 @@ C Choose other foreground colors spaced equally around the spectrum
 
         RETURN
         END
+
