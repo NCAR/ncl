@@ -1,5 +1,5 @@
 ;
-;      $Id: xy09n.ncl,v 1.5 1998-04-15 21:40:49 ethan Exp $
+;      $Id: xy09n.ncl,v 1.6 1998-05-14 16:31:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -48,8 +48,8 @@ cmap = (/ (/0.0,0.0,0.0/), \
 ;
 ; Initialize some data for the XyPlot object.
 ; 
-xdra = 500.+.9*ispan(0,npts-1,1)*cos(0.031415926535898*ii)
-ydra = 500.+.9*ispan(0,npts-1,1)*sin(0.031415926535898*ii)
+xdra = 500.+.9*ispan(0,npts-1,1)*cos(0.031415926535898*ispan(0,npts-1,1))
+ydra = 500.+.9*ispan(0,npts-1,1)*sin(0.031415926535898*ispan(0,npts-1,1))
 
 ;
 ; Create Application object.  The Application object name is used to
