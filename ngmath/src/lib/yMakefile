@@ -1,9 +1,12 @@
 #
-#       $Id: yMakefile,v 1.1 1997-02-19 22:58:01 fred Exp $
+#       $Id: yMakefile,v 1.2 1997-03-04 23:52:00 fred Exp $
 #
 
 #define IHaveSubdirs
 
 SUBDIRS = gridpack
 
+INCLUDES = ngmath.h
+
 PartialLibraryRoot(libngmath.a,$(SUBDIRS))
+InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
