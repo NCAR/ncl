@@ -46,9 +46,9 @@ c_rgbyiq
 c_yiqrgb
 .SH ACCESS 
 To use Colconv routines, load the NCAR Graphics libraries
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 To use the Colconv C-bindings, load the NCAR Graphics libraries
-ncargC, ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably 
+ncargC, ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably 
 in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_char_space.m,v 1.3 1993-05-12 17:18:59 haley Exp $
+.\"	$Id: gset_char_space.m,v 1.4 1994-08-11 17:53:17 haley Exp $
 .\"
 .TH GSET_CHAR_SPACE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -25,8 +25,8 @@ positive value inserts extra space between successive
 characters. A negative value causes successive characters to overlap.
 By default char_space = 0.0.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

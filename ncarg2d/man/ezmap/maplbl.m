@@ -38,9 +38,9 @@ tezmpa,
 ffex00.
 .SH ACCESS
 To use MAPLBL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_maplbl, load 
+and ncarg_c, preferably in that order.  To use c_maplbl, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap,

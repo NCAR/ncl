@@ -131,9 +131,9 @@ c_tick4
 None.
 .SH ACCESS 
 To use Gridall, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use the C bindings, load the 
+and ncarg_c, preferably in that order.  To use the C bindings, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 Various error conditions can occur in Gridall.  Each of these results in
 a call to the error-handling routine SETER, with a final argument indicating

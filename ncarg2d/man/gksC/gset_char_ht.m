@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_char_ht.m,v 1.3 1993-05-12 17:18:56 haley Exp $
+.\"	$Id: gset_char_ht.m,v 1.4 1994-08-11 17:53:16 haley Exp $
 .\"
 .TH GSET_CHAR_HT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -15,8 +15,8 @@ drawn using the GTX output
 primitive. char_ht > 0.
 By default char_ht = 0.01.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_colr_rep.m,v 1.4 1993-05-12 17:17:38 haley Exp $
+.\"	$Id: ginq_colr_rep.m,v 1.5 1994-08-11 17:52:51 haley Exp $
 .\"
 .TH GINQ_COLR_REP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -46,8 +46,8 @@ range 0. to 1. inclusive.
 .SH USAGE
 For details on setting and using color indices see the man page for gset_colr_rep.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gset_colr_rep(3NCARG),

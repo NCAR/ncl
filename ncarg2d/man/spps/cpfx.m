@@ -121,10 +121,10 @@ opposite.
 .sp
 To use one of CFUX, CFUY, CUFX, or CUFY,
 load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_cfux,
+and ncarg_c, preferably in that order.  To use c_cfux,
 c_cfuy, c_cufx, or c_cufy, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 cfux, cfuy, cmfx, cmfy, cmux, cmuy, cpfx, cpfy, cpux, cpuy, cufx, cufy, 

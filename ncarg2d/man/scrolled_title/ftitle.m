@@ -107,9 +107,9 @@ For more detailed control of titles, use the routine STITLE, which can be
 used to generate either fixed or scrolled titles.
 .SH ACCESS
 To use FTITLE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.  To use c_ftitle, load 
+ncarg_c, and ncarg_c, preferably in that order.  To use c_ftitle, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the scrolled_title man page for a description of all Scrolled_title error
 messages and/or informational messages.

@@ -45,9 +45,9 @@ c_hstopr
 .SH ACCESS 
 To use the Histogram utility, load the NCAR Graphics 
 libraries ncarg, ncarg_gks, and
-ncarg_loc, preferably in that order.  To use the C bindings, load the
+ncarg_c, preferably in that order.  To use the C bindings, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH MESSAGES
 The possible error messages are as follows:
 .IP "HISTGR - NPTS LESS THAN 1"

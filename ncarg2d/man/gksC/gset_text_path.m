@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_text_path.m,v 1.3 1993-05-12 17:19:50 haley Exp $
+.\"	$Id: gset_text_path.m,v 1.4 1994-08-11 17:53:32 haley Exp $
 .\"
 .TH GSET_TEXT_PATH 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -32,8 +32,8 @@ to the up vector direction.  Thus, to draw a text string at a 45
 degree angle the character up vector would be (-1,1), and the text 
 path would be right .
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

@@ -20,9 +20,9 @@ values.  For a complete list of the parameters affected and their
 default values, see the vectors_params man page.
 .SH ACCESS
 To use STRSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_strset, load the 
+and ncarg_c, preferably in that order.  To use c_strset, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 streamlines,

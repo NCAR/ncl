@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_char_up_vec.m,v 1.4 1993-05-12 17:19:02 haley Exp $
+.\"	$Id: gset_char_up_vec.m,v 1.5 1994-08-11 17:53:18 haley Exp $
 .\"
 .TH GSET_CHAR_UP_VEC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -47,8 +47,8 @@ would be appropriate for a Y-axis label.
 would specify the character up vector as (1.,1.) and subsequent
 text written with gtext would be rotated -45 degress from normal.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

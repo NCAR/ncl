@@ -39,9 +39,9 @@ Use the ncargex command to see the following relevant examples:
 sfex01, sfex02, and tsoftf.
 .SH ACCESS
 To use CURVE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_curve, load the 
+and ncarg_c, preferably in that order.  To use c_curve, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gpl, gsln, gslwsc, gscr, gsplci,

@@ -66,9 +66,9 @@ for a workstation that would produce Encapsulated color Postscript in
 landscape mode.
 .SH ACCESS
 To use NGPSWK, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngpswk, load the
+and ncarg_c, preferably in that order.  To use c_ngpswk, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH MESSAGES
 Warning messages will be issued if one calls NGPSWK with unrecognizable
 arguments.

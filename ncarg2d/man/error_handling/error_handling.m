@@ -121,9 +121,9 @@ current dash pattern.
 .SP
 .SH ACCESS
 To use Error_handling, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order. To use the Error_handling
+and ncarg_c, preferably in that order. To use the Error_handling
 C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .sp
 .SH SEE ALSO
 Online:

@@ -160,9 +160,9 @@ The default version of PCMPXY does several useful mappings;
 a user version may be supplied to do others.
 .SH ACCESS
 To use PCMPXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcmpxy, load 
+and ncarg_c, preferably in that order.  To use c_pcmpxy, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 plotchar,

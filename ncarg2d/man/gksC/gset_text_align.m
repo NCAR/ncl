@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_text_align.m,v 1.3 1993-05-12 17:19:41 haley Exp $
+.\"	$Id: gset_text_align.m,v 1.4 1994-08-11 17:53:30 haley Exp $
 .\"
 .TH GSET_TEXT_ALIGN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -44,8 +44,8 @@ rectangle.  The text extent rectangle rotates about
 the point determined by the horizontal and vertical 
 text alignment settings (text_align.hor, text_align.vert).
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

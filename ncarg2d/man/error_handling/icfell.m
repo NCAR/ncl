@@ -86,9 +86,9 @@ tseter,
 arex02.
 .SH ACCESS
 To use ICFELL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order. To use c_icfell,
+and ncarg_c, preferably in that order. To use c_icfell,
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 entsr, eprin, errof, error_handling, fdum, icloem, nerro, retsr,

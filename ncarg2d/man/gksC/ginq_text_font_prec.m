@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_text_font_prec.m,v 1.4 1993-05-12 17:18:29 haley Exp $
+.\"	$Id: ginq_text_font_prec.m,v 1.5 1994-08-11 17:53:07 haley Exp $
 .\"
 .TH GINQ_TEXT_FONT_PREC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -32,8 +32,8 @@ Character precision (better)
 Stroke precision (best)
 .RE
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

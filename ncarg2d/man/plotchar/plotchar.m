@@ -110,10 +110,10 @@ request mapping of characters from one X/Y coordinate
 system to another.
 .SH ACCESS 
 To use Plotchar routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use
+ncarg_gks, and ncarg_c, preferably in that order.  To use
 the Plotchar
 C-binding routines load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 Various error conditions can occur in Plotchar.  Each of these results in
 a call to the error-handling routine SETER, with a final argument indicating

@@ -83,7 +83,7 @@ equivalent of STUMXY; it has an identical interface and may serve as
 a model for your implementation.
 .SH ACCESS
 To use STUMXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 streamlines,

@@ -43,7 +43,7 @@ should only be done during a call with IFLG = 1 or IFLG =
 done for the other.
 .SH ACCESS
 To use CPCHIL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

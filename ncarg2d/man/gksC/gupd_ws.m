@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gupd_ws.m,v 1.5 1993-05-12 17:20:03 haley Exp $
+.\"	$Id: gupd_ws.m,v 1.6 1994-08-11 17:53:35 haley Exp $
 .\"
 .TH GUPD_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -28,8 +28,8 @@ set to GUPD_PEND.
 .SH USAGE
 A call to gupd_ws flushes all buffers to bring the workstation up to date.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR sflush(3NCARG),

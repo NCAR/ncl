@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_marker_colr_ind.m,v 1.3 1993-05-12 17:19:29 haley Exp $
+.\"	$Id: gset_marker_colr_ind.m,v 1.4 1994-08-11 17:53:26 haley Exp $
 .\"
 .TH GSET_MARKER_COLR_IND 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -25,8 +25,8 @@ If a color index is used that has no user-assigned color value
 set in a gset_colr_rep call, then a device-dependent color value will
 be assigned to that index.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gpolymarker(3NCARG),

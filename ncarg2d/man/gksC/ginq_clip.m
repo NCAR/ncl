@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_clip.m,v 1.4 1993-05-12 17:17:35 haley Exp $
+.\"	$Id: ginq_clip.m,v 1.5 1994-08-11 17:52:50 haley Exp $
 .\"
 .TH GINQ_CLIP 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -29,8 +29,8 @@ not be plotted.
 (Glimit, Output) - Four normalized device coordinates providing the 
 corner points of the current clipping rectangle.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR set(3NCARG),

@@ -38,7 +38,7 @@ coordinates defining a range of 1 to 2**IY - 1.  IY has a default value
 of 10.
 .SH ACCESS
 To use GETSI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 spps, seti

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_asfs.m,v 1.4 1993-05-12 17:17:21 haley Exp $
+.\"	$Id: ginq_asfs.m,v 1.5 1994-08-11 17:52:46 haley Exp $
 .\"
 .TH GINQ_ASFS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -57,8 +57,8 @@ these values remain in their default settings.  Some GKS packages
 default these values to "bundled".  ginq_asfs can be called to determine
 the values of all aspect source flags.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online:
 .BR gset_asfs(3NCARG),

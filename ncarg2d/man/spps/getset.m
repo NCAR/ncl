@@ -73,9 +73,9 @@ Use the ncargex command to see the following relevant examples:
 arex01, mpex07, mpex09, cpexcc.
 .SH ACCESS
 To use GETSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_getset, load the 
+and ncarg_c, preferably in that order.  To use c_getset, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gqnt, set, getusv, setusv, spps, spps_params, ncarg_cbind

@@ -61,9 +61,9 @@ tcolcv,
 fcce02.
 .SH ACCESS
 To use RGBHSV, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_rgbhsv, load 
+and ncarg_c, preferably in that order.  To use c_rgbhsv, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the colconv man page for a description of all Colconv error
 messages and/or informational messages.

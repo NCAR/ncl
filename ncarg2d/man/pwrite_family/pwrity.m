@@ -69,7 +69,7 @@ the IDPC character string.
 .fi
 .SH ACCESS 
 To use PWRITY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 pwrite_family, pwritx,

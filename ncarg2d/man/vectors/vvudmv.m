@@ -97,7 +97,7 @@ ffex05,
 vvex01.
 .SH ACCESS
 To use VVUDMV, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 vectors,

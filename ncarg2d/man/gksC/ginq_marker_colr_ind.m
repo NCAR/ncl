@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_marker_colr_ind.m,v 1.3 1993-05-12 17:18:00 haley Exp $
+.\"	$Id: ginq_marker_colr_ind.m,v 1.4 1994-08-11 17:52:59 haley Exp $
 .\"
 .TH GINQ_MARKER_COLR_IND 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,8 +18,8 @@ meaning of the error indicators.
 (Output) - Returns the polymarker color index as set by default
 or by a call to gset_marker_colr_ind.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gpolymarker(3NCARG),

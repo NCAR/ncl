@@ -19,7 +19,7 @@ stroked polylines, but is quicker, of lower quality, and with less
 options than PWRITX.
 .SH ACCESS 
 To use PWRITX or PWRITY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 pwritx, pwrity,

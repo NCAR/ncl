@@ -36,9 +36,9 @@ parameters. For a complete list of parameters available in this utility,
 see the plotchar_params man page.
 .SH ACCESS
 To use PCDLSC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_pcdlsc, load the 
+and ncarg_c, preferably in that order.  To use c_pcdlsc, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the plotchar man page for a description of all Plotchar error
 messages and/or informational messages.

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_win.m,v 1.4 1993-05-12 17:19:56 haley Exp $
+.\"	$Id: gset_win.m,v 1.5 1994-08-11 17:53:33 haley Exp $
 .\"
 .TH GSET_WIN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -37,8 +37,8 @@ win_limits.x_min to win_limits.x_max and win_limits.y_min to win_limits.y_max.
 .IP win_limits.y_max 12
 (Gfloat, Input) - The top vertical coordinate of the window.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR set(3NCARG),

@@ -27,9 +27,9 @@ in this utility, see the ezmap_params man page.
 No example is available for MAPSAV.
 .SH ACCESS
 To use MAPSAV, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapsav, load 
+and ncarg_c, preferably in that order.  To use c_mapsav, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the ezmap man page for a description of all Ezmap error
 messages and/or informational messages.

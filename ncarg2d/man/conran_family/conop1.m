@@ -233,7 +233,7 @@ Use the command ncargex to see the following examples: tconaq,
 tconan, and tconas.
 .SH ACCESS
 To use CONOP1 load the NCAR Graphics libraries ncarg, ncarg_gks, and
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH MESSAGES
 See the conran_family man page for a description of all Conran_family error
 messages and/or informational messages.

@@ -149,7 +149,7 @@ denote missing values in the Z array.
 This argument is ignored if ISPV = 0.
 .SH ACCESS 
 To use HAFTON, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 halftone, ezhftn, halftone_params,

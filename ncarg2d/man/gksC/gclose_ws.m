@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gclose_ws.m,v 1.3 1993-05-12 17:16:58 haley Exp $
+.\"	$Id: gclose_ws.m,v 1.4 1994-08-11 17:52:38 haley Exp $
 .\"
 .TH GCLOSE_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -17,8 +17,8 @@ Close workstation updates the workstation and removes its identifier
 from the set of open workstations.  The connection to the workstation
 is released and the associated connection ID is available for re-use.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gopen_gks(3NCARG),

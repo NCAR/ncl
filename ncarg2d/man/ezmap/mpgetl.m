@@ -35,9 +35,9 @@ also offered by the MAPGTI or MPGETI routines. See the examples
 listed on the MAPGTI or MPGETI man page.
 .SH ACCESS
 To use MAPGTL or MPGETL, load the NCAR Graphics libraries ncarg, 
-ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use 
+ncarg_gks, and ncarg_c, preferably in that order.  To use 
 c_mapgtl or c_mpgetl, load the NCAR Graphics libraries ncargC, 
-ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the ezmap man page for a description of all Ezmap error
 messages and/or informational messages.

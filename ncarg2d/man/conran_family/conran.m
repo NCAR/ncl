@@ -73,7 +73,7 @@ interpolation triangles.  The smooth version produces contours which
 are smoothed using splines under tension.
 .sp
 To use standard CONRAN, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To run the smooth option an
+and ncarg_c, preferably in that order.  To run the smooth option an
 additional library, dashsmth is needed.
 It can be loaded by the user directly, along with the above three
 standard libraries, or loaded implicitly

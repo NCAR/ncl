@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gdeactivate_ws.m,v 1.3 1993-05-12 17:17:07 haley Exp $
+.\"	$Id: gdeactivate_ws.m,v 1.4 1994-08-11 17:52:41 haley Exp $
 .\"
 .TH GDEACTIVATE_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -17,8 +17,8 @@ The specified workstation is removed from the set of active
 workstations.  GKS output primitives are not sent to workstations
 that are not active.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gopen_gks(3NCARG),

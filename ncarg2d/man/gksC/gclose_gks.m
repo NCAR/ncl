@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gclose_gks.m,v 1.4 1993-05-12 17:16:53 haley Exp $
+.\"	$Id: gclose_gks.m,v 1.5 1994-08-11 17:52:37 haley Exp $
 .\"
 .TH GCLOSE_GKS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,8 +18,8 @@ then c_clsgks can be used to deactivate and close the CGM workstation,
 and to close GKS, making a direct call to gclose_gks unnecessary in that
 case.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gopen_gks(3NCARG),

@@ -39,9 +39,9 @@ cpex03,
 mpex09.
 .SH ACCESS
 To use MAPTRN, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_maptrn, load the 
+and ncarg_c, preferably in that order.  To use c_maptrn, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH MESSAGES
 See the ezmap man page for a description of all Ezmap error
 messages and/or informational messages.

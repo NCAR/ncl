@@ -86,9 +86,9 @@ Use the ncargex command to see the following relevant examples:
 agex11, cmptra.
 .SH ACCESS
 To use POINTS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_points, load the 
+and ncarg_c, preferably in that order.  To use c_points, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gpl, gsln, gslwsc, gpm, gsmk, gsmksc, gtx, gstxal, gstxp, gstxfp,

@@ -39,7 +39,7 @@ contour plots.  These variations are specified through selected command line
 options of the ncargf77 command.
 .sp
 To use EZCNTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  Other optional libraries
+and ncarg_c, preferably in that order.  Other optional libraries
 to create the quick, smooth, and super contours will
 automatically be linked by the ncargf77 command.
 To run a code called mycode.f which has one or more calls to

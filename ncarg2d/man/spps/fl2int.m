@@ -46,7 +46,7 @@ metacode coordinates.
 metacode coordinates.
 .SH ACCESS
 To use FL2INT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 spps, plotit, cmfx, cmfy, cmux, cmuy,

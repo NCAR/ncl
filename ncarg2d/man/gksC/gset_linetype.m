@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_linetype.m,v 1.3 1993-05-12 17:19:23 haley Exp $
+.\"	$Id: gset_linetype.m,v 1.4 1994-08-11 17:53:24 haley Exp $
 .\"
 .TH GSET_LINETYPE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -29,8 +29,8 @@ Reserved for registration or
 future standardization (not 
 used in NCAR GKS-0A)
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gpolyline(3NCARG),

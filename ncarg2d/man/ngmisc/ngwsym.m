@@ -485,9 +485,9 @@ example:
 fngwsym.
 .SH ACCESS
 To use NGWSYM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngwsym, load the
+and ncarg_c, preferably in that order.  To use c_ngwsym, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH MESSAGES
 If an illegal font, or symbol number within a font, is requested,
 then a warning is issued.

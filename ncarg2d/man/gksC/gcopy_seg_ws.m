@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcopy_seg_ws.m,v 1.3 1993-05-12 17:17:01 haley Exp $
+.\"	$Id: gcopy_seg_ws.m,v 1.4 1994-08-11 17:52:39 haley Exp $
 .\"
 .TH GCOPY_SEG_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,8 +18,8 @@ a gopen_ws call) that is to receive the segment copy.
 that is to be copied to the specified workstation.
 seg_name must have been used in a previous call to gcreate_seg.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR geval_tran_matrix(3NCARG),

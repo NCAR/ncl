@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_fill_int_style.m,v 1.4 1993-05-12 17:17:47 haley Exp $
+.\"	$Id: ginq_fill_int_style.m,v 1.5 1994-08-11 17:52:54 haley Exp $
 .\"
 .TH GINQ_FILL_INT_STYLE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -29,8 +29,8 @@ Pattern fill (not implemented in NCAR GKS).
 .IP GSTYLE_HATCH
 Hatch fill
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gfill_area(3NCARG),

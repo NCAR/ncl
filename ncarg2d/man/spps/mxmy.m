@@ -49,7 +49,7 @@ routines PWRIT and WTSTR leave the pen position at the location
 specified by their first two arguments.
 .SH ACCESS
 To use MXMY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 curve, frstpt, line, plotit, point, points, pwrit, vector, seti, getsi,

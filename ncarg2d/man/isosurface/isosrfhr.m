@@ -58,7 +58,7 @@ An Isosrfhr example of the logical structure of a program follows:
 .fi
 .SH ACCESS 
 To use Isosrfhr, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 init3d, dandr,

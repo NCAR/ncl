@@ -18,7 +18,7 @@ picture from data stored in a rectangular array with the
 intensity in the picture proportional to the data value.
 .SH ACCESS 
 To use EZHFTN or HAFTON, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 hafton, ezhftn, halftone_params,

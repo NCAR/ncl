@@ -20,7 +20,7 @@ tseter,
 arex02.
 .SH ACCESS
 To use FDUM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 entsr, eprin, errof, error_handling, icfell, icloem, nerro, retsr, semess,

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gopen_ws.m,v 1.5 1994-04-27 21:39:26 fred Exp $
+.\"	$Id: gopen_ws.m,v 1.6 1994-08-11 17:53:10 haley Exp $
 .\"
 .TH GOPEN_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -82,8 +82,8 @@ output and the connection ID is irrelevant.
 There can be a maximum of fifteen simultaneously open workstations
 of all types.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gopen_gks(3NCARG),

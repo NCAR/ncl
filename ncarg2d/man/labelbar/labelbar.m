@@ -30,9 +30,9 @@ c_lbsetr
 LBFILL - Fills label bars.
 .SH ACCESS 
 To use Labelbar routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use the
+ncarg_gks, and ncarg_c, preferably in that order.  To use the
 Labelbar C-binding routines, load the NCAR Graphics libraries 
-ncargC, ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably 
+ncargC, ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably 
 in that order.
 .SH MESSAGES
 Various error conditions can occur in Labelbar.  Each of these results in

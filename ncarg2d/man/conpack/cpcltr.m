@@ -81,9 +81,9 @@ If the parameter 'T2D' has a non-zero value, the contour lines are smoothed,
 using cubic splines under tension.
 .SH ACCESS
 To use CPCLTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_cpcltr, load the 
+and ncarg_c, preferably in that order.  To use c_cpcltr, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

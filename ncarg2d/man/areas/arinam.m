@@ -86,9 +86,9 @@ fsfsgfa,
 fsppoint.
 .SH ACCESS
 To use ARINAM, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order. To use c_arinam, 
+and ncarg_c, preferably in that order. To use c_arinam, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 areas, areas_params, ardbpa, ardrln, aredam, argeti, argetr, argtai,

@@ -137,9 +137,9 @@ ccpga,
 ccpmpxy.
 .SH ACCESS
 To use LABMOD, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_labmod, load
+and ncarg_c, preferably in that order.  To use c_labmod, load
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, 
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,

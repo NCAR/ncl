@@ -37,9 +37,9 @@ fgkgtx,
 fngngdts.
 .SH ACCESS
 To use MAPTRA, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_maptra, load the 
+and ncarg_c, preferably in that order.  To use c_maptra, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap,

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_char_ht.m,v 1.4 1993-05-12 17:17:27 haley Exp $
+.\"	$Id: ginq_char_ht.m,v 1.5 1994-08-11 17:52:48 haley Exp $
 .\"
 .TH GINQ_CHAR_HT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,8 +18,8 @@ meaning of the error indicators.
 (Output) - 
 Contains the current character height as set by default or by gset_char_ht.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

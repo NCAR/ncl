@@ -133,7 +133,7 @@ Use the ncargex command to see the following relevant
 examples:  tisohr
 .SH ACCESS
 To use DANDR load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 isosrfhr, init3d,

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gclose_seg.m,v 1.3 1993-05-12 17:16:55 haley Exp $
+.\"	$Id: gclose_seg.m,v 1.4 1994-08-11 17:52:38 haley Exp $
 .\"
 .TH GCLOSE_SEG 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -14,8 +14,8 @@ currently open segment (graphics output primitives will no longer
 be stored in that segment).
 gclose_seg can be called only if a segment is open.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR geval_tran_matrix(3NCARG),

@@ -99,7 +99,7 @@ for adjusting the realized length of the maximum vector magnitude. See the
 velvct man page for more information.
 .SH ACCESS
 To use VELVEC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 vectors,

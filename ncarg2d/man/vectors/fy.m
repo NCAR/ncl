@@ -140,7 +140,7 @@ strongly urged to use the user-modifiable routine VVUMXY, rather than
 attempting to work with MXF and MYF.
 .SH ACCESS
 To use FX, FY, MXF, and MYF load the NCAR Graphics libraries ncarg,
-ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_gks, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 vectors,

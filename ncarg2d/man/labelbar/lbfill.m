@@ -57,7 +57,7 @@ the desired version, so that the default one from the package will not be
 loaded.
 .SH ACCESS
 To use LBFILL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 labelbar, labelbar_params, lbgeti, lbgetr, lblbar, lbseti, lbsetr, ncarg_cbind

@@ -32,9 +32,9 @@ Use the ncargex command to see the following relevant examples:
 tareas.
 .SH ACCESS
 To use POINT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_point, load the 
+and ncarg_c, preferably in that order.  To use c_point, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gpm, gsmk, gsmksc, gscr, gspmci,

@@ -46,9 +46,9 @@ c_pwrzi
 None.
 .SH ACCESS 
 To use Isosurface, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use the C bindings, load the 
+and ncarg_c, preferably in that order.  To use the C bindings, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 The error messages described below can be written to the output unit by
 routines in the package Isosurface.  All of these errors are fatal and cause

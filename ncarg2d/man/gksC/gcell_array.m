@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcell_array.m,v 1.4 1993-05-12 17:16:47 haley Exp $
+.\"	$Id: gcell_array.m,v 1.5 1994-08-11 17:52:35 haley Exp $
 .\"
 .TH GCELL_ARRAY 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -37,8 +37,8 @@ Points 1 and 2 must be diagonally opposite corner
 points of a rectangle to be divided into colr_array.dims.size_x cells in 
 the X dimension and colr_array.dims.size_y cells in the Y dimension.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online:
 .BR gset_colr_rep(3NCARG),

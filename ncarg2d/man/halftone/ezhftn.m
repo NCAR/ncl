@@ -44,7 +44,7 @@ based upon the following assumptions.
 If these conditions are not met, use the HAFTON entry.
 .SH ACCESS 
 To use EZHFTN, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 halftone, hafton, halftone_params,

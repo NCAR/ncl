@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_norm_tran.m,v 1.4 1993-05-12 17:18:15 haley Exp $
+.\"	$Id: ginq_norm_tran.m,v 1.5 1994-08-11 17:53:03 haley Exp $
 .\"
 .TH GINQ_NORM_TRAN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -25,8 +25,8 @@ meaning of the error indicators.
 .IP norm_tran.vp 12
 (Glimit, Output) - The normalized device coordinate viewport limits.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online:
 .BR gset_win(3NCARG),

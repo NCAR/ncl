@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gescape.m,v 1.4 1993-05-12 17:17:13 haley Exp $
+.\"	$Id: gescape.m,v 1.5 1994-08-11 17:52:43 haley Exp $
 .\"
 .TH GESCAPE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -91,8 +91,8 @@ The functions c_frame and c_ngpict are in general much easier to use and more
 flexible than the direct ESCAPE call for pausing in an X window.  It is
 suggested that those functions be used.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR setusv(3NCARG),

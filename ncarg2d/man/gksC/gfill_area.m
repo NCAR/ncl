@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gfill_area.m,v 1.4 1993-05-12 17:17:19 haley Exp $
+.\"	$Id: gfill_area.m,v 1.5 1994-08-11 17:52:45 haley Exp $
 .\"
 .TH GFILL_AREA 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -42,8 +42,8 @@ or no fill. If you call gfill_area and do not get a filled
 interior as you expected, you will probably need to call 
 gset_fill_int_style to set the fill style to something other than "hollow".
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gset_fill_int_style(3NCARG),

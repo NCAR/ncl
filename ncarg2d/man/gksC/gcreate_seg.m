@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcreate_seg.m,v 1.3 1993-05-12 17:17:04 haley Exp $
+.\"	$Id: gcreate_seg.m,v 1.4 1994-08-11 17:52:40 haley Exp $
 .\"
 .TH GCREATE_SEG 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -15,8 +15,8 @@ calls to subsequent segment functions applying to this segment.  There can be
 a maximum of 100 segments in a given job step.  Legal values for seg_name are
 integers between 0 and 99 inclusive.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR geval_tran_matrix(3NCARG),

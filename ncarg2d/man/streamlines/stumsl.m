@@ -77,7 +77,7 @@ error message if an area map with more than 64 groups is
 passed to it.
 .SH ACCESS
 To use STUMSL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 streamlines,

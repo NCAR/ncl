@@ -66,9 +66,9 @@ example:
 fngngdts.
 .SH ACCESS
 To use NGDOTS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngdots, load the
+and ncarg_c, preferably in that order.  To use c_ngdots, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH MESSAGES
 Warning messages will be issued if one calls NGDOTS after having
 called SET with any final argument other than "1".

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gtext.m,v 1.4 1993-05-12 17:19:59 haley Exp $
+.\"	$Id: gtext.m,v 1.5 1994-08-11 17:53:34 haley Exp $
 .\"
 .TH GTEXT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,8 +18,8 @@ character in char_string.
 .IP char_string 12
 (Input) The characters to be drawn.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gset_text_path(3NCARG),

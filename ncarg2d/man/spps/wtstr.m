@@ -70,7 +70,7 @@ the "pen" (for subsequent calls to FRSTPT, VECTOR, PLOTIF, and PLOTIT)
 at the location (PX,PY).
 .SH ACCESS
 To use WTSTR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gtx, gstxal, gstxp, gstxfp, gschh, gschsp, gschup, gschxp, gscr, gstxci,

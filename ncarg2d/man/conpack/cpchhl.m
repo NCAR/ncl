@@ -63,7 +63,7 @@ been set to the value of the high or low being labelled; its value
 may be retrieved and used by CPCHHL.
 .SH ACCESS
 To use CPCHHL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

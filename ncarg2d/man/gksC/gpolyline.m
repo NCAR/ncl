@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpolyline.m,v 1.4 1993-05-12 17:18:42 haley Exp $
+.\"	$Id: gpolyline.m,v 1.5 1994-08-11 17:53:11 haley Exp $
 .\"
 .TH GPOLYLINE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -21,8 +21,8 @@ user coordinates.  Among other things, this means that the log scaling
 and mirror-imaging features available via the c_set call and the SPPS
 functions for drawing lines are not applicable here.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gset_linetype(3NCARG),

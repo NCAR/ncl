@@ -57,7 +57,7 @@ through entries CONRAS and CONRAN, respectively.
 Use the ncargex command to see the relevant example tconaq.
 .SH ACCESS 
 To use CONRAQ, load the NCAR Graphics libraries conraq, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .sp
 The special conraq library is not loaded as part of the normal NCAR Graphics
 installation.  It can be loaded by the user directly, along with the above three

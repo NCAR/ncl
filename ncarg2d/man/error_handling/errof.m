@@ -24,9 +24,9 @@ tseter,
 arex02.
 .SH ACCESS
 To use ERROF, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order. To use c_errof,
+and ncarg_c, preferably in that order. To use c_errof,
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, 
-ncarg_gks, and ncarg_loc, preferably in that order.
+ncarg_gks, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 entsr, eprin, error_handling, fdum, icfell, icloem, nerro, retsr, semess, seter,

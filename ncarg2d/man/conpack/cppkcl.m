@@ -121,9 +121,9 @@ ffex03,
 ffex05.
 .SH ACCESS
 To use CPPKCL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_cppkcl, 
+and ncarg_c, preferably in that order.  To use c_cppkcl, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the conpack man page for a description of all Conpack error
 messages and/or informational messages.

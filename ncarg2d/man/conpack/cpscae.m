@@ -68,7 +68,7 @@ the current value of the color index for the cell in
 determining the new value of the color index for the cell.
 .SH ACCESS
 To use CPSCAE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 conpack,

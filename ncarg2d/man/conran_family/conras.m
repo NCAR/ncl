@@ -65,7 +65,7 @@ through entries CONRAQ and CONRAN, respectively.
 Use the ncargex command to see the relevant example tconas.
 .SH ACCESS 
 To use CONRAS, load the NCAR Graphics libraries conras, dashsupr,
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .sp
 The conras and dashsupr libraries are not loaded as part of the normal NCAR Graphics
 installation.  They can be loaded by the user directly, or loaded implicitly

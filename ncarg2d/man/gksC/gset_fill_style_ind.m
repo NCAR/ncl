@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_fill_style_ind.m,v 1.3 1993-05-12 17:19:17 haley Exp $
+.\"	$Id: gset_fill_style_ind.m,v 1.4 1994-08-11 17:53:22 haley Exp $
 .\"
 .TH GSET_FILL_STYLE_IND 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -30,8 +30,8 @@ Lines of positive and negative
 slope
 .RS
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gfill_area(3NCARG),

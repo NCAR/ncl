@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gopen_gks.m,v 1.3 1993-05-12 17:18:35 haley Exp $
+.\"	$Id: gopen_gks.m,v 1.4 1994-08-11 17:53:09 haley Exp $
 .\"
 .TH GOPEN_GKS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -22,8 +22,8 @@ For jobs producing only CGM output, the three calls to gopen_gks, gopen_ws,
 and gactivate_ws 
 can be replaced with a call to the SPPS function c_opngks().
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gopen_ws(3NCARG),

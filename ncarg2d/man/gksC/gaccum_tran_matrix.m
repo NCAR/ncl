@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gaccum_tran_matrix.m,v 1.4 1993-05-12 17:16:41 haley Exp $
+.\"	$Id: gaccum_tran_matrix.m,v 1.5 1994-08-11 17:52:33 haley Exp $
 .\"
 .TH GACCUM_TRAN_MATRIX 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -100,8 +100,8 @@ the following code
 would produce a transformation matrix in tout that would shift
 by (.25,0.) first, and then rotate by 45 degrees.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR geval_tran_matrix(3NCARG),

@@ -37,9 +37,9 @@ of points.
 See the man page for MAPIT.
 .SH ACCESS
 To use MAPVEC, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_mapvec, load the 
+and ncarg_c, preferably in that order.  To use c_mapvec, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 ezmap,

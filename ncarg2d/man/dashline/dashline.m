@@ -72,7 +72,7 @@ Dashline, the calls to RESET may be left in, as they then do nothing.
 .SH ACCESS 
 To use the normal version of the Dashline utility,
 load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  Other optional libraries
+and ncarg_c, preferably in that order.  Other optional libraries
 to create the quick, smooth, and super versions of Dashline are
 automatically linked in by the ncargf77 command.  If you need to know
 the names of these libraries for a particular version of Dashline, execute

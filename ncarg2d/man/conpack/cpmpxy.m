@@ -190,7 +190,7 @@ mapping. It should also be made, when IMAP = 0, to return
 correct information about its own capabilities.
 .SH ACCESS
 To use CPMPXY, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online:
 conpack,

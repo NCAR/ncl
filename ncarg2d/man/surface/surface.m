@@ -36,9 +36,9 @@ c_setr
 c_srface
 .SH ACCESS 
 To use Surface routines, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use the C bindings,
+and ncarg_c, preferably in that order.  To use the C bindings,
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 surface_params,

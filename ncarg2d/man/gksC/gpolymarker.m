@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gpolymarker.m,v 1.4 1993-05-12 17:18:45 haley Exp $
+.\"	$Id: gpolymarker.m,v 1.5 1994-08-11 17:53:12 haley Exp $
 .\"
 .TH GPOLYMARKER 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -25,8 +25,8 @@ user coordinates.  Among other things, this means that the log scaling
 and mirror-imaging features available via the c_set call and the SPPS
 functions for drawing dots and markers are not applicable here.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gset_marker_type(3NCARG),

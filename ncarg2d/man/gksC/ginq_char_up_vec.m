@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_char_up_vec.m,v 1.4 1993-05-12 17:17:32 haley Exp $
+.\"	$Id: ginq_char_up_vec.m,v 1.5 1994-08-11 17:52:50 haley Exp $
 .\"
 .TH GINQ_CHAR_UP_VEC 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -24,8 +24,8 @@ The up vector is that vector formed by the two coordinate points
 (0.,0.) and (char_up_vec.delta_x,char_up_vec.delta_y).  See gset_char_up_vec
 for more details on the meaning of the character up vector.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gtext(3NCARG),

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_name_open_seg.m,v 1.3 1993-05-12 17:18:12 haley Exp $
+.\"	$Id: ginq_name_open_seg.m,v 1.4 1994-08-11 17:53:02 haley Exp $
 .\"
 .TH GINQ_NAME_OPEN_SEG 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -18,8 +18,8 @@ then err_ind is returned as "0"; otherwise err_ind is returned as "4".
 name_open_seg is returned as the number of the currently open segment; otherwise
 name_open_seg is undefined.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR geval_tran_matrix(3NCARG),

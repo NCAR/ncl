@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_seg_tran.m,v 1.4 1993-05-12 17:19:38 haley Exp $
+.\"	$Id: gset_seg_tran.m,v 1.5 1994-08-11 17:53:29 haley Exp $
 .\"
 .TH GSET_SEG_TRAN 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -20,8 +20,8 @@ When the segment named in seg_name is displayed, the coordinates of its
 primitives are transformed by the matrix specified in tran_matrix.
 .sp
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gaccum_tran_matrix(3NCARG),

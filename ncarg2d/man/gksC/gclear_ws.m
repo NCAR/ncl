@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gclear_ws.m,v 1.3 1993-05-12 17:16:50 haley Exp $
+.\"	$Id: gclear_ws.m,v 1.4 1994-08-11 17:52:36 haley Exp $
 .\"
 .TH GCLEAR_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -38,8 +38,8 @@ primitives that appear on the screen.
 For all other workstation types, clear workstation simply updates
 the workstation.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gopen_ws(3NCARG),

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ginq_linetype.m,v 1.3 1993-05-12 17:17:55 haley Exp $
+.\"	$Id: ginq_linetype.m,v 1.4 1994-08-11 17:52:57 haley Exp $
 .\"
 .TH GINQ_LINETYPE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -28,8 +28,8 @@ Dotted
 Dot-dash
 .RE
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gpolyline(3NCARG),

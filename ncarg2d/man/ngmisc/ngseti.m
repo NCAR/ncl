@@ -29,9 +29,9 @@ Ngmisc parameters.  For a complete list of parameters available
 in this utility, see the ngmisc_params man page.
 .SH ACCESS
 To use NGSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngseti, load 
+ncarg_c, and ncarg_c, preferably in that order.  To use c_ngseti, load 
 the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 ngmisc_params,

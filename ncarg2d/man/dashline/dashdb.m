@@ -42,9 +42,9 @@ A dash pattern defined by a call to DASHDB will supersede one defined
 by an earlier call to DASHDB or DASHDC.
 .SH ACCESS
 To use DASHDB, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_dashdb, load 
+and ncarg_c, preferably in that order.  To use c_dashdb, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 dashline, dashline_params,

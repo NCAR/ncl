@@ -208,9 +208,9 @@ Provides a way for the user to change the user-system-to-label-system
 mapping for one or more of the four axes.
 .SH ACCESS 
 To use Autograph, routines load the NCAR Graphics libraries
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 To use the Autograph C-bindings, load the NCAR Graphics libraries
-ncargC, ncarg_gksC, ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably 
+ncargC, ncarg_gksC, ncarg, ncarg_gks, and ncarg_c, preferably 
 in that order.
 .sp
 To get smoother curves, drawn using spline interpolation,

@@ -21,9 +21,9 @@ Use the ncargex command to see the following relevant examples:
 agex01.
 .SH ACCESS
 To use CLSGKS, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_clsgks, load the 
+and ncarg_c, preferably in that order.  To use c_clsgks, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 spps, gdawk, gclwk, gclks, opngks, setusv, getusv, ncarg_cbind

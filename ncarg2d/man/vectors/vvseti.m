@@ -44,9 +44,9 @@ vvex01,
 vvex02.
 .SH ACCESS
 To use VVSETI, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_vvseti, load the 
+and ncarg_c, preferably in that order.  To use c_vvseti, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the vectors man page for a description of all Vectors error
 messages and/or informational messages.

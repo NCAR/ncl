@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_marker_size.m,v 1.3 1993-05-12 17:19:32 haley Exp $
+.\"	$Id: gset_marker_size.m,v 1.4 1994-08-11 17:53:27 haley Exp $
 .\"
 .TH GSET_MARKER_SIZE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -15,8 +15,8 @@ void gset_marker_size(Gdouble marker_size);
 It must be  greater than or equal to 0.  
 Since marker_size = 1.0 by default, setting marker_size = 2.0 doubles polymarker size.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gpolymarker(3NCARG),

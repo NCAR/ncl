@@ -41,7 +41,7 @@ element of a parameter array like 'CLD' will automatically
 get the correct one for the line being drawn.
 .SH ACCESS
 To use CPCHCL, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

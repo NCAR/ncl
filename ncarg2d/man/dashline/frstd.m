@@ -49,9 +49,9 @@ tdashc, tdashl, tdashp, tdashs,
 fdldashc, fdldashd.
 .SH ACCESS
 To use FRSTD load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_frstd load 
+and ncarg_c, preferably in that order.  To use c_frstd load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 dashline, dashline_params, curved,

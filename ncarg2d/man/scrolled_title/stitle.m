@@ -152,9 +152,9 @@ fslfont,
 tstitl.
 .SH ACCESS
 To use STITLE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.  To use c_stitle, load 
+ncarg_c, and ncarg_c, preferably in that order.  To use c_stitle, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg_c, and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the scrolled_title man page for a description of all Scrolled_title error
 messages and/or informational messages.

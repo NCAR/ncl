@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargsrc.m,v 1.2 1993-05-08 17:00:30 haley Exp $
+.\"	$Id: ncargsrc.m,v 1.3 1994-08-11 17:54:26 haley Exp $
 .\"
 .TH NCARGSRC 1NCARG "OCTOBER 1990" NCAR "NCAR GRAPHICS"
 .de sf          \"start constant spacing
@@ -91,7 +91,6 @@ The following three source libraries are normally searched first:
                      default members of CONRAN, CONREC,
                      and DASH families).
     srcncarg_gks.a - NCAR Graphics GKS package.
-    srcncarg_loc.a - NCAR Graphics support routines.
 .ef
 .sp 1
 The following eight source libraries are normally searched after the first
@@ -202,7 +201,6 @@ source libraries:
                        stitle  strmln   support  threed
                        velvct
     srcncarg_gks.a  -  awi bwi
-    srcncarg_loc.a  -  local
     srcagupwrtx.a   -  agupwrtx
     srcconraq.a     -  conraq
     srcconras.a     -  conras

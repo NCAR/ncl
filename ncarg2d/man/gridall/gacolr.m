@@ -30,9 +30,9 @@ Gridall parameters.  For a complete list of parameters available
 in this utility, see the gridall_params man page.
 .SH ACCESS
 To use GACOLR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_gacolr, load 
+and ncarg_c, preferably in that order.  To use c_gacolr, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gridall,

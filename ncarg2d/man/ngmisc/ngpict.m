@@ -75,9 +75,9 @@ in the X11 window, that window will be cleared before program execution
 continues.
 .SH ACCESS
 To use NGPICT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_ngpict, load the
+and ncarg_c, preferably in that order.  To use c_ngpict, load the
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks, and 
-ncarg_loc, preferably in that order.
+ncarg_c, preferably in that order.
 .SH MESSAGES
 Non-fatal errors are reported for values of ACTION out of range and
 for values of ACTION inappropriately applied to a metafile.  Also,

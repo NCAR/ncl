@@ -51,9 +51,9 @@ c_arseti
 c_ardbpa
 .SH ACCESS
 To use Areas, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order. To use the Areas 
+and ncarg_c, preferably in that order. To use the Areas 
 C-bindings, load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
 is called. By default, SETER writes a message to the standard

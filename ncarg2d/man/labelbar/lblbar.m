@@ -137,9 +137,9 @@ Use the ncarg command to see the following relevant examples:
 colcon, cpex05, cpex07, cpex08, elblba, tconpa, and tlblba.
 .SH ACCESS
 To use LBLBAR, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_lblbar, load 
+and ncarg_c, preferably in that order.  To use c_lblbar, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 See the labelbar man page for a description of all Labelbar error
 messages and/or informational messages.

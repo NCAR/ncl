@@ -212,7 +212,7 @@ stex02,
 tvelvc.
 .SH ACCESS
 To use VELVCT, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 vectors,

@@ -26,9 +26,9 @@ c_gflas3
 c_gflas4
 .SH ACCESS 
 To use Gflash routines, load the NCAR Graphics libraries ncarg,
-ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.  To use the
+ncarg_gks, and ncarg_c, preferably in that order.  To use the
 Gflash C-bindings load the NCAR Graphics libraries ncargC, ncarg_gksC, 
-ncarg, ncarg_gks, ncarg_c, and ncarg_loc, preferably in that order.
+ncarg, ncarg_gks, and ncarg_c, preferably in that order.
 .SH MESSAGES
 When error conditions are detected, the support routine SETER
 is called in such a way that it writes a message to the standard

@@ -41,7 +41,7 @@ There are three entries in the Conran_family which create contour plots:
 CONRAQ (quick), CONRAS (super), and CONRAN (standard and smooth.)
 .sp
 To use standard CONRAN, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To run any of the other three
+and ncarg_c, preferably in that order.  To run any of the other three
 options (quick, super, or smooth), one or more additional libraries is
 needed as follows:
 .sp

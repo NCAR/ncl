@@ -92,9 +92,9 @@ Use the ncargex command to see the following relevant examples:
 (none).
 .SH ACCESS
 To use GETUSV, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_getusv, load the 
+and ncarg_c, preferably in that order.  To use c_getusv, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gqcr,gqplci, gqfaci, gqpmci, gqtxci, gqmksc, gqlwsc,

@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gactivate_ws.m,v 1.3 1993-05-12 17:16:44 haley Exp $
+.\"	$Id: gactivate_ws.m,v 1.4 1994-08-11 17:52:34 haley Exp $
 .\"
 .TH GACTIVATE_WS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -16,8 +16,8 @@ ws_id must be the same as that used in some previous gopen_ws call.
 .SH USAGE
 Active workstations receive all GKS output primitives.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online: 
 .BR gopen_gks(3NCARG),

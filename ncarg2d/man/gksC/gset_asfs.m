@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_asfs.m,v 1.4 1993-05-12 17:18:51 haley Exp $
+.\"	$Id: gset_asfs.m,v 1.5 1994-08-11 17:53:14 haley Exp $
 .\"
 .TH GSET_ASFS 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -53,8 +53,8 @@ default these values to GASF_BUNDLED, so, if one expects to use such
 a package, it would be precautionary to call gset_asfs to set all aspect
 source flags to GASF_INDIV before calling other GKS functions.
 .SH ACCESS
-To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, ncarg_c,
-and ncarg_loc libraries.
+To use the GKS C-binding routines, load the ncarg_gksC, ncarg_gks, and
+ncarg_c libraries.
 .SH SEE ALSO
 Online:
 .BR ginq_asfs(3NCARG),

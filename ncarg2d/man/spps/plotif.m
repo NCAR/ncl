@@ -58,9 +58,9 @@ Use the ncargex command to see the following relevant examples:
 arex01, cbex01, cmppos, coex03, cpexcc, epltch.
 .SH ACCESS
 To use PLOTIF, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_plotif, load the 
+and ncarg_c, preferably in that order.  To use c_plotif, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gpl, plotit, setusv, getusv, sflush, frstpt, vector, line, curve,

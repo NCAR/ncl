@@ -26,9 +26,9 @@ Use the ncargex command to see the following relevant examples:
 tdashp, tdashs.
 .SH ACCESS
 To use LASTD, load the NCAR Graphics libraries ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.  To use c_lastd, load 
+and ncarg_c, preferably in that order.  To use c_lastd, load 
 the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 dashline, dashline_params, curved,

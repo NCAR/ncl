@@ -46,7 +46,7 @@ been set to the value of the field; its value may be
 retrieved and used by CPCHCF.
 .SH ACCESS
 To use CPCHCF, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  
+and ncarg_c, preferably in that order.  
 .SH SEE ALSO
 Online: 
 conpack, 

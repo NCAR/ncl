@@ -19,9 +19,9 @@ For a complete list of parameters available
 in this utility, see the conpack_params man page.
 .SH ACCESS
 To use CPRSET, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_cprset, 
+and ncarg_c, preferably in that order.  To use c_cprset, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 conpack,

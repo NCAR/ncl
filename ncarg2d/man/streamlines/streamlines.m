@@ -102,9 +102,9 @@ User modifiable routine that maps a single point on
 the streamline from data to user coordinate space.
 .SH ACCESS 
 To use Streamlines, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use the C bindings, load the 
+and ncarg_c, preferably in that order.  To use the C bindings, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 In this section are listed, in alphabetical order, all the
 error messages that may be written by Streamlines. Each

@@ -38,9 +38,9 @@ Use the ncargex command to see the following relevant examples:
 mpex07, mpex09, cbex01, coex01, coex03, epltch, srex01, and tgflas.
 .SH ACCESS
 To use LINE, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.  To use c_line, load the 
+and ncarg_c, preferably in that order.  To use c_line, load the 
 NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online:
 gpl, gsln, gslwsc, gscr, gsplci,

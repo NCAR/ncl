@@ -105,10 +105,10 @@ VVUDMV - The default name of a routine used to draw vectors masked to
 an area map. VVUDMV decides which segments of a vector to draw depending
 on the area group and group identifier arrays passed to it.
 .SH ACCESS 
-To use Vectors, load the NCAR Graphics libraries ncarg, ncarg_gks,
-ncarg_c and ncarg_loc, preferably in that order.  To use the C bindings, 
+To use Vectors, load the NCAR Graphics libraries ncarg, ncarg_gks, and
+ncarg_c, preferably in that order.  To use the C bindings, 
 load the NCAR Graphics libraries ncargC, ncarg_gksC, ncarg, ncarg_gks,
-ncarg_c, and ncarg_loc, preferably in that order.
+and ncarg_c, preferably in that order.
 .SH MESSAGES
 In this section are listed, in alphabetical order, all the
 error messages that may be written by Vectors. Each error
