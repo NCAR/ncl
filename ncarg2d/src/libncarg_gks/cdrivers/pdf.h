@@ -1,5 +1,5 @@
 /*
- *	$Id: pdf.h,v 1.2 2003-03-01 00:30:04 fred Exp $
+ *	$Id: pdf.h,v 1.3 2003-03-05 19:56:15 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -55,8 +55,8 @@
 #define LLY_DEFAULT		126     /* default lower left Y coordinate */
 #define URY_DEFAULT		666     /* default upper right Y coordinate */
 
-#define DEFAULT_CLIPPING_RECT	0
-#define PDF_CLIPPING_RECT	1
+#define PDF_DEFAULT_CLIPPING_RECT 0
+#define PDF_CLIPPING_RECT	  1
 
 #define MITER_LIMIT_DEFAULT		10.
 #define SUPPRESS_FLAG      		0

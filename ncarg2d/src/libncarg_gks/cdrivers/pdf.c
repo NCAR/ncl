@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.14 2003-03-04 19:29:54 fred Exp $
+ *      $Id: pdf.c,v 1.15 2003-03-05 19:56:15 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -225,7 +225,7 @@ void PDFOutputClipping (PDFddp *psa, int type)
   int tx,ty,x0,x1,y0,y1,current_color;
 
   if (psa->pdf_clip.null == FALSE) {
-    if (type == DEFAULT_CLIPPING_RECT) {
+    if (type == PDF_DEFAULT_CLIPPING_RECT) {
       x0 = psa->dspace.llx;
       x1 = psa->dspace.urx;
       y0 = psa->dspace.lly;
@@ -314,8 +314,7 @@ void PDFOutputClipping (PDFddp *psa, int type)
  *  Linewidth.
  */
   bump_page_lines();
-  sprintf(page_lines[num_page_lines],"%6d w\n",
-           psa->line_join, psa->line_cap, psa->attributes.linewidth_set);
+  sprintf(page_lines[num_page_lines],"%6d w\n", psa->attributes.linewidth_set);
   stream_size += 9;
 
 /*
@@ -477,8 +476,7 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
  *  Linewidth.
  */
     bump_page_lines();
-    sprintf(page_lines[num_page_lines],"%6d w\n",
-             psa->line_join, psa->line_cap, psa->attributes.linewidth_set);
+    sprintf(page_lines[num_page_lines],"%6d w\n",psa->attributes.linewidth_set);
     stream_size += 9;
 
 /*
@@ -524,13 +522,12 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
                            (psa->suppress_flag != 2)) {
        PDFbackground(psa);
     }
-    psa->attributes.clip_ind == current_clipping;
+    psa->attributes.clip_ind = current_clipping;
 
-    PDFOutputClipping (psa, DEFAULT_CLIPPING_RECT);
+    PDFOutputClipping (psa, PDF_DEFAULT_CLIPPING_RECT);
     if (psa->attributes.clip_ind == CLIPPING_ON) {
        PDFOutputClipping (psa, PDF_CLIPPING_RECT);
     }
-
 
 /*
  *  Establish the new clipping rectangle.
@@ -557,7 +554,6 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
  *  sprintf(page_lines[num_page_lines],"W n\n");
  *  stream_size += 4;
  */
-
   }
 }
 
@@ -3119,7 +3115,7 @@ PDFSetClipIndicator(GKSC *gksc)
           return(0);
         }
         else {
-          PDFOutputClipping (psa, DEFAULT_CLIPPING_RECT);
+          PDFOutputClipping (psa, PDF_DEFAULT_CLIPPING_RECT);
         }
       }
     }
