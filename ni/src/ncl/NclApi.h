@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.16 1996-09-05 20:29:13 boote Exp $
+ *      $Id: NclApi.h,v 1.17 1996-10-10 18:21:54 boote Exp $
  */
 /************************************************************************
 *									*
@@ -341,6 +341,12 @@ extern void NclSetPromptFunc(
 #if	NhlNeedProto
 NclPromptFunc /*prmf*/, 
 void * /*user_data */
+#endif
+);
+
+extern void NclSetOutputStream(
+#if	NhlNeedProto
+	FILE	*out
 #endif
 );
 

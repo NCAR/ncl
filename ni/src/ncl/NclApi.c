@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.34 1996-09-05 20:29:11 boote Exp $
+ *      $Id: NclApi.c,v 1.35 1996-10-10 18:21:52 boote Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,11 @@ extern "C" {
 #include "DataSupport.h"
 #include "NclCallBacksI.h"
 #include "NclMdInc.h"
+#include "NclHLUObj.h"
+#include "NclHLUVar.h"
+#include "NclVar.h"
+#include "NclFile.h"
+#include "NclFileVar.h"
 
 int force_reset = 0;
 int start_state = 0;
@@ -114,6 +119,7 @@ int NclInitServer
 	cur_line_text = NclMalloc((unsigned)512);
         cur_line_maxsize = 512;
         cur_line_text_pos = &(cur_line_text[0]);
+	cur_line_number = -1;
 
 	NhlOpen();
 
@@ -122,6 +128,12 @@ int NclInitServer
 	_NclInitTypeClasses();
 	_NclInitDataClasses();
 	_NhlRegSymConv(NULL,NhlTGenArray,NhlTNclData,NhlTGenArray,NhlTGenArray);
+
+	_NclInitClass(nclHLUObjClass);
+	_NclInitClass(nclHLUVarClass);
+	_NclInitClass(nclVarClass);
+	_NclInitClass(nclFileClass);
+	_NclInitClass(nclFileVarClass);
 
 	the_input_buffer = "begin\nend\n";
 	the_input_buffer_ptr = the_input_buffer;

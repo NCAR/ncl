@@ -245,14 +245,11 @@ statement_list :  statement eoln			{
 										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
 											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
 										}
+										fclose(tmp_file);
 										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
 										cur_line_number = 0;
-										fclose(tmp_file);
-/*
-										fprintf(stdout,"closing0 %s\n",tmp);
-										fflush(stdout);
-*/
 										loading += 1;
+										cmd_line = 0;
 									}	
 								} else {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
@@ -291,14 +288,11 @@ statement_list :  statement eoln			{
 										if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
 											NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
 										}
+										fclose(tmp_file);
 										_NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
 										cur_line_number = 0;
-/*
-										fprintf(stdout,"closing1 %s\n",tmp);
-										fflush(stdout);
-*/
-										fclose(tmp_file);
 										loading += 1;
+										cmd_line = 0;
 									}	
 								} else {
 									NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
@@ -439,14 +433,11 @@ block_statement_list : statement eoln {
                                                                                 if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
                                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$2);
                                                                                 }
+                                                                                fclose(tmp_file);
                                                                                 _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
                                                                                 cur_line_number = 0;
-/*
-										fprintf(stdout,"closing2 %s\n",tmp);
-										fflush(stdout);
-*/
-                                                                                fclose(tmp_file);
                                                                                 loading += 1;
+										cmd_line = 0;
                                                                         }
                                                                 } else {
                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);
@@ -486,14 +477,11 @@ block_statement_list : statement eoln {
                                                                                 if(fread((void*)tmp_input,sizeof(char),buff.st_size/sizeof(char),tmp_file)<0) {
                                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Error opening file: %s",$3);
                                                                                 }
+                                                                                fclose(tmp_file);
                                                                                 _NclPushNewInputStr(tmp_input,tmp,buff.st_size,cur_line_number);
                                                                                 cur_line_number = 0;
-/*
-										fprintf(stdout,"closing3 %s\n",tmp);
-										fflush(stdout);
-*/
-                                                                                fclose(tmp_file);
                                                                                 loading += 1;
+										cmd_line = 0;
                                                                         }
                                                                 } else {
                                                                         NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not open %s",tmp);

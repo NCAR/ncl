@@ -91,6 +91,20 @@ FILE *_NclGetInputStream
 {
 	return(stdin_fp);
 }
+
+void NclSetOutputStream
+#if	NhlNeedProto
+(
+	FILE	*out
+)
+#else
+(out)
+	FILE	*out;
+#endif
+{
+	stdout_fp = out;
+}
+
 FILE *_NclGetOutputStream
 #if	NhlNeedProto
 (void)
@@ -218,6 +232,12 @@ char *_NclPopInputStr
 		str_stack.next = str_stack.next->next;
 		NclFree(tmp);
 		loading--;
+	/*
+	 * If yywrap starts getting called from the api, then this
+	 * shouldn't be necessary.
+	 */
+		if(!loading)
+			cmd_line = cmd_line_is_set;
 		return(the_input_buffer);
 	} else {
 		return(the_input_buffer);
