@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.8 1993-03-25 16:59:50 kennison Exp $
+C $Id: plchhq.f,v 1.9 1993-03-30 21:55:38 kennison Exp $
 C
       SUBROUTINE PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
 C
@@ -112,6 +112,11 @@ C
      +          NDSV(NCSO),INSV(NCSO),NASV(NCSO),IPSV(NCSO)
 C
       CHARACTER*(NCSO) CHSV
+C
+C Define arrays in which to save the definitions of normalization
+C transformation 1 and the current normalization transformation.
+C
+      DIMENSION WNT1(4),VNT1(4),WNTC(4),VNTC(4)
 C
 C Define the characters to be associated with values of NDPC from 1
 C to 95.
@@ -778,37 +783,61 @@ C
 C D R A W   T H E   C H A R A C T E R S
 C
 C
-C First, save the values of the initial polyline, fill area, and text
+C First, save information about normalization transformation 1 and the
+C current normalization transformation.
+C
+      CALL GQNT (1,IERR,WNT1,VNT1)
+C
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQNT',2,2)
+        STOP
+      END IF
+C
+      CALL GQCNTN (IERR,INTC)
+C
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQCNTN',3,2)
+        STOP
+      END IF
+C
+      CALL GQNT (INTC,IERR,WNTC,VNTC)
+C
+      IF (IERR.NE.0) THEN
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQNT',4,2)
+        STOP
+      END IF
+C
+C Then, save the values of the initial polyline, fill area, and text
 C color indices, the initial line width, and the initial fill area
 C interior style.
 C
       CALL GQPLCI (IERR,IPLC)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',2,2)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQPLCI',5,2)
         STOP
       END IF
 C
       CALL GQFACI (IERR,IFAC)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',3,2)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFACI',6,2)
         STOP
       END IF
 C
       CALL GQTXCI (IERR,ITXC)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQTXCI',4,2)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQTXCI',7,2)
         STOP
       END IF
 C
       CALL GQLWSC (IERR,RILW)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQLWSC',5,2)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQLWSC',8,2)
         STOP
       END IF
 C
       CALL GQFAIS (IERR,IIIS)
       IF (IERR.NE.0) THEN
-        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFAIS',6,2)
+        CALL SETER ('PLCHHQ - ERROR EXIT FROM GQFAIS',9,2)
         STOP
       END IF
 C
@@ -956,7 +985,7 @@ C
               CALL PCEXCD (358,2,NDGU)
               IF (NDGU.EQ.0) THEN
                 CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NDGU = 0) -
-     +SEE CONSULTANT',7,2)
+     +SEE CONSULTANT',10,2)
                 STOP
               END IF
             END IF
@@ -1014,7 +1043,7 @@ C
                   YCRA(NCRA)=RDGU(K+1)
                 ELSE
                   CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA
-     +TOO SMALL) - SEE CONSULTANT',8,2)
+     +TOO SMALL) - SEE CONSULTANT',11,2)
                   STOP
                 END IF
               ELSE
@@ -1029,7 +1058,7 @@ C
   148             CONTINUE
                 ELSE
                   CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCRA/YCRA
-     +TOO SMALL) - SEE CONSULTANT',9,2)
+     +TOO SMALL) - SEE CONSULTANT',12,2)
                   STOP
                 END IF
               END IF
@@ -1226,7 +1255,7 @@ C
 C
   138               IF (NPCS.GE.MPCS) THEN
                       CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NPCS T
-     +OO BIG) - SEE CONSULTANT',10,2)
+     +OO BIG) - SEE CONSULTANT',13,2)
                       STOP
                     END IF
 C
@@ -1255,7 +1284,7 @@ C
 C
                         IF (NCRA.GE.MCRA) THEN
                           CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (NC
-     +RA TOO BIG) - SEE CONSULTANT',11,2)
+     +RA TOO BIG) - SEE CONSULTANT',14,2)
                           STOP
                         END IF
 C
@@ -1368,7 +1397,7 @@ C that should not have been possible, so take an error exit.
 C
                       IF (XCP1.EQ.OORV.OR.XCP2.EQ.OORV) THEN
                         CALL SETER ('PLCHHQ - INTERNAL LOGIC ERROR (XCP1
-     + OR XCP2 = OORV) - SEE CONSULTANT',12,2)
+     + OR XCP2 = OORV) - SEE CONSULTANT',15,2)
                         STOP
                       END IF
 C
@@ -1494,19 +1523,13 @@ C Now, if there are visible pieces of the polyline/polygon, ...
 C
               IF (NPCS.NE.0) THEN
 C
-C ... save the number of the current normalization transformation, ...
+C ... redefine normalization transformation 1 so that we can use
+C fractional coordinates and yet have the same window as before, and
+C then switch to that normalization transformation ...
 C
-                CALL GQCNTN (IERR,ISNT)
-C
-                IF (IERR.NE.0) THEN
-                  CALL SETER ('PLCHHQ - ERROR EXIT FROM GQCNTN',13,2)
-                  STOP
-                END IF
-C
-C ... switch to normalization transformation 0 so we can use fractional
-C coordinates, ...
-C
-                CALL GSELNT (0)
+                CALL GSWN   (1,VNTC(1),VNTC(2),VNTC(3),VNTC(4))
+                CALL GSVP   (1,VNTC(1),VNTC(2),VNTC(3),VNTC(4))
+                CALL GSELNT (1)
 C
 C ... change color (during pass 2) if so directed by information from
 C the fontcap, ...
@@ -1562,9 +1585,14 @@ C
 C
                 END IF
 C
+C ... restore normalization transformation 1, ...
+C
+                CALL GSWN (1,WNT1(1),WNT1(2),WNT1(3),WNT1(4))
+                CALL GSVP (1,VNT1(1),VNT1(2),VNT1(3),VNT1(4))
+C
 C ... switch back to the original normalization transformation, ...
 C
-                CALL GSELNT (ISNT)
+                CALL GSELNT (INTC)
 C
 C ... and, if the color was just overridden above, set it back to what
 C it was.
