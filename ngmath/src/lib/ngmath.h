@@ -16,14 +16,23 @@ float *c_shgrid(int, float [], float [], float [], float [],
 /*
  *  Function prototypes for the cssgrid package.
  */
-int   *c_csstri(int, float [], float [], float [], int *, int *);
-float *c_cssgrid(int, float [], float [], float [], float [],
+int   *c_csstri(int, float [], float [], int *, int *);
+float *c_cssgrid(int, float [], float [], float [],
                  int, int, float [], float [], int *);
+void   c_csvoro(int, float [], float [], int, int,
+                float [], float [], float [], int *,
+                int *, int [], int *);
 void   c_cstrans(int, float *, float *, float *, float *, float *);
 void   c_csscoord(float, float, float, float *, float *, float *);
-void   c_csvoro(int, float [], float [], float [], int, int,
-                float [], float [], float [], float [], int *,
+
+int   *c_csstrid(int, double [], double [], int *, int *);
+double *c_cssgridd(int, double [], double [], double [],
+                 int, int, double [], double [], int *);
+void   c_csvorod(int, double [], double [], int, int,
+                double [], double [], double [], int *,
                 int *, int [], int *);
+void   c_cstransd(int, double *, double *, double *, double *, double *);
+void   c_csscoordd(double, double, double, double *, double *, double *);
  
 /*
  *  Function prototypes for the csagrid package.
