@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.11 1993-05-08 17:00:17 haley Exp $
+.\"	$Id: ncargex.m,v 1.12 1993-09-24 14:45:55 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
@@ -209,7 +209,7 @@ listed according to which utility they belong with:
 .I "EXAMPLES AVAILABLE"
 .sp
 .I "AREAS Examples:"
-	arex01 cardb1 cardb2 caredg carfill carline carmap tareas
+	arex01 arex02 cardb1 cardb2 caredg carfill carline carmap tareas
 .sp
 .I "AUTOGRAPH Examples:"
 	agex01 agex02 agex03 agex04 agex05 agex06 agex07 agex08
