@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.9 1993-01-20 15:54:29 haley Exp $
+#	$Id: yMakefile,v 1.10 1993-02-02 21:57:26 clyne Exp $
 #
 
 NCARG		= ../../../..
@@ -33,7 +33,7 @@ SUN_SPECIFIER	= sunview
 #
 #       local libraries  (All of these are in $(LIBPATH).)
 #
-CTRANS_LIBS_A   = libcgm.a libncarv.a libncarg_ras.a
+CTRANS_LIBS_A   = libcgm.a libncarg_ras.a
 
 #
 #       local relocatable objects  (All of these are in $(ROBJPATH))
