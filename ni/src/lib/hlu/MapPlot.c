@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.87 2002-07-18 19:28:18 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.88 2002-08-10 00:36:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3851,6 +3851,8 @@ static NhlErrorTypes GetXAxisTicks
 	status = _OUTOFRANGE;
 
 	for (i = 0; i <= statix; i++) {
+		if (ts[i].status == _DEFERRED)
+			ts[i].status = _OUTOFRANGE;
 		if (ts[i].status == _OUTOFRANGE) {
 			if (start_ix == -1)
 				continue;
@@ -3873,6 +3875,8 @@ static NhlErrorTypes GetXAxisTicks
 			}
 			end_ix = ts[i].index - 1;
 		}
+		if (end_ix == start_ix) 
+			continue;
 		angle_div = (end_ix - start_ix) / 25.0;
 		if (dolat) {
 			max_angle = 
@@ -4214,6 +4218,8 @@ static NhlErrorTypes GetYAxisTicks
 	status = _OUTOFRANGE;
 
 	for (i = 0; i <= statix; i++) {
+		if (ts[i].status == _DEFERRED)
+			ts[i].status = _OUTOFRANGE;
 		if (ts[i].status == _OUTOFRANGE) {
 			if (start_ix == -1)
 				continue;
@@ -4236,6 +4242,8 @@ static NhlErrorTypes GetYAxisTicks
 			}
 			end_ix = ts[i].index - 1;
 		}
+		if (end_ix == start_ix) 
+			continue;
 		angle_div = (end_ix - start_ix) / 25.0;
 		if (dolon) {
 			max_angle = 
