@@ -1,5 +1,5 @@
 C
-C	$Id: csblda.f,v 1.1 2000-01-12 22:56:10 fred Exp $
+C	$Id: csblda.f,v 1.2 2000-03-10 01:06:05 fred Exp $
 C
       BLOCKDATA CSBLDA
 C
@@ -24,6 +24,11 @@ C  Tolerance to use in determining how close each SIGMA element
 C  should be to its optimum value in GETSIG.
 C
       DATA TOLSG/0.01D0/
+C
+C  Fill value to use with NCL functions that can return a missing
+C  valur.
+C
+      DATA RMVAL/-1.0D0/
 C
 C  Maximum number of iterations to use in computing SIGMA array.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: csgetr.f,v 1.1 2000-01-12 22:56:12 fred Exp $
+C	$Id: csgetr.f,v 1.2 2000-03-10 01:06:06 fred Exp $
 C
       SUBROUTINE CSGETR (CNP,RVP)
 C
@@ -44,9 +44,17 @@ C
      +    CNP(1:3).EQ.'Tol') THEN
         RVP = REAL(TOLIC)
         GO TO 110
+      ELSE IF (CNP(1:3).EQ.'TTF' .OR. CNP(1:3).EQ.'ttf' .OR. 
+     +    CNP(1:3).EQ.'Ttf') THEN
+        RVP = REAL(TOLSG)
+        GO TO 110
       ELSE IF (CNP(1:3).EQ.'SIG' .OR. CNP(1:3).EQ.'sig' .OR. 
      +    CNP(1:3).EQ.'Sig') THEN
         RVP = REAL(USSIG)
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'MVL' .OR. CNP(1:3).EQ.'mvl' .OR. 
+     +    CNP(1:3).EQ.'Mvl') THEN
+        RVP = REAL(RMVAL)
         GO TO 110
       ELSE
         CTM(1:36) = 'CSGETR - Parameter name not known - '

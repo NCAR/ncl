@@ -55,6 +55,25 @@ C
      +         CNP(1:3).EQ.'dtl' .OR. CNP(1:3).EQ.'Dtl') THEN
         TOLIC = DVP
         GO TO 120
+C
+C  TTF - Tolerance to use in determining how close each SIGMA element 
+C        should be to its optimum value in GETSIG.
+C
+      ELSE IF (CNP(1:3).EQ.'TTF' .OR. CNP(1:3).EQ.'ttf' .OR.
+     +         CNP(1:3).EQ.'Ttf' .OR. CNP(1:3).EQ.'TTD' .OR.
+     +         CNP(1:3).EQ.'ttd' .OR. CNP(1:3).EQ.'Ttd') THEN
+        TOLSG = DVP
+        GO TO 120
+C
+C  MVL - Missing value to be used with NCL functions that return arrays.
+C        if MVL is set, it will be used as the missing value to be
+C        returned.
+C
+      ELSE IF (CNP(1:3).EQ.'MVL' .OR. CNP(1:3).EQ.'mvl' .OR.
+     +         CNP(1:3).EQ.'Mvl' .OR. CNP(1:3).EQ.'DMV' .OR.
+     +         CNP(1:3).EQ.'dmv' .OR. CNP(1:3).EQ.'Dmv') THEN
+        RMVAL = DVP
+        GO TO 120
       ELSE
         CTM(1:36) = 'CSSETD - Parameter name not known - '
         CTM(37:39) = CNP(1:3)

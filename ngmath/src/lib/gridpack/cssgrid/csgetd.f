@@ -1,5 +1,5 @@
 C
-C	$Id: csgetd.f,v 1.2 2000-01-27 18:57:56 fred Exp $
+C	$Id: csgetd.f,v 1.3 2000-03-10 01:06:05 fred Exp $
 C
       SUBROUTINE CSGETD (CNP,DVP)
 C
@@ -46,10 +46,20 @@ C
      +    CNP(1:3).EQ.'dtl' .OR. CNP(1:3).EQ.'Dtl') THEN
         DVP = TOLIC
         GO TO 110
+      ELSE IF (CNP(1:3).EQ.'TTF' .OR. CNP(1:3).EQ.'ttf' .OR.
+     +         CNP(1:3).EQ.'Ttf' .OR. CNP(1:3).EQ.'TTD' .OR.
+     +         CNP(1:3).EQ.'ttd' .OR. CNP(1:3).EQ.'Ttd') THEN
+        DVP = TOLSG
+        GO TO 110
       ELSE IF (CNP(1:3).EQ.'SIG' .OR. CNP(1:3).EQ.'sig' .OR.
      +         CNP(1:3).EQ.'Sig' .OR. CNP(1:3).EQ.'DSG' .OR.
      +         CNP(1:3).EQ.'dsg' .OR. CNP(1:3).EQ.'Dsg') THEN
         DVP = USSIG
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'MVL' .OR. CNP(1:3).EQ.'mvl' .OR. 
+     +         CNP(1:3).EQ.'Mvl' .OR. CNP(1:3).EQ.'DMV' .OR.
+     +         CNP(1:3).EQ.'dmv' .OR. CNP(1:3).EQ.'Dmv') THEN
+        RVP = RMVAL
         GO TO 110
       ELSE
         CTM(1:36) = 'CSGETD - Parameter name not known - '

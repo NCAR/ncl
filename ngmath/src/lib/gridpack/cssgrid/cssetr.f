@@ -1,5 +1,5 @@
 C
-C	$Id: cssetr.f,v 1.1 2000-01-12 22:56:15 fred Exp $
+C	$Id: cssetr.f,v 1.2 2000-03-10 01:06:06 fred Exp $
 C
       SUBROUTINE CSSETR (CNP,RVP)
 C
@@ -52,6 +52,23 @@ C
       ELSE IF (CNP(1:3).EQ.'TOL' .OR. CNP(1:3).EQ.'tol' .OR.
      +         CNP(1:3).EQ.'Tol') THEN
         TOLIC = DBLE(RVP)
+        GO TO 120
+C
+C  TTF - Tolerance to use in determining how close each SIGMA element 
+C        should be to its optimum value in GETSIG.
+C
+      ELSE IF (CNP(1:3).EQ.'TTF' .OR. CNP(1:3).EQ.'ttf' .OR.
+     +         CNP(1:3).EQ.'Ttf') THEN
+        TOLSG = DBLE(RVP)
+        GO TO 120
+C
+C  MVL - Missing value to be used with NCL functions that return arrays.
+C        if MVL is set, it will be used as the missing value to be
+C        returned.
+C
+      ELSE IF (CNP(1:3).EQ.'MVL' .OR. CNP(1:3).EQ.'mvl' .OR.
+     +         CNP(1:3).EQ.'Mvl') THEN
+        RMVAL = DBLE(RVP)
         GO TO 120
       ELSE
         CTM(1:36) = 'CSSETR - Parameter name not known - '
