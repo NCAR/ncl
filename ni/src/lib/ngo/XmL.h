@@ -1,5 +1,5 @@
 /*
- *      $Id: XmL.h,v 1.5 1998-09-25 19:01:49 dbrown Exp $
+ *      $Id: XmL.h,v 1.6 1999-06-02 03:40:06 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -170,6 +170,7 @@ typedef struct
 #define XmCCellDefaults "CellDefaults"
 #define XmNcellDrawCallback "cellDrawCallback"
 #define XmNcellDropCallback "cellDropCallback"
+#define XmNcellStartDropCallback "cellStartDropCallback"
 #define XmNcellFocusCallback "cellFocusCallback"
 #define XmNcellPasteCallback "cellPasteCallback"
 #define XmNdeleteCallback "deleteCallback"
@@ -406,6 +407,7 @@ typedef struct _XmLGridCallbackStruct
 #define XmCR_DESELECT_CELL   926
 #define XmCR_DESELECT_COLUMN 927
 #define XmCR_DESELECT_ROW    928
+#define XmCR_START_CELL_DROP 929
 
 /* Grid defines */
 

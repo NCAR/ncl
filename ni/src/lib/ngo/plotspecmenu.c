@@ -1,5 +1,5 @@
 /*
- *      $Id: plotspecmenu.c,v 1.9 1999-05-22 00:36:22 dbrown Exp $
+ *      $Id: plotspecmenu.c,v 1.10 1999-06-02 03:40:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,8 @@
 #include <Xm/TextF.h>
 #include  <Xm/Form.h>
 #include  <Xm/LabelG.h>
+
+#define _NgDEFAULT_PLOTSTYLE_PATH "$NCARG_ROOT/lib/ncarg/plot_styles"
 
 typedef struct _NgDefSymbol {
 	NhlString class_name;
@@ -382,7 +384,7 @@ static void
 GetPlotStylesInPath
 (
 	PlotSpecMenuRec	*priv,
-	NhlString	path
+	const char	*path
 )
 {
 	struct stat	statbuf;
@@ -392,7 +394,12 @@ GetPlotStylesInPath
 	int		count, totalcount;
 	char		fullpath[1024];
 	char		*endp;
-	
+
+	if (! path) {
+		NHLPERROR((NhlWARNING,NhlEUNKNOWN,
+	   "Invalid directory encountered in plot style path specification"));
+		return;
+	}
 
 	for (i = 0; i < PlotStylePathCount; i ++) {
 		if (! strcmp(path,PlotStylePath[i])) /* dir already read */
@@ -586,35 +593,26 @@ UpdatePlotStyles
 	char buf[512];
 
 	path = getenv(NDV_PLOT_STYLE_PATH);
+
+	if (! path) {
+		fprintf(stderr,
+		      "%s environment variable not set\n\tdefaulting to %s\n",
+			NDV_PLOT_STYLE_PATH,_NgDEFAULT_PLOTSTYLE_PATH);
+		path = _NgDEFAULT_PLOTSTYLE_PATH;
+	}
 	if (path) {
 		char *cp,*last_cp = buf;
 		strcpy(buf,path);
 		while (cp = strchr(last_cp,':')) {
 			*cp = '\0';
 			if (*last_cp)
-				GetPlotStylesInPath(priv,last_cp);
+				GetPlotStylesInPath(priv,
+						    _NGResolvePath(last_cp));
 			last_cp = cp + 1;
 		}
 		if (*last_cp)
-			GetPlotStylesInPath(priv,last_cp);
+			GetPlotStylesInPath(priv,_NGResolvePath(last_cp));
 	}
-	else {
-		fprintf(stderr,
-			"%s environment variable not set\n",
-			NDV_PLOT_STYLE_PATH);
-	}	
-
-	path = (char *) GetNCARGPath("root");
-	if (path) {
-		strcpy(buf,path);
-		strcat(buf,"/lib/ncarg/plot_styles");
-
-		GetPlotStylesInPath(priv,buf);	
-	}
-	else {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			   "NCARG_ROOT environment variable not set");
-	}	
 
 	return;
 }

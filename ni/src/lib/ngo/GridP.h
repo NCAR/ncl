@@ -1,5 +1,5 @@
 /*
- *      $Id: GridP.h,v 1.2 1997-10-03 20:07:44 dbrown Exp $
+ *      $Id: GridP.h,v 1.3 1999-06-02 03:40:06 dbrown Exp $
  */
 /*
 (c) Copyright 1994, 1995, 1996 Microline Software, Inc.  ALL RIGHTS RESERVED
@@ -332,6 +332,7 @@ typedef struct _XmLGridPart
 	XtCallbackList addCallback, deleteCallback;
 	XtCallbackList cellDrawCallback, cellFocusCallback;
 	XtCallbackList cellDropCallback, cellPasteCallback;
+	XtCallbackList cellStartDropCallback;
 	XtCallbackList activateCallback, editCallback;
 	XtCallbackList selectCallback, deselectCallback;
 	XtCallbackList resizeCallback, scrollCallback;

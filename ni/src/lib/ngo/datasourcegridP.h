@@ -1,5 +1,5 @@
 /*
- *      $Id: datasourcegridP.h,v 1.3 1999-02-23 03:56:46 dbrown Exp $
+ *      $Id: datasourcegridP.h,v 1.4 1999-06-02 03:40:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -54,6 +54,9 @@ typedef struct _NgDataSourceGridRec
 	NhlBoolean		in_edit;
 	int			selected_row;
 	int			vis_row_count;
+	XmString		edit_save_string;
+	Widget			text;
+	NhlBoolean		text_dropped;
 } NgDataSourceGridRec;
 
 
