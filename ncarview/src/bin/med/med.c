@@ -1,5 +1,5 @@
 /*
- *	$Id: med.c,v 1.1 1991-04-04 15:23:09 clyne Exp $
+ *	$Id: med.c,v 1.2 1992-02-13 18:37:53 clyne Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -76,6 +76,7 @@ main (argc, argv)
 	extern	char	*malloc();
 
 	char	*file = NULL;	/* file to edit				*/
+	char	*prog_name = argv[0];
 
 	Cmd	*c;
 
@@ -114,6 +115,9 @@ main (argc, argv)
 				localTmp = *(++argv);
 				argc--;
 				break;
+			case 'V':	/* Version */
+				PrintVersion(prog_name);
+				exit(1);
 
 			default:
 				(void) sprintf(message_buf, 
