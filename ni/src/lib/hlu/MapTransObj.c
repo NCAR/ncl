@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.15 1995-02-11 02:42:07 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.16 1995-02-11 07:28:15 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -59,10 +59,10 @@ static NhlResource resources[] = {
 {NhlNmpPreserveAspectRatio,NhlCmpPreserveAspectRatio,NhlTBoolean,
 	 sizeof(NhlBoolean),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.preserve_aspect),
-	 NhlTImmediate,_NhlUSET((NhlPointer)False) ,0,NULL},
+	 NhlTImmediate,_NhlUSET((NhlPointer)True) ,0,NULL},
 
 
-{NhlNmpMapLimitMode,NhlCmpMapLimitMode,NhlTMapLimitMode,
+{NhlNmpLimitMode,NhlCmpLimitMode,NhlTMapLimitMode,
 	 sizeof(NhlMapLimitMode),
 	 NhlOffset(NhlMapTransObjLayerRec,mptrans.map_limit_mode),
 	 NhlTImmediate,_NhlUSET((NhlPointer)NhlMAXIMALAREA),0,NULL},

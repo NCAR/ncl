@@ -1,5 +1,5 @@
 /*
- *      $Id: MapTransObj.h,v 1.5 1995-02-11 02:42:08 dbrown Exp $
+ *      $Id: MapTransObj.h,v 1.6 1995-02-11 07:28:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,7 @@ typedef enum _NhlProjection {
 #define NhlNmpBottomMapPosF		"mpBottomMapPosF"
 #define NhlNmpTopMapPosF		"mpTopMapPosF"
 
-#define NhlNmpMapLimitMode		"mpMapLimitMode"
+#define NhlNmpLimitMode			"mpLimitMode"
 
 #define NhlNmpMinLatF			"mpMinLatF"
 #define NhlNmpMaxLatF			"mpMaxLatF"
@@ -116,7 +116,7 @@ typedef enum _NhlProjection {
 #define NhlCmpRelativeCenterLon		"MpRelativeCenterLon"
 #define NhlCmpPreserveAspectRatio	"MpPreserveAspectRatio"
 
-#define NhlCmpMapLimitMode		"MpMapLimitMode"
+#define NhlCmpLimitMode			"MpLimitMode"
 
 #define NhlCmpMinLatF			"MpMinLatF"
 #define NhlCmpMaxLatF			"MpMaxLatF"
