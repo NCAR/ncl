@@ -88,6 +88,14 @@ extern void NGCALLF(dsfvpgc,DSFVPGC)(int *,int *,int *,int *,double
 *,double *, int *,int *,double *,double *,double *,double *,int *,int *,
 double *,int *,double *,int *,int *);
 
+extern void NGCALLF(disfvpec,DISFVPEC)(int *,int *,int *,int *,double
+*,double *, int *,int *,double *,double *,double *,double *,int *,int *,
+double *,int *,double *,int *,int *);
+
+extern void NGCALLF(disfvpgc,DISFVPGC)(int *,int *,int *,int *,double
+*,double *, int *,int *,double *,double *,double *,double *,int *,int *,
+double *,int *,double *,int *,int *);
+
 extern void NGCALLF(dshaec,DSHAEC)(int *,int *,int *,int *,double *,int
 *,int *,double *,double *,int *,int *,double *,int *,double *,int *,int *);
 
@@ -14521,7 +14529,7 @@ NhlErrorTypes vrdv2uvf_W( void )
 
     NGCALLF(dchkerr,DCHKERR)("vrdv2uvf","shaec",&ier,&jer,&ker,&mer,8,5);
 /* 
- * Compute the u and v components fron vr,dv
+ * Compute the u and v components from vr,dv
  */ 
     NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
                              &jer);
@@ -14847,7 +14855,7 @@ NhlErrorTypes vrdv2uvF_W( void )
 
     NGCALLF(dchkerr,DCHKERR)("vrdv2uvF","shaec",&ier,&jer,&ker,&mer,8,5);
 /* 
- * Compute the u and v components fron vr,dv
+ * Compute the u and v components from vr,dv
  */ 
     NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
                              &jer);
@@ -15218,7 +15226,7 @@ NhlErrorTypes vrdv2uvg_W( void )
     
     NGCALLF(dchkerr,DCHKERR)("vrdv2uvg","shagc",&ier,&jer,&ker,&mer,8,5);
 /* 
- * Compute the u and v components fron vr,dv
+ * Compute the u and v components from vr,dv
  */ 
     NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
                              &jer);
@@ -15543,7 +15551,7 @@ NhlErrorTypes vrdv2uvG_W( void )
                            &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
     NGCALLF(dchkerr,DCHKERR)("vrdv2uvG","shagc",&ier,&jer,&ker,&mer,8,5);
 /* 
- * Compute the u and v components fron vr,dv
+ * Compute the u and v components from vr,dv
  */ 
     NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
                              &jer);
@@ -15612,6 +15620,728 @@ NhlErrorTypes vrdv2uvG_W( void )
     return(NclReturnValue(uv,ndims_uv,dsizes_uv,NULL,type_uv,0));
   }
 
+}
+
+
+NhlErrorTypes sfvp2uvf_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *vr, *dv;
+  double *tmp_vr, *tmp_dv;
+  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  NclScalar missing_vr, missing_dvo, missing_dvr, missing_ddvo;
+  NclBasicDataTypes type_vr, type_dv;
+  int has_missing_vr, has_missing_dvo, found_missing_vr, found_missing_dv;
+/*
+ * Output array variables
+ */
+  void *u, *v;
+  double *tmp_u, *tmp_v;
+  NclBasicDataTypes type_u, type_v;
+  int has_missing_u, has_missing_v;
+  NclScalar missing_u, missing_du, missing_v, missing_dv;
+  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+/*
+ * various
+ */
+  int nt, nlat, nlon, nlatnlon, total_size_in;
+  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
+  int index_uv, nmiss;
+/*
+ * Workspace variables
+ */
+  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshaec, lvhsec;
+  double *work1, *work2, *work3, *dwork1, *dwork2;
+  double *wshaec, *wvhsec, *as, *bs, *av, *bv;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  vr = (void*)NclGetArgValue(
+           0,
+           4,
+           &ndims_vr, 
+           dsizes_vr,
+           &missing_vr,
+           &has_missing_vr,
+           &type_vr,
+           2);
+  dv = (void*)NclGetArgValue(
+           1,
+           4,
+           &ndims_dv, 
+           dsizes_dv,
+           &missing_dvo,
+           &has_missing_dvo,
+           &type_dv,
+           2);
+/*
+ * Get output arrays.
+ */
+  u = (void*)NclGetArgValue(
+           2,
+           4,
+           &ndims_u, 
+           dsizes_u,
+           &missing_u,
+           &has_missing_u,
+           &type_u,
+           1);
+  v = (void*)NclGetArgValue(
+           3,
+           4,
+           &ndims_v, 
+           dsizes_v,
+           &missing_v,
+           &has_missing_v,
+           &type_v,
+           1);
+/*
+ * The grids coming in must be at least 2-dimensional and have the same # of
+ * dimensions.
+ */
+  if( ndims_vr != ndims_dv || ndims_vr < 2 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_vr; i++ ) {
+    if( dsizes_vr[i] != dsizes_dv[i] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * The output arrays must also be at least 2-dimensional and the same sizes.
+ */
+  if( ndims_u != ndims_vr || ndims_v != ndims_vr ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input/output arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_vr; i++ ) {
+    if( dsizes_u[i] != dsizes_vr[i] || dsizes_v[i] != dsizes_vr[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input/output arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+  if((type_u != NCL_float && type_u != NCL_double) ||
+     (type_v != NCL_float && type_v != NCL_double)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The output arrays must be float or double");
+    return(NhlFATAL);
+  }
+/*
+ * Compute the total number of elements in our array.
+ */
+  compute_nlatnlon(dsizes_u,ndims_u,&nlat,&nlon,&nlatnlon,&nt,
+                   &total_size_in);
+/*
+ * Coerce missing values
+ */
+  coerce_missing(type_vr,has_missing_vr,&missing_vr,&missing_dvr,NULL);
+  coerce_missing(type_dv,has_missing_dvo,&missing_dvo,&missing_ddvo,NULL);
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
+
+/*
+ * Allocate space for temporary input arrays. The temporary arrays
+ * tmp_dv/tmp_vr are just big enough to hold 2-dimensional subsections
+ * of the dv/vr array. We only need to allocate space for them if the
+ * input is not already double. Otherwise, we just have it point
+ * to the appropriate locations in dv/vr.
+ */
+  if(type_vr != NCL_double) {
+    tmp_vr = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_vr == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: Unable to allocate memory for coercing vr array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+
+  if(type_dv != NCL_double) {
+    tmp_dv = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_dv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: Unable to allocate memory for coercing dv array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+/*
+ * Allocate space for temporary output arrays, if not already double.
+ */
+  if(type_u != NCL_double) {
+    tmp_u = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_u == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: Unable to allocate memory for coercing u array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+
+  if(type_v != NCL_double) {
+    tmp_v = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_v == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: Unable to allocate memory for coercing v array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+
+/*
+ * Allocate memory for work arrays.
+ */
+  isym    = 0;
+  idvw    = nlat;
+  jdvw    = nlon;
+  ndab    = nlat;
+  mdab    = min(nlat,(nlon+2)/2);
+  l1      = min(nlat,(nlon+2)/2);
+  l2      = (nlat+1)/2;
+  lwork1  = nlatnlon;
+  lwork2  = max(2*(nlat+1),nlat*(nlon+max(3*l2,nlon)));
+  lwork3  = max(4*(nlat+1),nlat*(2*nlon+max(6*l2,nlon))+nlat*(4*l1+1));
+  ldwork1 = nlat+1;
+  ldwork2 = 2*(nlat+2);
+  lvhsec  = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
+  lshaec  = 2*nlat*l2+3*(max(l1-2,0)*(nlat+nlat-l1-1))/2+nlon+15;
+
+  work1  = (double*)calloc(lwork1,sizeof(double));
+  work2  = (double*)calloc(lwork2,sizeof(double));
+  work3  = (double*)calloc(lwork3,sizeof(double));
+  dwork1 = (double*)calloc(ldwork1,sizeof(double));
+  dwork2 = (double*)calloc(ldwork2,sizeof(double));
+  as     = (double*)calloc(mdab*ndab,sizeof(double));
+  bs     = (double*)calloc(mdab*ndab,sizeof(double));
+  av     = (double*)calloc(mdab*ndab,sizeof(double));
+  bv     = (double*)calloc(mdab*ndab,sizeof(double));
+  wshaec = (double*)calloc(lshaec,sizeof(double));
+  wvhsec = (double*)calloc(lvhsec,sizeof(double));
+
+  if(work1 == NULL || work2 == NULL || work3 == NULL || 
+     dwork1 == NULL || dwork2 == NULL || as == NULL || bs == NULL || 
+     av == NULL || bv == NULL || wshaec == NULL || wvhsec == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop through the rightmost nt dimensions and call the various
+ * underlying Fortran routines. This code could also be written
+ * so that the full input arrays are passed to the Fortran routines,
+ * but then you can't check each individual nlat x nlon array to see
+ * if contains missing values.  In the case below, if an nlat x nlon
+ * array contains missing values, then only that subsection is set to
+ * all missing.
+ */
+  index_uv = nmiss = 0;
+  
+  for(i = 0; i < nt; i++ ) {
+    if(type_vr != NCL_double) {
+/*
+ * Coerce nlat x nlon subsection of vr (tmp_vr) to double.
+ */
+      coerce_subset_input_double(vr,tmp_vr,index_uv,type_vr,
+                                 nlatnlon,0,&missing_vr,&missing_dvr);
+    }
+    else {
+/*
+ * Point tmp_vr to appropriate location in vr.
+ */
+      tmp_vr = &((double*)vr)[index_uv];
+    }
+    if(type_dv != NCL_double) {
+/*
+ * Coerce nlat x nlon subsection of dv (tmp_dv) to double.
+ */
+      coerce_subset_input_double(dv,tmp_dv,index_uv,type_dv,
+                                 nlatnlon,0,&missing_dvo,&missing_ddvo);
+    }
+    else {
+/*
+ * Point tmp_dv to appropriate location in dv.
+ */
+      tmp_dv = &((double*)dv)[index_uv];
+    }
+    if(type_u == NCL_double) {
+/*
+ * Point tmp_u to appropriate location in u.
+ */
+      tmp_u = &((double*)u)[index_uv];
+    }
+    if(type_v == NCL_double) {
+/*
+ * Point tmp_v to appropriate location in v.
+ */
+      tmp_v = &((double*)v)[index_uv];
+    }
+/*
+ * Check for missing values.
+ */
+    found_missing_dv = contains_missing(tmp_dv,nlatnlon,has_missing_dvo,
+                                        missing_ddvo.doubleval);
+    found_missing_vr = contains_missing(tmp_vr,nlatnlon,has_missing_vr,
+                                        missing_dvr.doubleval);
+
+    if(found_missing_dv || found_missing_vr) {
+      nmiss++;
+/*
+ * Set all elements of these 2D grids to a missing value, if a missing
+ * value exists.
+ */
+      if(has_missing_u) {
+        set_subset_output_missing(u,index_uv,type_u,nlatnlon,
+                                  missing_du.doubleval);
+      }
+      if(has_missing_v) {
+        set_subset_output_missing(v,index_uv,type_v,nlatnlon,
+                                  missing_dv.doubleval);
+      }
+    }
+    else {
+/*
+ * Transform from geophysical coordinates to math coordinates.
+ * (geo) nlon is the last dim.
+ */
+    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
+    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vr,work1);
+/*
+ * shaec performs the spherical harmonic analysis on a (scalar) equal 
+ * grid(s) and returns the coefficients in array(s) as,bs for divergence
+ * and av,bv for vortivity
+ */
+    NGCALLF(dshaeci,DSHAECI)(&nlat,&nlon,wshaec,&lshaec,dwork1,&ldwork1,
+                             &jer);
+    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,as,bs,
+                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+    NGCALLF(dshaec,DSHAEC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,av,bv,
+                           &mdab,&ndab,wshaec,&lshaec,work2,&lwork2,&ker);
+
+    NGCALLF(dchkerr,DCHKERR)("sfvp2uvf","shaec",&ier,&jer,&ker,&mer,8,5);
+/* 
+ * Compute the u and v components from sf,vp
+ */ 
+    NGCALLF(dvhseci,DVHSECI)(&nlat,&nlon,wvhsec,&lvhsec,dwork2,&ldwork2,
+                             &jer);
+    NGCALLF(disfvpec,DISFVPEC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
+                               &idvw,&jdvw,as,bs,av,bv,&mdab,&ndab,
+                               wvhsec,&lvhsec,work3,&lwork3,&ker);
+    NGCALLF(dchkerr,DCHKERR)("sfvp2uvf","isfvpec",&ier,&jer,&ker,
+                             &mer,8,13);
+/* 
+ * Transform from math coordinates to geophysical coordinates.
+ * (math) nlon is the last dim
+ */
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
+    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+/*
+ * (Possibly) scale the quantities calculated by this routine
+ */
+    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
+    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+/*
+ * Coerce output back to float if necessary.
+ */
+      if(type_u == NCL_float) {
+        coerce_output_float_only(u,tmp_u,nlatnlon,index_uv);
+      }
+      if(type_v == NCL_float) {
+        coerce_output_float_only(v,tmp_v,nlatnlon,index_uv);
+      }
+    }
+    index_uv += nlatnlon;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(nmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"sfvp2uvf: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+  }
+/*
+ * Free the work arrays.
+ */
+  NclFree(work1);
+  NclFree(work2);
+  NclFree(work3);
+  NclFree(dwork1);
+  NclFree(dwork2);
+  NclFree(as);
+  NclFree(bs);
+  NclFree(av);
+  NclFree(bv);
+  NclFree(wshaec);
+  NclFree(wvhsec);
+
+  if(type_vr != NCL_double) NclFree(tmp_vr);
+  if(type_dv != NCL_double) NclFree(tmp_dv);
+  if(type_u != NCL_double) NclFree(tmp_u);
+  if(type_v != NCL_double) NclFree(tmp_v);
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes sfvp2uvg_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *vr, *dv;
+  double *tmp_vr, *tmp_dv;
+  int ndims_vr, dsizes_vr[NCL_MAX_DIMENSIONS];
+  int ndims_dv, dsizes_dv[NCL_MAX_DIMENSIONS];
+  NclScalar missing_vr, missing_dvo, missing_dvr, missing_ddvo;
+  NclBasicDataTypes type_vr, type_dv;
+  int has_missing_vr, has_missing_dvo, found_missing_vr, found_missing_dv;
+/*
+ * Output array variables
+ */
+  void *u, *v;
+  double *tmp_u, *tmp_v;
+  NclBasicDataTypes type_u, type_v;
+  int has_missing_u, has_missing_v;
+  NclScalar missing_u, missing_du, missing_v, missing_dv;
+  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
+/*
+ * various
+ */
+  int nt, nlat, nlon, nlatnlon, total_size_in;
+  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
+  int index_uv, nmiss;
+/*
+ * Workspace variables
+ */
+  int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
+  double *work1, *work2, *work3, *dwork1, *dwork2;
+  double *wshagc, *wvhsgc, *as, *bs, *av, *bv;
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  vr = (void*)NclGetArgValue(
+           0,
+           4,
+           &ndims_vr, 
+           dsizes_vr,
+           &missing_vr,
+           &has_missing_vr,
+           &type_vr,
+           2);
+  dv = (void*)NclGetArgValue(
+           1,
+           4,
+           &ndims_dv, 
+           dsizes_dv,
+           &missing_dvo,
+           &has_missing_dvo,
+           &type_dv,
+           2);
+/*
+ * Get output arrays.
+ */
+  u = (void*)NclGetArgValue(
+           2,
+           4,
+           &ndims_u, 
+           dsizes_u,
+           &missing_u,
+           &has_missing_u,
+           &type_u,
+           1);
+  v = (void*)NclGetArgValue(
+           3,
+           4,
+           &ndims_v, 
+           dsizes_v,
+           &missing_v,
+           &has_missing_v,
+           &type_v,
+           1);
+/*
+ * The grids coming in must be at least 2-dimensional and have the same # of
+ * dimensions.
+ */
+  if( ndims_vr != ndims_dv || ndims_vr < 2 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_vr; i++ ) {
+    if( dsizes_vr[i] != dsizes_dv[i] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * The output arrays must also be at least 2-dimensional and the same sizes.
+ */
+  if( ndims_u != ndims_vr || ndims_v != ndims_vr ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input/output arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  for( i = 0; i < ndims_vr; i++ ) {
+    if( dsizes_u[i] != dsizes_vr[i] || dsizes_v[i] != dsizes_vr[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input/output arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+  if((type_u != NCL_float && type_u != NCL_double) ||
+     (type_v != NCL_float && type_v != NCL_double)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvF: The output arrays must be float or double");
+    return(NhlFATAL);
+  }
+/*
+ * Compute the total number of elements in our array.
+ */
+  compute_nlatnlon(dsizes_u,ndims_u,&nlat,&nlon,&nlatnlon,&nt,
+                   &total_size_in);
+/*
+ * Coerce missing values
+ */
+  coerce_missing(type_vr,has_missing_vr,&missing_vr,&missing_dvr,NULL);
+  coerce_missing(type_dv,has_missing_dvo,&missing_dvo,&missing_ddvo,NULL);
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,NULL);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,NULL);
+
+/*
+ * Allocate space for temporary input arrays. The temporary arrays
+ * tmp_dv/tmp_vr are just big enough to hold 2-dimensional subsections
+ * of the dv/vr array. We only need to allocate space for them if the
+ * input is not already double. Otherwise, we just have it point
+ * to the appropriate locations in dv/vr.
+ */
+  if(type_vr != NCL_double) {
+    tmp_vr = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_vr == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: Unable to allocate memory for coercing vr array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+
+  if(type_dv != NCL_double) {
+    tmp_dv = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_dv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: Unable to allocate memory for coercing dv array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+/*
+ * Allocate space for temporary output arrays, if not already double.
+ */
+  if(type_u != NCL_double) {
+    tmp_u = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_u == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: Unable to allocate memory for coercing u array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+
+  if(type_v != NCL_double) {
+    tmp_v = (double*)calloc(nlatnlon,sizeof(double));
+    if(tmp_v == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: Unable to allocate memory for coercing v array to double precision");
+      return(NhlFATAL);
+    }
+  } 
+
+/*
+ * Allocate memory for work arrays.
+ */
+  isym    = 0;
+  idvw    = nlat;
+  jdvw    = nlon;
+  ndab    = nlat;
+  mdab    = min(nlat,(nlon+2)/2);
+  l1      = min(nlat,(nlon+2)/2);
+  l2      = (nlat+1)/2;
+  lwork1  = nlatnlon;
+  lwork2  = max(4*nlat*(nlat+2)+2,nlat*(nlon+max(3*l2,nlon)));
+  lwork3  = max(4*nlat*(nlat+1)+2,nlat*(2*nlon+max(6*l2,nlon)+4*l1+1));
+  ldwork1 = nlat*(nlat+4);
+  ldwork2 = 2*nlat*(nlat+1)+1;
+  lshagc  = nlat*(2*l2+3*l1-2)+3*l1*max(1-l1,0)/2+nlon+15;
+  lvhsgc  = 4*nlat*l2+3*max(l1-2,0)*(2*nlat-l1-1)+nlon+15;
+
+  work1  = (double*)calloc(lwork1,sizeof(double));
+  work2  = (double*)calloc(lwork2,sizeof(double));
+  work3  = (double*)calloc(lwork3,sizeof(double));
+  dwork1 = (double*)calloc(ldwork1,sizeof(double));
+  dwork2 = (double*)calloc(ldwork2,sizeof(double));
+  as     = (double*)calloc(mdab*ndab,sizeof(double));
+  bs     = (double*)calloc(mdab*ndab,sizeof(double));
+  av     = (double*)calloc(mdab*ndab,sizeof(double));
+  bv     = (double*)calloc(mdab*ndab,sizeof(double));
+  wshagc = (double*)calloc(lshagc,sizeof(double));
+  wvhsgc = (double*)calloc(lvhsgc,sizeof(double));
+
+  if(work1 == NULL || work2 == NULL || work3 == NULL || 
+     dwork1 == NULL || dwork2 == NULL || as == NULL || bs == NULL || 
+     av == NULL || bv == NULL || wshagc == NULL || wvhsgc == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop through the rightmost nt dimensions and call the various
+ * underlying Fortran routines. This code could also be written
+ * so that the full input arrays are passed to the Fortran routines,
+ * but then you can't check each individual nlat x nlon array to see
+ * if contains missing values.  In the case below, if an nlat x nlon
+ * array contains missing values, then only that subsection is set to
+ * all missing.
+ */
+  index_uv = nmiss = 0;
+
+  for(i = 0; i < nt; i++ ) {
+    if(type_vr != NCL_double) {
+/*
+ * Coerce nlat x nlon subsection of vr (tmp_vr) to double.
+ */
+      coerce_subset_input_double(vr,tmp_vr,index_uv,type_vr,
+                                 nlatnlon,0,&missing_vr,&missing_dvr);
+    }
+    else {
+/*
+ * Point tmp_vr to appropriate location in vr.
+ */
+      tmp_vr = &((double*)vr)[index_uv];
+    }
+    if(type_dv != NCL_double) {
+/*
+ * Coerce nlat x nlon subsection of dv (tmp_dv) to double.
+ */
+      coerce_subset_input_double(dv,tmp_dv,index_uv,type_dv,
+                                 nlatnlon,0,&missing_dvo,&missing_ddvo);
+    }
+    else {
+/*
+ * Point tmp_dv to appropriate location in dv.
+ */
+      tmp_dv = &((double*)dv)[index_uv];
+    }
+    if(type_u == NCL_double) {
+/*
+ * Point tmp_u to appropriate location in u.
+ */
+      tmp_u = &((double*)u)[index_uv];
+    }
+    if(type_v == NCL_double) {
+/*
+ * Point tmp_v to appropriate location in v.
+ */
+      tmp_v = &((double*)v)[index_uv];
+    }
+/*
+ * Check for missing values.
+ */
+    found_missing_dv = contains_missing(tmp_dv,nlatnlon,has_missing_dvo,
+                                        missing_ddvo.doubleval);
+    found_missing_vr = contains_missing(tmp_vr,nlatnlon,has_missing_vr,
+                                        missing_dvr.doubleval);
+
+    if(found_missing_dv || found_missing_vr) {
+      nmiss++;
+/*
+ * Set all elements of these 2D grids to a missing value, if a missing
+ * value exists.
+ */
+      if(has_missing_u) {
+        set_subset_output_missing(u,index_uv,type_u,nlatnlon,
+                                  missing_du.doubleval);
+      }
+      if(has_missing_v) {
+        set_subset_output_missing(v,index_uv,type_v,nlatnlon,
+                                  missing_dv.doubleval);
+      }
+    }
+    else {
+/*
+ * Transform from geophysical coordinates to math coordinates.
+ * (geo) nlon is the last dim.
+ */
+    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_dv,work1);
+    NGCALLF(dgeomat,DGEOMAT)(&nlon,&nlat,tmp_vr,work1);
+/*
+ * shagc performs the spherical harmonic analysis on a (scalar) equal 
+ * grid(s) and returns the coefficients in array(s) as,bs for divergence
+ * and av,bv for vortivity
+ */
+    NGCALLF(dshagci,DSHAGCI)(&nlat,&nlon,wshagc,&lshagc,dwork1,&ldwork1,
+                             &jer); 
+    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_dv,&idvw,&jdvw,as,bs,
+                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
+    NGCALLF(dshagc,DSHAGC)(&nlat,&nlon,&isym,&one,tmp_vr,&idvw,&jdvw,av,bv,
+                           &mdab,&ndab,wshagc,&lshagc,work2,&lwork2,&ker);
+    
+    NGCALLF(dchkerr,DCHKERR)("sfvp2uvg","shagc",&ier,&jer,&ker,&mer,8,5);
+/* 
+ * Compute the u and v components from sf, vp
+ */ 
+    NGCALLF(dvhsgci,DVHSGCI)(&nlat,&nlon,wvhsgc,&lvhsgc,dwork2,&ldwork2,
+                             &jer);
+    NGCALLF(disfvpgc,DISFVPGC)(&nlat,&nlon,&isym,&one,tmp_v,tmp_u,
+                               &idvw,&jdvw,as,bs,av,bv,&mdab,&ndab,
+                               wvhsgc,&lvhsgc,work3,&lwork3,&ker);
+    NGCALLF(dchkerr,DCHKERR)("sfvp2uvg","isfvpgc",&ier,&jer,&ker,
+                             &mer,8,13);
+/* 
+ * Transform from math coordinates to geophysical coordinates.
+ * (math) nlon is the last dim
+ */
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_dv,work1);
+    NGCALLF(dmatgeo,DMATGEO)(&nlat,&nlon,tmp_vr,work1);
+    NGCALLF(dmatgeov,DMATGEOV)(&nlat,&nlon,tmp_u,tmp_v,work1);
+/*
+ * (Possibly) scale the quantities calculated by this routine
+ */
+    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_u,&scale,&ner);
+    NGCALLF(dgeoscl,DGEOSCL)(&nlon,&nlat,&one,tmp_v,&scale,&ner);
+/*
+ * Coerce output back to float if necessary.
+ */
+      if(type_u == NCL_float) {
+        coerce_output_float_only(u,tmp_u,nlatnlon,index_uv);
+      }
+      if(type_v == NCL_float) {
+        coerce_output_float_only(v,tmp_v,nlatnlon,index_uv);
+      }
+    }
+    index_uv += nlatnlon;
+  }
+/*
+ * Check if any input arrays had had missing values. If so, print a 
+ * warning message.
+ */
+  if(nmiss) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"sfvp2uvg: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
+  }
+/*
+ * Free the work arrays.
+ */
+  NclFree(work1);
+  NclFree(work2);
+  NclFree(work3);
+  NclFree(dwork1);
+  NclFree(dwork2);
+  NclFree(as);
+  NclFree(bs);
+  NclFree(av);
+  NclFree(bv);
+  NclFree(wshagc);
+  NclFree(wvhsgc);
+
+  if(type_vr != NCL_double) NclFree(tmp_vr);
+  if(type_dv != NCL_double) NclFree(tmp_dv);
+  if(type_u != NCL_double) NclFree(tmp_u);
+  if(type_v != NCL_double) NclFree(tmp_v);
+
+  return(NhlNOERROR);
 }
 
 

@@ -111,6 +111,8 @@ extern NhlErrorTypes vrdv2uvf_W(void);
 extern NhlErrorTypes vrdv2uvF_W(void);
 extern NhlErrorTypes vrdv2uvg_W(void);
 extern NhlErrorTypes vrdv2uvG_W(void);
+extern NhlErrorTypes sfvp2uvf_W(void);
+extern NhlErrorTypes sfvp2uvg_W(void);
 
 extern NhlErrorTypes vhaec_W(void);
 extern NhlErrorTypes vhaeC_W(void);
@@ -336,6 +338,7 @@ extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
 extern NhlErrorTypes dpres_hybrid_ccm_W(void);
+extern NhlErrorTypes hyi2hyo_W(void);
 extern NhlErrorTypes pres_sigma_W(void);
 extern NhlErrorTypes sigma2hybrid_W(void);
 extern NhlErrorTypes pslhyp_W(void);
@@ -1741,6 +1744,34 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
 
     NclRegisterFunc(vrdv2uvG_W,args,"vrdv2uvG",nargs);
+
+/*
+ * Register "sfvp2uvf".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+
+    NclRegisterProc(sfvp2uvf_W,args,"sfvp2uvf",nargs);
+
+/*
+ * Register "sfvp2uvg".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+
+    NclRegisterProc(sfvp2uvg_W,args,"sfvp2uvg",nargs);
 
 /*
  * Register "vhaec".
@@ -4730,6 +4761,22 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(dpres_hybrid_ccm_W,args,"dpres_hybrid_ccm",nargs);
 
+/*
+ * Register "hyi2hyo".
+ */
+    nargs = 0;
+    args = NewArgs(7);
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",(int) NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    NclRegisterFunc(hyi2hyo_W,args,"hyi2hyo",nargs);
 /*
  * Register "pres_sigma".
  */

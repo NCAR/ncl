@@ -1,8 +1,8 @@
 C NCLFORTSTART
-      subroutine hyi2hyoa (p0,hyai,hybi,psfc,mlon,nlat,klevi,xi
-     +                    ,hyao,hybo,klevo,xo)
-      implicit none
- 
+      SUBROUTINE DHYI2HYOA(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,
+     +                     HYBO,KLEVO,XO)
+      IMPLICIT NONE
+
 c NCL: xo = hybrid2hybrid (p0,hyai,hybi,psfc,xi,  hyao,hybo)
 
 c this routine interploates one hybrid level to another
@@ -17,70 +17,65 @@ c          psfc   - is the surface pressure Pa         [input]
 c          mlon   - longitude dimension
 c          nlat   - latitude  dimension
 c          klevi  - number of input  levels
-c          hyao   - is the "a" or pressure hybrid coef 
-c          hybo   - is the "b" or sigma coeficient    
+c          hyao   - is the "a" or pressure hybrid coef
+c          hybo   - is the "b" or sigma coeficient
 c          klevo  - number of output levels
 c     output
 c          xo     - pressure at hybrid levels [Pa]
 c                                                 ! input
-      integer  mlon, nlat, klevi, klevo
-      real     p0
-     +        ,hyai(klevi), hybi(klevi)
-     +        ,hyao(klevo), hybo(klevo)
-     +        ,psfc(mlon,nlat)
-     +        ,xi(mlon,nlat,klevi)
+      INTEGER MLON,NLAT,KLEVI,KLEVO
+      DOUBLE PRECISION P0,HYAI(KLEVI),HYBI(KLEVI),HYAO(KLEVO),
+     +                 HYBO(KLEVO),PSFC(MLON,NLAT),XI(MLON,NLAT,KLEVI)
 c                                                 ! output
-      real     xo(mlon,nlat,klevo) 
+      DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
 C NCLEND
 c                                                 ! local (automatic)
-      real     pi(klevi), po(klevo)
+      DOUBLE PRECISION PI(KLEVI),PO(KLEVO)
 
-      call hyi2hyob (p0,hyai,hybi,psfc,mlon,nlat,klevi,xi
-     +              ,hyao,hybo,klevo,xo, pi,po)
-      return
-      end
+      CALL DHYI2HYOB(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,HYBO,
+     +               KLEVO,XO,PI,PO)
+      RETURN
+      END
 
 C NCLFORTSTART
-      subroutine hyi2hyob (p0,hyai,hybi,psfc,mlon,nlat,klevi,xi
-     +                    ,hyao,hybo,klevo,xo, pi,po)
-      implicit none
-      integer  mlon, nlat, klevi, klevo
-      real     p0
-     +        ,hyai(klevi), hybi(klevi)
-     +        ,hyao(klevo), hybo(klevo)
-     +        ,psfc(mlon,nlat)
-     +        ,xi(mlon,nlat,klevi)
-     +        ,pi(klevi), po(klevo)
+      SUBROUTINE DHYI2HYOB(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,
+     +                     HYBO,KLEVO,XO,PI,PO)
+      IMPLICIT NONE
+      INTEGER MLON,NLAT,KLEVI,KLEVO
+      DOUBLE PRECISION P0,HYAI(KLEVI),HYBI(KLEVI),HYAO(KLEVO),
+     +                 HYBO(KLEVO),PSFC(MLON,NLAT),XI(MLON,NLAT,KLEVI),
+     +                 PI(KLEVI),PO(KLEVO)
 c                                                 ! output
-      real     xo(mlon,nlat,klevo) 
+      DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
 C NCLEND
 c                                                 ! local
-      integer nl, ml, ki, ko
+      INTEGER NL,ML,KI,KO
 c f77
-      do nl=1,nlat
-       do ml=1,mlon
+      DO NL = 1,NLAT
+          DO ML = 1,MLON
 
-         do ki=1,klevi
-            pi(ki) = hyai(ki)*p0 + hybi(ki)*psfc(ml,nl)
-         end do
+              DO KI = 1,KLEVI
+                  PI(KI) = HYAI(KI)*P0 + HYBI(KI)*PSFC(ML,NL)
+              END DO
 
-         do ko=1,klevo
-            po(ko) = hyao(ko)*p0 + hybo(ko)*psfc(ml,nl)
-         end do
+              DO KO = 1,KLEVO
+                  PO(KO) = HYAO(KO)*P0 + HYBO(KO)*PSFC(ML,NL)
+              END DO
 
-         do ko=1,klevo
-           do ki=1,klevi-1
-              if (po(ko).ge.pi(ki) .and. po(ko).lt.pi(ki+1)) then 
-                  xo(ml,nl,ko) = xi(ml,nl,ki)
-     +                         + (xi(ml,nl,ki+1)-xi(ml,nl,ki))
-     +                          *(alog(po(ko))  -alog(pi(ki)))
-     +                          /(alog(pi(ki+1))-alog(pi(ki)))
-              end if
-           end do
-         end do
+              DO KO = 1,KLEVO
+                  DO KI = 1,KLEVI - 1
+                      IF (PO(KO).GE.PI(KI) .AND.
+     +                    PO(KO).LT.PI(KI+1)) THEN
+                          XO(ML,NL,KO) = XI(ML,NL,KI) +
+     +                                   (XI(ML,NL,KI+1)-XI(ML,NL,KI))*
+     +                                   (DLOG(PO(KO))-DLOG(PI(KI)))/
+     +                                   (DLOG(PI(KI+1))-DLOG(PI(KI)))
+                      END IF
+                  END DO
+              END DO
 
-       end do
-      end do
+          END DO
+      END DO
 
-      return
-      end
+      RETURN
+      END
