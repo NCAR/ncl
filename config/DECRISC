@@ -1,83 +1,123 @@
-#define ByteSwapped
 #define BuildXlibDependentCode
-#define BuildClearTextctrans
-#define BuildUnsupportedAthenaApplications
+#define ByteSwapped
 
-VERSION         = 3.1.3
-PARFIL_INIT     = /usr/local/lib/ncargparams
-PARFIL_PERM     = /usr/local/lib/ncargparams
+/*
+**  Stuff that should be edited by Configure
+*/
+VERSION           = 3.1.3a
+BINROOT           = /usr/local/bin
+LIBROOT           = /usr/local/lib
+INCROOT           = /usr/local/include
+MANROOT           = /usr/local/man
+TMPROOT           = /tmp
+LOCAL_LIB_SEARCH  = -L/X/X11/lib -L/usr/local/lib
+LOCAL_INC_SEARCH  = -I/X/X11/include -I/usr/local/include
 
-BINDIR          = /usr/local/bin
-LIBDIR          = /usr/local/lib
-MANDIR          = /usr/man/manl
-MAN_SECTION     = l
-TMPDIR          = /tmp
+/*
+**  Order of assignment to LIB_SEARCH and to INC_SEARCH is 
+**  important.
+*/
+LIB_SEARCH        = -L$(LIBROOT) $(LOCAL_LIB_SEARCH)
+INC_SEARCH        = -I$(INCROOT) $(LOCAL_INC_SEARCH)
 
-XLIBDIR         = /usr/lib
-XINCDIR         = /usr/include
-XAPPDIR         = /usr/lib/X11/app-defaults
+NCARGDIR          = ncarg
+BINDIR            = bin
+LIBDIR            = lib
+INCDIR            = include
+TMPDIR            = tmp
+DBDIR             = database
+FONTCAPDIR        = fontcaps
+GRAPHCAPDIR       = graphcaps
+EXAMPLESDIR       = examples
+TESTSDIR          = tests
+XAPPDIR           = xapp
+CONFIGDIR         = config
+GENERICDIR        = generic
 
-INCLUDEDIR      = $(NCARG)/include
-DBDIR           = $(LIBDIR)
-FONTCAPDIR      = $(LIBDIR)/fontcaps
-GRAPHCAPDIR     = $(LIBDIR)/graphcaps
-EXAMPLEDIR      = $(LIBDIR)/ncargexamples
-TESTDIR         = $(LIBDIR)/ncargtests
+BINPATH           = $(BINROOT)
+LIBPATH           = $(LIBROOT)
+INCPATH           = $(INCROOT)/$(NCARGDIR)
+TMPPATH           = $(TMPROOT)
+MANPATH           = $(MANROOT)
 
-GENERICDIR      = $(NCARG)/generic
+MANLPATH          = $(MANPATH)/manl
+MAN1PATH          = $(MANPATH)/man1
+MAN3PATH          = $(MANPATH)/man3
+MAN4PATH          = $(MANPATH)/man4
+MAN5PATH          = $(MANPATH)/man5
 
-CONFIGDIR       = $(NCARG)/config
-YMAKE           = $(CONFIGDIR)/ymake -I$(CONFIGDIR)
+LIBNCARGPATH      = $(LIBPATH)/$(NCARGDIR)
+DBPATH            = $(LIBNCARGPATH)/$(DBDIR)
+FONTCAPPATH       = $(LIBNCARGPATH)/$(FONTCAPDIR)
+GRAPHCAPPATH      = $(LIBNCARGPATH)/$(GRAPHCAPDIR)
+EXAMPLESPATH      = $(LIBNCARGPATH)/$(EXAMPLESDIR)
+TESTSPATH         = $(LIBNCARGPATH)/$(TESTSDIR)
+XAPPPATH          = $(LIBNCARGPATH)/$(XAPPDIR)
 
-MAKE            = make
-FLOAT_OPT       = 
-OS              =
-ARCH            = -DByteSwapped
-XPATH           =
-VDEFINE         = -DVERSION='"$(VERSION)"'
-CC              = cc
-CC_LD           = $(CC)
-CDEBUG          =
-COPT            = -O
-CMISC           = 
-CFLAGS          = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
-                  $(FLOAT_OPT) $(XPATH) $(VDEFINE)
-LD_CFLAGS       = $(CFLAGS)
-CPP             = /lib/cpp
-FCPP            = /lib/cpp
-F77             = f77
-F77_LD          = $(F77)
-FDEBUG          =
-FOPT            = 
-FMISC           =
-FFLAGS          = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
-                  $(FLOAT_OPT)
-LD_FFLAGS       = $(FFLAGS)
-LD              = ld
-LD_REL          = $(LD)
-AR              = ar
-AR_QUICK        = $(AR) q
-AR_CHECK        = $(AR) vru
-AR_SRC          = ar
-AR_SRC_QUICK    = $(AR_SRC) q
-AR_SRC_CHECK    = $(AR_SRC) vru
-RM              = rm -f
-CAT             = cat
-CP              = cp
-MV              = mv -f
-RANLIB          = ranlib
-NO_OP           = touch -c
-INSTALL         = install -c
-INSTALL_RM      = $(RM)
-INSTALL_BIN     = 0755
-INSTALL_MAN     = 0644
-INSTALL_APP     = 0644
-INSTALL_LIB     = 0644
-INSTALL_DB      = 0644
+MANL_SECTION      = l
+MAN1_SECTION      = 1
+MAN3_SECTION      = 3
+MAN4_SECTION      = 4
+MAN5_SECTION      = 5
 
-GRAPHC          = $(BINDIR)/graphc
-FONTC           = $(BINDIR)/fontc
-CALLCONV        = $(NCARG)/utils/callconv
-SHELL           = /bin/sh
+GENERICPATH       = $(NCARG)/$(GENERICDIR)
 
-GKS_BUFFER_SIZE = 0
+CONFIGPATH        = $(NCARG)/$(CONFIGDIR)
+YMAKE             = $(CONFIGPATH)/ymake -I$(CONFIGPATH)
+
+MAKE              = make
+FLOAT_OPT         = 
+OS                =
+ARCH              = -DByteSwapped
+VDEFINE           = -DVERSION='"$(VERSION)"'
+CC                = cc
+CC_LD             = $(CC)
+CDEBUG            =
+COPT              = -O
+CMISC             = 
+CINC              = $(INC_SEARCH)
+CFLAGS            = $(OS) $(ARCH) $(CDEFINES) $(CDEBUG) $(COPT) $(CMISC)\
+                    $(FLOAT_OPT) $(CINC) $(VDEFINE)
+LD_CFLAGS         = $(LIB_SEARCH) $(CFLAGS) 
+CPP               = /lib/cpp
+FCPP              = /lib/cpp
+F77               = f77
+F77_LD            = $(F77)
+FDEBUG            =
+FOPT              = 
+FMISC             =
+FFLAGS            = $(OS) $(ARCH) $(FDEFINES) $(FDEBUG) $(FOPT) $(FMISC)\
+                    $(FLOAT_OPT)
+LD_FFLAGS         = $(LIB_SEARCH) $(FFLAGS)
+LD                = ld
+LD_REL            = $(LD)
+AR                = ar
+AR_QUICK          = $(AR) q
+AR_CHECK          = $(AR) vru
+AR_SRC            = ar
+AR_SRC_QUICK      = $(AR_SRC) q
+AR_SRC_CHECK      = $(AR_SRC) vru
+RM                = rm -f
+CAT               = cat
+CP                = cp
+MV                = mv -f
+RANLIB            = ranlib
+NO_OP             = touch -c
+LINT              = lint
+INSTALL           = install -c
+INSTALL_RM        = $(RM)
+INSTALL_BIN       = 0755
+INSTALL_MAN       = 0644
+INSTALL_APP       = 0644
+INSTALL_LIB       = 0644
+INSTALL_DB        = 0644
+INSTALL_INC       = 0644
+
+GRAPHC            = $(BINPATH)/graphc
+FONTC             = $(BINPATH)/fontc
+
+FSPLIT            = fsplit
+CALLCONV          = $(NCARG)/utils/callconv
+SHELL             = /bin/sh
+
+GKS_BUFFER_SIZE   = 0
