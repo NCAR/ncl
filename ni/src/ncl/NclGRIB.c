@@ -982,7 +982,7 @@ GribFileRecord *therec;
 			tmp_level[0] = *(int*)step->levels0->multidval.val;
 			tmp_level[1] = *(int*)step->levels1->multidval.val;
 			tmp_dimsizes = 2;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_level, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_level, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
 			tmp_dimsizes = 1;
 /*
 * Don't want two references
