@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.19 2003-03-17 23:36:56 fred Exp $
+ *      $Id: pdf.c,v 1.20 2003-04-02 19:16:43 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -693,7 +693,7 @@ static void PDFinit(PDFddp *psa, int *coords)
   psa->path_size           = MAX_PATH;
   psa->line_join           = ROUND;
   psa->line_cap            = ROUNDED;
-  psa->nominal_width_scale = .75;
+  psa->nominal_width_scale = .5;
   psa->full_background     = FALSE;
   psa->suppress_flag       = SUPPRESS_FLAG;
   psa->miter_limit         = MITER_LIMIT_DEFAULT;
