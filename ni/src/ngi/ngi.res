@@ -1,5 +1,5 @@
 !
-!      $Id: ngi.res,v 1.23 1999-03-05 01:15:20 dbrown Exp $
+!      $Id: ngi.res,v 1.24 1999-03-15 18:09:56 dbrown Exp $
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !									!
@@ -63,7 +63,9 @@ NgNGO*addfileMGR*directory:	.
 !
 NgNGO*visual:		XcbVisual
 !NgNGO*visual:		PseudoColor
+!NgNGO*visual:		DirectColor
 !NgNGO*depth:		8
+!NgNGO*depth:		24
 
 !NgNGO*colorMode:	privatecmap
 NgNGO*colorMode:	sharedcmap
@@ -878,9 +880,9 @@ browse.title:				Data Browser
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ! for development
-addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
-addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
-addfile*directory: /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
+!addfile*directory: /fs/scd/home1/ncargd/dev/sun4_SunOS_5_5_1/lib/ncarg/data/cdf
+!addfile*directory: /usr/local/ncarg/lib/ncarg/data/cdf/
+!addfile*directory: /fs/scd/home1/ncargd/dev/IRIS_IRIX_6_2_/lib/ncarg/data/cdf/
 
 
 !htmlview: display is sgi,linux
