@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.14 2003-09-29 23:23:44 kennison Exp $
+ *  $Id: ncargC.h,v 1.15 2003-10-06 21:52:04 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -62,8 +62,7 @@ extern void c_ardrln(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-               )
+        int *nai)
 #endif
 );
 
@@ -145,8 +144,7 @@ extern void c_arscam(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-               )
+        int *nai)
 #endif
 );
 
@@ -487,8 +485,7 @@ extern void c_cpcldm(
         int *ncra,
         int *iaia,
         int *igia,
-        int *nagi
-              )
+        int *nagi)
 #endif
 );
 
@@ -780,8 +777,7 @@ extern void c_ctcldm(
         int *ncra,
         int *iaia,
         int *igia,
-        int *nagi
-              )
+        int *nagi)
 #endif
 );
 
@@ -943,14 +939,13 @@ extern void c_cttmrg(
     float *rdat,
     int *iscr,
     float sval,
-    void (*rtmi_) (
-            int *idim,
-            int *jdim,
-            int *iini,
-            int *jini,
-            int *iino,
-            int *jino
-            ),
+    int (*rtmi_) (
+        int *idim,
+        int *jdim,
+        int *iini,
+        int *jini,
+        int *iino,
+        int *jino),
     float *rpnt,
     int mpnt,
     int *npnt,
@@ -1167,8 +1162,7 @@ extern void c_mapblm(
         int *ncra,
         int *iaia,
         int *igia,
-        int *nagi
-            )
+        int *nagi)
 #endif
 );
 
@@ -1218,8 +1212,7 @@ extern void c_mapgrm(
         int *ncra,
         int *iaia,
         int *igia,
-        int *nagi
-            )
+        int *nagi)
 #endif
 );
 
@@ -1301,8 +1294,7 @@ extern void c_mapiqm(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-            )
+        int *nai)
 #endif
 );
 
@@ -1352,8 +1344,7 @@ extern void c_mapitm(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-            )
+        int *nai)
 #endif
 );
 
@@ -1667,11 +1658,10 @@ extern void c_mdlndm(
     int (*ulpr_)(
         float *xcra,
         float *ycra,
-	int   *ncra,
-	int   *iaai,
-	int   *iagi,
-	int   *ngpsi
-                )
+        int   *ncra,
+        int   *iaai,
+        int   *iagi,
+        int   *ngpsi)
 #endif
 );
 
@@ -1730,8 +1720,7 @@ extern void c_mdpblm(
         int *ncra,
         int *iaia,
         int *igia,
-        int *nagi
-            )
+        int *nagi)
 #endif
 );
 
@@ -1781,8 +1770,7 @@ extern void c_mdpgrm(
         int *ncra,
         int *iaia,
         int *igia,
-        int *nagi
-            )
+        int *nagi)
 #endif
 );
 
@@ -1828,8 +1816,7 @@ extern void c_mdpiqm(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-            )
+        int *nai)
 #endif
 );
 
@@ -1879,8 +1866,7 @@ extern void c_mdpitm(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-            )
+        int *nai)
 #endif
 );
 
@@ -2258,11 +2244,10 @@ extern void c_mplndm(
     int (*ulpr_)(
         float *xcra,
         float *ycra,
-	int   *ncra,
-	int   *iaai,
-	int   *iagi,
-	int   *ngpsi
-                )
+        int   *ncra,
+        int   *iaai,
+        int   *iagi,
+        int   *ngpsi)
 #endif
 );
 
@@ -3061,90 +3046,86 @@ extern char *c_pcpnwi(
 
 extern void c_ppditr(
 #ifdef  NeedFuncProto
-	float *xccp,
-	float *yccp,
-	int nccp,
-	float *xcsp,
-	float *ycsp,
-	int ncsp,
-	float *rwrk,
-	int *iwrk,
-	int nwrk,
-    int (*urpt_)(
-        float *xcbl,
-        float *xcbr,
-        float *ycob,
-        float *dxle,
-        float *dxre,
-		float *ycot
-               ),
-	int *ierr
+        float *xccp,
+        float *yccp,
+        int nccp,
+        float *xcsp,
+        float *ycsp,
+        int ncsp,
+        float *rwrk,
+        int *iwrk,
+        int nwrk,
+        int (*urpt_)(
+            float *xcbl,
+            float *xcbr,
+            float *ycob,
+            float *dxle,
+            float *dxre,
+            float *ycot),
+        int *ierr
 #endif
 );
 
 extern void c_ppintr(
 #ifdef  NeedFuncProto
-	float *xccp,
-	float *yccp,
-	int nccp,
-	float *xcsp,
-	float *ycsp,
-	int ncsp,
-	float *rwrk,
-	int *iwrk,
-	int nwrk,
-    int (*urpt_)(
-        float *xcbl,
-        float *xcbr,
-        float *ycob,
-        float *dxle,
-        float *dxre,
-		float *ycot
-               ),
-	int *ierr
+        float *xccp,
+        float *yccp,
+        int nccp,
+        float *xcsp,
+        float *ycsp,
+        int ncsp,
+        float *rwrk,
+        int *iwrk,
+        int nwrk,
+        int (*urpt_)(
+            float *xcbl,
+            float *xcbr,
+            float *ycob,
+            float *dxle,
+            float *dxre,
+            float *ycot),
+        int *ierr
 #endif
 );
 
 extern void c_ppplcl(
 #ifdef  NeedFuncProto
-	float xmin,
-	float xmax,
-	float ymin,
-	float ymax,
-	float *xcpl,
-	float *ycpl,
-	int ncpl,
-	float *rwrk,
-	int lwrk,
-    int (*urpf_)(
-        float *xcra,
-        float *ycra,
- 	 	int *ncra
-               ),
-	int *ierr
+        float xmin,
+        float xmax,
+        float ymin,
+        float ymax,
+        float *xcpl,
+        float *ycpl,
+        int ncpl,
+        float *rwrk,
+        int lwrk,
+        int (*urpf_)(
+            float *xcra,
+            float *ycra,
+            int *ncra),
+        int *ierr
 #endif
 );
 
 extern void c_ppuntr(
 #ifdef  NeedFuncProto
-	float *xccp,
-	float *yccp,
-	int nccp,
-	float *xcsp,
-	float *ycsp,
-	int ncsp,
-	float *rwrk,
-	int *iwrk,
-	int nwrk,
-    int (*urpt_)(
-        float *xcbl,
-        float *xcbr,
-        float *ycob,
-        float *dxle,
-        float *dxre,
-		float *ycot
-               ),
-	int *ierr
+        float *xccp,
+        float *yccp,
+        int nccp,
+        float *xcsp,
+        float *ycsp,
+        int ncsp,
+        float *rwrk,
+        int *iwrk,
+        int nwrk,
+        int (*urpt_)(
+            float *xcbl,
+            float *xcbr,
+            float *ycob,
+            float *dxle,
+            float *dxre,
+            float *ycot),
+        int *ierr
 #endif
 );
 
@@ -3159,11 +3140,10 @@ extern void c_ppdipo(
         float *rwrk,
         int *iwrk,
         int nwrk,
-    int (*urpp_)(
-        float *xcra,
-        float *ycra,
-        int *ncra
-               ),
+        int (*urpp_)(
+            float *xcra,
+            float *ycra,
+            int *ncra),
         int *ierr
 #endif
 );
@@ -3179,11 +3159,10 @@ extern void c_ppinpo(
         float *rwrk,
         int *iwrk,
         int nwrk,
-    int (*urpp_)(
-        float *xcra,
-        float *ycra,
-        int *ncra
-               ),
+        int (*urpp_)(
+            float *xcra,
+            float *ycra,
+            int *ncra),
         int *ierr
 #endif
 );
@@ -3208,11 +3187,10 @@ extern void c_ppunpo(
         float *rwrk,
         int *iwrk,
         int nwrk,
-    int (*urpp_)(
-        float *xcra,
-        float *ycra,
-        int *ncra
-               ),
+        int (*urpp_)(
+            float *xcra,
+            float *ycra,
+            int *ncra),
         int *ierr
 #endif
 );
@@ -3960,8 +3938,7 @@ extern void c_stream(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-                ),
+        int *nai),
     float *wrk
 #endif
 );
@@ -4728,8 +4705,7 @@ extern void c_vvectr(
         int *ncs,
         int *iai,
         int *iag,
-        int *nai
-    ),
+        int *nai),
     float *wrk
 #endif
 );
