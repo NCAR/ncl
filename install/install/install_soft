@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: install_soft,v 1.9 1995-10-05 20:55:15 haley Exp $
+#      $Id: install_soft,v 1.10 1995-10-05 21:59:01 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -92,11 +92,11 @@ cat <<EOF
 
 
     1.  Select distribution medium      [ install from $INSTALL_SOURCE ]
-        2.  Select source device        [ device: $device ]
+    2.  Select source device            [ device: $device ]
     3.  Select installation type        [ $INSTALL_TYPE ]
     4.  Show installation configuration
-        5.  Perform installation
-        6.  Help
+    5.  Perform installation
+    6.  Help
 
     0.  Return to previous menu
 
@@ -174,9 +174,9 @@ EOF
         echo "" > /dev/tty
         echo "" > /dev/tty
         echo "" > /dev/tty
-        echo "  Installation source:    $INSTALL_SOURCE" > /dev/tty
-        echo "  Source device:      $device" > /dev/tty
-        echo "  Installation type:  $INSTALL_TYPE" > /dev/tty
+        echo "  Installation source:   $INSTALL_SOURCE" > /dev/tty
+        echo "  Source device:         $device" > /dev/tty
+        echo "  Installation type:     $INSTALL_TYPE" > /dev/tty
         echo "" > /dev/tty
 
         if ("$bin_path" != "/dev/null") then

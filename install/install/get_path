@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: get_path,v 1.4 1995-06-13 16:30:44 haley Exp $
+#      $Id: get_path,v 1.5 1995-10-05 21:58:59 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -24,7 +24,7 @@
 #           returned will have the same leaf name as the 
 #           default given on the command line. 
 #
-#   Usage:      get_path <comment> <default> [-doc]
+#   Usage:      get_path <comment> <default>
 #
 #   Environment:
 #
@@ -36,44 +36,40 @@
 
 onintr cleanup
 
-if ($#argv < 2 || $#argv > 4) then
-	echo "Usage: get_path <comment> <default> [-doc]" > /dev/tty
-	exit 1
+if ($#argv != 2) then
+    echo "Usage: get_path <comment> <default>" > /dev/tty
+    exit 1
 endif
 
 set comment = "$argv[1]"
 set directory = $argv[2]
-unset do_doc
-if ($#argv == 3) then
-	if ("$argv[3]" == "-doc") set do_doc
-endif
 
 set done = 0
 set tail = $directory:t
 while (! $done) 
 
-	echo "" > /dev/tty
-	echo "" > /dev/tty
-	echo "" > /dev/tty
-	echo "$comment : $directory" > /dev/tty
-	echo -n "Enter Return (default), new directory, or p(previous menu) > " >/dev/tty
-	set answer = $<
-	if ("$answer" == "p") exit 1
+    echo "" > /dev/tty
+    echo "" > /dev/tty
+    echo "" > /dev/tty
+    echo "$comment : $directory" > /dev/tty
+    echo -n "Enter Return (default), new directory, or p(previous menu) > " >/dev/tty
+    set answer = $<
+    if ("$answer" == "p") exit 1
 
-	if ("$answer" != "") then
-		if ("$answer:t" != "$tail" && ! $?do_doc) then
-			echo "" > /dev/tty
-			echo "" > /dev/tty
-			echo $comment must end with \"$tail\" > /dev/tty
-		else
-			set directory = $answer
-			set done = 1
-		endif
-	else
-		# default directory
-		set done = 1
-		
-	endif
+    if ("$answer" != "") then
+        if ("$answer:t" != "$tail") then
+            echo "" > /dev/tty
+            echo "" > /dev/tty
+            echo $comment must end with \"$tail\" > /dev/tty
+        else
+            set directory = $answer
+            set done = 1
+        endif
+    else
+        # default directory
+        set done = 1
+        
+    endif
 end
 
 

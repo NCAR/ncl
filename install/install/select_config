@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: select_config,v 1.7 1995-08-22 21:17:37 haley Exp $
+#      $Id: select_config,v 1.8 1995-10-05 21:59:03 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -10,65 +10,43 @@
 #                                                                       #
 #########################################################################
 #
-#	File:		select_config
+#   File:       select_config
 #
-#	Author:		John Clyne
-#			National Center for Atmospheric Research
-#			PO 3000, Boulder, Colorado
+#   Author:     John Clyne
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
 #
-#	Date:		Tue Sep 29 09:05:18 MDT 1992
+#   Date:       Tue Sep 29 09:05:18 MDT 1992
 #
-#	Description:	Select an installation configuration. On success,
-#			exit status == 0, select_config writes the installation
-#			type (Basic-Installation or Custom-Installation), 
-#			the bin, include, lib, and man paths (or the documentation
-#			paths) in that order, to the standard output. If no
-#			selection was made select_config will not write anything
-#			to stdout.  If an error occurs exit status will be 1.
+#   Description:    Select an installation configuration. On success,
+#           exit status == 0, select_config writes the installation
+#           type (Basic-Installation or Custom-Installation), 
+#           the bin, include, lib, and man paths, in that order,
+#           to the standard output. If no selection was made
+#           select_config will not write anything to stdout.
+#           If an error occurs exit status will be 1.
 #
-#	Usage:		select_config [-d]
+#   Usage:      select_config
 #
-#	Environment:	SYSTEM		: system type
-#			LOCALDIR	: path to install system
+#   Environment:    SYSTEM      : system type
+#           LOCALDIR    : path to install system
 #
-#	Files:
+#   Files:
 #
-#
-#   Options:    -doc        : look up documentation paths
 #
 
 onintr cleanup
 
-set do_doc = 0
-
-if ($#argv > 1) then
-	echo "Usage: select_config [-doc]" > /dev/tty
-	exit 1
-endif
-
-if ($#argv == 1) then
-  if ("$argv[1]" == "-doc") then
-    set do_doc = 1
-  else
-	echo "Usage: select_config [-doc]" > /dev/tty
-	exit 1
-  endif
-endif
-
 clear > /dev/tty
 
-if ("$do_doc") then
-  set total_size = `$LOCALDIR/get_sizes -t -d`
-else
-  set total_size = `$LOCALDIR/get_sizes -t`
-endif
+set total_size = `$LOCALDIR/get_sizes -t`
 if ($status != 0) then
-	exit 1
+    exit 1
 endif
 
 set done = 0
 while (! $done) 
-	clear > /dev/tty
+    clear > /dev/tty
 cat <<EOF > /dev/tty
 
 
@@ -81,138 +59,100 @@ cat <<EOF > /dev/tty
 
 
 Please select the type of installation that you wish to perform. 
-	
-	1.  Basic Installation			[ $total_size KB required ]
-	    The Basic Installation is recommended.
+    
+    1.  Basic Installation          [ $total_size KB required ]
+        The Basic Installation is recommended.
 
-        2.  Custom Installation			[ required disk space varies ]
-	    Optional software components and installation directories
+    2.  Custom Installation         [ required disk space varies ]
+        Optional software components and installation directories
 
-        3.  Help on Installation Choices
+    3.  Help on Installation Choices
 
-
-
-	0.  Return to previous menu
+    0.  Return to previous menu
 
 EOF
 
-	echo -n "    Select: " > /dev/tty
-	set answer =  $<
-	switch ("$answer")
-		case "1":
-			clear > /dev/tty
-			#
-			# We already know the installation directories. We
-			# call get_paths to determine if there is enough 
-			# disk space
-			#
-            if ("$do_doc") then
-			  set paths = `$LOCALDIR/get_paths -default -doc`
+    echo -n "    Select: " > /dev/tty
+    set answer =  $<
+    switch ("$answer")
+        case "1":
+            clear > /dev/tty
+            #
+            # We already know the installation directories. We
+            # call get_paths to determine if there is enough 
+            # disk space
+            #
+            set paths = `$LOCALDIR/get_paths -default`
+            if ($status == 0) then
+                set done = 1
+                set type = "Basic-Installation"
             else
-			  set paths = `$LOCALDIR/get_paths -default`
+                $LOCALDIR/pause
             endif
-			if ($status == 0) then
-				set done = 1
-				set type = "Basic-Installation"
-			else
-				$LOCALDIR/pause
-			endif
-			breaksw
+            breaksw
 
-		case "2":
-			clear > /dev/tty
-			#
-			# get the installation directory paths
-			#
-            if ("$do_doc") then
-  			  set paths = `$LOCALDIR/get_paths -doc`
+        case "2":
+            clear > /dev/tty
+            #
+            # get the installation directory paths
+            #
+            set paths = `$LOCALDIR/get_paths`
+            if ($status == 0) then
+                set done = 1
+                set type = "Custom-Installation"
             else
-  			  set paths = `$LOCALDIR/get_paths`
+                $LOCALDIR/pause
             endif
-			if ($status == 0) then
-				set done = 1
-				set type = "Custom-Installation"
-			else
-				$LOCALDIR/pause
-			endif
-			breaksw
+            breaksw
 
-		case "3":
-		  	source $LOCALDIR/config/paths.$SYSTEM
-			clear > /dev/tty
-            if ("$do_doc") then
-  			  cat <<EOF > /dev/tty
+        case "3":
+            source $LOCALDIR/config/paths.$SYSTEM
+            clear > /dev/tty
+            cat <<EOF > /dev/tty
 
-	The Basic Documentation Installation installs all documentation
-	components of NCAR Graphics Version $VERSION:
 
-		HTML documents are installed to $htmldoc_path.
-		PostScript documents are installed to $psdoc_path. 
+    The Basic Installation installs all components of NCAR Graphics
+    Version $VERSION:
 
-	The Custom Installation allows you some freedom in choosing which 
-	components of the NCAR Graphics documentation are installed. For
-	example, if you only need to install the HTML documentation, you
-	should select the Custom Installation. In addition, the custom
-	installation allows you to choose the installation paths of the
-	PostScript and HTML documentation directories.
+        Executables are installed to $bin_path. 
+        Include files are installed to $inc_path.
+        Libraries are installed to $lib_path. 
+        Man pages are installed to $man_path.
+
+    The Custom Installation allows you some freedom in choosing which 
+    components of NCAR Graphics are installed. For example, if you only
+    need to install the man pages you should select the Custom 
+    Installation. In addition, the custom installation allows you
+    to choose the installation paths of the bin, lib, man, and 
+    include directories.
+
+    It is highly recommended that less experienced installers choose
+    the basic installation.
 EOF
-            else
-  			  cat <<EOF > /dev/tty
+            $LOCALDIR/pause
 
-	The Basic Installation installs all components of NCAR Graphics
-	Version $VERSION:
+            breaksw
 
-		Executables are installed to $bin_path. 
-		Include files are installed to $inc_path.
-		Libraries are installed to $lib_path. 
-		Man pages are installed to $man_path.
+        case "0":
+            exit 0
+            breaksw
 
-	The Custom Installation allows you some freedom in choosing which 
-	components of NCAR Graphics are installed. For example, if you only
-	need to install the man pages you should select the Custom 
-	Installation. In addition, the custom installation allows you
-	to choose the installation paths of the bin, lib, man, and 
-	include directories.
+        case ""
+            breaksw
 
-	It is highly recommended that less experienced installers choose
-	the basic installation.
-EOF
-            endif
-       
-			$LOCALDIR/pause
-
-			breaksw
-
-		case "0":
-			exit 0
-			breaksw
-
-		case ""
-			breaksw
-
-		default
-			echo "Invalid option <$answer>" > /dev/tty
-			$LOCALDIR/pause
-	endsw
+        default
+            echo "Invalid option <$answer>" > /dev/tty
+            $LOCALDIR/pause
+    endsw
 end
 
 
-if ("$do_doc") then
-  set htmldoc_path = $paths[1]
-  set psdoc_path = $paths[2]
+set bin_path = $paths[1]
+set inc_path = $paths[2]
+set lib_path = $paths[3]
+set man_path = $paths[4]
 
-  echo $type $htmldoc_path $psdoc_path
-
-else
-  set bin_path = $paths[1]
-  set inc_path = $paths[2]
-  set lib_path = $paths[3]
-  set man_path = $paths[4]
-
-  echo $type $bin_path $inc_path $lib_path $man_path
-
-endif
-
+echo $type $bin_path $inc_path $lib_path $man_path
 
 exit 0
 

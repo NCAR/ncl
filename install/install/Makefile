@@ -4,7 +4,7 @@ SRC_TAR	= $(ROOT_DIR)/SRC.TAR
 
 TARGETS		=	HPUX_HP9000_7xx AIX_RS6000 SunOS_sun4 \
 			Solaris_sun4 ULTRIX_RISC IRIX_IP UNICOS_YMP \
-			OSF1_alpha NGDOC
+			OSF1_alpha
 
 
 

@@ -23,11 +23,9 @@
 #
 #           If the -t option is used only the total for
 #           bin, include, lib and man directories will be
-#           reported.  If the -d option is used, only sizes
-#           for documentation will be reported.
+#           reported.
 #
-#
-#	Usage:		get_sizes [-t] [-d]
+#   Usage:      get_sizes [-t]
 #
 #   Environment:    SYSTEM      : system type
 #           LOCALDIR    : path to install system
@@ -41,95 +39,58 @@
 onintr cleanup
 
 set do_total = 0
-set do_doc = 0
 
-if ($#argv > 2) then
-	echo "Usage: get_sizes [-t] [-d]" > /dev/tty
-	exit 1
+if ($#argv > 1) then
+    echo "Usage: get_sizes [-t]" > /dev/tty
+    exit 1
 endif
 
-while ($#argv > 0) 
-  switch ($1)
-    case "-t":
-	set do_total = 1
-    shift
-    breaksw
-
-    case "-d":
-    set do_doc = 1
-    shift
-    breaksw
-
-    default:
-	echo "Usage: get_sizes [-t] [-d]" > /dev/tty
-	exit 1
-    breaksw
-  endsw
-end
-
-if ("$do_doc") then
-	set cmd = "grep html $LOCALDIR/var/sizes.$DOC"
-	set size_line = `$cmd`
-	if ($status != 0) then
-		echo "$0 : <$cmd> - failed" > /dev/tty
-		exit 1
-	endif
-	set htmldoc_size = $size_line[2]
-
-	set cmd = "grep ps $LOCALDIR/var/sizes.$DOC"
-	set size_line = `$cmd`
-	if ($status != 0) then
-		echo "$0 : <$cmd> - failed" > /dev/tty
-		exit 1
-	endif
-	set psdoc_size = $size_line[2]
-
-	if ("$do_total") then
-		@ total = $psdoc_size + $htmldoc_size
-		echo "$total"
-	else
-		echo " $htmldoc_size $psdoc_size"
-	endif
-else
-	set cmd = "grep bin $LOCALDIR/var/sizes.$SYSTEM"
-	set size_line = `$cmd`
-	if ($status != 0) then
-		echo "$0 : <$cmd> - failed" > /dev/tty
-		exit 1
-	endif
-	set bin_size = $size_line[2]
-
-	set cmd = "grep include $LOCALDIR/var/sizes.$SYSTEM"
-	set size_line = `$cmd`
-	if ($status != 0) then
-		echo "$0 : <$cmd> - failed" > /dev/tty
-		exit 1
-	endif
-	set inc_size = $size_line[2]
-
-	set cmd = "grep lib $LOCALDIR/var/sizes.$SYSTEM"
-	set size_line = `$cmd`
-	if ($status != 0) then
-		echo "$0 : <$cmd> - failed" > /dev/tty
-		exit 1
-	endif
-	set lib_size = $size_line[2]
-
-	set cmd = "grep man $LOCALDIR/var/sizes.$SYSTEM"
-	set size_line = `$cmd`
-	if ($status != 0) then
-		echo "$0 : <$cmd> - failed" > /dev/tty
-		exit 1
-	endif
-	set man_size = $size_line[2]
-
-	if ("$do_total") then
-		@ total = $bin_size + $inc_size + $lib_size + $man_size
-		echo "$total"
-	else
-		echo "$bin_size $inc_size $lib_size $man_size"
-	endif
+if ($#argv == 1) then
+    if ("$argv[1]" != "-t") then
+        echo "Usage: get_sizes [-t]" > /dev/tty
+        exit 1
+    endif
+    set do_total = 1
 endif
+
+    set cmd = "grep bin $LOCALDIR/var/sizes.$SYSTEM"
+    set size_line = `$cmd`
+    if ($status != 0) then
+        echo "$0 : <$cmd> - failed" > /dev/tty
+        exit 1
+    endif
+    set bin_size = $size_line[2]
+
+    set cmd = "grep include $LOCALDIR/var/sizes.$SYSTEM"
+    set size_line = `$cmd`
+    if ($status != 0) then
+        echo "$0 : <$cmd> - failed" > /dev/tty
+        exit 1
+    endif
+    set inc_size = $size_line[2]
+
+    set cmd = "grep lib $LOCALDIR/var/sizes.$SYSTEM"
+    set size_line = `$cmd`
+    if ($status != 0) then
+        echo "$0 : <$cmd> - failed" > /dev/tty
+        exit 1
+    endif
+    set lib_size = $size_line[2]
+
+    set cmd = "grep man $LOCALDIR/var/sizes.$SYSTEM"
+    set size_line = `$cmd`
+    if ($status != 0) then
+        echo "$0 : <$cmd> - failed" > /dev/tty
+        exit 1
+    endif
+    set man_size = $size_line[2]
+
+    if ("$do_total") then
+        @ total = $bin_size + $inc_size + $lib_size + $man_size
+        echo "$total"
+    else
+        echo "$bin_size $inc_size $lib_size $man_size"
+    endif
 
 exit 0
 

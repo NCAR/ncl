@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: INSTALL,v 1.8 1995-08-22 21:17:36 haley Exp $
+#      $Id: INSTALL,v 1.9 1995-10-05 21:58:58 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -38,11 +38,11 @@
 #
 set dir = `expr \( x"$0" : x'\(/\)$' \) \| \( x"$0" : x'\(.*\)/[^/]*$' \) \| .`
 if ($status != 0) then
-	echo "$0 : Can't find working directory, <expr> failed" > /dev/tty
-	exit 1
+    echo "$0 : Can't find working directory, <expr> failed" > /dev/tty
+    exit 1
 endif
 
-setenv LOCALDIR	"$dir"
+setenv LOCALDIR "$dir"
 
 setenv SYSTEM `$LOCALDIR/sys_type`
 if ($status != 0) then
@@ -52,7 +52,7 @@ endif
 setenv VERSION `cat $LOCALDIR/var/version.$SYSTEM`
 
 while (1) 
-	clear
+    clear
 cat <<EOF
 
 
@@ -63,100 +63,90 @@ cat <<EOF
 
 
 
-
-
-	1.  Ordering information
+        1.  Ordering information
         2.  Install software
-        3.  Install documentation
-        4.  Remove installed software
-        5.  Help
+        3.  Remove installed software
+        4.  Help
 
-	0.  Exit
+        0.  Exit
 
 EOF
 
-	echo -n "    Select: "
-	set answer =  $<
-	switch ("$answer")
-	case "1":
-		clear
-		cat <<EOF
+    echo -n "    Select: "
+    set answer =  $<
+    switch ("$answer")
+    case "1":
+        clear
+        cat <<EOF
 
 
 
-	To order NCAR Graphics or request further information please call
-	or write NCAR Graphics Information:
+    To order NCAR Graphics or request further information please call
+    or write NCAR Graphics Information:
 
-		University Corporation for Atmospheric Research
-		SCD/NCAR Graphics Orders
-		P.O. Box 3000
-		Boulder, CO 80307-3000 (USA)
+        University Corporation for Atmospheric Research
+        SCD/NCAR Graphics Orders
+        P.O. Box 3000
+        Boulder, CO 80307-3000 (USA)
 
-		Telephone:	(303) 497-1201
-		Telex:		989764
-		FAX:		(303) 497-1814
-		email:		scdinfo@ncar.ucar.edu
+        Telephone:  (303) 497-1201
+        Telex:      989764
+        FAX:        (303) 497-1814
+        email:      scdinfo@ncar.ucar.edu
 EOF
-		$LOCALDIR/pause
-		
-	
-		breaksw
+        $LOCALDIR/pause
+        
+    
+        breaksw
 
-	case "2":
-		$LOCALDIR/install_soft
-		if ($status != 0) then
-			$LOCALDIR/pause
-		endif
-		breaksw
+    case "2":
+        $LOCALDIR/install_soft
+        if ($status != 0) then
+            $LOCALDIR/pause
+        endif
+        breaksw
 
-	case "3":
-		$LOCALDIR/install_soft -doc
-		if ($status != 0) then
-			$LOCALDIR/pause
-		endif
-		breaksw
+    case "3":
+        $LOCALDIR/remove_soft
+        if ($status != 0) then
+            $LOCALDIR/pause
+        endif
+        breaksw
 
-	case "4":
-		$LOCALDIR/remove_soft
-		if ($status != 0) then
-			$LOCALDIR/pause
-		endif
-		breaksw
+    case "4":
 
-	case "5":
-
-		clear
-		cat <<EOF
+        clear
+        cat <<EOF
 
 
-	This is the main menu for the NCAR Graphics software installation
-	program. From this menu you may choose to: 
+    This is the main menu for the NCAR Graphics software installation
+    program. From this menu you may choose to: 
 
-		1. Get information on ordering NCAR Graphics.
+        1. Get information on ordering NCAR Graphics.
 
-		2. Install NCAR Graphics software.
+        2. Install NCAR Graphics software.
 
-		3. Remove previously installed versions of NCAR Graphics.
+        3. Remove previously installed versions of NCAR Graphics.
 
-		4. Print this help message.
+        4. Print this help message.
 
-		0. Exit the INSTALL program.
+        0. Exit the INSTALL program.
 EOF
-		$LOCALDIR/pause
-		breaksw
+        $LOCALDIR/pause
+        breaksw
 
-	case "99":
-		$PAGER bambi1.ani
-		breaksw
-	case "0":
-		exit 0
-		breaksw
+    case "99":
+        $PAGER bambi1.ani
+        breaksw
+    case "0":
+        exit 0
+        breaksw
 
-	case ""
-		breaksw
+    case ""
+        breaksw
 
-	default
-		echo "Invalid option <$answer>"
-		$LOCALDIR/pause
-	endsw
+    default
+        echo "Invalid option <$answer>"
+        $LOCALDIR/pause
+    endsw
 end

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: rm3_1_3,v 1.2 1993-03-29 17:30:50 clyne Exp $
+#      $Id: rm3_1_3,v 1.3 1995-10-05 21:59:02 haley Exp $
 #
 #########################################################################
 #									#
@@ -18,7 +18,7 @@
 #
 #	Date:		Thu Feb 4 10:45:57 MST 1993
 #
-#	Description:	Remove version 31.3 of NCAR Graphics. This script
+#	Description:	Remove version 3.1.3 of NCAR Graphics. This script
 #			actually only removes those portions of 3.1.3
 #			that are not also in 3.2 or later. The intent
 #			is that 3.2.x can be installed (which will overwrite
