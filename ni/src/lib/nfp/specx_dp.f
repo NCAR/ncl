@@ -527,7 +527,6 @@ c --------------------------------------------------------------------
      +                 CI(NX2),COEF(3),XINFO(10),SINFO(50)
       PARAMETER (MXLAG=1,XMSG=1.D+36)
       DOUBLE PRECISION ACV(0:MXLAG),ACR(0:MXLAG)
-      CHARACTER LABEL*96
 
       DATA PI/3.141592653589D0/
 
