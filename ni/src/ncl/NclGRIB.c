@@ -24,13 +24,16 @@
 #include "ecmwf_129_gtb.h"
 #include "ecmwf_130_gtb.h"
 #include "ecmwf_131_gtb.h"
+#include "ecmwf_132_gtb.h"
 #include "ecmwf_140_gtb.h"
 #include "ecmwf_150_gtb.h"
 #include "ecmwf_151_gtb.h"
 #include "ecmwf_160_gtb.h"
+#include "ecmwf_162_gtb.h"
 #include "ecmwf_170_gtb.h"
 #include "ecmwf_180_gtb.h"
 #include "ecmwf_190_gtb.h"
+#include "ecmwf_200_gtb.h"
 #include "ncep_opn_gtb.h"
 #include "ncep_reanal_gtb.h"
 #include "ncep_129_gtb.h"
@@ -4078,6 +4081,10 @@ int wr_status;
 							ptable = &ecmwf_131_params[0];
 							ptable_count = sizeof(ecmwf_131_params)/sizeof(TBLE2);
 							break;
+						case 132:
+							ptable = &ecmwf_132_params[0];
+							ptable_count = sizeof(ecmwf_132_params)/sizeof(TBLE2);
+							break;
 						case 140:
 							ptable = &ecmwf_140_params[0];
 							ptable_count = sizeof(ecmwf_140_params)/sizeof(TBLE2);
@@ -4094,6 +4101,10 @@ int wr_status;
 							ptable = &ecmwf_160_params[0];
 							ptable_count = sizeof(ecmwf_160_params)/sizeof(TBLE2);
 							break;
+						case 162:
+							ptable = &ecmwf_162_params[0];
+							ptable_count = sizeof(ecmwf_162_params)/sizeof(TBLE2);
+							break;
 						case 170:
 							ptable = &ecmwf_170_params[0];
 							ptable_count = sizeof(ecmwf_170_params)/sizeof(TBLE2);
@@ -4105,6 +4116,10 @@ int wr_status;
 						case 190:
 							ptable = &ecmwf_190_params[0];
 							ptable_count = sizeof(ecmwf_190_params)/sizeof(TBLE2);
+							break;
+						case 200:
+							ptable = &ecmwf_200_params[0];
+							ptable_count = sizeof(ecmwf_200_params)/sizeof(TBLE2);
 							break;
 						}
 						break;
