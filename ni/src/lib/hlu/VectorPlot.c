@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.33 1997-05-22 23:55:18 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.34 1997-06-20 22:46:29 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -6093,6 +6093,7 @@ static NhlErrorTypes ManageAnnotation
 	rec->on = on;
 
 	if (*idp <= NhlNULLOBJID) {
+		NhlSetSArg(&sargs[(nargs)++],NhlNamResizeNotify,0);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamOn,rec->on);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamViewId,rec->id);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamZone,rec->zone);

@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.27 1997-05-22 23:55:14 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.28 1997-06-20 22:46:26 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -4582,6 +4582,7 @@ static NhlErrorTypes ManageAnnotation
 	rec->on = on;
 
 	if (*idp <= NhlNULLOBJID) {
+		NhlSetSArg(&sargs[(nargs)++],NhlNamResizeNotify,0);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamOn,rec->on);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamViewId,rec->id);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamZone,rec->zone);

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.53 1997-05-22 23:55:08 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.54 1997-06-20 22:46:22 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -7392,6 +7392,7 @@ static NhlErrorTypes ManageAnnotation
 	}
 
 	if (*idp <= NhlNULLOBJID) {
+		NhlSetSArg(&sargs[(nargs)++],NhlNamResizeNotify,0);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamOn,rec->on);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamViewId,rec->id);
 		NhlSetSArg(&sargs[(nargs)++],NhlNamZone,rec->zone);
@@ -8538,31 +8539,20 @@ static NhlErrorTypes    ManageDynamicArrays
 	cnp->level_flags = ga;
 
 	ip = (int *) cnp->level_flags->data;
-	if (! flags_modified && ! cnp->mono_level_flag &&
-	    (levels_modified || cnp->llabel_interval_set)) {
-		flags_modified = True;
-		if (cnp->llabel_interval <= 0) {
-			for (i = 0; i < count; i++) 
-				ip[i] = NhlLINEONLY;
-		}
-		else {
-			for (i = 0; i < count; i++)
-				ip[i] = (i - cnp->ref_level) % 
-					cnp->llabel_interval == 0 ?
-					NhlLINEANDLABEL : NhlLINEONLY;
-		}
-	}
-	else if (need_check) {
-		flags_modified = True;
-		if (cnp->llabel_interval <= 0) {
-			for (i = init_count; i < count; i++) 
-				ip[i] = NhlLINEONLY;
-		}
-		else {
-			for (i = init_count; i < count; i++)
-				ip[i] = (i - cnp->ref_level) % 
-					cnp->llabel_interval == 0 ?
-					NhlLINEANDLABEL : NhlLINEONLY;
+	if (need_check) {
+		if (! flags_modified && ! cnp->mono_level_flag &&
+	    		(levels_modified || cnp->llabel_interval_set)) {
+			flags_modified = True;
+			if (cnp->llabel_interval <= 0) {
+				for (i = init_count; i < count; i++) 
+					ip[i] = NhlLINEONLY;
+			}
+			else {
+				for (i = init_count; i < count; i++)
+					ip[i] = (i - cnp->ref_level) % 
+						cnp->llabel_interval == 0 ?
+						NhlLINEANDLABEL : NhlLINEONLY;
+			}
 		}
 		for (i=0; i<init_count; i++) {
 			if (ip[i] < NhlNOLINE || 
