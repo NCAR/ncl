@@ -1451,3 +1451,160 @@ NhlErrorTypes nnpntendd_W( void )
   return(NhlNOERROR);
 }
 
+NhlErrorTypes nngetwts_W( void )
+{
+/* 
+ * Input values
+ */
+  int *numw, *nbrs;
+  float *wts, *xe, *ye, *ze;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept numerics.
+ */
+  numw = (int*)NclGetArgValue(
+                              0,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  nbrs = (int*)NclGetArgValue(
+                              1,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  wts = (float*)NclGetArgValue(
+                              2,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  xe = (float*)NclGetArgValue(
+                              3,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  ye = (float*)NclGetArgValue(
+                              4,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  ze = (float*)NclGetArgValue(
+                              5,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+/*
+ * Call c_nngetwts.
+ */
+  c_nngetwts(numw,nbrs,wts,xe,ye,ze);
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes nngetwtsd_W( void )
+{
+/* 
+ * Input values
+ */
+  int *numw, *nbrs;
+  double *wts, *xe, *ye, *ze;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value. In this example
+ * the type parameter is set to NULL because the function
+ * is later registered to only accept numerics.
+ */
+  numw = (int*)NclGetArgValue(
+                              0,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  nbrs = (int*)NclGetArgValue(
+                              1,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  wts = (double*)NclGetArgValue(
+                              2,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  xe = (double*)NclGetArgValue(
+                              3,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  ye = (double*)NclGetArgValue(
+                              4,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+  ze = (double*)NclGetArgValue(
+                              5,
+                              6,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              1);
+/*
+ * Call c_nngetwtsd.
+ */
+  c_nngetwtsd(numw,nbrs,wts,xe,ye,ze);
+
+  return(NhlNOERROR);
+}
+

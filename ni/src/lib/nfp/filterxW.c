@@ -33,6 +33,7 @@ NhlErrorTypes filwgts_lancos_W( void )
   double *tmp_wgt, *tmp_freq, *tmp_resp;
   int dsizes_wgt[1];
   NclBasicDataTypes type_wgt;
+  NclTypeClass type_wgt_class;
 /*
  * Attribute variables
  */
@@ -175,6 +176,7 @@ NhlErrorTypes filwgts_lancos_W( void )
     }
   }
   dsizes_wgt[0] = *nwgt;
+  type_wgt_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_wgt)));
 /*
  * Call the Fortran version of this routine.
  */
@@ -204,129 +206,65 @@ NhlErrorTypes filwgts_lancos_W( void )
  *
  * freq and resp are returned as attributes.
  */
-  if(type_wgt == NCL_float) {
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            wgt,
+                            NULL,
+                            1,
+                            dsizes_wgt,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)type_wgt_class
+                            );
+
 /*
- * Input is not double, so return float values.
+ * Set up attributes to return.
  */
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              wgt,
-                              NULL,
-                              1,
-                              dsizes_wgt,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypefloatClass
-                              );
-  }
-  else {
-    return_md = _NclCreateVal(
-                              NULL,
-                              NULL,
-                              Ncl_MultiDValData,
-                              0,
-                              wgt,
-                              NULL,
-                              1,
-                              dsizes_wgt,
-                              TEMPORARY,
-                              NULL,
-                              (NclObjClass)nclTypedoubleClass
-                              );
-  }
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
   dsizes[0] = nf;
-/*
- * Set up float attribute to return.
- */
-  if(type_wgt == NCL_float) {
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           freq,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "freq",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         freq,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_wgt_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "freq",
+             att_md,
+             NULL
+             );
 
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           resp,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypefloatClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "resp",
-               att_md,
-               NULL
-               );
-  }
-  else {
-/*
- * Set up double attribute to return.
- */
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           freq,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "freq",
-               att_md,
-               NULL
-               );
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         resp,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_wgt_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "resp",
+             att_md,
+             NULL
+             );
 
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           resp,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)nclTypedoubleClass
-                           );
-    _NclAddAtt(
-               att_id,
-               "resp",
-               att_md,
-               NULL
-               );
-  }
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,

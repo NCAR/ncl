@@ -156,6 +156,8 @@ extern NhlErrorTypes nnsetp_W (void);
 extern NhlErrorTypes nngetp_W (void);
 extern NhlErrorTypes nngetaspects_W(void);
 extern NhlErrorTypes nngetslopes_W(void);
+extern NhlErrorTypes nngetwts_W(void);
+extern NhlErrorTypes nngetwtsd_W(void);
 extern NhlErrorTypes nnpntinits_W(void);
 extern NhlErrorTypes nnpnts_W(void);
 extern NhlErrorTypes nnpntend_W(void);
@@ -2035,6 +2037,40 @@ void NclAddUserFuncs(void)
  * Register wrapper function pointer and argument templates
  */
         NclRegisterFunc(nngetslopes_W,args,"nngetslopes",nargs);
+/*
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(6);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        dimsizes[0] = 3;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+/*
+ * Register wrapper procedure pointer and argument templates
+ */
+        NclRegisterProc(nngetwts_W,args,"nngetwts",nargs);
+/*
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(6);
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"double",1,NclANY);nargs++;
+        dimsizes[0] = 3;
+        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"double",1,dimsizes);nargs++;
+/*
+ * Register wrapper procedure pointer and argument templates
+ */
+        NclRegisterProc(nngetwtsd_W,args,"nngetwtsd",nargs);
 /*
  * Create private argument array
  */
