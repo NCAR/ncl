@@ -1,10 +1,11 @@
 #
-#       $Id: yMakefile,v 1.1 1997-07-16 19:54:37 kennison Exp $
+#       $Id: yMakefile,v 1.2 1998-06-27 23:13:17 fred Exp $
 #
 
-MAN = tdclrs tddtri tdgeti tdgetr tdgrds tdgrid tdgtrs tdinit tditri \
-      tdlbla tdlbls tdline tdlnpa tdmtri tdotri tdpack tdpara tdplch \
-      tdprpa tdprpi tdprpt tdseti tdsetr tdsort tdstri tdstrs tdpack_params
+MAN = tdclrs tddtri tdez2d tdez3d tdgeti tdgetr tdgrds tdgrid tdgtrs \
+      tdinit tditri tdlbla tdlbls tdline tdlnpa tdmtri tdotri tdpack \
+      tdpara tdplch tdprpa tdprpi tdprpt tdseti tdsetr tdsort tdstri \
+      tdstrs tdpack_params
 
 # Install preformatted troff documents on systems without troff
 #if UseCatDirs
