@@ -1,5 +1,5 @@
 ;
-;      $Id: xy06n.ncl,v 1.1 1995-04-07 17:06:23 haley Exp $
+;      $Id: xy06n.ncl,v 1.2 1995-04-17 20:33:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -26,11 +26,10 @@
 ;;                   (using the NhlSetValues call).
 ;;                3) How to overlay a Legend object and to tweak
 ;;                   several kinds of resources (see "xy06.res").
-;;                4) How to use netCDF interface routines to open
+;;                4) How to use ncl interface routines to open
 ;;                   and access a netCDF file.
 ;;                5) How to use a kludgy method for using the resource
 ;;                   file to specify which stations you want to observe.
-;;
 
 ;
 ; Begin NCL script
@@ -50,7 +49,8 @@ begin
   do j = 0,2
     do k = 0,9
       if((j.lt.2).or.(k.lt.4))
-        filename = "/cyclone/ncargd/dev/IRIS_IRIX_5_2_/lib/ncarg/data/cdf/" + day + j + k + "_sao.cdf"
+        filedir = ncargpath("data")
+        filename = filedir + "/cdf/" + day + j + k + "_sao.cdf"
 ; 
 ; Open data file containing grid of global data values.
 ;
@@ -84,7 +84,7 @@ end
 ; of stations we want data vales for, and "spv" is the special value
 ; for missing values.  If you want to plot data values for
 ; other cities, change the "stations" variable accordingly, and
-; also change "nstation" if you change the number of stations.
+; also change "nstations" if you change the number of stations.
 ;
 ; DEN = Denver, FTW = Fort Worth, HNL = Honolulu
 ;
