@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.134 2002-08-03 00:39:00 fred Exp $
+#   $Id: ncargex.csh,v 1.135 2003-02-27 17:47:14 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -82,33 +82,37 @@ endif
 # where you specify the name for it               #
 #                                                 #
 #*************************************************#
-set file_types     = (ncgm x11 text ps eps epsi)
+set file_types     = (ncgm x11 text ps eps epsi pdf)
 set orient_types = (port land)
 set color_types  = (color mono)
 set ws_types = (\
                 "ncgm.port.color" "" "" "" "" "" "" \
-                "x11.port.color" "" "text.port.color" "" "" \
+                "x11.port.color" "" "text.port.color" \
+                "pdf.port.color" "pdf.land.color" \
                 "" "" "" "" "" "" "" \
                 "ps.port.color" "eps.port.color" "epsi.port.color" \
                 "ps.port.mono" "eps.port.mono" "epsi.port.mono" \
                 "ps.land.color" "eps.land.color" "epsi.land.color" \
-                "ps.land.mono" "eps.land.mono" "epsi.land.mono" )
+                "ps.land.mono" "eps.land.mono" "epsi.land.mono")
 set suffix_names = (\
-                "ncgm" "" "" "" "" "" "" "" "" "txt" "" \
-                "" "" "" "" "" "" "" "" \
+                "ncgm" "" "" "" "" "" "" "" "" "txt" "pdf" \
+                "pdf" "" "" "" "" "" "" "" \
                 "ps" "eps" "epsi" "ps" "eps" "epsi" \
-                "ps" "eps" "epsi" "ps" "eps" "epsi" )
+                "ps" "eps" "epsi" "ps" "eps" "epsi")
 set default_files = (\
                 "gmeta" \
-                "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" \
+                "" "" "" "" "" "" "" "" "" "gmeta1.pdf" "gmeta1.pdf" \
+                "" "" "" "" "" "" "" \
                 "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi" "gmeta1.ps" \
                 "gmeta1.eps" "gmeta1.epsi" "gmeta1.ps" "gmeta1.eps" \
-                "gmeta1.epsi" "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi" )
+                "gmeta1.epsi" "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi")
 set default_msgs = (\
 	"Metafile file is named" \
 	"" "" "" "" "" "" "" "" \
 	"Text dump file is named" \
-    "" "" "" "" "" "" "" "" "" \
+	"Color portrait PDF file is named" \
+	"Color landscape PDF file is named" \
+    "" "" "" "" "" "" "" \
 	"Color portrait PostScript file is named" \
 	"Color portrait encapsulated PostScript file is named" \
 	"Color portrait interchange encapsulated PostScript file is named" \
