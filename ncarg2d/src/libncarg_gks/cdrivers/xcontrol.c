@@ -1,5 +1,5 @@
 /*
- *	$Id: xcontrol.c,v 1.6 1994-06-27 15:51:57 boote Exp $
+ *	$Id: xcontrol.c,v 1.7 1994-07-13 18:26:31 boote Exp $
  */
 /*
  *      File:		xcontrol.c
@@ -137,6 +137,7 @@ init_color
 		xi->color_pal[i] = xi->color_status[fg_indx].xpixnum;
 		xi->color_status[fg_indx].ref_count++;
 		xi->color_info[i] = fg_indx;
+		xi->color_status[i].ref_count = 0;
 	}
 
 	/* 
