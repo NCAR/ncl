@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl 
 #
-#      $Id: make-tape,v 1.9 1995-10-06 14:34:32 haley Exp $
+#      $Id: make-tape,v 1.10 1995-10-20 15:38:21 haley Exp $
 #
 #########################################################################
 #									#
@@ -58,9 +58,12 @@ $doDebug = 0;
 	'AIX_RS6000',
 	'ULTRIX_RISC',
 	'IRIX_IP',
+	'IRIX64_IP',
 	'HPUX_HP9000_7xx',
 	'OSF1_alpha',
 	'UNICOS_YMP',
+	'UNICOS_J90',
+	'UNICOS_C90',
 	'src',
 	'doc'
 );

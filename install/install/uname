@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: uname,v 1.4 1994-02-22 17:10:11 haley Exp $
+#      $Id: uname,v 1.5 1995-10-20 15:37:00 haley Exp $
 #
 #########################################################################
 #									#
@@ -67,6 +67,7 @@ switch ("$foo")
 case SunOS:
 case AIX:
 case IRIX:
+case IRIX64:
 case ULTRIX:
 case HP-UX:
 case OSF1:
@@ -194,6 +195,7 @@ while($#argv)
 			breaksw
 
 		case	IRIX:
+		case	IRIX64:
 			switch ("$mach")
 			case	IP*:
 				set arch = IP
@@ -225,6 +227,12 @@ while($#argv)
 				switch ("$mach[2]")
 				case	Y*:
 					set arch = YMP
+				breaksw
+				case	C90:
+					set arch = C90
+				breaksw
+				case	J90:
+					set arch = J90
 				breaksw
 				default:
 					echo "$0 : Unknown machine type" > /dev/tty

@@ -1,0 +1,43 @@
+#!/bin/csh -f
+#
+#      $Id: paths.UNICOS_J90,v 1.1 1995-10-20 15:36:10 haley Exp $
+#
+#########################################################################
+#                                                                       #
+#              Copyright (C)  1995                                      #
+#        University Corporation for Atmospheric Research                #
+#              All Rights Reserved                                      #
+#                                                                       #
+#########################################################################
+#
+#   File:       paths.UNICOS_J90
+#
+#   Author:     Mary Haley
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
+#
+#   Date:       Fri Oct 20 09:33:10 MDT 1995
+#
+#   Description:    Set default installation paths for a Cray J90. This
+#           script is sourced by the get_paths script to set
+#           the variables bin_path, inc_path, lib_path, and 
+#           man_path
+#
+#   Usage:      paths.UNICOS_J90
+#
+#   Environment:
+#
+#   Files:      get_paths : sources this script
+#
+#
+#   Options:
+#
+set bin_path = /usr/local/bin
+set inc_path = /usr/local/include
+set lib_path = /usr/local/lib
+set man_path = /usr/local/man
+set man1 = cat1
+set man3 = cat3
+set man5 = cat5
+set man8 = cat8
+exit 0
