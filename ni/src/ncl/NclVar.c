@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.64 2002-06-21 21:47:19 ethan Exp $
+ *      $Id: NclVar.c,v 1.65 2002-11-15 01:19:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2490,7 +2490,7 @@ struct _NclSelectionRecord * rhs_sel_ptr;
 #endif
 		if(lhs_md->obj.id != rhs_md->obj.id) {
 			j = 0;
-			if(rhs_md->multidval.kind != SCALAR) {
+			if(rhs_md->multidval.kind != SCALAR && lhs_md->multidval.n_dims != rhs_md->multidval.n_dims) {
 				for(i=0; i < lhs_sel_ptr->n_entries ; i++) {
 					if(((lhs_sel_ptr->selection[i].sel_type != Ncl_VECSUBSCR) && (!lhs_sel_ptr->selection[i].u.sub.is_single))||
 						((lhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) && (lhs_sel_ptr->selection[i].u.vec.n_ind != 1) )) {
