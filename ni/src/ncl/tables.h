@@ -333,7 +333,8 @@ TBLE2 params_nwsnmc[] = {
 {"253", "Friction velocity", "m/s", "FRICV"},
 {"254", "Richardson number", "non-dim.", "RI"}
 };
-int params_ecmwf_index[] = { 127, 128, 129, 130, 131, 132, 133, 134, 135, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 151, 152, 155, 156, 157, 158, 164, 165, 166, 167, 168, 170, 171, 172, 173, 174, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185
+int params_ecmwf_index[] = { 127, 128, 129, 130, 131, 132, 133, 134, 135,136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 151, 152, 155, 156, 157, 158, 164, 165, 166, 167, 168, 170, 171, 172, 173, 174, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185,
+186,187,188,198,235,236,237
 };
 TBLE2 params_ecmwf[] = {
 {"127","Atmospheric Tide","-","ATMOS_TIDE"},
@@ -345,10 +346,11 @@ TBLE2 params_ecmwf[] = {
 {"133","Specific Humidity","kg/kg","SPF_H"},
 {"134","Surface Pressure","Pa","PRES"},
 {"135","Vertical Velocity","Pa/s","V_VEL"},
+{"136","Total Column Water","kg/m^2","TCW"},
 {"137","Precipitable Water Content","m (of water)","P_WAT"},
 {"138","Vorticity","1/s","VORT"},
-{"139","Surface Temperature","K","STMP"},
-{"140","Soil Moisture","m (of water)","SOIL_M"},
+{"139","Soil Temperature level 1","K","STMP"},
+{"140","Soil Moisture level 1","m (of water)","SOIL_M"},
 {"141","Snow Depth","m","SNO_D"},
 {"142","Large Scale Precipitation","m","NCPCP"},
 {"143","Convective Precipitation","m","ACPCP"},
@@ -367,8 +369,8 @@ TBLE2 params_ecmwf[] = {
 {"166","V-wind at 10 m","m/s","V_GRD_10M"},
 {"167","Temperature at 2 m","K","TMP_2M"},
 {"168","Dewpoint at 2 m","K","DPT_2M"},
-{"170","Deep Soil Temperature","K","DTSOIL"},
-{"171","Deep Soil Wetness","m (of water)","DSOIL_M"},
+{"170","Soil Temperature level 2","K","STMP2"},
+{"171","Soil Wetness level 2","m (of water)","SOIL_M2"},
 {"172","Land-Sea Mask","(0, 1)","LAND"},
 {"173","Surface Roughness","m","SFC_R"},
 {"174","Albedo","-","ALBDO"},
@@ -379,9 +381,16 @@ TBLE2 params_ecmwf[] = {
 {"180","U-component of Surface Wind Stress","N/m^2","U_GWD"},
 {"181","V-component of Surface Wind Stress","N/m^2","V_GWD"},
 {"182","Evaporation","m (of water)","EVAP"},
-{"183","Climate Deep-Soil Temperature","K","CDSTMP"},
-{"184","Climate Deep-Soil Wetness","m (of water)","CDSM"},
-{"185","Cloud Cover","(0 - 1)","T_CDC"}
+{"183","Soil Temperature level 3","K","STMP3"},
+{"184","Soil Wetness level 3","m (of water)","SOIL_M3"},
+{"185","Cloud Cover","(0 - 1)","T_CDC"},
+{"186","Low Cloud Cover","(0 - 1)","L_CDC"},
+{"187","Medium Cloud Cover","(0 - 1)","M_CDC"},
+{"188","High Cloud Cover","(0 - 1)","H_CDC"},
+{"198","Skin reservoir content","m","SKRESC"},
+{"235","Skin temperature","K","SKTMP"},
+{"236","Soil temperature level 4","K","STMP4"},
+{"237","Soil moisture level 4","m","SOIL_M4"},
 };
 
 int params_fsl_index[] = { 129,149,157,158,171,172,173,179,186,187,188,189,191,193,194,195,204,205,211,212,229,234,235,252};
