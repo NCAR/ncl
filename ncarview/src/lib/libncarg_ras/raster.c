@@ -1,5 +1,5 @@
 /*
- *	$Id: raster.c,v 1.15 1992-08-27 17:55:08 clyne Exp $
+ *	$Id: raster.c,v 1.16 1992-09-10 21:24:18 don Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -41,7 +41,7 @@ int	OptionDitherPopular = False;
 int	OptionDitherColors = 256;
 int	OptionDitherBits = 5;
 
-char	*ProgramName;
+char	*NrtProgramName;
 
 static int	argdel();
 
@@ -74,8 +74,12 @@ RasterInit(argc, argv)
 	char	*argv[];
 {
 	int	i;
+	extern int	ras_nerr;
+	extern char	**ras_errlist;
 
-	ProgramName = argv[0];
+	NrtProgramName = argv[0];
+
+	(void) RasterInitError();
 
 	for(i=1; i<*argc; ) {
 		if (!strcmp(argv[i], "-printoptions")) {
@@ -108,7 +112,8 @@ RasterInit(argc, argv)
 		}
 		else if (!strcmp(argv[i], "-ditherbits")) {
 			if (i >= (*argc-1)) {
-				(void) RasterSetError(RAS_E_BAD_OPTION);
+				(void) ESprintf(RAS_E_NO_OPTION_PARM,
+					"%s", argv[i]);
 				return(RAS_ERROR);
 			}
 			(void) argdel(argc, argv, i);
@@ -117,7 +122,8 @@ RasterInit(argc, argv)
 		}
 		else if (!strcmp(argv[i], "-dithercolors")) {
 			if (i >= (*argc-1)) {
-				(void) RasterSetError(RAS_E_BAD_OPTION);
+				(void) ESprintf(RAS_E_NO_OPTION_PARM,
+					"%s", argv[i]);
 				return(RAS_ERROR);
 			}
 			(void) argdel(argc, argv, i);
@@ -126,7 +132,8 @@ RasterInit(argc, argv)
 		}
 		else if (!strcmp(argv[i], "-dpi")) {
 			if (i >= (*argc-1)) {
-				(void) RasterSetError(RAS_E_BAD_OPTION);
+				(void) ESprintf(RAS_E_NO_OPTION_PARM,
+					"%s", argv[i]);
 				return(RAS_ERROR);
 			}
 			(void) argdel(argc, argv, i);
@@ -221,7 +228,7 @@ RasterOpen(name, format)
 	int	i;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME, "RasterOpen(\"%s\")", name);
 		return ((Raster *) NULL);
 	}
 
@@ -239,7 +246,8 @@ RasterOpen(name, format)
 			format++;
 		}
 		else {
-			(void) RasterSetError(RAS_E_NO_FORMAT_SPECIFIED);
+			(void) ESprintf(RAS_E_NO_FORMAT_SPECIFIED,
+				"RasterOpen(\"%s\")", name);
 			return ((Raster *) NULL);
 		}
 	}
@@ -251,7 +259,7 @@ RasterOpen(name, format)
 		}
 	}
 
-	(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
+	(void) ESprintf(RAS_E_UNKNOWN_FORMAT, "\"%s\"", format);
 	return( (Raster *) NULL);
 }
 
@@ -295,7 +303,7 @@ RasterOpenWrite(name, nx, ny, comment, encoding, format)
 	int	i;
 
 	if (name == (char *) NULL) {
-		(void) RasterSetError(RAS_E_NULL_NAME);
+		(void) ESprintf(RAS_E_NULL_NAME,"RasterOpenWrite(\"%s\")",name);
 		return ((Raster *) NULL);
 	}
 
@@ -313,7 +321,7 @@ RasterOpenWrite(name, nx, ny, comment, encoding, format)
 			format++;
 		}
 		else {
-			(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
+			(void) ESprintf(RAS_E_UNKNOWN_FORMAT, "\"%s\"", name);
 			return ((Raster *) NULL);
 		}
 	}
@@ -326,7 +334,7 @@ RasterOpenWrite(name, nx, ny, comment, encoding, format)
 		}
 	}
 
-	(void) RasterSetError(RAS_E_UNKNOWN_FORMAT);
+	(void) ESprintf(RAS_E_UNKNOWN_FORMAT, "\"%s\"", format);
 	return( (Raster *) NULL);
 }
 
@@ -383,6 +391,11 @@ int
 RasterClose(ras)
 	Raster	*ras;
 {
+	if (ras == (Raster *) NULL) {
+		(void) ESprintf(RAS_E_PROGRAMMING,
+			"RasterClose() - NULL ras structure\n");
+		return(RAS_ERROR);
+	}
 	return(ras->Close(ras));
 }
 
@@ -402,9 +415,9 @@ int
 RasterPrintInfo(ras)
 	Raster	*ras;
 {
+	(void) fprintf(stderr, "\n**** %s ****\n", ras->name);
 	(void) fprintf(stderr, "Format-Independent Information\n");
 	(void) fprintf(stderr, "------------------------------\n");
-	(void) fprintf(stderr, "Name:             %s\n", ras->name);
 	(void) fprintf(stderr, "NX:               %d\n", ras->nx);
 	(void) fprintf(stderr, "NY:               %d\n", ras->ny);
 	(void) fprintf(stderr, 
@@ -428,7 +441,7 @@ RasterPrintInfo(ras)
  *		RasterLoadPalette() attempts to load a color palette 
  *		from file "name" into the raster structure
  *		pointed to by "ras". There is a flag in the
- *		Raster structure called "map_loaded", which
+ *		Raster structure called "map_forced", which
  *		is intended to tell other applications that
  *		a color map has been loaded from disk and
  *		should supercede any map contained in the image
@@ -446,13 +459,15 @@ RasterLoadPalette(ras, colors)
 {
 	int	i;
 
-	if (ras->map_loaded) {
-		(void) RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
+	if (ras->map_forced) {
+		(void) ESprintf(RAS_E_IMPROPER_COLORMAP_LOAD,
+			"Illegal colormap reload");
 		return(RAS_ERROR);
 	}
 
 	if (ras->type == RAS_DIRECT) {
-		(void) RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
+		(void) ESprintf(RAS_E_IMPROPER_COLORMAP_LOAD,
+			"You can't load a colormap for a direct-color image");
 		return(RAS_ERROR);
 	}
 
@@ -462,7 +477,7 @@ RasterLoadPalette(ras, colors)
 		ras->blue[i]  = colors[i + 512];
 	}
 
-	ras->map_loaded = True;
+	ras->map_forced = True;
 	return(RAS_OK);
 }
 
@@ -506,7 +521,8 @@ RasterCopyColormap(src, dst)
 	int	i;
 
 	if (src->type == RAS_DIRECT || dst->type == RAS_DIRECT) {
-	  (void) RasterSetError(RAS_E_IMPROPER_COLORMAP_LOAD);
+	  (void) ESprintf(RAS_E_IMPROPER_COLORMAP_LOAD,
+		"You can't load a colormap for a direct-color image");
 	  return(RAS_ERROR);
 	}
 
@@ -542,50 +558,50 @@ RasterCreate(nx, ny, encoding)
 	ras = (Raster *) calloc(sizeof(Raster), 1);
 
 	if (ras == (Raster *) NULL) {
-		(void) RasterSetError(RAS_E_SYSTEM);
+		(void) ESprintf(RAS_E_NULL_NAME, "RasterCreate()");
 		return( (Raster *) NULL );
 	}
 
 	if (encoding == RAS_INDEXED) {
-		ras->nx = nx;
-		ras->ny = ny;
+		ras->written = False;
+		ras->text    = "Memory raster structure";
+		ras->nx      = nx;
+		ras->ny      = ny;
+		ras->length  = ras->nx * ras->ny;
+		ras->ncolor  = RAS_DEFAULT_NCOLORS;
+		ras->type    = RAS_INDEXED;
 
-		ras->length = ras->nx * ras->ny;
-		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
-		if (ras->data == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
-			return( (Raster *) NULL );
-		}
-
-		ras->red = (unsigned char *) calloc(256, 1);
-		ras->green = (unsigned char *) calloc(256, 1);
-		ras->blue = (unsigned char *) calloc(256, 1);
+		ras->red     = (unsigned char *)calloc((unsigned)ras->ncolor,1);
+		ras->green   = (unsigned char *)calloc((unsigned)ras->ncolor,1);
+		ras->blue    = (unsigned char *)calloc((unsigned)ras->ncolor,1);
 
 		if (ras->red == (unsigned char *) NULL ||
 		    ras->green == (unsigned char *) NULL ||
 		    ras->blue == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "RasterCreate()");
 			return( (Raster *) NULL );
 		}
 
-		ras->text = "Memory raster structure";
-		ras->type = RAS_INDEXED; 
-		ras->ncolor = 256;
+		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
+		if (ras->data == (unsigned char *) NULL) {
+			(void) ESprintf(errno, "RasterCreate()");
+			return( (Raster *) NULL );
+		}
 	}
 	else if (encoding == RAS_DIRECT) {
-		ras->nx = nx;
-		ras->ny = ny;
+		ras->written = False;
+		ras->text    = "Memory raster structure";
+		ras->nx      = nx;
+		ras->ny      = ny;
+		ras->length  = ras->nx * ras->ny * 3;
+		ras->ncolor  = 256 * 256 * 256;
+		ras->type    = RAS_DIRECT;
 
-		ras->length = ras->nx * ras->ny * 3;
-		ras->data = (unsigned char *) calloc((unsigned)ras->length, 1);
+		ras->data = (unsigned char *) calloc((unsigned) ras->length, 1);
 		if (ras->data == (unsigned char *) NULL) {
-			(void) RasterSetError(RAS_E_SYSTEM);
+			(void) ESprintf(errno, "RasterCreate()");
 			return( (Raster *) NULL );
 		}
-
-		ras->text = "Memory raster structure";
-		ras->type = RAS_DIRECT;
-		ras->ncolor = 0;
 	}
 
 	return(ras);
@@ -661,28 +677,22 @@ int	RasterStat(path, format, ras_stat, icount)
 	int	rc;
 
 	if (stat(path, &(ras_stat->stat)) < 0) {
-		ESprintf(errno, "stat(%s, )", path);
-		return(-1);
+		ESprintf(errno, "stat(\"%s\", )", path);
+		return(RAS_ERROR);
 	}
 
 	if ((ras = RasterOpen(path, format)) == (Raster *) NULL) {
-		ESprintf(
-			E_UNKNOWN, "RasterOpen(%s,%s) : %s", 
-			path,format,RasterGetError()
-		);
-		return(-1);
+		return(RAS_ERROR);
 	}
 
 	rc = RasterRead(ras);
 	if (rc == RAS_ERROR) {
-		ESprintf(E_UNKNOWN, "RasterRead() : %s", RasterGetError());
-		RasterClose(ras);
-		return(-1);
+		return(RAS_ERROR);
 	}
 	else if (rc == RAS_EOF) {
-		ESprintf(E_UNKNOWN, "RasterRead() : EOF");
+		ESprintf(E_UNKNOWN, "RasterStat() - Unexpected EOF");
 		RasterClose(ras);
-		return(-1);
+		return(RAS_ERROR);
 	}
 
 	ras_stat->type = ras->type;
@@ -696,9 +706,73 @@ int	RasterStat(path, format, ras_stat, icount)
 	if (icount) {
 		if ((*icount = ras->ImageCount(path,format)) < 0) {
 			RasterClose(ras);
-			return(-1);
+			return(RAS_ERROR);
 		}
 	}
 	(void) RasterClose(ras);
-	return(1);
+	return(RAS_OK);
+}
+
+char
+*RasterTypeString(encoding)
+	RasterEncoding	encoding;
+{
+	return(raster_encodings[encoding]);
+}
+
+#ifdef __STDC__
+int RasterGetValues(Raster *ras, ...)
+#else
+int RasterGetValues(ras, va_alist)
+	Raster	*ras;
+	va_dcl
+#endif
+{
+	va_list		ap;
+	char		*_RasterGetFormatDesc();
+	char		*resource;
+	char		**svalue;	/* String Value */
+
+#ifdef __STDC__
+	va_start(ap, ras);
+#else
+	va_start(ap);
+#endif
+
+	if (ras == (Raster *) NULL) {
+		(void) ESprintf(RAS_E_PROGRAMMING, "RasterGetValues()");
+		return(RAS_ERROR);
+	}
+
+	while( (resource = va_arg(ap, char *)) != (char *) NULL) {
+
+		if (!strcmp(resource, NrtNformatName)) {
+			svalue = va_arg(ap, char **);
+			*svalue = strdup(ras->format);
+		}
+		else if (!strcmp(resource, NrtNformatDesc)) {
+			svalue = va_arg(ap, char **);
+			*svalue = strdup(_RasterGetFormatDesc(ras->format));
+		}
+		else {
+			(void) ESprintf(RAS_E_UNKNOWN_RESOURCE,
+				"RasterGetValues(%s)", resource);
+			return(RAS_ERROR);
+		}
+	}
+	return(RAS_OK);
+}
+
+char *
+_RasterGetFormatDesc(format)
+	char	*format;
+{
+	int	i;
+
+	for(i=0; i<NumberOfDevices; i++) {
+		if (!strcmp(rasdevices[i].name, format)) {
+			return(rasdevices[i].description);
+		}
+	}
+	return((char *) NULL);
 }
