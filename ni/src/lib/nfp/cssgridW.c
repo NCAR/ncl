@@ -426,9 +426,11 @@ NhlErrorTypes cssetp_W(void)
  *  List the parameter names (integer, float, double).  To add new ones,
  *  all that needs to be done is add the names to this list.
  */
-  char *params_i[] = {"nls", "NLS", "nsg", "NSG", "isg", "ISG", "igr", "IGR"};
-  char *params_f[] = {"sig", "SIG", "tol", "TOL","mvl","TTF"};
-  char *params_d[] = {"dsg", "DSG", "dtl", "DTL","dmv","TTD"};
+  char *params_i[] = {"nls", "NLS", "nsg", "NSG", "isg", "ISG", "igr", "IGR",
+                      "mvl", "MVL"};
+  char *params_f[] = {"sig", "SIG", "tol", "TOL", "mvl", "MVL", "ttf", "TTF"};
+  char *params_d[] = {"dsg", "DSG", "dtl", "DTL", "dmv", "DMV", "ttd", "TTD",
+                      "mvl", "MVL"};
 
 /*
  * Input array variables
