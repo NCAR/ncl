@@ -1,3 +1,6 @@
+C
+C $Id: dpdraw.f,v 1.3 1994-09-09 00:33:25 kennison Exp $
+C
       SUBROUTINE DPDRAW (XCPF,YCPF,IFVL)
 C
 C DPDRAW is the workhorse routine of DASHPACK.  When IFVL is less than
@@ -55,9 +58,10 @@ C Declare the arrays that are used to hold the descriptors of the
 C constituent elements of the dash pattern.  For a value of I between
 C 1 and NDPE, IDPE(I) will be -1 for a gap in which no characters will
 C be written, 0 for a solid-line chunk, and greater than 0 for a gap
-C in which characters will be written (in which case it contains the
-C packed indices of the characters to be written); RDPI(I) is the
-C length of line to be devoted to the element.
+C in which characters will be written (in which case it contains either
+C a +1, indicating the little gap that precedes or follows a label, or
+C the packed indices of the character substring to be written); RDPE(I)
+C is the length of line to be devoted to the element.
 C
         DIMENSION IDPE(LDPA),RDPE(LDPA)
 C
@@ -199,20 +203,10 @@ C
                 IF (CHRL.EQ.CHRB.OR.CHRL.EQ.CHRG.OR.CHRL.EQ.CHRS) THEN
 C
                   IF (CHRL.NE.CHRB.AND.ILTL.EQ.0.AND.RLS1.NE.0.) THEN
-                    IF (NDPE.NE.0) THEN
-                      IF (IDPE(NDPE).LT.0) THEN
-                        RDPE(NDPE)=RDPE(NDPE)+RLS1*WCHR
-                      ELSE
-                        IF (NDPE.GE.LDPA) GO TO 103
-                        NDPE=NDPE+1
-                        IDPE(NDPE)=-1
-                        RDPE(NDPE)=RLS1*WCHR
-                      END IF
-                    ELSE
-                      NDPE=1
-                      IDPE(NDPE)=-1
-                      RDPE(NDPE)=RLS1*WCHR
-                    END IF
+                    IF (NDPE.GE.LDPA) GO TO 103
+                    NDPE=NDPE+1
+                    IDPE(NDPE)=+1
+                    RDPE(NDPE)=RLS1*WCHR
                   END IF
 C
                   IF (NDPE.GE.LDPA) GO TO 103
@@ -243,12 +237,11 @@ C
 C
               IF ((CHRN.EQ.CHRG.OR.CHRN.EQ.CHRS).AND.NDPE.NE.0) THEN
 C
-                IF (IDPE(NDPE).GT.0.AND.ILTL.EQ.0.AND.RLS1.NE.0.) THEN
+                IF (IDPE(NDPE).GT.1.AND.ILTL.EQ.0.AND.RLS1.NE.0.) THEN
                   IF (NDPE.GE.LDPA) GO TO 103
                   NDPE=NDPE+1
-                  IDPE(NDPE)=-1
+                  IDPE(NDPE)=+1
                   RDPE(NDPE)=RLS1*WCHR
-                  CHRL=CHRG
                 END IF
 C
               END IF
@@ -277,7 +270,7 @@ C
 C
               DO 106 I=1,NDPE
 C
-                IF (IDPE(I).GT.0) THEN
+                IF (IDPE(I).GT.1) THEN
 C
                   IFCH=IDPE(I)/LDPA
                   ILCH=MOD(IDPE(I),LDPA)
@@ -342,10 +335,9 @@ C in the proper state to handle such a point, ...
 C
         IF (IFVL.NE.1.OR.IDST.EQ.0) THEN
 C
-C ... first, using only gap and solid elements of the dash pattern
-C (and avoiding any gap that is next to a label string) draw any
-C portion of a previous curve that was skipped as part of the gap
-C for a character string that ended up never being drawn ...
+C ... first, using only gap and solid elements of the dash pattern,
+C draw any portion of a previous curve that was skipped as part of
+C the gap for a character string that ended up never being drawn ...
 C
           IF (NPSB.GT.1.AND.ILTL.EQ.0) THEN
 C
@@ -353,9 +345,7 @@ C
             YCNF=RSPY(1)
 C
             ISPE=ICPE
-            ICPN=MOD(ICPE,NDPE)+1
-C
-            WCPE=WSLD
+            WCPE=WCHR
 C
             DO 110 I=2,NPSB
 C
@@ -372,7 +362,7 @@ C
                 IF (ICFELL('DPDRAW',8).NE.0) RETURN
               END IF
 C
-              IF (DIST.LE.WCPE) THEN
+              IF (DIST.LT.WCPE) THEN
 C
                 WCPE=WCPE-DIST
 C
@@ -393,17 +383,15 @@ C
                   IF (ICFELL('DPDRAW',10).NE.0) RETURN
                 END IF
 C
-  109           ICPL=ICPE
-                ICPE=ICPN
-                ICPN=MOD(ICPE,NDPE)+1
-                IF (IDPE(ICPE).LT.0.AND.
-     +             (IDPE(ICPL).GT.0.OR.IDPE(ICPN).GT.0)) GO TO 109
+                ISPE=ICPE
+C
+  109           ICPE=MOD(ICPE,NDPE)+1
                 IF (ICPE.NE.ISPE.AND.IDPE(ICPE).GT.0) GO TO 109
 C
-                IF (ICPE.EQ.ISPE) THEN
-                  WCPE=WSLD
-                ELSE
+                IF (ICPE.NE.ISPE) THEN
                   WCPE=RDPE(ICPE)
+                ELSE
+                  WCPE=1.
                 END IF
 C
                 GO TO 108
@@ -437,12 +425,12 @@ C
             WCPE=RDPE(1)
             IF (IDPE(1).EQ.0) WCPE=RMFS*WCPE
 C
-            IF (IDPE(ICPE).GT.0) THEN
+            IF (IDPE(ICPE).GT.1) THEN
               XCGF=XCPF
               YCGF=YCPF
             END IF
 C
-            IF (IDPE(ICPE).NE.0.AND.ISBF.NE.0.AND.NPSB.EQ.0) THEN
+            IF (IDPE(ICPE).GT.0.AND.ISBF.NE.0.AND.NPSB.EQ.0) THEN
               NPSB=1
               RSPX(1)=XCLF
               RSPY(1)=YCLF
@@ -486,7 +474,7 @@ C
 C
               END IF
 C
-              IF (IDPE(ICPE).NE.0.AND.ISBF.NE.0) THEN
+              IF (IDPE(ICPE).GT.0.AND.ISBF.NE.0) THEN
 C
                 IF (NPSB.EQ.LPSB) THEN
 C
@@ -536,7 +524,7 @@ C
 C
               END IF
 C
-              IF (IDPE(ICPE).GT.0) THEN
+              IF (IDPE(ICPE).GT.1) THEN
 C
                 IF (NSSB.GE.LSSB) THEN
                   CALL SETER ('DPDRAW - IMPLEMENTATION ERROR - SEE SPECI
@@ -562,13 +550,13 @@ C
               ICPE=MOD(ICPE,NDPE)+1
               WCPE=RDPE(ICPE)
 C
-              IF (IDPE(ICPE).GT.0) THEN
+              IF (IDPE(ICPE).GT.1) THEN
                 XCGF=XCLF
                 YCGF=YCLF
               END IF
 C
               IF (NSSB.NE.0.AND.(ISBF.EQ.0.OR.ICPE.EQ.1
-     +                                    .OR.IDPE(ICPE).LE.0)) THEN
+     +                                    .OR.IDPE(ICPE).LE.1)) THEN
 C
                 IF (NSSB.GT.1.AND.NPSB.GT.0.AND.ANGF.GT.0.) THEN
 C
@@ -705,7 +693,7 @@ C
 C
               END IF
 C
-              IF (IDPE(ICPE).NE.0.AND.ISBF.NE.0) THEN
+              IF (IDPE(ICPE).GT.0.AND.ISBF.NE.0) THEN
                 IF (NPSB.EQ.0) THEN
                   NPSB=1
                   RSPX(1)=XCLF
