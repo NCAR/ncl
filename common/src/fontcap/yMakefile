@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 1992-09-23 22:47:32 don Exp $
+#	$Id: yMakefile,v 1.3 1992-11-09 18:55:56 fred Exp $
 #
 NCARG	= ../../..
 
@@ -14,13 +14,19 @@ GENERIC_SRCS = \
 	font1.fc font2.fc font3.fc font4.fc font5.fc \
 	font6.fc font7.fc font8.fc .fc font9.fc font10.fc \
 	font11.fc font12.fc font13.fc font14.fc font15.fc \
-	font16.fc font17.fc font18.fc font19.fc font20.fc
+	font16.fc font17.fc font18.fc font19.fc font20.fc \
+	font21.fc font22.fc font25.fc font26.fc font29.fc \
+	font30.fc font33.fc font34.fc font35.fc font36.fc \
+        font37.fc
 
 FONTCAPS = \
 	font1 font2 font3 font4 font5 \
 	font6 font7 font8  font9 font10 \
 	font11 font12 font13 font14 font15 \
 	font16 font17 font18 font19 font20
+	font21 font22 font25 font26 font29 \
+	font30 font33 font34 font35 font36 \
+        font37
 
 all::
 
@@ -124,5 +130,49 @@ font19: font19.fc
 	@$(FONTC) $? $@
 
 font20: font20.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font21: font21.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font22: font22.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font25: font25.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font26: font26.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font29: font29.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font30: font30.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font33: font33.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font34: font34.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font35: font35.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font36: font36.fc
+	@echo "	Processing fontcap $@"
+	@$(FONTC) $? $@
+
+font37: font37.fc
 	@echo "	Processing fontcap $@"
 	@$(FONTC) $? $@

@@ -1,0 +1,1917 @@
+/*
+/*	$Id: font21.fc,v 1.1 1992-11-09 18:55:23 fred Exp $
+/*
+FONT_NAME
+NCAR:HELVETICA
+CHARACTER_START
+32
+CHARACTER_END
+126
+FONT_RIGHT
+195
+FONT_TOP
+168
+FONT_CAP_OVERSHOOT
+142
+FONT_CAP
+140
+FONT_X-HEIGHT_OVERSHOOT
+104
+FONT_X-HEIGHT
+101
+FONT_HALF
+70
+FONT_BASE
+0
+FONT_BOTTOM
+-42
+FONT_CAP_HORIZONTAL_STEM_WIDTH
+16
+FONT_CAP_VERTICAL_STEM_WIDTH
+18
+FONT_BOUNDING_BOX
+-4 -42 182 148
+FONT_EXTENDED_BOUNDING_BOX
+-4 -42 182 148
+
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*  <space>     32         53    53     0    53     0
+BEGIN_REGION
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     !        33         53    22     0    40   140
+BEGIN_REGION                               
+ 22 140
+ 40 140
+ 39  90  38  75  35  32
+ 27  32
+ 24  75  23  90  22 140
+END_REGION                                 
+BEGIN_REGION                               
+ 23  20
+ 39  20
+ 39   0
+ 23   0
+ 23  20
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     "        34         68     9    89    58   136
+BEGIN_REGION                               
+  9 136
+ 27 136
+ 27 113  24 105  22  89
+ 14  89
+ 12 105   9 113   9 136
+END_REGION                                 
+BEGIN_REGION                               
+ 40 136
+ 58 136
+ 58 113  55 105  53  89
+ 45  89
+ 43 105  40 113  40 136
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     #        35        107     2    -4   104   134
+BEGIN_REGION                               
+ 39 134
+ 54 134
+ 47  97
+ 71  97
+ 78 134
+ 93 134
+ 86  97
+104  97
+104  83
+ 84  83
+ 78  51
+ 97  51
+ 97  37
+ 75  37
+ 68  -4
+ 53  -4
+ 61  37
+ 36  37
+ 29  -4
+ 15  -4
+ 22  37
+  2  37
+  2  51
+ 24  51
+ 30  83
+BEGIN_HOLE                              
+ 45  83
+ 39  51
+ 63  51
+ 69  83
+ 45  83
+END_HOLE                                
+  9  83
+  9  97
+ 33  97
+ 39 134
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     $        36        107     6   -25    99   148
+BEGIN_REGION                               
+ 79 100
+ 94 100
+ 93 126  79 135  57 138
+ 57 148
+ 46 148
+ 46 138
+ 19 134   8 119   8  99
+BEGIN_HOLE                              
+ 24  99
+ 24  88  33  80  46  78
+ 46 125
+ 29 121  24 113  24  99
+END_HOLE                                
+  8  78  19  69  46  62
+ 46   9
+ 26  11  21  24  21  39
+  6  39
+  7   8  20  -3  46  -4
+ 46 -25
+ 57 -25
+ 57  -4
+ 86  -3  99  15  99  37
+BEGIN_HOLE                              
+ 83  37
+ 83  21  75  10  57   9
+ 57  60
+ 79  53  83  44  83  37
+END_HOLE                                
+ 99  56  92  65  57  76
+ 57 125
+ 71 123  79 113  79 100
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     %        37        171     5    -4   165   136
+BEGIN_REGION                               
+ 38 131
+ 56 131  71 116  71  98
+ 71  80  56  65  38  65
+ 20  65   5  80   5  98
+BEGIN_HOLE                              
+ 19  98
+ 19  88  28  79  38  79
+ 48  79  57  88  57  98
+ 57 108  48 117  38 117
+ 28 117  19 108  19  98
+END_HOLE                                
+  5 116  20 131  38 131
+END_REGION                                 
+BEGIN_REGION                               
+116 136
+129 136
+ 53  -4
+ 40  -4
+116 136
+END_REGION
+BEGIN_REGION
+132  62
+150  62 165  47 165  29
+165  11 150  -4 132  -4
+114  -4  99  11  99  29
+BEGIN_HOLE                              
+113  29
+113  19 122  10 132  10
+142  10 151  19 151  29
+151  39 142  48 132  48
+122  48 113  39 113  29
+END_HOLE                                
+ 99  47 114  62 132  62
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     &        38        128     9    -5   122   136
+BEGIN_REGION                               
+ 94  64
+109  64
+109  48 105  39  99  29
+122   0
+101   0
+ 90  14
+ 75   0  65  -5  50  -5
+ 24  -5   9  12   9  35
+BEGIN_HOLE                              
+ 26  35
+ 26  21  39  10  51  10
+ 61  10  68  14  80  26
+ 49  65
+ 34  55  26  47  26  35
+END_HOLE                                
+  9  53  22  63  41  75
+ 31  88  25  93  25 106
+BEGIN_HOLE                              
+ 41 106
+ 41  98  48  90  55  83
+ 68  91  74  98  74 106
+ 74 117  65 123  57 123
+ 49 123  41 116  41 106
+END_HOLE                                
+ 25 124  41 136  58 136
+ 75 136  89 125  89 106
+ 89  88  77  83  63  73
+ 89  41
+ 95  51  94  60  94  64
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     '        39         43    12    91    30   136
+BEGIN_REGION                               
+ 12 136
+ 30 136
+ 30 113
+ 30 106  24  91  12  91
+ 12  99
+ 19  99  21 107  21 111
+ 21 116
+ 12 116
+ 12 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     (        40         64    13   -41    55   140
+BEGIN_REGION                               
+ 45 140
+ 55 140
+ 37 109  29  79  29  48
+ 29  22  37 -14  55 -41
+ 45 -41
+ 27 -20  13  22  13  48
+ 13  82  27 114  45 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     )        41         64     7   -41    49   140 
+BEGIN_REGION                               
+  7 140
+ 17 140
+ 39 109  49  75  49  48
+ 49  21  38 -14  17 -41
+  7 -41
+ 24 -13  33  15  33  48
+ 33  80  25 108   7 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     *        42         74     7    84    65   140
+BEGIN_REGION
+ 30 140
+ 42 140
+ 41 118
+ 61 125
+ 65 114
+ 44 108
+ 58  91
+ 48  84
+ 36 102
+ 24  84
+ 14  91
+ 28 108
+  7 114
+ 11 125
+ 31 118
+ 30 140
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     +        43        112     9    -2   102    91
+BEGIN_REGION                               
+ 49  91
+ 62  91
+ 62  52
+102  52
+102  38
+ 62  38
+ 62  -2
+ 49  -2
+ 49  38
+  9  38
+  9  52
+ 49  52
+ 49  91
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     ,        44         53    16   -29    36    20
+BEGIN_REGION                               
+ 16  20
+ 36  20
+ 36  -8
+ 36 -17  30 -29  19 -29
+ 16 -29
+ 16 -22
+ 18 -22
+ 25 -22  27 -16  27  -9
+ 27   0
+ 16   0
+ 16  20
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     -        45         64     8    46    54    60
+BEGIN_REGION                               
+  8  60
+ 54  60
+ 54  46
+  8  46
+  8  60
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     .        46         53    16     0    36    20
+BEGIN_REGION                               
+ 16  20
+ 36  20
+ 36   0
+ 16   0
+ 16  20
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     /        47         54    -2    -4    55   140
+BEGIN_REGION                               
+ 44 140
+ 55 140
+  9  -4
+ -2  -4
+ 43 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     0        48        107     7    -5    97   136
+BEGIN_REGION                               
+ 52 136
+ 79 136  97 100  97  66
+ 97  32  79  -5  52  -5
+ 25  -5   7  32   7  66
+BEGIN_HOLE                              
+ 25  66
+ 25  32  39  10  52  10
+ 65  10  79  32  79  66
+ 79 100  65 121  52 121
+ 39 121  25 100  25  66
+END_HOLE                                
+  7 100  25 136  52 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     1        49        107    19     0    66   136
+BEGIN_REGION                               
+ 55 136
+ 66 136
+ 66   0
+ 49   0
+ 49  97
+ 19  97
+ 19 109
+ 36 111  50 110  55 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     2        50        107     6     0    98   136
+BEGIN_REGION                               
+  9  89
+ 26  89
+ 26 108  35 121  54 121
+ 68 121  80 111  80  95
+ 80  78  70  74  49  61
+ 15  43   6  25   6   0
+ 97   0
+ 97  16
+ 25  16
+ 29  34  39  38  63  52
+ 89  63  98  81  98  97
+ 98 120  78 136  54 136
+ 28 136   9 121   9  89
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     3        51        107     6    -4    97   136
+BEGIN_REGION                               
+ 25  92
+  8  92
+  9 121  25 136  51 136
+ 75 136  93 123  93  99
+ 93  85  88  76  73  70
+ 90  64  97  54  97  38
+ 97  18  85  -4  50  -4
+ 20  -4   6  14   6  39
+ 23  39
+ 23  26  27  11  51  11
+ 71  10  79  23  79  38
+ 79  59  64  63  41  63
+ 41  77
+ 64  77  75  80  75  98
+ 75 111  68 121  51 121
+ 36 121  26 115  25  92
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     4        52        107     5     0   100   136
+BEGIN_REGION                               
+ 67 136
+ 79 136
+ 79  48
+100  48
+100  32
+ 79  32
+ 79   0
+ 62   0
+ 62  32
+  5  32
+  5  48
+BEGIN_HOLE                              
+ 20  48
+ 62  48
+ 62 107
+ 20  48
+END_HOLE                                
+  5  50
+ 67 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     5        53        107     6    -5    98   136
+BEGIN_REGION                               
+ 20 136
+ 91 136
+ 91 120
+ 34 120
+ 29  81
+ 35  86  43  90  55  90
+ 73  90  98  78  98  44
+ 98  18  82  -5  51  -5
+ 22  -5  10  12   6  33
+ 23  33
+ 27  19  36  10  50  10
+ 69  10  81  21  81  43
+ 81  58  72  75  51  75
+ 40  75  35  71  25  62
+ 10  62
+ 20 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     6        54        107     7    -5    98   136
+BEGIN_REGION                               
+ 95 101
+ 78 101
+ 76 114  66 121  56 121
+ 36 121  25 102  25  70
+ 36  83  46  85  58  85
+ 75  85  99  71  98  41
+BEGIN_HOLE                              
+ 81  40
+ 81  55  68  70  53  70
+ 38  70  25  55  25  40
+ 25  25  38  10  53  10
+ 68  10  81  25  81  40
+END_HOLE                                
+ 98  20  84  -5  53  -5
+ 19  -5   7  25   7  63
+  7 108  25 136  56 136
+ 78 136  93 120  95 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     7        55        107     8     0    99   136
+BEGIN_REGION                               
+  8 136
+ 99 136
+ 99 122
+ 61  66  53  47  44   0
+ 26   0
+ 40  55  49  69  82 120
+  8 120
+  8 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     8        56        107     6    -5    98   136
+BEGIN_REGION                               
+ 52 136
+ 75 136  93 123  93 100
+ 93  83  83  76  75  71
+ 89  65  98  52  98  37
+ 98  20  82  -5  51  -5
+ 20  -5   6  20   6  37
+BEGIN_HOLE                              
+ 24  37
+ 24  22  37  10  52  10
+ 67  10  80  22  80  37
+ 80  52  67  64  52  64
+ 37  64  24  52  24  37
+END_HOLE                                
+  6  52  15  64  29  71
+ 21  76  11  83  11 100
+BEGIN_HOLE                              
+ 28 100
+ 28  87  39  79  52  79
+ 65  79  76  87  76 100
+ 76 113  65 121  52 121
+ 39 121  28 113  28 100
+END_HOLE                                
+ 11 123  29 136  52 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     9        57        107     6    -5    97   136
+BEGIN_REGION
+ 52 136
+ 79 136  97 118  98  70
+ 98  10  72  -5  48  -5
+ 29  -5  14   6   9  31
+ 26  31
+ 30  17  37  10  49  10
+ 70  10  80  33  80  61
+ 67  47  57  46  49  46
+ 20  47   6  68   7  91
+BEGIN_HOLE
+ 24  91
+ 24  77  35  61  52  61
+ 69  61  80  77  80  91
+ 80 105  69 121  52 121
+ 35 121  24 105  24  91
+END_HOLE
+  6 115  24 136  52 136
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     :        58         53    21     0    41   101
+BEGIN_REGION                               
+ 21 101
+ 41 101
+ 41  81
+ 21  81
+ 21 101
+END_REGION                                 
+BEGIN_REGION                               
+ 21  20
+ 41  20
+ 41   0
+ 21   0
+ 21  20
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     ;        59         53    21   -29    41   101
+BEGIN_REGION                               
+ 21 101
+ 41 101
+ 41  81
+ 21  81
+ 21 101
+END_REGION                                 
+BEGIN_REGION                               
+ 21  19
+ 41  19
+ 41  -8
+ 41 -20  33 -29  21 -29
+ 21 -22
+ 29 -22  32 -18  32  -9
+ 32   0
+ 21   0
+ 21  19
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     <        60        112     8    -2   102    91
+BEGIN_REGION                               
+102  91
+102  76
+ 26  45
+102  13
+102  -2
+  8  38
+  8  51
+102  91
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     =        61        112     9    21   102    68
+BEGIN_REGION                               
+  9  68
+102  68
+102  55
+  9  55
+  9  68
+END_REGION                                 
+BEGIN_REGION                               
+  9  34
+102  34
+102  21
+  9  21
+  9  34
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     >        62        112     9    -2   103    91
+BEGIN_REGION                               
+  9  91
+103  51
+103  38
+  9  -2
+  9  13
+ 85  45
+  9  76
+  9  91
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     ?        63        143    14     0    97   142
+BEGIN_REGION                               
+ 30  97
+ 14  97
+ 14 130  31 142  55 142
+ 80 142  97 129  97 105
+ 97  86  87  79  68  60
+ 62  54  63  49  63  38
+ 45  38
+ 45  51
+ 45  62  54  69  72  86
+ 87 102  80 127  55 127
+ 33 127  30 111  30  97
+END_REGION                                 
+BEGIN_REGION                               
+ 63  19
+ 63   0
+ 45   0
+ 45  19
+ 63  19
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     @        64        195     6   -28   182   143
+BEGIN_REGION                               
+127  96
+143  96
+124  36
+122  30 125  24 134  24
+147  24 165  40 165  68
+165 111 121 128  98 128
+ 64 128  23  97  22  52
+ 22  24  46 -13  95 -13
+102 -13 122 -10 131  -7
+137 -20
+120 -25 113 -28  92 -28
+ 45 -28   6   6   6  50
+  6 102  53 143 101 143
+134 143 182 116 182  70
+182  40 160  11 130  11
+116  11 111  16 109  25
+102  18  95  12  82  12
+ 59  12  50  31  50  48
+ 50  52  50  54  51  57
+BEGIN_HOLE                              
+ 68  57
+ 68  38  78  24  92  24
+105  24 116  35 116  57
+116  81  99  89  92  89
+ 80  89  68  75  68  57
+END_HOLE                                
+ 59  88  83 100  99 100
+113 100 118  94 123  84
+127  96
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     A        65        128     2     0   125   140
+BEGIN_REGION                               
+ 53 140
+ 76 140
+125   0
+105   0
+ 91  41
+ 36  41
+ 22   0
+  2   0
+ 46 120
+BEGIN_HOLE                              
+ 64 120
+ 41  57
+ 86  57
+ 64 120
+END_HOLE                                
+ 53 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     B        66        128    15     0   119   140
+BEGIN_REGION                               
+ 15 140
+ 76 140
+ 90 140 113 130 113 104
+113  85 105  80  94  73
+114  67 119  53 119  40
+119  16 104   0  82   0
+ 15   0
+ 15  64
+BEGIN_HOLE                              
+ 33  64
+ 33  16
+ 80  16
+111  16 106  64  79  64
+ 33  64
+END_HOLE                                
+ 15 124
+BEGIN_HOLE                              
+ 33 124
+ 33  80
+ 73  80
+104  80 103 124  71 124
+ 33 124
+END_HOLE                                
+ 15 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     C        67        139     8    -4   129   142
+BEGIN_REGION                               
+127  96
+121 129 102 142  72 142
+ 32 142   9 111   8  69
+  8  21  36  -4  72  -4
+112  -4 127  21 129  51
+111  51
+107  23  96  12  72  12
+ 40  12  26  37  26  69
+ 26 105  46 126  72 126
+ 91 126 107 115 109  96
+127  96
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     D        68        139    17     0   128   140
+BEGIN_REGION                               
+ 17 140
+ 75 140
+ 94 140 128 123 128  70
+128  17  97   0  75   0
+ 17   0
+ 17 124
+BEGIN_HOLE                              
+ 35 124
+ 35  16
+ 72  16
+ 96  16 110  37 110  70
+110 106  92 124  71 124
+ 35 124
+END_HOLE                                
+ 17 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     E        69        128    17     0   117   140
+BEGIN_REGION                               
+ 17 140
+114 140
+114 124
+ 35 124
+ 35  79
+111  79
+111  63
+ 35  63
+ 35  16
+117  16
+117   0
+ 17   0
+ 17 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     F        70        118    17     0   111   140
+BEGIN_REGION                               
+ 17 140
+111 140
+111 124
+ 35 124
+ 35  79
+102  79
+102  63
+ 35  63
+ 35   0
+ 17   0
+ 17 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     G        71        150     8    -4   136   142
+BEGIN_REGION                               
+136  74
+ 77  74
+ 77  58
+119  58
+119  49
+119  31 102  11  76  12
+ 41  12  26  39  26  70
+ 26 104  48 126  76 126
+ 88 126 111 120 115  97
+134  97
+132 111 117 142  76 142
+ 34 142   8 111   8  70
+  8  18  38  -4  76  -4
+ 89  -4 106   1 120  17
+124   0
+136   0
+136  74
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     H        72        139    16     0   123   140
+BEGIN_REGION                               
+ 16 140
+ 34 140
+ 34  79
+105  79
+105 140
+123 140
+123   0
+105   0
+105  63
+ 34  63
+ 34   0
+ 16   0
+ 16 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     I        73         54    19     0    37   140
+BEGIN_REGION                               
+ 19 140
+ 37 140
+ 37   0
+ 19   0
+ 19 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     J        74         96     3    -4    81   140
+BEGIN_REGION                               
+ 63 140
+ 81 140
+ 81  29
+ 81  13  67  -4  41  -4
+ 12  -4   3  19   3  29
+  3  45
+ 21  45
+ 21  32
+ 21  19  29  12  42  12
+ 56  12  63  20  63  35
+ 63 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     K        75        128    15     0   126   140
+BEGIN_REGION                               
+ 15 140
+ 33 140
+ 33  69
+102 140
+126 140
+ 69  82
+126   0
+105   0
+ 57  70
+ 33  46
+ 33   0
+ 15   0
+ 15 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     L        76        107    15     0   102   140
+BEGIN_REGION                               
+ 15 140
+ 33 140
+ 33  16
+102  16
+102   0
+ 15   0
+ 15 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     M        77        160    14     0   146   140
+BEGIN_REGION                               
+ 14 140
+ 39 140
+ 80  18
+121 140
+146 140
+146   0
+129   0
+129 117
+ 89   0
+ 70   0
+ 31 117
+ 31   0
+ 14   0
+ 14 140
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     N        78        139    14     0   123   140
+BEGIN_REGION                               
+ 14 140
+ 34 140
+106  26
+106 140
+123 140
+123   0
+103   0
+ 31 114
+ 31   0
+ 14   0
+ 14 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     O        79        149     7    -5   143   142
+BEGIN_REGION
+ 75 142
+115 142 142 106 142  69
+143  32 115  -5  75  -5
+ 35  -5   7  32   7  69
+BEGIN_HOLE
+ 25  69
+ 25  37  47  11  75  11
+103  11 124  37 124  69
+124 101 103 126  75 126
+ 47 126  25 101  25  69
+END_HOLE
+  7 106  35 142  75 142
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     P        80        128    17     0   118   140
+BEGIN_REGION                               
+ 17 140
+ 79 140
+ 92 140 118 132 118  99
+118  74 101  59  84  59
+ 35  59
+ 35   0
+ 17   0
+ 17 124
+BEGIN_HOLE                              
+ 35 124
+ 35  75
+ 77  75
+ 91  75 100  87 100  99
+100 113  89 124  76 124
+ 35 124
+END_HOLE                                
+ 17 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     Q        81        150     7   -11   141   142
+BEGIN_REGION
+ 73 142
+116 142 141 110 141  70
+141  43 135  31 123  15
+141   0
+132 -11
+111   5
+ 98  -2  88  -5  73  -5
+ 27  -5   7  34   7  69
+BEGIN_HOLE
+ 25  69
+ 25  35  43  11  74  11
+ 86  11  91  14  97  17
+ 84  29
+ 93  40
+110  26
+119  38 123  50 123  70
+123 111  94 127  73 127
+ 52 127  25 110  25  69
+END_HOLE
+  7 119  40 142  73 142
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     R        82        139    17     0   130   140
+BEGIN_REGION
+ 17 140
+ 86 140
+105 140 125 127 125 102
+125  86 117  76 102  69
+122  62 121  47 121  28
+122  13 123   8 130   4
+130   0
+108   0
+104   9 104  12 104  39
+104  54  94  60  84  60
+ 35  60
+ 35   0
+ 17   0
+ 17 124
+BEGIN_HOLE
+ 35 124
+ 35  76
+ 84  76
+ 84  76
+ 97  76 106  83 106 100
+106 116  97 124  82 124
+ 35 124
+END_HOLE
+ 17 140
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     S        83        128     8    -4   119   142
+BEGIN_REGION                               
+115  99
+115 128  91 142  63 142
+ 29 142  13 125  13 101
+ 13  81  24  74  36  69
+ 81  57
+ 96  52 101  45 101  36
+101  23  93  12  65  12
+ 37  12  26  28  26  44
+  8  44
+  8  17  26  -4  65  -4
+101  -4 119  15 119  38
+119  57 105  69  91  73
+ 46  85
+ 33  91  31  94  31 104
+ 31 119  45 127  62 127
+ 85 127  97 115  97  99
+115  99
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     T        84        118     3     0   113   140
+BEGIN_REGION                               
+  3 140
+113 140
+113 124
+ 67 124
+ 67   0
+ 49   0
+ 49 124
+  3 124
+  3 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     U        85        139    16    -4   122   140
+BEGIN_REGION                               
+ 16 140
+ 34 140
+ 34  38
+ 34  23  47  12  69  12
+ 95  12 104  25 104  38
+104 140
+122 140
+122  38
+122  17 105  -4  69  -4
+ 41  -4  16  12  16  38
+ 16  38
+ 16 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     V        86        128     5     0   127   140
+BEGIN_REGION                               
+  5 140
+ 24 140
+ 66  21
+108 140
+127 140
+ 76   0
+ 56   0
+  5 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     W        87        182     4     0   178   140
+BEGIN_REGION                               
+  4 140
+ 23 140
+ 49  26
+ 81 140
+100 140
+133  26
+159 140
+178 140
+143   0
+123   0
+ 91 115
+ 59   0
+ 39   0
+  4 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     X        88        128     9     0   119   140
+BEGIN_REGION                               
+  9 140
+ 28 140
+ 64  85
+100 140
+119 140
+ 74  71
+119   0
+100   0
+ 64  58
+ 28   0
+  9   0
+ 54  71
+  9 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     Y        89        128     4     0   125   140
+BEGIN_REGION                               
+  4 140
+ 24 140
+ 65  72
+105 140
+125 140
+ 74  54
+ 74   0
+ 56   0
+ 56  54
+  4 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     Z        90        117     6     0   111   140
+BEGIN_REGION                               
+ 10 140
+111 140
+111 124
+ 28  16
+111  16
+111   0
+  6   0
+  6  16
+ 89 124
+ 10 124
+ 10 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     [        91         53    11   -41    47   140
+BEGIN_REGION                               
+ 11 140
+ 47 140
+ 47 126
+ 28 126
+ 28 -27
+ 47 -27
+ 47 -41
+ 11 -41
+ 11 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     \        92         53    -2    -4    54   140
+BEGIN_REGION                               
+ -2 140
+  9 140
+ 54  -4
+ 43  -4
+ -2 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     ]        93         53     4   -41    40   140
+BEGIN_REGION                               
+  4 140
+ 40 140
+ 40 -41
+  4 -41
+  4 -27
+ 23 -27
+ 23 126
+  4 126
+  4 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     ^        94         90     7    63    81   136
+BEGIN_REGION                               
+ 37 136
+ 51 136
+ 81  63
+ 68  63
+ 44 121
+ 20  63
+  7  63
+ 37 136
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     _        95        107    -4   -34   111   -25
+BEGIN_REGION                               
+ -4 -25
+111 -25
+111 -34
+ -4 -34
+ -4 -25
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     `        96         43    12    91    30   136
+BEGIN_REGION                               
+ 20 112
+ 30 112
+ 30  91
+ 12  91
+ 12 114
+ 12 126  20 136  30 136
+ 30 129
+ 22 128  20 121  20 112
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     a        97        107     9    -4   102   104
+BEGIN_REGION                               
+ 12  71
+ 12  87  23 104  52 104
+ 66 104  90  99  90  79
+ 90  15
+ 90  10  98   7 102   9
+102  -3
+ 99  -4  98  -4  92  -4
+ 79  -4  78  -2  74   9
+ 61  -1  56  -4  41  -4
+ 16  -4   9  10   9  24
+BEGIN_HOLE                              
+ 24  24
+ 24  16  32   9  45   9
+ 64  10  74  22  74  30
+ 74  50
+ 62  45  60  46  42  43
+ 26  39  24  32  24  24
+END_HOLE                                
+  9  46  18  51  35  55
+ 61  59
+ 71  61  74  64  74  67
+ 74  76
+ 74  80  68  89  52  89
+ 35  89  28  79  28  71
+ 12  71
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     b        98        107    10    -5   100   140
+BEGIN_REGION                               
+ 10 140
+ 26 140
+ 26  87
+ 36 103  53 104  57 104
+ 77 104 100  91 100  51
+100  19  86  -5  55  -5
+ 47  -5  34  -2  26  12
+ 26   0
+ 10   0
+ 10  48
+BEGIN_HOLE                              
+ 26  48
+ 26  27  40  10  55  10
+ 74  10  84  32  84  50
+ 84  77  65  89  55  89
+ 39  89  26  71  26  48
+END_HOLE                                
+ 10 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     c        99         96     5    -5    91   104
+BEGIN_REGION                               
+ 90  67
+ 74  67
+ 73  78  65  89  50  89
+ 32  89  22  72  22  48
+ 22  24  33  10  51  10
+ 68  10  75  25  75  35
+ 91  35
+ 91  14  77  -5  49  -5
+ 17  -5   5  23   5  51
+  6  91  34 104  50 104
+ 69 104  87  94  90  67
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     d       100        107     4    -5    94   140
+BEGIN_REGION                               
+ 78 140
+ 94 140
+ 94   0
+ 80   0
+ 80  13
+ 73   3  65  -5  47  -5
+ 13  -5   4  29   4  50
+BEGIN_HOLE                              
+ 21  50
+ 21  29  33  10  50  10
+ 65  10  78  25  78  50
+ 77  75  64  89  50  89
+ 37  89  21  73  21  50
+END_HOLE                                
+  4  90  31 104  48 104
+ 56 104  70 100  78  88
+ 78 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     e       101        107     7    -5    98   104
+BEGIN_REGION                               
+ 96  31
+ 91   5  73  -5  52  -5
+ 23  -4   7  17   7  48
+  7  94  37 104  54 104
+BEGIN_HOLE                              
+ 53  89
+ 42  89  25  80  23  58
+ 82  58
+ 82  81  63  89  53  89
+END_HOLE                                
+ 72 104  98  94  98  45
+ 23  45
+ 23  32  30  10  54  10
+ 66  10  75  18  80  31
+ 96  31
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     f       102         53     2     0    49   139
+BEGIN_REGION                               
+ 32 118
+ 32 101
+ 49 101
+ 49  88
+ 32  88
+ 32   0
+ 16   0
+ 16  88
+  2  88
+  2 101
+ 16 101
+ 16 120
+ 16 135  35 144  49 139
+ 49 126
+ 42 128  32 125  32 118
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     g       103        107     5   -42    94   104
+BEGIN_REGION                               
+ 79 101
+ 94 101
+ 94   7
+ 94 -15  88 -42  49 -42
+ 24 -42   9 -30   9 -12
+ 25 -12
+ 27 -27  41 -29  49 -29
+ 66 -29  77 -21  77   1
+ 77  13
+ 68   0  59  -5  46  -5
+ 17  -5   5  26   5  49
+BEGIN_HOLE                              
+ 22  49
+ 22  29  34  10  49  10
+ 68  10  77  31  77  50
+ 77  76  60  89  49  89
+ 39  89  22  76  22  49
+END_HOLE                                
+  6  93  34 104  49 104
+ 59 104  70  98  79  86
+ 79 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     h       104        107    13     0    92   140
+BEGIN_REGION                               
+ 13 140
+ 29 140
+ 29  87
+ 29  87
+ 42 103  54 104  61 104
+ 77 104  92  92  92  79
+ 92   0
+ 76   0
+ 76  73
+ 76  79  69  89  55  89
+ 40  89  29  74  29  59
+ 29   0
+ 13   0
+ 13 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     i       105         43    12     0    28   140
+BEGIN_REGION                               
+ 12 140
+ 28 140
+ 28 120
+ 12 120
+ 12 140
+END_REGION                                 
+BEGIN_REGION                               
+ 12 101
+ 28 101
+ 28   0
+ 12   0
+ 12 101
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     j       106         43    -4   -42    29   140
+BEGIN_REGION                               
+ 13 140
+ 29 140
+ 29 120
+ 13 120
+ 13 140
+END_REGION                                 
+BEGIN_REGION                               
+ 13 101
+ 29 101
+ 29 -25
+ 29 -31  22 -42   6 -42
+ -4 -42
+ -4 -29
+  4 -29
+  7 -29  13 -24  13 -19
+ 13 101
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     k       107         96    11     0    96   140
+BEGIN_REGION                               
+ 11 140
+ 27 140
+ 27  58
+ 70 101
+ 91 101
+ 55  66
+ 96   0
+ 76   0
+ 42  54
+ 27  39
+ 27   0
+ 11   0
+ 11 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     l       108         43    13     0    29   140
+BEGIN_REGION                               
+ 13 140
+ 29 140
+ 29   0
+ 13   0
+ 13 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     m       109        160    14     0   146   104
+BEGIN_REGION                               
+ 14 101
+ 28 101
+ 28  86
+ 39 100  47 104  59 104
+ 69 103  77 102  86  88
+ 97 101 106 104 117 104
+130 104 146  96 146  78
+146   0
+130   0
+130  72
+130  82 120  90 112  90
+101  90  88  79  88  66
+ 88   0
+ 72   0
+ 72  72
+ 72  82  62  90  53  90
+ 44  90  30  80  30  66
+ 30   0
+ 14   0
+ 14 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     n       110        107    13     0    93   104
+BEGIN_REGION                               
+ 13 101
+ 28 101
+ 28  85
+ 39 100  51 104  61 104
+ 76 104  93  94  93  79
+ 93   0
+ 77   0
+ 77  72
+ 77  84  65  89  56  89
+ 43  89  29  77  29  58
+ 29  58
+ 29   0
+ 13   0
+ 13 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     o       111        107     6    -5    98   104
+BEGIN_REGION
+ 52 104
+ 77 104  98  79  98  49
+ 98  19  77  -5  52  -5
+ 27  -5   6  19   6  49
+BEGIN_HOLE
+ 23  49
+ 23  28  34  10  52  10
+ 70  10  81  28  81  49
+ 81  70  70  89  52  89
+ 34  89  23  70  23  49
+END_HOLE
+  6  79  27 104  52 104
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     p       112        107    10   -42   100   104
+BEGIN_REGION                               
+ 10 101
+ 25 101
+ 25  86
+ 36 101  49 104  57 104
+ 71 104 100  95 100  49
+100   9  77  -5  57  -5
+ 45  -5  36  -2  26  10
+ 26 -42
+ 10 -42
+ 10  50
+BEGIN_HOLE                              
+ 26  50
+ 26  27  40  10  55  10
+ 67  10  83  21  83  50
+ 83  78  65  89  55  89
+ 41  89  26  73  26  50
+END_HOLE                                
+ 10 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     q       113        107     4   -42    95   104
+BEGIN_REGION                               
+ 80 101
+ 95 101
+ 95 -42
+ 78 -42
+ 78  11
+ 69  -2  59  -5  47  -5
+ 16  -5   4  23   4  49
+BEGIN_HOLE                              
+ 21  49
+ 21  31  32  10  50  10
+ 68  10  78  29  78  49
+ 78  75  62  89  50  89
+ 37  89  21  74  21  49
+END_HOLE                                
+  4  76  20 104  48 104
+ 57 104  69 100  80  87
+ 80 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     r       114         64    13     0    61   102
+BEGIN_REGION                               
+ 13 101
+ 27 101
+ 27  82
+ 44 107  55 105  61 102
+ 61  87
+ 38  86  29  75  29  56
+ 29   0
+ 13   0
+ 13 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     s       115         96     6    -5    88   104
+BEGIN_REGION                               
+ 67  73
+ 84  73
+ 83  97  62 104  47 104
+ 28 104   8  93   8  72
+  8  59  15  51  31  46
+ 56  40
+ 65  38  71  34  71  26
+ 71  17  63  10  47  10
+ 28  10  25  18  23  30
+  6  30
+  8  10  15  -5  47  -5
+ 67  -5  88   6  88  28
+ 88  43  77  51  57  56
+ 38  60
+ 26  64  25  69  25  74
+ 25  84  35  89  47  89
+ 61  89  66  82  67  73
+ 84  73
+END_REGION
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     t       116         54     2    -5    48   128
+BEGIN_REGION                               
+ 16 128
+ 32 128
+ 32 101
+ 48 101
+ 48  88
+ 32  88
+ 32  16
+ 32   7  42   9  48  10
+ 48  -3
+ 45  -4  40  -5  34  -5
+ 24  -4  16   0  16   9
+ 16  88
+  2  88
+  2 101
+ 16 101
+ 16 128
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     u       117        107    13    -5    93   101
+BEGIN_REGION                               
+ 13 101
+ 29 101
+ 29  26
+ 29  19  36  10  50  10
+ 69  10  77  28  77  39
+ 77 101
+ 93 101
+ 93  -1
+ 78  -1
+ 78  13
+ 70   2  61  -5  45  -5
+ 25  -5  13   8  13  20
+ 13 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     v       118         96     2     0    94   101
+BEGIN_REGION                               
+  2 101
+ 21 101
+ 48  21
+ 75 101
+ 94 101
+ 58   0
+ 38   0
+  2 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     w       119        138     1     0   135   101
+BEGIN_REGION                               
+  1 101
+ 19 101
+ 39  24
+ 59 101
+ 77 101
+ 97  24
+117 101
+135 101
+106   0
+ 88   0
+ 67  76
+ 48   0
+ 30   0
+  1 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     x       120         96     3     0    91   101
+BEGIN_REGION                               
+  3 101
+ 21 101
+ 47  64
+ 73 101
+ 91 101
+ 56  51
+ 91   0
+ 73   0
+ 47  38
+ 21   0
+  3   0
+ 38  51
+  3 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     y       121         96     3   -42    92   101
+BEGIN_REGION                               
+  3 101
+ 21 101
+ 46  23
+ 74 101
+ 92 101
+ 45 -26
+ 36 -42  28 -42  19 -42
+ 16 -42  15 -42  10 -40
+ 10 -26
+ 18 -28  27 -29  31 -18
+ 37  -1
+  3 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     z       122         96     5     0    87   101
+BEGIN_REGION                               
+  9 101
+ 84 101
+ 84  86
+ 24  14
+ 87  14
+ 87   0
+  5   0
+  5  15
+ 65  87
+  9  87
+  9 101
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     {       123         64     7   -41    52   140
+BEGIN_REGION                               
+ 52 140
+ 52 128
+ 47 128
+ 42 128  37 123  37 117
+ 37  73
+ 37  64  34  53  22  50
+ 33  44  37  33  37  24
+ 37 -19
+ 37 -25  41 -29  46 -29
+ 52 -29
+ 52 -41
+ 41 -41
+ 31 -41  22 -31  22 -19
+ 22  23
+ 22  34  18  40   7  43
+  7  56
+ 18  58  22  64  22  76
+ 22  76
+ 22 118
+ 22 129  31 140  42 140
+ 52 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     |       124         50    19   -41    31   140
+BEGIN_REGION                               
+ 19 140
+ 31 140
+ 31 -41
+ 19 -41
+ 19 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     }       125         64     5   -41    50   140
+BEGIN_REGION                               
+  5 140
+ 16 140
+ 23 140  35 134  35 118
+ 35  77
+ 35  66  39  57  50  56
+ 50  43
+ 37  39  35  31  35  21
+ 35 -20
+ 35 -29  28 -41  17 -41
+  5 -41
+  5 -29
+ 12 -29
+ 17 -29  20 -26  20 -20
+ 20  23
+ 20  34  26  45  35  49
+ 25  55  20  64  20  75
+ 20 118
+ 20 125  14 128  10 128
+  5 128
+  5 140
+END_REGION                                 
+END_CHAR
+BEGIN_CHAR
+/*   ASCII   NUM(DEC)   WIDTH   LLX   LLY   URX   URY
+/*     ~       126        112    14    51    97    85
+BEGIN_REGION                               
+ 87  80
+ 97  80
+ 97  74
+ 97  67  94  50  77  51
+ 72  51  67  52  61  56
+ 61  56
+ 41  70
+ 34  74  26  75  24  56
+ 14  56
+ 14  73  24  85  34  85
+ 38  85  42  84  46  81
+ 69  66
+ 82  60  87  64  87  80
+END_REGION                                 
+END_CHAR
