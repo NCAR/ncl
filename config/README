@@ -75,6 +75,7 @@ LdRelCommand	LdCommand		$(LD_REL)
 ArCommand	ar			$(AR) = ArCommand ArRegOpt
 ArRegOpt	vru
 ArQuickOpt	q			$(AR_QUICK) = ArCommand ArQuickOpt
+ArSrcCommand	ar			$(AR_SRC_QUICK) = ArSrcCommand ArQuickOpt
 RmCommand	rm -f			$(RM)
 CatCommand	cat			$(CAT)
 CopyCommand	cp			$(CP)
