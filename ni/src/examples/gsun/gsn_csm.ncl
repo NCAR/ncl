@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.173 2004-08-28 18:19:08 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.174 2004-10-15 19:51:34 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8379,19 +8379,62 @@ begin
         end if
       end if                            ; Check if gsnYRefLine set.
 ;
-; Determine color of Y reference line.
+; Determine color of Y reference line(s).
 ;
       if(isatt(res2,"gsnYRefLineColor"))
         yref_line_color = res2@gsnYRefLineColor
         if(.not.(dimsizes(yref_line_color).eq.nyref.or.\
                  dimsizes(yref_line_color).eq.1))
-          print("gsn_csm_xy: Fatal: you must specify either one Y reference line color")
+          print("gsn_csm_xy: Warning: you must specify either one Y reference line color")
           print("or the same number of colors as there are reference lines.")
-          return
+          print("Will use the foreground color.") 
+          yref_line_color = "foreground"
         end if
         delete(res2@gsnYRefLineColor)
       else
         yref_line_color = "foreground"  ; defaults to foreground color.
+      end if
+;
+; Determine dash pattern of Y reference line(s).
+;
+      if(isatt(res2,"gsnYRefLineDashPattern"))
+        yref_line_pattern = res2@gsnYRefLineDashPattern(0)
+        delete(res2@gsnYRefLineDashPattern)
+      else
+        if(isatt(res2,"gsnYRefLineDashPatterns"))
+          yref_line_pattern = res2@gsnYRefLineDashPatterns
+          delete(res2@gsnYRefLineDashPatterns)
+          if(.not.(dimsizes(yref_line_pattern).eq.nyref.or.\
+                   dimsizes(yref_line_pattern).eq.1))
+            print("gsn_csm_xy: Warning: you must specify either one Y reference line dash pattern")
+            print("or the same number of dash patterns as there are reference lines.")
+            print("Will use a solid line.") 
+            yref_line_pattern = 0  ; defaults to solid
+          end if
+        else
+          yref_line_pattern = 0  ; defaults to solid
+        end if
+      end if
+;
+; Determine thickness of Y reference line(s).
+;
+      if(isatt(res2,"gsnYRefLineThicknessF"))
+        yref_line_thickness = res2@gsnYRefLineThicknessF(0)
+        delete(res2@gsnYRefLineThicknessF)
+      else
+        if(isatt(res2,"gsnYRefLineThicknesses"))
+          yref_line_thickness = res2@gsnYRefLineThicknesses
+          delete(res2@gsnYRefLineThicknesses)
+          if(.not.(dimsizes(yref_line_thickness).eq.nyref.or.\
+                   dimsizes(yref_line_thickness).eq.1))
+            print("gsn_csm_xy: Warning: you must specify either one Y reference line thickness")
+            print("or the same number of line thicknesses as there are reference lines.")
+            print("Will use a thickness of 1.") 
+            yref_line_thickness = 1.0
+          end if
+        else
+          yref_line_thickness = 1.0
+        end if
       end if
 ;
 ; Check if we want a bar chart.
@@ -8426,7 +8469,9 @@ begin
         xref_line    = get_res_value(res2,"gsnXRefLine",0.)
         nxref        = dimsizes(xref_line)
 
-        xref_line_color = get_res_value(res2,"gsnXRefLineColor","foreground")
+        xref_line_color     = get_res_value(res2,"gsnXRefLineColor","foreground")
+        xref_line_pattern   = get_res_value(res2,"gsnXRefLineDashPattern",0)
+        xref_line_thickness = get_res_value(res2,"gsnXRefLineThicknessF",1.)
       end if
 
 ; Check for existence of the left, center, and right subtitles.
@@ -9003,7 +9048,9 @@ begin
 
       yline = (/ymin,ymax/)
 
-      gsres@gsLineColor = xref_line_color(0)
+      gsres@gsLineColor       = xref_line_color(0)
+      gsres@gsLineDashPattern = xref_line_pattern(0)
+      gsres@gsLineThicknessF  = xref_line_thickness(0)
 
       do i=0,nxref-1
         if(dimsizes(xref_line_color).gt.1)
@@ -9030,11 +9077,19 @@ begin
 
       xline = (/xmin,xmax/)
 
-      gsres@gsLineColor = yref_line_color(0)
+      gsres@gsLineColor       = yref_line_color(0)
+      gsres@gsLineDashPattern = yref_line_pattern(0)
+      gsres@gsLineThicknessF  = yref_line_thickness(0)
 
       do i=0,nyref-1
         if(dimsizes(yref_line_color).gt.1)
           gsres@gsLineColor = yref_line_color(i)
+        end if
+        if(dimsizes(yref_line_pattern).gt.1)
+          gsres@gsLineDashPattern = yref_line_pattern(i)
+        end if
+        if(dimsizes(yref_line_thickness).gt.1)
+          gsres@gsLineThicknessF = yref_line_thickness(i)
         end if
         yline = fspan(tofloat(yref_line(i)),tofloat(yref_line(i)),2)
         var_string = unique_string("ypolyline"+i)
