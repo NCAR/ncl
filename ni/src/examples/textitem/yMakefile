@@ -1,22 +1,22 @@
 #
-#   $Id: yMakefile,v 1.1 1995-01-24 23:28:33 haley Exp $
+#   $Id: yMakefile,v 1.2 1995-01-26 16:43:36 haley Exp $
 #
 #   Makefile for HLU TextItem examples
 #
 
-NCGMS   =   ti01c.ncgm ti01f.ncgm
+NCGMS   =   tx01c.ncgm tx01f.ncgm
 
 PROG_LIBS   =   $(HLULIBS) $(CNCARGLIBS) $(NCARGLIBS)
 EXTRA_LIBS  =   $(XMOTIFCLIENTLIBS)
 SYS_LIBS    =   $(CTOFLIBS) -lm
 
-SRCS        = ti01c.c ti01f.f
+SRCS        = tx01c.c tx01f.f
 EXFILES     = $(SRCS)
 
 InstallTarget($(EXFILES),$(INSTALL_LIB),$(HLUEXROOT))
 
-HLUCExampleTarget(ti01c,ti01c.o)
-HLUFExampleTarget(ti01f,ti01f.o)
+HLUCExampleTarget(tx01c,tx01c.o)
+HLUFExampleTarget(tx01f,tx01f.o)
 
 CleanFilesTarget($(NCGMS))
 DependTarget($(SRCS))
