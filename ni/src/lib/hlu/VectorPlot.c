@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.1 1995-11-21 20:19:07 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.2 1995-11-30 02:33:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -259,10 +259,12 @@ static NhlResource resources[] = {
 		 NhlTString,sizeof(NhlString),
 		 Oset(refvec_anno.string2),NhlTImmediate,_NhlUSET(NULL),0,
 		 (NhlFreeFunc)NhlFree},
+#if 0
 	{NhlNvcRefAnnoFormat,NhlCvcRefAnnoFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(refvec_anno.format.fstring),NhlTImmediate,
 		 _NhlUSET(NhlvcDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
+#endif
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(refvec_anno.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -278,7 +280,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNvcRefAnnoFontColor,NhlCvcRefAnnoFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(refvec_anno.color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNvcRefAnnoFontAspectF,NhlCvcRefAnnoFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(refvec_anno.aspect),
 		 NhlTString, _NhlUSET("1.3125"),0,NULL},
@@ -378,10 +380,12 @@ static NhlResource resources[] = {
 		 NhlTString,sizeof(NhlString),
 		 Oset(minvec_anno.string2),NhlTImmediate,_NhlUSET(NULL),0,
 		 (NhlFreeFunc)NhlFree},
+#if 0
 	{NhlNvcMinAnnoFormat,NhlCvcMinAnnoFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(minvec_anno.format.fstring),NhlTImmediate,
 		 _NhlUSET(NhlvcDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
+#endif
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(minvec_anno.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -397,7 +401,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNvcMinAnnoFontColor,NhlCvcMinAnnoFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(minvec_anno.color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNvcMinAnnoFontAspectF,NhlCvcMinAnnoFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(minvec_anno.aspect),
 		 NhlTString, _NhlUSET("1.3125"),0,NULL},
@@ -468,10 +472,12 @@ static NhlResource resources[] = {
 	{NhlNvcZeroFLabelString,NhlCvcZeroFLabelString,
 		 NhlTString,sizeof(NhlString),Oset(zerof_lbl.string1),
 		 NhlTImmediate,_NhlUSET(NULL),0,(NhlFreeFunc)NhlFree},
+#if 0
 	{NhlNvcZeroFLabelFormat,NhlCvcZeroFLabelFormat,
 		 NhlTString,sizeof(NhlString),
 		 Oset(zerof_lbl.format.fstring),NhlTImmediate,
 		 _NhlUSET(NhlvcDEF_FORMAT),0,(NhlFreeFunc)NhlFree},
+#endif
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(zerof_lbl.height_set),
 		 NhlTImmediate,_NhlUSET((NhlPointer)True),0,NULL},
@@ -487,7 +493,7 @@ static NhlResource resources[] = {
 		 NhlTImmediate,_NhlUSET((NhlPointer) 0),0,NULL},
 	{NhlNvcZeroFLabelFontColor,NhlCvcZeroFLabelFontColor,NhlTColorIndex,
 		 sizeof(NhlColorIndex),Oset(zerof_lbl.color),
-		 NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
+		 NhlTImmediate,_NhlUSET((NhlPointer) NhlFOREGROUND),0,NULL},
 	{NhlNvcZeroFLabelFontAspectF,NhlCvcZeroFLabelFontAspectF,NhlTFloat, 
 		 sizeof(float),Oset(zerof_lbl.aspect),
 		 NhlTString, _NhlUSET("1.3125"),0,NULL},
@@ -1317,6 +1323,10 @@ static NrmQuark	Qminvec_anno_format = NrmNULLQUARK;
 static NrmQuark	Qno_data_label_string = NrmNULLQUARK; 
 static NrmQuark	Qzerof_label_string = NrmNULLQUARK; 
 static NrmQuark	Qlb_label_strings = NrmNULLQUARK;
+static NrmQuark	Qref_magnitude = NrmNULLQUARK;
+static NrmQuark	Qmin_magnitude = NrmNULLQUARK;
+static NrmQuark	Qmax_magnitude = NrmNULLQUARK;
+static NrmQuark	Qmin_frac_len = NrmNULLQUARK;
 
 static char *InitName = "VectorPlotInitialize";
 static char *SetValuesName = "VectorPlotSetValues";
@@ -1514,6 +1524,10 @@ VectorPlotClassInitialize
 	Qzerof_label_string = NrmStringToQuark(NhlNvcZeroFLabelString);
 	Qno_data_label_string = NrmStringToQuark(NhlNvcNoDataLabelString);
 	Qlb_label_strings = NrmStringToQuark(NhlNlbLabelStrings);
+	Qref_magnitude = NrmStringToQuark(NhlNvcRefMagnitudeF);
+	Qmin_magnitude = NrmStringToQuark(NhlNvcMinMagnitudeF);
+	Qmax_magnitude = NrmStringToQuark(NhlNvcMaxMagnitudeF);
+	Qmin_frac_len = NrmStringToQuark(NhlNvcMinFractionalLenF);
 
 	{
 		int i,j;
@@ -1741,7 +1755,37 @@ VectorPlotInitialize
 	vcp->ovfp = NULL;
 	vcp->sfp = NULL;
 	vcp->osfp = NULL;
-
+/*
+ * Constrain resources
+ */
+	if (vcp->min_frac_len < 0.0 || vcp->min_frac_len > 1.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcMinFractionalLenF);
+		vcp->min_frac_len = MIN(1.0,MAX(0.0,vcp->min_frac_len));
+	}
+	if (vcp->ref_length < 0.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcRefLengthF);
+		vcp->ref_length = 0.0;
+	}
+	if (vcp->min_magnitude < 0.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcMinMagnitudeF);
+		vcp->min_magnitude = 0.0;
+	}
+	if (vcp->max_magnitude < 0.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcMaxMagnitudeF);
+		vcp->max_magnitude = 0.0;
+	}
 /*
  * Set up the data
  */
@@ -1750,7 +1794,7 @@ VectorPlotInitialize
 	if ((ret = MIN(ret,subret)) < NhlWARNING) {
 		e_text = "%s: error setting view dependent resources";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
-		return(ret);
+		return(NhlFATAL);
 	}
 	subret = ManageScalarData(vcnew,(NhlVectorPlotLayer) req,
 				  True,args,num_args);
@@ -1953,6 +1997,37 @@ static NhlErrorTypes VectorPlotSetValues
 	if (_NhlArgIsSet(args,num_args,NhlNvcMaxLevelValF))
 		vcp->max_level_set = True;
 
+/*
+ * Constrain resources
+ */
+	if (vcp->min_frac_len < 0.0 || vcp->min_frac_len > 1.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcMinFractionalLenF);
+		vcp->min_frac_len = MIN(1.0,MAX(0.0,vcp->min_frac_len));
+	}
+	if (vcp->ref_length < 0.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcRefLengthF);
+		vcp->ref_length = 0.0;
+	}
+	if (vcp->min_magnitude < 0.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcMinMagnitudeF);
+		vcp->min_magnitude = 0.0;
+	}
+	if (vcp->max_magnitude < 0.0) {
+		ret = MIN(ret,NhlWARNING);
+		e_text = "%s: %s out of bounds: constraining";
+		NhlPError(ret,NhlEUNKNOWN,
+			  e_text,entry_name, NhlNvcMaxMagnitudeF);
+		vcp->max_magnitude = 0.0;
+	}
 
 /* Manage the data */
 
@@ -2127,7 +2202,7 @@ static NhlErrorTypes    VectorPlotGetValues
 		if (args[i].quark == Qmax_magnitude_format){
 			ts = vcp->mag_scale.format.fstring;
 		}
-		if (args[i].quark == Qmax_svalue_format){
+		else if (args[i].quark == Qmax_svalue_format){
 			ts = vcp->svalue_scale.format.fstring;
 		}
 		else if(args[i].quark == Qrefvec_anno_string1){
@@ -2136,17 +2211,11 @@ static NhlErrorTypes    VectorPlotGetValues
 		else if(args[i].quark == Qrefvec_anno_string2){
 			ts = vcp->refvec_anno.string2;
 		}
-		else if(args[i].quark == Qrefvec_anno_format){
-			ts = vcp->refvec_anno.format.fstring;
-		}
 		else if(args[i].quark == Qminvec_anno_string1){
 			ts = vcp->minvec_anno.string1;
 		}
 		else if(args[i].quark == Qminvec_anno_string2){
 			ts = vcp->minvec_anno.string2;
-		}
-		else if(args[i].quark == Qminvec_anno_format){
-			ts = vcp->minvec_anno.format.fstring;
 		}
 		else if(args[i].quark == Qno_data_label_string){
 			ts = vcp->zerof_lbl.string2;
@@ -2154,6 +2223,14 @@ static NhlErrorTypes    VectorPlotGetValues
 		else if(args[i].quark == Qzerof_label_string){
 			ts = vcp->zerof_lbl.string1;
 		}
+#if 0
+		else if(args[i].quark == Qminvec_anno_format){
+			ts = vcp->minvec_anno.format.fstring;
+		}
+		else if(args[i].quark == Qrefvec_anno_format){
+			ts = vcp->refvec_anno.format.fstring;
+		}
+#endif
                 if (ts != NULL) {
 			*((NhlString*)(args[i].value.ptrval)) =
 				NhlMalloc(strlen(ts)+1);
@@ -2172,6 +2249,18 @@ static NhlErrorTypes    VectorPlotGetValues
 				NhlVAGetValues(vcp->overlay_object->base.id,
 					       NhlNlbLabelStrings,&ga,NULL);
                         *((NhlGenArray *)(args[i].value.ptrval)) = ga;
+		}
+		else if (args[i].quark == Qref_magnitude) {
+			if (vcp->ref_magnitude == 0.0)
+				*((float *)args[i].value.ptrval) = vcp->zmax;
+		}
+		else if (args[i].quark == Qmin_magnitude) {
+			if (vcp->min_magnitude == 0.0)
+				*((float *)args[i].value.ptrval) = vcp->zmin;
+		}
+		else if (args[i].quark == Qmax_magnitude) {
+			if (vcp->max_magnitude == 0.0)
+				*((float *)args[i].value.ptrval) = vcp->zmax;
 		}
         }
 
@@ -2472,8 +2561,6 @@ NhlLayer inst;
                 NhlFree(vcp->refvec_anno.text1);
 	if (vcp->refvec_anno.text2 != NULL)
                 NhlFree(vcp->refvec_anno.text2);
-	if (vcp->refvec_anno.format.fstring != NULL)
-                NhlFree(vcp->refvec_anno.format.fstring);
 
         if (vcp->minvec_anno.string1 != NULL)
                 NhlFree(vcp->minvec_anno.string1);
@@ -2483,8 +2570,6 @@ NhlLayer inst;
                 NhlFree(vcp->minvec_anno.text1);
 	if (vcp->minvec_anno.text2 != NULL)
                 NhlFree(vcp->minvec_anno.text2);
-	if (vcp->minvec_anno.format.fstring != NULL)
-                NhlFree(vcp->minvec_anno.format.fstring);
 
         if (vcp->zerof_lbl.string2 != NULL)
                 NhlFree(vcp->zerof_lbl.string2);
@@ -2494,8 +2579,14 @@ NhlLayer inst;
                 NhlFree(vcp->zerof_lbl.text1);
 	if (vcp->zerof_lbl.text2 != NULL)
                 NhlFree(vcp->zerof_lbl.text2);
+#if 0
+	if (vcp->refvec_anno.format.fstring != NULL)
+                NhlFree(vcp->refvec_anno.format.fstring);
+	if (vcp->minvec_anno.format.fstring != NULL)
+                NhlFree(vcp->minvec_anno.format.fstring);
 	if (vcp->zerof_lbl.format.fstring != NULL)
                 NhlFree(vcp->zerof_lbl.format.fstring);
+#endif
 
 
 	return(ret);
@@ -4042,7 +4133,7 @@ static NhlErrorTypes SetFormat
 		subret = SetFormatRec(&vcp->svalue_scale.format,
 				      NhlNvcScalarValueFormat,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
-
+#if 0
 		subret = SetFormatRec(&vcp->refvec_anno.format,
 				      NhlNvcRefAnnoFormat,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
@@ -4054,6 +4145,7 @@ static NhlErrorTypes SetFormat
 		subret = SetFormatRec(&vcp->zerof_lbl.format,
 				      NhlNvcZeroFLabelFormat,entry_name);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) return ret;
+#endif
 		
 		return ret;
 	}
@@ -4075,7 +4167,7 @@ static NhlErrorTypes SetFormat
 			NhlFree(ovcp->svalue_scale.format.fstring);
 		ovcp->svalue_scale.format.fstring = NULL;
 	}
-	
+#if 0	
 	if (vcp->refvec_anno.format.fstring != 
 	    ovcp->refvec_anno.format.fstring) {
 		subret = SetFormatRec(&vcp->refvec_anno.format,
@@ -4103,6 +4195,7 @@ static NhlErrorTypes SetFormat
 			NhlFree(ovcp->zerof_lbl.format.fstring);
 		ovcp->zerof_lbl.format.fstring = NULL;
 	}
+#endif
 	return ret;
 }
 
@@ -4153,9 +4246,11 @@ static NhlErrorTypes ManageLabels
 		vcp->refvec_anno.text1 = NULL;
 		vcp->refvec_anno.text2 = NULL;
 		vcp->refvec_anno.aap = &vcp->ref_attrs;
+		ovcp->refvec_anno.aap = &vcp->ref_attrs;
 		vcp->minvec_anno.text1 = NULL;
 		vcp->minvec_anno.text2 = NULL;
 		vcp->minvec_anno.aap = &vcp->min_attrs;
+		ovcp->minvec_anno.aap = &vcp->min_attrs;
 		vcp->zerof_lbl.text1 = NULL;
 		vcp->zerof_lbl.text2 = NULL;
 		vcp->zerof_lbl.aap = NULL;
@@ -4288,7 +4383,7 @@ static NhlErrorTypes ManageLabels
 	subret = ManageVecAnno(vcnew,vcold,init,
 			       &vcp->minvec_anno,&ovcp->minvec_anno,
 			       &vcp->minvec_anno_rec,
-			       &vcp->minvec_anno_rec,
+			       &ovcp->minvec_anno_rec,
 			       &vcp->minvec_anno_id,
 			       NhlvcDEF_MINVEC_STRING1,
 			       NhlvcDEF_MINVEC_STRING2,
@@ -4940,6 +5035,7 @@ static NhlErrorTypes PrepareAnnoString
 	NhlVectorPlotLayerPart	*ovcp,
 	NhlBoolean		init,
 	float			value,
+	float			old_value,
 	NhlString		*new_string,
 	NhlString		old_string,
 	NhlString		def_string,
@@ -4948,12 +5044,13 @@ static NhlErrorTypes PrepareAnnoString
 	NhlString		entry_name
 )
 #else 
-(vcp,ovcp,init,ilp,oilp,value,new_string,old_string,def_string,
+(vcp,ovcp,init,ilp,oilp,value,old_value,new_string,old_string,def_string,
  formatted_string,changed,entry_name)
 	NhlVectorPlotLayerPart	*vcp;
 	NhlVectorPlotLayerPart	*ovcp;
 	NhlBoolean		init;
 	float			value;
+	float			old_value;
 	NhlString		*new_string;
 	NhlString		old_string;
 	NhlString		def_string;
@@ -4970,13 +5067,12 @@ static NhlErrorTypes PrepareAnnoString
 	char			*matchp,*subst;
 	float			val;
 	NhlvcScaleInfo		*sip;
-	NhlFormatRec		*formp;
-	int			sig_digits,left_sig_digit;
 
 	*changed = False;
 
 	if (! vcp->data_changed && ! init && 
 	    (vcp->levels == ovcp->levels) &&
+	    (value == old_value) &&
 	    (*new_string == old_string)) {
 		return NhlNOERROR;
 	}
@@ -5145,6 +5241,7 @@ static NhlErrorTypes ManageVecAnno
 
 	subret = PrepareAnnoString(vcp,ovcp,init,
 				   ilp->aap->real_vec_mag,
+				   oilp->aap->real_vec_mag,
 				   &ilp->string1,oilp->string1,
 				   def_string1,&ilp->text1,
 				   &text_changed,entry_name);
@@ -5153,6 +5250,7 @@ static NhlErrorTypes ManageVecAnno
 
 	subret = PrepareAnnoString(vcp,ovcp,init,
 				   ilp->aap->real_vec_mag,
+				   oilp->aap->real_vec_mag,
 				   &ilp->string2,oilp->string2,
 				   def_string2,&ilp->text2,
 				   &text_changed,entry_name);

@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorField.c,v 1.1 1995-11-21 20:19:04 dbrown Exp $
+ *      $Id: VectorField.c,v 1.2 1995-11-30 02:33:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3285,55 +3285,61 @@ static NhlErrorTypes    VectorFieldGetValues
 		resQ = args[i].quark;
 		do_genarray = False;
                 if (resQ == Qd_arr) {
-			do_genarray = True;
-			ndim = 2;
-			dlen[0] = vfp->d_arr->len_dimensions[0];
-			dlen[1] = vfp->d_arr->len_dimensions[1];
-			if (vfp->copy_arrays) {
-				if ((data = CopyData(vfp->d_arr,resQ))
-				    == NULL)
-					return NhlFATAL;
+			if (vfp->d_arr != NULL) {
+				do_genarray = True;
+				ndim = 2;
+				dlen[0] = vfp->d_arr->len_dimensions[0];
+				dlen[1] = vfp->d_arr->len_dimensions[1];
+				if (vfp->copy_arrays) {
+					if ((data = CopyData(vfp->d_arr,resQ))
+					    == NULL)
+						return NhlFATAL;
+				}
+				else {
+					nocopy = True;
+					data = vfp->d_arr->data;
+				}
+				typeQ = vfp->d_arr->typeQ;
+				size = vfp->d_arr->size;
 			}
-			else {
-				nocopy = True;
-				data = vfp->d_arr->data;
-			}
-			typeQ = vfp->d_arr->typeQ;
-			size = vfp->d_arr->size;
                 }
                 if (resQ == Qu_arr) {
-			do_genarray = True;
-			ndim = 2;
-			dlen[0] = vfp->u_arr->len_dimensions[0];
-			dlen[1] = vfp->u_arr->len_dimensions[1];
-			if (vfp->copy_arrays) {
-				if ((data = CopyData(vfp->u_arr,resQ))
-				    == NULL)
-					return NhlFATAL;
+			if (vfp->u_arr != NULL) {
+				do_genarray = True;
+				ndim = 2;
+				dlen[0] = vfp->u_arr->len_dimensions[0];
+				dlen[1] = vfp->u_arr->len_dimensions[1];
+				if (vfp->copy_arrays) {
+					if ((data = CopyData(vfp->u_arr,resQ))
+					    == NULL)
+						return NhlFATAL;
+				}
+				else {
+					nocopy = True;
+					data = vfp->u_arr->data;
+				}
+				typeQ = vfp->u_arr->typeQ;
+				size = vfp->u_arr->size;
 			}
-			else {
-				nocopy = True;
-				data = vfp->u_arr->data;
-			}
-			typeQ = vfp->u_arr->typeQ;
-			size = vfp->u_arr->size;
                 }
                 if (resQ == Qv_arr) {
-			do_genarray = True;
-			ndim = 2;
-			dlen[0] = vfp->v_arr->len_dimensions[0];
-			dlen[1] = vfp->v_arr->len_dimensions[1];
-			if (vfp->copy_arrays) {
-				if ((data = CopyData(vfp->v_arr,resQ))
-				    == NULL)
-					return NhlFATAL;
+			if (vfp->v_arr != NULL) {
+				do_genarray = True;
+				ndim = 2;
+				dlen[0] = vfp->v_arr->len_dimensions[0];
+				dlen[1] = vfp->v_arr->len_dimensions[1];
+				if (vfp->copy_arrays) {
+					if ((data = CopyData(vfp->v_arr,resQ))
+					    == NULL)
+						return NhlFATAL;
+				}
+				else {
+					nocopy = True;
+					data = vfp->v_arr->data;
+				}
+				typeQ = vfp->v_arr->typeQ;
+				size = vfp->v_arr->size;
 			}
-			else {
-				nocopy = True;
-				data = vfp->v_arr->data;
-			}
-			typeQ = vfp->v_arr->typeQ;
-			size = vfp->v_arr->size;
                 }
                 else if (resQ == Qx_arr) {
 			do_genarray = True;

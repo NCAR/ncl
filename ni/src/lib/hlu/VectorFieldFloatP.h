@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorFieldFloatP.h,v 1.1 1995-11-21 20:19:06 dbrown Exp $
+ *      $Id: VectorFieldFloatP.h,v 1.2 1995-11-30 02:33:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -72,6 +72,7 @@ typedef struct _NhlVectorFieldFloatLayerPart{
 	int		slow_len;
 	int		x_stride;
 	int		y_stride;
+	NhlBoolean	polar_data;
 
 } NhlVectorFieldFloatLayerPart;
 
