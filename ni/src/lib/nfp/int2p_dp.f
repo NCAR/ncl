@@ -60,14 +60,14 @@ c error check: enough points: pressures consistency?
 
       IF (NPIN.LT.2 .OR. NPOUT.LT.1) IER = IER + 1
 
-      IF (NPOUT.GT.1) THEN
-          IF ((PPIN(1).GT.PPIN(2).AND.PPOUT(1).LT.PPOUT(2)) .OR.
-     +        (PPIN(1).LT.PPIN(2).AND.PPOUT(1).GT.PPOUT(2))) THEN
-              IER = IER + 10
+C C C IF (NPOUT.GT.1) THEN
+C C C     IF ((PPIN(1).GT.PPIN(2).AND.PPOUT(1).LT.PPOUT(2)) .OR.
+C C C+        (PPIN(1).LT.PPIN(2).AND.PPOUT(1).GT.PPOUT(2))) THEN
+C C C         IER = IER + 10
 C              PRINT *,'INT2P: ppout is in different order than ppin'
 C              PRINT *,'       Must both be monotonic {in/de}creasing'
-          END IF
-      END IF
+C C C     END IF
+C C C END IF
 
       IF (IER.NE.0) THEN
 C          PRINT *,'INT2P: error exit: ier=',IER
@@ -153,7 +153,13 @@ c exact p-level matches
                   IF (POUT(NP).LT.P(NL) .AND. POUT(NP).GT.P(NL+1)) THEN
                       PA = DLOG(P(NL))
                       PB = DLOG(POUT(NP))
-                      PC = DLOG(P(NL+1))
+c special case: In case someome inadvertently enter p=0.
+                      if (p(nl+1).gt.0.d0) then
+                          PC = DLOG(P(NL+1))
+                      else
+                          PC = DLOG(1.d-4)
+                      end if
+
                       SLOPE = (X(NL)-X(NL+1))/ (PA-PC)
                       XOUT(NP) = X(NL+1) + SLOPE* (PB-PC)
                   END IF
