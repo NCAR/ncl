@@ -365,7 +365,7 @@ int child_id;
 	NclHLUChildList *tmp;
 	NclHLUObj chi = (NclHLUObj)_NclGetObj(child_id);
 
-	if(chi->obj.id != child_id) {
+	if(self->obj.id != child_id) {
 		tmp = self->hlu.c_list;
 		self->hlu.c_list = (NclHLUChildList*)NclMalloc((unsigned)sizeof(NclHLUChildList));
 		self->hlu.c_list->next = tmp;

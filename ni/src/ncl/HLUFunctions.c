@@ -1682,7 +1682,7 @@ NhlErrorTypes _NclIAddAnnotation
 		tmp_base_ptr = (NclHLUObj)_NclGetObj(*ncl_hlu_obj_ids);
 		if(tmp_base_ptr != NULL) {
 			for( i = 0; i < j; i++) {
-				if(tmp_hlu_ptr[i] != NULL ) { 
+				if((tmp_hlu_ptr[i] != NULL )&&(_NhlGetLayer(tmp_hlu_ptr[i]->hlu.hlu_id)!=NULL)) { 
 					tmp= NhlAddAnnotation(tmp_base_ptr->hlu.hlu_id,tmp_hlu_ptr[i]->hlu.hlu_id);
 
 					if(tmp > 0) {
@@ -1701,6 +1701,8 @@ NhlErrorTypes _NclIAddAnnotation
 					if(tmp<0) {
 						ret = NhlWARNING;
 					}
+				} else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlAddAnnotation: bad HLU id passed in, ignoring it");
 				}
 			}
 		} else {

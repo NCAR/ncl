@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInFuncs.c,v 1.78 1997-07-22 17:40:58 ethan Exp $
+ *      $Id: BuiltInFuncs.c,v 1.79 1997-08-11 23:21:25 ethan Exp $
  */
 /************************************************************************
 *									*
@@ -973,9 +973,13 @@ NhlErrorTypes _NclIAddToOverlay
 	default:
 		return(NhlFATAL);
 	}
-	NhlAddOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,-1);
-	_NclAddHLUToExpList(base_hl,over_hl->obj.id);
-	return(NhlNOERROR);
+	if((_NhlGetLayer(base_hl->hlu.hlu_id) != NULL)&&(_NhlGetLayer(over_hl->hlu.hlu_id)!= NULL)) {
+		NhlAddOverlay(base_hl->hlu.hlu_id,over_hl->hlu.hlu_id,-1);
+		_NclAddHLUToExpList(base_hl,over_hl->obj.id);
+		return(NhlNOERROR);
+	} else {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"overlay: bad HLU id passed in, ignoring");
+	}
 }
 NhlErrorTypes _NclIAddFile
 #if	NhlNeedProto

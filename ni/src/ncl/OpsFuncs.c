@@ -905,7 +905,7 @@ NclStackEntry _NclCreateHLUObjOp
 	NclMultiDValData parent;
 #endif
 {
-	int i,j;
+	int i,j,m;
 	NclStackEntry *data,*resname;
 	NclStackEntry data_out;
 	int rl_list;
@@ -1016,10 +1016,8 @@ NclStackEntry _NclCreateHLUObjOp
 				NhlTGenArray,
 				gen_array[i]);
 		} else {
-/*
-* Totally temporary code 6/21
-*/
 			ids = (int*)NclMalloc((unsigned)sizeof(int)*tmp_md->multidval.totalelements);
+			m = 0;
 			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
 				if(tmp_md->multidval.missing_value.has_missing) {
 					if(((int*)tmp_md->multidval.val)[j] != tmp_md->multidval.missing_value.value.objval) {
@@ -1031,9 +1029,10 @@ NclStackEntry _NclCreateHLUObjOp
 					tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
 				}
 				if(tmp_ho != NULL) {
-					ids[j] = tmp_ho->hlu.hlu_id;
+					ids[m++] = tmp_ho->hlu.hlu_id;
 				} else {
-					ids[j] = -1;
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"create: Bad HLU id passed to create, ignoring it");
+			
 				}
 			}
 			if(tmp_md->obj.obj_type_mask & NCL_HLU_MASK){
@@ -1042,7 +1041,7 @@ NclStackEntry _NclCreateHLUObjOp
 					NhlTInteger,
 					sizeof(int),
 					1,
-					&tmp_md->multidval.totalelements,
+					&m,
 					1);
 				NhlRLSet(rl_list,NrmQuarkToString(
 					*(string*)(tmp2_md->multidval.val)),
@@ -1246,7 +1245,7 @@ NclMultiDValData the_hlu_data_obj;
 int nres;
 #endif
 {
-	int i,j,k;
+	int i,j,k,m;
 	NclStackEntry *data,*resname;
 	int rl_list;
 	static int local_rl_list = 0;
@@ -1317,12 +1316,12 @@ int nres;
 				gen_array[i]);
 		} else {
 			ids = (int*)NclMalloc((unsigned)sizeof(int)*tmp_md->multidval.totalelements);
+			m = 0;
 			for(j = 0; j < tmp_md->multidval.totalelements;j++) {
-				ids[j] = -1;
 				if(tmp_md->obj.obj_type_mask & Ncl_MultiDValHLUObjData ) {
                                 	tmp_ho = (NclHLUObj)_NclGetObj(((int*)tmp_md->multidval.val)[j]);
 					if(tmp_ho != NULL) {
-                                		ids[j] = tmp_ho->hlu.hlu_id;
+                                		ids[m++] = tmp_ho->hlu.hlu_id;
 						obj_ids = (int*)the_hlu_data_obj->multidval.val;
 						for(k = 0; k < the_hlu_data_obj->multidval.totalelements; k++) {
 							if((!the_hlu_data_obj->multidval.missing_value.has_missing)||
@@ -1333,6 +1332,8 @@ int nres;
 								}
 							} 
 						}
+					} else {
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"setvalues: Bad HLU id passed to setvalues, ignoring it");
 					}
 					
 				}
@@ -1343,7 +1344,7 @@ int nres;
                                         NhlTInteger,
                                         sizeof(int),
                                         1,
-                                        &tmp_md->multidval.totalelements,
+                                        &m,
                                         1);
                                 NhlRLSet(rl_list,NrmQuarkToString(
                                         *(string*)(tmp2_md->multidval.val)),
