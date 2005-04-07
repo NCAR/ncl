@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.4 2005-02-08 19:27:32 kennison Exp $
+I $Id: CodeIftran,v 1.5 2005-04-07 21:40:13 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -1247,14 +1247,14 @@ C
      +                                  IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
           IF (ICFELL('MDPBLM',18).NE.0) RETURN
           DO (I=2,360)
-            CALL MAPITM (TLAT(I),TLON(I),1,
+            CALL MDPITM (TLAT(I),TLON(I),1,
      +                                  IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
             IF (ICFELL('MDPBLM',19).NE.0) RETURN
           END DO
-          CALL MAPITM (TLAT(361),TLON(361),2,
+          CALL MDPITM (TLAT(361),TLON(361),2,
      +                                  IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
           IF (ICFELL('MDPBLM',20).NE.0) RETURN
-          CALL MAPIQM (                 IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+          CALL MDPIQM (                 IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
           IF (ICFELL('MDPBLM',21).NE.0) RETURN
           GO TO 108
         ELSE IF (IPRF.EQ.20)
