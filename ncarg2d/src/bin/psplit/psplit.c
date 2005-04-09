@@ -1,5 +1,5 @@
 /*
- * $Id: psplit.c,v 1.4 2001-09-08 22:49:19 fred Exp $
+ * $Id: psplit.c,v 1.5 2005-04-09 00:13:26 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -51,40 +51,56 @@ void begin_picture_ps(FILE *, FILE *);
 void picture_body_ps(FILE *, FILE *, fpos_t *);
 void end_picture_ps(FILE *, FILE *, fpos_t *);
 
+int count_only=0;
+
 main(int argc, char *argv[])
 {
    FILE *input_file;
    enum file_type ft;
-   char *root_name;
+   char *root_name,*input_name;
 
 /*
  *  Check to see if an input file was specified.
  */
    if (argc < 2) {
-     printf("usage: psplit input_file [output_file_root]\n\n");
+     printf("\nusage: psplit input_file [output_file_root]\n");
      printf("  where \"input_file\" is the name of the input PostScript"
             " file and\n  \"output_file_root\" is an optional argument"
             " specifying the root\n  name for the output ps files.\n\n");
+     printf("or: psplit -c input_file\n"
+            "  where \"input_file\" is the name of an input PostScript"
+            " file for\n  which you only want the number of pages.\n\n");
      exit(1);
    }
      
 /*
- *  Open the input file for reading.
- */
-   input_file = fopen(argv[1],"r");
-   if (input_file == (FILE *) NULL) {
-      printf("Cannot open input file %s\n",argv[1]);
-      exit(2);
-   }
-
-/*
  *  Establish the root name for the output files.
  */
-   if (argc >= 3) {
+   if (!strcmp(argv[1],"-c")) {
+     if (argc < 3) {
+       printf("\n  Must specify an input file when using -c.\n\n");
+       exit(3);
+     }
+     input_name = argv[2];
+     count_only = 1;
+     root_name = argv[2];
+   }
+   else if (argc >= 3) {
+     input_name = argv[1];
      root_name = argv[2];
    }    
    else {
+     input_name = argv[1];
      root_name = "pict";
+   }
+
+/*
+ *  Open the input file for reading.
+ */
+   input_file = fopen(input_name,"r");
+   if (input_file == (FILE *) NULL) {
+      printf("Cannot open input file %s\n",input_name);
+      exit(2);
    }
 
 /*
@@ -156,6 +172,16 @@ void from_ncgm(FILE *ifile, char *rname)
     if (!strncmp(" h",line,2) || !strncmp("h ",line,2)) {
       pict_count++;
     }
+  }
+
+/*
+ *  Simply report the picture count and exit if requested.
+ */
+  if (count_only) {
+    printf("For PostScript file %s:\n"  
+           "  Number of pictures = %d\n", rname, pict_count);
+    fclose(ifile);
+    exit(4);
   }
 
 /*
@@ -571,6 +597,16 @@ void from_ps(FILE *ifile, char *rname)
       pict_count++;
     }
     line_count++;
+  }
+
+/*
+ *  Simply report the picture count and exit if requested.
+ */
+  if (count_only) {
+    printf("For PostScript file %s:\n"  
+           "  Number of pictures = %d\n", rname, pict_count);
+    fclose(ifile);
+    exit(4);
   }
 
 /*
