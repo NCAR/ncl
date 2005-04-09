@@ -1,14 +1,15 @@
 .\"
-.\"     $Id: psplit.m,v 1.6 2004-03-18 22:18:33 fred Exp $
+.\"     $Id: psplit.m,v 1.7 2005-04-09 00:13:54 fred Exp $
 .\"
 .TH psplit 1NCARG "August 2001" UNIX "NCAR GRAPHICS"
 .na
 .nh
 .SH NAME
 psplit - a tool for splitting PostScript files with multiple frames into 
-individual PostScript files
+individual PostScript files, or simply determining the number of pages
+in a file.
 .SH SYNOPSIS
-usage: psplit input_file [output_file_root]
+usage: psplit [-c] input_file [output_file_root]
 .SH DESCRIPTION 
 "psplit" takes a PostScript file as input (that may have
 multiple pictures) and splits it into individual PostScript
@@ -16,9 +17,11 @@ files having a single frame each.  If the original file has a
 %%BoundingBox comment in it, then that comment will be inserted
 into each output file and the output files will be EPS (encapsulated
 PostScript) conforming.  If the original file does not have a
-%%BoundingBox comment, then then output files will not have one
+%%BoundingBox comment, then the output files will not have one
 either.  In that case, if you want the output files to be EPS files,
-then use the "ps2epsi" utility that is based on GhostScript.
+use the "ps2epsi" utility that is based on GhostScript.
+If the -c option is present, then only the number of pages in
+input_file is reported.
 .sp
 "psplit" is primarily intended to be used with PostScript files
 that have been produced directly by NCAR Graphics, or produced from
