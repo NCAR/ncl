@@ -5,7 +5,7 @@
 extern void NGCALLF(dhyi2hyob,DHYI2HYOB)(double*,double*,double*,double*,
                                          int*,int*,int*,double*,double*,
                                          double*,int*,double*,double*,
-                                         double*);
+                                         double*,int*);
 
 NhlErrorTypes hyi2hyo_W( void )
 {
@@ -15,6 +15,7 @@ NhlErrorTypes hyi2hyo_W( void )
   void *p0, *hyai, *hybi, *ps, *xi, *hyao, *hybo;
   double *tmp_p0, *tmp_ps, *tmp_xi; 
   double *tmp_hyai, *tmp_hybi, *tmp_hyao, *tmp_hybo;
+  int *option;
   int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   int dsizes_hyao[1], dsizes_hybo[1], dsizes_hyai[1], dsizes_hybi[1];
@@ -45,7 +46,7 @@ NhlErrorTypes hyi2hyo_W( void )
  */
   p0 = (void*)NclGetArgValue(
           0,
-          7,
+          8,
           NULL,
           NULL,
           NULL,
@@ -55,7 +56,7 @@ NhlErrorTypes hyi2hyo_W( void )
 
   hyai = (void*)NclGetArgValue(
           1,
-          7,
+          8,
           NULL,
           dsizes_hyai,
           NULL,
@@ -65,7 +66,7 @@ NhlErrorTypes hyi2hyo_W( void )
 
   hybi = (void*)NclGetArgValue(
           2,
-          7,
+          8,
           NULL,
           dsizes_hybi,
           NULL,
@@ -75,7 +76,7 @@ NhlErrorTypes hyi2hyo_W( void )
 
   ps = (void*)NclGetArgValue(
           3,
-          7,
+          8,
           &ndims_ps,
           dsizes_ps,
           NULL,
@@ -90,7 +91,7 @@ NhlErrorTypes hyi2hyo_W( void )
 
   xi = (void*)NclGetArgValue(
           4,
-          7,
+          8,
           &ndims_xi,
           dsizes_xi,
           NULL,
@@ -100,7 +101,7 @@ NhlErrorTypes hyi2hyo_W( void )
 
   hyao = (void*)NclGetArgValue(
           5,
-          7,
+          8,
           NULL,
           dsizes_hyao,
           NULL,
@@ -110,12 +111,22 @@ NhlErrorTypes hyi2hyo_W( void )
 
   hybo = (void*)NclGetArgValue(
           6,
-          7,
+          8,
           NULL,
           dsizes_hybo,
           NULL,
           NULL,
           &type_hybo,
+          2);
+
+  option = (int*)NclGetArgValue(
+          7,
+          8,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
           2);
 
 /*
@@ -299,7 +310,7 @@ NhlErrorTypes hyi2hyo_W( void )
 
     NGCALLF(dhyi2hyob,DHYI2HYOB)(tmp_p0,tmp_hyai,tmp_hybi,tmp_ps,
                                  &mlon,&nlat,&klevi,tmp_xi,tmp_hyao,
-                                 tmp_hybo,&klevo,tmp_xo,pi,po);
+                                 tmp_hybo,&klevo,tmp_xo,pi,po,option);
 /*
  * Coerce output to float if necessary.
  */

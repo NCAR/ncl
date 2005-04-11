@@ -4770,7 +4770,7 @@ void NclAddUserFuncs(void)
  * Register "hyi2hyo".
  */
     nargs = 0;
-    args = NewArgs(7);
+    args = NewArgs(8);
     dimsizes[0] = 1;
 
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
@@ -4780,6 +4780,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(hyi2hyo_W,args,"hyi2hyo",nargs);
 /*
