@@ -1,5 +1,5 @@
       SUBROUTINE DHYI2HYOB(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,
-     +                     HYBO,KLEVO,XO,PI,PO)
+     +                     HYBO,KLEVO,XO,PI,PO,INTFLG)
       IMPLICIT NONE
 c NCL: xo = hyi2hyo (p0,hyai,hybi,psfc,xi,hyao,hybo)
 
@@ -18,10 +18,12 @@ c          klevi  - number of input  levels
 c          hyao   - is the "a" or pressure hybrid coef
 c          hybo   - is the "b" or sigma coeficient
 c          klevo  - number of output levels
+c          intflg - integer specifying linear or log-linear interp
+c                   placeholder ... not used
 c     output
 c          xo     - pressure at hybrid levels [Pa]
 c                                                 ! input
-      INTEGER MLON,NLAT,KLEVI,KLEVO
+      INTEGER MLON,NLAT,KLEVI,KLEVO,INTFLG
       DOUBLE PRECISION P0,HYAI(KLEVI),HYBI(KLEVI),HYAO(KLEVO),
      +                 HYBO(KLEVO),PSFC(MLON,NLAT),XI(MLON,NLAT,KLEVI),
      +                 PI(KLEVI),PO(KLEVO)
