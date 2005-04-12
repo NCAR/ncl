@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.19 2003-07-14 23:12:00 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.20 2005-04-12 17:50:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2757,9 +2757,9 @@ static NhlErrorTypes mpGrid
         float pole_param;
 
 	Grid_Setup = False;
-	c_mpseti("C2",mpp->grid.gks_color);
+	c_mpseti("C2",mpp->grid.gks_color < 0 ? 0 : mpp->grid.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	c_mpseti("C4", mpp->limb.gks_color);
+	c_mpseti("C4", mpp->limb.gks_color < 0 ? 0 :  mpp->limb.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
         
 
@@ -2823,11 +2823,13 @@ static NhlErrorTypes mpOutline
 	NhlMapPlotLayerPart	*mpp = &(mpl->mapplot);
 	int			i;
 
-	c_mpseti("C5",mpp->geophysical.gks_color);
+	c_mpseti("C5",mpp->geophysical.gks_color < 0 ? 0 : mpp->geophysical.gks_color );
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	c_mpseti("C6",mpp->us_state.gks_color);
+	c_mpseti("C6",mpp->us_state.gks_color < 0 ? 0 : mpp->us_state.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
-	c_mpseti("C7",mpp->national.gks_color);
+	c_mpseti("C7",mpp->national.gks_color < 0 ? 0 : mpp->national.gks_color);
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+	c_mpseti("C8",mpp->national.gks_color < 0 ? 0 : mpp->national.gks_color);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
         Color = -2;
@@ -3050,6 +3052,7 @@ static void SetLineAttrs
                     thickness = Mpp->geophysical.thickness;
                     break;
             case 3:
+	    case 5:
                     color = Mpp->national.gks_color;
                     dash_pattern = Mpp->national.dash_pat;
                     dash_seglen = Mpp->national.dash_seglen;
@@ -3062,6 +3065,11 @@ static void SetLineAttrs
                     thickness = Mpp->us_state.thickness;
                     break;
         }
+	if (color == -1) {
+		*npts = 0;
+		Color = color;
+		return;
+	}
         if (color != Color) {
                 gset_line_colr_ind(color);
                 Color = color;
@@ -3090,7 +3098,7 @@ static void SetLineAttrs
                 c_dashdc(buffer,jcrt,4);
                 _NhlLLErrCheckPrnt(NhlWARNING,entry_name);
                 Dash_Pattern = dash_pattern;
-                Dash_SegLen = Dash_SegLen;
+                Dash_SegLen = dash_seglen;
         }
         if (thickness != Thickness) {
               	gset_linewidth(thickness);

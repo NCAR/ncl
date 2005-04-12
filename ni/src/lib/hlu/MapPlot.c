@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.95 2004-06-28 22:14:32 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.96 2005-04-12 17:50:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2409,7 +2409,7 @@ static NhlErrorTypes mpDraw
 
 /* Draw labels and/or the perimeter */
 
-	if (mpp->labels.on && mpp->labels.order == order) {
+	if (mpp->labels.on && mpp->labels.order == order && mpp->labels.gks_color > -1) {
 		int ls = mpp->labels.real_height * 1024;
 		c_mpseti("LS",ls);
  		c_mpseti("C3",mpp->labels.gks_color);
@@ -2422,7 +2422,7 @@ static NhlErrorTypes mpDraw
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 	
-	if (mpp->perim.on && mpp->perim.order == order) {
+	if (mpp->perim.on && mpp->perim.order == order && mpp->perim.gks_color > -1) {
 		c_mpseti("C1",mpp->perim.gks_color);
 		c_mpseti("PE",1);
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
@@ -2669,7 +2669,11 @@ static NhlErrorTypes    CheckColor
 	char 		*e_text;
 	NhlErrorTypes	ret = NhlNOERROR;
 
-	if (cix < NhlBACKGROUND) {
+	if (cix == NhlTRANSPARENT) {
+		*gks_cix = -1;
+		return ret;
+	}
+	else if (cix < NhlBACKGROUND) {
 		e_text = "%s: invalid color index for %s; defaulting";
 		ret = NhlWARNING;
 		NhlPError(ret,NhlEUNKNOWN,e_text,entry_name,resname);
@@ -5224,6 +5228,7 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	float	thickness;
 	int	dpat;
 	float	dseglen;
+	int     gks_color;
 	NhlString *sp;
 	float	p0,p1,jcrt;
 	int	slen;
@@ -5241,11 +5246,13 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 		thickness = Mpp->perim.thickness;
 		dpat = Mpp->perim.dash_pat;
 		dseglen = Mpp->perim.dash_seglen;
+		gks_color = Mpp->perim.color;
 		break;
 	case 2:		/* grid */
 		thickness = Mpp->grid.thickness;
 		dpat = Mpp->grid.dash_pat;
 		dseglen = Mpp->grid.dash_seglen;
+		gks_color = Mpp->grid.color;
 		break;
 	case 3:		/* labels */
 		return;
@@ -5253,21 +5260,25 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 		thickness = Mpp->limb.thickness;
 		dpat = Mpp->limb.dash_pat;
 		dseglen = Mpp->limb.dash_seglen;
+		gks_color = Mpp->limb.gks_color;
 		break;
 	case 5:		/* geophysical outlines */
 		thickness = Mpp->geophysical.thickness;
 		dpat = Mpp->geophysical.dash_pat;
 		dseglen = Mpp->geophysical.dash_seglen;
+		gks_color = Mpp->geophysical.gks_color;
 		break;
 	case 6:		/* us states outlines */
 		thickness = Mpp->us_state.thickness;
 		dpat = Mpp->us_state.dash_pat;
 		dseglen = Mpp->us_state.dash_seglen;
+		gks_color = Mpp->us_state.gks_color;
 		break;
 	case 7:		/* countries */
 		thickness = Mpp->national.thickness;
 		dpat = Mpp->national.dash_pat;
 		dseglen = Mpp->national.dash_seglen;
+		gks_color = Mpp->national.gks_color;
 		break;
 	default:
 		return;
@@ -5292,6 +5303,7 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 	jcrt = jcrt > 1 ? jcrt : 1;
 	strcpy(buffer,sp[dpat]);
 
+
 #if 0
 	/* unneeded now-----------------
 	 * since dashchar recognizes only a single quote as
@@ -5304,7 +5316,12 @@ void   (_NHLCALLF(hlumapusr,HLUMAPUSR))
 			buffer[i] = '_';
 	}	
 #endif
-	c_dashdc(buffer,jcrt,4);
+	if (gks_color == -1) {
+		int ipat = 0;
+		c_dashdb(&ipat);
+	}
+	else
+		c_dashdc(buffer,jcrt,4);
 	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
 }
