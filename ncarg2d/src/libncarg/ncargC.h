@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.18 2004-03-26 21:46:14 kennison Exp $
+ *  $Id: ncargC.h,v 1.19 2005-04-14 20:27:49 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1414,6 +1414,12 @@ extern void c_maplmb(
 #endif
 );
 
+extern void c_maplmm(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
 extern void c_maplot(
 #ifdef  NeedFuncProto
     void
@@ -1931,6 +1937,12 @@ extern void c_mdplbl(
 );
 
 extern void c_mdplmb(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdplmm(
 #ifdef  NeedFuncProto
     void
 #endif
