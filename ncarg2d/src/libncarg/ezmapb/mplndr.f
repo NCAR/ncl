@@ -1,5 +1,5 @@
 C
-C $Id: mplndr.f,v 1.12 2001-08-16 23:10:51 kennison Exp $
+C $Id: mplndr.f,v 1.13 2005-04-14 20:16:05 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,5 +25,6 @@ C
         INTEGER       ILVL
         IF (ICFELL('MPLNDR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDLNDR (FLNM,ILVL)
+        IF (ICFELL('MPLNDR',2).NE.0) RETURN
         RETURN
       END

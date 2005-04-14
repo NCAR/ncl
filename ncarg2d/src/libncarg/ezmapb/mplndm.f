@@ -1,5 +1,5 @@
 C
-C $Id: mplndm.f,v 1.12 2001-08-16 23:10:51 kennison Exp $
+C $Id: mplndm.f,v 1.13 2005-04-14 20:16:05 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -28,5 +28,6 @@ C
         INTEGER       MCRA,IAAI(MNOG),IAGI(MNOG),MNOG
         IF (ICFELL('MPLNDM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDLNDM (FLNM,ILVL,IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
+        IF (ICFELL('MPLNDM',2).NE.0) RETURN
         RETURN
       END

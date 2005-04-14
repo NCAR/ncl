@@ -1,5 +1,5 @@
 C
-C $Id: mdlnam.f,v 1.1 2001-08-16 23:10:47 kennison Exp $
+C $Id: mdlnam.f,v 1.2 2005-04-14 20:16:03 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -168,8 +168,8 @@ C
           IF (ICFELL('MDLNAM',2).NE.0) RETURN
         END IF
 C
-C Use the EZMAPA routine MAPBLA to generate limb lines (if any)
-C and a perimeter and send them to the area map.
+C Use the EZMAPA routine MDPBLA to generate limb lines (if any) and a
+C perimeter and send them to the area map.
 C
         CALL MDGETC ('OU',SVOU)
         CALL MDSETC ('OU','NO')

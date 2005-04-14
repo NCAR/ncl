@@ -1,5 +1,5 @@
 C
-C $Id: mplnri.f,v 1.7 2001-08-16 23:10:52 kennison Exp $
+C $Id: mplnri.f,v 1.8 2005-04-14 20:16:05 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,5 +24,6 @@ C
         CHARACTER*(*) FLNM
         IF (ICFELL('MPLNRI - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDLNRI (FLNM)
+        IF (ICFELL('MPLNRI',2).NE.0) RETURN
         RETURN
       END

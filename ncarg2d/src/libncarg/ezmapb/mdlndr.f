@@ -1,5 +1,5 @@
 C
-C $Id: mdlndr.f,v 1.2 2001-09-07 18:38:40 kennison Exp $
+C $Id: mdlndr.f,v 1.3 2005-04-14 20:16:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -73,6 +73,8 @@ C Declare other local variables.
 C
         INTEGER          I,IAID,IDOT,IFDE,ILTS,INTF,IOAL,IOAR,ISTA,
      +                   IWGF,LFND,LFNL,LFNM,LONM,MCHR,NCHR,NPTS
+C
+        REAL             GRID
 C
         DATA IIII / 5 , 7 , 6 , 8 /
 C
@@ -245,6 +247,16 @@ C
         IF (ILTS.NE.0) THEN
           CALL MDPCHI (-IIII(MAX(2,MIN(5,ILTS))-1),0,0)
           IF (ICFELL('MDLNDR',9).NE.0) RETURN
+        END IF
+C
+C If the limb lines will not be (or have not been) drawn by MAPGRD,
+C do it here.
+C
+        CALL MDGETR ('GR',GRID)
+C
+        IF (GRID.LE.0.D0) THEN
+          CALL MDPLMB
+          IF (ICFELL('MDLNDR',10).NE.0) RETURN
         END IF
 C
 C Done.

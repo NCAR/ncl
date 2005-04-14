@@ -1,5 +1,5 @@
 C
-C $Id: mdlndm.f,v 1.2 2001-09-07 18:38:39 kennison Exp $
+C $Id: mdlndm.f,v 1.3 2005-04-14 20:16:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -76,6 +76,11 @@ C
 C IIII is used in the process of mapping line types into color indices.
 C
         INTEGER          IIII(4)
+C
+C SVOU is a character variable in which to save the value of the EZMAP
+C internal parameter named 'OU'.
+C
+        CHARACTER*2      SVOU
 C
 C Declare other local variables.
 C
@@ -255,6 +260,15 @@ C
      +                          IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
           IF (ICFELL('MDLNDM',9).NE.0) RETURN
         END IF
+C
+C Use the EZMAPA routine MAPBLM to draw a perimeter and limb lines (if
+C any).
+C
+        CALL MDGETC ('OU',SVOU)
+        CALL MDSETC ('OU','NO')
+        CALL MDPBLM (IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,MNOG,ULPR)
+        IF (ICFELL('MDLNDM',10).NE.0) RETURN
+        CALL MDSETC ('OU',SVOU)
 C
 C Done.
 C
