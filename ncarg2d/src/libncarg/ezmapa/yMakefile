@@ -1,17 +1,17 @@
 #
-#       $Id: yMakefile,v 1.13 2004-06-29 19:21:35 kennison Exp $
+#       $Id: yMakefile,v 1.14 2005-04-14 19:59:13 kennison Exp $
 #
 MYNAME	= ezmapa
 
 SOURCES = \
 	mapaci.f mapbla.f mapblm.f mapgrm.f mapiqa.f mapiqm.f mapita.f \
-	mapitm.f mdpaci.f mdpbla.f mdpblm.f mdpchm.f mdpgrm.f mdpiqa.f \
-	mdpiqm.f mdpita.f mdpitm.f mdrdnm.f
+	mapitm.f maplmm.f mdpaci.f mdpbla.f mdpblm.f mdpchm.f mdpgrm.f \
+	mdpiqa.f mdpiqm.f mdpita.f mdpitm.f mdplmm.f mdrdnm.f
 
 OBJECTS = \
 	mapaci.o mapbla.o mapblm.o mapgrm.o mapiqa.o mapiqm.o mapita.o \
-	mapitm.o mdpaci.o mdpbla.o mdpblm.o mdpchm.o mdpgrm.o mdpiqa.o \
-	mdpiqm.o mdpita.o mdpitm.o mdrdnm.o
+	mapitm.o maplmm.o mdpaci.o mdpbla.o mdpblm.o mdpchm.o mdpgrm.o \
+	mdpiqa.o mdpiqm.o mdpita.o mdpitm.o mdplmm.o mdrdnm.o
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 

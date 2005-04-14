@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.5 2005-04-07 21:40:13 kennison Exp $
+I $Id: CodeIftran,v 1.6 2005-04-14 19:59:12 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -113,6 +113,7 @@ C
         INTEGER IAMP(*)
         IF (ICFELL('MAPBLA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDPBLA (IAMP)
+        IF (ICFELL('MAPBLA',2).NE.0) RETURN
         RETURN
       END
 
@@ -969,11 +970,51 @@ C
       END
 
 
+      SUBROUTINE MAPLMM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+        INTEGER IAM(*),MCS,IAI(*),IAG(*),MAI
+        REAL    XCS(*),YCS(*)
+        IF (ICFELL('MAPLMM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDPLMM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+        IF (ICFELL('MAPLMM',2).NE.0) RETURN
+        RETURN
+      END
+
+
+      SUBROUTINE MDPLMM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+        INTEGER IAM(*),MCS,IAI(*),IAG(*),MAI
+        REAL    XCS(*),YCS(*)
+C
+C SVOU is a character variable in which to save the value of the EZMAP
+C internal parameter named 'OU'.
+C
+        CHARACTER*2      SVOU
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('MDPLMM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Call the EZMAPA routine MDPBLM to generate limb lines (if any) and a
+C perimeter and draw them masked by an area map.
+C
+        CALL MDGETC ('OU',SVOU)
+        CALL MDSETC ('OU','NO')
+        CALL MDPBLM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+        IF (ICFELL('MDPLMM',2).NE.0) RETURN
+        CALL MDSETC ('OU',SVOU)
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
       SUBROUTINE MAPBLM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
         INTEGER IAM(*),MCS,IAI(*),IAG(*),MAI
         REAL    XCS(*),YCS(*)
         IF (ICFELL('MAPBLM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDPBLM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+        IF (ICFELL('MAPBLM',2).NE.0) RETURN
         RETURN
       END
 
@@ -1678,6 +1719,7 @@ C
         REAL    XCS(*),YCS(*)
         IF (ICFELL('MAPGRM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDPGRM (IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
+        IF (ICFELL('MAPGRM',2).NE.0) RETURN
         RETURN
       END
 
