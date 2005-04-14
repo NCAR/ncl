@@ -1,5 +1,5 @@
 C
-C $Id: mapdrw.f,v 1.15 2001-11-02 22:36:31 kennison Exp $
+C $Id: mapdrw.f,v 1.16 2005-04-14 19:47:02 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,5 +23,6 @@ C
       SUBROUTINE MAPDRW
         IF (ICFELL('MAPDRW - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDPDRW
+        IF (ICFELL('MAPDRW',2).NE.0) RETURN
         RETURN
       END

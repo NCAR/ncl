@@ -1,5 +1,5 @@
 C
-C $Id: mdplot.f,v 1.2 2001-11-02 22:37:12 kennison Exp $
+C $Id: mdplot.f,v 1.3 2005-04-14 19:47:05 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -68,9 +68,9 @@ C
           IF (ICFELL('MDPLOT',2).NE.0) RETURN
         END IF
 C
-C If the selected outline type is "NONE", do nothing.
+C If the selected outline type is "NONE", skip to the limb line code.
 C
-        IF (NOUT.LE.0) RETURN
+        IF (NOUT.LE.0) GO TO 104
 C
 C Set the flag IWGF to say whether or not the whole globe is shown by
 C the current projection.  If so (IWGF=1), there's no need to waste the
@@ -159,9 +159,10 @@ C
           IF (ICFELL('MDPLOT',11).NE.0) RETURN
         END IF
 C
-C If the limb lines have not already been drawn, do it now.
+C If the limb lines will not be (or have not been) drawn by MAPGRD,
+C do it here.
 C
-        IF (GRID.LE.0.D0) THEN
+  104   IF (GRID.LE.0.D0) THEN
           CALL MDPLMB
           IF (ICFELL('MDPLOT',12).NE.0) RETURN
         END IF

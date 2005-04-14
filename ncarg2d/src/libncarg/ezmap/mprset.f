@@ -1,5 +1,5 @@
 C
-C $Id: mprset.f,v 1.10 2001-11-02 22:37:19 kennison Exp $
+C $Id: mprset.f,v 1.11 2005-04-14 19:47:06 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,5 +23,6 @@ C
       SUBROUTINE MPRSET
         IF (ICFELL('MPRSET - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDRSET
+        IF (ICFELL('MPRSET',2).NE.0) RETURN
         RETURN
       END

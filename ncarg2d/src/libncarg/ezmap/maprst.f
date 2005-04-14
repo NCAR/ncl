@@ -1,5 +1,5 @@
 C
-C $Id: maprst.f,v 1.12 2001-11-02 22:36:44 kennison Exp $
+C $Id: maprst.f,v 1.13 2005-04-14 19:47:05 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,5 +24,6 @@ C
         INTEGER IFNO
         IF (ICFELL('MAPRST - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDPRST (IFNO)
+        IF (ICFELL('MAPRST',2).NE.0) RETURN
         RETURN
       END

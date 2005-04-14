@@ -1,5 +1,5 @@
 C
-C $Id: mapint.f,v 1.18 2001-11-02 22:36:37 kennison Exp $
+C $Id: mapint.f,v 1.19 2005-04-14 19:47:03 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,5 +23,6 @@ C
       SUBROUTINE MAPINT
         IF (ICFELL('MAPINT - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDPINT
+        IF (ICFELL('MAPINT',2).NE.0) RETURN
         RETURN
       END

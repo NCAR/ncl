@@ -1,5 +1,5 @@
 C
-C $Id: maplbl.f,v 1.13 2001-11-02 22:36:41 kennison Exp $
+C $Id: maplbl.f,v 1.14 2005-04-14 19:47:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,5 +23,6 @@ C
       SUBROUTINE MAPLBL
         IF (ICFELL('MAPLBL - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
         CALL MDPLBL
+        IF (ICFELL('MAPLBL',2).NE.0) RETURN
         RETURN
       END
