@@ -113,7 +113,7 @@ stdin_fp = stdin;
 
 	error_fp = stderr;
 	stdout_fp = stdout;
-	fprintf(stdout," Copyright (C) 1995-2004 - All Rights Reserved   \n University Corporation for Atmospheric Research   \n NCAR Command Language Version %s   \n The use of this software is governed by a License Agreement.\n See http://ngwww.ucar.edu/ncl/ for more details.\n",GetNCARGVersion());
+	fprintf(stdout," Copyright (C) 1995-2005 - All Rights Reserved   \n University Corporation for Atmospheric Research   \n NCAR Command Language Version %s   \n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu for more details.\n",GetNCARGVersion());
 /*
          k = (mode_t)umask(22);
 	fprintf(stdout,"%d\n",k);
