@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.132 2005-02-14 19:48:52 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.133 2005-04-15 21:50:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9003,13 +9003,13 @@ static NhlErrorTypes    SetupLevelsManual
 		  count += 2;
 		else
 		  count += 1;
-	}
 
-	if (count <= 1) {
-		e_text = 
-		  "%s: cnLevelSpacingF value equals or exceeds data range";
-		NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
-                ret = MIN(ret,NhlWARNING);
+		if (count <= 1) {
+			e_text = 
+				"%s: cnLevelSpacingF value equals or exceeds data range";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name);
+			ret = MIN(ret,NhlWARNING);
+		}
 	}
 	if (count >  Nhl_cnMAX_LEVELS) {
 		ret = MIN(NhlWARNING,ret);

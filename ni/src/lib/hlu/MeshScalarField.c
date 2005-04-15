@@ -1,5 +1,5 @@
 /*
- *      $Id: MeshScalarField.c,v 1.7 2004-11-16 22:54:12 dbrown Exp $
+ *      $Id: MeshScalarField.c,v 1.8 2005-04-15 21:50:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1653,6 +1653,7 @@ MeshScalarFieldInitialize
 	sfp->x_index_start = sfp->x_index_end = 
 		sfp->y_index_start = sfp->y_index_end = -1;
 	sfp->x_stride = sfp->y_stride = 1;
+	sfp->subset_by_index = False;
 /*
  * end unsupported resource initialization
  */
