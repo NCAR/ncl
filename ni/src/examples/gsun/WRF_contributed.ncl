@@ -166,9 +166,8 @@ begin
   res@mpOutlineDrawOrder    = "PostDraw"       ; draw continental outline last
   res@mpOutlineBoundarySets = "GeophysicalAndUSStates" ; state boundaries
 
-;;The following was in the original examples.    This is not correct
-;;    6 April 2005                               These are not native grids.
-;;res@tfDoNDCOverlay        = True             ; True for 'native' grid
+  res@tfDoNDCOverlay        = True             ; True for 'native' grid
+  res@gsnAddCyclic          = False            ; data are not cyclic
 end 
 
 ;*************************************************************************
