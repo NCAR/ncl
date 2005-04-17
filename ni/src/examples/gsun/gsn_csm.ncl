@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.185 2005-04-17 22:11:50 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.186 2005-04-17 23:29:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9560,9 +9560,6 @@ begin
 ;
 ; Make a copy of the resources
 ;
-  res1_new = True
-  res2_new = True
-  res3_new = True
   if(res1) then
     res1_new = res1
   end if
@@ -9570,8 +9567,14 @@ begin
     res2_new = res2
   end if
   if(res3) then
-    res3_new = res3
+    res3_new = get_res_ne(res3,(/"am"/))
   end if
+;
+; Make sure these are True
+;
+  res1_new = True
+  res2_new = True
+  res3_new = True
 ;
 ; Retain draw, frame, and maximize settings for later.
 ;
@@ -9604,6 +9607,10 @@ begin
     "vpYF"       : vpy
     "trXMinF"    : xmin
     "trXMaxF"    : xmax
+    "tiXAxisFontHeightF"   : xaxis_fh
+    "tiYAxisFontHeightF"   : yaxis_fh
+    "tmXBLabelFontHeightF" : xlab_fh
+    "tmYLLabelFontHeightF" : ylab_fh
   end getvalues
 
 ;
@@ -9628,6 +9635,8 @@ begin
   res3_new@tmXBOn      = get_res_value_keep(res3, "tmXBOn",   False)
   res3_new@tmYROn      = get_res_value_keep(res3, "tmYROn",   False)
   res3_new@tmYLOn      = get_res_value_keep(res3, "tmYLOn",   False)
+  res3_new@tiYAxisOn   = get_res_value_keep(res3,"tiYAxisOn",False)
+  res3_new@tiXAxisOn   = get_res_value_keep(res3,"tiXAxisOn",False)
 
   if(plot_type.eq."csm") then
     xy3 = gsn_csm_xy(wks, (/x1/), (/y3/), res3_new)
@@ -9652,10 +9661,11 @@ begin
 ; resource to attach the left edge of this plot to right side
 ; of the previous  plot, outside of the tickmarks and labels.
 ;
-  res3_new = True
   if(res3) then
-    res3_new = res3
+    res3_new = get_res_ne(res3,(/"am"/))
   end if
+  res3_new = True      ; Make sure this is True.
+
   res3_new@gsnFrame     = False
   res3_new@gsnDraw      = False
   res3_new@vpHeightF    = vph
@@ -9677,7 +9687,6 @@ begin
   res3_new@tmXTOn       = get_res_value(res3_new,"tmXTOn",False)
   res3_new@tmXTBorderOn = get_res_value(res3_new,"tmXTBorderOn",False)
   res3_new@tmYLOn       = get_res_value(res3_new,"tmYLOn",False)
-
   res3_new@tmYROn       = get_res_value(res3_new,"tmYROn",True)
 ;
 ; Turn on right axis labels; they are off by default.
@@ -9685,7 +9694,14 @@ begin
   res3_new@tmYRLabelsOn = get_res_value(res3_new,"tmYRLabelsOn",True) 
   res3_new@tmYUseLeft   = get_res_value(res3_new,"tmYUseLeft",False)
   res3_new@tiYAxisSide  = get_res_value(res3_new,"tiYAxisSide","Right")
-
+  res3_new@tiXAxisFontHeightF  = get_res_value(res3_new, \
+                                 "tiXAxisFontHeightF",xaxis_fh)
+  res3_new@tiYAxisFontHeightF  = get_res_value(res3_new, \
+                                 "tiYAxisFontHeightF",yaxis_fh)
+  res3_new@tmXBLabelFontHeightF  = get_res_value(res3_new, \
+                                 "tmXBFontHeightF",xlab_fh)
+  res3_new@tmYLLabelFontHeightF  = get_res_value(res3_new, \
+                                 "tmYLFontHeightF",ylab_fh)
 ;
 ; Generate some dummy data for our plot.
 ;
@@ -9722,6 +9738,7 @@ begin
 ; At least let the user change this value if he/she wants to.
 ;
   anno2 = NhlAddAnnotation(xy12,line)
+  amres = get_res_eq(res3,(/"am"/))
   setvalues anno2
     "amZone"           : 0     ; Zone 2 is outside the tickmarks
     "amResizeNotify"   : True  ; Resize tick marks if plot resized.
@@ -9729,6 +9746,7 @@ begin
     "amOrthogonalPosF" : get_res_value(res3,"amOrthgonalPosF",0.7)
     "amSide"           : "Right" 
   end setvalues
+  attsetvalues_check(anno2,amres)
 
 ;
 ; Maximize plot, draw and advance the frame, if so desired.
