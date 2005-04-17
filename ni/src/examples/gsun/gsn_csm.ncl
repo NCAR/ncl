@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.184 2005-04-17 22:07:37 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.185 2005-04-17 22:11:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9701,7 +9701,6 @@ begin
 ;
 ; Create the vertical line.
 ;
-print(res3_new)
   if(plot_type.eq."csm") then
     line = gsn_csm_xy(wks,xdummy,ydummy,res3_new)
   else
