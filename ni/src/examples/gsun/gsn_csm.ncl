@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.183 2005-03-29 21:58:55 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.184 2005-04-17 22:07:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -114,11 +114,13 @@ undef("gsn_csm_contour_map_overlay")
 undef("gsn_csm_xy")
 undef("gsn_csm_y")
 undef("plot_x2y2")
+undef("plot_xy3")
 undef("plot_xy2")
 undef("plot_x2y")
 undef("gsn_csm_xy2")
 undef("gsn_csm_x2y")
 undef("gsn_csm_x2y2")
+undef("gsn_csm_xy3")
 undef("gsn_csm_contour")
 undef("gsn_csm_hov")
 undef("gsn_csm_lat_time")
@@ -9329,7 +9331,6 @@ begin
     calldraw  = get_res_value(locRes1,"gsnDraw", True)
     callframe = get_res_value(locRes1,"gsnFrame",True)
     maxbb     = get_bb_res(locRes1)
-
 ;
 ; For first plot, don't auto advance the frame or draw or maximize
 ; the plot.
@@ -9362,7 +9363,6 @@ begin
     else
       xy1 = gsn_xy (wks,x1,y1,locRes1)
     end if
-
 ;
 ; Get viewport coordinates, tickmark lengths, and font heights of
 ; first plot to use for second plot.
@@ -9397,6 +9397,12 @@ begin
 ; If the user is setting any of these, then use these settings and
 ; not the ones we just retrieved.
 ;
+; For second plot, don't auto advance the frame or draw or maximize
+; the plot.
+;
+    locRes2@gsnFrame    = False
+    locRes2@gsnDraw     = False
+    locRes2@gsnMaximize = False
     trxmin     = get_res_value(locRes2,"trXMinF",                 trxmin)
     trxmax     = get_res_value(locRes2,"trXMaxF",                 trxmax)
     trymin     = get_res_value(locRes2,"trYMinF",                 trymin)
@@ -9527,6 +9533,210 @@ begin
     draw_and_frame(wks,xy1,calldraw,callframe,0,maxbb)
     return (xy1)
  end
+
+
+;***********************************************************************;
+; Function : plot_xy3                                                   ;
+;               wks: workstation object                                 ;
+;                x1 : X values                                          ;
+;                y1 : First set of Y values                             ;
+;                y2 : Second set of Y values                            ;
+;                y3 : Third set of Y values                             ;
+;              res1 : opt'l resources, to apply to first curve          ;
+;              res2 : opt'l resources, to apply to second curve         ;
+;              res3 : opt'l resources, to apply to third curve          ;
+;         plot_type : whether we're doing generic gsn, or gsn_csm       ;
+;                                                                       ;
+; This function calls plot_x2y2 with a single set of X values, and two  ;
+; sets of Y values, each with their own Y axis, and puts them on the    ;
+; same plot. The left axis is labeled according to the y1 values, and   ;
+; the right axis is labeled according to the y2 values.                 ;
+;                                                                       ;
+;***********************************************************************;
+function plot_xy3 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                   y3:numeric, res1:logical, res2:logical, res3:logical, \
+                   plot_type:string)
+begin
+;
+; Make a copy of the resources
+;
+  res1_new = True
+  res2_new = True
+  res3_new = True
+  if(res1) then
+    res1_new = res1
+  end if
+  if(res2) then
+    res2_new = res2
+  end if
+  if(res3) then
+    res3_new = res3
+  end if
+;
+; Retain draw, frame, and maximize settings for later.
+;
+  calldraw  = get_res_value(res1_new,"gsnDraw", True)
+  callframe = get_res_value(res1_new,"gsnFrame",True)
+  maxbb     = get_bb_res(res1_new)
+
+;
+; Create some dummy variables.
+;
+  x2 = new(1,typeof(x1))
+;
+; Call plot_x2y2 function.
+;
+  res1_new@gsnDraw     = False
+  res1_new@gsnFrame    = False
+  res1_new@gsnMaximize = False   ; Don't need to maximize yet.
+  res2_new@gsnDraw     = False
+  res2_new@gsnFrame    = False
+  res2_new@gsnMaximize = False   ; Don't need to maximize yet.
+  xy12 = plot_x2y2 (wks, x1, x2, y1, y2, res1_new, res2_new, "y", plot_type)
+  delete(x2)
+;
+; Get the size and X limits of this plot, and use them for the third plot.
+;
+  getvalues xy12
+    "vpHeightF"  : vph
+    "vpWidthF"   : vpw
+    "vpXF"       : vpx
+    "vpYF"       : vpy
+    "trXMinF"    : xmin
+    "trXMaxF"    : xmax
+  end getvalues
+
+;
+; Set up some resources so we can add the third Y curve to the
+; previous plot in the same location as the first two curves,
+; but without any tickmarks.
+;
+; Notice that we are allowing the user to override some of these 
+; settings, but the user really shouldn't be doing this in the
+; first place.
+;
+  res3_new@gsnFrame    = False
+  res3_new@gsnDraw     = False
+  res3_new@gsnMaximize = False
+  res3_new@vpHeightF   = get_res_value_keep(res3, "vpHeightF",vph)
+  res3_new@vpWidthF    = get_res_value_keep(res3, "vpWidthF", vpw)
+  res3_new@vpXF        = get_res_value_keep(res3, "vpXF",     vpx)
+  res3_new@vpYF        = get_res_value_keep(res3, "vpYF",     vpy)
+  res3_new@trXMinF     = get_res_value_keep(res3, "trXMinF",  xmin)
+  res3_new@trXMaxF     = get_res_value_keep(res3, "trXMaxF",  xmax)
+  res3_new@tmXTOn      = get_res_value_keep(res3, "tmXTOn",   False)
+  res3_new@tmXBOn      = get_res_value_keep(res3, "tmXBOn",   False)
+  res3_new@tmYROn      = get_res_value_keep(res3, "tmYROn",   False)
+  res3_new@tmYLOn      = get_res_value_keep(res3, "tmYLOn",   False)
+
+  if(plot_type.eq."csm") then
+    xy3 = gsn_csm_xy(wks, (/x1/), (/y3/), res3_new)
+  else
+    xy3 = gsn_xy(wks, (/x1/), (/y3/), res3_new)
+  end if
+  delete(res3_new)
+
+;
+; Add this third curve as annotation of the xy12 plot.
+;
+  anno1 = NhlAddAnnotation(xy12,xy3)
+  setvalues anno1
+    "amZone"         : 0     ; Zone 0 centers tick marks over map.
+    "amResizeNotify" : True  ; Resize tick marks if map resized.
+  end setvalues
+
+;
+; Last step is to attach a single vertical line that will
+; represent the Y axis for the third curve.  Make the width
+; of this plot basically 0, so we can then use the amZone
+; resource to attach the left edge of this plot to right side
+; of the previous  plot, outside of the tickmarks and labels.
+;
+  res3_new = True
+  if(res3) then
+    res3_new = res3
+  end if
+  res3_new@gsnFrame     = False
+  res3_new@gsnDraw      = False
+  res3_new@vpHeightF    = vph
+  res3_new@vpWidthF     = 0.0001
+  res3_new@vpXF         = vpx
+  res3_new@vpYF         = vpy
+  res3_new@trXMinF      = xmin
+  res3_new@trXMaxF      = xmax
+;
+; Pick some "nice" values for this single vertical axis, and
+; use them if the user hasn't already set their own.
+;
+  mnmxint               = nice_mnmxintvl(min(y3), max(y3), 10, True)
+  res3_new@trYMinF      = get_res_value(res3_new,"trYMinF",mnmxint(0))
+  res3_new@trYMaxF      = get_res_value(res3_new,"trYMaxF",mnmxint(1))
+
+  res3_new@tmXBOn       = get_res_value(res3_new,"tmXBOn",False)
+  res3_new@tmXBBorderOn = get_res_value(res3_new,"tmXBBorderOn",False)
+  res3_new@tmXTOn       = get_res_value(res3_new,"tmXTOn",False)
+  res3_new@tmXTBorderOn = get_res_value(res3_new,"tmXTBorderOn",False)
+  res3_new@tmYLOn       = get_res_value(res3_new,"tmYLOn",False)
+
+  res3_new@tmYROn       = get_res_value(res3_new,"tmYROn",True)
+;
+; Turn on right axis labels; they are off by default.
+;
+  res3_new@tmYRLabelsOn = get_res_value(res3_new,"tmYRLabelsOn",True) 
+  res3_new@tmYUseLeft   = get_res_value(res3_new,"tmYUseLeft",False)
+  res3_new@tiYAxisSide  = get_res_value(res3_new,"tiYAxisSide","Right")
+
+;
+; Generate some dummy data for our plot.
+;
+  xdummy    = new( 2, typeof(x1))
+  ydummy    = new( 2, typeof(y3))
+  if (isatt(y3,"long_name")) then
+      ydummy@long_name = y3@long_name
+  end if
+  ydummy(0) = res3_new@trYMinF   ; dummy for vertical line
+  ydummy(1) = res3_new@trYMaxF
+  xdummy(0) = xmax
+  xdummy(1) = xmax
+;
+; Create the vertical line.
+;
+print(res3_new)
+  if(plot_type.eq."csm") then
+    line = gsn_csm_xy(wks,xdummy,ydummy,res3_new)
+  else
+    line = gsn_xy(wks,xdummy,ydummy,res3_new)
+  end if
+
+;
+; Right now we are using 0.7 for an orthgonal distance for the
+; single vertical axis to be positioned with respect to the 
+; previous plot. The real way to  do this is to figure out the
+; distance from the outermost right edge of the xy3
+; plot to the plot border. Then, figure out what fraction of the
+; width of the plot this is.  This fraction is how much we need to
+; move the vertical line to the right. The problem is that if we
+; do an NhlGetBB on the plot, it won't include the annotation that
+; was added, and hence the outermost edge of the plot space is the
+; same as the edge of the plot itself.
+;
+; At least let the user change this value if he/she wants to.
+;
+  anno2 = NhlAddAnnotation(xy12,line)
+  setvalues anno2
+    "amZone"           : 0     ; Zone 2 is outside the tickmarks
+    "amResizeNotify"   : True  ; Resize tick marks if plot resized.
+    "amJust"           : "CenterLeft"
+    "amOrthogonalPosF" : get_res_value(res3,"amOrthgonalPosF",0.7)
+    "amSide"           : "Right" 
+  end setvalues
+
+;
+; Maximize plot, draw and advance the frame, if so desired.
+;
+    draw_and_frame(wks,xy12,calldraw,callframe,0,maxbb)
+    return (xy12)
+end
 
 ;***********************************************************************;
 ; Function : plot_xy2                                                   ;
@@ -9697,6 +9907,30 @@ begin
     xy = plot_x2y2 (wks, x1, x2, y1, y2, res1, res2, "xy", "csm")
     return(xy)
 end
+
+;***********************************************************************;;
+; Function : gsn_csm_xy3                                                ;
+;               wks: workstation object                                 ;
+;                x1 : X values                                          ;
+;                y1 : First set of Y values                             ;
+;                y2 : Second set of Y values                            ;
+;                y3 : Third set of Y values                             ;
+;              res1 : opt'l resources, to apply to first curve          ;
+;              res2 : opt'l resources, to apply to second curve         ;
+;              res3 : opt'l resources, to apply to third curve          ;
+;                                                                       ;
+; This function calls plot_xy3 with a plot_type of "csm".               ;
+;***********************************************************************;
+function gsn_csm_xy3 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                      y3:numeric, res1:logical, res2:logical, res3:logical)
+begin
+;
+; Call plot_xy3 function.
+;
+    xy = plot_xy3 (wks, x1, y1, y2, y3, res1, res2, res3, "csm")
+    return(xy)
+end
+
 
 ;***********************************************************************;
 ; Function : gsn_csm_contour                                            ;
