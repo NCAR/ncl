@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.186 2005-04-17 23:29:49 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.187 2005-04-18 14:34:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9403,23 +9403,38 @@ begin
     locRes2@gsnFrame    = False
     locRes2@gsnDraw     = False
     locRes2@gsnMaximize = False
-    trxmin     = get_res_value(locRes2,"trXMinF",                 trxmin)
-    trxmax     = get_res_value(locRes2,"trXMaxF",                 trxmax)
-    trymin     = get_res_value(locRes2,"trYMinF",                 trymin)
-    trymax     = get_res_value(locRes2,"trYMaxF",                 trymax)
-    xfonth     = get_res_value(locRes2,"tiXAxisFontHeightF",      xfonth)
-    xbfonth    = get_res_value(locRes2,"tmXBLabelFontHeightF",    xbfonth)
-    xmjlength  = get_res_value(locRes2,"tmXBMajorLengthF",        xmjlength)
-    xmnlength  = get_res_value(locRes2,"tmXBMinorLengthF",        xmnlength)
-    xmjolength = get_res_value(locRes2,"tmXBMajorOutwardLengthF", xmjolength)
-    xmnolength = get_res_value(locRes2,"tmXBMinorOutwardLengthF", xmnolength)
-    yfonth     = get_res_value(locRes2,"tiYAxisFontHeightF",      yfonth)
-    ylfonth    = get_res_value(locRes2,"tmYLLabelFontHeightF",    ylfonth)
-    ymjlength  = get_res_value(locRes2,"tmYLMajorLengthF",        ymjlength)
-    ymnlength  = get_res_value(locRes2,"tmYLMinorLengthF",        ymnlength)
-    ymjolength = get_res_value(locRes2,"tmYLMajorOutwardLengthF", ymjolength)
-    ymnolength = get_res_value(locRes2,"tmYLMinorOutwardLengthF", ymnolength)
-
+    trxmin     = get_res_value_keep(locRes2,"trXMinF", \
+                                    trxmin)
+    trxmax     = get_res_value_keep(locRes2,"trXMaxF", \
+                                    trxmax)
+    trymin     = get_res_value_keep(locRes2,"trYMinF", \
+                                    trymin)
+    trymax     = get_res_value_keep(locRes2,"trYMaxF", \
+                                    trymax)
+    xfonth     = get_res_value_keep(locRes2,"tiXAxisFontHeightF", \
+                                    xfonth)
+    xbfonth    = get_res_value_keep(locRes2,"tmXBLabelFontHeightF", \
+                                    xbfonth)
+    xmjlength  = get_res_value_keep(locRes2,"tmXBMajorLengthF", \
+                                    xmjlength)
+    xmnlength  = get_res_value_keep(locRes2,"tmXBMinorLengthF", \
+                                    xmnlength)
+    xmjolength = get_res_value_keep(locRes2,"tmXBMajorOutwardLengthF", \
+                                    xmjolength)
+    xmnolength = get_res_value_keep(locRes2,"tmXBMinorOutwardLengthF", \
+                                    xmnolength)
+    yfonth     = get_res_value_keep(locRes2,"tiYAxisFontHeightF", \
+                                    yfonth)
+    ylfonth    = get_res_value_keep(locRes2,"tmYLLabelFontHeightF", \
+                                    ylfonth)
+    ymjlength  = get_res_value_keep(locRes2,"tmYLMajorLengthF", \
+                                    ymjlength)
+    ymnlength  = get_res_value_keep(locRes2,"tmYLMinorLengthF", \
+                                    ymnlength)
+    ymjolength = get_res_value_keep(locRes2,"tmYLMajorOutwardLengthF", \
+                                    ymjolength)
+    ymnolength = get_res_value_keep(locRes2,"tmYLMinorOutwardLengthF", \
+                                    ymnolength)
 ;
 ; Set resources that are common for second plot, regardless of what
 ; kind of axes situation we have.
