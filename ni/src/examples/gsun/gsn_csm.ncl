@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.187 2005-04-18 14:34:12 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.188 2005-04-19 17:48:29 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9546,6 +9546,7 @@ begin
     end setvalues
 
     draw_and_frame(wks,xy1,calldraw,callframe,0,maxbb)
+    xy1@xy2 = xy2
     return (xy1)
  end
 
@@ -9767,6 +9768,8 @@ begin
 ; Maximize plot, draw and advance the frame, if so desired.
 ;
     draw_and_frame(wks,xy12,calldraw,callframe,0,maxbb)
+
+    xy12@xy3 = xy3
     return (xy12)
 end
 
