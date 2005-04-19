@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.63 2005-04-05 19:47:35 shea Exp $
+;      $Id: contributed.ncl,v 1.64 2005-04-19 22:03:42 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6111,9 +6111,9 @@ end
 ; It adds the new level coordinates.
 
 
-function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo)
+function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
 begin
-   xo = hyi2hyo(p0,hyai,hybi,psfc,xi,hyao,hybo)
+   xo = hyi2hyo(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
 
    copy_VarAtts(xi,xo) 
    xo@info = "NCL function hyi2hyo used to interpolate" 
