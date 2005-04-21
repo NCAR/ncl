@@ -165,6 +165,7 @@ begin
   res@mpFillOn              = False            ; turn off map fill
   res@mpOutlineDrawOrder    = "PostDraw"       ; draw continental outline last
   res@mpOutlineBoundarySets = "GeophysicalAndUSStates" ; state boundaries
+  res@mpPerimDrawOrder      = "PostDraw"       ; force map perim
 
   res@tfDoNDCOverlay        = True             ; True for 'native' grid
   res@gsnAddCyclic          = False            ; data are not cyclic
