@@ -216,7 +216,7 @@ main(int argc, char* argv[]) {
     stdout_fp = stdout;
     
     if (NCLverbose) {
-    	(void) fprintf(stdout," Copyright (C) 1995-2004 - All Rights Reserved   \n University Corporation for Atmospheric Research   \n NCAR Command Language Version %s   \n The use of this software is governed by a License Agreement.\n See http://ngwww.ucar.edu/ncl/ for more details.\n", GetNCARGVersion());
+    	(void) fprintf(stdout," Copyright (C) 1995-2005 - All Rights Reserved   \n University Corporation for Atmospheric Research   \n NCAR Command Language Version %s   \n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCARGVersion());
     }
 
     stdin_fp = stdin;
