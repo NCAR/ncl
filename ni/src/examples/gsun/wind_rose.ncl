@@ -1,5 +1,5 @@
 ;
-;      $Id: wind_rose.ncl,v 1.3 2005-04-29 22:46:46 shea Exp $
+;      $Id: wind_rose.ncl,v 1.4 2005-04-29 22:52:35 shea Exp $
 ;
 ; functions to draw variations of wind roses
 
@@ -185,7 +185,7 @@ function WindRoseBasic (wks:graphic, wspd:numeric, wdir:numeric \
       wAveStr = wAveStr +"   No Calm Reports"
   end if
 
-  wAveStr = wAveStr +" Nwnd="+Wnum
+  wAveStr = wAveStr +"  Nwnd="+Wnum
 
   txRes@txJust = "CenterCenter"
   astring = systemfunc("echo text3$$")
@@ -446,7 +446,7 @@ function WindRoseColor(wks:graphic, wspd:numeric, wdir:numeric \
       wAveStr = wAveStr +"   No Calm Reports"
   end if
 
-  wAveStr = wAveStr +" Nwnd="+Wnum
+  wAveStr = wAveStr +"  Nwnd="+Wnum
 
   txRes@txJust = "CenterCenter"
   astring = systemfunc("echo text3$$")
@@ -703,7 +703,7 @@ function WindRoseThickLine(wks:graphic, wspd:numeric, wdir:numeric \
       wAveStr = wAveStr +"   No Calm Reports"
   end if
 
-  wAveStr = wAveStr +" Nwnd="+Wnum
+  wAveStr = wAveStr +"  Nwnd="+Wnum
 
   txRes@txJust = "CenterCenter"
   astring = systemfunc("echo text3$$")
