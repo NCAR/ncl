@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.30 2004-08-01 17:11:12 haley Exp $
+ *	$Id: c.h,v 1.31 2005-05-01 20:52:53 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -40,15 +40,15 @@
  */
 
 #ifndef	NGCALLF
-#if defined(UNICOS) || defined(NGCAPS)
+#if defined(F_UPPERCASE)
 /*
  * Brain dead crays (and most recently, the Absoft ProFortran
  * compiler) have to be different from everything else!
  */
 #define	NGCALLF(reg,caps)	caps
 
-#elif	defined(RS6000) || defined(__hpux)
-/* No munging of names - wow how unique */
+#elif defined(F_NO_UNDERSCORES)
+/* xlf and HP compilers have no munging of names - wow how unique */
 #define	NGCALLF(reg,caps)	reg
 
 #else
@@ -58,9 +58,14 @@
 #else
 #define	NGCALLF(reg,caps)	reg/**/_
 #endif	/* __STDC__ */
-#endif	/* UNICOS else ... */
+#endif	/* F_UPPERCASE */
 #endif	/* NGCALLF */
 
+/*
+ * The Absoft ProFortran compiler munges common block names
+ * differently than the way it handles Fortran subroutine names,
+ * so here is where we deal with this.
+ */
 #ifndef NGCALLC
 #if defined(AbsoftProFortran)
 #define	NGCALLC(reg,caps)	_C##caps
