@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.30 1998-04-14 18:46:49 haley Exp $
+ *      $Id: Cray,v 1.31 2005-05-01 20:30:12 haley Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *			describe the Cray running unicos.
  */
 #define	HdfDefines	-DUNICOS
-#define	StdDefines	-DSYSV -DUNICOS -DUSG
+#define	StdDefines	-DSYSV -DUNICOS -DUSG -DF_UPPERCASE
 #define FCompiler	f90
 #define LdRelCommand	$(CONFIG_DIR)/ldrel
 #define	ArCommand	bld
