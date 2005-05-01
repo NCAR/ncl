@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.102 2005-03-24 00:08:37 haley Exp $
+#      $Id: yMakefile,v 1.103 2005-05-01 21:51:29 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2005-03-24 00:08:37 $
+#	Date:		$Date: 2005-05-01 21:51:29 $
 #
 #	Description:	
 #
@@ -74,11 +74,6 @@ NCDFLIBS	= $(DODS_LIBS)
 #ifdef  HPUX
 ARCH_LIBS	=	-lPW
 HACKOBJS	=	hphack.o
-EXTRA_CLDFLAGS	= 	-Wl,-E
-#endif
-
-#if defined(linux) || defined(i386)
-EXTRA_CLDFLAGS	= -rdynamic
 #endif
 
 #if !defined(CRAY) && !defined(HPUX) && !defined(IRIX) && !defined(IRIX64) && !defined(OSF1)
@@ -92,12 +87,13 @@ API_DEFS	=	-DMAKEAPI
 PROG_LIBS	=	$(NFPLIBS) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
 DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 
+EXTRA_CLDFLAGS = $(EXTRA_EXPORT_FLAGS)
+
 #if defined(SUN)
 # EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -fast -xlic_lib=sunperf 
 EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -llapack -lblas
 #elif defined(AIX)
 EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -llapack -lblas -lxlf90 -lxlopt
-EXTRA_CLDFLAGS	= -bexpall -brtl
 #elif (defined(IRIX) || defined(IRIX64))
 EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -llapack -lblas
 #else
