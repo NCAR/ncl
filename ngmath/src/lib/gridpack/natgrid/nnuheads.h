@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheads.h,v 1.8 2004-07-31 12:27:24 haley Exp $
+ * $Id: nnuheads.h,v 1.9 2005-05-01 20:58:22 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -41,20 +41,22 @@ extern void   c_nngetwtsd(int *, int *, double *, double *, double *, double *);
  */
 #ifndef NGCALLF
 
-#if defined(UNICOS) || defined(NGCAPS)
+#if defined(F_UPPERCASE)
+
 #define NGCALLF(reg,caps)       caps
 
-#elif   defined(RS6000) || defined(__hpux)
-#define NGCALLF(reg,caps)       reg
+#elif defined(F_NO_UNDERSCORES)
 
+#define NGCALLF(reg,caps)       reg
+ 
 #else
 #ifdef  __STDC__
 #define NGCALLF(reg,caps)       reg##_
 #else
 #define NGCALLF(reg,caps)       reg/**/_
-
+ 
 #endif  /* __STDC__ */
-#endif  /* UNICOS else ... */
+#endif	/* F_UPPERCASE */
 #endif  /* NGCALLF */
 
 /*

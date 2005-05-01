@@ -1,5 +1,5 @@
 /*
- * $Id: shproto.h,v 1.6 2004-07-31 12:27:24 haley Exp $
+ * $Id: shproto.h,v 1.7 2005-05-01 20:58:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -42,11 +42,13 @@ int c_shgeti(char *);
  *  system-specific C function name for it to be Fortran callable.
  */
 #ifndef NGCALLF
- 
-#if defined(UNICOS) || defined(NGCAPS)
+
+#if defined(F_UPPERCASE)
+
 #define NGCALLF(reg,caps)       caps
- 
-#elif   defined(RS6000) || defined(__hpux)
+
+#elif defined(F_NO_UNDERSCORES)
+
 #define NGCALLF(reg,caps)       reg
  
 #else
@@ -56,7 +58,7 @@ int c_shgeti(char *);
 #define NGCALLF(reg,caps)       reg/**/_
  
 #endif  /* __STDC__ */
-#endif  /* UNICOS else ... */
+#endif	/* F_UPPERCASE */
 #endif  /* NGCALLF */
 
 /*

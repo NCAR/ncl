@@ -80,11 +80,13 @@ double *c_csa3lxd(int, double [], double [], double [], double [],
  *  system-specific C function name for it to be Fortran callable.
  */
 #ifndef NGCALLF
- 
-#if defined(UNICOS) || defined(NGCAPS)
+
+#if defined(F_UPPERCASE)
+
 #define NGCALLF(reg,caps)       caps
- 
-#elif   defined(RS6000) || defined(__hpux)
+
+#elif defined(F_NO_UNDERSCORES)
+
 #define NGCALLF(reg,caps)       reg
  
 #else
@@ -94,7 +96,7 @@ double *c_csa3lxd(int, double [], double [], double [], double [],
 #define NGCALLF(reg,caps)       reg/**/_
  
 #endif  /* __STDC__ */
-#endif  /* UNICOS else ... */
+#endif	/* F_UPPERCASE */
 #endif  /* NGCALLF */
 
 /*

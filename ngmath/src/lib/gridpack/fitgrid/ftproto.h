@@ -1,5 +1,5 @@
 /*
- * $Id: ftproto.h,v 1.9 2004-07-31 12:27:23 haley Exp $
+ * $Id: ftproto.h,v 1.10 2005-05-01 20:58:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -98,11 +98,13 @@ double *c_ftsurfdp(int, int, double *, double *, double *,
  *  system-specific C function name for it to be Fortran callable.
  */
 #ifndef NGCALLF
- 
-#if defined(UNICOS) || defined(NGCAPS)
+
+#if defined(F_UPPERCASE)
+
 #define NGCALLF(reg,caps)       caps
- 
-#elif   defined(RS6000) || defined(__hpux)
+
+#elif defined(F_NO_UNDERSCORES)
+
 #define NGCALLF(reg,caps)       reg
  
 #else
@@ -112,7 +114,7 @@ double *c_ftsurfdp(int, int, double *, double *, double *,
 #define NGCALLF(reg,caps)       reg/**/_
  
 #endif  /* __STDC__ */
-#endif  /* UNICOS else ... */
+#endif	/* F_UPPERCASE */
 #endif  /* NGCALLF */
 
 /*
