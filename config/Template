@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.46 2005-03-06 22:07:11 haley Exp $
+ *      $Id: Template,v 1.47 2005-05-01 21:49:24 haley Exp $
  */
 /************************************************************************
 *									*
@@ -431,6 +431,10 @@ NGCOMM########################################################################
 #define	ExtraSysLibraries	/**/
 #endif	/* ExtraSysLibraries */
 
+#ifndef	ExtraExportFlags
+#define	ExtraExportFlags	/**/
+#endif	/* ExtraExportFlags */
+
 #ifndef	ArCommand
 #define	ArCommand	ar
 #endif	/* ArCommand */
@@ -705,6 +709,7 @@ ALLDEFINES	= $(ALLINCLUDES) $(DEV_DEFINES) $(XTRA_CDEFINES) $(STD_DEFINES) $(PRO
 CFLAGS		= $(CCOPTIONS) $(COPT) $(ALLDEFINES)
 XTRA_CLDFLAGS	= $(EXTRA_CLDFLAGS) $(EXTRA_LDFLAGS)
 EXTRA_SYS_LIBS	= ExtraSysLibraries
+EXTRA_EXPORT_FLAGS = ExtraExportFlags
 
 DEPEND		= MakeDepend
 CPP		= CppCommand

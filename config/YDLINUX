@@ -1,5 +1,5 @@
 /*
- *      $Id: YDLINUX,v 1.4 2003-01-27 20:18:41 haley Exp $
+ *      $Id: YDLINUX,v 1.5 2005-05-01 21:49:24 haley Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@
 #define XToolLibrary	-lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext -ldl
+#define ExtraExportFlags -rdynamic
 
 #define	ArchRecLibSearch	-L/usr/X11R6/lib
 #define	ArchRecIncSearch	-I/usr/X11R6/include

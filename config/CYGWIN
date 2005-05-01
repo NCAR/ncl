@@ -1,5 +1,5 @@
 /*
- *      $Id: CYGWIN,v 1.4 2004-12-17 22:55:24 haley Exp $
+ *      $Id: CYGWIN,v 1.5 2005-05-01 21:49:22 haley Exp $
  */
 /************************************************************************
 *									*
@@ -35,6 +35,7 @@
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 #define ExeSuffix exe
+#define ExtraExportFlags -rdynamic
 
 #define	ArchRecLibSearch	-L/usr/X11R6/lib
 #define	ArchRecIncSearch	-I/usr/X11R6/include

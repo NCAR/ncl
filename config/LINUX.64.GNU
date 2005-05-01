@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.64.GNU,v 1.1 2004-12-17 06:52:25 haley Exp $
+ *      $Id: LINUX.64.GNU,v 1.2 2005-05-01 21:49:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -34,6 +34,7 @@
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lX11 -lXext
+#define ExtraExportFlags -rdynamic
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib64
 #define ArchRecIncSearch    -I/usr/X11R6/include

@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000.64,v 1.6 2005-05-01 20:26:13 haley Exp $
+ *      $Id: AIX_RS6000.64,v 1.7 2005-05-01 21:49:22 haley Exp $
  */
 /************************************************************************
 *									*
@@ -34,3 +34,4 @@
 #define Cstatic       -bnso
 #define Cdynamic      -bso
 #define CtoFLibraries -lm -lxlf90 -lxlopt
+#define ExtraExportFlags -bexpall -brtl

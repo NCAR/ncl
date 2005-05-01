@@ -1,5 +1,5 @@
 /*
- *      $Id: FreeBSD,v 1.1 2003-11-26 21:59:33 grubin Exp $
+ *      $Id: FreeBSD,v 1.2 2005-05-01 21:49:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -15,7 +15,7 @@
  *          	    National Center for Atmospheric Research
  *          	    POB 3000, Boulder, Colorado
  *
- *  Date:           $Date: 2003-11-26 21:59:33 $ 
+ *  Date:           $Date: 2005-05-01 21:49:23 $ 
  *
  *  Description:    This file contains all the directives needed to
  *                  tell ymake how FreeBSD is different from a
@@ -35,6 +35,7 @@
 # define    XToolLibrary    -lXt -lSM -lICE
 # define    BuildShared NO
 # define    XLibrary    -lX11 -lXext
+# define ExtraExportFlags -rdynamic
 
 # define    ArchRecLibSearch    -L/usr/X11R6/lib -L/custom/lib
 # define    ArchRecIncSearch    -I/usr/X11R6/include -I/custom/include
