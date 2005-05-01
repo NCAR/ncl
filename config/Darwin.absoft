@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin.absoft,v 1.1 2004-08-01 18:22:09 haley Exp $
+ *      $Id: Darwin.absoft,v 1.2 2005-05-01 20:26:14 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			default setup.
  */
 #define HdfDefines  -DDARWIN
-#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DNGCAPS
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DF_UPPERCASE
 #define Cstatic 
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'

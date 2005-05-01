@@ -1,5 +1,5 @@
 /*
- *      $Id: HPUX_snake,v 1.14 2002-05-09 17:00:04 haley Exp $
+ *      $Id: HPUX_snake,v 1.15 2005-05-01 20:26:14 haley Exp $
  */
 /************************************************************************
 *									*
@@ -20,7 +20,7 @@
  *	Description:	
  */
 #define	HdfDefines	-DHP9000
-#define	StdDefines	-DSYSV -D_HPUX_SOURCE
+#define	StdDefines	-DSYSV -D_HPUX_SOURCE -DF_NO_UNDERSCORES
 #define	CCompiler	c89
 #define	Cdynamic	-Wl,-a,default
 #define	Cstatic		-Wl,-a,archive
