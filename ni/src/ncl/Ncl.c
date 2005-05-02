@@ -84,6 +84,8 @@ char    **NCL_ARGV;
 int NCL_ARGC;
 
 char    *s;
+char    oc[1];
+
 char    *t;
 size_t  l;
 char    *f;
@@ -91,7 +93,7 @@ char    *f;
 char    **cargs;
 int nargs = 0;
 
-short   NCLverbose = 0;
+short   NCLverbose = 1;         /* echo copyright/etc. by default */
 short   NCLecho = 0;
 
 
@@ -133,15 +135,15 @@ main(int argc, char* argv[]) {
 
     cmd_line =isatty(fileno(stdin));
 
-    myName = malloc(strlen(argv[0]));
+    myName = NclMalloc(strlen(argv[0]));
     (void) strcpy(myName, argv[0]);
 
     /*
      * NCL argv, for command line processing
      */
-    NCL_ARGV = (char **) malloc(argc  * sizeof(char *));
+    NCL_ARGV = (char **) NclMalloc(argc  * sizeof(char *));
     for (i = 0; i < argc; i++) {
-        NCL_ARGV[i] =  (char *) malloc((strlen(argv[i]) + 1) * sizeof(char *));
+        NCL_ARGV[i] =  (char *) NclMalloc((strlen(argv[i]) + 1) * sizeof(char *));
         (void) strcpy(NCL_ARGV[i], argv[i]);
     }
     NCL_ARGC = argc;
@@ -163,13 +165,12 @@ main(int argc, char* argv[]) {
             else {
                 /* user-defined argument */
                 if (nargs == 0)
-                    cargs = (char **) malloc(sizeof(char *));
+                    cargs = (char **) NclMalloc(sizeof(char *));
                 else
-                    cargs = (char **) realloc(cargs, sizeof(char *));
+                    cargs = (char **) NclRealloc(cargs, sizeof(char *));
     
-                /* need two (2) extra spaces for "\n\n" for arg stack */
-                cargs[nargs] = (char *) malloc((strlen(NCL_ARGV[i]) + 2) * sizeof(char *));
-                (void) sprintf(cargs[nargs], "%s\n\n", NCL_ARGV[i]);
+                cargs[nargs] = (char *) NclMalloc((strlen(NCL_ARGV[i]) + 1) * sizeof(char *));
+                (void) sprintf(cargs[nargs], "%s\n", NCL_ARGV[i]);
                 nargs++;
             }
             continue;
@@ -191,23 +192,28 @@ main(int argc, char* argv[]) {
              * Take into account a combination of arguments (i.e. -xv or -vx)
              */
             while (strlen(s)) {
-                if (!strncmp(s, "x", 1)) {
+                (void) strncpy(oc, s, 1);
+                if (!strncmp(oc, "x", 1)) {
                     NCLecho = 1;
                     s++;
                     continue;
                 }
 
-                if (!strncmp(s, "v", 1)) {
-                    NCLverbose = 1;
+                if (!strncmp(oc, "v", 1)) {
+                    NCLverbose = 0;
                     s++;
                     continue;
                 }
 
-                if (!strncmp(s, "V", 1)) {
-                    NCLverbose = 1;
+                if (!strncmp(oc, "V", 1)) {
+                    NCLverbose = 0;
                     s++;
                     continue;
                 }
+
+                /* move past invalid options */
+                (void) fprintf(stderr, "Invalid option: '%s'\n", oc);
+                s++;
             }
         }
     }
@@ -354,6 +360,9 @@ main(int argc, char* argv[]) {
         for (k = 0; k < nargs; k++) {
             (void) fwrite(cargs[k], strlen(cargs[k]), 1, tmpf);
         }
+
+        /* don't forget last newline; NCL requires it */
+        (void) fwrite("\n", 1, 1, tmpf);
         (void) fclose(tmpf);
         
         if (_NclPreLoadScript(buffer, 1) == NhlFATAL) {
@@ -378,13 +387,13 @@ main(int argc, char* argv[]) {
     }
 
 # ifdef NCLDEBUG
-	fclose(thefptr);
-	fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
+	(void) fclose(thefptr);
+	(void) fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
 	_NclObjsSize(stdout);
 	_NclNumGetObjCals(stdout);
 	_NclPrintUnfreedObjs(theoptr);
-	fprintf(stdout,"Number of constants used %d\n",number_of_constants);
-	fclose(theoptr);
+	(void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
+	(void) fclose(theoptr);
 # endif
 	NhlClose();
 	return;
