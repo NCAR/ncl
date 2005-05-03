@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.56 1999-11-05 23:12:19 ethan Exp $
+ *      $Id: NclApi.c,v 1.57 2005-05-03 21:01:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,6 +52,9 @@ extern "C" {
 #else
 #include <dlfcn.h>
 #endif
+
+short    NCLverbose = 0;
+short    NCLecho = 0;
 
 int force_reset = 0;
 int start_state = 0;
