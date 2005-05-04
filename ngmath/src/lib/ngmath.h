@@ -1,5 +1,5 @@
 /* 
- * $Id: ngmath.h,v 1.18 2005-05-04 02:04:17 fred Exp $
+ * $Id: ngmath.h,v 1.19 2005-05-04 17:58:55 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -480,6 +480,7 @@ void    c_nnpntendd();
 void    c_nngetwtsd(int *, int *, double *, double *, double *, double *);
 
 #ifdef  UNICOS
+#ifndef NGstring
 #include <fortran.h>
 #define NGstring            _fcd
 #define NGCstrToFstr(cstr,len) ((cstr)?_cptofcd((char *)cstr,len):_cptofcd("",0)
@@ -487,21 +488,17 @@ void    c_nngetwtsd(int *, int *, double *, double *, double *, double *);
 #define NGFstrToCstr(fstr) (_fcdtocp(fstr))
 #define NGFlgclToClgcl(flog)  (_ltob(&flog))
 #define NGClgclToFlgcl(clog)  (_btol(clog))
-float   *c_natgrids(int, float [], float [], float [],
-float   *c_natgrids(int, float [], float [], float [],
-float   *c_natgrids(int, float [], float [], float [],
-float   *c_natgrids(int, float [], float [], float [],
-                     int, int, float [], float [], int *);
-                     int, int, float [], float [], int *);
-                     int, int, float [], float [], int *);
-                     int, int, float [], float [], int *);
+#endif
 #else
+#ifndef NGstring
 #define NGstring            char *
 #define NGCstrToFstr(cstr,len) (char *)cstr
 #define NGFstrToCstr(fstr) fstr
 #define NGFlgclToClgcl(flog)  flog
 #define NGClgclToFlgcl(clog)  clog
 #endif
+#endif
 
+#ifndef NGSTRLEN
 #define NGSTRLEN(cstr)      ((cstr)?strlen(cstr):0)
- 
+#endif
