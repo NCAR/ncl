@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheads.h,v 1.10 2005-05-04 02:02:50 fred Exp $
+ * $Id: nnuheads.h,v 1.11 2005-05-04 18:29:45 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -33,20 +33,3 @@ extern void   c_nnpnts(float, float, float *);
 extern void   c_nnpntend();
 extern void   c_nngetwts(int *, int *, float *, float *, float *, float *);
 extern void   c_nngetwtsd(int *, int *, double *, double *, double *, double *);
-
-/*
- *  Fortran entry points.
- */
-void  NGCALLF(natgrids,NATGRIDS) (int *, float *, float *, float *,
-              int *, int *, float *, float *, float *, int *);
-void  NGCALLF(nnsetr,NNSETR) (char *, float *);
-void  NGCALLF(nngetr,NNGETR) (char *, float *);
-void  NGCALLF(nngetslopes,NNGETSLOPES) (int *, int *, float *, int *);
-void  NGCALLF(nngetaspects,NNGETASPECTS) (int *, int *, float *, int *);
-void  NGCALLF(nnpntinits,NNPNTINITS) (int *, float *, float *, float *);
-void  NGCALLF(nnpnts,NNPNTS) (float *, float *, float *);
-void  NGCALLF(nnpntend,NNPNTEND) ();
-void  NGCALLF(nngetwts,NNGETWTS) (int *, int *, float *, float *, float *, float*);
-void  NGCALLF(nngetwtsd,NNGETWTSD) (int *, int *, double *, double *, double *, double *);
-void  NGCALLF(fnnsetc,FNNSETC) (char *, char *, int *);
-void  NGCALLF(fnngetc,FNNGETC) (char *, char *, int *);

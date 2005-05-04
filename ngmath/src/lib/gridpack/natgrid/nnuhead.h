@@ -1,5 +1,5 @@
 /*
- * $Id: nnuhead.h,v 1.9 2005-05-04 02:02:49 fred Exp $
+ * $Id: nnuhead.h,v 1.10 2005-05-04 18:29:44 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -43,6 +43,3 @@ extern double    bI,        bJ,         magx,       magy,
 extern char      tri_file[], error_file[], emsg[];
 
 extern void   ErrorHnd(int, char *, FILE *, char *);
-
-void  NGCALLF(nnseti,NNSETI) (char *, int *);
-void  NGCALLF(nngeti,NNGETI) (char *, int *);

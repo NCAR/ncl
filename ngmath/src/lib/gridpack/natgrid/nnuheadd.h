@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheadd.h,v 1.9 2005-05-04 02:02:49 fred Exp $
+ * $Id: nnuheadd.h,v 1.10 2005-05-04 18:29:44 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -31,16 +31,3 @@ extern void   c_nngetaspectd(int, int, double *, int *);
 extern void   c_nnpntinitd(int, double *, double *, double *);
 extern void   c_nnpntd(double, double, double *);
 extern void   c_nnpntendd();
-
-/*
- *  Fortran entry points.
- */
-void  NGCALLF(natgridd,NATGRIDD) (int *, double *, double *, double *,
-              int *, int *, double *, double *, double *, int *);
-void  NGCALLF(nnsetrd,NNSETRD) (char *, double *);
-void  NGCALLF(nngetrd,NNGETRD) (char *, double *);
-void  NGCALLF(nngetsloped,NNGETSLOPED) (int *, int *, double *, int *);
-void  NGCALLF(nngetaspectd,NNGETASPECTD) (int *, int *, double *, int *);
-void  NGCALLF(nnpntinitd,NNPNTINITD) (int *, double *, double *, double *);
-void  NGCALLF(nnpntd,NNPNTD) (double *, double *, double *);
-void  NGCALLF(nnpntendd,NNPNTENDD) ();
