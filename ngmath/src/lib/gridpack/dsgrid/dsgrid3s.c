@@ -21,8 +21,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <math.h>
-#include <stdlib.h>
+#include <ncarg/ngmath.h>
 #include "dstypes.h"
 #include "dsproto.h"
 #include "dsuhead.h"
@@ -69,7 +68,8 @@ float *c_dsgrid3s(int n, float x[], float y[], float z[], float u[],
  */
 {
   int       i, j, k;
-  float     xc, yc, zc, perror = 1., *retval;
+  static    float perror = 1.;
+  float     xc, yc, zc, *retval;
 
   DSpoints3 q;
 

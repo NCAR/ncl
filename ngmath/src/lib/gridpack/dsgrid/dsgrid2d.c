@@ -21,7 +21,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdlib.h>
+#include <ncarg/ngmath.h>
 #include "dstypes.h"
 #include "dsproto.h"
 #include "dsuhead.h"
@@ -58,7 +58,8 @@ double *c_dsgrid2d(int n, double x[], double y[], double u[],
  */
 {
   
-  double zo[1] = {0.}, *z, *retval, perror = 1.;
+  static double perror = 1.;
+  double zo[1] = {0.}, *z, *retval;
   
   z = (double *) calloc(n, sizeof(double));
   if (z == NULL) {

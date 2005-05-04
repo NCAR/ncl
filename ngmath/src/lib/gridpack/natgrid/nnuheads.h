@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheads.h,v 1.9 2005-05-01 20:58:22 haley Exp $
+ * $Id: nnuheads.h,v 1.10 2005-05-04 02:02:50 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,8 +24,7 @@
 *                                                                       *
 ************************************************************************/
 
-void   c_nnsetr(char *, float);
-void   c_nngetr(char *, float *);
+#include <ncarg/ngmath.h>
 
 extern void   c_nngetslopes(int, int, float *, int *);
 extern void   c_nngetaspects(int, int, float *, int *);
@@ -34,30 +33,6 @@ extern void   c_nnpnts(float, float, float *);
 extern void   c_nnpntend();
 extern void   c_nngetwts(int *, int *, float *, float *, float *, float *);
 extern void   c_nngetwtsd(int *, int *, double *, double *, double *, double *);
-
-/*
- *  Fortran function macro.  This macro is used to provide the appropriate
- *  system-specific C function name for it to be Fortran callable.
- */
-#ifndef NGCALLF
-
-#if defined(F_UPPERCASE)
-
-#define NGCALLF(reg,caps)       caps
-
-#elif defined(F_NO_UNDERSCORES)
-
-#define NGCALLF(reg,caps)       reg
- 
-#else
-#ifdef  __STDC__
-#define NGCALLF(reg,caps)       reg##_
-#else
-#define NGCALLF(reg,caps)       reg/**/_
- 
-#endif  /* __STDC__ */
-#endif	/* F_UPPERCASE */
-#endif  /* NGCALLF */
 
 /*
  *  Fortran entry points.
@@ -75,6 +50,3 @@ void  NGCALLF(nngetwts,NNGETWTS) (int *, int *, float *, float *, float *, float
 void  NGCALLF(nngetwtsd,NNGETWTSD) (int *, int *, double *, double *, double *, double *);
 void  NGCALLF(fnnsetc,FNNSETC) (char *, char *, int *);
 void  NGCALLF(fnngetc,FNNGETC) (char *, char *, int *);
-
-float  *c_natgrids(int, float [], float [], float [],
-                   int, int, float [], float [], int *);

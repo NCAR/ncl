@@ -1,5 +1,5 @@
 /*
- * $Id: c_ftcurv.c,v 1.8 2003-09-19 23:05:55 haley Exp $
+ * $Id: c_ftcurv.c,v 1.9 2005-05-04 02:02:39 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,10 +24,9 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdlib.h>
+#include <ncarg/ngmath.h>
 #include "ftgvars.h"
 #include "ftproto.h"
-#include <math.h>
 
 int c_ftcurv(int n, float xi[], float yi[], int m, float xo[], float yo[])
 {

@@ -1,5 +1,5 @@
 /*
- * $Id: nnuhead.h,v 1.8 2005-05-01 20:58:22 haley Exp $
+ * $Id: nnuhead.h,v 1.9 2005-05-04 02:02:49 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,8 +24,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdio.h>
-#include <string.h>
+#include <ncarg/ngmath.h>
 
 #define EQ             ==
 #define NE             !=
@@ -42,35 +41,6 @@ extern double    bI,        bJ,         magx,       magy,
                  vertlap_save;
 
 extern char      tri_file[], error_file[], emsg[];
-
-/*
- *  Fortran function macro.  This macro is used to provide the appropriate
- *  system-specific C function name for it to be Fortran callable.
- */
-#ifndef NGCALLF
-
-#if defined(F_UPPERCASE)
-
-#define NGCALLF(reg,caps)       caps
-
-#elif defined(F_NO_UNDERSCORES)
-
-#define NGCALLF(reg,caps)       reg
- 
-#else
-#ifdef  __STDC__
-#define NGCALLF(reg,caps)       reg##_
-#else
-#define NGCALLF(reg,caps)       reg/**/_
- 
-#endif  /* __STDC__ */
-#endif	/* F_UPPERCASE */
-#endif  /* NGCALLF */
-
-void   c_nnsetc(char *, char *);
-void   c_nngetc(char *, char *);
-void   c_nnseti(char *, int);
-void   c_nngeti(char *, int *);
 
 extern void   ErrorHnd(int, char *, FILE *, char *);
 

@@ -21,8 +21,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdlib.h>
-#include <math.h>
+#include <ncarg/ngmath.h>
 #include "dstypes.h"
 #include "dsproto.h"
 #include "dsuhead.h"
@@ -68,7 +67,8 @@ double *c_dsgrid3d(int n, double x[], double y[], double z[], double u[],
  */
 {
   int       i, j, k;
-  double    xc, yc, zc, perror = 1., *retval;
+  static    double perror = 1.;
+  double    xc, yc, zc, *retval;
 
   DSpointd3 q;
 

@@ -21,8 +21,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <ncarg/ngmath.h>
 #include "dstypes.h"
 #include "dsproto.h"
 

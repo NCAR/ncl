@@ -1,5 +1,5 @@
 /*
- * $Id: nncheadd.h,v 1.4 2000-08-22 03:34:56 haley Exp $
+ * $Id: nncheadd.h,v 1.5 2005-05-04 02:02:48 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,6 +24,8 @@
 *                                                                       *
 ************************************************************************/
 
+#include <ncarg/ngmath.h>
+
 struct asinfod
 {  int          crows;
    int          ccols;
@@ -40,9 +42,3 @@ extern void     Initialized(int, double [], double [], int, int,
 
 int             ReadDatad(int, double *, double *, double *);
 double          **MakeGridd(int, int, double *, double *);
-
-void            c_nngetsloped(int, int, double *, int *);
-void            c_nngetaspectd(int, int, double *, int *);
-void            c_nnpntinitd(int, double [], double [], double []);
-extern void     c_nnpntd(double, double, double *);
-void            c_nnpntendd();

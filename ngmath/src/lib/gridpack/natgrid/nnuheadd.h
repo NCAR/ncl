@@ -1,5 +1,5 @@
 /*
- * $Id: nnuheadd.h,v 1.8 2005-05-01 20:58:22 haley Exp $
+ * $Id: nnuheadd.h,v 1.9 2005-05-04 02:02:49 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,38 +24,13 @@
 *                                                                       *
 ************************************************************************/
 
-void   c_nnsetrd(char *, double);
-void   c_nngetrd(char *, double *);
+#include <ncarg/ngmath.h>
 
 extern void   c_nngetsloped(int, int, double *, int *);
 extern void   c_nngetaspectd(int, int, double *, int *);
 extern void   c_nnpntinitd(int, double *, double *, double *);
 extern void   c_nnpntd(double, double, double *);
 extern void   c_nnpntendd();
-
-/*
- *  Fortran function macro.  This macro is used to provide the appropriate
- *  system-specific C function name for it to be Fortran callable.
- */
-#ifndef NGCALLF
-
-#if defined(F_UPPERCASE)
-
-#define NGCALLF(reg,caps)       caps
-
-#elif defined(F_NO_UNDERSCORES)
-
-#define NGCALLF(reg,caps)       reg
- 
-#else
-#ifdef  __STDC__
-#define NGCALLF(reg,caps)       reg##_
-#else
-#define NGCALLF(reg,caps)       reg/**/_
- 
-#endif  /* __STDC__ */
-#endif	/* F_UPPERCASE */
-#endif  /* NGCALLF */
 
 /*
  *  Fortran entry points.
@@ -69,6 +44,3 @@ void  NGCALLF(nngetaspectd,NNGETASPECTD) (int *, int *, double *, int *);
 void  NGCALLF(nnpntinitd,NNPNTINITD) (int *, double *, double *, double *);
 void  NGCALLF(nnpntd,NNPNTD) (double *, double *, double *);
 void  NGCALLF(nnpntendd,NNPNTENDD) ();
-
-double  *c_natgridd(int, double [], double [], double [],
-                    int, int, double [], double [], int *);

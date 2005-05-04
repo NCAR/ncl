@@ -21,11 +21,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include "cssproto.h"
+#include <ncarg/ngmath.h>
 
 int *c_csstri(int n, float rlat[], float rlon[], int *nt, int *ier)
 {

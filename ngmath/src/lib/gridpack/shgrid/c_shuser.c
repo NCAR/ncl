@@ -1,5 +1,5 @@
 /*
- * $Id: c_shuser.c,v 1.6 2000-09-19 23:58:16 fred Exp $
+ * $Id: c_shuser.c,v 1.7 2005-05-04 02:02:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,30 +24,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-
-#include "shproto.h"
-
-#ifdef  UNICOS
-#include <fortran.h>
-#define NGstring            _fcd
-#define NGCstrToFstr(cstr,len) ((cstr)?_cptofcd((char *)cstr,len):_cptofcd("",0)
-)
-#define NGFstrToCstr(fstr) (_fcdtocp(fstr))
-#define NGFlgclToClgcl(flog)  (_ltob(&flog))
-#define NGClgclToFlgcl(clog)  (_btol(clog))
-#else
-#define NGstring            char *
-#define NGCstrToFstr(cstr,len) (char *)cstr
-#define NGFstrToCstr(fstr) fstr
-#define NGFlgclToClgcl(flog)  flog
-#define NGClgclToFlgcl(clog)  clog
-#endif
- 
-#define NGSTRLEN(cstr)      ((cstr)?strlen(cstr):0)
-
+#include <ncarg/ngmath.h>
 
 float *c_shgrid(int n, float x[], float y[], float z[], float f[],
                 int nxo, int nyo, int nzo, float xo[], float yo[], float zo[],
