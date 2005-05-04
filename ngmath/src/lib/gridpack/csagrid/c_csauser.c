@@ -21,11 +21,7 @@
 *                                                                       *
 ************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include "csaproto.h"
+#include <ncarg/ngmath.h>
 
 float *c_csa1s(int n, float xi[], float yi[], int knots, 
             int m, float xo[], int *ier)

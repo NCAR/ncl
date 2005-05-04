@@ -31,7 +31,7 @@ C
       DOUBLE PRECISION BASM
       DIMENSION X(NDIM),NDERIV(NDIM),COEF(*),XMIN(NDIM),XMAX(NDIM),
      +          NODES(NDIM)
-      COMMON /SPLCOMD/MDIM,DX(4),DXIN(4),IB(4),IBMN(4),IBMX(4)
+      COMMON /SPLCOMD/DX(4),DXIN(4),MDIM,IB(4),IBMN(4),IBMX(4)
       SAVE
 C
 C The restriction for NDIM to be .LE. 4 can be eliminated by increasing

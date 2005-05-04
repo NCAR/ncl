@@ -24,6 +24,7 @@ C
 C
 C  Check on the number of knots.
 C
+
       IF (KNOTS .LT. 4) THEN
         CALL CFAERR (202,' CSA1S - must have at least four knots',38)       
         IER = 202
