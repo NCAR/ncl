@@ -1,5 +1,5 @@
 /* 
- * $Id: ngmath.h,v 1.19 2005-05-04 17:58:55 fred Exp $
+ * $Id: ngmath.h,v 1.20 2005-05-04 18:29:22 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -478,6 +478,36 @@ void    c_nnpntinitd(int, double [], double [], double []);
 void    c_nnpntd(double, double, double *);
 void    c_nnpntendd();
 void    c_nngetwtsd(int *, int *, double *, double *, double *, double *);
+
+/* moved from nnuheadd.h */
+void  NGCALLF(natgridd,NATGRIDD) (int *, double *, double *, double *,
+              int *, int *, double *, double *, double *, int *);
+void  NGCALLF(nnsetrd,NNSETRD) (char *, double *);
+void  NGCALLF(nngetrd,NNGETRD) (char *, double *);
+void  NGCALLF(nngetsloped,NNGETSLOPED) (int *, int *, double *, int *);
+void  NGCALLF(nngetaspectd,NNGETASPECTD) (int *, int *, double *, int *);
+void  NGCALLF(nnpntinitd,NNPNTINITD) (int *, double *, double *, double *);
+void  NGCALLF(nnpntd,NNPNTD) (double *, double *, double *);
+void  NGCALLF(nnpntendd,NNPNTENDD) ();
+
+/* moved from nnuhead.h */
+void  NGCALLF(nnseti,NNSETI) (char *, int *);
+void  NGCALLF(nngeti,NNGETI) (char *, int *);
+
+/* moved from nnuheads.h */
+void  NGCALLF(natgrids,NATGRIDS) (int *, float *, float *, float *,
+              int *, int *, float *, float *, float *, int *);
+void  NGCALLF(nnsetr,NNSETR) (char *, float *);
+void  NGCALLF(nngetr,NNGETR) (char *, float *);
+void  NGCALLF(nngetslopes,NNGETSLOPES) (int *, int *, float *, int *);
+void  NGCALLF(nngetaspects,NNGETASPECTS) (int *, int *, float *, int *);
+void  NGCALLF(nnpntinits,NNPNTINITS) (int *, float *, float *, float *);
+void  NGCALLF(nnpnts,NNPNTS) (float *, float *, float *);
+void  NGCALLF(nnpntend,NNPNTEND) ();
+void  NGCALLF(nngetwts,NNGETWTS) (int *, int *, float *, float *, float *, float*);
+void  NGCALLF(nngetwtsd,NNGETWTSD) (int *, int *, double *, double *, double *, double *);
+void  NGCALLF(fnnsetc,FNNSETC) (char *, char *, int *);
+void  NGCALLF(fnngetc,FNNGETC) (char *, char *, int *);
 
 #ifdef  UNICOS
 #ifndef NGstring
