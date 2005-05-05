@@ -1,5 +1,5 @@
 /*
- *      $Id: Cray,v 1.31 2005-05-01 20:30:12 haley Exp $
+ *      $Id: Cray,v 1.32 2005-05-05 04:08:50 haley Exp $
  */
 /************************************************************************
 *									*
@@ -21,7 +21,7 @@
  *			describe the Cray running unicos.
  */
 #define	HdfDefines	-DUNICOS
-#define	StdDefines	-DSYSV -DUNICOS -DUSG -DF_UPPERCASE
+#define	StdDefines	-DSYSV -DUNICOS -DUSG
 #define FCompiler	f90
 #define LdRelCommand	$(CONFIG_DIR)/ldrel
 #define	ArCommand	bld
@@ -30,6 +30,7 @@
 #define BuildWithF90
 #define CppCommand  /opt/ctl/bin/cpp
 #define FCppCommand  /opt/ctl/bin/cpp
+#define NgCallF  caps
 
 #define DoesRanlib	NO
 #define GksBufferSize	1024

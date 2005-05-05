@@ -1,5 +1,5 @@
 /*
- *      $Id: HPUX_snake,v 1.16 2005-05-01 21:49:23 haley Exp $
+ *      $Id: HPUX_snake,v 1.17 2005-05-05 04:08:50 haley Exp $
  */
 /************************************************************************
 *									*
@@ -20,7 +20,7 @@
  *	Description:	
  */
 #define	HdfDefines	-DHP9000
-#define	StdDefines	-DSYSV -D_HPUX_SOURCE -DF_NO_UNDERSCORES
+#define	StdDefines	-DSYSV -D_HPUX_SOURCE
 #define	CCompiler	c89
 #define	Cdynamic	-Wl,-a,default
 #define	Cstatic		-Wl,-a,archive
@@ -30,6 +30,7 @@
 #define DoesRanlib	NO
 #define	CtoFLibraries	-lf -lm
 #define ExtraExportFlags -Wl,-E
+#define NgCallF       reg
 
 #define ArchRecLibSearch	-L/usr/lib/Motif2.1 -L/usr/lib/X11R6
 #define ArchRecIncSearch	-I/usr/include/Motif2.1 -I/usr/include/X11R6

@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.47 2005-05-01 21:49:24 haley Exp $
+ *      $Id: Template,v 1.48 2005-05-05 04:08:51 haley Exp $
  */
 /************************************************************************
 *									*
@@ -435,6 +435,10 @@ NGCOMM########################################################################
 #define	ExtraExportFlags	/**/
 #endif	/* ExtraExportFlags */
 
+#ifndef	NgCallF
+#define	NgCallF reg\#\#_
+#endif	/* NgCallF */
+
 #ifndef	ArCommand
 #define	ArCommand	ar
 #endif	/* ArCommand */
@@ -718,6 +722,7 @@ FCPP		= FCppCommand
 F77		= FCompiler
 F77_LD		= FLoader
 FCOPTIONS	= FcOptions $(EXTRA_FCOPTIONS)
+NGCALLF = NgCallF
 
 EXE_SUFFIX	= ExeSuffix
 

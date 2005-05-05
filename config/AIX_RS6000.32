@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000.32,v 1.6 2005-05-01 21:49:22 haley Exp $
+ *      $Id: AIX_RS6000.32,v 1.7 2005-05-05 04:08:49 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,7 @@
  *			default setup.
  */
 #define HdfDefines    -DIBM6000
-#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DF_NO_UNDERSCORES
+#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
 #define CCompiler     xlc
 #define FCompiler     xlf
 #define CcOptions     -q32 -qalign=natural
@@ -35,3 +35,4 @@
 #define Cdynamic      -bso
 #define CtoFLibraries -lm -lxlf90 -lxlopt
 #define ExtraExportFlags -bexpall -brtl
+#define NgCallF       reg

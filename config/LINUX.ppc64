@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.ppc64,v 1.1 2005-05-01 22:56:28 haley Exp $
+ *      $Id: LINUX.ppc64,v 1.2 2005-05-05 04:08:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -22,7 +22,7 @@
  *          system using the xlf/xlc compilers
  */
 #define HdfDefines    -D_IBMR2
-#define StdDefines    -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT -Dppc64 -DF_NO_UNDERSCORES
+#define StdDefines    -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT -Dppc64
 #define CCompiler     xlc
 #define FCompiler     xlf
 #define CcOptions     -q64 -qfullpath -qmaxmem=-1
@@ -35,7 +35,7 @@
 #define Cstatic       -bnso
 #define Cdynamic      -bso
 #define CtoFLibraries -L/opt/ibmcmp/xlf/9.1/lib64 -lxlfmath -lxlf90 -lm
-
+#define NgCallF       reg
 #define CppCommand '/usr/bin/cpp -traditional'
 #define XToolLibrary -lXt -lSM -lICE
 #define BuildShared NO
