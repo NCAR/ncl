@@ -1,5 +1,5 @@
 /* 
- * $Id: ngmath.h,v 1.20 2005-05-04 18:29:22 fred Exp $
+ * $Id: ngmath.h.sed,v 1.1 2005-05-05 04:30:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -42,20 +42,8 @@
  */
 #ifndef NGCALLF
  
-#if defined(UNICOS) || defined(NGCAPS)
-#define NGCALLF(reg,caps)       caps
- 
-#elif   defined(RS6000) || defined(__hpux)
-#define NGCALLF(reg,caps)       reg
- 
-#else
-#ifdef  __STDC__
-#define NGCALLF(reg,caps)       reg##_
-#else
-#define NGCALLF(reg,caps)       reg/**/_
- 
-#endif  /* __STDC__ */
-#endif  /* UNICOS else ... */
+#define NGCALLF(reg,caps)   SED_NGCALLF
+
 #endif  /* NGCALLF */
 
 #ifndef MAX
@@ -479,38 +467,7 @@ void    c_nnpntd(double, double, double *);
 void    c_nnpntendd();
 void    c_nngetwtsd(int *, int *, double *, double *, double *, double *);
 
-/* moved from nnuheadd.h */
-void  NGCALLF(natgridd,NATGRIDD) (int *, double *, double *, double *,
-              int *, int *, double *, double *, double *, int *);
-void  NGCALLF(nnsetrd,NNSETRD) (char *, double *);
-void  NGCALLF(nngetrd,NNGETRD) (char *, double *);
-void  NGCALLF(nngetsloped,NNGETSLOPED) (int *, int *, double *, int *);
-void  NGCALLF(nngetaspectd,NNGETASPECTD) (int *, int *, double *, int *);
-void  NGCALLF(nnpntinitd,NNPNTINITD) (int *, double *, double *, double *);
-void  NGCALLF(nnpntd,NNPNTD) (double *, double *, double *);
-void  NGCALLF(nnpntendd,NNPNTENDD) ();
-
-/* moved from nnuhead.h */
-void  NGCALLF(nnseti,NNSETI) (char *, int *);
-void  NGCALLF(nngeti,NNGETI) (char *, int *);
-
-/* moved from nnuheads.h */
-void  NGCALLF(natgrids,NATGRIDS) (int *, float *, float *, float *,
-              int *, int *, float *, float *, float *, int *);
-void  NGCALLF(nnsetr,NNSETR) (char *, float *);
-void  NGCALLF(nngetr,NNGETR) (char *, float *);
-void  NGCALLF(nngetslopes,NNGETSLOPES) (int *, int *, float *, int *);
-void  NGCALLF(nngetaspects,NNGETASPECTS) (int *, int *, float *, int *);
-void  NGCALLF(nnpntinits,NNPNTINITS) (int *, float *, float *, float *);
-void  NGCALLF(nnpnts,NNPNTS) (float *, float *, float *);
-void  NGCALLF(nnpntend,NNPNTEND) ();
-void  NGCALLF(nngetwts,NNGETWTS) (int *, int *, float *, float *, float *, float*);
-void  NGCALLF(nngetwtsd,NNGETWTSD) (int *, int *, double *, double *, double *, double *);
-void  NGCALLF(fnnsetc,FNNSETC) (char *, char *, int *);
-void  NGCALLF(fnngetc,FNNGETC) (char *, char *, int *);
-
 #ifdef  UNICOS
-#ifndef NGstring
 #include <fortran.h>
 #define NGstring            _fcd
 #define NGCstrToFstr(cstr,len) ((cstr)?_cptofcd((char *)cstr,len):_cptofcd("",0)
@@ -518,17 +475,21 @@ void  NGCALLF(fnngetc,FNNGETC) (char *, char *, int *);
 #define NGFstrToCstr(fstr) (_fcdtocp(fstr))
 #define NGFlgclToClgcl(flog)  (_ltob(&flog))
 #define NGClgclToFlgcl(clog)  (_btol(clog))
-#endif
+float   *c_natgrids(int, float [], float [], float [],
+float   *c_natgrids(int, float [], float [], float [],
+float   *c_natgrids(int, float [], float [], float [],
+float   *c_natgrids(int, float [], float [], float [],
+                     int, int, float [], float [], int *);
+                     int, int, float [], float [], int *);
+                     int, int, float [], float [], int *);
+                     int, int, float [], float [], int *);
 #else
-#ifndef NGstring
 #define NGstring            char *
 #define NGCstrToFstr(cstr,len) (char *)cstr
 #define NGFstrToCstr(fstr) fstr
 #define NGFlgclToClgcl(flog)  flog
 #define NGClgclToFlgcl(clog)  clog
 #endif
-#endif
 
-#ifndef NGSTRLEN
 #define NGSTRLEN(cstr)      ((cstr)?strlen(cstr):0)
-#endif
+ 

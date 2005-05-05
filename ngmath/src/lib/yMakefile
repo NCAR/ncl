@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.5 1999-10-20 20:34:45 haley Exp $
+#       $Id: yMakefile,v 1.6 2005-05-05 04:30:21 haley Exp $
 #
 
 #define IHaveSubdirs
@@ -11,5 +11,11 @@ INCLUDES = ngmath.h
 PartialLibraryRoot(libngmath.a,$(SUBDIRS))
 BuildSharedFromArch(libNGmath,libngmath.a,1,0,NullArgument)
 InstallTarget($(INCLUDES),$(INSTALL_INC),$(NCARGINCPATH))
+depend-local:: ngmath.h
 BuildIncludes($(INCLUDES),ncarg,..)
+
+ngmath.h: ngmath.h.sed Makefile
+	@sed \
+	-e 's+SED_NGCALLF+$(NGCALLF)+' \
+	<ngmath.h.sed >ngmath.h
 
