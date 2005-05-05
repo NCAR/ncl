@@ -56,6 +56,8 @@ IncSearch   null            default incsearch path(set in Site file)
 ExtraLibSearch  null            Extra lib search path(specific to arch)
 ExtraIncSearch  null            Extra inc search path(specific to arch)
 ExtraSysLibraries   null        Extra lib to link into EVERY executable
+ExtraExportFlags    null        Extra export options for building NCL so
+  that it can load shared objects.
 CtoFLibraries   null            $(CTOFLIBS)
 StdDefines  null            default c-defines (specific to arch)
 Cdynamic    null            $(CDYNAMIC)
@@ -70,7 +72,7 @@ FCompiler   f77         $(F77)
 FLoader     FCompiler       $(F77_LD)
 FoptimizeFlag   -O          These two options are selected based
 FDebugFlag  -g          on the DEBUG cpp symbol to set $(FOPT)
-
+NgCallF  reg##_         how to call Fortran subroutines from C
 FcOptions   null            default f77 options (specific to arch)
 LdCommand   ld          $(LD)
 LdRelCommand    LdCommand       $(LD_REL)
