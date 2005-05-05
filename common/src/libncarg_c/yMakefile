@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.51 2005-05-01 22:45:21 haley Exp $
+#	$Id: yMakefile,v 1.52 2005-05-05 04:12:02 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -78,6 +78,7 @@ REQLIBS = $(CTOFLIBS) -lc
 
 LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
+depend-local:: c.h
 BuildIncludes($(HDRS),ncarg,..)
 DependTarget($(CSRCS))
 
@@ -95,5 +96,10 @@ ncarg_path.c: ncarg_path.c.sed Makefile
 	@sed \
 	-e 's+SED_ENV_DEFS+$(NGENV_DESCRIPT)+' \
 	<ncarg_path.c.sed >ncarg_path.c
+
+c.h: c.h.sed Makefile
+	@sed \
+	-e 's+SED_NGCALLF+$(NGCALLF)+' \
+	<c.h.sed >c.h
 
 BuildSharedLibTarget(libNGc,$(OBJS) $(SHLIBOBJS),1,0,$(REQLIBS))

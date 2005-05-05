@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h,v 1.31 2005-05-01 20:52:53 haley Exp $
+ *	$Id: c.h.sed,v 1.1 2005-05-05 04:12:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -40,25 +40,9 @@
  */
 
 #ifndef	NGCALLF
-#if defined(F_UPPERCASE)
-/*
- * Brain dead crays (and most recently, the Absoft ProFortran
- * compiler) have to be different from everything else!
- */
-#define	NGCALLF(reg,caps)	caps
 
-#elif defined(F_NO_UNDERSCORES)
-/* xlf and HP compilers have no munging of names - wow how unique */
-#define	NGCALLF(reg,caps)	reg
+#define NGCALLF(reg,caps)   SED_NGCALLF
 
-#else
-/* Regular old BSD conventions */
-#ifdef	__STDC__
-#define	NGCALLF(reg,caps)	reg##_
-#else
-#define	NGCALLF(reg,caps)	reg/**/_
-#endif	/* __STDC__ */
-#endif	/* F_UPPERCASE */
 #endif	/* NGCALLF */
 
 /*
