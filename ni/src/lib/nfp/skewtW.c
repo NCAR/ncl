@@ -10,7 +10,7 @@ extern double NGCALLF(dsatlftskewt,DSATLFTSKEWT)(double*,double*);
 extern void NGCALLF(dptlclskewt,DPTLCLSKEWT)(double*,double*,double*,
                                            double*,double*);
 extern double NGCALLF(dshowalskewt,DSHOWALSKEWT)(double*,double*,double*,int*);
-extern double NGCALLF(dpwskewt,DSHOWALSKEWT)(double*,double*,int*);
+extern double NGCALLF(dpwskewt,DPWSKEWT)(double*,double*,int*);
 extern double NGCALLF(dcapethermo,DCAPETHERMO)(double*,double*,int*,double*,
                                                int*,double*,double*,int*,int*,
                                                int*);
