@@ -1,5 +1,5 @@
 /* 
- * $Id: ngmath.h.sed,v 1.1 2005-05-05 04:30:20 haley Exp $
+ * $Id: ngmath.h.sed,v 1.2 2005-05-06 23:08:50 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -45,14 +45,6 @@
 #define NGCALLF(reg,caps)   SED_NGCALLF
 
 #endif  /* NGCALLF */
-
-#ifndef MAX
-#define MAX(A,B)        (((A) > (B)) ? (A) : (B))
-#endif
-
-#ifndef MIN
-#define MIN(A,B)        (((A) < (B)) ? (A) : (B))
-#endif
 
 /*
  *  Function prototypes for the shgrid package.
