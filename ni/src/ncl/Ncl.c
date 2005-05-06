@@ -1,6 +1,8 @@
 # ifdef __cplusplus
+
 extern "C" {
 # endif
+
 # include   <stdio.h>
 # include   <sys/types.h>
 # include   <sys/stat.h>
@@ -54,78 +56,58 @@ extern FILE *stdout_fp ;
 extern FILE *stdin_fp ;
 extern int  number_of_constants;
 
-
 extern void nclprompt(
-# if	NhlNeedProto
-    void * user_data,
+# if NhlNeedProto
+    void *user_data,
     int arg
-# endif
+# endif /* NhlNeedProto */
 );
 
 extern void InitializeReadLine(
-# if	NhlNeedProto
+# if NhlNeedProto
     int opt
-# endif
+# endif /* NhlNeedProto */
 );
 
 extern NhlErrorTypes _NclPreLoadScript(
-# if     NhlNeedProto
+# if NhlNeedProto
     char *  /* path */,
     int     /* status */
-# endif
+# endif /* NhlNeedProto */
 );
 
-
-/*
- * Variables for command line options/arguments
- */
-char    *myName;        /* argv[0]: program name (should be 'ncl') */
-char    **NCL_ARGV;
-int NCL_ARGC;
-
-char    *s;
-char    oc[1];
-
-char    *t;
-size_t  l;
-char    *f;
-
-char    **cargs;
-int nargs = 0;
-
-short   NCLverbose = 1;         /* echo copyright/etc. by default */
-short   NCLecho = 0;
-
+/* Command line option variables */
+short   NCLverbose = 1;
+short   NCLecho = 0;            /* echo typed commands, off by default */
 
 int
-main(int argc, char* argv[]) {
+main(int argc, char **argv) {
 
-	int errid = -1;
-	int appid;
-	int i, j,
+    int errid = -1;
+    int appid;
+    int i, j,
         k = 0;
-	int reset = 1;
-	DIR *d;
-	struct dirent   *ent;
+    int reset = 1;
+    DIR *d;
+    struct dirent   *ent;
 # if defined(HPUX)
-	shl_t so_handle;
+    shl_t so_handle;
 # else
-	void *so_handle;
-# endif
-	char buffer[4 * NCL_MAX_STRING];
-	void (*init_function) (void);
-	char    *libpath;
-	char    *scriptpath;
-	char    *pt;
-	char    *tmp = NULL;
+    void *so_handle;
+# endif /* defined(HPUX) */
 
-    FILE    *tmpf;
-    char    *tmpd;
+    char buffer[4 * NCL_MAX_STRING];
+    void (*init_function) (void);
+    char    *libpath;
+    char    *scriptpath;
+    char    *pt;
+    char    *tmp = NULL;
+
 
 # ifdef YYDEBUG
-	extern int yydebug;
-	yydebug = 1;
-# endif
+    extern int yydebug;
+    yydebug = 1;
+# endif /* YYDEBUG */
 
     error_fp = stderr;
     stdout_fp = stdout;
@@ -133,13 +115,30 @@ main(int argc, char* argv[]) {
 	
     ncopts = NC_VERBOSE;
 
-    cmd_line =isatty(fileno(stdin));
+    /*
+     * Variables for command line options/arguments
+     */
+    char    *myName;        /* argv[0]: program name (should be 'ncl') */
+    char    **NCL_ARGV;
+    int NCL_ARGC;           /* local argv/argc -- future use for NCL scripts? */
 
-    myName = NclMalloc(strlen(argv[0]));
+    int c;
+    char    *s = NULL;
+
+    char    **cargs;
+    int nargs = 0;
+
+    char    *nclf = NULL;
+    FILE    *tmpf = NULL;   /* file variables for creating arguments */
+    char    *tmpd = NULL;
+
+
+    cmd_line =isatty(fileno(stdin));
+    myName = NclMalloc(strlen(argv[0]) + 1);
     (void) strcpy(myName, argv[0]);
 
     /*
-     * NCL argv, for command line processing
+     * Save NCL argv, for command line processing later use
      */
     NCL_ARGV = (char **) NclMalloc(argc  * sizeof(char *));
     for (i = 0; i < argc; i++) {
@@ -153,77 +152,64 @@ main(int argc, char* argv[]) {
         (void) printf("NCL_ARGV[%d] = %s\n", i, *argv);
 # endif /* NCLDEBUG */
 
-    for (i = 1; i < NCL_ARGC; i++) {
-        s = strchr(NCL_ARGV[i], '-');
-        if (s != NULL)
-            s++;
-        else {
-            /* no '-' sign, file arg? (<name>.ncl) */
-            s = strstr(NCL_ARGV[i], ".ncl");
+    /*
+     * Defined arguments
+     *
+     *  -x      echo: turns on command echo
+     *  -V      version: output NCARG/NCL version, exit
+     */
+    opterr = 0;     /* turn off getopt() msgs */
+    while ((c = getopt (argc, argv, "xV")) != -1) {
+        switch (c) {
+            case 'x':
+                NCLecho = 1;
+                break;
+
+            case 'V':
+                (void) fprintf(stdout, "Ncl %s\n", GetNCARGVersion());
+                exit(0);
+                break;
+
+           case '?':
+                if (isprint(optopt))
+                    (void) fprintf(stderr, "Unknown option `-%c'\n", optopt);
+                else
+                    (void) fprintf(stderr, "Unknown option character `\\x%x'\n", optopt);
+                break;
+
+            default:
+                break;
+        }
+    }
+     
+    /* Process any user-defined arguments */
+    for (i = optind; i < argc; i++) {
+# ifdef NCLDEBUG
+        printf ("Non-option argument %s\n", argv[i]);
+# endif /* NCLDEBUG */
+
+            /* file of NCL commands? */
+            s = strstr(argv[i], ".ncl");
             if (s != NULL)
-                f = NCL_ARGV[i];
+                nclf = argv[i];
             else {
                 /* user-defined argument */
                 if (nargs == 0)
                     cargs = (char **) NclMalloc(sizeof(char *));
                 else
-                    cargs = (char **) NclRealloc(cargs, sizeof(char *));
+                    cargs = (char **) NclRealloc(cargs, (nargs + 1) * sizeof(char *));
     
-                cargs[nargs] = (char *) NclMalloc((strlen(NCL_ARGV[i]) + 1) * sizeof(char *));
-                (void) sprintf(cargs[nargs], "%s\n", NCL_ARGV[i]);
+                cargs[nargs] = (char *) NclMalloc((strlen(argv[i]) + 2) * sizeof(char *));
+                (void) sprintf(cargs[nargs], "%s\n", argv[i]);
                 nargs++;
             }
-            continue;
-        }
-
-        t = strchr(NCL_ARGV[i], '=');
-        if (t != NULL) {
-            l = strcspn(s, "=");
-            t++;
-        } else {
-            /*
-             * Got "-" sign(s)
-             * Defined arguments
-             *
-             *  -x      echo: turns on command echo
-             *  -v      verbose: turns on verbose mode
-             *  -V      version: currently same as 'verbose'
-             *
-             * Take into account a combination of arguments (i.e. -xv or -vx)
-             */
-            while (strlen(s)) {
-                (void) strncpy(oc, s, 1);
-                if (!strncmp(oc, "x", 1)) {
-                    NCLecho = 1;
-                    s++;
-                    continue;
-                }
-
-                if (!strncmp(oc, "v", 1)) {
-                    NCLverbose = 0;
-                    s++;
-                    continue;
-                }
-
-                if (!strncmp(oc, "V", 1)) {
-                    NCLverbose = 0;
-                    s++;
-                    continue;
-                }
-
-                /* move past invalid options */
-                (void) fprintf(stderr, "Invalid option: '%s'\n", oc);
-                s++;
-            }
-        }
     }
 
     error_fp = stderr;
     stdout_fp = stdout;
     
-    if (NCLverbose) {
-    	(void) fprintf(stdout," Copyright (C) 1995-2005 - All Rights Reserved   \n University Corporation for Atmospheric Research   \n NCAR Command Language Version %s   \n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCARGVersion());
-    }
+    (void) fprintf(stdout,
+            " Copyright (C) 1995-2005 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCARGVersion());
 
     stdin_fp = stdin;
     cur_line_text = NclMalloc((unsigned int) 512);
@@ -245,7 +231,7 @@ main(int argc, char* argv[]) {
     errid = NhlErrGetID();
     NhlVAGetValues(errid, NhlNerrFileName, &tmp, NULL);
 	
-    if ((tmp == NULL)  ||  (!strcmp(tmp, "stderr")))
+    if ((tmp == NULL) || (!strcmp(tmp, "stderr")))
         NhlVASetValues(errid, NhlNerrFilePtr, stdout, NULL);
 
     _NclInitMachine();
@@ -253,9 +239,7 @@ main(int argc, char* argv[]) {
     _NclInitTypeClasses();
     _NclInitDataClasses();
 
-/*
- * Handle default directories
- */
+    /* Handle default directories */
     if ((libpath = getenv("NCL_DEF_LIB_DIR")) != NULL) {
         d = opendir(_NGResolvePath(libpath));
         if (d != NULL) {
@@ -271,6 +255,7 @@ main(int argc, char* argv[]) {
                             "Could not open (%s): %s.", buffer, dlerror());
                     }
 # endif /* HPUX */
+           
                     if (so_handle != NULL) {
 # if defined (HPUX)
                         init_function = NULL;
@@ -304,7 +289,7 @@ main(int argc, char* argv[]) {
 
     if (cmd_line == 1) {
         InitializeReadLine(1);
-        NclSetPromptFunc(nclprompt,NULL);
+        NclSetPromptFunc(nclprompt, NULL);
         cmd_line = 1;
         cmd_line_is_set = 1;
     } else {
@@ -344,7 +329,7 @@ main(int argc, char* argv[]) {
     }
 
     /*
-     * Create the new args.
+     * Create the new args
      *
      * Ideally this would be done using calls to the parser/stack engine but there is
      * no clean interface to that process.  Investigate _NclParseString() in the future.
@@ -376,8 +361,9 @@ main(int argc, char* argv[]) {
         cmd_line = 1;       /* reset to default: interactive */
     }
 
-    if (f != (char *) NULL) {
-        (void) strcpy(buffer, _NGResolvePath(f));
+    /* Load any provided script */
+    if (nclf != (char *) NULL) {
+        (void) strcpy(buffer, _NGResolvePath(nclf));
         if (_NclPreLoadScript(buffer, 0) == NhlFATAL)
             NhlPError(NhlFATAL, NhlEUNKNOWN, "Error loading provided NCL script.");
         else
@@ -387,19 +373,18 @@ main(int argc, char* argv[]) {
     }
 
 # ifdef NCLDEBUG
-	(void) fclose(thefptr);
-	(void) fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
-	_NclObjsSize(stdout);
-	_NclNumGetObjCals(stdout);
-	_NclPrintUnfreedObjs(theoptr);
-	(void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
-	(void) fclose(theoptr);
-# endif
-	NhlClose();
-	return;
+    (void) fclose(thefptr);
+    (void) fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
+    _NclObjsSize(stdout);
+    _NclNumGetObjCals(stdout);
+    _NclPrintUnfreedObjs(theoptr);
+    (void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
+    (void) fclose(theoptr);
+# endif /* NCLDEBUG */
+    NhlClose();
     exit(0);
 }
 
 # ifdef __cplusplus
 }
-# endif
+# endif /* __cplusplus */
