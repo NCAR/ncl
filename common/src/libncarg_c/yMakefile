@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.52 2005-05-05 04:12:02 haley Exp $
+#	$Id: yMakefile,v 1.53 2005-05-06 16:36:41 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -78,7 +78,7 @@ REQLIBS = $(CTOFLIBS) -lc
 
 LibraryTarget($(MYNAME),$(OBJS))
 InstallTarget($(HDRS),$(INSTALL_INC),$(NCARGINCPATH))
-depend-local:: c.h
+includes-local:: c.h
 BuildIncludes($(HDRS),ncarg,..)
 DependTarget($(CSRCS))
 
@@ -90,7 +90,7 @@ sdbm.o: sdbm.c
 	$(CC) $(CCOPTIONS) $(COPT) -c sdbm.c
 #endif
 
-CleanFilesTarget(ncarg_path.c)
+CleanFilesTarget(ncarg_path.c c.h)
 
 ncarg_path.c: ncarg_path.c.sed Makefile
 	@sed \
