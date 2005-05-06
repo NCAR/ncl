@@ -1,5 +1,5 @@
 C
-C	$Id: cssgridd.f,v 1.5 2002-09-05 04:49:44 fred Exp $
+C	$Id: cssgridd.f,v 1.6 2005-05-06 21:20:20 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -22,7 +22,7 @@ C USA.
 C
       SUBROUTINE CSSGRIDD(N,RLATI,RLONI,F,NI,NJ,RLATO,RLONO,FF,
      +                     IWK,WK,IER)
-      DOUBLE PRECISION UN,RLATD,RLOND,WK(*),TFVAL,DGMX,STOL,DSMX
+      DOUBLE PRECISION RLATD,RLOND,WK(*),TFVAL,DGMX,STOL,DSMX
       INTEGER N,NI,NJ,IWK(*),IER
       DOUBLE PRECISION RLATI(N),RLONI(N),F(N),RLATO(NI),
      +                 RLONO(NJ),FF(NI,NJ)
@@ -123,7 +123,6 @@ C  Use pre-calculated estimated gradients.
 C
       PARAMETER (IFLGG=1)
 C
-      INTEGER CSJRAND
       INTEGER I,J,IERR,IST,NN,NST,NX,NY
       DATA IX,IY,IZ/1,2,3/
       DATA NST/1/
