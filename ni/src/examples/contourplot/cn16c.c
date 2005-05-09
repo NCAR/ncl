@@ -1,5 +1,5 @@
 /*
- *      $Id: cn16c.c,v 1.4 2003-02-28 22:19:25 grubin Exp $
+ *      $Id: cn16c.c,v 1.5 2005-05-09 03:02:04 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -242,7 +242,7 @@ main()
   NhlRLSetFloat(srlist,NhlNtmXBMajorLengthF,0.);
   NhlRLSetFloat(srlist,NhlNtmYLMajorLengthF,0.);
   NhlRLSetString(srlist,NhlNcnFillOn,"True");
-  NhlRLSetString(srlist,NhlNcnRasterModeOn,"True");
+  NhlRLSetString(srlist,NhlNcnFillMode,"RasterFill");
   NhlRLSetFloat(srlist,NhlNcnRasterCellSizeF,cellsize);
   NhlRLSetFloat(srlist,NhlNcnMinLevelValF,-2.0);
   NhlRLSetIntegerArray(srlist,NhlNcnFillColors,fillcolors,17);

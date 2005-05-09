@@ -1,5 +1,5 @@
 C
-C      $Id: cn16f.f,v 1.2 2003-02-28 22:19:26 grubin Exp $
+C      $Id: cn16f.f,v 1.3 2005-05-09 03:02:04 haley Exp $
 C
 C***********************************************************************
 C                                                                      *
@@ -248,7 +248,7 @@ C
       call NhlFRLSetFloat(srlist,'tmXBMajorLengthF',0.,ierr)
       call NhlFRLSetFloat(srlist,'tmYLMajorLengthF',0.,ierr)
       call NhlFRLSetString(srlist,'cnFillOn','True',ierr)
-      call NhlFRLSetString(srlist,'cnRasterModeOn','True',ierr)
+      call NhlFRLSetString(srlist,'cnFillMode','RasterFill',ierr)
       call NhlFRLSetFloat(srlist,'cnRasterCellSizeF',cellsize,ierr)
       call NhlFRLSetFloat(srlist,'cnMinLevelValF',-2.0,ierr)
       call NhlFRLSetIntegerArray(srlist,'cnFillColors',fillcolors,17,

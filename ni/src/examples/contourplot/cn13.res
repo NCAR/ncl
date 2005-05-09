@@ -12,7 +12,7 @@
 *cnLinesOn:                False
 *cnLowLabelsOn:            False
 *cnMaxLevelCount:          65
-*cnRasterModeOn:           True
+*cnFillMode:               RasterFill
 *cnRasterCellSizeF:        0.003
 !
 ! MapPlot resources

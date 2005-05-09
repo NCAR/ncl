@@ -143,7 +143,7 @@ end if
     "tmXBMajorLengthF" : 0.
     "tmYLMajorLengthF" : 0.
     "cnFillOn" : True
-    "cnRasterModeOn" : True
+    "cnFillMode" : "RasterFill"
     "cnRasterCellSizeF" : cellsize
     "cnMinLevelValF" : -2.0
     "cnFillColors"   : (/2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1/)
