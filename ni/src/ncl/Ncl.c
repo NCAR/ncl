@@ -103,18 +103,6 @@ main(int argc, char **argv) {
     char    *pt;
     char    *tmp = NULL;
 
-
-# ifdef YYDEBUG
-    extern int yydebug;
-    yydebug = 1;
-# endif /* YYDEBUG */
-
-    error_fp = stderr;
-    stdout_fp = stdout;
-    stdin_fp = stdin;
-	
-    ncopts = NC_VERBOSE;
-
     /*
      * Variables for command line options/arguments
      */
@@ -132,6 +120,16 @@ main(int argc, char **argv) {
     FILE    *tmpf = NULL;   /* file variables for creating arguments */
     char    *tmpd = NULL;
 
+# ifdef YYDEBUG
+    extern int yydebug;
+    yydebug = 1;
+# endif /* YYDEBUG */
+
+    error_fp = stderr;
+    stdout_fp = stdout;
+    stdin_fp = stdin;
+	
+    ncopts = NC_VERBOSE;
 
     cmd_line =isatty(fileno(stdin));
     myName = NclMalloc(strlen(argv[0]) + 1);
