@@ -164,7 +164,7 @@ main(int argc, char **argv) {
                 break;
 
             case 'V':
-                (void) fprintf(stdout, "Ncl %s\n", GetNCARGVersion());
+                (void) fprintf(stdout, "NCL %s\n", GetNCARGVersion());
                 exit(0);
                 break;
 

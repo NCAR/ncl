@@ -18,6 +18,9 @@ extern void printtoken(
 #define printtoken(n,m)
 #endif
 #define MAXTMPSPACE 512
+
+extern short NCLecho;
+
 char *cur_line_text = NULL;
 char *cur_line_text_pos = NULL;
 int cur_line_length = 0;
@@ -310,6 +313,10 @@ digit	[0-9]
 
 }
 \;[^\n]*[\n] { 
+    if (NCLecho) {
+        (void) fprintf(stdout, "+ %s\n", cur_line_text);
+        (void) fflush(stdout);
+    }
 	printtoken(yytext[0],(char*)NULL); 
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	if(rec == 1) {
@@ -328,6 +335,10 @@ digit	[0-9]
 		BEGIN NEWLINE;
 	}
 */
+    if (NCLecho) {
+        (void) fprintf(stdout, "+ %s\n", cur_line_text);
+        (void) fflush(stdout);
+    }
 	inc_line = 1;
 	cur_line_length += yyleng;
 	if(rec == 1) {

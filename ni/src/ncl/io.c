@@ -18,9 +18,6 @@ extern int errno;
 extern int cmd_line;
 int	cmd_line_is_set = 0;
 
-extern short    NCLverbose;
-extern short    NCLecho;
-
 struct str_load_list {
 	char 	*buffer;
 	int 	size;
@@ -97,12 +94,6 @@ int arg;
 			ncl_input_buffer.size = strlen(ncl_input_buffer.buffer);
 			add_history(ncl_input_buffer.buffer);
 		}
-
-        if (NCLecho) {
-            fprintf(stdout, "+ %s\n", ncl_input_buffer.buffer);
-            fflush(stdout);
-        }
-
 		ncl_input_buffer.ptr = ncl_input_buffer.buffer;
 	} 
 }
