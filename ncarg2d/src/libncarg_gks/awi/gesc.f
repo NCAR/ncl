@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.36 2003-11-24 19:17:20 fred Exp $
+C	$Id: gesc.f,v 1.37 2005-05-10 17:40:11 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -142,7 +142,7 @@ C
 C
 C  Get maximum number of allowable error messages.
 C
-        READ (IDR,500,ERR=135) MXERMG
+        READ (IDR(1),500,ERR=135) MXERMG
         MXERMG = MAX(0,MXERMG)
         RETURN
   135   CONTINUE
@@ -159,7 +159,7 @@ C
 C
 C  Decode the workstation ID.
 C
-        READ (IDR,501,ERR=130) IWKID
+        READ (IDR(1),501,ERR=130) IWKID
         GO TO 140
   501   FORMAT(I5)
   130   CONTINUE
@@ -375,7 +375,7 @@ C
 C
 C  Decode the workstation ID.
 C
-        READ (IDR,501,ERR=150) IWKID
+        READ (IDR(1),501,ERR=150) IWKID
         GO TO 160
 C
   150   CONTINUE
@@ -651,7 +651,7 @@ C
           OPS = GGKOP
         ENDIF
       ELSE IF (FCTID .EQ. -1386) THEN
-        READ (IDR,501,ERR=137) IGSGCP
+        READ (IDR(1),501,ERR=137) IGSGCP
         GO TO 136
   137   CONTINUE
         ERS = 1
@@ -667,7 +667,7 @@ C
 C
 C  Decode the workstation ID.
 C
-        READ (IDR,501,ERR=350) IWKID
+        READ (IDR(1),501,ERR=350) IWKID
         GO TO 360
 C
   350   CONTINUE
