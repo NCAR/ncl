@@ -1,6 +1,6 @@
 C
-C $Id: tdplch.f,v 1.3 2000-08-22 15:07:12 haley Exp $
-C                                                                      
+C $Id: tdplch.f,v 1.4 2005-05-13 20:00:24 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -30,10 +30,13 @@ C within which characters are to be placed.  It just sets the PLOTCHAR
 C mapping flag to the appropriate value, calls PLCHHQ, and then resets
 C the mapping flag to its original value.
 C
-        CALL PCGETI ('MAPPING FLAG',IMAP)
-        CALL PCSETI ('MAPPING FLAG',3)
+        CALL PCGETI ('MA - MAPPING FLAG      ',IMAP)
+        CALL PCGETR ('OR - OUT-OF-RANGE VALUE',OORV)
+        CALL PCSETI ('MA - MAPPING FLAG      ',3)
+        CALL PCSETR ('OR - OUT-OF-RANGE VALUE',1.E12)
         CALL PLCHHQ (XPOS,YPOS,CHRS,SIZE,ANGD,CNTR)
-        CALL PCSETI ('MAPPING FLAG',IMAP)
+        CALL PCSETI ('MA - MAPPING FLAG      ',IMAP)
+        CALL PCSETR ('OR - OUT-OF-RANGE VALUE',OORV)
 C
 C Done.
 C
