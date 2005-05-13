@@ -1,6 +1,6 @@
 C
-C $Id: pcmpxy.f,v 1.10 2000-08-22 15:05:26 haley Exp $
-C                                                                      
+C $Id: pcmpxy.f,v 1.11 2005-05-13 19:55:17 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -86,6 +86,13 @@ C    1.                yes                            no
 C    2.                 no                           yes
 C    3.                yes                           yes
 C
+C Declare the common block in which TDPACK has put the current window
+C limits.
+C
+        COMMON /TDCOM1/ IH,IT,XM,YM,ZM,XO,YO,ZO,XT,YT,ZT,OE,XE,YE,ZE
+        COMMON /TDCOM1/ A1,B1,C1,D1,E1,A2,B2,C2,D2,E2,A3,B3,C3,D3,E3
+        COMMON /TDCOM1/ IS,FV,VL,VR,VB,VT,WL,WR,WB,WT
+        SAVE   /TDCOM1/
 C
 C Declare the common block in which STITLE communicates to PLOTCHAR the
 C coordinates of the viewport outside which scrolled titles are to be
@@ -160,8 +167,19 @@ C
 C
           IF (IMAP.GT.0) THEN
             CALL TDPRPA (XINP,YINP,XOTP,YOTP)
+            IF (XOTP.LT.WL.OR.XOTP.GT.WR.OR.
+     +          YOTP.LT.WB.OR.YOTP.GT.WT) THEN
+              XOTP=1.E12
+              YOTP=1.E12
+            END IF
           ELSE
-            CALL TDPRPI (XINP,YINP,XOTP,YOTP)
+            IF (XINP.LT.WL.OR.XINP.GT.WR.OR.
+     +          YINP.LT.WB.OR.YINP.LT.WT) THEN
+              XOTP=1.E12
+              YOTP=1.E12
+            ELSE
+              CALL TDPRPI (XINP,YINP,XOTP,YOTP)
+            END IF
           END IF
 C
 C ... a special use of EZMAP which avoids distorting the characters ...
