@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: MakeNcl.csh,v 1.3 2005-03-24 00:08:36 haley Exp $
+#   $Id: MakeNcl.csh,v 1.4 2005-05-20 14:14:07 haley Exp $
 #                                                                      
 #                Copyright (C)  2004
 #        University Corporation for Atmospheric Research
@@ -33,7 +33,7 @@ set incpath       = "SED_INCPATH"
 set libdir        = "-L$libpath"
 set incdir        = "-I$incpath"
 set libncl        = "-lncl"
-set libnfp        = "-lnfpfort -lnfp"
+set libnfp        = "-lnfp -lnfpfort"
 set libhlu        = "-lhlu"
 set libncarg      = "-lncarg"
 set libgks        = "-lncarg_gks"
