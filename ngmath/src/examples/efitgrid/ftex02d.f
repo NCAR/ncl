@@ -98,7 +98,7 @@ C      CALL GSCR(IWKID,3,0.0D0,1.0D0,0.0D0)
 C      CALL GSCR(IWKID,4,0.0D0,0.0D0,1.0D0)
 C      CALL GSCLIP(0)
 C
-D  Plot main title.
+C  Plot main title.
 C
 C      CALL PLCHHQ(0.50D0,0.95D0,':F25:Demo for CURVP1DP, CURVPIDP',
 C     +            0.032D0,0.D0,0.D0)
