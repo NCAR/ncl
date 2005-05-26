@@ -1,0 +1,125 @@
+#!/bin/csh -f
+#
+# This script does a "file dump" on any file supported by NCL
+# via "addfile". You can also specify a variable with the "-v"
+# option.
+#
+
+if ($#argv < 1) goto usage
+
+#
+# Sort through options.
+#
+
+while ($#argv > 0)
+  switch ($1)
+    case "-v":
+      shift
+      set var = "$1"
+      shift
+      breaksw
+
+    case "-h":
+      goto usage
+      breaksw
+
+    case "-*":
+      echo ""
+      echo "  nclfiledump warning: '$1' is not a valid option; ignoring it."
+      shift
+      breaksw
+
+    default:
+      set file=$1
+      shift
+    endsw
+end
+
+#
+# Check that a filename was specified.
+#
+if (! $?file) then
+  echo ""
+  echo "  nclfiledump error: a filename was not specified."
+  echo ""
+  exit 1
+endif
+
+#
+# Make sure the file has an appropriate suffix so that NCL knows
+# what kind of file it is.
+#
+set valid_suffixes = ("nc" "cdf" "grb" "hdf" "hdfeos" "ccm")
+set no_suffix
+set suffix = "$file:e"
+set prefix = "$file:r"
+if ("$suffix" != "") then
+  @ i = 1
+  while ($i <= $#valid_suffixes && $?no_suffix)
+    if ("$suffix" == "$valid_suffixes[$i]" ) then
+      unset no_suffix
+    endif
+    @ i++
+  end
+endif
+
+if ($?no_suffix) then
+  echo ""
+  echo "  nclfiledump error: '$file' does not have a recognizable suffix."
+  echo "  valid suffixes are: $valid_suffixes"
+  echo ""
+  exit 1
+endif
+
+#
+# Since it could be the case that the user added a suffix to
+# the file so that NCL knows how to open it with addfile, then
+# we need to check for the existence of the file both with and
+# without the suffix.
+# 
+if (! -e $file && ! -e $prefix) then
+    echo ""
+    echo "  nclfiledump error: neither '$file' or '$prefix' exists."
+    echo ""
+    exit 1
+endif
+
+#
+# Create temporary file to hold NCL script.
+#
+set tmp_nclfile = "tmp$$.ncl"
+/bin/rm $tmp_nclfile >& /dev/null
+
+cat <<'EOF' >! $tmp_nclfile
+begin
+  f = addfile(filename,"r")
+  if(isvar("var")) then
+    if(isfilevar(f,var)) then
+      printVarSummary(f->$var$)
+    else
+      print("nclfiledump error: '" + var + "' is not a variable in '" + filename + "'.")
+    end if
+  else
+    print(f)
+  end if
+  delete(f)
+end
+'EOF'
+
+if ($?var) then
+  ncl filename=\"$file\" var=\"$var\" $tmp_nclfile
+else
+  ncl filename=\"$file\" $tmp_nclfile
+endif
+
+#
+# Clean up.
+#
+
+/bin/rm $tmp_nclfile
+
+exit 0
+
+usage:
+echo "nclfiledump [-v varname] [-h] filename"
+exit
