@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.13 2004-10-21 22:47:29 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.14 2005-05-27 00:01:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1491,15 +1491,17 @@ void *data;
 				}
 				if(stepal->att_inq->data_type == NC_CHAR) {
 					buffer = NrmQuarkToString(*(NclQuark*)data);
+					int redef = 0;
 					if(strlen(buffer)+1 > stepal->att_inq->len) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"HDFWriteAtt: length of string exceeds available space for attribute (%s)",NrmQuarkToString(theatt));
-						sd_ncclose(cdfid);
-						return(NhlFATAL);
-					} else {
-						ret = sd_ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer)+1,(void*)buffer);
-						if (stepal->att_inq->value != NULL)
-							memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
+						sd_ncredef(cdfid);
+						redef = 1;
 					}
+					ret = sd_ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer)+1,(void*)buffer);
+					if (redef)
+						sd_ncendef(cdfid);
+					if (stepal->att_inq->value != NULL)
+						memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
+					
 				} else {
 					ret = sd_ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 					memcpy(stepal->att_inq->value,data,
@@ -1719,16 +1721,18 @@ void* data;
 							return(NhlFATAL);
 						}
 						if(stepal->att_inq->data_type == NC_CHAR) {	
+							int redef = 0;
 							buffer = NrmQuarkToString(*(NclQuark*)data);
 							if(strlen(buffer)  > stepal->att_inq->len) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"HDFWriteAtt: length of string exceeds available space for attribute (%s)",NrmQuarkToString(theatt));
-								sd_ncclose(cdfid);
-								return(NhlFATAL);
-							} else {
-								ret = sd_ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
-								if (stepal->att_inq->value != NULL)
-									memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
+								ncredef(cdfid);
+								redef = 1;
 							}
+							ret = sd_ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
+							if (redef)
+								ncendef(cdfid);
+
+							if (stepal->att_inq->value != NULL)
+								memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 						} else {
 							ret = sd_ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 							if (stepal->att_inq->value != NULL) {

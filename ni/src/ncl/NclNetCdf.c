@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.32 2004-06-17 21:03:00 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.33 2005-05-27 00:01:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,7 +25,9 @@
 #include <netcdf.h>
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
+#include "NclData.h"
 #include <math.h>
+#include <unistd.h>
 
 typedef struct _NetCdfFileRecord NetCdfFileRecord;
 typedef struct _NetCdfVarInqRec NetCdfVarInqRec;
@@ -810,12 +812,15 @@ void* storage;
 {
 	NetCdfFileRecord *rec = (NetCdfFileRecord*) therec;
 	NetCdfVarInqRecList *stepvl;
+	NetCdfDimInqRecList *stepdl; 
 	void *out_data;
 	int n_elem = 1;
 	int cdfid = -1;
 	int ret = -1,i;
 	int no_stride = 1;
 	long count[MAX_NC_DIMS];
+	size_t chunksizehint = 1;
+	size_t blksize = getpagesize();
 
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
@@ -824,14 +829,37 @@ void* storage;
 				return NetGetCachedValue(stepvl->var_inq,start[0],finish[0],stride[0],storage);
 			}
 			for(i= 0; i< stepvl->var_inq->n_dims; i++) {
+				int dimid;
 				count[i] = (int)floor((float)(finish[i] - start[i])/(float)stride[i]) + 1;
 				n_elem *= count[i];
 				if(stride[i] != 1) {
 					no_stride = 0;
 				}
+				dimid = stepvl->var_inq->dim[i];
+				for (stepdl = rec->dims; stepdl !=NULL; stepdl = stepdl->next) {
+					if (stepdl->dim_inq->dimid == dimid) 
+						break;
+				}
+				if (stepdl && !stepdl->dim_inq->is_unlimited) {
+					chunksizehint *= count[i];
+				}
 			}
 			out_data = storage;
-			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
+#if 0
+			chunksizehint *= _NclSizeOf(NetMapToNcl(&stepvl->var_inq->data_type));
+
+			while (blksize * 4 < chunksizehint) {
+				blksize *= 4;
+			}
+			chunksizehint = MIN(blksize,getpagesize() * 64);
+			printf ("size hint = %d\n",chunksizehint);
+			if (no_stride) {
+				nc__open(NrmQuarkToString(rec->file_path_q),NC_NOWRITE,&chunksizehint,&cdfid);
+				printf ("got size = %d\n",chunksizehint);
+			}
+			else
+#endif
+				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
 				
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
@@ -1036,6 +1064,9 @@ long *stride;
 	long count[MAX_NC_DIMS];
 	int i,n_elem = 1,no_stride = 1,k;
 	int ret;
+	int fill_mode;
+	size_t chunksizehint = 1;
+	size_t blksize = getpagesize();
 
 	if(rec->wr_status <= 0) {
 		stepvl = rec->vars;
@@ -1061,9 +1092,31 @@ long *stride;
 					if(stepdl->dim_inq->is_unlimited) {
 						stepdl->dim_inq->size = finish[i] + 1;
 					}
+					else {
+						chunksizehint *= count[i];
+					}
+					
 				}
+				chunksizehint *= _NclSizeOf(NetMapToNcl(&stepvl->var_inq->data_type));
+
+				while (blksize * 4 < chunksizehint) {
+					blksize *= 4;
+				}
+				chunksizehint = MIN(blksize,getpagesize() * 64);
+#if 0
+				printf ("size hint = %d\n",chunksizehint);
+
+				if (no_stride) {
+					nc__open(NrmQuarkToString(rec->file_path_q),NC_WRITE,&chunksizehint,&cdfid);
+					printf ("got size = %d\n",chunksizehint);
+				}
+				else
+					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+				nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
+#endif
+#if 1
 				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-				
+#endif				
 				if(cdfid == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
@@ -1150,16 +1203,17 @@ void *data;
 					return(NhlFATAL);
 				}
 				if(stepal->att_inq->data_type == NC_CHAR) {
+					int redef = 0;
 					buffer = NrmQuarkToString(*(NclQuark*)data);
 					if(strlen(buffer)+1 > stepal->att_inq->len) {
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetWriteAtt: length of string exceeds available space for attribute (%s)",NrmQuarkToString(theatt));
-						ncclose(cdfid);
-						return(NhlFATAL);
-					} else {
-						ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer)+1,(void*)buffer);
-						if (stepal->att_inq->value != NULL)
-							memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
+						ncredef(cdfid);
+						redef = 1;
 					}
+					ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),(void*)buffer);
+					if (redef)
+						ncendef(cdfid);
+					if (stepal->att_inq->value != NULL)
+						memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 				} else {
 					ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 					if (stepal->att_inq->value != NULL) {
@@ -1373,16 +1427,17 @@ void* data;
 							return(NhlFATAL);
 						}
 						if(stepal->att_inq->data_type == NC_CHAR) {	
+							int redef = 0;
 							buffer = NrmQuarkToString(*(NclQuark*)data);
 							if(strlen(buffer)  > stepal->att_inq->len) {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetWriteAtt: length of string exceeds available space for attribute (%s)",NrmQuarkToString(theatt));
-								ncclose(cdfid);
-								return(NhlFATAL);
-							} else {
-								ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
-								if (stepal->att_inq->value != NULL)
-									memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
+								ncredef(cdfid);
+								redef = 1;
 							}
+							ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
+							if (redef)
+								ncendef(cdfid);
+							if (stepal->att_inq->value != NULL)
+								memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 						} else {
 							ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 							if (stepal->att_inq->value != NULL) {
@@ -1530,9 +1585,13 @@ long* dim_sizes;
 	int dim_ids[MAX_NC_DIMS];
 	NetCdfDimInqRecList* stepdl = NULL;
 	int add_scalar_dim = 0;
+	int fill_mode;
 
 	if(rec->wr_status <= 0) {
 		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+#if 1
+		nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
+#endif
 		if(cdfid == -1) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 			return(NhlFATAL);

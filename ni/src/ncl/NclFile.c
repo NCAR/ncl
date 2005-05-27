@@ -886,6 +886,118 @@ NclQuark attname;
 	return(NhlFATAL);
 }
 
+static NclQuark GetLower
+(
+	NclQuark qstr
+	)
+{
+	char buffer[256];
+	char *cp;
+	
+	strncpy(buffer,NrmQuarkToString(qstr),sizeof(buffer)-1);
+	buffer[sizeof(buffer)-1] = '\0';
+	for (cp = buffer; *cp != '\0'; cp++) {
+		*cp = tolower(*cp);
+	}
+	return NrmStringToQuark(buffer);
+}
+	
+
+static NhlErrorTypes FileSetFileOption
+#if	NhlNeedProto
+(
+	NclFile  thefile,
+	NclQuark format,
+	NclQuark name,
+	NclMultiDValData value
+)
+#else
+(thefile,format,name,value)
+NclFile thefile;
+NclQuark format;
+NclQuark name;
+NclMultiDValData value
+#endif
+{
+	int i;
+	NclMultiDValData tmp_md;
+	NclQuark lname,lvalue;
+	
+	lname = GetLower(name);
+	if (! thefile) {
+		NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+		lvalue = NrmNULLQUARK;
+		for (i = 0; i < fcp->num_options; i++) {
+			if (fcp->options[i].name != lname)
+				continue;
+			if (_NclGetFormatFuncs(format) != _NclGetFormatFuncs(fcp->options[i].format)) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				    "FileSetFileOption: %s is not a recognized option for format %s",
+					  NrmQuarkToString(name),NrmQuarkToString(format));
+				return(NhlFATAL);
+			}
+			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
+			if (fcp->options[i].valid_values) {
+				int ok = 0;
+				int j;
+				if (fcp->options[i].value->multidval.data_type == NCL_string) {
+					lvalue = GetLower(*((string *)tmp_md->multidval.val));
+					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
+						NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+						if (lvalue != valid_val)
+							continue;
+						ok = 1;
+						break;
+					}
+				}
+				else {
+					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
+						if (memcmp(tmp_md->multidval.val,
+							   (char*)fcp->options[i].valid_values->multidval.val +
+							   j * tmp_md->multidval.type->type_class.size,
+							   tmp_md->multidval.type->type_class.size)) {
+							continue;
+						}
+						ok = 1;
+						break;
+					}
+				}
+				if (! ok) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "FileSetFileOption: invalid value suppliedfor option %s",
+							  NrmQuarkToString(name),NrmQuarkToString(name));
+					return(NhlFATAL);
+				}
+			}
+			if (lvalue != NrmNULLQUARK) {
+				/* store the lower-cased name */
+				*(string *)fcp->options[i].value->multidval.val = lvalue;
+			}
+			else {
+				memcpy(fcp->options[i].value->multidval.val,tmp_md->multidval.val,
+				       tmp_md->multidval.type->type_class.size);
+			}
+			if (tmp_md != value)
+				_NclDestroyObj((NclObj)tmp_md);
+			return NhlNOERROR;
+		}
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "FileSetFileOption: %s is not a recognized file option for format %s",
+			  NrmQuarkToString(name),NrmQuarkToString(format));
+		return(NhlFATAL);
+		
+
+	}
+					    
+		
+	return NhlNOERROR;
+}
+
+NclFileOption file_options[] = {
+	{ NrmNULLQUARK, NrmNULLQUARK, 0 },  /* NetCDF PreFill */
+	{ NrmNULLQUARK, NrmNULLQUARK, 0 }   /* GRIB thinned grid interpolation method */
+};
+
 NclFileClassRec nclFileClassRec = {
 	{	
 		"NclFileClass",
@@ -931,11 +1043,72 @@ NclFileClassRec nclFileClassRec = {
 		FileAddDim,
 		FileAddVar,
 		NULL,
-		NULL
+		NULL,
+		FileSetFileOption,
+		file_options,
+		sizeof(file_options) / sizeof(file_options[0])
 	}
 };
 
 NclObjClass nclFileClass = (NclObjClass)&nclFileClassRec;
+
+
+static NhlErrorTypes InitializeFileOptions
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	logical *lval;
+	string *sval;
+	int len_dims;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md;
+	
+	
+	/* option names are case insensitive and so are string-type 
+	 * option values
+	 */
+
+	/* NetCDF option DoPreFill */
+	fcp->options[0].format = NrmStringToQuark("nc");
+	fcp->options[0].name = NrmStringToQuark("doprefill");
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	len_dims = 1;
+	fcp->options[0].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	fcp->options[0].valid_values = NULL;
+	
+	/* GRIB option QuasiRegularInterpolation */
+
+	fcp->options[1].format = NrmStringToQuark("grb");
+	fcp->options[1].name = NrmStringToQuark("quasiregularinterpolation");
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("linear");
+	len_dims = 1;
+	fcp->options[1].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(2 * sizeof(string));
+	sval[0] = NrmStringToQuark("linear");
+	sval[1] = NrmStringToQuark("cubic");
+	len_dims = 2;
+	fcp->options[1].valid_values = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* End of options */
+
+	len_dims = 1;
+	sval = (string*) NclMalloc(1 * sizeof(string));
+	sval[0] = NrmStringToQuark("Cubic");
+	tmp_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,TEMPORARY,NULL,(NclTypeClass)nclTypestringClass);
+	FileSetFileOption(NULL,NrmStringToQuark("grib"),NrmStringToQuark("QuasiRegularInterpolation"),tmp_md);
+	_NclDestroyObj((NclObj)tmp_md);
+	return ret;
+}
 
 static NhlErrorTypes InitializeFileClass
 #if NhlNeedProto
@@ -944,10 +1117,14 @@ static NhlErrorTypes InitializeFileClass
 ()
 #endif
 {
+
+	InitializeFileOptions();
+
 	_NclRegisterClassPointer(
 		Ncl_File,
 		(NclObjClass)&nclFileClassRec
 	);
+	
 	return(NhlNOERROR);
 }
 
