@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.161 2005-01-11 17:20:15 haley Exp $
+;      $Id: gsn_code.ncl,v 1.162 2005-05-31 18:28:19 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8493,7 +8493,7 @@ begin
 ; of xy plot resources, the regular kind, and the data spec kind.  If   ;
 ; the resource starts with an "xy", it could be either kind, so we need ;
 ; to have some tests to see which object it belongs to.  Any "xy"       ;
-; resources that start with "xyCo", "xyX", or "xyY" are regular         ;
+; resources that start with "xyC", "xyX", or "xyY" are regular          ;
 ; resources (meaning, it belongs to the XyPlot object). The remaining   ;
 ; "xy" resources belong to the data spec object. Any resources that do  ;
 ; not start with "xy" or "ca" are assumed to also go with the XyPlot    ;
@@ -8503,7 +8503,7 @@ begin
             if((charactertostring(res(0:1)).ne."ca".and.\
                 charactertostring(res(0:1)).ne."xy").or.\
                (charactertostring(res(0:1)).eq."xy".and.\
-               (charactertostring(res(0:3)).eq."xyCo".or.\
+               (charactertostring(res(0:2)).eq."xyC".or.\
                 charactertostring(res(0:2)).eq."xyX".or.\
                 charactertostring(res(0:2)).eq."xyY")))
                 setvalues plot_object
@@ -8511,7 +8511,7 @@ begin
                 end setvalues
             end if
             if(charactertostring(res(0:1)).eq."xy".and.\
-              (charactertostring(res(0:3)).ne."xyCo".and.\
+              (charactertostring(res(0:2)).ne."xyC".and.\
                charactertostring(res(0:2)).ne."xyX".and.\
                charactertostring(res(0:2)).ne."xyY"))
                 setvalues dspec
@@ -8522,11 +8522,11 @@ begin
             xy_res_index = ind((charactertostring(res(:,0:1)).ne."ca".and.\
                                 charactertostring(res(:,0:1)).ne."xy").or.\
                                (charactertostring(res(:,0:1)).eq."xy".and.\
-                               (charactertostring(res(:,0:3)).eq."xyCo".or.\
+                               (charactertostring(res(:,0:2)).eq."xyC".or.\
                                 charactertostring(res(:,0:2)).eq."xyX".or.\
                                 charactertostring(res(:,0:2)).eq."xyY")))
             xydp_res_index = ind(charactertostring(res(:,0:1)).eq."xy".and.\
-                                (charactertostring(res(:,0:3)).ne."xyCo".and.\
+                                (charactertostring(res(:,0:2)).ne."xyC".and.\
                                  charactertostring(res(:,0:2)).ne."xyX".and.\
                                  charactertostring(res(:,0:2)).ne."xyY"))
             if(.not.all(ismissing(xy_res_index)))
