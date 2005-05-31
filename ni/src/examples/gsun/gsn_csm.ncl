@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.188 2005-04-19 17:48:29 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.189 2005-05-31 15:42:24 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1715,6 +1715,7 @@ begin
   parallel_pos(2) = get_res_value(right_string, \
                                   "gsnRightStringParallelPosF",  1.0)
 
+  zone    = get_res_value(amres,"amZone",2)
   orthpos = get_res_value(amres,"amOrthogonalPosF",0.01*vph)
   orthogonal_pos = new(3,float)
   orthogonal_pos(0) = get_res_value(left_string, \
@@ -1784,7 +1785,7 @@ begin
         anno = NhlAddAnnotation(plot,text_object)  ; Add annotation to plot.
 
         setvalues anno
-          "amZone"          : 3             ; Just outside plot area
+          "amZone"          : zone          ; Outside plot area
           "amSide"          : "top"         ; Subtitle at top.
           "amParallelPosF"  : parallel_pos(i)
           "amJust"          : "bottom"+just(i)
@@ -9316,21 +9317,42 @@ begin
 ;
 ; Make copy of local resources.
 ;
-    locRes1 = True
-    locRes2 = True
-    if (res1) then
-      locRes1 = res1
-    end if
     if (res2) then
       locRes2 = res2
     end if
-
+    if (res1) then
+      locRes1 = get_res_ne(res1,"tiMain")
+      locRes2 = get_res_eq(res1,"tiMain")
+    end if
+    locRes1 = True
+    locRes2 = True
 ;
 ; Retain draw, frame, and maximize settings for later.
 ;
     calldraw  = get_res_value(locRes1,"gsnDraw", True)
     callframe = get_res_value(locRes1,"gsnFrame",True)
     maxbb     = get_bb_res(locRes1)
+;
+; Check for subtitles. We don't want to add the subtitles until all
+; the plot stuff is done, in case some zones need to be adjusted.
+;
+    left_string   = new(1,logical)
+    center_string = new(1,logical)
+    right_string  = new(1,logical)
+
+    check_for_subtitles(locRes1,left_string,center_string,right_string)
+;
+; Set some zone information for the subtitles and main string.
+;
+    if(axis.eq."x".or.axis.eq."xy") then
+      mainzone = 5 
+      amzone   = 4
+    else
+      mainzone = 6 
+      amzone   = 5
+    end if
+
+    locRes2@pmTitleZone = mainzone
 ;
 ; For first plot, don't auto advance the frame or draw or maximize
 ; the plot.
@@ -9459,8 +9481,6 @@ begin
 ; Set some resources that will apply if you have two Y axes.
 ;
     if(axis.eq."y".or.axis.eq."xy") then
-      locRes2@trXMinF                 = trxmin
-      locRes2@trXMaxF                 = trxmax
       locRes2@tmYRLabelsOn            = True   ; Turn on right axis label
       locRes2@tmYROn                  = True   ; Turn on right tick marks
       locRes2@tmYUseLeft              = False  
@@ -9477,6 +9497,8 @@ begin
 ; Set resources specific only to having two Y axes and one X axis.
 ;
     if(axis.eq."y") then
+      locRes2@trXMinF       = trxmin
+      locRes2@trXMaxF       = trxmax
       locRes2@tiXAxisString = ""     ; already done 
       locRes2@tmXTLabelsOn  = False  ; Turn off top x axis labels
       locRes2@tmXTMinorOn   = False  ; and tick marks.
@@ -9493,14 +9515,20 @@ begin
 
 ;
 ; Set some resources that will apply if you have two X axes.
+; Note that normally, the x axis will use "long_name" for a title.
+; However, this causes clutter if you try to put this title at
+; the top of the plot, so for now, we are disabling an x axis string
+; for the top, unless it is explicitly set by the user.
 ;
     if(axis.eq."x".or.axis.eq."xy") then
-      locRes2@trYMinF                 = trymin
-      locRes2@trYMaxF                 = trymax
       locRes2@tmXTLabelsOn            = True   ; Turn on top axis label
       locRes2@tmXTOn                  = True   ; Turn on top tick marks
       locRes2@tmXUseBottom            = False  
-      locRes2@tiXAxisSide             = "Top"; put title on Top scale
+      if(isatt(locRes2,"tiXAxisString")) then
+        locRes2@tiXAxisSide           = "Top"; put title on Top scale
+      else
+        locRes2@tiXAxisOn             = False
+      end if 
       locRes2@tiXAxisFontHeightF      = xfonth
       locRes2@tmXTLabelFontHeightF    = xbfonth
       locRes2@tmXTMajorLengthF        = xmjlength
@@ -9513,6 +9541,8 @@ begin
 ; Set resources specific only to having two X axes and one Y axis.
 ;
     if(axis.eq."x") then
+      locRes2@trYMinF            = trymin
+      locRes2@trYMaxF            = trymax
       locRes2@tiYAxisString      = ""     ; already done 
       locRes2@tmYRLabelsOn       = False  ; Turn off right y axis labels
       locRes2@tmYRMinorOn        = False  ; and tick marks.
@@ -9535,6 +9565,43 @@ begin
         xy2 = gsn_xy(wks,x2,y2,locRes2)
       end if
     end if
+
+;
+; Set up three subtitles at top, if they exist. Note that we are
+; attaching the subtitles to the second plot. This is because the
+; second plot is the one that might have tickmarks and labels 
+; coming out the top, and we need to make sure these gsn strings stay
+; outside of them. This is also true for the main title, which we
+; already handled above.
+;
+    getvalues xy2
+      "vpHeightF"            : height
+      "vpWidthF"             : width
+      "tiYAxisFontHeightF"   : yfontf
+      "tiXAxisFontHeightF"   : xfontf
+    end getvalues
+
+; If the plot is close to square in size, then make the 
+; three top titles and the tick marks smaller.
+
+    font_height = min((/xfontf,yfontf/))  ; Make label sizes a function of
+
+    ratio = height/width
+    if(ratio.gt.1) 
+      ratio = 1./ratio
+    end if
+    if(ratio.gt.0.5)
+      font_height = 0.75 * font_height
+    end if
+
+    subres = True
+    subres = get_res_eq(locRes1,"tx")  ; Get textitem resources
+    set_attr(subres,"txFontHeightF",font_height)
+    set_attr(subres,"txFont","helvetica")
+    set_attr(subres,"amZone",amzone)
+    subres@amOrthogonalPosF = 0.06 
+
+    add_subtitles(wks,xy2,left_string,center_string,right_string,subres)
 
 ;
 ; Add second plot as annotation of 1st plot.
