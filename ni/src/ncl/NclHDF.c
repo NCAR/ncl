@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.14 2005-05-27 00:01:22 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.15 2005-06-01 17:12:13 haley Exp $
  */
 /************************************************************************
 *									*
@@ -1478,6 +1478,7 @@ void *data;
 	HDFAttInqRecList *stepal;
 	int cdfid;
 	int ret = -1;
+	int redef;
 	char *buffer=NULL;
 
 	if(rec->wr_status <= 0) {
@@ -1491,7 +1492,7 @@ void *data;
 				}
 				if(stepal->att_inq->data_type == NC_CHAR) {
 					buffer = NrmQuarkToString(*(NclQuark*)data);
-					int redef = 0;
+					redef = 0;
 					if(strlen(buffer)+1 > stepal->att_inq->len) {
 						sd_ncredef(cdfid);
 						redef = 1;
