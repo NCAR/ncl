@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.1 2005-03-24 00:05:06 haley Exp $
+#      $Id: yMakefile,v 1.2 2005-06-02 22:06:45 haley Exp $
 #
 
 MYNAME		=	libnfpfort
@@ -9,8 +9,8 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	cffti1.o chiin_dp.o cntrFiniteDiff.o ctwrap.o cz2ccm_dp.o dbetai.o	\
 	dewpt_trh.o dmapgci.o dpsort.o dtrend_dp.o eof2data.o exptapersh.o  \
 	ezfft_dp.o f2foshv.o filtrx.o finfo.o fluxEddyTav_dp.o fo2fs_dp.o   \
-	gausLobat.o grid2triple.o hydro_dp.o hyi2hyo.o index77_dp.o		    \
-	int2p_dp.o julGreg.o lclvl.o linint2.o linmsg_dp.o localMinMax.o	\
+	gausLobat.o gaus.o grid2triple.o hydro_dp.o hyi2hyo.o index77_dp.o  \
+	int2p_dp.o julGreg.o lclvl.o linint2.o linmsg_dp.o localMinMax.o \
 	mixhum_ptd.o mixhum_ptrh.o paleo_coasts.o passb.o passb2.o passb3.o	\
 	passb4.o passb5.o passf.o passf2.o passf3.o passf4.o passf5.o		\
 	phybrid_ccm.o prcwat.o preshybrid.o prneof_dp.o prneofts_dp.o		\
