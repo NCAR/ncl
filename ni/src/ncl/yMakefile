@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.104 2005-05-27 00:01:24 dbrown Exp $
+#      $Id: yMakefile,v 1.105 2005-06-02 22:07:21 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2005-05-27 00:01:24 $
+#	Date:		$Date: 2005-06-02 22:07:21 $
 #
 #	Description:	
 #
@@ -192,7 +192,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 
 FIO_SRCS        =       llmap.f llmisc.f
 
-FSRCS		=	gaus.f QU2REG.f GDSWIZCB.f
+FSRCS		=	QU2REG.f GDSWIZCB.f
 
 FEXE_IOSRCS     =       fortranio.f
 
@@ -236,7 +236,7 @@ IO_EXTRA_OBJS   =       nio_io.o Error.o NresDB.o Callbacks.o \
 
 FMAP_OBJS       =       llmap.o llmisc.o
 
-FOBJS		=	gaus.o QU2REG.o GDSWIZCB.o
+FOBJS		=	QU2REG.o GDSWIZCB.o
 
 FIO_OBJS        =       fortranio.o
 
