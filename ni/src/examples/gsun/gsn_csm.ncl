@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.189 2005-05-31 15:42:24 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.190 2005-06-03 20:16:48 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1715,7 +1715,7 @@ begin
   parallel_pos(2) = get_res_value(right_string, \
                                   "gsnRightStringParallelPosF",  1.0)
 
-  zone    = get_res_value(amres,"amZone",2)
+  zone    = get_res_value(amres,"amZone",3)
   orthpos = get_res_value(amres,"amOrthogonalPosF",0.01*vph)
   orthogonal_pos = new(3,float)
   orthogonal_pos(0) = get_res_value(left_string, \
