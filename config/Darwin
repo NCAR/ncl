@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin,v 1.5 2004-12-14 22:40:10 haley Exp $
+ *      $Id: Darwin,v 1.6 2005-06-03 14:34:32 haley Exp $
  */
 /************************************************************************
 *									*
@@ -27,9 +27,9 @@
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
-#define CtoFLibraries   -lg2c -lcc_dynamic
 #define ExtraSysLibraries       -lcc_dynamic
 #define FCompiler   g77
+#define CtoFLibraries   -lg2c 
 #define CcOptions      -ansi
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
