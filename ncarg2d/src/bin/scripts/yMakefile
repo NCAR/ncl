@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.46 2002-05-30 20:55:19 haley Exp $
+#	$Id: yMakefile,v 1.47 2005-06-03 14:18:47 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -29,6 +29,10 @@ ncargversion:	version.sed
 	-e 's+NCARGSITEFILE+$(NCARGSITEFILE)+' \
 	< version.sed > ncargversion
 
+#if !defined(Darwin)
+EXTRA_SYS_LIBS =
+#endif
+
 $(NGF_SCRIPT): ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
@@ -38,6 +42,7 @@ $(NGF_SCRIPT): ncargf77.csh Makefile
 	-e 's+SED_XLIB+$(XLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<ncargf77.csh > $(NGF_SCRIPT)
 
