@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.33 2002-05-30 20:55:19 haley Exp $
+#   $Id: ncargf77.csh,v 1.34 2005-06-03 14:20:55 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -42,7 +42,7 @@ set libdir   = `ncargpath SED_LIBDIR`
 set ro       = "$libdir/SED_NCARGDIR/SED_ROBJDIR"
 set libpath = "-L$libdir $syslibdir"
 
-set libextra = ""
+set libextra = "SED_LIBEXTRA"
 
 if (! -d "$libdir") then
   echo "Library directory <$libdir> does not exist."
