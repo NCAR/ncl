@@ -1,8 +1,11 @@
 #
-#       $Id: yMakefile,v 1.5 2004-06-29 19:22:51 kennison Exp $
+#       $Id: yMakefile,v 1.6 2005-06-06 21:28:27 haley Exp $
 #
 
 MYNAME  = polypack
+
+.f.o:
+	$(F77) $(FCOPTIONS) -g -c $*.f
 
 SOURCES = \
 	ppdipo.f ppditr.f ppinpo.f ppintr.f ppplcl.f ppppap.f \
