@@ -1,11 +1,13 @@
 #
-#       $Id: yMakefile,v 1.6 2005-06-06 21:28:27 haley Exp $
+#       $Id: yMakefile,v 1.7 2005-06-07 17:47:41 haley Exp $
 #
 
 MYNAME  = polypack
 
+#if defined(SUN)
 .f.o:
 	$(F77) $(FCOPTIONS) -g -c $*.f
+#endif
 
 SOURCES = \
 	ppdipo.f ppditr.f ppinpo.f ppintr.f ppplcl.f ppppap.f \
