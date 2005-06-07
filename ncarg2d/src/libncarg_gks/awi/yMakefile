@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.25 2005-06-06 21:31:24 haley Exp $
+#	$Id: yMakefile,v 1.26 2005-06-07 17:48:40 haley Exp $
 #
 
 MYNAME	= awi
@@ -87,17 +87,14 @@ CleanFilesTarget($(ROBJ_OBJ))
 
 all::	ggkwdr_stub.o
 
+#if defined(SUN) || defined(AIX)
 gzclpo.o: gzclpo.f
-	$(F77) $(FCOPTIONS) -g -c gzclpo.f
+	$(F77) -g  $(FCOPTIONS) $(XTRA_FDEFINES) -c gzclpo.f
+#endif
 
 #ifdef HPUX
 gztowk.o: gztowk.f
 	$(F77) -g $(FFLAGS) -c gztowk.f
-#endif
-
-#if defined(AIX)
-gzclpo.o: gzclpo.f
-	$(F77) -g  $(FCOPTIONS) $(XTRA_FDEFINES) -c gzclpo.f
 #endif
 
 gacwk.o : gkscom.h 
