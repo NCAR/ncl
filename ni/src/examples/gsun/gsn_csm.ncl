@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.190 2005-06-03 20:16:48 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.191 2005-06-09 20:17:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9788,8 +9788,8 @@ begin
 ;
 ; Generate some dummy data for our plot.
 ;
-  xdummy    = new( 2, typeof(x1))
-  ydummy    = new( 2, typeof(y3))
+  xdummy    = new( 2, double)       ; Make it double so it can handle
+  ydummy    = new( 2, double)
   if (isatt(y3,"long_name")) then
       ydummy@long_name = y3@long_name
   end if
