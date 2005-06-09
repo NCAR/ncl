@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.191 2005-06-09 20:17:00 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.192 2005-06-09 22:47:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4220,7 +4220,7 @@ begin
         labels(indexes) = floattoint(360-plon(indexes)) + "W"
         delete(indexes)
 
-        indexes = ind(plon.eq.0.or.plon.eq.0.or.plon.eq.180)
+        indexes = ind(plon.eq.0.or.plon.eq.180)
         labels(indexes) = floattoint(plon(indexes))
         delete(indexes)
       else
