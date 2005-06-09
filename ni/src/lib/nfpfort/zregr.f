@@ -143,6 +143,10 @@ C   Code 916                                   FAX: (301) 614-5903
 C   Greenbelt, MD  20771
 C   (Affil: UMBC GEST, Baltimore, MD)
 C   e-mail: ziemke@jwocky.gsfc.nasa.gov
+C
+C Source is from:
+C   http://code916.gsfc.nasa.gov/Data_services/cloud_slice/regress.html
+
 
 C local ... some are adjustable arrays
       INTEGER NGOOD,I,J,K,L,IPRINT,ICHECK
