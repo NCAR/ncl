@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.64 2005-04-19 22:03:42 haley Exp $
+;      $Id: contributed.ncl,v 1.65 2005-06-11 21:03:17 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6165,4 +6165,33 @@ begin
 
    return (xo)
 end
+;**************************************************************
+; D. Shea
+; wrapper for NCL function "shsgc_R42"  that copies attributes and coordinate vars.
+; It adds the longitude and gaussian latitude coordinates.
 
+undef("shsgc_R42_Wrap")
+function shsgc_R42_Wrap (a:numeric, b:numeric)
+local xNew, lat, gwt, lon, nDim
+begin
+  xNew = shsgc_R42(a,b) 
+  lat  = latGau    (108, "lat", "latitude" , "degrees_north")
+  gwt  = latGauWgt (108, "lat", "gaussian weights", "")
+  lon  = lonGlobeF (128, "lon", "longitude", "degrees_east")
+
+  if (isatt(a,"long_name")) then
+      xNew@long_name = a@long_name
+  end if
+  if (isatt(a,"units")) then
+      xNew@units = a@units
+  end if
+
+  nDim     = dimsizes(dimsizes(xNew))           ; number of dimensions
+  xNew!(nDim-2)  = "lat"                        ; 2nd rightmost dimension
+  xNew!(nDim-1)  = "lon"                        ; rightmost dimension
+      
+  xNew&lat = lat                                ; add new coord var
+  xNew&lon = lon
+  xNew@gwt = gwt                                ; attach as attribute
+  return (xNew)
+end
