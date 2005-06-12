@@ -122,6 +122,8 @@ extern void NGCALLF(dshsgc,DSHSGC)(int *,int *,int *,int *,double *,int
 *,int *,double *,double *,int *,int *,double *,int *,double *,int *,int
 *);
 
+extern void NGCALLF(dshsgcr42,DSHSGCR42)(double *,double *,double *);
+
 extern void NGCALLF(dslapec,DSLAPEC)(int *,int *,int *,int
 *,double *,int *,int *,double *,double *, int *,int *,double *,int
 *,double *,int *,int *);
@@ -19223,7 +19225,7 @@ NhlErrorTypes shsgc_W( void )
   da = coerce_input_double(a,type_a,total_size_in,0,NULL,NULL);
   db = coerce_input_double(b,type_b,total_size_in,0,NULL,NULL);
   if(da == NULL || db == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: Unable to allocate memory for coercing input arrays to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: Unable to allocate memory for coercing input arrays to double precision");
     return(NhlFATAL);
   }
 /*
@@ -19231,7 +19233,7 @@ NhlErrorTypes shsgc_W( void )
  */
   dg = coerce_output_double(g,type_g,total_size_out);
   if(dg == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: Unable to allocate memory for double precision output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: Unable to allocate memory for double precision output array");
     return(NhlFATAL);
   }
 /*
@@ -19289,6 +19291,194 @@ NhlErrorTypes shsgc_W( void )
   if(type_g == NCL_float) rg = coerce_output_float(dg,g,total_size_out,1);
 
   return(NhlNOERROR);
+}
+
+
+NhlErrorTypes shsgc_R42_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *a, *b;
+  double *tmp_a, *tmp_b;
+  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_a, type_b;
+/*
+ * Output array variables
+ */
+  void *g;
+  double *tmp_g;
+  int size_g, *dsizes_g;
+  NclBasicDataTypes type_g;
+/*
+ * various
+ */
+  int i, index_ab, index_g;
+  int size_leftmost, size_rightmost_g, size_rightmost_ab;
+
+/*
+ * Retrieve parameters
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  a = (void*)NclGetArgValue(
+           0,
+           2,
+           &ndims_a, 
+           dsizes_a,
+           NULL,
+           NULL,
+           &type_a,
+           2);
+  b = (void*)NclGetArgValue(
+           1,
+           2,
+           &ndims_b, 
+           dsizes_b,
+           NULL,
+           NULL,
+           &type_b,
+           2);
+/*
+ * Input arrays must be float or double.
+ */
+  if((type_a != NCL_float && type_a != NCL_double) ||
+     (type_b != NCL_float && type_b != NCL_double)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: The input arrays must be float or double");
+    return(NhlFATAL);
+  }
+/*
+ * The grids coming in must be at least 2-dimensional and have the same # of
+ * dimensions, and the rightmost dimensions must be 43 x 43.
+ */
+  size_rightmost_ab = 43 * 43;
+  if(ndims_a != ndims_b || ndims_a < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: The input arrays must be at least 2-dimensional and have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  if(dsizes_a[ndims_a-1] != 43 || dsizes_a[ndims_a-2] != 43 || 
+     dsizes_b[ndims_b-1] != 43 || dsizes_b[ndims_b-2] != 43) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: The rightmost two dimensions must be 43 x 43");
+      return(NhlFATAL);
+  }
+/*
+ * Calculate size of leftmost dimensions as we loop through dimentions
+ * and make sure a and b are the same size.
+ */
+  dsizes_g = (int*)calloc(ndims_a,sizeof(int));
+  size_leftmost = 1;
+  for( i = 0; i < ndims_a-2; i++ ) {
+    size_leftmost *= dsizes_a[i];
+    dsizes_g[i] = dsizes_a[i];
+    if( dsizes_a[i] != dsizes_b[i] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: a and b must have the same dimension sizes.");
+      return(NhlFATAL);
+    }
+  }
+  dsizes_g[ndims_a-2] = 108;
+  dsizes_g[ndims_a-1] = 128;
+  size_rightmost_g = 108 * 128;
+  size_g = size_leftmost * size_rightmost_g;
+
+/*
+ * Create temporary double arrays for a and b, if either one of them
+ * is not already double.
+ */
+  if(type_a != NCL_double) {
+    tmp_a = (double*)calloc(size_rightmost_ab,sizeof(double));
+    if(tmp_a == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: Unable to allocate memory for coercing a array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  if(type_b != NCL_double) {
+    tmp_b = (double*)calloc(size_rightmost_ab,sizeof(double));
+    if(tmp_b == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: Unable to allocate memory for coercing b array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Allocate space for temporary input array. The temporary array
+ * tmp_g is just big enough to hold a 2-dimensional subsection of the
+ * g array (which is always size 43 x 43).
+ */
+  if(type_a != NCL_double && type_b != NCL_double) {
+    type_g = NCL_float;
+    g      = (void*)calloc(size_g,sizeof(float));
+    tmp_g  = (double*)calloc(size_rightmost_g,sizeof(double));
+    if(g == NULL || tmp_g == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_g = NCL_double;
+    g      = (void*)calloc(size_g,sizeof(double));
+    if(g == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  } 
+
+/*
+ * Loop through leftmost dimensions and call Fortran routine.
+ */
+  index_g  = 0;
+  index_ab = 0;
+  for( i = 0; i < size_leftmost; i++ ) {
+    if(type_a != NCL_double) {
+/*
+ * Coerce 43 x 43 subsection of a (tmp_a) to double.
+ */
+      coerce_subset_input_double(a,tmp_a,index_ab,type_a,size_rightmost_ab,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_a to appropriate location in a.
+ */
+      tmp_a = &((double*)a)[index_ab];
+    }
+    if(type_b != NCL_double) {
+/*
+ * Coerce 43 x 43 subsection of b (tmp_b) to double.
+ */
+      coerce_subset_input_double(b,tmp_b,index_ab,type_b,size_rightmost_ab,0,NULL,NULL);
+    }
+    else {
+/*
+ * Point tmp_b to appropriate location in b.
+ */
+      tmp_b = &((double*)b)[index_ab];
+    }
+
+/*
+ * Point tmp_g to appropriate location in g if necessary.
+ */
+    if(type_g == NCL_double) {
+      tmp_g = &((double*)g)[index_g];
+    }
+
+    NGCALLF(dshsgcr42,DSHSGCR42)(tmp_a,tmp_b,tmp_g);
+
+    if(type_g == NCL_float) {
+      coerce_output_float_only(g,tmp_g,size_rightmost_g,index_g);
+    }
+    index_g  += size_rightmost_g;
+    index_ab += size_rightmost_ab;
+  }
+/*
+ * Free memory.
+ */
+  if(type_a != NCL_double) NclFree(tmp_a);
+  if(type_b != NCL_double) NclFree(tmp_b);
+  if(type_g != NCL_double) NclFree(tmp_g);
+
+  return(NclReturnValue(g,ndims_a,dsizes_g,NULL,type_g,0));
 }
 
 

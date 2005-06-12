@@ -126,6 +126,7 @@ extern NhlErrorTypes shaec_W(void);
 extern NhlErrorTypes shagc_W(void);
 extern NhlErrorTypes shsec_W(void);
 extern NhlErrorTypes shsgc_W(void);
+extern NhlErrorTypes shsgc_R42_W(void);
 extern NhlErrorTypes shaeC_W(void);
 extern NhlErrorTypes shagC_W(void);
 extern NhlErrorTypes shseC_W(void);
@@ -440,6 +441,10 @@ extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
 extern NhlErrorTypes get_ncl_version_W(void);
+/*
+extern NhlErrorTypes echo_on_W(void);
+extern NhlErrorTypes echo_off_W(void);
+*/
 
 extern NhlErrorTypes write_matrix_W(void);
 extern NhlErrorTypes ctwrap_W(void);
@@ -1938,6 +1943,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterProc(shsgc_W,args,"shsgc",nargs);
+/*
+ * Register "shsgc_R42".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(shsgc_R42_W,args,"shsgc_R42",nargs);
+
 
 /*
  * Register "shaeC".
@@ -5755,6 +5772,15 @@ void NclAddUserFuncs(void)
     args = NewArgs(0);
     NclRegisterFunc(get_ncl_version_W, args, "get_ncl_version", nargs);
 
+	/*
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterProc(echo_on_W, args, "echo_on", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterProc(echo_off_W, args, "echo_off", nargs);
+	*/
 /*
  *  Register ctwrap.
  */
