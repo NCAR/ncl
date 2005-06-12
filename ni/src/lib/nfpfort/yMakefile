@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.2 2005-06-02 22:06:45 haley Exp $
+#      $Id: yMakefile,v 1.3 2005-06-12 21:08:26 haley Exp $
 #
 
 MYNAME		=	libnfpfort
@@ -17,7 +17,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	prneofTranspose.o psigma.o random_dp.o rcm2points.o rcm2rgrid.o		\
 	rdsstoi.o regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o			\
 	rmStndx_dp.o rmsd.o round.o runave_dp.o rvdv.o s2h.o setrig.o		\
-	simpson_dp.o skewT.o smth9_dp.o sp2_util.o sp2_util_dp.o			\
+	shsgc_R42.o simpson_dp.o skewT.o smth9_dp.o sp2_util.o sp2_util_dp.o\
 	specx_dp.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o taper.o	\
 	tdez1d.o triple2grid.o triple2grid2d.o trssphx.o trvsphx.o ttest.o  \
 	upsl_dp.o varimax_dp.o vibeta_dp.o vinth2p_dp.o vinth2p_ecmwf.o     \
