@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.65 2005-06-11 21:03:17 shea Exp $
+;      $Id: contributed.ncl,v 1.66 2005-06-13 22:33:50 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6190,7 +6190,7 @@ begin
   xNew!(nDim-2)  = "lat"                        ; 2nd rightmost dimension
   xNew!(nDim-1)  = "lon"                        ; rightmost dimension
       
-  xNew&lat = lat                                ; add new coord var
+  xNew&lat = lat(::-1)                          ; add new coord var
   xNew&lon = lon
   xNew@gwt = gwt                                ; attach as attribute
   return (xNew)
