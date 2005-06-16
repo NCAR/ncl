@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.179 2005-03-24 21:56:04 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.180 2005-06-16 20:29:22 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2260,6 +2260,7 @@ NhlErrorTypes _NclIqsort
 			tmp_var = _NclReadCoordVar(args.u.data_var,NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
 			_NclWriteCoordVar(args.u.data_var,_NclVarValueRead(tmp_var,sel_ptr,NULL),NrmQuarkToString(args.u.data_var->var.dim_info[0].dim_quark),NULL);
 		}
+		_NclDestroyObj((NclObj)tmp_md2);
 		break;
 	default:
 		return(NhlFATAL);
