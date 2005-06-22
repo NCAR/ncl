@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.9 2004-06-30 16:06:26 kennison Exp $
+C $Id: EzmapDemo.f,v 1.10 2005-06-22 21:44:24 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -658,7 +658,9 @@ C
             PRINT * , '  GN => Gnomonic'
             PRINT * , '  AE => Azimuthal Equidistant'
             PRINT * , '  CE => Cylindrical Equidistant'
+            PRINT * , '  EA => Cylindrical Equal-Area'
             PRINT * , '  ME => Mercator'
+            PRINT * , '  RM => Rotated Mercator'
             PRINT * , '  MO => Mollweide'
             PRINT * , '  RO => Robinson'
             PRINT * , '  SV => Satellite-View'
@@ -671,8 +673,9 @@ C
             CALL MUPPER (CTMP)
             IF (CTMP.EQ.'LC'.OR.CTMP.EQ.'ST'.OR.CTMP.EQ.'OR'.OR.
      +          CTMP.EQ.'LE'.OR.CTMP.EQ.'GN'.OR.CTMP.EQ.'AE'.OR.
-     +          CTMP.EQ.'CE'.OR.CTMP.EQ.'ME'.OR.CTMP.EQ.'MO'.OR.
-     +          CTMP.EQ.'RO'.OR.CTMP.EQ.'SV'.OR.CTMP.EQ.'UT') PTYP=CTMP
+     +          CTMP.EQ.'CE'.OR.CTMP.EQ.'EA'.OR.CTMP.EQ.'ME'.OR.
+     +          CTMP.EQ.'RM'.OR.CTMP.EQ.'MO'.OR.CTMP.EQ.'RO'.OR.
+     +          CTMP.EQ.'SV'.OR.CTMP.EQ.'UT') PTYP=CTMP
             IF (PTYP.EQ.'LC') THEN
               PRINT * , ' '
               PRINT * , 'Current central meridian:      ',PLON
@@ -693,6 +696,20 @@ C
      +d 90):'
               CALL EMRDRN (ROTA,ROTA)
               ROTA=MAX(-90.,MIN(90.,ROTA))
+            ELSE IF (PTYP.EQ.'RM') THEN
+              PRINT * , ' '
+              PRINT * , 'Current central meridian:      ',PLON
+              PRINT * , 'Current rotation angle:        ',ROTA
+              PRINT * , ' '
+              PRINT * , 'Enter new central meridian (between -180 and 18
+     +0):'
+              CALL EMRDRN (PLON,PLON)
+              PLON=MAX(-180.,MIN(180.,PLON))
+              PRINT * , ' '
+              PRINT * , 'Enter new rotation angle (between -180 and 180)
+     +:'
+              CALL EMRDRN (ROTA,ROTA)
+              ROTA=MAX(-180.,MIN(180.,ROTA))
             ELSE IF (PTYP.EQ.'UT') THEN
               PRINT * , ' '
               PRINT * , 'For most of the USGS transformations, one may '
@@ -1939,6 +1956,9 @@ C
               ELSE IF (PTYP.EQ.'CE') THEN
                 PRINT * , 'U values should range from -180 to +180, V va
      +lues from -90 to +90.'
+              ELSE IF (PTYP.EQ.'EA') THEN
+                PRINT * , 'U values should range from -pi to +pi, V valu
+     +es from -4/3 to +4/3.'
               ELSE IF (PTYP.EQ.'MO') THEN
                 PRINT * , 'U values should range from -2 to +2, V values
      + from -1 to +1.'
@@ -2381,39 +2401,40 @@ C
           ELSE IF (COMD.EQ.'P'.OR.COMD.EQ.'p') THEN
             PRINT * , ' '
             PRINT * , 'Selected previous one in list.'
-            IPDP=MOD(IPDP+63,66)+1
+            IPDP=MOD(IPDP+65,68)+1
           ELSE IF (COMD.EQ.'S'.OR.COMD.EQ.'s') THEN
             PRINT * , ' '
-            PRINT * , 'Enter an integer between 1 and 66 (use 1-11 for'
-            PRINT * , 'original EZMAP projection types, 12-44 for USGS'
-            PRINT * , 'transformations, and 45-66 for State Plane Grid'
+            PRINT * , 'Enter an integer between 1 and 68 (use 1-13 for'
+            PRINT * , 'original EZMAP projection types, 14-46 for USGS'
+            PRINT * , 'transformations, and 47-68 for State Plane Grid'
             PRINT * , 'plots):'
             PRINT * , ' '
-            PRINT * , '   1 => LC     23 => UT-06  45 => SPG-US-NE--27'
-            PRINT * , '   2 => GN     24 => UT-07  46 => SPG-US-NE--83'
-            PRINT * , '   3 => ME     25 => UT-08  47 => SPG-US-SE--27'
-            PRINT * , '   4 => ST     26 => UT-08  48 => SPG-US-SE--83'
-            PRINT * , '   5 => LE     27 => UT-08  49 => SPG-US-NEC-27'
-            PRINT * , '   6 => OR     28 => UT-08  50 => SPG-US-NEC-83'
-            PRINT * , '   7 => SV     29 => UT-09  51 => SPG-US-SEC-27'
-            PRINT * , '   8 => AE     30 => UT-10  52 => SPG-US-SEC-83'
-            PRINT * , '   9 => RO     31 => UT-11  53 => SPG-US-NWC-27'
-            PRINT * , '  10 => MO     32 => UT-12  54 => SPG-US-NWC-83'
-            PRINT * , '  11 => CE     33 => UT-13  55 => SPG-US-SWC-27'
-            PRINT * , '  12 => UT-01  34 => UT-14  56 => SPG-US-SWC-83'
-            PRINT * , '  13 => UT-01  35 => UT-15  57 => SPG-US-NW--27'
-            PRINT * , '  14 => UT-02  36 => UT-16  58 => SPG-US-NW--83'
-            PRINT * , '  15 => UT-02  37 => UT-17  59 => SPG-US-SW--27'
-            PRINT * , '  16 => UT-02  38 => UT-18  60 => SPG-US-SW--83'
-            PRINT * , '  17 => UT-03  39 => UT-19  61 => SPG-ALASKA-27'
-            PRINT * , '  18 => UT-03  40 => UT-20  62 => SPG-ALASKA-83'
-            PRINT * , '  19 => UT-04  41 => UT-20  63 => SPG-HAWAII-27'
-            PRINT * , '  20 => UT-04  42 => UT-21  64 => SPG-HAWAII-83'
-            PRINT * , '  21 => UT-05  43 => UT-22  65 => SPG-ALL----27'
-            PRINT * , '  22 => UT-06  44 => UT-23  66 => SPG-ALL----83'
+            PRINT * , '   1 => LC     24 => UT-06  47 => SPG-US-NE--27'
+            PRINT * , '   2 => GN     25 => UT-06  48 => SPG-US-NE--83'
+            PRINT * , '   3 => ME     26 => UT-07  49 => SPG-US-SE--27'
+            PRINT * , '   4 => ST     27 => UT-08  50 => SPG-US-SE--83'
+            PRINT * , '   5 => LE     28 => UT-08  51 => SPG-US-NEC-27'
+            PRINT * , '   6 => OR     29 => UT-08  52 => SPG-US-NEC-83'
+            PRINT * , '   7 => SV     30 => UT-08  53 => SPG-US-SEC-27'
+            PRINT * , '   8 => AE     31 => UT-09  54 => SPG-US-SEC-83'
+            PRINT * , '   9 => RO     32 => UT-10  55 => SPG-US-NWC-27'
+            PRINT * , '  10 => MO     33 => UT-11  56 => SPG-US-NWC-83'
+            PRINT * , '  11 => CE     34 => UT-12  57 => SPG-US-SWC-27'
+            PRINT * , '  12 => EA     35 => UT-13  58 => SPG-US-SWC-83'
+            PRINT * , '  13 => RM     36 => UT-14  59 => SPG-US-NW--27'
+            PRINT * , '  14 => UT-01  37 => UT-15  60 => SPG-US-NW--83'
+            PRINT * , '  15 => UT-01  38 => UT-16  61 => SPG-US-SW--27'
+            PRINT * , '  16 => UT-02  39 => UT-17  62 => SPG-US-SW--83'
+            PRINT * , '  17 => UT-02  40 => UT-18  63 => SPG-ALASKA-27'
+            PRINT * , '  18 => UT-02  41 => UT-19  64 => SPG-ALASKA-83'
+            PRINT * , '  19 => UT-03  42 => UT-20  65 => SPG-HAWAII-27'
+            PRINT * , '  20 => UT-03  43 => UT-20  66 => SPG-HAWAII-83'
+            PRINT * , '  21 => UT-04  44 => UT-21  67 => SPG-ALL----27'
+            PRINT * , '  22 => UT-04  45 => UT-22  68 => SPG-ALL----83'
+            PRINT * , '  23 => UT-05  46 => UT-23                     '
             PRINT * , ' '
             CALL EMRDIN (IPDP,IPDP)
-            IPDP=MAX(1,MIN(66,IPDP))
+            IPDP=MAX(1,MIN(68,IPDP))
           END IF
 C
           PRINT * , ' '
@@ -3161,7 +3182,22 @@ C
           PTYP='CE'
           ILLB=-1
         ELSE IF (IPDP.EQ.12) THEN
-          PRINT * , 'Example 12 shows a USGS transformation called the'
+          PRINT * , 'Example 12 shows an original EZMAP transformation'
+          PRINT * , 'called the Cylindrical Equal-Area.'
+          PTYP='EA'
+          ILLB=-1
+        ELSE IF (IPDP.EQ.13) THEN
+          PRINT * , 'Example 13 shows an original EZMAP transformation'
+          PRINT * , 'called the Rotated Mercator.'
+          PTYP='RM'
+          ROTA=45.
+          LTYP='CO'
+          PLM1(1)=   2.
+          PLM2(1)=-135.
+          PLM3(1)=  37.
+          PLM4(1)=  67.
+        ELSE IF (IPDP.EQ.14) THEN
+          PRINT * , 'Example 14 shows a USGS transformation called the'
           PRINT * , 'UTM system (UTM="Universal Transverse Mercator"),'
           PRINT * , 'in the Northern Hemisphere.  The area shown is'
           PRINT * , 'that for which distortion is minimal, on either'
@@ -3171,8 +3207,8 @@ C
           IPRJ=1
           IZON=13
           IDSL=4
-        ELSE IF (IPDP.EQ.13) THEN
-          PRINT * , 'Example 13 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.15) THEN
+          PRINT * , 'Example 15 shows a USGS transformation called the'
           PRINT * , 'UTM system (UTM="Universal Transverse Mercator"),'
           PRINT * , 'in the Southern Hemisphere.  The area shown is'
           PRINT * , 'that for which distortion is minimal, on either'
@@ -3182,8 +3218,8 @@ C
           IPRJ=1
           IZON=-35
           IDSL=4
-        ELSE IF (IPDP.EQ.14) THEN
-          PRINT * , 'Example 14 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.16) THEN
+          PRINT * , 'Example 16 shows a USGS transformation called the'
           PRINT * , 'State Plane coordinate system.  The zone shown is'
           PRINT * , 'that for New Hampshire.'
           IPRJ=2
@@ -3191,8 +3227,8 @@ C
           ISPH=0
           IDSL=4
           ILLB=-1
-        ELSE IF (IPDP.EQ.15) THEN
-          PRINT * , 'Example 15 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.17) THEN
+          PRINT * , 'Example 17 shows a USGS transformation called the'
           PRINT * , 'State Plane coordinate system.  The zone shown is'
           PRINT * , 'that for Nebraska.'
           IPRJ=2
@@ -3200,8 +3236,8 @@ C
           ISPH=8
           IDSL=4
           ILLB=-1
-        ELSE IF (IPDP.EQ.16) THEN
-          PRINT * , 'Example 16 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.18) THEN
+          PRINT * , 'Example 18 shows a USGS transformation called the'
           PRINT * , 'State Plane coordinate system.  The zone shown is'
           PRINT * , 'that for the Alaskan panhandle.'
           IPRJ=2
@@ -3209,8 +3245,8 @@ C
           ISPH=8
           IDSL=4
           ILLB=-1
-        ELSE IF (IPDP.EQ.17) THEN
-          PRINT * , 'Example 17 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.19) THEN
+          PRINT * , 'Example 19 shows a USGS transformation called the'
           PRINT * , 'Alber''s Equal-Area Conic, in the Northern'
           PRINT * , 'Hemisphere.'
           IPRJ=3
@@ -3223,8 +3259,8 @@ C
           PARA( 6)=         90.D0  !  LATITUDE OF ORIGIN OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.18) THEN
-          PRINT * , 'Example 18 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.20) THEN
+          PRINT * , 'Example 20 shows a USGS transformation called the'
           PRINT * , 'Alber''s Equal-Area Conic, in the Southern'
           PRINT * , 'Hemisphere.'
           IPRJ=3
@@ -3237,8 +3273,8 @@ C
           PARA( 6)=        -90.D0  !  LATITUDE OF ORIGIN OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.19) THEN
-          PRINT * , 'Example 19 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.21) THEN
+          PRINT * , 'Example 21 shows a USGS transformation called the'
           PRINT * , 'Lambert Conformal Conic, with two standard'
           PRINT * , 'parallels, in the Northern Hemisphere.'
           IPRJ=4
@@ -3251,8 +3287,8 @@ C
           PARA( 6)=         55.D0  !  LATITUDE OF ORIGIN OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.20) THEN
-          PRINT * , 'Example 20 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.22) THEN
+          PRINT * , 'Example 22 shows a USGS transformation called the'
           PRINT * , 'Lambert Conformal Conic, with two standard'
           PRINT * , 'parallels, in the Southern Hemisphere.'
           IPRJ=4
@@ -3265,8 +3301,8 @@ C
           PARA( 6)=        -55.D0  !  LATITUDE OF ORIGIN OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.21) THEN
-          PRINT * , 'Example 21 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.23) THEN
+          PRINT * , 'Example 23 shows a USGS transformation called the'
           PRINT * , 'Mercator.'
           IPRJ=5
           ISPH=-1
@@ -3276,8 +3312,8 @@ C
           PARA( 6)=          0.D0  !  LATITUDE OF TRUE SCALE
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.22) THEN
-          PRINT * , 'Example 22 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.24) THEN
+          PRINT * , 'Example 24 shows a USGS transformation called the'
           PRINT * , 'Polar Stereographic, in the Northern Hemisphere.'
           IPRJ=6
           ISPH=-1
@@ -3287,8 +3323,8 @@ C
           PARA( 6)=        +45.D0  !  LATITUDE OF TRUE SCALE
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.23) THEN
-          PRINT * , 'Example 23 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.25) THEN
+          PRINT * , 'Example 25 shows a USGS transformation called the'
           PRINT * , 'Polar Stereographic, in the Southern Hemisphere.'
           IPRJ=6
           ISPH=-1
@@ -3298,8 +3334,8 @@ C
           PARA( 6)=        -45.D0  !  LATITUDE OF TRUE SCALE
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.24) THEN
-          PRINT * , 'Example 24 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.26) THEN
+          PRINT * , 'Example 26 shows a USGS transformation called the'
           PRINT * , 'Polyconic.'
           IPRJ=7
           ISPH=-1
@@ -3309,8 +3345,8 @@ C
           PARA( 6)=          0.D0  !  LATITUDE OF ORIGIN OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.25) THEN
-          PRINT * , 'Example 25 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.27) THEN
+          PRINT * , 'Example 27 shows a USGS transformation called the'
           PRINT * , 'Equidistant Conic, with one standard parallel, in'
           PRINT * , 'the Northern Hemisphere.'
           IPRJ=8
@@ -3323,8 +3359,8 @@ C
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
           PARA( 9)=          0.D0  !  ZERO
-        ELSE IF (IPDP.EQ.26) THEN
-          PRINT * , 'Example 26 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.28) THEN
+          PRINT * , 'Example 28 shows a USGS transformation called the'
           PRINT * , 'Equidistant Conic, with one standard parallel, in'
           PRINT * , 'the Southern Hemisphere.'
           IPRJ=8
@@ -3337,8 +3373,8 @@ C
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
           PARA( 9)=          0.D0  !  ZERO
-        ELSE IF (IPDP.EQ.27) THEN
-          PRINT * , 'Example 27 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.29) THEN
+          PRINT * , 'Example 29 shows a USGS transformation called the'
           PRINT * , 'Equidistant Conic, with two standard parallels, in'
           PRINT * , 'the Northern Hemisphere.'
           IPRJ=8
@@ -3352,8 +3388,8 @@ C
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
           PARA( 9)=          1.D0  !  NON-ZERO
-        ELSE IF (IPDP.EQ.28) THEN
-          PRINT * , 'Example 28 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.30) THEN
+          PRINT * , 'Example 30 shows a USGS transformation called the'
           PRINT * , 'Equidistant Conic, with two standard parallels, in'
           PRINT * , 'the Southern Hemisphere.'
           IPRJ=8
@@ -3367,8 +3403,8 @@ C
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
           PARA( 9)=          1.D0  !  NON-ZERO
-        ELSE IF (IPDP.EQ.29) THEN
-          PRINT * , 'Example 29 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.31) THEN
+          PRINT * , 'Example 31 shows a USGS transformation called the'
           PRINT * , 'Transverse Mercator.  The area shown is that for'
           PRINT * , 'which distortion is minimal, on either side of a'
           PRINT * , 'particular meridian; normally, this system is used'
@@ -3382,8 +3418,8 @@ C
           PARA( 6)=          0.D0  !  LATITUDE OF ORIGIN
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.30) THEN
-          PRINT * , 'Example 30 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.32) THEN
+          PRINT * , 'Example 32 shows a USGS transformation called the'
           PRINT * , 'Stereographic.'
           IPRJ=10
           ISPH=-1
@@ -3392,8 +3428,8 @@ C
           PARA( 6)=         40.D0  !  LATITUDE OF CENTER OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.31) THEN
-          PRINT * , 'Example 31 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.33) THEN
+          PRINT * , 'Example 33 shows a USGS transformation called the'
           PRINT * , 'Lambert Azimuthal Equal-Area.'
           IPRJ=11
           ISPH=-1
@@ -3402,8 +3438,8 @@ C
           PARA( 6)=         40.D0  !  LATITUDE OF CENTER OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.32) THEN
-          PRINT * , 'Example 32 shows a USGS transformation: the'
+        ELSE IF (IPDP.EQ.34) THEN
+          PRINT * , 'Example 34 shows a USGS transformation: the'
           PRINT * , 'Azimuthal Equidistant.'
           IPRJ=12
           ISPH=-1
@@ -3412,8 +3448,8 @@ C
           PARA( 6)=         40.D0  !  LATITUDE OF CENTER OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.33) THEN
-          PRINT * , 'Example 33 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.35) THEN
+          PRINT * , 'Example 35 shows a USGS transformation called the'
           PRINT * , 'Gnomonic.'
           IPRJ=13
           ISPH=-1
@@ -3422,8 +3458,8 @@ C
           PARA( 6)=         40.D0  !  LATITUDE OF CENTER OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.34) THEN
-          PRINT * , 'Example 34 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.36) THEN
+          PRINT * , 'Example 36 shows a USGS transformation called the'
           PRINT * , 'Orthographic.'
           IPRJ=14
           ISPH=-1
@@ -3432,8 +3468,8 @@ C
           PARA( 6)=         40.D0  !  LATITUDE OF CENTER OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.35) THEN
-          PRINT * , 'Example 35 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.37) THEN
+          PRINT * , 'Example 37 shows a USGS transformation called the'
           PRINT * , 'Perspective (the same as the Satellite-View, but'
           PRINT * , 'only allows for a vertical view).'
           IPRJ=15
@@ -3444,8 +3480,8 @@ C
           PARA( 6)=         40.D0  !  LATITUDE OF CENTER OF PROJECTION
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.36) THEN
-          PRINT * , 'Example 36 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.38) THEN
+          PRINT * , 'Example 38 shows a USGS transformation called the'
           PRINT * , 'Sinusoidal.'
           IPRJ=16
           ISPH=-1
@@ -3453,8 +3489,8 @@ C
           PARA( 5)=       -105.D0  !  LONGITUDE OF CENTRAL MERIDIAN
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.37) THEN
-          PRINT * , 'Example 37 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.39) THEN
+          PRINT * , 'Example 39 shows a USGS transformation called the'
           PRINT * , 'Equirectangular (same as Cylindrical Equidistant).'
           IPRJ=17
           ISPH=-1
@@ -3463,8 +3499,8 @@ C
           PARA( 6)=          0.D0  !  LATITUDE OF TRUE SCALE
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.38) THEN
-          PRINT * , 'Example 38 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.40) THEN
+          PRINT * , 'Example 40 shows a USGS transformation called the'
           PRINT * , 'Miller Cylindrical.'
           IPRJ=18
           ISPH=-1
@@ -3472,8 +3508,8 @@ C
           PARA( 5)=       -105.D0  !  LONGITUDE OF CENTRAL MERIDIAN
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.39) THEN
-          PRINT * , 'Example 39 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.41) THEN
+          PRINT * , 'Example 41 shows a USGS transformation called the'
           PRINT * , 'Van der Grinten I.'
           IPRJ=19
           ISPH=-1
@@ -3481,8 +3517,8 @@ C
           PARA( 5)=       -105.D0  !  LONGITUDE OF CENTRAL MERIDIAN
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.40) THEN
-          PRINT * , 'Example 40 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.42) THEN
+          PRINT * , 'Example 42 shows a USGS transformation called the'
           PRINT * , 'Oblique Mercator.  The projection''s center line'
           PRINT * , 'is specified by giving two points that project'
           PRINT * , 'into it.  Currently, there is a bug which prevents'
@@ -3500,8 +3536,8 @@ C
           PARA(11)=        -80.D0  !  LONGITUDE, POINT 2
           PARA(12)=         50.D0  !  LATITUDE, POINT 2
           PARA(13)=          0.D0  !  ZERO
-        ELSE IF (IPDP.EQ.41) THEN
-          PRINT * , 'Example 41 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.43) THEN
+          PRINT * , 'Example 43 shows a USGS transformation called the'
           PRINT * , 'Oblique Mercator.  The projection''s center line'
           PRINT * , 'is specified by specifying its azimuth angle.'
           IPRJ=20
@@ -3515,8 +3551,8 @@ C
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
           PARA(13)=          1.D0  !  NON-ZERO
-        ELSE IF (IPDP.EQ.42) THEN
-          PRINT * , 'Example 42 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.44) THEN
+          PRINT * , 'Example 44 shows a USGS transformation called the'
           PRINT * , 'Robinson, which was developed by the National'
           PRINT * , 'Geographic Society for use in world maps.'
           IPRJ=21
@@ -3525,8 +3561,8 @@ C
           PARA( 5)=       -105.D0  !  LONGITUDE OF CENTRAL MERIDIAN
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.43) THEN
-          PRINT * , 'Example 43 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.45) THEN
+          PRINT * , 'Example 45 shows a USGS transformation called the'
           PRINT * , 'Space Oblique Mercator.  Each of the views that'
           PRINT * , 'one can select shows the area passed over by a'
           PRINT * , 'chosen Landsat satellite during a particular'
@@ -3538,8 +3574,8 @@ C
           PARA( 4)=         84.D0  !  PATH (1-251 for LN 1-3, 1-233 for LN 4-5)
           PARA( 7)=          0.D0  !  FALSE EASTING
           PARA( 8)=          0.D0  !  FALSE NORTHING
-        ELSE IF (IPDP.EQ.44) THEN
-          PRINT * , 'Example 44 shows a USGS transformation called the'
+        ELSE IF (IPDP.EQ.46) THEN
+          PRINT * , 'Example 46 shows a USGS transformation called the'
           PRINT * , 'Modified Stereographic for Alaska.  It is centered'
           PRINT * , 'at Lat 64N, Long 152W and stretched in such a way'
           PRINT * , 'as to allow all of Alaska to be shown on a single'
@@ -3551,8 +3587,8 @@ C
           PARA( 8)=          0.D0  !  FALSE NORTHING
           IDSL=4
           ILLB=-1
-        ELSE IF (IPDP.EQ.45) THEN
-          PRINT * , 'Example 45 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.47) THEN
+          PRINT * , 'Example 47 shows the State Plane zones for the'
           PRINT * , 'northeastern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1927.'
           PTYP='ST'
@@ -3568,8 +3604,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.46) THEN
-          PRINT * , 'Example 46 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.48) THEN
+          PRINT * , 'Example 48 shows the State Plane zones for the'
           PRINT * , 'northeastern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1983.'
           PTYP='ST'
@@ -3585,8 +3621,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.47) THEN
-          PRINT * , 'Example 47 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.49) THEN
+          PRINT * , 'Example 49 shows the State Plane zones for the'
           PRINT * , 'southeastern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1927.'
           PTYP='ST'
@@ -3602,8 +3638,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.48) THEN
-          PRINT * , 'Example 48 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.50) THEN
+          PRINT * , 'Example 50 shows the State Plane zones for the'
           PRINT * , 'southeastern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1983.'
           PTYP='ST'
@@ -3619,8 +3655,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.49) THEN
-          PRINT * , 'Example 49 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.51) THEN
+          PRINT * , 'Example 51 shows the State Plane zones for the'
           PRINT * , 'northeast central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1927.'
           PTYP='ST'
@@ -3636,8 +3672,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST CENTRAL - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.50) THEN
-          PRINT * , 'Example 50 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.52) THEN
+          PRINT * , 'Example 52 shows the State Plane zones for the'
           PRINT * , 'northeast central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1983.'
           PTYP='ST'
@@ -3653,8 +3689,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHEAST CENTRAL - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.51) THEN
-          PRINT * , 'Example 51 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.53) THEN
+          PRINT * , 'Example 53 shows the State Plane zones for the'
           PRINT * , 'southeast central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1927.'
           PTYP='ST'
@@ -3670,8 +3706,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST CENTRAL - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.52) THEN
-          PRINT * , 'Example 52 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.54) THEN
+          PRINT * , 'Example 54 shows the State Plane zones for the'
           PRINT * , 'southeast central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1983.'
           PTYP='ST'
@@ -3687,8 +3723,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHEAST CENTRAL - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.53) THEN
-          PRINT * , 'Example 53 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.55) THEN
+          PRINT * , 'Example 55 shows the State Plane zones for the'
           PRINT * , 'northwest central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1927.'
           PTYP='ST'
@@ -3704,8 +3740,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST CENTRAL - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.54) THEN
-          PRINT * , 'Example 54 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.56) THEN
+          PRINT * , 'Example 56 shows the State Plane zones for the'
           PRINT * , 'northwest central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1983.'
           PTYP='ST'
@@ -3721,8 +3757,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST CENTRAL - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.55) THEN
-          PRINT * , 'Example 55 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.57) THEN
+          PRINT * , 'Example 57 shows the State Plane zones for the'
           PRINT * , 'southwest central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1927.'
           PTYP='ST'
@@ -3738,8 +3774,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST CENTRAL - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.56) THEN
-          PRINT * , 'Example 56 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.58) THEN
+          PRINT * , 'Example 58 shows the State Plane zones for the'
           PRINT * , 'southwest central states of the lower 48, using'
           PRINT * , 'the North American Datum of 1983.'
           PTYP='ST'
@@ -3755,8 +3791,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST CENTRAL - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.57) THEN
-          PRINT * , 'Example 57 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.59) THEN
+          PRINT * , 'Example 59 shows the State Plane zones for the'
           PRINT * , 'northwestern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1927.'
           PTYP='ST'
@@ -3772,8 +3808,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.58) THEN
-          PRINT * , 'Example 58 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.60) THEN
+          PRINT * , 'Example 60 shows the State Plane zones for the'
           PRINT * , 'northwestern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1983.'
           PTYP='ST'
@@ -3789,8 +3825,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - NORTHWEST - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.59) THEN
-          PRINT * , 'Example 59 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.61) THEN
+          PRINT * , 'Example 61 shows the State Plane zones for the'
           PRINT * , 'southwestern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1927.'
           PTYP='ST'
@@ -3806,8 +3842,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.60) THEN
-          PRINT * , 'Example 60 shows the State Plane zones for the'
+        ELSE IF (IPDP.EQ.62) THEN
+          PRINT * , 'Example 62 shows the State Plane zones for the'
           PRINT * , 'southwestern states of the lower 48, using the'
           PRINT * , 'North American Datum of 1983.'
           PTYP='ST'
@@ -3823,8 +3859,8 @@ C
           CHSZ=.24
           LABL='STATE PLANE ZONES - SOUTHWEST - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.61) THEN
-          PRINT * , 'Example 61 shows the State Plane zones for Alaska,'
+        ELSE IF (IPDP.EQ.63) THEN
+          PRINT * , 'Example 63 shows the State Plane zones for Alaska,'
           PRINT * , 'using the North American Datum of 1927.'
           PTYP='ST'
           PLAT=64.
@@ -3839,8 +3875,8 @@ C
           CHSZ=.75
           LABL='STATE PLANE ZONES - ALASKA - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.62) THEN
-          PRINT * , 'Example 62 shows the State Plane zones for Alaska,'
+        ELSE IF (IPDP.EQ.64) THEN
+          PRINT * , 'Example 64 shows the State Plane zones for Alaska,'
           PRINT * , 'using the North American Datum of 1983.'
           PTYP='ST'
           PLAT=64.
@@ -3855,8 +3891,8 @@ C
           CHSZ=.75
           LABL='STATE PLANE ZONES - ALASKA - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.63) THEN
-          PRINT * , 'Example 63 shows the State Plane zones for Hawaii,'
+        ELSE IF (IPDP.EQ.65) THEN
+          PRINT * , 'Example 65 shows the State Plane zones for Hawaii,'
           PRINT * , 'using the North American Datum of 1927.'
           PTYP='ST'
           PLAT=21.
@@ -3871,8 +3907,8 @@ C
           CHSZ=.075
           LABL='STATE PLANE ZONES - HAWAII - NAD1927'
           ILLB=-1
-        ELSE IF (IPDP.EQ.64) THEN
-          PRINT * , 'Example 64 shows the State Plane zones for Hawaii,'
+        ELSE IF (IPDP.EQ.66) THEN
+          PRINT * , 'Example 66 shows the State Plane zones for Hawaii,'
           PRINT * , 'using the North American Datum of 1927.'
           PTYP='ST'
           PLAT=21.
@@ -3887,8 +3923,8 @@ C
           CHSZ=.075
           LABL='STATE PLANE ZONES - HAWAII - NAD1983'
           ILLB=-1
-        ELSE IF (IPDP.EQ.65) THEN
-          PRINT * , 'Example 65 shows all the State Plane zones, using'
+        ELSE IF (IPDP.EQ.67) THEN
+          PRINT * , 'Example 67 shows all the State Plane zones, using'
           PRINT * , 'the North American Datum of 1927.'
           PTYP='LE'
           PLAT=40.
@@ -3902,8 +3938,8 @@ C
           ISPG=0
           CHSZ=1.75
           LABL='STATE PLANE ZONES - ALL - NAD1927'
-        ELSE IF (IPDP.EQ.66) THEN
-          PRINT * , 'Example 66 shows all the State Plane zones, using'
+        ELSE IF (IPDP.EQ.68) THEN
+          PRINT * , 'Example 68 shows all the State Plane zones, using'
           PRINT * , 'the North American Datum of 1983.'
           PTYP='LE'
           PLAT=45.
@@ -3919,7 +3955,7 @@ C
           LABL='STATE PLANE ZONES - ALL - NAD1983'
         END IF
 C
-        IF (IPDP.GE.45.AND.IPDP.LE.66) THEN
+        IF (IPDP.GE.47.AND.IPDP.LE.68) THEN
           PRINT * , ' '
           PRINT * , 'The area for which each of the State Plane zones'
           PRINT * , 'shown is meant to be used is shown as a rectangle'
@@ -3942,7 +3978,7 @@ C
           END IF
         END IF
 C
-        IPDP=MOD(IPDP,66)+1
+        IPDP=MOD(IPDP,68)+1
 C
         RETURN
 C
@@ -3964,6 +4000,8 @@ C
           PTLB='GNOMONIC'
         ELSE IF (PTYP.EQ.'ME') THEN
           PTLB='MERCATOR'
+        ELSE IF (PTYP.EQ.'RM') THEN
+          PTLB='ROTATED MERCATOR'
         ELSE IF (PTYP.EQ.'ST') THEN
           PTLB='STEREOGRAPHIC'
         ELSE IF (PTYP.EQ.'LE') THEN
@@ -3980,6 +4018,8 @@ C
           PTLB='MOLLWEIDE'
         ELSE IF (PTYP.EQ.'CE') THEN
           PTLB='CYLINDRICAL EQUIDISTANT'
+        ELSE IF (PTYP.EQ.'EA') THEN
+          PTLB='CYLINDRICAL EQUAL-AREA'
         ELSE IF (PTYP.EQ.'UT') THEN
           IF (IPRJ.EQ.1) THEN
             IF (IZON.GT.0) THEN
