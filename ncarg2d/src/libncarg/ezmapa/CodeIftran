@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.6 2005-04-14 19:59:12 kennison Exp $
+I $Id: CodeIftran,v 1.7 2005-06-22 21:38:22 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -157,8 +157,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
-     +                   PDCL(13)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
+     +                   PDCL(14)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -301,11 +301,11 @@ C
 C
 C Limb line.
 C
-C Projection:     US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:     US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
 C
-          GO TO (100,101,108,102,103,108,104,107,107,105,107,
-     +                                       107,107,105,107,
-     +                                           107        ) , IPRJ+1
+          GO TO (100,101,108,102,103,108,104,107,107,105,107,107,
+     +                                       107,107,105,107,107,
+     +                                           107            ),IPRJ+1
 C
 C USGS transformations.
 C
@@ -631,7 +631,7 @@ C
           END LOOP
           GO TO 108
 C
-C Cylindrical equidistant, Mercator, or Robinson.
+C Cylindrical equidistant, Mercator, Robinson, cylindrical equal-area.
 C
   107     TEMP=.9998D0
 C
@@ -642,20 +642,23 @@ C
             RLAT=-90.D0
             RLON=-180.D0
             FOR (I = 1 TO 361)
-              IF (IPRJ.EQ.7.OR.IPRJ.EQ.11)
+              IF (IPRJ.EQ.7.OR.IPRJ.EQ.12)
                 U=TEMP*RLON-UOFF
                 V=TEMP*RLAT-VOFF
-              ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12.OR.IPRJ.EQ.15)
+              ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.13.OR.IPRJ.EQ.17)
                 U=TEMP*DTOR*RLON-UOFF
                 V=TEMP*LOG(TAN((MAX(-89.999999D0,
      +                          MIN(+89.999999D0,RLAT))+
      +                                                90.D0)*DTRH))-VOFF
-                IF (IPRJ.EQ.15)
+                IF (IPRJ.EQ.17)
                   UTMP=U*COSR+V*SINR
                   VTMP=V*COSR-U*SINR
                   U=UTMP
                   V=VTMP
                 END IF
+              ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.16)
+                U=TEMP*DTOR*RLON-UOFF
+                V=TEMP*SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
               ELSE
                 U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
                 V=TEMP*RBGDFE(RLAT)-VOFF
@@ -1181,11 +1184,11 @@ C
 C
 C Draw the limb line.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
 C
-        GO TO (100,101,108,102,103,108,104,107,107,105,107,
-     +                                     107,107,105,107,
-     +                                         107        ) , IPRJ+1
+        GO TO (100,101,108,102,103,108,104,107,107,105,107,107,
+     +                                     107,107,105,107,107,
+     +                                         107            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -1500,19 +1503,22 @@ C
           RLAT=-90.D0
           RLON=-180.D0
           FOR (I = 1 TO 361)
-            IF (IPRJ.EQ.7.OR.IPRJ.EQ.11)
+            IF (IPRJ.EQ.7.OR.IPRJ.EQ.12)
               U=TEMP*RLON-UOFF
               V=TEMP*RLAT-VOFF
-            ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12.OR.IPRJ.EQ.15)
+            ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.13.OR.IPRJ.EQ.17)
               U=TEMP*DTOR*RLON-UOFF
               V=TEMP*LOG(TAN((MAX(-89.999999D0,
      +                        MIN(+89.999999D0,RLAT))+90.D0)*DTRH))-VOFF
-              IF (IPRJ.EQ.15)
+              IF (IPRJ.EQ.17)
                 UTMP=U*COSR+V*SINR
                 VTMP=V*COSR-U*SINR
                 U=UTMP
                 V=VTMP
               END IF
+            ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.16) THEN
+              U=TEMP*DTOR*RLON-UOFF
+              V=TEMP*SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
             ELSE
               U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
               V=TEMP*RBGDFE(RLAT)-VOFF
@@ -1836,7 +1842,7 @@ C
           IF (IPRJ.EQ.1)
             RLON=GLON*CEIL((PHOC-179.999999D0)/GLON)
             XLON=GLON*FLOR((PHOC+179.999999D0)/GLON)
-          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.10)
+          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.11)
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
           END IF
@@ -1845,7 +1851,8 @@ C
 C OLAT is the latitude at which meridians that do not extend all the
 C way to the poles are to stop.
 C
-        IF (IPRJ.EQ.11.OR.IPRJ.EQ.12.OR.IPRJ.EQ.14.OR.IPRJ.EQ.15)
+        IF (IPRJ.EQ.12.OR.IPRJ.EQ.13.OR.IPRJ.EQ.15.OR.IPRJ.EQ.16.OR.
+     +                                                IPRJ.EQ.17)
           OLAT=90.D0
         ELSE
           IF (INT(GRPO/1000.D0).EQ.0)
@@ -1887,7 +1894,7 @@ C If a fast-path cylindrical equidistant projection is in use and either
 C or both of the poles is within the (rectangular) perimeter, arrange
 C for the parallels at -90 and/or +90 to be drawn.
 C
-        IF (IPRJ.EQ.11)
+        IF (IPRJ.EQ.12.OR.IPRJ.EQ.16)
           CALL MDPTRN (-90.D0,PHOC,U,V)
           IF (ICFELL('MDPGRM',7).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
