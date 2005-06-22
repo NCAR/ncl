@@ -1,5 +1,5 @@
 C
-C $Id: rdpnuw.f,v 1.1 2002-08-21 20:28:20 kennison Exp $
+C $Id: rdpnuw.f,v 1.2 2005-06-22 21:36:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

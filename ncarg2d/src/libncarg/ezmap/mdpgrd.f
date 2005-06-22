@@ -1,5 +1,5 @@
 C
-C $Id: mdpgrd.f,v 1.4 2005-01-10 21:19:43 kennison Exp $
+C $Id: mdpgrd.f,v 1.5 2005-06-22 21:36:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -130,7 +130,7 @@ C
           IF (IPRJ.EQ.1) THEN
             RLON=GLON*CEIL((PHOC-179.999999D0)/GLON)
             XLON=GLON*FLOR((PHOC+179.999999D0)/GLON)
-          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.10) THEN
+          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.11) THEN
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
           END IF
@@ -139,7 +139,8 @@ C
 C OLAT is the latitude at which meridians that do not extend all the
 C way to the poles are to stop.
 C
-        IF (IPRJ.EQ.11.OR.IPRJ.EQ.12.OR.IPRJ.EQ.14.OR.IPRJ.EQ.15) THEN
+        IF (IPRJ.EQ.12.OR.IPRJ.EQ.13.OR.IPRJ.EQ.15.OR.IPRJ.EQ.16.OR.
+     +                                                IPRJ.EQ.17) THEN
           OLAT=90.D0
         ELSE
           IF (DINT(GRPO/1000.D0).EQ.0.D0) THEN
@@ -177,11 +178,12 @@ C
         BLAT=GLAT*CEIL(BLAT/GLAT)
         IF (BLAT.GE.+90.D0) BLAT=BLAT-GLAT
 C
-C If a fast-path cylindrical equidistant projection is in use and either
-C or both of the poles is within the (rectangular) perimeter, arrange
-C for the parallels at -90 and/or +90 to be drawn.
+C If a fast-path cylindrical equidistant or cylindrical equal-area
+C projection is in use and either or both of the poles is within the
+C (rectangular) perimeter, arrange for the parallels at -90 and/or +90
+C to be drawn.
 C
-        IF (IPRJ.EQ.11) THEN
+        IF (IPRJ.EQ.12.OR.IPRJ.EQ.16) THEN
           CALL MDPTRN (-90.D0,PHOC,U,V)
           IF (ICFELL('MDPGRD',7).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)

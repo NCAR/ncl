@@ -1,5 +1,5 @@
 C
-C $Id: mdgnin.f,v 1.3 2004-06-03 21:39:12 kennison Exp $
+C $Id: mdgnin.f,v 1.4 2005-06-22 21:36:44 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.18 2005-01-10 21:19:43 kennison Exp $
+C $Id: mapbd.f,v 1.19 2005-06-22 21:36:41 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -71,8 +71,8 @@ C
 C The common block MAPCM5 contains various lists ("dictionaries") of
 C two-character codes required by EZMAP for parameter-setting.
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
-     +                   PDCL(13)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
+     +                   PDCL(14)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -176,10 +176,10 @@ C
 C
 C Variables in MAPCM1:
 C
-C IPRJ is an integer between 0 and 15, specifying what projection is
-C currently in use.  The values 11, 12, 13, and 14 specify fast-path
-C versions of the values 7, 8, 9, and 10, respectively.  The meanings
-C of the various possible values of IPRJ are as follows:
+C IPRJ is an integer between 0 and 17, specifying what projection is
+C currently in use.  The values 12, 13, 14, 15, and 16 are fast-path
+C versions of the values 7, 8, 9, 10, and 11, respectively.  The
+C meanings of the various possible values of IPRJ are as follows:
 C
 C     IPRJ    Projection Selected                    Type
 C     ----    -----------------------------------    -----------
@@ -194,11 +194,13 @@ C       7     Cylindrical Equidistant (arbitrary)    Cylindrical
 C       8     Mercator (arbitrary)                   Cylindrical
 C       9     Mollweide (arbitrary)                  Cylindrical
 C      10     Robinson (arbitrary)                   Cylindrical
-C      11     Cylindrical Equidistant (fast-path)    Cylindrical
-C      12     Mercator (fast-path)                   Cylindrical
-C      13     Mollweide (fast-path)                  Cylindrical
-C      14     Robinson (fast-path)                   Cylindrical
-C      15     Rotated Mercator (fast-path)           Cylindrical
+C      11     Cylindrical Equal-Area (arbitrary)     Cylindrical
+C      12     Cylindrical Equidistant (fast-path)    Cylindrical
+C      13     Mercator (fast-path)                   Cylindrical
+C      14     Mollweide (fast-path)                  Cylindrical
+C      15     Robinson (fast-path)                   Cylindrical
+C      16     Cylindrical Equal-Area (fast-path)     Cylindrical
+C      17     Rotated Mercator (fast-path)           Cylindrical
 C
 C PHOC is just a copy of PHIO, from the common block MAPCM4.  IROD is
 C a flag which, if non-zero, says that we have to use double precision
@@ -261,7 +263,7 @@ C Variables in MAPCM4:
 C
 C INTF is a flag whose value at any given time indicates whether the
 C package EZMAP is in need of initialization (.TRUE.) or not (.FALSE.).
-C JPRJ is an integer between 0 and 10 indicating the type of projection
+C JPRJ is an integer between 0 and 13 indicating the type of projection
 C currently in use.  PHIA, PHIO, and ROTA are the pole latitude and
 C longitude and the rotation angle specified by the last user call to
 C MAPROJ.  ILTS is an integer between 1 and 6, specifying how the limits
@@ -348,9 +350,11 @@ C
      +        / 'ma','co','po','an','li','gr' /
 C
       DATA PDCT
-     +/'UT','LC','ST','OR','LE','GN','AE','CE','ME','MO','RO','SV','RM'/
+     +        / 'UT','LC','ST','OR','LE','GN','AE','CE','ME','MO',
+     +          'RO','EA','SV','RM' /
       DATA PDCL
-     +/'ut','lc','st','or','le','gn','ae','ce','me','mo','ro','sv','rm'/
+     +        / 'ut','lc','st','or','le','gn','ae','ce','me','mo',
+     +          'ro','ea','sv','rm' /
 C
 C Variables in MAPCM6:
 C

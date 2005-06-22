@@ -1,5 +1,5 @@
 C
-C $Id: maplbl.f,v 1.14 2005-04-14 19:47:04 kennison Exp $
+C $Id: maplbl.f,v 1.15 2005-06-22 21:36:42 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

@@ -1,5 +1,5 @@
 C
-C $Id: mdplot.f,v 1.3 2005-04-14 19:47:05 kennison Exp $
+C $Id: mdplot.f,v 1.4 2005-06-22 21:36:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

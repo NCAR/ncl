@@ -1,5 +1,5 @@
 C
-C $Id: mdptrn.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
+C $Id: mdptrn.f,v 1.5 2005-06-22 21:36:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -103,7 +103,7 @@ C
 C If a fast-path projection is in use and the rotation angle is 180,
 C adjust U and V.
 C
-        IF (IPRJ.GE.11.AND.IPRJ.LE.14.AND.
+        IF (IPRJ.GE.12.AND.IPRJ.LE.16.AND.
      +      ABS(ROTA).GT.179.999999D0) THEN
           U=-U
           V=-V
@@ -111,7 +111,7 @@ C
 C
 C Take fast paths for simple cylindrical projections.
 C
-        IF (IPRJ-11) 100,197,113
+        IF (IPRJ-12) 100,197,114
 C
 C No fast path.  Sort out the USGS transformations and the Lambert
 C conformal conic from the rest.
@@ -194,9 +194,9 @@ C
 C
 C Jump to code appropriate for the chosen projection.
 C
-C Projection:   ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
 C
-        GO TO (104,105,106,107,108,109,110,111,112) , IPRJ-1
+        GO TO (104,105,106,107,108,109,110,111,112,113) , IPRJ-1
 C
 C Stereographic.
 C
@@ -283,36 +283,48 @@ C
         V=RBGDFE(90.D0-ACOS(COSA)*RTOD)
         GO TO 198
 C
+C Cylindrical equal-area, arbitrary pole and orientation.  ???
+C
+  113   U=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
+        V=COSA*4.D0/3.D0
+        GO TO 197
+C
 C Fast-path cylindrical projections (with PLAT=0, ROTA=0 or 180).
 C
-C Projection:   ME  MO  RO  RM
+C Projection:   ME  MO  RO  EA  RM
 C
-  113   GO TO (114,115,116,117) , IPRJ-11
+  114   GO TO (115,116,117,118,119) , IPRJ-12
 C
-C Fast-path Mercator.
+C Mercator, fast-path.
 C
-  114   IF (ABS(V).GT.89.999999D0) GO TO 200
+  115   IF (ABS(V).GT.89.999999D0) GO TO 200
         U=U*DTOR
         V=LOG(TAN((V+90.D0)*DTRH))
         GO TO 197
 C
-C Fast-path Mollweide.
+C Mollweide, fast-path.
 C
-  115   P=U/90.D0
+  116   P=U/90.D0
         V=SIN(V*DTOR)
         U=P*SQRT(1.D0-V*V)
         GO TO 198
 C
-C Fast-path Robinson.
+C Robinson, fast-path.
 C
-  116   P=U/180.D0
+  117   P=U/180.D0
         U=P*RBGLEN(V)
         V=RBGDFE(V)
         GO TO 198
 C
+C Cylindrical equal-area, fast-path.  ???
+C
+  118   U=U*DTOR
+        V=SIN(V*DTOR)*4.D0/3.D0
+        GO TO 197
+C
 C Rotated Mercator.
 C
-  117   IF (ABS(V).GT.89.999999D0) GO TO 200
+  119   IF (ABS(V).GT.89.999999D0) GO TO 200
         UTM1=U*DTOR
         VTM1=LOG(TAN((V+90.D0)*DTRH))
         P=U

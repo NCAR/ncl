@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
+C $Id: mdplmb.f,v 1.5 2005-06-22 21:36:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -115,11 +115,11 @@ C
 C
 C Draw limb lines, the nature of which depends on the projection.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
 C
-        GO TO (100,101,110,104,105,110,106,112,112,107,112,
-     +                                     112,112,107,112,
-     +                                         112        ) , IPRJ+1
+        GO TO (100,101,110,104,105,110,106,112,112,107,112,112,
+     +                                     112,112,107,112,112,
+     +                                         112            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -401,26 +401,29 @@ C
 C
         GO TO 110
 C
-C Cylindrical equidistant, Mercator, or Robinson.
+C Cylindrical equidistant, Mercator, Robinson, cylindrical equal-area.
 C
   112   RLAT=-90.D0
         RLON=-180.D0
         IVIS=-1
 C
         DO 113 I=1,361
-          IF (IPRJ.EQ.7.OR.IPRJ.EQ.11) THEN
+          IF (IPRJ.EQ.7.OR.IPRJ.EQ.12) THEN
             U=RLON-UOFF
             V=RLAT-VOFF
-          ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.12.OR.IPRJ.EQ.15) THEN
+          ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.13.OR.IPRJ.EQ.17) THEN
             U=DTOR*RLON-UOFF
             V=LOG(TAN((MAX(-89.999999D0,
      +                 MIN(+89.999999D0,RLAT))+90.D0)*DTRH))-VOFF
-            IF (IPRJ.EQ.15) THEN
+            IF (IPRJ.EQ.17) THEN
               UTMP=U*COSR+V*SINR
               VTMP=V*COSR-U*SINR
               U=UTMP
               V=VTMP
             END IF
+          ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.16) THEN
+            U=DTOR*RLON-UOFF
+            V=SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
           ELSE
             U=(RLON/180.D0)*RBGLEN(RLAT)-UOFF
             V=RBGDFE(RLAT)-VOFF

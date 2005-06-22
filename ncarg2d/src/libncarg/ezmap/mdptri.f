@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
+C $Id: mdptri.f,v 1.5 2005-06-22 21:36:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -108,11 +108,11 @@ C
 C
 C Jump to the proper piece of code, depending on the projection type.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
 C
-        GO TO (100,101,102,103,104,105,106,107,108,109,110,
-     +                                     111,112,113,114,
-     +                                         115        ) , IPRJ+1
+        GO TO (100,101,102,103,104,105,106,107,108,109,110,111,
+     +                                     112,113,114,115,116,
+     +                                         117            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -292,23 +292,36 @@ C
         RCOSB=RSINU*SINR-RCOSU*COSR
         GO TO 199
 C
+C Cylindrical equal-area, arbitrary pole and orientation.  ???
+C
+  111   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
+        ANGA=PIOT-ASIN(VTMP*3.D0/4.D0)
+        RSINA=SIN(ANGA)
+        RCOSA=COS(ANGA)
+        ANGU=UTMP
+        RSINU=SIN(ANGU)
+        RCOSU=COS(ANGU)
+        RSINB=RSINU*COSR+RCOSU*SINR
+        RCOSB=RSINU*SINR-RCOSU*COSR
+        GO TO 199
+C
 C Cylindrical equidistant, fast path.
 C
-  111   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
+  112   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
         RLAT=VTMP
         RLON=PHOC+UTMP
         GO TO 200
 C
 C Mercator, fast path.
 C
-  112   IF (ABS(UTMP).GT.PI) GO TO 301
+  113   IF (ABS(UTMP).GT.PI) GO TO 301
         RLAT=RTDD*ATAN(EXP(VTMP))-90.D0
         RLON=PHOC+RTOD*UTMP
         GO TO 200
 C
 C Mollweide, fast path.
 C
-  113   IF (ABS(VTMP).GT.1.D0) GO TO 301
+  114   IF (ABS(VTMP).GT.1.D0) GO TO 301
         RLAT=ASIN(VTMP)*RTOD
         IF (1.D0-VTMP*VTMP.NE.0.D0) THEN
           RLON=PHOC+90.D0*UTMP/SQRT(1.D0-VTMP*VTMP)
@@ -321,17 +334,22 @@ C
 C
 C Robinson, fast path.
 C
-  114   IF (ABS(VTMP).GT..5072D0) GO TO 301
+  115   IF (ABS(VTMP).GT..5072D0) GO TO 301
         VVTM=RBIDFE(VTMP)
         IF (ABS(UTMP).GT.RBGLEN(VVTM)) GO TO 301
         RLAT=VVTM
         RLON=PHOC+180.D0*UTMP/RBGLEN(VVTM)
         GO TO 200
 C
+C Cylindrical equal-area, fast path.
+C
+  116   RLON=PHOC+RTOD*UTMP
+        RLAT=RTOD*ASIN(VTMP*3.D0/4.D0)
+        GO TO 200
+C
 C Rotated Mercator.
 C
-  115   CONTINUE
-        UTM1=UTMP*COSR-VTMP*SINR
+  117   UTM1=UTMP*COSR-VTMP*SINR
         VTM1=VTMP*COSR+UTMP*SINR
         RLAT=RTDD*ATAN(EXP(VTM1))-90.D0
         RLON=PHOC+RTOD*UTM1

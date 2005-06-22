@@ -1,5 +1,5 @@
 C
-C $Id: mapio.f,v 1.18 2001-11-02 22:36:38 kennison Exp $
+C $Id: mapio.f,v 1.19 2005-06-22 21:36:42 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

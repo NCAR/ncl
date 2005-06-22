@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.3 2005-01-10 21:19:44 kennison Exp $
+C $Id: mdpin1.f,v 1.4 2005-06-22 21:36:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -113,7 +113,7 @@ C
 C
 C Compute constants required only by the cylindrical projections.
 C
-          IF (IPRJ.GE.7.AND.IPRJ.LE.10) THEN
+          IF (IPRJ.GE.7.AND.IPRJ.LE.11) THEN
 C
 C See if fast-path transformations can be used (PLAT=0, ROTA=0 or 180).
 C
@@ -134,9 +134,9 @@ C
 C
             ELSE
 C
-C Yes.  The fast paths are implemented as four additional projections.
+C Yes.  The fast paths are implemented as five additional projections.
 C
-              IPRJ=IPRJ+4
+              IPRJ=IPRJ+5
 C
             END IF
 C

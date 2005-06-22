@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.4 2005-01-10 21:19:44 kennison Exp $
+C $Id: mdpint.f,v 1.5 2005-06-22 21:36:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -116,11 +116,11 @@ C
 C Set UMIN, UMAX, VMIN, and VMAX to correspond to the maximum useful
 C area produced by the projection.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
 C
-        GO TO (100,101,102,101,102,102,103,104,103,105,106,
-     +                                     104,103,105,106,
-     +                                         107        ) , IPRJ+1
+        GO TO (100,101,102,101,102,102,103,104,103,105,106,107,
+     +                                     104,103,105,106,107,
+     +                                         108            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -129,7 +129,7 @@ C
         VMIN=UVMN  !  ???
         VMAX=UVMX  !  ???
 C
-        GO TO 108
+        GO TO 109
 C
 C Lambert conformal conic and orthographic.  The quantity "R" which is
 C used below is the largest acceptable ratio of the lengths of the major
@@ -174,15 +174,15 @@ C
           END IF
         END IF
 C
-        GO TO 108
+        GO TO 109
 C
-C Stereographic, Lambert equal area, and Gnomonic.
+C Stereographic, Lambert equal-area, and Gnomonic.
 C
   102   UMIN=-2.D0
         UMAX=+2.D0
         VMIN=-2.D0
         VMAX=+2.D0
-        GO TO 108
+        GO TO 109
 C
 C Azimuthal equidistant and Mercator.
 C
@@ -190,7 +190,7 @@ C
         UMAX=+PI
         VMIN=-PI
         VMAX=+PI
-        GO TO 108
+        GO TO 109
 C
 C Cylindrical equidistant.
 C
@@ -198,7 +198,7 @@ C
         UMAX=+180.D0
         VMIN= -90.D0
         VMAX= +90.D0
-        GO TO 108
+        GO TO 109
 C
 C Mollweide.
 C
@@ -206,7 +206,7 @@ C
         UMAX=+2.D0
         VMIN=-1.D0
         VMAX=+1.D0
-        GO TO 108
+        GO TO 109
 C
 C Robinson.
 C
@@ -214,20 +214,28 @@ C
         UMAX=+1.0000D0
         VMIN= -.5072D0
         VMAX= +.5072D0
-        GO TO 108
+        GO TO 109
+C
+C Cylindrical equal-area.
+C
+  107   UMIN=-PI
+        UMAX=+PI
+        VMIN=-4.D0/3.D0
+        VMAX=+4.D0/3.D0
+        GO TO 109
 C
 C Rotated Mercator.
 C
-  107   UMIN=-PI/(ABS(SINR)+ABS(COSR))
+  108   UMIN=-PI/(ABS(SINR)+ABS(COSR))
         UMAX=+PI/(ABS(SINR)+ABS(COSR))
         VMIN=-PI/(ABS(SINR)+ABS(COSR))
         VMAX=+PI/(ABS(SINR)+ABS(COSR))
-        GO TO 108
+        GO TO 109
 C
 C Compute the quantity used by MAPIT in checking for crossover.  The
 C USGS and conical projections are oddballs.
 C
-  108   IF (IPRJ.EQ.0) THEN
+  109   IF (IPRJ.EQ.0) THEN
           IF (IPRF.EQ. 3.OR.IPRF.EQ. 4.OR.IPRF.EQ. 5.OR.IPRF.EQ. 7.OR.
      +        IPRF.EQ. 8.OR.IPRF.EQ.16.OR.IPRF.EQ.17.OR.IPRF.EQ.18.OR.
      +        IPRF.EQ.19.OR.IPRF.EQ.21) THEN
@@ -311,11 +319,11 @@ C
         CVMA=COS(AVMX*DTOR)
         SVMA=SIN(AVMX*DTOR)
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO
+C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
 C
-        GO TO (401,903,402,403,404,405,406,407,408,409,410,
-     +                                     407,408,409,410,
-     +                                         411        ) , IPRJ+1
+        GO TO (401,903,402,403,404,405,406,407,408,409,410,411,
+     +                                     407,408,409,410,411,
+     +                                         412            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -441,11 +449,19 @@ C
         VMAX=+RBGDFE(MAX(-90.D0,MIN(+90.D0,AVMX)))
         GO TO 600
 C
+C Cylindrical equal-area.
+C
+  411   UMIN=-AUMN*DTOR
+        UMAX=+AUMX*DTOR
+        VMIN=-SVMI*4.D0/3.D0
+        VMAX=+SVMA*4.D0/3.D0
+        GO TO 600
+C
 C Rotated Mercator.  ???   The code here treats angular limit-setting as
 C equivalent to maximal limit-setting.  This is because I'm not sure how
 C to make angular limit-setting for this projection work.
 C
-  411   GO TO 600
+  412   GO TO 600
 C
 C ILTS=5    Values in the u/v plane are given.
 C ------

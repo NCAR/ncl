@@ -1,5 +1,5 @@
 C
-C $Id: mdgetc.f,v 1.3 2005-01-10 21:19:43 kennison Exp $
+C $Id: mdgetc.f,v 1.4 2005-06-22 21:36:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -45,8 +45,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
-     +                   PDCL(13)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
+     +                   PDCL(14)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -62,14 +62,14 @@ C
           CVAL=DDCT(NOUT+1)
         ELSE IF (WHCH(1:2).EQ.'PR') THEN
           CVAL=PDCT(JPRJ+1)
-          IF (JPRJ.EQ.3.AND.ABS(SALT).GT.1.D0) CVAL=PDCT(12)
+          IF (JPRJ.EQ.3.AND.ABS(SALT).GT.1.D0) CVAL=PDCT(13)
         ELSE IF (WHCH(1:2).EQ.'ar') THEN
           CVAL=LDCL(ILTS)
         ELSE IF (WHCH(1:2).EQ.'ou') THEN
           CVAL=DDCL(NOUT+1)
         ELSE IF (WHCH(1:2).EQ.'pr') THEN
           CVAL=PDCL(JPRJ+1)
-          IF (JPRJ.EQ.3.AND.ABS(SALT).GT.1.D0) CVAL=PDCL(12)
+          IF (JPRJ.EQ.3.AND.ABS(SALT).GT.1.D0) CVAL=PDCL(13)
         ELSE
           GO TO 901
         END IF

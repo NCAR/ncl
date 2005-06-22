@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.3 2005-01-10 21:19:44 kennison Exp $
+C $Id: mdproj.f,v 1.4 2005-06-22 21:36:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -39,8 +39,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
-     +                   PDCL(13)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
+     +                   PDCL(14)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -58,8 +58,8 @@ C
 C
 C Transfer the parameters defining the projection.
 C
-        I=IDICTL(ARG1,PDCT,13)
-        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,13)
+        I=IDICTL(ARG1,PDCT,14)
+        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,14)
         IF (I.EQ.0) GO TO 901
 C
         JPRJ=I-1
@@ -71,14 +71,14 @@ C
         IF (JPRJ.EQ.3) THEN
           CALL MDSETD ('SA',0.D0)
           IF (ICFELL('MDPROJ',2).NE.0) RETURN
-        ELSE IF (JPRJ.EQ.11) THEN
+        ELSE IF (JPRJ.EQ.12) THEN
           JPRJ=3
           IF (ABS(SALT).LE.1.D0) THEN
             CALL MDSETD ('SA',6.631D0)
             IF (ICFELL('MDPROJ',3).NE.0) RETURN
           END IF
-        ELSE IF (JPRJ.EQ.12) THEN
-          JPRJ=15
+        ELSE IF (JPRJ.EQ.13) THEN
+          JPRJ=17
           PHIA=0.D0
         END IF
 C

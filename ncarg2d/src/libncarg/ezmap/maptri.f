@@ -1,5 +1,5 @@
 C
-C $Id: maptri.f,v 1.14 2001-11-02 22:36:48 kennison Exp $
+C $Id: maptri.f,v 1.15 2005-06-22 21:36:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

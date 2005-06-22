@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.16 2005-01-10 21:19:44 kennison Exp $
+C $Id: supmap.f,v 1.17 2005-06-22 21:36:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -29,16 +29,16 @@ C
 C Declare required common blocks.  See MAPBD for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(13),
-     +                   PDCL(13)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
+     +                   PDCL(14)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
 C Declare local variables.
 C
-        INTEGER          I,INTF,LLTS(6),LPRJ(12)
+        INTEGER          I,INTF,LLTS(6),LPRJ(13)
 C
-        DATA LPRJ / 2,3,1,4,5,6,11,7,8,9,10,12 /
+        DATA LPRJ / 2,3,1,4,5,6,12,7,8,9,10,13,11 /
         DATA LLTS / 1,2,5,4,3,6 /
 C
 C Set the error flag to indicate an error; if all goes well, this flag
@@ -85,7 +85,7 @@ C
 C
 C Set EZMAP's projection-selection parameters.
 C
-        I=MAX(1,MIN(12,ABS(JPRJ)))
+        I=MAX(1,MIN(13,ABS(JPRJ)))
         CALL MAPROJ (PDCT(LPRJ(I)+1),PLAT,PLON,ROTA)
         IF (ICFELL('SUPMAP',7).NE.0) RETURN
 C
