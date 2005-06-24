@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.192 2005-06-09 22:47:53 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.193 2005-06-24 20:24:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3152,6 +3152,11 @@ begin
       delta      = second_val - first_val
       range      = last_val - first_val
 
+      if(range.ge.360.)
+        print("gsn_add_cyclic: Warning: The range of your longitude coordinate array is at least 360.")
+        print("You may want to set gsnAddCyclic to False to avoid a warning")
+        print("message from the spline function.")
+      end if
       if(any((range+delta).lt.359.))
         print("gsn_add_cyclic: Warning: The range of your longitude data is not 360.")
         print("You may want to set gsnAddCyclic to False to avoid a warning")
