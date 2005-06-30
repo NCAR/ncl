@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.58 2005-02-28 22:14:12 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.59 2005-06-30 20:48:21 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -534,6 +534,7 @@ typedef struct _mpWinLimits {
 } mpWinLimits;
 
 #define mpPI 3.14159265358979323846
+#define DEG2RAD 0.017453292519943 
 #define mpDATAEPS 0.00036
 
 static mpWinLimits Win_Limits[] = {
@@ -547,7 +548,10 @@ static mpWinLimits Win_Limits[] = {
 	{ -180.0, 360.0, -90.0, 180.0 },
 	{ -1.0, 2.0, -1.0, 2.0 },
 	{ -1.0, 2.0, -1.0, 2.0 },
-        { -1.0, 2.0, -0.5072, 2 * 0.5072 }
+        { -1.0, 2.0, -0.5072, 2 * 0.5072 },
+	{ -mpPI, 2.0 * mpPI, -4.0/3.0, 2.0 * (4.0/3.0) },
+	{ 0.0,0.0,0.0,0.0 } /* depends on rotation angle */
+
 };
 
 static NhlLayer Wkptr = NULL;
@@ -595,6 +599,7 @@ NhlLayer parent;
 	float rl1[2],rl2[2],rl3[2],rl4[2];
         NhlBoolean outside_viewspace = False;
         float pxl,pxr,pyb,pyt,pw,ph;
+	double denom;
 
 	ret =(*NhltransObjClassRec.trobj_class.set_trans)(instance,parent);
 
@@ -705,6 +710,24 @@ NhlLayer parent;
 		h_angle_lim = 180;
 		v_angle_lim = 90;
 		ix = 10;
+		break;
+	case NhlCYLINDRICALEQUALAREA:
+		cproj = "EA";
+		h_angle_lim = 180;
+		v_angle_lim = 90;
+		ix = 11;
+		break;
+	case NhlROTATEDMERCATOR:
+		cproj = "RM";
+		h_angle_lim = 180;
+		v_angle_lim = 85;
+		ix = 12;
+		denom = fabs(sin(mtp->center_rot * DEG2RAD)) 
+			+ fabs(cos(mtp->center_rot * DEG2RAD));
+		Win_Limits[ix].u_min = -mpPI / denom;
+		Win_Limits[ix].u_range = 2.0 * mpPI / denom;
+		Win_Limits[ix].v_min = -mpPI / denom;
+		Win_Limits[ix].v_range = 2.0 * mpPI / denom;
 		break;
 	default:
 		e_text = "%s: internal enumeration error - projection";
@@ -2058,6 +2081,14 @@ static NhlErrorTypes CheckMapLimits
 		h_angle_lim = 180;
 		v_angle_lim = 90;
 		break;
+	case NhlCYLINDRICALEQUALAREA:
+		h_angle_lim = 180;
+		v_angle_lim = 90;
+		break;
+	case NhlROTATEDMERCATOR:
+		h_angle_lim = 180;
+		v_angle_lim = 85;
+		break;
 	default:
 		e_text = "%s: internal enumeration error - projection";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
@@ -2314,7 +2345,9 @@ static NhlErrorTypes    MapTransClassInitialize
         {NhlMERCATOR,			"Mercator"},
         {NhlCYLINDRICALEQUIDISTANT,	"CylindricalEquidistant"},
         {NhlLAMBERTCONFORMAL,		"LambertConformal"},
-	{NhlROBINSON,			"Robinson"}
+	{NhlROBINSON,			"Robinson"},
+	{NhlCYLINDRICALEQUALAREA,       "CylindricalEqualArea"},
+	{NhlROTATEDMERCATOR,            "RotatedMercator"}
         };
 
         _NhlRegisterEnumType(NhlmapTransObjClass,NhlTMapLimitMode,limitmodelist,
