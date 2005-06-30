@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.193 2005-06-24 20:24:18 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.194 2005-06-30 15:53:57 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4568,7 +4568,6 @@ end
 function gsn_csm_map(wks:graphic,resources:logical)
 begin
   res2 = get_resources(resources)
-
   if(res2.and.(isatt(res2,"gsnPolarNH").or.isatt(res2,"gsnPolarSH").or.\
                isatt(res2,"gsnPolar")))
     return(gsn_csm_map_polar(wks,res2))
@@ -4731,7 +4730,7 @@ begin
     mpres@gsnFrame = False
 
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
-    map_object = gsn_csm_map(wks,mpres)             ; Create map.
+    map_object = gsn_csm_map_polar(wks,mpres)       ; Create map.
     overlay(map_object,contour_object)              ; Overlay contour plot
                                                     ; on map.
 ;
@@ -5022,7 +5021,7 @@ begin
     mpres@gsnFrame = False
 
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
-    map_object = gsn_csm_map(wks,mpres)             ; Create map.
+    map_object = gsn_csm_map_ce(wks,mpres)             ; Create map.
     overlay(map_object,contour_object)              ; Overlay contours on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -5320,7 +5319,7 @@ begin
     mpres@gsnFrame  = False
 
     contour_object = gsn_contour(wks,datanew,cnres) ; Create contours.
-    map_object = gsn_csm_map(wks,mpres)             ; Create map.
+    map_object = gsn_csm_map_other(wks,mpres)       ; Create map.
     overlay(map_object,contour_object)              ; Overlay contours on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -5557,7 +5556,7 @@ begin
 
     vector_object = gsn_vector(wks,unew,vnew,vcres) ; Create vectors
 
-    map_object = gsn_csm_map(wks,mpres)            ; Create map.
+    map_object = gsn_csm_map_ce(wks,mpres)          ; Create map.
     overlay(map_object,vector_object)               ; Overlay vectors on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -5742,7 +5741,7 @@ begin
     set_attr(vcres,"vcRefAnnoString2On","False")
 
     vector_object = gsn_vector(wks,unew,vnew,vcres) ; Create vectors
-    map_object    = gsn_csm_map(wks,mpres)          ; Create map.
+    map_object    = gsn_csm_map_polar(wks,mpres)          ; Create map.
     overlay(map_object,vector_object)               ; Overlay vectors on map.
 
 ;
@@ -5890,7 +5889,7 @@ begin
     set_attr(vcres,"vcRefAnnoString2On","False")
 
     vector_object = gsn_vector(wks,unew,vnew,vcres) ; Create vectors.
-    map_object = gsn_csm_map(wks,mpres)             ; Create map.
+    map_object = gsn_csm_map_other(wks,mpres)             ; Create map.
     overlay(map_object,vector_object)               ; Overlay vectors on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -6069,7 +6068,7 @@ begin
 
     stream_object = gsn_streamline(wks,unew,vnew,stres) ; Create streamlines
 
-    map_object = gsn_csm_map(wks,mpres)   ; Create map.
+    map_object = gsn_csm_map_ce(wks,mpres)   ; Create map.
     overlay(map_object,stream_object)     ; Overlay streamlines on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -6203,7 +6202,7 @@ begin
     mpres@gsnFrame = False
 
     stream_object = gsn_streamline(wks,unew,vnew,stres) ; Create streamlines
-    map_object    = gsn_csm_map(wks,mpres)          ; Create map.
+    map_object    = gsn_csm_map_polar(wks,mpres)        ; Create map.
     overlay(map_object,stream_object)               ; Overlay strmlns on map.
 ;
 ; Retrieve the view port location of the map plot so we know where
@@ -6327,7 +6326,7 @@ begin
     mpres@gsnFrame  = False
 
     stream_object = gsn_streamline(wks,unew,vnew,stres) ; Create streamlines.
-    map_object = gsn_csm_map(wks,mpres)     ; Create map.
+    map_object = gsn_csm_map_other(wks,mpres)     ; Create map.
     overlay(map_object,stream_object)       ; Overlay streamlines on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -6535,7 +6534,7 @@ begin
 
     stream_object = gsn_streamline_contour(wks,unew,vnew,datanew,stres)
 
-    map_object = gsn_csm_map(wks,mpres)       ; Create map.
+    map_object = gsn_csm_map_ce(wks,mpres)    ; Create map.
     overlay(map_object,stream_object)         ; Overlay streamlines on map.
 
 ; Retrieve some font heights and make the X/Y axis labels the same
@@ -6741,7 +6740,7 @@ begin
     mpres@gsnFrame = False
 
     stream_object = gsn_streamline_contour(wks,unew,vnew,datanew,stres)
-    map_object    = gsn_csm_map(wks,mpres)      ; Create map.
+    map_object    = gsn_csm_map_polar(wks,mpres)    ; Create map.
     overlay(map_object,stream_object)           ; Overlay streamlines on map.
 
 ; Retrieve plot height so we can compute font height.
@@ -6923,8 +6922,8 @@ begin
 
     stream_object = gsn_streamline_contour(wks,unew,vnew,datanew,stres)
 
-    map_object = gsn_csm_map(wks,mpres)      ; Create map.
-    overlay(map_object,stream_object)        ; Overlay streamlines on map.
+    map_object = gsn_csm_map_other(wks,mpres)   ; Create map.
+    overlay(map_object,stream_object)           ; Overlay streamlines on map.
 
 ; Retrieve plot height so we can compute font height.
 
