@@ -92,7 +92,7 @@ C
 C Define some color indices.  (DFCLRS is part of this example; it is
 C not an NCAR Graphics library routine.)
 C
-        CALL DFCLRS (1)
+        CALL DFCLRS (IWKID)
 C
 C Select PLOTCHAR font number 25, turn on the outlining of filled fonts,
 C and turn off the setting of the outline color.

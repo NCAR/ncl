@@ -131,14 +131,14 @@ C
 C
 C Tell the user what he needs to do to get this to run.
 C
-	PRINT * , ' '
-	PRINT * , 'This example will not run properly until you have'
-	PRINT * , 'downloaded the RANGS/GSHHS data, supplied a routine'
-	PRINT * , 'for EZMAP to call to find out which directory the'
-	PRINT * , 'data are in, and removed these PRINTs and the STOP'
-	PRINT * , 'which follows them.  See code for full information.'
-	PRINT * , ' '
-	STOP
+        PRINT * , ' '
+        PRINT * , 'This example will not run properly until you have'
+        PRINT * , 'downloaded the RANGS/GSHHS data, supplied a routine'
+        PRINT * , 'for EZMAP to call to find out which directory the'
+        PRINT * , 'data are in, and removed these PRINTs and the STOP'
+        PRINT * , 'which follows them.  See code for full information.'
+        PRINT * , ' '
+        STOP
 C
 C Open GKS.
 C
