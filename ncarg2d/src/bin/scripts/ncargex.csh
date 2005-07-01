@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.158 2004-11-18 00:12:06 kennison Exp $
+#   $Id: ncargex.csh,v 1.159 2005-07-01 20:28:43 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -287,7 +287,7 @@ set c_list = ($c_list $dashpack_clist)
 #                      #
 #**********************#
 set ezmap_fex   = (mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07 mpex08 \
-                  mpex09 mpex10 mpex11 mpex12 mpex13 mpexfi eezmpa)
+		  mpex09 mpex10 mpex11 mpex12 mpex13 mpex14 mpexfi eezmpa)
 set ezmap_ftst  = (tezmap tezmpa tezmpb)
 set ezmap_fttr  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
                   cmpfil cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl \
