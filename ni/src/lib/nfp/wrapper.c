@@ -402,6 +402,7 @@ extern NhlErrorTypes ttest_W(void);
 extern NhlErrorTypes ftest_W(void);
 extern NhlErrorTypes rtest_W(void);
 extern NhlErrorTypes equiv_sample_size_W(void);
+extern NhlErrorTypes z2geouv_W(void);
 extern NhlErrorTypes NhlGetNamedColorIndex_W(void);
 extern NhlErrorTypes output_gif_W(void);
 /*
@@ -5346,6 +5347,18 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(equiv_sample_size_W,args,"equiv_sample_size",nargs);
 
 /*
+ * Register "z2geouv".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(z2geouv_W,args,"z2geouv",nargs);
+
+/*
  *  Register NhlGetNamedColorIndex.
  */
     nargs = 0;
@@ -5772,7 +5785,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(0);
     NclRegisterFunc(get_ncl_version_W, args, "get_ncl_version", nargs);
 
-	/*
+/*
     nargs = 0;
     args = NewArgs(0);
     NclRegisterProc(echo_on_W, args, "echo_on", nargs);
@@ -5780,7 +5793,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(0);
     NclRegisterProc(echo_off_W, args, "echo_off", nargs);
-	*/
+ */
 /*
  *  Register ctwrap.
  */
