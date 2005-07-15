@@ -4,7 +4,7 @@
 extern void NGCALLF(rndncl,RNDNCL)(int*,double*,int*,double*,double*,int*);
 
 extern void NGCALLF(dgendat,DGENDAT)(double *,int *,int *,int *,int *,int *,
-                                     double *,double *);
+                                     double *,double *,int *);
 
 NhlErrorTypes round_W( void )
 {
@@ -361,12 +361,12 @@ NhlErrorTypes replace_ieeenan_W( void )
   return(NhlNOERROR);
 }
 
-NhlErrorTypes gendat_W( void )
+NhlErrorTypes generate_2d_array_W( void )
 {
 /*
  * Input array variables
  */
-  int *dsizes_data, *mlow, *mhigh;
+  int *dsizes_data, *mlow, *mhigh, *iseed;
   void *dlow, *dhigh;
   double *tmp_dlow, *tmp_dhigh;
   NclBasicDataTypes type_dlow, type_dhigh;
@@ -383,30 +383,13 @@ NhlErrorTypes gendat_W( void )
 /*
  * Retrieve arguments.
  *
- * First get size of output array.
- */
-  dsizes_data = (int*)NclGetArgValue(
-          0,
-          5,
-          NULL,
-          NULL,
-          NULL,
-          NULL,
-          NULL,
-          2);
-
-  if(dsizes_data[0] < 1 || dsizes_data[1] < 1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gendat: the dimensions of the output array must be at least 1 x 1");
-    return(NhlFATAL);
-  }
-
-/*
+ *
  * Get number of lows and highs. These two values will be forced to
  * be between 1 and 25.
  */
   mlow = (int*)NclGetArgValue(
-          1,
-          5,
+          0,
+          6,
           NULL,
           NULL,
           NULL,
@@ -415,8 +398,8 @@ NhlErrorTypes gendat_W( void )
           2);
 
   mhigh = (int*)NclGetArgValue(
-          2,
-          5,
+          1,
+          6,
           NULL,
           NULL,
           NULL,
@@ -424,16 +407,12 @@ NhlErrorTypes gendat_W( void )
           NULL,
           2);
 
-  if(*mlow < 1 || *mlow > 25 || *mhigh < 1 || *mhigh > 25 ) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"gendat: mlow and mhigh must be between 1 and 25. Will reset any values falling outside this range.");
-  }
-
 /*
  * Retrieve minimum and maximum values that the data is supposed to have.
  */
   dlow = (void*)NclGetArgValue(
-          3,
-          5,
+          2,
+          6,
           NULL,
           NULL,
           NULL,
@@ -442,14 +421,69 @@ NhlErrorTypes gendat_W( void )
           2);
 
   dhigh = (void*)NclGetArgValue(
-          4,
-          5,
+          3,
+          6,
           NULL,
           NULL,
           NULL,
           NULL,
           &type_dhigh,
           2);
+
+/*
+ * Get size of output array.
+ */
+  iseed = (int*)NclGetArgValue(
+          4,
+          6,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+/*
+ * Get size of output array.
+ */
+  dsizes_data = (int*)NclGetArgValue(
+          5,
+          6,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+/*
+ * Error checking.
+ */
+  if(dsizes_data[0] <= 1 && dsizes_data[1] <= 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: the dimensions of the output array must be such that it has at least two elements");
+    return(NhlFATAL);
+  }
+
+  if(*iseed < 0 || *iseed > 100) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"generate_2d_array: iseed must be between 0 and 100. Will reset to 0.");
+    *iseed = 0;
+  }  
+  if(*mlow < 1) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"generate_2d_array: mlow must be between 1 and 25. Will reset to 1.");
+    *mlow = 1;
+  }
+  if(*mlow > 25) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"generate_2d_array: mlow must be between 1 and 25. Will reset to 25.");
+    *mlow = 25;
+  }
+
+  if(*mhigh < 1) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"generate_2d_array: mhigh must be between 1 and 25. Will reset to 1.");
+    *mhigh = 1;
+  }
+  if(*mhigh > 25) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"generate_2d_array: mhigh must be between 1 and 25. Will reset to 25.");
+    *mhigh = 25;
+  }
 
 /*
  * Coerce dlow and dhigh to double.
@@ -479,7 +513,7 @@ NhlErrorTypes gendat_W( void )
     data     = (void*)malloc(size_data*sizeof(double));
     tmp_data = (double *)data;
     if(data == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"gendat: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -487,7 +521,7 @@ NhlErrorTypes gendat_W( void )
     data     = (void*)malloc(size_data*sizeof(float));
     tmp_data = (double*)malloc(size_data*sizeof(double));
     if(tmp_data == NULL || data == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"gendat: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"generate_2d_array: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -495,7 +529,8 @@ NhlErrorTypes gendat_W( void )
  * Call the Fortran version of this routine.
  */
   NGCALLF(dgendat,DGENDAT)(tmp_data,&dsizes_data[1],&dsizes_data[1],
-                           &dsizes_data[0],mlow,mhigh,tmp_dlow,tmp_dhigh);
+                           &dsizes_data[0],mlow,mhigh,tmp_dlow,tmp_dhigh,
+                           iseed);
 /*
  * Figure out if we need to coerce output back to float.
  */

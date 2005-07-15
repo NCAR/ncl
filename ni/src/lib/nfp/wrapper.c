@@ -427,7 +427,7 @@ extern NhlErrorTypes random_gamma_W(void);
 extern NhlErrorTypes random_normal_W(void);
 extern NhlErrorTypes random_uniform_W(void);
 extern NhlErrorTypes round_W(void);
-extern NhlErrorTypes gendat_W(void);
+extern NhlErrorTypes generate_2d_array_W(void);
 extern NhlErrorTypes isnan_ieee_W(void);
 extern NhlErrorTypes replace_ieeenan_W(void);
 extern NhlErrorTypes dcdfbinp_W(void);
@@ -5618,20 +5618,21 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(round_W, args, "round", nargs);
 
 /*
- *  Register gendat.
+ *  Register generate_2d_array.
  */
     nargs = 0;
-    args = NewArgs(5);
+    args = NewArgs(6);
 
-    dimsizes[0] = 2;
-    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+    dimsizes[0] = 2;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
 
-    NclRegisterFunc(gendat_W, args, "gendat", nargs);
+    NclRegisterFunc(generate_2d_array_W, args, "generate_2d_array", nargs);
 
 /*
  *  Register isnan_ieee.
