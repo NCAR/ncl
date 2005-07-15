@@ -1,4 +1,4 @@
-      SUBROUTINE DGENDAT(DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH)
+      SUBROUTINE DGENDAT(DATA,IDIM,M,N,MLOW,MHGH,DLOW,DHGH,ISEED)
       DOUBLE PRECISION DATA
       DOUBLE PRECISION DLOW
       DOUBLE PRECISION DHGH
@@ -19,6 +19,8 @@ C
 C "MLOW" and "MHGH" are each forced to be greater than or equal to 1
 C and less than or equal to 25.
 C
+C "ISEED" is forced to be 0 if it is < 0 or > 100.
+C
 C The function used is a sum of exponentials.
 C
       DIMENSION DATA(IDIM,1),CCNT(3,50)
@@ -26,13 +28,20 @@ C
       FOVM = 9.D0/DBLE(M)
       FOVN = 9.D0/DBLE(N)
 C
+C This is all being done inside NCL C wrapper, so redundant, but safe.
+C
+      IF(ISEED.LT.0.OR.JSEED.GT.100) THEN
+        JSEED = 0
+      ELSE
+        JSEED = ISEED
+      ENDIF
       NLOW = MAX0(1,MIN0(25,MLOW))
       NHGH = MAX0(1,MIN0(25,MHGH))
       NCNT = NLOW + NHGH
 C
       DO 101 K = 1,NCNT
-          CCNT(1,K) = 1.D0 + (DBLE(M)-1.D0)*DFRAN()
-          CCNT(2,K) = 1.D0 + (DBLE(N)-1.D0)*DFRAN()
+          CCNT(1,K) = 1.D0 + (DBLE(M)-1.D0)*DFRAN(JSEED)
+          CCNT(2,K) = 1.D0 + (DBLE(N)-1.D0)*DFRAN(JSEED)
           IF (K.LE.NLOW) THEN
               CCNT(3,K) = -1.D0
           ELSE
@@ -68,11 +77,12 @@ C
       END
 
 
-      FUNCTION DFRAN()
+      FUNCTION DFRAN(ISEQ)
       DOUBLE PRECISION DFRAN
       DOUBLE PRECISION RSEQ
+ 
       DIMENSION RSEQ(100)
-      SAVE ISEQ
+C      SAVE ISEQ
       DATA RSEQ/.749D0,.973D0,.666D0,.804D0,.081D0,.483D0,.919D0,.903D0,
      +     .951D0,.960D0,.039D0,.269D0,.270D0,.756D0,.222D0,.478D0,
      +     .621D0,.063D0,.550D0,.798D0,.027D0,.569D0,.149D0,.697D0,
@@ -86,7 +96,7 @@ C
      +     .682D0,.373D0,.009D0,.469D0,.203D0,.730D0,.588D0,.603D0,
      +     .213D0,.495D0,.884D0,.032D0,.185D0,.127D0,.010D0,.180D0,
      +     .689D0,.354D0,.372D0,.429D0/
-      DATA ISEQ/0/
+C      DATA ISEQ/0/
 
       ISEQ = MOD(ISEQ,100) + 1
       DFRAN = RSEQ(ISEQ)
