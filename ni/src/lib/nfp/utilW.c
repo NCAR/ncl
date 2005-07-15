@@ -3,6 +3,9 @@
 
 extern void NGCALLF(rndncl,RNDNCL)(int*,double*,int*,double*,double*,int*);
 
+extern void NGCALLF(dgendat,DGENDAT)(double *,int *,int *,int *,int *,int *,
+                                     double *,double *);
+
 NhlErrorTypes round_W( void )
 {
 /*
@@ -357,3 +360,155 @@ NhlErrorTypes replace_ieeenan_W( void )
  */
   return(NhlNOERROR);
 }
+
+NhlErrorTypes gendat_W( void )
+{
+/*
+ * Input array variables
+ */
+  int *dsizes_data, *mlow, *mhigh;
+  void *dlow, *dhigh;
+  double *tmp_dlow, *tmp_dhigh;
+  NclBasicDataTypes type_dlow, type_dhigh;
+/*
+ * Output variables.
+ */
+  void *data;
+  double *tmp_data;
+  NclBasicDataTypes type_data;
+/*
+ * Declare various variables for random purposes.
+ */
+  int i, size_data;
+/*
+ * Retrieve arguments.
+ *
+ * First get size of output array.
+ */
+  dsizes_data = (int*)NclGetArgValue(
+          0,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  if(dsizes_data[0] < 1 || dsizes_data[1] < 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gendat: the dimensions of the output array must be at least 1 x 1");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get number of lows and highs. These two values will be forced to
+ * be between 1 and 25.
+ */
+  mlow = (int*)NclGetArgValue(
+          1,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  mhigh = (int*)NclGetArgValue(
+          2,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  if(*mlow < 1 || *mlow > 25 || *mhigh < 1 || *mhigh > 25 ) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"gendat: mlow and mhigh must be between 1 and 25. Will reset any values falling outside this range.");
+  }
+
+/*
+ * Retrieve minimum and maximum values that the data is supposed to have.
+ */
+  dlow = (void*)NclGetArgValue(
+          3,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          &type_dlow,
+          2);
+
+  dhigh = (void*)NclGetArgValue(
+          4,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          &type_dhigh,
+          2);
+
+/*
+ * Coerce dlow and dhigh to double.
+ */
+  tmp_dlow  = coerce_input_double(dlow, type_dlow, 1,0,NULL,NULL);
+  tmp_dhigh = coerce_input_double(dhigh,type_dhigh,1,0,NULL,NULL);
+
+/*
+ * Compute the size of the 2D output array.
+ */
+  size_data = dsizes_data[0] * dsizes_data[1];
+
+/*
+ * The type of the output array depends on dlow and dhigh.
+ */
+  if(type_dlow == NCL_double || type_dhigh == NCL_double) {
+    type_data = NCL_double;
+  }
+  else {
+    type_data = NCL_float;
+  }
+
+/*
+ * Allocate memory for output.
+ */
+  if(type_data == NCL_double) {
+    data     = (void*)malloc(size_data*sizeof(double));
+    tmp_data = (double *)data;
+    if(data == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"gendat: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    data     = (void*)malloc(size_data*sizeof(float));
+    tmp_data = (double*)malloc(size_data*sizeof(double));
+    if(tmp_data == NULL || data == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"gendat: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Call the Fortran version of this routine.
+ */
+  NGCALLF(dgendat,DGENDAT)(tmp_data,&dsizes_data[1],&dsizes_data[1],
+                           &dsizes_data[0],mlow,mhigh,tmp_dlow,tmp_dhigh);
+/*
+ * Figure out if we need to coerce output back to float.
+ */
+  if(type_data == NCL_float) {
+    coerce_output_float_only(data,tmp_data,size_data,0);
+  }
+/*
+ * Free memory.
+ */
+  if(type_data  != NCL_double) NclFree(tmp_data);
+  if(type_dlow  != NCL_double) NclFree(tmp_dlow);
+  if(type_dhigh != NCL_double) NclFree(tmp_dhigh);
+
+  return(NclReturnValue(data,2,dsizes_data,NULL,type_data,0));
+}
+
