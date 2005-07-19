@@ -66,9 +66,9 @@ NhlErrorTypes eof_W( void )
   double *pcrit;
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
-  int iopt = 0, jopt = 0, i, ier = 0, irevert = 1;
+  int iopt = 0, jopt = 0, i, ier = 0;
   logical transpose, tr_setbyuser = False;
-  logical revert = True, return_eval = False, debug = False;
+  logical return_eval = False, debug = False;
   logical return_trace = False, return_pcrit = False;
 /*
  * Work array variables.
@@ -208,8 +208,8 @@ NhlErrorTypes eof_W( void )
  *
  *   "jopt"        : both routines
  *   "return_eval" : both routines (unadvertised)
+ *   "return_trace": return trace
  *   "pcrit"       : transpose routine only
- *   "revert"      : transpose routine only (unadvertised)
  *   "transpose"   : If True, call transpose routine no matter what
  *                 : If False, don't call transpose routine no matter what
  *   "debug"       : turn on debug
@@ -272,27 +272,18 @@ NhlErrorTypes eof_W( void )
               return_eval = *(logical*) attr_list->attvalue->multidval.val;
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'return_eval' attribute must be a logical. Defaulting to True.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'return_eval' attribute must be a logical. Defaulting to False.");
             }
           }
 /*
- * Check for "revert".
+ * Check for "return_trace".
  */
-          if (!strcmp(attr_list->attname, "revert")) {
+          if (!strcmp(attr_list->attname, "return_trace")) {
             if(attr_list->attvalue->multidval.data_type == NCL_logical) {
-              revert = *(logical*) attr_list->attvalue->multidval.val;
-/*
- * For the Fortran routine.
- */
-              if(revert) {
-                irevert = 1;
-              }
-              else {
-                irevert = 0;
-              }
+              return_trace = *(logical*) attr_list->attvalue->multidval.val;
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'revert' attribute must be a logical. Defaulting to True.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'return_trace' attribute must be a logical. Defaulting to False.");
             }
           }
 /*
@@ -1583,7 +1574,6 @@ NhlErrorTypes eofcov_tr_W( void )
  *   "jopt"        : both routines
  *   "return_eval" : both routines (unadvertised)
  *   "pcrit"       : transpose routine only
- *   "revert"      : transpose routine only (unadvertised)
  *   "debug"       : turn on debug
  *
  */
@@ -2298,7 +2288,6 @@ NhlErrorTypes eofcor_tr_W( void )
  *   "jopt"        : both routines
  *   "return_eval" : both routines (unadvertised)
  *   "pcrit"       : transpose routine only
- *   "revert"      : transpose routine only (unadvertised)
  *   "debug"       : turn on debug
  *
  */
