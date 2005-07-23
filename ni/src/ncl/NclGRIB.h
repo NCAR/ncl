@@ -70,6 +70,7 @@ typedef struct _GribInternalVarRec GribInternalVarRec;
 typedef struct _NclGribFVarRec      NclGribFVarRec;
 typedef struct _NclGribCacheRec      NclGribCacheRec;
 typedef struct _NclGribCacheList      NclGribCacheList;
+typedef struct _GribOptions          GribOptions;
 
 struct _NclGribCacheList {
 	int grid_number;
@@ -195,6 +196,7 @@ struct _GribRecordInqRec {
 	unsigned int gds_size;
 	int gds_type;
 	int grid_gds_tbl_index;
+	int interp_method;   /* 0 - linear ; 1 - cubic */
 	int has_bms;
 	unsigned int bms_off;
 	unsigned int bms_size;
@@ -216,8 +218,15 @@ struct _GribAttInqRec {
 	NclMultiDValData thevalue;
 };
 
+#define GRIB_THINNED_GRID_INTERPOLATION_OPT 0
+#define GRIB_NUM_OPTIONS 1
 
-
+struct _GribOptions {
+	NclQuark name;
+	NclBasicDataTypes data_type;
+	int n_values;
+	void *values;
+};
 
 struct _GribFileRecord {
 NclQuark	file_path_q;
@@ -238,6 +247,8 @@ GribDimInqRecList *lv_dims;
 int		n_grid_dims;
 GribDimInqRecList *grid_dims;
 NclGribCacheList *grib_grid_cache;
+int             n_options;
+GribOptions     *options;
 };
 
 typedef int (*GribUnPackData)(

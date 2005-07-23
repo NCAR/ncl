@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.10 2001-03-07 22:28:28 ethan Exp $
+ *      $Id: FileSupport.h,v 1.11 2005-07-23 00:49:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -299,6 +299,14 @@ struct _NclFileRec * /*thefile*/
 #endif
 );
 
+extern NhlErrorTypes _NclFileSetOption(
+#if NhlNeedProto
+NclFile /* thefile */,  /* either a file or a format */
+NclQuark /* format */,
+NclQuark /* option */,
+struct _NclMultiDValDataRec* /*value*/
+#endif
+);
 
 #endif /*_FileSupport_h */
 

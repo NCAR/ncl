@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.8 2005-05-27 00:01:22 dbrown Exp $
+ *      $Id: NclFile.h,v 1.9 2005-07-23 00:49:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -239,7 +239,7 @@ typedef NhlErrorTypes (*NclSetFileOptionFunc)(
 #if	NhlNeedProto
 NclFile thefile,
 NclQuark format,
-NclQuark name,
+NclQuark option,
 NclMultiDValData value
 #endif
 );
@@ -249,6 +249,7 @@ typedef struct _NclFileOption {
 	NclQuark name;
 	NclMultiDValData value;
 	NclMultiDValData valid_values;
+	int access;    /* 0 - any (read-only or read-write; 1 - read-only; 2 - read-write 3 - create only */ 
 } NclFileOption;
 
 typedef struct _NclFileClassPart {
@@ -289,6 +290,7 @@ typedef struct _NclFileAttInfoList {
 	struct _NclFAttRec*	the_att;
 	struct _NclFileAttInfoList * next;
 } NclFileAttInfoList;
+
 typedef struct _NclFilePart {
 	NclQuark	fname;
 	NclQuark	fpath;

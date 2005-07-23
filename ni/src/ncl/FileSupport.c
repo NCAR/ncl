@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.20 2003-05-12 23:37:26 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.21 2005-07-23 00:49:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1620,4 +1620,28 @@ NclFile thefile;
 		tmp->next = NULL;
 		return(tmp);
 	}
+}
+
+NhlErrorTypes _NclFileSetOption
+#if	NhlNeedProto
+(NclFile thefile, 
+ NclQuark format, 
+ NclQuark option, 
+ struct _NclMultiDValDataRec *value
+	)
+#else 
+	(thefile, format,var, option, value)
+NclFile thefile;
+NclQuark format;
+NclQuark option;
+struct _NclMultiDValDataRec *value;
+#endif
+{
+	NclFileClass fc = NULL;
+
+	fc = &nclFileClassRec;
+	if(fc && fc->file_class.set_file_option != NULL) {
+		return((*fc->file_class.set_file_option)(thefile, format, option, value));
+	}
+	return(NhlFATAL);
 }

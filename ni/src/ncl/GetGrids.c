@@ -2678,11 +2678,11 @@ GribParamList* thevarrec;
 			}
 			if (is_thinned_lon) {
 				n = nlat;
-				kcode = 1;
+				kcode = therec->interp_method == 0 ? 1 : 3;
 			}
 			else {
 				n = nlon;
-				kcode = 11;
+				kcode = therec->interp_method == 0 ? 11 : 13;
 			}
 			rc_count = (int*)NclMalloc(sizeof(int)*n);
 			for (i = 0; i < n; i++) {
@@ -3704,6 +3704,9 @@ int * nlonatts;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("Lambert Conformal Secant or Tangent, Conical or bipolar");
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("longitude");
+		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -3733,6 +3736,9 @@ int * nlonatts;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("Lambert Conformal Secant or Tangent, Conical or bipolar");
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("latitude");
+		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	
 	
@@ -3981,6 +3987,9 @@ int * nlonatts;
 			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid");
 		}
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("longitude");
+		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -4011,6 +4020,9 @@ int * nlonatts;
 			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid");
 		}
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("latitude");
+		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 }
 void GdsSTGrid
@@ -4179,6 +4191,9 @@ int * nlonatts;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("Polar Stereographic Projection Grid");
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("longitude");
+		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -4205,6 +4220,9 @@ int * nlonatts;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("Polar Stereographic Projection Grid");
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("latitude");
+		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	
 }
@@ -4451,6 +4469,9 @@ int * nlonatts;
 		else 
 			*tmp_string = NrmStringToQuark("Cylindrical Equidistant Projection Grid");
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("longitude");
+		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -4480,6 +4501,9 @@ int * nlonatts;
 		else 
 			*tmp_string = NrmStringToQuark("Cylindrical Equidistant Projection Grid");
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("latitude");
+		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	return;
 }
@@ -4760,6 +4784,9 @@ int * nlonatts;
 		else 
 			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid");
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("longitude");
+		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -4798,6 +4825,9 @@ int * nlonatts;
 		else 
 			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid");
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("latitude");
+		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	return;
 }
@@ -4985,6 +5015,9 @@ int * nlonatts;
 			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (mass points)");
 		}
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("longitude");
+		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -5018,6 +5051,9 @@ int * nlonatts;
 			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (mass points)");
 		}
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("latitude");
+		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	
 }
@@ -5134,19 +5170,7 @@ int *nlonatts;
 	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	int tmp_dimsizes = 1;
-	
-	
 
-
-	tmp_att_list_ptr = (*lat_att_list_ptr);
-	(*lat_att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-	(*lat_att_list_ptr)->next = tmp_att_list_ptr;
-	(*lat_att_list_ptr)->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-	(*lat_att_list_ptr)->att_inq->name = NrmStringToQuark("long_name");
-	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("latitude");
-	(*lat_att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-	(*nlatatts)++;
 	tmp_att_list_ptr = (*lat_att_list_ptr);
 	(*lat_att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 	(*lat_att_list_ptr)->next = tmp_att_list_ptr;
@@ -5167,15 +5191,16 @@ int *nlonatts;
 	(*lat_att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 	(*nlatatts)++;
 
-	tmp_att_list_ptr = (*lon_att_list_ptr);
-	(*lon_att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-	(*lon_att_list_ptr)->next = tmp_att_list_ptr;
-	(*lon_att_list_ptr)->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-	(*lon_att_list_ptr)->att_inq->name = NrmStringToQuark("long_name");
+	tmp_att_list_ptr = (*lat_att_list_ptr);
+	(*lat_att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+	(*lat_att_list_ptr)->next = tmp_att_list_ptr;
+	(*lat_att_list_ptr)->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+	(*lat_att_list_ptr)->att_inq->name = NrmStringToQuark("long_name");
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("longitude");
-	(*lon_att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-	(*nlonatts)++;
+	*tmp_string = NrmStringToQuark("latitude");
+	(*lat_att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+	(*nlatatts)++;
+
 	tmp_att_list_ptr = (*lon_att_list_ptr);
 	(*lon_att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 	(*lon_att_list_ptr)->next = tmp_att_list_ptr;
@@ -5194,6 +5219,16 @@ int *nlonatts;
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark(grid[thevarrec->grid_tbl_index].grid_name);
 (*lon_att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+	(*nlonatts)++;
+
+	tmp_att_list_ptr = (*lon_att_list_ptr);
+	(*lon_att_list_ptr) = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+	(*lon_att_list_ptr)->next = tmp_att_list_ptr;
+	(*lon_att_list_ptr)->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+	(*lon_att_list_ptr)->att_inq->name = NrmStringToQuark("long_name");
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("longitude");
+	(*lon_att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 	(*nlonatts)++;
 
 }

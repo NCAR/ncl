@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.180 2005-06-16 20:29:22 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.181 2005-07-23 00:49:55 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -10845,8 +10845,6 @@ NhlErrorTypes _NclIIsFile
 		*out_val = 0;
 	}
 
-
-
 	return(NclReturnValue(
 		out_val,
 		1,
@@ -12764,6 +12762,11 @@ NhlErrorTypes _NclICreateFile(void)
 
 	cdfid = nccreate(NrmQuarkToString(*path),(NC_WRITE|NC_NOCLOBBER));
 
+	ncendef(cdfid);
+	ncclose(cdfid);
+
+	cdfid = ncopen(NrmQuarkToString(*path),(NC_WRITE|NC_NOCLOBBER));
+	ncredef(cdfid);
 
 	if(cdfid == -1) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"The specified netCDF file can't be created, either the file exists or the path is incorrect");
@@ -12923,6 +12926,7 @@ NhlErrorTypes _NclICreateFile(void)
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"fileatts parameter must be a variable, which optionally contains global file attributes, a value was passed in"); 
 	}
 	ncendef(cdfid);
+	/*nc__enddef(cdfid,65536,4,0,4); */
 	ncclose(cdfid);
 
 
@@ -12945,6 +12949,70 @@ NhlErrorTypes _NclICreateFile(void)
 	return(NhlNOERROR);
 }
 
+NhlErrorTypes _NclISetFileOption(void)
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData tmp_md1 = NULL;
+	NclFile f = NULL;
+	string format = NrmNULLQUARK;
+	string option;
+	NhlErrorTypes ret;
+	int n_dims = 1;
+
+	data = _NclGetArg(0,3,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+	if (tmp_md->multidval.data_type == NCL_string) {
+		format = *(string*)tmp_md->multidval.val;
+	}
+	else if (tmp_md->multidval.data_type == NCL_obj &&
+		 (tmp_md->obj.obj_type_mask & Ncl_MultiDValnclfileData)) {
+		f = (NclFile)_NclGetObj(*(obj*)tmp_md->multidval.val);
+	}
+	else {
+		NhlPError(NhlWARNING, NhlEUNKNOWN, 
+			  "setfileoption: first argument must be a file object or a string representing a supported data format");
+		return NhlWARNING;
+	}
+
+
+  	option = *(string*)NclGetArgValue(
+           1,
+           3,
+	   NULL,
+	   &n_dims,
+	   NULL,
+	   NULL,
+	   NULL,
+	   DONT_CARE);
+
+	data = _NclGetArg(2,3,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md1 = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md1 = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md1 == NULL)
+		return(NhlFATAL);
+
+	_NclInitClass(nclFileClass);
+	ret = _NclFileSetOption(f,format,option,tmp_md1);
+
+	return ret;
+	
+}	
 
 NhlErrorTypes   _NclIGetFileVarTypes
 # if    NhlNeedProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.3 2002-09-26 22:14:39 haley Exp $
+ *      $Id: NclHDFEOS.c,v 1.4 2005-07-23 00:49:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -386,17 +386,34 @@ static void HDFEOSIntFileAddAtt(HDFEOSFileRecord *the_file,NclQuark sw_ncl_name,
 	the_file->n_int_atts++;
 }
 
-
-static void *HDFEOSGetFileRec
+static void *HDFEOSInitializeFileRec
 #if	NhlNeedProto
-(NclQuark path,int wr_status)
+(void)
 #else
-(path,wr_status)
+()
+#endif
+{
+	HDFEOSFileRecord *therec = NULL;
+
+	therec = (HDFEOSFileRecord*)NclCalloc(1, sizeof(HDFEOSFileRecord));
+	if (! therec) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NULL;
+	}
+	return (void *) therec;
+}
+
+static void *HDFEOSOpenFile
+#if	NhlNeedProto
+(void *rec,NclQuark path,int wr_status)
+#else
+(rec,path,wr_status)
+void *rec;
 NclQuark path;
 int wr_status;
 #endif
 {
-	HDFEOSFileRecord* the_file = (HDFEOSFileRecord*)NclMalloc((unsigned)sizeof(HDFEOSFileRecord));
+	HDFEOSFileRecord *the_file = (HDFEOSFileRecord*) rec;
 	int32 SWfid = 0;
 	int32 PTfid = 0;
 	int32 GDfid = 0;
@@ -1225,8 +1242,9 @@ void* storage;
 	return(NULL);
 }
 NclFormatFunctionRec HDFEOSRec = {
-/* NclCreateFileRecFunc	   create_file_rec; */		NULL,
-/* NclGetFileRecFunc       get_file_rec; */		HDFEOSGetFileRec,
+/* NclInitializeFileRecFunc initialize_file_rec */      HDFEOSInitializeFileRec,
+/* NclCreateFileFunc	   create_file; */		NULL,
+/* NclOpenFileFunc         open_file; */		HDFEOSOpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */		HDFEOSFreeFileRec,
 /* NclGetVarNamesFu_nc      get_var_names; */		HDFEOSGetVarNames,
 /* NclGetVarInfoFusd_nc       get_var_info; */		HDFEOSGetVarInfo,
@@ -1258,7 +1276,8 @@ NclFormatFunctionRec HDFEOSRec = {
 /* NclMapFormatTypeToNcl   map_format_type_to_sd_ncl; */	NULL,
 /* NclMapNclTypeToFormat   map_sd_ncl_type_to_format; */	NULL,
 /* NclDelAttFusd_nc           del_att; */			NULL,
-/* NclDelVarAttFusd_nc        del_var_att; */	NULL	
+/* NclDelVarAttFusd_nc        del_var_att; */	        NULL,
+/* NclSetOptionFunc           set_option;  */           NULL
 };
 NclFormatFunctionRecPtr HDFEOSAddFileFormat 
 #if	NhlNeedProto

@@ -47,7 +47,6 @@
 
 #define NCL_GRIB_CACHE_SIZE  150
 
-
 /*
  * this is a hack function that applies to GRID TYPE 203 only
  * according to Mike Baldwin <baldwin@nssl.noaa.gov> the parameters listed 
@@ -4402,11 +4401,56 @@ static void InitPtables
 }
 
 
-static void *GribGetFileRec
+static int InitializeOptions 
 #if	NhlNeedProto
-(NclQuark path,int wr_status)
+(GribFileRecord *tmp)
 #else
-(path,wr_status)
+(tmp)
+GribFileRecord *tmp;
+#endif
+{
+	GribOptions *options;
+	int i;
+
+	tmp->n_options = GRIB_NUM_OPTIONS;
+	
+	options = NclMalloc(tmp->n_options * sizeof(GribOptions));
+	if (! options) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return 0;
+	}
+	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].data_type = NCL_string;
+	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].n_values = 1;
+	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void *) NrmStringToQuark("linear");
+
+	tmp->options = options;
+	return 1;
+}
+
+static void *GribInitializeFileRec
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	GribFileRecord *therec = NULL;
+
+	therec = (GribFileRecord*)NclCalloc(1, sizeof(GribFileRecord));
+	if (! therec) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NULL;
+	}
+	InitializeOptions(therec);
+	return (void *) therec;
+}
+
+static void *GribOpenFile
+#if	NhlNeedProto
+(void *rec,NclQuark path,int wr_status)
+#else
+(rec,path,wr_status)
+void *rec;
 NclQuark path;
 int wr_status;
 #endif
@@ -4416,7 +4460,7 @@ int wr_status;
 	unsigned int offset = 0;
 	unsigned int size = 0;
 	unsigned int nextoff = 0;
-	GribFileRecord *therec = NULL;
+	GribFileRecord *therec = (GribFileRecord *)rec;
 	GribRecordInqRec *grib_rec = NULL;
 	GribRecordInqRecList *grib_rec_list = NULL;
 	GribParamList *step = NULL,*step2 = NULL, *tmpstep = NULL ;
@@ -4443,6 +4487,13 @@ int wr_status;
 	if (! Ptables) {
 		InitPtables();
 	}
+
+	therec->n_vars = 0;
+	therec->var_list = NULL;
+	therec->wr_status = wr_status;	
+	therec->file_path_q = path;
+	therec->internal_var_list = NULL;
+	therec->n_internal_vars = 0;
 
 	if(wr_status <= 0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Grib files are read only continuing but opening file as read only");
@@ -4538,6 +4589,13 @@ int wr_status;
 
 				if(grib_rec != NULL) {
 					grib_rec->time_offset = 0;
+					if ((NrmQuark)(therec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values) == 
+					    NrmStringToQuark("cubic")) {
+						grib_rec->interp_method = 1;
+					}
+					else {
+						grib_rec->interp_method = 0;
+					}
 					if(grib_rec->has_gds) {
 						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
 						fread((void*)buffer,1,6,fd);
@@ -4899,15 +4957,6 @@ int wr_status;
 					grib_rec->units_q = NrmStringToQuark(name_rec->units);
 					grib_rec->level_indicator = (int)grib_rec->pds[9];
 					_GetLevels(&grib_rec->level0,&grib_rec->level1,(int)grib_rec->pds[9],&(grib_rec->pds[10]));
-					if(therec == NULL) {
-						therec = (GribFileRecord*)NclMalloc((unsigned)sizeof(GribFileRecord));
-						therec->n_vars = 0;
-						therec->var_list = NULL;
-						therec->wr_status = wr_status;	
-						therec->file_path_q = path;
-						therec->internal_var_list = NULL;
-						therec->n_internal_vars = 0;
-					}
 					if(therec->var_list == NULL) {
 						therec->var_list = _NewListNode(grib_rec);
 						therec->n_vars = 1;
@@ -5212,11 +5261,12 @@ int wr_status;
 	return(NULL);
 }
 
-static void *GribCreateFileRec
+static void *GribCreateFile
 #if	NhlNeedProto
-(NclQuark path)
+(void *rec,NclQuark path)
 #else
-(path)
+(rec,path)
+void *rec;
 NclQuark path;
 #endif
 {
@@ -5568,6 +5618,7 @@ void* storage;
 	NclMultiDValData tmp_md;
 	NclSelectionRecord  sel_ptr;
 	GribInternalVarList *vstep;
+	int current_interp_method;
 
 	vstep = rec->internal_var_list;
 	while(vstep != NULL ) {
@@ -5593,7 +5644,12 @@ void* storage;
 
 	}
 
-
+	if ((NrmQuark)(rec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values) == NrmStringToQuark("cubic")) {
+		current_interp_method = 1;
+	}
+	else {
+		current_interp_method = 0;
+	}
 
 
 
@@ -5739,16 +5795,24 @@ void* storage;
 								);
 					}
 				}
-				if(current_rec->the_dat == NULL) {
+				
+				if((current_rec->the_dat == NULL) || 
+				   (current_rec->interp_method != current_interp_method)) {
 	/*
 	* Retrieves LRU cache MultiDVal specific to this grid type
 	*/
-					current_rec->the_dat = _NclGetCacheVal(therec,step,current_rec);
-					if(current_rec->the_dat == NULL){
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unrecoverable caching error reading variable can't continue");
-						fclose(fd);
-						NclFree(vbuf);
-						return(NULL);
+					if (current_rec->the_dat) {
+						current_rec->interp_method = current_interp_method;
+					}
+					else {
+						current_rec->the_dat = _NclGetCacheVal(therec,step,current_rec);
+						if(current_rec->the_dat == NULL){
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "NclGRIB: Unrecoverable caching error reading variable can't continue");
+							fclose(fd);
+							NclFree(vbuf);
+							return(NULL);
+						}
 					}
 	/*
 	* grid and grid_gds will overwrite tmp
@@ -5756,15 +5820,18 @@ void* storage;
 					tmp = current_rec->the_dat->multidval.val;
 					if((current_rec->has_gds)&&(current_rec->grid_number == 255)&&(current_rec->grid_gds_tbl_index > -1)) {
 						if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
-							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
+							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)
+								(fd,&tmp,&missing,current_rec,step);
 						}
 					} else if(current_rec->grid_tbl_index > -1) {
 						if(grid[current_rec->grid_tbl_index].un_pack != NULL) {
-							int_or_float = (*grid[current_rec->grid_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
+							int_or_float = (*grid[current_rec->grid_tbl_index].un_pack)
+								(fd,&tmp,&missing,current_rec,step);
 						}
 					} else if((current_rec->has_gds)&&(current_rec->grid_gds_tbl_index > -1)) {
 						if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
-							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)(fd,&tmp,&missing,current_rec,step);
+							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)
+								(fd,&tmp,&missing,current_rec,step);
 						}
 					}
 					if(tmp != NULL) {
@@ -6077,9 +6144,36 @@ return(NULL);
 }
 
 
+static NhlErrorTypes GribSetOption
+#if	NhlNeedProto
+(void *therec,NclQuark option, NclBasicDataTypes data_type, int n_items, void * values)
+#else
+(therec,theatt,data_type,n_items,values)
+	void *therec;
+	NclQuark theatt;
+	NclBasicDataTypes data_type;
+	int n_items;
+	void * values;
+#endif
+{
+	GribFileRecord *rec = (GribFileRecord*)therec;
+	nc_type *the_data_type;
+	int i,ret;
+	int cdfid;
+	static first = 1;
+
+	if (option ==  NrmStringToQuark("thinnedgridinterpolation")) {
+		rec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void*) (NrmQuark)values;
+	}
+	
+	return NhlNOERROR;
+}
+
+
 NclFormatFunctionRec GribRec = {
-/* NclCreateFileRecFunc	   create_file_rec; */		GribCreateFileRec,
-/* NclGetFileRecFunc       get_file_rec; */		GribGetFileRec,
+/* NclInitializeFileRecFunc initialize_file_rec */      GribInitializeFileRec,
+/* NclCreateFileFunc	   create_file; */		GribCreateFile,
+/* NclOpenFileFunc         open_file; */		GribOpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */		GribFreeFileRec,
 /* NclGetVarNamesFunc      get_var_names; */		GribGetVarNames,
 /* NclGetVarInfoFunc       get_var_info; */		GribGetVarInfo,
@@ -6111,7 +6205,8 @@ NclFormatFunctionRec GribRec = {
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	GribMapToNcl,
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	GribMapFromNcl,
 /* NclDelAttFunc           del_att; */			NULL,
-/* NclDelVarAttFunc        del_var_att; */		NULL
+/* NclDelVarAttFunc        del_var_att; */		NULL,
+/* NclSetOptionFunc        set_option;  */              GribSetOption
 };
 NclFormatFunctionRecPtr GribAddFileFormat 
 #if	NhlNeedProto

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.105 2005-06-02 22:07:21 haley Exp $
+#      $Id: yMakefile,v 1.106 2005-07-23 00:49:57 dbrown Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2005-06-02 22:07:21 $
+#	Date:		$Date: 2005-07-23 00:49:57 $
 #
 #	Description:	
 #
@@ -119,7 +119,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclFileVar.h NclHLUVar.h HLUSupport.h NclCoordVar.h \
 			NclType.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
-			NclOneDValCoordData.h BuiltInFuncs.h HLUFunctions.h \
+			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclGRIB.h date.h tables.h \
 			editline.h unix.h ListSupport.h NclList.h \
 			NclMultiDVallistData.h NclTypelist.h \
@@ -260,8 +260,8 @@ InstallTarget(MakeNcl,$(INSTALL_BIN),$(BINPATH))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
 InstallTarget($(INSTALL_HDRS),$(INSTALL_INC),$(NCLINCPATH))
 
-depend-local:: $(GEN_HDRS) $(GEN_SRCS)
-DependTarget($(ALLSRCS))
+depend-local:: $(HDRS) $(SRCS)
+DependTarget($(SRCS))
 
 CleanFilesTarget(lex.yy.c y.tab.c y.tab.h)
 CleanFilesTarget($(GEN_HDRS) $(GEN_SRCS))

@@ -39,17 +39,29 @@ void *
 #endif
 );
 /*
-* Returns pointer a pointer to a special record used byt
+* Returns pointer a pointer to a special record used by
 * the file format to store private information about the
 * file.
 */
-typedef void * (*NclCreateFileRecFunc)(
+typedef void * (*NclInitializeFileRecFunc)(
 #if	NhlNeedProto
+#endif
+);
+
+/* for historical reasons these also return the private record,
+ * but they no longer create it
+ */
+
+typedef void * (*NclCreateFileFunc)(
+#if	NhlNeedProto
+void *, /* Private record used to identify which file is being accessed */
 NclQuark 	/* Path name of file to be opened */
 #endif
 );
-typedef void * (*NclGetFileRecFunc)(
+
+typedef void * (*NclOpenFileFunc)(
 #if	NhlNeedProto
+void *, /* Private record used to identify which file is being accessed */
 NclQuark ,	/* Path name of file to be opened */
 int 		/* 0 for read/write, 1 for read only */
 #endif
@@ -364,9 +376,20 @@ NclBasicDataTypes
 #endif
 );
 
+typedef NhlErrorTypes (*NclSetOptionFunc) (
+#if	NhlNeedProto
+void * /*therec*/,
+NclQuark /*option*/,
+NclBasicDataTypes /*data_type*/,
+int  /*n_items*/,
+void * /*values*/
+#endif
+);
+
 struct _NclFormatFunctionRecord {
-NclCreateFileRecFunc	create_file_rec;
-NclGetFileRecFunc	get_file_rec;
+NclInitializeFileRecFunc	initialize_file_rec;
+NclCreateFileFunc	create_file;
+NclOpenFileFunc		open_file;
 NclFreeFileRecFunc	free_file_rec;
 NclGetVarNamesFunc	get_var_names;
 NclGetVarInfoFunc	get_var_info;
@@ -399,6 +422,7 @@ NclMapFormatTypeToNcl	map_format_type_to_ncl;
 NclMapNclTypeToFormat	map_ncl_type_to_format;
 NclDelAttFunc		del_att;
 NclDelVarAttFunc	del_var_att;
+NclSetOptionFunc        set_option;  
 };
 
 extern void _NclRegisterFormat(

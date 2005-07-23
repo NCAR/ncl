@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.72 2005-01-26 00:58:03 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.73 2005-07-23 00:49:55 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -31,6 +31,11 @@ extern "C" {
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
 extern NhlErrorTypes _NclICreateFile(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclISetFileOption(
 #if NhlNeedProto
 void
 #endif
@@ -1758,6 +1763,14 @@ void _NclAddBuiltIns
     args = NewArgs(1);
     SetArgTemplate(args,nargs,"short",0,NclANY); nargs++;
     NclRegisterFunc(_NclIushorttoint,args,"ushorttoint",nargs);
+
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
+    SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+    SetArgTemplate(args,nargs,NclANY,1,NclANY); nargs++;
+    NclRegisterProc(_NclISetFileOption,args,"setfileoption",nargs);
     
 /*
 	nargs = 0;

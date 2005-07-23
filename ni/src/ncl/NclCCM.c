@@ -242,11 +242,12 @@ char *buffer;
 	return(NrmStringToQuark(tmpc));
 }
 
-static void *CcmCreateFileRec
+static void *CcmCreateFile
 #if	NhlNeedProto
-(NclQuark path)
+(void *rec,NclQuark path)
 #else
-(path)
+(rec,path)
+void *rec;
 NclQuark path;
 #endif
 {
@@ -992,18 +993,33 @@ static char *time_units( int date, int sec,char* units)
  
 }
 
-
-
-static void *CcmGetFileRec
+static void *CcmInitializeFileRec
 #if	NhlNeedProto
-(NclQuark path,int wr_status)
+(void)
 #else
-(path,wr_status)
+()
+#endif
+{
+	CCMFileRec *therec = NULL;
+
+	therec = (CCMFileRec*)NclCalloc(1, sizeof(CCMFileRec));
+	if (! therec) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+	}
+	return (void *) therec;
+}
+
+static void *CcmOpenFile
+#if	NhlNeedProto
+(void * rec,NclQuark path,int wr_status)
+#else
+(therec,path,wr_status)
+void *therec;
 NclQuark path;
 int	wr_status;
 #endif
 {
-	CCMFileRec *therec = NULL;
+	CCMFileRec *therec = (CCMFileRec *)rec;
 	CCMI initial_iheader;
 	CCMC initial_cheader;
 	CCMR initial_rheader;
@@ -1062,7 +1078,6 @@ int	wr_status;
 * If its COS blocked it will set up MySeek and MyRead pointers for COS freads
 * If its NON blocked cray binary file the MySeek and MyRead pointer 
 */
-		therec = (CCMFileRec*)NclMalloc(sizeof(CCMFileRec));
 		therec->cos_blocking = IsCOSBlockedCCM(fd);
 		therec->file_path_q = path;
 		therec->wr_status = wr_status;
@@ -2370,8 +2385,9 @@ NclBasicDataTypes type;
 
 
 NclFormatFunctionRec CCMRec = {
-/* NclCreateFileRecFunc	   create_file_rec; */		CcmCreateFileRec,
-/* NclGetFileRecFunc       get_file_rec; */		CcmGetFileRec,
+/* NclInitializeFileRecFunc initialize_file_rec */      CcmInitializeFileRec,
+/* NclCreateFileFunc	   create_file; */		CcmCreateFile,
+/* NclOpenFileFunc         open_file; */		CcmOpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */		CcmFreeFileRec,
 /* NclGetVarNamesFunc      get_var_names; */		CcmGetVarNames,
 /* NclGetVarInfoFunc       get_var_info; */		CcmGetVarInfo,
@@ -2403,7 +2419,8 @@ NclFormatFunctionRec CCMRec = {
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	CcmMapToNcl,
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	CcmMapFromNcl,
 /* NclDelAttFunc           del_att; */			NULL,
-/* NclDelVarAttFunc        del_var_att; */		NULL
+/* NclDelVarAttFunc        del_var_att; */		NULL,
+/* NclSetOptionFunc           set_option;  */           NULL
 };
 
 NclFormatFunctionRecPtr CcmAddFileFormat 

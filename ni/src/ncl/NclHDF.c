@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.15 2005-06-01 17:12:13 haley Exp $
+ *      $Id: NclHDF.c,v 1.16 2005-07-23 00:49:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -565,17 +565,35 @@ static void ProcessDuplicateNames
 			
 	}
 }
-static void *HDFGetFileRec
+
+static void *HDFInitializeFileRec
 #if	NhlNeedProto
-(NclQuark path,int wr_status)
+(void)
 #else
-(path,wr_status)
+()
+#endif
+{
+	HDFFileRecord *therec = NULL;
+
+	therec = (HDFFileRecord*)NclCalloc(1, sizeof(HDFFileRecord));
+	if (! therec) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NULL;
+	}
+	return (void *) therec;
+}
+
+static void *HDFOpenFile
+#if	NhlNeedProto
+(void *rec,NclQuark path,int wr_status)
+#else
+(rec,path,wr_status)
+void *rec;
 NclQuark path;
 int wr_status;
 #endif
 {
-	HDFFileRecord *tmp = (HDFFileRecord*)
-			NclMalloc((unsigned)sizeof(HDFFileRecord));
+	HDFFileRecord *tmp = (HDFFileRecord*) rec;
 	int cdfid;
 	int dummy;
 	char buffer[MAX_NC_NAME];
@@ -806,11 +824,12 @@ int wr_status;
 	return((void*)tmp);
 }
 
-static void *HDFCreateFileRec
-#if NhlNeedProto
-(NclQuark path)
+static void *HDFCreateFile
+#if	NhlNeedProto
+(void *rec,NclQuark path)
 #else
-(path)
+(rec,path)
+void *rec;
 NclQuark path;
 #endif
 {
@@ -820,7 +839,7 @@ NclQuark path;
 	if(id > -1) {
 		sd_ncendef(id);
 		sd_ncclose(id);
-		return(HDFGetFileRec(path,-1));
+		return(HDFOpenFile(rec,path,-1));
 	} else {
 		return(NULL);
 	}
@@ -2261,8 +2280,9 @@ static NhlErrorTypes HDFAddVarAtt
 
 
 NclFormatFunctionRec HDFRec = {
-/* NclCreateFileRecFunc	   create_file_rec; */		HDFCreateFileRec,
-/* NclGetFileRecFunc       get_file_rec; */		HDFGetFileRec,
+/* NclInitializeFileRecFunc initialize_file_rec */      HDFInitializeFileRec,
+/* NclCreateFileFunc	   create_file; */		HDFCreateFile,
+/* NclOpenFileFunc         open_file; */		HDFOpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */		HDFFreeFileRec,
 /* NclGetVarNamesFu_nc      get_var_names; */		HDFGetVarNames,
 /* NclGetVarInfoFusd_nc       get_var_info; */		HDFGetVarInfo,
@@ -2294,7 +2314,8 @@ NclFormatFunctionRec HDFRec = {
 /* NclMapFormatTypeToNcl   map_format_type_to_sd_ncl; */	HDFMapToNcl,
 /* NclMapNclTypeToFormat   map_sd_ncl_type_to_format; */	HDFMapFromNcl,
 /* NclDelAttFusd_nc           del_att; */			HDFDelAtt,
-/* NclDelVarAttFusd_nc        del_var_att; */		HDFDelVarAtt
+/* NclDelVarAttFusd_nc        del_var_att; */		HDFDelVarAtt,
+/* NclSetOptionFunc           set_option;  */           NULL
 };
 NclFormatFunctionRecPtr HDFAddFileFormat 
 #if	NhlNeedProto

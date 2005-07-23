@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.33 2005-05-27 00:01:22 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.34 2005-07-23 00:49:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,6 +36,8 @@ typedef struct _NetCdfAttInqRec NetCdfAttInqRec;
 typedef struct _NetCdfVarInqRecList NetCdfVarInqRecList;
 typedef struct _NetCdfDimInqRecList NetCdfDimInqRecList;
 typedef struct _NetCdfAttInqRecList NetCdfAttInqRecList;
+typedef struct _NetCdfOptions NetCdfOptions;
+
 
 struct _NetCdfVarInqRecList {
 	NetCdfVarInqRec *var_inq;
@@ -79,6 +81,20 @@ struct _NetCdfAttInqRec {
 	void	*value;
 };
 
+			
+struct _NetCdfOptions {
+	NclQuark name;
+	NclBasicDataTypes data_type;
+	int n_values;
+	void *values;
+};
+
+#define NC_PREFILL_OPT 0
+#define NC_DEFINE_MODE_OPT 1
+#define NC_HEADER_SPACE_OPT 2
+#define NC_SUPPRESS_CLOSE_OPT 3
+#define NC_FORMAT_OPT 4
+#define NC_NUM_OPTIONS 5
 
 struct _NetCdfFileRecord {
 NclQuark	file_path_q;
@@ -90,6 +106,11 @@ NetCdfDimInqRecList *dims;
 int		has_scalar_dim;
 int		n_file_atts;
 NetCdfAttInqRecList *file_atts;
+int             n_options;
+NetCdfOptions   *options;
+int             cdfid;
+int             header_reserve_space;
+int             define_mode;
 };
 
 
@@ -247,17 +268,127 @@ NetCdfAttInqRec* frec
 	return;
 }
 
-static void *NetGetFileRec
+static void CloseOrNot
 #if	NhlNeedProto
-(NclQuark path,int wr_status)
+(NetCdfFileRecord *rec, int cdfid, int sync)
 #else
-(path,wr_status)
+(tmp,cdfid,sync)
+NetCdfFileRecord *rec;
+int cdfid;
+int sync;
+#endif
+{
+
+	if ((int)(rec->options[NC_SUPPRESS_CLOSE_OPT].values) == 0) {
+		ncclose(cdfid);
+		rec->cdfid = -1;
+	}
+	else {
+		if (sync)
+			nc_sync(cdfid);
+		rec->cdfid = cdfid;
+	}
+}
+
+static void EndDefineModeIf
+#if	NhlNeedProto
+(NetCdfFileRecord *rec, int cdfid)
+#else
+(tmp,cdfid)
+NetCdfFileRecord *rec;
+int cdfid;
+#endif
+{
+	/* 
+	 * The header space will not be reserved unless at least one variable has been defined;
+	 * hence the double condition.
+	 */
+	if (rec->define_mode) {
+		if (rec->n_vars > 0 && rec->header_reserve_space > 0) {
+			nc__enddef(cdfid,rec->header_reserve_space,4,0,4);
+			rec->header_reserve_space = 0;
+		}
+		else {
+			ncendef(cdfid);
+		}
+		rec->define_mode = 0;
+	}
+	return;
+}
+
+static int InitializeOptions 
+#if	NhlNeedProto
+(NetCdfFileRecord *tmp)
+#else
+(tmp)
+NetCdfFileRecord *tmp;
+#endif
+{
+	NetCdfOptions *options;
+	int i;
+
+	tmp->n_options = NC_NUM_OPTIONS;
+	
+	options = NclMalloc(tmp->n_options * sizeof(NetCdfOptions));
+	if (! options) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return 0;
+	}
+	options[NC_PREFILL_OPT].data_type = NCL_logical;
+	options[NC_PREFILL_OPT].n_values = 1;
+	options[NC_PREFILL_OPT].values = (void *) 1;
+	options[NC_DEFINE_MODE_OPT].data_type = NCL_logical;
+	options[NC_DEFINE_MODE_OPT].n_values = 1;
+	options[NC_DEFINE_MODE_OPT].values = (void *) 0;
+	options[NC_HEADER_SPACE_OPT].data_type = NCL_int;
+	options[NC_HEADER_SPACE_OPT].n_values = 1;
+	options[NC_HEADER_SPACE_OPT].values = (void *) 0;
+	options[NC_SUPPRESS_CLOSE_OPT].data_type = NCL_int;
+	options[NC_SUPPRESS_CLOSE_OPT].n_values = 1;
+	options[NC_SUPPRESS_CLOSE_OPT].values = (void *) 0;
+	options[NC_FORMAT_OPT].data_type = NCL_string;
+	options[NC_FORMAT_OPT].n_values = 1;
+	options[NC_FORMAT_OPT].values = (void *) NrmStringToQuark("classic");
+
+	tmp->options = options;
+	return 1;
+}
+
+static void *NetInitializeFileRec
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NetCdfFileRecord *therec = NULL;
+
+	therec = (NetCdfFileRecord*)NclCalloc(1, sizeof(NetCdfFileRecord));
+	if (! therec) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NULL;
+	}
+	therec->cdfid = -1;
+	therec->header_reserve_space = 0;
+	therec->define_mode = 0;
+	if (! InitializeOptions(therec)) {
+		NclFree(therec);
+		return NULL;
+	}
+	return (void *) therec;
+}
+
+static void *NetOpenFile
+#if	NhlNeedProto
+(void *rec,NclQuark path,int wr_status)
+#else
+(rec,path,wr_status)
+void *rec;
 NclQuark path;
 int wr_status;
 #endif
 {
-	NetCdfFileRecord *tmp = (NetCdfFileRecord*)
-			NclMalloc((unsigned)sizeof(NetCdfFileRecord));
+	NetCdfFileRecord *tmp = (NetCdfFileRecord*) rec;
 	int cdfid;
 	int dummy;
 	char buffer[MAX_NC_NAME];
@@ -283,10 +414,17 @@ int wr_status;
 	tmp->n_file_atts = 0;
 	tmp->file_atts= NULL;
 
-	if(wr_status > 0) {
+	if (tmp->cdfid > -1) {
+		cdfid = tmp->cdfid;
+	}
+	else if(wr_status > 0) {
 		cdfid = ncopen(NrmQuarkToString(path),NC_NOWRITE);
+		tmp->define_mode = 0;
+		tmp->cdfid = cdfid;
 	} else {
 		cdfid = ncopen(NrmQuarkToString(path),(NC_WRITE|NC_NOCLOBBER));
+		tmp->define_mode = 0;
+		tmp->cdfid = cdfid;
 	}
 
 	if(cdfid == -1) {
@@ -432,24 +570,48 @@ int wr_status;
 
 	NetGetDimVals(cdfid,tmp);
 
-	ncclose(cdfid);
+	CloseOrNot(tmp,cdfid,0);
 	return((void*)tmp);
 }
 
-static void *NetCreateFileRec
+static void *NetCreateFile
 #if	NhlNeedProto
-(NclQuark path)
+(void *rec,NclQuark path)
 #else
-(path)
+(rec,path)
+void *rec;
 NclQuark path;
 #endif
 {
+	NetCdfFileRecord *tmp = (NetCdfFileRecord*)rec;
 	int id = 0;
-	id = nccreate(NrmQuarkToString(path),(NC_WRITE|NC_NOCLOBBER));
-	if(id > -1) {
-		ncendef(id);
-		ncclose(id);
-		return(NetGetFileRec(path,-1));
+	int ret, mode;
+
+	if (((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
+	     NrmStringToQuark("largefile")) ||
+	    ((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
+	     NrmStringToQuark("64bitoffset"))) {
+		mode = (NC_WRITE|NC_NOCLOBBER|NC_64BIT_OFFSET);
+	}
+/*
+	else if ((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
+	    NrmStringToQuark("hdf5")) {
+		mode = (NC_WRITE|NC_NOCLOBBER|NC_NETCDF4);
+	}
+*/
+	else {
+		mode = (NC_WRITE|NC_NOCLOBBER);
+	}
+
+	ret = nc_create(NrmQuarkToString(path),mode,&id);
+	if(ret == NC_NOERR && id > -1) {
+		tmp->cdfid = id;
+		tmp->define_mode = 1;
+		if ((int)(tmp->options[NC_DEFINE_MODE_OPT].values) == 0) {
+			EndDefineModeIf(tmp,id);
+			CloseOrNot(tmp,id,0);
+		}
+		return(NetOpenFile(rec,path,-1));
 	} else {
 		return(NULL);
 	}
@@ -468,6 +630,9 @@ void *therec;
         NetCdfVarInqRecList *stepvl;
         NetCdfDimInqRecList *stepdl;
 
+	if (rec->cdfid > -1) {
+		ncclose(rec->cdfid);
+	}
 	stepal = rec->file_atts;
 	while(rec->file_atts != NULL) {
 		stepal = rec->file_atts;
@@ -499,6 +664,7 @@ void *therec;
 		rec->vars = rec->vars->next;
 		NclFree(stepvl);
 	}
+	NclFree(rec->options);
 	NclFree(rec);
 	return;
 }
@@ -845,27 +1011,33 @@ void* storage;
 				}
 			}
 			out_data = storage;
-#if 0
 			chunksizehint *= _NclSizeOf(NetMapToNcl(&stepvl->var_inq->data_type));
 
 			while (blksize * 4 < chunksizehint) {
 				blksize *= 4;
 			}
 			chunksizehint = MIN(blksize,getpagesize() * 64);
-			printf ("size hint = %d\n",chunksizehint);
-			if (no_stride) {
-				nc__open(NrmQuarkToString(rec->file_path_q),NC_NOWRITE,&chunksizehint,&cdfid);
-				printf ("got size = %d\n",chunksizehint);
+			/* printf ("size hint = %d\n",chunksizehint); */
+			if (rec->cdfid > -1) {
+				cdfid = rec->cdfid;
+				EndDefineModeIf(rec,cdfid);
 			}
-			else
-#endif
+			else if (no_stride) {
+				nc__open(NrmQuarkToString(rec->file_path_q),NC_NOWRITE,&chunksizehint,&cdfid);
+				rec->define_mode = 0;
+				rec->cdfid = cdfid;
+				/* printf ("got size = %d\n",chunksizehint); */
+			}
+			else {
 				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
+				rec->define_mode = 0;
+				rec->cdfid = cdfid;
+			}
 				
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
 				return(NULL);
 			}
-
 
 			if(no_stride) {	
 				ret = ncvargetg(cdfid,
@@ -884,8 +1056,7 @@ void* storage;
 					NULL,
 					out_data);
 			}
-	
-			ncclose(cdfid);
+			CloseOrNot(rec,cdfid,0);
 			if(ret == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to read variable (%s) from file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 				return(NULL);
@@ -944,7 +1115,14 @@ void* storage;
 				}
 				return(storage);
 			}
-			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
+			if (rec->cdfid > -1) {
+				cdfid = rec->cdfid;
+			}				
+			else {
+				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+			}
 			
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
@@ -959,7 +1137,12 @@ void* storage;
 			} else {
 				ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),storage);
 			}
-			ncclose(cdfid);
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				if (rec->cdfid > -1) {
+					EndDefineModeIf(rec, cdfid);
+				}
+				CloseOrNot(rec,cdfid,0);
+			}
 			if (ret != -1) 
 				return(storage);
 			else {
@@ -1008,7 +1191,15 @@ void* storage;
 						}
 						return(storage);
 					}
-					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
+					
+					if (rec->cdfid > -1) {
+						cdfid = rec->cdfid;
+					}
+					else {
+						cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_NOWRITE);
+						rec->cdfid = cdfid;
+						rec->define_mode = 0;
+					}
 			
 					if(cdfid == -1) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for reading",NrmQuarkToString(rec->file_path_q));
@@ -1024,7 +1215,7 @@ void* storage;
 					} else {
 						ret = ncattget(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),storage);
 					}
-					ncclose(cdfid);
+					CloseOrNot(rec,cdfid,0);
 					if(ret != -1)
 						return(storage);
 					else {
@@ -1103,20 +1294,26 @@ long *stride;
 					blksize *= 4;
 				}
 				chunksizehint = MIN(blksize,getpagesize() * 64);
-#if 0
-				printf ("size hint = %d\n",chunksizehint);
-
+				/* printf ("size hint = %d\n",chunksizehint); */
+				
+				if (rec->cdfid > -1) {
+					cdfid = rec->cdfid;
+					EndDefineModeIf(rec, cdfid);
+				}
 				if (no_stride) {
 					nc__open(NrmQuarkToString(rec->file_path_q),NC_WRITE,&chunksizehint,&cdfid);
-					printf ("got size = %d\n",chunksizehint);
+					/* printf ("got size = %d\n",chunksizehint); */
+					rec->cdfid = cdfid;
+					rec->define_mode = 0;
 				}
-				else
+				else {
 					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-				nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
-#endif
-#if 1
-				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-#endif				
+					rec->cdfid = cdfid;
+					rec->define_mode = 0;
+				}
+				if ((int)(rec->options[NC_PREFILL_OPT].values) == 0)
+					nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
+
 				if(cdfid == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
@@ -1141,7 +1338,7 @@ long *stride;
 						data);
 				}
 	
-				ncclose(cdfid);
+				CloseOrNot(rec,cdfid,1);
 				if(ret == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to write variable (%s) from file (%s)",NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
@@ -1197,21 +1394,27 @@ void *data;
 		stepal = rec->file_atts;
 		while(stepal != NULL) {
 			if(stepal->att_inq->name == theatt) {
-				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+				if (rec->cdfid > -1) {
+					cdfid = rec->cdfid;
+				}
+				else {
+					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+					rec->cdfid = cdfid;
+					rec->define_mode = 0;
+				}
 				if(cdfid == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				}
 				if(stepal->att_inq->data_type == NC_CHAR) {
-					int redef = 0;
 					buffer = NrmQuarkToString(*(NclQuark*)data);
 					if(strlen(buffer)+1 > stepal->att_inq->len) {
-						ncredef(cdfid);
-						redef = 1;
+						if (! rec->define_mode) {
+							ncredef(cdfid);
+							rec->define_mode = 1;
+						}
 					}
 					ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),(void*)buffer);
-					if (redef)
-						ncendef(cdfid);
 					if (stepal->att_inq->value != NULL)
 						memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 				} else {
@@ -1222,8 +1425,12 @@ void *data;
 					}
 				}
 	
-	
-				ncclose(cdfid);
+				
+				if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+					EndDefineModeIf(rec, cdfid);
+					CloseOrNot(rec,cdfid,0);
+				}
+					
 				if(ret == -1) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to write the attribute (%s) to file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
@@ -1257,14 +1464,28 @@ NclQuark theatt;
 	if(rec->wr_status <= 0) {
 		stepal = rec->file_atts;
 		if((stepal != NULL) && (stepal->att_inq->name == theatt)) {
-			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+
+			if (rec->cdfid > -1) {
+				cdfid = rec->cdfid;
+			}
+			else {
+				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+			}
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 				return(NhlFATAL);
 			}
-			ncredef(cdfid);
+			if (! rec->define_mode) {
+				ncredef(cdfid);
+				rec->define_mode = 1;
+			}
 			ret = ncattdel(cdfid,NC_GLOBAL,(const char*)NrmQuarkToString(theatt));
-			ncendef(cdfid);
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				EndDefineModeIf(rec, cdfid);
+				CloseOrNot(rec,cdfid,0);
+			}
 	
 			tmpal = stepal;
 			rec->file_atts = stepal->next;
@@ -1272,7 +1493,6 @@ NclQuark theatt;
 				NclFree(tmpal->att_inq->value);
 			NclFree(tmpal->att_inq);
 			NclFree(tmpal);
-			ncclose(cdfid);
 			if(ret == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
 				return(NhlFATAL);
@@ -1281,22 +1501,33 @@ NclQuark theatt;
 		} else {
 			while(stepal->next != NULL) {
 				if(stepal->next->att_inq->name == theatt) {
-					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+					if (rec->cdfid > -1) {
+						cdfid = rec->cdfid;
+					}
+					else {
+						cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+						rec->cdfid = cdfid;
+						rec->define_mode = 0;
+					}
 					if(cdfid == -1) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 						return(NhlFATAL);
 					}
-
-					ncredef(cdfid);
+					if (! rec->define_mode) {
+						ncredef(cdfid);
+						rec->define_mode = 1;
+					}
 					ret = ncattdel(cdfid,NC_GLOBAL,(const char*)NrmQuarkToString(theatt));
-					ncendef(cdfid);
+					if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+						EndDefineModeIf(rec, cdfid);
+						CloseOrNot(rec,cdfid,0);
+					}
 					tmpal = stepal->next;
 					stepal->next = stepal->next->next;
 					if (tmpal->att_inq->value)
 						NclFree(tmpal->att_inq->value);
 					NclFree(tmpal->att_inq);
 					NclFree(tmpal);
-					ncclose(cdfid);
 					if(ret == -1) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
 						return(NhlFATAL);
@@ -1335,22 +1566,33 @@ NclQuark theatt;
 			if(stepvl->var_inq->name == thevar) {
 				stepal = stepvl->var_inq->att_list;
 				if((stepal != NULL) && (stepal->att_inq->name == theatt)) {
-					cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+					if (rec->cdfid > -1) {
+						cdfid = rec->cdfid;
+					}
+					else {
+						cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+						rec->cdfid = cdfid;
+						rec->define_mode = 0;
+					}
 					if(cdfid == -1) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 						return(NhlFATAL);
 					}
-					ncredef(cdfid);
+					if (! rec->define_mode) {
+						ncredef(cdfid);
+						rec->define_mode = 1;
+					}
 					ret = ncattdel(cdfid,stepvl->var_inq->varid,(const char*)NrmQuarkToString(theatt));
-					ncendef(cdfid);
-			
+					if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+						EndDefineModeIf(rec, cdfid);
+						CloseOrNot(rec,cdfid,0);
+					}
 					tmpal = stepal;
 					stepvl->var_inq->att_list = stepal->next;
 					if (tmpal->att_inq->value)
 						NclFree(tmpal->att_inq->value);
 					NclFree(tmpal->att_inq);
 					NclFree(tmpal);
-					ncclose(cdfid);
 					if(ret == -1) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 						return(NhlFATAL);
@@ -1359,22 +1601,33 @@ NclQuark theatt;
 				} else {
 					while(stepal->next != NULL) {
 						if(stepal->next->att_inq->name == theatt) {
-							cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+							if (rec->cdfid > -1) {
+								cdfid = rec->cdfid;
+							}
+							else {
+								cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+								rec->cdfid = cdfid;
+								rec->define_mode = 0;
+							}
 							if(cdfid == -1) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 								return(NhlFATAL);
 							}
-
-							ncredef(cdfid);
+							if (! rec->define_mode) {
+								ncredef(cdfid);
+								rec->define_mode = 1;
+							}
 							ret = ncattdel(cdfid,stepvl->var_inq->varid,(const char*)NrmQuarkToString(theatt));
-							ncendef(cdfid);
+							if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+								EndDefineModeIf(rec, cdfid);
+								CloseOrNot(rec,cdfid,0);
+							}
 							tmpal = stepal->next;
 							stepal->next = stepal->next->next;
 							if (tmpal->att_inq->value)
 								NclFree(tmpal->att_inq->value);
 							NclFree(tmpal->att_inq);
 							NclFree(tmpal);
-							ncclose(cdfid);
 							if(ret == -1) {
 								NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to delete the attribute (%s) from variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 								return(NhlFATAL);
@@ -1411,8 +1664,6 @@ void* data;
 	int cdfid;
 	int ret;
 	char * buffer = NULL;
-	
-	
 
 	if(rec->wr_status <= 0) {
 		stepvl = rec->vars;
@@ -1421,21 +1672,27 @@ void* data;
 				stepal = stepvl->var_inq->att_list;
 				while(stepal != NULL) {
 					if(stepal->att_inq->name == theatt) {
-						cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+						if (rec->cdfid > -1) {
+							cdfid = rec->cdfid;
+						}
+						else {
+							cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+							rec->cdfid = cdfid;
+							rec->define_mode = 0;
+						}
 						if(cdfid == -1) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 							return(NhlFATAL);
 						}
 						if(stepal->att_inq->data_type == NC_CHAR) {	
-							int redef = 0;
 							buffer = NrmQuarkToString(*(NclQuark*)data);
 							if(strlen(buffer)  > stepal->att_inq->len) {
-								ncredef(cdfid);
-								redef = 1;
+								if (! rec->define_mode) {
+									ncredef(cdfid);
+									rec->define_mode = 1;
+								}
 							}
 							ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
-							if (redef)
-								ncendef(cdfid);
 							if (stepal->att_inq->value != NULL)
 								memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 						} else {
@@ -1447,7 +1704,10 @@ void* data;
 							
 						}
 		
-						ncclose(cdfid);
+						if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+							EndDefineModeIf(rec, cdfid);
+							CloseOrNot(rec,cdfid,0);
+						}
 						if(ret == -1) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: An error occurred while attempting to write the attribute (%s) to variable (%s) in file (%s)",NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
 							return(NhlFATAL);
@@ -1495,19 +1755,31 @@ int is_unlimited;
 			add_scalar = 1;
 		}
 		else {
-			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if (rec->cdfid > -1) {
+				cdfid = rec->cdfid;
+			}
+			else {
+				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+			}
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 				return(NhlFATAL);
 			}
-			ncredef(cdfid);
+			if (! rec->define_mode) {
+				ncredef(cdfid);
+				rec->define_mode = 1;
+			}
 			if(is_unlimited) {
 				ret = ncdimdef(cdfid,NrmQuarkToString(thedim),NC_UNLIMITED);
 			} else {
 				ret = ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
 			}
-			ncendef(cdfid);
-			ncclose(cdfid);
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				EndDefineModeIf(rec, cdfid);
+				CloseOrNot(rec,cdfid,0);
+			}
 			if(ret == -1) {
 				return(NhlFATAL);
 			}
@@ -1588,10 +1860,17 @@ long* dim_sizes;
 	int fill_mode;
 
 	if(rec->wr_status <= 0) {
-		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
-#if 1
-		nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
-#endif
+		if (rec->cdfid > -1) {
+			cdfid = rec->cdfid;
+		}
+		else {
+			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			rec->cdfid = cdfid;
+			rec->define_mode = 0;
+		}
+		if ((int)(rec->options[NC_PREFILL_OPT].values) == 0)
+			nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
+
 		if(cdfid == -1) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 			return(NhlFATAL);
@@ -1627,18 +1906,24 @@ long* dim_sizes;
 			}
 		}
 		if(the_data_type != NULL) {
-			ncredef(cdfid);
+			if (! rec->define_mode) {
+				ncredef(cdfid);
+				rec->define_mode = 1;
+			}
 			if((n_dims == 1)&&(dim_ids[0] == -5)) {
 				ret = ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type, 0, NULL);
 			} else {
 				ret = ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type, n_dims, dim_ids);
 			}
-			ncendef(cdfid);
-			ncclose(cdfid);
 			if(ret == -1) {
 				NclFree(the_data_type);
 				return(NhlFATAL);
 			} 
+			rec->n_vars++;
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				EndDefineModeIf(rec, cdfid);
+				CloseOrNot(rec,cdfid,0);
+			}
 	
 			stepvl = rec->vars;
 			if(stepvl == NULL) {
@@ -1657,7 +1942,6 @@ long* dim_sizes;
 				for(i = 0 ; i< n_dims; i++) {
 					rec->vars->var_inq->dim[i] = dim_ids[i];
 				}
-				rec->n_vars = 1;
 			} else {
 				while(stepvl->next != NULL) {
 					stepvl= stepvl->next;
@@ -1677,7 +1961,6 @@ long* dim_sizes;
 				for(i = 0 ; i< n_dims; i++) {
 					stepvl->next->var_inq->dim[i] = dim_ids[i];
 				}
-				rec->n_vars++;
 			}
 			if (add_scalar_dim) {
 				rec->has_scalar_dim = 1;
@@ -1696,7 +1979,10 @@ long* dim_sizes;
 			NclFree(the_data_type);
 			return(NhlNOERROR);
 		} else {
-			ncclose(cdfid);
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				EndDefineModeIf(rec, cdfid);
+				CloseOrNot(rec,cdfid,0);
+			}
 		}
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
@@ -1704,6 +1990,8 @@ long* dim_sizes;
 	return(NhlFATAL);
 }
 
+#if 0
+/* dib 7/13/05 I don't think this is used so let's eliminate it */
 static NhlErrorTypes NetAddCoordVar
 #if	NhlNeedProto
 (void *therec, NclQuark thevar,NclBasicDataTypes data_type)
@@ -1720,10 +2008,16 @@ NclBasicDataTypes data_type;
 	int cdfid;
 	int ret,size;
 	nc_type *the_data_type;
-	
 
 	if(rec->wr_status <= 0) {
-		cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+		if (rec->cdfid > -1) {
+			cdfid = rec->cdfid;
+		}
+		else {
+			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			rec->cdfid = cdfid;
+			rec->define_mode = 0;
+		}
 		if(cdfid == -1) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 			return(NhlFATAL);
@@ -1733,12 +2027,16 @@ NclBasicDataTypes data_type;
 			stepdl = rec->dims;
 			while(stepdl != NULL ) {
 				if(stepdl->dim_inq->name == thevar){
-					ncredef(cdfid);
+					if (! rec->define_mode) {
+						ncredef(cdfid);
+						rec->define_mode = 1;
+					}
 					size = stepdl->dim_inq->size;
 					ret = ncvardef(cdfid,NrmQuarkToString(thevar),*the_data_type,1,&size);
 					if(ret == -1) {
 						ncabort(cdfid);
 						ncclose(cdfid);
+						rec->cdfid = -1;
 						NclFree(the_data_type);
 						return(NhlFATAL);
 					} 
@@ -1782,12 +2080,14 @@ NclBasicDataTypes data_type;
 			NclFree(the_data_type);
 		} else {
 			ncclose(cdfid);
+			rec->cdfid = -1;
 		}
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
 	}
 	return(NhlFATAL);
 }
+#endif
 
 static NhlErrorTypes NetRenameDim
 #if	NhlNeedProto
@@ -1814,14 +2114,28 @@ NclQuark to;
 				stepdl->dim_inq->name = to;
 				return(NhlNOERROR);
 			}
-			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if (rec->cdfid > -1) {
+				cdfid = rec->cdfid;
+			}
+			else {
+				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+			}
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 				return(NhlFATAL);
 			}
-			ncredef(cdfid);
+			if (! rec->define_mode) {
+				ncredef(cdfid);
+				rec->define_mode = 1;
+			}
 			ret = ncdimrename(cdfid,stepdl->dim_inq->dimid,NrmQuarkToString(to));
-			ncclose(cdfid);
+
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				EndDefineModeIf(rec, cdfid);
+				CloseOrNot(rec,cdfid,0);
+			}
 			if(ret == -1) {
 				return(NhlFATAL);
 			} else {
@@ -1884,16 +2198,28 @@ static NhlErrorTypes NetAddAtt
 	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)NetMapFromNcl(data_type);
 		if(the_data_type != NULL) {
-			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if (rec->cdfid > -1) {
+				cdfid = rec->cdfid;
+			}
+			else {
+				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+			}
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 				NclFree(the_data_type);
 				return(NhlFATAL);
 			}
-			ncredef(cdfid);
+			if (! rec->define_mode) {
+				ncredef(cdfid);
+				rec->define_mode = 1;
+			}
 			ret = ncattput(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),*the_data_type,n_items,values);
-			ncendef(cdfid);
-			ncclose(cdfid);
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				EndDefineModeIf(rec, cdfid);
+				CloseOrNot(rec,cdfid,0);
+			}
 			if(ret != -1 ) {
 				stepal = rec->file_atts;
 				if(stepal == NULL) {
@@ -1955,7 +2281,14 @@ static NhlErrorTypes NetAddVarAtt
 	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)NetMapFromNcl(data_type);
 		if(the_data_type != NULL) {
-			cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+			if (rec->cdfid > -1) {
+				cdfid = rec->cdfid;
+			}
+			else {
+				cdfid = ncopen(NrmQuarkToString(rec->file_path_q),NC_WRITE);
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+			}
 			if(cdfid == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"NetCdf: Could not reopen the file (%s) for writing",NrmQuarkToString(rec->file_path_q));
 				NclFree(the_data_type);
@@ -1969,10 +2302,15 @@ static NhlErrorTypes NetAddVarAtt
 					stepvl = stepvl->next;
 				}
 			}
-			ncredef(cdfid);
+			if (! rec->define_mode) {
+				ncredef(cdfid);
+				rec->define_mode = 1;
+			}
 			ret = ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),*the_data_type,n_items,values);
-			ncendef(cdfid);
-			ncclose(cdfid);
+			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
+				EndDefineModeIf(rec, cdfid);
+				CloseOrNot(rec,cdfid,0);
+			}
 			if(ret != -1 ) {
 				stepal = stepvl->var_inq->att_list;
 				if(stepal == NULL) {
@@ -2012,10 +2350,67 @@ static NhlErrorTypes NetAddVarAtt
 	return(NhlFATAL);
 }
 
+static NhlErrorTypes NetSetOption
+#if	NhlNeedProto
+(void *therec,NclQuark option, NclBasicDataTypes data_type, int n_items, void * values)
+#else
+(therec,theatt,data_type,n_items,values)
+	void *therec;
+	NclQuark theatt;
+	NclBasicDataTypes data_type;
+	int n_items;
+	void * values;
+#endif
+{
+	NetCdfFileRecord *rec = (NetCdfFileRecord*)therec;
+	NetCdfAttInqRecList* stepal;
+	nc_type *the_data_type;
+	int i,ret;
+	int cdfid;
+	static first = 1;
 
+	if (option ==  NrmStringToQuark("prefill")) {
+		rec->options[NC_PREFILL_OPT].values = (void*) *(int*)values;
+	}
+	else if (option == NrmStringToQuark("definemode")) {
+		rec->options[NC_DEFINE_MODE_OPT].values = (void*) *(int*)values;
+		if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0 && rec->cdfid > -1 && rec->define_mode == 1) {
+			EndDefineModeIf(rec, rec->cdfid);
+			CloseOrNot(rec,cdfid,0);
+		}
+	}
+	else if (option == NrmStringToQuark("headerreservespace")) {
+		rec->options[NC_HEADER_SPACE_OPT].values = (void*) *(int*)values;
+		if ((int)(rec->options[NC_HEADER_SPACE_OPT].values) > 0) {
+			rec->header_reserve_space = (int) rec->options[NC_HEADER_SPACE_OPT].values;
+		}
+		else if ((int)(rec->options[NC_HEADER_SPACE_OPT].values) < 0) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "NetSetOption: option %s value cannot be negative",NrmQuarkToString(option));
+			return(NhlWARNING);
+		}
+	}
+	else if (option == NrmStringToQuark("suppressclose")) {
+		rec->options[NC_SUPPRESS_CLOSE_OPT].values = (void*) *(int*)values;
+		if ((int)(rec->options[NC_SUPPRESS_CLOSE_OPT].values) == 0 && rec->cdfid > -1) {
+			CloseOrNot(rec,cdfid,1);
+		}
+	}
+	else if (option == NrmStringToQuark("format")) {
+		rec->options[NC_FORMAT_OPT].values = (void*) *(NrmQuark*)values;
+		if (rec->file_path_q != NrmNULLQUARK) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "NetSetOption: option %s can only be set when file before file is created",NrmQuarkToString(option));
+			return(NhlWARNING);
+		}
+	}
+	
+	return NhlNOERROR;
+}
 NclFormatFunctionRec NetCdfRec = {
-/* NclCreateFileRecFunc	   create_file_rec; */		NetCreateFileRec,
-/* NclGetFileRecFunc       get_file_rec; */		NetGetFileRec,
+/* NclInitializeFileRecFunc initialize_file_rec */      NetInitializeFileRec,
+/* NclCreateFileFunc	   create_file; */		NetCreateFile,
+/* NclOpenFileFunc         open_file; */		NetOpenFile,
 /* NclFreeFileRecFunc      free_file_rec; */		NetFreeFileRec,
 /* NclGetVarNamesFunc      get_var_names; */		NetGetVarNames,
 /* NclGetVarInfoFunc       get_var_info; */		NetGetVarInfo,
@@ -2041,13 +2436,14 @@ NclFormatFunctionRec NetCdfRec = {
 /* NclAddDimFunc           add_dim; */			NetAddDim,
 /* NclAddDimFunc           rename_dim; */		NetRenameDim,
 /* NclAddVarFunc           add_var; */			NetAddVar,
-/* NclAddVarFunc           add_coord_var; */		NetAddCoordVar,
+/* NclAddVarFunc           add_coord_var; */		NULL,
 /* NclAddAttFunc           add_att; */			NetAddAtt,
 /* NclAddVarAttFunc        add_var_att; */		NetAddVarAtt,
 /* NclMapFormatTypeToNcl   map_format_type_to_ncl; */	NetMapToNcl,
 /* NclMapNclTypeToFormat   map_ncl_type_to_format; */	NetMapFromNcl,
 /* NclDelAttFunc           del_att; */			NetDelAtt,
-/* NclDelVarAttFunc        del_var_att; */		NetDelVarAtt
+/* NclDelVarAttFunc        del_var_att; */		NetDelVarAtt,
+/* NclSetOptionFunc        set_option;  */              NetSetOption
 };
 NclFormatFunctionRecPtr NetCdfAddFileFormat 
 #if	NhlNeedProto
