@@ -1021,7 +1021,7 @@ NclMultiDValData value;
 			  NrmQuarkToString(option),NrmQuarkToString(format));
 		return(NhlWARNING);
 	}
-	else {
+	else if (format != NrmNULLQUARK) {
 		for (i = 0; i < fcp->num_options; i++) {
 			if (fcp->options[i].name != loption)
 				continue;
@@ -1081,7 +1081,11 @@ NclMultiDValData value;
 			  NrmQuarkToString(option),NrmQuarkToString(format));
 		return(NhlWARNING);
 	}
-					    
+	else {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "FileSetFileOption: invalid file or format");
+		return(NhlWARNING);
+	}					    
 		
 	return NhlNOERROR;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.34 2005-07-23 00:49:57 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.35 2005-07-26 22:21:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2366,7 +2366,6 @@ static NhlErrorTypes NetSetOption
 	NetCdfAttInqRecList* stepal;
 	nc_type *the_data_type;
 	int i,ret;
-	int cdfid;
 	static first = 1;
 
 	if (option ==  NrmStringToQuark("prefill")) {
@@ -2376,7 +2375,7 @@ static NhlErrorTypes NetSetOption
 		rec->options[NC_DEFINE_MODE_OPT].values = (void*) *(int*)values;
 		if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0 && rec->cdfid > -1 && rec->define_mode == 1) {
 			EndDefineModeIf(rec, rec->cdfid);
-			CloseOrNot(rec,cdfid,0);
+			CloseOrNot(rec,rec->cdfid,0);
 		}
 	}
 	else if (option == NrmStringToQuark("headerreservespace")) {
@@ -2393,7 +2392,7 @@ static NhlErrorTypes NetSetOption
 	else if (option == NrmStringToQuark("suppressclose")) {
 		rec->options[NC_SUPPRESS_CLOSE_OPT].values = (void*) *(int*)values;
 		if ((int)(rec->options[NC_SUPPRESS_CLOSE_OPT].values) == 0 && rec->cdfid > -1) {
-			CloseOrNot(rec,cdfid,1);
+			CloseOrNot(rec,rec->cdfid,1);
 		}
 	}
 	else if (option == NrmStringToQuark("format")) {
