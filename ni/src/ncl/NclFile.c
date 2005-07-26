@@ -961,6 +961,13 @@ NclMultiDValData value;
 			}
 
 			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
+			if (tmp_md == NULL) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+				    "FileSetFileOption: invalid type for %s option value; value must be coercible to %s",
+					  NrmQuarkToString(option), 
+					  NrmQuarkToString(_NclObjTypeToName(fcp->options[i].value->multidval.type->type_class.type)));
+				return(NhlWARNING);
+			}
 			if (fcp->options[i].valid_values) {
 				int ok = 0;
 				int j;
