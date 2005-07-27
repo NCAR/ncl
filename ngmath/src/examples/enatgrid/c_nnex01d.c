@@ -38,7 +38,7 @@ main()
 
   out = c_natgridd(NUMIN, x, y, z, NUMXOUT, NUMYOUT, xo, yo, &ier);
   if (ier != 0) {
-     printf (" Error return from c_natgrids = %d\n",ier);
+     printf (" Error return from c_natgridd = %d\n",ier);
   }
 
   for (i = 0; i < NUMXOUT; i++) {

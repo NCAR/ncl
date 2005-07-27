@@ -58,7 +58,7 @@ C
       CALL NATGRIDD(ISLIM,X,Y,Z,NUMXOUT,NUMYOUT,XI,YI,ZI,IER)
       IF (IER .NE. 0) THEN
         WRITE (6,510) IER
-  510   FORMAT('Error return from NATGRIDS = ',I3)
+  510   FORMAT('Error return from NATGRIDD = ',I3)
       ENDIF
 C
 C  Draw a plot of the interpolated surface.
