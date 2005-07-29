@@ -1,5 +1,5 @@
 /*
- * $Id: nnuser.c,v 1.7 2002-04-01 18:11:55 haley Exp $
+ * $Id: nnuser.c,v 1.8 2005-07-29 23:19:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -82,8 +82,11 @@ void c_nngeti(char *pnam, int *ival)
    else if (!strncmp(pnam,"adf",3) OR !strncmp(pnam,"ADF",3)) {
       *ival = adf;
    }
+   else if (!strncmp(pnam,"mdm",3) OR !strncmp(pnam,"MDM",3)) {
+      *ival = maxmsg;
+   }
    else if (!strncmp(pnam,"dup",3) OR !strncmp(pnam,"DUP",3)) {
-      *ival = nndup;
+      printf("\n  Natgrid info: parameter 'dup' is no longer supported; duplicate\n                points are now culled automatically\n");
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
@@ -144,8 +147,12 @@ void c_nnseti(char *pnam, int ival)
    else if (!strncmp(pnam,"adf",3) OR !strncmp(pnam,"ADF",3)) {
       adf = ival;
    }
+   else if (!strncmp(pnam,"mdm",3) OR !strncmp(pnam,"MDM",3)) {
+      maxmsg = ival;
+   }
    else if (!strncmp(pnam,"dup",3) OR !strncmp(pnam,"DUP",3)) {
       nndup = ival;
+      printf("\n  Natgrid info: parameter 'dup' is no longer supported; duplicate\n                points are now culled automatically\n");
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);

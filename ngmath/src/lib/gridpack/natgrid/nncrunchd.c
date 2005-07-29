@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunchd.c,v 1.12 2005-01-28 21:31:10 fred Exp $
+ * $Id: nncrunchd.c,v 1.13 2005-07-29 23:19:55 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -325,21 +325,24 @@ data_limits:
 
 /*
  *  Determine if any input data coordinates are duplicated.
+ *  [this is now handled at the top level; the code is left
+ *  here commented out for historical purposes.]
+ * 
+ * if (nndup == 1) {
+ *    for (i0 = 0 ; i0 < datcnt ; i0++) {
+ *       for (i1 = i0+1 ; i1 < datcnt ; i1++) {
+ *          if ( (points[i0][0] == points[i1][0]) &&
+ *             (points[i0][1] == points[i1][1]) )
+ *          {
+ *             sprintf(emsg,"\n  Coordinates %d and %d are identical.\n",i0,i1);
+ *             ErrorHnd(2, "ReadData", stderr, emsg);
+ *             error_status = 2;
+ *             return (error_status);
+ *          }
+ *       }
+ *    }
+ * }
  */
-   if (nndup == 1) {
-      for (i0 = 0 ; i0 < datcnt ; i0++) {
-         for (i1 = i0+1 ; i1 < datcnt ; i1++) {
-            if ( (points[i0][0] == points[i1][0]) &&
-               (points[i0][1] == points[i1][1]) )
-            {
-               sprintf(emsg,"\n  Coordinates %d and %d are identical.\n",i0,i1);
-               ErrorHnd(2, "ReadData", stderr, emsg);
-               error_status = 2;
-               return (error_status);
-            }
-         }
-      }
-   }
 
 /*
  *  Introduce a small random perturbation into the coordinate values.

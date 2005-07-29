@@ -1,5 +1,5 @@
 /*
- * $Id: nngheadd.h,v 1.4 2000-08-22 03:34:56 haley Exp $
+ * $Id: nngheadd.h,v 1.5 2005-07-29 23:19:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -37,3 +37,6 @@ extern void   c_nnsetrd(char *, double);
 extern void   c_nngetrd(char *, double *);
 
 extern void   Terminate();
+
+extern int    cull_dtriples(int, double *);
+extern int    comp_dtriples(const void *, const void *);

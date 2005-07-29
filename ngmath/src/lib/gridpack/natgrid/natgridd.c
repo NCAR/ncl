@@ -1,5 +1,5 @@
 /*
- * $Id: natgridd.c,v 1.9 2001-03-06 23:05:13 fred Exp $
+ * $Id: natgridd.c,v 1.10 2005-07-29 23:19:55 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,6 +24,9 @@
 *                                                                       *
 ************************************************************************/
 
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "nnghead.h"
 #include "nngheadd.h"
 
@@ -31,8 +34,42 @@ double *c_natgridd(int n, double x[], double y[], double z[],
                    int nxi, int nyi, double xi[], double yi[], int *ier)
 {  
    double **data_out=NULL, *rtrn_val=NULL;
-
+   double *x_sav, *y_sav, *z_sav, *darray;
+   int n_sav,i;
    *ier = 0;
+
+/*
+ *  Check for duplicate input values.  Duplicate triples will be
+ *  culled, but duplicate coordinates with different data values 
+ *  will produce an error.
+ */
+   if (single_point == 0)
+   {
+     n_sav = n;
+     x_sav = (double *) malloc(n*sizeof(double));
+     y_sav = (double *) malloc(n*sizeof(double));
+     z_sav = (double *) malloc(n*sizeof(double));
+     memcpy((void *)x_sav, (void *)x, n*sizeof(double));
+     memcpy((void *)y_sav, (void *)y, n*sizeof(double));
+     memcpy((void *)z_sav, (void *)z, n*sizeof(double));
+
+     darray = (double *) malloc(3*n*sizeof(double));
+     for (i = 0; i < n; i++) {
+       darray[3*i  ] = x[i];
+       darray[3*i+1] = y[i];
+       darray[3*i+2] = z[i];
+     }
+
+     qsort( (void *)darray, n, 3*sizeof(double), comp_dtriples);
+     n = cull_dtriples(n_sav, darray);
+
+     for (i = 0; i < n; i++) {
+       x[i] = darray[3*i  ];
+       y[i] = darray[3*i+1];
+       z[i] = darray[3*i+2];
+     }
+     free(darray);
+   }
 
    if (single_point == 0)
    {
@@ -86,6 +123,15 @@ double *c_natgridd(int n, double x[], double y[], double z[],
  
    rtrn_val = data_out[0];
    free(data_out);
+   if (single_point == 0)
+   {
+     memcpy((void *)x, (void *)x_sav, n_sav*sizeof(double));
+     memcpy((void *)y, (void *)y_sav, n_sav*sizeof(double));
+     memcpy((void *)z, (void *)z_sav, n_sav*sizeof(double));
+     free(x_sav);
+     free(y_sav);
+     free(z_sav);
+   }
    return (rtrn_val);
 }
 void Initialized(int n, double x[], double y[], int nxi, int nyi,

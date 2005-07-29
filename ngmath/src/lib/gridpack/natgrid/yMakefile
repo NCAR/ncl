@@ -1,16 +1,16 @@
 #
-#       $Id: yMakefile,v 1.5 1997-03-10 23:04:15 fred Exp $
+#       $Id: yMakefile,v 1.6 2005-07-29 23:19:56 fred Exp $
 #
 
 MYNAME  = natgrid
 
 SOURCES = natgrid.c  natgrids.c nncrunchd.c nnerror.c nnuserd.c  \
  	  natgridd.c nncrunch.c nncrunchs.c nnuser.c  nnusers.c  \
-  	  nnuser_f.f
+  	  nnuser_f.f nnculld.c  nnculls.c
 
 OBJECTS = natgrid.o  natgrids.o nncrunchd.o nnerror.o nnuserd.o  \
 	  natgridd.o nncrunch.o nncrunchs.o nnuser.o  nnusers.o  \
-	  nnuser_f.o
+	  nnuser_f.o nnculld.o  nnculls.o
 
 PartialLibraryTarget(../libngmath.a,$(OBJECTS))
 DependTarget($(SOURCES))

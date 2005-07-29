@@ -1,5 +1,5 @@
 /*
- * $Id: nngheads.h,v 1.4 2000-08-22 03:34:55 haley Exp $
+ * $Id: nngheads.h,v 1.5 2005-07-29 23:19:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -37,3 +37,6 @@ extern void   c_nnsetr(char *, float);
 extern void   c_nngetr(char *, float *);
 
 extern void   Terminate();
+
+extern int    cull_striples(int, float *);
+extern int    comp_striples(const void *, const void *);

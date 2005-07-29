@@ -1,5 +1,5 @@
 /*
- * $Id: nnchead.h,v 1.9 2002-04-01 18:11:54 haley Exp $
+ * $Id: nnchead.h,v 1.10 2005-07-29 23:19:55 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -50,7 +50,7 @@ extern  double  magx, magy, magz, magx_orig, magy_orig, magz_orig,
                 maxxy[2][3], magx_auto, magy_auto, magz_auto, *wts;
 
 extern  int     igrad, non_neg, densi, sdip, rads, southhemi,
-                extrap, adf, nndup;
+                extrap, adf, nndup, maxmsg;
 
 extern  int     datcnt, datcnt3, numtri, imag, numnei, iscale,
                 ext, *jndx, neicnt, optim, goodflag, updir,

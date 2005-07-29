@@ -1,5 +1,5 @@
 /*
- * $Id: nnmhead.h,v 1.11 2002-04-01 18:11:54 haley Exp $
+ * $Id: nnmhead.h,v 1.12 2005-07-29 23:19:56 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -50,7 +50,7 @@ double  magx = 1, magy = 1, magz = 1, magx_orig, magy_orig, magz_orig,
         maxxy[2][3], magx_auto, magy_auto, magz_auto, *wts;
 
 int     igrad = 0, non_neg = 0, densi, sdip = 0, rads = 0, southhemi = 0,
-        extrap = 1, adf = 0, nndup = 1;
+        extrap = 1, adf = 0, nndup = 1, maxmsg = 10;
 
 int     datcnt, datcnt3, numtri, imag, numnei, iscale,
         ext, *jndx, neicnt, optim = 1, goodflag, updir = 1,
