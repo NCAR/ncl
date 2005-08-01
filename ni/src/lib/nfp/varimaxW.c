@@ -43,6 +43,7 @@ NhlErrorTypes eof_varimax_W( void )
   NclVar tmp_var;
   NclStackEntry return_data;
   int i;
+  float *pcvar;
   logical return_trace;
 
 /*
@@ -151,7 +152,8 @@ NhlErrorTypes eof_varimax_W( void )
   devec = (double *)calloc(total_size_evec,sizeof(double));
   a     = (double *)calloc(nvar,sizeof(double));
   b     = (double *)calloc(nvar,sizeof(double));
-  if( devec == NULL || a == NULL || b == NULL ) {
+  pcvar = (float *)calloc(nfac,sizeof(float));
+  if( devec == NULL || a == NULL || b == NULL || pcvar == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eof_varimax: Unable to allocate memory for  input/output arrays");
     return(NhlFATAL);
   }
@@ -203,8 +205,13 @@ NhlErrorTypes eof_varimax_W( void )
  * Free unneeded memory.
  */
   NclFree(w);
-    NclFree(a);
-    NclFree(b);
+  NclFree(b);
+
+/*
+ * Return pcvar as float no matter what.
+ */
+  for( i = 0; i < nfac; i++ ) pcvar[i] = (float)a[i];
+  NclFree(a);
 
   if(type_evec_out == NCL_float) {
 /*
@@ -233,12 +240,35 @@ NhlErrorTypes eof_varimax_W( void )
                             );
 
 /*
- * Return "trace" attribute, if it exists.
- *
- * Be sure to initialize att_id, even if there's no 
- * attribute to return.
+ * Initialize att_id so we can return some attributes.
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = nfac;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         pcvar,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypefloatClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "pcvar_varimax",
+             att_md,
+             NULL
+             );
+
+
+/*
+ * Return "trace" attribute, if it exists.
+ */
   if(return_trace) {
     dsizes[0] = 1;
     att_md = _NclCreateVal(
@@ -329,6 +359,7 @@ NhlErrorTypes eof_varimax2_W( void )
   NclVar tmp_var;
   NclStackEntry return_data;
   int i;
+  float *pcvar;
   logical return_trace = False;
 
 /*
@@ -441,7 +472,8 @@ NhlErrorTypes eof_varimax2_W( void )
   devec = (double *)calloc(total_size_evec,sizeof(double));
   a     = (double *)calloc(nvar,sizeof(double));
   b     = (double *)calloc(nvar,sizeof(double));
-  if( devec == NULL || a == NULL || b == NULL ) {
+  pcvar = (float *)calloc(nfac,sizeof(float));
+  if( devec == NULL || a == NULL || b == NULL || pcvar == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Unable to allocate memory for input/output arrays");
     return(NhlFATAL);
   }
@@ -493,8 +525,13 @@ NhlErrorTypes eof_varimax2_W( void )
  * Free unneeded memory.
  */
   NclFree(w);
-  NclFree(a);
   NclFree(b);
+
+/*
+ * Return pcvar as float no matter what.
+ */
+  for( i = 0; i < nfac; i++ ) pcvar[i] = (float)a[i];
+  NclFree(a);
 
   if(type_evec_out == NCL_float) {
 /*
@@ -522,12 +559,36 @@ NhlErrorTypes eof_varimax2_W( void )
                             );
 
 /*
- * Return "trace" attribute, if it exists.
- *
- * Be sure to initialize att_id, even if there's no 
- * attribute to return.
+ * Initialize att_id so we can return some attributes.
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = nfac;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         pcvar,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypefloatClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "pcvar_varimax",
+             att_md,
+             NULL
+             );
+
+
+/*
+ * Return "trace" attribute, if it exists.
+ *
+ */
   if(return_trace) {
     dsizes[0] = 1;
     att_md = _NclCreateVal(
