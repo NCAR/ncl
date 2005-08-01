@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.162 2005-05-31 18:28:19 haley Exp $
+;      $Id: gsn_code.ncl,v 1.163 2005-08-01 16:47:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2329,12 +2329,12 @@ begin
     res_file=get_res_value_keep(name,"res_file","gsnapp")
 
     if(isatt(name,"wkColorMap"))
-      ncgm = create res_file ncgmWorkstationClass defaultapp 
+      ncgm = create res_file ncgmWorkstationClass name@app
         "wkMetaName" : name
         "wkColorMap" : name@wkColorMap
       end create
     else
-      ncgm = create res_file ncgmWorkstationClass defaultapp 
+      ncgm = create res_file ncgmWorkstationClass name@app 
         "wkMetaName" : name
       end create
     end if
@@ -2354,12 +2354,12 @@ function gsn_open_x11(name[1]:string)
 local window
 begin
     if(isatt(name,"wkColorMap"))
-      window = create name + "_x11" xWorkstationClass defaultapp
+      window = create name + "_x11" xWorkstationClass name@app
         "wkPause" : True
         "wkColorMap" : name@wkColorMap
       end create
     else
-      window = create name + "_x11" xWorkstationClass defaultapp
+      window = create name + "_x11" xWorkstationClass name@app
         "wkPause" : True
       end create
     end if
@@ -2462,7 +2462,7 @@ begin
     resltn   = get_res_value(wkresnew,"wkPSResolution",1800)
     visualt  = get_res_value(wkresnew,"wkVisualType","color")
 
-    ps = create res_file psWorkstationClass defaultapp
+    ps = create res_file psWorkstationClass name@app
       "wkColorModel"   : cmodel
       "wkPSResolution" : resltn
       "wkPSFileName"   : name
@@ -2533,7 +2533,7 @@ begin
     resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
     visualt  = get_res_value(wkresnew,"wkVisualType","color")
 
-    pdf = create res_file pdfWorkstationClass defaultapp
+    pdf = create res_file pdfWorkstationClass name@app
       "wkColorModel"    : cmodel
       "wkPDFResolution" : resltn
       "wkPDFFileName"   : name
@@ -2579,7 +2579,7 @@ begin
     wkheight = get_res_value_keep(type,"wkHeight",512)
 
     if(isatt(name,"wkColorMap"))
-      image = create res_file imageWorkstationClass defaultapp 
+      image = create res_file imageWorkstationClass name@app 
         "wkImageFileName" : name
         "wkImageFormat"   : type
         "wkColorMap"      : name@wkColorMap
@@ -2587,7 +2587,7 @@ begin
         "wkHeight"        : wkheight
       end create
     else
-      image = create res_file imageWorkstationClass defaultapp 
+      image = create res_file imageWorkstationClass name@app 
         "wkImageFileName" : name
         "wkImageFormat"   : type
         "wkWidth"         : wkwidth
@@ -2613,7 +2613,8 @@ end
 ; the workstation id.                                                   ;
 ;***********************************************************************;
 function gsn_open_wks(type[1]:string,name[1]:string)
-local i, wks, appusrdir, name_char, not_found, res_file, res_dir
+local i, wks, appusrdir, name_char, not_found, res_file, res_dir, \
+set_default_app
 begin
     type2   = type          ; Make copy of type and its resources
     res_dir = "./"          ; Default resource directory.
@@ -2641,8 +2642,19 @@ begin
       end if
     end if
 
+;
+; Check if the default app has been created yet. The default
+; one created by NCL is always called "ncl", so that's how we
+; know if it's been created yet.
+;
+    if(NhlName(NhlAppGetDefaultParentId()).eq."ncl") then
+      set_default_app = True
+    else
+      set_default_app = False
+    end if
+
     appid = create res_file appClass defaultapp
-        "appDefaultParent" : True
+        "appDefaultParent" : set_default_app
         "appUsrDir"        : res_dir
     end create
 
@@ -2657,6 +2669,7 @@ begin
       if (isatt(type2,"wkColorMap"))
         x_file@wkColorMap = type2@wkColorMap
       end if
+      x_file@app = appid
       wks = gsn_open_x11(x_file)
     end if
 
@@ -2664,6 +2677,7 @@ begin
         lower_case(type2).eq."epsi") then
       ps_file = get_res_value(type2,"wkPSFileName",res_file + "." + type2)
       ps_file@res_file = res_file
+      ps_file@app = appid
       wks = gsn_open_ps(type2,res_dir+ps_file)
     end if
 
@@ -2674,6 +2688,7 @@ begin
       if (isatt(type2,"wkColorMap"))
         ncgm_file@wkColorMap = type2@wkColorMap
       end if
+      ncgm_file@app = appid
       wks = gsn_open_ncgm(ncgm_file)
     end if
 
@@ -2681,12 +2696,14 @@ begin
       pdf_file = get_res_value(type2,"wkPDFFileName", \
                                res_file + "." + type2)
       pdf_file@res_file = res_file
+      pdf_file@app      = appid
       wks = gsn_open_pdf(type2, res_dir+pdf_file)
     end if
 
     if (lower_case(type2).eq."xwd".or.lower_case(type2).eq."png") then
       image_file = get_res_value(type2,"wkImageFileName", res_file)
       image_file@res_file = res_file
+      image_file@app      = appid
       wks = gsn_open_image(type2, res_dir+image_file)
     end if
 
@@ -2719,6 +2736,8 @@ begin
 ;
     wks@name = res_file
     wks@app  = appid 
+print("returning from gsn_open_wks...")
+print(wks)
     return(wks)
 end
 
@@ -2817,7 +2836,7 @@ begin
       if(.not.any(ismissing(inds)))
         x2 = x(inds)
         y2 = y(inds)
-        prim_object = create polytype primitiveClass noparent
+        prim_object = create polytype primitiveClass wks
           "prXArray"       : x2
           "prYArray"       : y2
           "prPolyType"     : polytype
@@ -2873,7 +2892,7 @@ begin
           else
             polytype2 = "polyline"
           end if
-          prim_object(i) = create astring(i) primitiveClass noparent
+          prim_object(i) = create astring(i) primitiveClass wks
             "prXArray"       : x(ibeg:iend)
             "prYArray"       : y(ibeg:iend)
             "prPolyType"     : polytype2
@@ -2900,7 +2919,7 @@ begin
 ;
 ; No data is missing, so create a primitive object.
 ;
-    prim_object = create polytype primitiveClass noparent
+    prim_object = create polytype primitiveClass wks
       "prXArray"       : x
       "prYArray"       : y
       "prPolyType"     : polytype
@@ -5638,17 +5657,18 @@ begin
   if(rank.eq.2) then
 
 ; Create the data object; also, check for a missing value and
-; set during the create call (if you don't do this, then if the
-; user's happens by freak chance to have a constant field of -999,
-; it will choke.
-
+; set during the create call. (If you don't do this, then if the
+; user happens by freak chance to have a constant field of -999,
+; it will choke.)
+;
+    appid = NhlGetParentId(wks)
     if(isatt(data,"_FillValue")) then
-      data_object = create sfname scalarFieldClass noparent
+      data_object = create sfname scalarFieldClass appid
         "sfMissingValueV" : data@_FillValue
         "sfDataArray"     : data
       end create
     else
-      data_object = create sfname scalarFieldClass noparent
+      data_object = create sfname scalarFieldClass appid
         "sfDataArray"     : data
       end create
     end if
@@ -5661,15 +5681,16 @@ begin
 ;
 ; Create the data object.
 ;
+      appid = NhlGetParentId(wks)
       if(isatt(data,"_FillValue")) then
-        data_object = create sfname meshScalarFieldClass noparent
+        data_object = create sfname meshScalarFieldClass appid
           "sfDataArray"     : data
           "sfMissingValueV" : data@_FillValue
           "sfXArray"        : get_res_value(res2,"sfXArray",1)
           "sfYArray"        : get_res_value(res2,"sfYArray",1)
         end create
       else
-        data_object = create sfname meshScalarFieldClass noparent
+        data_object = create sfname meshScalarFieldClass appid
           "sfDataArray" : data
           "sfXArray"    : get_res_value(res2,"sfXArray",1)
           "sfYArray"    : get_res_value(res2,"sfYArray",1)
@@ -5697,7 +5718,8 @@ end
 ;***********************************************************************;
 function vector_field(vfname:string,u:numeric,v:numeric,res2:logical)
 begin
-  data_object = create vfname vectorFieldClass noparent
+  appid = NhlGetParentId(wks)
+  data_object = create vfname vectorFieldClass appid
     "vfUDataArray" : u
     "vfVDataArray" : v
   end create
@@ -8389,7 +8411,8 @@ begin
     xdims = dimsizes(x)
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    data_object = create wksname + "_data" coordArraysClass noparent
+    appid = NhlGetParentId(wks)
+    data_object = create wksname + "_data" coordArraysClass appid
         "caXArray" : x
         "caYArray" : y
     end create
