@@ -672,8 +672,8 @@ NhlErrorTypes nnsetp_W(void)
  *  all that needs to be done is add the names to this list.
  */
   char *params_i[] = {"adf", "asc", "dup", "ext", "igr", "non", "rad", 
-                      "sdi", "upd", "ADF", "ASC", "DUP", "EXT", "IGR", 
-                      "NON", "RAD", "SDI", "UPD"};
+                      "sdi", "upd", "mdm", "ADF", "ASC", "DUP", "EXT", 
+                      "IGR", "NON", "RAD", "SDI", "UPD", "MDM"};
 /*
  *  The parameters "xas", "yas", and "zas" are not in the following
  *  list, since they are for retrieval only.
@@ -813,8 +813,8 @@ NhlErrorTypes nngetp_W(void)
  *  all that needs to be done is add the names to this list.
  */
   char *params_i[] = {"adf", "asc", "dup", "ext", "igr", "non", "rad", 
-                      "sdi", "upd", "ADF", "ASC", "DUP", "EXT", "IGR", 
-                      "NON", "RAD", "SDI", "UPD"};
+                      "sdi", "upd", "mdm", "ADF", "ASC", "DUP", "EXT", "IGR", 
+                      "NON", "RAD", "SDI", "UPD", "MDM"};
   char *params_f[] = {"bI", "bJ", "hor", "magx", "magy", "magz",
                       "nul", "ver", "xas", "yas", "zas", "Bi", "Bj", 
                       "HOR", "MAGX", "MAGY", "MAGZ", "NUL", "VER", 
