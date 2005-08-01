@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.163 2005-08-01 16:47:46 haley Exp $
+;      $Id: gsn_code.ncl,v 1.164 2005-08-01 20:01:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2736,8 +2736,7 @@ begin
 ;
     wks@name = res_file
     wks@app  = appid 
-print("returning from gsn_open_wks...")
-print(wks)
+
     return(wks)
 end
 
