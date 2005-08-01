@@ -36,7 +36,8 @@ c    is rotated to maximize the column-variance criterion
 c    in turn until a complete pass through all combinations
 c    does not result in any rotations of more than "reps" radians.
 c The percentages of trace are recomputed for each factor vector
-c    and returned in vector "a".
+c    and returned in vector "a" (actually, the first "nfac" 
+c    elements of "a").
 c The percentages of trace are computed for each row of the
 c    rotated matrix and returned in vector "b". When  computed
 c    as proportions (row sums of squares of the loading matrix)
@@ -113,7 +114,8 @@ c denormailize rows of v
           DO I = 1,NV
               V(I,J) = V(I,J)*B(I)
           END DO
-c % variation
+c % variation: note the A is dimensioned A(NV)
+c              but the % variation is in A(NF) [a subset of A]
           A(J) = (DSUMFR(V,J, (-NV),ND)/T)*100.D0
       END DO
 
