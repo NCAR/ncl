@@ -67,8 +67,8 @@ NhlErrorTypes eof_W( void )
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
   int iopt = 0, jopt = 0, i, ier = 0;
-  logical transpose, tr_setbyuser = False;
-  logical return_eval = False, debug = False;
+  logical anomalies = False, transpose, tr_setbyuser = False;
+  logical return_eval = True, debug = False;
   logical return_trace = False, return_pcrit = False;
 /*
  * Work array variables.
@@ -210,6 +210,8 @@ NhlErrorTypes eof_W( void )
  *   "return_eval" : both routines (unadvertised)
  *   "return_trace": return trace
  *   "pcrit"       : transpose routine only
+ *   "anomalies"   : If True, anomalies have already been calculated by
+ *                   user, and this interface shouldn't remove them.
  *   "transpose"   : If True, call transpose routine no matter what
  *                 : If False, don't call transpose routine no matter what
  *   "debug"       : turn on debug
@@ -287,6 +289,17 @@ NhlErrorTypes eof_W( void )
             }
           }
 /*
+ * Check for "anomalies".
+ */
+          if (!strcmp(attr_list->attname, "anomalies")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              anomalies = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'anomalies' attribute must be a logical. Will default to False");
+            }
+          }
+/*
  * Check for "transpose".
  */
           if (!strcmp(attr_list->attname, "transpose")) {
@@ -330,6 +343,12 @@ NhlErrorTypes eof_W( void )
   }
   if(debug) {
     printf("eofunc: pcrit = %g\n", *pcrit);
+    if(!anomalies) {
+      printf("anomalies being removed...\n");
+    }
+    else {
+      printf("anomalies NOT being removed...\n");
+    }
   }
 
 /*
@@ -360,7 +379,7 @@ NhlErrorTypes eof_W( void )
     NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
                            &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
 /*
- * Eliminate stations/grid-oints with less than pcrit % of data.
+ * Eliminate stations/grid-points with less than pcrit % of data.
  */
     pcx = ((double)kntx/(double)nrow)*100.;
     if (pcx < *pcrit || xsd <= 0.0) {
@@ -378,12 +397,29 @@ NhlErrorTypes eof_W( void )
  * Work with anomalies: xdave=0.0 [or standardized anomalies]
  */
     if (xave[nc] != missing_dx.doubleval) {
+      if(debug) {
+          printf("nc = %d xave = %g\n", nc, xave[nc]);
+      }
 /*
  * Increment counter for acceptable points.
  */
       for( nr = 0; nr < nobs; nr++) {
         if(dx[nc*nrow+nr] != missing_dx.doubleval) {
-          dx_strip[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+          if(!anomalies) {
+/*
+ * User hasn't removed anomalies, so do it here.
+ */
+            dx_strip[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+          }
+          else {
+            if(debug) {
+              printf("anomalies NOT being removed...\n");
+            }
+/*
+ * User has already removed anomalies, so leave alone.
+ */
+            dx_strip[mcsta*nrow+nr] = dx[nc*nrow+nr];
+          }
         }
         else {
           dx_strip[mcsta*nrow+nr] = missing_dx.doubleval;
