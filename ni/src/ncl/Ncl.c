@@ -164,7 +164,7 @@ main(int argc, char **argv) {
                 break;
 
             case 'V':
-                (void) fprintf(stdout, "NCL %s\n", GetNCARGVersion());
+                (void) fprintf(stdout, "NCL %s\n", GetNCLVersion());
                 exit(0);
                 break;
 
@@ -207,7 +207,7 @@ main(int argc, char **argv) {
     stdout_fp = stdout;
     
     (void) fprintf(stdout,
-            " Copyright (C) 1995-2005 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCARGVersion());
+            " Copyright (C) 1995-2005 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
 
     stdin_fp = stdin;
     cur_line_text = NclMalloc((unsigned int) 512);
