@@ -252,9 +252,9 @@ NhlErrorTypes get_ncl_version_W(void)
  * There are no input arguments to retrieve.
  * Just get the version number and return it.
  */
-  len     = strlen(GetNCARGVersion());
+  len     = strlen(GetNCLVersion());
   version = (char *)calloc(len+1,sizeof(char));
-  strcpy(version,GetNCARGVersion());
+  strcpy(version,GetNCLVersion());
   sversion  = (string *)calloc(1,sizeof(string));
   *sversion = NrmStringToQuark(version);
   return(NclReturnValue((void *)sversion, 1, &ret_size, NULL, NCL_string, 0));
