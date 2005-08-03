@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.64 2005-03-24 00:02:11 haley Exp $
+ *      $Id: Project,v 1.65 2005-08-03 21:07:51 haley Exp $
  */
 
 /************************************************************************
@@ -17,14 +17,16 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2005-03-24 00:02:11 $
+ *	$Date: 2005-08-03 21:07:51 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
  *			etc are in the Template file.
  */
 
-#define NcargVersion 4.4.1
+#define NcargVersion 4.4.2
+#define NclVersion 4.2.0.a033   
+
 
 #ifndef	BuildHDFEOS
 #define	BuildHDFEOS
@@ -168,7 +170,8 @@
 #define GksBufferSize 0
 #endif	/* GksBufferSize */
 
-VERSION			= NcargVersion
+NGVERSION       = NcargVersion
+NCLVERSION      = NclVersion
 
 NCARGDIR		= ncarg
 HLUDIR			= hlu
@@ -447,8 +450,8 @@ UDUNITSLIB	= UdUnitslib
 V5DLIB      = V5Dlib
 XDRLIB		= XdrLibrary
 HDFDEFINES	= HdfDefines
-VDEFINE		= -DVERSION='"$(VERSION)"'
+VDEFINE		= -DNGVERSION='"$(NGVERSION)"'  -DNCLVERSION='"$(NCLVERSION)"'
 PROJECTDEFINES	= ProjectDefines
 GKS_BUFFER_SIZE	= GksBufferSize
-PERL = /usr/local/bin/perl
+PERL = /bin/perl
 NCLWEBROOT      = /web/ncl
