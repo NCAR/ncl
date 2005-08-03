@@ -1,5 +1,5 @@
 /*
- *      $Id: version.c,v 1.8 2000-08-22 04:03:33 haley Exp $
+ *      $Id: version.c,v 1.9 2005-08-03 21:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,8 +39,12 @@
 #include <stdio.h>
 #include "c.h"
 
-#ifndef	VERSION
-#define	VERSION	"unknown version"
+#ifndef	NGVERSION
+#define	NGVERSION	"unknown version"
+#endif
+
+#ifndef	NCLVERSION
+#define	NCLVERSION	"unknown version"
 #endif
 
 void	PrintVersion(header)
@@ -52,7 +56,7 @@ void	PrintVersion(header)
 	}
 
 	if (header) (void) fprintf(fp, "%s - ", header);
-	(void) fprintf(fp, "Version %s\n", VERSION);
+	(void) fprintf(fp, "Version %s\n", NGVERSION);
 
 	if (fp != stderr) fclose(fp);
 }
@@ -63,7 +67,17 @@ const char *GetNCARGVersion(
 #endif
 )
 {
-	static char version[] = VERSION; 
+	static char ngversion[] = NGVERSION; 
 
-	return version;
+	return ngversion;
+}
+const char *GetNCLVersion(
+#ifdef	NeedFuncProto
+	void				 
+#endif
+)
+{
+	static char nclversion[] = NCLVERSION; 
+
+	return nclversion;
 }

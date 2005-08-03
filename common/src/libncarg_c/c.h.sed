@@ -1,5 +1,5 @@
 /*
- *	$Id: c.h.sed,v 1.1 2005-05-05 04:12:01 haley Exp $
+ *	$Id: c.h.sed,v 1.2 2005-08-03 21:11:54 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -372,6 +372,12 @@ extern	void	PrintVersion(
 );
 
 extern	const char *GetNCARGVersion(
+#ifdef	NeedFuncProto
+	void				 
+#endif
+);
+
+extern	const char *GetNCLVersion(
 #ifdef	NeedFuncProto
 	void				 
 #endif
