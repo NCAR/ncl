@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.14 1994-04-19 13:50:03 haley Exp $
+#	$Id: yMakefile,v 1.15 2005-08-03 21:13:26 haley Exp $
 #
 
 MYNAME		= scripts
@@ -52,13 +52,13 @@ CleanFilesTarget(fcaps gcaps ctlib ncarvversion)
 gcaps:	gcaps.csh Makefile
 	@sed \
 	-e 's+DEVICES+$(DEVICE_SPECIFIERS)+' \
-	-e 's+VERSION+$(VERSION)+' \
+	-e 's+VERSION+$(NGVERSION)+' \
 	-e 's+GRAPHCAPDIR+$(GRAPHCAPDIR)+' \
 	< gcaps.csh > gcaps
 
 fcaps:	fcaps.csh Makefile
 	@sed \
-	-e 's+VERSION+$(VERSION)+' \
+	-e 's+VERSION+$(NGVERSION)+' \
 	-e 's+FONTCAPDIR+$(FONTCAPDIR)+' \
 	< fcaps.csh > fcaps
 
@@ -67,7 +67,7 @@ ncarvversion:	sedscript
 	@$(RM) sedscript
 
 sedscript:      Makefile
-	@echo 's+VERSION+$(VERSION)+' > $@
+	@echo 's+VERSION+$(NGVERSION)+' > $@
 
 ctlib:	ctlib.csh Makefile
 	@sed \

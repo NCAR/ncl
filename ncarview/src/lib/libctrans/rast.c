@@ -1,5 +1,5 @@
 /*
- *	$Id: rast.c,v 1.37 2000-08-22 15:11:50 haley Exp $
+ *	$Id: rast.c,v 1.38 2005-08-03 21:14:16 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -571,7 +571,7 @@ CGMC *c;
 	 */
 	encoding = (int) (rasIsDirect ? RAS_DIRECT : RAS_INDEXED);
 	if ((rastGrid = (RasterOpenWrite(rast_opts.outfile, width, height,
-		VERSION,encoding,devices[currdev].name))) == NULL) {
+		NGVERSION,encoding,devices[currdev].name))) == NULL) {
 
 		ESprintf(E_UNKNOWN,
 			"RasterOpenWrite(%s,,,,,) [%s]\n",
