@@ -1,36 +1,36 @@
-# ifdef __cplusplus
+#ifdef __cplusplus
 
 extern "C" {
-# endif
+#endif
 
-# include   <stdio.h>
-# include   <sys/types.h>
-# include   <sys/stat.h>
-# include   <fcntl.h>
-# include   <unistd.h>
-# include   <string.h>
-# include   <dirent.h>
+#include   <stdio.h>
+#include   <sys/types.h>
+#include   <sys/stat.h>
+#include   <fcntl.h>
+#include   <unistd.h>
+#include   <string.h>
+#include   <dirent.h>
 
-# include   <ncarg/hlu/hlu.h>
-# include   <ncarg/hlu/NresDB.h>
-# include   "defs.h"
-# include   "Symbol.h"
-# include   "NclData.h"
-# include   "Machine.h"
-# include   "DataSupport.h"
-# include   "NclVar.h"
-# include   "NclType.h"
-# include   "TypeSupport.h"
-# include   <ncarg/hlu/ConvertP.h>
-# include   <ncarg/hlu/Error.h>
-# include   <ncarg/hlu/App.h>
-# include   <netcdf.h>
+#include   <ncarg/hlu/hlu.h>
+#include   <ncarg/hlu/NresDB.h>
+#include   "defs.h"
+#include   "Symbol.h"
+#include   "NclData.h"
+#include   "Machine.h"
+#include   "DataSupport.h"
+#include   "NclVar.h"
+#include   "NclType.h"
+#include   "TypeSupport.h"
+#include   <ncarg/hlu/ConvertP.h>
+#include   <ncarg/hlu/Error.h>
+#include   <ncarg/hlu/App.h>
+#include   <netcdf.h>
 
-# if defined(HPUX)
-# include   <dl.h>
-# else
-# include   <dlfcn.h>
-# endif /*HPUX */
+#if defined(HPUX)
+#include   <dl.h>
+#else
+#include   <dlfcn.h>
+#endif /*HPUX */
 
 extern NhlClass NhlworkstationClass;
 
@@ -49,7 +49,7 @@ extern char *cur_line_text_pos;
 extern FILE *yyin;
 extern int yyparse(int);
 
-# define    BUFF_SIZE   512
+#define    BUFF_SIZE   512
 
 extern FILE *error_fp;
 extern FILE *stdout_fp ;
@@ -57,28 +57,30 @@ extern FILE *stdin_fp ;
 extern int  number_of_constants;
 
 extern void nclprompt(
-# if NhlNeedProto
+#if NhlNeedProto
     void *user_data,
     int arg
-# endif /* NhlNeedProto */
+#endif /* NhlNeedProto */
 );
 
 extern void InitializeReadLine(
-# if NhlNeedProto
+#if NhlNeedProto
     int opt
-# endif /* NhlNeedProto */
+#endif /* NhlNeedProto */
 );
 
 extern NhlErrorTypes _NclPreLoadScript(
-# if NhlNeedProto
+#if NhlNeedProto
     char *  /* path */,
     int     /* status */
-# endif /* NhlNeedProto */
+#endif /* NhlNeedProto */
 );
 
 /* Command line option variables */
 short   NCLverbose = 1;
 short   NCLecho = 0;            /* echo typed commands, off by default */
+short   NCLoverrideEcho = 0;    /* override echo; non-advertised option */
+short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 
 int
 main(int argc, char **argv) {
@@ -90,11 +92,11 @@ main(int argc, char **argv) {
     int reset = 1;
     DIR *d;
     struct dirent   *ent;
-# if defined(HPUX)
+#if defined(HPUX)
     shl_t so_handle;
-# else
+#else
     void *so_handle;
-# endif /* defined(HPUX) */
+#endif /* defined(HPUX) */
 
     char buffer[4 * NCL_MAX_STRING];
     void (*init_function) (void);
@@ -112,18 +114,21 @@ main(int argc, char **argv) {
 
     int c;
     char    *s = NULL;
+    char    sc[NCL_MAX_STRING];
 
     char    **cargs;
     int nargs = 0;
 
     char    *nclf = NULL;
+    struct stat sbuf;
+
     FILE    *tmpf = NULL;   /* file variables for creating arguments */
     char    *tmpd = NULL;
 
-# ifdef YYDEBUG
+#ifdef YYDEBUG
     extern int yydebug;
     yydebug = 1;
-# endif /* YYDEBUG */
+#endif /* YYDEBUG */
 
     error_fp = stderr;
     stdout_fp = stdout;
@@ -145,26 +150,55 @@ main(int argc, char **argv) {
     }
     NCL_ARGC = argc;
 
-# ifdef NCLDEBUG
-    for (i = 0; i < argc; i++, *argv++)
-        (void) printf("NCL_ARGV[%d] = %s\n", i, *argv);
-# endif /* NCLDEBUG */
+#ifdef NCLDEBUG
+    for (i = 0; i < NCL_ARGC; i++, *NCL_ARGV++)
+        (void) printf("NCL_ARGV[%d] = %s\n", i, *NCL_ARGV);
+#endif /* NCLDEBUG */
+
+    /*
+     * Announce NCL first, so that the copyright and version msgs are always seen.
+     */
+    (void) fprintf(stdout,
+            " Copyright (C) 1995-2005 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n\n", GetNCLVersion());
 
     /*
      * Defined arguments
      *
+     *  -n      element print: don't enumerate elements in print()
      *  -x      echo: turns on command echo
      *  -V      version: output NCARG/NCL version, exit
+     *
+     *  -h      help: output options and exit
+     *
+     *  -X      override: echo every stmt regardless (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "xV")) != -1) {
+    while ((c = getopt (argc, argv, "hnxVX")) != -1) {
         switch (c) {
+            case 'n':
+                NCLnoPrintElem = 1;
+                break;
+
             case 'x':
                 NCLecho = 1;
                 break;
 
+            /* NOT ADVERTISED!  Will override "no echo" and print EVERYTHING! */
+            case 'X':
+                NCLoverrideEcho = 1;
+                break;
+
             case 'V':
                 (void) fprintf(stdout, "NCL %s\n", GetNCLVersion());
+                exit(0);
+                break;
+
+            case 'h':
+                (void) fprintf(stdout, "Usage: ncl -hnxV <args> <file.ncl>\n");
+                (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
+                (void) fprintf(stdout, "\t -x: echo NCL commands\n");
+                (void) fprintf(stdout, "\t -V: print NCL version and exit\n");
+                (void) fprintf(stdout, "\t -h: print this message and exit\n");
                 exit(0);
                 break;
 
@@ -179,48 +213,55 @@ main(int argc, char **argv) {
                 break;
         }
     }
-     
+
     /* Process any user-defined arguments */
     for (i = optind; i < argc; i++) {
-# ifdef NCLDEBUG
+#ifdef NCLDEBUG
         printf ("Non-option argument %s\n", argv[i]);
-# endif /* NCLDEBUG */
+#endif /* NCLDEBUG */
 
-            /* file of NCL commands? */
-            s = strstr(argv[i], ".ncl");
-            if (s != NULL)
+        /* file of NCL commands? */
+        s = strstr(argv[i], ".ncl");
+        if (s != NULL) {
+            /*
+             * Check for file's existence; the stat() call does not require access rights
+             * but does require search path rights, so if this fails, the file could exist
+             * but the user may not have permission to "see" it.
+             */
+            if (!stat(argv[i], &sbuf))
                 nclf = argv[i];
             else {
-                /* user-defined argument */
-                if (nargs == 0)
-                    cargs = (char **) NclMalloc(sizeof(char *));
-                else
-                    cargs = (char **) NclRealloc(cargs, (nargs + 1) * sizeof(char *));
-    
-                cargs[nargs] = (char *) NclMalloc((strlen(argv[i]) + 2) * sizeof(char *));
-                (void) sprintf(cargs[nargs], "%s\n", argv[i]);
-                nargs++;
+                NhlPError(NhlFATAL, NhlEUNKNOWN, " file \"%s\" does not exist.\n", argv[i]);
+                exit(NhlFATAL);
             }
+        }
+        else {
+            /* user-defined argument */
+            if (nargs == 0)
+                cargs = (char **) NclMalloc(sizeof(char *));
+            else
+                cargs = (char **) NclRealloc(cargs, (nargs + 1) * sizeof(char *));
+
+            cargs[nargs] = (char *) NclMalloc((strlen(argv[i]) + 2) * sizeof(char *));
+            (void) sprintf(cargs[nargs], "%s\n", argv[i]);
+             nargs++;
+        }
     }
 
     error_fp = stderr;
     stdout_fp = stdout;
-    
-    (void) fprintf(stdout,
-            " Copyright (C) 1995-2005 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
-
     stdin_fp = stdin;
     cur_line_text = NclMalloc((unsigned int) 512);
     cur_line_maxsize = 512;
     cur_line_text_pos = &(cur_line_text[0]);
 
-# ifdef NCLDEBUG
+#ifdef NCLDEBUG
     thefptr = fopen("ncl.tree", "w");
     theoptr = fopen("ncl.seq", "w");
-# else
+#else
     thefptr = NULL;
     theoptr = NULL;
-# endif /* NCLDEBUG */
+#endif /* NCLDEBUG */
 
     NhlInitialize();
     NhlVACreate(&appid, "ncl", NhlappClass, NhlDEFAULT_APP,
@@ -244,32 +285,32 @@ main(int argc, char **argv) {
             while((ent = readdir(d)) != NULL) {
                 if (*ent->d_name != '.') {
                     (void) sprintf(buffer, "%s/%s", _NGResolvePath(libpath), ent->d_name);
-# if defined (HPUX)
+#if defined (HPUX)
                     so_handle = shl_load(buffer, BIND_IMMEDIATE, 0L);
-# else
+#else
                     so_handle = dlopen(buffer, RTLD_NOW);
                     if (so_handle == NULL) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                             "Could not open (%s): %s.", buffer, dlerror());
                     }
-# endif /* HPUX */
+#endif /* HPUX */
            
                     if (so_handle != NULL) {
-# if defined (HPUX)
+#if defined (HPUX)
                         init_function = NULL;
                         (void) shl_findsym(&so_handle, "Init",
                                 TYPE_UNDEFINED, (void *) &init_function);
-# else
+#else
                         init_function = dlsym(so_handle, "Init");
-# endif /* HPUX */
+#endif /* HPUX */
                         if (init_function != NULL) {
                             (*init_function)();
                         } else {
-# if defined (HPUX)
+#if defined (HPUX)
                             shl_unload(so_handle);
-# else
+#else
                             dlclose(so_handle);
-# endif /* HPUX */
+#endif /* HPUX */
                             NhlPError(NhlWARNING, NhlEUNKNOWN,
                                 "Could not find Init() in external file %s, file not loaded.",
                                 buffer);
@@ -341,7 +382,10 @@ main(int argc, char **argv) {
 
         tmpf = fopen(buffer, "w");
         for (k = 0; k < nargs; k++) {
-            (void) fwrite(cargs[k], strlen(cargs[k]), 1, tmpf);
+            if ((strstr(cargs[k], "=")) == (char *) NULL) 
+                NhlPError(NhlWARNING, NhlEUNKNOWN, " Improper assignment for variable %s", cargs[k]);
+            else
+                (void) fwrite(cargs[k], strlen(cargs[k]), 1, tmpf);
         }
 
         /* don't forget last newline; NCL requires it */
@@ -370,7 +414,7 @@ main(int argc, char **argv) {
         yyparse(reset);
     }
 
-# ifdef NCLDEBUG
+#ifdef NCLDEBUG
     (void) fclose(thefptr);
     (void) fprintf(stdout,"Number of unfreed objects %d\n",_NclNumObjs());
     _NclObjsSize(stdout);
@@ -378,11 +422,11 @@ main(int argc, char **argv) {
     _NclPrintUnfreedObjs(theoptr);
     (void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
     (void) fclose(theoptr);
-# endif /* NCLDEBUG */
+#endif /* NCLDEBUG */
     NhlClose();
     exit(0);
 }
 
-# ifdef __cplusplus
+#ifdef __cplusplus
 }
-# endif /* __cplusplus */
+#endif /* __cplusplus */

@@ -20,6 +20,13 @@ extern void printtoken(
 #define MAXTMPSPACE 512
 
 extern short NCLecho;
+extern short NCLoverrideEcho;
+
+short   echo = 0;
+short   load_stmt = 0,
+        old_load_stmt = 0;
+char    load_file[255];
+char fbuf[256];
 
 char *cur_line_text = NULL;
 char *cur_line_text_pos = NULL;
@@ -38,6 +45,9 @@ extern int cmd_line;
 extern int cmd_line_is_set;
 extern char *cur_load_file;
 int inc_line = 1;
+
+short   oldval = 0;
+
 int _NclParseString
 #if NhlNeedProto
 (char *str,int reset)
@@ -137,22 +147,45 @@ void _NclResetScanner
 			yy_switch_to_buffer(include_stack[loading] );
 		}
 		SetLine(line_numbers[loading]);
-		cur_load_file = file_names[loading];
-		if(yyin != NULL) {
-			if(loading) {
-				cmd_line = (isatty(fileno(yyin))?1:0);
-			} else if(cmd_line_is_set) {
-				cmd_line = cmd_line_is_set;
-			} else {
-				cmd_line = (isatty(fileno(yyin))?1:0);
-			}
+        if (!(strcmp(cur_load_file, load_file))) {
+            /* done loading file */
+            memset(&load_file, '\0', 255);
+            load_stmt = 0;
+            if (NCLoverrideEcho) {
+                NCLecho = 1;
+                load_stmt = 0;
+            }
+            else
+                NCLecho = echo;
+        }
+        else {
+            if (load_stmt) {
+                load_stmt = 0;
+                if (NCLoverrideEcho) {
+                    NCLecho = 1;
+                    load_stmt = 0;
+                }
+                else
+                    NCLecho = echo; 
+            }
+        }
+    }
+	cur_load_file = file_names[loading];
+	if(yyin != NULL) {
+		if(loading) {
+			cmd_line = (isatty(fileno(yyin))?1:0);
 		} else if(cmd_line_is_set) {
 			cmd_line = cmd_line_is_set;
 		} else {
-			cmd_line = 0;
+			cmd_line = (isatty(fileno(yyin))?1:0);
 		}
+	} else if(cmd_line_is_set) {
+		cmd_line = cmd_line_is_set;
+	} else {
+		cmd_line = 0;
 	}
 }
+
 NhlErrorTypes _NclPreLoadScript
 #if	NhlNeedProto
 (char *path,int status)
@@ -165,7 +198,6 @@ int status;
 	static int first = 1;
 	char *tmp = path;
 	FILE *tmpfile = NULL;
-
 
 	preloading = status;	
 
@@ -218,8 +250,12 @@ digit	[0-9]
 		inc_line = 0;
 	} 
 "load" 	{ 
-		BEGIN incl;
-	}
+    BEGIN incl;
+    load_stmt = 1;
+    if (cur_load_file != NULL)
+        (void) strcpy(load_file, cur_load_file);
+}
+
 <incl>[ \t]*      {
 	/*CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);*/
 }
@@ -239,6 +275,19 @@ digit	[0-9]
 	tmp = strrchr(yytext,'\"');
 	*tmp = '\0';
 	tmp = (char*)&(yytext[0]) + 1;
+
+    if (NCLecho)
+        nclfprintf(stdout, "Loading file \"%s\"\n", tmp);
+    if (load_stmt) {
+            echo = NCLecho;
+            if (NCLoverrideEcho) {
+                NCLecho = 1;
+                load_stmt = 0;
+            }
+            else
+                NCLecho = 0;
+    }
+
 	if ( loading >= MAX_INCLUDE_DEPTH )
 	{
 		fprintf( stderr, "Includes nested too deeply" );
@@ -259,11 +308,10 @@ digit	[0-9]
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)\n",tmp);
 		_NclResetScanner();
 
-
 		SetLine(line_numbers[loading]);
 	}
 
-	BEGIN 0;
+    BEGIN 0;
 }
 <<EOF>> {
 	inc_line = 1;
@@ -287,6 +335,22 @@ digit	[0-9]
 }
 \;[^\n\\]*[\\][ \t]*[\n] {
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+
+    if (NCLoverrideEcho) {
+        old_load_stmt = load_stmt;
+        load_stmt = 0;
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s\n", cur_line_text);
+            (void) fflush(stdout);
+        }
+        load_stmt = old_load_stmt;
+    } else {
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s\n", cur_line_text);
+            (void) fflush(stdout);
+        }
+    }
+
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
@@ -299,6 +363,20 @@ digit	[0-9]
 	/*inc_line = 1;*/
 }
 [\\][^\n]*[\n] {
+    if (NCLoverrideEcho) {
+        old_load_stmt = load_stmt;
+        load_stmt = 0;
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s\n", cur_line_text);
+            (void) fflush(stdout);
+        }
+        load_stmt = old_load_stmt;
+    } else {
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s\n", cur_line_text);
+            (void) fflush(stdout);
+        }
+    }
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
@@ -313,12 +391,23 @@ digit	[0-9]
 
 }
 \;[^\n]*[\n] { 
-    if (NCLecho) {
-        (void) fprintf(stdout, "+ %s\n", cur_line_text);
-        (void) fflush(stdout);
-    }
 	printtoken(yytext[0],(char*)NULL); 
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
+    if (NCLoverrideEcho) {
+        old_load_stmt = load_stmt;
+        load_stmt = 0;
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s\n", cur_line_text);
+            (void) fflush(stdout);
+        }
+        load_stmt = old_load_stmt;
+    } else {
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s", cur_line_text);
+            (void) fflush(stdout);
+        }
+    }
+
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
@@ -335,10 +424,21 @@ digit	[0-9]
 		BEGIN NEWLINE;
 	}
 */
-    if (NCLecho) {
-        (void) fprintf(stdout, "+ %s\n", cur_line_text);
-        (void) fflush(stdout);
+
+    if (NCLoverrideEcho) {
+        old_load_stmt = load_stmt;
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s\n", cur_line_text);
+            (void) fflush(stdout);
+        }
+        load_stmt = old_load_stmt;
+    } else {
+        if (NCLecho != 0 && !load_stmt) {
+            (void) fprintf(stdout, "+ %s\n", cur_line_text);
+            (void) fflush(stdout);
+        }
     }
+
 	inc_line = 1;
 	cur_line_length += yyleng;
 	if(rec == 1) {
