@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.195 2005-08-01 16:47:46 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.196 2005-08-04 00:09:07 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5085,9 +5085,8 @@ begin
       end getvalues
 
 ; Create data object.
-      appid = NhlGetParentId(wks)
       if(is_valid_latlon_coord(datanew,"y","lat",res2)) then
-        data_object = create "data" coordArraysClass appid
+        data_object = create "data" coordArraysClass noparent
           "caXArray" : zmeans
           "caYArray" : datanew&$datanew!0$
         end create
