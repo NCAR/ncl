@@ -1,5 +1,5 @@
 /*
- *	$Id: w_idt.c,v 1.40 2005-01-04 15:37:42 haley Exp $
+ *	$Id: w_idt.c,v 1.41 2005-08-04 15:44:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -512,7 +512,7 @@ create_main_panel(parent, select_action)
 	char *line1 = " Copyright (C) 1991-2005 - All Rights Reserved    \n";
 	char *line2 = " University Corporation for Atmospheric Research   \n";
 #ifdef	__STDC__
-	char *line3 = " NCAR View - UNIX Version " VERSION "   \n";
+	char *line3 = " NCAR View - UNIX Version " NGVERSION "   \n";
 #else
 	char *line3 = " NCAR View - UNIX Version 3.xx    \n";
 #endif
