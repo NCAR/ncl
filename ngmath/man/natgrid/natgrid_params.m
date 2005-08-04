@@ -1,5 +1,5 @@
 .\"
-.\"     $Id: natgrid_params.m,v 1.5 2000-08-22 15:15:05 haley Exp $
+.\"     $Id: natgrid_params.m,v 1.6 2005-08-04 21:30:10 fred Exp $
 .\"
 .TH natgrid_params 3NCARG "March 1997-1998" UNIX "NCAR GRAPHICS"
 .na
@@ -25,9 +25,6 @@ as bI increases.
 .IP "\'bJ\'   -   Real   -   7.0"
 Tautness factor that decreases the breadth of the region 
 affected by the gradient estimates as bJ increases. 
-.IP "\'DUP\'   -   Integer   -   1"
-Controls whether duplicate input coordinates are 
-allowed (1 = yes; 0 = no).
 .IP "\'EXT\'   -   Integer   -   1"
 Flags whether extrapolation is allowed outside the 
 convex hull (0=no; 1=yes).
@@ -42,6 +39,8 @@ Scale factor for X coordinate input values.
 Scale factor for Y coordinate input values.
 .IP "\'MAGZ\'   -   Real   -   1.0"
 Scale factor for Z coordinate input values.
+.IP "\'MDM\'   -   Integer   -   10"
+Maximum number of informational messages about duplicate point culls.
 .IP "\'NON\'   -   Integer   -   0"
 Flags whether interpolated values are allowed to be 
 negative (0=yes; 1=no).
