@@ -12,7 +12,10 @@ NhlErrorTypes echo_on_W(void)
     echo_val = NCLecho;
     NCLecho = 1;
     load_stmt = 0;
-    (void) nclfprintf(stdout, "+ %s : %s\n", "echo_on()", cur_load_file);
+    if (cur_load_file != (char *) NULL)
+        (void) nclfprintf(stdout, "+ %s : %s\n", "echo_on()", cur_load_file);
+    else
+        (void) nclfprintf(stdout, "+ %s\n", "echo_on()");
     return(NhlNOERROR);
 }
 

@@ -443,10 +443,8 @@ extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
 extern NhlErrorTypes get_ncl_version_W(void);
-/*
 extern NhlErrorTypes echo_on_W(void);
 extern NhlErrorTypes echo_off_W(void);
-*/
 
 extern NhlErrorTypes write_matrix_W(void);
 extern NhlErrorTypes ctwrap_W(void);
@@ -5804,6 +5802,8 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(get_ncl_version_W, args, "get_ncl_version", nargs);
 
 /*
+ *  Register echo_on and echo_off
+ */
     nargs = 0;
     args = NewArgs(0);
     NclRegisterProc(echo_on_W, args, "echo_on", nargs);
@@ -5811,7 +5811,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(0);
     NclRegisterProc(echo_off_W, args, "echo_off", nargs);
- */
+
 /*
  *  Register ctwrap.
  */
