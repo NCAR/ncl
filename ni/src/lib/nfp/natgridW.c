@@ -681,7 +681,7 @@ NhlErrorTypes nnsetp_W(void)
   char *params_f[] = {"bI", "bJ", "hor", "magx", "magy", "magz",
                       "nul", "ver", "Bi", "Bj", "HOR", "MAGX", "MAGY", 
                       "MAGZ", "NUL", "VER", "bi", "bj", "BI", "BJ"};
-  char *params_c[] = {"alg", "ALG"};
+  char *params_c[] = {"alg", "ALG", "erf", "ERF"};
 
 /*
  * Input array variables
@@ -819,7 +819,7 @@ NhlErrorTypes nngetp_W(void)
                       "nul", "ver", "xas", "yas", "zas", "Bi", "Bj", 
                       "HOR", "MAGX", "MAGY", "MAGZ", "NUL", "VER", 
                       "bi", "bj", "BI", "BJ", "XAS", "YAS", "ZAS"};
-  char *params_c[] = {"alg", "ALG"};
+  char *params_c[] = {"alg", "ALG", "erf", "ERF"};
 
 /*
  * Input array variable
