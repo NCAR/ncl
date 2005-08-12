@@ -97,7 +97,7 @@ NhlErrorTypes paleo_outline_W( void )
  */
   jm   = 2*nlat+1;
   im   = 2*nlon+1;
-  zdat = (float*)calloc(jm*im,sizeof(float));
+  zdat = (float*)malloc(jm*im*sizeof(float));
   if(zdat == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"paleo_outline: Unable to allocate memory for work array");
     return(NhlFATAL);
