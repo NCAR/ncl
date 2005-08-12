@@ -1,4 +1,4 @@
-/*  $Revision: 1.1 $
+/*  $Revision: 1.2 $
 **
 **  Internal header file for editline library.
 */
@@ -18,7 +18,7 @@
 #include <string.h>
 #endif	/* defined(HAVE_STDLIB) */
 #if	defined(SYS_UNIX)
-#include "unix.h"
+#include "editline_unix.h"
 #endif	/* defined(SYS_UNIX) */
 #if	defined(SYS_OS9)
 #include "os9.h"

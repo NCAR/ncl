@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.106 2005-07-23 00:49:57 dbrown Exp $
+#      $Id: yMakefile,v 1.107 2005-08-12 21:55:08 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2005-07-23 00:49:57 $
+#	Date:		$Date: 2005-08-12 21:55:08 $
 #
 #	Description:	
 #
@@ -121,7 +121,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			NclMultiDValnclfileData.h NclMultiDValHLUObjData.h \
 			NclOneDValCoordData.h HLUFunctions.h \
 			NclCallBacksI.h date.h NclGRIB.h date.h tables.h \
-			editline.h unix.h ListSupport.h NclList.h \
+			editline.h editline_unix.h ListSupport.h NclList.h \
 			NclMultiDVallistData.h NclTypelist.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h \
 			dwd_202_gtb.h dwd_203_gtb.h ecmwf_128_gtb.h \
