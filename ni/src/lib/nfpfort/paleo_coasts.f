@@ -15,13 +15,11 @@ C The subroutine SVBLED requires that the input mask array be twice as
 C large(+1) as the orginal. This is an artificat of the original 
 C program written for Pat Behling. 
 C
-C Don't need to initialize here, because it's done in the C interface.
-C
-C      do i=1,im
-C         do j=1,jm
-C            zdat(i,j)=0.
-C         enddo
-C      enddo
+      do i=1,im
+         do j=1,jm
+            zdat(i,j)=1.-mskval
+         enddo
+      enddo
       do i=1,nlon
          do j=1,nlat
             ZDAT(2*I,2*J)=REAL(mask(I,J))
@@ -46,7 +44,8 @@ C
 
       ilft = 2
       lon1 = real(lon(1))
-      irgt = 2 * nlon + 2
+      irgt = 2 * nlon
+      lonn = real(lon(nlon))
       lonn = 360.
 C     
       CALL SVBLED (ZDAT,im,jm,IWRK,2000,mskval,ilft,lon1,irgt,lonn,
