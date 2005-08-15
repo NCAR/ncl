@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.25 2005-03-24 21:49:54 haley Exp $
+#      $Id: Configure,v 1.26 2005-08-15 14:09:29 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2005-03-24 21:49:54 $
+#	$Date: 2005-08-15 14:09:29 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -157,7 +157,10 @@ set f90comp="f90"
 echo -n "..."
 set buildDODS=`$makecmd DODSSTUFF`
 echo -n "..."
-set ncargversion=`$makecmd VERS`
+set ncargversion=`$makecmd NGVERS`
+echo ""
+echo -n "..."
+set nclversion=`$makecmd NCLVERS`
 echo ""
 /bin/rm Makefile
 
@@ -165,7 +168,7 @@ onintr cleanup
 
 QuestionAndAnswer:
 echo ""
-echo "*** Configuration Procedure for NCAR Graphics version $ncargversion ***"
+echo "*** Configuration Procedure for NCARG V$ncargversion and NCL V$nclversion ***"
 echo ""
 
 if ($?verbose_option) then

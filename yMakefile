@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.28 2004-11-18 22:24:48 haley Exp $
+ *      $Id: yMakefile,v 1.29 2005-08-15 14:09:29 haley Exp $
  */
 /************************************************************************
 *									*
@@ -214,5 +214,8 @@ F90STUFF:
 	@echo "n"
 #endif
 
-VERS:
-	@echo "$(VERSION)"
+NGVERS:
+	@echo "$(NGVERSION)"
+
+NCLVERS:
+	@echo "$(NCLVERSION)"
