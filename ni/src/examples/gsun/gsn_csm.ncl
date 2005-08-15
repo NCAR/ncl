@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.196 2005-08-04 00:09:07 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.197 2005-08-15 17:30:42 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1050,10 +1050,11 @@ begin
   yend_name   = prefix + "YCEndV"
   
 ;
-; Only plots over maps can have 2D lat/lon coordinates. These plots are
-; identified by the following "valid_2dcoord_types" strings.
+; I originally thought that Only plots over maps could have
+; 2D lat/lon coordinates, but I don't believe this is the case.
+; So, I've commented out the valid_2dcoord_types stuff.
 ;
-  valid_2dcoord_types = (/"contour_map","vector_map"/)
+;  valid_2dcoord_types = (/"contour_map","vector_map"/)
 ;
 ; First check if a valid "lon2d" attribute is set and whether we are 
 ; drawing over a map. If both conditions are not met, then
@@ -1062,8 +1063,9 @@ begin
 ;
   if(.not.((isatt(res,xstart_name).and.isatt(res,xend_name)).or.\
             isatt(res,xarray_name))) then
-    if(any(type.eq.valid_2dcoord_types).and. \
-       is_valid_latlon2d_attr(data,"lon2d")) then
+;    if(any(type.eq.valid_2dcoord_types).and. \
+;       is_valid_latlon2d_attr(data,"lon2d")) then
+    if(is_valid_latlon2d_attr(data,"lon2d")) then
       res@$xarray_name$ = data@lon2d
     else 
       if(is_valid_coord(data,"x")) then
@@ -1079,8 +1081,9 @@ begin
 ;
   if(.not.((isatt(res,ystart_name).and.isatt(res,yend_name)).or.\
             isatt(res,yarray_name))) then
-    if(any(type.eq.valid_2dcoord_types).and. \
-       is_valid_latlon2d_attr(data,"lat2d")) then
+;    if(any(type.eq.valid_2dcoord_types).and. \
+;       is_valid_latlon2d_attr(data,"lat2d")) then
+    if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$yarray_name$ = data@lat2d
     else
       if(is_valid_coord(data,"y")) then
@@ -1435,11 +1438,11 @@ begin
   end if
 
 ;
-; Only plots over maps can have 2D lat/lon coordinates. These plots are
-; identified by the following "type" strings.
+; I originally thought that Only plots over maps could have
+; 2D lat/lon coordinates, but I don't believe this is the case.
+; So, I've commented out the valid_2dcoord_types stuff.
 ;
-  valid_2dcoord_types = (/"contour_map","vector_map"/)
-
+;  valid_2dcoord_types = (/"contour_map","vector_map"/)
 ;
 ; Make sure user is not already setting own *Start* and *End*
 ; or *Array resources. Then check if a valid "lat2d" attribute
@@ -1447,8 +1450,9 @@ begin
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or.\
             isatt(res,array_name))) then
-    if(any(type.eq.valid_2dcoord_types).and. \
-       is_valid_latlon2d_attr(data,"lat2d")) then
+;    if(any(type.eq.valid_2dcoord_types).and. \
+;       is_valid_latlon2d_attr(data,"lat2d")) then
+    if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
       return
     else 
@@ -1514,10 +1518,11 @@ begin
   end if
 
 ;
-; Only plots over maps can have 2D lat/lon coordinates. These plots are
-; identified by the following "type" strings.
+; I originally thought that Only plots over maps could have
+; 2D lat/lon coordinates, but I don't believe this is the case.
+; So, I've commented out the valid_2dcoord_types stuff.
 ;
-  valid_2dcoord_types = (/"contour_map","vector_map"/)
+;  valid_2dcoord_types = (/"contour_map","vector_map"/)
 
 ;
 ; Make sure user is not already setting own *Start* and *End*
@@ -1526,8 +1531,9 @@ begin
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or. \
             isatt(res,array_name))) then
-    if(any(type.eq.valid_2dcoord_types).and. \
-       is_valid_latlon2d_attr(data,"lat2d")) then
+;    if(any(type.eq.valid_2dcoord_types).and. \
+;       is_valid_latlon2d_attr(data,"lat2d")) then
+    if(is_valid_latlon2d_attr(data,"lat2d")) then
       res@$array_name$ = data@lat2d
       return
     else 
@@ -1594,10 +1600,11 @@ begin
   end if
 
 ;
-; Only plots over maps can have 2D lat/lon coordinates. These plots are
-; identified by the following "type" strings.
+; I originally thought that Only plots over maps could have
+; 2D lat/lon coordinates, but I don't believe this is the case.
+; So, I've commented out the valid_2dcoord_types stuff.
 ;
-  valid_2dcoord_types = (/"contour_map","vector_map"/)
+;  valid_2dcoord_types = (/"contour_map","vector_map"/)
 
 ;
 ; Make sure user is not already setting his own *Start* and *End*
@@ -1606,8 +1613,9 @@ begin
 ;
   if(.not.((isatt(res,start_name).and.isatt(res,end_name)).or.\
             isatt(res,array_name))) then
-    if(any(type.eq.valid_2dcoord_types).and. \
-       is_valid_latlon2d_attr(data,"lon2d")) then
+;    if(any(type.eq.valid_2dcoord_types).and. \
+;       is_valid_latlon2d_attr(data,"lon2d")) then
+    if(is_valid_latlon2d_attr(data,"lon2d")) then
       res@$array_name$ = data@lon2d
       return
     else 
