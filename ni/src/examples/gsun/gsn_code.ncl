@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.165 2005-08-04 00:09:07 haley Exp $
+;      $Id: gsn_code.ncl,v 1.166 2005-08-16 14:10:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5643,14 +5643,42 @@ begin
 ; it will choke.
 
     if(isatt(data,"_FillValue")) then
-      data_object = create sfname scalarFieldClass noparent
-        "sfMissingValueV" : data@_FillValue
-        "sfDataArray"     : data
-      end create
+;
+; We need to check for stride, because if we have a case where
+; we are creating a scalar field that will be used with the vector
+; field, and we are setting the stride for both via setvalues rather
+; than during a create call, then at some point the sizes of the
+; vector and scalar fields will be different and you will get a
+; warning message:
+;
+;    warning:VectorPlotSetValues: ignoring vcScalarFieldData: size does
+;     not match vcVectorFieldData
+;
+      if(isatt(res2,"sfXCStride").and.isatt(res2,"sfYCStride")) then 
+        data_object = create sfname scalarFieldClass noparent
+          "sfMissingValueV" : data@_FillValue
+          "sfDataArray"     : data
+          "sfXCStride"      : get_res_value(res2,"sfXCStride",1)
+          "sfYCStride"      : get_res_value(res2,"sfYCStride",1)
+        end create
+      else
+        data_object = create sfname scalarFieldClass noparent
+          "sfMissingValueV" : data@_FillValue
+          "sfDataArray"     : data
+        end create
+      end if
     else
-      data_object = create sfname scalarFieldClass noparent
-        "sfDataArray"     : data
-      end create
+      if(isatt(res2,"sfXCStride").and.isatt(res2,"sfYCStride")) then 
+        data_object = create sfname scalarFieldClass noparent
+          "sfDataArray" : data
+          "sfXCStride"  : get_res_value(res2,"sfXCStride",1)
+          "sfYCStride"  : get_res_value(res2,"sfYCStride",1)
+        end create
+      else
+        data_object = create sfname scalarFieldClass noparent
+          "sfDataArray" : data
+        end create
+      end if
     end if
   else
 ;
@@ -5662,12 +5690,12 @@ begin
 ; Create the data object.
 ;
       if(isatt(data,"_FillValue")) then
-        data_object = create sfname meshScalarFieldClass noparent
-          "sfDataArray"     : data
-          "sfMissingValueV" : data@_FillValue
-          "sfXArray"        : get_res_value(res2,"sfXArray",1)
-          "sfYArray"        : get_res_value(res2,"sfYArray",1)
-        end create
+         data_object = create sfname meshScalarFieldClass noparent
+            "sfDataArray"     : data
+            "sfMissingValueV" : data@_FillValue
+            "sfXArray"        : get_res_value(res2,"sfXArray",1)
+            "sfYArray"        : get_res_value(res2,"sfYArray",1)
+          end create
       else
         data_object = create sfname meshScalarFieldClass noparent
           "sfDataArray" : data
@@ -5697,10 +5725,30 @@ end
 ;***********************************************************************;
 function vector_field(vfname:string,u:numeric,v:numeric,res2:logical)
 begin
-  data_object = create vfname vectorFieldClass noparent
-    "vfUDataArray" : u
-    "vfVDataArray" : v
-  end create
+;
+; We need to check for stride, because if we have a case where
+; we are creating a scalar field that will be used with the vector
+; field, and we are setting the stride for both via setvalues rather
+; than during a create call, then at some point the sizes of the
+; vector and scalar fields will be different and you will get a
+; warning message:
+;
+;    warning:VectorPlotSetValues: ignoring vcScalarFieldData: size does
+;     not match vcVectorFieldData
+;
+  if(isatt(res2,"vfXCStride").and.isatt(res2,"vfYCStride")) then
+    data_object = create vfname vectorFieldClass noparent
+      "vfUDataArray" : u
+      "vfVDataArray" : v
+      "vfXCStride"   : get_res_value(res2,"vfXCStride",1)
+      "vfYCStride"   : get_res_value(res2,"vfYCStride",1)
+    end create
+  else
+    data_object = create vfname vectorFieldClass noparent
+      "vfUDataArray" : u
+      "vfVDataArray" : v
+    end create
+  end if
 
 ; Check for missing values.
 
