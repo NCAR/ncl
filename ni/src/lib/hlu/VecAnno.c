@@ -1,5 +1,5 @@
 /*
- *      $Id: VecAnno.c,v 1.13 1999-03-27 00:44:58 dbrown Exp $
+ *      $Id: VecAnno.c,v 1.14 2005-08-16 23:15:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -684,6 +684,7 @@ VecAnnoSetValues
 				      NhlNtxConstantSpacingF,
 				      vap->constant_spacing,
 				      NhlNtxDirection,vap->direction,
+				      NhlNtxFontColor,vap->font_color,
 				      NULL);
 		if ((ret = MIN(lret,ret)) < NhlWARNING) return ret;
 	
@@ -700,6 +701,7 @@ VecAnnoSetValues
 				      NhlNtxConstantSpacingF,
 				      vap->constant_spacing,
 				      NhlNtxDirection,vap->direction,
+				      NhlNtxFontColor,vap->font_color,
 				      NULL);
 		if ((ret = MIN(lret,ret)) < NhlWARNING) return ret;
 	}
@@ -719,6 +721,22 @@ VecAnnoSetValues
 		 * Set the size
 		 */
 		_NhlInternalSetView((NhlViewLayer)new,x,y,width,height,False);
+	}
+	/*
+	 * if just the color has changed then the changed flag was not set and
+	 * no setvalues has taken place so we have to do it here
+	 */
+	else if (vap->font_color != ovap->font_color) {
+		lret = NhlVASetValues(vap->textitem1,
+				      NhlNtxFontColor,vap->font_color,
+				      NULL);
+		if ((ret = MIN(lret,ret)) < NhlWARNING) return ret;
+	
+
+		ret = NhlVASetValues(vap->textitem2,
+				      NhlNtxFontColor,vap->font_color,
+				      NULL);
+		if ((ret = MIN(lret,ret)) < NhlWARNING) return ret;
 	}
 
 	return ret;
