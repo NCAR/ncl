@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.20 2004-12-02 16:34:53 haley Exp $
+#   $Id: yMakefile,v 1.21 2005-08-17 23:03:32 fred Exp $
 #
 #   Makefile for netCDF data files for examples.
 #
@@ -17,6 +17,7 @@ DATA = 941110_P.cdf 941110_UV.cdf 95031800_sao.cdf 95031801_sao.cdf \
 	ced1.lf00.t00z.eta.nc climdiv_polygons.nc cn10n.cdf color.nc \
 	contour.cdf ctnccl.nc ctcbay.nc ex01B1_uv300.hs.nc fice.nc landsea.nc \
 	meccatemp.cdf sst30e_netcdf.nc hswm_d000000p000.g2.nc seam.nc pop.nc \
-	sstdata_netcdf.nc traj_data.nc trinidad.nc meteo_data.nc scatter1.nc
+	sstdata_netcdf.nc traj_data.nc trinidad.nc meteo_data.nc scatter1.nc \
+	vinth2p.nc
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/cdf)
