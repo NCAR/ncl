@@ -2668,6 +2668,8 @@ GribParamList* thevarrec;
 			int pl_ix;
 			int *rc_count;
 			int i,n;
+			int jpmax;
+			float *ztemp, *zline, *zwork;
 
 			pl_ix = (gds[4] == 255) ? -1 : (int) gds[3] * 4 + (int) gds[4] - 1;
 
@@ -2685,11 +2687,24 @@ GribParamList* thevarrec;
 				kcode = therec->interp_method == 0 ? 11 : 13;
 			}
 			rc_count = (int*)NclMalloc(sizeof(int)*n);
+			jpmax = MAX(lat_size,lon_size / 2 + 1);
+			ztemp = NclMalloc(jpmax * jpmax * 2 * sizeof(float));
+			zline = NclMalloc(jpmax * 2 * sizeof(float));
+			zwork = NclMalloc((2 * jpmax + 3) * 3 * sizeof(float));
+			if (! (rc_count && ztemp && zline && zwork)) {
+				NhlPError(NhlFATAL,ENOMEM,NULL);
+				return integer;
+			}
 			for (i = 0; i < n; i++) {
 				rc_count[i] = CnvtToDecimal(2,&(gds[pl_ix + i * 2]));
 			}
-			NGCALLF(qu2reg2,QU2REG2)(*outdat,rc_count,&lat_size,&lon_size,&kcode,&pmsval,&kret);
+					  
+			NGCALLF(qu2reg2,QU2REG2)(*outdat,rc_count,&lat_size,&lon_size,&kcode,&pmsval,&kret,
+				                 &jpmax,ztemp,zline,zwork);
 			NclFree(rc_count);
+			NclFree(ztemp);
+			NclFree(zline);
+			NclFree(zwork);
 		}
 		else if(is_staggered_grid){
 #if 0

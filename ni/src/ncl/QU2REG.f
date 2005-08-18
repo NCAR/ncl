@@ -1,5 +1,6 @@
 C NCLFORTSTART
-      SUBROUTINE QU2REG2(PFIELD,KPOINT,KLAT,KLON,KCODE,PMSVAL,KRET)
+      SUBROUTINE QU2REG2(PFIELD,KPOINT,KLAT,KLON,KCODE,PMSVAL,KRET,
+     +          JPMAX,ZTEMP,ZLINE,ZWORK)
 C
 C**** QU2REG - Convert quasi-regular grid data to regular.
 C
@@ -42,6 +43,8 @@ C                               longitude lines.
 C
 C     PMSVAL     - Value used for missing data indicator.
 C
+C     JPMAX      - Determines sizes of work arrays
+C     ZTEMP,ZLINE,ZWORK - work arrays of various sizes
 C
 C     Output Parameters.
 C     ------------------
@@ -111,8 +114,6 @@ C
       INTEGER IQUANO
       INTEGER IREGNO
 C
-      INTEGER JPMAX
-C
       INTEGER J210
       INTEGER J220
       INTEGER J225
@@ -128,6 +129,7 @@ C
       REAL    PFIELD
       REAL    PMSVAL
 C
+      INTEGER JPMAX
       REAL    ZLINE
       REAL    ZTEMP
       REAL    ZWORK
@@ -141,7 +143,6 @@ C
 C NCLEND
 c ncl In the original code the following 4 decalrations were after
 c     the "DIMENSION PFIELD(*)" but they were moved here. 
-      PARAMETER (JPMAX=320)
       DIMENSION ZTEMP(JPMAX*JPMAX*2)
       DIMENSION ZLINE(JPMAX*2)
       DIMENSION ZWORK(0:JPMAX*2+2,3)

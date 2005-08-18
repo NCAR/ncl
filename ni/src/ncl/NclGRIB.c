@@ -1485,8 +1485,10 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
 		attcount = 1;
 		if (interface) {
+			sprintf(buffer,"derived from %s_a as average of layer interfaces above and below midpoints",
+				NrmQuarkToString(tdim->dim_name));
 			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*qstr = NrmStringToQuark("derived as average of layer interfaces above and below midpoints");
+			*qstr = NrmStringToQuark(buffer);
 			GribPushAtt(&att_list_ptr,"note",qstr,1,nclTypestringClass); 
 			attcount++;
 		}
@@ -1511,8 +1513,10 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
 		attcount = 1;
 		if (interface) {
+			sprintf(buffer,"derived from %s_b as average of layer interfaces above and below midpoints",
+				NrmQuarkToString(tdim->dim_name));
 			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*qstr = NrmStringToQuark("derived as average of layer interfaces above and below midpoints");
+			*qstr = NrmStringToQuark(buffer);
 			GribPushAtt(&att_list_ptr,"note",qstr,1,nclTypestringClass); 
 			attcount++;
 		}
@@ -1532,9 +1536,17 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		
 		if (interface) {
 			att_list_ptr = NULL;
+			attcount = 0;
 			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			*qstr = NrmStringToQuark("hybrid A coefficient at layer interfaces");
 			GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+			attcount++;
+			sprintf(buffer,"layer interfaces associated with hybrid levels lv_HYBL%d",
+				tmp_file_dim_number);
+			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*qstr = NrmStringToQuark(buffer);
+			GribPushAtt(&att_list_ptr,"note",qstr,1,nclTypestringClass); 
+			attcount++;
 			sprintf(buffer,"lv_HYBL_i%d_a",new_dim_number);
 			_GribAddInternalVar(therec,NrmStringToQuark(buffer),&new_dim_number,(NclMultiDValData)_NclCreateVal(
 						    NULL,
@@ -1547,12 +1559,20 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 						    &count,
 						    TEMPORARY,
 						    NULL,
-						    nclTypefloatClass),att_list_ptr,1);
+						    nclTypefloatClass),att_list_ptr,attcount);
 
 			att_list_ptr = NULL;
+			attcount = 0;
 			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
 			*qstr = NrmStringToQuark("hybrid B coefficient at layer interfaces");
 			GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+			attcount++;
+			sprintf(buffer,"layer interfaces associated with hybrid levels lv_HYBL%d",
+				tmp_file_dim_number);
+			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*qstr = NrmStringToQuark(buffer);
+			GribPushAtt(&att_list_ptr,"note",qstr,1,nclTypestringClass); 
+			attcount++;
 			sprintf(buffer,"lv_HYBL_i%d_b",new_dim_number);
 			_GribAddInternalVar(therec,NrmStringToQuark(buffer),&new_dim_number,(NclMultiDValData)_NclCreateVal(
 						    NULL,
@@ -1565,7 +1585,7 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 						    &count,
 						    TEMPORARY,
 						    NULL,
-						    nclTypefloatClass),att_list_ptr,1);
+						    nclTypefloatClass),att_list_ptr,attcount);
 		}
 		/* 
 		 * Now we need the scalar reference pressure, requires a scalar dim 
@@ -4545,13 +4565,9 @@ int wr_status;
 				for (i = 0; i < sizeof(centers)/sizeof(GribTable); i++) {
 				  if (centers[i].index == (int) grib_rec->pds[4]) {
 				    grib_rec->center_ix = i;
+				    break;
 				  }
 				}
-				
-/*
-				grib_rec->grid_number = 255;
-*/
-			
 /*
 				if((grib_rec->has_gds) && (grib_rec->grid_number != 255)) {
 					fprintf(stdout,"Found one: %d\n",grib_rec->grid_number);
