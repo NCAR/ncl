@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.12 1997-01-16 19:44:00 ethan Exp $
+ *      $Id: DataSupport.h,v 1.13 2005-08-18 23:09:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -284,6 +284,15 @@ extern NhlErrorTypes _NclGetCoordClosestIndex(
 NclMultiDValData /* coord_md*/,
 void *		/* ind_md */,
 long*		 /* ind*/
+#endif
+);
+
+extern NhlErrorTypes _NclSwapBytes(
+#if     NhlNeedProto
+void *outdata,
+void *indata,
+int  count,
+int  type_size
 #endif
 );
 

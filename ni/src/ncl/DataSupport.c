@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.47 2005-03-24 21:56:05 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.48 2005-08-18 23:09:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1700,4 +1700,125 @@ struct _NclDataRec *value;
                 }
         }
         return(NhlFATAL);
+}
+
+
+NhlErrorTypes _NclSwapBytes
+#if     NhlNeedProto
+(
+void *outdata,
+void *indata,
+int  count,
+int  type_size
+)
+#else
+(outdata,indata,count,type_size)
+void *outdata;
+void *indata;
+int  count;
+int  type_size;
+#endif
+{
+
+	/* Note:
+	 * if outdata == indata or outdata is NULL then swapping is done in place,
+	 * and a temporary character variable is needed.
+	 * Otherwise, outdata is assumed to have the same size as indata.
+	 */
+
+	if (! outdata || outdata == indata) {
+		char *cd = indata;
+		char ctmp;
+
+		switch (type_size) {
+		case 1:
+			return NhlNOERROR;
+		case 2:
+			while (count-- > 0) {
+				ctmp = cd[0];
+				cd[0] = cd[1];
+				cd[1] = ctmp;
+				cd += 2;
+			}
+			return NhlNOERROR;
+		case 4:
+			while (count-- > 0) {
+				ctmp = cd[0];
+				cd[0] = cd[3];
+				cd[3] = ctmp;
+				ctmp = cd[1];
+				cd[1] = cd[2];
+				cd[2] = ctmp;
+				cd += 4;
+			}
+			return NhlNOERROR;
+		case 8:
+			while (count-- > 0) {
+				ctmp = cd[0];
+				cd[0] = cd[7];
+				cd[7] = ctmp;
+				ctmp = cd[1];
+				cd[1] = cd[6];
+				cd[6] = ctmp;
+				ctmp = cd[2];
+				cd[2] = cd[5];
+				cd[5] = ctmp;
+				ctmp = cd[3];
+				cd[3] = cd[4];
+				cd[4] = ctmp;
+				cd += 8;
+			}
+			return NhlNOERROR;
+		
+		default:
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclSwapBytes: non-supported type size, can't continue");
+			return(NhlFATAL);
+		}
+	}
+	else {
+		char *in = indata;
+		char *out = outdata;
+
+		switch (type_size) {
+		case 1:
+			return NhlNOERROR;
+		case 2:
+			while (count-- > 0) {
+				out[0] = in[1];
+				out[1] = in[0];
+				out += 2;
+				in += 2;
+			}
+			return NhlNOERROR;
+		case 4:
+			while (count-- > 0) {
+				out[0] = in[3];
+				out[1] = in[2];
+				out[2] = in[1];
+				out[3] = in[0];
+				out += 4;
+				in += 4;
+			}
+			return NhlNOERROR;
+		case 8:
+			while (count-- > 0) {
+				out[0] = in[7];
+				out[1] = in[6];
+				out[2] = in[5];
+				out[3] = in[4];
+				out[4] = in[3];
+				out[5] = in[2];
+				out[6] = in[1];
+				out[7] = in[0];
+				out += 8;
+				in += 8;
+			}
+			return NhlNOERROR;
+		
+		default:
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclSwapBytes: non-supported type size, can't continue");
+			return(NhlFATAL);
+		}
+	}
+		
 }

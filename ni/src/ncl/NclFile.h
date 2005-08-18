@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.9 2005-07-23 00:49:56 dbrown Exp $
+ *      $Id: NclFile.h,v 1.10 2005-08-18 23:09:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -251,6 +251,17 @@ typedef struct _NclFileOption {
 	NclMultiDValData valid_values;
 	int access;    /* 0 - any (read-only or read-write; 1 - read-only; 2 - read-write 3 - create only */ 
 } NclFileOption;
+
+typedef enum {
+	Ncl_PREFILL = 0,
+	Ncl_DEFINE_MODE,
+	Ncl_THINNED_GRID_INTERPOLATION,
+	Ncl_HEADER_RESERVE_SPACE,
+	Ncl_SUPPRESS_CLOSE,
+	Ncl_FORMAT,
+	Ncl_READ_BYTE_ORDER,
+	Ncl_WRITE_BYTE_ORDER
+} NclFileOptionValues;
 
 typedef struct _NclFileClassPart {
 

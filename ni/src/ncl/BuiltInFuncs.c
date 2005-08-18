@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.181 2005-07-23 00:49:55 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.182 2005-08-18 23:09:22 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2329,7 +2329,21 @@ NhlErrorTypes _NclIfbindirread(void)
 	int *recnum;
 	NclScalar missing;
 	int has_missing;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
 
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	fpath = _NclGetArg(0,4,DONT_CARE);
 	recnum = (int*) NclGetArgValue(
@@ -2461,11 +2475,17 @@ NhlErrorTypes _NclIfbindirread(void)
 			}
 			step = step + totalsize % buf.st_blksize;
 		}
-
+		if (swap_bytes) {
+			int count = (int)(step - (char*)tmp_ptr) / thetype->type_class.size;
+			ret = _NclSwapBytes(NULL,tmp_ptr,count,thetype->type_class.size);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		while((int)(step - (char*)tmp_ptr) < totalsize) {
 			memcpy(step,(char*)&(thetype->type_class.default_mis),thetype->type_class.size);
 			step += thetype->type_class.size;
 		}
+
 		data_out.kind = NclStk_VAL;
 		data_out.u.data_obj = tmp_md;
 		_NclPlaceReturn(data_out);
@@ -2503,7 +2523,21 @@ NhlErrorTypes _NclIcbinread
 	char *step = NULL;
 	NclStackEntry data_out;
 	int dim2;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
 
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
 	dimensions = _NclGetArg(1,3,DONT_CARE);
@@ -2609,7 +2643,12 @@ NhlErrorTypes _NclIcbinread
 		}
 		n = read(fd,step,totalsize % buf.st_blksize);
 		step = step + totalsize % buf.st_blksize;
-
+		if (swap_bytes) {
+			int count = ((int)(step - (char*)tmp_ptr)) / thetype->type_class.size;
+			ret = _NclSwapBytes(NULL,tmp_ptr,count,thetype->type_class.size);
+			if (ret < NhlWARNING)
+				return ret;
+		}
 		while((int)(step - (char*)tmp_ptr) < totalsize) {
 			memcpy(step,(char*)&(thetype->type_class.default_mis),thetype->type_class.size);
 			step += thetype->type_class.size;
@@ -2726,7 +2765,21 @@ NhlErrorTypes _NclIfbinrecwrite
 	int rsize = 0;
 	NclBasicDataTypes datai_type;
 	int total;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
 
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	control_word[0] = (char)0;
 	control_word[1] = (char)0;
@@ -2822,11 +2875,25 @@ NhlErrorTypes _NclIfbinrecwrite
 		lseek(fd,cur_off,SEEK_END);
 	}
 	if((rsize == -1)||(rsize== total)){
-		n = write(fd,&total,4);
-		n = write(fd,value,total);
-		n = write(fd,&total,4);
-		close(fd);
-		return(NhlNOERROR);
+		if (swap_bytes) {
+			char *outdata = NclMalloc(total);
+			if (!outdata)
+				return (NhlFATAL);
+			_NclSwapBytes(outdata,value,total / type->type_class.size,type->type_class.size);
+			n = write(fd,&total,4);
+			n = write(fd,outdata,total);
+			n = write(fd,&total,4);
+			close(fd);
+			NclFree(outdata);
+			return(NhlNOERROR);
+		}
+		else {
+			n = write(fd,&total,4);
+			n = write(fd,value,total);
+			n = write(fd,&total,4);
+			close(fd);
+			return(NhlNOERROR);
+		}
 	} else {
 		close(fd);
 		return(NhlFATAL);
@@ -2860,6 +2927,21 @@ NhlErrorTypes _NclIfbinrecread
 	int n;
 	int cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
+
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	control_word[0] = (char)0;
 	control_word[1] = (char)0;
@@ -2995,6 +3077,9 @@ NhlErrorTypes _NclIfbinrecread
 				close(fd);
 				return(NhlFATAL);
 			}
+			if (swap_bytes) {
+				_NclSwapBytes(NULL,value,n / thetype->type_class.size,thetype->type_class.size);
+			}
 			if(ind < size*thetype->type_class.size) {
 				for(;ind<size*thetype->type_class.size-1;ind+=thetype->type_class.size) {
 					memcpy((void*)((char*)value + ind * thetype->type_class.size),&thetype->type_class.default_mis,thetype->type_class.size);
@@ -3020,6 +3105,9 @@ NhlErrorTypes _NclIfbinrecread
 				NclFree(value);
 				close(fd);
 				return(NhlFATAL);
+			}
+			if (swap_bytes) {
+				_NclSwapBytes(NULL,value,n / thetype->type_class.size,thetype->type_class.size);
 			}
 			dimsize = ind/thetype->type_class.size;
 			tmp_md = _NclCreateMultiDVal(
@@ -3078,7 +3166,21 @@ NhlErrorTypes _NclIfbinread
 	NclStackEntry data_out;
 	int dim2;
 	int fd;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
 
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
 	dimensions = _NclGetArg(1,3,DONT_CARE);
@@ -3167,8 +3269,11 @@ NhlErrorTypes _NclIfbinread
 		totalsize = size*thetype->type_class.size;
 		tmp_ptr = NclMalloc(totalsize);
 	}
-	NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
 	if(tmp_ptr != NULL) {
+		NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+		if (swap_bytes) {
+			_NclSwapBytes(NULL,tmp_ptr,totalsize / thetype->type_class.size,thetype->type_class.size);
+		}
 		
 		tmp_md = _NclCreateMultiDVal(
 			NULL,
@@ -4141,7 +4246,21 @@ NhlErrorTypes _NclIfbindirwrite
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
 
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	fpath = _NclGetArg(0,2,DONT_CARE);
 	value = _NclGetArg(1,2,DONT_CARE);
@@ -4178,15 +4297,25 @@ NhlErrorTypes _NclIfbindirwrite
 		tmp_ptr = tmp_md->multidval.val;
 		thetype = tmp_md->multidval.type;
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
-	}
-	fd = open(path_string,(O_CREAT | O_RDWR),0666);
-	if((tmp_ptr != NULL)&&(fd >= 0)) {
-		lseek(fd,0,SEEK_END);
-		n = write(fd, tmp_ptr,totalsize);
-		close(fd);
-		return(ret);
-	} else if(fd < 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirwrite: Could not create file");
+		fd = open(path_string,(O_CREAT | O_RDWR),0666);
+		if(fd >= 0) {
+			lseek(fd,0,SEEK_END);
+			if (swap_bytes) {
+				char *outdata = NclMalloc(totalsize);
+				if (!outdata)
+					return (NhlFATAL);
+				_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
+				n = write(fd, outdata,totalsize);
+				NclFree(outdata);
+			}
+			else {
+				n = write(fd, tmp_ptr,totalsize);
+			}
+			close(fd);
+			return(ret);
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirwrite: Could not create file");
+		}
 	}
 	return(NhlFATAL);
 }
@@ -4216,7 +4345,21 @@ NhlErrorTypes _NclIcbinwrite
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
 
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	fpath = _NclGetArg(0,2,DONT_CARE);
 	value = _NclGetArg(1,2,DONT_CARE);
@@ -4253,14 +4396,33 @@ NhlErrorTypes _NclIcbinwrite
 		tmp_ptr = tmp_md->multidval.val;
 		thetype = tmp_md->multidval.type;
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
-	}
-	fd = open(path_string,(O_CREAT | O_RDWR),0666);
-	if((tmp_ptr != NULL)&&(fd >= 0)) {
-		n = write(fd, tmp_ptr,totalsize);
-		close(fd);
-		return(ret);
-	} else if(fd < 0) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
+		if (swap_bytes) {
+			char *outdata = NclMalloc(totalsize);
+			if (!outdata)
+				return (NhlFATAL);
+			_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
+			fd = open(path_string,(O_CREAT | O_RDWR),0666);
+			if(fd >= 0) {
+				n = write(fd,outdata,totalsize);
+				close(fd);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
+				ret = NhlFATAL;
+			}
+			NclFree(outdata);
+			return(ret);
+		}
+		else {
+			fd = open(path_string,(O_CREAT | O_RDWR),0666);
+			if(fd >= 0) {
+				n = write(fd, tmp_ptr,totalsize);
+				close(fd);
+			} else {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: Could not create file");
+				ret = NhlFATAL;
+			}
+			return(ret);
+		}
 	}
 	return(NhlFATAL);
 }
@@ -4290,7 +4452,21 @@ NhlErrorTypes _NclIfbinwrite
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+	int swap_bytes = 0;
 
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_WRITE_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	fpath = _NclGetArg(0,2,DONT_CARE);
 	value = _NclGetArg(1,2,DONT_CARE);
@@ -4308,7 +4484,7 @@ NhlErrorTypes _NclIfbinwrite
 	if(tmp_md != NULL) {
 		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
 		if(path_string == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"cbinwrite: An error in the file path was detected could not resolve file path");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: An error in the file path was detected could not resolve file path");
 			return(NhlFATAL);
 		}
 	}
@@ -4328,7 +4504,17 @@ NhlErrorTypes _NclIfbinwrite
 		thetype = tmp_md->multidval.type;
 		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
 	}
-	NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	if (swap_bytes) {
+		char *outdata = NclMalloc(totalsize);
+		if (!outdata)
+			return (NhlFATAL);
+		_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
+		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,outdata,&totalsize,&ret,strlen(path_string));
+		NclFree(outdata);
+	}
+	else {
+		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+	}
 	return(ret);
 }
 NhlErrorTypes _NclIsleep
