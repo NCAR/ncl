@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.29 2005-08-15 14:09:29 haley Exp $
+ *      $Id: yMakefile,v 1.30 2005-08-19 17:35:26 haley Exp $
  */
 /************************************************************************
 *									*
@@ -143,12 +143,11 @@ LSEARCH:
 ISEARCH:
 	@echo "$(INCSEARCH)"
 
-PYTHONLSEARCH:
-	@echo "$(PYTHONLIBSEARCH)"
+PYTHONDIR:
+	@echo "$(PYTHONDIR)"
 
-PYTHONISEARCH:
-	@echo "$(PYTHONINCSEARCH)"
-
+PYTHONVERS:
+	@echo "$(PYTHONVERSION)"
 
 #ifdef	BuildXlibDependentCode
 XSTUFF:
