@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.65 2005-08-03 21:07:51 haley Exp $
+ *      $Id: Project,v 1.66 2005-08-19 17:32:45 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2005-08-03 21:07:51 $
+ *	$Date: 2005-08-19 17:32:45 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -179,6 +179,7 @@ HLUEXDIR		= hluex
 NCLDIR			= ncl
 NCLEXDIR		= nclex
 PYNGLEXDIR		= pynglex
+PYNGLDIR		= PyNGL
 NGODIR			= ngo
 NFPDIR			= nfp
 NFPFORTDIR		= nfpfort
@@ -210,7 +211,6 @@ XAPPROOT		= $(LIBNCARGROOT)/$(XAPPDIR)
 HLUEXROOT		= $(LIBNCARGROOT)/$(HLUEXDIR)
 RESFILEROOT		= $(LIBNCARGROOT)/$(RESDIR)
 NCLEXROOT		= $(LIBNCARGROOT)/$(NCLEXDIR)
-PYNGLEXROOT		= $(LIBNCARGROOT)/$(PYNGLEXDIR)
 
 LIBNCARGPATH		= $(LIBPATH)/$(NCARGDIR)
 CONFIGPATH		= $(LIBNCARGPATH)/$(CONFIGDIR)
@@ -229,11 +229,12 @@ LIBNCLPATH		= $(LIBNCARGPATH)/$(NCLDIR)
 HLUEXPATH		= $(LIBNCARGPATH)/$(HLUEXDIR)
 RESFILEPATH		= $(LIBNCARGPATH)/$(RESDIR)
 NCLEXPATH		= $(LIBNCARGPATH)/$(NCLEXDIR)
-PYNGLEXPATH		= $(LIBNCARGPATH)/$(PYNGLEXDIR)
-NCARGINCPATH	= $(INCPATH)/$(NCARGDIR)
+NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
 NCLINCPATH		= $(NCARGINCPATH)/$(NCLDIR)
 NGOINCPATH		= $(NCARGINCPATH)/$(NGODIR)
+PYNGLBINPATH		= $(PYTHONBINDIR)
+PYNGLNCARGPATH		= $(PYTHONPKGSDIR)/$(PYNGLDIR)/$(NCARGDIR)
 USRRESFILE		= "~/.hluresfile"
 NCARGURL		= "ngurl"
 NCARGSITEFILE   = "ncargsite"

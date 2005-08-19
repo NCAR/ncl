@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.48 2005-05-05 04:08:51 haley Exp $
+ *      $Id: Template,v 1.49 2005-08-19 17:32:45 haley Exp $
  */
 /************************************************************************
 *									*
@@ -323,9 +323,25 @@ NGCOMM########################################################################
 #define LibSearch	ArchRecLibSearch
 #endif	/* LibSearch */
 
+#ifndef	PythonVersion
+#define PythonVersion	/**/
+#endif	/* PythonVersion */
+
+#ifndef	PythonDir
+#define PythonDir	/**/
+#endif	/* PythonDir */
+
+#ifndef	PythonBinDir
+#define PythonBinDir	/**/
+#endif	/* PythonBinDir */
+
 #ifndef	PythonLibSearch
 #define PythonLibSearch	/**/
 #endif	/* PythonLibSearch */
+
+#ifndef	PythonPkgsDir
+#define PythonPkgsDir	/**/
+#endif	/* PythonPkgsDir */
 
 #ifndef	PythonIncSearch
 #define PythonIncSearch	/**/
@@ -564,8 +580,11 @@ MANPATH			= ManPath
 
 LIBSEARCH		= LibSearch
 INCSEARCH		= IncSearch
+PYTHONVERSION		= PythonVersion
 PYTHONLIBSEARCH		= PythonLibSearch
 PYTHONINCSEARCH		= PythonIncSearch
+PYTHONPKGSDIR           = PythonPkgsDir
+PYTHONBINDIR            = PythonBinDir
 
 LIB_SEARCH		= LibSearch ExtraLibSearch
 INC_SEARCH		= IncSearch ExtraIncSearch
