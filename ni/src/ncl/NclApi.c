@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.57 2005-05-03 21:01:58 dbrown Exp $
+ *      $Id: NclApi.c,v 1.58 2005-08-19 22:01:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -55,6 +55,8 @@ extern "C" {
 
 short    NCLverbose = 0;
 short    NCLecho = 0;
+short   NCLoverrideEcho = 0;    /* override echo; non-advertised option */
+short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 
 int force_reset = 0;
 int start_state = 0;
