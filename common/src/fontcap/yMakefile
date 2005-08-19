@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.17 2004-08-03 16:24:37 haley Exp $
+#	$Id: yMakefile,v 1.18 2005-08-19 17:36:16 haley Exp $
 #
 
 MYNAME	= fontcap
@@ -35,7 +35,9 @@ FONTCAPS = \
 
 FortranProgram(fontc,$(OBJECTS),$(DEPLIBS))
 InstallTarget($(FONTCAPS),$(INSTALL_LIB),$(FONTCAPPATH))
-
+#ifdef BuildPyNGL
+InstallTarget($(FONTCAPS),$(INSTALL_LIB),$(PYNGLNCARGPATH)/$(FONTCAPDIR))
+#endif
 CleanFilesTarget($(FONTCAPS))
 
 # Rule for processing fontcaps

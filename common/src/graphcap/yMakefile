@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.19 2004-08-03 16:26:30 haley Exp $
+#	$Id: yMakefile,v 1.20 2005-08-19 17:36:17 haley Exp $
 #
 
 MYNAME	= graphcap
@@ -46,6 +46,9 @@ InstallTarget($(GRAPHCAPS),$(INSTALL_DB),$(GRAPHCAPPATH))
 #define linux
 #endif
 
+#ifdef BuildPyNGL
+InstallTarget($(GRAPHCAPS),$(INSTALL_LIB),$(PYNGLNCARGPATH)/$(GRAPHCAPDIR))
+#endif
 CleanFilesTarget($(GRAPHCAPS))
 
 # rule for processing graphcaps
