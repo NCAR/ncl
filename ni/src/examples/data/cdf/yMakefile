@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.21 2005-08-17 23:03:32 fred Exp $
+#   $Id: yMakefile,v 1.22 2005-08-19 19:52:18 haley Exp $
 #
 #   Makefile for netCDF data files for examples.
 #
@@ -21,3 +21,7 @@ DATA = 941110_P.cdf 941110_UV.cdf 95031800_sao.cdf 95031801_sao.cdf \
 	vinth2p.nc
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/cdf)
+#ifdef BuildPyNGL
+InstallTarget($(DATA),$(INSTALL_LIB),$(PYNGLNCARGPATH)/$(DATADIR)/cdf)
+#endif
+

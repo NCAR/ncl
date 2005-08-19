@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.7 2005-02-24 19:59:24 fred Exp $
+#   $Id: yMakefile,v 1.8 2005-08-19 19:52:16 haley Exp $
 #
 #   Makefile for ASC data files
 #
@@ -11,3 +11,7 @@ DATA  = cn03f.asc cn04n.asc cn11f.asc cn12n.asc ex05B1_uv_jan_mm92.hs.asc \
 	xy08.asc xy12c.asc sounding_ATS.asc sounding_testdata.asc
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/asc)
+#ifdef BuildPyNGL
+InstallTarget($(DATA),$(INSTALL_LIB),$(PYNGLNCARGPATH)/$(DATADIR)/asc)
+#endif
+

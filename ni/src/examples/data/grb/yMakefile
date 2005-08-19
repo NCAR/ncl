@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.1 1996-04-04 19:39:56 haley Exp $
+#   $Id: yMakefile,v 1.2 2005-08-19 19:52:18 haley Exp $
 #
 #   Makefile for GRIB data files
 #
@@ -7,8 +7,12 @@
 MYNAME = grb
 
 DATA  = ced1.lf00.t00z.eta.grb
-		
+
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/grb)
+#ifdef BuildPyNGL
+InstallTarget($(DATA),$(INSTALL_LIB),$(PYNGLNCARGPATH)/$(DATADIR)/grb)
+#endif
+
 
 
 
