@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.72 2005-03-07 17:05:15 haley Exp $
+#      $Id: yMakefile,v 1.73 2005-08-19 19:53:07 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -130,6 +130,9 @@ LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/hlu,../..)
 InstallTarget($(HDRS),$(INSTALL_INC),$(HLUINCPATH))
 InstallTarget(sysresfile,$(INSTALL_INC),$(LIBNCARGPATH))
+#ifdef BuildPyNGL
+InstallTarget(sysresfile,$(INSTALL_INC),$(PYNGLNCARGPATH))
+#endif
 DependTarget($(CSRCS))
 
 triangle.o: triangle.c
