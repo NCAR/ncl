@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.4 2004-04-22 14:52:21 haley Exp $
+#	$Id: yMakefile,v 1.5 2005-08-19 19:51:10 haley Exp $
 #
 
 MYNAME  = plotchar
@@ -11,6 +11,10 @@ DEPLIBS		= $(DEPNCARGLIB) $(DEPNCARGCLIB)
 
 FortranProgram(WritePlotcharData,$(OBJECTS),$(DEPLIBS))
 InstallTarget(PlotcharData,$(INSTALL_DB),$(DBPATH))
+#ifdef BuildPyNGL
+InstallTarget(PlotcharData,$(INSTALL_DB),$(PYNGLNCARGPATH)/$(DBDIR))
+#endif
+
 CleanFilesTarget(PlotcharData)
 
 PlotcharData: WritePlotcharData pwritxc1 pwritxd1 pwritxc2 pwritxd2

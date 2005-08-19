@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.14 2000-07-30 15:00:42 haley Exp $
+#       $Id: yMakefile,v 1.15 2005-08-19 19:51:09 haley Exp $
 #
 
 DBFILES = EzmapAreaInfo.CO EzmapAreaInfo.PO EzmapAreaInfo.PS EzmapAreaInfo.US \
@@ -13,6 +13,9 @@ PROG_LIBS	=	$(NCARGCLIB)
 DEPLIBS		=	$(DEPNCARGCLIB)
 
 InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
+#ifdef BuildPyNGL
+InstallTarget($(DBFILES),$(INSTALL_DB),$(PYNGLNCARGPATH)/$(DBDIR))
+#endif
 
 CleanFilesTarget(ConvertMapData EzmapOutlines.CO EzmapOutlines.PO \
 		 EzmapOutlines.PS EzmapOutlines.US ezmapdata \

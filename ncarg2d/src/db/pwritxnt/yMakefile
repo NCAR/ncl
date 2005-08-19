@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.7 2003-04-14 13:50:44 haley Exp $
+#	$Id: yMakefile,v 1.8 2005-08-19 19:51:10 haley Exp $
 #
 
 MYNAME	= pwritxnt
@@ -17,6 +17,11 @@ DEPLIBS		= $(DEPNCARGLIB) $(DEPNCARGCLIB)
 
 FortranProgram(pwritxnt,$(OBJECTS),$(DEPLIBS))
 InstallTarget(pwritdata,$(INSTALL_DB),$(DBPATH))
+#ifdef BuildPyNGL
+InstallTarget(pwritdata,$(INSTALL_DB),$(PYNGLNCARGPATH)/$(DBDIR))
+#endif
+
+
 CleanFilesTarget(pwritdata)
 
 pwritdata: pwritxnt pwritxc1 pwritxd1 pwritxc2 pwritxd2
