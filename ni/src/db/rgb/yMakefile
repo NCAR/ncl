@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.1 2002-03-29 16:31:37 haley Exp $
+#       $Id: yMakefile,v 1.2 2005-08-19 19:51:58 haley Exp $
 #
 GENERATED	= rgb.pag rgb.dir
 DBFILES		= rgb.txt $(GENERATED)
@@ -13,6 +13,10 @@ SRCS		= rgb.c
 OBJS		= rgb.o
 
 InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH))
+#ifdef BuildPyNGL
+InstallTarget($(DBFILES),$(INSTALL_DB),$(PYNGLNCARGPATH)/$(DBDIR))
+#endif
+
 CleanFilesTarget($(GENERATED))
 
 CNotInstalledTarget($(PROG),$(OBJS))
