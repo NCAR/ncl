@@ -1,5 +1,5 @@
 /*
- * $Id: nnusers.c,v 1.7 2002-04-01 18:11:55 haley Exp $
+ * $Id: nnusers.c,v 1.8 2005-08-21 05:45:24 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -123,7 +123,7 @@ void c_nnsetr(char *pnam, float dval)
    }
    else {
       sprintf(emsg,"\n  Parameter name supplied is: %s\n",pnam);
-      ErrorHnd(23, "c_nngetc", stderr, emsg);
+      ErrorHnd(23, "c_nnsetr", stderr, emsg);
    }
 }
 
