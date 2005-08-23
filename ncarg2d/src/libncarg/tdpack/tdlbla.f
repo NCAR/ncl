@@ -1,6 +1,6 @@
 C
-C $Id: tdlbla.f,v 1.3 2000-08-22 15:07:09 haley Exp $
-C                                                                      
+C $Id: tdlbla.f,v 1.4 2005-08-23 22:08:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -93,8 +93,20 @@ C Output the numeric labels, if any.
 C
         IF (NLBL.NE.' ') THEN
           NCHS=LEN(NLBL)
+          IF (NLBL(1:1).EQ.' '.OR.NLBL(1:1).EQ.'+'.OR.
+     +        NLBL(1:1).EQ.'-'.OR.NLBL(1:1).EQ.'.'.OR.
+     +        NLBL(1:1).EQ.'0'.OR.NLBL(1:1).EQ.'1'.OR.
+     +        NLBL(1:1).EQ.'2'.OR.NLBL(1:1).EQ.'3'.OR.
+     +        NLBL(1:1).EQ.'4'.OR.NLBL(1:1).EQ.'5'.OR.
+     +        NLBL(1:1).EQ.'6'.OR.NLBL(1:1).EQ.'7'.OR.
+     +        NLBL(1:1).EQ.'8'.OR.NLBL(1:1).EQ.'9'.OR.
+     +        NLBL(1:1).EQ.'*') THEN
+            IOFC=1
+          ELSE
+            IOFC=2
+          END IF
           IBEG=0
-          DO 101 I=1,NCHS
+          DO 101 I=IOFC,NCHS
             IF (NLBL(I:I).NE.' '.AND.NLBL(I:I).NE.'*') THEN
               IF (IBEG.EQ.0) IBEG=I
               IEND=I
@@ -104,6 +116,7 @@ C
      +            NLBL(I:I).EQ.'*'.OR.I.EQ.NCHS) THEN
                 WRITE (FORM,'(''(E'',I2,''.0)'')') IEND-IBEG+1
                 READ  (NLBL(IBEG:IEND),FORM) RVAL
+                IF (IOFC.NE.1) CALL TDLBLP (NLBL(1:1),RVAL,RVAL)
                 IF (IAXS.EQ.1.OR.IAXS.EQ.2) THEN
                   RVAL=(RVAL-YAT0)*SIGN(1.,YAT1-YAT0)
                   CALL TDPLCH (PONL(IAXS)*XRNG+OONL(IAXS)*CSM2,RVAL,
