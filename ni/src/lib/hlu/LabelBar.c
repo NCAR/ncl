@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.72 2005-08-24 21:12:13 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.73 2005-08-24 22:06:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4321,11 +4321,25 @@ NhlLabelBarLayer lbl;
 	float xp1,yp1,xp2,yp2;
 	int i;
 	int fill_color;
-	float frac, dist;
 	int nx,ny;
+	int has_transparent = 0;
 	
-	frac = (1.0 - lb_p->box_major_ext) / 2.0;
 	colors = (int *)lb_p->fill_colors->data;
+	/* 
+	 * If any colors are Transparent, then raster mode
+	 * cannot be used
+	 */
+	for (i = 0; i < lb_p->box_count; i++) {
+		if (colors[i] >= 0) 
+			continue;
+		has_transparent = 1;
+	}
+        if (has_transparent || lb_p->box_sizing == NhlEXPLICITSIZING) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "LabelBarDraw: cannot use raster fill if explicit box sizing set or any color index is transparent: defaulting to normal fill");
+		DrawFilledBoxes(lbl,False);
+		return ret;
+	}
 	xp1 = lb_p->adj_bar.l;
 	yp1 = lb_p->adj_bar.b;
 	xp2 = lb_p->adj_bar.r;
@@ -4341,6 +4355,9 @@ NhlLabelBarLayer lbl;
 	}
 	_NhlWorkstationCellFill
 		(lbl->base.wkptr,xp1,yp1,xp2,yp2,nx,ny,colors);
+
+	DrawFilledBoxes(lbl,True);
+
 	return ret;
 }
 
@@ -4463,9 +4480,8 @@ static NhlErrorTypes    LabelBarDraw
 /* 
  * Draw the boxes
  */
-	if (lb_p->raster_fill_on && lb_p->box_sizing != NhlEXPLICITSIZING) {
+	if (lb_p->raster_fill_on) {
 		DrawRasterBoxes(lbl);
-		DrawFilledBoxes(lbl,True);
 	}
 	else {
 		DrawFilledBoxes(lbl,False);
