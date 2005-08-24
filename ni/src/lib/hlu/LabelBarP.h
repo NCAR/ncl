@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBarP.h,v 1.16 2003-06-04 19:04:21 dbrown Exp $
+ *      $Id: LabelBarP.h,v 1.17 2005-08-24 21:12:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -132,6 +132,7 @@ typedef struct _NhlLabelBarLayerPart {
 
 	int	fill_background;
 	float	fill_line_thickness;
+	NhlBoolean raster_fill_on;
 
 	/* private fields */
 

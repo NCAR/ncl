@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkstationI.h,v 1.14 2003-11-25 22:41:34 dbrown Exp $
+ *      $Id: WorkstationI.h,v 1.15 2005-08-24 21:12:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -217,6 +217,19 @@ NhlLayer   /* instance */,
 float*   /* x */,
 float*   /* y */,
 int     /* num_points */
+#endif
+);
+
+extern NhlErrorTypes _NhlWorkstationCellFill(
+#if	NhlNeedProto
+NhlLayer	l,
+float		xp1,
+float		yp1,
+float           xp2,
+float           yp2,
+int             nx,
+int             ny,
+int             *clrixs
 #endif
 );
 

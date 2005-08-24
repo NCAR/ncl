@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.133 2005-04-15 21:50:33 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.134 2005-08-24 21:12:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -6132,6 +6132,9 @@ static NhlErrorTypes ManageLabelBar
 
 	if (init || set_all) {
 		NhlSetSArg(&sargs[(*nargs)++],
+			   NhlNlbRasterFillOn,
+			   (cnp->fill_mode == NhlRASTERFILL ? True : False));
+		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelAlignment,cnp->lbar_alignment);
@@ -6162,6 +6165,12 @@ static NhlErrorTypes ManageLabelBar
 		return ret;
 	}
 
+	if ((cnp->fill_mode == NhlRASTERFILL && 
+	     ocnp->fill_mode !=  NhlRASTERFILL) ||
+	    (cnp->fill_mode != NhlRASTERFILL && 
+	     ocnp->fill_mode ==  NhlRASTERFILL))
+		NhlSetSArg(&sargs[(*nargs)++],NhlNlbRasterFillOn,
+			   (cnp->fill_mode == NhlRASTERFILL ? True : False));
 	if (cnp->fill_count != ocnp->fill_count)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbBoxCount,cnp->fill_count);

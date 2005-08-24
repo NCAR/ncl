@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.71 2003-06-04 19:04:11 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.72 2005-08-24 21:12:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -322,6 +322,9 @@ static NhlResource resources[] = {
 	 sizeof(float), 
 	 NhlOffset(NhlLabelBarLayerRec,labelbar.fill_line_thickness),
 	 NhlTString,_NhlUSET("1.0"),0,NULL},
+	{NhlNlbRasterFillOn, NhlClbRasterFillOn, NhlTBoolean,
+	 sizeof(NhlBoolean), NhlOffset(NhlLabelBarLayerRec,labelbar.raster_fill_on),
+	 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
 
 /* End-documented-resources */
 
@@ -4182,6 +4185,166 @@ static NhlGenArray GenArraySubsetCopy
 			
 }
 
+static NhlErrorTypes    DrawFilledBoxes
+#if	NhlNeedProto
+(	
+NhlLabelBarLayer lbl,
+NhlBoolean edges_only
+)
+#else
+(lbl,edges_only)
+NhlLabelBarLayer lbl;
+NhlBoolean edges_only;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlLabelBarLayerPart *lb_p = &(lbl->labelbar);
+	int *colors, *patterns;
+	float xpoints[5];
+	float ypoints[5];
+	int i;
+	int fill_color, fill_pattern;
+	float fill_scale, *fill_scales;
+	float frac, dist;
+		
+	frac = (1.0 - lb_p->box_major_ext) / 2.0;
+	colors = (int *)lb_p->fill_colors->data;
+	patterns = (int *)lb_p->fill_patterns->data;
+	fill_scales = (float *) lb_p->fill_scales->data;
+
+	if (lb_p->orient == NhlHORIZONTAL) {
+
+		ypoints[0] = lb_p->adj_bar.b;
+		ypoints[1] = lb_p->adj_bar.b;
+		ypoints[2] = lb_p->adj_bar.t;
+		ypoints[3] = lb_p->adj_bar.t;
+		ypoints[4] = lb_p->adj_bar.b;
+		for (i=0; i<lb_p->box_count; i++) {
+			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
+			xpoints[0] = lb_p->box_locs[i] + dist * frac;
+			xpoints[1] = lb_p->box_locs[i+1] - dist * frac;
+			xpoints[2] = xpoints[1];
+			xpoints[3] = xpoints[0];
+			xpoints[4] = xpoints[0];
+			
+			if (edges_only) 
+				fill_color = NhlTRANSPARENT;
+			else if (lb_p->mono_fill_color)
+				fill_color = lb_p->fill_color;
+			else
+				fill_color = colors[i];
+
+			if (lb_p->mono_fill_pattern)
+				fill_pattern = lb_p->fill_pattern;
+			else
+				fill_pattern = patterns[i];
+			
+			if (lb_p->mono_fill_scale)
+				fill_scale = lb_p->fill_scale;
+			else
+				fill_scale = fill_scales[i];
+
+			NhlVASetValues(lbl->base.wkptr->base.id,
+				     _NhlNwkFillIndex, fill_pattern,
+				     _NhlNwkFillColor, fill_color,
+				     _NhlNwkFillScaleFactorF, fill_scale,
+				     _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
+				     NULL);
+			
+			_NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
+			_NhlWorkstationFill(lbl->base.wkptr,
+					    xpoints,ypoints,5);
+			
+		}
+	}
+	else {
+		xpoints[0] = lb_p->adj_bar.l;
+		xpoints[1] = lb_p->adj_bar.r;
+		xpoints[2] = lb_p->adj_bar.r;
+		xpoints[3] = lb_p->adj_bar.l;
+		xpoints[4] = lb_p->adj_bar.l;
+		for (i=0; i< lb_p->box_count; i++) {
+			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
+			ypoints[0] = lb_p->box_locs[i] + dist * frac;
+			ypoints[1] = ypoints[0];
+			ypoints[2] = lb_p->box_locs[i+1] - dist * frac;
+			ypoints[3] = ypoints[2];
+			ypoints[4] = ypoints[0];
+
+			
+			if (edges_only) 
+				fill_color = NhlTRANSPARENT;
+			else if (lb_p->mono_fill_color)
+				fill_color = lb_p->fill_color;
+			else
+				fill_color = colors[i];
+
+			if (lb_p->mono_fill_pattern)
+				fill_pattern = lb_p->fill_pattern;
+			else
+				fill_pattern = patterns[i];
+			
+			if (lb_p->mono_fill_scale)
+				fill_scale = lb_p->fill_scale;
+			else
+				fill_scale = fill_scales[i];
+
+			NhlVASetValues(lbl->base.wkptr->base.id,
+				     _NhlNwkFillIndex, fill_pattern,
+				     _NhlNwkFillColor, fill_color,
+				     _NhlNwkFillScaleFactorF, fill_scale,
+				     _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
+				     NULL);
+			
+			_NhlSetFillInfo(lbl->base.wkptr, (NhlLayer) lbl);
+			_NhlWorkstationFill(lbl->base.wkptr,
+					    xpoints,ypoints,5);
+			
+		}
+	}
+	return ret;
+}
+
+static NhlErrorTypes    DrawRasterBoxes
+#if	NhlNeedProto
+(	
+NhlLabelBarLayer lbl
+)
+#else
+(lbl)
+NhlLabelBarLayer lbl;
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NhlLabelBarLayerPart *lb_p = &(lbl->labelbar);
+	int *colors;
+	float xp1,yp1,xp2,yp2;
+	int i;
+	int fill_color;
+	float frac, dist;
+	int nx,ny;
+	
+	frac = (1.0 - lb_p->box_major_ext) / 2.0;
+	colors = (int *)lb_p->fill_colors->data;
+	xp1 = lb_p->adj_bar.l;
+	yp1 = lb_p->adj_bar.b;
+	xp2 = lb_p->adj_bar.r;
+	yp2 = lb_p->adj_bar.t;
+
+	if (lb_p->orient == NhlHORIZONTAL) {
+		nx = lb_p->box_count;
+		ny = 1;
+	}
+	else {
+		nx = 1;
+		ny = lb_p->box_count;
+	}
+	_NhlWorkstationCellFill
+		(lbl->base.wkptr,xp1,yp1,xp2,yp2,nx,ny,colors);
+	return ret;
+}
+
+
 
 /*
  * Function:	LabelBarDraw
@@ -4215,11 +4378,6 @@ static NhlErrorTypes    LabelBarDraw
 	char *entry_name = "LabelBarDraw";
 	float xpoints[5];
 	float ypoints[5];
-	int i;
-	int fill_color, fill_pattern;
-	int *colors, *patterns;
-	float fill_scale, *fill_scales;
-	float frac, dist;
 
 	if (! lb_p->labelbar_on)
 		return(ret);
@@ -4305,96 +4463,12 @@ static NhlErrorTypes    LabelBarDraw
 /* 
  * Draw the boxes
  */
-	frac = (1.0 - lb_p->box_major_ext) / 2.0;
-	colors = (int *)lb_p->fill_colors->data;
-	patterns = (int *)lb_p->fill_patterns->data;
-	fill_scales = (float *) lb_p->fill_scales->data;
-
-	if (lb_p->orient == NhlHORIZONTAL) {
-
-		ypoints[0] = lb_p->adj_bar.b;
-		ypoints[1] = lb_p->adj_bar.b;
-		ypoints[2] = lb_p->adj_bar.t;
-		ypoints[3] = lb_p->adj_bar.t;
-		ypoints[4] = lb_p->adj_bar.b;
-		for (i=0; i<lb_p->box_count; i++) {
-			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
-			xpoints[0] = lb_p->box_locs[i] + dist * frac;
-			xpoints[1] = lb_p->box_locs[i+1] - dist * frac;
-			xpoints[2] = xpoints[1];
-			xpoints[3] = xpoints[0];
-			xpoints[4] = xpoints[0];
-			
-			if (lb_p->mono_fill_color)
-				fill_color = lb_p->fill_color;
-			else
-				fill_color = colors[i];
-
-			if (lb_p->mono_fill_pattern)
-				fill_pattern = lb_p->fill_pattern;
-			else
-				fill_pattern = patterns[i];
-			
-			if (lb_p->mono_fill_scale)
-				fill_scale = lb_p->fill_scale;
-			else
-				fill_scale = fill_scales[i];
-
-			NhlVASetValues(lbl->base.wkptr->base.id,
-				     _NhlNwkFillIndex, fill_pattern,
-				     _NhlNwkFillColor, fill_color,
-				     _NhlNwkFillScaleFactorF, fill_scale,
-				     _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
-				     NULL);
-			
-			_NhlSetFillInfo(lbl->base.wkptr, layer);
-			_NhlWorkstationFill(lbl->base.wkptr,
-					    xpoints,ypoints,5);
-			
-		}
+	if (lb_p->raster_fill_on && lb_p->box_sizing != NhlEXPLICITSIZING) {
+		DrawRasterBoxes(lbl);
+		DrawFilledBoxes(lbl,True);
 	}
 	else {
-		xpoints[0] = lb_p->adj_bar.l;
-		xpoints[1] = lb_p->adj_bar.r;
-		xpoints[2] = lb_p->adj_bar.r;
-		xpoints[3] = lb_p->adj_bar.l;
-		xpoints[4] = lb_p->adj_bar.l;
-		for (i=0; i< lb_p->box_count; i++) {
-			dist = lb_p->box_locs[i+1] - lb_p->box_locs[i];
-			ypoints[0] = lb_p->box_locs[i] + dist * frac;
-			ypoints[1] = ypoints[0];
-			ypoints[2] = lb_p->box_locs[i+1] - dist * frac;
-			ypoints[3] = ypoints[2];
-			ypoints[4] = ypoints[0];
-
-			
-			if (lb_p->mono_fill_color)
-				fill_color = lb_p->fill_color;
-			else
-				fill_color = colors[i];
-
-			if (lb_p->mono_fill_pattern)
-				fill_pattern = lb_p->fill_pattern;
-			else
-				fill_pattern = patterns[i];
-			
-			if (lb_p->mono_fill_scale)
-				fill_scale = lb_p->fill_scale;
-			else
-				fill_scale = fill_scales[i];
-
-			NhlVASetValues(lbl->base.wkptr->base.id,
-				     _NhlNwkFillIndex, fill_pattern,
-				     _NhlNwkFillColor, fill_color,
-				     _NhlNwkFillScaleFactorF, fill_scale,
-				     _NhlNwkFillDotSizeF, lb_p->fill_dot_size,
-				     NULL);
-			
-			_NhlSetFillInfo(lbl->base.wkptr, layer);
-			_NhlWorkstationFill(lbl->base.wkptr,
-					    xpoints,ypoints,5);
-			
-		}
+		DrawFilledBoxes(lbl,False);
 	}
 
 	if (lbl->view.use_segments) {

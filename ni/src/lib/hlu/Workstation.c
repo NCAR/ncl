@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.105 2004-03-20 00:16:24 dbrown Exp $
+ *      $Id: Workstation.c,v 1.106 2005-08-24 21:12:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4469,6 +4469,62 @@ WorkstationFill
 
 }
 
+NhlErrorTypes
+_NhlWorkstationCellFill
+#if  NhlNeedProto
+(
+	NhlLayer	l,
+	float		xp1,
+	float		yp1,
+        float           xp2,
+	float           yp2,
+	int             nx,
+	int             ny,
+	int             *clrixs
+)
+#else
+(l,xp1,yp1,xp2,yp2,nx,ny,*clrixs)
+	NhlLayer	l;
+	float		xp1;
+	float		yp1;
+        float           xp2;
+	float           yp2;
+	int             nx;
+	int             ny;
+        int             *clrixs;
+#endif
+{
+	char			func[] = "WorkstationRasterFill";
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart	*wk_p = &wl->work;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+	int			ll, ix;
+	Gfill_int_style		save_fillstyle;
+	Gint			err_ind;
+	int                     xs = 1;
+	int                     ys = 1;
+	
+
+/*
+ * Make the user space coincide with the NDC space for the
+ * duration of the routine
+ */
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+
+	NGCALLF(gca,GCA)(&xp1,&yp1,&xp2,&yp2,&nx,&ny,&xs,&ys,&nx,&ny,clrixs);
+
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	return(NhlNOERROR);
+
+}
+
 NhlBoolean LLUGksWorkIsOpen
 #if     NhlNeedProto
 (
@@ -5954,6 +6010,65 @@ _NhlSetFillInfo
 	}
 
         return;
+}
+
+
+static NhlErrorTypes
+_NhlWorkstationRasterFill
+#if  NhlNeedProto
+(
+	NhlLayer	l,
+	float		xp1,
+	float		yp1,
+        float           xp2,
+	float           yp2,
+	int             nx,
+	int             ny,
+	int             *clrixs
+)
+#else
+(l,xp1,yp1,xp2,yp2,nx,ny,*clrixs)
+	NhlLayer	l;
+	float		xp1;
+	float		yp1;
+        float           xp2;
+	float           yp2;
+	int             nx;
+	int             ny;
+        int             *clrixs;
+#endif
+{
+	char			func[] = "WorkstationRasterFill";
+	NhlWorkstationLayer	wl = (NhlWorkstationLayer)l;
+	NhlWorkstationLayerPart	*wk_p = &wl->work;
+        float			fl,fr,fb,ft,ul,ur,ub,ut;
+	int			ll, ix;
+	Gfill_int_style		save_fillstyle;
+	Gint			err_ind;
+	int                     xs = 1;
+	int                     ys = 1;
+	
+
+/*
+ * Make the user space coincide with the NDC space for the
+ * duration of the routine
+ */
+	c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+
+	NGCALLF(gca,GCA)(&xp1,&yp1,&xp2,&yp2,&nx,&ny,&xs,&ys,&nx,&ny,clrixs);
+	if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+		return NhlFATAL;
+
+	c_set(fl,fr,fb,ft,ul,ur,ub,ut,ll);
+	(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+	return(NhlNOERROR);
+
 }
 
 NhlErrorTypes

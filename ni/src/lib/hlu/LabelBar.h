@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.h,v 1.16 2003-06-04 19:04:21 dbrown Exp $
+ *      $Id: LabelBar.h,v 1.17 2005-08-24 21:12:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -126,6 +126,7 @@ typedef enum _NhllbBoxSizingMode {
 
 #define NhlNlbFillBackground		"lbFillBackground"
 #define NhlNlbFillLineThicknessF	"lbFillLineThicknessF"
+#define NhlNlbRasterFillOn		"lbRasterFillOn"
 
 /* Class resources */
 
@@ -172,6 +173,7 @@ typedef enum _NhllbBoxSizingMode {
 #define NhlClbTitleFuncCode		"LbTitleFuncCode"
 
 #define NhlClbBoxLinesOn		"LbBoxLinesOn"
+#define NhlClbRasterFillOn		"LbRasterFillOn"
 
 
 
