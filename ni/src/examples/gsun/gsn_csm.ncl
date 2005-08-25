@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.197 2005-08-15 17:30:42 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.198 2005-08-25 05:56:45 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1933,12 +1933,20 @@ begin
       "cnFillColors"          : colors
       "cnFillPatterns"        : fill_patterns
       "cnFillScales"          : fill_scales
+      "cnFillMode"            : fill_mode
       "cnMonoFillPattern"     : mono_fill_pat
       "cnMonoFillScale"       : mono_fill_scl
       "cnMonoFillColor"       : mono_fill_col
       "lbLabelStrings"        : lbstrings
       "cnLabelBarEndLabelsOn" : end_labels_on
     end getvalues
+;
+; Check if the fill mode is "RasterFill". If so, be sure to 
+; set lbRasterFillOn to True
+;
+    if(.not.isatt(lbres,"lbRasterFillOn").and.fill_mode.eq.1)
+      lbres@lbRasterFillOn = True
+    end if
 ;
 ; Check if we want different fill patterns or fill scales.  If so, we
 ; have to pass these on to the labelbar.
