@@ -3838,7 +3838,7 @@ int * nlonatts;
  * The conditional that goes to TRY2 is also part of the IPCC hack.
  */
 	TRY2:
-		NGCALLF(gaqdncl,GAQDNCL)(&nlat,theta,wts,work,&lwork,&ierror);
+		NGCALLF(gaqdnio,GAQDNIO)(&nlat,theta,wts,work,&lwork,&ierror);
 
 
 
