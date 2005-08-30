@@ -45,6 +45,7 @@ void *
 */
 typedef void * (*NclInitializeFileRecFunc)(
 #if	NhlNeedProto
+void
 #endif
 );
 
