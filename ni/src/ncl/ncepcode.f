@@ -1833,12 +1833,13 @@ C$$$
      $ 146.870307625, 150.011882457, 153.153458019, 156.295034268 /
       DOUBLE PRECISION DLT,D1
       DOUBLE PRECISION AWORK((JMAX+1)/2,(JMAX+1)/2), BWORK((JMAX+1)/2)
-      INTEGER JHE,JHO,J0
+      INTEGER JHE,JHO,J0,NEXP
       INTEGER IPVT((JMAX+1)/2)
       PARAMETER(PI=3.14159265358979,C=(1.-(2./PI)**2)*0.25)
       D1 = 1.
       J0 = 0
-      EPS=10.* 2**(-48)
+      NEXP = -48 
+      EPS=10.* 2**NEXP
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  GAUSSIAN LATITUDES
       IF(IDRT.EQ.4) THEN
