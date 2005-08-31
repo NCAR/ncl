@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.85 2003-11-21 00:04:19 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.86 2005-08-31 18:16:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1780,6 +1780,7 @@ CurlyVectorInitialize
 		NhlRLSetInteger(rlist,
 				NhlNstScalarFieldData,vcp->scalar_field_id);
 	NhlRLSetInteger(rlist,NhlNstPositionMode,vcp->position_mode);
+	NhlRLSetInteger(rlist,NhlNstMapDirection,vcp->map_direction);
 
 	NhlRLSetFloatArray(rlist,NhlNstLevels,
 			   (float *)vcp->levels->data,
@@ -2360,6 +2361,8 @@ CurlyVectorSetValues
 				vcp->scalar_mval_color);
 	if (vcp->position_mode != ovcp->position_mode)
 		NhlRLSetInteger(rlist,NhlNstPositionMode,vcp->position_mode);
+	if (vcp->map_direction != ovcp->map_direction)
+		NhlRLSetInteger(rlist,NhlNstMapDirection,vcp->map_direction);
 	if (vcp->level_spacing_set)
 		NhlRLSetFloat(rlist,NhlNstLevelSpacingF,vcp->level_spacing);
 	if (_NhlArgIsSet(args,num_args,NhlNvcMinLevelValF))
