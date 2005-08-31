@@ -9,3 +9,6 @@
 #include "DataSupport.h"
 #include "FileSupport.h"
 #include "NclMdInc.h"
+
+
+extern void NioInitialize(void);
