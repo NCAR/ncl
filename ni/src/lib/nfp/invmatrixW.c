@@ -183,12 +183,12 @@ NhlErrorTypes solve_linsys_W( void )
   }
 
   if(dsizes_b[ndims_b-1] != n || dsizes_a[1] != n) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: The two dimensions of 'a' and the last dimension of 'b' must be n");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"solve_linsys: The two dimensions of 'a' and the rightmost dimension of 'b' must be n");
     return(NhlFATAL);
   }
 
   if(ndims_b==2) {
-    nrhs = dsizes_b[1];
+    nrhs = dsizes_b[0];
   }
   else {
     nrhs = 1;
