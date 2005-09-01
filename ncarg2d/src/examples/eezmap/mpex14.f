@@ -70,20 +70,20 @@ C
 C Forward mapping functions, Northern hemisphere EASE grid (R and S as
 C functions of latitude and longitude).
 C
-        RNOR(RLAT,RLON)=RZRO+2.*(REKM/DCKM)*SIN(RLON)*SIN(PI/4.-RLAT/2.)
-        SNOR(RLAT,RLON)=SZRO+2.*(REKM/DCKM)*COS(RLON)*SIN(PI/4.-RLAT/2.)
+        RNOR(XLAT,XLON)=RZRO+2.*(REKM/DCKM)*SIN(XLON)*SIN(PI/4.-XLAT/2.)
+        SNOR(XLAT,XLON)=SZRO+2.*(REKM/DCKM)*COS(XLON)*SIN(PI/4.-XLAT/2.)
 C
 C Forward mapping functions, Southern hemisphere EASE grid (R and S as
 C functions of latitude and longitude).
 C
-        RSOU(RLAT,RLON)=RZRO+2.*(REKM/DCKM)*SIN(RLON)*COS(PI/4.-RLAT/2.)
-        SSOU(RLAT,RLON)=SZRO-2.*(REKM/DCKM)*COS(RLON)*COS(PI/4.-RLAT/2.)
+        RSOU(XLAT,XLON)=RZRO+2.*(REKM/DCKM)*SIN(XLON)*COS(PI/4.-XLAT/2.)
+        SSOU(XLAT,XLON)=SZRO-2.*(REKM/DCKM)*COS(XLON)*COS(PI/4.-XLAT/2.)
 C
 C Forward mapping functions, global EASE grid (R and S as functions of
 C latitude and longitude).
 C
-        RGLO(RLAT,RLON)=RZRO+(REKM/DCKM)*RLON*(SQRT(3.)/2.)
-        SGLO(RLAT,RLON)=SZRO-(REKM/DCKM)*SIN(RLAT)/(SQRT(3.)/2.)
+        RGLO(XLAT,XLON)=RZRO+(REKM/DCKM)*XLON*(SQRT(3.)/2.)
+        SGLO(XLAT,XLON)=SZRO-(REKM/DCKM)*SIN(XLAT)/(SQRT(3.)/2.)
 C
 C Inverse mapping functions, Northern hemisphere EASE grid (latitude and
 C longitude as functions of R and S).
