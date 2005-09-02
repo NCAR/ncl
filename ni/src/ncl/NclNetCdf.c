@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.35 2005-07-26 22:21:29 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.36 2005-09-02 19:02:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1300,7 +1300,7 @@ long *stride;
 					cdfid = rec->cdfid;
 					EndDefineModeIf(rec, cdfid);
 				}
-				if (no_stride) {
+				else if (no_stride) {
 					nc__open(NrmQuarkToString(rec->file_path_q),NC_WRITE,&chunksizehint,&cdfid);
 					/* printf ("got size = %d\n",chunksizehint); */
 					rec->cdfid = cdfid;
