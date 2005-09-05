@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.167 2005-09-05 19:48:04 haley Exp $
+;      $Id: gsn_code.ncl,v 1.168 2005-09-05 20:49:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6188,7 +6188,7 @@ end
 ;       is set to True, you will either get exactly bins of this size,  ;
 ;       or approximately this size.                                     ; 
 ;                                                                       ;
-; gsnHistogramBarWidthPercentage - This indicates the percentage of the ;
+; gsnHistogramBarWidthPercent - This indicates the percentage of the    ;
 ;       the bin width that the bar width should be. The default is 66%  ;
 ;       for single histograms, and 50% for comparison.                  ;
 ;                                                                       ;
@@ -6322,15 +6322,15 @@ begin
   else
     bar_wdt_perc = 0.66667
   end if
-  if(isatt(res2,"gsnHistogramBarWidthPercentage")) then
-    if(res2@gsnHistogramBarWidthPercentage.le.0.or. \
-       res2@gsnHistogramBarWidthPercentage.gt.100.) then
+  if(isatt(res2,"gsnHistogramBarWidthPercent")) then
+    if(res2@gsnHistogramBarWidthPercent.le.0.or. \
+       res2@gsnHistogramBarWidthPercent.gt.100.) then
       print("gsn_histogram: The bar width percentage must be in the range (0,100.].")
       print("               Defaulting to " + bar_wdt_perc)
     else
-      bar_wdt_perc = 0.01*res2@gsnHistogramBarWidthPercentage
+      bar_wdt_perc = 0.01*res2@gsnHistogramBarWidthPercent
     end if
-    delete(res2@gsnHistogramBarWidthPercentage)
+    delete(res2@gsnHistogramBarWidthPercent)
   end if
 ;
 ; Check if user explicitly specified bin values. If so, and they represent
