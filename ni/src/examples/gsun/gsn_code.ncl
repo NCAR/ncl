@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.166 2005-08-16 14:10:51 haley Exp $
+;      $Id: gsn_code.ncl,v 1.167 2005-09-05 19:48:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6188,6 +6188,10 @@ end
 ;       is set to True, you will either get exactly bins of this size,  ;
 ;       or approximately this size.                                     ; 
 ;                                                                       ;
+; gsnHistogramBarWidthPercentage - This indicates the percentage of the ;
+;       the bin width that the bar width should be. The default is 66%  ;
+;       for single histograms, and 50% for comparison.                  ;
+;                                                                       ;
 ;  gsnHistogramSelectNiceIntervals - Indicates whether we want          ;
 ;       gsn_histogram to select "nice" range values. Default is True.   ;
 ;                                                                       ;
@@ -6309,6 +6313,25 @@ begin
   end if    
   delete(dims)
 
+;
+; Calculate the percentage of the bin width that the bar width should
+; be.
+;
+  if(compare) then
+    bar_wdt_perc = 0.5
+  else
+    bar_wdt_perc = 0.66667
+  end if
+  if(isatt(res2,"gsnHistogramBarWidthPercentage")) then
+    if(res2@gsnHistogramBarWidthPercentage.le.0.or. \
+       res2@gsnHistogramBarWidthPercentage.gt.100.) then
+      print("gsn_histogram: The bar width percentage must be in the range (0,100.].")
+      print("               Defaulting to " + bar_wdt_perc)
+    else
+      bar_wdt_perc = 0.01*res2@gsnHistogramBarWidthPercentage
+    end if
+    delete(res2@gsnHistogramBarWidthPercentage)
+  end if
 ;
 ; Check if user explicitly specified bin values. If so, and they represent
 ; end points, then make sure there are at least two values and sort them.
@@ -6438,11 +6461,17 @@ begin
     bin_width = 1.
   end if 
 
-  if(compare) then
-    bar_width = 0.5 * bin_width
-  else
-    bar_width = 0.66667 * bin_width
+;
+; Calculate the width of the histogram bar. It needs to be smaller
+; if we are comparing two histograms.
+;
+  bar_width = bar_wdt_perc * bin_width 
+  if(compare.and.1.3333*bar_width.gt.bin_width) then
+    print("Warning: gsn_histogram: The bar width percentage selected is too large for this comparison histogram.")
+    print("       Resetting to " + 1/1.3333 + " for better results")
+    bar_width = bin_width/1.3333
   end if
+
 ;
 ; 5. Get set of color indexes to use for filling bars. Span the full
 ;    color map when color-filling the bins.
@@ -6667,13 +6696,6 @@ begin
 ;
   nlbs = dimsizes(lbs)
   lbs_vals = fspan(0.,1.,nlbs)
-;
-; Make sure tickmark is centered under bar, if doing discrete
-; values with comparisons.
-;
-  if(compare.and.setdiscrete) then
-    lbs_vals = lbs_vals - (bar_width/6.)
-  end if
 
   if(count_msg.and.setinterval) then
     dx               = lbs_vals(nlbs-1) - lbs_vals(nlbs-2)
@@ -6705,17 +6727,19 @@ begin
 ;     first set of bars.
 ;
   if(setdiscrete) then
-    bar_locs = bin_width * (-0.3333 + ispan(0,nbars-1,1))
+    bar_locs = -.5*bar_width + bin_width * ispan(0,nbars-1,1)
     if(compare) then
-      bar2_locs = bin_width * (-0.1667 + ispan(0,nbars-1,1))
+      bar2_locs =  -.166667*bar_width + bin_width * ispan(0,nbars-1,1)
     else
       bar2_locs = 0
     end if
   else
-    bar_locs = bin_width * (0.1667 + ispan(0,nbars-1,1))
     if(compare) then
-      bar2_locs = bin_width * (0.3333 + ispan(0,nbars-1,1))
+       bar_locs = .5*(bin_width-(bar_width+0.3333*bar_width)) + \
+                      bin_width*ispan(0,nbars-1,1)
+       bar2_locs = bar_locs + 0.3333*bar_width
     else
+      bar_locs = .5*(bin_width-bar_width) + bin_width*ispan(0,nbars-1,1)
       bar2_locs = 0
     end if
   end if
