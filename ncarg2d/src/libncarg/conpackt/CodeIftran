@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.12 2004-12-17 00:26:45 kennison Exp $
+I $Id: CodeIftran,v 1.13 2005-09-06 17:40:54 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -13769,7 +13769,7 @@ C
             IVNU=1
           ELSE
             CALL HLUCTMXYZ (IMPF,XCND,YCND,ZCND,XCNU,YCNU)
-            IF (ICFELL('CTTRCL',5).NE.0) GO TO 102
+            IF (ICFELL('CTTREG',5).NE.0) GO TO 102
             IF ((OORV.NE.0.).AND.(XCNU.EQ.OORV.OR.YCNU.EQ.OORV))
               IVNU=0
             ELSE
