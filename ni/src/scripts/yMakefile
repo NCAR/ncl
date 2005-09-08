@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.5 2005-05-26 21:21:34 haley Exp $
+#	$Id: yMakefile,v 1.6 2005-09-08 21:11:02 grubin Exp $
 #
 
 #ifdef	BuildWithF90
@@ -9,7 +9,7 @@ NHF_SCRIPT	=	nhlf77
 #endif
 
 SCRIPTS1 = nhlcc $(NHF_SCRIPT) ng4ex 
-SCRIPTS2 = WRAPIT nclfiledump
+SCRIPTS2 = WRAPIT ncl_filedump
 
 #ifdef	BuildWithF90
 MOREMAN1 = nhlf90

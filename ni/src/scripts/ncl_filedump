@@ -1,0 +1,313 @@
+#!/bin/csh -f
+#
+#       $Id: ncl_filedump,v 1.1 2005-09-08 21:11:02 grubin Exp $
+
+#
+#       Copyright (C) 2005
+#       University Corporation for Atmospheric Research
+#       All Rights Reserved
+
+#
+#       File:       ncl_filedump
+#       Author:     Rick Grubin
+#
+#       National Center for Atmospheric Research
+#       POB 3000, Boulder, Colorado
+
+#
+# This script does a "file dump" on any file supported by NCL
+# via the "addfile()" function.
+#
+#       ncl_filedump [-c] [-v var1[,...]] [-h] file
+#           [-c]                coordinate variable and header information
+#           [-v var1[,...]]     data for variable(s) <var1>,...
+#           [-h]                usage message
+
+set progname = `basename $0`
+if ($#argv < 1) then
+    goto usage
+endif
+
+set nvars = 0
+set coords = 0
+
+#
+# Sort through options.
+#
+
+while ($#argv > 0)
+    switch ($1)
+        case "-v":
+            shift
+
+            # determine number of variables specified (count commas)
+            # set ncommas = `echo $* | tr -cd '\,' | wc -c`
+            # set ncommas = `echo $* | awk '{print(gsub(/,/, " "))}'`
+            set ncommas = `echo $* | awk -F, '{print NF - 1}'`
+            if ($ncommas == 0) then
+                # only one variable, or none?
+                set isopt = `echo $1 | grep -c '-'`
+                set isfile = `echo $1 | grep -c '\.'`
+                if ($isopt != 0  ||  $isfile != 0) then
+                    echo "${progname}: warning: no variable(s) specified." ; echo
+                    breaksw
+                endif
+            endif
+
+            set nvars = `expr $ncommas + 1`
+            # handle "space after commas" case
+            set psv = `echo $* | sed 's/, /,/g'`
+            set pvars = $psv[1]
+            shift
+
+            # build array of variables as strings, quote so as to pass thru the shell
+            set vline = `echo $pvars | sed 's/,/ /g'`
+            set vars = ( '\(/' )
+            set n = 1
+            while ($n < $nvars)
+                set v = $vline[$n]
+                set vars = ( $vars\\\"$v\\\"\',\' )
+                @ n = ($n + 1)
+            end
+
+            # catch the last variable
+            set vars = ( $vars\\\"$vline[$n]\\\"'/\)' )
+            breaksw
+
+        case "-c":
+            set coords = 1
+            shift
+            breaksw
+
+        case "-h":
+            goto usage
+            exit 0
+            breaksw
+
+        case "-*":
+            echo "${progname}: warning: '$1' is not a valid option; ignoring it." ; echo
+            shift
+            breaksw
+
+        default:
+            set file = $1
+            shift
+    endsw
+end
+
+#
+# Check that a filename was specified.
+#
+if (! $?file) then
+    echo "${progname}: error: a filename was not specified."
+    goto usage
+    exit 1
+endif
+
+#
+# Make sure the file has an appropriate suffix so that NCL knows
+# what kind of file it is.
+#
+set valid_suffixes = ("nc" "cdf" "grb" "grib" "GRIB" "hdf" "hdfeos" "ccm")
+set no_suffix
+set suffix = "$file:e"
+set prefix = "$file:r"
+if ("$suffix" != "") then
+    @ i = 1
+    while ($i <= $#valid_suffixes  &&  $?no_suffix)
+        if ("$suffix" == "$valid_suffixes[$i]") then
+            unset no_suffix
+        endif
+        @ i++
+    end
+endif
+
+if ($?no_suffix) then
+    echo ""
+    echo "  ${progname}: error: '$file' does not have a recognizable suffix."
+    echo "  valid suffixes are: $valid_suffixes"
+    echo ""
+    exit 1
+endif
+
+#
+# It may be the case that the user added a suffix to the file
+# so that NCL knows how to open it with addfile.  Check for the
+# existence of the file both with and without the suffix.
+# 
+if (! -e $file && ! -e $prefix) then
+    echo
+    echo "  ${progname}: error: neither '$file' nor '$prefix' exists."
+    echo
+    exit 1
+endif
+
+
+#
+# Create a temporary file to hold NCL script.
+#
+set tmp_nclfile = "tmp$$.ncl"
+/bin/rm $tmp_nclfile >& /dev/null
+
+cat << 'EOF_NCL' >! $tmp_nclfile
+    function set_fmt(v:numeric)
+    begin
+        if (isbyte(v)) then              ; 8 [+/- 127]
+            return("15i5")
+        end if
+
+        if (isshort(v)) then             ; 16 [+/-32767]
+            return("11i7")
+        end if
+
+        if (isinteger(v)) then           ; 32 [+/- 2147483647]
+            mxv = max(abs(v))
+            if (mxv .le. 9999) then
+                return("13i6")
+            end if
+
+            if (mxv .le. 999999) then
+                return("10i8")
+            end if
+
+            if (mxv .le. 9999999) then
+                return("9i9")
+            end if
+
+            return("7i12")               ; yyyymmddhh +/- 214748364
+        end if
+
+        if (islong(v)) then              ; 64
+            mxv = new(1, "long")
+            mxv = max(abs(v))
+            if (mxv .le. 9999) then
+                return("13i6")
+            end if
+
+            if (mxv .le. 999999) then
+                return("10i8")
+            end if
+
+            if (mxv .le. 9999999) then
+                return("9i9")
+            end if
+
+            if (mxv .gt. 9999999 .and. mxv .le. 214748364) then
+                return("7i12")
+            end if
+
+            return("5i16")
+        end if
+
+        if (isfloat(v) .or. isdouble(v)) then
+            return("6g12.4")
+        end if
+    end
+
+    procedure set_opt(o:logical, t:string)
+    begin
+        o@title = t + ":"
+        o@tspace = 5
+    end
+
+    function make_var2d(v:numeric, r:integer, d:integer)
+    begin
+        if (r .eq. 1) then
+            mv2d = onedtond(v, (/1, d(0)/))
+        else
+            mv2d = onedtond(ndtooned(v), (/1, product(d)/))
+        end if
+
+        return(mv2d)
+    end
+
+    begin
+        f = addfile(filename, "r")
+        print(f)
+
+        if ((coords .eq. 1)) then
+            dSizes = dimsizes(getfiledimsizes(f))
+            dNames = getvardims(f)
+            vNames = getfilevarnames(f)
+            vSizes = dimsizes(vNames)
+
+            print("data:")
+            print(" ")
+
+            do n = 0, dSizes - 1
+                do m = 0, vSizes - 1
+                    if (dNames(n) .eq. vNames(m)) then
+                        dims = getfilevardimsizes(f, vNames(m))
+                        rank = dimsizes(dims)
+    
+                        if ((getfilevartypes(f, vNames(m))) .eq. "string") then
+                            print(f->$vNames(m)$)
+                            print(" ")
+                        else
+                            v2d = make_var2d(f->$vNames(m)$, rank, dims)
+                            fmt = set_fmt(v2d)
+                            opt = True
+                            set_opt(opt, dNames(n))
+                            write_matrix(v2d, fmt, opt)
+                            delete(v2d)
+                        end if
+
+                        delete(dims)
+                    end if
+                end do
+            end do
+        end if
+    
+        print(" ")
+
+        if (nvars .gt. 0)
+            print("Variables:")
+            print(" ")
+
+            do n = 0, nvars - 1
+                if (isfilevar(f, vars(n))) then
+                    dims = getfilevardimsizes(f, vars(n))
+                    rank = dimsizes(dims)
+
+                    v2d = make_var2d(f->$vars(n)$, rank, dims)
+                    fmt = set_fmt(v2d)
+                    opt = True
+                    set_opt(opt, vars(n))
+                    write_matrix(v2d, fmt, opt)
+
+                    delete(v2d)
+                    delete(dims)
+                else
+                    print("${progname}: error: '" + vars(n) + "' is not a variable in '" + filename + "'.")
+                end if
+            end do
+        end if
+
+        delete(f)
+
+    end
+'EOF_NCL'
+
+
+#
+# Construct the command line.
+#
+if ($?vars) then
+    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords vars=$vars $tmp_nclfile
+else
+    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords $tmp_nclfile
+endif
+
+#
+# Clean up.
+#
+
+/bin/rm $tmp_nclfile
+
+exit 0
+
+usage:
+echo "${progname} [-c] [-v var1[,...]] [-h] file"
+echo "  [-c]                coordinate variable and header information"
+echo "  [-v var1[,...]]     data for variable(s) <var1>,..."
+echo "  [-h]                this usage message"
