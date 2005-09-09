@@ -176,8 +176,17 @@ NhlErrorTypes   write_matrix_W(void)
     }
 
 
+    /* flush buffers before writing */
+    (void) fflush((FILE *) NULL);
+
     /* call FORTRAN function */
     switch (data_type) {
+        case NCL_string:
+            NGCALLF(writematrixc, WRITEMATRIXC)(filename, &dimsz[0], &dimsz[1], data,
+                    format, title, &tspace, &rownumbers,
+                    strlen(filename), strlen(format), strlen(title));
+            break;
+
         case NCL_short:
             /* fall through */
         case NCL_int:
@@ -206,6 +215,9 @@ NhlErrorTypes   write_matrix_W(void)
             return NhlFATAL;
             break;
     }
+
+    /* flush buffers after writing */
+    (void) fflush((FILE *) NULL);
 
     return NhlNOERROR;
 }
