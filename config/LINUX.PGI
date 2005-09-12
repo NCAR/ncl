@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.PGI,v 1.1 2004-12-17 06:52:26 haley Exp $
+ *      $Id: LINUX.PGI,v 1.2 2005-09-12 20:06:11 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -15,7 +15,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2004-12-17 06:52:26 $
+ *	$Date: 2005-09-12 20:06:11 $
  *
  *	Description:	This file contains all the directives needed to
  *          tell ymake how to build NCAR Graphics on a 32-bit LINUX
@@ -32,6 +32,7 @@
 #define CtoFLibraries -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl
 #define XToolLibrary -lXt -lSM -lICE
 #define BuildShared NO
+#define ExtraExportFlags -Wl,--export-dynamic
 
 #define ArchRecLibSearch -L/usr/X11R6/lib
 #define ArchRecIncSearch -I/usr/X11R6/include
