@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.64.PGI,v 1.1 2004-12-17 06:52:25 haley Exp $
+ *      $Id: LINUX.64.PGI,v 1.2 2005-09-12 19:58:55 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -15,7 +15,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2004-12-17 06:52:25 $
+ *	$Date: 2005-09-12 19:58:55 $
  *
  *	Description:	This file contains all the directives needed to
  *          tell ymake how to build NCAR Graphics on a 64-bit LINUX
@@ -27,11 +27,12 @@
 #define	Cstatic
 #define	Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler     pgcc
-#define FCompiler     pgf90
-#define CtoFLibraries -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl
+#define CCompiler     pgcc -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+#define FCompiler     pgf90 -tp k8-64 -O -Msignextend -Mreentrant -fPIC -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+#define CtoFLibraries -lpgc -lpgf90  -lpgf90_rpm1  -lpgf902 -lpgftnrtl -lpghpf
 #define XToolLibrary -lXt -lSM -lICE
 #define BuildShared NO
+#define ExtraExportFlags -Wl,--export-dynamic
 
 #define ArchRecLibSearch -L/usr/X11R6/lib64
 #define ArchRecIncSearch -I/usr/X11R6/include
