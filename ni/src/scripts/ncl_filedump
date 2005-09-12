@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_filedump,v 1.1 2005-09-08 21:11:02 grubin Exp $
+#       $Id: ncl_filedump,v 1.2 2005-09-12 20:34:58 grubin Exp $
 
 #
 #       Copyright (C) 2005
@@ -108,7 +108,7 @@ endif
 # Make sure the file has an appropriate suffix so that NCL knows
 # what kind of file it is.
 #
-set valid_suffixes = ("nc" "cdf" "grb" "grib" "GRIB" "hdf" "hdfeos" "ccm")
+set valid_suffixes = ("nc" "cdf" "netcdf" "grb" "grib" "GRIB" "hdf" "hdfeos" "ccm")
 set no_suffix
 set suffix = "$file:e"
 set prefix = "$file:r"
