@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.182 2005-08-18 23:09:22 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.183 2005-09-13 23:36:08 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2677,10 +2677,26 @@ NhlErrorTypes _NclIfbinnumrec
 	int 	has_missing = 0;
 	char 	control_word[4];
 	int fd = -1;
-	int ind;
+	int ind1,ind2;
 	int cur_off;
 	int i,n;
 	int dimsize = 1;
+	int swap_bytes = 0;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
+
+	ret = _NclInitClass(nclFileClass);
+	if (ret < NhlWARNING)
+		return ret;
+#ifdef ByteSwapped
+	if (NrmStringToQuark("bigendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#else
+	if (NrmStringToQuark("littleendian") == *(string *)(fcp->options[Ncl_READ_BYTE_ORDER].value->multidval.val)) {
+		swap_bytes = 1;
+	}
+#endif
 
 	fpath = (string*)NclGetArgValue(
 		0,
@@ -2709,15 +2725,22 @@ NhlErrorTypes _NclIfbinnumrec
 		if(n != 4) {
 			break;
 		}
-		ind = *(int*)control_word;
-		lseek(fd,cur_off + ind + 4,SEEK_SET);
+		if (! swap_bytes)
+			ind1 = *(int*)control_word;
+		else
+			_NclSwapBytes(&ind1,control_word,1,sizeof(int));
+		lseek(fd,cur_off + ind1 + 4,SEEK_SET);
 		n = read(fd,(control_word),4);
 		if(n != 4) {
 			break;
 		}
-		if(ind ==  *(int*)control_word ) {
+		if (! swap_bytes) 
+			ind2 = *(int*)control_word;
+		else
+			_NclSwapBytes(&ind2,control_word,1,sizeof(int));
+		if(ind1 ==  ind2) {
 				i++;
-				cur_off += ind + 8;
+				cur_off += ind1 + 8;
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
 			close(fd);
@@ -2755,7 +2778,7 @@ NhlErrorTypes _NclIfbinrecwrite
 	char 	control_word[4];
 	void *value;
 	int i;
-	int ind;
+	int ind1,ind2;
 	int fd = -1;
 	int size = 1;
 	int n;
@@ -2851,8 +2874,11 @@ NhlErrorTypes _NclIfbinrecwrite
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"fbinrecwrite: end of file reached before record number, writing record as last record in file");
 				break;
 			}
-			ind = *(int*)control_word;
-			lseek(fd,cur_off + ind + 4,SEEK_SET);
+			if (! swap_bytes)
+				ind1 = *(int*)control_word;
+			else
+				_NclSwapBytes(&ind1,control_word,1,sizeof(int));
+			lseek(fd,cur_off + ind1 + 4,SEEK_SET);
 			n = read(fd,(control_word),4);
 			if(n != 4) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
@@ -2860,10 +2886,14 @@ NhlErrorTypes _NclIfbinrecwrite
 				return(NhlFATAL);
 				break;
 			}
-			if(ind ==  *(int*)control_word ) {
+			if (! swap_bytes) 
+				ind2 = *(int*)control_word;
+			else
+				_NclSwapBytes(&ind2,control_word,1,sizeof(int));
+			if(ind1 == ind2) {
 					i++;
-					cur_off += ind + 8;
-					rsize = ind;
+					cur_off += ind1 + 8;
+					rsize = ind1;
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
 				close(fd);
@@ -2875,14 +2905,21 @@ NhlErrorTypes _NclIfbinrecwrite
 		lseek(fd,cur_off,SEEK_END);
 	}
 	if((rsize == -1)||(rsize== total)){
+		if (rsize != -1) {
+			/* seek to the beginning of current record */
+			cur_off -= (rsize + 8);
+			lseek(fd,cur_off,SEEK_SET);
+		}
 		if (swap_bytes) {
+			int ltotal;
 			char *outdata = NclMalloc(total);
 			if (!outdata)
 				return (NhlFATAL);
 			_NclSwapBytes(outdata,value,total / type->type_class.size,type->type_class.size);
-			n = write(fd,&total,4);
+			_NclSwapBytes(&ltotal,&total,1,4);
+			n = write(fd,&ltotal,4);
 			n = write(fd,outdata,total);
-			n = write(fd,&total,4);
+			n = write(fd,&ltotal,4);
 			close(fd);
 			NclFree(outdata);
 			return(NhlNOERROR);
@@ -2895,6 +2932,7 @@ NhlErrorTypes _NclIfbinrecwrite
 			return(NhlNOERROR);
 		}
 	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: data variable size does not match record size");
 		close(fd);
 		return(NhlFATAL);
 	}
@@ -2921,7 +2959,7 @@ NhlErrorTypes _NclIfbinrecread
 	char 	control_word[4];
 	void *value;
 	int i;
-	int ind;
+	int ind1,ind2;
 	int fd = -1;
 	int size = 1;
 	int n;
@@ -3030,22 +3068,29 @@ NhlErrorTypes _NclIfbinrecread
 			close(fd);
 			return(NhlFATAL);
 		}
-		ind = *(int*)control_word;
-		if(ind <= 0) {
+		if (! swap_bytes)
+			ind1 = *(int*)control_word;
+		else
+			_NclSwapBytes(&ind1,control_word,1,sizeof(int));
+		if(ind1 <= 0) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinrecread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
 			close(fd);
 			return(NhlFATAL);
 		}
-		lseek(fd,cur_off + ind + 4,SEEK_SET);
+		lseek(fd,cur_off + ind1 + 4,SEEK_SET);
 		n = read(fd,(control_word),4);
 		if(n != 4) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: a read error occurred while reading (%s) , can't continue",NrmQuarkToString(*fpath));
 			close(fd);
 			return(NhlFATAL);
 		}
-		if(ind ==  *(int*)control_word ) {
-				i++;
-				cur_off += ind + 8;
+		if (! swap_bytes) 
+			ind2 = *(int*)control_word;
+		else
+			_NclSwapBytes(&ind2,control_word,1,sizeof(int));
+		if(ind1 == ind2) {
+			i++;
+			cur_off += ind1 + 8;
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
 			close(fd);
@@ -3060,18 +3105,21 @@ NhlErrorTypes _NclIfbinrecread
 			close(fd);
 			return(NhlFATAL);
 		}
-		ind = *(int*)control_word;
+		if (! swap_bytes)
+			ind1 = *(int*)control_word;
+		else
+			_NclSwapBytes(&ind1,control_word,1,sizeof(int));
 		if(size != -1) {
 			value = (void*)NclMalloc(thetype->type_class.size*size);
-			if(ind < size*thetype->type_class.size) {
+			if(ind1 < size*thetype->type_class.size) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"fbinrecread: size specified is greater than record size, filling with missing values");
 				ret = NhlWARNING;
-			} else if(ind > size*thetype->type_class.size) {
+			} else if(ind1 > size*thetype->type_class.size) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"fbinrecread: size specified is less than record size, some data will not be read");
 				ret = NhlWARNING;
 			}
-			n = read(fd,value,(ind>=size*thetype->type_class.size)?size*thetype->type_class.size:ind);
-			if(n != ((ind>=size*thetype->type_class.size)?size*thetype->type_class.size:ind))  {
+			n = read(fd,value,(ind1>=size*thetype->type_class.size)?size*thetype->type_class.size:ind1);
+			if(n != ((ind1>=size*thetype->type_class.size)?size*thetype->type_class.size:ind1))  {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: an error occurred reading the requested record. Something is wrong with the FORTRAN binary file.");
 				NclFree(value);
 				close(fd);
@@ -3080,9 +3128,9 @@ NhlErrorTypes _NclIfbinrecread
 			if (swap_bytes) {
 				_NclSwapBytes(NULL,value,n / thetype->type_class.size,thetype->type_class.size);
 			}
-			if(ind < size*thetype->type_class.size) {
-				for(;ind<size*thetype->type_class.size-1;ind+=thetype->type_class.size) {
-					memcpy((void*)((char*)value + ind * thetype->type_class.size),&thetype->type_class.default_mis,thetype->type_class.size);
+			if(ind1 < size*thetype->type_class.size) {
+				for(;ind1<size*thetype->type_class.size-1;ind1+=thetype->type_class.size) {
+					memcpy((void*)((char*)value + ind1 * thetype->type_class.size),&thetype->type_class.default_mis,thetype->type_class.size);
 				}
 			}
 			tmp_md = _NclCreateMultiDVal(
@@ -3098,9 +3146,9 @@ NhlErrorTypes _NclIfbinrecread
 				NULL,
 				thetype);
 		} else {
-			value = (void*)NclMalloc(ind);
-			n = read(fd,value,ind);
-			if(n != ind) {
+			value = (void*)NclMalloc(ind1);
+			n = read(fd,value,ind1);
+			if(n != ind1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: an error occurred reading the requested record. Something is wrong with the FORTRAN binary file.");
 				NclFree(value);
 				close(fd);
@@ -3109,7 +3157,7 @@ NhlErrorTypes _NclIfbinrecread
 			if (swap_bytes) {
 				_NclSwapBytes(NULL,value,n / thetype->type_class.size,thetype->type_class.size);
 			}
-			dimsize = ind/thetype->type_class.size;
+			dimsize = ind1/thetype->type_class.size;
 			tmp_md = _NclCreateMultiDVal(
 				NULL,
 				NULL,
