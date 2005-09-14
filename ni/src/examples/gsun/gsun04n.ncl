@@ -63,8 +63,8 @@ begin
     
   resources@stMinLineSpacingF = spacing * 2.0     ; Set some resources based
   resources@stArrowLengthF    = arrowlength * 2.0 ; on resources you retrieved.
-  resources@stLineColor       = "white"           ; Change line colors back to 
-  resources@stLineThicknessF  = 1.5               ; white.
+  resources@stLineColor       = "red"             ; Change line colors back to 
+  resources@stLineThicknessF  = 1.5               ; red.
 
   uvar = grb_file->U_GRD_6_GPML(0,:,:) ; Get new GRIB variables.
   vvar = grb_file->V_GRD_6_GPML(0,:,:)
