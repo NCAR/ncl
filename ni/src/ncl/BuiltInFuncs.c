@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.183 2005-09-13 23:36:08 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.184 2005-09-16 01:09:45 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3216,6 +3216,7 @@ NhlErrorTypes _NclIfbinread
 	int fd;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
+	int control_word;
 
 	ret = _NclInitClass(nclFileClass);
 	if (ret < NhlWARNING)
@@ -3268,8 +3269,10 @@ NhlErrorTypes _NclIfbinread
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error in the file path was detected could not resolve file path");
 			return(NhlFATAL);
 		}
-		if(stat(path_string,&buf) == -1) {
-			NhlPError(NhlFATAL, NhlEUNKNOWN,"fbinread: Unable to open input file (%s)",path_string);
+		fd = open(path_string,O_RDONLY);
+		if(fd == -1) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "fbinread: could not open (%s) check path and permissions, can't continue",path_string);
 			return(NhlFATAL);
 		}
 	}
@@ -3297,28 +3300,44 @@ NhlErrorTypes _NclIfbinread
 			size *= dimsizes[i];
 		}
 	}
+	if(read(fd,(void*)&control_word,4) != 4) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: An error occurred while reading the file (%s), check path",
+			  _NGResolvePath(path_string));
+		return(NhlFATAL);
+	}
+	if (swap_bytes) {
+		_NclSwapBytes(NULL,&control_word,1,sizeof(int));
+	}
+	if(control_word <= 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
+		close(fd);
+		return(NhlFATAL);
+	}
 	if(size == -1) {
-		fd = open(path_string,O_RDONLY);
-		if(read(fd,(void*)&size,4) != 4) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: An error occurred while reading the file (%s), check path",_NGResolvePath(path_string));
-			return(NhlFATAL);
-		}
-		if(size <= 0) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIfbinread: 0 or less than zero fortran control word, FILE NOT SEQUENTIAL ACCESS!");
-			close(fd);
-			return(NhlFATAL);
-		}
+		size = control_word;
 		n_dimensions = 1;
 		*dimsizes= size/thetype->type_class.size;
 		totalsize = size;
-		tmp_ptr = NclMalloc(totalsize);
-		close(fd);
-	} else {
+	}
+	else {
 		totalsize = size*thetype->type_class.size;
-		tmp_ptr = NclMalloc(totalsize);
+		if (totalsize > control_word)
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "_NclIfbinread: requested variable size exceeds record size");
+		close(fd);
+		return(NhlFATAL);
 	}
 	if(tmp_ptr != NULL) {
+		tmp_ptr = NclMalloc(totalsize);
+		if (! tmp_ptr) {
+			NhlPError(NhlFATAL,ENOMEM,NULL);
+			return( NhlFATAL);
+		}
+		lseek(fd,4,SEEK_SET); /* skip the control word */
+		n = read(fd,tmp_ptr,totalsize);
+#if 0
 		NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+#endif
 		if (swap_bytes) {
 			_NclSwapBytes(NULL,tmp_ptr,totalsize / thetype->type_class.size,thetype->type_class.size);
 		}
@@ -4535,6 +4554,12 @@ NhlErrorTypes _NclIfbinwrite
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: An error in the file path was detected could not resolve file path");
 			return(NhlFATAL);
 		}
+		fd = open(path_string,(O_CREAT | O_RDWR),0666);
+		if(fd == -1) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,
+				  "fbinwrite: could not open (%s) check path and permissions, can't continue",path_string);
+		return(NhlFATAL);
+	}
 	}
 	tmp_md = NULL;
 	switch(value.kind){
@@ -4545,24 +4570,42 @@ NhlErrorTypes _NclIfbinwrite
 		tmp_md = _NclVarValueRead(value.u.data_var,NULL,NULL);
 		break;
 	default:
+		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return(NhlFATAL);
 	}
-	if(tmp_md != NULL) {
-		tmp_ptr = tmp_md->multidval.val;
-		thetype = tmp_md->multidval.type;
-		totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
+	if(! tmp_md) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return (NhlFATAL);
 	}
+	tmp_ptr = tmp_md->multidval.val;
+	thetype = tmp_md->multidval.type;
+	totalsize = tmp_md->multidval.totalelements * thetype->type_class.size;
 	if (swap_bytes) {
 		char *outdata = NclMalloc(totalsize);
-		if (!outdata)
+		int ltotal;
+		if (!outdata) {
+			NhlPError(NhlFATAL,ENOMEM,NULL);
 			return (NhlFATAL);
+		}
 		_NclSwapBytes(outdata,tmp_ptr,tmp_md->multidval.totalelements,thetype->type_class.size);
+		_NclSwapBytes(&ltotal,&totalsize,1,4);
+		n = write(fd,&ltotal,4);
+		n = write(fd,outdata,totalsize);
+		n = write(fd,&ltotal,4);
+#if 0
 		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,outdata,&totalsize,&ret,strlen(path_string));
+#endif
 		NclFree(outdata);
 	}
 	else {
+#if 0
 		NGCALLF(nclpfortranwrite,NCLPFORTRANWRITE)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
+#endif
+		n = write(fd,&totalsize,4);
+		n = write(fd,tmp_ptr,totalsize);
+		n = write(fd,&totalsize,4);
 	}
+	close(fd);
 	return(ret);
 }
 NhlErrorTypes _NclIsleep
