@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.109 2005-08-30 22:48:13 dbrown Exp $
+#      $Id: yMakefile,v 1.110 2005-09-20 21:05:32 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2005-08-30 22:48:13 $
+#	Date:		$Date: 2005-09-20 21:05:32 $
 #
 #	Description:	
 #
@@ -89,8 +89,8 @@ DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS)
 
 #if defined(SUN)
-# EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -fast -xlic_lib=sunperf 
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -llapack -lblas
+# EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -llapack -lblas	-lnsl -lintl -lsocket -ldl -lw
 #elif defined(AIX)
 EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3_dp -llapack -lblas -lxlf90 -lxlopt
 #elif (defined(IRIX) || defined(IRIX64))
