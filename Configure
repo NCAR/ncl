@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.27 2005-08-19 17:35:26 haley Exp $
+#      $Id: Configure,v 1.28 2005-09-21 05:46:41 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2005-08-19 17:35:26 $
+#	$Date: 2005-09-21 05:46:41 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -594,6 +594,8 @@ endif
 echo ""
 echo "Build HDF support (optional) into raster library? ($buildhdf)"
 echo "(requires the external HDF libraries available from http://hdf.ncsa.uiuc.edu/) "
+echo "Note: HDF is required if you plan to build NCL, so you must answer 'yes'"
+echo "in this case. "
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
 set answer="$<"
 if ("$answer" == "q") goto cleanup
