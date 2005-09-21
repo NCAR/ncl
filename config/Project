@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.66 2005-08-19 17:32:45 haley Exp $
+ *      $Id: Project,v 1.67 2005-09-21 14:56:31 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2005-08-19 17:32:45 $
+ *	$Date: 2005-09-21 14:56:31 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -345,6 +345,7 @@ XCBLIBSRC	= $(NILIBSRC)/xcb
 NFPLIBSRC	= $(NILIBSRC)/nfp
 NFPFORTLIBSRC	= $(NILIBSRC)/nfpfort
 NCLLIBSRC	= $(NISRC)/ncl
+NIOLIBSRC	= $(NCLLIBSRC)
 
 #ifdef	BuildShared
 NCARGCLIB	= -lNGc
@@ -359,6 +360,7 @@ NGOLIB		= -lNGgo
 XCBLIB		= -lXcb
 NFPLIB		= -lnfp
 NFPFORTLIB	= -lnfpfort
+NIOLIB		= -lnio
 NCLLIB		=
 NCLAPILIB	= -lNGncl
 
@@ -376,6 +378,7 @@ DEPNGOLIB	=
 DEPNCLLIB	=
 DEPNCLAPILIB	=
 DEPNFPLIB	=
+DEPNIOLIB	=
 DEPNFPFORTLIB	=
 
 DEPCTRANSLIB	=
@@ -392,6 +395,7 @@ HLULIB		= _UseLib(-L$(HLULIBSRC),-lhlu)
 NGOLIB		= _UseLib(-L$(NGOLIBSRC),-lngo)
 NFPLIB		= _UseLib(-L$(NFPLIBSRC),-lnfp)
 NFPFORTLIB	= _UseLib(-L$(NFPFORTLIBSRC),-lnfpfort)
+NIOLIB		= _UseLib(-L$(NIOLIBSRC),-lnio)
 XCBLIB		= _UseLib(-L$(XCBLIBSRC),-lXcb)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
@@ -409,6 +413,7 @@ DEPHLULIB	= _DepLib($(HLULIBSRC),$(LIBROOT),libhlu.a)
 DEPNGOLIB	= _DepLib($(NGOLIBSRC),$(LIBROOT),libngo.a)
 DEPNFPLIB	= _DepLib($(NFPLIBSRC),$(LIBROOT),libnfp.a)
 DEPNFPFORTLIB	= _DepLib($(NFPFORTLIBSRC),$(LIBROOT),libnfpfort.a)
+DEPNIOLIB	= _DepLib($(NIOLIBSRC),$(LIBROOT),libnio.a)
 DEPNCLLIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libncl.a)
 DEPNCLAPILIB	= _DepLib($(NCLLIBSRC),$(LIBROOT),libnclapi.a)
 
@@ -424,11 +429,13 @@ NGMATHLIBS	= $(NGMATHLIB)
 HLULIBS		= $(HLULIB)
 NCLLIBS		= $(NCLAPILIB)
 NFPLIBS		= $(NFPLIB) $(NFPFORTLIB)
+NIOLIBS     = $(NIOLIB)
 
 DEPNCARGLIBS	= $(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGCLIB)
 DEPHLULIBS	= $(DEPHLULIB)
 DEPNCLLIBS	= $(DEPHLULIB) $(DEPNCLAPILIB)
 DEPNFPLIBS	= $(DEPNFPLIB) $(DEPNFPFORTLIB)
+DEPNIOLIBS	= $(DEPNIOLIB)
 
 GRAPHCSRC	= $(COMMONSRC)/graphcap
 FONTCSRC	= $(COMMONSRC)/fontcap
