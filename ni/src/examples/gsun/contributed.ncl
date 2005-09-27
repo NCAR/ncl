@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.66 2005-06-13 22:33:50 shea Exp $
+;      $Id: contributed.ncl,v 1.67 2005-09-27 16:44:28 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6194,4 +6194,255 @@ begin
   xNew&lon = lon
   xNew@gwt = gwt                                ; attach as attribute
   return (xNew)
+end
+;
+;**************************************************************
+; D. Shea
+; Driver for NCL function "omega_ccm"  
+; It calculates intermediate quantities needed for input.
+;
+function omcalc_ccm_driver(p0,psfc,u,v,hyam[*],hybm[*],hyai[*],hybi[*])
+
+; calculate assorted intermediate quantities 
+; prior to invoking the built-in function "omcalc_ccm"
+;
+;  p0     - Scalar numeric value equal to surface reference pressure in Pa.
+;  psfc   - 2D or 3D array  ([time,]lat,lon) of surface pressures in Pa. 
+;  u, v   - 3D or 4D arrays ([time,]lev,lat,lon) of zonal and meridional wind (m/s)
+;  hyam   - 1D array containing the hybrid A coefficients. Must have the 
+;           same dimension as the level dimension of u and v. 
+;           The order must be top-to-bottom. 
+;  hybm   - 1D array containing the hybrid B coefficients. Must have the 
+;           same dimension as the level dimension of u and v. 
+;           The order must be top-to-bottom. 
+;  hyai   - 1D array containing the interface hybrid A coefficients. 
+;           The order must be top-to-bottom. 
+;  hybi   - 1D array containing the interface hybrid B coefficients. 
+;           The order must be top-to-bottom. 
+
+
+begin
+  dimps  = dimsizes(psfc)
+  rankps = dimsizes(dimps)
+  dimu   = dimsizes(u)
+  ranku  = dimsizes(dimu)
+  if (ranku.ne.4 .or. rankps.ne.3) then
+      print("omcalc_driver: expected ranku=4 and rankps=3")
+      print("omcalc_driver: got      ranku="+ranku+"  and rankps="+rankps)
+      exit
+  end if
+
+  ntim   = dimu(0)
+  klev   = dimu(1)
+  nlat   = dimu(2)
+  mlon   = dimu(3)
+
+  omega = u                                 ; create space
+  omega@long_name = "Vertical pressure velocity"
+  omega@units     = "Pa/s"
+
+  lat   = omega&lat
+                      ;  hybd  = new((/klev/),typeof(hyai))
+                      ;  do k=0,klev-1
+                      ;    hybd(k) = hybi(k+1)-hybi(k)
+                      ;  end do
+  klevi  = dimsizes(hybi)
+  hybd   = hybi(1:) - hybi(0:klevi-2)
+  nprlev = 0                                ; number of pure pressure levels
+  do k=1,klev
+    if (nprlev .eq. 0 .and. hybi(k) .ne. 0.0) then
+      nprlev = k - 1 
+    end if
+  end do  
+
+  pdel  = dpres_hybrid_ccm(psfc,p0,hyai,hybi)
+  pmid  = pres_hybrid_ccm (psfc,p0,hyam,hybm)
+
+  dpsl  = psfc                            ; create space for retrn variables
+  dpsm  = psfc
+  psln  = log(psfc)
+  gradsg(psln,dpsl,dpsm)                  ; gradients of log(psfc) gaussian grid
+
+  div   = uv2dvG(u,v)                     ; divergence on gaussian grid
+
+  omega = omcalc_ccm(u       ,v       ,div     ,dpsl    \
+                    ,dpsm    ,pmid    ,pdel             \
+                    ,psfc    ,hybd    ,hybm    ,nprlev  )
+
+  return(omega)
+end
+;************************************************************
+; Saji N. Hameed <U. Hawaii> and D. Shea
+;
+; Determines the relative minima for a 1-dimensional array. 
+; x      - A 1-dimensional float or double array. 
+;          Missing data are not allowed.
+; cyclic - Set to True if data are cyclic.  
+;          Set to False if the data array is not cyclic in x.
+; delta  - Tolerance level (negative). If values are within delta of 
+;          surrounding values it will not be counted as a local min value. 
+; opt    - indicates what is to be returned
+;          0         ; return the minimum values
+;          opt.ne.0  ; return the indices [subscripts] where 
+;                    ; minimum values occured.
+;
+; usage:   qmin = local_min_1d(q, False, -0.25, 0)
+;
+;          imin = local_min_1d(q, False, -0.25, 1)
+;          if (.not.ismissing(imax)) then
+;              qmin = q(imin)
+;              zmin = z(imin)   ; z where q is at a minimum
+;          end if
+
+function local_min_1d( X[*]:numeric  , cyclic:logical \
+                     , del[1]:numeric, opt[1]:integer )
+local NX, nx, x, iOffSet, nStrt, nLast, imn, i
+begin
+  if (del.gt.0.0) then
+      print("contributed: local_min_1d: del must be .le. 0.0")
+      print("contributed: local_min_1d: del ="+del)
+      exit 
+  end if
+
+  if (any(ismissing(X))) then
+      print("contributed: local_min_1d: missing values not allowed")
+      print("contributed: local_min_1d: "+num(ismissing(X)) \
+                       +" missing values encountered")
+      exit 
+  end if
+
+  NX  = dimsizes(X)
+
+  if (cyclic) then
+      nx = NX+2
+      x  = new (nx, typeof(X), getFillValue(X)) 
+      x(0)      = (/ X(NX-1) /)
+      x(nx-1)   = (/ X(0)    /)
+      x(1:nx-2) = (/ X       /) 
+      iOffSet   = -1
+  else
+      x         = (/ X /)
+      iOffSet   = 0
+  end if
+
+  nx    = dimsizes(x) ; changed from dimsizes(nx) -> dimsizes(x)
+  nStrt = 1
+  nLast = nx-2   
+  imn   = new( nx, "integer") 
+
+  i   = -1
+  do n=nStrt,nLast
+     if ((x(n)-x(n-1)).le.del .and. (x(n)-x(n+1)).le.del) then
+         i = i+1
+         imn(i) = n   ; indices of local minima
+     end if
+  end do
+  i@_FillValue = -1             ; trick ... assign after loop 
+
+  if (.not.ismissing(i)) then
+      if (opt.eq.0) then
+          return(x(imn(0:i)))   ; return actual minimum values
+      else
+          return(imn(0:i)+iOffSet)
+      end if
+  else                          ; must be no local minima
+      if (opt.eq.0) then
+          if (typeof(x).eq."float") then
+              return(-999.)
+          end if
+          if (typeof(x).eq."double") then
+              return(-999.d0)
+          end if
+      else
+          return(i)           ; default integer missing code
+      end if
+  end if
+end
+;************************************************************
+; Saji N. Hameed <U. Hawaii> and D. Shea
+;
+; Determines the relative maxima for a 1-dimensional array. 
+; x      - A 1-dimensional float or double array. 
+;          Missing data are not allowed.
+; cyclic - Set to True if data are cyclic.  
+;          Set to False if the data array is not cyclic in x.
+; delta  - Tolerance level (positive). If values are within delta 
+;          of surrounding values it will not be counted as a local max value. 
+; opt    = indicates what is to be returned
+;          0         ; return the maximum values
+;          opt.ne.0  ; return the indices [subscripts] where 
+;                    ; maximum values occured.
+;
+; usage:   qmax = local_max_1d(q, False, 0.25, 0)
+;
+;          imax = local_max_1d(q, False, 0.25, 1)
+;          if (.not.ismissing(imax)) then
+;              qmax = q(imax)
+;              zmax = z(imax)   ; z where q is at a maximum
+;          end if
+
+function local_max_1d( X[*]:numeric  , cyclic:logical \
+                     , del[1]:numeric, opt[1]:integer )
+
+local NX, nx, x, iOffSet, nStrt, nLast, imn, i
+begin
+  if (del.lt.0.0) then
+      print("contributed: local_max_1d: del must be .ge. 0.0")
+      print("contributed: local_max_1d: del ="+del)
+      exit 
+  end if
+
+  if (any(ismissing(X))) then
+      print("contributed: local_max_1d: missing values not allowed")
+      print("contributed: local_max_1d: "+num(ismissing(X)) \
+                       +" missing values encountered")
+      exit 
+  end if
+
+  NX  = dimsizes(X)                                                                                 
+                                                                                                    
+  if (cyclic) then                                                                                  
+      nx = NX+2                                                                                     
+      x  = new (nx, typeof(X), getFillValue(X))    
+      x(0)      = (/ X(NX-1) /)                                                                     
+      x(nx-1)   = (/ X(0)    /)                                                                     
+      x(1:nx-2) = (/ X       /)                                                                     
+      iOffSet   = -1
+  else                                                                                              
+      x         = (/ X /)                                                                           
+      iOffSet   = 0
+  end if                                                                                            
+                                                                                                    
+  nx  = dimsizes(x) ; changed from dimsizes(nx) -> dimsizes(x)                                                                                
+      nStrt     = 1 
+      nLast     = nx-2   
+  imx = new( nx, "integer") 
+
+  i   = -1
+  do n=nStrt,nLast
+     if ((x(n)-x(n-1)).ge.del .and. (x(n)-x(n+1)).ge.del) then
+         i    = i+1
+         imx (i) = n
+     end if
+  end do
+  i@_FillValue = -1             ; trick ... assign after loop 
+
+  if (.not.ismissing(i)) then
+      if (opt.eq.0) then
+          return(x(imx(0:i)))   ; return actual maximum values
+      else
+          return(imx(0:i)+iOffSet)      ; return index values
+      end if
+  else                          ; must be no local maxima
+      if (opt.eq.0) then
+          if (typeof(x).eq."float") then
+              return(-999.)
+          end if
+          if (typeof(x).eq."double") then
+              return(-999.d0)
+          end if
+      else
+          return(i)
+      end if
+  end if
 end
