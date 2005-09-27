@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.67 2005-09-27 16:44:28 shea Exp $
+;      $Id: contributed.ncl,v 1.68 2005-09-27 20:55:47 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6272,7 +6272,7 @@ begin
   return(omega)
 end
 ;************************************************************
-; Saji N. Hameed <U. Hawaii> and D. Shea
+; D. Shea and S. N. Hameed <U. Hawaii> 
 ;
 ; Determines the relative minima for a 1-dimensional array. 
 ; x      - A 1-dimensional float or double array. 
@@ -6359,7 +6359,7 @@ begin
   end if
 end
 ;************************************************************
-; Saji N. Hameed <U. Hawaii> and D. Shea
+; D. Shea and S. N. Hameed <U. Hawaii> 
 ;
 ; Determines the relative maxima for a 1-dimensional array. 
 ; x      - A 1-dimensional float or double array. 
