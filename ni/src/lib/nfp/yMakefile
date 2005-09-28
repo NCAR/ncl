@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.86 2005-08-04 21:23:22 grubin Exp $
+#      $Id: yMakefile,v 1.87 2005-09-28 00:31:22 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2005-08-04 21:23:22 $
+#	$Date: 2005-09-28 00:31:22 $
 #
 #	Description:	
 
@@ -51,7 +51,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cdf_dpW.c chiinvW.c	\
 	gtripleW.c hydroW.c hyi2hyoW.c indW.c int2pW.c invmatrixW.c         \
 	julGregW.c linint2W.c linmsgW.c linroodW.c locminmaxW.c mapgciW.c	\
 	mixhumW.c natgridW.c ncolorW.c nglogoW.c ngmiscW.c nicevalsW.c		\
-	outputgif.c paleoW.c prcwatW.c preshybW.c pressigW.c probtestW.c	\
+	omcalc_ccmW.c outputgif.c paleoW.c prcwatW.c preshybW.c pressigW.c probtestW.c	\
 	randomW.c rcmW.c regcoefW.c relhumW.c remapW.c rhombtriW.c			\
 	shgridW.c simpsonW.c sindexW.c slpW.c skewtW.c smth9W.c sortW.c	\
 	specxW.c sph2W.c sphintW.c sstoiW.c statW.c svdW.c taperW.c			\
@@ -66,7 +66,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cdf_dpW.o chiinvW.o	\
 	gtripleW.o hydroW.o hyi2hyoW.o indW.o int2pW.o invmatrixW.o         \
 	julGregW.o linint2W.o linmsgW.o linroodW.o locminmaxW.o mapgciW.o	\
 	mixhumW.o natgridW.o ncolorW.o nglogoW.o ngmiscW.o nicevalsW.o		\
-	outputgif.o paleoW.o prcwatW.o preshybW.o pressigW.o probtestW.o	\
+	omcalc_ccmW.o outputgif.o paleoW.o prcwatW.o preshybW.o pressigW.o probtestW.o	\
 	randomW.o rcmW.o regcoefW.o relhumW.o remapW.o rhombtriW.o			\
 	shgridW.o simpsonW.o sindexW.o slpW.o skewtW.o smth9W.o sortW.o		\
 	specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o taperW.o			\

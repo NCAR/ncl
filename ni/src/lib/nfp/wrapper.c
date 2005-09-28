@@ -415,6 +415,7 @@ extern NhlErrorTypes conform_W(void);
 extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
+extern NhlErrorTypes omega_ccm_W(void);
 extern NhlErrorTypes wavelet_W(void);
 extern NhlErrorTypes wavelet_default_W(void);
 extern NhlErrorTypes grid2triple_W(void);
@@ -5436,6 +5437,26 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
     NclRegisterFunc(conform_W, args, "conform", nargs);
+/*
+ *  Register omega_ccm.
+ */
+    nargs = 0;
+    args = NewArgs(11);
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
+
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes);  nargs++;
+
+    NclRegisterFunc(omega_ccm_W, args, "omega_ccm", nargs);
 
 /*
  *  Register wavelet.
