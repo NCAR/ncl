@@ -386,7 +386,7 @@ NhlErrorTypes omega_ccm_W( void )
     }
     NGCALLF(omcalcccm,OMCALCCCM)(tmp_u, tmp_v, tmp_div, tmp_dpsl, tmp_dpsm, 
                                  tmp_pmid, tmp_pdel, tmp_psfc, tmp_hybd, 
-                                 tmp_hybd, nprlev, tmp_omega, &nlon, &nlat,
+                                 tmp_hybm, nprlev, tmp_omega, &nlon, &nlat,
                                  &nlev);
 /*
  * If the output is to be float, then do the coercion here.
