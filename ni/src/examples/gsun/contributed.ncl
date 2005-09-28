@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.68 2005-09-27 20:55:47 shea Exp $
+;      $Id: contributed.ncl,v 1.69 2005-09-28 14:47:30 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6201,10 +6201,10 @@ end
 ; Driver for NCL function "omega_ccm"  
 ; It calculates intermediate quantities needed for input.
 ;
-function omcalc_ccm_driver(p0,psfc,u,v,hyam[*],hybm[*],hyai[*],hybi[*])
+function omega_ccm_driver(p0,psfc,u,v,hyam[*],hybm[*],hyai[*],hybi[*])
 
 ; calculate assorted intermediate quantities 
-; prior to invoking the built-in function "omcalc_ccm"
+; prior to invoking the built-in function "omega_ccm"
 ;
 ;  p0     - Scalar numeric value equal to surface reference pressure in Pa.
 ;  psfc   - 2D or 3D array  ([time,]lat,lon) of surface pressures in Pa. 
@@ -6227,8 +6227,8 @@ begin
   dimu   = dimsizes(u)
   ranku  = dimsizes(dimu)
   if (ranku.ne.4 .or. rankps.ne.3) then
-      print("omcalc_driver: expected ranku=4 and rankps=3")
-      print("omcalc_driver: got      ranku="+ranku+"  and rankps="+rankps)
+      print("omega_ccm_driver: expected ranku=4 and rankps=3")
+      print("omega_ccm_driver: got      ranku="+ranku+"  and rankps="+rankps)
       exit
   end if
 
@@ -6265,9 +6265,9 @@ begin
 
   div   = uv2dvG(u,v)                     ; divergence on gaussian grid
 
-  omega = omcalc_ccm(u       ,v       ,div     ,dpsl    \
-                    ,dpsm    ,pmid    ,pdel             \
-                    ,psfc    ,hybd    ,hybm    ,nprlev  )
+  omega = omega_ccm(u       ,v       ,div     ,dpsl    \
+                   ,dpsm    ,pmid    ,pdel             \
+                   ,psfc    ,hybd    ,hybm    ,nprlev  )
 
   return(omega)
 end
