@@ -147,26 +147,36 @@ void _NclResetScanner
 			yy_switch_to_buffer(include_stack[loading] );
 		}
 		SetLine(line_numbers[loading]);
-        if (!(strcmp(cur_load_file, load_file))) {
-            /* done loading file */
-            memset(&load_file, '\0', 255);
-            load_stmt = 0;
-            if (NCLoverrideEcho) {
-                NCLecho = 1;
-                load_stmt = 0;
-            }
-            else
-                NCLecho = echo;
-        }
-        else {
-            if (load_stmt) {
+
+        if ((cur_load_file != NULL) && (load_file != NULL)) {
+            if (!(strcmp(cur_load_file, load_file))) {
+                /* done loading file */
+                memset(&load_file, '\0', 255);
                 load_stmt = 0;
                 if (NCLoverrideEcho) {
                     NCLecho = 1;
                     load_stmt = 0;
                 }
                 else
-                    NCLecho = echo; 
+                    NCLecho = echo;
+            }
+            else {
+                if (load_stmt) {
+                    load_stmt = 0;
+                    if (NCLoverrideEcho) {
+                        NCLecho = 1;
+                        load_stmt = 0;
+                    }
+                    else
+                        NCLecho = echo; 
+                }
+            }
+        } else {
+            memset(&load_file, '\0', 255);
+            load_stmt = 0;
+            if (NCLoverrideEcho) {
+                NCLecho = 1;
+                load_stmt = 0;
             }
         }
     }

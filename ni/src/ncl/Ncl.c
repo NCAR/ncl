@@ -121,6 +121,7 @@ main(int argc, char **argv) {
 
     char    *nclf = NULL;
     struct stat sbuf;
+    int sr;
 
     FILE    *tmpf = NULL;   /* file variables for creating arguments */
     char    *tmpd = NULL;
@@ -220,22 +221,24 @@ main(int argc, char **argv) {
         printf ("Non-option argument %s\n", argv[i]);
 #endif /* NCLDEBUG */
 
-        /* file of NCL commands? */
-        s = strstr(argv[i], ".ncl");
-        if (s != NULL) {
-            /*
-             * Check for file's existence; the stat() call does not require access rights
-             * but does require search path rights, so if this fails, the file could exist
-             * but the user may not have permission to "see" it.
-             */
-            if (!stat(argv[i], &sbuf))
+        /*
+         * Is this a file of NCL commands?  Can't assume ".ncl" tag, unfortunately.
+         * Check for file's existence; the stat() call does not require access rights
+         * but does require search path rights, so if this fails, the file could exist
+         * but the user may not have permission to "see" it.
+         */
+        sr = stat(argv[i], &sbuf);
+        if ((sbuf.st_mtime > 0) && (sbuf.st_ctime > 0)) {
+            if (sr == 0) {
                 nclf = argv[i];
-            else {
+                continue;
+            }
+
+            if (sr < 0) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN, " file \"%s\" does not exist.\n", argv[i]);
                 exit(NhlFATAL);
             }
-        }
-        else {
+        } else {
             /* user-defined argument */
             if (nargs == 0)
                 cargs = (char **) NclMalloc(sizeof(char *));
@@ -244,7 +247,7 @@ main(int argc, char **argv) {
 
             cargs[nargs] = (char *) NclMalloc((strlen(argv[i]) + 2) * sizeof(char *));
             (void) sprintf(cargs[nargs], "%s\n", argv[i]);
-             nargs++;
+            nargs++;
         }
     }
 
