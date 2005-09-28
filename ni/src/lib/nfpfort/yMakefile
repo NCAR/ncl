@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.5 2005-07-15 02:33:13 haley Exp $
+#      $Id: yMakefile,v 1.6 2005-09-28 00:31:44 haley Exp $
 #
 
 MYNAME		=	libnfpfort
@@ -11,11 +11,11 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	ezfft_dp.o f2foshv.o filtrx.o finfo.o fluxEddyTav_dp.o fo2fs_dp.o   \
 	gausLobat.o gaus.o grid2triple.o hydro_dp.o hyi2hyo.o index77_dp.o  \
 	int2p_dp.o julGreg.o lclvl.o linint2.o linmsg_dp.o localMinMax.o \
-	mixhum_ptd.o mixhum_ptrh.o paleo_coasts.o passb.o passb2.o passb3.o	\
-	passb4.o passb5.o passf.o passf2.o passf3.o passf4.o passf5.o		\
-	phybrid_ccm.o prcwat.o preshybrid.o prneof_dp.o prneofts_dp.o		\
-	prneofTranspose.o psigma.o random_dp.o rcm2points.o rcm2rgrid.o		\
-	rdsstoi.o regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o			\
+	mixhum_ptd.o mixhum_ptrh.o omcalc_ccm.o paleo_coasts.o passb.o \
+	passb2.o passb3.o passb4.o passb5.o passf.o passf2.o passf3.o \
+	passf4.o passf5.o phybrid_ccm.o prcwat.o preshybrid.o prneof_dp.o \
+	prneofts_dp.o prneofTranspose.o psigma.o random_dp.o rcm2points.o \
+	rcm2rgrid.o rdsstoi.o regcoef_dp.o relhum_dp.o remap.o rhombtri_dp.o \
 	rmStndx_dp.o rmsd.o round.o runave_dp.o rvdv.o s2h.o setrig.o		\
 	shsgc_R42.o simpson_dp.o skewT.o smth9_dp.o sp2_util.o sp2_util_dp.o\
 	specx_dp.o statx.o statx_dp.o svd_lap_dp.o svd_util_dp.o taper.o	\
