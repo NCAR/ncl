@@ -178,16 +178,6 @@ NhlErrorTypes omega_ccm_W( void )
     return(NhlFATAL);
   }
 
-  if(ndims_dpsl != 3 && ndims_dpsl != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsl' must be a 3 or 4 dimensional array");
-    return(NhlFATAL);
-  }
-
-  if(ndims_dpsm != 3 && ndims_dpsm != 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsm' must be a 3 or 4 dimensional array");
-    return(NhlFATAL);
-  }
-
   if(ndims_pmid != 3 && ndims_pmid != 4) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'pmid' must be a 3 or 4 dimensional array");
     return(NhlFATAL);
@@ -202,7 +192,6 @@ NhlErrorTypes omega_ccm_W( void )
  * Now check that the dimension sizes are equal to each other.
  */
   if(ndims_u != ndims_v    || ndims_u != ndims_div || 
-     ndims_u != ndims_dpsl || ndims_u != ndims_dpsm || 
      ndims_u != ndims_pmid || ndims_u != ndims_pdel) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: the first seven input variables must be the same dimensionality");
     return(NhlFATAL);
@@ -210,9 +199,8 @@ NhlErrorTypes omega_ccm_W( void )
 
   for(i = 0; i < ndims_u; i++) {
     if(dsizes_u[i] != dsizes_v[i]    || dsizes_u[i] != dsizes_div[i] || 
-       dsizes_u[i] != dsizes_dpsl[i] || dsizes_u[i] != dsizes_dpsm[i] || 
        dsizes_u[i] != dsizes_pmid[i] || dsizes_u[i] != dsizes_pdel[i]) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: the first seven input variables must be the same dimensionality");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: u, v, div, pmid, and pdel must be the same dimensionality");
     return(NhlFATAL);
     }
   }
@@ -228,9 +216,29 @@ NhlErrorTypes omega_ccm_W( void )
   }
 
 /*
- * Test the size of 'psfc' which should be one dimension smaller than the
- * others.
+ * Test the sizes of 'dpsl', 'dpsm', and 'psfc' which should be one
+ * dimension smaller than the others.
  */
+  if(ndims_u == 3 && ndims_dpsl != 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsl' must be a 2 dimensional array if the other input arguments are 3 dimensional");
+    return(NhlFATAL);
+  }
+
+  if(ndims_u == 4 && ndims_dpsl != 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsl' must be a 3 dimensional array if the other input arguments are 4 dimensional");
+    return(NhlFATAL);
+  }
+
+  if(ndims_u == 3 && ndims_dpsm != 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsm' must be a 2 dimensional array if the other input arguments are 3 dimensional");
+    return(NhlFATAL);
+  }
+
+  if(ndims_u == 4 && ndims_dpsm != 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsm' must be a 3 dimensional array if the other input arguments are 4 dimensional");
+    return(NhlFATAL);
+  }
+
   if(ndims_u == 3 && ndims_psfc != 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'psfc' must be a 2 dimensional array if the other input arguments are 3 dimensional");
     return(NhlFATAL);
@@ -241,13 +249,36 @@ NhlErrorTypes omega_ccm_W( void )
     return(NhlFATAL);
   }
 
-  if(ndims_psfc == 2) {
+/*
+ * Make sure dpsl, dpsm, and psfc are the correct dimension sizes,
+ * depending on whether they are 2D or 3D.
+ */
+  if(ndims_dpsl == 2) {
+    if(dsizes_dpsl[0] != nlat || dsizes_dpsl[1] != nlon) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsl' must be dimensioned time x lat x lon or lat x lon");
+      return(NhlFATAL);
+    }
+    if(dsizes_dpsm[0] != nlat || dsizes_dpsm[1] != nlon) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsm' must be dimensioned time x lat x lon or lat x lon");
+      return(NhlFATAL);
+    }
     if(dsizes_psfc[0] != nlat || dsizes_psfc[1] != nlon) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'psfc' must be dimensioned time x lat x lon or lat x lon");
       return(NhlFATAL);
     }
   }
   else {
+    if(dsizes_dpsl[0] != ntim || dsizes_dpsl[1] != nlat || 
+       dsizes_dpsl[2] != nlon) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsl' must be dimensioned time x lat x lon or lat x lon");
+      return(NhlFATAL);
+    }
+
+    if(dsizes_dpsm[0] != ntim || dsizes_dpsm[1] != nlat || 
+       dsizes_dpsm[2] != nlon) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'dpsm' must be dimensioned time x lat x lon or lat x lon");
+      return(NhlFATAL);
+    }
     if(dsizes_psfc[0] != ntim || dsizes_psfc[1] != nlat || 
        dsizes_psfc[2] != nlon) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"omega_ccm: 'psfc' must be dimensioned time x lat x lon or lat x lon");
@@ -280,11 +311,13 @@ NhlErrorTypes omega_ccm_W( void )
   tmp_u    = coerce_input_double(u,type_u,nlevlatlon,0,NULL,NULL);
   tmp_v    = coerce_input_double(v,type_v,nlevlatlon,0,NULL,NULL);
   tmp_div =  coerce_input_double(div,type_div,nlevlatlon,0,NULL,NULL);
-  tmp_dpsl = coerce_input_double(dpsl,type_dpsl,nlevlatlon,0,NULL,NULL);
-  tmp_dpsm = coerce_input_double(dpsm,type_dpsm,nlevlatlon,0,NULL,NULL);
   tmp_pmid = coerce_input_double(pmid,type_pmid,nlevlatlon,0,NULL,NULL);
   tmp_pdel = coerce_input_double(pdel,type_pdel,nlevlatlon,0,NULL,NULL);
+
+  tmp_dpsl = coerce_input_double(dpsl,type_dpsl,nlatlon,0,NULL,NULL);
+  tmp_dpsm = coerce_input_double(dpsm,type_dpsm,nlatlon,0,NULL,NULL);
   tmp_psfc = coerce_input_double(psfc,type_psfc,nlatlon,0,NULL,NULL);
+
   tmp_hybd = coerce_input_double(hybd,type_hybd,nlev,0,NULL,NULL);
   tmp_hybm = coerce_input_double(hybm,type_hybm,nlev,0,NULL,NULL);
 
@@ -333,14 +366,15 @@ NhlErrorTypes omega_ccm_W( void )
                                  nlevlatlon,0,NULL,NULL);
       coerce_subset_input_double(div,tmp_div,index_u,type_div,
                                  nlevlatlon,0,NULL,NULL);
-      coerce_subset_input_double(dpsl,tmp_dpsl,index_u,type_dpsl,
-                                 nlevlatlon,0,NULL,NULL);
-      coerce_subset_input_double(dpsm,tmp_dpsm,index_u,type_dpsm,
-                                 nlevlatlon,0,NULL,NULL);
       coerce_subset_input_double(pmid,tmp_pmid,index_u,type_pmid,
                                  nlevlatlon,0,NULL,NULL);
       coerce_subset_input_double(pdel,tmp_pdel,index_u,type_pdel,
                                  nlevlatlon,0,NULL,NULL);
+
+      coerce_subset_input_double(dpsl,tmp_dpsl,index_psfc,type_dpsl,
+                                 nlatlon,0,NULL,NULL);
+      coerce_subset_input_double(dpsm,tmp_dpsm,index_psfc,type_dpsm,
+                                 nlatlon,0,NULL,NULL);
       coerce_subset_input_double(psfc,tmp_psfc,index_psfc,type_psfc,
                                  nlatlon,0,NULL,NULL);
     }
@@ -385,5 +419,3 @@ NhlErrorTypes omega_ccm_W( void )
  */
   return(NclReturnValue(omega,ndims_u,dsizes_u,NULL,type_omega,0));
 }
-
-
