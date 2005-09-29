@@ -17,6 +17,10 @@ extern void NGCALLF(xrveoft,XRVEOFT)(double *dx_strip, double *dx_strip_t,
                                      int *jopt, int *ier);
 
 
+extern void NGCALLF(deof11,DEOF11)(double *, int *, int *, int *, int *,
+                                   double  *, double *, double *, double *,
+                                   double *);
+
 extern void NGCALLF(dncldrv,DNCLDRV)(double *,double *,int *,int *,int *,
                                      int *,double *,int *,double *,double *,
                                      float *,double *,int *,int *,double *,
@@ -47,6 +51,29 @@ extern void NGCALLF(deof2data,DEOF2DATA)(int *,int *,int *,double *,
 extern void NGCALLF(dstat2,DSTAT2)(double *, int *, double *, double *,
                                    double *, double *, int *, int *);
 
+/*
+ * This routine calls three different EOF routines.
+ *
+ * The first is the original eofcov routine, which can be
+ * extremely slow if  nrow < mcsta.
+ *
+ * The second routine is one Dennis wrote in 2004/2005 to speed
+ * up the case where nrow < mcsta. This routine had a problem with
+ * one particular case with a French grid. Dennis spent quite a
+ * bit of time proving that this routine works with several
+ * textbook examples, but he's not certain why it is having problems
+ * with this one particular grid.
+ *
+ * The third routine was taken from SCRIPPS and modified by Dennis
+ * to handle missing values.
+ *
+ * If use_old_transpose = use_new_transpose = False, then the old
+ * routine is used.  If use_old_transpose = True, then Dennis' transpose
+ * routine is used. If use_new_transpose = True, then SCRIPPS transpose
+ * routine is used.
+ */
+
+
 NhlErrorTypes eof_W( void )
 {
 /*
@@ -66,17 +93,17 @@ NhlErrorTypes eof_W( void )
   double *pcrit;
   float *rpcrit;
   NclBasicDataTypes type_pcrit;
-  int iopt = 0, jopt = 0, i, ier = 0;
-  logical anomalies = False, transpose, tr_setbyuser = False;
-  logical return_eval = True, debug = False;
-  logical return_trace = False, return_pcrit = False;
+  int iopt = 0, jopt = 0, i, j, l1, l2, ier = 0;
+  logical tr_setbyuser = False, anomalies = False, debug = False;
+  logical use_new_transpose = False, use_old_transpose = False;
+  logical return_eval = True, return_trace = False, return_pcrit = False;
 /*
  * Work array variables.
  */
   double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
   double *cssm, *work, *weval;
   int   *iwork, *ifail;
-  int lwork, liwork, lifail, lweval, lcssm;
+  int icovcor, lwork, liwork, lifail, lweval, lcssm;
   long long int llcssm;
 
 /*
@@ -96,13 +123,12 @@ NhlErrorTypes eof_W( void )
   NclStackEntry return_data;
   char *cmatrix, *cmethod;
   NclQuark *matrix, *method;
-  double *trace, *eval, *pcvar;
+  double *trace, *eval, *pcvar, *prncmp;
   float *rpcvar, *rtrace, *reval;
 /*
  * Output array variables
  */
-  double *evec, *wevec;
-  double *xdatat;
+  double *evec, *wevec, *xdatat;
   float *revec;
   int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
 
@@ -209,11 +235,13 @@ NhlErrorTypes eof_W( void )
  *   "jopt"        : both routines
  *   "return_eval" : both routines (unadvertised)
  *   "return_trace": return trace
+ *   "return_pcrit": return pcrit
  *   "pcrit"       : transpose routine only
  *   "anomalies"   : If True, anomalies have already been calculated by
  *                   user, and this interface shouldn't remove them.
  *   "transpose"   : If True, call transpose routine no matter what
  *                 : If False, don't call transpose routine no matter what
+ *   "oldtranspose": If True, call Dennis' old transpose routine.
  *   "debug"       : turn on debug
  *
  */
@@ -304,11 +332,23 @@ NhlErrorTypes eof_W( void )
  */
           if (!strcmp(attr_list->attname, "transpose")) {
             if(attr_list->attvalue->multidval.data_type == NCL_logical) {
-              transpose = *(logical*) attr_list->attvalue->multidval.val;
+              use_new_transpose = *(logical*) attr_list->attvalue->multidval.val;
               tr_setbyuser = True;
             }
             else {
               NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'transpose' attribute must be a logical. Will let routine pick best value.");
+            }
+          }
+/*
+ * Check for "oldtranspose".
+ */
+          if (!strcmp(attr_list->attname, "oldtranspose")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              use_old_transpose = *(logical*) attr_list->attvalue->multidval.val;
+              tr_setbyuser = True;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: The 'oldtranspose' attribute must be a logical. Will default to False.");
             }
           }
 /*
@@ -397,9 +437,13 @@ NhlErrorTypes eof_W( void )
  * Work with anomalies: xdave=0.0 [or standardized anomalies]
  */
     if (xave[nc] != missing_dx.doubleval) {
-      if(debug) {
-          printf("nc = %d xave = %g\n", nc, xave[nc]);
-      }
+/*
+ * The following can produce too much output, so I've commented it out.
+ *
+ *      if(debug) {
+ *          printf("nc = %d xave = %g\n", nc, xave[nc]);
+ *      }
+ */
 /*
  * Increment counter for acceptable points.
  */
@@ -435,33 +479,55 @@ NhlErrorTypes eof_W( void )
     }
   }
 /*
- * Depending on the size of the rightmost 2D arrays being processed, we
- * one of two different Fortran routines. These routines basically behave
- * the same, except one operates on a transposed version of the 2d array.
+ * Depending on the size of the rightmost 2D arrays being processed, and/or
+ * the value of the transpose or oldtranspose attributes, we call one of
+ * three different Fortran routines. These routines basically behave the
+ * same, except two of them operate on a transposed version of the 2d array.
  */
   if(debug) {
     printf("eofunc: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
   }
+/*
+ * If one of the transpose attributes has not explicitly been set by the
+ * user, then based on the sizes of the input array's dimensions, determine 
+ * whether to call a transpose routine or not.
+ */
   if(!tr_setbyuser) {
+/*
+ * If mcsta <= nrow, don't call transpose routine.
+ */
     if(mcsta <= nrow) {
-      transpose = False;
+      use_new_transpose = False;    /* already the default */
+      use_old_transpose = False;
       if(debug) {
         printf("eofunc: transpose set to False\n");
       }
     }
     else {
-      transpose = True;
+/*
+ * Since mcsta > nrow, call transpose routine. 
+ */
+      use_new_transpose = True;
+      use_old_transpose = False;
       if(debug) {
-        printf("eofunc: transpose set to True\n");
+          printf("eofunc: transpose set to True\n");
       }
     }
   }
   else if(debug) {
-    if(transpose) {
-      printf("eofunc: user set transpose to True\n");
+/*
+ * User explicitly set one of the transpose attributes, so indicate
+ * which one here. Note that if both oldtranspose and transpose are
+ * set to True, transpose will take precedence.
+ */
+    if(use_new_transpose) {
+      printf("eofunc: user set use_new_transpose to True\n");
+    }
+    else if(use_old_transpose) { 
+      printf("eofunc: user set use_old_transpose to True\n");
     }
     else {
-      printf("eofunc: user set transpose to False\n");
+      printf("eofunc: user set neither transpose attribute to True\n");
     }
   }
 
@@ -473,63 +539,152 @@ NhlErrorTypes eof_W( void )
   total_size_evec = *neval * ncol;
 
 /*
- * Allocate memory for attributes.
+ * Allocate memory for various arrays.  Depending on which Fortran routine
+ * will be called later, different quantities need to be allocated here.
  */
-  if(transpose) {
-    evec   = (double *)calloc(total_size_evec,sizeof(double));
+  if(use_new_transpose) {
+    xdatat = (double *)calloc(nrow*mcsta,sizeof(double));
+    wevec  = (double *)calloc(*neval * mcsta,sizeof(double));
+    prncmp = (double *)calloc(*neval*nrow,sizeof(double));
+    eval   = (double *)calloc(*neval,sizeof(double));
+    pcvar  = (double *)calloc(*neval,sizeof(double));
+    if(xdatat == NULL || wevec == NULL || prncmp == NULL || 
+       eval == NULL || pcvar == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for various arrays");
+      return(NhlFATAL);
+    }
+/*
+ * Determine whether the return eigenvectors will be float or double,
+ * and allocate space if necessary.
+ */
+    if(type_x != NCL_double) {
+      revec = (float*)calloc(total_size_evec,sizeof(float));
+      if( revec == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+	return(NhlFATAL);
+      }
+    }
+    else {
+/*
+ * If mcsta = msta, then we can use wevec as is. Otherwise, later we
+ * need to copy wevec to locations in which the input was not missing.
+ */
+      if(mcsta != msta) {
+	evec = (double*)calloc(total_size_evec,sizeof(double));
+	if( evec == NULL ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+	  return(NhlFATAL);
+	}
+      }
+    }
+/*
+ * Transpose the input array.
+ */
+    l1=0;
+    for(i = 0; i < mcsta; i++ ) {
+      l2 = i;  
+      for(j = 0; j < nrow; j++ ) {
+        xdatat[l2] = dx_strip[l1];
+        l1++;
+        l2+=mcsta;
+
+      }
+    }
+/*
+ * Initialization for other arrays.
+ */
+    i = 0;
+    for( ne = 0; ne < *neval; ne++ ) {
+      pcvar[ne] = eval[ne] = missing_dx.doubleval;
+      for( nc = 0; nc < mcsta; nc++) {
+        wevec[i] = missing_dx.doubleval;
+        i++;
+      }
+    }
+  }
+  else if(use_old_transpose) {
     trace  = (double *)calloc(1,sizeof(double));
+    evec   = (double*)calloc(total_size_evec,sizeof(double));
     eval   = (double *)calloc(*neval,sizeof(double));
     pcvar  = (double *)calloc(*neval,sizeof(double));
     xdatat = (double *)calloc(nrow*mcsta,sizeof(double));
-    if(evec == NULL || trace == NULL || pcvar == NULL || eval == NULL ||
-       xdatat == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for attribute arrays");
+    if(trace == NULL || pcvar == NULL || eval == NULL || xdatat == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for various arrays");
       return(NhlFATAL);
     }
-  }
-  else {
-    wevec  = (double *)calloc(total_size_evec,sizeof(double));
-    trace  = (double *)calloc(1,sizeof(double));
-    eval   = (double *)calloc(*neval,sizeof(double));
-    rpcvar = (float *)calloc(*neval,sizeof(float));
-    if(wevec == NULL || trace == NULL || rpcvar == NULL || eval == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for attribute arrays");
-      return(NhlFATAL);
+    if(type_x != NCL_double) {
+      revec = (float*)calloc(total_size_evec,sizeof(float));
+      if( revec == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+        return(NhlFATAL);
+      }
     }
-  }
-
 /*
- * Initialize to missing.
+ * Initialization.
  */
-  *trace = missing_dx.doubleval;
-  i = 0;
-  for( ne = 0; ne < *neval; ne++ ) {
-    eval[ne] = missing_dx.doubleval;
-    if(transpose) {
-      pcvar[ne] = missing_dx.doubleval;
+    *trace = missing_dx.doubleval;
+    i = 0;
+    for( ne = 0; ne < *neval; ne++ ) {
+      pcvar[ne] = eval[ne] = missing_dx.doubleval;
       for( nc = 0; nc < ncol; nc++) {
         evec[i] = missing_dx.doubleval;
         i++;
       }
     }
+  }
+  else {
+/*
+ * eofcov routine
+ *
+ * Allocate space needed for various arrays.
+ */
+    wevec  = (double *)calloc(total_size_evec,sizeof(double));
+    trace  = (double *)calloc(1,sizeof(double));
+    eval   = (double *)calloc(*neval,sizeof(double));
+    rpcvar = (float *)calloc(*neval,sizeof(float));
+    if(wevec == NULL || trace == NULL || rpcvar == NULL || eval == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for various arrays");
+      return(NhlFATAL);
+    }
+    if(type_x != NCL_double) {
+      revec = (float*)calloc(total_size_evec,sizeof(float));
+      if( revec == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+	return(NhlFATAL);
+      }
+    }
     else {
+/*
+ * If mcsta = msta, then we can use wevec as is. Otherwise, later we
+ * need to copy wevec to locations in which the input was not missing.
+ */
+      if(mcsta != msta) {
+	evec = (double*)calloc(total_size_evec,sizeof(double));
+	if( evec == NULL ) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+	  return(NhlFATAL);
+	}
+      }
+    }
+/*
+ * Initialization.
+ */
+    *trace = missing_dx.doubleval;
+
+    i = 0;
+    for( ne = 0; ne < *neval; ne++ ) {
+      eval[ne]   = missing_dx.doubleval;
       rpcvar[ne] = (float)missing_dx.doubleval;
       for( nc = 0; nc < ncol; nc++) {
         wevec[i] = missing_dx.doubleval;
         i++;
       }
     }
-  }
-  
 /*
  * Create some work arrays.  This is necessary to avoid having
  * these arrays created dynamically in the Fortran file (which makes
  * it Fortran 90, and unportable to some systems. 
- * 
- * This first set of work arrays are common to both Fortran routines,
- * just calculated slightly differently.
  */
-  if(!transpose) {
     llcssm = mcsta*(mcsta+1)/2;
     lwork  = 8*mcsta;
     liwork = 5*mcsta;
@@ -550,19 +705,30 @@ NhlErrorTypes eof_W( void )
 /*
  * Call the Fortran 77 version of appropriate routine.
  */
-  if(transpose) {
+  if(use_new_transpose) {
+    icovcor = 0;
+    NGCALLF(deof11,DEOF11)(xdatat,&mcsta,&nrow,neval,&icovcor,
+                           &missing_dx.doubleval,eval,wevec,pcvar,prncmp);
+  }
+  else if(use_old_transpose) {
     NGCALLF(xrveoft,XRVEOFT)(dx_strip,xdatat,&nrow,&ncol,&nobs,&mcsta,
                              &missing_dx.doubleval,neval,eval,evec,
                              pcvar,trace,xdvar,xave,&jopt,&ier);
+  }
+  else {
+    NGCALLF(ddrveof,DDRVEOF)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
+                             &missing_dx.doubleval,neval,eval,wevec,rpcvar,
+                             trace,&iopt,&jopt,cssm,&llcssm,work,&lwork,
+                             weval,iwork,&liwork,ifail,&lifail,&ier);
+  }
 /*
- * Convert to float if necessary.
+ * If we used the "old" transpose routine, then the returned eigenvectors
+ * have already been returned to the original-sized array with all the
+ * missing values in the correct locations.  All we need to do here is 
+ * convert to float if necessary.
  */
+  if(use_old_transpose) {
     if(type_x != NCL_double) {
-      revec = (float*)calloc(total_size_evec,sizeof(float));
-      if( revec == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-        return(NhlFATAL);
-      }
       for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)evec[i];
 /*
  * Free up double precision array.
@@ -570,29 +736,18 @@ NhlErrorTypes eof_W( void )
       NclFree(evec);
     }
   }
+/*
+ * If mcsta < msta *and* we are dealing with the old eofcov routine or the
+ * new scripps routine, then we need to "fix" the evec (or revec if float)
+ * array.
+ */
   else {
-    NGCALLF(ddrveof,DDRVEOF)(dx_strip,&nrow,&ncol,&nobs,&mcsta,
-                             &missing_dx.doubleval,neval,eval,wevec,rpcvar,
-                             trace,&iopt,&jopt,cssm,&llcssm,work,&lwork,
-                             weval,iwork,&liwork,ifail,&lifail,&ier);
-/*
- * Allocate space for return float array, if necessary.
- */
-    if(type_x != NCL_double) {
-      revec = (float*)calloc(total_size_evec,sizeof(float));
-      if( revec == NULL ) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-        return(NhlFATAL);
-      }
-    }
-
-/*
- * If mcsta < msta, then we need to "fix" the evec array.
- */
     if(mcsta < msta) {
 /*
  * First, make sure init to missing because not all values will be 
  * filled in.
+ *
+ * This is the floating point (single precision) case.
  */
       if(type_x != NCL_double) {
         for(i = 0; i < total_size_evec; i++) {
@@ -612,11 +767,6 @@ NhlErrorTypes eof_W( void )
         }
       }
       else {
-        evec = (double*)calloc(total_size_evec,sizeof(double));
-        if( evec == NULL ) {
-          NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-          return(NhlFATAL);
-        }
 /*
  * First, make sure init to missing because not all values will be 
  * filled in.
@@ -652,10 +802,12 @@ NhlErrorTypes eof_W( void )
       }
     }
   }
+
 /*
- * Check various possible error messages.
+ * Check various possible error messages. The new transpose routine doesn't
+ * have an ier.
  */
-  if (ier != 0) {
+  if (!use_new_transpose && ier != 0) {
     if (ier == -1) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
     }
@@ -678,7 +830,7 @@ NhlErrorTypes eof_W( void )
   NclFree(xave);
   NclFree(xvar);
   NclFree(xdvar);
-  if(!transpose) {
+  if(!use_new_transpose && !use_old_transpose) {
     NclFree(work);
     NclFree(cssm);
     NclFree(weval);
@@ -687,6 +839,7 @@ NhlErrorTypes eof_W( void )
   }
   else {
     NclFree(xdatat);
+    if(use_new_transpose) NclFree(prncmp);
   }
 
   if(type_x != NCL_double) {
@@ -748,8 +901,9 @@ NhlErrorTypes eof_W( void )
     }
 /*
  * Only return the trace if the appropriate option has been set.
+ * The new transpose routine doesn't return trace.
  */
-    if(return_trace) {
+    if(!use_new_transpose && return_trace) {
 /*
  * Coerce trace to float.
  */
@@ -823,7 +977,7 @@ NhlErrorTypes eof_W( void )
                  );
     }
 
-    if(return_trace) {
+    if(!use_new_transpose && return_trace) {
       dsizes[0] = 1;
       att_md = _NclCreateVal(
                              NULL,
@@ -850,7 +1004,7 @@ NhlErrorTypes eof_W( void )
 /*
  * Return pcvar as float no matter what.
  */
-  if(transpose) {
+  if(use_old_transpose || use_new_transpose) {
     rpcvar = (float *)calloc(*neval,sizeof(float));
     for( i = 0; i < *neval; i++ ) rpcvar[i] = (float)pcvar[i];
     NclFree(pcvar);
@@ -876,11 +1030,11 @@ NhlErrorTypes eof_W( void )
              NULL
              );
 /*
- * Only return "pcrit" if it was set by the user and we called the
- * transpose routine. The type returned is a float or a double,
+ * Only return "pcrit" if it was set by the user and we called one
+ * of the transpose routines. The type returned is a float or a double,
  * depending on what pcrit was set to in the input.
  */
-  if(transpose && return_pcrit) {
+  if((use_new_transpose || use_old_transpose) && return_pcrit) {
     dsizes[0] = 1;
     if(type_pcrit == NCL_float) {
       att_md = _NclCreateVal(
@@ -959,9 +1113,13 @@ NhlErrorTypes eof_W( void )
 /*
  * "method" indicates whether the transpose routine was called or not.
  */
-  if(transpose) {
+  if(use_new_transpose) {
     cmethod = (char *)calloc(10,sizeof(char));
     strcpy(cmethod,"transpose");
+  }
+  else if(use_old_transpose) {
+    cmethod = (char *)calloc(14,sizeof(char));
+    strcpy(cmethod,"old_transpose");
   }
   else {
     cmethod = (char *)calloc(13,sizeof(char));
@@ -1445,19 +1603,24 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Various.
  */
-  double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
-  double *pcrit, *xdatat;
-  float *rpcrit;
+  double *pcrit;
+  float *rpcrit, *rpcvar;
   NclBasicDataTypes type_pcrit;
-  int iopt = 0, jopt = 0, i, ier = 0;
-  logical return_trace = False, return_pcrit = False,  return_eval = False;
-  logical debug = False;
+  int iopt = 0, jopt = 0, i, j, l1, l2, ier = 0, icovcor;
+  logical anomalies = False, debug = False;
+  logical return_eval = True, return_pcrit = False;
+/*
+ * Work array variables.
+ */
+  double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
+
 /*
  * Variables for retrieving attributes from "opt".
  */
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
+
 /*
  * Attribute variables
  */
@@ -1466,15 +1629,14 @@ NhlErrorTypes eofcov_tr_W( void )
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  char *cmatrix;
-  NclQuark *matrix;
-  double *trace, *eval, *pcvar;
-  float *rtrace, *reval, *rpcvar;
-
+  char *cmatrix, *cmethod;
+  NclQuark *matrix, *method;
+  double *eval, *pcvar, *prncmp;
+  float *reval;
 /*
  * Output array variables
  */
-  double *evec;
+  double *evec, *wevec, *xdatat;
   float *revec;
   int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
 
@@ -1548,35 +1710,6 @@ NhlErrorTypes eofcov_tr_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for coercing x array to double precision");
     return(NhlFATAL);
   }
-/*
- * Allocate memory for return variable.
- */
-  dsizes_evec[0] = *neval;
-  for( i = 0; i <= ndims_x-2; i++ ) dsizes_evec[i+1] = dsizes_x[i];
-
-  total_size_evec = *neval * ncol;
-
-  evec = (double *)calloc(total_size_evec,sizeof(double));
-  if( evec == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
-/*
- * Allocate memory for attributes.
- */
-  trace = (double *)calloc(1,sizeof(double));
-  eval  = (double *)calloc(*neval,sizeof(double));
-  pcvar = (double *)calloc(*neval,sizeof(double));
-  if( trace == NULL || pcvar == NULL || eval == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for attribute arrays");
-    return(NhlFATAL);
-  }
-
-/*
- * Initialize to missing.
- */
-  *trace = missing_dx.doubleval;
-
 /* 
  * If "opt" is True, then check if any attributes have been set.
  */
@@ -1609,7 +1742,10 @@ NhlErrorTypes eofcov_tr_W( void )
  *
  *   "jopt"        : both routines
  *   "return_eval" : both routines (unadvertised)
+ *   "return_pcrit": return pcrit
  *   "pcrit"       : transpose routine only
+ *   "anomalies"   : If True, anomalies have already been calculated by
+ *                   user, and this interface shouldn't remove them.
  *   "debug"       : turn on debug
  *
  */
@@ -1670,7 +1806,18 @@ NhlErrorTypes eofcov_tr_W( void )
               return_eval = *(logical*) attr_list->attvalue->multidval.val;
             }
             else {
-              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The 'return_eval' attribute must be a logical. Defaulting to True.");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The 'return_eval' attribute must be a logical. Defaulting to False.");
+            }
+          }
+/*
+ * Check for "anomalies".
+ */
+          if (!strcmp(attr_list->attname, "anomalies")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              anomalies = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The 'anomalies' attribute must be a logical. Will default to False");
             }
           }
 /*
@@ -1705,6 +1852,799 @@ NhlErrorTypes eofcov_tr_W( void )
   }
   if(debug) {
     printf("eofcov_tr: pcrit = %g\n", *pcrit);
+    if(!anomalies) {
+      printf("anomalies being removed...\n");
+    }
+    else {
+      printf("anomalies NOT being removed...\n");
+    }
+  }
+
+/*
+ * Create arrays to store non-missing data and to remove mean from
+ * data before entering Fortran routines.
+ */
+  dx_strip = (double *)calloc(nrow * ncol,sizeof(double));
+  xave     = (double *)calloc(ncol,sizeof(double));
+  xvar     = (double *)calloc(ncol,sizeof(double));
+  xdvar    = (double *)calloc(ncol,sizeof(double));
+  if( dx_strip == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for stripping the data");
+    return(NhlFATAL);
+  }
+
+/*
+ * Strip all grid points that have less that "PCRIT" valid values.
+ * Create "dx_strip". This may have fewer columns/grid-pts
+ * than the original "dx" array, if not all columns 
+ * had the minimun number of valid values.
+ */
+  mcsta = 0;
+
+  for( nc = 0; nc < ncol; nc++) {
+/*
+ * Statistics for this station/grid-point
+ */
+    NGCALLF(dstat2,DSTAT2)(&dx[nrow*nc],&nrow,&missing_dx.doubleval,
+                           &xave[nc],&xvar[nc],&xsd,&kntx,&ier);
+/*
+ * Eliminate stations/grid-points with less than pcrit % of data.
+ */
+    pcx = ((double)kntx/(double)nrow)*100.;
+    if (pcx < *pcrit || xsd <= 0.0) {
+      xave[nc] = missing_dx.doubleval;
+    }
+/* 
+ * Create anomalies. If jopt=1, then normalize the anomalies.
+ * mcsta is the number of acceptable grid/station points (mcsta <= msta).
+ */
+    con = 1.0;
+    if(jopt == 1 && xave[nc] != missing_dx.doubleval && xsd > 0.0) {
+      con = 1./xsd;
+    }     
+/*
+ * Work with anomalies: xdave=0.0 [or standardized anomalies]
+ */
+    if (xave[nc] != missing_dx.doubleval) {
+/*
+ * The following can produce too much output, so I've commented it out.
+ *
+ *      if(debug) {
+ *          printf("nc = %d xave = %g\n", nc, xave[nc]);
+ *      }
+ */
+/*
+ * Increment counter for acceptable points.
+ */
+      for( nr = 0; nr < nobs; nr++) {
+        if(dx[nc*nrow+nr] != missing_dx.doubleval) {
+          if(!anomalies) {
+/*
+ * User hasn't removed anomalies, so do it here.
+ */
+            dx_strip[mcsta*nrow+nr] = (dx[nc*nrow+nr] - xave[nc]) * con;
+          }
+          else {
+            if(debug) {
+              printf("anomalies NOT being removed...\n");
+            }
+/*
+ * User has already removed anomalies, so leave alone.
+ */
+            dx_strip[mcsta*nrow+nr] = dx[nc*nrow+nr];
+          }
+        }
+        else {
+          dx_strip[mcsta*nrow+nr] = missing_dx.doubleval;
+        }
+      }
+      if(jopt == 0) {
+        xdvar[mcsta] = xvar[nc];
+      }
+      else {
+        xdvar[mcsta] = 1.0;
+      }
+      mcsta++;
+    }
+  }
+
+  if(debug) {
+    printf("eofcov_tr: msta = %d mcsta = %d nobs = %d\n", msta, mcsta, nobs);
+  }
+
+/*
+ * Allocate memory for return variable.
+ */
+  dsizes_evec[0] = *neval;
+  for( i = 0; i <= ndims_x-2; i++ ) dsizes_evec[i+1] = dsizes_x[i];
+  total_size_evec = *neval * ncol;
+
+/*
+ * Allocate memory for various arrays.
+ */
+  xdatat = (double *)calloc(nrow*mcsta,sizeof(double));
+  wevec  = (double *)calloc(*neval * mcsta,sizeof(double));
+  prncmp = (double *)calloc(*neval*nrow,sizeof(double));
+  eval   = (double *)calloc(*neval,sizeof(double));
+  pcvar  = (double *)calloc(*neval,sizeof(double));
+  if(xdatat == NULL || wevec == NULL || prncmp == NULL || 
+     eval == NULL || pcvar == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for various arrays");
+    return(NhlFATAL);
+  }
+/*
+ * Determine whether the return eigenvectors will be float or double,
+ * and allocate space if necessary.
+ */
+  if(type_x != NCL_double) {
+    revec = (float*)calloc(total_size_evec,sizeof(float));
+    if( revec == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+/*
+ * If mcsta = msta, then we can use wevec as is. Otherwise, later we
+ * need to copy wevec to locations in which the input was not missing.
+ */
+    if(mcsta != msta) {
+      evec = (double*)calloc(total_size_evec,sizeof(double));
+      if( evec == NULL ) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
+	return(NhlFATAL);
+      }
+    }
+  }
+/*
+ * Transpose the input array.
+ */
+  l1=0;
+  for(i = 0; i < mcsta; i++ ) {
+    l2 = i;  
+    for(j = 0; j < nrow; j++ ) {
+      xdatat[l2] = dx_strip[l1];
+      l1++;
+      l2+=mcsta;
+      
+    }
+  }
+/*
+ * Initialization for other arrays.
+ */
+  i = 0;
+  for( ne = 0; ne < *neval; ne++ ) {
+    pcvar[ne] = eval[ne] = missing_dx.doubleval;
+    for( nc = 0; nc < mcsta; nc++) {
+      wevec[i] = missing_dx.doubleval;
+      i++;
+    }
+  }
+
+/*
+ * Call the Fortran 77 version of appropriate routine.
+ */
+  icovcor = 0;
+  NGCALLF(deof11,DEOF11)(xdatat,&mcsta,&nrow,neval,&icovcor,
+			 &missing_dx.doubleval,eval,wevec,pcvar,prncmp);
+/*
+ * If mcsta < msta then we need to "fix" the evec (or revec if float)
+ * array.
+ */
+  if(mcsta < msta) {
+/*
+ * First, make sure init to missing because not all values will be 
+ * filled in.
+ *
+ * This is the floating point (single precision) case.
+ */
+    if(type_x != NCL_double) {
+      for(i = 0; i < total_size_evec; i++) {
+	revec[i] = (float)missing_dx.doubleval;
+      }
+/*
+ * Now copy over the appropriate values in the wevec array.
+ */
+      mcsta = 0;
+      for( nc = 0; nc < ncol; nc++) {
+	if (xave[nc] != missing_dx.doubleval) {
+	  for( ne = 0; ne < *neval; ne++ ) {
+	    revec[ne*ncol+nc] = (float)wevec[ne*ncol+mcsta];
+	  }
+	  mcsta++;
+	}
+      }
+    }
+    else {
+/*
+ * First, make sure init to missing because not all values will be 
+ * filled in.
+ */
+      for(i = 0; i < total_size_evec; i++) {
+	evec[i] = missing_dx.doubleval;
+      }
+/*
+ * Now copy over the appropriate values in the wevec array.
+ */
+      mcsta = 0;
+      for( nc = 0; nc < ncol; nc++) {
+	if (xave[nc] != missing_dx.doubleval) {
+	  for( ne = 0; ne < *neval; ne++ ) {
+	    evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+	  }
+	  mcsta++;
+	}
+      }
+    }
+    NclFree(wevec);
+  }
+  else {
+/*
+ * mcsta = msta, so we just need to copy stuff over.
+ */
+    if(type_x != NCL_double) {
+      for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)wevec[i];
+      NclFree(wevec);
+    }
+    else {
+      evec = wevec;
+    }
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if((void*)dx != x) NclFree(dx);
+  NclFree(dx_strip);
+  NclFree(xave);
+  NclFree(xvar);
+  NclFree(xdvar);
+  NclFree(xdatat);
+  NclFree(prncmp);
+
+  if(type_x != NCL_double) {
+/*
+ * Set up return value.
+ */
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)revec,
+                              &missing_rx,
+                              ndims_x,
+                              dsizes_evec,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypefloatClass
+                              );
+/*
+ * Set up attributes to return.
+ */
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Only return the eigenvalues if the appropriate option has been set.
+ */
+    if(return_eval) {
+/*
+ * Coerce eval to float.
+ */
+      reval = (float *)calloc(*neval,sizeof(float));
+      for( i = 0; i < *neval; i++ ) reval[i] = (float)eval[i];
+/*
+ * Free double precision eval.
+ */
+      NclFree(eval);
+
+      dsizes[0] = *neval;
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)reval,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "eval",
+                 att_md,
+                 NULL
+                 );
+    }
+  }
+  else {
+/*
+ *  Return doubles.
+ */
+    return_md = _NclCreateVal(
+                              NULL,
+                              NULL,
+                              Ncl_MultiDValData,
+                              0,
+                              (void*)evec,
+                              &missing_dx,
+                              ndims_x,
+                              dsizes_evec,
+                              TEMPORARY,
+                              NULL,
+                              (NclObjClass)nclTypedoubleClass
+                              );
+
+    att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+/*
+ * Only return the eigenvalues if the appropriate option has been set.
+ */
+    if(return_eval) {
+      dsizes[0] = *neval;
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)eval,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypedoubleClass
+                             );
+      _NclAddAtt(
+                 att_id,
+                 "eval",
+                 att_md,
+                 NULL
+                 );
+    }
+  }
+/*
+ * Return pcvar as float no matter what.
+ */
+
+  rpcvar = (float *)calloc(*neval,sizeof(float));
+  for( i = 0; i < *neval; i++ ) rpcvar[i] = (float)pcvar[i];
+  NclFree(pcvar);
+
+  dsizes[0] = *neval;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)rpcvar,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypefloatClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "pcvar",
+             att_md,
+             NULL
+             );
+/*
+ * Only return "pcrit" if it was set by the user.
+ * The type returned is a float or a double,
+ * depending on what pcrit was set to in the input.
+ */
+  if(return_pcrit) {
+    dsizes[0] = 1;
+    if(type_pcrit == NCL_float) {
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)rpcrit,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+    }
+    else {
+      att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)pcrit,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypedoubleClass
+                             );
+    }
+    _NclAddAtt(
+               att_id,
+               "pcrit",
+               att_md,
+               NULL
+               );
+  }
+  
+/*
+ * "matrix" indicates whether the covariance or correlation matrix
+ * was used.
+ */
+  if(jopt == 0) {
+    cmatrix = (char *)calloc(11,sizeof(char));
+    strcpy(cmatrix,"covariance");
+  }
+  else {
+    cmatrix = (char *)calloc(12,sizeof(char));
+    strcpy(cmatrix,"correlation");
+  }
+  matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *matrix = NrmStringToQuark(cmatrix);
+  
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)matrix,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "matrix",
+             att_md,
+             NULL
+             );
+
+/*
+ * "method" indicates whether the transpose routine was called or not.
+ */
+  cmethod = (char *)calloc(10,sizeof(char));
+  strcpy(cmethod,"transpose");
+  method  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *method = NrmStringToQuark(cmethod);
+  
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)method,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "method",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes eofcov_tr_old_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *x;
+  double *dx;
+  logical *opt;
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
+  NclScalar missing_x, missing_rx, missing_dx;
+  NclBasicDataTypes type_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
+  int *neval, ne;
+/*
+ * Various.
+ */
+  double *dx_strip, *xave, *xdvar, *xvar, con, pcx, xsd;
+  double *pcrit, *xdatat;
+  float *rpcrit;
+  NclBasicDataTypes type_pcrit;
+  int iopt = 0, jopt = 0, i, ier = 0;
+  logical return_trace = False, return_pcrit = False,  return_eval = False;
+  logical debug = False;
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+/*
+ * Attribute variables
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  char *cmatrix;
+  NclQuark *matrix;
+  double *trace, *eval, *pcvar;
+  float *rtrace, *reval, *rpcvar;
+
+/*
+ * Output array variables
+ */
+  double *evec;
+  float *revec;
+  int total_size_evec, dsizes_evec[NCL_MAX_DIMENSIONS];
+
+/*
+ * Retrieve parameters
+ */
+  x = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_x, 
+           dsizes_x,
+           &missing_x,
+           &has_missing_x,
+           &type_x,
+           2);
+/*
+ * Get number of eigenvalues and eigen vectors to be computed.
+ */
+  neval = (int *)NclGetArgValue(
+            1,
+            3, 
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            2);
+/*
+ * Get option.
+ */
+  opt = (logical *)NclGetArgValue(
+            2,
+            3, 
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            2);
+/*
+ * The grid coming in must be at least 2-dimensional.
+ */
+  if( ndims_x < 2 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: The input array must be at least 2-dimensional");
+    return(NhlFATAL);
+  }
+/*
+ * Check dimension sizes.
+ */
+  msta = 1;
+  for( i = 0; i <= ndims_x-2; i++ ) msta *= dsizes_x[i];
+  ncol = msta;
+  nobs = nrow = dsizes_x[ndims_x-1];
+
+  total_size_x = ncol * nrow;
+
+  if( msta < 1 || nobs < 1 ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: The dimensions of the input array must both be at least 1");
+    return(NhlFATAL);
+  }
+/*
+ * Coerce missing values, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+/*
+ * Coerce x to double if necessary.
+ */
+  dx = coerce_input_double(x,type_x,total_size_x,has_missing_x,&missing_x,
+                           &missing_dx);
+  if( dx == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: Unable to allocate memory for coercing x array to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate memory for return variable.
+ */
+  dsizes_evec[0] = *neval;
+  for( i = 0; i <= ndims_x-2; i++ ) dsizes_evec[i+1] = dsizes_x[i];
+
+  total_size_evec = *neval * ncol;
+
+  evec = (double *)calloc(total_size_evec,sizeof(double));
+  if( evec == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/*
+ * Allocate memory for attributes.
+ */
+  trace = (double *)calloc(1,sizeof(double));
+  eval  = (double *)calloc(*neval,sizeof(double));
+  pcvar = (double *)calloc(*neval,sizeof(double));
+  if( trace == NULL || pcvar == NULL || eval == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: Unable to allocate memory for attribute arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Initialize to missing.
+ */
+  *trace = missing_dx.doubleval;
+
+/* 
+ * If "opt" is True, then check if any attributes have been set.
+ */
+  if(*opt) {
+    stack_entry = _NclGetArg(2, 3, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+        break;
+      }
+/* 
+ * Get optional arguments.
+ */
+      if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+        attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. The current ones recognized are:
+ *
+ *   "jopt"        : both routines
+ *   "return_eval" : both routines (unadvertised)
+ *   "pcrit"       : transpose routine only
+ *   "debug"       : turn on debug
+ *
+ */
+        while (attr_list != NULL) {
+/*
+ * Check for "jopt".
+ */
+          if (!strcmp(attr_list->attname, "jopt")) {
+            if(attr_list->attvalue->multidval.data_type != NCL_int) {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: The 'jopt' attribute must be an integer, defaulting to 0.");
+            }
+            else {
+              jopt = *(int*) attr_list->attvalue->multidval.val;
+              if(jopt != 0 && jopt != 1) {
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: The 'jopt' attribute must be 0 or 1. Defaulting to 0.");
+                jopt = 0;
+              }
+            }
+          }
+/*
+ * Check for "pcrit". If user sets this attribute, then we'll return
+ * it as an attribute of the return variable.
+ */
+          if(!strcmp(attr_list->attname, "pcrit")) {
+            type_pcrit   = attr_list->attvalue->multidval.data_type;
+            return_pcrit = True;
+/*
+ * If "pcrit" is already double, don't just point it to the attribute,
+ * because we need to return it later.
+ */
+            if(type_pcrit == NCL_double) {
+              pcrit  = (double *)calloc(1,sizeof(double));
+              *pcrit = *(double*) attr_list->attvalue->multidval.val;
+            }
+            else if(type_pcrit == NCL_int || type_pcrit == NCL_float) {
+/*
+ * Coerce to float, if it's not double.
+ */
+              pcrit = coerce_input_double(attr_list->attvalue->multidval.val,
+                                          type_pcrit,1,0,NULL,NULL);
+/*
+ * For later, when we return "pcrit" as an attribute of the return value.
+ */
+              type_pcrit = NCL_float;
+              rpcrit  = (float *)calloc(1,sizeof(float));
+              *rpcrit = (float)(*pcrit);
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: The 'pcrit' attribute must be of type numeric. Defaulting to 50.");
+              return_pcrit = False;
+            }
+          }
+/*
+ * Check for "return_eval".
+ */
+          if (!strcmp(attr_list->attname, "return_eval")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              return_eval = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: The 'return_eval' attribute must be a logical. Defaulting to True.");
+            }
+          }
+/*
+ * Check for "debug".
+ */
+          if (!strcmp(attr_list->attname, "debug")) {
+            if(attr_list->attvalue->multidval.data_type == NCL_logical) {
+              debug = *(logical*) attr_list->attvalue->multidval.val;
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: The 'debug' attribute must be a logical. Defaulting to False.");
+            }
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    default:
+      break;
+    }
+  }
+
+/*
+ * If user didn't set pcrit, then set it here.
+ */
+  if(!return_pcrit) {
+    pcrit = (double *)calloc(1,sizeof(double));
+    if( pcrit == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: Unable to allocate memory for pcrit");
+      return(NhlFATAL);
+    }
+    *pcrit = 50.;
+  }
+  if(debug) {
+    printf("eofcov_tr_old: pcrit = %g\n", *pcrit);
   }
 
 
@@ -1717,7 +2657,7 @@ NhlErrorTypes eofcov_tr_W( void )
   xvar     = (double *)calloc(ncol,sizeof(double));
   xdvar    = (double *)calloc(ncol,sizeof(double));
   if( dx_strip == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for stripping the data");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: Unable to allocate memory for stripping the data");
     return(NhlFATAL);
   }
 
@@ -1781,7 +2721,7 @@ NhlErrorTypes eofcov_tr_W( void )
  */
   xdatat = (double *)calloc(nrow*mcsta,sizeof(double));
   if(xdatat == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for stripping the data");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: Unable to allocate memory for stripping the data");
     return(NhlFATAL);
   }
 
@@ -1794,16 +2734,16 @@ NhlErrorTypes eofcov_tr_W( void )
  */
   if (ier != 0) {
     if (ier == -1) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: cssm contains one or more missing values.\n(One or more series contains all missing values.)" );
     }
     else if (ier == -88) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: trace is equal to zero.\nAll data entries are missing or are equal to zero." );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: trace is equal to zero.\nAll data entries are missing or are equal to zero." );
     }
     else if (ier < 0) {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: The %d-th argument had an illegal value", abs(ier) );
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: The %d-th argument had an illegal value", abs(ier) );
     }
     else {
-      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr: %d eigenvectors failed to converge",ier);
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"eofcov_tr_old: %d eigenvectors failed to converge",ier);
     }
   }
 
@@ -1826,7 +2766,7 @@ NhlErrorTypes eofcov_tr_W( void )
  */
     revec = (float*)calloc(total_size_evec,sizeof(float));
     if( revec == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr_old: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
     for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)evec[i];
@@ -2430,7 +3370,7 @@ NhlErrorTypes eofcor_tr_W( void )
   xvar     = (double *)calloc(ncol,sizeof(double));
   xdvar    = (double *)calloc(ncol,sizeof(double));
   if( dx_strip == NULL || xave == NULL || xvar == NULL || xdvar == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for stripping the data");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for stripping the data");
     return(NhlFATAL);
   }
 
