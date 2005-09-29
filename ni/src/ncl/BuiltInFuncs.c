@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.184 2005-09-16 01:09:45 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.185 2005-09-29 01:21:06 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3130,7 +3130,7 @@ NhlErrorTypes _NclIfbinrecread
 			}
 			if(ind1 < size*thetype->type_class.size) {
 				for(;ind1<size*thetype->type_class.size-1;ind1+=thetype->type_class.size) {
-					memcpy((void*)((char*)value + ind1 * thetype->type_class.size),&thetype->type_class.default_mis,thetype->type_class.size);
+					memcpy((void*)((char*)value + ind1),&thetype->type_class.default_mis,thetype->type_class.size);
 				}
 			}
 			tmp_md = _NclCreateMultiDVal(
@@ -3321,11 +3321,12 @@ NhlErrorTypes _NclIfbinread
 	}
 	else {
 		totalsize = size*thetype->type_class.size;
-		if (totalsize > control_word)
+		if (totalsize > control_word) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "_NclIfbinread: requested variable size exceeds record size");
-		close(fd);
-		return(NhlFATAL);
+			close(fd);
+			return(NhlFATAL);
+		}
 	}
 	if(tmp_ptr != NULL) {
 		tmp_ptr = NclMalloc(totalsize);
@@ -3335,6 +3336,12 @@ NhlErrorTypes _NclIfbinread
 		}
 		lseek(fd,4,SEEK_SET); /* skip the control word */
 		n = read(fd,tmp_ptr,totalsize);
+		if(n != totalsize)  {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: an error occurred reading the FORTRAN binary file.");
+			NclFree(tmp_ptr);
+			close(fd);
+			return(NhlFATAL);
+		}
 #if 0
 		NGCALLF(nclpfortranread,NCLPFORTRANREAD)(path_string,tmp_ptr,&totalsize,&ret,strlen(path_string));
 #endif
