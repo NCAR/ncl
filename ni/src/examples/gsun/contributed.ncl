@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.69 2005-09-28 14:47:30 haley Exp $
+;      $Id: contributed.ncl,v 1.70 2005-09-29 19:55:30 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6226,8 +6226,11 @@ begin
   rankps = dimsizes(dimps)
   dimu   = dimsizes(u)
   ranku  = dimsizes(dimu)
-  if (ranku.ne.4 .or. rankps.ne.3) then
-      print("omega_ccm_driver: expected ranku=4 and rankps=3")
+  if ((ranku .le.2 .or.  ranku.ge.5) .or. \
+      (rankps.le.1 .or. rankps.ge.4) .or. \
+      (ranku .eq.4 .and.rankps.ne.3) .or. \
+      (ranku .eq.3 .and.rankps.ne.2)) then
+      print("omega_ccm_driver: expected ranku=3 or 4 and rankps=2 or 3")
       print("omega_ccm_driver: got      ranku="+ranku+"  and rankps="+rankps)
       exit
   end if
