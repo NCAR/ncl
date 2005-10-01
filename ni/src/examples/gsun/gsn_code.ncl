@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.168 2005-09-05 20:49:49 haley Exp $
+;      $Id: gsn_code.ncl,v 1.169 2005-10-01 22:13:55 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1069,7 +1069,8 @@ end
 ;***********************************************************************;
 ; Function : set_zero_line_thickness                                    ;
 ;                plot : graphic                                         ;
-;           thickness : numeric                                         ;
+;           zthickness : numeric                                        ;
+;           cthickness : numeric                                        ;
 ;                                                                       ;
 ; Make the 0-th contour line the given thickness.                       ;
 ;                                                                       ;
@@ -1080,7 +1081,7 @@ end
 ; If thickness is equal to 0, then the line is just not drawn.          ;
 ;                                                                       ;
 ;***********************************************************************;
-function set_zero_line_thickness(plot:graphic,thickness)
+function set_zero_line_thickness(plot:graphic,zthickness,cthickness)
 begin
   levels  = get_contour_levels (plot)
   nlevels = dimsizes(levels)
@@ -1090,32 +1091,34 @@ begin
     return (plot)
   end if
 
-  levels = fix_zero_contour (levels)
-
-  if(thickness.gt.0) then
-    thicknesses = new(dimsizes(levels), float)
-    thicknesses = 1.
-  end if
+  levels      = fix_zero_contour (levels)
+  thicknesses = new(dimsizes(levels), float)
+  thicknesses = cthickness
 
   zeroind = ind(levels.eq.0.0)      ; Get index where level equals 0.0
   if(.not.ismissing(zeroind)) then
-    if(thickness.gt.0) then
-      thicknesses(zeroind) = thickness
+    if(zthickness.gt.0) then
+      thicknesses(zeroind) = zthickness
     else
+      thicknesses(zeroind)  = 1.    ; Make it 1.0, but it doesn't matter
+                                    ; b/c we are turning off the drawing
+                                    ; of this line.
       levels@flags(zeroind) = 0     ; Turn off the zero contour line
     end if
   end if
   
   overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
    
-  if(thickness.gt.0) then
+  if(zthickness.gt.0) then
     setvalues overlay_plot
       "cnMonoLineThickness" : False
       "cnLineThicknesses"   : thicknesses
     end setvalues
   else
     setvalues overlay_plot
-      "cnLevelFlags" : levels@flags
+      "cnMonoLineThickness" : False
+      "cnLevelFlags"        : levels@flags
+      "cnLineThicknesses"   : thicknesses
     end setvalues
   end if
 
@@ -6916,6 +6919,7 @@ begin
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
+      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
       delete(res2@gsnContourZeroLineThicknessF)
     end if
 
@@ -6951,7 +6955,7 @@ begin
     attsetvalues_check(plot_object,cnres)
 
     if(isvar("zthickness")) then
-      plot_object = set_zero_line_thickness(plot_object,zthickness)
+      plot_object = set_zero_line_thickness(plot_object,zthickness,cthickness)
       delete(zthickness)
     end if
 
