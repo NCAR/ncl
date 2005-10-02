@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.71 2005-09-29 20:08:00 shea Exp $
+;      $Id: contributed.ncl,v 1.72 2005-10-02 22:46:25 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6226,7 +6226,7 @@ begin
   rankps = dimsizes(dimps)
   dimu   = dimsizes(u)
   ranku  = dimsizes(dimu)
-  if ((ranku .eq.rankps              .or. \
+  if ((ranku .eq.rankps)             .or. \
       (ranku .le.2 .or.  ranku.ge.5) .or. \
       (rankps.le.1 .or. rankps.ge.4) .or. \
       (ranku .eq.4 .and.rankps.ne.3) .or. \
