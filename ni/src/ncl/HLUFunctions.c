@@ -1450,7 +1450,7 @@ NhlErrorTypes _NclIRemoveData
 	for(i = 0; i < n_dims2; i++) {
 		total2 *= dimsizes2[i];
 	}
-	tmp_data_ptr  = (NclHLUObj*)NclMalloc(total*sizeof(NclHLUObj));
+	tmp_data_ptr  = (NclHLUObj*)NclMalloc(total2*sizeof(NclHLUObj));
 	if(has_missing2) {
 		for( i = 0; i < total2; i++) {
 			if(ncl_data_obj_ids[i] != missing2.objval) {
@@ -1459,7 +1459,7 @@ NhlErrorTypes _NclIRemoveData
 			}
 		}
 	} else {
-		for( i = 0; i < total; i++) {
+		for( i = 0; i < total2; i++) {
 			tmp_data_ptr[i] = (NclHLUObj)_NclGetObj(ncl_data_obj_ids[i]);
 		}
 		k = total2;
