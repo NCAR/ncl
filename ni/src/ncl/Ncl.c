@@ -218,7 +218,7 @@ main(int argc, char **argv) {
     /* Process any user-defined arguments */
     for (i = optind; i < argc; i++) {
 #ifdef NCLDEBUG
-        printf ("Non-option argument %s\n", argv[i]);
+        (void) printf("Non-option argument %s\n", argv[i]);
 #endif /* NCLDEBUG */
 
         /*
@@ -228,26 +228,30 @@ main(int argc, char **argv) {
          * but the user may not have permission to "see" it.
          */
         sr = stat(argv[i], &sbuf);
-        if ((sbuf.st_mtime > 0) && (sbuf.st_ctime > 0)) {
-            if (sr == 0) {
-                nclf = argv[i];
-                continue;
-            }
+        if (sr == 0) {
+#ifdef NCLDEBUG
+            (void) printf("NCL commands file: %s\n", argv[i]);
+#endif /* NCLDEBUG */
+            nclf = argv[i];
+            continue;
+        }
 
-            if (sr < 0) {
-                NhlPError(NhlFATAL, NhlEUNKNOWN, " file \"%s\" does not exist.\n", argv[i]);
+        if (sr < 0) {
+            if (!strchr(argv[i], '=')) {
+                /* argument is intended to be a file; can't locate it */
+                NhlPError(NhlFATAL, NhlEUNKNOWN, " can't find file \"%s\"\n", argv[i]);
                 exit(NhlFATAL);
-            }
-        } else {
-            /* user-defined argument */
-            if (nargs == 0)
-                cargs = (char **) NclMalloc(sizeof(char *));
-            else
-                cargs = (char **) NclRealloc(cargs, (nargs + 1) * sizeof(char *));
+            } else {
+                /* user-defined argument */
+                if (nargs == 0)
+                    cargs = (char **) NclMalloc(sizeof(char *));
+                else
+                    cargs = (char **) NclRealloc(cargs, (nargs + 1) * sizeof(char *));
 
-            cargs[nargs] = (char *) NclMalloc((strlen(argv[i]) + 2) * sizeof(char *));
-            (void) sprintf(cargs[nargs], "%s\n", argv[i]);
-            nargs++;
+                cargs[nargs] = (char *) NclMalloc((strlen(argv[i]) + 2) * sizeof(char *));
+                (void) sprintf(cargs[nargs], "%s\n", argv[i]);
+                nargs++;
+            }
         }
     }
 
