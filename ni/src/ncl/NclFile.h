@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.10 2005-08-18 23:09:23 dbrown Exp $
+ *      $Id: NclFile.h,v 1.11 2005-10-12 00:57:33 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -244,12 +244,19 @@ NclMultiDValData value
 #endif
 );
 
+typedef NhlErrorTypes (*NclPostSetOptionFunc) (
+#if	NhlNeedProto
+NclFile thefile
+#endif
+);
+
 typedef struct _NclFileOption {
 	NclQuark format;
 	NclQuark name;
 	NclMultiDValData value;
 	NclMultiDValData valid_values;
 	int access;    /* 0 - any (read-only or read-write; 1 - read-only; 2 - read-write 3 - create only */ 
+	NclPostSetOptionFunc post_set_option;
 } NclFileOption;
 
 typedef enum {
@@ -260,7 +267,8 @@ typedef enum {
 	Ncl_SUPPRESS_CLOSE,
 	Ncl_FORMAT,
 	Ncl_READ_BYTE_ORDER,
-	Ncl_WRITE_BYTE_ORDER
+	Ncl_WRITE_BYTE_ORDER,
+	Ncl_INITIAL_TIME_COORDINATE_TYPE
 } NclFileOptionValues;
 
 typedef struct _NclFileClassPart {

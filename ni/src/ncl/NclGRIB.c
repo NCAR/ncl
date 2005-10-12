@@ -1651,7 +1651,7 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 }
 
 
-static double  *_DateStringsToDoubles
+static double  *_DateStringsToEncodedDoubles
 #if 	NhlNeedProto
 (
 NrmQuark *vals,
@@ -1674,16 +1674,17 @@ int dimsize;
 	}
 
 	for (i = 0; i < dimsize; i++) {
-		int y,m,d,h,min;
+		int y,m,d,h;
+		float min;
 		str = NrmQuarkToString(vals[i]);
 		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
-		ddates[i] = y * 1e6 + m * 1e4 + d * 1e2 + h + min / 60;
+		ddates[i] = y * 1e6 + m * 1e4 + d * 1e2 + h + min / 60.;
 	}
 				       
 	return ddates;
 }
 
-static double  *_DoubleDatesToHours
+static double  *_DateStringsToHours
 #if 	NhlNeedProto
 (
 NrmQuark *vals,
@@ -1717,6 +1718,87 @@ int dimsize;
 				       
 	return dhours;
 }
+
+
+
+static void SetInitialTimeCoordinates
+#if 	NhlNeedProto
+(GribFileRecord *therec)
+#else
+(therec)
+GribFileRecord *therec;
+#endif
+{
+	GribDimInqRecList *step,*ptr;
+	GribInternalVarList *vstep,*nvstep;
+	GribDimInqRec *tmp;
+	int i,j,k;
+
+	step = therec->it_dims;
+	for (i = 0; i < therec->n_it_dims; i++) {
+		int dimsize;
+		char buffer[128];
+		char *cp;
+		NrmQuark dimq,newdimq;
+			
+
+		dimq = step->dim_inq->dim_name;
+		vstep = therec->internal_var_list;
+		for (j = 0; j < therec->n_internal_vars; j++) {
+			if (vstep->int_var->var_info.var_name_quark == dimq) {
+				break;
+			}
+			vstep = vstep->next;
+		}
+		if (j == therec->n_internal_vars) {
+			printf("var %s not found\n",NrmQuarkToString(dimq));
+			continue;
+		}
+		cp = strrchr(NrmQuarkToString(dimq),'_');
+		if (cp && ! strcmp(cp,"_hours")) {
+			if ((NrmQuark)therec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("hours"))
+				continue;
+			sprintf(buffer,NrmQuarkToString(dimq));
+			cp = strrchr(buffer,'_');
+			*cp = '\0';
+			newdimq = NrmStringToQuark(buffer);
+			nvstep = therec->internal_var_list;
+			for (k = 0; k < therec->n_internal_vars; k++) {
+				if (nvstep->int_var->var_info.var_name_quark == newdimq) {
+					break;
+				}
+				nvstep = nvstep->next;
+			}
+			if (k == therec->n_internal_vars) {
+				printf("var %s not found\n",NrmQuarkToString(newdimq));
+				continue;
+			}
+			step->dim_inq->dim_name = newdimq;
+		}
+		else {
+			if ((NrmQuark)therec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("string"))
+				continue;
+			sprintf(buffer,"%s_hours",NrmQuarkToString(dimq));
+			newdimq = NrmStringToQuark(buffer);
+			nvstep = therec->internal_var_list;
+			for (k = 0; k < therec->n_internal_vars; k++) {
+				if (nvstep->int_var->var_info.var_name_quark == newdimq) {
+					break;
+				}
+				nvstep = nvstep->next;
+			}
+			if (k == therec->n_internal_vars) {
+				printf("var %s not found\n",NrmQuarkToString(newdimq));
+				continue;
+			}
+			step->dim_inq->dim_name = newdimq;
+		}
+		step = step->next;
+	}
+	return;
+}
+
+
 
 static void _CreateSupplementaryTimeVariables
 #if 	NhlNeedProto
@@ -1758,8 +1840,8 @@ GribFileRecord *therec;
 		dimsize = vstep->int_var->value->multidval.totalelements;
 		vals = (NrmQuark *)vstep->int_var->value->multidval.val;
 		
-		dates = _DateStringsToDoubles(vals,dimsize);
-		hours = _DoubleDatesToHours(vals,dimsize);
+		dates = _DateStringsToEncodedDoubles(vals,dimsize);
+		hours = _DateStringsToHours(vals,dimsize);
 		if (! (dates && hours) )
 			continue;
 		mdval = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,(void*)dates,
@@ -1791,6 +1873,7 @@ GribFileRecord *therec;
 		tmp_att_list_ptr = NULL;
 		step = step->next;
 	}
+	SetInitialTimeCoordinates(therec);
 	return;
 }
 	
@@ -1819,13 +1902,16 @@ GribFileRecord *therec;
 	NclMultiDValData tmp_md;
 	NclMultiDValData tmp_md1;
 	NclGribFVarRec *test;
-	int n_dims_lat;
-	int n_dims_lon;
-	int n_dims_level;
+	int n_dims_lat = 0;
+	int n_dims_lon = 0;
+	int n_dims_rot = 0;
+	int n_dims_level = 0;
 	int *dimsizes_lat = NULL;
 	int *dimsizes_lon = NULL;
+	int *dimsizes_rot = NULL;
 	float *tmp_lat = NULL;
 	float *tmp_lon = NULL;
+	float *tmp_rot = NULL;
 	NhlErrorTypes is_err = NhlNOERROR;
 	int tmp_file_dim_numbers[2];
 	char name_buffer[80];
@@ -1839,11 +1925,11 @@ GribFileRecord *therec;
 	int dimsizes_level = 1;
 	int nlonatts = 0;
 	int nlatatts = 0;
+	int nrotatts = 0;
 	GribAttInqRecList *lat_att_list_ptr;
 	GribAttInqRecList *lon_att_list_ptr;
+	GribAttInqRecList *rot_att_list_ptr;
 
-
-	
 	therec->total_dims = 0;
 	therec->n_scalar_dims = 0;
 	therec->scalar_dims = NULL;
@@ -2245,9 +2331,6 @@ GribFileRecord *therec;
 * For gds grid it must be decoded every time since several different grid could be defined
 * by the smae grid_type number.
 */
-/*
-				(*grid_gds[step->grid_gds_tbl_index].get_gds_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon,NULL,NULL,NULL,NULL);
-*/
 				dstep = therec->grid_dims;
 				while(dstep != NULL) {
 					if((dstep->dim_inq->is_gds == step->gds_type)&&
@@ -2291,7 +2374,10 @@ GribFileRecord *therec;
 					nlatatts = 0;
 					lat_att_list_ptr = NULL;
 					lon_att_list_ptr = NULL;
-					(*grid_gds[step->grid_gds_tbl_index].get_gds_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon,&lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts);
+					(*grid_gds[step->grid_gds_tbl_index].get_gds_grid)
+						(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon,
+						 &tmp_rot,&n_dims_rot,&dimsizes_rot,
+						 &lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts,&rot_att_list_ptr,&nrotatts);
 				}
 	
 				if((step->has_gds )&& (step->gds_type == 50)) {
@@ -2434,7 +2520,6 @@ GribFileRecord *therec;
 					therec->total_dims += step->var_info.doff+1;
 
 
-
 				} else if((n_dims_lon ==2)&&(n_dims_lat ==2)&&(dimsizes_lat[0] == dimsizes_lon[0])&&(dimsizes_lat[1] == dimsizes_lon[1])) {
 					char *uv_m = "m";
 					step->var_info.dim_sizes[current_dim] = dimsizes_lat[0];
@@ -2560,8 +2645,34 @@ GribFileRecord *therec;
 								    TEMPORARY,
 								    NULL,
 								    nclTypefloatClass),lat_att_list_ptr,nlatatts);
-					NclFree(dimsizes_lat);
+
 					therec->total_dims += 2;
+					if (tmp_rot != NULL) {
+						/* the rotation array is assumed to be the same size as the lat and lon arrays */
+						if((step->has_gds)&&(step->grid_number == 255)) {
+							if (step->gds_type != 203) {
+								sprintf(buffer,"g%d_rot_%d",step->gds_type,therec->total_dims);
+							}
+							else {
+								sprintf(buffer,"g%d%s_rot_%d",step->gds_type,uv_m,therec->total_dims);
+							}
+						} else {
+							sprintf(buffer,"gridrot_%d",step->grid_number);
+						}
+						_GribAddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,
+								    (NclMultiDValData)_NclCreateVal(NULL,
+												    NULL,
+												    Ncl_MultiDValData,
+												    0,
+												    (void*)tmp_rot,
+												    NULL,
+												    n_dims_lat,
+												    dimsizes_lat,
+												    TEMPORARY,
+												    NULL,
+												    nclTypefloatClass),rot_att_list_ptr,nrotatts);
+					}
+					NclFree(dimsizes_lat);
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Couldn't handle dimension information returned by grid decoding");
 					is_err = NhlFATAL;
@@ -2592,9 +2703,12 @@ GribFileRecord *therec;
 					if ( !(iv->int_var->var_info.file_dim_num[0] == dnum1 &&
 					       iv->int_var->var_info.file_dim_num[1] == dnum2)) 
 						continue;
-					if (count < 2) {
-						step->aux_coords[count] = iv->int_var->var_info.var_name_quark;
-						count++;
+					if (strstr(NrmQuarkToString(iv->int_var->var_info.var_name_quark),"rot"))
+						continue;
+					step->aux_coords[count] = iv->int_var->var_info.var_name_quark;
+					count++;
+					if (count == 2) {
+						break;
 					}
 				}
 			}
@@ -4443,6 +4557,10 @@ GribFileRecord *tmp;
 	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].n_values = 1;
 	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void *) NrmStringToQuark("linear");
 
+	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].data_type = NCL_string;
+	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].n_values = 1;
+	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values = (void *) NrmStringToQuark("string");
+
 	tmp->options = options;
 	return 1;
 }
@@ -4930,6 +5048,7 @@ int wr_status;
 					case 0:
 					case 1:
 					case 2:
+					case 10:
 						break;	
 					case 3:
 						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];
@@ -5264,6 +5383,47 @@ int wr_status;
 			_SetAttributeLists(therec);
 			_MakeVarnamesUnique(therec);
 
+#if 0
+			/* this is for debugging */
+			{
+				GribParamList *step;
+				int rec_count = 0, rec_count1 = 0;
+				int num_recs;
+				int n;
+				GribRecordInqRecList *recl;
+				int *recs;
+				int q,r;
+				recs = NhlMalloc(sizeof(int) * rec_num);
+				for (step = therec->var_list; step != NULL; step = step->next) {
+					num_recs = 1;
+					if (step->var_info.num_dimensions > 2) {
+						for (n = step->var_info.num_dimensions - 3; n > -1; n--) {
+							num_recs *= step->var_info.dim_sizes[n];
+						}
+					}
+					rec_count += num_recs;
+					for (n = 0; n < step->n_entries; n++) {
+						recl = &step->thelist[n];
+						recs[rec_count1] = recl->rec_inq->rec_num;
+						printf("%d\t%s\n",recl->rec_inq->rec_num,
+						       NrmQuarkToString(step->var_info.var_name_quark));
+						rec_count1++;
+					}
+				}
+				printf ("there are %d or %d recordsin %d variables\n",rec_count,rec_count1,therec->n_vars);
+				for (q = 1; q < rec_num + 1; q++) {
+					for (r = 0; r < rec_count1; r++) {
+						if (recs[r] != q)
+							continue;
+						break;
+					}
+					if (r == rec_count)
+						printf ("record %d not found\n",q);
+				}
+				NhlFree(recs);
+				
+			}
+#endif
 			fclose(fd);	
 			NclFree(vbuf);
 			return(therec);
@@ -6179,7 +6339,12 @@ static NhlErrorTypes GribSetOption
 	static first = 1;
 
 	if (option ==  NrmStringToQuark("thinnedgridinterpolation")) {
-		rec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void*) (NrmQuark)values;
+		rec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void*) *(NrmQuark *)values;
+	}
+
+	if (option ==  NrmStringToQuark("initialtimecoordinatetype")) {
+		rec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values = (void*) *(NrmQuark *)values;
+		SetInitialTimeCoordinates(therec);
 	}
 	
 	return NhlNOERROR;

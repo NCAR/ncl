@@ -65,7 +65,7 @@ int grid_index[] = { 1, 2, 3, 4, 5, 6, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 3
 
 int grid_tbl_len = sizeof(grid_index)/sizeof(int);
 
-int grid_gds_index[] = { -1, 0, 1, 2, 3, 4, 5, /*10,*/ 13, 50, 60, 70, 80, /*90,*/ 201, 202, 203 };
+int grid_gds_index[] = { -1, 0, 1, /* 2,*/ 3, 4, 5, /*10, 13,*/ 50, /*60, 70, 80, 90, 201, 202,*/ 203 };
 
 int grid_gds_tbl_len = sizeof(grid_gds_index)/sizeof(int);
 #define EAR 6371.2213
@@ -3473,45 +3473,297 @@ GribParamList* thevarrec;
 
 void GdsMEGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * lonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, lonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * lonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
-			*lat = NULL;
-			*n_dims_lat = 0;
-			*dimsizes_lat = NULL;
-			*lon = NULL;
-			*n_dims_lon= 0;
-			*dimsizes_lon= NULL;
+	unsigned char *gds;
+	int la1;
+	int lo1;
+	int la2;
+	int lo2;
+	int latin;
+	float di,dj;
+	unsigned char tmp[4];
+	int sign;
+	int i;
+	float *tmp_float;
+	NclQuark* tmp_string;
+	int itmp;
+	int kgds[32];
+	int ni,nj;
+	int iopt,lrot,npts,nret;
+	float fillval = -9999;
+	float *tlon, *tlat;
+	
+	*lat = NULL;
+	*n_dims_lat = 0;
+	*dimsizes_lat = NULL;
+	*lon = NULL;
+	*n_dims_lon= 0;
+	*dimsizes_lon= NULL;
+	*rot = NULL;
+	*n_dims_rot= 0;
+	*dimsizes_rot= NULL;
+
+	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+		return;
+
+	gds = thevarrec->thelist->rec_inq->gds;
+	if(gds == NULL) {
+		return;
+	}
+
+	ni = CnvtToDecimal(2,&(gds[6]));
+	nj = CnvtToDecimal(2,&(gds[8]));
+
+	sign = ((char)0200 & gds[10] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[10];
+	tmp[1] = gds[11];
+	tmp[2] = gds[12];
+	la1 = sign * CnvtToDecimal(3,tmp);
+
+	sign = ((char)0200 & gds[13] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[13];
+	tmp[1] = gds[14];
+	tmp[2] = gds[15];
+	lo1 = sign * CnvtToDecimal(3,tmp);
+
+	sign = ((char)0200 & gds[17] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[17];
+	tmp[1] = gds[18];
+	tmp[2] = gds[19];
+	la2 = sign * CnvtToDecimal(3,tmp);
+
+	sign = ((char)0200 & gds[20] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[20];
+	tmp[1] = gds[21];
+	tmp[2] = gds[22];
+	lo2 = sign * CnvtToDecimal(3,tmp);
+
+	sign = ((char)0200 & gds[23] )? -1 : 1;
+	tmp[0] = (char)0177 & gds[23];
+	tmp[1] = gds[24];
+	tmp[2] = gds[25];
+	latin = sign * CnvtToDecimal(3,tmp);
+
+	tmp[0] = gds[28];
+	tmp[1] = gds[29];
+	tmp[2] = gds[30];
+	di = sign * CnvtToDecimal(3,tmp);
+
+	tmp[0] = gds[31];
+	tmp[1] = gds[32];
+	tmp[2] = gds[33];
+	dj = sign * CnvtToDecimal(3,tmp);
+
+	kgds[0] = 1;
+	kgds[1] = ni;
+	kgds[2] = nj;
+	kgds[3] = la1;
+	kgds[4] = lo1;
+	kgds[5] = UnsignedCnvtToDecimal(1,&(gds[16]));
+	kgds[6] = la2;
+	kgds[7] = lo2;
+	kgds[8] = latin;
+	kgds[10] = UnsignedCnvtToDecimal(1,&(gds[27]));
+	kgds[11] = di;
+	kgds[12] = dj;
+
+
+	iopt = 1;
+	lrot = 0;
+
+	npts = ni;
+	tlon = (float*)NclMalloc((unsigned)sizeof(float)* ni);
+	tlat = (float*)NclMalloc((unsigned)sizeof(float)* ni);
+	for (i = 0; i < ni; i++) {
+		tlon[i] = i + 1;
+		tlat[i] = nj / 2;
+	}
+	
+	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,tlon,tlat,tlon,tlat,&nret,&lrot,*rot,*rot);
+	NhlFree(tlat);
+	if (nret != ni) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "GdsMEGrid: Error computing Mercator longitudes");
+		NhlFree(tlon);
+		return;
+	}
+	for (i = 0; i < ni; i++) {
+		tlon[i] = (tlon[i] > 180) ? tlon[i] - 360.0 : tlon[i];
+	}
+	*lon = tlon;
+
+	npts = nj;
+	tlon = (float*)NclMalloc((unsigned)sizeof(float)* nj);
+	tlat = (float*)NclMalloc((unsigned)sizeof(float)* nj);
+	for (i = 0; i < nj; i++) {
+		tlat[i] = i + 1;
+		tlon[i] = ni / 2;
+	}
+	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,tlon,tlat,tlon,tlat,&nret,&lrot,*rot,*rot);
+	NhlFree(tlon);
+	if (nret != nj) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "GdsMEGrid: Error computing Mercator longitudes");
+		NhlFree(tlat);
+		NhlFree(*lon);
+		*lon = NULL;
+		return;
+	}
+
+	*n_dims_lon = 1;
+	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = ni;
+	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
+	*n_dims_lat = 1;
+	*(*dimsizes_lat) = nj;
+	*lat = tlat;
+	
+	if(lon_att_list != NULL) {
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la1/1000.0;
+		GribPushAtt(lon_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo1/1000.0;
+		GribPushAtt(lon_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la2/1000.0;
+		GribPushAtt(lon_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo2/1000.0;
+		GribPushAtt(lon_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = latin/1000.0;
+		GribPushAtt(lon_att_list,"Latin",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = di/1000.0;
+		GribPushAtt(lon_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = dj/1000.0;
+		GribPushAtt(lon_att_list,"Dj",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("degrees_east");
+		GribPushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("Mercator Projection Grid");
+		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("longitude");
+		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	}
+	if(lat_att_list != NULL) {
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la1/1000.0;
+		GribPushAtt(lat_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo1/1000.0;
+		GribPushAtt(lat_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = la2/1000.0;
+		GribPushAtt(lat_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = lo2/1000.0;
+		GribPushAtt(lat_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = latin/1000.0;
+		GribPushAtt(lat_att_list,"Latin",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = di/1000.0;
+		GribPushAtt(lat_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_float= (float*)NclMalloc(sizeof(float));
+		*tmp_float = dj/1000.0;
+		GribPushAtt(lat_att_list,"Dj",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("degrees_north");
+		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("Mercator Projection Grid");
+		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("latitude");
+		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	}
+	return;
+
 }
 void GdsGNGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * lonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, lonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * lonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 			*lat = NULL;
@@ -3523,20 +3775,44 @@ int * lonatts;
 }
 void GdsLEGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * nlonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	static int mapid = -1;
@@ -3564,9 +3840,7 @@ int * nlonatts;
 	float *tmp_float;
 	NclQuark *tmp_string;
 	int *tmp_int;
-
-	
-
+	int do_rot;
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
 	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
@@ -3615,6 +3889,8 @@ int * nlonatts;
 	north= ((unsigned char)0200 & (unsigned char)gds[26])?1:0;
 	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
 	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
+	do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+#if 0
 	if((latin1 < 0)&&(latin2 < 0)) {
 		float minlat,maxlat;
 
@@ -3689,7 +3965,55 @@ int * nlonatts;
 			}
 		}
 	}
+#endif
 
+#if 1
+	{
+		int kgds[32];
+		int iopt;
+		int npts;
+		float fillval;
+		int lrot;
+		int nret;
+		float *srot = NULL;
+		
+		kgds[0] = 3;
+		kgds[1] = nx;
+		kgds[2] = ny;
+		kgds[3] = la1 * 1000;
+		kgds[4] = lo1 * 1000;
+		kgds[5] = UnsignedCnvtToDecimal(1,&(gds[16]));
+		kgds[6] = lov * 1000;
+		kgds[7] = dx;
+		kgds[8] = dy;
+		kgds[9] = UnsignedCnvtToDecimal(1,&(gds[26]));;
+		kgds[10] = UnsignedCnvtToDecimal(1,&(gds[27]));
+		kgds[11] = latin1 * 1000;
+		kgds[12] = latin2 * 1000;
+
+		iopt = 0;
+		lrot = do_rot;
+		npts = nx * ny;
+		if (do_rot) {
+			srot = NhlMalloc(npts * sizeof(float));
+			*rot = NhlMalloc(npts * sizeof(float));
+		}
+	
+		NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
+
+		if (do_rot) {
+			for (i = 0; i < npts; i++) {
+				(*rot)[i] = asin(srot[i]) * RADDEG;
+				(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
+			}
+		}
+		else {
+			for (i = 0; i < npts; i++) {
+				(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
+			}
+		}
+	}
+#endif
 
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -3755,6 +4079,35 @@ int * nlonatts;
 		*tmp_string = NrmStringToQuark("latitude");
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
+	if(do_rot && rot_att_list != NULL) {
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("apply formulas to derive u and v components relative to earth");
+		GribPushAtt(rot_att_list,"note2",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("u and v components of vector quantities are resolved relative to grid");
+		GribPushAtt(rot_att_list,"note1",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("Vearth = cos(rot)*Vgrid - sin(rot)*Ugrid");
+		GribPushAtt(rot_att_list,"formula_v",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("Uearth = sin(rot)*Vgrid + cos(rot)*Ugrid");
+		GribPushAtt(rot_att_list,"formula_u",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("degrees");
+		GribPushAtt(rot_att_list,"units",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("Lambert Conformal Secant or Tangent, Conical or bipolar");
+		GribPushAtt(rot_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark("clockwise vector rotation");
+		GribPushAtt(rot_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+	}
 	
 	
 
@@ -3764,20 +4117,44 @@ int * nlonatts;
 
 void GdsGAGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * nlonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	int nlat,nlon;
@@ -4042,20 +4419,44 @@ int * nlonatts;
 }
 void GdsSTGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * nlonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	static int mapid = -1;
@@ -4243,20 +4644,44 @@ int * nlonatts;
 }
 void GdsOLGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * lonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, lonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * lonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 			*lat = NULL;
@@ -4269,20 +4694,44 @@ int * lonatts;
 
 void GdsSHGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * lonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, lonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * lonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	int j,k,m,type,mode;
@@ -4318,20 +4767,44 @@ int * lonatts;
 
 void GdsCEGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * nlonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	unsigned char *gds;
@@ -4525,20 +4998,44 @@ int * nlonatts;
 
 void GdsUnknownGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * nlonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	unsigned char *gds;
@@ -4602,20 +5099,44 @@ int * nlonatts;
  */
 void GdsRLLGrid
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * nlonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	unsigned char *gds;
@@ -4849,20 +5370,44 @@ int * nlonatts;
 
 void GdsSRLLGrid 
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,GribAttInqRecList ** lat_att_list, int * nlatatts, GribAttInqRecList **lon_att_list, int * nlonatts)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,lat_att_list,nlatatts,lon_att_list, nlonatts)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
-GribAttInqRecList ** lat_att_list;
-int * nlatatts;
-GribAttInqRecList ** lon_att_list;
-int * nlonatts;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
 	int nx;

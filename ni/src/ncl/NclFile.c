@@ -1004,7 +1004,7 @@ NclMultiDValData value;
 				thefile->file.format_funcs->set_option(thefile->file.private_rec,loption,
 									tmp_md->multidval.data_type,
 									tmp_md->multidval.totalelements,
-									(void *) lvalue);
+									(void *) &lvalue);
 			}
 			else {
 				thefile->file.format_funcs->set_option(thefile->file.private_rec,loption,
@@ -1014,6 +1014,9 @@ NclMultiDValData value;
 			}
 			if (tmp_md != value)
 				_NclDestroyObj((NclObj)tmp_md);
+			if (fcp->options[i].post_set_option) {
+				return (*fcp->options[i].post_set_option)(thefile);
+			}
 			return NhlNOERROR;
 		}
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -1094,15 +1097,43 @@ NclMultiDValData value;
 	return NhlNOERROR;
 }
 
+static NhlErrorTypes UpdateDims 
+#if	NhlNeedProto
+(
+	NclFile  thefile
+)
+#else
+(thefile)
+NclFile thefile;
+#endif
+{
+	NclQuark *name_list;
+	int n_names;
+	int i;
+	int index;
+
+	name_list = (*thefile->file.format_funcs->get_dim_names)(thefile->file.private_rec,&n_names);
+	thefile->file.n_file_dims = n_names;
+	for(i = 0; i < n_names; i++){
+		thefile->file.file_dim_info[i] = (thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,name_list[i]);
+		index = FileIsVar(thefile,name_list[i]);
+		if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
+			thefile->file.coord_vars[i] = thefile->file.var_info[index];
+		}
+	}
+	NclFree((void*)name_list);
+}
+
 NclFileOption file_options[] = {
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2 },  /* NetCDF PreFill */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2 },  /* NetCDF define mode */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0 },  /* GRIB thinned grid interpolation method */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2 },  /* NetCDF header reserve space */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0 },  /* NetCDF suppress close option */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 3 },  /* NetCDF file format option */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0 },  /* Binary file read byte order */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0 }   /* Binary file write byte order */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },  /* NetCDF PreFill */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },  /* NetCDF define mode */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* GRIB thinned grid interpolation method */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },  /* NetCDF header reserve space */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* NetCDF suppress close option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 3, NULL },  /* NetCDF file format option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file read byte order */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file write byte order */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, UpdateDims }   /* GRIB initial time coordinate type */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1299,6 +1330,25 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_WRITE_BYTE_ORDER].valid_values = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+
+	/* Grib option NumericIniitialTimeCoordinates */
+	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].format = NrmStringToQuark("grb");
+	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].name = NrmStringToQuark("initialtimecoordinatetype");
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("string");
+	len_dims = 1;
+	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(2 * sizeof(string));
+	sval[0] = NrmStringToQuark("string");
+	sval[1] = NrmStringToQuark("numeric");
+	len_dims = 2;
+	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
 	/* End of options */
 
 	return ret;

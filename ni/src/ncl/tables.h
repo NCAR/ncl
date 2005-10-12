@@ -164,7 +164,9 @@ GribTable models[] = {
 	{191, "CPC Manual Forecast Product"}
 };
 
-int level_index[] = {1,2,3,4,5,6,7,8,9,20,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,119,120,121,125,128,141,160,200,201};
+int level_index[] = {1,2,3,4,5,6,7,8,9,20,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,
+		     115,116,117,119,120,121,125,128,141,160,200,201,204,206,207,209,210,211,212,213,214,
+		     222,223,224,232,233,234,235,236,237,238,242,243,244,245,246,247,248,249,251,252};
 
 char *level_str[] = {
 	"SFC",		/*1*/
@@ -203,7 +205,36 @@ char *level_str[] = {
 	"IBYM", /*141*/
 	"DBSL",	/*160*/
 	"EATM",	/*200*/
-	"EOCN",		/*201*/
+	"EOCN",	/*201*/
+	"HTFL", /*204*/
+	"GCBL", /*206*/
+	"GCTL", /*207*/
+	"BCBL", /*209*/
+	"BCTL", /*210*/
+	"BCY",  /*211*/
+	"LCBL", /*212*/
+	"LCTL", /*213*/
+	"LCY",  /*214*/
+	"MCBL", /*222*/
+	"MCTL", /*223*/
+	"MCY",  /*224*/
+	"HCBL", /*232*/
+	"HCTL", /*233*/
+	"HCY",  /*234*/
+	"OITL", /*235*/
+	"OLYR", /*236*/
+	"OBML", /*237*/
+	"OBIL", /*238*/
+	"CCBL", /*242*/
+	"CCTL", /*243*/
+	"CCY",  /*244*/
+	"LLTW", /*245*/
+	"MTHE", /*246*/
+	"EHLT", /*247*/
+	"SCBL", /*248*/
+	"SCTL", /*249*/
+	"DCBL", /*251*/
+	"DCTL"  /*252*/
 };
 char *level_units_str[] = {
 	"none" /*"SFC",	1*/,
@@ -243,6 +274,35 @@ char *level_units_str[] = {
 	"m" /*"DBSL",	160*/,
 	"none" /*"EATM",	200*/,
 	"none" /*"EOCN",		201*/
+	"none", /*"HTFL", 204*/
+	"none", /*"GCBL", 206*/
+	"none", /*"GCTL", 207*/
+	"none", /*"BCBL", 209*/
+	"none", /*"BCTL", 210*/
+	"none", /*"BCY",  211*/
+	"none", /*"LCBL", 212*/
+	"none", /*"LCTL", 213*/
+	"none", /*"LCY",  214*/
+	"none", /*"MCBL", 222*/
+	"none", /*"MCTL", 223*/
+	"none", /*"MCY",  224*/
+	"none", /*"HCBL", 232*/
+	"none", /*"HCTL", 233*/
+	"none", /*"HCY",  234*/
+	"1/10 degC", /*"OITL", 235*/
+	"none", /*"OLYR", 236*/
+	"m",    /*"OBML", 237*/
+	"m",    /*"OBIL", 238*/
+	"none", /*"CCBL", 242*/
+	"none", /*"CCTL", 243*/
+	"none", /*"CCY",  244*/
+	"none", /*"LLTW", 245*/
+	"none", /*"MTHE", 246*/
+	"none", /*"EHLT", 247*/
+	"none", /*"SCBL", 248*/
+	"none", /*"SCTL", 249*/
+	"none", /*"DCBL", 251*/
+	"none"  /*"DCTL"  252*/
 };
 char *level_str_long_name[] = {    
 	"surface of the earth including sea surface", /*1*/
@@ -281,6 +341,35 @@ char *level_str_long_name[] = {
 	"layer between two isobaric surfaces (mixed precision)",	/*141*/
 	"depth below sea level",	/*160*/
 	"entire atmosphere considered as a single layer",	/*200*/
-	"entire ocean considered as a single layer"	/*201*/
+	"entire ocean considered as a single layer",	/*201*/
+	"highest tropospheric freezing level", /*"HTFL", 204*/
+	"grid scale cloud bottom level", /*"GCBL", 206*/
+	"grid scale cloud top level", /*"GCTL", 207*/
+	"boundary layer cloud bottom level", /*"BCBL", 209*/
+	"boundary layer cloud top level", /*"BCTL", 210*/
+	"boundary layer cloud layer", /*"BCY",  211*/
+	"low cloud bottom level", /*"LCBL", 212*/
+	"low cloud top level", /*"LCTL", 213*/
+	"low cloud layer", /*"LCY",  214*/
+	"middle cloud bottom level", /*"MCBL", 222*/
+	"middle cloud top level", /*"MCTL", 223*/
+	"middle cloud layer", /*"MCY",  224*/
+	"high cloud bottom level", /*"HCBL", 232*/
+	"high cloud top level", /*"HCTL", 233*/
+	"high cloud layer", /*"HCY",  234*/
+	"ocean isotherm level", /*"OITL", 235*/
+	"layer between two depths below ocean surface", /*"OLYR", 236*/
+	"bottom of ocean mixed layer", /*"OBML", 237*/
+	"bottom of ocean isothermal layer", /*"OBIL", 238*/
+	"convective cloud bottom level", /*"CCBL", 242*/
+	"convective cloud top level", /*"CCTL", 243*/
+	"convective cloud layer", /*"CCY",  244*/
+	"lowest level of the web bulb zero", /*"LLTW", 245*/
+	"maximum equivalent potential temperature level", /*"MTHE", 246*/
+	"equilibrium level", /*"EHLT", 247*/
+	"shallow convective cloud bottom level", /*"SCBL", 248*/
+	"shallow convective cloud top level", /*"SCTL", 249*/
+	"deep convective cloud bottom level", /*"DCBL", 251*/
+	"deep convective cloud top level"  /*"DCTL"  252*/
 };
 	

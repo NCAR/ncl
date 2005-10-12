@@ -219,7 +219,8 @@ struct _GribAttInqRec {
 };
 
 #define GRIB_THINNED_GRID_INTERPOLATION_OPT 0
-#define GRIB_NUM_OPTIONS 1
+#define GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT 1
+#define GRIB_NUM_OPTIONS 2
 
 struct _GribOptions {
 	NclQuark name;
@@ -263,17 +264,22 @@ GribParamList* /* thevarrec */
 
 typedef void (*GribGetGDSGrid)(
 #if NhlNeedProto
-GribParamList*, /* thevarrec */
-float**,
-int *,
-int **,
-float **,
-int *,
-int **,
-GribAttInqRecList ** /*lat_att_list*/,
-int * /*nlatatts*/,
-GribAttInqRecList ** /*lon_att_list*/,
-int * /*lonatts*/
+GribParamList* thevarrec,
+float** lat,
+int * n_dims_lat,
+int ** dimsizes_lat,
+float ** lon,
+int * n_dims_lon,
+int **dimsizes_lon,
+float **rot,
+int * n_dims_rot,
+int **dimsizes_rot,
+GribAttInqRecList ** lat_att_list,
+int * nlatatts,
+GribAttInqRecList ** lon_att_list,
+int * nlonatts,
+GribAttInqRecList ** rot_att_list,
+int * nrotatts
 #endif
 );	
 typedef void (*GribGetGrid)(
