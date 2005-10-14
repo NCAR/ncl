@@ -738,10 +738,11 @@ NhlErrorTypes eof_W( void )
     }
   }
 /*
- * If we are dealing with the old eofcov routine, or the new SCRIPPS routine,
- * then we then we need to "fix" the evec (or revec if float) array.  Note 
- * that for the old eofcov routine, wevec is actually the same size as evec,
- * whereas for the new routine, it's the same size only if mcsta == msta. 
+ * If we are dealing with the old eofcov routine, or the new SCRIPPS
+ * routine, then we need to "fix" the evec (or revec if float)
+ * array.  Note  that for the old eofcov routine, wevec is actually
+ * the same size as evec, whereas for the new routine, it's the same 
+ * size only if mcsta == msta. 
  */
   else {
     if(mcsta < msta) {
@@ -756,9 +757,9 @@ NhlErrorTypes eof_W( void )
           revec[i] = (float)missing_dx.doubleval;
         }
 /*
- * Now copy over the appropriate values in the wevec array. Since the wevec
- * array is different sizes depending on which routine you are using, we have
- * two different sections of code here.
+ * Now copy over the appropriate values in the wevec array. Since the
+ * wevec array is a different size depending on which routine you are
+ * using, we have two different sections of code here.
  */
         if(use_new_transpose) {
           nc2 = 0;
@@ -795,9 +796,9 @@ NhlErrorTypes eof_W( void )
           evec[i] = missing_dx.doubleval;
         }
 /*
- * Now copy over the appropriate values in the wevec array. Since the wevec
- * array is different sizes depending on which routine you are using, we have
- * two different sections of code here.
+ * Now copy over the appropriate values in the wevec array. Since the
+ * wevec array is a different size depending on which routine you are
+ * using, we have two different sections of code here.
  */
         if(use_new_transpose) { 
           nc2 = 0;
@@ -826,9 +827,10 @@ NhlErrorTypes eof_W( void )
     }
     else {
 /*
- * mcsta = msta, so we just need to copy stuff over. It doesn't matter whether we have called
- * the old eofcov routine or the new eof SCRIPPS routine, because if mcsta==msta, then wevec
- * is the same size for both routines.
+ * mcsta = msta, so we just need to copy stuff over. It doesn't matter
+ * whether we have called the old eofcov routine or the new eof SCRIPPS
+ * routine, because if mcsta==msta, then wevec is the same size for
+ * both routines.
  */
       if(type_x != NCL_double) {
         for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)wevec[i];
@@ -1635,7 +1637,7 @@ NhlErrorTypes eofcov_tr_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx, total_size_x;
   int *neval, ne;
 /*
  * Various.
@@ -2082,13 +2084,13 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Now copy over the appropriate values in the wevec array.
  */
-      mcsta = 0;
+      nc2 = 0;
       for( nc = 0; nc < ncol; nc++) {
         if (xave[nc] != missing_dx.doubleval) {
           for( ne = 0; ne < *neval; ne++ ) {
-            revec[ne*ncol+nc] = (float)wevec[ne*ncol+mcsta];
+            revec[ne*ncol+nc] = (float)wevec[ne*mcsta+nc2];
           }
-          mcsta++;
+          nc2++;
         }
       }
     }
@@ -2103,13 +2105,13 @@ NhlErrorTypes eofcov_tr_W( void )
 /*
  * Now copy over the appropriate values in the wevec array.
  */
-      mcsta = 0;
+      nc2 = 0;
       for( nc = 0; nc < ncol; nc++) {
         if (xave[nc] != missing_dx.doubleval) {
           for( ne = 0; ne < *neval; ne++ ) {
-            evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+            evec[ne*ncol+nc] = wevec[ne*mcsta+nc2];
           }
-          mcsta++;
+          nc2++;
         }
       }
     }
