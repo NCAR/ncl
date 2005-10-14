@@ -38,12 +38,13 @@ extern void NGCALLF(deoftsca,DEOFTSCA)(double *,int *,int *,int *,int *,
                                        double *,double *,int *,double *,
                                        double *);
 
-extern NGCALLF(dtncleof,DTNCLEOF)(double *, int *, int *, int *, int *,
-                                  double *, int *, double *, double *,
-                                  float *, double *, int *, int *, double *, 
-                                  double *, double *, double *, double *,
-                                  double *, long long int *, double *, int *, 
-                                  int *, int *, int *, int *, int *);
+extern void NGCALLF(dtncleof,DTNCLEOF)(double *, int *, int *, int *, int *,
+                                       double *, int *, double *, double *,
+                                       float *, double *, int *, int *,
+                                       double *,  double *, double *, 
+                                       double *, double *, double *,
+                                       long long int *, double *, int *, 
+                                       int *, int *, int *, int *, int *);
 
 extern void NGCALLF(deof2data,DEOF2DATA)(int *,int *,int *,double *,
                                          double *, double *, double *);
