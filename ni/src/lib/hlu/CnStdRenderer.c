@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.7 2005-02-28 22:14:11 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.8 2005-10-14 20:25:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3262,7 +3262,7 @@ NhlErrorTypes _NhlRasterFill
                                         iaid = -1;
 					zval = *(zdat + indy*izd1 + indx);
                                         for (k=0; k < Cnp->level_count; k++) {
-                                                if (zval <= levels[k]) {
+                                                if (zval < levels[k]) {
                                                    iaid = NhlcnAREAID_OFFSET+k;
                                                    break;
                                                 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.134 2005-08-24 21:12:12 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.135 2005-10-14 20:25:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -10308,7 +10308,7 @@ NhlErrorTypes DrawCell
 	else {
 		lix = -1;
 		for (i=0; i < cnp->level_count; i++) {
-			if (zval <= levels[i]) {
+			if (zval < levels[i]) {
 				lix = i; 
 				break;
 			}
@@ -10424,7 +10424,7 @@ NhlErrorTypes DrawAdjustedCell
 	else {
 		lix = -1;
 		for (i=0; i < cnp->level_count; i++) {
-			if (zval <= levels[i]) {
+			if (zval < levels[i]) {
 				lix = i; 
 				break;
 			}

@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.5 2005-02-14 22:56:52 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.6 2005-10-14 20:25:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3749,7 +3749,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 #endif
 				     iaid = -1;
 				     for (k=0; k < Cnp->level_count; k++) {
-					     if (fvali <= levels[k]) {
+					     if (fvali < levels[k]) {
 						  iaid = NhlcnAREAID_OFFSET+k;
 						  break;
 					     }
