@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.13 2005-09-06 17:40:54 kennison Exp $
+I $Id: CodeIftran,v 1.14 2005-10-14 01:23:36 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -8880,7 +8880,7 @@ C
 C
         DO (I=1,NCLV)
           KCLV=ICLP(I)
-          IF (ZVAL.LE.CLEV(KCLV))
+          IF (ZVAL.LT.CLEV(KCLV))
             IF (JCLV.NE.0)
               IF (CLEV(KCLV).NE.CLEV(JCLV)) GO TO 101
             END IF
