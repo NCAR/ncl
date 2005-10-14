@@ -86,7 +86,7 @@ NhlErrorTypes eof_W( void )
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_rx, missing_dx;
   NclBasicDataTypes type_x;
-  int nrow, ncol, nobs, msta, mcsta, nc, nr, kntx, total_size_x;
+  int nrow, ncol, nobs, msta, mcsta, nc, nc2, nr, kntx, total_size_x;
   int *neval, ne;
 /*
  * Various.
@@ -562,7 +562,7 @@ NhlErrorTypes eof_W( void )
       revec = (float*)calloc(total_size_evec,sizeof(float));
       if( revec == NULL ) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-	return(NhlFATAL);
+        return(NhlFATAL);
       }
     }
     else {
@@ -571,11 +571,11 @@ NhlErrorTypes eof_W( void )
  * need to copy wevec to locations in which the input was not missing.
  */
       if(mcsta != msta) {
-	evec = (double*)calloc(total_size_evec,sizeof(double));
-	if( evec == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-	  return(NhlFATAL);
-	}
+        evec = (double*)calloc(total_size_evec,sizeof(double));
+        if( evec == NULL ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+          return(NhlFATAL);
+        }
       }
     }
 /*
@@ -651,7 +651,7 @@ NhlErrorTypes eof_W( void )
       revec = (float*)calloc(total_size_evec,sizeof(float));
       if( revec == NULL ) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-	return(NhlFATAL);
+        return(NhlFATAL);
       }
     }
     else {
@@ -660,11 +660,11 @@ NhlErrorTypes eof_W( void )
  * need to copy wevec to locations in which the input was not missing.
  */
       if(mcsta != msta) {
-	evec = (double*)calloc(total_size_evec,sizeof(double));
-	if( evec == NULL ) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
-	  return(NhlFATAL);
-	}
+        evec = (double*)calloc(total_size_evec,sizeof(double));
+        if( evec == NULL ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for output array");
+          return(NhlFATAL);
+        }
       }
     }
 /*
@@ -738,9 +738,10 @@ NhlErrorTypes eof_W( void )
     }
   }
 /*
- * If mcsta < msta *and* we are dealing with the old eofcov routine or the
- * new scripps routine, then we need to "fix" the evec (or revec if float)
- * array.
+ * If we are dealing with the old eofcov routine, or the new SCRIPPS routine,
+ * then we then we need to "fix" the evec (or revec if float) array.  Note 
+ * that for the old eofcov routine, wevec is actually the same size as evec,
+ * whereas for the new routine, it's the same size only if mcsta == msta. 
  */
   else {
     if(mcsta < msta) {
@@ -755,18 +756,36 @@ NhlErrorTypes eof_W( void )
           revec[i] = (float)missing_dx.doubleval;
         }
 /*
- * Now copy over the appropriate values in the wevec array.
+ * Now copy over the appropriate values in the wevec array. Since the wevec
+ * array is different sizes depending on which routine you are using, we have
+ * two different sections of code here.
  */
-        mcsta = 0;
-        for( nc = 0; nc < ncol; nc++) {
-          if (xave[nc] != missing_dx.doubleval) {
-            for( ne = 0; ne < *neval; ne++ ) {
-              revec[ne*ncol+nc] = (float)wevec[ne*ncol+mcsta];
+        if(use_new_transpose) {
+          nc2 = 0;
+          for( nc = 0; nc < ncol; nc++) {
+            if (xave[nc] != missing_dx.doubleval) {
+              for( ne = 0; ne < *neval; ne++ ) {
+                revec[ne*ncol+nc] = (float)wevec[ne*mcsta+nc2];
+              }
+              nc2++;
             }
-            mcsta++;
+          }
+        }
+        else {
+          nc2 = 0;
+          for( nc = 0; nc < ncol; nc++) {
+            if (xave[nc] != missing_dx.doubleval) {
+              for( ne = 0; ne < *neval; ne++ ) {
+                revec[ne*ncol+nc] = (float)wevec[ne*ncol+nc2];
+              }
+              nc2++;
+            }
           }
         }
       }
+/*
+ * This is the double precision case.
+ */
       else {
 /*
  * First, make sure init to missing because not all values will be 
@@ -776,15 +795,30 @@ NhlErrorTypes eof_W( void )
           evec[i] = missing_dx.doubleval;
         }
 /*
- * Now copy over the appropriate values in the wevec array.
+ * Now copy over the appropriate values in the wevec array. Since the wevec
+ * array is different sizes depending on which routine you are using, we have
+ * two different sections of code here.
  */
-        mcsta = 0;
-        for( nc = 0; nc < ncol; nc++) {
-          if (xave[nc] != missing_dx.doubleval) {
-            for( ne = 0; ne < *neval; ne++ ) {
-              evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+        if(use_new_transpose) { 
+          nc2 = 0;
+          for( nc = 0; nc < ncol; nc++) {
+            if (xave[nc] != missing_dx.doubleval) {
+              for( ne = 0; ne < *neval; ne++ ) {
+                evec[ne*ncol+nc] = wevec[ne*mcsta+nc2];
+              }
+              nc2++;
             }
-            mcsta++;
+          }
+        }
+        else {
+          nc2 = 0;
+          for( nc = 0; nc < ncol; nc++) {
+            if (xave[nc] != missing_dx.doubleval) {
+              for( ne = 0; ne < *neval; ne++ ) {
+                evec[ne*ncol+nc] = wevec[ne*ncol+nc2];
+              }
+              nc2++;
+            }
           }
         }
       }
@@ -792,7 +826,9 @@ NhlErrorTypes eof_W( void )
     }
     else {
 /*
- * mcsta = msta, so we just need to copy stuff over.
+ * mcsta = msta, so we just need to copy stuff over. It doesn't matter whether we have called
+ * the old eofcov routine or the new eof SCRIPPS routine, because if mcsta==msta, then wevec
+ * is the same size for both routines.
  */
       if(type_x != NCL_double) {
         for( i = 0; i < total_size_evec; i++ ) revec[i] = (float)wevec[i];
@@ -1992,8 +2028,8 @@ NhlErrorTypes eofcov_tr_W( void )
     if(mcsta != msta) {
       evec = (double*)calloc(total_size_evec,sizeof(double));
       if( evec == NULL ) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofcov_tr: Unable to allocate memory for output array");
+        return(NhlFATAL);
       }
     }
   }
@@ -2027,7 +2063,7 @@ NhlErrorTypes eofcov_tr_W( void )
  */
   icovcor = 0;
   NGCALLF(deof11,DEOF11)(xdatat,&mcsta,&nrow,neval,&icovcor,
-			 &missing_dx.doubleval,eval,wevec,pcvar,prncmp);
+                         &missing_dx.doubleval,eval,wevec,pcvar,prncmp);
 /*
  * If mcsta < msta then we need to "fix" the evec (or revec if float)
  * array.
@@ -2041,19 +2077,19 @@ NhlErrorTypes eofcov_tr_W( void )
  */
     if(type_x != NCL_double) {
       for(i = 0; i < total_size_evec; i++) {
-	revec[i] = (float)missing_dx.doubleval;
+        revec[i] = (float)missing_dx.doubleval;
       }
 /*
  * Now copy over the appropriate values in the wevec array.
  */
       mcsta = 0;
       for( nc = 0; nc < ncol; nc++) {
-	if (xave[nc] != missing_dx.doubleval) {
-	  for( ne = 0; ne < *neval; ne++ ) {
-	    revec[ne*ncol+nc] = (float)wevec[ne*ncol+mcsta];
-	  }
-	  mcsta++;
-	}
+        if (xave[nc] != missing_dx.doubleval) {
+          for( ne = 0; ne < *neval; ne++ ) {
+            revec[ne*ncol+nc] = (float)wevec[ne*ncol+mcsta];
+          }
+          mcsta++;
+        }
       }
     }
     else {
@@ -2062,19 +2098,19 @@ NhlErrorTypes eofcov_tr_W( void )
  * filled in.
  */
       for(i = 0; i < total_size_evec; i++) {
-	evec[i] = missing_dx.doubleval;
+        evec[i] = missing_dx.doubleval;
       }
 /*
  * Now copy over the appropriate values in the wevec array.
  */
       mcsta = 0;
       for( nc = 0; nc < ncol; nc++) {
-	if (xave[nc] != missing_dx.doubleval) {
-	  for( ne = 0; ne < *neval; ne++ ) {
-	    evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
-	  }
-	  mcsta++;
-	}
+        if (xave[nc] != missing_dx.doubleval) {
+          for( ne = 0; ne < *neval; ne++ ) {
+            evec[ne*ncol+nc] = wevec[ne*ncol+mcsta];
+          }
+          mcsta++;
+        }
       }
     }
     NclFree(wevec);
