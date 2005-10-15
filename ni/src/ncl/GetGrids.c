@@ -5623,24 +5623,25 @@ GridGDSInfoRecord grid_gds[] = {
 		GenericUnPack,GdsUnknownGrid,"Unsupported Gds Grid", /*-1*/
 		GenericUnPack,GdsCEGrid,"Cylindrical Equidistant Projection Grid", /*0*/
 /**/		GenericUnPack,GdsMEGrid,"Mercator Projection Grid", /*1*/
+#if 0
 /**/		GenericUnPack,GdsGNGrid,"Gnomonic Projection Grid", /*2*/
+#endif
 		GenericUnPack,GdsLEGrid,"Lambert Conformal Secant or Tangent, Conical or bipolar", /*3*/
 		GenericUnPack,GdsGAGrid,"Gaussian Latitude/Longitude Grid", /*4*/
 		GenericUnPack,GdsSTGrid,"Polar Stereographic Projection Grid", /*5*/
 #if 0
 		GenericUnPack,GdsRLLGrid,"Rotated Latitude/Longitude Grid", /*10*/
-#endif
 /**/		GenericUnPack,GdsOLGrid,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
+#endif
 		GenericUnPack,GdsSHGrid,"Spherical Harmonic Coefficients", /*50*/
+#if 0
 		NULL,NULL,"Rotated Spherical Harmonic Coefficients", /*60*/
 		NULL,NULL,"Stretched Spherical Harmonic Coefficients", /*70*/
 		NULL,NULL,"Stretched and Rotated Spherical Harmonic Coefficients", /*80*/
-
-#if 0
 		NULL,NULL,"Space View perspective or orthographic grid", /*90*/
-#endif
 		NULL,NULL,"Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array", /*201*/
 		NULL,NULL,"Arakawa filled E-grid on rotated latitude/longitude grid-point array", /*202*/
+#endif
 		GenericUnPack,GdsSRLLGrid,"Arakawa staggered E-grid on rotated latitude/longitude grid-point array", /*203*/
 		
 };
