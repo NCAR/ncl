@@ -289,6 +289,7 @@ extern NhlErrorTypes wmstnm_W(void);
 extern NhlErrorTypes nglogo_W(void);
 extern NhlErrorTypes ngezlogo_W(void);
 
+extern NhlErrorTypes cancor_W(void);
 extern NhlErrorTypes regcoef_W(void);
 extern NhlErrorTypes regCoef_W(void);
 extern NhlErrorTypes regCoef_shields_W(void);
@@ -4183,6 +4184,19 @@ void NclAddUserFuncs(void)
     nargs++;
     NclRegisterFunc(dsgetp_W, args, "dsgetp", nargs);
 
+/*
+ * Register "cancor".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(cancor_W,args,"cancor",nargs);
 /*
  * Register "regcoef".
  *
