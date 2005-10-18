@@ -1,11 +1,11 @@
 #
-#      $Id: yMakefile,v 1.7 2005-09-30 23:45:30 haley Exp $
+#      $Id: yMakefile,v 1.8 2005-10-18 14:37:43 haley Exp $
 #
 
 MYNAME		=	libnfpfort
 
 FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
-	calcorc_dp.o cdf_dp.o cfftb.o cfftb1.o cfftf.o cfftf1.o cffti.o		\
+	calcorc_dp.o cancor.o cdf_dp.o cfftb.o cfftb1.o cfftf.o cfftf1.o cffti.o		\
 	cffti1.o chiin_dp.o cntrFiniteDiff.o ctwrap.o cz2ccm_dp.o dbetai.o	\
 	dewpt_trh.o dmapgci.o dpsort.o dtrend_dp.o eof2data.o exptapersh.o  \
 	ezfft_dp.o f2foshv.o filtrx.o finfo.o fluxEddyTav_dp.o fo2fs_dp.o   \

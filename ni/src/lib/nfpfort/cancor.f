@@ -1,5 +1,5 @@
 C NCLFORTSTART
-      subroutine cancor_xy (nobs,mx,my,mxy,minxy,maxxy,lrdim,x,y      
+      subroutine dcancorxy (nobs,mx,my,mxy,minxy,maxxy,lrdim,x,y      
      +                     ,ndf,canr,eval,wlam,chisq
      +                     ,coefxr,coefyl,ier)
 c
