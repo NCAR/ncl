@@ -5,7 +5,8 @@
 extern void NGCALLF(dcancorxy,DCANCORXY)(int *, int *, int *, int *, int *, 
                                          int *, int *, double *,double *,int *,
                                          double *, double *, double *,
-                                         double *, double *,double *,int *);
+                                         double *, double *,double *,
+                                         double *, int *, int *);
 
 NhlErrorTypes cancor_W( void )
 {
@@ -40,8 +41,8 @@ NhlErrorTypes cancor_W( void )
  * various
  */
   int size_coefx, size_coefy;
-  int nobs, nobsx, nobsy, nx, ny, nxy, minxy, maxxy, lrdim;
-  double *eval;
+  int nobs, nobsx, nobsy, nx, ny, nxy, minxy, maxxy, lrdim, lrr;
+  double *eval, *rr;
   int i, ier;
 
 /*
@@ -114,7 +115,9 @@ NhlErrorTypes cancor_W( void )
  * Allocate space for work arrays.
  */
   eval = (double*)calloc(minxy,sizeof(double));
-  if(eval == NULL) {
+  lrr  = ((nxy+1)*nxy)/2;
+  rr   = (double*)calloc(lrr,sizeof(double));
+  if(eval == NULL || rr == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for miscellaneous arrays");
     return(NhlFATAL);
   }
@@ -162,7 +165,7 @@ NhlErrorTypes cancor_W( void )
   tmp_coefy = (double *)calloc(lrdim,sizeof(double));
   ndf       =     (int*)calloc(minxy,sizeof(int));
   if(ndf == NULL || tmp_coefx == NULL || tmp_coefy == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for 'ndf' attribute");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for attributes");
     return(NhlFATAL);
   }
 
@@ -178,8 +181,8 @@ NhlErrorTypes cancor_W( void )
     tmp_wlam  = &((double*)wlam)[0];
   }
   NGCALLF(dcancorxy,DCANCORXY)(&nobs,&nx,&ny,&nxy,&minxy,&maxxy,&lrdim,
-                               tmp_x,tmp_y,ndf,tmp_canr,eval,
-                               tmp_wlam,tmp_chisq,tmp_coefx,tmp_coefy,&ier);
+                               tmp_x,tmp_y,ndf,tmp_canr,eval,tmp_wlam,
+                               tmp_chisq,tmp_coefx,tmp_coefy,rr,&lrr,&ier);
 /*
  * Coerce output to float if necessary.
  */
@@ -204,6 +207,7 @@ NhlErrorTypes cancor_W( void )
   NclFree(tmp_coefx);
   NclFree(tmp_coefy);
   NclFree(eval);
+  NclFree(rr);
 
 /*
  * Get ready to return the data and some attributes.
