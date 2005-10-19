@@ -15,8 +15,7 @@ NhlErrorTypes cancor_W( void )
   void *x, *y;
   double *tmp_x, *tmp_y;
   logical *opt;
-  int ndims_x, ndims_y;
-  int dsizes_y[NCL_MAX_DIMENSIONS], dsizes_x[NCL_MAX_DIMENSIONS];
+  int dsizes_y[2], dsizes_x[2];
   NclBasicDataTypes type_x, type_y;
 /*
  * Attribute variables.
@@ -35,16 +34,15 @@ NhlErrorTypes cancor_W( void )
  */
   void *canr;
   double *tmp_canr;
-  int *dsizes_canr, *dsizes_coefx, *dsizes_coefy, ndims_canr;
+  int dsizes_canr[1], dsizes_coefx[2], dsizes_coefy[2];
   NclBasicDataTypes type_canr;
 /*
  * various
  */
-  int size_x, size_y, size_coefx, size_coefy;
+  int size_coefx, size_coefy;
   int nobs, nobsx, nobsy, nx, ny, nxy, minxy, maxxy, lrdim;
-  int index_x, index_y, index_canr, index_coefx, index_coefy, ier;
   double *eval;
-  int i, size_leftmost;
+  int i, ier;
 
 /*
  * Retrieve parameters
@@ -55,7 +53,7 @@ NhlErrorTypes cancor_W( void )
   x = (void*)NclGetArgValue(
            0,
            3,
-           &ndims_x,
+           NULL,
            dsizes_x,
            NULL,
            NULL,
@@ -65,7 +63,7 @@ NhlErrorTypes cancor_W( void )
   y = (void*)NclGetArgValue(
            1,
            3,
-           &ndims_y,
+           NULL,
            dsizes_y,
            NULL,
            NULL,
@@ -82,20 +80,11 @@ NhlErrorTypes cancor_W( void )
             NULL,
             2);
 /*
- * The x and y must be at least 2-dimensional, and the rightmost dimension
- * must be nobs for both of them.
- */
-  if(ndims_x != ndims_y) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: x and y must have the same number of dimensions");
-    return(NhlFATAL);
-  }
-
-/*
  * Get array sizes.
  */
-  nx    = dsizes_x[ndims_x-2];
-  ny    = dsizes_y[ndims_y-2];
-  nobs  = dsizes_x[ndims_x-1];
+  nx    = dsizes_x[0];
+  ny    = dsizes_y[0];
+  nobs  = dsizes_x[1];
   minxy = min(nx,ny);
   maxxy = max(nx,ny);
   lrdim = 2 * (maxxy*maxxy);
@@ -107,58 +96,19 @@ NhlErrorTypes cancor_W( void )
 /*
  * Check array sizes.
  */
-  if(dsizes_y[ndims_y-1] != nobs){
+  if(dsizes_y[1] != nobs){
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: The rightmost dimensions of x and y must be the same");
     return(NhlFATAL);
   }  
 
 /*
- * Set the dimension sizes for the output arrays, and also check leftmost
- * dimensions while we're at it.
+ * Set the dimension sizes for the output arrays.
  */
-  ndims_canr   = ndims_x-1;
-  dsizes_canr  = (int*)calloc(ndims_canr,sizeof(int));  
-  dsizes_coefx = (int*)calloc(ndims_x,sizeof(int));  
-  dsizes_coefy = (int*)calloc(ndims_y,sizeof(int));  
-  if(dsizes_canr == NULL || dsizes_coefx == NULL || dsizes_coefy == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for the dimension sizes for the output arrays");
-    return(NhlFATAL);
-  }
-  size_leftmost = 1;
-  for( i=0; i < ndims_x-2; i++ ) {
-    if(dsizes_y[i] != dsizes_x[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: The leftmost dimensions of x and y must be the same");
-      return(NhlFATAL);
-    }  
-    size_leftmost *= dsizes_x[i];
-    dsizes_canr[i] = dsizes_coefx[i] = dsizes_coefy[i] = dsizes_x[i];
-  }
-  dsizes_canr[ndims_x-2]  = minxy;
-
-  dsizes_coefx[ndims_x-2] = ny;
-  dsizes_coefx[ndims_x-1] = nx;
-
-  dsizes_coefy[ndims_y-2] = ny;
-  dsizes_coefy[ndims_y-1] = ny;
-
-/*
- * Create arrays to hold double precision subsections of x and y.
- */
-  if(type_x != NCL_double) {
-    tmp_x = (double *)calloc(nobsx,sizeof(double));
-    if( tmp_x == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for coercing input arrays to double");
-      return(NhlFATAL);
-    }
-  }
-  if(type_y != NCL_double) {
-    tmp_y = (double *)calloc(nobsy,sizeof(double));
-    if( tmp_y == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for coercing input arrays to double");
-      return(NhlFATAL);
-    }
-  }
-
+  dsizes_canr[0]  = minxy;
+  dsizes_coefx[0] = ny;
+  dsizes_coefx[1] = nx;
+  dsizes_coefy[0] = ny;
+  dsizes_coefy[1] = ny;
 
 /*
  * Allocate space for work arrays.
@@ -174,11 +124,11 @@ NhlErrorTypes cancor_W( void )
  */
   if(type_x == NCL_double || type_y == NCL_double) {
     type_canr = NCL_double;
-    canr  = (double *)calloc(size_leftmost*minxy,sizeof(double));
-    chisq = (double *)calloc(size_leftmost*minxy,sizeof(double));
-    wlam  = (double *)calloc(size_leftmost*minxy,sizeof(double));
-    coefx = (double *)calloc(size_leftmost*size_coefx,sizeof(double));
-    coefy = (double *)calloc(size_leftmost*size_coefy,sizeof(double));
+    canr  = (double *)calloc(minxy,sizeof(double));
+    chisq = (double *)calloc(minxy,sizeof(double));
+    wlam  = (double *)calloc(minxy,sizeof(double));
+    coefx = (double *)calloc(size_coefx,sizeof(double));
+    coefy = (double *)calloc(size_coefy,sizeof(double));
     if(canr == NULL || chisq == NULL || coefx == NULL || coefy == NULL ||
        wlam == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for output variables");
@@ -187,11 +137,11 @@ NhlErrorTypes cancor_W( void )
   }
   else {
     type_canr = NCL_float;
-    canr      = (float *)calloc(size_leftmost*minxy,sizeof(float));
-    chisq     = (float *)calloc(size_leftmost*minxy,sizeof(float));
-    wlam      = (float *)calloc(size_leftmost*minxy,sizeof(float));
-    coefx     = (float *)calloc(size_leftmost*size_coefx,sizeof(float));
-    coefy     = (float *)calloc(size_leftmost*size_coefy,sizeof(float));
+    canr      = (float *)calloc(minxy,sizeof(float));
+    chisq     = (float *)calloc(minxy,sizeof(float));
+    wlam      = (float *)calloc(minxy,sizeof(float));
+    coefx     = (float *)calloc(size_coefx,sizeof(float));
+    coefy     = (float *)calloc(size_coefy,sizeof(float));
     tmp_canr  = (double *)calloc(minxy,sizeof(double));
     tmp_chisq = (double *)calloc(minxy,sizeof(double));
     tmp_wlam  = (double *)calloc(minxy,sizeof(double));
@@ -210,72 +160,37 @@ NhlErrorTypes cancor_W( void )
  */
   tmp_coefx = (double *)calloc(lrdim,sizeof(double));
   tmp_coefy = (double *)calloc(lrdim,sizeof(double));
-  ndf       =     (int*)calloc(size_leftmost*minxy,sizeof(int));
+  ndf       =     (int*)calloc(minxy,sizeof(int));
   if(ndf == NULL || tmp_coefx == NULL || tmp_coefy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for 'ndf' attribute");
     return(NhlFATAL);
   }
 
 /*
- * Loop through the leftmost dimensions and call the Fortran function
- * for each subsection of x and y.
+ * Coerce x and y to double.
  */
-  index_x = index_y = index_canr = index_coefx = index_coefy = 0;
-  for(i = 0; i < size_leftmost; i++) {
-    if(type_x != NCL_double) {
-/*
- * Coerce nobsx subsection of x (tmp_x) to double.
- */
-      coerce_subset_input_double(x,tmp_x,index_x,type_x,nobsx,0,NULL,NULL);
-    }
-    else {
-/*
- * Point tmp_x to appropriate locations in x.
- */
-      tmp_x = &((double*)x)[index_x];
-    }
+  tmp_x = coerce_input_double(x,type_x,nobsx,0,NULL,NULL);
+  tmp_y = coerce_input_double(y,type_y,nobsy,0,NULL,NULL);
 
-    if(type_y != NCL_double) {
-/*
- * Coerce nobsy subsection of y (tmp_y) to double.
- */
-      coerce_subset_input_double(y,tmp_y,index_y,type_y,nobsy,0,NULL,NULL);
-    }
-    else {
-/*
- * Point tmp_y to appropriate locations in y.
- */
-      tmp_y = &((double*)y)[index_y];
-    }
-
-    if(type_canr == NCL_double) {
-      tmp_canr  = &((double*)canr)[index_canr];
-      tmp_chisq = &((double*)chisq)[index_canr];
-      tmp_wlam  = &((double*)wlam)[index_canr];
-    }
-
-    NGCALLF(dcancorxy,DCANCORXY)(&nobs,&nx,&ny,&nxy,&minxy,&maxxy,&lrdim,
-                                 tmp_x,tmp_y,&ndf[index_canr],tmp_canr,eval,
-                                 tmp_wlam,tmp_chisq,tmp_coefx,tmp_coefy,&ier);
+  if(type_canr == NCL_double) {
+    tmp_canr  = &((double*)canr)[0];
+    tmp_chisq = &((double*)chisq)[0];
+    tmp_wlam  = &((double*)wlam)[0];
+  }
+  NGCALLF(dcancorxy,DCANCORXY)(&nobs,&nx,&ny,&nxy,&minxy,&maxxy,&lrdim,
+                               tmp_x,tmp_y,ndf,tmp_canr,eval,
+                               tmp_wlam,tmp_chisq,tmp_coefx,tmp_coefy,&ier);
 /*
  * Coerce output to float if necessary.
  */
-    if(type_canr == NCL_float) {
-      coerce_output_float_only(canr,tmp_canr,minxy,index_canr);
-      coerce_output_float_only(chisq,tmp_chisq,minxy,index_canr);
-      coerce_output_float_only(wlam,tmp_wlam,minxy,index_canr);
-    }
-    coerce_output_float_or_double(coefx,tmp_coefx,type_canr,size_coefx,
-                                  index_coefx);
-    coerce_output_float_or_double(coefy,tmp_coefy,type_canr,size_coefy,
-                                  index_coefy);
-
-    index_x    += nobsx;
-    index_y    += nobsy;
-    index_canr += minxy;
-    index_coefx += size_coefx;
-    index_coefy += size_coefy;
+  if(type_canr == NCL_float) {
+    coerce_output_float_only(canr,tmp_canr,minxy,0);
+    coerce_output_float_only(chisq,tmp_chisq,minxy,0);
+    coerce_output_float_only(wlam,tmp_wlam,minxy,0);
   }
+  coerce_output_float_or_double(coefx,tmp_coefx,type_canr,size_coefx,0);
+  coerce_output_float_or_double(coefy,tmp_coefy,type_canr,size_coefy,0);
+
 /*
  * Free up memory.
  */
@@ -304,7 +219,7 @@ NhlErrorTypes cancor_W( void )
                       0,
                       canr,
                       NULL,
-                      ndims_canr,
+                      1,
                       dsizes_canr,
                       TEMPORARY,
                       NULL,
@@ -322,7 +237,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    chisq,
                    NULL,
-                   ndims_canr,
+                   1,
                    dsizes_canr,
                    TEMPORARY,
                    NULL,
@@ -343,7 +258,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    wlam,
                    NULL,
-                   ndims_canr,
+                   1,
                    dsizes_canr,
                    TEMPORARY,
                    NULL,
@@ -364,7 +279,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    coefx,
                    NULL,
-                   ndims_x,
+                   2,
                    dsizes_coefx,
                    TEMPORARY,
                    NULL,
@@ -385,7 +300,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    coefy,
                    NULL,
-                   ndims_x,
+                   2,
                    dsizes_coefy,
                    TEMPORARY,
                    NULL,
@@ -411,7 +326,7 @@ NhlErrorTypes cancor_W( void )
                       0,
                       canr,
                       NULL,
-                      ndims_canr,
+                      1,
                       dsizes_canr,
                       TEMPORARY,
                       NULL,
@@ -429,7 +344,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    chisq,
                    NULL,
-                   ndims_canr,
+                   1,
                    dsizes_canr,
                    TEMPORARY,
                    NULL,
@@ -449,7 +364,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    wlam,
                    NULL,
-                   ndims_canr,
+                   1,
                    dsizes_canr,
                    TEMPORARY,
                    NULL,
@@ -469,7 +384,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    coefx,
                    NULL,
-                   ndims_x,
+                   2,
                    dsizes_coefx,
                    TEMPORARY,
                    NULL,
@@ -490,7 +405,7 @@ NhlErrorTypes cancor_W( void )
                    0,
                    coefy,
                    NULL,
-                   ndims_x,
+                   2,
                    dsizes_coefy,
                    TEMPORARY,
                    NULL,
@@ -514,7 +429,7 @@ NhlErrorTypes cancor_W( void )
                          0,
                          ndf,
                          NULL,
-                         ndims_canr,
+                         1,
                          dsizes_canr,
                          TEMPORARY,
                          NULL,
