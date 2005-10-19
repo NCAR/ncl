@@ -44,7 +44,7 @@ c local
 c yx(nobs,m)- merged data matrix which contains the x and y variables
 c rx        - 2D work array
 c
-      integer              m, n, lrr,lrwork, icov
+      integer              m, n, lrwork, icov
       integer              ncend, ncstrt, nc,ncs 
       double precision     yx(nobs,mxy)
       double precision     rx(mxy,mxy)
