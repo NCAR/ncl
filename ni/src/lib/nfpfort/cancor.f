@@ -1,7 +1,7 @@
 C NCLFORTSTART
       subroutine dcancorxy (nobs,mx,my,mxy,minxy,maxxy,lrdim,x,y      
      +                     ,ndf,canr,eval,wlam,chisq
-     +                     ,coefxr,coefyl,ier)
+     +                     ,coefxr,coefyl,rr,lrr,ier)
 c
 c NCL:   canr = cancor(x,y,opt)
 c .             ndf, chisq, coefyl [1d], coefxr [1d] 
@@ -10,13 +10,15 @@ c .             returned as attributes
 
       implicit none
 c                                            INPUT
-      integer              nobs, mx, my, mxy, minxy, maxxy, lrdim, ier
+      integer              nobs,mx,my,mxy,minxy,maxxy,lrdim,lrr,ier
       double precision     x(nobs,mx) , y(nobs,my)
 c                                            OUTPUT
       integer              ndf(minxy)
       double precision     canr(minxy)
       double precision     eval(minxy), wlam(minxy), chisq(minxy)
       double precision     coefxr(lrdim), coefyl(lrdim)
+c rr        - symmetric storage mode correlation matrix
+      double precision     rr(lrr)
 C NCLEND
 c
 c nobs   - total number of observations
@@ -41,12 +43,11 @@ c ier    - error code
 c local
 c yx(nobs,m)- merged data matrix which contains the x and y variables
 c rx        - 2D work array
-c rr        - symmetric storage mode correlation matrix
 c
       integer              m, n, lrr,lrwork, icov
       integer              ncend, ncstrt, nc,ncs 
-      double precision     yx(nobs,my+mx)
-      double precision     rx(mxy,mxy), rr(((mxy+1)*mxy)/2)
+      double precision     yx(nobs,mxy)
+      double precision     rx(mxy,mxy)
       double precision     xmsg
       logical              debug
 
