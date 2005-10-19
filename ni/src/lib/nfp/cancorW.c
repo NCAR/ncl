@@ -3,9 +3,9 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dcancorxy,DCANCORXY)(int *, int *, int *, int *, int *, 
-                                        int *, int *, double *,double *,int *,
-                                        double *, double *, double *, double *,
-                                        double *,double *,int *);
+                                         int *, int *, double *,double *,int *,
+                                         double *, double *, double *,
+                                         double *, double *,double *,int *);
 
 NhlErrorTypes cancor_W( void )
 {
@@ -22,8 +22,8 @@ NhlErrorTypes cancor_W( void )
  * Attribute variables.
  */
   int *ndf;
-  void *chisq, *coefx, *coefy;
-  double *tmp_chisq, *tmp_coefx, *tmp_coefy;
+  void *chisq, *coefx, *coefy, *wlam;
+  double *tmp_chisq, *tmp_coefx, *tmp_coefy, *tmp_wlam;
 
   int att_id;
   NclMultiDValData att_md, return_md;
@@ -43,7 +43,7 @@ NhlErrorTypes cancor_W( void )
   int size_x, size_y, size_coefx, size_coefy;
   int nobs, nobsx, nobsy, nx, ny, nxy, minxy, maxxy, lrdim;
   int index_x, index_y, index_canr, index_coefx, index_coefy, ier;
-  double *eval, *wlam;
+  double *eval;
   int i, size_leftmost;
 
 /*
@@ -108,7 +108,7 @@ NhlErrorTypes cancor_W( void )
  * Check array sizes.
  */
   if(dsizes_y[ndims_y-1] != nobs){
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: The lefmost dimensions of x and y must be the same");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: The rightmost dimensions of x and y must be the same");
     return(NhlFATAL);
   }  
 
@@ -164,8 +164,7 @@ NhlErrorTypes cancor_W( void )
  * Allocate space for work arrays.
  */
   eval = (double*)calloc(minxy,sizeof(double));
-  wlam = (double*)calloc(minxy,sizeof(double));
-  if(eval == NULL || wlam == NULL) {
+  if(eval == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for miscellaneous arrays");
     return(NhlFATAL);
   }
@@ -177,9 +176,11 @@ NhlErrorTypes cancor_W( void )
     type_canr = NCL_double;
     canr  = (double *)calloc(size_leftmost*minxy,sizeof(double));
     chisq = (double *)calloc(size_leftmost*minxy,sizeof(double));
+    wlam  = (double *)calloc(size_leftmost*minxy,sizeof(double));
     coefx = (double *)calloc(size_leftmost*size_coefx,sizeof(double));
     coefy = (double *)calloc(size_leftmost*size_coefy,sizeof(double));
-    if(canr  == NULL || chisq == NULL || coefx == NULL || coefy == NULL) {
+    if(canr == NULL || chisq == NULL || coefx == NULL || coefy == NULL ||
+       wlam == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for output variables");
       return(NhlFATAL);
     }
@@ -188,13 +189,16 @@ NhlErrorTypes cancor_W( void )
     type_canr = NCL_float;
     canr      = (float *)calloc(size_leftmost*minxy,sizeof(float));
     chisq     = (float *)calloc(size_leftmost*minxy,sizeof(float));
-    coefx     = (float *)calloc(size_leftmost*ny*nx,sizeof(float));
-    coefy     = (float *)calloc(size_leftmost*ny*ny,sizeof(float));
+    wlam      = (float *)calloc(size_leftmost*minxy,sizeof(float));
+    coefx     = (float *)calloc(size_leftmost*size_coefx,sizeof(float));
+    coefy     = (float *)calloc(size_leftmost*size_coefy,sizeof(float));
     tmp_canr  = (double *)calloc(minxy,sizeof(double));
     tmp_chisq = (double *)calloc(minxy,sizeof(double));
-    if(canr  == NULL || tmp_canr  == NULL ||
+    tmp_wlam  = (double *)calloc(minxy,sizeof(double));
+    if(canr  == NULL || tmp_canr  == NULL || 
        chisq == NULL || tmp_chisq == NULL ||
-       coefx == NULL || coefy == NULL) {
+       wlam  == NULL || tmp_wlam  == NULL || 
+       coefx == NULL || coefy     == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for output variables");
       return(NhlFATAL);
     }
@@ -206,8 +210,8 @@ NhlErrorTypes cancor_W( void )
  */
   tmp_coefx = (double *)calloc(lrdim,sizeof(double));
   tmp_coefy = (double *)calloc(lrdim,sizeof(double));
-  ndf = (int*)calloc(size_leftmost*minxy,sizeof(double));
-  if(ndf == NULL) {
+  ndf       =     (int*)calloc(size_leftmost*minxy,sizeof(int));
+  if(ndf == NULL || tmp_coefx == NULL || tmp_coefy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for 'ndf' attribute");
     return(NhlFATAL);
   }
@@ -247,17 +251,19 @@ NhlErrorTypes cancor_W( void )
     if(type_canr == NCL_double) {
       tmp_canr  = &((double*)canr)[index_canr];
       tmp_chisq = &((double*)chisq)[index_canr];
+      tmp_wlam  = &((double*)wlam)[index_canr];
     }
 
     NGCALLF(dcancorxy,DCANCORXY)(&nobs,&nx,&ny,&nxy,&minxy,&maxxy,&lrdim,
-                                 tmp_x,tmp_y,&ndf[index_canr],tmp_canr,
-                                 eval,wlam,tmp_chisq,tmp_coefx,tmp_coefy,&ier);
+                                 tmp_x,tmp_y,&ndf[index_canr],tmp_canr,eval,
+                                 tmp_wlam,tmp_chisq,tmp_coefx,tmp_coefy,&ier);
 /*
  * Coerce output to float if necessary.
  */
     if(type_canr == NCL_float) {
       coerce_output_float_only(canr,tmp_canr,minxy,index_canr);
       coerce_output_float_only(chisq,tmp_chisq,minxy,index_canr);
+      coerce_output_float_only(wlam,tmp_wlam,minxy,index_canr);
     }
     coerce_output_float_or_double(coefx,tmp_coefx,type_canr,size_coefx,
                                   index_coefx);
@@ -278,11 +284,11 @@ NhlErrorTypes cancor_W( void )
   if(type_canr != NCL_double) {
     NclFree(tmp_canr);
     NclFree(tmp_chisq);
+    NclFree(tmp_wlam);
   }
   NclFree(tmp_coefx);
   NclFree(tmp_coefy);
   NclFree(eval);
-  NclFree(wlam);
 
 /*
  * Get ready to return the data and some attributes.
@@ -326,6 +332,27 @@ NhlErrorTypes cancor_W( void )
     _NclAddAtt(
                att_id,
                "chisq",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   wlam,
+                   NULL,
+                   ndims_canr,
+                   dsizes_canr,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+
+    _NclAddAtt(
+               att_id,
+               "wlam",
                att_md,
                NULL
                );
@@ -411,6 +438,26 @@ NhlErrorTypes cancor_W( void )
     _NclAddAtt(
                att_id,
                "chisq",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   wlam,
+                   NULL,
+                   ndims_canr,
+                   dsizes_canr,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "wlam",
                att_md,
                NULL
                );
