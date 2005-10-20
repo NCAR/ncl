@@ -53,7 +53,7 @@ c
 
       ier  = 0
       xmsg = 1.d20
-      lrr  = ((mxy+1)*mxy)/2 
+c      lrr  = ((mxy+1)*mxy)/2 
       lrwork  = mxy*mxy 
       debug   = .false.
 
@@ -109,7 +109,7 @@ c                  Visually reverse output order foe upper triangular
           end do
       end if
 
-      call dcanorx (nobs,my,mx,rr,eval,wlam,canr,chisq,ndf
+      call dcanorx (nobs,my,minxy,rr,eval,wlam,canr,chisq,ndf
      +             ,coefxr,coefyl,rx,lrdim,lrr,lrwork)
 
       return
@@ -868,17 +868,3 @@ C
   185 CONTINUE
       RETURN
       END
-C +++++++++
-      SUBROUTINE FOODATA (m,d)
-c place holder only!!!!!  ... 
-c I could remove and code section that reference this sub
-c but just leaving this as a dummy routine is ok too!
-      integer    m
-      double precision       d(m)
-      double precision       foo
-      foo = 0.0D0
-      RETURN  
-      END  
-C
-C=======================================================================
-C
