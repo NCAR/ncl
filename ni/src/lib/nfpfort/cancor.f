@@ -1,7 +1,7 @@
 C NCLFORTSTART
       subroutine dcancorxy (nobs,mx,my,mxy,minxy,maxxy,lrdim,x,y      
      +                     ,ndf,canr,eval,wlam,chisq
-     +                     ,coefxr,coefyl,rr,lrr,ier)
+     +                     ,coefxr,coefyl,rr,yx,rx,lrr,ier)
 c
 c NCL:   canr = cancor(x,y,opt)
 c .             ndf, chisq, coefyl [1d], coefxr [1d] 
@@ -13,12 +13,16 @@ c                                            INPUT
       integer              nobs,mx,my,mxy,minxy,maxxy,lrdim,lrr,ier
       double precision     x(nobs,mx) , y(nobs,my)
 c                                            OUTPUT
-      integer              ndf(minxy)
-      double precision     canr(minxy)
-      double precision     eval(minxy), wlam(minxy), chisq(minxy)
+      integer              ndf(mx)
+      double precision     canr(mx)
+      double precision     eval(mx), wlam(mx), chisq(mx)
       double precision     coefxr(lrdim), coefyl(lrdim)
 c rr        - symmetric storage mode correlation matrix
+c yx(nobs,m)- merged data matrix which contains the x and y variables
+c rx        - 2D work array
       double precision     rr(lrr)
+      double precision     yx(nobs,mxy)
+      double precision     rx(mxy,mxy)
 C NCLEND
 c
 c nobs   - total number of observations
@@ -41,13 +45,9 @@ c coefyl - y [B, LEFT ] cononical vectors
 c ier    - error code
 
 c local
-c yx(nobs,m)- merged data matrix which contains the x and y variables
-c rx        - 2D work array
 c
       integer              m, n, lrwork, icov
       integer              ncend, ncstrt, nc,ncs 
-      double precision     yx(nobs,mxy)
-      double precision     rx(mxy,mxy)
       double precision     xmsg
       logical              debug
 
@@ -57,7 +57,8 @@ c      lrr  = ((mxy+1)*mxy)/2
       lrwork  = mxy*mxy 
       debug   = .false.
 
-      do m=1,minxy
+c      do m=1,minxy
+      do m=1,mx
          ndf(m)   = 0
          canr(m)  = 0.0d0
          eval(m)  = 0.0d0
@@ -109,7 +110,7 @@ c                  Visually reverse output order foe upper triangular
           end do
       end if
 
-      call dcanorx (nobs,my,minxy,rr,eval,wlam,canr,chisq,ndf
+      call dcanorx (nobs,my,mx,rr,eval,wlam,canr,chisq,ndf
      +             ,coefxr,coefyl,rx,lrdim,lrr,lrwork)
 
       return
