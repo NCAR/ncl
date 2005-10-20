@@ -6,7 +6,8 @@ extern void NGCALLF(dcancorxy,DCANCORXY)(int *, int *, int *, int *, int *,
                                          int *, int *, double *,double *,int *,
                                          double *, double *, double *,
                                          double *, double *,double *,
-                                         double *, int *, int *);
+                                         double *, double *, double *, int *,
+					 int *);
 
 NhlErrorTypes cancor_W( void )
 {
@@ -21,7 +22,7 @@ NhlErrorTypes cancor_W( void )
 /*
  * Attribute variables.
  */
-  int *ndf;
+  int *ndf, *tmp_ndf;
   void *chisq, *coefx, *coefy, *wlam;
   double *tmp_chisq, *tmp_coefx, *tmp_coefy, *tmp_wlam;
 
@@ -42,7 +43,7 @@ NhlErrorTypes cancor_W( void )
  */
   int size_coefx, size_coefy;
   int nobs, nobsx, nobsy, nx, ny, nxy, minxy, maxxy, lrdim, lrr;
-  double *eval, *rr;
+  double *eval, *rr, *yx, *rx;
   int i, ier;
 
 /*
@@ -117,7 +118,9 @@ NhlErrorTypes cancor_W( void )
   eval = (double*)calloc(minxy,sizeof(double));
   lrr  = ((nxy+1)*nxy)/2;
   rr   = (double*)calloc(lrr,sizeof(double));
-  if(eval == NULL || rr == NULL) {
+  yx   = (double*)calloc(nobs*nxy,sizeof(double));
+  rx   = (double*)calloc(nxy*nxy,sizeof(double));
+  if(eval == NULL || rr == NULL || yx == NULL || rx == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for miscellaneous arrays");
     return(NhlFATAL);
   }
@@ -132,82 +135,76 @@ NhlErrorTypes cancor_W( void )
     wlam  = (double *)calloc(minxy,sizeof(double));
     coefx = (double *)calloc(size_coefx,sizeof(double));
     coefy = (double *)calloc(size_coefy,sizeof(double));
-    if(canr == NULL || chisq == NULL || coefx == NULL || coefy == NULL ||
-       wlam == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
   }
   else {
     type_canr = NCL_float;
-    canr      = (float *)calloc(minxy,sizeof(float));
-    chisq     = (float *)calloc(minxy,sizeof(float));
-    wlam      = (float *)calloc(minxy,sizeof(float));
-    coefx     = (float *)calloc(size_coefx,sizeof(float));
-    coefy     = (float *)calloc(size_coefy,sizeof(float));
-    tmp_canr  = (double *)calloc(minxy,sizeof(double));
-    tmp_chisq = (double *)calloc(minxy,sizeof(double));
-    tmp_wlam  = (double *)calloc(minxy,sizeof(double));
-    if(canr  == NULL || tmp_canr  == NULL || 
-       chisq == NULL || tmp_chisq == NULL ||
-       wlam  == NULL || tmp_wlam  == NULL || 
-       coefx == NULL || coefy     == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for output variables");
-      return(NhlFATAL);
-    }
+    canr  = (float *)calloc(minxy,sizeof(float));
+    chisq = (float *)calloc(minxy,sizeof(float));
+    wlam  = (float *)calloc(minxy,sizeof(float));
+    coefx = (float *)calloc(size_coefx,sizeof(float));
+    coefy = (float *)calloc(size_coefy,sizeof(float));
+  }
+  if(canr  == NULL || chisq == NULL || wlam == NULL || 
+     coefx == NULL || coefy == NULL) {
+	NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for output variables");
+	return(NhlFATAL);
   }
 /*
- * Allocate space for tmp coefx and coefy no matter what, because the
- * input arrays will be a different size than what is eventually
+ * Allocate space for the arrays below no matter what, because the
+ * input arrays are a different size than what is eventually
  * returned.
  */
+  tmp_canr  = (double *)calloc(nx,sizeof(double));
+  tmp_chisq = (double *)calloc(nx,sizeof(double));
+  tmp_wlam  = (double *)calloc(nx,sizeof(double));
+  tmp_ndf   =     (int*)calloc(nx,sizeof(int));
+  ndf       =     (int*)calloc(minxy,sizeof(int));
   tmp_coefx = (double *)calloc(lrdim,sizeof(double));
   tmp_coefy = (double *)calloc(lrdim,sizeof(double));
-  ndf       =     (int*)calloc(minxy,sizeof(int));
-  if(ndf == NULL || tmp_coefx == NULL || tmp_coefy == NULL) {
+  if(tmp_canr == NULL || ndf == NULL || tmp_ndf == NULL || tmp_wlam == NULL ||
+     tmp_chisq == NULL || tmp_coefx == NULL || tmp_coefy == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cancor: Unable to allocate memory for attributes");
     return(NhlFATAL);
   }
 
 /*
- * Coerce x and y to double.
+ * Coerce input x and y to double.
  */
   tmp_x = coerce_input_double(x,type_x,nobsx,0,NULL,NULL);
   tmp_y = coerce_input_double(y,type_y,nobsy,0,NULL,NULL);
 
-  if(type_canr == NCL_double) {
-    tmp_canr  = &((double*)canr)[0];
-    tmp_chisq = &((double*)chisq)[0];
-    tmp_wlam  = &((double*)wlam)[0];
-  }
   NGCALLF(dcancorxy,DCANCORXY)(&nobs,&nx,&ny,&nxy,&minxy,&maxxy,&lrdim,
-                               tmp_x,tmp_y,ndf,tmp_canr,eval,tmp_wlam,
-                               tmp_chisq,tmp_coefx,tmp_coefy,rr,&lrr,&ier);
+                               tmp_x,tmp_y,tmp_ndf,tmp_canr,eval,tmp_wlam,
+                               tmp_chisq,tmp_coefx,tmp_coefy,rr,yx,rx,
+			       &lrr,&ier);
 /*
- * Coerce output to float if necessary.
+ * Copy temp output arrays to appropriate place in output arrays.
  */
-  if(type_canr == NCL_float) {
-    coerce_output_float_only(canr,tmp_canr,minxy,0);
-    coerce_output_float_only(chisq,tmp_chisq,minxy,0);
-    coerce_output_float_only(wlam,tmp_wlam,minxy,0);
-  }
-  coerce_output_float_or_double(coefx,tmp_coefx,type_canr,size_coefx,0);
-  coerce_output_float_or_double(coefy,tmp_coefy,type_canr,size_coefy,0);
+  coerce_output_float_or_double(canr,  tmp_canr,  type_canr, minxy,0);
+  coerce_output_float_or_double(chisq, tmp_chisq, type_canr, minxy,0);
+  coerce_output_float_or_double(wlam,  tmp_wlam,  type_canr, minxy,0);
+  coerce_output_float_or_double(coefx, tmp_coefx, type_canr, size_coefx,0);
+  coerce_output_float_or_double(coefy, tmp_coefy, type_canr, size_coefy,0);
+/*
+ * Copy only minxy of the ndf values.
+ */
+  for(i = 0; i < minxy; i++ ) ndf[i] = tmp_ndf[i];
 
 /*
  * Free up memory.
  */
-  if(type_x != NCL_double) NclFree(tmp_x);
-  if(type_y != NCL_double) NclFree(tmp_y);
-  if(type_canr != NCL_double) {
-    NclFree(tmp_canr);
-    NclFree(tmp_chisq);
-    NclFree(tmp_wlam);
-  }
+  if(type_x != NCL_double)    NclFree(tmp_x);
+  if(type_y != NCL_double)    NclFree(tmp_y);
+  NclFree(tmp_canr);
+  NclFree(tmp_chisq);
+  NclFree(tmp_wlam);
   NclFree(tmp_coefx);
   NclFree(tmp_coefy);
+  NclFree(tmp_ndf);
   NclFree(eval);
   NclFree(rr);
+  NclFree(yx);
+  NclFree(rx);
 
 /*
  * Get ready to return the data and some attributes.
