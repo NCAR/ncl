@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #                                                                                              
-#       $Id: ncl_grib2nc,v 1.1 2005-10-13 21:02:51 grubin Exp $
+#       $Id: ncl_grib2nc,v 1.2 2005-10-20 19:42:23 grubin Exp $
                                                                                                
 #
 #       Copyright (C) 2005
@@ -26,17 +26,24 @@ if ($#argv < 1) then
     goto usage
 endif
 
+# Location to write temporary files
+set tmpdir = `ncargpath tmp`
+
+# Input and output directories default values
+set idirs = ()
 set dirin = `pwd`
 set dirout = `pwd`
 
 #
-# Default values for script commandline parameters
+# Default values for script commandline parameters for NCL commands
 #
-unset printonexit
 unset vars
 set nvars = 0
 set time_t = "numeric"
 set ncdfcomment = ""
+
+# Display resultant netCDF file when done
+unset printonexit
 
 #
 # First argument should be the input file(s); if it's not, exit.
@@ -47,13 +54,17 @@ if ($1 == "-h") then
 endif
 
 #
-# Collect the file arguments, check them later (need the "dirin" argument first)
+# Collect the file arguments, check them later -- need the "-i" ("dirin")
+# argument first for unqualified full/partial pathnames.  Bogus filenames
+# are still *kept* at this point.
 #
+set nfiles = 0
 set ifiles_t = ()
 while ($#argv > 0)
     set isfile = `echo $1 | grep -c '-'`
     if ($isfile == 0) then
         set ifiles_t = ( $ifiles_t $1 )
+        @ nfiles += 1
         shift
     else
         break
@@ -85,7 +96,7 @@ while ($#argv > 0)
         case "-v":
             shift
 
-            # determine number of variables specified (count commas)
+            # Determine number of variables specified (count commas)
             # set ncommas = `echo $* | tr -cd '\,' | wc -c`
             # set ncommas = `echo $* | awk '{print(gsub(/,/, " "))}'`
             set ncommas = `echo $* | awk -F, '{print NF - 1}'`
@@ -105,7 +116,7 @@ while ($#argv > 0)
             set pvars = $psv[1]
             shift
 
-            # build array of variables as strings, quote so as to pass thru the shell
+            # Build array of variables as strings, quote so as to pass thru the shell
             set vline = `echo $pvars | sed 's/,/ /g'`
             set vars = ( '\(/' )
             set n = 1
@@ -115,7 +126,7 @@ while ($#argv > 0)
                 @ n = ($n + 1)
             end
 
-            # catch the last variable
+            # Catch the last variable
             set vars = ( $vars\\\"$vline[$n]\\\"'/\)' )
             breaksw
 
@@ -148,74 +159,118 @@ while ($#argv > 0)
 end
 
 #
+# Split filenames into (full, relative) paths and filenames.  This will
+# ensure that file arguments entered with full/relative paths are properly
+# accounted for.  Files without a path will be assigned the value given
+# with the "-i" switch (or its default if "-i" is not used).
+#
 # Check existence/readability of input file arguments; eliminate invalid entries.
 # Guarantees a one-to-one correspondence between input and output file entries.
 #
 # No check is performed to determine if a file contains valid GRIB data; it is
-# assumed that the user provides properly formatted data.
+# assumed that the user provides properly formatted data (regardless of filename).
 #
-set ofiles = ()
+set n = 1
+set nbadf = 0
 set ifiles = ()
+set ifiles_r = ()
+set ofiles = ()
 
-foreach file ($ifiles_t)
+while ($n <= $nfiles)
     set valid_file
-    # full filename provided on the command line
-    if ((-e $dirin/$file) && (-r $dirin/$file)) then
-        # if the file has a suffix that indicates "GRIB" strip it
-        set suffix = "$file:e"
-        set sfxlen = `echo $suffix | awk '{print length($0)}'`
+    set valid_suffixes = ("grb" "grib" "GRB" "GRIB")
+    set fil = `basename $ifiles_t[$n]`
+    set fil_bn = `basename $fil`
+    set dir = `dirname $ifiles_t[$n]`
+    set haspath = `echo $dir | grep -c '/'`
+
+    # Does the file exist, and is it readble, as named?
+    if (( -e $ifiles_t[$n]) && (-r $ifiles_t[$n])) then
+        # Does the file have a suffix (delineated by a ".")?  If
+        # yes, does the suffix indicate GRIB data?
+        set sfx = "$fil:e"
+        set sfxlen = `echo $sfx | awk '{print length($0)}'`
         if ($sfxlen > 0) then
             set sfx_chk
-            set valid_suffixes = ("grb" "grib" "GRB" "GRIB")
-            foreach sfx ($valid_suffixes)
-                if ($suffix == $sfx) then
-                    set prefix = "$file:r"
-                    set ifiles = ( $ifiles $file )
-                    set ofiles = ( $ofiles $prefix )
+            foreach vsfx ($valid_suffixes)
+                if ($sfx == $vsfx) then
+                    set if = $fil
+                    set of = $fil_bn:r
                     unset sfx_chk
+                    unset valid_file
                     break
                 endif
             end
 
+            # There is a suffix, but it doesn't indicate GRIB data,
+            # so default to ".grb" -- this assumes the file does
+            # contain GRIB data.  NCL will handle the ".grb" extension.
             if ($?sfx_chk) then
                 # default to ".grb" extension
-                set ifiles = ( $ifiles $file.grb )
-                set ofiles = ( $ofiles $file )
-                continue
+                set if = $fil.grb
+                set of = $fil
+                unset valid_file
             endif
         else
-            set ifiles = ( $ifiles $file )
-            set ofiles = ( $ofiles $file )
-            break
-        endif
-
-        unset valid_file
-        continue
-    endif
-
-    # incomplete file name? -- does the file have a suffix indicating it's GRIB data?
-    set valid_suffixes = ("grb" "grib" "GRB" "GRIB")
-    foreach sfx ($valid_suffixes)
-        if (-e $dirin/$file.$sfx && -r $dirin/$file.$sfx) then
-            set ifiles = ( $ifiles $file.$sfx )
-            set ofiles = ( $ofiles $file )
+            # The file exists as named, but there is no suffix -- assume
+            # an incomplete filename (ex.: 'ruc' ==> 'ruc.grb') and assign
+            # the default GRIB data tag (".grb").
+            set if = $fil.grb
+            set of = $fil
             unset valid_file
-            break
-       endif
-    end
-
-    if ($?valid_file) then
-        echo "${progname}: file '$dirin/$file' not readable or doesn't exist, skipping."
+        endif
+    else
+        # The file, as named, doesn't exist or isn't readable.  Check
+        # for existence/readability as an incomplete file name
+        # (ex.: 'ruc' ==> 'ruc.grb').  If found, keep it as input.
+        foreach vsfx ($valid_suffixes)
+            if ((-e $fil.$vsfx) && (-r $fil.$vsfx)) then
+                set if = $fil.$vsfx
+                set of = $fil
+                unset valid_file
+                break
+           endif
+        end
     endif
+
+    # Is the file valid -- i.e., it exists/is readable, and has a valid name?
+    # If not, skip it, else set values for input/output filenames, and input 
+    # directory.  Output directory is set by "-o" or assumed to be the current
+    # working directory (default).
+    if ($?valid_file) then
+        echo "${progname}: file '$fil' not readable or doesn't exist, skipping."
+        @ nbadf += 1
+        @ n += 1
+        continue
+    else
+        if ($haspath == 1) then
+            set idirs = ( $idirs $dir )
+            set ifiles = ( $ifiles $if )
+            set ofiles = ( $ofiles $of )
+        else
+            set idirs = ( $idirs $dirin )
+            set ifiles = ( $ifiles $if )
+            set ofiles = ( $ofiles $of )
+        endif
+    endif
+
+    # Keep the name of the file actually specified on the command line
+    set ifiles_r = ( $ifiles_r $fil )
+    @ n += 1
 end
+
+unset ifiles_t
+
+# Account for any discarded files
+@ nfiles -= $nbadf
 
 #
 # Create temporary file to hold NCL script
 #
-set tmp_nclfile = "tmp$$.ncl"
-/bin/rm $tmp_nclfile >& /dev/null
+set tmp_nclf = "$tmpdir/tmp$$.ncl"
+/bin/rm $tmp_nclf >& /dev/null
 
-cat << 'EOF_NCL' >! $tmp_nclfile
+cat << 'EOF_NCL' >! $tmp_nclf
 
 ;***************************************************
 ; GRIB to netcdf
@@ -476,28 +531,32 @@ begin
 #
 # Loop over input file(s), executing NCL script
 #
-set errfile = /tmp/${progname}_$$.err
+set errfile = $tmpdir/${progname}_$$.err
 set n = 1
-foreach file ($ifiles)
-    echo -n "Processing file: $file"
+while ($n <= $nfiles)
+    echo -n "Processing file: $ifiles_r[$n]"
     if ($?vars) then
-        (eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$dirin\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclfile > $errfile) >& /dev/tty
+        (eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf > $errfile) >& /dev/tty
     else
-        (eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$dirin\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclfile > $errfile) >& /dev/tty
+        (eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf > $errfile) >& /dev/tty
     endif
 
-    set error = `grep "fatal" $errfile`
-    set errstatus = $?
-    if ($errstatus == 0) then
-        echo -n "... error processing $file" ; echo
-        echo $error ; echo
-        /bin/rm -f $errfile
-        goto incr
-        continue
-    else
-        echo -n "... done" ; echo
+    # Did an error occur?
+    if (-e $errfile) then
+        set error = `grep "fatal" $errfile`
+        set errstatus = $?
+        if ($errstatus == 0) then
+            echo -n "... error processing $ifiles_r[$n]" ; echo
+            echo $error ; echo
+            /bin/rm -f $errfile
+            goto incr
+            continue
+        else
+            echo -n "... done" ; echo
+        endif
     endif
 
+    # Display output if requested.
     if ($?printonexit) then
         set fdump = `which ncdump`
         if ($? != 0) then
@@ -513,7 +572,7 @@ foreach file ($ifiles)
     endif
 
 incr:
-    @ n = ($n + 1)
+    @ n += 1
     if (($n > $#ifiles) || ($n > $#ofiles)) then
         break
     endif
@@ -523,13 +582,13 @@ end
 #
 # Clean up.
 #
-/bin/rm -f $tmp_nclfile
+/bin/rm -f $tmp_nclf
 /bin/rm -f $errfile
 
 exit 0
 
 cleanup:
-/bin/rm -f $tmp_nclfile
+/bin/rm -f $tmp_nclf
 /bin/rm -f $errfile
 exit 1
 
