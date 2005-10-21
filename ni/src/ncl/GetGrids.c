@@ -65,7 +65,7 @@ int grid_index[] = { 1, 2, 3, 4, 5, 6, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 3
 
 int grid_tbl_len = sizeof(grid_index)/sizeof(int);
 
-int grid_gds_index[] = { -1, 0, 1, /* 2,*/ 3, 4, 5, /*10, 13,*/ 50, /*60, 70, 80, 90, 201, 202,*/ 203 };
+int grid_gds_index[] = { -1, 0, 1, /* 2,*/ 3, 4, 5, /*10, 13,*/ 50, /*60, 70, 80, 90, */ 201, 202, 203 };
 
 int grid_gds_tbl_len = sizeof(grid_gds_index)/sizeof(int);
 #define EAR 6371.2213
@@ -3470,6 +3470,44 @@ GribParamList* thevarrec;
 	return(integer);
 }
 
+void Do_Rotation_Atts
+(
+	NrmQuark grid_name,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+{
+	NclQuark* tmp_string;
+	char buf[256];
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("apply formulas to derive u and v components relative to earth");
+	GribPushAtt(rot_att_list,"note2",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("u and v components of vector quantities are resolved relative to grid");
+	GribPushAtt(rot_att_list,"note1",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("Vearth = cos(rot)*Vgrid - sin(rot)*Ugrid");
+	GribPushAtt(rot_att_list,"formula_v",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("Uearth = sin(rot)*Vgrid + cos(rot)*Ugrid");
+	GribPushAtt(rot_att_list,"formula_u",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("radians");
+	GribPushAtt(rot_att_list,"units",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = grid_name;
+	GribPushAtt(rot_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("clockwise vector rotation");
+	GribPushAtt(rot_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+}
 
 void GdsMEGrid
 #if NhlNeedProto
@@ -3841,6 +3879,8 @@ int* nrotatts;
 	NclQuark *tmp_string;
 	int *tmp_int;
 	int do_rot;
+	char buf[256];
+	NrmQuark grid_name;
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
 	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
@@ -4003,9 +4043,10 @@ int* nrotatts;
 
 		if (do_rot) {
 			for (i = 0; i < npts; i++) {
-				(*rot)[i] = asin(srot[i]) * RADDEG;
+				(*rot)[i] = asin(srot[i]);
 				(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
 			}
+			NhlFree(srot);
 		}
 		else {
 			for (i = 0; i < npts; i++) {
@@ -4074,44 +4115,15 @@ int* nrotatts;
 		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("Lambert Conformal Secant or Tangent, Conical or bipolar");
+		grid_name = *tmp_string;
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("latitude");
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	if(do_rot && rot_att_list != NULL) {
-		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("apply formulas to derive u and v components relative to earth");
-		GribPushAtt(rot_att_list,"note2",tmp_string,1,nclTypestringClass); (*nrotatts)++;
-
-		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("u and v components of vector quantities are resolved relative to grid");
-		GribPushAtt(rot_att_list,"note1",tmp_string,1,nclTypestringClass); (*nrotatts)++;
-
-		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Vearth = cos(rot)*Vgrid - sin(rot)*Ugrid");
-		GribPushAtt(rot_att_list,"formula_v",tmp_string,1,nclTypestringClass); (*nrotatts)++;
-
-		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Uearth = sin(rot)*Vgrid + cos(rot)*Ugrid");
-		GribPushAtt(rot_att_list,"formula_u",tmp_string,1,nclTypestringClass); (*nrotatts)++;
-
-		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("degrees");
-		GribPushAtt(rot_att_list,"units",tmp_string,1,nclTypestringClass); (*nrotatts)++;
-
-		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Lambert Conformal Secant or Tangent, Conical or bipolar");
-		GribPushAtt(rot_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nrotatts)++;
-
-		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("clockwise vector rotation");
-		GribPushAtt(rot_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
 	}
-	
-	
-
-
 
 }
 
@@ -4483,8 +4495,9 @@ int* nrotatts;
 	float start_ndcx,start_ndcy;
 	float *tmp_float;
 	NclQuark* tmp_string;
-
-	
+	NhlBoolean do_rot;
+	char buf[256];
+	NrmQuark grid_name;
 
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
@@ -4526,7 +4539,9 @@ int* nrotatts;
 	north= ((unsigned char)0200 & (unsigned char)gds[26])?0:1;
 	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
 	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
+	do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
 
+#if 0
 	if(north) {
 		InitMapTrans("ST",90.0,lov,0.0);
 /*
@@ -4582,6 +4597,55 @@ int* nrotatts;
 			}
 		}
 	}
+#endif
+
+#if 1
+	{
+		int kgds[32];
+		int iopt;
+		int npts;
+		float fillval;
+		int lrot;
+		int nret;
+		float *srot = NULL;
+		
+		kgds[0] = 5;
+		kgds[1] = nx;
+		kgds[2] = ny;
+		kgds[3] = la1 * 1000;
+		kgds[4] = lo1 * 1000;
+		kgds[5] = UnsignedCnvtToDecimal(1,&(gds[16]));
+		kgds[6] = lov * 1000;
+		kgds[7] = dx;
+		kgds[8] = dy;
+		kgds[9] = UnsignedCnvtToDecimal(1,&(gds[26]));;
+		kgds[10] = UnsignedCnvtToDecimal(1,&(gds[27]));
+
+		iopt = 0;
+		lrot = do_rot;
+		npts = nx * ny;
+		if (do_rot) {
+			srot = NhlMalloc(npts * sizeof(float));
+			*rot = NhlMalloc(npts * sizeof(float));
+		}
+	
+		NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
+
+		if (do_rot) {
+			for (i = 0; i < npts; i++) {
+				(*rot)[i] = asin(srot[i]);
+				(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
+			}
+			NhlFree(srot);
+		}
+		else {
+			for (i = 0; i < npts; i++) {
+				(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
+			}
+		}
+	}
+#endif
+
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1;
@@ -4635,10 +4699,15 @@ int* nrotatts;
 		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("Polar Stereographic Projection Grid");
+		grid_name = *tmp_string;
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("latitude");
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	}
+
+	if(do_rot && rot_att_list != NULL) {
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
 	}
 	
 }
@@ -5050,7 +5119,10 @@ int* nrotatts;
 	*dimsizes_lat = NULL;
 	*lon = NULL;
 	*n_dims_lon= 0;
-	*dimsizes_lon= NULL;
+	*dimsizes_lon = NULL;
+	*rot = NULL;
+	*n_dims_rot = 0;
+	*dimsizes_rot = NULL;
 	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
 		return;
 
@@ -5060,6 +5132,24 @@ int* nrotatts;
 	}
 
 	gds_type = (int) gds[5];
+	switch (gds_type) {
+	default:
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "GdsUnsupportedGrid: Not enough known about grid %d to determine grid size or shape",
+			gds_type);
+		return;
+
+	case 10:
+	case 14:
+	case 20:
+	case 24:
+	case 30:
+	case 34:
+	case 90:
+		/* we can at least get the x and y dimensions for these grids */
+		break;
+	}
+		
 	nlon = CnvtToDecimal(2,&(gds[6]));
 	nlat = CnvtToDecimal(2,&(gds[8]));
 	is_thinned_lon = (nlon == 65535); /* all bits set indicates missing: missing means thinned */
@@ -5073,12 +5163,6 @@ int* nrotatts;
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
 				  "GdsUnknownGrid: Invalid grid detected");
 		}
-		*lat = NULL;
-		*n_dims_lat = 0;
-		*dimsizes_lat = NULL;
-		*lon = NULL;
-		*n_dims_lon= 0;
-		*dimsizes_lon= NULL;
 		return;
 	}
 	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
@@ -5368,6 +5452,8 @@ int* nrotatts;
 	return;
 }
 
+	
+
 void GdsSRLLGrid 
 #if NhlNeedProto
 (
@@ -5436,9 +5522,13 @@ int* nrotatts;
 	float *crot = NULL,*srot = NULL;
 	float *lat1, *lat2, *lon1, *lon2;
 	int is_uv = Is_UV(thevarrec->param_number);
+	NhlBoolean do_rot;
+	NrmQuark grid_name;
+	int gtype;
 
-	/* RLL: Rotated LatLon grids - actually only 203 at this point */
+	/* arakawa RLL: Rotated LatLon grids - 201,202 and 203 */
 	
+	gtype = UnsignedCnvtToDecimal(1,&(gds[5]));
 
 	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
 	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
@@ -5469,7 +5559,28 @@ int* nrotatts;
 	di = CnvtToDecimal(2,&gds[23]);
 	dj = CnvtToDecimal(2,&gds[25]);
 
-	kgds[0] = 203;
+	switch (gtype) {
+	case 201:
+		do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		grid_name = NrmStringToQuark("Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array");
+		break;
+	case 202:
+		do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		grid_name = NrmStringToQuark("Arakawa filled E-grid on rotated latitude/longitude grid-point array");
+		break;
+
+	case 203:
+		do_rot = is_uv && ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		if (is_uv) {
+			grid_name = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (velocity points)");
+		}
+		else {
+			grid_name = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (mass points)");
+		}
+		break;
+	}
+
+	kgds[0] = gtype;
 	kgds[1] = nx;
 	kgds[2] = ny;
 	kgds[3] = la1;
@@ -5485,18 +5596,6 @@ int* nrotatts;
         *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
         *n_dims_lat = 2;
         *n_dims_lon = 2;
-#if 0
-        (*dimsizes_lat)[0] = ny;
-        (*dimsizes_lat)[1] = nx * 2;
-        (*dimsizes_lon)[0] = ny;
-        (*dimsizes_lon)[1] = nx * 2;
-	lat1 = (float*)NclMalloc(sizeof(float)*nx*ny);
-	lon1 = (float*)NclMalloc(sizeof(float)*nx*ny);
-	lat2 = (float*)NclMalloc(sizeof(float)*nx*ny);
-	lon2 = (float*)NclMalloc(sizeof(float)*nx*ny);
-	(*lon) = (float*)NclMalloc(sizeof(float)*2*nx*ny);
-	(*lat) = (float*)NclMalloc(sizeof(float)*2*nx*ny);
-#endif
 	/* for now at least return the native coordinates, not attempting to shift to a regular grid */
 
         (*dimsizes_lat)[0] = ny;
@@ -5509,38 +5608,30 @@ int* nrotatts;
 
 	npts = nx * ny;
 	lrot = 0;
+	if (do_rot) {
+		srot = NhlMalloc(npts * sizeof(float));
+		*rot = NhlMalloc(npts * sizeof(float));
+		lrot = 1;
+	}
 
 	if (is_uv) {
 		kgds[10] |= 256;
 	}
 
-	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,crot,srot);
-
-#if 0
-	/* the is for the expanded grid form - not used now */
-	for(j = 0; j < ny; j++) {
-		if (j % 2 == 0) { 
-			for(i = 0; i < nx; i++) {
-				((*lat)[j * 2 * nx + i * 2]) = lat1[j * nx + i];
-				((*lon)[j * 2 * nx + i * 2]) = lon1[j * nx + i];
-				((*lat)[j * 2 * nx + i * 2 + 1]) = lat2[j * nx + i];
-				((*lon)[j * 2 * nx + i * 2 + 1]) = lon2[j * nx + i];
-			}
+	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
+	if (do_rot) {
+		for (i = 0; i < npts; i++) {
+			(*rot)[i] = asin(srot[i]);
+			(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
 		}
-		else {
-			for(i = 0; i < nx; i++) {
-				((*lat)[j * 2 * nx + i * 2]) = lat2[j * nx + i];
-				((*lon)[j * 2 * nx + i * 2]) = lon2[j * nx + i];
-				((*lat)[j * 2 * nx + i * 2 + 1]) = lat1[j * nx + i];
-				((*lon)[j * 2 * nx + i * 2 + 1]) = lon1[j * nx + i];
-			}
-		}								
-	} 
-	NclFree(lat1);
-	NclFree(lon1);
-	NclFree(lat2);
-	NclFree(lon2);
-#endif
+		NhlFree(srot);
+	}
+	else {
+		for (i = 0; i < npts; i++) {
+			(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
+		}
+	}
+
 	
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
@@ -5568,12 +5659,7 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_east");
 		GribPushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		if (is_uv) {
-			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (velocity points)");
-		}
-		else {
-			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (mass points)");
-		}
+		*tmp_string = grid_name;
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("longitude");
@@ -5604,19 +5690,19 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_north");
 		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		if (is_uv) {
-			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (velocity points)");
-		}
-		else {
-			*tmp_string = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (mass points)");
-		}
+		*tmp_string = grid_name;
+		grid_name = *tmp_string;
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("latitude");
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
+	if (do_rot && rot_att_list != NULL) {
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
+	}
 	
 }
+
 
 
 GridGDSInfoRecord grid_gds[] = {
@@ -5630,8 +5716,17 @@ GridGDSInfoRecord grid_gds[] = {
 		GenericUnPack,GdsGAGrid,"Gaussian Latitude/Longitude Grid", /*4*/
 		GenericUnPack,GdsSTGrid,"Polar Stereographic Projection Grid", /*5*/
 #if 0
+		NULL,NULL,"Universal Transverse Mercator (UTM) Projection Grid", /*6*/
+		NULL,NULL,"Simple Polyconic Projection Grid", /*7*/
+		NULL,NULL,"Albers equal-area, secant or tangent, conic or bi-polar, Projection Grid", /*8*/
+		NULL,NULL,"Miller's cylindrical projection Grid", /*9*/
 		GenericUnPack,GdsRLLGrid,"Rotated Latitude/Longitude Grid", /*10*/
-/**/		GenericUnPack,GdsOLGrid,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
+		GenericUnPack,GdsOLGrid,"Oblique Lambert conformal, secant or tangent, conical or bipolar, projection", /*13*/
+		NULL,NULL,"Rotated Gaussian Latitude/Longitude Grid", /* 14 */
+		NULL,NULL,"Stretched Latitude/Longitude Grid", /*20*/
+		NULL,NULL,"Stretched Gaussian Latitude/Longitude Grid", /*24*/
+		NULL,NULL,"Stretched and Rotated Latitude/Longitude Grid", /*30*/
+		NULL,NULL,"Stretched and Rotated Gaussian Latitude/Longitude Grid", /*34*/
 #endif
 		GenericUnPack,GdsSHGrid,"Spherical Harmonic Coefficients", /*50*/
 #if 0
@@ -5639,9 +5734,9 @@ GridGDSInfoRecord grid_gds[] = {
 		NULL,NULL,"Stretched Spherical Harmonic Coefficients", /*70*/
 		NULL,NULL,"Stretched and Rotated Spherical Harmonic Coefficients", /*80*/
 		NULL,NULL,"Space View perspective or orthographic grid", /*90*/
-		NULL,NULL,"Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array", /*201*/
-		NULL,NULL,"Arakawa filled E-grid on rotated latitude/longitude grid-point array", /*202*/
 #endif
+		GenericUnPack,GdsSRLLGrid,"Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array", /*201*/
+		GenericUnPack,GdsSRLLGrid,"Arakawa filled E-grid on rotated latitude/longitude grid-point array", /*202*/
 		GenericUnPack,GdsSRLLGrid,"Arakawa staggered E-grid on rotated latitude/longitude grid-point array", /*203*/
 		
 };

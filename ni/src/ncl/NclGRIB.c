@@ -1926,9 +1926,9 @@ GribFileRecord *therec;
 	int nlonatts = 0;
 	int nlatatts = 0;
 	int nrotatts = 0;
-	GribAttInqRecList *lat_att_list_ptr;
-	GribAttInqRecList *lon_att_list_ptr;
-	GribAttInqRecList *rot_att_list_ptr;
+	GribAttInqRecList *lat_att_list_ptr = NULL;
+	GribAttInqRecList *lon_att_list_ptr = NULL;
+	GribAttInqRecList *rot_att_list_ptr = NULL;
 
 	therec->total_dims = 0;
 	therec->n_scalar_dims = 0;
@@ -2356,24 +2356,23 @@ GribFileRecord *therec;
 				}
 			}
 			if(dstep == NULL) {
+				nlonatts = 0;
+				nlatatts = 0;
+				nrotatts = 0;
+				lat_att_list_ptr = NULL;
+				lon_att_list_ptr = NULL;
+				rot_att_list_ptr = NULL;
+
 /*
 * Grid has not been defined
 */
 				if(step->grid_tbl_index!=-1) {
+					
 					(*grid[step->grid_tbl_index].get_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon);
 					if((grid[step->grid_tbl_index].get_grid_atts) != NULL) {
-						nlonatts = 0;
-						nlatatts = 0;
-						lat_att_list_ptr = NULL;
-						lon_att_list_ptr = NULL;
 						(*grid[step->grid_tbl_index].get_grid_atts)(step,&lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts);
 					}
 				} else if(step->grid_gds_tbl_index != -1) {
-
-					nlonatts = 0;
-					nlatatts = 0;
-					lat_att_list_ptr = NULL;
-					lon_att_list_ptr = NULL;
 					(*grid_gds[step->grid_gds_tbl_index].get_gds_grid)
 						(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon,
 						 &tmp_rot,&n_dims_rot,&dimsizes_rot,
