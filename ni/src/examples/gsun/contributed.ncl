@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.72 2005-10-02 22:46:25 haley Exp $
+;      $Id: contributed.ncl,v 1.73 2005-10-21 23:20:18 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -175,27 +175,33 @@ end
 
 undef("copy_VarCoords")
 procedure copy_VarCoords(var_from,var_to)  
-local dfrom, dto, rfrom, rto, i
+local dfrom, dto, rfrom, rto, i, dName
 begin                                     
   dfrom = dimsizes(var_from)
   dto   = dimsizes(var_to)
   
   rfrom = dimsizes(dfrom)
   rto   = dimsizes(dto)
+                                             ; coordinates must have names
+  dName = getvardims(var_from)               ; Oct 18, 2005
 
-  if(all(dfrom(0:rto-1).eq.dto)) then
-      do i = 0,rto-1
-         if (.not.ismissing(var_from!i)) then
-            var_to!i = var_from!i
-            if(iscoord(var_from,var_from!i))
-	       var_to&$var_to!i$ = var_from&$var_from!i$
-            end if
-         end if
-      end  do
-  else
-      print("ERROR: copy_VarCoords: dimension sizes do not match")
-      print(dto)
-      print(dfrom)
+  if (.not.all(ismissing(dName))) then
+
+      if (all(dfrom(0:rto-1).eq.dto)) then
+          do i = 0,rto-1
+             if (.not.ismissing(dName(i))) then   ; Oct 18, 2005
+                var_to!i = var_from!i
+                if(iscoord(var_from,var_from!i))
+               var_to&$var_to!i$ = var_from&$var_from!i$
+                end if
+             end if
+          end  do
+      else
+          print("ERROR: copy_VarCoords: dimension sizes do not match")
+          print(dto)
+          print(dfrom)
+      end if
+
   end if
 end
 ;************************************************************
@@ -206,24 +212,30 @@ end
 
 undef ("copy_VarCoords_1")
 procedure copy_VarCoords_1(var_from,var_to)  
-local dimt, dimf, rfrom, rto, i
+local dimt, dimf, rfrom, rto, i, dName
 begin                      
-        dimf  = dimsizes(var_from)            
-        dimt  = dimsizes(var_to)
-        rfrom = dimsizes(dimf)      ; rank of var_from
-        rto   = dimsizes(dimt)      ; rank of var_to
+
+  dimf  = dimsizes(var_from)            
+  dimt  = dimsizes(var_to)
+  rfrom = dimsizes(dimf)      ; rank of var_from
+  rto   = dimsizes(dimt)      ; rank of var_to
+
+  dName = getvardims(var_from)               ; Oct 18, 2005
+
+  if (.not.all(ismissing(dName))) then
        ;if (rto.eq.(rfrom-1)) then
                 do i = 0,rfrom-2            ; do not use last dimension
-                   if (.not.ismissing(var_from!i).and.dimf(i).eq.dimt(i))then
+                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
                         var_to!i = var_from!i
-			if(iscoord(var_from,var_from!i))
-				var_to&$var_to!i$ = var_from&$var_from!i$
-			end if
+                        if(iscoord(var_from,var_from!i))
+                                var_to&$var_to!i$ = var_from&$var_from!i$
+                        end if
                    end if
                 end  do
        ;else
        ;        print("ERROR: copy_VarCoords_1: rank problem")
        ;end if
+  end if
 end
 ; *****************************************************************
 ; D. Shea
@@ -233,22 +245,27 @@ end
 
 undef ("copy_VarCoords_2")
 procedure copy_VarCoords_2(var_from,var_to)  
-local dimt, dimf, rfrom, rto, i
+local dimt, dimf, rfrom, rto, i, dName
 begin                      
-        dimf  = dimsizes(var_from)            
-        rfrom = dimsizes(dimf)      ; rank of var_from
+  dimf  = dimsizes(var_from)            
+  rfrom = dimsizes(dimf)      ; rank of var_from
+
+  dName = getvardims(var_from)               ; Oct 18, 2005
+
+  if (.not.all(ismissing(dName))) then
         if (rfrom.gt.2) then
             dimt  = dimsizes(var_to)
             rto   = dimsizes(dimt)      ; rank of var_to
             do i = 0,rfrom-3            ; do not use last two dimensions
-               if (.not.ismissing(var_from!i) .and. dimf(i).eq.dimt(i)  ) then
+               if (.not.ismissing(dName(i)) .and. dimf(i).eq.dimt(i)  ) then
                     var_to!i = var_from!i
-	            if(iscoord(var_from,var_from!i))
-		       var_to&$var_to!i$ = var_from&$var_from!i$
+                    if(iscoord(var_from,var_from!i))
+                       var_to&$var_to!i$ = var_from&$var_from!i$
                     end if
                 end if
             end  do
         end if
+  end if
 end
 ;****************************************
 ; D. Shea
@@ -309,24 +326,33 @@ end
 
 ;undef("copyatt")
 procedure copyatt(var_to,var_from) 
-local n, att_names, i 
+local n, att_names, i, dName, rankto, natts 
 begin
-  do n = 0, dimsizes(dimsizes(var_to))-1   
-    var_to!n=var_from!n
-    if(iscoord(var_from,var_from!n))then
-      var_to&$var_to!n$ = var_from&$var_from!n$
-    end if 
-  end do
+
+  dName = getvardims(var_from)               ; Oct 18, 2005
+  rankto= dimsizes(dimsizes(var_to))
+                                             ; coordinates must have names
+  if (.not.all(ismissing(dName))) then
+      do n=0,rankto-1   
+         if (.not.ismissing(dName(n))) then   ; Oct 18, 2005
+             var_to!n = var_from!n
+             if (iscoord(var_from,var_from!n))then
+                 var_to&$var_to!n$ = var_from&$var_from!n$
+             end if
+         end if 
+      end do
+  end if
 ;
 ; copy variable attributes
 ;
   att_names = getvaratts(var_from);
+  natts     = dimsizes(att_names)
   if(.not.all(ismissing(att_names)))
-    do i = 0, dimsizes(att_names)-1
+    do i=0,natts-1
        if(isatt(var_from,"_FillValue"))then
           if(typeof(var_from@_FillValue).eq."double"  .and.\
              typeof(var_to).eq."float")then
-	     var_to@_FillValue = doubletofloat(var_from@_FillValue)
+             var_to@_FillValue = doubletofloat(var_from@_FillValue)
           else
              if (isatt(var_to,att_names(i))) then  ; added 10 Mar 2003 [DJS]
                  delete(var_to@$att_names(i)$)  
@@ -336,7 +362,7 @@ begin
         end if
     end do
   end if
-  delete(att_names)
+
 end
 ;****************************************
 ; D. Shea
@@ -353,7 +379,7 @@ end
 ; which has had an extra left dimension added.
 
 procedure component_copy_VarCoords (x, y)
-local rankx, dimy, i
+local rankx, dimy, i, dName
 begin
   rankx = dimsizes(dimsizes(x))
   dimy  = dimsizes(y)
@@ -361,8 +387,10 @@ begin
   y!0 = "component"
   y&component = ispan(0, dimy(0)-1, 1)
 
+  dName = getvardims( x )
+
   do i=0,rankx-1
-     if (.not.ismissing(x!i)) then
+     if (.not.ismissing(dName(i))) then
          y!(i+1) = x!i
          if(iscoord(x,x!i)) then
             y&$x!i$ = x&$x!i$
