@@ -115,7 +115,7 @@ NhlErrorTypes cancor_W( void )
 /*
  * Allocate space for work arrays.
  */
-  eval = (double*)calloc(minxy,sizeof(double));
+  eval = (double*)calloc(nx,sizeof(double));
   lrr  = ((nxy+1)*nxy)/2;
   rr   = (double*)calloc(lrr,sizeof(double));
   yx   = (double*)calloc(nobs*nxy,sizeof(double));
