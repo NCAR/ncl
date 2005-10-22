@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.73 2005-10-21 23:20:18 shea Exp $
+;      $Id: contributed.ncl,v 1.74 2005-10-22 14:53:47 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6478,3 +6478,217 @@ begin
       end if
   end if
 end
+; *****************************************************************
+; D. Shea
+; Turn monthly total values [eg, precipitation] to "per day" values.
+; Each monthly total is divided by the number of days in the month.
+; Leap years use 29 days.
+;
+; Nomenclature:
+;   yyyymm     -  yearMonth   [eg  195602]
+;                 Values correspond to the time dimension of "x"
+;                 Must be the same size as time dimension of "x".
+;   x          -  data array
+;                 if rank is greater than one, then it is required that 
+;                 the *leftmost* dimension be "time"
+;                 eg: prc(time),  prc(time,lat,lon),  prc(time,stations)
+;   opt        -  not used currently: set to zero [ 0 ]
+;
+;   Usage:  prc(time), prc(time,stations) or prc(time,lat,lon)
+;           PRC = monthly_total_to_daily_mean( time, prc, 0) ; time is yyyymm
+;
+
+function monthly_total_to_daily_mean(yyyymm[*]:numeric, x:numeric, opt:integer)
+local yyyy, mm, dymon, DYMON, dimx, rankx, xNew
+begin
+
+  dimx  = dimsizes(x)
+  if (dimx(0).ne.dimsizes(yyyymm)) then
+      print("monthly_total_to_daily_mean: yyyymm and x time dimension must be same size")
+      exit
+  end if 
+
+  yyyy  = yyyymm/100
+  mm    = yyyymm - (yyyy*100)     ; mm=1,...,12
+  if (any(mm.lt.1 .or. mm.gt.12)) then
+      print("monthly_total_to_daily_mean: mm must be 1-to-12 inclusive")
+      exit
+  end if
+
+  rankx = dimsizes(dimx)                 ; number of dimensions
+
+  dymon = days_in_month ( yyyy, mm)      ; accounts for leap year
+
+  if (rankx.eq.1) then
+      xNew  = x/dymon                    ; per day
+  else
+      DYMON = conform(x, dymon, 0)       ; time is the left dim of x [0]
+      xNew  = x/DYMON
+  end if
+
+  copy_VarMeta(x, xNew)
+  if (isatt(x,"units")) then
+      xNew@units = x@units + "per day"
+  end if
+
+  return(xNew)
+end   
+
+; *****************************************************************
+; D. Shea
+; Turn monthly values [eg, precipitation] to annual values
+; Two options: (a) sum of all 12 months (b) [sum of 12 values]/12
+; Caveats: If there is more than one dimension, 
+;            (a) all dimensions *must* be named.
+;            (b) If there are no missing data [_FillValue], 
+;                this function will work as expected.
+;            (c) If _FillValue are encountered, then the results
+;                for that year will be missing for *ALL* grid points.
+;                Even grid pts where there are 12 values. If this
+;                case needs to be addressed, then multiple do loops
+;                must be used to check each grid point individually.
+;                The user will have to do that. 
+; Nomenclature:
+;   x          -  data array
+;                 if rank is greater than one, then it is required that 
+;                 the *leftmost* dimension be "time"
+;                 eg: prc(time,lat,lon),  z(time,stations), q(time,lev,lat,lon)
+;
+;                 if 1D missing values [_FillValue] are allowed
+;                 otherwise
+;                 no missing values currently alloed
+;
+;   opt        - flag: opt=0 if annual total value [sum 12 values] is to be returned
+;                      opt=1 if annual mean  value is to be returned [(annual total)/12]
+;   Usage:
+;                 PRC_annual_total = monthly_to_annual( prc, 0) 
+;                 TMP_annual_mean  = monthly_to_annual( tmp, 1) 
+;
+
+function monthly_to_annual(x:numeric, opt:integer)
+local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, nz, nn, nmo \
+    , dName, xAnnual, xTemp
+begin
+
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+  ntim  = dimx(0)
+  if (dimx(0).ne.ntim) then
+      print("monthly_to_annual: yyyymm and x time dimension must be same size")
+      exit
+  end if 
+
+  if (rankx .gt. 4) then
+      print("*** FATAL  ***")
+      print("monthly_to_annual: currently support up to 4D only")
+      print("monthly_to_annual: rank="+rankx)
+      exit
+  end if
+
+  nyrs = ntim/12
+
+  if (ntim%12 .ne. 0) then
+      print("*** WARNING ***")
+      print("monthly_to_annual: ntim="+ntim+" not multiple of 12:  nyrs="+nyrs)
+  end if
+
+
+  if (rankx.eq.1) then
+      xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
+      xAnnual@long_name = x@long_name
+      xAnnual@units     = x@units
+
+      nyr = -1
+      do nt=0,ntim-1,12
+         nyr  = nyr+1
+         nMsg = num (ismissing(x(nt:nt+11)) )
+         if (nMsg.eq.0) then
+             if (opt.eq.0) then
+                 xAnnual(nyr)   = sum ( x(nt:nt+11) )
+             else
+                 xAnnual(nyr)   = avg ( x(nt:nt+11) )
+             end if
+         end if
+      end do
+
+      return(xAnnual)
+   end if
+
+   dName  = getvardims(x)    ; get dim names
+   if (any(ismissing(dName))) then
+       print("*** FATAL  ***")
+       print("monthly_total_to_annual: requires that all dimensions be named")
+       exit
+   end if
+    
+   if (rankx.eq.2) then
+       nn     = dimx(1)  
+       nyr    = -1
+       xAnnual= new ( (/nyrs,nn/), typeof(x), getFillValue(x)) ;  contributed.ncl
+       do nt=0,ntim-1,12
+          xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+11)          ; cleaner code only
+          nyr   = nyr+1
+          nMsg  = num (ismissing(xTemp) )
+          if (nMsg.eq.0) then
+              if (opt.eq.0) then
+                  xAnnual(nyr,:) = dim_sum ( xTemp )
+              else
+                  xAnnual(nyr,:) = dim_avg ( xTemp )
+              end if
+          else
+              print("monthly_total_to_annual: all grid pts set to missing: current year: nt="+nt)
+          end if
+       end do
+
+      return(xAnnual)
+   end if
+
+   if (rankx.eq.3) then
+       ny     = dimx(1)      ; nlat
+       mx     = dimx(2)      ; mlon
+       nyr    = -1
+       xAnnual= new ( (/nyrs,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
+       do nt=0,ntim-1,12
+          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+11) ; cleaner code only
+          nyr   = nyr+1
+          nMsg  = num (ismissing(xTemp) )
+          if (nMsg.eq.0) then
+              if (opt.eq.0) then
+                  xAnnual(nyr,:,:) = dim_sum ( xTemp )
+              else
+                  xAnnual(nyr,:,:) = dim_avg ( xTemp )
+              end if
+          else
+              print("monthly_total_to_annual: all grid pts set to missing: current year: nt="+nt)
+          end if
+       end do
+
+      return(xAnnual)
+   end if
+
+   if (rankx.eq.4) then
+       nz     = dimx(1)      ; nlev
+       ny     = dimx(2)      ; nlat
+       mx     = dimx(3)      ; mlon
+       nyr    = -1
+       xAnnual= new ( (/nyrs,nz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
+       do nt=0,ntim-1,12
+          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+11) 
+          nyr   = nyr+1
+          nMsg  = num (ismissing(xTemp) )
+          if (nMsg.eq.0) then
+              if (opt.eq.0) then
+                  xAnnual(nyr,:,:,:) = dim_sum ( xTemp )
+              else
+                  xAnnual(nyr,:,:,:) = dim_avg ( xTemp )
+              end if
+          else
+              print("monthly_total_to_annual: all grid pts set to missing: current year: nt="+nt)
+          end if
+       end do
+
+      return(xAnnual)
+   end if
+
+   return
+   end
