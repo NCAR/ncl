@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.75 2005-10-22 15:54:51 shea Exp $
+;      $Id: contributed.ncl,v 1.76 2005-10-23 04:10:11 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6396,61 +6396,35 @@ begin
       end if
   end if
 end
-; *****************************************************************
-; D. Shea
-; Turn monthly total values [eg, precipitation] to "per day" values.
-; Each monthly total is divided by the number of days in the month.
-; Leap years use 29 days.
-;
-; Nomenclature:
-;   yyyymm     -  yearMonth   [eg  195602]
-;                 Values correspond to the time dimension of "x"
-;                 Must be the same size as time dimension of "x".
-;   x          -  data array
-;                 if rank is greater than one, then it is required that 
-;                 the *leftmost* dimension be "time"
-;                 eg: prc(time),  prc(time,lat,lon),  prc(time,stations)
-;   opt        -  not used currently: set to zero [ 0 ]
-;
-;   Usage:  prc(time), prc(time,stations) or prc(time,lat,lon)
-;           PRC = monthly_total_to_daily_mean( time, prc, 0) ; time is yyyymm
-;
+;************************************************************
+; Copy all of the coordinate variables from one variable to another.  
+; starting at dimension 1           
 
-function monthly_total_to_daily_mean(yyyymm[*]:numeric, x:numeric, opt:integer)
-local yyyy, mm, dymon, DYMON, dimx, rankx, xNew
-begin
+undef("copy_VarCoords_skipDim0")
+procedure copy_VarCoords_skipDim0(var_from,var_to)  
+local dfrom, dto, rfrom, rto, i, dName
+begin                                     
+  dfrom = dimsizes(var_from)
+  dto   = dimsizes(var_to)
+  
+  rfrom = dimsizes(dfrom)
+  rto   = dimsizes(dto)
+                                             ; coordinates must have names
+  dName = getvardims(var_from)               ; Oct 18, 2005
 
-  dimx  = dimsizes(x)
-  if (dimx(0).ne.dimsizes(yyyymm)) then
-      print("monthly_total_to_daily_mean: yyyymm and x time dimension must be same size")
-      exit
-  end if 
+  if (.not.all(ismissing(dName))) then
 
-  yyyy  = yyyymm/100
-  mm    = yyyymm - (yyyy*100)     ; mm=1,...,12
-  if (any(mm.lt.1 .or. mm.gt.12)) then
-      print("monthly_total_to_daily_mean: mm must be 1-to-12 inclusive")
-      exit
+          do i = 1,rto-1
+             if (.not.ismissing(dName(i))) then   ; Oct 18, 2005
+                var_to!i = var_from!i
+                if(iscoord(var_from,var_from!i))
+               var_to&$var_to!i$ = var_from&$var_from!i$
+                end if
+             end if
+          end  do
+
   end if
-
-  rankx = dimsizes(dimx)                 ; number of dimensions
-
-  dymon = days_in_month ( yyyy, mm)      ; accounts for leap year
-
-  if (rankx.eq.1) then
-      xNew  = x/dymon                    ; per day
-  else
-      DYMON = conform(x, dymon, 0)       ; time is the left dim of x [0]
-      xNew  = x/DYMON
-  end if
-
-  copy_VarMeta(x, xNew)
-  if (isatt(x,"units")) then
-      xNew@units = x@units + "per day"
-  end if
-
-  return(xNew)
-end   
+end
 
 ; *****************************************************************
 ; D. Shea
@@ -6479,47 +6453,51 @@ end
 ;   opt        - flag: opt=0 if annual total value [sum 12 values] is to be returned
 ;                      opt=1 if annual mean  value is to be returned [(annual total)/12]
 ;   Usage:
-;                 PRC_annual_total = monthly_to_annual( prc, 0) 
-;                 TMP_annual_mean  = monthly_to_annual( tmp, 1) 
+;                 PRC_annual_total = month_to_annual( prc, 0) 
+;                 TMP_annual_mean  = month_to_annual( tmp, 1) 
 ;
 
-function monthly_to_annual(x:numeric, opt:integer)
+function month_to_annual(x:numeric, opt:integer)
 local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, nz, nn, nmo \
     , dName, xAnnual, xTemp
 begin
 
   dimx  = dimsizes(x)
   rankx = dimsizes(dimx)
-  ntim  = dimx(0)
-  if (dimx(0).ne.ntim) then
-      print("monthly_to_annual: yyyymm and x time dimension must be same size")
+  NTIM  = dimx(0)
+  if (dimx(0).ne.NTIM) then
+      print("month_to_annual: yyyymm and x time dimension must be same size")
       exit
   end if 
 
   if (rankx .gt. 4) then
       print("*** FATAL  ***")
-      print("monthly_to_annual: currently support up to 4D only")
-      print("monthly_to_annual: rank="+rankx)
+      print("month_to_annual: currently support up to 4D only")
+      print("month_to_annual: rank="+rankx)
       exit
   end if
 
-  nyrs = ntim/12
+  nyrs = NTIM/12
+  ntim = nyrs*12
 
-  if (ntim%12 .ne. 0) then
+  if (NTIM%12 .ne. 0) then
       print("*** WARNING ***")
-      print("monthly_to_annual: ntim="+ntim+" not multiple of 12:  nyrs="+nyrs)
+      print("month_to_annual: ntim="+NTIM+" not multiple of 12:  nyrs="+nyrs)
   end if
 
 
   if (rankx.eq.1) then
       xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
-      xAnnual@long_name = x@long_name
-      xAnnual@units     = x@units
 
       nyr = -1
       do nt=0,ntim-1,12
          nyr  = nyr+1
-         nMsg = num (ismissing(x(nt:nt+11)) )
+
+         nMsg = 0
+         if (isatt(x,"_FillValue")) then
+             nMsg = num (ismissing(x(nt:nt+11)) )
+         end if
+
          if (nMsg.eq.0) then
              if (opt.eq.0) then
                  xAnnual(nyr)   = sum ( x(nt:nt+11) )
@@ -6529,13 +6507,16 @@ begin
          end if
       end do
 
+      copy_VarAtts (x, xAnnual)
+      xAnnual@info = "NCL: month_to_annual"
+      xAnnual!0    = "year"
       return(xAnnual)
    end if
 
    dName  = getvardims(x)    ; get dim names
    if (any(ismissing(dName))) then
        print("*** FATAL  ***")
-       print("monthly_total_to_annual: requires that all dimensions be named")
+       print("month_to_annual: requires that all dimensions be named")
        exit
    end if
     
@@ -6546,7 +6527,12 @@ begin
        do nt=0,ntim-1,12
           xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+11)          ; cleaner code only
           nyr   = nyr+1
-          nMsg  = num (ismissing(xTemp) )
+
+          nMsg  = 0
+          if (isatt(x,"_FillValue")) then
+              nMsg = num (ismissing(xTemp) )
+          end if
+
           if (nMsg.eq.0) then
               if (opt.eq.0) then
                   xAnnual(nyr,:) = dim_sum ( xTemp )
@@ -6554,11 +6540,15 @@ begin
                   xAnnual(nyr,:) = dim_avg ( xTemp )
               end if
           else
-              print("monthly_total_to_annual: all grid pts set to missing: current year: nt="+nt)
+              print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
           end if
        end do
 
-      return(xAnnual)
+       copy_VarAtts (x, xAnnual)
+       xAnnual@info = "NCL: month_to_annual"
+       xAnnual!0    = "year"
+       copy_VarCoords_skipDim0 (x, xAnnual)
+       return(xAnnual)
    end if
 
    if (rankx.eq.3) then
@@ -6569,7 +6559,12 @@ begin
        do nt=0,ntim-1,12
           xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+11) ; cleaner code only
           nyr   = nyr+1
-          nMsg  = num (ismissing(xTemp) )
+
+          nMsg  = 0
+          if (isatt(x,"_FillValue")) then
+              nMsg = num (ismissing(xTemp) )
+          end if
+
           if (nMsg.eq.0) then
               if (opt.eq.0) then
                   xAnnual(nyr,:,:) = dim_sum ( xTemp )
@@ -6577,11 +6572,15 @@ begin
                   xAnnual(nyr,:,:) = dim_avg ( xTemp )
               end if
           else
-              print("monthly_total_to_annual: all grid pts set to missing: current year: nt="+nt)
+              print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
           end if
        end do
 
-      return(xAnnual)
+       copy_VarAtts (x, xAnnual)
+       xAnnual@info = "NCL: month_to_annual"
+       xAnnual!0    = "year"
+       copy_VarCoords_skipDim0 (x, xAnnual)
+       return(xAnnual)
    end if
 
    if (rankx.eq.4) then
@@ -6593,7 +6592,12 @@ begin
        do nt=0,ntim-1,12
           xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+11) 
           nyr   = nyr+1
-          nMsg  = num (ismissing(xTemp) )
+
+          nMsg  = 0
+          if (isatt(x,"_FillValue")) then
+              nMsg = num (ismissing(xTemp) )
+          end if
+
           if (nMsg.eq.0) then
               if (opt.eq.0) then
                   xAnnual(nyr,:,:,:) = dim_sum ( xTemp )
@@ -6601,12 +6605,201 @@ begin
                   xAnnual(nyr,:,:,:) = dim_avg ( xTemp )
               end if
           else
-              print("monthly_total_to_annual: all grid pts set to missing: current year: nt="+nt)
+              print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
           end if
        end do
 
+       copy_VarAtts (x, xAnnual)
+       xAnnual@info = "NCL: month_to_annual"
+       xAnnual!0    = "year"
+       copy_VarCoords_skipDim0 (x, xAnnual)
+       return(xAnnual)
+   end if
+return
+end
+
+function month_to_annual_weighted(yyyymm[*]:numeric, x:numeric, opt:integer)
+local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, nz, nn, nmo \
+    , dName, xAnnual, xTemp
+begin
+  yyyy  = yyyymm/100
+  mm    = yyyymm - (yyyy*100)     ; mm=1,...,12
+  if (any(mm.lt.1 .or. mm.gt.12)) then
+      print("month_to_annual_weighted: mm must be 1-to-12 inclusive")
+      exit
+  end if
+
+  dimx  = dimsizes(x)
+  rankx = dimsizes(dimx)
+  NTIM  = dimx(0)
+
+  if (NTIM.ne.dimsizes(yyyymm)) then
+      print("month_to_annual_weighted: incompatible time dimesnions")
+      print("                                  dimsizes(yyyymm) .ne. ntim  ")
+      exit
+  end if
+
+  if (rankx .gt. 4) then
+      print("*** FATAL  ***")
+      print("month_to_annual_weighted: currently supports up to 4D only")
+      print("month_to_annual_weighted: rank="+rankx)
+      exit
+  end if
+
+  nyrs = NTIM/12
+  ntim = nyrs*12
+
+  if (NTIM%12 .ne. 0) then
+      print("*** WARNING ***")
+      print("month_to_annual_weighted: ntim="+NTIM+" not multiple of 12")
+  end if
+
+  dymon = days_in_month ( yyyy, mm)      ; accounts for leap year
+
+  if (rankx.eq.1) then
+      xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
+      xAnnual@long_name = x@long_name
+      xAnnual@units     = x@units
+
+      nyr = -1
+      do nt=0,ntim-1,12
+         nyr  = nyr+1
+
+         nMsg = 0
+         if (isatt(x,"_FillValue")) then
+             nMsg = num (ismissing(x(nt:nt+11)) )
+         end if
+
+         if (nMsg.eq.0) then
+             wgt          = dymon(nt:nt+11)                ; days for each month
+
+             xTemp        = x(nt:nt+11)*wgt                ; values(:)*wgt(:)
+             xAnnual(nyr) = sum( xTemp )                   ; sum of [value(:)*wgt(:)] 
+                                                           ; opt=3
+             if (opt.eq.0) then                            ; normalization .. if any
+                 wgtSum = 365
+                 if (isleapyear(yyyy(nt))) then
+                     wgtSum = 366
+                 end if
+                 xAnnual(nyr) = xAnnual(nyr)/wgtSum        ; weighted average
+             end if
+             if (opt.eq.1) then
+                 xAnnual(nyr) = xAnnual(nyr)/12            
+             end if
+         end if
+      end do
+
+      return(xAnnual)
+  end if
+
+  if (rankx.eq.2) then
+      dName  = getvardims(x)    ; get dim names
+      xAnnual= new ( (/nyrs,dimx(1)/), typeof(x), getFillValue(x)) ;  contributed.ncl
+
+      nyr    = -1
+      do nt=0,ntim-1,12
+         nyr   = nyr+1
+         xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+11)  
+
+         nMsg = 0
+         if (isatt(x,"_FillValue")) then
+             nMsg = num (ismissing(xTemp) ) 
+         end if
+
+         if (nMsg.eq.0) then
+             wgt            = conform(xTemp, dymon(nt:nt+11),1)
+             xTemp          = xTemp*wgt                       ; values*wgt 
+             xAnnual(nyr,:) = dim_sum( xTemp )                ; sum of [value*wgt] opt=3
+
+             if (opt.eq.0) then                               ; normalization .. if any 
+                 wgtSum = 365
+                 if (isleapyear(yyyy(nt))) then
+                     wgtSum = 366
+                 end if
+                 xAnnual(nyr,:) = xAnnual(nyr,:)/wgtSum
+             end if
+             if (opt.eq.1) then
+                 xAnnual(nyr,:) = xAnnual(nyr,:)/12
+             end if
+         end if
+      end do
+
+      return(xAnnual)
+  end if
+
+  if (rankx.eq.3) then
+      dName  = getvardims(x)
+      ny     = dimx(1)      ; nlat
+      mx     = dimx(2)      ; mlon
+      xAnnual = new ( (/nyrs,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
+
+      nyr    = -1
+      do nt=0,ntim-1,12
+         xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+11) 
+
+         nyr   = nyr+1
+
+         nMsg = 0
+         if (isatt(x,"_FillValue")) then
+             nMsg = num (ismissing(xTemp) )
+         end if
+
+         if (nMsg.eq.0) then
+             wgt              = conform(xTemp, dymon(nt:nt+11),2)
+             xTemp            = xTemp*wgt
+             xAnnual(nyr,:,:) = dim_sum ( xTemp )
+
+             if (opt.eq.0) then
+                 wgtSum = 365
+                 if (isleapyear(yyyy(nt))) then
+                     wgtSum = 366
+                 end if
+                 xAnnual(nyr,:,:) = xAnnual(nyr,:,:)/wgtSum
+             else
+                 xAnnual(nyr,:,:) = xAnnual(nyr,:,:)/12
+             end if
+         end if
+      end do
+
+      return(xAnnual)
+  end if
+
+  if (rankx.eq.4) then
+      dName   = getvardims(x)
+      nz      = dimx(1)      ; nlev
+      ny      = dimx(2)      ; nlat
+      mx      = dimx(3)      ; mlon
+      xAnnual = new ( (/nyrs,nz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
+
+      nyr    = -1
+      do nt=0,ntim-1,12
+         xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+11) 
+
+         nyr   = nyr+1
+
+         nMsg = 0
+         if (isatt(x,"_FillValue")) then
+             nMsg = num (ismissing(xTemp) )
+         end if
+
+         if (nMsg.eq.0) then
+             wgt                = conform(xTemp, dymon(nt:nt+11),3)
+             xTemp              = xTemp*wgt
+             xAnnual(nyr,:,:,:) = dim_sum ( xTemp )   ; opt=2
+
+             if (opt.eq.0) then
+                 wgtSum = 365
+                 if (isleapyear(yyyy(nt))) then
+                     wgtSum = 366
+                 end if
+                 xAnnual(nyr,:,:,:) = xAnnual(nyr,:,:,:)/wgtSum
+             end if
+             if (opt.eq.1) then
+                 xAnnual(nyr,:,:,:) = xAnnual(nyr,:,:,:)/12
+             end if
+         end if
+      end do
+
       return(xAnnual)
    end if
-
-   return
-   end
+end
