@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.78 2005-10-24 17:05:15 shea Exp $
+;      $Id: contributed.ncl,v 1.79 2005-10-24 19:29:00 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5212,7 +5212,7 @@ local year, mon
 begin
   year = yyyymm/100 
   mon  = yyyymm-year*100  
-  yrFrac = year + (mon-1)/12.
+  yrFrac = year + (mon-1.)/12.
 
   yrFrac@long_name = "Time"
   yrFrac@units     = "YYYY + fractional portion of year"
@@ -5220,8 +5220,38 @@ begin
      
   return(yrFrac)
 end
-
-
+;************************************************************************* 
+; D. Shea                                                                 
+;                                                                        
+; given, say, yyyymm = (/ 197901 , 198407, 200112 /)                    
+;       yrFrac = yyyymm_to_yyyyfrac (yyyymm, 0.0)                      
+;       yrFrac ==> [1979.0 , 1979.5 , 2001.917]                       
+;                                                                    
+; yyyymm       - scalar or array of dates                           
+; mm_offset    - 0.0 or 0.5
+;                                                                  
+function yyyymm_to_yyyyfrac (yyyymm[*]:numeric, mmOffset[1]:numeric)
+local year, mm, xmos, one      
+begin                                                                                               
+  if (typeof(yyyymm).eq."double" .or.typeof(mmOffset).eq."double") then 
+      xmos = 12.d0                         
+      one  = 1.0d0                        
+  else                                   
+      xmos = 12.0                       
+      one  = 1.0                       
+  end if                              
+                                     
+  year   = yyyymm/100               
+  mm     = yyyymm-year*100         
+  yrFrac = year + ((mm+mmOffset)-one)/xmos  
+                                           
+  copy_VarMeta(yyyymm, yrFrac)            
+                                         
+  yrFrac@units     = "YYYY + fractional portion of year"  
+  yrFrac@NCL       = "derived using function yyyymm_to_yyyyfrac"
+                                                               
+  return(yrFrac)                                              
+end                                                          
 ;*************************************************************************
 ; D. Shea
 ; given, say, 19790719  where 0719 is the 200th day of the year
