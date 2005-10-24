@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.77 2005-10-23 23:22:34 shea Exp $
+;      $Id: contributed.ncl,v 1.78 2005-10-24 17:05:15 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5534,8 +5534,17 @@ begin
   return (XK)
 end
 
+;*************************************************************************
+; D. Shea
 undef ("timeCoads2YYYYMM")
 function timeCoads2YYYYMM (yrStrt:integer, yrLast:integer, TYPE:string)
+;
+; This was a *terrible* name for a function.
+; It was never explicitly documented.
+; It was used in some "COADS" application examples.
+; The function "yyyymm_time" is documented.
+; It is just a different interface to this function.
+;
 ; usage
 ;    yrLast = 1997   ; last year on this COADS file
 ;    yyyymm = timeCoads2YYYYMM (1800,yrLast,typeof(time))
@@ -5554,8 +5563,6 @@ begin
 
      time@long_name = "time"
      time@units     = "yyyymm"
-     time@initial   = time(0)
-     time@final     = time(ntim-1)
 
      if (isatt(time,"_FillValue")) then
          delete(time@_FillValue)
@@ -5567,7 +5574,20 @@ begin
 end
 ;*************************************************************************
 ; D. Shea
-; Read simple f90 namelist file as indicated by Ben Foster
+undef ("yyyymm_time")
+function yyyymm_time (yrStrt:integer, yrLast:integer, TYPE:string)
+;
+; documented interface to "timeCoads2YYYYMM"
+; It is just a different interface to this function.
+;
+; usage
+;    yyyymm = yyyymm_time (1800,2001, "integer")
+begin
+     return( timeCoads2YYYYMM (yrStrt, yrLast, TYPE) )     
+end
+;************************************************************************* 
+; D. Shea 
+; Read simple f90 namelist file as indicated by Ben Foster [HAO]
 ; An integer variable is returned. Upon return it will have 
 ; associated with it attributes that were created from the
 ; input namelist file.
