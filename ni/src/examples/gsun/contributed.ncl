@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.79 2005-10-24 19:29:00 shea Exp $
+;      $Id: contributed.ncl,v 1.80 2005-10-24 19:56:42 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5200,7 +5200,7 @@ begin
 end 
 ;*************************************************************************
 ; D. Shea
-;
+; old ... undocumented function: use "yyyymm_to_yyyyfrac"
 ; given, say, yyyymm = (/ 197901 , 198407, 200112 /)
 ;       yrFrac = yyyymm2yyyyFrac (yyyymm)
 ;       yrFrac ==> [1979.0 , 1979.5 , 2001.917]
@@ -5233,7 +5233,7 @@ end
 function yyyymm_to_yyyyfrac (yyyymm[*]:numeric, mmOffset[1]:numeric)
 local year, mm, xmos, one      
 begin                                                                                               
-  if (typeof(yyyymm).eq."double" .or.typeof(mmOffset).eq."double") then 
+  if (typeof(yyyymm).eq."double" .or. typeof(mmOffset).eq."double") then 
       xmos = 12.d0                         
       one  = 1.0d0                        
   else                                   
