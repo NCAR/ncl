@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.80 2005-10-24 19:56:42 shea Exp $
+;      $Id: contributed.ncl,v 1.81 2005-10-25 04:07:07 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6555,7 +6555,7 @@ begin
       end do
 
       copy_VarAtts (x, xAnnual)
-      xAnnual@info = "NCL: month_to_annual"
+      xAnnual@NCL  = "month_to_annual"
       xAnnual!0    = "year"
       return(xAnnual)
    end if
@@ -6592,7 +6592,7 @@ begin
        end do
 
        copy_VarAtts (x, xAnnual)
-       xAnnual@info = "NCL: month_to_annual"
+       xAnnual@NCL  = "month_to_annual"
        xAnnual!0    = "year"
        copy_VarCoords_skipDim0 (x, xAnnual)
        return(xAnnual)
@@ -6624,7 +6624,7 @@ begin
        end do
 
        copy_VarAtts (x, xAnnual)
-       xAnnual@info = "NCL: month_to_annual"
+       xAnnual@NCL  = "month_to_annual"
        xAnnual!0    = "year"
        copy_VarCoords_skipDim0 (x, xAnnual)
        return(xAnnual)
@@ -6657,7 +6657,7 @@ begin
        end do
 
        copy_VarAtts (x, xAnnual)
-       xAnnual@info = "NCL: month_to_annual"
+       xAnnual@NCL  = "month_to_annual"
        xAnnual!0    = "year"
        copy_VarCoords_skipDim0 (x, xAnnual)
        return(xAnnual)
@@ -6722,23 +6722,25 @@ begin
 
          if (nMsg.eq.0) then
              wgt          = dymon(nt:nt+11)                ; days for each month
-
              xTemp        = x(nt:nt+11)*wgt                ; values(:)*wgt(:)
-             xAnnual(nyr) = sum( xTemp )                   ; sum of [value(:)*wgt(:)] 
-                                                           ; opt=3
-             if (opt.eq.0) then                            ; normalization .. if any
+             xAnnual(nyr) = sum( xTemp )                   ; opt=0
+                                                          
+             if (opt.eq.1) then                          
                  wgtSum = 365
                  if (isleapyear(yyyy(nt))) then
                      wgtSum = 366
                  end if
                  xAnnual(nyr) = xAnnual(nyr)/wgtSum        ; weighted average
              end if
-             if (opt.eq.1) then
+             if (opt.eq.2) then
                  xAnnual(nyr) = xAnnual(nyr)/12            
              end if
          end if
       end do
 
+      xAnnual!0    = "year"
+      xAnnual&year =  yyyy(0:ntim-1:12)
+      copy_VarCoords_skipDim0 (x, xAnnual)
       return(xAnnual)
   end if
 
@@ -6757,23 +6759,26 @@ begin
          end if
 
          if (nMsg.eq.0) then
-             wgt            = conform(xTemp, dymon(nt:nt+11),1)
+             wgt            = conform(xTemp, dymon(nt:nt+11), 1)
              xTemp          = xTemp*wgt                       ; values*wgt 
-             xAnnual(nyr,:) = dim_sum( xTemp )                ; sum of [value*wgt] opt=3
+             xAnnual(nyr,:) = dim_sum( xTemp )                ; opt=3
 
-             if (opt.eq.0) then                               ; normalization .. if any 
+             if (opt.eq.1) then                               
                  wgtSum = 365
                  if (isleapyear(yyyy(nt))) then
                      wgtSum = 366
                  end if
                  xAnnual(nyr,:) = xAnnual(nyr,:)/wgtSum
              end if
-             if (opt.eq.1) then
+             if (opt.eq.2) then
                  xAnnual(nyr,:) = xAnnual(nyr,:)/12
              end if
          end if
       end do
 
+      xAnnual!0    = "year"
+      xAnnual&year =  yyyy(0:ntim-1:12)
+      copy_VarCoords_skipDim0 (x, xAnnual)
       return(xAnnual)
   end if
 
@@ -6795,22 +6800,26 @@ begin
          end if
 
          if (nMsg.eq.0) then
-             wgt              = conform(xTemp, dymon(nt:nt+11),2)
+             wgt              = conform(xTemp, dymon(nt:nt+11), 2)
              xTemp            = xTemp*wgt
-             xAnnual(nyr,:,:) = dim_sum ( xTemp )
+             xAnnual(nyr,:,:) = dim_sum ( xTemp )   ; opt=0
 
-             if (opt.eq.0) then
+             if (opt.eq.1) then
                  wgtSum = 365
                  if (isleapyear(yyyy(nt))) then
                      wgtSum = 366
                  end if
                  xAnnual(nyr,:,:) = xAnnual(nyr,:,:)/wgtSum
-             else
+             end if
+             if (opt.eq.2) then
                  xAnnual(nyr,:,:) = xAnnual(nyr,:,:)/12
              end if
          end if
       end do
 
+      xAnnual!0    = "year"
+      xAnnual&year =  yyyy(0:ntim-1:12)
+      copy_VarCoords_skipDim0 (x, xAnnual)
       return(xAnnual)
   end if
 
@@ -6835,21 +6844,24 @@ begin
          if (nMsg.eq.0) then
              wgt                = conform(xTemp, dymon(nt:nt+11),3)
              xTemp              = xTemp*wgt
-             xAnnual(nyr,:,:,:) = dim_sum ( xTemp )   ; opt=2
+             xAnnual(nyr,:,:,:) = dim_sum ( xTemp )   ; opt=0
 
-             if (opt.eq.0) then
+             if (opt.eq.1) then
                  wgtSum = 365
                  if (isleapyear(yyyy(nt))) then
                      wgtSum = 366
                  end if
                  xAnnual(nyr,:,:,:) = xAnnual(nyr,:,:,:)/wgtSum
              end if
-             if (opt.eq.1) then
+             if (opt.eq.2) then
                  xAnnual(nyr,:,:,:) = xAnnual(nyr,:,:,:)/12
              end if
          end if
       end do
 
+      xAnnual!0    = "year"
+      xAnnual&year =  yyyy(0:ntim-1:12)
+      copy_VarCoords_skipDim0 (x, xAnnual)
       return(xAnnual)
    end if
 end
