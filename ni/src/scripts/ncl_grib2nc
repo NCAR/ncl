@@ -1,23 +1,29 @@
 #!/bin/csh -f
 #                                                                                              
-#       $Id: ncl_grib2nc,v 1.2 2005-10-20 19:42:23 grubin Exp $
+#       $Id: ncl_grib2nc,v 1.3 2005-10-27 16:51:07 grubin Exp $
                                                                                                
-#
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research                                        
 #       All Rights Reserved
                                                                                                
-#                                                                                              
 #       File:       ncl_grib2nc
 #       Author:     Rick Grubin
 #
 #       National Center for Atmospheric Research
 #       POB 3000, Boulder, Colorado
                                                                                                
-#
 # This script converts a NCL-supported GRIB file to
 # a netCDF-formatted file.
 #
+#   ncl_grib2nc gribFile [-i input_directory] [-o output_directory] [-v var1[,...]] [-t] [-c comment] [-d] [-h]
+#       gribFile              name of GRIB file [required]
+#       [-i input_directory]  location of input file  [default: current directory]
+#       [-o output_directory] location of output file [default: current directory]
+#       [-v var1[,...]]       user specified subset of variables [default: all variables]
+#       [-t]                  specify initial time coordinate type as 'string' [default: 'numeric']
+#       [-c comment]          text to be included in netCDF file attribute [default: no comment]
+#       [-d]                  upon exit: print contents each netCDF file [like ncdump -h]
+#       [-h]                  usage message
 
 onintr cleanup
 
@@ -531,36 +537,23 @@ begin
 #
 # Loop over input file(s), executing NCL script
 #
-set errfile = $tmpdir/${progname}_$$.err
 set n = 1
 while ($n <= $nfiles)
     echo -n "Processing file: $ifiles_r[$n]"
     if ($?vars) then
-        (eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf > $errfile) >& /dev/tty
+        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
     else
-        (eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf > $errfile) >& /dev/tty
-    endif
-
-    # Did an error occur?
-    if (-e $errfile) then
-        set error = `grep "fatal" $errfile`
-        set errstatus = $?
-        if ($errstatus == 0) then
-            echo -n "... error processing $ifiles_r[$n]" ; echo
-            echo $error ; echo
-            /bin/rm -f $errfile
-            goto incr
-            continue
-        else
-            echo -n "... done" ; echo
-        endif
+        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
     endif
 
     # Display output if requested.
     if ($?printonexit) then
-        set fdump = `which ncdump`
+        set fdump = `which ncl_filedump`
         if ($? != 0) then
-            echo "Can't locate 'ncdump' to display output file."
+            set fdump = `which ncdump`
+            if ($? != 0) then
+                echo "Can't locate 'ncl_filedump' or 'ncdump' to display output file."
+            endif
         else
             if (-e $dirout/$ofiles[$n].nc) then
                 echo "  Displaying $dirout/$ofiles[$n].nc"
@@ -583,13 +576,11 @@ end
 # Clean up.
 #
 /bin/rm -f $tmp_nclf
-/bin/rm -f $errfile
 
 exit 0
 
 cleanup:
 /bin/rm -f $tmp_nclf
-/bin/rm -f $errfile
 exit 1
 
 usage:
