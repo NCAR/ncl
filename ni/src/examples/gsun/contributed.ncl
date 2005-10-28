@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.81 2005-10-25 04:07:07 shea Exp $
+;      $Id: contributed.ncl,v 1.82 2005-10-28 21:30:05 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4585,13 +4585,11 @@ begin
       print ("transpose: currently set up for a max of 6 dimensions")
   end if
                                   ; is each dimension named?
-  namedDim = new ( N, logical) 
-  namedDim = True                 ; assume all dimensions are named
+  namedDim = getvardims(x)
   do n=0,N1     
-    if (ismissing(x!n)) then
-        namedDim(n) = False
-        x!n = "dim"+n             ; add temporary name 
-    end if
+     if (ismissing(namedDim(n))) then
+         x!n = "dim"+n 
+     end if
   end do
 
   if (N.eq.2) then
@@ -4615,10 +4613,10 @@ begin
   end if
                                 ; if temporary dim name
   do n=0,N1     
-     if( .not.namedDim(n)) then
+     if (ismissing(namedDim(n))) then
         delete(x!n)             ; delete temporary name 
         delete(xT!(N1-n))
-    end if
+     end if
   end do
 
   return (xT)
