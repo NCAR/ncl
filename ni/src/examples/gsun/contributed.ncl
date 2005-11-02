@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.82 2005-10-28 21:30:05 shea Exp $
+;      $Id: contributed.ncl,v 1.83 2005-11-02 18:40:47 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5796,11 +5796,6 @@ begin
 end
 ;*************************************************************************
 ; D. Shea
-; Read simple f90 namelist file as indicated by Ben Foster
-; An integer variable is returned. Upon return it will have 
-; associated with it attributes that were created from the
-; input namelist file.
-;
 ; create symmetric min/max values for plots
 ; will add additional plot resources to the "res" variable
 ; 
