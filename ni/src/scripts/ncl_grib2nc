@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #                                                                                              
-#       $Id: ncl_grib2nc,v 1.3 2005-10-27 16:51:07 grubin Exp $
+#       $Id: ncl_grib2nc,v 1.4 2005-11-03 16:39:48 grubin Exp $
                                                                                                
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research                                        
@@ -20,7 +20,6 @@
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
-#       [-t]                  specify initial time coordinate type as 'string' [default: 'numeric']
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
 #       [-d]                  upon exit: print contents each netCDF file [like ncdump -h]
 #       [-h]                  usage message
@@ -45,7 +44,6 @@ set dirout = `pwd`
 #
 unset vars
 set nvars = 0
-set time_t = "numeric"
 set ncdfcomment = ""
 
 # Display resultant netCDF file when done
@@ -134,11 +132,6 @@ while ($#argv > 0)
 
             # Catch the last variable
             set vars = ( $vars\\\"$vline[$n]\\\"'/\)' )
-            breaksw
-
-        case "-t":
-            set time_t = "string"
-            shift
             breaksw
 
         case "-c":
@@ -386,10 +379,10 @@ begin
     ;;setfileoption(fgrb, "COARDS", True)   ; place holder
 
 ;***************************************************
-; Specify the type of time coordinate [default is 'numeric']
+; Specify the type of time coordinate [default is 'numeric' ; waiting for netCDF-4]
 ;***************************************************
-    TimeCoordType = timeType
-    setfileoption(fgrb, "InitialTimeCoordinateType", TimeCoordType)
+    ;;TimeCoordType = timeType
+    ;;setfileoption(fgrb, "InitialTimeCoordinateType", TimeCoordType)
 
 ;***************************************************
 ; Get *all* variables names on the file 
@@ -539,11 +532,12 @@ begin
 #
 set n = 1
 while ($n <= $nfiles)
-    echo -n "Processing file: $ifiles_r[$n]"
+    echo "Processing file: $ifiles_r[$n]..."
+    echo
     if ($?vars) then
-        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'comment=\""$ncdfcomment"\"' $tmp_nclf
     else
-        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'timeType=\""$time_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'comment=\""$ncdfcomment"\"' $tmp_nclf
     endif
 
     # Display output if requested.
@@ -584,13 +578,12 @@ cleanup:
 exit 1
 
 usage:
-echo "${progname} gribFile OPTIONS"
-echo "  gribFile              name of GRIB file [required]"
-echo "  [-i input_directory]  location of input file  [default: current directory]"
-echo "  [-o output_directory] location of output file [default: current directory]"
+echo "${progname} gribFile(s) OPTIONS"
+echo "  gribFile(s)           name of GRIB file(s) [required]"
+echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
+echo "  [-o output_directory] location of output file(s) [default: current directory]"
 echo "  [-v var1[,...]]       user specified subset of variables [default: all variables]"
 echo "                        ncl_filedump can be used to determine desired variable names"
-echo "  [-t]                  specify initial time coordinate type as 'string' [default: 'numeric']"
 echo "  [-c comment]          text to be included in netCDF file attribute [default: no comment]"
 echo "  [-d]                  upon exit: print contents each netCDF file [like ncdump -h]"
 echo "  [-h]                  this usage message"
