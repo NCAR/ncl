@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.37 1999-04-02 23:51:06 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.38 2005-11-04 23:17:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1276,21 +1276,21 @@ float *yc;
 	for (i=0; i < 2; i++) {
 
 		if (x != xclip) {
-			if (_NhlCmpF(xt,llp->xmin_dat) < 0.0) {
+			if (_NhlCmpFAny2(xt,llp->x_min,6,1e-36) < 0.0) {
 				*xd = llp->x_min;
 				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
 			}
-			else if (_NhlCmpF(xt,llp->xmax_dat) > 0.0) {
+			else if (_NhlCmpFAny2(xt,llp->x_max,6,1e-36) > 0.0) {
 				*xd = llp->x_max;
 				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
 			}
 		}
 		if (y != yclip) {
-			if (_NhlCmpF(yt,llp->ymin_dat) < 0.0) {
+			if (_NhlCmpFAny2(yt,llp->y_min,6,1e-36) < 0.0) {
 				*yd = llp->y_min;
 				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
 			}
-			else if (_NhlCmpF(yt,llp->ymax_dat) > 0.0) {
+			else if (_NhlCmpFAny2(yt,llp->y_max,6,1e-36) > 0.0) {
 				*yd = llp->y_max;
 				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
 			}
@@ -1363,10 +1363,10 @@ float *yc;
 	for (i=0; i < 2; i++) {
 
 		if (x != xclip) {
-			if (_NhlCmpF(xt,llp->xmin_dat) < 0.0) {
+			if (_NhlCmpFAny2(xt,llp->x_min,6,1e-36) < 0.0) {
 				*xd = llp->x_min;
 			}
-			else if (_NhlCmpF(xt,llp->xmax_dat) > 0.0) {
+			else if (_NhlCmpFAny2(xt,llp->x_max,6,1e-36) > 0.0) {
 				*xd = llp->x_max;
 			}
 
@@ -1390,10 +1390,10 @@ float *yc;
 
 		}
 		if (y != yclip) {
-			if (_NhlCmpF(yt,llp->ymin_dat) < 0.0) {
+			if (_NhlCmpFAny2(yt,llp->y_min,6,1e-36) < 0.0) {
 				*yd = llp->y_min;
 			}
-			else if (_NhlCmpF(yt,llp->ymax_dat) > 0.0) {
+			else if (_NhlCmpFAny2(yt,llp->y_max,6,1e-36) > 0.0) {
 				*yd = llp->y_max;
 			}
 
