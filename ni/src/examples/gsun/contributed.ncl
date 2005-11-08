@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.83 2005-11-02 18:40:47 shea Exp $
+;      $Id: contributed.ncl,v 1.84 2005-11-08 02:37:23 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6475,12 +6475,6 @@ end
 ;            (a) all dimensions *must* be named.
 ;            (b) If there are no missing data [_FillValue], 
 ;                this function will work as expected.
-;            (c) If _FillValue are encountered, then the results
-;                for that year will be missing for *ALL* grid points.
-;                Even grid pts where there are 12 values. If this
-;                case needs to be addressed, then multiple do loops
-;                must be used to check each grid point individually.
-;                The user will have to do that. 
 ; Nomenclature:
 ;   x          -  data array
 ;                 if rank is greater than one, then it is required that 
@@ -6499,8 +6493,8 @@ end
 ;
 
 function month_to_annual(x:numeric, opt:integer)
-local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, nz, nn, nmo \
-    , dName, xAnnual, xTemp
+local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, kz, nn, nmo \
+    , dName, xAnnual, xTemp, n, m, k, kMsg
 begin
 
   dimx  = dimsizes(x)
@@ -6580,7 +6574,18 @@ begin
                   xAnnual(nyr,:) = dim_avg ( xTemp )
               end if
           else
-              print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
+              print("month_to_annual: some grid points have missing data")
+              print("                 conventional looping used: current year: nt="+nt)
+              kMsg = dim_num(.not.ismissing( xTemp ) )
+              do n=0,nn-1
+                 if (kMsg(n).eq.12) then
+                     if (opt.eq.0) then
+                         xAnnual(nyr,n) = sum ( xTemp(n,:) )
+                     else
+                         xAnnual(nyr,n) = avg ( xTemp(n,:) )
+                     end if
+                 end if
+              end do
           end if
        end do
 
@@ -6612,7 +6617,21 @@ begin
                   xAnnual(nyr,:,:) = dim_avg ( xTemp )
               end if
           else
-              print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
+             ;print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
+              print("month_to_annual: some grid points have missing data")
+              print("                 conventional looping used: current year: nt="+nt)
+              kMsg = dim_num(.not.ismissing( xTemp ) )
+              do n=0,ny-1
+                do m=0,mx-1
+                   if (kMsg(n,m).eq.12) then
+                       if (opt.eq.0) then
+                           xAnnual(nyr,n,m) = sum ( xTemp(n,m,:) )
+                       else
+                           xAnnual(nyr,n,m) = avg ( xTemp(n,m,:) )
+                       end if
+                   end if
+                end do
+              end do
           end if
        end do
 
@@ -6624,11 +6643,11 @@ begin
    end if
 
    if (rankx.eq.4) then
-       nz     = dimx(1)      ; nlev
+       kz     = dimx(1)      ; nlev
        ny     = dimx(2)      ; nlat
        mx     = dimx(3)      ; mlon
        nyr    = -1
-       xAnnual= new ( (/nyrs,nz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
+       xAnnual= new ( (/nyrs,kz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
        do nt=0,ntim-1,12
           xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+11) 
           nyr   = nyr+1
@@ -6645,7 +6664,23 @@ begin
                   xAnnual(nyr,:,:,:) = dim_avg ( xTemp )
               end if
           else
-              print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
+             ;print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
+              print("month_to_annual: some grid points have missing data")
+              print("                 conventional looping used: current year: nt="+nt)
+              kMsg = dim_num(.not.ismissing( xTemp ) )
+              do k=0,kz-1
+                do n=0,ny-1
+                  do m=0,mx-1
+                     if (kMsg(k,n,m).eq.12) then
+                         if (opt.eq.0) then
+                             xAnnual(nyr,k,n,m) = sum ( xTemp(k,n,m,:) )
+                         else
+                             xAnnual(nyr,k,n,m) = avg ( xTemp(k,n,m,:) )
+                         end if
+                     end if
+                  end do
+                end do
+              end do
           end if
        end do
 
