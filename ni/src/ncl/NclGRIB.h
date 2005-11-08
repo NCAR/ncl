@@ -281,16 +281,24 @@ int * nlonatts,
 GribAttInqRecList ** rot_att_list,
 int * nrotatts
 #endif
-);	
+);
+	
 typedef void (*GribGetGrid)(
 #if NhlNeedProto
-GribParamList*, /* thevarrec */
-float**,
-int *,
-int **,
-float **,
-int *,
-int **
+GribParamList* thevarrec,
+float** lat,
+int * n_dims_lat,
+int ** dimsizes_lat,
+float ** lon,
+int * n_dims_lon,
+int **dimsizes_lon,
+float **rot,
+GribAttInqRecList ** lat_att_list,
+int * nlatatts,
+GribAttInqRecList ** lon_att_list,
+int * nlonatts,
+GribAttInqRecList ** rot_att_list,
+int * nrotatts
 #endif
 );	
 
@@ -300,7 +308,10 @@ GribParamList*,
 GribAttInqRecList ** /*lat_att_list*/,
 int * /*nlatatts*/,
 GribAttInqRecList ** /*lon_att_list*/,
-int * /*lonatts*/
+int * /*lonatts*/,
+int do_rot,
+GribAttInqRecList ** /*rot_att_list*/,
+int * /*rotatts*/
 #endif
 );
 
