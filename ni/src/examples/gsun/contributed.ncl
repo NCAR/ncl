@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.84 2005-11-08 02:37:23 shea Exp $
+;      $Id: contributed.ncl,v 1.85 2005-11-08 04:28:21 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6026,10 +6026,22 @@ begin
 
   if (typeof(opt).eq."float") then
       nrow = floattointeger(opt)    ; # of rows to be read as float
-      asciiwrite ("./HeAdBoGuSfile", xs(0:nrow-1))
-      f_head = asciiread("./HeAdBoGuSfile", -1, "float")
-      system("/bin/rm ./HeAdBoGuSfile")
-      return(f_head)
+
+      tmpdir  = ncargpath("tmp") + "/"
+      if(ismissing(tmpdir)) then
+        tmpdir = "./"
+      end if
+
+      tmpfile = systemfunc("echo tmp$$")
+      if (ismissing(tmpfile)) then
+          tmpfile = "BoGuS_file"
+      end if
+
+      asciiwrite (tmpdir+tmpfile, xs(0:nrow-1))
+      f_head = asciiread(tmpdir+tmpfile, -1, "float")
+      system("/bin/rm "+tmpdir+tmpfile)
+
+      return( f_head )
   end if
 
 end
@@ -6059,9 +6071,20 @@ begin
       nh   = dimsizes(head)                 ; # header records
       xs   = asciiread(fName, -1, "string") ; all rows as strings
       nrow = dimsizes(xs)-nh                ; # rows containing data
-      asciiwrite ("./DaTaBoGuSfile", xs(nh:))
-      table = asciiread("./DaTaBoGuSfile", (/nrow,ncol/), datatype)
-      system("/bin/rm ./DaTaBoGuSfile")
+
+      tmpdir  = ncargpath("tmp") + "/"
+      if(ismissing(tmpdir)) then
+        tmpdir = "./"
+      end if
+
+      tmpfile = systemfunc("echo tmp$$")
+      if (ismissing(tmpfile)) then
+          tmpfile = "BoGuS_file"
+      end if
+
+      asciiwrite (tmpdir+tmpfile, xs(nh:))
+      table = asciiread(tmpdir+tmpfile, (/nrow,ncol/), datatype)
+      system("/bin/rm "+tmpdir+tmpfile)
   end if
   return(table)
 end
