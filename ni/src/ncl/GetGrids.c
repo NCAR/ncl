@@ -18,7 +18,10 @@ GribParamList* thevarrec,
 GribAttInqRecList **lat_att_list, 
 int * nlatatts, 
 GribAttInqRecList **lon_att_list, 
-int *lonatts
+int *lonatts,
+int do_rot,
+GribAttInqRecList **rot_att_list, 
+int *rotatts
 #endif
 );
 
@@ -56,12 +59,16 @@ static void InitMapTrans
 
 /* 
  * pds-defined grids that are still unsupported:
- * 8,53,88,94,95,96,97,110,127,145,146,147,148,170,171,172,173,175,185,186,190,192,194,198,215 - 254
+ * 8,53,94,95,96,97,110,127,145,146,147,148,170,171,172,173,175,185,186,190,192,194,198,215 - 254
  */
 
-int grid_index[] = { 1, 2, 3, 4, 5, 6, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 33, 34, 37, 38, 39, 40, 41, 42, 43, 44, 45, 50, 55, 56, 61, 62, 63, 64, 75, 76, 77, 85, 86, 87, 90, 91, 92, 93, 98, 100, 101, 103, 104, 105, 106, 107, 126, 201, 202, 203, 204, 205, 206,207, 208, 209, 210, 211, 212, 213, 214 };
-
-
+int grid_index[] = { 
+	1, 2, 3, 4, 5, 6, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 33, 34, 37, 38, 39, 40, 
+	41, 42, 43, 44, 45, 50, 55, 56, 61, 62, 63, 64, 75, 76, 77, 85, 86, 87, 88, 90, 
+	91, 92, 93, 98, 100, 101, 103, 104, 105, 106, 107, 126, 130,
+	160,163, 171, 172, 185, /* 186, */
+	201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215,
+        216, 217, 218, 219, 220, 221, 222, 223, 224, 226, 227, 236, 237, 240, 241, 242, 245, 246, 247, 249, 252}; 
 
 int grid_tbl_len = sizeof(grid_index)/sizeof(int);
 
@@ -407,6 +414,98 @@ NclObjClass type;
 	(*att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) val, NULL, 1 , &dimsize, PERMANENT, NULL, type);
 }
 
+void GetNCEPGrid
+#if NhlNeedProto
+(int *kgds, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon, float **rot)
+#else
+(kgds, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot)
+int *kgds;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float **rot;
+#endif
+{
+	int nx, ny;
+	int iopt;
+	int npts;
+	float fillval;
+	int lrot;
+	int nret;
+	float *srot = NULL;
+	int i;
+	int do_rot;
+
+	nx = kgds[1];
+	ny = kgds[2];
+
+        *lat = (float*)NclMalloc(sizeof(float) * nx * ny);
+        *lon= (float*)NclMalloc(sizeof(float) * nx * ny);
+        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *n_dims_lat = 2;
+        *n_dims_lon = 2;
+        (*dimsizes_lat)[0] = ny;
+        (*dimsizes_lat)[1] = nx;
+        (*dimsizes_lon)[0] = ny;
+        (*dimsizes_lon)[1] = nx;
+
+	iopt = 0;
+	lrot = 1;
+	npts = nx * ny;
+	do_rot = (010 & kgds[5])?1:0;
+	if (do_rot) {
+		srot = NhlMalloc(npts * sizeof(float));
+		*rot = NhlMalloc(npts * sizeof(float));
+	}
+	
+	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
+
+	if (do_rot) {
+		for (i = 0; i < npts; i++) {
+			(*rot)[i] = asin(srot[i]);
+			(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
+		}
+		NhlFree(srot);
+	}
+	else {
+		for (i = 0; i < npts; i++) {
+			(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
+		}
+	}
+}
+
+int ConsistentWithGDS
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	int *kgds
+)
+#else
+(thevarrec, kgds)
+GribParamList* thevarrec; 
+int kgds;
+#endif
+{
+	unsigned char *gds = thevarrec->thelist->rec_inq->gds;
+	int nx,ny;
+
+	nx = UnsignedCnvtToDecimal(2,&(gds[6]));
+	ny = UnsignedCnvtToDecimal(2,&(gds[8]));
+
+	if (! ((int) gds[5] == kgds[0] && nx == kgds[1] && ny == kgds[2])) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "GribOpenFile: Grid Description Section not consistent with NCEP documention of grid %d; using GDS values for variables with this grid",
+			  thevarrec->grid_number);
+		return 0;
+	}
+
+	return 1;
+}
+
 /*
 * START Mercator
 */
@@ -492,63 +591,163 @@ int ny;
 
 void GetGrid_210
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 1;
+	kgds[1] = 93;
+	kgds[2] = 68;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
 	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
 }
 void GetGrid_208
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 1;
+	kgds[1] = 93;
+	kgds[2] = 68;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
 	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
 }
 void GetGrid_204
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 1;
+	kgds[1] = 93;
+	kgds[2] = 68;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
 	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -25.0/*lat0*/, 110.0 /*lon0*/, 60.644 /*lat1*/, -109.129/* lon1*/, 160.0 /*dx*/, 160.0 /*dy*/, 20.0 /*latin*/, 93/*nx*/, 68/*ny*/);
 }
 
 void GetAtts_1
 #if NhlNeedProto
-(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
+ int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
 #endif
 {
 	GribAttInqRecList* tmp_att_list_ptr;
@@ -581,22 +780,54 @@ int *nlonatts;
 	*tmp_float = 180.0;
 	GribPushAtt(lon_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts);
 }
 void GetGrid_1
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 1;
+	kgds[1] = 73;
+	kgds[2] = 23;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
 	GenMercator(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, -48.09 /*lat0*/, 0.0/*lon0*/, 48.09 /*lat1*/, 360.0/* lon1*/, 513.669 /*dx*/, 513.669 /*dy*/, 22.5 /*latin*/, 73/*nx*/, 23/*ny*/);
 }
 /*
@@ -708,14 +939,18 @@ void GenLambert
 
 void GetAtts_212
 #if NhlNeedProto
-(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
+ int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
 #endif
 {
 	GribAttInqRecList* tmp_att_list_ptr;
@@ -757,43 +992,54 @@ int *nlonatts;
 	*tmp_float = -95.0;
 	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
-}
-void GetGrid_212
-#if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
-#else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
-int* n_dims_lat;
-int** dimsizes_lat;
-float** lon;
-int* n_dims_lon;
-int** dimsizes_lon;
-#endif
-{
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 12.190 /*start_lat*/,  -133.459  /*start_lon*/, 185 /*nx*/, 129 /*ny*/);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
 }
 
-
-void GetAtts_209
+void GenLambertAtts
 #if NhlNeedProto
-(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+(
+	GribParamList* thevarrec, 
+	GribAttInqRecList **lat_att_list_ptr, 
+	int * nlatatts, 
+	GribAttInqRecList **lon_att_list_ptr, 
+	int *nlonatts, 
+	int do_rot, 
+	GribAttInqRecList **rot_att_list_ptr, 
+	int *nrotatts,
+	int *kgds
+	)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts,kgds)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
+int *kgds;
 #endif
 {
-	GribAttInqRecList* tmp_att_list_ptr;
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
 
+/* lat atts */
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[3] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[4] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[6] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[7];
+	GribPushAtt(lat_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[8];
+	GribPushAtt(lat_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
@@ -801,62 +1047,75 @@ int *nlonatts;
 
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
+	*tmp_float =  kgds[11] / 1000.0;
 	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
+	*tmp_float = kgds[12] / 1000.0;
 	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = -95.0;
+	*tmp_float =  kgds[6] / 1000.0;
 	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+/* lon atts */
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[3] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[4] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"Lo1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[6] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[7];
+	GribPushAtt(lon_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[8];
+	GribPushAtt(lon_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[11] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"Latin1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[12] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"Latin2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
 	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
+	*tmp_float =  kgds[11] / 1000.0;
 	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
+	*tmp_float = kgds[12] / 1000.0;
 	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = -95.0;
+	*tmp_float =  kgds[6] / 1000.0;
 	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
 }
-void GetGrid_209
-#if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
-#else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
-int* n_dims_lat;
-int** dimsizes_lat;
-float** lon;
-int* n_dims_lon;
-int** dimsizes_lon;
-#endif
-{
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 101 /*nx*/, 81 /*ny*/);
-}
+
 
 void GetAtts_206
 #if NhlNeedProto
-(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts,
+ int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
 #endif
 {
 	GribAttInqRecList* tmp_att_list_ptr;
@@ -897,36 +1156,81 @@ int *nlonatts;
 	*tmp_float = -95.0;
 	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
-}
-void GetGrid_206
-#if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
-#else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
-int* n_dims_lat;
-int** dimsizes_lat;
-float** lon;
-int* n_dims_lon;
-int** dimsizes_lon;
-#endif
-{
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 51 /*nx*/, 41 /*ny*/);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts);
 }
 
+void GetAtts_209
+#if NhlNeedProto
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts,
+ int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
+#else
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, int do_rot, rot_att_list_ptr, nrotatts)
+GribParamList* thevarrec;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+	int tmp_dimsizes = 1;
+
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts);
+}
 
 void GetAtts_211
 #if NhlNeedProto
-(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
+ int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
 #endif
 {
 	GribAttInqRecList* tmp_att_list_ptr;
@@ -967,24 +1271,1270 @@ int *nlonatts;
 	*tmp_float = -95.0;
 	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts);
 }
-void GetGrid_211
+
+void GetGrid_130
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 12.190 /*start_lat*/,  -133.459 /*start_lon*/, 93 /*nx*/, 65 /*ny*/);
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 451;
+	kgds[2] = 337;
+	kgds[3] = 16281;
+	kgds[4] = 233862;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 13545; /* 13.545087 */
+	kgds[8] = 13545; /* 13.545087 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
 }
+
+void GetGrid_163
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 1008;
+	kgds[2] = 722;
+	kgds[3] = 20600;
+	kgds[4] = 241700;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 5000; 
+	kgds[8] = 5000; 
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 38000;
+	kgds[12] = 38000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_185
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 491;
+	kgds[2] = 303;
+	kgds[3] = 19943;
+	kgds[4] = 234907;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 262000;
+	kgds[7] = 12000; 
+	kgds[8] = 12000; 
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 40000;
+	kgds[12] = 40000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_206
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 51;
+	kgds[2] = 41;
+	kgds[3] = 22289;
+	kgds[4] = 242009;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 81271; /* 81.2705 */
+	kgds[8] = 81271; /* 81.2705 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+#if 0
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 51 /*nx*/, 41 /*ny*/);
+#endif
+}
+
+
+void GetGrid_209
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 275;
+	kgds[2] = 223;
+	kgds[3] = -4850;
+	kgds[4] = 208900;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 249000;
+	kgds[7] = 44000; 
+	kgds[8] = 44000; 
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 45000;
+	kgds[12] = 45000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+#if 0
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 101 /*nx*/, 81 /*ny*/);
+#endif
+}
+
+
+void GetGrid_211
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 93;
+	kgds[2] = 65;
+	kgds[3] = 12190;
+	kgds[4] = 226541;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 81271; /* 81.2705 */
+	kgds[8] = 81271; /* 81.2705 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+#if 0
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 12.190 /*start_lat*/,  -133.459 /*start_lon*/, 93 /*nx*/, 65 /*ny*/);
+#endif
+}
+
+void GetGrid_212
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 185;
+	kgds[2] = 129;
+	kgds[3] = 12190;
+	kgds[4] = 226541;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 40635; /* 40.63525 */
+	kgds[8] = 40635; /* 40.63525 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+#if 0
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 12.190 /*start_lat*/,  -133.459  /*start_lon*/, 185 /*nx*/, 129 /*ny*/);
+#endif
+}
+
+void GetGrid_215
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 369;
+	kgds[2] = 257;
+	kgds[3] = 12190;
+	kgds[4] = 226514;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 20318; /* 20.317625 */
+	kgds[8] = 20318; /* 20.317625 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_218
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 614;
+	kgds[2] = 428;
+	kgds[3] = 12190;
+	kgds[4] = 226514;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 12191; /* 12.19058 */
+	kgds[8] = 12191; /* 12.19058 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_221
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 349;
+	kgds[2] = 277;
+	kgds[3] = 1000;
+	kgds[4] = 214500;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 253000;
+	kgds[7] = 32463; /* 32.46341 */
+	kgds[8] = 32463; /* 32.46341 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 50000;
+	kgds[12] = 50000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+}
+
+void GetGrid_222
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 138;
+	kgds[2] = 112;
+	kgds[3] = -4850;
+	kgds[4] = 208900;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 249000;
+	kgds[7] = 88000;
+	kgds[8] = 88000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 45000;
+	kgds[12] = 45000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+
+void GetGrid_226
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 737;
+	kgds[2] = 517;
+	kgds[3] = 12190;
+	kgds[4] = 226514;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 10159; /* 10.1588125 */
+	kgds[8] = 10159; /* 10.1588125 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_227
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 1473;
+	kgds[2] = 1025;
+	kgds[3] = 12190;
+	kgds[4] = 226514;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 5079; /* 5.07940625 */
+	kgds[8] = 5079; /* 5.07940625 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+
+void GetGrid_236
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 151;
+	kgds[2] = 113;
+	kgds[3] = 16281;
+	kgds[4] = 233862;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 40635; /* 40.63525 */
+	kgds[8] = 40635; /* 40.63525 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_237
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 54;
+	kgds[2] = 47;
+	kgds[3] = 16201;
+	kgds[4] = 285720;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 253000;
+	kgds[7] = 32463; /* 32.46341 */
+	kgds[8] = 32463; /* 32.46341 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 50000;
+	kgds[12] = 50000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_241
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 549;
+	kgds[2] = 445;
+	kgds[3] = -4850;
+	kgds[4] = 208900;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 249000;
+	kgds[7] = 22000;
+	kgds[8] = 22000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 45000;
+	kgds[12] = 45000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_245
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 336;
+	kgds[2] = 372;
+	kgds[3] = 22980;
+	kgds[4] = 267160;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 280000;
+	kgds[7] = 8000;
+	kgds[8] = 8000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 35000;
+	kgds[12] = 35000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_246
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 336;
+	kgds[2] = 371;
+	kgds[3] = 25970;
+	kgds[4] = 232027;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 245000;
+	kgds[7] = 8000;
+	kgds[8] = 8000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 40000;
+	kgds[12] = 40000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+
+void GetGrid_247
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 336;
+	kgds[2] = 372;
+	kgds[3] = 22980;
+	kgds[4] = 249160;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 262000;
+	kgds[7] = 8000;
+	kgds[8] = 8000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 35000;
+	kgds[12] = 35000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+void GetGrid_252
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 3;
+	kgds[1] = 301;
+	kgds[2] = 225;
+	kgds[3] = 16281;
+	kgds[4] = 233862;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 265000;
+	kgds[7] = 20.318; /* 20.317625 */
+	kgds[8] = 20.318; /* 20.317625 */
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+	kgds[11] = 25000;
+	kgds[12] = 25000;
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+}
+
+
 /*
 * END Lambert Conformal Grids
 */
@@ -1032,51 +2582,138 @@ float lat_dir;
 }
 void GetGrid_86
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 360;
+	kgds[2] = 90;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 360, 90, 0.5, -89.5 , 1.0, 1.0);
         return;
 }
 
 void GetGrid_85
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 360;
+	kgds[2] = 90;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 360, 90, 0.5, 0.5 , 1.0, 1.0);
         return;
 }
 void GetGrid_64
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 91, 46, -180.0, -90.0, 2.0, 2.0);
@@ -1085,16 +2722,39 @@ int** dimsizes_lon;
 
 void GetGrid_63
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 91, 46, 0.0, -90.0, 2.0, 2.0);
@@ -1103,16 +2763,39 @@ int** dimsizes_lon;
 
 void GetGrid_62
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 91, 46, -180.0, 0.0, 2.0, 2.0);
@@ -1121,16 +2804,39 @@ int** dimsizes_lon;
 
 void GetGrid_61
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 91, 46, 0.0, 0.0, 2.0, 2.0);
@@ -1139,16 +2845,39 @@ int** dimsizes_lon;
 
 void GetGrid_50
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 36, 33, -140.0, 20.0, 2.5, 1.25);
@@ -1157,104 +2886,287 @@ int** dimsizes_lon;
 
 void GetGrid_45
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 288;
+	kgds[2] = 145;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 288, 145, 0.0, 90.0, 1.25, -1.25);
         return;
 }
 
 void GetGrid_34
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 181;
+	kgds[2] = 46;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 181, 46, 0.0, -90.0, 2, 2);
         return;
 }
 
 void GetGrid_33
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 181;
+	kgds[2] = 46;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 181, 46, 0.0, 0.0, 2, 2);
         return;
 }
 
 void GetGrid_30
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 145;
+	kgds[2] = 37;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 145, 37, 0.0, -90.0, 2.5, 2.5);
         return;
 }
 void GetGrid_29
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 145;
+	kgds[2] = 37;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 145, 37, 0.0, 0.0, 2.5, 2.5);
         return;
 }
 void GetGrid_26
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 72, 19, 0.0, -90.0, 5.0, 5.0);
@@ -1263,16 +3175,39 @@ int** dimsizes_lon;
 
 void GetGrid_25
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 72, 19, 0.0, 0.0, 5.0, 5.0);
@@ -1281,16 +3216,39 @@ int** dimsizes_lon;
 
 void GetGrid_24
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 37, 37, -180.0, -90.0, 5.0, 2.5);
@@ -1299,16 +3257,39 @@ int** dimsizes_lon;
 
 void GetGrid_23
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 37, 37, 0.0, -90.0, 5.0, 2.5);
@@ -1317,16 +3298,39 @@ int** dimsizes_lon;
 
 void GetGrid_22
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 37, 37, -180.0, 0.0, 5.0, 2.5);
@@ -1336,18 +3340,42 @@ int** dimsizes_lon;
 
 void GetGrid_21
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 37, 37, 0.0, 0.0, 5.0, 2.5);
         return;
 }
@@ -1355,54 +3383,150 @@ int** dimsizes_lon;
 
 void GetGrid_4
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 720;
+	kgds[2] = 361;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 720, 361, 0.0, 90.0, .5, -.5);
         return;
 }
 
 void GetGrid_3
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 360;
+	kgds[2] = 181;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
         GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 360, 181, 0.0, 90.0, 1.0, -1.0);
         return;
 }
 
 void GetGrid_2
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[3];
+
+	kgds[0] = 0;
+	kgds[1] = 144;
+	kgds[2] = 73;
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
 	GenLatLon(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 144, 73, 0.0, 90.0, 2.5, -2.5);
 	return;
 }
@@ -1411,28 +3535,737 @@ int** dimsizes_lon;
 /*
 * END lat lon grids
 */
+
+
+
+
 /*
 * START Polar Stereographic GRIDS
 */
-void GetGrid_214
+
+
+void GenPolarStereographicAtts
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	GribAttInqRecList **lat_att_list_ptr, 
+	int * nlatatts, 
+	GribAttInqRecList **lon_att_list_ptr, 
+	int *nlonatts, 
+	int do_rot, 
+	GribAttInqRecList **rot_att_list_ptr, 
+	int *nrotatts,
+	int *kgds
+	)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts,kgds)
 GribParamList* thevarrec;
-float** lat;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
+int *kgds;
+#endif
+{
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+
+/* lat atts */
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[3] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[4] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[6] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[7];
+	GribPushAtt(lat_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[8];
+	GribPushAtt(lat_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	tmp_string= (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string= NrmStringToQuark(kgds[9] & 0200 ? "south" : "north");
+	GribPushAtt(lat_att_list_ptr,"ProjectionCenter",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("STEREOGRAPHIC");
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[6] / 1000.0;
+	GribPushAtt(lat_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[9] & 0200 ? -90 : 90;
+	GribPushAtt(lat_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+/* lon atts */
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[3] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[4] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"Lo1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float =  kgds[6] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[7];
+	GribPushAtt(lon_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[8];
+	GribPushAtt(lon_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	tmp_string= (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string= NrmStringToQuark(kgds[9] & 0200 ? "south" : "north");
+	GribPushAtt(lon_att_list_ptr,"ProjectionCenter",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("STEREOGRAPHIC");
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[6] / 1000.0;
+	GribPushAtt(lon_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = kgds[9] & 0200 ? -90 : 90;
+	GribPushAtt(lon_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
+}
+
+
+void GetGrid_249
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 97;
-        int ysize = 69;
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 367;
+	kgds[2] = 343;
+	kgds[3] = 45400;
+	kgds[4] = 188400;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 210000;
+	kgds[7] = 9868;
+	kgds[8] = 9868;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_242
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+
+	kgds[0] = 5;
+	kgds[1] = 553;
+	kgds[2] = 425;
+	kgds[3] = 30000;
+	kgds[4] = 187000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 225000;
+	kgds[7] = 11500;
+	kgds[8] = 11500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+
+
+void GetGrid_240
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 1121;
+	kgds[2] = 881;
+	kgds[3] = 23098;
+	kgds[4] = 240964;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 4763;
+	kgds[8] = 4763;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	{
+		int xsize = kgds[1];
+		int ysize = kgds[2];
+		float polex = 401.;
+		float poley = 1601.;
+		float dist = 4.7625;
+		float deg = 60.0;
+		float ore = -105.0;
+		int x,y;
+
+		grdsetup(polex,poley,dist,deg, ore + 90.0 );
+		for (y = 0; y < ysize; y++) {
+			for(x = 0; x < xsize; x++) {
+				grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
+			}
+		}
+	}
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_224
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 65;
+	kgds[2] = 65;
+	kgds[3] = 20826;
+	kgds[4] = 120000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 75000;  /* 225 - 180 -- the ncep code requires this */
+	kgds[7] = 381000;
+	kgds[8] = 381000;
+	kgds[9] = 0200;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_223
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 129;
+	kgds[2] = 129;
+	kgds[3] = -20826;
+	kgds[4] = 210000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 190500;
+	kgds[8] = 190500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_220
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 345;
+	kgds[2] = 355;
+	kgds[3] = -36889;
+	kgds[4] = 139806;
+	kgds[5] = 0110;  /* 0000 1000 */
+	kgds[6] = 100000; /* 280 -180 -- required by the NCEP code */
+	kgds[7] = 25400;
+	kgds[8] = 25400;
+	kgds[9] = 0200;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+	
+
+}
+
+void GetGrid_219
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 385;
+	kgds[2] = 465;
+	kgds[3] = 25008;
+	kgds[4] = 240441;
+	kgds[5] = 0110;  /* 0000 1000 */
+	kgds[6] = 280000;
+	kgds[7] = 25400;
+	kgds[8] = 25400;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+	
+
+}
+
+void GetGrid_217
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 277;
+	kgds[2] = 213;
+	kgds[3] = 30000;
+	kgds[4] = 187000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 225000;
+	kgds[7] = 22500;
+	kgds[8] = 22500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+	
+
+}
+
+void GetGrid_216
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 139;
+	kgds[2] = 107;
+	kgds[3] = 30000;
+	kgds[4] = 187000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 225000;
+	kgds[7] = 45000;
+	kgds[8] = 45000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+	
+
+}
+
+void GetGrid_214
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+#if 0
         float polex = 49;
         float poley = 101;
         float dist = 47.625;
@@ -1441,40 +4274,103 @@ int** dimsizes_lon;
         int x,y;
 
 
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
         grdsetup(polex,poley,dist,deg, ore + 90.0 );
         for (y = 0; y < ysize; y++) {
                 for(x = 0; x < xsize; x++) {
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
+#endif
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 97;
+	kgds[2] = 67;
+	kgds[3] = 42085;
+	kgds[4] = 184359;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 210000;
+	kgds[7] = 47625;
+	kgds[8] = 47625;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+
+	return; 
+	
 
 }
 
 void GetGrid_213
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 129;
+	kgds[2] = 85;
+	kgds[3] = 7838;
+	kgds[4] = 218972;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 95250;
+	kgds[8] = 95250;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+	
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1505,23 +4401,73 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
+#endif
+
 
 }
 
 void GetGrid_207
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 49;
+	kgds[2] = 35;
+	kgds[3] = 42085;
+	kgds[4] = 184359;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 210000;
+	kgds[7] = 95250;
+	kgds[8] = 95250;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1552,23 +4498,72 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
 void GetGrid_205
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 45;
+	kgds[2] = 39;
+	kgds[3] = 0616;
+	kgds[4] = 275096;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 300000;
+	kgds[7] = 190500;
+	kgds[8] = 190500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1600,22 +4595,71 @@ int** dimsizes_lon;
                 }
         }
 
+#endif
 }
 
 void GetGrid_203
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 45;
+	kgds[2] = 39;
+	kgds[3] = 19132;
+	kgds[4] = 174163;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 210000;
+	kgds[7] = 190500;
+	kgds[8] = 190500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1646,23 +4690,72 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
 void GetGrid_202
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 65;
+	kgds[2] = 43;
+	kgds[3] = 7838;
+	kgds[4] = 218972;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 190500;
+	kgds[8] = 190500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1693,23 +4786,72 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
 void GetGrid_201
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 65;
+	kgds[2] = 65;
+	kgds[3] = -20826;
+	kgds[4] = 210000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 381000;
+	kgds[8] = 381000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1741,22 +4883,325 @@ int** dimsizes_lon;
                 }
         }
 
+#endif
 }
 
-void GetGrid_107
+void GetGrid_186
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 377;
+	kgds[2] = 237;
+	kgds[3] = 44196; 
+	kgds[4] = 174759; 
+	kgds[5] = 010;  /* 0100 1000 */
+	kgds[6] = 20300;
+	kgds[7] = 12000;
+	kgds[8] = 12000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_172
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 690;
+	kgds[2] = 710;
+	kgds[3] = -36899; /* 36.899599 how do you do more resolution? */
+	kgds[4] = 139805; /* 139.805573 */
+	kgds[5] = 0110;  /* 0100 1000 */
+	kgds[6] = 100000; /* 280 - 180 -- the NCEP code requires this */
+	kgds[7] = 12700;
+	kgds[8] = 12700;
+	kgds[9] = 0200; /* 1000 0000
+	kgds[10] = 0100; /* 0100 0000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_171
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 770;
+	kgds[2] = 930;
+	kgds[3] = 25009; /* 25.008621 how do you do more resolution? */
+	kgds[4] = 240440; /* 240.440331 */
+	kgds[5] = 0110;  /* 0100 1000 */
+	kgds[6] = 280000;
+	kgds[7] = 12700;
+	kgds[8] = 12700;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+
+void GetGrid_160
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 180;
+	kgds[2] = 156;
+	kgds[3] = 19132;
+	kgds[4] = 174163;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 210000;
+	kgds[7] = 47500;
+	kgds[8] = 47500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_107
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 120;
+	kgds[2] = 92;
+	kgds[3] = 23434;
+	kgds[4] = 239833;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 45377;
+	kgds[8] = 45377;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
+
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1764,7 +5209,7 @@ int** dimsizes_lon;
         int ysize = 92;
         float polex = 46;
         float poley = 167;
-        float dist = 91.452;
+        float dist = 45.37732;
         float deg = 60.0;
         float ore = -105.0;
         int x,y;
@@ -1787,23 +5232,73 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
+#endif
 
 }
 
 void GetGrid_106
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 165;
+	kgds[2] = 117;
+	kgds[3] = 17529;
+	kgds[4] = 230704;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 45377;
+	kgds[8] = 45377;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1811,7 +5306,7 @@ int** dimsizes_lon;
         int ysize = 117;
         float polex = 80;
         float poley = 176;
-        float dist = 91.452;
+        float dist = 45.37732;
         float deg = 60.0;
         float ore = -105.0;
         int x,y;
@@ -1834,23 +5329,166 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
-void GetGrid_104
+void GetGrid_105
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 83;
+	kgds[2] = 83;
+	kgds[3] = 17529;
+	kgds[4] = 230704;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 90755;
+	kgds[8] = 90755;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
+/*
+* Very tricky need to figure out how to exchange dimensions correctly
+*/
+	int xsize = 83;
+	int ysize = 83;
+	float polex = 40.5;
+	float poley = 88.5;
+	float dist = 90.75464;
+	float deg = 60.0;
+	float ore = -105.0;
+	int x,y;
+	
+	
+	*lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
+	*lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
+	*dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
+	*dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+	*n_dims_lat = 2;
+	*n_dims_lon = 2;
+        (*dimsizes_lat)[0] = ysize;
+        (*dimsizes_lat)[1] = xsize;
+        (*dimsizes_lon)[0] = ysize;
+        (*dimsizes_lon)[1] = xsize;
+
+	grdsetup(polex,poley,dist,deg, ore + 90.0 );
+	for (y = 0; y < ysize; y++) {
+		for(x = 0; x < xsize; x++) {
+			grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
+		}
+	}
+#endif	
+}
+
+void GetGrid_104
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 147;
+	kgds[2] = 110;
+	kgds[3] = -706;
+	kgds[4] = 220525;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 90755;
+	kgds[8] = 90755;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1881,23 +5519,71 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
 void GetGrid_103
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 65;
+	kgds[2] = 56;
+	kgds[3] = 22405;
+	kgds[4] = 238648;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 91452;
+	kgds[8] = 91452;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1929,22 +5615,71 @@ int** dimsizes_lon;
                 }
         }
 
+#endif
 }
 
 void GetGrid_101
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 113;
+	kgds[2] = 91;
+	kgds[3] = 10528;
+	kgds[4] = 222854;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 91452;
+	kgds[8] = 91452;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
+
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -1976,22 +5711,72 @@ int** dimsizes_lon;
                 }
         }
 
+#endif
 }
 
 void GetGrid_100
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 83;
+	kgds[2] = 83;
+	kgds[3] = 17110;
+	kgds[4] = 230704;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 91452;
+	kgds[8] = 91452;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
+
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -2022,23 +5807,136 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
-void GetGrid_87
+
+void GetGrid_88
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 540;
+	kgds[2] = 548;
+	kgds[3] = 10000;
+	kgds[4] = 232000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 15000;
+	kgds[8] = 15000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+}
+
+void GetGrid_87
+#if NhlNeedProto
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 81;
+	kgds[2] = 62;
+	kgds[3] = 22876;
+	kgds[4] = 239509;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 68153;
+	kgds[8] = 68153;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -2069,23 +5967,72 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
 void GetGrid_56
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 87;
+	kgds[2] = 71;
+	kgds[3] = 7647;
+	kgds[4] = 226557;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 127000;
+	kgds[8] = 127000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -2116,22 +6063,72 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
+
 void GetGrid_55
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 87;
+	kgds[2] = 71;
+	kgds[3] = -10947;
+	kgds[4] = 205711;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 254000;
+	kgds[8] = 254000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -2163,22 +6160,71 @@ int** dimsizes_lon;
                 }
         }
 
+#endif
 }
 
 void GetGrid_28
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 65;
+	kgds[2] = 65;
+	kgds[3] = 20825;
+	kgds[4] = 145000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 100000;  /* 280 - 180  The NCEP code needs this for southern hemisphere */
+	kgds[7] = 381000;
+	kgds[8] = 381000;
+	kgds[9] = 0200;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -2188,7 +6234,7 @@ int** dimsizes_lon;
         float poley = 33;
         float dist = 381; 
         float deg = -60.0;
-        float ore = 100.0;
+        float ore = 280.0;
         int x,y;
 
 
@@ -2209,23 +6255,72 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
+#endif
 
 }
 
 void GetGrid_27
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 65;
+	kgds[2] = 65;
+	kgds[3] = -20825;
+	kgds[4] = 235000;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 280000;
+	kgds[7] = 381000;
+	kgds[8] = 381000;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
+
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -2235,7 +6330,7 @@ int** dimsizes_lon;
         float poley = 33;
         float dist = 381; 
         float deg = 60.0;
-        float ore = 80.0;
+        float ore = 280.0;
         int x,y;
 
 
@@ -2256,23 +6351,70 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
 void GetGrid_6
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 53;
+	kgds[2] = 45;
+	kgds[3] = 7647;
+	kgds[4] = 226557;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 190500;
+	kgds[8] = 190500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
+
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
+	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return; 
+#if 0
 /*
 * Very tricky need to figure out how to exchange dimensions correctly
 */
@@ -2303,102 +6445,75 @@ int** dimsizes_lon;
                         grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
                 }
         }
-
+#endif
 }
 
 void GetGrid_5
 #if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot,
+	GribAttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	GribAttInqRecList** lon_att_list, 
+	int* nlonatts,
+	GribAttInqRecList** rot_att_list,
+	int* nrotatts
+)
 #else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
 int* n_dims_lat;
 int** dimsizes_lat;
 float** lon;
 int* n_dims_lon;
 int** dimsizes_lon;
+float** rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
 #endif
 {
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-	int xsize = 53;
-	int ysize = 57;
-	float polex = 27;
-	float poley = 49;
-	float dist = 190.5 ;
-	float deg = 60.0;
-	float ore = -105.0;
-	int x,y;
-	
-	
-	*lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-	*lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-	*n_dims_lat = 2;
-	*n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
+	int kgds[32];
+		
+	kgds[0] = 5;
+	kgds[1] = 53;
+	kgds[2] = 57;
+	kgds[3] = 7647;
+	kgds[4] = 226556;
+	kgds[5] = 010;  /* 0000 1000 */
+	kgds[6] = 255000;
+	kgds[7] = 190500;
+	kgds[8] = 190500;
+	kgds[9] = 0;
+	kgds[10] = 0100; /* 0100 000 */
 
-	grdsetup(polex,poley,dist,deg, ore + 90.0 );
-	for (y = 0; y < ysize; y++) {
-		for(x = 0; x < xsize; x++) {
-			grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-		}
+	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
+		return;
 	}
+
+	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	return;      
 	
 }
 
-void GetGrid_105
-#if NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon)
-#else
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon)
-GribParamList* thevarrec;
-float** lat;
-int* n_dims_lat;
-int** dimsizes_lat;
-float** lon;
-int* n_dims_lon;
-int** dimsizes_lon;
-#endif
-{
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-	int xsize = 83;
-	int ysize = 83;
-	float polex = 40.5;
-	float poley = 88.5;
-	float dist = 90.75464;
-	float deg = 60.0;
-	float ore = -105.0;
-	int x,y;
-	
-	
-	*lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-	*lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-	*n_dims_lat = 2;
-	*n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
 
-	grdsetup(polex,poley,dist,deg, ore + 90.0 );
-	for (y = 0; y < ysize; y++) {
-		for(x = 0; x < xsize; x++) {
-			grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-		}
-	}
-	
-}
+
+
 /*
 * END Polar Stereographic GRIDS
 */
@@ -3500,9 +7615,11 @@ void Do_Rotation_Atts
 	*tmp_string = NrmStringToQuark("radians");
 	GribPushAtt(rot_att_list,"units",tmp_string,1,nclTypestringClass); (*nrotatts)++;
 
-	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = grid_name;
-	GribPushAtt(rot_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+	if (grid_name > NrmNULLQUARK) {
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = grid_name;
+		GribPushAtt(rot_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+	}
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("clockwise vector rotation");
@@ -5822,85 +9939,220 @@ GridGDSInfoRecord grid_gds[] = {
 };
 
 GridInfoRecord grid[] = {
-		GenericUnPack,GetGrid_1,GetAtts_1,"1679-point (23x73) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude", /*01*/
-		GenericUnPack,GetGrid_2,GenAtts,"10512-point (73x144) global longitude-latitude grid.  (0,0) at 0E, 90N, latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*2*/
-		GenericUnPack,GetGrid_3,GenAtts,"65160-point (181x360) global longitude-latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*3*/
-		GenericUnPack,GetGrid_4,GenAtts,"259920-point (361x720) global lon/lat grid. (0,0) at 0E, 90N; matrix layout; prime meridian not duplicated", /*4*/
-		GenericUnPack,GetGrid_5,GenAtts,"3021-point (57x53) N. Hemisphere stereographic grid oriented 105W; Pole at (27,49). (LFM analysis)",/*5*/
-		GenericUnPack,GetGrid_6,GenAtts,"2385-point (45x53) N. Hemisphere polar stereographic grid oriented 105W; Pole at (27,49). (LFM Forecast)", /*6*/
-		IFOSUnPack,GetGrid_21,GenAtts,"1369-point (37x37) longitude-latitude grid. 0-180E, 0-90N", /*21*/
-		IFOSUnPack,GetGrid_22,GenAtts,"1369-point (37x37) longitude-latitude grid. 180W-0, 0-90N", /*22*/
-		IFOSUnPack,GetGrid_23,GenAtts,"1369-point (37x37) longitude-latitude grid. 0-180E, 90S-0", /*23*/
-		IFOSUnPack,GetGrid_24,GenAtts,"1369-point (37x37) longitude-latitude grid. 180W-0, 90S-0", /*24*/
-		IFOSUnPack,GetGrid_25,GenAtts,"1368-point (19x72) longitude-latitude grid. 0-355E, 0-90N", /*25*/
-		IFOSUnPack,GetGrid_26,GenAtts,"1368-point (19x72) longitude-latitude grid. 0-355E, 90S-0", /*26*/
-		GenericUnPack,GetGrid_27,GenAtts,"4225-point (65x65) N. Hemisphere polar stereographic grid oriented 80W; Pole at (33,33).", /*27*/
-		GenericUnPack,GetGrid_28,GenAtts,"4225-point (65x65) S. Hemisphere polar stereographic grid oriented 100E; Pole at (33,33).", /*28*/
-		GenericUnPack,GetGrid_29,GenAtts,"5365-point (37x145) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N).", /*29*/
-		GenericUnPack,GetGrid_30,GenAtts,"5365-point (37x145) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S).", /*30*/
-		GenericUnPack,GetGrid_33,GenAtts,"8326-point (46x181) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N).", /*33*/
-		GenericUnPack,GetGrid_34,GenAtts,"8326-point (46x181) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S).", /*34*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 0-90N", /*37*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 0-90N", /*38*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E, 0-90N", /*39*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 0-90N", /*40*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 90S-0", /*41*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 90S-0", /*42*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E,90S-0", /*43*/
-		NULL,NULL,GenAtts,"3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 90S-0", /*44*/
-		GenericUnPack,GetGrid_45,GenAtts,"41760-point (145x288) Global Latitude/Longitude 1.25 deg Resoulution. 0E-358.75E, 90N-90S",/*45*/
-		IFOS50UnPack,GetGrid_50,GenAtts,"1188-point (33x36) longitude-latitude grid. 140.0W-52.5W, 20N-60N", /*50*/
-		GenericUnPack,GetGrid_55,GenAtts,"6177-point (71x87) N. Hemisphere polar tereographic grid oriented 105W; Pole at (44,38). (2/3 bedient NH sfc anl)", /*55*/
-		GenericUnPack,GetGrid_56,GenAtts,"6177-point (71x87) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40,73). (1/3 bedient NA sfc anl)", /*56*/
-		IFOSUnPack,GetGrid_61,GenAtts,"4186-point (46x91) longitude-latitude grid. 0-180E, 0-90N", /*61*/
-		IFOSUnPack,GetGrid_62,GenAtts,"4186-point (46x91) longitude-latitude grid. 180W-0, 0-90N", /*62*/
-		IFOSUnPack,GetGrid_63,GenAtts,"4186-point (46x91) longitude-latitude grid. 0-180E, 90S-0", /*63*/
-		IFOSUnPack,GetGrid_64,GenAtts,"4186-point (46x91) longitude-latitude grid. 180W-0, 90S-0", /*64*/
-		NULL,NULL,GenAtts,"12321-point (111x111) N. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model.", /*75*/
-		NULL,NULL,GenAtts,"12321-point (111x111) S. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model.", /*76*/
-		NULL,NULL,GenAtts,"12321-point (111x111) N. Hemisphere Mercator grid.  No fixed location; used by QLM Hurricane model.", /*77*/
-		GenericUnPack,GetGrid_85,GenAtts,"32400-point (90x360) N. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 0.5N to 89.5N; origin (0,0) at (0.5E,0.5N)", /*85*/
-		GenericUnPack,GetGrid_86,GenAtts,"32400-point (90x360) S. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 89.5S to 0.5S; origin (0,0) at (0.5E,89.5S)", /*86*/
-		GenericUnPack,GetGrid_87,GenAtts,"5022-point (62x81) N. Hemisphere  polar stereographic grid oriented at 105W. Pole at (31.91, 112.53) Used for RUC.", /*87*/
-		NULL,NULL,GenAtts,"12902-point (141x92 semi-staggered) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W, 35S Unfilled E grid for 80 km ETA model", /*90*/
-		NULL,NULL,GenAtts,"25803-point (141x183) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W,35S Filled E grid for 80 km ETA model", /*91*/
-		NULL,NULL,GenAtts,"24162-point (191x127 semi-staggered) lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W,25S Unfilled E grid for 40 km ETA model", /*92*/
-		NULL,NULL,GenAtts,"48323-point (191x253)lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W ,25S Filled E grid for 40 km ETA model", /*93*/
-		NULL,NULL,GenAtts,"18048-point (94x192) Global Gaussian T62 Latitude/Longitude Resolution.", /*98*/
-		GenericUnPack,GetGrid_100,GenAtts,"6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40.5,88.5). (NGM Original C-Grid)",  /*100*/
-		GenericUnPack,GetGrid_101,GenAtts,"10283-point (91x113) N. Hemisphere polar stereographic grid oriented 105W; Pole at (58.5,92.5). (NGM \"Big C-Grid\")", /*101*/
-		GenericUnPack,GetGrid_103,GenAtts,"3640-point (56x65) N. Hemisphere polar stereographic grid oriented 105W; Pole at (25.5,84.5) (used by ARL)", /*103*/
-		GenericUnPack,GetGrid_104,GenAtts,"16170-point (110x147) N. Hemisphere polar stereographic grid oriented 105W; pole at (75.5,109.5). (NGM Super C grid)", /*104*/
-		GenericUnPack,GetGrid_105,GenAtts,"6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; pole at  (40.5,88.5).  (U.S. area subset of NGM Super C grid, used by ETA model)", /*105*/
-		GenericUnPack,GetGrid_106,GenAtts,"19305-point (117x165) N. Hemisphere stereographic grid oriented 105W; pole at (80,176) Hi res. ETA (2 x resolution of Super C)", /*106*/
-		GenericUnPack,GetGrid_107,GenAtts,"11040 point (92x120) N. Hemisphere stereographic grid oriented 105W; pole at (46,167) subset of Hi res. ETA; for ETA & MAPS/RUC", /*107*/
-		NULL,NULL,GenAtts,"72960-point (190x384) Global Gaussian Latitude/Longitude T126 Resolution", /*126*/
-		GenericUnPack,GetGrid_201,GenAtts,"4225-point (65x65) Hemispheric polar stereographic grid oriented 105W; pole at (33,33)", /*201*/
-		GenericUnPack,GetGrid_202,GenAtts,"2795-point (43x65) National - CONUS polar stereographic oriented 105W; pole at (33,45)", /*202*/
-		GenericUnPack,GetGrid_203,GenAtts,"1755-point (39x45) National - Alaska polar stereographic oriented 150W; pole at (27,37)", /*203*/
-		GenericUnPack,GetGrid_204,GenAtts,"6324-point (68x93) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W", /*204*/
-		GenericUnPack,GetGrid_205,GenAtts,"1755-point (39x45) National - Puerto Rico stereographic oriented 60W; pole at (27,57)", /*205*/
-		GenericUnPack,GetGrid_206,GetAtts_206,"2091-point (41x51) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
-		GenericUnPack,GetGrid_205,GenAtts,"1715-point (35x49) Regional - Alaska polar stereographic oriented 150W; pole at 25,51", /*207*/
-		GenericUnPack,GetGrid_208,GenAtts,"783-point (27x29) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W", /*208*/
-		GenericUnPack,GetGrid_209,GetAtts_209,"8181-point (81x101) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
-		GenericUnPack,GetGrid_210,GenAtts,"625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625", /*210*/
-		GenericUnPack,GetGrid_211,GetAtts_211,"6045-point (65x93) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
-		GenericUnPack,GetGrid_212,GetAtts_212,"23865-point (129x185) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
-		GenericUnPack,GetGrid_213,GenAtts,"10965-point (85x129) National - CONUS - Double Resolution polar stereographic oriented 105W; pole at (65,89)", /*213*/
-		GenericUnPack,GetGrid_214,GenAtts,"6693-point (69x97) Regional - Alaska - Double Resolution polar stereographic oriented 150W; pole at (49,101)", /*214*/
+		GenericUnPack,GetGrid_1,GetAtts_1,
+		"1679-point (23x73) Mercator grid with (0,0) at (0W,48.09S), (73,23) at (0W,48.09N); I increasing eastward, Equator at J=12. Grid increment of 5 degs of longitude", /*01*/
+		GenericUnPack,GetGrid_2,GenAtts,
+		"10512-point (73x144) global longitude-latitude grid.  (0,0) at 0E, 90N, latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*2*/
+		GenericUnPack,GetGrid_3,GenAtts,
+		"65160-point (181x360) global longitude-latitude grid.  (0,0) at 0E, 90N, matrix layout.  N.B.: prime meridian not duplicated.", /*3*/
+		GenericUnPack,GetGrid_4,GenAtts,
+		"259920-point (361x720) global lon/lat grid. (0,0) at 0E, 90N; matrix layout; prime meridian not duplicated", /*4*/
+		GenericUnPack,GetGrid_5,GenAtts,
+		"3021-point (57x53) N. Hemisphere stereographic grid oriented 105W; Pole at (27,49). (LFM analysis)",/*5*/
+		GenericUnPack,GetGrid_6,GenAtts,
+		"2385-point (45x53) N. Hemisphere polar stereographic grid oriented 105W; Pole at (27,49). (LFM Forecast)", /*6*/
+		IFOSUnPack,GetGrid_21,GenAtts,
+		"1369-point (37x37) longitude-latitude grid. 0-180E, 0-90N", /*21*/
+		IFOSUnPack,GetGrid_22,GenAtts,
+		"1369-point (37x37) longitude-latitude grid. 180W-0, 0-90N", /*22*/
+		IFOSUnPack,GetGrid_23,GenAtts,
+		"1369-point (37x37) longitude-latitude grid. 0-180E, 90S-0", /*23*/
+		IFOSUnPack,GetGrid_24,GenAtts,
+		"1369-point (37x37) longitude-latitude grid. 180W-0, 90S-0", /*24*/
+		IFOSUnPack,GetGrid_25,GenAtts,
+		"1368-point (19x72) longitude-latitude grid. 0-355E, 0-90N", /*25*/
+		IFOSUnPack,GetGrid_26,GenAtts,
+		"1368-point (19x72) longitude-latitude grid. 0-355E, 90S-0", /*26*/
+		GenericUnPack,GetGrid_27,GenAtts,
+		"4225-point (65x65) N. Hemisphere polar stereographic grid oriented 80W; Pole at (33,33).", /*27*/
+		GenericUnPack,GetGrid_28,GenAtts,
+		"4225-point (65x65) S. Hemisphere polar stereographic grid oriented 100E; Pole at (33,33).", /*28*/
+		GenericUnPack,GetGrid_29,GenAtts,
+		"5365-point (37x145) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N).", /*29*/
+		GenericUnPack,GetGrid_30,GenAtts,
+		"5365-point (37x145) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S).", /*30*/
+		GenericUnPack,GetGrid_33,GenAtts,
+		"8326-point (46x181) N. Hemisphere longitude/latitude grid for latitudes 0N to 90N; (0,0) at (0E,0N).", /*33*/
+		GenericUnPack,GetGrid_34,GenAtts,
+		"8326-point (46x181) S. Hemisphere longitude/latitude grid for latitudes 90S to 0S; (0,0) at (0E,90S).", /*34*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 0-90N", /*37*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 0-90N", /*38*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E, 0-90N", /*39*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 0-90N", /*40*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 330E-60E, 90S-0", /*41*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 60E-150E, 90S-0", /*42*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 150E-240E,90S-0", /*43*/
+		NULL,NULL,GenAtts,
+		"3447-point (73x73) \"Thinned\" longitude-latitude grid. 240E-330E, 90S-0", /*44*/
+		GenericUnPack,GetGrid_45,GenAtts,
+		"41760-point (145x288) Global Latitude/Longitude 1.25 deg Resoulution. 0E-358.75E, 90N-90S",/*45*/
+		IFOS50UnPack,GetGrid_50,GenAtts,
+		"1188-point (33x36) longitude-latitude grid. 140.0W-52.5W, 20N-60N", /*50*/
+		GenericUnPack,GetGrid_55,GenAtts,
+		"6177-point (71x87) N. Hemisphere polar stereographic grid oriented 105W; Pole at (44,38). (2/3 bedient NH sfc anl)", /*55*/
+		GenericUnPack,GetGrid_56,GenAtts,
+		"6177-point (71x87) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40,73). (1/3 bedient NA sfc anl)", /*56*/
+		IFOSUnPack,GetGrid_61,GenAtts,
+		"4186-point (46x91) longitude-latitude grid. 0-180E, 0-90N", /*61*/
+		IFOSUnPack,GetGrid_62,GenAtts,
+		"4186-point (46x91) longitude-latitude grid. 180W-0, 0-90N", /*62*/
+		IFOSUnPack,GetGrid_63,GenAtts,
+		"4186-point (46x91) longitude-latitude grid. 0-180E, 90S-0", /*63*/
+		IFOSUnPack,GetGrid_64,GenAtts,
+		"4186-point (46x91) longitude-latitude grid. 180W-0, 90S-0", /*64*/
+		NULL,NULL,GenAtts,
+		"12321-point (111x111) N. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model.", /*75*/
+		NULL,NULL,GenAtts,
+		"12321-point (111x111) S. Hemisphere Lambert Conformal grid.  No fixed location; used by QLM Hurricane model.", /*76*/
+		NULL,NULL,GenAtts,
+		"12321-point (111x111) N. Hemisphere Mercator grid.  No fixed location; used by QLM Hurricane model.", /*77*/
+		GenericUnPack,GetGrid_85,GenAtts,
+		"32400-point (90x360) N. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 0.5N to 89.5N; origin (0,0) at (0.5E,0.5N)", /*85*/
+		GenericUnPack,GetGrid_86,GenAtts,
+		"32400-point (90x360) S. Hemisphere longitude/latitude grid; longitudes: 0.5E to 359.5E (0.5W); latitudes: 89.5S to 0.5S; origin (0,0) at (0.5E,89.5S)", /*86*/
+		GenericUnPack,GetGrid_87,GenAtts,
+		"5022-point (62x81) N. Hemisphere  polar stereographic grid oriented at 105W. Pole at (31.91, 112.53) Used for RUC.", /*87*/
+		GenericUnPack,GetGrid_88,GenAtts,
+		"317840 point (580x548) N. American polar stereographic grid oriented at 105W. Pole at (260.853, 613.176) Used for RSAS. (15 km at 60N)", /*88*/
+		NULL,NULL,GenAtts,
+		"12902-point (141x92 semi-staggered) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W, 35S Unfilled E grid for 80 km ETA model", /*90*/
+		NULL,NULL,GenAtts,
+		"25803-point (141x183) lat. long., rotated such that center located at 52.0N, 111.0W; LL at 37.5W,35S Filled E grid for 80 km ETA model", /*91*/
+		NULL,NULL,GenAtts,
+		"24162-point (191x127 semi-staggered) lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W,25S Unfilled E grid for 40 km ETA model", /*92*/
+		NULL,NULL,GenAtts,
+		"48323-point (191x253)lat. long., rotated such that center located at 41.0N, 97.0W; LL at 35W ,25S Filled E grid for 40 km ETA model", /*93*/
+		NULL,NULL,GenAtts,
+		"18048-point (94x192) Global Gaussian T62 Latitude/Longitude Resolution.", /*98*/
+		GenericUnPack,GetGrid_100,GenAtts,
+		"6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; Pole at (40.5,88.5). (NGM Original C-Grid)",  /*100*/
+		GenericUnPack,GetGrid_101,GenAtts,
+		"10283-point (91x113) N. Hemisphere polar stereographic grid oriented 105W; Pole at (58.5,92.5). (NGM \"Big C-Grid\")", /*101*/
+		GenericUnPack,GetGrid_103,GenAtts,
+		"3640-point (56x65) N. Hemisphere polar stereographic grid oriented 105W; Pole at (25.5,84.5) (used by ARL)", /*103*/
+		GenericUnPack,GetGrid_104,GenAtts,
+		"16170-point (110x147) N. Hemisphere polar stereographic grid oriented 105W; pole at (75.5,109.5). (NGM Super C grid)", /*104*/
+		GenericUnPack,GetGrid_105,GenAtts,
+		"6889-point (83x83) N. Hemisphere polar stereographic grid oriented 105W; pole at  (40.5,88.5).  (U.S. area subset of NGM Super C grid, used by ETA model)", /*105*/
+		GenericUnPack,GetGrid_106,GenAtts,
+		"19305-point (117x165) N. Hemisphere stereographic grid oriented 105W; pole at (80,176) Hi res. ETA (2 x resolution of Super C)", /*106*/
+		GenericUnPack,GetGrid_107,GenAtts,
+		"11040 point (92x120) N. Hemisphere stereographic grid oriented 105W; pole at (46,167) subset of Hi res. ETA; for ETA & MAPS/RUC", /*107*/
+		NULL,NULL,GenAtts,
+		"72960-point (190x384) Global Gaussian Latitude/Longitude T126 Resolution", /*126*/
+		GenericUnPack,GetGrid_130,GenAtts,
+		"Regional (CONUS) Lambert Conformal grid for AWIPS", /*130*/
+
+		GenericUnPack,GetGrid_160,GenAtts,
+		"AWIPS North Polar Stereographic grid for Alaska (Quadruple grid 203)", /*160*/
+		GenericUnPack,GetGrid_163,GenAtts,
+		"Regional (CONUS) Lambert Conformal grid", /*163*/
+		GenericUnPack,GetGrid_171,GenAtts,
+		"AWIPS Northern Hemisphere High Resolution Sea Ice grid (polar stereographic) ", /*171*/
+		GenericUnPack,GetGrid_172,GenAtts,
+		"AWIPS Southern Hemisphere High Resolution Sea Ice grid (polar stereographic) ", /*172*/
+		GenericUnPack,GetGrid_185,GenAtts,
+		"Limited domain CONUS Lambert Conformal (used by the DGEX)", /*185*/
+#if 0
+		GenericUnPack,GetGrid_186,GenAtts,
+		"Limited domain Alaska Polar Stereographic (used by the DGEX)", /*186*/ 
+#endif
+		GenericUnPack,GetGrid_201,GenAtts,
+		"4225-point (65x65) Hemispheric polar stereographic grid oriented 105W; pole at (33,33)", /*201*/
+		GenericUnPack,GetGrid_202,GenAtts,
+		"2795-point (43x65) National - CONUS polar stereographic oriented 105W; pole at (33,45)", /*202*/
+		GenericUnPack,GetGrid_203,GenAtts,
+		"1755-point (39x45) National - Alaska polar stereographic oriented 150W; pole at (27,37)", /*203*/
+		GenericUnPack,GetGrid_204,GenAtts,
+		"6324-point (68x93) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W", /*204*/
+		GenericUnPack,GetGrid_205,GenAtts,
+		"1755-point (39x45) National - Puerto Rico stereographic oriented 60W; pole at (27,57)", /*205*/
+		GenericUnPack,GetGrid_206,GetAtts_206,
+		"2091-point (41x51) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
+		GenericUnPack,GetGrid_205,GenAtts,
+		"1715-point (35x49) Regional - Alaska polar stereographic oriented 150W; pole at 25,51", /*207*/
+		GenericUnPack,GetGrid_208,GenAtts,
+		"783-point (27x29) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W", /*208*/
+		GenericUnPack,GetGrid_209,GetAtts_209,
+		"8181-point (81x101) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
+		GenericUnPack,GetGrid_210,GenAtts,
+		"625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625", /*210*/
+		GenericUnPack,GetGrid_211,GetAtts_211,
+		"6045-point (65x93) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
+		GenericUnPack,GetGrid_212,GetAtts_212,
+		"23865-point (129x185) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
+		GenericUnPack,GetGrid_213,GenAtts,
+		"10965-point (85x129) National - CONUS - Double Resolution polar stereographic oriented 105W; pole at (65,89)", /*213*/
+		GenericUnPack,GetGrid_214,GenAtts,
+		"6693-point (69x97) Regional - Alaska - Double Resolution polar stereographic oriented 150W; pole at (49,101)", /*214*/
+		GenericUnPack,GetGrid_215,GenAtts,
+		"AWIPS grid over the contiguous United States - Quadruple Resolution (used by the 29-km ETA Model) (Lambert Conformal", /*215*/
+		GenericUnPack,GetGrid_216,GenAtts,
+		"AWIPS - Grid over Alaska (polar stereographic)", /*216*/
+		GenericUnPack,GetGrid_217,GenAtts,
+		"AWIPS - Grid over Alaska - Double Resolution (polar stereographic)", /*217*/
+		GenericUnPack,GetGrid_218,GenAtts,
+		"AWIPS grid over the Contiguous United States (used by the 12-km ETA Model) (Lambert Conformal)", /*218*/
+		GenericUnPack,GetGrid_219,GenAtts,
+		"AWIPS grid over the Northern Hemisphere to depict SSMI-derived ice concentrations (polar stereographic)", /*219*/
+		GenericUnPack,GetGrid_220,GenAtts,
+		"AWIPS grid over the Southern Hemisphere to depict SSMI-derived ice concentrations (polar stereographic)", /*220*/
+		GenericUnPack,GetGrid_221,GenAtts,
+		"AWIPS - Regional - NOAMHI - High Resolution North American Master Grid (Lambert Conformal)", /*221*/
+		GenericUnPack,GetGrid_222,GenAtts,
+		"AWIPS - Regional - NOAMLO - Low Resolution North American Master Grid (Lambert Conformal)", /*222*/
+		GenericUnPack,GetGrid_223,GenAtts,
+		"AWIPS - Hemispheric - Double Resolution (polar stereographic)", /*223*/
+		GenericUnPack,GetGrid_224,GenAtts,
+		"AWIPS - Southern Hemispheric (polar stereographic)", /*224*/
+		GenericUnPack,GetGrid_226,GenAtts,
+		"AWIPS grid over the contiguous United States - 8X Resolution (10 km) (Used by the Radar mosaics) (Lambert Conformal)", /*226*/
+		GenericUnPack,GetGrid_227,GenAtts,
+		"AWIPS grid over the contiguous United States - 16X Resolution(5 km) (Used by the Radar Stage IV precipitation analyses and Satellite-derived Precipitation Estimates) (Lambert Conformal", /*227*/
+		GenericUnPack,GetGrid_236,GenAtts,
+		"AWIPS - Regional - CONUS (Lambert Conformal)", /*236*/
+		GenericUnPack,GetGrid_237,GenAtts,
+		"AWIPS - Puerto Rico FAA Regional Grid (Lambert Conformal)", /*237*/
+		GenericUnPack,GetGrid_240,GenAtts,
+		"AWIPS - HRAP Grid over the Contiguous United States and Puerto Rico (polar stereographic)", /*240*/
+		GenericUnPack,GetGrid_241,GenAtts,
+		"AWIPS - Regional - NOAMHI - High Resolution North American Grid (Lambert Conformal)", /*241*/
+		GenericUnPack,GetGrid_242,GenAtts,
+		"AWIPS - Grid over Alaska - Quadruple Resolution Grid (polar stereographic)", /*242*/
+		GenericUnPack,GetGrid_245,GenAtts,
+		"AWIPS - Regional - NOAMHI - High Resolution over Eastern US (Lambert Conformal for 8 km NMM)", /*245*/
+		GenericUnPack,GetGrid_246,GenAtts,
+		"AWIPS - Regional - NOAMHI - High Resolution over Western US (Lambert Conformal for 8 km NMM)", /*246*/
+		GenericUnPack,GetGrid_247,GenAtts,
+		"AWIPS - Regional - NOAMHI - High Resolution over Central US (Lambert Conformal for 8 km NMM)", /*247*/
+		GenericUnPack,GetGrid_249,GenAtts,
+		"AWIPS - Grid over Alaska for 10-km Alaska nest (Polar Stereographic)", /*249*/
+		GenericUnPack,GetGrid_252,GenAtts,
+		"AWIPS - Regional - CONUS (Lambert Conformal)", /*252*/
+
 };
 
 void GenAtts
 #if NhlNeedProto
-(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts)
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
+ int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
 #endif
 {
 	GribAttInqRecList* tmp_att_list_ptr;
@@ -5966,5 +10218,12 @@ int *nlonatts;
 	*tmp_string = NrmStringToQuark("longitude");
 	(*lon_att_list_ptr)->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*) tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 	(*nlonatts)++;
+
+	if (do_rot) {
+		Do_Rotation_Atts(NrmNULLQUARK,rot_att_list_ptr,nrotatts);
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark(grid[thevarrec->grid_tbl_index].grid_name);
+		GribPushAtt(rot_att_list_ptr,"grid_description",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+	}
 
 }

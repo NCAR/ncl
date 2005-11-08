@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <math.h>
+#include <ctype.h>
+#include <unistd.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
@@ -532,7 +534,7 @@ static void *GribMapFromNcl
 	}
 	return((void*)tmp);
 }
-static LVNotEqual( GribRecordInqRecList *s_1,GribRecordInqRecList *s_2)
+static int LVNotEqual( GribRecordInqRecList *s_1,GribRecordInqRecList *s_2)
 {
 
 	if((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
@@ -932,7 +934,7 @@ int** valid_lv_vals1;
 	*valid_lv_vals1 = tmp_lvs1;
 	return(header.next);
 }
-static GetItQuark
+static NrmQuark GetItQuark
 #if NhlNeedProto
 (GIT *the_it)
 #else
@@ -1080,53 +1082,69 @@ GribFileRecord *therec;
 * model
 */
 		switch((int)grib_rec->pds[4]) {
-			case 7:
-				for( i = 0; i < sizeof(models)/sizeof(GribTable);i++) {
-					if(models[i].index == (int)grib_rec->pds[5]) {
-						att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-						att_list_ptr->next = step->theatts;
-						att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-						att_list_ptr->att_inq->name = NrmStringToQuark("model");
-						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-						*tmp_string = NrmStringToQuark(models[i].name);		
-						att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-						step->theatts = att_list_ptr;
-						step->n_atts++;
-					}
+		case 7:
+			for( i = 0; i < sizeof(models)/sizeof(GribTable);i++) {
+				if(models[i].index == (int)grib_rec->pds[5]) {
+					att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+					att_list_ptr->next = step->theatts;
+					att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+					att_list_ptr->att_inq->name = NrmStringToQuark("model");
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = NrmStringToQuark(models[i].name);		
+					att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+					step->theatts = att_list_ptr;
+					step->n_atts++;
 				}
-				break;
-			default:
-				break;
+			}
+			break;
+		default:
+			break;
 		}
-			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("parameter_number");
-			tmp_int = (int*)NclMalloc(sizeof(int));
-			*tmp_int= grib_rec->param_number;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
+		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_number");
+		tmp_int = (int*)NclMalloc(sizeof(int));
+		*tmp_int= grib_rec->param_number;
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
 
-			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_table_version");
+		tmp_int = (int*)NclMalloc(sizeof(int));
+		*tmp_int= (int)grib_rec->pds[3];
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+
+		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		tmp_int = (int*)NclMalloc(sizeof(int));
+		if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+			att_list_ptr->att_inq->name = NrmStringToQuark("gds_grid_type");
+			*tmp_int = grib_rec->gds_type;
+		}
+		else {
 			att_list_ptr->att_inq->name = NrmStringToQuark("grid_number");
-			tmp_int = (int*)NclMalloc(sizeof(int));
 			*tmp_int = grib_rec->grid_number;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
+		}
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
 
-			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("level_indicator");
-			tmp_int= (int*)NclMalloc(sizeof(int));
-			*tmp_int= grib_rec->level_indicator;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
+		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("level_indicator");
+		tmp_int= (int*)NclMalloc(sizeof(int));
+		*tmp_int= grib_rec->level_indicator;
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
 
 /*
  * if 2D coordinates, this adds the CF compliant attribute "coordinates", to point to the
@@ -2362,17 +2380,50 @@ GribFileRecord *therec;
 				lat_att_list_ptr = NULL;
 				lon_att_list_ptr = NULL;
 				rot_att_list_ptr = NULL;
+				tmp_rot = NULL;
+				tmp_lon = NULL;
+				tmp_lat = NULL;
+				n_dims_lat = 0;
+				n_dims_lon = 0;
+				dimsizes_lat = NULL;
+				dimsizes_lon = NULL;
 
 /*
 * Grid has not been defined
 */
 				if(step->grid_tbl_index!=-1) {
-					
-					(*grid[step->grid_tbl_index].get_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon);
-					if((grid[step->grid_tbl_index].get_grid_atts) != NULL) {
-						(*grid[step->grid_tbl_index].get_grid_atts)(step,&lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts);
+					int do_rot;
+#if 0
+					if (step->thelist->rec_inq->has_gds) {
+						printf("vector rotation %s for pre-defined grid %d\n",((unsigned char)010 & step->thelist->rec_inq->gds[16]) ? 
+						       "grid relative" : "earth relative", step->grid_number);
 					}
-				} else if(step->grid_gds_tbl_index != -1) {
+#endif
+					if (grid[step->grid_tbl_index].get_grid != NULL) {
+						(*grid[step->grid_tbl_index].get_grid)(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,
+										       &tmp_lon,&n_dims_lon,&dimsizes_lon,&tmp_rot,
+										       &lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts,
+										       &rot_att_list_ptr,&nrotatts);
+					}
+
+					/* Get the atts if a grid has been set up but the atts have not been defined yet 
+					   -- the new way is to set them in the 'grid' function */
+
+					if (!tmp_lat) 
+						step->grid_tbl_index = -1;
+					else if(((grid[step->grid_tbl_index].get_grid_atts) != NULL) && nlatatts == 0) {
+						do_rot = tmp_rot == NULL ? 0 : 1;
+						(*grid[step->grid_tbl_index].get_grid_atts)(step,&lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts,
+											    do_rot,&rot_att_list_ptr,&nrotatts);
+					}
+				}
+				/* if a pre-defined grid has not been set up and there is a gds grid type that applies do this */
+
+				if (tmp_lat == NULL && step->grid_gds_tbl_index != -1) {
+#if 0
+					printf("vector rotation %s for gds grid %d\n",((unsigned char)010 & step->thelist->rec_inq->gds[16]) ? 
+					       "grid relative" : "earth relative", step->gds_type);
+#endif
 					(*grid_gds[step->grid_gds_tbl_index].get_gds_grid)
 						(step,&tmp_lat,&n_dims_lat,&dimsizes_lat,&tmp_lon,&n_dims_lon,&dimsizes_lon,
 						 &tmp_rot,&n_dims_rot,&dimsizes_rot,
@@ -2429,7 +2480,7 @@ GribFileRecord *therec;
 					/*
 					 * y or lon first!
 					 */
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
 						sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims+step->var_info.doff);
 					} else {
 						sprintf(buffer,"lon_%d",step->grid_number);
@@ -2473,7 +2524,7 @@ GribFileRecord *therec;
 								    lon_att_list_ptr,nlonatts);
 					}
 					NclFree(dimsizes_lon);
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
 						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims + (step->var_info.doff - 1));
 					} else {
 						sprintf(buffer,"lat_%d",step->grid_number);
@@ -2527,7 +2578,7 @@ GribFileRecord *therec;
 					step->var_info.file_dim_num[current_dim+1] = therec->total_dims + 1;
 					step->var_info.doff=1;
 
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_y_%d",step->gds_type,therec->total_dims + 1);
 						}
@@ -2553,7 +2604,7 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims + 1);
 						}
@@ -2590,7 +2641,7 @@ GribFileRecord *therec;
 							    lon_att_list_ptr,nlonatts);
 					NclFree(dimsizes_lon);
 						
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
 						}
@@ -2614,7 +2665,7 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
 						}
@@ -2648,7 +2699,7 @@ GribFileRecord *therec;
 					therec->total_dims += 2;
 					if (tmp_rot != NULL) {
 						/* the rotation array is assumed to be the same size as the lat and lon arrays */
-						if((step->has_gds)&&(step->grid_number == 255)) {
+						if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
 							if (step->gds_type != 203) {
 								sprintf(buffer,"g%d_rot_%d",step->gds_type,therec->total_dims);
 							}
@@ -4747,7 +4798,7 @@ int wr_status;
 						grib_rec->gds_type = -1;
 						grib_rec->gds = NULL;
 					}
-					if((grib_rec->has_gds) && (grib_rec->grid_number == 255)) {
+					if((grib_rec->has_gds) && (grib_rec->grid_number == 255) ) {
 						for(i = 0; i < grid_gds_tbl_len ; i++) {
 							if(grib_rec->gds_type == grid_gds_index[i]) { 
 								grib_rec->grid_gds_tbl_index = i;
@@ -4759,14 +4810,16 @@ int wr_status;
 						}
 						grib_rec->grid_tbl_index = -1;
 					} else {
+						grib_rec->grid_tbl_index = -1;
 						for(i = 0; i < grid_tbl_len ; i++) {
 							if(grib_rec->grid_number == grid_index[i]) { 
 								grib_rec->grid_tbl_index = i;
 								break;
 							}
 						}
+						/*
 						if((i == grid_tbl_len) || (grid[grib_rec->grid_tbl_index].get_grid == NULL)){
-							grib_rec->grid_tbl_index = -1;
+						*/
 							if(grib_rec->has_gds) {
 								for(i = 0; i < grid_gds_tbl_len ; i++) {
 									if(grib_rec->gds_type == grid_gds_index[i]) { 
@@ -4778,9 +4831,11 @@ int wr_status;
 									grib_rec->grid_gds_tbl_index = -1;
 								}
 							}
+						/*
 						} else {
 							grib_rec->grid_gds_tbl_index = -1;
 						}
+						*/
 					}
 
 					if(grib_rec->has_bms) {
@@ -5024,7 +5079,7 @@ int wr_status;
 					}
 						
 					strcpy((char*)buffer,name_rec->abrev);
-					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255)) {
+					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255 || grib_rec->grid_tbl_index == -1)) {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_GDS%d",grib_rec->gds_type);
 					} else {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",grib_rec->grid_number);
@@ -6335,7 +6390,6 @@ static NhlErrorTypes GribSetOption
 	nc_type *the_data_type;
 	int i,ret;
 	int cdfid;
-	static first = 1;
 
 	if (option ==  NrmStringToQuark("thinnedgridinterpolation")) {
 		rec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void*) *(NrmQuark *)values;
