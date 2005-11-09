@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.21 2005-07-23 00:49:55 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.22 2005-11-09 21:55:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1275,7 +1275,7 @@ NclQuark  varname;
 	NclFileAttInfoList* step;
 	int i,j;
 	int ret;
-	long total;
+	long long total;
 	char *dimnames[100];
 	NclMultiDValData tmp_md;
 	NclVar tmp_var;
@@ -1303,11 +1303,11 @@ NclQuark  varname;
                		 	if(ret < 0) {
                        			return(NhlWARNING);
                 		}
-				ret = nclfprintf(fp,"Total Size: %d bytes\n",total * _NclSizeOf(thefile->file.var_info[i]->data_type));
+				ret = nclfprintf(fp,"Total Size: %lld bytes\n",total * _NclSizeOf(thefile->file.var_info[i]->data_type));
                 		if(ret < 0) {
                         		return(NhlWARNING);
                 		}
-				ret = nclfprintf(fp,"            %d values\n",total);
+				ret = nclfprintf(fp,"            %lld values\n",total);
                 		if(ret < 0) {
                         		return(NhlWARNING);
                 		}
@@ -1329,7 +1329,7 @@ NclQuark  varname;
 						return(NhlWARNING);
 					}
 					
-					ret = nclfprintf(fp,"%d]",thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size);
+					ret = nclfprintf(fp,"%lld]",(long long) thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size);
 					if(ret < 0) {
                                                 return(NhlWARNING);
                                         }
