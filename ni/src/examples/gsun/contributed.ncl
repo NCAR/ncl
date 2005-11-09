@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.85 2005-11-08 04:28:21 shea Exp $
+;      $Id: contributed.ncl,v 1.86 2005-11-09 22:08:59 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4174,6 +4174,10 @@ begin
   end if
 
   mlon  = dimx(nDim-1)
+  if (mlon%2 .ne. 0) then
+      print ("lonflip: longitude dimension size must be even: mlon="+mlon)
+      exit
+  end if
   mlon2 = mlon/2
 
   if (mlon%2.ne.0) then
