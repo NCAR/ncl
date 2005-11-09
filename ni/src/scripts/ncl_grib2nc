@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #                                                                                              
-#       $Id: ncl_grib2nc,v 1.4 2005-11-03 16:39:48 grubin Exp $
+#       $Id: ncl_grib2nc,v 1.5 2005-11-09 17:52:54 grubin Exp $
                                                                                                
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research                                        
@@ -20,6 +20,7 @@
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
+#       [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
 #       [-d]                  upon exit: print contents each netCDF file [like ncdump -h]
 #       [-h]                  usage message
@@ -45,6 +46,7 @@ set dirout = `pwd`
 unset vars
 set nvars = 0
 set ncdfcomment = ""
+set ncdflrgf_t = "classic"
 
 # Display resultant netCDF file when done
 unset printonexit
@@ -132,6 +134,11 @@ while ($#argv > 0)
 
             # Catch the last variable
             set vars = ( $vars\\\"$vline[$n]\\\"'/\)' )
+            breaksw
+
+        case "-L":
+            set ncdflrgf_t = "64bitoffset"
+            shift
             breaksw
 
         case "-c":
@@ -315,6 +322,12 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;      (7) ncl_grib2nc U12345 -o /my/output  \
 ;                     -v gridlat_236,gridlon_236,PRES_236_SFC,NCPCP_236_SFC_acc1h
 ;             => /my/output/U12345.nc    [contains 4 variables only] 
+;
+;      (8) ncl_grib2nc U12345 -v gridlat_236,gridlon_236,PRES_236_SFC -L
+;             => U12345.nc [location current directory]
+;                          [contains only three variables]
+;                          [supports large files (>2Gb) for netCDF]
+;
 ;***************************************************
 ; Multiple files
 ;      The driver shell script gets the expanded file names
@@ -332,6 +345,8 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;              'comment="Data Support Section: ds124.1"' grib2nc.ncl_v1
 ;      (h) ncl 'fili="U12345"' 'varSelect=(/"gridlat_236","gridlon_236", \
 ;                                           "PRES_236_SFC,"NCPCP_236_SFC_acc1h"/)  grib2nc.ncl_v1
+;      (h) ncl 'fili="U12345"' 'varSelect=(/"gridlat_236","gridlon_236", \
+;                                           "PRES_236_SFC/) -L  grib2nc.ncl_v1
 ;***************************************************
 
 begin
@@ -410,14 +425,18 @@ begin
 
 ;***************************************************
 ; open output netcdf file
-;***********************************************
+; Set file for 'large file' netCDF support if specified
+;***************************************************
+    netcdfSizeType = ncdfSize
+    setfileoption("netcdf", "format", netcdfSizeType)
+
     ncFileName = diro + filo + ".nc"      
     system("/bin/rm -f " + ncFileName)  ; remove pre-existing file (if any)
     fnc = addfile(ncFileName, "c")      ; "c"reate the netCDF file
 
 ;***************************************************
 ; define file options [Version a033]
-;***********************************************
+;***************************************************
     setfileoption(fnc, "prefill", False)
     setfileoption(fnc, "suppressclose", True)
     setfileoption(fnc, "definemode", True)
@@ -535,9 +554,9 @@ while ($n <= $nfiles)
     echo "Processing file: $ifiles_r[$n]..."
     echo
     if ($?vars) then
-        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'comment=\""$ncdfcomment"\"' $tmp_nclf
+        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
     else
-        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'comment=\""$ncdfcomment"\"' $tmp_nclf
+        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
     endif
 
     # Display output if requested.
@@ -584,6 +603,7 @@ echo "  [-i input_directory]  location of input file(s)  [default: current direc
 echo "  [-o output_directory] location of output file(s) [default: current directory]"
 echo "  [-v var1[,...]]       user specified subset of variables [default: all variables]"
 echo "                        ncl_filedump can be used to determine desired variable names"
+echo "  [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]"
 echo "  [-c comment]          text to be included in netCDF file attribute [default: no comment]"
 echo "  [-d]                  upon exit: print contents each netCDF file [like ncdump -h]"
 echo "  [-h]                  this usage message"
