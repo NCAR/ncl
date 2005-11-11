@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.86 2005-11-09 22:08:59 shea Exp $
+;      $Id: contributed.ncl,v 1.87 2005-11-11 17:02:06 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6493,7 +6493,6 @@ begin
           end  do
   end if
 end
-
 ; *****************************************************************
 ; D. Shea
 ; Turn monthly values [eg, precipitation] to annual values
@@ -6589,30 +6588,21 @@ begin
           xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+11)          ; cleaner code only
           nyr   = nyr+1
 
-          nMsg  = 0
-          if (isatt(x,"_FillValue")) then
-              nMsg = num (ismissing(xTemp) )
+          if (opt.eq.0) then
+              xAnnual(nyr,:) = dim_sum ( xTemp )
+          else
+              xAnnual(nyr,:) = dim_avg ( xTemp )
           end if
 
-          if (nMsg.eq.0) then
-              if (opt.eq.0) then
-                  xAnnual(nyr,:) = dim_sum ( xTemp )
-              else
-                  xAnnual(nyr,:) = dim_avg ( xTemp )
-              end if
-          else
-              print("month_to_annual: some grid points have missing data")
-              print("                 conventional looping used: current year: nt="+nt)
+          nMsg  = 0                             ; number of missing for current year (nyr)
+          if (isatt(x,"_FillValue")) then
+              nMsg = num (ismissing(xTemp) )    ; for all grid points
+          end if
+
+          if (nMsg.gt.0) then
+              print("month_to_annual: some grid points have missing data: nt="+nt+" nyr="+nyr)
               kMsg = dim_num(.not.ismissing( xTemp ) )
-              do n=0,nn-1
-                 if (kMsg(n).eq.12) then
-                     if (opt.eq.0) then
-                         xAnnual(nyr,n) = sum ( xTemp(n,:) )
-                     else
-                         xAnnual(nyr,n) = avg ( xTemp(n,:) )
-                     end if
-                 end if
-              end do
+              xAnnual(nyr,:) = mask( xAnnual(nyr,:), kMsg.ne.12, False)
           end if
        end do
 
@@ -6632,33 +6622,21 @@ begin
           xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+11) ; cleaner code only
           nyr   = nyr+1
 
-          nMsg  = 0
-          if (isatt(x,"_FillValue")) then
-              nMsg = num (ismissing(xTemp) )
+          if (opt.eq.0) then
+              xAnnual(nyr,:,:) = dim_sum ( xTemp )
+          else
+              xAnnual(nyr,:,:) = dim_avg ( xTemp )
           end if
 
-          if (nMsg.eq.0) then
-              if (opt.eq.0) then
-                  xAnnual(nyr,:,:) = dim_sum ( xTemp )
-              else
-                  xAnnual(nyr,:,:) = dim_avg ( xTemp )
-              end if
-          else
-             ;print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
-              print("month_to_annual: some grid points have missing data")
-              print("                 conventional looping used: current year: nt="+nt)
-              kMsg = dim_num(.not.ismissing( xTemp ) )
-              do n=0,ny-1
-                do m=0,mx-1
-                   if (kMsg(n,m).eq.12) then
-                       if (opt.eq.0) then
-                           xAnnual(nyr,n,m) = sum ( xTemp(n,m,:) )
-                       else
-                           xAnnual(nyr,n,m) = avg ( xTemp(n,m,:) )
-                       end if
-                   end if
-                end do
-              end do
+          nMsg  = 0                             ; number of missing for current year (nyr)
+          if (isatt(x,"_FillValue")) then
+              nMsg = num (ismissing(xTemp) )    ; for all grid points
+          end if
+
+          if (nMsg.gt.0) then
+              print("month_to_annual: some grid points have missing data: nt="+nt+" nyr="+nyr)
+              kMsg             = dim_num(.not.ismissing( xTemp ) )          ; (lat,lon)
+              xAnnual(nyr,:,:) = mask( xAnnual(nyr,:,:), kMsg.ne.12, False)
           end if
        end do
 
@@ -6679,35 +6657,21 @@ begin
           xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+11) 
           nyr   = nyr+1
 
-          nMsg  = 0
+          if (opt.eq.0) then
+                  xAnnual(nyr,:,:,:) = dim_sum ( xTemp )
+          else
+                  xAnnual(nyr,:,:,:) = dim_avg ( xTemp )
+          end if
+
+          nMsg  = 0                             ; number of missing for current year (nyr)
           if (isatt(x,"_FillValue")) then
-              nMsg = num (ismissing(xTemp) )
+              nMsg = num (ismissing(xTemp) )    ; for all grid points
           end if
 
           if (nMsg.eq.0) then
-              if (opt.eq.0) then
-                  xAnnual(nyr,:,:,:) = dim_sum ( xTemp )
-              else
-                  xAnnual(nyr,:,:,:) = dim_avg ( xTemp )
-              end if
-          else
-             ;print("month_to_annual: all grid pts set to missing: current year: nt="+nt)
-              print("month_to_annual: some grid points have missing data")
-              print("                 conventional looping used: current year: nt="+nt)
-              kMsg = dim_num(.not.ismissing( xTemp ) )
-              do k=0,kz-1
-                do n=0,ny-1
-                  do m=0,mx-1
-                     if (kMsg(k,n,m).eq.12) then
-                         if (opt.eq.0) then
-                             xAnnual(nyr,k,n,m) = sum ( xTemp(k,n,m,:) )
-                         else
-                             xAnnual(nyr,k,n,m) = avg ( xTemp(k,n,m,:) )
-                         end if
-                     end if
-                  end do
-                end do
-              end do
+              print("month_to_annual: some grid points have missing data: nt="+nt+" nyr="+nyr)
+              kMsg               = dim_num(.not.ismissing( xTemp ) )
+              xAnnual(nyr,:,:,:) = mask( xAnnual(nyr,:,:,:), kMsg.ne.12, False)
           end if
        end do
 
