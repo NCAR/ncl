@@ -80,6 +80,7 @@ extern NhlErrorTypes _NclPreLoadScript(
 short   NCLverbose = 1;
 short   NCLecho = 0;            /* echo typed commands, off by default */
 short   NCLoverrideEcho = 0;    /* override echo; non-advertised option */
+short   NCLnoCopyright = 0;     /* override copyright notice; non-advertised option */
 short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 
 int
@@ -157,12 +158,6 @@ main(int argc, char **argv) {
 #endif /* NCLDEBUG */
 
     /*
-     * Announce NCL first, so that the copyright and version msgs are always seen.
-     */
-    (void) fprintf(stdout,
-            " Copyright (C) 1995-2005 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n\n", GetNCLVersion());
-
-    /*
      * Defined arguments
      *
      *  -n      element print: don't enumerate elements in print()
@@ -172,9 +167,10 @@ main(int argc, char **argv) {
      *  -h      help: output options and exit
      *
      *  -X      override: echo every stmt regardless (unannounced option)
+     *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "hnxVX")) != -1) {
+    while ((c = getopt (argc, argv, "hnxVXQ")) != -1) {
         switch (c) {
             case 'n':
                 NCLnoPrintElem = 1;
@@ -189,8 +185,13 @@ main(int argc, char **argv) {
                 NCLoverrideEcho = 1;
                 break;
 
+            /* NOT ADVERTISED!  Will not echo copyright notice! */
+            case 'Q':
+                NCLnoCopyright = 1;
+                break;
+
             case 'V':
-                (void) fprintf(stdout, "NCL %s\n", GetNCLVersion());
+                (void) fprintf(stdout, "%s\n", GetNCLVersion());
                 exit(0);
                 break;
 
@@ -214,6 +215,13 @@ main(int argc, char **argv) {
                 break;
         }
     }
+
+    /*
+     * Announce NCL copyright notice, etc.
+     */
+    if (!NCLnoCopyright) 
+        (void) fprintf(stdout,
+            " Copyright (C) 1995-2005 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
 
     /* Process any user-defined arguments */
     for (i = optind; i < argc; i++) {
