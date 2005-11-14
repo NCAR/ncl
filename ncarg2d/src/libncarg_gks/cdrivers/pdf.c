@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.22 2005-11-14 02:45:33 fred Exp $
+ *      $Id: pdf.c,v 1.23 2005-11-14 19:07:03 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2065,6 +2065,15 @@ PDFText(GKSC *gksc)
 
   psa = (PDFddp *) gksc->ddp;
 
+/*
+ *  Save original coordinates, return if out-of-range.
+ */
+  x_orig = psa->dspace.llx + (int) (pptr[0].x * (float) psa->dspace.xspan);
+  y_orig = psa->dspace.lly + (int) (pptr[0].y * (float) psa->dspace.yspan);
+  if (abs(x_orig) > 99999 || abs(y_orig) > 99999) {
+    return(0);
+  }
+
   text_linewidth = 
      (int) (psa->nominal_width_scale * (LINEWIDTH_DEFAULT/(psa->scaling)));
   num_chars = strlen(sptr);
@@ -2114,12 +2123,6 @@ PDFText(GKSC *gksc)
     psa->attributes.pdf_colr_ind = requested_color;
   }
 
-/*
- *  Save original coordinates.
- */
-  x_orig = psa->dspace.llx + (int) (pptr[0].x * (float) psa->dspace.xspan);
-  y_orig = psa->dspace.lly + (int) (pptr[0].y * (float) psa->dspace.yspan);
-                
   up_x          = psa->attributes.char_up_vec_x;
   up_y          = psa->attributes.char_up_vec_y;
   base_x        = psa->attributes.char_base_vec_x;
