@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.21 2003-05-30 23:17:40 fred Exp $
+ *      $Id: pdf.c,v 1.22 2005-11-14 02:45:33 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -109,6 +109,14 @@ void PDFprint_points(PDFddp *psa, PDFPoint *points, unsigned num,
             + (int) (points[i].x * (float) psa->dspace.xspan);
     tmpy = psa->dspace.lly 
             + (int) (points[i].y * (float) psa->dspace.yspan);
+/*
+ *  Return if a coordinate is out-of-range.
+ */
+    if (abs(tmpx) > 99999 || abs(tmpy) > 99999) {
+      printf("**Warning**: PDF - coordinate out of range.\n");
+      return;
+    }
+
     bump_page_lines();
     switch (terminator) {
       case NONE:
@@ -3594,6 +3602,15 @@ int PDFPutStream(FILE *fp) {
  *  Write out a single line segment.
  */
 void PDFPutLine(int px0, int py0, int px1, int py1) {
+
+/*
+ *  Return if any coordinate is out-of-range.
+ */
+  if (abs(px0) > 99999 || abs(py0) > 99999 ||
+      abs(px1) > 99999 || abs(py0) > 99999 ) {
+    return;
+  }
+      
   bump_page_lines();
   sprintf(page_lines[num_page_lines],"%6d %6d m\n", px0, py0);
   stream_size += 16;
