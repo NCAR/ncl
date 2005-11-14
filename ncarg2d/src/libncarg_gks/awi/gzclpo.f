@@ -73,6 +73,19 @@ C
         RETURN
       ENDIF
 C
+C If the subject polygon is entirely outside the clip rectangle
+C return with no error.
+C
+      XCCMN = MIN(XCCP(1),XCCP(2),XCCP(3),XCCP(4))
+      YCCMN = MIN(YCCP(1),YCCP(2),YCCP(3),YCCP(4))
+      XCCMX = MAX(XCCP(1),XCCP(2),XCCP(3),XCCP(4))
+      YCCMX = MAX(YCCP(1),YCCP(2),YCCP(3),YCCP(4))
+      IF (XCSPMN.GT.XCCMX .OR. XCSPMX.LT.XCCMN .OR.
+     +    YCSPMN.GT.YCCMX .OR. YCSPMX.LT.YCCMN) THEN
+        RERR = 0
+        RETURN
+      ENDIF
+C
 C Initialize the garbage lists, onto which released 3-word and 10-word
 C nodes are put for possible re-use.
 C
