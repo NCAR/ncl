@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.23 2005-11-14 19:07:03 fred Exp $
+ *      $Id: pdf.c,v 1.24 2005-11-16 01:21:37 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1668,7 +1668,7 @@ static void PDFOutputPolymarker (GKSC *gksc, int markersize, int markertype)
 }
 
 /*ARGSUSED*/
-PDFOpenWorkstation(GKSC *gksc)
+int PDFOpenWorkstation(GKSC *gksc)
 {
   char    *sptr = (char *) gksc->s.list;
   PDFddp  *psa;
@@ -1750,13 +1750,13 @@ PDFOpenWorkstation(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFActivateWorkstation(GKSC *gksc)
+int PDFActivateWorkstation(GKSC *gksc)
 {
   return(0);
 }
 
 /*ARGSUSED*/
-PDFDeactivateWorkstation(GKSC *gksc)
+int PDFDeactivateWorkstation(GKSC *gksc)
 {
   PDFddp   *psa;
 
@@ -1767,7 +1767,7 @@ PDFDeactivateWorkstation(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFCloseWorkstation(GKSC *gksc)
+int PDFCloseWorkstation(GKSC *gksc)
 {
   PDFddp  *psa;
   int     pages, i, j, startxref;
@@ -1837,7 +1837,7 @@ PDFCloseWorkstation(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFClearWorkstation(GKSC *gksc)
+int PDFClearWorkstation(GKSC *gksc)
 {
   PDFddp  *psa;
   int     ier = 0;
@@ -1883,7 +1883,7 @@ PDFClearWorkstation(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFPolyline(GKSC *gksc)
+int PDFPolyline(GKSC *gksc)
 {
   PDFddp  *psa;
   int     pdf_linewidth, requested_color, current_color, requested_type;
@@ -1951,7 +1951,7 @@ PDFPolyline(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFPolymarker(GKSC *gksc)
+int PDFPolymarker(GKSC *gksc)
 {
 
   PDFddp  *psa;
@@ -2040,7 +2040,7 @@ PDFPolymarker(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFText(GKSC *gksc)
+int PDFText(GKSC *gksc)
 {
   PDFPoint    *pptr = (PDFPoint *) gksc->p.list;
   char        *sptr = (char *) gksc->s.list;
@@ -2530,7 +2530,7 @@ PDFText(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFFillArea(GKSC *gksc)
+int PDFFillArea(GKSC *gksc)
 {
   PDFddp   *psa  = (PDFddp *) gksc->ddp;
   PDFPoint *pptr = (PDFPoint *) gksc->p.list;
@@ -2677,7 +2677,7 @@ PDFFillArea(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFCellarray(GKSC *gksc)
+int PDFCellarray(GKSC *gksc)
 {
   PDFPoint        *pptr = (PDFPoint *) gksc->p.list;
   int             *iptr = (int *) gksc->i.list;
@@ -2819,7 +2819,7 @@ PDFCellarray(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetLinetype(GKSC *gksc)
+int PDFSetLinetype(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2830,7 +2830,7 @@ PDFSetLinetype(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetLineWidthScaleFactor(GKSC *gksc)
+int PDFSetLineWidthScaleFactor(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2842,7 +2842,7 @@ PDFSetLineWidthScaleFactor(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetPolylineColorIndex(GKSC *gksc)
+int PDFSetPolylineColorIndex(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2853,7 +2853,7 @@ PDFSetPolylineColorIndex(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetMarkerType(GKSC *gksc)
+int PDFSetMarkerType(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2865,7 +2865,7 @@ PDFSetMarkerType(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetMarkerSizeScaleFactor(GKSC *gksc)
+int PDFSetMarkerSizeScaleFactor(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2876,7 +2876,7 @@ PDFSetMarkerSizeScaleFactor(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetPolymarkerColorIndex(GKSC *gksc)
+int PDFSetPolymarkerColorIndex(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2888,7 +2888,7 @@ PDFSetPolymarkerColorIndex(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetTextFontAndPrecision(GKSC *gksc)
+int PDFSetTextFontAndPrecision(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2901,7 +2901,7 @@ PDFSetTextFontAndPrecision(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetCharacterExpansionFactor(GKSC *gksc)
+int PDFSetCharacterExpansionFactor(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2913,7 +2913,7 @@ PDFSetCharacterExpansionFactor(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetCharacterSpacing(GKSC *gksc)
+int PDFSetCharacterSpacing(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2924,7 +2924,7 @@ PDFSetCharacterSpacing(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetTextColorIndex(GKSC *gksc)
+int PDFSetTextColorIndex(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2936,7 +2936,7 @@ PDFSetTextColorIndex(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetCharacterHeightAndUpVector(GKSC *gksc)
+int PDFSetCharacterHeightAndUpVector(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2965,7 +2965,7 @@ PDFSetCharacterHeightAndUpVector(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetTextPath(GKSC *gksc)
+int PDFSetTextPath(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2977,7 +2977,7 @@ PDFSetTextPath(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetTextAlignment(GKSC *gksc)
+int PDFSetTextAlignment(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -2989,7 +2989,7 @@ PDFSetTextAlignment(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetFillAreaInteriorStyle(GKSC *gksc)
+int PDFSetFillAreaInteriorStyle(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -3001,7 +3001,7 @@ PDFSetFillAreaInteriorStyle(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetFillAreaStyleIndex(GKSC *gksc)
+int PDFSetFillAreaStyleIndex(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -3011,7 +3011,7 @@ PDFSetFillAreaStyleIndex(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetFillAreaColorIndex(GKSC *gksc)
+int PDFSetFillAreaColorIndex(GKSC *gksc)
 {
   PDFddp *psa = (PDFddp *) gksc->ddp;
 
@@ -3023,7 +3023,7 @@ PDFSetFillAreaColorIndex(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFSetColorRepresentation(GKSC *gksc)
+int PDFSetColorRepresentation(GKSC *gksc)
 {
   PDFddp    *psa = (PDFddp *) gksc->ddp;
 
@@ -3082,7 +3082,7 @@ PDFSetColorRepresentation(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetClipIndicator(GKSC *gksc)
+int PDFSetClipIndicator(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -3171,7 +3171,7 @@ PDFSetClipIndicator(GKSC *gksc)
 
 
 /*ARGSUSED*/
-PDFGetColorRepresentation(gksc)
+int PDFGetColorRepresentation(gksc)
         GKSC    *gksc;
 {
         PDFddp   *psa = (PDFddp *) gksc->ddp;
@@ -3224,7 +3224,7 @@ void PDFNcarLogo(GKSC *gksc,float x,float y,float size)
 }
 
 /*ARGSUSED*/
-PDFEsc(GKSC *gksc)
+int PDFEsc(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -3411,7 +3411,7 @@ PDFEsc(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFUpdateWorkstation(GKSC *gksc)
+int PDFUpdateWorkstation(GKSC *gksc)
 {
         PDFddp   *psa = (PDFddp *) gksc->ddp;
 
@@ -3420,7 +3420,7 @@ PDFUpdateWorkstation(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetViewport(GKSC *gksc)
+int PDFSetViewport(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
   float   *fptr = (float *) gksc->f.list;
@@ -3467,7 +3467,7 @@ PDFSetViewport(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-PDFSetWindow(GKSC *gksc)
+int PDFSetWindow(GKSC *gksc)
 {
   PDFddp   *psa = (PDFddp *) gksc->ddp;
   float   *fptr = (float *) gksc->f.list;
@@ -3886,7 +3886,7 @@ void rgb2cmyk(float r, float g, float b,
   *m = *m-*k;
   *y = *y-*k;
 }
-int bump_object_number() {
+void bump_object_number() {
   if (object_number > MAX_OBJECTS) {
     object_pointer = (int *) realloc(object_pointer,2*MAX_OBJECTS*sizeof(int));
     if (object_pointer == NULL) {
@@ -3896,7 +3896,7 @@ int bump_object_number() {
   }
   object_number++;
 }
-int bump_page_lines() {
+void bump_page_lines() {
   if (num_page_lines >= maximum_lines-1) {
     adjust_lines();
   }

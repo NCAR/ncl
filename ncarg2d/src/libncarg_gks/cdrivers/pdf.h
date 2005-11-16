@@ -1,5 +1,5 @@
 /*
- *	$Id: pdf.h,v 1.3 2003-03-05 19:56:15 fred Exp $
+ *	$Id: pdf.h,v 1.4 2005-11-16 01:21:37 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -35,6 +35,9 @@
  *
  *      Description:	PDF device driver header file
  */
+
+#include <stdio.h>
+
 #ifndef	_pdf_driver_
 #define	_pdf_driver_
 
@@ -260,5 +263,9 @@ typedef enum {BUTT, ROUNDED, PROJECTING} linecap_type;
 typedef enum {MITER,ROUND, BEVEL} linejoin_type;
 
 void reverse_chars(char *);
+void bump_page_lines();
+void bump_object_number();
+int PDFPutStreamDict(FILE *, int, int);
+int PDFPutStream(FILE *);
 
 #endif	/* _pdf_driver_	*/

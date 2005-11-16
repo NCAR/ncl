@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.36 2003-11-24 19:17:44 fred Exp $
+ *      $Id: ps.c,v 1.37 2005-11-16 01:21:37 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2019,7 +2019,7 @@ static void OutputPolymarker (GKSC *gksc, int markersize, int markertype)
 }
 
 /*ARGSUSED*/
-ps_OpenWorkstation(GKSC *gksc)
+int ps_OpenWorkstation(GKSC *gksc)
 {
         char    *sptr = (char *) gksc->s.list;
         PSddp   *psa;
@@ -2114,14 +2114,14 @@ ps_OpenWorkstation(GKSC *gksc)
 }
 
 /*ARGSUSED*/
-ps_ActivateWorkstation(gksc)
+int ps_ActivateWorkstation(gksc)
         GKSC    *gksc;
 {
         return(0);
 }
 
 /*ARGSUSED*/
-ps_DeactivateWorkstation(gksc)
+int ps_DeactivateWorkstation(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa;
@@ -2133,7 +2133,7 @@ ps_DeactivateWorkstation(gksc)
 }
 
 /*ARGSUSED*/
-ps_CloseWorkstation(gksc)
+int ps_CloseWorkstation(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa;
@@ -2179,7 +2179,7 @@ ps_CloseWorkstation(gksc)
 }
 
 /*ARGSUSED*/
-ps_ClearWorkstation(gksc)
+int ps_ClearWorkstation(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa;
@@ -2204,7 +2204,7 @@ ps_ClearWorkstation(gksc)
 
 
 /*ARGSUSED*/
-ps_Polyline(gksc)
+int ps_Polyline(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa;
@@ -2264,7 +2264,7 @@ ps_Polyline(gksc)
 }
 
 /*ARGSUSED*/
-ps_Polymarker(gksc)
+int ps_Polymarker(gksc)
         GKSC    *gksc;
 {
 
@@ -2332,7 +2332,7 @@ ps_Polymarker(gksc)
 }
 
 /*ARGSUSED*/
-ps_Text(gksc)
+int ps_Text(gksc)
         GKSC    *gksc;
 {
         PSPoint *pptr = (PSPoint *) gksc->p.list;
@@ -2723,7 +2723,7 @@ ps_Text(gksc)
 }
 
 /*ARGSUSED*/
-ps_FillArea(gksc)
+int ps_FillArea(gksc)
         GKSC    *gksc;
 {
         PSPoint *pptr = (PSPoint *) gksc->p.list;
@@ -2856,7 +2856,7 @@ ps_FillArea(gksc)
 
 
 /*ARGSUSED*/
-ps_Cellarray(gksc)
+int ps_Cellarray(gksc)
         GKSC    *gksc;
 {
         PSPoint *pptr = (PSPoint *) gksc->p.list;
@@ -2934,7 +2934,7 @@ ps_Cellarray(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetLinetype(gksc)
+int ps_SetLinetype(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -2946,7 +2946,7 @@ ps_SetLinetype(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetLineWidthScaleFactor(gksc)
+int ps_SetLineWidthScaleFactor(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -2959,7 +2959,7 @@ ps_SetLineWidthScaleFactor(gksc)
 
 
 /*ARGSUSED*/
-ps_SetPolylineColorIndex(gksc)
+int ps_SetPolylineColorIndex(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -2971,7 +2971,7 @@ ps_SetPolylineColorIndex(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetMarkerType(gksc)
+int ps_SetMarkerType(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -2984,7 +2984,7 @@ ps_SetMarkerType(gksc)
 
 
 /*ARGSUSED*/
-ps_SetMarkerSizeScaleFactor(gksc)
+int ps_SetMarkerSizeScaleFactor(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -2996,7 +2996,7 @@ ps_SetMarkerSizeScaleFactor(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetPolymarkerColorIndex(gksc)
+int ps_SetPolymarkerColorIndex(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3009,7 +3009,7 @@ ps_SetPolymarkerColorIndex(gksc)
 
 
 /*ARGSUSED*/
-ps_SetTextFontAndPrecision(gksc)
+int ps_SetTextFontAndPrecision(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3023,7 +3023,7 @@ ps_SetTextFontAndPrecision(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetCharacterExpansionFactor(gksc)
+int ps_SetCharacterExpansionFactor(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3036,7 +3036,7 @@ ps_SetCharacterExpansionFactor(gksc)
 
 
 /*ARGSUSED*/
-ps_SetCharacterSpacing(gksc)
+int ps_SetCharacterSpacing(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3048,7 +3048,7 @@ ps_SetCharacterSpacing(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetTextColorIndex(gksc)
+int ps_SetTextColorIndex(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3061,7 +3061,7 @@ ps_SetTextColorIndex(gksc)
 
 
 /*ARGSUSED*/
-ps_SetCharacterHeightAndUpVector(gksc)
+int ps_SetCharacterHeightAndUpVector(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3091,7 +3091,7 @@ ps_SetCharacterHeightAndUpVector(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetTextPath(gksc)
+int ps_SetTextPath(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3104,7 +3104,7 @@ ps_SetTextPath(gksc)
 
 
 /*ARGSUSED*/
-ps_SetTextAlignment(gksc)
+int ps_SetTextAlignment(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3117,7 +3117,7 @@ ps_SetTextAlignment(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetFillAreaInteriorStyle(gksc)
+int ps_SetFillAreaInteriorStyle(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3130,7 +3130,7 @@ ps_SetFillAreaInteriorStyle(gksc)
 
 
 /*ARGSUSED*/
-ps_SetFillAreaStyleIndex(gksc)
+int ps_SetFillAreaStyleIndex(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3141,7 +3141,7 @@ ps_SetFillAreaStyleIndex(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetFillAreaColorIndex(gksc)
+int ps_SetFillAreaColorIndex(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3154,7 +3154,7 @@ ps_SetFillAreaColorIndex(gksc)
 
 
 /*ARGSUSED*/
-ps_SetColorRepresentation(gksc)
+int ps_SetColorRepresentation(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3214,7 +3214,7 @@ ps_SetColorRepresentation(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetClipIndicator(gksc)
+int ps_SetClipIndicator(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -3321,7 +3321,7 @@ ps_SetClipIndicator(gksc)
 
 
 /*ARGSUSED*/
-ps_GetColorRepresentation(gksc)
+int ps_GetColorRepresentation(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -8482,7 +8482,7 @@ void ps_NcarLogo(GKSC *gksc,float x,float y,float size)
 }
 
 /*ARGSUSED*/
-ps_Esc(gksc)
+int ps_Esc(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -8663,7 +8663,7 @@ ps_Esc(gksc)
 }
 
 /*ARGSUSED*/
-ps_UpdateWorkstation(gksc)
+int ps_UpdateWorkstation(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -8673,7 +8673,7 @@ ps_UpdateWorkstation(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetViewport(gksc)
+int ps_SetViewport(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
@@ -8724,7 +8724,7 @@ ps_SetViewport(gksc)
 }
 
 /*ARGSUSED*/
-ps_SetWindow(gksc)
+int ps_SetWindow(gksc)
         GKSC    *gksc;
 {
         PSddp   *psa = (PSddp *) gksc->ddp;
