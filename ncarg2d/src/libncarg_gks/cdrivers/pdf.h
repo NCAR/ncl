@@ -1,5 +1,5 @@
 /*
- *	$Id: pdf.h,v 1.4 2005-11-16 01:21:37 fred Exp $
+ *	$Id: pdf.h,v 1.5 2005-11-16 20:17:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -264,7 +264,7 @@ typedef enum {MITER,ROUND, BEVEL} linejoin_type;
 
 void reverse_chars(char *);
 void bump_page_lines();
-void bump_object_number();
+int bump_object_number();
 int PDFPutStreamDict(FILE *, int, int);
 int PDFPutStream(FILE *);
 

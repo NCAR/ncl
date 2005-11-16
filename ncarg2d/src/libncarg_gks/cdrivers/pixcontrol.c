@@ -1,5 +1,5 @@
 /*
- *      $Id: pixcontrol.c,v 1.5 2004-12-15 23:04:38 fred Exp $
+ *      $Id: pixcontrol.c,v 1.6 2005-11-16 20:17:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -44,6 +44,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <ncarg/c.h>
+#include <ncarg/gks.h>
 #include "gks_device.h"
 #include "common.h"
 #include "gksc.h"
@@ -52,6 +53,8 @@
 #include "x.h"
 #include "pix_device.h"
 #include "pixddi.h"
+
+extern void gerr_hand(Gint, Gint, const char *);
 
 /*
  * Function:    PIX_private_color

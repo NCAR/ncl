@@ -1,5 +1,5 @@
 /*
- *      $Id: ctxt.c,v 1.5 2003-01-06 23:30:12 fred Exp $
+ *      $Id: ctxt.c,v 1.6 2005-11-16 20:17:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <ncarg/gksP.h>
 #include <ncarg/c.h>
+#include <ncarg/gks.h>
 #include "gksc.h"
 #include "ctxt.h"
 #include "gks.h"
@@ -47,6 +48,7 @@
  * cvs test comment
  */
 
+extern void gerr_hand (Gint, Gint, const char *);
 
 static  void    print_points(points, num)
         CTXTPoint       *points;

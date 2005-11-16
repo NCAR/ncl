@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.37 2005-11-16 01:21:37 fred Exp $
+ *      $Id: ps.c,v 1.38 2005-11-16 20:17:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -45,6 +45,7 @@
 #include <errno.h>
 #include <ncarg/gksP.h>
 #include <ncarg/c.h>
+#include <ncarg/gks.h>
 #include "gksc.h"
 #include "gks.h"
 #include "common.h"
@@ -62,6 +63,7 @@ char    *PSFontNames[] = {
                 };
 
 extern int      orig_wks_id;
+extern void     gerr_hand (Gint, Gint, const char *);
 int             c_model;
 
 void PSprint_points(PSddp *psa, PSPoint *points, unsigned num, 

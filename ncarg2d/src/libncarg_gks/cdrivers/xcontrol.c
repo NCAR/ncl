@@ -1,5 +1,5 @@
 /*
- *      $Id: xcontrol.c,v 1.24 2004-08-03 21:53:14 fred Exp $
+ *      $Id: xcontrol.c,v 1.25 2005-11-16 20:17:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -44,6 +44,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <ncarg/c.h>
+#include <ncarg/gks.h>
 #include "gks_device.h"
 #include "common.h"
 #include "gksc.h"
@@ -52,6 +53,8 @@
 #include "x.h"
 #include "x_device.h"
 #include "xddi.h"
+
+extern void gerr_hand(Gint, Gint, const char *);
 
 /*
  * Function:    X11_private_color

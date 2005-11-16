@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.24 2005-11-16 01:21:37 fred Exp $
+ *      $Id: pdf.c,v 1.25 2005-11-16 20:17:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -45,12 +45,15 @@
 #include <errno.h>
 #include <ncarg/gksP.h>
 #include <ncarg/c.h>
+#include <ncarg/gks.h>
 #include "gksc.h"
 #include "gks.h"
 #include "common.h"
 #include "pdf_device.h"
 #include "pdfddi.h"
 #include "pdf.h"
+
+extern void gerr_hand(Gint, Gint, const char *);
 
 void PDFPutLine(int, int, int, int);
 void PDFPutCircle(int, int, int);
@@ -3886,7 +3889,7 @@ void rgb2cmyk(float r, float g, float b,
   *m = *m-*k;
   *y = *y-*k;
 }
-void bump_object_number() {
+int bump_object_number() {
   if (object_number > MAX_OBJECTS) {
     object_pointer = (int *) realloc(object_pointer,2*MAX_OBJECTS*sizeof(int));
     if (object_pointer == NULL) {
