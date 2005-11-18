@@ -1,5 +1,5 @@
 /*
- * $Id: natgrids.c,v 1.12 2005-07-29 23:19:55 fred Exp $
+ * $Id: natgrids.c,v 1.13 2005-11-18 00:59:46 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ncarg/ngmath.h>
 #include "nnghead.h"
 #include "nngheads.h"
 #include "nnexver.h"

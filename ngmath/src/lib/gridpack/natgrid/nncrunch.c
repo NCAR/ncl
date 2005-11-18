@@ -1,5 +1,5 @@
 /*
- * $Id: nncrunch.c,v 1.9 2002-08-02 16:48:04 fred Exp $
+ * $Id: nncrunch.c,v 1.10 2005-11-18 00:59:47 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -28,6 +28,7 @@
  */
 #include <stdlib.h>
 #include <math.h>
+#include <ncarg/ngmath.h>
 #include "nncheads.h"
 #include "nnchead.h"
 #include "nntypes.h"

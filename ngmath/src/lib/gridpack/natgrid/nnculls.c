@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ncarg/ngmath.h>
 
 extern int maxmsg;
 
