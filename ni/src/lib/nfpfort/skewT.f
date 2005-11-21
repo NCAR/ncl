@@ -381,7 +381,7 @@ C                          (integer) subscript where tparcel crosses env
 C                          sounding
 C NCLEND
 C                               ! maximum number of sounding levels
-      PARAMETER (NLMAX=500)
+      PARAMETER (NLMAX=5000)
 C                               ! must match "tpar" in capedjs
       DOUBLE PRECISION TPAR(NLMAX)
 
@@ -758,8 +758,9 @@ c     GLF 9/95
 C                ! special for NCL return [dimensioned NLMAX]
       DOUBLE PRECISION TPARCEL(*)
 
-C                               number of sounding levels
-      PARAMETER (NLMAX=500)
+C                               max number of sounding levels
+c                               see also cape routine
+      PARAMETER (NLMAX=5000)
       PARAMETER (CENTKEL=273.15D0)
       PARAMETER (G=9.81D0)
       PARAMETER (CP=1004.D0)
