@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.198 2005-08-25 05:56:45 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.199 2005-11-22 17:36:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8553,9 +8553,12 @@ begin
 ; If no ref line specified, but bar fill is on, then set the reference
 ; line to the minimum y value.
 ;
-          yref_line    = get_res_value_keep(res2,"trYMinF",min(y))
-          nyref        = 1 
-          yref_line_on = True
+          yref_line           = get_res_value_keep(res2,"trYMinF",min(y))
+          nyref               = 1 
+          yref_line_on        = True
+          yref_line_color     = "foreground"
+          yref_line_pattern   = 0
+          yref_line_thickness = 1.
         else
           if((ncurves.gt.1.and.nyref.gt.1.and.ncurves.ne.nyref).or. \
              (ncurves.eq.1.and.nyref.ne.1))
