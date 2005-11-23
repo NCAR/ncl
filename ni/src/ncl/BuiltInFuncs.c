@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.186 2005-11-23 18:12:53 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.187 2005-11-23 18:53:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3899,6 +3899,7 @@ NhlErrorTypes _NclIasciiread
 	int has_unlimited = 0;
 	int bufsize = 4096;
 	char buf[4096];
+	int total = 0;
 
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
@@ -3981,7 +3982,6 @@ NhlErrorTypes _NclIasciiread
 
 	if((size != -1)&&(!has_unlimited)) {
 		totalsize = size;
-		int total = 0;
 		
 		tmp_ptr = NclMalloc(size*thetype->type_class.size);
 		fp = fopen(path_string,"r");
