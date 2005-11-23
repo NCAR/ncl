@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.170 2005-11-08 04:10:54 haley Exp $
+;      $Id: gsn_code.ncl,v 1.171 2005-11-23 04:51:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -100,6 +100,7 @@ undef("gsn_polyline_ndc")
 undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
+undef("gsn_create_labelbar_ndc")
 undef("gsn_labelbar_ndc")
 undef("gsn_legend_ndc_return")
 undef("gsn_legend_ndc")
@@ -3286,7 +3287,7 @@ begin
 end
 
 ;***********************************************************************;
-; Procedure : gsn_labelbar_ndc                                          ;
+; Function : gsn_create_labelbar_ndc                                    ;
 ;                   wks: workstation object                             ;
 ;                  nbox: number of labelbar boxes                       ;
 ;                labels: labels for boxes                               ;
@@ -3294,12 +3295,12 @@ end
 ;                     y: Y NDC position of labelbar                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-; This procedure draws a labelbar on the workstation "wks" (the         ;
-; variable returned from a previous call to "gsn_open_wks").            ;
+; This function creates and returns a labelbar on the workstation "wks" ;
+; (the variable returned from a previous call to "gsn_open_wks").       ;
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
-procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
-                           x,y,resources:logical )
+function gsn_create_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
+                                 x,y,resources:logical )
 local i, lbid, res, lb_res_index, lbres
 begin
     res2 = get_resources(resources)
@@ -3330,10 +3331,17 @@ begin
       attsetvalues_check(lbid,lbres)
     end if
 
-; Draw labelbar.
+; Return labelbar.
 
-    draw(lbid)
-    delete(lbid)
+    return(lbid)
+end
+
+procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
+                           x,y,resources:logical )
+local labelbar
+begin
+    labelbar = gsn_create_labelbar_ndc(wks, nbox, labels, x, y, resources)
+    draw(labelbar)
 end
 
 ;***********************************************************************;
