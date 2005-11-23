@@ -105,5 +105,7 @@ TBLE2 omb_params[] = {
 {173, "Net Ice-Ocean salt flux", "kg/s", "IOSFLX"},
 {175, "Ocean Mixed Layer Temperature", "K", "OMLT"},
 {176, "Ocean Mixed Layer Salinity", "kg/kg", "OMLS"},
+{178, "Ocean mixed layer u velocity", "m/s", "OMLU"},
+{179, "Ocean mixed layer v velocity", "m/s", "OMLV"},
 {254, "Relative Error Variance", "non-dim", "REV"},
 };

@@ -162,6 +162,7 @@ TBLE2 ncep_130_params[] = {
 {172, "Momentum flux", "N/m^2", "MFLX"},
 {176, "Latitude (-90 to +90)", "deg", "NLAT"},
 {177, "East longitude (0-360)", "deg", "ELON"},
+{178, "Field Capacity (soil moisture)", "fraction", "FLDCAP"},
 {179, "Aerodynamic conductance", "m/s", "ACOND"},
 {180, "Snow age", "s", "SNOAG"},
 {181, "Canopy conductance", "m/s", "CCOND"},

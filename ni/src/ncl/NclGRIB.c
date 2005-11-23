@@ -3801,30 +3801,34 @@ unsigned char *offset;
 #endif
 {
 	switch(time_indicator) {
-		case 0: /* reference time + P1 */
-		case 1: /* reference time + P1 */
-			return((int)offset[0]);
-		case 2: /* reference time + P1 < t < reference time + P2 */
-		case 3: /* Average from reference time + P1 to reference time + P2 */
-		case 4: /* Accumulation from reference time + P1 to reference time + P2 */
-		case 5: /* Difference from reference time + P1 to reference time + P2 */
-			return((int)offset[1]);
-		case 10:/* P1 occupies both bytes */
-			return(UnsignedCnvtToDecimal(2,offset));
-		case 51:
-		case 113:
-		case 114:
-		case 115:
-		case 116:
-		case 118:
-		case 123:
-		case 124:
-			return 0;
-		case 117:
-			return((int)offset[0]);
-		default:
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown or unsupported time range indicator detected, continuing");
-			return(-1);
+	case 0: /* reference time + P1 */
+	case 1: /* reference time + P1 */
+		return((int)offset[0]);
+	case 2: /* reference time + P1 < t < reference time + P2 */
+	case 3: /* Average from reference time + P1 to reference time + P2 */
+	case 4: /* Accumulation from reference time + P1 to reference time + P2 */
+	case 5: /* Difference from reference time + P1 to reference time + P2 */
+		return((int)offset[1]);
+	case 6: /* Average from reference time - P1 to reference time - P2 */
+		return(-(int)offset[1]);
+	case 7: /* Average from reference time - P1 to reference time + P2 */
+		return((int)offset[1]);
+	case 10:/* P1 occupies both bytes */
+		return(UnsignedCnvtToDecimal(2,offset));
+	case 51:
+	case 113:
+	case 114:
+	case 115:
+	case 116:
+	case 118:
+	case 123:
+	case 124:
+		return 0;
+	case 117:
+		return((int)offset[0]);
+	default:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown or unsupported time range indicator detected, continuing");
+		return(-1);
 	}
 }
 static int level_comp
@@ -5132,6 +5136,17 @@ int wr_status;
 							grib_rec->time_period = AdjustedTimePeriod
 								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif%s",tpbuf);
+						}
+						break;
+					case 6:
+					case 7:
+						grib_rec->time_period = abs((int)grib_rec->pds[19] - (int) grib_rec->pds[18]);
+						if (grib_rec->time_period == 0)
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
+						else {
+							grib_rec->time_period = AdjustedTimePeriod
+								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
 						break;
 					default:
