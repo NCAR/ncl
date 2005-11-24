@@ -77,27 +77,21 @@ int grid_gds_index[] = { -1, 0, 1, /* 2,*/ 3, 4, 5, 10, /* 13,*/ 50, /*60, 70, 8
 int grid_gds_tbl_len = sizeof(grid_gds_index)/sizeof(int);
 #define EAR 6371.2213
 #define ear 6367.47
-#define PI 3.14159265
+#define PI 3.14159265358979323846
 #define PI4  (PI/4)
-#define RADDEG (180./PI)
+#define RADDEG PI / 180.0
 #define EAST 1
 #define WEST -1
 
-static float er;
-static float er2;
-static float xax;
-static float xpp;
-static float ypp;
-static int southern;
 
 float pi = 3.14159265358979323846;
 float pi2 = 1.57079632679489661923;
 float pi4 = 0.78539816339744830962;
 float degtorad = 1.745329e-02;
 float radtodeg = 5.729578e+01;
-double dpi = (double)3.14159265358979323846;
-double rtod = (double)180.0/(double)3.14159265358979323846;
-double dtor = (double)3.14159265358979323846/(double)180.0;
+double dpi = (double)PI;
+double rtod = (double) 180.0/ PI;
+double dtor = (double) PI /(double)180.0;
 
 typedef int (*Index_Func) (
 #if NhlNeedProto
@@ -184,43 +178,6 @@ static int is_gpoint
 		}
 	}
 }
-static void grdsetup(float x,float y,float gsp,float d,float ax) 
-{
-	if(d< 0) {
-		southern = -1;
-	} else {
-		southern = 1;
-	}
-	er =  EAR * (1.0 + sin(fabs(d)/RADDEG)) / gsp;
-	er2 = er * er;
-	xax = ax;
-	xpp = x;
-	ypp = y;
-	return;
-}
-
-
-static void grdloc(float xp,float yp, float *xlo, float* xla)
-{
-	float r2,ss;
-	float yy,xx,elong;
-
-
-	yy = yp - ypp;
-	xx = xp - xpp;
-	*xlo = 0.0;
-	if((yy != 0.0)||(xx!=0) ) {
-		elong = RADDEG * atan2(yy,xx);
-		*xlo =  elong + xax;
-		if(*xlo > 180.0) 
-			*xlo = *xlo - 360.0;
-		if(*xlo < -180.0)
-			*xlo = *xlo + 360;
-	} 
-	r2 = xx * xx + yy * yy;
-	ss = (er2-r2)/(er2+r2);
-	*xla = southern * RADDEG * asin(ss);
-} 
 
 static int printbinary(int val) {
 
@@ -838,9 +795,27 @@ int* nrotatts;
 */
 void GenLambert
 #if	NhlNeedProto
-(GribParamList* thevarrec, float** lat, int* n_dims_lat, int** dimsizes_lat, float** lon, int* n_dims_lon, int** dimsizes_lon,float lat0, float lat1, float lon0, float dx, float dy,float start_lat, float start_lon,int nx,int ny)
+(
+	GribParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon,
+	float **rot,
+	double lat0, 
+	double lat1, 
+	double lon0, 
+	double dx, 
+	double dy,
+	double start_lat, 
+	double start_lon,
+	int nx,
+	int ny)
 #else  
-(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, lat0, lat1, lon0, dx, dy, start_lat, start_lon, nx, ny)
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+ lat0, lat1, lon0, dx, dy, start_lat, start_lon, nx, ny)
 	GribParamList* thevarrec;
 	float** lat;
 	int* n_dims_lat;
@@ -848,13 +823,14 @@ void GenLambert
 	float** lon;
 	int* n_dims_lon;
 	int** dimsizes_lon;
-	loat lat0;
-	float lat1;
-	float lon0;
-	float dx;
-	float dy;
-	float start_lat;
-	float start_lon;
+	float ** rot;
+	double lat0;
+	double lat1;
+	double lon0;
+	double dx;
+	double dy;
+	double start_lat;
+	double start_lon;
 	int nx;
 	int ny;
 #endif
@@ -862,19 +838,22 @@ void GenLambert
 	static int mapid = -1;
 	static int vpid = -1;
 	static int rlist = -1;
-	float tlat;
-	float tlon;
-	float nx0,nx1,ny0,ny1;
-	float C,d_per_km,dlon,dlat;
-	float ndcdx,ndcdy,start_ndcx,start_ndcy;
+	double tlat;
+	double tlon;
+	double nx0,nx1,ny0,ny1;
+	double C,d_per_km,dlon,dlat;
+	double ndcdx,ndcdy,start_ndcx,start_ndcy;
 	int status;
-	float orv;
+	double orv;
 	int i,j;
+	double an;
 
 	InitMapTrans("LC",lat0,lon0,lat1);
 
+	/* this has already been done now */
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
+	*rot = (float*)NclMalloc(sizeof(float)*nx*ny);
         *dimsizes_lat = (int*)NclMalloc(sizeof(int)*2);
         *dimsizes_lon = (int*)NclMalloc(sizeof(int)*2);
         *n_dims_lat = 2;
@@ -883,117 +862,85 @@ void GenLambert
         (*dimsizes_lat)[1] = nx;
         (*dimsizes_lon)[0] = ny;
         (*dimsizes_lon)[1] = nx;
+
 /*
 * Southern case
 */
 	if((lat0 < 0)&&(lat1 < 0)) {
 		
-		C = 2 * pi * EAR * cos(degtorad * lat0);
+		if (lat0 == lat1) {
+			an = sin(-1 * lat0 * dtor);
+		}
+		else {
+			an = log(cos(lat0 * dtor)/cos(lat1 * dtor)) /
+				log(tan(dtor * (-90 - lat0) / 2) / tan(dtor * (-90 - lat1) / 2));
+		}
+		C = 2 * pi * EAR * cos(dtor * lat0);
 		d_per_km = 360.0/C;
 		dlon = dx * d_per_km;
 /*
 * lat0 is always closest to pole
 */
 		tlon = lon0 + dlon;
-		NGCALLF(maptrn,MAPTRN)(&lat0,&lon0,&nx0,&ny0);
-		NGCALLF(maptrn,MAPTRN)(&lat0,&tlon,&nx1,&ny1);
+		NGCALLF(mdptrn,MDPTRN)(&lat0,&lon0,&nx0,&ny0);
+		NGCALLF(mdptrn,MDPTRN)(&lat0,&tlon,&nx1,&ny1);
 		ndcdx = fabs(nx0 - nx1);
 		ndcdy = dy/dx * ndcdx;
-		NGCALLF(maptrn,MAPTRN)(&start_lat,&start_lon,&nx0,&ny0);
+		NGCALLF(mdptrn,MDPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				float tmpx =  nx0 + j * ndcdx;
-				float tmpy =  ny0 + i * ndcdy;
-				NGCALLF(maptri,MAPTRI)
-				(&tmpx,&tmpy,&((*lat)[i * nx + j]),&((*lon)[i * nx + j]));
+				double tmpx =  nx0 + j * ndcdx;
+				double tmpy =  ny0 + i * ndcdy;
+				double tmplat,tmplon;
+				double dlon,trot;
+				NGCALLF(mdptri,MDPTRI)
+					(&tmpx,&tmpy,&tmplat,&tmplon);
+				(*lat)[i * nx + j] = (float)tmplat;
+				(*lon)[i * nx + j] = (float)tmplon;
+				dlon = fmod(tmplon - lon0 + 180 + 3600, 360) - 180.0;
+				(*rot)[i * nx + j] = (float) an * dlon * dtor;
 			}
 		}
 	} else {
 /*
 * Northern case
 */
-		C = 2 * pi * EAR * cos(degtorad * lat0);
+		if (lat0 == lat1) {
+			an = sin(lat0 * dtor);
+		}
+		else {
+			an = log(cos(lat0 * dtor)/cos(lat1 * dtor)) /
+				log(tan(dtor * (90 - lat0) / 2) / tan(dtor * (90 - lat1) / 2));
+		}
+		C = 2 * pi * EAR * cos(dtor * lat0);
 		d_per_km = 360.0/C;
 		dlon = dx * d_per_km;
 /*
 * lat0 is always closest to pole
 */
 		tlon = lon0 + dlon;
-		NGCALLF(maptrn,MAPTRN)(&lat0,&lon0,&nx0,&ny0);
-		NGCALLF(maptrn,MAPTRN)(&lat0,&tlon,&nx1,&ny1);
+		NGCALLF(mdptrn,MDPTRN)(&lat0,&lon0,&nx0,&ny0);
+		NGCALLF(mdptrn,MDPTRN)(&lat0,&tlon,&nx1,&ny1);
 		ndcdx = fabs(nx0 - nx1);
 		ndcdy = dy/dx * ndcdx;
-		NGCALLF(maptrn,MAPTRN)(&start_lat,&start_lon,&nx0,&ny0);
+		NGCALLF(mdptrn,MDPTRN)(&start_lat,&start_lon,&nx0,&ny0);
 		for(i = 0; i < ny; i++) {
 			for(j = 0; j < nx; j++) {
-				float tmpx =  nx0 + j * ndcdx;
-				float tmpy =  ny0 + i * ndcdy;
-				NGCALLF(maptri,MAPTRI)
-				(&tmpx,&tmpy,&((*lat)[i * nx + j]),&((*lon)[i * nx + j]));
+				double tmpx =  nx0 + j * ndcdx;
+				double tmpy =  ny0 + i * ndcdy;
+				double tmplat,tmplon;
+				NGCALLF(mdptri,MDPTRI)
+					(&tmpx,&tmpy,&tmplat,&tmplon);
+				(*lat)[i * nx + j] = (float)tmplat;
+				(*lon)[i * nx + j] = (float)tmplon;
+				dlon = fmod(tmplon - lon0 + 180 + 3600, 360) - 180.0;
+				(*rot)[i * nx + j] = (float) an * dlon * dtor;
 			}
 		}
 	}
 
 }
 
-
-void GetAtts_212
-#if NhlNeedProto
-(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
- int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
-#else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts)
-GribParamList* thevarrec;
-GribAttInqRecList **lat_att_list_ptr;
-int * nlatatts; 
-GribAttInqRecList **lon_att_list_ptr;
-int *nlonatts;
-int do_rot;
-GribAttInqRecList **rot_att_list_ptr;
-int *nrotatts;
-#endif
-{
-	GribAttInqRecList* tmp_att_list_ptr;
-	NclQuark *tmp_string = NULL;
-	float *tmp_float = NULL;
-	int tmp_dimsizes = 1;
-
-
-	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
-
-
-	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
-
-	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
-	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
-
-	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = -95.0;
-	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
-
-	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
-	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
-
-	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
-
-	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = 25.0;
-	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
-
-	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = -95.0;
-	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
-
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
-}
 
 void GenLambertAtts
 #if NhlNeedProto
@@ -1006,10 +953,12 @@ void GenLambertAtts
 	int do_rot, 
 	GribAttInqRecList **rot_att_list_ptr, 
 	int *nrotatts,
-	int *kgds
+	int *kgds,
+	double dx,
+	double dy
 	)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts,kgds)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts,kgds,dx,dy)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
@@ -1019,6 +968,8 @@ int do_rot;
 GribAttInqRecList **rot_att_list_ptr;
 int *nrotatts;
 int *kgds;
+double dx;
+double dy;
 #endif
 {
 	NclQuark *tmp_string = NULL;
@@ -1035,10 +986,10 @@ int *kgds;
 	*tmp_float = kgds[6] / 1000.0;
 	GribPushAtt(lat_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[7];
+	*tmp_float = dx;
 	GribPushAtt(lat_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[8];
+	*tmp_float = dy;
 	GribPushAtt(lat_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -1070,10 +1021,10 @@ int *kgds;
 	*tmp_float =  kgds[6] / 1000.0;
 	GribPushAtt(lon_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[7];
+	*tmp_float = dx;
 	GribPushAtt(lon_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[8];
+	*tmp_float = dy;
 	GribPushAtt(lon_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float =  kgds[11] / 1000.0;
@@ -1101,7 +1052,8 @@ int *kgds;
 	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
 }
 
-
+/* --- we're not calling these specific att-getting routines any more */
+#if 0 
 void GetAtts_206
 #if NhlNeedProto
 (GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts,
@@ -1274,6 +1226,65 @@ int *nrotatts;
 	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts);
 }
 
+void GetAtts_212
+#if NhlNeedProto
+(GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
+ int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
+#else
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts)
+GribParamList* thevarrec;
+GribAttInqRecList **lat_att_list_ptr;
+int * nlatatts; 
+GribAttInqRecList **lon_att_list_ptr;
+int *nlonatts;
+int do_rot;
+GribAttInqRecList **rot_att_list_ptr;
+int *nrotatts;
+#endif
+{
+	GribAttInqRecList* tmp_att_list_ptr;
+	NclQuark *tmp_string = NULL;
+	float *tmp_float = NULL;
+	int tmp_dimsizes = 1;
+
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lat_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lat_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+
+	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+	*tmp_string = NrmStringToQuark("LAMBERTCONFORMAL");
+	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel1F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = 25.0;
+	GribPushAtt(lon_att_list_ptr,"mpLambertParallel2F",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	tmp_float= (float*)NclMalloc(sizeof(float));
+	*tmp_float = -95.0;
+	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
+}
+
+#endif
 void GetGrid_130
 #if NhlNeedProto
 (
@@ -1312,6 +1323,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 451;
@@ -1331,9 +1351,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 13.545087;
+	dy = 13.545087;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_163
@@ -1374,6 +1405,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 1008;
@@ -1393,8 +1425,10 @@ int* nrotatts;
 		return;
 	}
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_185
@@ -1435,6 +1469,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 491;
@@ -1454,8 +1489,10 @@ int* nrotatts;
 		return;
 	}
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_206
@@ -1496,6 +1533,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 51;
@@ -1515,13 +1561,21 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 81.2705;
+	dy = 81.2705;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
 
-#if 0
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 51 /*nx*/, 41 /*ny*/);
-#endif
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
+
 }
 
 
@@ -1563,6 +1617,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 275;
@@ -1583,12 +1638,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
-
-#if 0
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 22.289 /*start_lat*/,  -117.991 /*start_lon*/, 101 /*nx*/, 81 /*ny*/);
-#endif
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 
@@ -1630,6 +1683,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 93;
@@ -1649,13 +1711,21 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 81.2705;
+	dy = 81.2705;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-#if 0
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 81.2705 /*dx*/, 81.2705 /*dy*/, 12.190 /*start_lat*/,  -133.459 /*start_lon*/, 93 /*nx*/, 65 /*ny*/);
-#endif
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_212
@@ -1696,6 +1766,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 185;
@@ -1715,13 +1794,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 40.63525;
+	dy = 40.63525;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
 
-#if 0
-	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, 25.0 /*lat0*/, 25.0 /*lat1*/, -95.0 /*lon0*/, 40.63525 /*dx*/, 40.63525 /*dy*/, 12.190 /*start_lat*/,  -133.459  /*start_lon*/, 185 /*nx*/, 129 /*ny*/);
-#endif
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_215
@@ -1762,6 +1848,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 369;
@@ -1781,9 +1876,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 20.317625;
+	dy = 20.317625;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_218
@@ -1824,6 +1930,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 614;
@@ -1842,10 +1957,21 @@ int* nrotatts;
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
 		return;
 	}
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 12.19058;
+	dy = 12.19058;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_221
@@ -1886,6 +2012,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 349;
@@ -1905,9 +2040,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 32.46341;
+	dy = 32.46341;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 }
 
@@ -1949,6 +2095,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 138;
@@ -1969,8 +2116,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 
@@ -2012,6 +2161,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 737;
@@ -2031,9 +2189,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 10.1588125;
+	dy = 10.1588125;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_227
@@ -2074,6 +2243,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 1473;
@@ -2093,9 +2271,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 5.07940625;
+	dy = 5.07940625;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 
@@ -2137,6 +2326,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 151;
@@ -2156,9 +2354,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 40.63525;
+	dy = 40.63525;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_237
@@ -2199,6 +2408,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 54;
@@ -2218,9 +2436,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 32.46341;
+	dy = 32.46341;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_241
@@ -2261,6 +2490,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 549;
@@ -2281,8 +2511,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_245
@@ -2323,6 +2555,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 336;
@@ -2343,8 +2576,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_246
@@ -2385,6 +2620,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 336;
@@ -2405,8 +2641,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 
@@ -2448,6 +2686,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 3;
 	kgds[1] = 336;
@@ -2468,8 +2707,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 void GetGrid_252
@@ -2510,6 +2751,15 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	int nx;
+	int ny;
+	double latin1;
+	double latin2;
+	double lov;
+	double dx;
+	double dy;
+	double la1;
+	double lo1;
 		
 	kgds[0] = 3;
 	kgds[1] = 301;
@@ -2529,9 +2779,20 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	nx = kgds[1];
+	ny = kgds[2];
+	latin1 = kgds[11] / 1000.0;
+	latin2 = kgds[12] / 1000.0;
+	lov = kgds[6] / 1000.0;
+	dx = 20.317625;
+	dy = 20.317625;
+	la1 = kgds[3] / 1000.0;
+	lo1 = kgds[4] / 1000.0;
 
-	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov,dx,dy,la1,lo1,nx,ny);
+
+	GenLambertAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 }
 
 
@@ -3543,6 +3804,128 @@ int* nrotatts;
 * START Polar Stereographic GRIDS
 */
 
+static float er;
+static float er2;
+static float xax;
+static float xpp;
+static float ypp;
+static int southern;
+
+/* 
+ * grdsetup, grdloc and grdrot are used for polar stereo grids that require precision higher
+ * than the ncep codes can handle
+ */
+
+static void grdsetup(double x,double y,double gsp,double d,double ax) 
+{
+	if(d< 0) {
+		southern = -1;
+	} else {
+		southern = 1;
+	}
+	er =  EAR * (1.0 + sin(fabs(d)/rtod)) / gsp;
+	er2 = er * er;
+	xax = ax;
+	xpp = x;
+	ypp = y;
+	return;
+}
+
+
+static void grdloc(double xp,double yp, float *xlo, float* xla)
+{
+	double r2,ss;
+	double yy,xx,elong;
+
+
+	yy = yp - ypp;
+	xx = xp - xpp;
+	*xlo = 0.0;
+	if((yy != 0.0)||(xx!=0) ) {
+		elong = rtod * atan2(yy,xx);
+		*xlo =  (float) elong + xax;
+		if(*xlo > 180.0) 
+			*xlo = *xlo - 360.0;
+		if(*xlo < -180.0)
+			*xlo = *xlo + 360;
+	} 
+	r2 = xx * xx + yy * yy;
+	ss = (er2-r2)/(er2+r2);
+	*xla = (float) southern * rtod * asin(ss);
+} 
+
+void gridrot(float ore,float lon, float *rot)
+{
+	float trot = lon - ore; /* rotation in degrees */
+	if (trot > 180) 
+		trot -= 360;
+	if (trot < -180)
+		trot += 360;
+	*rot = trot * dtor; 
+	return;
+}
+
+void GetHiResPolarStereoGrid
+#if NhlNeedProto
+(
+	int *kgds, 
+	double polex,
+	double poley,
+	double dist,
+	double deg,
+	double ore,
+	float** lat, 
+	int* n_dims_lat, 
+	int** dimsizes_lat, 
+	float** lon, 
+	int* n_dims_lon, 
+	int** dimsizes_lon, 
+	float **rot
+)
+#else
+(kgds, polex, poley, dist, deg, ore, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot)
+int *kgds;
+double polex;
+double poley;
+double dist;
+double deg;
+double ore;
+float** lat;
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float **rot;
+#endif
+{
+	int nx,ny;
+	int x,y;
+	
+	nx = kgds[1];
+	ny = kgds[2];
+        *lat = (float*)NclMalloc(sizeof(float) * nx * ny);
+        *lon= (float*)NclMalloc(sizeof(float) * nx * ny);
+	*rot = (float*) NclMalloc(sizeof(float) * nx * ny);
+        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
+        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
+        *n_dims_lat = 2;
+        *n_dims_lon = 2;
+        (*dimsizes_lat)[0] = ny;
+        (*dimsizes_lat)[1] = nx;
+        (*dimsizes_lon)[0] = ny;
+        (*dimsizes_lon)[1] = nx;
+
+	grdsetup(polex,poley,dist,deg, ore + 90.0 );
+	for (y = 0; y < ny; y++) {
+		for(x = 0; x < nx; x++) {
+			grdloc(x+1,y+1,&((*lon)[y * nx + x]),&((*lat)[y * nx + x]));
+			gridrot((float) ore,(*lon)[y * nx + x],&((*rot)[y * nx + x]));
+		}
+	}
+	return;
+}
+
 
 void GenPolarStereographicAtts
 #if NhlNeedProto
@@ -3555,10 +3938,12 @@ void GenPolarStereographicAtts
 	int do_rot, 
 	GribAttInqRecList **rot_att_list_ptr, 
 	int *nrotatts,
-	int *kgds
+	int *kgds,
+	double dx,
+	double dy
 	)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts,kgds)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts,kgds,dx,dy)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
@@ -3568,6 +3953,8 @@ int do_rot;
 GribAttInqRecList **rot_att_list_ptr;
 int *nrotatts;
 int *kgds;
+double dx;
+double dy;
 #endif
 {
 	NclQuark *tmp_string = NULL;
@@ -3584,10 +3971,10 @@ int *kgds;
 	*tmp_float = kgds[6] / 1000.0;
 	GribPushAtt(lat_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[7];
+	*tmp_float = dx * 1000.0;
 	GribPushAtt(lat_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[8];
+	*tmp_float = dy * 1000;
 	GribPushAtt(lat_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 	tmp_string= (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string= NrmStringToQuark(kgds[9] & 0200 ? "south" : "north");
@@ -3617,10 +4004,10 @@ int *kgds;
 	*tmp_float =  kgds[6] / 1000.0;
 	GribPushAtt(lon_att_list_ptr,"Lov",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[7];
+	*tmp_float = dx * 1000.0;
 	GribPushAtt(lon_att_list_ptr,"Dx",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 	tmp_float= (float*)NclMalloc(sizeof(float));
-	*tmp_float = kgds[8];
+	*tmp_float = dy * 1000.0;
 	GribPushAtt(lon_att_list_ptr,"Dy",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 	tmp_string= (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string= NrmStringToQuark(kgds[9] & 0200 ? "south" : "north");
@@ -3680,7 +4067,14 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 182.889; /* from GRIB docs */
+	double poley = 460.425;
+	double dist = 9.86789;
+	double deg = 60.0;
+	double ore = -150.0;
+	double dx,dy;
 		
+
 	kgds[0] = 5;
 	kgds[1] = 367;
 	kgds[2] = 343;
@@ -3697,9 +4091,15 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	dx = dy = dist;
+
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list,nlonatts,1, 
+				  rot_att_list,nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -3742,6 +4142,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 
 	kgds[0] = 5;
 	kgds[1] = 553;
@@ -3760,8 +4161,11 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -3806,6 +4210,12 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 401.; /* from GRIB docs */
+	double poley = 1601.;
+	double dist = 4.7625;
+	double deg = 60.0;
+	double ore = -105.0;
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 1121;
@@ -3823,27 +4233,13 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 
-	{
-		int xsize = kgds[1];
-		int ysize = kgds[2];
-		float polex = 401.;
-		float poley = 1601.;
-		float dist = 4.7625;
-		float deg = 60.0;
-		float ore = -105.0;
-		int x,y;
+	dx = dy = dist;
 
-		grdsetup(polex,poley,dist,deg, ore + 90.0 );
-		for (y = 0; y < ysize; y++) {
-			for(x = 0; x < xsize; x++) {
-				grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-			}
-		}
-	}
-
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -3886,6 +4282,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -3904,8 +4301,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -3948,6 +4347,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 129;
@@ -3966,8 +4366,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -4010,6 +4412,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 345;
@@ -4028,8 +4431,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 	
@@ -4074,6 +4479,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 385;
@@ -4092,8 +4498,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 	
@@ -4138,6 +4546,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 277;
@@ -4156,8 +4565,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 	
@@ -4202,6 +4613,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 139;
@@ -4220,8 +4632,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 	
@@ -4271,17 +4685,9 @@ int* nrotatts;
         float dist = 47.625;
         float deg = 60.0;
         float ore = -150.0;
-        int x,y;
-
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 97;
@@ -4300,8 +4706,10 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 
 	return; 
@@ -4347,6 +4755,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 129;
@@ -4365,42 +4774,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 	
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 129;
-        int ysize = 85;
         float polex = 65;
         float poley = 89;
         float dist = 95.250;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 
 
@@ -4444,6 +4830,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 49;
@@ -4462,42 +4849,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 49;
-        int ysize = 35;
         float polex = 25;
         float poley = 51;
         float dist = 95.250;
         float deg = 60.0;
         float ore = -150.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -4540,6 +4904,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 45;
@@ -4558,43 +4923,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 45;
-        int ysize = 39;
         float polex = 27;
         float poley = 167;
         float dist = 57;
         float deg = 60.0;
         float ore = -60.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-
 #endif
 }
 
@@ -4636,6 +4977,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 45;
@@ -4654,42 +4996,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 45;
-        int ysize = 39;
         float polex = 27;
         float poley = 37;
         float dist = 190.5;
         float deg = 60.0;
         float ore = -150.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -4732,6 +5051,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -4750,42 +5070,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 65;
-        int ysize = 43;
         float polex = 33;
         float poley = 45;
         float dist = 190.5;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -4828,6 +5125,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -4846,43 +5144,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 65;
-        int ysize = 65;
         float polex = 33;
         float poley = 33;
         float dist =381.0;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-
 #endif
 }
 
@@ -4925,6 +5199,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 377;
@@ -4943,8 +5218,11 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -4988,6 +5266,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 690;
@@ -5006,8 +5285,11 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -5051,6 +5333,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 770;
@@ -5069,8 +5352,11 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -5115,6 +5401,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 180;
@@ -5133,8 +5420,11 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -5178,6 +5468,12 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double polex = 46.; /* from GRIB docs */
+	double poley = 167.;
+	double dist = 45.37732;
+	double deg = 60.0;
+	double ore = -105.0;
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 120;
@@ -5195,44 +5491,14 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	dx = dy = dist;
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
-#if 0
-
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 120;
-        int ysize = 92;
-        float polex = 46;
-        float poley = 167;
-        float dist = 45.37732;
-        float deg = 60.0;
-        float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-#endif
 
 }
 
@@ -5275,6 +5541,12 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double polex = 80.; /* from GRIB docs */
+	double poley = 176.;
+	double dist = 45.37732;
+	double deg = 60.0;
+	double ore = -105.0;
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 165;
@@ -5292,44 +5564,15 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	dx = dy = dist;
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
-#if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 165;
-        int ysize = 117;
-        float polex = 80;
-        float poley = 176;
-        float dist = 45.37732;
-        float deg = 60.0;
-        float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-#endif
 }
 
 void GetGrid_105
@@ -5371,6 +5614,12 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double polex = 40.5; /* from GRIB docs */
+	double poley = 88.5;
+	double dist = 90.75464;
+	double deg = 60.0;
+	double ore = -105.0;
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 83;
@@ -5385,47 +5634,16 @@ int* nrotatts;
 	kgds[10] = 0100; /* 0100 000 */
 
 
-	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
-		return;
-	}
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = dy = dist;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
-#if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-	int xsize = 83;
-	int ysize = 83;
-	float polex = 40.5;
-	float poley = 88.5;
-	float dist = 90.75464;
-	float deg = 60.0;
-	float ore = -105.0;
-	int x,y;
-	
-	
-	*lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-	*lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-	*dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-	*dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-	*n_dims_lat = 2;
-	*n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-	grdsetup(polex,poley,dist,deg, ore + 90.0 );
-	for (y = 0; y < ysize; y++) {
-		for(x = 0; x < xsize; x++) {
-			grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-		}
-	}
-#endif	
 }
 
 void GetGrid_104
@@ -5466,6 +5684,12 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double polex = 75.5; /* from GRIB docs */
+	double poley = 109.5;
+	double dist = 90.75464;
+	double deg = 60.0;
+	double ore = -105.0;
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 147;
@@ -5483,43 +5707,14 @@ int* nrotatts;
 		return;
 	}
 
-	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	GetHiResPolarStereoGrid(kgds,polex,poley,dist,deg,ore,
+				lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	dx = dy = dist;
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
-#if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 147;
-        int ysize = 110;
-        float polex = 75.5;
-        float poley = 109.5;
-        float dist = 91.452;
-        float deg = 60.0;
-        float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-#endif
 }
 
 void GetGrid_103
@@ -5560,6 +5755,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -5578,43 +5774,20 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 65;
-        int ysize = 56;
         float polex = 25.5;
         float poley = 84.5;
         float dist = 91.452;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-
 #endif
 }
 
@@ -5656,6 +5829,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 113;
@@ -5674,43 +5848,18 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 #if 0
-
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 113;
-        int ysize = 91;
         float polex = 58.5;
         float poley = 92.5;
         float dist = 91.452;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-
 #endif
 }
 
@@ -5753,6 +5902,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 83;
@@ -5771,42 +5921,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 #if 0
-
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 83;
-        int ysize = 83;
         float polex = 40.5;
         float poley = 88.5;
         float dist = 91.452;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -5850,6 +5977,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 540;
@@ -5868,8 +5996,11 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 }
@@ -5914,6 +6045,7 @@ int* nrotatts;
 
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 81;
@@ -5932,41 +6064,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 81;
-        int ysize = 62;
         float polex = 31.91;
         float poley = 112.53;
         float dist =  68.153;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -6009,6 +6119,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 87;
@@ -6027,42 +6138,20 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 87;
-        int ysize = 71;
         float polex = 40;
         float poley = 73;
         float dist =  127;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -6105,6 +6194,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 87;
@@ -6123,43 +6213,20 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 87;
-        int ysize = 71;
         float polex = 44;
         float poley = 38;
         float dist = 254;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
-
 #endif
 }
 
@@ -6202,6 +6269,7 @@ int* nrotatts;
 {
 
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -6220,41 +6288,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 65;
-        int ysize = 65;
         float polex = 33;
         float poley = 33;
         float dist = 381; 
         float deg = -60.0;
         float ore = 280.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 
 }
@@ -6297,6 +6343,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 65;
@@ -6315,42 +6362,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 #if 0
-
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 65;
-        int ysize = 65;
         float polex = 33;
         float poley = 33;
         float dist = 381; 
         float deg = 60.0;
         float ore = 280.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -6392,6 +6416,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 53;
@@ -6410,41 +6435,19 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return; 
 #if 0
-/*
-* Very tricky need to figure out how to exchange dimensions correctly
-*/
-        int xsize = 53;
-        int ysize = 45;
         float polex = 27;
         float poley = 49;
         float dist = 190.5 ;
         float deg = 60.0;
         float ore = -105.0;
-        int x,y;
-
-
-        *lat = (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *lon= (float*)NclMalloc(sizeof(float) * xsize * ysize);
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ysize;
-        (*dimsizes_lat)[1] = xsize;
-        (*dimsizes_lon)[0] = ysize;
-        (*dimsizes_lon)[1] = xsize;
-
-        grdsetup(polex,poley,dist,deg, ore + 90.0 );
-        for (y = 0; y < ysize; y++) {
-                for(x = 0; x < xsize; x++) {
-                        grdloc(x+1,y+1,&((*lon)[y * xsize + x]),&((*lat)[y * xsize + x]));
-                }
-        }
 #endif
 }
 
@@ -6486,6 +6489,7 @@ int* nrotatts;
 #endif
 {
 	int kgds[32];
+	double dx,dy;
 		
 	kgds[0] = 5;
 	kgds[1] = 53;
@@ -6504,8 +6508,11 @@ int* nrotatts;
 	}
 
 	GetNCEPGrid(kgds,lat,n_dims_lat,dimsizes_lat,lon,n_dims_lon,dimsizes_lon,rot);
+	dx = kgds[7] / 1000.0;
+	dy = kgds[8] / 1000.0;
 
-	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 1, rot_att_list, nrotatts,kgds);
+	GenPolarStereographicAtts(thevarrec,lat_att_list,nlatatts,lon_att_list, nlonatts, 
+				  1, rot_att_list, nrotatts,kgds,dx,dy);
 
 	return;      
 	
@@ -8457,14 +8464,20 @@ int* nrotatts;
 			GetThinnedLonParams(thevarrec->thelist->rec_inq->gds,
 					    nlat,ilo1,ilo2,idir,&nlon,&loinc);
 		} else {
+			/* Unfortunately for hi-res grids the DI value may not have enough resolution
+			   so don't do it that way */
+			/*
 			int itmp = (int)CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[23]);
 			if (itmp != 65535) {
 				loinc = (double) itmp;
 			}
 			else {
-				loinc = (ilo2 - ilo1) / (double) (nlon - 1);
-				loinc = loinc < 0 ? -loinc : loinc;
+			*/
+			loinc = (ilo2 - ilo1) / (double) (nlon - 1);
+			loinc = loinc < 0 ? -loinc : loinc;
+			/*
 			}
+			*/
 		}
 		(*dimsizes_lon)[0] = nlon;
 		*lon = malloc(sizeof(float)*nlon);
@@ -9074,30 +9087,40 @@ int* nrotatts;
 		GetThinnedLonParams(gds,nlat,lo1,lo2,idir,&nlon,&di);
 	}
 	else {
+		/*
 		itmp =  CnvtToDecimal(2,&gds[23]);
 		if (itmp != 65535) {
 			di = (double) itmp;
 		}
 		else {
+		*/
+		/* this is more accurate in any case: do it this way */
 			/* not specified: must be calculated from the endpoints and number of steps */
 			di = (lo2 - lo1) / (double)(nlon - 1);
 			if (di < 0) di = -di;
+		/*
 		}
+		*/
 	}
 
 	if (is_thinned_lat) {
 		GetThinnedLatParams(gds,nlon,la1,la2,jdir,&nlat,&dj);
 	}
 	else {
+		/*
 		itmp = (double) CnvtToDecimal(2,&gds[25]);
 		if (itmp != 65535.0) {
 			dj = (double) itmp;
 		}
 		else {
+		*/
+		/* this is more accurate: do it this way */
 			/* not specified: must be calculated from the endpoints and number of steps */
 			dj = (la2 - la1) / (double) (nlat - 1);
 			if (dj < 0) dj = -dj;
+		/*	
 		}
+		*/
 	}
 			
 	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
@@ -9501,30 +9524,40 @@ int* nrotatts;
 		GetThinnedLonParams(gds,nj,lo1,lo2,idir,&ni,&di);
 	}
 	else {
+		/*
 		itmp =  CnvtToDecimal(2,&gds[23]);
 		if (itmp != 65535 && has_dir_inc) {
 			di = (double) itmp / 1000.0;
 		}
 		else {
+		*/
+		/* this is more accurate */
 			/* not specified: must be calculated from the endpoints and number of steps */
 			di = (lo2 - lo1) / (double)(ni - 1);
 			if (di < 0) di = -di;
+		/*
 		}
+		*/
 	}
 
 	if (is_thinned_lat) {
 		GetThinnedLatParams(gds,ni,la1,la2,jdir,&nj,&dj);
 	}
 	else {
+		/*
 		itmp = (double) CnvtToDecimal(2,&gds[25]);
 		if (itmp != 65535.0 && has_dir_inc) {
 			dj = (double) itmp / 1000.0;
 		}
 		else {
+		*/
+		/* this is more accurate */
 			/* not specified: must be calculated from the endpoints and number of steps */
 			dj = (la2 - la1) / (double) (nj - 1);
 			if (dj < 0) dj = -dj;
+		/*
 		}
+		*/
 	}
 			
 	if (rotang != 0.0) {
@@ -10074,19 +10107,19 @@ GridInfoRecord grid[] = {
 		"6324-point (68x93) National - Hawaii Mercator (0,0) is 25S,110E, (93,68) is 60.644S,109.129W", /*204*/
 		GenericUnPack,GetGrid_205,GenAtts,
 		"1755-point (39x45) National - Puerto Rico stereographic oriented 60W; pole at (27,57)", /*205*/
-		GenericUnPack,GetGrid_206,GetAtts_206,
+		GenericUnPack,GetGrid_206,GenAtts,
 		"2091-point (41x51) Regional - Central MARD Lambert Conformal oriented 95W; pole at (30.00,169.745)", /*206*/
 		GenericUnPack,GetGrid_205,GenAtts,
 		"1715-point (35x49) Regional - Alaska polar stereographic oriented 150W; pole at 25,51", /*207*/
 		GenericUnPack,GetGrid_208,GenAtts,
 		"783-point (27x29) Regional - Hawaii mercator (0,0) is 9.343N,167.315W, (29,27) is 28.092N,145.878W", /*208*/
-		GenericUnPack,GetGrid_209,GetAtts_209,
+		GenericUnPack,GetGrid_209,GenAtts,
 		"8181-point (81x101) Regional - Centeral US MARD - Double Res. Lambert Conformal oriented 95W; pole at (59.000,338.490)", /* 209*/
 		GenericUnPack,GetGrid_210,GenAtts,
 		"625-point (25x25) Regional - Puerto Rico mercator (0,0) is 9.000N,77.00W (25,25) is 26.422,58.625", /*210*/
-		GenericUnPack,GetGrid_211,GetAtts_211,
+		GenericUnPack,GetGrid_211,GenAtts,
 		"6045-point (65x93) Regional - CONUS lambert conformal oriented 95W; pole at (53.000,178.745)", /*211*/
-		GenericUnPack,GetGrid_212,GetAtts_212,
+		GenericUnPack,GetGrid_212,GenAtts,
 		"23865-point (129x185) Regional - CONUS - double resolution lambert conformal oriented 95W; pole at (105.000,256.490)", /* 212 */
 		GenericUnPack,GetGrid_213,GenAtts,
 		"10965-point (85x129) National - CONUS - Double Resolution polar stereographic oriented 105W; pole at (65,89)", /*213*/
