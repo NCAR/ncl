@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.87 2005-11-11 17:02:06 shea Exp $
+;      $Id: contributed.ncl,v 1.88 2005-11-26 19:39:18 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6513,15 +6513,32 @@ end
 ;
 ;   opt        - flag: opt=0 if annual total value [sum 12 values] is to be returned
 ;                      opt=1 if annual mean  value is to be returned [(annual total)/12]
+;                      opt>1 special: calculate annual mean with < 12 values
+;                                     # values used to calculate "annual" mean
+;                                       can be 1<=opt<=12
+;                    
 ;   Usage:
 ;                 PRC_annual_total = month_to_annual( prc, 0) 
 ;                 TMP_annual_mean  = month_to_annual( tmp, 1) 
+;                 special
+;                 TMP_annual_mean  = month_to_annual( tmp, 10)   ; 10 or more values
 ;
 
 function month_to_annual(x:numeric, opt:integer)
 local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, kz, nn, nmo \
-    , dName, xAnnual, xTemp, n, m, k, kMsg
+    , dName, xAnnual, xTemp, n, m, k, nMsg, nmos, NMOS, nGood
 begin
+  if (opt.lt.0 .or. opt.gt.12) then
+      print("month_to_annual: illegal value of opt: opt="+opt)
+      exit
+  end if
+
+  NMOS  = 12                   ; fixed ... will not change
+  nmos  = 12                   ; possible change in value
+  if (opt.gt.1) then
+      nmos = opt         
+  end if
+  NMOS1 = NMOS-1               ; convenience
 
   dimx  = dimsizes(x)
   rankx = dimsizes(dimx)
@@ -6538,32 +6555,36 @@ begin
       exit
   end if
 
-  nyrs = NTIM/12
-  ntim = nyrs*12
-
-  if (NTIM%12 .ne. 0) then
+  nyrs = NTIM/NMOS
+  ntim = nyrs*NMOS
+  if (NTIM%NMOS .ne. 0) then
       print("*** WARNING ***")
       print("month_to_annual: ntim="+NTIM+" not multiple of 12:  nyrs="+nyrs)
+      nyrs = nyrs + 1
   end if
+
 
   if (rankx.eq.1) then
       xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
 
       nyr = -1
-      do nt=0,ntim-1,12
+      do nt=0,ntim-1,NMOS
          nyr  = nyr+1
 
          nMsg = 0
          if (isatt(x,"_FillValue")) then
-             nMsg = num (ismissing(x(nt:nt+11)) )
+             nMsg = num (ismissing(x(nt:nt+NMOS1)) )
          end if
+         nGood = NMOS-nMsg
 
-         if (nMsg.eq.0) then
-             if (opt.eq.0) then
-                 xAnnual(nyr)   = sum ( x(nt:nt+11) )
-             else
-                 xAnnual(nyr)   = avg ( x(nt:nt+11) )
-             end if
+         if (nMsg.eq.0 .and. opt.eq.0) then
+             xAnnual(nyr)   = sum ( x(nt:nt+NMOS1) )
+         end if
+         if (nMsg.eq.0 .and. opt.ge.1) then
+             xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
+         end if
+         if (nMsg.gt.0 .and. opt.gt.1 .and. nGood.ge.nmos) then
+             xAnnual(nyr)   = avg ( x(nt:nt+NMOS1) )  ; always opt=1
          end if
       end do
 
@@ -6584,8 +6605,8 @@ begin
        nn     = dimx(1)  
        nyr    = -1
        xAnnual= new ( (/nyrs,nn/), typeof(x), getFillValue(x)) ;  contributed.ncl
-       do nt=0,ntim-1,12
-          xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+11)          ; cleaner code only
+       do nt=0,ntim-1,NMOS
+          xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+NMOS1)          ; cleaner code only
           nyr   = nyr+1
 
           if (opt.eq.0) then
@@ -6600,10 +6621,12 @@ begin
           end if
 
           if (nMsg.gt.0) then
-              print("month_to_annual: some grid points have missing data: nt="+nt+" nyr="+nyr)
-              kMsg = dim_num(.not.ismissing( xTemp ) )
-              xAnnual(nyr,:) = mask( xAnnual(nyr,:), kMsg.ne.12, False)
+              nGood = dim_num(.not.ismissing( xTemp ) )
+              xAnnual(nyr,:) = mask( xAnnual(nyr,:), nGood.ge.nmos, True)  ; ?False
+              print("month_to_annual: some points have missing data: nt="+nt \
+                   +" nyr="+nyr+"  num(nGood)="+num(nGood.gt.0))
           end if
+
        end do
 
        copy_VarAtts (x, xAnnual)
@@ -6618,8 +6641,8 @@ begin
        mx     = dimx(2)      ; mlon
        nyr    = -1
        xAnnual= new ( (/nyrs,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
-       do nt=0,ntim-1,12
-          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+11) ; cleaner code only
+       do nt=0,ntim-1,NMOS
+          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+NMOS1) ; cleaner code only
           nyr   = nyr+1
 
           if (opt.eq.0) then
@@ -6634,9 +6657,10 @@ begin
           end if
 
           if (nMsg.gt.0) then
-              print("month_to_annual: some grid points have missing data: nt="+nt+" nyr="+nyr)
-              kMsg             = dim_num(.not.ismissing( xTemp ) )          ; (lat,lon)
-              xAnnual(nyr,:,:) = mask( xAnnual(nyr,:,:), kMsg.ne.12, False)
+              nGood            = dim_num(.not.ismissing( xTemp ) )          ; (lat,lon)
+              xAnnual(nyr,:,:) = mask( xAnnual(nyr,:,:), nGood.ge.nmos, True)  ; ?False
+              print("month_to_annual: some grid points have missing data: nt="+nt \
+                   +" nyr="+nyr+"  num(nGood)="+num(nGood.gt.0))
           end if
        end do
 
@@ -6653,8 +6677,8 @@ begin
        mx     = dimx(3)      ; mlon
        nyr    = -1
        xAnnual= new ( (/nyrs,kz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
-       do nt=0,ntim-1,12
-          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+11) 
+       do nt=0,ntim-1,NMOS
+          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+NMOS1) 
           nyr   = nyr+1
 
           if (opt.eq.0) then
@@ -6668,10 +6692,11 @@ begin
               nMsg = num (ismissing(xTemp) )    ; for all grid points
           end if
 
-          if (nMsg.eq.0) then
-              print("month_to_annual: some grid points have missing data: nt="+nt+" nyr="+nyr)
-              kMsg               = dim_num(.not.ismissing( xTemp ) )
-              xAnnual(nyr,:,:,:) = mask( xAnnual(nyr,:,:,:), kMsg.ne.12, False)
+          if (nMsg.gt.0) then
+              nGood              = dim_num(.not.ismissing( xTemp ) )
+              xAnnual(nyr,:,:,:) = mask( xAnnual(nyr,:,:,:), nGood.ge.nmos, False)
+              print("month_to_annual: some grid points have missing data: nt="+nt \
+                   +" nyr="+nyr+"  num(nGood)="+num(nGood.gt.0))
           end if
        end do
 
@@ -6939,3 +6964,126 @@ begin
 
   return(xNew)
 end   
+;**************************************************************************
+; D Shea
+;
+; Standard approach to "packing" data.  
+; The contributed.ncl functions "short2flt", "byte2flt"
+; can be used to unpack the values.
+;
+; NOTE: THE PRECISION OF THE ORIGINAL INPUT VALUES CAN NOT BE RECOVERED.
+;       This is a "lossy" method. MPEG/JPEG are "lossy" approaches to compression.
+;
+; Most of the code is to handle _FillValue and assorted permutations/options
+
+function pack_values(var:numeric, packType:string, opt:logical)  
+local pMax, sFill, vMin, vMax, vRange, vPack, scale_factor, add_offset
+begin
+        if (.not.(typeof(var).eq."float" .or. typeof(var).eq."double")) then
+            print("pack_values: FATAL:  input must be float or double: typeof(var)="+typeof(var)) 
+            exit
+        end if
+
+        if (packType.eq."short" .or. packType.eq."byte") then
+            if (packType.eq."short") then
+                pMax  = 2^15 - 1
+                sFill = floattoshort(pMax)       ; default _FillValue [if necessary]
+            else
+                pMax = 2^7  - 1              
+                sFill = floattobyte(pMax)        ; default _FillValue [if necessary]
+            end if
+        else
+            print("pack_values: FATAL:  packType must be short or byte: packType="+packType) 
+            exit
+        end if
+                  
+        if (.not.isatt(var,"_FillValue") .and. isatt(var,"missing_value")) then
+            var@_FillValue = var@missing_value   ; NCL only understands _FillValue
+        end if
+
+        if (opt .and. isatt(opt,"min_value") ) then
+	    vMin = opt@min_value                 ; knowledgable user
+        else
+	    vMin = min(var)                      ; calculate [default]
+        end if
+
+        if (opt .and. isatt(opt,"max_value") ) then
+	    vMax = opt@max_value                 ; knowledgable user
+        else
+	    vMax = max(var)                      ; calculate [default]
+        end if
+
+        if (isatt(var,"_FillValue")) then
+            if (opt .and. isatt(opt,"msgFill") ) then
+                if (packType.eq."short") then
+                    if (typeof(opt@msgFill).eq."integer") then
+                        sFill = inttoshort(opt@msgFill)         ; user specified _FillValue 
+                    else
+                        sFill = opt@msgFill                     ; must be same as packType
+                    end if
+                else
+                    if (typeof(opt@msgFill).eq."integer") then
+                        sFill = inttobyte(opt@msgFill)          ; user specified _FillValue 
+                    else
+                        sFill = opt@msgFill                     ; must be same as packType
+                    end if
+                end if
+            end if
+            vPack = new ( dimsizes(var), packType, sFill)       ; pre-fill with _FillValue
+        end if                                                  ; if _FillValue associated var
+	
+        vRange       = vMax-vMin
+	scale_factor = vRange/pMax
+	add_offset   = (vMax+vMin)/2.
+
+        if (packType.eq."short") then
+            vPack = floattoshort((var-add_offset)/scale_factor) ; pack ... array syntax
+        else
+            vPack = floattobyte ((var-add_offset)/scale_factor) ; pack ... array syntax
+        end if
+
+	copy_VarCoords(var,vPack)              ; copy coordinates
+
+        msgFlag = False
+        if (isatt(var,"missing_value")) then
+            msgVal = var@missing_value         ; float/double
+            delete(var@missing_value)          ; so it will not be copied to new variable
+            msgFlag = True
+        end if
+
+        filFlag = False
+        if (isatt(var,"_FillValue")) then
+            filVal = var@_FillValue            ; float/double
+            delete(var@_FillValue)             ; so it will not be copied to new variable
+            filFlag = True
+        end if
+
+	copy_VarAtts(var,vPack)                ; copy attributes but not original
+                                               ; missing_value or _FillValue
+        if (msgFlag) then
+            var@missing_value = msgVal         ; reassign to input variable
+            vPack@missing_value = sFill        ; explicitly add
+        end if
+
+        if (filFlag) then
+            var@_FillValue = filVal            ; reassign to input variable
+        end if
+
+	vPack@add_offset   = add_offset
+	vPack@scale_factor = scale_factor
+
+        if (opt .and. isatt(opt,"min_value") ) then
+	    vPack@vMin_user_specified  = opt@min_value
+        else
+	    vPack@vMin_original_data   = vMin 
+        end if
+
+        if (opt .and. isatt(opt,"max_value") ) then
+	    vPack@vMax_user_specified  = opt@max_value
+        else
+	    vPack@vMax_original_data   = vMax 
+        end if
+	vPack@vRange       = vRange 
+
+	return(vPack)
+end
