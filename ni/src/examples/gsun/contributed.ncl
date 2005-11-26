@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.88 2005-11-26 19:39:18 shea Exp $
+;      $Id: contributed.ncl,v 1.89 2005-11-26 22:40:11 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6983,6 +6983,13 @@ begin
             print("pack_values: FATAL:  input must be float or double: typeof(var)="+typeof(var)) 
             exit
         end if
+                      ; the following is not documented
+                      ; user may input scale_factor and add_offset
+        if (opt .and. (isatt(opt,"scale_factor") .and. .not.isatt(opt,"add_offset"  ))  .or. \
+                      (isatt(opt,"add_offset")   .and. .not.isatt(opt,"scale_factor"))) then
+            print("pack_values: FATAL:  User must specify BOTH scale_factor and add_offset")
+            exit
+        end if
 
         if (packType.eq."short" .or. packType.eq."byte") then
             if (packType.eq."short") then
@@ -7001,16 +7008,30 @@ begin
             var@_FillValue = var@missing_value   ; NCL only understands _FillValue
         end if
 
+        vMinVar = min(var)                       ; calculate [default]
         if (opt .and. isatt(opt,"min_value") ) then
-	    vMin = opt@min_value                 ; knowledgable user
+            vMin = opt@min_value                 ; knowledgable user
+            if (vMinVar.lt.vMin) then
+                print("pack_values: FATAL: User specified opt@min_value is too high")
+                print("pack_values: opt@min_value    = "+opt@min_value)
+                print("pack_values: actual min value = "+xMinVar)
+                exit
+            end if
         else
-	    vMin = min(var)                      ; calculate [default]
+            vMin = vMinVar
         end if
 
+        vMaxVar = max(var)                       ; calculate [default]
         if (opt .and. isatt(opt,"max_value") ) then
-	    vMax = opt@max_value                 ; knowledgable user
+            vMax = opt@max_value                 ; knowledgable user
+            if (vMaxVar.gt.vMax) then
+                print("pack_values: FATAL: User specified opt@max_value is too low")
+                print("pack_values: opt@max_value    = "+opt@max_value)
+                print("pack_values: actual max value = "+xMaxVar)
+                exit
+            end if
         else
-	    vMax = max(var)                      ; calculate [default]
+            vMax = vMaxVar
         end if
 
         if (isatt(var,"_FillValue")) then
@@ -7035,6 +7056,11 @@ begin
         vRange       = vMax-vMin
 	scale_factor = vRange/pMax
 	add_offset   = (vMax+vMin)/2.
+                                                                ; undocumented option
+        if (opt .and. isatt(opt,"scale_factor") .and. isatt(opt,"add_offset") ) then
+            scale_factor = opt@scale_factor                     ; must be careful
+            add_offset   = opt@add_offset                       ;  "   "     "
+        end if
 
         if (packType.eq."short") then
             vPack = floattoshort((var-add_offset)/scale_factor) ; pack ... array syntax
@@ -7072,17 +7098,16 @@ begin
 	vPack@add_offset   = add_offset
 	vPack@scale_factor = scale_factor
 
+        vPack@vMin_original_data   = vMinVar
         if (opt .and. isatt(opt,"min_value") ) then
-	    vPack@vMin_user_specified  = opt@min_value
-        else
-	    vPack@vMin_original_data   = vMin 
+            vPack@vMin_user_specified  = opt@min_value
         end if
 
+        vPack@vMax_original_data   = vMaxVar
         if (opt .and. isatt(opt,"max_value") ) then
-	    vPack@vMax_user_specified  = opt@max_value
-        else
-	    vPack@vMax_original_data   = vMax 
+            vPack@vMax_user_specified  = opt@max_value
         end if
+
 	vPack@vRange       = vRange 
 
 	return(vPack)
