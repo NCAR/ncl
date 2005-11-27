@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.89 2005-11-26 22:40:11 shea Exp $
+;      $Id: contributed.ncl,v 1.90 2005-11-27 02:30:28 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6967,50 +6967,53 @@ end
 ;**************************************************************************
 ; D Shea
 ;
-; Standard approach to "packing" data.  
+; Standard "lossy" approach to compressing (packing) data.  
 ; The contributed.ncl functions "short2flt", "byte2flt"
 ; can be used to unpack the values.
 ;
-; NOTE: THE PRECISION OF THE ORIGINAL INPUT VALUES CAN NOT BE RECOVERED.
-;       This is a "lossy" method. MPEG/JPEG are "lossy" approaches to compression.
+; NOTE: THE ORIGINAL INPUT VALUES CAN NOT BE RECOVERED.
 ;
+; The actual packing is pretty simple.
 ; Most of the code is to handle _FillValue and assorted permutations/options
 
 function pack_values(var:numeric, packType:string, opt:logical)  
-local pMax, sFill, vMin, vMax, vRange, vPack, scale_factor, add_offset
+local vType, one, two, pMax, sFill, vMin, vMax, vRange, vPack, scale_factor, add_offset
 begin
-        if (.not.(typeof(var).eq."float" .or. typeof(var).eq."double")) then
-            print("pack_values: FATAL:  input must be float or double: typeof(var)="+typeof(var)) 
+        vType = typeof(var)
+        if (.not.(vType.eq."float" .or. vType.eq."double")) then
+            print("pack_values: FATAL:  input must be float or double: vType="+vType) 
+            exit
+        end if
+
+        if (.not.(packType.eq."short" .or. packType.eq."byte")) then
+            print("pack_values: FATAL:  packType must be short or byte: packType="+packType) 
             exit
         end if
                       ; the following is not documented
-                      ; user may input scale_factor and add_offset
+                      ; user may input both scale_factor and add_offset
         if (opt .and. (isatt(opt,"scale_factor") .and. .not.isatt(opt,"add_offset"  ))  .or. \
                       (isatt(opt,"add_offset")   .and. .not.isatt(opt,"scale_factor"))) then
             print("pack_values: FATAL:  User must specify BOTH scale_factor and add_offset")
             exit
         end if
 
-        if (packType.eq."short" .or. packType.eq."byte") then
-            if (packType.eq."short") then
-                pMax  = 2^15 - 1
-                sFill = floattoshort(pMax)       ; default _FillValue [if necessary]
-            else
-                pMax = 2^7  - 1              
-                sFill = floattobyte(pMax)        ; default _FillValue [if necessary]
-            end if
+        if (vType.eq."float") then
+            one = 1.0
+            two = 2.0
         else
-            print("pack_values: FATAL:  packType must be short or byte: packType="+packType) 
-            exit
-        end if
-                  
-        if (.not.isatt(var,"_FillValue") .and. isatt(var,"missing_value")) then
-            var@_FillValue = var@missing_value   ; NCL only understands _FillValue
+            one = 1.0d 
+            two = 2.0d
         end if
 
-        vMinVar = min(var)                       ; calculate [default]
+        if (packType.eq."short") then
+            pMax = 2^15 - one
+        else
+            pMax = 2^7  - one            
+        end if
+
+        vMinVar = min(var)                        ; calculate [default]
         if (opt .and. isatt(opt,"min_value") ) then
-            vMin = opt@min_value                 ; knowledgable user
+            vMin = opt@min_value                  ; knowledgable user
             if (vMinVar.lt.vMin) then
                 print("pack_values: FATAL: User specified opt@min_value is too high")
                 print("pack_values: opt@min_value    = "+opt@min_value)
@@ -7033,6 +7036,10 @@ begin
         else
             vMax = vMaxVar
         end if
+                  
+        if (.not.isatt(var,"_FillValue") .and. isatt(var,"missing_value")) then
+            var@_FillValue = var@missing_value    ; NCL only understands _FillValue
+        end if
 
         if (isatt(var,"_FillValue")) then
             if (opt .and. isatt(opt,"msgFill") ) then
@@ -7049,13 +7056,27 @@ begin
                         sFill = opt@msgFill                     ; must be same as packType
                     end if
                 end if
+            else
+                if (packType.eq."short") then
+                    if (vType.eq."float") then
+                        sFill = floattoshort (pMax)             ; default _FillValue 
+                    else 
+                        sFill = doubletoshort(pMax)     
+                    end if
+                else
+                    if (vType.eq."float") then
+                        sFill = floattobyte (pMax)              ; default _FillValue
+                    else 
+                        sFill = doubletobyte(pMax)     
+                    end if
+                end if
             end if
             vPack = new ( dimsizes(var), packType, sFill)       ; pre-fill with _FillValue
         end if                                                  ; if _FillValue associated var
 	
         vRange       = vMax-vMin
 	scale_factor = vRange/pMax
-	add_offset   = (vMax+vMin)/2.
+	add_offset   = (vMax+vMin)/two
                                                                 ; undocumented option
         if (opt .and. isatt(opt,"scale_factor") .and. isatt(opt,"add_offset") ) then
             scale_factor = opt@scale_factor                     ; must be careful
@@ -7063,9 +7084,17 @@ begin
         end if
 
         if (packType.eq."short") then
-            vPack = floattoshort((var-add_offset)/scale_factor) ; pack ... array syntax
-        else
-            vPack = floattobyte ((var-add_offset)/scale_factor) ; pack ... array syntax
+            if (vType.eq."float") then
+                vPack = floattoshort((var-add_offset)/scale_factor)  ; pack ... array syntax
+            else
+                vPack = doubletoshort((var-add_offset)/scale_factor) 
+            end if
+        else   ; byte                            
+            if (vType.eq."float") then
+                vPack = floattobyte((var-add_offset)/scale_factor)  ; pack ... array syntax
+            else
+                vPack = doubletobyte((var-add_offset)/scale_factor) 
+            end if
         end if
 
 	copy_VarCoords(var,vPack)              ; copy coordinates
