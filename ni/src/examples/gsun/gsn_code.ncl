@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.171 2005-11-23 04:51:00 haley Exp $
+;      $Id: gsn_code.ncl,v 1.172 2005-11-30 17:32:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -880,15 +880,19 @@ begin
   if (class.eq."contourPlotClass".or.class.eq."logLinPlotClass".or.\
       class.eq."irregularPlotClass")
     if(isatt(res,"cnFillColors")) then
-       print("spread_colors: warning: you are setting both cnFillColors and gsnSpreadColors. Your cnFillColors resource will be ignored.")
-       print("               If this is not desired, set gsnSpreadColors to False.")
+       print("spread_colors: warning: you are setting both cnFillColors and")
+       print("               gsnSpreadColors. Your cnFillColors resource will")
+       print("               be ignored. If this is not desired, delete the")
+       print("               setting of gsnSpreadColors or set it to False.")
     end if
     levelcountres = "cnLevelCount"
   else
     levelcountres = "vcLevelCount"
     if(isatt(res,"vcLevelolors")) then
-       print("spread_colors: warning: you are setting both vcLevelColors and gsnSpreadColors. Your vcLevelColors resource will be ignored.")
-       print("               If this is not desired, set gsnSpreadColors to False.")
+       print("spread_colors: warning: you are setting both vcLevelColors and")
+       print("               gsnSpreadColors. Your vcLevelColors resource will")
+       print("               be ignored. If this is not desired, delete the")
+       print("               setting of gsnSpreadColors or set it to False.")
     end if
   end if
 
