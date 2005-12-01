@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.91 2005-12-01 22:39:37 shea Exp $
+;      $Id: contributed.ncl,v 1.92 2005-12-01 22:42:04 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2826,7 +2826,7 @@ begin
 end
 
 ; =====================================
-function clmDAYTLL (x[*][*][*]:numeric, yyyyddd:integer)   
+function clmDayTLL (x[*][*][*]:numeric, yyyyddd:integer)   
 ;
 ; calculate the mean Annual Cycle from daily data. 
 ; The return array will gave the raw climatology at each grid point
