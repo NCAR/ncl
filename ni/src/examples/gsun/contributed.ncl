@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.90 2005-11-27 02:30:28 shea Exp $
+;      $Id: contributed.ncl,v 1.91 2005-12-01 22:39:37 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2825,6 +2825,192 @@ begin
    return (xAnom)
 end
 
+; =====================================
+function clmDAYTLL (x[*][*][*]:numeric, yyyyddd:integer)   
+;
+; calculate the mean Annual Cycle from daily data. 
+; The return array will gave the raw climatology at each grid point
+;
+;              x(time,lat,lon)  <==== input dimension order
+;              x!0 = "time"     <==== time is in days
+;              x!1 = "lat"
+;              x!2 = "lon"
+;
+;    non-Leap  yyyyddd
+;              1905001 =>  Jan  1, 1905
+;              1905032 =>  Feb  1, 1905
+;              1905059 =>  Feb 28, 1905
+;              1905060 =>  Mar  1, 1905
+;              1905365 =>  Dec 31, 1905
+;
+;    Leap
+;              1908001 =>  Jan  1, 1908]
+;              1908032 =>  Feb  1, 1908]
+;              1908059 =>  Feb 28, 1908]
+;              1908060 =>  Feb 29, 1908]
+;              1908061 =>  Mar  1, 1908]
+;              1908366 =>  Dec 31, 1908]
+;
+; Usage:  xClmDay = clmDAY_TLL (x, yyyyddd)
+; -------
+
+
+begin
+
+   dimx  = dimsizes (x)
+
+   ntim  = dimx(0)
+   nlat  = dimx(1)
+   mlon  = dimx(2)
+   ndys  = 366                                     ; allow for leap year
+
+   days  = yyyyddd - (yyyyddd/1000)*1000           ; strip year info [yyyy]
+
+   clmDay= new((/ndys,nlat,mlon/),typeof(x), getFillValue(x) ) ; daily climatology
+;
+; Compute averages for each sequebtial day of the year. 
+; This uses dimension swapping.
+;
+   do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
+      indx = ind( days.eq.(ndy+1) )       
+      clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
+      delete(indx)                  
+   end do
+                                                   ; nominal day 366 
+                                                   ; ave(31 Dec + 1 Jan)=leap
+   clmDay(ndys-1,:,:) = (clmDay(0,:,:) + clmDay(ndys-2,:,:))*0.5
+
+   nFill = num(ismissing(clmDay))
+   if (nFill.eq.0) then
+       delete(clmDay@_FillValue)
+   end if
+
+   clmDay@long_name   = "Daily Climatology"
+   if (isatt(x,"long_name")) then
+       clmDay@long_name = clmDay@long_name +": "+x@long_name
+   end if
+   if (isatt(x,"units")) then
+       clmDay@units     = x@units
+   end if
+   clmDay@information = "Raw daily averages across all years"
+   clmDay@smoothing   = "None"
+
+   year_day           = ispan(1,ndys,1)
+   year_day@long_name = "day of year"
+   year_day@units     = "ddd"
+
+   clmDay!0           = "year_day"
+   clmDay&year_day    =  year_day
+   
+   copy_VarCoords(x(0,:,:), clmDay(0,:,:))   ; trick
+   delete(clmDay@year_day)                   ; clean up
+ 
+   return (clmDay)
+end
+
+; =====================================
+function smthClmDayTLL (clmDay[*][*][*]:numeric, nHarm:integer)
+;
+begin
+  
+  if (isatt(clmDay, "_FillValue")) then
+      nFill = num(ismissing(clmDay))
+      if (nFill.gt.0) then
+          print("smthClmDay_TLL: No missing values allowed: ezfftf does not allow")
+          print("smthClmDay_TLL: nFill="+nFill)
+          exit  
+      end if
+  end if
+
+  dn = getvardims(clmDay)                   ; get dimension names
+  if (dn(0).ne."year_day") then
+      print("smthClmDayTLL: Warning: Usually expect year_day to be the dimension name")
+  end if
+
+  z  = clmDay($dn(1)$|:,$dn(2)$|:,$dn(0)$|:); reorder make time fastest varying dimension
+  cf = ezfftf( z )                          ; [2] x [nlat] x [mlon] x [183]
+
+                                            ; remember NCL is 0-based 
+                                            ; cf(:,0:nHarm-1) are retained unaltered
+  cf(:,:,:,nHarm   ) = 0.5*cf(:,:,:,nHarm)  ; mini-taper
+  cf(:,:,:,nHarm+1:) = 0.0                  ; set all higher coef to 0.0
+
+  z  = ezfftb( cf, cf@xbar)                 ; reconstructed series
+
+  clmDaySmth = z($dn(0)$|:,$dn(1)$|:,$dn(2)$|:)
+  clmDaySmth@information = "Smoothed daily climatological averages"
+  clmDaySmth@smoothing   = "FFT: "+nHarm+" harmonics were retained."
+
+  return(clmDaySmth)
+end
+
+; =====================================
+function calcDayAnomTLL (x[*][*][*]:numeric, yyyyddd:integer, clmDay[*][*][*]:numeric)   
+
+; Remove the Annual Cycle from daily data. 
+; On return x will consist of deviations from each day's long term mean.
+;
+;              x(time,lat,lon)  <==== input dimension order
+;              x!0 = "time"     <==== time is in days
+;              x!1 = "lat"
+;              x!2 = "lon"
+;
+;
+;    non-Leap  yyyyddd
+;              1905001 =>  Jan  1, 1905
+;              1905032 =>  Feb  1, 1905
+;              1905059 =>  Feb 28, 1905
+;              1905060 =>  Mar  1, 1905
+;              1905365 =>  Dec 31, 1905
+;
+;    Leap
+;              1908001 =>  Jan  1, 1908]
+;              1908032 =>  Feb  1, 1908]
+;              1908059 =>  Feb 28, 1908]
+;              1908060 =>  Feb 29, 1908]
+;              1908061 =>  Mar  1, 1908]
+;              1908366 =>  Dec 31, 1908]
+
+; Usage:  xAnom = calcDayAnomTLL (x, yyyyddd, clmDay)
+
+begin
+
+   dimx  = dimsizes (x)
+
+   ntim  = dimx(0)
+   nlat  = dimx(1)
+   mlon  = dimx(2)
+   ndys  = 366                               
+
+   days  = yyyyddd - (yyyyddd/1000)*1000      ; strip year info [yyyy]
+
+; quick error check
+
+   if (.not.all(days(0:ndys-2).eq.clmDay&year_day(0:ndys-2))) then
+       print("calcDayAnomTLL: day mismatch")
+       exit
+   end if
+
+; loop on every day and compute difference. 
+
+   xAnom = (/ x  /)                                 ; create xAnom
+   do nt=0,ntim-1
+      xAnom(nt,:,:) = x(nt,:,:) - clmDay(days(nt)-1,:,:)   ; -1 for 0-based subscript
+   end do
+
+   if (isatt(x,"long_name")) then
+       xAnom@long_name = "Anomalies: "+x@long_name
+   else
+       xAnom@long_name = "Anomalies from Daily Climatology"
+   end if
+   if (isatt(x,"units")) then
+       xAnom@units = x@units
+   end if
+
+   copy_VarCoords(x, xAnom)
+
+   return(xAnom)
+end
 ;********************************************************************
 ; D. Shea
 ; wrapper for NCL function "cssgrid"  that copies attributes 
@@ -6989,14 +7175,13 @@ begin
             print("pack_values: FATAL:  packType must be short or byte: packType="+packType) 
             exit
         end if
-                      ; the following is not documented
                       ; user may input both scale_factor and add_offset
         if (opt .and. (isatt(opt,"scale_factor") .and. .not.isatt(opt,"add_offset"  ))  .or. \
                       (isatt(opt,"add_offset")   .and. .not.isatt(opt,"scale_factor"))) then
             print("pack_values: FATAL:  User must specify BOTH scale_factor and add_offset")
             exit
         end if
-
+                                                  ; ensure that float/double handle correctly
         if (vType.eq."float") then
             one = 1.0
             two = 2.0
@@ -7077,7 +7262,7 @@ begin
         vRange       = vMax-vMin
 	scale_factor = vRange/pMax
 	add_offset   = (vMax+vMin)/two
-                                                                ; undocumented option
+                      
         if (opt .and. isatt(opt,"scale_factor") .and. isatt(opt,"add_offset") ) then
             scale_factor = opt@scale_factor                     ; must be careful
             add_offset   = opt@add_offset                       ;  "   "     "
@@ -7138,6 +7323,7 @@ begin
         end if
 
 	vPack@vRange       = vRange 
+
 
 	return(vPack)
 end
