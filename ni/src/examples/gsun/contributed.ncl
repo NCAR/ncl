@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.92 2005-12-01 22:42:04 shea Exp $
+;      $Id: contributed.ncl,v 1.93 2005-12-02 04:15:45 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7202,7 +7202,7 @@ begin
             if (vMinVar.lt.vMin) then
                 print("pack_values: FATAL: User specified opt@min_value is too high")
                 print("pack_values: opt@min_value    = "+opt@min_value)
-                print("pack_values: actual min value = "+xMinVar)
+                print("pack_values: actual min value = "+vMinVar)
                 exit
             end if
         else
@@ -7215,7 +7215,7 @@ begin
             if (vMaxVar.gt.vMax) then
                 print("pack_values: FATAL: User specified opt@max_value is too low")
                 print("pack_values: opt@max_value    = "+opt@max_value)
-                print("pack_values: actual max value = "+xMaxVar)
+                print("pack_values: actual max value = "+vMaxVar)
                 exit
             end if
         else
