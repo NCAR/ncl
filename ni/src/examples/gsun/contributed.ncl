@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.93 2005-12-02 04:15:45 shea Exp $
+;      $Id: contributed.ncl,v 1.94 2005-12-02 18:47:26 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2854,7 +2854,7 @@ function clmDayTLL (x[*][*][*]:numeric, yyyyddd:integer)
 ; Usage:  xClmDay = clmDAY_TLL (x, yyyyddd)
 ; -------
 
-
+local dimx, ntim, nlat, mlon, ndys, days, clmDay, ndy, indx, year_day, nFill
 begin
 
    dimx  = dimsizes (x)
@@ -2911,6 +2911,7 @@ end
 ; =====================================
 function smthClmDayTLL (clmDay[*][*][*]:numeric, nHarm:integer)
 ;
+local nFill, dn, z, cf, clmDaySmth 
 begin
   
   if (isatt(clmDay, "_FillValue")) then
@@ -2973,6 +2974,7 @@ function calcDayAnomTLL (x[*][*][*]:numeric, yyyyddd:integer, clmDay[*][*][*]:nu
 
 ; Usage:  xAnom = calcDayAnomTLL (x, yyyyddd, clmDay)
 
+local dimx, ntim, nlat, mlon, ndys, days, xAnom, nt
 begin
 
    dimx  = dimsizes (x)
@@ -7163,7 +7165,8 @@ end
 ; Most of the code is to handle _FillValue and assorted permutations/options
 
 function pack_values(var:numeric, packType:string, opt:logical)  
-local vType, one, two, pMax, sFill, vMin, vMax, vRange, vPack, scale_factor, add_offset
+local vType, one, two, pMax, sFill, vMin, vMax, vRange, vPack  \
+    , scale_factor, add_offset, vMinVar, vMaxVar, msgFlag, msgVal, filFlag, filVal 
 begin
         vType = typeof(var)
         if (.not.(vType.eq."float" .or. vType.eq."double")) then
