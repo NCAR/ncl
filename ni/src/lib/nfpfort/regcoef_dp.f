@@ -1,6 +1,6 @@
 c -------------------------------------------------------------
       SUBROUTINE DREGCOEF(X,Y,NPTS,XMSG,YMSG,RCOEF,TVAL,NPTXY,XAVE,
-     +     YAVE,IER)
+     +     YAVE,RSTD,IER)
       IMPLICIT NONE
 
 c NCL:  rcoef = regcoef (x,y,tval,nptxy)
@@ -23,7 +23,9 @@ c .              dmsg will be used to fill missing values
 c .   rcoef    - slope (trend ... regression coef)
 c .   tval     - t-statistic (null hypothesis: H0: r=0.0)
 c .   nptxy    - number of points used
+c .   rstd     - standard deviation of the regression coefficient
 c .   xave     - average of x
+c .   yave     - average of y
 c .   yave     - average of y
 c .   ier      - if (ier.ne.0) an error has occurred
 
@@ -34,7 +36,7 @@ C input
 C output
       INTEGER IER
 C output
-      DOUBLE PRECISION RCOEF,TVAL,YAVE,XAVE
+      DOUBLE PRECISION RCOEF,TVAL,YAVE,XAVE,RSTD
 
 C local
       LOGICAL REGDBG
@@ -46,6 +48,7 @@ C local
       IER = 0
       TVAL  = YMSG
       RCOEF = YMSG
+      RSTD  = YMSG
       IF (NPTS.LT.2) IER = 1
       IF (IER.NE.0) RETURN
 
@@ -97,9 +100,10 @@ C sum of squares due to regression
 C v[b] in book {variance of B}
           VB = SSQ/XVAR
           SQRTVB = DSQRT(VB)
-C t-statistic
+C t-statistic and standard deviation of reg coef
           IF (SQRTVB.GT.0.D0) then
               TVAL = (RCOEF-RNULL)/SQRTVB
+              RSTD = SQRTVB
           ELSE
               TVAL = YMSG
           END IF
@@ -132,7 +136,7 @@ c XVAR = 0.0
           WRITE (*,FMT='('' rcoef ='',f12.9)') RCOEF
           WRITE (*,FMT='('' rnull ='',f12.9)') RNULL
           WRITE (*,FMT='('' vb    ='',f15.9)') VB
-          WRITE (*,FMT='('' sqrtvb='',f15.9)') SQRTVB
+          WRITE (*,FMT='('' rstd(=sqrtvb)='',f15.9)') RSTD   
           WRITE (*,FMT='('' tval  ='',f15.9)') TVAL
       END IF
 
