@@ -9447,6 +9447,8 @@ int* nrotatts;
 	float clat,llat,llon,rlat,rlon;
 	float dux,ux0,ux1,duy,uy0,uy1;
 	int gds_type = 10;
+	NhlBoolean do_rot = True;
+	NrmQuark grid_name;
 		
 	*lat = NULL;
 	*n_dims_lat = 0;
@@ -9559,6 +9561,8 @@ int* nrotatts;
 		}
 		*/
 	}
+
+	do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
 			
 	if (rotang != 0.0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -9566,6 +9570,8 @@ int* nrotatts;
 			  gds_type);
 	}
 	else {
+		float uxc,uyc;
+
 		*dimsizes_lat = (int*)NclMalloc(2 * sizeof(int));
 		*dimsizes_lon = (int*)NclMalloc(2 * sizeof(int));
 		(*dimsizes_lon)[0] = nj;
@@ -9586,25 +9592,56 @@ int* nrotatts;
 		dux = (ux1 - ux0) / (ni - 1);
 		duy = (uy1 - uy0) / (nj - 1);
 
-		for(j = 0;j < nj; j++) {
-			float uy = uy0 + j * duy;
-			for (i = 0; i < ni; i++) {
-				float ux = ux0 + i * dux;
-				NGCALLF(maptri,MAPTRI)
-					(&ux,&uy,&((*lat)[j * ni + i]),&((*lon)[j * ni + i]));
+		if (do_rot) {
+			double gridlatc;
+			double dtr = atan(1) / 45.0;
+
+			*rot = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
+			NGCALLF(maptrn,MAPTRN)(&clat,&losp,&uxc,&uyc);
+			gridlatc = (uyc / (uy1 - uy0)) * nj * dj; 
+
+			for(j = 0;j < nj; j++) {
+				float uy = uy0 + j * duy;
+				for (i = 0; i < ni; i++) {
+					double cgridlat, slon,srot;
+					float ux = ux0 + i * dux;
+					NGCALLF(maptri,MAPTRI)
+						(&ux,&uy,&((*lat)[j * ni + i]),&((*lon)[j * ni + i]));
+					slon = sin(((*lon)[j * ni + i] - losp)*dtr);
+					cgridlat = cos((j * dj - gridlatc)* dtr);
+					if (cgridlat <= 0.0)
+						(*rot)[j * ni + i] = 0.0;
+					else {
+						srot = sin(-clat * dtr) * slon / cgridlat;
+						(*rot)[j * ni + i] = (float) asin(srot);
+					}
+				}
+			}
+		}
+		else {
+			for(j = 0;j < nj; j++) {
+				float uy = uy0 + j * duy;
+				for (i = 0; i < ni; i++) {
+					float ux = ux0 + i * dux;
+					NGCALLF(maptri,MAPTRI)
+						(&ux,&uy,&((*lat)[j * ni + i]),&((*lon)[j * ni + i]));
+				}
 			}
 		}
 	}	
+	grid_name = (is_thinned_lat || is_thinned_lon) ?
+		NrmStringToQuark("Rotated Latitude/Longitude Grid (Quasi-Regular)") :
+		NrmStringToQuark("Rotated Latitude/Longitude Grid");
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = lasp;
-		GribPushAtt(lon_att_list,"Latitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		GribPushAtt(lon_att_list,"Latitude_of_southern_pole",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = losp;
-		GribPushAtt(lon_att_list,"Longitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		GribPushAtt(lon_att_list,"Longitude_of_southern_pole",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = rotang;
-		GribPushAtt(lon_att_list,"Angle of rotation",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		GribPushAtt(lon_att_list,"Angle_of_rotation",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1;
 		GribPushAtt(lon_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
@@ -9627,10 +9664,7 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_east");
 		GribPushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		if (is_thinned_lat || is_thinned_lon)
-			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid (Quasi-Regular)");
-		else 
-			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid");
+		*tmp_string = grid_name;
 		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("longitude");
@@ -9639,13 +9673,13 @@ int* nrotatts;
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = lasp;
-		GribPushAtt(lat_att_list,"Latitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		GribPushAtt(lat_att_list,"Latitude_of_southern_pole",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = losp;
-		GribPushAtt(lat_att_list,"Longitude of southern pole",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		GribPushAtt(lat_att_list,"Longitude_of_southern_pole",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = rotang;
-		GribPushAtt(lat_att_list,"Angle of rotation",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		GribPushAtt(lat_att_list,"Angle_of_rotation",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1;
 		GribPushAtt(lat_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
@@ -9668,14 +9702,14 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_north");
 		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		if (is_thinned_lat || is_thinned_lon)
-			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid (Quasi-Regular)");
-		else 
-			*tmp_string = NrmStringToQuark("Rotated Latitude/Longitude Grid");
+		*tmp_string = grid_name;
 		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("latitude");
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	}
+	if (do_rot && rot_att_list != NULL) {
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
 	}
 	return;
 }
