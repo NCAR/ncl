@@ -4,7 +4,7 @@
 
 extern void NGCALLF(dregcoef,DREGCOEF)(double *,double *,int *,double *,
                                        double *,double *,double *,int *,
-                                       double *,double *,int *);
+                                       double *,double *,double *,int *);
 
 extern void  NGCALLF(dzregr1,DZREGR1)(int *,int *,double *,double *,double *,
                                       double *,double *,double *,double *, 
@@ -26,7 +26,7 @@ NhlErrorTypes regcoef_W( void )
  * Output array variables
  */
   void *tval, *rcoef;
-  double *tmp_tval, *tmp_rcoef, xave, yave;
+  double *tmp_tval, *tmp_rcoef, xave, yave, rstd;
   int ndims_tval, dsizes_tval[NCL_MAX_DIMENSIONS];
   int ndims_nptxy, dsizes_nptxy[NCL_MAX_DIMENSIONS];
   int ndims_rcoef, *dsizes_rcoef;
@@ -290,7 +290,7 @@ NhlErrorTypes regcoef_W( void )
 
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
                                  &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                 &nptxy[ln],&xave,&yave,&ier);
+                                 &nptxy[ln],&xave,&yave,&rstd,&ier);
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
@@ -336,7 +336,7 @@ NhlErrorTypes regcoef_W( void )
         NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
                                    &missing_dy.doubleval,
                                    tmp_rcoef,tmp_tval,&nptxy[ln],
-                                   &xave,&yave,&ier);
+                                   &xave,&yave,&rstd,&ier);
         if (ier == 5) ier_count5++;
         if (ier == 6) ier_count6++;
 /*
@@ -407,8 +407,8 @@ NhlErrorTypes regCoef_W( void )
 /*
  * Output array variables
  */
-  void *tval, *rcoef;
-  double *tmp_tval, *tmp_rcoef, xave, yave;
+  void *tval, *rstd, *rcoef;
+  double *tmp_tval, *tmp_rstd, *tmp_rcoef, xave, yave;
   int ndims_rcoef, *dsizes_rcoef;
   NclBasicDataTypes type_rcoef;
   int *nptxy;
@@ -559,12 +559,15 @@ NhlErrorTypes regCoef_W( void )
 
     rcoef     = (float *)calloc(total_size_rcoef,sizeof(float));
     tval      = (float *)calloc(total_size_rcoef,sizeof(float));
+    rstd      = (float *)calloc(total_size_rcoef,sizeof(float));
     nptxy     = (int *)calloc(total_size_rcoef,sizeof(int));
     tmp_tval  = (double*)calloc(1,sizeof(double));
+    tmp_rstd  = (double*)calloc(1,sizeof(double));
     tmp_rcoef = (double *)calloc(1,sizeof(double));
 
     if(tmp_rcoef == NULL || rcoef == NULL || nptxy == NULL ||
-       tmp_tval  == NULL || tval  == NULL) {
+       tmp_tval  == NULL || tval  == NULL || tmp_rstd  == NULL ||
+       rstd  == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: Unable to allocate memory for output variables");
       return(NhlFATAL);
     }
@@ -574,9 +577,10 @@ NhlErrorTypes regCoef_W( void )
 
     rcoef = (double *)calloc(total_size_rcoef,sizeof(double));
     tval  = (double *)calloc(total_size_rcoef,sizeof(double));
+    rstd  = (double *)calloc(total_size_rcoef,sizeof(double));
     nptxy = (int *)calloc(total_size_rcoef,sizeof(int));
 
-    if(rcoef == NULL || tval == NULL || nptxy == NULL) {
+    if(rcoef == NULL || tval == NULL || rstd == NULL || nptxy == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: Unable to allocate memory for output variables");
       return(NhlFATAL);
     }
@@ -617,12 +621,13 @@ NhlErrorTypes regCoef_W( void )
 
       if(type_rcoef == NCL_double) {
         tmp_tval  = &((double*)tval)[ln];
+        tmp_rstd  = &((double*)rstd)[ln];
         tmp_rcoef = &((double*)rcoef)[ln];
       }
 
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
                                  &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                 &nptxy[ln],&xave,&yave,&ier);
+                                 &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
@@ -630,6 +635,7 @@ NhlErrorTypes regCoef_W( void )
  */
       if(type_rcoef != NCL_double) {
         ((float*)tval)[ln]  = (float)*tmp_tval;
+        ((float*)rstd)[ln]  = (float)*tmp_rstd;
         ((float*)rcoef)[ln] = (float)*tmp_rcoef;
       }
 
@@ -666,12 +672,13 @@ NhlErrorTypes regCoef_W( void )
         
         if(type_rcoef == NCL_double) {
           tmp_tval  = &((double*)tval)[ln];
+          tmp_rstd  = &((double*)rstd)[ln];
           tmp_rcoef = &((double*)rcoef)[ln];
         }
         
         NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
                                    &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                                   &nptxy[ln],&xave,&yave,&ier);
+                                   &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
         if (ier == 5) ier_count5++;
         if (ier == 6) ier_count6++;
 /*
@@ -679,6 +686,7 @@ NhlErrorTypes regCoef_W( void )
  */
         if(type_rcoef != NCL_double) {
           ((float*)tval)[ln]  = (float)*tmp_tval;
+          ((float*)rstd)[ln]  = (float)*tmp_rstd;
           ((float*)rcoef)[ln] = (float)*tmp_rcoef;
         }
         
@@ -705,6 +713,7 @@ NhlErrorTypes regCoef_W( void )
   if(type_rcoef != NCL_double) {
     NclFree(tmp_rcoef);
     NclFree(tmp_tval);
+    NclFree(tmp_rstd);
   }
 
   dsizes[0] = total_size_rcoef;
@@ -752,6 +761,25 @@ NhlErrorTypes regCoef_W( void )
                att_md,
                NULL
                );
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rstd,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
+               att_md,
+               NULL
+               );
   }
   else {
 /* 
@@ -793,6 +821,26 @@ NhlErrorTypes regCoef_W( void )
     _NclAddAtt(
                att_id,
                "tval",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rstd,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
                att_md,
                NULL
                );
@@ -863,8 +911,8 @@ NhlErrorTypes regCoef_shields_W( void )
 /*
  * Output array variables
  */
-  void *tval, *rcoef;
-  double *tmp_tval, *tmp_rcoef, xave, yave;
+  void *tval, *rstd, *rcoef;
+  double *tmp_tval, *tmp_rstd, *tmp_rcoef, xave, yave;
   int ndims_rcoef, *dsizes_rcoef;
   NclBasicDataTypes type_rcoef;
   int *nptxy;
@@ -974,12 +1022,15 @@ NhlErrorTypes regCoef_shields_W( void )
 
     rcoef     = (float *)calloc(total_size_rcoef,sizeof(float));
     tval      = (float *)calloc(total_size_rcoef,sizeof(float));
+    rstd      = (float *)calloc(total_size_rcoef,sizeof(float));
     nptxy     = (int *)calloc(total_size_rcoef,sizeof(int));
     tmp_tval  = (double*)calloc(1,sizeof(double));
+    tmp_rstd  = (double*)calloc(1,sizeof(double));
     tmp_rcoef = (double *)calloc(1,sizeof(double));
 
     if(tmp_rcoef == NULL || rcoef == NULL || nptxy == NULL ||
-       tmp_tval  == NULL || tval  == NULL) {
+       tmp_tval  == NULL || tval  == NULL ||
+       tmp_rstd  == NULL || rstd  == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_shields: Unable to allocate memory for output variables");
       return(NhlFATAL);
     }
@@ -989,9 +1040,10 @@ NhlErrorTypes regCoef_shields_W( void )
 
     rcoef = (double *)calloc(total_size_rcoef,sizeof(double));
     tval  = (double *)calloc(total_size_rcoef,sizeof(double));
+    rstd  = (double *)calloc(total_size_rcoef,sizeof(double));
     nptxy = (int *)calloc(total_size_rcoef,sizeof(int));
 
-    if(rcoef == NULL || tval == NULL || nptxy == NULL) {
+    if(rcoef == NULL || tval == NULL || nptxy == NULL || rstd == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef_shields: Unable to allocate memory for output variables");
       return(NhlFATAL);
     }
@@ -1021,25 +1073,27 @@ NhlErrorTypes regCoef_shields_W( void )
                    &missing_y,&missing_dy);
       }
       else {
-    tmp_y  = &((double*)y)[ly];
+	tmp_y  = &((double*)y)[ly];
       }
       
       if(type_rcoef == NCL_double) {
-    tmp_tval  = &((double*)tval)[ln];
-    tmp_rcoef = &((double*)rcoef)[ln];
+	tmp_tval  = &((double*)tval)[ln];
+	tmp_rstd  = &((double*)rstd)[ln];
+	tmp_rcoef = &((double*)rcoef)[ln];
       }
       
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-                 &nptxy[ln],&xave,&yave,&ier);
+				 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+				 &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
  * Coerce output to float if necessary.
  */
       if(type_rcoef != NCL_double) {
-    ((float*)tval)[ln]  = (float)*tmp_tval;
-    ((float*)rcoef)[ln] = (float)*tmp_rcoef;
+	((float*)tval)[ln]  = (float)*tmp_tval;
+	((float*)rstd)[ln]  = (float)*tmp_rstd;
+	((float*)rcoef)[ln] = (float)*tmp_rcoef;
       }
       
       ly += npts;
@@ -1064,6 +1118,7 @@ NhlErrorTypes regCoef_shields_W( void )
   if(type_rcoef != NCL_double) {
     NclFree(tmp_rcoef);
     NclFree(tmp_tval);
+    NclFree(tmp_rstd);
   }
 
   dsizes[0] = total_size_rcoef;
@@ -1111,6 +1166,26 @@ NhlErrorTypes regCoef_shields_W( void )
                att_md,
                NULL
                );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rstd,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
+               att_md,
+               NULL
+               );
   }
   else {
 /* 
@@ -1152,6 +1227,26 @@ NhlErrorTypes regCoef_shields_W( void )
     _NclAddAtt(
                att_id,
                "tval",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rstd,
+                   NULL,
+                   1,                    /*  ndims_rcoef,   */
+                   dsizes,               /*  dsizes_rcoef,  */
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
                att_md,
                NULL
                );
@@ -1214,8 +1309,8 @@ NhlErrorTypes regline_W( void )
 /*
  * Output array variables
  */
-  double *rcoef, *tval, *xave, *yave, *yint;
-  float *rrcoef, *rtval, *rxave, *ryave, *ryint;
+  double *rcoef, *tval, *rstd, *xave, *yave, *yint;
+  float *rrcoef, *rtval, *rrstd, *rxave, *ryave, *ryint;
   int *nptxy, ier = 0;
 
 /*
@@ -1283,11 +1378,12 @@ NhlErrorTypes regline_W( void )
  */
   rcoef = (double *)calloc(1,sizeof(double));
   tval  = (double *)calloc(1,sizeof(double));
+  rstd  = (double *)calloc(1,sizeof(double));
   xave  = (double *)calloc(1,sizeof(double));
   yave  = (double *)calloc(1,sizeof(double));
   nptxy =   (int *)calloc(1,sizeof(int));
   if( rcoef == NULL || tval == NULL || xave == NULL || yave == NULL ||
-      nptxy == NULL) {
+      nptxy == NULL || rstd == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for output values");
     return(NhlFATAL);
   }
@@ -1297,7 +1393,7 @@ NhlErrorTypes regline_W( void )
  */
   NGCALLF(dregcoef,DREGCOEF)(&dx[0],&dy[0],&npts,&missing_dx.doubleval,
                              &missing_dy.doubleval,rcoef,tval,nptxy,xave,
-                             yave,&ier);
+                             yave,rstd,&ier);
   if (ier == 5) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"regline: The x and/or y array contains all missing values");
   }
@@ -1323,11 +1419,12 @@ NhlErrorTypes regline_W( void )
  */
     rrcoef = (float *)calloc(1,sizeof(float));
     rtval  = (float *)calloc(1,sizeof(float));
+    rrstd  = (float *)calloc(1,sizeof(float));
     rxave  = (float *)calloc(1,sizeof(float));
     ryave  = (float *)calloc(1,sizeof(float));
     ryint  = (float *)calloc(1,sizeof(float));
     if( rrcoef == NULL || rtval == NULL || rxave == NULL || ryave == NULL ||
-        ryint == NULL) {
+        rrstd == NULL || ryint == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"regline: Unable to allocate memory for coercing output values back to floating point");
       return(NhlFATAL);
     }
@@ -1336,6 +1433,7 @@ NhlErrorTypes regline_W( void )
  */
     *rrcoef = (float)*rcoef;
     *rtval  = (float)*tval;
+    *rrstd  = (float)*rstd;
     *rxave  = (float)*xave;
     *ryave  = (float)*yave;
     *ryint  = *ryave - *rrcoef*(*rxave);
@@ -1344,6 +1442,7 @@ NhlErrorTypes regline_W( void )
  */
     NclFree(rcoef);
     NclFree(tval);
+    NclFree(rstd);
     NclFree(xave);
     NclFree(yave);
 /*
@@ -1383,6 +1482,26 @@ NhlErrorTypes regline_W( void )
     _NclAddAtt(
                att_id,
                "tval",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rrstd,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypefloatClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
                att_md,
                NULL
                );
@@ -1517,6 +1636,26 @@ NhlErrorTypes regline_W( void )
     _NclAddAtt(
                att_id,
                "tval",
+               att_md,
+               NULL
+               );
+
+    att_md = _NclCreateVal(
+                   NULL,
+                   NULL,
+                   Ncl_MultiDValData,
+                   0,
+                   rstd,
+                   NULL,
+                   1,
+                   dsizes,
+                   TEMPORARY,
+                   NULL,
+                   (NclObjClass)nclTypedoubleClass
+                   );
+    _NclAddAtt(
+               att_id,
+               "rstd",
                att_md,
                NULL
                );
