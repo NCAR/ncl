@@ -5277,7 +5277,7 @@ int* nrotatts;
 	kgds[6] = 100000; /* 280 - 180 -- the NCEP code requires this */
 	kgds[7] = 12700;
 	kgds[8] = 12700;
-	kgds[9] = 0200; /* 1000 0000
+	kgds[9] = 0200; /* 1000 0000 */
 	kgds[10] = 0100; /* 0100 0000 */
 
 	if (thevarrec->has_gds && ! ConsistentWithGDS(thevarrec,kgds)) {
