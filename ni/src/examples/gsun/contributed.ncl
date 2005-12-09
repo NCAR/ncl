@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.94 2005-12-02 18:47:26 shea Exp $
+;      $Id: contributed.ncl,v 1.95 2005-12-09 20:56:19 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6242,8 +6242,12 @@ end
 ; D. Shea
 ; read an ascii file and return the table data after the header portion
 ; opt - option
-;       if type "integer" then it is the number of rows (line)
-;       for the header. This is a 'fixed' number of lines.
+;       if type "integer" it can be a scalar or have size [2]
+;       opt/opt(0) specifies the number of rows (lines) for the header. 
+;       This is a 'fixed' number of lines.
+;       if opt has 2 elements, the second integer value [ opt(1) ]
+;       specifies the number of lines at the end of the 
+;       file to be ignored.
 ;
 ;       if type "string" then it is a sequence of characters
 ;       that terminate a variable number of header rows.
@@ -6255,14 +6259,17 @@ end
 function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
 local head, nh, xs, nrow, table
 begin
-  if (typeof(opt).eq."integer" .and. opt.eq.0) then
+  if (typeof(opt).eq."integer" .and. opt(0).eq.0) then
       nrow  = dimsizes(asciiread(fName, -1, "string"))  ; all rows as strings
       table = asciiread(fName, (/nrow,ncol/), datatype)
   else
-      head = readAsciiHead( fName, opt)
+      head = readAsciiHead( fName, opt(0))
       nh   = dimsizes(head)                 ; # header records
       xs   = asciiread(fName, -1, "string") ; all rows as strings
-      nrow = dimsizes(xs)-nh                ; # rows containing data
+      nrow = dimsizes(xs)-nh                ; # rows after header
+      if (dimsizes(opt).gt.1) then
+          nrow = nrow - opt(1) 
+      end if
 
       tmpdir  = ncargpath("tmp") + "/"
       if(ismissing(tmpdir)) then
@@ -6274,7 +6281,7 @@ begin
           tmpfile = "BoGuS_file"
       end if
 
-      asciiwrite (tmpdir+tmpfile, xs(nh:))
+      asciiwrite (tmpdir+tmpfile, xs(nh:nh+nrow-1))
       table = asciiread(tmpdir+tmpfile, (/nrow,ncol/), datatype)
       system("/bin/rm "+tmpdir+tmpfile)
   end if
