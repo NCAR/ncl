@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.187 2005-11-23 18:53:11 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.188 2005-12-09 20:27:02 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -4956,6 +4956,36 @@ NhlErrorTypes _NclIgetenv
     }
 }
 
+
+/* 
+ * this version recognizes hexadecimal and decimal conventions, but not octal
+ */
+
+static long _Nclstrtol 
+#if     NhlNeedProto
+(
+	const char *str, 
+	char **endptr
+)
+#else
+(str,endptr)
+const char *str;
+char **endptr;
+#endif
+{
+
+	long tval;
+	int i = 0;
+
+	while (isspace(str[i]))
+			i++;
+	if (strlen(&(str[i])) >= 2 && str[i] == '0' && (str[i+1] == 'x' || str[i+1] == 'X'))
+		tval = strtol(str,endptr,16);
+	else
+		tval = strtol(str,endptr,10);
+	return tval;
+}
+
 NhlErrorTypes _NclIushorttoint
 #if	NhlNeedProto
 (void)
@@ -6579,7 +6609,7 @@ NhlErrorTypes _NclIstringtolong
 	if(has_missing) {
 		errno = 0;
 		val = NrmQuarkToString(missing.stringval);
-		tval = strtol(val,&end,0);
+		tval = _Nclstrtol(val,&end);
 		if (end == val || errno == ERANGE) {
 			missing2.longval = ((NclTypeClass)nclTypelongClass)->type_class.default_mis.longval;
 		}
@@ -6592,7 +6622,7 @@ NhlErrorTypes _NclIstringtolong
 			} else {
 				errno = 0;
 				val = NrmQuarkToString(value[i]);
-				tval = strtol(val,&end,0);
+				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,
 					"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
@@ -6611,7 +6641,7 @@ NhlErrorTypes _NclIstringtolong
 		for(i = 0; i < total; i++) {
 			errno = 0;
 			val = NrmQuarkToString(value[i]);
-			tval = strtol(val,&end,0);
+			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
                                 "A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
@@ -6670,7 +6700,7 @@ NhlErrorTypes _NclIstringtoshort
 	if(has_missing) {
 		errno = 0;
 		val = NrmQuarkToString(missing.stringval);
-		tval = strtol(val,&end,0);
+		tval = _Nclstrtol(val,&end);
 		if (end == val || tval < SHRT_MIN || tval > SHRT_MAX || errno == ERANGE) {
 			missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		}
@@ -6682,7 +6712,7 @@ NhlErrorTypes _NclIstringtoshort
 				out_val[i] = missing2.shortval;
 			} else {
 				val = NrmQuarkToString(value[i]);
-				tval = strtol(val,&end,0);
+				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,
                                         "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
@@ -6700,7 +6730,7 @@ NhlErrorTypes _NclIstringtoshort
 		missing2.shortval = ((NclTypeClass)nclTypeshortClass)->type_class.default_mis.shortval;
 		for(i = 0; i < total; i++) {
 			val = NrmQuarkToString(value[i]);
-			tval = strtol(val,&end,0);
+			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
                                 "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
@@ -6725,6 +6755,8 @@ NhlErrorTypes _NclIstringtoshort
 		0
 	));
 }
+
+
 NhlErrorTypes _NclIstringtointeger
 #if     NhlNeedProto
 (void)
@@ -6759,7 +6791,7 @@ NhlErrorTypes _NclIstringtointeger
 	if(has_missing) {
 		errno = 0;
 		val = NrmQuarkToString(missing.stringval);
-		tval = strtol(val,&end,0);
+		tval = _Nclstrtol(val,&end);
 		if (end == val || tval < INT_MIN || tval > INT_MAX || errno == ERANGE) {
 			missing2.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
 		}
@@ -6772,7 +6804,7 @@ NhlErrorTypes _NclIstringtointeger
 			} else {
 				errno = 0;
 				val = NrmQuarkToString(value[i]);
-				tval = strtol(val,&end,0);
+				tval = _Nclstrtol(val,&end);
 				if (end == val) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,
                                         "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
@@ -6791,7 +6823,7 @@ NhlErrorTypes _NclIstringtointeger
 		for(i = 0; i < total; i++) {
 			errno = 0;
 			val = NrmQuarkToString(value[i]);
-			tval = strtol(val,&end,0);
+			tval = _Nclstrtol(val,&end);
 			if (end == val) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
                                 "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
