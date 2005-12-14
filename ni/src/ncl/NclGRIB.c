@@ -236,7 +236,8 @@ GribRecordInqRec *current_rec;
 	void *val;
 	thelist = therec->grib_grid_cache;
 	while(thelist != NULL) {
-		if((thelist->grid_number == step->grid_number)&&(thelist->has_gds ==step->has_gds)&&(thelist->grid_gds_tbl_index == step->grid_gds_tbl_index)) {
+		if((thelist->grid_number == step->grid_number)&&(thelist->has_gds ==step->has_gds)
+		   &&(thelist->grid_gds_tbl_index == step->grid_gds_tbl_index)) {
 			if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
 				tmp = thelist->tail;
 				tmp->rec->the_dat = NULL;
@@ -248,7 +249,8 @@ GribRecordInqRec *current_rec;
 				tmp->next->prev = tmp;
 				thelist->thelist = tmp;
 				return(tmp->thevalue);
-			} if(thelist->n_entries == 0) {
+			} 
+			if(thelist->n_entries == 0) {
 				thelist->thelist = NclMalloc(sizeof(NclGribCacheRec));
 				thelist->thelist->prev = NULL;
 				thelist->thelist->next = NULL;
@@ -4824,22 +4826,20 @@ int wr_status;
 						/*
 						if((i == grid_tbl_len) || (grid[grib_rec->grid_tbl_index].get_grid == NULL)){
 						*/
-							if(grib_rec->has_gds) {
-								for(i = 0; i < grid_gds_tbl_len ; i++) {
-									if(grib_rec->gds_type == grid_gds_index[i]) { 
-										grib_rec->grid_gds_tbl_index = i;
-										break;
-									}
-								}
-								if(i == grid_gds_tbl_len) {
-									grib_rec->grid_gds_tbl_index = -1;
+						if(grib_rec->has_gds) {
+							for(i = 0; i < grid_gds_tbl_len ; i++) {
+								if(grib_rec->gds_type == grid_gds_index[i]) { 
+									grib_rec->grid_gds_tbl_index = i;
+									break;
 								}
 							}
-						/*
-						} else {
-							grib_rec->grid_gds_tbl_index = -1;
+							if(i == grid_gds_tbl_len) {
+								grib_rec->grid_gds_tbl_index = 0;
+							}
 						}
-						*/
+						else {
+							grib_rec->grid_gds_tbl_index = 0;
+						}
 					}
 
 					if(grib_rec->has_bms) {
