@@ -6053,7 +6053,7 @@ void* storage;
 						current_rec->the_dat = _NclGetCacheVal(therec,step,current_rec);
 						if(current_rec->the_dat == NULL){
 							NhlPError(NhlFATAL,NhlEUNKNOWN,
-								  "NclGRIB: Unrecoverable caching error reading variable can't continue");
+								  "NclGRIB: Unrecoverable caching error reading variable %s; can't continue",current_rec->var_name);
 							fclose(fd);
 							NclFree(vbuf);
 							return(NULL);
@@ -6119,7 +6119,9 @@ void* storage;
 						_NclDestroyObj((NclObj)tmp_md);
 					}
 				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Unrecoverable erro reading variable can't continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "NclGRIB: Unrecoverable error reading variable %s; can't continue",
+						  current_rec->var_name);
 					fclose(fd);
 					NclFree(vbuf);
 					return(NULL);
