@@ -1,17 +1,18 @@
 #!/bin/csh -f
-#                                                                                              
-#       $Id: ncl_grib2nc,v 1.6 2005-12-14 18:25:50 grubin Exp $
-                                                                                               
+#
+#       $Id: ncl_grib2nc,v 1.7 2005-12-15 05:47:30 haley Exp $
+
 #       Copyright (C) 2005
-#       University Corporation for Atmospheric Research                                        
+#       University Corporation for Atmospheric Research
 #       All Rights Reserved
-                                                                                               
+
 #       File:       ncl_grib2nc
 #       Author:     Rick Grubin
+#                   Original NCL code written by Dennis Shea.
 #
 #       National Center for Atmospheric Research
 #       POB 3000, Boulder, Colorado
-                                                                                               
+
 # This script converts a NCL-supported GRIB file to
 # a netCDF-formatted file.
 #
@@ -503,7 +504,9 @@ begin
             varAtts = getfilevaratts(fgrb, grbVarNames(i))
             nAtts   = dimsizes(varAtts)
 
- 	        dumAtts = new (1, varType(i))       ; dummy to attach varAtts 
+            dumAtts = new (1, varType(i))    ; dummy to attach varAtts 
+            delete(dumAtts@_FillValue)       ; delete auto assigned _FillValue
+
             do j = 0, nAtts - 1
                 dumAtts@$varAtts(j)$ = fgrb->$grbVarNames(i)$@$varAtts(j)$
             end do
