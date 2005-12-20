@@ -2482,7 +2482,7 @@ GribFileRecord *therec;
 					/*
 					 * y or lon first!
 					 */
-					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims+step->var_info.doff);
 					} else {
 						sprintf(buffer,"lon_%d",step->grid_number);
@@ -2526,7 +2526,7 @@ GribFileRecord *therec;
 								    lon_att_list_ptr,nlonatts);
 					}
 					NclFree(dimsizes_lon);
-					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+					if((step->has_gds)&&(step->grid_number == 255)) {
 						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims + (step->var_info.doff - 1));
 					} else {
 						sprintf(buffer,"lat_%d",step->grid_number);
@@ -2580,7 +2580,7 @@ GribFileRecord *therec;
 					step->var_info.file_dim_num[current_dim+1] = therec->total_dims + 1;
 					step->var_info.doff=1;
 
-					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+					if((step->has_gds)&&(step->grid_number == 255)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_y_%d",step->gds_type,therec->total_dims + 1);
 						}
@@ -2606,7 +2606,7 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+					if((step->has_gds)&&(step->grid_number == 255)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims + 1);
 						}
@@ -2643,7 +2643,7 @@ GribFileRecord *therec;
 							    lon_att_list_ptr,nlonatts);
 					NclFree(dimsizes_lon);
 						
-					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+					if((step->has_gds)&&(step->grid_number == 255)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
 						}
@@ -2667,7 +2667,7 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+					if((step->has_gds)&&(step->grid_number == 255)) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
 						}
@@ -2701,7 +2701,7 @@ GribFileRecord *therec;
 					therec->total_dims += 2;
 					if (tmp_rot != NULL) {
 						/* the rotation array is assumed to be the same size as the lat and lon arrays */
-						if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+						if((step->has_gds)&&(step->grid_number == 255)) {
 							if (step->gds_type != 203) {
 								sprintf(buffer,"g%d_rot_%d",step->gds_type,therec->total_dims);
 							}
@@ -3988,6 +3988,7 @@ static GribRecordInqRec* _MakeMissingRec
 	grib_rec->bms_off= 0;
 	grib_rec->bms_size = 0;
 	grib_rec->the_dat = NULL;
+	grib_rec->interp_method = 0;
 	return(grib_rec);
 	
 }
@@ -4823,10 +4824,12 @@ int wr_status;
 								break;
 							}
 						}
-						/*
-						if((i == grid_tbl_len) || (grid[grib_rec->grid_tbl_index].get_grid == NULL)){
-						*/
 						if(grib_rec->has_gds) {
+							/*
+							if((i == grid_tbl_len) || (grid[grib_rec->grid_tbl_index].get_grid == NULL)){
+								grib_rec->grid_tbl_index = -1;
+							}
+							*/
 							for(i = 0; i < grid_gds_tbl_len ; i++) {
 								if(grib_rec->gds_type == grid_gds_index[i]) { 
 									grib_rec->grid_gds_tbl_index = i;
@@ -6042,7 +6045,8 @@ void* storage;
 				}
 				
 				if((current_rec->the_dat == NULL) || 
-				   (current_rec->interp_method != current_interp_method)) {
+				   (current_rec->interp_method != current_interp_method &&
+				    current_rec->var_name_q > NrmNULLQUARK)) {
 	/*
 	* Retrieves LRU cache MultiDVal specific to this grid type
 	*/
@@ -6068,11 +6072,9 @@ void* storage;
 							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)
 								(fd,&tmp,&missing,current_rec,step);
 						}
-					} else if(current_rec->grid_tbl_index > -1) {
-						if(grid[current_rec->grid_tbl_index].un_pack != NULL) {
-							int_or_float = (*grid[current_rec->grid_tbl_index].un_pack)
-								(fd,&tmp,&missing,current_rec,step);
-						}
+					} else if(current_rec->grid_tbl_index > -1 && (grid[current_rec->grid_tbl_index].un_pack != NULL)) {
+						int_or_float = (*grid[current_rec->grid_tbl_index].un_pack)
+							(fd,&tmp,&missing,current_rec,step);
 					} else if((current_rec->has_gds)&&(current_rec->grid_gds_tbl_index > -1)) {
 						if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
 							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)

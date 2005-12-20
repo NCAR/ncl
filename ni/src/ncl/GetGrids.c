@@ -411,12 +411,13 @@ float **rot;
         (*dimsizes_lon)[1] = nx;
 
 	iopt = 0;
-	lrot = 1;
+	lrot = 0;
 	npts = nx * ny;
 	do_rot = (010 & kgds[5])?1:0;
 	if (do_rot) {
 		srot = NhlMalloc(npts * sizeof(float));
 		*rot = NhlMalloc(npts * sizeof(float));
+		lrot = 1;
 	}
 	
 	NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
@@ -6797,7 +6798,7 @@ GribParamList* thevarrec;
 
 			if (pl_ix == -1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
-					  "GdsCEGrid: Invalid thinned longitude grid");
+					  "GenericUnpack: Invalid thinned longitude grid");
 				return integer;
 			}
 			if (is_thinned_lon) {
@@ -9095,12 +9096,15 @@ int* nrotatts;
 		else {
 		*/
 		/* this is more accurate in any case: do it this way */
-			/* not specified: must be calculated from the endpoints and number of steps */
-			di = (lo2 - lo1) / (double)(nlon - 1);
-			if (di < 0) di = -di;
+		/* not specified: must be calculated from the endpoints and number of steps */
+
 		/*
-		}
+		di = (lo2 - lo1) / (double)(nlon - 1);
 		*/
+		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values */
+
+		di = 1000 * ((fmod((lo2 - lo1) * 1e-3 - 1.0 + 3600.0,360.0)+1.0) / (double) (nlon - 1));
+		if (di < 0) di = -di;
 	}
 
 	if (is_thinned_lat) {
@@ -9534,12 +9538,14 @@ int* nrotatts;
 		else {
 		*/
 		/* this is more accurate */
-			/* not specified: must be calculated from the endpoints and number of steps */
-			di = (lo2 - lo1) / (double)(ni - 1);
-			if (di < 0) di = -di;
+		/* not specified: must be calculated from the endpoints and number of steps */
 		/*
-		}
+		di = (lo2 - lo1) / (double)(ni - 1);
+		if (di < 0) di = -di;
 		*/
+		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values */
+		di = (idir * (fmod(idir * (lo2 - lo1) - 1.0 + 3600.0,360.0)+1.0) / (double) (ni - 1));
+
 	}
 
 	if (is_thinned_lat) {
@@ -9556,13 +9562,16 @@ int* nrotatts;
 		/* this is more accurate */
 			/* not specified: must be calculated from the endpoints and number of steps */
 			dj = (la2 - la1) / (double) (nj - 1);
-			if (dj < 0) dj = -dj;
+
 		/*
 		}
 		*/
 	}
 
 	do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+	/*
+	do_rot = 1;
+	*/
 			
 	if (rotang != 0.0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
