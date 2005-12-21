@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_grib2nc,v 1.7 2005-12-15 05:47:30 haley Exp $
+#       $Id: ncl_grib2nc,v 1.8 2005-12-21 21:57:16 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -56,7 +56,10 @@ unset printonexit
 # First argument should be the input file(s); if it's not, exit.
 #    Check to see if the first argument is "-h"
 #
-if ($1 == "-h") then
+if ("$1" != "-h") then
+    echo "${progname}: warning: improper usage: ${progname} '$1'"
+    goto usage
+else
     goto usage
 endif
 
@@ -296,7 +299,6 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ; [-v var1[,...]]       user specified subset of variables [default: all variables]
 ;                       ncl_filedump can be used to determine desired variable names
 ; [-c comment]          text to be included in netCDF file attribute [default: no comment] 
-; [-t]                  specify initial time coordinate type as 'string' [default: 'numeric']"
 ; [-d]                  upon exit: print contents each netCDF file [like ncdump -h] 
 ; [-h]                  this usage message
 ;
@@ -395,10 +397,9 @@ begin
     ;;setfileoption(fgrb, "COARDS", True)   ; place holder
 
 ;***************************************************
-; Specify the type of time coordinate [default is 'numeric' ; waiting for netCDF-4]
+; Specify the type of time coordinate [default is 'numeric']
 ;***************************************************
-    ;;TimeCoordType = timeType
-    ;;setfileoption(fgrb, "InitialTimeCoordinateType", TimeCoordType)
+    setfileoption(fgrb, "InitialTimeCoordinateType", "numeric")
 
 ;***************************************************
 ; Get *all* variables names on the file 
