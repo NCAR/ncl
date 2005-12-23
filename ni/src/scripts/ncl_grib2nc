@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_grib2nc,v 1.8 2005-12-21 21:57:16 grubin Exp $
+#       $Id: ncl_grib2nc,v 1.9 2005-12-23 18:11:44 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -56,11 +56,15 @@ unset printonexit
 # First argument should be the input file(s); if it's not, exit.
 #    Check to see if the first argument is "-h"
 #
-if ("$1" != "-h") then
-    echo "${progname}: warning: improper usage: ${progname} '$1'"
+if ("$1" == "-h") then
     goto usage
 else
-    goto usage
+    # Check argument's length
+    set arglen = `echo "$1" | awk '{print(length($0))}'`
+    if ($arglen <= 2) then
+        echo "${progname}: improper usage: ${progname} $1"
+        goto usage
+    endif
 endif
 
 #
@@ -71,8 +75,9 @@ endif
 set nfiles = 0
 set ifiles_t = ()
 while ($#argv > 0)
-    set isfile = `echo $1 | grep -c ' -'`
-    if ($isfile == 0) then
+    set isfile = `echo $1 | grep -c '-'`
+    set iflen = `echo $1 | awk '{print(length($0))}'`
+    if ($isfile == 0  &&  $iflen > 2) then
         set ifiles_t = ( $ifiles_t $1 )
         @ nfiles += 1
         shift
