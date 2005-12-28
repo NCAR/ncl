@@ -2414,9 +2414,23 @@ GribFileRecord *therec;
 					if (!tmp_lat) 
 						step->grid_tbl_index = -1;
 					else if(((grid[step->grid_tbl_index].get_grid_atts) != NULL) && nlatatts == 0) {
+						int grid_oriented;
 						do_rot = tmp_rot == NULL ? 0 : 1;
-						(*grid[step->grid_tbl_index].get_grid_atts)(step,&lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts,
-											    do_rot,&rot_att_list_ptr,&nrotatts);
+						/*
+						 * if there's a gds, gds[16] determines whether the uv rotation is 
+						 * grid or earth based; otherwise assume that if a rotation variable was
+						 * created the rotation is grid-based
+						 */
+
+						if (step->has_gds)
+							grid_oriented = (step->thelist->rec_inq->gds[16] & 010 )  ? 1 : 0;
+						else
+							grid_oriented = do_rot;
+
+						(*grid[step->grid_tbl_index].get_grid_atts)(step,&lat_att_list_ptr,&nlatatts,
+											    &lon_att_list_ptr,&nlonatts,
+											    do_rot,grid_oriented,
+											    &rot_att_list_ptr,&nrotatts);
 					}
 				}
 				/* if a pre-defined grid has not been set up and there is a gds grid type that applies do this */
@@ -5086,7 +5100,7 @@ int wr_status;
 					}
 						
 					strcpy((char*)buffer,name_rec->abrev);
-					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255 || grib_rec->grid_tbl_index == -1)) {
+					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255)) {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_GDS%d",grib_rec->gds_type);
 					} else {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",grib_rec->grid_number);

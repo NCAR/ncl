@@ -310,6 +310,7 @@ int * /*nlatatts*/,
 GribAttInqRecList ** /*lon_att_list*/,
 int * /*lonatts*/,
 int do_rot,
+int grid_oriented,
 GribAttInqRecList ** /*rot_att_list*/,
 int * /*rotatts*/
 #endif

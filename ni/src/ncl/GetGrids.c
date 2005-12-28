@@ -20,6 +20,7 @@ int * nlatatts,
 GribAttInqRecList **lon_att_list, 
 int *lonatts,
 int do_rot,
+int grid_oriented,
 GribAttInqRecList **rot_att_list, 
 int *rotatts
 #endif
@@ -695,7 +696,7 @@ int* nrotatts;
 void GetAtts_1
 #if NhlNeedProto
 (GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
- int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
+ int do_rot, int grid_oriented, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
 #else
 (thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts)
 GribParamList* thevarrec;
@@ -704,6 +705,7 @@ int * nlatatts;
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
 int do_rot;
+int grid_oriented;
 GribAttInqRecList **rot_att_list_ptr;
 int *nrotatts;
 #endif
@@ -738,7 +740,7 @@ int *nrotatts;
 	*tmp_float = 180.0;
 	GribPushAtt(lon_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, rot_att_list_ptr, nrotatts);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot, grid_oriented,rot_att_list_ptr, nrotatts);
 }
 void GetGrid_1
 #if NhlNeedProto
@@ -975,6 +977,11 @@ double dy;
 {
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
+	int grid_oriented = 1;
+
+	if (thevarrec->has_gds) {
+		grid_oriented = (thevarrec->thelist->rec_inq->gds[16] & 010) ? 1 : 0;
+	}
 
 /* lat atts */
 	tmp_float= (float*)NclMalloc(sizeof(float));
@@ -1050,7 +1057,7 @@ double dy;
 	*tmp_float =  kgds[6] / 1000.0;
 	GribPushAtt(lon_att_list_ptr,"mpLambertMeridianF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts,do_rot,grid_oriented,rot_att_list_ptr, nrotatts);
 }
 
 /* --- we're not calling these specific att-getting routines any more */
@@ -3960,6 +3967,12 @@ double dy;
 {
 	NclQuark *tmp_string = NULL;
 	float *tmp_float = NULL;
+	int grid_oriented = 1;
+
+	if (thevarrec->has_gds) {
+		grid_oriented = (thevarrec->thelist->rec_inq->gds[16] & 010) ? 1 : 0;
+	}
+
 
 /* lat atts */
 	tmp_float= (float*)NclMalloc(sizeof(float));
@@ -4026,7 +4039,7 @@ double dy;
 	*tmp_float = kgds[9] & 0200 ? -90 : 90;
 	GribPushAtt(lon_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
-	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts);
+	GenAtts(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,grid_oriented,rot_att_list_ptr, nrotatts);
 }
 
 
@@ -7597,26 +7610,37 @@ void Do_Rotation_Atts
 (
 	NrmQuark grid_name,
 	GribAttInqRecList** rot_att_list,
-	int* nrotatts
+	int* nrotatts,
+	NhlBoolean grid_oriented
 )
 {
 	NclQuark* tmp_string;
 	char buf[256];
+	
+	char *note1[2] = {"u and v components of vector quantities are resolved relative to grid",
+			  "u and v components of vector quantities are resolved relative to earth"};
+	char *note2[2] = {"apply formulas to derive u and v components relative to earth",
+			  "apply formulas to derive u and v components relative to grid"};
+	char *formula_u[2] = {"Uearth = sin(rot)*Vgrid + cos(rot)*Ugrid",
+			      "Ugrid = cos(rot)*Uearth - sin(rot)*Vearth"};
+	char *formula_v[2] = {"Vearth = cos(rot)*Vgrid - sin(rot)*Ugrid",
+			      "Vgrid = sin(rot)*Uearth + cos(rot)*Vearth"};
+			  
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("apply formulas to derive u and v components relative to earth");
+	*tmp_string = NrmStringToQuark(grid_oriented ? note2[0] : note2[1]);
 	GribPushAtt(rot_att_list,"note2",tmp_string,1,nclTypestringClass); (*nrotatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("u and v components of vector quantities are resolved relative to grid");
+	*tmp_string = NrmStringToQuark(grid_oriented ? note1[0] : note1[1]);
 	GribPushAtt(rot_att_list,"note1",tmp_string,1,nclTypestringClass); (*nrotatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("Vearth = cos(rot)*Vgrid - sin(rot)*Ugrid");
+	*tmp_string = NrmStringToQuark(grid_oriented ? formula_v[0] : formula_v[1]);
 	GribPushAtt(rot_att_list,"formula_v",tmp_string,1,nclTypestringClass); (*nrotatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("Uearth = sin(rot)*Vgrid + cos(rot)*Ugrid");
+	*tmp_string = NrmStringToQuark(grid_oriented ? formula_u[0] : formula_u[1]);
 	GribPushAtt(rot_att_list,"formula_u",tmp_string,1,nclTypestringClass); (*nrotatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -7630,7 +7654,7 @@ void Do_Rotation_Atts
 	}
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	*tmp_string = NrmStringToQuark("clockwise vector rotation");
+	*tmp_string = NrmStringToQuark("vector rotation angle");
 	GribPushAtt(rot_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nrotatts)++;
 }
 
@@ -8004,6 +8028,7 @@ int* nrotatts;
 	NclQuark *tmp_string;
 	int *tmp_int;
 	int do_rot;
+	NhlBoolean grid_oriented;
 	char buf[256];
 	NrmQuark grid_name;
 
@@ -8054,7 +8079,8 @@ int* nrotatts;
 	north= ((unsigned char)0200 & (unsigned char)gds[26])?1:0;
 	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
 	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
-	do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+	do_rot = 1;
+	grid_oriented =  ((unsigned char)010 & (unsigned char)gds[16])?1:0;
 #if 0
 	if((latin1 < 0)&&(latin2 < 0)) {
 		float minlat,maxlat;
@@ -8147,7 +8173,14 @@ int* nrotatts;
 		kgds[2] = ny;
 		kgds[3] = la1 * 1000;
 		kgds[4] = lo1 * 1000;
-		kgds[5] = UnsignedCnvtToDecimal(1,&(gds[16]));
+		if (do_rot) {
+			/* force gdswiz to think uv components are grid oriented so rotation angles are produced */
+			unsigned char res_comp_flag = gds[16] | 010;
+			kgds[5] = UnsignedCnvtToDecimal(1,&res_comp_flag);
+		}
+		else {
+			kgds[5] = UnsignedCnvtToDecimal(1,&gds[16]);
+		}
 		kgds[6] = lov * 1000;
 		kgds[7] = dx;
 		kgds[8] = dy;
@@ -8247,7 +8280,7 @@ int* nrotatts;
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	if(do_rot && rot_att_list != NULL) {
-		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts,grid_oriented);
 	}
 
 }
@@ -8627,6 +8660,7 @@ int* nrotatts;
 	float *tmp_float;
 	NclQuark* tmp_string;
 	NhlBoolean do_rot;
+	NhlBoolean grid_oriented;
 	char buf[256];
 	NrmQuark grid_name;
 
@@ -8670,7 +8704,8 @@ int* nrotatts;
 	north= ((unsigned char)0200 & (unsigned char)gds[26])?0:1;
 	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
 	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
-	do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+	do_rot = 1;
+	grid_oriented = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
 
 #if 0
 	if(north) {
@@ -8745,7 +8780,14 @@ int* nrotatts;
 		kgds[2] = ny;
 		kgds[3] = la1 * 1000;
 		kgds[4] = lo1 * 1000;
-		kgds[5] = UnsignedCnvtToDecimal(1,&(gds[16]));
+		if (do_rot) {
+			/* force gdswiz to think uv components are grid oriented so rotation angles are produced */
+			unsigned char res_comp_flag = gds[16] | 010;
+			kgds[5] = UnsignedCnvtToDecimal(1,&res_comp_flag);
+		}
+		else {
+			kgds[5] = UnsignedCnvtToDecimal(1,&gds[16]);
+		}
 		kgds[6] = lov * 1000;
 		kgds[7] = dx;
 		kgds[8] = dy;
@@ -8838,7 +8880,7 @@ int* nrotatts;
 	}
 
 	if(do_rot && rot_att_list != NULL) {
-		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts,grid_oriented);
 	}
 	
 }
@@ -9452,6 +9494,7 @@ int* nrotatts;
 	float dux,ux0,ux1,duy,uy0,uy1;
 	int gds_type = 10;
 	NhlBoolean do_rot = True;
+	NhlBoolean grid_oriented;
 	NrmQuark grid_name;
 		
 	*lat = NULL;
@@ -9568,10 +9611,8 @@ int* nrotatts;
 		*/
 	}
 
-	do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
-	/*
+	grid_oriented  = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
 	do_rot = 1;
-	*/
 			
 	if (rotang != 0.0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -9718,7 +9759,7 @@ int* nrotatts;
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	if (do_rot && rot_att_list != NULL) {
-		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts,grid_oriented);
 	}
 	return;
 }
@@ -9794,6 +9835,7 @@ int* nrotatts;
 	float *lat1, *lat2, *lon1, *lon2;
 	int is_uv = Is_UV(thevarrec->param_number);
 	NhlBoolean do_rot;
+	NhlBoolean grid_oriented;
 	NrmQuark grid_name;
 	int gtype;
 
@@ -9832,16 +9874,19 @@ int* nrotatts;
 
 	switch (gtype) {
 	case 201:
-		do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		grid_oriented = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		do_rot = True;
 		grid_name = NrmStringToQuark("Arakawa semi-staggered E-grid on rotated latitude/longitude grid-point array");
 		break;
 	case 202:
-		do_rot = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		grid_oriented =  ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		do_rot = True;
 		grid_name = NrmStringToQuark("Arakawa filled E-grid on rotated latitude/longitude grid-point array");
 		break;
 
 	case 203:
-		do_rot = is_uv && ((unsigned char)010 & (unsigned char)gds[16])?1:0;
+		do_rot = is_uv;
+		grid_oriented = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
 		if (is_uv) {
 			grid_name = NrmStringToQuark("Arakawa staggered E-grid on rotated latitude/longitude grid-point array (velocity points)");
 		}
@@ -9856,7 +9901,14 @@ int* nrotatts;
 	kgds[2] = ny;
 	kgds[3] = la1;
 	kgds[4] = lo1;
-	kgds[5] = UnsignedCnvtToDecimal(1,&(gds[16]));
+	if (do_rot) {
+		/* force gdswiz to think uv components are grid oriented so rotation angles are produced */
+		unsigned char res_comp_flag = gds[16] | 010;
+		kgds[5] = UnsignedCnvtToDecimal(1,&res_comp_flag);
+	}
+	else {
+		kgds[5] = UnsignedCnvtToDecimal(1,&gds[16]);
+	}
 	kgds[6] = lac;
 	kgds[7] = loc;
 	kgds[8] = di;
@@ -9969,7 +10021,7 @@ int* nrotatts;
 		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 	if (do_rot && rot_att_list != NULL) {
-		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts);
+		Do_Rotation_Atts(grid_name,rot_att_list,nrotatts,grid_oriented);
 	}
 	
 }
@@ -10218,15 +10270,16 @@ GridInfoRecord grid[] = {
 void GenAtts
 #if NhlNeedProto
 (GribParamList* thevarrec, GribAttInqRecList **lat_att_list_ptr, int * nlatatts, GribAttInqRecList **lon_att_list_ptr, int *nlonatts, 
- int do_rot, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
+ int do_rot, int grid_oriented, GribAttInqRecList **rot_att_list_ptr, int *nrotatts)
 #else
-(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,rot_att_list_ptr, nrotatts)
+(thevarrec,lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts, do_rot,grid_oriented,rot_att_list_ptr, nrotatts)
 GribParamList* thevarrec;
 GribAttInqRecList **lat_att_list_ptr;
 int * nlatatts; 
 GribAttInqRecList **lon_att_list_ptr;
 int *nlonatts;
 int do_rot;
+int grid_oriented;
 GribAttInqRecList **rot_att_list_ptr;
 int *nrotatts;
 #endif
@@ -10296,7 +10349,7 @@ int *nrotatts;
 	(*nlonatts)++;
 
 	if (do_rot) {
-		Do_Rotation_Atts(NrmNULLQUARK,rot_att_list_ptr,nrotatts);
+		Do_Rotation_Atts(NrmNULLQUARK,rot_att_list_ptr,nrotatts,grid_oriented);
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark(grid[thevarrec->grid_tbl_index].grid_name);
 		GribPushAtt(rot_att_list_ptr,"grid_description",tmp_string,1,nclTypestringClass); (*nrotatts)++;
