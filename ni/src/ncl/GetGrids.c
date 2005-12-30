@@ -6967,9 +6967,7 @@ GribParamList* thevarrec;
 					imvals = &(vals[(jmain+1)*(jmain+1)]);
                                 } else {
                                         vals = *outdat;
-/*
 					memset(vals,0,2*(jmain+1)*(jmain+1)*sizeof(float));
-*/
 					imvals = &(vals[(jmain+1)*(jmain+1)]);
                                 }
 	
