@@ -1,5 +1,5 @@
 C
-C	$Id: yiqrgb.f,v 1.3 2000-08-22 15:02:30 haley Exp $
+C	$Id: yiqrgb.f,v 1.4 2006-01-03 00:04:41 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -114,8 +114,8 @@ C  Check on the input values.
 C
 C_FIRST EXECUTABLE STATEMENT YIQRGB
 C
-      R = Y +  .95*I +  .62*Q
-      G = Y -  .28*I -  .64*Q
-      B = Y - 1.11*I + 1.73*Q
+      R = Y +  .956*I +  .621*Q
+      G = Y -  .272*I -  .647*Q
+      B = Y - 1.105*I + 1.702*Q
       RETURN
       END

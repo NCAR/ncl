@@ -1,5 +1,5 @@
 C
-C	$Id: rgbyiq.f,v 1.3 2000-08-22 15:02:30 haley Exp $
+C	$Id: rgbyiq.f,v 1.4 2006-01-03 00:04:41 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -113,9 +113,9 @@ C
       REAL R,G,B,Y,I,Q
 C
 C_FIRST EXECUTABLE STATEMENT RGBYIQ
-      Y = 0.30*R + 0.59*G + 0.11*B
-      I = 0.60*R - 0.28*G - 0.32*B
-      Q = 0.21*R - 0.52*G + 0.31*B
+      Y = 0.299*R + 0.587*G + 0.114*B
+      I = 0.596*R - 0.275*G - 0.321*B
+      Q = 0.212*R - 0.523*G + 0.311*B
 C
       RETURN
       END
