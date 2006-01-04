@@ -9564,7 +9564,7 @@ int* nrotatts;
 	tmp[1] = gds[39];
 	tmp[2] = gds[40];
 	tmp[2] = gds[41];
-	rotang = (float)sign * ((float)CnvtToDecimal(3,&(tmp[1])) * pow(2.0,-24.0) * pow(16.0,tmp[0] - 64));
+	rotang = (float)sign * ((float)CnvtToDecimal(3,tmp) * pow(2.0,-24.0) * pow(16.0,tmp[0] - 64));
 
 	has_dir_inc = ((char)0200 & gds[16]) ? 1 : 0;
 	if (is_thinned_lon) {
@@ -9614,8 +9614,9 @@ int* nrotatts;
 			
 	if (rotang != 0.0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "GdsRLLGrid: Nonzero rotation angle not yet supported for GDS grid type %d: no coordinate variables will be supplied", 
+			  "GdsRLLGrid: Nonzero rotation angle not yet supported for GDS grid type %d: cannot handle grid", 
 			  gds_type);
+		return;
 	}
 	else {
 		float uxc,uyc;
