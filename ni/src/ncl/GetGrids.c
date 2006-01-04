@@ -9563,8 +9563,8 @@ int* nrotatts;
 	tmp[0] = (char)0177 & gds[38];
 	tmp[1] = gds[39];
 	tmp[2] = gds[40];
-	tmp[2] = gds[41];
-	rotang = (float)sign * ((float)CnvtToDecimal(3,tmp) * pow(2.0,-24.0) * pow(16.0,tmp[0] - 64));
+	tmp[3] = gds[41];
+	rotang = (float)sign * ((float)CnvtToDecimal(3,&(tmp[1])) * pow(2.0,-24.0) * pow(16.0,tmp[0] - 64));
 
 	has_dir_inc = ((char)0200 & gds[16]) ? 1 : 0;
 	if (is_thinned_lon) {
