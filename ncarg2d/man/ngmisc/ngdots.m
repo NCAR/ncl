@@ -84,7 +84,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 "The Use of X/Y Coordinates in NCAR Graphics" SCD User Document
 .SH COPYRIGHT
-Copyright (C) 1987-2005
+Copyright (C) 1987-2006
 .br
 University Corporation for Atmospheric Research
 .br

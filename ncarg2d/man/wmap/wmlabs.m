@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmlabs.m,v 1.9 2005-01-04 15:42:34 haley Exp $
+.\"	$Id: wmlabs.m,v 1.10 2006-01-04 00:13:46 haley Exp $
 .\"
 .TH WMLABS 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -71,7 +71,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-2005
+Copyright (C) 1987-2006
 .br
 University Corporation for Atmospheric Research
 .br

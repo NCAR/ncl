@@ -1714,7 +1714,7 @@ cpsetr
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
-Copyright (C) 1987-2005
+Copyright (C) 1987-2006
 .br
 University Corporation for Atmospheric Research
 .br

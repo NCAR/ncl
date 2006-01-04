@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_linewidth.m,v 1.12 2005-01-04 15:42:13 haley Exp $
+.\"	$Id: gset_linewidth.m,v 1.13 2006-01-04 00:13:07 haley Exp $
 .\"
 .TH GSET_LINEWIDTH 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -44,7 +44,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2005
+Copyright (C) 1987-2006
 .br
 University Corporation for Atmospheric Research
 .br

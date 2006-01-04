@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gcaps.m,v 1.20 2005-01-04 15:47:26 haley Exp $
+.\"	$Id: gcaps.m,v 1.21 2006-01-04 00:15:51 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH GCAPS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -47,7 +47,7 @@ The graphcaps.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2005
+Copyright (C) 1987-2006
 .br
 University Corporation for Atmospheric Research
 .br

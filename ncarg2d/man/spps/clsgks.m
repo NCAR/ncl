@@ -30,7 +30,7 @@ Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version;
 User's Guide for NCAR GKS-0A Graphics
 .SH COPYRIGHT
-Copyright (C) 1987-2005
+Copyright (C) 1987-2006
 .br
 University Corporation for Atmospheric Research
 .br
