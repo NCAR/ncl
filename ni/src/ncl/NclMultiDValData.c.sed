@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.37 2006-01-05 00:02:58 dbrown Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.38 2006-01-05 02:31:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2203,8 +2203,11 @@ FILE *fp;
             }
         }
 	else {
-            where = (where + i[ndims -2]) * j[ndims - 1];
+ 	    for(k = 0; k < ndims - 1; k++) {
+	       where = (where + i[k]) * j[k+1];
+	    }
 	}	
+
         where = where + i[ndims - 1];
 
         ret0 = _Nclprint(self_md->multidval.type,fp,(void*)((char*)self_md->multidval.val + (where * el_size)));
