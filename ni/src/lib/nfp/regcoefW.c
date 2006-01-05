@@ -479,6 +479,13 @@ NhlErrorTypes regCoef_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: The rightmost dimension of x must be at least 2");
     return(NhlFATAL);
   }  
+
+  npts = dsizes_x[ndims_x-1];
+  if( dsizes_y[ndims_y-1] != npts ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"regCoef: The rightmost dimension of x must be equal to the rightmost dimension of y");
+    return(NhlFATAL);
+  }  
+
   total_size_leftmost_x = 1;
   for(i = 0; i < ndims_x-1; i++) total_size_leftmost_x *= dsizes_x[i];
   total_size_x = total_size_leftmost_x * npts;
