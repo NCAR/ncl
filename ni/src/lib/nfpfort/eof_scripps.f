@@ -43,7 +43,7 @@ c local and  automatic arrays
      &          tentpcs(imaxnxnt,nmodes)
         double precision  sqrootweights(nx)                                         
         integer ilawork(5*iminnxnt), ifail(iminnxnt)    
-        integer n 
+        integer n
 
 c NCL expects the user will do weighting externally
 
@@ -358,9 +358,9 @@ c       In the original code, it would exit if there was
 c       an eigenvalue less than 0. For our purposes, however,
 c       we'll just set the eigenvalue to 0 and let it continue.
 c	------------------------------------------------
-        DEPS = -1e-6
+        DEPS = 1d-6
 	do i=1, nmodes
-          if(evals(i) .le. DEPS ) then
+          if(abs(evals(i)) .le. DEPS ) then
 c	    print *, 'Error! LAPACK routine returned'
 c	    print *, 'eigenvalue <= 0!! ', i, evals(i)
 	    print *, 'Warning! LAPACK routine returned eigenvalue <= 0.'
@@ -415,7 +415,11 @@ c		switch in this loop.
 c		--------------------------------------------
 		do jascending=1, nmodes
 			jdescending = nmodes - jascending + 1
-			fact        = 1.0d0/sqrt(evals(jascending))
+                        if(abs(evals(jascending)) .le. DEPS ) then
+                           fact        = 0.0d0
+                        else
+                           fact        = 1.0d0/sqrt(evals(jascending))
+                        end if
 			do i=1, nx
 				eigenvectors(i,jdescending) = 
      &			 	  	tentpcs(i,jascending)*fact
@@ -496,9 +500,15 @@ c		----------------------------
 c		--------------------------
 c		Normalize the eigenvectors
 c		--------------------------
-		do i=1, nx
+                if (fact.eq.0.0d0) then
+                   do i=1, nx
+			eigenvectors(i,mode) = 0.0d0
+                   end do
+                else
+                   do i=1, nx
 			eigenvectors(i,mode) = eigenvectors(i,mode)/fact
-		end do
+                   end do
+                end if
 c		----------------------------------
 c		Normalize the principal components
 c		----------------------------------
