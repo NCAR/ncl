@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.188 2005-12-09 20:27:02 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.189 2006-01-05 00:00:21 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3714,7 +3714,8 @@ int asciifloat(char *buf, char **end, int type, void *retvalue,char **rem) {
 		else {
 			tmpd = strtod(&(buf[i]),end);
 		}
-		if (**end == '\0') {
+		if (**end == '\0' ||
+		    ((**end == 'e' || **end == 'E') && *((*end)+1) == '\0')) {
 			*rem = &(buf[i]);
 			/* this might or might not be a complete number: return it for now */
 		}
