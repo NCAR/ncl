@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.189 2006-01-05 00:00:21 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.190 2006-01-05 01:26:36 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3701,6 +3701,7 @@ int asciifloat(char *buf, char **end, int type, void *retvalue,char **rem) {
 	double tmpd;
 	const char *initchars = "0123456789+-.nNiI";
 	int i;
+	char *cp;
 
 	
 	i = strcspn(buf,initchars);
@@ -3714,10 +3715,22 @@ int asciifloat(char *buf, char **end, int type, void *retvalue,char **rem) {
 		else {
 			tmpd = strtod(&(buf[i]),end);
 		}
-		if (**end == '\0' ||
-		    ((**end == 'e' || **end == 'E') && *((*end)+1) == '\0')) {
+		switch (**end) {
+			/* find entities that parsed as a number but are possibly incomplete
+			   because they are at the end of a buffer */
+		case '\0':
 			*rem = &(buf[i]);
-			/* this might or might not be a complete number: return it for now */
+			break;
+		case 'e':
+		case 'E':
+			cp = (*end) + 1;
+			if ((*cp == '\0') ||
+			    ((*cp == '-' || *cp == '+') && (*(cp+1) == '\0'))) {
+				*rem = &(buf[i]);
+			}
+			break;
+		default:
+			break;
 		}
 		if (*end == &(buf[i])) {
 			if (strlen(buf) - i < 4) {
