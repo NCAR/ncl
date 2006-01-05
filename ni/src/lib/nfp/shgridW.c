@@ -319,8 +319,8 @@ NhlErrorTypes shgetnp_W(void)
   NclScalar missing_px, missing_py, missing_pz;
   int       has_missing_xi, has_missing_yi, has_missing_zi;
   NclScalar missing_xi, missing_yi, missing_zi;
-
-  static    int index, index_dims = 1;
+  int       *index;
+  int       index_dims = 1;
 
 /*
  * Retrieve argument #0 (x coordinate of reference point).
@@ -512,13 +512,14 @@ NhlErrorTypes shgetnp_W(void)
 /*
  *  Call the C procedure.
  */
-  index = c_shgetnp(*px, *py, *pz, dsizes_xi[0], xi, yi, zi, *flag, &ier);
+  index = (int*)malloc(sizeof(int));
+  *index = c_shgetnp(*px, *py, *pz, dsizes_xi[0], xi, yi, zi, *flag, &ier);
   if (ier != 0) {
     sprintf(shmsg, "shgetnp: Error number %d.", ier);
     NhlPError(NhlFATAL, NhlEUNKNOWN, shmsg);
     return(NhlFATAL);
   }
-  return(NclReturnValue( (void *) (&index), 1, &index_dims, NULL, NCL_int, 0));
+  return(NclReturnValue( (void *) index, 1, &index_dims, NULL, NCL_int, 0));
 }
 
 NhlErrorTypes shsetp_W(void)
