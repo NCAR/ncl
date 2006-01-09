@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.190 2006-01-05 01:26:36 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.191 2006-01-09 23:31:29 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3914,7 +3914,7 @@ NhlErrorTypes _NclIasciiread
 	int bufsize = 4096;
 	char buf[4096];
 	int total = 0;
-
+	char *cp;
 
 	fpath = _NclGetArg(0,3,DONT_CARE);
 	dimensions = _NclGetArg(1,3,DONT_CARE);
@@ -4029,6 +4029,16 @@ NhlErrorTypes _NclIasciiread
 						}
 						buf[count] = '\0';
 						end = buf;
+						/* 
+						 * this is to take care of a difference in SGI's strtod:
+						 * it allows spaces between an 'e' and the exponent digits
+						 * in a floating point number. So 
+						 */
+						cp = strchr(buf,' ');
+						while (cp != NULL) {
+							*cp = '\n';
+							cp = strchr(cp+1,' ');
+						}
 					}
 					rem = NULL;
 					if (thetype->type_class.type == Ncl_Typefloat ||
@@ -4057,6 +4067,11 @@ NhlErrorTypes _NclIasciiread
 						buf[j + count] = '\0';
 						/* now we're going to try again */
 						end = buf;
+						cp = strchr(buf,' ');
+						while (cp != NULL) {
+							*cp = '\n';
+							cp = strchr(cp+1,' ');
+						}
 						continue;
 					}
 					if (ret) {
@@ -4146,6 +4161,11 @@ NhlErrorTypes _NclIasciiread
 						}
 						buf[count] = '\0';
 						end = buf;
+						cp = strchr(buf,' ');
+						while (cp != NULL) {
+							*cp = '\n';
+							cp = strchr(cp+1,' ');
+						}
 					}
 					rem = NULL;
 					if (thetype->type_class.type == Ncl_Typefloat ||
@@ -4173,6 +4193,11 @@ NhlErrorTypes _NclIasciiread
 						buf[j + count] = '\0';
 						/* now we're going to try again */
 						end = buf;
+						cp = strchr(buf,' ');
+						while (cp != NULL) {
+							*cp = '\n';
+							cp = strchr(cp+1,' ');
+						}
 						continue;
 					}
 					if (ret) {
@@ -4254,6 +4279,11 @@ NhlErrorTypes _NclIasciiread
 						}
 						buf[count] = '\0';
 						end = buf;
+						cp = strchr(buf,' ');
+						while (cp != NULL) {
+							*cp = '\n';
+							cp = strchr(cp+1,' ');
+						}
 					}
 					rem = NULL;
 					if (thetype->type_class.type == Ncl_Typefloat ||
@@ -4282,6 +4312,11 @@ NhlErrorTypes _NclIasciiread
 						buf[j + count] = '\0';
 						/* now we're going to try again */
 						end = buf;
+						cp = strchr(buf,' ');
+						while (cp != NULL) {
+							*cp = '\n';
+							cp = strchr(cp+1,' ');
+						}
 						continue;
 					}
 					if (ret) {
