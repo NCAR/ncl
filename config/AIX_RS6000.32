@@ -1,5 +1,5 @@
 /*
- *      $Id: AIX_RS6000.32,v 1.8 2006-01-09 18:04:50 haley Exp $
+ *      $Id: AIX_RS6000.32,v 1.9 2006-01-09 18:47:26 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,10 +22,10 @@
  *			default setup.
  */
 #define HdfDefines    -DIBM6000
-#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -D_LARGE_FILES
+#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
 #define CCompiler     xlc
 #define FCompiler     xlf
-#define CcOptions     -q32 -qalign=natural
+#define CcOptions     -q32 -qalign=natural -D_LARGE_FILES
 #define FcOptions     -q32
 #define LdCommand     ld -b32
 #define ArCommand     ar -X 32
