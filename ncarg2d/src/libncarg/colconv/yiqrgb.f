@@ -1,5 +1,5 @@
 C
-C	$Id: yiqrgb.f,v 1.4 2006-01-03 00:04:41 fred Exp $
+C	$Id: yiqrgb.f,v 1.5 2006-01-10 02:25:38 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -117,5 +117,8 @@ C
       R = Y +  .956*I +  .621*Q
       G = Y -  .272*I -  .647*Q
       B = Y - 1.105*I + 1.702*Q
+      R = MIN(MAX(R,0.),1.)
+      G = MIN(MAX(G,0.),1.)
+      B = MIN(MAX(B,0.),1.)
       RETURN
       END
