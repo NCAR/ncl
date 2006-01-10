@@ -90,7 +90,7 @@ C
 C
 C  YIQ to RGB.
 C
-      CALL YIQRGB(.59,-.28,-.52,R,G,B)
+      CALL YIQRGB(0.58701, -0.27431, -0.52299,R,G,B)
       IF ( (ABS(R-0.) .GT. EPS) .OR. (ABS(G-1.) .GT. EPS) .OR.
      *     (ABS(B-0.) .GT. EPS) ) IERR = 1
 C
