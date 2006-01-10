@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_grib2nc,v 1.9 2005-12-23 18:11:44 grubin Exp $
+#       $Id: ncl_grib2nc,v 1.10 2006-01-10 00:32:14 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -75,9 +75,8 @@ endif
 set nfiles = 0
 set ifiles_t = ()
 while ($#argv > 0)
-    set isfile = `echo $1 | grep -c '-'`
     set iflen = `echo $1 | awk '{print(length($0))}'`
-    if ($isfile == 0  &&  $iflen > 2) then
+    if ($iflen > 2) then
         set ifiles_t = ( $ifiles_t $1 )
         @ nfiles += 1
         shift
