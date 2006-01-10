@@ -1372,7 +1372,7 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	int dimsizes_level;
 	int tmp_file_dim_number;
 	int i;
-	char buffer[80];
+	char buffer[256];
 	NclGribFVarRec *test;
 	int ok = 0;
 	NclMultiDValData tmp_md;
@@ -1500,10 +1500,12 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		}
 		NclFree(tmpf);
 
+		att_list_ptr = NULL;
+		attcount = 0;
 		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*qstr = NrmStringToQuark("hybrid A coefficient at layer midpoints");
 		GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
-		attcount = 1;
+		attcount++;
 		if (interface) {
 			sprintf(buffer,"derived from %s_a as average of layer interfaces above and below midpoints",
 				NrmQuarkToString(tdim->dim_name));
@@ -1528,10 +1530,11 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 			nclTypefloatClass),att_list_ptr,attcount);
 
 		att_list_ptr = NULL;
+		attcount = 0;
 		qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*qstr = NrmStringToQuark("hybrid B coefficient at layer midpoints");
 		GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
-		attcount = 1;
+		attcount++;
 		if (interface) {
 			sprintf(buffer,"derived from %s_b as average of layer interfaces above and below midpoints",
 				NrmQuarkToString(tdim->dim_name));
@@ -3177,6 +3180,10 @@ GribParamList* step;
 		step->levels_isatt = 0;
 	}
 	step->var_info.num_dimensions = i + (doff+1);
+	for (i = 0; i < step->var_info.num_dimensions; i++) {
+		/* initialize the file dim number to something out of range */
+		step->var_info.file_dim_num[i] = -1;
+	}
 /*
 * Now call grid code to get coordinates
 */
