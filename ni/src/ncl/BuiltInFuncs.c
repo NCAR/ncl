@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.191 2006-01-09 23:31:29 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.192 2006-01-13 23:57:35 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2496,6 +2496,36 @@ NhlErrorTypes _NclIfbindirread(void)
 	}
 	return(NhlFATAL);
 }
+
+
+NhlErrorTypes _NclIisbigendian
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	logical *out_val;
+	int dimsizes = 1;
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
+#ifdef ByteSwapped
+	*out_val = 0;
+#else
+	*out_val = 1;
+#endif
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+		0
+	));
+}
+
+
 NhlErrorTypes _NclIcbinread
 #if	NhlNeedProto
 (void)

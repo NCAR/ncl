@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.73 2005-07-23 00:49:55 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.74 2006-01-13 23:57:35 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -571,6 +571,11 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIIsLogical(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIisbigendian(
 #if     NhlNeedProto
 void
 #endif
@@ -1495,6 +1500,8 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsLogical,args,"islogical",nargs);
+
+	NclRegisterFunc( _NclIisbigendian,NULL,"isbigendian",0);
 
 	nargs = 0;
 	args = NewArgs(1);
