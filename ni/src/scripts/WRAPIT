@@ -569,7 +569,9 @@ switch ($OS)
        ld -64 -shared $ld_suffix
      endif
    endif
-   'rm' so_locations
+   if (-e so_locations) then
+     'rm' so_locations
+   endif
    breaksw
  case IRIX:                        # IRIX
    if ($debug == 1) then
@@ -577,7 +579,9 @@ switch ($OS)
    else
      ld -n32 -shared $ld_suffix
    endif
-   'rm' so_locations
+   if (-e so_locations) then
+     'rm' so_locations
+   endif
    breaksw
  case Linux:                       # Linux
    if ($f90c == pgf90) then        # PG compiler
@@ -607,7 +611,9 @@ switch ($OS)
    breaksw
  case OSF1:                        # OSF1
    f90 -shared $ld_suffix
-   'rm' so_locations
+   if (-e so_locations) then
+     'rm' so_locations
+   endif
    breaksw
  case Darwin:                      # MacOSX
    if ($debug == 1) then
