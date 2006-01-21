@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.95 2005-12-09 20:56:19 haley Exp $
+;      $Id: contributed.ncl,v 1.96 2006-01-21 01:54:53 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -345,23 +345,26 @@ begin
 ;
 ; copy variable attributes
 ;
-  att_names = getvaratts(var_from);
-  natts     = dimsizes(att_names)
-  if(.not.all(ismissing(att_names)))
-    do i=0,natts-1
-       if(isatt(var_from,"_FillValue"))then
-          if(typeof(var_from@_FillValue).eq."double"  .and.\
-             typeof(var_to).eq."float")then
-             var_to@_FillValue = doubletofloat(var_from@_FillValue)
-          else
-             if (isatt(var_to,att_names(i))) then  ; added 10 Mar 2003 [DJS]
-                 delete(var_to@$att_names(i)$)  
-             end if
-             var_to@$att_names(i)$ = var_from@$att_names(i)$
-          end if
-        end if
-    end do
-  end if
+
+  copy_VarAtts(var_from,var_to)    ; DJS 20 Jan 2005
+
+;;att_names = getvaratts(var_from) ; This was not quite right
+;;natts     = dimsizes(att_names)
+;;if(.not.all(ismissing(att_names)))
+;;  do i=0,natts-1
+;;     if(isatt(var_from,"_FillValue"))then
+;;        if(typeof(var_from@_FillValue).eq."double"  .and.\
+;;           typeof(var_to).eq."float")then
+;;           var_to@_FillValue = doubletofloat(var_from@_FillValue)
+;;        else
+;;           if (isatt(var_to,att_names(i))) then  ; added 10 Mar 2003 [DJS]
+;;               delete(var_to@$att_names(i)$)  
+;;           end if
+;;           var_to@$att_names(i)$ = var_from@$att_names(i)$
+;;        end if
+;;      end if
+;;  end do
+;;end if
 
 end
 ;****************************************
@@ -6323,6 +6326,7 @@ end
 
 
 function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
+local xo, dName, nDim, P0, lev, n
 begin
    xo = hyi2hyo(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
 
@@ -6354,7 +6358,10 @@ begin
    end if
 
    if (nDim.eq.3) then
-       xo&$dName(0)$ = lev
+       if (isvar("lev")) then
+           xo&$dName(0)$ = lev
+       end if
+
        do n=1,2
           if (iscoord(xi, dName(n)) ) then
               xo&$dName(n)$ = xi&$dName(n)$
@@ -6364,7 +6371,7 @@ begin
 
    if (nDim.eq.4) then
        do n=0,3
-          if (n.eq.1) then
+          if (n.eq.1 .and. isvar("lev")) then
               xo&$dName(n)$ = lev
           else
               if (iscoord(xi, dName(n)) ) then
