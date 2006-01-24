@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.96 2006-01-21 01:54:53 shea Exp $
+;      $Id: contributed.ncl,v 1.97 2006-01-24 01:20:12 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7344,3 +7344,50 @@ begin
 
 	return(vPack)
 end
+;**************************************************************************
+; D Shea
+;
+; Usage:
+;       fName  = "sample.1958-2005.nc.gz"
+;       suffix = get_file_suffix(fName, 0)  ; ".gz"
+;       if (suffix.eq.".gz") then
+;           system("gzip -d "+fName) 
+;           fileName = suffix@fBase            ; sample.1958-2005.nc
+;       end if
+;       f = addfile(fileName, "r")
+;
+;       fName  = "sample.1958-2005.nc.gz"
+;       suffix = get_file_suffix(fName, 1)  ; ".1958-2005.gz"
+;       fBase  = suffix@fBase               ; sample
+
+function get_file_suffix (filName:string, opt:integer)
+local chr, ckey, cstr, N, filName_suffix, nStrt, nLast, n
+begin
+  chr    = stringtochar(".")  ; dimsizes(chr)=2
+  ckey   = chr(0)             ; int 46
+
+  cstr   = stringtochar(filName)
+  N      = dimsizes(cstr)     ; one extra for end of char
+
+  filName_suffix = new (1, "string")  ; _FillValue="missing"
+
+  if (opt.eq.0) then
+      nStrt = N-2
+      nLast = 0
+  else
+      nStrt = 0
+      nLast = N-2
+  end if
+
+  do n=nStrt,nLast,1
+     if (cstr(n).eq.ckey) then
+         filName_suffix        = chartostring(cstr(n:N-2))
+         filName_suffix@fBase  = chartostring(cstr(0:n-1))
+         break
+     end if
+  end do
+
+  return(filName_suffix)
+end
+
+
