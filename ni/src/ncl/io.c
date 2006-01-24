@@ -1,5 +1,3 @@
-
-#define DONTUSEPAGER 0
 #ifdef __cplusplus
 extern "C" {
 #endif
