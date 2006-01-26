@@ -343,6 +343,16 @@ main(int argc, char **argv) {
 
     if (cmd_line == 1) {
         InitializeReadLine(1);
+/*
+ * This next line is only to deal with an optimization bug with gcc
+ * version 4.0.1 on MacOS 10.4. It apparently saw that "cmd_line"
+ * was already of value 1 before it went into NclSetPromptFunc, so 
+ * when it optimized the code, it ignored the "cmd_line = 1" line
+ * right after the NclSetPromptFunc call.  Since NclSetPrompFunc
+ * was setting cmd_line =2, this meant that the value of cmd_line
+ * stayed 2, which is the wrong value.
+ */
+        cmd_line = 0;
         NclSetPromptFunc(nclprompt, NULL);
         cmd_line = 1;
         cmd_line_is_set = 1;
