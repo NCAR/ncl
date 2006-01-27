@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.68 2005-10-28 07:21:11 haley Exp $
+ *      $Id: Project,v 1.69 2006-01-27 03:45:35 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2005-10-28 07:21:11 $
+ *	$Date: 2006-01-27 03:45:35 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -25,7 +25,7 @@
  */
 
 #define NcargVersion 4.4.2
-#define NclVersion 4.2.0.a033   
+#define NclVersion 4.2.0.a034   
 
 
 #ifndef	BuildHDFEOS
@@ -233,6 +233,7 @@ NCARGINCPATH		= $(INCPATH)/$(NCARGDIR)
 HLUINCPATH		= $(NCARGINCPATH)/$(HLUDIR)
 NCLINCPATH		= $(NCARGINCPATH)/$(NCLDIR)
 NGOINCPATH		= $(NCARGINCPATH)/$(NGODIR)
+PYNGLDOCPATH		= webdoc/pyngl
 PYNGLBINPATH		= $(PYTHONBINDIR)
 PYNGLNCARGPATH		= $(PYTHONPKGSDIR)/$(PYNGLDIR)/$(NCARGDIR)
 USRRESFILE		= "~/.hluresfile"
