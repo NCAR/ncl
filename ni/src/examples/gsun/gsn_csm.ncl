@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.199 2005-11-22 17:36:16 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.200 2006-01-27 03:23:40 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4458,7 +4458,7 @@ begin
 
     set_attr(res2,"mpGridAndLimbOn", False)
     set_attr(res2,"mpPerimOn", .not.masklc)
-    set_attr(res2,"mpFillOn", True)
+    set_attr(res2,"mpFillOn", True) 
     set_attr(res2,"mpFillColors",(/"background","transparent","LightGray",\
                                    "transparent"/)) ; (default,ocean,land,
                                                     ;  inland water)
@@ -9448,38 +9448,6 @@ begin
     locRes2@gsnFrame    = False
     locRes2@gsnDraw     = False
     locRes2@gsnMaximize = False
-    trxmin     = get_res_value_keep(locRes2,"trXMinF", \
-                                    trxmin)
-    trxmax     = get_res_value_keep(locRes2,"trXMaxF", \
-                                    trxmax)
-    trymin     = get_res_value_keep(locRes2,"trYMinF", \
-                                    trymin)
-    trymax     = get_res_value_keep(locRes2,"trYMaxF", \
-                                    trymax)
-    xfonth     = get_res_value_keep(locRes2,"tiXAxisFontHeightF", \
-                                    xfonth)
-    xbfonth    = get_res_value_keep(locRes2,"tmXBLabelFontHeightF", \
-                                    xbfonth)
-    xmjlength  = get_res_value_keep(locRes2,"tmXBMajorLengthF", \
-                                    xmjlength)
-    xmnlength  = get_res_value_keep(locRes2,"tmXBMinorLengthF", \
-                                    xmnlength)
-    xmjolength = get_res_value_keep(locRes2,"tmXBMajorOutwardLengthF", \
-                                    xmjolength)
-    xmnolength = get_res_value_keep(locRes2,"tmXBMinorOutwardLengthF", \
-                                    xmnolength)
-    yfonth     = get_res_value_keep(locRes2,"tiYAxisFontHeightF", \
-                                    yfonth)
-    ylfonth    = get_res_value_keep(locRes2,"tmYLLabelFontHeightF", \
-                                    ylfonth)
-    ymjlength  = get_res_value_keep(locRes2,"tmYLMajorLengthF", \
-                                    ymjlength)
-    ymnlength  = get_res_value_keep(locRes2,"tmYLMinorLengthF", \
-                                    ymnlength)
-    ymjolength = get_res_value_keep(locRes2,"tmYLMajorOutwardLengthF", \
-                                    ymjolength)
-    ymnolength = get_res_value_keep(locRes2,"tmYLMinorOutwardLengthF", \
-                                    ymnolength)
 ;
 ; Set resources that are common for second plot, regardless of what
 ; kind of axes situation we have.
@@ -9508,20 +9476,26 @@ begin
       locRes2@tmYROn                  = True   ; Turn on right tick marks
       locRes2@tmYUseLeft              = False  
       locRes2@tiYAxisSide             = "Right"; put title on right scale
-      locRes2@tiYAxisFontHeightF      = yfonth
-      locRes2@tmYRLabelFontHeightF    = ylfonth
-      locRes2@tmYRMajorLengthF        = ymjlength
-      locRes2@tmYRMinorLengthF        = ymnlength
-      locRes2@tmYRMajorOutwardLengthF = ymjolength
-      locRes2@tmYRMinorOutwardLengthF = ymnolength
+      locRes2@tiYAxisFontHeightF      = get_res_value_keep(locRes2, \
+                                        "tiYAxisFontHeightF",yfonth) 
+      locRes2@tmYRLabelFontHeightF    = get_res_value_keep(locRes2, \
+                                        "tmYLLabelFontHeightF",ylfonth)
+      locRes2@tmYRMajorLengthF        = get_res_value_keep(locRes2, \
+                                        "tmYLMajorLengthF",ymjlength)
+      locRes2@tmYRMinorLengthF        = get_res_value_keep(locRes2, \
+                                        "tmYLMinorLengthF",ymnlength)
+      locRes2@tmYRMajorOutwardLengthF = get_res_value_keep(locRes2, \
+                                        "tmYLMajorOutwardLengthF",ymjolength)
+      locRes2@tmYRMinorOutwardLengthF = get_res_value_keep(locRes2, \
+                                        "tmYLMinorOutwardLengthF",ymnolength)
     end if
 
 ;
 ; Set resources specific only to having two Y axes and one X axis.
 ;
     if(axis.eq."y") then
-      locRes2@trXMinF       = trxmin
-      locRes2@trXMaxF       = trxmax
+      locRes2@trXMinF       = get_res_value_keep(locRes2,"trXMinF",trxmin) 
+      locRes2@trXMaxF       = get_res_value_keep(locRes2,"trXMaxF",trxmax)
       locRes2@tiXAxisString = ""     ; already done 
       locRes2@tmXTLabelsOn  = False  ; Turn off top x axis labels
       locRes2@tmXTMinorOn   = False  ; and tick marks.
@@ -9552,24 +9526,30 @@ begin
       else
         locRes2@tiXAxisOn             = False
       end if 
-      locRes2@tiXAxisFontHeightF      = xfonth
-      locRes2@tmXTLabelFontHeightF    = xbfonth
-      locRes2@tmXTMajorLengthF        = xmjlength
-      locRes2@tmXTMinorLengthF        = xmnlength
-      locRes2@tmXTMajorOutwardLengthF = xmjolength
-      locRes2@tmXTMinorOutwardLengthF = xmnolength
+      locRes2@tiXAxisFontHeightF      = get_res_value_keep(locRes2, \
+                                        "tiXAxisFontHeightF",xfonth)
+      locRes2@tmXTLabelFontHeightF    = get_res_value_keep(locRes2,\
+                                        "tmXBLabelFontHeightF",xbfonth)
+      locRes2@tmXTMajorLengthF        = get_res_value_keep(locRes2, \
+                                        "tmXBMajorLengthF",xmjlength)
+      locRes2@tmXTMinorLengthF        =  get_res_value_keep(locRes2, \
+                                         "tmXBMinorLengthF",xmnlength)
+      locRes2@tmXTMajorOutwardLengthF = get_res_value_keep(locRes2, \
+                                        "tmXBMajorOutwardLengthF",xmjolength)
+      locRes2@tmXTMinorOutwardLengthF = get_res_value_keep(locRes2, \
+                                        "tmXBMinorOutwardLengthF",xmnolength)
     end if
 
 ;
 ; Set resources specific only to having two X axes and one Y axis.
 ;
     if(axis.eq."x") then
-      locRes2@trYMinF            = trymin
-      locRes2@trYMaxF            = trymax
-      locRes2@tiYAxisString      = ""     ; already done 
-      locRes2@tmYRLabelsOn       = False  ; Turn off right y axis labels
-      locRes2@tmYRMinorOn        = False  ; and tick marks.
-      locRes2@tmYROn             = False
+      locRes2@trYMinF        = get_res_value_keep(locRes2,"trYMinF",trymin)
+      locRes2@trYMaxF        = get_res_value_keep(locRes2,"trYMaxF",trymax)
+      locRes2@tiYAxisString  = ""     ; already done 
+      locRes2@tmYRLabelsOn   = False  ; Turn off right y axis labels
+      locRes2@tmYRMinorOn    = False  ; and tick marks.
+      locRes2@tmYROn         = False
 
       if(plot_type.eq."csm") then
         xy2 = gsn_csm_xy(wks,x2,y1,locRes2)
