@@ -292,6 +292,13 @@ NhlErrorTypes exp_tapersh_W( void )
 
     NGCALLF(dexptapersh,DEXPTAPERSH)(&mb,&nb,tmp_a,tmp_b,tmp_n0,rate,&ier);
 
+    if(type_a != NCL_double) {
+      coerce_output_float_only(a,tmp_a,nm,index_ab);
+    }
+    if(type_b != NCL_double) {
+      coerce_output_float_only(b,tmp_b,nm,index_ab);
+    }
+
     index_ab += nm;
   }
 
