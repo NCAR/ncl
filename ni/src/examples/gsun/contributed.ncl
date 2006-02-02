@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.98 2006-02-02 17:07:48 shea Exp $
+;      $Id: contributed.ncl,v 1.99 2006-02-02 18:11:49 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7414,7 +7414,7 @@ function niceLatLon2D(lat2d[*][*], lon2d[*][*])
 ;
 ; assign to a variable
 
- 
+local dimll, nLeft, nRght 
 begin
    dimll = dimsizes(lat2d)       ; (south_north,west_east) 
    nLeft = dimll(0)
@@ -7429,3 +7429,20 @@ begin
        return(False)
    end if
 end
+;**************************************************************************
+; D Shea
+
+function isMonotonic(x[*]:numeric)          
+; check for monoticity                     
+local nx                                  
+begin                                    
+  nx   = dimsizes(x)                    
+                                       
+  if (all(x(1:nx-1).gt.x(0:nx-2))) then
+      return(1)                       
+  end if                             
+  if (all(x(1:nx-1).lt.x(0:nx-2))) then 
+      return(-1)                       
+  end if                              
+  return(0)                          
+end                                 
