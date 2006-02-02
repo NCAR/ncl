@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.97 2006-01-24 01:20:12 shea Exp $
+;      $Id: contributed.ncl,v 1.98 2006-02-02 17:07:48 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7347,6 +7347,9 @@ end
 ;**************************************************************************
 ; D Shea
 ;
+; Get the suffix associated with a file. Minor options.
+; The attribute "fBase" is the file name without the suffix
+;
 ; Usage:
 ;       fName  = "sample.1958-2005.nc.gz"
 ;       suffix = get_file_suffix(fName, 0)  ; ".gz"
@@ -7390,4 +7393,39 @@ begin
   return(filName_suffix)
 end
 
+;**************************************************************************
+; D Shea
+;
+function niceLatLon2D(lat2d[*][*], lon2d[*][*])
+; check map coordinates to see if they have a "nice" structure
+;
+; if True then 
+; the data could be made accessible via classic
+; netCDF coordinate array subscripting.
+;
+; lat      = lat2d(:,0)        
+; lon      = lon2d(0,:)       
+; lat@units= "degrees_north"  
+; lon@units= "degrees_east"
+; lat!0    = "lat"
+; lon!0    = "lon"
+; lat&lat  =  lat 
+; lon&lon  =  lon 
+;
+; assign to a variable
 
+ 
+begin
+   dimll = dimsizes(lat2d)       ; (south_north,west_east) 
+   nLeft = dimll(0)
+   nRght = dimll(1)
+
+   if (all(lat2d(:,0).eq.lat2d(:,nRght/2)) .and.  \
+       all(lat2d(:,0).eq.lat2d(:,nRght-1)) .and.  \
+       all(lon2d(0,:).eq.lon2d(nLeft/2,:)) .and.  \
+       all(lon2d(0,:).eq.lon2d(nLeft-1,:)) ) then
+       return(True)
+   else
+       return(False)
+   end if
+end
