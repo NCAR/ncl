@@ -21,6 +21,7 @@
 #include "NclMdInc.h"
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
+#include <netcdf.h>
 
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
@@ -1140,7 +1141,12 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 3, NULL },  /* NetCDF file format option */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file read byte order */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file write byte order */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, UpdateDims }   /* GRIB initial time coordinate type */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL }  /* NetCDF missing to fill value option */
+#ifdef NC_FORMAT_NETCDF4
+	,
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL }   /* NetCDF 4 compression option level */
+#endif
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1294,10 +1300,13 @@ static NhlErrorTypes InitializeFileOptions
 	sval[0] = NrmStringToQuark("classic");
 	sval[1] = NrmStringToQuark("64bitoffset");
 	sval[2] = NrmStringToQuark("largefile");
-/*
-	sval[3] = NrmStringToQuark("hdf5");
-*/
+#ifdef NC_FORMAT_NETCDF4
+	sval[3] = NrmStringToQuark("netcdf4classic");
+	len_dims = 4;
+#else
 	len_dims = 3;
+#endif
+
 	fcp->options[Ncl_FORMAT].valid_values = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
@@ -1355,6 +1364,31 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].valid_values = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* NetCDF option MissingToFillValue */
+	fcp->options[Ncl_MISSING_TO_FILL_VALUE].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_MISSING_TO_FILL_VALUE].name = NrmStringToQuark("missingtofillvalue");
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	len_dims = 1;
+	fcp->options[Ncl_MISSING_TO_FILL_VALUE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	fcp->options[Ncl_MISSING_TO_FILL_VALUE].valid_values = NULL;
+
+
+#ifdef NC_FORMAT_NETCDF4
+	/* NetCDF 4 option compression level */
+	fcp->options[Ncl_COMPRESSION_LEVEL].format = NrmStringToQuark("nc");
+	fcp->options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = -1;
+	len_dims = 1;
+	fcp->options[Ncl_COMPRESSION_LEVEL].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	fcp->options[Ncl_COMPRESSION_LEVEL].valid_values = NULL;
+#endif
 
 	/* End of options */
 

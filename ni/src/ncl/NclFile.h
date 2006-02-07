@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.11 2005-10-12 00:57:33 dbrown Exp $
+ *      $Id: NclFile.h,v 1.12 2006-02-07 22:20:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -268,7 +268,9 @@ typedef enum {
 	Ncl_FORMAT,
 	Ncl_READ_BYTE_ORDER,
 	Ncl_WRITE_BYTE_ORDER,
-	Ncl_INITIAL_TIME_COORDINATE_TYPE
+	Ncl_INITIAL_TIME_COORDINATE_TYPE,
+	Ncl_MISSING_TO_FILL_VALUE,
+	Ncl_COMPRESSION_LEVEL
 } NclFileOptionValues;
 
 typedef struct _NclFileClassPart {
