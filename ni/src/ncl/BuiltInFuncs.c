@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.192 2006-01-13 23:57:35 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.193 2006-02-08 23:49:34 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -4048,7 +4048,7 @@ NhlErrorTypes _NclIasciiread
 
 			if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
 				char *end = "";
-				int ret;
+				int lret;
 				int count;
 				char *rem;
 				while (total < totalsize) {
@@ -4073,10 +4073,10 @@ NhlErrorTypes _NclIasciiread
 					rem = NULL;
 					if (thetype->type_class.type == Ncl_Typefloat ||
 					    thetype->type_class.type == Ncl_Typedouble) {
-						ret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+						lret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
 					}
 					else {
-						ret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+						lret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
 					}
 					if (rem) {
 						/* dangling characters not fully parsed:
@@ -4087,7 +4087,7 @@ NhlErrorTypes _NclIasciiread
 						}
 						count = fread(&(buf[j]),1,bufsize-j-1,fp);
 						if (count <= 0) {
-							if (ret) {
+							if (lret) {
 								/* since the last return was good, add it to the total */
 								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 								total++;
@@ -4104,7 +4104,7 @@ NhlErrorTypes _NclIasciiread
 						}
 						continue;
 					}
-					if (ret) {
+					if (lret) {
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 						total++;
 					} else {
@@ -4122,6 +4122,7 @@ NhlErrorTypes _NclIasciiread
 			else if(thetype->type_class.type==Ncl_Typestring) {
 				char buffer[NCL_MAX_STRING+1];
 				char *step;
+				int truncated = 0;
 
 				step =buffer;
 				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
@@ -4143,12 +4144,21 @@ NhlErrorTypes _NclIasciiread
 						}
 					}
 					if(j >= NCL_MAX_STRING) {
+						if (buffer[NCL_MAX_STRING] != '\n')
+							truncated = 1;
 						buffer[NCL_MAX_STRING] = '\0';
 						while(!feof(fp)&&(fgetc(fp) != '\n'));
 						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+						step = buffer;
 						total++;
 					} 
+					if (truncated) {
+						NhlPError(NhlWARNING,NhlEUNKNOWN,
+							  "asciiread: one or more strings truncated because NCL maximum string length (%d) exceeded",
+							NCL_MAX_STRING);
+						ret = NhlWARNING;
+					}
 				}
 			}
 			else {
@@ -4179,7 +4189,7 @@ NhlErrorTypes _NclIasciiread
 
 			if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
 				char *end = "";
-				int ret;
+				int lret;
 				int count;
 				char *rem;
 				totalsize = 0;
@@ -4200,10 +4210,10 @@ NhlErrorTypes _NclIasciiread
 					rem = NULL;
 					if (thetype->type_class.type == Ncl_Typefloat ||
 					    thetype->type_class.type == Ncl_Typedouble) {
-						ret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+						lret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
 					}
 					else {
-						ret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+						lret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
 					}
 					if (rem) {
 						/* dangling characters not fully parsed:
@@ -4214,7 +4224,7 @@ NhlErrorTypes _NclIasciiread
 						}
 						count = fread(&(buf[j]),1,bufsize-j-1,fp);
 						if (count <= 0) {
-							if (ret) {
+							if (lret) {
 								/* since the last return was good, add it to the total */
 								totalsize++;
 							}
@@ -4230,7 +4240,7 @@ NhlErrorTypes _NclIasciiread
 						}
 						continue;
 					}
-					if (ret) {
+					if (lret) {
 						totalsize++;
 					} else {
 						continue;
@@ -4298,7 +4308,7 @@ NhlErrorTypes _NclIasciiread
 
 			if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
 				char *end = "";
-				int ret;
+				int lret;
 				int count;
 				char *rem;
 				while (total < totalsize) {
@@ -4318,10 +4328,10 @@ NhlErrorTypes _NclIasciiread
 					rem = NULL;
 					if (thetype->type_class.type == Ncl_Typefloat ||
 					    thetype->type_class.type == Ncl_Typedouble) {
-						ret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+						lret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
 					}
 					else {
-						ret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+						lret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
 					}
 					if (rem) {
 						/* dangling characters not fully parsed:
@@ -4332,7 +4342,7 @@ NhlErrorTypes _NclIasciiread
 						}
 						count = fread(&(buf[j]),1,bufsize-j-1,fp);
 						if (count <= 0) {
-							if (ret) {
+							if (lret) {
 								/* since the last return was good, add it to the total */
 								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 								total++;
@@ -4349,7 +4359,7 @@ NhlErrorTypes _NclIasciiread
 						}
 						continue;
 					}
-					if (ret) {
+					if (lret) {
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
 						total++;
 					} else {
@@ -4367,6 +4377,7 @@ NhlErrorTypes _NclIasciiread
 			else if(thetype->type_class.type==Ncl_Typestring) {
 				char buffer[NCL_MAX_STRING+1];
 				char *step;
+				int truncated = 0;
 
 				step =buffer;
 				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
@@ -4388,12 +4399,20 @@ NhlErrorTypes _NclIasciiread
 						}
 					}
 					if(j >= NCL_MAX_STRING) {
+						if (buffer[NCL_MAX_STRING] != '\n')
+							truncated = 1;
 						buffer[NCL_MAX_STRING] = '\0';
 						while(!feof(fp)&&(fgetc(fp) != '\n'));
 						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
 						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+						step = buffer;
 						total++;
 					} 
+				}
+				if (truncated) {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: one or more strings truncated because NCL maximum string length (%d) exceeded",
+						NCL_MAX_STRING);
+					ret = NhlWARNING;
 				}
 			}
 			else {
