@@ -1,5 +1,5 @@
 C
-C	$Id: g01pat.f,v 1.5 2000-08-22 15:09:35 haley Exp $
+C	$Id: g01pat.f,v 1.6 2006-02-09 19:15:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -134,7 +134,7 @@ C
 C
 C  A vector is longer than 1.0 NDC, scale down both vectors equally.
 C
-        FACTOR = 1.0/DMAX
+        FACTOR = 1.0/MAX(1.,DMAX)
         RX(1) = FACTOR*RX(1)
         RY(1) = FACTOR*RY(1)
         RX(2) = FACTOR*RX(2)
