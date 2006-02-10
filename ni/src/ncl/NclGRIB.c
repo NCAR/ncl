@@ -5130,7 +5130,6 @@ int wr_status;
 					case 0:
 					case 1:
 					case 2:
-					case 10:
 						break;	
 					case 3:
 						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];
