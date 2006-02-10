@@ -1,0 +1,43 @@
+#
+#       $Id: yMakefile,v 1.1 2006-02-10 18:57:38 kennison Exp $
+#
+
+MYNAME  = vaspackt
+
+SOURCES = \
+	hluvtchcf.f hluvtchil.f hluvtchsl.f hluvtmxyz.f vtabgc.f \
+	vtback.f vtblda.f vtcflb.f vtchcf.f vtchil.f vtchsl.f \
+	vtcurv.f vtcvdr.f vtdrel.f vtdrpl.f vtfran.f vtgetc.f \
+	vtgeti.f vtgetr.f vtgiws.f vtgrws.f vtinlb.f vtinrc.f \
+	vtinrk.f vtmesh.f vtmviw.f vtmvrw.f vtmxyz.f vtnumb.f \
+	vtpisb.f vtpitt.f vtrand.f vtrset.f vtsbst.f vtsetc.f \
+	vtseti.f vtsetr.f vtsldr.f vtsort.f vttdbf.f vttdbm.f \
+	vttddm.f vttdfm.f vttlom.f vttmrg.f vttmtl.f vttmtx.f \
+	vttpom.f vttsom.f
+
+OBJECTS = \
+	hluvtchcf.o hluvtchil.o hluvtchsl.o hluvtmxyz.o vtabgc.o \
+	vtback.o vtblda.o vtcflb.o vtchcf.o vtchil.o vtchsl.o \
+	vtcurv.o vtcvdr.o vtdrel.o vtdrpl.o vtfran.o vtgetc.o \
+	vtgeti.o vtgetr.o vtgiws.o vtgrws.o vtinlb.o vtinrc.o \
+	vtinrk.o vtmesh.o vtmviw.o vtmvrw.o vtmxyz.o vtnumb.o \
+	vtpisb.o vtpitt.o vtrand.o vtrset.o vtsbst.o vtsetc.o \
+	vtseti.o vtsetr.o vtsldr.o vtsort.o vttdbf.o vttdbm.o \
+	vttddm.o vttdfm.o vttlom.o vttmrg.o vttmtl.o vttmtx.o \
+	vttpom.o vttsom.o
+
+PartialLibraryTarget(libncarg.a,$(OBJECTS))
+
+PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
+
+PartialLibraryTarget(libNGcn.a,$(OBJECTS))
+
+CleanFilesTarget($(SOURCES) IftranRun)
+
+$(SOURCES) : IftranRun
+
+IftranRun : CodeIftran
+	@$(IFTRAN) < CodeIftran > CodeFortran
+	@$(FSPLIT) -both CodeFortran
+	-@$(RM) CodeFortran
+	touch IftranRun
