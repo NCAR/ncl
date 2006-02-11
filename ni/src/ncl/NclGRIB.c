@@ -4248,13 +4248,19 @@ GribRecordInqRec *grib_rec;
 
 static int AdjustedTimePeriod
 #if	NhlNeedProto
-(int time_period, int unit_code,char *buf)
+(GribRecordInqRec *grec, int time_period, int unit_code,char *buf)
 #else
-(time_period,unit_code)
+(grec,time_period,unit_code,buf)
+GribRecordInqRec *grec;
 int time_period;
 int unit_code;
+char * buf;
 #endif
 {
+	int days_per_month[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+	int month, month_days;
+	int is_leap = 0;
+	int ix;
 	/*
 	 * Negative time periods are considered to be modular values, and converted to
 	 * positive values depending on the units. This is difficult for days, as well
@@ -4273,9 +4279,35 @@ int unit_code;
 		break;
 	case 2: /*Day*/
 		/* this oversimplifies and may need attention when there are users of such time periods */
-		while (time_period < 0)
-			time_period = 30 + time_period;
-		sprintf(buf,"%dd",time_period);
+		/* time period in days == a month, then switch to months */
+		month = (int) grec->pds[13];
+		month_days = days_per_month[month-1];
+		if (month == 2 && HeisLeapYear(grec->initial_time.year)) {
+			month_days++;
+			is_leap = 1;
+		}
+		if (grec->pds[20] == 7) {
+			/* special processing for GODAS -- although maybe it should be universal --
+			   see if we're really talking about a monthly average */
+			if (grec->pds[14] == month_days && month_days - grec->pds[18] == 1 && grec->pds[19] == 0)
+				sprintf(buf,"1m");
+		}
+		else {
+			ix = month - 1;
+			while (time_period < 0) {
+				if (ix == 1 && is_leap) {
+					time_period = days_per_month[ix] + 1 + time_period;
+				}
+				else {
+					time_period = days_per_month[ix] + time_period;
+				}
+				ix = (ix + 1) % 12;
+				if (ix == 0) {
+					is_leap =  HeisLeapYear(grec->initial_time.year + 1);
+				}
+			}
+			sprintf(buf,"%dd",time_period);
+		}
 		break;
 	case 3: /*Month*/
 		while (time_period < 0)
@@ -5137,7 +5169,7 @@ int wr_status;
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
-								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
+								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
 						break;
@@ -5147,7 +5179,7 @@ int wr_status;
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc");
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
-								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
+								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc%s",tpbuf);
 						}
 						break;
@@ -5157,18 +5189,28 @@ int wr_status;
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif");
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
-								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
+								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif%s",tpbuf);
 						}
 						break;
 					case 6:
-					case 7:
-						grib_rec->time_period = abs((int)grib_rec->pds[19] - (int) grib_rec->pds[18]);
+						grib_rec->time_period = (int)grib_rec->pds[19] - (int) grib_rec->pds[18];
 						if (grib_rec->time_period == 0)
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
-								(grib_rec->time_period,grib_rec->pds[17],tpbuf);
+								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
+						}
+						break;
+					case 7:
+						/* average ref time - P1 to ref_time + P2 -- add 1 for extent of ref time unit itself */
+						grib_rec->time_period = (int)grib_rec->pds[19] + (int) grib_rec->pds[18] + 1; 
+						if (grib_rec->time_period == 0)
+							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave");
+						else {
+							grib_rec->time_period = AdjustedTimePeriod
+								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
 						break;
