@@ -4279,7 +4279,7 @@ char * buf;
 		break;
 	case 2: /*Day*/
 		/* this oversimplifies and may need attention when there are users of such time periods */
-		/* time period in days == a month, then switch to months */
+		/* if time period in days == a month, then switch to months */
 		month = (int) grec->pds[13];
 		month_days = days_per_month[month-1];
 		if (month == 2 && HeisLeapYear(grec->initial_time.year)) {
@@ -4289,8 +4289,10 @@ char * buf;
 		if (grec->pds[20] == 7) {
 			/* special processing for GODAS -- although maybe it should be universal --
 			   see if we're really talking about a monthly average */
-			if (grec->pds[14] == month_days && month_days - grec->pds[18] == 1 && grec->pds[19] == 0)
+			if (grec->pds[14] - grec->pds[18] == 1 && grec->pds[14] + grec->pds[19] == month_days) {
 				sprintf(buf,"1m");
+				time_period = 1;
+			}
 		}
 		else {
 			ix = month - 1;
