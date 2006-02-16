@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.172 2005-11-30 17:32:00 haley Exp $
+;      $Id: gsn_code.ncl,v 1.173 2006-02-16 20:48:13 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6523,9 +6523,9 @@ begin
       else
         colors = tmpc
       end if
+      delete(tmpc)
     end if
     delete(tmp)
-    delete(tmpc)
   end if  
 ;
 ; 6. Calculate axis limits for plot, and create plot.
