@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.200 2006-01-27 03:23:40 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.201 2006-02-17 18:43:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9472,8 +9472,10 @@ begin
 ; Set some resources that will apply if you have two Y axes.
 ;
     if(axis.eq."y".or.axis.eq."xy") then
-      locRes2@tmYRLabelsOn            = True   ; Turn on right axis label
-      locRes2@tmYROn                  = True   ; Turn on right tick marks
+      locRes2@tmYRLabelsOn            = get_res_value_keep(locRes2, \
+                                        "tmYRLabelsOn",True) ; rgt axis labels
+      locRes2@tmYROn                  = get_res_value_keep(locRes2, \
+                                        "tmYROn",True) ; rgt tick marks on
       locRes2@tmYUseLeft              = False  
       locRes2@tiYAxisSide             = "Right"; put title on right scale
       locRes2@tiYAxisFontHeightF      = get_res_value_keep(locRes2, \
@@ -9518,8 +9520,10 @@ begin
 ; for the top, unless it is explicitly set by the user.
 ;
     if(axis.eq."x".or.axis.eq."xy") then
-      locRes2@tmXTLabelsOn            = True   ; Turn on top axis label
-      locRes2@tmXTOn                  = True   ; Turn on top tick marks
+      locRes2@tmXTLabelsOn            = get_res_value_keep(locRes2, \
+                                        "tmXTLabelsOn",True) ; top axis labels
+      locRes2@tmXTOn                  = get_res_value_keep(locRes2, \
+                                        "tmXTOn",True) ; top tick marks on
       locRes2@tmXUseBottom            = False  
       if(isatt(locRes2,"tiXAxisString")) then
         locRes2@tiXAxisSide           = "Top"; put title on Top scale
