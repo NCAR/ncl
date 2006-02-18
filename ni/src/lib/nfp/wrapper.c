@@ -340,6 +340,7 @@ extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
 extern NhlErrorTypes dpres_hybrid_ccm_W(void);
+extern NhlErrorTypes p2hy_W(void);
 extern NhlErrorTypes hyi2hyo_W(void);
 extern NhlErrorTypes pres_sigma_W(void);
 extern NhlErrorTypes sigma2hybrid_W(void);
@@ -4797,6 +4798,25 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(dpres_hybrid_ccm_W,args,"dpres_hybrid_ccm",nargs);
+
+
+/*
+ * Register "p2hy".
+ */
+    nargs = 0;
+    args = NewArgs(7);
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(p2hy_W,args,"p2hy",nargs);
+
 
 /*
  * Register "hyi2hyo".
