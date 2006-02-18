@@ -1065,7 +1065,7 @@ NhlErrorTypes sigma2hybrid_W( void )
 }
 
 
-NhlErrorTypes p2hy_W( void )
+NhlErrorTypes pres2hybrid_W( void )
 {
 /*
  * Input variables
@@ -1163,15 +1163,15 @@ NhlErrorTypes p2hy_W( void )
  * Check # of dimensions.
  */
   if(ndims_ps < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: 'ps' must be at least two dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: 'ps' must be at least two dimensions");
     return(NhlFATAL);
   }
   if(ndims_xi < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: 'xi' must be at least three dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: 'xi' must be at least three dimensions");
     return(NhlFATAL);
   }
   if(ndims_xi != ndims_ps+1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: 'xi' must have one more dimension than 'ps'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: 'xi' must have one more dimension than 'ps'");
     return(NhlFATAL);
   }
 /*
@@ -1187,16 +1187,16 @@ NhlErrorTypes p2hy_W( void )
 
   if( dsizes_xi[ndims_xi-3] != nlevi || dsizes_xi[ndims_xi-2] != nlat || 
       dsizes_xi[ndims_xi-1] != nlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: The three rightmost dimensions of 'xi' must be nlevi x nlat x nlon");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: The three rightmost dimensions of 'xi' must be nlevi x nlat x nlon");
     return(NhlFATAL);
   }
   if( dsizes_hybo[0] != nlevo ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: 'hyao' and 'hybo' must be the same length");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: 'hyao' and 'hybo' must be the same length");
     return(NhlFATAL);
   }
   for(i=0; i <= ndims_ps-3; i++) {
     if(dsizes_ps[i] != dsizes_xi[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: The leftmost n-2 dimensions of 'ps' and n-3 dimensions of 'xi' must be the same");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: The leftmost n-2 dimensions of 'ps' and n-3 dimensions of 'xi' must be the same");
       return(NhlFATAL);
     }
   }
@@ -1215,7 +1215,7 @@ NhlErrorTypes p2hy_W( void )
  */
   dsizes_xo = (int*)calloc(ndims_xi,sizeof(int));  
   if( dsizes_xo == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: Unable to allocate memory for holding dimension sizes");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
 
@@ -1241,7 +1241,7 @@ NhlErrorTypes p2hy_W( void )
   tmp_hyao = coerce_input_double(hyao,type_hyao,nlevo,0,NULL,NULL);
   tmp_hybo = coerce_input_double(hybo,type_hybo,nlevo,0,NULL,NULL);
   if( tmp_p0==NULL || tmp_p==NULL || tmp_hyao==NULL || tmp_hybo==NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: Unable to coerce input to double precision");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: Unable to coerce input to double precision");
     return(NhlFATAL);
   }
 
@@ -1251,7 +1251,7 @@ NhlErrorTypes p2hy_W( void )
   if(type_ps != NCL_double) {
     tmp_ps = (double*)calloc(nlat_nlon,sizeof(double));
     if( tmp_ps == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: Unable to allocate memory for coercing ps array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: Unable to allocate memory for coercing ps array to double precision");
       return(NhlFATAL);
     }
   }
@@ -1261,7 +1261,7 @@ NhlErrorTypes p2hy_W( void )
   if(type_xi != NCL_double) {
     tmp_xi = (double*)calloc(nlat_nlon_nlevi,sizeof(double));
     if( tmp_xi == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: Unable to allocate memory for coercing xi array to double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: Unable to allocate memory for coercing xi array to double precision");
       return(NhlFATAL);
     }
   }
@@ -1272,14 +1272,14 @@ NhlErrorTypes p2hy_W( void )
     xo     = (void*)calloc(size_xo,sizeof(float));
     tmp_xo = (double*)calloc(nlat_nlon_nlevo,sizeof(double));
     if(tmp_xo == NULL || xo == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
   else {
     xo = (void*)calloc(size_xo,sizeof(double));
     if(xo == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"p2hy: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }

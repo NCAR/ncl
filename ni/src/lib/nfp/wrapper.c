@@ -340,7 +340,7 @@ extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
 extern NhlErrorTypes dpres_hybrid_ccm_W(void);
-extern NhlErrorTypes p2hy_W(void);
+extern NhlErrorTypes pres2hybrid_W(void);
 extern NhlErrorTypes hyi2hyo_W(void);
 extern NhlErrorTypes pres_sigma_W(void);
 extern NhlErrorTypes sigma2hybrid_W(void);
@@ -4801,7 +4801,7 @@ void NclAddUserFuncs(void)
 
 
 /*
- * Register "p2hy".
+ * Register "pres2hybrid".
  */
     nargs = 0;
     args = NewArgs(7);
@@ -4815,7 +4815,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-    NclRegisterFunc(p2hy_W,args,"p2hy",nargs);
+    NclRegisterFunc(pres2hybrid_W,args,"pres2hybrid",nargs);
 
 
 /*
