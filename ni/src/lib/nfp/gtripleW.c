@@ -191,8 +191,8 @@ NhlErrorTypes triple2grid_W( void )
  */
   void *x, *y, *z, *gridx, *gridy;
   double *tmp_x, *tmp_y, *tmp_z, *tmp_gridx, *tmp_gridy;
-  int dsizes_x[1], dsizes_y[1], dsizes_z[1], dsizes_gridx[1], dsizes_gridy[1];
-  int has_missing_z;
+  int dsizes_x[1], dsizes_y[1], dsizes_gridx[1], dsizes_gridy[1];
+  int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS], has_missing_z;
   NclBasicDataTypes type_x, type_y, type_z, type_gridx, type_gridy;
   NclScalar missing_z, missing_rz, missing_dz;
   logical *option;
@@ -201,12 +201,12 @@ NhlErrorTypes triple2grid_W( void )
  */
   void *grid;
   double *tmp_grid;
-  int dsizes_grid[2];
+  int ndims_grid, *dsizes_grid, size_grid, size_leftmost;
   NclBasicDataTypes type_grid;
 /*
  * Various
  */
-  int i, npts, ngx, ngy, ier;
+  int i, npts, ngx, ngy, ngxy, ier, index_z, index_grid;
   logical strict = False;
   double domain = 0.;
 /*
@@ -242,7 +242,7 @@ NhlErrorTypes triple2grid_W( void )
   z = (void*)NclGetArgValue(
            2,
            6,
-           NULL,
+           &ndims_z,
            dsizes_z,
            &missing_z,
            &has_missing_z,
@@ -283,8 +283,8 @@ NhlErrorTypes triple2grid_W( void )
  * Check sizes of x, y, and z arrays.
  */
   npts  = dsizes_x[0];
-  if(dsizes_y[0] != npts || dsizes_z[0] != npts) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: The three input arrays must be the same length");
+  if(dsizes_y[0] != npts || dsizes_z[ndims_z-1] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: The length of x and y must be the same as the rightmost dimension of z");
     return(NhlFATAL);
   }
 
@@ -293,11 +293,24 @@ NhlErrorTypes triple2grid_W( void )
  * Remember, in NCL, the Y dimension is usually associated with dimension
  * '0, and the X dimension with dimension '1'.
  */
+  ndims_grid = ndims_z + 1;
+  dsizes_grid = (int*)calloc(ndims_grid,sizeof(int));  
+  if( dsizes_grid == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  size_leftmost = 1;
+  for( i = 0; i < ndims_z-1; i++ ) {
+    size_leftmost *= dsizes_z[i];
+    dsizes_grid[i] = dsizes_z[i];
+  }
   ngx = dsizes_gridx[0];
   ngy = dsizes_gridy[0];
+  ngxy = ngx * ngy;
+  size_grid = size_leftmost * ngxy;
 
-  dsizes_grid[0] = ngy;
-  dsizes_grid[1] = ngx;
+  dsizes_grid[ndims_grid-2] = ngy;
+  dsizes_grid[ndims_grid-1] = ngx;
 /*
  * Get type of return variable. If any of the input is double, then return
  * a double. Return float otherwise.
@@ -306,18 +319,22 @@ NhlErrorTypes triple2grid_W( void )
      type_gridx == NCL_double || type_gridy == NCL_double) {
 
     type_grid = NCL_double;
-    grid      = (void*)calloc(ngx*ngy,sizeof(double));
+    grid      = (void*)calloc(size_grid,sizeof(double));
+    if(grid == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
   }
   else {
     type_grid = NCL_float;
-    grid      = (void*)calloc(ngx*ngy,sizeof(float));
+    grid      = (void*)calloc(size_grid,sizeof(float));
+    tmp_grid  = (double*)calloc(ngxy,sizeof(double));
+    if(grid == NULL || tmp_grid == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
   }
-  tmp_grid = coerce_output_double(grid,type_grid,ngx*ngy);
 
-  if(grid == NULL || tmp_grid == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
 /*
  * Coerce missing values.  The z missing value will be used to determine
  * the grid missing value.  If z doesn't have a missing value, then the
@@ -329,15 +346,26 @@ NhlErrorTypes triple2grid_W( void )
  */
   tmp_x     = coerce_input_double(x,type_x,npts,0,NULL,NULL);
   tmp_y     = coerce_input_double(y,type_y,npts,0,NULL,NULL);
-  tmp_z     = coerce_input_double(z,type_z,npts,0,NULL,NULL);
   tmp_gridx = coerce_input_double(gridx,type_gridx,ngx,0,NULL,NULL);
   tmp_gridy = coerce_input_double(gridy,type_gridy,ngy,0,NULL,NULL);
 
-  if( tmp_x == NULL || tmp_y == NULL || tmp_z == NULL ||
-      tmp_gridx == NULL || tmp_gridy == NULL ) {
+  if( tmp_x == NULL || tmp_y == NULL || tmp_gridx == NULL ||
+      tmp_gridy == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to coerce input arrays to double");
     return(NhlFATAL);
   }
+
+/*
+ * Create temporary array for z if it is not already double.
+ */
+  if(type_z != NCL_double) {
+    tmp_z = (double*)calloc(npts,sizeof(double));
+    if( tmp_z == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to coerce input arrays to double");
+      return(NhlFATAL);
+    }
+  }
+
 
 /*
  * If "option" is True, then it may contain some attributes that we
@@ -393,18 +421,40 @@ NhlErrorTypes triple2grid_W( void )
   }
 
 /*
- * Call the Fortran subroutine.
+ * Loop across the leftmost dimensions of z and call the 
+ * Fortran subroutine.
  */
-  NGCALLF(triple2grid,TRIPLE2GRID)(&npts,tmp_x,tmp_y,tmp_z,
-                                   &missing_dz.doubleval,&ngx,&ngy,
-                                   tmp_gridx,tmp_gridy,tmp_grid,&domain,
-                                   &strict,&ier);
+  index_z = index_grid = 0;
+  for( i = 0; i < size_leftmost; i++ ) {
+    if(type_z != NCL_double) {
+/*
+ * Coerce subsection of z (tmp_z) to double.
+ */
+      coerce_subset_input_double(z,tmp_z,index_z,type_z,npts,has_missing_z,
+                                 &missing_z,&missing_dz);
+    }
+    else {
+/*
+ * Point tmp_z to appropriate location in z.
+ */
+      tmp_z = &((double*)z)[index_z];
+    }
+
+    if(type_grid == NCL_double) tmp_grid = &((double*)grid)[index_grid];
+
+    NGCALLF(triple2grid,TRIPLE2GRID)(&npts,tmp_x,tmp_y,tmp_z,
+                                     &missing_dz.doubleval,&ngx,&ngy,
+                                     tmp_gridx,tmp_gridy,tmp_grid,&domain,
+                                     &strict,&ier);
 /*
  * Coerce grid back to float if necessary.
  *
  */
-  if(type_grid == NCL_float) {
-    coerce_output_float_only(grid,tmp_grid,ngx*ngy,0);
+    if(type_grid == NCL_float) {
+      coerce_output_float_only(grid,tmp_grid,ngxy,index_grid);
+    }
+    index_grid += ngxy;
+    index_z    += npts;
   }
 /*
  * Free unneeded memory.
@@ -422,10 +472,10 @@ NhlErrorTypes triple2grid_W( void )
  * of its values filled in.
  */
   if(type_grid == NCL_double) {
-    return(NclReturnValue(grid,2,dsizes_grid,&missing_dz,type_grid,0));
+    return(NclReturnValue(grid,ndims_grid,dsizes_grid,&missing_dz,type_grid,0));
   }
   else {
-    return(NclReturnValue(grid,2,dsizes_grid,&missing_rz,type_grid,0));
+    return(NclReturnValue(grid,ndims_grid,dsizes_grid,&missing_rz,type_grid,0));
   }
 }
 
