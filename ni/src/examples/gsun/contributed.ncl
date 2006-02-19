@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.100 2006-02-19 21:58:50 shea Exp $
+;      $Id: contributed.ncl,v 1.101 2006-02-19 22:32:08 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -889,6 +889,61 @@ begin
 
   return (indWant)        
 end
+;********************************************************************
+; D. Shea
+; set a _FillValue "automatically" 
+; If a variable has a "_FillValue" use it, if not "missing_value" etc.
+; if none on file, then set default by variable type 
+; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
+
+undef("getFillValue")
+function getFillValue (x)
+local FillValue
+begin
+  if (isatt(x,"_FillValue")) then
+      FillValue = x@_FillValue
+  else
+      if (isatt(x,"missing_value")) then
+           FillValue = x@missing_value
+      else
+           if (typeof(x).eq."float") then
+               FillValue = -999.
+           end if
+           if (typeof(x).eq."double") then
+               FillValue = -9999.
+           end if
+           if (typeof(x).eq."integer") then
+               FillValue = -99
+           end if
+           if (typeof(x).eq."logical") then
+               FillValue = -1
+           end if
+           if (typeof(x).eq."byte") then
+               FillValue = 0377
+           end if
+           if (typeof(x).eq."short") then
+               FillValue = -99
+           end if
+           if (typeof(x).eq."graphic") then
+               FillValue = -9999
+           end if
+           if (typeof(x).eq."file") then
+               FillValue = -9999
+           end if
+           if (typeof(x).eq."list") then
+               FillValue = -9999
+           end if
+           if (typeof(x).eq."character") then
+               FillValue = "\0"
+           end if
+           if (typeof(x).eq."string") then
+               FillValue = "missing"
+           end if
+      end if
+  end if
+
+   return (FillValue)
+end
 ; **************************************************************
 ; D. Shea
 ; Loops thru a 1D variable [eg, time] and finds
@@ -927,7 +982,6 @@ function get1Dindex_Collapse (cv[*]:numeric,cvWant[*]:numeric)
 begin
   return( get1Dindex_Exclude(cv, cvWant) )
 end
-
 
 ;****************************************************************
 ; S. Murphy
@@ -1038,61 +1092,6 @@ begin
  return(str)
 end
 
-;********************************************************************
-; D. Shea
-; set a _FillValue "automatically" 
-; If a variable has a "_FillValue" use it, if not "missing_value" etc.
-; if none on file, then set default by variable type 
-; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
-
-undef("getFillValue")
-function getFillValue (x)
-local FillValue
-begin
-  if (isatt(x,"_FillValue")) then
-      FillValue = x@_FillValue
-  else
-      if (isatt(x,"missing_value")) then
-           FillValue = x@missing_value
-      else
-           if (typeof(x).eq."float") then
-               FillValue = -999.
-           end if
-           if (typeof(x).eq."double") then
-               FillValue = -9999.
-           end if
-           if (typeof(x).eq."integer") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."logical") then
-               FillValue = -1
-           end if
-           if (typeof(x).eq."byte") then
-               FillValue = 0377
-           end if
-           if (typeof(x).eq."short") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."graphic") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."file") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."list") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."character") then
-               FillValue = "\0"
-           end if
-           if (typeof(x).eq."string") then
-               FillValue = "missing"
-           end if
-      end if
-  end if
-
-   return (FillValue)
-end
 
 ;*************************************************************
 ; D. Shea
