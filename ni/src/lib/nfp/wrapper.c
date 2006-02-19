@@ -4265,9 +4265,9 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(4);
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 
     NclRegisterProc(stat2_W,args,"stat2",nargs);
@@ -4278,11 +4278,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 
     NclRegisterProc(stat_trim_W,args,"stat_trim",nargs);
@@ -4293,11 +4293,11 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(6);
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 
     NclRegisterProc(stat4_W,args,"stat4",nargs);
@@ -4318,10 +4318,10 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(5);
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
 
     NclRegisterProc(stat_medrng_W,args,"stat_medrng",nargs);
