@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.99 2006-02-02 18:11:49 shea Exp $
+;      $Id: contributed.ncl,v 1.100 2006-02-19 21:58:50 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -889,38 +889,43 @@ begin
 
   return (indWant)        
 end
-
 ; **************************************************************
 ; D. Shea
 ; Loops thru a 1D variable [eg, time] and finds
-; the indices which match up with the values of the cvWant 1D array
-; e.g. time_want = (/1948, 1957, 1964, 1965, 1989/)
-; indWant   = get1Dindex_Collapse (time, time_want)
-; This will eliminate any places where there was no match
-; ie:  values of cvWant need not exist in cv
+; the indices which do *not* match up with the values of the cvExclude
+
+undef("get1Dindex_Exclude")
+function get1Dindex_Exclude (cv[*]:numeric,cvExclude[*]:numeric)
+local nCv, nExclude, cvLocal,n, indTemp
+begin
+
+  nExclude = dimsizes (cvExclude)
+  nCv      = dimsizes (cv)
+
+  cvLocal  = new( nCv, typeof(cv), getFillValue(cv) )
+  cvLocal  = (/ cv /)
+
+  do n=0,nExclude-1
+     indTemp = ind( cvExclude(n).eq.cv)
+     if (.not.any(ismissing(indTemp)) ) then
+         cvLocal(indTemp) = cvLocal@_FillValue         
+     end if
+     delete(indTemp)
+  end do
+
+  return(ind(.not.ismissing(cvLocal)))
+end
+; **************************************************************
+; D. Shea
+; 19 Feb 2006
+; This was wrong. For historical reasons keep the function but
+; invoke get1Dindex_Exclude
 
 undef("get1Dindex_Collapse")
 
 function get1Dindex_Collapse (cv[*]:numeric,cvWant[*]:numeric)
-local nWant, indWant, n, k, indTemp
 begin
-  nWant   = dimsizes (cvWant)
-  indWant = new (nWant, integer, -999)
-
-  k  = -1
-  do n=0,nWant-1
-     indTemp = ind( cv.eq.cvWant(n) )
-     if (.not.ismissing(indTemp) ) then
-         k = k+1
-         indWant(k) = indTemp
-     end if
-  end do
-
-  if (k.ge.0) then
-      return ( indWant(0:k) )        
-  else
-      return ( indWant )        
-  end if
+  return( get1Dindex_Exclude(cv, cvWant) )
 end
 
 
