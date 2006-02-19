@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.101 2006-02-19 22:32:08 shea Exp $
+;      $Id: contributed.ncl,v 1.102 2006-02-19 23:06:44 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6416,6 +6416,78 @@ begin
   xNew&lon = lon
   xNew@gwt = gwt                                ; attach as attribute
   return (xNew)
+end
+;********************************************************************
+; D. Shea
+; wrapper for NCL function "pres2hybrid" that copies attributes and coordinate vars.
+; It adds the new level coordinates.
+
+
+function pres2hybrid_Wrap(p[*],psfc,p0,xi,hyao,hybo,intflg)
+local xo, dName, nDim, P0, lev, n
+begin
+   xo = pres2hybrid(p,psfc,p0,xi,hyao,hybo,intflg)
+
+   copy_VarAtts(xi,xo) 
+   xo@info = "NCL function pres2hybrid used to interpolate" 
+
+   dName = getvardims( xi )  ; get dim names of the input variable
+   if (any(ismissing(dName))) then
+       return (xo)
+   end if
+   
+   nDim = dimsizes( dimsizes(xo) )
+   if (nDim.ge.5) then
+       print("pres2hybrid_Wrap: Too many dimensions: nDim="+nDim)
+       exit
+   end if
+   if (nDim.lt.3) then
+       print("pres2hybrid_Wrap: Too few  dimensions: nDim="+nDim)
+       exit
+   end if
+
+   do n=0,nDim-1                     ; name the dimensions
+      xo!n = dName(n)
+   end do
+
+   if (isatt(p0,"units") .and. \
+      (p0@units.eq."Pa" .or. p0@units.eq."Pascals") .or. \
+      (p0.eq.100000.))  then
+       P0  = p0/100.
+       P0@units = "hPa"
+       lev      = (hyao+hybo)*P0
+       lev@long_name     = "level"
+       lev@units         = "hPa"
+       lev@formula_terms = "a: hyam b: hybm p0: P0 ps: PS" 
+       lev@positive      = "down" 
+       lev@standard_name = "atmosphere_hybrid_sigma_pressure_coordinate"
+   end if
+
+   if (nDim.eq.3) then
+       if (isvar("lev")) then
+           xo&$dName(0)$ = lev
+       end if
+
+       do n=1,2
+          if (iscoord(xi, dName(n)) ) then
+              xo&$dName(n)$ = xi&$dName(n)$
+          end if
+       end do
+   end if
+
+   if (nDim.eq.4) then
+       do n=0,3
+          if (n.eq.1 .and. isvar("lev")) then
+              xo&$dName(n)$ = lev
+          else
+              if (iscoord(xi, dName(n)) ) then
+                  xo&$dName(n)$ = xi&$dName(n)$
+              end if
+          end if
+       end do
+   end if
+
+   return (xo)
 end
 ;
 ;**************************************************************
