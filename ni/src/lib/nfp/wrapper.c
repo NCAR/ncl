@@ -442,6 +442,8 @@ extern NhlErrorTypes dcdfgamx_W(void);
 extern NhlErrorTypes dcdfnorp_W(void);
 extern NhlErrorTypes dcdfnorx_W(void);
 extern NhlErrorTypes dcdfchip_W(void);
+extern NhlErrorTypes cdft_t_W(void);
+extern NhlErrorTypes cdft_p_W(void);
 extern NhlErrorTypes ind_resolve_W(void);
 extern NhlErrorTypes unique_string_W(void);
 extern NhlErrorTypes tempnam_W(void);
@@ -5806,7 +5808,7 @@ void NclAddUserFuncs(void)
 
 /*
  *  Registering dcdfchip_W.
-*/
+ */
     nargs = 0;
     args = NewArgs(2);
 
@@ -5814,6 +5816,28 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(dcdfchip_W,args,"cdfchi_p",nargs);
+
+/*
+ *  Registering cdft_t_W.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(cdft_t_W,args,"cdft_t",nargs);
+
+/*
+ *  Registering cdft_p_W.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(cdft_p_W,args,"cdft_p",nargs);
 
 /*
  *  Register ind_resolve.
