@@ -97,11 +97,11 @@ C
       DATA TB/15.D0,2*-56.5D0,-44.5D0,2*-2.5D0,-58.5D0,3*-86.2D0/
       DATA GRAD/-.0065D0,0.D0,0.001D0,0.0028D0,0.D0,-.0028D0,-.002D0,
      +     3*0.D0/
-      DATA CHECK/0.D0/
+c djs DATA CHECK/0.D0/
 C
 C     H1 IS ALTITUDE: IF IN METERS SET L<=0.  IF IN FEET SET L>=1
 C
-      IF (CHECK.EQ.0.D0) THEN
+c djs IF (CHECK.EQ.0.D0) THEN
           ABSZ  = 273.15D0
           PZERO = 1013.250D0
           G     = 980.665D0
@@ -124,7 +124,7 @@ C
               RB(I) = 1000.D0*PB(I)/ (R*ABST(I))*1000.D0
           END DO
           CHECK = 10.D0
-      END IF
+c djs END IF
 
       IF (L.GE.1) THEN
           H = H1*0.3048D0
