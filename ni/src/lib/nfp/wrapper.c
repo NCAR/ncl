@@ -317,6 +317,8 @@ extern NhlErrorTypes escovc_W(void);
 extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
 extern NhlErrorTypes fourier_info_W(void);
+extern NhlErrorTypes stdatmus_z2tdp_W(void);
+extern NhlErrorTypes stdatmus_p2tdz_W(void);
 
 extern NhlErrorTypes rdsstoi_W(void);
 extern NhlErrorTypes vibeta_W(void);
@@ -4517,6 +4519,26 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(fourier_info_W,args,"fourier_info",nargs);
+/*
+ * Register "stdatmus_z2tdp".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(stdatmus_z2tdp_W,args,"stdatmus_z2tdp",nargs);
+/*
+ * Register "stdatmus_p2tdz".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(stdatmus_p2tdz_W,args,"stdatmus_p2tdz",nargs);
 /*
  * Register "rdsstoi".
  *
