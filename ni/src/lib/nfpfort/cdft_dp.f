@@ -62,7 +62,7 @@ c error messages for cdft_{t, p} functions
       INTEGER IER
 
       IF (IER.NE.0) THEN
-          IF (IER.LT.0) PRINT *,NAME,': bad input paraneter, IER=', IER
+          IF (IER.LT.0) PRINT *,NAME,': bad input parameter, IER=', IER
           IF (IER.EQ.1) PRINT *,NAME,': lower bound error'
           IF (IER.EQ.2) PRINT *,NAME,': upper bound error'
           IF (IER.EQ.3) PRINT *,NAME,': P+Q .ne. 1'
