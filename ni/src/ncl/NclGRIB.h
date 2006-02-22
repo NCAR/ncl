@@ -15,6 +15,28 @@ typedef struct _git{
 	short minute_of_day;
 }GIT;
 
+typedef struct _ens {
+	int extension_type; /* 0 - NCEP, 1 - ECMWF */
+	int type;
+	int id;
+	int prod_id;
+} ENS;
+
+typedef struct ens_list {
+	int ens_ix;
+	ENS ens;
+	int n_it;
+	GIT *it_vals;
+	int n_ft;
+	int *ft_vals;
+	int n_lv;
+	int *lv_vals;
+	int *lv_vals1;
+	struct it_list *thelist;
+	struct ens_list *next;
+}ENSLIST;
+
+
 typedef struct it_list {
 	GIT it;
 	int n_ft;
@@ -112,9 +134,6 @@ struct _GribInternalVarRec {
 	GribAttInqRecList *theatts;
 };
 
-
-
-
 struct _GribParamList {
 	int param_number;
 	int grid_number;
@@ -130,6 +149,9 @@ struct _GribParamList {
 	GIT minimum_it;
 	NclGribFVarRec var_info;
 	NrmQuark aux_coords[2];
+	int ensemble_isatt;
+	NclOneDValCoordData ensemble;
+	NclOneDValCoordData ens_indexes;
 	int yymmddhh_isatt;
 	NclOneDValCoordData yymmddhh;
 	GIT *it_vals;
@@ -201,6 +223,8 @@ struct _GribRecordInqRec {
 	unsigned int bms_off;
 	unsigned int bms_size;
 	NclMultiDValData the_dat;
+	int is_ensemble;
+	ENS ens;
 };
 
 struct _GribDimInqRec {
@@ -239,6 +263,8 @@ GribInternalVarList	*internal_var_list;
 int		total_dims;
 int		n_scalar_dims;
 GribDimInqRecList *scalar_dims;
+int		n_ensemble_dims;
+GribDimInqRecList *ensemble_dims;
 int		n_it_dims;
 GribDimInqRecList *it_dims;
 int		n_ft_dims;
