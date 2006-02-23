@@ -17,6 +17,7 @@ NhlErrorTypes dtrend_W( void )
   void *y;
   double *tmp_y;
   int ndims_y, dsizes_y[NCL_MAX_DIMENSIONS], has_missing_y;
+  NclScalar missing_y, missing_dy, missing_ry;
   logical *return_slope;
   NclBasicDataTypes type_y, type_dtrend_y;
 /*
@@ -44,7 +45,7 @@ NhlErrorTypes dtrend_W( void )
           2,
           &ndims_y,
           dsizes_y,
-          NULL,
+          &missing_y,
           &has_missing_y,
           &type_y,
           2);
@@ -83,6 +84,13 @@ NhlErrorTypes dtrend_W( void )
   if(has_missing_y) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend: 'y' contains a _FillValue attribute, which means your data may contain missing values.\nThis function doesn't check for missing values, and hence they will get used in the calculation.\nYou may want to consider using 'dtrend_msg' instead.");
   }
+/*
+ * Coerce the missing value to both float and double so that when
+ * we return the variable later, we can set the appropriate missing
+ * value depending on the type.
+ */
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
+
 /*
  * Coerce data to double no matter what, since input array also becomes
  * output array. 
@@ -164,7 +172,23 @@ NhlErrorTypes dtrend_W( void )
 /*
  * Input is not double, so return float values.
  */
-      return_md = _NclCreateVal(
+      if(has_missing_y) {
+        return_md = _NclCreateVal(
+                                NULL,
+                                NULL,
+                                Ncl_MultiDValData,
+                                0,
+                                dtrend_y,
+                                &missing_ry,
+                                ndims_y,
+                                dsizes_y,
+                                TEMPORARY,
+                                NULL,
+                                (NclObjClass)nclTypefloatClass
+                                );
+      }
+      else {
+        return_md = _NclCreateVal(
                                 NULL,
                                 NULL,
                                 Ncl_MultiDValData,
@@ -177,12 +201,29 @@ NhlErrorTypes dtrend_W( void )
                                 NULL,
                                 (NclObjClass)nclTypefloatClass
                                 );
+      }
     }
+    else {
 /* 
  * Input was double, so return double values.
  */
-    else {
-      return_md = _NclCreateVal(
+      if(has_missing_y) {
+        return_md = _NclCreateVal(
+                                  NULL,
+                                  NULL,
+                                  Ncl_MultiDValData,
+                                  0,
+                                  dtrend_y,
+                                  &missing_dy,
+                                  ndims_y,
+                                  dsizes_y,
+                                  TEMPORARY,
+                                  NULL,
+                                  (NclObjClass)nclTypedoubleClass
+                                  );
+      }
+      else {
+        return_md = _NclCreateVal(
                                 NULL,
                                 NULL,
                                 Ncl_MultiDValData,
@@ -195,6 +236,7 @@ NhlErrorTypes dtrend_W( void )
                                 NULL,
                                 (NclObjClass)nclTypedoubleClass
                                 );
+      }
     }
     att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
     dsizes[0] = size_leftmost;
@@ -315,7 +357,19 @@ NhlErrorTypes dtrend_W( void )
  * No slope/y-intercept is being returned, so we don't need to do all
  * that attribute stuff.
  */
-    return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,type_dtrend_y,0));
+    if(has_missing_y) {
+      if(type_dtrend_y == NCL_float) {
+        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_ry,
+                              type_dtrend_y,0));
+      }
+      else {
+        return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,&missing_dy,
+                              type_dtrend_y,0));
+      }
+    }
+    else {
+      return(NclReturnValue(dtrend_y,ndims_y,dsizes_y,NULL,type_dtrend_y,0));
+    }
   }
 }
 
@@ -831,4 +885,3 @@ NhlErrorTypes dtrend_msg_W( void )
     }
   }
 }
-
