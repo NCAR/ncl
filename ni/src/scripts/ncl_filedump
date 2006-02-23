@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncl_filedump,v 1.5 2005-10-27 16:51:06 grubin Exp $
+#   $Id: ncl_filedump,v 1.6 2006-02-23 18:46:39 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -109,7 +109,8 @@ endif
 #
 set valid_suffixes = ("nc" "cdf" "netcdf" "grb" "grib" "GRIB" "hdf" "hdfeos" "ccm")
 set no_suffix
-set suffix = "$file:e"
+set psfx = "$file:e"
+set suffix = `echo $psfx | tr '[A-Z]' '[a-z]'`
 set prefix = "$file:r"
 if ("$suffix" != "") then
     @ i = 1
@@ -239,11 +240,12 @@ cat << 'EOF_NCL' >! $tmp_nclfile
                     if (dNames(n) .eq. vNames(m)) then
                         dims = getfilevardimsizes(f, vNames(m))
                         rank = dimsizes(dims)
-    
+ 
                         if ((getfilevartypes(f, vNames(m))) .eq. "string") then
                             print(f->$vNames(m)$)
                             print(" ")
                         else
+                            print(f->$vNames(m)$)
                             v2d = make_var2d(f->$vNames(m)$, rank, dims)
                             fmt = set_fmt(v2d)
                             opt = True
@@ -266,17 +268,22 @@ cat << 'EOF_NCL' >! $tmp_nclfile
 
             do n = 0, nvars - 1
                 if (isfilevar(f, vars(n))) then
-                    dims = getfilevardimsizes(f, vars(n))
-                    rank = dimsizes(dims)
+                    if ((getfilevartypes(f, vars(n))) .eq. "string") then
+                        print(f->$vars(n)$)
+                        print(" ")
+                    else
+                        dims = getfilevardimsizes(f, vars(n))
+                        rank = dimsizes(dims)
 
-                    v2d = make_var2d(f->$vars(n)$, rank, dims)
-                    fmt = set_fmt(v2d)
-                    opt = True
-                    set_opt(opt, vars(n))
-                    write_matrix(v2d, fmt, opt)
+                        v2d = make_var2d(f->$vars(n)$, rank, dims)
+                        fmt = set_fmt(v2d)
+                        opt = True
+                        set_opt(opt, vars(n))
+                        write_matrix(v2d, fmt, opt)
 
-                    delete(v2d)
-                    delete(dims)
+                        delete(v2d)
+                        delete(dims)
+                    end if
                 else
                     print("${progname}: error: '" + vars(n) + "' is not a variable in '" + filename + "'.")
                 end if
