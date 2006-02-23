@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.102 2006-02-19 23:06:44 shea Exp $
+;      $Id: contributed.ncl,v 1.103 2006-02-23 20:04:48 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2794,6 +2794,51 @@ begin
 ; Create an informational attribute:  
 
    xAnom@anomaly_op_ncl  = "Anomalies from Annual Cycle: calcMonAnomTLL: contributed.ncl" 
+   
+   return (xAnom)
+end
+;**********************************************************************
+; D. Shea
+; Calculate anomalies from climatology [Remove annual cycle]
+;
+; Subtract the the long term means from each "month".
+; On return x will consist of deviations from  each "month's" long term mean.
+;
+; The time dimension must be a multiple of 12
+;
+;     x(time,lev,lat,lon)  <==== INPUT DIMENSION ORDER
+;     x!0 = "time"
+;     x!1 = "lev"
+;     x!2 = "lat"
+;     x!3 = "lon"
+;     xAve(12,lev,lat,lon) <==== THE 12 is Jan, Feb, .., Dec
+;
+; Usage:  x     = calcMonAnomTLLL (x,xAve)  ; overwrites "x"
+;         xAnom = calcMonAnomTLLL (x,xAve)  ; creates xAnom as new variable
+; where   xAve  = clmMonTLLL (x)           
+
+undef("calcMonAnomTLLL")
+function calcMonAnomTLLL (x[*][*][*][*]:numeric, xAve[12][*][*][*]:numeric)
+local dimx, ntim, yr, nmos, xAnom
+begin
+   dimx  = dimsizes (x)
+   ntim  = dimx(0)
+
+   nmos  = 12
+   modCheck ("calcMonAnomTLLL", ntim, nmos)   ; error check
+  ;rankCheck("calcMonAnomTLLL", x, 3)         ; not needed due to prototyping
+
+; Now loop on every year and compute difference. 
+; The [yr:yr+nmos-1] strips out 12 months for each year. [array notation]
+
+   xAnom = x          ; variable to variable copy [meta data]
+   do yr=0,ntim-1,nmos
+      xAnom(yr:yr+nmos-1,:,:,:) = (/ x(yr:yr+nmos-1,:,:,:)- xAve /)
+   end do
+
+; Create an informational attribute:  
+
+   xAnom@anomaly_op_ncl  = "Anomalies from Annual Cycle: calcMonAnomTLLL: contributed.ncl" 
    
    return (xAnom)
 end
