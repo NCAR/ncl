@@ -1078,8 +1078,34 @@ ENS *ens;
 			sprintf(buf,"type: %d, id: %d, prod_id: %d",ens->type,ens->id,ens->prod_id);
 		}
 	}
-	else {
-		sprintf(buf,"type: %d, id: %d, prod_id: %d",ens->type,ens->id,ens->prod_id);
+	else if (ens->extension_type == 1) {  /* ECMWF local definition 1 */
+		switch (ens->type) {
+		case 10:
+			sprintf(buf,"control forecast");
+			break;
+		case 11:
+			if (ens->id % 2 == 0) 
+				sprintf(buf,"negative pertubation # %d",ens->id / 2);
+			else 
+				sprintf(buf,"positive pertubation # %d",ens->id / 2 + 1);
+			break;
+		case 17:
+			sprintf(buf,"ensemble mean");
+			break;
+		case 18:
+			sprintf(buf,"ensemble standard deviation");
+			break;
+		default:
+			sprintf(buf,"type: %d, id: %d",ens->type,ens->id);
+		}
+
+	}
+	else {   /* other ECMWF local definitions */
+		if (ens->id == 0) 
+			sprintf(buf,"control forecast");
+		else
+			sprintf(buf,"perturbed forecast # %d",ens->id);
+			
 	}
 	return NrmStringToQuark(buf);
 }
@@ -6207,13 +6233,32 @@ int wr_status;
 					grib_rec->is_ensemble = 0;
 					memset(&grib_rec->ens,0,sizeof(ENS));
 					/* check for ensemble dimension */
-					if (center == 98 && grib_rec->pds_size > 50 && grib_rec->pds[40] == 18) {
-						/* ECMWF ensemble: local definition 18 */
-						/*
-						grib_rec->is_ensemble = 1;
-						grib_rec->ensemble_type = 0;
-						grib_rec->ensemble_ix = grib_rec->ensemble_id = grib_rec->pds[49]; 
-						*/
+					if (center == 98 && grib_rec->pds_size > 50) {
+						switch ((int) grib_rec->pds[40]) {
+						case 1:
+							if (CnvtToDecimal(2,&(grib_rec->pds[43])) == 1035) {
+								grib_rec->is_ensemble = 1;
+								grib_rec->ens.extension_type = grib_rec->pds[40];
+								grib_rec->ens.type = grib_rec->pds[42];
+								grib_rec->ens.id = grib_rec->pds[49];
+							}
+							break;
+						case 18:
+						case 26:
+						case 50:
+							grib_rec->is_ensemble = 1;
+							grib_rec->ens.id = grib_rec->pds[49];
+							grib_rec->ens.extension_type = grib_rec->pds[40];
+							break;
+						case 15:
+						case 16:
+						case 22:
+						case 23:
+							grib_rec->is_ensemble = 1;
+							grib_rec->ens.extension_type = grib_rec->pds[40];
+							grib_rec->ens.id = CnvtToDecimal(2,&(grib_rec->pds[49]));
+							break;
+						}
 					}
 					else if (subcenter == 2 && grib_rec->pds_size > 44 && grib_rec->pds[40] == 1) {
 						/* NCEP ensemble */

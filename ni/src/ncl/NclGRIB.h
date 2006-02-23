@@ -16,7 +16,7 @@ typedef struct _git{
 }GIT;
 
 typedef struct _ens {
-	int extension_type; /* 0 - NCEP, 1 - ECMWF */
+	int extension_type; /* 0 - NCEP, 1 .. n - ECMWF  local definition */
 	int type;
 	int id;
 	int prod_id;
