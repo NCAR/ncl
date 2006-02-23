@@ -9,6 +9,10 @@ extern void NGCALLF(dstat2,DSTAT2)(double*, int*, double*, double*, double*,
 extern void NGCALLF(dstat4,DSTAT4)(double*, int*, double*, double*, double*, 
                                    double*, double*, double*, int*, int*); 
 
+extern void NGCALLF(dstat2t,DSTAT2T)(double *,int *, double *,double *,
+									 double *,double *,int *,double *,
+									 double *, int*);
+
 extern void NGCALLF(drmvmean,DRMVMEAN)(double*, int*, double*, int*);
 
 extern void NGCALLF(drmvmed,DRMVMED)(double*, double*, int*, double*, int*);
