@@ -70,9 +70,14 @@ c                                    centered finite differences
       END DO
 c                                    if not cyclic
 c                                    how to treat end-points
+c                                    3 Mar 2006 [added qmsg checks]
       IF (ICYC.NE.1 .AND. IEND.EQ.1) THEN
-          DQDR(1) = (QQ(2)-QQ(1))/ (RR(2)-RR(1))
-          DQDR(NPTS) = (QQ(NPTS)-QQ(NPTS-1))/ (RR(NPTS)-RR(NPTS-1))
+         IF (QQ(1).NE.QMSG .AND. QQ(2).NE.QMSG) THEN
+             DQDR(1) = (QQ(2)-QQ(1))/ (RR(2)-RR(1))
+         END IF
+         IF (QQ(NPTS).NE.QMSG .AND. QQ(NPTS-1).NE.QMSG) THEN
+             DQDR(NPTS) = (QQ(NPTS)-QQ(NPTS-1))/ (RR(NPTS)-RR(NPTS-1))
+         END IF
       END IF
 
       RETURN
