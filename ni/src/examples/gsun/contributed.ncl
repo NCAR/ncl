@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.103 2006-02-23 20:04:48 shea Exp $
+;      $Id: contributed.ncl,v 1.104 2006-03-04 19:54:39 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5494,9 +5494,10 @@ begin
                                                                
   return(yrFrac)                                              
 end                                                          
+
 ;*************************************************************************
 ; D. Shea
-; given, say, 19790719  where 0719 is the 200th day of the year
+; given, say, 19790719  where 0719 (mmdd)  is the 200th day of the year
 ;       yrFrac = yyyymmdd2yyyyFrac (19790719)
 ;       yrFrac = 1979.545     ( [200-1]/365.= 0.545..)
 ;
@@ -5504,11 +5505,24 @@ end
 ; 
 ; assumes Gregorian calendar
 undef ("yyyymmdd2yyyyFrac")
-function yyyymmdd2yyyyFrac (yyyymmdd:integer)
-local year, mmdd, mon, day, dayYear, nDay, yrFrac, n
+function yyyymmdd2yyyyFrac (yyyymmdd:numeric)
+local year, mmdd, mon, day, dayYear, nDay, yrFrac, n, con, varType, YEAR
 begin
-     year = yyyymmdd/10000
-     mmdd = yyyymmdd-year*10000
+     varType = typeof(yyyymmdd)
+     if (varType.eq."integer") then
+         YYYYMMDD = yyyymmdd
+     else
+         if (varType.eq."float") then
+             YYYYMMDD = floattointeger(yyyymmdd)
+         else
+             YYYYMMDD = doubletointeger(yyyymmdd)
+         end if
+     end if
+
+     year = YYYYMMDD/10000
+     mmdd = YYYYMMDD-year*10000
+     delete(YYYYMMDD)
+
      mon  = mmdd/100
      day  = mmdd-mon*100
      delete (mmdd)
@@ -5518,22 +5532,133 @@ begin
      delete (day)
      
      nDay   = dimsizes(yyyymmdd)
-     yrFrac = new( nDay, "float")
+     if (varType.eq."integer" .or. varType.eq."float") then
+         yrFrac = new( nDay, "float")
+         con    = (/ 365, 366 /)*1.0
+     else
+         yrFrac = new( nDay, "double")
+         con    = (/ 365, 366 /)*1d0
+     end if
      delete(yrFrac@_FillValue)
         
      do n=0,nDay-1
         if (isleapyear(year(n))) then
-            yrFrac(n) = year(n) + (dayYear(n)-1)/366.
+            yrFrac(n) = year(n) + (dayYear(n)-1)/con(1)
         else
-            yrFrac(n) = year(n) + (dayYear(n)-1)/365.
-         end if   
+            yrFrac(n) = year(n) + (dayYear(n)-1)/con(0)
+        end if   
      end do
      
      yrFrac@long_name = "Time"
      yrFrac@units     = "YYYY + fractional portion of year"
-     yrFrac@info      = "derived using: function yyyymmdd2yyyyFrac"
+     yrFrac@info      = "derived using: function yyyymmdd_to_yyyyFrac"
      
      return(yrFrac)
+end
+;*************************************************************************
+; D. Shea
+;      a function that invokes yyyymmdd2yyyyFrac
+;      name consistent with yyyymm_to_yyyyfrac
+function yyyymmdd_to_yyyyfrac (yyyymmdd:numeric)
+local varType
+begin
+  varType = typeof(yyyymmdd)
+  if (varType.eq."integer" .or. \
+      varType.eq."float"   .or. \
+      varType.eq."double"       ) then
+      return (yyyymmdd2yyyyFrac (yyyymmdd))
+  else
+      print("yyyymmdd_to_yyyyfrac: variable type="+varType+" not supported")
+      exit
+  end if
+end
+
+;*************************************************************************
+; D. Shea
+;
+; given, say, 1979071906  where 0719 is the 200th day of the year
+;       yrFrac = yyyymmddhh2yyyyFrac (1979071906)
+;       yrFrac = 1979.5458984375    ([200-1]*86400.+hh*3600.)/(86400*365)
+;
+; yyyymmddhh     - scalar or array of dates
+;
+; assumes Gregorian calendar
+ 
+undef ("yyyymmddhh2yyyyFrac")
+function yyyymmddhh2yyyyFrac (yyyymmddhh[*]:numeric)
+local year, mmddhh, mon, ddhh, day, hour, dayYear, nTim, yrFrac \
+    , n, ysec, dsec, varType, YEAR
+begin
+     varType = typeof(yyyymmddhh)
+     if (varType.eq."integer") then
+         YYYYMMDDHH = yyyymmddhh
+     else
+         if (varType.eq."float") then
+             YYYYMMDDHH = floattointeger(yyyymmddhh)
+         else
+             YYYYMMDDHH = doubletointeger(yyyymmddhh)
+         end if
+     end if
+
+     year   = YYYYMMDDHH/1000000
+     mmddhh = YYYYMMDDHH-year*1000000
+     delete(YYYYMMDDHH)
+
+     mon  = mmddhh/10000
+     ddhh = mmddhh-mon*10000
+     delete (mmddhh)
+
+     day  = ddhh/100
+     hour = ddhh-day*100
+     delete (ddhh)
+
+     dayYear = day_of_year(year, mon, day)  ; Gregorian calendar
+     delete (mon)
+     delete (day)
+
+     nTim   = dimsizes(yyyymmddhh)
+     if (varType.eq."integer" .or. varType.eq."float") then
+         yrFrac = new( nTim, "float")
+         con    = (/ 365, 366, 86400, 3600 /)*1.0
+     else
+         yrFrac = new( nTim, "double")
+         con    = (/ 365, 366, 86400, 3600 /)*1d
+     end if
+     delete(yrFrac@_FillValue)
+
+     do n=0,nTim-1
+        if (isleapyear(year(n))) then
+            ysec = con(2)*con(1)
+        else
+            ysec = con(2)*con(0)
+         end if
+         dsec = (dayYear(n)-1)*con(2)  + hour(n)*con(3)
+         yrFrac(n) = year(n) + dsec/ysec
+     end do
+
+     yrFrac@long_name = "Time"
+     yrFrac@units     = "YYYY + fractional portion of year"
+     yrFrac@NCL       = "contributed.ncl: function yyyymmddhh_to_yyyyFrac"
+
+     return(yrFrac)
+end
+;*************************************************************************
+; D. Shea
+;      a function that invokes yyyymmddhh2yyyyFrac
+;      name consistent with yyyymm_to_yyyyfrac
+;      name consistent with yyyymmdd_to_yyyyfrac
+function yyyymmddhh_to_yyyyfrac (yyyymmddhh:numeric)
+local varType
+begin
+  varType = typeof(yyyymmddhh)
+  if (varType.eq."integer" .or. \
+      varType.eq."float"   .or. \
+      varType.eq."double"       ) then
+      return (yyyymmddhh2yyyyFrac (yyyymmddhh))
+  else
+      print("yyyymmddhh_to_yyyyfrac: variable type="+varType+" not supported")
+      exit
+  end if
 end
 ;*************************************************************************
 ; D. Shea
@@ -6167,54 +6292,6 @@ begin
   end if
 
   return(str)
-end
-
-undef ("yyyymmddhh2yyyyFrac")
-function yyyymmddhh2yyyyFrac (yyyymmddhh[*]:integer)
-;
-; given, say, 1979071906  where 0719 is the 200th day of the year
-;       yrFrac = yyyymmddhh2yyyyFrac (1979071906)
-;       yrFrac = 1979.5458984375    ([200-1]*86400.+hh*3600.)/(86400*365)
-;
-; yyyymmddhh     - scalar or array of dates
-;
-; assumes Gregorian calendar
- 
-local year, mmddhh, mon, ddhh, day, hour, dayYear, nTim, yrFrac, n, ysec, dsec
-begin
-     year   = yyyymmddhh/1000000
-     mmddhh = yyyymmddhh-year*1000000
-     mon  = mmddhh/10000
-     ddhh = mmddhh-mon*10000
-     day  = ddhh/100
-     hour = ddhh-day*100
-     delete (mmddhh)
-     delete (ddhh)
-
-
-     dayYear = day_of_year(year, mon, day)  ; Gregorian calendar
-     delete (mon)
-     delete (day)
-
-     nTim   = dimsizes(yyyymmddhh)
-     yrFrac = new( nTim, "double")
-     delete(yrFrac@_FillValue)
-
-     do n=0,nTim-1
-        if (isleapyear(year(n))) then
-            ysec = 86400.*366.
-        else
-            ysec = 86400.*365.
-         end if
-         dsec = (dayYear(n)-1)*86400. + hour(n)*3600.
-         yrFrac(n) = year(n) + dsec/ysec
-     end do
-
-     yrFrac@long_name = "Time"
-     yrFrac@units     = "YYYY + fractional portion of year"
-     yrFrac@NCL       = "contributed.ncl: function yyyymmddhh2yyyyFrac"
-
-     return(yrFrac)
 end
 
 ;*************************************************************************
