@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.104 2006-03-04 19:54:39 shea Exp $
+;      $Id: contributed.ncl,v 1.105 2006-03-06 17:04:37 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5494,7 +5494,6 @@ begin
                                                                
   return(yrFrac)                                              
 end                                                          
-
 ;*************************************************************************
 ; D. Shea
 ; given, say, 19790719  where 0719 (mmdd)  is the 200th day of the year
@@ -5504,11 +5503,12 @@ end
 ; yyyymmdd       - scalar or array of dates
 ; 
 ; assumes Gregorian calendar
-undef ("yyyymmdd2yyyyFrac")
-function yyyymmdd2yyyyFrac (yyyymmdd:numeric)
-local year, mmdd, mon, day, dayYear, nDay, yrFrac, n, con, varType, YEAR
+undef ("yyyymmdd2yyyyFrac") 
+function yyyymmdd2yyyyFrac (yyyymmdd:numeric, ddOffset[1]:numeric)
+local year, mmdd, mon, day, dayYear, nDay, yrFrac, n, con, varType, YYYYMMDD
 begin
      varType = typeof(yyyymmdd)
+
      if (varType.eq."integer") then
          YYYYMMDD = yyyymmdd
      else
@@ -5543,9 +5543,9 @@ begin
         
      do n=0,nDay-1
         if (isleapyear(year(n))) then
-            yrFrac(n) = year(n) + (dayYear(n)-1)/con(1)
+            yrFrac(n) = year(n) + ((dayYear(n)-1)+ddOffset)/con(1)
         else
-            yrFrac(n) = year(n) + (dayYear(n)-1)/con(0)
+            yrFrac(n) = year(n) + ((dayYear(n)-1)+ddOffset)/con(0)
         end if   
      end do
      
@@ -5559,14 +5559,14 @@ end
 ; D. Shea
 ;      a function that invokes yyyymmdd2yyyyFrac
 ;      name consistent with yyyymm_to_yyyyfrac
-function yyyymmdd_to_yyyyfrac (yyyymmdd:numeric)
+function yyyymmdd_to_yyyyfrac (yyyymmdd:numeric, ddOffset:numeric)
 local varType
 begin
   varType = typeof(yyyymmdd)
   if (varType.eq."integer" .or. \
       varType.eq."float"   .or. \
       varType.eq."double"       ) then
-      return (yyyymmdd2yyyyFrac (yyyymmdd))
+      return (yyyymmdd2yyyyFrac (yyyymmdd, ddOffset))
   else
       print("yyyymmdd_to_yyyyfrac: variable type="+varType+" not supported")
       exit
@@ -5590,6 +5590,7 @@ local year, mmddhh, mon, ddhh, day, hour, dayYear, nTim, yrFrac \
     , n, ysec, dsec, varType, YEAR
 begin
      varType = typeof(yyyymmddhh)
+ 
      if (varType.eq."integer") then
          YYYYMMDDHH = yyyymmddhh
      else
@@ -5647,10 +5648,14 @@ end
 ;      a function that invokes yyyymmddhh2yyyyFrac
 ;      name consistent with yyyymm_to_yyyyfrac
 ;      name consistent with yyyymmdd_to_yyyyfrac
-function yyyymmddhh_to_yyyyfrac (yyyymmddhh:numeric)
+;
+;      ignore hhOffset
+;
+function yyyymmddhh_to_yyyyfrac (yyyymmddhh:numeric, hhOffset[1]:numeric)
 local varType
 begin
   varType = typeof(yyyymmddhh)
+
   if (varType.eq."integer" .or. \
       varType.eq."float"   .or. \
       varType.eq."double"       ) then
