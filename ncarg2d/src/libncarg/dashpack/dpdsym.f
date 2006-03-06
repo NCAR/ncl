@@ -1,5 +1,5 @@
 C
-C $Id: dpdsym.f,v 1.2 2004-11-17 18:09:25 kennison Exp $
+C $Id: dpdsym.f,v 1.3 2006-03-06 20:37:13 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -43,7 +43,9 @@ C Compute the coordinates of the point defining the mark.  The curious
 C constants used in some of this code are intended to make each symbol
 C have the same area as that of a circle symbol.
 C
-        IF (CSYM.EQ.'0'.OR.CSYM.EQ.'5') THEN  !  circle
+        IF (CSYM.EQ.'0'.OR.CSYM.EQ.'5') THEN
+C
+C The mark is a circle.
 C
           DO 101 I=1,37
             ANGR=DTOR*(REAL(I-1)*10.)
@@ -53,7 +55,9 @@ C
 C
           NCRA=37
 C
-        ELSE IF (CSYM.EQ.'1'.OR.CSYM.EQ.'6') THEN  !  square
+        ELSE IF (CSYM.EQ.'1'.OR.CSYM.EQ.'6') THEN
+C
+C The mark is a square.
 C
           DO 102 I=1,5
             ANGR=DTOR*(ANGD+45.+REAL(I-1)*90.)
@@ -63,7 +67,9 @@ C
 C
           NCRA=5
 C
-        ELSE IF (CSYM.EQ.'2'.OR.CSYM.EQ.'7') THEN  !  triangle
+        ELSE IF (CSYM.EQ.'2'.OR.CSYM.EQ.'7') THEN
+C
+C The mark is a triangle.
 C
           DO 103 I=1,4
             ANGR=DTOR*(ANGD+90.+REAL(I-1)*120.)
@@ -73,7 +79,9 @@ C
 C
           NCRA=4
 C
-        ELSE IF (CSYM.EQ.'3'.OR.CSYM.EQ.'8') THEN  !  diamond
+        ELSE IF (CSYM.EQ.'3'.OR.CSYM.EQ.'8') THEN
+C
+C The mark is a diamond.
 C
           DO 104 I=1,5
             ANGR=DTOR*(ANGD+REAL(I-1)*90.)
@@ -83,7 +91,9 @@ C
 C
           NCRA=5
 C
-        ELSE IF (CSYM.EQ.'4'.OR.CSYM.EQ.'9') THEN  !  star
+        ELSE IF (CSYM.EQ.'4'.OR.CSYM.EQ.'9') THEN
+C
+C The mark is a star.
 C
           DO 105 I=1,11
             ANGR=DTOR*(ANGD+18.+REAL(I-1)*36.)
