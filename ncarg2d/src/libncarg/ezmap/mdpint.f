@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.5 2005-06-22 21:36:45 kennison Exp $
+C $Id: mdpint.f,v 1.6 2006-03-06 21:02:19 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -122,12 +122,13 @@ C
      +                                     104,103,105,106,107,
      +                                         108            ) , IPRJ+1
 C
-C USGS transformations.
+C USGS transformations.  I have some doubts about the appropriateness of
+C setting UMIN, UMAX, VMIN, and VMAX in this way.
 C
-  100   UMIN=UUMN  !  ???
-        UMAX=UUMX  !  ???
-        VMIN=UVMN  !  ???
-        VMAX=UVMX  !  ???
+  100   UMIN=UUMN
+        UMAX=UUMX
+        VMIN=UVMN
+        VMAX=UVMX
 C
         GO TO 109
 C
@@ -325,12 +326,13 @@ C
      +                                     407,408,409,410,411,
      +                                         412            ) , IPRJ+1
 C
-C USGS transformations.
+C USGS transformations.  I have some doubts about the appropriateness of
+C setting UMIN, UMAX, VMIN, and VMAX in this way.
 C
-  401   UMIN=UUMN  !  ???
-        UMAX=UUMX  !  ???
-        VMIN=UVMN  !  ???
-        VMAX=UVMX  !  ???
+  401   UMIN=UUMN
+        UMAX=UUMX
+        VMIN=UVMN
+        VMAX=UVMX
 C
         GO TO 600
 C
@@ -565,9 +567,10 @@ C
         SLOM=PHOC-180.D0
         BLOM=PHOC+180.D0
 C
-C Jump if it's obvious that really is the case.
+C Jump if it's obvious that really is the case.  It is possible that
+C something else needs to be done here.
 C
-        IF (JPRJ.EQ.0) GO TO 701  !  ???
+        IF (JPRJ.EQ.0) GO TO 701
 C
         IF (ILTS.EQ.1.AND.(JPRJ.EQ.4.OR.JPRJ.EQ.6.OR.JPRJ.EQ.7.OR.
      +                               JPRJ.EQ.9.OR.JPRJ.EQ.10)) GO TO 701

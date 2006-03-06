@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsf.f,v 1.5 2005-06-22 21:36:47 kennison Exp $
+C $Id: mdrgsf.f,v 1.6 2006-03-06 21:02:19 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -92,7 +92,7 @@ C
           RETURN
         END IF
 C
-        CALL GTX    (CFUX(.5),CFUY(.5),' ')  !  SEE COMMENT ABOVE!
+        CALL GTX    (CFUX(.5),CFUY(.5),' ')
 C
         CALL GSCLIP (1)
 C

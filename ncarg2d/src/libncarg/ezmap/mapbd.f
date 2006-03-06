@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.19 2005-06-22 21:36:41 kennison Exp $
+C $Id: mapbd.f,v 1.20 2006-03-06 21:02:19 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -163,16 +163,23 @@ C which need default variables.
 C
 C Variables in MAPCM0:
 C
-        DATA COS1 / .999847695156390D0 /  !  COSINE OF 1 DEGREE
-        DATA DTOR / .017453292519943D0 /  !  DEGREES TO RADIANS
-        DATA DTRH / .008726646259971D0 /  !  DEGREES TO RADIANS, HALVED
-        DATA OOPI / .318309886183790D0 /  !  ONE OVER PI
-        DATA PI   / 3.14159265358979D0 /  !  PI
-        DATA PIOT / 1.57079632679489D0 /  !  PI OVER TWO
-        DATA RTDD / 114.591559026165D0 /  !  RADIANS TO DEGREES, DOUBLED
-        DATA RTOD / 57.2957795130823D0 /  !  RADIANS TO DEGREES
-        DATA SIN1 / .017452406437283D0 /  !  SINE OF 1 DEGREE
-        DATA TOPI / .636619772367581D0 /  !  TWO OVER PI
+C COS1 is the cosine of 1 degree; DTOR is a conversion constant to go
+C from degrees to radians; DTRH is a conversion constant to go from
+C degrees to radians, halved; OOPI is one over pi; PI is pi; PIOT is
+C pi over two; RTDD is a conversion constant to go from radians to
+C degrees, doubled; RTOD is a conversion constant to go from radians
+C to degrees; SIN1 is the sine of 1 degree; and TOPI is two over pi.
+C
+        DATA COS1 / .999847695156390D0 /
+        DATA DTOR / .017453292519943D0 /
+        DATA DTRH / .008726646259971D0 /
+        DATA OOPI / .318309886183790D0 /
+        DATA PI   / 3.14159265358979D0 /
+        DATA PIOT / 1.57079632679489D0 /
+        DATA RTDD / 114.591559026165D0 /
+        DATA RTOD / 57.2957795130823D0 /
+        DATA SIN1 / .017452406437283D0 /
+        DATA TOPI / .636619772367581D0 /
 C
 C Variables in MAPCM1:
 C

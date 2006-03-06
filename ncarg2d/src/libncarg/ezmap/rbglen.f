@@ -1,5 +1,5 @@
 C
-C $Id: rbglen.f,v 1.6 2005-06-22 21:36:49 kennison Exp $
+C $Id: rbglen.f,v 1.7 2006-03-06 21:02:19 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -34,27 +34,28 @@ C
         INTEGER          ILAT
 C
 C Define the contents of PLEN per the definition of the Robinson
-C projection.
+C projection.  The values are associated with values of latitude from
+C 0 North to 90 North at five-degree intervals.
 C
-        DATA PLEN( 1) / 1.0000D0 /  !   0N
-        DATA PLEN( 2) / 0.9986D0 /  !   5N
-        DATA PLEN( 3) / 0.9954D0 /  !  10N
-        DATA PLEN( 4) / 0.9900D0 /  !  15N
-        DATA PLEN( 5) / 0.9822D0 /  !  20N
-        DATA PLEN( 6) / 0.9730D0 /  !  25N
-        DATA PLEN( 7) / 0.9600D0 /  !  30N
-        DATA PLEN( 8) / 0.9427D0 /  !  35N
-        DATA PLEN( 9) / 0.9216D0 /  !  40N
-        DATA PLEN(10) / 0.8962D0 /  !  45N
-        DATA PLEN(11) / 0.8679D0 /  !  50N
-        DATA PLEN(12) / 0.8350D0 /  !  55N
-        DATA PLEN(13) / 0.7986D0 /  !  60N
-        DATA PLEN(14) / 0.7597D0 /  !  65N
-        DATA PLEN(15) / 0.7186D0 /  !  70N
-        DATA PLEN(16) / 0.6732D0 /  !  75N
-        DATA PLEN(17) / 0.6213D0 /  !  80N
-        DATA PLEN(18) / 0.5722D0 /  !  85N
-        DATA PLEN(19) / 0.5322D0 /  !  90N
+        DATA PLEN( 1) / 1.0000D0 /
+        DATA PLEN( 2) / 0.9986D0 /
+        DATA PLEN( 3) / 0.9954D0 /
+        DATA PLEN( 4) / 0.9900D0 /
+        DATA PLEN( 5) / 0.9822D0 /
+        DATA PLEN( 6) / 0.9730D0 /
+        DATA PLEN( 7) / 0.9600D0 /
+        DATA PLEN( 8) / 0.9427D0 /
+        DATA PLEN( 9) / 0.9216D0 /
+        DATA PLEN(10) / 0.8962D0 /
+        DATA PLEN(11) / 0.8679D0 /
+        DATA PLEN(12) / 0.8350D0 /
+        DATA PLEN(13) / 0.7986D0 /
+        DATA PLEN(14) / 0.7597D0 /
+        DATA PLEN(15) / 0.7186D0 /
+        DATA PLEN(16) / 0.6732D0 /
+        DATA PLEN(17) / 0.6213D0 /
+        DATA PLEN(18) / 0.5722D0 /
+        DATA PLEN(19) / 0.5322D0 /
 C
 C Determine where the parallel of interest lies relative to the ones
 C represented in the tables (between the ones associated with elements
