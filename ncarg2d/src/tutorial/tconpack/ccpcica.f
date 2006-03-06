@@ -194,9 +194,12 @@ C
      2         MAX(0.,MIN(1.,1.-REAL(ABS(I- 9)/10.))),
      3         MAX(0.,MIN(1.,1.-REAL(ABS(I-15)/10.))))
  10   CONTINUE
-      CALL GSCR (IWKID,16,1.,0.,0.)
-      CALL GSCR (IWKID,101,0.,0.,0.) ! OUTSIDE THE GRID
-      CALL GSCR (IWKID,102,.5,.5,.5) ! SPECIAL VALUE
+      CALL GSCR (IWKID,16,1.,0.,0)
+C     Define color to be used outside the grid.
+      CALL GSCR (IWKID,101,0.,0.,0.)
+C     Define color to be used in special-value areas.
+      CALL GSCR (IWKID,102,.5,.5,.5)
+C     Define color to be used in out-of-range areas.
       CALL GSCR (IWKID,103,0.,0.,0.) ! OUT-OF-RANGE AREA
       RETURN
       END
