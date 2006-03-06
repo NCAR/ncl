@@ -1,5 +1,5 @@
 C
-C $Id: mdutin.f,v 1.1 2001-08-16 23:12:45 kennison Exp $
+C $Id: mdutin.f,v 1.2 2006-03-06 21:08:28 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -376,7 +376,9 @@ C
           UVMN=PADP(8)-1.75D6
           UVMX=PADP(8)+1.75D6
 C
-        ELSE  !  JPRJ in {3,5,7,8,11,12,14,15,16,17,18,19,20,21}
+        ELSE
+C
+C JPRJ is in the group {3,5,7,8,11,12,14,15,16,17,18,19,20,21}.
 C
           UUMN=+1.D12
           UUMX=-1.D12
