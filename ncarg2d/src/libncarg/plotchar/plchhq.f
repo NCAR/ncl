@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.24 2003-01-04 00:11:01 kennison Exp $
+C $Id: plchhq.f,v 1.25 2006-03-06 21:18:28 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -566,7 +566,9 @@ C If high-quality characters are being used, get the digitization of
 C the character in the array RDGU; if no digitization is found, try a
 C star instead; if that can't be found, there's a more serious error.
 C In any case, define the distances from the center of the character to
-C its left and right ends.
+C its left and right ends.  Note: I have some doubts about the setting
+C of CHFS to .1 in the following code (though it seems to have worked
+C okay for a very long time).
 C
   105 IF (IQUF.EQ.0) THEN
         IF (NFNT.EQ.0.OR.NDPC.LT.1.OR.NDPC.GT.95.OR.INDP.EQ.95) THEN
@@ -597,7 +599,7 @@ C
               IF (IMAP.LE.0) THEN
                 CHFS=SIZM*HPIC(IPIC)
               ELSE
-                CHFS=.1  !  ???
+                CHFS=.1
               END IF
               CALL PCCFFF (IPSS,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
      +                                          RDGU,MDGU,NDGU)
@@ -1052,7 +1054,9 @@ C
             IF (NFNT.GE.21.AND.NFNT.LE.99) NFNT=NFNT+100
           END IF
 C
-C Get the digitization of the desired character.
+C Get the digitization of the desired character.  Note: I have some
+C doubts about the setting of CHFS to .1 in the following code (though
+C it seems to have worked okay for a very long time).
 C
           IF (IQUF.EQ.0) THEN
             IF (NFNT.EQ.0.OR.NDPC.LT. 1.OR.
@@ -1066,7 +1070,7 @@ C
                 IF (IMAP.LE.0) THEN
                   CHFS=SIZM*HPIC(IPIC)
                 ELSE
-                  CHFS=.1  !  ???
+                  CHFS=.1
                 END IF
                 CALL PCCFFF (2,IBNU,NFNT,NASC,SPIC(IPIC),CHFS,
      +                                         RDGU,MDGU,NDGU)
