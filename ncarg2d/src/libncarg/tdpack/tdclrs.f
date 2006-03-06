@@ -1,5 +1,5 @@
 C
-C $Id: tdclrs.f,v 1.4 2002-07-23 21:47:29 kennison Exp $
+C $Id: tdclrs.f,v 1.5 2006-03-06 22:00:27 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -81,24 +81,26 @@ C The colors defined by calling TDCLRS may be used for any purpose, but
 C they are particularly useful when calling TDPACK routines to render
 C surfaces.
 C
-C Define the foreground and background colors.
+C Define the foreground and background colors (white on black or black
+C on white).
 C
         IF (IBOW.EQ.0) THEN
-          CALL GSCR (IWID,0,0.,0.,0.)  !  black
-          CALL GSCR (IWID,1,1.,1.,1.)  !  white
+          CALL GSCR (IWID,0,0.,0.,0.)
+          CALL GSCR (IWID,1,1.,1.,1.)
         ELSE
-          CALL GSCR (IWID,0,1.,1.,1.)  !  white
-          CALL GSCR (IWID,1,0.,0.,0.)  !  black
+          CALL GSCR (IWID,0,1.,1.,1.)
+          CALL GSCR (IWID,1,0.,0.,0.)
         END IF
 C
-C Define the pure colors.
+C Define the pure colors: 2 = red; 3 = green; 4 = blue; 5 = cyan;
+C 6 = magenta; and 7 = yellow.
 C
-        CALL GSCR (IWID,2,1.,0.,0.)    !  red
-        CALL GSCR (IWID,3,0.,1.,0.)    !  green
-        CALL GSCR (IWID,4,0.,0.,1.)    !  blue
-        CALL GSCR (IWID,5,0.,1.,1.)    !  cyan
-        CALL GSCR (IWID,6,1.,0.,1.)    !  magenta
-        CALL GSCR (IWID,7,1.,1.,0.)    !  yellow
+        CALL GSCR (IWID,2,1.,0.,0.)
+        CALL GSCR (IWID,3,0.,1.,0.)
+        CALL GSCR (IWID,4,0.,0.,1.)
+        CALL GSCR (IWID,5,0.,1.,1.)
+        CALL GSCR (IWID,6,1.,0.,1.)
+        CALL GSCR (IWID,7,1.,1.,0.)
 C
 C Define the specified color shades.
 C
@@ -107,21 +109,29 @@ C
         DO 101 IOCC=IOFC,IOLC
           P=MAX(0.,MIN(1.,1.-     REAL(IOCC-IOFC)/REAL(IOLC-IOFC)))
           Q=MAX(0.,MIN(1.,1.-SHDR*REAL(IOCC-IOFC)/REAL(IOLC-IOFC)))
-          CALL GSCR (IWID,IOCC       ,     P,     P,     P) ! full range
+C         full range:
+          CALL GSCR (IWID,IOCC       ,     P,     P,     P)
           IF (ILMT.EQ.1) GO TO 101
-          CALL GSCR (IWID,IOCC+  NSHD,     Q,     Q,     Q) ! grays
+C         grays:
+          CALL GSCR (IWID,IOCC+  NSHD,     Q,     Q,     Q)
           IF (ILMT.EQ.2) GO TO 101
-          CALL GSCR (IWID,IOCC+2*NSHD,     Q,SHDE*Q,SHDE*Q) ! reds
+C         reds:
+          CALL GSCR (IWID,IOCC+2*NSHD,     Q,SHDE*Q,SHDE*Q)
           IF (ILMT.EQ.3) GO TO 101
-          CALL GSCR (IWID,IOCC+3*NSHD,SHDE*Q,     Q,SHDE*Q) ! greens
+C         greens:
+          CALL GSCR (IWID,IOCC+3*NSHD,SHDE*Q,     Q,SHDE*Q)
           IF (ILMT.EQ.4) GO TO 101
-          CALL GSCR (IWID,IOCC+4*NSHD,SHDE*Q,SHDE*Q,     Q) ! blues
+C         blues:
+          CALL GSCR (IWID,IOCC+4*NSHD,SHDE*Q,SHDE*Q,     Q)
           IF (ILMT.EQ.5) GO TO 101
-          CALL GSCR (IWID,IOCC+5*NSHD,SHDE*Q,     Q,     Q) ! cyans
+C         cyans:
+          CALL GSCR (IWID,IOCC+5*NSHD,SHDE*Q,     Q,     Q)
           IF (ILMT.EQ.6) GO TO 101
-          CALL GSCR (IWID,IOCC+6*NSHD,     Q,SHDE*Q,     Q) ! magentas
+C         magentas:
+          CALL GSCR (IWID,IOCC+6*NSHD,     Q,SHDE*Q,     Q)
           IF (ILMT.EQ.7) GO TO 101
-          CALL GSCR (IWID,IOCC+7*NSHD,     Q,     Q,SHDE*Q) ! yellows
+C         yellows:
+          CALL GSCR (IWID,IOCC+7*NSHD,     Q,     Q,SHDE*Q)
   101   CONTINUE
 C
 C Done.

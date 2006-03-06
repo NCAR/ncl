@@ -1,6 +1,6 @@
 C
-C $Id: tdsort.f,v 1.3 2000-08-22 15:07:13 haley Exp $
-C                                                                      
+C $Id: tdsort.f,v 1.4 2006-03-06 22:00:27 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -32,14 +32,14 @@ C
         DO 101 I=1,NRWK
           IWRK(I)=I
   101   CONTINUE
-C                                                                       
+C
         K=0
 C
   102   IF (3*K+1.LT.NRWK) THEN
           K=3*K+1
           GO TO 102
         END IF
-C                                                                       
+C
         IF (IORD.EQ.0) THEN
 C
   103     IF (K.GT.0) THEN
@@ -94,4 +94,4 @@ C Done.
 C
         RETURN
 C
-      END                                                               
+      END

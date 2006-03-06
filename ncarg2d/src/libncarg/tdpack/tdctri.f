@@ -1,6 +1,6 @@
 C
-C $Id: tdctri.f,v 1.3 2000-08-22 15:07:07 haley Exp $
-C                                                                      
+C $Id: tdctri.f,v 1.4 2006-03-06 22:00:27 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -39,79 +39,106 @@ C
             IF          (RTRI(1,I).LT.RCUT) THEN
               IF        (RTRI(4,I).LT.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  GO TO 101                       !  1 <  4 <  7 <
+C                 1 <  4 <  7 <
+                  GO TO 101
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  IODD=7                          !  1 <  4 <  7 >
+C                 1 <  4 <  7 >
+                  IODD=7
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  GO TO 101                       !  1 <  4 <  7 =
+C                 1 <  4 <  7 =
+                  GO TO 101
                 END IF
               ELSE IF   (RTRI(4,I).GT.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  IODD=4                          !  1 <  4 >  7 <
+C                 1 <  4 >  7 <
+                  IODD=4
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  IODD=1                          !  1 <  4 >  7 >
+C                 1 <  4 >  7 >
+                  IODD=1
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  IODD=7                          !  1 <  4 >  7 =
+C                 1 <  4 >  7 =
+                  IODD=7
                 END IF
               ELSE IF   (RTRI(4,I).EQ.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  GO TO 101                       !  1 <  4 =  7 <
+C                 1 <  4 =  7 <
+                  GO TO 101
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  IODD=4                          !  1 <  4 =  7 >
+C                 1 <  4 =  7 >
+                  IODD=4
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  GO TO 101                       !  1 <  4 =  7 =
+C                 1 <  4 =  7 =
+                  GO TO 101
                 END IF
               END IF
             ELSE IF     (RTRI(1,I).GT.RCUT) THEN
               IF        (RTRI(4,I).LT.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  IODD=1                          !  1 >  4 <  7 <
+C                 1 >  4 <  7 <
+                  IODD=1
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  IODD=4                          !  1 >  4 <  7 >
+C                 1 >  4 <  7 >
+                  IODD=4
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  IODD=7                          !  1 >  4 <  7 =
+C                 1 >  4 <  7 =
+                  IODD=7
                 END IF
               ELSE IF   (RTRI(4,I).GT.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  IODD=7                          !  1 >  4 >  7 <
+C                 1 >  4 >  7 <
+                  IODD=7
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  GO TO 101                       !  1 >  4 >  7 >
+C                 1 >  4 >  7 >
+                  GO TO 101
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  GO TO 101                       !  1 >  4 >  7 =
+C                 1 >  4 >  7 =
+                  GO TO 101
                 END IF
               ELSE IF   (RTRI(4,I).EQ.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  IODD=4                          !  1 >  4 =  7 <
+C                 1 >  4 =  7 <
+                  IODD=4
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  GO TO 101                       !  1 >  4 =  7 >
+C                 1 >  4 =  7 >
+                  GO TO 101
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  GO TO 101                       !  1 >  4 =  7 =
+C                 1 >  4 =  7 =
+                  GO TO 101
                 END IF
               END IF
             ELSE IF     (RTRI(1,I).EQ.RCUT) THEN
               IF        (RTRI(4,I).LT.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  GO TO 101                       !  1 =  4 <  7 <
+C                 1 =  4 <  7 <
+                  GO TO 101
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  IODD=1                          !  1 =  4 <  7 >
+C                 1 =  4 <  7 >
+                  IODD=1
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  GO TO 101                       !  1 =  4 <  7 =
+C                 1 =  4 <  7 =
+                  GO TO 101
                 END IF
               ELSE IF   (RTRI(4,I).GT.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  IODD=1                          !  1 =  4 >  7 <
+C                 1 =  4 >  7 <
+                  IODD=1
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  GO TO 101                       !  1 =  4 >  7 >
+C                 1 =  4 >  7 >
+                  GO TO 101
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  GO TO 101                       !  1 =  4 >  7 =
+C                 1 =  4 >  7 =
+                  GO TO 101
                 END IF
               ELSE IF   (RTRI(4,I).EQ.RCUT) THEN
                 IF      (RTRI(7,I).LT.RCUT) THEN
-                  GO TO 101                       !  1 =  4 =  7 <
+C                 1 =  4 =  7 <
+                  GO TO 101
                 ELSE IF (RTRI(7,I).GT.RCUT) THEN
-                  GO TO 101                       !  1 =  4 =  7 >
+C                 1 =  4 =  7 >
+                  GO TO 101
                 ELSE IF (RTRI(7,I).EQ.RCUT) THEN
-                  GO TO 101                       !  1 =  4 =  7 =
+C                 1 =  4 =  7 =
+                  GO TO 101
                 END IF
               END IF
             END IF
@@ -191,79 +218,106 @@ C
             IF          (RTRI(2,I).LT.RCUT) THEN
               IF        (RTRI(5,I).LT.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  GO TO 102                       !  2 <  5 <  8 <
+C                 2 <  5 <  8 <
+                  GO TO 102
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  IODD=8                          !  2 <  5 <  8 >
+C                 2 <  5 <  8 >
+                  IODD=8
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  GO TO 102                       !  2 <  5 <  8 =
+C                 2 <  5 <  8 =
+                  GO TO 102
                 END IF
               ELSE IF   (RTRI(5,I).GT.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  IODD=5                          !  2 <  5 >  8 <
+C                 2 <  5 >  8 <
+                  IODD=5
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  IODD=2                          !  2 <  5 >  8 >
+C                 2 <  5 >  8 >
+                  IODD=2
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  IODD=8                          !  2 <  5 >  8 =
+C                 2 <  5 >  8 =
+                  IODD=8
                 END IF
               ELSE IF   (RTRI(5,I).EQ.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  GO TO 102                       !  2 <  5 =  8 <
+C                 2 <  5 =  8 <
+                  GO TO 102
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  IODD=5                          !  2 <  5 =  8 >
+C                 2 <  5 =  8 >
+                  IODD=5
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  GO TO 102                       !  2 <  5 =  8 =
+C                 2 <  5 =  8 =
+                  GO TO 102
                 END IF
               END IF
             ELSE IF     (RTRI(2,I).GT.RCUT) THEN
               IF        (RTRI(5,I).LT.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  IODD=2                          !  2 >  5 <  8 <
+C                 2 >  5 <  8 <
+                  IODD=2
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  IODD=5                          !  2 >  5 <  8 >
+C                 2 >  5 <  8 >
+                  IODD=5
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  IODD=8                          !  2 >  5 <  8 =
+C                 2 >  5 <  8 =
+                  IODD=8
                 END IF
               ELSE IF   (RTRI(5,I).GT.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  IODD=8                          !  2 >  5 >  8 <
+C                 2 >  5 >  8 <
+                  IODD=8
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  GO TO 102                       !  2 >  5 >  8 >
+C                 2 >  5 >  8 >
+                  GO TO 102
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  GO TO 102                       !  2 >  5 >  8 =
+C                 2 >  5 >  8 =
+                  GO TO 102
                 END IF
               ELSE IF   (RTRI(5,I).EQ.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  IODD=5                          !  2 >  5 =  8 <
+C                 2 >  5 =  8 <
+                  IODD=5
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  GO TO 102                       !  2 >  5 =  8 >
+C                 2 >  5 =  8 >
+                  GO TO 102
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  GO TO 102                       !  2 >  5 =  8 =
+C                 2 >  5 =  8 =
+                  GO TO 102
                 END IF
               END IF
             ELSE IF     (RTRI(2,I).EQ.RCUT) THEN
               IF        (RTRI(5,I).LT.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  GO TO 102                       !  2 =  5 <  8 <
+C                 2 =  5 <  8 <
+                  GO TO 102
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  IODD=2                          !  2 =  5 <  8 >
+C                 2 =  5 <  8 >
+                  IODD=2
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  GO TO 102                       !  2 =  5 <  8 =
+C                 2 =  5 <  8 =
+                  GO TO 102
                 END IF
               ELSE IF   (RTRI(5,I).GT.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  IODD=2                          !  2 =  5 >  8 <
+C                 2 =  5 >  8 <
+                  IODD=2
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  GO TO 102                       !  2 =  5 >  8 >
+C                 2 =  5 >  8 >
+                  GO TO 102
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  GO TO 102                       !  2 =  5 >  8 =
+C                 2 =  5 >  8 =
+                  GO TO 102
                 END IF
               ELSE IF   (RTRI(5,I).EQ.RCUT) THEN
                 IF      (RTRI(8,I).LT.RCUT) THEN
-                  GO TO 102                       !  2 =  5 =  8 <
+C                 2 =  5 =  8 <
+                  GO TO 102
                 ELSE IF (RTRI(8,I).GT.RCUT) THEN
-                  GO TO 102                       !  2 =  5 =  8 >
+C                 2 =  5 =  8 >
+                  GO TO 102
                 ELSE IF (RTRI(8,I).EQ.RCUT) THEN
-                  GO TO 102                       !  2 =  5 =  8 =
+C                 2 =  5 =  8 =
+                  GO TO 102
                 END IF
               END IF
             END IF
@@ -343,79 +397,106 @@ C
             IF          (RTRI(3,I).LT.RCUT) THEN
               IF        (RTRI(6,I).LT.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  GO TO 103                       !  3 <  6 <  9 <
+C                 3 <  6 <  9 <
+                  GO TO 103
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  IODD=9                          !  3 <  6 <  9 >
+C                 3 <  6 <  9 >
+                  IODD=9
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  GO TO 103                       !  3 <  6 <  9 =
+C                 3 <  6 <  9 =
+                  GO TO 103
                 END IF
               ELSE IF   (RTRI(6,I).GT.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  IODD=6                          !  3 <  6 >  9 <
+C                 3 <  6 >  9 <
+                  IODD=6
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  IODD=3                          !  3 <  6 >  9 >
+C                 3 <  6 >  9 >
+                  IODD=3
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  IODD=9                          !  3 <  6 >  9 =
+C                 3 <  6 >  9 =
+                  IODD=9
                 END IF
               ELSE IF   (RTRI(6,I).EQ.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  GO TO 103                       !  3 <  6 =  9 <
+C                 3 <  6 =  9 <
+                  GO TO 103
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  IODD=6                          !  3 <  6 =  9 >
+C                 3 <  6 =  9 >
+                  IODD=6
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  GO TO 103                       !  3 <  6 =  9 =
+C                 3 <  6 =  9 =
+                  GO TO 103
                 END IF
               END IF
             ELSE IF     (RTRI(3,I).GT.RCUT) THEN
               IF        (RTRI(6,I).LT.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  IODD=3                          !  3 >  6 <  9 <
+C                 3 >  6 <  9 <
+                  IODD=3
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  IODD=6                          !  3 >  6 <  9 >
+C                 3 >  6 <  9 >
+                  IODD=6
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  IODD=9                          !  3 >  6 <  9 =
+C                 3 >  6 <  9 =
+                  IODD=9
                 END IF
               ELSE IF   (RTRI(6,I).GT.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  IODD=9                          !  3 >  6 >  9 <
+C                 3 >  6 >  9 <
+                  IODD=9
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  GO TO 103                       !  3 >  6 >  9 >
+C                 3 >  6 >  9 >
+                  GO TO 103
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  GO TO 103                       !  3 >  6 >  9 =
+C                 3 >  6 >  9 =
+                  GO TO 103
                 END IF
               ELSE IF   (RTRI(6,I).EQ.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  IODD=6                          !  3 >  6 =  9 <
+C                 3 >  6 =  9 <
+                  IODD=6
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  GO TO 103                       !  3 >  6 =  9 >
+C                 3 >  6 =  9 >
+                  GO TO 103
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  GO TO 103                       !  3 >  6 =  9 =
+C                 3 >  6 =  9 =
+                  GO TO 103
                 END IF
               END IF
             ELSE IF     (RTRI(3,I).EQ.RCUT) THEN
               IF        (RTRI(6,I).LT.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  GO TO 103                       !  3 =  6 <  9 <
+C                 3 =  6 <  9 <
+                  GO TO 103
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  IODD=3                          !  3 =  6 <  9 >
+C                 3 =  6 <  9 >
+                  IODD=3
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  GO TO 103                       !  3 =  6 <  9 =
+C                 3 =  6 <  9 =
+                  GO TO 103
                 END IF
               ELSE IF   (RTRI(6,I).GT.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  IODD=3                          !  3 =  6 >  9 <
+C                 3 =  6 >  9 <
+                  IODD=3
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  GO TO 103                       !  3 =  6 >  9 >
+C                 3 =  6 >  9 >
+                  GO TO 103
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  GO TO 103                       !  3 =  6 >  9 =
+C                 3 =  6 >  9 =
+                  GO TO 103
                 END IF
               ELSE IF   (RTRI(6,I).EQ.RCUT) THEN
                 IF      (RTRI(9,I).LT.RCUT) THEN
-                  GO TO 103                       !  3 =  6 =  9 <
+C                 3 =  6 =  9 <
+                  GO TO 103
                 ELSE IF (RTRI(9,I).GT.RCUT) THEN
-                  GO TO 103                       !  3 =  6 =  9 >
+C                 3 =  6 =  9 >
+                  GO TO 103
                 ELSE IF (RTRI(9,I).EQ.RCUT) THEN
-                  GO TO 103                       !  3 =  6 =  9 =
+C                 3 =  6 =  9 =
+                  GO TO 103
                 END IF
               END IF
             END IF
