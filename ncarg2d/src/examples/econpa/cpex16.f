@@ -37,16 +37,16 @@ C smaller values gives smaller execution times and smaller metafiles.
 C The user must determine whether the picture given by a particular
 C pair of values is acceptable or not.
 C
-C       PARAMETER (MCRA=  25,NCRA=  25)  !  Quicker test case.
-C       PARAMETER (MCRA=  50,NCRA=  50)  !  Quick test case.
-C       PARAMETER (MCRA= 100,NCRA= 100)  !  Way too coarse, I think.
-C       PARAMETER (MCRA= 200,NCRA= 200)  !  Too coarse, I think.
-C       PARAMETER (MCRA= 400,NCRA= 400)  !  Probably acceptable?
-C       PARAMETER (MCRA= 512,NCRA= 512)  !  Probably acceptable?
-        PARAMETER (MCRA= 800,NCRA= 800)  !  Fine (maybe too fine).
-C       PARAMETER (MCRA=1000,NCRA=1000)  !  Really fine.
-C       PARAMETER (MCRA=1024,NCRA=1024)  !  Really fine.
-C       PARAMETER (MCRA=2048,NCRA=2048)  !  Absurdly fine.
+C       PARAMETER (MCRA=  25,NCRA=  25)
+C       PARAMETER (MCRA=  50,NCRA=  50)
+C       PARAMETER (MCRA= 100,NCRA= 100)
+C       PARAMETER (MCRA= 200,NCRA= 200)
+C       PARAMETER (MCRA= 400,NCRA= 400)
+C       PARAMETER (MCRA= 512,NCRA= 512)
+        PARAMETER (MCRA= 800,NCRA= 800)
+C       PARAMETER (MCRA=1000,NCRA=1000)
+C       PARAMETER (MCRA=1024,NCRA=1024)
+C       PARAMETER (MCRA=2048,NCRA=2048)
 C
 C Declare the lengths of workspace arrays to be passed to CONPACK, the
 C area-map array to be used, and workspace arrays for ARSCAM.
@@ -482,19 +482,24 @@ C down on the size of the metafile.
 C
         CALL PCSETR ('FB - FIDELITY OF BEZIER CURVES',.00015)
 C
-C Tell EZMAP what projection to use.
+C Tell EZMAP what projection to use (choices given include cylindrical
+C equidistant; orthographic, including the North Pole; orthographic,
+C opposite side of globe from the second choice; orthographic, from
+C above the North Pole; and polar stereographic).
 C
-C       CALL MAPROJ ('CE',  0.,  0.,0.)     !  Cylindrical equidistant.
-        CALL MAPROJ ('OR',+40.,-20.,0.)     !  Includes the NP.
-C       CALL MAPROJ ('OR',-40.,160.,0.)     !  Opposite side of globe.
-C       CALL MAPROJ ('OR', 90.,  0.,0.)     !  Polar view.
-C       CALL MAPROJ ('ST', 90.,  0.,0.)     !  Polar stereographic.
+C       CALL MAPROJ ('CE',  0.,  0.,0.)
+        CALL MAPROJ ('OR',+40.,-20.,0.)
+C       CALL MAPROJ ('OR',-40.,160.,0.)
+C       CALL MAPROJ ('OR', 90.,  0.,0.)
+C       CALL MAPROJ ('ST', 90.,  0.,0.)
 C
-C Tell EZMAP what part of the projection to draw.
+C Tell EZMAP what part of the projection to draw (choices given specify
+C a maximal useful view; a 30-degree field of view; and a 60-degree
+C field of view).
 C
-        CALL MAPSET ('MA', 0., 0., 0., 0.)  !  Maximal useful view.
-C       CALL MAPSET ('AN',15.,15.,15.,15.)  !  30-degree field of view.
-C       CALL MAPSET ('AN',60.,60.,60.,60.)  !  60-degree field of view.
+        CALL MAPSET ('MA', 0., 0., 0., 0.)
+C       CALL MAPSET ('AN',15.,15.,15.,15.)
+C       CALL MAPSET ('AN',60.,60.,60.,60.)
 C
 C Initialize EZMAP (to make it call SET).
 C
@@ -834,18 +839,23 @@ C Define the color indices.
 C
           DO 130 ICIN=101,101+NOCL+4
             IF      (ICIN.EQ.101) THEN
-              CALL GSCR (IWKID,ICIN,0.,1.,1.)  ! ambiguously-specified
+C             color for ambiguously-specified areas:
+              CALL GSCR (IWKID,ICIN,0.,1.,1.)
             ELSE IF (ICIN.LE.101+NOCL+1) THEN
               RR=REAL(ICIN-102)/REAL(NOCL)
               GG=0.
               BB=1.-RR
-              CALL GSCR (IWKID,ICIN,RR,GG,BB)  ! bands 1 to NOCL+1
+C             colors for bands 1 to NOCL+1:
+              CALL GSCR (IWKID,ICIN,RR,GG,BB)
             ELSE IF (ICIN.EQ.101+NOCL+2) THEN
-              CALL GSCR (IWKID,ICIN,.2,.5,.2)  ! outside the grid
+C             color for areas outside the bounds of the grid:
+              CALL GSCR (IWKID,ICIN,.2,.5,.2)
             ELSE IF (ICIN.EQ.101+NOCL+3) THEN
-              CALL GSCR (IWKID,ICIN,.5,.5,.5)  ! special-value area
+C             color for special-value areas:
+              CALL GSCR (IWKID,ICIN,.5,.5,.5)
             ELSE IF (ICIN.EQ.101+NOCL+4) THEN
-              CALL GSCR (IWKID,ICIN,.2,.2,.2)  ! out-of-range area
+C             color for out-of-range areas:
+              CALL GSCR (IWKID,ICIN,.2,.2,.2)
             END IF
   130     CONTINUE
 C
@@ -872,14 +882,14 @@ C
 C
 C Turn on debug plots from AREAS and tweak the appearance a little.
 C
-C         CALL ARSETI ('DB',   -1)  !  (DEBUG)
+C         CALL ARSETI ('DB',   -1)
 C
-C         CALL ARSETI ('DC',  200)  !  (DEBUG)
+C         CALL ARSETI ('DC',  200)
 C
-C         CALL ARSETR ('AL',.0020)  !  (DEBUG)
-C         CALL ARSETR ('AW',.0005)  !  (DEBUG)
-C         CALL ARSETR ('ID',.0010)  !  (DEBUG)
-C         CALL ARSETR ('IS',.0005)  !  (DEBUG)
+C         CALL ARSETR ('AL',.0020)
+C         CALL ARSETR ('AW',.0005)
+C         CALL ARSETR ('ID',.0010)
+C         CALL ARSETR ('IS',.0005)
 C
 C Initialize the area map.
 C
@@ -891,7 +901,7 @@ C
 C
 C Write the contents of the area map to unit 11.
 C
-C         CALL ARDAMN (IAMA,11)     !  (DEBUG)
+C         CALL ARDAMN (IAMA,11)
 C
 C Color the map.
 C
@@ -1257,53 +1267,71 @@ C Check a little area around the last box used (in hopes of quickly
 C finding the correct box often enough so as to speed the process up).
 C
               IF (IEND-IBEG.EQ.1.AND.JEND-JBEG.EQ.1) THEN
+C
+C Jump if in same box:
+C
                 ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICSP.EQ.0) GO TO 101  !  Same box.
+                IF (ICSP.EQ.0) GO TO 101
+C
+C Jump if in adjacent box:
+C
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
                 ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICSP.EQ.0) GO TO 101  !  Adjacent box.
+                IF (ICSP.EQ.0) GO TO 101
+C
+C Jump if in near-by box:
+C
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
                 ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICSP.EQ.0) GO TO 101  !  Near-by box.
+                IF (ICSP.EQ.0) GO TO 101
+C
               END IF
 C
 C If that didn't work, look for a "quarter" of the grid containing the
 C point we want.  (Starting with the entire grid is problematical
 C because of the way ICEGSP works.)
 C
+C Jump if in lower left quadrant:
+C
               IBEG=1
               IEND=51
               JBEG=1
               JEND=58
               ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101  !  Lower left quadrant.
+              IF (ICSP.EQ.0) GO TO 101
+C
+C Jump if in lower right quadrant:
 C
               IBEG=51
               IEND=101
               JBEG=1
               JEND=58
               ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101  !  Lower right quadrant.
+              IF (ICSP.EQ.0) GO TO 101
+C
+C Jump if in upper left quadrant:
 C
               IBEG=1
               IEND=51
               JBEG=58
               JEND=116
               ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101  !  Upper left quadrant.
+              IF (ICSP.EQ.0) GO TO 101
+C
+C Jump if in upper right quadrant:
 C
               IBEG=51
               IEND=101
               JBEG=58
               JEND=116
               ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101  !  Upper right quadrant.
+              IF (ICSP.EQ.0) GO TO 101
 C
 C Point was not in any "quarter" of the grid, so treat it as outside
 C the grid.
@@ -1397,53 +1425,71 @@ C Check a little area around the last box used (in hopes of quickly
 C finding the correct box often enough so as to speed the process up).
 C
               IF (IEND-IBEG.EQ.1.AND.JEND-JBEG.EQ.1) THEN
+C
+C Jump if in same box.
+C
                 ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICDP.EQ.0) GO TO 102  !  Same box.
+                IF (ICDP.EQ.0) GO TO 102
+C
+C Jump if in adjacent box.
+C
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
                 ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICDP.EQ.0) GO TO 102  !  Adjacent box.
+                IF (ICDP.EQ.0) GO TO 102
+C
+C Jump if in near-by box.
+C
                 IBEG=MAX(  1,IBEG-1)
                 IEND=MIN(101,IEND+1)
                 JBEG=MAX(  1,JBEG-1)
                 JEND=MIN(116,JEND+1)
                 ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICDP.EQ.0) GO TO 102  !  Near-by box.
+                IF (ICDP.EQ.0) GO TO 102
+C
               END IF
 C
 C If that didn't work, look for a "quarter" of the grid containing the
 C point we want.  (Starting with the entire grid is problematical
 C because of the way ICEGDP works.)
 C
+C Jump if in lower left quadrant.
+C
               IBEG=1
               IEND=51
               JBEG=1
               JEND=58
               ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102  !  Lower left quadrant.
+              IF (ICDP.EQ.0) GO TO 102
+C
+C Jump if in lower right quadrant.
 C
               IBEG=51
               IEND=101
               JBEG=1
               JEND=58
               ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102  !  Lower right quadrant.
+              IF (ICDP.EQ.0) GO TO 102
+C
+C Jump if in upper left quadrant.
 C
               IBEG=1
               IEND=51
               JBEG=58
               JEND=116
               ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102  !  Upper left quadrant.
+              IF (ICDP.EQ.0) GO TO 102
+C
+C Jump if in upper right quadrant.
 C
               IBEG=51
               IEND=101
               JBEG=58
               JEND=116
               ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102  !  Upper right quadrant.
+              IF (ICDP.EQ.0) GO TO 102
 C
 C Point was not in any "quarter" of the grid, so treat it as outside
 C the grid.

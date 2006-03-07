@@ -46,9 +46,9 @@ C values give smaller execution times and smaller metafiles.  It is up
 C to the user to determine whether the picture given by a particular
 C pair of values is acceptable or not.
 C
-C       PARAMETER (MCRA=800,NCRA=640)  !  Fine (maybe too fine).
-        PARAMETER (MCRA=400,NCRA=320)  !  Probably acceptable?
-C       PARAMETER (MCRA=200,NCRA=160)  !  Too coarse, I think.
+C       PARAMETER (MCRA=800,NCRA=640)
+        PARAMETER (MCRA=400,NCRA=320)
+C       PARAMETER (MCRA=200,NCRA=160)
 C
 C The parameters LRWK and LIWK define the lengths of the workspace
 C arrays to be passed to CONPACK.
@@ -98,11 +98,12 @@ C Turn clipping by GKS off.
 C
         CALL GSCLIP (0)
 C
-C Define some basic colors to use.
+C Define some basic colors to use (0 = black, for the background;
+C 1 = white, for the foreground; and 2 = light red).
 C
-        CALL GSCR (IWKID,0,0.,0.,0.)  !  black for the background
-        CALL GSCR (IWKID,1,1.,1.,1.)  !  white for the foreground
-        CALL GSCR (IWKID,2,1.,.4,.4)  !  light red.
+        CALL GSCR (IWKID,0,0.,0.,0.)
+        CALL GSCR (IWKID,1,1.,1.,1.)
+        CALL GSCR (IWKID,2,1.,.4,.4)
 C
 C Tell PLOTCHAR to use font number 25 (a filled font) and to outline
 C each character.

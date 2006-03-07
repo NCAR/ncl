@@ -62,15 +62,18 @@ C Turn off the clipping indicator.
 C
         CALL GSCLIP (0)
 C
-C Define colors to use for various purposes.
+C Define colors to use for various purposes (0 = black, for the
+C background; 1 = white, for the foreground; 2 = light blue, for
+C labels; 3 = light yellow, for labels; 4 = light red, for labels;
+C 5 = white, for land areas; and 6 = gray, for ocean areas).
 C
-        CALL GSCR   (IWKID,0,0.,0.,0.)  !  black for the background
-        CALL GSCR   (IWKID,1,1.,1.,1.)  !  white for the foreground
-        CALL GSCR   (IWKID,2,.5,.5,1.)  !  light blue (for labels)
-        CALL GSCR   (IWKID,3,1.,1.,.5)  !  light yellow (for labels)
-        CALL GSCR   (IWKID,4,1.,.5,.5)  !  light red (for labels)
-        CALL GSCR   (IWKID,5,1.,1.,1.)  !  white (for land areas)
-        CALL GSCR   (IWKID,6,.6,.6,.6)  !  gray (for ocean areas)
+        CALL GSCR   (IWKID,0,0.,0.,0.)
+        CALL GSCR   (IWKID,1,1.,1.,1.)
+        CALL GSCR   (IWKID,2,.5,.5,1.)
+        CALL GSCR   (IWKID,3,1.,1.,.5)
+        CALL GSCR   (IWKID,4,1.,.5,.5)
+        CALL GSCR   (IWKID,5,1.,1.,1.)
+        CALL GSCR   (IWKID,6,.6,.6,.6)
 C
 C Generate an array of test data.
 C
@@ -86,15 +89,22 @@ C
         CALL PLCHHQ (.5,.928,'They are also used to modify colors and li
      +ne widths used for the labels.',.012,0.,0.)
 C
+C Set EZMAP parameters.
+C
+C       labels (none):
+        CALL MAPSTI ('LA - LABELS',0)
+C       perimeter (none):
+        CALL MAPSTI ('PE - PERIMETER',0)
+C       map position:
+        CALL MAPPOS (.05,.95,.01,.91)
+C       projection:
+        CALL MAPROJ ('OR - ORTHOGRAPHIC',40.,-135.,0.)
+C       portion of the map to be used:
+        CALL MAPSET ('MA - MAXIMAL AREA',0.,0.,0.,0.)
+C
 C Initialize EZMAP.
 C
-        CALL MAPSTI ('LA - LABELS',0)  !  no labels
-        CALL MAPSTI ('PE - PERIMETER',0)  !  no perimeter
-        CALL MAPPOS (.05,.95,.01,.91)  !  positions the map
-        CALL MAPROJ ('OR - ORTHOGRAPHIC',40.,-135.,0.)  !  projection
-        CALL MAPSET ('MA - MAXIMAL AREA',0.,0.,0.,0.)  !  map portion
-C
-        CALL MAPINT  !  initialize
+        CALL MAPINT
 C
 C Tell CONPACK to do no SET call (EZMAP has done it).
 C
