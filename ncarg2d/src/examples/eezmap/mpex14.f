@@ -38,15 +38,19 @@ C
         CHARACTER*14 PLAB(6)
 C
 C Declare the routines that are used to color the continental map
-C backgrounds (one for each of the databases one can use).
+C backgrounds (one for each of the databases one can use).  COLRCO
+C is used with the old continental outlines and COLRE2 with outlines
+C from the database "Earth..2".
 C
-        EXTERNAL COLRCO  !  old continental outlines
-        EXTERNAL COLRE2  !  new outlines from the database "Earth..2"
+        EXTERNAL COLRCO
+        EXTERNAL COLRE2
 C
-C Choose which continental map background to use.
+C Choose which continental map background to use.  Set IBKG = 0 for
+C the old continental outlines or = 1 for the new outlines from the
+C database "Earth..2".
 C
-        DATA IBKG / 0 /  !  old continental outlines
-C       DATA IBKG / 1 /  !  new outlines from the database "Earth..2"
+        DATA IBKG / 0 /
+C       DATA IBKG / 1 /
 C
 C Define labels to be used on the plots.
 C
@@ -117,14 +121,16 @@ C Turn clipping off.
 C
         CALL GSCLIP (0)
 C
-C Define some colors to use.
+C Define some colors to use (0 = white, the background color; 1 =
+C black, the foreground color; 2 is used for oceans; 3 is used for
+C land; 4 is used for the grid; and 5 is used for land borders).
 C
-        CALL GSCR (IWKID,0,1.,1.,1.)  !  Background
-        CALL GSCR (IWKID,1,0.,0.,0.)  !  Foreground
-        CALL GSCR (IWKID,2,.5,.5,1.)  !  Ocean
-        CALL GSCR (IWKID,3,.5,1.,.5)  !  Land
-        CALL GSCR (IWKID,4,0.,.6,.6)  !  Grid
-        CALL GSCR (IWKID,5,1.,.5,.5)  !  Land borders.
+        CALL GSCR (IWKID,0,1.,1.,1.)
+        CALL GSCR (IWKID,1,0.,0.,0.)
+        CALL GSCR (IWKID,2,.5,.5,1.)
+        CALL GSCR (IWKID,3,.5,1.,.5)
+        CALL GSCR (IWKID,4,0.,.6,.6)
+        CALL GSCR (IWKID,5,1.,.5,.5)
 C
 C Tell EZMAP to use a little smaller portion of the plotter frame.
 C
@@ -777,9 +783,11 @@ C
   101   CONTINUE
         IF (IAI1.GT.0) THEN
           IF (MDPACI(IAI1).EQ.1) THEN
-            CALL GSFACI (2)  !  (OCEAN)
+C           LAND
+            CALL GSFACI (2)
           ELSE
-            CALL GSFACI (3)  !  (LAND)
+C           LAND
+            CALL GSFACI (3)
           END IF
           CALL GFA    (NCRA-1,XCRA,YCRA)
         END IF
@@ -795,9 +803,11 @@ C
   101   CONTINUE
         IF (IAI1.GT.0) THEN
           IF (MDIPAN(IAI1,'Water').NE.0) THEN
-            CALL GSFACI (2)  !  (OCEAN)
+C           OCEAN
+            CALL GSFACI (2)
           ELSE
-            CALL GSFACI (3)  !  (LAND)
+C           LAND
+            CALL GSFACI (3)
           END IF
           CALL GFA    (NCRA-1,XCRA,YCRA)
         END IF

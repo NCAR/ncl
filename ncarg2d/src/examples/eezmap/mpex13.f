@@ -150,18 +150,21 @@ C Turn off clipping by GKS (so labels don't get clipped).
 C
         CALL GSCLIP (0)
 C
-C Define some colors to use.
+C Define some colors to use.  0 and 1 are black and white, the default
+C background and foreground colors.  2 through 6 are used for coloring
+C RANGS/GSHHS areas "ocean", "land", "lake", "island in lake", and
+C "pond on island in lake", respectively.  7 is for debug use.
 C
-        CALL GSCR (1,0,0.,0.,0.)  !  Default background
-        CALL GSCR (1,1,1.,1.,1.)  !  Default foreground
+        CALL GSCR (1,0,0.,0.,0.)
+        CALL GSCR (1,1,1.,1.,1.)
 C
-        CALL GSCR (1,2,0.,0.,1.)  !  RANGS/GSHHS - Ocean
-        CALL GSCR (1,3,0.,1.,0.)  !  RANGS/GSHHS - Land
-        CALL GSCR (1,4,0.,1.,1.)  !  RANGS/GSHHS - Lake
-        CALL GSCR (1,5,0.,1.,0.)  !  RANGS/GSHHS - Island in lake
-        CALL GSCR (1,6,0.,1.,1.)  !  RANGS/GSHHS - Pond on island
+        CALL GSCR (1,2,0.,0.,1.)
+        CALL GSCR (1,3,0.,1.,0.)
+        CALL GSCR (1,4,0.,1.,1.)
+        CALL GSCR (1,5,0.,1.,0.)
+        CALL GSCR (1,6,0.,1.,1.)
 C
-        CALL GSCR (1,7,1.,0.,0.)  !  Debug
+        CALL GSCR (1,7,1.,0.,0.)
 C
 C Tell EZMAP to draw the map in a bit smaller square, leaving room for
 C lat/lon labels around the edge.
@@ -349,9 +352,11 @@ C
   101   CONTINUE
         IF (IAI1.GT.0) THEN
           IF (MDPACI(IAI1).EQ.1) THEN
-            CALL GSFACI (2)  !  (OCEAN)
+C           OCEAN
+            CALL GSFACI (2)
           ELSE
-            CALL GSFACI (3)  !  (LAND)
+C           LAND
+            CALL GSFACI (3)
           END IF
           CALL GFA    (NCRA-1,XCRA,YCRA)
         END IF
@@ -367,9 +372,11 @@ C
   101   CONTINUE
         IF (IAI1.GT.0) THEN
           IF (MDIPAN(IAI1,'Water').NE.0) THEN
-            CALL GSFACI (2)  !  (OCEAN)
+C           OCEAN
+            CALL GSFACI (2)
           ELSE
-            CALL GSFACI (3)  !  (LAND)
+C           LAND
+            CALL GSFACI (3)
           END IF
           CALL GFA    (NCRA-1,XCRA,YCRA)
         END IF

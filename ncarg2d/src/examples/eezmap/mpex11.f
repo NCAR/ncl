@@ -252,24 +252,29 @@ C
 
       SUBROUTINE DFCLRS (IWKS)
 C
-C Define some color indices for use in the example "mpex13".
+C Define some color indices for use in the example "mpex13" (0 = black,
+C the background color; 1 = white, the foreground color; 2 = yellow,
+C for some labels; 11 = white, for water/land edges; 12 = gray, for
+C edges of continents; 13 = gray, for edges of countries; 14 = gray,
+C for edges of states; 15 = gray, for edges of counties; 16 = pink,
+C for highlighted areas; 101-107 = area colors 1-7).
 C
-        CALL GSCR (IWKS,  0,0.,0.,0.)  !  black   - the background
-        CALL GSCR (IWKS,  1,1.,1.,1.)  !  white   - the foreground
-        CALL GSCR (IWKS,  2,1.,1.,0.)  !  yellow  - some labelling
-        CALL GSCR (IWKS, 11,1.,1.,1.)  !  white   - water/land edges
-        CALL GSCR (IWKS, 12,1.,1.,1.)  !  gray    - continent edges
-        CALL GSCR (IWKS, 13,1.,1.,1.)  !  gray    - country edges
-        CALL GSCR (IWKS, 14,1.,1.,1.)  !  gray    - state edges
-        CALL GSCR (IWKS, 15,.1,.1,.1)  !  gray    - county edges
-        CALL GSCR (IWKS, 16,1.,.6,.6)  !  pink    - highlighted area
-        CALL GSCR (IWKS,101,.2,.2,.8)  !  area color 1
-        CALL GSCR (IWKS,102,.2,.4,.6)  !  area color 2
-        CALL GSCR (IWKS,103,.2,.6,.4)  !  area color 3
-        CALL GSCR (IWKS,104,.2,.8,.2)  !  area color 4  !  area fills
-        CALL GSCR (IWKS,105,.4,.6,.2)  !  area color 5
-        CALL GSCR (IWKS,106,.6,.4,.2)  !  area color 6
-        CALL GSCR (IWKS,107,.6,.6,.6)  !  area color 7
+        CALL GSCR (IWKS,  0,0.,0.,0.)
+        CALL GSCR (IWKS,  1,1.,1.,1.)
+        CALL GSCR (IWKS,  2,1.,1.,0.)
+        CALL GSCR (IWKS, 11,1.,1.,1.)
+        CALL GSCR (IWKS, 12,1.,1.,1.)
+        CALL GSCR (IWKS, 13,1.,1.,1.)
+        CALL GSCR (IWKS, 14,1.,1.,1.)
+        CALL GSCR (IWKS, 15,.1,.1,.1)
+        CALL GSCR (IWKS, 16,1.,.6,.6)
+        CALL GSCR (IWKS,101,.2,.2,.8)
+        CALL GSCR (IWKS,102,.2,.4,.6)
+        CALL GSCR (IWKS,103,.2,.6,.4)
+        CALL GSCR (IWKS,104,.2,.8,.2)
+        CALL GSCR (IWKS,105,.4,.6,.2)
+        CALL GSCR (IWKS,106,.6,.4,.2)
+        CALL GSCR (IWKS,107,.6,.6,.6)
 C
         RETURN
 C
