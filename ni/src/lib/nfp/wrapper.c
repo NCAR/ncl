@@ -2659,7 +2659,7 @@ void NclAddUserFuncs(void)
 
         SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;

@@ -907,14 +907,14 @@ NhlErrorTypes tdstri_W( void )
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the second dimension of ntri must be 10");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the second dimension of rtri must be 10");
     return(NhlFATAL);
   }
 
   nu = dsizes_u[0];
   nv = dsizes_v[0];
-  if(dsizes_w[0] != nv || dsizes_w[1] != nu) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the dimensions of w must be nv x nu");
+  if(dsizes_w[0] < nv || dsizes_w[1] < nu) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the dimensions of w must greater than or equal to nv x nu");
     return(NhlFATAL);
   }
 
@@ -956,8 +956,8 @@ NhlErrorTypes tditri_W( void )
   nu = dsizes_u[0];
   nv = dsizes_v[0];
   nw = dsizes_w[0];
-  if(dsizes_f[0] != nw || dsizes_f[1] != nv || dsizes_f[2] != nu) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the dimensions of f must be nw x nv x nu");
+  if(dsizes_f[0] < nw || dsizes_f[1] < nv || dsizes_f[2] < nu) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the dimensions of f must be greater than or equal to nw x nv x nu");
     return(NhlFATAL);
   }
 
