@@ -173,21 +173,30 @@ C 1-7 can then be used as final arguments in calls to TDITRI, TDSTRI,
 C and TDMTRI.
 C
         IF (ICLR.EQ.0) THEN
-          CALL TDSTRS (1,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (2,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (3,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (4,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (5,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (6,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (7,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
+C
+C Rendering styles 1-7 are all gray on both sides:
+C
+          CALL TDSTRS (1,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (2,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (3,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (4,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (5,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (6,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (7,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+C
         ELSE
-          CALL TDSTRS (1,27,42, 27, 42,-1,-1,1,0.,0.,0.) ! gray/gray
-          CALL TDSTRS (2,27,42, 43, 58,-1,-1,1,0.,0.,0.) ! gray/red
-          CALL TDSTRS (3,27,42, 59, 74,-1,-1,1,0.,0.,0.) ! gray/green
-          CALL TDSTRS (4,27,42, 75, 90,-1,-1,1,0.,0.,0.) ! gray/blue
-          CALL TDSTRS (5,27,42, 91,106,-1,-1,1,0.,0.,0.) ! gray/cyan
-          CALL TDSTRS (6,27,42,107,122,-1,-1,1,0.,0.,0.) ! gray/magenta
-          CALL TDSTRS (7,27,42,123,138,-1,-1,1,0.,0.,0.) ! gray/yellow
+C
+C Rendering styles 1-7 are all gray on one side.  The other side is
+C 1) gray, 2) red, 3) green, 4) blue, 5) cyan, 6) magenta, 7) yellow.
+C
+          CALL TDSTRS (1,27,42, 27, 42,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (2,27,42, 43, 58,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (3,27,42, 59, 74,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (4,27,42, 75, 90,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (5,27,42, 91,106,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (6,27,42,107,122,-1,-1,1,0.,0.,0.)
+          CALL TDSTRS (7,27,42,123,138,-1,-1,1,0.,0.,0.)
+C
         END IF
 C
 C Initialize the count of triangles in the triangle list.
@@ -274,9 +283,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
         IF (ISTE.EQ.0) THEN
-          OTEP=0.                    !  (single view)
+          OTEP=0.
         ELSE
-          OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+          OTEP=-R*TAN(DTOR*ASTE/2.)
         END IF
 C
 C Initialize TDPACK.

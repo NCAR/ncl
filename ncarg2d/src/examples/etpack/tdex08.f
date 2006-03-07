@@ -123,9 +123,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
         IF (ISTE.EQ.0) THEN
-          OTEP=0.                    !  (single view)
+          OTEP=0.
         ELSE
-          OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+          OTEP=-R*TAN(DTOR*ASTE/2.)
         END IF
 C
 C Initialize TDPACK.

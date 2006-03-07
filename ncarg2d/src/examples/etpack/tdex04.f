@@ -126,24 +126,26 @@ C Double the line width.
 C
         CALL GSLWSC (2.)
 C
-C Define the background color and the basic foreground color.
+C Define the background color and the basic foreground color (either
+C black and white or white and black).
 C
         IF (IBOW.EQ.0) THEN
-          CALL GSCR (1,0,0.,0.,0.)  !  black
-          CALL GSCR (1,1,1.,1.,1.)  !  white
+          CALL GSCR (1,0,0.,0.,0.)
+          CALL GSCR (1,1,1.,1.,1.)
         ELSE
-          CALL GSCR (1,0,1.,1.,1.)  !  white
-          CALL GSCR (1,1,0.,0.,0.)  !  black
+          CALL GSCR (1,0,1.,1.,1.)
+          CALL GSCR (1,1,0.,0.,0.)
         END IF
 C
-C Define the primary colors.
+C Define the primary colors (2 = red; 3 = green; 4 = blue; 5 = cyan;
+C 6 = magenta; and 7 = yellow).
 C
-        CALL GSCR   (1,2,1.,0.,0.)  !  red
-        CALL GSCR   (1,3,0.,1.,0.)  !  green
-        CALL GSCR   (1,4,0.,0.,1.)  !  blue
-        CALL GSCR   (1,5,0.,1.,1.)  !  cyan
-        CALL GSCR   (1,6,1.,0.,1.)  !  magenta
-        CALL GSCR   (1,7,1.,1.,0.)  !  yellow
+        CALL GSCR   (1,2,1.,0.,0.)
+        CALL GSCR   (1,3,0.,1.,0.)
+        CALL GSCR   (1,4,0.,0.,1.)
+        CALL GSCR   (1,5,0.,1.,1.)
+        CALL GSCR   (1,6,1.,0.,1.)
+        CALL GSCR   (1,7,1.,1.,0.)
 C
 C Now we need a bunch more colors.  Each of the NLYR layers of the
 C simple surface is to be a different color and the isosurface is
@@ -170,18 +172,20 @@ C others may prefer something different.
 C
         DO 101 I=1,NLYR+1
           IF (I.LE.NLYR) THEN
-            R=REAL(I-1)/REAL(NLYR-1)  !  From blue to red.
+C           Colors run from blue to red.
+            R=REAL(I-1)/REAL(NLYR-1)
             G=0.
             B=1.-R
           ELSE IF (I.EQ.NLYR+1) THEN
-            R=1.                      !  Yellow.
+C           Colors are all yellow.
+            R=1.
             G=1.
             B=0.
           END IF
           CALL TDSTRS (I,1,1,ILCU+1,ILCU+NSHD,-1,-1,0,0.,0.,0.)
           DO 100 J=1,NSHD
             ILCU=ILCU+1
-            P=REAL(NSHD-J+1)/REAL(NSHD)  !  P in range (0,1].
+            P=REAL(NSHD-J+1)/REAL(NSHD)
             CALL GSCR (1,ILCU,.2+.8*P*R,.2+.8*P*G,.2+.8*P*B)
   100     CONTINUE
   101   CONTINUE
@@ -329,9 +333,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
         IF (ISTE.EQ.0) THEN
-          OTEP=0.                    !  (single view)
+          OTEP=0.
         ELSE
-          OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+          OTEP=-R*TAN(DTOR*ASTE/2.)
         END IF
 C
 C Initialize TDPACK.
