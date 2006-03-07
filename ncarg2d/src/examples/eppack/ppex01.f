@@ -21,7 +21,12 @@ C
         PARAMETER (NWRK=999)
 C
         DIMENSION RWRK(NWRK),IWRK(NWRK)
-        EQUIVALENCE (RWRK(1),IWRK(1))
+C 
+C The EQUIVALENCE line is commented out below. If memory storage is an
+C issue for you, *and* RWRK is not a DOUBLE PRECISION variable, then you
+C can uncomment this line.
+C
+C        EQUIVALENCE (RWRK(1),IWRK(1))
 C
 C Tell the compiler that the fill and merge routines for polygons and
 C the fill routine for trapezoids are EXTERNALs, not REALs.
