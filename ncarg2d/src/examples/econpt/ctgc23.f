@@ -543,16 +543,17 @@ C Turn off clipping by GKS.
 C
         CALL GSCLIP (0)
 C
-C Define colors.
+C Define colors (0 = white, background; 1 = black, foreground; 2 =
+C yellow; 3 = magenta; 4 = red; 5 = cyan; 6 = green; and 7 = blue).
 C
-        CALL GSCR   (IWID,0,1.,1.,1.)  !  white (background)
-        CALL GSCR   (IWID,1,0.,0.,0.)  !  black (foreground)
-        CALL GSCR   (IWID,2,1.,1.,0.)  !  yellow
-        CALL GSCR   (IWID,3,1.,0.,1.)  !  magenta
-        CALL GSCR   (IWID,4,1.,0.,0.)  !  red
-        CALL GSCR   (IWID,5,0.,1.,1.)  !  cyan
-        CALL GSCR   (IWID,6,0.,1.,0.)  !  green
-        CALL GSCR   (IWID,7,0.,0.,1.)  !  blue
+        CALL GSCR   (IWID,0,1.,1.,1.)
+        CALL GSCR   (IWID,1,0.,0.,0.)
+        CALL GSCR   (IWID,2,1.,1.,0.)
+        CALL GSCR   (IWID,3,1.,0.,1.)
+        CALL GSCR   (IWID,4,1.,0.,0.)
+        CALL GSCR   (IWID,5,0.,1.,1.)
+        CALL GSCR   (IWID,6,0.,1.,0.)
+        CALL GSCR   (IWID,7,0.,0.,1.)
 C
 C Tell PLOTCHAR to use one of the filled fonts and to outline each
 C character.
@@ -595,12 +596,13 @@ C Tell EZMAP what projection to use.
 C
           CALL MAPROJ ('OR', 45.,-45.,0.)
 C
-C Tell EZMAP how much of the map to show.
+C Tell EZMAP how much of the map to show (either an entire hemisphere
+C or a 40-degree field of view).
 C
           IF (IFRA.EQ.1) THEN
-            CALL MAPSET ('MA', 0., 0., 0., 0.)  !  entire hemisphere
+            CALL MAPSET ('MA', 0., 0., 0., 0.)
           ELSE
-            CALL MAPSET ('AN',20.,20.,20.,20.)  !  40-degree field of view
+            CALL MAPSET ('AN',20.,20.,20.,20.)
           END IF
 C
 C Draw the map.

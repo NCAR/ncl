@@ -65,31 +65,39 @@ C       PARAMETER (IMSH=3)  !  colored and simple rectangular grids
 C       PARAMETER (IMSH=4)  !  triangular only
 C       PARAMETER (IMSH=5)  !  colored rectangular and triangular
 C       PARAMETER (IMSH=6)  !  simple rectangular and triangular
-        PARAMETER (IMSH=7)  !  all three
+C       PARAMETER (IMSH=7)  !  all three
+C
+        PARAMETER (IMSH=7)
 C
 C Define the parameter that says whether or not to draw simple contours
 C (frame 4):
 C
 C       PARAMETER (ICON=0)  !  contours not drawn
-        PARAMETER (ICON=1)  !  contours drawn
+C       PARAMETER (ICON=1)  !  contours drawn
+C
+        PARAMETER (ICON=1)
 C
 C Define the parameter that says whether or not to draw color-filled
 C contours (frame 5):
 C
 C       PARAMETER (ICOL=0)  ! no color fill done
-        PARAMETER (ICOL=1)  ! color fill done
+C       PARAMETER (ICOL=1)  ! color fill done
+C
+        PARAMETER (ICOL=1)
 C
 C Define the parameter that says whether or not to draw a cell array
 C plot (frame 6):
 C
 C       PARAMETER (ICAP=0)  !  cell array plot not drawn
-        PARAMETER (ICAP=1)  !  cell array plot drawn
+C       PARAMETER (ICAP=1)  !  cell array plot drawn
+C
+        PARAMETER (ICAP=1)
 C
 C To represent the triangular mesh, we use three singly-dimensioned
 C arrays: RPNT holds points, IEDG holds edges, and ITRI holds triangles.
 C The elements of each array form "nodes" having lengths as follows:
 C
-        PARAMETER (LOPN=5)  !  length of a point node
+        PARAMETER (LOPN=5)
 C
 C The five elements of a point node are
 C
@@ -99,7 +107,7 @@ C   3. the Z coordinate of the point;
 C   4. the field value at the point;
 C   5. any additional value desired by the user.
 C
-        PARAMETER (LOEN=5)  !  length of an edge node
+        PARAMETER (LOEN=5)
 C
 C The five elements of an edge node are
 C
@@ -117,7 +125,7 @@ C toward point 2 of the edge.  It is possible, if there are "holes" in
 C the mesh, that there will be no triangle to the left or to the right
 C of an edge, but there must be a triangle on one side or the other.
 C
-        PARAMETER (LOTN=4)  !  length of a triangle node
+        PARAMETER (LOTN=4)
 C
 C The four elements of a triangle node are
 C
@@ -174,9 +182,9 @@ C Once we know how many points, edges, and triangles we're going to use
 C (at most), we can set parameters defining the space reserved for the
 C triangular mesh:
 C
-        PARAMETER (MPNT=MNOP*LOPN)  !  space for points
-        PARAMETER (MEDG=MNOE*LOEN)  !  space for edges
-        PARAMETER (MTRI=MNOT*LOTN)  !  space for triangles
+        PARAMETER (MPNT=MNOP*LOPN)
+        PARAMETER (MEDG=MNOE*LOEN)
+        PARAMETER (MTRI=MNOT*LOTN)
 C
 C Declare the arrays to hold the point nodes, edge nodes, and triangle
 C nodes defining the triangular mesh.
@@ -233,8 +241,10 @@ C
 C
 C Define the tension on the splines to be used in smoothing contours.
 C
-        DATA T2DS / 0.0 /  !  smoothing off
+C       DATA T2DS / 0.0 /  !  smoothing off
 C       DATA T2DS / 2.5 /  !  smoothing on
+C
+        DATA T2DS / 0.0 /
 C
 C Define the distance between points on smoothed contour lines.
 C
@@ -248,8 +258,10 @@ C Define the label-positioning flag.
 C
 C       DATA ILLP / 0 /  !  no labels
 C       DATA ILLP / 1 /  !  dash-package writes labels
-        DATA ILLP / 2 /  !  regular scheme
+C       DATA ILLP / 2 /  !  regular scheme
 C       DATA ILLP / 3 /  !  penalty scheme
+C
+        DATA ILLP / 2 /
 C
 C Define the high/low search radius.
 C
@@ -261,8 +273,10 @@ C
 C
 C Define the hachuring flag, hachure length, and hachure spacing.
 C
-        DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /  !  off
+C       DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /  !  off
 C       DATA IHCF,HCHL,HCHS / +1 , -.004 , .020 /  !  on, all, uphill
+C
+        DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /
 C
 C Define the colors to be used in the lower left, lower right, upper
 C left, and upper right corners of the rectangular grid when a drawing
@@ -283,9 +297,9 @@ C
         PRINT * , ' '
         PRINT * , 'CREATING TRIANGULAR MESH:'
 C
-        CALL GTGAUS (RPNT,MPNT,NPNT,LOPN,  !  point list
-     +               IEDG,MEDG,NEDG,LOEN,  !  edge list
-     +               ITRI,MTRI,NTRI,LOTN,  !  triangle list
+        CALL GTGAUS (RPNT,MPNT,NPNT,LOPN,
+     +               IEDG,MEDG,NEDG,LOEN,
+     +               ITRI,MTRI,NTRI,LOTN,
      +               CLAT,CLON)
 C
 C Print the number of points, edges, and triangles.
@@ -318,24 +332,28 @@ C
 C Turn off the clipping indicator.
 C
         CALL GSCLIP (0)
-C
-C Define a basic set of colors.
-C
-        CALL GSCR   (IWID, 0,1.,1.,1.)  !  white (background)
-        CALL GSCR   (IWID, 1,0.,0.,0.)  !  black (foreground)
-        CALL GSCR   (IWID, 2,1.,1.,0.)  !  yellow
-        CALL GSCR   (IWID, 3,1.,0.,1.)  !  magenta
-        CALL GSCR   (IWID, 4,1.,0.,0.)  !  red
-        CALL GSCR   (IWID, 5,0.,1.,1.)  !  cyan
-        CALL GSCR   (IWID, 6,0.,1.,0.)  !  green
-        CALL GSCR   (IWID, 7,0.,0.,1.)  !  blue
-        CALL GSCR   (IWID, 8,.5,.5,.5)  !  darker light gray
-        CALL GSCR   (IWID, 9,.8,.8,.8)  !  lighter light gray
-        CALL GSCR   (IWID,10,.3,.3,0.)  !  dark yellow
-        CALL GSCR   (IWID,11,.3,.3,.3)  !  dark gray
-        CALL GSCR   (IWID,12,.5,.5,.5)  !  medium gray
-        CALL GSCR   (IWID,13,.8,.5,.5)  !  light red - geographic lines
-        CALL GSCR   (IWID,14,.5,.5,.8)  !  light blue - lat/lon lines
+C      
+C Define a basic set of colors (0 = white, background; 1 = black,
+C foreground; 2 = yellow; 3 = magenta; 4 = red; 5 = cyan; 6 = green;
+C 7 = blue; 8 = darker light gray; 9 = lighter light gray; 10 = dark
+C yellow; 11 = dark gray; 12 = medium gray; 13 = light red, for
+C geographic lines; 14 = light blue, for lat/lon lines).
+C      
+        CALL GSCR   (IWID, 0,1.,1.,1.)
+        CALL GSCR   (IWID, 1,0.,0.,0.)
+        CALL GSCR   (IWID, 2,1.,1.,0.) 
+        CALL GSCR   (IWID, 3,1.,0.,1.)
+        CALL GSCR   (IWID, 4,1.,0.,0.)
+        CALL GSCR   (IWID, 5,0.,1.,1.)
+        CALL GSCR   (IWID, 6,0.,1.,0.)
+        CALL GSCR   (IWID, 7,0.,0.,1.) 
+        CALL GSCR   (IWID, 8,.5,.5,.5)
+        CALL GSCR   (IWID, 9,.8,.8,.8)
+        CALL GSCR   (IWID,10,.3,.3,0.)
+        CALL GSCR   (IWID,11,.3,.3,.3) 
+        CALL GSCR   (IWID,12,.5,.5,.5)
+        CALL GSCR   (IWID,13,.8,.5,.5)
+        CALL GSCR   (IWID,14,.5,.5,.8)
 C
 C Define 100 colors, associated with color indices 51 through 150, to
 C be used in making an illustrative drawing of the rectangular grid.
@@ -436,7 +454,7 @@ C
 C
 C Loop through four different viewing angles.
 C
-        DO 104 IDIR=1,4  !  four different (OR) views of the globe
+        DO 104 IDIR=1,4
 C
           PRINT * , ' '
           PRINT * , 'VIEW FROM DIRECTION NUMBER: ',IDIR
@@ -718,11 +736,11 @@ C Initialize CONPACKT.
 C
             PRINT * , 'CALLING CTMESH'
 C
-            CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                   IEDG,NEDG,LOEN,  !  edge list
-     +                   ITRI,NTRI,LOTN,  !  triangle list
-     +                   RWRK,LRWK,       !  real workspace
-     +                   IWRK,LIWK)       !  integer workspace
+            CALL CTMESH (RPNT,NPNT,LOPN,
+     +                   IEDG,NEDG,LOEN,
+     +                   ITRI,NTRI,LOTN,
+     +                   RWRK,LRWK,
+     +                   IWRK,LIWK)
 C
             CALL PLOTIT (0,0,2)
             CALL GSPLCI (1)
@@ -828,11 +846,11 @@ C
 C
             PRINT * , 'CALLING CTMESH'
 C
-            CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                   IEDG,NEDG,LOEN,  !  edge list
-     +                   ITRI,NTRI,LOTN,  !  triangle list
-     +                   RWRK,LRWK,       !  real workspace
-     +                   IWRK,LIWK)       !  integer workspace
+            CALL CTMESH (RPNT,NPNT,LOPN,
+     +                   IEDG,NEDG,LOEN,
+     +                   ITRI,NTRI,LOTN,
+     +                   RWRK,LRWK,
+     +                   IWRK,LIWK)
 C
             MAXN=0
 C
@@ -919,11 +937,11 @@ C
 C
             PRINT * , 'CALLING CTMESH'
 C
-            CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                   IEDG,NEDG,LOEN,  !  edge list
-     +                   ITRI,NTRI,LOTN,  !  triangle list
-     +                   RWRK,LRWK,       !  real workspace
-     +                   IWRK,LIWK)       !  integer workspace
+            CALL CTMESH (RPNT,NPNT,LOPN,
+     +                   IEDG,NEDG,LOEN,
+     +                   ITRI,NTRI,LOTN,
+     +                   RWRK,LRWK,
+     +                   IWRK,LIWK)
 C
             CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
 C
@@ -1523,9 +1541,9 @@ C
 C (DRSGCR = DRaw Shortest Great Circle Route)
 C
 C This routine draws the shortest great circle route joining two points
-C on the globe.
+C on the globe.  Note that MPTS = INT(180./SIZE) + 1.
 C
-        PARAMETER (MPTS=181,SIZE=1.)  !  MPTS = INT(180./SIZE) + 1
+        PARAMETER (MPTS=181,SIZE=1.)
 C
         DIMENSION QLAT(MPTS),QLON(MPTS)
 C
