@@ -58,9 +58,9 @@ C arrays: RPNT holds information about points; IEDG, information about
 C edges; and ITRI, information about triangles.  The elements of each
 C array form "nodes" having lengths as follows:
 C
-        PARAMETER (LOPN=4)  !  length of a point node
-        PARAMETER (LOEN=5)  !  length of an edge node
-        PARAMETER (LOTN=4)  !  length of a triangle node
+        PARAMETER (LOPN=4)
+        PARAMETER (LOEN=5)
+        PARAMETER (LOTN=4)
 C
 C The four elements of a point node, in RPNT, are
 C
@@ -133,18 +133,18 @@ C fact that, in a tiling of the plane with equilateral triangles, there
 C are three times as many edges and two times as many triangles as
 C there are vertices.
 C
-        PARAMETER (NOPN=100000)          ! number of point nodes
-        PARAMETER (NOEN=3*NOPN)          ! number of edge nodes
-        PARAMETER (NOTN=2*NOPN)          ! number of triangle nodes
+        PARAMETER (NOPN=100000)
+        PARAMETER (NOEN=3*NOPN)
+        PARAMETER (NOTN=2*NOPN)
 C
-        PARAMETER (MPPP=NOPN,MPPE=NOEN)  ! alternate names used below
+        PARAMETER (MPPP=NOPN,MPPE=NOEN)
 C
 C Compute the space required in the arrays (in each case, the number of
 C nodes times the length of a node).
 C
-        PARAMETER (MPNT=NOPN*LOPN)       ! maximal space for points
-        PARAMETER (MEDG=NOEN*LOEN)       ! maximal space for edges
-        PARAMETER (MTRI=NOTN*LOTN)       ! maximal space for triangles
+        PARAMETER (MPNT=NOPN*LOPN)
+        PARAMETER (MEDG=NOEN*LOEN)
+        PARAMETER (MTRI=NOTN*LOTN)
 C
 C Declare the arrays to hold the point nodes, edge nodes, and triangle
 C nodes defining the triangular mesh.
@@ -264,19 +264,22 @@ C Turn off the clipping indicator.
 C
         CALL GSCLIP (0)
 C
-C Define a basic set of colors.
+C Define a basic set of colors (0 = white, background; 1 = black,
+C foreground; 2 = yellow; 3 = magenta; 4 = red; 5 = cyan; 6 = green;
+C 7 = blue; 8 = a yellow for unblocked portions of the mesh; 9 = 
+C a yellow for blocked portions of the mesh; and 10 = light magenta).
 C
-        CALL GSCR   (IWID, 0,1.,1.,1.)  !  white (background)
-        CALL GSCR   (IWID, 1,0.,0.,0.)  !  black (foreground)
-        CALL GSCR   (IWID, 2,1.,1.,0.)  !  yellow
-        CALL GSCR   (IWID, 3,1.,0.,1.)  !  magenta
-        CALL GSCR   (IWID, 4,1.,0.,0.)  !  red
-        CALL GSCR   (IWID, 5,0.,1.,1.)  !  cyan
-        CALL GSCR   (IWID, 6,0.,1.,0.)  !  green
-        CALL GSCR   (IWID, 7,0.,0.,1.)  !  blue
-        CALL GSCR   (IWID, 8,.8,.8,0.)  !  yellow for mesh (unblocked)
-        CALL GSCR   (IWID, 9,1.,1.,0.)  !  yellow for mesh (blocked)
-        CALL GSCR   (IWID,10,1.,.8,1.)  !  light magenta
+        CALL GSCR   (IWID, 0,1.,1.,1.)
+        CALL GSCR   (IWID, 1,0.,0.,0.)
+        CALL GSCR   (IWID, 2,1.,1.,0.)
+        CALL GSCR   (IWID, 3,1.,0.,1.)
+        CALL GSCR   (IWID, 4,1.,0.,0.)
+        CALL GSCR   (IWID, 5,0.,1.,1.)
+        CALL GSCR   (IWID, 6,0.,1.,0.)
+        CALL GSCR   (IWID, 7,0.,0.,1.)
+        CALL GSCR   (IWID, 8,.8,.8,0.)
+        CALL GSCR   (IWID, 9,1.,1.,0.)
+        CALL GSCR   (IWID,10,1.,.8,1.)
 C
 C Define 100 colors, associated with color indices 151 through 250, to
 C be used for color-filled contour bands and in cell arrays, ranging
@@ -392,12 +395,15 @@ C
         ELEN=SLEN/10.
         ESQR=ELEN*ELEN
 C
-C Initialize various counters.
+C Initialize various counters.  NPPP is the number of points in the
+C point sorter, NPPE is the number of edges in the edge sorter, NBUF
+C is the number of triangles in the triangle randomizing buffer, and
+C NTRI is the number of triangles in the final triangle list.
 C
-        NPPP=0  !  number of points in point sorter
-        NPPE=0  !  number of edges in edge sorter
-        NBUF=0  !  number of triangles in triangle randomizing buffer
-        NTRI=0  !  number of triangles in final triangle list
+        NPPP=0
+        NPPE=0
+        NBUF=0
+        NTRI=0
 C
 C Loop to generate the triangles of the mesh.  The variables J and I
 C specify the vertical and horizontal positions, respectively, of a
@@ -418,14 +424,14 @@ C triangles, process KBUF randomly-chosen triangles from it, leaving the
 C remainder at the beginning of the buffer.
 C
             IF (NBUF+4.GT.MBUF) THEN
-              CALL CTTMTX (KBUF,                 !  number to process
-     +                     TBUF,MBUF,NBUF,       !  triangle buffer
-     +                     ELEN/10.,             !  tolerance value
-     +                     IPPP,MPPP,NPPP,       !  point sorting array
-     +                     IPPE,MPPE,NPPE,       !  edge sorting array
-     +                     RPNT,MPNT,NPNT,LOPN,  !  point node array
-     +                     IEDG,MEDG,NEDG,LOEN,  !  edge node array
-     +                     ITRI,MTRI,NTRI,LOTN)  !  triangle node array
+              CALL CTTMTX (KBUF,
+     +                     TBUF,MBUF,NBUF,
+     +                     ELEN/10.,
+     +                     IPPP,MPPP,NPPP,
+     +                     IPPE,MPPE,NPPE,
+     +                     RPNT,MPNT,NPNT,LOPN,
+     +                     IEDG,MEDG,NEDG,LOEN,
+     +                     ITRI,MTRI,NTRI,LOTN)
             END IF
 C
 C At each step, we generate two equilateral triangles, making sure to
@@ -498,14 +504,14 @@ C
 C Process any triangles that remain in the triangle buffer.
 C
         IF (NBUF.NE.0) THEN
-          CALL CTTMTX (NBUF,                 !  number to process
-     +                 TBUF,MBUF,NBUF,       !  triangle buffer
-     +                 ELEN/10.,             !  tolerance value
-     +                 IPPP,MPPP,NPPP,       !  point sorting array
-     +                 IPPE,MPPE,NPPE,       !  edge sorting array
-     +                 RPNT,MPNT,NPNT,LOPN,  !  point node array
-     +                 IEDG,MEDG,NEDG,LOEN,  !  edge node array
-     +                 ITRI,MTRI,NTRI,LOTN)  !  triangle node array
+          CALL CTTMTX (NBUF,
+     +                 TBUF,MBUF,NBUF,
+     +                 ELEN/10.,
+     +                 IPPP,MPPP,NPPP,
+     +                 IPPE,MPPE,NPPE,
+     +                 RPNT,MPNT,NPNT,LOPN,
+     +                 IEDG,MEDG,NEDG,LOEN,
+     +                 ITRI,MTRI,NTRI,LOTN)
         END IF
 C
 C Print the number of points, edges, and triangles.
@@ -567,10 +573,10 @@ C Draw the mesh, using two shades of yellow to distinguish blocked
 C portions of it from unblocked portions.  (Actually, in this program,
 C there will be no blocked portions.)
 C
-          CALL DRWMSH (RPNT,NPNT,LOPN,  !  point list
-     +                 IEDG,NEDG,LOEN,  !  edge list
-     +                 ITRI,NTRI,LOTN,  !  triangle list
-     +                 8,9)             !  color indices
+          CALL DRWMSH (RPNT,NPNT,LOPN,
+     +                 IEDG,NEDG,LOEN,
+     +                 ITRI,NTRI,LOTN,
+     +                 8,9)
 C
 C Connect the centers of adjacent triangles, in light magenta.
 C
@@ -732,20 +738,20 @@ C
 C
 C Initialize CONPACKT.
 C
-          CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                 IEDG,NEDG,LOEN,  !  edge list
-     +                 ITRI,NTRI,LOTN,  !  triangle list
-     +                 RWRK,LRWK,       !  real workspace
-     +                 IWRK,LIWK)       !  integer workspace
+          CALL CTMESH (RPNT,NPNT,LOPN,
+     +                 IEDG,NEDG,LOEN,
+     +                 ITRI,NTRI,LOTN,
+     +                 RWRK,LRWK,
+     +                 IWRK,LIWK)
 C
 C Draw the mesh in two shades of yellow, to distinguish blocked portions
 C of it from unblocked portions.
 C
           IF (ICON.GE.2) THEN
-            CALL DRWMSH (RPNT,NPNT,LOPN,  !  point list
-     +                   IEDG,NEDG,LOEN,  !  edge list
-     +                   ITRI,NTRI,LOTN,  !  triangle list
-     +                   8,9)             !  color indices
+            CALL DRWMSH (RPNT,NPNT,LOPN,
+     +                   IEDG,NEDG,LOEN,
+     +                   ITRI,NTRI,LOTN,
+     +                   8,9)
           END IF
 C
 C Draw contour lines with labels written by the dash package.
@@ -851,10 +857,10 @@ C
       END
 
 
-      SUBROUTINE DRWMSH (RPNT,NPNT,LOPN,  !  point list
-     +                   IEDG,NEDG,LOEN,  !  edge list
-     +                   ITRI,NTRI,LOTN,  !  triangle list
-     +                   ICI1,ICI2)       !  color indices
+      SUBROUTINE DRWMSH (RPNT,NPNT,LOPN,
+     +                   IEDG,NEDG,LOEN,
+     +                   ITRI,NTRI,LOTN,
+     +                   ICI1,ICI2)
 C
         DIMENSION RPNT(NPNT),IEDG(NEDG),ITRI(NTRI)
 C
@@ -1345,7 +1351,9 @@ C are inside, find points A (between 3 and 1) and B (between 3 and 2)
 C that are almost inside and replace the triangle 123 with triangles
 C 12A and A2B or 12B and A1B (whichever is better).
 C
-        ELSE  !  INF1.NE.0.AND.INF2.NE.0.AND.INF3.EQ.0) THEN
+        ELSE
+C
+C that is, if (INF1.NE.0.AND.INF2.NE.0.AND.INF3.EQ.0) ...
 C
           XINT=TBUF( 1,NBUF)
           YINT=TBUF( 2,NBUF)

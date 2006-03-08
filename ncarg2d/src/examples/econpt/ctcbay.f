@@ -37,20 +37,32 @@ C
 C Define the parameter that says whether or not the triangular mesh is
 C to be drawn (frame 1):
 C
+C       PARAMETER (IMSH=0)  !  mesh not drawn
+C       PARAMETER (IMSH=1)  !  mesh drawn
+C
         PARAMETER (IMSH=1)
 C
 C Define the parameter that says whether or not to draw simple contours
 C (frame 2):
+C
+C       PARAMETER (ICON=0)  !  contours not drawn
+C       PARAMETER (ICON=1)  !  contours drawn
 C
         PARAMETER (ICON=1)
 C
 C Define the parameter that says whether or not to draw color-filled
 C contours (frame 3):
 C
+C       PARAMETER (ICOL=0)  !  no color fill done
+C       PARAMETER (ICOL=1)  !  color fill done
+C
         PARAMETER (ICOL=1)
 C
 C Define the parameter that says whether or not to draw a cell array
 C plot (frame 4):
+C
+C       PARAMETER (ICAP=0)  !  cell array plot not drawn
+C       PARAMETER (ICAP=1)  !  cell array plot drawn
 C
         PARAMETER (ICAP=1)
 C
@@ -191,6 +203,9 @@ C
 C
 C Define the tension on the splines to be used in smoothing contours.
 C
+C       DATA T2DS / 0.0 /  !  smoothing off
+C       DATA T2DS / 2.5 /  !  smoothing on
+C
         DATA T2DS / 0.0 /
 C
 C Define the distance between points on smoothed contour lines.
@@ -201,8 +216,12 @@ C Define the amount of real workspace to be used in drawing contours.
 C
         DATA IRWC / 500 /
 C
-C Define the label-positioning flag (0 = no labels; 1 = dash package
-C writes labels; 2 = regular scheme; 3 = penalty scheme).
+C Define the label-positioning flag.
+C
+C       DATA ILLP / 0 /  !  no labels
+C       DATA ILLP / 1 /  !  dash-package writes labels
+C       DATA ILLP / 2 /  !  regular scheme
+C       DATA ILLP / 3 /  !  penalty scheme
 C
         DATA ILLP / 2 /
 C
@@ -215,6 +234,9 @@ C
         DATA IHLO / 11 /
 C
 C Define the hachuring flag, hachure length, and hachure spacing.
+C
+C       DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /  !  off
+C       DATA IHCF,HCHL,HCHS / +1 , -.004 , .020 /  !  on, all, uphill
 C
         DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /
 C
