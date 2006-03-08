@@ -53,9 +53,9 @@ C singly-dimensioned arrays: RPNT holds information about points; IEDG,
 C information about edges; and ITRI, information about triangles.  The
 C elements of each array form "nodes" having lengths as follows:
 C
-        PARAMETER (LOPN=4)  !  length of a point node
-        PARAMETER (LOEN=5)  !  length of an edge node
-        PARAMETER (LOTN=4)  !  length of a triangle node
+        PARAMETER (LOPN=4)
+        PARAMETER (LOEN=5)
+        PARAMETER (LOTN=4)
 C
 C The four elements of a point node, in RPNT, are
 C
@@ -132,15 +132,15 @@ C there are IDM1 more horizontal edges along the top of the grid; and
 C that there are JDM1 more vertical edges along the right edge of the
 C grid.
 C
-        PARAMETER (NOPN=IDIM*JDIM)             ! point nodes
-        PARAMETER (NOEN=3*IDM1*JDM1+IDM1+JDM1) ! edge nodes
-        PARAMETER (NOTN=2*IDM1*JDM1)           ! triangle nodes
+        PARAMETER (NOPN=IDIM*JDIM)
+        PARAMETER (NOEN=3*IDM1*JDM1+IDM1+JDM1)
+        PARAMETER (NOTN=2*IDM1*JDM1)
 C
 C Now, compute the amount of space we will need in the arrays.
 C
-        PARAMETER (NPNT=NOPN*LOPN)             ! space for points
-        PARAMETER (NEDG=NOEN*LOEN)             ! space for edges
-        PARAMETER (NTRI=NOTN*LOTN)             ! space for triangles
+        PARAMETER (NPNT=NOPN*LOPN)
+        PARAMETER (NEDG=NOEN*LOEN)
+        PARAMETER (NTRI=NOTN*LOTN)
 C
 C Declare the arrays to hold the point nodes, edge nodes, and triangle
 C nodes defining the triangular mesh.
@@ -284,11 +284,11 @@ C
         DO 104 I=1,IDM1
           DO 103 J=1,JDIM
             IBIE=IBE1(I,J)
-            IEDG(IBIE+1)=IBPT(I  ,J  )   ! 1st end point
-            IEDG(IBIE+2)=IBPT(I+1,J  )   ! 2nd end point (right of 1st)
-            IEDG(IBIE+3)=-1              ! no triangle on left
-            IEDG(IBIE+4)=-1              ! no triangle on right
-            IEDG(IBIE+5)=0               ! utility flag unset
+            IEDG(IBIE+1)=IBPT(I  ,J  )
+            IEDG(IBIE+2)=IBPT(I+1,J  )
+            IEDG(IBIE+3)=-1
+            IEDG(IBIE+4)=-1
+            IEDG(IBIE+5)=0
   103     CONTINUE
   104   CONTINUE
 C
@@ -304,11 +304,11 @@ C
         DO 106 I=1,IDIM
           DO 105 J=1,JDM1
             IBIE=IBE2(I,J)
-            IEDG(IBIE+1)=IBPT(I  ,J  )   ! 1st end point
-            IEDG(IBIE+2)=IBPT(I  ,J+1)   ! 2nd end point (above 1st)
-            IEDG(IBIE+3)=-1              ! no triangle on left
-            IEDG(IBIE+4)=-1              ! no triangle on right
-            IEDG(IBIE+5)=0               ! utility flag unset
+            IEDG(IBIE+1)=IBPT(I  ,J  )
+            IEDG(IBIE+2)=IBPT(I  ,J+1)
+            IEDG(IBIE+3)=-1
+            IEDG(IBIE+4)=-1
+            IEDG(IBIE+5)=0
   105     CONTINUE
   106   CONTINUE
 C
@@ -329,18 +329,20 @@ C
           DO 107 J=1,JDM1
             IBIE=IBE3(I,J)
             IF (MOD(I+J,2).EQ.0)
-     +      THEN  !  diagonal is from lower left to upper right
-              IEDG(IBIE+1)=IBPT(I  ,J  ) ! 1st end point lower left
-              IEDG(IBIE+2)=IBPT(I+1,J+1) ! 2nd end point upper right
-              IEDG(IBIE+3)=-1            ! no triangle on left
-              IEDG(IBIE+4)=-1            ! no triangle on right
-              IEDG(IBIE+5)=0             ! utility flag unset
-            ELSE  !  diagonal is from upper left to lower right
-              IEDG(IBIE+1)=IBPT(I  ,J+1) ! 1st end point upper left
-              IEDG(IBIE+2)=IBPT(I+1,J  ) ! 2nd end point lower right
-              IEDG(IBIE+3)=-1            ! no triangle on left
-              IEDG(IBIE+4)=-1            ! no triangle on right
-              IEDG(IBIE+5)=0             ! utility flag unset
+     +      THEN
+C             diagonal is from lower left to upper right
+              IEDG(IBIE+1)=IBPT(I  ,J  )
+              IEDG(IBIE+2)=IBPT(I+1,J+1)
+              IEDG(IBIE+3)=-1
+              IEDG(IBIE+4)=-1
+              IEDG(IBIE+5)=0
+            ELSE
+C             diagonal is from upper left to lower right
+              IEDG(IBIE+1)=IBPT(I  ,J+1)
+              IEDG(IBIE+2)=IBPT(I+1,J  )
+              IEDG(IBIE+3)=-1
+              IEDG(IBIE+4)=-1
+              IEDG(IBIE+5)=0
             END IF
   107     CONTINUE
   108   CONTINUE
@@ -390,46 +392,102 @@ C lower left to upper right (when K=1) or from upper left to lower
 C right (when K=2); these conventions tell us whether a given triangle
 C is to the left or to the right of a given edge.
 C
+C NOTE (03/07/2006): For procedural reasons, I needed to remove the
+C exclamation-point comments from the following code.  That made the
+C code much harder to follow, so I'm putting in two copies of it, the
+C first of which has C's in column 1 and the second of which has the
+C exclamation-point comments removed.
+C
+C Original version (easier to follow):
+C
+C       DO 111 I=1,IDM1
+C         DO 110 J=1,JDM1
+C           DO 109 K=1,2
+C             IBIT=IBTR(I,J,K)
+C             IF (MOD(I+J,2).EQ.0)
+C    +        THEN ! diagonal is from lower left to upper right
+C               IF (K.EQ.1) THEN ! lower right triangle
+C                 ITRI(IBIT+1)=IBE1(I  ,J  )  ! edge a
+C                 ITRI(IBIT+2)=IBE2(I+1,J  )  ! edge b
+C                 ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
+C                 ITRI(IBIT+4)=0              ! triangle unblocked
+C                 IEDG(ITRI(IBIT+1)+3)=IBIT+1 ! triangle left of edge a
+C                 IEDG(ITRI(IBIT+2)+3)=IBIT+2 ! triangle left of edge b
+C                 IEDG(ITRI(IBIT+3)+4)=IBIT+3 ! triangle right of edge c
+C               ELSE                          ! upper left triangle
+C                 ITRI(IBIT+1)=IBE1(I  ,J+1)  ! edge a
+C                 ITRI(IBIT+2)=IBE2(I  ,J  )  ! edge b
+C                 ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
+C                 ITRI(IBIT+4)=0              ! triangle unblocked
+C                 IEDG(ITRI(IBIT+1)+4)=IBIT+1 ! triangle right of edge a
+C                 IEDG(ITRI(IBIT+2)+4)=IBIT+2 ! triangle right of edge b
+C                 IEDG(ITRI(IBIT+3)+3)=IBIT+3 ! triangle left of edge c
+C               END IF
+C             ELSE  !  diagonal is from upper left to lower right
+C               IF (K.EQ.1) THEN              ! lower left triangle
+C                 ITRI(IBIT+1)=IBE2(I  ,J  )  ! edge a
+C                 ITRI(IBIT+2)=IBE1(I  ,J  )  ! edge b
+C                 ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
+C                 ITRI(IBIT+4)=0              ! triangle unblocked
+C                 IEDG(ITRI(IBIT+1)+4)=IBIT+1 ! triangle right of edge a
+C                 IEDG(ITRI(IBIT+2)+3)=IBIT+2 ! triangle left of edge b
+C                 IEDG(ITRI(IBIT+3)+4)=IBIT+3 ! triangle right of edge c
+C               ELSE                          ! upper right triangle
+C                 ITRI(IBIT+1)=IBE2(I+1,J  )  ! edge a
+C                 ITRI(IBIT+2)=IBE1(I  ,J+1)  ! edge b
+C                 ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
+C                 ITRI(IBIT+4)=0              ! triangle unblocked
+C                 IEDG(ITRI(IBIT+1)+3)=IBIT+1 ! triangle left of edge a
+C                 IEDG(ITRI(IBIT+2)+4)=IBIT+2 ! triangle right of edge b
+C                 IEDG(ITRI(IBIT+3)+3)=IBIT+3 ! triangle left of edge c
+C               END IF
+C             END IF
+C 109       CONTINUE
+C 110     CONTINUE
+C 111   CONTINUE
+C
+C Version with exclamation-point comments removed (for compiler):
+C
         DO 111 I=1,IDM1
           DO 110 J=1,JDM1
             DO 109 K=1,2
               IBIT=IBTR(I,J,K)
               IF (MOD(I+J,2).EQ.0)
-     +        THEN  !  diagonal is from lower left to upper right
-                IF (K.EQ.1) THEN              ! lower right triangle
-                  ITRI(IBIT+1)=IBE1(I  ,J  )  ! edge a
-                  ITRI(IBIT+2)=IBE2(I+1,J  )  ! edge b
-                  ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
-                  ITRI(IBIT+4)=0              ! triangle unblocked
-                  IEDG(ITRI(IBIT+1)+3)=IBIT+1 ! triangle left of edge a
-                  IEDG(ITRI(IBIT+2)+3)=IBIT+2 ! triangle left of edge b
-                  IEDG(ITRI(IBIT+3)+4)=IBIT+3 ! triangle right of edge c
-                ELSE                          ! upper left triangle
-                  ITRI(IBIT+1)=IBE1(I  ,J+1)  ! edge a
-                  ITRI(IBIT+2)=IBE2(I  ,J  )  ! edge b
-                  ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
-                  ITRI(IBIT+4)=0              ! triangle unblocked
-                  IEDG(ITRI(IBIT+1)+4)=IBIT+1 ! triangle right of edge a
-                  IEDG(ITRI(IBIT+2)+4)=IBIT+2 ! triangle right of edge b
-                  IEDG(ITRI(IBIT+3)+3)=IBIT+3 ! triangle left of edge c
+     +        THEN
+                IF (K.EQ.1) THEN
+                  ITRI(IBIT+1)=IBE1(I  ,J  )
+                  ITRI(IBIT+2)=IBE2(I+1,J  )
+                  ITRI(IBIT+3)=IBE3(I  ,J  )
+                  ITRI(IBIT+4)=0
+                  IEDG(ITRI(IBIT+1)+3)=IBIT+1
+                  IEDG(ITRI(IBIT+2)+3)=IBIT+2
+                  IEDG(ITRI(IBIT+3)+4)=IBIT+3
+                ELSE
+                  ITRI(IBIT+1)=IBE1(I  ,J+1)
+                  ITRI(IBIT+2)=IBE2(I  ,J  )
+                  ITRI(IBIT+3)=IBE3(I  ,J  )
+                  ITRI(IBIT+4)=0
+                  IEDG(ITRI(IBIT+1)+4)=IBIT+1
+                  IEDG(ITRI(IBIT+2)+4)=IBIT+2
+                  IEDG(ITRI(IBIT+3)+3)=IBIT+3
                 END IF
-              ELSE  !  diagonal is from upper left to lower right
-                IF (K.EQ.1) THEN              ! lower left triangle
-                  ITRI(IBIT+1)=IBE2(I  ,J  )  ! edge a
-                  ITRI(IBIT+2)=IBE1(I  ,J  )  ! edge b
-                  ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
-                  ITRI(IBIT+4)=0              ! triangle unblocked
-                  IEDG(ITRI(IBIT+1)+4)=IBIT+1 ! triangle right of edge a
-                  IEDG(ITRI(IBIT+2)+3)=IBIT+2 ! triangle left of edge b
-                  IEDG(ITRI(IBIT+3)+4)=IBIT+3 ! triangle right of edge c
-                ELSE                          ! upper right triangle
-                  ITRI(IBIT+1)=IBE2(I+1,J  )  ! edge a
-                  ITRI(IBIT+2)=IBE1(I  ,J+1)  ! edge b
-                  ITRI(IBIT+3)=IBE3(I  ,J  )  ! edge c
-                  ITRI(IBIT+4)=0              ! triangle unblocked
-                  IEDG(ITRI(IBIT+1)+3)=IBIT+1 ! triangle left of edge a
-                  IEDG(ITRI(IBIT+2)+4)=IBIT+2 ! triangle right of edge b
-                  IEDG(ITRI(IBIT+3)+3)=IBIT+3 ! triangle left of edge c
+              ELSE
+                IF (K.EQ.1) THEN
+                  ITRI(IBIT+1)=IBE2(I  ,J  )
+                  ITRI(IBIT+2)=IBE1(I  ,J  )
+                  ITRI(IBIT+3)=IBE3(I  ,J  )
+                  ITRI(IBIT+4)=0
+                  IEDG(ITRI(IBIT+1)+4)=IBIT+1
+                  IEDG(ITRI(IBIT+2)+3)=IBIT+2
+                  IEDG(ITRI(IBIT+3)+4)=IBIT+3
+                ELSE
+                  ITRI(IBIT+1)=IBE2(I+1,J  )
+                  ITRI(IBIT+2)=IBE1(I  ,J+1)
+                  ITRI(IBIT+3)=IBE3(I  ,J  )
+                  ITRI(IBIT+4)=0
+                  IEDG(ITRI(IBIT+1)+3)=IBIT+1
+                  IEDG(ITRI(IBIT+2)+4)=IBIT+2
+                  IEDG(ITRI(IBIT+3)+3)=IBIT+3
                 END IF
               END IF
   109       CONTINUE
@@ -437,19 +495,19 @@ C
   111   CONTINUE
 C
 C The triangular mesh is complete.  For illustrative purposes, we will
-C block some triangles in the center of the mesh (but only when IDIM
-C and JDIM are both 7, since specific numbers are used for the triangles
-C blocked).
+C block some triangles (numbered 29, 30, 31, 32, 41, 42, 43, and 44) in
+C the center of the mesh (but only when IDIM and JDIM are both 7, since
+C these specific numbers are used for the triangles blocked).
 C
         IF (IDIM.EQ.7.AND.JDIM.EQ.7) THEN
-          ITRI(28*LOTN+4)=1  !  triangle number 29
-          ITRI(29*LOTN+4)=1  !  triangle number 30
-          ITRI(30*LOTN+4)=1  !  triangle number 31
-          ITRI(31*LOTN+4)=1  !  triangle number 32
-          ITRI(40*LOTN+4)=1  !  triangle number 41
-          ITRI(41*LOTN+4)=1  !  triangle number 42
-          ITRI(42*LOTN+4)=1  !  triangle number 43
-          ITRI(43*LOTN+4)=1  !  triangle number 44
+          ITRI(28*LOTN+4)=1
+          ITRI(29*LOTN+4)=1
+          ITRI(30*LOTN+4)=1
+          ITRI(31*LOTN+4)=1
+          ITRI(40*LOTN+4)=1
+          ITRI(41*LOTN+4)=1
+          ITRI(42*LOTN+4)=1
+          ITRI(43*LOTN+4)=1
         END IF
 C
 C
@@ -466,18 +524,21 @@ C Turn off the clipping indicator.
 C
         CALL GSCLIP (0)
 C
-C Define a basic set of colors.
+C Define a basic set of colors (0 = white, background; 1 = black,
+C foreground; 2 = yellow; 3 = magenta; 4 = red; 5 = cyan; 6 = green;
+C 7 = blue; 8 = a yellow for unblocked portions of the mesh; and 9 =
+C a yellow for blocked portions of the mesh).
 C
-        CALL GSCR   (IWID, 0,1.,1.,1.)  !  white (background)
-        CALL GSCR   (IWID, 1,0.,0.,0.)  !  black (foreground)
-        CALL GSCR   (IWID, 2,1.,1.,0.)  !  yellow
-        CALL GSCR   (IWID, 3,1.,0.,1.)  !  magenta
-        CALL GSCR   (IWID, 4,1.,0.,0.)  !  red
-        CALL GSCR   (IWID, 5,0.,1.,1.)  !  cyan
-        CALL GSCR   (IWID, 6,0.,1.,0.)  !  green
-        CALL GSCR   (IWID, 7,0.,0.,1.)  !  blue
-        CALL GSCR   (IWID, 8,.8,.8,0.)  !  yellow for mesh (unblocked)
-        CALL GSCR   (IWID, 9,1.,1.,0.)  !  yellow for mesh (blocked)
+        CALL GSCR   (IWID, 0,1.,1.,1.)
+        CALL GSCR   (IWID, 1,0.,0.,0.)
+        CALL GSCR   (IWID, 2,1.,1.,0.)
+        CALL GSCR   (IWID, 3,1.,0.,1.)
+        CALL GSCR   (IWID, 4,1.,0.,0.)
+        CALL GSCR   (IWID, 5,0.,1.,1.)
+        CALL GSCR   (IWID, 6,0.,1.,0.)
+        CALL GSCR   (IWID, 7,0.,0.,1.)
+        CALL GSCR   (IWID, 8,.8,.8,0.)
+        CALL GSCR   (IWID, 9,1.,1.,0.)
 C
 C Define 100 colors, associated with color indices 151 through 250, to
 C be used for color-filled contour bands and in cell arrays, ranging
@@ -561,10 +622,10 @@ C
 C Draw the mesh in two shades of yellow, to distinguish blocked portions
 C of it from unblocked portions.
 C
-        CALL DRWMSH (RPNT,NPNT,LOPN,  !  point list
-     +               IEDG,NEDG,LOEN,  !  edge list
-     +               ITRI,NTRI,LOTN,  !  triangle list
-     +               8,9)             !  color indices
+        CALL DRWMSH (RPNT,NPNT,LOPN,
+     +               IEDG,NEDG,LOEN,
+     +               ITRI,NTRI,LOTN,
+     +               8,9)
 C
 C Label the points of the mesh, in blue.
 C
@@ -631,19 +692,19 @@ C
 C
 C Initialize CONPACKT.
 C
-        CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +               IEDG,NEDG,LOEN,  !  edge list
-     +               ITRI,NTRI,LOTN,  !  triangle list
-     +               RWRK,LRWK,       !  real workspace
-     +               IWRK,LIWK)       !  integer workspace
+        CALL CTMESH (RPNT,NPNT,LOPN,
+     +               IEDG,NEDG,LOEN,
+     +               ITRI,NTRI,LOTN,
+     +               RWRK,LRWK,
+     +               IWRK,LIWK)
 C
 C Draw the mesh in two shades of yellow, to distinguish blocked portions
 C of it from unblocked portions.
 C
-        CALL DRWMSH (RPNT,NPNT,LOPN,  !  point list
-     +               IEDG,NEDG,LOEN,  !  edge list
-     +               ITRI,NTRI,LOTN,  !  triangle list
-     +               8,9)             !  color indices
+        CALL DRWMSH (RPNT,NPNT,LOPN,
+     +               IEDG,NEDG,LOEN,
+     +               ITRI,NTRI,LOTN,
+     +               8,9)
 C
 C Draw contour lines with labels written by the dash package.
 C
@@ -718,10 +779,10 @@ C
       END
 
 
-      SUBROUTINE DRWMSH (RPNT,NPNT,LOPN,  !  point list
-     +                   IEDG,NEDG,LOEN,  !  edge list
-     +                   ITRI,NTRI,LOTN,  !  triangle list
-     +                   ICI1,ICI2)       !  color indices
+      SUBROUTINE DRWMSH (RPNT,NPNT,LOPN,
+     +                   IEDG,NEDG,LOEN,
+     +                   ITRI,NTRI,LOTN,
+     +                   ICI1,ICI2)
 C
         DIMENSION RPNT(NPNT),IEDG(NEDG),ITRI(NTRI)
 C
