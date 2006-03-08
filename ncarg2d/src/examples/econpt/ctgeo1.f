@@ -64,8 +64,8 @@ C
 C Define the parameter that says whether or not to draw color-filled
 C contours (frame 3):
 C
-C       PARAMETER (ICOL=0)  ! no color fill done
-C       PARAMETER (ICOL=1)  ! color fill done
+C       PARAMETER (ICOL=0)  !  no color fill done
+C       PARAMETER (ICOL=1)  !  color fill done
 C
         PARAMETER (ICOL=1)
 C
