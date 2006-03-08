@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.106 2006-03-08 00:24:43 shea Exp $
+;      $Id: contributed.ncl,v 1.107 2006-03-08 18:36:50 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -305,13 +305,30 @@ end
 ;  x@orange remains
 ;***********************************************
 undef("delete_VarAtts")
-procedure delete_VarAtts (x, atts[*]:string)
-local n, nAtts
+procedure delete_VarAtts (x, ATTS)
+local n, atts, nAtts
 begin
+  typeATTS = typeof(ATTS)
+  if (.not.(typeATTS.eq."string" .or. typeATTS.eq."integer")) then
+      print("delete_VarAtts: argument must be string or integer: type="+typeATTS)     
+      print("delete_VarAtts: nothing deleted")     
+      return
+  end if
+
+  if (typeATTS.eq."integer") then
+      atts = getvaratts(x)
+  end if
+
+  if (typeof(ATTS).eq."string") then
+      atts = ATTS
+  end if
+
   nAtts = dimsizes(atts)
   do n=0,nAtts-1
      if (isatt(x, atts(n)) ) then
          delete(x@$atts(n)$)
+     else
+         print("delete_VarAtts: attribute="+atts(n)+" does not exist")
      end if
   end do
 end
