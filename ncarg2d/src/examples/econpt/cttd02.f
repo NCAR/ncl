@@ -43,49 +43,67 @@ C Define parameters that say whether or not the triangular mesh is to be
 C drawn on the various frames.
 C
 C       PARAMETER (IMSH=0)  !  frame 1 (mesh only) not drawn
-        PARAMETER (IMSH=1)  !  frame 1 (mesh only) drawn
+C       PARAMETER (IMSH=1)  !  frame 1 (mesh only) drawn
+C
+        PARAMETER (IMSH=1)
 C
 C Define the parameter that says whether or not parts of the triangular
 C mesh that were diagonals of the rectangular mesh are to be drawn.
 C
-        PARAMETER (IDIA=0)  !  diagonals not drawn
+C       PARAMETER (IDIA=0)  !  diagonals not drawn
 C       PARAMETER (IDIA=1)  !  diagonals drawn
+C
+        PARAMETER (IDIA=0)
 C
 C Define the parameter that says whether or not simple contours are to
 C be drawn:
 C
 C       PARAMETER (ICON=0)  !  contours not drawn
-        PARAMETER (ICON=1)  !  contours drawn
+C       PARAMETER (ICON=1)  !  contours drawn
+C
+        PARAMETER (ICON=1)
 C
 C       PARAMETER (IMSN=0)  !  mesh not drawn on frame
-        PARAMETER (IMSN=1)  !  mesh drawn on frame
+C       PARAMETER (IMSN=1)  !  mesh drawn on frame
+C
+        PARAMETER (IMSN=1)
 C
 C Define the parameter that says whether or not color-filled contours
 C (drawn using an area map) are to be drawn:
 C
-        PARAMETER (ICOL=0)  !  no color fill done
+C       PARAMETER (ICOL=0)  !  no color fill done
 C       PARAMETER (ICOL=1)  !  color fill done
 C
-        PARAMETER (IMSL=0)  !  mesh not drawn on frame
+        PARAMETER (ICOL=0)
+C
+C       PARAMETER (IMSL=0)  !  mesh not drawn on frame
 C       PARAMETER (IMSL=1)  !  mesh drawn on frame
+C
+        PARAMETER (IMSL=0)
 C
 C Define the parameter that says whether or not color-filled contours
 C (drawn using a cell array) are to be drawn:
 C
 C       PARAMETER (ICAP=0)  !  no color fill done
-        PARAMETER (ICAP=1)  !  color fill done
+C       PARAMETER (ICAP=1)  !  color fill done
+C
+        PARAMETER (ICAP=1)
 C
 C       PARAMETER (IMSP=0)  !  mesh not drawn on frame
-        PARAMETER (IMSP=1)  !  mesh drawn on frame
+C       PARAMETER (IMSP=1)  !  mesh drawn on frame
+C
+        PARAMETER (IMSP=1)
 C
 C       PARAMETER (ICOP=0)  !  contours not drawn on frame
-        PARAMETER (ICOP=1)  !  contours drawn on frame
+C       PARAMETER (ICOP=1)  !  contours drawn on frame
+C
+        PARAMETER (ICOP=1)
 C
 C To represent the triangular mesh, we use three singly-dimensioned
 C arrays: RPNT holds points, IEDG holds edges, and ITRI holds triangles.
 C The elements of each array form "nodes" having lengths as follows:
 C
-        PARAMETER (LOPN=5)  !  length of a point node
+        PARAMETER (LOPN=5)
 C
 C The five elements of a point node are
 C
@@ -95,7 +113,7 @@ C   3. the Z coordinate of the point;
 C   4. the field value at the point;
 C   5. any additional value desired by the user.
 C
-        PARAMETER (LOEN=6)  !  length of an edge node
+        PARAMETER (LOEN=6)
 C
 C The six elements of an edge node are
 C
@@ -116,7 +134,7 @@ C toward point 2 of the edge.  It is possible, if there are "holes" in
 C the mesh, that there will be no triangle to the left or to the right
 C of an edge, but there must be a triangle on one side or the other.
 C
-        PARAMETER (LOTN=4)  !  length of a triangle node
+        PARAMETER (LOTN=4)
 C
 C The four elements of a triangle node are
 C
@@ -196,9 +214,9 @@ C Once we know how many points, edges, and triangles we're going to use
 C (at most), we can set parameters defining the space reserved for the
 C triangular mesh:
 C
-        PARAMETER (MPNT=MNOP*LOPN)  !  space for points
-        PARAMETER (MEDG=MNOE*LOEN)  !  space for edges
-        PARAMETER (MTRI=MNOT*LOTN)  !  space for triangles
+        PARAMETER (MPNT=MNOP*LOPN)
+        PARAMETER (MEDG=MNOE*LOEN)
+        PARAMETER (MTRI=MNOT*LOTN)
 C
 C Declare the arrays to hold the point nodes, edge nodes, and triangle
 C nodes defining the triangular mesh.
@@ -265,8 +283,10 @@ C a one-frame stereo image (ISTE=-1), or a two-frame stereo image
 C (ISTE=+1).
 C
 C       DATA ISTE /  0 /  !  simple image
-        DATA ISTE / -1 /  !  one-frame stereo image
+C       DATA ISTE / -1 /  !  one-frame stereo image
 C       DATA ISTE / +1 /  !  two-frame stereo image
+C
+        DATA ISTE / -1 /
 C
 C ASTE is the desired angle (in degrees) between the lines of sight for
 C a pair of stereo views.
@@ -284,8 +304,10 @@ C
 C
 C Define the tension on the splines to be used in smoothing contours.
 C
-        DATA T2DS / 0.0 /  !  smoothing off
+C       DATA T2DS / 0.0 /  !  smoothing off
 C       DATA T2DS / 2.5 /  !  smoothing on
+C
+        DATA T2DS / 0.0 /
 C
 C Define the distance between points on smoothed contour lines.
 C
@@ -299,8 +321,10 @@ C Define the label-positioning flag.
 C
 C       DATA ILLP / 0 /  !  no labels
 C       DATA ILLP / 1 /  !  dash-package writes labels
-        DATA ILLP / 2 /  !  regular scheme
+C       DATA ILLP / 2 /  !  regular scheme
 C       DATA ILLP / 3 /  !  penalty scheme
+C
+        DATA ILLP / 2 /
 C
 C Define the high/low search radius.
 C
@@ -312,8 +336,10 @@ C
 C
 C Define the hachuring flag, hachure length, and hachure spacing.
 C
-        DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /  !  off
+C       DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /  !  off
 C       DATA IHCF,HCHL,HCHS / +1 , -.004 , .020 /  !  on, all, uphill
+C
+        DATA IHCF,HCHL,HCHS /  0 , +.004 , .010 /
 C
 C Define conversion constants to convert from degrees to radians and
 C vice-versa.
@@ -339,10 +365,10 @@ C
         PRINT * , ' '
         PRINT * , 'CREATING TRIANGULAR MESH:'
 C
-        CALL GTTD02 (RPNT,MPNT,NPNT,LOPN,            !  point list
-     +               IEDG,MEDG,NEDG,LOEN,            !  edge list
-     +               ITRI,MTRI,NTRI,LOTN,            !  triangle list
-     +               IDIM,JDIM,XLAT,XLON,ZDAT,ISCR)  !  other arguments
+        CALL GTTD02 (RPNT,MPNT,NPNT,LOPN,
+     +               IEDG,MEDG,NEDG,LOEN,
+     +               ITRI,MTRI,NTRI,LOTN,
+     +               IDIM,JDIM,XLAT,XLON,ZDAT,ISCR)
 C
 C Print the number of points, edges, and triangles.
 C
@@ -432,24 +458,27 @@ C Turn off the clipping indicator.
 C
         CALL GSCLIP (0)
 C
-C Define a basic set of colors.
+C Define a basic set of colors (0 = white, background; 1 = black,
+C foreground; 2 = yellow; 3 = light green; 4 = red; 5 = cyan; 6 =
+C green; 7 = blue; 8 = darker light gray; 9 = lighter light gray;
+C 10 = dark yellow; 11 = dark gray; 12 = medium gray; 13 = light
+C red, for geographic lines; 14 = light blue, for lat/lon lines).
 C
-        CALL GSCR   (IWID, 0,1.,1.,1.)  !  white (background)
-        CALL GSCR   (IWID, 1,0.,0.,0.)  !  black (foreground)
-        CALL GSCR   (IWID, 2,1.,1.,0.)  !  yellow
-C       CALL GSCR   (IWID, 3,1.,0.,1.)  !  magenta
-        CALL GSCR   (IWID, 3,.5,1.,.5)  !  light green
-        CALL GSCR   (IWID, 4,1.,0.,0.)  !  red
-        CALL GSCR   (IWID, 5,0.,1.,1.)  !  cyan
-        CALL GSCR   (IWID, 6,0.,1.,0.)  !  green
-        CALL GSCR   (IWID, 7,0.,0.,1.)  !  blue
-        CALL GSCR   (IWID, 8,.5,.5,.5)  !  darker light gray
-        CALL GSCR   (IWID, 9,.8,.8,.8)  !  lighter light gray
-        CALL GSCR   (IWID,10,.3,.3,0.)  !  dark yellow
-        CALL GSCR   (IWID,11,.3,.3,.3)  !  dark gray
-        CALL GSCR   (IWID,12,.5,.5,.5)  !  medium gray
-        CALL GSCR   (IWID,13,.8,.5,.5)  !  light red - geographic lines
-        CALL GSCR   (IWID,14,.5,.5,.8)  !  light blue - lat/lon lines
+        CALL GSCR   (IWID, 0,1.,1.,1.)
+        CALL GSCR   (IWID, 1,0.,0.,0.)
+        CALL GSCR   (IWID, 2,1.,1.,0.)
+        CALL GSCR   (IWID, 3,.5,1.,.5)
+        CALL GSCR   (IWID, 4,1.,0.,0.)
+        CALL GSCR   (IWID, 5,0.,1.,1.)
+        CALL GSCR   (IWID, 6,0.,1.,0.)
+        CALL GSCR   (IWID, 7,0.,0.,1.)
+        CALL GSCR   (IWID, 8,.5,.5,.5)
+        CALL GSCR   (IWID, 9,.8,.8,.8)
+        CALL GSCR   (IWID,10,.3,.3,0.)
+        CALL GSCR   (IWID,11,.3,.3,.3)
+        CALL GSCR   (IWID,12,.5,.5,.5)
+        CALL GSCR   (IWID,13,.8,.5,.5)
+        CALL GSCR   (IWID,14,.5,.5,.8)
 C
 C Define 100 colors, associated with color indices 151 through 250, to
 C be used for color-filled contour bands and in cell arrays, ranging
@@ -458,8 +487,10 @@ C
 C       CALL DFCRGB (IWID,151,250,0.,0.,1.,0.,1.,0.,0.) ! blue to green
 C       CALL DFCRGB (IWID,151,250,0.,1.,0.,1.,0.,0.,0.) ! green to red
 C       CALL DFCRGB (IWID,151,250,0.,0.,1.,1.,0.,0.,.4) ! blue to red
-        CALL DFCRGB (IWID,151,250,0.,1.,1.,1.,0.,1.,0.) ! cyan to magenta
+C       CALL DFCRGB (IWID,151,250,0.,1.,1.,1.,0.,1.,0.) ! cyan to magenta
 C       CALL DFCRGB (IWID,151,250,0.,1.,1.,1.,1.,0.,0.) ! cyan to yellow
+C
+        CALL DFCRGB (IWID,151,250,0.,1.,1.,1.,0.,1.,0.)
 C
 C       CALL DFCHLS (IWID,151,250,0.,50.,100.,120.,50.,100.)
 C
@@ -570,9 +601,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
         IF (ISTE.EQ.0) THEN
-          OTEP=0.                    !  (single view)
+          OTEP=0.
         ELSE
-          OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+          OTEP=-R*TAN(DTOR*ASTE/2.)
         END IF
 C
 C Initialize TDPACK.
@@ -604,11 +635,11 @@ C
           PRINT * , '  INITIALIZING CONPACKT'
 C
           PRINT * , '  CALLING CTMESH'
-          CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                 IEDG,NEDG,LOEN,  !  edge list
-     +                 ITRI,NTRI,LOTN,  !  triangle list
-     +                 RWRK,LRWK,       !  real workspace
-     +                 IWRK,LIWK)       !  integer workspace
+          CALL CTMESH (RPNT,NPNT,LOPN,
+     +                 IEDG,NEDG,LOEN,
+     +                 ITRI,NTRI,LOTN,
+     +                 RWRK,LRWK,
+     +                 IWRK,LIWK)
 C
 C CTTDBF is called to set blocking flag bits for triangles according to
 C various criteria.  Its next-to-last argument may take on the following
@@ -692,9 +723,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
           IF (ISTE.EQ.0) THEN
-            OTEP=0.                    !  (single view)
+            OTEP=0.
           ELSE
-            OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+            OTEP=-R*TAN(DTOR*ASTE/2.)
           END IF
 C
 C Initialize TDPACK.
@@ -764,9 +795,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
           IF (ISTE.EQ.0) THEN
-            OTEP=0.                    !  (single view)
+            OTEP=0.
           ELSE
-            OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+            OTEP=-R*TAN(DTOR*ASTE/2.)
           END IF
 C
 C Initialize TDPACK.
@@ -800,11 +831,11 @@ C
           PRINT * , '  INITIALIZING CONPACKT'
 C
           PRINT * , '  CALLING CTMESH'
-          CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                 IEDG,NEDG,LOEN,  !  edge list
-     +                 ITRI,NTRI,LOTN,  !  triangle list
-     +                 RWRK,LRWK,       !  real workspace
-     +                 IWRK,LIWK)       !  integer workspace
+          CALL CTMESH (RPNT,NPNT,LOPN,
+     +                 IEDG,NEDG,LOEN,
+     +                 ITRI,NTRI,LOTN,
+     +                 RWRK,LRWK,
+     +                 IWRK,LIWK)
 C
           IF (IMSN.NE.0) THEN
 C
@@ -942,9 +973,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
           IF (ISTE.EQ.0) THEN
-            OTEP=0.                    !  (single view)
+            OTEP=0.
           ELSE
-            OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+            OTEP=-R*TAN(DTOR*ASTE/2.)
           END IF
 C
 C Initialize TDPACK.
@@ -978,11 +1009,11 @@ C
           PRINT * , '  INITIALIZING CONPACKT'
 C
           PRINT * , '  CALLING CTMESH'
-          CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                 IEDG,NEDG,LOEN,  !  edge list
-     +                 ITRI,NTRI,LOTN,  !  triangle list
-     +                 RWRK,LRWK,       !  real workspace
-     +                 IWRK,LIWK)       !  integer workspace
+          CALL CTMESH (RPNT,NPNT,LOPN,
+     +                 IEDG,NEDG,LOEN,
+     +                 ITRI,NTRI,LOTN,
+     +                 RWRK,LRWK,
+     +                 IWRK,LIWK)
 C
           MAXN=0
 C
@@ -1057,9 +1088,9 @@ C Initialize the stereo offset argument to do either a single view or
 C a left-eye view (whichever is selected by the value of ISTE).
 C
           IF (ISTE.EQ.0) THEN
-            OTEP=0.                    !  (single view)
+            OTEP=0.
           ELSE
-            OTEP=-R*TAN(DTOR*ASTE/2.)  !  (left-eye view)
+            OTEP=-R*TAN(DTOR*ASTE/2.)
           END IF
 C
 C Initialize TDPACK.
@@ -1093,11 +1124,11 @@ C
           PRINT * , '  INITIALIZING CONPACKT'
 C
           PRINT * , '  CALLING CTMESH'
-          CALL CTMESH (RPNT,NPNT,LOPN,  !  point list
-     +                 IEDG,NEDG,LOEN,  !  edge list
-     +                 ITRI,NTRI,LOTN,  !  triangle list
-     +                 RWRK,LRWK,       !  real workspace
-     +                 IWRK,LIWK)       !  integer workspace
+          CALL CTMESH (RPNT,NPNT,LOPN,
+     +                 IEDG,NEDG,LOEN,
+     +                 ITRI,NTRI,LOTN,
+     +                 RWRK,LRWK,
+     +                 IWRK,LIWK)
 C
 C Retrieve the arguments with which SET was called.
 C
