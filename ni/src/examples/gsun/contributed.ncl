@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.105 2006-03-06 17:04:37 shea Exp $
+;      $Id: contributed.ncl,v 1.106 2006-03-08 00:24:43 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -285,6 +285,35 @@ begin
 	 var_to@$att_names(i)$ = var_from@$att_names(i)$
       end do
   end if
+end
+
+;***********************************************
+; D. Shea
+; delete one or more attributes of a variable
+; This checks to see if the attribute exists and
+; if it does, it deletes it.
+;
+; Sample usage:
+;  x = 0
+;  x@apple = 5
+;  x@orange = 81.
+;  x@peach  = (/ "a", "b"/)
+;
+;  delete_VarAtts(x, "apple") )
+;  delete_VarAtts(x, (/ "apple", "peach"/) )
+;
+;  x@orange remains
+;***********************************************
+undef("delete_VarAtts")
+procedure delete_VarAtts (x, atts[*]:string)
+local n, nAtts
+begin
+  nAtts = dimsizes(atts)
+  do n=0,nAtts-1
+     if (isatt(x, atts(n)) ) then
+         delete(x@$atts(n)$)
+     end if
+  end do
 end
 
 ;****************************************
