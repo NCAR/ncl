@@ -1,5 +1,5 @@
 C
-C $Id: pjindp.f,v 1.5 2001-08-16 23:13:02 kennison Exp $
+C $Id: pjindp.f,v 1.6 2006-03-09 23:37:15 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -138,7 +138,7 @@ C
 C -- U T M
 C
   100    KEEPZN = ZONE
-         ZONE = IABS(ZONE)
+         ZONE = ABS(ZONE)
          IF (ZONE.LT.1 .OR. ZONE.GT.60) THEN
             IF (IPEMSG .EQ. 0) WRITE (IPELUN,140) KEEPZN
   140       FORMAT (/' ERROR PJ01DP'/
