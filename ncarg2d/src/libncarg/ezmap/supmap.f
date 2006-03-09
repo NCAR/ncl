@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.17 2005-06-22 21:36:49 kennison Exp $
+C $Id: supmap.f,v 1.18 2006-03-09 23:28:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -58,7 +58,7 @@ C
 C Set EZMAP's outline-selection parameter.
 C
         IF (ABS(IOUT).EQ.0.OR.ABS(IOUT).EQ.1) THEN
-          I=1+2*ABS(IOUT)+(1+ISIGN(1,JPRJ))/2
+          I=1+2*ABS(IOUT)+(1+SIGN(1,JPRJ))/2
         ELSE
           I=MAX(1,MIN(6,IOUT))
         END IF
