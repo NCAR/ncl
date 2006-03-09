@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.6 2005-10-14 01:08:04 kennison Exp $
+I $Id: CodeIftran,v 1.7 2006-03-09 23:16:07 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K   -   I N T R O D U C T I O N
@@ -5666,7 +5666,7 @@ C
               END IF
               IF (NEST.GE.MEST)
                 NREP=NREP+1
-                RWRK(IR01+I)=REST/FLOAT(NEST)
+                RWRK(IR01+I)=REST/REAL(NEST)
               END IF
             END DO
 C
@@ -6009,7 +6009,7 @@ C
               END IF
               IF (NEST.GE.MEST)
                 NREP=NREP+1
-                RWRK(IR01+I)=REST/FLOAT(NEST)
+                RWRK(IR01+I)=REST/REAL(NEST)
               END IF
             END DO
 C
@@ -11254,9 +11254,9 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO IABS(IPIC))
-              XCND=XSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(XSND-XSOD)
-              YCND=YSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(YSND-YSOD)
+            FOR (INTP = 1 TO ABS(IPIC))
+              XCND=XSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(XSND-XSOD)
+              YCND=YSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(YSND-YSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
               IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
@@ -12266,8 +12266,8 @@ C
           YCES=REAL(INDY)
           ZCES=ZDAT(INDX,INDY)
           IF (SVAL.NE.0..AND.ZDAT(INDX+IADX,INDY+IADY).EQ.SVAL)ZCES=SVAL
-          FOR (INTP = 1 TO IABS(IPIE)+1 BY 1)
-            FINT=REAL(INTP)/REAL(IABS(IPIE)+1)
+          FOR (INTP = 1 TO ABS(IPIE)+1 BY 1)
+            FINT=REAL(INTP)/REAL(ABS(IPIE)+1)
             XCOD=XCND
             YCOD=YCND
             ZCOD=ZCND
@@ -12276,7 +12276,7 @@ C
             IVOU=IVNU
             XCND=(1.-FINT)*XCSS+FINT*XCES
             YCND=(1.-FINT)*YCSS+FINT*YCES
-            IF (INTP.NE.IABS(IPIE)+1)
+            IF (INTP.NE.ABS(IPIE)+1)
               IF (SVAL.EQ.0..OR.(ZCSS.NE.SVAL.AND.ZCES.NE.SVAL))
                 ZCND=(1.-FINT)*ZCSS+FINT*ZCES
               ELSE
@@ -12303,7 +12303,7 @@ C
                 END FOR
               END IF
             END IF
-            IF (IPIE.LT.0.AND.INTP.NE.IABS(IPIE)+1)
+            IF (IPIE.LT.0.AND.INTP.NE.ABS(IPIE)+1)
               IFOP=0
             ELSE
               IFOP=1
@@ -13028,8 +13028,8 @@ C
           XCES=REAL(INDX)
           YCES=REAL(INDY)
           ZCES=ZDAT(INDX,INDY)
-          FOR (INTP = 1 TO IABS(IPIE)+1 BY 1)
-            FINT=REAL(INTP)/REAL(IABS(IPIE)+1)
+          FOR (INTP = 1 TO ABS(IPIE)+1 BY 1)
+            FINT=REAL(INTP)/REAL(ABS(IPIE)+1)
             XCOD=XCND
             YCOD=YCND
             ZCOD=ZCND
@@ -13061,7 +13061,7 @@ C
                 END FOR
               END IF
             END IF
-            IF (IPIE.LT.0.AND.INTP.NE.IABS(IPIE)+1)
+            IF (IPIE.LT.0.AND.INTP.NE.ABS(IPIE)+1)
               IFOP=0
             ELSE
               IFOP=1
@@ -14721,8 +14721,8 @@ C Ultimately, we combine the values of this flag for two consecutive
 C points in such a way as to get an integer between 1 and 81, telling
 C us what combination of inside/outside we have to deal with.
 C
-        NPOW=IFIX(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
-     +               (SIGN(.51,YNXT-YMIN)+SIGN(.51,YNXT-YMAX)))
+        NPOW=INT(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
+     +              (SIGN(.51,YNXT-YMIN)+SIGN(.51,YNXT-YMAX)))
 C
 C If the next point is not the first point of a line, there is work to
 C be done.
