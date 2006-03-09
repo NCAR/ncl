@@ -1,6 +1,6 @@
 C
-C $Id: agmini.f,v 1.4 2000-08-22 15:02:15 haley Exp $
-C                                                                      
+C $Id: agmini.f,v 1.5 2006-03-09 22:56:06 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -49,14 +49,14 @@ C
             INDZ=INDZ+IIEZ
             IF (ZDRA(INDZ).EQ.SVAL) GO TO 101
             IF (AGMINI.EQ.SVAL) AGMINI=ZDRA(INDZ)
-            AGMINI=AMIN1(AGMINI,ZDRA(INDZ))
+            AGMINI=MIN(AGMINI,ZDRA(INDZ))
   101     CONTINUE
         ELSE
           DO 102 J=1,NEVZ
             INDZ=INDZ+IIEZ
             IF (ZDRA(INDZ).EQ.SVAL.OR.ZDRA(INDZ).LT.ZLOW) GO TO 102
             IF (AGMINI.EQ.SVAL) AGMINI=ZDRA(INDZ)
-            AGMINI=AMIN1(AGMINI,ZDRA(INDZ))
+            AGMINI=MIN(AGMINI,ZDRA(INDZ))
   102     CONTINUE
         END IF
         INDZ=INDZ-NEVZ*IIEZ+IIVZ

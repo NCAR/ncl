@@ -1,6 +1,6 @@
 C
-C $Id: agscan.f,v 1.6 2000-08-22 15:02:17 haley Exp $
-C                                                                      
+C $Id: agscan.f,v 1.7 2006-03-09 22:56:07 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -81,8 +81,8 @@ C
 C
 C Extract the values of a couple of required dimensions.
 C
-      LBIM=IFIX(QBIM)
-      LNIM=IFIX(QNIM)
+      LBIM=INT(QBIM)
+      LNIM=INT(QNIM)
 C
 C Initialize the parameter-identifier character index.
 C
@@ -394,7 +394,7 @@ C
 C
 C LABEL PARAMETERS.
 C
-  133 LBAN=IFIX(QBAN)
+  133 LBAN=INT(QBAN)
 C
       LOPA=154
       NIPA=3+LBIM*10
@@ -483,7 +483,7 @@ C
 C
 C LINE PARAMETERS.
 C
-  147 LNAN=IFIX(QNAN)
+  147 LNAN=INT(QNAN)
 C
       LOPA=237+10*LBIM-80
       NIPA=4+LNIM*6

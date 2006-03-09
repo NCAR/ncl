@@ -1,6 +1,6 @@
 C
-C $Id: aggtch.f,v 1.4 2000-08-22 15:02:14 haley Exp $
-C                                                                      
+C $Id: aggtch.f,v 1.5 2006-03-09 22:56:06 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -63,7 +63,7 @@ C
         I=-IDCS
         J=INCH(1,I)-1
         IF (J.GE.0) THEN
-          LNCS=MIN0(LEN(CHST),INCH(2,I))
+          LNCS=MIN(LEN(CHST),INCH(2,I))
           DO 101 K=1,LNCS
             J=J+1
             CHST(K:K)=CHRA(J)

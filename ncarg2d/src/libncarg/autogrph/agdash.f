@@ -1,6 +1,6 @@
 C
-C $Id: agdash.f,v 1.4 2000-08-22 15:02:11 haley Exp $
-C                                                                      
+C $Id: agdash.f,v 1.5 2006-03-09 22:56:04 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -59,13 +59,13 @@ C The AUTOGRAPH function AGFPBN is of type integer.
 C
       INTEGER AGFPBN
 C
-      IWCD=MAX0(MWCD,IFIX(WOCD*SCWP))
-      IWDQ=MAX0(MWDQ,IFIX(WODQ*SCWP))
+      IWCD=MAX(MWCD,INT(WOCD*SCWP))
+      IWDQ=MAX(MWDQ,INT(WODQ*SCWP))
 C
       IF (DASH.GE.0.) THEN
         CALL DASHDB (AGFPBN(DASH))
       ELSE
-        CALL AGGTCH (IFIX(DASH),CHS1,LNC1)
+        CALL AGGTCH (INT(DASH),CHS1,LNC1)
         CALL DASHDC (CHS1(1:LNC1),IWDQ,IWCD)
       END IF
 C

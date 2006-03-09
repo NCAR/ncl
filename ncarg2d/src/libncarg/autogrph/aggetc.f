@@ -1,6 +1,6 @@
 C
-C $Id: aggetc.f,v 1.4 2000-08-22 15:02:13 haley Exp $
-C                                                                      
+C $Id: aggetc.f,v 1.5 2006-03-09 22:56:05 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -43,7 +43,7 @@ C Otherwise, get the integer value of the parameter and use that to get
 C the desired character string.
 C
       CALL AGGETP (TPID,FURA,1)
-      CALL AGGTCH (IFIX(FURA(1)),CUSR,LNCS)
+      CALL AGGTCH (INT(FURA(1)),CUSR,LNCS)
 C
 C Done.
 C

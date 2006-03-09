@@ -1,6 +1,6 @@
 C
-C $Id: agfpbn.f,v 1.4 2000-08-22 15:02:13 haley Exp $
-C                                                                      
+C $Id: agfpbn.f,v 1.5 2006-03-09 22:56:05 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -24,7 +24,7 @@ C
 C
 C The value of AGFPBN(FPDP) is a binary dash pattern, obtained from the
 C floating-point dash pattern FPDP.  On machines having a word length
-C greater than 16 bits, AGFPBN(FPDP) = IFIX(FPDP).  On machines having
+C greater than 16 bits, AGFPBN(FPDP) = INT(FPDP).  On machines having
 C a word length of 16 bits, this is not true.  For example, when FPDP =
 C 65535. (2 to the 16th minus 1), the equivalent binary dash pattern
 C does not have the value 65535, but the value -1 (assuming integers
@@ -35,7 +35,7 @@ C
       AGFPBN=0
 C
       DO 101 I=1,16
-        IF (AMOD(TEMP,2.).GE.1.) AGFPBN=IOR(AGFPBN,ISHIFT(1,I-1))
+        IF (MOD(TEMP,2.).GE.1.) AGFPBN=IOR(AGFPBN,ISHIFT(1,I-1))
         TEMP=TEMP/2.
   101 CONTINUE
 C

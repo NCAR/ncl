@@ -1,5 +1,5 @@
 C
-C $Id: aglbls.f,v 1.5 2004-06-28 22:26:42 kennison Exp $
+C $Id: aglbls.f,v 1.6 2006-03-09 22:56:06 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -187,7 +187,7 @@ C This is the main section of AGLBLS.
 C
 C Compute the length of the smallest side of the curve window.
 C
-      SCWP=AMIN1(WCWP,HCWP)
+      SCWP=MIN(WCWP,HCWP)
 C
 C Preset certain jumps in the internal procedure which follows.
 C
@@ -349,11 +349,11 @@ C
   118 XPLN=XPLN+.5*(PHCL+FHCL)*YDLB/WCWP
       YPLN=YPLN-.5*(PHCL+FHCL)*XDLB/HCWP
       PHCL=FHCL
-      CALL AGGTCH (IFIX(FLLN(4,LNIN)),CHS2,LNC2)
+      CALL AGGTCH (INT(FLLN(4,LNIN)),CHS2,LNC2)
 C
 C Give the user a chance to change the appearance of the label line.
 C
-      CALL AGCHIL (0,CHS1(1:LNC1),IFIX(FLLN(1,LNIN)))
+      CALL AGCHIL (0,CHS1(1:LNC1),INT(FLLN(1,LNIN)))
 C
 C Plot the label line.
 C
@@ -361,7 +361,7 @@ C
 C
 C Give the user a chance to undo the changes he made above.
 C
-      CALL AGCHIL (1,CHS1(1:LNC1),IFIX(FLLN(1,LNIN)))
+      CALL AGCHIL (1,CHS1(1:LNC1),INT(FLLN(1,LNIN)))
 C
 C Go get the next line, if any.
 C
@@ -459,22 +459,22 @@ C
 C
 C On a non-test run, get the label name and length for call to AGCHIL.
 C
-      IF (ITST.GT.0) CALL AGGTCH (IFIX(FLLB(1,LBIN)),CHS1,LNC1)
+      IF (ITST.GT.0) CALL AGGTCH (INT(FLLB(1,LBIN)),CHS1,LNC1)
 C
 C Unpack the label orientation and compute its direction cosines.
 C
-      LBOR=IFIX(FLLB(7,LBIN))
+      LBOR=INT(FLLB(7,LBIN))
 C
       XDLB=COS(.017453292519943*FLLB(7,LBIN))
       YDLB=SIN(.017453292519943*FLLB(7,LBIN))
 C
 C Unpack the label-centering option.
 C
-      LBCN=IFIX(FLLB(8,LBIN))
+      LBCN=INT(FLLB(8,LBIN))
 C
 C Unpack the index of the initial line of the label and save it.
 C
-      LNIN=IFIX(FLLB(10,LBIN))
+      LNIN=INT(FLLB(10,LBIN))
       LNII=LNIN
 C
 C If this is not a test run, modify the label-base-point position as
@@ -524,16 +524,16 @@ C
 C Unpack the position-number, character-width, and character-count
 C parameters for the line.
 C
-      LNPN=IFIX(FLLN(1,LNIN))
+      LNPN=INT(FLLN(1,LNIN))
       WCLN=FLLN(3,LNIN)
-      LNCC=IFIX(FLLN(5,LNIN))
+      LNCC=INT(FLLN(5,LNIN))
 C
 C Compute the integer width (IWCL) and the floating-point width and
 C height (FWCL and FHCL) of characters in the label.  All are expressed
 C in plotter-coordinate-system units.
 C
-      IWCL=MAX0(MWCL,IFIX(RBOX(LBBX)*WCLN*SCWP+.5))
-      FWCL=FLOAT(IWCL)
+      IWCL=MAX(MWCL,INT(RBOX(LBBX)*WCLN*SCWP+.5))
+      FWCL=REAL(IWCL)
       FHCL=HCFW(FWCL)
 C
 C Jump back with line information or drop through, as directed.
@@ -542,7 +542,7 @@ C
 C
 C Update the label-dimension parameters.
 C
-  211 DRLB=AMAX1(DRLB,FLOAT(LNCC)*FWCL)
+  211 DRLB=MAX(DRLB,REAL(LNCC)*FWCL)
 C
       IF (LNPN) 212,213,214
 C
@@ -557,7 +557,7 @@ C
 C
 C Go to the next line in the label, if there is one.
 C
-  215 LNIN=IFIX(FLLN(6,LNIN))
+  215 LNIN=INT(FLLN(6,LNIN))
       IF (LNIN.NE.0) GO TO 210
 C
 C Jump back on end of lines or drop through, as directed.
@@ -599,14 +599,14 @@ C
 C
 C Update the x and y coordinates of the label box edges.
 C
-  221 XLBX=AMIN1(XLBX,XBLB,
-     +     XPLB-AMAX1(+DLLB*XDLB,-DRLB*XDLB,-DBLB*YDLB,+DTLB*YDLB)/WCWP)
-      XRBX=AMAX1(XRBX,XBLB,
-     +     XPLB+AMAX1(-DLLB*XDLB,+DRLB*XDLB,+DBLB*YDLB,-DTLB*YDLB)/WCWP)
-      YBBX=AMIN1(YBBX,YBLB,
-     +     YPLB-AMAX1(+DLLB*YDLB,-DRLB*YDLB,+DBLB*XDLB,-DTLB*XDLB)/HCWP)
-      YTBX=AMAX1(YTBX,YBLB,
-     +     YPLB+AMAX1(-DLLB*YDLB,+DRLB*YDLB,-DBLB*XDLB,+DTLB*XDLB)/HCWP)
+  221 XLBX=MIN(XLBX,XBLB,
+     +     XPLB-MAX(+DLLB*XDLB,-DRLB*XDLB,-DBLB*YDLB,+DTLB*YDLB)/WCWP)
+      XRBX=MAX(XRBX,XBLB,
+     +     XPLB+MAX(-DLLB*XDLB,+DRLB*XDLB,+DBLB*YDLB,-DTLB*YDLB)/WCWP)
+      YBBX=MIN(YBBX,YBLB,
+     +     YPLB-MAX(+DLLB*YDLB,-DRLB*YDLB,+DBLB*XDLB,-DTLB*XDLB)/HCWP)
+      YTBX=MAX(YTBX,YBLB,
+     +     YPLB+MAX(-DLLB*YDLB,+DRLB*YDLB,-DBLB*XDLB,+DTLB*XDLB)/HCWP)
 C
 C Go back for the next label.
 C

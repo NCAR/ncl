@@ -1,5 +1,5 @@
 C
-C $Id: agnumb.f,v 1.5 2004-06-28 22:26:42 kennison Exp $
+C $Id: agnumb.f,v 1.6 2006-03-09 22:56:07 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -274,7 +274,7 @@ C Reduce the mantissa-generator to the range (1.,10.), keeping track of
 C the power of 10 required to do it.  Round the result, keeping in mind
 C that the rounding may kick the value past 10. .
 C
-      IMAN=IFIX(ALOG10(XMAN))
+      IMAN=INT(ALOG10(XMAN))
       IF (XMAN.LT.1.) IMAN=IMAN-1
       XMAN=REAL(DBLE(XMAN)*10.D0**(-IMAN))+SMRL
       IF (XMAN.GE.10.) THEN
@@ -315,7 +315,7 @@ C
 C
 C Non-scientific exponential notation for SBSE * 10**EXMU.
 C
-  109 NDPD=IMAN+1-(NLEX+IFIX(EXMU+SMRL*EXMU))
+  109 NDPD=IMAN+1-(NLEX+INT(EXMU+SMRL*EXMU))
       NDFD=NLFL
       IF10=1
       IFEX=1
@@ -324,7 +324,7 @@ C
 C Non-scientific exponential notation for SIGN(SBSE) * ABSV(SBSE)**EXMU.
 C
   110 NDPD=IMAN+1
-      IMAN=IMAN+IFIX(EXMU+SMRL*EXMU)
+      IMAN=IMAN+INT(EXMU+SMRL*EXMU)
       NDFD=NLFL
       IF10=0
       IFEX=1
@@ -341,8 +341,8 @@ C
 C No-exponent notation for SBSE * 10**EXMU.
 C
   112 NDPD=IMAN+1
-      NDFD=MAX0(NLFL,0)-IFIX(EXMU+SMRL*EXMU)
-      IF (NDFD.LE.0) NDFD=MIN0(NLFL,0)
+      NDFD=MAX(NLFL,0)-INT(EXMU+SMRL*EXMU)
+      IF (NDFD.LE.0) NDFD=MIN(NLFL,0)
       IF10=0
       IFEX=0
       GO TO 115
@@ -359,8 +359,8 @@ C
       END IF
 C
       NDPD=IMAN+1
-      NDFD=NLFL*IFIX(ABS(EXMU+SMRL*EXMU))
-      IF (NDFD.EQ.0) NDFD=MIN0(NLFL,0)
+      NDFD=NLFL*INT(ABS(EXMU+SMRL*EXMU))
+      IF (NDFD.EQ.0) NDFD=MIN(NLFL,0)
       IF10=0
       IFEX=0
       GO TO 115
@@ -369,15 +369,15 @@ C If there is an exponent of 10 and the mantissa is precisely 1, omit
 C the (I.F X) portion of the mantissa.
 C
   114 IF (NDPD.NE.1) GO TO 115
-      IF (IFIX(XMAN).NE.1) GO TO 115
-      IF (((XMAN-1.)*10.**MAX0(0,NDFD)).GE.1.) GO TO 115
+      IF (INT(XMAN).NE.1) GO TO 115
+      IF (((XMAN-1.)*10.**MAX(0,NDFD)).GE.1.) GO TO 115
       IVEX=IMAN+1-NDPD
       GO TO 123
 C
 C Generate the characters of the mantissa (I.F).  Check first for zero-
 C or-negative-length error.
 C
-  115 LMAN=MAX0(NDPD,0)+1+MAX0(NDFD,-1)
+  115 LMAN=MAX(NDPD,0)+1+MAX(NDFD,-1)
       IF (LMAN.LE.0) GO TO 903
 C
 C Make sure the mantissa buffer is big enough to hold (I.F).
@@ -421,9 +421,9 @@ C
 C Generate a digit from the mantissa-generator.  It is assumed that, for
 C n between 1 and 9, ICHAR('n') = ICHAR('n-1') + 1 .
 C
-  121 IDGT=IFIX(XMAN)
+  121 IDGT=INT(XMAN)
       KHAR=CHAR(ICHAR('0')+IDGT)
-      XMAN=XMAN-FLOAT(IDGT)
+      XMAN=XMAN-REAL(IDGT)
       XMAN=XMAN*10.
 C
 C Store a digit from KHAR into the mantissa buffer.

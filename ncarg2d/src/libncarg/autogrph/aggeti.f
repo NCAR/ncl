@@ -1,6 +1,6 @@
 C
-C $Id: aggeti.f,v 1.5 2000-08-22 15:02:13 haley Exp $
-C                                                                      
+C $Id: aggeti.f,v 1.6 2006-03-09 22:56:05 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

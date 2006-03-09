@@ -1,6 +1,6 @@
 C
-C $Id: agezsu.f,v 1.4 2000-08-22 15:02:13 haley Exp $
-C                                                                      
+C $Id: agezsu.f,v 1.5 2006-03-09 22:56:05 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -59,7 +59,7 @@ C
 C Examine the frame-advance parameter.  Do frame advance as appropriate.
 C
       CALL AGGETI ('FRAM.',IFRA)
-      IFRA=MAX0(1,MIN0(3,IFRA))
+      IFRA=MAX(1,MIN(3,IFRA))
 C
       IF (IFRA.EQ.3) CALL FRAME
 C
@@ -74,7 +74,7 @@ C
 C Set up the AGSTUP arguments defining the coordinate-data arrays.
 C
       CALL AGGETI ('ROW .',IROW)
-      IROW=MAX0(-2,MIN0(+2,IROW))
+      IROW=MAX(-2,MIN(+2,IROW))
 C
       NVIY=MANY
       IIVY=IDXY

@@ -1,5 +1,5 @@
 C
-C $Id: agcurv.f,v 1.6 2004-07-06 21:06:46 kennison Exp $
+C $Id: agcurv.f,v 1.7 2006-03-09 22:56:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -95,13 +95,13 @@ C
         DASH='$$$$$$$$$$'
         DASH(IPSN:IPSN)=ALPH(IDSH:IDSH)
         CALL AGSTCH (DASH,10,IDCS)
-        CALL AGDASH (FLOAT(IDCS),WODQ,WOCD,SCWP)
+        CALL AGDASH (REAL(IDCS),WODQ,WOCD,SCWP)
         CALL AGDLCH (IDCS)
 C
 C Check for a dash pattern from the group "DASH/PATTERNS."
 C
       ELSE IF (KDSH.GT.0) THEN
-        IDSH=MOD(KDSH-1,IFIX(QODP))+1
+        IDSH=MOD(KDSH-1,INT(QODP))+1
         CALL AGDASH (QDSH(IDSH),WODQ,WOCD,SCWP)
 C
       END IF
@@ -110,7 +110,7 @@ C Now that the dash pattern is determined, do the SET call.
 C
       CALL PLOTIT (0,0,2)
       CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
-     +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
+     +                            1+ABS(INT(QLUX))*2+ABS(INT(QLUY)))
 C
 C Give the user a chance to modify the curve (by changing line style,
 C color, etc.).

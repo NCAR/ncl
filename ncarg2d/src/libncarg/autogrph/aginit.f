@@ -1,6 +1,6 @@
 C
-C $Id: aginit.f,v 1.4 2000-08-22 15:02:14 haley Exp $
-C                                                                      
+C $Id: aginit.f,v 1.5 2006-03-09 22:56:06 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -66,17 +66,17 @@ C
 C Fill in the names of the four pre-defined labels.
 C
       CALL AGSTCH ('L',1,IDCS)
-      FLLB(1,1)=FLOAT(IDCS)
+      FLLB(1,1)=REAL(IDCS)
       CALL AGSTCH ('R',1,IDCS)
-      FLLB(1,2)=FLOAT(IDCS)
+      FLLB(1,2)=REAL(IDCS)
       CALL AGSTCH ('B',1,IDCS)
-      FLLB(1,3)=FLOAT(IDCS)
+      FLLB(1,3)=REAL(IDCS)
       CALL AGSTCH ('T',1,IDCS)
-      FLLB(1,4)=FLOAT(IDCS)
+      FLLB(1,4)=REAL(IDCS)
 C
 C Declare the rest of the label-definition slots to be available.
 C
-      LBIM=IFIX(QBIM)
+      LBIM=INT(QBIM)
 C
       DO 101 J=5,LBIM
         FLLB(1,J)=0.
@@ -85,17 +85,17 @@ C
 C Fill in the text of the four pre-defined lines.
 C
       CALL AGSTCH ('Y',1,IDCS)
-      FLLN(4,1)=FLOAT(IDCS)
+      FLLN(4,1)=REAL(IDCS)
       CALL AGSTCH (' ',1,IDCS)
-      FLLN(4,2)=FLOAT(IDCS)
+      FLLN(4,2)=REAL(IDCS)
       CALL AGSTCH ('X',1,IDCS)
-      FLLN(4,3)=FLOAT(IDCS)
+      FLLN(4,3)=REAL(IDCS)
       CALL AGSTCH (' ',1,IDCS)
-      FLLN(4,4)=FLOAT(IDCS)
+      FLLN(4,4)=REAL(IDCS)
 C
 C Declare the rest of the line-definition slots to be available.
 C
-      LNIM=IFIX(QNIM)
+      LNIM=INT(QNIM)
 C
       DO 102 J=5,LNIM
         FLLN(1,J)=SVAL(1)
@@ -104,7 +104,7 @@ C
 C Set the value of 'LINE/TERMINATOR.'
 C
       CALL AGSTCH ('$',1,IDCS)
-      TCLN=FLOAT(IDCS)
+      TCLN=REAL(IDCS)
 C
 C Compute the values of SMLL and SMRL.
 C

@@ -1,6 +1,6 @@
 C
-C $Id: agdlch.f,v 1.4 2000-08-22 15:02:12 haley Exp $
-C                                                                      
+C $Id: agdlch.f,v 1.5 2006-03-09 22:56:04 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

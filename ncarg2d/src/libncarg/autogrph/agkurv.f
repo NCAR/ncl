@@ -1,5 +1,5 @@
 C
-C $Id: agkurv.f,v 1.7 2004-07-06 21:06:46 kennison Exp $
+C $Id: agkurv.f,v 1.8 2006-03-09 22:56:06 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -94,12 +94,12 @@ C
 C
       INDX=INDX+IIEX
       XNXT=XVEC(INDX)
-      IF (IIEX.EQ.0) XNXT=FLOAT(INDP)
+      IF (IIEX.EQ.0) XNXT=REAL(INDP)
       IF (LLUX.NE.0.AND.XNXT.LE.0.) XNXT=SVAL
 C
       INDY=INDY+IIEY
       YNXT=YVEC(INDY)
-      IF (IIEY.EQ.0) YNXT=FLOAT(INDP)
+      IF (IIEY.EQ.0) YNXT=REAL(INDP)
       IF (LLUY.NE.0.AND.YNXT.LE.0.) YNXT=SVAL
 C
 C Check whether (XNXT,YNXT) is a special-value point.  Handle that case.

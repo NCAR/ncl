@@ -1,6 +1,6 @@
 C
-C $Id: displa.f,v 1.4 2000-08-22 15:02:19 haley Exp $
-C                                                                      
+C $Id: displa.f,v 1.5 2006-03-09 22:56:09 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -25,13 +25,13 @@ C
 C The subroutine DISPLA resets the parameters IFRA, IROW, and/or LLUX
 C and LLUY.
 C
-      IF (LFRA.NE.0) CALL AGSETI ('FRAM.', MAX0(1,MIN0(3,LFRA)))
+      IF (LFRA.NE.0) CALL AGSETI ('FRAM.', MAX(1,MIN(3,LFRA)))
 C
       IF (LROW.NE.0) CALL AGSETI ('ROW .',LROW)
 C
       IF (LTYP.EQ.0) RETURN
 C
-      ITYP=MAX0(1,MIN0(4,LTYP))
+      ITYP=MAX(1,MIN(4,LTYP))
       CALL AGSETI ('X/LOGA.',   (1-ITYP)/2)
       CALL AGSETI ('Y/LOGA.',MOD(1-ITYP,2))
 C

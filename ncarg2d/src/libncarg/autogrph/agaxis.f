@@ -1,5 +1,5 @@
 C
-C $Id: agaxis.f,v 1.9 2004-06-28 22:26:42 kennison Exp $
+C $Id: agaxis.f,v 1.10 2006-03-09 22:56:03 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -277,7 +277,7 @@ C
 C Compute the length of the smaller side of the curve window, in the
 C plotter coordinate system.
 C
-  101 SCWP=AMIN1(WCWP,HCWP)
+  101 SCWP=MIN(WCWP,HCWP)
 C
 C Compute a set of direction numbers for the axis, in the curve-window
 C coordinate system (the change in x and y from the beginning to the
@@ -298,7 +298,7 @@ C
 C
 C Compute the axis orientation angle, in degrees counter-clockwise.
 C
-      IAOR=MOD(IFIX(57.2957795130823*ATAN2(YDCA,XDCA)+3600.5),360)
+      IAOR=MOD(INT(57.2957795130823*ATAN2(YDCA,XDCA)+3600.5),360)
 C
 C Compute the multiplicative constants required to convert a fraction of
 C the axis length to a fraction of the width or height of the curve
@@ -331,7 +331,7 @@ C ticks themselves or the minor ticks between them, respectively, may be
 C drawn.
 C
   103 SMJT=SMJP/AXLP
-      SMNT=SMJT*FLOAT(NMNT+1)
+      SMNT=SMJT*REAL(NMNT+1)
 C
 C Initialize the fractional numeric-label character heights.
 C
@@ -397,8 +397,8 @@ C
 C Compute the widths and heights of the longest possible label mantissa
 C and exponent, as fractions of the length of the axis.
 C
-      FWLM=FLOAT(MCIM)*FWCM
-      FWLE=FLOAT(MCIE)*FWCE
+      FWLM=REAL(MCIM)*FWCM
+      FWLE=REAL(MCIE)*FWCE
       FHLM=FHCM
       FHLE=FHCE
       IF (MCIE.EQ.0) FHLE=0.
@@ -513,8 +513,8 @@ C
       SBSE=SIGN(BASE,VBGM)
       CALL AGFTOL (IAXS,2,FBGM,EBGM,DUMI,LLUA,UBEG,UDIF,FUNS,NBTP,SBSE)
       CALL AGFTOL (IAXS,2,FNDP,ENDP,DUMI,LLUA,UBEG,UDIF,FUNS,NBTP,SBSE)
-      EXMU=AMIN1(EBGM,ENDP)
-      ETMP=AMOD(EXMU,1.)
+      EXMU=MIN(EBGM,ENDP)
+      ETMP=MOD(EXMU,1.)
       IF (ETMP.NE.0.) EXMU=EXMU-ETMP+.5+SIGN(.5,EXMU)
 C
 C Set the numeric-label-space limits for the beginning and end of the
@@ -557,8 +557,8 @@ C
 C
 C Compute the length of the mantissa, the exponent, and the whole label.
 C
-      FLLM=FLOAT(NCIM)*FWCM
-      FLLE=FLOAT(NCIE)*FWCE
+      FLLM=REAL(NCIM)*FWCM
+      FLLE=REAL(NCIE)*FWCE
       FLLB=FLLM+FLLE
 C
 C The numeric-label space begins and ends at impossible values.
@@ -584,7 +584,7 @@ C Preset the internal-procedure exit parameter JMP1.
 C
   203 JMP1=1
       FZRO=FRAX
-      DZRT=AMAX1(SMJT,1.6*FLOAT(LDNL)*FHCM)
+      DZRT=MAX(SMJT,1.6*REAL(LDNL)*FHCM)
       IF (LDNL.EQ.0) GO TO 204
       DZRL=FNLB-FZRO
       FNLE=FNDP+WNLE/CFAA+.5*(FHCM+FHCE)
@@ -603,7 +603,7 @@ C
 C Compute a starting value of the exponent/multiplier EXMU.
 C
       CALL AGFTOL (IAXS,2,FRAX,EXMU,DUMI,LLUA,UBEG,UDIF,FUNS,NBTP,SBSE)
-      EXMU=EXMU-AMOD(EXMU,1.)+.5+SIGN(.5,EXMU)
+      EXMU=EXMU-MOD(EXMU,1.)+.5+SIGN(.5,EXMU)
 C
 C Jump to an internal procedure to draw the tick marks and/or labels.
 C
@@ -665,10 +665,10 @@ C
 C
 C Minor tick marks are equally spaced in the label-coordinate system.
 C
-      VINC=(VLCS-VLST)/FLOAT(NMNT+1)
+      VINC=(VLCS-VLST)/REAL(NMNT+1)
 C
       DO 303 I=1,NMNT
-        VMNT=VLST+VINC*FLOAT(I)
+        VMNT=VLST+VINC*REAL(I)
         CALL AGFTOL (IAXS,-1,VMNT,FMNT,DUMI,LLUA,UBEG,UDIF,FUNS,NBTP,
      +                                                             SBSE)
         IF (FMNT.LT.FBGP.OR.FMNT.GT.FNDM) GO TO 303
@@ -708,8 +708,8 @@ C If this is not a test run, mantissa and exponent length are checked.
 C
       IF (ITST.EQ.0.AND.(NCIM.GT.MCIM.OR.NCIE.GT.MCIE)) GO TO 305
       LDLB=1
-      FLLM=FLOAT(NCIM)*FWCM
-      FLLE=FLOAT(NCIE)*FWCE
+      FLLM=REAL(NCIM)*FWCM
+      FLLE=REAL(NCIE)*FWCE
       FLLB=FLLM+FLLE
 C
 C Use the next internal procedure to draw the major tick and/or label.
@@ -768,7 +768,7 @@ C
 C If not, shrink them by an amount based on the extent of the overlap,
 C reset the parameters affected, and start from square one.
 C
-      RFNL=AMIN1(.9,FDST/(FDST+AMAX1(FNLB-FLBB,FLBE-FNLE)))*RFNL
+      RFNL=MIN(.9,FDST/(FDST+MAX(FNLB-FLBB,FLBE-FNLE)))*RFNL
       MCIM=0
       MCIE=0
       JMP3=2
@@ -810,8 +810,8 @@ C
 C If this is a test shot, update the maximum mantissa and exponent
 C lengths being generated and exit from this internal procedure.
 C
-      MCIM=MAX0(MCIM,NCIM)
-      MCIE=MAX0(MCIE,NCIE)
+      MCIM=MAX(MCIM,NCIM)
+      MCIE=MAX(MCIE,NCIE)
       GO TO 424
 C
 C No label is to be drawn.  If this is a test shot, exit from this
@@ -963,8 +963,8 @@ C
   500 NLOR=NLOF
       IF (NLOR.LT.0) NLOR=NLOS
 C
-      XDCL=COS(.017453292519943*FLOAT(NLOR))
-      YDCL=SIN(.017453292519943*FLOAT(NLOR))
+      XDCL=COS(.017453292519943*REAL(NLOR))
+      YDCL=SIN(.017453292519943*REAL(NLOR))
 C
 C Compute JLAO, which is a computed-go-to jump parameter specifying the
 C label-to-axis orientation.
@@ -975,15 +975,15 @@ C Compute the width of a character in the label mantissa, the width of a
 C character in the label exponent, and the distance of a label from the
 C axis, in the plotter coordinate system.
 C
-      IWCM=MAX0(MWCM,IFIX(RFNL*ABS(WCLM)*SCWP+.5))
-      IWCE=MAX0(MWCE,IFIX(RFNL*ABS(WCLE)*SCWP+.5))
-      IDLA=MAX0(MDLA,IFIX(RFNL*ABS(DNLA)*SCWP+.5))
+      IWCM=MAX(MWCM,INT(RFNL*ABS(WCLM)*SCWP+.5))
+      IWCE=MAX(MWCE,INT(RFNL*ABS(WCLE)*SCWP+.5))
+      IDLA=MAX(MDLA,INT(RFNL*ABS(DNLA)*SCWP+.5))
 C
 C Compute the same quantities as fractions of the axis length.
 C
-      FWCM=FLOAT(IWCM)/AXLP
-      FWCE=FLOAT(IWCE)/AXLP
-      FDLA=FLOAT(IDLA)/AXLP
+      FWCM=REAL(IWCM)/AXLP
+      FWCE=REAL(IWCE)/AXLP
+      FDLA=REAL(IDLA)/AXLP
 C
 C Compute character heights as fractions of the axis length.
 C
@@ -1021,7 +1021,7 @@ C
 C
 C Labels are perpendicular to the axis.
 C
-  803 FNLW=FLOAT(MCIM)*FWCM+FLOAT(MCIE)*FWCE
+  803 FNLW=REAL(MCIM)*FWCM+REAL(MCIE)*FWCE
 C
 C Jump on the numeric-label-distance-from-axis parameter DNLA.
 C
@@ -1075,7 +1075,7 @@ C
       RFNL=.000001*RFNL
       GO TO 811
 C
-  810 RFNL=AMIN1(.9,(WNLL+WNLR)/(CFAP*(FNLL+FNLR)))*RFNL
+  810 RFNL=MIN(.9,(WNLL+WNLR)/(CFAP*(FNLL+FNLR)))*RFNL
 C
   811 JMP3=3
       GO TO 500
@@ -1119,10 +1119,10 @@ C
 C Pack up integer values which might have been changed into the
 C corresponding floating-point arguments.
 C
-  816 QLOF=FLOAT(NLOF)
-      QLOS=FLOAT(NLOS)
-      QCIM=FLOAT(MCIM)
-      QCIE=FLOAT(MCIE)
+  816 QLOF=REAL(NLOF)
+      QLOS=REAL(NLOS)
+      QCIM=REAL(MCIM)
+      QCIE=REAL(MCIE)
 C
 C Done.
 C

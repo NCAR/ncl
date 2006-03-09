@@ -1,6 +1,6 @@
 C
-C $Id: idiot.f,v 1.6 2000-08-22 15:02:19 haley Exp $
-C                                                                      
+C $Id: idiot.f,v 1.7 2006-03-09 22:56:09 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -34,9 +34,9 @@ C This is an implementation of the routine from which AUTOGRAPH grew.
 C It should work pretty much as the original did (if you can figure out
 C what that was).
 C
-      CALL ANOTAT (LABX,LABY,1,2-ISIGN(1,NPTS),1,AGBNCH(LDSH))
+      CALL ANOTAT (LABX,LABY,1,2-SIGN(1,NPTS),1,AGBNCH(LDSH))
 C
-      CALL DISPLA (2-MAX0(-1,MIN0(1,LFRA)),1,LTYP)
+      CALL DISPLA (2-MAX(-1,MIN(1,LFRA)),1,LTYP)
 C
       CALL AGEZSU (5,XDRA,YDRA,IABS(NPTS),1,IABS(NPTS),LABG,IIVX,IIEX,
      +                                                        IIVY,IIEY)

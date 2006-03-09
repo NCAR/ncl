@@ -1,6 +1,6 @@
 C
-C $Id: agctko.f,v 1.4 2000-08-22 15:02:11 haley Exp $
-C                                                                      
+C $Id: agctko.f,v 1.5 2006-03-09 22:56:04 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -46,8 +46,8 @@ C
 C Compute the distances of the tick mark ends from the axis as fractions
 C of the axis length, using only the (EPSILON) portion of WMML and WMMR.
 C
-      FMML=-CSFA*AMOD(WMML,1.)
-      FMMR=+CSFA*AMOD(WMMR,1.)
+      FMML=-CSFA*MOD(WMML,1.)
+      FMMR=+CSFA*MOD(WMMR,1.)
 C
 C If the labels overlap the axis and the (EPSILON) form was used for
 C WMML or WMMR, move the tick mark to the end of the label.

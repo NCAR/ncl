@@ -1,6 +1,6 @@
 C
-C $Id: agseti.f,v 1.4 2000-08-22 15:02:17 haley Exp $
-C                                                                      
+C $Id: agseti.f,v 1.5 2006-03-09 22:56:08 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -28,7 +28,7 @@ C
 C The routine AGSETI may be used to set the integer-equivalent value of
 C any single AUTOGRAPH control parameter.
 C
-      FURA(1)=FLOAT(IUSR)
+      FURA(1)=REAL(IUSR)
       CALL AGSETP (TPID,FURA,1)
       RETURN
 C

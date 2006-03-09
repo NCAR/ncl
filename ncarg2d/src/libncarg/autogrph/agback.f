@@ -1,5 +1,5 @@
 C
-C $Id: agback.f,v 1.7 2004-07-06 21:06:46 kennison Exp $
+C $Id: agback.f,v 1.8 2006-03-09 22:56:03 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -71,10 +71,10 @@ C
 C
 C Draw the labels, if any, first.
 C
-      IDLB=IFIX(QDLB)
+      IDLB=INT(QDLB)
       IF (IDLB.EQ.0) GO TO 101
 C
-      LBIM=IFIX(QBIM)
+      LBIM=INT(QBIM)
       CALL AGLBLS (IDLB,WCWP,HCWP,FLLB,LBIM,FLLN,DBOX,SBOX,RBOX)
 C
 C Now draw each of the four axes.
@@ -135,7 +135,7 @@ C
       IF (YBGA(4)-WNLR(4).LT.DBOX(2,4).AND.
      +                YBGA(4)+WNLL(4).GT.DBOX(2,3)) WNLE(4)=DBOX(2,1)-1.
 C
-  107 Q=AMIN1(0.,QDAX(I))
+  107 Q=MIN(0.,QDAX(I))
 C
       CALL AGAXIS (I,Q,
      +             QSPA(I),WCWP,HCWP,XBGA(I),YBGA(I),XNDA(I),YNDA(I),
@@ -151,7 +151,7 @@ C Do a "SET" call for the user and return.
 C
   108 CALL PLOTIT (0,0,2)
       CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
-     +                            1+IABS(IFIX(QLUX))*2+IABS(IFIX(QLUY)))
+     +                            1+IABS(INT(QLUX))*2+ABS(INT(QLUY)))
 C
       RETURN
 C

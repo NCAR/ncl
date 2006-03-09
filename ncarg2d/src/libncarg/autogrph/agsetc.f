@@ -1,6 +1,6 @@
 C
-C $Id: agsetc.f,v 1.4 2000-08-22 15:02:17 haley Exp $
-C                                                                      
+C $Id: agsetc.f,v 1.5 2006-03-09 22:56:07 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -65,7 +65,7 @@ C
 C Check for a label name.
 C
       ELSE IF (ITCS.EQ.2) THEN
-        CALL AGSTCH (CUSR,MAX0(1,ILEN),ITMP)
+        CALL AGSTCH (CUSR,MAX(1,ILEN),ITMP)
 C
 C Check for the line-end character.
 C
@@ -76,7 +76,7 @@ C Check for the text of a label.
 C
       ELSE IF (ITCS.EQ.4) THEN
         CALL AGGETI ('LINE/MAXI.',NCHR)
-        IF (ILEN.GT.0) NCHR=MIN0(NCHR,ILEN)
+        IF (ILEN.GT.0) NCHR=MIN(NCHR,ILEN)
         CALL AGGETC ('LINE/END .',LEND)
         DO 101 I=1,NCHR
           IF (CUSR(I:I).EQ.LEND) THEN
@@ -95,7 +95,7 @@ C
 C
 C Transfer the generated value to the list of AUTOGRAPH parameters.
 C
-      FURA(1)=FLOAT(ITMP)
+      FURA(1)=REAL(ITMP)
       CALL AGSETP (TPID,FURA,1)
 C
 C Done.

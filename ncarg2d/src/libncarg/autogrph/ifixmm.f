@@ -1,6 +1,6 @@
 C
-C $Id: ifixmm.f,v 1.3 2000-08-22 15:02:20 haley Exp $
-C                                                                      
+C $Id: ifixmm.f,v 1.4 2006-03-09 22:56:09 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -22,9 +22,9 @@ C USA.
 C
       FUNCTION IFIXMM(RVAL)
 C
-C This function may be called in place of the FORTRAN function IFIX.
+C This function may be called in place of the FORTRAN function INT.
 C If the argument is a special value, a zero is returned, and otherwise
-C IFIX(RVAL) is returned.
+C INT(RVAL) is returned.
 C
 C The following common block contains the AUTOGRAPH control parameters,
 C all of which are real.  If it is changed, all of AUTOGRAPH (especially
@@ -51,7 +51,7 @@ C
       SAVE /AGCONP/
 C
       IF (ABS(RVAL).NE.SVAL(1).AND.ABS(RVAL).NE.SVAL(2)) THEN
-        IFIXMM=IFIX(RVAL)
+        IFIXMM=INT(RVAL)
       ELSE
         IFIXMM=0
       END IF

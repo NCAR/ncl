@@ -1,6 +1,6 @@
 C
-C $Id: agmaxi.f,v 1.4 2000-08-22 15:02:15 haley Exp $
-C                                                                      
+C $Id: agmaxi.f,v 1.5 2006-03-09 22:56:06 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -37,7 +37,7 @@ C
 C -- IIEZ is the index increment from one vector element to the next.
 C    If IIEZ is 0, the array is ignored and NEVZ is returned.
 C
-      AGMAXI=FLOAT(NEVZ)
+      AGMAXI=REAL(NEVZ)
       IF (IIEZ.EQ.0) RETURN
 C
       AGMAXI=SVAL
@@ -49,14 +49,14 @@ C
             INDZ=INDZ+IIEZ
             IF (ZDRA(INDZ).EQ.SVAL) GO TO 101
             IF (AGMAXI.EQ.SVAL) AGMAXI=ZDRA(INDZ)
-            AGMAXI=AMAX1(AGMAXI,ZDRA(INDZ))
+            AGMAXI=MAX(AGMAXI,ZDRA(INDZ))
   101     CONTINUE
         ELSE
           DO 102 J=1,NEVZ
             INDZ=INDZ+IIEZ
             IF (ZDRA(INDZ).EQ.SVAL.OR.ZDRA(INDZ).GT.ZHGH) GO TO 102
             IF (AGMAXI.EQ.SVAL) AGMAXI=ZDRA(INDZ)
-            AGMAXI=AMAX1(AGMAXI,ZDRA(INDZ))
+            AGMAXI=MAX(AGMAXI,ZDRA(INDZ))
   102     CONTINUE
         END IF
         INDZ=INDZ-NEVZ*IIEZ+IIVZ

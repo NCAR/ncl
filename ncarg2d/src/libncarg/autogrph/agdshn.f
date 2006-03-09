@@ -1,6 +1,6 @@
 C
-C $Id: agdshn.f,v 1.4 2000-08-22 15:02:12 haley Exp $
-C                                                                      
+C $Id: agdshn.f,v 1.5 2006-03-09 22:56:05 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -24,11 +24,11 @@ C
 C
 C The value of this function is the name of the dash pattern numbered
 C IDSH - that is to say, the character string 'DASH/PATTERN/n.', where
-C n is an integer between 1 and 99, equal to MAX0(1,MIN0(99,IDSH)).
+C n is an integer between 1 and 99, equal to MAX(1,MIN(99,IDSH)).
 C
       AGDSHN='DASH/PATTERN/  .'
 C
-      KDSH=MAX0(1,MIN0(99,IDSH))
+      KDSH=MAX(1,MIN(99,IDSH))
 C
       DO 101 I=15,14,-1
         AGDSHN(I:I)=CHAR(ICHAR('0')+MOD(KDSH,10))

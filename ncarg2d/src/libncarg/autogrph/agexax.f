@@ -1,5 +1,5 @@
 C
-C $Id: agexax.f,v 1.7 2004-06-28 22:26:42 kennison Exp $
+C $Id: agexax.f,v 1.8 2006-03-09 22:56:05 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -127,7 +127,7 @@ C
 C The user has specified a value for the parameter BASE.  If that value
 C is less than or equal to zero, tick marks and labels are suppressed.
 C
-      BASE=AMAX1(0.,BASD)
+      BASE=MAX(0.,BASD)
       IF (BASE.EQ.0.) RETURN
       NMNT=0
       GO TO 108
@@ -138,11 +138,11 @@ C
 C
 C Major ticks and labels are at numbers of the form (-) BASE * EXMU.
 C
-  102 NMJD=MAX0(0,NMJD)
+  102 NMJD=MAX(0,NMJD)
 C
 C Compute an approximate value for BASE.
 C
-      FTMP=ABS(VMAX-VMIN)/FLOAT(NMJD+1)
+      FTMP=ABS(VMAX-VMIN)/REAL(NMJD+1)
 C
 C Reduce the approximate value to the form FTMP * 10 ** ITMP.
 C
@@ -171,8 +171,8 @@ C
 C
   107 IF (BASD.EQ.SVAL(2)) BASD=BASE
 C
-  108 IF (QMND.NE.SVAL(1).AND.QMND.NE.SVAL(2)) NMNT=MAX0(0,NMND)
-      IF (QMND.EQ.SVAL(2)) QMND=FLOAT(NMNT)
+  108 IF (QMND.NE.SVAL(1).AND.QMND.NE.SVAL(2)) NMNT=MAX(0,NMND)
+      IF (QMND.EQ.SVAL(2)) QMND=REAL(NMNT)
 C
 C If the user wants nice values at the axis ends, reset UMIN and UMAX.
 C
@@ -191,8 +191,8 @@ C
      +                                                +1.E-6*(EMAX-EMIN)
       EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX-VMIN)
      +                                                -1.E-6*(EMAX-EMIN)
-      WMIN=BASE*(EMIN-AMOD(EMIN,1.))
-      WMAX=BASE*(EMAX-AMOD(EMAX,1.))
+      WMIN=BASE*(EMIN-MOD(EMIN,1.))
+      WMAX=BASE*(EMAX-MOD(EMAX,1.))
       GO TO 114
 C
   110 IF ((VMIN.LT.0..AND.VMAX.LT.0.).OR.(VMIN.GT.0..AND.VMAX.GT.0.))
@@ -203,22 +203,22 @@ C
      +        -SIGN(SMRL*EMIN,VMIN)*SIGN(1.,VMIN-VMAX)+1.E-6*(EMAX-EMIN)
         EMAX=EMAX-.5+SIGN(.5,EMAX)
      +        -SIGN(SMRL*EMAX,VMAX)*SIGN(1.,VMAX-VMIN)-1.E-6*(EMAX-EMIN)
-        WMIN=SIGN(BASE,VMIN)*10.**(EMIN-AMOD(EMIN,1.))
-        WMAX=SIGN(BASE,VMAX)*10.**(EMAX-AMOD(EMAX,1.))
+        WMIN=SIGN(BASE,VMIN)*10.**(EMIN-MOD(EMIN,1.))
+        WMAX=SIGN(BASE,VMAX)*10.**(EMAX-MOD(EMAX,1.))
       ELSE
         IF (VMIN.NE.0.) THEN
           EMIN=ALOG10(ABS(VMIN)/BASE)+.5+SIGN(.5,VMIN)*
      +                                                SIGN(1.,VMIN-VMAX)
           EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN)*
      +                                                SIGN(1.,VMIN-VMAX)
-          WMIN=SIGN(BASE,VMIN)*10.**(EMIN-AMOD(EMIN,1.))
+          WMIN=SIGN(BASE,VMIN)*10.**(EMIN-MOD(EMIN,1.))
         END IF
         IF (VMAX.NE.0.) THEN
           EMAX=ALOG10(ABS(VMAX)/BASE)+.5+SIGN(.5,VMAX)*
      +                                                SIGN(1.,VMAX-VMIN)
           EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX)*
      +                                                SIGN(1.,VMAX-VMIN)
-          WMAX=SIGN(BASE,VMAX)*10.**(EMAX-AMOD(EMAX,1.))
+          WMAX=SIGN(BASE,VMAX)*10.**(EMAX-MOD(EMAX,1.))
         END IF
       END IF
       GO TO 114
@@ -233,22 +233,22 @@ C
      +                              SIGN(1.,VMIN-VMAX)+1.E-6*(EMAX-EMIN)
         EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX)*
      +                              SIGN(1.,VMAX-VMIN)-1.E-6*(EMAX-EMIN)
-        WMIN=SIGN(1.,VMIN)*BASE**(EMIN-AMOD(EMIN,1.))
-        WMAX=SIGN(1.,VMAX)*BASE**(EMAX-AMOD(EMAX,1.))
+        WMIN=SIGN(1.,VMIN)*BASE**(EMIN-MOD(EMIN,1.))
+        WMAX=SIGN(1.,VMAX)*BASE**(EMAX-MOD(EMAX,1.))
       ELSE
         IF (VMIN.NE.0.) THEN
           EMIN=ALOG10(ABS(VMIN))/ALOG10(BASE)
      +                              +.5+SIGN(.5,VMIN)*SIGN(1.,VMIN-VMAX)
           EMIN=EMIN-.5+SIGN(.5,EMIN)-SIGN(SMRL*EMIN,VMIN)*
      +                                                SIGN(1.,VMIN-VMAX)
-          WMIN=SIGN(1.,VMIN)*BASE**(EMIN-AMOD(EMIN,1.))
+          WMIN=SIGN(1.,VMIN)*BASE**(EMIN-MOD(EMIN,1.))
         END IF
         IF (VMAX.NE.0.) THEN
           EMAX=ALOG10(ABS(VMAX))/ALOG10(BASE)
      +                              +.5+SIGN(.5,VMAX)*SIGN(1.,VMAX-VMIN)
           EMAX=EMAX-.5+SIGN(.5,EMAX)-SIGN(SMRL*EMAX,VMAX)*
      +                                                SIGN(1.,VMAX-VMIN)
-          WMAX=SIGN(1.,VMAX)*BASE**(EMAX-AMOD(EMAX,1.))
+          WMAX=SIGN(1.,VMAX)*BASE**(EMAX-MOD(EMAX,1.))
         END IF
       END IF
 C
@@ -289,7 +289,7 @@ C Now we examine the parameters defining the appearance of the numeric
 C labels.  If the numeric-label type is zero, there is no more to do.
 C
   115 IF (QLTD.EQ.SVAL(1).OR.QLTD.EQ.SVAL(2)) GO TO 116
-      NLTP=MAX0(0,MIN0(3,NLTD))
+      NLTP=MAX(0,MIN(3,NLTD))
       IF (NLTP.EQ.0) GO TO 136
 C
 C The numeric-label type (NLTP) is specified.  If both the numeric-label
@@ -331,11 +331,11 @@ C digits that are likely to be required, depending on the number type.
 C
   120 GO TO (121,123,124) , NBTP
 C
-  121 FTMP=AMAX1(ABS(VMIN),ABS(VMAX))/BASE
+  121 FTMP=MAX(ABS(VMIN),ABS(VMAX))/BASE
       JMP1=3
       GO TO 200
 C
-  122 NSIG=MAX0(1,ITMP+1+LBSE)
+  122 NSIG=MAX(1,ITMP+1+LBSE)
       GO TO 125
 C
   123 NSIG=LBSE
@@ -347,7 +347,7 @@ C NLEX + NLFL should be equal to NSIG.  Make that the case.
 C
   125 IF (QLED.NE.SVAL(1).AND.QLED.NE.SVAL(2)) GO TO 127
       IF (QLFD.EQ.SVAL(1).OR. QLFD.EQ.SVAL(2)) GO TO 126
-      NLEX=NSIG-MAX0(0,NLFL)
+      NLEX=NSIG-MAX(0,NLFL)
       GO TO 135
   126 NLEX=1
   127 NLFL=NSIG-NLEX
@@ -367,7 +367,7 @@ C
       IF (QLFD.NE.SVAL(1).AND.QLFD.NE.SVAL(2)) GO TO 129
       IF (QLED.NE.SVAL(1).AND.QLED.NE.SVAL(2)) GO TO 130
       NLFL=-1
-  129 NLEX=MAX0(0,NLFL)+NEXP
+  129 NLEX=MAX(0,NLFL)+NEXP
       GO TO 135
   130 NLFL=NLEX-NEXP
       IF (NLFL.LE.0) NLFL=-1
@@ -393,7 +393,7 @@ C
 C Nunbers are of the form (-) BASE * EXMU.  Use labels with no exponent
 C unless the use of an exponent would result in shorter labels.
 C
-  133 IF (MAX0(KBSE+1-LBSE,-KBSE-1).GT.4) GO TO 134
+  133 IF (MAX(KBSE+1-LBSE,-KBSE-1).GT.4) GO TO 134
       NLTP=3
       NLFL=LBSE-KBSE-1
       IF (NLFL.LE.0) NLFL=-1
@@ -407,16 +407,16 @@ C
 C
 C Back-store the computed parameters, if requested, and return.
 C
-  135 IF (QLTD.EQ.SVAL(2)) QLTD=FLOAT(NLTP)
-      IF (QLED.EQ.SVAL(2)) QLED=FLOAT(NLEX)
-      IF (QLFD.EQ.SVAL(2)) QLFD=FLOAT(NLFL)
+  135 IF (QLTD.EQ.SVAL(2)) QLTD=REAL(NLTP)
+      IF (QLED.EQ.SVAL(2)) QLED=REAL(NLEX)
+      IF (QLFD.EQ.SVAL(2)) QLFD=REAL(NLFL)
 C
 C Pack up integer values to floating-point arguments and return.
 C
-  136 QMNT=FLOAT(NMNT)
-      QLTP=FLOAT(NLTP)
-      QLEX=FLOAT(NLEX)
-      QLFL=FLOAT(NLFL)
+  136 QMNT=REAL(NMNT)
+      QLTP=REAL(NLTP)
+      QLEX=REAL(NLEX)
+      QLFL=REAL(NLFL)
       RETURN
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -427,8 +427,8 @@ C the original value of (FTMP).  (FTMP) must be positive.
 C
   200 FTM1=ALOG10(FTMP+SMRL*FTMP)
       IF (FTM1.LT.0.) FTM1=FTM1-1.
-      ITMP=IFIX(FTM1)
-      FTMP=AMAX1(1.,FTMP*REAL(10.D0**(-ITMP)))
+      ITMP=INT(FTM1)
+      FTMP=MAX(1.,FTMP*REAL(10.D0**(-ITMP)))
       GO TO (103,118,122) , JMP1
 C
 C *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -436,14 +436,14 @@ C
 C This internal procedure counts the number of digits in the fractional
 C portion of (FTMP), returning the count as the value of (ITMP).
 C
-  300 FTM1=AMOD(FTMP+SMRL*FTMP,1.)
+  300 FTM1=MOD(FTMP+SMRL*FTMP,1.)
       FTM2=10.*SMRL*FTMP
       ITMP=0
 C
   301 IF (FTM1.LT.FTM2) GO TO 302
       ITMP=ITMP+1
       IF (ITMP.GE.10) GO TO 302
-      FTM1=AMOD(10.*FTM1,1.)
+      FTM1=MOD(10.*FTM1,1.)
       FTM2=10.*FTM2
       GO TO 301
 C

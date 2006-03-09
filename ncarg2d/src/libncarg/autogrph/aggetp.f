@@ -1,6 +1,6 @@
 C
-C $Id: aggetp.f,v 1.4 2000-08-22 15:02:14 haley Exp $
-C                                                                      
+C $Id: aggetp.f,v 1.5 2006-03-09 22:56:06 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -87,7 +87,7 @@ C
 C
 C Determine the number of elements to transfer.
 C
-      NURA=MAX0(1,MIN0(LURA,NIPA))
+      NURA=MAX(1,MIN(LURA,NIPA))
 C
 C Transfer the desired parameters to the user array.
 C
@@ -102,7 +102,7 @@ C If the current label name is being gotten, return its identifier.
 C
       CALL AGSCAN ('LABE/NAME.',LOLN,NILN,IILN)
       IF (LOPA.EQ.LOLN.AND.NIPA.EQ.NILN.AND.QBAN.NE.0.) THEN
-        LBAN=IFIX(QBAN)
+        LBAN=INT(QBAN)
         FURA(1)=FLLB(1,LBAN)
       END IF
 C

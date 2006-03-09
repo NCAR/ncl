@@ -1,6 +1,6 @@
 C
-C $Id: ezy.f,v 1.6 2000-08-22 15:02:19 haley Exp $
-C                                                                      
+C $Id: ezy.f,v 1.7 2006-03-09 22:56:09 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

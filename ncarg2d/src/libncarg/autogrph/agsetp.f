@@ -1,6 +1,6 @@
 C
-C $Id: agsetp.f,v 1.4 2000-08-22 15:02:17 haley Exp $
-C                                                                      
+C $Id: agsetp.f,v 1.5 2006-03-09 22:56:08 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -93,17 +93,17 @@ C
 C
 C Determine the number of values to transfer.
 C
-      NURA=MAX0(1,MIN0(LURA,NIPA))
+      NURA=MAX(1,MIN(LURA,NIPA))
 C
 C If character-string dash patterns are being replaced by integer dash
 C patterns, reclaim the space used in the character-storage arrays.
 C
       CALL AGSCAN ('DASH/PATT.',LODP,NIDP,IIDP)
       IF (LOPA.LE.LODP+NIDP-1.AND.LOPA+NURA-1.GE.LODP) THEN
-        MINI=MAX0(LOPA,LODP)-LOPA+1
-        MAXI=MIN0(LOPA+NURA-1,LODP+NIDP-1)-LOPA+1
+        MINI=MAX(LOPA,LODP)-LOPA+1
+        MAXI=MIN(LOPA+NURA-1,LODP+NIDP-1)-LOPA+1
         DO 100 I=MINI,MAXI
-          IF (FURA(I).GT.0.) CALL AGDLCH (IFIX(DUMI(LOPA+I-1)))
+          IF (FURA(I).GT.0.) CALL AGDLCH (INT(DUMI(LOPA+I-1)))
   100   CONTINUE
       END IF
 C
@@ -165,20 +165,20 @@ C
       QBAN=0.
       QNAN=0.
 C
-      LBIM=IFIX(QBIM)
+      LBIM=INT(QBIM)
 C
       DO 105 I=1,LBIM
         IF (FLLB(1,I).NE.0.) THEN
-          CALL AGDLCH (IFIX(FLLB(1,I)))
+          CALL AGDLCH (INT(FLLB(1,I)))
           FLLB(1,I)=0.
         END IF
   105 CONTINUE
 C
-      LNIM=IFIX(QNIM)
+      LNIM=INT(QNIM)
 C
       DO 106 I=1,LNIM
         IF (FLLN(1,I).NE.SVAL(1)) THEN
-          CALL AGDLCH (IFIX(FLLN(4,I)))
+          CALL AGDLCH (INT(FLLN(4,I)))
           FLLN(1,I)=SVAL(1)
         END IF
   106 CONTINUE
@@ -192,24 +192,24 @@ C
       IF (LOPA.NE.LOLN) GO TO 109
 C
       LBAN=0
-      LBIM=IFIX(QBIM)
+      LBIM=INT(QBIM)
       QNAN=0.
 C
-      CALL AGGTCH (IFIX(FURA(1)),CHS1,LCS1)
+      CALL AGGTCH (INT(FURA(1)),CHS1,LCS1)
 C
       DO 108 I=1,LBIM
         IF (LBAN.EQ.0.AND.FLLB(1,I).EQ.0.) LBAN=I
-        CALL AGGTCH (IFIX(FLLB(1,I)),CHS2,LCS2)
+        CALL AGGTCH (INT(FLLB(1,I)),CHS2,LCS2)
         IF (LCS1.NE.LCS2) GO TO 108
         IF (CHS1(1:LCS1).NE.CHS2(1:LCS2)) GO TO 108
-        QBAN=FLOAT(I)
-        CALL AGDLCH (IFIX(FURA(1)))
+        QBAN=REAL(I)
+        CALL AGDLCH (INT(FURA(1)))
         RETURN
   108 CONTINUE
 C
       IF (LBAN.EQ.0) GO TO 901
 C
-      QBAN=FLOAT(LBAN)
+      QBAN=REAL(LBAN)
 C
       FLLB( 1,LBAN)=FURA(1)
       FLLB( 2,LBAN)=0.
@@ -228,10 +228,10 @@ C If the label access name is not set, skip.
 C
   109 IF (QBAN.LE.0.) GO TO 122
 C
-      LBAN=IFIX(QBAN)
-      LBIM=IFIX(QBIM)
-      LNAN=IFIX(QNAN)
-      LNIM=IFIX(QNIM)
+      LBAN=INT(QBAN)
+      LBIM=INT(QBIM)
+      LNAN=INT(QNAN)
+      LNIM=INT(QNIM)
 C
 C If the specific item was the suppression flag for the current label
 C and it was set negative, delete the label and/or its lines.
@@ -240,21 +240,21 @@ C
       IF (LOPA.NE.LOLS) GO TO 111
       IF (FLLB(2,LBAN).GE.0.) RETURN
 C
-      ITMP=IFIX(FLLB(2,LBAN))
+      ITMP=INT(FLLB(2,LBAN))
       FLLB(2,LBAN)=0.
       FLLB(9,LBAN)=0.
-      LNIN=IFIX(FLLB(10,LBAN))
+      LNIN=INT(FLLB(10,LBAN))
       FLLB(10,LBAN)=0.
       QNAN=0.
       IF (ITMP.EQ.(-1)) GO TO 110
-      CALL AGDLCH (IFIX(FLLB(1,LBAN)))
+      CALL AGDLCH (INT(FLLB(1,LBAN)))
       FLLB(1,LBAN)=0.
       QBAN=0.
 C
   110 IF (LNIN.LT.1.OR.LNIN.GT.LNIM) RETURN
       FLLN(1,LNIN)=SVAL(1)
-      CALL AGDLCH (IFIX(FLLN(4,LNIN)))
-      LNIN=IFIX(FLLN(6,LNIN))
+      CALL AGDLCH (INT(FLLN(4,LNIN)))
+      LNIN=INT(FLLN(6,LNIN))
       GO TO 110
 C
 C If the specific item was the line number, reset it to an appropriate
@@ -264,16 +264,16 @@ C
       IF (LOPA.NE.LOLN) GO TO 118
 C
       LNIL=0
-      LNIN=IFIX(FLLB(10,LBAN))
+      LNIN=INT(FLLB(10,LBAN))
 C
   112 IF (LNIN.LT.1.OR.LNIN.GT.LNIM) GO TO 115
-      IF (LNAN-IFIX(FLLN(1,LNIN))) 113,114,115
+      IF (LNAN-INT(FLLN(1,LNIN))) 113,114,115
 C
   113 LNIL=LNIN
-      LNIN=IFIX(FLLN(6,LNIN))
+      LNIN=INT(FLLN(6,LNIN))
       GO TO 112
 C
-  114 QNAN=FLOAT(LNIN)
+  114 QNAN=REAL(LNIN)
       RETURN
 C
   115      DO 116 I=1,LNIM
@@ -285,20 +285,20 @@ C
 C
   117 CALL AGSTCH (' ',1,ITMP)
 C
-      FLLN(1,LNIT)=FLOAT(LNAN)
+      FLLN(1,LNIT)=REAL(LNAN)
       FLLN(2,LNIT)=0.
       FLLN(3,LNIT)=.015
       FLLN(4,LNIT)=ITMP
       FLLN(5,LNIT)=1.
-      FLLN(6,LNIT)=FLOAT(LNIN)
+      FLLN(6,LNIT)=REAL(LNIN)
 C
       LNAN=LNIT
-      IF (LNIL.EQ.0) FLLB(10,LBAN)=FLOAT(LNAN)
-      IF (LNIL.NE.0) FLLN( 6,LNIL)=FLOAT(LNAN)
+      IF (LNIL.EQ.0) FLLB(10,LBAN)=REAL(LNAN)
+      IF (LNIL.NE.0) FLLN( 6,LNIL)=REAL(LNAN)
 C
       FLLB(9,LBAN)=FLLB(9,LBAN)+1.
 C
-      QNAN=FLOAT(LNAN)
+      QNAN=REAL(LNAN)
       RETURN
 C
 C If the line access number is not set, skip.
@@ -313,18 +313,18 @@ C
       IF (FLLN(2,LNAN).GE.0.) RETURN
 C
       LNIL=0
-      LNIN=IFIX(FLLB(10,LBAN))
+      LNIN=INT(FLLB(10,LBAN))
 C
   119 IF (LNIN.LT.1.OR.LNIN.GT.LNIM) RETURN
       IF (LNAN.EQ.LNIN) GO TO 120
       LNIL=LNIN
-      LNIN=IFIX(FLLN(6,LNIN))
+      LNIN=INT(FLLN(6,LNIN))
       GO TO 119
 C
   120 IF (LNIL.EQ.0) FLLB(10,LBAN)=FLLN(6,LNAN)
       IF (LNIL.NE.0) FLLN( 6,LNIL)=FLLN(6,LNAN)
       FLLN(1,LNAN)=SVAL(1)
-      CALL AGDLCH (IFIX(FLLN(4,LNAN)))
+      CALL AGDLCH (INT(FLLN(4,LNAN)))
       QNAN=0.
       RETURN
 C
@@ -333,8 +333,8 @@ C line, as well.
 C
   121 CALL AGSCAN ('LINE/TEXT.',LOLT,NILT,IILT)
       IF (LOPA.NE.LOLT) GO TO 123
-      CALL AGGTCH (IFIX(FURA(1)),CHS1,LCS1)
-      FLLN(5,LNAN)=FLOAT(LCS1)
+      CALL AGGTCH (INT(FURA(1)),CHS1,LCS1)
+      FLLN(5,LNAN)=REAL(LCS1)
       RETURN
 C
 C See if the user is trying to get at a line of a non-existent label.
@@ -348,8 +348,8 @@ C
   123 CALL AGSCAN ('BACK.',LOBG,NIBG,IIBG)
       IF (LOPA.NE.LOBG) GO TO 130
 C
-      QBAC=AMAX1(1.,AMIN1(4.,QBAC))
-      IBAC=IFIX(QBAC)
+      QBAC=MAX(1.,MIN(4.,QBAC))
+      IBAC=INT(QBAC)
       GO TO (124,125,126,127) , IBAC
 C
 C Perimeter background.
@@ -393,7 +393,7 @@ C
         WMNR(I)=WMNI
   129 CONTINUE
 C
-      QDLB=FLOAT(2-2*(IBAC/4))
+      QDLB=REAL(2-2*(IBAC/4))
       RETURN
 C
 C If the specific item was the get-limits-from-last-SET-call parameter,
@@ -402,7 +402,7 @@ C
   130 CALL AGSCAN ('SET .',LOSE,NISE,IISE)
       IF (LOPA.NE.LOSE) GO TO 131
 C
-      QSET=SIGN(AMAX1(1.,AMIN1(4.,ABS(QSET))),QSET)
+      QSET=SIGN(MAX(1.,MIN(4.,ABS(QSET))),QSET)
 C
       XLGD=.15
       XRGD=.95
@@ -412,7 +412,7 @@ C
 C
       XMIN=SVAL(1)
       XMAX=SVAL(1)
-      QLUX=AMIN1(QLUX,0.)
+      QLUX=MIN(QLUX,0.)
       QOVX=0.
       QCEX=-1.
       XLOW=SVAL(1)
@@ -420,7 +420,7 @@ C
 C
       YMIN=SVAL(1)
       YMAX=SVAL(1)
-      QLUY=AMIN1(QLUY,0.)
+      QLUY=MIN(QLUY,0.)
       QOVY=0.
       QCEY=-1.
       YLOW=SVAL(1)

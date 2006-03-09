@@ -1,6 +1,6 @@
 C
-C $Id: anotat.f,v 1.4 2000-08-22 15:02:18 haley Exp $
-C                                                                      
+C $Id: anotat.f,v 1.5 2006-03-09 22:56:09 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -57,7 +57,7 @@ C
 C Set up the dash patterns the user wants.
 C
       IF (NDSH.NE.0) THEN
-        IDSH=MIN0(26,NDSH)
+        IDSH=MIN(26,NDSH)
         CALL AGSETI ('DASH/SELE.',IDSH)
         IF (IDSH.LT.0) RETURN
         DO 101 I=1,IDSH

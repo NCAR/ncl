@@ -1,5 +1,5 @@
 C
-C $Id: agqurv.f,v 1.8 2004-07-06 21:06:46 kennison Exp $
+C $Id: agqurv.f,v 1.9 2006-03-09 22:56:07 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -124,12 +124,12 @@ C
 C
       INDX=INDX+IIEX
       XNXT=XVEC(INDX)
-      IF (IIEX.EQ.0) XNXT=FLOAT(INDP)
+      IF (IIEX.EQ.0) XNXT=REAL(INDP)
       IF (LLUX.NE.0.AND.XNXT.LE.0.) XNXT=SVAL
 C
       INDY=INDY+IIEY
       YNXT=YVEC(INDY)
-      IF (IIEY.EQ.0) YNXT=FLOAT(INDP)
+      IF (IIEY.EQ.0) YNXT=REAL(INDP)
       IF (LLUY.NE.0.AND.YNXT.LE.0.) YNXT=SVAL
 C
 C Check whether (XNXT,YNXT) is a special-value point.  Handle that case.
@@ -152,8 +152,8 @@ C Set the next-point-outside-window flag to a value between -4 and +4,
 C inclusive.  A non-zero value indicates that the next point is outside
 C the window and indicates which of eight possible areas it falls in.
 C
-      NPOW=IFIX(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
-     +             (SIGN(.51,YNXT-YMIN)+SIGN(.51,YNXT-YMAX)))
+      NPOW=INT(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
+     +            (SIGN(.51,YNXT-YMIN)+SIGN(.51,YNXT-YMAX)))
 C
 C There are now various possible cases, depending on whether the line-
 C drawn-to-last-point flag is set or not, whether the next point is in
