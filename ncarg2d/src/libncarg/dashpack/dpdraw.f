@@ -1,5 +1,5 @@
 C
-C $Id: dpdraw.f,v 1.10 2004-11-16 21:30:32 kennison Exp $
+C $Id: dpdraw.f,v 1.11 2006-03-09 23:23:15 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -159,7 +159,7 @@ C If IDPS is less than zero, use the integer dash pattern.
 C
           IF (IDPS.LT.0) THEN
 C
-            NBTS=IABS(IDPS)
+            NBTS=ABS(IDPS)
             LBIT=1-IAND(ISHIFT(INDP,1-NBTS),1)
 C
             DO 101 I=1,NBTS
