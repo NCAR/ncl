@@ -1,5 +1,5 @@
 C
-C       $Id: dandr.f,v 1.4 2004-06-29 17:04:10 kennison Exp $
+C       $Id: dandr.f,v 1.5 2006-03-10 23:56:10 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -51,8 +51,8 @@ C
 C RX AND RY ARE USED TO MAP PLOTTER COORDINATES INTO THE
 C IMAGE PLANE MODEL.
 C
-      RX = (FLOAT(NNX)-1.)/(S(2)-S(1))
-      RY = (FLOAT(NNY)-1.)/(S(4)-S(3))
+      RX = (REAL(NNX)-1.)/(S(2)-S(1))
+      RY = (REAL(NNY)-1.)/(S(4)-S(3))
 C
 C READ THE RELATIVE PLOTTER COORDINATES OF THE LATTICE
 C POINTS FROM UNIT IU.
@@ -64,9 +64,9 @@ C NON-LATTICE POINTS.
 C
       NVD2 = NNV/2
       NWD2 = NNW/2
-      DX = (ST1(NNV,NWD2,1)-ST1(1,NWD2,1))*.5/(FLOAT(NNV)-1.)
-      DY = (ST1(1,NWD2,2)-ST1(NNV,NWD2,2))*.5/(FLOAT(NNV)-1.)
-      DZ = (ST1(NVD2,NNW,2)-ST1(NVD2,1,2))*.5/(FLOAT(NNW)-1.)
+      DX = (ST1(NNV,NWD2,1)-ST1(1,NWD2,1))*.5/(REAL(NNV)-1.)
+      DY = (ST1(1,NWD2,2)-ST1(NNV,NWD2,2))*.5/(REAL(NNV)-1.)
+      DZ = (ST1(NVD2,NNW,2)-ST1(NVD2,1,2))*.5/(REAL(NNW)-1.)
 C
 C SLOPE IS USED TO DEFORM THE IMAGE PLANE MODEL SO THAT
 C LINES OF CONSTANT Y OF THE IMAGE MODEL HAVE THE SAME
@@ -158,7 +158,7 @@ C
 C TEST VISIBILITY OF THIS LINE SEGMENT.
 C
   111       IX = (X1-S(1))*RX
-            IY = MOD(IFIX((Y1-S(3))*RY-SLOPE*FLOAT(IX))+NNY,NNY)+1
+            IY = MOD(INT((Y1-S(3))*RY-SLOPE*REAL(IX))+NNY,NNY)+1
             IBIT = MOD(IX,NBPW)+1
             IX = IX/NBPW+1
             IV = IAND(IS2(IX,IY),MASK(IBIT))
@@ -168,15 +168,15 @@ C PLANE MODEL, THE LINE IS HIDDEN
 C
             IF (IV .NE. 0) GO TO (106,109,112) , IRET
             IX = (X2-S(1))*RX
-            IY = MOD(IFIX((Y2-S(3))*RY-SLOPE*FLOAT(IX))+NNY,NNY)+1
+            IY = MOD(INT((Y2-S(3))*RY-SLOPE*REAL(IX))+NNY,NNY)+1
             IBIT = MOD(IX,NBPW)+1
             IX = IX/NBPW+1
             IV = IAND(IS2(IX,IY),MASK(IBIT))
             IF (IV .NE. 0) GO TO (106,109,112) , IRET
-            PX(1) = CPUX(IFIX(X1))
-            PX(2) = CPUX(IFIX(X2))
-            PY(1) = CPUY(IFIX(Y1))
-            PY(2) = CPUY(IFIX(Y2))
+            PX(1) = CPUX(INT(X1))
+            PX(2) = CPUX(INT(X2))
+            PY(1) = CPUY(INT(Y1))
+            PY(2) = CPUY(INT(Y2))
             CALL GPL (2,PX,PY)
             GO TO (106,109,112) , IRET
   112    CONTINUE
@@ -192,8 +192,8 @@ C
          DO 114 J=1,NNW
             IF (IOBJS(I,J) .EQ. 0) GO TO 114
             IX = (ST1(I,J,1)-S(1))*RX+0.5
-            TWK = SLOPE*FLOAT(IX)-0.5
-            IY = MOD(IFIX((ST1(I,J,2)-S(3))*RY-TWK)+NNY,NNY)+1
+            TWK = SLOPE*REAL(IX)-0.5
+            IY = MOD(INT((ST1(I,J,2)-S(3))*RY-TWK)+NNY,NNY)+1
             IBIT = MOD(IX,NBPW)+1
             IX = IX/NBPW+1
             IS2(IX,IY) = IOR(IS2(IX,IY),MASK(IBIT))
