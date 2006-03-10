@@ -1,6 +1,6 @@
 C
-C	$Id: draws.f,v 1.3 2000-08-22 15:06:27 haley Exp $
-C                                                                      
+C $Id: draws.f,v 1.4 2006-03-10 14:46:00 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -72,13 +72,13 @@ C
 C FIND CHANGE POINT.
 C
       IF (NX1 .EQ. NX2) GO TO 110
-      DY = FLOAT(NY2-NY1)/FLOAT(NX2-NX1)
+      DY = REAL(NY2-NY1)/REAL(NX2-NX1)
       NX1P1 = NX1+1
       FNY1 = NY1
       IF (VIS1) GO TO  60
       DO  30 K=NX1P1,NX2
          MX = K
-         MY = FNY1+FLOAT(K-NX1)*DY
+         MY = FNY1+REAL(K-NX1)*DY
          IF (MY .GT. LIMU(K)) GO TO  40
    30 CONTINUE
    40 IF (ABS(DY) .GE. STEEP) GO TO  90
@@ -87,7 +87,7 @@ C
       GO TO 120
    60 DO  70 K=NX1P1,NX2
          MX = K
-         MY = FNY1+FLOAT(K-NX1)*DY
+         MY = FNY1+REAL(K-NX1)*DY
          IF (MY .LE. LIMU(K)) GO TO  80
    70 CONTINUE
    80 IF (ABS(DY) .GE. STEEP) GO TO 100
@@ -102,36 +102,36 @@ C
       NX2 = MX-1
       NY2 = LIMU(NX2)
       GO TO 120
-  110 IF (VIS1) NY2 = MIN0(LIMU(NX1),LIMU(NX2))
-      IF (VIS2) NY1 = MIN0(LIMU(NX1),LIMU(NX2))
+  110 IF (VIS1) NY2 = MIN(LIMU(NX1),LIMU(NX2))
+      IF (VIS2) NY1 = MIN(LIMU(NX1),LIMU(NX2))
   120 IF (IDRAW .EQ. 0) GO TO 150
 C
 C DRAW VISIBLE PART OF LINE.
 C
       IF (IROT) 130,140,130
   130 CONTINUE
-      PXS(1) = FLOAT(NY1)
-      PXS(2) = FLOAT(NY2)
-      PYS(1) = FLOAT(1024-NX1)
-      PYS(2) = FLOAT(1024-NX2)
+      PXS(1) = REAL(NY1)
+      PXS(2) = REAL(NY2)
+      PYS(1) = REAL(1024-NX1)
+      PYS(2) = REAL(1024-NX2)
       CALL GPL (2,PXS,PYS)
       GO TO 150
   140 CONTINUE
-      PXS(1) = FLOAT(NX1)
-      PXS(2) = FLOAT(NX2)
-      PYS(1) = FLOAT(NY1)
-      PYS(2) = FLOAT(NY2)
+      PXS(1) = REAL(NX1)
+      PXS(2) = REAL(NX2)
+      PYS(1) = REAL(NY1)
+      PYS(2) = REAL(NY2)
       CALL GPL (2,PXS,PYS)
   150 IF (IMARK .EQ. 0) GO TO 180
       IF (NX1 .EQ. NX2) GO TO 170
-      DY = FLOAT(NY2-NY1)/FLOAT(NX2-NX1)
+      DY = REAL(NY2-NY1)/REAL(NX2-NX1)
       FNY1 = NY1
       DO 160 K=NX1,NX2
-         LTEMP = FNY1+FLOAT(K-NX1)*DY
+         LTEMP = FNY1+REAL(K-NX1)*DY
          IF (LTEMP .GT. LIMU(K)) LIMU(K) = LTEMP
   160 CONTINUE
       GO TO 180
-  170 LTEMP = MAX0(NY1,NY2)
+  170 LTEMP = MAX(NY1,NY2)
       IF (LTEMP .GT. LIMU(NX1)) LIMU(NX1) = LTEMP
   180 IF (NUPPER) 190,190,370
 C
@@ -152,13 +152,13 @@ C
       IF (VIS1 .AND. VIS2) GO TO 310
       IF (.NOT.(VIS1 .OR. VIS2)) GO TO 370
       IF (NX1 .EQ. NX2) GO TO 300
-      DY = FLOAT(NY2-NY1)/FLOAT(NX2-NX1)
+      DY = REAL(NY2-NY1)/REAL(NX2-NX1)
       NX1P1 = NX1+1
       FNY1 = NY1
       IF (VIS1) GO TO 250
       DO 220 K=NX1P1,NX2
          MX = K
-         MY = FNY1+FLOAT(K-NX1)*DY
+         MY = FNY1+REAL(K-NX1)*DY
          IF (MY .LT. LIML(K)) GO TO 230
   220 CONTINUE
   230 IF (ABS(DY) .GE. STEEP) GO TO 280
@@ -167,7 +167,7 @@ C
       GO TO 310
   250 DO 260 K=NX1P1,NX2
          MX = K
-         MY = FNY1+FLOAT(K-NX1)*DY
+         MY = FNY1+REAL(K-NX1)*DY
          IF (MY .GE. LIML(K)) GO TO 270
   260 CONTINUE
   270 IF (ABS(DY) .GE. STEEP) GO TO 290
@@ -182,33 +182,33 @@ C
       NX2 = MX-1
       NY2 = LIML(NX2)
       GO TO 310
-  300 IF (VIS1) NY2 = MAX0(LIML(NX1),LIML(NX2))
-      IF (VIS2) NY1 = MAX0(LIML(NX1),LIML(NX2))
+  300 IF (VIS1) NY2 = MAX(LIML(NX1),LIML(NX2))
+      IF (VIS2) NY1 = MAX(LIML(NX1),LIML(NX2))
   310 IF (IDRAW .EQ. 0) GO TO 340
       IF (IROT) 320,330,320
   320 CONTINUE
-      PXS(1) = FLOAT(NY1)
-      PXS(2) = FLOAT(NY2)
-      PYS(1) = FLOAT(1024-NX1)
-      PYS(2) = FLOAT(1024-NX2)
+      PXS(1) = REAL(NY1)
+      PXS(2) = REAL(NY2)
+      PYS(1) = REAL(1024-NX1)
+      PYS(2) = REAL(1024-NX2)
       CALL GPL (2,PXS,PYS)
       GO TO 340
   330 CONTINUE
-      PXS(1) = FLOAT(NX1)
-      PXS(2) = FLOAT(NX2)
-      PYS(1) = FLOAT(NY1)
-      PYS(2) = FLOAT(NY2)
+      PXS(1) = REAL(NX1)
+      PXS(2) = REAL(NX2)
+      PYS(1) = REAL(NY1)
+      PYS(2) = REAL(NY2)
       CALL GPL (2,PXS,PYS)
   340 IF (IMARK .EQ. 0) GO TO 370
       IF (NX1 .EQ. NX2) GO TO 360
-      DY = FLOAT(NY2-NY1)/FLOAT(NX2-NX1)
+      DY = REAL(NY2-NY1)/REAL(NX2-NX1)
       FNY1 = NY1
       DO 350 K=NX1,NX2
-         LTEMP = FNY1+FLOAT(K-NX1)*DY
+         LTEMP = FNY1+REAL(K-NX1)*DY
          IF (LTEMP .LT. LIML(K)) LIML(K) = LTEMP
   350 CONTINUE
       RETURN
-  360 LTEMP = MIN0(NY1,NY2)
+  360 LTEMP = MIN(NY1,NY2)
       IF (LTEMP .LT. LIML(NX1)) LIML(NX1) = LTEMP
   370 RETURN
       END

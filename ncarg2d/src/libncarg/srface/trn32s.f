@@ -1,6 +1,6 @@
 C
-C	$Id: trn32s.f,v 1.4 2000-08-22 15:06:28 haley Exp $
-C                                                                      
+C $Id: trn32s.f,v 1.5 2006-03-10 14:46:00 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -37,7 +37,7 @@ C X,Y,Z    ARE THE 3-SPACE COORDINATES OF A POINT TO BE
 C          TRANSFORMED.
 C XT,YT    THE RESULTS OF THE 3-SPACE TO 2-SPACE TRANSFOR-
 C          MATION.
-C          USE IFIX(XT) AND IFIX(YT) IN GPL CALLS.
+C          USE INT(XT) AND INT(YT) IN GPL CALLS.
 C ZT       NOT USED.
 C IF LL (IN COMMON) =0 XT AND YT ARE IN THE SAME SCALE AS X, Y, AND Z.
 C
@@ -159,8 +159,8 @@ C
    80 XX = ((EZ+Q*(ZZ-EZ)-AZ)*COSAL-(EX+Q*(XX-EX)-AX)*COSGA)*R
       YY = (EY+Q*(YY-EY)-AY)*R
    90 GO TO (120,100), JUMP2
-  100 XX = AMIN1(U4,AMAX1(U1,U1+U3*(FACT*XX-U0)))
-      YY = AMIN1(V4,AMAX1(V1,V1+V3*(FACT*YY-V0)))
+  100 XX = MIN(U4,MAX(U1,U1+U3*(FACT*XX-U0)))
+      YY = MIN(V4,MAX(V1,V1+V3*(FACT*YY-V0)))
       GO TO 120
   110 XX = NSPVAL
       YY = NSPVAL

@@ -1,6 +1,6 @@
 C
-C	$Id: srfgk.f,v 1.3 2000-08-22 15:06:28 haley Exp $
-C                                                                      
+C $Id: srfgk.f,v 1.4 2006-03-10 14:46:00 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -81,7 +81,7 @@ C
          NUPPER = IUPPER
          IF (IFR .LT. 0) CALL FRAME
 C
-C SET UP MAPING FROM FLOATING POINT 3-SPACE TO CRT SPACE.
+C SET UP MAPPING FROM FLOATING POINT 3-SPACE TO CRT SPACE.
 C
          SIGN1 = IPIC*2-3
          EYEX = S(1)+SIGN1*DX
@@ -112,13 +112,13 @@ C
             DO  30 I=1,NNXX
                ZZ = Z(I,J)
                IF (IOFFP.EQ.1 .AND. ZZ.EQ.SPVAL) GO TO  30
-               ZZMAX = AMAX1(ZZMAX,ZZ)
-               ZZMIN = AMIN1(ZZMIN,ZZ)
+               ZZMAX = MAX(ZZMAX,ZZ)
+               ZZMIN = MIN(ZZMIN,ZZ)
                CALL TRN32S (X(I),Y(J),Z(I,J),UT,VT,DUMMY,1)
-               UMAX = AMAX1(UMAX,UT)
-               UMIN = AMIN1(UMIN,UT)
-               VMAX = AMAX1(VMAX,VT)
-               VMIN = AMIN1(VMIN,VT)
+               UMAX = MAX(UMAX,UT)
+               UMIN = MIN(UMIN,UT)
+               VMAX = MAX(VMAX,VT)
+               VMIN = MIN(VMIN,VT)
    30       CONTINUE
    40    CONTINUE
          IF (ISKIRT .NE. 1) GO TO  70
@@ -127,10 +127,10 @@ C
          DO  60 J=1,NNYY,NYSTP
             DO  50 I=1,NNXX,NXSTP
                CALL TRN32S (X(I),Y(J),HSKIRT,UT,VT,DUMMY,1)
-               UMAX = AMAX1(UMAX,UT)
-               UMIN = AMIN1(UMIN,UT)
-               VMAX = AMAX1(VMAX,VT)
-               VMIN = AMIN1(VMIN,VT)
+               UMAX = MAX(UMAX,UT)
+               UMIN = MIN(UMIN,UT)
+               VMAX = MAX(VMAX,VT)
+               VMIN = MIN(VMIN,VT)
    50       CONTINUE
    60    CONTINUE
    70    CONTINUE
@@ -225,9 +225,9 @@ C
          YNOW = Y(JN)
          DO 240 I=1,NNXX
             CALL TRN32S (X(I),YNOW,HSKIRT,RU,RV,DUMMY,1)
-            CALL DRAWS (IFIX(RU),IFIX(RV),M(1,I,JN),M(2,I,JN),1,1)
+            CALL DRAWS (INT(RU),INT(RV),M(1,I,JN),M(2,I,JN),1,1)
   240    CONTINUE
-         CALL DRAWS (IFIX(UX1),IFIX(VX1),IFIX(UX2),IFIX(VX2),1,1)
+         CALL DRAWS (INT(UX1),INT(VX1),INT(UX2),INT(VX2),1,1)
          IF (IDRY .NE. 0) GO TO 260
          DO 250 I=2,NNXX
             CALL DRAWS (M(1,I-1,JN),M(2,I-1,JN),M(1,I,JN),M(2,I,JN),1,1)
@@ -240,9 +240,9 @@ C
          XNOW = X(IN)
          DO 270 J=1,NNYY
             CALL TRN32S (XNOW,Y(J),HSKIRT,RU,RV,DUMMY,1)
-            CALL DRAWS (IFIX(RU),IFIX(RV),M(1,IN,J),M(2,IN,J),1,1)
+            CALL DRAWS (INT(RU),INT(RV),M(1,IN,J),M(2,IN,J),1,1)
   270    CONTINUE
-         CALL DRAWS (IFIX(UY1),IFIX(VY1),IFIX(UY2),IFIX(VY2),1,1)
+         CALL DRAWS (INT(UY1),INT(VY1),INT(UY2),INT(VY2),1,1)
          IF (IDRX .NE. 0) GO TO 290
          DO 280 J=2,NNYY
             CALL DRAWS (M(1,IN,J-1),M(2,IN,J-1),M(1,IN,J),M(2,IN,J),1,1)
@@ -252,10 +252,10 @@ C PICK PROPER ALGORITHM
 C
   290    LI = MXJ(1)
          MI = MXS(1)-LI
-         NI = IABS(MI-MXF(1))
+         NI = ABS(MI-MXF(1))
          LJ = MYJ(1)
          MJ = MYS(1)-LJ
-         NJ = IABS(MJ-MYF(1))
+         NJ = ABS(MJ-MYF(1))
 C
 C IF NXPASS IS 1, PUT THE I LOOP OUTERMOST.  OTHERWISE, PUT THE J LOOP
 C OUTERMOST.
@@ -275,11 +275,11 @@ C
             IF (IDRX .NE. 0)
      1          CALL DRAWS (M(1,I,K),M(2,I,K),M(1,I,L),M(2,I,L),1,1)
             IF (NDRZ.NE.0 .AND. II.NE.NI)
-     1          CALL CTCELL (Z,MMXX,NNXX,NNYY,M,MIN0(I,I+LI),K)
+     1          CALL CTCELL (Z,MMXX,NNXX,NNYY,M,MIN(I,I+LI),K)
   320       DO 340 JPASS=1,NYPASS
                LJ = MYJ(JPASS)
                MJ = MYS(JPASS)-LJ
-               NJ = IABS(MJ-MYF(JPASS))
+               NJ = ABS(MJ-MYF(JPASS))
                DO 330 JJ=1,NJ
                   J = MJ+JJ*LJ
                   JPLJ = J+LJ
@@ -290,8 +290,8 @@ C
      1                CALL DRAWS (M(1,IPLI,J),M(2,IPLI,J),M(1,I,J),
      2                            M(2,I,J),1,1)
                   IF (NDRZ.NE.0 .AND. JJ.NE.NJ .AND. II.NE.NNXX)
-     1                CALL CTCELL (Z,MMXX,NNXX,NNYY,M,MIN0(I,I+LI),
-     2                             MIN0(J,J+LJ))
+     1                CALL CTCELL (Z,MMXX,NNXX,NNYY,M,MIN(I,I+LI),
+     2                             MIN(J,J+LJ))
   330          CONTINUE
   340       CONTINUE
   350    CONTINUE
@@ -310,11 +310,11 @@ C
             IF (IDRY .NE. 0)
      1          CALL DRAWS (M(1,K,J),M(2,K,J),M(1,L,J),M(2,L,J),1,1)
             IF (NDRZ.NE.0 .AND. JJ.NE.NJ)
-     1          CALL CTCELL (Z,MMXX,NNXX,NNYY,M,K,MIN0(J,J+LJ))
+     1          CALL CTCELL (Z,MMXX,NNXX,NNYY,M,K,MIN(J,J+LJ))
   390       DO 410 IPASS=1,NXPASS
                LI = MXJ(IPASS)
                MI = MXS(IPASS)-LI
-               NI = IABS(MI-MXF(IPASS))
+               NI = ABS(MI-MXF(IPASS))
                DO 400 II=1,NI
                   I = MI+II*LI
                   IPLI = I+LI
@@ -325,8 +325,8 @@ C
      1                CALL DRAWS (M(1,I,JPLJ),M(2,I,JPLJ),M(1,I,J),
      2                            M(2,I,J),1,1)
                   IF (NDRZ.NE.0 .AND. II.NE.NI .AND. JJ.NE.NNYY)
-     1                CALL CTCELL (Z,MMXX,NNXX,NNYY,M,MIN0(I,I+LI),
-     2                             MIN0(J,J+LJ))
+     1                CALL CTCELL (Z,MMXX,NNXX,NNYY,M,MIN(I,I+LI),
+     2                             MIN(J,J+LJ))
   400          CONTINUE
   410       CONTINUE
   420    CONTINUE

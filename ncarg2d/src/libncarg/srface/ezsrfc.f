@@ -1,6 +1,6 @@
 C
-C	$Id: ezsrfc.f,v 1.3 2000-08-22 15:06:27 haley Exp $
-C                                                                      
+C $Id: ezsrfc.f,v 1.4 2006-03-10 14:46:00 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -71,22 +71,22 @@ C
       DO  20 J=1,NY
          DO  10 I=1,MX
             IF (NOFFP.EQ.1 .AND. Z(I,J).EQ.SPV) GO TO  10
-            HI = AMAX1(Z(I,J),HI)
-            FLO = AMIN1(Z(I,J),FLO)
+            HI = MAX(Z(I,J),HI)
+            FLO = MIN(Z(I,J),FLO)
    10    CONTINUE
    20 CONTINUE
 C
 C SET UP LINEAR X AND Y ARRAYS FOR SRFACE
 C
-      DELTA = (HI-FLO)/(AMAX0(MX,NY)-1.)*FACT1
-      XMIN = -(FLOAT(MX/2)*DELTA+FLOAT(MOD(MX+1,2))*DELTA)
-      YMIN = -(FLOAT(NY/2)*DELTA+FLOAT(MOD(NY+1,2))*DELTA)
+      DELTA = (HI-FLO)/(REAL(MAX(MX,NY))-1.)*FACT1
+      XMIN = -(REAL(MX/2)*DELTA+REAL(MOD(MX+1,2))*DELTA)
+      YMIN = -(REAL(NY/2)*DELTA+REAL(MOD(NY+1,2))*DELTA)
       DO  30 I=1,MX
-         WORK(I) = XMIN+FLOAT(I-1)*DELTA
+         WORK(I) = XMIN+REAL(I-1)*DELTA
    30 CONTINUE
       DO  40 J=1,NY
          K = MX+J
-         WORK(K) = YMIN+FLOAT(J-1)*DELTA
+         WORK(K) = YMIN+REAL(J-1)*DELTA
    40 CONTINUE
 C
 C SET UP EYE POSITION
