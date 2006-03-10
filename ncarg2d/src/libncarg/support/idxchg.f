@@ -1,6 +1,6 @@
 C
-C $Id: idxchg.f,v 1.4 2000-08-22 15:06:55 haley Exp $
-C                                                                      
+C $Id: idxchg.f,v 1.5 2006-03-10 16:17:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -85,10 +85,10 @@ C
         A2SQ=(X2-X4)**2+(Y2-Y4)**2
         B2SQ=(X3-X2)**2+(Y3-Y2)**2
         C3SQ=(X2-X1)**2+(Y2-Y1)**2
-        S1SQ=U1*U1/(C1SQ*AMAX1(A1SQ,B1SQ))
-        S2SQ=U2*U2/(C2SQ*AMAX1(A2SQ,B2SQ))
-        S3SQ=U3*U3/(C3SQ*AMAX1(A3SQ,B3SQ))
-        S4SQ=U4*U4/(C4SQ*AMAX1(A4SQ,B4SQ))
+        S1SQ=U1*U1/(C1SQ*MAX(A1SQ,B1SQ))
+        S2SQ=U2*U2/(C2SQ*MAX(A2SQ,B2SQ))
+        S3SQ=U3*U3/(C3SQ*MAX(A3SQ,B3SQ))
+        S4SQ=U4*U4/(C4SQ*MAX(A4SQ,B4SQ))
         IF ((MIN(S3SQ,S4SQ)-MIN(S1SQ,S2SQ)).GT.EPSLN) IDX=1
       END IF
 C
