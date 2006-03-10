@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.5 2004-06-29 19:35:36 kennison Exp $
+I $Id: CodeIftran,v 1.6 2006-03-10 00:05:51 kennison Exp $
 I
 
 I ---------------------------------------------------------------------
@@ -9834,8 +9834,8 @@ C If there is only one point in the polyline, that's a special case ...
 C
         IF (NCPL.EQ.1) THEN
 C
-          NPOW=IFIX(3.*(SIGN(.51,XCPL(1)-XMIN)+SIGN(.51,XCPL(1)-XMAX))+
-     +                 (SIGN(.51,YCPL(1)-YMIN)+SIGN(.51,YCPL(1)-YMAX)))
+          NPOW=INT(3.*(SIGN(.51,XCPL(1)-XMIN)+SIGN(.51,XCPL(1)-XMAX))+
+     +                (SIGN(.51,YCPL(1)-YMIN)+SIGN(.51,YCPL(1)-YMAX)))
           IF (NPOW.EQ.0) THEN
             NPIF=1
             RWRK(     1)=XCPL(1)
@@ -9872,8 +9872,8 @@ C Ultimately, we combine the values of this flag for two consecutive
 C points in such a way as to get an integer between 1 and 81, telling
 C us what combination of inside/outside we have to deal with.
 C
-            NPOW=IFIX(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
-     +                   (SIGN(.51,YNXT-YMIN)+SIGN(.51,YNXT-YMAX)))
+            NPOW=INT(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
+     +                  (SIGN(.51,YNXT-YMIN)+SIGN(.51,YNXT-YMAX)))
 C
 C If the next point is not the first point of a line, there is work to
 C be done.
