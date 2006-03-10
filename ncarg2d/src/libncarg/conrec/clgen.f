@@ -1,5 +1,5 @@
 C
-C	$Id: clgen.f,v 1.3 2000-08-22 15:03:07 haley Exp $
+C	$Id: clgen.f,v 1.4 2006-03-10 17:28:10 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -58,8 +58,8 @@ C
             DO 104 JJ=J,NY
                DO 103 II=1,NX
                   IF (Z(II,JJ) .EQ. SPVAL) GO TO 103
-                  GLO = AMIN1(Z(II,JJ),GLO)
-                  HA = AMAX1(Z(II,JJ),HA)
+                  GLO = MIN(Z(II,JJ),GLO)
+                  HA = MAX(Z(II,JJ),HA)
   103          CONTINUE
   104       CONTINUE
             GO TO 110
@@ -68,21 +68,21 @@ C
       GO TO 110
   107 DO 109 J=1,NY
          DO 108 I=1,NX
-            GLO = AMIN1(Z(I,J),GLO)
-            HA = AMAX1(Z(I,J),HA)
+            GLO = MIN(Z(I,J),GLO)
+            HA = MAX(Z(I,J),HA)
   108    CONTINUE
   109 CONTINUE
   110 IF (GLO .GE. HA) GO TO 119
   111 IF (FANC) 112,113,114
-  112 CRAT = AMAX1(1.,-FANC)
+  112 CRAT = MAX(1.,-FANC)
   113 FANC = (HA-GLO)/CRAT
-      P = 10.**(IFIX(ALOG10(FANC)+5000.)-5000)
-      FANC = AINT(FANC/P)*P
+      P = 10.**(INT(ALOG10(FANC)+5000.)-5000)
+      FANC = REAL(INT(FANC/P))*P
   114 IF (CHI-CLO) 116,115,116
-  115 GLO = AINT(GLO/FANC)*FANC
-      HA = AINT(HA/FANC)*FANC*(1.+SIGN(1.E-6,HA))
+  115 GLO = REAL(INT(GLO/FANC))*FANC
+      HA = REAL(INT(HA/FANC))*FANC*(1.+SIGN(1.E-6,HA))
   116 DO 117 K=1,NLM
-         CC = GLO+FLOAT(K-1)*FANC
+         CC = GLO+REAL(K-1)*FANC
          IF (CC .GT. HA) GO TO 118
          KK = K
          CL(K) = CC

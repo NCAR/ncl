@@ -1,5 +1,5 @@
 C
-C	$Id: calcnt.f,v 1.3 2000-08-22 15:03:07 haley Exp $
+C	$Id: calcnt.f,v 1.4 2006-03-10 17:28:09 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,6 +32,6 @@ C THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
 C
       CALL Q8QST4 ('GRAPHX','CONREC','CALCNT','VERSION 01')
 C
-      CALL CONREC (Z,M,M,N,A1,A2,A3,I1,I2,-IABS(I3))
+      CALL CONREC (Z,M,M,N,A1,A2,A3,I1,I2,-ABS(I3))
       RETURN
       END
