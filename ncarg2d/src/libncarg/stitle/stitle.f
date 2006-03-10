@@ -1,6 +1,6 @@
 C
-C $Id: stitle.f,v 1.6 2000-08-22 15:06:35 haley Exp $
-C                                                                      
+C $Id: stitle.f,v 1.7 2006-03-10 00:32:20 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -432,7 +432,7 @@ C
         IF (TMMV.NE.0.) THEN
 C
           NDIF=INT(TMMV*RNFS+.5)
-          IF (MTST.NE.0) NDIF=MAX(1,IABS(IYND-IYST)/IJMP)
+          IF (MTST.NE.0) NDIF=MAX(1,ABS(IYND-IYST)/IJMP)
 C
           TPER=TMMV/REAL(NDIF)
 C
