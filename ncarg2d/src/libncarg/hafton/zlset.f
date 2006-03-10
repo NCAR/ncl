@@ -1,5 +1,5 @@
 C
-C	$Id: zlset.f,v 1.3 2000-08-22 15:04:45 haley Exp $
+C	$Id: zlset.f,v 1.4 2006-03-10 17:38:25 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,7 +36,7 @@ C
       LX = NX
       LY = NY
       NLEV = NLEVL
-      NOPT = IABS(NOPTN)
+      NOPT = ABS(NOPTN)
       RALPH = 1./ALPHA
       ICNST = 0
       IF (GLO.NE.0. .OR. HA.NE.0.) GO TO 106
@@ -49,8 +49,8 @@ C
       DO 102 J=1,LY
          DO 101 I=1,LX
             ZZ = Z(I,J)
-            GLO = AMIN1(ZZ,GLO)
-            HA = AMAX1(ZZ,HA)
+            GLO = MIN(ZZ,GLO)
+            HA = MAX(ZZ,HA)
   101    CONTINUE
   102 CONTINUE
       GO TO 106
@@ -58,8 +58,8 @@ C
          DO 104 I=1,LX
             ZZ = Z(I,J)
             IF (ZZ .EQ. SP) GO TO 104
-            GLO = AMIN1(ZZ,GLO)
-            HA = AMAX1(ZZ,HA)
+            GLO = MIN(ZZ,GLO)
+            HA = MAX(ZZ,HA)
   104    CONTINUE
   105 CONTINUE
 C
@@ -67,15 +67,15 @@ C FILL ZL
 C
   106 DELZ = HA-GLO
       IF (DELZ .EQ. 0.) GO TO 115
-      DZ = DELZ/FLOAT(NLEV)
+      DZ = DELZ/REAL(NLEV)
       NLEVM1 = NLEV-1
       DO 114 K=1,NLEVM1
-         ZNORM = FLOAT(K)/FLOAT(NLEV)
+         ZNORM = REAL(K)/REAL(NLEV)
          GO TO (107,108,109,110,111),NOPT
 C
 C NOPT=1
 C
-  107    ZL(K) = GLO+FLOAT(K)*DZ
+  107    ZL(K) = GLO+REAL(K)*DZ
          GO TO 114
 C
 C NOPT=2

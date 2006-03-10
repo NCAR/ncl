@@ -1,5 +1,5 @@
 C
-C	$Id: hafton.f,v 1.3 2000-08-22 15:04:44 haley Exp $
+C	$Id: hafton.f,v 1.4 2006-03-10 17:38:25 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -132,7 +132,7 @@ C                                areas on the paper.
 C
 C                              The absolute value of NOPT determines the
 C                              mapping of Z onto the intensities.  For
-C                              IABS(NOPT)
+C                              ABS(NOPT)
 C                              = 0  The mapping is linear.  For
 C                                   each intensity there is an equal
 C                                   range in Z value.
@@ -254,7 +254,7 @@ C                        SIDE+2*XLT = SIDE+2*YBT=1., as with the
 C                        defaults.)
 C         ALPHA   1.6    A parameter to control the extremeness of the
 C                        mapping function specified by NOPT.  (For
-C                        IABS(NOPT)=0 or 1, the mapping function is
+C                        ABS(NOPT)=0 or 1, the mapping function is
 C                        linear and independent of ALPHA.)  For the non-
 C                        linear mapping functions, when ALPHA is changed
 C                        to a number closer to 1., the mapping function
@@ -315,12 +315,12 @@ C
       ALPHA = ALPH
       GLO = FLO
       HA = HI
-      NLEVL = MIN0(IABS(NLEV),MXLEV)
+      NLEVL = MIN(ABS(NLEV),MXLEV)
       IF (NLEVL .LE. 1) NLEVL = MXLEV
       NOPTN = NOPT
       IF (NOPTN .EQ. 0) NOPTN = 1
       NPRIM = NPRM
-      NSPV = MAX0(MIN0(ISPV,4),0)
+      NSPV = MAX(MIN(ISPV,4),0)
       IF (NSPV .NE. 0) SP = SPVAL
       MX = L
       NX = M
@@ -349,13 +349,13 @@ C
          X2 = XLT+SIDE
          Y1 = YBT
          Y2 = YBT+SIDE
-         IF (AMIN1(X3,Y3)/AMAX1(X3,Y3) .GE. EXT) THEN
+         IF (MIN(X3,Y3)/MAX(X3,Y3) .GE. EXT) THEN
             IF (NX-NY.LT.0) THEN
                X2 =SIDE*X3/Y3+XLT
-               X2 = (AINT(X2*CRTF/FLOAT(NCRTG))*FLOAT(NCRTG))/CRTF
+               X2 = (REAL(INT(X2*CRTF/REAL(NCRTG)))*REAL(NCRTG))/CRTF
             ELSE IF (NX-NY.GT.0) THEN
                Y2 = SIDE*Y3/X3+YBT
-               Y2 = (AINT(Y2*CRTF/FLOAT(NCRTG))*FLOAT(NCRTG))/CRTF
+               Y2 = (REAL(INT(Y2*CRTF/REAL(NCRTG)))*REAL(NCRTG))/CRTF
             END IF
          END IF
       ELSE IF (NPRIM.GT.0) THEN
@@ -446,9 +446,9 @@ C
 C
 C FIND Y FOR THIS J AND Z FOR THIS Y.
 C
-       YJ = (FLOAT(J-JMIN)+.5)/YL*(YN-1.)+1.
+       YJ = (REAL(J-JMIN)+.5)/YL*(YN-1.)+1.
          LOWY = YJ
-         YPART = YJ-FLOAT(LOWY)
+         YPART = YJ-REAL(LOWY)
          IF (LOWY .NE. NY) GO TO 113
          LOWY = LOWY-1
          YPART = 1.
@@ -486,9 +486,9 @@ C
 C FIND X FOR THIS I AND Z FOR THIS X AND Y.
 C
             IADD = 1
-            XI = (FLOAT(I-IMIN)+.5)/XL*(XN-1.)+1.
+            XI = (REAL(I-IMIN)+.5)/XL*(XN-1.)+1.
             LOWX = XI
-            XPART = XI-FLOAT(LOWX)
+            XPART = XI-REAL(LOWX)
             IF (LOWX .NE. NX) GO TO 118
             LOWX = LOWX-1
             XPART = 1.
