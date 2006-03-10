@@ -1,5 +1,5 @@
 C
-C	$Id: congen.f,v 1.3 2000-08-22 15:02:40 haley Exp $
+C	$Id: congen.f,v 1.4 2006-03-10 16:44:22 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -403,8 +403,8 @@ C  SEARCH THE POSSIBLE CELLS
 C
   330     DO   350 K=1,2
               DO   340 L=1,2
-              XC = XCSTOR + STPSZ*FLOAT( IXMOV(K) )
-              YC = YCSTOR + STPSZ*FLOAT( IYMOV(L) )
+              XC = XCSTOR + STPSZ*REAL( IXMOV(K) )
+              YC = YCSTOR + STPSZ*REAL( IYMOV(L) )
               IX = IXSTOR+IXMOV(K)
               IY = IYSTOR+IYMOV(L)
               ILOC = IOR(ISHIFT(IX,ISHFCT),IY)

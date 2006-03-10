@@ -1,5 +1,5 @@
 C
-C	$Id: conreo.f,v 1.3 2000-08-22 15:02:40 haley Exp $
+C	$Id: conreo.f,v 1.4 2006-03-10 16:44:23 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -70,7 +70,7 @@ C
           Q = Q/10.
               DO    20 I=1,NL
               ISAVE = I
-              IF (AMOD( ABS( CL(I) + 1.E-9*CL(I) )/Q,FLOAT(NMLP1) ).LE.
+              IF (MOD( ABS( CL(I) + 1.E-9*CL(I) )/Q,REAL(NMLP1) ).LE.
      1            .0001) GO TO    40
    20         CONTINUE
    30     CONTINUE

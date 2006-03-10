@@ -1,5 +1,5 @@
 C
-C	$Id: concld.f,v 1.3 2000-08-22 15:02:38 haley Exp $
+C	$Id: concld.f,v 1.4 2006-03-10 16:44:22 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -314,7 +314,7 @@ C
 C
 C  DRAW THE CONTOUR LINES NOT ALREADY TAKEN CARE OF
 C
-  180 IF (IABS(IC-NC).NE.2) GO TO   190
+  180 IF (ABS(IC-NC).NE.2) GO TO   190
       ICASE = IOC
       XN = XO
       YN = YO

@@ -1,5 +1,5 @@
 C
-C	$Id: consld.f,v 1.3 2000-08-22 15:02:40 haley Exp $
+C	$Id: consld.f,v 1.4 2006-03-10 16:44:23 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -65,7 +65,7 @@ C
 C
 C
       IGADDR(XXX,YYY) =
-     1 IFIX((YYY-YST)/STPSZ+.5)+(IFIX((XXX-XST)/STPSZ+.5))*IYMAX+1
+     1 INT((YYY-YST)/STPSZ+.5)+(INT((XXX-XST)/STPSZ+.5))*IYMAX+1
 C
 C  SET THE SPECIAL VALUE
 C
@@ -118,8 +118,8 @@ C
 C       SET UP LOOP TO SET ALL CELLS ON THE LINE SEGMENT
 C
         NSTPS = (DIST/STPSZ)*RESINC
-        XSTP = (X2-X1)/FLOAT(NSTPS)
-        YSTP = (Y2-Y1)/FLOAT(NSTPS)
+        XSTP = (X2-X1)/REAL(NSTPS)
+        YSTP = (Y2-Y1)/REAL(NSTPS)
         X = X1
         Y = Y1
         DO 20 K = 1,NSTPS

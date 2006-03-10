@@ -1,5 +1,5 @@
 C
-C	$Id: conecd.f,v 1.3 2000-08-22 15:02:39 haley Exp $
+C	$Id: conecd.f,v 1.4 2006-03-10 16:44:22 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -101,12 +101,12 @@ C
 C
 C  GET SIZE OF NUMBER
 C
-      LOG = IFIX(ALOG10(ABS(V))+.1)
-      IF (IABS(LOG).GT.4) GO TO    60
+      LOG = INT(ALOG10(ABS(V))+.1)
+      IF (ABS(LOG).GT.4) GO TO    60
 C
 C  COMPUTE FLOATING POINT FIELD
 C
-      NS = IABS(LOG)+3
+      NS = ABS(LOG)+3
       ND = 1
       IF (LOG.GT.0) GO TO    40
 C
