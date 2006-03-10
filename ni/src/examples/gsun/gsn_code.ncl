@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.173 2006-02-16 20:48:13 haley Exp $
+;      $Id: gsn_code.ncl,v 1.174 2006-03-10 04:01:05 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -90,6 +90,7 @@ undef("gsn_open_ps")
 undef("gsn_open_pdf")
 undef("gsn_open_image")
 undef("gsn_open_wks")
+undef("gsn_add_annotation")
 undef("gsn_add_primitive")
 undef("gsn_polygon")
 undef("gsn_add_polygon")
@@ -101,10 +102,13 @@ undef("gsn_polymarker")
 undef("gsn_add_polymarker")
 undef("gsn_polymarker_ndc")
 undef("gsn_create_labelbar_ndc")
+undef("gsn_create_labelbar")
 undef("gsn_labelbar_ndc")
-undef("gsn_legend_ndc_return")
+undef("gsn_create_legend_ndc")
+undef("gsn_create_legend")
 undef("gsn_legend_ndc")
-undef("gsn_text_ndc_return")
+undef("gsn_create_text_ndc")
+undef("gsn_create_text")
 undef("gsn_text_ndc")
 undef("gsn_text")
 undef("gsn_add_text")
@@ -2744,6 +2748,81 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_add_annotation                                         ;
+;                plotid : graphic                                       ;
+;                annoid : graphic                                       ;
+;             resources : logical                                       ;
+;                                                                       ;
+; This function attaches one graphical object to another, for example,  ;
+; a labelbar to a contour plot. The default is for the annotation to be ;
+; added to the center of the plot. You can use the amJust resource      ;
+; to change the general location of the annotation (top/center,         ;
+; top/left top/right, bottom/center, bottom/right, etc. You can use     ;
+; the amOrthogonalPosF and amParallelPosF resources to then move the    ;
+; annotation perpendicular or parallel to the plot.                     ;
+;                                                                       ;
+; "amJust" is the corner or side of the annotation of which you want to ;
+; position using values for "amParallelPosF" and "amOrthogonalPosF". It ;
+; can be any one of the four corners, or the center of any edge of the  ;
+; annotation.                                                           ;
+;                                                                       ;
+; "amParallelPosF" is the amount to move the annotation to the right or ;
+; left, and "amOrthogonalPosF" is the amount to move it up and down. The;
+; move is applied to the corner or the side of the annotation that is   ;
+; indicated by "amJust".                                                ;
+;                                                                       ;
+; Here's what various values of amParallelPosF and amOrthogonalPosF     ;
+; mean for moving the annotation:                                       ;
+;                                                                       ;
+; amParallelPosF/amOrthogonalPosF                                       ;
+;    0.0/ 0.0  -  annotation in dead center of plot                     ;
+;    0.5/ 0.5  -  annotation at bottom right of plot                    ;
+;    0.5/-0.5  -  annotation at top right of plot                       ;
+;   -0.5/-0.5  -  annotation at top left of plot                        ;
+;   -0.5/ 0.5  -  annotation at bottom left of plot                     ;
+;                                                                       ;
+; So, for example, an amJust value of "TopRight" and amParallelPosF,    ;
+; amOrthogonalPosF values of 0.5 and -0.5 will position the top right   ;
+; corner of the annotation in the top right corner of the plot.         ;
+;                                                                       ;
+; Values of just = "TopCenter", para = -0.5, orth = -0.5 will position  ;
+; the top center of the annotation in the top left corner of the plot,  ;
+; effectively placing part of the annotation outside the plot.          ;
+;***********************************************************************;
+function gsn_add_annotation(plot:graphic, anno:graphic, resources:logical)
+local res2, just, para, orth, just, zone, resize
+begin
+  res2 = get_resources(resources)
+  just = get_res_value(res2,"amJust","CenterCenter")
+  para = get_res_value(res2,"amParallelPosF",0)
+  orth = get_res_value(res2,"amOrthogonalPosF",0)
+  zone = get_res_value(res2,"amZone",0)
+  resize = get_res_value(res2,"amResizeNotify",True)
+;
+; Add annotation to plot.
+;
+   anno_id = NhlAddAnnotation(plot,anno)
+;
+; Set some resource values.
+;
+   setvalues anno_id
+     "amZone"           : zone
+     "amJust"           : just
+     "amParallelPosF"   : para
+     "amOrthogonalPosF" : orth
+     "amResizeNotify"   : resize
+   end setvalues
+;
+; Apply rest of resources, if any.
+;
+   attsetvalues_check(anno_id,res2)
+;
+; Return id
+;
+   return(anno_id)
+end
+
+;***********************************************************************;
 ; Function : gsn_add_primitive                                          ;
 ;                   wks: workstation object                             ;
 ;                plotid: plot object                                    ;
@@ -3299,24 +3378,35 @@ end
 ;                     y: Y NDC position of labelbar                     ;
 ;               resources: optional resources                           ;
 ;                                                                       ;
-; This function creates and returns a labelbar on the workstation "wks" ;
-; (the variable returned from a previous call to "gsn_open_wks").       ;
-; "resources" is an optional list of resources.                         ;
+; This function is identical to gsn_create_labelbar, except the location;
+; of the labelbar is passed in (NDC coordinate values).                 ;
 ;***********************************************************************;
+
 function gsn_create_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                                  x,y,resources:logical )
-local i, lbid, res, lb_res_index, lbres
+local res2, lbres, wksname
 begin
     res2 = get_resources(resources)
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
-
-    lbid = create wksname + "_labelbar" labelBarClass wks
-      "vpXF"           : x
-      "vpYF"           : y
-      "lbBoxCount"     : nbox
-      "lbLabelStrings" : labels
-    end create
+;
+; If x,y < 0, this is invalid, and hence don't use these values.
+; This was a special way to allow gsn_create_labelbar to call this
+; routine without needing valid x, y values.
+;
+    if(x.lt.0.or.y.lt.0) then
+      lbid = create wksname + "_labelbar" labelBarClass wks
+        "lbBoxCount"     : nbox
+        "lbLabelStrings" : labels
+      end create
+    else
+      lbid = create wksname + "_labelbar" labelBarClass wks
+        "vpXF"           : x
+        "vpYF"           : y
+        "lbBoxCount"     : nbox
+        "lbLabelStrings" : labels
+      end create
+    end if
 
     lbres = get_res_eq(res2,(/"lb","vp"/))
     if(lbres.and..not.any(ismissing(getvaratts(lbres))))
@@ -3340,16 +3430,38 @@ begin
     return(lbid)
 end
 
+;***********************************************************************;
+; Function : gsn_create_labelbar                                        ;
+;                   wks: workstation object                             ;
+;                  nbox: number of labelbar boxes                       ;
+;                labels: labels for boxes                               ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates and returns a labelbar on the workstation "wks" ;
+; (the variable returned from a previous call to "gsn_open_wks").       ;
+; "resources" is an optional list of resources.                         ;
+;***********************************************************************;
+function gsn_create_labelbar(wks:graphic, nbox:integer, labels:string, \
+                             resources:logical )
+begin
+    x = -1.   ; Special values to tip off the routine
+    y = -1.   ; that we don't have X,Y values.
+
+    labelbar = gsn_create_labelbar_ndc(wks, nbox, labels, x, y, resources)
+    return(labelbar)
+end
+
 procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                            x,y,resources:logical )
 local labelbar
 begin
     labelbar = gsn_create_labelbar_ndc(wks, nbox, labels, x, y, resources)
     draw(labelbar)
+    delete(labelbar)
 end
 
 ;***********************************************************************;
-; Function : gsn_legend_ndc_return                                      ;
+; Function : gsn_create_legend_ndc                                      ;
 ;                   wks: workstation object                             ;
 ;                  nitems: number of legend items                       ;
 ;                labels: labels for items                               ;
@@ -3361,21 +3473,32 @@ end
 ; returned from a previous call to "gsn_open_wks"). "resources" is an   ;
 ; optional list of resources.                                           ;
 ;***********************************************************************;
-function gsn_legend_ndc_return(wks:graphic, nitems:integer, labels:string, \
+function gsn_create_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                                x,y,resources:logical )
-local i, legend, res, lg_res_index, lgres
+local i, res2, lgres, wksname, lgres
 begin
     res2 = get_resources(resources)
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
-    legend = create wksname + "_legend" legendClass wks
-      "vpXF"           : x
-      "vpYF"           : y
-      "lgItemCount"    : nitems
-      "lgLabelStrings" : labels
-    end create
-
+;
+; If x,y < 0, this is invalid, and hence don't use these values.
+; This was a special way to allow gsn_create_legend to call this
+; routine without needing valid x, y values.
+;
+    if(x.lt.0.or.y.lt.0) then
+      legend = create wksname + "_legend" legendClass wks
+        "lgItemCount"    : nitems
+        "lgLabelStrings" : labels
+      end create
+    else
+      legend = create wksname + "_legend" legendClass wks
+        "vpXF"           : x
+        "vpYF"           : y
+        "lgItemCount"    : nitems
+        "lgLabelStrings" : labels
+      end create
+    end if
     lgres = get_res_eq(res2,(/"lg","vp"/))
     if(lgres.and..not.any(ismissing(getvaratts(lgres))))
 
@@ -3397,6 +3520,25 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_create_legend                                          ;
+;                   wks: workstation object                             ;
+;                  nitems: number of legend items                       ;
+;                labels: labels for items                               ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates a legend.                                       ;
+;***********************************************************************;
+function gsn_create_legend(wks:graphic, nitems:integer, labels:string, \
+                           resources:logical )
+begin
+    x = -1.   ; Special values to tip off the routine
+    y = -1.   ; that we don't have X,Y values.
+
+    legend = gsn_create_legend_ndc(wks, nitems, labels, x, y, resources)
+    return(legend)
+end
+
+;***********************************************************************;
 ; Procedure : gsn_legend_ndc                                            ;
 ;                   wks: workstation object                             ;
 ;                  nitems: number of legend items                       ;
@@ -3413,12 +3555,13 @@ procedure gsn_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                          x,y,resources:logical )
 local legend
 begin
-    legend = gsn_legend_ndc_return(wks,nitems,labels,x,y,resources)
-    draw(legend)
+  legend = gsn_create_legend_ndc(wks,nitems,labels,x,y,resources)
+  draw(legend)
+  delete(legend)
 end
 
 ;***********************************************************************;
-; Function : gsn_text_ndc_return                                        ;
+; Function : gsn_create_text_ndc                                        ;
 ;                   wks: workstation object                             ;
 ;                  text: array of text strings                          ;
 ;                     x: n-dimensional array of x ndc positions         ;
@@ -3431,7 +3574,7 @@ end
 ; specified in NDC space. "resources" is an optional list of resources. ;
 ; This function returns the text string created.                        ;
 ;***********************************************************************;
-function gsn_text_ndc_return(wks:graphic, texto:string, xo:numeric, \
+function gsn_create_text_ndc(wks:graphic, texto:string, xo:numeric, \
                              yo:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
 calldraw, callframe
@@ -3486,7 +3629,7 @@ begin
 
   wksname = get_res_value_keep(wks,"name","gsnapp")
 
-  calldraw  = get_res_value(res2,"gsnDraw", True)
+  calldraw  = get_res_value(res2,"gsnDraw", False)
   callframe = get_res_value(res2,"gsnFrame",False)
   maxbb     = get_bb_res(res2)
 
@@ -3494,26 +3637,53 @@ begin
   txid  = new(len,graphic)
 
   if((res2).and.isatt(res2,"txFuncCode")) then
-    do i=0,len-1
-      txid(i) = create wksname + "_text_ndc"+i textItemClass wks
-        "txString" : text(i)
-        "txPosXF"  : x(i)
-        "txPosYF"  : y(i)
-        "txFuncCode" : res2@txFuncCode
-      end create
-      attsetvalues_check(txid(i),txres)       ; Set text resources.
-      draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
-    end do
+;
+; Special case where we don't have x,y values.
+;
+    if(all(x.lt.0).and.all(y.lt.0)) then
+      do i=0,len-1
+        txid(i) = create wksname + "_text_ndc"+i textItemClass wks
+          "txString"   : text(i)
+          "txFuncCode" : res2@txFuncCode
+        end create
+        attsetvalues_check(txid(i),txres)       ; Set text resources.
+        draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
+      end do
+    else
+      do i=0,len-1
+        txid(i) = create wksname + "_text_ndc"+i textItemClass wks
+          "txString" : text(i)
+          "txPosXF"  : x(i)
+          "txPosYF"  : y(i)
+          "txFuncCode" : res2@txFuncCode
+        end create
+        attsetvalues_check(txid(i),txres)       ; Set text resources.
+        draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
+      end do
+    end if
   else
-    do i=0,len-1
-      txid(i) = create wksname + "_text_ndc"+i textItemClass wks
-        "txString" : text(i)
-        "txPosXF"  : x(i)
-        "txPosYF"  : y(i)
-      end create
-      attsetvalues_check(txid(i),txres)       ; Set text resources.
-      draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
-    end do
+;
+; Special case where we don't have x,y values.
+;
+    if(all(x.lt.0).and.all(y.lt.0)) then
+      do i=0,len-1
+        txid(i) = create wksname + "_text_ndc"+i textItemClass wks
+          "txString" : text(i)
+        end create
+        attsetvalues_check(txid(i),txres)       ; Set text resources.
+        draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
+      end do
+    else
+      do i=0,len-1
+        txid(i) = create wksname + "_text_ndc"+i textItemClass wks
+          "txString" : text(i)
+          "txPosXF"  : x(i)
+          "txPosYF"  : y(i)
+        end create
+        attsetvalues_check(txid(i),txres)       ; Set text resources.
+        draw_and_frame(wks,txid(i),calldraw,callframe,0,maxbb)
+      end do
+    end if
   end if
 
   if(xrank.gt.1) then
@@ -3526,6 +3696,25 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_create_text                                            ;
+;                   wks: workstation object                             ;
+;                  text: text strings                                   ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates text strings.                                   ;
+;***********************************************************************;
+function gsn_create_text(wks:graphic, text:string, resources:logical )
+local x, y
+begin
+    x = -1.   ; Special values to tip off the routine
+    y = -1.   ; that we don't have X,Y values.
+
+    text = gsn_create_text_ndc(wks, text, x, y, resources)
+    return(text)
+end
+
+
+;***********************************************************************;
 ; Procedure : gsn_text_ndc                                              ;
 ;                                                                       ;
 ; This procedure is the same as gsn_text, only it doesn't return        ;
@@ -3535,8 +3724,13 @@ procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
                        y:numeric, resources:logical )
 local txid
 begin
-  res2 = get_resources(resources)
-  txid = gsn_text_ndc_return(wks,text,x,y,res2)
+  if(res2) then
+    res2 = get_resources(resources)
+  else
+    res2 = True
+  end if
+  res2@gsnDraw = True               ; False by default
+  txid = gsn_create_text_ndc(wks,text,x,y,res2)
 end
 
 ;***********************************************************************;
@@ -4578,7 +4772,7 @@ begin
     mntxres@gsnDraw       = False
     mntxres@gsnFrame      = False
     mntxres@txFontHeightF = main_font_hgt
-    newplots(nplot) = gsn_text_ndc_return(wks, main_string, main_xpos, \
+    newplots(nplot) = gsn_create_text_ndc(wks, main_string, main_xpos, \
                       main_ypos, mntxres)
   end if
 ;
@@ -7594,6 +7788,7 @@ begin
   lineres  = True
   txres    = True
 
+  txres@gsnDraw               = True
   txres@txFontHeightF         = font_height
   txres@txFont                = "helvetica-bold"
   txres@txPerimOn             = True
@@ -7642,9 +7837,11 @@ begin
 
             ; Draw color label.
         txres@txJust                = "BottomLeft"
-        text = gsn_text_ndc_return(wks,colors(i-1),font_space+xpos(jj),ypos(ii)+font_space,txres)
+        text = gsn_create_text_ndc(wks,colors(i-1),font_space+xpos(jj),\
+                                   ypos(ii)+font_space,txres)
         txres@txJust                = "TopLeft"
-        gsn_text_ndc(wks,rgb_val(i-1),font_space+xpos(jj),height+ypos(ii)-font_space,txres)
+        gsn_text_ndc(wks,rgb_val(i-1),font_space+xpos(jj), \
+                     height+ypos(ii)-font_space,txres)
 
         ii = ii + 1
         colorindex = colorindex + 1
