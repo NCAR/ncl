@@ -1,6 +1,6 @@
 C
-C	$Id: line3w.f,v 1.3 2000-08-22 15:07:23 haley Exp $
-C                                                                      
+C $Id: line3w.f,v 1.4 2006-03-10 15:31:41 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

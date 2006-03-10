@@ -1,6 +1,6 @@
 C
-C $Id: perim3.f,v 1.5 2000-08-22 15:07:23 haley Exp $
-C                                                                      
+C $Id: perim3.f,v 1.6 2006-03-10 15:31:41 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -34,7 +34,7 @@ C
       COMMON /THRINT/ ITHRMJ     ,ITHRMN     ,ITHRTX
       DIMENSION       LASF(13)
 C
-      TICK(T) = AMAX1(UUMAX-UUMIN,VVMAX-VVMIN,WWMAX-WWMIN)*T/1024.
+      TICK(T) = MAX(UUMAX-UUMIN,VVMAX-VVMIN,WWMAX-WWMIN)*T/1024.
 C
 C INQUIRE LINE COLOR INDEX AND SET ASF TO INDIVIDUAL
 C
@@ -48,9 +48,9 @@ C
       MN1 = MINI1-1
       MGR2 = MAGR2
       MN2 = MINI2-1
-      MN1P1 = MAX0(MN1+1,1)
-      MN2P1 = MAX0(MN2+1,1)
-      L = MIN0(3,MAX0(1,IWHICH))
+      MN1P1 = MAX(MN1+1,1)
+      MN2P1 = MAX(MN2+1,1)
+      L = MIN(3,MAX(1,IWHICH))
       Q = VAR
 C
 C PICK BOUNDS
@@ -86,7 +86,7 @@ C
       CALL LINE3W (XMAX,YMAX,XMIN,YMAX)
       CALL LINE3W (XMIN,YMAX,XMIN,YMIN)
       IF (MGR1 .LT. 1) GO TO  90
-      DX = (XMAX-XMIN)/AMAX0(MGR1*(MN1P1),1)
+      DX = (XMAX-XMIN)/REAL(MAX(MGR1*(MN1P1),1))
       DO  80 I=1,MGR1
 C
 C MINORS
@@ -96,7 +96,7 @@ C
          CALL GSPLCI (ITHRMN)
 C
          DO  60 J=1,MN1
-            X = XMIN+FLOAT(MN1P1*(I-1)+J)*DX
+            X = XMIN+REAL(MN1P1*(I-1)+J)*DX
             CALL LINE3W (X,YMIN,X,YMIN+DELYS)
             CALL LINE3W (X,YMAX,X,YMAX-DELYS)
    60    CONTINUE
@@ -104,7 +104,7 @@ C
 C
          CALL GSPLCI (ITHRMJ)
 C
-         X = XMIN+FLOAT(MN1P1*I)*DX
+         X = XMIN+REAL(MN1P1*I)*DX
 C
 C MAJORS
 C
@@ -112,14 +112,14 @@ C
          CALL LINE3W (X,YMAX,X,YMAX-DELYL)
    80 CONTINUE
    90 IF (MGR2 .LT. 1) GO TO 130
-      DY = (YMAX-YMIN)/AMAX0(MGR2*(MN2P1),1)
+      DY = (YMAX-YMIN)/REAL(MAX(MGR2*(MN2P1),1))
       DO 120 J=1,MGR2
          IF (MN2 .LE. 0) GO TO 110
 C
          CALL GSPLCI (ITHRMN)
 C
          DO 100 I=1,MN2
-            Y = YMIN+FLOAT(MN2P1*(J-1)+I)*DY
+            Y = YMIN+REAL(MN2P1*(J-1)+I)*DY
             CALL LINE3W (XMIN,Y,XMIN+DELXS,Y)
             CALL LINE3W (XMAX,Y,XMAX-DELXS,Y)
   100    CONTINUE
@@ -127,7 +127,7 @@ C
 C
          CALL GSPLCI (ITHRMJ)
 C
-         Y = YMIN+FLOAT(MN2P1*J)*DY
+         Y = YMIN+REAL(MN2P1*J)*DY
          CALL LINE3W (XMIN,Y,XMIN+DELXL,Y)
          CALL LINE3W (XMAX,Y,XMAX-DELXL,Y)
   120 CONTINUE

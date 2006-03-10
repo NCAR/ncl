@@ -1,6 +1,6 @@
 C
-C $Id: fence3.f,v 1.4 2000-08-22 15:07:22 haley Exp $
-C                                                                      
+C $Id: fence3.f,v 1.5 2006-03-10 15:31:40 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -39,7 +39,7 @@ C
 C
       M = N
       BASE = BOT
-      L = MAX0(1,MIN0(3,IOR))
+      L = MAX(1,MIN(3,IOR))
 C
 C SET LINE INTENSITY TO LOW
 C

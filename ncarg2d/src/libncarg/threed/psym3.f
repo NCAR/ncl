@@ -1,6 +1,6 @@
 C
-C $Id: psym3.f,v 1.4 2000-08-22 15:07:24 haley Exp $
-C                                                                      
+C $Id: psym3.f,v 1.5 2006-03-10 15:31:41 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

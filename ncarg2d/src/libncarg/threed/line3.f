@@ -1,6 +1,6 @@
 C
-C $Id: line3.f,v 1.4 2000-08-22 15:07:23 haley Exp $
-C                                                                      
+C $Id: line3.f,v 1.5 2006-03-10 15:31:41 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -23,9 +23,9 @@ C
       SUBROUTINE LINE3 (UA,VA,WA,UB,VB,WB)
       CALL TRN32T (UA,VA,WA,XA,YA,XDUM,2)
       CALL TRN32T (UB,VB,WB,XB,YB,XDUM,2)
-      IIX = 32*IFIX(XB)
-      IIY = 32*IFIX(YB)
-      CALL PLOTIT (32*IFIX(XA),32*IFIX(YA),0)
+      IIX = 32*INT(XB)
+      IIY = 32*INT(YB)
+      CALL PLOTIT (32*INT(XA),32*INT(YA),0)
       CALL PLOTIT (IIX,IIY,1)
 C
 C FLUSH PLOTIT BUFFER

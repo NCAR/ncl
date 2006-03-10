@@ -1,6 +1,6 @@
 C
-C $Id: frst3.f,v 1.4 2000-08-22 15:07:23 haley Exp $
-C                                                                      
+C $Id: frst3.f,v 1.5 2006-03-10 15:31:40 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -23,6 +23,6 @@ C
       SUBROUTINE FRST3 (U,V,W)
       XDUM = 5.
       CALL TRN32T (U,V,W,X,Y,XDUM,2)
-      CALL PLOTIT  (32*IFIX(X),32*IFIX(Y),0)
+      CALL PLOTIT  (32*INT(X),32*INT(Y),0)
       RETURN
       END

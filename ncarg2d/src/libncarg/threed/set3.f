@@ -1,6 +1,6 @@
 C
-C $Id: set3.f,v 1.4 2000-08-22 15:07:24 haley Exp $
-C                                                                      
+C $Id: set3.f,v 1.5 2006-03-10 15:31:41 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -260,10 +260,10 @@ C
       CALL TRN32T (SU(UUMAX),SV(VVMIN),SW(WWMAX),X6,Y6,DUM,2)
       CALL TRN32T (SU(UUMAX),SV(VVMAX),SW(WWMIN),X7,Y7,DUM,2)
       CALL TRN32T (SU(UUMAX),SV(VVMAX),SW(WWMAX),X8,Y8,DUM,2)
-      XMIN = AMIN1(X1,X2,X3,X4,X5,X6,X7,X8)
-      XMAX = AMAX1(X1,X2,X3,X4,X5,X6,X7,X8)
-      YMIN = AMIN1(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
-      YMAX = AMAX1(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
+      XMIN = MIN(X1,X2,X3,X4,X5,X6,X7,X8)
+      XMAX = MAX(X1,X2,X3,X4,X5,X6,X7,X8)
+      YMIN = MIN(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
+      YMAX = MAX(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
 C
 C ADD RIGHT AMOUNT TO KEEP PICTURE SQUARE
 C

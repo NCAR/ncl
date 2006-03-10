@@ -1,6 +1,6 @@
 C
-C $Id: curve3.f,v 1.4 2000-08-22 15:07:22 haley Exp $
-C                                                                      
+C $Id: curve3.f,v 1.5 2006-03-10 15:31:40 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -24,7 +24,7 @@ C
       SAVE
       DIMENSION       U(N)       ,V(N)       ,W(N)
       CALL TRN32T (U(1),V(1),W(1),X,Y,ZDUM,2)
-      CALL PLOTIT (32*IFIX(X),32*IFIX(Y),0)
+      CALL PLOTIT (32*INT(X),32*INT(Y),0)
       NN = N
       IF (NN .LT. 2) RETURN
       DO  10 I=2,NN
@@ -32,7 +32,7 @@ C
          VV = V(I)
          WW = W(I)
          CALL TRN32T (UU,VV,WW,X,Y,ZDUM,2)
-         CALL PLOTIT (32*IFIX(X),32*IFIX(Y),1)
+         CALL PLOTIT (32*INT(X),32*INT(Y),1)
    10 CONTINUE
 C
 C FLUSH PLOTIT BUFFER

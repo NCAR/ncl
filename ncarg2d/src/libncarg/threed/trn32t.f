@@ -1,6 +1,6 @@
 C
-C	$Id: trn32t.f,v 1.4 2000-08-22 15:07:25 haley Exp $
-C                                                                      
+C $Id: trn32t.f,v 1.5 2006-03-10 15:31:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

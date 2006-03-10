@@ -1,6 +1,6 @@
 C
-C $Id: vect3.f,v 1.4 2000-08-22 15:07:25 haley Exp $
-C                                                                      
+C $Id: vect3.f,v 1.5 2006-03-10 15:31:42 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -22,8 +22,8 @@ C USA.
 C
       SUBROUTINE VECT3 (U,V,W)
       CALL TRN32T (U,V,W,X,Y,ZDUM,2)
-      IIX = 32*IFIX(X)
-      IIY = 32*IFIX(Y)
+      IIX = 32*INT(X)
+      IIY = 32*INT(Y)
       CALL PLOTIT  (IIX,IIY,1)
       RETURN
       END
