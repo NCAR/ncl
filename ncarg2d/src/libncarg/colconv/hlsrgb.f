@@ -1,5 +1,5 @@
 C
-C	$Id: hlsrgb.f,v 1.3 2000-08-22 15:02:29 haley Exp $
+C	$Id: hlsrgb.f,v 1.4 2006-03-10 23:36:08 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -147,7 +147,7 @@ C
 C  Check on the input values.
 C
 C_FIRST EXECUTABLE STATEMENT HLSRGB
-      HH = AMOD(H,360.)
+      HH = MOD(H,360.)
       IF (HH .LT. 0.) HH = HH+360.
       IF (L.LT.0. .OR. L.GT.100.)
      *      CALL SETER(' HLSRGB - L out of range',1,1)

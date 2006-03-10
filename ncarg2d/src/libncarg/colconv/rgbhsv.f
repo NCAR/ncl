@@ -1,5 +1,5 @@
 C
-C	$Id: rgbhsv.f,v 1.4 2000-08-22 15:02:29 haley Exp $
+C	$Id: rgbhsv.f,v 1.5 2006-03-10 23:36:08 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -142,8 +142,8 @@ C_FIRST EXECUTABLE STATEMENT RGBHSV
       IF (B.LT.0. .OR. B.GT.1.)
      *      CALL SETER(' RGBHSV - B out of range',1,1)
 C
-      MXINTS = AMAX1(R,G,B)
-      MNINTS = AMIN1(R,G,B)
+      MXINTS = MAX(R,G,B)
+      MNINTS = MIN(R,G,B)
       MAXMIN = MXINTS-MNINTS
 C
 C  Compute value.
@@ -186,7 +186,7 @@ C
 C
 C  Guarantee saturation and value are in range.
 C
-      S = AMIN1(1.,AMAX1(0.,S))
-      V = AMIN1(1.,AMAX1(0.,V))
+      S = MIN(1.,MAX(0.,S))
+      V = MIN(1.,MAX(0.,V))
       RETURN
       END

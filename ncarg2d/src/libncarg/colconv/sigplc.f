@@ -1,5 +1,5 @@
 C
-C	$Id: sigplc.f,v 1.3 2000-08-22 15:02:30 haley Exp $
+C	$Id: sigplc.f,v 1.4 2006-03-10 23:36:08 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -80,7 +80,7 @@ C
       REAL M1,M2,HUE,H
 C_FIRST EXECUTABLE STATEMENT SIGPLC
       H = HUE
-      H = AMOD(H,360.)
+      H = MOD(H,360.)
       IF (H .LT. 0.) H = H+360.
       IF (H .LT. 60.0) THEN
 C
@@ -106,6 +106,6 @@ C
 C
 C  Guarantee SIGPLC is in the range 0. to 1.
 C
-      SIGPLC = AMIN1(1.,AMAX1(0.,SIGPLC))
+      SIGPLC = MIN(1.,MAX(0.,SIGPLC))
       RETURN
       END

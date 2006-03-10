@@ -1,5 +1,5 @@
 C
-C	$Id: rgbhls.f,v 1.3 2000-08-22 15:02:29 haley Exp $
+C	$Id: rgbhls.f,v 1.4 2006-03-10 23:36:08 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -150,8 +150,8 @@ C_FIRST EXECUTABLE STATEMENT RGBHLS
      *      CALL SETER(' RGBHLS - G out of range',1,1)
       IF (B.LT.0. .OR. B.GT.1.)
      *      CALL SETER(' RGBHLS - B out of range',1,1)
-      MXINTS = AMAX1(R,G,B)
-      MNINTS = AMIN1(R,G,B)
+      MXINTS = MAX(R,G,B)
+      MNINTS = MIN(R,G,B)
 C
 C  Compute lightness
 C
@@ -197,7 +197,7 @@ C  Scale lightness and saturation values.
 C
       L = L*100.
       S = S*100.
-      L = AMIN1(100.,AMAX1(0.,L))
-      S = AMIN1(100.,AMAX1(0.,S))
+      L = MIN(100.,MAX(0.,L))
+      S = MIN(100.,MAX(0.,S))
       RETURN
       END
