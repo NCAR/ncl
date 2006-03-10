@@ -1,5 +1,5 @@
 C
-C	$Id: conpdv.f,v 1.3 2000-08-22 15:03:13 haley Exp $
+C	$Id: conpdv.f,v 1.4 2006-03-10 17:09:40 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -101,8 +101,8 @@ C  LOOP AND PLOT ALL VALUES
 C
   110 DO  120 K=1,NDP
          CALL FL2INT (XD(K),YD(K),MX,MY)
-         MX = IFIX(FLOAT(MX)/TRANS)+1
-         MY = IFIX(FLOAT(MY)/TRANS)+1
+         MX = INT(REAL(MX)/TRANS)+1
+         MY = INT(REAL(MY)/TRANS)+1
        WRITE(ISTR,FORM)ZD(K)
 C
 C  POSITION STRINGS PROPERLY IF COORDS ARE IN PAU'S

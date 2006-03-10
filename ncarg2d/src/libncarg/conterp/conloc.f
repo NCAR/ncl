@@ -1,5 +1,5 @@
 C
-C	$Id: conloc.f,v 1.3 2000-08-22 15:03:11 haley Exp $
+C	$Id: conloc.f,v 1.4 2006-03-10 17:09:40 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -92,10 +92,10 @@ C
       DO  100 IDP=2,NDP
          XI = XD(IDP)
          YI = YD(IDP)
-         XMN = AMIN1(XI,XMN)
-         XMX = AMAX1(XI,XMX)
-         YMN = AMIN1(YI,YMN)
-         YMX = AMAX1(YI,YMX)
+         XMN = MIN(XI,XMN)
+         XMX = MAX(XI,XMX)
+         YMN = MIN(YI,YMN)
+         YMX = MAX(YI,YMX)
   100 CONTINUE
       XS1 = (XMN+XMN+XMX)/3.0
       XS2 = (XMN+XMX+XMX)/3.0
@@ -116,10 +116,10 @@ C
          I1 = IPT(IT0T3-2)
          I2 = IPT(IT0T3-1)
          I3 = IPT(IT0T3)
-         XMN = AMIN1(XD(I1),XD(I2),XD(I3))
-         XMX = AMAX1(XD(I1),XD(I2),XD(I3))
-         YMN = AMIN1(YD(I1),YD(I2),YD(I3))
-         YMX = AMAX1(YD(I1),YD(I2),YD(I3))
+         XMN = MIN(XD(I1),XD(I2),XD(I3))
+         XMX = MAX(XD(I1),XD(I2),XD(I3))
+         YMN = MIN(YD(I1),YD(I2),YD(I3))
+         YMX = MAX(YD(I1),YD(I2),YD(I3))
          IF (YMN .GT. YS1) GO TO  120
          IF (XMN .LE. XS1) IDSC(1) = 1
          IF (XMX.GE.XS1 .AND. XMN.LE.XS2) IDSC(2) = 1

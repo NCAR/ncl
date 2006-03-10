@@ -1,5 +1,5 @@
 C
-C	$Id: concls.f,v 1.3 2000-08-22 15:03:10 haley Exp $
+C	$Id: concls.f,v 1.4 2006-03-10 17:09:40 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -125,13 +125,13 @@ C
 C
 C  ROUND FINC TO NICE NUMBER
 C
-  190 P = 10.**(IFIX(ALOG10(FINC)+500.)-500)
-      FINC = AINT(FINC/P+0.1)*P
+  190 P = 10.**(INT(ALOG10(FINC)+500.)-500)
+      FINC = REAL(INT(FINC/P+0.1))*P
 C
 C  ROUND THE LOW VALUE TO START AT A NICE NUMBER
 C
   200 IF (CHILO) GO TO  210
-      FLO = AINT(FLO/FINC)*FINC
+      FLO = REAL(INT(FLO/FINC))*FINC
 C
 C  COMPUTE THE CONTOUR LEVELS
 C
@@ -142,7 +142,7 @@ C
 C  BREAK POINT OUT OF RANGE SO GENERATE CONTOURS BASED ON FLO
 C
       DO  220 I=1,30
-         CV = FLO+FLOAT(I-1)*FINC
+         CV = FLO+REAL(I-1)*FINC
          ICUR = I
          CL(I) = CV
          IF (CV .GE. HI) GO TO  230
@@ -154,7 +154,7 @@ C
 C  BREAK POINT WITHIN RANGE SO BASE CONTOURS ON IT
 C
   240 DO  250 I=1,30
-         CV = BPSIZ-FLOAT(I-1)*FINC
+         CV = BPSIZ-REAL(I-1)*FINC
          IND = (30-I)+1
          CL(IND) = CV
          ICUR = I
@@ -173,7 +173,7 @@ C
       IEND = 30-ICUR
       ISAV = ICUR+1
       DO  280 I=1,IEND
-         CV = BPSIZ+FLOAT(I)*FINC
+         CV = BPSIZ+REAL(I)*FINC
          CL(ISAV) = CV
          ISAV = ISAV+1
          IF (CV .GE. HI) GO TO  290

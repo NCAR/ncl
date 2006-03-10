@@ -1,5 +1,5 @@
 C
-C	$Id: conxch.f,v 1.3 2000-08-22 15:03:14 haley Exp $
+C	$Id: conxch.f,v 1.4 2006-03-10 17:09:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -66,11 +66,11 @@ C
       A2SQ = (X0(2)-X0(4))**2+(Y0(2)-Y0(4))**2
       B2SQ = (X0(3)-X0(2))**2+(Y0(3)-Y0(2))**2
       C3SQ = (X0(2)-X0(1))**2+(Y0(2)-Y0(1))**2
-      S1SQ = U1*U1/(C1SQ*AMAX1(A1SQ,B1SQ))
-      S2SQ = U2*U2/(C2SQ*AMAX1(A2SQ,B2SQ))
-      S3SQ = U3*U3/(C3SQ*AMAX1(A3SQ,B3SQ))
-      S4SQ = U4*U4/(C4SQ*AMAX1(A4SQ,B4SQ))
-      IF (AMIN1(S1SQ,S2SQ) .LT. AMIN1(S3SQ,S4SQ)) IDX = 1
+      S1SQ = U1*U1/(C1SQ*MAX(A1SQ,B1SQ))
+      S2SQ = U2*U2/(C2SQ*MAX(A2SQ,B2SQ))
+      S3SQ = U3*U3/(C3SQ*MAX(A3SQ,B3SQ))
+      S4SQ = U4*U4/(C4SQ*MAX(A4SQ,B4SQ))
+      IF (MIN(S1SQ,S2SQ) .LT. MIN(S3SQ,S4SQ)) IDX = 1
   100 CONXCH = IDX
       RETURN
 C

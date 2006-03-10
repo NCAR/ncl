@@ -1,5 +1,5 @@
 C
-C	$Id: constp.f,v 1.3 2000-08-22 15:03:13 haley Exp $
+C	$Id: constp.f,v 1.4 2006-03-10 17:09:40 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -98,7 +98,7 @@ C
       YRG = (ABS(YED-YST))
       SQRG = XRG
       IF (SQRG .LT. YRG) SQRG = YRG
-      STPSZ = SQRG/FLOAT(IGRAD-1)
+      STPSZ = SQRG/REAL(IGRAD-1)
 C
 C  COMPUTE PARAMETERS FOR SET CALL
 C
@@ -108,8 +108,8 @@ C
       PXED = .5+(BORD*DIFX)/2.
       PYST = .5-(BORD*DIFY)/2.
       PYED = .5+(BORD*DIFY)/2.
-      XRG = XRG/FLOAT(ITICK)
-      YRG = YRG/FLOAT(ITICK)
+      XRG = XRG/REAL(ITICK)
+      YRG = YRG/REAL(ITICK)
 C
 C  TEST IF THE ASPECT RATIO FOR THE COORDINATES IS REASONABLE.
 C     REASONABLE IS CURRENTLY DEFINED AS 5 TO 1.
