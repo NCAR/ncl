@@ -1,6 +1,6 @@
 C
-C $Id: kpmy.f,v 1.5 2000-08-22 15:06:12 haley Exp $
-C                                                                      
+C $Id: kpmy.f,v 1.6 2006-03-10 00:25:35 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -27,6 +27,6 @@ C coordinate in the metacode system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
-      KPMY=IFIX(32767.*FLOAT(IY-1)/(2.**MY-1.))
+      KPMY=INT(32767.*REAL(IY-1)/(2.**MY-1.))
       RETURN
       END

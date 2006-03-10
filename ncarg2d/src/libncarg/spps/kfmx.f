@@ -1,6 +1,6 @@
 C
-C $Id: kfmx.f,v 1.5 2000-08-22 15:06:10 haley Exp $
-C                                                                      
+C $Id: kfmx.f,v 1.6 2006-03-10 00:25:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -25,6 +25,6 @@ C
 C Given an X coordinate RX in the fractional system, KFMX(RX) is an X
 C coordinate in the metacode system.
 C
-      KFMX=IFIX(RX*32767.)
+      KFMX=INT(RX*32767.)
       RETURN
       END

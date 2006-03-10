@@ -1,6 +1,6 @@
 C
-C $Id: wtstr.f,v 1.5 2000-08-22 15:06:15 haley Exp $
-C                                                                      
+C $Id: wtstr.f,v 1.6 2006-03-10 00:25:37 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -110,11 +110,11 @@ C the default font.)
 C
       CALL GETUSV ('YF',MY)
       IF (ICFELL('WTSTR',11).NE.0) RETURN
-      YS=FLOAT(2**MY)
+      YS=REAL(2**MY)
       IF (IS.GE.0.AND.IS.LE.3) THEN
-        CS=FLOAT(8+4*IS+4*(IS/3))/YS
+        CS=REAL(8+4*IS+4*(IS/3))/YS
       ELSE
-        CS=AMIN1(FLOAT(IS),YS)/YS
+        CS=MIN(REAL(IS),YS)/YS
       ENDIF
 C
 C     CS=CS*1.0
@@ -137,9 +137,9 @@ C
       ELSE IF (JO.EQ.270) THEN
         CALL GSCHUP (1.,0.)
       ELSE IF (JO.GT.0.AND.JO.LT.180) THEN
-        CALL GSCHUP (-1.,1./TAN(FLOAT(JO)*3.1415926/180.))
+        CALL GSCHUP (-1.,1./TAN(REAL(JO)*3.1415926/180.))
       ELSE
-        CALL GSCHUP (1.,-1./TAN(FLOAT(JO)*3.1415926/180.))
+        CALL GSCHUP (1.,-1./TAN(REAL(JO)*3.1415926/180.))
       ENDIF
 C
 C Define the text alignment.

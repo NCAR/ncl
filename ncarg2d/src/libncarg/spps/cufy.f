@@ -1,6 +1,6 @@
 C
-C $Id: cufy.f,v 1.5 2000-08-22 15:06:09 haley Exp $
-C                                                                      
+C $Id: cufy.f,v 1.6 2006-03-10 00:25:33 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

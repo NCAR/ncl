@@ -1,6 +1,6 @@
 C
-C $Id: kumy.f,v 1.5 2000-08-22 15:06:12 haley Exp $
-C                                                                      
+C $Id: kumy.f,v 1.6 2006-03-10 00:25:35 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -43,11 +43,11 @@ C
       I=3
       IF (MI.EQ.2.OR.MI.GE.4) I=4
       IF (LL.LE.1.OR.LL.EQ.3) THEN
-        KUMY=IFIX(((RY-WD(I))/(WD(7-I)-WD(I))*(VP(4)-VP(3))+VP(3))*
-     +              32767.)
+        KUMY=INT(((RY-WD(I))/(WD(7-I)-WD(I))*(VP(4)-VP(3))+VP(3))*
+     +             32767.)
       ELSE
-        KUMY=IFIX(((ALOG10(RY)-WD(I))/(WD(7-I)-WD(I))*(VP(4)-VP(3))+
-     +              VP(3))*32767.)
+        KUMY=INT(((ALOG10(RY)-WD(I))/(WD(7-I)-WD(I))*(VP(4)-VP(3))+
+     +             VP(3))*32767.)
       ENDIF
       RETURN
       END

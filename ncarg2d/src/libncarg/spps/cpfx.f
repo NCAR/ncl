@@ -1,6 +1,6 @@
 C
-C $Id: cpfx.f,v 1.5 2000-08-22 15:06:08 haley Exp $
-C                                                                      
+C $Id: cpfx.f,v 1.6 2006-03-10 00:25:32 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -27,6 +27,6 @@ C coordinate in the fractional system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
-      CPFX=FLOAT(IX-1)/(2.**MX-1.)
+      CPFX=REAL(IX-1)/(2.**MX-1.)
       RETURN
       END

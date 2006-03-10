@@ -1,6 +1,6 @@
 C
-C $Id: opngks.f,v 1.5 2000-08-22 15:06:13 haley Exp $
-C                                                                      
+C $Id: opngks.f,v 1.6 2006-03-10 00:25:35 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -43,7 +43,7 @@ C
         CALL GOPKS (6,0)
         CALL GOPWK (1,IU(6),1)
         CALL GACWK (1)
-        IU(6)=-IABS(IU(6))
+        IU(6)=-ABS(IU(6))
       END IF
 C
       RETURN

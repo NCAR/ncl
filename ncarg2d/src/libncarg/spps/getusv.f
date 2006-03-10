@@ -1,6 +1,6 @@
 C
-C $Id: getusv.f,v 1.5 2000-08-22 15:06:10 haley Exp $
-C                                                                      
+C $Id: getusv.f,v 1.6 2006-03-10 00:25:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -65,7 +65,7 @@ C
 C Check for the variable specifying the metacode unit.
 C
       ELSE IF (VN(1:2).EQ.'MU') THEN
-        IV=IABS(IU(6))
+        IV=ABS(IU(6))
 C
 C Check for one of the variables specifying color and intensity.
 C

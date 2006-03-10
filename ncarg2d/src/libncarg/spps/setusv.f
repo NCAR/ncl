@@ -1,5 +1,5 @@
 C
-C $Id: setusv.f,v 1.6 2004-11-19 18:46:08 kennison Exp $
+C $Id: setusv.f,v 1.7 2006-03-10 00:25:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -93,7 +93,7 @@ C
 C Check for the variable specifying the size of the pen-move buffer.
 C
       ELSE IF (VN(1:2).EQ.'PB') THEN
-        IF (IV.LT.2.OR.IV.GT.500) THEN
+        IF (IV.LT.2.OR.IV.GT.50) THEN
           CALL SETER ('SETUSV - PEN-MOVE BUFFER SIZE OUT OF RANGE',6,1)
           RETURN
         END IF
@@ -164,9 +164,9 @@ C
 C
 C Compute the floating-point red, green, and blue intensities.
 C
-        FR=FLOAT(IR)/FLOAT(MAX0(IR,IG,IB,1))*FLOAT(IN)/10000.
-        FG=FLOAT(IG)/FLOAT(MAX0(IR,IG,IB,1))*FLOAT(IN)/10000.
-        FB=FLOAT(IB)/FLOAT(MAX0(IR,IG,IB,1))*FLOAT(IN)/10000.
+        FR=REAL(IR)/REAL(MAX(IR,IG,IB,1))*REAL(IN)/10000.
+        FG=REAL(IG)/REAL(MAX(IR,IG,IB,1))*REAL(IN)/10000.
+        FB=REAL(IB)/REAL(MAX(IR,IG,IB,1))*REAL(IN)/10000.
 C
 C Dump the pen-move buffer before changing anything.
 C
@@ -277,7 +277,7 @@ C
 C
 C Redefine the line width scale factor.
 C
-        CALL GSLWSC (FLOAT(IV)/1000.)
+        CALL GSLWSC (REAL(IV)/1000.)
 C
 C Check for the variable setting the current marker size scale factor.
 C
@@ -300,7 +300,7 @@ C
 C
 C Redefine the marker size scale factor.
 C
-        CALL GSMKSC (FLOAT(IV)/1000.)
+        CALL GSMKSC (REAL(IV)/1000.)
 C
 C Otherwise, the variable name is unknown.
 C

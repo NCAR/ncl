@@ -1,6 +1,6 @@
 C
-C $Id: set.f,v 1.6 2000-08-22 15:06:14 haley Exp $
-C                                                                      
+C $Id: set.f,v 1.7 2006-03-10 00:25:36 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -52,7 +52,7 @@ C
 C
 C Set the utility state variable controlling linear-log mapping.
 C
-      LL=MAX0(1,MIN0(4,LF))
+      LL=MAX(1,MIN(4,LF))
 C
 C Set the GKS window for transformation 1.
 C

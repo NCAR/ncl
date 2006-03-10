@@ -1,6 +1,6 @@
 C
-C $Id: points.f,v 1.5 2000-08-22 15:06:14 haley Exp $
-C                                                                      
+C $Id: points.f,v 1.6 2006-03-10 00:25:36 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -76,7 +76,7 @@ C
             CALL SETER ('POINTS - ERROR EXIT FROM GQPMI',5,1)
             RETURN
           END IF
-          CALL GSPMI (MAX0(-IC,1))
+          CALL GSPMI (MAX(-IC,1))
           CALL GPM (NP,PX,PY)
           CALL GSPMI (IN)
         ELSE
@@ -85,7 +85,7 @@ C
             CALL SETER ('POINTS - ERROR EXIT FROM GQMK',6,1)
             RETURN
           END IF
-          CALL GSMK (MAX0(-IC,1))
+          CALL GSMK (MAX(-IC,1))
           CALL GPM (NP,PX,PY)
           CALL GSMK (IN)
         END IF
@@ -112,14 +112,14 @@ C
               CALL SETER ('POINTS - ERROR EXIT FROM GQPMI',8,1)
               RETURN
             END IF
-            CALL GSPMI (MAX0(-IC,1))
+            CALL GSPMI (MAX(-IC,1))
           ELSE
             CALL GQMK (IE,IN)
             IF (IE.NE.0) THEN
               CALL SETER ('POINTS - ERROR EXIT FROM GQMK',9,1)
               RETURN
             END IF
-            CALL GSMK (MAX0(-IC,1))
+            CALL GSMK (MAX(-IC,1))
           END IF
         ELSE
           CALL GQTXAL (IE,IH,IV)
@@ -137,8 +137,8 @@ C
 C Fill the little point coordinate arrays with up to ten values,
 C converting them from the user system to the fractional system.
 C
-          NQ=MIN0(10,NP-IP+1)
-          MQ=MIN0(9,NQ)
+          NQ=MIN(10,NP-IP+1)
+          MQ=MIN(9,NQ)
           DO 102 IQ=1,NQ
             QX(IQ)=CUFX(PX(IP+IQ-1))
             QY(IQ)=CUFY(PY(IP+IQ-1))

@@ -1,6 +1,6 @@
 C
-C $Id: kfpy.f,v 1.5 2000-08-22 15:06:11 haley Exp $
-C                                                                      
+C $Id: kfpy.f,v 1.6 2006-03-10 00:25:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -27,6 +27,6 @@ C coordinate in the plotter system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
-      KFPY=1+IFIX(RY*(2.**MX-1.))
+      KFPY=1+INT(RY*(2.**MX-1.))
       RETURN
       END

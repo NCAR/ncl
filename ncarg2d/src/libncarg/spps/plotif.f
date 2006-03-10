@@ -1,5 +1,5 @@
 C
-C $Id: plotif.f,v 1.8 2004-11-19 18:46:08 kennison Exp $
+C $Id: plotif.f,v 1.9 2006-03-10 00:25:35 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,7 +27,7 @@ C system.  If IP is zero, do a pen-up move.  If IP is one, do a pen-down
 C move.  If IP is two, flush the buffer.
 C
 C The variable IU(5), in the labelled common block IUTLCM, specifies
-C the size of the pen-move buffer (between 2 and 500).
+C the size of the pen-move buffer (between 2 and 50).
 C
       COMMON /IUTLCM/ IU(100)
       SAVE /IUTLCM/
@@ -35,7 +35,7 @@ C
 C The common block VCTSEQ contains variables implementing the buffering
 C of pen moves.
 C
-      COMMON /VCTSEQ/ NQ,QX(500),QY(500),NF,IF(250)
+      COMMON /VCTSEQ/ NQ,QX(50),QY(50),NF,IF(25)
       SAVE /VCTSEQ/
 C
 C In the common block PLTCM are recorded the coordinates of the last

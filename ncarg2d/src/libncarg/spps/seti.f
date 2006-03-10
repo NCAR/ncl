@@ -1,6 +1,6 @@
 C
-C $Id: seti.f,v 1.6 2000-08-22 15:06:14 haley Exp $
-C                                                                      
+C $Id: seti.f,v 1.7 2006-03-10 00:25:36 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -37,8 +37,8 @@ C
 C
 C Transfer the user's values into the common block.
 C
-      MX=MAX0(1,MIN0(15,IX))
-      MY=MAX0(1,MIN0(15,IY))
+      MX=MAX(1,MIN(15,IX))
+      MY=MAX(1,MIN(15,IY))
 C
       RETURN
 C

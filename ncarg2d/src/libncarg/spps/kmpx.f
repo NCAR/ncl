@@ -1,6 +1,6 @@
 C
-C $Id: kmpx.f,v 1.5 2000-08-22 15:06:11 haley Exp $
-C                                                                      
+C $Id: kmpx.f,v 1.6 2006-03-10 00:25:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -27,6 +27,6 @@ C coordinate in the plotter system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
-      KMPX=1+IFIX((2.**MX-1.)*FLOAT(IX)/32767.)
+      KMPX=1+INT((2.**MX-1.)*REAL(IX)/32767.)
       RETURN
       END

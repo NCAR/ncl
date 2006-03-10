@@ -1,5 +1,5 @@
 C
-C $Id: plotit.f,v 1.8 2004-11-19 18:46:08 kennison Exp $
+C $Id: plotit.f,v 1.9 2006-03-10 00:25:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -28,7 +28,7 @@ C If IP is two, flush the buffer.  (For the sake of efficiency, the
 C moves are buffered; "CALL PLOTIT (0,0,0)" will also flush the buffer.)
 C
 C The variable IU(5), in the labelled common block IUTLCM, specifies
-C the size of the pen-move buffer (between 2 and 500).
+C the size of the pen-move buffer (between 2 and 50).
 C
       COMMON /IUTLCM/ IU(100)
       SAVE /IUTLCM/
@@ -36,7 +36,7 @@ C
 C The common block VCTSEQ contains variables implementing the buffering
 C of pen moves.
 C
-      COMMON /VCTSEQ/ NQ,QX(500),QY(500),NF,IF(250)
+      COMMON /VCTSEQ/ NQ,QX(50),QY(50),NF,IF(25)
       SAVE /VCTSEQ/
 C
 C In the common block PLTCM are recorded the coordinates of the last
@@ -74,8 +74,8 @@ C A pen-up move to the current point (whether the pen is up or down) is
 C simply ignored, since it cannot possibly have any effect but to put
 C extra pen-up moves in the buffer.
 C
-      FX=FLOAT(IX)/32767.
-      FY=FLOAT(IY)/32767.
+      FX=REAL(IX)/32767.
+      FY=REAL(IY)/32767.
 C
       IF (IP.EQ.0.AND.FX.EQ.QX(NQ).AND.FY.EQ.QY(NQ)) RETURN
 C

@@ -1,6 +1,6 @@
 C
-C $Id: curve.f,v 1.5 2000-08-22 15:06:09 haley Exp $
-C                                                                      
+C $Id: curve.f,v 1.6 2006-03-10 00:25:33 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -71,7 +71,7 @@ C the coordinates for each chunk as directed by the last SET call.
 C
         ELSE
           DO 102 IP=1,NP,9
-            NQ=MIN0(10,NP-IP+1)
+            NQ=MIN(10,NP-IP+1)
             IF (NQ.GE.2) THEN
               DO 101 IQ=1,NQ
                 QX(IQ)=CUFX(PX(IP+IQ-1))

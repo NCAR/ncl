@@ -1,6 +1,6 @@
 C
-C $Id: sflush.f,v 1.6 2000-08-22 15:06:15 haley Exp $
-C                                                                      
+C $Id: sflush.f,v 1.7 2006-03-10 00:25:36 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

@@ -1,6 +1,6 @@
 C
-C $Id: kmpy.f,v 1.5 2000-08-22 15:06:11 haley Exp $
-C                                                                      
+C $Id: kmpy.f,v 1.6 2006-03-10 00:25:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -27,6 +27,6 @@ C coordinate in the plotter system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
-      KMPY=1+IFIX((2.**MY-1.)*FLOAT(IY)/32767.)
+      KMPY=1+INT((2.**MY-1.)*REAL(IY)/32767.)
       RETURN
       END

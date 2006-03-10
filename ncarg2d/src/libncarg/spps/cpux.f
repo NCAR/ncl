@@ -1,6 +1,6 @@
 C
-C $Id: cpux.f,v 1.5 2000-08-22 15:06:08 haley Exp $
-C                                                                      
+C $Id: cpux.f,v 1.6 2006-03-10 00:25:33 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -42,7 +42,7 @@ C
       END IF
       I=1
       IF (MI.GE.3) I=2
-      CPUX=WD(I)+(FLOAT(IX-1)/(2.**MX-1.)-VP(1))/(VP(2)-VP(1))*
+      CPUX=WD(I)+(REAL(IX-1)/(2.**MX-1.)-VP(1))/(VP(2)-VP(1))*
      +           (WD(3-I)-WD(I))
       IF (LL.GE.3) CPUX=10.**CPUX
       RETURN

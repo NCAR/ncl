@@ -1,6 +1,6 @@
 C
-C $Id: cmfx.f,v 1.5 2000-08-22 15:06:07 haley Exp $
-C                                                                      
+C $Id: cmfx.f,v 1.6 2006-03-10 00:25:32 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -25,6 +25,6 @@ C
 C Given an X coordinate IX in the metacode system, CMFX(IX) is an X
 C coordinate in the fractional system.
 C
-      CMFX=FLOAT(IX)/32767.
+      CMFX=REAL(IX)/32767.
       RETURN
       END

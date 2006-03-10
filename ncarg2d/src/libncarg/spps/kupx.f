@@ -1,6 +1,6 @@
 C
-C $Id: kupx.f,v 1.5 2000-08-22 15:06:12 haley Exp $
-C                                                                      
+C $Id: kupx.f,v 1.6 2006-03-10 00:25:35 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -43,11 +43,11 @@ C
       I=1
       IF (MI.GE.3) I=2
       IF (LL.LE.2) THEN
-        KUPX=1+IFIX(((RX-WD(I))/(WD(3-I)-WD(I))*(VP(2)-VP(1))+VP(1))*
-     +              (2.**MX-1.))
+        KUPX=1+INT(((RX-WD(I))/(WD(3-I)-WD(I))*(VP(2)-VP(1))+VP(1))*
+     +             (2.**MX-1.))
       ELSE
-        KUPX=1+IFIX(((ALOG10(RX)-WD(I))/(WD(3-I)-WD(I))*(VP(2)-VP(1))+
-     +              VP(1))*(2.**MX-1.))
+        KUPX=1+INT(((ALOG10(RX)-WD(I))/(WD(3-I)-WD(I))*(VP(2)-VP(1))+
+     +             VP(1))*(2.**MX-1.))
       ENDIF
       RETURN
       END

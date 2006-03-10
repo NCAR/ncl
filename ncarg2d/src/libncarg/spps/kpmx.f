@@ -1,6 +1,6 @@
 C
-C $Id: kpmx.f,v 1.5 2000-08-22 15:06:11 haley Exp $
-C                                                                      
+C $Id: kpmx.f,v 1.6 2006-03-10 00:25:34 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -27,6 +27,6 @@ C coordinate in the metacode system.
 C
       COMMON /IUTLCM/ LL,MI,MX,MY,IU(96)
       SAVE /IUTLCM/
-      KPMX=IFIX(32767.*FLOAT(IX-1)/(2.**MX-1.))
+      KPMX=INT(32767.*REAL(IX-1)/(2.**MX-1.))
       RETURN
       END

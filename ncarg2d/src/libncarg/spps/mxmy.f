@@ -1,6 +1,6 @@
 C
-C $Id: mxmy.f,v 1.5 2000-08-22 15:06:13 haley Exp $
-C                                                                      
+C $Id: mxmy.f,v 1.6 2006-03-10 00:25:35 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -40,8 +40,8 @@ C
 C Return to the user the plotter-system equivalents of the values in
 C the metacode system.
 C
-      IX=1+IFIX((2.**MX-1.)*FLOAT(JX)/32767.)
-      IY=1+IFIX((2.**MY-1.)*FLOAT(JY)/32767.)
+      IX=1+INT((2.**MX-1.)*REAL(JX)/32767.)
+      IY=1+INT((2.**MY-1.)*REAL(JY)/32767.)
 C
 C Done.
 C

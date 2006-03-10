@@ -1,6 +1,6 @@
 C
-C $Id: getset.f,v 1.6 2000-08-22 15:06:10 haley Exp $
-C                                                                      
+C $Id: getset.f,v 1.7 2006-03-10 00:25:33 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved

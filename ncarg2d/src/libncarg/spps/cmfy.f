@@ -1,6 +1,6 @@
 C
-C $Id: cmfy.f,v 1.5 2000-08-22 15:06:07 haley Exp $
-C                                                                      
+C $Id: cmfy.f,v 1.6 2006-03-10 00:25:32 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -25,6 +25,6 @@ C
 C Given a Y coordinate IY in the metacode system, CMFY(IY) is a Y
 C coordinate in the fractional system.
 C
-      CMFY=FLOAT(IY)/32767.
+      CMFY=REAL(IY)/32767.
       RETURN
       END

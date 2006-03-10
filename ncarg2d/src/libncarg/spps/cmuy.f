@@ -1,6 +1,6 @@
 C
-C $Id: cmuy.f,v 1.5 2000-08-22 15:06:08 haley Exp $
-C                                                                      
+C $Id: cmuy.f,v 1.6 2006-03-10 00:25:32 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -42,7 +42,7 @@ C
       END IF
       I=3
       IF (MI.EQ.2.OR.MI.GE.4) I=4
-      CMUY=WD(I)+(FLOAT(IY)/32767.-VP(3))/(VP(4)-VP(3))*(WD(7-I)-WD(I))
+      CMUY=WD(I)+(REAL(IY)/32767.-VP(3))/(VP(4)-VP(3))*(WD(7-I)-WD(I))
       IF (LL.EQ.2.OR.LL.GE.4) CMUY=10.**CMUY
       RETURN
       END

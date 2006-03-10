@@ -1,5 +1,5 @@
 C
-C $Id: utilbd.f,v 1.6 2004-11-19 18:46:08 kennison Exp $
+C $Id: utilbd.f,v 1.7 2006-03-10 00:25:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -34,7 +34,7 @@ C scheme used by PLOTIF/T for pen moves.  The dimension of QX and QY
 C must be an even number greater than or equal to the value of IU(5).
 C The dimension of IF must be half that of QX and QY.
 C
-      COMMON /VCTSEQ/ NQ,QX(500),QY(500),NF,IF(250)
+      COMMON /VCTSEQ/ NQ,QX(50),QY(50),NF,IF(25)
       SAVE /VCTSEQ/
 C
 C In the common block PLTCM are recorded the coordinates of the last
@@ -79,7 +79,7 @@ C must be greater than or equal to 2 and not greater than the dimension
 C of the variables QX and QY.  Using the value 2 effectively turns off
 C the buffering.
 C
-      DATA IU(5) / 500 /
+      DATA IU(5) / 50 /
 C
 C IU(6) specifies the current metacode unit, which is machine-dependent.
 C IU(6) is made negative when OPNGKS is called and positive when CLSGKS

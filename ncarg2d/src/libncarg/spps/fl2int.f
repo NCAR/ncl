@@ -1,6 +1,6 @@
 C
-C $Id: fl2int.f,v 1.5 2000-08-22 15:06:09 haley Exp $
-C                                                                      
+C $Id: fl2int.f,v 1.6 2006-03-10 00:25:33 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -54,10 +54,10 @@ C
       I=1
       IF (MI.GE.3) I=2
       IF (LL.LE.2) THEN
-        IX=IFIX(((PX-WD(I))/(WD(3-I)-WD(I))*(VP(2)-VP(1))+VP(1))*32767.)
+        IX=INT(((PX-WD(I))/(WD(3-I)-WD(I))*(VP(2)-VP(1))+VP(1))*32767.)
       ELSE
-        IX=IFIX(((ALOG10(PX)-WD(I))/(WD(3-I)-WD(I))*
-     +                              (VP(2)-VP(1))+VP(1))*32767.)
+        IX=INT(((ALOG10(PX)-WD(I))/(WD(3-I)-WD(I))*
+     +                             (VP(2)-VP(1))+VP(1))*32767.)
       ENDIF
 C
 C Compute IY.
@@ -65,10 +65,10 @@ C
       I=3
       IF (MI.EQ.2.OR.MI.GE.4) I=4
       IF (LL.LE.1.OR.LL.EQ.3) THEN
-        IY=IFIX(((PY-WD(I))/(WD(7-I)-WD(I))*(VP(4)-VP(3))+VP(3))*32767.)
+        IY=INT(((PY-WD(I))/(WD(7-I)-WD(I))*(VP(4)-VP(3))+VP(3))*32767.)
       ELSE
-        IY=IFIX(((ALOG10(PY)-WD(I))/(WD(7-I)-WD(I))*
-     +                              (VP(4)-VP(3))+VP(3))*32767.)
+        IY=INT(((ALOG10(PY)-WD(I))/(WD(7-I)-WD(I))*
+     +                             (VP(4)-VP(3))+VP(3))*32767.)
       ENDIF
 C
 C Done.
