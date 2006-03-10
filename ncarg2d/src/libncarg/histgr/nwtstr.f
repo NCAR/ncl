@@ -1,5 +1,5 @@
 C
-C $Id: nwtstr.f,v 1.6 2000-08-22 15:04:49 haley Exp $
+C $Id: nwtstr.f,v 1.7 2006-03-10 17:48:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -43,7 +43,7 @@ C
 C
         ICENT = IHZ-2
 	IF (IHZ .EQ. 0) ICENT = -1
-	CNTR = FLOAT(ICENT)
+	CNTR = REAL(ICENT)
 C
 C Determine character height.
 C
@@ -58,7 +58,7 @@ C
       ANGD = 57.29634*ATAN2(-XV,YV)
       IANG = ANGD + .01
       IF (IANG.LT. 0) IANG = IANG+360
-      ANGD = FLOAT(IANG)
+      ANGD = REAL(IANG)
 C
 C Invoke PCHIQU (formerly PLCHHQ) of the Plotchar utility.
 C

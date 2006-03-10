@@ -1,5 +1,5 @@
 C
-C $Id: histgr.f,v 1.7 2000-08-22 15:04:46 haley Exp $
+C $Id: histgr.f,v 1.8 2006-03-10 17:48:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -900,10 +900,10 @@ C
 C Compute X intervals
 C
       IF (ASSIGN .OR. COMPAR) THEN
-        XINT = (HI - LOW) / FLOAT(NCLASS-1)
+        XINT = (HI - LOW) / REAL(NCLASS-1)
         HAFINT = XINT / 2.
       ELSE
-        XINT = (HI - LOW) / FLOAT(NCLASS)
+        XINT = (HI - LOW) / REAL(NCLASS)
         HAFINT = XINT / 2.
       ENDIF
 C
@@ -930,7 +930,7 @@ C
           WRK(NPTS+I) = XPOS
   200 XPOS = XPOS + XINT
       XMAX = WRK(NPTS+NCLASS + 1)
-      IF ( COMPAR ) XMAX = AMIN1(WRK(NPTS+NCLASS+1) + SPAC2,
+      IF ( COMPAR ) XMAX = MIN(WRK(NPTS+NCLASS+1) + SPAC2,
      1 WRK(NPTS+NCLASS+1))
       IF ( XMIN .EQ. XMAX ) THEN
         NERR = NERR + 1
@@ -989,7 +989,7 @@ C  FIND MAX Y AND ADJUST Y WINDOW LIMIT
 C
       YBOUND = WRK(INDY1+1)
       DO 400  I = 1,NCLASS
-          YBOUND = AMAX1(YBOUND,WRK(INDY1+I),WRK(INDY2+I))
+          YBOUND = MAX(YBOUND,WRK(INDY1+I),WRK(INDY2+I))
  400  CONTINUE
       IF (YBOUND .EQ. 0.) THEN
         NERR = NERR + 1
@@ -1026,8 +1026,8 @@ C
       YTICKS(3) = TICINT * 3.
       YTICKS(4) = YMAX
       IF (PERCNT) THEN
-	  DEN = FLOAT(NPTS)
-	  IF(NMVAL) DEN = FLOAT(NMVA)
+	  DEN = REAL(NPTS)
+	  IF(NMVAL) DEN = REAL(NMVA)
 	  PERC = YMAX / DEN * 100.
           IF (ASSIGN .OR. COMPAR) PERC = (YMAX/YBOUND)*100.
           PER(1) = PERC / 4.
@@ -1249,10 +1249,10 @@ C
           IF (WRK(INDY2+I) .GT. WRK(INDY1+I)) THEN
             PX(1) = CURX + XINT/2 + SPAC2
             PX(2) = CURX + XINT/2 + SPAC2
-            PX(3) = AMIN1(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
-            PX(4) = AMIN1(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
-            PX(5) = AMAX1(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
-            PX(6) = AMAX1(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
+            PX(3) = MIN(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
+            PX(4) = MIN(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
+            PX(5) = MAX(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
+            PX(6) = MAX(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
             PX(7) = CURX + XINT/2 + SPAC2
             IF (PX(3) .LE. NEXTX - SPAC1) THEN
               PX(3) = NEXTX - SPAC1 - SPAC2/8.
@@ -1286,10 +1286,10 @@ C
               CALL GPL(7,PX,PY)
             ENDIF
           ELSE
-            PX(1) = AMAX1(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
-            PX(2) = AMAX1(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
-            PX(3) = AMIN1(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
-            PX(4) = AMIN1(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
+            PX(1) = MAX(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
+            PX(2) = MAX(NEXTX - SPAC1,CURX+XINT/2+SPAC2)
+            PX(3) = MIN(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
+            PX(4) = MIN(NEXTX + XINT/2 + SPAC2 - 2*SPAC1,NEXTX+SPAC1)
             PY(1) = 0.
             PY(2) = WRK(INDY2+I)
             PY(3) = WRK(INDY2+I)
@@ -1498,8 +1498,8 @@ C  COMPUTE LABEL INTERVAL SO THAT THERE ARE NO MORE
 C  THAN LABMAX LABELS
 C
       IF (NUMLAB .GT. LABMAX) THEN
-	  XDIV = FLOAT(NUMLAB)/FLOAT(LABMAX)
-          IF ((AINT(XDIV) - XDIV) .EQ. 0.) THEN
+	  XDIV = REAL(NUMLAB)/REAL(LABMAX)
+          IF ((REAL(INT(XDIV)) - XDIV) .EQ. 0.) THEN
             NDIV = INT(XDIV)
           ELSE
             NDIV = INT(XDIV + 1.)

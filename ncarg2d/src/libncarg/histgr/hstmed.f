@@ -1,5 +1,5 @@
 C
-C $Id: hstmed.f,v 1.5 2000-08-22 15:04:48 haley Exp $
+C $Id: hstmed.f,v 1.6 2006-03-10 17:48:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -52,10 +52,10 @@ C
   830   CONTINUE
         IF (FLAG .EQ. 1 .OR. D .GT. 1)GOTO 810
 C
-  850 IF (FLOAT(NPTS2)/2. .GT. FLOAT(HALFN)) THEN
-        MED = WRK2(MIN0(HALFN + 1,NPTS2))
+  850 IF (REAL(NPTS2)/2. .GT. REAL(HALFN)) THEN
+        MED = WRK2(MIN(HALFN + 1,NPTS2))
       ELSE
-        MED = (WRK2(MAX0(1,HALFN)) + WRK2(MIN0(HALFN + 1,NPTS2)))/2.
+        MED = (WRK2(MAX(1,HALFN)) + WRK2(MIN(HALFN + 1,NPTS2)))/2.
       ENDIF
       RETURN
       END
