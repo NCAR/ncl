@@ -1,6 +1,6 @@
 C
-C $Id: isosrf.f,v 1.5 2000-08-22 15:04:55 haley Exp $
-C                                                                      
+C $Id: isosrf.f,v 1.6 2006-03-10 14:23:18 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -78,7 +78,7 @@ C
       EYEW = EYE(3)
       NUVWP2 = MUVWP2
       TVAL = TISO
-      NFLAG = IABS(IFLAG)
+      NFLAG = ABS(IFLAG)
       IF (NFLAG.EQ.0 .OR. NFLAG.GE.8) NFLAG = 7
 C
 C Set up scaling.

@@ -1,6 +1,6 @@
 C
-C	$Id: isst3d.f,v 1.3 2000-08-22 15:04:56 haley Exp $
-C                                                                      
+C $Id: isst3d.f,v 1.4 2006-03-10 14:23:19 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -19,10 +19,6 @@ C You should have received a copy of the GNU General Public License
 C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
-C
-C
-C The subroutine ISST3D.
-C --- ---------- -------
 C
       SUBROUTINE ISST3D (EYE,ULO,UHI,VLO,VHI,WLO,WHI)
 C
@@ -102,10 +98,10 @@ C
       CALL ISTR32 (SU(UUMAX),SV(VVMIN),SW(WWMAX),X6,Y6,DUM,2)
       CALL ISTR32 (SU(UUMAX),SV(VVMAX),SW(WWMIN),X7,Y7,DUM,2)
       CALL ISTR32 (SU(UUMAX),SV(VVMAX),SW(WWMAX),X8,Y8,DUM,2)
-      XMIN = AMIN1(X1,X2,X3,X4,X5,X6,X7,X8)
-      XMAX = AMAX1(X1,X2,X3,X4,X5,X6,X7,X8)
-      YMIN = AMIN1(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
-      YMAX = AMAX1(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
+      XMIN = MIN(X1,X2,X3,X4,X5,X6,X7,X8)
+      XMAX = MAX(X1,X2,X3,X4,X5,X6,X7,X8)
+      YMIN = MIN(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
+      YMAX = MAX(Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8)
 C
 C Add the right amount to keep the picture square.
 C

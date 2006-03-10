@@ -1,6 +1,6 @@
 C
-C	$Id: isblda.f,v 1.3 2000-08-22 15:04:54 haley Exp $
-C                                                                      
+C $Id: isblda.f,v 1.4 2006-03-10 14:23:18 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -19,10 +19,6 @@ C You should have received a copy of the GNU General Public License
 C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
-C
-C
-C The subroutine ISBLDA.
-C --- ---------- -------
 C
       BLOCKDATA ISBLDA
 C

@@ -1,6 +1,6 @@
 C
-C $Id: issetr.f,v 1.5 2000-08-22 15:04:55 haley Exp $
-C                                                                      
+C $Id: issetr.f,v 1.6 2006-03-10 14:23:19 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -19,10 +19,6 @@ C You should have received a copy of the GNU General Public License
 C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
-C
-C
-C The subroutine ISSETR.
-C --- ---------- -------
 C
       SUBROUTINE ISSETR (IPN,RVL)
 C

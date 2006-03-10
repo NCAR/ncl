@@ -1,6 +1,6 @@
 C
-C	$Id: ezisos.f,v 1.3 2000-08-22 15:04:53 haley Exp $
-C                                                                      
+C $Id: ezisos.f,v 1.4 2006-03-10 14:23:17 kennison Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -20,10 +20,6 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-C
-C The subroutine EZISOS.
-C --- ---------- -------
-C
       SUBROUTINE EZISOS (T,MU,MV,MW,EYE,SLAB,TISO)
 C
 C Arguments are as described in ISOSRF.
@@ -38,7 +34,7 @@ C
       NV = MV
       NW = MW
       TVAL = TISO
-      MAX = MAX0(NU,NV,NW)+2
+      MAXN = MAX(NU,NV,NW)+2
       ATU = NU/2
       ATV = NV/2
       ATW = NW/2
@@ -105,8 +101,8 @@ C
             ICNT = ICNT+1
    70    CONTINUE
    80 CONTINUE
-   90 IFLAG = ISIGN(IFLAG,ICNT)
-      CALL ISOSRF (T,NU,NU,NV,NV,NW,EYE,MAX,SLAB,TVAL,IFLAG)
+   90 IFLAG = SIGN(IFLAG,ICNT)
+      CALL ISOSRF (T,NU,NU,NV,NV,NW,EYE,MAXN,SLAB,TVAL,IFLAG)
       CALL FRAME
       RETURN
       END
