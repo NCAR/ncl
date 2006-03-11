@@ -1,5 +1,5 @@
 C
-C	$Id: xtch.f,v 1.3 2000-08-22 15:05:45 haley Exp $
+C	$Id: xtch.f,v 1.4 2006-03-11 00:06:39 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -240,9 +240,9 @@ C
     1 CONTINUE
 C
 C FIND THE BIT WHERE THE DIGITIZATION OF THE CHARACTER STARTS.
-      BIT = FLOAT((IDIGP-1)*60+1)
-      IDDWOR = IFIX(BIT/FLOAT(NBWD)) + 1
-      NPOS = IFIX(BIT - FLOAT(IDDWOR-1)*FLOAT(NBWD))
+      BIT = REAL((IDIGP-1)*60+1)
+      IDDWOR = INT(BIT/REAL(NBWD)) + 1
+      NPOS = INT(BIT - REAL(IDDWOR-1)*REAL(NBWD))
 C
 C LOOP FOR MAXIMUM NUMBER OF UNITS OR UNTIL END OF DIGITIZATION REACHED.
       DO 11 I = 1,NUMMAX
@@ -290,9 +290,9 @@ C 12-BIT FORMAT.
 C
 C ALGORITHM EXACTLY AS FOR 6-BIT FORMAT
     2 CONTINUE
-      BIT = FLOAT((IDIGP-1)*60+1)
-      IDDWOR = IFIX(BIT/FLOAT(NBWD)) + 1
-      NPOS = IFIX(BIT - FLOAT(IDDWOR-1)*FLOAT(NBWD))
+      BIT = REAL((IDIGP-1)*60+1)
+      IDDWOR = INT(BIT/REAL(NBWD)) + 1
+      NPOS = INT(BIT - REAL(IDDWOR-1)*REAL(NBWD))
       DO 21 I = 1,NUMMAX
       LCNUM = LCNUM + 1
       LC(I) = IAND(IDD(IDDWOR),MASK12(NPOS))
