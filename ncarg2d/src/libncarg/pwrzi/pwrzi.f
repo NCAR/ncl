@@ -1,5 +1,5 @@
 C
-C	$Id: pwrzi.f,v 1.3 2000-08-22 15:05:52 haley Exp $
+C	$Id: pwrzi.f,v 1.4 2006-03-11 00:20:19 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -398,11 +398,11 @@ C
       IF (ISIZE .EQ. 1) Q = 2.*SCALE
       IF (ISIZE .EQ. 2) Q = 2.6667*SCALE
       IF (ISIZE .EQ. 3) Q = 4.*SCALE
-      IF (ISIZE .GT. 3) Q = FLOAT(ISIZE)*(2**(15-LX))/6.
+      IF (ISIZE .GT. 3) Q = REAL(ISIZE)*(2**(15-LX))/6.
 C
 C PUT ANGLE IN RADIANS IN T.
 C
-      T = FLOAT(ITHETA)*1.5708
+      T = REAL(ITHETA)*1.5708
   104 CONTINUE
 C
 C CALCULATE COMBINED TRANSFORMATION
@@ -427,7 +427,7 @@ C
 C
 C CORRECT FOR CENTERING IF TURNED ON.
 C
-      JCNT = MAX0(-1,MIN0(1,JCNT))+2
+      JCNT = MAX(-1,MIN(1,JCNT))+2
       GO TO (108,107,109),JCNT
   107 XC = XC-CT*FNNM1*3.
       YC = YC-ST*FNNM1*3.
@@ -439,10 +439,10 @@ C
       YC = YC-ST*2.
       XC = XC-CT*FNNM1*6.
       YC = YC-ST*FNNM1*6.
-  110 CALL INITZI (IFIX(XC),IFIX(YC),1,IDUM1,IDUM2,2)
-      CALL INITZI (IFIX(XC+CT*6.*FNNM1),IFIX(YC+ST*6.*FNNM1),2,IDUM1,
+  110 CALL INITZI (INT(XC),INT(YC),1,IDUM1,IDUM2,2)
+      CALL INITZI (INT(XC+CT*6.*FNNM1),INT(YC+ST*6.*FNNM1),2,IDUM1,
      +             IDUM2,2)
-      CALL INITZI (IFIX(XC),IFIX(YC),IDUM1,IDUM2,IDUM3,3)
+      CALL INITZI (INT(XC),INT(YC),IDUM1,IDUM2,IDUM3,3)
       DO 114 K=1,NN
          XB = XC
          YB = YC
@@ -483,10 +483,10 @@ C
 C CALL DESIRED PLOTTING ROUTINE.  DETERMINED BY OP-CODES.
 C
           IF (IP .NE. 0) GO TO 112
-      CALL INITZI (IFIX(XC+.5),IFIX(YC+.5),IDUM1,IDUM2,IDUM3,3)
+      CALL INITZI (INT(XC+.5),INT(YC+.5),IDUM1,IDUM2,IDUM3,3)
           IP = 1
           GO TO 113
-  112 CALL INITZI (IFIX(XC+.5),IFIX(YC+.5),IDUM1,IDUM2,IDUM3,4)
+  112 CALL INITZI (INT(XC+.5),INT(YC+.5),IDUM1,IDUM2,IDUM3,4)
   113  CONTINUE
   114 CONTINUE
 C
