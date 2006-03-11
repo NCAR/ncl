@@ -1,5 +1,5 @@
 C
-C	$Id: pwrity.f,v 1.3 2000-08-22 15:05:49 haley Exp $
+C	$Id: pwrity.f,v 1.4 2006-03-11 00:13:19 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -391,14 +391,14 @@ C PUT RELATIVE SIZE IN Q.
 C
       Q = ISIZE
       IF (Q .LE. 3.) GO TO 104
-      Q = Q/FLOAT(ISHIFT(6,LXSAVE-10))
+      Q = Q/REAL(ISHIFT(6,LXSAVE-10))
       GO TO 105
-  104 Q = (1.+.5*(FLOAT(IFIX(Q)+IFIX(Q)/3)))*4./3.
-  105 Q = Q*FLOAT(ISHIFT(1,LRES-10))
+  104 Q = (1.+.5*(REAL(INT(Q)+INT(Q)/3)))*4./3.
+  105 Q = Q*REAL(ISHIFT(1,LRES-10))
 C
 C CALCULATE COMBINED TRANSFORMATION.
 C
-      THETA = FLOAT(ITHETA)*DEGRAD
+      THETA = REAL(ITHETA)*DEGRAD
       CT = Q*COS(THETA)
       ST = Q*SIN(THETA)
 C
@@ -414,7 +414,7 @@ C
 C
 C CORRECT FOR CENTERING IF TURNED ON.
 C
-      JCENT = MAX0(-1,MIN0(1,JCNT))+2
+      JCENT = MAX(-1,MIN(1,JCNT))+2
       GO TO (107,106,108),JCENT
   106 XC = XC-CT*FNNM1*WIDE*.5
       YC = YC-ST*FNNM1*WIDE*.5
@@ -429,7 +429,7 @@ C
 C
 C SET PLOTTER TO STARTING POINT.
 C
-  109 CALL PLOTIT (IFIX(XC),IFIX(YC),0)
+  109 CALL PLOTIT (INT(XC),INT(YC),0)
 C
 C PLOT ALL THE CHARACTERS IN THE INPUT STRING.
 C
@@ -473,7 +473,7 @@ C
 C
 C CALL PLOTTING ROUTINE. MODE DETERMINED BY OP-CODE.
 C
-         CALL PLOTIT (IFIX(XC+.5),IFIX(YC+.5),IP)
+         CALL PLOTIT (INT(XC+.5),INT(YC+.5),IP)
          IP = 1
          GO TO 110
   112 CONTINUE
