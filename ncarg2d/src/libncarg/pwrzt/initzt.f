@@ -1,5 +1,5 @@
 C
-C	$Id: initzt.f,v 1.4 2000-08-22 15:05:56 haley Exp $
+C	$Id: initzt.f,v 1.5 2006-03-11 00:33:36 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -28,22 +28,22 @@ C
      +                EYEY       ,EYEZ
 C
       COMMON /PWRZ2T/ X          ,Y          ,Z
-      FX(R) = R+FACTX*FLOAT(IX)
-      FY(R) = R+FACTY*FLOAT(IY)
+      FX(R) = R+FACTX*REAL(IX)
+      FY(R) = R+FACTY*REAL(IY)
 C
 C
 C  DETERMINE INITZT,VISSET,FRSTZ OR VECTZ CALL
 C
       GO TO (1000,2000,3000,4000),IENT
- 1000 LIN = MAX0(1,MIN0(3,IABS(LIN3)))
-      ITO = MAX0(1,MIN0(3,IABS(ITOP)))
+ 1000 LIN = MAX(1,MIN(3,ABS(LIN3)))
+      ITO = MAX(1,MIN(3,ABS(ITOP)))
 C
 C SET UP SCALING CONSTANTS
 C
-      DELMAX = AMAX1(XXMAX-XXMIN,YYMAX-YYMIN,ZZMAX-ZZMIN)
+      DELMAX = MAX(XXMAX-XXMIN,YYMAX-YYMIN,ZZMAX-ZZMIN)
       FACTOR = DELMAX/DELCRT
-      FACTX = SIGN(FACTOR,FLOAT(LIN3))
-      FACTY = SIGN(FACTOR,FLOAT(ITOP))
+      FACTX = SIGN(FACTOR,REAL(LIN3))
+      FACTY = SIGN(FACTOR,REAL(ITOP))
 C
 C SET UP FOR PROPER PLANE
 C
@@ -87,7 +87,7 @@ C
 C
 C IF EITHER END CHARACTER COULD BE HIDDEN, TEST ALL LINE SEGMENTS.
 C
-      IF (IZ .EQ. 2) IVIS = MIN0(IVISS,ITEMP)
+      IF (IZ .EQ. 2) IVIS = MIN(IVISS,ITEMP)
       RETURN
 C
 C **************************** ENTRY FRSTZ *****************************
@@ -136,9 +136,9 @@ C
 C
 C IF IN FRONT, DRAW IN ANY CASE.
 C
-  119 CALL PLOTIT (32*IFIX(XT),32*IFIX(YT),0)
+  119 CALL PLOTIT (32*INT(XT),32*INT(YT),0)
       RETURN
-  120 CALL PLOTIT (32*IFIX(XT),32*IFIX(YT),1)
+  120 CALL PLOTIT (32*INT(XT),32*INT(YT),1)
       RETURN
   121 IF (IFRST) 122,123,122
   122 IX1 = XT
