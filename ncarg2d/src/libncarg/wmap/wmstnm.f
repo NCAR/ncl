@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.10 2004-09-08 21:52:33 fred Exp $
+C	$Id: wmstnm.f,v 1.11 2006-03-11 01:05:19 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -925,7 +925,7 @@ C
      +                SIZ,0.,0.)       
         ENDIF
       ELSE
-        CTEMP = FLOAT(TTT)/10.
+        CTEMP = REAL(TTT)/10.
         CHR5 = ' '
         WRITE(CHR5,'(F5.1)') CTEMP
         LL = WMGTLN(CHR5,LEN(CHR5),1)
@@ -1120,7 +1120,7 @@ C
           IF (VV .EQ. 0) THEN
             RWH = 0.
           ELSE
-            RWH = 0.1*FLOAT(VV)
+            RWH = 0.1*REAL(VV)
           ENDIF
 C
 C  Values of VV strictly between 50 and 56 are not used.
@@ -1128,9 +1128,9 @@ C
         ELSE IF (VV.GT.50 .AND. VV.LT.56) THEN
           IPLFLG = 0
         ELSE IF (VV.GE.56 .AND. VV.LE.80) THEN
-          RWH = FLOAT(VV) - 50.
+          RWH = REAL(VV) - 50.
         ELSE IF (VV.GT.80 .AND. VV.LT.90) THEN
-          RWH = 30. + 5.*(FLOAT(VV)-80.)
+          RWH = 30. + 5.*(REAL(VV)-80.)
         ELSE IF (VV.EQ.90) THEN
           RWH = 0.
         ELSE IF (VV.EQ.91) THEN
@@ -1238,7 +1238,7 @@ C
      +                SIZ,0.,0.)       
         ENDIF
       ELSE
-        CTEMP = FLOAT(TD)/10.
+        CTEMP = REAL(TD)/10.
         CHR5 = ' '
         WRITE(CHR5,'(F5.1)') CTEMP
         LL = WMGTLN(CHR5,LEN(CHR5),1)

@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.12 2004-09-08 21:52:33 fred Exp $
+C	$Id: wmseti.f,v 1.13 2006-03-11 01:05:19 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -105,7 +105,7 @@ C        (0=use GKS linewidths; 1=use internal routines WMDRFL).
 C
       ELSE IF (CNP(1:3).EQ.'WTY' .OR. CNP(1:3).EQ.'wty' .OR.
      +    CNP(1:3).EQ.'Wty') THEN
-        IF (IABS(IVP) .GE. 1) THEN
+        IF (ABS(IVP) .GE. 1) THEN
           IWDTYP = 1
         ELSE
           IWDTYP = 0
@@ -116,7 +116,7 @@ C  STY - symbol type (uses PAI to determine position on line).
 C
       ELSE IF (CNP(1:3).EQ.'STY' .OR. CNP(1:3).EQ.'sty' .OR.
      +    CNP(1:3).EQ.'Sty') THEN
-        IF (IABS(IVP).GT.2 .OR. IVP.EQ.0) THEN
+        IF (ABS(IVP).GT.2 .OR. IVP.EQ.0) THEN
           CTM(1:42) = 'WMSETI - Parameter value out of range for '
           CTM(43:45) = CNP(1:3)
           CALL SETER (CTM(1:45), 2, 1)
@@ -130,7 +130,7 @@ C        3=use neither SL1 or SL2).
 C
       ELSE IF (CNP(1:3).EQ.'SLF' .OR. CNP(1:3).EQ.'slf' .OR.
      +    CNP(1:3).EQ.'Slf') THEN
-        IF (IABS(IVP).GT.3 .OR. IVP.LT.0) THEN
+        IF (ABS(IVP).GT.3 .OR. IVP.LT.0) THEN
           ISLFLG = 3
         ELSE
           ISLFLG = IVP

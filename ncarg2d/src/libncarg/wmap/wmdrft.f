@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrft.f,v 1.14 2002-08-03 01:29:36 fred Exp $
+C	$Id: wmdrft.f,v 1.15 2006-03-11 01:05:19 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -288,9 +288,9 @@ C
       IF (ALEN(NPTS) .GT. BEGDST+SYMWID+ENDDST) THEN
         CALL GQPLCI(IER,ICOLD)
         IF (NUMSYM .LE. 1) THEN
-          IF (IABS(ISTYPE(1)) .EQ. 1) THEN
+          IF (ABS(ISTYPE(1)) .EQ. 1) THEN
             ICOLOR = ICOLDC
-          ELSE IF (IABS(ISTYPE(1)) .EQ. 2) THEN
+          ELSE IF (ABS(ISTYPE(1)) .EQ. 2) THEN
             ICOLOR = IWARMC
           ENDIF
           CALL WMLGPL(NPTS,XOUT,YOUT)
@@ -315,9 +315,9 @@ C  Now draw the segments.
 C
           IBL = 1
           DO 70 J=1,NUMSYM-1
-            IF (IABS(ISTYPE(J)) .EQ. 1) THEN
+            IF (ABS(ISTYPE(J)) .EQ. 1) THEN
               ICOLOR = ICOLDC
-            ELSE IF (IABS(ISTYPE(J)) .EQ. 2) THEN
+            ELSE IF (ABS(ISTYPE(J)) .EQ. 2) THEN
               ICOLOR = IWARMC
             ENDIF
             IBR = (IPOSIT(J+1)+IPOSIT(J))/2
@@ -326,9 +326,9 @@ C
             ENDIF
             IBL = IBR
    70     CONTINUE 
-          IF (IABS(ISTYPE(NUMSYM)) .EQ. 1) THEN
+          IF (ABS(ISTYPE(NUMSYM)) .EQ. 1) THEN
             ICOLOR = ICOLDC
-          ELSE IF (IABS(ISTYPE(NUMSYM)) .EQ. 2) THEN
+          ELSE IF (ABS(ISTYPE(NUMSYM)) .EQ. 2) THEN
             ICOLOR = IWARMC
           ENDIF
           IBR = NPTS

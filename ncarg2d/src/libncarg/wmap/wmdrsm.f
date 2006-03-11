@@ -1,5 +1,5 @@
 C
-C	$Id: wmdrsm.f,v 1.6 2000-08-22 15:07:44 haley Exp $
+C	$Id: wmdrsm.f,v 1.7 2006-03-11 01:05:19 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -83,7 +83,7 @@ C
 C
 C  Get the points making up the symbol.
 C
-        IF (IABS(ISTYPE(1)) .EQ. 1) THEN
+        IF (ABS(ISTYPE(1)) .EQ. 1) THEN
           NOUT = 3
         ELSE
           NOUT = NPTSBZ
@@ -196,7 +196,7 @@ C
 C
 C  Get the points making up the symbol.
 C
-        IF (IABS(ISTYPE(I)).EQ.1 .OR. IABS(ISTYPE(I)).EQ.3) THEN
+        IF (ABS(ISTYPE(I)).EQ.1 .OR. ABS(ISTYPE(I)).EQ.3) THEN
           NOUT = 3
         ELSE
           NOUT = NPTSBZ
@@ -216,9 +216,9 @@ C
         ENDIF
         IF (IALOFT .NE. 0) THEN
           ICOLO = ICOLOR
-          IF (IABS(ISTYPE(I)) .EQ. 2) THEN
+          IF (ABS(ISTYPE(I)) .EQ. 2) THEN
             ICOLOR = IWARMC
-          ELSE IF (IABS(ISTYPE(I)) .EQ. 1) THEN
+          ELSE IF (ABS(ISTYPE(I)) .EQ. 1) THEN
             ICOLOR = ICOLDC
           ENDIF
           CALL WMLGPL(NF,XT,YT)
@@ -229,9 +229,9 @@ C
           CALL GPL(2,XT,YT)
           CALL GSLWSC(OSCL)
         ELSE
-          IF (IABS(ISTYPE(I)) .EQ. 2) THEN
+          IF (ABS(ISTYPE(I)) .EQ. 2) THEN
             CALL GSFACI(IWARMC)
-          ELSE IF (IABS(ISTYPE(I)) .EQ. 1) THEN
+          ELSE IF (ABS(ISTYPE(I)) .EQ. 1) THEN
             CALL GSFACI(ICOLDC)
           ENDIF
           CALL GFA(NF,XT,YT)

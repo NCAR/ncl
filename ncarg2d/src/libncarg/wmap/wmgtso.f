@@ -1,5 +1,5 @@
 C
-C $Id: wmgtso.f,v 1.6 2000-08-22 15:07:45 haley Exp $
+C $Id: wmgtso.f,v 1.7 2006-03-11 01:05:19 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -58,12 +58,12 @@ C
       SS = 0.5*D
       DO 10 I=1,NDIM
         WXTRAN(I) = SS*WSBZCX(I)
-        WYTRAN(I) = SS*ISIGN(1,IFLG)*WSBZCY(I)
+        WYTRAN(I) = SS*SIGN(1,IFLG)*WSBZCY(I)
    10 CONTINUE
 C
 C  Make the cold front symbols a little larger.
 C
-      IF (IABS(IFLG) .EQ. 1) THEN
+      IF (ABS(IFLG) .EQ. 1) THEN
         WYTRAN(4) = 1.1*WYTRAN(4)
       ENDIF
 C
@@ -89,7 +89,7 @@ C
         WYTRAN(I) = YM+WYTRAN(I)
    40 CONTINUE
 C
-      IF (IABS(IFLG).EQ.1 .OR. IABS(IFLG).EQ.3) THEN
+      IF (ABS(IFLG).EQ.1 .OR. ABS(IFLG).EQ.3) THEN
 C
 C  Return cold front symbol.
 C
