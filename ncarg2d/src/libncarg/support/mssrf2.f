@@ -1,5 +1,5 @@
 C
-C	$Id: mssrf2.f,v 1.3 2000-08-22 15:06:57 haley Exp $
+C	$Id: mssrf2.f,v 1.4 2006-03-11 00:44:32 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -102,8 +102,8 @@ C
 C
 C DENORMALIZE TENSION FACTOR IN X AND Y DIRECTION
 C
-      SIGMAX = ABS(SIGMA)*FLOAT(M-1)/(X(M)-X(1))
-      SIGMAY = ABS(SIGMA)*FLOAT(N-1)/(Y(N)-Y(1))
+      SIGMAX = ABS(SIGMA)*REAL(M-1)/(X(M)-X(1))
+      SIGMAY = ABS(SIGMA)*REAL(N-1)/(Y(N)-Y(1))
 C
 C DETERMINE Y INTERVAL
 C

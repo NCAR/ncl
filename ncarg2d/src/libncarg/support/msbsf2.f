@@ -1,5 +1,5 @@
 C
-C	$Id: msbsf2.f,v 1.3 2000-08-22 15:06:56 haley Exp $
+C	$Id: msbsf2.f,v 1.4 2006-03-11 00:44:32 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -111,23 +111,23 @@ C-----------------------------------------------------------
 C
 C DENORMALIZE TENSION FACTOR IN X AND Y DIRECTION
 C
-      SIGMAX = ABS(SIGMA)*FLOAT(M-1)/(XMAX-XMIN)
-      SIGMAY = ABS(SIGMA)*FLOAT(N-1)/(YMAX-YMIN)
+      SIGMAX = ABS(SIGMA)*REAL(M-1)/(XMAX-XMIN)
+      SIGMAY = ABS(SIGMA)*REAL(N-1)/(YMAX-YMIN)
 C
 C FIND INTERVALS OF SECOND X GRID WITH RESPECT TO ORIGINAL X
 C GRID
 C
       DELTDX = 0.
-      IF (MD .GE. 2) DELTDX = (DXMAX-DXMIN)/FLOAT(MD-1)
-      DELX = (XMAX-XMIN)/FLOAT(M-1)
+      IF (MD .GE. 2) DELTDX = (DXMAX-DXMIN)/REAL(MD-1)
+      DELX = (XMAX-XMIN)/REAL(M-1)
       IF (SIGMAX .NE. 0.) CALL MSSHCH (SINHMS,DUMMY,
      *                                 SIGMAX*DELX,-1)
       DO 2 II = 1,MD
-        XII = DXMIN+FLOAT(II-1)*DELTDX
-        I = 2+IFIX((XII-XMIN)/DELX)
+        XII = DXMIN+REAL(II-1)*DELTDX
+        I = 2+INT((XII-XMIN)/DELX)
         IF (I .LT. 2) I = 2
         IF (I .GT. M) I = M
-        DEL1 = XII-XMIN-FLOAT(I-2)*DELX
+        DEL1 = XII-XMIN-REAL(I-2)*DELX
         DEL2 = DELX-DEL1
         WORK(1,II) = DEL2/DELX
         WORK(2,II) = DEL1/DELX
@@ -147,17 +147,17 @@ C FIND INTERVALS OF SECOND Y GRID WITH RESPECT TO ORIGINAL Y
 C GRID AND PERFORM INTRPOLATION
 C
       DELTDY = 0.
-      IF (ND .GE. 2) DELTDY = (DYMAX-DYMIN)/FLOAT(ND-1)
-      DELY = (YMAX-YMIN)/FLOAT(N-1)
+      IF (ND .GE. 2) DELTDY = (DYMAX-DYMIN)/REAL(ND-1)
+      DELY = (YMAX-YMIN)/REAL(N-1)
       IF (SIGMAY .NE. 0.) CALL MSSHCH (SINHMS,DUMMY,
      *                                 SIGMAY*DELY,-1)
       DO 5 JJ=1,ND
-        YJJ = DYMIN+FLOAT(JJ-1)*DELTDY
-        J = 2+IFIX((YJJ-YMIN)/DELY)
+        YJJ = DYMIN+REAL(JJ-1)*DELTDY
+        J = 2+INT((YJJ-YMIN)/DELY)
         IF (J .LT. 2) J = 2
         IF (J .GT. N) J = N
         JM1 = J-1
-        DEL1 = YJJ-YMIN-FLOAT(J-2)*DELY
+        DEL1 = YJJ-YMIN-REAL(J-2)*DELY
         DEL2 = DELY-DEL1
         C1 = DEL2/DELY
         C2 = DEL1/DELY
@@ -173,8 +173,8 @@ C
         C4 = DEL1*(SINHM1-SINHMS)/TEMP
     4   LASTI = 0
         DO 5 II=1,MD
-          XII = DXMIN+FLOAT(II-1)*DELTDX
-          I = 2+IFIX((XII-XMIN)/DELX)
+          XII = DXMIN+REAL(II-1)*DELTDX
+          I = 2+INT((XII-XMIN)/DELX)
           IF (I .LT. 2) I = 2
           IF (I .GT. M) I = M
           IM1 = I-1

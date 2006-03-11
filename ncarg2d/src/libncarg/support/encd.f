@@ -1,5 +1,5 @@
 C
-C	$Id: encd.f,v 1.3 2000-08-22 15:06:51 haley Exp $
+C	$Id: encd.f,v 1.4 2006-03-11 00:44:32 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -60,10 +60,10 @@ C
       IF (IOFFD .NE. 0) GO TO 103
       IF (VAL) 101,104,101
   101 CONTINUE
-      LOG = IFIX((ALOG10(ABS(VAL))+.00001)+5000.)-5000
+      LOG = INT((ALOG10(ABS(VAL))+.00001)+5000.)-5000
       V = VAL
-      NS = MAX0(4,MIN0(6,LOG+2))
-      ND = MIN0(3,MAX0(0,2-LOG))
+      NS = MAX(4,MIN(6,LOG+2))
+      ND = MIN(3,MAX(0,2-LOG))
       IF (VAL.LT.0)  NS = NS + 1
   102 CONTINUE
       WRITE (IFMT,'(A2,I2,A1,I1,A1)') '(F',NS,'.',ND,')'

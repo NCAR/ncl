@@ -1,5 +1,5 @@
 C
-C	$Id: msbsf1.f,v 1.3 2000-08-22 15:06:55 haley Exp $
+C	$Id: msbsf1.f,v 1.4 2006-03-11 00:44:32 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -107,11 +107,11 @@ C
 C
 C DENORMALIZE TENSION FACTOR IN Y-DIRECTION
 C
-      SIGMAY = ABS(SIGMA)*FLOAT(N-1)/(YMAX-YMIN)
+      SIGMAY = ABS(SIGMA)*REAL(N-1)/(YMAX-YMIN)
 C
 C OBTAIN Y-PARTIAL DERIVATIVES ALONG Y = YMIN
 C
-      DELY1 = (YMAX-YMIN)/FLOAT(N-1)
+      DELY1 = (YMAX-YMIN)/REAL(N-1)
       DELY2 = DELY1+DELY1
       CALL MSCEEZ (DELY1,DELY2,SIGMAY,C1,C2,C3,N)
       DO 1 I = 1,M
@@ -135,11 +135,11 @@ C
 C
 C DENORMALIZE TENSION FACTOR IN X-DIRECTION
 C
-    6 SIGMAX = ABS(SIGMA)*FLOAT(M-1)/(XMAX-XMIN)
+    6 SIGMAX = ABS(SIGMA)*REAL(M-1)/(XMAX-XMIN)
 C
 C OBTAIN X-PARTIAL DERIVATIVES ALONG X = XMIN
 C
-      DELX1 = (XMAX-XMIN)/FLOAT(M-1)
+      DELX1 = (XMAX-XMIN)/REAL(M-1)
       DELX2 = DELX1+DELX1
       CALL MSCEEZ (DELX1,DELX2,SIGMAX,C1,C2,C3,M)
       DO 7 J = 1,N

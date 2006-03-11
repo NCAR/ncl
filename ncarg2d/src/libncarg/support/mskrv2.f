@@ -1,5 +1,5 @@
 C
-C	$Id: mskrv2.f,v 1.3 2000-08-22 15:06:56 haley Exp $
+C	$Id: mskrv2.f,v 1.4 2006-03-11 00:44:32 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -133,7 +133,7 @@ C
 C
 C DENORMALIZE TENSION FACTOR
 C
-      SIGMAP = ABS(SIGMA)*FLOAT(N-1)/S(N)
+      SIGMAP = ABS(SIGMA)*REAL(N-1)/S(N)
 C
 C SET UP AND PERFORM INTERPOLATION
 C
