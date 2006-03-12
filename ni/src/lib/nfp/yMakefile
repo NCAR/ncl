@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.89 2006-02-21 02:56:39 haley Exp $
+#      $Id: yMakefile,v 1.90 2006-03-12 15:18:25 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2006-02-21 02:56:39 $
+#	$Date: 2006-03-12 15:18:25 $
 #
 #	Description:	
 
@@ -72,7 +72,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o	
 	specxW.o sph2W.o sphintW.o sstoiW.o statW.o svdW.o taperW.o			\
 	tdpackW.o tempnamW.o trvsphW.o varimaxW.o vibetaW.o waveletW.o		\
 	wgneW.o wmapW.o writematrixW.o wrunaveW.o wrapper.o utilW.o			\
-	vinth2pW.o vinth2peW.o zonmpsiW.o z2geouvW.o stdatmusW.o
+	vinth2pW.o vinth2peW.o zonmpsiW.o z2geouvW.o stdatmusW.o ripW.o
 
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS)
