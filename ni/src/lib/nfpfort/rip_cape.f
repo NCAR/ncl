@@ -28,8 +28,8 @@ c
 c !INTERFACE:
 c ------------------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE CAPECALC3D(PRS,TMK,QVP,GHT,TER,SFP,CAPE,CIN,MIY,MJX,
-     +                      MKZH,I3DFLAG,TER_FOLLOW)
+      SUBROUTINE DCAPECALC3D(PRS,TMK,QVP,GHT,TER,SFP,CAPE,CIN,MIY,MJX,
+     +                       MKZH,I3DFLAG,TER_FOLLOW)
 c
       IMPLICIT NONE
       INTEGER MIY,MJX,MKZH,I3DFLAG,TER_FOLLOW
@@ -96,12 +96,12 @@ C  K
 c  Calculated the pressure at full sigma levels (a set of pressure
 c  levels that bound the layers represented by the vertical grid points)
 
-      CALL PFCALC(PRS,SFP,PRSF,MIY,MJX,MKZH,TER_FOLLOW)
+      CALL DPFCALC(PRS,SFP,PRSF,MIY,MJX,MKZH,TER_FOLLOW)
 c
 c  Before looping, set lookup table for getting temperature on
 c  a pseudoadiabat.
 c
-      CALL LOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK)
+      CALL DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK)
 c
 C   do j=1,mjx-1
       DO J = 1,MJX
@@ -447,7 +447,7 @@ c
       END
 c                                                                     c
 c*********************************************************************c
-      SUBROUTINE LOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK)
+      SUBROUTINE DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK)
       DOUBLE PRECISION PSADITHTE
       DOUBLE PRECISION PSADIPRS
       DOUBLE PRECISION PSADITMK
@@ -481,7 +481,7 @@ c
 c                                                                     c
 c*********************************************************************c
 c                                                                     c
-      SUBROUTINE PFCALC(PRS,SFP,PF,MIY,MJX,MKZH,TER_FOLLOW)
+      SUBROUTINE DPFCALC(PRS,SFP,PF,MIY,MJX,MKZH,TER_FOLLOW)
       DOUBLE PRECISION PRS
       DOUBLE PRECISION SFP
       DOUBLE PRECISION PF
