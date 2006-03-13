@@ -5675,6 +5675,10 @@ GribFileRecord *tmp;
 	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].n_values = 1;
 	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values = (void *) NrmStringToQuark("string");
 
+	options[GRIB_DEFAULT_NCEP_PTABLE_OPT].data_type = NCL_string;
+	options[GRIB_DEFAULT_NCEP_PTABLE_OPT].n_values = 1;
+	options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values = (void *) NrmStringToQuark("operational");
+
 	tmp->options = options;
 	return 1;
 }
@@ -6055,9 +6059,16 @@ int wr_status;
 								ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
 							}
 							else {
-								/* not able to tell -- default to operational */
-								ptable = &ncep_opn_params[0];
-								ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
+								/* not able to tell -- use the default value */
+								if ((NrmQuark)(therec->options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values) 
+								    == NrmStringToQuark("reanalysis")) {
+									ptable = &ncep_reanal_params[0];
+									ptable_count = sizeof(ncep_reanal_params)/sizeof(TBLE2);
+								}
+								else {
+									ptable = &ncep_opn_params[0];
+									ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
+								}
 							}
 							break;
 						case 128: /* ocean modeling branch */
@@ -7544,6 +7555,10 @@ static NhlErrorTypes GribSetOption
 	if (option ==  NrmStringToQuark("initialtimecoordinatetype")) {
 		rec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values = (void*) *(NrmQuark *)values;
 		SetInitialTimeCoordinates(therec);
+	}
+	
+	if (option ==  NrmStringToQuark("defaultncepptable")) {
+		rec->options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values = (void*) *(NrmQuark *)values;
 	}
 	
 	return NhlNOERROR;

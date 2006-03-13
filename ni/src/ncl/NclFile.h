@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.12 2006-02-07 22:20:46 dbrown Exp $
+ *      $Id: NclFile.h,v 1.13 2006-03-13 22:20:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #define NclFile_h
 
 #include "NclData.h"
+#include <netcdf.h> /* this is included here only because we need to know if netcdf 4 is in use */
 
 typedef struct _NclFileRec NclFileRec;
 typedef struct _NclFileClassRec NclFileClassRec;
@@ -270,7 +271,10 @@ typedef enum {
 	Ncl_WRITE_BYTE_ORDER,
 	Ncl_INITIAL_TIME_COORDINATE_TYPE,
 	Ncl_MISSING_TO_FILL_VALUE,
-	Ncl_COMPRESSION_LEVEL
+#ifdef NC_FORMAT_NETCDF4
+	Ncl_COMPRESSION_LEVEL,
+#endif
+	Ncl_DEFAULT_NCEP_PTABLE
 } NclFileOptionValues;
 
 typedef struct _NclFileClassPart {

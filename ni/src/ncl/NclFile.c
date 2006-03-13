@@ -21,7 +21,6 @@
 #include "NclMdInc.h"
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
-#include <netcdf.h>
 
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
@@ -1142,11 +1141,12 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file read byte order */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file write byte order */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL }  /* NetCDF missing to fill value option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
 #ifdef NC_FORMAT_NETCDF4
-	,
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL }   /* NetCDF 4 compression option level */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
 #endif
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL }  /* GRIB default NCEP parameter table */
+
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1389,6 +1389,23 @@ static NhlErrorTypes InitializeFileOptions
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_COMPRESSION_LEVEL].valid_values = NULL;
 #endif
+
+	/* Grib option Default_NCEP_Ptable */
+	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].format = NrmStringToQuark("grb");
+	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].name = NrmStringToQuark("defaultncepptable");
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("operational");
+	len_dims = 1;
+	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(2 * sizeof(string));
+	sval[0] = NrmStringToQuark("operational");
+	sval[1] = NrmStringToQuark("reanalysis");
+	len_dims = 2;
+	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 
 	/* End of options */
 
