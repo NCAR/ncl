@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.174 2006-03-10 04:01:05 haley Exp $
+;      $Id: gsn_code.ncl,v 1.175 2006-03-14 04:16:27 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3709,8 +3709,8 @@ begin
     x = -1.   ; Special values to tip off the routine
     y = -1.   ; that we don't have X,Y values.
 
-    text = gsn_create_text_ndc(wks, text, x, y, resources)
-    return(text)
+    txid = gsn_create_text_ndc(wks, text, x, y, resources)
+    return(txid)
 end
 
 
