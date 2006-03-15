@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.8 2005-08-19 19:52:16 haley Exp $
+#   $Id: yMakefile,v 1.9 2006-03-15 16:11:48 haley Exp $
 #
 #   Makefile for ASC data files
 #
@@ -8,7 +8,8 @@ MYNAME = asc
 
 DATA  = cn03f.asc cn04n.asc cn11f.asc cn12n.asc ex05B1_uv_jan_mm92.hs.asc \
 	mp03n.asc oceanland30e.asc seismic.asc u.cocos uvdata0.asc xy.asc \
-	xy08.asc xy12c.asc sounding_ATS.asc sounding_testdata.asc
+	xy08.asc xy12c.asc sounding_ATS.asc sounding_testdata.asc \
+	psadilookup.dat
 
 InstallTarget($(DATA),$(INSTALL_LIB),$(DATAROOT)/asc)
 #ifdef BuildPyNGL
