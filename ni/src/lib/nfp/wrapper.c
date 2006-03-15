@@ -57,6 +57,7 @@ extern NhlErrorTypes satlft_skewt_W(void);
 extern NhlErrorTypes ptlcl_skewt_W(void);
 extern NhlErrorTypes showal_skewt_W(void);
 extern NhlErrorTypes pw_skewt_W(void);
+extern NhlErrorTypes rip_cape_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
 extern NhlErrorTypes gaus_lobat_wgt_W(void);
@@ -1097,6 +1098,24 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(pw_skewt_W,args,"pw_skewt",nargs);
+/*
+ * Register "rip_cape".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(8);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(rip_cape_W,args,"rip_cape",nargs);
 /*
  * Register "cape_thermo".
  *
