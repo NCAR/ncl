@@ -1,9 +1,5 @@
 C
-C $Id: gwiast.h,v 1.3 2000-08-22 03:45:42 haley Exp $
-C                                                                      
-C                Copyright (C)  2000
-C        University Corporation for Atmospheric Research
-C                All Rights Reserved
+C $Id: gwiast.h,v 1.4 2006-03-15 01:56:18 fred Exp $
 C
 C This file is free software; you can redistribute it and/or modify
 C it under the terms of the GNU General Public License as published
@@ -20,23 +16,42 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      COMMON  /GWIAST/  MSPLIX  ,MSLTYP ,ASLWSC ,MSPLCI ,
-     +                  MSPMIX  ,MSMTYP ,ASMSZS ,MSPMCI ,
+C  The common blocks here are divided so that 
+C  conversion to double precision can be simplified.
+C  The filler variables are never used.
+C
+      COMMON  /GWIASTI/ MSPLIX  ,MSLTYP ,MSDM03 ,MSPLCI ,
+     +                  MSPMIX  ,MSMTYP ,MSDM07 ,MSPMCI ,
      +                  MSTXIX  ,MSTXP  ,MSTXAL(2)      ,MSCHH  ,
-     +                  MSCHOV(4)       ,MSTXFO ,MSTXPR ,ASCHXP ,
-     +                  ASCHSP  ,MSTXCI ,
+     +                  MSCHOV(4)       ,MSTXFO ,MSTXPR ,MSDM16 ,
+     +                  MSDM17  ,MSTXCI ,
      +                  MSFAIX  ,MSPASZ(4)      ,MSPARF(2)      ,
-     +                  MSFAIS  ,MSFASI ,MSFACI ,
-     +                  MSASF(13)
-        INTEGER         MSPLIX  ,MSLTYP ,MSPLCI
-        REAL            ASLWSC
-        INTEGER         MSPMIX  ,MSMTYP ,MSPMCI
-        REAL            ASMSZS
-        INTEGER         MSTXIX  ,MSTXP  ,MSTXAL ,MSTXFO
-        INTEGER         MSTXPR  ,MSTXCI ,MSCHH  ,MSCHOV
-        REAL            ASCHXP  ,ASCHSP
-        INTEGER         MSFAIX  ,MSPASZ ,MSPARF ,MSFAIS ,MSFASI
-        INTEGER         MSFACI  ,MSASF
-        INTEGER         MSAEQV(45)
-        REAL            ASAEQV(45)
-        EQUIVALENCE     (MSPLIX, MSAEQV, ASAEQV)
+     +                  MSFAIS  ,MSFASI ,MSFACI ,MSASF(13)
+      INTEGER           MSPLIX  ,MSLTYP ,MSPLCI ,MSPMIX ,MSMTYP ,
+     +                  MSPMCI  ,MSTXIX ,MSTXP  ,MSTXAL ,MSTXFO ,
+     +                  MSTXPR  ,MSTXCI ,MSCHH  ,MSCHOV ,MSFAIX ,
+     +                  MSPASZ  ,MSPARF ,MSFAIS ,MSFASI ,MSFACI ,
+     +                  MSASF   ,MSAEQV(45)
+C
+C  Integer fillers.
+C
+      INTEGER           MSDM03  ,MSDM07 ,MSDM16 ,MSDM17
+C
+      COMMON  /GWIASTR/ ASDM01  ,ASDM02 ,ASLWSC ,ASDM04 ,
+     +                  ASDM05  ,ASDM06 ,ASMSZS ,ASDM08 ,
+     +                  ASDM09  ,ASDM10 ,ASDM11(2)      ,ASDM12 ,
+     +                  ASDM13(4)       ,ASDM14 ,ASDM15 ,ASCHXP ,
+     +                  ASCHSP  ,ASDM18 ,ASDM19 ,ASDM20(4)      ,
+     +                  ASDM21(2)       ,ASDM22 ,ASDM23 ,ASDM24 ,
+     +                  ASDM25(13)
+      REAL              ASLWSC  ,ASMSZS ,ASCHXP ,ASCHSP ,ASAEQV(45)
+C
+C  Floating point fillers.
+C
+      REAL              ASDM01  ,ASDM02 ,ASDM04 ,ASDM05 ,ASDM06 ,
+     +                  ASDM08  ,ASDM09 ,ASDM10 ,ASDM11 ,ASDM12 ,
+     +                  ASDM13  ,ASDM14 ,ASDM15 ,ASDM18 ,ASDM19 ,
+     +                  ASDM20  ,ASDM21 ,ASDM22 ,ASDM23 ,ASDM24 ,
+     +                  ASDM25
+      EQUIVALENCE     (MSPLIX, MSAEQV)
+      EQUIVALENCE     (ASDM01, ASAEQV)

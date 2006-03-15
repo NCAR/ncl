@@ -1,9 +1,5 @@
 C
-C $Id: gwiarq.h,v 1.3 2000-08-22 03:45:42 haley Exp $
-C                                                                      
-C                Copyright (C)  2000
-C        University Corporation for Atmospheric Research
-C                All Rights Reserved
+C $Id: gwiarq.h,v 1.4 2006-03-15 01:56:18 fred Exp $
 C
 C This file is free software; you can redistribute it and/or modify
 C it under the terms of the GNU General Public License as published
@@ -20,23 +16,42 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      COMMON  /GWIARQ/  MRPLIX  ,MRLTYP ,ARLWSC ,MRPLCI ,
-     +                  MRPMIX  ,MRMTYP ,ARMSZS ,MRPMCI ,
+C  The common blocks here are divided so that 
+C  conversion to double precision can be simplified.
+C  The filler variables are never used.
+C
+      COMMON  /GWIARQI/ MRPLIX  ,MRLTYP ,MRDM03 ,MRPLCI ,
+     +                  MRPMIX  ,MRMTYP ,MRDM07 ,MRPMCI ,
      +                  MRTXIX  ,MRTXP  ,MRTXAL(2)      ,MRCHH  ,
-     +                  MRCHOV(4)       ,MRTXFO ,MRTXPR ,ARCHXP ,
-     +                  ARCHSP  ,MRTXCI ,
+     +                  MRCHOV(4)       ,MRTXFO ,MRTXPR ,MRDM16 ,
+     +                  MRDM17  ,MRTXCI ,
      +                  MRFAIX  ,MRPASZ(4)      ,MRPARF(2)      ,
-     +                  MRFAIS  ,MRFASI ,MRFACI ,
-     +                  MRASF(13)
-        INTEGER         MRPLIX  ,MRLTYP ,MRPLCI
-        REAL            ARLWSC
-        INTEGER         MRPMIX  ,MRMTYP ,MRPMCI
-        REAL            ARMSZS
-        INTEGER         MRTXIX  ,MRTXP  ,MRTXAL ,MRTXFO
-        INTEGER         MRTXPR  ,MRTXCI ,MRCHH  ,MRCHOV
-        REAL            ARCHXP  ,ARCHSP
-        INTEGER         MRFAIX  ,MRPASZ ,MRPARF ,MRFAIS ,MRFASI
-        INTEGER         MRFACI  ,MRASF
-        INTEGER         MRAEQV(45)
-        REAL            ARAEQV(45)
-        EQUIVALENCE     (MRPLIX, MRAEQV, ARAEQV)
+     +                  MRFAIS  ,MRFASI ,MRFACI ,MRASF(13)
+      INTEGER           MRPLIX  ,MRLTYP ,MRPLCI ,MRPMIX ,MRMTYP ,
+     +                  MRPMCI  ,MRTXIX ,MRTXP  ,MRTXAL ,MRTXFO ,
+     +                  MRTXPR  ,MRTXCI ,MRCHH  ,MRCHOV ,MRFAIX ,
+     +                  MRPASZ  ,MRPARF ,MRFAIS ,MRFASI ,MRFACI ,
+     +                  MRASF   ,MRAEQV(45)
+C
+C  Integer fillers.
+C
+      INTEGER           MRDM03  ,MRDM07 ,MRDM16 ,MRDM17
+C
+      COMMON  /GWIARQR/ ARDM01  ,ARDM02 ,ARLWSC ,ARDM04 ,
+     +                  ARDM05  ,ARDM06 ,ARMSZS ,ARDM08 ,
+     +                  ARDM09  ,ARDM10 ,ARDM11(2)      ,ARDM12 ,
+     +                  ARDM13(4)       ,ARDM14 ,ARDM15 ,ARCHXP ,
+     +                  ARCHSP  ,ARDM18 ,ARDM19 ,ARDM20(4)      ,
+     +                  ARDM21(2)       ,ARDM22 ,ARDM23 ,ARDM24 ,
+     +                  ARDM25(13)
+      REAL              ARLWSC  ,ARMSZS ,ARCHXP ,ARCHSP ,ARAEQV(45)
+C
+C  Floating point fillers.
+C
+      REAL              ARDM01  ,ARDM02 ,ARDM04 ,ARDM05 ,ARDM06 ,
+     +                  ARDM08  ,ARDM09 ,ARDM10 ,ARDM11 ,ARDM12 ,
+     +                  ARDM13  ,ARDM14 ,ARDM15 ,ARDM18 ,ARDM19 ,
+     +                  ARDM20  ,ARDM21 ,ARDM22 ,ARDM23 ,ARDM24 ,
+     +                  ARDM25
+      EQUIVALENCE     (MRPLIX, MRAEQV)
+      EQUIVALENCE     (ARDM01, ARAEQV)
