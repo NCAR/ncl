@@ -14,16 +14,16 @@ C The function used is a sum of exponentials.
 C
         DIMENSION DATA(IDIM,1),CCNT(3,50)
 C
-        FOVM=9./FLOAT(M)
-        FOVN=9./FLOAT(N)
+        FOVM=9./REAL(M)
+        FOVN=9./REAL(N)
 C
-        NLOW=MAX0(1,MIN0(25,MLOW))
-        NHGH=MAX0(1,MIN0(25,MHGH))
+        NLOW=MAX(1,MIN(25,MLOW))
+        NHGH=MAX(1,MIN(25,MHGH))
         NCNT=NLOW+NHGH
 C
         DO 101 K=1,NCNT
-          CCNT(1,K)=1.+(FLOAT(M)-1.)*FRAN()
-          CCNT(2,K)=1.+(FLOAT(N)-1.)*FRAN()
+          CCNT(1,K)=1.+(REAL(M)-1.)*FRAN()
+          CCNT(2,K)=1.+(REAL(N)-1.)*FRAN()
           IF (K.LE.NLOW) THEN
             CCNT(3,K)=-1.
           ELSE
@@ -37,13 +37,13 @@ C
           DO 103 I=1,M
             DATA(I,J)=.5*(DLOW+DHGH)
             DO 102 K=1,NCNT
-              TEMP=-((FOVM*(FLOAT(I)-CCNT(1,K)))**2+
-     +               (FOVN*(FLOAT(J)-CCNT(2,K)))**2)
+              TEMP=-((FOVM*(REAL(I)-CCNT(1,K)))**2+
+     +               (FOVN*(REAL(J)-CCNT(2,K)))**2)
               IF (TEMP.GE.-20.) DATA(I,J)=DATA(I,J)+
      +            .5*(DHGH-DLOW)*CCNT(3,K)*EXP(TEMP)
   102       CONTINUE
-            DMIN=AMIN1(DMIN,DATA(I,J))
-            DMAX=AMAX1(DMAX,DATA(I,J))
+            DMIN=MIN(DMIN,DATA(I,J))
+            DMAX=MAX(DMAX,DATA(I,J))
   103     CONTINUE
   104   CONTINUE
 C
@@ -183,10 +183,10 @@ C
       II=3.+DI*RANDNO()
       JJ=3.+DJ*RANDNO()
       DO 4 J=1,JD
-      JE=IABS(J-JJ)
+      JE=ABS(J-JJ)
       DO 3 I=1,ID
-      IE=IABS(I-II)
-      EE=MAX0(IE,JE)
+      IE=ABS(I-II)
+      EE=MAX(IE,JE)
       A(I,J)=A(I,J)+AA*(.8**EE)
     3 CONTINUE
     4 CONTINUE
@@ -197,11 +197,11 @@ C
       GO TO 2
 C
     6 DO 8 J=1,JD
-      JM1=MAX0(1,J-1)
-      JP1=MIN0(JD,J+1)
+      JM1=MAX(1,J-1)
+      JP1=MIN(JD,J+1)
       DO 7 I=1,ID
-      IM1=MAX0(1,I-1)
-      IP1=MIN0(ID,I+1)
+      IM1=MAX(1,I-1)
+      IP1=MIN(ID,I+1)
       B(I,J)=(4.*A(I,J)+2.*(A(I,JM1)+A(IM1,J)+A(IP1,J)+A(I,JP1))
      1                 +A(IM1,JM1)+A(IP1,JM1)+A(IM1,JP1)+A(IP1,JP1))/16.
     7 CONTINUE

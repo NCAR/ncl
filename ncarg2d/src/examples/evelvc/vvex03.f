@@ -108,9 +108,9 @@ C boundaries (i.e. the range of the array indexes). This is actually
 C the default condition for Vectors, but is included for emphasis here.
 C
          CALL VVSETR('XC1 -- Lower X Bound', 1.0)
-         CALL VVSETR('XCM -- Upper X Bound', FLOAT(M))
+         CALL VVSETR('XCM -- Upper X Bound', REAL(M))
          CALL VVSETR('YC1 -- Lower Y Bound', 1.0)
-         CALL VVSETR('YCN -- Upper Y Bound', FLOAT(N))
+         CALL VVSETR('YCN -- Upper Y Bound', REAL(N))
 C
 C Set the MAP parameter to a value indicating a user-defined mapping
 C (anything other than 0, 1, or 2). The routine VVUMXY must be modified
@@ -218,9 +218,9 @@ C boundaries (i.e. the range of the array indexes). This is actually
 C the default condition for Vectors, but is included for emphasis here.
 C
          CALL VVSETR('XC1 -- Lower X Bound', 1.0)
-         CALL VVSETR('XCM -- Upper X Bound', FLOAT(M))
+         CALL VVSETR('XCM -- Upper X Bound', REAL(M))
          CALL VVSETR('YC1 -- Lower Y Bound', 1.0)
-         CALL VVSETR('YCN -- Upper Y Bound', FLOAT(N))
+         CALL VVSETR('YCN -- Upper Y Bound', REAL(N))
 C
 C Set the MAP parameter to a value indicating a user-defined mapping
 C (anything other than 0, 1, or 2). The routine VVUMXY must be modified
@@ -331,9 +331,9 @@ C boundaries (i.e. the range of the array indexes). This is actually
 C the default condition for Vectors, but is included for emphasis here.
 C
       CALL VVSETR('XC1 -- Lower X Bound', 1.0)
-      CALL VVSETR('XCM -- Upper X Bound', FLOAT(M))
+      CALL VVSETR('XCM -- Upper X Bound', REAL(M))
       CALL VVSETR('YC1 -- Lower Y Bound', 1.0)
-      CALL VVSETR('YCN -- Upper Y Bound', FLOAT(N))
+      CALL VVSETR('YCN -- Upper Y Bound', REAL(N))
 C
 C Set the MAP parameter to a value indicating a user-defined mapping
 C (anything other than 0, 1, or 2). The routine VVUMXY must be modified
@@ -611,7 +611,7 @@ C XC is longitude, YC is latitude.
 C
 C Test for 90 degree latitude.
 C
-         IF (IFIX(ABS(YC)*PRCFAC+0.5).EQ.IPCTST) THEN
+         IF (INT(ABS(YC)*PRCFAC+0.5).EQ.IPCTST) THEN
             IST=-1
             RETURN
          END IF
@@ -627,7 +627,7 @@ C
 C
 C Check the vector magnitude
 C
-         IF (IFIX(UVM*PRCFAC+0.5) .EQ. 0) THEN
+         IF (INT(UVM*PRCFAC+0.5) .EQ. 0) THEN
             IST=-2
             RETURN
          END IF
@@ -659,7 +659,7 @@ C
             END IF
          END IF
 C
-         IF (IFIX(DV1*PRCFAC) .EQ. 0) THEN
+         IF (INT(DV1*PRCFAC) .EQ. 0) THEN
             IF (ICT .LT. IPMXCT) THEN
                ICT = ICT + 1
                DUV=DUV*PDUVML
