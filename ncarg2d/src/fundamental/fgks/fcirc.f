@@ -27,7 +27,7 @@ C
 C Generate three intersecting circles of radius 1.
 C
       DO 100 I=1,NPTS
-         ANG=D2R*3.6*FLOAT(I-1)
+         ANG=D2R*3.6*REAL(I-1)
          X=COS(ANG)
          Y=SIN(ANG)
          X1(I) = X - .5

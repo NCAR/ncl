@@ -43,12 +43,12 @@ C
 C Specify horizontal and vertical vector components U and V on
 C the rectangular grid.
 C
-      GISIZE = 2.0*PI/FLOAT(M)
-      GJSIZE = 2.0*PI/FLOAT(N)
+      GISIZE = 2.0*PI/REAL(M)
+      GJSIZE = 2.0*PI/REAL(N)
       DO  20 J = 1,N
          DO  10 I = 1,M
-            U(I,J) = COS(GISIZE*(FLOAT(I)-1.0))
-            V(I,J) = COS(GJSIZE*(FLOAT(J)-1.0))
+            U(I,J) = COS(GISIZE*(REAL(I)-1.0))
+            V(I,J) = COS(GJSIZE*(REAL(J)-1.0))
    10    CONTINUE
    20 CONTINUE
 C
