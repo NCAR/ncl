@@ -1,5 +1,5 @@
 C
-C	$Id: markl.f,v 1.3 2000-08-22 15:10:25 haley Exp $
+C	$Id: markl.f,v 1.4 2006-03-16 17:55:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -56,7 +56,7 @@ C
       IF (MX1S .GT. MX2S) RETURN
 C
       DO 20 MX=MX1S,MX2S,ISKIP
-         MY = IFIX(FLOAT(MY1)+FLOAT(MX-MX1)*SLOPE+.5)
+         MY = INT(REAL(MY1)+REAL(MX-MX1)*SLOPE+.5)
          CALL REMOVE (MX,MY,LDUMMY,2)
    20 CONTINUE
       RETURN
@@ -65,7 +65,7 @@ C
       MX2S = MX2+1*ISKIP
       IF (MX1S .LT. MX2S) RETURN
       DO 40 MX=MX2S,MX1S,ISKIP
-         MY = IFIX(FLOAT(MY2)+FLOAT(MX-MX2)*SLOPE+.5)
+         MY = INT(REAL(MY2)+REAL(MX-MX2)*SLOPE+.5)
          CALL REMOVE (MX,MY,LDUMMY,2)
    40 CONTINUE
       RETURN
@@ -85,7 +85,7 @@ C
       IF (MY1S .GT. MY2S) RETURN
 C
       DO 70 MY=MY1S,MY2S,ISKIP
-         MX = IFIX(FLOAT(MX1)+FLOAT(MY-MY1)*SLOPE+.5)
+         MX = INT(REAL(MX1)+REAL(MY-MY1)*SLOPE+.5)
          CALL REMOVE (MX,MY,LDUMMY,2)
    70 CONTINUE
       RETURN
@@ -95,7 +95,7 @@ C
       IF (MY1S .LT. MY2S) RETURN
 C
       DO 90 MY=MY2S,MY1S,ISKIP
-         MX = IFIX(FLOAT(MX2)+FLOAT(MY-MY2)*SLOPE+.5)
+         MX = INT(REAL(MX2)+REAL(MY-MY2)*SLOPE+.5)
          CALL REMOVE (MX,MY,LDUMMY,2)
    90 CONTINUE
 C

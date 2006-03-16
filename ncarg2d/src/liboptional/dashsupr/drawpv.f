@@ -1,5 +1,5 @@
 C
-C	$Id: drawpv.f,v 1.3 2000-08-22 15:10:24 haley Exp $
+C	$Id: drawpv.f,v 1.4 2006-03-16 17:55:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -114,10 +114,10 @@ C
 C
 C EITHER BEGINNING OR END POINT OF LINE WERE ALREADY MARKED.
 C
-   20 D = AMAX1(ABS(DX),ABS(DY))
-      ID = D/FLOAT(ISKIP)
-      DX = (DX/D)*FLOAT(ISKIP)
-      DY = (DY/D)*FLOAT(ISKIP)
+   20 D = MAX(ABS(DX),ABS(DY))
+      ID = D/REAL(ISKIP)
+      DX = (DX/D)*REAL(ISKIP)
+      DY = (DY/D)*REAL(ISKIP)
       IF (LM) GO TO 50
 C
 C STARTING POINT WAS NOT MARKED. FIND THE FIRST MARKED POINT.
@@ -127,11 +127,11 @@ C
       DO 30 I=1,ID
          X = X+DX
          Y = Y+DY
-         CALL REMOVE (IFIX(X+.5),IFIX(Y+.5),HID,3)
+         CALL REMOVE (INT(X+.5),INT(Y+.5),HID,3)
          IF (HID) GO TO 40
    30 CONTINUE
-      X = FLOAT(IXSTOR)+DX
-      Y = FLOAT(IYSTOR)+DY
+      X = REAL(IXSTOR)+DX
+      Y = REAL(IYSTOR)+DY
    40 IXP = X+.5-DX
       IYP = Y+.5-DY
 C FIRST MARKED POINT FOUND.
@@ -148,7 +148,7 @@ C
       DO 60 I=1,ID
          X = X+DX
          Y = Y+DY
-         CALL REMOVE (IFIX(X+.5),IFIX(Y+.5),HID,3)
+         CALL REMOVE (INT(X+.5),INT(Y+.5),HID,3)
          IF (.NOT.HID) GO TO 70
    60 CONTINUE
       X = IXSTOR
@@ -177,8 +177,8 @@ C INTERCEPT PLOTIT(IX,IY,0) TO SET THE STARTING POINT FOR THE NEXT
 C LINE TO BE DRAWN OR REMOVED.
 C
 C CHECK IF PEN IS ALREADY CLOSE ENOUGH TO THE WANTED POSITION.
-      DIFF = FLOAT(IABS(IXSTOR-IX)+IABS(IYSTOR-IY))
-      IF (DIFF .LE. FLOAT(ICLOSE)) GO TO 110
+      DIFF = REAL(ABS(IXSTOR-IX)+ABS(IYSTOR-IY))
+      IF (DIFF .LE. REAL(ICLOSE)) GO TO 110
 C
       IXSTOR = IX
       IYSTOR = IY

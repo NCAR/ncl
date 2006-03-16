@@ -1,5 +1,5 @@
 C
-C	$Id: fdvdld.f,v 1.3 2000-08-22 15:10:24 haley Exp $
+C	$Id: fdvdld.f,v 1.4 2006-03-16 17:55:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -432,7 +432,7 @@ C
 C
 C IF THE NEW POINT IS TOO CLOSE TO THE PREVIOUS POINT, IGNORE IT
 C
-      IF (ABS(FLOAT(IFIX(XSVN)-MX))+ABS(FLOAT(IFIX(YSVN)-MY)) .LT.
+      IF (ABS(REAL(INT(XSVN)-MX))+ABS(REAL(INT(YSVN)-MY)) .LT.
      1    SMALL) RETURN
       IFLAG = 0
    30 N = N+1
@@ -531,12 +531,12 @@ C
 C DETERMINE THE NUMBER OF POINTS TO INTERPOLATE FOR EACH SEGMENT
 C
       IF (NSEG.GE.1 .AND. N.LT.L1-1) GO TO 110
-      NPRIME = FLOAT(NP)-(SLEN(N)*FLOAT(NP)*.5)/32767.
-      IF (SLEN(N) .GE. 32767.) NPRIME = .5*FLOAT(NP)
-      NPL = AMAX1(FLOAT(NPRIME)*SLEN(N)/32767.,2.5)
-  110 DT = 1./FLOAT(NPL)
-      IX = IFIX (XSAVE(1))
-      IY = IFIX (YSAVE(1))
+      NPRIME = REAL(NP)-(SLEN(N)*REAL(NP)*.5)/32767.
+      IF (SLEN(N) .GE. 32767.) NPRIME = .5*REAL(NP)
+      NPL = MAX(REAL(NPRIME)*SLEN(N)/32767.,2.5)
+  110 DT = 1./REAL(NPL)
+      IX = INT (XSAVE(1))
+      IY = INT (YSAVE(1))
       IF (NSEG .LE. 0) GO TO 112
       CALL DRAWPV (IX,IY,0)
       GO TO 114
@@ -564,16 +564,16 @@ C
 C
 C DRAW EACH PART OF THE LINE SEGMENT
 C
-         IX = IFIX(XS)
-         IY = IFIX (YS)
+         IX = INT (XS)
+         IY = INT (YS)
          CALL CFVLD (2,IX,IY)
   120 CONTINUE
       IF (IPRD .NE. 0) GO TO 130
 C
 C CONNECT THE LAST POINT WITH THE FIRST POINT OF A PERIODIC LINE
 C
-      IX = IFIX (XSV1)
-      IY = IFIX (YSV1)
+      IX = INT (XSV1)
+      IY = INT (YSV1)
       CALL CFVLD (2,IX,IY)
 C
 C BEGIN THE NEXT LINE SEGMENT WITH THE LAST POINT OF THIS SEGMENT
@@ -587,10 +587,10 @@ C
 C FOR THE CASE WHEN THERE ARE ONLY 2 DISTINCT POINTS ON A LINE.
 C
   140 CONTINUE
-      IX1 = IFIX(XSAVE(1))
-      IY1 = IFIX(YSAVE(1))
-      IX2 = IFIX(XSAVE(N))
-      IY2 = IFIX (YSAVE(N))
+      IX1 = INT (XSAVE(1))
+      IY1 = INT (YSAVE(1))
+      IX2 = INT (XSAVE(N))
+      IY2 = INT (YSAVE(N))
       CALL CUTUP (IX1,IY1,IX2,IY2)
 C
   150 CONTINUE

@@ -1,5 +1,5 @@
 C
-C	$Id: cfvld.f,v 1.3 2000-08-22 15:10:23 haley Exp $
+C	$Id: cfvld.f,v 1.4 2006-03-16 17:55:02 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -106,7 +106,7 @@ C
       IB = 0
       BTI = 0
    40 CONTINUE
-      BTI = FLOAT(IP(1))*FPART
+      BTI = REAL(IP(1))*FPART
       GO TO 300
 C
 C MAIN LOOP START
@@ -159,10 +159,10 @@ C
          IF (IB) 140,160,150
   140    X3 = X
          Y3 = Y
-         BTI = FLOAT(IP(M))
+         BTI = REAL(IP(M))
          GO TO 70
   150    X3 = -1.
-         BTI = FLOAT(IP(M))
+         BTI = REAL(IP(M))
          GO TO 70
 C
 C CHARACTER GENERATION
@@ -195,7 +195,7 @@ C
          LIGP = 1
 C
   184    CONTINUE
-         IS = IFIX(S*180./3.14 + .5)
+         IS = INT(S*180./3.14 + .5)
          IF (IS .LT. 0) IS = 360+IS
          CALL GETUSV('XF',LXSAVE)
          CALL GETUSV('YF',LYSAVE)
@@ -240,7 +240,7 @@ C
       IF (M .EQ. MO) GO TO 300
       IB = IPFLAG(M)
       IF (IB .EQ. 0) GOTO 245
-      BTI = FLOAT(IP(M))
+      BTI = REAL(IP(M))
   245 CONTINUE
 C
 C IF IP(M) NOT A LINE, CONTINUE LOOKING.
@@ -255,7 +255,7 @@ C
       IF (M .EQ. MO) GO TO 290
       IB = IPFLAG(M)
       IF (IB .EQ. 0) GOTO 265
-      BTI = FLOAT(IP(M))
+      BTI = REAL(IP(M))
   265 CONTINUE
 C
 C IF IP(M) NOT A GAP, CONTINUE LOOKING.

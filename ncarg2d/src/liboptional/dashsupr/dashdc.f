@@ -1,5 +1,5 @@
 C
-C	$Id: dashdc.f,v 1.4 2003-06-02 19:17:38 kennison Exp $
+C	$Id: dashdc.f,v 1.5 2006-03-16 17:55:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -138,9 +138,9 @@ C
       IADJUS = ISHIFT(1,15-LXSAVE)
       ICRT = JCRT*IADJUS
       ISIZE = JSIZE
-      CHARW = FLOAT(ISIZE*IADJUS)
+      CHARW = REAL(ISIZE*IADJUS)
       IF (ISIZE .GT. 3) GO TO 30
-      CHARW = 256. + FLOAT(ISIZE)*128.
+      CHARW = 256. + REAL(ISIZE)*128.
       IF (ISIZE .EQ. 3) CHARW = 768.
 C
    30 CONTINUE
@@ -223,8 +223,8 @@ C
 C CASE 2) - START STRING ENTRY.  LGBSTR POINTS TO THE GAP WHICH
 C           WILL CONTAIN THE STRING.
 C
-   80      LGBSTR = MIN0(L+1,NPD)
-           L = MIN0(LGBSTR+1,NPD)
+   80      LGBSTR = MIN(L+1,NPD)
+           L = MIN(LGBSTR+1,NPD)
            IPFLAG(L) = 0
            NCHRTS    = 1
            IP(L)     = 1
@@ -236,7 +236,7 @@ C
 C CASE 3) - END STRING ENTRY.  ICR IS A $ OR '.
 C
    90      CONTINUE
-           IP(LGBSTR) = CHARW*(FLOAT(NCHRTS) + .5)
+           IP(LGBSTR) = CHARW*(REAL(NCHRTS) + .5)
            IPFLAG(LGBSTR) = -1
            IF (IGP .EQ. 0) IPFLAG(LGBSTR) = 1
 C
@@ -244,7 +244,7 @@ C BLANK TO SOLID OR SOLID TO BLANK
 C
 C CASE 4) - START TYPE 1 ENTRY.
 C
-  140       L = MIN0(L+1,NPD)
+  140       L = MIN(L+1,NPD)
             IP(L) = 0
 C
 C ADD TO A BLANK OR SOLID LINE
@@ -261,14 +261,14 @@ C IF LAST ICR PROCESSED WAS A LABEL CHARACTER, MUST END STRING
 C ENTRY.
 C
       IF (NGO.NE.2 .AND. NGO.NE.5 .AND. NGO.NE.8) GO TO 220
-      IP(LGBSTR) = CHARW*(FLOAT(NCHRTS)+.5)
+      IP(LGBSTR) = CHARW*(REAL(NCHRTS)+.5)
       IPFLAG(LGBSTR) = -1
       IF (IGP .EQ. 0) IPFLAG(LGBSTR) = 1
 C
 C IF IP ARRAY HAS ONLY ONE TYPE 1 ENTRY, SET ISL FLAG.
 C
   220 IF (L .GT. 1) RETURN
-      IBIG = ISHIFT(1,MAX0(LXSAVE,LYSAVE))
+      IBIG = ISHIFT(1,MAX(LXSAVE,LYSAVE))
       IF (IP(L) .GE. IBIG) GO TO 230
       IF (IPFLAG(L)) 240,240,230
   230 ISL = 1

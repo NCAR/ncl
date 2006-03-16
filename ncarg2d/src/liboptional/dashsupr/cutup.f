@@ -1,5 +1,5 @@
 C
-C	$Id: cutup.f,v 1.4 2000-08-22 15:10:23 haley Exp $
+C	$Id: cutup.f,v 1.5 2006-03-16 17:55:02 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -47,7 +47,7 @@ C
 C
       CALL CFVLD (1,MX1,MY1)
       DO 20 MX=MX1,MX2,MLLINE
-         MY = IFIX(FLOAT(MY1)+FLOAT(MX-MX1)*SLOPE+.5)
+         MY = INT(REAL(MY1)+REAL(MX-MX1)*SLOPE+.5)
          CALL CFVLD (2,MX,MY)
    20 CONTINUE
       CALL CFVLD (1,MX2,MY2)
@@ -56,7 +56,7 @@ C
    30 CONTINUE
       CALL CFVLD (1,MX2,MY2)
       DO 40 MX=MX2,MX1,MLLINE
-         MY = IFIX(FLOAT(MY2)+FLOAT(MX-MX2)*SLOPE+.5)
+         MY = INT(REAL(MY2)+REAL(MX-MX2)*SLOPE+.5)
          CALL CFVLD (2,MX,MY)
    40 CONTINUE
       CALL CFVLD (2,MX1,MY1)
@@ -75,7 +75,7 @@ C
 C
       CALL CFVLD (1,MX1,MY1)
       DO 70 MY=MY1,MY2,MLLINE
-         MX = IFIX(FLOAT(MX1)+FLOAT(MY-MY1)*SLOPE+.5)
+         MX = INT(REAL(MX1)+REAL(MY-MY1)*SLOPE+.5)
          CALL CFVLD (2,MX,MY)
    70 CONTINUE
       CALL CFVLD (2,MX2,MY2)
@@ -85,7 +85,7 @@ C
 C
       CALL CFVLD (1,MX2,MY2)
       DO 90 MY=MY2,MY1,MLLINE
-         MX = IFIX(FLOAT(MX2)+FLOAT(MY-MY2)*SLOPE+.5)
+         MX = INT(REAL(MX2)+REAL(MY-MY2)*SLOPE+.5)
          CALL CFVLD (2,MX,MY)
    90 CONTINUE
       CALL CFVLD (2,MX1,MY1)
