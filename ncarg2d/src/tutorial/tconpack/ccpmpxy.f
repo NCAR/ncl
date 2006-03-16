@@ -112,7 +112,7 @@ C
 C Distance between next lowest data point and contour point
 C
          IIX=INT(X)
-         DIFX=X-FLOAT(IIX)
+         DIFX=X-REAL(IIX)
 C
 C Find next lowest y data point
 C
@@ -121,13 +121,13 @@ C
 C Distance between next lowest data point and contour point
 C
          IY=INT(Y)
-         DIFY=Y-FLOAT(IY)
+         DIFY=Y-REAL(IY)
 C
 C Find next highest X and Y data points, 
 C and make sure they are in the domain.
 C
-         IXP1 = MIN0(JX,IIX+1)
-         IYP1 = MIN0(KX ,IY+1)
+         IXP1 = MIN(JX,IIX+1)
+         IYP1 = MIN(KX ,IY+1)
 C
 C Linear interpolation between points to give height at contour point
 C

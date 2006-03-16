@@ -224,8 +224,8 @@ C
       FOVM=9./REAL(M)
       FOVN=9./REAL(N)
 C
-      NLOW=MAX0(1,MIN0(25,MLOW))
-      NHGH=MAX0(1,MIN0(25,MHGH))
+      NLOW=MAX(1,MIN(25,MLOW))
+      NHGH=MAX(1,MIN(25,MHGH))
       NCNT=NLOW+NHGH
 C
       DO 101 K=1,NCNT
@@ -293,8 +293,8 @@ C
 C
       DO 110 J=1,N
          DO 109 I=1,M
-            DMIN=AMIN1(DMIN,DATA(I,J))
-            DMAX=AMAX1(DMAX,DATA(I,J))
+            DMIN=MIN(DMIN,DATA(I,J))
+            DMAX=MAX(DMAX,DATA(I,J))
  109     CONTINUE
  110  CONTINUE
 C
