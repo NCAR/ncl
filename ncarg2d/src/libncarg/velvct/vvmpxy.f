@@ -1,5 +1,5 @@
 C
-C       $Id: vvmpxy.f,v 1.11 2000-08-22 15:07:36 haley Exp $
+C       $Id: vvmpxy.f,v 1.12 2006-03-16 22:56:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -130,7 +130,7 @@ C
 C
 C Check for zero magnitude
 C
-      IF (IFIX(UVM*PRCFAC+0.5) .EQ. 0) THEN
+      IF (INT(UVM*PRCFAC+0.5) .EQ. 0) THEN
          IZO = 1
       ELSE
          IZO = 0
@@ -236,7 +236,7 @@ C Since EZMAP uses uniform user coordinates, don't convert to
 C fractional coordinates until the end
 C The tranformation type parameter is not used.
 C
-         IF (IFIX(ABS(Y)*PRCFAC+0.5).EQ.IPCTST) THEN
+         IF (INT(ABS(Y)*PRCFAC+0.5).EQ.IPCTST) THEN
             IST=-1
             RETURN
          END IF
@@ -286,7 +286,7 @@ C
             END IF
          END IF
 C
-         IF (IFIX(DV1*PRCFAC) .EQ. 0) THEN
+         IF (INT(DV1*PRCFAC) .EQ. 0) THEN
             IF (ICT .LT. IPMXCT) THEN
                ICT = ICT + 1
                DUV=DUV*PDUVML

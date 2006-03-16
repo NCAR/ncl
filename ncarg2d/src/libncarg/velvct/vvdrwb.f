@@ -1,5 +1,5 @@
 C
-C       $Id: vvdrwb.f,v 1.6 2001-04-17 00:23:05 dbrown Exp $
+C       $Id: vvdrwb.f,v 1.7 2006-03-16 22:56:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -369,7 +369,7 @@ C
             RMG = 0.001
             PHI = ATAN2(DY,DX)
             ISN = -1
-            IF (AMOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) THEN
+            IF (MOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) THEN
                PHI = PHI+P1XPI
                ISN = 1
             END IF

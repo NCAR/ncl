@@ -1,5 +1,5 @@
 C
-C       $Id: vvdraw.f,v 1.11 2000-08-22 15:07:33 haley Exp $
+C       $Id: vvdraw.f,v 1.12 2006-03-16 22:56:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -251,7 +251,7 @@ C
       IF (NC .GT. 0) THEN
 C
          PHI = ATAN2(DY,DX)
-         IF (AMOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) PHI = PHI+P1XPI
+         IF (MOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) PHI = PHI+P1XPI
          XC = 0.5*(XF(1)+XF(4))+1.25*FLBS*FW2W*COS(PHI+P1D2PI)
          YC = 0.5*(YF(1)+YF(4))+1.25*FLBS*FW2W*SIN(PHI+P1D2PI)
 C

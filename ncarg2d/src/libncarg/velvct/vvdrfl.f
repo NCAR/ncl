@@ -1,5 +1,5 @@
 C
-C       $Id: vvdrfl.f,v 1.9 2001-04-17 00:23:04 dbrown Exp $
+C       $Id: vvdrfl.f,v 1.10 2006-03-16 22:56:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -316,7 +316,7 @@ C
       IF (NC .GT. 0) THEN
 C
          PHI = ATAN2(DY,DX)
-         IF (AMOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) PHI = PHI+P1XPI
+         IF (MOD(PHI+P5D2PI,P2XPI) .GT. P1XPI) PHI = PHI+P1XPI
          XC = AXB+0.33*(AXE-AXB) +
      +        (1.25*FLBS*FW2W+RMG)*COS(PHI+P1D2PI)
          YC = AYB+0.33*(AYE-AYB) +

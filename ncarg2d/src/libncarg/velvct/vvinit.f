@@ -1,5 +1,5 @@
 C
-C       $Id: vvinit.f,v 1.14 2000-08-22 15:07:35 haley Exp $
+C       $Id: vvinit.f,v 1.15 2006-03-16 22:56:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -294,8 +294,8 @@ C
       I=MAX(IXDM/IXIN, 1)
       J=MAX(IYDN/IYIN, 1)
 C
-      TX=(XVPR-XVPL)/FLOAT(I)
-      TY=(YVPT-YVPB)/FLOAT(J)
+      TX=(XVPR-XVPL)/REAL(I)
+      TY=(YVPT-YVPB)/REAL(J)
       DVMX=SQRT((TX*TX+TY*TY)/2.0)
       DVMN = 0.0
 C

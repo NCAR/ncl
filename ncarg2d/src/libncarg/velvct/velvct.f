@@ -1,5 +1,5 @@
 C
-C       $Id: velvct.f,v 1.19 2000-08-22 15:07:33 haley Exp $
+C       $Id: velvct.f,v 1.20 2006-03-16 22:56:56 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -305,7 +305,7 @@ C
       X2=VXR
       Y1=VYB
       Y2=VYT
-      SVM = FLOAT(KFMX(X2) - KFMX(X1))
+      SVM = REAL(KFMX(X2) - KFMX(X1))
 C
 C Set the parameter and common block use flags
 C Note that the value of ICPM is temporarily modified if it
@@ -325,9 +325,9 @@ C
          IF (NSET .LT. 0) THEN
 C
             X3 = 1.
-            X4 = FLOAT(M)
+            X4 = REAL(M)
             Y3 = 1.
-            Y4 = FLOAT(N)
+            Y4 = REAL(N)
             CALL SET(X1,X2,Y1,Y2,X3,X4,Y3,Y4,1)
 C     
          ELSE IF (NSET .EQ. 0) THEN
@@ -338,9 +338,9 @@ C
             Y2 = YBT+SIDE
             X3 = 1.
             Y3 = 1.
-            X4 = FLOAT(M)
-            Y4 = FLOAT(N)
-            IF (AMIN1(X4,Y4)/AMAX1(X4,Y4) .GE. EXT) THEN
+            X4 = REAL(M)
+            Y4 = REAL(N)
+            IF (MIN(X4,Y4)/MAX(X4,Y4) .GE. EXT) THEN
                IF (M .GT. N) THEN
                   Y2 = YBT+SIDE*Y4/X4
                ELSE 
@@ -350,7 +350,7 @@ C
 C     
             CALL SET(X1,X2,Y1,Y2,X3,X4,Y3,Y4,1)
             CALL PERIM (1,0,1,0)
-            SVM = FLOAT(KFMX(X2) - KFMX(X1))
+            SVM = REAL(KFMX(X2) - KFMX(X1))
 C     
          END IF
 C
@@ -432,7 +432,7 @@ C in the old version of VELVCT.
 C
             XP=1.0+(1.0-X2-0.05)/(X2-X1)
             YP=(0.005-Y1)/(Y2-Y1)
-            TSZ=CPFX(MAX0(256/ISX,8))/(X2-X1)
+            TSZ=CPFX(MAX(256/ISX,8))/(X2-X1)
             CALL VVSETR('MXS - Maximum Text Size', TSZ)
             CALL VVSETI('MXP - Maximum Text Position Mode', -2)
             CALL VVSETR('MXX - Maximum Text X Position', XP)
@@ -702,7 +702,7 @@ C     CFCT=COS(.17453292519943*(YY-1.))
 C     CALL MAPTRN(10.*(YY-1.)         ,10.*(XX-1.)              ,X1,Y1)
 C     CALL MAPTRN(10.*(YY-1.)+1.E-6*VV,10.*(XX-1.)+1.E-6*UU/CFCT,X2,Y2)
 C     U=((X2-X1)/SQRT((X2-X1)**2+(Y2-Y1)**2))*SQRT(UU**2+VV**2)
-C     MXF=MX+IFIX(SFX*U)
+C     MXF=MX+INT(SFX*U)
 C     RETURN
 C     END
 C
@@ -711,7 +711,7 @@ C     CFCT=COS(.17453292519943*(YY-1.))
 C     CALL MAPTRN(10.*(YY-1.)         ,10.*(XX-1.)              ,X1,Y1)
 C     CALL MAPTRN(10.*(YY-1.)+1.E-6*VV,10.*(XX-1.)+1.E-6*UU/CFCT,X2,Y2)
 C     V=((Y2-Y1)/SQRT((X2-X1)**2+(Y2-Y1)**2))*SQRT(UU**2+VV**2)
-C     MYF=MY+IFIX(SFY*V)
+C     MYF=MY+INT(SFY*V)
 C     RETURN
 C     END
 C

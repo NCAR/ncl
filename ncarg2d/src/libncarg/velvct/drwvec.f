@@ -1,5 +1,5 @@
 C
-C       $Id: drwvec.f,v 1.4 2000-08-22 15:07:31 haley Exp $
+C       $Id: drwvec.f,v 1.5 2006-03-16 22:56:56 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -89,14 +89,14 @@ C
 C
   102 N3 = N1
       N4 = N2
-      N1 = FLOAT(N1)-DX
-      N2 = FLOAT(N2)-DY
+      N1 = REAL(N1)-DX
+      N2 = REAL(N2)-DY
       GO TO 104
 C
-  103 N1 = FLOAT(N1)-.5*DX
-      N2 = FLOAT(N2)-.5*DY
-      N3 = FLOAT(N3)-.5*DX
-      N4 = FLOAT(N4)-.5*DY
+  103 N1 = REAL(N1)-.5*DX
+      N2 = REAL(N2)-.5*DY
+      N3 = REAL(N3)-.5*DX
+      N4 = REAL(N4)-.5*DY
 C
 C DETERMINE THE COORDINATES OF THE POINTS USED TO DRAW THE ARROWHEAD.
 C
@@ -112,10 +112,10 @@ C
 C
 C COMPUTE THE COORDINATES OF THE HEAD.
 C
-      N5 = FLOAT(N3)-C1*(CT*DX-ST*DY)
-      N6 = FLOAT(N4)-C1*(CT*DY+ST*DX)
-      N7 = FLOAT(N3)-C1*(CT*DX+ST*DY)
-      N8 = FLOAT(N4)-C1*(CT*DY-ST*DX)
+      N5 = REAL(N3)-C1*(CT*DX-ST*DY)
+      N6 = REAL(N4)-C1*(CT*DY+ST*DX)
+      N7 = REAL(N3)-C1*(CT*DX+ST*DY)
+      N8 = REAL(N4)-C1*(CT*DY-ST*DX)
 C
 C PLOT THE ARROW.
 C
@@ -130,18 +130,18 @@ C IF REQUESTED, PUT THE VECTOR MAGNITUDE ABOVE THE ARROW.
 C
       IF (NC .EQ. 0) RETURN
       PHI = ATAN2(DY,DX)
-      IF (AMOD(PHI+FHOPI,TWOPI) .GT. PI) PHI = PHI+PI
-      IX = 1+IFIX(.5*FLOAT(N1+N3)+1.25*
-     +            FLOAT(ISX*MAX0(IFIX(SIZE)/ISX,8))*COS(PHI+OHOPI))/ISX
-      IY = 1+IFIX(.5*FLOAT(N2+N4)+1.25*
-     +            FLOAT(ISX*MAX0(IFIX(SIZE)/ISX,8))*SIN(PHI+OHOPI))/ISY
+      IF (MOD(PHI+FHOPI,TWOPI) .GT. PI) PHI = PHI+PI
+      IX = 1+INT(.5*REAL(N1+N3)+1.25*
+     +            REAL(ISX*MAX(INT(SIZE)/ISX,8))*COS(PHI+OHOPI))/ISX
+      IY = 1+INT(.5*REAL(N2+N4)+1.25*
+     +            REAL(ISX*MAX(INT(SIZE)/ISX,8))*SIN(PHI+OHOPI))/ISY
 C
 C
         XC = CPUX(IX)
         YC = CPUY(IY)
       CALL WTSTR(XC,YC,
-     +           LABEL,MAX0(IFIX(SIZE)/ISX,8),
-     +                                     IFIX(57.2957795130823*PHI),0)
+     +           LABEL,MAX(INT(SIZE)/ISX,8),
+     +                                     INT(57.2957795130823*PHI),0)
 C
       RETURN
       END

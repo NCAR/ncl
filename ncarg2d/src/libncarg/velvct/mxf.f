@@ -1,5 +1,5 @@
 C
-C       $Id: mxf.f,v 1.4 2000-08-22 15:07:32 haley Exp $
+C       $Id: mxf.f,v 1.5 2006-03-16 22:56:56 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -60,7 +60,7 @@ C     Linear transformation.
 C
 10    CONTINUE
 C
-      MXF = MX+IFIX(SFX*U)
+      MXF = MX+INT(SFX*U)
       RETURN
 C
 C     EZMAP overlaying.
@@ -71,15 +71,15 @@ C
 C
 C Check the vector magnitude
 C
-      IF (IFIX(UVLEN*PRCFAC) .EQ. 0) THEN
+      IF (INT(UVLEN*PRCFAC) .EQ. 0) THEN
          MXF=IBIG
          RETURN
       END IF
 C
       CLMT=PVFRAC/UVLEN
 C
-      XLON = XLOV + (X-1.)*(XHIV-XLOV)/(FLOAT(NXCT)-1.)
-      YLAT = YLOV + (Y-1.)*(YHIV-YLOV)/(FLOAT(NYCT)-1.)
+      XLON = XLOV + (X-1.)*(XHIV-XLOV)/(REAL(NXCT)-1.)
+      YLAT = YLOV + (Y-1.)*(YHIV-YLOV)/(REAL(NYCT)-1.)
 C
 C If the latitude is 90 we never should have gotten to this routine
 C
@@ -103,7 +103,7 @@ C
             ISGN=-1
             GO TO 35
          END IF
-      ELSE IF (IFIX(VCLEN*PRCFAC) .EQ. 0) THEN
+      ELSE IF (INT(VCLEN*PRCFAC) .EQ. 0) THEN
          IF (ICNT .LT. 10) THEN
             ICNT = ICNT + 1
             CLMT = CLMT * 2.0
@@ -121,7 +121,7 @@ C
 C
       T=ISGN*((X2-X1)/VCLEN)*UVLEN
 C
-      MXF=MX+IFIX(SFX*T)
+      MXF=MX+INT(SFX*T)
 C
       RETURN
 C

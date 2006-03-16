@@ -1,5 +1,5 @@
 C
-C       $Id: vvectr.f,v 1.21 2001-04-17 00:23:05 dbrown Exp $
+C       $Id: vvectr.f,v 1.22 2006-03-16 22:56:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -310,7 +310,7 @@ C
      +    IDP = 1
       ASH = 1.0
       IF (IDP .NE. 0) ASH =
-     +     10.**(3-IFIX(ALOG10(AMAX1(ABS(UVMN),ABS(UVMX)))-500.)-500)
+     +     10.**(3-INT(ALOG10(MAX(ABS(UVMN),ABS(UVMX)))-500.)-500)
 C
 C If thinning is in effect, set up the thinning arrays
 C
@@ -823,8 +823,8 @@ C                                 implementation
 C
 C     FX(XX,YY) = XX
 C     FY(XX,YY) = YY
-C     MXF(XX,YY,UU,VV,SFXX,SFYY,MXX,MYY) = MXX+IFIX(SFXX*UU)
-C     MYF(XX,YY,UU,VV,SFXX,SFYY,MXX,MYY) = MYY+IFIX(SFYY*VV)
+C     MXF(XX,YY,UU,VV,SFXX,SFYY,MXX,MYY) = MXX+INT(SFXX*UU)
+C     MYF(XX,YY,UU,VV,SFXX,SFYY,MXX,MYY) = MYY+INT(SFYY*VV)
 C
       SCALEX(MM,NN,IX,IY,UVM,XX1,XX2,YY1,YY2,XX3,XX4,YY3,YY4,
      1     LENN) = LENN/UVM
@@ -840,7 +840,7 @@ C
 C
 C Check for zero magnitude
 C
-      IF (IFIX(UVM*PRCFAC+0.5) .EQ. 0) THEN
+      IF (INT(UVM*PRCFAC+0.5) .EQ. 0) THEN
          IZO = 1
       ELSE
          IZO = 0
