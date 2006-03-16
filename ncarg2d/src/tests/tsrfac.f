@@ -101,10 +101,10 @@ C
 C Fill the XX and YY coordinate arrays as well as the Z function array.
 C
       DO  20 I=1,21
-         X = .1*FLOAT(I-11)
+         X = .1*REAL(I-11)
          XX(I) = X
          DO  10 J=1,25
-            Y = .1*FLOAT(J-13)
+            Y = .1*REAL(J-13)
             YY(J) = Y
             Z(I,J) = (X+Y+1./((X-.1)**2+Y**2+.09)-
      1                                      1./((X+.1)**2+Y**2+.09))*.25

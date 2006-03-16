@@ -112,7 +112,7 @@ C
 C  Label the column and change the function code
 C
          DO 150 J=1,12
-            XPOS = FLOAT(J*80-39) / 1024.
+            XPOS = REAL(J*80-39) / 1024.
             GO TO ( 10, 20, 30, 40, 50, 60, 70, 80, 90,100,
      1             110,120),J
    10       CALL PWRITX (XPOS,.9375,'PRU',3,16,0,0)
@@ -156,7 +156,7 @@ C
 C           Draw twelve characters with the same function code
 C
             DO 140 I=1,12
-               YPOS = FLOAT( 980-I*80 ) / 1024.
+               YPOS = REAL( 980-I*80 ) / 1024.
                IF = I+(K-1)*12
                CALL PWRITX (XPOS,YPOS,DAT(IF),1,1,0,0)
   140       CONTINUE

@@ -100,7 +100,7 @@ C
 C Fill the array Y1D for the call to EZY.
 C
       DO  10 I=1,21
-         Y1D(I) = EXP(-.1*FLOAT(I))*COS(FLOAT(I)*.5)
+         Y1D(I) = EXP(-.1*REAL(I))*COS(REAL(I)*.5)
    10 CONTINUE
 C
 C Plot the contents of Y1D as a function of the integers.
@@ -112,7 +112,7 @@ C
 C Fill the arrays X and Y1D for the call to EZXY.
 C
       DO  20 I=1,21
-         X(I) = FLOAT(I-1)*.314
+         X(I) = REAL(I-1)*.314
          Y1D(I) = X(I)+COS(X(I))*2.0
    20 CONTINUE
 C
@@ -131,9 +131,9 @@ C
 C Fill the array Y2D for the call to EZMY.
 C
       DO  40 I=1,21
-         T = .5*FLOAT(I-1)
+         T = .5*REAL(I-1)
          DO  30 J=1,5
-            Y2D(I,J) = EXP(-.5*T)*COS(T)/FLOAT(J)
+            Y2D(I,J) = EXP(-.5*T)*COS(T)/REAL(J)
    30    CONTINUE
    40 CONTINUE
 C

@@ -97,7 +97,7 @@ C
   105 CONTINUE
 C
       DO  110 I=1,NPTS
-        X = FLOAT(I)
+        X = REAL(I)
         DAT1(I,1) = 10. * ALOG10(0.1*X+1.)
   110 CONTINUE
 C

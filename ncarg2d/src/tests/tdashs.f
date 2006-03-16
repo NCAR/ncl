@@ -112,9 +112,9 @@ C
 C Compute the curve coordinates and draw the curve.
 C
          DO  70 I=1,31
-            THETA = FLOAT(I-1)*3.1415926535897932/15.
+            THETA = REAL(I-1)*3.1415926535897932/15.
             X(I) = 0.5+.4*COS(THETA)
-            Y(I) = ORG+.075*SIN(FLOAT(K)*THETA)
+            Y(I) = ORG+.075*SIN(REAL(K)*THETA)
    70    CONTINUE
          CALL CURVED (X,Y,31)
 C

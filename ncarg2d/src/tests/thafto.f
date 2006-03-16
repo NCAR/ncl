@@ -90,9 +90,9 @@ C
 C Fill the 2 dimensional array to be plotted
 C
       DO  20 I=1,21
-         X = .1*FLOAT(I-11)
+         X = .1*REAL(I-11)
          DO  10 J=1,25
-            Y = .1*FLOAT(J-13)
+            Y = .1*REAL(J-13)
             Z(I,J) = X+Y+1./((X-.10)**2+Y**2+.09)-
      1               1./((X+.10)**2+Y**2+.09)
    10    CONTINUE

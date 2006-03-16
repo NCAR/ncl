@@ -97,10 +97,10 @@ C
 C Define the function values and store them in the Z array.
 C
       DO  10 I=1,M
-         X(I) = -1.+FLOAT(I-1)/FLOAT(M-1)*2.
+         X(I) = -1.+REAL(I-1)/REAL(M-1)*2.
    10 CONTINUE
       DO  20 J=1,N
-         Y(J) = -1.+FLOAT(J-1)/FLOAT(N-1)*2.
+         Y(J) = -1.+REAL(J-1)/REAL(N-1)*2.
    20 CONTINUE
       DO  40 J=1,N
          DO  30 I=1,M

@@ -110,11 +110,11 @@ C Define and draw latitudinal lines on the sphere of radius one
 C having its center at (0.,0.,0.)
 C
       DO 10 J=1,18
-      THETA = FLOAT(J)*PI/9.
+      THETA = REAL(J)*PI/9.
       CT = COS(THETA)
       ST = SIN(THETA)
       DO 20 K=1,31
-      PHI = FLOAT(K-16)*PI/30.
+      PHI = REAL(K-16)*PI/30.
       Z(K) = SIN(PHI)
       CP = COS(PHI)
       X(K) = CT*CP
@@ -127,11 +127,11 @@ C Define and draw longitudinal lines on the sphere of radius one
 C having its center at (0.,0.,0.)
 C
       DO 30 K=1,5
-      PHI = FLOAT(K-3)*PI/6.
+      PHI = REAL(K-3)*PI/6.
       SP = SIN(PHI)
       CP = COS(PHI)
       DO 40 J=1,31
-      TUETA = FLOAT(J-1)*PI/15.
+      TUETA = REAL(J-1)*PI/15.
       X(J) = COS(TUETA)*CP
       Y(J) = SIN(TUETA)*CP
       Z(J) = SP

@@ -114,8 +114,8 @@ C
 C
 C Create and plot the interlocking doughnuts.
 C
-      JCENT1 = FLOAT(NV)*.5-RBIG1*.5
-      JCENT2 = FLOAT(NV)*.5+RBIG2*.5
+      JCENT1 = REAL(NV)*.5-RBIG1*.5
+      JCENT2 = REAL(NV)*.5+RBIG2*.5
       DO  70 IBKWDS=1,NU
          I = NU+1-IBKWDS
 C
@@ -136,7 +136,7 @@ C
                FJP2 = (1.-F2)*FJMID2
                FKP1 = (1.-F1)*FKMID
                FKP2 = (1.-F2)*FKMID
-               TEMP = AMIN1(FIMID**2+FJP1**2+FKP1**2-RSML1**2,
+               TEMP = MIN(FIMID**2+FJP1**2+FKP1**2-RSML1**2,
      1                                FKMID**2+FIP2**2+FJP2**2-RSML2**2)
                IF (TEMP .LE. 0.) IOBJS(J,K) = 1
                IF (TEMP .GT. 0.) IOBJS(J,K) = 0

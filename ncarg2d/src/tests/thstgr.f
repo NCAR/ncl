@@ -134,7 +134,7 @@ C
           DAT1(I,J)=0.
   105 CONTINUE
       DO  110 I=1,NPTS
-        X = FLOAT(I)
+        X = REAL(I)
         DAT1(I,1) = 10. * ALOG10(0.1*X+1.)
   110 CONTINUE
 C
@@ -162,9 +162,9 @@ C
       NCLASS = 6
       NPTS2 = 6
        DO 200 I=1,NPTS2
-        DAT1(I,1)=2*SIN(FLOAT(I))
-        DAT1(I,2)=2.5*COS(FLOAT(I)/.5)
-        CLASS(I)=FLOAT(I)
+        DAT1(I,1)=2*SIN(REAL(I))
+        DAT1(I,2)=2.5*COS(REAL(I)/.5)
+        CLASS(I)=REAL(I)
   200  CONTINUE
 C
 C  (First call HSTOPL('DEF=ON') to activate all default options.)
@@ -212,7 +212,7 @@ C
       NCLASS = 17
       NPTS = 320
       DO  210 I=1,NPTS
-        X = FLOAT(I)
+        X = REAL(I)
         DAT1(I,1) = 10. * ALOG10(0.1*X+1.)
   210 CONTINUE
 C
@@ -265,8 +265,8 @@ C
       NCLASS = 11
       NPTS2 = 11
       DO 650 I = 1, NPTS2
-        CLASS(I)=FLOAT(2*I)
-        DAT1(I,1)=(FLOAT(2*I))**0.5
+        CLASS(I)=REAL(2*I)
+        DAT1(I,1)=(REAL(2*I))**0.5
   650 CONTINUE
 C
 C  (First call HSTOPL('DEF=ON') to activate all default options.)
