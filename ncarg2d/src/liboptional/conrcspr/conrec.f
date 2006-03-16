@@ -1,5 +1,5 @@
 C
-C	$Id: conrec.f,v 1.4 2006-03-16 17:26:48 kennison Exp $
+C	$Id: conrec.f,v 1.5 2006-03-16 18:30:43 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -337,7 +337,9 @@ C
       DIMENSION       LNGTHS(5)  ,HOLD(5)
       DIMENSION       VIEW(4)    ,WIND(4)    ,LASF(13)    ,RECT(4)
       DIMENSION       Z(L,N)     ,CL(40)     ,RWORK(40)
-      COMMON /INTPR/  PAD1       ,FPART      ,PAD2(8)
+      COMMON /INTPR/  IPD1       ,FPART      ,RPD1        ,IPD2       ,
+     1                RPD2       ,IPD3       ,RPD3        ,RPD4       ,
+     2                IPD4       ,IPD5
       COMMON /CONRE1/ IOFFP      ,SPVAL      ,IHILO
       COMMON /CONRE3/ IXBITS     ,IYBITS
       COMMON /CONRE5/ SCLY
