@@ -1,5 +1,5 @@
 C
-C	$Id: conrec.f,v 1.4 2000-08-22 15:10:10 haley Exp $
+C	$Id: conrec.f,v 1.5 2006-03-16 17:15:20 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -384,7 +384,7 @@ C
 C
 C DEFINE NORMALIZATION 1 AND LOG SCALING
 C
-      CALL SET(X1,X2,Y1,Y2,1.0,FLOAT(NX),1.0,FLOAT(NY),1)
+      CALL SET(X1,X2,Y1,Y2,1.0,REAL(NX),1.0,REAL(NY),1)
       GO TO 106
   102 X1 = XLT
       X2 = XLT+SIDE
@@ -392,7 +392,7 @@ C
       Y2 = YBT+SIDE
       X3 = NX
       Y3 = NY
-      IF (AMIN1(X3,Y3)/AMAX1(X3,Y3) .LT. EXT) GO TO 105
+      IF (MIN(X3,Y3)/MAX(X3,Y3) .LT. EXT) GO TO 105
       IF (NX-NY) 103,105,104
   103 X2 = SIDE*X3/Y3+XLT
       GO TO 105
@@ -409,7 +409,7 @@ C
      1    IOFFDT = 1
       IF (HA.NE.0.0 .AND. (ABS(HA).LT.0.1 .OR. ABS(HA).GE.1.E5))
      1    IOFFDT = 1
-      ASH = 10.**(3-IFIX(ALOG10(AMAX1(ABS(GL),ABS(HA),ABS(GP)))
+      ASH = 10.**(3-INT(ALOG10(MAX(ABS(GL),ABS(HA),ABS(GP)))
      1                                                  -4999.999)-5000)
       IF (IOFFDT .EQ. 0) ASH = 1.
       IF (IOFFM .NE. 0) GO TO 110
