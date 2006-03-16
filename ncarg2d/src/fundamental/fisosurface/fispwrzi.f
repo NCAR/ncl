@@ -114,8 +114,8 @@ C
 C
 C Fill the 3-D array to be plotted.
 C
-      JCENT1 = FLOAT(NV)*.5-RBIG1*.5
-      JCENT2 = FLOAT(NV)*.5+RBIG2*.5
+      JCENT1 = REAL(NV)*.5-RBIG1*.5
+      JCENT2 = REAL(NV)*.5+RBIG2*.5
       DO  30 I=1,NU
          FIMID = I-NU/2
          DO  20 J=1,NV
@@ -131,7 +131,7 @@ C
                FJP2 = (1.-F2)*FJMID2
                FKP1 = (1.-F1)*FKMID
                FKP2 = (1.-F2)*FKMID
-               T(I,J,K) = AMIN1(FIMID*FIMID+FJP1*FJP1+FKP1*FKP1-
+               T(I,J,K) = MIN(FIMID*FIMID+FJP1*FJP1+FKP1*FKP1-
      1              RSML1*RSML1,
      2              FKMID*FKMID+FIP2*FIP2+FJP2*FJP2-RSML2*RSML2)
  10         CONTINUE
@@ -157,7 +157,7 @@ C
       MU = NU/2
       MV = NV/2
       MW = NW/2
-      MUVWP2 = MAX0(MU,MV,MW)+2
+      MUVWP2 = MAX(MU,MV,MW)+2
 C
 C Set the line color of the isosurface
 C
