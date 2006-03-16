@@ -1,5 +1,5 @@
 C
-C	$Id: agpwrt.f,v 1.3 2000-08-22 15:10:03 haley Exp $
+C	$Id: agpwrt.f,v 1.4 2006-03-16 16:53:44 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -57,17 +57,17 @@ C Otherwise, use PWRITX to produce one character at a time.
 C
       CALL GETSET (F1,F2,G1,G2,X1,X2,Y1,Y2,LL)
 C
-      XS=FLOAT(IS)*COS(.017453292519943*FLOAT(IO))*(X2-X1)/
-     +                                          FLOAT(KFPX(F2)-KFPX(F1))
-      YS=FLOAT(IS)*SIN(.017453292519943*FLOAT(IO))*(Y2-Y1)/
-     +                                          FLOAT(KFPY(G2)-KFPY(G1))
+      XS=REAL(IS)*COS(.017453292519943*REAL(IO))*(X2-X1)/
+     +                                           REAL(KFPX(F2)-KFPX(F1))
+      YS=REAL(IS)*SIN(.017453292519943*REAL(IO))*(Y2-Y1)/
+     +                                           REAL(KFPY(G2)-KFPY(G1))
 C
       FX=PX
       FY=PY
 C
       IF (IC.GT.0) THEN
-        FX=FX-FLOAT(NC)*XS
-        FY=FY-FLOAT(NC)*YS
+        FX=FX-REAL(NC)*XS
+        FY=FY-REAL(NC)*YS
       END IF
 C
       FX=FX-.5*XS
