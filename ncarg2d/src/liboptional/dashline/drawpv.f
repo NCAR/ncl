@@ -1,5 +1,5 @@
 C
-C	$Id: drawpv.f,v 1.3 2000-08-22 15:10:17 haley Exp $
+C	$Id: drawpv.f,v 1.4 2006-03-16 17:32:33 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -49,7 +49,7 @@ C
 C
 C CHECK IF PEN IS ALREADY CLOSE ENOUGH TO THE WANTED POSITION.
 C
-      IF ((IABS(IXSTOR-IX)+IABS(IYSTOR-IY)) .LE. ICLOSE) GO TO 110
+      IF ((ABS(IXSTOR-IX)+ABS(IYSTOR-IY)) .LE. ICLOSE) GO TO 110
 C
       IXSTOR = IX
       IYSTOR = IY

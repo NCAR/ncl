@@ -1,5 +1,5 @@
 C
-C	$Id: cfvld.f,v 1.3 2000-08-22 15:10:16 haley Exp $
+C	$Id: cfvld.f,v 1.4 2006-03-16 17:32:33 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -74,9 +74,9 @@ C
       X2 = X
       Y2 = Y
       M = 1
-      MX = IABS(IP(1))
+      MX = ABS(IP(1))
       BTI = MX
-      IB = ISIGN(1,IP(1))
+      IB = SIGN(1,IP(1))
       GO TO 300
 C
 C MAIN LOOP START
@@ -125,9 +125,9 @@ C
 C GET THE NEXT PATTERN ELEMENT
 C
   130    M = MOD(M,L)+1
-         MX = IABS(IP(M))
+         MX = ABS(IP(M))
          BTI = MX
-         IB = ISIGN(1,IP(M))
+         IB = SIGN(1,IP(M))
          GO TO 70
   190    X2 = X1
          Y2 = Y1
