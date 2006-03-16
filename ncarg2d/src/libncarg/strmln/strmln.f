@@ -1,5 +1,5 @@
 C
-C       $Id: strmln.f,v 1.19 2001-06-13 23:10:44 dbrown Exp $
+C       $Id: strmln.f,v 1.20 2006-03-16 22:44:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -343,10 +343,10 @@ C
          ILL = 1
          IF (NSET .LT. 0) THEN
 C     
-            X3 = FLOAT(IS)
-            X4 = FLOAT(IEND)
-            Y3 = FLOAT(JS)
-            Y4 = FLOAT(JEND)
+            X3 = REAL(IS)
+            X4 = REAL(IEND)
+            Y3 = REAL(JS)
+            Y4 = REAL(JEND)
             CALL SET(X1,X2,Y1,Y2,X3,X4,Y3,Y4,ILL)
 C     
          ELSE IF (NSET .EQ. 0) THEN
@@ -355,11 +355,11 @@ C
             X2 = XLT+SIDE
             Y1 = YBT
             Y2 = YBT+SIDE
-            X3 = FLOAT(IS)
-            X4 = FLOAT(IEND)
-            Y3 = FLOAT(JS)
-            Y4 = FLOAT(JEND)
-            IF (AMIN1(X4,Y4)/AMAX1(X4,Y4).GE.EXT) THEN
+            X3 = REAL(IS)
+            X4 = REAL(IEND)
+            Y3 = REAL(JS)
+            Y4 = REAL(JEND)
+            IF (MIN(X4,Y4)/MAX(X4,Y4).GE.EXT) THEN
                IF (X4.GT.Y4)  THEN
                   Y2=SIDE*(Y4/X4)+YBT
                ELSE IF (Y4.GT.X4) THEN
@@ -407,11 +407,11 @@ C These parameters are roughly mapped to the new method of
 C using viewport fraction rather than grid fraction.
 C
          CALL STSETR('ARL - Arrow length, viewport fraction', 
-     +        AROWL/FLOAT(M))
+     +        AROWL/REAL(M))
          CALL STSETR('SSP - Streamline spacing, VP fraction', 
-     +        CSTOP/FLOAT(M))
+     +        CSTOP/REAL(M))
          CALL STSETR('DFM - Differential magnitude, VP fraction', 
-     +        DISPL/FLOAT(M))
+     +        DISPL/REAL(M))
          CALL STSETR('CDS - Critical displacement multiplier', 
      +        DISPC/DISPL)
 C

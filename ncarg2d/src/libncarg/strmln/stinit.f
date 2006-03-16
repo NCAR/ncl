@@ -1,5 +1,5 @@
 C
-C       $Id: stinit.f,v 1.12 2003-03-03 17:16:18 dbrown Exp $
+C       $Id: stinit.f,v 1.13 2006-03-16 22:44:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -283,8 +283,8 @@ C These are for convenience.
 C
       FW2W = XVPR - XVPL
       FH2H = YVPT - YVPB
-      TX=(XVPR-XVPL)/FLOAT(NXCT)
-      TY=(YVPT-YVPB)/FLOAT(NYCT)
+      TX=(XVPR-XVPL)/REAL(NXCT)
+      TY=(YVPT-YVPB)/REAL(NYCT)
       RDMX=SQRT((TX*TX+TY*TY))
       RDMN = 0.0
 C

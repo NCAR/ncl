@@ -1,5 +1,5 @@
 C
-C       $Id: drwstr.f,v 1.4 2000-08-22 15:06:40 haley Exp $
+C       $Id: drwstr.f,v 1.5 2006-03-16 22:44:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -171,8 +171,8 @@ C
       ITER = 0
       IF (KFLAG.NE.0) ICHKB = ICHK+1
       IF (ICHKB.GT.NUMCHK) ICHKB = 1
-      X = FLOAT(I)+0.5
-      Y = FLOAT(J)+0.5
+      X = REAL(I)+0.5
+      Y = REAL(J)+0.5
       XBASE = X
       YBASE = Y
       CALL FL2INT (FX(X,Y),FY(X,Y),IFX,IFY)
@@ -191,7 +191,7 @@ C
 C PLOT LOOP
 C .   CHECK TO SEE IF THE STREAMLINE HAS ENTERED A NEW GRID BOX
 C
-      IF (I.NE.IFIX(X) .OR. J.NE.IFIX(Y)) GO TO 120
+      IF (I.NE.INT(X) .OR. J.NE.INT(Y)) GO TO 120
 C
 C MUST BE IN SAME BOX CALCULATE THE DISPLACEMENT COMPONENTS
 C
@@ -233,14 +233,14 @@ C
 C
 C CHECK (1)
 C
-      IF (IFIX(X).LT.IS .OR. IFIX(X).GT.IEND1) GO TO  50
-      IF (IFIX(Y).LT.JS .OR. IFIX(Y).GT.JEND1) GO TO  50
+      IF (INT(X).LT.IS .OR. INT(X).GT.IEND1) GO TO  50
+      IF (INT(Y).LT.JS .OR. INT(Y).GT.JEND1) GO TO  50
 C
 C CHECK (2)
 C
       IF ( IMSG.EQ.0) GO TO 125
-      II = IFIX(X)
-      JJ = IFIX(Y)
+      II = INT(X)
+      JJ = INT(Y)
       IF (U(II,JJ).EQ.UVMSG .OR. U(II,JJ+1).EQ.UVMSG .OR.
      1    U(II+1,JJ).EQ.UVMSG .OR. U(II+1,JJ+1).EQ.UVMSG) GO TO 50
   125 CONTINUE
@@ -263,13 +263,13 @@ C
       IF (ICHKB.GE.ICHK .AND. (LOC.GE.ICHKB .OR. LOC.LE.ICHK)) LFLAG = 2
       IF (LFLAG.EQ.1) GO TO  50
   140 CONTINUE
-      LCHK = MIN0(LCHK+1,NUMCHK)
+      LCHK = MIN(LCHK+1,NUMCHK)
       ICHK = ICHK+1
       IF (ICHK.GT.NUMCHK) ICHK = 1
       XCHK(ICHK) = X
       YCHK(ICHK) = Y
-      I = IFIX(X)
-      J = IFIX(Y)
+      I = INT(X)
+      J = INT(Y)
       CALL SBYTES( UX(I,J) , IONE , ISKIP1 , 1 , 0 , 1 )
       IF (NBOX.LT.5) GO TO 150
       ICHKB = ICHKB+1

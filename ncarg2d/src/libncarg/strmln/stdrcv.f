@@ -1,5 +1,5 @@
 C
-C       $Id: stdrcv.f,v 1.2 2002-01-14 22:32:58 dbrown Exp $
+C       $Id: stdrcv.f,v 1.3 2006-03-16 22:44:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -470,8 +470,8 @@ C
 C      NBX = 0
 C      IF (IDR.NE.0) LBC = LCK+1
 C      IF (LBC.GT.IPLSTL) LBC = 1
-      X = FLOAT(I)
-      Y = FLOAT(J)
+      X = REAL(I)
+      Y = REAL(J)
       T = SQRT(U(I,J)*U(I,J) + V(I,J)*V(I,J))
 C      if (t .eq. uvmx) then
 C         write(*,*) i,j,uvmx
@@ -527,7 +527,7 @@ C
 C
 C Check to see if the streamline has entered a new grid box.
 C
-      IF (I.EQ.IFIX(X) .AND. J.EQ.IFIX(Y)) THEN
+      IF (I.EQ.INT(X) .AND. J.EQ.INT(Y)) THEN
 C
 C Must be in same box --  Clear the point buffer if required
 C
@@ -698,8 +698,8 @@ C
 C     If on the top or right edge of the grid space, decrease the X and/or
 C     Y value by a small amount so the interpolation routine still works.
 C     
-         IF (IFIX(X).GE.IXDM) X=FLOAT(IXDM)-PSMALL
-         IF (IFIX(Y).GE.IYDN) Y=FLOAT(IYDN)-PSMALL
+         IF (INT(X).GE.IXDM) X=REAL(IXDM)-PSMALL
+         IF (INT(Y).GE.IYDN) Y=REAL(IYDN)-PSMALL
 C
 C Check streamline progress every 'ICKP' iterations.
 C
@@ -723,8 +723,8 @@ C Must have entered a new grid box  check for the following :
 C (1) Check for missing data if msg data flag (ISVF) has been set.
 C     cancel the line if nothing has been drawn.
 C
-         I = IFIX(X)
-         J = IFIX(Y)
+         I = INT(X)
+         J = INT(Y)
 C
 C Check (1)
 C

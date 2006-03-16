@@ -1,5 +1,5 @@
 C
-C       $Id: stdrcm.f,v 1.1 2001-06-13 23:10:42 dbrown Exp $
+C       $Id: stdrcm.f,v 1.2 2006-03-16 22:44:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -382,8 +382,8 @@ C
       NBX = 0
       IF (IDR.NE.0) LBC = LCK+1
       IF (LBC.GT.IPLSTL) LBC = 1
-      X = FLOAT(I)+0.5
-      Y = FLOAT(J)+0.5
+      X = REAL(I)+0.5
+      Y = REAL(J)+0.5
       CALL  STDUDV(UX,VY,I,J,X,Y,DU,DV)
       XDA=XLOV+(X-1.0)*XGDS
       YDA=YLOV+(Y-1.0)*YGDS
@@ -433,7 +433,7 @@ C
 C
 C Check to see if the streamline has entered a new grid box.
 C
-      IF (I.EQ.IFIX(X) .AND. J.EQ.IFIX(Y)) THEN
+      IF (I.EQ.INT(X) .AND. J.EQ.INT(Y)) THEN
 C
 C Must be in same box --  Clear the point buffer if required
 C
@@ -494,8 +494,8 @@ C (2) Check for missing data if msg data flag (ISVF) has been set.
 C (3) Is this box eligible for a directional arrow?
 C (4) Location of this entry versus other streamline entries
 C
-         I = IFIX(X)
-         J = IFIX(Y)
+         I = INT(X)
+         J = INT(Y)
          NBX = NBX+1
 C
 C Check (1) (Only performed in compatibility mode)
@@ -541,7 +541,7 @@ C
          END IF
  140  CONTINUE
 C
-      LCU = MIN0(LCU+1,IPLSTL)
+      LCU = MIN(LCU+1,IPLSTL)
       LCK = LCK+1
       IF (LCK.GT.IPLSTL) LCK = 1
       XLS(LCK) = XND

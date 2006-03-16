@@ -1,5 +1,5 @@
 C
-C       $Id: stutil.f,v 1.2 2002-01-14 22:32:58 dbrown Exp $
+C       $Id: stutil.f,v 1.3 2006-03-16 22:44:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -193,7 +193,7 @@ C
 C K serves as a sign determining factor; KK indexes the point array.
 C
          KK=K+2
-         D30 = -(P1D2PI-TA)+FLOAT(K)*PHFANG
+         D30 = -(P1D2PI-TA)+REAL(K)*PHFANG
          XX = +SIZ*FLW*SIN(D30)+XND
          YY = -SIZ*FLW*COS(D30)+YND
          AX(KK) = CFUX(XX)

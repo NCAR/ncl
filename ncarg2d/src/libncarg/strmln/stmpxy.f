@@ -1,5 +1,5 @@
 C
-C       $Id: stmpxy.f,v 1.11 2000-08-22 15:06:43 haley Exp $
+C       $Id: stmpxy.f,v 1.12 2006-03-16 22:44:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -355,7 +355,7 @@ C
 C X is longitude, Y is latitude
 C If Y is 90 degrees, can't compute a direction
 C
-         IF (IFIX(ABS(YDA)*PRCFAC+0.5) .GE. IFIX(PCSTST)) THEN
+         IF (INT(ABS(YDA)*PRCFAC+0.5) .GE. INT(PCSTST)) THEN
             IST=-1
             RETURN
          END IF
