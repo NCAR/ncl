@@ -135,7 +135,7 @@ C
 C Check if the area is over the map
 C
       IF ((IAREA(1) .GE. 0) .AND. (IAREA(2) .GE. 0)) THEN
-         ITMP=MAX0(IAREA(1),IAREA(2))
+         ITMP=MAX(IAREA(1),IAREA(2))
          CALL GSFACI(MAPACI(ITMP)+1)
          CALL GFA(NWRK,XWRK,YWRK)
       ENDIF
