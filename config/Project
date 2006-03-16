@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.69 2006-01-27 03:45:35 haley Exp $
+ *      $Id: Project,v 1.70 2006-03-16 03:21:48 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2006-01-27 03:45:35 $
+ *	$Date: 2006-03-16 03:21:48 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -293,8 +293,9 @@ NGENV_DESCRIPT	= \
 		"fontcaps",NULL,"ncarg",NULL,NULL,		\
 		"graphcaps",NULL,"ncarg",NULL,NULL,		\
 		"colormaps",NULL,"ncarg",NULL,NULL,		\
-		"rangs","NCARG_RANGS","database",NULL,NULL,		\
-		"udunits","UDUNITS_PATH","ncarg",NULL,NULL,		\
+		"rangs","NCARG_RANGS","database",NULL,NULL,	\
+		"udunits","UDUNITS_PATH","ncarg",NULL,NULL,	\
+		"psadilookup","PSADILOOKUP_PATH",NULL,NULL,NULL,\
 		"examples",NULL,"ncarg",NULL,NULL,		\
 		"hluex",NULL,"ncarg",NULL,NULL,			\
 		"nclex",NULL,"ncarg",NULL,NULL,			\
