@@ -7,8 +7,16 @@ extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk,
                                              double *ter, double *sfp, 
                                              double *cape, double *cin, 
                                              int *miy, int *mjx, int *mkzh, 
-                                             int *i3dflag, int *ter_follow);
+                                             int *i3dflag, int *ter_follow,
+                                             char *,int);
 
+
+/*
+ * Function for calculating cape (from the RIP code). This function
+ * depends on the "psadilookup.dat" file, which by default will be
+ * searched for in $NCARG_ROOT/lib/ncarg/data/asc/), unless
+ * NCARG_PSADILOOKUP is set to the location of this file.
+ */
 
 NhlErrorTypes rip_cape_W( void )
 {
@@ -32,10 +40,39 @@ NhlErrorTypes rip_cape_W( void )
   NclBasicDataTypes type_cape;
   int ndims_cape, *dsizes_cape;
 /*
+ * File input variables.
+ */
+  const char *path = NULL;
+  char psa_file[_NhlMAXFNAMELEN];
+
+/*
  * Declare various variables for random purposes.
  */
   int i, miy, mjx, mkzh, size_leftmost, size_cape, size_output, size_zsfc;
-  int index_cape, index_zsfc, index_cin;
+  int scalar_zsfc, index_cape, index_zsfc, index_cin;
+
+/*
+ * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
+ * for the input data file, unless PSADILOOKUP_PATH is set by the
+ * user, then it will try to use this path. 
+ */
+  path = getenv("PSADILOOKUP_PATH");
+  if ((void *)path == (void *)NULL) {
+    path = _NGGetNCARGEnv("data");
+    if ((void *)path != (void *)NULL) {
+      strcpy(psa_file,path);
+      strcat(psa_file,_NhlPATHDELIMITER);
+      strcat(psa_file,"asc");
+      strcat(psa_file,_NhlPATHDELIMITER);
+      strcat(psa_file,"psadilookup.dat");
+    }
+  }
+  else {
+    strcpy(psa_file,path);
+    strcat(psa_file,_NhlPATHDELIMITER);
+    strcat(psa_file,"psadilookup.dat");
+  }
+
 /*
  * Retrieve parameters
  *
@@ -125,15 +162,29 @@ NhlErrorTypes rip_cape_W( void )
           2);
   
 /*
- * Check the input dimension sizes.
+ * Check the input dimension sizes. There are three possible cases
+ * for the input dimension sizes:
+ *
+ *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
+ *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
+ *  - p,t,q,z (lev) and psfc,zsfc (scalars)
  */
   if(ndims_p != ndims_t || ndims_p != ndims_q || ndims_p != ndims_z) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: The p, t, q, and z arrays must all have the same number of dimensions");
     return(NhlFATAL);
   }
+  if(ndims_p != 1 && ndims_p != 3 && ndims_p != 4) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: The p, t, q, and z arrays must be 1-, 3-, or 4-dimensional\n");
+    return(NhlFATAL);
+  }
+/*
+ * zsfc and psfc can be scalars, if the other inputa arrays are 1D.
+ */
+  scalar_zsfc = is_scalar(ndims_zsfc,dsizes_zsfc);
 
-  if(ndims_zsfc != ndims_p-1 || ndims_zsfc != ndims_psfc) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: The zsfc and psfc arrays must have the same number of dimensions, and one less dimension than the other input arrays");
+  if((ndims_zsfc != ndims_psfc) || (scalar_zsfc && ndims_p != 1) || 
+     (!scalar_zsfc && ndims_zsfc != ndims_p-1)) { 
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: The zsfc and psfc arrays must have the same number of dimensions, and either be scalars or one less dimension than the other input arrays");
     return(NhlFATAL);
   }
 
@@ -153,21 +204,43 @@ NhlErrorTypes rip_cape_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: psfc and zsfc must be the same dimensionality");
       return(NhlFATAL);
     }
-    if(dsizes_psfc[i] != dsizes_p[i+1]) { 
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: The dimensions of psfc and zsfc must be equal to all but the lefmost dimension of the other input arrays");
+  }
+  if(ndims_p == 4) {
+    if(dsizes_p[0] != dsizes_psfc[0] || dsizes_p[2] != dsizes_psfc[1] |\
+       dsizes_p[3] != dsizes_psfc[2]) { 
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
       return(NhlFATAL);
     }
   }
-
+  if(ndims_p == 3) {
+    if(dsizes_p[1] != dsizes_psfc[0] || dsizes_p[2] != dsizes_psfc[1] ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
+      return(NhlFATAL);
+    }
+  }
 /*
  * Get sizes of input arrays.
  */
-  mkzh = dsizes_p[ndims_p-3];
-  mjx  = dsizes_p[ndims_p-2];
-  miy  = dsizes_p[ndims_p-1];
-
+  if(ndims_p == 4) {
+    size_leftmost = dsizes_p[0];  /* time */
+    mkzh = dsizes_p[1];           /* lev */
+    mjx  = dsizes_p[2];           /* nlat */
+    miy  = dsizes_p[3];           /* nlon */
+  }
+  else if(ndims_p == 3) {
+    size_leftmost = 1;
+    mkzh = dsizes_p[0];           /* lev */
+    mjx  = dsizes_p[1];           /* nlat */
+    miy  = dsizes_p[2];           /* nlon */
+  }
+  else if(ndims_p == 1) {
+    size_leftmost = 1;
+    mkzh = dsizes_p[0];           /* lev */
+    mjx  = 1;                     /* nlat */
+    miy  = 1;                     /* nlon */
+  }
 /*
- * Calculate size of leftmost dimensions, and cape array.
+ * Calculate size of arrays.
  */
   ndims_cape = ndims_p+1;
   dsizes_cape = (int *)calloc(ndims_cape,sizeof(int));
@@ -176,16 +249,10 @@ NhlErrorTypes rip_cape_W( void )
     return(NhlFATAL);
   }
 
-  size_leftmost  = 1;
   dsizes_cape[0] = 2;
-  for(i = 0; i < ndims_p-3; i++ ) {
-    size_leftmost *= dsizes_p[i];
+  for(i = 0; i < ndims_p; i++ ) {
     dsizes_cape[i+1] = dsizes_p[i];
   }
-  dsizes_cape[ndims_p-2] = mkzh;
-  dsizes_cape[ndims_p-1] = mjx;
-  dsizes_cape[ndims_p]   = miy;
-
   size_zsfc   = mjx * miy;
   size_cape   = mkzh * size_zsfc;
   size_output = 2 * size_cape * size_leftmost;
@@ -347,8 +414,9 @@ NhlErrorTypes rip_cape_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-				     tmp_psfc, tmp_cape, tmp_cin, &miy,
-				     &mjx, &mkzh, i3dflag, ter_follow);
+                                     tmp_psfc, tmp_cape, tmp_cin, &miy,
+                                     &mjx, &mkzh, i3dflag, ter_follow,
+                                     psa_file,strlen(psa_file));
 /*
  * If the output is to be float, then do the coercion here.
  */

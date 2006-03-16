@@ -961,7 +961,8 @@ NhlErrorTypes tditri_W( void )
     return(NhlFATAL);
   }
 
-  c_tditri(u, nu, v, nv, w, nw, f, nu, nv, *fiso, rtri, mtri, ntri, *irst);
+  c_tditri(u, nu, v, nv, w, nw, f, dsizes_f[2], dsizes_f[1], *fiso, 
+	   rtri, mtri, ntri, *irst);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tditri: triangle list overflow");
