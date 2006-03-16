@@ -29,7 +29,7 @@ c !INTERFACE:
 c ------------------------------------------------------------------
 C NCLFORTSTART
       SUBROUTINE DCAPECALC3D(PRS,TMK,QVP,GHT,TER,SFP,CAPE,CIN,MIY,MJX,
-     +                       MKZH,I3DFLAG,TER_FOLLOW)
+     +                       MKZH,I3DFLAG,TER_FOLLOW,PSAFILE)
 c
       IMPLICIT NONE
       INTEGER MIY,MJX,MKZH,I3DFLAG,TER_FOLLOW
@@ -41,6 +41,7 @@ c
       DOUBLE PRECISION SFP(MIY,MJX)
       DOUBLE PRECISION CAPE(MIY,MJX,MKZH)
       DOUBLE PRECISION CIN(MIY,MJX,MKZH)
+      CHARACTER*(*) PSAFILE
 c
 C NCLEND
 c Local variables
@@ -101,7 +102,7 @@ c
 c  Before looping, set lookup table for getting temperature on
 c  a pseudoadiabat.
 c
-      CALL DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK)
+      CALL DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK,PSAFILE)
 c
 C   do j=1,mjx-1
       DO J = 1,MJX
@@ -447,17 +448,18 @@ c
       END
 c                                                                     c
 c*********************************************************************c
-      SUBROUTINE DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK)
+      SUBROUTINE DLOOKUP_TABLE(PSADITHTE,PSADIPRS,PSADITMK,FNAME)
       DOUBLE PRECISION PSADITHTE
       DOUBLE PRECISION PSADIPRS
       DOUBLE PRECISION PSADITMK
 c   Set up lookup table for getting temperature on a pseudoadiabat.
 c   (Borrow the unit number for the stationlist, just for the moment.)
 c
-      CHARACTER*15 FNAME
+C      CHARACTER*15 FNAME
+      CHARACTER*(*) FNAME
       DIMENSION PSADITHTE(150),PSADIPRS(150),PSADITMK(150,150)
 
-      FNAME = 'psadilookup.dat'
+C      FNAME = 'psadilookup.dat'
       IUSTNLIST = 33
       OPEN (UNIT=IUSTNLIST,FILE=FNAME,FORM='formatted',STATUS='old')
       DO I = 1,14
