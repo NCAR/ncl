@@ -73,12 +73,12 @@ C Specify horizontal and vertical vector components U and V on
 C the rectangular grid. And set up a special value area near the
 C center.
 C
-      TPIMX = 2.*3.14/FLOAT(M)
-      TPJMX = 2.*3.14/FLOAT(N)
+      TPIMX = 2.*3.14/REAL(M)
+      TPJMX = 2.*3.14/REAL(N)
       DO  20 J=1,N
          DO  10 I=1,M
-            U(I,J) = SIN(TPIMX*(FLOAT(I)-1.))
-            V(I,J) = SIN(TPJMX*(FLOAT(J)-1.))
+            U(I,J) = SIN(TPIMX*(REAL(I)-1.))
+            V(I,J) = SIN(TPJMX*(REAL(J)-1.))
   10     CONTINUE
   20  CONTINUE
 

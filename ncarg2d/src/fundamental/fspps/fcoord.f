@@ -41,9 +41,9 @@ C system.  It lies in a rectangular region bounded by the lines
 C "X=100", "X=1000", "Y=100", and "Y=1000".
 C
       DO 101 I=1,476
-         THETA=.031415926535898*FLOAT(I-1)
-         X(I)=500.+.9*FLOAT(I-1)*COS(THETA)
-         Y(I)=500.+.9*FLOAT(I-1)*SIN(THETA)
+         THETA=.031415926535898*REAL(I-1)
+         X(I)=500.+.9*REAL(I-1)*COS(THETA)
+         Y(I)=500.+.9*REAL(I-1)*SIN(THETA)
  101  CONTINUE
 C
 C Loop through the possible values of 'LS'.
