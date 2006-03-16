@@ -1,5 +1,5 @@
 C
-C	$Id: minmax.f,v 1.3 2000-08-22 15:10:14 haley Exp $
+C	$Id: minmax.f,v 1.4 2006-03-16 17:26:48 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -53,8 +53,8 @@ C
 C
       IF (AASH .LT. 0.0) GO TO 128
 C
-      MN = MIN0(15,MAX0(2,IFIX(FLOAT(M)/8.)))
-      NM = MIN0(15,MAX0(2,IFIX(FLOAT(N)/8.)))
+      MN = MIN(15,MAX(2,INT(REAL(M)/8.)))
+      NM = MIN(15,MAX(2,INT(REAL(N)/8.)))
       NM1 = N-1
       MM1 = M-1
 C
@@ -87,14 +87,14 @@ C
 C FUNCTION DECREASED - TEST FOR MAXIMUM ON LINE
 C
   104    IF (IM .GE. MN) GO TO 106
-         IS = MAX0(1,IP-MN)
+         IS = MAX(1,IP-MN)
          IT = IP-IM-1
          IF (IS .GT. IT) GO TO 106
          DO 105 II=IS,IT
             IF (AA .LE. Z(II,JP)) GO TO 112
   105    CONTINUE
   106    IS = IP+2
-         IT = MIN0(M,IP+MN)
+         IT = MIN(M,IP+MN)
          IF (IS .GT. IT) GO TO 109
          DO 108 II=IS,IT
             IF (IOFFP.EQ.0 .OR. Z(II,JP).NE.SPVAL) GO TO 107
@@ -105,10 +105,10 @@ C
 C
 C WE HAVE MAXIMUM ON LINE - DO TWO-DIMENSIONAL TEST FOR MAXIMUM OF FIELD
 C
-  109    JS = MAX0(1,JP-NM)
-         JT = MIN0(N,JP+NM)
-         IS = MAX0(1,IP-MN)
-         IT = MIN0(M,IP+MN)
+  109    JS = MAX(1,JP-NM)
+         JT = MIN(N,JP+NM)
+         IS = MAX(1,IP-MN)
+         IT = MIN(M,IP+MN)
          DO 111 JK=JS,JT
             IF (JK .EQ. JP) GO TO 111
             DO 110 IK=IS,IT
@@ -117,8 +117,8 @@ C
   110       CONTINUE
   111    CONTINUE
          IF (MOD(IHILO,2).EQ.0) GO TO 112
-         X = FLOAT(IP)
-         Y = FLOAT(JP)
+         X = REAL(IP)
+         Y = REAL(JP)
          CALL PWRTM (FX(X,Y),FY(X,Y),'H',ISIZEM,0,0)
          CALL FL2INT (FX(X,Y),FY(X,Y),IFX,IFY)
 C
@@ -149,14 +149,14 @@ C
 C FUNCTION INCREASED - TEST FOR MINIMUM ON LINE
 C
   116    IF (IM .GE. MN) GO TO 118
-         IS = MAX0(1,IP-MN)
+         IS = MAX(1,IP-MN)
          IT = IP-IM-1
          IF (IS .GT. IT) GO TO 118
          DO 117 II=IS,IT
             IF (AA .GE. Z(II,JP)) GO TO 124
   117    CONTINUE
   118    IS = IP+2
-         IT = MIN0(M,IP+MN)
+         IT = MIN(M,IP+MN)
          IF (IS .GT. IT) GO TO 121
          DO 120 II=IS,IT
             IF (IOFFP.EQ.0 .OR. Z(II,JP).NE.SPVAL) GO TO 119
@@ -167,10 +167,10 @@ C
 C
 C WE HAVE MINIMUM ON LINE - DO TWO-DIMENSIONAL TEST FOR MINIMUM OF FIELD
 C
-  121    JS = MAX0(1,JP-NM)
-         JT = MIN0(N,JP+NM)
-         IS = MAX0(1,IP-MN)
-         IT = MIN0(M,IP+MN)
+  121    JS = MAX(1,JP-NM)
+         JT = MIN(N,JP+NM)
+         IS = MAX(1,IP-MN)
+         IT = MIN(M,IP+MN)
          DO 123 JK=JS,JT
             IF (JK .EQ. JP) GO TO 123
             DO 122 IK=IS,IT
@@ -179,8 +179,8 @@ C
   122       CONTINUE
   123    CONTINUE
          IF (IHILO.LT.2) GO TO 124
-         X = FLOAT(IP)
-         Y = FLOAT(JP)
+         X = REAL(IP)
+         Y = REAL(JP)
          CALL PWRTM (FX(X,Y),FY(X,Y),'L',ISIZEM,0,0)
          CALL FL2INT (FX(X,Y),FY(X,Y),IFX,IFY)
          IFY = IFY*SCLY

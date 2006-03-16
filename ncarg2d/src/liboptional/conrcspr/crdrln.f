@@ -1,5 +1,5 @@
 C
-C       $Id: crdrln.f,v 1.5 2004-06-29 17:34:02 kennison Exp $
+C       $Id: crdrln.f,v 1.6 2006-03-16 17:26:48 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,8 +27,8 @@ C
 C THIS ROUTINE TRACES A CONTOUR LINE WHEN GIVEN THE BEGINNING BY STLINE.
 C TRANSFORMATIONS CAN BE ADDED BY DELETING THE STATEMENT FUNCTIONS FOR
 C FX AND FY IN CRDRLN AND MINMAX AND ADDING EXTERNAL FUNCTIONS.
-C X=1. AT Z(1,J), X=FLOAT(M) AT Z(M,J). X TAKES ON NON-INTEGER VALUES.
-C Y=1. AT Z(I,1), Y=FLOAT(N) AT Z(I,N). Y TAKES ON NON-INTEGER VALUES.
+C X=1. AT Z(1,J), X=REAL(M) AT Z(M,J). X TAKES ON NON-INTEGER VALUES.
+C Y=1. AT Z(I,1), Y=REAL(N) AT Z(I,N). Y TAKES ON NON-INTEGER VALUES.
 C
       COMMON /CONRE2/ IX         ,IY         ,IDX        ,IDY        ,
      1                IS         ,ISS        ,NP         ,CV         ,
@@ -60,11 +60,11 @@ C
   103 IF (IDX .EQ. 0) GO TO 104
       Y = IY
       ISUB = IX+IDX
-      X = CFCN(Z(IX,IY),Z(ISUB,IY))*FLOAT(IDX)+FLOAT(IX)
+      X = CFCN(Z(IX,IY),Z(ISUB,IY))*REAL(IDX)+REAL(IX)
       GO TO 105
   104 X = IX
       ISUB = IY+IDY
-      Y = CFCN(Z(IX,IY),Z(IX,ISUB))*FLOAT(IDY)+FLOAT(IY)
+      Y = CFCN(Z(IX,IY),Z(IX,ISUB))*REAL(IDY)+REAL(IY)
   105 CALL FRSTD (FX(X,Y),FY(X,Y))
   106 IS = IS+1
       IF (IS .GT. 8) IS = IS-8
@@ -95,11 +95,11 @@ C
   112 IF (IDX .EQ. 0) GO TO 113
       Y = IY
       ISUB = IX+IDX
-      X = CFCN(Z(IX,IY),Z(ISUB,IY))*FLOAT(IDX)+FLOAT(IX)
+      X = CFCN(Z(IX,IY),Z(ISUB,IY))*REAL(IDX)+REAL(IX)
       GO TO 114
   113 X = IX
       ISUB = IY+IDY
-      Y = CFCN(Z(IX,IY),Z(IX,ISUB))*FLOAT(IDY)+FLOAT(IY)
+      Y = CFCN(Z(IX,IY),Z(IX,ISUB))*REAL(IDY)+REAL(IY)
   114 GO TO (115,116) , JUMP
   115 IF (.NOT.IPEN) GO TO 117
       IF (IPENO) GO TO 1151

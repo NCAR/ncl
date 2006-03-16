@@ -1,5 +1,5 @@
 C
-C	$Id: reord.f,v 1.3 2000-08-22 15:10:14 haley Exp $
+C	$Id: reord.f,v 1.4 2006-03-16 17:26:48 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -51,7 +51,7 @@ C
          Q = Q/10.
          DO 102 I=1,NL
             ISAVE = I
-            IF (AMOD(ABS(CL(I)+1.E-9*CL(I))/Q,FLOAT(NMLP1)) .LE. .0001)
+            IF (MOD(ABS(CL(I)+1.E-9*CL(I))/Q,REAL(NMLP1)) .LE. .0001)
      1          GO TO 104
   102    CONTINUE
   103 CONTINUE
