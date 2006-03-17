@@ -64,8 +64,8 @@ C
       CALL AGSETI('DASH/LENGTH.',16)
       CALL DISPLA(2,0,1)
       DO 160 J=1,3
-      YT = 0.3*FLOAT(J)
-      YB = 0.3*FLOAT(J-1)+.05
+      YT = 0.3*REAL(J)
+      YB = 0.3*REAL(J-1)+.05
       CALL SET(.1,.9,YB,YT,0.,1.,0.,1.,1)
       CALL ANOTAT(ZERO,ZERO,3,2,1,LDASH)
       CALL EZY(A(1,3*J),60,' $')
@@ -187,10 +187,10 @@ C
       II=3.+DI*RANDNO()
       JJ=3.+DJ*RANDNO()
       DO 4 J=1,JD
-      JE=IABS(J-JJ)
+      JE=ABS(J-JJ)
       DO 3 I=1,ID
-      IE=IABS(I-II)
-      EE=MAX0(IE,JE)
+      IE=ABS(I-II)
+      EE=MAX(IE,JE)
       A(I,J)=A(I,J)+AA*(.8**EE)
     3 CONTINUE
     4 CONTINUE
@@ -201,11 +201,11 @@ C
       GO TO 2
 C
     6 DO 8 J=1,JD
-      JM1=MAX0(1,J-1)
-      JP1=MIN0(JD,J+1)
+      JM1=MAX(1,J-1)
+      JP1=MIN(JD,J+1)
       DO 7 I=1,ID
-      IM1=MAX0(1,I-1)
-      IP1=MIN0(ID,I+1)
+      IM1=MAX(1,I-1)
+      IP1=MIN(ID,I+1)
       B(I,J)=(4.*A(I,J)+2.*(A(I,JM1)+A(IM1,J)+A(IP1,J)+A(I,JP1))
      1                 +A(IM1,JM1)+A(IP1,JM1)+A(IM1,JP1)+A(IP1,JP1))/16.
     7 CONTINUE
@@ -322,14 +322,14 @@ C
 C     Polar coordinate transformation.
 C
 20    CONTINUE
-      FX=(D1+D2*(X-1.)/(FLOAT(MA)-1.))*COS(A1+A2*(Y-1.)/(FLOAT(NA)-1.))
+      FX=(D1+D2*(X-1.)/(REAL(MA)-1.))*COS(A1+A2*(Y-1.)/(REAL(NA)-1.))
       RETURN
 C
 C     EZMAP overlaying.
 C
 30    CONTINUE
-      XLON = ALNMN + (X-1.)*(ALNMX-ALNMN)/(FLOAT(MA)-1.)
-      YLAT = ALTMN + (Y-1.)*(ALTMX-ALTMN)/(FLOAT(NA)-1.)
+      XLON = ALNMN + (X-1.)*(ALNMX-ALNMN)/(REAL(MA)-1.)
+      YLAT = ALTMN + (Y-1.)*(ALTMX-ALTMN)/(REAL(NA)-1.)
       CALL MAPTRN (YLAT, XLON, FXLON, YDUM)
       FX = FXLON
       RETURN
@@ -353,14 +353,14 @@ C
 C     Polar coordinate transformation.
 C
 20    CONTINUE
-      FY=(D1+D2*(X-1.)/(FLOAT(MA)-1.))*SIN(A1+A2*(Y-1.)/(FLOAT(NA)-1.))
+      FY=(D1+D2*(X-1.)/(REAL(MA)-1.))*SIN(A1+A2*(Y-1.)/(REAL(NA)-1.))
       RETURN
 C
 C     EZMAP overlaying.
 C
 30    CONTINUE
-      XLON = ALNMN + (X-1.)*(ALNMX-ALNMN)/(FLOAT(MA)-1.)
-      YLAT = ALTMN + (Y-1.)*(ALTMX-ALTMN)/(FLOAT(NA)-1.)
+      XLON = ALNMN + (X-1.)*(ALNMX-ALNMN)/(REAL(MA)-1.)
+      YLAT = ALTMN + (Y-1.)*(ALTMX-ALTMN)/(REAL(NA)-1.)
       CALL MAPTRN(YLAT,XLON,XDUM,FYLAT)
       FY = FYLAT
       RETURN
