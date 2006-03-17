@@ -28,8 +28,8 @@ C to delimit the months; the major ticks, though shortened to
 C invisibility, still determine where the labels go.
 C
       DO 101 I=1,1201
-        XDRA(I)=FLOAT(I-51)
-        YDRA(I)=COSH(FLOAT(I-601)/202.)
+        XDRA(I)=REAL(I-51)
+        YDRA(I)=COSH(REAL(I-601)/202.)
   101 CONTINUE
 C
 C Change the labels on the bottom and left axes.
@@ -116,14 +116,14 @@ C
 C Modify the numeric labels on the left axis.
 C
       IF (IAXS.EQ.1) THEN
-        CALL AGCORN (IFIX(VILS),CHRM,NCIM)
+        CALL AGCORN (INT(VILS),CHRM,NCIM)
         IPXM=0
         NCIE=0
 C
 C Modify the numeric labels on the bottom axis.
 C
       ELSE IF (IAXS.EQ.3) THEN
-        IMON=IFIX(VILS+.5)/100+1
+        IMON=INT(VILS+.5)/100+1
         CHRM(1:3)=MONS(IMON)
         NCIM=3
         IPXM=0
@@ -153,7 +153,7 @@ C
 C
 C Treat numbers outside the range (-4000,+4000) as infinites.
 C
-      IF (IABS(NTGR).GE.4000) THEN
+      IF (ABS(NTGR).GE.4000) THEN
         IF (NTGR.GT.0) THEN
           NCRN=5
           BCRN(1:5)='(INF)'
@@ -192,7 +192,7 @@ C
 C Find out how many thousands (hundreds, tens, units) there
 C are and jump to the proper code block for each case.
 C
-  101 INTG=MOD(IABS(NTGR),IMOD)/IDIV
+  101 INTG=MOD(ABS(NTGR),IMOD)/IDIV
 C
       GO TO (107,104,104,104,102,103,103,103,103,106),INTG+1
 C

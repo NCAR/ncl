@@ -24,10 +24,10 @@ C
 C Fill the data arrays.
 C
       DO 102 I=1,201
-        XDRA(I)=-1.+.02*FLOAT(I-1)
+        XDRA(I)=-1.+.02*REAL(I-1)
         IF (I.GT.101) XDRA(I)=2.-XDRA(I)
         DO 101 J=1,10
-          YDRA(I,J)=FLOAT(J)*
+          YDRA(I,J)=REAL(J)*
      +    SQRT(1.000000000001-XDRA(I)**2)/10.
           IF (I.GT.101) YDRA(I,J)=-YDRA(I,J)
   101   CONTINUE

@@ -30,7 +30,7 @@ C
 C
       DO 101 I=2,100,2
         XDRA(I  )=XDRA(I-1)
-        YDRA(I  )=EXP(-16.*(FLOAT(I/2)/50.-.51)**2)+.1*FRAN()
+        YDRA(I  )=EXP(-16.*(REAL(I/2)/50.-.51)**2)+.1*FRAN()
         XDRA(I+1)=XDRA(I-1)+.02
         YDRA(I+1)=YDRA(I)
   101 CONTINUE
@@ -48,7 +48,7 @@ C
         XDRA(NDRA+2)=XDRA(I)
         YDRA(NDRA+2)=0.
         XDRA(NDRA+3)=XDRA(I)
-        YDRA(NDRA+3)=AMIN1(YDRA(I),YDRA(I+1))
+        YDRA(NDRA+3)=MIN(YDRA(I),YDRA(I+1))
         NDRA=NDRA+3
   102 CONTINUE
 C

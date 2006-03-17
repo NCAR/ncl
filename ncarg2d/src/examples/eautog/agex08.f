@@ -25,7 +25,7 @@ C Fill the data arrays.
 C
       DO 101 I=1,101
         XDRA(I)=-3.14159265358979+
-     +            .062831853071796*FLOAT(I-1)
+     +            .062831853071796*REAL(I-1)
   101 CONTINUE
 C
       DO 103 I=1,4
@@ -33,7 +33,7 @@ C
         BASE=2.*FLTI-1.
         DO 102 J=1,101
           YDRA(I,J)=BASE+.75*SIN(-3.14159265358979+
-     +             .062831853071796*FLTI*FLOAT(J-1))
+     +             .062831853071796*FLTI*REAL(J-1))
   102   CONTINUE
   103 CONTINUE
 C

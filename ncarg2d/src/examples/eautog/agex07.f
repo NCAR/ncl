@@ -29,7 +29,7 @@ C
 C Fill the data arrays and the dash pattern array.
 C
       DO 101 I=1,101
-        XDRA(I)=-90.+1.8*FLOAT(I-1)
+        XDRA(I)=-90.+1.8*REAL(I-1)
   101 CONTINUE
 C
       DO 103 J=1,9

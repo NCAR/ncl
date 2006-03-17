@@ -24,7 +24,7 @@ C
 C Fill the data arrays.
 C
       DO 101 I=1,4001
-        THETA=.0015707963267949*FLOAT(I-1)
+        THETA=.0015707963267949*REAL(I-1)
         RHO=SIN(2.*THETA)+.05*SIN(64.*THETA)
         XDRA(I)=RHO*COS(THETA)
         YDRA(I)=RHO*SIN(THETA)

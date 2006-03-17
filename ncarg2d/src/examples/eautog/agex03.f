@@ -24,10 +24,10 @@ C
 C Fill the data array.
 C
       DO 101 I=1,100
-        YDRA(I,1)=COS(3.14159265358979*FLOAT(I)/25.)*
-     +                                    FLOAT(I)**2
-        YDRA(I,2)=COS(3.14159265358979*FLOAT(I)/25.)*
-     +                            10.**(.04*FLOAT(I))
+        YDRA(I,1)=COS(3.14159265358979*REAL(I)/25.)*
+     +                                    REAL(I)**2
+        YDRA(I,2)=COS(3.14159265358979*REAL(I)/25.)*
+     +                            10.**(.04*REAL(I))
   101 CONTINUE
 C
 C Draw a boundary around the edge of the plotter frame.

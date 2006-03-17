@@ -47,9 +47,9 @@ C
 C Fill the data arrays.
 C
       DO 101 I=1,501
-        THETA=.031415926535898*FLOAT(I-1)
-        XDRA(I)=500.+.9*FLOAT(I-1)*COS(THETA)
-        YDRA(I)=500.+.9*FLOAT(I-1)*SIN(THETA)
+        THETA=.031415926535898*REAL(I-1)
+        XDRA(I)=500.+.9*REAL(I-1)*COS(THETA)
+        YDRA(I)=500.+.9*REAL(I-1)*SIN(THETA)
   101 CONTINUE
 C
 C Suppress the frame advance.

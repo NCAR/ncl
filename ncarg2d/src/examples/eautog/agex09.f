@@ -24,7 +24,7 @@ C
 C Fill the data arrays.
 C
       DO 101 I=1,400
-        XDAT(I)=(FLOAT(I)-1.)/399.
+        XDAT(I)=(REAL(I)-1.)/399.
   101 CONTINUE
 C
       CALL GENDAT (YDAT(  1),200,200,1,3,3,+.01,+10.)
@@ -41,7 +41,7 @@ C of getting a positive number), and re-attach the original
 C sign.  We can plot the resulting y data on a linear y axis.
 C
       DO 102 I=1,400
-        YDAT(I)=SIGN(ALOG10(AMAX1(ABS(YDAT(I)),.01))+2.0001,
+        YDAT(I)=SIGN(ALOG10(MAX(ABS(YDAT(I)),.01))+2.0001,
      +               YDAT(I))
   102 CONTINUE
 C
@@ -89,7 +89,7 @@ C Left or right axis.
 C
       IF (FUNS.EQ.1.) THEN
         IF (IDMA.LT.0) THEN
-          VOTP=SIGN(ALOG10(AMAX1(ABS(VINP),.01))+2.0001,VINP)
+          VOTP=SIGN(ALOG10(MAX(ABS(VINP),.01))+2.0001,VINP)
         ELSE
           VOTP=SIGN(10.**(ABS(VINP)-2.0001),VINP)
         END IF
@@ -140,16 +140,16 @@ C The function used is a sum of exponentials.
 C
       DIMENSION DATA(IDIM,1),CCNT(3,50)
 C
-      FOVM=9./FLOAT(M)
-      FOVN=9./FLOAT(N)
+      FOVM=9./REAL(M)
+      FOVN=9./REAL(N)
 C
-      NLOW=MAX0(1,MIN0(25,MLOW))
-      NHGH=MAX0(1,MIN0(25,MHGH))
+      NLOW=MAX(1,MIN(25,MLOW))
+      NHGH=MAX(1,MIN(25,MHGH))
       NCNT=NLOW+NHGH
 C
       DO 101 K=1,NCNT
-        CCNT(1,K)=1.+(FLOAT(M)-1.)*FRAN()
-        CCNT(2,K)=1.+(FLOAT(N)-1.)*FRAN()
+        CCNT(1,K)=1.+(REAL(M)-1.)*FRAN()
+        CCNT(2,K)=1.+(REAL(N)-1.)*FRAN()
         IF (K.LE.NLOW) THEN
           CCNT(3,K)=-1.
         ELSE
@@ -163,13 +163,13 @@ C
         DO 103 I=1,M
           DATA(I,J)=.5*(DLOW+DHGH)
           DO 102 K=1,NCNT
-            TEMP=-((FOVM*(FLOAT(I)-CCNT(1,K)))**2+
-     +             (FOVN*(FLOAT(J)-CCNT(2,K)))**2)
+            TEMP=-((FOVM*(REAL(I)-CCNT(1,K)))**2+
+     +             (FOVN*(REAL(J)-CCNT(2,K)))**2)
             IF (TEMP.GE.-20.) DATA(I,J)=DATA(I,J)+
      +          .5*(DHGH-DLOW)*CCNT(3,K)*EXP(TEMP)
   102     CONTINUE
-          DMIN=AMIN1(DMIN,DATA(I,J))
-          DMAX=AMAX1(DMAX,DATA(I,J))
+          DMIN=MIN(DMIN,DATA(I,J))
+          DMAX=MAX(DMAX,DATA(I,J))
   103   CONTINUE
   104 CONTINUE
 C

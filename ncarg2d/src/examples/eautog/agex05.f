@@ -38,7 +38,7 @@ C
 C Fill the data arrays.
 C
       DO 101 I=1,401
-        THETA=PID200*FLOAT(I-1)
+        THETA=PID200*REAL(I-1)
         XDRA(I,1)=   -.5+RADOSC*COS(THETA)
         YDRA(I,1)=       RADOSC*SIN(THETA)
         IF (ABS(THETA       ).GE.BSSCLL.AND.

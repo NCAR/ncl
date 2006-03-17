@@ -24,7 +24,7 @@ C
 C Fill the data array.
 C
       DO 101 I=1,1001
-        X=FLOAT(I)/20.
+        X=REAL(I)/20.
         YDRA(I)=10.*(X-1.)*(X-11.)*(X-21.)*(X-31.)*(X-41.)*
      +                             (X-51.)+2.E7*(FRAN()-.5)
   101 CONTINUE
