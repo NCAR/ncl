@@ -318,7 +318,7 @@ C
         RYCN=REAL(IAMA(INDX+2))/RLC
 C
         IF (IAMA(INDX+7).NE.0) THEN
-          IGID=IABS(IAMA(INDX+7))
+          IGID=ABS(IAMA(INDX+7))
           IF (IGID.LT.IAMA(6)) THEN
             IGID=IAMA(IAMA(1)-IGID)/2
           ELSE
