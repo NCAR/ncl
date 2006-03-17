@@ -354,8 +354,8 @@ C
       DATA DTOR / .017453292519943 /
       DATA RTOD / 57.2957795130823 /
 C
-      NLOW = MAX0(0,MIN0(4,MLOW))
-      NHGH = MAX0(0,MIN0(4,MHGH))
+      NLOW = MAX(0,MIN(4,MLOW))
+      NHGH = MAX(0,MIN(4,MHGH))
       IF (NLOW+NHGH.GE.12 .AND. NLOW.GE.6) NLOW = NLOW-1
       IF (NLOW+NHGH.GE.12 .AND. NHGH.GE.6) NHGH = NHGH-1
       NCNT = 20*(NLOW+NHGH)
@@ -416,8 +416,8 @@ C
             RVAL = RVAL+.5*(RHGH-RLOW)*CMUL(K)*EXP(-DIST*DIST)
      +                              *(2.-SIN(6.283*DIST)/2.)
   150     CONTINUE
-          RMIN = AMIN1(RMIN,RVAL)
-          RMAX = AMAX1(RMAX,RVAL)
+          RMIN = MIN(RMIN,RVAL)
+          RMAX = MAX(RMAX,RVAL)
   140   CONTINUE
   130 CONTINUE
         RETURN
