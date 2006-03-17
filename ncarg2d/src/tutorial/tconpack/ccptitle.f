@@ -39,8 +39,8 @@ C
 C Draw a Title
 C
       CALL GETSET(VPL,VPR,VPB,VPT,WL,WR,WB,WT,LL)
-      SIZE = AMIN1(.5 * (1.0 - VPT),.017)
-      Y = AMIN1((1.0+VPT)/2.0+.017,.017+VPT)
+      SIZE = MIN(.5 * (1.0 - VPT),.017)
+      Y = MIN((1.0+VPT)/2.0+.017,.017+VPT)
       CALL SET (0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1)
       CALL PLCHHQ (.5, Y, 'An Interesting Data Field',SIZE, 0., 0.)
 C
