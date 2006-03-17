@@ -171,7 +171,7 @@ C device being used won't handle polygons defined by more points than
 C that.)
 C
         IF (IAI(1).GE.0.AND.IAI(2).GE.0) THEN
-          ITM=MAX0(IAI(1),IAI(2))
+          ITM=MAX(IAI(1),IAI(2))
           IF (ITM.GT.0) THEN
             IF (NCS.GT.150) PRINT * , 'COLRAM - NCS TOO BIG - ',NCS
 C
@@ -201,7 +201,7 @@ C If the segment is defined by more than 150 points, we'd like to
 C know about it.
 C
         IF (IAI(1).GE.0.AND.IAI(2).GE.0) THEN
-          ITM=MAX0(IAI(1),IAI(2))
+          ITM=MAX(IAI(1),IAI(2))
           IF (MAPACI(ITM).EQ.1) THEN
             IF (NCS.GT.150) PRINT * , 'COLRLN - NCS TOO BIG - ',NCS
             CALL GPL (NCS,XCS,YCS)
