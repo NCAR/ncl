@@ -144,10 +144,10 @@ C
       DO 102 I=1,ILIM
         DO 101 J=1,JLIM
           CALL MAPSET ('LI',
-     +                 ULEM+(UREM-ULEM)*FLOAT(I-1)/FLOAT(ILIM),
-     +                 ULEM+(UREM-ULEM)*FLOAT(I  )/FLOAT(ILIM),
-     +                 VBEM+(VTEM-VBEM)*FLOAT(J-1)/FLOAT(JLIM),
-     +                 VBEM+(VTEM-VBEM)*FLOAT(J  )/FLOAT(JLIM))
+     +                 ULEM+(UREM-ULEM)*REAL(I-1)/REAL(ILIM),
+     +                 ULEM+(UREM-ULEM)*REAL(I  )/REAL(ILIM),
+     +                 VBEM+(VTEM-VBEM)*REAL(J-1)/REAL(JLIM),
+     +                 VBEM+(VTEM-VBEM)*REAL(J  )/REAL(JLIM))
 C
 C Re-initialize EZMAP with the new limits.
 C
@@ -165,8 +165,8 @@ C
 C Compute quantities required by MAPEOD and MOVEIT to position
 C labels.
 C
-          DELU=3.5*(FLOAT(ICSZ)/FLOAT(IREW-ILEW))*(UREW-ULEW)
-          DELV=2.0*(FLOAT(ICSZ)/FLOAT(ITEW-IBEW))*(VTEW-VBEW)
+          DELU=3.5*(REAL(ICSZ)/REAL(IREW-ILEW))*(UREW-ULEW)
+          DELV=2.0*(REAL(ICSZ)/REAL(ITEW-IBEW))*(VTEW-VBEW)
           NSAV=0
 C
 C Draw the outlines.
@@ -232,22 +232,22 @@ C Generate a character string representing the value of the
 C segment number.
 C
         WRITE (CSG2,1001) NSEG
-        NFCH=4-IFIX(ALOG10(FLOAT(NSEG)+.5))
+        NFCH=4-INT(ALOG10(REAL(NSEG)+.5))
         NCHS=5-NFCH
         CSG1=CSG2(NFCH:4)
 C
 C Find out where the two points on either side of the center are.
 C
-        MPTS=MAX0(NPTS/2,1)
+        MPTS=MAX(NPTS/2,1)
         CALL MAPTRN (PNTS(2*MPTS-1),PNTS(2*MPTS),UCM1,VCM1)
 C
-        MPTS=MIN0(NPTS/2+2,NPTS)
+        MPTS=MIN(NPTS/2+2,NPTS)
         CALL MAPTRN (PNTS(2*MPTS-1),PNTS(2*MPTS),UCP1,VCP1)
 C
 C Compute the preferred position of the label, with one corner
 C of its enclosing box at the center of the segment.
 C
-        ULAB=UCEN-SIGN(.1428*DELU*FLOAT(NCHS),UCM1+UCP1-2*UCEN)
+        ULAB=UCEN-SIGN(.1428*DELU*REAL(NCHS),UCM1+UCP1-2*UCEN)
         VLAB=VCEN-SIGN(.3333*DELV,VCM1+VCP1-2*VCEN)
 C
 C Move the label as necessary to avoid its being on top of any
@@ -259,7 +259,7 @@ C Write out the character string and connect it to the segment
 C with a straight line.
 C
         CALL LINE (UCEN,VCEN,
-     +             ULAB-SIGN(.1428*DELU*FLOAT(NCHS),ULAB-UCEN),
+     +             ULAB-SIGN(.1428*DELU*REAL(NCHS),ULAB-UCEN),
      +             VLAB-SIGN(.3333*DELV,VLAB-VCEN))
 C
         CALL PWRIT (ULAB,VLAB,CSG1,NCHS,ICSZ,0,0)
@@ -327,9 +327,9 @@ C Overlap.  Try a new point.  The points tried form a spiral.
 C
   103 IGN1=IGN1+1
       IF (IGN1.LE.IGN2/2) THEN
-        ULAB=ULAB+SIGN(DELU,-.5+FLOAT(MOD(IGN2/2,2)))
+        ULAB=ULAB+SIGN(DELU,-.5+REAL(MOD(IGN2/2,2)))
       ELSE
-        VLAB=VLAB+SIGN(DELV,-.5+FLOAT(MOD(IGN2/2,2)))
+        VLAB=VLAB+SIGN(DELV,-.5+REAL(MOD(IGN2/2,2)))
       END IF
       IF (IGN1.EQ.IGN2) THEN
         IGN1=0

@@ -129,8 +129,8 @@ C
 C and the grid spacing must be an integral divisor of 180.
 C
       CALL MAPGTR ('GR',GRID)
-      IF (AMOD(GRID,1.).NE.0.OR.
-     +    MOD(180,IFIX(GRID)).NE.0) RETURN
+      IF (MOD(GRID,1.).NE.0.OR.
+     +    MOD(180,INT(GRID)).NE.0) RETURN
 C
 C All conditions are satisfied.  Label the meridians.
 C
@@ -149,8 +149,8 @@ C
       ELSE IF (ICSZ.EQ.3) THEN
         ICSZ=24
       END IF
-      WOCH=(FLOAT(  ICSZ)/FLOAT(IREW-ILEW))*(UREW-ULEW)
-      HOCH=(FLOAT(2*ICSZ)/FLOAT(ITEW-IBEW))*(VTEW-VBEW)
+      WOCH=(REAL(  ICSZ)/REAL(IREW-ILEW))*(UREW-ULEW)
+      HOCH=(REAL(2*ICSZ)/REAL(ITEW-IBEW))*(VTEW-VBEW)
       HOLB=HOCH/1.5
 C
 C Loop on the label values.
@@ -159,13 +159,13 @@ C
 C
 C Express the value of the longitude in a nice form.
 C
-        WRITE (CHRS,1001) IABS(I)
+        WRITE (CHRS,1001) ABS(I)
         NCHS=0
-        IF (IABS(I).GE.100) THEN
+        IF (ABS(I).GE.100) THEN
           NCHS=NCHS+1
           CHLB(NCHS:NCHS)=CHRS(1:1)
         END IF
-        IF (IABS(I).GE.10) THEN
+        IF (ABS(I).GE.10) THEN
           NCHS=NCHS+1
           CHLB(NCHS:NCHS)=CHRS(2:2)
         END IF
@@ -181,14 +181,14 @@ C
 C
 C Compute the width of the label.
 C
-       WOLB=FLOAT(NCHS)*WOCH
+       WOLB=REAL(NCHS)*WOCH
 C
 C Find the angle at which the labelled meridian lies on the plot.
 C
         IF (PLAT.GT.0.) THEN
-          ANGD=FLOAT(I-90)-PLON-ROTA
+          ANGD=REAL(I-90)-PLON-ROTA
         ELSE
-          ANGD=FLOAT(90-I)+PLON-ROTA
+          ANGD=REAL(90-I)+PLON-ROTA
         END IF
 C
 C Reduce the angle to the range from -180 to +180 and
