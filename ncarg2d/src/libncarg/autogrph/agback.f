@@ -1,5 +1,5 @@
 C
-C $Id: agback.f,v 1.8 2006-03-09 22:56:03 kennison Exp $
+C $Id: agback.f,v 1.9 2006-03-17 22:36:57 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -151,7 +151,7 @@ C Do a "SET" call for the user and return.
 C
   108 CALL PLOTIT (0,0,2)
       CALL SET (XLCW,XRCW,YBCW,YTCW,XLUW,XRUW,YBUW,YTUW,
-     +                            1+IABS(INT(QLUX))*2+ABS(INT(QLUY)))
+     +                            1+ABS(INT(QLUX))*2+ABS(INT(QLUY)))
 C
       RETURN
 C

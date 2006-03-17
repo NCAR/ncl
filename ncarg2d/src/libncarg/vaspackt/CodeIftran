@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.1 2006-02-10 18:57:36 kennison Exp $
+I $Id: CodeIftran,v 1.2 2006-03-17 22:37:00 kennison Exp $
 I
 I***********************************************************************
 I  V A S P A C K T   -   I N T R O D U C T I O N
@@ -5096,11 +5096,11 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO IABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(WSND-WSOD)
-              CCND=CSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(CSND-CSOD)
+            FOR (INTP = 1 TO ABS(IPIC))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
+              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(CSND-CSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
               IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
@@ -7864,11 +7864,11 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO IABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(WSND-WSOD)
-              CCND=CSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(CSND-CSOD)
+            FOR (INTP = 1 TO ABS(IPIC))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
+              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(CSND-CSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
               IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
@@ -9241,10 +9241,10 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO IABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(WSND-WSOD)
+            FOR (INTP = 1 TO ABS(IPIC))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
               IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
@@ -10668,11 +10668,11 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO IABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(WSND-WSOD)
-              CCND=CSOD+(REAL(INTP)/REAL(IABS(IPIC)+1))*(CSND-CSOD)
+            FOR (INTP = 1 TO ABS(IPIC))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
+              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(CSND-CSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
               IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)

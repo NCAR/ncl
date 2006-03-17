@@ -1,5 +1,5 @@
 C
-C $Id: agezsu.f,v 1.5 2006-03-09 22:56:05 kennison Exp $
+C $Id: agezsu.f,v 1.6 2006-03-17 22:36:57 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -91,7 +91,7 @@ C
       NEVX=NEVY
       IIEX=IIEY
 C
-      IF (IABS(IROW).LE.1) THEN
+      IF (ABS(IROW).LE.1) THEN
         NVIX=1
         IIVX=0
         NEVX=NPTS

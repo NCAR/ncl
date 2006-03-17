@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.7 2006-03-09 23:16:07 kennison Exp $
+I $Id: CodeIftran,v 1.8 2006-03-17 22:36:58 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K   -   I N T R O D U C T I O N
@@ -4332,9 +4332,9 @@ C
           NCLV=0
           RTM2=ZMIN+.001*(ZMAX-ZMIN)
           IF (RTM2.LT.0.)
-            RTM1=-AINT(-RTM2/CINU)
+            RTM1=-REAL(INT(-RTM2/CINU))
           ELSE
-            RTM1=1.+AINT(RTM2/CINU)
+            RTM1=1.+REAL(INT(RTM2/CINU))
           END IF
           RTM2=ZMAX-.001*(ZMAX-ZMIN)
           WHILE (NCLV.LT.$NCLV$.AND.RTM1*CINU.LT.RTM2)

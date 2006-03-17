@@ -1,5 +1,5 @@
 C
-C $Id: aglbls.f,v 1.6 2006-03-09 22:56:06 kennison Exp $
+C $Id: aglbls.f,v 1.7 2006-03-17 22:36:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -224,7 +224,7 @@ C
 C This is a test run.  Compute the coordinates of the edges of the six
 C smallest-size boxes, in one of two ways.
 C
-      IF (IABS(ITST).GT.1) GO TO 105
+      IF (ABS(ITST).GT.1) GO TO 105
 C
 C This is a test run.  Determine smallest-size boxes (no shrinking).
 C

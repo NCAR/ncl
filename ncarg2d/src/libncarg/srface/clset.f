@@ -1,5 +1,5 @@
 C
-C $Id: clset.f,v 1.4 2006-03-10 14:46:00 kennison Exp $
+C $Id: clset.f,v 1.5 2006-03-17 22:36:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -50,10 +50,10 @@ C
    70 FANC = (HA-GLO)/CRAT
       IF (FANC) 140,140, 80
    80 P = 10.**(INT(ALOG10(FANC)+500.)-500)
-      FANC = AINT(FANC/P)*P
+      FANC = REAL(INT(FANC/P))*P
    90 IF (CHI-CLO) 110,100,110
-  100 GLO = AINT(GLO/FANC)*FANC
-      HA = AINT(HA/FANC)*FANC
+  100 GLO = REAL(INT(GLO/FANC))*FANC
+      HA = REAL(INT(HA/FANC))*FANC
   110 DO 120 K=1,NLM
          CC = GLO+REAL(K-1)*FANC
          IF (CC .GT. HA) GO TO 130

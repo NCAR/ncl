@@ -1,5 +1,5 @@
 C
-C $Id: idiot.f,v 1.7 2006-03-09 22:56:09 kennison Exp $
+C $Id: idiot.f,v 1.8 2006-03-17 22:36:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -38,11 +38,11 @@ C
 C
       CALL DISPLA (2-MAX(-1,MIN(1,LFRA)),1,LTYP)
 C
-      CALL AGEZSU (5,XDRA,YDRA,IABS(NPTS),1,IABS(NPTS),LABG,IIVX,IIEX,
+      CALL AGEZSU (5,XDRA,YDRA,ABS(NPTS),1,ABS(NPTS),LABG,IIVX,IIEX,
      +                                                        IIVY,IIEY)
       CALL AGBACK
 C
-      CALL AGCURV (XDRA,1,YDRA,1,IABS(NPTS),1)
+      CALL AGCURV (XDRA,1,YDRA,1,ABS(NPTS),1)
 C
       IF (LFRA.GT.0) CALL FRAME
 C
