@@ -24,9 +24,9 @@ C  Demonstrate the use of SFWRLD.
 C
 C  Generate three intersecting circles of radius 1.
       DO 100 II=1,NPTS
-      ANG=D2R*3.6*FLOAT(II-1)
+      ANG=D2R*3.6*REAL(II-1)
         X=COS(ANG)
-      Y=SIN(ANG)
+        Y=SIN(ANG)
         X1(II) = X - .5
         X2(II) = X + .5
         X3(II) = X

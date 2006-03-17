@@ -56,8 +56,8 @@ C
 C
 C  Create the data array for the isosurface.
 C
-      JCENT1 = FLOAT(NIY)*.5-RBIG1*.5
-      JCENT2 = FLOAT(NIY)*.5+RBIG2*.5
+      JCENT1 = REAL(NIY)*.5-RBIG1*.5
+      JCENT2 = REAL(NIY)*.5+RBIG2*.5
       DO  30 I=1,NIX
         XI(I) = REAL(I)
         FIMID = I-NIX/2
