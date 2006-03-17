@@ -265,8 +265,8 @@ C
         FOVM=9./REAL(M)
         FOVN=9./REAL(N)
 C
-        NLOW=MAX0(1,MIN0(25,MLOW))
-        NHGH=MAX0(1,MIN0(25,MHGH))
+        NLOW=MAX(1,MIN(25,MLOW))
+        NHGH=MAX(1,MIN(25,MHGH))
         NCNT=NLOW+NHGH
 C
         DO 101 K=1,NCNT
@@ -290,8 +290,8 @@ C
               IF (TEMP.GE.-20.) DATA(I,J)=DATA(I,J)+
      +            .5*(DHGH-DLOW)*CCNT(3,K)*EXP(TEMP)
   102       CONTINUE
-            DMIN=AMIN1(DMIN,DATA(I,J))
-            DMAX=AMAX1(DMAX,DATA(I,J))
+            DMIN=MIN(DMIN,DATA(I,J))
+            DMAX=MAX(DMAX,DATA(I,J))
   103     CONTINUE
   104   CONTINUE
 C
