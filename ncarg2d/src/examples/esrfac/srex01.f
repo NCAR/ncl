@@ -40,13 +40,13 @@ C
 C Generate x-coordinate values.
 C
       DO 10 I=1,100
-         XDAT(I)=5.*FLOAT(I-1)
+         XDAT(I)=5.*REAL(I-1)
  10   CONTINUE
 C
 C Generate y-coordinate values.
 C
       DO 15 J=1,100
-         YDAT(J)=5.*FLOAT(J-1)
+         YDAT(J)=5.*REAL(J-1)
  15   CONTINUE
 C
 C Put the original Long's Peak data in the array ODAT.
@@ -58,13 +58,13 @@ C
 C Interpolate to get more closely-spaced data in the array QDAT.
 C
       DO 30 J=1,100
-         FL=1.+39.*FLOAT(J-1)/99.
-         L=MAX0(1,MIN0(39,IFIX(FL)))
-         FL=FL-FLOAT(L)
+         FL=1.+39.*REAL(J-1)/99.
+         L=MAX(1,MIN(39,INT(FL)))
+         FL=FL-REAL(L)
          DO 40 I=1,100
-            FK=1.+39.*FLOAT(I-1)/99.
-            K=MAX0(1,MIN0(39,IFIX(FK)))
-            FK=FK-FLOAT(K)
+            FK=1.+39.*REAL(I-1)/99.
+            K=MAX(1,MIN(39,INT(FK)))
+            FK=FK-REAL(K)
             QDAT(I,J)=(1.-FL)*((1.-FK)*ODAT(K,L  )+FK*ODAT(K+1,L  ))+
      +                    FL *((1.-FK)*ODAT(K,L+1)+FK*ODAT(K+1,L+1))
  40      CONTINUE
@@ -73,11 +73,11 @@ C
 C Apply a nine-point smoother to get smoother data in the array ZDAT.
 C
       DO 50 J=1,100
-         JM1=MAX0(J-1,1)
-         JP1=MIN0(J+1,100)
+         JM1=MAX(J-1,1)
+         JP1=MIN(J+1,100)
          DO 60 I=1,100
-            IM1=MAX0(I-1,1)
-            IP1=MIN0(I+1,100)
+            IM1=MAX(I-1,1)
+            IP1=MIN(I+1,100)
             ZDAT(I,J)=.2500*QDAT(I,J)+
      +                .1250*(QDAT(IM1,J)+QDAT(IP1,J)+
      +                       QDAT(I,JM1)+QDAT(I,JP1))+
