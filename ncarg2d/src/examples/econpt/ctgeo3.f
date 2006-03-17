@@ -1579,8 +1579,8 @@ C
         YRNG=YMAX-YMIN
         ZRNG=ZMAX-ZMIN
 C
-        NLOW=MAX0(1,MIN0(25,MLOW))
-        NHGH=MAX0(1,MIN0(25,MHGH))
+        NLOW=MAX(1,MIN(25,MLOW))
+        NHGH=MAX(1,MIN(25,MHGH))
         NCNT=NLOW+NHGH
 C
         DO 101 ICNT=1,NCNT
