@@ -22,7 +22,7 @@ C
 C Fill Y array for entry EZY of AUTOGRAPH.
 C
       DO  10 I=1,21
-         Y(I) = EXP(-.1*FLOAT(I))*COS(FLOAT(I)*.5)
+         Y(I) = EXP(-.1*REAL(I))*COS(REAL(I)*.5)
    10 CONTINUE
 C
       CALL EZY (Y(1),21,'DEMONSTRATING EZY ENTRY OF AUTOGRAPH$')

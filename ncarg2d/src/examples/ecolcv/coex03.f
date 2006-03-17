@@ -58,16 +58,16 @@ C
       DO 30 IL = 1,NW
         INDEX = 2
         CALL SET(.1,.9,.1,.9,-1.2,1.2,-1.2,1.2,1)
-        RINC = 2 * PI / FLOAT(NCOL)
-        HINC = 360.0  / FLOAT(NCOL)
-        SINC =  1.00  / FLOAT(NSAT - 1)
+        RINC = 2 * PI / REAL(NCOL)
+        HINC = 360.0  / REAL(NCOL)
+        SINC =  1.00  / REAL(NSAT - 1)
 C
 C  Loop on the hues.
 C
         DO 20 IHUE = 0,NCOL - 1
-          HUE    =  FLOAT(IHUE)      * HINC
-          THETA1 = (FLOAT(IHUE) -.5) * RINC
-          THETA2 = (FLOAT(IHUE) +.5) * RINC
+          HUE    =  REAL(IHUE)      * HINC
+          THETA1 = (REAL(IHUE) -.5) * RINC
+          THETA2 = (REAL(IHUE) +.5) * RINC
           X(1) = 0.0
           X(4) = 0.0
           Y(1) = 0.0
@@ -76,11 +76,11 @@ C
 C  Loop on the saturations
 C
           DO 10 ISAT = 1,NSAT
-            SAT = (FLOAT(ISAT - 1) * SINC)
+            SAT = (REAL(ISAT - 1) * SINC)
             CALL HSVRGB(HUE,SAT,VAL(IL),R,G,B)
             CALL GSCR(IWKID,INDEX,R,G,B)
             CALL GSFACI(INDEX)
-            RLEN = FLOAT(ISAT) / FLOAT(NSAT)
+            RLEN = REAL(ISAT) / REAL(NSAT)
             X(2) = COS(THETA1) * RLEN
             Y(2) = SIN(THETA1) * RLEN
             X(3) = COS(THETA2) * RLEN
@@ -102,7 +102,7 @@ C
         CALL GSPLCI(1)
         CALL PLCHHQ(0.0,1.25,TITLE(1:12),21.0,0.0,0.0)
         DO 40 L=2,NSAT
-          SAT = (FLOAT(L-1)*SINC)
+          SAT = (REAL(L-1)*SINC)
           WRITE(TITLE,710) SAT
           CALL PLCHHQ(0.0,ST(L),TITLE(1:6),15.0,0.0,0.0)
    40   CONTINUE
