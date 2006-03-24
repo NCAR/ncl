@@ -154,7 +154,14 @@ begin
   res@mpRightCornerLonF     = lon2d(nlat-1,mlon-1)
 
   res@mpCenterLonF          = f@CEN_LON
-  res@mpCenterLatF          = f@CEN_LAT
+  res@mpCenterLatF          = f@CEN_LAT        ; default
+
+  if (isatt(f, "STAND_LON") ) then
+      res@mpCenterLatF      = f@STAND_LON      ; use if present
+  end if
+  if (res@mpProjection.eq."Mercator") then
+      res@mpCenterLatF = 0.0    ; Cindy Bruyere MMM/WRF 24 Mar 2006
+  end if
 
   if (res@mpProjection.eq."LambertConformal") then
       res@mpLambertParallel1F   = f@TRUELAT1
