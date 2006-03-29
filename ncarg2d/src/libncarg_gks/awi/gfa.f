@@ -1,5 +1,5 @@
 C
-C	$Id: gfa.f,v 1.8 2000-08-22 15:08:00 haley Exp $
+C	$Id: gfa.f,v 1.9 2006-03-29 19:50:56 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,10 +36,9 @@ C
 C
       REAL PX(N),PY(N)
 C
-C  Set up integer workspace for clipping call.
+C  Set up integer and real workspaces for the clipping call.
 C
       DIMENSION IWKSP(IWDIM)
-      EQUIVALENCE(IWKSP(1),RWKSP(1))
       DIMENSION WCLIPX(4),WCLIPY(4)
 C
 C  Check if GKS is in the proper state.
