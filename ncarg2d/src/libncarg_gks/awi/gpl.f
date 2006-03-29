@@ -1,5 +1,5 @@
 C
-C	$Id: gpl.f,v 1.9 2000-08-22 15:08:02 haley Exp $
+C	$Id: gpl.f,v 1.10 2006-03-29 23:56:18 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -78,7 +78,7 @@ C
    10 CONTINUE
 C
       NPTOT = N
-      CALL GZPUTR(NPTOT,N,PX,PY,MIN0(CNT,1),IER)
+      CALL GZPUTR(NPTOT,N,PX,PY,MIN(CNT,1),IER)
       RERR = IER
       IF (RERR.NE.0) THEN
         ERS = 1

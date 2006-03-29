@@ -1,5 +1,5 @@
 C
-C	$Id: gprec.f,v 1.4 2000-08-22 15:08:03 haley Exp $
+C	$Id: gprec.f,v 1.5 2006-03-29 23:56:18 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -81,7 +81,7 @@ C
       MAXSL = 0
       IF (SL .GT. 0) THEN
         DO 200 I=1,SL
-          MAXSL = MAX0(MAXSL,LSTR(I))
+          MAXSL = MAX(MAXSL,LSTR(I))
   200   CONTINUE
       ENDIF
 C

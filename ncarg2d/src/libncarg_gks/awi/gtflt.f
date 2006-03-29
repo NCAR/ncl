@@ -1,5 +1,5 @@
 C
-C	$Id: gtflt.f,v 1.3 2000-08-22 15:08:23 haley Exp $
+C	$Id: gtflt.f,v 1.4 2006-03-29 23:56:18 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -66,7 +66,7 @@ C
 C
 C  Convert to floating point.
 C
-      FLTNUM = FLOAT(ITMP) + (FLOAT(PART)/DTCNV2)
+      FLTNUM = REAL(ITMP) + (REAL(PART)/DTCNV2)
 C
       RETURN
       END

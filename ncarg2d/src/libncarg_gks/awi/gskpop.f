@@ -1,5 +1,5 @@
 C
-C	$Id: gskpop.f,v 1.3 2000-08-22 15:08:19 haley Exp $
+C	$Id: gskpop.f,v 1.4 2006-03-29 23:56:18 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -49,8 +49,8 @@ C  LOOP FOR ALL PARTITIONS
 C
  10   CONTINUE
 C
-      LEFT = MAX0((PARBIT-LEN*BYTSIZ),0)
-      CUR = MIN0(PARBIT, LEN*BYTSIZ)
+      LEFT = MAX((PARBIT-LEN*BYTSIZ),0)
+      CUR = MIN(PARBIT, LEN*BYTSIZ)
       LEN = LEN - (CUR/BYTSIZ)
 C
 C  SKIP THE OPERANDS
@@ -60,7 +60,7 @@ C
 C       LOOP FOR RECORDS WITHIN A PARTITION
 C
         RL = CUR+MOPRST
-        CUR = MAX0(CUR-(MRECLN-MOPRST),0)
+        CUR = MAX(CUR-(MRECLN-MOPRST),0)
         IF (CUR .GT.0) THEN
                 CALL GSEGRD(IOS, STATUS)
                 IF (STATUS .NE. 0) RETURN
