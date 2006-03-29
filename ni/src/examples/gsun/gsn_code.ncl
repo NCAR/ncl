@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.175 2006-03-14 04:16:27 haley Exp $
+;      $Id: gsn_code.ncl,v 1.176 2006-03-29 15:35:16 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3724,7 +3724,7 @@ procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
                        y:numeric, resources:logical )
 local txid
 begin
-  if(res2) then
+  if(resources) then
     res2 = get_resources(resources)
   else
     res2 = True
