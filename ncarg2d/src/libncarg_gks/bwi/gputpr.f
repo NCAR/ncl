@@ -1,5 +1,5 @@
 C
-C	$Id: gputpr.f,v 1.4 2000-08-22 15:09:42 haley Exp $
+C	$Id: gputpr.f,v 1.5 2006-03-30 00:45:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -53,7 +53,7 @@ C
 C
 C  Compute and move the allowed number of operands.
 C
-      MOVIT = MIN0(WCBYT,CTEMP)
+      MOVIT = MIN(WCBYT,CTEMP)
       CALL GMFLOD(BUFFER(STRT),BITS,MOVIT,GKSERR)
       IF (GKSERR .NE. ALLOK) RETURN
 C

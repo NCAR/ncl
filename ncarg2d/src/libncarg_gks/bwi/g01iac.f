@@ -1,5 +1,5 @@
 C
-C	$Id: g01iac.f,v 1.5 2003-02-13 23:58:21 fred Exp $
+C	$Id: g01iac.f,v 1.6 2006-03-30 00:45:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -35,7 +35,7 @@ C
 C  Compute the length of each attribute, based on the pointers.
 C
       DO 5 IX=1,25
-        IL2AEA(IX) = IABS(IP2AEA(IX+1)) - IABS(IP2AEA(IX))
+        IL2AEA(IX) = ABS(IP2AEA(IX+1)) - ABS(IP2AEA(IX))
     5 CONTINUE
 C
 C  Copy default attribute context to "SET" context.

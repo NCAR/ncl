@@ -1,5 +1,5 @@
 C
-C	$Id: gupdvr.f,v 1.5 2003-02-13 23:58:23 fred Exp $
+C	$Id: gupdvr.f,v 1.6 2006-03-30 00:45:04 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -54,7 +54,7 @@ C
 C
 C  Offset and length of attribute in equivalencing structures.
 C
-      IOFF   = IABS(IP2AEA(IPOINT))
+      IOFF   = ABS(IP2AEA(IPOINT))
       LNGVAL = IL2AEA(IPOINT)
 C
 C  Is the new value different from the last sent?

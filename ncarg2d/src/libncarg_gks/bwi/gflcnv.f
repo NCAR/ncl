@@ -1,5 +1,5 @@
 C
-C	$Id: gflcnv.f,v 1.4 2000-08-22 15:09:39 haley Exp $
+C	$Id: gflcnv.f,v 1.5 2006-03-30 00:45:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,7 @@ C
 C
 C  Define 2's complement of whole part.
 C
-      JABS = IABS(JNUM)
+      JABS = ABS(JNUM)
       INUM(1) = IAND(32767,JABS)
       IF (JNUM .LT. 0) THEN
         INUM(1) = (32767-INUM(1))+1

@@ -1,5 +1,5 @@
 C
-C	$Id: g01mio.f,v 1.10 2000-08-22 15:09:35 haley Exp $
+C	$Id: g01mio.f,v 1.11 2006-03-30 00:45:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -55,20 +55,20 @@ C    INPUT PARAMETERS
 C
 C      OP     - Operation:
 C                 =  1, open workstation for reading and writing on 
-C                      IABS(UNIT) - truncates existing files.
-C                 =  2, close workstation on IABS(UNIT).
-C                 =  3, write buffer to IABS(UNIT).
-C                 =  4, read IABS(UNIT) to buffer.
+C                       ABS(UNIT) - truncates existing files.
+C                 =  2, close workstation on ABS(UNIT).
+C                 =  3, write buffer to ABS(UNIT).
+C                 =  4, read ABS(UNIT) to buffer.
 C                 =  5, position the record pointer to the beginning
 C                       of the file.
 C                 =  6, position the record pointer to the previous 
 C                       record.
 C                 =  7, flush the I/O buffers for UNIT.
-C                 =  8, open workstation for reading only on IABS(UNIT).
+C                 =  8, open workstation for reading only on ABS(UNIT).
 C                 =  9, delete the segment whose file name is in FNAME.
 C                 = 10, open a segment.
 C                 = 11, open an existing CGM for appending.
-C      UNIT   - IABS(UNIT) is the Fortran LUN on which OP is to occur.
+C      UNIT   - ABS(UNIT) is the Fortran LUN on which OP is to occur.
 C      FNAME  - filename used for open.
 C      BUFFER - buffer containing data for a read/write operation.
 C      LENGTH - length of data in BUFFER.
@@ -95,7 +95,7 @@ C
       INTEGER IAUNT,IOPENF
 C
       ERROR = 0
-      IAUNT = IABS(UNIT)
+      IAUNT = ABS(UNIT)
 
 C Open the workstation with filename FNAME
 

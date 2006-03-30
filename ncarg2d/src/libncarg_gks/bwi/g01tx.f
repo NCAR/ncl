@@ -1,5 +1,5 @@
 C
-C	$Id: g01tx.f,v 1.7 2003-02-13 23:58:22 fred Exp $
+C	$Id: g01tx.f,v 1.8 2006-03-30 00:45:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -246,10 +246,10 @@ C
 C  Truncate point to limits of the NDC unit square, convert to VDC,
 C  and store in MPXPY.
 C
-        MPXPY(1) = MXOFF + IFIX(FLOAT(MXSCAL)*
-     +             (AMAX1(0.,AMIN1(1.0,RX(1)))))
-        MPXPY(2) = MYOFF + IFIX(FLOAT(MYSCAL)*
-     +             (AMAX1(0.,AMIN1(1.0,RY(1)))))
+        MPXPY(1) = MXOFF + INT(REAL(MXSCAL)*
+     +             (MAX(0.,MIN(1.0,RX(1)))))
+        MPXPY(2) = MYOFF + INT(REAL(MYSCAL)*
+     +             (MAX(0.,MIN(1.0,RY(1)))))
         CALL GPUTPR (MPXPY, MVDCFW, 2, RERR)
 C
 C  Put out final flag.

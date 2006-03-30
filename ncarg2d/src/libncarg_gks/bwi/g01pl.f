@@ -1,5 +1,5 @@
 C
-C	$Id: g01pl.f,v 1.7 2003-02-13 23:58:22 fred Exp $
+C	$Id: g01pl.f,v 1.8 2006-03-30 00:45:03 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -137,10 +137,10 @@ C
         DO 30 K=1,RL2
           INDX1 = 2*K-1
           INDX2 = INDX1+1
-          MPXPY(INDX1) = MXOFF + IFIX(FLOAT(MXSCAL)*
-     +                   (AMAX1(0.,AMIN1(1.0,RX(K)))))
-          MPXPY(INDX2) = MYOFF + IFIX(FLOAT(MYSCAL)*
-     +                   (AMAX1(0.,AMIN1(1.0,RY(K)))))
+          MPXPY(INDX1) = MXOFF + INT(REAL(MXSCAL)*
+     +                   (MAX(0.,MIN(1.0,RX(K)))))
+          MPXPY(INDX2) = MYOFF + INT(REAL(MYSCAL)*
+     +                   (MAX(0.,MIN(1.0,RY(K)))))
    30   CONTINUE
 C
 C Send out points.
@@ -166,10 +166,10 @@ C
         DO 40 K=1,RL2
           INDX1 = 2*K-1
           INDX2 = INDX1+1
-          MPXPY(INDX1) = MXOFF + IFIX(FLOAT(MXSCAL)*
-     +                   (AMAX1(0.,AMIN1(1.0,RX(K)))))
-          MPXPY(INDX2) = MYOFF + IFIX(FLOAT(MYSCAL)*
-     +                 (AMAX1(0.,AMIN1(1.0,RY(K)))))
+          MPXPY(INDX1) = MXOFF + INT(REAL(MXSCAL)*
+     +                   (MAX(0.,MIN(1.0,RX(K)))))
+          MPXPY(INDX2) = MYOFF + INT(REAL(MYSCAL)*
+     +                 (MAX(0.,MIN(1.0,RY(K)))))
    40   CONTINUE
         IF (CONT .EQ. 0) THEN
           CALL GPUTPR (MPXPY,  MVDCFW,     2*RL2, RERR)

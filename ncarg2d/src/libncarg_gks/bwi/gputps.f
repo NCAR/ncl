@@ -1,5 +1,5 @@
 C
-C	$Id: gputps.f,v 1.5 2000-08-22 15:09:43 haley Exp $
+C	$Id: gputps.f,v 1.6 2006-03-30 00:45:04 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -89,7 +89,7 @@ C
 C
 C  Compute and move the allowed number of characters.
 C
-      MOVIT = MIN0(WCBYT,CTEMP,MXCH)
+      MOVIT = MIN(WCBYT,CTEMP,MXCH)
 C
 C  Move the character codes to the integer buffer.
 C

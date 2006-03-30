@@ -1,5 +1,5 @@
 C
-C	$Id: g01diq.f,v 1.4 2000-08-22 15:09:32 haley Exp $
+C	$Id: g01diq.f,v 1.5 2006-03-30 00:45:02 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -37,7 +37,7 @@ C  All defined WDT inquiry codes lie in range -11o thru -128.
 C  Only -127 is legal for MO.  The rest are error 31 or 39,
 C  except -125 and -126, which are undefined.  
 C
-      ICODE = IABS(MCODES) - 109
+      ICODE = ABS(MCODES) - 109
 C
 C      CODE -110 -111 -112 -113 -114 -115 -116 -117 -118 -119
       GOTO  ( 39,  39,  39,  39,  31,  39,  39,  39,  39,  39,
