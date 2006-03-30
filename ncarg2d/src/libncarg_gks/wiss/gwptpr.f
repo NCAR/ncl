@@ -1,5 +1,5 @@
 C
-C	$Id: gwptpr.f,v 1.3 2000-08-22 15:10:01 haley Exp $
+C	$Id: gwptpr.f,v 1.4 2006-03-30 01:00:41 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -56,7 +56,7 @@ C
 C
 C  Compute and move the allowed number of operands.
 C
-      MOVIT = MIN0(WCBYT,CTEMP)
+      MOVIT = MIN(WCBYT,CTEMP)
       CALL GWILOD(BUFFER(STRT),BITS,MOVIT,GKSERR)
       IF (GKSERR .NE. ALLOK) RETURN
 C

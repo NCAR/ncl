@@ -1,5 +1,5 @@
 C
-C	$Id: gwica.f,v 1.5 2000-08-22 15:09:57 haley Exp $
+C	$Id: gwica.f,v 1.6 2006-03-30 01:00:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -54,10 +54,10 @@ C
 C  Transform P and Q corner points to VDC, generate the
 C  R corner point, store all in WPXPY.
 C
-        WPXPY(1) = MXOFF+IFIX(FLOAT(MXSCAL)*RX(1))
-        WPXPY(2) = MXOFF+IFIX(FLOAT(MYSCAL)*RY(1))
-        WPXPY(3) = MYOFF+IFIX(FLOAT(MXSCAL)*RX(2))
-        WPXPY(4) = MYOFF+IFIX(FLOAT(MYSCAL)*RY(2))
+        WPXPY(1) = MXOFF+INT(REAL(MXSCAL)*RX(1))
+        WPXPY(2) = MXOFF+INT(REAL(MYSCAL)*RY(1))
+        WPXPY(3) = MYOFF+INT(REAL(MXSCAL)*RX(2))
+        WPXPY(4) = MYOFF+INT(REAL(MYSCAL)*RY(2))
         WPXPY(5) = WPXPY(3)
         WPXPY(6) = WPXPY(2)
 C
@@ -126,7 +126,7 @@ C
 C  Number of cells to put out, to end of current row or
 C  all cells remaining, whichever is less.
 C
-        NCLOUT = MIN0 (DX-ROWPOS+1, IC2-IDPOS+1)
+        NCLOUT = MIN (DX-ROWPOS+1, IC2-IDPOS+1)
         CALL GWPTPR (IC(IDPOS), MCIXFW, NCLOUT, RERR)
         IF (RERR .NE. 0)  RETURN
 C
@@ -167,7 +167,7 @@ C
 C  Number of cells to put out, to end of current row or
 C  all cells remaining, whichever is less.
 C
-        NCLOUT = MIN0 (DX-ROWPOS+1, IC2-IDPOS+1)
+        NCLOUT = MIN (DX-ROWPOS+1, IC2-IDPOS+1)
         CALL GWPTPR (IC(IDPOS), MCIXFW, NCLOUT, RERR)
         IF (RERR .NE. 0)  RETURN
 C

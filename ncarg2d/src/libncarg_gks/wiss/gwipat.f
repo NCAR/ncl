@@ -1,5 +1,5 @@
 C
-C	$Id: gwipat.f,v 1.3 2000-08-22 15:09:59 haley Exp $
+C	$Id: gwipat.f,v 1.4 2006-03-30 01:00:40 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -97,7 +97,7 @@ C
 C  Font.
 C    Convert GKS font index to pointer to font list.
 C
-      ID(1) = IABS(ID(1))
+      ID(1) = ABS(ID(1))
       CALL GWPDVI (ID(1), IVTXFO, 3)
 C
 C  Precision.
@@ -131,7 +131,7 @@ C  Extract and process height.
 C
       UP   = SQRT (RX(1)**2+RY(1)**2)
       BASE = SQRT (RX(2)**2+RY(2)**2)
-      DMAX = AMAX1(UP,BASE)
+      DMAX = MAX(UP,BASE)
       IF (DMAX .GT. 1.0)  THEN
 C
 C  A vector is longer than 1.0 NDC, scale down both vectors equally.
@@ -152,10 +152,10 @@ C
 C
 C  Convert NDC vectors to VDC and process.
 C
-      ID(1) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RX(1)))
-      ID(2) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RY(1)))
-      ID(3) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RX(2)))
-      ID(4) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RY(2)))
+      ID(1) = MIN (MAXYVD, INT (0.5 + MXSCAL*RX(1)))
+      ID(2) = MIN (MAXYVD, INT (0.5 + MYSCAL*RY(1)))
+      ID(3) = MIN (MAXYVD, INT (0.5 + MXSCAL*RX(2)))
+      ID(4) = MIN (MAXYVD, INT (0.5 + MYSCAL*RY(2)))
       CALL GWPDVI (ID, IVCHOV, 3)
       RETURN
 C
@@ -203,8 +203,8 @@ C  Truncate DX,DY to limits of NDC unit square,
 C  convert to VDC, store as height and width vectors.
 C
 C     ID(4) = 0
-C     ID(3) = IFIX(FLOAT(MXSCAL)*(AMAX1(0.,AMIN1(1.0,RX(1)))))
-C     ID(2) = IFIX(FLOAT(MYSCAL)*(AMAX1(0.,AMIN1(1.0,RY(1)))))
+C     ID(3) = INT(REAL(MXSCAL)*(MAX(0.,MIN(1.0,RX(1)))))
+C     ID(2) = INT(REAL(MYSCAL)*(MAX(0.,MIN(1.0,RY(1)))))
 C     ID(1) = 0
 C     CALL GWPDVI (ID, IVPASZ, 4)
       RETURN
@@ -215,8 +215,8 @@ C
 C
 C  Truncate X,Y to limits of NDC unit square and convert to VDC.
 C
-C     ID(1) = IFIX(FLOAT(MXSCAL)*(AMAX1(0.,AMIN1(1.0,RX(1)))))
-C     ID(2) = IFIX(FLOAT(MYSCAL)*(AMAX1(0.,AMIN1(1.0,RX(2)))))
+C     ID(1) = INT(REAL(MXSCAL)*(MAX(0.,MIN(1.0,RX(1)))))
+C     ID(2) = INT(REAL(MYSCAL)*(MAX(0.,MIN(1.0,RX(2)))))
 C     CALL GWPDVI (ID, IVPARF, 4)
       RETURN
 C

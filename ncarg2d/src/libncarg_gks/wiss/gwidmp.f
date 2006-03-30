@@ -1,5 +1,5 @@
 C
-C	$Id: gwidmp.f,v 1.5 2000-08-22 15:09:58 haley Exp $
+C	$Id: gwidmp.f,v 1.6 2006-03-30 01:00:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -219,7 +219,7 @@ C
       CALL GWPTNI (CLCHHT, IDCHHT, NBYTES, RERR)
       UP   = SQRT(RCNTX(16)**2+RCNTX(17)**2)
       BASE = SQRT(RCNTX(18)**2+RCNTX(19)**2)
-      DMAX = AMAX1(UP,BASE)
+      DMAX = MAX(UP,BASE)
       IF (DMAX .GT. 1.0)  THEN
 C
 C  A vector is longer than 1.0 NDC, scale down both vectors equally.
@@ -242,10 +242,10 @@ C  Character up vector.
 C
       NBYTES = 1+(4*MVDCFW-1)/8
       CALL GWPTNI (CLCHOR, IDCHOR, NBYTES, RERR)
-      MRCHOV(1) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RCNTX(16)))
-      MRCHOV(2) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RCNTX(17)))
-      MRCHOV(3) = MIN0 (MAXYVD, IFIX (0.5 + MXSCAL*RCNTX(18)))
-      MRCHOV(4) = MIN0 (MAXYVD, IFIX (0.5 + MYSCAL*RCNTX(19)))
+      MRCHOV(1) = MIN (MAXYVD, INT (0.5 + MXSCAL*RCNTX(16)))
+      MRCHOV(2) = MIN (MAXYVD, INT (0.5 + MYSCAL*RCNTX(17)))
+      MRCHOV(3) = MIN (MAXYVD, INT (0.5 + MXSCAL*RCNTX(18)))
+      MRCHOV(4) = MIN (MAXYVD, INT (0.5 + MYSCAL*RCNTX(19)))
       CALL GWPTPR (MRCHOV(1) , MVDCFW,  4, RERR)
       MSCHOV(1)      = MRCHOV(1)
       MSCHOV(2)      = MRCHOV(2)

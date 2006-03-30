@@ -1,5 +1,5 @@
 C
-C	$Id: gwpdva.f,v 1.3 2000-08-22 15:10:01 haley Exp $
+C	$Id: gwpdva.f,v 1.4 2006-03-30 01:00:40 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -45,7 +45,7 @@ C
       IPRIM = 1
       AGPEND(IPRIM) = .FALSE.
       DO 100 I=IVPLIX,IVPLCI
-        IOFF = IABS(IP2AEA(I))
+        IOFF = ABS(IP2AEA(I))
 C
 C  Is the requested value different from the sent?
 C  The following code reflects the fact that all attribute
@@ -68,7 +68,7 @@ C
       AGPEND(IPRIM) = .FALSE.
       DO 140 I=IVPMIX,IVPMCI
 C
-        IOFF = IABS(IP2AEA(I))
+        IOFF = ABS(IP2AEA(I))
 C
 C  Is the requested value different from the sent?
 C  The following code reflects the fact that all attribute
@@ -92,7 +92,7 @@ C
       AGPEND(IPRIM) = .FALSE.
       DO 150 I=IVTXIX,IVTXCI
 C
-        IOFF = IABS(IP2AEA(I))
+        IOFF = ABS(IP2AEA(I))
         JOFF = IOFF + IL2AEA(I) - 1
 C
 C  Is the requested value different from the sent?
@@ -121,7 +121,7 @@ C
       AGPEND(IPRIM) = .FALSE.
       DO 160 I=IVFAIX,IVFACI
 C
-        IOFF = IABS(IP2AEA(I))
+        IOFF = ABS(IP2AEA(I))
         JOFF = IOFF + IL2AEA(I) - 1
 C
 C  Is the requested value different from the sent?
