@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.201 2006-02-17 18:43:22 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.202 2006-04-05 15:54:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1933,6 +1933,7 @@ begin
       "cnFillColors"          : colors
       "cnFillPatterns"        : fill_patterns
       "cnFillScales"          : fill_scales
+      "cnFillScaleF"          : fill_scale
       "cnFillMode"            : fill_mode
       "cnMonoFillPattern"     : mono_fill_pat
       "cnMonoFillScale"       : mono_fill_scl
@@ -1961,6 +1962,8 @@ begin
       lbres@lbMonoFillScale = False
       lbres@lbFillScales    = fill_scales
       lbres@lbFillDotSizeF  = dot_size
+    else
+      lbres@lbFillScaleF    = fill_scale
     end if
   else
     getvalues the_plot
