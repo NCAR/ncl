@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.202 2006-04-05 15:54:11 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.203 2006-04-05 16:20:30 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1932,6 +1932,7 @@ begin
       "cnFillDotSizeF"        : dot_size
       "cnFillColors"          : colors
       "cnFillPatterns"        : fill_patterns
+      "cnFillPattern"         : fill_pattern
       "cnFillScales"          : fill_scales
       "cnFillScaleF"          : fill_scale
       "cnFillMode"            : fill_mode
@@ -1957,6 +1958,8 @@ begin
       lbres@lbMonoFillPattern = False
       lbres@lbFillPatterns    = fill_patterns
       lbres@lbFillDotSizeF    = dot_size
+    else
+      lbres@lbFillPattern = fill_pattern
     end if
     if(.not.mono_fill_scl)
       lbres@lbMonoFillScale = False
