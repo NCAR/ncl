@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.203 2006-04-05 16:20:30 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.204 2006-04-06 20:23:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2649,7 +2649,7 @@ begin
 
   if(min_lat.lt.-90.or.max_lat.gt.90) then
     print("get_lat_values: Warning: Your latitude values do not fall between -90 and 90 inclusive.")
-    print("You will not get nice get 'nice' latitude labels.")
+    print("You will not get 'nice' latitude labels.")
     lat_values = new(1,float,-999)
     return(lat_values)
   end if
