@@ -1,5 +1,5 @@
 /*
- *      $Id: TickMark.c,v 1.83 2004-02-20 00:54:11 dbrown Exp $
+ *      $Id: TickMark.c,v 1.84 2006-04-07 18:42:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8831,11 +8831,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_b_label_font_height = tmp->y_l_label_font_height;
 		xbylset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_b_label_font_height + 
 		     tmp->y_l_label_font_height) / 2.0;
 		tmp->x_b_label_font_height = h;
 		tmp->y_l_label_font_height = h;
+		if (tmp->y_l_label_font_height_set)
+			xbylset = True;
 	}
 	if (tmp->x_t_label_font_height_set && 
 	    ! tmp->y_r_label_font_height_set) {
@@ -8847,11 +8849,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_t_label_font_height = tmp->y_r_label_font_height;
 		xtyrset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_t_label_font_height + 
 		     tmp->y_r_label_font_height) / 2.0;
 		tmp->x_t_label_font_height = h;
 		tmp->y_r_label_font_height = h;
+		if (tmp->y_r_label_font_height_set)
+			xtyrset = True;
 	}
 	if (xbylset && ! xtyrset) {
 		tmp->x_t_label_font_height = tmp->x_b_label_font_height;
@@ -8861,7 +8865,7 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_b_label_font_height = tmp->x_t_label_font_height;
 		tmp->y_l_label_font_height = tmp->x_t_label_font_height;
 	}
-	else {
+	else { 
 		h = (tmp->x_b_label_font_height + 
 		     tmp->x_t_label_font_height) / 2.0;
 		tmp->x_b_label_font_height = h;
@@ -8881,11 +8885,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_b_major_length = tmp->y_l_major_length;
 		xbylset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_b_major_length + 
 		     tmp->y_l_major_length) / 2.0;
 		tmp->x_b_major_length = h;
 		tmp->y_l_major_length = h;
+		if (tmp->x_b_major_length_set)
+			xbylset = True;
 	}
 	if (tmp->x_t_major_length_set && 
 	    ! tmp->y_r_major_length_set) {
@@ -8897,11 +8903,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_t_major_length = tmp->y_r_major_length;
 		xtyrset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_t_major_length + 
 		     tmp->y_r_major_length) / 2.0;
 		tmp->x_t_major_length = h;
 		tmp->y_r_major_length = h;
+		if (tmp->x_t_major_length_set)
+			xtyrset = True;
 	}
 	if (xbylset && ! xtyrset) {
 		tmp->x_t_major_length = tmp->x_b_major_length;
@@ -8931,11 +8939,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_b_minor_length = tmp->y_l_minor_length;
 		xbylset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_b_minor_length + 
 		     tmp->y_l_minor_length) / 2.0;
 		tmp->x_b_minor_length = h;
 		tmp->y_l_minor_length = h;
+		if (tmp->x_b_minor_length_set)
+			xbylset = True;
 	}
 	if (tmp->x_t_minor_length_set && 
 	    ! tmp->y_r_minor_length_set) {
@@ -8947,11 +8957,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_t_minor_length = tmp->y_r_minor_length;
 		xtyrset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_t_minor_length + 
 		     tmp->y_r_minor_length) / 2.0;
 		tmp->x_t_minor_length = h;
 		tmp->y_r_minor_length = h;
+		if (tmp->x_t_minor_length_set)
+			xtyrset = True;
 	}
 	if (xbylset && ! xtyrset) {
 		tmp->x_t_minor_length = tmp->x_b_minor_length;
@@ -8981,11 +8993,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_b_major_outward_length = tmp->y_l_major_outward_length;
 		xbylset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_b_major_outward_length + 
 		     tmp->y_l_major_outward_length) / 2.0;
 		tmp->x_b_major_outward_length = h;
 		tmp->y_l_major_outward_length = h;
+		if (tmp->x_b_major_outward_length_set)
+			xbylset = True;
 	}
 	if (tmp->x_t_major_outward_length_set && 
 	    ! tmp->y_r_major_outward_length_set) {
@@ -8997,11 +9011,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_t_major_outward_length = tmp->y_r_major_outward_length;
 		xtyrset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_t_major_outward_length + 
 		     tmp->y_r_major_outward_length) / 2.0;
 		tmp->x_t_major_outward_length = h;
 		tmp->y_r_major_outward_length = h;
+		if (tmp->x_t_major_outward_length_set)
+			xtyrset = True;
 	}
 	if (xbylset && ! xtyrset) {
 		tmp->x_t_major_outward_length = tmp->x_b_major_outward_length;
@@ -9031,11 +9047,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_b_minor_outward_length = tmp->y_l_minor_outward_length;
 		xbylset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_b_minor_outward_length + 
 		     tmp->y_l_minor_outward_length) / 2.0;
 		tmp->x_b_minor_outward_length = h;
 		tmp->y_l_minor_outward_length = h;
+		if (tmp->x_b_minor_outward_length_set)
+			xbylset = True;
 	}
 	if (tmp->x_t_minor_outward_length_set && 
 	    ! tmp->y_r_minor_outward_length_set) {
@@ -9047,11 +9065,13 @@ static NhlErrorTypes ScaleValuesForMove
 		tmp->x_t_minor_outward_length = tmp->y_r_minor_outward_length;
 		xtyrset = True;
 	}
-	else {
+	else { /* either both are set or none are set */
 		h = (tmp->x_t_minor_outward_length + 
 		     tmp->y_r_minor_outward_length) / 2.0;
 		tmp->x_t_minor_outward_length = h;
 		tmp->y_r_minor_outward_length = h;
+		if (tmp->x_t_minor_outward_length_set)
+			xtyrset = True;
 	}
 	if (xbylset && ! xtyrset) {
 		tmp->x_t_minor_outward_length = tmp->x_b_minor_outward_length;
