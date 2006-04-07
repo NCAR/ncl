@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c,v 1.7 2003-12-09 17:03:07 grubin Exp $
+ *      $Id: wks.c,v 1.8 2006-04-07 18:29:17 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -841,11 +841,13 @@ NGCALLF(begwks,BEGWKS)(unit, status)
                 return(0);
         }
 
-        if (fseek(mftab[*unit].fp, 0L, L_SET) == -1)
-        {
-                (void) fprintf(stderr, "Error in begwks_() : Seek failed\n");
-                *status = 304;
-                return(0);
+        if (mftab[*unit].type != PIPE_OUTPUT) {
+          if (fseek(mftab[*unit].fp, 0L, L_SET) == -1)
+          {
+                  (void) fprintf(stderr, "Error in begwks_() : Seek failed\n");
+                  *status = 304;
+                  return(0);
+          }
         }
         return(0);
 }
@@ -881,11 +883,13 @@ NGCALLF(lstwks,LSTWKS)(unit, status)
                 return(0);
         }
 
-        if ( fseek(mftab[*unit].fp, -1440L, L_INCR) == -1)
-        {
-                (void) fprintf(stderr, "Error in lstwks_() : Seek failed\n");
-                *status = 304;
-                return(0);
+        if (mftab[*unit].type != PIPE_OUTPUT) {
+          if ( fseek(mftab[*unit].fp, -1440L, L_INCR) == -1)
+          {
+                  (void) fprintf(stderr, "Error in lstwks_() : Seek failed\n");
+                  *status = 304;
+                  return(0);
+          }
         }
         return(0);
 }
@@ -915,10 +919,12 @@ NGCALLF(flswks,FLSWKS)(unit, status)
                 return(0);
         }
 
-        if (fseek(mftab[*unit].fp, 0L, SEEK_CUR) != 0) {
-                (void) fprintf(stderr, "Error in flswks_() : Seek failed\n");
-                *status = 304;
-                return(0);
+        if (mftab[*unit].type != PIPE_OUTPUT) {
+          if (fseek(mftab[*unit].fp, 0L, SEEK_CUR) != 0) {
+                  (void) fprintf(stderr, "Error in flswks_() : Seek failed\n");
+                  *status = 304;
+                  return(0);
+          }
         }
 
         rc = fflush(mftab[*unit].fp);
