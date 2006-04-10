@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.58 2005-08-19 22:01:27 dbrown Exp $
+ *      $Id: NclApi.c,v 1.59 2006-04-10 16:41:26 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -239,8 +239,7 @@ int NclInitServer
 				}
 			}
 		} else {
-			closedir(d);
-			NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), no libraries loaded",libpath);
+			NhlPError(NhlWARNING,NhlEUNKNOWN," Could not open (%s), no libraries loaded.",libpath);
 		}
 	}
 
@@ -284,8 +283,7 @@ int NclInitServer
 				}
 			}
 		} else {
-			closedir(d);
-                        NhlPError(NhlFATAL,NhlEUNKNOWN," Could not open (%s), no scripts loaded",scriptpath);
+            NhlPError(NhlWARNING,NhlEUNKNOWN," Could not open (%s), no scripts loaded.",scriptpath);
 		}
 
 	}

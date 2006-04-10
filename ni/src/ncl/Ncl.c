@@ -334,9 +334,8 @@ main(int argc, char **argv) {
                 }
             }
         } else {
-            closedir(d);
-            NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "Could not open (%s), no libraries loaded.", libpath);
+            NhlPError(NhlWARNING, NhlEUNKNOWN,
+                "Could not open default library path (%s), no libraries loaded.", libpath);
         }
         _NclResetNewSymStack();
     }
@@ -387,8 +386,8 @@ main(int argc, char **argv) {
                 }
             }
         } else {
-            (void) closedir(d);
-            NhlPError(NhlFATAL, NhlEUNKNOWN, "Could not open (%s), no scripts loaded.", scriptpath);
+            NhlPError(NhlWARNING, NhlEUNKNOWN,
+                " Could not open default script path (%s), no scripts loaded.", scriptpath);
         }
     }
 
