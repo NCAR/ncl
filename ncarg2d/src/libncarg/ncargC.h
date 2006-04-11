@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.19 2005-04-14 20:27:49 kennison Exp $
+ *  $Id: ncargC.h,v 1.20 2006-04-11 02:15:25 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -4376,6 +4376,16 @@ extern void c_tdclrs(
     int   iofc,
     int   iolc,
     int   ilmt
+#endif
+);
+
+extern void c_tdctri(
+#ifdef NeedFuncProto
+    float *rtri,
+    int    mtri,
+    int    *ntri,
+    int    iaxs,
+    float  rcut
 #endif
 );
 
