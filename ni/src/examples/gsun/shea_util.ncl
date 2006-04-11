@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.20 2005-04-17 22:07:38 haley Exp $
+;      $Id: shea_util.ncl,v 1.21 2006-04-11 20:09:52 asphilli Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2545,6 +2545,9 @@ begin
 	   "tmXTOn"  : False
 	   "tmYRBorderOn" : False
 	   "tmXTBorderOn" : False
+  	   "pmTitleDisplayMode": "Always"                   ; allow titles
+  	   "tiMainOn"     : True
+  	   "tiMainString"   : ""	   
 	end create
 	if (plotres) then
 	   attsetvalues(plot,plotres)	
