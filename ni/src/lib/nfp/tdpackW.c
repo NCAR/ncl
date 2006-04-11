@@ -6,19 +6,19 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include "wrapper.h"
 
-extern NGCALLF(tdttri,tdttri)(float *,float *,float*,int *,int *, float *,
-                              float *,float *,int *,int *,int *,float *, 
-                              float *,float *,float *,float *,float *);
+extern void NGCALLF(tdttri,tdttri)(float *,float *,float*,int *,int *, float *,
+                                   float *,float *,int *,int *,int *,float *, 
+                                   float *,float *,float *,float *,float *);
 
-extern NGCALLF(tditri,tditri)(float *,int *,float *,int *, float *,int *,
-                              float *,int *,int *,float *,float *,int *,
-			      int *, int *);
+extern void NGCALLF(tditri,tditri)(float *,int *,float *,int *, float *,int *,
+                                   float *,int *,int *,float *,float *,int *,
+                                   int *, int *);
 
-extern NGCALLF(tdstri,TDSTRI)(float *,int *,float *,int *,float *,int *,
-			      float *,int *,int *,int *);
+extern void NGCALLF(tdstri,TDSTRI)(float *,int *,float *,int *,float *,int *,
+                                   float *,int *,int *,int *);
 
-extern NGCALLF(tdez1d,TDEZ1D)(int *,float *,float *,float*,int *,float *,
-                              float *,float *,float *,float *,int *);
+extern void NGCALLF(tdez1d,TDEZ1D)(int *,float *,float *,float*,int *,float *,
+                                   float *,float *,float *,float *,int *);
 
 NhlErrorTypes tdinit_W( void )
 {
@@ -1039,7 +1039,7 @@ NhlErrorTypes tdstri_W( void )
   }
 
   NGCALLF(tdstri,TDSTRI)(u, idim, v, jdim, w, &dsizes_w[1], rtri, &mtri, ntri,
-			 irst);
+                         irst);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdstri: triangle list overflow");
@@ -1082,7 +1082,7 @@ NhlErrorTypes tditri_W( void )
   }
 
   NGCALLF(tditri,TDITRI)(u,idim,v,jdim,w,kdim,f,&dsizes_f[2],&dsizes_f[1],
-			 fiso,rtri,&mtri,ntri,irst);
+          fiso,rtri,&mtri,ntri,irst);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tditri: triangle list overflow");

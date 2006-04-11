@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-extern NGCALLF(gbytes,GBYTES)(int *, int *, int *, int *, int *, int *);
-extern NGCALLF(sbytes,SBYTES)(int *, int *, int *, int *, int *, int *);
-extern NGCALLF(getbitsone,GETBITSONE)(int *, int *, int *, int *, int *);
+extern void NGCALLF(gbytes,GBYTES)(int *, int *, int *, int *, int *, int *);
+extern void NGCALLF(sbytes,SBYTES)(int *, int *, int *, int *, int *, int *);
+extern void NGCALLF(getbitsone,GETBITSONE)(int *, int *, int *, int *, int *);
 
 NhlErrorTypes dim_gbits_W( void )
 {
