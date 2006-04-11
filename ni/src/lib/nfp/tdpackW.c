@@ -10,6 +10,13 @@ extern NGCALLF(tdttri,tdttri)(float *,float *,float*,int *,int *, float *,
                               float *,float *,int *,int *,int *,float *, 
                               float *,float *,float *,float *,float *);
 
+extern NGCALLF(tditri,tditri)(float *,int *,float *,int *, float *,int *,
+                              float *,int *,int *,float *,float *,int *,
+			      int *, int *);
+
+extern NGCALLF(tdstri,TDSTRI)(float *,int *,float *,int *,float *,int *,
+			      float *,int *,int *,int *);
+
 extern NGCALLF(tdez1d,TDEZ1D)(int *,float *,float *,float*,int *,float *,
                               float *,float *,float *,float *,int *);
 
@@ -415,6 +422,120 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
     return(NhlFATAL);
   }
 }
+
+
+
+/*
+ * The pcsetp_W code is based on Fred Clare's wmsetp_W code.
+ */
+
+NhlErrorTypes pcsetp_W(void)
+{
+  char  *arg1;
+  int   numpi, numpf, i, j;
+
+/*
+ *  List the integer and float parameter names.  To add new ones,
+ *  all that needs to be done is add the names to this list.
+ */
+  char *params_i[] = {"fn","of","FN","OF"};
+  char *params_f[] = {"ol","oc","OL","OC"};
+/*
+ * Input array variables
+ */
+  string *pname;
+  int ndims_pname, dsizes_pname[NCL_MAX_DIMENSIONS];
+  void *pvalue;
+  int ndims_pvalue, dsizes_pvalue[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_pvalue;
+
+/*
+ * Retrieve argument #1
+ */
+  pname = (string *) NclGetArgValue(
+          0,
+          2,
+          &ndims_pname,
+          dsizes_pname,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  arg1 = NrmQuarkToString(*pname);
+ 
+/*
+ *  Check to see if the parameter name is valid.
+ */
+  numpi = sizeof(params_i)/sizeof(void *);
+  numpf = sizeof(params_f)/sizeof(void *);
+  for (i = 0; i < numpi; i++) {
+    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+      goto OK_NAME;
+    }
+  }
+  for (i = 0; i < numpf; i++) {
+    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
+      goto OK_NAME;
+    }
+  }
+  NhlPError(NhlFATAL, NhlEUNKNOWN, "pcsetp: unrecognized parameter name");
+  return(NhlFATAL);
+
+/*
+ * Retrieve argument #2
+ */
+OK_NAME: pvalue = (void *) NclGetArgValue(
+           1,
+           2,
+           &ndims_pvalue,
+           dsizes_pvalue,
+           NULL,
+           NULL,
+           &type_pvalue,
+           2);
+
+/*
+ *  Process the parameter if it has an integer value.
+ */
+  if (type_pvalue == NCL_int) {
+    for (i = 0; i < numpi; i++) {
+      if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+        j = *((int *) pvalue);
+        c_pcseti(arg1, j);
+        return(NhlNOERROR);
+      }
+    }
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "pcsetp: The specified value for the parameter has an invalid type");
+    return(NhlFATAL);
+  }
+  else if (type_pvalue == NCL_float || type_pvalue == NCL_double) {
+
+/*
+ *  Process the parameter if it has a float value or double value.
+ */
+    for (i = 0; i < numpf; i++) {
+      if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
+        if (type_pvalue == NCL_float) {
+          c_pcsetr(arg1, *((float *) pvalue));
+          return(NhlNOERROR);
+        }
+        else if (type_pvalue == NCL_double) {
+          c_pcsetr(arg1, (float) *((double *) pvalue));
+          return(NhlNOERROR);
+        }
+      }
+    }
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "pcsetp: The specified value for the parameter has an invalid type");
+    return(NhlFATAL);
+  }
+  else {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "pcsetp: The specified value for the "
+              "parameter has an incorrect type");
+    return(NhlFATAL);
+  }
+}
+
 
 
 NhlErrorTypes tdstrs_W( void )
@@ -892,18 +1013,19 @@ NhlErrorTypes tddtri_W( void )
 NhlErrorTypes tdstri_W( void )
 {
   float *u, *v, *w, *rtri;
-  int *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[2], dsizes_rtri[2];
-  int nu, nv;
+  int *idim, *jdim, *ntri, mtri, *irst;
+  int dsizes_w[2], dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
-  u    = (float*)NclGetArgValue(0,6,NULL,dsizes_u,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue(1,6,NULL,dsizes_v,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue(2,6,NULL,dsizes_w,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(3,6,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,2);
+  u    = (float*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,2);
+  idim =   (int*)NclGetArgValue(1,8,NULL,NULL,NULL,NULL,NULL,2);
+  v    = (float*)NclGetArgValue(2,8,NULL,NULL,NULL,NULL,NULL,2);
+  jdim =   (int*)NclGetArgValue(3,8,NULL,NULL,NULL,NULL,NULL,2);
+  w    = (float*)NclGetArgValue(4,8,NULL,dsizes_w,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(5,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -911,14 +1033,13 @@ NhlErrorTypes tdstri_W( void )
     return(NhlFATAL);
   }
 
-  nu = dsizes_u[0];
-  nv = dsizes_v[0];
-  if(dsizes_w[0] < nv || dsizes_w[1] < nu) {
+  if(dsizes_w[0] < *jdim || dsizes_w[1] < *idim) {
     NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the dimensions of w must greater than or equal to nv x nu");
     return(NhlFATAL);
   }
 
-  c_tdstri(u, nu, v, nv, w, nu, rtri, mtri, ntri, *irst);
+  NGCALLF(tdstri,TDSTRI)(u, idim, v, jdim, w, &dsizes_w[1], rtri, &mtri, ntri,
+			 irst);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdstri: triangle list overflow");
@@ -932,20 +1053,22 @@ NhlErrorTypes tdstri_W( void )
 NhlErrorTypes tditri_W( void )
 {
   float *u, *v, *w, *f, *fiso, *rtri;
-  int *ntri, mtri, *irst;
-  int dsizes_u[1], dsizes_v[1], dsizes_w[1], dsizes_f[3], dsizes_rtri[2];
-  int nu, nv, nw;
+  int *idim, *jdim, *kdim, *ntri, mtri, *irst;
+  int dsizes_f[3], dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
-  u    = (float*)NclGetArgValue(0,8,NULL,dsizes_u,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue(1,8,NULL,dsizes_v,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue(2,8,NULL,dsizes_w,NULL,NULL,NULL,2);
-  f    = (float*)NclGetArgValue(3,8,NULL,dsizes_f,NULL,NULL,NULL,2);
-  fiso = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(5,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
+  u    = (float*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
+  idim =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
+  v    = (float*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
+  jdim =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
+  w    = (float*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
+  kdim =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
+  f    = (float*)NclGetArgValue( 6,11,NULL,dsizes_f,NULL,NULL,NULL,2);
+  fiso = (float*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue( 8,11,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -953,16 +1076,13 @@ NhlErrorTypes tditri_W( void )
     return(NhlFATAL);
   }
 
-  nu = dsizes_u[0];
-  nv = dsizes_v[0];
-  nw = dsizes_w[0];
-  if(dsizes_f[0] < nw || dsizes_f[1] < nv || dsizes_f[2] < nu) {
+  if(dsizes_f[0] < *kdim || dsizes_f[1] < *jdim || dsizes_f[2] < *idim) {
     NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the dimensions of f must be greater than or equal to nw x nv x nu");
     return(NhlFATAL);
   }
 
-  c_tditri(u, nu, v, nv, w, nw, f, dsizes_f[2], dsizes_f[1], *fiso, 
-	   rtri, mtri, ntri, *irst);
+  NGCALLF(tditri,TDITRI)(u,idim,v,jdim,w,kdim,f,&dsizes_f[2],&dsizes_f[1],
+			 fiso,rtri,&mtri,ntri,irst);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tditri: triangle list overflow");

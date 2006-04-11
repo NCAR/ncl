@@ -376,3 +376,84 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
   return(NhlFATAL);
 }
 
+
+NhlErrorTypes ngritd_W(void)
+{
+/*
+ *  Input variables
+ */
+  float *angl, *ucrd, *vcrd, *wcrd;
+  int *iaxs;
+
+/*
+ *  Retrieve argument #1 (input)
+ */
+  iaxs = (int *) NclGetArgValue(
+      0,
+      5,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      2);
+
+/*
+ *  Retrieve argument #2 (input)
+ */
+  angl = (float *) NclGetArgValue(
+      1,
+      5,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      2);
+
+/*
+ *  Retrieve argument #3 (input)
+ */
+  ucrd = (float *) NclGetArgValue(
+      2,
+      5,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      2);
+
+/*
+ *  Retrieve argument #4 (output)
+ */
+  vcrd = (float *) NclGetArgValue(
+       3,
+       5,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       2);
+
+/*
+ *  Retrieve argument #5 (output)
+ */
+  wcrd = (float *) NclGetArgValue(
+       4,
+       5,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       NULL,
+       2);
+/*
+ *  Make the call to c_ngritd.
+ */
+  c_ngritd(*iaxs, *angl, ucrd, vcrd, wcrd);
+  return(NhlNOERROR);
+}
+
+

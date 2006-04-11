@@ -147,6 +147,7 @@ extern NhlErrorTypes simpeq_W(void);
 extern NhlErrorTypes simpne_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
+extern NhlErrorTypes ngritd_W(void);
 
 extern NhlErrorTypes natgrids_W(void);
 extern NhlErrorTypes natgridd_W(void);
@@ -249,6 +250,7 @@ extern NhlErrorTypes drwsrfc_W(void);
 extern NhlErrorTypes drwvctc_W(void);
 extern NhlErrorTypes drwconc_W(void);
 
+extern NhlErrorTypes pcsetp_W(void);
 extern NhlErrorTypes tdinit_W(void);
 extern NhlErrorTypes tdpara_W(void);
 extern NhlErrorTypes tdclrs_W(void);
@@ -2213,6 +2215,19 @@ void NclAddUserFuncs(void)
     NclRegisterProc(nggcog_W, args, "nggcog", nargs);
 
 /*
+ *  Register ngritd.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "integer", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
+    SetArgTemplate(args, nargs, "float", 1, dimsizes); nargs++;
+    NclRegisterProc(ngritd_W, args, "ngritd", nargs);
+
+/*
  * Register "natgrids".
  *
  * Create private argument array
@@ -2319,6 +2334,18 @@ void NclAddUserFuncs(void)
  * Register wrapper function pointer and argument templates.
  */
         NclRegisterProc(drwconc_W,args,"drwconc",nargs);
+/*
+ *  Register pcsetp.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes);
+    nargs++;
+    SetArgTemplate(args, nargs, 0, 1, dimsizes);
+    nargs++;
+    NclRegisterProc(pcsetp_W, args, "pcsetp", nargs);
+
 /*
  * Register tdinit.
  */
@@ -2578,14 +2605,16 @@ void NclAddUserFuncs(void)
  * Register tdstri.
  */
         nargs = 0;
-        args = NewArgs(6);
+        args = NewArgs(8);
 
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-
-        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
+
+        SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         NclRegisterProc(tdstri_W,args,"tdstri",nargs);
@@ -2593,14 +2622,17 @@ void NclAddUserFuncs(void)
  * Register tditri.
  */
         nargs = 0;
-        args = NewArgs(8);
-
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"float",3,NclANY);nargs++;
+        args = NewArgs(11);
 
         dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",3,NclANY);nargs++;
+
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
