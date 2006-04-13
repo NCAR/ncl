@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.108 2006-03-31 17:41:03 haley Exp $
+;      $Id: contributed.ncl,v 1.109 2006-04-13 13:34:13 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7833,4 +7833,270 @@ begin
   return (rhoout)   
 end
 
+; ******************************************************************
+; D. Shea
+; append [concatenate] arrays along record dimension 
+function array_append_record (x1, x2, iopt:integer)
+local dim_x1, dim_x2, rank_x1, rank_x2, n1, n2, dim_xNew, xNew \
+    , errFlag, dimNames_x1, dimNames_x2, dimNames, n           \
+    , recCoord, recFlag
+
+begin
+                                   ; get array shape/sizes
+  dim_x1  = dimsizes(x1)
+  dim_x2  = dimsizes(x2)
+
+  rank_x1 = dimsizes(dim_x1)  
+  rank_x2 = dimsizes(dim_x2)  
+
+  errFlag = 0                      ; ERROR CHECKING
+                                   ; ranks must be equal
+  if (rank_x1.ne.rank_x1) then
+      print("array_append_record: ranks not equal: rank_x1="+rank_x1+ \
+                                                "  rank_x2="+rank_x2)
+      errFlag = errFlag + 1
+  end if
+                                   ; current version only supports
+  if (rank_x1.gt.5) then
+      print ("array_append_record: currently will only append array of rank 5 or less")
+      print ("                     rank="+rank_x1)                                     
+      errFlag = errFlag + 1
+  end if
+                                   ; types must match
+  if (typeof(x1).ne.typeof(x2)) then
+      print ("array_append_record: arrays must be of the same type")
+      print ("                     typeof(x1)="+typeof(x1))                                     
+      print ("                     typeof(x2)="+typeof(x2))                                     
+      errFlag = errFlag + 1
+  end if
+
+  if (rank_x1.gt.1 .and. .not.all(dim_x1(1:).eq.dim_x2(1:))) then
+      print ("array_append_record: non-record dimensions must be the same size")
+      errFlag = errFlag + 1
+  end if
  
+  if (errFlag.ne.0) then
+      exit
+  end if
+                                   ; allocate space for new array
+  n1          = dim_x1(0)
+  n2          = dim_x2(0)
+  dim_xNew    = dim_x1
+  dim_xNew(0) = n1 + n2
+  xNew        = new ( dim_xNew, typeof(x1), getFillValue(x1) )
+                                   ; chk _FillValue stuff
+  if (.not.isatt(x1,"_FillValue") ) then
+      delete(xNew@_FillValue)
+  end if
+  if (isatt(x2,"_FillValue") ) then
+      xNew@_FillValue = x2@_FillValue
+  end if
+                                   ; assign values
+  if (rank_x1.eq.1) then
+      xNew(0:n1-1)         = (/ x1 /)
+      xNew(n1:   )         = (/ x2 /)
+  end if
+
+  if (rank_x1.eq.2) then
+      xNew(0:n1-1,:)       = (/ x1 /)
+      xNew(n1:   ,:)       = (/ x2 /)
+  end if
+
+  if (rank_x1.eq.3) then
+      xNew(0:n1-1,:,:)     = (/ x1 /)
+      xNew(n1:   ,:,:)     = (/ x2 /)
+  end if
+
+  if (rank_x1.eq.4) then
+      xNew(0:n1-1,:,:,:)   = (/ x1 /)
+      xNew(n1:   ,:,:,:)   = (/ x2 /)
+  end if
+
+  if (rank_x1.eq.5) then
+      xNew(0:n1-1,:,:,:,:) = (/ x1 /)
+      xNew(n1:   ,:,:,:,:) = (/ x2 /)
+  end if
+                                 ; meta data
+  copy_VarAtts (x1, xNew)        ; copy attributes
+  copy_VarAtts (x2, xNew)        ; may overwrite previous info
+
+  dimNames_x1 = getvardims(x1)   ; dimension names
+  dimNames_x2 = getvardims(x2) 
+  dimNames    = dimNames_x1      ; default
+                                 ; only go here if dimNames are not the same
+                                 ; name all dimensions
+  if (any(dimNames_x1.ne.dimNames_x2)) then
+      do n=0,rank_x1-1
+         if (ismissing(dimNames_x1(n)) .and. \
+             .not.ismissing(dimNames_x2(n))) then
+             dimNames(n) = dimNames_x2(n)
+         end if
+      end do
+  end if 
+
+  recCoord = new ( n1+n2, typeof(x1&$dimNames_x1(0)$) )
+  if (iscoord(x1,dimNames_x1(0)) ) then 
+      recCoord(0:n1-1) = x1&$dimNames_x1(0)$   
+  end if
+  if (iscoord(x2,dimNames_x2(0)) ) then 
+      recCoord(n1:   ) = x2&$dimNames_x2(0)$   
+  end if
+  recFlag  = False
+  if (.not.all(ismissing(recCoord))) then
+      recFlag = True
+      delete(recCoord@_FillValue)
+  end if
+                                 ; assign coordinate variables [if present]
+  do n=0,rank_x1-1                    
+     xNew!n = dimNames(n)        ; name all dimensions
+     if (n.eq.0 .and. recFlag) then 
+         xNew&$dimNames(n)$ = recCoord
+     else
+         if (iscoord(x1,dimNames_x1(n)) ) then 
+             xNew&$dimNames(n)$ = x1&$dimNames(n)$   ; right dimensions
+         else
+             if (iscoord(x1,dimNames_x2(n)) ) then
+                 xNew&$dimNames(n)$ = x2&$dimNames(n)$
+             end if
+         end if
+     end if
+  end  do
+
+  return (xNew)
+end
+; ******************************************************************
+; D. Shea
+; attaches/appends table data: ie (row,column) arrays
+; add additional rows
+function table_attach_rows (t1[*][*], t2[*][*], iopt:integer)
+
+local dim_t1, dim_t2, ncol1, ncol2, nrow1, nrow2    \
+    , dimNames_t1, dimNames_t2, dimNames, n
+begin
+                                   ; get array shape/sizes
+  dim_t1  = dimsizes(t1)
+  dim_t2  = dimsizes(t2)
+
+  ncol1   = dim_t1(1)
+  ncol2   = dim_t2(1)
+
+  if (ncol1.ne.ncol2) then
+      print ("table_attach_rows: tables must have same number of columns")
+      print ("                    ncol1="+ncol1)                                     
+      print ("                    ncol2="+ncol2)                                     
+      exit
+  end if
+
+  if (typeof(t1).ne.typeof(t2)) then
+      print ("table_attach_rows: arrays must be of the same type")
+      print ("                    typeof(t1)="+typeof(t1)) 
+      print ("                    typeof(t2)="+typeof(t2)) 
+      exit
+  end if
+                                   ; allocate space for new array
+  nrow1       = dim_t1(0)
+  nrow2       = dim_t2(0)
+
+  tNew = new ( (/nrow1+nrow2, ncol1/), typeof(t1), getFillValue(t1))
+  delete(tNew@_FillValue)
+                                   ; chk _FillValue stuff
+  if (isatt(t1,"_FillValue") ) then
+      tNew@_FillValue = t1@_FillValue
+  end if
+  if (isatt(t2,"_FillValue") ) then
+      tNew@_FillValue = t2@_FillValue
+  end if
+                                 ; insert values
+  tNew(0:nrow1-1,:)   = (/ t1 /)
+  tNew(nrow1:   ,:)   = (/ t2 /)
+                                 ; meta data
+  tNew!0 = "row"                 ; default dim names
+  tNew!1 = "col" 
+
+  copy_VarAtts (t1, tNew)        ; copy attributes
+  copy_VarAtts (t2, tNew)        ; may overwrite previous info
+
+  dimNames_t1 = getvardims(t1)   ; dimension names
+  dimNames_t2 = getvardims(t2) 
+  dimNames    = dimNames_t1      ; default
+
+  do n=0,1                       ; override "row", "col"
+     if (.not.ismissing(dimNames_t1(n))) then
+         tNew!n = dimNames_t1(n) ; default ... use t1 dim names
+     else
+         if (.not.ismissing(dimNames_t2(n))) then
+             tNew!n = dimNames_t2(n)    ; use t2 dim names if t1 not present
+         end if
+     end if
+  end do
+                                 ; coordinate stuff [if present]
+  do n=0,1
+     if (n.eq.0) then 
+         if (iscoord(t1,dimNames_t1(n)) ) then 
+             tNew&$dimNames(n)$(0:n1-1) = t1&$dimNames_t1(n)$ ; t1 leftmost dimension
+         end if
+         if (iscoord(t2,dimNames_t2(n)) ) then 
+             tNew&$dimNames(n)$(n1:   ) = t2&$dimNames_t2(n)$ ; t2 leftmost dimension
+         end if
+     else
+         if (iscoord(t1,dimNames_t1(n)) ) then 
+             tNew&$dimNames(n)$ = t1&$dimNames(n)$   ; right dimensions
+         else
+             if (iscoord(t1,dimNames_t2(n)) ) then
+                 tNew&$dimNames(n)$ = t2&$dimNames(n)$
+             end if
+         end if
+     end if
+  end do
+
+  return (tNew)
+end
+; ******************************************************************
+; D. Shea
+; appends table data: ie (row,column) arrays
+; adds additional columns
+;
+; This *requires* that the dimensions be named for each table
+
+function table_attach_columns (t1[*][*], t2[*][*], iopt:integer)
+local dim_t1, dim_t2, nrow1, nrow2, trows    \
+    , dimNames_t1, dimNames_t2, dimNames, n
+begin
+                                   ; get array shape/sizes
+  dim_t1  = dimsizes(t1)
+  dim_t2  = dimsizes(t2)
+
+  nrow1   = dim_t1(0)
+  nrow2   = dim_t2(0)
+
+  dimNames_t1 = getvardims(t1)     ; dimension names
+  dimNames_t2 = getvardims(t2) 
+
+  if (nrow1.ne.nrow2) then
+      print ("table_attach_columns: tables must have same number of rows")
+      print ("                      nrow1="+nrow1)                                     
+      print ("                      nrow2="+nrow2)                                     
+      exit
+  end if
+
+  if (typeof(t1).ne.typeof(t2)) then
+      print ("table_attach_columns: tables must be of the same type")
+      print ("                      typeof(t1)="+typeof(t1))  
+      print ("                      typeof(t2)="+typeof(t2)) 
+      exit
+  end if
+
+  if (any(ismissing(dimNames_t1))  .or.  \
+      any(ismissing(dimNames_t2))) then 
+      print ("table_attach_columns: dimensions must be named")       
+      print ("                      dimNames_t1="+dimNames_t1)  
+      print ("                      dimNames_t2="+dimNames_t2)  
+  end if
+                                   ; reverse order ... invoke row append
+  trows = table_attach_rows(t1($dimNames_t1(1)$|:,$dimNames_t1(0)$|:) \
+                           ,t2($dimNames_t2(1)$|:,$dimNames_t2(0)$|:) , 0 )
+  dimNames = getvardims(trows)     ; dimension names
+                                   ; revert back to original order
+  return (trows($dimNames(1)$|:,$dimNames(0)$|:) )
+end
+
