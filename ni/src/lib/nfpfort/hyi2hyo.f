@@ -42,17 +42,19 @@ c f77
               DO KO = 1,KLEVO
                   PO(KO) = HYAO(KO)*P0 + HYBO(KO)*PSFC(ML,NL)
               END DO
-
+c Andy Mai [4/2006] is responsible for the ".OR. PO(KO).LT.PI(1)"
               DO KO = 1,KLEVO
                   DO KI = 1,KLEVI - 1
-                      IF (PO(KO).GE.PI(KI) .AND.
-     +                    PO(KO).LT.PI(KI+1)) THEN
+                      IF ((PO(KO).GE.PI(KI).AND.PO(KO).LT.PI(KI+1)) .OR.
+     +                     PO(KO).LT.PI(1)) THEN
                           XO(ML,NL,KO) = XI(ML,NL,KI) +
      +                                   (XI(ML,NL,KI+1)-XI(ML,NL,KI))*
      +                                   (DLOG(PO(KO))-DLOG(PI(KI)))/
      +                                   (DLOG(PI(KI+1))-DLOG(PI(KI)))
+                          GO TO 20
                       END IF
                   END DO
+   20             CONTINUE
               END DO
 
           END DO
