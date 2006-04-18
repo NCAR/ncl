@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.37 2006-02-07 22:20:46 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.38 2006-04-18 01:10:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -349,26 +349,33 @@ NetCdfFileRecord *tmp;
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return 0;
 	}
+	options[NC_PREFILL_OPT].name = NrmStringToQuark("prefill");
 	options[NC_PREFILL_OPT].data_type = NCL_logical;
 	options[NC_PREFILL_OPT].n_values = 1;
 	options[NC_PREFILL_OPT].values = (void *) 1;
+	options[NC_DEFINE_MODE_OPT].name = NrmStringToQuark("definemode");
 	options[NC_DEFINE_MODE_OPT].data_type = NCL_logical;
 	options[NC_DEFINE_MODE_OPT].n_values = 1;
 	options[NC_DEFINE_MODE_OPT].values = (void *) 0;
+	options[NC_HEADER_SPACE_OPT].name = NrmStringToQuark("headerreservespace");
 	options[NC_HEADER_SPACE_OPT].data_type = NCL_int;
 	options[NC_HEADER_SPACE_OPT].n_values = 1;
 	options[NC_HEADER_SPACE_OPT].values = (void *) 0;
+	options[NC_SUPPRESS_CLOSE_OPT].name = NrmStringToQuark("suppressclose");
 	options[NC_SUPPRESS_CLOSE_OPT].data_type = NCL_int;
 	options[NC_SUPPRESS_CLOSE_OPT].n_values = 1;
 	options[NC_SUPPRESS_CLOSE_OPT].values = (void *) 0;
+	options[NC_FORMAT_OPT].name = NrmStringToQuark("format");
 	options[NC_FORMAT_OPT].data_type = NCL_string;
 	options[NC_FORMAT_OPT].n_values = 1;
 	options[NC_FORMAT_OPT].values = (void *) NrmStringToQuark("classic");
+	options[NC_MISSING_TO_FILL_VALUE_OPT].name = NrmStringToQuark("missingtofillvalue");
 	options[NC_MISSING_TO_FILL_VALUE_OPT].data_type = NCL_int;
 	options[NC_MISSING_TO_FILL_VALUE_OPT].n_values = 1;
 	options[NC_MISSING_TO_FILL_VALUE_OPT].values = (void *) 1;
 
 #ifdef NC_FORMAT_NETCDF4
+	options[NC_COMPRESSION_LEVEL_OPT].name = NrmStringToQuark("compressionlevel");
 	options[NC_COMPRESSION_LEVEL_OPT].data_type = NCL_int;
 	options[NC_COMPRESSION_LEVEL_OPT].n_values = 1;
 	options[NC_COMPRESSION_LEVEL_OPT].values = (void *) -1;

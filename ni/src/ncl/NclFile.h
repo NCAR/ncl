@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.13 2006-03-13 22:20:14 dbrown Exp $
+ *      $Id: NclFile.h,v 1.14 2006-04-18 01:10:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -255,6 +255,7 @@ typedef struct _NclFileOption {
 	NclQuark format;
 	NclQuark name;
 	NclMultiDValData value;
+	NclMultiDValData def_value;
 	NclMultiDValData valid_values;
 	int access;    /* 0 - any (read-only or read-write; 1 - read-only; 2 - read-write 3 - create only */ 
 	NclPostSetOptionFunc post_set_option;

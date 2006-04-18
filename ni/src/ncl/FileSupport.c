@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.22 2005-11-09 21:55:26 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.23 2006-04-18 01:10:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1622,6 +1622,7 @@ NclFile thefile;
 	}
 }
 
+
 NhlErrorTypes _NclFileSetOption
 #if	NhlNeedProto
 (NclFile thefile, 
@@ -1630,7 +1631,7 @@ NhlErrorTypes _NclFileSetOption
  struct _NclMultiDValDataRec *value
 	)
 #else 
-	(thefile, format,var, option, value)
+(thefile, format, option, value)
 NclFile thefile;
 NclQuark format;
 NclQuark option;
@@ -1644,4 +1645,101 @@ struct _NclMultiDValDataRec *value;
 		return((*fc->file_class.set_file_option)(thefile, format, option, value));
 	}
 	return(NhlFATAL);
+}
+
+
+int _NclFileIsOption
+#if	NhlNeedProto
+( NclQuark format, 
+ NclQuark option 
+)
+#else 
+(format,option)
+NclQuark format;
+NclQuark option;
+#endif
+{
+	NclFileClass fc = NULL;
+	int i;
+
+	fc = &nclFileClassRec;
+	if(fc) {
+		for (i = 0; i < fc->file_class.num_options; i++) {
+			NclFileOption *opt = &(fc->file_class.options[i]);
+			if (opt->name != _NclGetLower(option))
+				continue;
+			if (! (_NclGetFormatFuncs(format) &&
+			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(opt->format)) )
+				continue;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+NhlErrorTypes _NclFileSetOptionDefaults
+#if	NhlNeedProto
+(
+ NclQuark format, 
+ NclQuark option
+)
+#else 
+(format, option)
+NclQuark format;
+NclQuark option;
+#endif
+{
+	NclFileClass fc = NULL;
+	int i;
+
+	fc = &nclFileClassRec;
+	if( !fc) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error referencing file class");
+		return(NhlFATAL);
+	}
+	if (format && option) {
+		if (! _NclFileIsOption(format,option)) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s is not a valid option for format %s",
+				  NrmQuarkToString(option),
+				  NrmQuarkToString(format));
+			return(NhlWARNING);
+		}
+		_NclFileSetOption(NULL,format,option,NULL);
+	}
+	else if (format) {
+		if (! _NclGetFormatFuncs(format)) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"%s is not a valid format",
+				  NrmQuarkToString(format));
+			return(NhlWARNING);
+		}
+		for (i = 0; i < fc->file_class.num_options; i++) {
+			NclFileOption *opt = &(fc->file_class.options[i]);
+			if (!(_NclGetFormatFuncs(format) == _NclGetFormatFuncs(opt->format)))
+				continue;
+			_NclFileSetOption(NULL,format,opt->name,NULL);
+		}
+	}
+	else if (option) {
+		int found = False;
+		for (i = 0; i < fc->file_class.num_options; i++) {
+			NclFileOption *opt = &(fc->file_class.options[i]);
+			if (option != opt->name)
+				continue;
+			_NclFileSetOption(NULL,opt->format,option,NULL);
+			found = True;
+		}
+		if (! found) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"no such option: %s",
+				  NrmQuarkToString(option));
+			return(NhlWARNING);
+		}
+	}
+	else {
+		for (i = 0; i < fc->file_class.num_options; i++) {
+			NclFileOption *opt = &(fc->file_class.options[i]);
+			_NclFileSetOption(NULL,opt->format,opt->name,NULL);
+		}
+	}
+	return NhlNOERROR;
+			
 }

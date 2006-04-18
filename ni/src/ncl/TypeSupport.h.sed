@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSupport.h.sed,v 1.2 1995-11-03 00:01:10 ethan Exp $
+ *      $Id: TypeSupport.h.sed,v 1.3 2006-04-18 01:10:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -85,6 +85,12 @@ NclTypeClass /* the_type */,
 void * /* val */,
 NclScalar* /* val_m */,
 int /* nval */
+#endif
+);
+
+extern NclQuark _NclGetLower(
+#if	NhlNeedProto
+NclQuark qstr
 #endif
 );
 

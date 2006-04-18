@@ -886,21 +886,6 @@ NclQuark attname;
 	return(NhlFATAL);
 }
 
-static NclQuark GetLower
-(
-	NclQuark qstr
-	)
-{
-	char buffer[256];
-	char *cp;
-	
-	strncpy(buffer,NrmQuarkToString(qstr),sizeof(buffer)-1);
-	buffer[sizeof(buffer)-1] = '\0';
-	for (cp = buffer; *cp != '\0'; cp++) {
-		*cp = tolower(*cp);
-	}
-	return NrmStringToQuark(buffer);
-}
 	
 
 static NhlErrorTypes FileSetFileOption
@@ -925,7 +910,7 @@ NclMultiDValData value;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	lvalue = NrmNULLQUARK;
 	
-	loption = GetLower(option);
+	loption = _NclGetLower(option);
 	if (thefile) {
 		if (thefile->file.format_funcs->set_option == NULL) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -959,7 +944,15 @@ NclMultiDValData value;
 					  NrmQuarkToString(option));
 				return(NhlWARNING);
 			}
-
+			if (! value) {
+				/* if no value specified restore default for this file only - it's not an error */
+				tmp_md = fcp->options[i].def_value;
+				thefile->file.format_funcs->set_option(thefile->file.private_rec,loption,
+									tmp_md->multidval.data_type,
+									tmp_md->multidval.totalelements,
+									tmp_md->multidval.val);
+				return NhlNOERROR;
+			}
 			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
 			if (tmp_md == NULL) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -972,7 +965,7 @@ NclMultiDValData value;
 				int ok = 0;
 				int j;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
-					lvalue = GetLower(*((string *)tmp_md->multidval.val));
+					lvalue = _NclGetLower(*((string *)tmp_md->multidval.val));
 					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
 						NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
 						if (lvalue != valid_val)
@@ -1030,13 +1023,20 @@ NclMultiDValData value;
 				continue;
 			if (! (_NclGetFormatFuncs(format) &&
 			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(fcp->options[i].format)) ) {
-				if (! (GetLower(format) == NrmStringToQuark("bin") &&
-				       fcp->options[i].format == GetLower(format)) ) {
+				if (! (_NclGetLower(format) == NrmStringToQuark("bin") &&
+				       fcp->options[i].format == _NclGetLower(format)) ) {
 					NhlPError(NhlWARNING,NhlEUNKNOWN,
 						  "FileSetFileOption: %s is not a recognized option for format %s",
 						  NrmQuarkToString(option),NrmQuarkToString(format));
 					return(NhlWARNING);
 				}
+			}
+			if (! value) {
+				/* if no value specified restore default - it's not an error */
+				tmp_md = fcp->options[i].def_value;
+				memcpy(fcp->options[i].value->multidval.val,tmp_md->multidval.val,
+				       tmp_md->multidval.type->type_class.size);
+				return NhlNOERROR;
 			}
 			tmp_md = _NclCoerceData(value,fcp->options[i].value->multidval.type->type_class.type,NULL);
 			if (tmp_md == NULL) {
@@ -1050,7 +1050,7 @@ NclMultiDValData value;
 				int ok = 0;
 				int j;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
-					lvalue = GetLower(*((string *)tmp_md->multidval.val));
+					lvalue = _NclGetLower(*((string *)tmp_md->multidval.val));
 					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
 						NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
 						if (lvalue != valid_val)
@@ -1132,20 +1132,20 @@ NclFile thefile;
 }
 
 NclFileOption file_options[] = {
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },  /* NetCDF PreFill */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },  /* NetCDF define mode */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* GRIB thinned grid interpolation method */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },  /* NetCDF header reserve space */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* NetCDF suppress close option */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 3, NULL },  /* NetCDF file format option */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file read byte order */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* Binary file write byte order */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF PreFill */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF define mode */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB thinned grid interpolation method */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF header reserve space */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF suppress close option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3, NULL },  /* NetCDF file format option */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file read byte order */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file write byte order */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
 #ifdef NC_FORMAT_NETCDF4
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
 #endif
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, 0, NULL }  /* GRIB default NCEP parameter table */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB default NCEP parameter table */
 
 };
 
@@ -1227,10 +1227,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* NetCDF option PreFill */
 	fcp->options[Ncl_PREFILL].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_PREFILL].name = NrmStringToQuark("prefill");
+	len_dims = 1;
 	lval = (logical*) NclMalloc(sizeof(logical));
 	*lval = True;
-	len_dims = 1;
 	fcp->options[Ncl_PREFILL].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	fcp->options[Ncl_PREFILL].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_PREFILL].valid_values = NULL;
@@ -1238,10 +1243,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* NetCDF option DefineMode */
 	fcp->options[Ncl_DEFINE_MODE].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_DEFINE_MODE].name = NrmStringToQuark("definemode");
+	len_dims = 1;
 	lval = (logical*) NclMalloc(sizeof(logical));
 	*lval = False;
-	len_dims = 1;
 	fcp->options[Ncl_DEFINE_MODE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_DEFINE_MODE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_DEFINE_MODE].valid_values = NULL;
@@ -1250,10 +1260,15 @@ static NhlErrorTypes InitializeFileOptions
 
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].format = NrmStringToQuark("grb");
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].name = NrmStringToQuark("thinnedgridinterpolation");
+	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
 	*sval = NrmStringToQuark("linear");
-	len_dims = 1;
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("linear");
+	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(2 * sizeof(string));
@@ -1267,10 +1282,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* NetCDF option HeaderReserveSpace */
 	fcp->options[Ncl_HEADER_RESERVE_SPACE].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_HEADER_RESERVE_SPACE].name = NrmStringToQuark("headerreservespace");
+	len_dims = 1;
 	ival = (int*) NclMalloc(sizeof(int));
 	*ival = 0;
-	len_dims = 1;
 	fcp->options[Ncl_HEADER_RESERVE_SPACE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = 0;
+	fcp->options[Ncl_HEADER_RESERVE_SPACE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_HEADER_RESERVE_SPACE].valid_values = NULL;
@@ -1278,10 +1298,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* NetCDF option SuppressClose */
 	fcp->options[Ncl_SUPPRESS_CLOSE].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_SUPPRESS_CLOSE].name = NrmStringToQuark("suppressclose");
+	len_dims = 1;
 	lval = (logical*) NclMalloc(sizeof(logical));
 	*lval = False;
-	len_dims = 1;
 	fcp->options[Ncl_SUPPRESS_CLOSE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_SUPPRESS_CLOSE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_SUPPRESS_CLOSE].valid_values = NULL;
@@ -1291,10 +1316,14 @@ static NhlErrorTypes InitializeFileOptions
 
 	fcp->options[Ncl_FORMAT].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_FORMAT].name = NrmStringToQuark("format");
+	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
 	*sval = NrmStringToQuark("classic");
-	len_dims = 1;
 	fcp->options[Ncl_FORMAT].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("classic");
+	fcp->options[Ncl_FORMAT].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(3 * sizeof(string));
 	sval[0] = NrmStringToQuark("classic");
@@ -1315,10 +1344,14 @@ static NhlErrorTypes InitializeFileOptions
 
 	fcp->options[Ncl_READ_BYTE_ORDER].format = NrmStringToQuark("bin");
 	fcp->options[Ncl_READ_BYTE_ORDER].name = NrmStringToQuark("readbyteorder");
+	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
 	*sval = NrmStringToQuark("native");
-	len_dims = 1;
 	fcp->options[Ncl_READ_BYTE_ORDER].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("native");
+	fcp->options[Ncl_READ_BYTE_ORDER].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(3 * sizeof(string));
 	sval[0] = NrmStringToQuark("native");
@@ -1333,10 +1366,14 @@ static NhlErrorTypes InitializeFileOptions
 
 	fcp->options[Ncl_WRITE_BYTE_ORDER].format = NrmStringToQuark("bin");
 	fcp->options[Ncl_WRITE_BYTE_ORDER].name = NrmStringToQuark("writebyteorder");
+	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
 	*sval = NrmStringToQuark("native");
-	len_dims = 1;
 	fcp->options[Ncl_WRITE_BYTE_ORDER].value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("native");
+	fcp->options[Ncl_WRITE_BYTE_ORDER].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(3 * sizeof(string));
 	sval[0] = NrmStringToQuark("native");
@@ -1351,10 +1388,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* Grib option NumericIniitialTimeCoordinates */
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].format = NrmStringToQuark("grb");
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].name = NrmStringToQuark("initialtimecoordinatetype");
+	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
 	*sval = NrmStringToQuark("string");
-	len_dims = 1;
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("string");
+	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(2 * sizeof(string));
@@ -1368,10 +1410,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* NetCDF option MissingToFillValue */
 	fcp->options[Ncl_MISSING_TO_FILL_VALUE].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_MISSING_TO_FILL_VALUE].name = NrmStringToQuark("missingtofillvalue");
+	len_dims = 1;
 	lval = (logical*) NclMalloc(sizeof(logical));
 	*lval = True;
-	len_dims = 1;
 	fcp->options[Ncl_MISSING_TO_FILL_VALUE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	fcp->options[Ncl_MISSING_TO_FILL_VALUE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_MISSING_TO_FILL_VALUE].valid_values = NULL;
@@ -1381,10 +1428,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* NetCDF 4 option compression level */
 	fcp->options[Ncl_COMPRESSION_LEVEL].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");
+	len_dims = 1;
 	ival = (int*) NclMalloc(sizeof(int));
 	*ival = -1;
-	len_dims = 1;
 	fcp->options[Ncl_COMPRESSION_LEVEL].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+	ival = (int*) NclMalloc(sizeof(int));
+	*ival = -1;
+	fcp->options[Ncl_COMPRESSION_LEVEL].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)ival,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
 	fcp->options[Ncl_COMPRESSION_LEVEL].valid_values = NULL;
@@ -1393,10 +1445,15 @@ static NhlErrorTypes InitializeFileOptions
 	/* Grib option Default_NCEP_Ptable */
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].format = NrmStringToQuark("grb");
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].name = NrmStringToQuark("defaultncepptable");
+	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
 	*sval = NrmStringToQuark("operational");
-	len_dims = 1;
 	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("operational");
+	fcp->options[Ncl_DEFAULT_NCEP_PTABLE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(2 * sizeof(string));

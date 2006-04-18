@@ -1,5 +1,5 @@
 /*
- *      $Id: FileSupport.h,v 1.11 2005-07-23 00:49:55 dbrown Exp $
+ *      $Id: FileSupport.h,v 1.12 2006-04-18 01:10:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -305,6 +305,20 @@ NclFile /* thefile */,  /* either a file or a format */
 NclQuark /* format */,
 NclQuark /* option */,
 struct _NclMultiDValDataRec* /*value*/
+#endif
+);
+
+extern int _NclFileIsOption(
+#if NhlNeedProto
+NclQuark /* format */,
+NclQuark /* option */
+#endif
+);
+
+extern NhlErrorTypes _NclFileSetOptionDefaults(
+#if NhlNeedProto
+NclQuark format, /* if NULL set defaults for all formats */
+NclQuark option /* if NULL set defaults for all options */
 #endif
 );
 

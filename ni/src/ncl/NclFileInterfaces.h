@@ -438,3 +438,11 @@ extern NclFormatFunctionRecPtr _NclGetFormatFuncs(
 NclQuark /* file_extension */
 #endif
 );
+
+logical _NclFormatEqual(
+#if NhlNeedProto
+	NclQuark file_ext1, 
+	NclQuark file_ext2
+#endif
+);
+

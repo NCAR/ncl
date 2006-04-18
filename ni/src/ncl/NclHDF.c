@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.16 2005-07-23 00:49:57 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.17 2006-04-18 01:10:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -768,6 +768,7 @@ int wr_status;
 			tmp->dims->dim_inq->size = 1;
 			tmp->dims->dim_inq->name = NrmStringToQuark("ncl_scalar");
 			tmp->dims->dim_inq->hdf_name = NrmNULLQUARK;
+			tmp->dims->dim_inq->is_unlimited = 0;
 			tmp->n_dims++;
 		} else {
 			tmp->has_scalar_dim = 0;
@@ -1006,6 +1007,7 @@ NclQuark dim_name_q;
 			tmp = (NclFDimRec*)NclMalloc((unsigned)sizeof(NclFDimRec));
 			tmp->dim_name_quark = dim_name_q;
 			tmp->dim_size = stepdl->dim_inq->size;
+			tmp->is_unlimited  = stepdl->dim_inq->is_unlimited;
 			return(tmp);
 		} else {
 			stepdl = stepdl->next;
@@ -1815,12 +1817,18 @@ int is_unlimited;
 				return(NhlFATAL);
 			}
 			sd_ncredef(cdfid);
-			ret = sd_ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
+			if (is_unlimited) {
+				ret = sd_ncdimdef(cdfid,NrmQuarkToString(thedim),(long)0);
+			}
+			else {
+				ret = sd_ncdimdef(cdfid,NrmQuarkToString(thedim),(long)size);
+			}
 			sd_ncendef(cdfid);
 			sd_ncclose(cdfid);
 			if(ret == -1) {
 				return(NhlFATAL);
 			}
+
 		}
 		stepdl = rec->dims;
 
@@ -1843,6 +1851,7 @@ int is_unlimited;
 			rec->dims->dim_inq->dimid = ret;
 			rec->dims->dim_inq->name = thedim;
 			rec->dims->dim_inq->size = (long)size;
+			rec->dims->dim_inq->is_unlimited = is_unlimited;
 			rec->dims->next = NULL;
 			rec->n_dims = 1;
 		} else {
@@ -1854,6 +1863,7 @@ int is_unlimited;
 			stepdl->next->dim_inq->dimid = ret;
 			stepdl->next->dim_inq->name = thedim;
 			stepdl->next->dim_inq->size = (long)size;
+			stepdl->next->dim_inq->is_unlimited = is_unlimited;
 			stepdl->next->next = NULL;
 			rec->n_dims++;
 		}	
