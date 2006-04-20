@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.90 2003-09-10 21:30:03 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.91 2006-04-20 19:02:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1450,7 +1450,7 @@ XyDataSetValues
 	NhlXyPlotLayerPart	*xyp =
 				&((NhlXyPlotLayer)new->base.parent)->xyplot;
 
-	if(xdnp->dashes != xdop->dashes){
+	if(_NhlArgIsSet(args,num_args,NhlNxyDashPatterns)){
 		gen = xdnp->dashes;
 		xdnp->dashes = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->dashes){
@@ -1465,7 +1465,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->marker_modes != xdop->marker_modes){
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkLineMode)){
 		gen = xdnp->marker_modes;
 		xdnp->marker_modes = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->marker_modes){
@@ -1480,7 +1480,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->lg_label_strings != xdop->lg_label_strings){
+	if(_NhlArgIsSet(args,num_args,NhlNxyExplicitLegendLabels)){
 		gen = xdnp->lg_label_strings;
 		xdnp->lg_label_strings = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->lg_label_strings){
@@ -1495,7 +1495,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->colors != xdop->colors){
+	if(_NhlArgIsSet(args,num_args,NhlNxyLineColors)){
 		gen = xdnp->colors;
 		xdnp->colors = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->colors){
@@ -1510,7 +1510,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->label_colors != xdop->label_colors){
+	if(_NhlArgIsSet(args,num_args,NhlNxyLineLabelFontColors)){
 		gen = xdnp->label_colors;
 		xdnp->label_colors = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->label_colors){
@@ -1525,7 +1525,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->labels != xdop->labels){
+	if(_NhlArgIsSet(args,num_args,NhlNxyExplicitLabels)){
 		gen = xdnp->labels;
 		xdnp->labels = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->labels){
@@ -1540,7 +1540,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->line_thicknesses != xdop->line_thicknesses){
+	if(_NhlArgIsSet(args,num_args,NhlNxyLineThicknesses)){
 		gen = xdnp->line_thicknesses;
 		xdnp->line_thicknesses = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->line_thicknesses){
@@ -1555,7 +1555,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->marker_colors != xdop->marker_colors){
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkerColors)){
 		gen = xdnp->marker_colors;
 		xdnp->marker_colors = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->marker_colors){
@@ -1570,7 +1570,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->markers != xdop->markers){
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkers)){
 		gen = xdnp->markers;
 		xdnp->markers = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->markers){
@@ -1585,7 +1585,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->marker_sizes != xdop->marker_sizes){
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkerSizes)){
 		gen = xdnp->marker_sizes;
 		xdnp->marker_sizes = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->marker_sizes){
@@ -1604,7 +1604,7 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->marker_thicknesses != xdop->marker_thicknesses){
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkerThicknesses)){
 		gen = xdnp->marker_thicknesses;
 		xdnp->marker_thicknesses = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->marker_thicknesses){
@@ -1619,13 +1619,13 @@ XyDataSetValues
 		}
 	}
 
-	if(xdnp->marker_size != xdop->marker_size){
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkerSizeF)){
 		xdnp->marker_size = xdnp->marker_size / xyp->vp_average;
 	}
-	if(xdnp->dash_seg_len != xdop->dash_seg_len){
+	if(_NhlArgIsSet(args,num_args,NhlNxyLineDashSegLenF)){
 		xdnp->dash_seg_len = xdnp->dash_seg_len / xyp->vp_average;
 	}
-	if(xdnp->llabel_fheight != xdop->llabel_fheight){
+	if(_NhlArgIsSet(args,num_args,NhlNxyLineLabelFontHeightF)){
 		xdnp->llabel_fheight = xdnp->llabel_fheight / xyp->vp_average;
 	}
 
