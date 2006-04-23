@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.176 2006-03-29 15:35:16 haley Exp $
+;      $Id: gsn_code.ncl,v 1.177 2006-04-23 21:23:39 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6815,12 +6815,13 @@ begin
 ; Compute min, max, and step necessary to later get "nice" values for
 ; the percentages.
 ;
+    xnpts = npts*1.
     if(horizontal) then
       nicevals = nice_mnmxintvl(res2@trXMinF,min((/100., \
-                                100.*(res2@trXMaxF/npts)/)),7,False)
+                                100.*(res2@trXMaxF/xnpts)/)),7,False)
     else
       nicevals = nice_mnmxintvl(res2@trYMinF,min((/100., \
-                                100.*(res2@trYMaxF/npts)/)),7,False)
+                                100.*(res2@trYMaxF/xnpts)/)),7,False)
     end if
     nvals = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
 ;
