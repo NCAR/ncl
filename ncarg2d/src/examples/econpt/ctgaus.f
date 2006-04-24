@@ -151,7 +151,7 @@ C as it follows a contour line, but these pointers are tricky to define:
 C if IPTE is the base index of an edge node and IEDG(IPTE+3) is zero or
 C more, saying that there is a triangle to the left of the edge, then
 C IEDG(IPTE+3) is the actual index of that element of the triangle node
-C that points to the edge node; i.e., ITRI(IDGE(IPTE+3))=IPTE.  The base
+C that points to the edge node; i.e., ITRI(IEDG(IPTE+3))=IPTE.  The base
 C index of the triangle node defining that triangle is IPTT, where
 C IPTT=LOTN*((IEDG(IPTE+3)-1)/LOTN), and the index of the pointer to
 C the edge within the triangle node is IPTI=IEDG(IPTE+3)-IPTT, so that
