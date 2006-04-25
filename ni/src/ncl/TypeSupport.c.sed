@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSupport.c.sed,v 1.3 1995-11-03 00:01:08 ethan Exp $
+ *      $Id: TypeSupport.c.sed,v 1.4 2006-04-25 05:07:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -226,4 +226,35 @@ int nval;
 		return(NhlFATAL);
 	}
 
+}
+
+NclQuark _NclGetLower
+(
+	NclQuark qstr
+	)
+{
+	char *buf;
+	char buffer[256];
+	char *cp;
+	char *instr = NrmQuarkToString(qstr);
+	int size = strlen(instr);
+	NrmQuark outq;
+	
+	if (size < 256) {
+		buf = buffer;
+	}
+	else {
+		buf = NclMalloc(size + 1);
+	}
+	strncpy(buf,instr,size);
+	buf[size] = '\0';
+	for (cp = buf; *cp != '\0'; cp++) {
+		*cp = tolower(*cp);
+	}
+	outq = NrmStringToQuark(buffer);
+
+	if (buf != buffer)
+		NclFree(buf);
+
+	return outq;
 }
