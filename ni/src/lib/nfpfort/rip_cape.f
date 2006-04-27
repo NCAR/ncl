@@ -255,7 +255,8 @@ c
 C  buoyancy
                       BUOY(KK) = GRAV* (TVLIFT-TVENV)/TVENV
                       ZREL(KK) = GHTLIFT - GHTPARI
-                      IF (BUOY(KK)*BUOY(KK-1).LT.0.0D0) THEN
+                      IF ((KK.GT.1).AND.
+     +                    (BUOY(KK)*BUOY(KK-1).LT.0.0D0)) THEN
 c
 c   Parcel ascent curve crosses sounding curve, so create a new level
 c   in the bottom-up array at the crossing.
