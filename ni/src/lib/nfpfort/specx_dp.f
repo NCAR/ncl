@@ -164,7 +164,7 @@ C set common block to spval
       DO 88 N = 11,50
    88 SINFO(N) = SPVAL
 
-      DO 9 N = 1,DBLE(MAX(1,NX/2+1))
+      DO 9 N = 1,(NX/2+1)
           FRQ(N) = SPVAL
 C set spectral estimates to spval
     9 SPCX(N) = SPVAL
@@ -389,7 +389,7 @@ C set common block to spval
     8     XINFO(N) = SPVAL
           DO 88 N = 11,50
    88     SINFO(N) = SPVAL
-          DO 9 N = 1,DBLE(MAX(1,NX/2+1))
+          DO 9 N = 1,(NX/2+1)
               FRQ(N) = SPVAL
               COSPC(N) = SPVAL
               QUSPC(N) = SPVAL
