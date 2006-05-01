@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.86 2006-03-03 00:54:08 dbrown Exp $
+ *      $Id: Machine.c,v 1.87 2006-05-01 17:49:03 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -434,6 +434,7 @@ NhlErrorTypes _NclInitMachine
 #endif
 {
 	int i;
+	NclStackEntry*  stack_entry;
 
 	thestack = (NclStackEntry*)NclMalloc((unsigned)sizeof(NclStackEntry)*NCL_STACK_SIZE);
 	for(i = 0; i< NCL_STACK_SIZE; i++) {
@@ -473,7 +474,7 @@ NhlErrorTypes _NclInitMachine
 		return(NhlFATAL);
 	}
 	current_level_1_size = NCL_LEVEL_1_SIZE;
-	NclStackEntry *stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
+	stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
 	if(! stack_entry) {
 		NhlPError(NhlFATAL,errno,"_NclInitMachine: Can't allocate space for machine");
 		return(NhlFATAL);
@@ -494,6 +495,8 @@ NhlErrorTypes _NclPutLevel1Var
 #endif
 {
 	int i;
+	NclStackEntry*  stack_entry;
+
  	if (offset < 0) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclPutLevel1Var: invalid offset");
 		return(NhlFATAL);
@@ -506,7 +509,7 @@ NhlErrorTypes _NclPutLevel1Var
 			return(NhlFATAL);
 		}
 		level_1_vars = tl1vars;
-		NclStackEntry *stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
+		stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
 		if(! stack_entry) {
 			NhlPError(NhlFATAL,errno,"_NclInitMachine: Can't allocate space for machine");
 			return(NhlFATAL);
@@ -528,6 +531,8 @@ NclStackEntry *_NclGetLevel1Var
 #endif
 { 	
 	int i;
+	NclStackEntry*  stack_entry;
+
  	if (offset < 0) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclGetLevel1Var: invalid offset");
 		return(NULL);
@@ -540,7 +545,7 @@ NclStackEntry *_NclGetLevel1Var
 			return(NULL);
 		}
 		level_1_vars = tl1vars;
-		NclStackEntry *stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
+		stack_entry = (NclStackEntry *)NclCalloc(NCL_LEVEL_1_SIZE,sizeof(NclStackEntry));
 		if(! stack_entry) {
 			NhlPError(NhlFATAL,errno,"_NclInitMachine: Can't allocate space for machine");
 			return(NULL);
