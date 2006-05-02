@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.91 2006-04-20 19:02:09 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.92 2006-05-02 22:43:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1465,13 +1465,13 @@ XyDataSetValues
 		}
 	}
 
-	if(_NhlArgIsSet(args,num_args,NhlNxyMarkLineMode)){
+	if(_NhlArgIsSet(args,num_args,NhlNxyMarkLineModes)){
 		gen = xdnp->marker_modes;
 		xdnp->marker_modes = _NhlCopyGenArray(gen,True);
 		if(gen && !xdnp->marker_modes){
 			NhlPError(NhlWARNING,ENOMEM,
 				"%s:Resetting %s to previous value",
-				func,NhlNxyMarkLineMode);
+				func,NhlNxyMarkLineModes);
 			xdnp->marker_modes = xdop->marker_modes;
 		}
 		else{
