@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.177 2006-04-23 21:23:39 haley Exp $
+;      $Id: gsn_code.ncl,v 1.178 2006-05-04 16:08:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4502,8 +4502,7 @@ begin
                                      ; position to its bottommost annotation.
 
   ypos = y_top - ywsp - dyt -(ysp/2.+new_total_height*ispan(0,nrows-1,1))
-  min_ypos = min(ypos)
-  max_ypos = max(ypos)
+
   delete(top)
   delete(bottom)
   delete(right)
@@ -4553,6 +4552,7 @@ begin
   nplot          = 0
   nr             = 0
   do while(num_plots_left.gt.0)
+    vpy_new = ypos(nr)
     new_ncols = min((/num_plots_left,row_spec(nr)/))
 
     if(panel_center)
@@ -4566,6 +4566,7 @@ begin
     xpos = x_lft + xwsp + dxl +(xsp/2.+new_total_width*ispan(0,new_ncols-1,1))
 
     do nc = 0,new_ncols-1
+      vpx_new = xpos(nc)
       if(.not.ismissing(plot(nplot)))
         pplot = plot(nplot)
         getvalues pplot
@@ -4574,18 +4575,36 @@ begin
           "vpWidthF"  : old_vp(nplot,2)
           "vpHeightF" : old_vp(nplot,3)
         end getvalues
+;
+; If user setting gsnPanelXF or gsnPanelYF resources, then use these instead.
+; They must be set as an array of the same length as you have plots.
+; If any of these are negative, then use the calculated values.
+;
+        vpx_new = xpos(nc)
+        if(isatt(res,"gsnPanelXF").and.dimsizes(res@gsnPanelXF).eq.nplots.and.\
+          res@gsnPanelXF(nplot).ge.0.and.res@gsnPanelXF(nplot).le.1) then
+          vpx_new = res@gsnPanelXF(nplot)
+        end if
 
+        vpy_new = ypos(nr)
+        if(isatt(res,"gsnPanelYF").and.dimsizes(res@gsnPanelYF).eq.nplots.and.\
+          res@gsnPanelYF(nplot).ge.0.and.res@gsnPanelYF(nplot).le.1) then
+          vpy_new = res@gsnPanelYF(nplot)
+        end if
+;
+; Print out values used.
+;
         if(panel_debug) then
           print("-------Panel viewport values for each plot-------")
           print("    plot #" + nplot)
-          print("    x,y          = " + xpos(nc) + "," + ypos(nr))
+          print("    new x,y      = " + vpx_new + "," + vpy_new)
           print("    orig wdt,hgt = " + old_vp(nplot,2) + "," + old_vp(nplot,3))
           print("    new wdt,hgt  = " + scale*old_vp(nplot,2) + "," + scale*old_vp(nplot,3))
         end if
 
         setvalues pplot
-          "vpXF"      : xpos(nc)
-          "vpYF"      : ypos(nr)
+          "vpXF"      : vpx_new
+          "vpYF"      : vpy_new
           "vpWidthF"  : scale*old_vp(nplot,2)
           "vpHeightF" : scale*old_vp(nplot,3)
         end setvalues
@@ -4628,7 +4647,7 @@ begin
 ; Info for possible labelbar or main_string
 ;
         if(main_string_on.or.panel_labelbar.or.draw_boxes) then
-          bb  = NhlGetBB(pplot) ; Get bounding box of plot
+          bb  = NhlGetBB(pplot) ; Get bounding box of plot.
           top = bb(0)
           lft = bb(2)
           bot = bb(1)
@@ -4640,24 +4659,38 @@ begin
             draw_bb(pplot,False)
           end if
         end if
+      end if      ;   if(.not.ismissing(plot(nplot)))
+;
+; Retain the smallest and largest x and y positions.
+;
+      if(nplot.eq.0) then
+        min_xpos = vpx_new
+        max_xpos = vpx_new
+        min_ypos = vpy_new
+        max_ypos = vpy_new
+      else
+        min_xpos = min( (/vpx_new,min_xpos/) )
+        max_xpos = max( (/vpx_new,max_xpos/) )
+        min_ypos = min( (/vpy_new,min_ypos/) )
+        max_ypos = max( (/vpy_new,max_ypos/) )
       end if
-      nplot = nplot + 1
+
+      nplot = nplot + 1    ; Increment plot counter
     end do  ; end of columns
-;
-; Retain the smallest and largest x position, since xpos gets
-; deleted inside the loop.
-;
-    if(nr.eq.0)
-      min_xpos = min(xpos)
-      max_xpos = max(xpos)
-    else
-      min_xpos = min( (/min(xpos),min_xpos/) )
-      max_xpos = max( (/max(xpos),max_xpos/) )
-    end if
+
     num_plots_left = nplots - nplot
     nr = nr + 1   ; increment rows
     delete(xpos)
   end do    ; end of plots
+
+;
+; Print min/max information.
+;
+  if(panel_debug) then
+    print("-------min/max X,Y positions for plots-------")
+    print("min/max x position = " + min_xpos + "/" + max_xpos)
+    print("min/max y position = " + min_ypos + "/" + max_ypos)
+  end if
 ;
 ; Calculate the biggest rescaled widths and heights (technically, they
 ; should all be the same).  These values will be used a few times 
@@ -4713,7 +4746,7 @@ begin
       else
         set_attr(lbres,"vpXF",min ((/1.-(xwsp+labelbar_width),max_rgt+xwsp/)))
         if(nrows.eq.1.and.lbres@vpHeightF.le.scaled_height)
-          set_attr(lbres,"vpYF",ypos(0)-(scaled_height - lbres@vpHeightF)/2.)
+          set_attr(lbres,"vpYF",max_ypos-(scaled_height - lbres@vpHeightF)/2.)
         else
           tmp_range = y_top - y_bot
           set_attr(lbres,"vpYF",y_top-(tmp_range - lbres@vpHeightF)/2.)
@@ -4741,6 +4774,7 @@ begin
 ; a value of 0.
 ;
       levels = fix_zero_contour(levels)
+
       newplots(nplot) = create_labelbar(wks,dimsizes(colors),colors, \
                                         levels,lbres)
       nplot = nplot + 1
