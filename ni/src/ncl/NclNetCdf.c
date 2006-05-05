@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.38 2006-04-18 01:10:11 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.39 2006-05-05 20:40:15 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -97,7 +97,7 @@ struct _NetCdfOptions {
 #define NC_FORMAT_OPT 4
 #define NC_MISSING_TO_FILL_VALUE_OPT 5
 
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 #define NC_COMPRESSION_LEVEL_OPT 6
 #define NC_NUM_OPTIONS 7
 #else
@@ -374,7 +374,7 @@ NetCdfFileRecord *tmp;
 	options[NC_MISSING_TO_FILL_VALUE_OPT].n_values = 1;
 	options[NC_MISSING_TO_FILL_VALUE_OPT].values = (void *) 1;
 
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	options[NC_COMPRESSION_LEVEL_OPT].name = NrmStringToQuark("compressionlevel");
 	options[NC_COMPRESSION_LEVEL_OPT].data_type = NCL_int;
 	options[NC_COMPRESSION_LEVEL_OPT].n_values = 1;
@@ -470,7 +470,7 @@ int wr_status;
 		NclFree(tmp);
 		return(NULL);
 	}
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	nc_inq_format(cdfid,&(tmp->format));
 #endif
 	ncinquire(cdfid,&(tmp->n_dims),&(tmp->n_vars),&(tmp->n_file_atts),&dummy);
@@ -659,7 +659,7 @@ NclQuark path;
 		mode = (NC_NOCLOBBER|NC_64BIT_OFFSET);
 		format = 2;
 	}
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	else if ((NrmQuark)(tmp->options[NC_FORMAT_OPT].values) == 
 	    NrmStringToQuark("netcdf4classic")) {
 		mode = (NC_NOCLOBBER|NC_NETCDF4|NC_CLASSIC_MODEL);
@@ -1956,7 +1956,7 @@ long* dim_sizes;
 			if((n_dims == 1)&&(dim_ids[0] == -5)) {
 				ret = nc_def_var(cdfid,NrmQuarkToString(thevar),*the_data_type, 0, NULL,&var_id);
 			} else {
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 
 				struct nc_var_options vop;
 				memset(&vop,0,sizeof(struct nc_var_options));
@@ -2473,7 +2473,7 @@ static NhlErrorTypes NetSetOption
 	else if (option == NrmStringToQuark("missingtofillvalue")) {
 		rec->options[NC_MISSING_TO_FILL_VALUE_OPT].values = (void*) *(int*)values;
 	}
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	else if (option == NrmStringToQuark("compressionlevel")) {
 		if (*(int*)values < -1 || *(int*)values > 9) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,

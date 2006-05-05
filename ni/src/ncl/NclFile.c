@@ -1142,11 +1142,10 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* Binary file write byte order */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateDims },   /* GRIB initial time coordinate type */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF missing to fill value option */
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
 #endif
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB default NCEP parameter table */
-
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1329,7 +1328,7 @@ static NhlErrorTypes InitializeFileOptions
 	sval[0] = NrmStringToQuark("classic");
 	sval[1] = NrmStringToQuark("64bitoffset");
 	sval[2] = NrmStringToQuark("largefile");
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	sval[3] = NrmStringToQuark("netcdf4classic");
 	len_dims = 4;
 #else
@@ -1424,7 +1423,7 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_MISSING_TO_FILL_VALUE].valid_values = NULL;
 
 
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	/* NetCDF 4 option compression level */
 	fcp->options[Ncl_COMPRESSION_LEVEL].format = NrmStringToQuark("nc");
 	fcp->options[Ncl_COMPRESSION_LEVEL].name = NrmStringToQuark("compressionlevel");

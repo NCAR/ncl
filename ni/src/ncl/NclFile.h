@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.14 2006-04-18 01:10:10 dbrown Exp $
+ *      $Id: NclFile.h,v 1.15 2006-05-05 20:40:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -272,7 +272,7 @@ typedef enum {
 	Ncl_WRITE_BYTE_ORDER,
 	Ncl_INITIAL_TIME_COORDINATE_TYPE,
 	Ncl_MISSING_TO_FILL_VALUE,
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	Ncl_COMPRESSION_LEVEL,
 #endif
 	Ncl_DEFAULT_NCEP_PTABLE
