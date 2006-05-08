@@ -206,6 +206,68 @@ struct _NclSelectionRecord* /* sel_ptr */
 #endif
 );
 
+/*
+ * Updates the dimension info
+ */
+
+static NhlErrorTypes UpdateDims 
+#if	NhlNeedProto
+(
+	NclFile  thefile
+)
+#else
+(thefile)
+NclFile thefile;
+#endif
+{
+	NclQuark *name_list;
+	int n_names;
+	int i;
+	int index;
+
+	name_list = (*thefile->file.format_funcs->get_dim_names)(thefile->file.private_rec,&n_names);
+	thefile->file.n_file_dims = n_names;
+	for(i = 0; i < n_names; i++){
+		if (thefile->file.file_dim_info[i])
+			NclFree(thefile->file.file_dim_info[i]);
+		thefile->file.file_dim_info[i] = (thefile->file.format_funcs->get_dim_info)
+			(thefile->file.private_rec,name_list[i]);
+		index = FileIsVar(thefile,name_list[i]);
+		if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
+			thefile->file.coord_vars[i] = thefile->file.var_info[index];
+		}
+	}
+	NclFree((void*)name_list);
+}
+
+/*
+ * Updates the coord info
+ */
+
+static NhlErrorTypes UpdateCoordInfo 
+#if	NhlNeedProto
+(
+	NclFile  thefile,
+	NrmQuark varname
+)
+#else
+(thefile)
+NclFile thefile;
+#endif
+{
+	int dimid;
+	int index;
+
+	dimid = FileIsDim(thefile,varname);
+	if (dimid >  -1) {
+		index = FileIsVar(thefile,varname);
+		if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
+			thefile->file.coord_vars[dimid] = thefile->file.var_info[index];
+		}
+	}
+	return NhlNOERROR;
+}
+
 static void AdjustForScalarDim
 #if	NhlNeedProto
 (NclFile thefile)
@@ -341,6 +403,7 @@ NclQuark *dimnames;
 			thefile->file.var_att_ids[thefile->file.n_vars] = -1;
 			
 			thefile->file.n_vars++;
+			UpdateCoordInfo(thefile,varname); 
 			return(NhlNOERROR);
 		} else {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAddVar: Variable %s is already defined, can not redefine",NrmQuarkToString(varname));
@@ -1104,32 +1167,6 @@ NclMultiDValData value;
 	return NhlNOERROR;
 }
 
-static NhlErrorTypes UpdateDims 
-#if	NhlNeedProto
-(
-	NclFile  thefile
-)
-#else
-(thefile)
-NclFile thefile;
-#endif
-{
-	NclQuark *name_list;
-	int n_names;
-	int i;
-	int index;
-
-	name_list = (*thefile->file.format_funcs->get_dim_names)(thefile->file.private_rec,&n_names);
-	thefile->file.n_file_dims = n_names;
-	for(i = 0; i < n_names; i++){
-		thefile->file.file_dim_info[i] = (thefile->file.format_funcs->get_dim_info)(thefile->file.private_rec,name_list[i]);
-		index = FileIsVar(thefile,name_list[i]);
-		if(index > -1 && thefile->file.var_info[index]->num_dimensions == 1) {
-			thefile->file.coord_vars[i] = thefile->file.var_info[index];
-		}
-	}
-	NclFree((void*)name_list);
-}
 
 NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF PreFill */

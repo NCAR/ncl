@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.15 2006-05-05 20:40:14 dbrown Exp $
+ *      $Id: NclFile.h,v 1.16 2006-05-08 23:28:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 #define NclFile_h
 
 #include "NclData.h"
-#include <netcdf.h> /* this is included here only because we need to know if netcdf 4 is in use */
 
 typedef struct _NclFileRec NclFileRec;
 typedef struct _NclFileClassRec NclFileClassRec;
