@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.109 2006-04-13 13:34:13 shea Exp $
+;      $Id: contributed.ncl,v 1.110 2006-05-08 18:45:03 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3111,6 +3111,107 @@ begin
 
    return(xAnom)
 end
+;****************************************************
+; D. Shea
+; Take a monthly climatology and make a daily climatology
+; Supported: leftmost dimension must be 12
+;            x(12), x(12,N), x(12,N1,N2), x(12,N1,N2,N3)
+; x must have named dimensions on entry
+; opt - not used set to zero [0]
+;
+function clmMon2clmDay( x:numeric, retOrder:integer, opt:integer )
+local dNames, dimx, rank, X, midMon, day
+begin
+  if (.not.(retOrder.eq.0 .or. retOrder.eq.1)) then
+      print("clmMon2clmDay: retOrder must be 0 or 1, retOrder=" +retOrder)
+      exit
+  end if
+
+  dNames = getvardims( x )
+  if (any(ismissing(dNames))) then
+      print("clmMon2clmDay: named dimensions required:" +dNames)
+      exit
+  end if
+
+  dimx   = dimsizes(x)
+  if (dimx(0).ne.12) then
+      print("clmMon2clmDay: leftmost dimension must be size=12: SIZE="+dimx(0))
+      exit
+  end if
+
+  rank   = dimsizes( dimx )
+  if (rank.gt.4) then
+      print("clmMon2clmDay: currently max of 4 dimension supported: rank="+rank)
+      exit
+  end if
+
+ ;if (isatt(x,"_FillValue")) then
+ ;    nFill = num(ismissing(x))
+ ;    if (nFill.gt.0) then
+ ;        print("clmMon2clmDay: input is assumed to have no missing values, nFill="+nFill)
+ ;        exit
+ ;    end if
+ ;end if
+                          ; transfer to work arrsy,if necessary, reorder array
+  if (rank.eq.2) then
+      X =  x
+  end if
+  if (rank.eq.2) then
+      X =  x($dNames(1)$|:, $dNames(0)$|:)  
+  end if
+  if (rank.eq.3)
+      X =  x($dNames(1)$|:, $dNames(2)$|:, $dNames(0)$|:) 
+  end if
+  if (rank.eq.4)
+      X =  x($dNames(1)$|:, $dNames(2)$|:, $dNames(3)$|:, $dNames(0)$|:) 
+  end if
+                          ; mid day of each month
+  if (isatt(opt,"midmon")) then
+      if (dimsizes(opt@midMon).eq.12) then
+          midMon = opt@midMon
+      else
+          print("clmMon2clmDay: midMon required to be size 12: size="+dimsizes(opt@midMon))
+          exit
+      end if
+  else
+      midMon = (/ 15.5, 45  , 74.5,105  ,135.5,166  \
+                ,196.5,227.5,258  ,288.5,319  ,349.5/)
+  end if
+  midMon@long_name = "middle of month"
+
+  day    = ispan(0,364,1)    ; use 0 => 364 for interpolation
+  day!0  = "day"
+
+  Z      = linint1_Wrap (midMon, X, True, day, 0)
+  Z@info = "NCL: clmMon2clmDay"
+
+  day    = ispan(1,365,1)    ; use 1 => 365 for coord variable
+  day@long_name = "day of year: no leap"
+  day@units     = "1=Jan 1, 32=Feb 1, ..., 365-Dec 31"
+  Z!(rank-1) = "day"
+  Z&day      =  day
+
+  if (retOrder.eq.1) then
+      return( Z )
+  end if
+
+  if (retOrder.eq.0) then
+      if (rank.eq.1) then
+          return(Z)
+      end if
+      if (rank.eq.2) then
+          return( Z(day|:, $dNames(1)$|:) )
+      end if
+      if (rank.eq.3) then
+          return( Z(day|:, $dNames(1)$|:, $dNames(2)$|:) )
+      end if
+      if (rank.eq.4) then
+          return( Z(day|:, $dNames(1)$|:, $dNames(2)$|:, $dNames(3)$|:) )
+      end if
+  end if
+end
+
+
 ;********************************************************************
 ; D. Shea
 ; wrapper for NCL function "cssgrid"  that copies attributes 
