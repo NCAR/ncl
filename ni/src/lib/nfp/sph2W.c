@@ -268,13 +268,12 @@ NhlErrorTypes dv2uvf_W( void )
     return(NhlFATAL);
   }
 /*
- * The input/output arrays must be float or double, and be 2 or
- * 3-dimensional.
+ * The output arrays must be float or double, and input/output arrays 
+ * must be 2 or 3-dimensional.
  */
-  if((type_dv != NCL_float && type_dv != NCL_double) ||
-     (type_ud != NCL_float && type_ud != NCL_double) ||
+  if((type_ud != NCL_float && type_ud != NCL_double) ||
      (type_vd != NCL_float && type_vd != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvf: The output arrays must be float or double");
     return(NhlFATAL);
   }
   if( ndims_ud != ndims_dv || ndims_vd != ndims_dv ) {
@@ -586,13 +585,12 @@ NhlErrorTypes dv2uvg_W( void )
     return(NhlFATAL);
   }
 /*
- * The input/output arrays must be float or double, and be 2 or
- * 3-dimensional.
+ * The output arrays must be float or double, and input/output arrays 
+ * must be 2 or 3-dimensional.
  */
-  if((type_dv != NCL_float && type_dv != NCL_double) ||
-     (type_ud != NCL_float && type_ud != NCL_double) ||
+  if((type_ud != NCL_float && type_ud != NCL_double) ||
      (type_vd != NCL_float && type_vd != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvg: The output arrays must be float or double");
     return(NhlFATAL);
   }
   if( ndims_ud != ndims_dv || ndims_vd != ndims_dv ) {
@@ -881,13 +879,7 @@ NhlErrorTypes dv2uvF_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvF: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
-/*
- * The input array must be float or double.
- */
-  if(type_dv != NCL_float && type_dv != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvF: The input array must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * Compute the total number of elements in our array.
  */
@@ -1164,13 +1156,7 @@ NhlErrorTypes dv2uvG_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvG: The input array must be at least 2-dimensional");
     return(NhlFATAL);
   }
-/*
- * The input array must be float or double.
- */
-  if(type_dv != NCL_float && type_dv != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dv2uvG: The input array must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * Compute the total number of elements in our array.
  */
@@ -1473,12 +1459,11 @@ NhlErrorTypes gradsf_W( void )
     return(NhlFATAL);
   }
 /*
- * The input/output arrays must be float or double.
+ * The output arrays must be float or double.
  */
-  if((type_z   != NCL_float && type_z   != NCL_double) ||
-     (type_gzx != NCL_float && type_gzx != NCL_double) ||
+  if((type_gzx != NCL_float && type_gzx != NCL_double) ||
      (type_gzy != NCL_float && type_gzy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsf: The output arrays must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -1800,12 +1785,11 @@ NhlErrorTypes gradsg_W( void )
     return(NhlFATAL);
   }
 /*
- * The input/output arrays must be float or double.
+ * The output arrays must be float or double.
  */
-  if((type_z   != NCL_float && type_z   != NCL_double) ||
-     (type_gzx != NCL_float && type_gzx != NCL_double) ||
+  if((type_gzx != NCL_float && type_gzx != NCL_double) ||
      (type_gzy != NCL_float && type_gzy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"gradsg: The output arrays must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -2119,12 +2103,10 @@ NhlErrorTypes igradsf_W( void )
            &type_z,
            1);
 /*
- * The input/output arrays must be float or double.
+ * The output array must be float or double.
  */
-  if((type_z   != NCL_float && type_z   != NCL_double) ||
-     (type_gzx != NCL_float && type_gzx != NCL_double) ||
-     (type_gzy != NCL_float && type_gzy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: The input/output arrays must be float or double");
+  if(type_z != NCL_float && type_z != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsf: The output array must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -2433,14 +2415,6 @@ NhlErrorTypes igradsF_W( void )
            &has_missing_gzy,
            &type_gzy,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_gzx != NCL_float && type_gzx != NCL_double) ||
-     (type_gzy != NCL_float && type_gzy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsF: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and the same # of
  * dimensions.
@@ -2769,12 +2743,10 @@ NhlErrorTypes igradsg_W( void )
            &type_z,
            1);
 /*
- * The input/output arrays must be float or double.
+ * The output array must be float or double.
  */
-  if((type_z   != NCL_float && type_z   != NCL_double) ||
-     (type_gzx != NCL_float && type_gzx != NCL_double) ||
-     (type_gzy != NCL_float && type_gzy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: The input/output arrays must be float or double");
+  if(type_z != NCL_float && type_z != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsg: The output array must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -3082,14 +3054,6 @@ NhlErrorTypes igradsG_W( void )
            &has_missing_gzy,
            &type_gzy,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_gzx != NCL_float && type_gzx != NCL_double) ||
-     (type_gzy != NCL_float && type_gzy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"igradsG: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and the same # of
  * dimensions.
@@ -3418,14 +3382,6 @@ NhlErrorTypes ilapsf_W( void )
            &type_z,
            1);
 /*
- * The input must be float or double.
- */
-  if((type_zlmbda != NCL_float && type_zlmbda != NCL_double) ||
-     (type_zlap   != NCL_float && type_zlap   != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsf: The input must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grids coming in must be 1 and 3-dimensional.
  */
   if( ndims_zlap < 2 || ndims_zlmbda < 1 ) {
@@ -3683,9 +3639,9 @@ NhlErrorTypes ilapsf_W( void )
   NclFree(a);
   NclFree(b);
 
-  if(type_zlap != NCL_double) NclFree(tmp_zlap);
+  if(type_zlap   != NCL_double) NclFree(tmp_zlap);
   if(type_zlmbda != NCL_double) NclFree(tmp_zlmbda);
-  if(type_z != NCL_double) NclFree(tmp_z);
+  if(type_z      != NCL_double) NclFree(tmp_z);
 
   return(NhlNOERROR);
 }
@@ -3751,14 +3707,6 @@ NhlErrorTypes ilapsF_W( void )
            &has_missing_zlmbda,
            &type_zlmbda,
            2);
-/*
- * The input must be float or double.
- */
-  if((type_zlmbda != NCL_float && type_zlmbda != NCL_double) ||
-     (type_zlap   != NCL_float && type_zlap   != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsF: The input must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be 1 and 3-dimensional.
  */
@@ -4011,9 +3959,9 @@ NhlErrorTypes ilapsF_W( void )
   NclFree(a);
   NclFree(b);
 
-  if(type_zlap != NCL_double) NclFree(tmp_zlap);
+  if(type_zlap   != NCL_double) NclFree(tmp_zlap);
   if(type_zlmbda != NCL_double) NclFree(tmp_zlmbda);
-  if(type_z != NCL_double) NclFree(tmp_z);
+  if(type_z      != NCL_double) NclFree(tmp_z);
 
   if(nmiss) {
 /*
@@ -4088,14 +4036,6 @@ NhlErrorTypes ilapsg_W( void )
            &has_missing_zlmbda,
            &type_zlmbda,
            2);
-/*
- * The input must be float or double.
- */
-  if((type_zlmbda != NCL_float && type_zlmbda != NCL_double) ||
-     (type_zlap   != NCL_float && type_zlap   != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsg: The input must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * Get output array.
  */
@@ -4368,9 +4308,9 @@ NhlErrorTypes ilapsg_W( void )
   NclFree(a);
   NclFree(b);
 
-  if(type_zlap != NCL_double) NclFree(tmp_zlap);
+  if(type_zlap   != NCL_double) NclFree(tmp_zlap);
   if(type_zlmbda != NCL_double) NclFree(tmp_zlmbda);
-  if(type_z != NCL_double) NclFree(tmp_z);
+  if(type_z      != NCL_double) NclFree(tmp_z);
 
   return(NhlNOERROR);
 }
@@ -4436,14 +4376,6 @@ NhlErrorTypes ilapsG_W( void )
            &has_missing_zlmbda,
            &type_zlmbda,
            2);
-/*
- * The input must be float or double.
- */
-  if((type_zlmbda != NCL_float && type_zlmbda != NCL_double) ||
-     (type_zlap   != NCL_float && type_zlap   != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapsG: The input must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be 1 and 3-dimensional.
  */
@@ -4695,9 +4627,9 @@ NhlErrorTypes ilapsG_W( void )
   NclFree(a);
   NclFree(b);
 
-  if(type_zlap != NCL_double) NclFree(tmp_zlap);
+  if(type_zlap   != NCL_double) NclFree(tmp_zlap);
   if(type_zlmbda != NCL_double) NclFree(tmp_zlmbda);
-  if(type_z != NCL_double) NclFree(tmp_z);
+  if(type_z      != NCL_double) NclFree(tmp_z);
 
   if(nmiss) {
 /*
@@ -4794,14 +4726,6 @@ NhlErrorTypes ilapvf_W( void )
            &has_missing_v,
            &type_v,
            1);
-/*
- * The input arrays must be float or double.
- */
-  if((type_ulap != NCL_float && type_ulap != NCL_double) ||
-     (type_vlap != NCL_float && type_vlap != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvf: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and the same # of
  * dimensions.
@@ -5162,14 +5086,6 @@ NhlErrorTypes ilapvg_W( void )
            &type_v,
            1);
 /*
- * The input arrays must be float or double.
- */
-  if((type_ulap != NCL_float && type_ulap != NCL_double) ||
-     (type_vlap != NCL_float && type_vlap != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ilapvg: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grids coming in must be at least 2-dimensional and the same # of
  * dimensions.
  */
@@ -5529,11 +5445,10 @@ NhlErrorTypes lapsf_W( void )
     }
   }
 /*
- * Input/output must be float or double.
+ * Output must be float or double.
  */
-  if((type_zlap != NCL_float && type_zlap != NCL_double) ||
-     (type_z    != NCL_float && type_z    != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: The input/output arrays must be float or double");
+  if(type_zlap != NCL_float && type_zlap != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsf: The output array must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -5773,13 +5688,6 @@ NhlErrorTypes lapsF_W( void )
            &has_missing_z,
            &type_z,
            2);
-/*
- * Input must be float or double.
- */
-  if(type_z != NCL_float && type_z != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsF: The input array must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -6072,11 +5980,10 @@ NhlErrorTypes lapsg_W( void )
     }
   }
 /*
- * Input/output must be float or double.
+ * Output must be float or double.
  */
-  if((type_zlap != NCL_float && type_zlap != NCL_double) ||
-     (type_z    != NCL_float && type_z    != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: The input/output arrays must be float or double");
+  if(type_zlap != NCL_float && type_zlap != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsg: The output array must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -6314,13 +6221,6 @@ NhlErrorTypes lapsG_W( void )
            &has_missing_z,
            &type_z,
            2);
-/*
- * Input must be float or double.
- */
-  if(type_z != NCL_float && type_z != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapsG: The input array must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -6610,14 +6510,6 @@ NhlErrorTypes lapvf_W( void )
            &has_missing_vlap,
            &type_vlap,
            1);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u != NCL_float && type_u != NCL_double) ||
-     (type_v != NCL_float && type_v != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvf: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -6977,14 +6869,6 @@ NhlErrorTypes lapvg_W( void )
            &has_missing_vlap,
            &type_vlap,
            1);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u != NCL_float && type_u != NCL_double) ||
-     (type_v != NCL_float && type_v != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lapvg: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -7370,11 +7254,9 @@ NhlErrorTypes uv2sfvpf_W( void )
       return(NhlFATAL);
     }
   }
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double) ||
-     (type_sf != NCL_float && type_sf != NCL_double) ||
+  if((type_sf != NCL_float && type_sf != NCL_double) ||
      (type_vp != NCL_float && type_vp != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpf: The output arrays must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -7672,14 +7554,6 @@ NhlErrorTypes uv2sfvpF_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * Input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpF: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -8048,11 +7922,9 @@ NhlErrorTypes uv2sfvpg_W( void )
       return(NhlFATAL);
     }
   }
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double) ||
-     (type_sf != NCL_float && type_sf != NCL_double) ||
+  if((type_sf != NCL_float && type_sf != NCL_double) ||
      (type_vp != NCL_float && type_vp != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpg: The output arrays must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -8350,14 +8222,6 @@ NhlErrorTypes uv2sfvpG_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * Input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2sfvpG: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -8728,13 +8592,11 @@ NhlErrorTypes lderuvf_W( void )
     }
   }
 /*
- * Input/output must be float or double.
+ * Output must be float or double.
  */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double) ||
-     (type_uy != NCL_float && type_uy != NCL_double) ||
+  if((type_uy != NCL_float && type_uy != NCL_double) ||
      (type_vy != NCL_float && type_vy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvf: The output arrays must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -9086,13 +8948,11 @@ NhlErrorTypes lderuvg_W( void )
     }
   }
 /*
- * Input/output must be float or double.
+ * Output must be float or double.
  */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double) ||
-     (type_uy != NCL_float && type_uy != NCL_double) ||
+  if((type_uy != NCL_float && type_uy != NCL_double) ||
      (type_vy != NCL_float && type_vy != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"lderuvg: The output arrays must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -9434,12 +9294,10 @@ NhlErrorTypes uv2dvf_W( void )
     }
   }
 /*
- * The input/output arrays must be float or double.
+ * The output array must be float or double.
  */
-  if((type_dv != NCL_float && type_dv != NCL_double) ||
-     (type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: The input/output arrays must be float or double");
+  if(type_dv != NCL_float && type_dv != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvf: The output array must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -9719,14 +9577,6 @@ NhlErrorTypes uv2dvF_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvF: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -10081,12 +9931,10 @@ NhlErrorTypes uv2dvg_W( void )
     }
   }
 /*
- * The input/output arrays must be float or double.
+ * The output array must be float or double.
  */
-  if((type_dv != NCL_float && type_dv != NCL_double) ||
-     (type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: The input/output arrays must be float or double");
+  if(type_dv != NCL_float && type_dv != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvg: The output array must be float or double");
     return(NhlFATAL);
   }
 /*
@@ -10366,14 +10214,6 @@ NhlErrorTypes uv2dvG_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2dvG: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -10698,14 +10538,6 @@ NhlErrorTypes uv2vrf_W( void )
            &type_vort,
            1);
 /*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrf: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
  */
@@ -11015,14 +10847,7 @@ NhlErrorTypes uv2vrF_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrF: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -11349,14 +11174,6 @@ NhlErrorTypes uv2vrg_W( void )
            &type_vort,
            1);
 /*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrg: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
  */
@@ -11665,14 +11482,7 @@ NhlErrorTypes uv2vrG_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrG: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -12005,14 +11815,7 @@ NhlErrorTypes uv2vrdvf_W( void )
            &has_missing_dvo,
            &type_dv,
            1);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvf: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -12346,14 +12149,7 @@ NhlErrorTypes uv2vrdvF_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvF: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -12702,14 +12498,7 @@ NhlErrorTypes uv2vrdvg_W( void )
            &has_missing_dvo,
            &type_dv,
            1);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvg: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -13045,14 +12834,7 @@ NhlErrorTypes uv2vrdvG_W( void )
            &has_missing_v,
            &type_v,
            2);
-/*
- * The input arrays must be float or double.
- */
-  if((type_u  != NCL_float && type_u  != NCL_double) ||
-     (type_v  != NCL_float && type_v  != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"uv2vrdvG: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -13389,13 +13171,6 @@ NhlErrorTypes vr2uvf_W( void )
            &type_vr,
            1);
 /*
- * The input array must be float or double.
- */
-  if(type_vort != NCL_float && type_vort != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvf: The input array must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grid coming in must be at least 2-dimensional.
  */
   if( ndims_vort < 2 ) {
@@ -13688,13 +13463,6 @@ NhlErrorTypes vr2uvF_W( void )
            &has_missing_vort,
            &type_vort,
            2);
-/*
- * The input array must be float or double.
- */
-  if(type_vort != NCL_float && type_vort != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvF: The input array must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -13993,13 +13761,6 @@ NhlErrorTypes vr2uvg_W( void )
            &type_vr,
            1);
 /*
- * The input array must be float or double.
- */
-  if(type_vort != NCL_float && type_vort != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvg: The input array must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grid coming in must be at least 2-dimensional.
  */
   if( ndims_vort < 2 ) {
@@ -14293,13 +14054,6 @@ NhlErrorTypes vr2uvG_W( void )
            &has_missing_vort,
            &type_vort,
            2);
-/*
- * The input array must be float or double.
- */
-  if(type_vort != NCL_float && type_vort != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vr2uvG: The input array must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -14607,14 +14361,6 @@ NhlErrorTypes vrdv2uvf_W( void )
            &has_missing_v,
            &type_v,
            1);
-/*
- * The input arrays must be float or double.
- */ 
-  if((type_vr != NCL_float && type_vr != NCL_double) ||
-     (type_dv != NCL_float && type_dv != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvf: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -14962,14 +14708,7 @@ NhlErrorTypes vrdv2uvF_W( void )
            &has_missing_dv,
            &type_dv,
            2);
-/*
- * The input arrays must be float or double.
- */ 
-  if((type_vr != NCL_float && type_vr != NCL_double) ||
-     (type_dv != NCL_float && type_dv != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvF: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -15324,14 +15063,6 @@ NhlErrorTypes vrdv2uvg_W( void )
            &type_v,
            1);
 /*
- * The input arrays must be float or double.
- */ 
-  if((type_vr != NCL_float && type_vr != NCL_double) ||
-     (type_dv != NCL_float && type_dv != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvg: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
  */
@@ -15675,14 +15406,6 @@ NhlErrorTypes vrdv2uvG_W( void )
            &has_missing_dv,
            &type_dv,
            2);
-/*
- * The input arrays must be float or double.
- */ 
-  if((type_vr != NCL_float && type_vr != NCL_double) ||
-     (type_dv != NCL_float && type_dv != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vrdv2uvG: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -16037,14 +15760,7 @@ NhlErrorTypes sfvp2uvf_W( void )
            &has_missing_v,
            &type_v,
            1);
-/*
- * The input arrays must be float or double.
- */ 
-  if((type_sf != NCL_float && type_sf != NCL_double) ||
-     (type_vp != NCL_float && type_vp != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvf: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -16409,14 +16125,7 @@ NhlErrorTypes sfvp2uvg_W( void )
            &has_missing_v,
            &type_v,
            1);
-/*
- * The input arrays must be float or double.
- */ 
-  if((type_sf != NCL_float && type_sf != NCL_double) ||
-     (type_vp != NCL_float && type_vp != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"sfvp2uvg: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -16794,14 +16503,7 @@ NhlErrorTypes vhaec_W( void )
            NULL,
            &type_ci,
            1);
-/*
- * Input arrays must be float or double.
- */
-  if((type_u != NCL_float && type_u != NCL_double) ||
-     (type_v != NCL_float && type_v != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -17010,14 +16712,7 @@ NhlErrorTypes vhaeC_W( void )
            NULL,
            &type_v,
            2);
-/*
- * Input arrays must be float or double.
- */
-  if((type_u != NCL_float && type_u != NCL_double) ||
-     (type_v != NCL_float && type_v != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -17259,14 +16954,7 @@ NhlErrorTypes vhagc_W( void )
            NULL,
            &type_ci,
            1);
-/*
- * Input arrays must be float or double.
- */
-  if((type_u != NCL_float && type_u != NCL_double) ||
-     (type_v != NCL_float && type_v != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagc: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -17470,14 +17158,7 @@ NhlErrorTypes vhagC_W( void )
            NULL,
            &type_v,
            2);
-/*
- * Input arrays must be float or double.
- */
-  if((type_u != NCL_float && type_u != NCL_double) ||
-     (type_v != NCL_float && type_v != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -17719,16 +17400,6 @@ NhlErrorTypes vhsec_W( void )
            &type_v,
            1);
 /*
- * Input arrays must be float or double.
- */
-  if((type_br != NCL_float && type_br != NCL_double) ||
-     (type_bi != NCL_float && type_bi != NCL_double) ||
-     (type_cr != NCL_float && type_cr != NCL_double) ||
-     (type_ci != NCL_float && type_ci != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaec: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grids coming in must be at least 2-dimensional.
  */
   if( ndims_br != ndims_bi || ndims_br != ndims_ci || ndims_br != ndims_cr ||
@@ -17909,13 +17580,6 @@ NhlErrorTypes vhseC_W( void )
            NULL,
            NULL,
            2);
-/*
- * Input array must be float or double.
- */
-  if(type_bc != NCL_float && type_bc != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhaeC: The input array must be float or double");
-    return(NhlFATAL);
-  }
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -18140,16 +17804,7 @@ NhlErrorTypes vhsgc_W( void )
            NULL,
            &type_v,
            1);
-/*
- * Input arrays must be float or double.
- */
-  if((type_br != NCL_float && type_br != NCL_double) ||
-     (type_bi != NCL_float && type_bi != NCL_double) ||
-     (type_cr != NCL_float && type_cr != NCL_double) ||
-     (type_ci != NCL_float && type_ci != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhsgc: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  *  dimensions. 
@@ -18332,13 +17987,7 @@ NhlErrorTypes vhsgC_W( void )
            NULL,
            NULL,
            2);
-/*
- * Input array must be float or double.
- */
-  if(type_bc != NCL_float && type_bc != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vhagC: The input array must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grid coming in must be at least 3-dimensional.
  */
@@ -18533,12 +18182,11 @@ NhlErrorTypes shaec_W( void )
            &type_b,
            1);
 /*
- * Input/output arrays must be float or double.
+ * Output arrays must be float or double.
  */
-  if((type_g != NCL_float && type_g != NCL_double) ||
-     (type_a != NCL_float && type_a != NCL_double) ||
+  if((type_a != NCL_float && type_a != NCL_double) ||
      (type_b != NCL_float && type_b != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaec: The output arrays must be float or double");
     return(NhlFATAL);
   }
 
@@ -18749,12 +18397,11 @@ NhlErrorTypes shagc_W( void )
            &type_b,
            1);
 /*
- * Input/output arrays must be float or double.
+ * Output arrays must be float or double.
  */
-  if((type_g != NCL_float && type_g != NCL_double) ||
-     (type_a != NCL_float && type_a != NCL_double) ||
+  if((type_a != NCL_float && type_a != NCL_double) ||
      (type_b != NCL_float && type_b != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: The input/output arrays must be float or double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagc: The output arrays must be float or double");
     return(NhlFATAL);
   }
 
@@ -18965,14 +18612,7 @@ NhlErrorTypes shsec_W( void )
           NULL,
           &type_g,
           1);
-/*
- * Input arrays must be float or double.
- */
-  if((type_a != NCL_float && type_a != NCL_double) ||
-     (type_b != NCL_float && type_b != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsec: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -19163,14 +18803,6 @@ NhlErrorTypes shsgc_W( void )
           &type_g,
           1);
 /*
- * Input arrays must be float or double.
- */
-  if((type_a != NCL_float && type_a != NCL_double) ||
-     (type_b != NCL_float && type_b != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
-/*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
  */
@@ -19341,14 +18973,7 @@ NhlErrorTypes shsgc_R42_W( void )
            NULL,
            &type_b,
            2);
-/*
- * Input arrays must be float or double.
- */
-  if((type_a != NCL_float && type_a != NCL_double) ||
-     (type_b != NCL_float && type_b != NCL_double)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgc_R42: The input arrays must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions, and the rightmost dimensions must be 43 x 43.
@@ -19523,13 +19148,7 @@ NhlErrorTypes shaeC_W( void )
              NULL,
              &type_g,
            2);
-/*
- * Input array must be float or double.
- */
-  if(type_g != NCL_float && type_g != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shaeC: The input array must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -19715,13 +19334,7 @@ NhlErrorTypes shagC_W( void )
              NULL,
              &type_g,
              2);
-/*
- * Input array must be float or double.
- */
-  if(type_g != NCL_float && type_g != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shagC: The input array must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -19921,13 +19534,7 @@ NhlErrorTypes shseC_W( void )
            NULL,
            NULL,
            2);
-/*
- * Input array must be float or double.
- */
-  if(type_ab != NCL_float && type_ab != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shseC: The input array must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grid coming in must be at least 3-dimensional.
  */
@@ -20117,13 +19724,7 @@ NhlErrorTypes shsgC_W( void )
            NULL,
            NULL,
            2);
-/*
- * Input array must be float or double.
- */
-  if(type_ab != NCL_float && type_ab != NCL_double) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"shsgC: The input array must be float or double");
-    return(NhlFATAL);
-  }
+
 /*
  * The grid coming in must be at least 3-dimensional.
  */
