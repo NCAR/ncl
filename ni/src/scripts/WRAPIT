@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 041106    # YYMMDD
+set version = 042606    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -8,14 +8,7 @@ if ($#argv == 0) then
   exit
 endif
 if ($argv[1]:q == "-h" || $argv[1]:q == "-help") then
-echo written by Mark Stevens, NCAR/CGD/Climate Modeling Section
-echo e-mail: stevens@ucar.edu
-echo "----------------------------------------------------------------------"
-echo "Get the latest version of WRAPIT from our 'anonymous' ftp site."
-echo ">ftp  ftp.cgd.ucar.edu"
-echo "> login using '"anonymous"' and your email address"
-echo ">cd pub/stevens"
-echo ">get WRAPIT"
+echo written by Mark Stevens, formerly of NCAR/CGD/Climate Modeling Section
 echo "----------------------------------------------------------------------"
 echo "WRAPIT works on SunOS, IRIX64, IRIX (Sgi), AIX (IBM), OSF1 (alpha),"
 echo MacOSX, HP-UX, Linux and FreeBSD operating systems. WRAPIT can handle 
@@ -61,6 +54,7 @@ echo "  is derived from the first fortran filename on the command line."
 echo "OPTION: -q32 is used to specify a 32-bit IRIX or AIX operating"
 echo "environment.  NOTE: the default is a 64-bit operating envirnonment."
 echo "OPTION: -r8 is used to promote floats of real*4 to real*8."
+echo "OPTION: -fPIC is used to compile with the '-fPIC' option."
 echo " "
 echo "------------------------ Linux Compilers ---------------------------"
 echo The default linux fortran compiler is the gnu g77 compiler. If your
@@ -137,6 +131,8 @@ set real8 = 0     # off
 set debug = 0     # off
 set nbits = 64    # default for AIX and IRIX
 set f90c  = g77   # default linux compiler
+set exfopts = ""   # default is no extra Fortran options
+set excopts = ""   # default is no extra C options
 
 # get a name for the shared object file
 set SharedObj = NONE
@@ -189,6 +185,9 @@ while ($#argv)
     else
       echo "WARNING: option -in INVALID for $OS system"
     endif
+  else if ($arg:q == "-fPIC") then
+    set exfopts = "-fPIC"
+    set excopts = "-fPIC"
   else if ($arg:q == "-q32") then
     set nbits = 32
   else if ($arg:q == "-r8") then
@@ -276,48 +275,51 @@ set args = ($argv)     # save list of remaining arguments
 
 #------------- Set the fortran compiler options ---------------------
 
+set fopts = $exfopts
+set copts = $excopts
+
 switch ($OS)
  case Linux:                         # Linux 
    if ($f90c == pgf90) then          # Portland Group 
      if ($debug == 1) then
-       set fopts = "-c -Mbounds"
+       set fopts = "$fopts -c -Mbounds"
      else
-       set fopts = "-c -O"
+       set fopts = "$fopts -c -O"
      endif
      if ($real8 == 1) then
        set fopts = "$fopts -r8"
      endif
    else if ($f90c == lf95) then      # Lahey/Fujitsu
      if ($debug == 1) then
-       set fopts = "-c --chk a,e,s"
+       set fopts = "$fopts -c --chk a,e,s"
      else
-       set fopts = "-c -O"
+       set fopts = "$fopts -c -O"
      endif 
      if ($real8 == 1) then
        set fopts = "$fopts --dbl"
      endif
    else if ($f90c == ifc || $f90c == ifort) then     # Intel 
      if ($debug == 1) then
-       set fopts = "-c -CB -V"
+       set fopts = "$fopts -c -CB -V"
      else
-       set fopts = "-c -O2"
+       set fopts = "$fopts -c -O2"
      endif 
      if ($real8 == 1) then
        set fopts = "$fopts -r8"
      endif
    else                              # GNU g77
      if ($debug == 1) then
-       set fopts = "-v -c -ffortran-bounds-check -fno-second-underscore" 
+       set fopts = "$fopts -v -c -ffortran-bounds-check -fno-second-underscore" 
      else
-       set fopts = "-c -O -fno-second-underscore"
+       set fopts = "$fopts -c -O -fno-second-underscore"
      endif 
    endif  
    breaksw
  case AIX:                           # AIX
    if ($debug == 1) then
-     set fopts = "-c -C -q{$nbits} -qmaxmem=-1 -qarch=auto -qextname=flush"
+     set fopts = "$fopts -c -C -q{$nbits} -qmaxmem=-1 -qarch=auto -qextname=flush"
    else
-     set fopts = "-c -q{$nbits} -qmaxmem=-1 -qarch=auto -qextname=flush -O"
+     set fopts = "$fopts -c -q{$nbits} -qmaxmem=-1 -qarch=auto -qextname=flush -O"
    endif
    if ($real8 == 1) then
      set fopts = "$fopts -qautodbl=dbl4"
@@ -326,15 +328,15 @@ switch ($OS)
  case IRIX64:                        # SGI 64-bit or 32-bit
    if ($nbits == 32) then
      if ($debug == 1) then
-       set fopts = "-n32 -c -C"
+       set fopts = "$fopts -n32 -c -C"
      else
-       set fopts = "-n32 -c -O"
+       set fopts = "$fopts -n32 -c -O"
      endif
    else                             # 64-bit default
      if ($debug == 1) then
-       set fopts = "-64 -c -C"
+       set fopts = "$fopts -64 -c -C"
      else
-       set fopts = "-64 -c -O"
+       set fopts = "$fopts -64 -c -O"
      endif
    endif
    if ($real8 == 1) then
@@ -343,9 +345,9 @@ switch ($OS)
    breaksw
  case IRIX:                          # SGI 32-bit
    if ($debug == 1) then
-     set fopts = "-n32 -c -C"
+     set fopts = "$fopts -n32 -c -C"
    else
-     set fopts = "-n32 -c -O" 
+     set fopts = "$fopts -n32 -c -O" 
    endif
    if ($real8 == 1) then
      set fopts = "$fopts -r8"
@@ -353,23 +355,23 @@ switch ($OS)
    breaksw
  case Darwin:                        # MacOSX (g77)
    if ($debug == 1) then
-     set fopts = "-v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
+     set fopts = "$fopts -v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
    else
-     set fopts = "-c -O -fno-common -fno-second-underscore"
+     set fopts = "$fopts -c -O -fno-common -fno-second-underscore"
    endif
    breaksw
  case FreeBSD:                       # FreeBSD (g77)
    if ($debug == 1) then
-     set fopts = "-v -c -ffortran-bounds-check -fno-second-underscore"
+     set fopts = "$fopts -v -c -ffortran-bounds-check -fno-second-underscore"
    else
-     set fopts = "-c -O -fno-second-underscore"
+     set fopts = "$fopts -c -O -fno-second-underscore"
    endif
    breaksw
  case HP-UX:                         # HP-UX
    if ($debug == 1) then
-     set fopts = "+z -c -C"
+     set fopts = "$fopts +z -c -C"
    else
-     set fopts = "+z -c -O"
+     set fopts = "$fopts +z -c -O"
    endif
    if ($real8 == 1) then
      set fopts = "$fopts +r8"
@@ -377,9 +379,9 @@ switch ($OS)
    breaksw
  case OSF1:                          # OSF1
    if ($debug == 1) then
-     set fopts = "-c -C"
+     set fopts = "$fopts -c -C"
    else
-     set fopts = "-c -O" 
+     set fopts = "$fopts -c -O" 
    endif
    if ($real8 == 1) then
      set fopts = "$fopts -r8"
@@ -387,9 +389,9 @@ switch ($OS)
    breaksw
  default:                            # SunOS
    if ($debug == 1) then
-     set fopts = "-c -C" 
+     set fopts = "$fopts -c -C" 
    else
-     set fopts = "-c -O" 
+     set fopts = "$fopts -c -O" 
    endif
    if ($real8 == 1) then
      set fopts = "$fopts -xtypemap=real:64"
@@ -433,10 +435,10 @@ $NCARG_ROOT/bin/wrapit77 < WRAPIT.stub >! WRAPIT.c
 switch ($OS)
  case AIX:
    if ($debug == 1) then
-     xlc -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
+     xlc $copts -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
       -c -q{$nbits} -qmaxmem=-1 -qarch=auto -I${NCARG_ROOT}/include WRAPIT.c 
    else
-     xlc -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
+     xlc $copts -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
       -c -q{$nbits} -qmaxmem=-1 -qarch=auto -O -I${NCARG_ROOT}/include WRAPIT.c 
    endif
    breaksw
@@ -444,44 +446,44 @@ switch ($OS)
 #  -woff turns off warning messages about variables not used or set
    if ($nbits == 32) then
      if ($debug == 1) then
-       cc -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       cc $copts -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
      else
-       cc -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       cc $copts -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
      endif
    else     # 64-bit default
      if ($debug == 1) then
-       cc -c -64 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       cc $copts -c -64 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
      else
-       cc -c -64 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       cc $copts -c -64 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
      endif
    endif
    breaksw
  case IRIX:
    if ($debug == 1) then
-     cc -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     cc $copts -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
    else
-     cc -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     cc $copts -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
    endif
    breaksw
  case Darwin:
    if ($debug == 1) then
-     gcc -c -fno-common -I${NCARG_ROOT}/include WRAPIT.c
+     gcc $copts -c -fno-common -I${NCARG_ROOT}/include WRAPIT.c
    else
-     gcc -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c
+     gcc $copts -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c
    endif
    breaksw
  case HP-UX:
    if ($debug == 1) then
-     cc +z -c -I${NCARG_ROOT}/include WRAPIT.c
+     cc $copts +z -c -I${NCARG_ROOT}/include WRAPIT.c
    else
-     cc +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
+     cc $copts +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
    endif
    breaksw
  default:          # OSF1, SunOS, FreeBSD, Linux
    if ($debug == 1) then
-     cc -c -I${NCARG_ROOT}/include WRAPIT.c
+     cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c
    else
-     cc -c -O -I${NCARG_ROOT}/include WRAPIT.c
+     cc $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c
    endif
    breaksw
 endsw
