@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.74 2006-01-13 23:57:35 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.75 2006-05-16 20:59:48 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -429,6 +429,12 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstrlen(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclidsfft(
 #if NhlNeedProto
 void
@@ -809,6 +815,12 @@ void _NclAddBuiltIns
 	dimsizes[0] = 1;
 	SetArgTemplate(args,0,"string",1,dimsizes);nargs++;
 	NclRegisterFunc(_Nclsystemfunc,args,"systemfunc",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args, nargs, "string", 1, NclANY); nargs++;
+	NclRegisterFunc(_Nclstrlen, args, "strlen", nargs);
+	nargs = 0;
 
 	nargs = 0;
 	args = NewArgs(4);

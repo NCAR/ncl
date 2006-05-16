@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.193 2006-02-08 23:49:34 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.194 2006-05-16 20:59:49 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -940,6 +940,47 @@ NhlErrorTypes _Nclsystemfunc
                 return(NhlFATAL);
 	}
 }
+
+NhlErrorTypes _Nclstrlen
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    NclStackEntry   sval;
+    NclMultiDValData    s_md = NULL;
+    int dimsizes = 1;
+    char*   s;
+    int len;
+    
+    sval = _NclGetArg(0, 1, DONT_CARE);
+    switch (sval.kind) {
+        case NclStk_VAL:
+            s_md = (NclMultiDValData) sval.u.data_obj;
+            break;
+
+        case NclStk_VAR:
+            s_md = _NclVarValueRead(sval.u.data_var, NULL, NULL);
+            break;
+
+        default:
+            NhlPError(NhlFATAL, NhlEUNKNOWN, "strlen: incorrect argument type");
+            return(NhlFATAL);
+    }
+
+    if ((s_md != NULL) && (s_md->multidval.data_type == NCL_string)) {
+        s = NrmQuarkToString(*(NclQuark *) s_md->multidval.val);
+        len = strlen(s);
+        return NclReturnValue(&len, 1, &dimsizes, NULL, NCL_int, 1);
+    } else {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "strlen: invalid argument type");
+        return NhlFATAL;
+	}
+
+    return NhlNOERROR;
+}
+
 
 NhlErrorTypes _Nclsystem
 #if     NhlNeedProto
