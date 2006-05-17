@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.75 2006-05-16 20:59:48 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.76 2006-05-17 22:49:18 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -818,7 +818,7 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	args = NewArgs(1);
-	SetArgTemplate(args, nargs, "string", 1, NclANY); nargs++;
+	SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
 	NclRegisterFunc(_Nclstrlen, args, "strlen", nargs);
 	nargs = 0;
 
