@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.111 2006-05-16 20:21:14 shea Exp $
+;      $Id: contributed.ncl,v 1.112 2006-05-17 22:04:05 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4532,7 +4532,10 @@ function eof_varimax_Wrap (eof:numeric, optEVX:logical)
 local eofEVX
 begin
   eofEVX = eof
-  eofEVX = eofunc_varimax(eof, optEVX) ; invoke built-in function
+  if (isatt(eof,"pcvar")) then
+      delete(eofEVX@pcvar)          ; avoid confusion
+  end if
+  eofEVX = (/ eofunc_varimax(eof, optEVX) /); invoke built-in function
   eofEVX@op = "Kaiser Varimax Rotation"
   return  (eofEVX)                        ; return
 end
@@ -6368,7 +6371,7 @@ begin
   end if
 end
 
-undef ("wallClockElapseTime")
+undef("wallClockElapseTime")
 procedure wallClockElapseTime(wcStrt:string, title:string, opt:integer)
 ;
 ; compute *Wall Clock* elapsed time in seconds
@@ -6379,29 +6382,34 @@ procedure wallClockElapseTime(wcStrt:string, title:string, opt:integer)
 ; this will not handle case where year or month changes
 local wcNow, wcStrt_c, tSTRT, wcNow_c, tNOW, sec, NLINE
 begin
-  wcNow     = systemfunc("date")   ; current ("now") time
- 
+  wcNow     = systemfunc("date")     ; current ("now") time
+  wcNow_c   = stringtochar(wcNow)
   wcStrt_c  = stringtochar(wcStrt)
-  tSTRT     = stringtointeger((/wcStrt_c( 8: 9)/))*86400 \
+
+  if (dimsizes(wcNow_c).eq.dimsizes(wcStrt_c) .and. \
+      dimsizes(wcNow_c).eq.29) then  ; includes end-of-line character
+
+      tSTRT = stringtointeger((/wcStrt_c( 8: 9)/))*86400 \
             + stringtointeger((/wcStrt_c(11:12)/))*3600  \
             + stringtointeger((/wcStrt_c(14:15)/))*60    \
             + stringtointeger((/wcStrt_c(17:18)/))
- 
-  wcNow_c   = stringtochar(wcNow)
-  tNOW      = stringtointeger((/wcNow_c( 8: 9)/))*86400  \
+
+      tNOW  = stringtointeger((/wcNow_c( 8: 9)/))*86400  \
             + stringtointeger((/wcNow_c(11:12)/))*3600   \
             + stringtointeger((/wcNow_c(14:15)/))*60     \
             + stringtointeger((/wcNow_c(17:18)/))
 
-  secElapseTime = tNOW-tSTRT    
+      secElapseTime = tNOW-tSTRT
 
-  NLINE     = inttochar(10)   ; new line character
-  print (NLINE+ \
+      NLINE     = inttochar(10)   ; new line character
+      print (NLINE+ \
         "=====> Wall Clock Elapsed Time: "+title+": "+   \
          secElapseTime+" seconds <====="+NLINE)
+  else
+      print("wallClockElapseTime: something wrong: no printed value")
+  end if
 
-end 
-
+end
 
 undef("partitionString")
 function partitionString(s:string , fs:string)
