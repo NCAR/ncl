@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.112 2006-05-17 22:04:05 shea Exp $
+;      $Id: contributed.ncl,v 1.113 2006-05-17 22:04:57 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4532,7 +4532,7 @@ function eof_varimax_Wrap (eof:numeric, optEVX:logical)
 local eofEVX
 begin
   eofEVX = eof
-  if (isatt(eof,"pcvar")) then
+  if (isatt(eofEVX,"pcvar")) then
       delete(eofEVX@pcvar)          ; avoid confusion
   end if
   eofEVX = (/ eofunc_varimax(eof, optEVX) /); invoke built-in function
