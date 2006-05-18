@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.113 2006-05-17 22:04:57 shea Exp $
+;      $Id: contributed.ncl,v 1.114 2006-05-18 15:46:17 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4707,7 +4707,7 @@ begin
           tlon(indt) = (/ tlon(indt) + 360. /)
       end if
   end if
-  if (tlon(0).eq.180. .or. tlon(0).eq.360.) then
+  if (tlon(0).ge.180. .or. tlon(0).eq.360.) then
       tlon = (/ tlon -360. /)
   end if
   copy_VarAtts   (xlon,tlon)
