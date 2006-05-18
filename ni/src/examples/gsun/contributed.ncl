@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.114 2006-05-18 15:46:17 shea Exp $
+;      $Id: contributed.ncl,v 1.115 2006-05-18 21:31:52 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -459,9 +459,10 @@ function numAsciiRow (fNam:string)
 
 local filString, nrow
 begin
-  filString = asciiread ( fNam, -1, "string")
-  nrow      = dimsizes(filString)
-  delete (filString)  ; not required but to be explicit
+ ;filString = asciiread ( fNam, -1, "string")
+ ;nrow      = dimsizes(filString)
+
+  nrow      = stringtointeger(systemfunc("'wc' -l" + fNam +" | awk '{print $1}'" ))
 
   return (nrow)
 end
