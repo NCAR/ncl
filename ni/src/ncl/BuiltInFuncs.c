@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.195 2006-05-17 22:49:18 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.196 2006-05-23 18:06:27 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -875,7 +875,12 @@ NhlErrorTypes _Nclsystemfunc
         }
 	if((tmp_md != NULL)&&(tmp_md->multidval.type->type_class.type & Ncl_Typestring)) {
 		ret = pipe(fildes);
+		errno = 0;
 		id = fork();
+		if (id < 0) {
+			NhlPError(NhlFATAL,errno,"systemfunc: cannot create child process");
+			return(NhlFATAL);
+		}
 		if(id == 0) {
 			close(fildes[0]);
 			close(fileno(stdout));
