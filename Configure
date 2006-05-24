@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.29 2006-01-26 16:41:30 grubin Exp $
+#      $Id: Configure,v 1.30 2006-05-24 20:18:21 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2006-01-26 16:41:30 $
+#	$Date: 2006-05-24 20:18:21 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -814,6 +814,20 @@ proc_pythondir:
     set pythonlib = "-L$pythonlibdir"
     set pythoninc = "-I$pythonincdir"
   endif 
+# 
+# Decide whether to use Numeric or NumPy.
+# 
+    set usenumpy = 0
+    echo ""
+    echo "Use Numeric (0) or NumPy (1)? : $usenumpy "
+    echo -n "Enter Return (default), (0) Numeric, (1) NumPy, or q(quit) > "
+    set answer="$<"
+
+    if ("$answer" == "q") goto cleanup
+    if ("$answer" != "") then
+      set usenumpy = "$answer"
+      set altered
+    endif
 endif
 
 #
@@ -1078,6 +1092,9 @@ if ($?newbuildpyngl) then
 	else
 		echo "#define BuildPyNGL FALSE" >> Site.local
 		echo "#define PYNGLlib" >> Site.local
+	endif
+	if ("$usenumpy" == 1) then
+		echo "#define UseNumpy TRUE" >> Site.local
 	endif
 endif
 
