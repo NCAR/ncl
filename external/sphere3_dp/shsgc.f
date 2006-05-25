@@ -561,6 +561,7 @@ c     set indices in temp work for double precision gaussian wts and pts
       DOUBLE PRECISION BBEL
       DOUBLE PRECISION CBEL
       DOUBLE PRECISION WFFT
+      DOUBLE PRECISION BB1, BB2, BB3, BBTOP BBBOT
       DIMENSION WTS(NLAT),P0N(NLAT,LATE),P1N(NLAT,LATE),ABEL(1),BBEL(1),
      +          CBEL(1),WFFT(1),DTHETA(NLAT),DWTS(NLAT)
 C*PT*WARNING* Already double-precision
@@ -629,12 +630,14 @@ c     for 2.le.m.le.n and 2.le.n.le.nlat in abel,bbel,cbel
           DO 107 M = 2,MLIM
               IMN = INDX(M,N)
               IF (N.GE.L) IMN = IMNDX(M,N)
-              ABEL(IMN) = SQRT(DBLE((2*N+1)* (M+N-2)* (M+N-3))/
-     +                    DBLE(((2*N-3)* (M+N-1)* (M+N))))
-              BBEL(IMN) = SQRT(DBLE((2*N+1)* (N-M-1)* (N-M))/
-     +                    DBLE(((2*N-3)* (M+N-1)* (M+N))))
-              CBEL(IMN) = SQRT(DBLE((N-M+1)* (N-M+2))/
+              ABEL(IMN) = DSQRT(DBLE((2d0*N+1d0)* (M+N-2d0)* (M+N-3d0))/
+     +                    DBLE(((2d0*N-3d0)* (M+N-1.d0)* (M+N))))
+              BBEL(IMN) = DSQRT(DBLE((2d0*N+1d0)* (N-M-1d0)* (N-M))/
+     +                    DBLE(((2d0*N-3d0)* (M+N-1d0)* (M+N))))
+
+              CBEL(IMN) = DSQRT(DBLE((N-M+1)* (N-M+2))/
      +                    DBLE(((N+M-1)* (N+M))))
+              
   107 CONTINUE
       RETURN
       END
