@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.115 2006-05-18 21:31:52 shea Exp $
+;      $Id: contributed.ncl,v 1.116 2006-05-26 15:44:15 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -457,12 +457,13 @@ end
 undef ("numAsciiRow")
 function numAsciiRow (fNam:string)
 
-local filString, nrow
+local filString, nrow, nrow_s
 begin
  ;filString = asciiread ( fNam, -1, "string")
  ;nrow      = dimsizes(filString)
 
-  nrow      = stringtointeger(systemfunc("'wc' -l" + fNam +" | awk '{print $1}'" ))
+  nrow_s    = systemfunc("'wc' -l" + fNam +" | awk '{print $1}'" )
+  nrow      = stringtointeger( nrow_s )
 
   return (nrow)
 end
@@ -5082,7 +5083,7 @@ begin
   end if
 
   if (rank.eq.1) then
-      xSea = new ( nyrs, typeof(xMon))
+      xSea = new ( nyrs, typeof(xMon), getFillValue(xMon))
       do nyr=nyrStrt,nyrLast
          n = nyr*nmos + NMO
          xSea(nyr) = (xMon(n-1) + xMon(n) + xMon(n+1))*con
@@ -5100,7 +5101,7 @@ begin
   end if
 
   if (rank.eq.3) then
-      xSea = new ( (/nyrs,nlat,mlon/), typeof(xMon))
+      xSea = new ( (/nyrs,nlat,mlon/), typeof(xMon), getFillValue(xMon))
       do nyr=nyrStrt,nyrLast
          n = nyr*nmos + NMO
          xSea(nyr,:,:) = (xMon(n-1,:,:) + xMon(n,:,:) + xMon(n+1,:,:))*con
@@ -5119,7 +5120,7 @@ begin
 
   if (rank.eq.4) then
       klev = dimx(1)
-      xSea = new ( (/nyrs,klev,nlat,mlon/), typeof(xMon))
+      xSea = new ( (/nyrs,klev,nlat,mlon/), typeof(xMon), getFillValue(xMon))
       do nyr=nyrStrt,nyrLast
          n = nyr*nmos + NMO
          xSea(nyr,:,:,:) = (xMon(n-1,:,:,:) + xMon( n ,:,:,:) \
