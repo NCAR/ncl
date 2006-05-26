@@ -33,5 +33,24 @@ sphcom.o: sphcom.f
 	$(F77) $(FCOPTIONS) -g -c sphcom.f
 #endif
 
+#if defined(IRIX64)
+vhaec.o: vhaec.f
+	$(F77) $(FCOPTIONS) -O2 -c vhaec.f
+vhaes.o: vhaes.f
+	$(F77) $(FCOPTIONS) -O2 -c vhaes.f
+vhagc.o: vhagc.f
+	$(F77) $(FCOPTIONS) -O2 -c vhagc.f
+vhags.o: vhags.f
+	$(F77) $(FCOPTIONS) -O2 -c vhags.f
+vhsec.o: vhsec.f
+	$(F77) $(FCOPTIONS) -O2 -c vhsec.f
+vhses.o: vhses.f
+	$(F77) $(FCOPTIONS) -O2 -c vhses.f
+vhsgc.o: vhsgc.f
+	$(F77) $(FCOPTIONS) -O2 -c vhsgc.f
+vhsgs.o: vhsgs.f
+	$(F77) $(FCOPTIONS) -O2 -c vhsgs.f
+#endif
+
 BuildAndInstallLibraryTarget($(MYLIB),$(OBJS))  
 
