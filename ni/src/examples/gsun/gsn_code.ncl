@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.178 2006-05-04 16:08:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.179 2006-05-31 04:06:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6514,7 +6514,7 @@ end
 function gsn_histogram(wks[1]:graphic,xdata:numeric, resources:logical)
 local res2, calldraw, callframe, maxbb, ispercent, bins, nbars, \
       setdiscrete, setinterval,top, botton, left, right, lenc, tmp, \
-      colors, locs, lbs
+      colors, locs, lbs, compare
 begin
   dummy = new(1,graphic)      ; Dummy graphic to return if things go wrong.
 ;
