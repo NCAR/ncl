@@ -1,0 +1,952 @@
+
+<html>
+<Head>
+<META NAME="htdig-keywords" CONTENT="Sherepack Model Development Facility">
+<body bgcolor="#FFFFFF">
+<title>SPHEREPACK 3.0: A Model Development Facility</title>
+<center>
+<h2>SPHEREPACK 3.0: A Model Development Facility</h2>
+by<br>
+<p>
+<b><a href="mailto:johnad@ucar.edu">John C. Adams</a>  and
+<a href="mailto:pauls@ucar.edu">Paul N. Swarztrauber</a></b><br>
+<p>
+September 1998
+<p>
+<b><a href="link3.0">Important information for users of SPHEREPACK
+version 2.0</a></b>
+<p>
+
+<P><IMG  BORDER=0 ALIGN=MIDDLE SRC="sphere.gif" alt="[]"  border="0" align="top" hspace="0" vspace="0">
+<P>
+<br>
+<p>
+</center>
+<p>
+(The figure above is a visible rendering of a scalar harmonic with order 12
+and degree 6 on a 89 X 180 Gauss latitudinal grid.
+It was produced by the SPHEREPACK subroutine <b>visgau</b>.
+<p>
+
+<h2>ABSTRACT</h2>
+SPHEREPACK 3.0 is a collection of FORTRAN programs that facilitates
+computer modeling of geophysical processes. The package
+contains programs for computing certain common differential operators
+including divergence, vorticity, gradients, and the Laplacian of both
+scalar and vector functions.  Programs are also available for
+inverting these operators.  For example, given divergence and
+vorticity, the package can be used to compute the velocity
+components. The Laplacian can also be inverted and therefore the
+package can be used to solve both the scalar and vector Poisson equations.
+Its use in model development is
+demonstrated by a sample program that solves the time-dependent
+non-linear shallow-water equations. Accurate solutions are obtained
+via the spectral method that uses both scalar and vector spherical
+harmonic transforms that are available to the user. The package
+also contains utility programs for computing the associated Legendre
+functions, Gauss points and weights, and multiple fast Fourier
+transforms. Programs are provided for both equally-spaced and Gauss
+distributed latitudinal points as well as programs that transfer data
+between these grids.
+<p>
+This work was partially supported by the Computer Hardware, Advanced
+Mathematics, and Model Physics (CHAMMP) Program which is administered
+by the Office of Energy Research under the Office of Health and
+Environmental Research in the U.S. Department of Energy, Environmental
+Sciences Division.
+
+<h2>Overview</h2>
+SPHEREPACK 3.0 is a collection of FORTRAN programs that facilitates
+the development of computer models of geophysical processes.  In
+addition to the programs in SPHEREPACK 1.0, it contains a suite of
+programs for the application of certain common differential operators
+including vorticity, divergence, gradient, Laplacian, and latitudinal
+derivatives. In addition, programs are available for inverting these
+operators. For example, given vorticity and divergence, the package
+can be used to reconstruct the corresponding vector function.  Also,
+given the gradient, the corresponding scalar function can be
+computed. Both the scalar and vector Laplacian can be computed or
+inverted. Therefore the programs can be used to solve both the scalar
+and vector Poisson equations.
+<p>
+The package can also be used to solve time dependent partial
+differential equations.  In particular, the package facilitated the
+development of nine spectral models of the shallow-water equations
+that were evaluated in (Swarztrauber, 1996).  One such model is given
+in section 3.3 which provides an example of how SPHEREPACK 3.0 can be
+used to solve the nonlinear shallow-water equations on the sphere.
+The package also contains utility programs for computing the
+associated Legendre functions, multiple fast Fourier transforms, an
+icosahedral geodesic, and Gauss points and weights.  All computations
+can be performed on either a Gauss or equally-spaced latitudinal grid
+and programs are available for interpolating between these grid
+systems. There is no difference in the accuracy or computing time
+of these systems; however, they alias differently (Temperton, 1991).
+<p>
+SPHEREPACK 3.0 is a significant extension of SPHEREPACK 1.0 which
+included programs for the spherical harmonic analysis and synthesis of
+scalar functions only. In addition to these programs, and those listed
+above, SPHEREPACK 3.0 contains separate programs for the analysis and
+synthesis of vector functions. Although the components of
+a vector function, such as a wind field, are smooth in
+Cartesian coordinates, they can nevertheless be
+discontinuous in spherical coordinates because of the discontinuity in
+the coordinate system itself (Swarztrauber, 1993). Therefore the
+spectral representation and analysis of a vector function is
+fundamentally different from that of a scalar function.
+<p>
+Scalar and vector harmonic analyses are used for problem solving in
+spherical coordinates in the same way that Fourier analysis is used in
+Cartesian coordinates. Consequently SPHEREPACK 3.0 provides the same
+high level of accuracy that the spectral method provides in Cartesian
+coordinates. Furthermore, accuracy is uniform on the sphere and
+independent of the location of the poles. This eliminates a number of
+computational difficulties associated with solving partial
+differential equations on the sphere including the accuracy and
+stability problems that can be created by the clustering of points
+near the pole. Interpolation and smoothing on the sphere are also
+significantly facilitated by harmonic analysis (Swarztrauber, 1979).
+Indeed the package includes programs for interpolating between
+Gaussian and equally-spaced latitudinal grids.
+<p>
+<center>
+<table border=1>
+<tr>
+<th colspan=2><center>Table 1 <br>
+An overview of SPHEREPACK 3.0 </center>
+<th>
+<tr>
+<th>computation
+<th>subprograms
+<tr>
+<td>colatitude derivative
+<td><a href="vtsec.txt">vtsec</a>,
+<a href="vtses.txt">vtses</a>,
+<a href="vtsgc.txt">vtsgc</a>,
+<a href="vtsgs.txt">vtsgs</a>
+<tr>
+<td>gradient
+<td><a href="gradec.txt">gradec</a>,
+<a href="grades.txt">grades</a>,
+<a href="gradgc.txt">gradgc</a>,
+<a href="gradgs.txt">gradgs</a>
+<tr>
+<td>inverse gradient
+<td><a href="igradec.txt">igradec</a>,
+<a href="igrades.txt">igrades</a>,
+<a href="igradgc.txt">igradgc</a>,
+<a href="igradgs.txt">igradgs</a>
+<tr>
+<td>divergence
+<td><a href="divec.txt">divec</a>,
+<a href="dives.txt">dives</a>,
+<a href="divgc.txt">divgc</a>,
+<a href="divgs.txt">divgs</a>
+<tr>
+<td>inverse divergence
+<td><a href="idivec.txt">idivec</a>,
+<a href="idives.txt">idives</a>,
+<a href="idivgc.txt">idivgc</a>,
+<a href="idivgs.txt">idivgs</a>
+<tr>
+<td>vorticity
+<td><a href="vrtec.txt">vrtec</a>,
+<a href="vrtes.txt">vrtes</a>,
+<a href="vrtgc.txt">vrtgc</a>,
+<a href="vrtgs.txt">vrtgs</a>
+<tr>
+<td>inverse vorticity
+<td><a href="ivrtec.txt">ivrtec</a>,
+<a href="ivrtes.txt">ivrtes</a>,
+<a href="ivrtgc.txt">ivrtgc</a>,
+<a href="ivrtgs.txt">ivrtgs</a>
+<tr>
+<td>invert divg.&vort.
+<td><a href="idvtec.txt">idvtec</a>,
+<a href="idvtes.txt">idvtes</a>,
+<a href="idvtgc.txt">idvtgc</a>,
+<a href="idvtgs.txt">idvtgs</a>
+<tr>
+<td>scalar Laplacian
+<td><a href="slapec.txt">slapec</a>,
+<a href="slapes.txt">slapes</a>,
+<a href="slapgc.txt">slapgc</a>,
+<a href="slapgs.txt">slapgs</a>
+<tr>
+<td>inverse LaPlacian
+<td><a href="islapec.txt">islapec</a>,
+<a href="islapes.txt">islapes</a>,
+<a href="islapgc.txt">islapgc</a>,
+<a href="islapgs.txt">islapgs</a>
+<tr>
+<td>vector Laplacian
+<td><a href="vlapec.txt">vlapec</a>,
+<a href="vlapes.txt">vlapes</a>,
+<a href="vlapgc.txt">vlapgc</a>,
+<a href="vlapgs.txt">vlapgs</a>
+<tr>
+<td>inv. vct. Laplacian
+<td><a href="ivlapec.txt">ivlapec</a>,
+<a href="ivlapes.txt">ivlapes</a>,
+<a href="ivlapgc.txt">ivlapgc</a>,
+<a href="ivlapgs.txt">ivlapgs</a>
+<tr>
+<td>stream fm. & vel pot.
+<td><a href="sfvpec.txt">sfvpec</a>
+<a href="sfvpes.txt">sfvpes</a>
+<a href="sfvpgc.txt">sfvpgc</a>
+<a href="sfvpgs.txt">sfvpgs</a>
+<tr>
+<td>inv. stream fm. & vel pot.
+<td><a href="isfvpec.txt">isfvpec</a>
+<a href="isfvpes.txt">isfvpes</a>
+<a href="isfvpgc.txt">isfvpgc</a>
+<a href="isfvpgs.txt">isfvpgs</a>
+<tr>
+<td>grid transfers
+<td><a href="trssph.txt">trssph</a>,
+<a href="trvsph.txt">trvsph</a>,
+<a href="sshifte.txt">sshifte</a>,
+<a href="vshifte.txt">vshifte</a>,
+<tr>
+<td>geo/math coordinate transfers
+<td><a href="geo2math.txt">geo2maths</a>,
+<a href="geo2math.txt">math2geos</a>,
+<a href="geo2math.txt">geo2mathv</a>,
+<a href="geo2math.txt">math2geov</a>
+<tr>
+<td>scalar analysis
+<td><a href="shaec.txt">shaec</a>,
+<a href="shaes.txt">shaes</a>,
+<a href="shagc.txt">shagc</a>,
+<a href="shags.txt">shags</a>
+<tr>
+<td>scalar synthesis
+<td><a href="shsec.txt">shsec</a>,
+<a href="shses.txt">shses</a>,
+<a href="shsgc.txt">shsgc</a>,
+<a href="shsgs.txt">shsgs</a>
+<tr>
+<td>vector analysis
+<td><a href="vhaec.txt">vhaec</a>,
+<a href="vhaes.txt">vhaes</a>,
+<a href="vhagc.txt">vhagc</a>,
+<a href="vhags.txt">vhags</a>
+<tr>
+<td>vector synthesis
+<td><a href="vhsec.txt">vhsec</a>,
+<a href="vhses.txt">vhses</a>,
+<a href="vhsgc.txt">vhsgc</a>,
+<a href="vhsgs.txt">vhsgs</a>
+<tr>
+<td>Legendre functions
+<td><a href="alfk.txt">alfk</a>,
+<a href="lfp.txt">lfp</a>,
+<a href="lfpt.txt">lfpt</a>,
+<a href="lfim.txt">lfim</a>,
+<a href="lfin.txt">lfin</a>
+<tr>
+<td>icosahedral geodesic
+<td><a href="ihgeod.txt">ihgeod</a>
+<tr>
+<td>multiple ffts
+<td><a href="hrfftf.txt">hrfftf</a>
+<a href="hrfftb.txt">hrfftb</a>
+<tr>
+<td>Gaussian wts&pts
+<td><a href="gaqd.txt">gaqd</a>
+<tr>
+<td>3-d sphere graphics
+<td><a href="visequ.txt">visequ</a>,
+<a href="visgau.txt">visgau</a>,
+<a href="visgeo.txt">visgeo</a>
+<tr>
+<td>examples
+<td><a href="helmsph.f">helmholtz</a>,
+<a href="advec.f">advection</a>,
+<a href="shallow.f">shallow</a>
+<tr>
+</table>
+</center>
+<p>
+<h2>Contents of SPHEREPACK 3.0</h2>
+<p>
+The contents of the package are listed in this section which
+contains a sentence or two description of each program.
+The package consists of driver programs that compute
+or invert the differential operators that are required by the
+user's application. In turn, the driver programs call the
+utility programs that implement the analyses and syntheses
+required by the harmonic or spectral method on the sphere.
+<p>
+Most of the programs that compute the differential operators require
+the harmonic analysis of the scalar or vector function prior to
+computing the operator. For example, to compute the Laplacian of a
+scalar function using <a href="slapec">slapec </a>, one must first compute the spectral
+coefficients using subroutine <a href="shaec.txt">shaec </a> .  The reason <a href="shaec.txt">shaec </a> is
+not called by <a href="slapec.txt">slapec </a> is to avoid repeated computation of
+spectral coefficients when more than one differential operator is
+applied to the same function.
+<p>
+The major options provided by SPHEREPACK are:
+<p>
+(1) The colatitudinal grid can be either Gaussian
+or equally-spaced.  There is no restriction on the number of grid points in
+either the latitude or longitude direction. The spectral truncation is
+always triangular.
+<p>
+(2) Computations can be performed on the entire sphere or, if symmetries
+permit, on the northern hemisphere only.  The user can specify even or
+odd symmetry about the equator and thereby halve both storage and
+computing time.
+<p>
+(3) The user can elect to store certain quantities for repeated use
+in subsequent calls to the same subroutine. Storage is increased
+from O(N**2) to O(N**3) and computing time is
+reduced by about 30%.
+<p>
+(4) When applicable, the differential operators and harmonic transforms
+can be applied to multiple functions with a single subroutine call.
+This reduces the computing time for additional functions 
+by about 30% compared to multiple calls of the subroutine.
+This is usually used with the O(N**2) storage option.
+<p>
+A list of user entry programs is given below.  Where applicable, the
+programs are named with the following conventions: The
+characters <b> sh </b> or <b>vh </b> denote scalar and vector harmonic transforms
+respectively.  The character <b> a</b> or <b>s </b> denotes analysis or
+synthesis. The character <b>g</b> or <b>e</b> denotes Gaussian or
+equally-spaced latitudinal grid, and the character <b>c</b> or <b>s</b>
+denotes whether or not the quantities in 3. above are computed or
+stored. That is, whether the O(N**2) or O(N**3) storage
+option is selected.
+<p>
+<center>
+<h2>COLATITUDINAL DERIVATIVE OF A VECTOR FUNCTION </h2>
+</center>
+<p>
+<b>Note</b>: for latitudinal derivatives of scalar functions
+use the gradient programs.
+<dl>
+<p>
+<dt><a href="vtsec.txt">vtsec </a>
+<dd>computes the derivative of the vector function
+with respect to colatitude on a equally-spaced
+grid using O(N**2) storage,
+initialized by <a href="vtseci.txt">vtseci </a>.
+<p>
+<dt><a href="vtses.txt">vtses </a>
+<dd>computes the derivative of the vector function
+with respect to colatitude on a equally-spaced grid
+using O(N**3) storage,
+initialized by <a href="vtsesi.txt">vtsesi </a>.
+<p>
+<dt><a href="vtsgc.txt">vtsgc </a>
+<dd>computes the derivative of the vector function
+with respect to colatitude on a Gaussian
+grid using O(N**2) storage,
+initialized by <a href="vtsgci.txt">vtsgci </a>.
+<p>
+<dt><a href="vtsgs.txt">vtsgs </a>
+<dd>computes the derivative of the vector function
+with respect to colatitude on a Gaussian
+grid using O(N**3) storage,
+initialized by <a href="vtsgsi.txt">vtsgsi </a>.
+</dl>
+<p>
+<center>
+<h2>GRADIENT OF A SCALAR FUNCTION</h2>
+</center>
+<p>
+<dl>
+<dt><a href="grades.txt">grades </a>
+<dd>computes the gradient of a scalar function on an equally
+spaced grid using O(N**3) storage,
+initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="gradec.txt">gradec </a>
+<dd>computes the gradient of a scalar function on an equally
+spaced grid using O(N**2) storage,
+initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="gradgs.txt">gradgs </a>
+<dd>computes the gradient of a scalar function on a Gaussian
+grid using O(N**3) storage,
+initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+<p>
+<dt><a href="gradgc.txt">gradgc </a>
+<dd>computes the gradient of a scalar function on a Gaussian
+grid using O(N**2) storage,
+initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>RECONSTRUCT A SCALAR FUNCTION FROM ITS GRADIENT</h2>
+</center>
+<dl>
+<dt><a href="igrades.txt">igrades </a>
+<dd>computes a scalar function whose gradient is a given vector
+function on an equally spaced grid using O(N**3) storage,
+initialized by <a href="shsesi.txt">shsesi </a>.
+<dt><a href="igradec.txt">igradec </a>
+<dd>computes a scalar function whose gradient is a given vector
+function on an equally spaced grid using O(N**3)storage,
+initialized by <a href="shseci.txt">shseci </a>.
+<dt><a href="igradgs.txt">igradgs </a>
+<dd>computes a scalar function whose gradient is a given vector
+function on a Gaussian grid using O(N**3) storage,
+initialized by <a href="shsgsi.txt">shsgsi </a>.
+<dt><a href="igradgc.txt">igradgc </a>
+<dd>computes a scalar function whose gradient is a given vector
+function on a Gaussian grid using O(N**2) storage,
+initialized by <a href="shsgci.txt">shsgci </a>.
+</dl>
+<p>
+<center>
+<h2>DIVERGENCE OF A VECTOR FUNCTION</h2>
+</center>
+<p>
+<dl>
+<dt><a href="dives.txt">dives </a>
+<dd>computes the divergence of a vector function on
+an equally spaced grid using O(N**3) storage,
+initialized by <a href="shsesi.txt">shsesi </a>.
+<dt><a href="divec.txt">divec </a>
+<dd>computes the divergence of a vector function on
+an equally spaced grid using O(N**2) storage,
+initialized by <a href="shseci.txt">shseci </a>.
+<dt><a href="divgs.txt">divgs </a>
+<dd>computes the divergence of a vector function on
+a Gaussian grid using O(N**3) storage,
+initialized by <a href="shsgsi.txt">shsgsi </a>.
+<dt><a href="divgc.txt">divgc </a>
+<dd>computes the divergence of a vector function on
+a Gaussian grid using O(N**2) storage,
+initialized by <a href="shsgci.txt">shsgci </a>.
+</dl>
+<p>
+<center>
+<h2>RECONSTRUCT A VECTOR FUNCTION FROM ITS DIVERGENCE</h2>
+</center>
+<p>
+<dl>
+<dt><a href="idives.txt">idives </a>
+<dd>computes an irrotational vector function whose divergence
+is given on an equally spaced grid using
+O(N**3) storage, initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="idivec.txt">idivec </a>
+<dd>computes an irrotational vector function whose divergence
+is given on an equally spaced grid using
+O(N**2) storage, initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="idivgs.txt">idivgs </a>
+<dd>computes an irrotational vector function whose divergence
+is given on a Gaussian grid using 
+O(N**3) storage, initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+<dt><a href="idivgc.txt">idivgc </a>
+<dd>computes an irrotational vector function whose divergence
+is given on a Gaussian grid using 
+O(N**2) storage, initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>VORTICITY OF A VECTOR FUNCTION</h2>
+</center>
+<p>
+<dl>
+<dt><a href="vrtes.txt">vrtes </a>
+<dd>computes the scalar vorticity of a vector function on an
+equally spaced grid using O(N**3) storage,
+initialized by <a href="shsesi.txt">shsesi </a>.
+<dt><a href="vrtec.txt">vrtec </a>
+<dd>computes the scalar vorticity of a vector function on an
+equally spaced grid using O(N**2) storage,
+initialized by <a href="shseci.txt">shseci </a>.
+<p>
+<dt><a href="vrtgs.txt">vrtgs </a>
+<dd>computes the scalar vorticity of a vector function on a
+Gaussian grid using O(N**3) storage,
+initialized by <a href="shsgsi.txt">shsgsi </a>.
+<p>
+<dt><a href="vrtgc.txt">vrtgc </a>
+<dd>computes the scalar vorticity of a vector function on a
+Gaussian grid using O(N**2) storage,
+initialized by <a href="shsgci.txt">shsgci </a>.
+</dl>
+<p>
+<center>
+<h2>RECONSTRUCT A VECTOR FUNCTION FROM ITS VORTICITY</h2>
+</center>
+<p>
+<dl>
+<dt><a href="ivrtes.txt">ivrtes </a>
+<dd>computes a divergence-free vector function whose vorticity
+is given on an equally spaced grid using
+O(N**3) storage, initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="ivrtec.txt">ivrtec </a>
+<dd>computes a divergence-free vector function whose vorticity
+is given on an equally spaced grid using
+O(N**2) storage, initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="ivrtgs.txt">ivrtgs </a>
+<dd>computes a divergence-free vector function whose vorticity
+is given on a Gaussian grid using 
+O(N**3) storage, initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+<p>
+<dt><a href="ivrtgc.txt">ivrtgc </a>
+<dd>computes a divergence-free vector function whose vorticity
+is given on a Gaussian grid using 
+O(N**2) storage, initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>RECONSTRUCT VECTOR FUNCTION FROM ITS
+DIVERGENCE AND VORTICITY</h2>
+</center>
+<p>
+<dl>
+<dt><a href="idvtes.txt">idvtes </a>
+<dd>computes a vector function with given divergence and vorticity on
+an equally spaced grid using O(N**3) storage,
+initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="idvtec.txt">idvtec </a>
+<dd>computes a vector function with given divergence and vorticity on
+an equally spaced grid using O(N**2) storage,
+initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="idvtgs.txt">idvtgs </a>
+<dd>computes a vector function with given divergence and vorticity on
+a Gaussian grid using O(N**3) storage,
+initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+<p>
+<dt><a href="idvtgc.txt">idvtgc </a>
+<dd>computes a vector function with given divergence and vorticity on
+a Gaussian grid using O(N**2) storage,
+initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>LAPLACIAN OF A SCALAR FUNCTION</h2>
+</center>
+<p>
+<dl>
+<dt><a href="slapes.txt">slapes </a>
+<dd>computes the scalar Laplacian of a scalar function on an
+equally spaced grid using O(N**3) storage,
+initialized by <a href="shsesi.txt">shsesi </a>.
+<p>
+<dt><a href="slapec.txt">slapec </a>
+<dd>computes the scalar Laplacian of a scalar function on an
+equally spaced grid using O(N**2) storage,
+initialized by <a href="shseci.txt">shseci </a>.
+<p>
+<dt><a href="slapgs.txt">slapgs </a>
+<dd>computes the scalar Laplacian of a scalar function on a
+Gaussian grid using O(N**3) storage,
+initialized by <a href="shsgsi.txt">shsgsi </a>.
+<p>
+<dt><a href="slapgc.txt">slapgc </a>
+<dd>computes the scalar Laplacian of a scalar function on a
+Gaussian grid using O(N**2) storage,
+initialized by <a href="shsgci.txt">shsgci </a>
+</dl>
+<p>
+<center>
+<h2>INVERT THE LAPLACIAN OF A SCALAR FUNCTION
+OR SOLVE THE HELMHOLTZ EQUATION</h2>
+</center>
+<p>
+<dl>
+<dt><a href="islapes.txt">islapes </a>
+<dd>computes a scalar function whose scalar Laplacian is
+given on an equally spaced grid using
+O(N**3) storage, initialized by <a href="shsesi.txt">shsesi </a>.
+<p>
+<dt><a href="islapec.txt">islapec </a>
+<dd>computes a scalar function whose scalar Laplacian is
+given on an equally spaced grid using
+O(N**2) storage, initialized by <a href="shseci.txt">shseci </a>.
+<p>
+<dt><a href="islapgs.txt">islapgs </a>
+<dd>computes a scalar function whose scalar Laplacian is
+given on a Gaussian grid using
+O(N**3) storage, initialized by <a href="shsgsi.txt">shsgsi </a>.
+<p>
+<dt><a href="islapgc.txt">islapgc </a>
+<dd>computes a scalar function whose scalar Laplacian is
+given on a Gaussian grid using
+O(N**2) storage, initialized by <a href="shsgci.txt">shsgci </a>.
+</dl>
+<p>
+<center>
+<h2>THE VECTOR LAPLACIAN OF A VECTOR FUNCTION</h2>
+</center>
+<p>
+<dl>
+<dt><a href="vlapes.txt">vlapes </a>
+<dd>computes the vector Laplacian of a given vector function
+on an equally spaced grid using O(N**3) storage,
+initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="vlapec.txt">vlapec </a>
+<dd>computes the vector Laplacian of a given vector function
+on an equally spaced grid using O(N**2) storage,
+initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="vlapgs.txt">vlapgs </a>
+<dd>computes the vector Laplacian of a given vector function
+on a Gaussian grid using O(N**3) storage,
+initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+<p>
+<dt><a href="vlapgc.txt">vlapgc </a>
+<dd>computes the vector Laplacian of a given vector function
+on a Gaussian grid using O(N**2) storage,
+initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>INVERT THE VECTOR LAPLACIAN OF A VECTOR FUNCTION</h2>
+</center>
+<p>
+<dl>
+<dt><a href="ivlapes.txt">ivlapes </a>
+<dd>computes a vector function whose vector Laplacian is a
+given vector function on an equally spaced grid using
+O(N**3) storage, initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="ivlapec.txt">ivlapec </a>
+<dd>computes a vector function whose vector Laplacian is a
+given vector function on an equally spaced grid using
+O(N**2) storage, initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="ivlapgs.txt">ivlapgs </a>
+<dd>computes a vector function whose vector Laplacian is a
+given vector function on a Gaussian grid using O(N**3)
+storage, initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+<p>
+<dt><a href="ivlapgc.txt">ivlapgc </a>
+<dd>computes a vector function whose vector Laplacian is a
+given vector function on a Gaussian grid using O(N**2)
+storage, initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>STREAM FUNCTION AND VELOCITY POTENTIAL</h2>
+</center>
+<p>
+<dl>
+<dt><a href="sfvpes.txt">sfvpes </a>
+<dd>computes the stream function and velocity potential
+of a vector function on an equally spaced grid using 
+O(N**3) storage, initialized by <a href="shsesi.txt">shsesi </a>.
+<p>
+<dt><a href="sfvpec.txt">sfvpec </a>
+<dd>computes the stream function and velocity potential
+of a vector function on an equally spaced grid using 
+O(N**2) storage, initialized by <a href="shseci.txt">shseci </a>.
+<p>
+<dt><a href="sfvpgs.txt">sfvpgs </a>
+<dd>computes the stream function and velocity potential
+of a vector function on a Gaussian spaced grid using 
+O(N**3) storage, initialized by <a href="shsgsi.txt">shsgsi </a>.
+<p>
+<dt><a href="sfvpgc.txt">sfvpgc </a>
+<dd>computes the stream function and velocity potential
+of a vector function on an Gaussian spaced grid using
+O(N**2) storage, initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>INVERT STREAM FUNCTION AND VELOCITY POTENTIAL</h2>
+</center>
+<p>
+<dl>
+<dt><a href="isfvpes.txt">isfvpes </a>
+<dd>computes a vector function with a given stream function
+and velocity potential on an equally spaced grid using 
+O(N**3) storage, initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="isfvpec.txt">isfvpec </a>
+<dd>computes a vector function with a given stream function
+and velocity potential on an equally spaced grid using 
+O(N**2) storage, initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="isfvpgs.txt">isfvpgs </a>
+<dd>computes a vector function with a given stream function
+and velocity potential on a Gaussian spaced grid using 
+O(N**3) storage, initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+<p>
+<dt><a href="isfvpgc.txt">isfvpgc </a>
+<dd>computes a vector function with a given stream function
+and velocity potential on a Gaussian spaced grid using
+O(N**2) storage, initialized by <a href="vhsgci.txt">vhsgci </a>.
+</dl>
+<p>
+<center>
+<h2>GRID TRANSFERS</h2>
+</center>
+<dl>
+<dt><a href="trssph.txt">trssph </a>
+<dd>transfers scalar data from one spherical grid
+to another. The grids can be Gaussian
+or equally spaced.
+<p>
+<dt><a href="trvsph.txt">trvsph </a>
+<dd>transfers vector data from one spherical grid
+to another. The grids can be Gaussian
+or equally spaced.
+<p>
+<dt><a href="sshifte.txt">sshifte </a>
+<dd>transfers scalar data on the sphere between an equally spaced grid
+that is offset by a half grid increment in both longitude and latitude
+(which excludes the poles) and an equally spaced grid that includes
+the poles.
+<p>
+<dt><a href="vshifte.txt">vshifte </a>
+<dd>transfers vector data on the sphere between an equally spaced grid
+that is offset by a half grid increment in both longitude and latitude
+(which excludes the poles) and an equally spaced grid that includes
+the poles.
+</dl>
+<p>
+<center>
+</dl>
+<h2>GEOPHYSICAL/MATHEMATICAL SPHERICAL COORDINATE CONVERSIONS </h2>
+</center>
+<p>
+<b>note</b>: most SPHEREPACK 3.0 software require scalar and vector fields in
+mathematical spherical coordinates.
+<p>
+<dt><a href="geo2math.txt">geo2maths </a>
+<dd>converts a scalar field from geophysical to mathematical spherical coordinates
+<P>
+<dt><a href="geo2math.txt">math2geos </a>
+<dd>converts a scalar field from mathematical to geophysical spherical coordinates
+<p>
+<dt><a href="geo2math.txt">geo2mathv </a>
+<dd>converts a vector field from geophysical to mathematical spherical coordinates
+<p>
+<dt><a href="geo2math.txt">math2geov </a>
+<dd>converts a vector field from mathematical to geophysical spherical coordinates
+</dl>
+<p>
+<center>
+<h2>SCALAR SPHERICAL HARMONIC ANALYSIS</h2>
+</center>
+<dl>
+<dt><a href="shaec.txt">shaec </a>
+<dd>computes the spherical harmonic analysis on
+an equally spaced grid using O(N**2) storage,
+initialized by <a href="shaeci.txt">shaeci </a>.
+<p>
+<dt><a href="shaes.txt">shaes </a>
+<dd>computes the spherical harmonic analysis on an
+equally spaced grid using O(N**3) storage,
+initialized by <a href="shaesi.txt">shaesi </a>.
+<p>
+<dt><a href="shagc.txt">shagc </a>
+<dd>computes the spherical harmonic analysis on a
+Gaussian grid using O(N**2) storage,
+initialized by <a href="shagci.txt">shagci </a>.
+<p>
+<dt><a href="shags.txt">shags </a>
+<dd>computes the spherical harmonic analysis on a
+Gaussian grid using O(N**3) storage,
+initialized by <a href="shagsi.txt">shagsi </a>.
+</dl>
+<p>
+<center>
+<h2>SCALAR SPHERICAL HARMONIC SYNTHESIS</h2>
+</center>
+<dl>
+<dt><a href="shsec.txt">shsec </a>
+<dd>computes the spherical harmonic synthesis on an
+equally spaced grid using O(N**2) storage,
+initialized by <a href="shseci.txt">shseci </a>.
+<p>
+<dt><a href="shses.txt">shses </a>
+<dd>computes the spherical harmonic synthesis on an
+equally spaced grid using O(N**3) storage,
+initialized by <a href="shsesi.txt">shsesi </a>.
+<p>
+<dt><a href="shsgc.txt">shsgc </a>
+<dd>computes the spherical harmonic synthesis on a
+Gaussian grid using O(N**2) storage,
+initialized by <a href="shsgci.txt">shsgci </a>.
+<p>
+<dt><a href="shsgs.txt">shsgs </a>
+<dd>computes the spherical harmonic synthesis on a
+Gaussian grid using O(N**3) storage,
+initialized by <a href="shsgsi.txt">shsgsi </a>.
+</dl>
+<p>
+<center>
+<h2>VECTOR SPHERICAL HARMONIC ANALYSIS</h2>
+</center>
+<p>
+<dl>
+<dt><a href="vhaec.txt">vhaec </a>
+<dd>computes the vector harmonic analysis on an
+equally spaced grid using O(N**2) storage,
+initialized by <a href="vhaeci.txt">vhaeci </a>.
+<p>
+<dt><a href="vhaes.txt">vhaes </a>
+<dd>computes the vector harmonic analysis on an
+equally spaced grid using O(N**3) storage,
+initialized by <a href="vhaesi.txt">vhaesi </a>.
+<p>
+<dt><a href="vhagc.txt">vhagc </a>
+<dd>computes the vector harmonic analysis on a
+Gaussian grid using O(N**2) storage,
+initialized by <a href="vhagci.txt">vhagci </a>.
+<p>
+<dt><a href="vhags.txt">vhags </a>
+<dd>computes the vector harmonic analysis on a
+Gaussian grid using O(N**3) storage,
+initialized by <a href="vhagsi.txt">vhagsi </a>.
+</dl>
+<p>
+<center>
+<h2>VECTOR SPHERICAL HARMONIC SYNTHESIS</h2>
+</center>
+<dl>
+<p>
+<dt><a href="vhsec.txt">vhsec </a>
+<dd>computes the vector harmonic synthesis on an
+equally spaced grid using O(N**2) storage,
+initialized by <a href="vhseci.txt">vhseci </a>.
+<p>
+<dt><a href="vhses.txt">vhses </a>
+<dd>computes the vector harmonic synthesis on an
+equally-spaced grid using O(N**3) storage,
+initialized by <a href="vhsesi.txt">vhsesi </a>.
+<p>
+<dt><a href="vhsgc.txt">vhsgc </a>
+<dd>computes the vector harmonic synthesis on a
+Gaussian grid using O(N**2) storage,
+initialized by <a href="vhsgci.txt">vhsgci </a>.
+<p>
+<dt><a href="vhsgs.txt">vhsgs </a>
+<dd>computes the vector harmonic synthesis on a
+Gaussian grid using O(N**3) storage,
+initialized by <a href="vhsgsi.txt">vhsgsi </a>.
+</dl>
+<p>
+<center>
+<h2>ASSOCIATED LEGENDRE FUNCTIONS</h2>
+</center>
+<dl>
+<p>
+<dt><a href="http://www.scd.ucar.edu/css/software/alfk.txt">alfk </a>
+<dd>computes the
+coefficients in the trigonometric series
+representation of P<SUB>nm</SUB>( theta ).
+<p>
+<dt><a href="http://www.scd.ucar.edu/css/software/lfp.txt">lfp </a>
+<dd>uses coefficients computed by routine <a href="http://www.scd.ucar.edu/css/software/alfk.txt">alfk </a>
+to tabulate P<SUB>nm</SUB>( theta ) at equally-spaced
+colatitudes.
+<p>
+<dt><a href="http://www.scd.ucar.edu/css/software/lfpt.txt">lfpt </a>
+<dd>uses coefficients computed by routine <a href="http://www.scd.ucar.edu/css/software/alfk.txt">alfk </a>
+to compute P<SUB>nm</SUB>( theta ) at a
+single colatitude theta.
+<p>
+<dt><a href="http://www.scd.ucar.edu/css/software/lfim.txt">lfim </a>
+<dd> given n, L,and theta<sub>i</sub>
+<a href="http://www.scd.ucar.edu/css/software/lfim.txt">lfim </a> computes P<sub>nm</sub>( theta<sub>i</sub> ) for
+m=0,...,n and i=1,...,L.
+<dt> <a href="http://www.scd.ucar.edu/css/software/lfin.txt">lfin </a>
+<dd>given N, m, L and theta<sub>i</sub>
+<a href="http://www.scd.ucar.edu/css/software/lfin.txt">lfin </a> computes P<sub>nm</sub>( theta<sub>i</sub> ) for
+n=m,...,N and i=1,...,L
+<p>
+Additional programs for computing the associated
+Legendre functions are included in ALFPACK which
+is also available from the National Center for
+Atmospheric Research.
+</dl>
+<p>
+<center>
+<h2>ICOSAHEDRAL GEODESIC</h2>
+</center>
+<p>
+<dt><a href="ihgeod.txt">ihgeod </a>
+<dd>computes the Cartesian coordinates of the points
+on the surface of the sphere corresponding to a 
+twenty-sided geodesic.
+</dl>
+<p>
+<center>
+<h2>MULTIPLE FFTS</h2>
+</center>
+<p>
+<dl>
+<dt><a href="hrfftf.txt">hrfftf </a>
+<dd>multiple real forward fast fourier transforms, initialized
+by <a href="hrffti.txt">hrffti </a>.
+<p>
+<dt><a href="hrfftb.txt">hrfftb </a>
+<dd>multiple real backward fast fourier transforms, initialized
+by <a href="hrffti.txt">hrffti </a>
+<p>
+Additional programs are included in FFTPACK which
+is also available from the National Center for
+Atmospheric Research.
+</dl>
+<p>
+<center>
+<h2>GAUSS POINTS AND WEIGHTS</h2>
+</center>
+<p>
+<dl>
+<dt><a href="gaqd.txt">gaqd </a>
+<dd>computes the Gaussian colatitudes and weights
+that are used in the Gaussian quadrature.
+</dl>
+<p>
+<center>
+<h2>GRAPHICS ON THE SPHERE</h2>
+</center>
+<p>
+<dl>
+<dt><a href="visequ.txt">visequ </a>
+<dd>three-dimensional rendering of a scalar function defined
+on an equally-spaced latitudinal grid.
+<p>
+<dt><a href="visgau.txt">visgau </a>
+<dd>three-dimensional rendering of a scalar function defined
+on a Gauss distributed latitudinal grid, initialized
+by <a href="gaqd.txt">gaqd </a>.
+<p>
+<dt><a href="visgeo.txt">visgeo </a>
+<dd>three-dimensional rendering of a scalar function defined
+on a geodesic grid, initialized by <a href="geopts.txt">geopts </a>.
+<p>
+<p>
+<h2>Downloading SPHEREPACK 2.0 technical info:</h2>
+<p>
+The following NCAR Technical Note contains identities, formulas,
+and computational methods that are used by SPHEREPACK 2.0 and 3.0.
+<p>
+J. C. Adams and P. N. Swarztrauber,
+<b>SPHEREPACK 2.0: A model development facility</b>,
+NCAR Technical Note NCAR/TN-436-STR, September 1997.
+<p>
+Download the postscript version by clicking on <a href="spherepack.ps">
+spherepack.ps </a>.
+Download the pdf version by clicking on <a href="spherepack.pdf">
+spherepack.pdf </a>.
+A postscript file named
+"spherepack.ps" or pdf file named "spherepack.pdf" will automatically
+be placed on your local computer.  Print the file as
+would any other postscript or pdf file.
+<p>
+<p>
+<a href="index.html">Return to beginning of this document</a>
+</body>
+</html>
+

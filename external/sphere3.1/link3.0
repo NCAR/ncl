@@ -1,0 +1,164 @@
+<html>
+<body bgcolor="#FFFFFF">
+In SPHEREPACK 2.0, a single work array was transfered via a single
+arguement to subroutines that would break it up into several arrays as
+required by the subroutine. This eliminated the need for the user to
+specify several different work arrays and therefore simplified the
+subroutine interface. However, in some cases the original work array
+was split into work arrays of different type, i.e. real, double
+precision, integer and so forth. This created a standards problem that
+was largely overlooked by many machines. However, there exist
+machines that will not compile SPHEREPACK 2.0 although, to date,
+we have not received complaints from users.  Nevertheless, to
+avoid problems down the road, SPHEREPACK 3.0 has been created
+with arguement list types that are compatible throughout.
+<p>
+This change has been initiated early in the life of SPHEREPACK
+and therefore the impact should be minimal. Indeed there is no
+need for current users to change to SPHEREPACK 3.0 if the
+current codes can be isolated from SPHEREPACK 3.0. That is,
+if the users codes are self-contained and not accessing a library
+that has the potential to be updated to SPHEREPACK 3.0. If
+users of SPHEREPACK 2.0 are accessing the codes from a library that
+is updated to SPHEREPACK 3.0, the codes will no longer run
+because the arguement lists between the two version are different.
+A detailed description of the argument list changes and the
+affected subroutines is provided below.
+<p>
+<p>
+<p>
+<center>
+<h2>VERSION 3.0 OF SPHEREPACK CREATED TO
+ELIMINATE ARGUMENT TYPE CONFLICTS</h2>
+</center>
+<p>
+<p>
+A new version 3.0 of spherepack has been created to
+correct a problem with unsaved real, double precision, and integer
+work space passage. The changes made will require users to
+modify their calls to some spherepack routines.  These modifications
+are critical, but very simple, and will be specified below.
+<p>
+In several user called subroutines of version 2.0,
+a real work space argument is passed to lower level subroutines
+where it is used as a double precision work space.  In several
+of the graphics routines, a real work space is used as type integer.
+Such type conflicts are nonstandard Fortran and can cause run-time 
+failure on some systems (e.g. SGI Power Challenge).
+<p>
+To correct the type conflicts, it was necessary to modify the argument 
+lists in version 3.0 in three ways which are described in Categories A,B,C
+below.  None of the routine names have changed.  The affected subroutines 
+are listed under each category along with an example of how to call them.
+<p>
+<b>CATEGORY A</b>
+
+<p>
+These are user called subroutines for which a
+double precision unsaved work space "dwork" of length "ldwork"
+replaces a real unsaved work space "work" of length "lwork".
+The affected user called subroutines are:
+<p>
+<b>shaeci,shseci</b> (in files <b>shaec.f,shsec.f</b> respectively)
+<p>
+<b>shagci,shsgci</b> (in files <b>shagc.f,shsgc.f</b> respectively)
+<p>
+<b>vhaeci,vhseci</b> (in files <b>vhaec.f,vhsec.f</b> respectively)
+<p>
+<b>vhagci,vhsgci</b> (in files <b>vhagc.f,vhsgc.f</b> respectively)
+<p>
+<b>vtseci,vtsgci</b> (in files <b>vtsec.f,vtsgc.f</b> respectively)
+<p>
+<b>gaqd</b> (in file <b>gaqd.f</b>)
+<p>
+<b>shigc</b> (in file <b>shigc.f</b>)
+<p>
+
+<b>Example A:</b>
+<p>
+In Version 2.0
+<p>
+     CALL VHAGCI(NLAT,NLON,WVHAGC,LVHAGC,WORK,LWORK,IERROR)
+<p>
+where LWORK is at least 4*NLAT*(NLAT+1)+2 is replaced by
+<p>
+     CALL VHAGCI(NLAT,NLON,WVHAGC,LVHAGC,DWORK,LDWORK,IERROR)
+<p>
+in version 3.0 of spherepack.  The unsaved double precision work
+space DWORK has length LDWORK which is at least 2*NLAT*(NLAT+1)+1
+(see documentation in file vhagc.f).  The other arguments remain
+identical in the two versions of spherepack.
+<p>
+<b>CATEGORY B</b>
+<p>
+A double precision unsaved work space "DWORK" of length "LDWORK"
+is added to the argument list of the affected subroutines after the real
+unsaved work space "WORK" of length "LWORK."  The value of "LWORK" remains
+unchanged.  The affected subroutines are:
+<p>
+<b>shaesi,shsesi</b> (in files <b>shaes.f,shses.f</b>)
+<p>
+<b>vhaesi,vhsesi</b> (in files <b>vhaes.f,vhses.f</b>)
+<p>
+<b>vtsesi,vtsgsi</b> (in files <b>vtses.f,vtsgs.f</b>)
+<p>
+<b>shigs</b> (in file <b>shigs.f</b>)
+<p>
+<b>helmsph</b> (in file <b>helmsph.f</b>)
+<p>
+<b>trssph,trvsph</b> (in files <b>trssph.f,trvsph.f</b>)
+<p>
+<b>testrssph,testrvsph</b> (in files <b>testrssph.f,testrvsph.f</b>)
+<p>
+<b>tadvec</b> (in file <b>tadvec.f</b>)
+<p>
+<b>Example B:</b>
+<p>
+In version 2.0
+<p>
+     CALL VHSESI(NLAT,NLON,WVHAGC,LVHAGC,WORK,LWORK,IERROR)
+<p>
+is replaced by
+<p>
+     CALL VHSESI(NLAT,NLON,WVHAGC,LVHAGC,WORK,LWORK,DWORK,LDWORK,IERROR)
+<p>
+by adding the two new arguments DWORK and LDWORK in version 3.0.
+In this case, the length of the unsaved double precision work space
+DWORK in LDWORK must be at least 2*(NLAT+1) words long in the
+routine calling VHSESI (see documentation for VHSESI in file vhses.f).
+The minimum length of WORK in LWORK remains the same in versions 2.0
+and 3.0 of spherepack.
+<p>
+<b>CATEGORY C</b>
+<p>
+The following graphics routines in spherepack had
+a type integer work space "IWORK" added to
+their arguement list after the real work space "WORK."
+<p>
+<b> visgeo</b> (in file <b>visgeo.f</b>)
+<p>
+<b> visequ</b> (in file <b>visequ.f</b>)
+<p>
+<b> visgau</b>(in file <b>visgau.f</b>)
+<p>
+<b> vsurf</b> (in file <b>vsurf.f</b>)
+<p>
+<b>Example C:</b>
+<p>
+In version 2.0, a call to
+<p>
+
+SUBROUTINE VISGEO (M,IDP,JDP,X,Y,Z,H,EYER,EYELAT,EYELON,WORK,IERROR)
+<p>
+is replaced by the call
+<p>
+SUBROUTINE VISGEO (M,IDP,JDP,X,Y,Z,H,EYER,EYELAT,EYELON,WORK,IWORK,IERROR)
+<p>
+The required lengths for the real unsaved work space "WORK" and integer
+unsaved work space "IWORK" are described in the documentation which is
+in file visgeo.f.
+<p>
+<a href="index.html">Return to the spherepack 3.0 web site</a>
+
+</html>
+
