@@ -317,7 +317,7 @@ c
 c
           IF (MS2.LE.0 .OR. MS2.GE.NTE) GO TO 200
           DO I = 1,NTE
-              XX(I) = RAND(0)
+              XX(I) = RAND()
           END DO
           IT = 0
   201     DO I = 1,NTE
@@ -510,7 +510,7 @@ C*PT*WARNING* Constant already double-precision
 c
           IF (MS2.LE.0 .OR. MS2.GE.NTO) GO TO 300
           DO I = 1,NTE
-              XX(I) = RAND(0)
+              XX(I) = RAND()
           END DO
 C*PT*WARNING* Constant already double-precision
           IF (MODN.EQ.1) XX(NTE) = 0.0d0

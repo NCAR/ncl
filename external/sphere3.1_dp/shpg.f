@@ -272,7 +272,7 @@ c
 c     generate orthogonal vector
 c
           DO I = 1,NTE
-              XX(I) = RAND(0)
+              XX(I) = RAND()
           END DO
 c
           IT = 0
@@ -425,7 +425,7 @@ C*PT*WARNING* Constant already double-precision
 c
           IF (NOC.LE.0) GO TO 300
           DO I = 1,NTE
-              XX(I) = RAND(0)
+              XX(I) = RAND()
           END DO
 C*PT*WARNING* Constant already double-precision
           IF (MODN.EQ.1) XX(NTE) = 0.0d0
