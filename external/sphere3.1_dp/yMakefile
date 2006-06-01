@@ -30,3 +30,11 @@ vrtgc.o vrtgs.o vshifte.o vsurf.o vtsec.o vtses.o vtsgc.o vtsgs.o
 
 
 LibraryTarget($(MYLIB),$(OBJS))  
+
+#if defined(IRIX64)
+shaec.o: shaec.f
+        $(F77) $(FCOPTIONS) -O2 -c shaec.f
+
+vhagc.o: vhagc.f
+        $(F77) $(FCOPTIONS) -O2 -c vhagc.f
+#endif
