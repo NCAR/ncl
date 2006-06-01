@@ -29,4 +29,4 @@ visgau.o visgeo.o vlapec.o vlapes.o vlapgc.o vlapgs.o vrtec.o vrtes.o	\
 vrtgc.o vrtgs.o vshifte.o vsurf.o vtsec.o vtses.o vtsgc.o vtsgs.o
 
 
-BuildAndInstallLibraryTarget($(MYLIB),$(OBJS))  
+LibraryTarget($(MYLIB),$(OBJS))  
