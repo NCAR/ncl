@@ -211,8 +211,8 @@ c           = 9  error in the specification of lshsec
 c           = 10 error in the specification of lwork
 c **********************************************************************
 c
-      SUBROUTINE DIVEC(NLAT,NLON,ISYM,NT,DV,IDV,JDV,BR,BI,MDB,NDB,
-     +                 WSHSEC,LSHSEC,WORK,LWORK,IERROR)
+      SUBROUTINE DDIVEC(NLAT,NLON,ISYM,NT,DV,IDV,JDV,BR,BI,MDB,NDB,
+     +                  WSHSEC,LSHSEC,WORK,LWORK,IERROR)
       DOUBLE PRECISION DV
       DOUBLE PRECISION BR
       DOUBLE PRECISION BI

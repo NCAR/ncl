@@ -213,8 +213,8 @@ c           = 10 error in the specification of lwork
 c **********************************************************************
 c
 c
-      SUBROUTINE DIVES(NLAT,NLON,ISYM,NT,DV,IDV,JDV,BR,BI,MDB,NDB,
-     +                 WSHSES,LSHSES,WORK,LWORK,IERROR)
+      SUBROUTINE DDIVES(NLAT,NLON,ISYM,NT,DV,IDV,JDV,BR,BI,MDB,NDB,
+     +                  WSHSES,LSHSES,WORK,LWORK,IERROR)
       DOUBLE PRECISION DV
       DOUBLE PRECISION BR
       DOUBLE PRECISION BI
