@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.92 2006-05-27 04:02:23 haley Exp $
+#      $Id: yMakefile,v 1.93 2006-06-02 15:05:28 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2006-05-27 04:02:23 $
+#	$Date: 2006-06-02 15:05:28 $
 #
 #	Description:	
 
@@ -82,3 +82,8 @@ BuildSharedLibTarget(libNGnfp,$(OBJS),1,0,$(NCARGLIB) $(NCARGGKSLIB) $(NCARGCLIB
 LibraryTarget($(MYNAME),$(OBJS))
 BuildIncludes($(HDRS),ncarg/nfp,../..)
 DependTarget($(CSRCS))
+
+#if defined(Linux)
+wrfW.o: wrfW.c
+	$(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c wrfW.c
+#endif
