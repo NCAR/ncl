@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.196 2006-05-23 18:06:27 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.197 2006-06-05 17:36:59 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -953,10 +953,14 @@ NhlErrorTypes _Nclstrlen
 ()
 #endif
 {
-    string  *strs;
+    string* strs;
     int ndims,
         dimsz[NCL_MAX_DIMENSIONS];
+    int has_missing;
+    NclScalar   missing,
+                ret_missing;
     int sz = 1;
+
     int*    lens;
     int i;
     
@@ -966,8 +970,8 @@ NhlErrorTypes _Nclstrlen
                         1,
                         &ndims,
                         dimsz,
-                        NULL,
-                        NULL,
+                        &missing,
+                        &has_missing,
                         NULL,
                         0);
 
@@ -980,10 +984,35 @@ NhlErrorTypes _Nclstrlen
         return NhlFATAL;
     }
 
-    for (i = 0; i < sz; i++)
-        lens[i] = strlen(NrmQuarkToString(strs[i]));
+    if (has_missing) {
+        for (i = 0; i < sz; i++) {
+            if (strs[i] == missing.stringval)
+                lens[i] = 0;
+            else {
+                lens[i] = strlen(NrmQuarkToString(strs[i]));
+                if (lens[i] > NCL_MAX_STRING)
+                    NhlPError(NhlWARNING, NhlEUNKNOWN,
+                        "strlen: string literals are limited to %d characters in length.",
+                        NCL_MAX_STRING);
+            }
+        }
 
-    return NclReturnValue((void *) lens, ndims, dimsz, NULL, NCL_int, 0);
+        ret_missing.intval =
+            ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+    } else {
+        for (i = 0; i < sz; i++) {
+            lens[i] = strlen(NrmQuarkToString(strs[i]));
+            if (lens[i] > NCL_MAX_STRING)
+                NhlPError(NhlWARNING, NhlEUNKNOWN,
+                    "strlen: string literals are limited to %d characters in length.",
+                    NCL_MAX_STRING);
+        }
+    }
+
+    return NclReturnValue((void *) lens, ndims, dimsz,
+                        has_missing ? &ret_missing : NULL, NCL_int, 0);
+
+    NclFree(lens);
 }
 
 
