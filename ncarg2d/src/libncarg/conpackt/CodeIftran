@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.15 2006-03-10 22:37:29 kennison Exp $
+I $Id: CodeIftran,v 1.16 2006-06-05 22:38:53 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -12837,7 +12837,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(XCQD.NE.XCLD.OR.YCQD.NE.YCLD.OR.
      +                                         ZCQD.NE.ZCLD))
@@ -13716,7 +13716,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(XCQD.NE.XCLD.OR.YCQD.NE.YCLD.OR.
      +                                         ZCQD.NE.ZCLD))
