@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.8 2006-03-17 22:36:58 kennison Exp $
+I $Id: CodeIftran,v 1.9 2006-06-05 22:37:44 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K   -   I N T R O D U C T I O N
@@ -11568,7 +11568,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(XCQD.NE.XCLD.OR.YCQD.NE.YCLD))
               NPLS=NPLS+1
@@ -12054,7 +12054,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(XTQD.NE.XTLD.OR.YTQD.NE.YTLD))
               NOUT=NOUT+1
@@ -12683,7 +12683,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(XCQD.NE.XCLD.OR.YCQD.NE.YCLD))
               IFOP=1
@@ -13441,7 +13441,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(XCQD.NE.XCLD.OR.YCQD.NE.YCLD))
               IFOP=1
