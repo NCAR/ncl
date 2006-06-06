@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.197 2006-06-05 17:36:59 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.198 2006-06-06 14:04:53 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -957,8 +957,7 @@ NhlErrorTypes _Nclstrlen
     int ndims,
         dimsz[NCL_MAX_DIMENSIONS];
     int has_missing;
-    NclScalar   missing,
-                ret_missing;
+    NclScalar   missing;
     int sz = 1;
 
     int*    lens;
@@ -996,9 +995,6 @@ NhlErrorTypes _Nclstrlen
                         NCL_MAX_STRING);
             }
         }
-
-        ret_missing.intval =
-            ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
     } else {
         for (i = 0; i < sz; i++) {
             lens[i] = strlen(NrmQuarkToString(strs[i]));
@@ -1009,10 +1005,8 @@ NhlErrorTypes _Nclstrlen
         }
     }
 
-    return NclReturnValue((void *) lens, ndims, dimsz,
-                        has_missing ? &ret_missing : NULL, NCL_int, 0);
-
-    NclFree(lens);
+    return NclReturnValue((void *) lens, ndims, dimsz, NULL, NCL_int, 0);
+    Nclfree(lens);
 }
 
 
