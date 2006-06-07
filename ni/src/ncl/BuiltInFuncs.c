@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.199 2006-06-07 19:30:02 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.200 2006-06-07 21:52:40 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -5025,14 +5025,14 @@ NhlErrorTypes _NclIabs
             if (has_missing) {
                 for (i = 0; i < total; i++) {
                     if (fvalue[i] != missing.floatval) {
-                        fout_val[i] = (float) fabs((float) fvalue[i]);
+                        fout_val[i] = (float) fabsf((float) fvalue[i]);
                     } else {
                         fout_val[i] = (float) missing.floatval;
                     }
                 }
             } else {
                 for (i = 0; i < total; i++) {
-                    fout_val[i] = (float) fabs((float) fvalue[i]);
+                    fout_val[i] = (float) fabsf((float) fvalue[i]);
                 }
             }
 
@@ -5069,14 +5069,14 @@ NhlErrorTypes _NclIabs
             if (has_missing) {
                 for (i = 0; i < total; i++) {
                     if (ivalue[i] != missing.intval) {
-                        iout_val[i] = abs(ivalue[i]);
+                        iout_val[i] = (int) abs((int) ivalue[i]);
                     } else {
                         iout_val[i] = missing2.intval;
                     }
                 }
             } else {
                 for (i = 0; i < total; i++) {
-                    iout_val[i] = abs(ivalue[i]);
+                    iout_val[i] = (int) abs((int) ivalue[i]);
                 }
             }
 
@@ -5113,14 +5113,14 @@ NhlErrorTypes _NclIabs
             if (has_missing) {
                 for (i = 0; i < total; i++) {
                     if (lvalue[i] != missing.longval) {
-                        lout_val[i] = labs((long) lvalue[i]);
+                        lout_val[i] = (long) labs((long) lvalue[i]);
                     } else {
                         lout_val[i] = missing2.longval;
                     }
                 }
             } else {
                 for (i = 0; i < total; i++) {
-                    lout_val[i] = labs((long) lvalue[i]);
+                    lout_val[i] = (long) labs((long) lvalue[i]);
                 }
             }
 
@@ -5157,59 +5157,6 @@ NhlErrorTypes _NclIabs
     }
 }
 
-
-#ifdef NOTNOW
-NhlErrorTypes _NclIabs
-#if	NhlNeedProto
-(void)
-#else
-()
-#endif
-{
-	NclStackEntry args;
-	NclMultiDValData tmp_md= NULL;
-	int *out_val = NULL;
-	int i;
-
-
-	args  = _NclGetArg(0,1,DONT_CARE);
-	switch(args.kind) {
-	case NclStk_VAL:
-		tmp_md = args.u.data_obj;
-		break;
-	case NclStk_VAR:
-		tmp_md = _NclVarValueRead(args.u.data_var,NULL,NULL);
-		break;
-	default:
-		return(NhlFATAL);
-	}
-	if(tmp_md != NULL) {
-		out_val = (int*)NclMalloc(sizeof(int)*tmp_md->multidval.totalelements);
-		if(tmp_md->multidval.missing_value.has_missing) {
-			for( i = 0 ; i < tmp_md->multidval.totalelements; i ++ ) {
-				if(((int*)tmp_md->multidval.val)[i] != tmp_md->multidval.missing_value.value.intval) {
-					out_val[i] = (int)abs(((int*)tmp_md->multidval.val)[i]);
-				} else {
-					out_val[i] = tmp_md->multidval.missing_value.value.intval;
-				}
-			}
-		} else {
-			for( i = 0 ; i < tmp_md->multidval.totalelements; i ++ ) {
-				out_val[i] = (int)abs(((int*)tmp_md->multidval.val)[i]);
-			}
-		}
-		return(NclReturnValue(
-			out_val,
-			tmp_md->multidval.n_dims,
-			tmp_md->multidval.dim_sizes,
-			&((NclTypeClass)nclTypeintClass)->type_class.default_mis,
-			NCL_int,
-			0
-			));
-	}
-	return(NhlNOERROR);
-}
-#endif /* NOTNOW */
 
 NhlErrorTypes _NclIncargversion
 #if	NhlNeedProto
