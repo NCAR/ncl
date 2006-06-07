@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.198 2006-06-06 14:04:53 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.199 2006-06-07 19:30:02 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -956,10 +956,12 @@ NhlErrorTypes _Nclstrlen
     string* strs;
     int ndims,
         dimsz[NCL_MAX_DIMENSIONS];
-    int has_missing;
-    NclScalar   missing;
+    int has_missing,
+        found_missing = 0;
+    NclScalar   missing,
+                ret_missing;
+  
     int sz = 1;
-
     int*    lens;
     int i;
     
@@ -972,7 +974,7 @@ NhlErrorTypes _Nclstrlen
                         &missing,
                         &has_missing,
                         NULL,
-                        0);
+                        2);
 
     for (i = 0; i < ndims; i++)
         sz *= dimsz[i];
@@ -985,9 +987,10 @@ NhlErrorTypes _Nclstrlen
 
     if (has_missing) {
         for (i = 0; i < sz; i++) {
-            if (strs[i] == missing.stringval)
-                lens[i] = 0;
-            else {
+            if (strs[i] == missing.stringval) {
+                lens[i] = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+                found_missing = 1;
+            } else {
                 lens[i] = strlen(NrmQuarkToString(strs[i]));
                 if (lens[i] > NCL_MAX_STRING)
                     NhlPError(NhlWARNING, NhlEUNKNOWN,
@@ -1005,7 +1008,13 @@ NhlErrorTypes _Nclstrlen
         }
     }
 
-    return NclReturnValue((void *) lens, ndims, dimsz, NULL, NCL_int, 0);
+    if (has_missing && found_missing) {
+        ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+        return NclReturnValue((void *) lens, ndims, dimsz, &ret_missing, NCL_int, 0);
+    }
+    else
+        return NclReturnValue((void *) lens, ndims, dimsz, NULL, NCL_int, 0);
+
     Nclfree(lens);
 }
 
@@ -4959,6 +4968,197 @@ NhlErrorTypes _NclIsrand
 	}
 	
 }
+
+NhlErrorTypes _NclIabs
+# if	NhlNeedProto
+(void)
+# else
+()
+# endif
+{
+    NclScalar   missing,
+                missing2;
+    int has_missing,
+        n_dims,
+        dimsizes[NCL_MAX_DIMENSIONS];
+
+    void    *out_val,
+            *value;
+    byte    *bout_val,
+            *bvalue;
+    short   *sout_val,
+            *svalue;
+    int *iout_val,
+        *ivalue;
+    long    *lout_val,
+            *lvalue;
+    float   *fout_val,
+            *fvalue;
+    double  *dout_val,
+            *dvalue;
+
+    NclBasicDataTypes   type;
+    int total = 1;
+    int i;
+
+
+    /* get input data */
+    value = (void *) NclGetArgValue(
+                0,
+                1,
+                &n_dims,
+                dimsizes,
+                &missing,
+                &has_missing,
+                &type,
+                0);
+
+    for (i = 0; i < n_dims; i++) {
+        total *= dimsizes[i];
+    }
+
+    switch (type) {
+        case NCL_float:
+            fvalue = (float *) value;
+            out_val = (void *) NclMalloc(total * sizeof(float));
+            fout_val = (float *) out_val;
+            if (has_missing) {
+                for (i = 0; i < total; i++) {
+                    if (fvalue[i] != missing.floatval) {
+                        fout_val[i] = (float) fabs((float) fvalue[i]);
+                    } else {
+                        fout_val[i] = (float) missing.floatval;
+                    }
+                }
+            } else {
+                for (i = 0; i < total; i++) {
+                    fout_val[i] = (float) fabs((float) fvalue[i]);
+                }
+            }
+
+            return NclReturnValue(out_val, n_dims, dimsizes,
+                (has_missing ? &missing : NULL), NCL_float, 0);
+            break;
+
+        case NCL_double:
+            dvalue = (double *) value;
+            out_val = (void *) NclMalloc(total * sizeof(double));
+            dout_val = (double *) out_val;
+            if (has_missing) {
+                for (i = 0 ; i < total; i++) {
+                    if (dvalue[i] != missing.doubleval) {
+                        dout_val[i] = (double) fabs((double) dvalue[i]);
+                    } else {
+                        dout_val[i] = (double) missing.doubleval;
+                    }
+                }
+            } else {
+                for (i = 0; i < total; i++) {
+                    dout_val[i] = (double) fabs((double) dvalue[i]);
+                }
+            }
+
+            return NclReturnValue(out_val, n_dims, dimsizes,
+                    (has_missing ? &missing : NULL), NCL_double, 0);
+            break;
+
+        case NCL_int:
+            ivalue = (int *) value;
+            out_val = (void *) NclMalloc(total * sizeof(int));
+            iout_val = (int *) out_val;
+            if (has_missing) {
+                for (i = 0; i < total; i++) {
+                    if (ivalue[i] != missing.intval) {
+                        iout_val[i] = abs(ivalue[i]);
+                    } else {
+                        iout_val[i] = missing2.intval;
+                    }
+                }
+            } else {
+                for (i = 0; i < total; i++) {
+                    iout_val[i] = abs(ivalue[i]);
+                }
+            }
+
+            return NclReturnValue(out_val, n_dims, dimsizes,
+                    (has_missing ? &missing2 : NULL), NCL_int, 0);
+            break;
+
+        case NCL_short:
+            svalue = (short *) value;
+            out_val = (void *) NclMalloc(total * sizeof(short));
+            sout_val = (short *) out_val;
+            if (has_missing) {
+                for (i = 0; i < total; i++) {
+                    if (svalue[i] != missing.shortval) {
+                        sout_val[i] = (short) abs((short) svalue[i]);
+                    } else {
+                        sout_val[i] = missing2.shortval;
+                    }
+                }
+            } else {
+                for (i = 0; i < total; i++) {
+                    sout_val[i] = (short) abs((short) svalue[i]);
+                }
+            }
+
+            return NclReturnValue(out_val, n_dims, dimsizes,
+                    (has_missing ? &missing2 : NULL), NCL_short, 0);
+            break;
+
+        case NCL_long:
+            lvalue = (long *) value;
+            out_val = (void *) NclMalloc(total * sizeof(long));
+            lout_val = (long *) out_val;
+            if (has_missing) {
+                for (i = 0; i < total; i++) {
+                    if (lvalue[i] != missing.longval) {
+                        lout_val[i] = labs((long) lvalue[i]);
+                    } else {
+                        lout_val[i] = missing2.longval;
+                    }
+                }
+            } else {
+                for (i = 0; i < total; i++) {
+                    lout_val[i] = labs((long) lvalue[i]);
+                }
+            }
+
+            return NclReturnValue(out_val, n_dims, dimsizes,
+                    (has_missing ? &missing2 : NULL), NCL_long, 0);
+            break;
+
+        case NCL_byte:
+            bvalue = (byte *) value;
+            out_val = (void *) NclMalloc(total * sizeof(float));
+            bout_val = (byte *) out_val;
+            if (has_missing) {
+                for (i = 0; i < total; i++) {
+                    if (bvalue[i] != missing.byteval) {
+                        bout_val[i] = (byte) abs((byte) bvalue[i]);
+                    } else {
+                        bout_val[i] = missing2.byteval;
+                    }
+                }
+            } else {
+                for (i = 0; i < total; i++) {
+                    bout_val[i] = (byte) abs((byte) bvalue[i]);
+                }
+            }
+
+            return NclReturnValue(out_val, n_dims, dimsizes,
+                    (has_missing ? &missing2 : NULL), NCL_byte, 0);
+            break;
+
+        default:
+            NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "abs: a non-numeric type was passed to this function, cannot continue");
+            break;
+    }
+}
+
+
+#ifdef NOTNOW
 NhlErrorTypes _NclIabs
 #if	NhlNeedProto
 (void)
@@ -5009,6 +5209,7 @@ NhlErrorTypes _NclIabs
 	}
 	return(NhlNOERROR);
 }
+#endif /* NOTNOW */
 
 NhlErrorTypes _NclIncargversion
 #if	NhlNeedProto
