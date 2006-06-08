@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.200 2006-06-07 21:52:40 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.201 2006-06-08 22:04:40 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1015,7 +1015,7 @@ NhlErrorTypes _Nclstrlen
     else
         return NclReturnValue((void *) lens, ndims, dimsz, NULL, NCL_int, 0);
 
-    Nclfree(lens);
+    NclFree(lens);
 }
 
 
