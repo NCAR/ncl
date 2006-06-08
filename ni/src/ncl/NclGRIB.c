@@ -3890,10 +3890,10 @@ GribParamList* step;
 			ens_vals_q[j] = GetEnsQuark(&(tmp_ens_vals[j]));
 			ens_indexes[j] = j;
 		}
-		step->ensemble = (NclOneDValCoordData)_NclCreateVal(
+		step->ensemble = (NclMultiDValData)_NclCreateVal(
 					NULL,
 					NULL,
-					Ncl_OneDValCoordData,
+					Ncl_MultiDValData,
 					0,
 					(void*)ens_vals_q,
 					NULL,

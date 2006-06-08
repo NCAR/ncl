@@ -150,7 +150,7 @@ struct _GribParamList {
 	NclGribFVarRec var_info;
 	NrmQuark aux_coords[2];
 	int ensemble_isatt;
-	NclOneDValCoordData ensemble;
+	NclMultiDValData ensemble;
 	NclOneDValCoordData ens_indexes;
 	int yymmddhh_isatt;
 	NclOneDValCoordData yymmddhh;

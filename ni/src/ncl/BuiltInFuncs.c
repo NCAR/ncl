@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.201 2006-06-08 22:04:40 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.202 2006-06-08 23:37:31 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -4976,11 +4976,10 @@ NhlErrorTypes _NclIabs
 ()
 # endif
 {
-    NclScalar   missing,
-                missing2;
-    int has_missing,
-        n_dims,
-        dimsizes[NCL_MAX_DIMENSIONS];
+   NclScalar   missing;
+   int has_missing,
+	   n_dims,
+	   dimsizes[NCL_MAX_DIMENSIONS];
 
     void    *out_val,
             *value;
@@ -5071,7 +5070,7 @@ NhlErrorTypes _NclIabs
                     if (ivalue[i] != missing.intval) {
                         iout_val[i] = (int) abs((int) ivalue[i]);
                     } else {
-                        iout_val[i] = missing2.intval;
+                        iout_val[i] = missing.intval;
                     }
                 }
             } else {
@@ -5081,7 +5080,7 @@ NhlErrorTypes _NclIabs
             }
 
             return NclReturnValue(out_val, n_dims, dimsizes,
-                    (has_missing ? &missing2 : NULL), NCL_int, 0);
+                    (has_missing ? &missing : NULL), NCL_int, 0);
             break;
 
         case NCL_short:
@@ -5093,7 +5092,7 @@ NhlErrorTypes _NclIabs
                     if (svalue[i] != missing.shortval) {
                         sout_val[i] = (short) abs((short) svalue[i]);
                     } else {
-                        sout_val[i] = missing2.shortval;
+                        sout_val[i] = missing.shortval;
                     }
                 }
             } else {
@@ -5103,7 +5102,7 @@ NhlErrorTypes _NclIabs
             }
 
             return NclReturnValue(out_val, n_dims, dimsizes,
-                    (has_missing ? &missing2 : NULL), NCL_short, 0);
+                    (has_missing ? &missing : NULL), NCL_short, 0);
             break;
 
         case NCL_long:
@@ -5115,7 +5114,7 @@ NhlErrorTypes _NclIabs
                     if (lvalue[i] != missing.longval) {
                         lout_val[i] = (long) labs((long) lvalue[i]);
                     } else {
-                        lout_val[i] = missing2.longval;
+                        lout_val[i] = missing.longval;
                     }
                 }
             } else {
@@ -5125,7 +5124,7 @@ NhlErrorTypes _NclIabs
             }
 
             return NclReturnValue(out_val, n_dims, dimsizes,
-                    (has_missing ? &missing2 : NULL), NCL_long, 0);
+                    (has_missing ? &missing : NULL), NCL_long, 0);
             break;
 
         case NCL_byte:
@@ -5137,7 +5136,7 @@ NhlErrorTypes _NclIabs
                     if (bvalue[i] != missing.byteval) {
                         bout_val[i] = (byte) abs((byte) bvalue[i]);
                     } else {
-                        bout_val[i] = missing2.byteval;
+                        bout_val[i] = missing.byteval;
                     }
                 }
             } else {
@@ -5147,7 +5146,7 @@ NhlErrorTypes _NclIabs
             }
 
             return NclReturnValue(out_val, n_dims, dimsizes,
-                    (has_missing ? &missing2 : NULL), NCL_byte, 0);
+                    (has_missing ? &missing : NULL), NCL_byte, 0);
             break;
 
         default:
