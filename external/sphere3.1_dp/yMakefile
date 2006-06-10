@@ -1,7 +1,7 @@
 MYLIB = libsphere3.1_dp
 
-SRCS = advec.f alf.f divec.f dives.f divgc.f divgs.f gaqd.f geo2math.f \
-gradec.f grades.f gradgc.f gradgs.f helmsph.f hrfft.f idivec.f		   \
+SRCS = alf.f divec.f dives.f divgc.f divgs.f gaqd.f geo2math.f \
+gradec.f grades.f gradgc.f gradgs.f hrfft.f idivec.f		   \
 idives.f idivgc.f idivgs.f idvtec.f idvtes.f idvtgc.f idvtgs.f		   \
 igradec.f igrades.f igradgc.f igradgs.f ihgeod.f isfvpec.f isfvpes.f   \
 isfvpgc.f isfvpgs.f islapec.f islapes.f islapgc.f islapgs.f ivlapec.f  \
@@ -14,8 +14,8 @@ vhsgc.f vhsgs.f visequ.f visgau.f visgeo.f vlapec.f vlapes.f vlapgc.f  \
 vlapgs.f vrtec.f vrtes.f vrtgc.f vrtgs.f vshifte.f vsurf.f vtsec.f	   \
 vtses.f vtsgc.f vtsgs.f
 
-OBJS = advec.o alf.o divec.o dives.o divgc.o divgs.o gaqd.o geo2math.o	\
-gradec.o grades.o gradgc.o gradgs.o helmsph.o hrfft.o idivec.o			\
+OBJS = alf.o divec.o dives.o divgc.o divgs.o gaqd.o geo2math.o	\
+gradec.o grades.o gradgc.o gradgs.o hrfft.o idivec.o			\
 idives.o idivgc.o idivgs.o idvtec.o idvtes.o idvtgc.o idvtgs.o			\
 igradec.o igrades.o igradgc.o igradgs.o ihgeod.o isfvpec.o isfvpes.o	\
 isfvpgc.o isfvpgs.o islapec.o islapes.o islapgc.o islapgs.o ivlapec.o	\
