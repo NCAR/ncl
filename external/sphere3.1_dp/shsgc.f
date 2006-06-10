@@ -626,15 +626,17 @@ c     compute and store swarztrauber recursion coefficients
 c     for 2.le.m.le.n and 2.le.n.le.nlat in abel,bbel,cbel
       DO 107 N = 2,NLAT
           MLIM = MIN0(N,L)
+          FN = FLOAT(N)
           DO 107 M = 2,MLIM
+              FM = FLOAT(M)
               IMN = INDX(M,N)
               IF (N.GE.L) IMN = IMNDX(M,N)
-              ABEL(IMN) = SQRT(DBLE((2*N+1)* (M+N-2)* (M+N-3))/
-     +                    DBLE(((2*N-3)* (M+N-1)* (M+N))))
-              BBEL(IMN) = SQRT(DBLE((2*N+1)* (N-M-1)* (N-M))/
-     +                    DBLE(((2*N-3)* (M+N-1)* (M+N))))
-              CBEL(IMN) = SQRT(DBLE((N-M+1)* (N-M+2))/
-     +                    DBLE(((N+M-1)* (N+M))))
+              ABEL(IMN) = SQRT(DBLE((2*FN+1)* (FM+FN-2)* (FM+FN-3))/
+     +                    DBLE(((2*FN-3)* (FM+FN-1)* (FM+FN))))
+              BBEL(IMN) = SQRT(DBLE((2*FN+1)* (FN-FM-1)* (FN-FM))/
+     +                    DBLE(((2*FN-3)* (FM+FN-1)* (FM+FN))))
+              CBEL(IMN) = SQRT(DBLE((FN-FM+1)* (FN-FM+2))/
+     +                    DBLE(((FN+FM-1)* (FN+FM))))
   107 CONTINUE
       RETURN
       END
