@@ -415,7 +415,7 @@ c            = 3  error in the specification of lvhsgs
 c            = 4  error in the specification of lwork
 c
       SUBROUTINE DVHSGS(NLAT,NLON,ITYP,NT,V,W,IDVW,JDVW,BR,BI,CR,CI,
-     +                 MDAB,NDAB,WVHSGS,LVHSGS,WORK,LWORK,IERROR)
+     +                  MDAB,NDAB,WVHSGS,LVHSGS,WORK,LWORK,IERROR)
       DOUBLE PRECISION V
       DOUBLE PRECISION W
       DOUBLE PRECISION BR
@@ -1133,7 +1133,7 @@ c     iw2 = iw1+nlat+nlat
 c     iw3 = iw2+nlat+nlat
 c     iw4 = iw3+6*imid*nlat
       CALL DVHGSI1(NLAT,IMID,WVHSGS(JW1),WVHSGS(JW2),DWORK(IW1),
-     +            DWORK(IW2),DWORK(IW3),DWORK(IW4))
+     +             DWORK(IW2),DWORK(IW3),DWORK(IW4))
       CALL DHRFFTI(NLON,WVHSGS(JW3))
       RETURN
       END
@@ -1145,6 +1145,8 @@ C*PT*WARNING* Already double-precision
       DOUBLE PRECISION ABEL,BBEL,CBEL,SSQR2,DCF
 C*PT*WARNING* Already double-precision
       DOUBLE PRECISION DTHET(*),DWTS(*),DPBAR(IMID,NLAT,3),WORK(*)
+C*PT*WARNING* Already double-precision
+      DOUBLE PRECISION DN,DM
 c
 c     compute gauss points and weights
 c     use dpbar (length 3*nnlat*(nnlat+1)) as work space for gaqd
@@ -1167,6 +1169,8 @@ c
 c     main loop for remaining vb, and wb
 c
       DO 100 N = 1,NLAT - 1
+C*PT*WARNING* Already double-precision (DBLE)
+          DN = DBLE(N)
           NM = MOD(N-2,3) + 1
           NZ = MOD(N-1,3) + 1
           NP = MOD(N,3) + 1
@@ -1195,17 +1199,12 @@ c
           IF (N.LT.2) GO TO 108
           DO 107 M = 2,N
 C*PT*WARNING* Already double-precision (DBLE)
-C*PT*WARNING* Already double-precision (DBLE)
-              ABEL = DSQRT(DBLE(DBLE((2*N+1)* (M+N-2)* (M+N-3)))/
-     +               DBLE(DBLE((2*N-3)* (M+N-1)* (M+N))))
-C*PT*WARNING* Already double-precision (DBLE)
-C*PT*WARNING* Already double-precision (DBLE)
-              BBEL = DSQRT(DBLE(DBLE((2*N+1)* (N-M-1)* (N-M)))/
-     +               DBLE(DBLE((2*N-3)* (M+N-1)* (M+N))))
-C*PT*WARNING* Already double-precision (DBLE)
-C*PT*WARNING* Already double-precision (DBLE)
-              CBEL = DSQRT(DBLE(DBLE((N-M+1)* (N-M+2)))/
-     +               DBLE(DBLE((M+N-1)* (M+N))))
+              DM = DBLE(M)
+              ABEL = DSQRT(((2*DN+1)* (DM+DN-2)* (DM+DN-3))/
+     +               ((2*DN-3)* (DM+DN-1)* (DM+DN)))
+              BBEL = DSQRT(((2*DN+1)* (DN-DM-1)* (DN-DM))/
+     +               ((2*DN-3)* (DM+DN-1)* (DM+DN)))
+              CBEL = DSQRT(((DN-DM+1)* (DN-DM+2))/ ((DM+DN-1)* (DM+DN)))
               ID = INDX(M,N,NLAT)
               IF (M.GE.N-1) GO TO 102
               DO 103 I = 1,IMID
@@ -1228,19 +1227,15 @@ c
           IY = INDX(N,N,NLAT)
           DO 125 I = 1,IMID
               VB(I,IX) = -DPBAR(I,2,NP)
-C*PT*WARNING* Already double-precision (DBLE)
-              VB(I,IY) = DPBAR(I,N,NP)/DSQRT(DBLE(DBLE(2* (N+1))))
+              VB(I,IY) = DPBAR(I,N,NP)/DSQRT(2* (DN+1))
   125     CONTINUE
 c
           IF (N.EQ.1) GO TO 131
-C*PT*WARNING* Already double-precision (DBLE)
-          DCF = DSQRT(DBLE(DBLE(4*N* (N+1))))
+          DCF = DSQRT(4*DN* (DN+1))
           DO 130 M = 1,N - 1
               IX = INDX(M,N,NLAT)
-C*PT*WARNING* Already double-precision (DBLE)
-              ABEL = DSQRT(DBLE(DBLE((N+M)* (N-M+1))))/DCF
-C*PT*WARNING* Already double-precision (DBLE)
-              BBEL = DSQRT(DBLE(DBLE((N-M)* (N+M+1))))/DCF
+              ABEL = DSQRT((DN+DM)* (DN-DM+1))/DCF
+              BBEL = DSQRT((DN-DM)* (DN+DM+1))/DCF
               DO 130 I = 1,IMID
                   VB(I,IX) = ABEL*DPBAR(I,M,NP) - BBEL*DPBAR(I,M+2,NP)
   130     CONTINUE
@@ -1254,18 +1249,14 @@ c
 C*PT*WARNING* Constant already double-precision
               WB(I,IX) = 0.d0
   220     CONTINUE
-C*PT*WARNING* Already double-precision (DBLE)
-C*PT*WARNING* Already double-precision (DBLE)
 c
 c     compute wb for m=1,n
 c
-          DCF = DSQRT(DBLE(DBLE(N+N+1))/DBLE(DBLE(4*N* (N+1)* (N+N-1))))
+          DCF = DSQRT((DN+DN+1)/ (4*DN* (DN+1)* (DN+DN-1)))
           DO 230 M = 1,N
               IX = INDX(M,N,NLAT)
-C*PT*WARNING* Already double-precision (DBLE)
-              ABEL = DCF*DSQRT(DBLE(DBLE((N+M)* (N+M-1))))
-C*PT*WARNING* Already double-precision (DBLE)
-              BBEL = DCF*DSQRT(DBLE(DBLE((N-M)* (N-M-1))))
+              ABEL = DCF*DSQRT((DN+DM)* (DN+DM-1))
+              BBEL = DCF*DSQRT((DN-DM)* (DN-DM-1))
               IF (M.GE.N-1) GO TO 231
               DO 229 I = 1,IMID
                   WB(I,IX) = ABEL*DPBAR(I,M,NZ) + BBEL*DPBAR(I,M+2,NZ)

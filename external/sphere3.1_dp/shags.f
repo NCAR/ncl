@@ -348,13 +348,13 @@ c     and fully stored legendre polys in wshags
 c     set pointer for internal storage of g
       IW = LAT*NLON*NT + 1
       CALL DSHAGS1(NLAT,NLON,L,LAT,MODE,G,IDG,JDG,NT,A,B,MDAB,NDAB,
-     +            WSHAGS(IWTS),WSHAGS(IFFT),WSHAGS(IPMN),LATE,WORK,
-     +            WORK(IW))
+     +             WSHAGS(IWTS),WSHAGS(IFFT),WSHAGS(IPMN),LATE,WORK,
+     +             WORK(IW))
       RETURN
       END
 
       SUBROUTINE DSHAGS1(NLAT,NLON,L,LAT,MODE,GS,IDG,JDG,NT,A,B,MDAB,
-     +                  NDAB,WTS,WFFT,PMN,LATE,G,WORK)
+     +                   NDAB,WTS,WFFT,PMN,LATE,G,WORK)
       DOUBLE PRECISION GS
       DOUBLE PRECISION A
       DOUBLE PRECISION B
@@ -677,14 +677,14 @@ c     iw = idwts+2*nlat
       IDWTS = IDTH + NLAT
       IW = IDWTS + NLAT
       CALL DSHAGSP1(NLAT,NLON,L,LATE,WSHAGS(I1),WSHAGS(I2),WSHAGS(I3),
-     +             WSHAGS(I4),WSHAGS(I5),WSHAGS(I6),WSHAGS(I7),
-     +             DWORK(IDTH),DWORK(IDWTS),DWORK(IW),IERROR)
+     +              WSHAGS(I4),WSHAGS(I5),WSHAGS(I6),WSHAGS(I7),
+     +              DWORK(IDTH),DWORK(IDWTS),DWORK(IW),IERROR)
       IF (IERROR.NE.0) IERROR = 6
       RETURN
       END
 
       SUBROUTINE DSHAGSP1(NLAT,NLON,L,LATE,WTS,P0N,P1N,ABEL,BBEL,CBEL,
-     +                   WFFT,DTHETA,DWTS,WORK,IER)
+     +                    WFFT,DTHETA,DWTS,WORK,IER)
       DOUBLE PRECISION WTS
       DOUBLE PRECISION P0N
       DOUBLE PRECISION P1N
@@ -692,6 +692,8 @@ c     iw = idwts+2*nlat
       DOUBLE PRECISION BBEL
       DOUBLE PRECISION CBEL
       DOUBLE PRECISION WFFT
+      DOUBLE PRECISION FN
+      DOUBLE PRECISION FM
       DIMENSION WTS(NLAT),P0N(NLAT,LATE),P1N(NLAT,LATE),ABEL(1),BBEL(1),
      +          CBEL(1),WFFT(1),DTHETA(NLAT),DWTS(NLAT)
 C*PT*WARNING* Already double-precision
@@ -748,16 +750,18 @@ c
 c     compute and store swarztrauber recursion coefficients
 c     for 2.le.m.le.n and 2.le.n.le.nlat in abel,bbel,cbel
       DO 107 N = 2,NLAT
+          FN = DBLE(N)
           MLIM = MIN0(N,L)
           DO 107 M = 2,MLIM
+              FM = DBLE(M)
               IMN = INDX(M,N)
               IF (N.GE.L) IMN = IMNDX(M,N)
-              ABEL(IMN) = SQRT(DBLE((2*N+1)* (M+N-2)* (M+N-3))/
-     +                    DBLE(((2*N-3)* (M+N-1)* (M+N))))
-              BBEL(IMN) = SQRT(DBLE((2*N+1)* (N-M-1)* (N-M))/
-     +                    DBLE(((2*N-3)* (M+N-1)* (M+N))))
-              CBEL(IMN) = SQRT(DBLE((N-M+1)* (N-M+2))/
-     +                    DBLE(((N+M-1)* (N+M))))
+              ABEL(IMN) = SQRT(((2*FN+1)* (FM+FN-2)* (FM+FN-3))/
+     +                    (((2*FN-3)* (FM+FN-1)* (FM+FN))))
+              BBEL(IMN) = SQRT(((2*FN+1)* (FN-FM-1)* (FN-FM))/
+     +                    (((2*FN-3)* (FM+FN-1)* (FM+FN))))
+              CBEL(IMN) = SQRT(((FN-FM+1)* (FN-FM+2))/
+     +                    (((FN+FM-1)* (FN+FM))))
   107 CONTINUE
       RETURN
       END
