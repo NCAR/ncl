@@ -614,16 +614,18 @@ c     compute m=1 legendre polynomials for all n and theta(i)
 c     compute and store swarztrauber recursion coefficients
 c     for 2.le.m.le.n and 2.le.n.le.nlat in abel,bbel,cbel
       do 107 n=2,nlat
+      fn = float(n)
       mlim = min0(n,l)
       do 107 m=2,mlim
+      fm = float(m)
       imn = indx(m,n)
       if (n.ge.l) imn = imndx(m,n)
-      abel(imn)=sqrt(float((2*n+1)*(m+n-2)*(m+n-3))/
-     1               float(((2*n-3)*(m+n-1)*(m+n))))
-      bbel(imn)=sqrt(float((2*n+1)*(n-m-1)*(n-m))/
-     1               float(((2*n-3)*(m+n-1)*(m+n))))
-      cbel(imn)=sqrt(float((n-m+1)*(n-m+2))/
-     1               float(((n+m-1)*(n+m))))
+      abel(imn)=sqrt(((2*fn+1)*(fm+fn-2)*(fm+fn-3))/
+     1               (((2*fn-3)*(fm+fn-1)*(fm+fn))))
+      bbel(imn)=sqrt(((2*fn+1)*(fn-fm-1)*(fn-fm))/
+     1               (((2*fn-3)*(fm+fn-1)*(fm+fn))))
+      cbel(imn)=sqrt(((fn-fm+1)*(fn-fm+2))/
+     1               (((fn+fm-1)*(fn+fm))))
   107 continue
       return
       end

@@ -894,6 +894,7 @@ c     iw4 = iw3+6*imid*nlat
       dimension vb(imid,*),wb(imid,*)
       double precision abel,bbel,cbel,ssqr2,dcf
       double precision dpbar(imid,nlat,3), dthet(*),dwts(*),work(*)
+      double precision dn,dm
 c     lwk = 4*nlat*(nlat+2)
       lwk = nlat*(nlat+2)
       call gaqd(nlat,dthet,dwts,dpbar,lwk,ierror)
@@ -912,6 +913,7 @@ c
 c     main loop for remaining vb, and wb
 c
       do 100 n=1,nlat-1
+      dn = dble(n)
       nm = mod(n-2,3)+1
       nz = mod(n-1,3)+1
       np = mod(n,3)+1
@@ -938,12 +940,13 @@ c     compute and store dpbar for m=2,n
 c
       if(n.lt.2) go to 108
       do 107 m=2,n
-      abel = dsqrt(dble(float((2*n+1)*(m+n-2)*(m+n-3)))/
-     1                dble(float((2*n-3)*(m+n-1)*(m+n))))
-      bbel = dsqrt(dble(float((2*n+1)*(n-m-1)*(n-m)))/
-     1                dble(float((2*n-3)*(m+n-1)*(m+n))))
-      cbel = dsqrt(dble(float((n-m+1)*(n-m+2)))/
-     1                dble(float((m+n-1)*(m+n))))
+      dm = dble(m)
+      abel = dsqrt(((2*dn+1)*(dm+dn-2)*(dm+dn-3))/
+     1                ((2*dn-3)*(dm+dn-1)*(dm+dn)))
+      bbel = dsqrt(((2*dn+1)*(dn-dm-1)*(dn-dm))/
+     1                ((2*dn-3)*(dm+dn-1)*(dm+dn)))
+      cbel = dsqrt(((dn-dm+1)*(dn-dm+2))/
+     1                ((dm+dn-1)*(dm+dn)))
       id = indx(m,n,nlat)
       if (m.ge.n-1) go to 102
       do 103 i=1,imid
@@ -963,15 +966,15 @@ c
       iy = indx(n,n,nlat)
       do 125 i=1,imid
       vb(i,ix) = -dpbar(i,2,np)*dwts(i)
-      vb(i,iy) = dpbar(i,n,np)/dsqrt(dble(float(2*(n+1))))*dwts(i)
+      vb(i,iy) = dpbar(i,n,np)/dsqrt(2*(dn+1))*dwts(i)
 125   continue
 c
       if(n.eq.1) go to 131 
-      dcf = dsqrt(dble(float(4*n*(n+1))))
+      dcf = dsqrt(4*dn*(dn+1))
       do 130 m=1,n-1
       ix = indx(m,n,nlat)
-      abel = dsqrt(dble(float((n+m)*(n-m+1))))/dcf
-      bbel = dsqrt(dble(float((n-m)*(n+m+1))))/dcf
+      abel = dsqrt((dn+dm)*(dn-dm+1))/dcf
+      bbel = dsqrt((dn-dm)*(dn+dm+1))/dcf
       do 130 i=1,imid
       vb(i,ix) = (abel*dpbar(i,m,np)-bbel*dpbar(i,m+2,np))*dwts(i)
 130   continue
@@ -988,11 +991,11 @@ c
 c
 c     compute wb for m=1,n
 c
-      dcf = dsqrt(dble(float(n+n+1))/dble(float(4*n*(n+1)*(n+n-1))))
+      dcf = dsqrt((dn+dn+1)/(4*dn*(dn+1)*(dn+dn-1)))
       do 230 m=1,n
       ix = indx(m,n,nlat)
-      abel = dcf*dsqrt(dble(float((n+m)*(n+m-1))))
-      bbel = dcf*dsqrt(dble(float((n-m)*(n-m-1))))
+      abel = dcf*dsqrt((dn+dm)*(dn+dm-1))
+      bbel = dcf*dsqrt((dn-dm)*(dn-dm-1))
       if(m.ge.n-1) go to 231
       do 229 i=1,imid
       wb(i,ix) = (abel*dpbar(i,m,nz) + bbel*dpbar(i,m+2,nz))*dwts(i)
