@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.h,v 1.22 2003-06-04 19:04:23 dbrown Exp $
+ *      $Id: MapPlot.h,v 1.23 2006-06-15 16:45:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,9 @@ typedef enum _NhlMapDataResolution {
 #define NhlNmpDataSetName		"mpDataSetName"
 #define NhlNmpDataResolution		"mpDataResolution"
 
+#define NhlNmpOutlineMaskingOn		"mpOutlineMaskingOn"
+#define NhlNmpMaskOutlineSpecifiers	"mpMaskOutlineSpecifiers"
+
 #define NhlNmpOutlineOn			"mpOutlineOn"
 #define NhlNmpOutlineDrawOrder		"mpOutlineDrawOrder"
 #define NhlNmpOutlineBoundarySets	"mpOutlineBoundarySets"
@@ -214,6 +217,9 @@ typedef enum _NhlMapDataResolution {
 #define NhlCmpDataBaseVersion		"MpDataBaseVersion"
 #define NhlCmpDataSetName		"MpDataSetName"
 #define NhlCmpDataResolution		"MpDataResolution"
+
+#define NhlCmpOutlineMaskingOn		"MpOutlineMaskingOn"
+#define NhlCmpMaskOutlineSpecifiers	"MpMaskOutlineSpecifiers"
 
 #define NhlCmpOutlineOn			"MpOutlineOn"
 #define NhlCmpOutlineDrawOrder		"MpOutlineDrawOrder"

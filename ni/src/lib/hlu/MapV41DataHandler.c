@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.20 2005-04-12 17:50:21 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.21 2006-06-15 16:45:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1892,6 +1892,12 @@ static int outline_sort
         }
 
 /*
+ * next sort by draw mode, masking follows outline, causing it to override
+ */
+        if (lrec1.draw_mode != lrec2.draw_mode)
+                return lrec1.draw_mode - lrec2.draw_mode;
+
+/*
  * Finally sort by entity id (not really necessary)
  */
         return (lrec1.eid - lrec2.eid);
@@ -2008,6 +2014,7 @@ static NhlErrorTypes    UpdateSpecLineRecords
                 }
                 mv41p->outline_recs[count].eid = erec->eid;
                 mv41p->outline_recs[count].spec_ix = spec_line_index;
+                mv41p->outline_recs[count].draw_mode = draw_mode;
                 mv41p->outline_recs[count].spec_col = 0;
                 mv41p->outline_recs[count].spec_dpat = 0;
                 mv41p->outline_recs[count].spec_thickness = 0;
@@ -2077,6 +2084,16 @@ static NhlErrorTypes    mv41BuildOutlineDrawList
 
 		}
 	}
+	if (mpp->outline_masking_on && mpp->mask_outline_specs != NULL) {
+		sp = (NhlString *) mpp->mask_outline_specs->data;
+		for (i = 0; i < mpp->mask_outline_specs->num_elements; i++) {
+			strcpy(spec_string,PrepareSpecString(sp[i]));
+                        subret = UpdateSpecLineRecords
+                                (mv41l,mpp,mpMASK,spec_string,i,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				return ret;
+		}
+	}
         if (mv41p->outline_rec_count) {
                 qsort(mv41p->outline_recs,mv41p->outline_rec_count,
                       sizeof(v41SpecLineRec),outline_sort);
@@ -2138,6 +2155,8 @@ static NhlErrorTypes MapV41DHUpdateDrawList
                 
                 if (mpp->database_version != ompp->database_version ||
                     mpp->outline_boundaries != ompp->outline_boundaries ||
+		    mpp->mask_outline_specs != ompp->mask_outline_specs ||
+                    mpp->outline_masking_on != ompp->outline_masking_on ||
                     mpp->outline_specs != ompp->outline_specs ||
 		    mpp->data_set_name != ompp->data_set_name)
                         build_outline_list = True;
@@ -3151,15 +3170,39 @@ static void   ModifyLines
 		  	(v41SpecLineRec *)DrawIds[ioal-1].spec_rec;
 	  	v41SpecLineRec *rrec = 
 		  	(v41SpecLineRec *)DrawIds[ioar-1].spec_rec;
+		if (lrec->draw_mode == mpMASK || rrec->draw_mode == mpMASK) {
+			*npts = 0;
+			return;
+		}
+		/*
 		if (lrec->eid == rrec->eid) {
 			*npts = 0;
 			return;
 		}
+		*/
 		SetLineAttrs(ilty,npts);
 		return;
         }
-        else if (DrawIds[ioal-1].spec_rec || DrawIds[ioar-1].spec_rec) {
-		SetLineAttrs(ilty,npts);
+        else if (DrawIds[ioal-1].spec_rec) {
+		v41SpecLineRec *llspec = (v41SpecLineRec *) DrawIds[ioal-1].spec_rec;
+		if (llspec->draw_mode == mpMASK) {
+			*npts = 0;
+
+		}
+		else {
+			SetLineAttrs(ilty,npts);
+		}
+		return;
+	}
+	else if  (DrawIds[ioar-1].spec_rec) {
+		v41SpecLineRec *rlspec = (v41SpecLineRec *) DrawIds[ioar-1].spec_rec;
+		if (rlspec->draw_mode == mpMASK) {
+			*npts = 0;
+
+		}
+		else {
+			SetLineAttrs(ilty,npts);
+		}
 		return;
 	}
 	else if (ilty > Level) {

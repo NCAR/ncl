@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.10 2003-06-04 19:04:23 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.11 2006-06-15 16:45:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -162,6 +162,7 @@ static int Point_Count = 0;
 static NhlMapPlotLayer Mpl;
 static NhlMapPlotLayerPart *Mpp;
 static NhlMapV40DataHandlerClassPart	*Mv4cp;
+static NhlMapV40DataHandlerLayerPart	*Mv40p;
 static NhlBoolean Grid_Setup;
 static mpDrawOp Draw_Op;
 static mpOutlineSet Outline_Set;
@@ -283,11 +284,11 @@ static short Exp_Ids_Count[][2] = {
 	{NhlNumber(NSAmerica),NhlNumber(PS_NSAmerica)},
 	{NhlNumber(Tierra_Del_Fuego),NhlNumber(PS_Tierra_Del_Fuego)},
 	{NhlNumber(Dominican_Republic_and_Haiti),
-		 NhlNumber(PS_Dominican_Republic_and_Haiti)},
+	 NhlNumber(PS_Dominican_Republic_and_Haiti)},
 	{NhlNumber(Africa_Eurasia),NhlNumber(PS_Africa_Eurasia)},
 	{NhlNumber(England_Scotland_Wales),
-		 NhlNumber(PS_England_Scotland_Wales)},
-{NhlNumber(Ireland),NhlNumber(PS_Ireland)},
+	 NhlNumber(PS_England_Scotland_Wales)},
+	{NhlNumber(Ireland),NhlNumber(PS_Ireland)},
 	{NhlNumber(Borneo),NhlNumber(PS_Borneo)},
 	{NhlNumber(New_Guinea),NhlNumber(PS_New_Guinea)},
 	{0,NhlNumber(PS_Bahamas_1)},
@@ -1925,6 +1926,32 @@ static NhlErrorTypes    mdhBuildOutlineDrawList
 
 		}
 	}
+
+	if (mpp->outline_masking_on && mpp->mask_outline_specs != NULL) {
+		sp = (NhlString *) mpp->mask_outline_specs->data;
+		for (i = 0; i < mpp->mask_outline_specs->num_elements; i++) {
+			found = False;
+			mpLowerCase(sp[i]);
+			for (j = 0; j < NhlNumber(BGroup_Names); j++) {
+				if (! strcmp(sp[i],BGroup_Names[j])) {
+					subret = mdhUpdateDrawGroups
+                                                (mv40l,mpp,mpDRAWOUTLINE,mpMASK,
+                                                 mpNOINDEX,j,entry_name);
+					if ((ret = MIN(ret,subret)) < 
+					    NhlWARNING)
+						return ret;
+					found = True;
+					break;
+				}
+			}   
+			if (! found) 
+				subret = mdhUpdateNameRecs
+                                        (mv40l,mpp,mpDRAWOUTLINE,sp[i],
+                                         mpMASK,mpNOINDEX,entry_name);
+			if ((ret = MIN(ret,subret)) < NhlWARNING)
+				return ret;
+		}
+	}
 /*
  * If usstates are to be used promote the global set if necessary
  */
@@ -1988,7 +2015,9 @@ static NhlErrorTypes MapV40DHUpdateDrawList
                 
                 if (mpp->database_version != ompp->database_version ||
                     mpp->outline_boundaries != ompp->outline_boundaries ||
-                    mpp->outline_specs != ompp->outline_specs)
+                    mpp->outline_specs != ompp->outline_specs ||
+                    mpp->mask_outline_specs != ompp->mask_outline_specs ||
+                    mpp->outline_masking_on != ompp->outline_masking_on)
                         build_outline_list = True;
 
                 if (build_fill_list || mpp->view_changed ||
@@ -3262,6 +3291,7 @@ static NhlErrorTypes MapV40DHDrawMapList
         
         Mv4cp = &((NhlMapV40DataHandlerClass)
                   mv40l->base.layer_class)->mapv40dh_class;
+	Mv40p = &(mv40l->mapv40dh);
 	Mpp = mpp;
 	Mpl = mpl;
 
@@ -3274,6 +3304,7 @@ static NhlErrorTypes MapV40DHDrawMapList
         }
         Last_Instance = instance;
         Point_Count = 0;
+	Draw_Op = draw_op;
                 
         switch (draw_op) {
             case mpDRAWFILL:
@@ -3286,6 +3317,8 @@ static NhlErrorTypes MapV40DHDrawMapList
                     
 	Mpp = NULL;
 	Mpl = NULL;
+        Mv4cp = NULL;
+	Mv40p = NULL;
 
         return ret;
 }
@@ -3350,34 +3383,62 @@ void   (_NHLCALLF(hlumapeod,HLUMAPEOD))
 	case mpDRAWOUTLINE:
 		il = *idls - Id_Offset[Outline_Set];
 		ir = *idrs - Id_Offset[Outline_Set];
-		if (il >= 0) {
-			switch (DrawIds[il].u.f.draw_mode) {
-			case mpDRAW:
-				keep = True;
-				break;
-			case mpDRAWSPECIAL:
-				if (*idrs == Draw_Check)
-					keep = True;
-				break;
-			default:
-				break;
-			}
+		if (DrawIds[il].u.f.draw_mode == mpMASK || 
+		    DrawIds[ir].u.f.draw_mode == mpMASK) {
+			keep = False;
 		}
-		if (ir >= 0) {
-			switch (DrawIds[ir].u.f.draw_mode) {
-			case mpDRAW:
-				keep = True;
-				break;
-			case mpDRAWSPECIAL:
-				if (*idls == Draw_Check)
+		else if ((Mv40p->outline_groups[mpSmallIsland].u.f.draw_mode != mpDRAW) &&
+			 (Outline_Set != mpUS && il == 1 && ir == 1)) 
+			/* 
+			 * this gets rid of line segments representing islands that have no area,
+			 * and therefore no area id.
+			 */
+			keep = False;
+		else {
+			if (il >= 0) {
+				switch (DrawIds[il].u.f.draw_mode) {
+				case mpDRAW:
 					keep = True;
-				break;
-			default:
-				break;
+					break;
+				case mpDRAWSPECIAL:
+				/* 
+				 * this is for simulating large areas from contiguous smaller areas: 
+				 * only draw a segment if it touches the larger border
+				 */
+                                   
+					if (*idrs == Draw_Check)
+						keep = True;
+					break;
+				default:
+					break;
+				}
+			}
+			if (ir >= 0) {
+				switch (DrawIds[ir].u.f.draw_mode) {
+				case mpDRAW:
+					keep = True;
+					break;
+				case mpDRAWSPECIAL:
+				/* 
+				 * this is for simulating large areas from contiguous smaller areas: 
+				 * only draw a segment if it touches the larger border
+				 */
+					if (*idls == Draw_Check)
+						keep = True;
+					break;
+				default:
+					break;
+				}
 			}
 		}
 		if (! keep)
 			*npts = 0;
+#if 0
+		else {
+			printf("nseg %d il %d, ir %d, npts %d idls %d idrs %d\n", 
+			       *nseg,il,ir,*npts,*idls,*idrs);
+		}
+#endif
 		break;
 	case mpDRAWFILL:
 		il = *idls - Id_Offset[Outline_Set];

@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.96 2005-04-12 17:50:21 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.97 2006-06-15 16:45:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -81,6 +81,22 @@ static NhlResource resources[] = {
 	 	Oset(data_resolution),NhlTImmediate, 
 	 	_NhlUSET((NhlPointer)NhlUNSPECIFIEDRESOLUTION),0,NULL},
 
+/* Outline masking resources */
+
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(outline_masking_on_set),
+		 NhlTImmediate,_NhlUSET((NhlPointer)True),
+         	 _NhlRES_PRIVATE,NULL},
+	{NhlNmpOutlineMaskingOn, NhlCmpOutlineMaskingOn, NhlTBoolean,
+		 sizeof(NhlBoolean),Oset(outline_masking_on),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{NhlNmpMaskOutlineSpecifiers,NhlCmpMaskOutlineSpecifiers,NhlTStringGenArray,
+		 sizeof(NhlPointer),Oset(mask_outline_specs),
+		 NhlTImmediate,_NhlUSET((NhlPointer) NULL),0,
+		 (NhlFreeFunc)NhlFreeGenArray},
+
+
+
 /* Outline resources */
 
 	{NhlNmpOutlineOn, NhlCmpOutlineOn, NhlTBoolean,
@@ -96,6 +112,8 @@ static NhlResource resources[] = {
 	{NhlNmpOutlineSpecifiers,NhlCmpOutlineSpecifiers,NhlTStringGenArray,
 		 sizeof(NhlPointer),Oset(outline_specs),NhlTImmediate,
 		 _NhlUSET((NhlPointer) NULL),0,(NhlFreeFunc)NhlFreeGenArray},
+
+/* Area masking resources */
 
 	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(area_masking_on_set),
@@ -906,6 +924,7 @@ static NrmQuark Qstring = NrmNULLQUARK;
 static NrmQuark Qdatabase_version = NrmNULLQUARK;
 static NrmQuark Qfill_area_specs = NrmNULLQUARK;
 static NrmQuark Qmask_area_specs = NrmNULLQUARK;
+static NrmQuark Qmask_outline_specs = NrmNULLQUARK;
 static NrmQuark Qoutline_specs = NrmNULLQUARK;
 static NrmQuark Qarea_names = NrmNULLQUARK;
 static NrmQuark Qarea_types = NrmNULLQUARK;
@@ -1056,6 +1075,7 @@ MapPlotClassInitialize
 	Qdatabase_version = NrmStringToQuark(NhlNmpDataBaseVersion);
 	Qfill_area_specs = NrmStringToQuark(NhlNmpFillAreaSpecifiers);
 	Qmask_area_specs = NrmStringToQuark(NhlNmpMaskAreaSpecifiers);
+	Qmask_outline_specs = NrmStringToQuark(NhlNmpMaskOutlineSpecifiers);
 	Qoutline_specs = NrmStringToQuark(NhlNmpOutlineSpecifiers);
 	Qarea_names = NrmStringToQuark(NhlNmpAreaNames);
 	Qarea_types = NrmStringToQuark(NhlNmpAreaTypes);
@@ -1244,6 +1264,8 @@ MapPlotInitialize
         mpp->view_changed = True;
         if (! mpp->area_masking_on_set)
                 mpp->area_masking_on = mpp->mask_area_specs ? True : False;
+        if (! mpp->outline_masking_on_set)
+                mpp->outline_masking_on = mpp->mask_outline_specs ? True : False;
         
         if (mpp->grid_spacing_set)
                 mpp->grid_lat_spacing = mpp->grid_lon_spacing =
@@ -1361,6 +1383,7 @@ MapPlotInitialize
         mpp->dynamic_groups = NULL;
 	mpp->data_set_name = NULL;
         mpp->area_masking_on_set = False;
+        mpp->outline_masking_on_set = False;
         mpp->grid_spacing_set = False;
         
 	mpp = NULL;
@@ -1568,6 +1591,12 @@ static NhlErrorTypes MapPlotSetValues
                 if (! mpp->area_masking_on_set)
                         mpp->area_masking_on = True;
         }
+	if (_NhlArgIsSet(args,num_args,NhlNmpOutlineMaskingOn))
+		mpp->outline_masking_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNmpMaskOutlineSpecifiers)) {
+                if (! mpp->outline_masking_on_set)
+                        mpp->outline_masking_on = True;
+        }
         if ( _NhlArgIsSet(args,num_args,NhlNmpGridSpacingF))
                 mpp->grid_lat_spacing = mpp->grid_lon_spacing =
                         mpp->grid_spacing;
@@ -1729,6 +1758,7 @@ static NhlErrorTypes MapPlotSetValues
         mpp->data_set_name = NULL;
         
         mpp->area_masking_on_set = False;
+        mpp->outline_masking_on_set = False;
         mpp->grid_spacing_set = False;
         
 	mpp = NULL;
@@ -1797,6 +1827,10 @@ static NhlErrorTypes    MapPlotGetValues
                 }
                 else if (args[i].quark == Qmask_area_specs) {
                         ga = mpp->mask_area_specs;
+                        count = ga ? ga->num_elements : 0;
+                }
+                else if (args[i].quark == Qmask_outline_specs) {
+                        ga = mpp->mask_outline_specs;
                         count = ga ? ga->num_elements : 0;
                 }
                 else if (args[i].quark == Qoutline_specs) {
@@ -3141,6 +3175,51 @@ static NhlErrorTypes    mpManageDynamicArrays
 	}
 		
 /*
+ * Mask outline specifiers
+ */
+	ga = init ? NULL : ompp->mask_outline_specs;
+
+        if (! mpp->mask_outline_specs && ga) {
+               NhlFreeGenArray(ga);
+               ompp->mask_outline_specs = (NhlGenArray)0xdeadbeef;
+        }
+	else if (ga != mpp->mask_outline_specs) {
+		NhlFreeGenArray(ga);
+		if ((ga = _NhlCopyGenArray(mpp->mask_outline_specs,
+					   True)) == NULL) {
+			e_text = "%s: error copying %s GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNmpMaskOutlineSpecifiers);
+			return NhlFATAL;
+		}
+		mpp->mask_outline_specs = ga;
+		ompp->mask_outline_specs = NULL;
+		/* Check elements for null strings */
+		sp = (NhlString *) mpp->mask_outline_specs->data;
+		for (i = 0; i < mpp->mask_outline_specs->num_elements; i++) {
+			if (sp[i] == NULL) {
+				e_text = 
+		 "%s: Null or zero length %s string for index %d: defaulting";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
+					  entry_name,NhlNmpMaskOutlineSpecifiers,
+					  i,NhlmpNULLAREA);
+				ret = MIN(ret,NhlWARNING);
+				if (sp[i] != NULL) NhlFree(sp[i]);
+				sp[i] = NhlMalloc(strlen(NhlmpNULLAREA) + 1);
+				if (sp[i] == NULL) {
+					e_text = 
+				       "%s: dynamic memory allocation error";
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  e_text,entry_name);
+					return NhlFATAL;
+				}
+				strcpy(sp[i],NhlmpNULLAREA);
+			}
+		}
+
+	}
+		
+/*
  * Outline specifiers
  */
 	ga = init ? NULL : ompp->outline_specs;
@@ -3167,7 +3246,7 @@ static NhlErrorTypes    mpManageDynamicArrays
 				e_text = 
 		 "%s: Null or zero length %s string for index %d: defaulting";
 				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,
-					  entry_name,NhlNmpMaskAreaSpecifiers,
+					  entry_name,NhlNmpOutlineSpecifiers,
 					  i,NhlmpNULLAREA);
 				ret = MIN(ret,NhlWARNING);
 				if (sp[i] != NULL) NhlFree(sp[i]);

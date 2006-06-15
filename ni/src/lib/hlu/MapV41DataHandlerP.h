@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandlerP.h,v 1.4 1998-11-12 21:40:03 dbrown Exp $
+ *      $Id: MapV41DataHandlerP.h,v 1.5 2006-06-15 16:45:56 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -88,6 +88,7 @@ typedef struct _v41SpecFillRec {
 typedef struct _v41SpecLineRec {
 	short		eid;
   	short           spec_ix;      /* index into specifier array */
+  	unsigned char	draw_mode;    /* draw or mask */
   	unsigned char	spec_col;     /* color specified ? */
         unsigned char   spec_dpat;     /* dash pattern specified ? */
         unsigned char   spec_thickness;  /* thickness specified ? */
