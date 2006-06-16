@@ -2,16 +2,16 @@
 #include <math.h>
 #include "wrapper.h"
 
-extern void NGCALLF(dcompute_tk,DCOMPUTE_TK)(double *,double *,double *,int *);
-extern void NGCALLF(dcompute_rh,DCOMPUTE_RH)(double *,double *,double *,
-                                             double *,int *);
-extern void NGCALLF(dcompute_seaprs,DCOMPUTE_SEAPRS)(int *,int *,int *,
-                                                     double *,double *,
-                                                     double *,double *,
-                                                     double *,double *,
-                                                     double *,double *);
-extern void NGCALLF(dinterp_3dz,DINTERP_3DZ)(double *,double *,double *,
-                                             double *,int *,int *, int*);
+extern void NGCALLF(dcomputetk,DCOMPUTETK)(double *,double *,double *,int *);
+extern void NGCALLF(dcomputerh,DCOMPUTERH)(double *,double *,double *,
+                                           double *,int *);
+extern void NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(int *,int *,int *,
+                                                   double *,double *,
+                                                   double *,double *,
+                                                   double *,double *,
+                                                   double *,double *);
+extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
+                                           double *,int *,int *, int*);
 
 
 NhlErrorTypes wrf_compute_temperature_W( void )
@@ -188,7 +188,7 @@ NhlErrorTypes wrf_compute_temperature_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcompute_tk,DCOMPUTE_TK)(tmp_t,tmp_p,tmp_theta,&nx);
+    NGCALLF(dcomputetk,DCOMPUTETK)(tmp_t,tmp_p,tmp_theta,&nx);
 
 /*
  * Coerce output back to float if necessary.
@@ -392,7 +392,7 @@ NhlErrorTypes wrf_compute_rh_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcompute_rh,DCOMPUTE_rh)(tmp_qv,tmp_p,tmp_t,tmp_rh,&nx);
+    NGCALLF(dcomputerh,DCOMPUTERH)(tmp_qv,tmp_p,tmp_t,tmp_rh,&nx);
 
 /*
  * Coerce output back to float if necessary.
@@ -649,9 +649,9 @@ NhlErrorTypes wrf_compute_slp_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dcompute_seaprs,DCOMPUTE_seaprs)(&nx,&ny,&nz,tmp_z,tmp_t,tmp_p,
-                                             tmp_q,tmp_slp,tmp_slv,tmp_srf,
-                                             tmp_lvl);
+    NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&nx,&ny,&nz,tmp_z,tmp_t,tmp_p,
+                                           tmp_q,tmp_slp,tmp_slv,tmp_srf,
+                                           tmp_lvl);
 /*
  * Coerce output back to float if necessary.
  */
@@ -862,8 +862,8 @@ NhlErrorTypes wrf_interp_3dz_W( void )
 /*
  * Call Fortran routine.
  */
-    NGCALLF(dinterp_3dz,Dinterp_3dz)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
-                                     &nx,&ny,&nz);
+    NGCALLF(dinterp3dz,DINTERP3DZ)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
+                                   &nx,&ny,&nz);
 
 /*
  * Coerce output back to float if necessary.
