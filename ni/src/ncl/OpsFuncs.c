@@ -1954,6 +1954,8 @@ NclStackEntry missing_expr;
 	char *tp;
 	NclTypeClass typec = NULL;
 	int tsize;
+	NrmQuark qnofill = NrmStringToQuark("No_FillValue");
+	int fill = 1;
 	
 
 	the_type = _NclKeywordToDataType(data_type);
@@ -1976,7 +1978,10 @@ NclStackEntry missing_expr;
 		if(missing_md->multidval.kind != SCALAR) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"New: the missing value provided has more than one element, using the first one as the _FillValue");
 		}
-		if(missing_md->multidval.type->type_class.type != the_obj_type) {
+		if (*(NrmQuark*)missing_md->multidval.val == qnofill) {
+			fill = 0;
+		}
+		else if(missing_md->multidval.type->type_class.type != the_obj_type) {
 			tmp_md = _NclCoerceData(missing_md,the_obj_type,NULL);
 			if(tmp_md == NULL) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"New: Could not coerce missing value parameter into appropriate type, using default");
@@ -2059,25 +2064,32 @@ NclStackEntry missing_expr;
 			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
 			return(NhlFATAL);
 		}
-		tp = (char *) tmp_val;
-		i = 1;
-		tsize = _NclSizeOf(the_type);
-		memcpy((void*)tp,(void*)&missing_val,tsize);
-		while (i <= total / 2) {
-			memcpy(tp+i*tsize,tp,tsize * i);
-			i *= 2;
-		}
-		if (total - i > 0) {
-			memcpy(tp+i*tsize,tp,tsize * (total - i));
-		}
+		if (fill) {
+			tp = (char *) tmp_val;
+			i = 1;
+			tsize = _NclSizeOf(the_type);
+			memcpy((void*)tp,(void*)&missing_val,tsize);
+			while (i <= total / 2) {
+				memcpy(tp+i*tsize,tp,tsize * i);
+				i *= 2;
+			}
+			if (total - i > 0) {
+				memcpy(tp+i*tsize,tp,tsize * (total - i));
+			}
 
-#if 0
-		for(i = 0; i< total*_NclSizeOf(the_type); i+=_NclSizeOf(the_type)) {
-			memcpy((void*)&(((char*)tmp_val)[i]),(void*)&missing_val,_NclSizeOf(the_type));
-			
+			tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
+							  Ncl_MultiDValData:the_obj_type),0,tmp_val,
+					       &missing_val,j,dim_sizes,TEMPORARY,NULL,
+					       (NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
+							     _NclTypeEnumToTypeClass(the_obj_type):NULL));
 		}
-#endif
-		tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ? Ncl_MultiDValData:the_obj_type),0,tmp_val,&missing_val,j,dim_sizes,TEMPORARY,NULL,(NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?_NclTypeEnumToTypeClass(the_obj_type):NULL));
+		else {
+			tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
+							  Ncl_MultiDValData:the_obj_type),0,tmp_val,
+					       NULL,j,dim_sizes,TEMPORARY,NULL,
+					       (NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
+							     _NclTypeEnumToTypeClass(the_obj_type):NULL));
+		}
 		if((tmp1_md != size_md)&&(tmp1_md->obj.status != PERMANENT)) {
 			_NclDestroyObj((NclObj)tmp1_md);
 		}
