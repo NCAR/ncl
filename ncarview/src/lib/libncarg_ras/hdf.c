@@ -1,5 +1,5 @@
 /*
- *	$Id: hdf.c,v 1.19 2000-08-22 15:12:11 haley Exp $
+ *	$Id: hdf.c,v 1.20 2006-06-20 19:55:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -65,6 +65,7 @@
 #include <string.h>
 #include <ncarg/c.h>
 #include <hdf/hdf.h>
+#include <hdf/df.h>
 #include <hdf/dfgr.h>
 #include "ncarg_ras.h"
 #include "hdfP.h"
