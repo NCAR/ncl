@@ -709,8 +709,9 @@ digit	[0-9]
 	tmp = strrchr(yytext,'\"');
 	*tmp = '\0';
 	tmp = (char*)&(yytext[0]) + 1;
-	strncpy(yylval.str,tmp,strlen(tmp)+1);
-	printtoken(STRING,yylval.str);
+	yylval.sstr = NclMalloc(strlen(tmp) + 1);
+	strncpy(yylval.sstr,tmp,strlen(tmp)+1);
+	printtoken(STRING,yylval.sstr);
 	return STRING;
 }
 \: { 

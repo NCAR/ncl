@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypestring.c.specific,v 1.7 2005-02-05 00:13:55 dbrown Exp $
+ *      $Id: NclTypestring.c.specific,v 1.8 2006-06-20 20:07:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -260,21 +260,26 @@ NclTypeClass fc;
 	case Ncl_Typechar: {
 		char *fl = (char*)from;
 		int is_mis = 0;
+		char *lbuf;
+		int allocated = 0;
 		if(n > NCL_MAX_STRING -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"Ncl_Type_string_coerce: attempt to coerce list of characters to a single string failed, number of characters exceeds maximum string length of (%d)",NCL_MAX_STRING);
-			return(NhlFATAL);
+			lbuf = NclMalloc((n+1) * sizeof(char));
+			allocated = 1;
+		}
+		else {
+			lbuf = buffer;
 		}
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,fl++)  {
-				buffer[i] = *fl;
+				lbuf[i] = *fl;
 			}
-			buffer[n] = '\0';
-			*res = (string)NrmStringToQuark(buffer);
+			lbuf[n] = '\0';
+			*res = (string)NrmStringToQuark(lbuf);
 		} else {
 			for(i = 0; i < n;i++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-				buffer[i] = *fl;
+				lbuf[i] = *fl;
 				if(tmp) {
 					is_mis = 1;
 				} 
@@ -282,8 +287,11 @@ NclTypeClass fc;
 			if(is_mis) {
 				*res = tmp_mis.stringval;
 			} else {
-				*res = NrmStringToQuark(buffer);
+				*res = NrmStringToQuark(lbuf);
 			}
+		}
+		if (allocated) {
+			NclFree(lbuf);
 		}
 		return(NhlNOERROR);
 	}

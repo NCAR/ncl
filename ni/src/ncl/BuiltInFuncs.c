@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.202 2006-06-08 23:37:31 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.203 2006-06-20 20:07:22 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -992,19 +992,23 @@ NhlErrorTypes _Nclstrlen
                 found_missing = 1;
             } else {
                 lens[i] = strlen(NrmQuarkToString(strs[i]));
+#if 0
                 if (lens[i] > NCL_MAX_STRING)
                     NhlPError(NhlWARNING, NhlEUNKNOWN,
                         "strlen: string literals are limited to %d characters in length.",
                         NCL_MAX_STRING);
+#endif
             }
         }
     } else {
         for (i = 0; i < sz; i++) {
             lens[i] = strlen(NrmQuarkToString(strs[i]));
+#if 0
             if (lens[i] > NCL_MAX_STRING)
                 NhlPError(NhlWARNING, NhlEUNKNOWN,
                     "strlen: string literals are limited to %d characters in length.",
                     NCL_MAX_STRING);
+#endif
         }
     }
 
@@ -4198,13 +4202,19 @@ NhlErrorTypes _NclIasciiread
 				}
 			}
 			else if(thetype->type_class.type==Ncl_Typestring) {
-				char buffer[NCL_MAX_STRING+1];
+				char *buffer;
 				char *step;
-				int truncated = 0;
+				int cur_size = NCL_MAX_STRING;
 
+				buffer = NclMalloc(cur_size * sizeof(char));
 				step =buffer;
 				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
-					for(j = 0; j < NCL_MAX_STRING; j++) {
+					for(j = 0; ; j++) {
+						if (j == cur_size) {
+							cur_size *= 2;
+							buffer = NclRealloc(buffer,cur_size * sizeof(char));
+							step = &buffer[j];
+						}
 						if(!feof(fp)) {
 							*step = fgetc(fp);
 							if(*step == '\n') {
@@ -4221,23 +4231,8 @@ NhlErrorTypes _NclIasciiread
 							break;
 						}
 					}
-					if(j >= NCL_MAX_STRING) {
-						if (buffer[NCL_MAX_STRING] != '\n')
-							truncated = 1;
-						buffer[NCL_MAX_STRING] = '\0';
-						while(!feof(fp)&&(fgetc(fp) != '\n'));
-						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-						step = buffer;
-						total++;
-					} 
-					if (truncated) {
-						NhlPError(NhlWARNING,NhlEUNKNOWN,
-							  "asciiread: one or more strings truncated because NCL maximum string length (%d) exceeded",
-							NCL_MAX_STRING);
-						ret = NhlWARNING;
-					}
 				}
+				NclFree(buffer);
 			}
 			else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
@@ -4453,13 +4448,19 @@ NhlErrorTypes _NclIasciiread
 				}
 			}
 			else if(thetype->type_class.type==Ncl_Typestring) {
-				char buffer[NCL_MAX_STRING+1];
+				char *buffer;
 				char *step;
-				int truncated = 0;
+				int cur_size = NCL_MAX_STRING;
 
+				buffer = NclMalloc(cur_size * sizeof(char));
 				step =buffer;
 				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
-					for(j = 0; j < NCL_MAX_STRING; j++) {
+					for(j = 0; ; j++) {
+						if (j == cur_size) {
+							cur_size *= 2;
+							buffer = NclRealloc(buffer,cur_size * sizeof(char));
+							step = &buffer[j];
+						}
 						if(!feof(fp)) {
 							*step = fgetc(fp);
 							if(*step == '\n') {
@@ -4476,22 +4477,8 @@ NhlErrorTypes _NclIasciiread
 							break;
 						}
 					}
-					if(j >= NCL_MAX_STRING) {
-						if (buffer[NCL_MAX_STRING] != '\n')
-							truncated = 1;
-						buffer[NCL_MAX_STRING] = '\0';
-						while(!feof(fp)&&(fgetc(fp) != '\n'));
-						*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-						step = buffer;
-						total++;
-					} 
 				}
-				if (truncated) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"asciiread: one or more strings truncated because NCL maximum string length (%d) exceeded",
-						NCL_MAX_STRING);
-					ret = NhlWARNING;
-				}
+				NclFree(buffer);
 			}
 			else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");

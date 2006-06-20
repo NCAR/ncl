@@ -65,6 +65,7 @@ char *cur_load_file = NULL;
 	int integer;
 	double real;
 	char  str[NCL_MAX_STRING];
+        char *sstr;
 	struct _NclSymbol *sym;
 	void *src_node;
 	struct src_node_list *list;
@@ -76,7 +77,8 @@ char *cur_load_file = NULL;
 %token	<void> RP LP RBC LBC RBK LBK COLON ',' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING ASTRING CSTRING
 %token <integer> INT DIMNUM
 %token <real> REAL
-%token <str> STRING DIM DIMNAME ATTNAME COORDV FVAR 
+%token <str> DIM DIMNAME ATTNAME COORDV FVAR 
+%token <sstr> STRING
 %token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
 %token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL LIST
 %token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
@@ -2242,6 +2244,7 @@ primary : REAL				{
 					}
 	| STRING			{
 						$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));
+						NclFree($1);
 					}
 	| function			{	
 						$$ = _NclMakeIdnExpr($1);
