@@ -1081,6 +1081,7 @@ c
           IF (N.EQ.1) GO TO 131
           DCF = DSQRT(4*DN* (DN+1))
           DO 130 M = 1,N - 1
+              DM = DBLE(M)
               IX = INDX(M,N,NLAT)
               ABEL = DSQRT((DN+DM)* (DN-DM+1))/DCF
               BBEL = DSQRT((DN-DM)* (DN+DM+1))/DCF
@@ -1104,6 +1105,7 @@ c     compute wb for m=1,n
 c
           DCF = DSQRT((DN+DN+1)/ (4*DN* (DN+1)* (DN+DN-1)))
           DO 230 M = 1,N
+              DM = DBLE(M)
               IX = INDX(M,N,NLAT)
               ABEL = DCF*DSQRT((DN+DM)* (DN+DM-1))
               BBEL = DCF*DSQRT((DN-DM)* (DN-DM-1))
