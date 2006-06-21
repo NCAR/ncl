@@ -111,7 +111,7 @@ int ylg;
 char* ytxt;
 #endif
 {
-	if(*cll + ylg > cur_line_maxsize -1) {
+	while (*cll + ylg > cur_line_maxsize -1) {
 		cur_line_text = (char*)NclRealloc(cur_line_text,2*cur_line_maxsize);
 		*cltp = &(cur_line_text[*cll]);
 		cur_line_maxsize = 2 * cur_line_maxsize;
