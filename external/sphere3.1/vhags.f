@@ -972,6 +972,7 @@ c
       if(n.eq.1) go to 131 
       dcf = dsqrt(4*dn*(dn+1))
       do 130 m=1,n-1
+      dm = dble(m)
       ix = indx(m,n,nlat)
       abel = dsqrt((dn+dm)*(dn-dm+1))/dcf
       bbel = dsqrt((dn-dm)*(dn+dm+1))/dcf
@@ -993,6 +994,7 @@ c     compute wb for m=1,n
 c
       dcf = dsqrt((dn+dn+1)/(4*dn*(dn+1)*(dn+dn-1)))
       do 230 m=1,n
+      dm = dble(m)
       ix = indx(m,n,nlat)
       abel = dcf*dsqrt((dn+dm)*(dn+dm-1))
       bbel = dcf*dsqrt((dn-dm)*(dn-dm-1))
