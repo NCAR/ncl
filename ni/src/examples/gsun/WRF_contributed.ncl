@@ -58,6 +58,14 @@ begin
   Time&Time       =  Time        ; make coordinate variable
   return (Time)
 end 
+;*************************************************************************
+; D. Shea
+;      interface to WRF_Times2Udunits_c
+undef ("WRF_Times_to_udunits")
+function WRF_Times_to_udunits(Times:character, opt)
+begin
+  return( WRF_Times2Udunits_c(Times, 0) )    ; old name 
+end
 
 ;*************************************************************************
 ; D. Shea
@@ -102,24 +110,25 @@ end
 ; D. Shea
 ;      interface to WRF_Times2double_c
 ;      more explicit function name
-function WRF_Times2yyyymmddhhmnss(Times:character, opt)
+undef ("WRF_Times_to_ymdhms")
+function WRF_Times_to_ymdhms(Times:character, opt)
 begin
-  return( WRF_Times2double_c(Times, 0) ) 
+  return( WRF_Times2double_c(Times, 0) )    ; old name 
 end
 
 ;*************************************************************************
 ; D. Shea
 ;      convert WRF character variable "Times" to 
 ;      a coordinate variable of type integer 
-;      time(integer)=              yyyymmddhh
+;      time(integer)=              yyyymmddhh   [->ymdh]
 ;      2001-06-11_12:00:00     ==> 2001061112
 ;
-;      Note: mn and ss are not part of the returned time
+;      Note: mminute and second are not part of the returned time
 ;
 ;      opt: currently not used [dummy]
 ;
-undef ("WRF_Times2yyyymmddhh")
-function WRF_Times2yyyymmddhh(Times:character, opt)
+undef ("WRF_Times_to_ymdh")
+function WRF_Times_to_ymdh(Times:character, opt)
 local dimT, rank, N, time, i, tmp_c
 begin
   dimT   = dimsizes(Times)
