@@ -20,7 +20,6 @@ NhlErrorTypes wrf_compute_temperature_W( void )
  * Input array variables
  */
   void *p, *theta;
-  string *units;
   double *tmp_p, *tmp_theta;
   int ndims_p, ndims_theta;
   int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_theta[NCL_MAX_DIMENSIONS];
@@ -37,7 +36,6 @@ NhlErrorTypes wrf_compute_temperature_W( void )
  * Various
  */
   int i, nx, size_leftmost, index_p;
-  char *units_char;
 
 /*
  * Retrieve parameters.
@@ -47,7 +45,7 @@ NhlErrorTypes wrf_compute_temperature_W( void )
  */
   p = (void*)NclGetArgValue(
            0,
-           3,
+           2,
            &ndims_p,
            dsizes_p,
            NULL,
@@ -57,32 +55,13 @@ NhlErrorTypes wrf_compute_temperature_W( void )
 
   theta = (void*)NclGetArgValue(
            1,
-           3,
+           2,
            &ndims_theta,
            dsizes_theta,
            NULL,
            NULL,
            &type_theta,
            2);
-
-  units = (string*)NclGetArgValue(
-           2,
-           3,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-
-/*
- * Convert to a char* so we can check it.
- */
-  units_char = NrmQuarkToString(*units);
-  if (strcmp(units_char, "c") && strcmp(units_char, "C")) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_temperature: invalid units; must be 'c', 'f', or 'k'");
-    return(NhlFATAL);
-  }
 
 /*
  * Error checking. Input variables must be same size.
