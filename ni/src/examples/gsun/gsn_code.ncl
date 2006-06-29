@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.179 2006-05-31 04:06:04 haley Exp $
+;      $Id: gsn_code.ncl,v 1.180 2006-06-29 17:17:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1505,7 +1505,36 @@ begin
         new_plot = plot@vector
         new_plot@plot_type = "vector"
       else
-        new_plot = plot(0)
+        found = False
+        getvalues plot
+          "pmOverlaySequenceIds" : base_ids
+        end getvalues
+        if(.not.any(ismissing(base_ids))) then
+	  nbase = dimsizes(base_ids)
+	  i = 0
+	  do while(.not.found.and.i.lt.nbase) 
+            bclass = NhlClassName(base_ids(i))
+            if(bclass.eq."contourPlotClass") then
+              new_plot = base_ids(i)
+              new_plot@plot_type = "contour"
+	      found = True
+            end if
+            if(bclass.eq."vectorPlotClass") then
+              new_plot = base_ids(i)
+              new_plot@plot_type = "vector"
+	      found = True
+            end if
+            if(bclass.eq."xyPlotClass") then
+              new_plot = base_ids(i)
+              new_plot@plot_type = "xy"
+	      found = True
+            end if
+	    i = i + 1
+	  end do
+	end if
+        if(.not.found) then
+          new_plot = plot(0)
+        end if
       end if
     end if
   else
