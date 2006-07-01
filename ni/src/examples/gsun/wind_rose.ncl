@@ -1,12 +1,16 @@
 ;
-;      $Id: wind_rose.ncl,v 1.5 2005-06-06 22:50:41 haley Exp $
+;      $Id: wind_rose.ncl,v 1.6 2006-07-01 15:01:12 shea Exp $
 ;
+; ******************************************************************
+; *******  THERE IS NO SUPPORT FOR THE WIND ROSE FUNCTIONS *********
+; ******************************************************************
+; *******  These were developed to draw the figures the way I like them.
+; *******  If the user wishes to change something to their preference,
+; *******  they may excerpt the relevent function and modify as they wish.
+; *******  Good luck!
+; ******************************************************************
 ; functions to draw variations of wind roses
 
-; These were developed to draw the figures the way I like them.
-; If the user wishes to change something to their preference,
-; they may excerpt the relevent function and modify as they wish.
-; Good luck!
 
 function WindRoseBasic (wks:graphic, wspd:numeric, wdir:numeric \
                                    , numPetals:integer, circFr:float, wrRes:logical)
