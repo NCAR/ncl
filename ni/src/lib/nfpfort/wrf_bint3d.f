@@ -6,6 +6,20 @@ C
 C NCLFORTSTART
       SUBROUTINE DMAPTFORM(DSKMC,MIYCORS,MJXCORS,NPROJ,XLATC,XLONC,
      +                     TRUE1,TRUE2,RIY,RJX,RLAT,RLON,IDIR)
+C
+C Input vars:        DSKMC, MIYCORS, MJXCORS, NPROJ, XLATC, XLONC,
+C                    NPROJ, IDIR
+C Input/output vars: RIY, RIX, RLAT
+C Output vars:       TRUE1, TRUE2, RLON 
+C 
+C
+C Possible NCL interface:
+C
+C   wrf_maptform(dskmc, miycors, mjxcors, nproj, xlatc, xlonc, riy, rjx,
+C                idir, rlat, rlon, opts)
+C
+C where opts could contain the TRUE1 and TRUE2 information in some fashion.
+C
       DOUBLE PRECISION PI_MPTF
       DOUBLE PRECISION RPD_MPTF
       DOUBLE PRECISION REARTH_MPTF
@@ -210,7 +224,10 @@ C********************************************************
 C NCLFORTSTART
       SUBROUTINE DBINT3D(DATA_OUT,OBSII,OBSJJ,DATA_IN,NX,NY,NZ,NOBSICRS,
      +                   NOBSJCRS,ICRS,JCRS)
-
+C
+C Possible NCL interface:
+C
+C    data_out = wrf_bint3d(data_in,obsii,obsjj,icrs,jcrs)
 C
 C     !!! 1_based_array (cols x rows) in fortran <=> 0_based_array
 C      (rows x cols) in NCL !!!
