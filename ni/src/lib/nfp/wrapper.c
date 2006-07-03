@@ -59,10 +59,11 @@ extern NhlErrorTypes showal_skewt_W(void);
 extern NhlErrorTypes pw_skewt_W(void);
 extern NhlErrorTypes rip_cape_2d_W(void);
 extern NhlErrorTypes rip_cape_3d_W(void);
-extern NhlErrorTypes wrf_compute_temperature_W(void);
-extern NhlErrorTypes wrf_compute_rh_W(void);
-extern NhlErrorTypes wrf_compute_slp_W(void);
+extern NhlErrorTypes wrf_tk_W(void);
+extern NhlErrorTypes wrf_rh_W(void);
+extern NhlErrorTypes wrf_slp_W(void);
 extern NhlErrorTypes wrf_interp_3dz_W(void);
+extern NhlErrorTypes wrf_bint_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
 extern NhlErrorTypes gaus_lobat_wgt_W(void);
@@ -1151,7 +1152,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
-    NclRegisterFunc(wrf_compute_temperature_W,args,"wrf_tk",nargs);
+    NclRegisterFunc(wrf_tk_W,args,"wrf_tk",nargs);
 /*
  * Register "wrf_rh".
  *
@@ -1164,7 +1165,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
-    NclRegisterFunc(wrf_compute_rh_W,args,"wrf_rh",nargs);
+    NclRegisterFunc(wrf_rh_W,args,"wrf_rh",nargs);
 /*
  * Register "wrf_slp".
  *
@@ -1178,7 +1179,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
-    NclRegisterFunc(wrf_compute_slp_W,args,"wrf_slp",nargs);
+    NclRegisterFunc(wrf_slp_W,args,"wrf_slp",nargs);
 /*
  * Register "wrf_interp_3dz".
  *
@@ -1193,6 +1194,22 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(wrf_interp_3dz_W,args,"wrf_interp_3dz",nargs);
+/*
+ * Register "wrf_bint".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(wrf_bint_W,args,"wrf_bint",nargs);
 /*
  * Register "cape_thermo".
  *

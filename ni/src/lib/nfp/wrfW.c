@@ -14,7 +14,13 @@ extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
                                            double *,int *,int *, int*);
 
 
-NhlErrorTypes wrf_compute_temperature_W( void )
+extern void NGCALLF(dbint3d,DBINT3D)(double *,double *,double *, double *,
+                                     int *, int *, int *, int *,
+                                     int *, int *, int *);
+
+
+
+NhlErrorTypes wrf_tk_W( void )
 {
 /*
  * Input array variables
@@ -67,12 +73,12 @@ NhlErrorTypes wrf_compute_temperature_W( void )
  * Error checking. Input variables must be same size.
  */
   if(ndims_p != ndims_theta) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_temperature: The p and theta arrays must have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: The p and theta arrays must have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_p; i++) {
     if(dsizes_p[i] != dsizes_theta[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_temperature: p and theta must be the same dimensionality");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: p and theta must be the same dimensionality");
       return(NhlFATAL);
     }
   }
@@ -97,7 +103,7 @@ NhlErrorTypes wrf_compute_temperature_W( void )
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nx,sizeof(double));
     if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_temperature: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -108,7 +114,7 @@ NhlErrorTypes wrf_compute_temperature_W( void )
   if(type_theta != NCL_double) {
     tmp_theta = (double *)calloc(nx,sizeof(double));
     if(tmp_theta == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_temperature: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -122,7 +128,7 @@ NhlErrorTypes wrf_compute_temperature_W( void )
   if(type_t == NCL_double) {
     t = (double *)calloc(size_t,sizeof(double));
     if(t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_temperature: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -130,7 +136,7 @@ NhlErrorTypes wrf_compute_temperature_W( void )
     t     = (float *)calloc(size_t,sizeof(float));
     tmp_t = (double *)calloc(nx,sizeof(double));
     if(tmp_t == NULL || t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_temperature: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -188,7 +194,7 @@ NhlErrorTypes wrf_compute_temperature_W( void )
   return(NclReturnValue(t,ndims_p,dsizes_p,NULL,type_t,0));
 }
 
-NhlErrorTypes wrf_compute_rh_W( void )
+NhlErrorTypes wrf_rh_W( void )
 {
 /*
  * Input array variables
@@ -252,12 +258,12 @@ NhlErrorTypes wrf_compute_rh_W( void )
  * Error checking. Input variables must be same size.
  */
   if(ndims_qv != ndims_t || ndims_p != ndims_t) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_rh: The qv, p, and t arrays must have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: The qv, p, and t arrays must have the same number of dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_qv; i++) {
     if(dsizes_qv[i] != dsizes_t[i] || dsizes_p[i] != dsizes_t[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_rh: qv, p, and t must be the same dimensionality");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: qv, p, and t must be the same dimensionality");
       return(NhlFATAL);
     }
   }
@@ -282,7 +288,7 @@ NhlErrorTypes wrf_compute_rh_W( void )
   if(type_qv != NCL_double) {
     tmp_qv = (double *)calloc(nx,sizeof(double));
     if(tmp_qv == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_rh: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -292,7 +298,7 @@ NhlErrorTypes wrf_compute_rh_W( void )
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nx,sizeof(double));
     if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_rh: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -303,7 +309,7 @@ NhlErrorTypes wrf_compute_rh_W( void )
   if(type_t != NCL_double) {
     tmp_t = (double *)calloc(nx,sizeof(double));
     if(tmp_t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_rh: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -317,7 +323,7 @@ NhlErrorTypes wrf_compute_rh_W( void )
   if(type_rh == NCL_double) {
     rh = (double *)calloc(size_rh,sizeof(double));
     if(rh == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_rh: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -325,7 +331,7 @@ NhlErrorTypes wrf_compute_rh_W( void )
     rh     = (float *)calloc(size_rh,sizeof(float));
     tmp_rh = (double *)calloc(nx,sizeof(double));
     if(tmp_rh == NULL || rh == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_rh: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -393,7 +399,7 @@ NhlErrorTypes wrf_compute_rh_W( void )
   return(NclReturnValue(rh,ndims_qv,dsizes_qv,NULL,type_rh,0));
 }
 
-NhlErrorTypes wrf_compute_slp_W( void )
+NhlErrorTypes wrf_slp_W( void )
 {
 /*
  * Input array variables
@@ -468,17 +474,17 @@ NhlErrorTypes wrf_compute_slp_W( void )
  * 3 dimensions.
  */
   if(ndims_z != ndims_t || ndims_z != ndims_p || ndims_z != ndims_q) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: The z, t, p, and q arrays must have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: The z, t, p, and q arrays must have the same number of dimensions");
     return(NhlFATAL);
   }
   if(ndims_z < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: The z, t, p, and q arrays must have at least 3 dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: The z, t, p, and q arrays must have at least 3 dimensions");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_z; i++) {
     if(dsizes_z[i] != dsizes_t[i] || dsizes_z[i] != dsizes_p[i] ||
        dsizes_z[i] != dsizes_q[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: z, t, p, and q must be the same dimensionality");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: z, t, p, and q must be the same dimensionality");
       return(NhlFATAL);
     }
   }
@@ -508,7 +514,7 @@ NhlErrorTypes wrf_compute_slp_W( void )
   if(type_z != NCL_double) {
     tmp_z = (double *)calloc(nxyz,sizeof(double));
     if(tmp_z == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -519,7 +525,7 @@ NhlErrorTypes wrf_compute_slp_W( void )
   if(type_t != NCL_double) {
     tmp_t = (double *)calloc(nxyz,sizeof(double));
     if(tmp_t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -530,7 +536,7 @@ NhlErrorTypes wrf_compute_slp_W( void )
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nxyz,sizeof(double));
     if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -541,7 +547,7 @@ NhlErrorTypes wrf_compute_slp_W( void )
   if(type_q != NCL_double) {
     tmp_q = (double *)calloc(nxyz,sizeof(double));
     if(tmp_q == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
@@ -556,7 +562,7 @@ NhlErrorTypes wrf_compute_slp_W( void )
   tmp_srf = (double *)calloc(nxy,sizeof(double));
   tmp_lvl = (double *)calloc(nxy,sizeof(double));
   if(tmp_slv == NULL || tmp_srf == NULL || tmp_lvl == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: Unable to allocate memory for temporary arrays");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for temporary arrays");
       return(NhlFATAL);
   }
 
@@ -566,7 +572,7 @@ NhlErrorTypes wrf_compute_slp_W( void )
   if(type_slp == NCL_double) {
     slp = (double *)calloc(size_slp,sizeof(double));
     if(slp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -574,7 +580,7 @@ NhlErrorTypes wrf_compute_slp_W( void )
     slp     = (float *)calloc(size_slp,sizeof(float));
     tmp_slp = (double *)calloc(nxyz,sizeof(double));
     if(tmp_slp == NULL || slp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_compute_slp: Unable to allocate memory for output array");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
@@ -863,5 +869,292 @@ NhlErrorTypes wrf_interp_3dz_W( void )
   if(type_v2d != NCL_double) NclFree(tmp_v2d);
 
   return(NclReturnValue(v2d,ndims_v2d,dsizes_v2d,NULL,type_v2d,0));
+}
+
+
+NhlErrorTypes wrf_bint_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *data_in, *obsii, *obsjj;
+  double *tmp_data_in, *tmp_obsii, *tmp_obsjj;
+  int *icrs, *jcrs;
+  int ndims_data_in, ndims_obsii, ndims_obsjj;
+  int dsizes_data_in[NCL_MAX_DIMENSIONS]; 
+  int dsizes_obsii[NCL_MAX_DIMENSIONS], dsizes_obsjj[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_data_in, type_obsii, type_obsjj;
+  
+/*
+ * Output variable.
+ */
+  void *data_out;
+  double *tmp_data_out;
+  int *dsizes_data_out, size_data_out;
+  NclBasicDataTypes type_data_out;
+/*
+ * Various
+ */
+  int i, nx, ny, nz, nobsicrs, nobsjcrs, size_leftmost; 
+  int nxyz, nobsij, nobsijz, index_data_in, index_data_out, index_nobsij;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  data_in = (void*)NclGetArgValue(
+           0,
+           5,
+           &ndims_data_in,
+           dsizes_data_in,
+           NULL,
+           NULL,
+           &type_data_in,
+           2);
+
+  obsii = (void*)NclGetArgValue(
+           1,
+           5,
+           &ndims_obsii,
+           dsizes_obsii,
+           NULL,
+           NULL,
+           &type_obsii,
+           2);
+
+  obsjj = (void*)NclGetArgValue(
+           2,
+           5,
+           &ndims_obsjj,
+           dsizes_obsjj,
+           NULL,
+           NULL,
+           &type_obsjj,
+           2);
+
+  icrs = (int*)NclGetArgValue(
+           3,
+           5,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+  jcrs = (int*)NclGetArgValue(
+           4,
+           5,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * Error checking.
+ */
+  if(ndims_data_in < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The data_in array must have at least two dimensions");
+    return(NhlFATAL);
+  }
+  if(ndims_data_in != (ndims_obsii+1) || ndims_data_in != (ndims_obsjj+1)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The data_in array must have one more dimension than the obsii, obsjj arrays");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_obsii; i++) {
+    if(dsizes_obsii[i] != dsizes_obsjj[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The obsii and obsjj arrays must be the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * If data_in is greater than 3 dimensions (and, hence, obsii and obsjj
+ * are greater than 2 dimensions), then check that these extra dimensions
+ * are all the same length.
+ *
+ * While we're here, calculate the size of the leftmost dimensions.
+ */
+  size_leftmost = 1;
+  if(ndims_data_in > 3) {
+    for(i = 0; i < ndims_data_in-3; i++) {
+      if(dsizes_data_in[i] != dsizes_obsii[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The rightmost dimensions of data_in, obsii, obsjj must be the same");
+        return(NhlFATAL);
+      }
+      size_leftmost *= dsizes_data_in[i];
+    }
+  }
+
+/*
+ * Store some dimension sizes and output data array sizes.
+ */
+  nx = dsizes_data_in[ndims_data_in-1];
+  ny = dsizes_data_in[ndims_data_in-2];
+  if(ndims_data_in > 2) {
+    nz = dsizes_data_in[ndims_data_in-3];
+  }
+  else {
+    nz = 1;
+  }
+  nobsicrs = dsizes_obsii[ndims_obsii-1];
+  nobsjcrs = dsizes_obsii[ndims_obsii-2];
+  nxyz     = nx * ny * nz;
+  nobsij   = nobsicrs * nobsjcrs;
+  nobsijz  = nobsij * nz;
+
+  size_data_out = size_leftmost * nobsijz;
+
+/* 
+ * Allocate space for coercing input arrays.  If the input data_in, obsii,
+ * or obsjj are already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ *
+ * The output type defaults to float, unless any of the input arrays
+ * are double.
+ */
+  type_data_out = NCL_float;
+  if(type_data_in != NCL_double) {
+    tmp_data_in = (double *)calloc(nxyz,sizeof(double));
+    if(tmp_data_in == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_data_out = NCL_double;
+  }
+
+  if(type_obsii != NCL_double) {
+    tmp_obsii = (double *)calloc(nobsij,sizeof(double));
+    if(tmp_obsii == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_data_out = NCL_double;
+  }
+
+  if(type_obsjj != NCL_double) {
+    tmp_obsjj = (double *)calloc(nobsij,sizeof(double));
+    if(tmp_obsjj == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_data_out = NCL_double;
+  }
+
+/*
+ * Allocate space for output array.
+ */ 
+  if(type_data_out == NCL_double) {
+    data_out = (double *)calloc(size_data_out,sizeof(double));
+    if(data_out == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    data_out     = (float *)calloc(size_data_out,sizeof(float));
+    tmp_data_out = (double *)calloc(nobsijz,sizeof(double));
+    if(tmp_data_out == NULL || data_out == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Create dimension sizes for output array.
+ */
+  dsizes_data_out = (int*)calloc(ndims_data_in,sizeof(int));  
+  if( dsizes_data_out == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 1; i < ndims_data_in-2; i++) dsizes_data_out[i] = dsizes_data_in[i];
+  dsizes_data_out[ndims_data_in-2] = nobsjcrs;
+  dsizes_data_out[ndims_data_in-1] = nobsicrs;
+/*
+ * Loop across leftmost dimensions and call the Fortran routine for each
+ * one-dimensional subsection.
+ */
+  index_data_in = index_data_out = index_nobsij = 0;
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of data_in (tmp_data_in) to double if necessary.
+ */
+    if(type_data_in != NCL_double) {
+      coerce_subset_input_double(data_in,tmp_data_in,index_data_in,
+                                 type_data_in,nxyz,0,NULL,NULL);
+    }
+    else {
+      tmp_data_in = &((double*)data_in)[index_data_in];
+    }
+/*
+ * Coerce subsection of obsii (tmp_obsii) to double if ncessary.
+ */
+    if(type_obsii != NCL_double) {
+      coerce_subset_input_double(obsii,tmp_obsii,index_nobsij,type_obsii,
+                                 nobsij,0,NULL,NULL);
+    }
+    else {
+      tmp_obsii = &((double*)obsii)[index_nobsij];
+    }
+
+/*
+ * Coerce subsection of obsjj (tmp_obsjj) to double if ncessary.
+ */
+    if(type_obsjj != NCL_double) {
+      coerce_subset_input_double(obsjj,tmp_obsjj,index_nobsij,type_obsjj,
+                                 nobsij,0,NULL,NULL);
+    }
+    else {
+      tmp_obsjj = &((double*)obsjj)[index_nobsij];
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_data_out == NCL_double) {
+      tmp_data_out = &((double*)data_out)[index_data_out];
+    }
+/*
+ * Call Fortran routine.
+ */
+    NGCALLF(dbint3d,DBINT3D)(tmp_data_out,tmp_obsii,tmp_obsjj,tmp_data_in,
+                             &nx,&ny,&nz,&nobsicrs,&nobsjcrs,icrs,jcrs);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_data_out == NCL_float) {
+      coerce_output_float_only(data_out,tmp_data_out,nobsijz,index_data_out);
+    }
+
+/*
+ * Increment indices.
+ */
+    index_data_in  += nxyz;
+    index_data_out += nobsijz;
+    index_nobsij   += nobsij;
+  }
+/*
+ * Free up memory.
+ */
+  if(type_data_in  != NCL_double) NclFree(tmp_data_in);
+  if(type_obsii    != NCL_double) NclFree(tmp_obsii);
+  if(type_obsjj    != NCL_double) NclFree(tmp_obsjj);
+  if(type_data_out != NCL_double) NclFree(tmp_data_out);
+
+  return(NclReturnValue(data_out,ndims_data_in,dsizes_data_out,NULL,
+                        type_data_out,0));
 }
 
