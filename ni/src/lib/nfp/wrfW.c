@@ -957,12 +957,17 @@ NhlErrorTypes wrf_bint_W( void )
 /*
  * Error checking.
  */
-  if(ndims_data_in < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The data_in array must have at least two dimensions");
+  if(ndims_data_in < 2 || ndims_obsii < 2 || ndims_obsjj < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The data_in, obsii, and obsjj arrays must have at least two dimensions");
     return(NhlFATAL);
   }
-  if(ndims_data_in != (ndims_obsii+1) || ndims_data_in != (ndims_obsjj+1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The data_in array must have one more dimension than the obsii, obsjj arrays");
+  if(ndims_obsii != ndims_obsjj) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The obsii and obsjj arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+  if((ndims_data_in == 2 && ndims_obsii != 2) || 
+     (ndims_data_in  > 2 && ndims_data_in != (ndims_obsii+1))) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_bint: The data_in, obsii, and obsjj arrays must all be two-dimensional, or data_in must be greater than two dimensions and have one more dimension than obsii and obsjj");
     return(NhlFATAL);
   }
   for(i = 0; i < ndims_obsii; i++) {
@@ -973,9 +978,9 @@ NhlErrorTypes wrf_bint_W( void )
   }
 
 /*
- * If data_in is greater than 3 dimensions (and, hence, obsii and obsjj
- * are greater than 2 dimensions), then check that these extra dimensions
- * are all the same length.
+ * If data_in is greater than 3 dimensions, then check that these
+ * extra dimensions are all the same length in the three input 
+ * arrays.
  *
  * While we're here, calculate the size of the leftmost dimensions.
  */
