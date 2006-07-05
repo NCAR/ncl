@@ -52,7 +52,7 @@ NhlErrorTypes rip_cape_3d_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, miy, mjx, mkzh, size_leftmost, size_cape, size_output, size_zsfc;
+  int i, miy, mjx, mkzh, ntime, size_cape, size_output, size_zsfc;
   int i3dflag=1, scalar_zsfc, index_cape, index_zsfc, index_cin;
 
 /*
@@ -216,19 +216,19 @@ NhlErrorTypes rip_cape_3d_W( void )
  * Get sizes of input arrays.
  */
   if(ndims_p == 4) {
-    size_leftmost = dsizes_p[0];  /* time */
-    mkzh = dsizes_p[1];           /* lev */
-    mjx  = dsizes_p[2];           /* nlat */
-    miy  = dsizes_p[3];           /* nlon */
+    ntime = dsizes_p[0];          /* time */
+    mkzh  = dsizes_p[1];          /* lev */
+    mjx   = dsizes_p[2];          /* nlat */
+    miy   = dsizes_p[3];          /* nlon */
   }
   else if(ndims_p == 3) {
-    size_leftmost = 1;
+    ntime = 1;
     mkzh = dsizes_p[0];           /* lev */
     mjx  = dsizes_p[1];           /* nlat */
     miy  = dsizes_p[2];           /* nlon */
   }
   else if(ndims_p == 1) {
-    size_leftmost = 1;
+    ntime = 1;
     mkzh = dsizes_p[0];           /* lev */
     mjx  = 1;                     /* nlat */
     miy  = 1;                     /* nlon */
@@ -249,7 +249,7 @@ NhlErrorTypes rip_cape_3d_W( void )
   }
   size_zsfc   = mjx * miy;
   size_cape   = mkzh * size_zsfc;
-  size_output = 2 * size_cape * size_leftmost;
+  size_output = 2 * size_cape * ntime;
 
 /* 
  * Allocate space for output arrays.  If any of the input is already double,
@@ -331,9 +331,9 @@ NhlErrorTypes rip_cape_3d_W( void )
  * Call the Fortran routine.
  */ 
   index_cape = index_zsfc = 0;
-  index_cin = size_leftmost * size_cape;
+  index_cin = ntime * size_cape;
 
-  for(i = 0; i < size_leftmost; i++) {
+  for(i = 0; i < ntime; i++) {
 /*
  * Coerce subset of input arrays to double if necessary.
  */
@@ -478,7 +478,7 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, miy, mjx, mkzh, size_leftmost, size_cape, size_output, size_zsfc;
+  int i, miy, mjx, mkzh, ntime, size_cape, size_output, size_zsfc;
   int size_left_zsfc, i3dflag=0, scalar_zsfc, index_cape, index_zsfc;
   int index_output_cape, index_output_cin, index_output_lcl;
   int index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
@@ -633,7 +633,7 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Store dimension sizes.
  */
-    size_leftmost = dsizes_p[0];  /* time */
+    ntime = dsizes_p[0];  /* time */
     mkzh = dsizes_p[1];           /* lev */
     mjx  = dsizes_p[2];           /* nlat */
     miy  = dsizes_p[3];           /* nlon */
@@ -647,7 +647,7 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Store dimension sizes.
  */
-    size_leftmost = 1;
+    ntime = 1;
     mkzh = dsizes_p[0];           /* lev */
     mjx  = dsizes_p[1];           /* nlat */
     miy  = dsizes_p[2];           /* nlon */
@@ -665,14 +665,14 @@ NhlErrorTypes rip_cape_2d_W( void )
   dsizes_cape[0]            = 4;    /* To hold the 4 different variables. */
   dsizes_cape[ndims_cape-1] = miy;
   dsizes_cape[ndims_cape-2] = mjx;
-  if(ndims_cape == 4) dsizes_cape[1] = size_leftmost;
+  if(ndims_cape == 4) dsizes_cape[1] = ntime;
 
   size_zsfc   = mjx * miy;
   size_cape   = mkzh * size_zsfc;
   mkzh0_index = (mkzh-1) * size_zsfc;    /* Indexes into cin array for   */
   mkzh1_index = (mkzh-2) * size_zsfc;    /* returning cin, lcl, and lfc. */
   mkzh2_index = (mkzh-3) * size_zsfc;
-  size_left_zsfc = size_zsfc * size_leftmost;
+  size_left_zsfc = size_zsfc * ntime;
   size_output = 4 * size_left_zsfc;
 
 /* 
@@ -756,7 +756,7 @@ NhlErrorTypes rip_cape_2d_W( void )
   index_output_lcl  = 2 * size_left_zsfc;
   index_output_lfc  = 3 * size_left_zsfc;
 
-  for(i = 0; i < size_leftmost; i++) {
+  for(i = 0; i < ntime; i++) {
 /*
  * Coerce subset of input arrays to double if necessary.
  */
