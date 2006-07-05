@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.116 2006-05-26 15:44:15 shea Exp $
+;      $Id: contributed.ncl,v 1.117 2006-07-05 17:29:22 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8211,3 +8211,42 @@ begin
   return (trows($dimNames(1)$|:,$dimNames(0)$|:) )
 end
 
+;****************************************************************
+; D Shea
+; requires NCL version a034 or later
+;
+; Get the indicies [subscripts] of the 2D lat/lon arrays
+; closest to each LAT/LON coordinate pair.
+;
+function getind_latlon2d(lat2d[*][*]:numeric,lon2d[*][*]:numeric \
+                        ,LAT[*]:numeric, LON[*]:numeric)
+local N, ij, lat1d, lon1d, dist, mndist, indx
+begin
+  N  = dimsizes( LAT )          
+  ij = new ( (/N,2/) , "integer")
+
+  lat1d  = ndtooned( lat2d )  
+  lon1d  = ndtooned( lon2d )  
+  n2d    = dimsizes( lat2d )    
+
+  do n=0,N-1
+     dist   = gc_latlon(LAT(n),LON(n),lat1d,lon1d, 2,2)
+     mndist = min( dist )
+     ind1d  = ind(dist.eq.mndist)
+     if (.not.ismissing(ind1d)) then
+         ij(n,:) = ind_resolve( ind1d(0), n2d )
+     else
+         print("getind_latlon2d: lat="+ LAT(n)+"  lon="+ LON(n)+" problem")
+     end if
+
+     delete(mndist)
+     delete(ind1d)
+  end do
+  ij@long_name = "indicies closest to specified LAT/LON coordinate pairs"
+
+  if (.not.any(ismissing(ij))) then
+      delete(ij@_FillValue)
+  end if
+     
+  return( ij )
+end
