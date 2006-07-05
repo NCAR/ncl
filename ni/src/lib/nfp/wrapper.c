@@ -64,6 +64,7 @@ extern NhlErrorTypes wrf_rh_W(void);
 extern NhlErrorTypes wrf_slp_W(void);
 extern NhlErrorTypes wrf_interp_3dz_W(void);
 extern NhlErrorTypes wrf_bint_W(void);
+extern NhlErrorTypes wrf_maptform_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
 extern NhlErrorTypes gaus_lobat_wgt_W(void);
@@ -1210,6 +1211,31 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(wrf_bint_W,args,"wrf_bint",nargs);
+/*
+ * Register "wrf_maptform".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(13);
+
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterProc(wrf_maptform_W,args,"wrf_maptform",nargs);
 /*
  * Register "cape_thermo".
  *

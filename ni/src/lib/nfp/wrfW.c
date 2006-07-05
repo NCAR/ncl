@@ -19,6 +19,9 @@ extern void NGCALLF(dbint3d,DBINT3D)(double *,double *,double *, double *,
                                      int *, int *, int *);
 
 
+extern void NGCALLF(dmaptform,DMAPTFORM)(double *,int *,int *, int *, double *,
+                                         double *,double *,double *,double *,
+                                         double *,double *,double *,int *);
 
 NhlErrorTypes wrf_tk_W( void )
 {
@@ -1161,5 +1164,191 @@ NhlErrorTypes wrf_bint_W( void )
 
   return(NclReturnValue(data_out,ndims_data_in,dsizes_data_out,NULL,
                         type_data_out,0));
+}
+
+NhlErrorTypes wrf_maptform_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *dskmc, *xlatc, *xlonc, *riy, *rjx, *rlat, *rlon, *true1, *true2;
+  double *tmp_dskmc, *tmp_xlatc, *tmp_xlonc, *tmp_riy, *tmp_rjx;
+  double *tmp_rlat, *tmp_rlon, *tmp_true1, *tmp_true2;
+  int *miycors, *mjxcors, *nproj, *idir;
+
+  NclBasicDataTypes type_dskmc, type_xlatc, type_xlonc, type_riy, type_rjx;
+  NclBasicDataTypes type_rlat, type_rlon, type_true1, type_true2;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  dskmc = (void*)NclGetArgValue(
+           0,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_dskmc,
+           2);
+
+  miycors = (int*)NclGetArgValue(
+           1,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+  mjxcors = (int*)NclGetArgValue(
+           2,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+  nproj = (int*)NclGetArgValue(
+           3,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+  xlatc = (void*)NclGetArgValue(
+           4,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_xlatc,
+           2);
+
+  xlonc = (void*)NclGetArgValue(
+           5,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_xlonc,
+           2);
+
+  riy = (void*)NclGetArgValue(
+           6,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_riy,
+           2);
+
+  rjx = (void*)NclGetArgValue(
+           7,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_rjx,
+           2);
+
+  idir = (int*)NclGetArgValue(
+           8,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+  rlat = (void*)NclGetArgValue(
+           9,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_rlat,
+           2);
+
+  rlon = (void*)NclGetArgValue(
+           10,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_rlon,
+           2);
+
+  true1 = (void*)NclGetArgValue(
+           11,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_true1,
+           2);
+
+  true2 = (void*)NclGetArgValue(
+           12,
+           13,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_true2,
+           2);
+
+/* 
+ * Coerce void input arrays to double if necessary.
+ */
+  coerce_input_double(dskmc, type_dskmc, 1, 0, NULL, NULL);
+  coerce_input_double(xlatc, type_xlatc, 1, 0, NULL, NULL);
+  coerce_input_double(xlonc, type_xlonc, 1, 0, NULL, NULL);
+  coerce_input_double(riy,   type_riy,   1, 0, NULL, NULL);
+  coerce_input_double(rjx,   type_rjx,   1, 0, NULL, NULL);
+  coerce_input_double(rlat,  type_rlat,  1, 0, NULL, NULL);
+  coerce_input_double(rlon,  type_rlon,  1, 0, NULL, NULL);
+  coerce_input_double(true1, type_true1, 1, 0, NULL, NULL);
+  coerce_input_double(true2, type_true2, 1, 0, NULL, NULL);
+
+/*
+ * Call Fortran routine.
+ */
+    NGCALLF(dmaptform,DMAPTFORM)(tmp_dskmc,miycors,mjxcors,nproj,tmp_xlatc,
+                                 tmp_xlonc,tmp_true1,tmp_true2,tmp_riy,
+                                 tmp_rjx,tmp_rlat,tmp_rlon,idir); 
+
+
+/*
+ * Free up memory.
+ */
+  if(type_dskmc != NCL_double) NclFree(tmp_dskmc);
+  if(type_xlatc != NCL_double) NclFree(tmp_xlatc);
+  if(type_xlonc != NCL_double) NclFree(tmp_xlonc);
+  if(  type_riy != NCL_double) NclFree(tmp_riy);
+  if(  type_rjx != NCL_double) NclFree(tmp_rjx);
+  if( type_rlat != NCL_double) NclFree(tmp_rlat);
+  if( type_rlon != NCL_double) NclFree(tmp_rlon);
+  if(type_true1 != NCL_double) NclFree(tmp_true1);
+  if(type_true2 != NCL_double) NclFree(tmp_true2);
+
+  return(NhlNOERROR);
 }
 
