@@ -1087,6 +1087,228 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 }
 
 
+NhlErrorTypes wrf_interp_1d_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *v_in, *z_in, *z_out;
+  double *tmp_v_in, *tmp_z_in, *tmp_z_out;
+  int ndims_v_in, ndims_z_in, ndims_z_out;
+  int dsizes_v_in[NCL_MAX_DIMENSIONS], dsizes_z_in[NCL_MAX_DIMENSIONS];
+  int dsizes_z_out[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_v_in, type_z_in, type_z_out;
+
+/*
+ * Output variable.
+ */
+  void *v_out;
+  double *tmp_v_out;
+  int *dsizes_v_out, size_v_out;
+  NclBasicDataTypes type_v_out;
+/*
+ * Various
+ */
+  int i, nz_in, nz_out, size_leftmost, index_v_in, index_v_out;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+  v_in = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_v_in,
+           dsizes_v_in,
+           NULL,
+           NULL,
+           &type_v_in,
+           2);
+
+  z_in = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_z_in,
+           dsizes_z_in,
+           NULL,
+           NULL,
+           &type_z_in,
+           2);
+
+  z_out = (void*)NclGetArgValue(
+           2,
+           3,
+           &ndims_z_out,
+           dsizes_z_out,
+           NULL,
+           NULL,
+           &type_z_out,
+           2);
+
+/*
+ * Error checking.
+ */
+  if(ndims_v_in != ndims_z_in || ndims_v_in != ndims_z_out) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The v_in, z_in, and z_out arrays must be the same number of dimensions");
+    return(NhlFATAL);
+  }
+/*
+ * Calculate leftmost dimensions, if any and check their sizes.
+ */
+  size_leftmost = 1;
+  for(i = 0; i < ndims_v_in; i++ ) {
+    if(dsizes_v_in[ndims_z_in-1] != dsizes_z_in[i] || 
+       dsizes_v_in[ndims_z_in-1] != dsizes_z_out[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The input arrays must be the same dimensionality");
+      return(NhlFATAL);
+    }
+    if(i != (ndims_v_in-1)) size_leftmost *= dsizes_v_in[i];
+  }
+
+  nz_in  = dsizes_v_in[ndims_v_in-1];
+  nz_out = dsizes_z_out[ndims_z_out-1];
+
+  size_v_out = size_leftmost * nz_out;
+
+/* 
+ * Allocate space for coercing input arrays.  If the input arrays
+ * are already double, then we don't need to allocate space for the
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ *
+ * The output type defaults to float, unless any of the two input arrays
+ * are double.
+ */
+  type_v_out = NCL_float;
+  if(type_v_in != NCL_double) {
+    tmp_v_in = (double *)calloc(nz_in,sizeof(double));
+    if(tmp_v_in == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_v_out = NCL_double;
+  }
+  if(type_z_in != NCL_double) {
+    tmp_z_in = (double *)calloc(nz_in,sizeof(double));
+    if(tmp_z_in == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_v_out = NCL_double;
+  }
+
+  if(type_z_out != NCL_double) {
+    tmp_z_out = (double *)calloc(nz_out,sizeof(double));
+    if(tmp_z_out == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_v_out = NCL_double;
+  }
+
+/*
+ * Allocate space for output array.
+ */ 
+  if(type_v_out == NCL_double) {
+    v_out = (double *)calloc(size_v_out,sizeof(double));
+    if(v_out == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    v_out     = (float *)calloc(size_v_out,sizeof(float));
+    tmp_v_out = (double *)calloc(nz_out,sizeof(double));
+    if(tmp_v_out == NULL || v_out == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+/*
+ * Set dimension sizes for output array.
+ */
+  dsizes_v_out = (int*)calloc(ndims_z_out,sizeof(int));  
+  if( dsizes_v_out == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 1; i < ndims_z_out; i++) dsizes_v_out[i] = dsizes_z_out[i];
+
+/*
+ * Loop across leftmost dimensions and call the Fortran routine
+ * for reach one-dimensional subsection.
+ */
+  index_v_out = index_v_in = 0;
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of v_in (tmp_v_in) to double if necessary.
+ */
+    if(type_v_in != NCL_double) {
+      coerce_subset_input_double(v_in,tmp_v_in,index_v_in,type_v_in,nz_in,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_v_in = &((double*)v_in)[index_v_in];
+    }
+/*
+ * Coerce subsection of z_in (tmp_z_in) to double if necessary.
+ */
+    if(type_z_in != NCL_double) {
+      coerce_subset_input_double(z_in,tmp_z_in,index_v_in,type_z_in,nz_in,0,NULL,NULL);
+    }
+    else {
+      tmp_z_in = &((double*)z_in)[index_v_in];
+    }
+
+/*
+ * Coerce subsection of z_out (tmp_z_out) to double if necessary.
+ */
+    if(type_z_out != NCL_double) {
+      coerce_subset_output_double(z_out,tmp_z_out,index_v_out,type_z_out,nz_out,0,NULL,NULL);
+    }
+    else {
+      tmp_z_out = &((double*)z_out)[index_v_out];
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_v_out == NCL_double) tmp_v_out = &((double*)v_out)[index_v_out];
+/*
+ * Call Fortran routine.
+ */
+    NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&nz_in,
+                                 &nz_out);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_v_out == NCL_float) {
+      coerce_output_float_only(v_out,tmp_v_out,nz_out,index_v_out);
+    }
+
+    index_v_in  += nz_in;
+    index_v_out += nz_out;
+  }
+/*
+ * Free up memory.
+ */
+  if(type_v_in != NCL_double) NclFree(tmp_v_in);
+  if(type_z_in  != NCL_double) NclFree(tmp_z_in);
+  if(type_z_out != NCL_double) NclFree(tmp_z_out);
+  if(type_v_out != NCL_double) NclFree(tmp_v_out);
+
+  return(NclReturnValue(v_out,ndims_z_out,dsizes_v_out,NULL,type_v_out,0));
+}
+
 NhlErrorTypes wrf_bint_W( void )
 {
 /*
