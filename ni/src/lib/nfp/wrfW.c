@@ -1154,11 +1154,17 @@ NhlErrorTypes wrf_interp_1d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The v_in, z_in, and z_out arrays must be the same number of dimensions");
     return(NhlFATAL);
   }
+  nz_in  = dsizes_v_in[ndims_v_in-1];
+  nz_out = dsizes_z_out[ndims_z_out-1];
+  if(dsizes_z_in[ndims_z_in-1] != nz_in) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The rightmost dimesion of v_in and z_in must be the same");
+    return(NhlFATAL);
+  }
 /*
  * Calculate leftmost dimensions, if any and check their sizes.
  */
   size_leftmost = 1;
-  for(i = 0; i < ndims_v_in; i++ ) {
+  for(i = 0; i < ndims_v_in-1; i++ ) {
     if(dsizes_v_in[ndims_z_in-1] != dsizes_z_in[i] || 
        dsizes_v_in[ndims_z_in-1] != dsizes_z_out[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The input arrays must be the same dimensionality");
@@ -1166,9 +1172,6 @@ NhlErrorTypes wrf_interp_1d_W( void )
     }
     if(i != (ndims_v_in-1)) size_leftmost *= dsizes_v_in[i];
   }
-
-  nz_in  = dsizes_v_in[ndims_v_in-1];
-  nz_out = dsizes_z_out[ndims_z_out-1];
 
   size_v_out = size_leftmost * nz_out;
 
