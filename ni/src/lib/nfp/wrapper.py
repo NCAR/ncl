@@ -98,7 +98,7 @@ valid = False
 while not valid:
   ncl_name     = raw_input("\nEnter NCL name of your " + wrapper_type + ": ")
   if ncl_name == "":
-    print "Invalid name for NCL function, reenter"
+    print "Invalid name for NCL function or procedure, reenter"
   else:
     valid = True
 
@@ -452,38 +452,46 @@ if debug:
 #
 #---------------------------------------------------------------------
 
-print 'I will be creating the file file ' + wrapper_name + '.c'
+print 'I will be creating the files ' + wrapper_name + '.c and ' + \
+      'wrapper_' + ncl_name + '.c.'
+print 'The contents of wrapper_' + ncl_name + '.c should be copied over to wrapper.c.'
+
 okay = raw_input("Is this okay? (y/n) [y] ")
 if (lower(okay) == "n"):
   print "Bye!"
   sys.exit()
 
 #
-# Open the file.
+# Open the files. The first one (w1file) is for actually wrapping the
+# Fortran code, and the second one (w2file) is for registering the
+# function or procedure. The second file is for temporary use only: you
+# should copy its contents to "wrapper.c" where all the built-in 
+# functions and procedures are registered.
 #
-wfile = open(wrapper_name+'.c','w')
+w1file = open(wrapper_name+'.c','w')
+w2file = open('wrapper_' + wrapper_name+'.c','w')
 
 #
-# Start writing information to it.
+# Start writing information to the main wrapper code.
 #
-wfile.write('#include <stdio.h>\n')
-wfile.write('#include "wrapper.h"\n\n')
+w1file.write('#include <stdio.h>\n')
+w1file.write('#include "wrapper.h"\n\n')
 
-wfile.write("extern void NGCALLF("+ lower(fortran_name) + "," +
+w1file.write("extern void NGCALLF("+ lower(fortran_name) + "," +
              upper(fortran_name) + ")(")
 for i in range(len(farg_types)):
   if i == 0:
-    wfile.write(ctypes[farg_types[i]] + " *")
+    w1file.write(ctypes[farg_types[i]] + " *")
   else:
-    wfile.write(", " + ctypes[farg_types[i]] + " *")
-wfile.write(");\n\n")
+    w1file.write(", " + ctypes[farg_types[i]] + " *")
+w1file.write(");\n\n")
 
-wfile.write("NhlErrorTypes " + ncl_name + "_W( void )\n{\n")
+w1file.write("NhlErrorTypes " + ncl_name + "_W( void )\n{\n")
 
 #
 # Write the argument information.
 #
-wfile.write("""
+w1file.write("""
 /*
  * Input variables
  */
@@ -496,18 +504,18 @@ wfile.write("""
 # associated with it.
 #
 for i in range(len(args)):
-  wfile.write("/*\n")
-  wfile.write(" * Argument # " + str(i) + "\n")
-  wfile.write(" */\n")
+  w1file.write("/*\n")
+  w1file.write(" * Argument # " + str(i) + "\n")
+  w1file.write(" */\n")
 
-  wfile.write("  " + args[i].ctype + " *" + args[i].name + ";\n")
+  w1file.write("  " + args[i].ctype + " *" + args[i].name + ";\n")
   if args[i].ntype == "numeric":
-    wfile.write("  double *tmp_" + args[i].name + ";\n")
+    w1file.write("  double *tmp_" + args[i].name + ";\n")
 #
 # Write out dimension information.
 #
   if args[i].ndims == 0:
-    wfile.write("  int ndims_" + args[i].name + ", dsizes_" + args[i].name + \
+    w1file.write("  int ndims_" + args[i].name + ", dsizes_" + args[i].name + \
                 "[NCL_MAX_DIMENSIONS];\n")
   else:
 #
@@ -515,13 +523,13 @@ for i in range(len(args)):
 # is unknown (represented by being set to '0').
 #
     if 0 in args[i].dsizes:
-      wfile.write("  int dsizes_" + args[i].name + "[" + str(args[i].ndims) + "];\n")
+      w1file.write("  int dsizes_" + args[i].name + "[" + str(args[i].ndims) + "];\n")
 
 #
 # Include a type variable for each variable that is numeric.
 #
   if args[i].ntype == "numeric":
-    wfile.write("  NclBasicDataTypes type_" + args[i].name + ";\n\n")
+    w1file.write("  NclBasicDataTypes type_" + args[i].name + ";\n\n")
 
 if isfunc:
 #---------------------------------------------------------------------
@@ -529,59 +537,59 @@ if isfunc:
 # Write out return variable information
 #
 #---------------------------------------------------------------------
-  wfile.write("/*\n")
-  wfile.write(" * Return variable\n")
-  wfile.write(" */\n")
+  w1file.write("/*\n")
+  w1file.write(" * Return variable\n")
+  w1file.write(" */\n")
 
-  wfile.write("  " + ret_arg.ctype + " *" + ret_arg.name + ";\n")
+  w1file.write("  " + ret_arg.ctype + " *" + ret_arg.name + ";\n")
   if ret_arg.ntype == "numeric":
-    wfile.write("  double *tmp_" + ret_arg.name + ";\n")
+    w1file.write("  double *tmp_" + ret_arg.name + ";\n")
 #
 # Write out dimension information.
 #
-wfile.write("  int ndims_" + ret_arg.name + ", *dsizes_" + ret_arg.name + \
+w1file.write("  int ndims_" + ret_arg.name + ", *dsizes_" + ret_arg.name + \
             ";\n")
 
 #
 # Include a type variable.
 #
-wfile.write("  NclBasicDataTypes type_" + ret_arg.name + ";\n\n")
+w1file.write("  NclBasicDataTypes type_" + ret_arg.name + ";\n\n")
 
 #---------------------------------------------------------------------
 # Declare other variables
 #---------------------------------------------------------------------
-wfile.write("""
+w1file.write("""
 /*
  * Various
  */
 """)
 if global_dsizes_names != []:
-  wfile.write("  int ")
+  w1file.write("  int ")
 #
 # Write the various dimension size variables we've been collecting.
 #
   for i in range(len(global_dsizes_names)):
     if i == (len(global_dsizes_names)-1):
-      wfile.write(global_dsizes_names[i] + ";\n")
+      w1file.write(global_dsizes_names[i] + ";\n")
     else:
-      wfile.write(global_dsizes_names[i] + ", ")
+      w1file.write(global_dsizes_names[i] + ", ")
 #
 # For any variable that has leftmost dimensions, we need a corresponding
 # "index_xxx" variable.
 #
-  wfile.write("  int ")
+  w1file.write("  int ")
   for i in range(len(index_names)):
     if i == (len(index_names)-1):
-      wfile.write(index_names[i] + ";\n")
+      w1file.write(index_names[i] + ";\n")
     else:
-      wfile.write(index_names[i] + ", ")
+      w1file.write(index_names[i] + ", ")
 
 if have_leftmost:
-  wfile.write("  int i, ndims_leftmost, size_leftmost, size_output;\n")
+  w1file.write("  int i, ndims_leftmost, size_leftmost, size_output;\n")
 else:
-  wfile.write("  int i, size_output;\n")
+  w1file.write("  int i, size_output;\n")
   
-wfile.write("""
+w1file.write("""
 /*
  * Retrieve parameters.
  *
@@ -597,50 +605,50 @@ wfile.write("""
 global_dsizes_names_accum = []
 
 for i in range(len(args)):
-  wfile.write("/*\n")
-  wfile.write(" * Get argument # " + str(i) + "\n")
-  wfile.write(" */\n")
-  wfile.write("  " + args[i].name + " = (" + args[i].ctype + \
+  w1file.write("/*\n")
+  w1file.write(" * Get argument # " + str(i) + "\n")
+  w1file.write(" */\n")
+  w1file.write("  " + args[i].name + " = (" + args[i].ctype + \
               "*)NclGetArgValue(\n")
 
-  wfile.write("           " + str(i) + ",\n")
-  wfile.write("           " + str(len(args)) + ",\n")
+  w1file.write("           " + str(i) + ",\n")
+  w1file.write("           " + str(len(args)) + ",\n")
   if args[i].ndims == 0:
-    wfile.write("           &ndims_" + args[i].name + ",\n")
+    w1file.write("           &ndims_" + args[i].name + ",\n")
   else:
-    wfile.write("           NULL,\n")
+    w1file.write("           NULL,\n")
 
   if (args[i].ndims == 0) or (0 in args[i].dsizes):
-    wfile.write("           dsizes_" + args[i].name + ",\n")
+    w1file.write("           dsizes_" + args[i].name + ",\n")
   else:
-    wfile.write("           NULL,\n")
+    w1file.write("           NULL,\n")
 #
 # These are for the missing values, which we are not handling yet.
 #
-  wfile.write("           NULL,\n")
-  wfile.write("           NULL,\n")
+  w1file.write("           NULL,\n")
+  w1file.write("           NULL,\n")
 
   if args[i].ntype == "numeric":
-    wfile.write("           &type_" + args[i].name + ",\n")
+    w1file.write("           &type_" + args[i].name + ",\n")
 
-  wfile.write("           2);\n")
+  w1file.write("           2);\n")
 
 #
 # Code for doing some minimal error checking.
 #
   if args[i].min_ndims > 0:
-    wfile.write("""
+    w1file.write("""
 /*
  * Check dimension sizes.
  */
 """)
-    wfile.write("  if(ndims_" + args[i].name + " < " + \
+    w1file.write("  if(ndims_" + args[i].name + " < " + \
                 str(args[i].min_ndims) + ") {\n")
-    wfile.write(fatal_str + 'The ' + args[i].name + \
+    w1file.write(fatal_str + 'The ' + args[i].name + \
                 ' array must have at least ' + str(args[i].min_ndims) + \
                 ' dimensions");\n')
-    wfile.write(return_fatal_str)
-    wfile.write('  }\n')
+    w1file.write(return_fatal_str)
+    w1file.write('  }\n')
 
     if args[i].min_ndims > 1: 
       dstr = "  " + args[i].dsizes_names_str + " = " + args[i].dsizes_names[0]
@@ -653,21 +661,21 @@ for i in range(len(args)):
         dstr = dstr + " * " + args[i].dsizes_names[j]
 
       if i == 0 or not args[i].dsizes_names[j] in global_dsizes_names_accum:
-        wfile.write('  ' + args[i].dsizes_names[j] + ' = dsizes_' + \
+        w1file.write('  ' + args[i].dsizes_names[j] + ' = dsizes_' + \
                     args[i].name + '[ndims_' + args[i].name + '-' + 
                     str(j+1) + '];\n\n')
         global_dsizes_names_accum.append(args[i].dsizes_names[j])
       else:
-        wfile.write('  if(dsizes_' + args[i].name + '[ndims_' + 
+        w1file.write('  if(dsizes_' + args[i].name + '[ndims_' + 
                     args[i].name + '-' + str(j+1) + '] != ' + \
                     args[i].dsizes_names[j] + ') {\n')
-        wfile.write(fatal_str + 'The ndims-' + str(j+1) + ' argument of ' + \
+        w1file.write(fatal_str + 'The ndims-' + str(j+1) + ' argument of ' + \
                     args[i].name + ' must be of length ' + \
                     args[i].dsizes_names[j] + '");\n')
-        wfile.write(return_fatal_str)
-        wfile.write('  }\n')
+        w1file.write(return_fatal_str)
+        w1file.write('  }\n')
     if args[i].min_ndims > 1: 
-      wfile.write(dstr + ";\n\n")
+      w1file.write(dstr + ";\n\n")
 
 #
 # Code to calculate size of leftmost dimensions, if any.
@@ -677,14 +685,14 @@ name_str = ""
 for i in range(len(args)):
   if args[i].min_ndims > 0:
     if first:
-      wfile.write("""
+      w1file.write("""
 /*
  * Calculate size of leftmost dimensions.
  */
 """)
-      wfile.write("  size_leftmost  = 1;\n")
-      wfile.write("  ndims_leftmost = 0;\n")
-      wfile.write("  for(i = 0; i < ndims_" + args[i].name + "-" + \
+      w1file.write("  size_leftmost  = 1;\n")
+      w1file.write("  ndims_leftmost = 0;\n")
+      w1file.write("  for(i = 0; i < ndims_" + args[i].name + "-" + \
                   str(args[i].min_ndims) + "; i++) {\n")
 
       first_arg_name = args[i].name       # Keep track of this argument
@@ -693,31 +701,31 @@ for i in range(len(args)):
       second         = True
     else:
       if second:
-        wfile.write("    if(dsizes_" + args[i].name + "[i] != dsizes_" + \
+        w1file.write("    if(dsizes_" + args[i].name + "[i] != dsizes_" + \
                     first_arg_name + "[i]")
         name_str      = prev_arg_name
         prev_arg_name = args[i].name
         second        = False
       else:
         name_str = name_str + ", " + prev_arg_name
-        wfile.write(" ||\n       dsizes_" + args[i].name + "[i] != dsizes_" + \
+        w1file.write(" ||\n       dsizes_" + args[i].name + "[i] != dsizes_" + \
                     first_arg_name + "[i]")
         prev_arg_name = args[i].name
 #
 # Close up leftmost dimensions loop.
 #
 if name_str != "":
-  wfile.write(") {\n")
-  wfile.write('  ' + fatal_str + 'The leftmost dimensions of ' + \
+  w1file.write(") {\n")
+  w1file.write('  ' + fatal_str + 'The leftmost dimensions of ' + \
               name_str + ' and ' + prev_arg_name + \
               ' must be the same");\n')
-  wfile.write('  ' + return_fatal_str)
-  wfile.write('    }\n')
+  w1file.write('  ' + return_fatal_str)
+  w1file.write('    }\n')
 
 if not first:
-  wfile.write("    size_leftmost *= dsizes_" + first_arg_name + "[i];\n")
-  wfile.write("    ndims_leftmost++;\n")
-  wfile.write("  }\n\n")
+  w1file.write("    size_leftmost *= dsizes_" + first_arg_name + "[i];\n")
+  w1file.write("    ndims_leftmost++;\n")
+  w1file.write("  }\n\n")
 
 #---------------------------------------------------------------------
 # Code to allocate space for coercing input arrays, if any of them
@@ -732,7 +740,7 @@ for i in range(len(args)):
   if args[i].ntype == "numeric":
     if first:
       first = False
-      wfile.write("""
+      w1file.write("""
 /* 
  * Allocate space for coercing input arrays.  If any of the input
  * is already double, then we don't need to allocate space for
@@ -745,46 +753,46 @@ for i in range(len(args)):
 # on whether any of the input is double or not.
 #---------------------------------------------------------------------
 
-        wfile.write(""" *
+        w1file.write(""" *
  * The output type defaults to float, unless any of the input arrays
  * are double.
  */
 """)
-        wfile.write("  type_" + ret_arg.name + " = NCL_float;\n")
+        w1file.write("  type_" + ret_arg.name + " = NCL_float;\n")
       else:
-        wfile.write(" */\n")
+        w1file.write(" */\n")
 
 #---------------------------------------------------------------------
 # If input is not already double, then we'll need to allocate a
 # temporary array to coerce it to double.
 #---------------------------------------------------------------------
-    wfile.write("/*\n")
-    wfile.write(" * Allocate space for tmp_" + args[i].name + ".\n")
-    wfile.write(" */\n")
+    w1file.write("/*\n")
+    w1file.write(" * Allocate space for tmp_" + args[i].name + ".\n")
+    w1file.write(" */\n")
 
-    wfile.write("  if(type_" + name + " != NCL_double) {\n")
+    w1file.write("  if(type_" + name + " != NCL_double) {\n")
     if args[i].min_ndims > 0:
-      wfile.write("    tmp_" + name + " = (double *)calloc(" + \
+      w1file.write("    tmp_" + name + " = (double *)calloc(" + \
                   args[i].dsizes_names_str + ",sizeof(double));\n")
     else:
-      wfile.write("    tmp_" + name + " = coerce_input_double(" + \
+      w1file.write("    tmp_" + name + " = coerce_input_double(" + \
                   name + ",type_" + name + \
                   ",...need input here,0,NULL,NULL);\n")
 
-    wfile.write("    if(tmp_" + name + " == NULL) {\n")
-    wfile.write('  ' + fatal_str + \
+    w1file.write("    if(tmp_" + name + " == NULL) {\n")
+    w1file.write('  ' + fatal_str + \
                 'Unable to allocate memory for coercing input array to double");\n')
-    wfile.write("  " + return_fatal_str)
-    wfile.write("    }\n")
-    wfile.write("  }\n")
+    w1file.write("  " + return_fatal_str)
+    w1file.write("    }\n")
+    w1file.write("  }\n")
 
     if isfunc and ret_arg.ntype == "numeric":
 #---------------------------------------------------------------------
 # If input is double, then output type should be set to double.
 #---------------------------------------------------------------------
-      wfile.write("  else {\n")
-      wfile.write("    type_" + ret_arg.name + " = NCL_double;\n")
-      wfile.write("  }\n")
+      w1file.write("  else {\n")
+      w1file.write("    type_" + ret_arg.name + " = NCL_double;\n")
+      w1file.write("  }\n")
 
 #---------------------------------------------------------------------
 # Code to handle allocating space for output array and its dimension
@@ -796,7 +804,7 @@ if isfunc:
 #----------------------------------------------------------------------
 # Code to calculate size of output array.
 #----------------------------------------------------------------------
-  wfile.write("""
+  w1file.write("""
 /*
  * Calculate size of output array.
  */
@@ -815,66 +823,66 @@ if isfunc:
         ret_dstr = ret_dstr + " * " + ret_arg.dsizes_names[j]
 
     if ret_arg.min_ndims > 1: 
-      wfile.write(ret_dstr + ";\n")
+      w1file.write(ret_dstr + ";\n")
 
-    wfile.write("  size_output = size_leftmost * " + \
+    w1file.write("  size_output = size_leftmost * " + \
                 ret_arg.dsizes_names_str + ";\n")
   else:
-    wfile.write("  size_output = ...need input here...;\n")
+    w1file.write("  size_output = ...need input here...;\n")
 
-  wfile.write("""
+  w1file.write("""
 /* 
  * Allocate space for output array.
  */
 """)
   if ret_arg.ntype == "numeric":
-    wfile.write("  if(type_" + ret_arg.name + " != NCL_double) {\n")
-    wfile.write("    " + ret_arg.name + " = (void *)calloc(size_output, " + \
+    w1file.write("  if(type_" + ret_arg.name + " != NCL_double) {\n")
+    w1file.write("    " + ret_arg.name + " = (void *)calloc(size_output, " + \
                   "sizeof(float));\n")
     if ret_arg.min_ndims > 0:
-      wfile.write("    tmp_" + ret_arg.name + " = (double *)calloc(" + \
+      w1file.write("    tmp_" + ret_arg.name + " = (double *)calloc(" + \
                   ret_arg.dsizes_names_str + ",sizeof(double));\n")
     else:
-      wfile.write("    tmp_" + ret_arg.name + \
+      w1file.write("    tmp_" + ret_arg.name + \
         " = (double *)calloc(...need input here...,sizeof(double));\n")
 
-    wfile.write("    if(tmp_" + ret_arg.name + " == NULL) {\n")
-    wfile.write('  ' + fatal_str + \
+    w1file.write("    if(tmp_" + ret_arg.name + " == NULL) {\n")
+    w1file.write('  ' + fatal_str + \
                 'Unable to allocate memory for temporary output array");\n')
-    wfile.write("  " + return_fatal_str)
-    wfile.write("    }\n")
+    w1file.write("  " + return_fatal_str)
+    w1file.write("    }\n")
 
-    wfile.write("  }\n")
-    wfile.write("  else {\n")
-    wfile.write("    " + ret_arg.name + " = (void *)calloc(size_output, " + \
+    w1file.write("  }\n")
+    w1file.write("  else {\n")
+    w1file.write("    " + ret_arg.name + " = (void *)calloc(size_output, " + \
                   "sizeof(double));\n")
-    wfile.write("  }\n")
+    w1file.write("  }\n")
   else :
-    wfile.write("    " + ret_arg.name + " = (" + ret_arg.ctype + \
+    w1file.write("    " + ret_arg.name + " = (" + ret_arg.ctype + \
                 "*)calloc(size_output, sizeof(" + ret_arg.ctype + "));\n")
 
-  wfile.write("  if(" + ret_arg.name + " == NULL) {\n")
-  wfile.write(fatal_str + 'Unable to allocate memory for output array");\n')
-  wfile.write(return_fatal_str)
-  wfile.write("  }\n")
+  w1file.write("  if(" + ret_arg.name + " == NULL) {\n")
+  w1file.write(fatal_str + 'Unable to allocate memory for output array");\n')
+  w1file.write(return_fatal_str)
+  w1file.write("  }\n")
 
-  wfile.write("""
+  w1file.write("""
 /* 
  * Allocate space for output dimension sizes and set them.
  */
 """)
   if ret_arg.ndims > 0:
-    wfile.write("  ndims_" + ret_arg.name + " = " + str(ret_arg.ndims) + ";\n")
+    w1file.write("  ndims_" + ret_arg.name + " = " + str(ret_arg.ndims) + ";\n")
   else:
-    wfile.write("  ndims_" + ret_arg.name + " = ndims_leftmost + " + \
+    w1file.write("  ndims_" + ret_arg.name + " = ndims_leftmost + " + \
                 str(ret_arg.min_ndims) + ";\n")
-  wfile.write("  dsizes_" + ret_arg.name + " = (int*)calloc(ndims_" + \
+  w1file.write("  dsizes_" + ret_arg.name + " = (int*)calloc(ndims_" + \
               ret_arg.name + ",sizeof(int));  \n")
-  wfile.write("  if( dsizes_" + ret_arg.name + " == NULL ) {\n")
-  wfile.write(fatal_str + \
+  w1file.write("  if( dsizes_" + ret_arg.name + " == NULL ) {\n")
+  w1file.write(fatal_str + \
                'Unable to allocate memory for holding dimension sizes");\n')
-  wfile.write(return_fatal_str)
-  wfile.write("  }\n")
+  w1file.write(return_fatal_str)
+  w1file.write("  }\n")
   if ret_arg.min_ndims > 0:
 #
 # Loop through input arguments until we find one that has leftmost
@@ -883,27 +891,27 @@ if isfunc:
 #
     for i in range(len(args)):
       if args[i].min_ndims > 0:
-        wfile.write("  for(i = 0; i < ndims_" + ret_arg.name + "-" + \
+        w1file.write("  for(i = 0; i < ndims_" + ret_arg.name + "-" + \
                     str(ret_arg.min_ndims) + "; i++) dsizes_" + \
                     ret_arg.name + "[i] = dsizes_" + args[i].name + "[i];\n")
         break
     else:
-      wfile.write("  for(i = 0; i < ndims_" + ret_arg.name + \
+      w1file.write("  for(i = 0; i < ndims_" + ret_arg.name + \
                   "; i++) dsizes_" + ret_arg.name + \
                   "[i] = ...need input here;\n")
     for i in range(ret_arg.min_ndims):
-      wfile.write("  dsizes_" + ret_arg.name + "[ndims_" + ret_arg.name + 
+      w1file.write("  dsizes_" + ret_arg.name + "[ndims_" + ret_arg.name + 
                   "-" + str(ret_min_ndims-i) + "] = " + \
                   ret_dsizes_names[i] + ";\n")
   else:
-    wfile.write("  for(i = 0; i < ndims_" + ret_arg.name + "; i++) dsizes_" + \
+    w1file.write("  for(i = 0; i < ndims_" + ret_arg.name + "; i++) dsizes_" + \
                  ret_arg.name + "[i] = ...need input here;\n")
 
 #
 # Write out code for the loop across leftmost dimensions (if any).
 #
 if have_leftmost:
-  wfile.write("""
+  w1file.write("""
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
  * one-dimensional subsection.
@@ -916,54 +924,54 @@ if have_leftmost:
     else:
       index_str = index_str + index_names[i] + " = 0;\n"
 
-  wfile.write(index_str)
-  wfile.write("  for(i = 0; i < size_leftmost; i++) {\n")
+  w1file.write(index_str)
+  w1file.write("  for(i = 0; i < size_leftmost; i++) {\n")
   for i in range(len(args)):
     name = args[i].name
     if args[i].ntype == "numeric" and args[i].ndims == 0:
-      wfile.write("/*\n")
-      wfile.write(" * Coerce subsection of " + name + " (tmp_" + name + \
+      w1file.write("/*\n")
+      w1file.write(" * Coerce subsection of " + name + " (tmp_" + name + \
                   ") to double if necessary.\n")
-      wfile.write(" */\n")
-      wfile.write("    if(type_" + name + " != NCL_double) {\n")
-      wfile.write("      coerce_subset_input_double(" + name + ",tmp_" + \
+      w1file.write(" */\n")
+      w1file.write("    if(type_" + name + " != NCL_double) {\n")
+      w1file.write("      coerce_subset_input_double(" + name + ",tmp_" + \
                   name + ",index_" + name + ",type_" + name + "," + \
                   args[i].dsizes_names_str + ",0,NULL,NULL);\n")
-      wfile.write("    }\n")
-      wfile.write("    else {\n")
-      wfile.write("      tmp_" + name + " = &((double*)" + name + \
+      w1file.write("    }\n")
+      w1file.write("    else {\n")
+      w1file.write("      tmp_" + name + " = &((double*)" + name + \
                   ")[index_" + name + "];\n")
-      wfile.write("    }\n\n")
+      w1file.write("    }\n\n")
 #
 # Write out code for pointing temporary output array to appropriate
 # location in output array, if necessary.
 #
   if ret_arg.ntype == "numeric" and ret_arg.ndims == 0:
-    wfile.write("""
+    w1file.write("""
 /*
  * Point temporary output array to void output array if appropriate.
  */
 """)
-    wfile.write("    if(type_" + ret_arg.name + " == NCL_double) tmp_" + \
+    w1file.write("    if(type_" + ret_arg.name + " == NCL_double) tmp_" + \
                 ret_arg.name + " = &((double*)" + ret_arg.name + \
                 ")[index_" + ret_arg.name + "];\n\n")
 
 #
 # Write code for calling Fortran routine inside loop.
 #
-  wfile.write("""
+  w1file.write("""
 /*
  * Call the Fortran routine.
  */
 """)
-  wfile.write("    NGCALLF("+ lower(fortran_name) + "," + \
+  w1file.write("    NGCALLF("+ lower(fortran_name) + "," + \
               upper(fortran_name) + ")(")
   for i in range(len(farg_names)):
     if i == 0:
-      wfile.write(farg_names[i])
+      w1file.write(farg_names[i])
     else:
-      wfile.write(", " + farg_names[i])
-  wfile.write(");\n")
+      w1file.write(", " + farg_names[i])
+  w1file.write(");\n")
 
 
 #
@@ -971,29 +979,29 @@ if have_leftmost:
 # supposed to be float.
 #
   if isfunc and ret_arg.ntype == "numeric":
-    wfile.write("""
+    w1file.write("""
 /*
  * Coerce output back to float if necessary.
  */
 """)
-    wfile.write("    if(type_" + ret_arg.name + " == NCL_float) {\n")
-    wfile.write("      coerce_output_float_only(" + ret_arg.name + \
+    w1file.write("    if(type_" + ret_arg.name + " == NCL_float) {\n")
+    w1file.write("      coerce_output_float_only(" + ret_arg.name + \
                 ",tmp_" + ret_arg.name + "," + ret_arg.dsizes_names_str + \
                 ",index_" + ret_arg.name + ");\n")
-    wfile.write("    }\n")
+    w1file.write("    }\n")
 
 #
 # Write out code for incrementing index variables, if any.
 #
   for i in range(len(args)):
     if args[i].ntype == "numeric" and args[i].ndims == 0:
-      wfile.write("    index_"  + args[i].name + " += " + \
+      w1file.write("    index_"  + args[i].name + " += " + \
                   args[i].dsizes_names_str + ";\n")
   if ret_arg.ntype == "numeric" and ret_arg.ndims == 0:
-    wfile.write("    index_"  + ret_arg.name + " += " + \
+    w1file.write("    index_"  + ret_arg.name + " += " + \
                 ret_arg.dsizes_names_str + ";\n")
 
-  wfile.write("  }\n")    # End "for" loop
+  w1file.write("  }\n")    # End "for" loop
 else:
 #
 # We are dealing with a function that doesn't have any arguments
@@ -1001,19 +1009,19 @@ else:
 #
 # Write code for calling Fortran routine not in a loop.
 #
-  wfile.write("""
+  w1file.write("""
 /*
  * Call the Fortran routine.
  */
 """)
-  wfile.write("  NGCALLF("+ lower(fortran_name) + "," + \
+  w1file.write("  NGCALLF("+ lower(fortran_name) + "," + \
               upper(fortran_name) + ")(")
   for i in range(len(farg_names)):
     if i == 0:
-      wfile.write(farg_names[i])
+      w1file.write(farg_names[i])
     else:
-      wfile.write(", " + farg_names[i])
-  wfile.write(");\n")
+      w1file.write(", " + farg_names[i])
+  w1file.write(");\n")
 
 #
 # Set up code for freeing unneeded memory.  Only those input variables
@@ -1026,43 +1034,71 @@ for i in range(len(args)):
 # Write code for calling Fortran routine not in a loop.
 #
     if first:
-      wfile.write("""
+      w1file.write("""
 /*
  * Free unneeded memory.
  */
 """)
       first = False
 
-    wfile.write("  if(type_" + args[i].name + \
+    w1file.write("  if(type_" + args[i].name + \
                 " != NCL_double) NclFree(tmp_" + args[i].name + ");\n")
 
 if ret_arg.ntype == "numeric":
-  wfile.write("  if(type_" + ret_arg.name + \
+  w1file.write("  if(type_" + ret_arg.name + \
               " != NCL_double) NclFree(tmp_" + ret_arg.name + ");\n")
 
 #
 # Set up code for returning information back to NCL script.
 #
 if isfunc:
-  wfile.write("""
+  w1file.write("""
 /*
  * Return value back to NCL script.
  */
 """)
-  wfile.write("  return(NclReturnValue(" + ret_arg.name + ",ndims_" + \
+  w1file.write("  return(NclReturnValue(" + ret_arg.name + ",ndims_" + \
               ret_arg.name + ",dsizes_" + ret_arg.name + ",NULL,type_" + \
               ret_arg.name + ",0));\n")
 else:
-  wfile.write("""
+  w1file.write("""
 /*
  * This is a procedure, so no values are returned.
  */
 """)
-  wfile.write("  return(NhlNOERROR);\n")
+  w1file.write("  return(NhlNOERROR);\n")
 
-wfile.write("}\n")   # End wrapper routine
+w1file.write("}\n")   # End wrapper routine
 
 #
-# Close wrapper file.
+# Write the code for registering this function or procedure with NCL.
+# This will be written to a different file, and needs to be copied
+# to "wrapper.c".
 #
-wfile.close()
+
+w2file.write('extern NhlErrorTypes ' + ncl_name + '_W(void);\n')
+w2file.write('/*\n * Register "' + ncl_name + '".\n *\n')
+w2file.write(' * Create private argument array\n */\n')
+w2file.write('        nargs = 0;\n')
+w2file.write('        args = NewArgs(' + str(num_args) + ');\n\n')
+for i in range(num_args):
+  if args[i].ndims == 0:
+    w2file.write('        SetArgTemplate(args,nargs,"' + args[i].ntype + \
+                 '",0,NclANY);nargs++;\n')
+  else:
+    for j in range(args[i].ndims):
+      w2file.write('        dimsizes[' + str(j) + '] = ' + \
+                   str(args[i].dsizes[j]) + ';\n')
+    w2file.write('\n        SetArgTemplate(args,nargs,"' + args[i].ntype + \
+                 '",' + str(args[i].ndims) + ',dimsizes);nargs++;\n')
+if isfunc:
+  w2file.write('\n        NclRegisterFunc(' + ncl_name + '_W,args,"' + \
+               ncl_name + '",nargs);\n')
+else:
+  w2file.write('\n        NclRegisterProc(' + ncl_name + '_W,args,"' + \
+               ncl_name + '",nargs);\n')
+#
+# Close files.
+#
+w1file.close()
+w2file.close()
