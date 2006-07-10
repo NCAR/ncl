@@ -1275,7 +1275,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Coerce subsection of z_out (tmp_z_out) to double if necessary.
  */
     if(type_z_out != NCL_double) {
-      coerce_subset_output_double(z_out,tmp_z_out,index_v_out,type_z_out,nz_out,0,NULL,NULL);
+      coerce_subset_input_double(z_out,tmp_z_out,index_v_out,type_z_out,nz_out,0,NULL,NULL);
     }
     else {
       tmp_z_out = &((double*)z_out)[index_v_out];
