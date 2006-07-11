@@ -1755,15 +1755,15 @@ NhlErrorTypes wrf_maptform_W( void )
 /* 
  * Coerce void input arrays to double if necessary.
  */
-  coerce_input_double(dskmc, type_dskmc, 1, 0, NULL, NULL);
-  coerce_input_double(xlatc, type_xlatc, 1, 0, NULL, NULL);
-  coerce_input_double(xlonc, type_xlonc, 1, 0, NULL, NULL);
-  coerce_input_double(riy,   type_riy,   1, 0, NULL, NULL);
-  coerce_input_double(rjx,   type_rjx,   1, 0, NULL, NULL);
-  coerce_input_double(rlat,  type_rlat,  1, 0, NULL, NULL);
-  coerce_input_double(rlon,  type_rlon,  1, 0, NULL, NULL);
-  coerce_input_double(true1, type_true1, 1, 0, NULL, NULL);
-  coerce_input_double(true2, type_true2, 1, 0, NULL, NULL);
+  tmp_dskmc = coerce_input_double(dskmc, type_dskmc, 1, 0, NULL, NULL);
+  tmp_xlatc = coerce_input_double(xlatc, type_xlatc, 1, 0, NULL, NULL);
+  tmp_xlonc = coerce_input_double(xlonc, type_xlonc, 1, 0, NULL, NULL);
+  tmp_riy   = coerce_input_double(riy,   type_riy,   1, 0, NULL, NULL);
+  tmp_rjx   = coerce_input_double(rjx,   type_rjx,   1, 0, NULL, NULL);
+  tmp_rlat  = coerce_input_double(rlat,  type_rlat,  1, 0, NULL, NULL);
+  tmp_rlon  = coerce_input_double(rlon,  type_rlon,  1, 0, NULL, NULL);
+  tmp_true1 = coerce_input_double(true1, type_true1, 1, 0, NULL, NULL);
+  tmp_true2 = coerce_input_double(true2, type_true2, 1, 0, NULL, NULL);
 
 /*
  * Call Fortran routine.
