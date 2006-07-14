@@ -1,5 +1,5 @@
 /*
- *      $Id: View.c,v 1.32 1999-08-14 01:25:55 dbrown Exp $
+ *      $Id: View.c,v 1.33 2006-07-14 17:24:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -189,6 +189,9 @@ static NhlResource resources[] = {
 		  sizeof(int),NhlOffset(NhlViewLayerRec,view.annomanager_id),
 		  NhlTImmediate,
 		  _NhlUSET((NhlPointer) NhlNULLOBJID),_NhlRES_GONLY,NULL},
+	{ NhlNvpClipOn, NhlCvpClipOn, NhlTBoolean, sizeof(NhlBoolean),
+		  NhlOffset(NhlViewLayerRec,view.clip_on),
+		  NhlTImmediate,_NhlUSET((NhlPointer) True),0,NULL},
 
 /* End-documented-resources */
 

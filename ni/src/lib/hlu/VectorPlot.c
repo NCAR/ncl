@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.86 2005-08-31 18:16:45 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.87 2006-07-14 17:24:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3795,6 +3795,8 @@ static NhlErrorTypes vcDraw
 	float			vfr,vlc,vrl,vhc,vrm;
 	float			*u_data,*v_data,*p_data;
         NhlBoolean		all_mono = False;
+        Gint		        err_ind;
+        Gclip           	clip_ind_rect;
 
 	NhlVASetValues(vcl->base.wkptr->base.id,
 		       _NhlNwkReset,	True,
@@ -3831,6 +3833,8 @@ static NhlErrorTypes vcDraw
 		vcp->current_trans_dat = *trans_dat_pp;
 	}
 
+	ginq_clip(&err_ind,&clip_ind_rect);
+        gset_clip_ind(vcl->view.clip_on ? GIND_CLIP : GIND_NO_CLIP);
 	c_vvrset();
 	
 	switch (vcp->vfp->miss_mode) {
@@ -4091,7 +4095,7 @@ static NhlErrorTypes vcDraw
 	}
 	/* Draw the vectors */
 
-	gset_clip_ind(GIND_CLIP);
+	
 	Need_Info = True;
 
 	u_data = &((float *) vcp->vfp->u_arr->data)[vcp->vfp->begin]; 
@@ -4146,7 +4150,8 @@ static NhlErrorTypes vcDraw
 		return(ret);
 	}
 
-	gset_clip_ind(GIND_NO_CLIP);
+	gset_clip_ind(clip_ind_rect.clip_ind);
+
 	if (vcl->view.use_segments && vcp->current_trans_dat) {
 		_NhlEndSegment(vcp->current_trans_dat);
 	}

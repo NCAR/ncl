@@ -1,5 +1,5 @@
 /*
- *      $Id: Workspace.c,v 1.46 2004-03-11 02:00:34 dbrown Exp $
+ *      $Id: Workspace.c,v 1.47 2006-07-14 17:24:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2985,8 +2985,6 @@ NhlErrorTypes _NhlCpcica
 	int		ll;
 	int		startx = 1,starty = 1;
 	int		countx,county;
-	Gint		err_ind;
-	Gclip		clip_ind_rect;
 	float 		lxcpf,lycpf,lxcqf,lycqf;
 	float		xstep,ystep;
 	float		lx = -999.,rx = -999.,by = -999. ,ty = -999.;
@@ -3072,9 +3070,6 @@ NhlErrorTypes _NhlCpcica
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	
-	ginq_clip(&err_ind,&clip_ind_rect);
-	gset_clip_ind(GIND_CLIP);
-
 	countx = icam;
 	county = ican;
 	if (! smooth) {
@@ -3209,8 +3204,6 @@ NhlErrorTypes _NhlCpcica
 		(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 
-
-	gset_clip_ind(clip_ind_rect.clip_ind);
 
 	c_set(fl,fr,fb,ft,wl,wr,wb,wt,ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
@@ -3701,8 +3694,6 @@ NhlErrorTypes _NhlCtcica
 	int		ll;
 	int		startx = 1,starty = 1;
 	int		countx,county;
-	Gint		err_ind;
-	Gclip		clip_ind_rect;
 	float 		lxcpf,lycpf,lxcqf,lycqf;
 	float		xstep,ystep;
 	float		lx = -999.,rx = -999.,by = -999. ,ty = -999.;
@@ -3799,8 +3790,6 @@ NhlErrorTypes _NhlCtcica
 	c_set(fl,fr,fb,ft,fl,fr,fb,ft,1);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	
-	ginq_clip(&err_ind,&clip_ind_rect);
-	gset_clip_ind(GIND_CLIP);
 
 	countx = icam;
 	county = ican;
@@ -3937,7 +3926,6 @@ NhlErrorTypes _NhlCtcica
 	}
 
 
-	gset_clip_ind(clip_ind_rect.clip_ind);
 
 	c_set(fl,fr,fb,ft,wl,wr,wb,wt,ll);
 	(void)_NhlLLErrCheckPrnt(NhlWARNING,entry_name);

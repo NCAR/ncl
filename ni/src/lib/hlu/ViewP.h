@@ -1,5 +1,5 @@
 /*
- *      $Id: ViewP.h,v 1.15 1998-02-20 22:41:48 dbrown Exp $
+ *      $Id: ViewP.h,v 1.16 2006-07-14 17:24:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,6 +58,7 @@ typedef struct _NhlViewLayerPart {
 	NhlBoolean	keep_aspect;
 	NhlBoolean	use_segments;
 	int		annomanager_id;
+	NhlBoolean      clip_on;
 
 	/* Private fields (set only through _NhlSetAnnoView) */
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.135 2005-10-14 20:25:09 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.136 2006-07-14 17:24:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -11887,14 +11887,10 @@ NhlErrorTypes _NhlCellFill
 	NhlContourPlotLayer     cnl = (NhlContourPlotLayer) l;
 	NhlContourPlotLayerPart 	  *cnp = &cnl->contourplot;
 	NhlErrorTypes	ret = NhlNOERROR;
-        Gint            err_ind;
-        Gclip           clip_ind_rect;
 	char		*e_text;
 	int             save_ty;
 
 
-	ginq_clip(&err_ind,&clip_ind_rect);
-        gset_clip_ind(GIND_CLIP);
 	c_sfgeti("ty",&save_ty);
 	c_sfseti("ty",0);
 
@@ -11915,7 +11911,6 @@ NhlErrorTypes _NhlCellFill
 	else {
 		ret = CellFill1D(Cnl,entry_name);
 	}
-	gset_clip_ind(clip_ind_rect.clip_ind);
 	c_sfseti("ty",save_ty);
 	return ret;
 }

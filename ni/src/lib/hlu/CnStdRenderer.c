@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.8 2005-10-14 20:25:08 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.9 2006-07-14 17:24:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1866,10 +1866,15 @@ static NhlErrorTypes CnStdRender
 	NhlTransformLayerPart 		  *tfp = &cnl->trans;
 	NhlString e_text;
         NhlErrorTypes ret = NhlNOERROR,subret = NhlNOERROR;
+        Gint            err_ind;
+        Gclip           clip_ind_rect;
 
 	Cnl = cnl;
 	Cnp = cnp;
 	
+	ginq_clip(&err_ind,&clip_ind_rect);
+        gset_clip_ind(GIND_CLIP);
+
 	c_cprset();
 	SetCpParams(cnl,entry_name);
 
@@ -1935,12 +1940,14 @@ static NhlErrorTypes CnStdRender
 	subret = UpdateLineAndLabelParams(cnl,&cnp->do_lines,&cnp->do_labels);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
 		return ret;
 	}
 
 	subret = UpdateFillInfo(cnl, &cnp->do_fill);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
 		return ret;
 	}
 
@@ -1951,12 +1958,14 @@ static NhlErrorTypes CnStdRender
 		e_text = "%s: error reserving float workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
 		return(ret);
 	}
 	if ((cnp->iws = _NhlUseWorkspace(cnp->iws_id)) == NULL) {
 		e_text = "%s: error reserving integer workspace";
 		NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name);
 		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
 		return(ret);
 	}
 	/* Draw the contours */
@@ -1965,6 +1974,7 @@ static NhlErrorTypes CnStdRender
 			    cnp->sfp->slow_len,cnp->fws,cnp->iws,entry_name);
 	if ((ret = MIN(subret,ret)) < NhlWARNING) {
 		ContourAbortDraw(cnl);
+		gset_clip_ind(clip_ind_rect.clip_ind);
 		return ret;
 	}
 #if 0
@@ -1985,6 +1995,7 @@ static NhlErrorTypes CnStdRender
 				(cnl,False,&csrp->do_bounds);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 #endif
@@ -1992,6 +2003,7 @@ static NhlErrorTypes CnStdRender
 				subret = cnInitAreamap(cnl,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					ContourAbortDraw(cnl);
+					gset_clip_ind(clip_ind_rect.clip_ind);
 					return ret;
 				}
 			}
@@ -2000,11 +2012,13 @@ static NhlErrorTypes CnStdRender
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return NhlFATAL;
 			}
 			subret = AddDataBoundToAreamap(cnl,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 
@@ -2012,6 +2026,7 @@ static NhlErrorTypes CnStdRender
 					    cnp->aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 
@@ -2023,6 +2038,7 @@ static NhlErrorTypes CnStdRender
 					    entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 			subret = _NhlIdleWorkspace(cnp->aws);
@@ -2035,6 +2051,7 @@ static NhlErrorTypes CnStdRender
 				(cnl,True,&csrp->do_bounds);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 #endif
@@ -2060,12 +2077,14 @@ static NhlErrorTypes CnStdRender
 #endif
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 			subret = cnInitCellArray(cnl,&msize,&nsize,&bbox,
 						 &min_cell_size,entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 			subret = _NhlCpcica(cnp->data,
@@ -2077,6 +2096,7 @@ static NhlErrorTypes CnStdRender
 					    entry_name);
  			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 			if (cnp->cws != NULL) {
@@ -2095,6 +2115,7 @@ static NhlErrorTypes CnStdRender
 			(cnl,False,&csrp->do_bounds);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			ContourAbortDraw(cnl);
+			gset_clip_ind(clip_ind_rect.clip_ind);
 			return ret;
 		}
 #endif
@@ -2104,6 +2125,7 @@ static NhlErrorTypes CnStdRender
 				subret = cnInitAreamap(cnl,entry_name);
 				if ((ret = MIN(subret,ret)) < NhlWARNING) {
 					ContourAbortDraw(cnl);
+					gset_clip_ind(clip_ind_rect.clip_ind);
 					return ret;
 				}
 			}
@@ -2112,6 +2134,7 @@ static NhlErrorTypes CnStdRender
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
 					  e_text,entry_name);
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return NhlFATAL;
 			}
 			c_pcsetr("PH",(float)cnp->line_lbls.pheight);
@@ -2124,6 +2147,7 @@ static NhlErrorTypes CnStdRender
 					    cnp->aws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 			subret = _NhlCpcldm(cnp->data,
@@ -2132,6 +2156,7 @@ static NhlErrorTypes CnStdRender
 					    entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 			subret = _NhlIdleWorkspace(cnp->aws);
@@ -2143,6 +2168,7 @@ static NhlErrorTypes CnStdRender
 					    cnp->fws,cnp->iws,entry_name);
 			if ((ret = MIN(subret,ret)) < NhlWARNING) {
 				ContourAbortDraw(cnl);
+				gset_clip_ind(clip_ind_rect.clip_ind);
 				return ret;
 			}
 		}
@@ -2154,6 +2180,7 @@ static NhlErrorTypes CnStdRender
 			(cnl,False,&csrp->do_bounds);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			ContourAbortDraw(cnl);
+			gset_clip_ind(clip_ind_rect.clip_ind);
 			return ret;
 		}
 #endif
@@ -2171,6 +2198,7 @@ static NhlErrorTypes CnStdRender
 		subret = _NhlCplbdr(cnp->data,cnp->fws,cnp->iws,entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) {
 			ContourAbortDraw(cnl);
+			gset_clip_ind(clip_ind_rect.clip_ind);
 			return ret;
 		}
 	}

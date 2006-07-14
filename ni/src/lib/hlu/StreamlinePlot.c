@@ -1,5 +1,5 @@
 /*
- *      $Id: StreamlinePlot.c,v 1.70 2003-11-21 00:04:24 dbrown Exp $
+ *      $Id: StreamlinePlot.c,v 1.71 2006-07-14 17:24:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1999,7 +1999,7 @@ static NhlErrorTypes    StreamlinePlotGetValues
                         if ((ga = GenArraySubsetCopy(ga, count)) == NULL) {
                                 e_text = "%s: error copying %s GenArray";
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,
-                                          "VectorPlotGetValues",type);
+                                          "StreamlinePlotGetValues",type);
                                 return NhlFATAL;
                         }
                         *((NhlGenArray *)(args[i].value.ptrval)) = ga;
@@ -2780,6 +2780,8 @@ static NhlErrorTypes stDraw
 	NhlTransformLayerPart	*tfp = &(stl->trans);
 	float			*u_data,*v_data,*p_data;
 	int			cix;
+        Gint		        err_ind;
+        Gclip           	clip_ind_rect;
 
 	NhlVASetValues(stl->base.wkptr->base.id,
 		       _NhlNwkReset,	True,
@@ -2816,6 +2818,8 @@ static NhlErrorTypes stDraw
 		stp->current_trans_dat = *trans_dat_pp;
 	}
         
+	ginq_clip(&err_ind,&clip_ind_rect);
+        gset_clip_ind(GIND_CLIP);
 	c_strset();
 	
 	switch (stp->vfp->miss_mode) {
@@ -2893,7 +2897,6 @@ static NhlErrorTypes stDraw
 		c_stsetr("VFR",stp->min_frac_len);
 		c_stsetr("AFR",stp->arrow_frac_len);
 		c_stsetr("SSP",-1.0);
-		gset_clip_ind(GIND_CLIP);
 	}
 	cix = stp->line_color < 0 ? 
 		_NhlGetGksCi(stl->base.wkptr,NhlFOREGROUND) :
@@ -3013,9 +3016,8 @@ static NhlErrorTypes stDraw
 		}
 	}
 
-	if (stp->curly_vector_mode) {
-		gset_clip_ind(GIND_NO_CLIP);
-	}
+	gset_clip_ind(clip_ind_rect.clip_ind);
+
 	if (stl->view.use_segments) {
 		_NhlEndSegment(stp->current_trans_dat);
 	}
