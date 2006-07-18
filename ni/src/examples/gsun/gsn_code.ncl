@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.180 2006-06-29 17:17:51 haley Exp $
+;      $Id: gsn_code.ncl,v 1.181 2006-07-18 12:47:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -61,6 +61,7 @@ undef("get_display_mode")
 undef("attsetvalues_check")
 undef("spread_colors")
 undef("check_for_irreg2loglin")
+undef("is_data_1d_or_2d")
 undef("overlay_irregular")
 undef("get_plot_not_loglin")
 undef("get_overlay_plot")
@@ -78,7 +79,7 @@ undef("gsnp_shape_plot")
 undef("gsnp_scale_plot")
 undef("check_for_tickmarks_off")
 undef("compute_device_coords")
-undef("reset_device_coords")
+undef("reset_device_coordinates")
 undef("maximize_output")
 undef("draw_and_frame")
 undef("create_canvas")
@@ -92,6 +93,7 @@ undef("gsn_open_image")
 undef("gsn_open_wks")
 undef("gsn_add_annotation")
 undef("gsn_add_primitive")
+undef("gsn_primitive")
 undef("gsn_polygon")
 undef("gsn_add_polygon")
 undef("gsn_polygon_ndc")
@@ -2116,7 +2118,7 @@ begin
 end
 
 ;***********************************************************************;
-; Procedure : reset_device_coords                                       ;
+; Procedure : reset_device_coordinates                                  ;
 ;                wks:graphic                                            ;
 ;                                                                       ;
 ; This procedure resets the PS/PDF device coordinates back to their     ;
