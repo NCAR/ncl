@@ -1,5 +1,5 @@
 /*
- *      $Id: NclOneDValCoordData.c,v 1.10 2004-06-16 00:41:32 dbrown Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.11 2006-07-18 00:48:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -53,10 +53,18 @@ long * ind;
 	logical lres;
 	NclScalar m1_res;
 	NclScalar m2_res;
+	NclScalar zero;
+	static int first = 1;
+	NclMultiDValData tmp_md;
+
 
 	if((self_md == NULL)||(ind_val == NULL)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclOneDValGetClosestIndex: Null values passed in");
 		return(NhlFATAL);
+	}
+	if (first) {
+		memset(&zero,0,sizeof(NclScalar));
+		first = 0;
 	}
 	the_coord = (NclOneDValCoordData)self_md;
 	ind_ptr = ind_val;
@@ -91,7 +99,13 @@ long * ind;
 			if(lres) {
 				*ind = i;
 			} else {
-				*ind = i-1;
+				_Ncleq(type_coord,(void*)&lres,(void*)&m1_res,(void*)&m2_res,NULL,NULL,1,1);
+				if (! lres)
+					*ind = i-1;
+				else {
+					_Nclcmpf(type_coord,ind_ptr,&zero,NULL,NULL,16,&cmp_val);
+					*ind = cmp_val >= 0 ? i : i - 1;
+				}
 			}
 			return(NhlNOERROR);
 		}
@@ -119,11 +133,17 @@ long * ind;
 			}
 			_Nclminus(type_coord,(void*)&m1_res,ind_ptr,(void*)((char*)coord_ptr + ((i-1) * type_coord->type_class.size)),NULL,NULL,1,1);
 			_Nclminus(type_coord,(void*)&m2_res,(void*)((char*)coord_ptr + ((i) * type_coord->type_class.size)),ind_ptr,NULL,NULL,1,1);
-			_Ncllt(type_coord,(void*)&lres,(void*)&m1_res,(void*)&m2_res,NULL,NULL,1,1);
+			_Nclgt(type_coord,(void*)&lres,(void*)&m1_res,(void*)&m2_res,NULL,NULL,1,1);
 			if(lres) {
 				*ind = i-1;
 			} else {
-				*ind = i;
+				_Ncleq(type_coord,(void*)&lres,(void*)&m1_res,(void*)&m2_res,NULL,NULL,1,1);
+				if (! lres)
+					*ind = i;
+				else {
+					_Nclcmpf(type_coord,ind_ptr,&zero,NULL,NULL,16,&cmp_val);
+					*ind = cmp_val >= 0 ? i - 1 : i;
+				}
 			}
 			return(NhlNOERROR);
 		}
