@@ -170,6 +170,7 @@ end
 ;             WRF_map_c (ncdf, res, 0)
 ;             res  = ...
 ;
+undef("WRF_map_c")
 procedure WRF_map_c (f:file, res:logical, opt)
 local rank, dimll, nlat, mlon, lat2d, lon2d
 begin
@@ -238,6 +239,7 @@ end
 ;*************************************************************************
 ; D. Shea
 ; interface for backward compatibility
+undef("WRF_resLamCon_c")
 procedure WRF_resLamCon_c (f:file, res:logical, opt)
 begin
   WRF_map_c (f, res, opt)

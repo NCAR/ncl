@@ -1,5 +1,5 @@
 ;
-;      $Id: wind_rose.ncl,v 1.6 2006-07-01 15:01:12 shea Exp $
+;      $Id: wind_rose.ncl,v 1.7 2006-07-19 02:12:21 haley Exp $
 ;
 ; ******************************************************************
 ; *******  THERE IS NO SUPPORT FOR THE WIND ROSE FUNCTIONS *********
@@ -11,7 +11,7 @@
 ; ******************************************************************
 ; functions to draw variations of wind roses
 
-
+undef("WindRoseBasic")
 function WindRoseBasic (wks:graphic, wspd:numeric, wdir:numeric \
                                    , numPetals:integer, circFr:float, wrRes:logical)
 
@@ -221,7 +221,7 @@ function WindRoseBasic (wks:graphic, wspd:numeric, wdir:numeric \
 
 ; ---------------------------------------------------
 
-
+undef("WindRoseColor")
 function WindRoseColor(wks:graphic, wspd:numeric, wdir:numeric \
                       , numPetals:integer, circFr:float \
                       , spdBounds:float, colorBounds:string, wrRes:logical)
@@ -482,7 +482,7 @@ function WindRoseColor(wks:graphic, wspd:numeric, wdir:numeric \
 
 ; -------------------------------------------
 
-
+undef("WindRoseThickLine")
 function WindRoseThickLine(wks:graphic, wspd:numeric, wdir:numeric \
                           , numPetals:integer, circFr:float \
                           , spdBounds:float, wrRes:logical)
@@ -741,7 +741,7 @@ function WindRoseThickLine(wks:graphic, wspd:numeric, wdir:numeric \
 ;        THIS IS ***NOT*** A GENERAL FUNCTION!!!!
 ;           DEVELOPED TO FACILITATE EXAMPLES
 
-
+undef("wr_GenBogusData ")
 function wr_GenBogusData (nMax:integer) 
 begin
 

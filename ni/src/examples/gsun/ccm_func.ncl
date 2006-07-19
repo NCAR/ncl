@@ -1,5 +1,5 @@
 ;
-;      $Id: ccm_func.ncl,v 1.2 2003-02-23 00:11:05 haley Exp $
+;      $Id: ccm_func.ncl,v 1.3 2006-07-19 02:12:20 haley Exp $
 ;
 ; ccm_func.ncl
 ;
@@ -21,6 +21,7 @@
 ; u       - u-velocity
 ; dp      - delta pressure (compute using  
 
+undef("aam_local")
 function aam_local(u[*][*][*][*]:numeric,dp[*][*][*][*],fin:file)
 
 begin
@@ -86,6 +87,7 @@ end
 
 ; history- 7  Aug 2000: added CSM string and "history" attribute
   
+undef("thetaHybrid")
 function thetaHybrid (t:numeric,ps:numeric, P0:numeric \
                      ,HYAM[*]:numeric, HYBM[*]:numeric, order:string)
 
@@ -152,6 +154,7 @@ end
 ; and oro has values ocean: 0, land: 1, seaice: 2
 ; used internally to all the transport functions in ccm_func.ncl
 
+undef("ocean_mask")
 function ocean_mask (oro[*][*]:numeric)
 begin
  
@@ -243,6 +246,7 @@ end
 ; shfl: sensible heat flux at surface 
 ; lhfl: latent heat flux at surface 
 
+undef("oht_model")
 function oht_model (gwt[*]:numeric,oro[*][*]:numeric,fsns[*][*]:numeric, \
                     flns[*][*]:numeric,shfl[*][*]:numeric,lhfl[*][*]:numeric)
 begin
@@ -317,6 +321,7 @@ end
 ; lhfl: latent heat flux at surface 
 ; adjust: logical switch for applying adjustment
 
+undef("ht_surface")
 function ht_surface (gwt[*]:numeric,oro[*][*]:numeric,fsns[*][*]:numeric, \
    flns[*][*]:numeric,shfl[*][*]:numeric,lhfl[*][*]:numeric,adjust:logical)
 
@@ -379,6 +384,7 @@ end
 ; qflx  : surface water flux (kg/s)
 
 
+undef("oft_model")
 function oft_model (gwt[*]:numeric,oro[*][*]:numeric,precc[*][*]:numeric, \
                     precl[*][*]:numeric,qflx[*][*]:numeric)
 begin
@@ -451,6 +457,7 @@ end
 ; restoa : residual energy at TOA = fsntoa-flut  
 
 
+undef("rht_model")
 function rht_model (gwt[*]:numeric,restoa[*][*]:numeric)
 begin
 

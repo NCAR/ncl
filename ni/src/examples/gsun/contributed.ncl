@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.117 2006-07-05 17:29:22 shea Exp $
+;      $Id: contributed.ncl,v 1.118 2006-07-19 02:12:20 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -427,6 +427,7 @@ end
 ; called internally: add coordinate variables to a variable
 ; which has had an extra left dimension added.
 
+undef("component_copy_VarCoords")
 procedure component_copy_VarCoords (x, y)
 local rankx, dimy, i, dName
 begin
@@ -1025,7 +1026,6 @@ end
 ; invoke get1Dindex_Exclude
 
 undef("get1Dindex_Collapse")
-
 function get1Dindex_Collapse (cv[*]:numeric,cvWant[*]:numeric)
 begin
   return( get1Dindex_Exclude(cv, cvWant) )
@@ -1190,7 +1190,6 @@ end
 ; but also make sure that _FillValue is assigned 
 ;     when missing_value is present
 undef("flt2dble")
-
 function flt2dble (xF:float) 
 local xD
 begin
@@ -1210,7 +1209,6 @@ begin
  return(xD)
 end
 
-undef("dble2flt")
 ; *************************************************************
 ; D. Shea
 ; Wrapper for NCL function: doubletofloat
@@ -2926,6 +2924,7 @@ begin
 end
 
 ; =====================================
+undef("clmDayTLL")
 function clmDayTLL (x[*][*][*]:numeric, yyyyddd:integer)   
 ;
 ; calculate the mean Annual Cycle from daily data. 
@@ -3009,6 +3008,7 @@ begin
 end
 
 ; =====================================
+undef("smthClmDayTLL")
 function smthClmDayTLL (clmDay[*][*][*]:numeric, nHarm:integer)
 ;
 local nFill, dn, z, cf, clmDaySmth 
@@ -3046,6 +3046,7 @@ begin
 end
 
 ; =====================================
+undef("calcDayAnomTLL")
 function calcDayAnomTLL (x[*][*][*]:numeric, yyyyddd:integer, clmDay[*][*][*]:numeric)   
 
 ; Remove the Annual Cycle from daily data. 
@@ -3121,6 +3122,7 @@ end
 ; x must have named dimensions on entry
 ; opt - not used set to zero [0]
 ;
+undef("clmMon2clmDay")
 function clmMon2clmDay( x:numeric, retOrder:integer, opt:integer )
 local dNames, dimx, rank, X, midMon, day
 begin
@@ -3836,7 +3838,6 @@ end
 ; vars.  It creates a "pts" coord variable and creates two 1D
 ; attributes that indicate the lat/lon associated with each point.
 undef ("linint2_points_Wrap")
-
 function linint2_points_Wrap \ 
                       (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
                       ,xo[*]:numeric,yo[*]:numeric, Opt)
@@ -4276,7 +4277,6 @@ end
 ; wrapper for NCL function "eofcov"  that copies coordiante variables
 
 undef ("eofMeta")
-  
 procedure eofMeta (data:numeric, neval:integer, eof:numeric)
 local evn, dimd, dime, nDimd, nDime, i
 begin
@@ -4445,6 +4445,7 @@ end
 ;
 ; currently: the option argument is not used. 
 ;
+undef("eoftsData2eof")
 function eoftsData2eof (eof_ts[*][*], data:numeric, option:logical )
 local dimd, rank, dimts, neval, ntim, npts, eof, nev \
     , np, opt, n, mx, MX, ny, NY
@@ -4530,7 +4531,7 @@ begin
 end
 
 undef ("eofunc_varimax_Wrap")
-function eof_varimax_Wrap (eof:numeric, optEVX:logical)
+function eofunc_varimax_Wrap (eof:numeric, optEVX:logical)
 local eofEVX
 begin
   eofEVX = eof
@@ -5601,6 +5602,7 @@ end
 ;
 ; yyyymm       - scalar or array of dates
 ; 
+undef("yyyymm2yyyyFrac")
 function yyyymm2yyyyFrac (yyyymm:integer)
 local year, mon
 begin
@@ -5624,6 +5626,7 @@ end
 ; yyyymm       - scalar or array of dates                           
 ; mm_offset    - 0.0 or 0.5
 ;                                                                  
+undef("yyyymm_to_yyyyfrac")
 function yyyymm_to_yyyyfrac (yyyymm[*]:numeric, mmOffset[1]:numeric)
 local year, mm, xmos, one      
 begin                                                                                               
@@ -5711,6 +5714,7 @@ end
 ; D. Shea
 ;      a function that invokes yyyymmdd2yyyyFrac
 ;      name consistent with yyyymm_to_yyyyfrac
+undef("yyyymmdd_to_yyyyfrac")
 function yyyymmdd_to_yyyyfrac (yyyymmdd:numeric, ddOffset:numeric)
 local varType
 begin
@@ -5803,6 +5807,7 @@ end
 ;
 ;      ignore hhOffset
 ;
+undef("yyyymmddhh_to_yyyyfrac")
 function yyyymmddhh_to_yyyyfrac (yyyymmddhh:numeric, hhOffset[1]:numeric)
 local varType
 begin
@@ -6328,6 +6333,7 @@ end
 ; usage:    res = True
 ;          symMinMaxPlt(zData, 14, False, res)
 ;
+undef("symMinMaxPlt")
 procedure symMinMaxPlt (x:numeric, nCnLvl:integer, inOut:logical, res:logical)
 local xMin, xMax, cmnmx, mnmxint
 begin
@@ -6476,6 +6482,7 @@ end
 ;       eg: f_head = readAsciiHead("foo.ascii", 3.) 
 ;       all numbers on the 1st three rows will be read as float.
 
+undef("readAsciiHead")
 function readAsciiHead( fName:string, opt)
 local xs, xc, nr, nrow, noptc, nxc, f_head
 begin
@@ -6547,6 +6554,7 @@ end
 ; ncol- number of columns in table
 
 
+undef("readAsciiTable")
 function readAsciiTable( fName:string, ncol:integer, datatype:string, opt)
 local head, nh, xs, nrow, table
 begin
@@ -6583,6 +6591,7 @@ end
 ; D. Shea
 ; print Min and Max of a numeric variable using long_name [if present]
 ;
+undef("printMinMax")
 procedure printMinMax (x:numeric,optSpace:logical)  
 ;  Usage:   printMinMax (T,True)                   
 begin                                             
@@ -6613,6 +6622,7 @@ end
 ; It adds the new level coordinates.
 
 
+undef("hyi2hyo_Wrap")
 function hyi2hyo_Wrap(p0,hyai,hybi,psfc,xi,hyao,hybo,option)
 local xo, dName, nDim, P0, lev, n
 begin
@@ -6707,6 +6717,7 @@ end
 ; It adds the new level coordinates.
 
 
+undef("pres2hybrid_Wrap")
 function pres2hybrid_Wrap(p[*],psfc,p0,xi,hyao,hybo,intflg)
 local xo, dName, nDim, P0, lev, n
 begin
@@ -6779,6 +6790,7 @@ end
 ; Driver for NCL function "omega_ccm"  
 ; It calculates intermediate quantities needed for input.
 ;
+undef("omega_ccm_driver")
 function omega_ccm_driver(p0,psfc,u,v,hyam[*],hybm[*],hyai[*],hybi[*])
 
 ; calculate assorted intermediate quantities 
@@ -6876,6 +6888,7 @@ end
 ;              zmin = z(imin)   ; z where q is at a minimum
 ;          end if
 
+undef("local_min_1d")
 function local_min_1d( X[*]:numeric  , cyclic:logical \
                      , del[1]:numeric, opt[1]:integer )
 local NX, nx, x, iOffSet, nStrt, nLast, imn, i
@@ -6963,6 +6976,7 @@ end
 ;              zmax = z(imax)   ; z where q is at a maximum
 ;          end if
 
+undef("local_max_1d")
 function local_max_1d( X[*]:numeric  , cyclic:logical \
                      , del[1]:numeric, opt[1]:integer )
 
@@ -7086,6 +7100,7 @@ end
 ;                 TMP_annual_mean  = month_to_annual( tmp, 10)   ; 10 or more values
 ;
 
+undef("month_to_annual")
 function month_to_annual(x:numeric, opt:integer)
 local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, kz, nn, nmo \
     , dName, xAnnual, xTemp, n, m, k, nMsg, nmos, NMOS, nGood
@@ -7274,6 +7289,7 @@ end
 ; *****************************************************************
 ; D. Shea
 
+undef("month_to_annual_weighted")
 function month_to_annual_weighted(yyyymm[*]:numeric, x:numeric, opt:integer)
 local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, nz, nn, nmo \
     , dName, xAnnual, xTemp
@@ -7491,6 +7507,7 @@ end
 ;           PRC = monthly_total_to_daily_mean( time, prc, 0) ; time is yyyymm
 ;
 
+undef("monthly_total_to_daily_mean")
 function monthly_total_to_daily_mean(yyyymm[*]:numeric, x:numeric, opt:integer)
 local yyyy, mm, dymon, DYMON, dimx, rankx, xNew
 begin
@@ -7538,6 +7555,7 @@ end
 ; The actual packing is pretty simple.
 ; Most of the code is to handle _FillValue and assorted permutations/options
 
+undef("pack_values")
 function pack_values(var:numeric, packType:string, opt:logical)  
 local vType, one, two, pMax, sFill, vMin, vMax, vRange, vPack  \
     , scale_factor, add_offset, vMinVar, vMaxVar, msgFlag, msgVal, filFlag, filVal 
@@ -7723,6 +7741,7 @@ end
 ;       suffix = get_file_suffix(fName, 1)  ; ".1958-2005.gz"
 ;       fBase  = suffix@fBase               ; sample
 
+undef("get_file_suffix")
 function get_file_suffix (filName:string, opt:integer)
 local chr, ckey, cstr, N, filName_suffix, nStrt, nLast, n
 begin
@@ -7756,6 +7775,7 @@ end
 ;**************************************************************************
 ; D Shea
 ;
+undef("niceLatLon2D")
 function niceLatLon2D(lat2d[*][*], lon2d[*][*])
 ; check map coordinates to see if they have a "nice" structure
 ;
@@ -7792,6 +7812,7 @@ end
 ;**************************************************************************
 ; D Shea
 
+undef("isMonotonic")
 function isMonotonic(x[*]:numeric)          
 ; check for monoticity                     
 local nx                                  
@@ -7811,6 +7832,7 @@ end
 ; Contributed by Christine Shields, March 2006.
 ; Slight mods were made to allow input to be numeric.
 
+undef("rho_mwjf")
 function rho_mwjf(t2d[*][*]:numeric,s2d[*][*]:numeric,depth:numeric) 
 
 ;-- based on Steve Yeager's rhoalphabeta
@@ -7947,6 +7969,7 @@ end
 ; ******************************************************************
 ; D. Shea
 ; append [concatenate] arrays along record dimension 
+undef("array_append_record")
 function array_append_record (x1, x2, iopt:integer)
 local dim_x1, dim_x2, rank_x1, rank_x2, n1, n2, dim_xNew, xNew \
     , errFlag, dimNames_x1, dimNames_x2, dimNames, n           \
@@ -8079,6 +8102,7 @@ end
 ; D. Shea
 ; attaches/appends table data: ie (row,column) arrays
 ; add additional rows
+undef("table_attach_rows")
 function table_attach_rows (t1[*][*], t2[*][*], iopt:integer)
 
 local dim_t1, dim_t2, ncol1, ncol2, nrow1, nrow2    \
@@ -8169,6 +8193,7 @@ end
 ;
 ; This *requires* that the dimensions be named for each table
 
+undef("table_attach_columns")
 function table_attach_columns (t1[*][*], t2[*][*], iopt:integer)
 local dim_t1, dim_t2, nrow1, nrow2, trows    \
     , dimNames_t1, dimNames_t2, dimNames, n
@@ -8218,6 +8243,7 @@ end
 ; Get the indicies [subscripts] of the 2D lat/lon arrays
 ; closest to each LAT/LON coordinate pair.
 ;
+undef("getind_latlon2d")
 function getind_latlon2d(lat2d[*][*]:numeric,lon2d[*][*]:numeric \
                         ,LAT[*]:numeric, LON[*]:numeric)
 local N, ij, lat1d, lon1d, dist, mndist, indx

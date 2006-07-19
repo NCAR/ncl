@@ -1,5 +1,5 @@
 ;
-;      $Id: skewt_func.ncl,v 1.7 2005-03-22 23:36:00 fred Exp $
+;      $Id: skewt_func.ncl,v 1.8 2006-07-19 02:12:21 haley Exp $
 ;
 ; -------------------------------------------------
 ; This library requires that the "gsn_code.ncl" library
@@ -11,17 +11,20 @@
 ;        temp   -   
 ; ------------------------------------------------
 
+undef("skewty")
 function skewty(pres[*]:float)            ; y-coord given pressure (mb)
   begin                             
    return (132.182-44.061*log10(pres))
   end
 
+undef("skewtx")
 function skewtx(temp[*]:float,y[*]:float) ; x-coord given temperature (c)
   begin                                     ; y=skewty(p)
    return (0.54*temp+0.90692*y)
   end
 
 
+undef("skewT_BackGround")
 function skewT_BackGround (wks:graphic,  Opts:logical)
   begin
 ; statement of purpose.
@@ -621,6 +624,7 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
 
 ; ------------------------------------------------------
 
+undef("skewT_PlotData")
 function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
                         ,P[*]:numeric,TC[*]:numeric      \
                         ,TDC[*]:numeric,Z[*]:numeric     \

@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.21 2006-04-11 20:09:52 asphilli Exp $
+;      $Id: shea_util.ncl,v 1.22 2006-07-19 02:12:21 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -15,6 +15,7 @@
 ; and functions contained within the gsn*.ncl and contributed.ncl
 ; libraries. 
 ; ------------------------------------------------------------
+undef("printVarInfo")
 procedure printVarInfo (x, xInfo:string)
 
 ; basically superceded by NCL function: printVarSummary
@@ -36,6 +37,7 @@ begin
   end if
 end
 ; -------------------------------------------------------
+undef("FixZeroContour")
 function FixZeroContour (CNLVLS[*]:float, label:string)
 ; called internally
 local eps, indEps, nEps, cnlvls, nClvl
@@ -56,6 +58,7 @@ begin
        return (cnlvls)                                      
 end
 ; -------------------------------------------------------
+undef("FixZeroContourEps")
 function FixZeroContourEps (CNLVLS[*]:float, label:string, eps:numeric)
 ; called internally
 local indEps, nEps, cnlvls, nClvl
@@ -74,6 +77,7 @@ begin
        return (cnlvls)                                      
 end
 ;-------------------------------------------------------------------
+undef("FixZeroContour_HALEY")
 function FixZeroContour_HALEY(LEVELS[*]:numeric, label:string)  
 ;                                                 ; 18 July 2001 2:55pm
 ;procedure fix_zero_contour(levels)               ; MARY HALEY ROUTINE
@@ -102,6 +106,7 @@ begin
   return(levels)
 end
 ; -------------------------------------------------------
+undef("GetOverlayPlot")
 function GetOverlayPlot (plot:graphic, ClassName:string, PlotIndex:integer)
 
 ; Retrieves a specified overlaid object.
@@ -149,6 +154,7 @@ begin
 end
 
 ;-------------------------------------------------------------------
+undef("get_cnLevels")
 function get_cnLevels (plot:graphic) 
 local cnlvls, ovrly_plot
 begin
@@ -161,6 +167,7 @@ begin
       return(cnlvls)
 end
 ; -------------------------------------------------------
+undef("get_flags")
 function get_flags (plot:graphic) 
 local ovrly_plot
 begin
@@ -172,6 +179,7 @@ begin
        return(flags)
 end
 ;-------------------------------------------------------------------
+undef("ZeroLineContour")
 function ZeroLineContour (plot:graphic) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -207,6 +215,7 @@ begin
       return (plot)
 end
 ;-------------------------------------------------------------------
+undef("ZeroLineContourThick")
 function ZeroLineContourThick (plot:graphic, Thick:integer) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -243,6 +252,7 @@ begin
       return (plot)
 end
 ; -------------------------------------------------------
+undef("ZeroNegDashLineContour")
 function ZeroNegDashLineContour (plot:graphic) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -290,6 +300,7 @@ begin
 
 end
 ; -------------------------------------------------------
+undef("ZeroNegDashLineContourOverlay")
 function ZeroNegDashLineContourOverlay (plot:graphic) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -346,6 +357,7 @@ begin
 
 end
 ; -------------------------------------------------------
+undef("ZeroGoneNegDashLineContour")
 function ZeroGoneNegDashLineContour(plot:graphic) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -399,6 +411,7 @@ begin
 
 end
 ; -------------------------------------------------------
+undef("NegDashLineContour")
 function NegDashLineContour (plot:graphic) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -439,6 +452,7 @@ begin
 
 end
 ; -------------------------------------------------------
+undef("ShadeLtContour")
 function ShadeLtContour (plot:graphic, CnLt:float, FillPatLt:integer ) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -482,6 +496,7 @@ begin
    return (plot)
 end
 ; -------------------------------------------------------
+undef("ShadeGtContour")
 function ShadeGtContour (plot:graphic, CnGt:float, FillPatGt:integer ) 
 
 ; operates on a plot object created by "gsn_csm.ncl" code
@@ -528,6 +543,7 @@ begin
 
 end
 ; -------------------------------------------------------
+undef("ShadeLtGtContour")
 function ShadeLtGtContour (plot:graphic
                           ,CnLt:float, FillPatLt:integer\
                           ,CnGt:float, FillPatGt:integer ) 
@@ -579,6 +595,7 @@ begin
 
 end
 ; -------------------------------------------------------
+undef("ShadeGeLeContour")
 function ShadeGeLeContour (plot:graphic
                           ,CnGe:float, CnLe:float, FillPat:integer ) 
 
@@ -625,6 +642,7 @@ begin
 
 end
 ; -------------------------------------------------------
+undef("ShadeGeLeContourDensity")
 function ShadeGeLeContourDensity (plot:graphic ,CnGe:float, CnLe:float \
                                  ,FillPat:integer, FillDensity:float ) 
 
@@ -673,6 +691,7 @@ begin
 end
 ;-------------------------------------------------------------------
                                       ; utility called internally only
+undef("genCmapHueRangeInternal")
 function genCmapHueRangeInternal (hueLeft, hueRight) 
 
 ; generates left and right "hue" values for *predefined* colors
@@ -757,6 +776,7 @@ begin
 end
 ;-------------------------------------------------------------------
                                       ; utility called internally only
+undef("genCmapColorWheelInternal")
 procedure genCmapColorWheelInternal (wks:graphic, ncol:integer, hueRange:float)
 local hleft, hright, colorWheel, h, s, v, cmap
 begin
@@ -807,6 +827,7 @@ begin
    gsn_define_colormap(wks, cmap)
 end
 ;-------------------------------------------------------------------
+undef("genCmapManualRes")
 procedure genCmapManualRes (wks:graphic, res ,hueLeft, hueRight)
 
 ; generates RGB values for *predefined* min, max, contour intervals
@@ -885,6 +906,7 @@ begin
 
 end
 ;-------------------------------------------------------------------
+undef("genCmapMnMxCnInt")
 procedure genCmapMnMxCnInt (wks:graphic \
                            ,MnCnLvl:float, MxCnLvl:float, CnInt:float \
                            ,hueLeft, hueRight)
@@ -949,6 +971,7 @@ begin
 
 end
 ;-------------------------------------------------------------------
+undef("genCmapMnMxSpan")
 procedure genCmapMnMxSpan (wks:graphic, plot:graphic\
                                       , hueLeft, hueRight)
 
@@ -999,6 +1022,7 @@ begin
 
 end
 ;-------------------------------------------------------------------
+undef("genCmapCnLvl")
 procedure genCmapCnLvl (wks:graphic, nCnLvl:integer, hueLeft, hueRight)
 ; ----------------limited usefulness ----------------------
 ; This works but an idiosyncracy of the underlying graphics is
@@ -1062,6 +1086,7 @@ begin
  genCmapColorWheelInternal (wks, ncol, hueRange)   
 end
 ;-------------------------------------------------------------------
+undef("genCmapLb")
 procedure genCmapLb (wks:graphic, plot:graphic \  ; changed 4 Aug 99
                     ,xndc:float, yndc:float, csize:float)
 
@@ -1120,6 +1145,7 @@ begin
 
 end
 ;-------------------------------------------------------------------
+undef("genCmapNameCol")
 procedure genCmapNameCol (wks:graphic, colors[*]:string)
 ; This works but an idiosyncracy of the underlying graphics is
 ; that it starts at cmap(2,:) and cycles thru the colors.
@@ -1166,6 +1192,7 @@ begin
 
 end
 ; ----------------------------------------------------------
+undef("msgValOutline")
 function msgValOutline (wks:graphic, plot:graphic, x[*][*]:float)
 
 ; When drawing plots with vectors, streamlines which do not
@@ -1197,6 +1224,7 @@ begin
   return (plot)
 end
 ; ----------------------------------------------------------
+undef("infoTimeStamp")
 procedure infoTimeStamp ( wks:graphic, chSize:float, FileInfo:string )
 
 ; Place text on plot to indicate the data source and time created
@@ -1261,6 +1289,7 @@ begin
    gsn_text_ndc  (wks,"Created: "+TimeStamp , xLeft, yBot, txres)
 end
 ; ----------------------------------------------------------
+undef("specx_ci")
 function specx_ci (sdof:numeric ,pLow:numeric, pHigh:numeric)
 
 ; Calculate the theoretical Markov spectrum and lower and
@@ -1316,6 +1345,7 @@ begin
   return (splt)
 end
 ; ----------------------------------------------------------
+undef("specxy_ci")
 function specxy_ci (sdof:numeric ,pLow:numeric, pHigh:numeric)
 
 ; Calculate the theoretical Markov spectrum and lower and
@@ -1385,6 +1415,7 @@ begin
   return (splt)
 end
 ; ------------------------------------------------------------
+undef("add90LatX")
 function add90LatX (Data[*][*]:numeric)
 
 ; This assumes that the "x" coordinate is latitude.
@@ -1458,6 +1489,7 @@ begin
 	return(newData)
 end
 ; ------------------------------------------------------------
+undef("add90LatY")
 function add90LatY(Data[*][*]:numeric)
 
 ; This assumes that the "y" coordinate is latitude.
@@ -1538,6 +1570,7 @@ end
 ; create plots with a monthly x labels J,F,M,..,N,D,J
 ; It will add the cyclic pts
 
+undef("plt_csm_xy_AddCyclicMonth")
 function plt_csm_xy_AddCyclicMonth(wks:graphic, x[12]:numeric, y:numeric, resxy:logical)
 local nmos, xCyclic,yCyclic,dimy,ranky
 begin
@@ -1799,6 +1832,7 @@ begin
    return (plot)
 
 end
+undef("upperTriCntr")
 function upperTriCntr(wks:graphic,x[*][*]:numeric,label:string,RES:logical)
 
 local res,txres,fs0,fs1,fheight,numl,yoffset,avgx,avgy, \
@@ -1884,6 +1918,7 @@ begin
         return(plot)
 end
 ; ----------------------------------------------------------------
+undef("drawNDCGrid")
 procedure drawNDCGrid(wks:graphic) 
 ;
 ; Created by Adam Phillips
@@ -1932,6 +1967,7 @@ begin
 	gsn_polyline_ndc(wks,(/0.99,0.99/),(/0.,1./),x6res)
 end
 ; -------------------------------------------------------
+undef("setColorContourClear")
 function setColorContourClear (plot:graphic, cLow:numeric, cUp:numeric) 
 ; operates on a plot object created by "gsn_csm.ncl" code
 ; Make color contours between cLow and cUp clear
@@ -1983,6 +2019,7 @@ end
 ;     time:  the time values corresponding with the coi values
 ;     gsres: optional list of GraphicStyle resources (for polygon fill).
 ;
+undef("ShadeCOI")
 function ShadeCOI(wks:graphic,plot:graphic,w,time, gsres:logical)
 local newtime, newcoi, ni, indices, do_both
 begin
@@ -2173,6 +2210,7 @@ end
 ;*************************************************************************
 ; Adam Philips
 
+undef("get_script_name")
 function get_script_name()
 local args, nargs, found, i, cstr, ncstr, script_name
 begin
@@ -2216,6 +2254,7 @@ end
 ; ----------------------------------------------------------
 ; Adam Phillips
 ;
+undef("TimeSourceStamp")
 procedure TimeSourceStamp (wks:graphic, chSize:float, Data:string )
 
 ; Place text on plot to indicate the data source, program, and 
@@ -2296,6 +2335,7 @@ end
 ; ----------------------------------------------------------
 ; Adam Phillips
 ;
+undef("landsea_mask")
 function landsea_mask (basemap[*][*]:byte,tlat:numeric,tlon:numeric)
 ;
 ;	Given a latitude and longitude array, this function will 
@@ -2450,6 +2490,7 @@ end
 ; ----------------------------------------------------------
 ; Adam Phillips
 ;
+undef("boxplot")
 function boxplot (wks:graphic,x[*]:numeric,y[*][*]:numeric,boxOpts:logical,plotres:logical,lineres:logical)
 ;
 ;	This function creates a blank linLog plot object, on which box plots are created by extensive

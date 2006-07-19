@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.10 2004-11-20 23:14:49 shea Exp $
+;      $Id: popRemap.ncl,v 1.11 2006-07-19 02:12:21 haley Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -183,12 +183,12 @@ begin
 end
 
 ; -----------------------------------------------------
-undef ("copy_CV_2_pop")
 ; internal function
 ; Copy the coordinate variables from one variable to another,
 ; except for last two dimensions.  
 ; The "iOffSet" is for the vector case where there is one 
 ; extra dimension.
+undef ("copy_CV_2_pop")
 procedure copy_CV_2_pop(var_from,var_to, iOffSet:integer)  
 local dimt, dimf, rfrom, rto, i
 begin                      
@@ -578,6 +578,7 @@ print (dim_src)
 
 end
 ;----------------------------------------------------------------------
+undef("preRotate_PopLatLon2D")
 function preRotate_PopLatLon2D \
                      (u[*][*]:numeric, v[*][*]:numeric , rot[*]:numeric \
                      ,ny:integer, mx:integer ,map_wts[*][*]:numeric     \
@@ -610,6 +611,7 @@ begin
   return (uvNew)
 end
 ;----------------------------------------------------------------------
+undef("postRotate_PopLatLon2D")
 function postRotate_PopLatLon2D \
                      (u[*][*]:numeric, v[*][*]:numeric , rot[*]:numeric \
                      ,ny:integer, mx:integer ,map_wts[*][*]:numeric     \
