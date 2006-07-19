@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.204 2006-04-06 20:23:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.205 2006-07-19 22:52:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7033,6 +7033,7 @@ begin
     refanno_on     = True
     lbar_on        = True
     res2 = get_resources(resources)
+    point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -7208,10 +7209,12 @@ begin
     major_length = scale * major_length
     minor_length = scale * minor_length
 
-    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
-    gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
+    if(point_outward) then
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
                                                xmlength,ymlength,\
                                                major_length,minor_length)
+    end if
 
 ; Make sure info labels, line labels, and vector labels are same size.
     if(scalar_contour)
@@ -8377,6 +8380,7 @@ begin
     center_string = False
     right_string  = False
     bar_chart     = False
+    point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; Check if frame and/or draw are not supposed to be called.
 
@@ -9249,9 +9253,11 @@ begin
 
 ; Make tick marks same length and point outward.
 
-    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
-    gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
-                                 ymlength,major_length,minor_length)
+    if(point_outward) then
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
+                                   ymlength,major_length,minor_length)
+    end if
 
 ; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
@@ -10089,6 +10095,7 @@ begin
     lbar_on       = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+    point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
 ; with "gsn."
@@ -10218,10 +10225,12 @@ begin
       major_length = scale * min((/ylength,xlength/))
       minor_length = scale * min((/ymlength,xmlength/))
 
-      tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
-      gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
+      if(point_outward) then
+        tmres = get_res_eq(res2,"tm")
+        gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
                                                 xmlength,ymlength,\
                                                 major_length,minor_length)
+      end if
     end if
 
 ; Create a labelbar.
@@ -10688,6 +10697,7 @@ begin
     lbar_on       = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+    point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
 ; with "gsn."
@@ -10804,10 +10814,13 @@ begin
     major_length = scale * major_length
     minor_length = scale * minor_length
 
-    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
-    gsnp_point_tickmarks_outward(vector_plot,tmres,xlength,ylength,\
+    if(point_outward) then
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(vector_plot,tmres,xlength,ylength,\
                                  xmlength,ymlength,\
                                  major_length,minor_length)
+    end if
+
 ; Create a labelbar.
 
     if (lbar_on)
@@ -10959,6 +10972,7 @@ begin
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+    point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
 ; with "gsn."
@@ -11063,10 +11077,12 @@ begin
     major_length = scale * major_length
     minor_length = scale * minor_length
 
-    tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
-    gsnp_point_tickmarks_outward(streamline_plot,tmres,xlength,ylength,\
+    if(point_outward) then
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(streamline_plot,tmres,xlength,ylength,\
                                                xmlength,ymlength,\
                                                major_length,minor_length)
+    end if
 
 ; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"am","tx"/))  ; Get textitem resources
