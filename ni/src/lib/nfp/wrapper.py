@@ -28,7 +28,7 @@ ctypes = [   'void','double','float','long',   'int','string','logical']
 #
 class Argument:
   def __init__(self,name,itype,ndims,dsizes=None,min_ndims=0, 
-               dsizes_names=None,dsizes_names_str=""):
+               dsizes_names=None,dsizes_names_str="",has_missing=False):
     self.name       = name
     self.ntype      = ntypes[itype]
     self.ctype      = ctypes[itype]
@@ -40,23 +40,28 @@ class Argument:
       self.is_scalar = False
 #
 # These are variable names that we use in the C code to hold
-# number of dimensions, dimension sizes, types, and temporary names
-# for various input arguments. Note that not all of these names will
-# necessarily be used in the code. They are conditional on several 
-# factors, like whether the type is numeric, and whether the array
-# has leftmost dimensions.
+# number of dimensions, dimension sizes, types, missing values, and
+# temporary names for various input arguments. Note that not all of
+# these names will necessarily be used in the code. They are
+# conditional on several factors, like whether the type is numeric,
+# and whether the array has leftmost dimensions.
 #
-    self.ndims_name  = "ndims_" + name
-    self.type_name   = "type_" + name
-    self.dsizes_name = "dsizes_" + name
-    self.tmp_name    = "tmp_" + name
-    self.index_name  = "index_" + name
+    self.ndims_name   = "ndims_" + name
+    self.type_name    = "type_" + name
+    self.dsizes_name  = "dsizes_" + name
+    self.has_msg_name = "has_missing_" + name
+    self.msg_name     = "missing_" + name
+    self.msg_dname    = "missing_dbl_" + name
+    self.msg_fname    = "missing_flt_" + name
+    self.tmp_name     = "tmp_" + name
+    self.index_name   = "index_" + name
 
     if dsizes != None:
       self.dsizes      = dsizes
     if dsizes_names != None:
       self.dsizes_names     = dsizes_names
       self.dsizes_names_str = dsizes_names_str
+    self.has_missing = has_missing
 #
 # Set up instructions on how to print an instance of this class.
 #
@@ -64,6 +69,8 @@ class Argument:
     str1 = "Name is '" + self.name + "'\n"
     str1 = str1 + "  NCL type is " + self.ntype + "\n"
     str1 = str1 + "    C type is " + self.ctype + "\n"
+    if self.has_missing:
+      str1 = str1 + "    This variable can contain a missing value.\n"
     if self.ndims > 0:
       if self.is_scalar:
         str1 = str1 + "  This variable is a scalar\n"
@@ -220,6 +227,15 @@ for i in range(num_args):
     global_var_names.append(name)
 
 #
+# Ask about a missing value.
+#
+  rinput = raw_input("Can this variable have a _FillValue attribute? (y/n) [n] ")
+  if (lower(rinput) == "y"):
+    has_missing = True
+  else:
+    has_missing = False
+   
+#
 # Get dimension sizes.
 #
 
@@ -310,7 +326,7 @@ for i in range(num_args):
         dsizes_names.append(raw_input("Name of dimension " + str(j) + " : "))
       else:
         dsizes_names.append(raw_input("Name of dimension ndims_" + name + \
-                                    "-" + str(min_ndims-j) + " : "))
+                                    "-" + str(int(min_ndims-j)) + " : "))
       if not dsizes_names[j] in global_dsizes_names: 
         global_dsizes_names.append(dsizes_names[j])
       if not dsizes_names[j] in global_var_names: 
@@ -335,7 +351,7 @@ for i in range(num_args):
 #
 
   args.append(Argument(name,itype,ndims,dsizes,min_ndims,dsizes_names,\
-                       dsizes_names_str))
+                       dsizes_names_str,has_missing))
 
 #
 # Get information on the return value, if a function.
@@ -377,6 +393,15 @@ if isfunc:
   else:
     global_var_names.append(ret_name)
 
+#
+# Ask about a missing value.
+#
+  rinput = raw_input("Can the return value contain missing values? (y/n) [n] ")
+  if (lower(rinput) == "y"):
+    ret_has_missing = True
+  else:
+    ret_has_missing = False
+   
 #
 # Get dimension sizes.
 #
@@ -483,7 +508,8 @@ if isfunc:
 #
     
   ret_arg = Argument(ret_name,ret_itype,ret_ndims,ret_dsizes,
-                     ret_min_ndims,ret_dsizes_names,ret_dsizes_names_str)
+                     ret_min_ndims,ret_dsizes_names,ret_dsizes_names_str,
+                     ret_has_missing)
 
 #
 # Get information about how Fortran function is to be called and what
@@ -560,7 +586,7 @@ if debug:
 # make sure this is acceptable.
 #
 
-print 'I will be creating the files ' + wrapper_name + '.c and ' + \
+print 'I will be creating the files ' + wrapper_name + 'W.c and ' + \
       'wrapper_' + ncl_name + '.c.'
 print 'The contents of wrapper_' + ncl_name + '.c should be copied over to wrapper.c.'
 
@@ -576,7 +602,7 @@ if (lower(okay) == "n"):
 # should copy its contents to "wrapper.c" where all the built-in 
 # functions and procedures are registered.
 #
-w1file = open(wrapper_name+'.c','w')
+w1file = open(wrapper_name+'W.c','w')
 w2file = open('wrapper_' + wrapper_name+'.c','w')
 
 #
@@ -666,6 +692,25 @@ for i in range(len(args)):
 
 #---------------------------------------------------------------------
 #
+# Include missing value variables for each variable that can contain
+# missing values. In addition, if the variable is numeric, be sure
+# to create variables to hold the double and single versions of
+# the missing value.
+#
+# int has_missing_x;
+# NclScalar missing_x, missing_dbl_x, missing_flt_x;
+#
+#---------------------------------------------------------------------
+  if args[i].has_missing:
+    w1file.write("  int " + args[i].has_msg_name + ";\n")
+    if args[i].ntype == "numeric":
+      w1file.write("  NclScalar " + args[i].msg_name + ", " + \
+                   args[i].msg_fname + ", " + args[i].msg_dname + ";\n")
+    else:
+      w1file.write("  NclScalar " + args[i].msg_name + ";\n")
+
+#---------------------------------------------------------------------
+#
 # Include a type variable for each variable that is numeric.
 #
 # NclBasicDataTypes type_x;
@@ -695,6 +740,25 @@ if isfunc:
 #---------------------------------------------------------------------
   w1file.write("  int " + ret_arg.ndims_name + ", *" + ret_arg.dsizes_name + \
                ";\n")
+
+#---------------------------------------------------------------------
+#
+# Include missing value variables for each variable that can contain
+# missing values. In addition, if the variable is numeric, be sure
+# to create variables to hold the double and single versions of
+# the missing value.
+#
+# int has_missing_x;
+# NclScalar missing_x, missing_dbl_x, missing_flt_x;
+#
+#---------------------------------------------------------------------
+  if ret_arg.has_missing:
+    w1file.write("  int " + ret_arg.has_msg_name + ";\n")
+    if ret_arg.ntype == "numeric":
+      w1file.write("  NclScalar " + ret_arg.msg_name + ", " + \
+                   ret_arg.msg_fname + ", " + ret_arg.msg_dname + ";\n")
+    else:
+      w1file.write("  NclScalar " + ret_arg.msg_name + ";\n")
 
 #---------------------------------------------------------------------
 #
@@ -792,10 +856,14 @@ for i in range(len(args)):
   else:
     w1file.write("           NULL,\n")
 #
-# These are for the missing values, which we are not handling yet.
+# These are for the missing values.
 #
-  w1file.write("           NULL,\n")
-  w1file.write("           NULL,\n")
+  if args[i].has_missing:
+    w1file.write("           &" + args[i].msg_name + ",\n")
+    w1file.write("           &" + args[i].has_msg_name + ",\n")
+  else:
+    w1file.write("           NULL,\n")
+    w1file.write("           NULL,\n")
 
   if args[i].ntype == "numeric":
     w1file.write("           &" + args[i].type_name + ",\n")
