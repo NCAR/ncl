@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.38 2006-01-05 02:31:57 dbrown Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.39 2006-07-19 22:58:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,6 +50,7 @@ static struct _NclDataRec *MultiDValReadSection
 {
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	NclData output_md;
+	NclSelectionRecord local_sel;
 	NclSelection *sel_ptr;
 	void *val;
 	int i,k,from,to;
@@ -91,9 +92,18 @@ static struct _NclDataRec *MultiDValReadSection
 * if no vector subscripting is used then add selection record to
 * output object.
 */
-	if(sel!= NULL){
-		sel_ptr	= sel->selection;
+	if(sel == NULL){
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"*MultiDValReadSection: internal error: no selection record provided");
+		return NULL;
 	}
+	/* 
+	 * Coordinate variables can become corrupted later on if the selection record that is passed in
+	 * gets modified: so make a copy of the selection record and modify that.
+	 */
+
+	local_sel = *sel;
+	sel_ptr	= local_sel.selection;
+		
 	for(i = 0 ; i < n_dims_input; i++) {
 		switch(sel_ptr->sel_type) {
 		case Ncl_SUB_ALL:
@@ -208,7 +218,7 @@ static struct _NclDataRec *MultiDValReadSection
 		total_elements = total_elements * n_elem;
 		sel_ptr++;
 	}
-	sel_ptr = sel->selection;
+	sel_ptr = local_sel.selection;
 /*
 * All subscript ranges are valid. whether or not it is a reorder, and
 * whether or not a vector subscript is present are known.
@@ -405,6 +415,7 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 * This selection record applys to the target record and it represents a 
 * mapping from the value object into target. 
 */
+	NclSelectionRecord local_sel;
 	NclSelection *sel_ptr = NULL;
 	void *val;
 	int i,k;
@@ -459,7 +470,8 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 	el_size = target_md->multidval.type->type_class.size;
 	
 	if(sel != NULL) {
-		sel_ptr = sel->selection;
+		local_sel = *sel;
+		sel_ptr	= local_sel.selection;
 	} else {
 		if(target_md->multidval.totalsize == value_md->multidval.totalsize) {
 			memcpy(target_md->multidval.val,value_md->multidval.val,value_md->multidval.totalsize);
@@ -612,7 +624,7 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 		return(NhlFATAL);
 		
 	}
-	sel_ptr = sel->selection;
+	sel_ptr = local_sel.selection;
 /*
 * all dimsizes between value and selection target match. 
 * all dimsizes are in valid ranges of target dimensions.
@@ -760,6 +772,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 * mapping from the value object into target. 
 */
 	NclSelection *sel_ptr = NULL;
+	NclSelectionRecord local_sel;
 	void *val;
 	int i,k,to;
 
@@ -808,7 +821,8 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 	}
 	el_size = target_md->multidval.type->type_class.size;
 	if(sel != NULL) {
-		sel_ptr = sel->selection;
+		local_sel = *sel;
+		sel_ptr	= local_sel.selection;
 	} else {
 		/*
 		 * DIB -- this seems wrong: if the value_md has only one element it can't possible work.
@@ -939,7 +953,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 		total_elements = total_elements * n_elem;
 		sel_ptr++;
 	}
-	sel_ptr = sel->selection;
+	sel_ptr = local_sel.selection;
 /*
 * all dimsizes are in valid ranges of target dimensions.
 * All subscript ranges are valid. if vector subscript is present is known.
@@ -1123,6 +1137,8 @@ NclSelectionRecord *from_selection;
 	void *to_val;
 	NclSelection *from_sel_ptr = NULL;
 	void *from_val;
+	NclSelectionRecord local_to_sel;
+	NclSelectionRecord local_from_sel;
 
 	long to_current_index[NCL_MAX_DIMENSIONS];
 	long to_multiplier[NCL_MAX_DIMENSIONS];
@@ -1202,13 +1218,14 @@ NclSelectionRecord *from_selection;
 	}
 	el_size = target_md->multidval.type->type_class.size;
 
-	
-	if(to_selection != NULL) {
-		to_sel_ptr = to_selection->selection;
-	} 
-	if(from_selection != NULL) {
-		from_sel_ptr = from_selection->selection;
-	} 
+	if(to_selection == NULL || from_selection == NULL) {
+		return NhlFATAL;
+	}
+	local_to_sel = *to_selection;
+	local_from_sel = *from_selection;
+	to_sel_ptr = local_to_sel.selection;
+	from_sel_ptr = local_from_sel.selection;
+
 	for(i = 0 ; i < n_dims_target; i++) {
 		switch(to_sel_ptr->sel_type) {
 		case Ncl_SUB_ALL:
@@ -1440,8 +1457,8 @@ NclSelectionRecord *from_selection;
 		from_sel_ptr++;
 	}
 
-	to_sel_ptr = to_selection->selection;
-	from_sel_ptr = from_selection->selection;
+	to_sel_ptr = local_to_sel.selection;
+	from_sel_ptr = local_from_sel.selection;
 	to_val = target_md->multidval.val;
 	from_val = value_md->multidval.val;
 
@@ -1734,6 +1751,7 @@ NclSelectionRecord *from_selection;
 	}
 	return(NhlNOERROR);
 }
+
 static NhlErrorTypes MultiDValAddParent
 #if	NhlNeedProto
 (NclObj theobj, NclObj parent)
