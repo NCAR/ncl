@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.181 2006-07-18 12:47:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.182 2006-07-20 17:35:14 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2819,16 +2819,22 @@ end
 ; Values of just = "TopCenter", para = -0.5, orth = -0.5 will position  ;
 ; the top center of the annotation in the top left corner of the plot,  ;
 ; effectively placing part of the annotation outside the plot.          ;
+;                                                                       ;
+; Since adding an annotation to a plot can make it bigger, this         ;
+; function will recognize gsnMaximize if it is set, and resize the plot ;
+; if necessary.                                                         ;
+;                                                                       ;
 ;***********************************************************************;
 function gsn_add_annotation(plot:graphic, anno:graphic, resources:logical)
-local res2, just, para, orth, just, zone, resize
+local res2, just, para, orth, just, zone, resize, maxbb, tmp_wks
 begin
-  res2 = get_resources(resources)
+  res2  = get_resources(resources)
   just = get_res_value(res2,"amJust","CenterCenter")
   para = get_res_value(res2,"amParallelPosF",0)
   orth = get_res_value(res2,"amOrthogonalPosF",0)
   zone = get_res_value(res2,"amZone",0)
   resize = get_res_value(res2,"amResizeNotify",True)
+  maxbb = get_bb_res(res2)
 ;
 ; Add annotation to plot.
 ;
@@ -2847,6 +2853,11 @@ begin
 ; Apply rest of resources, if any.
 ;
    attsetvalues_check(anno_id,res2)
+;
+; Remaximize the plot if necessary.
+;
+   tmp_wks = NhlGetParentWorkstation(plot)
+   draw_and_frame(tmp_wks,plot,False,False,False,maxbb)
 ;
 ; Return id
 ;
