@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.118 2006-07-19 02:12:20 haley Exp $
+;      $Id: contributed.ncl,v 1.119 2006-07-20 19:32:08 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8059,26 +8059,34 @@ begin
   dimNames    = dimNames_x1      ; default
                                  ; only go here if dimNames are not the same
                                  ; name all dimensions
-  if (any(dimNames_x1.ne.dimNames_x2)) then
-      do n=0,rank_x1-1
-         if (ismissing(dimNames_x1(n)) .and. \
-             .not.ismissing(dimNames_x2(n))) then
-             dimNames(n) = dimNames_x2(n)
-         end if
-      end do
-  end if 
+  do n=0,rank_x1-1
+     if (ismissing(dimNames_x1(n)) .and. \
+         .not.ismissing(dimNames_x2(n))) then
+         dimNames(n) = dimNames_x2(n)
+         x1!n = dimNames(n)
+     end if
+     if (ismissing(dimNames_x1(n)) .and. \
+         ismissing(dimNames_x2(n))) then
+         dimNames(n) = "dim"+n
+         x1!n = "dim"+n
+         x2!n = "dim"+n
+     end if
+  end do
 
-  recCoord = new ( n1+n2, typeof(x1&$dimNames_x1(0)$) )
   if (iscoord(x1,dimNames_x1(0)) ) then 
-      recCoord(0:n1-1) = x1&$dimNames_x1(0)$   
+      recCoord = new ( n1+n2, typeof(x1&$dimNames_x1(0)$) )
+      if (iscoord(x1,dimNames_x1(0)) ) then 
+          recCoord(0:n1-1) = x1&$dimNames_x1(0)$   
+      end if
+      if (iscoord(x2,dimNames_x2(0)) ) then 
+          recCoord(n1:   ) = x2&$dimNames_x2(0)$   
+      end if
   end if
-  if (iscoord(x2,dimNames_x2(0)) ) then 
-      recCoord(n1:   ) = x2&$dimNames_x2(0)$   
-  end if
+
   recFlag  = False
-  if (.not.all(ismissing(recCoord))) then
-      recFlag = True
-      delete(recCoord@_FillValue)
+  if (isvar("recCoord") .and. .not.all(ismissing(recCoord))) then
+      recFlag = True             ; must have coord
+     ;delete(recCoord@_FillValue)
   end if
                                  ; assign coordinate variables [if present]
   do n=0,rank_x1-1                    
