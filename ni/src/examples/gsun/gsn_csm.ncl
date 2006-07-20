@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.205 2006-07-19 22:52:00 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.206 2006-07-20 20:57:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3033,7 +3033,7 @@ end
 ;***********************************************************************;
 procedure add_map_tickmarks(wks:graphic,map:graphic,tmres:logical, \
                             lon_spacing,mlon_spacing,lat_spacing,\
-                            mlat_spacing)
+                            mlat_spacing,point_outward)
 local vpxf, vpyf, vpwf, vphf, min_lon, max_lon, min_lat, max_lat, \
 center_lon, lonvalues, latvalues, lonlabels, latlabels, tickmark
 begin
@@ -3111,7 +3111,8 @@ begin
 
 ; Point tick marks outward and make labels the same size.
 
-    gsnp_point_tickmarks_outward(tickmark,tmres,-1.,-1.,-1.,-1.,-1.,-1.)
+    gsnp_point_tickmarks_outward(tickmark,tmres,-1.,-1.,-1.,-1.,-1.,-1.,\
+                                 point_outward)
     gsnp_uniform_tickmark_labels(tickmark,tmres,0.)
 
 ;
@@ -3749,7 +3750,8 @@ begin
     calldraw  = get_res_value(res2,"gsnDraw", True)
     callframe = get_res_value(res2,"gsnFrame",True)
     maxbb     = get_bb_res(res2)
-    
+    point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
+
     left_string   = new(1,logical)
     center_string = new(1,logical)
     right_string  = new(1,logical)
@@ -3949,7 +3951,7 @@ begin
 ; we need to get the size of the X/Y axis labels.
 ;
     add_map_tickmarks(wks,map_object,tmres,lon_spacing,mlon_spacing,\
-                      lat_spacing,mlat_spacing)
+                      lat_spacing,mlat_spacing,point_outward)
 
 ; Make sure axes labels (if any) are the same size.
 
@@ -4954,6 +4956,8 @@ begin
       mpres@gsnMinorLatSpacing = res2@gsnMinorLatSpacing
       delete(res2@gsnMinorLatSpacing)
     end if
+    mpres@gsnTickMarksPointOutward = get_res_value(res2, \
+                                     "gsnTickMarksPointOutward",True)
 
 ; Check for left/right titles at top. Use valid "long_name" type attributes
 ; and "units" if they exist.
@@ -7209,12 +7213,10 @@ begin
     major_length = scale * major_length
     minor_length = scale * minor_length
 
-    if(point_outward) then
-      tmres = get_res_eq(res2,"tm")
-      gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
-                                               xmlength,ymlength,\
-                                               major_length,minor_length)
-    end if
+    tmres = get_res_eq(res2,"tm")
+    gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
+                                 xmlength,ymlength,\
+                                 major_length,minor_length,point_outward)
 
 ; Make sure info labels, line labels, and vector labels are same size.
     if(scalar_contour)
@@ -9253,11 +9255,10 @@ begin
 
 ; Make tick marks same length and point outward.
 
-    if(point_outward) then
-      tmres = get_res_eq(res2,"tm")
-      gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
-                                   ymlength,major_length,minor_length)
-    end if
+    tmres = get_res_eq(res2,"tm")
+    gsnp_point_tickmarks_outward(xy_object,tmres,xlength,ylength,xmlength, \
+                                 ymlength,major_length,minor_length, \
+                                 point_outward)
 
 ; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"tx","am"/))  ; Get textitem resources
@@ -10225,12 +10226,10 @@ begin
       major_length = scale * min((/ylength,xlength/))
       minor_length = scale * min((/ymlength,xmlength/))
 
-      if(point_outward) then
-        tmres = get_res_eq(res2,"tm")
-        gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
-                                                xmlength,ymlength,\
-                                                major_length,minor_length)
-      end if
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
+                                   xmlength,ymlength,\
+                                   major_length,minor_length,point_outward)
     end if
 
 ; Create a labelbar.
@@ -10814,12 +10813,11 @@ begin
     major_length = scale * major_length
     minor_length = scale * minor_length
 
-    if(point_outward) then
-      tmres = get_res_eq(res2,"tm")
-      gsnp_point_tickmarks_outward(vector_plot,tmres,xlength,ylength,\
+    tmres = get_res_eq(res2,"tm")
+    gsnp_point_tickmarks_outward(vector_plot,tmres,xlength,ylength,\
                                  xmlength,ymlength,\
-                                 major_length,minor_length)
-    end if
+                                 major_length,minor_length,point_outward)
+
 
 ; Create a labelbar.
 
@@ -11077,12 +11075,10 @@ begin
     major_length = scale * major_length
     minor_length = scale * minor_length
 
-    if(point_outward) then
-      tmres = get_res_eq(res2,"tm")
-      gsnp_point_tickmarks_outward(streamline_plot,tmres,xlength,ylength,\
-                                               xmlength,ymlength,\
-                                               major_length,minor_length)
-    end if
+    tmres = get_res_eq(res2,"tm")
+    gsnp_point_tickmarks_outward(streamline_plot,tmres,xlength,ylength,\
+                                 xmlength,ymlength,\
+                                 major_length,minor_length,point_outward)
 
 ; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"am","tx"/))  ; Get textitem resources

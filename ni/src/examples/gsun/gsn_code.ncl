@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.182 2006-07-20 17:35:14 haley Exp $
+;      $Id: gsn_code.ncl,v 1.183 2006-07-20 20:57:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1678,7 +1678,7 @@ end
 procedure gsnp_point_tickmarks_outward(plot:graphic,res:logical, \
                               x_major_length, y_major_length, \
                               x_minor_length, y_minor_length, \
-                              major_length, minor_length)
+                              major_length, minor_length,point_outward)
 local tmres
 begin
   if(major_length.lt.0.)
@@ -1720,22 +1720,26 @@ begin
 
   tmres = res
   tmres = True
+
   set_attr(tmres,"tmXBMajorLengthF"        , x_major_length)
-  set_attr(tmres,"tmXBMajorOutwardLengthF" , x_major_length)
   set_attr(tmres,"tmXBMinorLengthF"        , x_minor_length)
-  set_attr(tmres,"tmXBMinorOutwardLengthF" , x_minor_length)
   set_attr(tmres,"tmXTMajorLengthF"        , x_major_length)
-  set_attr(tmres,"tmXTMajorOutwardLengthF" , x_major_length)
   set_attr(tmres,"tmXTMinorLengthF"        , x_minor_length)
-  set_attr(tmres,"tmXTMinorOutwardLengthF" , x_minor_length)
   set_attr(tmres,"tmYLMajorLengthF"        , y_major_length)
-  set_attr(tmres,"tmYLMajorOutwardLengthF" , y_major_length)
   set_attr(tmres,"tmYLMinorLengthF"        , y_minor_length)
-  set_attr(tmres,"tmYLMinorOutwardLengthF" , y_minor_length)
   set_attr(tmres,"tmYRMajorLengthF"        , y_major_length)
-  set_attr(tmres,"tmYRMajorOutwardLengthF" , y_major_length)
   set_attr(tmres,"tmYRMinorLengthF"        , y_minor_length)
-  set_attr(tmres,"tmYRMinorOutwardLengthF" , y_minor_length)
+
+  if (point_outward) then
+    set_attr(tmres,"tmXBMajorOutwardLengthF" , x_major_length)
+    set_attr(tmres,"tmXBMinorOutwardLengthF" , x_minor_length)
+    set_attr(tmres,"tmXTMajorOutwardLengthF" , x_major_length)
+    set_attr(tmres,"tmXTMinorOutwardLengthF" , x_minor_length)
+    set_attr(tmres,"tmYLMajorOutwardLengthF" , y_major_length)
+    set_attr(tmres,"tmYLMinorOutwardLengthF" , y_minor_length)
+    set_attr(tmres,"tmYRMajorOutwardLengthF" , y_major_length)
+    set_attr(tmres,"tmYRMinorOutwardLengthF" , y_minor_length)
+  end if
 
   attsetvalues_check(plot,tmres)
 
@@ -7091,7 +7095,7 @@ begin
 ; 13. Force tickmarks to be the same length, and pointing outward.
 ;
   tmres = get_res_eq(res2,"tm")  ; Get tickmark resources
-  gsnp_point_tickmarks_outward(xy,tmres,-1.,-1.,-1.,-1.,-1.,-1.)
+  gsnp_point_tickmarks_outward(xy,tmres,-1.,-1.,-1.,-1.,-1.,-1.,True)
   gsnp_uniform_tickmark_labels(xy,tmres,0.)
 ;
 ; 14. Create (but don't draw) histogram plot.
