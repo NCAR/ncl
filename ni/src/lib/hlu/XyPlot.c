@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.92 2006-05-02 22:43:05 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.93 2006-07-20 00:21:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2739,11 +2739,20 @@ DrawCurves
 			float	oor;
 			float	*xmiss = NULL;
 			float	*ymiss = NULL;
+			int xin = 0, yin = 0;
 
-			if(missing_set[i] & XMISS_SET)
+			if(missing_set[i] & XMISS_SET) {
 				xmiss = &xmissing[i];
-			if(missing_set[i] & YMISS_SET)
+				if (*xmiss >= tfp->x_min 
+				    && *xmiss <= tfp->x_max)
+					xin = 1;
+			}
+			if(missing_set[i] & YMISS_SET) {
 				ymiss = &ymissing[i];
+				if (*ymiss >= tfp->y_min
+				    && *ymiss <= tfp->y_max)
+					yin = 1;
+			}
 
 			NhlVAGetValues(thetrans->base.id,
 				NhlNtrOutOfRangeF,	&oor,
@@ -2776,7 +2785,35 @@ DrawCurves
 
 			_NhlSetMarkerInfo(xlayer->base.wkptr,(NhlLayer)xlayer);
 
-			if(status){
+			if (xin && yin) {
+				for(j=0;j<len_vectors[i];j++){
+					if((xvect[j] == *xmiss) ||
+						(yvect[j] == *ymiss))
+						continue;
+					_NhlWorkstationMarker(
+						xlayer->base.wkptr,
+						&tx[j],&ty[j],1);
+				}
+			}
+			else if (xin) {
+				for(j=0;j<len_vectors[i];j++){
+					if(xvect[j] == *xmiss)
+						continue;
+					_NhlWorkstationMarker(
+						xlayer->base.wkptr,
+						&tx[j],&ty[j],1);
+				}
+			}
+			else if (yin) {
+				for(j=0;j<len_vectors[i];j++){
+					if(yvect[j] == *ymiss)
+						continue;
+					_NhlWorkstationMarker(
+						xlayer->base.wkptr,
+						&tx[j],&ty[j],1);
+				}
+			}
+			else if(status){
 				for(j=0;j<len_vectors[i];j++){
 					if((tx[j] == oor)||(ty[j] == oor))
 						continue;
