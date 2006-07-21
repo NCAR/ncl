@@ -12,9 +12,12 @@ can call it from NCL."""
 #
 args                = []
 farg_names          = []
+farg_cchar          = []
 farg_types          = []
 global_dsizes_names = []
 global_var_names    = []
+global_var_types    = []
+global_calling_char = []
 global_dsizes_names_accum = []
 index_names         = []
 debug               = True
@@ -22,6 +25,7 @@ have_leftmost       = False
 
 ntypes = ['numeric','double','float','long','integer','string','logical']
 ctypes = [   'void','double','float','long',   'int','string','logical']
+reserved_names = ['i', 'ndims_leftmost', 'size_leftmost', 'size_output']
 
 #
 # Set up class that will hold information on NCL input arguments.
@@ -194,6 +198,8 @@ for i in range(num_args):
     name = raw_input("\nWhat is the name of argument # " + str(i) + "? ")
     if name == "":
       print "Invalid name, reenter."
+    elif name in reserved_names or name in global_var_names:
+      print "Name already in use, reenter."
     else:
       valid = True
 
@@ -220,11 +226,17 @@ for i in range(num_args):
           valid = True
       except:
         print "Invalid type, reenter"
-      
+#
+# Store this variable and its type in a list of variables we are
+# keeping track of.
+#
   if itype == 0:
     global_var_names.append("tmp_" + name)
+    global_var_types.append(ctypes.index('double'))
   else:
     global_var_names.append(name)
+    global_var_types.append(itype)
+  global_calling_char.append("")
 
 #
 # Ask about a missing value.
@@ -232,9 +244,18 @@ for i in range(num_args):
   rinput = raw_input("Can this variable have a _FillValue attribute? (y/n) [n] ")
   if (lower(rinput) == "y"):
     has_missing = True
+
+    if itype == 0:
+      global_var_names.append("missing_dbl_" + name + ".doubleval")
+      global_var_names.append("missing_flt_" + name + ".floatval")
+      global_var_types.append(ctypes.index('double'))
+      global_var_types.append(ctypes.index('float'))
+    else:
+      global_var_names.append("missing_" + name + "." + ctypes[itype] + "val")
+      global_var_types.append(itype)
   else:
     has_missing = False
-   
+
 #
 # Get dimension sizes.
 #
@@ -331,6 +352,8 @@ for i in range(num_args):
         global_dsizes_names.append(dsizes_names[j])
       if not dsizes_names[j] in global_var_names: 
         global_var_names.append(dsizes_names[j])
+        global_var_types.append(ctypes.index('int'))
+        global_calling_char.append("&")
 #
 # Create string for variable that will hold the size of these dimensions
 # (rightmost dimensions for variables that have leftmost dimensions).
@@ -345,7 +368,8 @@ for i in range(num_args):
       global_dsizes_names.append(dsizes_names_str)
     if not dsizes_names_str in global_var_names: 
       global_var_names.append(dsizes_names_str)
-
+      global_var_types.append(ctypes.index('int'))
+      global_calling_char.append("&")
 #
 # With all this information, create an instance of the Argument class.
 #
@@ -362,6 +386,8 @@ if isfunc:
     ret_name = raw_input("\nWhat is the name of the return value? ")
     if ret_name == "":
       print "Invalid name, reenter."
+    elif ret_name in reserved_names or ret_name in global_var_names:
+      print "Name already in use, reenter."
     else:
       valid = True
 
@@ -390,8 +416,11 @@ if isfunc:
 
   if ret_itype == 0:
     global_var_names.append("tmp_" + ret_name)
+    global_var_types.append(ctypes.index('double'))
   else:
     global_var_names.append(ret_name)
+    global_var_types.append(ret_itype)
+  global_calling_char.append("")
 
 #
 # Ask about a missing value.
@@ -486,11 +515,13 @@ if isfunc:
                                           " : "))
       else:
         ret_dsizes_names.append(raw_input("Name of dimension ndims_" + \
-                   ret_name + "-" + str(min_ndims-j) + " : "))
+                   ret_name + "-" + str(int(min_ndims-j)) + " : "))
         if not ret_dsizes_names[j] in global_dsizes_names: 
           global_dsizes_names.append(ret_dsizes_names[j])
         if not ret_dsizes_names[j] in global_var_names: 
           global_var_names.append(ret_dsizes_names[j])
+          global_var_types.append(ctypes.index('int'))
+          global_calling_char.append("&")
 #
 # Create string for variable that will hold the size of these 
 # minimum dimensions.
@@ -501,6 +532,8 @@ if isfunc:
         global_dsizes_names.append(ret_dsizes_names_str)
       if not ret_dsizes_names_str in global_var_names: 
         global_var_names.append(ret_dsizes_names_str)
+        global_var_types.append(ctypes.index('int'))
+        global_calling_char.append("&")
 
 #
 # With this information, create an instance of the Argument class for
@@ -529,47 +562,62 @@ while not valid:
   except:
     print "Must enter an integer > 0, reenter"
 
+#
+# Loop through the Fortran arguments and get the name and type.
+#
 for i in range(fnum_args):
   print "What is the name of argument # " + str(i) + " ?"
-  print "(Be sure to include '&' if appropriate.) "
-  print "You can select one of these existing names, or supply your own : "
+  print "You can select one of these existing names, or supply your own."
 
   for j in range(len(global_var_names)):
     print "   ",j,":",global_var_names[j]
 
   rinput = raw_input()
   valid = False
+  from_list = False
   while not valid:
     try:
       ii = int(rinput)
       if (ii >= 0) or (ii < len(global_var_names)):
         valid = True
         farg_names.append(global_var_names[ii])
+        farg_cchar.append(global_calling_char[ii])
+        from_list = True
       else:
         print "Invalid integer, reenter."
     except:
       farg_names.append(rinput)
       valid = True
+      rinput = raw_input("Does an '&' need to be prepended when passing '" +\
+                         rinput + "' to the Fortran routine? (y/n) [n] ")
+      if (lower(rinput) == "y"):
+        farg_cchar.append('&')
+      else:
+        farg_cchar.append('')
 
   valid = False
   while not valid:
-    print "What type is '" + farg_names[i] + "'? [0]"
-    for j in range(len(ctypes)):
-      print "   ",j,":",ctypes[j]
-   
-    rinput = raw_input()
-    if rinput == "":
-      farg_types.append(0)
+    if from_list:
+      farg_types.append(global_var_types[ii])
       valid = True
     else:
-      try:
-        if (int(rinput) < 0) or (int(rinput) >= len(ctypes)):
-          print "Invalid type, reenter"
-        else:
-          farg_types.append(int(rinput))
-          valid = True
-      except:
-        print "Must enter an integer, reenter."
+      print "What type is '" + farg_names[i] + "'? [1] "
+      for j in range(len(ctypes)):
+        print "   ",j,":",ctypes[j]
+   
+      rinput = raw_input()
+      if rinput == "":
+        farg_types.append(1)
+        valid = True
+      else:
+        try:
+          if (int(rinput) < 0) or (int(rinput) >= len(ctypes)):
+            print "Invalid type, reenter"
+          else:
+            farg_types.append(int(rinput))
+            valid = True
+        except:
+          print "Must enter an integer, reenter."
 
 #
 # Print information about each argument for debugging purposes.
@@ -1268,9 +1316,9 @@ if have_leftmost:
               upper(fortran_name) + ")(")
   for i in range(len(farg_names)):
     if i == 0:
-      w1file.write(farg_names[i])
+      w1file.write(farg_cchar[i] + farg_names[i])
     else:
-      w1file.write(", " + farg_names[i])
+      w1file.write(", " + farg_cchar[i] + farg_names[i])
   w1file.write(");\n")
 
 
