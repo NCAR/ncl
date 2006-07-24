@@ -78,7 +78,7 @@ NhlErrorTypes prcwater_dp_W( void )
   klvl = dsizes_q[ndims_q-1];
 
   total_size_leftmost = 1;
-  for( i = 0; i < ndims_dp-1; i++ ) {
+  for( i = 0; i < ndims_q-1; i++ ) {
     total_size_leftmost *= dsizes_q[i];
   }
 
