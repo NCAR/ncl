@@ -5,7 +5,7 @@ echo "WRAPIT Version: "$version
 if ($#argv == 0) then
   echo ERROR: NO ARGUMENTS
   echo For help: "WRAPIT -h | less"
-  exit
+  exit 1
 endif
 if ($argv[1]:q == "-h" || $argv[1]:q == "-help") then
 echo written by Mark Stevens, formerly of NCAR/CGD/Climate Modeling Section
@@ -103,7 +103,7 @@ echo " "
 echo Many arguments
 echo "WRAPIT -l blas_mp -L /usr/local/lib64/r4i4 -l imsl_mp file1.f"
 echo " "
-exit
+exit 1
 endif
 #---------------------------------------------------------------------- 
 set OS = `uname`
@@ -113,7 +113,7 @@ if ($OS != "SunOS" && $OS != "IRIX64" && $OS != "IRIX" && $OS != "AIX" \
   echo WRAPIT IS NOT SUPPORTED ON THE $OS OPERATING SYSTEM 
   echo EXITING WRAPIT
   echo " "
-  exit
+  exit 1
 endif
 if (-e WRAPIT.c) then
   'rm' -f WRAPIT.c
@@ -197,7 +197,7 @@ while ($#argv)
       echo "FATAL ERROR: missing shared object name after -n option"
       echo EXITING WRAPIT
       echo " "
-      exit
+      exit 1
     endif
     shift
     if ($argv[1]:q == "-l" || $argv[1]:q == "-L" || $argv[1]:q == "-r8" || \
@@ -206,7 +206,7 @@ while ($#argv)
       echo "FATAL ERROR: missing shared object name after -n option"
       echo EXITING WRAPIT
       echo " "
-      exit
+      exit 1
     endif
     set SharedObj = $argv[1].so
   else if ($arg:q == "-L") then
@@ -214,7 +214,7 @@ while ($#argv)
       echo "FATAL ERROR: missing library path after -L option"
       echo EXITING WRAPIT
       echo " "
-      exit
+      exit 1
     endif
     shift
     if ($argv[1]:q == "-l" || $argv[1]:q == "-n" || $argv[1]:q == "-r8" || \
@@ -223,7 +223,7 @@ while ($#argv)
       echo "FATAL ERROR: missing library path after -L option"
       echo EXITING WRAPIT
       echo " "
-      exit
+      exit 1
     endif
     if ($?libraries) then
       set libraries = "$libraries -L$argv[1]"
@@ -235,7 +235,7 @@ while ($#argv)
       echo "FATAL ERROR: missing library name after -l option"
       echo EXITING WRAPIT
       echo " "
-      exit
+      exit 1
     endif
     shift
     if ($argv[1]:q == "-L" || $argv[1]:q == "-n" || $argv[1]:q == "-r8" || \
@@ -244,7 +244,7 @@ while ($#argv)
       echo "FATAL ERROR: missing library name after -l option"
       echo EXITING WRAPIT
       echo " "
-      exit
+      exit 1
     endif
     if ($?libraries) then
       set libraries = "$libraries -l$argv[1]"
@@ -267,7 +267,7 @@ if ($OS == Linux && $f90c == g77 || $OS == FreeBSD || $OS == Darwin) then
     echo "FATAL ERROR: GNU g77 compiler NOT found."
     echo EXITING WRAPIT
     echo " "
-    exit 
+    exit 1
   endif
 endif
 
@@ -425,10 +425,16 @@ while ($#argv)
     echo FATAL ERROR: FILE $argv[1] DOES NOT EXIST
     echo EXITING WRAPIT
     echo " "
-    exit
+    exit 1
   endif
 end
 $NCARG_ROOT/bin/wrapit77 < WRAPIT.stub >! WRAPIT.c
+
+if ($status) then
+  echo FATAL ERROR: 'wrapit77' failed
+  echo 
+  exit 1
+endif
 
 #----------- Compile the WRAPIT.c code ------------------------
 
@@ -488,6 +494,11 @@ switch ($OS)
    breaksw
 endsw
 
+if ($status) then
+  echo FATAL ERROR: compilation of C wrapper failed
+  exit 1
+endif
+
 echo WRAPIT.o > objects
 
 #---------------- Compile the fortran code -------------------
@@ -506,7 +517,7 @@ foreach arg ($args)
         if ($arg:e == "f90" && $f90c == "g77") then           
           echo FATAL ERROR: g77 can not compile f90 code
           echo " "
-          exit
+          exit 1
         else
           $f90c $fopts $arg
         endif
@@ -525,9 +536,14 @@ foreach arg ($args)
   else
     echo FATAL ERROR: FILE $arg DOES NOT EXIST
     echo " "
-    exit
+    exit 1
   endif
 end
+
+if ($status) then
+  echo FATAL ERROR: compilation of Fortran code(s) failed
+  exit 1
+endif
 
 set object_files = `cat objects`
 
@@ -641,6 +657,11 @@ switch ($OS)
    breaksw
 endsw
 
+if ($status) then
+  echo FATAL ERROR: load command for creation of shared object failed
+  exit 1
+endif
+
 # clean up
 if ($debug == 0) then
  'rm' $object_files
@@ -650,3 +671,5 @@ if ($debug == 0) then
 endif
 echo END WRAPIT
 echo " "
+
+exit 0
