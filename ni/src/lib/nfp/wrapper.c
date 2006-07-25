@@ -465,6 +465,8 @@ extern NhlErrorTypes tempnam_W(void);
 extern NhlErrorTypes get_ncl_version_W(void);
 extern NhlErrorTypes echo_on_W(void);
 extern NhlErrorTypes echo_off_W(void);
+extern NhlErrorTypes erf_W(void);
+extern NhlErrorTypes erfc_W(void);
 
 extern NhlErrorTypes write_matrix_W(void);
 extern NhlErrorTypes ctwrap_W(void);
@@ -3001,10 +3003,10 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
 
     SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
     NclRegisterProc(wmbarbmap_W,args,"wmbarbmap",nargs);
 
 /*
@@ -4926,8 +4928,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(7);
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",NclANY,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     dimsizes[0] = 1;
@@ -5711,14 +5713,14 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(11);
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
-    SetArgTemplate(args, nargs, "numeric", NclANY, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);    nargs++;
 
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, NclANY);    nargs++;
@@ -6123,6 +6125,32 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(0);
     NclRegisterProc(echo_off_W, args, "echo_off", nargs);
+
+/*
+ * Register "erf".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(erf_W,args,"erf",nargs);
+
+/*
+ * Register "erfc".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    
+    NclRegisterFunc(erfc_W,args,"erfc",nargs);
 
 /*
  *  Register ctwrap.
