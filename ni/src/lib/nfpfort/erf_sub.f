@@ -3,7 +3,7 @@ C NCLFORTSTART
       implicit none
       double precision x, result
 C NCLEND
-c ncl result = errf (x)
+c ncl result = erf (x)
       double precision erf
 c c c external erf
       result = erf(x)
@@ -16,7 +16,7 @@ C NCLFORTSTART
       integer  ind
       double precision x, result
 C NCLEND
-c ncl result = errcf (ind, x)
+c ncl result = erfc (ind, x)
       double precision erfc1
 c c c external errc1
       result = erfc1(ind,x)
