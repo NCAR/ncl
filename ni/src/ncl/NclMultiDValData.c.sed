@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.39 2006-07-19 22:58:51 dbrown Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.40 2006-07-27 01:51:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,6 +38,7 @@ extern short    NCLnoPrintElem;     /* for multiple element print() stmts */
 INSERTHERE
 
 
+
 static struct _NclDataRec *MultiDValReadSection
 #if	NhlNeedProto
 (NclData self, NclSelectionRecord * sel,NclScalar *missing)
@@ -50,7 +51,6 @@ static struct _NclDataRec *MultiDValReadSection
 {
 	NclMultiDValData self_md = (NclMultiDValData)self;
 	NclData output_md;
-	NclSelectionRecord local_sel;
 	NclSelection *sel_ptr;
 	void *val;
 	int i,k,from,to;
@@ -92,21 +92,12 @@ static struct _NclDataRec *MultiDValReadSection
 * if no vector subscripting is used then add selection record to
 * output object.
 */
-	if(sel == NULL){
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"*MultiDValReadSection: internal error: no selection record provided");
-		return NULL;
+	if(sel!= NULL){
+		sel_ptr	= sel->selection;
 	}
-	/* 
-	 * Coordinate variables can become corrupted later on if the selection record that is passed in
-	 * gets modified: so make a copy of the selection record and modify that.
-	 */
-
-	local_sel = *sel;
-	sel_ptr	= local_sel.selection;
-		
 	for(i = 0 ; i < n_dims_input; i++) {
 		switch(sel_ptr->sel_type) {
-		case Ncl_SUB_ALL:
+		case Ncl_SUB_ALL:                             
 			sel_ptr->u.sub.start = 0;
 		case Ncl_SUB_VAL_DEF:
 			sel_ptr->u.sub.finish = (long)self_md->multidval.dim_sizes[sel_ptr->dim_num] - 1;
@@ -116,7 +107,9 @@ static struct _NclDataRec *MultiDValReadSection
 /*
 * The above cases make sure the defaults ranges are set. This cannot happen
 * until here because dim sizes are not known out side of the object
+* Note all cases fall through to here (no break statement)
 */
+			sel_ptr->sel_type = Ncl_SUBSCR;
 		case Ncl_SUBSCR:
 			if(sel_ptr->u.sub.is_single) {
 				keeper[i] = 0;
@@ -146,6 +139,8 @@ static struct _NclDataRec *MultiDValReadSection
 					sel_ptr->u.sub.start = current_index[i];
 					compare_sel[i] = -2;
 					strider[i] = -(sel_ptr->u.sub.stride);
+					sel_ptr->u.sub.stride = strider[i];
+
 				} else {
 					compare_sel[i] = -1;
 					current_index[i] = sel_ptr->u.sub.start;
@@ -169,6 +164,7 @@ static struct _NclDataRec *MultiDValReadSection
 					sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
 					sel_ptr->u.sub.start = current_index[i];
 					strider[i] = sel_ptr->u.sub.stride;
+					sel_ptr->u.sub.stride = -strider[i];
 
 				} else {
 					compare_sel[i] = -2;
@@ -218,7 +214,7 @@ static struct _NclDataRec *MultiDValReadSection
 		total_elements = total_elements * n_elem;
 		sel_ptr++;
 	}
-	sel_ptr = local_sel.selection;
+	sel_ptr = sel->selection;
 /*
 * All subscript ranges are valid. whether or not it is a reorder, and
 * whether or not a vector subscript is present are known.
@@ -415,7 +411,6 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 * This selection record applys to the target record and it represents a 
 * mapping from the value object into target. 
 */
-	NclSelectionRecord local_sel;
 	NclSelection *sel_ptr = NULL;
 	void *val;
 	int i,k;
@@ -470,8 +465,7 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 	el_size = target_md->multidval.type->type_class.size;
 	
 	if(sel != NULL) {
-		local_sel = *sel;
-		sel_ptr	= local_sel.selection;
+		sel_ptr = sel->selection;
 	} else {
 		if(target_md->multidval.totalsize == value_md->multidval.totalsize) {
 			memcpy(target_md->multidval.val,value_md->multidval.val,value_md->multidval.totalsize);
@@ -502,7 +496,9 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 /*
 * The above cases make sure the defaults ranges are set. This cannot happen
 * until here because dim sizes are not known out side of the object
+* Note all cases fall through to here (no break statement)
 */
+			sel_ptr->sel_type = Ncl_SUBSCR;
 		case Ncl_SUBSCR:
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
@@ -524,6 +520,7 @@ static NhlErrorTypes MultiDVal_md_WriteSection
                                         sel_ptr->u.sub.start = current_index[i];
                                         compare_sel[i] = -2;
                                         strider[i] = -(sel_ptr->u.sub.stride);
+					sel_ptr->u.sub.stride = strider[i];
                                 } else {
                                         compare_sel[i] = -1;
                                         current_index[i] = sel_ptr->u.sub.start;
@@ -554,6 +551,7 @@ static NhlErrorTypes MultiDVal_md_WriteSection
                                         sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
                                         sel_ptr->u.sub.start = current_index[i];
                                         strider[i] = sel_ptr->u.sub.stride;
+					sel_ptr->u.sub.stride = -strider[i];
 
                                 } else {
                                         compare_sel[i] = -2;
@@ -624,7 +622,7 @@ static NhlErrorTypes MultiDVal_md_WriteSection
 		return(NhlFATAL);
 		
 	}
-	sel_ptr = local_sel.selection;
+	sel_ptr = sel->selection;
 /*
 * all dimsizes between value and selection target match. 
 * all dimsizes are in valid ranges of target dimensions.
@@ -772,7 +770,6 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 * mapping from the value object into target. 
 */
 	NclSelection *sel_ptr = NULL;
-	NclSelectionRecord local_sel;
 	void *val;
 	int i,k,to;
 
@@ -821,8 +818,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 	}
 	el_size = target_md->multidval.type->type_class.size;
 	if(sel != NULL) {
-		local_sel = *sel;
-		sel_ptr	= local_sel.selection;
+		sel_ptr = sel->selection;
 	} else {
 		/*
 		 * DIB -- this seems wrong: if the value_md has only one element it can't possible work.
@@ -853,7 +849,9 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 /*
 * The above cases make sure the defaults ranges are set. This cannot happen
 * until here because dim sizes are not known out side of the object
+* Note all cases fall through to here (no break statement)
 */
+			sel_ptr->sel_type = Ncl_SUBSCR;
 		case Ncl_SUBSCR:
 			if(sel_ptr->u.sub.finish < sel_ptr->u.sub.start) {
 
@@ -877,6 +875,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
                                         sel_ptr->u.sub.start = current_index[i];
                                         compare_sel[i] = -2;
                                         strider[i] = -(sel_ptr->u.sub.stride);
+					sel_ptr->u.sub.stride = strider[i];
                                 } else {
                                         compare_sel[i] = -1;
                                         current_index[i] = sel_ptr->u.sub.start;
@@ -899,6 +898,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
                                         sel_ptr->u.sub.finish = sel_ptr->u.sub.start;
                                         sel_ptr->u.sub.start = current_index[i];
                                         strider[i] = sel_ptr->u.sub.stride;
+					sel_ptr->u.sub.stride = -strider[i];
 
                                 } else {
                                         compare_sel[i] = -2;
@@ -953,7 +953,7 @@ static NhlErrorTypes MultiDVal_s_WriteSection
 		total_elements = total_elements * n_elem;
 		sel_ptr++;
 	}
-	sel_ptr = local_sel.selection;
+	sel_ptr = sel->selection;
 /*
 * all dimsizes are in valid ranges of target dimensions.
 * All subscript ranges are valid. if vector subscript is present is known.
@@ -1137,8 +1137,6 @@ NclSelectionRecord *from_selection;
 	void *to_val;
 	NclSelection *from_sel_ptr = NULL;
 	void *from_val;
-	NclSelectionRecord local_to_sel;
-	NclSelectionRecord local_from_sel;
 
 	long to_current_index[NCL_MAX_DIMENSIONS];
 	long to_multiplier[NCL_MAX_DIMENSIONS];
@@ -1218,14 +1216,13 @@ NclSelectionRecord *from_selection;
 	}
 	el_size = target_md->multidval.type->type_class.size;
 
-	if(to_selection == NULL || from_selection == NULL) {
-		return NhlFATAL;
-	}
-	local_to_sel = *to_selection;
-	local_from_sel = *from_selection;
-	to_sel_ptr = local_to_sel.selection;
-	from_sel_ptr = local_from_sel.selection;
-
+	
+	if(to_selection != NULL) {
+		to_sel_ptr = to_selection->selection;
+	} 
+	if(from_selection != NULL) {
+		from_sel_ptr = from_selection->selection;
+	} 
 	for(i = 0 ; i < n_dims_target; i++) {
 		switch(to_sel_ptr->sel_type) {
 		case Ncl_SUB_ALL:
@@ -1238,7 +1235,9 @@ NclSelectionRecord *from_selection;
 /*
 * The above cases make sure the defaults ranges are set. This cannot happen
 * until here because dim sizes are not known out side of the object
+* Note all cases fall through to here (no break statement)
 */
+			to_sel_ptr->sel_type = Ncl_SUBSCR;
 		case Ncl_SUBSCR:
 			if(to_sel_ptr->u.sub.finish < to_sel_ptr->u.sub.start) {
 
@@ -1262,6 +1261,7 @@ NclSelectionRecord *from_selection;
                                         to_sel_ptr->u.sub.start = to_current_index[i];
                                         to_compare_sel[i] = -2;
                                         to_strider[i] = -(to_sel_ptr->u.sub.stride);
+					to_sel_ptr->u.sub.stride = to_strider[i];
                                 } else {
                                         to_compare_sel[i] = -1;
                                         to_current_index[i] = to_sel_ptr->u.sub.start;
@@ -1287,6 +1287,7 @@ NclSelectionRecord *from_selection;
                                         to_sel_ptr->u.sub.finish = to_sel_ptr->u.sub.start;
                                         to_sel_ptr->u.sub.start = to_current_index[i];
                                         to_strider[i] = to_sel_ptr->u.sub.stride;
+					to_sel_ptr->u.sub.stride = -to_strider[i];
 
                                 } else {
                                         to_compare_sel[i] = -2;
@@ -1354,7 +1355,9 @@ NclSelectionRecord *from_selection;
 /*
 * The above cases make sure the defaults ranges are set. This cannot happen
 * until here because dim sizes are not known out side of the object
+* Note all cases fall through to here (no break statement)
 */
+			from_sel_ptr->sel_type = Ncl_SUBSCR;
 		case Ncl_SUBSCR:
 			if(from_sel_ptr->u.sub.finish < from_sel_ptr->u.sub.start) {
 
@@ -1379,6 +1382,7 @@ NclSelectionRecord *from_selection;
                                         from_sel_ptr->u.sub.start = from_current_index[i];
                                         from_compare_sel[i] = -2;
                                         from_strider[i] = -(from_sel_ptr->u.sub.stride);
+					from_sel_ptr->u.sub.stride = from_strider[i];
                                 } else {
                                         from_compare_sel[i] = -1;
                                         from_current_index[i] = from_sel_ptr->u.sub.start;
@@ -1403,7 +1407,7 @@ NclSelectionRecord *from_selection;
                                         from_sel_ptr->u.sub.finish = from_sel_ptr->u.sub.start;
                                         from_sel_ptr->u.sub.start = from_current_index[i];
                                         from_strider[i] = from_sel_ptr->u.sub.stride;
-
+					from_sel_ptr->u.sub.stride = -from_strider[i];
                                 } else {
                                         from_compare_sel[i] = -2;
                                         from_current_index[i] = from_sel_ptr->u.sub.start;
@@ -1457,8 +1461,8 @@ NclSelectionRecord *from_selection;
 		from_sel_ptr++;
 	}
 
-	to_sel_ptr = local_to_sel.selection;
-	from_sel_ptr = local_from_sel.selection;
+	to_sel_ptr = to_selection->selection;
+	from_sel_ptr = from_selection->selection;
 	to_val = target_md->multidval.val;
 	from_val = value_md->multidval.val;
 
