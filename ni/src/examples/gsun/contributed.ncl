@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.119 2006-07-20 19:32:08 shea Exp $
+;      $Id: contributed.ncl,v 1.120 2006-07-31 13:34:30 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1677,6 +1677,24 @@ begin
  return (xF)
 
 end
+; ********************************************************************
+; D. Shea
+; There is no built-in "floattostring"
+; Convert float values to type string
+
+undef("flt2string")
+function flt2string ( x:float )
+local x_str
+begin
+  ;x_str = x + ""              ; trick
+  ;copy_VarMeta (x, x_str)     ; contributed.ncl
+
+   x_str = new (dimsizes(x), "string")
+   delete(x_str@_FillValue)
+   x_str = x
+   return(x_str)
+end
+
 ; ********************************************************************
 ; D. Shea
 ; Truncate or Round "x" to the number of decimal places [nDec]
