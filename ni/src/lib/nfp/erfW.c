@@ -155,10 +155,6 @@ NhlErrorTypes erfc_W( void )
 /*
  * Argument # 0
  */
-  int *iopt;
-/*
- * Argument # 1
- */
   void *x;
   double *tmp_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
@@ -175,7 +171,7 @@ NhlErrorTypes erfc_W( void )
 /*
  * Various
  */
-  int i, size_output;
+  int i, size_output, iopt = 0;
 
 /*
  * Retrieve parameters.
@@ -186,21 +182,9 @@ NhlErrorTypes erfc_W( void )
 /*
  * Get argument # 0
  */
-  iopt = (int*)NclGetArgValue(
-           0,
-           2,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-/*
- * Get argument # 1
- */
   x = (void*)NclGetArgValue(
+           0,
            1,
-           2,
            &ndims_x,
            dsizes_x,
            NULL,
@@ -284,7 +268,7 @@ NhlErrorTypes erfc_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(derrcf,DERRCF)(iopt, tmp_x, tmp_result);
+    NGCALLF(derrcf,DERRCF)(&iopt, tmp_x, tmp_result);
 
 /*
  * Coerce output back to float if necessary.

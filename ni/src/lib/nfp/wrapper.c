@@ -6144,10 +6144,8 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
     nargs = 0;
-    args = NewArgs(2);
+    args = NewArgs(1);
 
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     
     NclRegisterFunc(erfc_W,args,"erfc",nargs);
