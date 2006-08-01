@@ -1,5 +1,5 @@
 /*
- *      $Id: LogLinTransObj.c,v 1.38 2005-11-04 23:17:16 dbrown Exp $
+ *      $Id: LogLinTransObj.c,v 1.39 2006-08-01 18:49:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1276,21 +1276,21 @@ float *yc;
 	for (i=0; i < 2; i++) {
 
 		if (x != xclip) {
-			if (_NhlCmpFAny2(xt,llp->x_min,6,1e-36) < 0.0) {
+			if (_NhlCmpFAny2(xt,llp->x_min,5,1e-36) <= 0) {
 				*xd = llp->x_min;
 				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
 			}
-			else if (_NhlCmpFAny2(xt,llp->x_max,6,1e-36) > 0.0) {
+			else if (_NhlCmpFAny2(xt,llp->x_max,6,1e-36) >= 0.0) {
 				*xd = llp->x_max;
 				*yd = yclip +(y-yclip) * (*xd-xclip)/(x-xclip);
 			}
 		}
 		if (y != yclip) {
-			if (_NhlCmpFAny2(yt,llp->y_min,6,1e-36) < 0.0) {
+			if (_NhlCmpFAny2(yt,llp->y_min,6,1e-36) <= 0.0) {
 				*yd = llp->y_min;
 				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
 			}
-			else if (_NhlCmpFAny2(yt,llp->y_max,6,1e-36) > 0.0) {
+			else if (_NhlCmpFAny2(yt,llp->y_max,6,1e-36) >= 0.0) {
 				*yd = llp->y_max;
 				*xd = xclip +(x-xclip) * (*yd-yclip)/(y-yclip);
 			}
@@ -1361,13 +1361,16 @@ float *yc;
 
 
 	for (i=0; i < 2; i++) {
+		int keep = 0;
 
 		if (x != xclip) {
-			if (_NhlCmpFAny2(xt,llp->x_min,6,1e-36) < 0.0) {
+			if (_NhlCmpFAny2(xt,llp->x_min,5,1e-36) <= 0.0) {
 				*xd = llp->x_min;
+				keep = 1;
 			}
-			else if (_NhlCmpFAny2(xt,llp->x_max,6,1e-36) > 0.0) {
+			else if (_NhlCmpFAny2(xt,llp->x_max,5,1e-36) >= 0.0) {
 				*xd = llp->x_max;
+				keep = 1;
 			}
 
 			if (llp->x_log && llp->y_log) {
@@ -1389,11 +1392,11 @@ float *yc;
 			}
 
 		}
-		if (y != yclip) {
-			if (_NhlCmpFAny2(yt,llp->y_min,6,1e-36) < 0.0) {
+		if (y != yclip && ! keep) {
+			if (_NhlCmpFAny2(yt,llp->y_min,5,1e-36) <= 0.0) {
 				*yd = llp->y_min;
 			}
-			else if (_NhlCmpFAny2(yt,llp->y_max,6,1e-36) > 0.0) {
+			else if (_NhlCmpFAny2(yt,llp->y_max,5,1e-36) >= 0.0) {
 				*yd = llp->y_max;
 			}
 
@@ -1420,11 +1423,19 @@ float *yc;
 		if (status) {
 			xt = *xd;
 			yt = *yd;
+			continue;
 		}
 	}
-	if (status) 
-		return NhlWARNING;
+	if (status) {
+		/* default to x and y (which are supposed to be inside) */
+		*xd = x;
+		*yd = y;
+		LlDataToWin((NhlLayer)llinst,xd,yd,1,
+				      xc,yc,NULL,NULL,&status);
 
+		if (status)
+			return NhlWARNING;
+	}
 	return NhlNOERROR;
 }
 
@@ -1592,7 +1603,7 @@ float y;
 int upordown;
 #endif
 {
-	NhlErrorTypes ret = NhlNOERROR;
+	NhlErrorTypes ret = NhlNOERROR,subret;
 	NhlLogLinTransObjLayer llinst = (NhlLogLinTransObjLayer)instance;
 	NhlLogLinTransObjLayerPart *ltp = 
 		(NhlLogLinTransObjLayerPart *) &llinst->lltrans;
@@ -1610,7 +1621,8 @@ int upordown;
 				  NhlEUNKNOWN,e_text,"LlDataLineTo",x,y);
 			ret = MIN(ret,NhlWARNING);
 		}
-		return MIN(ret,LogDataLineTo(instance,x,y,upordown));
+		subret = LogDataLineTo(instance,x,y,upordown);
+		return MIN(ret,subret);
 	}
 /*
 * if true the moveto is being performed
