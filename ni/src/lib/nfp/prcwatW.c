@@ -175,7 +175,7 @@ NhlErrorTypes prcwater_dp_W( void )
 
     if(type_prcwat == NCL_double) tmp_prcwat = &((double*)prcwat)[i];
 
-    NGCALLF(dprcwatdp,DPRCWATDP)(tmp_q,tmp_dp,&klvl,&missing_q.doubleval,
+    NGCALLF(dprcwatdp,DPRCWATDP)(tmp_q,tmp_dp,&klvl,&missing_dq.doubleval,
                                  tmp_prcwat);
 /*
  * Coerce output to float if necessary.
