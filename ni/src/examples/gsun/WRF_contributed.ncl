@@ -201,30 +201,39 @@ begin
         exit
     end if
   end if
+
+  lat2d@units = "degrees_north"
+  lon2d@units = "degrees_east"
+
   dimll = dimsizes(lat2d)
   nlat  = dimll(0)
   mlon  = dimll(1)
 
-  res@mpLimitMode           = "Corners"  
-  res@mpLeftCornerLatF      = lat2d(0,0)
-  res@mpLeftCornerLonF      = lon2d(0,0)
-  res@mpRightCornerLatF     = lat2d(nlat-1,mlon-1)
-  res@mpRightCornerLonF     = lon2d(nlat-1,mlon-1)
+  res@mpLimitMode            = "Corners"  
+  res@mpLeftCornerLatF       = lat2d(0,0)
+  res@mpLeftCornerLonF       = lon2d(0,0)
+  res@mpRightCornerLatF      = lat2d(nlat-1,mlon-1)
+  res@mpRightCornerLonF      = lon2d(nlat-1,mlon-1)
 
-  res@mpCenterLonF          = f@CEN_LON
-  res@mpCenterLatF          = f@CEN_LAT        ; default
+  res@mpCenterLonF           = f@CEN_LON
+  res@mpCenterLatF           = f@CEN_LAT        ; default
 
-  if (isatt(f, "STAND_LON") ) then
-      res@mpCenterLatF      = f@STAND_LON      ; use if present
-  end if
   if (res@mpProjection.eq."Mercator") then
       res@mpCenterLatF = 0.0    ; Cindy Bruyere MMM/WRF 24 Mar 2006
   end if
 
   if (res@mpProjection.eq."LambertConformal") then
-      res@mpLambertParallel1F   = f@TRUELAT1
-      res@mpLambertParallel2F   = f@TRUELAT2
-      res@mpLambertMeridianF    = f@CEN_LON
+      res@mpLambertParallel1F    = f@TRUELAT1
+      res@mpLambertParallel2F    = f@TRUELAT2
+      if (isatt(f, "STAND_LON") ) then
+          res@mpLambertMeridianF = f@STAND_LON  ; use if present
+      else
+          if (isatt(f, "CEN_LON") ) then
+              res@mpLambertMeridianF    = f@CEN_LON
+          else
+              print("WRF_map_c: STAND_LON and CEN_LON missing")
+          end if
+      end if
   end if
 
   res@mpFillOn              = False            ; turn off map fill
