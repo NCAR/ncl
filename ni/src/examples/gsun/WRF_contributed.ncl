@@ -202,7 +202,7 @@ begin
     end if
   end if
 
-  lat2d@units = "degrees_north"
+  lat2d@units = "degrees_north"    ; not needed
   lon2d@units = "degrees_east"
 
   dimll = dimsizes(lat2d)
@@ -227,6 +227,7 @@ begin
       res@mpLambertParallel2F    = f@TRUELAT2
       if (isatt(f, "STAND_LON") ) then
           res@mpLambertMeridianF = f@STAND_LON  ; use if present
+                                                ; CB MMM/WRF 4 Aug 2006
       else
           if (isatt(f, "CEN_LON") ) then
               res@mpLambertMeridianF    = f@CEN_LON
