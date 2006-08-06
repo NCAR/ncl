@@ -557,18 +557,21 @@ NhlErrorTypes vinth2p_ecmwf_W
     }
     if(was_val) {
       if(datai_md->multidval.n_dims == 4 ) {
-        dim_info[0].dim_quark =NrmStringToQuark("time"); 
-        dim_info[0].dim_num= 0 ; 
-        dim_info[0].dim_size = total; 
-        dim_info[1].dim_quark =plevo_quark; 
-        dim_info[1].dim_num= 1 ; 
-        dim_info[1].dim_size = plevo_dimsizes ; 
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = NrmStringToQuark("time"); 
+        dim_info[0].dim_size  = total; 
+
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = plevo_quark; 
+        dim_info[1].dim_size  = plevo_dimsizes;
+
+        dim_info[2].dim_num   = 2;
         dim_info[2].dim_quark = NrmStringToQuark("lat");
-        dim_info[2].dim_size = datai_dimsizes[1] ; 
-        dim_info[2].dim_num= 2 ; 
+        dim_info[2].dim_size  = datai_dimsizes[1];
+
+        dim_info[3].dim_num   = 3;
         dim_info[3].dim_quark = NrmStringToQuark("lon");
-        dim_info[3].dim_size = datai_dimsizes[2] ;
-        dim_info[3].dim_num= 3 ; 
+        dim_info[3].dim_size  = datai_dimsizes[2];
         
         lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&(plevo_dimsizes),TEMPORARY,NULL,(NclObjClass)plevo_type_class);
         lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,&(dim_info[1]),-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
@@ -587,15 +590,18 @@ NhlErrorTypes vinth2p_ecmwf_W
                                &out_missing,4,datao_dimsizes,TEMPORARY,NULL,
                                not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
       } else {
-        dim_info[0].dim_quark =plevo_quark; 
-        dim_info[0].dim_num= 0 ; 
-        dim_info[0].dim_size = plevo_dimsizes ; 
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = plevo_quark; 
+        dim_info[0].dim_size  = plevo_dimsizes;
+
+        dim_info[1].dim_num   = 1;
         dim_info[1].dim_quark = NrmStringToQuark("lat");
-        dim_info[1].dim_size = datai_dimsizes[1] ; 
-        dim_info[1].dim_num= 1 ; 
+        dim_info[1].dim_size  = datai_dimsizes[1];
+
+        dim_info[2].dim_num   = 2;
         dim_info[2].dim_quark = NrmStringToQuark("lon");
-        dim_info[2].dim_size = datai_dimsizes[2] ;
-        dim_info[2].dim_num= 2 ; 
+        dim_info[2].dim_size  = datai_dimsizes[2];
+
         lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,
                                      NULL,1,&(plevo_dimsizes),TEMPORARY,NULL,
                                      (NclObjClass)plevo_type_class);
@@ -625,18 +631,22 @@ NhlErrorTypes vinth2p_ecmwf_W
       _NclPlaceReturn(data);
     } else {
       if(datai_n_dims == 4) {
-        dim_info[0].dim_quark = val.u.data_var->var.dim_info[0].dim_quark;;
-        dim_info[0].dim_num= 0 ; 
-        dim_info[0].dim_size = plevo_dimsizes ; 
-        dim_info[1].dim_quark = plevo_quark;;
-        dim_info[1].dim_num= 1 ; 
-        dim_info[1].dim_size = plevo_dimsizes ; 
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = val.u.data_var->var.dim_info[0].dim_quark;
+        dim_info[0].dim_size  = val.u.data_var->var.dim_info[0].dim_size; 
+
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = plevo_quark;
+        dim_info[1].dim_size  = plevo_dimsizes;
+
+        dim_info[2].dim_num   = 2;
         dim_info[2].dim_quark = val.u.data_var->var.dim_info[2].dim_quark;
-        dim_info[2].dim_size = val.u.data_var->var.dim_info[2].dim_size; 
-        dim_info[2].dim_num= 2 ; 
+        dim_info[2].dim_size  = val.u.data_var->var.dim_info[2].dim_size; 
+
+        dim_info[3].dim_num   = 3;
         dim_info[3].dim_quark = val.u.data_var->var.dim_info[3].dim_quark;
-        dim_info[3].dim_size = val.u.data_var->var.dim_info[3].dim_size; 
-        dim_info[3].dim_num= 3 ; 
+        dim_info[3].dim_size  = val.u.data_var->var.dim_info[3].dim_size; 
+
         lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,
                                      NULL,1,&(plevo_dimsizes),TEMPORARY,NULL,
                                      (NclObjClass)plevo_type_class);
@@ -692,15 +702,18 @@ NhlErrorTypes vinth2p_ecmwf_W
           }
         }
       } else {
-        dim_info[0].dim_quark = plevo_quark;;
-        dim_info[0].dim_num= 0 ; 
-        dim_info[0].dim_size = plevo_dimsizes ; 
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = plevo_quark;
+        dim_info[0].dim_size  = plevo_dimsizes; 
+
+        dim_info[1].dim_num   = 1;
         dim_info[1].dim_quark = val.u.data_var->var.dim_info[1].dim_quark;
-        dim_info[1].dim_size = val.u.data_var->var.dim_info[1].dim_size; 
-        dim_info[1].dim_num= 1 ; 
+        dim_info[1].dim_size  = val.u.data_var->var.dim_info[1].dim_size; 
+
+        dim_info[2].dim_num   = 2;
         dim_info[2].dim_quark = val.u.data_var->var.dim_info[2].dim_quark;
-        dim_info[2].dim_size = val.u.data_var->var.dim_info[2].dim_size; 
-        dim_info[2].dim_num= 2 ; 
+        dim_info[2].dim_size  = val.u.data_var->var.dim_info[2].dim_size; 
+
         lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&(plevo_dimsizes),TEMPORARY,NULL,(NclObjClass)plevo_type_class);
         lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,dim_info,-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
         if(!plevo_was_val) {
