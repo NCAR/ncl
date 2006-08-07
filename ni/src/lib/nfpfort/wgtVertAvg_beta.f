@@ -1,6 +1,6 @@
 C NCLFORTSTART
-      SUBROUTINE DWVBETAP1(MLON,NLAT,KLEV,P,X,XMSG,PSFC,IPUNIT,IOPT,PTOP,
-     +                     PBOT,XVB,IER)
+      SUBROUTINE DWVBETAP1(MLON,NLAT,KLEV,P,X,XMSG,PSFC,IPUNIT,IOPT,
+     +                     PTOP,PBOT,XVB,IER)
       IMPLICIT NONE
 
 C     NCL:    x_wva =  wgtVertBeta (p, x, psfc, ipunit, iopt)
