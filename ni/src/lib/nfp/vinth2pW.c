@@ -473,8 +473,9 @@ NhlErrorTypes vinth2p_W
 		  datao_dimsizes[0] = datai_md->multidval.dim_sizes[0];
 		  datao_dimsizes[1] = datai_md->multidval.dim_sizes[1];
 		  datao_dimsizes[2] = plevo_dimsizes;
-		  datao_dimsizes[3] = datai_dimsizes[2];
-		  datao_dimsizes[4] = datai_dimsizes[3];
+		  datao_dimsizes[3] = datai_md->multidval.dim_sizes[3];
+		  datao_dimsizes[4] = datai_md->multidval.dim_sizes[4];
+
 		  tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,datao,&out_missing,5,datao_dimsizes,TEMPORARY,NULL,not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
 		}
 		else if(datai_md->multidval.n_dims == 4 ) {
