@@ -81,9 +81,9 @@ class Argument:
       else:
         str1 = str1 + "  Number of dimensions is " + str(self.ndims) + "\n"
         str1 = str1 + "  Name of variable that holds # of dimemsions is " + \
-               self.ndims_name
+               self.ndims_name + "\n"
         str1 = str1 + "  Name of variable that holds dimemsion sizes is " + \
-               self.dsizes_name
+               self.dsizes_name + "\n"
         for i in range(self.ndims):
           if self.dsizes[i] > 1:
             str1 = str1 + "  Dimension # " + str(i) + " is length " +\
@@ -94,10 +94,12 @@ class Argument:
       str1 = str1 + "  Number of dimensions is variable\n"
 
     if self.min_ndims > 0:
-      str1 = str1 + "  Number of minimum dimensions is " + str(self.min_ndims) + "\n"
+      str1 = str1 + "  Number of minimum dimensions is " + \
+                    str(self.min_ndims) + "\n"
       for j in range(self.min_ndims):
-        str1 = str1 + "  Dimension " + self.ndims_name + "-" + str(j+1) + \
-                      " is " + self.dsizes_names[j] + "\n"
+        str1 = str1 + "  Dimension " + self.ndims_name + "-" + \
+                      str(int(self.min_ndims-j)) + " is " + \
+                      self.dsizes_names[j] + "\n"
     return str1
 
 #
@@ -250,9 +252,12 @@ for i in range(num_args):
       global_var_names.append("missing_flt_" + name + ".floatval")
       global_var_types.append(ctypes.index('double'))
       global_var_types.append(ctypes.index('float'))
+      global_calling_char.append("&")
+      global_calling_char.append("&")
     else:
       global_var_names.append("missing_" + name + "." + ctypes[itype] + "val")
       global_var_types.append(itype)
+      global_calling_char.append("&")
   else:
     has_missing = False
 
@@ -515,7 +520,7 @@ if isfunc:
                                           " : "))
       else:
         ret_dsizes_names.append(raw_input("Name of dimension ndims_" + \
-                   ret_name + "-" + str(int(min_ndims-j)) + " : "))
+                   ret_name + "-" + str(int(ret_min_ndims-j)) + " : "))
         if not ret_dsizes_names[j] in global_dsizes_names: 
           global_dsizes_names.append(ret_dsizes_names[j])
         if not ret_dsizes_names[j] in global_var_names: 
@@ -948,6 +953,7 @@ for i in range(len(args)):
     w1file.write('  }\n')
 
   if not args[i].is_scalar:
+    dstr = ""
     for j in range(len(args[i].dsizes_names)):
 #
 # If we're not dealing with a scalar, then write the code that 
@@ -964,11 +970,11 @@ for i in range(len(args)):
                          args[i].dsizes_name + '[' + str(j) + '];\n')
           else:
             w1file.write('  ' + args[i].dsizes_names[j] + ' = ' + \
-                         str(args[i].dsizes[j]) + ';\n\n')
+                         str(args[i].dsizes[j]) + ';\n')
         else:
           w1file.write('  ' + args[i].dsizes_names[j] + ' = ' + \
                       args[i].dsizes_name + '[' + args[i].ndims_name + '-' + 
-                      str(j+1) + '];\n\n')
+                      str(int(args[i].min_ndims-j)) + '];\n')
         global_dsizes_names_accum.append(args[i].dsizes_names[j])
       else:
         if args[i].ndims > 0 and args[i].dsizes[j] == 0:
@@ -980,23 +986,25 @@ for i in range(len(args)):
                        '");\n')
         elif args[i].ndims == 0:
           w1file.write('  if(' + args[i].dsizes_name + '[' + 
-                      args[i].ndims_name + '-' + str(j+1) + '] != ' + \
-                      args[i].dsizes_names[j] + ') {\n')
-          w1file.write(fatal_str + 'The ndims-' + str(j+1) + \
-                       ' argument of ' + args[i].name + \
+                      args[i].ndims_name + '-' + str(args[i].min_ndims-j) + \
+                      '] != ' + args[i].dsizes_names[j] + ') {\n')
+          w1file.write(fatal_str + \
+                       'The ndims-' + str(int(args[i].min_ndims-j)) + \
+                       ' dimension of ' + args[i].name + \
                        ' must be of length ' + args[i].dsizes_names[j] + \
                        '");\n')
         w1file.write(return_fatal_str)
         w1file.write('  }\n')
 
-      if min_ndims > 1 or ndims > 1:
+      if args[i].min_ndims > 1 or args[i].ndims > 1:
         if j == 0:
           dstr = "  " + args[i].dsizes_names_str + " = " + \
                  args[i].dsizes_names[0]
         else:
           dstr = dstr + " * " + args[i].dsizes_names[j]
 
-        w1file.write(dstr + ";\n\n")
+    if dstr != "":
+      w1file.write(dstr + ";\n\n")
 
 #---------------------------------------------------------------------
 #
@@ -1013,13 +1021,13 @@ if have_leftmost:
  */
 """)
   w1file.write("  size_leftmost  = 1;\n")
-  w1file.write("  ndims_leftmost = 0;\n")
 
   for i in range(len(args)):
     if args[i].min_ndims > 0:
       if first:
-        w1file.write("  for(i = 0; i < " + args[i].ndims_name + "-" + \
-                     str(args[i].min_ndims) + "; i++) {\n")
+        w1file.write("  ndims_leftmost = " + args[i].ndims_name + "-" + 
+                     str(args[i].min_ndims) + ";\n");
+        w1file.write("  for(i = 0; i < ndims_leftmost; i++) {\n")
 
         first_arg_name = args[i].name       # Keep track of this argument
         prev_arg_name  = first_arg_name
@@ -1052,7 +1060,6 @@ if have_leftmost:
 
   if not first:
     w1file.write("    size_leftmost *= dsizes_" + first_arg_name + "[i];\n")
-    w1file.write("    ndims_leftmost++;\n")
     w1file.write("  }\n\n")
 
 #---------------------------------------------------------------------
@@ -1403,9 +1410,35 @@ if isfunc:
  * Return value back to NCL script.
  */
 """)
-  w1file.write("  return(NclReturnValue(" + ret_arg.name + "," + \
-              ret_arg.ndims_name + "," + ret_arg.dsizes_name + ",NULL," + \
-              ret_arg.type_name + ",0));\n")
+#
+# If the return can have a missing value, account for it here. Also,
+# if the return can be float or double, then we have to return
+# the correct missing value.
+#
+  if ret_has_missing:
+    if ret_arg.ntype == "numeric":
+      w1file.write("  if(" + ret_arg.type_name + " != NCL_double) {\n")
+      w1file.write("    return(NclReturnValue(" + ret_arg.name + "," + \
+                   ret_arg.ndims_name + "," + ret_arg.dsizes_name + \
+                   ",&" + ret_arg.msg_fname + "," + \
+                   ret_arg.type_name + ",0));\n")
+      w1file.write("  }\n")
+      w1file.write("  else {\n")
+      w1file.write("    return(NclReturnValue(" + ret_arg.name + "," + \
+                   ret_arg.ndims_name + "," + ret_arg.dsizes_name + \
+                   ",&" + ret_arg.msg_dname + "," + \
+                   ret_arg.type_name + ",0));\n")
+      w1file.write("  }\n")
+    else:
+      w1file.write("  else {\n")
+      w1file.write("    return(NclReturnValue(" + ret_arg.name + "," + \
+                   ret_arg.ndims_name + "," + ret_arg.dsizes_name + "," + \
+                   ret_arg.msg_name + "," + ret_arg.type_name + ",0));\n")
+      w1file.write("  }\n")
+  else:
+    w1file.write("  return(NclReturnValue(" + ret_arg.name + "," + \
+                ret_arg.ndims_name + "," + ret_arg.dsizes_name + ",NULL," + \
+                ret_arg.type_name + ",0));\n")
 else:
   w1file.write("""
 /*

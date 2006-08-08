@@ -72,6 +72,7 @@ extern NhlErrorTypes gaus_lobat_W(void);
 extern NhlErrorTypes gaus_lobat_wgt_W(void);
 extern NhlErrorTypes linrood_latwgt_W(void);
 extern NhlErrorTypes linrood_wgt_W(void);
+extern NhlErrorTypes wgt_vert_avg_beta_W(void);
 
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
@@ -1322,6 +1323,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(linrood_wgt_W,args,"linrood_wgt",nargs);
+/*
+ * Register "wgt_vert_avg_beta".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(5);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+
+    NclRegisterFunc(wgt_vert_avg_beta_W,args,"wgt_vert_avg_beta",nargs);
+
 /*
  * Register "dv2uvf".
  *
