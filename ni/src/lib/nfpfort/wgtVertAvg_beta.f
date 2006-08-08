@@ -1,6 +1,6 @@
 C NCLFORTSTART
-      SUBROUTINE DWVBETAP1(MLON,NLAT,KLEV,P,X,XMSG,PSFC,IPUNIT,IOPT,
-     +                     PTOP,PBOT,XVB,IER)
+      SUBROUTINE DWVBETAP1(MLON,NLAT,KLEV,P,X,XMSG,PSFC,IPUNIT,
+     +                     IOPT,PTOP,PBOT,XVB,IER)
       IMPLICIT NONE
 
 C     NCL:    x_wva =  wgtVertBeta (p, x, psfc, ipunit, iopt)
@@ -38,17 +38,15 @@ c                                                 initialize return
               XVB(ML,NL) = XMSG
           END DO
       END DO
-C*PL*ERROR* Comment line too long
-c                                                  top-to-bot (+1) or bot-to-top (-1)
+c                                     top-to-bot (+1) or bot-to-top (-1)
       PFLAG = 1
       IF (P(2).LT.P(1)) PFLAG = -1
 
       DO NL = 1,NLAT
           DO ML = 1,MLON
               KLVL = 0
-C*PL*ERROR* Comment line too long
-c                                                  ensure top to bot order
-c                                                  strip missing levels
+c                                              ensure top to bot order
+c                                              strip missing levels
               IF (PFLAG.EQ.1) THEN
                   DO KL = 1,KLEV
                       IF (X(ML,NL,KL).NE.XMSG) THEN
@@ -68,6 +66,67 @@ c                                                  strip missing levels
               END IF
 
               IF (KLVL.GE.2) THEN
+                  CALL DWVBETAP(KLVL,PWRK,XWRK,PSFC(ML,NL),IPUNIT,IOPT,
+     +                          PTOP,PBOT,XVB(ML,NL),IER)
+              END IF
+
+          END DO
+      END DO
+
+      RETURN
+      END
+C     ===================
+C NCLFORTSTART
+      SUBROUTINE DWVBETAP3(MLON,NLAT,KLEV,P,X,XMSG,PSFC,IPUNIT,
+     +                     IOPT,PTOP,PBOT,XVB,IER)
+      IMPLICIT NONE
+
+C     NCL:    x_wva =  wgtVertBeta (p, x, psfc, ipunit, iopt)
+
+C                                                 INPUT
+      INTEGER MLON,NLAT,KLEV,IPUNIT,IOPT,IER
+      DOUBLE PRECISION P(MLON,NLAT,KLEV),X(MLON,NLAT,KLEV),
+     +                 PSFC(MLON,NLAT),XMSG,PTOP,PBOT
+C                                                 OUTPUT
+      DOUBLE PRECISION XVB(MLON,NLAT)
+C NCLEND
+
+      INTEGER ML,NL,KL,PFLAG,KK,KLVL
+      DOUBLE PRECISION PWRK(KLEV),XWRK(KLEV)
+c                                                 initialize return
+      DO NL = 1,NLAT
+          DO ML = 1,MLON
+              XVB(ML,NL) = XMSG
+          END DO
+      END DO
+c                                    top-to-bot (+1) or bot-to-top (-1)
+      PFLAG = 1
+      IF (P(1,2,2).LT.P(1,1,1)) PFLAG = -1
+
+      DO NL = 1,NLAT
+          DO ML = 1,MLON
+              KLVL = 0
+c                                            ensure top to bot order
+c                                            strip missing levels
+              IF (PFLAG.EQ.1) THEN
+                  DO KL = 1,KLEV
+                      IF (X(ML,NL,KL).NE.XMSG) THEN
+                          KLVL = KLVL + 1
+                          PWRK(KLVL) = P(ML,NL,KL)
+                          XWRK(KLVL) = X(ML,NL,KL)
+                      END IF
+                  END DO
+              ELSE
+                  DO KL = 1,KLEV
+                      IF (X(ML,NL,KLEV+1-KL).NE.XMSG) THEN
+                          KLVL = KLVL + 1
+                          PWRK(KLVL) = P(ML,NL,KLEV+1-KL)
+                          XWRK(KLVL) = X(ML,NL,KLEV+1-KL)
+                      END IF
+                  END DO
+              END IF
+
+              IF (KLVL.GE.3) THEN
                   CALL DWVBETAP(KLVL,PWRK,XWRK,PSFC(ML,NL),IPUNIT,IOPT,
      +                          PTOP,PBOT,XVB(ML,NL),IER)
               END IF
@@ -108,8 +167,7 @@ C                                                 fixed  limits
       END DO
       PP(KLMAX) = PBOTF
       XPP(KLMAX) = XP(KLVL)
-C*PL*ERROR* Comment line too long
-c                                                 xpp(2,4,..,klmax-2) not used
+c                                      xpp(2,4,..,klmax-2) not used
       DO KL = 2,KLMAX - 2,2
           PP(KL) = (PP(KL-1)+PP(KL+1))*0.5D0
           XPP(KL) = (XPP(KL-1)+XPP(KL+1))*0.5D0
