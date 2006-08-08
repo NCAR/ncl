@@ -6,6 +6,11 @@ extern void NGCALLF(dwvbetap1,DWVBETAP1)(int *, int *, int *, double *,
 					 int *, int *, double *, double *,
 					 double *, int *);
 
+extern void NGCALLF(dwvbetap3,DWVBETAP3)(int *, int *, int *, double *,
+					 double *, double *, double *,
+					 int *, int *, double *, double *,
+					 double *, int *);
+
 NhlErrorTypes wgt_vert_avg_beta_W( void )
 {
 
