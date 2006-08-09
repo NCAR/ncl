@@ -952,6 +952,20 @@ for i in range(len(args)):
     w1file.write(return_fatal_str)
     w1file.write('  }\n')
 
+#
+# Code for coercing missing values to float and/or double.
+#
+  if args[i].has_missing and args[i].ntype == "numeric":
+    w1file.write("""
+/*
+ * Coerce missing value to double if necessary.
+ */
+""")
+    w1file.write("  coerce_missing(" + args[i].type_name + "," + \
+                 args[i].has_msg_name + ",&" + args[i].msg_name + ",\n&" + \
+                 args[i].msg_dname + ",&" + args[i].msg_fname + ");\n\n")
+
+
   if not args[i].is_scalar:
     dstr = ""
     for j in range(len(args[i].dsizes_names)):

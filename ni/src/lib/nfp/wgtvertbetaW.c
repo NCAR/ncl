@@ -2,14 +2,14 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dwvbetap1,DWVBETAP1)(int *, int *, int *, double *,
-					 double *, double *, double *,
-					 int *, int *, double *, double *,
-					 double *, int *);
+                                         double *, double *, double *,
+                                         int *, int *, double *, double *,
+                                         double *, int *);
 
 extern void NGCALLF(dwvbetap3,DWVBETAP3)(int *, int *, int *, double *,
-					 double *, double *, double *,
-					 int *, int *, double *, double *,
-					 double *, int *);
+                                         double *, double *, double *,
+                                         int *, int *, double *, double *,
+                                         double *, int *);
 
 NhlErrorTypes wgt_vert_avg_beta_W( void )
 {
@@ -60,14 +60,13 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   int ndims_wva, *dsizes_wva;
   NclBasicDataTypes type_wva;
 
-
 /*
  * Various
  */
   double ptop = 0, pbot=1100;
   int ier;
   int klev, nlat, mlon, klevnlatmlon, nlatmlon, nopt;
-  int size_p, index_p, index_datai, index_psfc;
+  int index_p, index_datai, index_psfc;
   int i, ndims_leftmost, size_leftmost, size_output;
 
 /*
@@ -90,7 +89,9 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
            2);
 
 /*
- * Check dimension sizes.
+ * Check dimension sizes. Later, we need to check the dimensions of p
+ * against datai if ndims_p is > 1.
+ * 
  */
   if(ndims_p < 1 || ndims_p == 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or at least a 3-dimensional array of klev x nlat x mlon values");
@@ -133,7 +134,6 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   }
   if(ndims_p > 1) {
     is_p_one_d = 0;
-    size_p     = klevnlatmlon;
     if(dsizes_p[ndims_p-2] != nlat || dsizes_p[ndims_p-1] != mlon) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or an array whose rightmost three dimensions are klev x nlat x mlon");
       return(NhlFATAL);
@@ -141,8 +141,14 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   }
   else {
     is_p_one_d = 1;
-    size_p     = klev;
   }
+
+/*
+ * Coerce missing values to double if necessary.
+ */
+  coerce_missing(type_datai,has_missing_datai,&missing_datai,
+                 &missing_dbl_datai,&missing_flt_datai);
+
 /*
  * Get argument # 2
  */
@@ -218,14 +224,14 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   for(i = 0; i < ndims_leftmost; i++) {
     if(!is_p_one_d) {
       if(dsizes_p[i] != dsizes_datai[i] || dsizes_psfc[i] != dsizes_datai[i]) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The leftmost dimensions of p, datai and psfc must be the same");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The leftmost dimensions of p, datai and psfc must be the same");
+        return(NhlFATAL);
       }
     }
     else {
       if(dsizes_psfc[i] != dsizes_datai[i]) {
-	NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The leftmost dimensions of datai and psfc must be the same");
-	return(NhlFATAL);
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The leftmost dimensions of datai and psfc must be the same");
+        return(NhlFATAL);
       }
     }
     size_leftmost *= dsizes_datai[i];
@@ -241,10 +247,16 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  */
   type_wva = NCL_float;
 /*
- * Allocate space for tmp_p.
+ * Allocate space for tmp_p.  If p is 1D, then we should coerce it
+ * now. Otherwise, we will create a temporary array to hold
+ * klev x nlat x mlon values, and coerce the values later inside
+ * the loop across the leftmost dimensions.
  */
-  if(type_p != NCL_double) {
-    tmp_p = (double *)calloc(size_p,sizeof(double));
+  if(is_p_one_d) {
+    tmp_p = coerce_input_double(p,type_p,klev,0,NULL,NULL);
+  }
+  else if(type_p != NCL_double) {
+    tmp_p = (double *)calloc(klevnlatmlon,sizeof(double));
     if(tmp_p == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
@@ -318,17 +330,20 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * Loop across leftmost dimensions and call the Fortran routine for each
  * one-dimensional subsection.
  */
-  index_p = index_datai = index_psfc = 0;
+  index_datai = index_psfc = 0;
 
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of p (tmp_p) to double if necessary.
  */
-    if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,index_p,type_p,size_p,0,NULL,NULL);
-    }
-    else {
-      tmp_p = &((double*)p)[index_p];
+    if(!is_p_one_d) {
+      if(type_p != NCL_double) {
+        coerce_subset_input_double(p,tmp_p,index_datai,type_p,klevnlatmlon,0,
+                                   NULL,NULL);
+      }
+      else {
+        tmp_p = &((double*)p)[index_datai];
+      }
     }
 
 /*
@@ -336,7 +351,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  */
     if(type_datai != NCL_double) {
       coerce_subset_input_double(datai,tmp_datai,index_datai,type_datai,
-				 klevnlatmlon,0,NULL,NULL);
+                                 klevnlatmlon,0,NULL,NULL);
     }
     else {
       tmp_datai = &((double*)datai)[index_datai];
@@ -347,7 +362,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  */
     if(type_psfc != NCL_double) {
       coerce_subset_input_double(psfc,tmp_psfc,index_psfc,type_psfc,
-				 nlatmlon,0,NULL,NULL);
+                                 nlatmlon,0,NULL,NULL);
     }
     else {
       tmp_psfc = &((double*)psfc)[index_psfc];
@@ -359,19 +374,20 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
     if(type_wva == NCL_double) tmp_wva = &((double*)wva)[index_psfc];
 
 /*
- * Call the Fortran routine.
+ * Call one of the two Fortran routines, depending on whether p is
+ * 1D or the same dimensions as datai.
  */
     if(is_p_one_d) {
       NGCALLF(dwvbetap1,DWVBETAP1)(&mlon, &nlat, &klev, tmp_p, tmp_datai,
-				   &missing_dbl_datai.doubleval, tmp_psfc,
-				   punits, &opt[0], &ptop, &pbot, tmp_wva,
-				   &ier);
+                                   &missing_dbl_datai.doubleval, tmp_psfc,
+                                   punits, &opt[0], &ptop, &pbot, tmp_wva,
+                                   &ier);
     }
     else {
       NGCALLF(dwvbetap3,DWVBETAP3)(&mlon, &nlat, &klev, tmp_p, tmp_datai,
-				   &missing_dbl_datai.doubleval, tmp_psfc,
-				   punits, &opt[0], &ptop, &pbot, tmp_wva,
-				   &ier);
+                                   &missing_dbl_datai.doubleval, tmp_psfc,
+                                   punits, &opt[0], &ptop, &pbot, tmp_wva,
+                                   &ier);
     }
 
 /*
@@ -380,7 +396,6 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
     if(type_wva == NCL_float) {
       coerce_output_float_only(wva,tmp_wva,nlatmlon,index_psfc);
     }
-    index_p     += size_p;
     index_datai += klevnlatmlon;
     index_psfc  += nlatmlon;
   }
@@ -399,11 +414,11 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   if(has_missing_datai) {
     if(type_wva != NCL_double) {
       return(NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_flt_datai,
-			    type_wva,0));
+                            type_wva,0));
     }
     else {
       return(NclReturnValue(wva,ndims_wva,dsizes_wva,&missing_dbl_datai,
-			    type_wva,0));
+                            type_wva,0));
     }
   }
   else {
