@@ -22,7 +22,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  */
   void *p;
   double *tmp_p;
-  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS], is_p_one_d;
+  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
@@ -93,11 +93,19 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * against datai if ndims_p is > 1.
  * 
  */
-  if(ndims_p < 1 || ndims_p == 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or at least a 3-dimensional array of klev x nlat x mlon values");
+  if(ndims_p < 1 || ndims_p == 2 || (ndims_p > 1 && ndims_p != ndims_datai)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of length klev, or at least a 3-dimensional array of the same size as datai, with rightmost dimensions klev x nlat x mlon");
     return(NhlFATAL);
   }
-  klev = dsizes_p[ndims_p-1];
+/*
+ * Get size of level dimension.
+ */
+  if(ndims_p > 1) {
+    klev = dsizes_p[ndims_p-3];
+  }
+  else {
+    klev = dsizes_p[0];
+  }
 
 /*
  * Get argument # 1
@@ -128,19 +136,9 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   nlatmlon     = nlat * mlon;
   klevnlatmlon = klev * nlatmlon;
 
-  if(ndims_p > 1 && ndims_p != ndims_datai) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or an array with the same number of dimensions as datai");
+  if((ndims_p > 1) && (dsizes_p[ndims_p-2] != nlat || dsizes_p[ndims_p-1] != mlon)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or an array whose rightmost three dimensions are klev x nlat x mlon");
     return(NhlFATAL);
-  }
-  if(ndims_p > 1) {
-    is_p_one_d = 0;
-    if(dsizes_p[ndims_p-2] != nlat || dsizes_p[ndims_p-1] != mlon) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The p array must either be a one dimensional array of klev values, or an array whose rightmost three dimensions are klev x nlat x mlon");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    is_p_one_d = 1;
   }
 
 /*
@@ -222,7 +220,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
   size_leftmost  = 1;
   ndims_leftmost = ndims_datai-3;
   for(i = 0; i < ndims_leftmost; i++) {
-    if(!is_p_one_d) {
+    if(ndims_p > 1) {
       if(dsizes_p[i] != dsizes_datai[i] || dsizes_psfc[i] != dsizes_datai[i]) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,"wgt_vert_avg_beta: The leftmost dimensions of p, datai and psfc must be the same");
         return(NhlFATAL);
@@ -252,7 +250,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * klev x nlat x mlon values, and coerce the values later inside
  * the loop across the leftmost dimensions.
  */
-  if(is_p_one_d) {
+  if(ndims_p == 1) {
     tmp_p = coerce_input_double(p,type_p,klev,0,NULL,NULL);
   }
   else if(type_p != NCL_double) {
@@ -334,9 +332,10 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
 
   for(i = 0; i < size_leftmost; i++) {
 /*
- * Coerce subsection of p (tmp_p) to double if necessary.
+ * Coerce subsection of p (tmp_p) to double if necessary.  If p is 1D,
+ * then the coercion should have already taken place.
  */
-    if(!is_p_one_d) {
+    if(ndims_p > 1) {
       if(type_p != NCL_double) {
         coerce_subset_input_double(p,tmp_p,index_datai,type_p,klevnlatmlon,0,
                                    NULL,NULL);
@@ -377,7 +376,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
  * Call one of the two Fortran routines, depending on whether p is
  * 1D or the same dimensions as datai.
  */
-    if(is_p_one_d) {
+    if(ndims_p == 1) {
       NGCALLF(dwvbetap1,DWVBETAP1)(&mlon, &nlat, &klev, tmp_p, tmp_datai,
                                    &missing_dbl_datai.doubleval, tmp_psfc,
                                    punits, &opt[0], &ptop, &pbot, tmp_wva,
