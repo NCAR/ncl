@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.120 2006-07-31 13:34:30 shea Exp $
+;      $Id: contributed.ncl,v 1.121 2006-08-12 21:27:00 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7760,7 +7760,7 @@ end
 ;       fBase  = suffix@fBase               ; sample
 
 undef("get_file_suffix")
-function get_file_suffix (filName:string, opt:integer)
+function get_file_suffix (filName[1]:string, opt:integer)
 local chr, ckey, cstr, N, filName_suffix, nStrt, nLast, n
 begin
   chr    = stringtochar(".")  ; dimsizes(chr)=2
