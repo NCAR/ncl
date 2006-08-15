@@ -425,7 +425,7 @@ digit	[0-9]
 	inc_line = 1;
 	return EOLN;
 }
-[\n] {
+\r?\n {
 	printtoken(EOLN,(char*)NULL);
 /*
 	if(cur_line_length == 0) {
