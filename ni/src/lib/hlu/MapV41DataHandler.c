@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.21 2006-06-15 16:45:56 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.22 2006-08-15 18:24:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -164,6 +164,66 @@ static int LandId,WaterId,OceanId;
 static char OutBuf[512];
 
 static NhlString DefDataSetName = "Earth..2";
+
+
+static char *BorderWater[] = {
+"ocean",
+"aral sea (eurasia)",
+"azov sea (eurasia)",
+"black sea (eurasia)",
+"caspian sea (eurasia)",
+"lake albert (africa)",
+"lake chad (africa)",
+"lake kariba (africa)",
+"lake malawi (africa)",
+"lake tanganyika (africa)",
+"lake titicaca (south america)",
+"lake victoria (africa)",
+"lake champlain (north america)",
+
+"lake erie (north america)",
+"lake george (north america)",
+"lake of the woods (north america)",
+"lake ontario (north america)",
+"lake saint clair (north america)",
+"lake superior (north america)",
+"lakes michigan and huron (north america)",
+"namakan lake (north america)",
+"rainy lake (north america)",
+"sault sainte marie (north america)",  /* national count */
+
+"clark hill reservoir (north america)",
+"lake mead (north america)",
+"lake seminole (north america)",
+"lake tahoe (north america)",
+"lake texoma (north america)",
+"sabine lake (north america)",     /* state count */
+
+"great salt lake (north america)",
+"lake maurepas (north america)",
+"lake okeechobee (north america)",
+"lake pontchartrain (north america)"
+
+};
+
+static int BorderWaterEids[NhlNumber(BorderWater)];
+static int GeoBorderWaterCount = 1;
+static int NatBorderWaterCount = 23;
+static int StateBorderWaterCount = 29;
+static int CountyBorderWaterCount = NhlNumber(BorderWater);
+static int USStartIndex = 13; /* this is for  NhlGEOPHYSICALANDUSSTATES */
+
+
+/*
+ * special entity recs for broad subcategories
+ * all ids are -1 because these are not part of the regular database
+ */
+
+static v41EntityRec SubCatRecs[] = {
+{ 4, -1, 2, -1, -1, 0, "states" },
+{ 4, -1, 2, -1, -1, 0, "provinces" },
+{ 5, -1, 2, -1, -1, 0, "counties" }
+};
 
 /*
  * The following string manipulation routines help deal with Map entity
@@ -546,7 +606,31 @@ static NhlErrorTypes Init_Entity_Recs
                c_mpname(UsIds[1]),us_child_count[1],
                c_mpname(UsIds[2]),us_child_count[2]);
 #endif                
-        
+
+	j = 0;
+	memset(BorderWaterEids,0,sizeof(int) * NhlNumber(BorderWater));
+	for (i = 0; i < NhlNumber(BorderWater); i++) {
+		int found = 0;
+		while (! found) {
+			if (j == Mv41p->entity_rec_count) {
+				j = 0;
+#if 0				
+				printf("recycling j at %d\n",i);
+#endif
+			}
+			if (! strcmp(mv41p->alpha_recs[j]->name,BorderWater[i])) {
+				if (c_mpiola(mv41p->alpha_recs[j]->eid,1) == Mv41p->basic_ids.water_id) {
+					BorderWaterEids[i] = mv41p->alpha_recs[j]->eid;
+#if 0
+					printf("initializing %d with alpha rec %d\n",i,j);
+#endif
+					found = 1;
+				}
+			}
+			j++;
+		}
+	}
+		
 	return NhlNOERROR;
 }    
         
@@ -660,6 +744,7 @@ static NhlErrorTypes SetUpEntityRecs
 			return(ret);
 		}
 	}
+	
 	return ret;
 }
 /*
@@ -1638,6 +1723,78 @@ static int fill_sort
         return (frec1.eid - frec2.eid);
 }
 
+/*
+ * Function:  ExpandSpecFillRecord
+ *
+ * Description: 
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Return Values:
+ *
+ * Side Effects: 
+ */
+
+/*ARGSUSED*/
+static NhlErrorTypes    ExpandSpecFillRecord
+#if	NhlNeedProto
+(
+        NhlMapV41DataHandlerLayerPart  *mv41p,
+	v41EntityRec                   *srec,
+	int                            level,
+        unsigned char   	       draw_mode,
+        NhlString		       entry_name
+)
+#else
+(mv41p,erec,level,draw_mode,entry_name)
+	NhlMapV41DataHandlerLayerPart  *mv41p;
+	v41EntityRec                   *srec;
+	int                            level;
+        unsigned char   	       draw_mode;
+        NhlString		       entry_name;
+#endif
+{
+
+        char *e_text;
+	int eid = srec->eid;
+	int i;
+
+        for (i = 0; i < mv41p->entity_rec_count; i++) {
+                int count = mv41p->fill_rec_count;
+		int plevel;
+		int is_child = 0;
+		v41EntityRec *erec = mv41p->alpha_recs[i];
+
+		if (! c_mpipai(erec->eid,eid))
+			continue;
+		if (c_mpiaty(erec->eid) != level)
+			continue;
+
+		if (count == mv41p->fill_rec_alloc) {
+                        mv41p->fill_rec_alloc *= 2;
+                        mv41p->fill_recs = NhlRealloc
+                                (mv41p->fill_recs,
+				 sizeof(v41SpecFillRec) *
+				 mv41p->fill_rec_alloc);
+                        if (! mv41p->fill_recs) {
+                                e_text = "%s: dynamic memory allocation error";
+                                NhlPError(NhlFATAL,ENOMEM,e_text,entry_name);
+                                return NhlFATAL;
+                        }
+                }
+		mv41p->fill_recs[count].eid = erec->eid;
+		mv41p->fill_recs[count].spec_ix = 0;
+		mv41p->fill_recs[count].draw_mode = draw_mode;
+		mv41p->fill_recs[count].spec_col = 0;
+		mv41p->fill_recs[count].spec_pat = 0;
+		mv41p->fill_recs[count].spec_fscale = 0;
+		mv41p->fill_recs[count].level = level;
+		mv41p->fill_rec_count++;
+	}
+}
+
 
 /*
  * Function:  UpdateSpecFillRecords
@@ -1681,6 +1838,7 @@ static NhlErrorTypes    UpdateSpecFillRecords
 	NhlString *area_names = NULL;
         int i;
 	NhlBoolean found = False;
+	char spec_fill_level = -1;
 
         if (!strcmp(mpLowerCase(spec_string),NhlmpNULLAREA))
                 return ret;
@@ -1689,6 +1847,25 @@ static NhlErrorTypes    UpdateSpecFillRecords
                 area_names = (NhlString *) mdhp->area_names->data;
 	}
         comp_string = UpNameHierarchy(spec_string);
+/*
+ * first see if the string is represents one of the broad subcategories
+ */
+	for (i = 0; i < NhlNumber(SubCatRecs); i++) {
+		if (strcmp(comp_string,SubCatRecs[i].name))
+			continue;
+		 parent_string = UpNameHierarchy(spec_string);
+		 if (parent_string == comp_string) {
+			 e_text = "%s: invalid boundary specification string: \"%s\"";
+			 NhlPError(NhlWARNING,
+				   NhlEUNKNOWN,e_text,entry_name,spec_string);
+			 return NhlWARNING;
+		 }
+		 spec_fill_level = SubCatRecs[i].level;
+		 comp_string = parent_string;
+		 parent_string = NULL;
+		 break;
+	}
+		
         for (i = 0; i < mv41p->entity_rec_count; i++) {
                 int count = mv41p->fill_rec_count;
 		v41EntityRec *erec;
@@ -1711,6 +1888,14 @@ static NhlErrorTypes    UpdateSpecFillRecords
 			  if (strcmp(comp_string,mv41p->alpha_recs[i]->name))
 			  	continue;
 			  erec = mv41p->alpha_recs[i];
+		}
+		if (spec_fill_level > 0 && spec_fill_level <= erec->level) {
+			/* at least for now the subcategories have to be at
+			 * higher level than the containing entity
+			 * e.g.: this eliminates iowa county in wisconsin when
+			 * you specify "iowa:counties"
+			 */
+			continue;
 		}
 		found = True;
                 unique = erec->unique;
@@ -1740,7 +1925,10 @@ static NhlErrorTypes    UpdateSpecFillRecords
                 }
 
                 if (count == mv41p->fill_rec_alloc) {
-                        mv41p->fill_rec_alloc += v41ALLOC_UNIT;
+			if (count == 0)
+				mv41p->fill_rec_alloc = v41ALLOC_UNIT;
+			else 
+				mv41p->fill_rec_alloc *= 2;
                         mv41p->fill_recs = NhlRealloc
                                 (mv41p->fill_recs,
 				 sizeof(v41SpecFillRec) *
@@ -1751,14 +1939,20 @@ static NhlErrorTypes    UpdateSpecFillRecords
                                 return NhlFATAL;
                         }
                 }
-                mv41p->fill_recs[count].eid = erec->eid;
-                mv41p->fill_recs[count].spec_ix = spec_fill_index;
-                mv41p->fill_recs[count].draw_mode = draw_mode;
-                mv41p->fill_recs[count].spec_col = 0;
-                mv41p->fill_recs[count].spec_pat = 0;
-                mv41p->fill_recs[count].spec_fscale = 0;
-                mv41p->fill_rec_count++;
-                
+		if (spec_fill_level > 0) {
+			/* what we need are all the children of this entity */
+			ExpandSpecFillRecord(mv41p,erec,spec_fill_level,draw_mode,entry_name);
+		}
+		else {
+			mv41p->fill_recs[count].eid = erec->eid;
+			mv41p->fill_recs[count].spec_ix = 0;
+			mv41p->fill_recs[count].draw_mode = draw_mode;
+			mv41p->fill_recs[count].spec_col = 0;
+			mv41p->fill_recs[count].spec_pat = 0;
+			mv41p->fill_recs[count].spec_fscale = 0;
+			mv41p->fill_recs[count].level = erec->level;
+			mv41p->fill_rec_count++;
+		}		
                 if (unique)
                         break;
                     /* Otherwise add all matching items */
@@ -1845,6 +2039,11 @@ static NhlErrorTypes    mv41BuildFillDrawList
                         MAX(c_mpiaty
                             (mv41p->fill_recs[mv41p->fill_rec_count-1].eid),
                             mv41p->min_fill_level);
+		for (i = 0; i < mv41p->fill_rec_count; i++) {
+			mv41p->min_fill_level = 
+				MAX(mv41p->min_fill_level,
+				    mv41p->fill_recs[i].level);
+		}
         }
         
         return ret;
@@ -1945,11 +2144,31 @@ static NhlErrorTypes    UpdateSpecLineRecords
         char *e_text;
         int i;
 	NhlBoolean found = False;
-
+	char spec_line_level = -1;
+	
         if (!strcmp(mpLowerCase(spec_string),NhlmpNULLAREA))
                 return ret;
         
         comp_string = UpNameHierarchy(spec_string);
+/*
+ * first see if the string is represents one of the broad subcategories
+ */
+	for (i = 0; i < NhlNumber(SubCatRecs); i++) {
+		if (strcmp(comp_string,SubCatRecs[i].name))
+			continue;
+		 parent_string = UpNameHierarchy(spec_string);
+		 if (parent_string == comp_string) {
+			 e_text = "%s: invalid boundary specification string: \"%s\"";
+			 NhlPError(NhlWARNING,
+				   NhlEUNKNOWN,e_text,entry_name,spec_string);
+			 return NhlWARNING;
+		 }
+		 spec_line_level = SubCatRecs[i].level;
+		 comp_string = parent_string;
+		 parent_string = NULL;
+		 break;
+	}
+		
         for (i = 0; i < mv41p->entity_rec_count; i++) {
                 int count = mv41p->outline_rec_count;
 		v41EntityRec *erec;
@@ -1972,6 +2191,14 @@ static NhlErrorTypes    UpdateSpecLineRecords
 			  if (strcmp(comp_string,mv41p->alpha_recs[i]->name))
 			  	continue;
 			  erec = mv41p->alpha_recs[i];
+		}
+		if (spec_line_level > 0 && spec_line_level <= erec->level) {
+			/* at least for now the subcategories have to be at
+			 * higher level than the containing entity
+			 * e.g.: this eliminates iowa county in wisconsin when
+			 * you specify "iowa:counties"
+			 */
+			continue;
 		}
 		found = True;
                 unique = erec->unique;
@@ -2013,8 +2240,9 @@ static NhlErrorTypes    UpdateSpecLineRecords
                         }
                 }
                 mv41p->outline_recs[count].eid = erec->eid;
-                mv41p->outline_recs[count].spec_ix = spec_line_index;
                 mv41p->outline_recs[count].draw_mode = draw_mode;
+                mv41p->outline_recs[count].level = spec_line_level;
+                mv41p->outline_recs[count].spec_ix = 0;
                 mv41p->outline_recs[count].spec_col = 0;
                 mv41p->outline_recs[count].spec_dpat = 0;
                 mv41p->outline_recs[count].spec_thickness = 0;
@@ -2102,6 +2330,11 @@ static NhlErrorTypes    mv41BuildOutlineDrawList
                         MAX(c_mpiaty
                          (mv41p->outline_recs[mv41p->outline_rec_count-1].eid),
                             mv41p->min_outline_level);
+		for (i = 0; i < mv41p->outline_rec_count; i++) {
+			mv41p->min_outline_level = 
+				MAX(mv41p->min_outline_level,
+				    mv41p->outline_recs[i].level);
+		}
         }
         
         return ret;
@@ -2508,7 +2741,7 @@ static NhlErrorTypes mpSetUpAreamap
 	aws_id = mv41p->aws_id;
 
 	/* 
-	 * this is a very add hoc way of trying to minimize the workspace
+	 * this is a very ad hoc way of trying to minimize the workspace
 	 * used, and at the same time keeping workspace induced resizes
 	 * from taking place, because they are very costly. Presumably
 	 * datasets added by the user are not likely to be bigger than
@@ -2862,7 +3095,7 @@ static NhlErrorTypes mpOutline
 	    	    Level = 0;
 	    	    break;
             case NhlGEOPHYSICAL:
-                    Level = 1;
+                    Level = 2;
                     break;
             case NhlNATIONAL:
                     Level = 3;
@@ -2896,6 +3129,10 @@ static NhlErrorTypes mpOutline
 			}
 #endif
                         if (c_mpipai(j,eid)) {
+#if 0
+			        printf("%s: type %d contains %s type %d\n",
+				       eidname,spec_level, c_mdname(j),c_mpiaty(j));
+#endif
                                 DrawIds[j-1].spec_rec =   
                                         (void *) &mv41p->outline_recs[i];
                         }
@@ -3009,30 +3246,57 @@ static void   ModifyFill
 	NhlMapBoundarySets boundaries = Mpp->fill_boundaries;
 	NhlBoolean found = False;
 	int i;
+	int do_boundary_check = 0;
 
-	switch (boundaries) {
-	    default:
-	    case NhlNOBOUNDARIES:
-	    	*npts = 0;
-		break;
-	    case NhlGEOPHYSICAL:
-	    case NhlNATIONAL:
-	    case NhlALLBOUNDARIES:
-	        break;
-	    case NhlUSSTATES:
-	        for (i = UsIdCount-1;i>-1;i--) {
-		  	if (NGCALLF(mpipai,MPIPAI)(&ioal,&UsIds[i]) ||
-			    NGCALLF(mpipai,MPIPAI)(&ioar,&UsIds[i])) {
-			  	found = True;
-				break;
-			}
+        if (DrawIds[ioal-1].spec_rec && DrawIds[ioar-1].spec_rec) {
+	  	v41SpecFillRec *lrec = 
+		  	(v41SpecFillRec *)DrawIds[ioal-1].spec_rec;
+	  	v41SpecFillRec *rrec = 
+		  	(v41SpecFillRec *)DrawIds[ioar-1].spec_rec;
+		int rtype, ltype;
+		rtype = MAX(c_mpiaty(rrec->eid),rrec->level);
+		ltype = MAX(c_mpiaty(lrec->eid),lrec->level);
+
+		if (ilty > ltype && ilty > rtype) {
+			*npts = 0;
+			return;
 		}
-		if (! found) {
-		  	*npts = 0;
+		return;
+        }
+        else if (DrawIds[ioal-1].spec_rec) {
+		v41SpecFillRec *llspec = 
+			(v41SpecFillRec *) DrawIds[ioal-1].spec_rec;
+		if (ilty > MAX(c_mpiaty(llspec->eid),llspec->level)) {
+			*npts = 0;
+			return;
 		}
-		break;
-	    case NhlGEOPHYSICALANDUSSTATES:
-	        if (ilty > 1) {
+	}
+	else if  (DrawIds[ioar-1].spec_rec) {
+		v41SpecFillRec *rlspec = (v41SpecFillRec *) DrawIds[ioar-1].spec_rec;
+		if (ilty > MAX(c_mpiaty(rlspec->eid),rlspec->level)) {
+			*npts = 0;
+			return;
+		}
+	}
+	else if (ilty > Level) {
+		*npts = 0;
+		return;
+	}
+	else {
+		do_boundary_check = 1;
+	}
+
+	if (do_boundary_check) {
+		switch (boundaries) {
+		default:
+		case NhlNOBOUNDARIES:
+			*npts = 0;
+			break;
+		case NhlGEOPHYSICAL:
+		case NhlNATIONAL:
+		case NhlALLBOUNDARIES:
+			break;
+		case NhlUSSTATES:
 			for (i = UsIdCount-1;i>-1;i--) {
 				if (NGCALLF(mpipai,MPIPAI)(&ioal,&UsIds[i]) ||
 				    NGCALLF(mpipai,MPIPAI)(&ioar,&UsIds[i])) {
@@ -3043,9 +3307,24 @@ static void   ModifyFill
 			if (! found) {
 				*npts = 0;
 			}
+			break;
+		case NhlGEOPHYSICALANDUSSTATES:
+			if (ilty > 1) {
+				for (i = UsIdCount-1;i>-1;i--) {
+					if (NGCALLF(mpipai,MPIPAI)(&ioal,&UsIds[i]) ||
+					    NGCALLF(mpipai,MPIPAI)(&ioar,&UsIds[i])) {
+						found = True;
+						break;
+					}
+				}
+				if (! found) {
+					*npts = 0;
+				}
+			}
+			break;
 		}
-		break;
-        }
+	}
+
 
 	return;
 }
@@ -3164,75 +3443,209 @@ static void   ModifyLines
 	NhlMapBoundarySets boundaries = Mpp->outline_boundaries;
 	NhlBoolean found = False;
 	int i;
+	int do_boundary_check = 0;
 
         if (DrawIds[ioal-1].spec_rec && DrawIds[ioar-1].spec_rec) {
 	  	v41SpecLineRec *lrec = 
 		  	(v41SpecLineRec *)DrawIds[ioal-1].spec_rec;
 	  	v41SpecLineRec *rrec = 
 		  	(v41SpecLineRec *)DrawIds[ioar-1].spec_rec;
-		if (lrec->draw_mode == mpMASK || rrec->draw_mode == mpMASK) {
+		int rtype, ltype;
+		if (lrec->draw_mode == mpMASK && rrec->draw_mode == mpMASK) {
+			/* definitely masked */
 			*npts = 0;
 			return;
 		}
-		/*
-		if (lrec->eid == rrec->eid) {
+		
+		rtype = MAX(c_mpiaty(rrec->eid),rrec->level);
+		ltype = MAX(c_mpiaty(lrec->eid),lrec->level);
+		if (lrec->draw_mode == mpMASK) {
+			/* 
+			 * if the left id specifies an area that is part of the 
+			 * right id area, or if this line is at a "lower" level (where
+			 * lower means a larger type number) than the specified entity
+			 * (such as a county where the entity is a state), then don't
+			 * draw.
+			 */ 
+			if ((rtype <= ltype) || (ilty > rtype)) {
+				*npts = 0;
+				return;
+			}
+			/*
+			 * If water 
+			 */
+			if (lrec->eid  == Mv41p->basic_ids.water_id) {
+				int count;
+				if (rtype > 4) 
+					count = CountyBorderWaterCount;
+				else if (rtype > 3)
+					count = StateBorderWaterCount;
+				else if (rtype > 2)
+					count = NatBorderWaterCount;
+				else
+					count = GeoBorderWaterCount;
+
+				for (i = 0; i < count; i++) {
+					if (ioal == BorderWaterEids[i])
+						break;
+				}
+				if (i == count) {
+					/* not in list, so it can be masked */
+					*npts = 0; 
+					return;
+				}
+			}
+			else if (c_mpiola(lrec->eid,1) == Mv41p->basic_ids.water_id) {
+				/* if a water body is specified explicitly then
+				 * always mask
+				 */
+				*npts = 0; 
+				return;
+			}
+		}
+		else if (rrec->draw_mode == mpMASK) {
+			if ((ltype <= rtype) || (ilty > ltype)) {
+				*npts = 0;
+				return;
+			}
+			/*
+			if (c_mpiola(rrec->eid,1) == Mv41p->basic_ids.water_id) {
+			*/
+			if (rrec->eid == Mv41p->basic_ids.water_id) {
+				int count;
+				if (ltype > 4) 
+					count = CountyBorderWaterCount;
+			        else if (ltype > 3)
+					count = StateBorderWaterCount;
+				else if (ltype > 2)
+					count = NatBorderWaterCount;
+				else
+					count = GeoBorderWaterCount;
+
+				for (i = 0; i < count; i++) {
+					if (ioar == BorderWaterEids[i])
+						break;
+				}
+				if (i == count) {
+					/* not in list, so it can be masked */
+					*npts = 0; 
+					return;
+				}
+			}
+			else if (c_mpiola(rrec->eid,1) == Mv41p->basic_ids.water_id) {
+				/* if a water body is specified explicitly then
+				 * always mask
+				 */
+				*npts = 0; 
+				return;
+			}
+		}
+		else if (ilty > ltype && ilty > rtype) {
 			*npts = 0;
 			return;
 		}
-		*/
 		SetLineAttrs(ilty,npts);
 		return;
-        }
+         }
         else if (DrawIds[ioal-1].spec_rec) {
 		v41SpecLineRec *llspec = (v41SpecLineRec *) DrawIds[ioal-1].spec_rec;
 		if (llspec->draw_mode == mpMASK) {
-			*npts = 0;
+			if (ioal == Mv41p->basic_ids.ocean_id) {
+				do_boundary_check = 1;
+			}
+			else if (llspec->eid == Mv41p->basic_ids.water_id) {
+				int count;
+				int start_ix = boundaries == 
+					NhlGEOPHYSICALANDUSSTATES ?  USStartIndex :0;
+				if (Level > 4) 
+					count = CountyBorderWaterCount;
+				else if (Level > 3)
+					count = StateBorderWaterCount;
+				else if (Level > 2)
+					count = NatBorderWaterCount;
+				else
+					count = GeoBorderWaterCount;
 
+				for (i = start_ix; i < count; i++) {
+					if (ioal == BorderWaterEids[i])
+						break;
+				}
+				if (i == count) {
+					/* not in list, so it can be masked */
+					*npts = 0; 
+					return;
+				}
+				do_boundary_check = 1;
+			}
+			else {
+				*npts = 0;
+				return;
+			}
 		}
-		else {
-			SetLineAttrs(ilty,npts);
+		else if (ilty > MAX(c_mpiaty(llspec->eid),llspec->level)) {
+			*npts = 0;
+			return;
 		}
-		return;
 	}
 	else if  (DrawIds[ioar-1].spec_rec) {
 		v41SpecLineRec *rlspec = (v41SpecLineRec *) DrawIds[ioar-1].spec_rec;
 		if (rlspec->draw_mode == mpMASK) {
-			*npts = 0;
+			if (ioar == Mv41p->basic_ids.ocean_id) {
+				do_boundary_check = 1;
+			}
+			else if (rlspec->eid == Mv41p->basic_ids.water_id) {
+				int count;
+				int start_ix = boundaries == 
+					NhlGEOPHYSICALANDUSSTATES ?  USStartIndex :0;
+				if (Level > 4) 
+					count = CountyBorderWaterCount;
+				else if (Level > 3)
+					count = StateBorderWaterCount;
+				else if (Level > 2)
+					count = NatBorderWaterCount;
+				else
+					count = GeoBorderWaterCount;
 
+				for (i = start_ix; i < count; i++) {
+					if (ioar == BorderWaterEids[i])
+						break;
+				}
+				if (i == count) {
+					/* not in list, so it can be masked */
+					*npts = 0; 
+					return;
+				}
+				do_boundary_check = 1;
+			}
+			else {
+				*npts = 0;
+				return;
+			}
 		}
-		else {
-			SetLineAttrs(ilty,npts);
+		else if (ilty > MAX(c_mpiaty(rlspec->eid),rlspec->level)) {
+			*npts = 0;
+			return;
 		}
-		return;
 	}
 	else if (ilty > Level) {
 		*npts = 0;
 		return;
 	}
+	else {
+		do_boundary_check = 1;
+	}
 
-	switch (boundaries) {
-	    default:
-	    case NhlNOBOUNDARIES:
-	    	*npts = 0;
-		break;
-	    case NhlGEOPHYSICAL:
-	    case NhlNATIONAL:
-	    case NhlALLBOUNDARIES:
-	        break;
-	    case NhlUSSTATES:
-	        for (i = UsIdCount-1;i>-1;i--) {
-		  	if (NGCALLF(mpipai,MPIPAI)(&ioal,&UsIds[i]) ||
-			    NGCALLF(mpipai,MPIPAI)(&ioar,&UsIds[i])) {
-			  	found = True;
-				break;
-			}
-		}
-		if (! found) {
-		  	*npts = 0;
-		}
-		break;
-	    case NhlGEOPHYSICALANDUSSTATES:
-	        if (ilty > 1) {
+	if (do_boundary_check) {
+		switch (boundaries) {
+		default:
+		case NhlNOBOUNDARIES:
+			*npts = 0;
+			break;
+		case NhlGEOPHYSICAL:
+		case NhlNATIONAL:
+		case NhlALLBOUNDARIES:
+			break;
+		case NhlUSSTATES:
 			for (i = UsIdCount-1;i>-1;i--) {
 				if (NGCALLF(mpipai,MPIPAI)(&ioal,&UsIds[i]) ||
 				    NGCALLF(mpipai,MPIPAI)(&ioar,&UsIds[i])) {
@@ -3243,9 +3656,23 @@ static void   ModifyLines
 			if (! found) {
 				*npts = 0;
 			}
+			break;
+		case NhlGEOPHYSICALANDUSSTATES:
+			if (ilty > 1) {
+				for (i = UsIdCount-1;i>-1;i--) {
+					if (NGCALLF(mpipai,MPIPAI)(&ioal,&UsIds[i]) ||
+					    NGCALLF(mpipai,MPIPAI)(&ioar,&UsIds[i])) {
+						found = True;
+						break;
+					}
+				}
+				if (! found) {
+					*npts = 0;
+				}
+			}
+			break;
 		}
-		break;
-        }
+	}
 
 	if (*npts) {
 		SetLineAttrs(ilty,npts);

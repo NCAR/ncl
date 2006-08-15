@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandlerP.h,v 1.5 2006-06-15 16:45:56 dbrown Exp $
+ *      $Id: MapV41DataHandlerP.h,v 1.6 2006-08-15 18:24:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -83,6 +83,7 @@ typedef struct _v41SpecFillRec {
   	unsigned char	spec_col;     /* color specified ? */
         unsigned char   spec_pat;     /* fill pattern specified ? */
         unsigned char   spec_fscale;  /* fill scale specified ? */
+	char   	        level;
 } v41SpecFillRec;
 
 typedef struct _v41SpecLineRec {
@@ -92,6 +93,7 @@ typedef struct _v41SpecLineRec {
   	unsigned char	spec_col;     /* color specified ? */
         unsigned char   spec_dpat;     /* dash pattern specified ? */
         unsigned char   spec_thickness;  /* thickness specified ? */
+	char            level;
 } v41SpecLineRec;
 
 typedef struct _mpDrawIdRec {
