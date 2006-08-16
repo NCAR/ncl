@@ -2,11 +2,24 @@
 can call it from NCL."""
 
 #
-# This script currently doesn't handle missing values. Also, it
-# hasn't been heavily tested for cases where there are no
-# leftmost dimensions.
+# This script asks you a bunch of questions about a Fortran routine
+# that you want wrap and call from NCL. It then creates an interface
+# C wrapper routine and a code snippet for registering the routine (this
+# code snippet goes in "wrapper.c").
 #
-# It also doesn't yet generate code for the wrapper.c file.
+# There are some things that need to be added to this program:
+# 
+#  1. Recognition of work arrays
+#  2. Ask if input arrays are not allowed to have missing values
+#     (this is checked via "contains_missing").
+#  3. Needs more testing with variables that don't have leftmost
+#     dimensions.
+#  4. More testing with scalars. I think there's something odd with these.
+#  5. Better handling of array dimensions that are fixed. For example
+#        for an array that is 2 x nx x ny, this program doesn't handle
+#        the '2' part very well.
+#
+
 #
 # Initialize some stuff.
 #
@@ -19,6 +32,10 @@ global_var_names    = []
 global_var_types    = []
 global_calling_char = []
 global_dsizes_names_accum = []
+various_var_names   = []
+various_var_types   = []
+work_array_names    = []
+work_array_types    = []
 index_names         = []
 debug               = True
 have_leftmost       = False
@@ -31,11 +48,15 @@ reserved_names = ['i', 'ndims_leftmost', 'size_leftmost', 'size_output']
 # Set up class that will hold information on NCL input arguments.
 #
 class Argument:
-  def __init__(self,name,itype,ndims,dsizes=None,min_ndims=0, 
-               dsizes_names=None,dsizes_names_str="",has_missing=False):
+  def __init__(self,arg_num,name,itype,sets_otype,ndims,dsizes=None,
+               min_ndims=0,dsizes_names=None,dsizes_names_str="",
+               has_missing=False):
+    self.arg_num    = arg_num       # Number of argument, -1 indicates
+                                    # return value.
     self.name       = name
     self.ntype      = ntypes[itype]
     self.ctype      = ctypes[itype]
+    self.sets_otype = sets_otype
     self.ndims      = ndims
     self.min_ndims  = min_ndims
     if ndims == 1 and dsizes[0] == 1:
@@ -54,9 +75,10 @@ class Argument:
     self.type_name    = "type_" + name
     self.dsizes_name  = "dsizes_" + name
     self.has_msg_name = "has_missing_" + name
-    self.msg_name     = "missing_" + name
+    self.msg_name     = "missing_"     + name
     self.msg_dname    = "missing_dbl_" + name
     self.msg_fname    = "missing_flt_" + name
+
     self.tmp_name     = "tmp_" + name
     self.index_name   = "index_" + name
 
@@ -70,7 +92,11 @@ class Argument:
 # Set up instructions on how to print an instance of this class.
 #
   def __str__(self):
-    str1 = "Name is '" + self.name + "'\n"
+    if self.arg_num >= 0:
+      str1 = "Name of argument " + str(self.arg_num) + " is '" +  \
+              self.name + "'\n"
+    else:
+      str1 = "Name of return argument is '" + self.name + "'\n"
     str1 = str1 + "  NCL type is " + self.ntype + "\n"
     str1 = str1 + "    C type is " + self.ctype + "\n"
     if self.has_missing:
@@ -111,8 +137,8 @@ from string import *
 #
 # Begin asking for input on function/procedure.
 #
-print "\nIn order to wrap your Fortran subroutine, I need to ask you"
-print "a few questions.\n"
+print "\nIn order to wrap your Fortran subroutine, I need"
+print "to ask you a few questions.\n"
 
 #
 # Is this a function or procedure?
@@ -134,7 +160,7 @@ valid = False
 while not valid:
   ncl_name = raw_input("\nEnter NCL name of your " + wrapper_type + ": ")
   if ncl_name == "":
-    print "Invalid name for NCL function or procedure, reenter"
+    print "Invalid name for NCL function or procedure, reenter."
   else:
     valid = True
 
@@ -145,7 +171,7 @@ while not valid:
   fortran_name = raw_input("\nEnter Fortran name of your " + wrapper_type + \
                            ": ")
   if fortran_name == "":
-    print "Invalid name for Fortran subroutine, reenter"
+    print "Invalid name for Fortran subroutine, reenter."
   else:
     valid = True
 
@@ -154,7 +180,7 @@ while not valid:
   wrapper_name = raw_input("\nEnter name of wrapper C file (without '.c') " +\
                            ": ")
   if wrapper_name == "":
-    print "Invalid name for wrapper name, reenter"
+    print "Invalid name for wrapper name, reenter."
   else:
     valid = True
 
@@ -176,7 +202,7 @@ while not valid:
       print "Invalid number of arguments: ",num_args
       print "Reenter."
     elif num_args == 0:
-      print "This script is for routines that contain arguments Reenter"
+      print "This script is for routines that contain arguments. Reenter."
     else:
       valid = True
   except:
@@ -189,6 +215,8 @@ print "\nI need to ask you some questions about each input argument."
 # about each one.
 #
 
+num_input_has_missing = 0       # Counter for how many input
+                                # variables can have missing values.
 for i in range(num_args):
 
 #
@@ -223,11 +251,11 @@ for i in range(num_args):
       try:
         itype = int(rinput)
         if (itype < 0) or (itype >= len(ntypes)):
-          print "Invalid type, reenter"
+          print "Invalid type, reenter."
         else:
           valid = True
       except:
-        print "Invalid type, reenter"
+        print "Invalid type, reenter."
 #
 # Store this variable and its type in a list of variables we are
 # keeping track of.
@@ -241,11 +269,23 @@ for i in range(num_args):
   global_calling_char.append("")
 
 #
+# If this input argument is numeric, then ask if its type
+# determines the output type of the return value.
+#
+  if isfunc and itype == 0:
+    rinput = raw_input("Does the type of " + name + " determine the type of the output? (y/n) [n] ")
+  if (lower(rinput) == "y"):
+    sets_otype = True
+  else:
+    sets_otype = False
+
+#
 # Ask about a missing value.
 #
-  rinput = raw_input("Can this variable have a _FillValue attribute? (y/n) [n] ")
+  rinput = raw_input("Can " + name + " have a _FillValue attribute? (y/n) [n] ")
   if (lower(rinput) == "y"):
     has_missing = True
+    num_input_has_missing += 1
 
     if itype == 0:
       global_var_names.append("missing_dbl_" + name + ".doubleval")
@@ -269,7 +309,7 @@ for i in range(num_args):
 
   valid = False
   while not valid:
-    rinput = raw_input("Enter 0 for variable dimensions: [0] ")
+    rinput = raw_input("Enter <return> for variable dimensions: [0] ")
     if rinput == "":
       ndims = 0
       valid = True
@@ -279,7 +319,7 @@ for i in range(num_args):
         if ndims >= 0:
           valid = True
         else:
-          print "Invalid number of dimensions, reenter"
+          print "Invalid number of dimensions, reenter."
       except:
         print "Must enter an integer, reenter."
 
@@ -309,7 +349,7 @@ for i in range(num_args):
               valid = True
               dsizes.append(int(rinput))
             else:
-              print "Invalid size for dimension, reenter"
+              print "Invalid size for dimension, reenter."
           except:
             print "Must enter an integer, reenter."
   else:
@@ -332,7 +372,7 @@ for i in range(num_args):
         if min_ndims > 0:
           valid = True
         else:
-          print "Invalid number of dimensions, reenter"
+          print "Invalid number of dimensions, reenter."
       except:
         print "Must enter an integer > 0."
 
@@ -379,8 +419,8 @@ for i in range(num_args):
 # With all this information, create an instance of the Argument class.
 #
 
-  args.append(Argument(name,itype,ndims,dsizes,min_ndims,dsizes_names,\
-                       dsizes_names_str,has_missing))
+  args.append(Argument(i,name,itype,sets_otype,ndims,dsizes,min_ndims, \
+                       dsizes_names,dsizes_names_str,has_missing))
 
 #
 # Get information on the return value, if a function.
@@ -413,7 +453,7 @@ if isfunc:
       try:
         ret_itype = int(rinput)
         if (ret_itype < 0) or (ret_itype >= len(ntypes)):
-          print "Invalid type, reenter"
+          print "Invalid type, reenter."
         else:
           valid = True
       except:
@@ -428,14 +468,47 @@ if isfunc:
   global_calling_char.append("")
 
 #
-# Ask about a missing value.
+# Ask about a return missing value.
 #
-  rinput = raw_input("Can the return value contain missing values? (y/n) [n] ")
+  rinput = raw_input('Can ' + ret_name + ' contain missing values? (y/n) [n] ')
   if (lower(rinput) == "y"):
     ret_has_missing = True
   else:
     ret_has_missing = False
+
+#
+# Find out which (if any) input variable the return value is dependent on.
+# Only do this if there's at least one input value that can contain a
+# missing value.
+#
+  if ret_has_missing and (num_input_has_missing > 0):
+    rinput = raw_input("Is the return missing value based on any input missing values? (y/n) [y] ")
+    if (lower(rinput) == "n"):
+      ret_msg_depend_input = False
+    else:
+      ret_msg_depend_input = True
+
+    if ret_msg_depend_input:  
+      print "Select the input variable whose missing value determines"
+      print "the missing value for the return variable:"
+  
+      for j in range(len(args)):
+        if(args[j].has_missing):
+          print "   ",j,":",args[j].name
    
+      valid = False
+      while not valid:
+        rinput = raw_input()
+        try:
+          ret_msg_depend_index = int(rinput)
+          if (ret_msg_depend_index < 0) or \
+             (ret_msg_depend_index >= len(args)):
+            print "Invalid entry, reenter."
+          else:
+            valid = True
+        except:
+          print "Must enter an integer, reenter."
+
 #
 # Get dimension sizes.
 #
@@ -452,7 +525,7 @@ if isfunc:
       try:
         ret_ndims = int(rinput)
         if ret_ndims < 0:
-          print "Invalid number of dimensions, reenter"
+          print "Invalid number of dimensions, reenter."
         else:
           valid = True
       except:
@@ -477,7 +550,7 @@ if isfunc:
         else:   
           try:      
             if int(rinput) < 0:
-              print "Invalid size for dimension, reenter"
+              print "Invalid size for dimension, reenter."
             else:
               ret_dsizes.append(int(rinput))
               valid = True          
@@ -497,7 +570,7 @@ if isfunc:
       try:
         ret_min_ndims = int(rinput)
         if ret_min_ndims <= 0:
-          print "Invalid number of dimensions, reenter"
+          print "Invalid number of dimensions, reenter."
         else:
           valid = True
       except:
@@ -544,8 +617,7 @@ if isfunc:
 # With this information, create an instance of the Argument class for
 # the return value.
 #
-    
-  ret_arg = Argument(ret_name,ret_itype,ret_ndims,ret_dsizes,
+  ret_arg = Argument(-1,ret_name,ret_itype,False,ret_ndims,ret_dsizes,
                      ret_min_ndims,ret_dsizes_names,ret_dsizes_names_str,
                      ret_has_missing)
 
@@ -561,11 +633,11 @@ while not valid:
     fnum_args = int(rinput)
     if fnum_args <= 0:
       print "Invalid number of dimensions for Fortran routine."
-      print "There should be at least one dimension, reenter"
+      print "There should be at least one dimension, reenter."
     else:
       valid = True
   except:
-    print "Must enter an integer > 0, reenter"
+    print "Must enter an integer > 0, reenter."
 
 #
 # Loop through the Fortran arguments and get the name and type.
@@ -592,6 +664,7 @@ for i in range(fnum_args):
         print "Invalid integer, reenter."
     except:
       farg_names.append(rinput)
+      various_var_names.append(rinput)
       valid = True
       rinput = raw_input("Does an '&' need to be prepended when passing '" +\
                          rinput + "' to the Fortran routine? (y/n) [n] ")
@@ -613,13 +686,15 @@ for i in range(fnum_args):
       rinput = raw_input()
       if rinput == "":
         farg_types.append(1)
+        various_var_types.append(1)
         valid = True
       else:
         try:
           if (int(rinput) < 0) or (int(rinput) >= len(ctypes)):
-            print "Invalid type, reenter"
+            print "Invalid type, reenter."
           else:
             farg_types.append(int(rinput))
+            various_var_types.append(int(rinput))
             valid = True
         except:
           print "Must enter an integer, reenter."
@@ -856,6 +931,31 @@ if global_dsizes_names != []:
     else:
       w1file.write(index_names[i] + ", ")
 
+#
+# Write out the various work arrays and extra arguments we have to
+# pass into Fortran array.
+#
+if various_var_names != []:
+  for i in range(len(various_var_names)):
+    w1file.write("  " + ctypes[various_var_types[i]] + " " + \
+                 various_var_names[i] + ";\n")
+
+if work_array_names != []:
+  for i in range(len(work_array_names)):
+    w1file.write("  " + ctypes[work_array_types[i]] + " " + \
+                 work_array_names[i] + ";\n")
+#
+# Write out integer variables that will hold the size of each work
+# array. This will be the same name as the work array, with an "l"
+# in front of it.
+#
+  w1file.write("  int ")
+  for i in range(len(work_array_names)):
+    if i == (len(work_array_names)-1):
+      w1file.write("l" + work_array_names[i] + ";\n")
+    else:
+      w1file.write("l" + work_array_names[i] + ", ")
+
 #---------------------------------------------------------------------
 #
 # If any input variable has leftmost dimensions, include that variable
@@ -962,9 +1062,9 @@ for i in range(len(args)):
  */
 """)
     w1file.write("  coerce_missing(" + args[i].type_name + "," + \
-                 args[i].has_msg_name + ",&" + args[i].msg_name + ",\n&" + \
-                 args[i].msg_dname + ",&" + args[i].msg_fname + ");\n\n")
-
+                 args[i].has_msg_name + ",&" + args[i].msg_name + \
+                 ",\n                 &" + args[i].msg_dname + ",&" + \
+                 args[i].msg_fname + ");\n\n")
 
   if not args[i].is_scalar:
     dstr = ""
@@ -996,7 +1096,7 @@ for i in range(len(args)):
                        '] != ' + args[i].dsizes_names[j] + ') {\n')
           w1file.write(fatal_str + 'The #' + str(j) + \
                        ' argument of ' + args[i].name + \
-                       ' must be of length ' + args[i].dsizes_names[j] + \
+                       ' must be length ' + args[i].dsizes_names[j] + \
                        '");\n')
         elif args[i].ndims == 0:
           w1file.write('  if(' + args[i].dsizes_name + '[' + 
@@ -1091,28 +1191,27 @@ for i in range(len(args)):
   if args[i].ntype == "numeric":
     if first:
       first = False
+
+      if isfunc and ret_arg.ntype == "numeric":
+#---------------------------------------------------------------------
+# While we're here, we can also set the output array type, based
+# on whether any of the input is double or not.
+#---------------------------------------------------------------------
+        w1file.write("""
+/*
+ * The output type defaults to float, unless this input array is double.
+ */
+""")
+        w1file.write("  " + ret_arg.type_name + " = NCL_float;\n")
+
       w1file.write("""
 /* 
  * Allocate space for coercing input arrays.  If any of the input
  * is already double, then we don't need to allocate space for
  * temporary arrays, because we'll just change the pointer into
  * the void array appropriately.
-""")
-      if isfunc and ret_arg.ntype == "numeric":
-
-#---------------------------------------------------------------------
-# While we're here, we can also set the output array type, based
-# on whether any of the input is double or not.
-#---------------------------------------------------------------------
-
-        w1file.write(""" *
- * The output type defaults to float, unless any of the input arrays
- * are double.
  */
 """)
-        w1file.write("  " + ret_arg.type_name + " = NCL_float;\n")
-      else:
-        w1file.write(" */\n")
 
 #---------------------------------------------------------------------
 # If input is not already double, then we'll need to allocate a
@@ -1138,24 +1237,34 @@ for i in range(len(args)):
 
     else:
 #
-# This array has no leftmost dimensions.
+# This array has no leftmost dimensions, so go ahead and coerce it
+# to double here. We have two separate cases, depending on whether
+# the input can contain a missing value.
 #
       if args[i].is_scalar:
+        size = "1"
+      else:
+        size = args[i].dsizes_names_str
+
+      if args[i].has_missing:
         w1file.write("  " + args[i].tmp_name + " = coerce_input_double(" + \
-                     name + "," + args[i].type_name + ",1,0,NULL,NULL);\n")
+                     name + "," + args[i].type_name + "," + size + "," + \
+                     args[i].has_msg_name + ",&" + args[i].msg_name + ",&" + \
+                     args[i].msg_dname + ");\n")
       else:
         w1file.write("  " + args[i].tmp_name + " = coerce_input_double(" + \
-                     name + "," + args[i].type_name + "," + \
-                     args[i].dsizes_names_str + ",0,NULL,NULL);\n")
+                     name + "," + args[i].type_name + "," + size + "," + \
+                     "0,NULL,NULL);\n")
       w1file.write("  if(" + args[i].tmp_name + " == NULL) {\n")
       w1file.write(fatal_str + \
                   'Unable to allocate memory for coercing input array to double");\n')
       w1file.write(return_fatal_str)
       w1file.write("  }\n")
 
-    if isfunc and ret_arg.ntype == "numeric":
+    if isfunc and ret_arg.ntype == "numeric" and args[i].sets_otype:
 #---------------------------------------------------------------------
-# If input is double, then output type should be set to double.
+# If this input argument is numeric, and its one whose type determines
+# the output for the output, then include the code for that here.
 #---------------------------------------------------------------------
       w1file.write("  else {\n")
       w1file.write("    " + ret_arg.type_name + " = NCL_double;\n")
@@ -1233,6 +1342,20 @@ if isfunc:
   w1file.write(fatal_str + 'Unable to allocate memory for output array");\n')
   w1file.write(return_fatal_str)
   w1file.write("  }\n")
+
+#
+# Set the missing value for the output, if any.
+#
+  if ret_has_missing and (num_input_has_missing > 0) and ret_msg_depend_input:
+    w1file.write("  if(" + args[ret_msg_depend_index].has_msg_name + ") {\n")
+    w1file.write("    if(" + ret_arg.type_name + " == NCL_double) " + \
+                 ret_arg.msg_name + " = " + \
+                 args[ret_msg_depend_index].msg_dname + ";\n")
+    w1file.write("    else                 " + ret_arg.msg_name + " = " + \
+                 args[ret_msg_depend_index].msg_fname + ";\n")
+    w1file.write("    " + ret_arg.msg_dname + " = " + \
+                 args[ret_msg_depend_index].msg_dname + ";\n")
+    w1file.write("  }\n")
 
   w1file.write("""
 /* 
