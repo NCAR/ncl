@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.136 2006-07-14 17:24:31 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.137 2006-08-21 21:55:42 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8995,9 +8995,14 @@ static NhlErrorTypes    SetupLevelsManual
                 lmax = cnp->min_level_val;
 	}
 	else {
-		lmax = floor(((cnp->zmax - lmin) / spacing) * spacing + lmin);
-		if (_NhlCmpFAny2(lmax,cnp->zmax,6,spacing * 0.001) == 0.0) {
-			lmax -= spacing;
+		for (i = 0; i < Nhl_cnMAX_LEVELS; i++) {
+			lmax = lmin + i * spacing;
+			if (lmax < cnp->zmax - spacing) 
+				continue;
+			if (_NhlCmpFAny2(lmax,cnp->zmax,6,spacing * 0.001) >= 0.0) {
+				lmax -= spacing;
+			}
+			break;
 		}
 		cnp->max_level_val = lmax;
 	}
