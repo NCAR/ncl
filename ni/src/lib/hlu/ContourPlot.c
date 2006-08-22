@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.137 2006-08-21 21:55:42 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.138 2006-08-22 18:48:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8948,7 +8948,7 @@ static NhlErrorTypes    SetupLevelsManual
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlContourPlotLayerPart	*cnp = &(cnew->contourplot);
-	int			i, count;
+	int			i, count = 0;
 	float			lmin,lmax,rem,spacing;
 	float			*fp;
         NhlBoolean		do_automatic = False;
@@ -8994,6 +8994,10 @@ static NhlErrorTypes    SetupLevelsManual
         else if (cnp->const_field) {
                 lmax = cnp->min_level_val;
 	}
+	else if (lmin + Nhl_cnMAX_LEVELS * spacing < cnp->zmax) {
+		/* more than max levels needed */
+		count =  Nhl_cnMAX_LEVELS + 1;
+	}
 	else {
 		for (i = 0; i < Nhl_cnMAX_LEVELS; i++) {
 			lmax = lmin + i * spacing;
@@ -9010,7 +9014,7 @@ static NhlErrorTypes    SetupLevelsManual
 	if (cnp->const_field) {
 		count = 1;
 	}
-	else {
+	else if (count == 0) {
 		count = (lmax - lmin) / cnp->level_spacing;
 		rem = lmax - lmin - cnp->level_spacing * count; 
 		if (_NhlCmpFAny2(rem,0.0,6,spacing * 0.001) != 0.0)

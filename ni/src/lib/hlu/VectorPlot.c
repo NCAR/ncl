@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.87 2006-07-14 17:24:32 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.88 2006-08-22 18:48:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8338,7 +8338,7 @@ static NhlErrorTypes    SetupLevelsManual
 	NhlErrorTypes		ret = NhlNOERROR,subret = NhlNOERROR;
 	char			*e_text;
 	NhlVectorPlotLayerPart	*vcp = &(vcnew->vectorplot);
-	int			i, count;
+	int			i, count = 0;
 	float			lmin,lmax,rem,spacing;
 	float			*fp;
         NhlBoolean		do_automatic = False;
@@ -8389,20 +8389,27 @@ static NhlErrorTypes    SetupLevelsManual
         else if (vcp->zero_field || spacing == 0.0) {
                 vcp->max_level_val = lmax = vcp->min_level_val;
 	}
+	else if (lmin + Nhl_vcMAX_LEVELS * spacing < vcp->zmax) {
+		/* more than max levels needed */
+		count =  Nhl_vcMAX_LEVELS + 1;
+	}
 	else {
-		lmax = floor(((max - lmin) / spacing) * spacing + lmin);
-		if (_NhlCmpFAny2
-		    (lmax,max,NhlvcPRECISION,spacing * 0.001) == 0.0) {
-			lmax -= spacing;
+		for (i = 0; i < Nhl_vcMAX_LEVELS; i++) {
+			lmax = lmin + i * spacing;
+			if (lmax < vcp->zmax - spacing) 
+				continue;
+			if (_NhlCmpFAny2(lmax,vcp->zmax,6,spacing * 0.001) >= 0.0) {
+				lmax -= spacing;
+			}
+			break;
 		}
-		lmax = MAX(lmin,lmax);
 		vcp->max_level_val = lmax;
 	}
 
 	if (vcp->zero_field || spacing == 0.0) {
 		count = 1;
 	}
-	else {
+	else if (count == 0) {
 		count = (lmax - lmin) / vcp->level_spacing;
 		rem = lmax - lmin - vcp->level_spacing * count; 
 		if (_NhlCmpFAny2
