@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.22 2006-07-19 02:12:21 haley Exp $
+;      $Id: shea_util.ncl,v 1.23 2006-08-24 21:00:08 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -479,7 +479,7 @@ begin
        patterns(:)  = -1                           ; patterns and initialize
                                                    ; it to transparent.
        do i=0,N-1                        ; Fill contour levels depending on 
-         if(cnlvls(i).le.CnLt) then      ; different criteria.
+         if(cnlvls(i).lt.CnLt) then      ; different criteria.
            patterns(i) = FillPatLt       ; see above URL
          end if
        end do
