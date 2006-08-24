@@ -2476,17 +2476,17 @@ yyerror
 	is_error += 1;
 
 	if(is_error < NCL_MAX_ERROR) {
-		if(yytext[0] == '\n') {
+		if(yytext[0] == '\n' || (yytext[0] == '\r' && yytext[1] == '\n')) {
 			sprintf(error_buffer,"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<last_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
 			sprintf(&(error_buffer[len+last_line_length-1]),"^\n");
 			if(loading > 0) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number + 1,cur_load_file,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number,cur_load_file,error_buffer);
 			} else if(cmd_line){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
 			} else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number+1,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near \\n \n%s\n",s,cur_line_number,error_buffer);
 			} 
 		} else {
 			sprintf((char*)&(error_buffer[0]),"%s\n",cur_line_text);
@@ -2498,7 +2498,7 @@ yyerror
 			} else if(cmd_line){
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number,yytext,error_buffer);
 			} else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number+1,yytext,error_buffer);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d before or near %s \n%s\n",s,cur_line_number,yytext,error_buffer);
 			}
 		}
 	} else if((is_error == NCL_MAX_ERROR)&&(cmd_line != 2)) {

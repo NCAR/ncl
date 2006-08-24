@@ -48,6 +48,13 @@ int inc_line = 1;
 
 short   oldval = 0;
 
+/*
+ * Note concerning line numbers: in an interactive session the first line is
+ * numbered 0, corresponding to the prompt "ncl 0>". Files executed in batch mode
+ * or loaded with the "load" command have lines numbered from 1, corresponding to 
+ * how an editor like emacs or vi numbers the lines.
+ */
+
 int _NclParseString
 #if NhlNeedProto
 (char *str,int reset)
@@ -70,9 +77,6 @@ int reset;
 void ResetCurLine(void) {
 	last_line_length = cur_line_length;
 	cur_line_length = 0;
-	cur_line_length = 0;
-	cur_line_text_pos = &(cur_line_text[0]);
-	*cur_line_text_pos = '\0';
 }
 
 
@@ -259,6 +263,10 @@ digit	[0-9]
 		} 
 		inc_line = 0;
 	} 
+        if (cur_line_length == 0) {
+                cur_line_text_pos = &(cur_line_text[0]);
+                *cur_line_text_pos = '\0';
+        }
 "load" 	{ 
     BEGIN incl;
     load_stmt = 1;
@@ -309,6 +317,7 @@ digit	[0-9]
 	include_stack[loading++] = YY_CURRENT_BUFFER;
 	tmpfile = fopen( _NGResolvePath(tmp), "r" );
 	if(tmpfile != NULL) {
+		inc_line = 1;
 		yyin = tmpfile;
 		yy_switch_to_buffer(yy_create_buffer( yyin, YY_BUF_SIZE ) );
 		cmd_line = isatty(fileno(yyin));
@@ -370,12 +379,11 @@ digit	[0-9]
         } else {
 		IncLine();
 	}
-	/*inc_line = 1;*/
 }
 [\\][^\n]*[\n] {
     if (NCLoverrideEcho) {
         old_load_stmt = load_stmt;
-        load_stmt = 0;
+        load_stmt = 0;\
         if (NCLecho != 0 && !load_stmt) {
             (void) fprintf(stdout, "+ %s\n", cur_line_text);
             (void) fflush(stdout);
@@ -397,7 +405,6 @@ digit	[0-9]
         } else { 
 		IncLine();
 	}
-	/*inc_line = 1;*/
 
 }
 \;[^\n]*[\n] { 
@@ -427,13 +434,6 @@ digit	[0-9]
 }
 \r?\n {
 	printtoken(EOLN,(char*)NULL);
-/*
-	if(cur_line_length == 0) {
-		IncLine();
-	} else {
-		BEGIN NEWLINE;
-	}
-*/
 
     if (NCLoverrideEcho) {
         old_load_stmt = load_stmt;
