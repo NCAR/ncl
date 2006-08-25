@@ -77,6 +77,8 @@ int reset;
 void ResetCurLine(void) {
 	last_line_length = cur_line_length;
 	cur_line_length = 0;
+        cur_line_text_pos = &(cur_line_text[0]);
+        *cur_line_text_pos = '\0';
 }
 
 
@@ -454,7 +456,8 @@ digit	[0-9]
 	if(rec == 1) {
 		fprintf(recfp,"%s\n",cur_line_text);
 	}
-	ResetCurLine();
+	last_line_length = cur_line_length;
+	cur_line_length = 0;
 	return EOLN;
 }
 [ \t] { 
