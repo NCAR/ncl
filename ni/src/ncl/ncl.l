@@ -46,13 +46,13 @@ extern int cmd_line_is_set;
 extern char *cur_load_file;
 int inc_line = 1;
 
-short   oldval = 0;
-
 /*
  * Note concerning line numbers: in an interactive session the first line is
  * numbered 0, corresponding to the prompt "ncl 0>". Files executed in batch mode
  * or loaded with the "load" command have lines numbered from 1, corresponding to 
  * how an editor like emacs or vi numbers the lines.
+ * Also unlike in batch mode, in interactive line numbers are not incremented for 
+ * statements continued on the next line using the continuation char ('\').
  */
 
 int _NclParseString
@@ -430,7 +430,8 @@ digit	[0-9]
 	if(rec == 1) {
 		fprintf(recfp,"%s",cur_line_text);
 	}
-	ResetCurLine();
+	last_line_length = cur_line_length;
+	cur_line_length = 0;
 	inc_line = 1;
 	return EOLN;
 }
@@ -460,7 +461,7 @@ digit	[0-9]
 	cur_line_length = 0;
 	return EOLN;
 }
-[ \t] { 
+[ \t][ \t]* { 
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	
 }
