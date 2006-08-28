@@ -314,12 +314,21 @@ digit	[0-9]
 		exit( 1 );
 	}
 	line_numbers[loading] = cur_line_number;
-	SetLine(0);
 	file_names[loading] = cur_load_file;
 	include_stack[loading++] = YY_CURRENT_BUFFER;
 	tmpfile = fopen( _NGResolvePath(tmp), "r" );
 	if(tmpfile != NULL) {
-		inc_line = 1;
+                /* Note that this is slightly different behavior than _NclPreLoadScript. 
+                 * Here line number is set to one and the inc_line flag set to 0. That is 
+                 * because the lines at the beginning of the lex code following the '%%'
+                 * do not get executed until after the first piece of text is parsed when
+                 * load is matched. I'm not sure why this is at this point, but if the 
+                 * first piece of text is a comment that consumes a whole line then without
+                 * this change, subsequent line numbers are one less than what they should be. 
+                 * -dib
+                 */
+                SetLine(1);
+		inc_line = 0;
 		yyin = tmpfile;
 		yy_switch_to_buffer(yy_create_buffer( yyin, YY_BUF_SIZE ) );
 		cmd_line = isatty(fileno(yyin));
