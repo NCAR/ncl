@@ -422,13 +422,13 @@ NhlErrorTypes wrf_slp_W( void )
  */
   void *slp;
   double *tmp_slp;
-  int size_slp;
+  int ndims_slp, *dsizes_slp, size_slp;
   NclBasicDataTypes type_slp;
 /*
  * Various
  */
-  int i, nx, ny, nz, nxy, nxyz, size_leftmost, index_z;
-  double *tmp_slv, *tmp_srf, *tmp_lvl;
+  int i, nx, ny, nz, nxy, nxyz, size_leftmost, index_nxy, index_nxyz;
+  double *tmp_t_sea_level, *tmp_t_surf, *tmp_level;
 /*
  * Retrieve parameters.
  *
@@ -495,16 +495,28 @@ NhlErrorTypes wrf_slp_W( void )
     }
   }
 /*
- * Calculate size of leftmost dimensions.
+ * Set sizes for output array and calculate size of leftmost dimensions.
+ * The output array will have one less dimension than the four input arrays.
  */
+  ndims_slp = ndims_z-1;
+  dsizes_slp = (int*)calloc(ndims_slp,sizeof(int));  
+  if( dsizes_slp == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
   size_leftmost = 1;
-  for(i = 0; i < ndims_z-3; i++) size_leftmost *= dsizes_z[i];
+  for(i = 0; i < ndims_z-3; i++) {
+    dsizes_slp[i] = dsizes_z[i];
+    size_leftmost *= dsizes_z[i];
+  }
   nx = dsizes_z[ndims_z-1];
   ny = dsizes_z[ndims_z-2];
   nz = dsizes_z[ndims_z-3];
+  dsizes_slp[ndims_slp-1] = nx;
+  dsizes_slp[ndims_slp-2] = ny;
   nxy  = nx * ny;
   nxyz = nxy * nz;
-  size_slp = size_leftmost * nxyz;
+  size_slp = size_leftmost * nxy;
 
 /* 
  * Allocate space for coercing input arrays.  If the input q, p, or t
@@ -564,10 +576,10 @@ NhlErrorTypes wrf_slp_W( void )
 /*
  * Allocate space for work arrays.
  */ 
-  tmp_slv = (double *)calloc(nxy,sizeof(double));
-  tmp_srf = (double *)calloc(nxy,sizeof(double));
-  tmp_lvl = (double *)calloc(nxy,sizeof(double));
-  if(tmp_slv == NULL || tmp_srf == NULL || tmp_lvl == NULL) {
+  tmp_t_sea_level = (double *)calloc(nxy,sizeof(double));
+  tmp_t_surf      = (double *)calloc(nxy,sizeof(double));
+  tmp_level       = (double *)calloc(nxy,sizeof(double));
+  if(tmp_t_sea_level == NULL || tmp_t_surf == NULL || tmp_level == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for temporary arrays");
       return(NhlFATAL);
   }
@@ -584,86 +596,89 @@ NhlErrorTypes wrf_slp_W( void )
   }
   else {
     slp     = (float *)calloc(size_slp,sizeof(float));
-    tmp_slp = (double *)calloc(nxyz,sizeof(double));
+    tmp_slp = (double *)calloc(nxy,sizeof(double));
     if(tmp_slp == NULL || slp == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
+
 /*
  * Loop across leftmost dimensions and call the Fortran routine
  * for each three-dimensional subsection.
  */
-  index_z = 0;
+  index_nxy = index_nxyz = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of z (tmp_z) to double if necessary.
  */
     if(type_z != NCL_double) {
-      coerce_subset_input_double(z,tmp_z,index_z,type_z,nxyz,0,NULL,NULL);
+      coerce_subset_input_double(z,tmp_z,index_nxyz,type_z,nxyz,0,NULL,NULL);
     }
     else {
-      tmp_z = &((double*)z)[index_z];
+      tmp_z = &((double*)z)[index_nxyz];
     }
 /*
  * Coerce subsection of p (tmp_p) to double if necessary.
  */
     if(type_p != NCL_double) {
-      coerce_subset_input_double(p,tmp_p,index_z,type_p,nxyz,0,NULL,NULL);
+      coerce_subset_input_double(p,tmp_p,index_nxyz,type_p,nxyz,0,NULL,NULL);
     }
     else {
-      tmp_p = &((double*)p)[index_z];
+      tmp_p = &((double*)p)[index_nxyz];
     }
 /*
  * Coerce subsection of t (tmp_t) to double if ncessary.
  */
     if(type_t != NCL_double) {
-      coerce_subset_input_double(t,tmp_t,index_z,type_t,nxyz,0,NULL,NULL);
+      coerce_subset_input_double(t,tmp_t,index_nxyz,type_t,nxyz,0,NULL,NULL);
     }
     else {
-      tmp_t = &((double*)t)[index_z];
+      tmp_t = &((double*)t)[index_nxyz];
     }
 
 /*
  * Coerce subsection of q (tmp_q) to double if necessary.
  */
     if(type_q != NCL_double) {
-      coerce_subset_input_double(q,tmp_q,index_z,type_q,nx,0,NULL,NULL);
+      coerce_subset_input_double(q,tmp_q,index_nxyz,type_q,nx,0,NULL,NULL);
     }
     else {
-      tmp_q = &((double*)q)[index_z];
+      tmp_q = &((double*)q)[index_nxyz];
     }
 /*
  * Point temporary output array to void output array if appropriate.
  */
-    if(type_slp == NCL_double) tmp_slp = &((double*)slp)[index_z];
+    if(type_slp == NCL_double) tmp_slp = &((double*)slp)[index_nxy];
 /*
  * Call Fortran routine.
  */
     NGCALLF(dcomputeseaprs,DCOMPUTESEAPRS)(&nx,&ny,&nz,tmp_z,tmp_t,tmp_p,
-                                           tmp_q,tmp_slp,tmp_slv,tmp_srf,
-                                           tmp_lvl);
+                                           tmp_q,tmp_slp,tmp_t_sea_level,
+                                           tmp_t_surf,tmp_level);
 /*
  * Coerce output back to float if necessary.
  */
     if(type_slp == NCL_float) {
-      coerce_output_float_only(slp,tmp_slp,nx,index_z);
+      coerce_output_float_only(slp,tmp_slp,nxy,index_nxy);
     }
 
-    index_z += nxyz;    /* Increment index */
+    index_nxyz += nxyz;    /* Increment indices */
+    index_nxy  += nxy;
   }
 /*
  * Free up memory.
  */
-  if(type_q != NCL_double) NclFree(tmp_q);
-  if(type_p  != NCL_double) NclFree(tmp_p);
-  if(type_t  != NCL_double) NclFree(tmp_t);
+  if(type_q   != NCL_double) NclFree(tmp_q);
+  if(type_p   != NCL_double) NclFree(tmp_p);
+  if(type_t   != NCL_double) NclFree(tmp_t);
   if(type_slp != NCL_double) NclFree(tmp_slp);
-  NclFree(tmp_slv);
-  NclFree(tmp_srf);
-  NclFree(tmp_lvl);
 
-  return(NclReturnValue(slp,ndims_z,dsizes_z,NULL,type_slp,0));
+  NclFree(tmp_t_sea_level);
+  NclFree(tmp_t_surf);
+  NclFree(tmp_level);
+
+  return(NclReturnValue(slp,ndims_slp,dsizes_slp,NULL,type_slp,0));
 }
 
 NhlErrorTypes wrf_interp_3d_z_W( void )
