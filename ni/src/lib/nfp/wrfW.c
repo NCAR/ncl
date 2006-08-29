@@ -760,15 +760,31 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
   }
 /*
- * Calculate size of leftmost dimensions.
+ * Calculate size of leftmost dimensions and set dimension sizes for 
+ * output array.
+ *
+ * The output array will have one less dimension than v3d/z input arrays.
  */
-  size_leftmost = 1;
-  for(i = 0; i < ndims_v3d-3; i++) size_leftmost *= dsizes_v3d[i];
   nx = dsizes_v3d[ndims_v3d-1];
   ny = dsizes_v3d[ndims_v3d-2];
   nz = dsizes_v3d[ndims_v3d-3];
-  nxy = nx * ny;
+  nxy  = nx * ny;
   nxyz = nxy * nz;
+
+  ndims_v2d = ndims_v3d-1;
+  dsizes_v2d = (int*)calloc(ndims_v2d,sizeof(int));  
+  if( dsizes_v2d == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  size_leftmost = 1;
+  for(i = 0; i < ndims_v3d-3; i++) {
+    dsizes_v2d[i] = dsizes_v3d[i];
+    size_leftmost *= dsizes_v3d[i];
+  }
+  dsizes_v2d[ndims_v3d-2] = ny;
+  dsizes_v2d[ndims_v3d-1] = nx;
+
   size_v2d = size_leftmost * nxy;
 
 /* 
@@ -825,17 +841,6 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
   }
 /*
- * Set dimension sizes for output array.
- */
-  ndims_v2d = ndims_v3d-1;
-  dsizes_v2d = (int*)calloc(ndims_v2d,sizeof(int));  
-  if( dsizes_v2d == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension sizes");
-    return(NhlFATAL);
-  }
-  dsizes_v2d[0] = 4;
-  for(i = 1; i <= ndims_v3d-1; i++) dsizes_v2d[i] = dsizes_v3d[i];
-/*
  * Loop across leftmost dimensions and call the Fortran routine
  * for reach three-dimensional subsection.
  */
@@ -875,7 +880,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * Coerce output back to float if necessary.
  */
     if(type_v2d == NCL_float) {
-      coerce_output_float_only(v2d,tmp_v2d,nxyz,index_v2d);
+      coerce_output_float_only(v2d,tmp_v2d,nxy,index_v2d);
     }
 
     index_v3d += nxyz;
@@ -969,19 +974,30 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   }
 /*
  * Check leftmost dimensions, if any, and calculate their size.
+ * Also set dimension sizes for output array.
  */
+  ndims_v2d = ndims_xy;     /* leftmost dims x nz x nxy */
+  dsizes_v2d = (int*)calloc(ndims_v2d,sizeof(int));  
+  if( dsizes_v2d == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
   size_leftmost = 1;
   for(i = 0; i < ndims_v3d-3; i++) {
     if(dsizes_v3d[i] != dsizes_xy[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: The leftmost dimensions of v3d and xy must be the same");
       return(NhlFATAL);
     }
+    dsizes_v2d[i] = dsizes_v3d[i];
     size_leftmost *= dsizes_v3d[i];
   }
+  dsizes_v2d[ndims_v2d-2] = nz;
+  dsizes_v2d[ndims_v2d-1] = nxy;
+
   nxyz = nxy * nz;
   nxy2 = 2 * nxy;
 
-  size_v2d = size_leftmost * nxy * nz;
+  size_v2d = size_leftmost * nxyz;
 
 /* 
  * Allocate space for coercing input arrays.  If the input v3d or xy
@@ -1032,18 +1048,6 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
       return(NhlFATAL);
     }
   }
-/*
- * Set dimension sizes for output array.
- */
-  ndims_v2d = ndims_xy;     /* leftmost dims x nz x nxy */
-  dsizes_v2d = (int*)calloc(ndims_v2d,sizeof(int));  
-  if( dsizes_v2d == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for holding dimension sizes");
-    return(NhlFATAL);
-  }
-  for(i = 1; i < ndims_v2d-2; i++) dsizes_v2d[i] = dsizes_xy[i];
-  dsizes_v2d[ndims_v2d-2] = nz;
-  dsizes_v2d[ndims_v2d-1] = nxy;
 
 /*
  * Loop across leftmost dimensions and call the Fortran routine
@@ -1087,9 +1091,9 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
       coerce_output_float_only(v2d,tmp_v2d,nxyz,index_v2d);
     }
 
-    index_v3d += nxyz;    /* Increment index */
+    index_v3d += nxyz;    /* Increment indices */
     index_xy  += nxy2;
-    index_v2d += nxy;
+    index_v2d += nxyz;
   }
 /*
  * Free up memory.
@@ -1169,9 +1173,9 @@ NhlErrorTypes wrf_interp_1d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The v_in, z_in, and z_out arrays must be the same number of dimensions");
     return(NhlFATAL);
   }
-  nz_in  = dsizes_v_in[ndims_v_in-1];
+  nz_in  = dsizes_z_in[ndims_z_in-1];
   nz_out = dsizes_z_out[ndims_z_out-1];
-  if(dsizes_z_in[ndims_z_in-1] != nz_in) {
+  if(dsizes_v_in[ndims_v_in-1] != nz_in) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The rightmost dimesion of v_in and z_in must be the same");
     return(NhlFATAL);
   }
@@ -1180,12 +1184,11 @@ NhlErrorTypes wrf_interp_1d_W( void )
  */
   size_leftmost = 1;
   for(i = 0; i < ndims_v_in-1; i++ ) {
-    if(dsizes_v_in[ndims_z_in-1] != dsizes_z_in[i] || 
-       dsizes_v_in[ndims_z_in-1] != dsizes_z_out[i]) {
+    if(dsizes_v_in[i] != dsizes_z_in[i] || dsizes_v_in[i] != dsizes_z_out[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The input arrays must be the same dimensionality");
       return(NhlFATAL);
     }
-    if(i != (ndims_v_in-1)) size_leftmost *= dsizes_v_in[i];
+    size_leftmost *= dsizes_v_in[i];
   }
 
   size_v_out = size_leftmost * nz_out;
@@ -1280,7 +1283,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Coerce subsection of z_in (tmp_z_in) to double if necessary.
  */
     if(type_z_in != NCL_double) {
-      coerce_subset_input_double(z_in,tmp_z_in,index_v_in,type_z_in,nz_in,0,NULL,NULL);
+      coerce_subset_input_double(z_in,tmp_z_in,index_v_in,type_z_in,nz_in,
+				 0,NULL,NULL);
     }
     else {
       tmp_z_in = &((double*)z_in)[index_v_in];
@@ -1319,7 +1323,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
 /*
  * Free up memory.
  */
-  if(type_v_in != NCL_double) NclFree(tmp_v_in);
+  if(type_v_in  != NCL_double) NclFree(tmp_v_in);
   if(type_z_in  != NCL_double) NclFree(tmp_z_in);
   if(type_z_out != NCL_double) NclFree(tmp_z_out);
   if(type_v_out != NCL_double) NclFree(tmp_v_out);
