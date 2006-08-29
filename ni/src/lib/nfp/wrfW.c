@@ -782,8 +782,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     dsizes_v2d[i] = dsizes_v3d[i];
     size_leftmost *= dsizes_v3d[i];
   }
-  dsizes_v2d[ndims_v3d-2] = ny;
-  dsizes_v2d[ndims_v3d-1] = nx;
+  dsizes_v2d[ndims_v2d-2] = ny;
+  dsizes_v2d[ndims_v2d-1] = nx;
 
   size_v2d = size_leftmost * nxy;
 
@@ -842,7 +842,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   }
 /*
  * Loop across leftmost dimensions and call the Fortran routine
- * for reach three-dimensional subsection.
+ * for each three-dimensional subsection.
  */
   index_v2d = index_v3d = 0;
   for(i = 0; i < size_leftmost; i++) {
@@ -875,7 +875,6 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  */
     NGCALLF(dinterp3dz,DINTERP3DZ)(tmp_v3d,tmp_v2d,tmp_z,tmp_loc,
                                    &nx,&ny,&nz);
-
 /*
  * Coerce output back to float if necessary.
  */
@@ -920,7 +919,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Various
  */
   int i, nx, ny, nz, nxy, nxyz, nxy2, size_leftmost;
-  int index_v3d, index_v2d, index_xy;
+  int index_v3d, index_xy;
 
 /*
  * Retrieve parameters.
@@ -996,7 +995,6 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 
   nxyz = nxy * nz;
   nxy2 = 2 * nxy;
-
   size_v2d = size_leftmost * nxyz;
 
 /* 
@@ -1053,7 +1051,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Loop across leftmost dimensions and call the Fortran routine
  * for reach three-dimensional subsection.
  */
-  index_v2d = index_v3d = index_xy = 0;
+  index_v3d = index_xy = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of v3d (tmp_v3d) to double if necessary.
@@ -1078,7 +1076,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 /*
  * Point temporary output array to void output array if appropriate.
  */
-    if(type_v2d == NCL_double) tmp_v2d = &((double*)v2d)[index_v2d];
+    if(type_v2d == NCL_double) tmp_v2d = &((double*)v2d)[index_v3d];
 /*
  * Call Fortran routine.
  */
@@ -1088,12 +1086,11 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Coerce output back to float if necessary.
  */
     if(type_v2d == NCL_float) {
-      coerce_output_float_only(v2d,tmp_v2d,nxyz,index_v2d);
+      coerce_output_float_only(v2d,tmp_v2d,nxyz,index_v3d);
     }
 
     index_v3d += nxyz;    /* Increment indices */
     index_xy  += nxy2;
-    index_v2d += nxyz;
   }
 /*
  * Free up memory.
@@ -1180,17 +1177,25 @@ NhlErrorTypes wrf_interp_1d_W( void )
     return(NhlFATAL);
   }
 /*
- * Calculate leftmost dimensions, if any and check their sizes.
+ * Calculate leftmost dimensions, if any, and check their sizes.
+ * Also set dimension sizes for output array.
  */
+  dsizes_v_out = (int*)calloc(ndims_z_out,sizeof(int));  
+  if( dsizes_v_out == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+
   size_leftmost = 1;
   for(i = 0; i < ndims_v_in-1; i++ ) {
-    if(dsizes_v_in[i] != dsizes_z_in[i] || dsizes_v_in[i] != dsizes_z_out[i]) {
+    if(dsizes_v_in[i] != dsizes_z_in[i] || 
+       dsizes_v_in[i] != dsizes_z_out[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The input arrays must be the same dimensionality");
       return(NhlFATAL);
     }
+    dsizes_v_out[i] = dsizes_v_in[i];
     size_leftmost *= dsizes_v_in[i];
   }
-
   size_v_out = size_leftmost * nz_out;
 
 /* 
@@ -1253,15 +1258,6 @@ NhlErrorTypes wrf_interp_1d_W( void )
       return(NhlFATAL);
     }
   }
-/*
- * Set dimension sizes for output array.
- */
-  dsizes_v_out = (int*)calloc(ndims_z_out,sizeof(int));  
-  if( dsizes_v_out == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for holding dimension sizes");
-    return(NhlFATAL);
-  }
-  for(i = 1; i < ndims_z_out; i++) dsizes_v_out[i] = dsizes_z_out[i];
 
 /*
  * Loop across leftmost dimensions and call the Fortran routine
@@ -1284,7 +1280,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
  */
     if(type_z_in != NCL_double) {
       coerce_subset_input_double(z_in,tmp_z_in,index_v_in,type_z_in,nz_in,
-				 0,NULL,NULL);
+                                 0,NULL,NULL);
     }
     else {
       tmp_z_in = &((double*)z_in)[index_v_in];
@@ -1294,7 +1290,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Coerce subsection of z_out (tmp_z_out) to double if necessary.
  */
     if(type_z_out != NCL_double) {
-      coerce_subset_input_double(z_out,tmp_z_out,index_v_out,type_z_out,nz_out,0,NULL,NULL);
+      coerce_subset_input_double(z_out,tmp_z_out,index_v_out,type_z_out,
+                                 nz_out,0,NULL,NULL);
     }
     else {
       tmp_z_out = &((double*)z_out)[index_v_out];
@@ -1309,7 +1306,6 @@ NhlErrorTypes wrf_interp_1d_W( void )
  */
     NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&nz_in,
                                  &nz_out);
-
 /*
  * Coerce output back to float if necessary.
  */
