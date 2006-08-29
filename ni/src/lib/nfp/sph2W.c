@@ -19030,7 +19030,7 @@ NhlErrorTypes shsgc_R42_W( void )
 /*
  * Allocate space for temporary input array. The temporary array
  * tmp_g is just big enough to hold a 2-dimensional subsection of the
- * g array (which is always size 43 x 43).
+ * g array (which is always size 108 x 128).
  */
   if(type_a != NCL_double && type_b != NCL_double) {
     type_g = NCL_float;
@@ -19060,7 +19060,8 @@ NhlErrorTypes shsgc_R42_W( void )
 /*
  * Coerce 43 x 43 subsection of a (tmp_a) to double.
  */
-      coerce_subset_input_double(a,tmp_a,index_ab,type_a,size_rightmost_ab,0,NULL,NULL);
+      coerce_subset_input_double(a,tmp_a,index_ab,type_a,size_rightmost_ab,
+				 0,NULL,NULL);
     }
     else {
 /*
@@ -19072,7 +19073,8 @@ NhlErrorTypes shsgc_R42_W( void )
 /*
  * Coerce 43 x 43 subsection of b (tmp_b) to double.
  */
-      coerce_subset_input_double(b,tmp_b,index_ab,type_b,size_rightmost_ab,0,NULL,NULL);
+      coerce_subset_input_double(b,tmp_b,index_ab,type_b,size_rightmost_ab,
+				 0,NULL,NULL);
     }
     else {
 /*
