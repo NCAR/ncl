@@ -276,8 +276,8 @@ c
                   END DO
                   KMAX = KK
                   IF (KMAX.GT.150) THEN
-                      WRITE (IUP,FMT=*)
-     +                  'in capecalc3d: kmax got too big. kmax=',KMAX
+                      print *,
+     +                  'capecalc3d: kmax got too big. kmax=',KMAX
                       STOP
                   END IF
 c
@@ -423,7 +423,8 @@ c
       IP = -1
   215 CONTINUE
       IF (JT.EQ.-1 .OR. IP.EQ.-1) THEN
-          WRITE (IUP,FMT=*) 'Outside of lookup table bounds. prs,thte=',
+         print *,'capecalc3d: ',
+     +           'Outside of lookup table bounds. prs,thte=',
      +      PRS,THTE
           STOP
       END IF
@@ -433,9 +434,8 @@ c
       FRACIP2 = 1.D0 - FRACIP
       IF (PSADITMK(IP,JT).GT.1D9 .OR. PSADITMK(IP+1,JT).GT.1D9 .OR.
      +    PSADITMK(IP,JT+1).GT.1D9 .OR. PSADITMK(IP+1,JT+1).GT.1D9) THEN
-          WRITE (IUP,FMT=*)
-     +      'Tried to access missing tmperature in lookup table.'
-          WRITE (IUP,FMT=*)
+          print *,'capecalc3d: ',
+     +      'Tried to access missing temperature in lookup table.',
      +      'Prs and Thte probably unreasonable. prs,thte=',PRS,THTE
           STOP
       END IF
