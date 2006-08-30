@@ -918,8 +918,8 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 /*
  * Various
  */
-  int i, nx, ny, nz, nxy, nxyz, nxy2, size_leftmost;
-  int index_v3d, index_xy;
+  int i, nx, ny, nz, nxny, nxnynz, nxy, nxy_nz , nxy_2, size_leftmost;
+  int index_v3d, index_v2d, index_xy;
 
 /*
  * Retrieve parameters.
@@ -967,10 +967,6 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   nx  = dsizes_v3d[ndims_v3d-1];
   nxy = dsizes_xy[ndims_xy-2];
 
-  if(nxy != (nx * ny)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: The second-to-the-last dimension of xy must be nx * ny");
-    return(NhlFATAL);
-  }
 /*
  * Check leftmost dimensions, if any, and calculate their size.
  * Also set dimension sizes for output array.
@@ -993,9 +989,11 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   dsizes_v2d[ndims_v2d-2] = nz;
   dsizes_v2d[ndims_v2d-1] = nxy;
 
-  nxyz = nxy * nz;
-  nxy2 = 2 * nxy;
-  size_v2d = size_leftmost * nxyz;
+  nxny     = nx * ny;
+  nxnynz   = nxny * nz;
+  nxy_nz   = nxy * nz;
+  nxy_2    = nxy * 2;
+  size_v2d = size_leftmost * nxy_nz;
 
 /* 
  * Allocate space for coercing input arrays.  If the input v3d or xy
@@ -1008,7 +1006,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  */
   type_v2d = NCL_float;
   if(type_v3d != NCL_double) {
-    tmp_v3d = (double *)calloc(nxyz,sizeof(double));
+    tmp_v3d = (double *)calloc(nxnynz,sizeof(double));
     if(tmp_v3d == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
@@ -1018,7 +1016,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
     type_v2d = NCL_double;
   }
   if(type_xy != NCL_double) {
-    tmp_xy = (double *)calloc(nxy2,sizeof(double));
+    tmp_xy = (double *)calloc(nxy_2,sizeof(double));
     if(tmp_xy == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
@@ -1040,7 +1038,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   }
   else {
     v2d     = (float *)calloc(size_v2d,sizeof(float));
-    tmp_v2d = (double *)calloc(nxyz,sizeof(double));
+    tmp_v2d = (double *)calloc(nxy_nz,sizeof(double));
     if(tmp_v2d == NULL || v2d == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -1051,13 +1049,13 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Loop across leftmost dimensions and call the Fortran routine
  * for reach three-dimensional subsection.
  */
-  index_v3d = index_xy = 0;
+  index_v3d = index_v2d = index_xy = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of v3d (tmp_v3d) to double if necessary.
  */
     if(type_v3d != NCL_double) {
-      coerce_subset_input_double(v3d,tmp_v3d,index_v3d,type_v3d,nxyz,
+      coerce_subset_input_double(v3d,tmp_v3d,index_v3d,type_v3d,nxnynz,
                                  0,NULL,NULL);
     }
     else {
@@ -1067,7 +1065,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Coerce subsection of xy (tmp_xy) to double if necessary.
  */
     if(type_xy != NCL_double) {
-      coerce_subset_input_double(xy,tmp_xy,index_xy,type_xy,nxy2,0,NULL,NULL);
+      coerce_subset_input_double(xy,tmp_xy,index_xy,type_xy,nxy_2,0,NULL,NULL);
     }
     else {
       tmp_xy = &((double*)xy)[index_xy];
@@ -1076,7 +1074,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 /*
  * Point temporary output array to void output array if appropriate.
  */
-    if(type_v2d == NCL_double) tmp_v2d = &((double*)v2d)[index_v3d];
+    if(type_v2d == NCL_double) tmp_v2d = &((double*)v2d)[index_v2d];
 /*
  * Call Fortran routine.
  */
@@ -1086,11 +1084,12 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * Coerce output back to float if necessary.
  */
     if(type_v2d == NCL_float) {
-      coerce_output_float_only(v2d,tmp_v2d,nxyz,index_v3d);
+      coerce_output_float_only(v2d,tmp_v2d,nxy_nz,index_v2d);
     }
 
-    index_v3d += nxyz;    /* Increment indices */
-    index_xy  += nxy2;
+    index_v3d += nxnynz;    /* Increment indices */
+    index_v2d += nxy_nz;
+    index_xy  += nxy_2;
   }
 /*
  * Free up memory.
