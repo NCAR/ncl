@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.203 2006-06-20 20:07:22 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.204 2006-08-31 18:17:47 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -13131,6 +13131,36 @@ NhlErrorTypes _NclIprintFileVarSummary( void )
 	return(NhlNOERROR);
 
 }
+
+NhlErrorTypes _NclILoadScript( void )
+{
+	NclStackEntry path;
+	NclMultiDValData p_md = NULL;
+	char buf[1024];
+
+	path =  _NclGetArg(0,1,DONT_CARE);
+	if(path.kind == NclStk_VAR) {
+		if(path.u.data_var != NULL) {
+			p_md = _NclVarValueRead(path.u.data_var,NULL,NULL);
+		}
+	} else if(path.kind == NclStk_VAL) {
+		p_md = path.u.data_obj;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"loadscript: arg 0 is incorrect type");
+		return(NhlFATAL);
+	}
+	/* 
+	 * Note the line is incremented for the parser of the script/session that calls
+	 * the loadscript procedure -- it's not for the script that is loaded. That is
+	 * why it needs to be called prior to calling _NclPreLoad..
+	 */
+	IncLine();
+	_NclPreLoadScript(NrmQuarkToString(*((int*)p_md->multidval.val)),0);
+
+	return(NhlNOERROR);
+
+}
+
 NhlErrorTypes _NclIAddFiles( void )
 {
 	NclStackEntry path;

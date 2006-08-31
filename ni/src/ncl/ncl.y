@@ -118,7 +118,7 @@ char *cur_load_file = NULL;
 %type <src_node> statement assignment 
 %type <src_node> procedure function_def procedure_def fp_block block do conditional
 %type <src_node> visblk statement_list
-%type <src_node> declaration identifier expr v_parent the_datatype
+%type <src_node> declaration identifier expr v_parent 
 %type <src_node> subscript0 subscript2 break_cont vcreate list_subscript 
 %type <src_node> subscript3 subscript1 subexpr primary function array error filevarselector coordvarselector attributeselector 
 %type <list> the_list arg_dec_list subscript_list opt_arg_list named_subscript_list normal_subscript_list
@@ -1463,9 +1463,14 @@ assignment :  identifier '=' expr		{
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: possibly an undefined procedure");
 						$$ = NULL;
 					}
+        | vname list_subscript LP RP error {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: possibly an undefined procedure");
+						$$ = NULL;
+					}
 	| identifier '='  error		{
 						$$ = NULL;
 					}
+       
 /*
 	| identifier '=' vcreate	{
 						$$ = NULL;
@@ -1737,12 +1742,7 @@ identifier : vname list_subscript 	{
 							$$ = _NclMakeListRef(_NclMakeVarCoordAttRef(tmp0,$3,$4,$6),tmp,$1,$2,tmp0);
 						}
 					}
-	| vname list_subscript LP RP error 			{
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: possibly an undefined procedure");
-					is_error += 1;
 
-					$$ = NULL;
-	}
 ;
 
 vname : OBJVAR		{
@@ -1773,7 +1773,8 @@ list_subscript : {
 		$$ = _NclMakeIntSubscript($2,NULL);
 	}
 ;
-subscript_list : named_subscript_list {
+subscript_list : 
+        named_subscript_list {
 			$$ = $1;
 		}
 	| normal_subscript_list {
@@ -2480,7 +2481,7 @@ yyerror
 			sprintf(error_buffer,"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<last_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
-			sprintf(&(error_buffer[len+last_line_length-1]),"^\n");
+			sprintf(&(error_buffer[len+last_line_length-1]),"^");
 			if(loading > 0) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near \\n \n%s\n",s,cur_line_number,cur_load_file,error_buffer);
 			} else if(cmd_line){
@@ -2492,7 +2493,7 @@ yyerror
 			sprintf((char*)&(error_buffer[0]),"%s\n",cur_line_text);
 			len = strlen(error_buffer);
 			for(i=0; i<cur_line_length-1;i++) sprintf(&(error_buffer[len+i]),"-");
-			sprintf(&(error_buffer[len+cur_line_length-1]),"^\n");
+			sprintf(&(error_buffer[len+cur_line_length-1]),"^");
 			if(loading > 0) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"%s: line %d in file %s before or near %s \n%s\n",s,cur_line_number,cur_load_file,yytext,error_buffer);
 			} else if(cmd_line){

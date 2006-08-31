@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.76 2006-05-17 22:49:18 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.77 2006-08-31 18:17:47 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,11 @@ extern "C" {
 #include "NclBuiltIns.h"
 #include "MathFuncs.h"
 #include "HLUFunctions.h"
+extern NhlErrorTypes _NclILoadScript(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclICreateFile(
 #if NhlNeedProto
 void
@@ -719,6 +724,12 @@ void _NclAddBuiltIns
 	int dimsizes[NCL_MAX_DIMENSIONS];
 	int nargs = 0;
 
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
+	NclRegisterProc(_NclILoadScript,args,"loadscript",nargs);
+
+	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_Nclsinh,args,"sinh",nargs);
@@ -1754,6 +1765,7 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,"string",0,NclANY); nargs++;
     SetArgTemplate(args,nargs,"string",1,dimsizes); nargs++;
     NclRegisterFunc(_NclIAddFiles,args,"addfiles",nargs);
+
 
 
     nargs = 0;
