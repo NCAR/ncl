@@ -199,42 +199,54 @@ NhlErrorTypes rip_cape_3d_W( void )
       return(NhlFATAL);
     }
   }
+/*
+ * Get sizes of input arrays.
+ */
   if(ndims_p == 4) {
-    if(dsizes_p[0] != dsizes_psfc[0] || dsizes_p[2] != dsizes_psfc[1] |\
-       dsizes_p[3] != dsizes_psfc[2]) { 
+    ntime = dsizes_p[0];          /* time, serves as a leftmost dimension */
+    mkzh  = dsizes_p[1];          /* lev */
+    mjx   = dsizes_p[2];          /* lat */
+    miy   = dsizes_p[3];          /* lon */
+  }
+  else if(ndims_p == 3) {
+    ntime = 1;
+    mkzh = dsizes_p[0];           /* lev */
+    mjx  = dsizes_p[1];           /* lat */
+    miy  = dsizes_p[2];           /* lon */
+  }
+  else if(ndims_p == 1) {
+    ntime = 1;
+    mkzh = dsizes_p[0];           /* lev */
+    mjx  = 1;                     /* lat */
+    miy  = 1;                     /* lon */
+  }
+
+/*
+ * Check some more dimension sizes.
+ */
+  if(ndims_p == 4) {
+    if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx || 
+       dsizes_psfc[2] != miy) { 
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
       return(NhlFATAL);
     }
   }
   if(ndims_p == 3) {
-    if(dsizes_p[1] != dsizes_psfc[0] || dsizes_p[2] != dsizes_psfc[1] ) {
+    if(dsizes_psfc[0] != mjx || dsizes_psfc[1] != miy) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_3d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
       return(NhlFATAL);
     }
   }
 /*
- * Get sizes of input arrays.
- */
-  if(ndims_p == 4) {
-    ntime = dsizes_p[0];          /* time */
-    mkzh  = dsizes_p[1];          /* lev */
-    mjx   = dsizes_p[2];          /* nlat */
-    miy   = dsizes_p[3];          /* nlon */
-  }
-  else if(ndims_p == 3) {
-    ntime = 1;
-    mkzh = dsizes_p[0];           /* lev */
-    mjx  = dsizes_p[1];           /* nlat */
-    miy  = dsizes_p[2];           /* nlon */
-  }
-  else if(ndims_p == 1) {
-    ntime = 1;
-    mkzh = dsizes_p[0];           /* lev */
-    mjx  = 1;                     /* nlat */
-    miy  = 1;                     /* nlon */
-  }
-/*
- * Calculate size of output arrays.
+ * Calculate size of output array. The output array size depends on
+ * the size of p,t,q,z:
+ *
+ *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
+ *       output array: (2,time,lev,lat,lon)
+ *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
+ *       output array: (2,lev,lat,lon)
+ *  - p,t,q,z (lev) and psfc,zsfc (scalars)
+ *       output array: (2,lev)
  */
   ndims_cape = ndims_p+1;
   dsizes_cape = (int *)calloc(ndims_cape,sizeof(int));
@@ -243,12 +255,12 @@ NhlErrorTypes rip_cape_3d_W( void )
     return(NhlFATAL);
   }
 
-  dsizes_cape[0] = 2;
+  dsizes_cape[0] = 2;                /* 0 = cape, 1 = cin */
   for(i = 0; i < ndims_p; i++ ) {
     dsizes_cape[i+1] = dsizes_p[i];
   }
   size_zsfc   = mjx * miy;
-  size_cape   = mkzh * size_zsfc;
+  size_cape   = mkzh * size_zsfc;       /* Also size of cin array */
   size_output = 2 * size_cape * ntime;
 
 /* 
@@ -331,7 +343,7 @@ NhlErrorTypes rip_cape_3d_W( void )
  * Call the Fortran routine.
  */ 
   index_cape = index_zsfc = 0;
-  index_cin = ntime * size_cape;
+  index_cin = ntime * size_cape;    /* Second half of output array */
 
   for(i = 0; i < ntime; i++) {
 /*
@@ -446,7 +458,13 @@ NhlErrorTypes rip_cape_3d_W( void )
 /*
  * The rip_cape_2d wrapper is for the case where I3DFLAG is set to
  * 0 in the Fortran rip_cape.f file.  In this case, 4 2D arrays
- * are returned: cape, cin, lcl, and lfc.
+ * are returned: cape, cin, lcl, and lfc, but they are all returned 
+ * in one big array whose leftmost dimension is 4:
+ *
+ *   index 0 = cape
+ *   index 1 = cin
+ *   index 2 = lcl
+ *   index 3 = lfc
  */
 NhlErrorTypes rip_cape_2d_W( void )
 {
@@ -624,37 +642,52 @@ NhlErrorTypes rip_cape_2d_W( void )
     }
   }
   if(ndims_p == 4) {
-    if(dsizes_p[0] != dsizes_psfc[0] || dsizes_p[2] != dsizes_psfc[1] |\
-       dsizes_p[3] != dsizes_psfc[2]) { 
+/*
+ * Store dimension sizes.
+ */
+    ntime = dsizes_p[0];       /* time */
+    mkzh = dsizes_p[1];        /* lev */
+    mjx  = dsizes_p[2];        /* lat */
+    miy  = dsizes_p[3];        /* lon */
+    ndims_cape = 4;
+    if(dsizes_psfc[0] != ntime || dsizes_psfc[1] != mjx ||
+       dsizes_psfc[2] != miy) { 
       NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are 4-dimensional (time x lev x lat x lon), psfc,zsfc must be 3-dimensional (time x lat x lon)");
       return(NhlFATAL);
 
     }
-/*
- * Store dimension sizes.
- */
-    ntime = dsizes_p[0];  /* time */
-    mkzh = dsizes_p[1];           /* lev */
-    mjx  = dsizes_p[2];           /* nlat */
-    miy  = dsizes_p[3];           /* nlon */
-    ndims_cape = 4;
   }
   else if(ndims_p == 3) {
-    if(dsizes_p[1] != dsizes_psfc[0] || dsizes_p[2] != dsizes_psfc[1] ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
-      return(NhlFATAL);
-    }
 /*
  * Store dimension sizes.
  */
     ntime = 1;
     mkzh = dsizes_p[0];           /* lev */
-    mjx  = dsizes_p[1];           /* nlat */
-    miy  = dsizes_p[2];           /* nlon */
+    mjx  = dsizes_p[1];           /* lat */
+    miy  = dsizes_p[2];           /* lon */
     ndims_cape = 3;
+    if(dsizes_psfc[0] != mjx || dsizes_psfc[1] != miy) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: If p,q,t,z are 3-dimensional (time x lev x lat x lon), psfc,zsfc must be 2-dimensional (lat x lon)");
+      return(NhlFATAL);
+    }
   }
 /*
- * Calculate size of output arrays.
+ * If mkzh is not at least size 3, then this dimension won't be big 
+ * enough to contain the cin, lcl, and lfc values.
+ */
+  if(mkzh < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"rip_cape_2d: The level dimension must have at least 3 elements");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate size of output array. The output array size depends on
+ * the size of p,t,q,z:
+ *
+ *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
+ *       output array: (4,time,lat,lon)
+ *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
+ *       output array: (4,lat,lon)
  */
   dsizes_cape = (int *)calloc(ndims_cape,sizeof(int));
   if(dsizes_cape == NULL) {
@@ -663,6 +696,7 @@ NhlErrorTypes rip_cape_2d_W( void )
   }
 
   dsizes_cape[0]            = 4;    /* To hold the 4 different variables. */
+                                    /* 0=cape, 1=cin, 2=lcl, 3=lfc */
   dsizes_cape[ndims_cape-1] = miy;
   dsizes_cape[ndims_cape-2] = mjx;
   if(ndims_cape == 4) dsizes_cape[1] = ntime;
@@ -670,15 +704,15 @@ NhlErrorTypes rip_cape_2d_W( void )
   size_zsfc   = mjx * miy;
   size_cape   = mkzh * size_zsfc;
   mkzh0_index = (mkzh-1) * size_zsfc;    /* Indexes into cin array for   */
-  mkzh1_index = (mkzh-2) * size_zsfc;    /* returning cin, lcl, and lfc. */
-  mkzh2_index = (mkzh-3) * size_zsfc;
+  mkzh1_index = (mkzh-2) * size_zsfc;    /* returning cin, lcl, and lfc  */
+  mkzh2_index = (mkzh-3) * size_zsfc;    /* respectively.
   size_left_zsfc = size_zsfc * ntime;
   size_output = 4 * size_left_zsfc;
 
 /* 
- * Allocate space for output arrays.  Even if the input arrays are already
- * double, go ahead and allocate some space for them b/c we have to copy
- * the values back to 4 different locations.
+ * Allocate space for output and temporary arrays.  Even if the input
+ * arrays are already double, go ahead and allocate some space for
+ * them b/c we have to copy the values back to 4 different locations.
  */
   if(type_p == NCL_double || type_t == NCL_double || type_q == NCL_double ||
      type_z == NCL_double) {
@@ -827,19 +861,23 @@ NhlErrorTypes rip_cape_2d_W( void )
                                      psa_file,strlen(psa_file));
 /*
  * Copy the values back out to the correct places in the "cape" array.
+ *
  * This is a bit whacky, because the Fortran code is doing something
- * fancy to  save memory. The "cin" array is going to contain the cin
- * values in addition to the lcl and lfc values, and the "cape" array
- * contains its values in the last part of the tmp_cape array.
+ * fancy to save memory. The "tmp_cin" array contains the cin values in
+ * the last mkzh section, the lcl values in the 2nd-to-last mkzh
+ * section, and the lfc values in the 3rd-to-last mkzh section.
+ *
+ * The "tmp_cape" array contains its values in the last mkzh section
+ * of the tmp_cape array.
  */
     coerce_output_float_or_double(cape,&tmp_cape[mkzh0_index],type_cape,
-				  size_zsfc,index_output_cape);
+                                  size_zsfc,index_output_cape);
     coerce_output_float_or_double(cape,&tmp_cin[mkzh0_index],type_cape,
-				  size_zsfc,index_output_cin);
+                                  size_zsfc,index_output_cin);
     coerce_output_float_or_double(cape,&tmp_cin[mkzh1_index],type_cape,
-				  size_zsfc,index_output_lcl);
+                                  size_zsfc,index_output_lcl);
     coerce_output_float_or_double(cape,&tmp_cin[mkzh2_index],type_cape,
-				  size_zsfc,index_output_lfc);
+                                  size_zsfc,index_output_lfc);
 /*
  * Implement the pointers into the arrays.
  */
