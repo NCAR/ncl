@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.204 2006-08-31 18:17:47 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.205 2006-08-31 23:50:30 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -13154,8 +13154,13 @@ NhlErrorTypes _NclILoadScript( void )
 	 * the loadscript procedure -- it's not for the script that is loaded. That is
 	 * why it needs to be called prior to calling _NclPreLoad..
 	 */
-	IncLine();
-	_NclPreLoadScript(NrmQuarkToString(*((int*)p_md->multidval.val)),0);
+	if (p_md && (p_md->multidval.type->type_class.type & Ncl_Typestring)) {
+		IncLine();
+		_NclPreLoadScript(NrmQuarkToString(*((NclQuark*)p_md->multidval.val)),0);
+	}
+	else {
+		return(NhlFATAL);
+	}
 
 	return(NhlNOERROR);
 
