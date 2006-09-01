@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.32 2006-03-03 00:27:58 haley Exp $
+ *      $Id: yMakefile,v 1.33 2006-09-01 21:27:34 haley Exp $
  */
 /************************************************************************
 *									*
@@ -23,11 +23,7 @@
 
 #define IHaveSubdirs
 
-#ifdef BuildPyNGL
-SUBDIRS	= config external common ncarg2d ngmath ncarview ni pyngl 
-#else
 SUBDIRS	= config external common ncarg2d ngmath ncarview ni
-#endif
 
 #ifdef	YMAKEDEVFILE
 Info::
