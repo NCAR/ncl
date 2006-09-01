@@ -705,7 +705,7 @@ NhlErrorTypes rip_cape_2d_W( void )
   size_cape   = mkzh * size_zsfc;
   mkzh0_index = (mkzh-1) * size_zsfc;    /* Indexes into cin array for   */
   mkzh1_index = (mkzh-2) * size_zsfc;    /* returning cin, lcl, and lfc  */
-  mkzh2_index = (mkzh-3) * size_zsfc;    /* respectively.
+  mkzh2_index = (mkzh-3) * size_zsfc;    /* respectively. */
   size_left_zsfc = size_zsfc * ntime;
   size_output = 4 * size_left_zsfc;
 
