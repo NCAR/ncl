@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.205 2006-08-31 23:50:30 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.206 2006-09-03 20:03:03 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -5011,14 +5011,14 @@ NhlErrorTypes _NclIabs
             if (has_missing) {
                 for (i = 0; i < total; i++) {
                     if (fvalue[i] != missing.floatval) {
-                        fout_val[i] = (float) fabsf((float) fvalue[i]);
+                        fout_val[i] = (float) fabs((float) fvalue[i]);
                     } else {
                         fout_val[i] = (float) missing.floatval;
                     }
                 }
             } else {
                 for (i = 0; i < total; i++) {
-                    fout_val[i] = (float) fabsf((float) fvalue[i]);
+                    fout_val[i] = (float) fabs((float) fvalue[i]);
                 }
             }
 
