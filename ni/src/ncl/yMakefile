@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.114 2006-06-26 20:03:35 grubin Exp $
+#      $Id: yMakefile,v 1.115 2006-09-05 17:33:14 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2006-06-26 20:03:35 $
+#	Date:		$Date: 2006-09-05 17:33:14 $
 #
 #	Description:	
 #
@@ -60,6 +60,7 @@ HDFEOS_OBJS = NclHDFEOS.o
 DODS_LIBS	= -lnc-dap -ldap -lcurl -lrx -lxml2 -lstdc\+\+ -lssl -lpthread -lnsl
 CC_LD		= g\+\+ -R/opt/SUNWspro/lib -L/opt/SUNWspro/lib
 CCOPTIONS	= $(EXTRA_CCOPTIONS)
+CTOFLIBS += -L/opt/SUNWspro/prod/lib -lompstubs 
 #elif defined(AIX)
 DODS_LIBS	= -lnc-dap -ldap -lcurl -lrx -lxml2 -lpthread -lssl -liconv
 CC_LD		= xlC_r
