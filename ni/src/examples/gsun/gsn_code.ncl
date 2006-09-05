@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.184 2006-09-05 17:22:35 haley Exp $
+;      $Id: gsn_code.ncl,v 1.185 2006-09-05 17:28:20 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2365,6 +2365,7 @@ function gsn_blank_plot(wks:graphic,res:logical)
 local res2
 begin
   res2      = res
+  point_outward = get_res_value(res2,"gsnTickMarksPointOutward",False)
   calldraw  = get_res_value(res2,"gsnDraw", True)
   callframe = get_res_value(res2,"gsnFrame",False)
   shape     = get_res_value(res2,"gsnShape",False)
@@ -2380,7 +2381,6 @@ begin
 
   attsetvalues_check(canvas,res2)
 
-  point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
   tmres = get_res_eq(res2,"tm")
   gsnp_point_tickmarks_outward(canvas,tmres,-1.,-1.,-1.,-1.,-1.,-1.,\
                                point_outward)
