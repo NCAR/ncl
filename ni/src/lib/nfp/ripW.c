@@ -54,6 +54,7 @@ NhlErrorTypes rip_cape_3d_W( void )
  */
   int i, miy, mjx, mkzh, ntime, size_cape, size_output, size_zsfc;
   int i3dflag=1, scalar_zsfc, index_cape, index_zsfc, index_cin;
+  int iter;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -155,6 +156,9 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           2);
   
+  if(*ter_follow) iter = 1;
+  else            iter = 0;
+
 /*
  * Check the input dimension sizes. There are three possible cases
  * for the input dimension sizes:
@@ -421,7 +425,7 @@ NhlErrorTypes rip_cape_3d_W( void )
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape, tmp_cin, &miy,
-                                     &mjx, &mkzh, &i3dflag, ter_follow,
+                                     &mjx, &mkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
 /*
  * If the output is to be float, then do the coercion here.
@@ -500,6 +504,7 @@ NhlErrorTypes rip_cape_2d_W( void )
   int size_left_zsfc, i3dflag=0, scalar_zsfc, index_cape, index_zsfc;
   int index_output_cape, index_output_cin, index_output_lcl;
   int index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
+  int iter;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -601,6 +606,10 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           2);
   
+  if(*ter_follow) iter = 1;
+  else            iter = 0;
+
+
 /*
  * Check the input dimension sizes. There are two possible cases
  * for the input dimension sizes:
@@ -857,7 +866,7 @@ NhlErrorTypes rip_cape_2d_W( void )
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
                                      tmp_psfc, tmp_cape, tmp_cin, &miy,
-                                     &mjx, &mkzh, &i3dflag, ter_follow,
+                                     &mjx, &mkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
 /*
  * Copy the values back out to the correct places in the "cape" array.
