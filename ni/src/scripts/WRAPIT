@@ -309,9 +309,9 @@ switch ($OS)
      endif
    else                              # GNU g77
      if ($debug == 1) then
-       set fopts = "$fopts -v -c -ffortran-bounds-check -fno-second-underscore" 
+       set fopts = "$fopts -fPIC -v -c -ffortran-bounds-check -fno-second-underscore" 
      else
-       set fopts = "$fopts -c -O -fno-second-underscore"
+       set fopts = "$fopts -fPIC -c -O -fno-second-underscore"
      endif 
    endif  
    breaksw
@@ -485,7 +485,22 @@ switch ($OS)
      cc $copts +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
    endif
    breaksw
- default:          # OSF1, SunOS, FreeBSD, Linux
+ case Linux:                       # Linux
+   if ($f90c == pgf90 || $f90c == lf95 || $f90c == ifc || $f90c == ifort) then
+     if ($debug == 1) then
+       cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c
+     else
+       cc $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c
+     endif
+   else
+     if ($debug == 1) then
+       gcc -fPIC -c -I${NCARG_ROOT}/include WRAPIT.c
+     else
+       gcc -fPIC $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c
+     endif
+   endif
+   breaksw
+ default:          # OSF1, SunOS, FreeBSD
    if ($debug == 1) then
      cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c
    else
@@ -614,9 +629,9 @@ switch ($OS)
      $f90c -shared $ld_suffix
    else                            # GNU g77               
      if ($debug == 1) then
-       gcc -shared $ld_suffix -lg2c
+       gcc -fPIC -shared $ld_suffix -lg2c
      else
-       gcc -shared $ld_suffix
+       gcc -fPIC -shared $ld_suffix
      endif
    endif
    breaksw
