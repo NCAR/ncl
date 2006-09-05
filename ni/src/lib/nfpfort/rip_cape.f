@@ -92,7 +92,10 @@ C  K
       THTECON1 = 3376.D0
       THTECON2 = 2.54D0
       THTECON3 = .81D0
-
+C KLCL - This wasn't originally being initialized anywhere.
+C        Dennis Shea suggested using 1.  Blame him if this
+C        doesn't work.
+      KLCL = 1
 c  Calculated the pressure at full sigma levels (a set of pressure
 c  levels that bound the layers represented by the vertical grid points)
 
