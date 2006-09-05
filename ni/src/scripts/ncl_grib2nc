@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_grib2nc,v 1.10 2006-01-10 00:32:14 grubin Exp $
+#       $Id: ncl_grib2nc,v 1.11 2006-09-05 15:26:37 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -8,610 +8,69 @@
 
 #       File:       ncl_grib2nc
 #       Author:     Rick Grubin
-#                   Original NCL code written by Dennis Shea.
+#                   Original NCL code written by Dennis Shea
 #
 #       National Center for Atmospheric Research
 #       POB 3000, Boulder, Colorado
 
-# This script converts a NCL-supported GRIB file to
-# a netCDF-formatted file.
+# This script converts a GRIB file type to a netCDF-formatted file.
 #
-#   ncl_grib2nc gribFile [-i input_directory] [-o output_directory] [-v var1[,...]] [-t] [-c comment] [-d] [-h]
-#       gribFile              name of GRIB file [required]
+# THIS UTILITY IS DEPRECATED IN FAVOR OF ncl_convert2nc AS OF NCL Release 4.2.0.a034
+#
+#   ncl_grib2nc inputFile [-i input_directory] [-o output_directory] [-v var1[,...]] [-t] [-c comment] [-d] [-h]
+#       inputFile             name of file [required]
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
+#       [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
+#       [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
 #       [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
-#       [-d]                  upon exit: print contents each netCDF file [like ncdump -h]
+#       [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]
+#       [-B] <file>           suppress informational messages; redirect messages to <file> if present [default: /dev/null]
 #       [-h]                  usage message
 
-onintr cleanup
+onintr CLEANUP
 
 set progname = `basename $0`
 if ($#argv < 1) then
-    goto usage
+    goto USAGE
 endif
 
-# Location to write temporary files
-set tmpdir = `ncargpath tmp`
-
-# Input and output directories default values
-set idirs = ()
-set dirin = `pwd`
-set dirout = `pwd`
 
 #
-# Default values for script commandline parameters for NCL commands
-#
-unset vars
-set nvars = 0
-set ncdfcomment = ""
-set ncdflrgf_t = "classic"
-
-# Display resultant netCDF file when done
-unset printonexit
-
-#
-# First argument should be the input file(s); if it's not, exit.
-#    Check to see if the first argument is "-h"
-#
-if ("$1" == "-h") then
-    goto usage
-else
-    # Check argument's length
-    set arglen = `echo "$1" | awk '{print(length($0))}'`
-    if ($arglen <= 2) then
-        echo "${progname}: improper usage: ${progname} $1"
-        goto usage
-    endif
-endif
-
-#
-# Collect the file arguments, check them later -- need the "-i" ("dirin")
-# argument first for unqualified full/partial pathnames.  Bogus filenames
-# are still *kept* at this point.
+# Count the file arguments so we may emit a 'reminder' for each argument, per
+# Dennis' request.  Validity of file is irrelevant, only want a count.  Any
+# options ("-h" or similar) are ignored.
 #
 set nfiles = 0
-set ifiles_t = ()
 while ($#argv > 0)
-    set iflen = `echo $1 | awk '{print(length($0))}'`
-    if ($iflen > 2) then
-        set ifiles_t = ( $ifiles_t $1 )
+    set hasdash = `echo $1 | awk '{print substr($0, 1, 1)}'`
+    if ("$hasdash" != "-") then
         @ nfiles += 1
         shift
     else
-        break
-    endif
-end
-
-#
-# Parse options/arguments
-#
-while ($#argv > 0)
-    switch ($1)
-        case "-i"
-            shift
-            set dirin = $1
-            shift
-            breaksw
-
-        case "-o"
-            shift
-            set dirout = $1
-            shift
-            breaksw
-
-        case "-d"
-            set printonexit = 1
-            shift
-            breaksw
-
-        case "-v":
-            shift
-
-            # Determine number of variables specified (count commas)
-            # set ncommas = `echo $* | tr -cd '\,' | wc -c`
-            # set ncommas = `echo $* | awk '{print(gsub(/,/, " "))}'`
-            set ncommas = `echo $* | awk -F, '{print NF - 1}'`
-            if ($ncommas == 0) then
-                # only one variable, or none?
-                set isopt = `echo $1 | grep -c '-'`
-                set isfile = `echo $1 | grep -c '\.'`
-                if ($isopt != 0  ||  $isfile != 0) then
-                    echo "${progname}: warning: no variable(s) specified." ; echo
-                    breaksw
-                endif
-            endif
-
-            set nvars = `expr $ncommas + 1`
-            # handle "space after commas" case
-            set psv = `echo $* | sed 's/, /,/g'`
-            set pvars = $psv[1]
-            shift
-
-            # Build array of variables as strings, quote so as to pass thru the shell
-            set vline = `echo $pvars | sed 's/,/ /g'`
-            set vars = ( '\(/' )
-            set n = 1
-            while ($n < $nvars)
-                set v = $vline[$n]
-                set vars = ( $vars\\\"$v\\\"\',\' )
-                @ n = ($n + 1)
-            end
-
-            # Catch the last variable
-            set vars = ( $vars\\\"$vline[$n]\\\"'/\)' )
-            breaksw
-
-        case "-L":
-            set ncdflrgf_t = "64bitoffset"
-            shift
-            breaksw
-
-        case "-c":
-            shift
-            set ncdfcomment = "$1"
-            shift
-            breaksw
-
-        case "-h":
-            goto usage
-            exit 0
-            breaksw
-
-        case "-*":
-            echo "${progname}: warning: '$1' is not a valid option, ignoring." ; echo
-            shift
-            breaksw
-
-        default:
-            echo "${progname}: warning: '$1' is not a valid argument, ignoring." ; echo
-            shift
-            breaksw
-    endsw
-end
-
-#
-# Split filenames into (full, relative) paths and filenames.  This will
-# ensure that file arguments entered with full/relative paths are properly
-# accounted for.  Files without a path will be assigned the value given
-# with the "-i" switch (or its default if "-i" is not used).
-#
-# Check existence/readability of input file arguments; eliminate invalid entries.
-# Guarantees a one-to-one correspondence between input and output file entries.
-#
-# No check is performed to determine if a file contains valid GRIB data; it is
-# assumed that the user provides properly formatted data (regardless of filename).
-#
-set n = 1
-set nbadf = 0
-set ifiles = ()
-set ifiles_r = ()
-set ofiles = ()
-
-while ($n <= $nfiles)
-    set valid_file
-    set valid_suffixes = ("grb" "grib" "GRB" "GRIB")
-    set fil = `basename $ifiles_t[$n]`
-    set fil_bn = `basename $fil`
-    set dir = `dirname $ifiles_t[$n]`
-    set haspath = `echo $dir | grep -c '/'`
-
-    # Does the file exist, and is it readble, as named?
-    if (( -e $ifiles_t[$n]) && (-r $ifiles_t[$n])) then
-        # Does the file have a suffix (delineated by a ".")?  If
-        # yes, does the suffix indicate GRIB data?
-        set sfx = "$fil:e"
-        set sfxlen = `echo $sfx | awk '{print length($0)}'`
-        if ($sfxlen > 0) then
-            set sfx_chk
-            foreach vsfx ($valid_suffixes)
-                if ($sfx == $vsfx) then
-                    set if = $fil
-                    set of = $fil_bn:r
-                    unset sfx_chk
-                    unset valid_file
-                    break
-                endif
-            end
-
-            # There is a suffix, but it doesn't indicate GRIB data,
-            # so default to ".grb" -- this assumes the file does
-            # contain GRIB data.  NCL will handle the ".grb" extension.
-            if ($?sfx_chk) then
-                # default to ".grb" extension
-                set if = $fil.grb
-                set of = $fil
-                unset valid_file
-            endif
-        else
-            # The file exists as named, but there is no suffix -- assume
-            # an incomplete filename (ex.: 'ruc' ==> 'ruc.grb') and assign
-            # the default GRIB data tag (".grb").
-            set if = $fil.grb
-            set of = $fil
-            unset valid_file
-        endif
-    else
-        # The file, as named, doesn't exist or isn't readable.  Check
-        # for existence/readability as an incomplete file name
-        # (ex.: 'ruc' ==> 'ruc.grb').  If found, keep it as input.
-        foreach vsfx ($valid_suffixes)
-            if ((-e $fil.$vsfx) && (-r $fil.$vsfx)) then
-                set if = $fil.$vsfx
-                set of = $fil
-                unset valid_file
-                break
-           endif
-        end
-    endif
-
-    # Is the file valid -- i.e., it exists/is readable, and has a valid name?
-    # If not, skip it, else set values for input/output filenames, and input 
-    # directory.  Output directory is set by "-o" or assumed to be the current
-    # working directory (default).
-    if ($?valid_file) then
-        echo "${progname}: file '$fil' not readable or doesn't exist, skipping."
-        @ nbadf += 1
-        @ n += 1
+        shift
         continue
-    else
-        if ($haspath == 1) then
-            set idirs = ( $idirs $dir )
-            set ifiles = ( $ifiles $if )
-            set ofiles = ( $ofiles $of )
-        else
-            set idirs = ( $idirs $dirin )
-            set ifiles = ( $ifiles $if )
-            set ofiles = ( $ofiles $of )
-        endif
-    endif
-
-    # Keep the name of the file actually specified on the command line
-    set ifiles_r = ( $ifiles_r $fil )
-    @ n += 1
-end
-
-unset ifiles_t
-
-# Account for any discarded files
-@ nfiles -= $nbadf
-
-#
-# Create temporary file to hold NCL script
-#
-set tmp_nclf = "$tmpdir/tmp$$.ncl"
-/bin/rm $tmp_nclf >& /dev/null
-
-cat << 'EOF_NCL' >! $tmp_nclf
-
-;***************************************************
-; GRIB to netcdf
-;***************************************************
-;
-; ncl_grib2nc gribFile
-;             [-i directory_of_input_file] 
-;             [-o directory_of_output_file] 
-;             [-v var1[,...]] 
-;             [-c information_included_with_file_attribute]
-;             [-d] 
-;             [-h] 
-; gribFile              name of GRIB file [required]
-; [-i input_directory]  location of input file  [default: current directory] 
-; [-o output_directory] location of output file [default: current directory] 
-; [-v var1[,...]]       user specified subset of variables [default: all variables]
-;                       ncl_filedump can be used to determine desired variable names
-; [-c comment]          text to be included in netCDF file attribute [default: no comment] 
-; [-d]                  upon exit: print contents each netCDF file [like ncdump -h] 
-; [-h]                  this usage message
-;
-; Sample Usage 
-;      (1) ncl_grib2nc U12345        
-;             => U12345.nc [location current directory]  
-;
-;      (2) ncl_grib2nc U12345 -t
-;             => time coordinate type set to "string"
-;
-;      (3) ncl_grib2nc U12345 -i /my/input    
-;                [/my/input/U12345]
-;             => U12345.nc [location current directory] 
-;
-;      (4) ncl_grib2nc U12345 -i /my/input -o /my/output 
-;             =>  /my/output/U12345.nc 
-;
-;      (5) ncl_grib2nc U12345 -i /my/input -o /my/output
-;             => /my/output/U12345.nc 
-;
-;      (6) ncl_grib2nc U12345 -c 'Data Support Section: ds124.1'
-;             => /my/output/U12345.nc     [includes file attribute "ds124.1"] 
-;
-;      (7) ncl_grib2nc U12345 -o /my/output  \
-;                     -v gridlat_236,gridlon_236,PRES_236_SFC,NCPCP_236_SFC_acc1h
-;             => /my/output/U12345.nc    [contains 4 variables only] 
-;
-;      (8) ncl_grib2nc U12345 -v gridlat_236,gridlon_236,PRES_236_SFC -L
-;             => U12345.nc [location current directory]
-;                          [contains only three variables]
-;                          [supports large files (>2Gb) for netCDF]
-;
-;***************************************************
-; Multiple files
-;      The driver shell script gets the expanded file names
-;      and invokes this script, one file at a time.
-;***************************************************
-; Sample usage of the NCL script:
-;      (a) ncl 'fili="U12345"' grib2nc.ncl_v1
-;      (b) ncl 'fili="U12345"' -t
-;      (c) ncl 'fili="U12345"'  ncDump=True grib2nc.ncl_v1
-;      (d) ncl 'fili="U12345"' 'filo=Ugrib' grib2nc.ncl_v1
-;      (e) ncl 'fili="U12345"' 'diri="/my/input"' grib2nc.ncl_v1
-;      (f) ncl 'fili="U12345"' 'diri="/my/input"' 'diro="/my/output"' grib2nc.ncl_v1
-;      (g) ncl 'fili="U12345"' 'diri="/my/input"' \
-;              'diro="/my/output"'\
-;              'comment="Data Support Section: ds124.1"' grib2nc.ncl_v1
-;      (h) ncl 'fili="U12345"' 'varSelect=(/"gridlat_236","gridlon_236", \
-;                                           "PRES_236_SFC,"NCPCP_236_SFC_acc1h"/)  grib2nc.ncl_v1
-;      (h) ncl 'fili="U12345"' 'varSelect=(/"gridlat_236","gridlon_236", \
-;                                           "PRES_236_SFC/) -L  grib2nc.ncl_v1
-;***************************************************
-
-begin
-;    debug          = True
-    debug          = False
-
-    grbValidSuffix = (/ ".grb", ".GRB", ".grib", ".GRIB"/)
-
-;***************************************************
-; fili is *required*
-;***************************************************
-    if (.not. isvar("fili")) then
-        print("grib2nc: REQUIRED input file name is missing, exiting")
-        exit
-    end if
-
-;***************************************************
-; The following are optional command line variables
-;***************************************************
-    if (.not. isvar("diri")) then
-        diri  = "./"                     ; default input dir
-    else
-        diri = diri + "/"
-    end if
-
-    if (.not. isvar("diro")) then
-        diro  = "./"                     ; default output dir
-    else
-        diro = diro + "/"
-    end if
-
-    if (.not. isvar("comment")) then
-        comment = ""                     ; comment option
-    end if
-
-;***************************************************
-; open file with appropriate extension
-;***************************************************
-    grbFileName = diri + fili
-    fgrb    = addfile(grbFileName, "r")     ; suffix ok 
-
-;***************************************************
-; Specify that COARDS style output desired [not yet implemented]
-;***************************************************
-    ;;setfileoption(fgrb, "COARDS", True)   ; place holder
-
-;***************************************************
-; Specify the type of time coordinate [default is 'numeric']
-;***************************************************
-    setfileoption(fgrb, "InitialTimeCoordinateType", "numeric")
-
-;***************************************************
-; Get *all* variables names on the file 
-;     or
-; Specify a subset of variables. All variable names,
-; including coordinate variable names must be specified.
-;***************************************************
-    if (.not. isvar("nvars")) then    
-        grbVarNames = getfilevarnames(fgrb)     ; all files names 
-     else
-        grbVarNames = vars                     ; user specified variables
-     end if
-     nGrbNames = dimsizes(grbVarNames)
-
-     if (debug) then
-        print(nGrbNames)
-        print(grbVarNames)
-    end if
-
-;***************************************************
-; optionally, create new names for the output nc file
-; Add variable renaming later.
-;***************************************************
-     ncVarNames  = grbVarNames         ; default: netCDF names <==>  NCL names
-
-;***************************************************
-; open output netcdf file
-; Set file for 'large file' netCDF support if specified
-;***************************************************
-    netcdfSizeType = ncdfSize
-    setfileoption("netcdf", "format", netcdfSizeType)
-
-    ncFileName = diro + filo + ".nc"      
-    system("/bin/rm -f " + ncFileName)  ; remove pre-existing file (if any)
-    fnc = addfile(ncFileName, "c")      ; "c"reate the netCDF file
-
-;***************************************************
-; define file options [Version a033]
-;***************************************************
-    setfileoption(fnc, "prefill", False)
-    setfileoption(fnc, "suppressclose", True)
-    setfileoption(fnc, "definemode", True)
-
-;***********************************************
-; assign standard file attributes [Sample]
-;***********************************************
-    fAtt               = True
-    fAtt@title         = "NCL: GRIB-to-netCDF"
-    fAtt@grib_source   = fili
-    fAtt@conventions   = "None"
-    fAtt@system        = systemfunc("uname -a")
-    fAtt@NCL_Version   = get_ncl_version()
-    fAtt@creation_date = systemfunc ("date")
-    if (comment .ne. "") then
-        fAtt@comment   = comment 
-    end if
-    fileattdef(fnc, fAtt)
-
-;***********************************************
-; predefine the file's dimension names, sizes and types
-;***********************************************
-    dimNames = getvardims(fgrb)
-    dimSizes = getfiledimsizes(fgrb)
-    dimUnlim = new(dimsizes(dimNames), "logical")
-    dimUnlim = False
-
-    ;;if (any(dimNames .eq. "initial_time0_hours")) then
-    ;;    i = ind(dimNames .eq. "initial_time0_hours")
-    ;;    dimUnlim(i) = True
-    ;;end if
-
-    filedimdef(fnc, dimNames, dimSizes, dimUnlim)
-
-    if (debug) then
-        print(dimNames)
-        print(dimSizes)
-        print(dimUnlim)
-    end if
-
-;***********************************************
-; determine the type of each variable
-;***********************************************
-    varType = getfilevartypes(fgrb, grbVarNames)
-
-;***********************************************
-; loop over each variable: skip variables of type string [not allowed by netCDF]
-; (1) define name, type and dimension names
-; (2) rather that read in the variable [could be big and slow], read
-;     each attribute of a variable and assign to a dummy variable
-;***********************************************
-    do i = 0, nGrbNames - 1 
-        if (debug) then
-            print(" ")
-            print(i + "  ncl_name = " + grbVarNames(i))
-            print(i + "  ncl_type = " + varType(i))
-            print(i + "  dim_names " + getfilevardims(fgrb, grbVarNames(i)))
-        end if
-
-        if (varType(i) .ne. "string") then      ; netCDF (currently no strings)
-                                                ; predefine variable
-            filevardef(fnc, ncVarNames(i), varType(i), (/ getfilevardims(fgrb,grbVarNames(i)) /))
-
-            varAtts = getfilevaratts(fgrb, grbVarNames(i))
-            nAtts   = dimsizes(varAtts)
-
-            dumAtts = new (1, varType(i))    ; dummy to attach varAtts 
-            delete(dumAtts@_FillValue)       ; delete auto assigned _FillValue
-
-            do j = 0, nAtts - 1
-                dumAtts@$varAtts(j)$ = fgrb->$grbVarNames(i)$@$varAtts(j)$
-            end do
-
-            ;if (debug) then                    ; can lead to much output
-            ;    print(varAtts)
-            ;    print(nAtts)
-            ;    print(dumAtts) 
-            ;end if
-
-            ; define variable attributes
-            filevarattdef(fnc, ncVarNames(i) , dumAtts)
-
-            delete(varAtts)
-            delete(dumAtts)
-        end if
-    end do
-
-    setfileoption(fnc, "definemode", False) ; not necessary
-
-;***************************************************
-; write *only* data values to predefined locations
-;***************************************************
-    do i = 0, nGrbNames - 1
-        if (varType(i) .ne. "string") then
-            if (debug) then
-                print("write loop: i = " + i + "  " + grbVarNames(i))
-            end if
-            fnc->$ncVarNames(i)$ = (/ fgrb->$grbVarNames(i)$ /)
-        end if
-    end do
-
-;    if (isvar("ncDump") .and. ncDump) then
-;        print(fnc)
-;    end if
-
-    delete(fgrb)   ; not necessary
-    delete(fnc)
- end 
-'EOF_NCL'
-
-
-#
-# Loop over input file(s), executing NCL script
-#
-set n = 1
-while ($n <= $nfiles)
-    echo "Processing file: $ifiles_r[$n]..."
-    echo
-    if ($?vars) then
-        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
-    else
-        eval ncl -n fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
-    endif
-
-    # Display output if requested.
-    if ($?printonexit) then
-        set fdump = `which ncl_filedump`
-        if ($? != 0) then
-            set fdump = `which ncdump`
-            if ($? != 0) then
-                echo "Can't locate 'ncl_filedump' or 'ncdump' to display output file."
-            endif
-        else
-            if (-e $dirout/$ofiles[$n].nc) then
-                echo "  Displaying $dirout/$ofiles[$n].nc"
-                sleep 2
-                $fdump -c "$dirout/$ofiles[$n].nc"
-                echo ; echo
-            endif
-        endif
-    endif
-
-incr:
-    @ n += 1
-    if (($n > $#ifiles) || ($n > $#ofiles)) then
-        break
     endif
 end
 
 
 #
-# Clean up.
+# DEPRECATED
 #
-/bin/rm -f $tmp_nclf
+# Issue a msg for each input file, informing user to use 'ncl_convert2nc' instead.
+#
+if ($nfiles == 0) then
+    goto USAGE
+else
+    while ($nfiles > 0)
+        echo "${progname} is deprecated.  Please use 'ncl_convert2nc' instead."
+        @ nfiles = ($nfiles - 1)
+    end
+    exit 1
+endif
 
-exit 0
-
-cleanup:
-/bin/rm -f $tmp_nclf
+USAGE:
+echo "${progname} is deprecated.  Please use 'ncl_convert2nc' instead."
 exit 1
-
-usage:
-echo "${progname} gribFile(s) OPTIONS"
-echo "  gribFile(s)           name of GRIB file(s) [required]"
-echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
-echo "  [-o output_directory] location of output file(s) [default: current directory]"
-echo "  [-v var1[,...]]       user specified subset of variables [default: all variables]"
-echo "                        ncl_filedump can be used to determine desired variable names"
-echo "  [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]"
-echo "  [-c comment]          text to be included in netCDF file attribute [default: no comment]"
-echo "  [-d]                  upon exit: print contents each netCDF file [like ncdump -h]"
-echo "  [-h]                  this usage message"
