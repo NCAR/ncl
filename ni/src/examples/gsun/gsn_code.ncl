@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.183 2006-07-20 20:57:33 haley Exp $
+;      $Id: gsn_code.ncl,v 1.184 2006-09-05 17:22:35 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -82,6 +82,7 @@ undef("compute_device_coords")
 undef("reset_device_coordinates")
 undef("maximize_output")
 undef("draw_and_frame")
+undef("gsn_blank_plot")
 undef("create_canvas")
 undef("get_bb_res")
 undef("gsn_open_ncgm")
@@ -2352,10 +2353,62 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_blank_plot                                                 ;
+;               wks : workstation                                       ;
+;               res : optional resources                                ;
+;                                                                       ;
+; This function creates a blank tickmark object that can be used for    ;
+; drawing primitives.                                                   ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_blank_plot(wks:graphic,res:logical)
+local res2
+begin
+  res2      = res
+  calldraw  = get_res_value(res2,"gsnDraw", True)
+  callframe = get_res_value(res2,"gsnFrame",False)
+  shape     = get_res_value(res2,"gsnShape",False)
+  scale     = get_res_value(res2,"gsnScale",shape)
+  ticks     = get_res_value(res2,"pmTickMarkDisplayMode","Always")
+  title     = get_res_value(res2,"pmTitleDisplayMode","Always")
+  maxbb     = get_bb_res(res2)
+
+  canvas = create "canvas" logLinPlotClass wks
+    "pmTickMarkDisplayMode" : ticks
+    "pmTitleDisplayMode"    : title
+  end create
+
+  attsetvalues_check(canvas,res2)
+
+  point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
+  tmres = get_res_eq(res2,"tm")
+  gsnp_point_tickmarks_outward(canvas,tmres,-1.,-1.,-1.,-1.,-1.,-1.,\
+                               point_outward)
+
+; If gsnShape was set to True, then resize the X or Y axis so that
+; the scales are proportionally correct.
+
+  if(shape)
+    gsnp_shape_plot(canvas)
+  end if
+
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+
+  if(scale)
+    gsnp_scale_plot(canvas)
+  end if
+
+  draw_and_frame(wks,canvas,calldraw,callframe,False,maxbb)
+
+  return(canvas)
+end
+
+;***********************************************************************;
 ; Function : create_canvas                                              ;
 ;               wks : workstation                                       ;
 ;                                                                       ;
-; This function creates a LogLin plot that can be used for drawing      ;
+; This function creates a blank LogLin plot that can be used for drawing;
 ; primitives.                                                           ;
 ;                                                                       ;
 ;***********************************************************************;
