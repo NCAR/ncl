@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 042606    # YYMMDD
+set version = 090606    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
