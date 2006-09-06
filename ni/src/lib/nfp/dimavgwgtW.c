@@ -199,11 +199,10 @@ NhlErrorTypes dim_avg_wgt_W( void )
 				 tmp_w, opt, &tmp_xavg[0]);
 
 /*
- * Coerce output back to float if necessary.
+ * Coerce output back to float or double.
  */
-    if(type_xavg == NCL_float) {
-      coerce_output_float_or_double(xavg,&tmp_xavg[0],type_x,1,i);
-    }
+    coerce_output_float_or_double(xavg,&tmp_xavg[0],type_x,1,i);
+
     index_x += nx;
   }
 
