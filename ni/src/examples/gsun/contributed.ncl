@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.121 2006-08-12 21:27:00 shea Exp $
+;      $Id: contributed.ncl,v 1.122 2006-09-06 15:51:32 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1769,6 +1769,35 @@ begin
       xave@average_op_ncl= "dim_avg over dimension: "+x!Ndx1
  else
       xave@average_op_ncl= "dim_avg function was applied"
+ end if
+ 
+ return (xave)
+end
+; *******************************************************************
+; D. Shea
+; Compute a wgted average of the rightmost dimension of "x" 
+; return with one less dimension
+; Copies over all the attribures and coordinate variables
+; x    - multidimensional variable 
+
+undef ("dim_avg_wgt_Wrap")
+function dim_avg_wgt_Wrap (x:numeric, w[*]:numeric, opt[1]:integer)     
+local xave, dimx, Ndx, Ndx1
+begin
+
+ xave = dim_avg_wgt(x,w,opt); weighted ave [no meta data]
+ 
+ copy_VarAtts (x, xave)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ dimx = dimsizes(x)         ; size of each dimension
+ Ndx  = dimsizes(dimx)      ; number of dimensions
+ copy_VarCoords_1 (x, xave) ; one less dimension 
+                                       ; add an extra attribute
+ Ndx1 = Ndx-1                          ; last dimension
+ if (.not.ismissing(x!Ndx1)) then   
+      xave@average_op_ncl= "dim_avg_wgt over dimension: "+x!Ndx1
+ else
+      xave@average_op_ncl= "dim_avg_wgt function was applied"
  end if
  
  return (xave)
