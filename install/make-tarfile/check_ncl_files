@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.1 2006-09-07 16:20:34 haley Exp $
+#   $Id: check_ncl_files,v 1.2 2006-09-07 16:21:41 haley Exp $
 #
 # Check for existence of NCL files in a particular version of
 # a distribution.
@@ -10,7 +10,7 @@
 #
 # set echo verbose timestamp
 
-version = "4.2.0.a033"
+version = "4.2.0.a034"
 
 echo "Checking files for version $version..."
 
@@ -30,6 +30,7 @@ bin/med
 bin/ncargpath
 bin/ncarlogo2ps
 bin/ncl
+bin/ncl_convert2nc
 bin/ncl_filedump
 bin/ncl_grib2nc
 bin/ng4ex
@@ -265,6 +266,7 @@ lib/ncarg/data/asc/cn12n.asc
 lib/ncarg/data/asc/ex05B1_uv_jan_mm92.hs.asc
 lib/ncarg/data/asc/mp03n.asc
 lib/ncarg/data/asc/oceanland30e.asc
+lib/ncarg/data/asc/psadilookup.dat
 lib/ncarg/data/asc/seismic.asc
 lib/ncarg/data/asc/sounding_ATS.asc
 lib/ncarg/data/asc/sounding_testdata.asc
@@ -328,6 +330,7 @@ lib/ncarg/data/cdf/95031822_sao.cdf
 lib/ncarg/data/cdf/95031823_sao.cdf
 lib/ncarg/data/cdf/950318_sao.cdf
 lib/ncarg/data/cdf/ced1.lf00.t00z.eta.nc
+lib/ncarg/data/cdf/chi200_ud_smooth.nc
 lib/ncarg/data/cdf/climdiv_polygons.nc
 lib/ncarg/data/cdf/cn10n.cdf
 lib/ncarg/data/cdf/color.nc
