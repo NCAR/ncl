@@ -1,0 +1,364 @@
+#!/bin/csh -f
+#
+#   $Id: create_ncl_dist,v 1.1 2006-09-07 16:02:15 haley Exp $
+#
+#######################################################################
+#                                                                     #
+#              Copyright (C)  1998                                    #
+#        University Corporation for Atmospheric Research              #
+#              All Rights Reserved                                    #
+#                                                                     #
+#######################################################################
+#
+#   File:       create_ncl_dist
+#
+#   Author:     Mary Haley
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
+#
+#   Date:       Wed Aug 26 08:29:55 MDT 1998
+#
+#   Description:  Tars up ncl and necessary files so 
+#                 somebody has the necessary software to run NCL.
+#
+#   Options:   -r :  root directory
+#              -d :  tar file directory
+#              -s :  system to tar up
+#              -c :  scp to meeker.scd.ucar.edu
+#              -v :  version number
+#              -b :  bit (32 or 64, required for AIX and IRIX64)
+#
+#
+# Here's what various options to uname return on various systems:
+#
+# machine       uname -n                uname -m          uname -s
+# ----------------------------------------------------------------
+# tempest       tempest                 IP35              IRIX64  
+# clock         clock.scd.ucar.edu      i386              Darwin
+# reader        reader.scd.ucar.edu     Power Macintosh   Darwin  
+# lightning     ln0126en                x86_64            Linux   
+# bluesky       bs1201en                0023F7EA4C00      AIX     
+# meeker        meeker                  sun4u             SunOS
+# longs         longs                   i686              Linux
+# screw         screw                   i686              Linux
+# jewell        jewell                  i686              CYGWIN_NT-5.0
+
+# machine        uname -r
+# -------------------------------
+# tempest        6.5
+# reader         8.7.0
+# willow         7.9.0
+# clock          8.7.1
+# lightning      2.6.5-7.147-smp
+# bluesky        1
+# meeker         5.9
+# longs          2.4.21-37.ELsmp
+# screw          2.6.8-2-686-smp
+# jewell         1.5.19(0.150/4/2)
+#
+# Set defaults for the root directory, the tar file directory, the
+# version number, and the system.
+#
+# set echo verbose timestamp
+#
+set rootdir     = $NCARG_ROOT
+set sys_version = `uname -r`
+set sys         = `uname -m`
+set name        = `uname -n`
+set os          = `uname -s`
+set exe_suffix  = ""
+set scpmach     = "meeker.scd.ucar.edu"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/a034"
+
+if ("$os" == "AIX") then
+  set system = "{$os}_5.1"
+else if ("$os" == "Darwin") then
+  if("$sys" == "Power Macintosh") then
+    if($sys_version == "7.9.0") then
+      set system = "MacOS_PPC_Panther"
+    else if($sys_version == "8.7.0") then
+      set system = "MacOS_PPC_Tiger"
+    else
+      echo "MacOS system not recognized."
+      echo "sys  = $sys"
+      echo "vers = $sys_version"
+      echo "MacOS system not recognized."
+      exit 1
+    endif
+  else
+    if($sys_version == "8.7.1") then
+      set system = "MacOS_Intel_Tiger"
+    else
+      echo "MacOS system not recognized."
+      echo "sys  = $sys"
+      echo "vers = $sys_version"
+      echo "MacOS system not recognized."
+      exit 1
+    endif
+  endif
+else if ("$os" == "CYGWIN_NT-5.0") then
+  set os         = "CYGWIN"
+  set system     = "{$os}_{$sys}"
+  set exe_suffix = ".exe"
+else
+  set system      = "{$os}_{$sys}"
+endif
+set tardir1     = "/fs/scd/home1/ncargd/dist/tarfiles"
+set tardir2     = "/fis/scd/home/ncargd"
+set extra       = ""
+
+if (-e $tardir1) then
+  set tardir = $tardir1
+else if (-e $tardir2) then 
+  set tardir = $tardir2
+else
+  set tardir = "./"
+endif
+
+
+#
+# Using ncargversion no longer works because NCAR Graphics
+# has its own version.
+#
+# set version = `$rootdir/bin/ncargversion -v`
+set version = `cat $NCARG/NclVersion`
+
+#
+# Sort through options.
+#
+
+unset SCP
+
+while ($#argv > 0)
+  switch ($1)
+    case "-b":
+      shift
+      set bit = "$1"
+      shift
+      breaksw
+
+    case "-v":
+      shift
+      set version = "$1"
+      shift
+      breaksw
+
+    case "-s":
+      shift
+      set system = "$1"
+      shift
+      breaksw
+
+    case "-d":
+      shift
+      set tardir = "$1"
+      shift
+      breaksw
+
+    case "-c":
+      set SCP
+      shift
+      breaksw
+
+    case "-e":
+      shift
+      set extra = "$1"
+      shift
+      breaksw
+
+    case "-rangs":
+      set KEEPRANGS
+      shift
+      breaksw
+
+    case "-r":
+      shift
+      set rootdir = "$1"
+      shift
+      breaksw
+
+    case "-h":
+    case "-help":
+      goto usage
+      breaksw
+
+    default:
+      echo "option not recognized"
+      exit 1
+    endsw
+end
+
+#
+# Error checking.
+#
+if (! -e $tardir) then
+  echo "Directory $tardir does not exist. Please choose another directory."
+endif
+
+if (($os == "IRIX64" || $os == "AIX") && ! $?bit) then
+  echo "Need the -b 32|64 option for $os"
+  exit
+endif
+
+if ($extra != "") then
+  set system = "{$system}_{$extra}"
+endif
+
+#
+# For most systems, use the OS name and the version. Some, like "AIX,
+# need more info.
+#
+if ($os == "IRIX64") then
+  if ($bit == "32") then
+    set system = "{$system}_n32"
+  else if ($bit == "64") then
+    set system = "{$system}_64"
+  else
+    echo "Invalid bit information. Should be '32' or '64'."
+    exit
+  endif
+else  if ($os == "AIX") then
+  if ($bit == "32") then
+    set system = "{$system}_32"
+  else if ($bit == "64") then
+    set system = "{$system}_64"
+  else
+    echo "Invalid bit information. Should be '32' or '64'."
+    exit
+  endif
+endif
+
+
+# Temporarily remove link to high-resolution coastline (rangs) files.
+# These files should be downloaded by the user separately.
+
+if (-e $rootdir/lib/ncarg/database/rangs && ! $?KEEPRANGS) then
+  echo "Temporarily removing rangs link..."
+  sleep 1
+  /bin/mv $rootdir/lib/ncarg/database/rangs $rootdir/lib/ncarg/rangs.tmp
+  set removedrangs
+endif
+#if ($?KEEPRANGS) then
+#  echo "Copying files to rangs dir so we can tar it up..."
+#  cp -r /fs/scd/home1/ncargd/dev/COMMON/lib/ncarg/database/rangs $rootdir/lib/ncarg/database/.
+#endif
+
+
+#
+# Set the files we want to tar up.
+#
+set bin_files = "ctrans$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargpath$exe_suffix ng4ex nhlcc nhlf77 ncarlogo2ps$exe_suffix ncl$exe_suffix wrapit77$exe_suffix psplit$exe_suffix WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc"
+
+set inc_files = "gks.h c.h ncargC.h"
+set inc_dirs  = "hlu ncl"
+
+set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt"
+set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/udunits"
+
+set all_files
+set all_dirs
+
+foreach f($bin_files)
+  set all_files = ("bin/$f" $all_files)
+end
+
+foreach f($lib_files)
+  set all_files = ("lib/$f" $all_files)
+end
+
+foreach f($lib_dirs)
+  set all_dirs  = ("lib/$f" $all_dirs)
+end
+
+#
+# The include files are needed by people who want to create NCL
+# shared objects.
+#
+foreach f($inc_files)
+  set all_files = ("include/ncarg/$f" $all_files)
+end
+
+foreach f($inc_dirs)
+  set all_dirs = ("include/ncarg/$f" $all_dirs)
+end
+
+#
+# Tar up ncl and necessary files.
+#
+set ncl_filename = "ncl-$version.$system.tar"
+cd $rootdir
+
+echo "Tarring up the files in $rootdir..."
+echo -n "The tar file is called $ncl_filename and it will be put in $tardir. Continue? (y/n) "
+set answer="$<"
+if ("$answer" != "y") then
+  exit
+endif
+
+#
+# Make sure permissions are correct for install.
+#
+echo "Make sure permissions are correct..."
+foreach dir($all_dirs)
+  find . -name $dir -exec chmod gou+r {} \;
+  find . -name $dir -exec chmod go-w {} \;
+  find . -name $dir -exec chmod u+w {} \;
+end
+
+find $all_files -exec chmod gou+r {} \;
+find $all_files -exec chmod go-w {} \;
+find $all_files -exec chmod u+w {} \;
+
+tar -cvhf $tardir/$ncl_filename $all_files $all_dirs
+
+#
+# Set permissions back for group writes.
+#
+echo "Putting permissions back..."
+find $all_files -exec chmod g+w {} \;
+foreach dir($all_dirs)
+  find . -name $dir -exec chmod g+w {} \;
+end
+
+
+#
+# Put rangs link back
+#
+
+if ($?removedrangs) then
+  echo "Putting rangs link back..."
+  /bin/mv $rootdir/lib/ncarg/rangs.tmp $rootdir/lib/ncarg/database/rangs 
+endif 
+
+#
+# Compress file.
+#
+echo "Gzipping the tar file..."
+gzip $tardir/$ncl_filename
+if (-f $tardir/$ncl_filename.gz) then 
+  echo "Created '$tardir/$ncl_filename.gz'..."
+else
+  echo "Error, no compressed tar file created."
+  exit
+endif
+
+if ($?SCP) then
+  echo "scp file to meeker..."
+  if ("$name" == "meeker") then
+    /bin/cp $tardir/$ncl_filename.gz $scpdir
+  else
+    scp $tardir/$ncl_filename.gz $scpmach\:$scpdir
+  endif
+endif
+
+exit 0
+
+usage:
+echo "usage: create_base_and_ncl [options]"
+echo ""
+echo " Options:"
+echo ""
+echo "  -r root_directory -d tarfile_directory -s system -v version"
+echo "  -b 32|64 -e extra_string -rangs"
+echo ""
+exit
