@@ -583,9 +583,9 @@ echo LINKING
 switch ($OS)
  case AIX:                         # AIX
    if ($debug == 1) then
-     ld -bnoquiet -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf -lxlopt $ld_suffix
+     ld -bnoquiet -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix
    else
-     ld -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf -lxlopt $ld_suffix
+     ld -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix
    endif
    breaksw
  case IRIX64:                      # IRIX64
