@@ -321,6 +321,7 @@ extern NhlErrorTypes dim_rmsd_W(void);
 extern NhlErrorTypes dim_pqsort_W(void);
 extern NhlErrorTypes dim_num_W(void);
 extern NhlErrorTypes dim_avg_wgt_W(void);
+extern NhlErrorTypes dim_sum_wgt_W(void);
 extern NhlErrorTypes esacr_W(void);
 extern NhlErrorTypes esacv_W(void);
 extern NhlErrorTypes esccr_W(void);
@@ -4636,6 +4637,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(dim_avg_wgt_W,args,"dim_avg_wgt",nargs);
+/*
+ * Register "dim_avg_wgt".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(dim_sum_wgt_W,args,"dim_sum_wgt",nargs);
 /*
  * Register "esacr".
  *
