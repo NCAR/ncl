@@ -41,7 +41,6 @@ c
       DOUBLE PRECISION CAPE(MIY,MJX,MKZH)
       DOUBLE PRECISION CIN(MIY,MJX,MKZH)
       CHARACTER*(*) PSAFILE
-c
 C NCLEND
 c Local variables
       INTEGER I,J,K,ILCL,IUP,KEL,KK,KLCL,KLEV,KLFC,KMAX,KPAR,KPAR1,KPAR2
@@ -246,7 +245,7 @@ c
                           ILCL = 1
                       ELSE
                           TMKLIFT = TONPSADIABAT(ETHPARI,PRS(I,J,K),
-     +                              PSADITHTE,PSADIPRS,PSADITMK)
+     +                              PSADITHTE,PSADIPRS,PSADITMK,GAMMA)
                           ESLIFT = EZERO*EXP(ESLCON1* (TMKLIFT-CELKEL)/
      +                             (TMKLIFT-ESLCON2))
                           QVPLIFT = EPS*ESLIFT/ (PRS(I,J,K)-ESLIFT)
@@ -376,7 +375,7 @@ c                                                                     c
 c*********************************************************************c
 c                                                                     c
 C NCLFORTSTART
-      FUNCTION TONPSADIABAT(THTE,PRS,PSADITHTE,PSADIPRS,PSADITMK)
+      FUNCTION TONPSADIABAT(THTE,PRS,PSADITHTE,PSADIPRS,PSADITMK,GAMMA)
       DOUBLE PRECISION TONPSADIABAT
       DOUBLE PRECISION THTE
       DOUBLE PRECISION PRS
