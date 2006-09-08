@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.18 2006-06-08 23:37:31 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.19 2006-09-08 23:30:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,9 +25,10 @@
 #define HAVE_NETCDF
 #include <hdf/mfhdf.h>
 #include <hdf/netcdf.h>
-#include "NclDataDefs.h"
+#include "NclData.h"
 #include "NclFileInterfaces.h"
 #include <math.h>
+#include <ctype.h>
 
 typedef struct _HDFFileRecord HDFFileRecord;
 typedef struct _HDFVarInqRec HDFVarInqRec;
@@ -83,6 +84,7 @@ struct _HDFAttInqRec {
 	nc_type data_type;
 	int	len;
 	void *value;
+	int attr_ix;
 };
 
 
@@ -125,6 +127,36 @@ HDFAttInqRec* att_inq
 	else {
 		att_inq->value = NclMalloc(nctypelen(att_inq->data_type)*att_inq->len);
 		ret = sd_ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),att_inq->value);
+	}
+}
+
+static void HDF_SDGetAttrVal
+#if	NhlNeedProto
+(int sd_id,HDFAttInqRec* att_inq)
+#else
+(sd_id,att_inq)
+int sdid,
+HDFAttInqRec* att_inq
+#endif
+{
+	char *tmp;
+	int ret;
+
+	if (att_inq->data_type < 1) {
+		att_inq->value = NULL;
+	}
+	else if(att_inq->data_type == NC_CHAR) {
+		tmp = (char*)NclMalloc(att_inq->len+1);
+		tmp[att_inq->len] = '\0';
+		ret = SDreadattr(sd_id,att_inq->attr_ix,tmp);
+		att_inq->value = NclMalloc(sizeof(NclQuark));
+		*(string *)att_inq->value = NrmStringToQuark(tmp);
+		NclFree(tmp);
+	} 
+	else {
+		att_inq->value = NclMalloc(nctypelen(att_inq->data_type)*att_inq->len);
+		ret = SDreadattr(sd_id,att_inq->attr_ix,att_inq->value);
+		
 	}
 }
 
@@ -308,14 +340,15 @@ static NclQuark HDFToNCLName
 	return NrmStringToQuark(buffer);
 }
 		  
+static void 
 ProcessVgroup(HDFFileRecord *hdf,int32 hid,int32 vg_ref,int level,char *vpath) 
 {
 	char vname[VGNAMELENMAX];
 	char vclass[VGNAMELENMAX];
-	int n_entries;
+	int32 n_entries;
 	int status;
 	int i;
-	int *tag_array,*ref_array;
+	int32 *tag_array,*ref_array;
 	char levelstr[30];
 	int vgid = Vattach(hid,vg_ref,"r");
 	int len = strlen(vpath);
@@ -383,7 +416,7 @@ ProcessVgroup(HDFFileRecord *hdf,int32 hid,int32 vg_ref,int level,char *vpath)
 static void ProcessVgroups(HDFFileRecord *hdf,char *path)
 {
 	int hid = Hopen(path,DFACC_READ,0);
-	int *vls = NULL;
+	int32 *vls = NULL;
 	int status = Vstart(hid);
 	int vid,i,j;
 	int vcount = Vlone(hid,vls,0);
@@ -646,6 +679,7 @@ int wr_status;
 #endif
 	sd_ncinquire(cdfid,&(tmp->n_dims),&(tmp->n_vars),&(tmp->n_file_atts),&dummy);
 
+
 	stepdlptr = &(tmp->dims);
 	if(tmp->n_dims != 0) {
 		for(i = 0 ; i < tmp->n_dims; i++) {
@@ -675,6 +709,7 @@ int wr_status;
 		NhlBoolean has_duplicate_names = False;
 		int32 sds_id;
 		for(i = 0 ; i < nvars; i++) {
+			int dim_sizes[32];
 			*stepvlptr = (HDFVarInqRecList*)NclMalloc(
 					(unsigned) sizeof(HDFVarInqRecList));
 			(*stepvlptr)->var_inq = (HDFVarInqRec*)NclMalloc(
@@ -690,17 +725,17 @@ int wr_status;
 			sds_id = SDselect(sd_id,i);
 			(*stepvlptr)->var_inq->id_ref = SDidtoref(sds_id);
 			(*stepvlptr)->var_inq->vg_ref = -1;
-			status = SDendaccess (sds_id); 
 			(*stepvlptr)->var_inq->var_path = NrmNULLQUARK;
 			(*stepvlptr)->var_inq->name = NrmNULLQUARK;
 			(*stepvlptr)->var_inq->hdf_name = NrmStringToQuark(buffer);
-/*			
+			/*
 			status = SDgetinfo(sds_id,buffer,
 					   &((*stepvlptr)->var_inq->n_dims),
-					   ((*stepvlptr)->var_inq->dim),
+					   dim_sizes,
 					   &((*stepvlptr)->var_inq->data_type),
 					   &((*stepvlptr)->var_inq->natts));
-*/
+			*/
+
 			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
 				tmp_size = 0;
 				sd_ncdiminq(cdfid,((*stepvlptr)->var_inq->dim)[j],buffer2,&tmp_size);
@@ -755,6 +790,7 @@ int wr_status;
 				} else {
 					((*stepvlptr)->var_inq->att_list) = NULL;
 				}
+				status = SDendaccess (sds_id);
 				stepvlptr = &((*stepvlptr)->next);
 			}
 		}
@@ -801,6 +837,7 @@ int wr_status;
 		tmp->has_scalar_dim = 0;
 	}
 	if(tmp->n_file_atts != 0 ) {
+		int attr_ix;
 		stepalptr = &(tmp->file_atts);
 		for(i = 0; i < tmp->n_file_atts; i++) {
 			*stepalptr = (HDFAttInqRecList*)NclMalloc(
@@ -813,10 +850,11 @@ int wr_status;
 			(*stepalptr)->att_inq->hdf_name = NrmStringToQuark(buffer);
 			(*stepalptr)->att_inq->name = HDFToNCLName(buffer,NULL,False);
 			(*stepalptr)->att_inq->varid = NC_GLOBAL;
+			(*stepalptr)->att_inq->attr_ix = SDfindattr(sd_id,buffer);
 			sd_ncattinq(cdfid,NC_GLOBAL,buffer,
 					&((*stepalptr)->att_inq->data_type),
                                 	&((*stepalptr)->att_inq->len));
-			HDFGetAttrVal(cdfid,(*stepalptr)->att_inq);
+			HDF_SDGetAttrVal(sd_id,(*stepalptr)->att_inq);
        	        	stepalptr = &((*stepalptr)->next);
 		}
 	} else {
@@ -837,8 +875,9 @@ NclQuark path;
 #endif
 {
 	int id = 0;
-
+	
 	id = sd_nccreate(NrmQuarkToString(path),NC_NOCLOBBER);
+
 	if(id > -1) {
 		sd_ncendef(id);
 		sd_ncclose(id);
