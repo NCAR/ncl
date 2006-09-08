@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set version = 090606    # YYMMDD
+set version = 090806    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -62,10 +62,12 @@ echo system has one of the supported linux fortran compilers you must
 echo specify which one you want to use by the appropriate command line
 echo option, otherwise the g77 compiler will be used. 
 echo The supported linux fortran compilers are the Portland Group
-echo "(pgf90), the Lahey/Fujitsu (lf95), and the Intel compiler (ifc/ifort)."
+echo "(pgf90), the Lahey/Fujitsu (lf95), and the g95 compiler (g95),
+echo "and the Intel compiler (ifc/ifort)."
 echo "OPTION: -pg  to specify the Portland Group compiler."
 echo "OPTION: -lf  to specify the Lahey/Fujitsu compiler."
 echo "OPTION: -in  to specify the Intel compiler."
+echo "OPTION: -g95 to specify the g95 compiler."
 echo " " 
 echo "-------------------- Some Usage Examples ---------------------------"
 echo One argument
@@ -168,6 +170,18 @@ while ($#argv)
     else
       echo "WARNING: option -lf INVALID for $OS system"
     endif
+  else if ($arg:q == "-g95") then
+    if ($OS == Linux || $OS == Darwin) then
+      which g95
+      if ($status) then
+        echo WARNING: g95 fortran compiler NOT found.
+        echo Using default gnu g77 compiler.
+      else
+        set f90c = g95
+      endif
+    else
+      echo "WARNING: option -g95 INVALID for $OS system"
+    endif
   else if ($arg:q == "-in") then
     if ($OS == Linux) then
       which ifort              # newer version (8.1)
@@ -202,7 +216,8 @@ while ($#argv)
     shift
     if ($argv[1]:q == "-l" || $argv[1]:q == "-L" || $argv[1]:q == "-r8" || \
         $argv[1]:q == "-pg" || $argv[1]:q == "-lf" || $argv[1]:q == "-in" || \
-        $argv[1]:q == "-q32" || $argv[1]:q == "-d" || $argv[1]:q == "-h") then
+        $argv[1]:q == "-g95" $argv[1]:q == "-q32" || $argv[1]:q == "-d" || \
+        $argv[1]:q == "-h") then
       echo "FATAL ERROR: missing shared object name after -n option"
       echo EXITING WRAPIT
       echo " "
@@ -219,7 +234,8 @@ while ($#argv)
     shift
     if ($argv[1]:q == "-l" || $argv[1]:q == "-n" || $argv[1]:q == "-r8" || \
         $argv[1]:q == "-pg" || $argv[1]:q == "-lf" || $argv[1]:q == "-in" || \
-        $argv[1]:q == "-q32" || $argv[1]:q == "-d" || $argv[1]:q == "-h") then
+        $argv[1]:q == "-g95" || $argv[1]:q == "-q32" || $argv[1]:q == "-d" ||\
+        $argv[1]:q == "-h") then
       echo "FATAL ERROR: missing library path after -L option"
       echo EXITING WRAPIT
       echo " "
@@ -240,7 +256,8 @@ while ($#argv)
     shift
     if ($argv[1]:q == "-L" || $argv[1]:q == "-n" || $argv[1]:q == "-r8" || \
         $argv[1]:q == "-pg" || $argv[1]:q == "-lf" || $argv[1]:q == "-in" || \
-        $argv[1]:q == "-q32" || $argv[1]:q == "-d" || $argv[1]:q == "-h") then
+        $argv[1]:q == "-g95" || $argv[1]:q == "-q32" || $argv[1]:q == "-d" ||\
+        $argv[1]:q == "-h") then
       echo "FATAL ERROR: missing library name after -l option"
       echo EXITING WRAPIT
       echo " "
@@ -261,7 +278,8 @@ while ($#argv)
 end      
 
 # check for g77 compiler if needed
-if ($OS == Linux && $f90c == g77 || $OS == FreeBSD || $OS == Darwin) then 
+if (($OS == Linux && $f90c == g77) || ($OS == Darwin && $f90c == g77) || \
+     $OS == FreeBSD) then 
   which g77
   if ($status) then
     echo "FATAL ERROR: GNU g77 compiler NOT found."
