@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.27 1999-11-04 23:39:24 ethan Exp $
+ *      $Id: Symbol.h,v 1.28 2006-09-08 22:06:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -531,7 +531,10 @@ FILE *fp
                 } \
         else if ( ((result = fread( buf, 1, max_size, yyin )) == 0) \
                   && ferror( yyin ) ) \
-                YY_FATAL_ERROR( "input in flex scanner failed" );
+                YY_FATAL_ERROR( "input in flex scanner failed" );\
+	else if (feof(yyin) && result > 0 && result < max_size - 1 && buf[result-1] != '\n') \
+		buf[result++] = '\n';
+		
 #endif
 
 #endif /*_NCSymbol_h*/
