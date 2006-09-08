@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.17 2006-09-05 22:31:14 haley Exp $
+#      $Id: yMakefile,v 1.18 2006-09-08 20:57:54 haley Exp $
 #
 
 MYNAME		=	libnfpfort
@@ -24,7 +24,7 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	volAve.o volRmse.o wavelet.o writematrix.o wrunave_dp.o zon_mpsi.o  \
 	zregr.o z2geouv_dp.o gendat.o eof_scripps.o p2hyo.o cdft_dp.o \
 	stndAtmUS76_dp.o rip_cape.o wrf_user.o lspoly.o wrf_bint3d.o erf_sub.o \
-	dimavgwgt.o wgtVertAvg_beta.o
+	dimavgwgt.o dimsumwgt.o wgtVertAvg_beta.o
 
 LibraryTarget($(MYNAME),$(FOBJS))
 
