@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.6 1995-06-14 14:01:26 haley Exp $
+#	$Id: yMakefile,v 1.7 2006-09-10 17:49:44 haley Exp $
 #
 MYNAME	= ffield_flow
 
@@ -12,6 +12,7 @@ SYS_LIBS		= -lm
 EXTRA_LIBS		= $(XLIB)
 
 InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+InstallTarget(fcover.dat,$(INSTALL_LIB),$(DATAROOT)/asc)
 
 FExampleTarget(ffex00,ffex00.o)
 FExampleTarget(ffex01,ffex01.o)
