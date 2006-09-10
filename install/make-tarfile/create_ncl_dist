@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.4 2006-09-10 19:27:54 haley Exp $
+#   $Id: create_ncl_dist,v 1.5 2006-09-10 23:14:31 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -74,9 +74,8 @@ if ("$os" == "AIX") then
   set system = "{$os}_5.1"
   set a = `/usr/sbin/lsconf | grep POWER`
   set b = $a[3] 
-  set r = `uname -r`
   set pwr = "pwr"`echo $b | cut -c 14- `
-  set system = "{$os}_5.{$r}_{$pwr}"
+  set system = "{$os}_5.{$sys_version}_{$pwr}"
 else if ("$os" == "Darwin") then
   if("$sys" == "Power Macintosh") then
     if($sys_version == "7.9.0") then
@@ -101,6 +100,8 @@ else if ("$os" == "Darwin") then
       exit 1
     endif
   endif
+else if ("$os" == "SunOS") then
+  set system     = "{$os}_{$sys_version}"
 else if ("$os" == "CYGWIN_NT-5.0") then
   set os         = "CYGWIN"
   set system     = "{$os}_{$sys}"
@@ -252,7 +253,7 @@ endif
 #
 # Set the files we want to tar up.
 #
-set bin_files = "ctrans$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargpath$exe_suffix ng4ex nhlcc nhlf77 ncarlogo2ps$exe_suffix ncl$exe_suffix wrapit77$exe_suffix psplit$exe_suffix WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc"
+set bin_files = "ctrans$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargpath$exe_suffix ng4ex nhlcc nhlf77 nhlf90 ncarlogo2ps$exe_suffix ncl$exe_suffix wrapit77$exe_suffix psplit$exe_suffix WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc"
 
 set inc_files = "gks.h c.h ncargC.h"
 set inc_dirs  = "hlu ncl"
@@ -301,10 +302,10 @@ if ("$answer" != "y") then
 endif
 
 #
-# Give us a chance to clean up nhlcc and nhlf77 (remove 
+# Give us a chance to clean up nhlcc, nhlf77, and nhlf90 (remove 
 # directories that should be in there).
 #
-emacs bin/nhlcc bin/nhlf77
+emacs bin/nhlcc bin/nhlf77 bin/nhlf90 
 
 #
 # Make sure permissions are correct for install.
