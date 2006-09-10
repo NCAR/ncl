@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.1 2006-09-07 16:02:15 haley Exp $
+#   $Id: create_ncl_dist,v 1.2 2006-09-10 13:58:26 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -299,10 +299,23 @@ endif
 # Make sure permissions are correct for install.
 #
 echo "Make sure permissions are correct..."
+
+#
+# These "ncarg" directories have to be done separately, because
+# they are not part of "all_dirs"
+chmod gou+r include/ncarg
+chmod gou+r lib/ncarg
+chmod go-w include/ncarg
+chmod go-w lib/ncarg
+chmod u+w include/ncarg
+chmod u+w lib/ncarg
+
 foreach dir($all_dirs)
-  find . -name $dir -exec chmod gou+r {} \;
-  find . -name $dir -exec chmod go-w {} \;
-  find . -name $dir -exec chmod u+w {} \;
+  echo "Removing *~ files..."
+  find $dir -name '*~' -print -exec /bin/rm {} \;
+  find $dir -name '*' -exec chmod gou+r {} \;
+  find $dir -name '*' -exec chmod go-w {} \;
+  find $dir -name '*' -exec chmod u+w {} \;
 end
 
 find $all_files -exec chmod gou+r {} \;
@@ -315,9 +328,12 @@ tar -cvhf $tardir/$ncl_filename $all_files $all_dirs
 # Set permissions back for group writes.
 #
 echo "Putting permissions back..."
+
+chmod g+w include/ncarg
+chmod g+w lib/ncarg
 find $all_files -exec chmod g+w {} \;
 foreach dir($all_dirs)
-  find . -name $dir -exec chmod g+w {} \;
+  find $dir -name '*' -exec chmod g+w {} \;
 end
 
 
