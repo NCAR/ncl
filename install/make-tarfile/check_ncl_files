@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.3 2006-09-10 13:58:26 haley Exp $
+#   $Id: check_ncl_files,v 1.4 2006-09-10 18:04:34 haley Exp $
 #
 # Check for existence of NCL files in a particular version of
 # a distribution.
@@ -265,6 +265,7 @@ lib/ncarg/data/asc/cn04n.asc
 lib/ncarg/data/asc/cn11f.asc
 lib/ncarg/data/asc/cn12n.asc
 lib/ncarg/data/asc/ex05B1_uv_jan_mm92.hs.asc
+lib/ncarg/data/asc/fcover.dat
 lib/ncarg/data/asc/mp03n.asc
 lib/ncarg/data/asc/oceanland30e.asc
 lib/ncarg/data/asc/psadilookup.dat
