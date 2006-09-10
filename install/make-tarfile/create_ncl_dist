@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.3 2006-09-10 14:47:25 haley Exp $
+#   $Id: create_ncl_dist,v 1.4 2006-09-10 19:27:54 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -72,6 +72,11 @@ set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/a034"
 
 if ("$os" == "AIX") then
   set system = "{$os}_5.1"
+  set a = `/usr/sbin/lsconf | grep POWER`
+  set b = $a[3] 
+  set r = `uname -r`
+  set pwr = "pwr"`echo $b | cut -c 14- `
+  set system = "{$os}_5.{$r}_{$pwr}"
 else if ("$os" == "Darwin") then
   if("$sys" == "Power Macintosh") then
     if($sys_version == "7.9.0") then
