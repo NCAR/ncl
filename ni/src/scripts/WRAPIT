@@ -678,9 +678,9 @@ switch ($OS)
    breaksw
  default:                          # SunOS
    if (-e /opt/SUNWspro/lib/libsunperf.so) then   # extra SUN libraries
-     set ld_suffix = "-L/opt/SUNWspro/lib -lF77 -lsunmath -lfsu -lfui -lsunperf $ld_suffix"
+     set ld_suffix = "-L/opt/SUNWspro/lib -lsunmath -lfsu -lfui -lsunperf $ld_suffix"
    else
-     set ld_suffix = "-L/opt/SUNWspro/lib -lF77 $ld_suffix"
+     set ld_suffix = "-L/opt/SUNWspro/lib $ld_suffix"
    endif
    if ($debug == 1) then
      ld -V -G $ld_suffix
