@@ -1565,7 +1565,6 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
       return(NclReturnValue((void *) qvalue, 1, &ret_size, NULL,NCL_string, 1));
     }
   }
-  return(NhlNOERROR);
 }
 
 
@@ -2269,6 +2268,7 @@ NhlErrorTypes dspnt3s_W( void )
      NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3s: the dimension sizes of parameters x, y, and z, and xo and yo must be identical");
      return(NhlFATAL);
    }
+   return(NhlNOERROR);
 }
 
 
@@ -2437,6 +2437,7 @@ NhlErrorTypes dspnt3d_W( void )
      NhlPError(NhlFATAL,NhlEUNKNOWN,"dspnt3d: the dimension sizes of parameters x, y, and z, and xo and yo must be identical");
      return(NhlFATAL);
    }
+   return(NhlNOERROR);
 }
 
 NhlErrorTypes dspnt3_W( void )
