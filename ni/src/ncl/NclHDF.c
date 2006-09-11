@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.19 2006-09-08 23:30:05 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.20 2006-09-11 23:00:20 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -200,11 +200,14 @@ static NclBasicDataTypes HDFMapToNcl
 	static int first = 1;
 	static NclBasicDataTypes long_type;
 	if(first) {
-		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
-			long_type = NCL_long;
-		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
+		if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
 			long_type = NCL_int;
+		} else if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
+			long_type = NCL_long;
 		} 
+		else {
+			long_type = NCL_none;
+		}
 		first = 0;
 	}
 	switch(*(nc_type*)the_type) {
@@ -241,7 +244,9 @@ static void *HDFMapFromNcl
 			long_type = NCL_long;
 		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
 			long_type = NCL_int;
-		} 
+		} else {
+			long_type = NCL_none;
+		}
 		first = 0;
 	}
 
@@ -262,6 +267,7 @@ static void *HDFMapFromNcl
 		if(long_type == the_type) {
 			*(nc_type*)out_type = NC_LONG;
 		} else {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type, HDF 4 does not support 64 bit longs: try converting to integer or double");
 			NclFree(out_type);
 			out_type = NULL;
 		}
@@ -775,7 +781,9 @@ int wr_status;
 							sd_ncattinq(cdfid,i,buffer,
 								    &((*stepalptr)->att_inq->data_type),
 								    &((*stepalptr)->att_inq->len));
-							HDFGetAttrVal(cdfid,(*stepalptr)->att_inq);
+							(*stepalptr)->att_inq->attr_ix = SDfindattr(sds_id,buffer);
+
+							HDF_SDGetAttrVal(sds_id,(*stepalptr)->att_inq);
 						}
 						else {
 							(*stepalptr)->att_inq->name =
