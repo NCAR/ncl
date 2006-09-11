@@ -1,3 +1,6 @@
 If having problems with the HLUs on the Cray, the first thing I try is
 compiling Convert.c with optimization turned off.
 
+If having troubles compiling Create.c on Cygwin because of an sa_handler
+error message, try compiling without -ansi.
+
