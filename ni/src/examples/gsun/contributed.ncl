@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.122 2006-09-06 15:51:32 shea Exp $
+;      $Id: contributed.ncl,v 1.123 2006-09-11 20:01:04 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1042,6 +1042,15 @@ undef("closest_val")
 function closest_val(var2ck:numeric,array2ck[*])
 local size, narray,loc, test1,test2
 begin
+  size = dimsizes(array2ck)            ; get size of original array
+
+; make sure array is monotonically increasing
+
+  if (.not.all(array2ck(1:size-1).gt.array2ck(0:size-2)) ) then
+      print("closest_val: input array is not monotonically increasing")
+      exit
+  end if
+  
 
 ; first check to see if the value exists in the array
 
@@ -1053,7 +1062,6 @@ begin
 
 ; value does not exist in array, so we insert it
 
-  size = dimsizes(array2ck)            ; get size of original array
   narray = new( (/size + 1/),typeof(array2ck)) ; create new array 
 
   narray(0:size-1) = array2ck(:)
