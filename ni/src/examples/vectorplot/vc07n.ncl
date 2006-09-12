@@ -113,8 +113,8 @@ end if
 ;   data(1,:,:) is V
 ;   data(2,:,:) is P
 ;
-path = ncargpath("examples")
-data = asciiread(path + "/fcover.dat",(/3,73,73/),"float")
+path = ncargpath("data")
+data = asciiread(path + "/asc/fcover.dat",(/3,73,73/),"float")
 ;
 ; Massage the data to eliminate surplus of vectors near the pole
 ;
