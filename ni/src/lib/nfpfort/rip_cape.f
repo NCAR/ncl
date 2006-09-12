@@ -91,10 +91,7 @@ C  K
       THTECON1 = 3376.D0
       THTECON2 = 2.54D0
       THTECON3 = .81D0
-C KLCL - This wasn't originally being initialized anywhere.
-C        Dennis Shea suggested using 1.  Blame him if this
-C        doesn't work.
-      KLCL = 1
+c
 c  Calculated the pressure at full sigma levels (a set of pressure
 c  levels that bound the layers represented by the vertical grid points)
 
@@ -282,6 +279,12 @@ c
      +                  'capecalc3d: kmax got too big. kmax=',KMAX
                       STOP
                   END IF
+c
+c   If no LCL was found, set klcl to kmax.  It is probably not really
+c   at kmax, but this will make the rest of the routine behave
+c   properly.
+c
+                  IF (ILCL.EQ.0) KLCL=KMAX
 c
 c   Get the accumulated buoyant energy from the parcel's starting
 c   point, at all levels up to the top level.
