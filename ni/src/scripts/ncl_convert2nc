@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.1 2006-08-24 20:28:23 grubin Exp $
+#       $Id: ncl_convert2nc,v 1.2 2006-09-13 20:56:47 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -24,6 +24,7 @@
 #       inputFile             name of file [required]
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
+#       [-e extension]        file type, defined by extension, to convert
 #       [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
 #       [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
@@ -74,6 +75,9 @@ set redirect = 0
 # Display resultant netCDF file when done
 unset printonexit
 
+# Suffix for all file arguments provided (default == none provided)
+set have_esfx = 0
+
 #
 # First argument should be the input file(s); if it's not, exit.
 # Check to see if the first argument contains a "-"
@@ -120,6 +124,13 @@ while ($#argv > 0)
         case "-o"
             shift
             set dirout = $1
+            shift
+            breaksw
+
+        case "-e"
+            shift
+            set esfx = "$1"
+            set have_esfx = 1
             shift
             breaksw
 
@@ -289,111 +300,114 @@ while ($n <= $nfiles)
 
     set valid_file
     set fil = `basename $ifiles_t[$n]`
-    set fil_bn = `basename $fil`
     set dir = `dirname $ifiles_t[$n]`
     set haspath = `echo $dir | grep -c '/'`
 
     # Does the file exist, and is it readble, as named?
-    if (( -e $ifiles_t[$n]) && (-r $ifiles_t[$n])) then
-        # Does the file have a suffix (delineated by a ".")?  If
-        # yes, does the suffix indicate requested data type?
-        set psfx = "$fil:e"
-        set sfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
-        set sfxlen = `echo $sfx | awk '{print length($0)}'`
-        if ($sfxlen > 0) then
-            # Validate the suffix
-            switch ($psfx)
-                case grb:
-                case grib:
-                case GRB:
-                case GRIB:
-                    set ftype = "GRIB"
-                    set if = $fil
-                    set of = $fil:r
-
-                    unset valid_file
-                    goto VALID_FILE
-                breaksw
-
-                case hdf:
-                case HDF:
-                    set ftype = "HDF"
-                    set if = $fil
-                    set of = $fil:r
-
-                    unset valid_file
-                    goto VALID_FILE
-                breaksw
-
-                case hdfeos:
-                case HDFEOS:
-                    set ftype = "HDFEOS"
-                    set if = $fil
-                    set of = $fil:r
-
-                    unset valid_file
-                    goto VALID_FILE
-                breaksw
-
-                case ccm:
-                case CCM:
-                    echo "  file '${fil}': CCM files not supported.  Please use: ccm2nc"
-                    echo "  Download at:  http://www.cgd.ucar.edu/cms/ccm3/tools"
-                    echo
-                    @ nbadf += 1
-                    @ n += 1
-                    continue
-                breaksw
-            endsw
+    # Must account for different data directory if specified
+    # If an input file already has an extension, ignore "-e"
+    # for that file.
+    if (((-e $ifiles_t[$n]) && (-r $ifiles_t[$n])) \
+            || ((-e $dirin/$ifiles_t[$n]) && (-r $dirin/$ifiles_t[$n]))) then
+        set sfxlen = `echo $fil:e | awk '{print length($0)}'`
+        if (($have_esfx == 1) && ($sfxlen == 0)) then
+            set psfx = $esfx
+            set fil = $fil.$psfx
         else
-            # The file exists as named, but there is no suffix to determine
-            # its data type; discard this file
-            echo "${progname}: file '$fil' not a recognized file type, skipping."
-            @ nbadf += 1
-            @ n += 1
-            continue
+            set psfx = "$fil:e"
         endif
+
+        # Does the file have a suffix (delineated by a ".") or
+        # was a suffix specified via command-line options? If
+        # yes, does the suffix indicate requested data type?
+        switch ($psfx)
+            case grb:
+            case grib:
+            case GRB:
+            case GRIB:
+                set ftype = "GRIB"
+                set if = $fil
+                set of = $fil:r
+
+                unset valid_file
+                goto VALID_FILE
+                breaksw
+
+            case hdf:
+            case HDF:
+                set ftype = "HDF"
+                set if = $fil
+                set of = $fil:r
+
+                unset valid_file
+                goto VALID_FILE
+                breaksw
+
+            case hdfeos:
+            case HDFEOS:
+                set ftype = "HDFEOS"
+                set if = $fil
+                set of = $fil:r
+
+                unset valid_file
+                goto VALID_FILE
+                breaksw
+
+            case ccm:
+            case CCM:
+                echo "${progname}: file '${fil}': CCM files not supported.  Please use: ccm2nc"
+                echo "  Download at:  http://www.cgd.ucar.edu/cms/ccm3/tools"
+                echo
+                @ nbadf += 1
+                @ n += 1
+                continue
+                breaksw
+
+        endsw
     else
-        # The file, as named, doesn't exist or isn't readable.  Check
-        # for existence/readability as an incomplete file name
-        # (ex.: 'ruc' ==> 'ruc.grb').  If found, keep it as input.
-        set valid_suffixes = ("grb" "grib" "GRB" "GRIB" "hdf" "HDF" "hdfeos" "HDFEOS")
-        foreach vsfx ($valid_suffixes)
-            if ((-e $fil.$vsfx) && (-r $fil.$vsfx)) then
-                switch ($vsfx)
-                    case grb:
-                    case grib:
-                    case GRB:
-                    case GRIB:
-                        set vsfx = `echo $vsfx | tr '[A-Z]' '[a-z]'`
-                        set ftype = "GRIB"
-                        set if = $fil.$vsfx
-                        set of = $fil
-                        unset valid_file
-                    breaksw
+        # The file, as named, doesn't exist or isn't readable.
+        # Check existence/readability as an incomplete file name
+        # (ex.: 'ruc.grb' ==> 'ruc' exists).  This emulates NCL's
+        # 'addfile()' functionality.  If found, keep it as input.
 
-                    case hdf:
-                    case HDF:
-                        set vsfx = `echo $vsfx | tr '[A-Z]' '[a-z]'`
-                        set ftype = "HDF"
-                        set if = $fil.$vsfx
-                        set of = $fil
-                        unset valid_file
-                    breaksw
+        set psfx = "$fil:e"
+        switch ($psfx)
+            case grb:
+            case grib:
+            case GRB:
+            case GRIB:
+                set ftype = "GRIB"
+                set if = $fil
+                set of = $fil:r
+                unset valid_file
+                breaksw
 
-                    case hdfeos:
-                        HDFEOS
-                        set vsfx = `echo $vsfx | tr '[A-Z]' '[a-z]'`
-                        set ftype = "HDFEOS"
-                        set if = $fil.$vsfx
-                        set of = $fil
-                        unset valid_file
-                    breaksw
-                endsw
+            case hdf:
+            case HDF:
+                set ftype = "HDF"
+                set if = $fil
+                set of = $fil:r
+                unset valid_file
+                breaksw
 
-                break
-           endif
-        end
+            case hdfeos:
+                 HDFEOS:
+                set ftype = "HDFEOS"
+                set if = $fil
+                set of = $fil:r
+                unset valid_file
+                breaksw
+
+            case ccm:
+            case CCM:
+                echo "${progname}: file '${fil}': CCM files not supported.  Please use: ccm2nc"
+                echo "  Download at:  http://www.cgd.ucar.edu/cms/ccm3/tools"
+                echo
+                @ nbadf += 1
+                @ n += 1
+                continue
+                breaksw
+        endsw
     endif
 
     # Is the file valid -- i.e., it exists/is readable, and has a valid name?
@@ -403,6 +417,7 @@ while ($n <= $nfiles)
 VALID_FILE:
     if ($?valid_file) then
         echo "${progname}: file '$fil' not readable, does not contain recognized data, or doesn't exist, skipping."
+        echo
         @ nbadf += 1
         @ n += 1
         continue
@@ -452,6 +467,7 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ; inputFile             name of GRIB/HDF/HDF-EOS file [required]
 ; [-i input_directory]  location of input file  [default: current directory] 
 ; [-o output_directory] location of output file [default: current directory] 
+; [-e extension]        file type, defined by extension, to convert
 ; [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
 ; [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
 ; [-v var1[,...]]       user specified subset of variables [default: all variables]
@@ -463,30 +479,31 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ; [-h]                  this usage message
 ;
 ; Sample Usage 
-;      (1) ncl_convert2nc U12345        
+;      (1) ncl_convert2nc U12345.grb
 ;             => U12345.nc [location current directory]  
 ;
-;      (2) ncl_convert2nc U12345 -t
+;      (2) ncl_convert2nc U12345 -e grb -t
+;             => apply ".grb" extension to input file(s)
 ;             => time coordinate type set to "string"
 ;
-;      (3) ncl_convert2nc U12345 -i /my/input    
+;      (3) ncl_convert2nc U12345.hdf -i /my/input    
 ;                [/my/input/U12345]
 ;             => U12345.nc [location current directory] 
 ;
-;      (4) ncl_convert2nc U12345 -i /my/input -o /my/output 
+;      (4) ncl_convert2nc U12345.hdfeos -i /my/input -o /my/output 
 ;             =>  /my/output/U12345.nc 
 ;
-;      (5) ncl_convert2nc U12345 -i /my/input -o /my/output
+;      (5) ncl_convert2nc U12345.grb -i /my/input -o /my/output
 ;             => /my/output/U12345.nc 
 ;
-;      (6) ncl_convert2nc U12345 -c 'Data Support Section: ds124.1'
+;      (6) ncl_convert2nc U12345.hdf -c 'Data Support Section: ds124.1'
 ;             => /my/output/U12345.nc     [includes file attribute "ds124.1"] 
 ;
-;      (7) ncl_convert2nc U12345 -o /my/output  \
+;      (7) ncl_convert2nc U12345.grb -o /my/output  \
 ;                     -v gridlat_236,gridlon_236,PRES_236_SFC,NCPCP_236_SFC_acc1h
 ;             => /my/output/U12345.nc    [contains 4 variables only] 
 ;
-;      (8) ncl_convert2nc U12345 -v gridlat_236,gridlon_236,PRES_236_SFC -L
+;      (8) ncl_convert2nc U12345.grb -v gridlat_236,gridlon_236,PRES_236_SFC -L
 ;             => U12345.nc [location current directory]
 ;                          [contains only three variables]
 ;                          [supports large files (>2Gb) for netCDF]
@@ -560,7 +577,7 @@ begin
 ; open file with appropriate extension
 ;***************************************************
     iFileName = diri + fili
-    f    = addfile(iFileName, "r")     ; suffix ok 
+    f = addfile(iFileName, "r")     ; suffix ok 
 
 ;***************************************************
 ; Specify that COARDS style output desired
@@ -577,6 +594,21 @@ begin
         setfileoption(f, "InitialTimeCoordinateType", "numeric")
     end if
 
+;***************************************************
+; Get all the global [file] attributes.  These will
+; be copied to the output file.
+; NOTE: GRIB files will return "missing"
+;***************************************************
+
+    fInAtts = getvaratts( f )
+
+;***************************************************
+; Get *all* variables names on the file 
+;     or
+; Specify a subset of variables. All variable names,
+; including coordinate variable names, must be
+; specified.
+;***************************************************
 ;***************************************************
 ; Get *all* variables names on the file 
 ;     or
@@ -652,6 +684,17 @@ begin
     if (comment .ne. "") then
         fAtt@comment   = comment 
     end if
+
+;***********************************************
+; copy input file attributes to output file
+;***********************************************
+
+    if (.not. all(ismissing(fInAtts))) then
+        do i = 0, dimsizes(fInAtts) - 1
+            fAtt@$fInAtts(i)$ = f@$fInAtts(i)$
+        end do
+    end if
+
     fileattdef(fnc, fAtt)
 
 ;***********************************************
@@ -692,7 +735,7 @@ begin
 ; loop over each variable: skip variables of type
 ; string [not allowed by netCDF v3.6.x]
 ; (1) define name, type and dimension names
-; (2) rather that read in the variable [could be
+; (2) rather than read in the variable [could be
 ;     big and slow], read each attribute of a
 ;     variable and assign to a dummy variable
 ;***********************************************
@@ -729,11 +772,11 @@ begin
                 dumAtts@$varAtts(j)$ = f->$fVarNames(i)$@$varAtts(j)$
             end do
 
-            ;if (debug) then                    ; can lead to much output
-            ;    print(varAtts)
-            ;    print(nAtts)
-            ;    print(dumAtts) 
-            ;end if
+            if (debug) then                    ; can lead to much output
+                print(varAtts)
+                print(nAtts)
+                print(dumAtts) 
+            end if
 
             ; define variable attributes
             filevarattdef(fnc, ncVarNames(i) , dumAtts)
@@ -833,6 +876,7 @@ echo "${progname} inputFile(s) OPTIONS"
 echo "  inputFile(s)          name(s) of data file(s) [required] [valid types: GRIB HDF HDF-EOS]"
 echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
 echo "  [-o output_directory] location of output file(s) [default: current directory]"
+echo "  [-e extension]        file type, defined by extension, to convert [example: grb]"
 echo "  [-u time_name]        name of the NCL-named time dimension to be UNLIMITED"
 echo "  [-U new_time_name]    if -u is specified: new name of UNLIMITED variable and dimension"
 echo "  [-v var1[,...]]       user specified subset of variables [default: all variables]"
