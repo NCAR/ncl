@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.5 2006-09-10 23:14:31 haley Exp $
+#   $Id: create_ncl_dist,v 1.6 2006-09-13 21:51:56 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -306,6 +306,7 @@ endif
 # directories that should be in there).
 #
 emacs bin/nhlcc bin/nhlf77 bin/nhlf90 
+/bin/rm bin/*~
 
 #
 # Make sure permissions are correct for install.
