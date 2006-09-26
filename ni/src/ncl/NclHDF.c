@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.20 2006-09-11 23:00:20 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.21 2006-09-26 17:56:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -150,6 +150,9 @@ HDFAttInqRec* att_inq
 		tmp[att_inq->len] = '\0';
 		ret = SDreadattr(sd_id,att_inq->attr_ix,tmp);
 		att_inq->value = NclMalloc(sizeof(NclQuark));
+		while (strlen(tmp) < att_inq->len -1) {
+			tmp[strlen(tmp)] = ' ';
+		}
 		*(string *)att_inq->value = NrmStringToQuark(tmp);
 		NclFree(tmp);
 	} 
