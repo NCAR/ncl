@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncarg_dist,v 1.1 2006-09-26 17:16:32 haley Exp $
+#   $Id: create_ncarg_dist,v 1.2 2006-09-26 20:51:26 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -18,7 +18,7 @@
 #
 #   Date:       Tue Sep 26 10:58:18 MDT 2006
 #
-#   Description:  Tars up NCAR Graphics for release to users.
+#   Description:  Tars up NCL NCAR Graphics for release to local users.
 #
 #   Options:   -r :  root directory
 #              -d :  tar file directory
@@ -123,9 +123,10 @@ endif
 
 #
 # Using ncargversion no longer works because NCAR Graphics
-# has its own version.
+# has its own version.  Just use the NCL version here, even though
+# the versions are different.
 #
-set version = `cat $NCARG/NcargVersion`
+set version = `cat $NCARG/NclVersion`
 
 #
 # Sort through options.
@@ -251,20 +252,20 @@ endif
 #
 # Set the files we want to tar up.
 #
-set bin_files = "ConvertMapData$exe_suffix WriteLineFile$exe_suffix WriteNameFile$exe_suffix WritePlotcharData$exe_suffix cgm2ncgm$exe_suffix ctlib$exe_suffix ctrans$exe_suffix ezmapdemo$exe_suffix fcaps$exe_suffix findg$exe_suffix fontc$exe_suffix gcaps$exe_suffix graphc$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargcc ncargex ncargf77 ncargf90 ncargfile ncargpath$exe_suffix ncargrun ncargversion ncargworld$exe_suffix ncarlogo2ps$exe_suffix ncarvversion ncgm2cgm$exe_suffix ncgmstat$exe_suffix ng4ex nhlcc nhlf77 nhlf90 nnalg$exe_suffix pre2ncgm$exe_suffix pre2ncgm.prog$exe_suffix psblack$exe_suffix psplit$exe_suffix pswhite$exe_suffix pwritxnt$exe_suffix ras2ccir601$exe_suffix rascat$exe_suffix rasgetpal$exe_suffix rasls$exe_suffix rassplit$exe_suffix rasstat$exe_suffix rasview$exe_suffix tdpackdemo$exe_suffix tgks0a$exe_suffix tlocal$exe_suffix"
+set bin_files = "ConvertMapData MakeNcl WRAPIT WriteLineFile WriteNameFile WritePlotcharData cgm2ncgm ctlib ctrans ezmapdemo fcaps findg fontc gcaps graphc ictrans idt med ncargcc ncargex ncargf77 ncargf90 ncargfile ncargpath ncargrun ncargversion ncargworld ncarlogo2ps ncarvversion ncgm2cgm ncgmstat ncl ncl_convert2nc ncl_filedump ncl_grib2nc ng4ex nhlcc nhlf77 nhlf90 nnalg pre2ncgm pre2ncgm.prog psblack psplit pswhite pwritxnt ras2ccir601 rascat rasgetpal rasls rassplit rasstat rasview tdpackdemo tgks0a tlocal wrapit77"
 
+set lib_files = "libcgm.a libhlu.a libncarg.a libncarg_c.a libncarg_gks.a libncarg_ras.a libncl.a libnclapi.a libnfp.a libnfpfort.a libngmath.a libnio.a"
 
-set inc_files = "c.h cgm_tools.h cgmdef.h ctrans.h gks.h gksP.h ncargC.h ncarg_ras.h ngmath.h"
-
-set inc_dirs  = "hlu"
-
-set lib_files = "libcgm.a libhlu.a libncarg.a libncarg_c.a libncarg_gks.a libncarg_ras.a libngmath.a ncarg/sysresfile"
-
-set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/examples ncarg/fontcaps ncarg/graphcaps ncarg/hluex ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/robj ncarg/sysresfile ncarg/tests ncarg/tutorial ncarg/xapp"
+set inc_dirs  = "ncarg"
+set lib_dirs  = "ncarg"
 
 set all_files
 set all_dirs
 
+#
+# Not dealing with $exe_suffix for now. We'll need to do this if you run
+# this script under Cygwin.
+#
 foreach f($bin_files)
   set all_files = ("bin/$f" $all_files)
 end
@@ -277,22 +278,14 @@ foreach f($lib_dirs)
   set all_dirs  = ("lib/$f" $all_dirs)
 end
 
-#
-# The include files are needed by people who want to create NCL
-# shared objects.
-#
-foreach f($inc_files)
-  set all_files = ("include/ncarg/$f" $all_files)
-end
-
 foreach f($inc_dirs)
-  set all_dirs = ("include/ncarg/$f" $all_dirs)
+  set all_dirs = ("include/$f" $all_dirs)
 end
 
 #
 # Tar up ncl and necessary files.
 #
-set ncarg_filename = "ncarg-$version.$system.tar"
+set ncarg_filename = "ncl_ncarg-$version.$system.tar"
 cd $rootdir
 
 echo "Tarring up the files in $rootdir..."
@@ -306,7 +299,7 @@ endif
 # Give us a chance to clean up nhlcc, nhlf77, and nhlf90 (remove 
 # directories that should be in there).
 #
-emacs bin/nhlcc bin/nhlf77 bin/nhlf90 
+emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
 /bin/rm bin/*~
 
 #
