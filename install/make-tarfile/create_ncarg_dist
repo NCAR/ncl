@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.7 2006-09-26 17:16:32 haley Exp $
+#   $Id: create_ncarg_dist,v 1.1 2006-09-26 17:16:32 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -10,16 +10,15 @@
 #                                                                     #
 #######################################################################
 #
-#   File:       create_ncl_dist
+#   File:       create_ncarg_dist
 #
 #   Author:     Mary Haley
 #           National Center for Atmospheric Research
 #           PO 3000, Boulder, Colorado
 #
-#   Date:       Wed Aug 26 08:29:55 MDT 1998
+#   Date:       Tue Sep 26 10:58:18 MDT 2006
 #
-#   Description:  Tars up ncl and necessary files so 
-#                 somebody has the necessary software to run NCL.
+#   Description:  Tars up NCAR Graphics for release to users.
 #
 #   Options:   -r :  root directory
 #              -d :  tar file directory
@@ -68,7 +67,7 @@ set name        = `uname -n`
 set os          = `uname -s`
 set exe_suffix  = ""
 set scpmach     = "meeker.scd.ucar.edu"
-set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/a034"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncarg"
 
 if ("$os" == "AIX") then
   set system = "{$os}_5.1"
@@ -126,8 +125,7 @@ endif
 # Using ncargversion no longer works because NCAR Graphics
 # has its own version.
 #
-# set version = `$rootdir/bin/ncargversion -v`
-set version = `cat $NCARG/NclVersion`
+set version = `cat $NCARG/NcargVersion`
 
 #
 # Sort through options.
@@ -253,13 +251,16 @@ endif
 #
 # Set the files we want to tar up.
 #
-set bin_files = "ctrans$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargpath$exe_suffix ng4ex nhlcc nhlf77 nhlf90 ncarlogo2ps$exe_suffix ncl$exe_suffix wrapit77$exe_suffix psplit$exe_suffix WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc"
+set bin_files = "ConvertMapData$exe_suffix WriteLineFile$exe_suffix WriteNameFile$exe_suffix WritePlotcharData$exe_suffix cgm2ncgm$exe_suffix ctlib$exe_suffix ctrans$exe_suffix ezmapdemo$exe_suffix fcaps$exe_suffix findg$exe_suffix fontc$exe_suffix gcaps$exe_suffix graphc$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargcc ncargex ncargf77 ncargf90 ncargfile ncargpath$exe_suffix ncargrun ncargversion ncargworld$exe_suffix ncarlogo2ps$exe_suffix ncarvversion ncgm2cgm$exe_suffix ncgmstat$exe_suffix ng4ex nhlcc nhlf77 nhlf90 nnalg$exe_suffix pre2ncgm$exe_suffix pre2ncgm.prog$exe_suffix psblack$exe_suffix psplit$exe_suffix pswhite$exe_suffix pwritxnt$exe_suffix ras2ccir601$exe_suffix rascat$exe_suffix rasgetpal$exe_suffix rasls$exe_suffix rassplit$exe_suffix rasstat$exe_suffix rasview$exe_suffix tdpackdemo$exe_suffix tgks0a$exe_suffix tlocal$exe_suffix"
 
-set inc_files = "gks.h c.h ncargC.h"
-set inc_dirs  = "hlu ncl"
 
-set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt"
-set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/udunits"
+set inc_files = "c.h cgm_tools.h cgmdef.h ctrans.h gks.h gksP.h ncargC.h ncarg_ras.h ngmath.h"
+
+set inc_dirs  = "hlu"
+
+set lib_files = "libcgm.a libhlu.a libncarg.a libncarg_c.a libncarg_gks.a libncarg_ras.a libngmath.a ncarg/sysresfile"
+
+set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/examples ncarg/fontcaps ncarg/graphcaps ncarg/hluex ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/robj ncarg/sysresfile ncarg/tests ncarg/tutorial ncarg/xapp"
 
 set all_files
 set all_dirs
@@ -291,11 +292,11 @@ end
 #
 # Tar up ncl and necessary files.
 #
-set ncl_filename = "ncl-$version.$system.tar"
+set ncarg_filename = "ncarg-$version.$system.tar"
 cd $rootdir
 
 echo "Tarring up the files in $rootdir..."
-echo -n "The tar file is called $ncl_filename and it will be put in $tardir. Continue? (y/n) "
+echo -n "The tar file is called $ncarg_filename and it will be put in $tardir. Continue? (y/n) "
 set answer="$<"
 if ("$answer" != "y") then
   exit
@@ -339,7 +340,7 @@ find $all_files -exec chmod u+w {} \;
 #
 # Now tar up everything.
 #
-tar -cvhf $tardir/$ncl_filename $all_files $all_dirs
+tar -cvhf $tardir/$ncarg_filename $all_files $all_dirs
 
 #
 # Set permissions back for group writes.
@@ -367,9 +368,9 @@ endif
 # Compress file.
 #
 echo "Gzipping the tar file..."
-gzip $tardir/$ncl_filename
-if (-f $tardir/$ncl_filename.gz) then 
-  echo "Created '$tardir/$ncl_filename.gz'..."
+gzip $tardir/$ncarg_filename
+if (-f $tardir/$ncarg_filename.gz) then 
+  echo "Created '$tardir/$ncarg_filename.gz'..."
 else
   echo "Error, no compressed tar file created."
   exit
@@ -378,16 +379,16 @@ endif
 if ($?SCP) then
   echo "scp file to meeker..."
   if ("$name" == "meeker") then
-    /bin/cp $tardir/$ncl_filename.gz $scpdir
+    /bin/cp $tardir/$ncarg_filename.gz $scpdir
   else
-    scp $tardir/$ncl_filename.gz $scpmach\:$scpdir
+    scp $tardir/$ncarg_filename.gz $scpmach\:$scpdir
   endif
 endif
 
 exit 0
 
 usage:
-echo "usage: create_ncl_dist [options]"
+echo "usage: create_ncarg_dist [options]"
 echo ""
 echo " Options:"
 echo ""
@@ -395,3 +396,5 @@ echo "  -r root_directory -d tarfile_directory -s system -v version"
 echo "  -b 32|64 -e extra_string -rangs"
 echo ""
 exit
+
+
