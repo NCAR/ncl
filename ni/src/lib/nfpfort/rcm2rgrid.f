@@ -1,4 +1,3 @@
-c -----------------------------------------------------------
 C NCLFORTSTART
       SUBROUTINE DRCM2RGRID(NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO,XMSG,OPT,
      +                      IER)
@@ -45,6 +44,7 @@ c
 c                              local
       INTEGER NX,NY,NEXACT,IX,IY,M,N,NW,NER,K
       DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
+      DOUBLE PRECISION EPS
       DOUBLE PRECISION DGCDIST
 c                              error checking
       IER = 0
@@ -75,30 +75,33 @@ c c c    print *,"chklon: nx=",nx,"  chklon=",chklon(nx)
 
       K = 2
 c c c k = opt
-
+c                              initialize to xmsg
       DO NY = 1,NYO
           DO NX = 1,NXO
               FO(NX,NY) = XMSG
           END DO
       END DO
 c                              main loop [exact matches]
+      EPS    = 1.D-04
       NEXACT = 0
       DO NY = 1,NYO
-          DO NX = 1,NXO
+        DO NX = 1,NXO
+          DO IY = 1,NYI
+            DO IX = 1,NXI
+               IF (XO(NX).GE.(XI(IX,IY)-EPS) .AND.
+     +             XO(NX).LE.(XI(IX,IY)+EPS) .AND.
+     +             YO(NY).GE.(YI(IX,IY)-EPS) .AND.
+     +             YO(NY).LE.(YI(IX,IY)+EPS) ) THEN
 
-              DO IY = 1,NYI
-                  DO IX = 1,NXI
-                      IF (XO(NX).EQ.XI(IX,IY) .AND.
-     +                    YO(NY).EQ.YI(IX,IY)) THEN
-                          FO(NX,NY) = FI(IX,IY)
-                          NEXACT = NEXACT + 1
-                          GO TO 10
-                      END IF
-                  END DO
-              END DO
+                   FO(NX,NY) = FI(IX,IY)
+                   NEXACT = NEXACT + 1
+                   GO TO 10
+               END IF
+            END DO
+          END DO
 
    10         CONTINUE
-          END DO
+        END DO
       END DO
 
 c c c print *, "nexact=",nexact
@@ -122,8 +125,7 @@ c                              main loop [interpolation]
                               W(1,2) = (1.D0/DGCDIST(YO(NY),XO(NX),
      +                                 YI(IX,IY+K),XI(IX,IY+K),2))**2
                               W(2,2) = (1.D0/DGCDIST(YO(NY),XO(NX),
-     +                                 YI(IX+K,IY+K),XI(IX+K,IY+K),2))**
-     +                                 2
+     +                                YI(IX+K,IY+K),XI(IX+K,IY+K),2))**2
 
                               FW(1,1) = FI(IX,IY)
                               FW(2,1) = FI(IX+K,IY)
@@ -143,7 +145,9 @@ c                              main loop [interpolation]
                                   END DO
                               END DO
 c                                             nw >=3 arbitrary
-                              IF (NW.GE.3 .AND. SUMW.GT.0.D0) THEN
+c c c                         IF (NW.GE.3 .AND. SUMW.GT.0.D0) THEN
+c                                             nw =1 nearest neighbor
+                              IF (NW.GE.1 .AND. SUMW.GT.0.D0) THEN
                                   FO(NX,NY) = SUMF/SUMW
                               END IF
                               GO TO 20
@@ -160,13 +164,14 @@ c                                             nw >=3 arbitrary
       END
 c -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DRGRID2RCM(NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO,XMSG,OPT,
-     +                      IER)
+      SUBROUTINE RGRID2RCM(NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO,XMSG,OPT,
+     +                     IER)
       IMPLICIT NONE
       INTEGER NXI,NYI,NXO,NYO,IER
       DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI),OPT
       DOUBLE PRECISION XO(NXO,NYO),YO(NXO,NYO),FO(NXO,NYO),XMSG
 C NCLEND
+C C C SUBROUTINE DRGRID2RCM(NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO,XMSG,OPT,
 
 C This is written  with GNU f77 acceptable extensions
 c .   This could be improved considerably with f90
@@ -204,7 +209,7 @@ c .             =4/5; xo or yo are not monotonically increasing
 c
 c                              local
       INTEGER NX,NY,NEXACT,IX,IY,M,N,NW,NER,K
-      DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW
+      DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,EPS
       DOUBLE PRECISION DGCDIST
 
 c                              in-line functions (bilinear interp)
@@ -227,21 +232,25 @@ c                              error checking
       IF (IER.NE.0) RETURN
       CALL DMONOINC(XI,NXI,IER,NER)
       IF (IER.NE.0) RETURN
-
+c                              Init to missing
       DO NY = 1,NYO
           DO NX = 1,NXO
               FO(NX,NY) = XMSG
           END DO
       END DO
 c                              main loop [exact matches]
+      EPS    = 1.D-04
       NEXACT = 0
       DO NY = 1,NYO
           DO NX = 1,NXO
 
               DO IY = 1,NYI
                   DO IX = 1,NXI
-                      IF (XO(NX,NY).EQ.XI(IX) .AND.
-     +                    YO(NX,NY).EQ.YI(IY)) THEN
+                      IF (XO(NX,NY).GE.(XI(IX)-EPS) .AND.
+     +                    XO(NX,NY).LE.(XI(IX)+EPS) .AND.
+     +                    YO(NX,NY).GE.(YI(IY)-EPS) .AND.
+     +                    YO(NX,NY).LE.(YI(IY)+EPS) ) THEN
+
                           FO(NX,NY) = FI(IX,IY)
                           NEXACT = NEXACT + 1
                           GO TO 10
@@ -261,12 +270,12 @@ c c c k = opt
 c                              main loop [interpolation]
       DO NY = 1,NYO
           DO NX = 1,NXO
-
+             IF (FO(NX,NY).EQ.XMSG) THEN
               DO IY = 1,NYI - K
                   DO IX = 1,NXI - K
-                      IF (XO(NX,NY).GT.XI(IX) .AND.
+                      IF (XO(NX,NY).GE.XI(IX) .AND.
      +                    XO(NX,NY).LT.XI(IX+K) .AND.
-     +                    YO(NX,NY).GT.YI(IY) .AND.
+     +                    YO(NX,NY).GE.YI(IY) .AND.
      +                    YO(NX,NY).LT.YI(IY+K)) THEN
 
                           IF (FI(IX,IY).NE.XMSG .AND.
@@ -310,7 +319,9 @@ c                                            OVERKILL
                                   END DO
                               END DO
 c                                             nw >=3 arbitrary
-                              IF (NW.GE.3 .AND. SUMW.GT.0.D0) THEN
+c c c                         IF (NW.GE.3 .AND. SUMW.GT.0.D0) THEN
+c                                             nw  =1 nearest neighbor
+                              IF (NW.GE.1 .AND. SUMW.GT.0.D0) THEN
                                   FO(NX,NY) = SUMF/SUMW
                               END IF
                               GO TO 20
@@ -319,6 +330,7 @@ c                                             nw >=3 arbitrary
                       END IF
                   END DO
               END DO
+             END IF
 
    20         CONTINUE
           END DO
