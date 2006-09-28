@@ -164,8 +164,8 @@ c                                             nw =1 nearest neighbor
       END
 c -----------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE RGRID2RCM(NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO,XMSG,OPT,
-     +                     IER)
+      SUBROUTINE DRGRID2RCM(NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO,XMSG,OPT,
+     +                      IER)
       IMPLICIT NONE
       INTEGER NXI,NYI,NXO,NYO,IER
       DOUBLE PRECISION XI(NXI),YI(NYI),FI(NXI,NYI),OPT
