@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.124 2006-09-25 16:34:23 shea Exp $
+;      $Id: contributed.ncl,v 1.125 2006-09-28 04:48:06 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -463,7 +463,7 @@ begin
  ;filString = asciiread ( fNam, -1, "string")
  ;nrow      = dimsizes(filString)
 
-  nrow_s    = systemfunc("'wc' -l" + fNam +" | awk '{print $1}'" )
+  nrow_s    = systemfunc("'wc' -l " + fNam +" | awk '{print $1}'" )
   nrow      = stringtointeger( nrow_s )
 
   return (nrow)
