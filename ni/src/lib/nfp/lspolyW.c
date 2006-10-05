@@ -153,7 +153,7 @@ NhlErrorTypes lspoly_W( void )
  */
   type_coef = NCL_float;
 
-  if(type_x == NCL_float) {
+  if(type_x != NCL_double) {
     tmp_x = (double*)calloc(npts,sizeof(double));
     if( tmp_x == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"lspoly: Unable to allocate memory for temporary array");
@@ -164,7 +164,7 @@ NhlErrorTypes lspoly_W( void )
     type_coef = NCL_double;
   }
 
-  if(type_y == NCL_float) {
+  if(type_y != NCL_double) {
     tmp_y = (double*)calloc(npts,sizeof(double));
     if( tmp_y == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"lspoly: Unable to allocate memory for temporary array");
