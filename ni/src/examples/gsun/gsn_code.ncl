@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.185 2006-09-05 17:28:20 haley Exp $
+;      $Id: gsn_code.ncl,v 1.186 2006-10-05 18:02:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8183,6 +8183,23 @@ begin
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
+
+    if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
+      zthickness = res2@gsnContourZeroLineThicknessF
+      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      delete(res2@gsnContourZeroLineThicknessF)
+    end if
+
+    if(res2.and.isatt(res2,"gsnContourLineThicknessesScale")) then
+      linescale = res2@gsnContourLineThicknessesScale
+      delete(res2@gsnContourLineThicknessesScale)
+    end if
+
+    if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
+      npattern = res2@gsnContourNegLineDashPattern
+      delete(res2@gsnContourNegLineDashPattern)
+    end if
+
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,(/"cn","vp","tf"/))
@@ -8192,6 +8209,21 @@ begin
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(contour_object,cnres)
     attsetvalues_check(vector_object,vcres)
+
+    if(isvar("zthickness")) then
+      contour_object = set_zero_line_thickness(contour_object,zthickness,cthickness)
+      delete(zthickness)
+    end if
+
+    if(isvar("linescale")) then
+      contour_object = set_line_thickness_scale(contour_object,linescale)
+      delete(linescale)
+    end if
+
+    if(isvar("npattern")) then
+      contour_object = set_neg_line_pattern(contour_object,npattern)
+      delete(npattern)
+    end if
 
     if(sprdcols)
       cnres2 = True
@@ -8296,6 +8328,22 @@ begin
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
+    if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
+      zthickness = res2@gsnContourZeroLineThicknessF
+      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      delete(res2@gsnContourZeroLineThicknessF)
+    end if
+
+    if(res2.and.isatt(res2,"gsnContourLineThicknessesScale")) then
+      linescale = res2@gsnContourLineThicknessesScale
+      delete(res2@gsnContourLineThicknessesScale)
+    end if
+
+    if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
+      npattern = res2@gsnContourNegLineDashPattern
+      delete(res2@gsnContourNegLineDashPattern)
+    end if
+
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,(/"cn","vp"/))
@@ -8305,6 +8353,21 @@ begin
     attsetvalues_check(sfdata_object,sfres)
     attsetvalues_check(contour_object,cnres)
     attsetvalues_check(stream_object,stres)
+
+    if(isvar("zthickness")) then
+      contour_object = set_zero_line_thickness(contour_object,zthickness,cthickness)
+      delete(zthickness)
+    end if
+
+    if(isvar("linescale")) then
+      contour_object = set_line_thickness_scale(contour_object,linescale)
+      delete(linescale)
+    end if
+
+    if(isvar("npattern")) then
+      contour_object = set_neg_line_pattern(contour_object,npattern)
+      delete(npattern)
+    end if
 
     if(sprdcols)
       cnres2 = True
@@ -8409,6 +8472,23 @@ begin
     min_index = get_res_value(res2,"gsnSpreadColorStart",2)
     max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
 
+
+    if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
+      zthickness = res2@gsnContourZeroLineThicknessF
+      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      delete(res2@gsnContourZeroLineThicknessF)
+    end if
+
+    if(res2.and.isatt(res2,"gsnContourLineThicknessesScale")) then
+      linescale = res2@gsnContourLineThicknessesScale
+      delete(res2@gsnContourLineThicknessesScale)
+    end if
+
+    if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
+      npattern = res2@gsnContourNegLineDashPattern
+      delete(res2@gsnContourNegLineDashPattern)
+    end if
+
     vfres = get_res_eq(res2,"vf")
     sfres = get_res_eq(res2,"sf")
     cnres = get_res_eq(res2,(/"cn","tf"/))
@@ -8420,6 +8500,21 @@ begin
     attsetvalues_check(map_object,mpres)
     attsetvalues_check(contour_object,cnres)
     attsetvalues_check(vector_object,vcres)
+
+    if(isvar("zthickness")) then
+      contour_object = set_zero_line_thickness(contour_object,zthickness,cthickness)
+      delete(zthickness)
+    end if
+
+    if(isvar("linescale")) then
+      contour_object = set_line_thickness_scale(contour_object,linescale)
+      delete(linescale)
+    end if
+
+    if(isvar("npattern")) then
+      contour_object = set_neg_line_pattern(contour_object,npattern)
+      delete(npattern)
+    end if
 
     if(sprdcols)
       cnres2 = True
