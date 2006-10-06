@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.11 2006-06-15 16:45:56 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.12 2006-10-06 23:17:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,7 +19,7 @@
  *
  *	Description:	
  */
-
+/*#define HLU_WRITE_TABLES*/
 #include <ncarg/hlu/MapV40DataHandlerP.h>
 
 static NhlErrorTypes MapV40DHClassPartInit(
@@ -384,6 +384,7 @@ static NhlErrorTypes Init_Outline_Recs
 	mpOutlineType last_type;
 	Const char *db_path;
 	char *full_name;
+	int i;
 
 	if ((db_path = GetNCARGPath("database")) == NULL) {
 		e_text = "%s: cannot find path to NCARG database";
@@ -443,7 +444,9 @@ static NhlErrorTypes Init_Outline_Recs
 		orp->cix[1] = cix1;
 		orp->id[2] = id2;
 		orp->type = (mpOutlineType) type;
+#ifndef HLU_WRITE_TABLES 
 		mpLowerCase(name);
+#endif
 		count = strlen(name) + 1;
 		orp->name = (char *) malloc(count);
 		bytes += count;
@@ -458,6 +461,26 @@ static NhlErrorTypes Init_Outline_Recs
 	mdhcp->outline_type_start_ix[last_type+1] = mdhcp->outline_rec_count; 
 	fclose(fp);
 	NhlFree(full_name);
+
+#ifdef HLU_WRITE_TABLES 
+
+	printf("<table border=1 width=100%%>\n");
+	printf("<tr><th>Element<br>Index</th><th>Type</th><th>Fixed<br> Group</th><th>Dynamic<br>Group</th><th>Area Name</th><tr>\n");
+        for (i = 0; i < mdhcp->outline_rec_count; i++) {
+		printf("<tr>\n");
+		printf("<td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s</td>\n",
+		       i,
+		       (int)mdhcp->outline_recs[i].type,
+		       mdhcp->outline_recs[i].cix[0],
+		       mdhcp->outline_recs[i].cix[1],
+		       mdhcp->outline_recs[i].name);
+		printf("</tr>\n");
+	}
+	printf("</table>\n");
+
+	exit(1);
+
+#endif
 
 #if 0        
 	printf("records read %d, bytes %d + record size %d\n",

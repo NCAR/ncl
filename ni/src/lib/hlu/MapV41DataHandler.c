@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.22 2006-08-15 18:24:02 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.23 2006-10-06 23:17:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,6 +19,8 @@
  *
  *	Description:	
  */
+
+/*#define HLU_WRITE_TABLES*/
 
 #include <ncarg/hlu/MapV41DataHandlerP.h>
 
@@ -213,6 +215,7 @@ static int StateBorderWaterCount = 29;
 static int CountyBorderWaterCount = NhlNumber(BorderWater);
 static int USStartIndex = 13; /* this is for  NhlGEOPHYSICALANDUSSTATES */
 
+static NrmQuark RDatasets[4];
 
 /*
  * special entity recs for broad subcategories
@@ -454,6 +457,12 @@ static NhlErrorTypes Init_Entity_Recs
         int us_child_count[3] = {0,0,0};
         LongNameRec *lname_recs;
         char lname_buf[256];
+	NrmQuark cur_dataset_q;
+
+	RDatasets[0] = NrmStringToQuark("earth..1");
+	RDatasets[1] = NrmStringToQuark("earth..2");
+	RDatasets[2] = NrmStringToQuark("earth..3");
+	RDatasets[3] = NrmNULLQUARK;
 
         mv41p->entity_recs = NhlMalloc
                 (sizeof(v41EntityRec) * mv41p->entity_rec_count);
@@ -487,7 +496,11 @@ static NhlErrorTypes Init_Entity_Recs
                         NhlPError(NhlFATAL,ENOMEM,e_text,entry_name);
                         return NhlFATAL;
                 }
+#ifdef HLU_WRITE_TABLES
+		strcpy(erec->name,buf);
+#else
                 strcpy(erec->name,mpLowerCase(buf));
+#endif
 
                 if (ix == LandId) {
                         erec->dynamic_gid = erec->fixed_gid =
@@ -532,7 +545,6 @@ static NhlErrorTypes Init_Entity_Recs
               sizeof(LongNameRec),long_alpha_sort);
 
         for (i = 0; i < mv41p->entity_rec_count; i++) {
-                char buf[256];
                 mv41p->alpha_recs[i]->unique = True;
                 if (i < mv41p->entity_rec_count - 1) {
                         if (! strcmp(mv41p->alpha_recs[i]->name,
@@ -546,39 +558,60 @@ static NhlErrorTypes Init_Entity_Recs
                 }
                 mv41p->long_alpha_recs[i] = lname_recs[i].erec;
 		mv41p->long_alpha_recs[i]->canonical_ix = i;
-#if 0                
-                printf("%s\n",mv41p->long_alpha_recs[i]->name);
-                
-                if (mv41p->alpha_recs[i]->unique) {
-                        strcpy(buf,mv41p->alpha_recs[i]->name);
+	}
+#ifdef HLU_WRITE_TABLES                
+	printf("<table border=1 width=100%%>\n");
+	printf("<tr><th>Element<br>Index</th><th>Type</th><th>Fixed<br> Group</th><th>Dynamic<br>Group</th><th>Area Name</th><tr>\n");
+        for (i = 0; i < mv41p->entity_rec_count; i++) {
+                char buf[256];
+		char *sub,*sub2;
+                if (mv41p->long_alpha_recs[i]->unique) {
+                        strcpy(buf,mv41p->long_alpha_recs[i]->name);
                 }
                 else {
-                        int pix = c_mpipar(mv41p->alpha_recs[i]->eid);
+                        int pix = c_mpipar(mv41p->long_alpha_recs[i]->eid);
                         int ptype = c_mpiaty(pix);
-                        int etype = c_mpiaty(mv41p->alpha_recs[i]->eid);
+                        int etype = c_mpiaty(mv41p->long_alpha_recs[i]->eid);
                         
                         strcpy(buf,mv41p->entity_recs[pix-1].name);
                         if (ptype == etype)
                                 strcat(buf," . ");
                         else 
-                                strcat(buf," - ");
-                        strcat(buf,mv41p->alpha_recs[i]->name);
+                                strcat(buf," : ");
+                        strcat(buf,mv41p->long_alpha_recs[i]->name);
                 }
-                printf("%s\n",buf);
-#endif
-        }
+		printf("<tr>\n");
+		sub = strstr(lname_recs[i].lname,buf);
+		sub2 = sub;
+		while (sub2) {
+			sub2 = strstr(sub+1,buf);
+			if (sub2) sub = sub2;
+		}
+		if (sub) {
+			*sub = '\0';
+			printf("<td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%s<b>%s</b></td>\n",
+			       i,
+			       mv41p->long_alpha_recs[i]->level,
+			       mv41p->long_alpha_recs[i]->fixed_gid,
+			       mv41p->long_alpha_recs[i]->dynamic_gid,
+			       lname_recs[i].lname,
+			       buf);
+		}
+		else {
+			printf("error in %s\n",buf);
+		}
+		printf("</tr>\n");
+	}
+	printf("</table>\n");
+/*
+	printf("=========================================================================\n");
         for (i = 0; i < mv41p->entity_rec_count; i++) {
-#if 0                
-                if (mv41p->long_alpha_recs[i]->unique) {
-                        printf("%s\n",lname_recs[i].lname);
-                }
-                else {
-                        printf("! %s\n",lname_recs[i].lname);
-                }
-#endif                
-                NhlFree(lname_recs[i].lname);
+		printf("%d\t%s\n",i+1,lname_recs[i].lname);
         }
+*/
         NhlFree(lname_recs);
+	exit(1);
+#endif
         
 #if 0        
         for (i = 1; i <= mv41p->entity_rec_count; i++) {
@@ -607,12 +640,20 @@ static NhlErrorTypes Init_Entity_Recs
                c_mpname(UsIds[2]),us_child_count[2]);
 #endif                
 
+	cur_dataset_q = NrmStringToQuark(mv41l->mapdh.data_set_name);
+	for (i = 0; RDatasets[i] != NrmNULLQUARK; i++) {
+		if (cur_dataset_q == RDatasets[i])
+			break;
+	}
+	if (RDatasets[i] == NrmNULLQUARK)
+		return (NhlNOERROR);
+		
 	j = 0;
 	memset(BorderWaterEids,0,sizeof(int) * NhlNumber(BorderWater));
 	for (i = 0; i < NhlNumber(BorderWater); i++) {
 		int found = 0;
 		while (! found) {
-			if (j == Mv41p->entity_rec_count) {
+			if (j == mv41p->entity_rec_count) {
 				j = 0;
 #if 0				
 				printf("recycling j at %d\n",i);
@@ -1744,14 +1785,16 @@ static NhlErrorTypes    ExpandSpecFillRecord
         NhlMapV41DataHandlerLayerPart  *mv41p,
 	v41EntityRec                   *srec,
 	int                            level,
+	int                            spec_fill_index,
         unsigned char   	       draw_mode,
         NhlString		       entry_name
 )
 #else
-(mv41p,erec,level,draw_mode,entry_name)
+(mv41p,erec,level,spec_fill_index,draw_mode,entry_name)
 	NhlMapV41DataHandlerLayerPart  *mv41p;
 	v41EntityRec                   *srec;
 	int                            level;
+	int                            spec_fill_index;
         unsigned char   	       draw_mode;
         NhlString		       entry_name;
 #endif
@@ -1785,7 +1828,7 @@ static NhlErrorTypes    ExpandSpecFillRecord
                         }
                 }
 		mv41p->fill_recs[count].eid = erec->eid;
-		mv41p->fill_recs[count].spec_ix = 0;
+		mv41p->fill_recs[count].spec_ix = spec_fill_index;
 		mv41p->fill_recs[count].draw_mode = draw_mode;
 		mv41p->fill_recs[count].spec_col = 0;
 		mv41p->fill_recs[count].spec_pat = 0;
@@ -1941,11 +1984,12 @@ static NhlErrorTypes    UpdateSpecFillRecords
                 }
 		if (spec_fill_level > 0) {
 			/* what we need are all the children of this entity */
-			ExpandSpecFillRecord(mv41p,erec,spec_fill_level,draw_mode,entry_name);
+			ExpandSpecFillRecord(mv41p,erec,spec_fill_level,
+					     spec_fill_index,draw_mode,entry_name);
 		}
 		else {
 			mv41p->fill_recs[count].eid = erec->eid;
-			mv41p->fill_recs[count].spec_ix = 0;
+			mv41p->fill_recs[count].spec_ix = spec_fill_index;
 			mv41p->fill_recs[count].draw_mode = draw_mode;
 			mv41p->fill_recs[count].spec_col = 0;
 			mv41p->fill_recs[count].spec_pat = 0;
