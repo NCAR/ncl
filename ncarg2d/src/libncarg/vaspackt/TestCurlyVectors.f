@@ -3,7 +3,7 @@
       PROGRAM TESTIT
 C
 C This program constructs a simple triangular mesh, including dummy flow
-C data, and then traces streamlines on it.
+C data, and then traces curly vectors on it.
 C
 C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID, to be used in calls to GKS routines.  Use one
@@ -95,7 +95,7 @@ C follow a contour or a streamline; the pointers are tricky to define:
 C if IPTE is the base index of an edge node and IEDG(IPTE+3) is zero or
 C more, saying that there is a triangle to the left of the edge, then
 C IEDG(IPTE+3) is the actual index of that element of the triangle node
-C that points to the edge node; i.e., ITRI(IDGE(IPTE+3))=IPTE.  The base
+C that points to the edge node; i.e., ITRI(IEDG(IPTE+3))=IPTE.  The base
 C index of the triangle node defining that triangle is IPTT, where
 C IPTT=LOTN*((IEDG(IPTE+3)-1)/LOTN), and the index of the pointer to
 C the edge within the triangle node is IPTI=IEDG(IPTE+3)-IPTT, so that
@@ -133,6 +133,20 @@ C
 C Declare variables to hold labels.
 C
         CHARACTER*64 UNLB,VNLB,WNLB,UILB,VILB,WILB
+C 
+C Declare a variable to hold an area map for masking purposes.
+C 
+        PARAMETER (LAMA=10000)
+C       
+        DIMENSION IAMA(LAMA)
+C 
+C Declare some arrays to be used in defining a masked-out area.
+C   
+        DIMENSION XMSK(5),YMSK(5)
+C
+C Declare the routine that will do the masked drawing of vectors.
+C
+        EXTERNAL VTDRPL
 C
 C Set the desired minimum and maximum values of U, V, and W.
 C
@@ -157,7 +171,7 @@ C ISTE is a flag that says whether to do a simple image (ISTE=0),
 C a one-frame stereo image (ISTE=-1), or a two-frame stereo image
 C (ISTE=+1).
 C
-        DATA ISTE / 0 /
+        DATA ISTE / -1 /
 C
 C ASTE is the desired angle (in degrees) between the lines of sight for
 C a pair of stereo views.
@@ -192,7 +206,7 @@ C or not streamlines are to be colored and, if so, how:
 C
 C   ICTV = 0 => no coloring
 C   ICTV < 0 => colored, user defines color threshold values used
-C   ICTV > 0 => colored, CTMESH defines color threshold values used
+C   ICTV > 0 => colored, VTMESH defines color threshold values used
 C
 C If ABS(ICTV) is between 1 and LOPN, inclusive, then colors will be
 C determined from elements having index ABS(ICTV) in the point nodes:
@@ -225,47 +239,36 @@ C
 C       DATA NCLR /   1 /
         DATA NCLR / 100 /
 C
+C Define the parameter that tells VASPACKT how to interpret size
+C parameters.
+C
+        DATA IISP / 0 /
+C       DATA IISP / 1 /
+C
 C Define the segment length for drawing streamlines.
 C
-        DATA SLSL / .001 /
-C       DATA SLSL / .002 /
-C       DATA SLSL / .005 /
-C       DATA SLSL / .010 /
-C       DATA SLSL / .020 /
+        DATA SLPS / .001 /
+C       DATA SLPS / .002 /
+C       DATA SLPS / .005 /
+C       DATA SLPS / .010 /
+C       DATA SLPS / .020 /
 C
-C Define the maximum length and the termination test parameters for
-C curly vectors.
+C Define the termination test parameters for curly vectors.
 C
-C       DATA SLML,TTSP,TTLL / .05 , .012 , .024 /
-C       DATA SLML,TTSP,TTLL / .10 , .006 , .012 /
-C       DATA SLML,TTSP,TTLL / .10 , .012 , .024 /
-C       DATA SLML,TTSP,TTLL / .15 , .009 , .018 /
-        DATA SLML,TTSP,TTLL / .20 , .020 , .020 /
-C
-C Define the maximum length of a streamline.
-C
-C       DATA SLML / 8.0 /
-C       DATA SLML / 4.0 /
-C       DATA SLML / 2.0 / ! <--
-C       DATA SLML / 1.0 /
-C       DATA SLML / .50 /
-C       DATA SLML / .10 /
-C       DATA SLML / .05 /
-C
-C Define the streamline spacing and the termination test parameters.
-C
-C       DATA SLSP,TTSP,TTLL / .012 , .003 , .006 /
-C       DATA SLSP,TTSP,TTLL / .024 , .006 , .012 /
-C       DATA SLSP,TTSP,TTLL / .036 , .009 , .018 /
-C       DATA SLSP,TTSP,TTLL / .048 , .012 , .024 / ! <--
-C       DATA SLSP,TTSP,TTLL / .072 , .018 , .036 /
-C       DATA SLSP,TTSP,TTLL / .096 , .024 , .048 /
-C       DATA SLSP,TTSP,TTLL / .144 , .036 , .072 /
-C       DATA SLSP,TTSP,TTLL / .192 , .048 , .096 /
+C       DATA TTSP,TTLL / .012 , .024 /
+C       DATA TTSP,TTLL / .006 , .012 /
+C       DATA TTSP,TTLL / .012 , .024 /
+C       DATA TTSP,TTLL / .009 , .018 /
+        DATA TTSP,TTLL / .020 , .020 /
 C
 C Define the values of VASPACKT's arrowhead parameters.
 C
         DATA AHSP,AHAW,AHLN / .24 , 30. , .03 /
+C
+C Define the values of parameters used to map vector magnitudes into
+C vector lengths.
+C
+        DATA VFRA,VRLN,VRMG / .25 , .20 , 0. /
 C
 C Define the value of the debug flag and a trio of required color
 C indices for VASPACKT.
@@ -276,6 +279,15 @@ C Define the desired value of VASPACKT's point interpolation threshold.
 C
 C       DATA PITH /  0. /  !  point interpolation off
         DATA PITH / .01 /
+C
+C Define a parameter that says whether or not masking is to be tested.
+C
+        DATA IMSK / 0 /
+C
+C Define the coordinates of the area to be masked out.
+C
+        DATA XMSK / .3 , .7 , .7 , .3 , .3 /
+        DATA YMSK / .3 , .3 , .7 , .7 , .3 /
 C
 C Create data and generate the required triangular mesh.
 C
@@ -299,13 +311,19 @@ C due east, with some smooth variation based on the original data.
 C
         DO 101 I=0,NPNT-LOPN,LOPN
           DNOM=SQRT(RPNT(I+1)**2+RPNT(I+2)**2+RPNT(I+3)**2)
-          CALL XYZLLP (RPNT(I+1)/DNOM,RPNT(I+2)/DNOM,RPNT(I+3)/DNOM,
-     +                                                        RLAT,RLON)
+          RPNT(I+1)=RPNT(I+1)/DNOM
+          RPNT(I+2)=RPNT(I+2)/DNOM
+          RPNT(I+3)=RPNT(I+3)/DNOM
+          CALL XYZLLP (RPNT(I+1),RPNT(I+2),RPNT(I+3),RLAT,RLON)
           CALL LLPXYZ (MAX(-90.,MIN(+90.,RLAT+.25)),RLON+2.,
      +                                                   RVOX,RVOY,RVOZ)
-          RPNT(I+4)=RVOX-RPNT(I+1)/DNOM+RPNT(I+4)/15.
-          RPNT(I+5)=RVOY-RPNT(I+2)/DNOM+RPNT(I+5)/15.
-          RPNT(I+6)=RVOZ-RPNT(I+3)/DNOM+RPNT(I+6)/15.
+          RVOX=RVOX+RPNT(I+4)/15.
+          RVOY=RVOY+RPNT(I+5)/15.
+          RVOZ=RVOZ+RPNT(I+6)/15.
+          DNOM=SQRT(RVOX**2+RVOY**2+RVOZ**2)
+          RPNT(I+4)=RVOX/DNOM-RPNT(I+1)
+          RPNT(I+5)=RVOY/DNOM-RPNT(I+2)
+          RPNT(I+6)=RVOZ/DNOM-RPNT(I+3)
           RPNT(I+7)=RLAT
           RPNT(I+8)=RLON
   101   CONTINUE
@@ -340,6 +358,18 @@ C another.
 C
         CALL DFCRGB (IWID,151,150+NCLR,0.,0.,1.,1.,0.,0.,0.)
 C
+C Initialize the area map as directed.
+C
+        IF (IMSK.EQ.0) THEN
+          IAMA(1)=0
+        ELSE
+          CALL SET    (0.,1.,0.,1.,0.,1.,0.,1.,1)
+          PRINT * , 'CALLING ARINAM'
+          CALL ARINAM (IAMA,LAMA)
+          PRINT * , 'CALLING AREDAM'
+          CALL AREDAM (IAMA,XMSK,YMSK,5,1,-1,0)
+        END IF
+C
 C Select font number 25, turn on the outlining of filled fonts, set the
 C line width to 1, and set the outline color to the foreground color.
 C
@@ -356,17 +386,13 @@ C Make TDPACK characters a bit bigger.
 C
         CALL TDSETR ('CS1',1.25)
 C
-C Set VASPACKT's streamline maximum length.
+C Set VASPACKT's size-interpretation parameter.
 C
-        CALL VTSETR ('SML',SLML)
+        CALL VTSETI ('ISP',IISP)
 C
 C Set VASPACKT's streamline segment length.
 C
-        CALL VTSETR ('SSL',SLSL)
-C
-C Set VASPACKT's streamline spacing.
-C
-        CALL VTSETR ('SSP',SLSP)
+        CALL VTSETR ('SLP',SLPS)
 C
 C Set VASPACKT's termination test parameters.
 C
@@ -378,6 +404,12 @@ C
         CALL VTSETR ('AHS',AHSP)
         CALL VTSETR ('AHA',AHAW)
         CALL VTSETR ('AHL',AHLN)
+C
+C Set VASPACKT's vector-magnitude mapping parameters.
+C
+        CALL VTSETR ('VFR',VFRA)
+        CALL VTSETR ('VRL',VRLN)
+        CALL VTSETR ('VRM',VRMG)
 C
 C Set VASPACKT's debug flag and a trio of color indices.
 C
@@ -645,12 +677,13 @@ C
         CALL GSPLCI (1)
         CALL GSLWSC (1.)
 C
-C Draw the streamlines in a somewhat darker gray.
+C Draw the curly vectors, either in a reddish-gray or in varying
+C colors, depending on the value of ICTV, above.
 C
         CALL PLOTIF (0.,0.,2)
         CALL GSPLCI (9)
 C
-        CALL VTCVDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+        CALL VTCVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
 C
         CALL PLOTIF (0.,0.,2)
         CALL GSPLCI (1)
@@ -698,6 +731,7 @@ C
           CALL MAPDRW
 C
           CALL VTSETI ('MAP - MAPPING FLAG',1)
+          CALL VTSETR ('ORV - OUT-OF-RANGE FLAG',1.E12)
 C
           CALL VTMESH (RPNT,NPNT,LOPN,  !  point list
      +                 IEDG,NEDG,LOEN,  !  edge list
@@ -708,7 +742,7 @@ C
           CALL PLOTIF (0.,0.,2)
           CALL GSPLCI (9)
 C
-          CALL VTCVDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+          CALL VTCVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
 C
           CALL PLOTIF (0.,0.,2)
           CALL GSPLCI (1)

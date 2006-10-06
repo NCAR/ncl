@@ -3,7 +3,7 @@
       PROGRAM TESTIT
 C
 C This program constructs a simple triangular mesh, including dummy flow
-C data, and then traces streamlines on it.
+C data, and then traces simple vectors on it.
 C
 C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID, to be used in calls to GKS routines.  Use one
@@ -20,10 +20,13 @@ C is to be broken into in forming the geodesic mesh.
 C
 C       PARAMETER (NDIV=3)
 C       PARAMETER (NDIV=7)
+C       PARAMETER (NDIV=10)
 C       PARAMETER (NDIV=15)
-C       PARAMETER (NDIV=25)
-        PARAMETER (NDIV=30)
+C       PARAMETER (NDIV=20)
+        PARAMETER (NDIV=25)
+C       PARAMETER (NDIV=30)
 C       PARAMETER (NDIV=45)
+C       PARAMETER (NDIV=50)
 C       PARAMETER (NDIV=60)
 C       PARAMETER (NDIV=80)
 C       PARAMETER (NDIV=100)
@@ -133,19 +136,19 @@ C
 C Declare variables to hold labels.
 C
         CHARACTER*64 UNLB,VNLB,WNLB,UILB,VILB,WILB
-C 
+C
 C Declare a variable to hold an area map for masking purposes.
-C 
+C
         PARAMETER (LAMA=10000)
-C       
+C
         DIMENSION IAMA(LAMA)
-C 
+C
 C Declare some arrays to be used in defining a masked-out area.
-C   
+C
         DIMENSION XMSK(5),YMSK(5)
-C   
+C
 C Declare the routine that will do the masked drawing of vectors.
-C   
+C
         EXTERNAL VTDRPL
 C
 C Set the desired minimum and maximum values of U, V, and W.
@@ -161,7 +164,11 @@ C       DATA ANG1,ANG2,RMUL / 115., 25.,1.5 /
 C       DATA ANG1,ANG2,RMUL / 210., 30.,1.5 /
 C       DATA ANG1,ANG2,RMUL / 280.,-45.,1.5 /
 C       DATA ANG1,ANG2,RMUL / 130., 45.,1.5 /
-        DATA ANG1,ANG2,RMUL / 210.,-45.,1.5 /
+C
+C       DATA ANG1,ANG2,RMUL / 210.,-45.,1.5 /
+C       DATA ANG1,ANG2,RMUL /  30., 45.,1.5 /
+        DATA ANG1,ANG2,RMUL /  15., 15.,1.5 /
+C
 C       DATA ANG1,ANG2,RMUL / 300.,-45.,1.5 /
 C       DATA ANG1,ANG2,RMUL / 210., 80.,1.5 /
 C       DATA ANG1,ANG2,RMUL / 300.,  5.,1.5 /
@@ -186,10 +193,12 @@ C must be positive and non-zero; it may be slightly greater than .5, if
 C it is desired that the stereo windows should overlap slightly.
 C
         DATA WOSW / .5 /
-C
-C Define the conversion constant from degrees to radians.
-C
+C 
+C Define multiplicative constants to convert from degrees to radians
+C and from radians to degrees.
+C 
         DATA DTOR / .017453292519943 /
+        DATA RTOD / 57.2957795130823 /
 C
 C Define labels for the edges of the box.
 C
@@ -253,30 +262,19 @@ C       DATA SLPS / .005 /
 C       DATA SLPS / .010 /
 C       DATA SLPS / .020 /
 C
-C Define the maximum length of a streamline.
-C
-C       DATA SLLN / 8.0 /
-C       DATA SLLN / 4.0 /
-        DATA SLLN / 2.0 / ! <--
-C       DATA SLLN / 1.0 /
-C       DATA SLLN / .50 /
-C       DATA SLLN / .10 /
-C       DATA SLLN / .05 /
-C
-C Define the streamline spacing and the termination test parameters.
-C
-C       DATA SLSP,TTSP,TTLL / .012 , .003 , .006 /
-C       DATA SLSP,TTSP,TTLL / .024 , .006 , .012 /
-C       DATA SLSP,TTSP,TTLL / .036 , .009 , .018 /
-        DATA SLSP,TTSP,TTLL / .048 , .012 , .024 / ! <--
-C       DATA SLSP,TTSP,TTLL / .072 , .018 , .036 /
-C       DATA SLSP,TTSP,TTLL / .096 , .024 , .048 /
-C       DATA SLSP,TTSP,TTLL / .144 , .036 , .072 /
-C       DATA SLSP,TTSP,TTLL / .192 , .048 , .096 /
-C
 C Define the values of VASPACKT's arrowhead parameters.
 C
-        DATA AHSP,AHAW,AHLN / .24 , 30. , .03 /
+C       DATA AHSP,AHAW,AHLN / .24 , 30. , .04 /
+C       DATA AHSP,AHAW,AHLN / .24 , 30. , .01 /
+        DATA AHSP,AHAW,AHLN / .24 , 30. , -.2 /
+C
+C Define the values of parameters used to map vector magnitudes into
+C vector lengths.
+C
+C       DATA VFRA,VRLN,VRMG / .25 , .05 , 0. /
+C       DATA VFRA,VRLN,VRMG / .25 , .15 , 0. /
+C       DATA VFRA,VRLN,VRMG / .25 , -3. , 0. /
+        DATA VFRA,VRLN,VRMG / .25 ,  0. , 0. /
 C
 C Define the value of the debug flag and a trio of required color
 C indices for VASPACKT.
@@ -287,6 +285,24 @@ C Define the desired value of VASPACKT's point interpolation threshold.
 C
 C       DATA PITH /  0. /  !  point interpolation off
         DATA PITH / .01 /
+C
+C Define the desired values of the parameters that determine how the
+C simple vectors are thinned.
+C
+C       DATA ISVT,SVSP / 0, 0. /  !  simple vectors not thinned
+C       DATA ISVT,SVSP / 1, 0. /  !  simple vectors thinned
+        DATA ISVT,SVSP / 2, 0. /  !  simple vectors thinned
+C       DATA ISVT,SVSP / 3, 0. /  !  simple vectors thinned
+C       DATA ISVT,SVSP / 4, 0. /  !  simple vectors thinned
+C       DATA ISVT,SVSP / 5, 0. /  !  simple vectors thinned
+C       DATA ISVT,SVSP / 9, 0. /  !  simple vectors thinned
+C       DATA ISVT,SVSP / 5,.1  /  !  simple vectors thinned
+C       DATA ISVT,SVSP / 5,.05 /  !  simple vectors thinned
+C
+C Define the desired value of a parameter that affects how the random
+C number generator is to be spun up.
+C
+        DATA IRNG / 1 /
 C
 C Define a parameter that says whether or not masking is to be tested.
 C
@@ -396,17 +412,9 @@ C Set VASPACKT's size-interpretation parameter.
 C
         CALL VTSETI ('ISP',IISP)
 C
-C Set VASPACKT's streamline length.
-C
-        CALL VTSETR ('SLL',SLLN)
-C
 C Set VASPACKT's streamline segment length.
 C
         CALL VTSETR ('SLP',SLPS)
-C
-C Set VASPACKT's streamline spacing.
-C
-        CALL VTSETR ('SLS',SLSP)
 C
 C Set VASPACKT's termination test parameters.
 C
@@ -419,6 +427,12 @@ C
         CALL VTSETR ('AHA',AHAW)
         CALL VTSETR ('AHL',AHLN)
 C
+C Set VASPACKT's vector-magnitude mapping parameters.
+C
+        CALL VTSETR ('VFR',VFRA)
+        CALL VTSETR ('VRL',VRLN)
+        CALL VTSETR ('VRM',VRMG)
+C
 C Set VASPACKT's debug flag and a trio of color indices.
 C
         CALL VTSETI ('DBG',IDBG)
@@ -430,9 +444,19 @@ C Set VASPACKT's point interpolation threshold value.
 C
         CALL VTSETR ('PIT',PITH)
 C
+C Set VASPACKT's vector-thinning parameters.
+C
+        CALL VTSETI ('SVT',ISVT)
+        CALL VTSETR ('SVS',SVSP)
+C
 C Set VASPACKT parameters having to do with coloring of streamlines.
 C
         CALL VTSETI ('CTV - COLOR THRESHOLD VALUE CONTROL',ICTV)
+C
+C Set the VASPACKT parameter that affects how the random number
+C generator is spun up before use.
+C
+        CALL VTSETI ('RNG - RANDOM NUMBER GENERATOR SPINUP',IRNG)
 C
 C Initialize coloring of the streamlines.
 C
@@ -541,6 +565,11 @@ C Retrieve and print the average edge length.
 C
         CALL VTGETR ('AEL',AVEL)
         PRINT * , '  AVERAGE LENGTH OF EDGES: ',AVEL
+C
+C Retrieve the values of 'DMN' and 'DMX'.
+C
+        CALL VTGETR ('DMN',DMIN)
+        CALL VTGETR ('DMX',DMAX)
 C
 C VTTDBF is called to set blocking flag bits for triangles according to
 C various criteria.  Its next-to-last argument may take on the following
@@ -685,13 +714,15 @@ C
         CALL GSPLCI (1)
         CALL GSLWSC (1.)
 C
-C Draw the streamlines, either in a reddish-gray or in varying
+C Draw the simple vectors, either in a reddish-gray or in varying
 C colors, depending on the value of ICTV, above.
 C
         CALL PLOTIF (0.,0.,2)
         CALL GSPLCI (9)
 C
-        CALL VTSLDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
+        CALL VTVRLL (1.,65.,65.,32,0.,0.,1,DMIN,DMAX,IAMA,VTDRPL)
+        CALL VTVRLL (1.,90., 0.,32,0.,0.,1,DMIN,DMAX,IAMA,VTDRPL)
+        CALL VTSVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
 C
         CALL PLOTIF (0.,0.,2)
         CALL GSPLCI (1)
@@ -713,9 +744,9 @@ C Advance the frame.
 C
         CALL FRAME
 C
-C Draw another frame or two using EZMAP.
+C Draw some other frames using EZMAP.
 C
-        DO 107 IFRA=1,2
+        DO 107 IFRA=1,8
 C
           DO 106 I=0,NTRI-LOTN,LOTN
             ITRI(I+4)=0
@@ -725,15 +756,29 @@ C
             CALL MAPROJ ('CE',40.,-105.,0.)
           ELSE IF (IFRA.EQ.2) THEN
             CALL MAPROJ ('LE',40.,-105.,0.)
-C           CALL MAPROJ ('AE',40.,-105.,0.)
-C           CALL MAPROJ ('ME',40.,-105.,0.)
-C           CALL MAPROJ ('MO',40.,-105.,0.)
-C           CALL MAPROJ ('RO',40.,-105.,0.)
-C           CALL MAPROJ ('OR',40.,-105.,0.)
-C           CALL MAPROJ ('SV',40.,-105.,0.)
-C           CALL MAPROJ ('LC',40.,-105.,60.)
-C           CALL MAPROJ ('ST',40.,-105.,60.)
+          ELSE IF (IFRA.EQ.3) THEN
+            CALL MAPROJ ('ME',40.,-105.,0.)
+          ELSE IF (IFRA.EQ.4) THEN
+            CALL MAPROJ ('AE',40.,-105.,0.)
+          ELSE IF (IFRA.EQ.5) THEN
+            CALL MAPROJ ('RO', 0.,   0.,0.)
+          ELSE IF (IFRA.EQ.6) THEN
+            CALL MAPROJ ('ST',40.,-105.,60.)
+          ELSE IF (IFRA.EQ.7) THEN
+            CALL MAPROJ ('GN',40.,-105.,60.)
+          ELSE IF (IFRA.EQ.8) THEN ! (last - copied from 'cpex10')
+            CALL MAPROJ ('SV',38., -76.,75.)
+            DFCE=1.3
+            CALL MPSETR ('SA',DFCE)
+            CALL MPSETR ('S1',7.*RTOD*ASIN(1./DFCE)/8.)
+            CALL MPSETR ('S2',90.)
+            CALL MAPSET ('AN',20.,20.,20.,20.)
+            CALL MPSETC ('OU','PS')
+          ELSE
 C           CALL MAPROJ ('GN',40.,-105.,60.)
+C           CALL MAPROJ ('MO',40.,-105.,0.)
+C           CALL MAPROJ ('OR',40.,-105.,0.)
+C           CALL MAPROJ ('LC',40.,-105.,60.)
           END IF
 C
           CALL MAPDRW
@@ -747,10 +792,18 @@ C
      +                 RWRK,LRWK,       !  real workspace
      +                 IWRK,LIWK)       !  integer workspace
 C
+          CALL VTGETR ('DMN',DMIN)
+          CALL VTGETR ('DMX',DMAX)
+C
           CALL PLOTIF (0.,0.,2)
           CALL GSPLCI (9)
 C
-          CALL VTSLDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
+          CALL VTVRLL (1.,  0.,   0.,32,0.,0.,1,DMIN,DMAX,IAMA,VTDRPL)
+          CALL VTVRLL (1., 40.,-105.,32,0.,0.,1,DMIN,DMAX,IAMA,VTDRPL)
+C         CALL VTVRLL (1.,-40.,  90.,32,0.,0.,1,DMIN,DMAX,IAMA,VTDRPL)
+          CALL VTVRLL (1.,-20., -95.,32,0.,0.,1,DMIN,DMAX,IAMA,VTDRPL)
+          CALL VTVRLL (1., 90.,   0.,32,0.,0.,1,DMIN,DMAX,IAMA,VTDRPL)
+          CALL VTSVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
 C
           CALL PLOTIF (0.,0.,2)
           CALL GSPLCI (1)
@@ -1274,7 +1327,7 @@ C
 C Use a TDPACK routine to draw the projection of the "curve" with a
 C cone-shaped arrowhead on the end of it.
 C
-        CALL TDCURV (UCRV,VCRV,WCRV,2,1,AHLN,AHWD)
+        CALL TDCURV (UCRV,VCRV,WCRV,2,1,ARHL,ARHW)
 C
 C Done.
 C

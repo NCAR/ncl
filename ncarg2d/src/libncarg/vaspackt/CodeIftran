@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.2 2006-03-17 22:37:00 kennison Exp $
+I $Id: CodeIftran,v 1.3 2006-10-06 21:22:51 kennison Exp $
 I
 I***********************************************************************
 I  V A S P A C K T   -   I N T R O D U C T I O N
@@ -22,8 +22,9 @@ I IFTRAN preprocessor yields a standard FORTRAN 77 file, which is the
 I version distributed as a part of NCAR Graphics.
 I
 I VASPACKT requires various parts of the NCAR Graphics package to have
-I been implemented (in particular, it uses the support routines I1MACH,
-I SETER, various routines from SPPS, and the utility package DASHCHAR).
+I been implemented; in particular, it uses the support routines I1MACH
+I and SETER, various routines from SPPS, various GKS routines, and a
+I few routines from EZMAP, PLOTCHAR, and TDPACK.
 I
 I***********************************************************************
 I  V A S P A C K T   -   I F T R A N   D E F I N I T I O N S
@@ -32,9 +33,8 @@ I
 I Implementor-settable variables
 I ----------- -------- ---------
 I
-I $LOCV$ is the length of certain character variables.  User-specified
-I dash patterns will be truncated to this length.  Do not use a value
-I less than 25.  Values greater than 500 are probably too large.
+I $LOCV$ is the length of certain character variables.  Do not use a
+I value less than 25.  Values greater than 500 are probably too large.
 I
 .RE /$LOCV$/500/
 I
@@ -78,19 +78,19 @@ I
 C
 C VTCOM1 contains integer and real variables.
 C
-        COMMON /VTCOM1/ AHAW,AHLN,AHSP
-        COMMON /VTCOM1/ ANCF,ANIL,AVEL,CHWM,CXCF,CXIL,CYCF,CYIL
-        COMMON /VTCOM1/ DCNU,DCNV,DCNW,DMAX
+        COMMON /VTCOM1/ AHAW,AHLN,AHLR,AHSP,AHSR
+        COMMON /VTCOM1/ ANCF,ANIL,ANM1,ANM2,AVEL,CHWM,CXCF,CXIL
+        COMMON /VTCOM1/ CYCF,CYIL,DCNU,DCNV,DCNW,DMAX
         COMMON /VTCOM1/ DMIN,DVAL  !  REUSE FOR FLOWMIN AND FLOWMAX?
-        COMMON /VTCOM1/ EPSI
+        COMMON /VTCOM1/ EMAX,EPSI
         COMMON /VTCOM1/ IBCF,IBIL,ICCF,ICFF,ICIL,ICLR($MCLR$)
-        COMMON /VTCOM1/ ICSG,ICST,ICTT,ICTV,IDBG
+        COMMON /VTCOM1/ ICSG,ICST,ICTT,ICTV,IDBG,IISP
         COMMON /VTCOM1/ IIWS($NBIW$),IIWU,ILBC,IMPF
         COMMON /VTCOM1/ INIL  !  NEEDED? (INFORMATIONAL LABEL INDEX)
-        COMMON /VTCOM1/ INIT,IPAI,IPCF,IPIC
+        COMMON /VTCOM1/ INIT,IPAI,IPCF,IPIS
         COMMON /VTCOM1/ IPIE  !  NEEDED? (STREAMLINE INTERPOLATION)
-        COMMON /VTCOM1/ IPIL,IRWS($NBRW$),IRWU,ISET,ISTA(625)
-        COMMON /VTCOM1/ ITBM,IWSO,JODP,JOMA
+        COMMON /VTCOM1/ IPIL,IRNG,IRWS($NBRW$),IRWU,ISET,ISTA(625)
+        COMMON /VTCOM1/ ISVT,ITBM,IWSO,JODP,JOMA
         COMMON /VTCOM1/ JOTZ,LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3
         COMMON /VTCOM1/ LIWB,LIWK,LIWM,LIWS($NBIW$),LNLG
         COMMON /VTCOM1/ LOEN,LOPN,LOTN
@@ -101,13 +101,14 @@ C
         COMMON /VTCOM1/ NLBS  !  NEEDED? (NUMBER OF LABELS)
         COMMON /VTCOM1/ NLSD,NLZF,NOMF,NPNT
         COMMON /VTCOM1/ NR04  !  NEEDED? (LABEL-LIST MANAGEMENT)
-        COMMON /VTCOM1/ NSDL,NSDR,NTRI,OORV
+        COMMON /VTCOM1/ NSDL,NSDR,NTRI,OORV,PCPU,PCPV,PCPW
         COMMON /VTCOM1/ PITH  !  NEEDED? (STREAMLINE INTERPOLATION)
         COMMON /VTCOM1/ SCFS,SCFU  !  NEEDED? (SCALE FACTORS)
-        COMMON /VTCOM1/ SLML,SLSL,SLSP
-        COMMON /VTCOM1/ TTLL,TTSP,TVAL(0:<$MCLR$+1>)
+        COMMON /VTCOM1/ SLLN,SLLR,SLPS,SLPR,SLSP,SLSR,SVSP,SVSR
+        COMMON /VTCOM1/ TTLL,TTLR,TTSP,TTSR,TVAL(0:<$MCLR$+1>)
         COMMON /VTCOM1/ UVPB,UVPL,UVPR,UVPS,UVPT,UWDB,UWDL
-        COMMON /VTCOM1/ UWDR,UWDT,VFRA,VRLN,VRMG,VVMM,VVPU,VVPV,VVPW
+        COMMON /VTCOM1/ UWDR,UWDT,VFRA,VRLN,VRLR,VRMG,VRMR
+        COMMON /VTCOM1/ VVMM
         COMMON /VTCOM1/ WCCF,WCIL,WLCF,WLIL
         COMMON /VTCOM1/ WWCF,WWIL
         COMMON /VTCOM1/ XLBC,XMAX,XMIN,XVPL,XVPR,XWDL,XWDR
@@ -185,7 +186,6 @@ C
 .ENDIF
 .END
 
-
 I***********************************************************************
 I  V A S P A C K T   -   B L O C K   D A T A   ( D E F A U L T S )
 I***********************************************************************
@@ -202,12 +202,14 @@ C for those which require defaults.
 C
 C AHAW and AHLN are the parameters 'AHA' and 'AHL', which are the
 C angular width and length, respectively, of the arrowheads to be
-C used on a streamline.
+C used on a streamline.  AHLR is the "realized" length of an arrowhead,
+C computed as needed.
 C
         DATA AHAW,AHLN / 30.,.04 /
 C
 C AHSP is the parameter 'AHS', which is the spacing of arrowheads along
-C a streamline.
+C a streamline.  AHSR is a "realized" value of AHSP and is computed as
+C necessary.
 C
         DATA AHSP / .16 /
 C
@@ -220,6 +222,14 @@ C ANIL is the parameter 'ILA', which is the angle, in degrees, at which
 C the informational label is to be written.
 C
         DATA ANIL / 0. /
+C
+C ANM1 and ANM2 are the parameters 'AM1' and 'AM2', maximum angles to
+C be allowed between any pair of velocity vectors at the vertices of a
+C triangle being considered.  The first serves to limit the starting
+C positions of streamline generators, streamlines, and curly vectors,
+C while the second serves to terminate them.
+C
+        DATA ANM1,ANM2 / 90. , 0. /
 C
 C AVEL is the parameter 'AEL' (for retrieval only), which is the average
 C edge length in the triangular mesh.
@@ -238,36 +248,41 @@ C purposes throughout the code.
 C
         DATA CTMA,CTMB / ' ',' ' /
 C
-C CXCF and CYCF are the parameters 'CFX' and 'CFY', which are the x and
-C y coordinates of a basepoint relative to which the constant-field
+C CXCF and CYCF are the parameters 'CFX' and 'CFY', which are the X and
+C Y coordinates of a basepoint relative to which the constant-field
 C label is to be positioned.  These coordinates are given in a
-C fractional coordinate system superimposed on the grid.
+C fractional coordinate system superimposed on the user-system window.
 C
         DATA CXCF,CYCF / .50,.50 /
 C
-C CXIL and CYIL are the parameters 'ILX' and 'ILY', which are the x and
-C y coordinates of a basepoint relative to which the informational label
+C CXIL and CYIL are the parameters 'ILX' and 'ILY', which are the X and
+C Y coordinates of a basepoint relative to which the informational label
 C is to be positioned.  These coordinates are given in a fractional
-C coordinate system superimposed on the grid.
+C coordinate system superimposed on the user-system window.
 C
         DATA CXIL,CYIL / .98,-.02 /
 C
 C DCNU, DCNV, and DCNW are the direction cosines for the normal to the
-C plane of the triangle, computed for use by the routine VTCURV when it
+C plane of the triangle, computed for use by the routine VTCUDR when it
 C is asked to draw arrowheads (so that they will lie in the plane of
 C the triangle).
 C
         DATA DCNU,DCNV,DCNW / 0.,0.,1. /
 C
 C DMAX and DMIN are the parameters 'DMX' and 'DMN', the maximum and
-C minimum values in the user's array of data.
+C minimum velocity-vector magnitudes in the user's array of data.
 C
         DATA DMAX,DMIN / 0.,0. /
 C
-C DVAL is the parameter 'DVA', which holds a data value, either the
-C value at a high or low or the value of a constant field.
+C DVAL is the parameter 'DVA', which holds a data value.
 C
         DATA DVAL / 0. /
+C
+C EMAX is equal to MAX(XMAX-XMIN,YMAX-YMIN,ZMAX-ZMIN) and is computed
+C by VTMESH.  It is given a default value only because its value can
+C be retrieved as the value of the parameter 'EOM'.
+C
+        DATA EMAX / 0. /
 C
 C EPSI is a machine "epsilon", whose real value is computed as required.
 C
@@ -325,6 +340,14 @@ C be plotted.
 C
         DATA IDBG / 0 /
 C
+C IISP is the parameter 'ISP', which says how to interpret the size
+C parameters.  If 'ISP' = 0, all size parameters are treated as actual
+C values in 3-space, commensurate with the coordinates of the mesh
+C points themselves; if 'ISP' = 1, they are treated as multiples of
+C the maximum extent of the mesh in 3-space.
+C
+        DATA IISP / 0 /
+C
 C IIWS is an array of base indices in the integer work array.  LIWS is
 C an associated array of lengths.  For each I for which LIWS(I) is not
 C zero, IIWS(I)+1 is the index of the first word, and IIWS(I)+LIWS(I)
@@ -338,7 +361,8 @@ C space was used in the integer workspace.
 C
         DATA IIWU / 0 /
 C
-C ILBC is the color-index specifier for area fill of label boxes.
+C ILBC is the parameter 'LBC', the color-index specifier for area fill
+C of label boxes.
 C
         DATA ILBC / 0 /
 C
@@ -363,10 +387,10 @@ C is to be positioned.
 C
         DATA IPCF / 0 /
 C
-C IPIC is the parameter 'PIC', which indicates the number of points to
+C IPIS is the parameter 'PIS', which indicates the number of points to
 C interpolate between each pair of points defining a streamline.
 C
-        DATA IPIC / 0 /
+        DATA IPIS / 0 /
 C
 C IPIE is the parameter 'PIE', which indicates the number of points to
 C interpolate between each pair of points defining an "edge" line.
@@ -377,6 +401,12 @@ C IPIL is the parameter 'ILP', specifying how the informational label
 C is to be positioned.
 C
         DATA IPIL / 4 /
+C
+C IRNG is the parameter 'RNG', specifying by how many steps the random
+C number generator is to be spun up during initialization of VTCVDM,
+C VTSLDM, and VTSVDM.
+C
+        DATA IRNG / 0 /
 C
 C IRWS is an array of base indices in the real work array.  LRWS is an
 C associated array of lengths.  For each I for which LRWS(I) is not
@@ -400,7 +430,7 @@ C ISTA is a table, dimensioned 25x25, of subtriangle bit masks for use
 C by the routines VTTSOM and VTTPOM.  If I and J are the indices of two
 C subtriangles of a triangle (1.LE.I,J.LE.25), then ISTA(I,J) contains
 C 1 bits for triangles forming a connected path from subtriangle I to
-C subtriangle J.
+C subtriangle J.  (See the file "CreateTable.f".)
 C
         DATA (ISTA(I),I=  1, 70) /
      +          1,       3,       7,      15,      31,      63,     127,
@@ -502,15 +532,20 @@ C
      +   23265280,23199744,23461888,29884416,30932992,23068672,20971520,
      +   29360128,16777216/
 C
+C ISVT is the parameter 'SVT', which turns on the algorithm for
+C thinning simple vectors and helps determine how it works.
+C
+        DATA ISVT / 5 /
+C
 C ITBM contains the parameters 'TBX' and 'TBA', which are used to mask
 C triangle blocking flags.  It has the form 4096*ITBX+ITBA; both ITBX
 C and ITBA are 12-bit masks.  If ITBF is the triangle blocking flag for
 C some triangle of the triangular mesh, then, in general, the triangle
 C will be blocked if and only if the value of AND(XOR(ITBF,ITBX),ITBA)
 C is non-zero.  The default values are such as to block only triangles
-C having the low-order bit of the blocking flag set.
+C having the low-order blocking flag bit set (ITBX = 0, ITBA = 1).
 C
-        DATA ITBM / 1 /  !  ITBX = 0, ITBA = 1
+        DATA ITBM / 1 /
 C
 C IWSO is the parameter 'WSO', which says what to do when workspace
 C overflow occurs.
@@ -531,9 +566,9 @@ C
 C LEE1, LEE2, and LEE3 are the effective lengths of the three portions
 C of the character string CHEX.
 C
-C LIWB is the length of the integer workspace to be made available to
-C the routine VTTDBF, which is called to set the blocking flags for
-C triangles being mapped by TDPACK.
+C LIWB is the parameter 'IWB', which is the length of the integer
+C workspace to be made available to the routine VTTDBF (called to
+C set the blocking flags for triangles being mapped by TDPACK).
 C
         DATA LIWB / 2500 /
 C
@@ -573,16 +608,14 @@ C
 C LRWS is described with IRWS, above.
 C
 C LSDD is set by VTMESH to indicate the position of the leftmost
-C significant digit in ABS(DMAX-DMIN).  This information is needed
-C in VTPKLB.
+C significant digit in ABS(DMAX-DMIN).
 C
 C LSDL is used for the leftmost-significant-digit argument of VTNUMB,
 C which is based on, but not identical with, the leftmost-significant-
 C digit parameter 'NLS'.
 C
 C LSDM is set by VTMESH to indicate the position of the leftmost
-C significant digit in MAX(ABS(DMIN),ABS(DMAX)).  This information
-C is needed in VTPKLB.
+C significant digit in MAX(ABS(DMIN),ABS(DMAX)).
 C
 C LTCF is the length of the constant-field label, before substitution.
 C
@@ -606,7 +639,8 @@ C NDGL is used for the number-of-significant-digits argument of VTNUMB,
 C which is based on, but not identical with, the number-of-significant-
 C digits parameter 'NSD'.
 C
-C NEDG is the number of edges in the triangular mesh, as set by VTMESH.
+C NEDG/LOEN is the number of edges in the triangular mesh (set by
+C VTMESH).
 C
 C NEXL is the parameter 'NEL', which specifies the desired length of
 C exponents in numeric labels.  A value which is zero or negative
@@ -671,8 +705,8 @@ C (as in "46.200") may be omitted.
 C
         DATA NOMF / 6 /
 C
-C NPNT is the number of points used in the triangular mesh, as set by
-C VTMESH.
+C NPNT/LOPN is the number of points in the triangular mesh (set by
+C VTMESH).
 C
 C NR04 is the current number of words of real work space devoted to the
 C list of labels which are not line labels (the informational label and
@@ -691,13 +725,20 @@ C
 C NSDR is the number of significant digits in a real number, which is
 C computed as required by VASPACKT itself.
 C
-C NTRI is the number of triangles in the triangular mesh, as set by
-C VTMESH.
+C NTRI/LOTN is the number of triangles in the triangular mesh (set by
+C VTMESH).
 C
 C OORV is the parameter 'ORV', an out-of-range value to be returned by
 C VTMPXY for both coordinates of a point which is invisible.
 C
         DATA OORV / 0. /
+C
+C (PCPU,PCPV,PCPW) is a "projection center point" for the mesh, used in
+C the process of projecting each velocity vector into the plane of its
+C associated triangle.  The three coordinates are the parameters 'PCU',
+C 'PCV', and 'PCW'.
+C
+        DATA PCPU,PCPV,PCPW / 0.,0.,0. /
 C
 C PITH is the parameter 'PIT', the "point interpolation threshold".  In
 C routines that map polylines using VTMPXY, this value is used to check
@@ -717,31 +758,40 @@ C SCFU is the parameter 'SFU', the scale factor in use.
 C
         DATA SCFU / 1. /
 C
-C SLML is the parameter 'SML', the maximum length of any streamline,
-C expressed in the same coordinate system used for the triangular mesh.
+C SLLN is the parameter 'SLL', the maximum length of any streamline,
+C while SLLR is a "realized" value of SLLN, computed as needed.
 C
-        DATA SLML / 8. /
+        DATA SLLN / 8. /
 C
-C SLSL is the parameter 'SSL', the desired distance between points used
-C to draw the streamlines, expressed in the same coordinate system used
-C for the triangular mesh.
+C SLPS is the parameter 'SLP', the desired distance between points used
+C to draw the streamlines, while SLPR is a "realized" value of SLPS,
+C computed as needed.
 C
-        DATA SLSL / .001 /
+        DATA SLPS / .001 /
 C
-C SLSP is the parameter 'SSP', the desired spacing of the streamlines,
-C expressed in the same coordinate system used for the triangular mesh.
+C SLSP is the parameter 'SLS', the desired spacing of the streamlines,
+C while SLSR is a "realized" value of SLSP, computed as needed.
 C
         DATA SLSP / .072 /
 C
+C SVSP is the parameter 'SVS', which is the desired spacing of simple
+C vectors.  Its value is used by the algorithm that attempts to cull
+C some of the simple vectors.  SVSR is a "realized" value of this
+C parameter, computed from it as needed.
+C
+        DATA SVSP / 0. /
+C
 C TTLL is the parameter 'TTL', which is the length of each termination
 C test line, expressed in the same coordinate system used for the
-C triangular mesh.
+C triangular mesh, while TTLR is a "realized" value of TTLL, computed
+C as required.
 C
         DATA TTLL / .018 /
 C
 C TTSP is the parameter 'TTS', which says how far apart termination
 C tests are to be spaced along streamlines, expressed in the same
-C coordinate system used for the triangular mesh.
+C coordinate system used for the triangular mesh, while TTSR is a
+C "realized" value of TTSP, computed as required.
 C
         DATA TTSP / .036 /
 C
@@ -779,22 +829,25 @@ C through 8 in the call.
 C
         DATA UWDL,UWDR,UWDB,UWDT / 0.,0.,0.,0. /
 C
-C VFRA is the parameter 'VFR', which is the minimum length of a curly
-C vector as a fraction of 'VRL'.
+C VFRA is the parameter 'VFR', which is the minimum length of a simple
+C vector or a curly vector as a fraction of 'VRL'.
 C
         DATA VFRA / 0. /
 C
 C VRLN is the parameter 'VRL', which is the "vector reference length",
 C given in the native coordinate system of the triangular mesh, which
 C is the length to be used for a curly vector representing magnitude
-C 'VRM'.  The value zero specifies the use of the ???
+C 'VRM'.  VRLR is a "vector reference length, realized", which is
+C computed as needed, as implied by the value of VRLN.
 C
         DATA VRLN / 0. /
 C
 C VRMG is the parameter 'VRM' - the "vector reference magnitude".  A
-C curly vector of this magnitude will be shown with length 'VRL'.  The
-C value zero specifies the use of the actual maximum magnitude in the
-C data field.
+C simple vector or curly vector of this magnitude will be shown with
+C length 'VRL'.  The value zero specifies the use of the actual maximum
+C magnitude in the data field.  VRMR is a "vector reference magnitude,
+C realized", which is computed as needed, as implied by the value of
+C VRMG.
 C
         DATA VRMG / 0. /
 C
@@ -802,13 +855,6 @@ C VVMM is the parameter 'VVM', which is the velocity vector magnitude
 C minimum, below which the velocity is considered to be zero.
 C
         DATA VVMM / .001 /
-C
-C (VVPU,VVPV,VVPW) is a "projection center point" for the mesh, used in
-C the process of projecting each velocity vector into the plane of its
-C associated triangle.  The three coordinates are the parameters 'VVU',
-C 'VVV', and 'VVW'.
-C
-        DATA VVPU,VVPV,VVPW / 0.,0.,0. /
 C
 C WCCF is the parameter 'CFS', which specifies the width of a character
 C in the constant-field label, as a fraction of the viewport width.
@@ -1105,6 +1151,10 @@ C
           RVAL=AHLN
         ELSE IF (WHCH(1:3).EQ.'AHS'.OR.WHCH(1:3).EQ.'ahs')
           RVAL=AHSP
+        ELSE IF (WHCH(1:3).EQ.'AM1'.OR.WHCH(1:3).EQ.'am1')
+          RVAL=ANM1
+        ELSE IF (WHCH(1:3).EQ.'AM2'.OR.WHCH(1:3).EQ.'am2')
+          RVAL=ANM2
         ELSE IF (WHCH(1:3).EQ.'CFA'.OR.WHCH(1:3).EQ.'cfa')
           RVAL=ANCF
         ELSE IF (WHCH(1:3).EQ.'CFB'.OR.WHCH(1:3).EQ.'cfb')
@@ -1139,6 +1189,8 @@ C
           RVAL=DMAX
         ELSE IF (WHCH(1:3).EQ.'DVA'.OR.WHCH(1:3).EQ.'dva')
           RVAL=DVAL
+        ELSE IF (WHCH(1:3).EQ.'EOM'.OR.WHCH(1:3).EQ.'eom')
+          RVAL=EMAX
         ELSE IF (WHCH(1:3).EQ.'ILA'.OR.WHCH(1:3).EQ.'ila')
           RVAL=ANIL
         ELSE IF (WHCH(1:3).EQ.'ILB'.OR.WHCH(1:3).EQ.'ilb')
@@ -1157,6 +1209,8 @@ C
           RVAL=CXIL
         ELSE IF (WHCH(1:3).EQ.'ILY'.OR.WHCH(1:3).EQ.'ily')
           RVAL=CYIL
+        ELSE IF (WHCH(1:3).EQ.'ISP'.OR.WHCH(1:3).EQ.'isp')
+          RVAL=REAL(IISP)
         ELSE IF (WHCH(1:3).EQ.'IWB'.OR.WHCH(1:3).EQ.'iwb')
           RVAL=REAL(LIWB)
         ELSE IF (WHCH(1:3).EQ.'IWM'.OR.WHCH(1:3).EQ.'iwm')
@@ -1199,12 +1253,20 @@ C
           RVAL=OORV
         ELSE IF (WHCH(1:3).EQ.'PAI'.OR.WHCH(1:3).EQ.'pai')
           RVAL=REAL(IPAI)
-        ELSE IF (WHCH(1:3).EQ.'PIC'.OR.WHCH(1:3).EQ.'pic')
-          RVAL=REAL(IPIC)
         ELSE IF (WHCH(1:3).EQ.'PIE'.OR.WHCH(1:3).EQ.'pie')
           RVAL=REAL(IPIE)
+        ELSE IF (WHCH(1:3).EQ.'PIS'.OR.WHCH(1:3).EQ.'pis')
+          RVAL=REAL(IPIS)
         ELSE IF (WHCH(1:3).EQ.'PIT'.OR.WHCH(1:3).EQ.'pit')
           RVAL=PITH
+        ELSE IF (WHCH(1:3).EQ.'PCU'.OR.WHCH(1:3).EQ.'pcu')
+          RVAL=PCPU
+        ELSE IF (WHCH(1:3).EQ.'PCV'.OR.WHCH(1:3).EQ.'pcv')
+          RVAL=PCPV
+        ELSE IF (WHCH(1:3).EQ.'PCW'.OR.WHCH(1:3).EQ.'pcw')
+          RVAL=PCPW
+        ELSE IF (WHCH(1:3).EQ.'RNG'.OR.WHCH(1:3).EQ.'rng')
+          RVAL=REAL(IRNG)
         ELSE IF (WHCH(1:3).EQ.'RWC'.OR.WHCH(1:3).EQ.'rwc')
           RVAL=REAL(LRWC)
         ELSE IF (WHCH(1:3).EQ.'RWM'.OR.WHCH(1:3).EQ.'rwm')
@@ -1219,14 +1281,18 @@ C
           RVAL=SCFU
         ELSE IF (WHCH(1:3).EQ.'SGC'.OR.WHCH(1:3).EQ.'sgc')
           RVAL=REAL(ICSG)
-        ELSE IF (WHCH(1:3).EQ.'SML'.OR.WHCH(1:3).EQ.'sml')
-          RVAL=SLML
-        ELSE IF (WHCH(1:3).EQ.'SSL'.OR.WHCH(1:3).EQ.'ssl')
-          RVAL=SLSL
-        ELSE IF (WHCH(1:3).EQ.'SSP'.OR.WHCH(1:3).EQ.'ssp')
+        ELSE IF (WHCH(1:3).EQ.'SLL'.OR.WHCH(1:3).EQ.'sll')
+          RVAL=SLLN
+        ELSE IF (WHCH(1:3).EQ.'SLP'.OR.WHCH(1:3).EQ.'slp')
+          RVAL=SLPS
+        ELSE IF (WHCH(1:3).EQ.'SLS'.OR.WHCH(1:3).EQ.'sls')
           RVAL=SLSP
         ELSE IF (WHCH(1:3).EQ.'STC'.OR.WHCH(1:3).EQ.'stc')
           RVAL=REAL(ICST)
+        ELSE IF (WHCH(1:3).EQ.'SVS'.OR.WHCH(1:3).EQ.'svs')
+          RVAL=REAL(SVSP)
+        ELSE IF (WHCH(1:3).EQ.'SVT'.OR.WHCH(1:3).EQ.'svt')
+          RVAL=REAL(ISVT)
         ELSE IF (WHCH(1:3).EQ.'TBA'.OR.WHCH(1:3).EQ.'tba')
           RVAL=REAL(IAND(ITBM,4095))
         ELSE IF (WHCH(1:3).EQ.'TBX'.OR.WHCH(1:3).EQ.'tbx')
@@ -1239,6 +1305,8 @@ C
           RVAL=TTSP
         ELSE IF (WHCH(1:3).EQ.'TVL'.OR.WHCH(1:3).EQ.'tvl')
           RVAL=TVAL(IPAI)
+        ELSE IF (WHCH(1:3).EQ.'VFR'.OR.WHCH(1:3).EQ.'vfr')
+          RVAL=VFRA
         ELSE IF (WHCH(1:3).EQ.'VPB'.OR.WHCH(1:3).EQ.'vpb')
           RVAL=UVPB
         ELSE IF (WHCH(1:3).EQ.'VPL'.OR.WHCH(1:3).EQ.'vpl')
@@ -1249,14 +1317,12 @@ C
           RVAL=UVPS
         ELSE IF (WHCH(1:3).EQ.'VPT'.OR.WHCH(1:3).EQ.'vpt')
           RVAL=UVPT
+        ELSE IF (WHCH(1:3).EQ.'VRL'.OR.WHCH(1:3).EQ.'vrl')
+          RVAL=VRLN
+        ELSE IF (WHCH(1:3).EQ.'VRM'.OR.WHCH(1:3).EQ.'vrm')
+          RVAL=VRMG
         ELSE IF (WHCH(1:3).EQ.'VVM'.OR.WHCH(1:3).EQ.'vvm')
           RVAL=VVMM
-        ELSE IF (WHCH(1:3).EQ.'VVU'.OR.WHCH(1:3).EQ.'vvu')
-          RVAL=VVPU
-        ELSE IF (WHCH(1:3).EQ.'VVV'.OR.WHCH(1:3).EQ.'vvv')
-          RVAL=VVPV
-        ELSE IF (WHCH(1:3).EQ.'VVW'.OR.WHCH(1:3).EQ.'vvw')
-          RVAL=VVPW
         ELSE IF (WHCH(1:3).EQ.'WDB'.OR.WHCH(1:3).EQ.'wdb')
           RVAL=UWDB
         ELSE IF (WHCH(1:3).EQ.'WDL'.OR.WHCH(1:3).EQ.'wdl')
@@ -1398,9 +1464,8 @@ C
         IIWU=0
         IRWU=0
 C
-C Find the ranges of the X, Y, and Z coordinates, the flow field values,
-C and the values of the 2D coordinates in the projection plane, over the
-C unblocked portion of the mesh.
+C Compute the ranges of the X, Y, and Z coordinates, the flow field
+C values, and the values of the 2D coordinates in the projection plane.
 C
         ITM1=0
 C
@@ -1481,6 +1546,8 @@ C
             END DO
           END IF
         END DO
+C
+        EMAX=MAX(XMAX-XMIN,YMAX-YMIN,ZMAX-ZMIN)
 C       
 C Initialize coloring of the streamlines.
 C
@@ -1891,7 +1958,10 @@ C
           ITM2=LIWK
 C
           DO (I=1,$NBIW$)
-            IF (LIWS(I).NE.0.AND.IIWS(I).LT.ITM2) ITM1=I
+            IF (LIWS(I).NE.0.AND.IIWS(I).LT.ITM2)
+              ITM1=I
+              ITM2=IIWS(I)
+            END IF
           END DO
 C
           IF (ITM1.NE.0)
@@ -1979,7 +2049,10 @@ C
           ITM2=LRWK
 C
           DO (I=1,$NBRW$)
-            IF (LRWS(I).NE.0.AND.IRWS(I).LT.ITM2) ITM1=I
+            IF (LRWS(I).NE.0.AND.IRWS(I).LT.ITM2)
+              ITM1=I
+              ITM2=IRWS(I)
+            END IF
           END DO
 C
           IF (ITM1.NE.0)
@@ -2054,17 +2127,20 @@ C
         ICTT=1
         ICTV=0
         IDBG=0
+        IISP=0
         IIWU=0
         ILBC=0
         IMPF=0
         INIT=0
         IPAI=0
         IPCF=0
-        IPIC=0
         IPIE=0
         IPIL=4
+        IPIS=0
+        IRNG=0
         IRWU=0
         ISET=1
+        ISVT=5
         ITBM=1
         IWSO=1
         LCTM=1
@@ -2084,12 +2160,16 @@ C
         NOMF=6
         NSDL=4
         OORV=0.
+        PCPU=0.
+        PCPV=0.
+        PCPW=0.
         PITH=0.
         SCFS=1.
         SCFU=1.
-        SLML=8.
-        SLSL=.001
+        SLLN=8.
+        SLPS=.001
         SLSP=.072
+        SVSP=0.
         TTLL=.018
         TTSP=.036
         TXCF='CONSTANT FIELD - VALUE IS $DVA$'
@@ -2103,10 +2183,10 @@ C
         UWDR=0.
         UWDB=0.
         UWDT=0.
+        VFRA=0.
         VVMM=.001
-        VVPU=0.
-        VVPV=0.
-        VVPW=0.
+        VRLN=0.
+        VRMG=0.
         WCCF=.012
         WCIL=.012
         WLCF=0.
@@ -2291,9 +2371,13 @@ C
         IF      (WHCH(1:3).EQ.'AHA'.OR.WHCH(1:3).EQ.'aha')
           AHAW=MAX(1.,MIN(90.,RVAL))
         ELSE IF (WHCH(1:3).EQ.'AHL'.OR.WHCH(1:3).EQ.'ahl')
-          AHLN=MAX(0.,RVAL)
+          AHLN=RVAL
         ELSE IF (WHCH(1:3).EQ.'AHS'.OR.WHCH(1:3).EQ.'ahs')
           AHSP=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'AM1'.OR.WHCH(1:3).EQ.'am1')
+          ANM1=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'AM2'.OR.WHCH(1:3).EQ.'am2')
+          ANM2=MAX(0.,RVAL)
         ELSE IF (WHCH(1:3).EQ.'CFA'.OR.WHCH(1:3).EQ.'cfa')
           ANCF=RVAL
         ELSE IF (WHCH(1:3).EQ.'CFB'.OR.WHCH(1:3).EQ.'cfb')
@@ -2340,6 +2424,8 @@ C
           CXIL=RVAL
         ELSE IF (WHCH(1:3).EQ.'ILY'.OR.WHCH(1:3).EQ.'ily')
           CYIL=RVAL
+        ELSE IF (WHCH(1:3).EQ.'ISP'.OR.WHCH(1:3).EQ.'isp')
+          IISP=MAX(0,MIN(1,INT(RVAL)))
         ELSE IF (WHCH(1:3).EQ.'IWB'.OR.WHCH(1:3).EQ.'iwb')
           LIWB=MAX(1,INT(RVAL))
         ELSE IF (WHCH(1:3).EQ.'IWM'.OR.WHCH(1:3).EQ.'iwm')
@@ -2368,12 +2454,20 @@ C
           OORV=RVAL
         ELSE IF (WHCH(1:3).EQ.'PAI'.OR.WHCH(1:3).EQ.'pai')
           IPAI=INT(RVAL)
-        ELSE IF (WHCH(1:3).EQ.'PIC'.OR.WHCH(1:3).EQ.'pic')
-          IPIC=INT(RVAL)
+        ELSE IF (WHCH(1:3).EQ.'PCU'.OR.WHCH(1:3).EQ.'pcu')
+          PCPU=RVAL
+        ELSE IF (WHCH(1:3).EQ.'PCV'.OR.WHCH(1:3).EQ.'pcv')
+          PCPV=RVAL
+        ELSE IF (WHCH(1:3).EQ.'PCW'.OR.WHCH(1:3).EQ.'pcw')
+          PCPW=RVAL
         ELSE IF (WHCH(1:3).EQ.'PIE'.OR.WHCH(1:3).EQ.'pie')
           IPIE=INT(RVAL)
+        ELSE IF (WHCH(1:3).EQ.'PIS'.OR.WHCH(1:3).EQ.'pis')
+          IPIS=INT(RVAL)
         ELSE IF (WHCH(1:3).EQ.'PIT'.OR.WHCH(1:3).EQ.'pit')
           PITH=RVAL
+        ELSE IF (WHCH(1:3).EQ.'RNG'.OR.WHCH(1:3).EQ.'rng')
+          IRNG=MAX(0,INT(RVAL))
         ELSE IF (WHCH(1:3).EQ.'RWC'.OR.WHCH(1:3).EQ.'rwc')
           LRWC=MAX(5,INT(RVAL))
         ELSE IF (WHCH(1:3).EQ.'RWM'.OR.WHCH(1:3).EQ.'rwm')
@@ -2385,14 +2479,18 @@ C
           SCFS=RVAL
         ELSE IF (WHCH(1:3).EQ.'SGC'.OR.WHCH(1:3).EQ.'sgc')
           ICSG=MAX(0,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'SML'.OR.WHCH(1:3).EQ.'sml')
-          SLML=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'SSL'.OR.WHCH(1:3).EQ.'ssl')
-          SLSL=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'SSP'.OR.WHCH(1:3).EQ.'ssp')
+        ELSE IF (WHCH(1:3).EQ.'SLL'.OR.WHCH(1:3).EQ.'sll')
+          SLLN=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'SLP'.OR.WHCH(1:3).EQ.'slp')
+          SLPS=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'SLS'.OR.WHCH(1:3).EQ.'sls')
           SLSP=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'SVS'.OR.WHCH(1:3).EQ.'svs')
+          SVSP=MAX(0.,RVAL)
         ELSE IF (WHCH(1:3).EQ.'STC'.OR.WHCH(1:3).EQ.'stc')
           ICST=MAX(0,INT(RVAL))
+        ELSE IF (WHCH(1:3).EQ.'SVT'.OR.WHCH(1:3).EQ.'svt')
+          ISVT=MAX(0,MIN(10,INT(RVAL)))
         ELSE IF (WHCH(1:3).EQ.'TBA'.OR.WHCH(1:3).EQ.'tba')
           ITBM=IOR(ISHIFT(ISHIFT(ITBM,-12),12),IAND(INT(RVAL),4095))
         ELSE IF (WHCH(1:3).EQ.'TBX'.OR.WHCH(1:3).EQ.'tbx')
@@ -2405,6 +2503,8 @@ C
           TTSP=RVAL
         ELSE IF (WHCH(1:3).EQ.'TVL'.OR.WHCH(1:3).EQ.'tvl')
           TVAL(IPAI)=RVAL
+        ELSE IF (WHCH(1:3).EQ.'VFR'.OR.WHCH(1:3).EQ.'vfr')
+          VFRA=MAX(0.,MIN(1.,RVAL))
         ELSE IF (WHCH(1:3).EQ.'VPB'.OR.WHCH(1:3).EQ.'vpb')
           UVPB=MAX(0.,MIN(1.,RVAL))
         ELSE IF (WHCH(1:3).EQ.'VPL'.OR.WHCH(1:3).EQ.'vpl')
@@ -2415,14 +2515,12 @@ C
           UVPS=RVAL
         ELSE IF (WHCH(1:3).EQ.'VPT'.OR.WHCH(1:3).EQ.'vpt')
           UVPT=MAX(0.,MIN(1.,RVAL))
+        ELSE IF (WHCH(1:3).EQ.'VRL'.OR.WHCH(1:3).EQ.'vrl')
+          VRLN=RVAL
+        ELSE IF (WHCH(1:3).EQ.'VRM'.OR.WHCH(1:3).EQ.'vrm')
+          VRMG=MAX(0.,RVAL)
         ELSE IF (WHCH(1:3).EQ.'VVM'.OR.WHCH(1:3).EQ.'vvm')
           VVMM=RVAL
-        ELSE IF (WHCH(1:3).EQ.'VVU'.OR.WHCH(1:3).EQ.'vvu')
-          VVPU=RVAL
-        ELSE IF (WHCH(1:3).EQ.'VVV'.OR.WHCH(1:3).EQ.'vvv')
-          VVPV=RVAL
-        ELSE IF (WHCH(1:3).EQ.'VVW'.OR.WHCH(1:3).EQ.'vvw')
-          VVPW=RVAL
         ELSE IF (WHCH(1:3).EQ.'WDB'.OR.WHCH(1:3).EQ.'wdb')
           UWDB=RVAL
         ELSE IF (WHCH(1:3).EQ.'WDL'.OR.WHCH(1:3).EQ.'wdl')
@@ -2447,25 +2545,45 @@ C
       END
 
 
-      SUBROUTINE VTCVDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+      SUBROUTINE VTCVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,RTPL)
 C
-        DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),IAMA(*)
+C
+        EXTERNAL RTPL
 C
 C This routine draws "curly vectors".
 C
 C Declare all of the VASPACKT common blocks.
 C
 .CALL VTCOMN,/$SAVE-COMMON$/1/
-C
-C Define the maximum angle to be allowed between two velocity vectors 
-C in a triangle in which a curly vector is allowed to begin.  THIS
-C PROBABLY SHOULD BE MOVED ELSEWHERE.
-C
-        DATA ANMX / 90. /
+C 
+C The following common block allows us to initialize the "seed" for the
+C random number generator VTRAND.  This makes it possible to generate
+C the same set of curly vectors for a pair of stereo views of a field.
+C 
+        COMMON /VTSEED/ SEED
+          DOUBLE PRECISION SEED
+        SAVE   /VTSEED/
 C
 C Define a constant used to convert from degrees to radians.
 C
         DATA DTOR / .017453292519943 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('VTCVDM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Compute "realized" values of various vector parameters.
+C
+        CALL VTRVSP
+C 
+C Initialize the "seed" for the random number generator used.
+C
+        SEED=0.D0
+C
+        DO (I=1,IRNG)
+          TEMP=VTRAND()
+        END DO
 C
 C Do an initialization loop through all of the triangle nodes.
 C
@@ -2474,7 +2592,7 @@ C
 C Zero the utility flags in the triangle node.  Bits B2-B0 of element
 C 5 contain a count of the number of curly vectors that have passed
 C through the triangle.  Bits B27-B3 record which of 25 sub-triangles
-C have been previously crossed by a streamline.
+C have been previously crossed by a curly vector.
 C
           ITRI(I+5)=0
 C
@@ -2492,7 +2610,7 @@ C order to avoid taking square roots, and, actually, we compute "signed
 C squares" such that, as the angles range from 0 degrees to 180 degrees,
 C the values we get range from -1 to +1.)  These values will be used to
 C order the triangles from most desirable as the starting point of a
-C curly vector.
+C curly vector to least desirable.
 C
           RWRK(I/LOTN+1)=1.
 C
@@ -2524,17 +2642,7 @@ C
 C
         END DO
 C
-C Generate an index array for the values in RWRK.
-C
-C       CALL VTSORT (RWRK,NTRI/LOTN,IWRK)
-C
-C (DEBUG) Compute an index array putting the triangles in array order.
-C
-C       DO (IIII=1,NTRI/LOTN)
-C         IWRK(IIII)=IIII
-C       END DO
-C
-C (DEBUG) Compute an index array putting the triangles in random order.
+C Compute an index array putting the triangles in random order.
 C
         NIND=NTRI/LOTN
 C
@@ -2543,7 +2651,7 @@ C
         END DO
 C
         DO (IIII=1,NIND-1)
-          JJJJ=MAX(1,MIN(NIND,IIII+INT(REAL(NIND-IIII+1)*VTFRAN())))
+          JJJJ=MAX(1,MIN(NIND,IIII+INT(REAL(NIND-IIII+1)*VTRAND())))
           IF (IIII.NE.JJJJ)
             ITMP=IWRK(IIII)
             IWRK(IIII)=IWRK(JJJJ)
@@ -2554,20 +2662,20 @@ C
 C Compute a maximum acceptable value of the measure that we used to
 C order the triangles.
 C
-        TMAX=COS(DTOR*ANMX)
+        TMAX=COS(DTOR*ANM1)
         TMAX=-TMAX*ABS(TMAX)
 C
-C Loop through the triangles in order from most desirable to least
-C desirable.
+C Loop through the triangles in the specified order.
 C
-        DO (IIII=1,NTRI/LOTN)
+        DO (IIII=1,NIND)
 C
 C Avoid using the triangle (or any following it) if the greatest angle
 C between the velocity vectors at its vertices is too large.
 C
 C         IF (RWRK(IWRK(IIII)).GT.TMAX) GO TO 104
 C
-C (DEBUG)
+C (DEBUG) Avoid using the triangle if the greatest angle between the
+C velocity vectors at its vertices is too large.
 C
           IF (RWRK(IWRK(IIII)).GT.TMAX) GO TO 103
 C
@@ -2599,12 +2707,12 @@ C direction and then the other, for a specified distance.  If another
 C curly vector is encountered, skip the current triangle.
 C
           CALL VTTPOM (RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 0,ICSG,0.,TTLL,ITER,SLGB,ISTB,RSTB,SSTB)
-          IF (SLGB.LE..999*TTLL) GO TO 103
+     +                 0,ICSG,TTLR,ITER,SLGB,ISTB,RSTB,SSTB,IAMA,RTPL)
+          IF (SLGB.LE..999*TTLR) GO TO 103
 C
           CALL VTTPOM (RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 1,ICSG,0.,TTLL,ITER,SLGE,ISTE,RSTE,SSTE)
-          IF (SLGE.LE..999*TTLL) GO TO 103
+     +                 1,ICSG,TTLR,ITER,SLGE,ISTE,RSTE,SSTE,IAMA,RTPL)
+          IF (SLGE.LE..999*TTLR) GO TO 103
 C 
 C Find the indices of the nodes of the vertices of the triangle (in no
 C particular order).
@@ -2622,21 +2730,17 @@ C
      +          SQRT(RPNT(IPP3+4)**2+RPNT(IPP3+5)**2+RPNT(IPP3+6)**2))
      +                                                               /3.
 C
-          VFRA=.25   !  temporary code
-          VRLN=SLML  !  temporary code
-          VRMG=DMAX  !  temporary code
+          VLEN=VFRA*VRLR+(1.-VFRA)*VRLR*(VMAG/VRMR)
 C
-          VLEN=VFRA*VRLN+(1.-VFRA)*VRLN*(VMAG/VRMG)
+          VLEN=VLEN/2.
 C
-          VLEN=VLEN/2.  !  temporary code
-C
-          IF (VLEN.LE.SLSL) GO TO 103
+          IF (VLEN.LE.SLPR) GO TO 103
 C
 C Trace the curly vector toward its beginning (in a direction opposite
 C to the direction of the flow field), ...
 C
           CALL VTTSOM (0,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 0,0.,VLEN,ITER,VRET,ISTD,RSTD,SSTD)
+     +                 0,VLEN,ITER,VRET,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
 C ... skipping the triangle if the curly vector terminated early, ...
 C
@@ -2645,7 +2749,7 @@ C
 C ... and then toward its end (in the direction of the flow field), ...
 C
           CALL VTTSOM (0,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 1,0.,VLEN,ITER,VRET,ISTD,RSTD,SSTD)
+     +                 1,VLEN,ITER,VRET,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
 C ... skipping the triangle if the curly vector terminated early.
 C
@@ -2655,12 +2759,12 @@ C Draw the curly vector toward its beginning (in a direction opposite
 C to the direction of the flow field) ...
 C
           CALL VTTSOM (1,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 0,0.,VLEN,ITER,VRET,ISTD,RSTD,SSTD)
+     +                 0,VLEN,ITER,VRET,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
 C ... and then toward its end (in the direction of the flow field).
 C
           CALL VTTSOM (2,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 1,0.,VLEN,ITER,VRET,ISTD,RSTD,SSTD)
+     +                 1,VLEN,ITER,VRET,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
   103   END DO
 C
@@ -2671,9 +2775,35 @@ C
       END
 
 
-      SUBROUTINE VTSLDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+      SUBROUTINE VTCVDR (RPNT,IEDG,ITRI,RWRK,IWRK)
 C
         DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
+C
+C This routine draws "curly vectors".
+C
+        DIMENSION IAMA(1)
+C
+        EXTERNAL VTDRPL
+C
+        DATA IAMA / 0 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('VTCVDR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+        CALL VTCVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
+        IF (ICFELL('VTCVDR',2).NE.0) RETURN
+C
+        RETURN
+C
+      END
+
+
+      SUBROUTINE VTSLDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,RTPL)
+C
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),IAMA(*)
+C
+        EXTERNAL RTPL
 C
 C This routine draws streamlines.  It uses the capability of moving
 C in a direction perpendicular to the velocity vectors to generate
@@ -2685,28 +2815,34 @@ C
 .CALL VTCOMN,/$SAVE-COMMON$/1/
 C
 C The following common block allows us to initialize the "seed" for the
-C random number generator used to offset the arrowheads.  This makes it
-C possible to generate the same set of arrowheads for a pair of stereo
-C views of a streamline field.
+C random number generator VTRAND that is used to offset the arrowheads.
+C This makes it possible to generate the same set of arrowheads for a
+C pair of stereo views of a streamline field.
 C
         COMMON /VTSEED/ SEED
           DOUBLE PRECISION SEED
         SAVE   /VTSEED/
 C
-C Define the maximum angle to be allowed between two velocity vectors 
-C in a triangle in which a streamline generator is allowed to begin.
-C THIS PROBABLY SHOULD BE MOVED ELSEWHERE.
-C
-        DATA ANMX / 90. /
-C
 C Define a constant used to convert from degrees to radians.
 C
         DATA DTOR / .017453292519943 /
 C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('VTSLDM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Compute "realized" values of various vector parameters.
+C
+        CALL VTRVSP
+C
 C Initialize the "seed" for the random number generator used to offset
 C the arrowheads.
 C
-        SEED=0.
+        SEED=0.D0
+C
+        DO (I=1,IRNG)
+          TEMP=VTRAND()
+        END DO
 C
 C Do an initialization loop through all of the triangle nodes.
 C
@@ -2772,7 +2908,7 @@ C
 C Compute a maximum acceptable value of the measure that we used to
 C order the triangles.
 C
-        TMAX=COS(DTOR*ANMX)
+        TMAX=COS(DTOR*ANM1)
         TMAX=-TMAX*ABS(TMAX)
 C
 C Loop through the triangles in order from most desirable to least
@@ -2819,39 +2955,39 @@ C from previously-drawn streamlines and 2) it locates starting points
 C for other streamlines to be drawn.
 C
           CALL VTTPOM (RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 0,ICSG,0.,SLSP,ITER,SLGB,ISTB,RSTB,SSTB)
-          IF (SLGB.LE.TTLL) GO TO 103
+     +                 0,ICSG,SLSR,ITER,SLGB,ISTB,RSTB,SSTB,IAMA,RTPL)
+          IF (SLGB.LE.TTLR) GO TO 103
 C
           CALL VTTPOM (RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 1,ICSG,0.,SLSP,ITER,SLGE,ISTE,RSTE,SSTE)
-          IF (SLGE.LE.TTLL) GO TO 103
+     +                 1,ICSG,SLSR,ITER,SLGE,ISTE,RSTE,SSTE,IAMA,RTPL)
+          IF (SLGE.LE.TTLR) GO TO 103
 C
 C Trace the first streamline toward its beginning (in a direction
 C opposite to the direction of the flow field) ...
 C
           CALL VTTSOM (0,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 0,0.,SLML,ITER,SLTB,ISTD,RSTD,SSTD)
+     +                 0,SLLR,ITER,SLTB,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
 C ... and then toward its end (in the direction of the flow field).
 C
           CALL VTTSOM (0,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 1,0.,SLML,ITER,SLTE,ISTD,RSTD,SSTD)
+     +                 1,SLLR,ITER,SLTE,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
 C Draw the first streamline toward its beginning (in a direction
 C opposite to the direction of the flow field) ...
 C
           CALL VTTSOM (3,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 0,0.,SLTB,ITER,SLTD,ISTD,RSTD,SSTD)
+     +                 0,SLTB,ITER,SLTD,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
 C ... and then toward its end (in the direction of the flow field).
 C
           CALL VTTSOM (3,RPNT,IEDG,ITRI,IBEG,RBEG,SBEG,
-     +                 1,0.,SLTE,ITER,SLTD,ISTD,RSTD,SSTD)
+     +                 1,SLTE,ITER,SLTD,ISTD,RSTD,SSTD,IAMA,RTPL)
 C
 C Then, repositioning to the start of the next streamline toward the
 C beginning of the streamline generator ...
 C
-  101     IF (SLGB.GT..999*SLSP)
+  101     IF (SLGB.GT..999*SLSR)
 C
             ISTR=ISTB
             RSTR=RSTB
@@ -2861,20 +2997,20 @@ C ... trace the streamline generator further toward its beginning
 C (taking steps of a specified size), ...
 C
             CALL VTTPOM (RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                   0,ICSG,0.,SLSP,ITER,SLGB,ISTB,RSTB,SSTB)
+     +                   0,ICSG,SLSR,ITER,SLGB,ISTB,RSTB,SSTB,IAMA,RTPL)
 C
 C ... and then draw a streamline (in two parts).
 C
-            IF (SLGB.GT.TTLL)
+            IF (SLGB.GT.TTLR)
               IF (IAND(ITRI(ISTR+5),7).NE.7) ITRI(ISTR+5)=ITRI(ISTR+5)+1
               CALL VTTSOM (0,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     0,0.,SLML,ITER,SLTB,ISTD,RSTD,SSTD)
+     +                     0,SLLR,ITER,SLTB,ISTD,RSTD,SSTD,IAMA,RTPL)
               CALL VTTSOM (0,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     1,0.,SLML,ITER,SLTE,ISTD,RSTD,SSTD)
+     +                     1,SLLR,ITER,SLTE,ISTD,RSTD,SSTD,IAMA,RTPL)
               CALL VTTSOM (3,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     0,0.,SLTB,ITER,SLTD,ISTD,RSTD,SSTD)
+     +                     0,SLTB,ITER,SLTD,ISTD,RSTD,SSTD,IAMA,RTPL)
               CALL VTTSOM (3,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     1,0.,SLTE,ITER,SLTD,ISTD,RSTD,SSTD)
+     +                     1,SLTE,ITER,SLTD,ISTD,RSTD,SSTD,IAMA,RTPL)
               GO TO 101
             END IF
 C
@@ -2883,7 +3019,7 @@ C
 C Then, repositioning to the start of the next streamline toward the
 C end of the streamline generator ...
 C
-  102     IF (SLGE.GT..999*SLSP)
+  102     IF (SLGE.GT..999*SLSR)
 C
             ISTR=ISTE
             RSTR=RSTE
@@ -2893,20 +3029,20 @@ C ... trace the streamline generator further toward its end (taking
 C steps of a specified size), ...
 C
             CALL VTTPOM (RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                   1,ICSG,0.,SLSP,ITER,SLGE,ISTE,RSTE,SSTE)
+     +                   1,ICSG,SLSR,ITER,SLGE,ISTE,RSTE,SSTE,IAMA,RTPL)
 C
 C ... and draw a streamline (in two parts).
 C
-            IF (SLGE.GT.TTLL)
+            IF (SLGE.GT.TTLR)
               IF (IAND(ITRI(ISTR+5),7).NE.7) ITRI(ISTR+5)=ITRI(ISTR+5)+1
               CALL VTTSOM (0,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     0,0.,SLML,ITER,SLTB,IDUM,RDUM,SDUM)
+     +                     0,SLLR,ITER,SLTB,IDUM,RDUM,SDUM,IAMA,RTPL)
               CALL VTTSOM (0,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     1,0.,SLML,ITER,SLTE,IDUM,RDUM,SDUM)
+     +                     1,SLLR,ITER,SLTE,IDUM,RDUM,SDUM,IAMA,RTPL)
               CALL VTTSOM (3,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     0,0.,SLTB,ITER,SLTD,IDUM,RDUM,SDUM)
+     +                     0,SLTB,ITER,SLTD,IDUM,RDUM,SDUM,IAMA,RTPL)
               CALL VTTSOM (3,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,
-     +                     1,0.,SLTE,ITER,SLTD,IDUM,RDUM,SDUM)
+     +                     1,SLTE,ITER,SLTD,IDUM,RDUM,SDUM,IAMA,RTPL)
               GO TO 102
             END IF
 C
@@ -2921,6 +3057,342 @@ C
       END
 
 
+      SUBROUTINE VTSLDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+C
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
+C
+C This routine draws streamlines.
+C
+        DIMENSION IAMA(1)
+C
+        EXTERNAL VTDRPL
+C
+        DATA IAMA / 0 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('VTSLDR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+        CALL VTSLDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
+        IF (ICFELL('VTSLDR',2).NE.0) RETURN
+C
+        RETURN
+C
+      END
+
+
+.OP   BI=66
+      SUBROUTINE VTSVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,RTPL)
+C
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*),IAMA(*)
+C
+        EXTERNAL RTPL
+C
+C This routine draws simple vectors.
+C
+C Declare all of the VASPACKT common blocks.
+C
+.CALL VTCOMN,/$SAVE-COMMON$/1/
+C
+C Declare arrays for use in calling VTCUDR.
+C
+        DIMENSION UCRV(2),VCRV(2),WCRV(2),CCRV(2)
+C 
+C The following common block allows us to initialize the "seed" for the
+C random number generator VTRAND.  This makes it possible to generate
+C the same set of vectors for a pair of stereo views of a field.
+C 
+        COMMON /VTSEED/ SEED
+          DOUBLE PRECISION SEED
+        SAVE   /VTSEED/
+C
+C Declare an array to be used in searching and marking all triangles
+C within a specified radius of some particular triangle.
+C
+        DIMENSION ISTK(2,10)
+C
+C Define a constant used to convert from degrees to radians.
+C
+        DATA DTOR / .017453292519943 /
+C
+C IXOR(IONE,ITWO) is the exclusive OR of the 12-bit masks IONE and ITWO.
+C
+        IXOR(IONE,ITWO)=IAND(IOR(IONE,ITWO),4095-IAND(IONE,ITWO))
+C
+C ITBF(IARG) is non-zero if and only if a triangle with blocking-flag
+C element IARG is blocked.
+C
+        ITBF(IARG)=IAND(IXOR(IARG,ITBX),ITBA)
+C
+C Extract the values of ITBX and ITBA from ITBM.
+C
+        ITBX=IAND(ISHIFT(ITBM,-12),4095)
+        ITBA=IAND(       ITBM     ,4095)
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('VTSVDM - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+C Compute "realized" values of various vector parameters.
+C
+        CALL VTRVSP
+C
+C Set a flag that says whether or not vectors will be colored.
+C
+        IF (ICTV.EQ.0.OR.NCLR.EQ.0)
+          ICOL=0
+        ELSE
+          ICOL=1
+        END IF
+C
+C Decide whether to use a simple algorithm that draws a vector in each
+C unblocked triangle or a more complicated algorithm that attempts to
+C cull some of them.
+C
+        IF (ISVT.EQ.0)
+C
+C Simple algorithm - just loop through all of the triangle nodes and
+C draw a vector at the center of each triangle.
+C
+          FOR (IIII = 0 TO NTRI-LOTN BY LOTN)
+C
+            INVOKE (DRAW-SIMPLE-VECTOR)
+C
+          END FOR
+C
+        ELSE
+C 
+C More complicated algorithm - first, initialize the "seed" for the
+C random number generator used.
+C
+          SEED=0.D0
+C
+          DO (I=1,IRNG)
+            TEMP=VTRAND()
+          END DO
+C
+C Zero the utility flags in all of the triangle nodes.
+C
+          DO (I=0,NTRI-LOTN,LOTN)
+            ITRI(I+5)=0
+          END DO
+C
+C Generate an index array putting the triangles in random order.
+C
+          NIND=NTRI/LOTN
+C
+          DO (I=1,NIND)
+            IWRK(I)=I
+          END DO
+C
+          DO (I=1,NIND-1)
+            J=MAX(I,MIN(NIND,I+INT(REAL(NIND-I+1)*VTRAND())))
+            IF (I.NE.J)
+              ITMP=IWRK(I)
+              IWRK(I)=IWRK(J)
+              IWRK(J)=ITMP
+            END IF
+          END DO
+C
+C Loop through the triangles in random order.
+C
+          FOR (I = 1 TO NIND)
+C
+            IIII=LOTN*(IWRK(I)-1)
+C
+C Use the current triangle only if it has not been marked yet.
+C
+            IF (ITRI(IIII+5).EQ.0)
+C
+C Draw a vector at the center of the current triangle.
+C
+              INVOKE (DRAW-SIMPLE-VECTOR)
+C
+C Save the coordinates of the center of the triangle.
+C
+              UCCS=UCCT
+              VCCS=VCCT
+              WCCS=WCCT
+C
+C Mark all triangles within ISVT steps of this one (where a "step" is
+C just from one triangle to an adjacent triangle) and having centers
+C within SVSR units of the center of this one.  (If SVSR is zero, we
+C don't bother with computing the distance - we just mark all triangles
+C within ISVT steps.)  The algorithm used here may not be the most
+C efficient one; it was used because it could be implemented without
+C a lot of extra memory.
+C
+C Initialize the stack.
+C
+              ILEV=1
+              ISTK(1,ILEV)=IIII
+              ISTK(2,ILEV)=0
+C
+C Try the next path from the current triangle to another one.
+C
+  101         IF (ISTK(2,ILEV).LT.3)
+                ISTK(2,ILEV)=ISTK(2,ILEV)+1
+                ITMP=ITRI(ISTK(1,ILEV)+ISTK(2,ILEV))
+                IF (IEDG(ITMP+3).LT.0.OR.IEDG(ITMP+4).LT.0) GO TO 101
+                IF (LOTN*((IEDG(ITMP+3)-1)/LOTN).NE.ISTK(1,ILEV))
+                  ITMP=LOTN*((IEDG(ITMP+3)-1)/LOTN)
+                ELSE
+                  ITMP=LOTN*((IEDG(ITMP+4)-1)/LOTN)
+                END IF
+                IF (ITRI(ITMP+5).EQ.0)
+                  IF (SVSR.EQ.0.)
+                    ITRI(ITMP+5)=1
+                  ELSE
+                    IPP1=IEDG(ITRI(ITMP+1)+1)
+                    IPP2=IEDG(ITRI(ITMP+1)+2)
+                    IPP3=IEDG(ITRI(ITMP+2)+1)
+                    IF (IPP3.EQ.IPP1.OR.IPP3.EQ.IPP2)
+     +                                         IPP3=IEDG(ITRI(ITMP+2)+2)
+                    UCCT=(RPNT(IPP1+1)+RPNT(IPP2+1)+RPNT(IPP3+1))/3.
+                    VCCT=(RPNT(IPP1+2)+RPNT(IPP2+2)+RPNT(IPP3+2))/3.
+                    WCCT=(RPNT(IPP1+3)+RPNT(IPP2+3)+RPNT(IPP3+3))/3.
+                    IF (SQRT((UCCT-UCCS)**2+
+     +                       (VCCT-VCCS)**2+
+     +                       (WCCT-WCCS)**2).LT.SVSR) ITRI(ITMP+5)=1
+                  END IF
+                END IF
+                IF (ILEV.LT.ISVT)
+                  ILEV=ILEV+1
+                  ISTK(1,ILEV)=ITMP
+                  ISTK(2,ILEV)=0
+                END IF
+                GO TO 101
+              ELSE
+                IF (ILEV.GT.1)
+                  ILEV=ILEV-1
+                  GO TO 101
+                END IF
+              END IF
+C
+            END IF
+C
+          END FOR
+C
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+C The following internal procedure draws a simple vector centered on
+C the triangle whose base address is IIII.
+C
+        BLOCK (DRAW-SIMPLE-VECTOR)
+C
+C Find the indices of the nodes of the vertices of the triangle (in no
+C particular order).
+C
+          IPP1=IEDG(ITRI(IIII+1)+1)
+          IPP2=IEDG(ITRI(IIII+1)+2)
+          IPP3=IEDG(ITRI(IIII+2)+1)
+          IF (IPP3.EQ.IPP1.OR.IPP3.EQ.IPP2) IPP3=IEDG(ITRI(IIII+2)+2)
+C
+C Extract the coordinates of the vertices of the triangle.
+C
+          UCP1=RPNT(IPP1+1)
+          VCP1=RPNT(IPP1+2)
+          WCP1=RPNT(IPP1+3)
+          UCP2=RPNT(IPP2+1)
+          VCP2=RPNT(IPP2+2)
+          WCP2=RPNT(IPP2+3)
+          UCP3=RPNT(IPP3+1)
+          VCP3=RPNT(IPP3+2)
+          WCP3=RPNT(IPP3+3)
+C
+C Compute the coordinates of the center of the triangle.
+C
+          UCCT=(UCP1+UCP2+UCP3)/3.
+          VCCT=(VCP1+VCP2+VCP3)/3.
+          WCCT=(WCP1+WCP2+WCP3)/3.
+C
+C Skip the triangle if it's blocked.
+C
+          IF (ITBF(ITRI(IIII+4)).NE.0) GO TO 102
+C
+C Compute the coefficients A, B, C, and D in the equation defining the
+C plane of the triangle (Ax+By+Cz+D=0).
+C
+          A=(VCP2-VCP1)*(WCP3-WCP1)-(VCP3-VCP1)*(WCP2-WCP1)
+          B=(WCP2-WCP1)*(UCP3-UCP1)-(WCP3-WCP1)*(UCP2-UCP1)
+          C=(UCP2-UCP1)*(VCP3-VCP1)-(UCP3-UCP1)*(VCP2-VCP1)
+          D=-(A*UCP1+B*VCP1+C*WCP1)
+C
+C Compute the direction cosines of the normal to the triangle.  If they
+C are not well-defined, skip the triangle.
+C
+          DNOM=SQRT(A**2+B**2+C**2)
+C
+          IF (DNOM.EQ.0.) GO TO 102
+C
+          DCNU=A/DNOM
+          DCNV=B/DNOM
+          DCNW=C/DNOM
+C
+C Compute the components of the velocity vector at the center of the
+C triangle and its magnitude.
+C
+          UCVV=(RPNT(IPP1+4)+RPNT(IPP2+4)+RPNT(IPP3+4))/3.
+          VCVV=(RPNT(IPP1+5)+RPNT(IPP2+5)+RPNT(IPP3+5))/3.
+          WCVV=(RPNT(IPP1+6)+RPNT(IPP2+6)+RPNT(IPP3+6))/3.
+C
+          VMAG=SQRT(UCVV**2+VCVV**2+WCVV**2)
+C
+          VLEN=VFRA*VRLR+(1.-VFRA)*VRLR*(VMAG/VRMR)
+C
+          VLEN=VLEN/2.
+C
+C Draw the simple vector.  WE MAY WANT TO HAVE OTHER CHOICES HERE.  FOR
+C EXAMPLE, IT MAY BE DESIRABLE TO FIND THE ORIENTATION OF THE VECTOR BY
+C PROJECTING THE END POINTS OF A TINY PORTION OF IT AND THEN USE THAT
+C FOR A VECTOR OF A SPECIFIED SIZE IN THE PROJECTION SPACE.
+C
+          UCRV(1)=UCCT-VLEN*UCVV/VMAG
+          VCRV(1)=VCCT-VLEN*VCVV/VMAG
+          WCRV(1)=WCCT-VLEN*WCVV/VMAG
+          CCRV(1)=VMAG
+C
+          UCRV(2)=UCCT+VLEN*UCVV/VMAG
+          VCRV(2)=VCCT+VLEN*VCVV/VMAG
+          WCRV(2)=WCCT+VLEN*WCVV/VMAG
+          CCRV(2)=VMAG
+C
+          CALL VTCUDR (UCRV,VCRV,WCRV,CCRV,2,ICOL,1,IAMA,RTPL)
+C
+  102   END BLOCK
+C
+      END
+.OP   BI=77
+
+
+      SUBROUTINE VTSVDR (RPNT,IEDG,ITRI,RWRK,IWRK)
+C
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),RWRK(*),IWRK(*)
+C
+C This routine draws simple vectors.
+C
+        DIMENSION IAMA(1)
+C
+        EXTERNAL VTDRPL
+C
+        DATA IAMA / 0 /
+C
+C Check for an uncleared prior error.
+C
+        IF (ICFELL('VTSVDR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+C
+        CALL VTSVDM (RPNT,IEDG,ITRI,RWRK,IWRK,IAMA,VTDRPL)
+        IF (ICFELL('VTSVDR',2).NE.0) RETURN
+C
+        RETURN
+C
+      END
+
+
       SUBROUTINE VTTMRG (IDIM,JDIM,RLAT,RLON,RDAT,ISCR,SVAL,RTMI,
      +                   RPNT,MPNT,NPNT,LOPN,
      +                   IEDG,MEDG,NEDG,LOEN,
@@ -2930,8 +3402,9 @@ C
         DIMENSION ISCR(IDIM,JDIM,4)
         DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI)
 C
-C Given arrays defining a rectangular mesh of data deformed to wrap around
-C the globe, VTTMRG returns a triangular mesh representing the data.
+C Given arrays defining a rectangular mesh of data deformed to wrap
+C around the globe, VTTMRG returns a triangular mesh representing the
+C data.
 C
 C The arguments are as follows:
 C
@@ -3380,7 +3853,7 @@ C
      +                   IEDG,MEDG,NEDG,LOEN,
      +                   ITRI,MTRI,NTRI,LOTN)
 C
-        DIMENSION TBUF(12,MBUF)
+        DIMENSION TBUF(18,MBUF)
         DIMENSION IPPP(2,MPPP),IPPE(2,MPPE)
         DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI)
 C
@@ -3400,30 +3873,36 @@ C triangle with index IBUF will be processed.
 C
           IBUF=1+MAX(0,MIN(NBUF-1,INT(REAL(NBUF)*VTFRAN())))
 C
-C Use the function ICAPNT to get indices for each of the three points
+C Use the function ICAVPT to get indices for each of the three points
 C of the triangle in the point list and form the base indices (IPP1,
 C IPP2, and IPP3) of the three points in the point list.
 C
-          IPP1=(ICAPNT(TBUF( 1,IBUF),
+          IPP1=(ICAVPT(TBUF( 1,IBUF),
      +                 TBUF( 2,IBUF),
      +                 TBUF( 3,IBUF),
      +                 TBUF( 4,IBUF),
+     +                 TBUF( 5,IBUF),
+     +                 TBUF( 6,IBUF),
      +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
 C
           IF (ICFELL('VTTMTL',1).NE.0) RETURN
 C
-          IPP2=(ICAPNT(TBUF( 5,IBUF),
-     +                 TBUF( 6,IBUF),
-     +                 TBUF( 7,IBUF),
+          IPP2=(ICAVPT(TBUF( 7,IBUF),
      +                 TBUF( 8,IBUF),
+     +                 TBUF( 9,IBUF),
+     +                 TBUF(10,IBUF),
+     +                 TBUF(11,IBUF),
+     +                 TBUF(12,IBUF),
      +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
 C
           IF (ICFELL('VTTMTL',2).NE.0) RETURN
 C
-          IPP3=(ICAPNT(TBUF( 9,IBUF),
-     +                 TBUF(10,IBUF),
-     +                 TBUF(11,IBUF),
-     +                 TBUF(12,IBUF),
+          IPP3=(ICAVPT(TBUF(13,IBUF),
+     +                 TBUF(14,IBUF),
+     +                 TBUF(15,IBUF),
+     +                 TBUF(16,IBUF),
+     +                 TBUF(17,IBUF),
+     +                 TBUF(18,IBUF),
      +                 RPNT,LOPN,IPPP,MPPP,NPPP)-1)*LOPN
 C
           IF (ICFELL('VTTMTL',3).NE.0) RETURN
@@ -3516,7 +3995,7 @@ C
      +                   IEDG,MEDG,NEDG,LOEN,
      +                   ITRI,MTRI,NTRI,LOTN)
 C
-        DIMENSION TBUF(12,MBUF)
+        DIMENSION TBUF(18,MBUF)
         DIMENSION IPPP(3,MPPP),IPPE(2,MPPE)
         DIMENSION RPNT(MPNT),IEDG(MEDG),ITRI(MTRI)
 C
@@ -3538,30 +4017,36 @@ C triangle with index IBUF will be processed.
 C
           IBUF=1+MAX(0,MIN(NBUF-1,INT(REAL(NBUF)*VTFRAN())))
 C
-C Use the function ICAPNX to get indices for each of the three points
+C Use the function ICAVPX to get indices for each of the three points
 C of the triangle in the point list and form the base indices (IPP1,
 C IPP2, and IPP3) of the three points in the point list.
 C
-          IPP1=(ICAPNX(TBUF( 1,IBUF),
+          IPP1=(ICAVPX(TBUF( 1,IBUF),
      +                 TBUF( 2,IBUF),
      +                 TBUF( 3,IBUF),
      +                 TBUF( 4,IBUF),
+     +                 TBUF( 5,IBUF),
+     +                 TBUF( 6,IBUF),
      +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
           IF (ICFELL('VTTMTX',1).NE.0) RETURN
 C
-          IPP2=(ICAPNX(TBUF( 5,IBUF),
-     +                 TBUF( 6,IBUF),
-     +                 TBUF( 7,IBUF),
+          IPP2=(ICAVPX(TBUF( 7,IBUF),
      +                 TBUF( 8,IBUF),
+     +                 TBUF( 9,IBUF),
+     +                 TBUF(10,IBUF),
+     +                 TBUF(11,IBUF),
+     +                 TBUF(12,IBUF),
      +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
           IF (ICFELL('VTTMTX',2).NE.0) RETURN
 C
-          IPP3=(ICAPNX(TBUF( 9,IBUF),
-     +                 TBUF(10,IBUF),
-     +                 TBUF(11,IBUF),
-     +                 TBUF(12,IBUF),
+          IPP3=(ICAVPX(TBUF(13,IBUF),
+     +                 TBUF(14,IBUF),
+     +                 TBUF(15,IBUF),
+     +                 TBUF(16,IBUF),
+     +                 TBUF(17,IBUF),
+     +                 TBUF(18,IBUF),
      +                 RPNT,LOPN,IPPP,MPPP,NPPP,EPST)-1)*LOPN
 C
           IF (ICFELL('VTTMTX',3).NE.0) RETURN
@@ -4884,25 +5369,306 @@ C
       END
 
 
-.OP   BI=66
-      SUBROUTINE VTCURV (UCRV,VCRV,WCRV,CCRV,NCRV,ICOL,IARH)
+      SUBROUTINE VTRVSP
 C
-        DIMENSION UCRV(NCRV),VCRV(NCRV),WCRV(NCRV),CCRV(NCRV)
+C Compute "realized" values of all size parameters.
+C
+C Declare all of the VASPACKT common blocks.
+C
+.CALL VTCOMN,/$SAVE-COMMON$/1/
+C
+C Compute a "realized" value for the spacing of simple vectors.
+C
+        IF (IISP.EQ.0)
+          SVSR=SVSP
+        ELSE
+          SVSR=SVSP*EMAX
+        END IF
+C
+C Compute a "realized" value of the vector reference length.
+C
+        IF (VRLN.LT.0.)
+          VRLR=ABS(VRLN)*AVEL
+        ELSE IF (VRLN.GT.0.)
+          IF (IISP.EQ.0)
+            VRLR=VRLN
+          ELSE
+            VRLR=VRLN*EMAX
+          END IF
+        ELSE
+          IF (ISVT.EQ.0.OR.SVSR.EQ.0.)
+            VRLR=AVEL*REAL(1+ISVT)
+          ELSE
+            VRLR=AVEL+2.*SVSR
+          END IF
+        END IF
+C
+C Compute a "realized" value of the vector reference magnitude.
+C
+        IF (VRMG.EQ.0.)
+          VRMR=DMAX
+        ELSE
+          VRMR=VRMG
+        END IF
+C
+C Compute "realized" values of the arrowhead length and spacing.
+C
+        IF (AHLN.LE.0.)
+          AHLR=ABS(AHLN)*VRLR
+        ELSE
+          IF (IISP.EQ.0)
+            AHLR=AHLN
+          ELSE
+            AHLR=AHLN*EMAX
+          END IF
+        END IF
+C
+        IF (IISP.EQ.0)
+          AHSR=AHSP
+        ELSE
+          AHSR=AHSP*EMAX
+        END IF
+C
+C Compute "realized" values of the streamline length, point spacing,
+C streamline spacing, termination test length, and termination test
+C spacing parameters.
+C
+        IF (IISP.EQ.0)
+          SLLR=SLLN
+          SLPR=SLPS
+          SLSR=SLSP
+          TTLR=TTLL
+          TTSR=TTSP
+        ELSE
+          SLLR=SLLN*EMAX
+          SLPR=SLPS*EMAX
+          SLSR=SLSP*EMAX
+          TTLR=TTLL*EMAX
+          TTSR=TTSP*EMAX
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+      SUBROUTINE VTVRLL (RADI,RLAT,RLON,NVEC,VMIN,VMAX,ICOL,CMIN,CMAX,
+     +                   IAMA,RTPL)
+C
+        DIMENSION IAMA(*)
+C
+        EXTERNAL RTPL
+C
+C Draw a "vector rose" on a globe - centered at (0,0,0) and having a
+C radius RADI - at a position specified by the latitude RLAT and the
+C longitude RLON.  The zero line is assumed to point north.
+C
+C NVEC is the number of vectors to draw.
+C
+C VMIN and VMAX are minimum and maximum lengths of vectors to be drawn
+C in each of the NVEC directions; if VMIN = VMAX, only one set of
+C vectors will be drawn, except when both are zero, when the lengths
+C used will be computed from the current value of the VASPACKT
+C parameter 'VRL'.
+C
+C If ICOL is zero, the vectors are drawn in the color implied by the
+C current value of the polyline color index, but, if ICOL is non-zero,
+C the values in CMIN and CMAX are used to determine their colors; in
+C either case, CMIN and CMAX must contain valid real values that will
+C not cause arithmetic problems.
+C
+C IAMA is an array containing an area map against which the rose is to
+C be masked.  If masking is not desired, set IAMA(1) = 0.
+C
+C RTPL is a routine to be called to draw the rose (when it is masked).
+C
+C Define a vector pointing at latitude 0, longitude 0.
+C
+        DCLU=1.
+        DCLV=0.
+        DCLW=0.
+C
+C Define a vector pointing north.
+C
+        DCZU=0.
+        DCZV=0.
+        DCZW=1.
+C
+C Rotate both the point and the vector to the desired position.
+C
+        CALL NGRITD (2,-RLAT,DCLU,DCLV,DCLW)
+        CALL NGRITD (3,+RLON,DCLU,DCLV,DCLW)
+C
+        CALL NGRITD (2,-RLAT,DCZU,DCZV,DCZW)
+        CALL NGRITD (3,+RLON,DCZU,DCZV,DCZW)
+C
+C Call VTVRAP to draw the vector rose.
+C
+        CALL VTVRAP (RADI*DCLU,RADI*DCLV,RADI*DCLW,DCLU,DCLV,DCLW,
+     +               DCZU,DCZV,DCZW,NVEC,VMIN,VMAX,ICOL,CMIN,CMAX,
+     +               IAMA,RTPL)
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+      SUBROUTINE VTVRAP (UCEN,VCEN,WCEN,DCLU,DCLV,DCLW,DCZU,DCZV,DCZW,
+     +                   NVEC,VMIN,VMAX,ICOL,CMIN,CMAX,IAMA,RTPL)
+C
+        DIMENSION IAMA(*)
+C
+        EXTERNAL RTPL
+C
+C Draw a "vector rose" at an arbitrary position in 3-space - centered
+C at (UCEN,VCEN,WCEN), perpendicular to a line with direction cosines
+C (DCNU,DCNV,DCNW), and having a zero line with direction cosines
+C (DCZU,DCZV,DCZW).
+C
+C NVEC specifies the number of vectors to draw.
+C
+C VMIN and VMAX are minimum and maximum lengths of vectors to be
+C drawn in each of the NVEC directions; if VMIN = VMAX, only one set
+C of vectors will be drawn, except when both are zero, when the lengths
+C used will be computed from the current value of the VASPACKT
+C parameter 'VRL'.
+C
+C If ICOL is zero, the vectors drawn in each of the NVEC directions; if
+C VMIN = VMAX, only one set of vectors will be drawn.  If ICOL is zero,
+C the vectors are drawn in the color implied by the current value of
+C the polyline color index, but, if ICOL is non-zero, the values in
+C CMIN and CMAX are used to determine their colors; in either case,
+C CMIN and CMAX must contain valid real values that will not cause
+C arithmetic problems.
+C
+C IAMA is an array containing an area map against which the rose is to
+C be masked.  If masking is not desired, set IAMA(1) = 0.
+C
+C RTPL is a routine to be called to draw the rose (when it is masked).
+C
+C Declare all of the VASPACKT common blocks.
+C
+.CALL VTCOMN,/$SAVE-COMMON$/1/
+C
+C Declare arrays for use in calling VTCUDR.
+C
+        DIMENSION UCRV(2),VCRV(2),WCRV(2),CCRV(2)
+C
+C Define a constant used to convert from degrees to radians.
+C
+        DATA DTOR / .017453292519943 /
+C
+C Compute "realized" values of various vector parameters.
+C
+        CALL VTRVSP
+C
+C Transfer the direction cosines of the normal to COMMON for use by
+C TDCURV.
+C
+        DCNU=DCLU
+        DCNV=DCLV
+        DCNW=DCLW
+C
+C Compute the direction cosines of a vector perpendicular to both the
+C normal and the zero line of the wind rose.
+C
+        DCPU=DCZV*DCLW-DCZW*DCLV
+        DCPV=DCZW*DCLU-DCZU*DCLW
+        DCPW=DCZU*DCLV-DCZV*DCLU
+C
+C The first point for each vector drawn is the same and the colors to
+C be used are the same.
+C
+        UCRV(1)=UCEN
+        VCRV(1)=VCEN
+        WCRV(1)=WCEN
+        CCRV(1)=CMAX
+        CCRV(2)=CMAX
+C
+C Determine "realized" values of VMIN and VMAX.
+C
+        IF (VMIN.EQ.0..AND.VMAX.EQ.0.)
+          RMIN=VFRA*VRLR
+          RMAX=VRLR
+        ELSE
+          RMIN=VMIN
+          RMAX=VMAX
+        END IF
+C
+C Loop to draw the NVEC vectors of maximum length.
+C
+        DO 101 I=1,NVEC
+          ANGD=(REAL(I-1)/REAL(NVEC))*360.
+          ANGR=DTOR*ANGD
+          SINA=SIN(ANGR)
+          COSA=COS(ANGR)
+          UCRV(2)=UCEN+RMAX*(SINA*DCPU+COSA*DCZU)
+          VCRV(2)=VCEN+RMAX*(SINA*DCPV+COSA*DCZV)
+          WCRV(2)=WCEN+RMAX*(SINA*DCPW+COSA*DCZW)
+          CALL VTCUDR (UCRV,VCRV,WCRV,CCRV,2,ICOL,1,IAMA,RTPL)
+  101   CONTINUE
+C
+C If requested, loop to draw the NVEC vectors of minimum length.
+C
+        IF (RMIN.NE.RMAX)
+C
+          CCRV(1)=CMIN
+          CCRV(2)=CMIN
+C
+          DO 102 I=1,NVEC
+            ANGD=(REAL(I-1)/REAL(NVEC))*360.
+            ANGR=DTOR*ANGD
+            SINA=SIN(ANGR)
+            COSA=COS(ANGR)
+            UCRV(2)=UCEN+RMIN*(SINA*DCPU+COSA*DCZU)
+            VCRV(2)=VCEN+RMIN*(SINA*DCPV+COSA*DCZV)
+            WCRV(2)=WCEN+RMIN*(SINA*DCPW+COSA*DCZW)
+            CALL VTCUDR (UCRV,VCRV,WCRV,CCRV,2,ICOL,1,IAMA,RTPL)
+  102     CONTINUE
+C
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+.OP   BI=66
+      SUBROUTINE VTCUDR (UCRV,VCRV,WCRV,CCRV,NCRV,ICOL,IARH,IAMA,RTPL)
+C
+        DIMENSION UCRV(NCRV),VCRV(NCRV),WCRV(NCRV),CCRV(NCRV),IAMA(*)
+C
+        EXTERNAL RTPL
 C
 C Draw the projection of a curve in 3-space, as defined by the points
 C (UCRV(I),VCRV(I),WCRV(I)), for I from 1 to NCRV.  For each I from 1
 C to NCRV, CCRV(I) is the value of some real quantity associated with
-C point I of the curve.  If ICOL is zero, the entire curve is drawn in
-C the color implied by the currrent value of the polyline color index,
-C but, if ICOL is non-zero, the values in CCRV are used to determine
-C its color; in either case, CCRV must contain valid real values that
-C will not cause arithmetic problems.  If IARH is non-zero, VTCURV will
-C draw the projection of an arrowhead at one end of the curve (at the
-C beginning of it if IARH is negative, or at the end of it if IARH is
-C positive).  What is used is a simple arrowhead, of length AHLN and
-C width AHWD, lying in a plane that is perpendicular to both the unit
-C vector having components DCNU, DCNV, and DCNW, and to the terminal
-C segment of the curve.
+C point I of the curve.
+C
+C If ICOL is zero, the entire curve is drawn in the color implied by
+C the current value of the polyline color index, but, if ICOL is
+C non-zero, the values in CCRV are used to determine its color; in
+C either case, CCRV must contain valid real values that will not cause
+C arithmetic problems.
+C
+C If IARH is non-zero, VTCUDR will draw the projection of an arrowhead
+C at one end of the curve (at the beginning of it if IARH is negative,
+C or at the end of it if IARH is positive).  What is used is a simple
+C arrowhead, of length AHLR and half-width AHHR (both of which are
+C computed from AHLN and AHAW, in COMMON), lying in a plane
+C perpendicular to both the unit vector having components DCNU, DCNV,
+C and DCNW, and to the terminal segment of the curve.
+C
+C IAMA is an array containing an area map against which the curve is to
+C be masked.  If masking is not desired, set IAMA(1) = 0.
+C
+C RTPL is a routine to be called to draw the curve (when it is masked).
 C
 C Declare all of the VASPACKT common blocks.
 C
@@ -4913,13 +5679,18 @@ C
         PARAMETER (MCPL=100)
         DIMENSION XCPL(MCPL),YCPL(MCPL)
 C
+C Declare local arrays to use in drawing masked polylines.
+C
+        PARAMETER (MCPF=MCPL,MNOG=64)
+        DIMENSION XCPF(MCPF),YCPF(MCPF),IAAI(MNOG),IAGI(MNOG)
+C
 C Check for an uncleared prior error.
 C
-        IF (ICFELL('VTCURV - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        IF (ICFELL('VTCUDR - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
 C
-C Generate a value to use for AHWD, which no longer exists in COMMON.
+C Compute the value of AHHR.
 C
-        AHWD=.5*AHLN
+        AHHR=AHLR*TAN(.017453292519943*AHAW/2.)
 C
 C If the curve is to be colored according to the values in CCRV, save
 C the current polyline color.
@@ -4927,7 +5698,7 @@ C
         IF (ICOL.NE.0.AND.ICTV.NE.0.AND.NCLR.NE.0)
           CALL GQPLCI (IGER,IPCS)
           IF (IGER.NE.0)
-            CALL SETER ('VTCURV - ERROR EXIT FROM GQPLCI',2,1)
+            CALL SETER ('VTCUDR - ERROR EXIT FROM GQPLCI',2,1)
             RETURN
           END IF
           IPCC=IPCS
@@ -5035,12 +5806,12 @@ C
             UDCP=VDCC*DCNW-WDCC*DCNV
             VDCP=WDCC*DCNU-UDCC*DCNW
             WDCP=UDCC*DCNV-VDCC*DCNU
-            UACC=UEND-AHLN*UDCC
-            VACC=VEND-AHLN*VDCC
-            WACC=WEND-AHLN*WDCC
-            UCND=UACC-(AHWD/2.)*UDCP
-            VCND=VACC-(AHWD/2.)*VDCP
-            WCND=WACC-(AHWD/2.)*WDCP
+            UACC=UEND-AHLR*UDCC
+            VACC=VEND-AHLR*VDCC
+            WACC=WEND-AHLR*WDCC
+            UCND=UACC-AHHR*UDCP
+            VCND=VACC-AHHR*VDCP
+            WCND=WACC-AHHR*WDCP
             INVOKE (COMPUTE-USER-COORDINATES)
             UCOD=UCND
             VCOD=VCND
@@ -5059,9 +5830,9 @@ C
             XCOU=XCNU
             YCOU=YCNU
             IVOU=IVNU
-            UCND=UACC+(AHWD/2.)*UDCP
-            VCND=VACC+(AHWD/2.)*VDCP
-            WCND=WACC+(AHWD/2.)*WDCP
+            UCND=UACC+AHHR*UDCP
+            VCND=VACC+AHHR*VDCP
+            WCND=WACC+AHHR*WDCP
             INVOKE (COMPUTE-USER-COORDINATES)
             INVOKE (INTERPOLATE-POINTS-ALONG-SEGMENT)
           END IF
@@ -5082,9 +5853,9 @@ C portions of it to the coordinate arrays.
 C
         BLOCK (INTERPOLATE-POINTS-ALONG-SEGMENT)
 C
-C If point interpolation is turned on, do the first IPIC segments.
+C If point interpolation is turned on, do the first IPIS segments.
 C
-          IF (IPIC.NE.0)
+          IF (IPIS.NE.0)
             USOD=UCOD
             VSOD=VCOD
             WSOD=WCOD
@@ -5096,13 +5867,13 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO ABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
-              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(CSND-CSOD)
+            FOR (INTP = 1 TO ABS(IPIS))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(WSND-WSOD)
+              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(CSND-CSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
-              IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
+              IF (IPIS.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
                 UCOD=UCND
                 VCOD=VCND
@@ -5289,7 +6060,7 @@ C
             WC3D=(WC1D+WC2D)/2.
             CC3D=(CC1D+CC2D)/2.
             CALL HLUCTMXYZ (IMPF,UC3D,VC3D,WC3D,XC3U,YC3U)
-            IF (ICFELL('VTCURV',3).NE.0) GO TO 101
+            IF (ICFELL('VTCUDR',3).NE.0) GO TO 101
             IF (OORV.EQ.0..OR.(XC3U.NE.OORV.AND.YC3U.NE.OORV))
               DST1=ABS(XC3U-XC1U)+ABS(YC3U-YC1U)
               DST2=ABS(XC3U-XC2U)+ABS(YC3U-YC2U)
@@ -5392,7 +6163,7 @@ C
             WCHD=(WCVD+WCID)/2.
             CCHD=(CCVD+CCID)/2.
             CALL HLUCTMXYZ (IMPF,UCHD,VCHD,WCHD,XCHU,YCHU)
-            IF (ICFELL('VTCURV',4).NE.0) GO TO 101
+            IF (ICFELL('VTCUDR',4).NE.0) GO TO 101
             IF (XCHU.NE.OORV.AND.YCHU.NE.OORV)
               EXIT IF (UCHD.EQ.UCVD.AND.VCHD.EQ.VCVD.AND.WCHD.EQ.WCVD)
               UCVD=UCHD
@@ -5472,7 +6243,7 @@ C
               WCPD=WCLD+RDST*(WCTD-WCLD)
               CCPD=CCLD+RDST*(CCTD-CCLD)
               CALL HLUCTMXYZ (IMPF,UCPD,VCPD,WCPD,XCPU,YCPU)
-              IF (ICFELL('VTCURV',5).NE.0) GO TO 101
+              IF (ICFELL('VTCUDR',5).NE.0) GO TO 101
               EXIT IF (OORV.NE.0..AND.(XCPU.EQ.OORV.OR.YCPU.EQ.OORV))
               IF (ABS(XCPU-XCLU).LT.PITX.AND.ABS(YCPU-YCLU).LT.PITY)
                 IFND=1
@@ -5489,7 +6260,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(UCQD.NE.UCLD.OR.VCQD.NE.VCLD.OR.
      +                                         WCQD.NE.WCLD))
@@ -5543,7 +6314,7 @@ C
             IVNU=1
           ELSE
             CALL HLUCTMXYZ (IMPF,UCND,VCND,WCND,XCNU,YCNU)
-            IF (ICFELL('VTCURV',6).NE.0) GO TO 101
+            IF (ICFELL('VTCUDR',6).NE.0) GO TO 101
             IF ((OORV.NE.0.).AND.(XCNU.EQ.OORV.OR.YCNU.EQ.OORV))
               IVNU=0
             ELSE
@@ -5600,7 +6371,13 @@ C
               CALL GSPLCI (IPCD)
               IPCC=IPCD
             END IF
-            CALL CURVE (XCPL,YCPL,NCPL)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
           END IF
 C
           XCPL(1)=XCPL(NCPL)
@@ -5642,7 +6419,13 @@ C
               CALL GSPLCI (IPCD)
               IPCC=IPCD
             END IF
-            CALL CURVE (XCPL,YCPL,NCPL)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
           END IF
 C
           NCPL=0
@@ -6816,8 +7599,8 @@ C
 C Given the coordinates of the corner points of two triangles in the
 C plane, this routine computes and returns the coordinates of a point
 C in both triangles, if such a point exists.  If no such point exists,
-C IFLG is returned non-zero; otherwise, it is a count of the number of
-C points used to compute the common point.
+C IFLG is returned equal to zero; otherwise, it is a count of the
+C number of points used to compute the common point.
 C
 C Declare an arithmetic statement function that has one sign if point
 C 3 is to the left of the line from point 1 to point 2 and a different
@@ -7110,11 +7893,11 @@ C
 
       FUNCTION VTRAND ()
 C
-C This function can be made to generate repeatable sequences of pseudo- 
-C random numbers.  Initially, the calling routine zeroes the seed value
-C X in the labelled common block VTSEED, calls VTRAND N times (where N
-C is zero or greater), and then saves the resulting value of X.  When
-C it is desired to repeat the sequence, the value of X is restored.  It
+C This function generates repeatable sequences of pseudo-random
+C numbers.  Initially, the calling routine zeroes the seed value X in
+C the labelled common block VTSEED, calls VTRAND N times (where N is
+C zero or greater), and then saves the resulting value of X.  When it
+C is desired to repeat the sequence, the value of X is restored.  It
 C is probably not a good idea to use an arbitrary seed value for X, as
 C the algorithm seems to depend on starting with X = e.
 C
@@ -7187,9 +7970,11 @@ C
 
 .OP   BI=66
       SUBROUTINE VTTLOM (RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,ANGD,SLMX,
-     +                   ITER,SLTR)
+     +                   ITER,SLTR,IAMA,RTPL)
 C
-        DIMENSION RPNT(*),IEDG(*),ITRI(*)
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),IAMA(*)
+C
+        EXTERNAL RTPL
 C
 C This routine, given arrays defining a triangular mesh, at each point
 C of which a velocity vector is given, and the location of a particular
@@ -7225,6 +8010,11 @@ C
 C SLTR is returned and is the length of streamline traced before a
 C termination condition was encountered.
 C
+C IAMA is an array containing an area map against which the line is to
+C be masked.  If masking is not desired, set IAMA(1) = 0.
+C
+C RTPL is a routine to be called to draw the line (when it is masked).
+C
 C Declare all of the VASPACKT common blocks.
 C
 .CALL VTCOMN,/$SAVE-COMMON$/1/
@@ -7234,6 +8024,11 @@ C
         PARAMETER (MCPL=100)
 C
         DIMENSION XCPL(MCPL),YCPL(MCPL)
+C
+C Declare local arrays to use in drawing masked polylines.
+C
+        PARAMETER (MCPF=MCPL,MNOG=64)
+        DIMENSION XCPF(MCPF),YCPF(MCPF),IAAI(MNOG),IAGI(MNOG)
 C
 C DTOR is a multiplicative constant to convert from degrees to radians.
 C
@@ -7253,9 +8048,8 @@ C
         ITBX=IAND(ISHIFT(ITBM,-12),4095)
         ITBA=IAND(       ITBM     ,4095)
 C
-C If the line is to be colored according to the values in CCRV, save
-C the initial polyline color and initialize the variables that keep
-C track of coloring.
+C If the line is to be colored, save the initial polyline color and
+C initialize the variables that keep track of coloring.
 C
         IF (ICTV.NE.0.AND.NCLR.NE.0)
           CALL GQPLCI (IGER,IPCS)
@@ -7374,6 +8168,30 @@ C
           WVP3=+RPNT(IPP3+6)
         END IF
 C
+        VMG1=SQRT(UVP1**2+VVP1**2+WVP1**2)
+C
+        IF (VMG1.NE.0.)
+          UVP1=.001*EMAX*UVP1/VMG1
+          VVP1=.001*EMAX*VVP1/VMG1
+          WVP1=.001*EMAX*WVP1/VMG1
+        END IF
+C
+        VMG2=SQRT(UVP2**2+VVP2**2+WVP2**2)
+C
+        IF (VMG2.NE.0.)
+          UVP2=.001*EMAX*UVP2/VMG2
+          VVP2=.001*EMAX*VVP2/VMG2
+          WVP2=.001*EMAX*WVP2/VMG2
+        END IF
+C
+        VMG3=SQRT(UVP3**2+VVP3**2+WVP3**2)
+C
+        IF (VMG3.NE.0.)
+          UVP3=.001*EMAX*UVP3/VMG3
+          VVP3=.001*EMAX*VVP3/VMG3
+          WVP3=.001*EMAX*WVP3/VMG3
+        END IF
+C
         IF (ICTV.EQ.0)
           CVP1=0.
           CVP2=0.
@@ -7453,25 +8271,25 @@ C case of most interest to us, but it will not work for an arbitrary
 C triangular mesh.  This is a problem I'll have to look into later.
 C
         T=-((UCP1+UVP1)*A+(VCP1+VVP1)*B+(WCP1+WVP1)*C+D)/
-     +     ((UCP1+UVP1-VVPU)*A+(VCP1+VVP1-VVPV)*B+(WCP1+WVP1-VVPW)*C)
+     +     ((UCP1+UVP1-PCPU)*A+(VCP1+VVP1-PCPV)*B+(WCP1+WVP1-PCPW)*C)
 C
-        UPP1=UVP1+(UCP1+UVP1-VVPU)*T
-        VPP1=VVP1+(VCP1+VVP1-VVPV)*T
-        WPP1=WVP1+(WCP1+WVP1-VVPW)*T
+        UPP1=UVP1+(UCP1+UVP1-PCPU)*T
+        VPP1=VVP1+(VCP1+VVP1-PCPV)*T
+        WPP1=WVP1+(WCP1+WVP1-PCPW)*T
 C
         T=-((UCP2+UVP2)*A+(VCP2+VVP2)*B+(WCP2+WVP2)*C+D)/
-     +     ((UCP2+UVP2-VVPU)*A+(VCP2+VVP2-VVPV)*B+(WCP2+WVP2-VVPW)*C)
+     +     ((UCP2+UVP2-PCPU)*A+(VCP2+VVP2-PCPV)*B+(WCP2+WVP2-PCPW)*C)
 C
-        UPP2=UVP2+(UCP2+UVP2-VVPU)*T
-        VPP2=VVP2+(VCP2+VVP2-VVPV)*T
-        WPP2=WVP2+(WCP2+WVP2-VVPW)*T
+        UPP2=UVP2+(UCP2+UVP2-PCPU)*T
+        VPP2=VVP2+(VCP2+VVP2-PCPV)*T
+        WPP2=WVP2+(WCP2+WVP2-PCPW)*T
 C
         T=-((UCP3+UVP3)*A+(VCP3+VVP3)*B+(WCP3+WVP3)*C+D)/
-     +     ((UCP3+UVP3-VVPU)*A+(VCP3+VVP3-VVPV)*B+(WCP3+WVP3-VVPW)*C)
+     +     ((UCP3+UVP3-PCPU)*A+(VCP3+VVP3-PCPV)*B+(WCP3+WVP3-PCPW)*C)
 C
-        UPP3=UVP3+(UCP3+UVP3-VVPU)*T
-        VPP3=VVP3+(VCP3+VVP3-VVPV)*T
-        WPP3=WVP3+(WCP3+WVP3-VVPW)*T
+        UPP3=UVP3+(UCP3+UVP3-PCPU)*T
+        VPP3=VVP3+(VCP3+VVP3-PCPV)*T
+        WPP3=WVP3+(WCP3+WVP3-PCPW)*T
 C
 C Use cross products with the normal to the triangle to generate
 C vectors perpendicular to the velocity vectors.
@@ -7537,9 +8355,7 @@ C
 C
 C If the last triangle was blocked (or non-existent) and this one is
 C not blocked, compute values associated with the first point of a new
-C segment of streamline.  (If both triangles are unblocked, values we
-C computed would be identical to what we already had, but for round-off
-C differences that could cause problems.)
+C segment of streamline.
 C
         IF (ILTB.NE.0.AND.ICTB.EQ.0)
           UCND=UCP1+RVAL*(UCP2-UCP1)+SVAL*(UCP3-UCP1)
@@ -7585,24 +8401,30 @@ C
 C
         IF (VMAG.GT.VVMM)
 C
-          TEMP=MIN(SLNE,SLSL)/VMAG
+          TEMP=MIN(SLNE,SLPR)/VMAG
+C
+C Check for exit through the side joining V1 and V3.
 C
           IF (RVAL+TEMP*RVVN.LT.0..AND.(RVAL.GT..001.OR.
      +        ABS(RVVN).GT..001*ABS(RVVN+2.*SVVN)))
-            JUMP=1  !  exiting through side joining V1 and V3
+            JUMP=1
             TEMP=-RVAL/RVVN
           END IF
 C
+C Check for exit through the side joining V1 and V2.
+C
           IF (SVAL+TEMP*SVVN.LT.0..AND.(SVAL.GT..001.OR.
      +        ABS(SVVN).GT..001*ABS(2.*RVVN+SVVN)))
-            JUMP=2  !  exiting through side joining V1 and V2
+            JUMP=2
             TEMP=-SVAL/SVVN
           END IF
+C
+C Check for exit through the side joining V2 and V3.
 C
           IF (1.-RVAL-SVAL-TEMP*(RVVN+SVVN).LT.0..AND.
      +       (1.-RVAL-SVAL.GT..001.OR.
      +        ABS(RVVN+SVVN).GT..001*ABS(RVVN-SVVN)))
-            JUMP=3  !  exiting through side joining V2 and V3
+            JUMP=3
             TEMP=(1.-RVAL-SVAL)/(RVVN+SVVN)
           END IF
 C
@@ -7636,14 +8458,16 @@ C
 C If the line is now of the desired length at the next event, terminate
 C it.
 C
-          IF (SLNE.LT..01*SLSL)
+          IF (SLNE.LT..01*SLPR)
             SLNE=0.
             JUMP=4
           END IF
 C
         ELSE
 C
-          JUMP=5  !  vector velocity too low
+C The velocity is too low.
+C
+          JUMP=5
 C
         END IF
 C
@@ -7651,10 +8475,11 @@ C
 C
         IF (JUMP.EQ.4) JUMP=0
 C
-C Update various line-length quantities.
+C Update various line-length quantities (line length in buffer and line
+C length traced already).
 C
-        SLIB=SLNS-SLNE  !  line length in buffer
-        SLTR=SLTR+SLIB  !  line length traced already
+        SLIB=SLNS-SLNE
+        SLTR=SLTR+SLIB
 C
 C If the length of the line has hit the maximum, terminate it.
 C
@@ -7836,8 +8661,7 @@ C
           INVOKE (CLEAR-POLYLINE-BUFFER)
         END IF
 C
-C If the curve was colored according to the values in CCRV, restore the
-C saved polyline color.
+C If the curve was colored, restore the saved polyline color.
 C
         IF (IPCS.GE.0) CALL GSPLCI (IPCS)
 C
@@ -7850,9 +8674,9 @@ C portions of it to the coordinate arrays.
 C
         BLOCK (INTERPOLATE-POINTS-ALONG-SEGMENT)
 C
-C If point interpolation is turned on, do the first IPIC segments.
+C If point interpolation is turned on, do the first IPIS segments.
 C
-          IF (IPIC.NE.0)
+          IF (IPIS.NE.0)
             USOD=UCOD
             VSOD=VCOD
             WSOD=WCOD
@@ -7864,13 +8688,13 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO ABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
-              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(CSND-CSOD)
+            FOR (INTP = 1 TO ABS(IPIS))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(WSND-WSOD)
+              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(CSND-CSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
-              IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
+              IF (IPIS.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
                 UCOD=UCND
                 VCOD=VCND
@@ -8257,7 +9081,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(UCQD.NE.UCLD.OR.VCQD.NE.VCLD.OR.
      +                                         WCQD.NE.WCLD))
@@ -8368,7 +9192,13 @@ C
               CALL GSPLCI (IPCD)
               IPCC=IPCD
             END IF
-            CALL CURVE (XCPL,YCPL,NCPL)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
           END IF
 C
           XCPL(1)=XCPL(NCPL)
@@ -8410,7 +9240,13 @@ C
               CALL GSPLCI (IPCD)
               IPCC=IPCD
             END IF
-            CALL CURVE (XCPL,YCPL,NCPL)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
           END IF
 C
           NCPL=0
@@ -8424,9 +9260,11 @@ C
 
 .OP   BI=66
       SUBROUTINE VTTPOM (RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,IDIR,IDBC,
-     +                   ANMX,SLMX,ITER,SLTR,IEND,REND,SEND)
+     +                   SLMX,ITER,SLTR,IEND,REND,SEND,IAMA,RTPL)
 C
-        DIMENSION RPNT(*),IEDG(*),ITRI(*)
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),IAMA(*)
+C
+        EXTERNAL RTPL
 C
 C This routine is a copy of VTTSOM that has been modified to allow for
 C tracing a line perpendicular to the direction of the flow field.  It
@@ -8459,9 +9297,6 @@ C 0 => toward its beginning; 1 => toward its end.
 C
 C IDBC is the color index for a color to be used to draw debug stuff.
 C
-C ANMX is the maximum angle to be allowed between any two velocity
-C vectors at the vertices of any triangle crossed by a streamline.
-C
 C SLMX is the maximum length of line to be traced.
 C
 C ITER is a flag that is returned to say how the line terminated:
@@ -8481,6 +9316,11 @@ C of the triangle node of the triangle containing the end point of the
 C line and REND and SEND are the coordinates of the end point within
 C that triangle.
 C
+C IAMA is an array containing an area map against which the line is to
+C be masked.  If masking is not desired, set IAMA(1) = 0.
+C
+C RTPL is a routine to be called to draw the line (when it is masked).
+C
 C Declare all of the VASPACKT common blocks.
 C
 .CALL VTCOMN,/$SAVE-COMMON$/1/
@@ -8490,6 +9330,11 @@ C
         PARAMETER (MCPL=100)
 C
         DIMENSION XCPL(MCPL),YCPL(MCPL)
+C
+C Declare local arrays to use in drawing masked polylines.
+C
+        PARAMETER (MCPF=MCPL,MNOG=64)
+        DIMENSION XCPF(MCPF),YCPF(MCPF),IAAI(MNOG),IAGI(MNOG)
 C
 C Declare a character variable to hold the digits from 0 to 9.
 C
@@ -8535,8 +9380,8 @@ C
 C Compute a test value, based on the maximum allowable angle, to be
 C used below.
 C
-        IF (ANMX.NE.0.)
-          CSMN=COS(DTOR*ANMX)
+        IF (ANM2.NE.0.)
+          CSMN=COS(DTOR*ANM2)
           CSMN=CSMN*ABS(CSMN)
         END IF
 C
@@ -8673,6 +9518,30 @@ C
           WVP3=+RPNT(IPP3+6)
         END IF
 C
+        VMG1=SQRT(UVP1**2+VVP1**2+WVP1**2)
+C
+        IF (VMG1.NE.0.)
+          UVP1=.001*EMAX*UVP1/VMG1
+          VVP1=.001*EMAX*VVP1/VMG1
+          WVP1=.001*EMAX*WVP1/VMG1
+        END IF
+C
+        VMG2=SQRT(UVP2**2+VVP2**2+WVP2**2)
+C
+        IF (VMG2.NE.0.)
+          UVP2=.001*EMAX*UVP2/VMG2
+          VVP2=.001*EMAX*VVP2/VMG2
+          WVP2=.001*EMAX*WVP2/VMG2
+        END IF
+C
+        VMG3=SQRT(UVP3**2+VVP3**2+WVP3**2)
+C
+        IF (VMG3.NE.0.)
+          UVP3=.001*EMAX*UVP3/VMG3
+          VVP3=.001*EMAX*VVP3/VMG3
+          WVP3=.001*EMAX*WVP3/VMG3
+        END IF
+C
 C Compute the coefficients A, B, C, and D in the equation defining the
 C plane of the triangle (Ax+By+Cz+D=0).
 C
@@ -8738,25 +9607,25 @@ C case of most interest to us, but it will not work for an arbitrary
 C triangular mesh.  This is a problem I'll have to look into later.
 C
         T=-((UCP1+UVP1)*A+(VCP1+VVP1)*B+(WCP1+WVP1)*C+D)/
-     +     ((UCP1+UVP1-VVPU)*A+(VCP1+VVP1-VVPV)*B+(WCP1+WVP1-VVPW)*C)
+     +     ((UCP1+UVP1-PCPU)*A+(VCP1+VVP1-PCPV)*B+(WCP1+WVP1-PCPW)*C)
 C
-        UPP1=UVP1+(UCP1+UVP1-VVPU)*T
-        VPP1=VVP1+(VCP1+VVP1-VVPV)*T
-        WPP1=WVP1+(WCP1+WVP1-VVPW)*T
+        UPP1=UVP1+(UCP1+UVP1-PCPU)*T
+        VPP1=VVP1+(VCP1+VVP1-PCPV)*T
+        WPP1=WVP1+(WCP1+WVP1-PCPW)*T
 C
         T=-((UCP2+UVP2)*A+(VCP2+VVP2)*B+(WCP2+WVP2)*C+D)/
-     +     ((UCP2+UVP2-VVPU)*A+(VCP2+VVP2-VVPV)*B+(WCP2+WVP2-VVPW)*C)
+     +     ((UCP2+UVP2-PCPU)*A+(VCP2+VVP2-PCPV)*B+(WCP2+WVP2-PCPW)*C)
 C
-        UPP2=UVP2+(UCP2+UVP2-VVPU)*T
-        VPP2=VVP2+(VCP2+VVP2-VVPV)*T
-        WPP2=WVP2+(WCP2+WVP2-VVPW)*T
+        UPP2=UVP2+(UCP2+UVP2-PCPU)*T
+        VPP2=VVP2+(VCP2+VVP2-PCPV)*T
+        WPP2=WVP2+(WCP2+WVP2-PCPW)*T
 C
         T=-((UCP3+UVP3)*A+(VCP3+VVP3)*B+(WCP3+WVP3)*C+D)/
-     +     ((UCP3+UVP3-VVPU)*A+(VCP3+VVP3-VVPV)*B+(WCP3+WVP3-VVPW)*C)
+     +     ((UCP3+UVP3-PCPU)*A+(VCP3+VVP3-PCPV)*B+(WCP3+WVP3-PCPW)*C)
 C
-        UPP3=UVP3+(UCP3+UVP3-VVPU)*T
-        VPP3=VVP3+(VCP3+VVP3-VVPV)*T
-        WPP3=WVP3+(WCP3+WVP3-VVPW)*T
+        UPP3=UVP3+(UCP3+UVP3-PCPU)*T
+        VPP3=VVP3+(VCP3+VVP3-PCPV)*T
+        WPP3=WVP3+(WCP3+WVP3-PCPW)*T
 C
 C Modify these values, using cross products with the normal to the
 C triangle to generate vectors perpendicular to the velocity vectors.
@@ -8886,24 +9755,30 @@ C
 C
         IF (VMAG.GT.VVMM)
 C
-          TEMP=MIN(SLNE,SLSL)/VMAG
+          TEMP=MIN(SLNE,SLPR)/VMAG
+C
+C Check for exit through the side joining V1 and V3.
 C
           IF (RVAL+TEMP*RVVN.LT.0..AND.(RVAL.GT..001.OR.
      +        ABS(RVVN).GT..001*ABS(RVVN+2.*SVVN)))
-            JUMP=1  !  exiting through side joining V1 and V3
+            JUMP=1
             TEMP=-RVAL/RVVN
           END IF
 C
+C Check for exit through the side joining V1 and V2.
+C
           IF (SVAL+TEMP*SVVN.LT.0..AND.(SVAL.GT..001.OR.
      +        ABS(SVVN).GT..001*ABS(2.*RVVN+SVVN)))
-            JUMP=2  !  exiting through side joining V1 and V2
+            JUMP=2
             TEMP=-SVAL/SVVN
           END IF
+C
+C Check for exit through the side joining V2 and V3.
 C
           IF (1.-RVAL-SVAL-TEMP*(RVVN+SVVN).LT.0..AND.
      +       (1.-RVAL-SVAL.GT..001.OR.
      +        ABS(RVVN+SVVN).GT..001*ABS(RVVN-SVVN)))
-            JUMP=3  !  exiting through side joining V2 and V3
+            JUMP=3
             TEMP=(1.-RVAL-SVAL)/(RVVN+SVVN)
           END IF
 C
@@ -8935,7 +9810,7 @@ C
 C If the line is now of the desired length at the next event, terminate
 C it.
 C
-          IF (SLNE.LT..01*SLSL)
+          IF (SLNE.LT..01*SLPR)
             SLNE=0.
             JUMP=4
           END IF
@@ -8955,7 +9830,9 @@ C
 C
         ELSE
 C
-          JUMP=5  !  vector velocity too low
+C The velocity is too low.
+C
+          JUMP=5
 C
         END IF
 C
@@ -8963,10 +9840,11 @@ C
 C
         IF (JUMP.EQ.4) JUMP=0
 C
-C Update various line-length quantities.
+C Update various line-length quantities (line length in buffer and line
+C length traced already).
 C
-        SLIB=SLNS-SLNE  !  line length in buffer
-        SLTR=SLTR+SLIB  !  line length traced already
+        SLIB=SLNS-SLNE
+        SLTR=SLTR+SLIB
 C
 C If the length of the line has hit the maximum, terminate it.
 C
@@ -9129,7 +10007,7 @@ C
 C Also, if we have been directed to examine the angles between the
 C velocity vectors at its vertices, do that.
 C
-          IF (ANMX.NE.0.)
+          IF (ANM2.NE.0.)
 C
 C Compute the squares of the cosines of the angles between the velocity
 C vectors at pairs of vertices of the triangle.
@@ -9229,9 +10107,9 @@ C portions of it to the coordinate arrays.
 C
         BLOCK (INTERPOLATE-POINTS-ALONG-SEGMENT)
 C
-C If point interpolation is turned on, do the first IPIC segments.
+C If point interpolation is turned on, do the first IPIS segments.
 C
-          IF (IPIC.NE.0)
+          IF (IPIS.NE.0)
             USOD=UCOD
             VSOD=VCOD
             WSOD=WCOD
@@ -9241,12 +10119,12 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO ABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
+            FOR (INTP = 1 TO ABS(IPIS))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(WSND-WSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
-              IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
+              IF (IPIS.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
                 UCOD=UCND
                 VCOD=VCND
@@ -9576,7 +10454,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(UCQD.NE.UCLD.OR.VCQD.NE.VCLD.OR.
      +                                         WCQD.NE.WCLD))
@@ -9631,8 +10509,7 @@ C
 C
 C The following internal procedure draws the part of the curve defined
 C by the contents of the polyline buffer and then removes all but the
-C last point from the buffer.  IPCC is the polyline color currently
-C in use and IPCD the polyline color desired for the curve.
+C last point from the buffer.
 C
         BLOCK (FLUSH-POLYLINE-BUFFER)
 C
@@ -9657,7 +10534,15 @@ C
             END IF
           END LOOP
 C
-          IF (NCPL.GT.1) CALL CURVE (XCPL,YCPL,NCPL)
+          IF (NCPL.GT.1)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
+          END IF
 C
           XCPL(1)=XCPL(NCPL)
           YCPL(1)=YCPL(NCPL)
@@ -9667,8 +10552,6 @@ C
 C
 C The following internal procedure draws the part of the curve defined
 C by the contents of the polyline buffer and then clears the buffer.
-C IPCC is the polyline color currently in use and IPCD the polyline
-C color desired for the curve.
 C
         BLOCK (CLEAR-POLYLINE-BUFFER)
 C
@@ -9693,7 +10576,15 @@ C
             END IF
           END LOOP
 C
-          IF (NCPL.GT.1) CALL CURVE (XCPL,YCPL,NCPL)
+          IF (NCPL.GT.1)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
+          END IF
 C
           NCPL=0
           RUDN=0.
@@ -9706,9 +10597,11 @@ C
 
 .OP   BI=66
       SUBROUTINE VTTSOM (IDRW,RPNT,IEDG,ITRI,ISTR,RSTR,SSTR,IDIR,
-     +                   ANMX,SLMX,ITER,SLTR,IEND,REND,SEND)
+     +                   SLMX,ITER,SLTR,IEND,REND,SEND,IAMA,RTPL)
 C
-        DIMENSION RPNT(*),IEDG(*),ITRI(*)
+        DIMENSION RPNT(*),IEDG(*),ITRI(*),IAMA(*)
+C
+        EXTERNAL RTPL
 C
 C This routine, given arrays defining a triangular mesh, at each point
 C of which a velocity vector is given, and the location of a particular
@@ -9724,7 +10617,7 @@ C but the line is not actually drawn.  If IDRW is not 0, the line is
 C traced and drawn; no proximity termination tests are done.  If IDRW
 C = 1, no arrowheads are drawn; if IDRW = 2, only one arrowhead is
 C drawn, at the end of the streamline; if IDRW = 3, arrowheads are
-C drawn at positions along the streamline which are AHSP units apart.
+C drawn at positions along the streamline which are AHSR units apart.
 C
 C RPNT is an array of nodes defining vertices of triangles of the mesh.
 C
@@ -9741,9 +10634,6 @@ C its first and second sides, respectively).
 C
 C IDIR is a flag that says in which direction the line is to be traced:
 C 0 => toward its beginning; 1 => toward its end.
-C
-C ANMX is the maximum angle to be allowed between any two velocity
-C vectors at the vertices of any triangle crossed by a streamline.
 C
 C SLMX is the maximum length of streamline to be traced.
 C
@@ -9765,6 +10655,12 @@ C of the triangle node of the triangle containing the end point of the
 C line and REND and SEND are the coordinates of the end point within
 C that triangle.
 C
+C IAMA is an array containing an area map against which the streamline
+C is to be masked.  If masking is not desired, set IAMA(1) = 0.
+C
+C RTPL is a routine to be called to draw the streamline (when it is
+C masked).
+C
 C Declare all of the VASPACKT common blocks.
 C
 .CALL VTCOMN,/$SAVE-COMMON$/1/
@@ -9774,6 +10670,11 @@ C
         PARAMETER (MCPL=100)
 C
         DIMENSION XCPL(MCPL),YCPL(MCPL)
+C
+C Declare local arrays to use in drawing masked polylines.
+C
+        PARAMETER (MCPF=MCPL,MNOG=64)
+        DIMENSION XCPF(MCPF),YCPF(MCPF),IAAI(MNOG),IAGI(MNOG)
 C
 C Declare variables to hold coordinates of subtriangle vertices.
 C
@@ -9811,8 +10712,8 @@ C
         ITBX=IAND(ISHIFT(ITBM,-12),4095)
         ITBA=IAND(       ITBM     ,4095)
 C
-C If a streamline is to be drawn, compute a quantity between 0 and 1
-C to be used to somewhat randomize the positions of arrowheads on it.
+C If a streamline is to be drawn, compute a quantity AHPR between 0 and
+C 1 to be used to somewhat randomize the positions of arrowheads on it.
 C Note that this code assumes pairs of calls, one to draw the part of
 C the streamline toward its beginning and another to draw the part of
 C the streamline toward its end.
@@ -9826,9 +10727,9 @@ C
         END IF
 C
 C If a streamline is to be drawn and either debugging output is turned
-C on or the streamline is to be colored according to the values in CCRV,
-C save the initial polyline color and initialize variables that keep
-C track of the current polyline color setting.
+C on or the streamline is to be colored, save the initial polyline
+C color and initialize variables that keep track of the current
+C polyline color setting.
 C
         IF (IDRW.NE.0.AND.(IDBG.NE.0.OR.(ICTV.NE.0.AND.NCLR.NE.0)))
           CALL GQPLCI (IGER,IPCS)
@@ -9851,8 +10752,8 @@ C
 C Compute a test value, based on the maximum allowable angle, to be
 C used below.
 C
-        IF (ANMX.NE.0.)
-          CSMN=COS(DTOR*ANMX)
+        IF (ANM2.NE.0.)
+          CSMN=COS(DTOR*ANM2)
           CSMN=CSMN*ABS(CSMN)
         END IF
 C
@@ -9905,7 +10806,7 @@ C
 C
         IF (IDRW.EQ.0)
           SLAR=2.*SLMX
-          SLTT=TTSP
+          SLTT=TTSR
         ELSE IF (IDRW.EQ.1)
           SLAR=2.*SLMX
           SLTT=2.*SLMX
@@ -9917,7 +10818,7 @@ C
           END IF
           SLTT=2.*SLMX
         ELSE
-          SLAR=AHSP*AHPR
+          SLAR=AHSR*AHPR
           SLTT=2.*SLMX
         END IF
 C
@@ -9999,6 +10900,30 @@ C
           WVP3=+RPNT(IPP3+6)
         END IF
 C
+        VMG1=SQRT(UVP1**2+VVP1**2+WVP1**2)
+C
+        IF (VMG1.NE.0.)
+          UVP1=.001*EMAX*UVP1/VMG1
+          VVP1=.001*EMAX*VVP1/VMG1
+          WVP1=.001*EMAX*WVP1/VMG1
+        END IF
+C
+        VMG2=SQRT(UVP2**2+VVP2**2+WVP2**2)
+C
+        IF (VMG2.NE.0.)
+          UVP2=.001*EMAX*UVP2/VMG2
+          VVP2=.001*EMAX*VVP2/VMG2
+          WVP2=.001*EMAX*WVP2/VMG2
+        END IF
+C
+        VMG3=SQRT(UVP3**2+VVP3**2+WVP3**2)
+C
+        IF (VMG3.NE.0.)
+          UVP3=.001*EMAX*UVP3/VMG3
+          VVP3=.001*EMAX*VVP3/VMG3
+          WVP3=.001*EMAX*WVP3/VMG3
+        END IF
+C
         IF (ICTV.EQ.0)
           CVP1=0.
           CVP2=0.
@@ -10078,25 +11003,25 @@ C case of most interest to us, but it will not work for an arbitrary
 C triangular mesh.  This is a problem I'll have to look into later.
 C
         T=-((UCP1+UVP1)*A+(VCP1+VVP1)*B+(WCP1+WVP1)*C+D)/
-     +     ((UCP1+UVP1-VVPU)*A+(VCP1+VVP1-VVPV)*B+(WCP1+WVP1-VVPW)*C)
+     +     ((UCP1+UVP1-PCPU)*A+(VCP1+VVP1-PCPV)*B+(WCP1+WVP1-PCPW)*C)
 C
-        UPP1=UVP1+(UCP1+UVP1-VVPU)*T
-        VPP1=VVP1+(VCP1+VVP1-VVPV)*T
-        WPP1=WVP1+(WCP1+WVP1-VVPW)*T
+        UPP1=UVP1+(UCP1+UVP1-PCPU)*T
+        VPP1=VVP1+(VCP1+VVP1-PCPV)*T
+        WPP1=WVP1+(WCP1+WVP1-PCPW)*T
 C
         T=-((UCP2+UVP2)*A+(VCP2+VVP2)*B+(WCP2+WVP2)*C+D)/
-     +     ((UCP2+UVP2-VVPU)*A+(VCP2+VVP2-VVPV)*B+(WCP2+WVP2-VVPW)*C)
+     +     ((UCP2+UVP2-PCPU)*A+(VCP2+VVP2-PCPV)*B+(WCP2+WVP2-PCPW)*C)
 C
-        UPP2=UVP2+(UCP2+UVP2-VVPU)*T
-        VPP2=VVP2+(VCP2+VVP2-VVPV)*T
-        WPP2=WVP2+(WCP2+WVP2-VVPW)*T
+        UPP2=UVP2+(UCP2+UVP2-PCPU)*T
+        VPP2=VVP2+(VCP2+VVP2-PCPV)*T
+        WPP2=WVP2+(WCP2+WVP2-PCPW)*T
 C
         T=-((UCP3+UVP3)*A+(VCP3+VVP3)*B+(WCP3+WVP3)*C+D)/
-     +     ((UCP3+UVP3-VVPU)*A+(VCP3+VVP3-VVPV)*B+(WCP3+WVP3-VVPW)*C)
+     +     ((UCP3+UVP3-PCPU)*A+(VCP3+VVP3-PCPV)*B+(WCP3+WVP3-PCPW)*C)
 C
-        UPP3=UVP3+(UCP3+UVP3-VVPU)*T
-        VPP3=VVP3+(VCP3+VVP3-VVPV)*T
-        WPP3=WVP3+(WCP3+WVP3-VVPW)*T
+        UPP3=UVP3+(UCP3+UVP3-PCPU)*T
+        VPP3=VVP3+(VCP3+VVP3-PCPV)*T
+        WPP3=WVP3+(WCP3+WVP3-PCPW)*T
 C
 C For each of the projected velocity vectors at the three vertices of
 C the triangle, find R and S such that the vector may be expressed as R
@@ -10199,24 +11124,30 @@ C
 C
         IF (VMAG.GT.VVMM)
 C
-          TEMP=MIN(SLNE,SLSL)/VMAG
+          TEMP=MIN(SLNE,SLPR)/VMAG
+C
+C Check for exit through the side joining V1 and V3.
 C
           IF (RVAL+TEMP*RVVN.LT.0..AND.(RVAL.GT..001.OR.
      +        ABS(RVVN).GT..001*ABS(RVVN+2.*SVVN)))
-            JUMP=1  !  exiting through side joining V1 and V3
+            JUMP=1
             TEMP=-RVAL/RVVN
           END IF
 C
+C Check for exit through the side joining V1 and V2.
+C
           IF (SVAL+TEMP*SVVN.LT.0..AND.(SVAL.GT..001.OR.
      +        ABS(SVVN).GT..001*ABS(2.*RVVN+SVVN)))
-            JUMP=2  !  exiting through side joining V1 and V2
+            JUMP=2
             TEMP=-SVAL/SVVN
           END IF
+C
+C Check for exit through the side joining V2 and V3.
 C
           IF (1.-RVAL-SVAL-TEMP*(RVVN+SVVN).LT.0..AND.
      +       (1.-RVAL-SVAL.GT..001.OR.
      +        ABS(RVVN+SVVN).GT..001*ABS(RVVN-SVVN)))
-            JUMP=3  !  exiting through side joining V2 and V3
+            JUMP=3
             TEMP=(1.-RVAL-SVAL)/(RVVN+SVVN)
           END IF
 C
@@ -10250,7 +11181,7 @@ C
 C If the line is now of the desired length at the next event, terminate
 C it.
 C
-          IF (SLNE.LT..01*SLSL)
+          IF (SLNE.LT..01*SLPR)
             SLNE=0.
             JUMP=4
           END IF
@@ -10321,7 +11252,7 @@ C
                 IF (IPCC.NE.ICST)
                   CALL GSPLCI (ICST)
                 END IF
-                CALL VTCURV (UTRI,VTRI,WTRI,UTRI,4,0,0)
+                CALL VTCUDR (UTRI,VTRI,WTRI,UTRI,4,0,0,IAMA,RTPL)
                 IF (IPCC.NE.ICST)
                   CALL GSPLCI (IPCC)
                 END IF
@@ -10329,11 +11260,13 @@ C
             END IF
             ITRI(IIII+5)=IOR(ITRI(IIII+5),
      +                       ISHIFT(ISTA(25*IOSL+IOSB+1),3))
-            END IF
+          END IF
 C
         ELSE
 C
-          JUMP=5  !  vector velocity too low
+C The velocity is too low.
+C
+          JUMP=5
 C
         END IF
 C
@@ -10341,41 +11274,43 @@ C
 C
         IF (JUMP.EQ.4) JUMP=0
 C
-C Update various line-length quantities.
+C Update various line-length quantities (line length in buffer, line
+C length traced already, line length to next arrowhead, and line length
+C to next termination test).
 C
-  105   SLIB=SLNS-SLNE  !  line length in buffer
-        SLTR=SLTR+SLIB  !  line length traced already
-        SLAR=SLAR-SLIB  !  line length to next arrowhead
-        SLTT=SLTT-SLIB  !  line length to next termination test
+  105   SLIB=SLNS-SLNE
+        SLTR=SLTR+SLIB
+        SLAR=SLAR-SLIB
+        SLTT=SLTT-SLIB
 C
 C If we're at a point where an arrowhead is to be drawn, do it.
 C
-        IF (SLAR.LT..01*SLSL)
+        IF (SLAR.LT..01*SLPR)
           IF (ICTB.EQ.0)
             CALL VTTLOM (RPNT,IEDG,ITRI,IIII,RVAL,SVAL,180.-AHAW/2.,
-     +                   AHLN,ISTP,SLT2)
+     +                   AHLR,ISTP,SLT2,IAMA,RTPL)
             CALL VTTLOM (RPNT,IEDG,ITRI,IIII,RVAL,SVAL,AHAW/2.-180.,
-     +                   AHLN,ISTP,SLT2)
+     +                   AHLR,ISTP,SLT2,IAMA,RTPL)
           END IF
-          SLAR=SLAR+AHSP
+          SLAR=SLAR+AHSR
         END IF
 C
 C If we're at a point where a termination test is to be done, do it.
 C
-        IF (SLTT.LT..01*SLSL)
+        IF (SLTT.LT..01*SLPR)
           CALL VTTPOM (RPNT,IEDG,ITRI,IIII,RVAL,SVAL,
-     +                 0,ICTT,0.,TTLL,ISTP,SLT2,IDUM,RDUM,SDUM)
-          IF (SLT2.LT..99*TTLL)
+     +                 0,ICTT,TTLR,ISTP,SLT2,IDUM,RDUM,SDUM,IAMA,RTPL)
+          IF (SLT2.LT..99*TTLR)
             ITER=6
             GO TO 106
           END IF
           CALL VTTPOM (RPNT,IEDG,ITRI,IIII,RVAL,SVAL,
-     +                 1,ICTT,0.,TTLL,ISTP,SLT2,IDUM,RDUM,SDUM)
-          IF (SLT2.LT..99*TTLL)
+     +                 1,ICTT,TTLR,ISTP,SLT2,IDUM,RDUM,SDUM,IAMA,RTPL)
+          IF (SLT2.LT..99*TTLR)
             ITER=6
             GO TO 106
           END IF
-          SLTT=SLTT+TTSP
+          SLTT=SLTT+TTSR
         END IF
 C
 C If the length of the line has hit the maximum, terminate it.
@@ -10554,7 +11489,7 @@ C
 C Also, if we have been directed to examine the angles between the
 C velocity vectors at its vertices, do that.
 C
-          IF (ANMX.NE.0.)
+          IF (ANM2.NE.0.)
 C
 C Compute the squares of the cosines of the angles between the velocity
 C vectors at pairs of vertices of the triangle.
@@ -10654,9 +11589,9 @@ C portions of it to the coordinate arrays.
 C
         BLOCK (INTERPOLATE-POINTS-ALONG-SEGMENT)
 C
-C If point interpolation is turned on, do the first IPIC segments.
+C If point interpolation is turned on, do the first IPIS segments.
 C
-          IF (IPIC.NE.0)
+          IF (IPIS.NE.0)
             USOD=UCOD
             VSOD=VCOD
             WSOD=WCOD
@@ -10668,13 +11603,13 @@ C
             XSNU=XCNU
             YSNU=YCNU
             ISNU=IVNU
-            FOR (INTP = 1 TO ABS(IPIC))
-              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(USND-USOD)
-              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(VSND-VSOD)
-              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(WSND-WSOD)
-              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIC)+1))*(CSND-CSOD)
+            FOR (INTP = 1 TO ABS(IPIS))
+              UCND=USOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(USND-USOD)
+              VCND=VSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(VSND-VSOD)
+              WCND=WSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(WSND-WSOD)
+              CCND=CSOD+(REAL(INTP)/REAL(ABS(IPIS)+1))*(CSND-CSOD)
               INVOKE (COMPUTE-USER-COORDINATES)
-              IF (IPIC.GT.0.OR.IVNU.NE.IVOU)
+              IF (IPIS.GT.0.OR.IVNU.NE.IVOU)
                 INVOKE (ADD-POINTS-TO-POLYLINE)
                 UCOD=UCND
                 VCOD=VCND
@@ -11061,7 +11996,7 @@ C
                 RDST=RDST-RSTP
               END IF
               RSTP=RSTP/2.
-              EXIT IF (RSTP.LT..001)
+              EXIT IF (RSTP.LT..0001)
             END LOOP
             IF (IFND.NE.0.AND.(UCQD.NE.UCLD.OR.VCQD.NE.VCLD.OR.
      +                                         WCQD.NE.WCLD))
@@ -11174,7 +12109,13 @@ C
                 IPCC=IPCD
               END IF
             END IF
-            CALL CURVE (XCPL,YCPL,NCPL)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
           END IF
 C
           XCPL(1)=XCPL(NCPL)
@@ -11218,7 +12159,13 @@ C
                 IPCC=IPCD
               END IF
             END IF
-            CALL CURVE (XCPL,YCPL,NCPL)
+            IF (IAMA(1).EQ.0)
+              CALL CURVE (XCPL,YCPL,NCPL)
+            ELSE
+              CALL ARDRLN (IAMA,XCPL,YCPL,NCPL,
+     +                          XCPF,YCPF,MCPF,
+     +                          IAAI,IAGI,MNOG,RTPL)
+            END IF
           END IF
 C
           NCPL=0
@@ -11294,6 +12241,287 @@ C
 C Draw it.
 C
         IF (IDRW.EQ.2.OR.IDRW.EQ.3) CALL GPL (NSTP+1,XCRA,YCRA)
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+      FUNCTION ICAVPT (XCRD,YCRD,ZCRD,XCVV,YCVV,ZCVV,RPNT,LOPN,
+     +                                          IPPP,MPPP,NPPP)
+C
+        DIMENSION RPNT(LOPN,MPPP),IPPP(2,MPPP)
+C
+C This function, given the X, Y, and Z coordinates of a point and the
+C components of the velocity vector at that point, searches the point
+C list for a point having the same coordinates.  If such a point
+C exists, its index is returned; if not, such a point is created and
+C its index is returned.  The search is effected using a tree-sort
+C technique, the pointers for which are kept in the array IPPP.
+C
+C If there are any points in the point list at all, ...
+C
+        IF (NPPP.NE.0)
+C
+C initialize a search index to point to the first one, and loop.
+C
+          ITMP=1
+C
+C If the search index is of the point we want, return its index.
+C
+  101     IF (XCRD.EQ.RPNT(1,ITMP).AND.
+     +        YCRD.EQ.RPNT(2,ITMP).AND.
+     +        ZCRD.EQ.RPNT(3,ITMP))
+C
+            ICAVPT=ITMP
+C
+            RETURN
+C
+C If the point we want would precede the one pointed at by the search
+C index, reset the search index to look at lesser elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+          ELSE IF ((XCRD.LT.RPNT(1,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.LT.RPNT(2,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.EQ.RPNT(2,ITMP).AND.
+     +              ZCRD.LT.RPNT(3,ITMP)))
+C
+            IF (IPPP(1,ITMP).NE.0)
+              ITMP=IPPP(1,ITMP)
+              GO TO 101
+            END IF
+C
+            IPPP(1,ITMP)=NPPP+1
+C
+C If the point we want would follow the one pointed at by the search
+C index, reset the search index to look at greater elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+          ELSE IF ((XCRD.GT.RPNT(1,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.GT.RPNT(2,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.EQ.RPNT(2,ITMP).AND.
+     +              ZCRD.GT.RPNT(3,ITMP)))
+C
+            IF (IPPP(2,ITMP).NE.0)
+              ITMP=IPPP(2,ITMP)
+              GO TO 101
+            END IF
+C
+            IPPP(2,ITMP)=NPPP+1
+C
+          END IF
+C
+        END IF
+C
+C Create a new point in the point list (if there's room, of course), and
+C return its index to the caller.
+C
+        IF (NPPP.GE.MPPP)
+C
+          CALL SETER ('ICAVPT - POINT ARRAY IS TOO SMALL',1,1)
+          ICAVPT=-1
+          RETURN
+C
+        ELSE
+C
+          NPPP=NPPP+1
+C
+          IPPP(1,NPPP)=0
+          IPPP(2,NPPP)=0
+C
+          RPNT(1,NPPP)=XCRD
+          RPNT(2,NPPP)=YCRD
+          RPNT(3,NPPP)=ZCRD
+          RPNT(4,NPPP)=XCVV
+          RPNT(5,NPPP)=YCVV
+          RPNT(6,NPPP)=ZCVV
+C
+          ICAVPT=NPPP
+C
+        END IF
+C
+C Done.
+C
+        RETURN
+C
+      END
+
+
+      FUNCTION ICAVPX (XCRD,YCRD,ZCRD,XCVV,YCVV,ZCVV,RPNT,LOPN,
+     +                                     IPPP,MPPP,NPPP,EPST)
+C
+        DIMENSION RPNT(LOPN,MPPP),IPPP(3,MPPP)
+C
+C This function, given the X, Y, and Z coordinates of a point and the
+C components of the velocity vector at that point, searches the point
+C list for a point having nearly the same coordinates (within the
+C epsilon specified by the value of EPST).  If such a point exists,
+C its index is returned; if not, such a point is created and its index
+C is returned.  The search is effected using a tree-sort technique, the
+C pointers for which are kept in the array IPPP.  Each node contains
+C three pointers: 1) a forward pointer to a list of lesser values;
+C 2) a forward pointer to a list of greater values, and 3) a backward
+C pointer to the parent.
+C
+C Initialize.
+C
+        ITMP=0
+C
+C If there are any points in the point list at all, ...
+C
+        IF (NPPP.NE.0)
+C
+C initialize the search index to point to the first one, and loop.
+C
+          ITMP=1
+C
+C If the search index is that of the point we want, return it.
+C
+  101     IF (ABS(XCRD-RPNT(1,ITMP)).LE.EPST.AND.
+     +        ABS(YCRD-RPNT(2,ITMP)).LE.EPST.AND.
+     +        ABS(ZCRD-RPNT(3,ITMP)).LE.EPST)
+C
+C 101     IF      (ABS(XCRD.EQ.RPNT(1,ITMP)).AND.
+C    +             ABS(YCRD.EQ.RPNT(2,ITMP)).AND.
+C    +             ABS(ZCRD.EQ.RPNT(3,ITMP)))
+C
+            ICAVPX=ITMP
+C
+            RETURN
+C
+C If the point we want would precede the one pointed at by the search
+C index, reset the search index to look at lesser elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+          ELSE IF ((XCRD.LT.RPNT(1,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.LT.RPNT(2,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.EQ.RPNT(2,ITMP).AND.
+     +              ZCRD.LT.RPNT(3,ITMP)))
+C
+            IF (IPPP(1,ITMP).NE.0)
+              ITMP=IPPP(1,ITMP)
+              GO TO 101
+            END IF
+C
+            INEW=1
+C
+C If the point we want would follow the one pointed at by the search
+C index, reset the search index to look at greater elements (if any),
+C and loop back to continue the search.  If the pointer is null, reset
+C it to point to a new element that we will create.
+C
+          ELSE IF ((XCRD.GT.RPNT(1,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.GT.RPNT(2,ITMP)).OR.
+     +             (XCRD.EQ.RPNT(1,ITMP).AND.
+     +              YCRD.EQ.RPNT(2,ITMP).AND.
+     +              ZCRD.GT.RPNT(3,ITMP)))
+C
+            IF (IPPP(2,ITMP).NE.0)
+              ITMP=IPPP(2,ITMP)
+              GO TO 101
+            END IF
+C
+            INEW=2
+C
+          END IF
+C
+C No point with approximately the right X, Y, and Z coordinates was
+C found.  Search backward through the list looking for near matches.
+C
+          IBAK=ITMP
+C
+          LOOP
+            IF (IPPP(1,IBAK).NE.0)
+              IBAK=IPPP(1,IBAK)
+              WHILE (IPPP(2,IBAK).NE.0)
+                IBAK=IPPP(2,IBAK)
+              END WHILE
+            ELSE
+              REPEAT
+                EXIT IF (IPPP(3,IBAK).EQ.0)
+                ISAV=IBAK
+                IBAK=IPPP(3,IBAK)
+              UNTIL (IPPP(2,IBAK).EQ.ISAV)
+            END IF
+            EXIT IF (RPNT(1,IBAK).LT.XCRD-EPST)
+            IF (ABS(XCRD-RPNT(1,IBAK)).LE.EPST.AND.
+     +          ABS(YCRD-RPNT(2,IBAK)).LE.EPST.AND.
+     +          ABS(ZCRD-RPNT(3,IBAK)).LE.EPST)
+              ICAVPX=IBAK
+              RETURN
+            END IF
+          END LOOP
+C
+C No point with approximately the right X, Y, and Z coordinates was
+C found.  Search forward through the list looking for near matches.
+C
+          IFOR=ITMP
+C
+          LOOP
+            IF (IPPP(2,IFOR).NE.0)
+              IFOR=IPPP(2,IFOR)
+              WHILE (IPPP(1,IFOR).NE.0)
+                IFOR=IPPP(1,IFOR)
+              END WHILE
+            ELSE
+              REPEAT
+                EXIT IF (IPPP(3,IFOR).EQ.0)
+                ISAV=IFOR
+                IFOR=IPPP(3,IFOR)
+              UNTIL (IPPP(1,IFOR).EQ.ISAV)
+            END IF
+            EXIT IF (RPNT(1,IFOR).GT.XCRD+EPST)
+            IF (ABS(XCRD-RPNT(1,IFOR)).LE.EPST.AND.
+     +          ABS(YCRD-RPNT(2,IFOR)).LE.EPST.AND.
+     +          ABS(ZCRD-RPNT(3,IFOR)).LE.EPST)
+              ICAVPX=IFOR
+              RETURN
+            END IF
+          END LOOP
+C
+        END IF
+C
+C Create a new point in the point list (if there's room, of course), and
+C return its index to the caller.
+C
+        IF (NPPP.GE.MPPP)
+C
+          CALL SETER ('ICAVPX - POINT ARRAY IS TOO SMALL',1,1)
+          ICAVPX=-1
+          RETURN
+C
+        ELSE
+C
+          NPPP=NPPP+1
+C
+          IF (ITMP.NE.0) IPPP(INEW,ITMP)=NPPP
+C
+          IPPP(1,NPPP)=0
+          IPPP(2,NPPP)=0
+          IPPP(3,NPPP)=ITMP
+C
+          RPNT(1,NPPP)=XCRD
+          RPNT(2,NPPP)=YCRD
+          RPNT(3,NPPP)=ZCRD
+          RPNT(4,NPPP)=XCVV
+          RPNT(5,NPPP)=YCVV
+          RPNT(6,NPPP)=ZCVV
+C
+          ICAVPX=NPPP
+C
+        END IF
 C
 C Done.
 C
