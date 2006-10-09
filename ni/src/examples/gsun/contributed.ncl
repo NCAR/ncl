@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.125 2006-09-28 04:48:06 haley Exp $
+;      $Id: contributed.ncl,v 1.126 2006-10-09 16:31:02 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8387,4 +8387,61 @@ begin
   end if
      
   return( ij )
+end
+
+;****************************************************************
+; D Shea
+; Emulate the fortran "mod" function
+
+undef ("mod")
+function mod (r1:numeric, r2:numeric) 
+; mod function like GNU fortran ; AS ALWAYS: BE CAREFUL MIXING NUMERIC TYPES
+local rank_r1, rank_r2, type_r1, type_r2, tmp, R2
+begin
+  if (any(r2.eq.0)) then
+      print("mod: contributed: r2 cannot be zero")
+      exit
+  end if
+
+  rank_r1 = dimsizes(dimsizes(r1))
+  rank_r2 = dimsizes(dimsizes(r2))
+  if (rank_r1.ne.rank_r2 .and. rank_r2.gt.1) then
+      print("mod: contributed: rank(r1).ne.rank(r2)")
+      print("                  rank(r1)= "+rank_r1)
+      print("                  rank(r2)= "+rank_r2)
+      exit
+  end if
+
+  type_r1 = typeof(r1)
+  type_r2 = typeof(r2)
+
+  if (type_r1.eq."double") then
+      return( r1 - (r2 * doubletointeger( r1/r2) ) ) 
+  end if  
+
+  if (type_r1.eq."float") then
+      if (type_r2.eq."float" .or. type_r2.eq."integer") then
+          return( r1 - (r2 * floattointeger( r1/r2 ) ))
+      end if     
+
+      if (type_r2.eq."double") then
+          tmp = doubletofloat( r1 - (r2 * doubletointeger( r1/r2 ) ))
+          return( tmp )
+      end if
+  end if  
+
+  if (type_r1.eq."integer") then
+      if (type_r2.eq."integer") then
+          return( r1 % r2 ) 
+      end if
+      if (type_r2.eq."float") then
+          R2 = floattointeger(r2)
+          return( r1 - floattointeger(R2 * (r1/R2)))
+      end if
+      if (type_r2.eq."double") then
+          R2 = doubletointeger(r2)
+          return( r1 - doubletointeger(R2 * (r1/R2)))
+      end if
+  end if
+
 end
