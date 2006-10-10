@@ -1,4 +1,5 @@
 #!/bin/csh -f
+set echo verbose timestamp
 set version = 090806    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
@@ -216,7 +217,7 @@ while ($#argv)
     shift
     if ($argv[1]:q == "-l" || $argv[1]:q == "-L" || $argv[1]:q == "-r8" || \
         $argv[1]:q == "-pg" || $argv[1]:q == "-lf" || $argv[1]:q == "-in" || \
-        $argv[1]:q == "-g95" $argv[1]:q == "-q32" || $argv[1]:q == "-d" || \
+        $argv[1]:q == "-g95" || $argv[1]:q == "-q32" || $argv[1]:q == "-d" || \
         $argv[1]:q == "-h") then
       echo "FATAL ERROR: missing shared object name after -n option"
       echo EXITING WRAPIT
