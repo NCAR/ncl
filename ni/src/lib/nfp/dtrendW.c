@@ -101,23 +101,6 @@ NhlErrorTypes dtrend_W( void )
     return(NhlFATAL);
   }
 /*
- * Compute size of slope and y intercept.
- */
-  if(*return_slope) {
-    if(type_y != NCL_double) {
-      slope = (void *)calloc(size_leftmost,sizeof(double));
-      yintp = (void *)calloc(size_leftmost,sizeof(double));
-    }
-    else {
-      slope = (void *)calloc(size_leftmost,sizeof(float));
-      yintp = (void *)calloc(size_leftmost,sizeof(float));
-    }
-    if( slope == NULL || yintp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: Cannot allocate space for slope and y-intercept");
-      return(NhlFATAL);
-    }
-  }
-/*
  * Allocate space for output array
  */
   if(type_y != NCL_double) {
@@ -133,6 +116,23 @@ NhlErrorTypes dtrend_W( void )
     return(NhlFATAL);
   }
 
+/*
+ * Compute size of slope and y intercept.
+ */
+  if(*return_slope) {
+    if(type_dtrend_y != NCL_double) {
+      slope = (void *)calloc(size_leftmost,sizeof(float));
+      yintp = (void *)calloc(size_leftmost,sizeof(float));
+    }
+    else {
+      slope = (void *)calloc(size_leftmost,sizeof(double));
+      yintp = (void *)calloc(size_leftmost,sizeof(double));
+    }
+    if( slope == NULL || yintp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend: Cannot allocate space for slope and y-intercept");
+      return(NhlFATAL);
+    }
+  }
 /*
  * Call the Fortran version of this routine.
  */
@@ -642,23 +642,6 @@ NhlErrorTypes dtrend_msg_W( void )
     }
   }
 /*
- * Compute size of slope and y intercept.
- */
-  if(*return_slope) {
-    if(type_y != NCL_double) {
-      slope = (void *)calloc(size_leftmost,sizeof(double));
-      yintp = (void *)calloc(size_leftmost,sizeof(double));
-    }
-    else {
-      slope = (void *)calloc(size_leftmost,sizeof(float));
-      yintp = (void *)calloc(size_leftmost,sizeof(float));
-    }
-    if( slope == NULL || yintp == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Cannot allocate space for slope and y-intercept");
-      return(NhlFATAL);
-    }
-  }
-/*
  * Allocate space for output array
  */
   if(type_y != NCL_double) {
@@ -673,6 +656,24 @@ NhlErrorTypes dtrend_msg_W( void )
   if( dtrend_y == NULL || ydt == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Unable to allocate memory for output array");
     return(NhlFATAL);
+  }
+
+/*
+ * Compute size of slope and y intercept.
+ */
+  if(*return_slope) {
+    if(type_dtrend_y != NCL_double) {
+      slope = (void *)calloc(size_leftmost,sizeof(float));
+      yintp = (void *)calloc(size_leftmost,sizeof(float));
+    }
+    else {
+      slope = (void *)calloc(size_leftmost,sizeof(double));
+      yintp = (void *)calloc(size_leftmost,sizeof(double));
+    }
+    if( slope == NULL || yintp == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: Cannot allocate space for slope and y-intercept");
+      return(NhlFATAL);
+    }
   }
 
 /*
