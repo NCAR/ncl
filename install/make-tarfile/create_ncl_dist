@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.7 2006-09-26 17:16:32 haley Exp $
+#   $Id: create_ncl_dist,v 1.8 2006-10-13 16:30:34 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -24,7 +24,7 @@
 #   Options:   -r :  root directory
 #              -d :  tar file directory
 #              -s :  system to tar up
-#              -c :  scp to meeker.scd.ucar.edu
+#              -c :  scp to windom.ucar.edu
 #              -v :  version number
 #              -b :  bit (32 or 64, required for AIX and IRIX64)
 #
@@ -38,11 +38,13 @@
 # reader        reader.scd.ucar.edu     Power Macintosh   Darwin  
 # lightning     ln0126en                x86_64            Linux   
 # bluesky       bs1201en                0023F7EA4C00      AIX     
-# meeker        meeker                  sun4u             SunOS
+# huron         huron                   sun4u             SunOS
+# windom        windom                  sun4u             SunOS
 # longs         longs                   i686              Linux
 # screw         screw                   i686              Linux
 # jewell        jewell                  i686              CYGWIN_NT-5.0
-
+# gallifrey     gallifrey               ia64              Linux
+#
 # machine        uname -r
 # -------------------------------
 # tempest        6.5
@@ -51,10 +53,12 @@
 # clock          8.7.1
 # lightning      2.6.5-7.147-smp
 # bluesky        1
-# meeker         5.9
+# huron          5.9
+# windom         5.10
 # longs          2.4.21-37.ELsmp
 # screw          2.6.8-2-686-smp
 # jewell         1.5.19(0.150/4/2)
+# gallifrey      2.6.5-7.267-sn2
 #
 # Set defaults for the root directory, the tar file directory, the
 # version number, and the system.
@@ -376,9 +380,9 @@ else
 endif
 
 if ($?SCP) then
-  echo "scp file to meeker..."
-  if ("$name" == "meeker") then
-    /bin/cp $tardir/$ncl_filename.gz $scpdir
+  echo "scp (via meeker) or mv file to $scpdir..."
+  if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
+    /bin/mv $tardir/$ncl_filename.gz $scpdir
   else
     scp $tardir/$ncl_filename.gz $scpmach\:$scpdir
   endif
