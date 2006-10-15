@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.187 2006-10-15 04:56:43 haley Exp $
+;      $Id: gsn_code.ncl,v 1.188 2006-10-15 05:42:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6338,7 +6338,7 @@ function compute_hist_vals(xx,binlocs,nbinlocs[1]:integer, \
                            count_msg:logical,isnice:logical,compare:logical)
 local xmin, xmax, new_binlocs, nbars, buckets, x, i
 begin
-  if(setinterval) then
+  if(isnumeric(xx)) then
     xmin = tofloat(min(xx))
     xmax = tofloat(max(xx))
   end if
@@ -6368,20 +6368,23 @@ begin
           end if
         end if
       end if
-      if(isnice) then
+      if(.not.setdiscrete) then
+        if(isnice) then
+
 ;
 ; Based on min and max of data, compute a new min/max/step that will
 ; give us "nice" bin values.
 ;
-         nicevals = nice_mnmxintvl(xmin,xmax,nbinlocs,True)
-         nvals    = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
-         new_binlocs = fspan(nicevals(0),nicevals(1),nvals)
-       else
+           nicevals = nice_mnmxintvl(xmin,xmax,nbinlocs,True)
+           nvals    = floattoint((nicevals(1) - nicevals(0))/nicevals(2) + 1)
+           new_binlocs = fspan(nicevals(0),nicevals(1),nvals)
+         else
 ;
 ; Don't bother with "nice" values; just span the data. 
 ;
-         new_binlocs = fspan(xmin,xmax,nbinlocs+1)
-       end if
+           new_binlocs = fspan(xmin,xmax,nbinlocs+1)
+         end if
+      end if
     end if
     nbars = dimsizes(new_binlocs)-1
   end if
@@ -6769,7 +6772,7 @@ begin
     print("       your data must be numeric.")
     return(dummy)
   end if
-      
+
 ;
 ; 2. Get number of values in each bin (num_in_bins) and bin locations
 ;    (num_in_bins@binlocs).
