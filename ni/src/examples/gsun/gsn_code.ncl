@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.186 2006-10-05 18:02:49 haley Exp $
+;      $Id: gsn_code.ncl,v 1.187 2006-10-15 04:56:43 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6289,8 +6289,8 @@ end
 
 ;***********************************************************************;
 ; Function : compute_hist_vals                                          ;
-;                     x: numeric                                        ;
-;               binlocs: numeric                                        ;
+;                     x: numeric or string                              ;
+;               binlocs: numeric or string                              ;
 ;              nbinlocs: integer                                        ;
 ;             bin_width: numeric                                        ;
 ;           setinterval: logical                                        ;
@@ -6332,14 +6332,16 @@ end
 ;    range of the data.                                                 ;
 ;                                                                       ;
 ;***********************************************************************;
-function compute_hist_vals(xx:numeric,binlocs:numeric,nbinlocs[1]:integer, \
+function compute_hist_vals(xx,binlocs,nbinlocs[1]:integer, \
                            bin_width:numeric,setinterval:logical, \
                            setdiscrete:logical, minmaxbins:logical, \
                            count_msg:logical,isnice:logical,compare:logical)
 local xmin, xmax, new_binlocs, nbars, buckets, x, i
 begin
-  xmin = tofloat(min(xx))
-  xmax = tofloat(max(xx))
+  if(setinterval) then
+    xmin = tofloat(min(xx))
+    xmax = tofloat(max(xx))
+  end if
 ;
 ; If the bins are set, need to determine if you want to have the bins
 ; represent ranges of values or discrete values.
@@ -6393,10 +6395,10 @@ begin
     npts  = dims(1)
     x     = xx
   else
-    nsets = 1
-    npts  = dimsizes(xx)
-    x     = new((/1,npts/),typeof(xx))
-    x     = conform(x,xx,1)
+    nsets  = 1
+    npts   = dimsizes(xx)
+    x      = new((/1,npts/),typeof(xx))
+    x(0,:) = xx
   end if
 ;
 ; Set up variable to hold binned values. Binned values can have
@@ -6525,13 +6527,14 @@ end
 ;***********************************************************************;
 ; Function : gsn_histogram                                              ;
 ;                   wks: workstation object                             ;
-;                 xdata: numeric                                        ;
+;                 xdata: numeric or string                              ;
 ;                   res: resources                                      ;
 ;                                                                       ;
 ; This function draws a histogram plot. The user can enter the bin      ;
 ;      ranges, discrete bin values, or let this function calculate ones ;
 ;      automatically.  This function will also compare two sets of      ;
-;      histograms.                                                      ;
+;      histograms. If xdata is a string, then you must be using         ;
+;      discrete values, and not ranges.                                 ;
 ;                                                                       ;
 ; Special resources ("gsn" prefix) allowed:                             ;
 ;                                                                       ;
@@ -6610,7 +6613,7 @@ end
 ;15. Draw and advance frame.                                            ;
 ;16. Return histogram information.                                      ;
 ;***********************************************************************;
-function gsn_histogram(wks[1]:graphic,xdata:numeric, resources:logical)
+function gsn_histogram(wks[1]:graphic,xdata, resources:logical)
 local res2, calldraw, callframe, maxbb, ispercent, bins, nbars, \
       setdiscrete, setinterval,top, botton, left, right, lenc, tmp, \
       colors, locs, lbs, compare
@@ -6730,14 +6733,22 @@ begin
       end if
     else
       setdiscrete = True
-      if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
-        bins = tofloat(get_res_value(res2,"gsnHistogramDiscreteBinValues",1))
+      if(isnumeric(xdata)) then
+        if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
+          bins = tofloat(get_res_value(res2,"gsnHistogramDiscreteBinValues",1))
+        else
+          bins = tofloat(get_res_value(res2,"gsnHistogramDiscreteClassValues",1))
+        end if
+        if(max(bins).lt.min(xdata).or.min(bins).gt.max(xdata)) then
+          print("Error: gsn_histogram: The bin values you picked are out of range. No plot will be drawn.")
+          return(dummy)
+        end if
       else
-        bins = tofloat(get_res_value(res2,"gsnHistogramDiscreteClassValues",1))
-      end if
-      if(max(bins).lt.min(xdata).or.min(bins).gt.max(xdata))
-        print("Error: gsn_histogram: The bin values you picked are out of range. No plot will be drawn.")
-        return(dummy)
+        if(isatt(res2,"gsnHistogramDiscreteBinValues")) then
+          bins = get_res_value(res2,"gsnHistogramDiscreteBinValues",1)
+        else
+          bins = get_res_value(res2,"gsnHistogramDiscreteClassValues",1)
+        end if
       end if
     end if
   end if
@@ -6752,6 +6763,13 @@ begin
   if(.not.setinterval.and..not.setdiscrete) then
     bins = 0.
   end if
+
+  if(setinterval.and..not.isnumeric(xdata)) then
+    print("Error: gsn_histogram: If you are doing bin intervals,")
+    print("       your data must be numeric.")
+    return(dummy)
+  end if
+      
 ;
 ; 2. Get number of values in each bin (num_in_bins) and bin locations
 ;    (num_in_bins@binlocs).
@@ -7165,9 +7183,23 @@ begin
 ;
 ; 16. Return histogram and the values.
 ;
-  histogram@NumInBins   = num_in_bins
-  histogram@NumMissing = num_in_bins@NumMissing
-  histogram@Percentages = num_in_bins@percentages
+; Return begin, mid, and end point location of each bar.
+;
+  if(compare) then
+      both_locs = new((/2,dimsizes(bar_locs)/),typeof(bar_locs))
+      both_locs(0,:) = bar_locs
+      both_locs(1,:) = bar2_locs
+      histogram@BeginBarLocs = both_locs
+      histogram@MidBarLocs   = both_locs + 0.5*bar_width
+      histogram@EndBarLocs   = both_locs + bar_width
+  else
+    histogram@BeginBarLocs = bar_locs
+    histogram@MidBarLocs   = bar_locs + 0.5*bar_width
+    histogram@EndBarLocs   = bar_locs + bar_width
+  end if
+  histogram@NumInBins     = num_in_bins
+  histogram@NumMissing    = num_in_bins@NumMissing
+  histogram@Percentages   = num_in_bins@percentages
   histogram@PercentagesNoMissing = num_in_bins@percentages_nm
   return(histogram)
 end
@@ -7294,7 +7326,7 @@ begin
 
 ;
 ; Don't let pmTickMarkDisplayMode be set after the fact if we are
-; going to overlya this plot later, because you might get an error
+; going to overlay this plot later, because you might get an error
 ; message about warning:PlotManagerSetValues: TickMark annotation 
 ; cannot be added after NhlCreate.
 ;
