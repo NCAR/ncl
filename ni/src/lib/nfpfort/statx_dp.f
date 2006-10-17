@@ -438,24 +438,23 @@ c note :  uncalculated quantities are set to xmsg
       IF (NPTS.LT.2) IER = 1
       IF (MXLAG.LT.0 .OR. MXLAG.GT.NPTS) IER = 2
       IF (XVAR.LE.0.D0 .AND. XVAR.NE.XMSG) IER = 3
-      IF (IER.NE.0) THEN
-          DO LAG = 0,MAX0(0,MIN0(MXLAG,NPTS))
-              ACV(LAG) = XMSG
-              ACR(LAG) = XMSG
-          END DO
-          RETURN
-      END IF
+
+      DO LAG = 0,MAX0(0,MIN0(MXLAG,NPTS))
+         ACV(LAG) = XMSG
+         ACR(LAG) = XMSG
+      END DO
+      IF (IER.NE.0) RETURN
+
 
       IF (XMEAN.EQ.XMSG .OR. XVAR.EQ.XMSG) THEN
           CALL DSTAT2(X,NPTS,XMSG,XMEAN,XVAR,XSD,NPTUSED,JER)
           IF (JER.NE.0) THEN
               IER = -JER
-              RETURN
           ELSE IF (XVAR.EQ.0.D0) THEN
               IER = -5
-              RETURN
           END IF
       END IF
+      IF (IER.NE.0) RETURN
 
       ACV(0) = XVAR
       ACR(0) = 1.00D0
