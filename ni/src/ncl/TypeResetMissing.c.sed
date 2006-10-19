@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeResetMissing.c.sed,v 1.1 1995-01-28 01:52:59 ethan Exp $
+ *      $Id: TypeResetMissing.c.sed,v 1.2 2006-10-19 22:57:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -39,6 +39,10 @@ int nval;
 	if((old_m == NULL)||(new_m == NULL))
 		return(NhlFATAL);
 
+	if (old_m->DATATYPEval == new_m->DATATYPEval) {
+		/* nothing to do */
+		return NhlNOERROR;	
+	}
 
 	for(i = 0; i < nval; i++,value++ ) {
 		if(*value == old_m->DATATYPEval) {
