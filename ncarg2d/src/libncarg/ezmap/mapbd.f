@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.20 2006-03-06 21:02:19 kennison Exp $
+C $Id: mapbd.f,v 1.21 2006-10-19 19:00:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -138,7 +138,8 @@ C
         SAVE   /MAPCMX/
 C
         COMMON /MAPCMY/  NAME(MNAI),FLNS
-        CHARACTER*64     NAME,FLNS
+        CHARACTER*64     NAME
+        CHARACTER*512    FLNS
         SAVE   /MAPCMY/
 C
 C The common block MAPRGD contains two arrays of color indices and
