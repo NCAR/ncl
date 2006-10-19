@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.39 2006-05-05 20:40:15 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.40 2006-10-19 23:27:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -276,6 +276,8 @@ NetCdfAttInqRec* frec
 			break;
 		}
 		if (! vl || vl->var_inq->n_dims > 1)
+			continue;
+		if (dim_inq->size == 0)
 			continue;
 	        vl->var_inq->value = NclMalloc(nctypelen(vl->var_inq->data_type) * dim_inq->size);
 		ret = ncvarget(ncid,vl->var_inq->varid,&start,&dim_inq->size,vl->var_inq->value);
