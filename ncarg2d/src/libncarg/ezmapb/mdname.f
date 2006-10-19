@@ -1,5 +1,5 @@
 C
-C $Id: mdname.f,v 1.1 2001-08-16 23:10:48 kennison Exp $
+C $Id: mdname.f,v 1.2 2006-10-19 19:02:22 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -34,7 +34,8 @@ C
         SAVE   /MAPCMX/
 C
         COMMON /MAPCMY/  NAME(MNAI),FLNS
-        CHARACTER*64     NAME,FLNS
+        CHARACTER*64     NAME
+        CHARACTER*512    FLNS
         SAVE   /MAPCMY/
 C
         MDNAME=' '

@@ -1,5 +1,5 @@
 C
-C $Id: mdlnam.f,v 1.2 2005-04-14 20:16:03 kennison Exp $
+C $Id: mdlnam.f,v 1.3 2006-10-19 19:02:22 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -47,7 +47,8 @@ C
         SAVE   /MAPCMX/
 C
         COMMON /MAPCMY/  NAME(MNAI),FLNS
-        CHARACTER*64     NAME,FLNS
+        CHARACTER*64     NAME
+        CHARACTER*512    FLNS
         SAVE   /MAPCMY/
 C
         COMMON /MAPCMZ/  NNMS,ILTY,IAIL,IAIR,BLAG,SLAG,BLOG,SLOG,
@@ -59,8 +60,8 @@ C
 C FLNL and FLND are character variables in which to form the names of
 C files to be read (locally or in the NCAR Graphics database directory).
 C
-        CHARACTER*71     FLNL
-        CHARACTER*128    FLND
+        CHARACTER*519    FLNL
+        CHARACTER*1024   FLND
 C
 C CHRS is a buffer used to read name information.
 C
@@ -92,15 +93,16 @@ C Form the full names of the ".names" file (locally and in the NCAR
 C Graphics database directory).
 C
         LFNM=MDILNB(FLNM)
+        IF (LFNM.GT.512) GO TO 901
 C
         FLNL=FLNM(1:LFNM)//'.names'//CHAR(0)
         LFNL=LFNM+7
 C
         CALL MPDBDI (FLND,ISTA)
         IF (ISTA.EQ.-1) GO TO 901
-        DO 101 I=1,121-LFNM
+        DO 101 I=1,LEN(FLND)-7-LFNM
           IF (FLND(I:I).EQ.CHAR(0)) THEN
-            FLND(I:128)='/'//FLNM(1:LFNM)//'.names'//CHAR(0)
+            FLND(I:LEN(FLND))='/'//FLNM(1:LFNM)//'.names'//CHAR(0)
             LFND=I+LFNM+7
             GO TO 102
           ENDIF
