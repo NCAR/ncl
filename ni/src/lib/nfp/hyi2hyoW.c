@@ -84,11 +84,6 @@ NhlErrorTypes hyi2hyo_W( void )
           &type_ps,
           2);
 
-  if( ndims_ps < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: The input array 'ps' must be at least 2 dimensions");
-    return(NhlFATAL);
-  }
-
   xi = (void*)NclGetArgValue(
           4,
           8,
@@ -158,7 +153,7 @@ NhlErrorTypes hyi2hyo_W( void )
   }
 
   if(dsizes_hyai[0] != klevi || dsizes_hybi[0] != klevi) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: The input arrays 'hyai' and 'hybi' must be the same as the third rightmost dimension of 'xi'");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: The input arrays 'hyai' and 'hybi' must be the same length as the third rightmost dimension of 'xi'");
     return(NhlFATAL);
   }
 
@@ -175,27 +170,24 @@ NhlErrorTypes hyi2hyo_W( void )
  * xi must have the same dimensions as ps, only with one more dimension
  * 'klevi'.
  */
-  if( ndims_xi != ndims_ps+1 ) {
+  if( ndims_xi != (ndims_ps+1) ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: The input array 'xi' must have one more dimension than 'ps'");
     return(NhlFATAL);
   }
 
 /*
- * Check dimension sizes of xi and ps.
+ * Check dimension sizes of xi and ps and compute the size of the
+ * leftmost dimensions of the output array (minus the nlat,mlon,
+ * klevi dims).
  */
+  size_leftmost = 1;
   for( i = 0; i < ndims_xi-3; i++ ) {
     if( dsizes_xi[i] != dsizes_ps[i] ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: The rightmost dimensions of 'ps' and 'xi' must be the same");
       return(NhlFATAL);
     }
+    size_leftmost *= dsizes_xi[i]; 
   }
-
-/*
- * Compute the size of the leftmost dimensions of the output array
- * (minus the nlat,mlon,klevi dims).
- */
-  size_leftmost = 1;
-  for( i = 0; i < ndims_xi-3; i++ ) size_leftmost *= dsizes_xi[i]; 
   size_xo = size_leftmost*klevonlatmlon;
 
 /*
@@ -215,7 +207,7 @@ NhlErrorTypes hyi2hyo_W( void )
   if(type_xi != NCL_double) {
     tmp_xi = (double *)calloc(klevinlatmlon,sizeof(double));
     if( tmp_xi == NULL ) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: Unable to allocate memory for coercing xi array double precision");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: Unable to allocate memory for coercing xi array to double precision");
       return(NhlFATAL);
     }
   }
@@ -258,7 +250,7 @@ NhlErrorTypes hyi2hyo_W( void )
     type_xo = NCL_float;
 
     tmp_xo = (double *)calloc(klevonlatmlon,sizeof(double));
-    xo     = (float *)NclMalloc(size_xo*sizeof(float));
+    xo     = (float *)calloc(size_xo,sizeof(float));
 
     if(tmp_xo == NULL || xo == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: Unable to allocate memory for output array");
@@ -267,7 +259,7 @@ NhlErrorTypes hyi2hyo_W( void )
   }
   else {
     type_xo = NCL_double;
-    xo = (double *)NclMalloc(size_xo*sizeof(double));
+    xo = (double *)calloc(size_xo,sizeof(double));
     if( xo == NULL ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: Unable to allocate memory for output array");
       return(NhlFATAL);
@@ -276,8 +268,8 @@ NhlErrorTypes hyi2hyo_W( void )
 /*
  * Allocate space for scratch arrays.
  */
-  pi = (double *)NclMalloc(klevi*sizeof(double));
-  po = (double *)NclMalloc(klevo*sizeof(double));
+  pi = (double *)calloc(klevi,sizeof(double));
+  po = (double *)calloc(klevo,sizeof(double));
 
   if( pi == NULL || po == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"hyi2hyo: Unable to allocate memory for work arrays");
