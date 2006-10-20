@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.207 2006-10-20 17:40:18 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.208 2006-10-20 21:39:38 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -10799,7 +10799,7 @@ NhlErrorTypes _Nclwhere
 			}
 			if (cond_val[j]) {
 				memcpy((char*)out_val + j * val_type->type_class.size,
-				       (char*)&true_val, val_type->type_class.size);
+				       (char*)true_val, val_type->type_class.size);
 			}
 			else if (check_false) {
 				if (! memcmp((char*)false_val + j *  val_type->type_class.size,
@@ -10822,7 +10822,7 @@ NhlErrorTypes _Nclwhere
 	}
 	else if (false_val_md->multidval.kind == SCALAR) {
 		if (check_false) {
-			if (! memcmp(&false_val,&check_missing_val,val_type->type_class.size))
+			if (! memcmp(false_val,&check_missing_val,val_type->type_class.size))
 				false_val = (void *) & missing_val;
 		}
 		for(j = 0; j < cond_md->multidval.totalelements; j++) {
