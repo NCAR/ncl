@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.16 2006-06-05 22:38:53 kennison Exp $
+I $Id: CodeIftran,v 1.17 2006-10-20 21:40:31 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -4278,7 +4278,10 @@ C
           ITM2=LIWK
 C
           DO (I=1,$NBIW$)
-            IF (LIWS(I).NE.0.AND.IIWS(I).LT.ITM2) ITM1=I
+            IF (LIWS(I).NE.0.AND.IIWS(I).LT.ITM2)
+              ITM1=I
+              ITM2=IIWS(I)
+            END IF
           END DO
 C
           IF (ITM1.NE.0)
@@ -4366,7 +4369,10 @@ C
           ITM2=LRWK
 C
           DO (I=1,$NBRW$)
-            IF (LRWS(I).NE.0.AND.IRWS(I).LT.ITM2) ITM1=I
+            IF (LRWS(I).NE.0.AND.IRWS(I).LT.ITM2)
+              ITM1=I
+              ITM2=IRWS(I)
+            END IF
           END DO
 C
           IF (ITM1.NE.0)
