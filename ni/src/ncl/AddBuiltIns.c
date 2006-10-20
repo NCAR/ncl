@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.77 2006-08-31 18:17:47 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.78 2006-10-20 17:40:18 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -189,6 +189,11 @@ void
 #endif
 );
 extern NhlErrorTypes _Nclmask(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclwhere(
 #if NhlNeedProto
 void
 #endif
@@ -1415,6 +1420,14 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	SetArgTemplate(args,nargs,NclANY,1,dimsizes); nargs++;
 	NclRegisterFunc( _Nclmask,args,"mask",nargs);
+
+	nargs = 0;
+	args = NewArgs(3);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"logical",0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	NclRegisterFunc( _Nclwhere,args,"where",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

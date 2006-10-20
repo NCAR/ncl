@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.206 2006-09-03 20:03:03 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.207 2006-10-20 17:40:18 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -10571,6 +10571,345 @@ NhlErrorTypes _Nclmask
 		tmp_md0->multidval.dim_sizes,
 		(tmp_md0->multidval.missing_value.has_missing? &tmp_md0->multidval.missing_value.value:&tmp_md0->multidval.type->type_class.default_mis),
 		tmp_md0->multidval.data_type,
+		0
+	));
+}
+/*
+ * Simply:
+ * for all elements of cond_md:
+ *     if True:
+ *        out_val_md = true_val_md
+ *     else:
+ *        out_val_md = false_val_md
+ */
+
+
+NhlErrorTypes _Nclwhere
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+
+	NclStackEntry data0;
+	NclStackEntry data1;
+	NclStackEntry data2;
+	NclMultiDValData cond_md = NULL;
+	NclMultiDValData true_val_md = NULL;
+	NclMultiDValData false_val_md = NULL;
+	NclMultiDValData val_md = NULL;
+	void *out_val;
+	int j,i;
+	void *tmp = NULL;
+	void *true_val = NULL;
+	void *false_val = NULL;
+	logical *cond_val = NULL;
+	NclTypeClass val_type = NULL;
+	int true_has_missing = 0,false_has_missing = 0,cond_has_missing = 0;
+	int check_true = 0, check_false = 0;
+	NclScalar missing_val, check_missing_val;
+	
+
+	data0 = _NclGetArg(0,3,DONT_CARE);
+	switch(data0.kind) {
+		case NclStk_VAR:
+			cond_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			cond_md = (NclMultiDValData)data0.u.data_obj;
+			break;
+	}
+	if(cond_md == NULL)
+		return(NhlFATAL);
+	if (cond_md->multidval.missing_value.has_missing)
+		cond_has_missing = 1;
+	
+
+	data1 = _NclGetArg(1,3,DONT_CARE);
+	switch(data1.kind) {
+		case NclStk_VAR:
+			true_val_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			true_val_md = (NclMultiDValData)data1.u.data_obj;
+			break;
+	}
+	data2 = _NclGetArg(2,3,DONT_CARE);
+	switch(data2.kind) {
+		case NclStk_VAR:
+			false_val_md = _NclVarValueRead(data2.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			false_val_md = (NclMultiDValData)data2.u.data_obj;
+			break;
+	}
+	if (true_val_md == NULL || false_val_md == NULL)
+		return(NhlFATAL);
+	if (true_val_md->multidval.missing_value.has_missing)
+		true_has_missing = 1;
+	if (false_val_md->multidval.missing_value.has_missing)
+		false_has_missing = 1;
+
+	if (true_val_md->multidval.kind != SCALAR)  {
+		if(cond_md->multidval.n_dims  != true_val_md->multidval.n_dims) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"where: condition variable (parameter 1) dimension mismatch with parameter 2");
+			return(NhlFATAL);
+		}
+		else {
+			for(i = 0; i < cond_md->multidval.n_dims; i++) {
+				if(cond_md->multidval.dim_sizes[i] != true_val_md->multidval.dim_sizes[i]) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "wherefunc: dimension sizes  of parameter 0 and parameter 1 do not match");
+					return(NhlFATAL);
+				}
+			}
+		}
+	}
+	if (false_val_md->multidval.kind != SCALAR) {
+		if(cond_md->multidval.n_dims  != false_val_md->multidval.n_dims) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"where: condition variable (parameter 1) dimension mismatch with parameter 2");
+			return(NhlFATAL);
+		}
+		else {
+			for(i = 0; i < cond_md->multidval.n_dims; i++) {
+				if(cond_md->multidval.dim_sizes[i] != false_val_md->multidval.dim_sizes[i]) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "wherefunc: dimension sizes  of parameter 0 and parameter 1 do not match");
+					return(NhlFATAL);
+				}
+			}
+		}
+	}
+	if(true_val_md->multidval.data_type != false_val_md->multidval.data_type) {
+		tmp = (void*)NclMalloc(true_val_md->multidval.type->type_class.size * false_val_md->multidval.totalelements);
+		if(_Nclcoerce((NclTypeClass)true_val_md->multidval.type,tmp,
+			      false_val_md->multidval.val,false_val_md->multidval.totalelements,
+			      NULL,NULL,(NclTypeClass)false_val_md->multidval.type) == NhlFATAL)  {
+			NclFree(tmp);
+			tmp = (void*)NclMalloc(false_val_md->multidval.type->type_class.size * true_val_md->multidval.totalelements);
+			if(_Nclcoerce((NclTypeClass)false_val_md->multidval.type,tmp,
+				      true_val_md->multidval.val,true_val_md->multidval.totalelements,
+				      NULL,NULL,(NclTypeClass)true_val_md->multidval.type) == NhlFATAL)  {
+				NclFree(tmp);
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "wherefunc: parameter 2 and parameter 2 must be the same types or coercible to each other");
+				return(NhlFATAL);
+			} else {
+				false_val = false_val_md->multidval.val;
+				true_val = tmp;
+				val_type = false_val_md->multidval.type;
+				val_md = false_val_md;
+				if (false_has_missing && true_has_missing) {
+					_NclScalarCoerce(&true_val_md->multidval.missing_value.value,true_val_md->multidval.data_type,
+							 &check_missing_val,val_md->multidval.data_type);
+					if (memcmp(&val_md->multidval.missing_value.value,&check_missing_val,val_type->type_class.size)) {
+						check_true = 1;
+					}
+					missing_val = val_md->multidval.missing_value.value;
+				}
+				else if (false_has_missing)
+					missing_val = val_md->multidval.missing_value.value;
+				else if (true_has_missing)
+					_NclScalarCoerce(&true_val_md->multidval.missing_value.value,true_val_md->multidval.data_type,
+							 &missing_val,val_md->multidval.data_type);
+				else
+					missing_val = val_md->multidval.type->type_class.default_mis;
+			}
+		} else {
+			true_val = true_val_md->multidval.val;
+			false_val = tmp;
+			val_type = true_val_md->multidval.type;
+			val_md = true_val_md;
+			if (true_has_missing && false_has_missing) {
+				_NclScalarCoerce(&false_val_md->multidval.missing_value.value,false_val_md->multidval.data_type,
+						 &check_missing_val,val_md->multidval.data_type);
+				if (memcmp(&val_md->multidval.missing_value.value,&check_missing_val,val_type->type_class.size)) {
+					check_false = 1;
+				}
+				missing_val = val_md->multidval.missing_value.value;
+			}
+			else if (true_has_missing)
+				missing_val = val_md->multidval.missing_value.value;
+			else if (false_has_missing)
+				_NclScalarCoerce(&false_val_md->multidval.missing_value.value,false_val_md->multidval.data_type,
+							 &missing_val,val_md->multidval.data_type);
+			else
+				missing_val = val_md->multidval.type->type_class.default_mis;
+		}
+	} else {
+		true_val = true_val_md->multidval.val;
+		false_val = false_val_md->multidval.val;
+		val_type = true_val_md->multidval.type;
+		val_md = true_val_md;
+		if (true_has_missing && false_has_missing) {
+			if (memcmp(&val_md->multidval.missing_value.value,
+				   &false_val_md->multidval.missing_value.value,val_type->type_class.size)) {
+				check_missing_val = false_val_md->multidval.missing_value.value;
+				check_false = 1;
+			}
+			missing_val = val_md->multidval.missing_value.value;
+		}
+		else if (true_has_missing)
+			missing_val = val_md->multidval.missing_value.value;
+		else if (false_has_missing)
+			missing_val = false_val_md->multidval.missing_value.value;
+		else
+			missing_val = val_md->multidval.type->type_class.default_mis;
+	}
+
+	out_val = (void*)NclMalloc(cond_md->multidval.totalelements * val_type->type_class.size);
+
+	cond_val = (logical *) cond_md->multidval.val;
+	if (true_val_md->multidval.kind == SCALAR && false_val_md->multidval.kind == SCALAR) {
+		if (check_true) {
+			if (! memcmp(true_val,&check_missing_val,val_type->type_class.size))
+				true_val = (void *) & missing_val;
+		}
+		else if (check_false) {
+			if (! memcmp(false_val,&check_missing_val,val_type->type_class.size))
+				false_val = (void *) & missing_val;
+		}
+		for(j = 0; j < cond_md->multidval.totalelements; j++) {
+			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       &missing_val,val_type->type_class.size);
+				continue;
+			}
+			if (cond_val[j]) {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       (char*)true_val, val_type->type_class.size);
+			}
+			else {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       (char*)false_val, val_type->type_class.size);
+			}
+		}
+	}
+	else if (true_val_md->multidval.kind == SCALAR) {
+		if (check_true) {
+			if (! memcmp(true_val,&check_missing_val,val_type->type_class.size))
+				true_val = (void *) & missing_val;
+		}
+		for(j = 0; j < cond_md->multidval.totalelements; j++) {
+			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       &missing_val,val_type->type_class.size);
+				continue;
+			}
+			if (cond_val[j]) {
+				memcpy((char*)out_val + j * val_type->type_class.size,
+				       (char*)&true_val, val_type->type_class.size);
+			}
+			else if (check_false) {
+				if (! memcmp((char*)false_val + j *  val_type->type_class.size,
+					     &check_missing_val,val_type->type_class.size)) {
+					memcpy((char*)out_val + j *  val_type->type_class.size,
+					       (char*)& missing_val, val_type->type_class.size);
+				}
+				else {
+					memcpy((char*)out_val + j *  val_type->type_class.size,
+					       (char*)false_val + j *  val_type->type_class.size,
+					       val_type->type_class.size);
+				}
+			}
+			else {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       (char*)false_val + j *  val_type->type_class.size,
+				       val_type->type_class.size);
+			}
+		}
+	}
+	else if (false_val_md->multidval.kind == SCALAR) {
+		if (check_false) {
+			if (! memcmp(&false_val,&check_missing_val,val_type->type_class.size))
+				false_val = (void *) & missing_val;
+		}
+		for(j = 0; j < cond_md->multidval.totalelements; j++) {
+			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       &missing_val,val_type->type_class.size);
+				continue;
+			}
+			if (cond_val[j]) {
+				if (check_true) {
+					if (! memcmp((char*)true_val + j *  val_type->type_class.size,
+						     &check_missing_val,val_type->type_class.size)) {
+						memcpy((char*)out_val + j *  val_type->type_class.size,
+						       (char*)& missing_val, val_type->type_class.size);
+					}
+					else {
+						memcpy((char*)out_val + j *  val_type->type_class.size,
+						       (char*)true_val + j * val_type->type_class.size,
+						       val_type->type_class.size);
+					}
+				}
+				else {
+					memcpy((char*)out_val + j *  val_type->type_class.size,
+					       (char*)true_val + j * val_type->type_class.size,
+					       val_type->type_class.size);
+				}
+			}
+			else {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       (char*)false_val, val_type->type_class.size);
+			}
+		}
+	}
+	else {
+		for(j = 0; j < cond_md->multidval.totalelements; j++) {
+			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       &missing_val,val_type->type_class.size);
+				continue;
+			}
+			if (cond_val[j]) {
+				if (check_true) {
+					if (! memcmp((char*)true_val + j *  val_type->type_class.size,
+						     &check_missing_val,val_type->type_class.size)) {
+						memcpy((char*)out_val + j *  val_type->type_class.size,
+						       (char*)& missing_val, val_type->type_class.size);
+					}
+					else {
+						memcpy((char*)out_val + j *  val_type->type_class.size,
+						       (char*)true_val + j * val_type->type_class.size,
+						       val_type->type_class.size);
+					}
+				}
+				else {
+					memcpy((char*)out_val + j *  val_type->type_class.size,
+					       (char*)true_val + j * val_type->type_class.size,
+					       val_type->type_class.size);
+				}
+			}
+			else if (check_false) {
+				if (! memcmp((char*)false_val + j *  val_type->type_class.size,
+					     &check_missing_val,val_type->type_class.size)) {
+					memcpy((char*)out_val + j *  val_type->type_class.size,
+					       (char*)& missing_val, val_type->type_class.size);
+				}			
+				else {
+					memcpy((char*)out_val + j *  val_type->type_class.size,
+					       (char*)false_val + j *  val_type->type_class.size,
+					       val_type->type_class.size);
+				}
+			}
+			else {
+				memcpy((char*)out_val + j *  val_type->type_class.size,
+				       (char*)false_val + j *  val_type->type_class.size,
+				       val_type->type_class.size);
+			}
+		}
+	}
+	if(tmp != NULL) 	
+		NclFree(tmp);
+	return(NclReturnValue(
+		out_val,
+		cond_md->multidval.n_dims,
+		cond_md->multidval.dim_sizes,
+		(val_md->multidval.missing_value.has_missing? &val_md->multidval.missing_value.value:
+		 &val_md->multidval.type->type_class.default_mis),
+		val_md->multidval.data_type,
 		0
 	));
 }
