@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.126 2006-10-09 16:31:02 shea Exp $
+;      $Id: contributed.ncl,v 1.127 2006-10-23 14:35:08 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3169,6 +3169,120 @@ begin
 
    return(xAnom)
 end
+; **********************************************************************
+; D. Shea
+; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
+; vars.  It adds the longitude and latitude coordinates.
+
+undef("linint1_Wrap")
+function linint1_Wrap (xi[*]:numeric, fi:numeric, wrapX:logical \
+                      ,xo[*]:numeric, Opt)
+
+; wrapper for NCL function "linint1"  that copies attributes and coordinate vars.
+local fo, dimfi, nDim, n, nD
+begin
+
+  fo   = linint1 (xi,fi, wrapX, xo, Opt)        ; perform interpolation 
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fo))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_1 (fi, fo)                     ; copy coord variables  
+                                                ; except for rightmost
+
+  nD   = nDim-1                                 ; last dimension
+                                                ; create a new coord for
+  if (.not.ismissing(xo!0)) then
+      fo!nD = xo!0                              ; if present, use xo name
+  else 
+      if (.not.ismissing(fi!nD)) then
+          fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
+      else                                      ; but change case [contributed]
+          fo!nD = "X"                           ; default dimension name
+      end if                
+  end if
+                                                ; assign coordinates
+  fo&$fo!nD$ = xo                               ; rightmost dim
+   
+  return (fo)
+end
+; **********************************************************************
+; D. Shea
+; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
+; vars.  It adds the longitude and latitude coordinates.
+
+undef ("linint2_Wrap")
+function linint2_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
+                      ,xo[*]:numeric,yo[*]:numeric, Opt)
+
+; wrapper for NCL function "linint2"  that copies attributes and coordinate vars
+
+local fo, dimfi, nDim, nD
+begin
+  fo   = linint2 (xi,yi,fi, wrapX, xo,yo, Opt)  ; perform interpolation 
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+                                                ; except for 2 rightmost
+
+  fo!(nDim-2) = "Y"                             ; default named dimensions
+  fo!(nDim-1) = "X"
+                                                ; override if possible
+  if (.not.ismissing(xo!0) .and. .not.ismissing(yo!0)) then
+      fo!(nDim-2) = yo!0                        ; if present, use xo name
+      fo!(nDim-1) = xo!0                        ; if present, use xo name
+  else 
+      do nD=nDim-2,nDim-1                       ; two rightmost dimensions
+         if (.not.ismissing(fi!nD)) then
+             fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
+         end if                                 ; but change case
+      end do
+  end if
+
+  fo&$fo!(nDim-2)$ = yo                         ; create coordinate var 
+  fo&$fo!(nDim-1)$ = xo                         ; two rightmost dimensions
+
+  return (fo)
+end
+
+; **********************************************************************
+; D. Shea
+; wrapper for NCL function "linint2_points"  that copies attributes+coordinates
+; vars.  It creates a "pts" coord variable and creates two 1D
+; attributes that indicate the lat/lon associated with each point.
+undef ("linint2_points_Wrap")
+function linint2_points_Wrap \ 
+                      (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
+                      ,xo[*]:numeric,yo[*]:numeric, Opt)
+
+; wrapper for NCL function "linint2_points"  that copies attributes and coordinate vars
+local fo, dimfi, nDim, pts
+begin
+  fo   = linint2_points (xi,yi,fi, wrapX, xo,yo, Opt)  ; perform interpolation 
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+
+  copy_VarAtts     (fi, fo)                     ; copy variable attributes
+  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+                                                ; except for 2 rightmost
+
+  nDim = dimsizes(dimsizes(fo))                 ; # output  dimensions 
+                                                
+  pts           = ispan(0,dimsizes(xo)-1,1)     ; linear   
+  pts@long_name = "Points"
+
+  fo!(nDim-1)   = "pts"                         ; default named dimensions
+  fo&pts        =  pts
+  fo@xcoord     =  xo            ; x/longitude points
+  fo@ycoord     =  yo            ; y/latitude  points
+   
+  return (fo)
+end
 ;****************************************************
 ; D. Shea
 ; Take a monthly climatology and make a daily climatology
@@ -3806,120 +3920,6 @@ begin
   vNew!(nDim-1)  = "lon"                        ; rightmost dimension
   vNew&lat       = lat                          ; add new coord var
   vNew&lon       = lon
-end
-; **********************************************************************
-; D. Shea
-; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
-; vars.  It adds the longitude and latitude coordinates.
-
-undef("linint1_Wrap")
-function linint1_Wrap (xi[*]:numeric, fi:numeric, wrapX:logical \
-                      ,xo[*]:numeric, Opt)
-
-; wrapper for NCL function "linint1"  that copies attributes and coordinate vars.
-local fo, dimfi, nDim, n, nD
-begin
-
-  fo   = linint1 (xi,fi, wrapX, xo, Opt)        ; perform interpolation 
-                                                ; shea_misc functions
-  dimfi= dimsizes(fi)
-  nDim = dimsizes(dimsizes(fo))                 ; number of dimensions
-
-  copy_VarAtts (fi, fo)                         ; copy variable attributes
-  copy_VarCoords_1 (fi, fo)                     ; copy coord variables  
-                                                ; except for rightmost
-
-  nD   = nDim-1                                 ; last dimension
-                                                ; create a new coord for
-  if (.not.ismissing(xo!0)) then
-      fo!nD = xo!0                              ; if present, use xo name
-  else 
-      if (.not.ismissing(fi!nD)) then
-          fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
-      else                                      ; but change case [contributed]
-          fo!nD = "X"                           ; default dimension name
-      end if                
-  end if
-                                                ; assign coordinates
-  fo&$fo!nD$ = xo                               ; rightmost dim
-   
-  return (fo)
-end
-; **********************************************************************
-; D. Shea
-; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
-; vars.  It adds the longitude and latitude coordinates.
-
-undef ("linint2_Wrap")
-function linint2_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
-                      ,xo[*]:numeric,yo[*]:numeric, Opt)
-
-; wrapper for NCL function "linint2"  that copies attributes and coordinate vars
-
-local fo, dimfi, nDim, nD
-begin
-  fo   = linint2 (xi,yi,fi, wrapX, xo,yo, Opt)  ; perform interpolation 
-                                                ; shea_misc functions
-  dimfi= dimsizes(fi)
-  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
-
-  copy_VarAtts (fi, fo)                         ; copy variable attributes
-  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
-                                                ; except for 2 rightmost
-
-  fo!(nDim-2) = "Y"                             ; default named dimensions
-  fo!(nDim-1) = "X"
-                                                ; override if possible
-  if (.not.ismissing(xo!0) .and. .not.ismissing(yo!0)) then
-      fo!(nDim-2) = yo!0                        ; if present, use xo name
-      fo!(nDim-1) = xo!0                        ; if present, use xo name
-  else 
-      do nD=nDim-2,nDim-1                       ; two rightmost dimensions
-         if (.not.ismissing(fi!nD)) then
-             fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
-         end if                                 ; but change case
-      end do
-  end if
-
-  fo&$fo!(nDim-2)$ = yo                         ; create coordinate var 
-  fo&$fo!(nDim-1)$ = xo                         ; two rightmost dimensions
-
-  return (fo)
-end
-
-; **********************************************************************
-; D. Shea
-; wrapper for NCL function "linint2_points"  that copies attributes and coordinate 
-; vars.  It creates a "pts" coord variable and creates two 1D
-; attributes that indicate the lat/lon associated with each point.
-undef ("linint2_points_Wrap")
-function linint2_points_Wrap \ 
-                      (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
-                      ,xo[*]:numeric,yo[*]:numeric, Opt)
-
-; wrapper for NCL function "linint2_points"  that copies attributes and coordinate vars
-local fo, dimfi, nDim, pts
-begin
-  fo   = linint2_points (xi,yi,fi, wrapX, xo,yo, Opt)  ; perform interpolation 
-                                                ; shea_misc functions
-  dimfi= dimsizes(fi)
-  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
-
-  copy_VarAtts     (fi, fo)                     ; copy variable attributes
-  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
-                                                ; except for 2 rightmost
-
-  nDim = dimsizes(dimsizes(fo))                 ; # output  dimensions 
-                                                
-  pts           = ispan(0,dimsizes(xo)-1,1)     ; linear   
-  pts@long_name = "Points"
-
-  fo!(nDim-1)   = "pts"                         ; default named dimensions
-  fo&pts        =  pts
-  fo@xcoord     =  xo            ; x/longitude points
-  fo@ycoord     =  yo            ; y/latitude  points
-   
-  return (fo)
 end
  
 ;*********************************************************************
