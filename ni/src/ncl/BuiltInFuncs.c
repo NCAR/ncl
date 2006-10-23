@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.208 2006-10-20 21:39:38 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.209 2006-10-23 19:06:47 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -10609,6 +10609,7 @@ NhlErrorTypes _Nclwhere
 	int true_has_missing = 0,false_has_missing = 0,cond_has_missing = 0;
 	int check_true = 0, check_false = 0;
 	NclScalar missing_val, check_missing_val;
+	int return_missing = False;
 	
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
@@ -10646,10 +10647,14 @@ NhlErrorTypes _Nclwhere
 	}
 	if (true_val_md == NULL || false_val_md == NULL)
 		return(NhlFATAL);
-	if (true_val_md->multidval.missing_value.has_missing)
+	if (true_val_md->multidval.missing_value.has_missing) {
 		true_has_missing = 1;
-	if (false_val_md->multidval.missing_value.has_missing)
+		return_missing = 1;
+	}
+	if (false_val_md->multidval.missing_value.has_missing) {
 		false_has_missing = 1;
+		return_missing = 1;
+	}
 
 	if (true_val_md->multidval.kind != SCALAR)  {
 		if(cond_md->multidval.n_dims  != true_val_md->multidval.n_dims) {
@@ -10774,6 +10779,7 @@ NhlErrorTypes _Nclwhere
 			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
 				memcpy((char*)out_val + j *  val_type->type_class.size,
 				       &missing_val,val_type->type_class.size);
+				return_missing = 1;
 				continue;
 			}
 			if (cond_val[j]) {
@@ -10795,6 +10801,7 @@ NhlErrorTypes _Nclwhere
 			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
 				memcpy((char*)out_val + j *  val_type->type_class.size,
 				       &missing_val,val_type->type_class.size);
+				return_missing = 1;
 				continue;
 			}
 			if (cond_val[j]) {
@@ -10829,6 +10836,7 @@ NhlErrorTypes _Nclwhere
 			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
 				memcpy((char*)out_val + j *  val_type->type_class.size,
 				       &missing_val,val_type->type_class.size);
+				return_missing = 1;
 				continue;
 			}
 			if (cond_val[j]) {
@@ -10861,6 +10869,7 @@ NhlErrorTypes _Nclwhere
 			if (cond_has_missing && _NclIsMissing(cond_md,(void *)&cond_val[j])) {
 				memcpy((char*)out_val + j *  val_type->type_class.size,
 				       &missing_val,val_type->type_class.size);
+				return_missing = 1;
 				continue;
 			}
 			if (cond_val[j]) {
@@ -10903,15 +10912,27 @@ NhlErrorTypes _Nclwhere
 	}
 	if(tmp != NULL) 	
 		NclFree(tmp);
-	return(NclReturnValue(
-		out_val,
-		cond_md->multidval.n_dims,
-		cond_md->multidval.dim_sizes,
-		(val_md->multidval.missing_value.has_missing? &val_md->multidval.missing_value.value:
-		 &val_md->multidval.type->type_class.default_mis),
-		val_md->multidval.data_type,
-		0
-	));
+	if (return_missing) {
+		return(NclReturnValue(
+			       out_val,
+			       cond_md->multidval.n_dims,
+			       cond_md->multidval.dim_sizes,
+			       (val_md->multidval.missing_value.has_missing? &val_md->multidval.missing_value.value:
+				&val_md->multidval.type->type_class.default_mis),
+			       val_md->multidval.data_type,
+			       0
+			       ));
+	}
+	else {
+		return(NclReturnValue(
+			       out_val,
+			       cond_md->multidval.n_dims,
+			       cond_md->multidval.dim_sizes,
+			       NULL,
+			       val_md->multidval.data_type,
+			       0
+			       ));
+	}
 }
 
 NhlErrorTypes _Nclmin
