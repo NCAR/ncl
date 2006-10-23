@@ -1,5 +1,5 @@
 #!/bin/csh -f
-set echo verbose timestamp
+# set echo verbose timestamp
 set version = 090806    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
