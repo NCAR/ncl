@@ -4780,7 +4780,55 @@ unsigned char *lv;
 	return(0);
 }
 
+static int _SetCommonTimeUnit
+#if	NhlNeedProto
+(GribParamList *node, GribRecordInqRec* grib_rec)
+#else
+(node,grib_rec)
+GribParamList *node;
+GribRecordInqRec* grib_rec;
+#endif
+{
+	int cix, nix;
+	static int month_ix = 7;
+	/* 
+	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
+	 * short to long duration. 
+	 */
 
+	static int unit_code_order[] = { 254,0,1,10,11,12,2,3,4,5,6,7 };
+	for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
+		if (node->time_unit_indicator == unit_code_order[cix])
+			break;
+	}
+	for (nix = 0; nix < NhlNumber(unit_code_order); nix++) {
+		if ((int)grib_rec->pds[17] == unit_code_order[nix])
+			break;
+	}
+	if (nix >= NhlNumber(unit_code_order)) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NclGRIB: Unsupported time unit found for parameter (%s), continuing anyways.",
+			  NrmQuarkToString(grib_rec->var_name_q));
+	}
+	else if (cix >= NhlNumber(unit_code_order)) { 
+		/* current time units are unsupported so use the new unit */
+		node->time_unit_indicator = (int)grib_rec->pds[17];
+	}
+	else if (unit_code_order[nix] < unit_code_order[cix]) { 
+		/* choose the shortest duration as the common unit */
+		node->time_unit_indicator = (int)grib_rec->pds[17];
+	}
+	if (nix >= month_ix) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NclGRIB: Variable time unit codes representing time durations of a month or more in variable (%s): requires approximation to convert to common unit",
+			  NrmQuarkToString(grib_rec->var_name_q));
+	}
+		
+	/* Set the variable_time_unit flag */
+	node->variable_time_unit = True;
+
+	return;
+}
 static int _GetTimeOffset 
 #if	NhlNeedProto
 ( int time_indicator, unsigned char *offset)
@@ -4821,6 +4869,94 @@ unsigned char *offset;
 		return(-1);
 	}
 }
+
+/*
+ * This is like _GetTimeOffset except that it converts the value to a common unit
+ * for variables with variable time units
+ */
+
+static int _GetConvertedTimeOffset 
+#if	NhlNeedProto
+(int common_time_unit, int time_unit, int time_indicator, unsigned char *offset)
+#else
+(common_time_unit, time_unit, time_indicator, offset)
+int common_time_unit;
+int time_unit;
+int time_indicator;
+unsigned char *offset;
+#endif
+{
+	int cix,tix, ret_val;
+	/* 
+	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
+	 * short to long duration. The convert table below is the conversion from
+	 * the shortest duration (second) to each of the other units. (For periods longer
+	 * than a day there is inaccuracy because the periods vary depending on which which 
+	 * month and/or year we are talking about. For now use average based on 365.25 days per year.
+	 * This will need to be refined.
+	 */
+
+	double c_factor = 1.0;
+	int unit_code_order[] = { 254,0,1,10,11,12,2,3,4,5,6,7 };
+	double unit_convert[] = { 1.0, 60.0, 3600.0, 10800.0, 21600.0, /* 1 sec - 6 hr */
+				  43200.0,86400.0,2629800.0, 31557600.0, /* 12 hr - 1 yr */
+				  315576000.0,946728000.0,3155760000.0};   /* 10 yr - 100 yr */
+
+
+	if (common_time_unit != time_unit) {
+		for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
+			if (common_time_unit == unit_code_order[cix])
+				break;
+		}
+		for (tix = 0; tix < NhlNumber(unit_code_order); tix++) {
+			if (time_unit == unit_code_order[tix])
+				break;
+		}
+		/* this condition must be met in order to do a valid conversion */
+		if (cix < NhlNumber(unit_code_order) && tix < NhlNumber(unit_code_order)) { 
+			c_factor = unit_convert[tix] / unit_convert[cix];
+		}
+	}
+	switch(time_indicator) {
+	case 0: /* reference time + P1 */
+	case 1: /* reference time + P1 */
+		ret_val = (int)offset[0];
+		break;
+	case 2: /* reference time + P1 < t < reference time + P2 */
+	case 3: /* Average from reference time + P1 to reference time + P2 */
+	case 4: /* Accumulation from reference time + P1 to reference time + P2 */
+	case 5: /* Difference from reference time + P1 to reference time + P2 */
+		ret_val = (int)offset[1];
+		break;
+	case 6: /* Average from reference time - P1 to reference time - P2 */
+		ret_val = -(int)offset[1];
+		break;
+	case 7: /* Average from reference time - P1 to reference time + P2 */
+		ret_val = (int)offset[1];
+		break;
+	case 10:/* P1 occupies both bytes */
+		ret_val = UnsignedCnvtToDecimal(2,offset);
+		break;
+	case 51:
+	case 113:
+	case 114:
+	case 115:
+	case 116:
+	case 118:
+	case 123:
+	case 124:
+		ret_val = 0;
+		break;
+	case 117:
+		ret_val = (int)offset[0];
+		break;
+	default:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unknown or unsupported time range indicator detected, continuing");
+		return(-1);
+	}
+	return ((int)(ret_val * c_factor));
+}
+
 static int level_comp
 #if	NhlNeedProto
 (Const void *s1, Const void *s2)
@@ -4947,7 +5083,13 @@ static GribParamList *_NewListNode
 	tmp->minimum_it = grib_rec->initial_time;
 	tmp->time_range_indicator = (int)grib_rec->pds[20];
 	tmp->time_period = grib_rec->time_period;
+	if ((int)grib_rec->pds[17] > 12 && (int)grib_rec->pds[17] != 254) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NclGRIB: Unsupported time unit found for parameter (%s), continuing anyways.",
+			  NrmQuarkToString(grib_rec->var_name_q));
+	}
 	tmp->time_unit_indicator = (int)grib_rec->pds[17];
+	tmp->variable_time_unit = False;
 	
 	tmp->levels = NULL;
 	tmp->levels0 = NULL;
@@ -5042,7 +5184,10 @@ GribRecordInqRec* grib_rec;
 
 	}
 	if(node->time_unit_indicator != (int)grib_rec->pds[17]) {
+		_SetCommonTimeUnit(node,grib_rec);
+/*
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Time unit indicator varies for parameter (%s), continuing anyways.",NrmQuarkToString(grib_rec->var_name_q));
+*/
 	}
 	grib_rec_list->rec_inq = grib_rec;
 	grib_rec_list->next = node->thelist;
@@ -6459,14 +6604,28 @@ int wr_status;
 * First determine an offset in time units based on time_units_indicator and time_range_indicator
 * then determine offset in same units from the top of the parameter list's time reference 
 */		
-		
-			while(grib_rec_list != NULL) {
-				sortar[i] = grib_rec_list;	
-				grib_rec_list->rec_inq->time_offset = _GetTimeOffset(
-							(int)grib_rec_list->rec_inq->pds[20],
-							&(grib_rec_list->rec_inq->pds[18]));
-				grib_rec_list = grib_rec_list->next;
-				i++;
+
+			if (step->variable_time_unit) {
+				while(grib_rec_list != NULL) {
+					sortar[i] = grib_rec_list;
+					grib_rec_list->rec_inq->time_offset = _GetConvertedTimeOffset(
+						step->time_unit_indicator,
+						(int) grib_rec_list->rec_inq->pds[17],
+						(int)grib_rec_list->rec_inq->pds[20],
+						&(grib_rec_list->rec_inq->pds[18]));
+					grib_rec_list = grib_rec_list->next;
+					i++;
+				}
+			}
+			else {
+				while(grib_rec_list != NULL) {
+					sortar[i] = grib_rec_list;
+					grib_rec_list->rec_inq->time_offset = _GetTimeOffset(
+						(int)grib_rec_list->rec_inq->pds[20],
+						&(grib_rec_list->rec_inq->pds[18]));
+					grib_rec_list = grib_rec_list->next;
+					i++;
+				}
 			}
 			qsort((void*)sortar,i,sizeof(GribRecordInqRecList*),record_comp);
 

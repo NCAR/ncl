@@ -145,6 +145,7 @@ struct _GribParamList {
 	int time_range_indicator;
 	int time_period;      /* 0 unless  ave,diff, or acc: then p2 - p1 */
 	int time_unit_indicator;
+	int variable_time_unit;
 	int level_indicator;
 	GIT minimum_it;
 	NclGribFVarRec var_info;
