@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.40 2006-07-27 01:51:39 dbrown Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.41 2006-10-26 21:53:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2198,6 +2198,14 @@ FILE *fp;
     int el_size;
     int ret = 0;
     NhlErrorTypes ret0 = NhlNOERROR;
+
+    if (self_md->multidval.totalelements == 0) {
+        ret = nclfprintf(fp,"(0) no elements\n");
+        if(ret < 0) {
+            return(NhlWARNING);
+        }
+	return NhlNOERROR;
+    }	
 
     el_size = self_md->multidval.type->type_class.size;
     for(k = 0; k < self_md->multidval.n_dims; k++) {

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.27 2004-06-15 00:20:53 dbrown Exp $
+ *      $Id: VarSupport.c,v 1.28 2006-10-26 21:53:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1399,17 +1399,21 @@ struct _NclVarRec* self;
 					if(ret < 0) {
 						return(NhlWARNING);
 					}
-					ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
-					if(ret0 < NhlWARNING) {
-						return(NhlWARNING);
+					if (tmp_md->multidval.totalelements > 0) {
+						ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+						if(ret0 < NhlWARNING) {
+							return(NhlWARNING);
+						}
 					}
 					ret = nclfprintf(fp,"..");
 					if(ret < 0) {
 						return(NhlWARNING);
 					}
-					ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
-					if(ret0 < NhlWARNING) {
-						return(NhlWARNING);
+					if (tmp_md->multidval.totalelements > 0) {
+						ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+						if(ret0 < NhlWARNING) {
+							return(NhlWARNING);
+						}
 					}
 					ret = nclfprintf(fp,"]\n");
 					if(ret < 0) {

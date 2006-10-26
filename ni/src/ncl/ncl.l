@@ -44,7 +44,14 @@ int the_input_buffer_size = 0;
 extern int cmd_line;
 extern int cmd_line_is_set;
 extern char *cur_load_file;
+extern char *ncl_cur_func;
 int inc_line = 1;
+
+#define PRINTLOCATION(errlev)	\
+	if (loading > 0) \
+		NhlPError(errlev,NhlEUNKNOWN,"error at line %d in file %s\n",cur_line_number,cur_load_file); \
+	else\
+		NhlPError(errlev,NhlEUNKNOWN,"error at line %d\n",cur_line_number); 
 
 /*
  * Note concerning line numbers: in an interactive session the first line is
@@ -243,7 +250,9 @@ int status;
 		strcpy(cur_load_file,tmp);
 		return(NhlNOERROR);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)\n",tmp);
+		loading--;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",tmp);
+		PRINTLOCATION(NhlFATAL);
 		_NclResetScanner();
 		SetLine(line_numbers[loading]);
 		return(NhlFATAL);
@@ -281,6 +290,7 @@ digit	[0-9]
 }
 <incl>["][^"\n]*[\n] {
 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error : \\n not allowed in strings");
+	PRINTLOCATION(NhlFATAL);
 	IncLine();
 	if(cmd_line) {
         	_NclCallPromptFunc(cur_line_number);
@@ -335,7 +345,9 @@ digit	[0-9]
 		cur_load_file = NclMalloc((unsigned)strlen(tmp)+1);
 		strcpy(cur_load_file,tmp);
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)\n",tmp);
+		loading--;
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not open (%s)",tmp);
+		PRINTLOCATION(NhlFATAL);
 		_NclResetScanner();
 
 		SetLine(line_numbers[loading]);
@@ -649,6 +661,9 @@ digit	[0-9]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         if(( s = _NclLookUp(yytext)) == NULL) 
 		s = _NclAddSym(yytext,UNDEF);
+	if (s->type == IFUNC || s->type == NFUNC) {
+	    ncl_cur_func = s->name;
+	}
        	yylval.sym = s;
        	printtoken(s->type,yytext);
 	if((rec == 1)&&(s->type == QUIT)) {

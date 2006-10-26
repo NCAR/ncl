@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.23 2006-04-18 01:10:10 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.24 2006-10-26 21:53:05 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1344,6 +1344,7 @@ NclQuark  varname;
 				ret = nclfprintf(fp,"\nCoordinates: \n");
 				for(j = 0; j < thefile->file.var_info[i]->num_dimensions;j++) {
 					if(_NclFileVarIsCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark)!= -1) {
+						int size = thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_size;
 						ret = nclfprintf(fp,"            ");
 						if(ret < 0) {
 							return(NhlWARNING);
@@ -1352,28 +1353,34 @@ NclQuark  varname;
 						if(ret < 0) {
 							return(NhlWARNING);
 						}
-						tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark,NULL);
-						if(tmp_var != NULL) {
-							tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
+						if (size > 0) {
+							tmp_var = _NclFileReadCoord(thefile,thefile->file.file_dim_info[thefile->file.var_info[i]->file_dim_num[j]]->dim_name_quark,NULL);
+							if(tmp_var != NULL) {
+								tmp_md = (NclMultiDValData)_NclGetObj(tmp_var->var.thevalue_id);
+							}
+							ret =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+							if(ret < NhlWARNING) {
+								return(NhlWARNING);
+							}
 						}
-						ret =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
-                                		if(ret < NhlWARNING) {
-                                        		return(NhlWARNING);
-                                		}
 						ret = nclfprintf(fp,"..");
 						if(ret < 0) {
 							return(NhlWARNING);
 						}
-						ret = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
-                                		if(ret < NhlWARNING) {
-                                        		return(NhlWARNING);
-                                		}
+						if (size > 0) {
+							ret = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+							if(ret < NhlWARNING) {
+								return(NhlWARNING);
+							}
+						}
                                 		ret = nclfprintf(fp,"]\n");
                                 		if(ret < 0) {
                                         		return(NhlWARNING);
                                 		}
-						if(tmp_var->obj.status != PERMANENT) {
-							_NclDestroyObj((NclObj)tmp_var);
+						if (size > 0) {
+							if(tmp_var->obj.status != PERMANENT) {
+								_NclDestroyObj((NclObj)tmp_var);
+							}
 						}
 					} else {
 						ret = nclfprintf(fp,"            ");

@@ -1823,6 +1823,69 @@ int vtype;
 		}
 		sel = NULL;
 	}
+
+	if (total_elements == 0) {
+		/* can't return any data because there is a 0-length dimension but nevertheless return what is possible */
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"FileReadVar: %s contains a 0 length dimension", 
+			  NrmQuarkToString(var_name));
+		n_dims_output = n_dims_input;
+
+		if(sel_ptr != NULL) {
+			i = 0;
+			while((i <  n_dims_output)&&(n_dims_output > 1)) {
+				if((output_dim_sizes[i] == 1)&&!(keeper[i])) {
+					for(j = i; j < n_dims_output-1; j++) {
+						output_dim_sizes[j] = output_dim_sizes[j+1];
+						keeper[j] = keeper[j+1];
+						(dim_info)[j] = (dim_info)[j+1];
+					}
+					n_dims_output--;
+				} else {
+					i++;
+				}
+			}
+		}
+
+		if(FileIsVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT))!=-1){
+			mis_md = FileReadVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
+			if(mis_md != NULL) {
+				memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
+				has_missing = 1;
+			}
+		} 
+		if(vtype == FILE_COORD_VAR_ACCESS) {
+			tmp_md = _NclOneDValCoordDataCreate(
+				NULL,
+				NULL,
+				Ncl_OneDValCoordData,
+				0,
+				val,
+				(has_missing ? &missing_value:NULL),
+				n_dims_output,
+				output_dim_sizes,
+				TEMPORARY,
+				sel_ptr,
+				_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type))
+				);
+		} else {
+			tmp_md = _NclCreateMultiDVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				val,
+				(has_missing ? &missing_value:NULL),
+				n_dims_output,
+				output_dim_sizes,
+				TEMPORARY,
+				sel_ptr,
+				_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type))
+				);
+		}
+		return(tmp_md);
+	}
+		
+
 /*
 * When ncl gets here all strides are positive and finishs are greater than starts
 * and stride and finishes all corespond to their *CORRECT* dimension numbers not

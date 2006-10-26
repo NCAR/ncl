@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.70 2005-02-05 00:13:55 dbrown Exp $
+ *      $Id: NclVar.c,v 1.71 2006-10-26 21:53:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -571,17 +571,21 @@ FILE *fp;
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
-			if(ret0 < NhlWARNING) {
-				return(NhlWARNING);
+			if (tmp_md->multidval.totalelements > 0) {
+				ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+				if(ret0 < NhlWARNING) {
+					return(NhlWARNING);
+				}
 			}
 			ret = nclfprintf(fp,"..");
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
-			if(ret0 < NhlWARNING) {
-				return(NhlWARNING);
+			if (tmp_md->multidval.totalelements > 0) {
+				ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+				if(ret0 < NhlWARNING) {
+					return(NhlWARNING);
+				}
 			}
 			ret = nclfprintf(fp,"]\n");
 			if(ret < 0) {
@@ -591,7 +595,7 @@ FILE *fp;
 	}
 	ret0 = _NclPrint(_NclGetObj(self->var.att_id),fp);
 	
-	if((self != NULL) && (thevalue != NULL)&&(ret > NhlWARNING)) {
+	if((self != NULL) && (thevalue != NULL) &&(ret > NhlWARNING)) {
 		ret0 = _NclPrint((NclObj)thevalue,fp);
 	}
 	return(ret0);

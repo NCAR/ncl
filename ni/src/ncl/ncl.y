@@ -33,6 +33,12 @@ extern char *cur_line_text;
 extern int ok_to_start_vsblk;
 extern void ResetCurLine(void);
 #define ERROR(x)  NhlPError(NhlFATAL,NhlEUNKNOWN,"%s",(x))
+#define PRINTLOCATION(errlev)	\
+	if (loading > 0) \
+		NhlPError(errlev,NhlEUNKNOWN,"error at line %d in file %s\n",cur_line_number,cur_load_file); \
+	else\
+		NhlPError(errlev,NhlEUNKNOWN,"error at line %d\n",cur_line_number); 
+
 int is_error = 0;
 int block_syntax_error = 0;
 int ret_urn = 0;
@@ -59,6 +65,7 @@ int loading = 0;
 int preloading = 0;
 int top_level_line;
 char *cur_load_file = NULL;
+char *ncl_cur_func = NULL;
 
 %}
 %union {
@@ -154,6 +161,7 @@ statement_list :  statement eoln			{
 									is_error = 0;
 									if(block_syntax_error) {
 										NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error in block, block not executed");
+										PRINTLOCATION(NhlFATAL);
 										block_syntax_error = 0;
 									}
 								}
@@ -182,6 +190,7 @@ statement_list :  statement eoln			{
 									is_error = 0;
 									if(block_syntax_error) {
 										NhlPError(NhlFATAL,NhlEUNKNOWN,"Syntax Error in block, block not executed");
+										PRINTLOCATION(NhlFATAL);
 										block_syntax_error = 0;
 									}
 								}
@@ -197,6 +206,7 @@ statement_list :  statement eoln			{
 									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
+									PRINTLOCATION(NhlWARNING);
 									rec = 0;
 								}
 							}
@@ -207,6 +217,7 @@ statement_list :  statement eoln			{
 									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
+									PRINTLOCATION(NhlWARNING);
 									rec = 0;
 								}
 							}
@@ -248,10 +259,15 @@ statement_list :  statement eoln			{
 #endif
 								if($2->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,strerror(errno));
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $3,strerror(errno));
 #else
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,dlerror());
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $3,dlerror());
 #endif
+									PRINTLOCATION(NhlWARNING);
 								} else {
 #if defined(HPUX)
 									init_function = NULL;
@@ -266,7 +282,9 @@ statement_list :  statement eoln			{
 										(*init_function)();
 										$2->u.package->scope = _NclPopScope();
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",$3);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,
+											  "Could not find Init() in external file %s, file not loaded",$3);
+										PRINTLOCATION(NhlWARNING);
 										$2->u.package->scope = NULL;
 									}
 									
@@ -311,10 +329,15 @@ statement_list :  statement eoln			{
 #endif
 								if($3->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,strerror(errno));
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $4,strerror(errno));
 #else
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,dlerror());
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $4,dlerror());
 #endif
+									PRINTLOCATION(NhlWARNING);
 								} else {
 #if defined(HPUX)
 									init_function = NULL;
@@ -329,7 +352,9 @@ statement_list :  statement eoln			{
 										(*init_function)();
 										$3->u.package->scope = _NclPopScope();
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",$4);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,
+											  "Could not find Init() in external file %s, file not loaded",$4);
+										PRINTLOCATION(NhlWARNING);
 										$3->u.package->scope = NULL;
 									}
 								}
@@ -400,6 +425,7 @@ block_statement_list : statement eoln {
 									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
+									PRINTLOCATION(NhlWARNING);
 									rec = 0;
 								}
 								$$ = $1;
@@ -411,6 +437,7 @@ block_statement_list : statement eoln {
 									ResetCurLine();
 								} else {
 									NhlPError(NhlWARNING,errno,"Could not open record file");
+									PRINTLOCATION(NhlWARNING);
 									rec = 0;
 								}
 								$$ = NULL;
@@ -453,10 +480,15 @@ block_statement_list : statement eoln {
 #endif
 								if($2->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,strerror(errno));
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $3,strerror(errno));
 #else
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$3,dlerror());
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $3,dlerror());
 #endif
+									PRINTLOCATION(NhlWARNING);
 								} else {
 #if defined(HPUX)
 									init_function = NULL;
@@ -471,7 +503,10 @@ block_statement_list : statement eoln {
 										(*init_function)();
 										$2->u.package->scope = _NclPopScope();
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",$3);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,
+											  "Could not find Init() in external file %s, file not loaded",$3);
+										
+										PRINTLOCATION(NhlWARNING);
 										$2->u.package->scope = NULL;
 									}
 								}
@@ -515,10 +550,16 @@ block_statement_list : statement eoln {
 #endif
 								if($3->u.package->so_handle == NULL) {
 #if defined(HPUX)
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,strerror(errno));
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $4,strerror(errno));
 #else
-									NhlPError(NhlWARNING,NhlEUNKNOWN,"An error occurred loading the external file %s, file not loaded\n%s",$4,dlerror());
+									NhlPError(NhlWARNING,NhlEUNKNOWN,
+										  "An error occurred loading the external file %s, file not loaded\n%s",
+										  $4,dlerror());
 #endif
+									PRINTLOCATION(NhlWARNING);
+
 								} else {
 #if defined(HPUX)
 									init_function = NULL;
@@ -533,7 +574,9 @@ block_statement_list : statement eoln {
 										(*init_function)();
 										$3->u.package->scope = _NclPopScope();
 									} else {
-										NhlPError(NhlWARNING,NhlEUNKNOWN,"Could not find Init() in external file %s, file not loaded",$4);
+										NhlPError(NhlWARNING,NhlEUNKNOWN,
+											  "Could not find Init() in external file %s, file not loaded",$4);
+										PRINTLOCATION(NhlWARNING);
 										$3->u.package->scope = NULL;
 									}
 								}
@@ -955,7 +998,10 @@ procedure : IPROC opt_arg_list    {
 					}
 					if(count != $1->u.procfunc->nargs) {
 						is_error += 1;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,
+							  "syntax error: procedure %s expects %d arguments, got %d",
+							  $1->name,$1->u.procfunc->nargs,count);
+						PRINTLOCATION(NhlFATAL);
 						$$ = NULL;
 					} else {
 						$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
@@ -972,7 +1018,10 @@ procedure : IPROC opt_arg_list    {
 					}
 					if(count != $1->u.procfunc->nargs) {
 						is_error += 1;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,
+							  "syntax error: procedure %s expects %d arguments, got %d",
+							  $1->name,$1->u.procfunc->nargs,count);
+						PRINTLOCATION(NhlFATAL);
 						$$ = NULL;
 					} else {
 						$$ = _NclMakeProcCall($1,$2,Ncl_INTRINSICPROCCALL); 
@@ -989,7 +1038,10 @@ procedure : IPROC opt_arg_list    {
 					}
 					if(count != $1->u.procfunc->nargs) {
 						is_error += 1;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,
+							  "syntax error: procedure %s expects %d arguments, got %d",
+							  $1->name,$1->u.procfunc->nargs,count);
+						PRINTLOCATION(NhlFATAL);
 						$$ = NULL;
 					} else {
 						$$ = _NclMakeProcCall($1,$2,Ncl_PROCCALL); 
@@ -998,7 +1050,10 @@ procedure : IPROC opt_arg_list    {
 	| PIPROC 		{ 
 					if($1->u.procfunc->nargs != 0) {
 						is_error += 1;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,
+							  "syntax error: procedure %s expects %d arguments, got %d",
+							  $1->name,$1->u.procfunc->nargs,0);
+						PRINTLOCATION(NhlFATAL);
 						$$ = NULL;
 					} else {
 						$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
@@ -1007,7 +1062,10 @@ procedure : IPROC opt_arg_list    {
 	| IPROC 		{ 
 					if($1->u.procfunc->nargs != 0) {
 						is_error += 1;
-						NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+						NhlPError(NhlFATAL,NhlEUNKNOWN,
+							  "syntax error: procedure %s expects %d arguments, got %d",
+							  $1->name,$1->u.procfunc->nargs,0);
+						PRINTLOCATION(NhlFATAL);
 						$$ = NULL;
 					} else {
 						$$ = _NclMakeProcCall($1,NULL,Ncl_INTRINSICPROCCALL); 
@@ -1016,7 +1074,10 @@ procedure : IPROC opt_arg_list    {
 	| NPROC 		{ 
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: procedure %s expects %d arguments, got %d",
+								  $1->name,$1->u.procfunc->nargs,0);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeProcCall($1,NULL,Ncl_PROCCALL); 
@@ -1028,12 +1089,18 @@ procedure : IPROC opt_arg_list    {
 						s = _NclLookUpInScope($1->u.package->scope,$4->name);
 						if(s == NULL) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: procedure %s is not defined in package %s\n",
+								  $4->name,$1->name);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						} else if(s->type == IPROC) {
 							if(s->u.procfunc->nargs != 0) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,0);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: procedure %s expects %d arguments, got %d",
+									  s->name,s->u.procfunc->nargs,0);
+								PRINTLOCATION(NhlFATAL);
 								$$ = NULL;
 							} else {
 								$$ = _NclMakeProcCall(s,NULL,Ncl_INTRINSICPROCCALL); 
@@ -1041,14 +1108,19 @@ procedure : IPROC opt_arg_list    {
 						} else if(s->type == NPROC) {
 							if(s->u.procfunc->nargs != 0) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,0);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: procedure %s expects %d arguments, got %d",
+									  s->name,s->u.procfunc->nargs,0);
+								PRINTLOCATION(NhlFATAL);
 								$$ = NULL;
 							} else {
 								$$ = _NclMakeProcCall(s,NULL,Ncl_PROCCALL); 
 							} 	
 
 						} else {
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$4->name,$1->name);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: %s is not a procedure in package %s\n",$4->name,$1->name);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						}
 					} else {
@@ -1064,7 +1136,9 @@ procedure : IPROC opt_arg_list    {
 						s = _NclLookUpInScope($1->u.package->scope,$4->name);
 						if(s == NULL) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						} else if(s->type == IPROC){
 							step = $5;
@@ -1074,7 +1148,10 @@ procedure : IPROC opt_arg_list    {
 							}
 							if(count != s->u.procfunc->nargs) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: procedure %s expects %d arguments, got %d",
+									  s->name,s->u.procfunc->nargs,count);
+								PRINTLOCATION(NhlWARNING);
 								$$ = NULL;
 							} else {
 								$$ = _NclMakeProcCall(s,$5,Ncl_INTRINSICPROCCALL); 
@@ -1087,14 +1164,20 @@ procedure : IPROC opt_arg_list    {
 							}
 							if(count != s->u.procfunc->nargs) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: procedure %s expects %d arguments, got %d",
+									  s->name,s->u.procfunc->nargs,count);
+								PRINTLOCATION(NhlFATAL);
 								$$ = NULL;
 							} else {
 								$$ = _NclMakeProcCall(s,$5,Ncl_PROCCALL); 
 							}
 							
                                                 } else {
-                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a procedure in package %s\n",$4->name,$1->name);
+                                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: %s is not a procedure in package %s\n",
+								  $4->name,$1->name);
+							PRINTLOCATION(NhlFATAL);
                                                         $$ = NULL;
                                                 }
 
@@ -1103,14 +1186,16 @@ procedure : IPROC opt_arg_list    {
 					}
 				}
 /*---------------------------------------------ERROR HANDLING BELOW THIS LINE-----------------------------------------------------*/
-/*
-	| identifier opt_arg_list	{ ERROR("syntax error: <identifier> IS NOT A PROCEDURE"); }
-*/
-	| IFUNC opt_arg_list	{ $$ = NULL;  ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
-	| NFUNC opt_arg_list	{ $$ = NULL; ERROR("syntax error: <identifier> IS A FUNCTION NOT A PROCEDURE"); }
-/*
-	| UNDEF LP arg_list RP	{ $$ = NULL; NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s IS A FUNCTION NOT A PROCEDURE",$1->name); }
-*/
+        | IFUNC opt_arg_list	{ $$ = NULL; 
+		  		  NhlPError(NhlFATAL,NhlEUNKNOWN,
+					    "syntax error: %s is a function not a procedure; return value must be referenced",ncl_cur_func); 
+                                  PRINTLOCATION(NhlFATAL);
+                                }
+        | NFUNC opt_arg_list	{ $$ = NULL; 
+		                  NhlPError(NhlFATAL,NhlEUNKNOWN,
+					    "syntax error: %s is a function not a procedure; return value must be referenced",ncl_cur_func); 
+				  PRINTLOCATION(NhlFATAL);
+				}
 
 ;
 
@@ -1159,10 +1244,6 @@ arg_list: expr					{
 						}
 ;
 func_identifier: KEYFUNC UNDEF { _NclNewScope(); $$ = $2; }
-/*
-	| KEYFUNC pfname { NhlPError(NhlFATAL,NhlEUNKNOWN,"Function identifier is defined");_NclNewScope(); $$ = NULL; }
-	| KEYFUNC VAR { NhlPError(NhlFATAL,NhlEUNKNOWN,"Function identifier is defined");_NclNewScope(); $$ = NULL; }
-*/
 ;
 
 local_list: vname {
@@ -1820,7 +1901,8 @@ named_subscript_list:  subscript2 	{
                                                 
 					}
 	| named_subscript_list ',' error {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript, named subscripting is being used, make sure each subscript has a name");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "Error in subscript, named subscripting is being used, make sure each subscript has a name");
 					is_error += 1;
 					$$ = NULL;
 					
@@ -1866,7 +1948,8 @@ normal_subscript_list:  subscript0 	{
                                                 
 					}
 	| normal_subscript_list ',' error {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"Error in subscript, normal subscripting is being used, make sure named subscripting has not been used");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "Error in subscript, normal subscripting is being used, make sure named subscripting has not been used");
 					is_error += 1;
 					$$ = NULL;
 					
@@ -2301,7 +2384,10 @@ function:  IFUNC opt_arg_list		{
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: function %s expects %d arguments, got %d",
+								  $1->name,$1->u.procfunc->nargs,count);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,$2,Ncl_INTRINSICFUNCCALL);
@@ -2318,7 +2404,10 @@ function:  IFUNC opt_arg_list		{
 						}
 						if(count != $1->u.procfunc->nargs) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,count);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: function %s expects %d arguments, got %d",
+								  $1->name,$1->u.procfunc->nargs,count);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,$2,Ncl_FUNCCALL);
@@ -2327,7 +2416,10 @@ function:  IFUNC opt_arg_list		{
 	| IFUNC 				{
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: function %s expects %d arguments, got %d",
+								  $1->name,$1->u.procfunc->nargs,0);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_INTRINSICFUNCCALL);
@@ -2336,7 +2428,10 @@ function:  IFUNC opt_arg_list		{
 	| NFUNC 			{
 						if($1->u.procfunc->nargs != 0) {
 							is_error += 1;
-							NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",$1->name,$1->u.procfunc->nargs,0);
+							NhlPError(NhlFATAL,NhlEUNKNOWN,
+								  "syntax error: function %s expects %d arguments, got %d",
+								  $1->name,$1->u.procfunc->nargs,0);
+							PRINTLOCATION(NhlFATAL);
 							$$ = NULL;
 						} else {
 							$$ = _NclMakeFuncCall($1,NULL,Ncl_FUNCCALL);
@@ -2348,12 +2443,18 @@ function:  IFUNC opt_arg_list		{
 							s = _NclLookUpInScope($1->u.package->scope,$4->name);
 							if(s == NULL) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: procedure %s is not defined in package %s\n",
+									  $4->name,$1->name);
+								PRINTLOCATION(NhlFATAL);
 								$$ = NULL;
 							} else if(s->type == IFUNC){
 								if(s->u.procfunc->nargs != 0) {
 									is_error += 1;
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,0);
+									NhlPError(NhlFATAL,NhlEUNKNOWN,
+										  "syntax error: function %s expects %d arguments, got %d",
+										  s->name,s->u.procfunc->nargs,0);
+									PRINTLOCATION(NhlFATAL);
 									$$ = NULL;
 								} else {
 									$$ = _NclMakeFuncCall(s,NULL,Ncl_INTRINSICFUNCCALL); 
@@ -2361,14 +2462,20 @@ function:  IFUNC opt_arg_list		{
 							} else if(s->type == NFUNC) {
 								if(s->u.procfunc->nargs != 0) {
 									is_error += 1;
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,0);
+									NhlPError(NhlFATAL,NhlEUNKNOWN,
+										  "syntax error: function %s expects %d arguments, got %d",
+										  s->name,s->u.procfunc->nargs,0);
+									PRINTLOCATION(NhlFATAL);
 									$$ = NULL;
 								} else {
 									$$ = _NclMakeFuncCall(s,NULL,Ncl_FUNCCALL); 
 								}
 
 							} else {
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$4->name,$1->name);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: %s is not a function in package %s\n",
+									  $4->name,$1->name);
+								PRINTLOCATION(NhlFATAL);
 								$$ = NULL;
 							}
 						} else {
@@ -2384,7 +2491,10 @@ function:  IFUNC opt_arg_list		{
 							s = _NclLookUpInScope($1->u.package->scope,$4->name);
 							if(s == NULL) {
 								is_error += 1;
-								NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: procedure %s is not defined in package %s\n",$4->name,$1->name);
+								NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: procedure %s is not defined in package %s\n",
+									  $4->name,$1->name);
+								PRINTLOCATION(NhlFATAL);
 								$$ = NULL;
 							} else if(s->type == IFUNC){
 								step = $5;
@@ -2394,7 +2504,10 @@ function:  IFUNC opt_arg_list		{
 								}
 								if(count != s->u.procfunc->nargs) {
 									is_error += 1;
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
+									NhlPError(NhlFATAL,NhlEUNKNOWN,
+										  "syntax error: function %s expects %d arguments, got %d",
+										  s->name,s->u.procfunc->nargs,count);
+									PRINTLOCATION(NhlFATAL);
 									$$ = NULL;
 								} else {
 									$$ = _NclMakeFuncCall(s,$5,Ncl_INTRINSICFUNCCALL); 
@@ -2407,13 +2520,18 @@ function:  IFUNC opt_arg_list		{
 								}
 								if(count != s->u.procfunc->nargs) {
 									is_error += 1;
-									NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: function %s expects %d arguments, got %d",s->name,s->u.procfunc->nargs,count);
+									NhlPError(NhlFATAL,NhlEUNKNOWN,
+										  "syntax error: function %s expects %d arguments, got %d",
+										  s->name,s->u.procfunc->nargs,count);
+									PRINTLOCATION(NhlFATAL);
 									$$ = NULL;
 								} else {
 									$$ = _NclMakeFuncCall(s,$5,Ncl_FUNCCALL); 
 								}
                                                 	} else {
-                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,"syntax error: %s is not a function in package %s\n",$4->name,$1->name);
+                                                        	NhlPError(NhlFATAL,NhlEUNKNOWN,
+									  "syntax error: %s is not a function in package %s\n",$4->name,$1->name);
+								PRINTLOCATION(NhlFATAL);
                                                         	$$ = NULL;
                                                 	}
 	
