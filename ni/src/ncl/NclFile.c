@@ -1829,6 +1829,7 @@ int vtype;
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"FileReadVar: %s contains a 0 length dimension", 
 			  NrmQuarkToString(var_name));
 		n_dims_output = n_dims_input;
+		val = NULL;
 
 		if(sel_ptr != NULL) {
 			i = 0;

@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.28 2006-10-26 21:53:06 dbrown Exp $
+ *      $Id: VarSupport.c,v 1.29 2006-10-27 00:37:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1399,21 +1399,26 @@ struct _NclVarRec* self;
 					if(ret < 0) {
 						return(NhlWARNING);
 					}
-					if (tmp_md->multidval.totalelements > 0) {
-						ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
-						if(ret0 < NhlWARNING) {
+					if (tmp_md->multidval.totalelements == 0) {
+						ret = nclfprintf(fp,"no elements]\n");
+						if(ret < 0) {
 							return(NhlWARNING);
 						}
+						continue;
+					}
+					ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+					if(ret0 < NhlWARNING) {
+						return(NhlWARNING);
 					}
 					ret = nclfprintf(fp,"..");
 					if(ret < 0) {
 						return(NhlWARNING);
 					}
-					if (tmp_md->multidval.totalelements > 0) {
-						ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
-						if(ret0 < NhlWARNING) {
-							return(NhlWARNING);
-						}
+					ret0 = _Nclprint(tmp_md->multidval.type,fp,
+							 &(((char*)tmp_md->multidval.val)
+							   [(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+					if(ret0 < NhlWARNING) {
+						return(NhlWARNING);
 					}
 					ret = nclfprintf(fp,"]\n");
 					if(ret < 0) {
@@ -1428,6 +1433,7 @@ struct _NclVarRec* self;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclPrintVarSummary: Non-Variable passed to printVarSummary, can't print summary");
 		return(NhlFATAL);
 	}
+	return MIN(ret,ret0);
 }
 
 

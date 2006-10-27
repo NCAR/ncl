@@ -1,5 +1,5 @@
 /*
- *      $Id: NclOneDValCoordData.c,v 1.12 2006-07-19 22:58:51 dbrown Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.13 2006-10-27 00:37:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -680,7 +680,10 @@ NclTypeClass type;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclOneDValCoordDataCreate: Number of dimensions is greater than one, could not create coordinate data object");
 		return(NULL);
 	}
-	thevalobj->onedval.mono_type = _Nclis_mono(type,val,missing_value,*dim_sizes);
+	if (dim_sizes[0] == 0)
+		thevalobj->onedval.mono_type = NclNONMONO;
+	else
+		thevalobj->onedval.mono_type = _Nclis_mono(type,val,missing_value,*dim_sizes);
 
 	if(!(thevalobj->onedval.mono_type & (NclINCREASING | NclDECREASING) )) {
 		NhlPError(NhlINFO,NhlEUNKNOWN,"_NclOneDValCoordDataCreate: A non-monotonic value was passed in. Coordinate subscripting will not work on the coordinate object");

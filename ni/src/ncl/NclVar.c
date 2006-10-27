@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.71 2006-10-26 21:53:06 dbrown Exp $
+ *      $Id: NclVar.c,v 1.72 2006-10-27 00:37:13 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -571,21 +571,25 @@ FILE *fp;
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			if (tmp_md->multidval.totalelements > 0) {
-				ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
-				if(ret0 < NhlWARNING) {
+			if (tmp_md->multidval.totalelements == 0) {
+				ret = nclfprintf(fp,"no elements]\n");
+				if(ret < 0) {
 					return(NhlWARNING);
 				}
+				continue;
+			}
+			ret0 =_Nclprint(tmp_md->multidval.type,fp,tmp_md->multidval.val);
+			if(ret0 < NhlWARNING) {
+				return(NhlWARNING);
 			}
 			ret = nclfprintf(fp,"..");
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
-			if (tmp_md->multidval.totalelements > 0) {
-				ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)[(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
-				if(ret0 < NhlWARNING) {
-					return(NhlWARNING);
-				}
+			ret0 = _Nclprint(tmp_md->multidval.type,fp,&(((char*)tmp_md->multidval.val)
+								     [(tmp_md->multidval.totalelements -1)*tmp_md->multidval.type->type_class.size]));
+			if(ret0 < NhlWARNING) {
+				return(NhlWARNING);
 			}
 			ret = nclfprintf(fp,"]\n");
 			if(ret < 0) {
