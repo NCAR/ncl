@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 2006-06-01 21:03:25 haley Exp $
+#      $Id: yMakefile,v 1.5 2006-10-27 16:35:11 haley Exp $
 #
 #########################################################################
 #									#
@@ -18,7 +18,7 @@
 #	Date:		Fri Jan 16 21:11:00 MST 2004
 #
 #	Description:	yMakefile for external libraries and software
-SUBDIRS = blas lapack sphere3.1_dp 
+SUBDIRS = blas lapack sphere3.1_dp  fftpack5_dp
 #define IHaveSubdirs
 
 
