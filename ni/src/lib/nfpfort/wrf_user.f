@@ -68,7 +68,8 @@ c set offset appropriately
 
       DO I = 1,NX
           DO J = 1,NY
-
+C Initialize to missing.
+              V2D(I,J) = -999999
               INTERP = .false.
               KP = NZ
 
@@ -185,11 +186,12 @@ C NCLEND
       END
 
 C NCLFORTSTART
-      SUBROUTINE DINTERP1D(V_IN,V_OUT,Z_IN,Z_OUT,NZ_IN,NZ_OUT)
+      SUBROUTINE DINTERP1D(V_IN,V_OUT,Z_IN,Z_OUT,NZ_IN,NZ_OUT,VMSG)
       IMPLICIT NONE
       INTEGER NZ_IN,NZ_OUT
       DOUBLE PRECISION V_IN(NZ_IN),Z_IN(NZ_IN)
       DOUBLE PRECISION V_OUT(NZ_OUT),Z_OUT(NZ_OUT)
+      DOUBLE PRECISION VMSG
 C NCLEND
 
       INTEGER KP,K,IM,IP
@@ -207,6 +209,7 @@ c set offset appropriately
       END IF
 
       DO K = 1,NZ_OUT
+          V_OUT(K) = VMSG
 
           INTERP = .false.
           KP = NZ_IN
