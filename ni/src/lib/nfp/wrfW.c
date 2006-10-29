@@ -17,6 +17,9 @@ extern void NGCALLF(dinterp3dz,DINTERP3DZ)(double *,double *,double *,
 extern void NGCALLF(dinterp2dxy,DINTERP2DXY)(double *,double *,double *,
                                              int *,int *,int *, int*);
 
+extern void NGCALLF(dinterp1d,DINTERP1D)(double *,double *,double *,double *,
+					 int *, int *, double *);
+
 extern void NGCALLF(dbint3d,DBINT3D)(double *,double *,double *, double *,
                                      int *, int *, int *, int *,
                                      int *, int *, int *);
@@ -641,7 +644,7 @@ NhlErrorTypes wrf_slp_W( void )
  * Coerce subsection of q (tmp_q) to double if necessary.
  */
     if(type_q != NCL_double) {
-      coerce_subset_input_double(q,tmp_q,index_nxyz,type_q,nx,0,NULL,NULL);
+      coerce_subset_input_double(q,tmp_q,index_nxyz,type_q,nxyz,0,NULL,NULL);
     }
     else {
       tmp_q = &((double*)q)[index_nxyz];
@@ -693,12 +696,35 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   NclBasicDataTypes type_v3d, type_z, type_loc;
 
 /*
+ * Variables for retrieving attributes from "v3d".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  string *description;
+  char *cdesc;
+  logical found_desc = False;
+/*
  * Output variable.
  */
   void *v2d;
   double *tmp_v2d;
   int ndims_v2d, *dsizes_v2d, size_v2d;
   NclBasicDataTypes type_v2d;
+  NclObjClass type_obj_v2d;
+  NclScalar missing_v2d;
+
+/*
+ * If there's to be return attributes, set up the return information
+ * we need for that here.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  NclQuark *desc;
+
 /*
  * Various
  */
@@ -760,6 +786,54 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
   }
 /*
+ * Check if v3d as any attributes, namely "description". This 
+ * attribute will be attached to the return variable v2d.
+ */
+  stack_entry = _NclGetArg(0, 3, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments. If none are specified, then return
+ * missing values.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      break;
+    }
+    else {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "description")) == 0) {
+          description = (string *) attr_list->attvalue->multidval.val;
+          cdesc       = NrmQuarkToString(*description);
+          found_desc  = True;
+          break;
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
+/*
  * Calculate size of leftmost dimensions and set dimension sizes for 
  * output array.
  *
@@ -796,7 +870,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
  * The output type defaults to float, unless any of the two input arrays
  * are double.
  */
-  type_v2d = NCL_float;
+  type_v2d     = NCL_float;
+  type_obj_v2d = nclTypefloatClass;
   if(type_v3d != NCL_double) {
     tmp_v3d = (double *)calloc(nxyz,sizeof(double));
     if(tmp_v3d == NULL) {
@@ -805,7 +880,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
   }
   else {
-    type_v2d = NCL_double;
+    type_v2d     = NCL_double;
+    type_obj_v2d = nclTypedoubleClass;
   }
   if(type_z != NCL_double) {
     tmp_z = (double *)calloc(nxyz,sizeof(double));
@@ -815,7 +891,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
   }
   else {
-    type_v2d = NCL_double;
+    type_v2d     = NCL_double;
+    type_obj_v2d = nclTypedoubleClass;
   }
 /*
  * Coerce loc (tmp_loc) to double if ncessary.
@@ -831,6 +908,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    missing_v2d.doubleval = -999999;
   }
   else {
     v2d     = (float *)calloc(size_v2d,sizeof(float));
@@ -839,6 +917,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    missing_v2d.floatval = -999999;
   }
 /*
  * Loop across leftmost dimensions and call the Fortran routine
@@ -893,7 +972,84 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   if(type_loc != NCL_double) NclFree(tmp_loc);
   if(type_v2d != NCL_double) NclFree(tmp_v2d);
 
-  return(NclReturnValue(v2d,ndims_v2d,dsizes_v2d,NULL,type_v2d,0));
+/*
+ * If v3d had a "description" attribute, return it with the output 
+ * variable as an attribute.  Otherwise, return a blank string.
+ */
+  if(!found_desc) {
+    cdesc = (char *)calloc(2,sizeof(char));
+    strcpy(cdesc," ");
+  }
+/*
+ * I don't think we can return "description" here, because it's 
+ * attached to an NCL input parameter. It could  screw things up
+ * if we try to return it as an attribute with the output variable.
+ */
+  desc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *desc = NrmStringToQuark(cdesc);
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)v2d,
+                            &missing_v2d,
+                            ndims_v2d,
+                            dsizes_v2d,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_v2d
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)desc,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 
@@ -918,7 +1074,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 /*
  * Various
  */
-  int i, nx, ny, nz, nxny, nxnynz, nxy, nxy_nz , nxy_2, size_leftmost;
+  int i, nx, ny, nz, nxnynz, nxy, nxy_nz , nxy_2, size_leftmost;
   int index_v3d, index_v2d, index_xy;
 
 /*
@@ -966,6 +1122,9 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   ny  = dsizes_v3d[ndims_v3d-2];
   nx  = dsizes_v3d[ndims_v3d-1];
   nxy = dsizes_xy[ndims_xy-2];
+  nxnynz   = nx * ny * nz;
+  nxy_nz   = nxy * nz;
+  nxy_2    = nxy * 2;
 
 /*
  * Check leftmost dimensions, if any, and calculate their size.
@@ -989,10 +1148,6 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   dsizes_v2d[ndims_v2d-2] = nz;
   dsizes_v2d[ndims_v2d-1] = nxy;
 
-  nxny     = nx * ny;
-  nxnynz   = nxny * nz;
-  nxy_nz   = nxy * nz;
-  nxy_2    = nxy * 2;
   size_v2d = size_leftmost * nxy_nz;
 
 /* 
@@ -1118,9 +1273,10 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Output variable.
  */
   void *v_out;
-  double *tmp_v_out;
+  double *tmp_v_out, v_out_msg;
   int *dsizes_v_out, size_v_out;
   NclBasicDataTypes type_v_out;
+  NclScalar missing_v_out;
 /*
  * Various
  */
@@ -1195,6 +1351,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
     dsizes_v_out[i] = dsizes_v_in[i];
     size_leftmost *= dsizes_v_in[i];
   }
+  dsizes_v_out[ndims_v_in-1] = nz_out;
   size_v_out = size_leftmost * nz_out;
 
 /* 
@@ -1248,6 +1405,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    v_out_msg = missing_v_out.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
   else {
     v_out     = (float *)calloc(size_v_out,sizeof(float));
@@ -1256,6 +1414,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    v_out_msg = (double)((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
+    missing_v_out.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
 
 /*
@@ -1304,7 +1464,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dinterp1d,DINTERP1D)(tmp_v_in,tmp_v_out,tmp_z_in,tmp_z_out,&nz_in,
-                                 &nz_out);
+                                 &nz_out,&v_out_msg);
 /*
  * Coerce output back to float if necessary.
  */
@@ -1323,7 +1483,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
   if(type_z_out != NCL_double) NclFree(tmp_z_out);
   if(type_v_out != NCL_double) NclFree(tmp_v_out);
 
-  return(NclReturnValue(v_out,ndims_z_out,dsizes_v_out,NULL,type_v_out,0));
+  return(NclReturnValue(v_out,ndims_z_out,dsizes_v_out,&missing_v_out,
+			type_v_out,0));
 }
 
 NhlErrorTypes wrf_bint_W( void )
