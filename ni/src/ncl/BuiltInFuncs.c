@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.209 2006-10-23 19:06:47 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.210 2006-10-30 22:08:00 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2405,6 +2405,7 @@ NhlErrorTypes _NclIfbindirread(void)
 	struct stat buf;
 	int fd = -1;
 	int totalsize = 0;
+	off_t f_off;
 	int n;
 	char *step = NULL;
 	NclStackEntry data_out;
@@ -2514,19 +2515,19 @@ NhlErrorTypes _NclIfbindirread(void)
                         size *= dimsizes[i];
                 }
         }
+	f_off = (off_t)(*recnum) * (off_t)size * (off_t)thetype->type_class.size;
+	totalsize = size*thetype->type_class.size;
 
-	if((((*recnum + 1)*size*thetype->type_class.size)) > buf.st_size) {
+	if(f_off + (off_t)totalsize > buf.st_size) {
 		ret = NhlFATAL;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbindirread: The size implied by the dimension array and record number is greater that the size of the file, can't continue");
 		return(NhlFATAL);
-	} else { 
-		totalsize = size*thetype->type_class.size;
 	}
 	tmp_ptr = NclMalloc(size*thetype->type_class.size);
 	fd = open(path_string,O_RDONLY);
 	
 	if((tmp_ptr != NULL)&&(fd > 0)) {
-		lseek(fd,(*recnum)*size*thetype->type_class.size,SEEK_SET);
+		lseek(fd,f_off,SEEK_SET);
 		
 		tmp_md = _NclCreateMultiDVal(
 			NULL,
@@ -2544,7 +2545,7 @@ NhlErrorTypes _NclIfbindirread(void)
 			return(NhlFATAL);
 
 		step = tmp_ptr;
-		for(i = 0; i < (int)(totalsize / buf.st_blksize); i++) {
+		for(i = 0; i < (totalsize / buf.st_blksize); i++) {
 			n = read(fd, step,buf.st_blksize);
 			step = step + buf.st_blksize;
 		}
@@ -2790,7 +2791,7 @@ NhlErrorTypes _NclIfbinnumrec
 	char 	control_word[4];
 	int fd = -1;
 	int ind1,ind2;
-	int cur_off;
+	off_t cur_off;
 	int i,n;
 	int dimsize = 1;
 	int swap_bytes = 0;
@@ -2841,7 +2842,7 @@ NhlErrorTypes _NclIfbinnumrec
 			ind1 = *(int*)control_word;
 		else
 			_NclSwapBytes(&ind1,control_word,1,sizeof(int));
-		lseek(fd,cur_off + ind1 + 4,SEEK_SET);
+		lseek(fd,cur_off + (off_t)(ind1 + 4),SEEK_SET);
 		n = read(fd,(control_word),4);
 		if(n != 4) {
 			break;
@@ -2852,7 +2853,7 @@ NhlErrorTypes _NclIfbinnumrec
 			_NclSwapBytes(&ind2,control_word,1,sizeof(int));
 		if(ind1 ==  ind2) {
 				i++;
-				cur_off += ind1 + 8;
+				cur_off += (off_t)(ind1 + 8);
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinnumrec: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
 			close(fd);
@@ -2895,7 +2896,7 @@ NhlErrorTypes _NclIfbinrecwrite
 	int size = 1;
 	int n;
 	int n_dims;
-	int cur_off = 0;
+	off_t cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	int rsize = 0;
 	NclBasicDataTypes datai_type;
@@ -2990,7 +2991,7 @@ NhlErrorTypes _NclIfbinrecwrite
 				ind1 = *(int*)control_word;
 			else
 				_NclSwapBytes(&ind1,control_word,1,sizeof(int));
-			lseek(fd,cur_off + ind1 + 4,SEEK_SET);
+			lseek(fd,cur_off + (off_t)(ind1 + 4),SEEK_SET);
 			n = read(fd,(control_word),4);
 			if(n != 4) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
@@ -3004,7 +3005,7 @@ NhlErrorTypes _NclIfbinrecwrite
 				_NclSwapBytes(&ind2,control_word,1,sizeof(int));
 			if(ind1 == ind2) {
 					i++;
-					cur_off += ind1 + 8;
+					cur_off += (off_t)(ind1 + 8);
 					rsize = ind1;
 			} else {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecwrite: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
@@ -3019,7 +3020,7 @@ NhlErrorTypes _NclIfbinrecwrite
 	if((rsize == -1)||(rsize== total)){
 		if (rsize != -1) {
 			/* seek to the beginning of current record */
-			cur_off -= (rsize + 8);
+			cur_off -= (off_t)(rsize + 8);
 			lseek(fd,cur_off,SEEK_SET);
 		}
 		if (swap_bytes) {
@@ -3075,7 +3076,7 @@ NhlErrorTypes _NclIfbinrecread
 	int fd = -1;
 	int size = 1;
 	int n;
-	int cur_off = 0;
+	off_t cur_off = 0;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
 	int swap_bytes = 0;
@@ -3189,7 +3190,7 @@ NhlErrorTypes _NclIfbinrecread
 			close(fd);
 			return(NhlFATAL);
 		}
-		lseek(fd,cur_off + ind1 + 4,SEEK_SET);
+		lseek(fd,cur_off + (off_t)(ind1 + 4),SEEK_SET);
 		n = read(fd,(control_word),4);
 		if(n != 4) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: a read error occurred while reading (%s) , can't continue",NrmQuarkToString(*fpath));
@@ -3202,7 +3203,7 @@ NhlErrorTypes _NclIfbinrecread
 			_NclSwapBytes(&ind2,control_word,1,sizeof(int));
 		if(ind1 == ind2) {
 			i++;
-			cur_off += ind1 + 8;
+			cur_off += (off_t)(ind1 + 8);
 		} else {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinrecread: an error occurred reading the record control words. Something is wrong with the FORTRAN binary file.");
 			close(fd);
@@ -3446,7 +3447,7 @@ NhlErrorTypes _NclIfbinread
 			NhlPError(NhlFATAL,ENOMEM,NULL);
 			return( NhlFATAL);
 		}
-		lseek(fd,4,SEEK_SET); /* skip the control word */
+		lseek(fd,(off_t)4,SEEK_SET); /* skip the control word */
 		n = read(fd,tmp_ptr,totalsize);
 		if(n != totalsize)  {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: an error occurred reading the FORTRAN binary file.");
