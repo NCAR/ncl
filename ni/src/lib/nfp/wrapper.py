@@ -1405,7 +1405,7 @@ if have_leftmost:
   w1file.write("""
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
- * one-dimensional subsection.
+ * subsection of the input arrays..
  */
 """)
   index_str = "  "

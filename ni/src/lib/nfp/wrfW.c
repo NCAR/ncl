@@ -18,7 +18,13 @@ extern void NGCALLF(dinterp2dxy,DINTERP2DXY)(double *,double *,double *,
                                              int *,int *,int *, int*);
 
 extern void NGCALLF(dinterp1d,DINTERP1D)(double *,double *,double *,double *,
-					 int *, int *, double *);
+                                         int *, int *, double *);
+
+extern void NGCALLF(dfilter2d,DFILTER2D)(double *, double *, int *, int *, 
+                                         int *);
+
+extern void NGCALLF(filter2d,FILTER2D)(float *, float *, int *, int *, 
+                                       int *);
 
 extern void NGCALLF(dbint3d,DBINT3D)(double *,double *,double *, double *,
                                      int *, int *, int *, int *,
@@ -41,16 +47,28 @@ NhlErrorTypes wrf_tk_W( void )
   NclBasicDataTypes type_p, type_theta;
 
 /*
- * Output variable.
+ * Output variable and attributes.
  */
   void *t;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
   double *tmp_t;
   int size_t;
   NclBasicDataTypes type_t;
+  NclObjClass type_obj_t;
 /*
  * Various
  */
   int i, nx, size_leftmost, index_p;
+
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 
 /*
  * Retrieve parameters.
@@ -108,7 +126,8 @@ NhlErrorTypes wrf_tk_W( void )
  * The output type defaults to float, unless any of the two input arrays
  * are double.
  */
-  type_t = NCL_float;
+  type_t     = NCL_float;
+  type_obj_t = nclTypefloatClass;
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nx,sizeof(double));
     if(tmp_p == NULL) {
@@ -117,7 +136,8 @@ NhlErrorTypes wrf_tk_W( void )
     }
   }
   else {
-    type_t = NCL_double;
+    type_t     = NCL_double;
+    type_obj_t = nclTypedoubleClass;
   }
 
   if(type_theta != NCL_double) {
@@ -128,7 +148,8 @@ NhlErrorTypes wrf_tk_W( void )
     }
   }
   else {
-    type_t = NCL_double;
+    type_t     = NCL_double;
+    type_obj_t = nclTypedoubleClass;
   }
 
 /*
@@ -200,7 +221,102 @@ NhlErrorTypes wrf_tk_W( void )
   if(type_theta != NCL_double) NclFree(tmp_theta);
   if(type_t     != NCL_double) NclFree(tmp_t);
 
-  return(NclReturnValue(t,ndims_p,dsizes_p,NULL,type_t,0));
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(12,sizeof(char));
+  cunits       = (char *)calloc(2,sizeof(char));
+  strcpy(cdescription,"Temperature");
+  strcpy(cunits,"K");
+  description = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)t,
+                            NULL,
+                            ndims_p,
+                            dsizes_p,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_t
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
 
 NhlErrorTypes wrf_rh_W( void )
@@ -216,16 +332,29 @@ NhlErrorTypes wrf_rh_W( void )
   NclBasicDataTypes type_qv, type_p, type_t;
 
 /*
- * Output variable.
+ * Output variable and attributes.
  */
   void *rh;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
   double *tmp_rh;
   int size_rh;
   NclBasicDataTypes type_rh;
+  NclObjClass type_obj_rh;
 /*
  * Various
  */
   int i, nx, size_leftmost, index_qv;
+
+
+/*
+ * Variables for return the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 
 /*
  * Retrieve parameters.
@@ -293,7 +422,8 @@ NhlErrorTypes wrf_rh_W( void )
  * The output type defaults to float, unless any of the two input arrays
  * are double.
  */
-  type_rh = NCL_float;
+  type_rh     = NCL_float;
+  type_obj_rh = nclTypefloatClass;
   if(type_qv != NCL_double) {
     tmp_qv = (double *)calloc(nx,sizeof(double));
     if(tmp_qv == NULL) {
@@ -302,7 +432,8 @@ NhlErrorTypes wrf_rh_W( void )
     }
   }
   else {
-    type_rh = NCL_double;
+    type_rh     = NCL_double;
+    type_obj_rh = nclTypedoubleClass;
   }
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nx,sizeof(double));
@@ -312,7 +443,8 @@ NhlErrorTypes wrf_rh_W( void )
     }
   }
   else {
-    type_rh = NCL_double;
+    type_rh     = NCL_double;
+    type_obj_rh = nclTypedoubleClass;
   }
 
   if(type_t != NCL_double) {
@@ -323,7 +455,8 @@ NhlErrorTypes wrf_rh_W( void )
     }
   }
   else {
-    type_rh = NCL_double;
+    type_rh     = NCL_double;
+    type_obj_rh = nclTypedoubleClass;
   }
 
 /*
@@ -405,7 +538,101 @@ NhlErrorTypes wrf_rh_W( void )
   if(type_t  != NCL_double) NclFree(tmp_t);
   if(type_rh != NCL_double) NclFree(tmp_rh);
 
-  return(NclReturnValue(rh,ndims_qv,dsizes_qv,NULL,type_rh,0));
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(18,sizeof(char));
+  cunits       = (char *)calloc(2,sizeof(char));
+  strcpy(cdescription,"Relative Humidity");
+  strcpy(cunits,"%");
+  description = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)rh,
+                            NULL,
+                            ndims_qv,
+                            dsizes_qv,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_rh
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes wrf_slp_W( void )
@@ -424,14 +651,26 @@ NhlErrorTypes wrf_slp_W( void )
  * Output variable.
  */
   void *slp;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
   double *tmp_slp;
   int ndims_slp, *dsizes_slp, size_slp;
   NclBasicDataTypes type_slp;
+  NclObjClass type_obj_slp;
 /*
  * Various
  */
   int i, nx, ny, nz, nxy, nxyz, size_leftmost, index_nxy, index_nxyz;
   double *tmp_t_sea_level, *tmp_t_surf, *tmp_level;
+/*
+ * Variables for return the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
 /*
  * Retrieve parameters.
  *
@@ -530,7 +769,8 @@ NhlErrorTypes wrf_slp_W( void )
  * The output type defaults to float, unless any of the two input arrays
  * are double.
  */
-  type_slp = NCL_float;
+  type_slp     = NCL_float;
+  type_obj_slp = nclTypefloatClass;
 
   if(type_z != NCL_double) {
     tmp_z = (double *)calloc(nxyz,sizeof(double));
@@ -540,7 +780,8 @@ NhlErrorTypes wrf_slp_W( void )
     }
   }
   else {
-     type_slp = NCL_double;
+    type_slp     = NCL_double;
+    type_obj_slp = nclTypedoubleClass;
   }
 
   if(type_t != NCL_double) {
@@ -551,7 +792,8 @@ NhlErrorTypes wrf_slp_W( void )
     }
   }
   else {
-    type_slp = NCL_double;
+    type_slp     = NCL_double;
+    type_obj_slp = nclTypedoubleClass;
   }
 
   if(type_p != NCL_double) {
@@ -562,7 +804,8 @@ NhlErrorTypes wrf_slp_W( void )
     }
   }
   else {
-    type_slp = NCL_double;
+    type_slp     = NCL_double;
+    type_obj_slp = nclTypedoubleClass;
   }
 
   if(type_q != NCL_double) {
@@ -573,7 +816,8 @@ NhlErrorTypes wrf_slp_W( void )
     }
   }
   else {
-    type_slp = NCL_double;
+    type_slp     = NCL_double;
+    type_obj_slp = nclTypedoubleClass;
   }
 
 /*
@@ -681,7 +925,102 @@ NhlErrorTypes wrf_slp_W( void )
   NclFree(tmp_t_surf);
   NclFree(tmp_level);
 
-  return(NclReturnValue(slp,ndims_slp,dsizes_slp,NULL,type_slp,0));
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(19,sizeof(char));
+  cunits       = (char *)calloc(3,sizeof(char));
+  strcpy(cdescription,"Sea Level Pressure");
+  strcpy(cunits,"Pa");
+  description = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)slp,
+                            NULL,
+                            ndims_slp,
+                            dsizes_slp,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_slp
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
 
 NhlErrorTypes wrf_interp_3d_z_W( void )
@@ -701,9 +1040,9 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *description;
-  char *cdesc;
-  logical found_desc = False;
+  string *description, *units;
+  char *cdesc, *cunits;
+  logical found_desc = False, found_units = False;
 /*
  * Output variable.
  */
@@ -715,15 +1054,14 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   NclScalar missing_v2d;
 
 /*
- * If there's to be return attributes, set up the return information
- * we need for that here.
+ * Variables for returning the output array with attributes attached.
  */
   int att_id;
   int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
-  NclQuark *desc;
+  NclQuark *qdesc, *qunits;
 
 /*
  * Various
@@ -786,8 +1124,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
     }
   }
 /*
- * Check if v3d as any attributes, namely "description". This 
- * attribute will be attached to the return variable v2d.
+ * Check if v3d has any attributes, namely "description" or "units".
+ * These attributes will be attached to the return variable v2d.
  */
   stack_entry = _NclGetArg(0, 3, DONT_CARE);
   switch (stack_entry.kind) {
@@ -824,7 +1162,11 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
           description = (string *) attr_list->attvalue->multidval.val;
           cdesc       = NrmQuarkToString(*description);
           found_desc  = True;
-          break;
+        }
+        if ((strcmp(attr_list->attname, "units")) == 0) {
+          units  = (string *) attr_list->attvalue->multidval.val;
+          cunits = NrmQuarkToString(*units);
+          found_units  = True;
         }
         attr_list = attr_list->next;
       }
@@ -973,20 +1315,26 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   if(type_v2d != NCL_double) NclFree(tmp_v2d);
 
 /*
- * If v3d had a "description" attribute, return it with the output 
- * variable as an attribute.  Otherwise, return a blank string.
+ * If v3d had a "description" or units attribute, return them with
+ * the output variable as an attribute.  Otherwise, return a
+ * blank string for description, and nothing for units.
  */
   if(!found_desc) {
     cdesc = (char *)calloc(2,sizeof(char));
     strcpy(cdesc," ");
   }
 /*
- * I don't think we can return "description" here, because it's 
- * attached to an NCL input parameter. It could  screw things up
+ * I don't think we can return "description" or "units" here, because 
+ * they are attached to an NCL input parameter. It could screw things up
  * if we try to return it as an attribute with the output variable.
+ * Instead, create a new description and units "quark" variable.
  */
-  desc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
-  *desc = NrmStringToQuark(cdesc);
+  qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *qdesc = NrmStringToQuark(cdesc);
+  if(found_units) {
+    qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+    *qunits = NrmStringToQuark(cunits);
+  }
 /*
  * Set up return value.
  */
@@ -1014,7 +1362,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
                          NULL,
                          Ncl_MultiDValData,
                          0,
-                         (void*)desc,
+                         (void*)qdesc,
                          NULL,
                          1,
                          dsizes,
@@ -1029,6 +1377,27 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
              NULL
              );
     
+  if(found_units) {
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)qunits,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypestringClass
+                           );
+    _NclAddAtt(
+               att_id,
+             "units",
+               att_md,
+               NULL
+               );
+  }
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -1065,18 +1434,38 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   NclBasicDataTypes type_v3d, type_xy;
 
 /*
+ * Variables for retrieving attributes from "v3d".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  string *description, *units;
+  char *cdesc, *cunits;
+  logical found_desc = False, found_units = False;
+/*
  * Output variable.
  */
   void *v2d;
   double *tmp_v2d;
   int ndims_v2d, *dsizes_v2d, size_v2d;
   NclBasicDataTypes type_v2d;
+  NclObjClass type_obj_v2d;
+
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  NclQuark *qdesc, *qunits;
+
 /*
  * Various
  */
   int i, nx, ny, nz, nxnynz, nxy, nxy_nz , nxy_2, size_leftmost;
   int index_v3d, index_v2d, index_xy;
-
 /*
  * Retrieve parameters.
  *
@@ -1150,6 +1539,58 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
 
   size_v2d = size_leftmost * nxy_nz;
 
+/*
+ * Check if v3d has any attributes, namely "description" or "units".
+ * These attributes will be attached to the return variable v2d.
+ */
+  stack_entry = _NclGetArg(0, 2, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments. If none are specified, then return
+ * missing values.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      break;
+    }
+    else {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "description")) == 0) {
+          description = (string *) attr_list->attvalue->multidval.val;
+          cdesc       = NrmQuarkToString(*description);
+          found_desc  = True;
+        }
+        if ((strcmp(attr_list->attname, "units")) == 0) {
+          units  = (string *) attr_list->attvalue->multidval.val;
+          cunits = NrmQuarkToString(*units);
+          found_units  = True;
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
 /* 
  * Allocate space for coercing input arrays.  If the input v3d or xy
  * are already double, then we don't need to allocate space for
@@ -1159,7 +1600,8 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
  * The output type defaults to float, unless any of the two input arrays
  * are double.
  */
-  type_v2d = NCL_float;
+  type_v2d     = NCL_float;
+  type_obj_v2d = nclTypefloatClass;
   if(type_v3d != NCL_double) {
     tmp_v3d = (double *)calloc(nxnynz,sizeof(double));
     if(tmp_v3d == NULL) {
@@ -1168,7 +1610,8 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
     }
   }
   else {
-    type_v2d = NCL_double;
+    type_v2d     = NCL_double;
+    type_obj_v2d = nclTypedoubleClass;
   }
   if(type_xy != NCL_double) {
     tmp_xy = (double *)calloc(nxy_2,sizeof(double));
@@ -1178,7 +1621,8 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
     }
   }
   else {
-    type_v2d = NCL_double;
+    type_v2d     = NCL_double;
+    type_obj_v2d = nclTypedoubleClass;
   }
 
 /*
@@ -1253,7 +1697,111 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   if(type_xy  != NCL_double) NclFree(tmp_xy);
   if(type_v2d != NCL_double) NclFree(tmp_v2d);
 
-  return(NclReturnValue(v2d,ndims_v2d,dsizes_v2d,NULL,type_v2d,0));
+/*
+ * If v3d had a "description" or units attribute, return them with
+ * the output variable as an attribute.  Otherwise, return a
+ * blank string for description, and nothing for units.
+ */
+  if(!found_desc) {
+    cdesc = (char *)calloc(2,sizeof(char));
+    strcpy(cdesc," ");
+  }
+/*
+ * I don't think we can return "description" or "units" here, because 
+ * they are attached to an NCL input parameter. It could screw things up
+ * if we try to return it as an attribute with the output variable.
+ * Instead, create a new description and units "quark" variable.
+ */
+  qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *qdesc = NrmStringToQuark(cdesc);
+  if(found_units) {
+    qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+    *qunits = NrmStringToQuark(cunits);
+  }
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)v2d,
+                            NULL,
+                            ndims_v2d,
+                            dsizes_v2d,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_v2d
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)qdesc,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  if(found_units) {
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)qunits,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypestringClass
+                           );
+    _NclAddAtt(
+               att_id,
+             "units",
+               att_md,
+               NULL
+               );
+  }
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 
@@ -1268,6 +1816,15 @@ NhlErrorTypes wrf_interp_1d_W( void )
   int dsizes_v_in[NCL_MAX_DIMENSIONS], dsizes_z_in[NCL_MAX_DIMENSIONS];
   int dsizes_z_out[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v_in, type_z_in, type_z_out;
+/*
+ * Variables for retrieving attributes from "v3d".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  string *description, *units;
+  char *cdesc, *cunits;
+  logical found_desc = False, found_units = False;
 
 /*
  * Output variable.
@@ -1276,7 +1833,19 @@ NhlErrorTypes wrf_interp_1d_W( void )
   double *tmp_v_out, v_out_msg;
   int *dsizes_v_out, size_v_out;
   NclBasicDataTypes type_v_out;
+  NclObjClass type_obj_v_out;
   NclScalar missing_v_out;
+
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+  NclQuark *qdesc, *qunits;
+
 /*
  * Various
  */
@@ -1332,6 +1901,58 @@ NhlErrorTypes wrf_interp_1d_W( void )
     return(NhlFATAL);
   }
 /*
+ * Check if v_in has any attributes, namely "description" or "units".
+ * These attributes will be attached to the return variable v_out.
+ */
+  stack_entry = _NclGetArg(0, 3, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments. If none are specified, then return
+ * missing values.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      break;
+    }
+    else {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "description")) == 0) {
+          description = (string *) attr_list->attvalue->multidval.val;
+          cdesc       = NrmQuarkToString(*description);
+          found_desc  = True;
+        }
+        if ((strcmp(attr_list->attname, "units")) == 0) {
+          units  = (string *) attr_list->attvalue->multidval.val;
+          cunits = NrmQuarkToString(*units);
+          found_units  = True;
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
+/*
  * Calculate leftmost dimensions, if any, and check their sizes.
  * Also set dimension sizes for output array.
  */
@@ -1363,7 +1984,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
  * The output type defaults to float, unless any of the two input arrays
  * are double.
  */
-  type_v_out = NCL_float;
+  type_v_out     = NCL_float;
+  type_obj_v_out = nclTypefloatClass;
   if(type_v_in != NCL_double) {
     tmp_v_in = (double *)calloc(nz_in,sizeof(double));
     if(tmp_v_in == NULL) {
@@ -1372,7 +1994,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
     }
   }
   else {
-    type_v_out = NCL_double;
+    type_v_out     = NCL_double;
+    type_obj_v_out = nclTypedoubleClass;
   }
   if(type_z_in != NCL_double) {
     tmp_z_in = (double *)calloc(nz_in,sizeof(double));
@@ -1382,7 +2005,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
     }
   }
   else {
-    type_v_out = NCL_double;
+    type_v_out     = NCL_double;
+    type_obj_v_out = nclTypedoubleClass;
   }
 
   if(type_z_out != NCL_double) {
@@ -1393,7 +2017,8 @@ NhlErrorTypes wrf_interp_1d_W( void )
     }
   }
   else {
-    type_v_out = NCL_double;
+    type_v_out     = NCL_double;
+    type_obj_v_out = nclTypedoubleClass;
   }
 
 /*
@@ -1483,8 +2108,112 @@ NhlErrorTypes wrf_interp_1d_W( void )
   if(type_z_out != NCL_double) NclFree(tmp_z_out);
   if(type_v_out != NCL_double) NclFree(tmp_v_out);
 
-  return(NclReturnValue(v_out,ndims_z_out,dsizes_v_out,&missing_v_out,
-			type_v_out,0));
+/*
+ * If v3d had a "description" or units attribute, return them with
+ * the output  variable as an attribute.  Otherwise, return a
+ * blank string for description, and nothing for units.
+ */
+  if(!found_desc) {
+    cdesc = (char *)calloc(2,sizeof(char));
+    strcpy(cdesc," ");
+  }
+/*
+ * I don't think we can return "description" or "units" here, because 
+ * they are attached to an NCL input parameter. It could screw things up
+ * if we try to return it as an attribute with the output variable.
+ * Instead, create a new description and units "quark" variable.
+ */
+  qdesc  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *qdesc = NrmStringToQuark(cdesc);
+  if(found_units) {
+    qunits  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+    *qunits = NrmStringToQuark(cunits);
+  }
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)v_out,
+                            &missing_v_out,
+                            ndims_z_out,
+                            dsizes_v_out,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_v_out
+                            );
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)qdesc,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+            );
+    
+  if(found_units) {
+    att_md = _NclCreateVal(
+                           NULL,
+                           NULL,
+                           Ncl_MultiDValData,
+                           0,
+                           (void*)qunits,
+                           NULL,
+                           1,
+                           dsizes,
+                           TEMPORARY,
+                           NULL,
+                           (NclObjClass)nclTypestringClass
+                           );
+    _NclAddAtt(
+               att_id,
+             "units",
+               att_md,
+               NULL
+               );
+  }
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
 
 NhlErrorTypes wrf_bint_W( void )
@@ -1964,3 +2693,139 @@ NhlErrorTypes wrf_maptform_W( void )
   return(NhlNOERROR);
 }
 
+NhlErrorTypes wrf_smooth_2d_W( void )
+{
+
+/*
+ * Input variables
+ *
+ */
+  void *a, *b;
+  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_a, type_b;
+  int *it;
+
+/*
+ * Various
+ */
+  int ny, nx, nynx,  i, index_a, size_leftmost;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  a = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_a,
+           dsizes_a,
+           NULL,
+           NULL,
+           &type_a,
+           1);
+
+/*
+ * Check dimension sizes and input type.
+ */
+  if(ndims_a < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'a' array must have at least 2 dimensions");
+    return(NhlFATAL);
+  }
+  if(type_a != NCL_double && type_a != NCL_float) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'a' array must be float or double");
+    return(NhlFATAL);
+  }
+  ny = dsizes_a[ndims_a-2];
+  nx = dsizes_a[ndims_a-1];
+  nynx = ny * nx;
+
+/*
+ * Get argument # 1
+ */
+  b = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_b,
+           dsizes_b,
+           NULL,
+           NULL,
+           &type_b,
+           1);
+
+/*
+ * Check dimension sizes and input type.
+ */
+  if(ndims_b < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'b' array must have at least 2 dimensions");
+    return(NhlFATAL);
+  }
+  if(dsizes_b[ndims_b-2] != ny || dsizes_b[ndims_b-1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The last two dimensions of b must be ny x nx");
+    return(NhlFATAL);
+  }
+  if(type_b != NCL_double && type_b != NCL_float) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'b' array must be float or double");
+    return(NhlFATAL);
+  }
+
+  if(type_a != type_b) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'a' and 'b' arrays must be the same type");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 2
+ */
+  it = (int*)NclGetArgValue(
+           2,
+           3,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * Calculate size of leftmost dimensions.
+ */
+  size_leftmost  = 1;
+  for(i = 0; i < ndims_a-2; i++) {
+    if(dsizes_b[i] != dsizes_a[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The leftmost dimensions of a and b must be the same");
+      return(NhlFATAL);
+    }
+    size_leftmost *= dsizes_a[i];
+  }
+
+/*
+ * Loop across leftmost dimensions and call the Fortran routine for each
+ * two-dimensional subsection.
+ */
+  index_a = 0;
+
+  for(i = 0; i < size_leftmost; i++) {
+    if(type_a == NCL_double) {
+      NGCALLF(dfilter2d,DFILTER2D)(&((double*)a)[index_a],
+                                   &((double*)b)[index_a],
+                                   &nx, &ny, it);
+    }
+    else {
+      NGCALLF(filter2d,FILTER2D)(&((float*)a)[index_a],
+                                 &((float*)b)[index_a],
+                                 &nx, &ny, it);
+    }
+    index_a += nynx;
+  }
+
+/*
+ * This is a procedure, so no values are returned.
+ */
+  return(NhlNOERROR);
+}
