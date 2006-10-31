@@ -407,6 +407,10 @@ c    *         sea_level_pressure(20,2),sea_level_pressure(20,3)
 
 c---------------------------------------------------
 
+C
+C Double precision version. If you make a change here, you
+C must make the same change below to filter2d.
+C
 C NCLFORTSTART
       SUBROUTINE DFILTER2D(A,B,NX,NY,IT)
       IMPLICIT NONE
@@ -453,6 +457,57 @@ c        enddo
       END DO
       RETURN
       END
+
+C
+C Single precision version. If you make a change here, you
+C must make the same change above to dfilter2d.
+C
+C NCLFORTSTART
+      SUBROUTINE filter2d( a, b, nx , ny , it)
+      IMPLICIT NONE
+c     Estimate sea level pressure.
+      INTEGER nx , ny, it
+      REAL    a(nx,ny),b(nx,ny)
+C NCLEND
+
+      REAL coef
+      parameter( coef = 0.25)
+      INTEGER i,j,iter
+
+      do iter=1, it
+        do j=1,ny
+        do i=1,nx
+          b(i,j) = a(i,j)
+        enddo
+        enddo
+        do j=2,ny-1
+        do i=1,nx
+          a(i,j) = a(i,j) + coef*(b(i,j-1)-2*b(i,j)+b(i,j+1))
+        enddo
+        enddo
+        do j=1,ny
+        do i=2,nx-1
+          a(i,j) = a(i,j) + coef*(b(i-1,j)-2*b(i,j)+b(i+1,j))
+        enddo
+        enddo
+c        do j=1,ny
+c        do i=1,nx
+c          b(i,j) = a(i,j)
+c        enddo
+c        enddo
+c        do j=2,ny-1
+c        do i=1,nx
+c          a(i,j) = a(i,j) - .99*coef*(b(i,j-1)-2*b(i,j)+b(i,j+1))
+c        enddo
+c        enddo
+c        do j=1,ny
+c        do i=2,nx-1
+c          a(i,j) = a(i,j) - .99*coef*(b(i-1,j)-2*b(i,j)+b(i+1,j))
+c        enddo
+c        enddo
+      enddo
+      return
+      end
 c---------------------------------------------------------
 
 C NCLFORTSTART
