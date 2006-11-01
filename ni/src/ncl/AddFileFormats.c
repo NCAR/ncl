@@ -58,6 +58,8 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(GribAddFileFormat,"grb");
 	_NclRegisterFormat(GribAddFileFormat,"grib");
+	_NclRegisterFormat(GribAddFileFormat,"grib2");
+	_NclRegisterFormat(GribAddFileFormat,"grb2");
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
 	return;
 }

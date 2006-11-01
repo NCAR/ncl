@@ -75,55 +75,60 @@ NclFormatFunctionRecPtr _NclGetFormatFuncs
 	
 	for(i = 0; i<num_formats; i++) {
 		if(formats[i].file_extension == file_extension) {
-			return((*formats[i].format_func)());
+            return((*formats[i].format_func)());
 		}
 	}
 	return(NULL);
 }
 
-logical _NclFormatEqual
+int GribVersion
 #if NhlNeedProto
-(
-	NclQuark file_ext1, 
-	NclQuark file_ext2
-)
+(char *path)
 #else
-(file_ext1, file_ext2)
-NclQuark file_ext1;
-NclQuark file_ext2;
+(path)
+    char *path;
 #endif
 {
-	NclAddFileFormat format_func1;
-	char ext[16];
-        char *cp;
-	NclQuark qext1,qext2;
-	int i;
+# define GBUFSZ_T 1024
+    unsigned char buf[4 * GBUFSZ_T];
+    int len,
+    version;
 
-        strncpy(ext,NrmQuarkToString(file_ext1),sizeof(ext));
-        ext[sizeof(ext)-1] = '\0';
-	for (cp = ext; *cp != '\0'; cp++) {
-		*cp = tolower(*cp);	
-        }
-        qext1 = NrmStringToQuark(ext);
-	for(i = 0; i<num_formats; i++) {
-		if(formats[i].file_extension == qext1) {
-			format_func1 = formats[i].format_func;
-		}
-	}
+    int i,
+        j;
 
-        strncpy(ext,NrmQuarkToString(file_ext2),sizeof(ext));
-        ext[sizeof(ext)-1] = '\0';
-	for (cp = ext; *cp != '\0'; cp++) {
-		*cp = tolower(*cp);	
+    static void *vbuf;
+    FILE    *fd;
+
+    fd = fopen(path, "r");
+    vbuf = (void *) NclMalloc(4 * getpagesize());
+    setvbuf(fd, vbuf, _IOFBF, 4 * getpagesize());
+
+    (void) fseek(fd, 0L, SEEK_SET);
+    i = 0;
+    while (i < 100) {
+        len = fread((void*) buf, 1, 4 * GBUFSZ_T, fd);
+        if (len > 0) {
+            for (j = 0; j < len; j++) {
+                /* look for "GRIB" indicator */
+                if (buf[j] != 'G') {
+                    continue;
+                } else {
+                    if ((buf[j + 1] == 'R' && buf[j + 2] == 'I' && buf[j + 3] == 'B')) {
+                        version = buf[j + 7];
+                        break;
+                    }
+                }
+            }
+            i++;
         }
-        qext2 = NrmStringToQuark(ext);
-	for(i = 0; i<num_formats; i++) {
-		if(formats[i].file_extension == qext2) {
-			if (format_func1 == formats[i].format_func)
-				return 1;
-			return 0;
-		}
-	}
-	return 0;
+
+    }
+
+    if (fd) {
+        (void) fseek(fd, 0L, SEEK_SET);
+        fclose(fd);
+    }
+
+    return version;
 }
-
