@@ -66,6 +66,7 @@ extern NhlErrorTypes wrf_interp_1d_W(void);
 extern NhlErrorTypes wrf_interp_2d_xy_W(void);
 extern NhlErrorTypes wrf_interp_3d_z_W(void);
 extern NhlErrorTypes wrf_smooth_2d_W(void);
+extern NhlErrorTypes wrf_latlon_to_ij_W(void);
 extern NhlErrorTypes wrf_bint_W(void);
 extern NhlErrorTypes wrf_maptform_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
@@ -1242,6 +1243,20 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterProc(wrf_smooth_2d_W,args,"wrf_smooth_2d",nargs);
+/*
+ * Register "wrf_latlon_to_ij".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(4);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+        NclRegisterFunc(wrf_latlon_to_ij_W,args,"wrf_latlon_to_ij",nargs);
 /*
  * Register "wrf_bint".
  *
