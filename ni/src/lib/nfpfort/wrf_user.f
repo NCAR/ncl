@@ -545,18 +545,21 @@ c       rh(i) = 100.*qv(i)/qvs
 c----------------------------------------------
 
 C NCLFORTSTART
-      SUBROUTINE DGETIJLATLONG(LAT_ARRAY,LONG_ARRAY,LAT,LONGITUDE,IR,
-     +                         JR,NX,NY)
+      SUBROUTINE DGETIJLATLONG(LAT_ARRAY,LONG_ARRAY,LAT,LONGITUDE,
+     +                         II,JJ,NX,NY)
       IMPLICIT NONE
-      INTEGER NX,NY
+      INTEGER NX,NY,II,JJ
       DOUBLE PRECISION LAT_ARRAY(NX,NY),LONG_ARRAY(NX,NY)
-      DOUBLE PRECISION IR,JR
       DOUBLE PRECISION LAT,LONGITUDE
-      DOUBLE PRECISION LONGD,LATD
 C NCLEND
+      DOUBLE PRECISION LONGD,LATD
       INTEGER I,J
+      DOUBLE PRECISION IR,JR
       DOUBLE PRECISION DIST_MIN,DIST
-      DOUBLE PRECISION W00,W01,W02,W10,W11,W12,W20,W21,W22
+
+C Init to missing
+      IR = -999
+      JR = -999    
 
       DIST_MIN = 1.D+20
       DO J = 1,NY
@@ -572,8 +575,16 @@ C NCLEND
               END IF
           END DO
       END DO
-      I = NINT(IR)
-      J = NINT(JR)
+C
+C The original version of this routine returned IR and JR. But, then
+C the NCL script that called this routine was converting IR and JR
+C to integer, so why not just return II and JJ?
+C
+C Also, I'm subtracing 1 here, because it will be returned to NCL
+C script which has 0-based indexing.
+C 
+      II = NINT(IR)-1
+      JJ = NINT(JR)-1
 
 c we will just return the nearest point at present
 
