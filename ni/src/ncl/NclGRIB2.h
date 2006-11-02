@@ -61,9 +61,14 @@ typedef struct g2_ft_list {
 /*
  * Derived from NCEP WMO GRIB2 Documentation
  * http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc.shtml
+ *
+ * NCEP WMO GRIB2 Documentation
+ *    http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc.shtml
+ *
+ * ECMWF uses the WMO definitions, and does not (seem to) produce
+ * tables that indicate its choices for variable short names.
  */
 
-# define    NCL_DEF_GRIB2_CODETABLE_DIR     "/home/grubin/src/ncarg/ni/src/ncl/codetables"
 typedef struct _g2codeTable {
     int oct;
     char    *cat;

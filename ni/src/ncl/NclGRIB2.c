@@ -25,6 +25,8 @@
 
 static void *vbuf;
 
+const char  *grib2_codetable_dir = NULL;
+int g2_codetable_dirname_len = 0;
 
 
 unsigned int
@@ -5105,6 +5107,7 @@ static g2codeTable *Grib2ReadCodeTable
     ct->shname = NULL;
     ct->units = NULL;
 
+
     /*
      * construct pathname:
      *      codetable dir + center + section + table
@@ -5112,28 +5115,28 @@ static g2codeTable *Grib2ReadCodeTable
      */
     if (secid == -1) {
         /* reading table of centers */
-        ctf = NclMalloc(strlen(NCL_DEF_GRIB2_CODETABLE_DIR) + strlen(table) + 2);
+        ctf = NclMalloc(g2_codetable_dirname_len + strlen(table) + 2);
         if (ctf == NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN, "Could not allocate memory for code table.");
             return NULL;
         }
 
-        (void) sprintf(ctf, "%s/%s", NCL_DEF_GRIB2_CODETABLE_DIR, table);
+        (void) sprintf(ctf, "%s/%s", grib2_codetable_dir, table);
     } else {
-        ctf = NclMalloc(strlen(NCL_DEF_GRIB2_CODETABLE_DIR) + strlen(center) + 5 + strlen(table));
+        ctf = NclMalloc(g2_codetable_dirname_len + strlen(center) + 5 + strlen(table));
         if (ctf == NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN, "Could not allocate memory for code table.");
             return NULL;
         }
 
-        (void) sprintf(ctf, "%s/%s/%d/%s", NCL_DEF_GRIB2_CODETABLE_DIR, center, secid, table);
+        (void) sprintf(ctf, "%s/%s/%d/%s", grib2_codetable_dir, center, secid, table);
     }
 
     fp = fopen(ctf, "r");
     if (fp == (FILE *) NULL) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
             " NclGRIB2: codetable file \"%s/%s\" not a valid GRIB2 code table.\n",
-                NCL_DEF_GRIB2_CODETABLE_DIR, ctf);
+                grib2_codetable_dir, ctf);
         return (g2codeTable *) NULL;
     } else {
         while (fgets(s, 256, fp)) {
@@ -5418,6 +5421,20 @@ static void *Grib2OpenFile
             return NULL;
     }
 
+    /*
+     * Code table directory
+     */
+    grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
+    if (grib2_codetable_dir == NULL) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+            " Unable to locate GRIB v2 code tables, cannot continue.");
+
+        NhlFree(g2rec[nrecs]);
+        return NULL;
+    }
+
+    g2_codetable_dirname_len = strlen(grib2_codetable_dir);
+
     fd = fopen(NrmQuarkToString(path), "r");
     vbuf = (void *) NclMalloc(4 * getpagesize());
     setvbuf(fd, vbuf, _IOFBF, 4 * getpagesize());
@@ -5637,13 +5654,13 @@ static void *Grib2OpenFile
             NhlFree(g2rec);
             return;
         }
-	if (ct->descrip) {
+
+        if (ct->descrip) {
             g2rec[nrecs]->sec1.proc_data_type = NclMalloc(strlen(ct->descrip) + 1);
-	    (void) strcpy(g2rec[nrecs]->sec1.proc_data_type, ct->descrip);
-	}
-	else {
-		g2rec[nrecs]->sec1.proc_data_type = NULL;
-	}
+            (void) strcpy(g2rec[nrecs]->sec1.proc_data_type, ct->descrip);
+        } else {
+            g2rec[nrecs]->sec1.proc_data_type = NULL;
+        }
 
         /*
          * Get GRIB v2 sections 2 thru 7.  These sections may be repeated
@@ -6089,7 +6106,7 @@ static void *Grib2OpenFile
              * available that what's been extracted to this point.  This is determined
              * by the Product Definition Templates (PDTs).
              */
-	    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = 0;
+            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = 0;
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
                 case 0:
                     /*
