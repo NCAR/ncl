@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.72 2006-11-01 23:01:43 grubin Exp $
+ *      $Id: Project,v 1.73 2006-11-02 21:48:07 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2006-11-01 23:01:43 $
+ *	$Date: 2006-11-02 21:48:07 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -25,7 +25,7 @@
  */
 
 #define NcargVersion 4.4.2
-#define NclVersion 4.2.0.a034   
+#define NclVersion 4.2.0.a035
 
 
 #ifndef	BuildHDFEOS
