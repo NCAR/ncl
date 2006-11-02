@@ -227,10 +227,18 @@ NhlErrorTypes wrf_tk_W( void )
 
 /*
  * Set up some attributes ("description" and "units") to return.
+ * Note that if the input arrays are anything but 2D, the units
+ * will be "Temperature", and "2m Temperature" otherwise.
  */
-  cdescription = (char *)calloc(12,sizeof(char));
+  if(ndims_p != 2) {
+    cdescription = (char *)calloc(12,sizeof(char));
+    strcpy(cdescription,"Temperature");
+  }
+  else {
+    cdescription = (char *)calloc(15,sizeof(char));
+    strcpy(cdescription,"2m Temperature");
+  }
   cunits       = (char *)calloc(2,sizeof(char));
-  strcpy(cdescription,"Temperature");
   strcpy(cunits,"K");
   description = (NclQuark*)NclMalloc(sizeof(NclQuark));
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -933,9 +941,9 @@ NhlErrorTypes wrf_slp_W( void )
  * Set up some attributes ("description" and "units") to return.
  */
   cdescription = (char *)calloc(19,sizeof(char));
-  cunits       = (char *)calloc(3,sizeof(char));
+  cunits       = (char *)calloc(4,sizeof(char));
   strcpy(cdescription,"Sea Level Pressure");
-  strcpy(cunits,"Pa");
+  strcpy(cunits,"hPa");
   description = (NclQuark*)NclMalloc(sizeof(NclQuark));
   units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
   *description = NrmStringToQuark(cdescription);
@@ -1454,6 +1462,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   int ndims_v2d, *dsizes_v2d, size_v2d;
   NclBasicDataTypes type_v2d;
   NclObjClass type_obj_v2d;
+  NclScalar missing_v2d;
 
 /*
  * Variables for returning the output array with attributes attached.
@@ -1638,6 +1647,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    missing_v2d.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
   }
   else {
     v2d     = (float *)calloc(size_v2d,sizeof(float));
@@ -1646,6 +1656,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_2d_xy: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
+    missing_v2d.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
   }
 
 /*
@@ -1731,7 +1742,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
                             Ncl_MultiDValData,
                             0,
                             (void*)v2d,
-                            NULL,
+                            &missing_v2d,
                             ndims_v2d,
                             dsizes_v2d,
                             TEMPORARY,
