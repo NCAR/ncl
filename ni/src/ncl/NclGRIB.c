@@ -47,6 +47,8 @@
 #include "fsl2_gtb.h"
 #include "fnmoc_gtb.h"
 
+#include "NclFile.h"
+
 #define NCL_GRIB_CACHE_SIZE  150
 
 /*
@@ -4466,11 +4468,14 @@ int *version;
 			*totalsize = 0;
 			return(GRIBEOF);
 		}	 
+
+        /* jump into GRIB file, read 1024 bytes at a time */
 		fseek(gribfile,i,SEEK_SET);
 		ret1 = fread((void*)buf,1,buflen,gribfile);
 		if(ret1 > 0) {
 			len = ret1 - LEN_HEADER_PDS;
 			for (j = 0; j < len; j++) {
+                /* look for "GRIB" indicator */
 				if (buf[j] != 'G') 
 					continue;
 				if (! (buf[j+1] == 'R' && buf[j+2] == 'I' && buf[j+3] == 'B'))
@@ -5846,6 +5851,7 @@ static void *GribInitializeFileRec
 	return (void *) therec;
 }
 
+
 static void *GribOpenFile
 #if	NhlNeedProto
 (void *rec,NclQuark path,int wr_status)
@@ -7147,9 +7153,9 @@ void* storage;
 	long *grid_finish;
 	long *grid_stride;
 	int n_other_dims;
-	int current_index[5] = {0,0,0,0,0};
-	int dim_offsets[5] = {-1,-1,-1,-1,-1};
-	int i,j,tg;
+	int current_index[3];
+	int dim_sizes[3] = {-1,-1,-1};
+	int i,tg;
 	int offset;
 	int done = 0,inc_done =0;
 	int data_offset = 0;
@@ -7216,10 +7222,7 @@ void* storage;
 			
 				for(i = 0; i < n_other_dims; i++) {
 					current_index[i] = start[i];
-					dim_offsets[i] = step->var_info.dim_sizes[i];
-					for (j = i + 1; j < n_other_dims; j++) {
-						dim_offsets[i] *= step->var_info.dim_sizes[j];
-					}
+					dim_sizes[i] = step->var_info.dim_sizes[i];
 				}
 				n_grid_dims = 2;
 				grid_dim_sizes[0] = step->var_info.dim_sizes[step->var_info.num_dimensions - 2];
@@ -7246,10 +7249,7 @@ void* storage;
 			
 				for(i = 0; i < n_other_dims; i++) {
 					current_index[i] = start[i];
-					dim_offsets[i] = step->var_info.dim_sizes[i];
-					for (j = i + 1; j < n_other_dims; j++) {
-						dim_offsets[i] *= step->var_info.dim_sizes[j];
-					}
+					dim_sizes[i] = step->var_info.dim_sizes[i];
 				}
 				n_grid_dims = 3;
 				grid_dim_sizes[0] = step->var_info.dim_sizes[step->var_info.num_dimensions - 3];
@@ -7282,7 +7282,7 @@ void* storage;
 				offset = 0;
 				if(n_other_dims > 0 ) {
 					for(i = 0; i < n_other_dims - 1; i++) {
-						offset += dim_offsets[i+1] * current_index[i];
+						offset += dim_sizes[i+1] * current_index[i];
 					}
 					offset += current_index[n_other_dims-1];
 				}
@@ -7729,7 +7729,6 @@ static NhlErrorTypes GribSetOption
 	return NhlNOERROR;
 }
 
-
 NclFormatFunctionRec GribRec = {
 /* NclInitializeFileRecFunc initialize_file_rec */      GribInitializeFileRec,
 /* NclCreateFileFunc	   create_file; */		GribCreateFile,
@@ -7768,13 +7767,3 @@ NclFormatFunctionRec GribRec = {
 /* NclDelVarAttFunc        del_var_att; */		NULL,
 /* NclSetOptionFunc        set_option;  */              GribSetOption
 };
-NclFormatFunctionRecPtr GribAddFileFormat 
-#if	NhlNeedProto
-(void)
-#else 
-()
-#endif
-{
-
-return(&GribRec);
-}
