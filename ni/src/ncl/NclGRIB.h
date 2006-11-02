@@ -78,7 +78,6 @@ typedef struct _ptableinfo {
 #define GRIBERROR -1
 #define GRIBOK 1
 
-
 typedef struct _GribFileRecord GribFileRecord;
 typedef struct _GribRecordInqRec GribRecordInqRec;
 typedef struct _GribDimInqRec GribDimInqRec;
@@ -383,3 +382,8 @@ typedef struct _GribTable {
 
 #define DEFAULT_MISSING_FLOAT ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval
 #define DEFAULT_MISSING_INT ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval
+
+/*
+ * Define here; filled in NclGRIB.c
+ */
+NclFormatFunctionRec GribRec;
