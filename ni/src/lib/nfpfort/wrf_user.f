@@ -388,10 +388,14 @@ c     The grand finale: ta da!
           DO I = 1,NX
 c   z_half_lowest=zetahalf(1)/ztop*(ztop-terrain(i,j))+terrain(i,j)
               Z_HALF_LOWEST = Z(I,J,1)
-              SEA_LEVEL_PRESSURE(I,J) = P(I,J,1)*
+
+C Convert to hPa in this step, by multiplying by 0.01. The original
+C Fortran routine didn't do this, but the NCL script that called it
+C did, so we moved it here.
+              SEA_LEVEL_PRESSURE(I,J) = 0.01 * (P(I,J,1)*
      +                                  EXP((2.D0*G*Z_HALF_LOWEST)/
      +                                  (R* (T_SEA_LEVEL(I,J)+T_SURF(I,
-     +                                  J))))
+     +                                  J)))))
           END DO
       END DO
 
