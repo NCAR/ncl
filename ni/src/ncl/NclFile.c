@@ -3153,15 +3153,15 @@ int rw_status;
      * If a GRIB file, check version.  First verify that the file exists
      * and is accessible (path to it must be searchable).
      */
-    if ((strcmp(end_of_name, "grb")) || (strcmp(end_of_name, "grib"))
-            || (strcmp(end_of_name, "grib2")) || (strcmp(end_of_name, "grb2"))) {
+    if ((strcmp(end_of_name, "grb")) == 0 || (strcmp(end_of_name, "grib")) == 0
+            || (strcmp(end_of_name, "grib2")) == 0 || (strcmp(end_of_name, "grb2")) == 0) {
         if (stat(_NGResolvePath(NrmQuarkToString(path)), &buf) == -1) {
             NhlPError(NhlFATAL, NhlEUNKNOWN," File does not exist as (%s), can't add.",
                     the_path);
             return NULL;
         }
 
-        grib_version = GribVersion(the_path);
+        grib_version = GribVersion(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path))));
     }
 
 	if(inst == NULL) {

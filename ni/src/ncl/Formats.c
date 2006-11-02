@@ -83,10 +83,10 @@ NclFormatFunctionRecPtr _NclGetFormatFuncs
 
 int GribVersion
 #if NhlNeedProto
-(char *path)
+(NclQuark path)
 #else
 (path)
-    char *path;
+    NclQuark path;
 #endif
 {
 # define GBUFSZ_T 1024
@@ -100,7 +100,7 @@ int GribVersion
     static void *vbuf;
     FILE    *fd;
 
-    fd = fopen(path, "r");
+    fd = fopen(NrmQuarkToString(path), "r");
     vbuf = (void *) NclMalloc(4 * getpagesize());
     setvbuf(fd, vbuf, _IOFBF, 4 * getpagesize());
 
