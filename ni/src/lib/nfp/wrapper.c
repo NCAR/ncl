@@ -60,6 +60,7 @@ extern NhlErrorTypes pw_skewt_W(void);
 extern NhlErrorTypes rip_cape_2d_W(void);
 extern NhlErrorTypes rip_cape_3d_W(void);
 extern NhlErrorTypes wrf_tk_W(void);
+extern NhlErrorTypes wrf_td_W(void);
 extern NhlErrorTypes wrf_rh_W(void);
 extern NhlErrorTypes wrf_slp_W(void);
 extern NhlErrorTypes wrf_interp_1d_W(void);
@@ -67,6 +68,7 @@ extern NhlErrorTypes wrf_interp_2d_xy_W(void);
 extern NhlErrorTypes wrf_interp_3d_z_W(void);
 extern NhlErrorTypes wrf_smooth_2d_W(void);
 extern NhlErrorTypes wrf_latlon_to_ij_W(void);
+extern NhlErrorTypes wrf_uvmet_W(void);
 extern NhlErrorTypes wrf_bint_W(void);
 extern NhlErrorTypes wrf_maptform_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
@@ -1164,6 +1166,18 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(wrf_tk_W,args,"wrf_tk",nargs);
 /*
+ * Register "wrf_td".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(wrf_td_W,args,"wrf_td",nargs);
+/*
  * Register "wrf_rh".
  *
  * Create private argument array.
@@ -1257,6 +1271,24 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
         NclRegisterFunc(wrf_latlon_to_ij_W,args,"wrf_latlon_to_ij",nargs);
+/*
+ * Register "wrf_uvmet".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(6);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_uvmet_W,args,"wrf_uvmet",nargs);
+
 /*
  * Register "wrf_bint".
  *
