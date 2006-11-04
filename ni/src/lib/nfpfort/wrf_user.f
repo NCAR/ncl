@@ -611,7 +611,7 @@ C NCLEND
       DOUBLE PRECISION UK,VK
 
 
-      WRITE (6,FMT=*) ' in compute_uvmet ',NX,NY,NZ,NXP1,NYP1
+c      WRITE (6,FMT=*) ' in compute_uvmet ',NX,NY,NZ,NXP1,NYP1
 
       DO J = 1,NY
           DO I = 1,NX
@@ -635,7 +635,7 @@ C NCLEND
           END DO
       END DO
 
-      WRITE (6,FMT=*) ' computing velocities '
+c      WRITE (6,FMT=*) ' computing velocities '
 
       DO K = 1,NZ
           DO J = 1,NY
@@ -652,60 +652,30 @@ C NCLEND
       END
 
 C NCLFORTSTART
-      SUBROUTINE DCOMPUTETD(TD,PRESSURE,QV_IN,NX,NY,NZ)
+C
+C This was originally a routine that took 2D input arrays. Since
+C the NCL C wrapper routine can handle multiple dimensions, it's
+C not necessary to have anything bigger than 1D here.
+C
+      SUBROUTINE DCOMPUTETD(TD,PRESSURE,QV_IN,NX)
       IMPLICIT NONE
-      INTEGER NX,NY,NZ
-      DOUBLE PRECISION PRESSURE(NX,NY,NZ)
-      DOUBLE PRECISION QV_IN(NX,NY,NZ)
-      DOUBLE PRECISION TD(NX,NY,NZ)
-      DOUBLE PRECISION QV,TDC
+      INTEGER NX
+      DOUBLE PRECISION PRESSURE(NX)
+      DOUBLE PRECISION QV_IN(NX)
+      DOUBLE PRECISION TD(NX)
 C NCLEND
+      DOUBLE PRECISION QV,TDC
 
-      INTEGER I,J,K
-      DOUBLE PRECISION P1000MB,R_D,CP
+      INTEGER I
 
-      DO K = 1,NZ
-          DO J = 1,NY
-              DO I = 1,NX
-                  QV = DMAX1(QV_IN(I,J,K),0.D0)
-
+      DO I = 1,NX
+          QV = DMAX1(QV_IN(I),0.D0)
 c vapor pressure
-                  TDC = QV*PRESSURE(I,J,K)/ (.622D0+QV)
+          TDC = QV*PRESSURE(I)/ (.622D0+QV)
 
 c avoid problems near zero
-                  TDC = DMAX1(TDC,0.001D0)
-                  TD(I,J,K) = (243.5D0*LOG(TDC)-440.8D0)/
-     +                        (19.48D0-LOG(TDC))
-              END DO
-          END DO
-      END DO
-
-      RETURN
-      END
-
-C NCLFORTSTART
-      SUBROUTINE DCOMPUTETD2D(TD,PRESSURE,QV_IN,NX,NY)
-      IMPLICIT NONE
-      INTEGER NX,NY
-      DOUBLE PRECISION PRESSURE(NX,NY)
-      DOUBLE PRECISION QV_IN(NX,NY)
-      DOUBLE PRECISION TD(NX,NY)
-      DOUBLE PRECISION QV,TDC
-C NCLEND
-
-      INTEGER I,J,K
-      DOUBLE PRECISION P1000MB,R_D,CP
-
-      DO J = 1,NY
-          DO I = 1,NX
-              QV = DMAX1(QV_IN(I,J),0.D0)
-c vapor pressure
-              TDC = QV*PRESSURE(I,J)/ (.622D0+QV)
-
-c avoid problems near zero
-              TDC = DMAX1(TDC,0.001D0)
-              TD(I,J) = (243.5D0*LOG(TDC)-440.8D0)/ (19.48D0-LOG(TDC))
-          END DO
+          TDC = DMAX1(TDC,0.001D0)
+          TD(I) = (243.5D0*LOG(TDC)-440.8D0)/ (19.48D0-LOG(TDC))
       END DO
 
       RETURN
