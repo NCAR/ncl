@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.17 2006-11-02 16:17:56 grubin Exp $
+ *      $Id: NclFile.h,v 1.18 2006-11-04 02:20:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 #define NclFile_h
 
 #include "NclData.h"
-#include <netcdf.h> /* this is included here only because we need to know if netcdf 4 is in use */
 
 int grib_version;
 
@@ -257,6 +256,7 @@ typedef struct _NclFileOption {
 	NclQuark format;
 	NclQuark name;
 	NclMultiDValData value;
+	NclMultiDValData def_value;
 	NclMultiDValData valid_values;
 	int access;    /* 0 - any (read-only or read-write; 1 - read-only; 2 - read-write 3 - create only */ 
 	NclPostSetOptionFunc post_set_option;
@@ -273,7 +273,7 @@ typedef enum {
 	Ncl_WRITE_BYTE_ORDER,
 	Ncl_INITIAL_TIME_COORDINATE_TYPE,
 	Ncl_MISSING_TO_FILL_VALUE,
-#ifdef NC_FORMAT_NETCDF4
+#ifdef USE_NETCDF4
 	Ncl_COMPRESSION_LEVEL,
 #endif
 	Ncl_DEFAULT_NCEP_PTABLE

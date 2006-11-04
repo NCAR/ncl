@@ -81,6 +81,54 @@ NclFormatFunctionRecPtr _NclGetFormatFuncs
 	return(NULL);
 }
 
+
+
+logical _NclFormatEqual
+#if NhlNeedProto
+(
+	NclQuark file_ext1, 
+	NclQuark file_ext2
+)
+#else
+(file_ext1, file_ext2)
+NclQuark file_ext1;
+NclQuark file_ext2;
+#endif
+{
+	NclAddFileFormat format_func1;
+	char ext[16];
+        char *cp;
+	NclQuark qext1,qext2;
+	int i;
+
+        strncpy(ext,NrmQuarkToString(file_ext1),sizeof(ext));
+        ext[sizeof(ext)-1] = '\0';
+	for (cp = ext; *cp != '\0'; cp++) {
+		*cp = tolower(*cp);	
+        }
+        qext1 = NrmStringToQuark(ext);
+	for(i = 0; i<num_formats; i++) {
+		if(formats[i].file_extension == qext1) {
+			format_func1 = formats[i].format_func;
+		}
+	}
+
+        strncpy(ext,NrmQuarkToString(file_ext2),sizeof(ext));
+        ext[sizeof(ext)-1] = '\0';
+	for (cp = ext; *cp != '\0'; cp++) {
+		*cp = tolower(*cp);	
+        }
+        qext2 = NrmStringToQuark(ext);
+	for(i = 0; i<num_formats; i++) {
+		if(formats[i].file_extension == qext2) {
+			if (format_func1 == formats[i].format_func)
+				return 1;
+			return 0;
+		}
+	}
+	return 0;
+}
+
 int GribVersion
 #if NhlNeedProto
 (NclQuark path)
