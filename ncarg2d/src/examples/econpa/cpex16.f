@@ -535,7 +535,14 @@ C
 C
           DO 108 I=1,100
             DO 107 J=1,116
-              CALL MAPIT (ULAT(I,J),ULON(I,J),MAX(0,MIN(1,J-1)))
+              IF (J.EQ.1) THEN
+                IPEN=0
+              ELSE IF (J.NE.116) THEN
+                IPEN=1
+              ELSE
+                IPEN=2
+              END IF
+              CALL MAPIT (ULAT(I,J),ULON(I,J),IPEN)
   107       CONTINUE
             CALL MAPIQ
   108     CONTINUE
@@ -543,7 +550,14 @@ C
           DO 110 J=1,116
             DO 109 I=1,100
               K=MOD(I-1,100)+1
-              CALL MAPIT (ULAT(K,J),ULON(K,J),MAX(0,MIN(1,I-1)))
+              IF (I.EQ.1) THEN
+                IPEN=0
+              ELSE IF (I.NE.100) THEN
+                IPEN=1
+              ELSE
+                IPEN=2 
+              END IF
+              CALL MAPIT (ULAT(K,J),ULON(K,J),IPEN)
   109       CONTINUE
             CALL MAPIQ
   110     CONTINUE
@@ -555,7 +569,14 @@ C
 C
           DO 112 I=1,100
             DO 111 J=1,116
-              CALL MAPIT (TLAT(I,J),TLON(I,J),MAX(0,MIN(1,J-1)))
+              IF (J.EQ.1) THEN
+                IPEN=0
+              ELSE IF (J.NE.116) THEN
+                IPEN=1
+              ELSE
+                IPEN=2 
+              END IF
+              CALL MAPIT (TLAT(I,J),TLON(I,J),IPEN)
   111       CONTINUE
             CALL MAPIQ
   112     CONTINUE
@@ -563,7 +584,14 @@ C
           DO 114 J=1,116
             DO 113 I=1,101
               K=MOD(I-1,100)+1
-              CALL MAPIT (TLAT(K,J),TLON(K,J),MAX(0,MIN(1,I-1)))
+              IF (I.EQ.1) THEN
+                IPEN=0
+              ELSE IF (I.NE.101) THEN
+                IPEN=1
+              ELSE
+                IPEN=2
+              END IF
+              CALL MAPIT (TLAT(K,J),TLON(K,J),IPEN)
   113       CONTINUE
             CALL MAPIQ
   114     CONTINUE
@@ -587,14 +615,28 @@ C
 C
           DO 118 I=1,101
             DO 117 J=1,116
-              CALL MAPIT (XLAT(I,J),XLON(I,J),MAX(0,MIN(1,J-1)))
+              IF (J.EQ.1) THEN
+                IPEN=0
+              ELSE IF (J.NE.116) THEN
+                IPEN=1
+              ELSE
+                IPEN=2
+              END IF
+              CALL MAPIT (XLAT(I,J),XLON(I,J),IPEN)
   117       CONTINUE
             CALL MAPIQ
   118     CONTINUE
 C
           DO 120 J=1,116
             DO 119 I=1,101
-              CALL MAPIT (XLAT(I,J),XLON(I,J),MAX(0,MIN(1,I-1)))
+              IF (I.EQ.1) THEN
+                IPEN=0
+              ELSE IF (I.NE.101) THEN
+                IPEN=1
+              ELSE
+                IPEN=2
+              END IF
+              CALL MAPIT (XLAT(I,J),XLON(I,J),IPEN)
   119       CONTINUE
             CALL MAPIQ
   120     CONTINUE
@@ -618,14 +660,28 @@ C
 C
           DO 124 I=1,100,99
             DO 123 J=1,116
-              CALL MAPIT (ULAT(I,J),ULON(I,J),MAX(0,MIN(1,J-1)))
+              IF (J.EQ.1) THEN
+                IPEN=0
+              ELSE IF (J.NE.116) THEN
+                IPEN=1
+              ELSE
+                IPEN=2
+              END IF
+              CALL MAPIT (ULAT(I,J),ULON(I,J),IPEN)
   123       CONTINUE
             CALL MAPIQ
   124     CONTINUE
 C
           DO 126 J=1,116,115
             DO 125 I=1,100
-              CALL MAPIT (ULAT(I,J),ULON(I,J),MAX(0,MIN(1,I-1)))
+              IF (I.EQ.1) THEN
+                IPEN=0
+              ELSE IF (I.NE.100) THEN
+                IPEN=1
+              ELSE
+                IPEN=2
+              END IF
+              CALL MAPIT (ULAT(I,J),ULON(I,J),IPEN)
   125       CONTINUE
             CALL MAPIQ
   126     CONTINUE
