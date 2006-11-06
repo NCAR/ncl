@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.207 2006-08-04 21:58:00 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.208 2006-11-06 17:17:19 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3725,7 +3725,8 @@ end
 function gsn_csm_map_ce(wks:graphic,resources:logical)
 local i, res, map_object, tickmark_object, calldraw, callframe, \
 left_string, center_string, right_string, main_zone, min_lat, max_lat, \
-min_lon, max_lon, res2, tmres, ticks_on, display_mode
+min_lon, max_lon, res2, tmres, ticks_on, display_mode, rel_c_lat, rel_c_lon, \
+center_lon, center_lat
 begin
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
@@ -3788,6 +3789,10 @@ begin
     lon_spacing  = get_res_value(res2,"tmXBTickSpacingF",lon_spacing)
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0.)
     mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0.)
+    center_lon   = get_res_value(res2, "mpCenterLonF",  0)
+    center_lat   = get_res_value(res2, "mpCenterLatF",  0)
+    rel_c_lat    = get_res_value(res2, "mpRelativeCenterLat", False)
+    rel_c_lon    = get_res_value(res2, "mpRelativeCenterLon", False)
     shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
     limit_mode   = get_res_value(res2,"mpLimitMode","LatLon")
     if((typeof(limit_mode).eq."integer".and.(limit_mode.ne.1.and. \
@@ -3833,10 +3838,10 @@ begin
                          (res2@mpCenterLonF-res2@$min_lon_str$)
     end if
   
-    min_lon = get_res_value(res2,min_lon_str,-180)
-    max_lon = get_res_value(res2,max_lon_str, 180)
-    min_lat = get_res_value(res2,min_lat_str, -90)
-    max_lat = get_res_value(res2,max_lat_str,  90)
+    min_lon    = get_res_value(res2,min_lon_str,-180)
+    max_lon    = get_res_value(res2,max_lon_str, 180)
+    min_lat    = get_res_value(res2,min_lat_str, -90)
+    max_lat    = get_res_value(res2,max_lat_str,  90)
 
     if(min_lon.ge.max_lon)
       print("gsn_csm_map_ce: Fatal: The resources mpMinLonF/mpLeftCornerLonF must be less than the resources mpMaxLonF/mpRightCornerLonF.")
@@ -3899,6 +3904,10 @@ begin
         "mpMaxLonF"          : max_lon
         "mpMinLatF"          : min_lat
         "mpMaxLatF"          : max_lat
+        "mpCenterLonF"       : center_lon
+        "mpCenterLatF"       : center_lat
+        "mpRelativeCenterLat" : rel_c_lat
+        "mpRelativeCenterLon" : rel_c_lon
         "mpShapeMode"        : shape_mode   ; must be set when map created
         "pmTitleDisplayMode" : "Always"
         "pmTitleZone"        : main_zone    ; Zone for main title
@@ -3910,12 +3919,16 @@ begin
           "vpYF"                : res2@vpYF
           "vpWidthF"            : res2@vpWidthF
           "vpHeightF"           : res2@vpHeightF
+          "mpShapeMode"         : shape_mode
           "mpLimitMode"         : limit_mode
           "mpLeftCornerLonF"    : min_lon
           "mpRightCornerLonF"   : max_lon
           "mpLeftCornerLatF"    : min_lat
           "mpRightCornerLatF"   : max_lat
-          "mpShapeMode"         : shape_mode   ; must be set when map created
+          "mpCenterLonF"        : center_lon
+          "mpCenterLatF"        : center_lat
+          "mpRelativeCenterLat" : rel_c_lat
+          "mpRelativeCenterLon" : rel_c_lon
           "pmTitleDisplayMode"  : "Always"
           "pmTitleZone"         : main_zone    ; Zone for main title
         end create
@@ -4030,7 +4043,8 @@ local i, res, res2, map_object, main_zone, \
 calldraw, callframe, left_string, center_string, right_string, yoffset, \
 min_lat, max_lat, center_lat, main_offset, \
 side, just, orth, para, quad1, quad2, quad3, quad4, topbot, xcen, ycen, \
-vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc, polar_type
+vpxf, vpyf, vphf, vpwf, plon, plat, xndc, yndc, polar_type, center_lon, \
+center_lat, rel_c_lon, rel_c_lat
 begin
 
 ; Initialize.
@@ -4092,8 +4106,29 @@ begin
 ; Check for other resources that we need to set at the time the
 ; map is created.
 ;
-    limit_mode   = get_res_value(res2,"mpLimitMode","LatLon")
-    shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
+    limit_mode = get_res_value(res2,"mpLimitMode","LatLon")
+    shape_mode = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
+    rel_c_lat  = get_res_value(res2,"mpRelativeCenterLat", False)
+    rel_c_lon  = get_res_value(res2,"mpRelativeCenterLon", False)
+
+;
+; If labeling the polar plot with time values, then we want slt = 0
+; to be at the bottom of the plot, so we need to rotate the map 
+; accordingly, by setting mpCenterLonF.
+;
+;  If slt = ut + lon/15, then at slt=0:
+;
+;   0 = ut + lon/15  --> lon/15 = -ut -->  lon = -ut*15.
+;
+    center_lon = 0.
+    if(polar_time) then
+      if(polar_type.eq."NH")
+        center_lon = -ut*15
+      else
+        center_lon = -ut*15+180
+      end if 
+    end if 
+    center_lon = get_res_value(res2, "mpCenterLonF", center_lon)
 
 ; Create a polar stereographic map object.
 
@@ -4108,6 +4143,11 @@ begin
       "mpLimitMode"          : limit_mode
       "mpShapeMode"          : shape_mode   ; must be set when map created
 
+      "mpCenterLonF"         : center_lon
+      "mpCenterLatF"         : center_lat
+      "mpRelativeCenterLat"  : rel_c_lat
+      "mpRelativeCenterLon"  : rel_c_lon
+
       "mpFillOn"             : True
       "mpFillColors"         : (/"background","transparent","LightGray",\
                                  "transparent"/)
@@ -4120,28 +4160,11 @@ begin
     res2 = True
     set_attr(res2,"mpMinLatF",min_lat)
     set_attr(res2,"mpMaxLatF",max_lat)
-    set_attr(res2,"mpCenterLatF",center_lat)
     set_attr(res2,"mpFillOn",True)
     set_attr(res2,"mpGridAndLimbOn",True)
     set_attr(res2,"mpGridLineDashPattern",2)
     set_attr(res2,"mpGridLonSpacingF",30.)
     set_attr(res2,"mpPerimOn",True)
-;
-; If labeling the polar plot with time values, then we want slt = 0
-; to be at the bottom of the plot, so we need to rotate the map 
-; accordingly, by setting mpCenterLonF.
-;
-;  If slt = ut + lon/15, then at slt=0:
-;
-;   0 = ut + lon/15  --> lon/15 = -ut -->  lon = -ut*15.
-;
-    if(polar_time) then
-      if(polar_type.eq."NH")
-        set_attr(res2,"mpCenterLonF",-ut*15)
-      else
-        set_attr(res2,"mpCenterLonF",-ut*15+180)
-      end if 
-    end if 
 ;
 ; Set the spacing of the polar labels to the same as mpGridLonSpacingF,
 ; unless user has explicitly set gsnPolarLabelSpacing.
