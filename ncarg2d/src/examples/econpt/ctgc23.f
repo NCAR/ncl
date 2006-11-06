@@ -621,9 +621,10 @@ C
               NOJS=6
             END IF
             CALL MAPIT (CLAT(NOJS,I),CLON(NOJS,I),0)
-            DO 115 J=1,NOJS
+            DO 115 J=1,NOJS-1
               CALL MAPIT (CLAT(J,I),CLON(J,I),1)
   115       CONTINUE
+            CALL MAPIT (CLAT(NOJS,I),CLON(NOJS,I),2)
             CALL MAPIQ
             DO 116 J=1,NOJS
               CALL FPSGCR (VLAT(I),VLON(I),CLAT(J,I),CLON(J,I),.85,
@@ -644,7 +645,7 @@ C
             DO 118 J=1,6
               IF (IADJ(I,J).GT.0) THEN
                 CALL MAPIT (VLAT(I),VLON(I),0)
-                CALL MAPIT (VLAT(IADJ(I,J)),VLON(IADJ(I,J)),1)
+                CALL MAPIT (VLAT(IADJ(I,J)),VLON(IADJ(I,J)),2)
               END IF
   118       CONTINUE
   119     CONTINUE
@@ -667,9 +668,9 @@ C
             TLAT(3,I)=RTOD*ASIN (ZTRI(3,I))
             TLON(3,I)=RTOD*ATAN2(YTRI(3,I),XTRI(3,I))
             CALL MAPIT (TLAT(1,I),TLON(1,I),0)
-            CALL MAPIT (TLAT(2,I),TLON(2,I),1)
-            CALL MAPIT (TLAT(3,I),TLON(3,I),1)
-            CALL MAPIT (TLAT(1,I),TLON(1,I),1)
+            CALL MAPIT (TLAT(2,I),TLON(2,I),2)
+            CALL MAPIT (TLAT(3,I),TLON(3,I),2)
+            CALL MAPIT (TLAT(1,I),TLON(1,I),2)
   120     CONTINUE
 C
           CALL PLCHHQ (CFUX(.50),CFUY(.098),'The computed triangular mes
@@ -982,7 +983,7 @@ C
           CALL MAPIT (QLAT(I),QLON(I),1)
   101   CONTINUE
 C
-        CALL MAPIT (BLAT,BLON,1)
+        CALL MAPIT (BLAT,BLON,2)
 C
         CALL MAPIQ
 C

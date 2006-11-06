@@ -1557,7 +1557,7 @@ C
           CALL MAPIT (QLAT(I),QLON(I),1)
   101   CONTINUE
 C
-        CALL MAPIT (BLAT,BLON,1)
+        CALL MAPIT (BLAT,BLON,2)
 C
         CALL MAPIQ
 C
