@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.127 2006-10-23 14:35:08 shea Exp $
+;      $Id: contributed.ncl,v 1.128 2006-11-07 19:29:26 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6412,13 +6412,13 @@ begin
    SC  = stringtochar(S)     ; main
    sc  = stringtochar(s)     ; subset
 
-   nSC = dimsizes( SC ) - 2  ; extra 'end of char' at end
-   nsc = dimsizes( sc ) - 2
+   nSC = dimsizes( SC ) - 1  ; extra 'end of char' at end
+   nsc = dimsizes( sc ) - 1
 
    sTF = False
    if (nsc.le.nSC) then      ; nsc must be <= nSC
        do n=0,nSC-nsc
-          if (all(SC(n:n+nsc).eq.sc(0:nsc)) ) then
+          if (all(SC(n:n+nsc-1).eq.sc(0:nsc-1)) ) then
               sTF = True
               return (sTF)
           end if
@@ -6437,13 +6437,13 @@ begin
    SC  = stringtochar(S)     ; main
    sc  = stringtochar(s)     ; subset
 
-   nSC = dimsizes( SC ) - 2  ; extra 'end of char' at end
-   nsc = dimsizes( sc ) - 2
+   nSC = dimsizes( SC ) - 1  ; extra 'end of char' at end
+   nsc = dimsizes( sc ) - 1
 
    if (nsc.le.nSC) then      ; nsc must be <= nSC
        do n=0,nSC-nsc
-          if (all(SC(n:n+nsc).eq.sc(0:nsc)) ) then
-              ii  = ispan(n,n+nsc,1)
+          if (all(SC(n:n+nsc-1).eq.sc(0:nsc-1)) ) then
+              ii  = ispan(n,n+nsc-1,1)
               return( ii )
           end if
        end do
