@@ -38,6 +38,9 @@ extern void NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(double *, double *, double *,
                                                  double *, int *, int *, 
                                                  int *, int *, int *);
 
+extern void NGCALLF(dcomputeiclw,DCOMPUTEICLW)(double *, double *, double *, 
+					       int *, int *, int *);
+
 extern void NGCALLF(dbint3d,DBINT3D)(double *,double *,double *, double *,
                                      int *, int *, int *, int *,
                                      int *, int *, int *);
@@ -4001,4 +4004,250 @@ NhlErrorTypes wrf_uvmet_W( void )
   return_data.u.data_var = tmp_var;
   _NclPlaceReturn(return_data);
   return(NhlNOERROR);
+}
+
+NhlErrorTypes wrf_iclw_W( void )
+{
+
+/*
+ * Input variables
+ */
+/*
+ * Argument # 0
+ */
+  void *p;
+  double *tmp_p;
+  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_p;
+
+/*
+ * Argument # 1
+ */
+  void *qc;
+  double *tmp_qc;
+  int ndims_qc, dsizes_qc[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_qc;
+
+/*
+ * Return variable
+ */
+  void *iclw;
+  double *tmp_iclw;
+  int ndims_iclw, *dsizes_iclw;
+  int has_missing_iclw;
+  NclScalar missing_iclw;
+  NclBasicDataTypes type_iclw;
+
+/*
+ * Various
+ */
+  int nz, ny, nx, nznynx, nynx;
+  int index_p, index_iclw;
+  int i, ndims_leftmost, size_leftmost, size_output;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  p = (void*)NclGetArgValue(
+           0,
+           2,
+           &ndims_p,
+           dsizes_p,
+           NULL,
+           NULL,
+           &type_p,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_p < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: The p array must have at least 3 dimensions");
+    return(NhlFATAL);
+  }
+  nz = dsizes_p[ndims_p-3];
+  ny = dsizes_p[ndims_p-2];
+  nx = dsizes_p[ndims_p-1];
+  nynx   = ny * nx;
+  nznynx = nz * nynx;
+
+/*
+ * Get argument # 1
+ */
+  qc = (void*)NclGetArgValue(
+           1,
+           2,
+           &ndims_qc,
+           dsizes_qc,
+           NULL,
+           NULL,
+           &type_qc,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_qc < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: The qc array must have at least 3 dimensions");
+    return(NhlFATAL);
+  }
+
+  if(dsizes_qc[ndims_qc-3] != nz || 
+     dsizes_qc[ndims_qc-2] != ny || 
+     dsizes_qc[ndims_qc-1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: The rightmost dimensions of qc must be nz x ny x nx");
+    return(NhlFATAL);
+  }
+
+/*
+ * Calculate size of leftmost dimensions.
+ */
+  size_leftmost  = 1;
+  ndims_leftmost = ndims_p-3;
+  for(i = 0; i < ndims_leftmost; i++) {
+    if(dsizes_qc[i] != dsizes_p[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: The leftmost dimensions of p and qc must be the same");
+      return(NhlFATAL);
+    }
+    size_leftmost *= dsizes_p[i];
+  }
+
+/*
+ * The output type defaults to float, unless either input array is double.
+ */
+  type_iclw = NCL_float;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ */
+/*
+ * Allocate space for tmp_p.
+ */
+  if(type_p != NCL_double) {
+    tmp_p = (double *)calloc(nznynx,sizeof(double));
+    if(tmp_p == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_iclw = NCL_double;
+  }
+/*
+ * Allocate space for tmp_qc.
+ */
+  if(type_qc != NCL_double) {
+    tmp_qc = (double *)calloc(nznynx,sizeof(double));
+    if(tmp_qc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_iclw = NCL_double;
+  }
+
+/*
+ * Calculate size of output array.
+ */
+  size_output = size_leftmost * nynx;
+
+/* 
+ * Allocate space for output array.
+ */
+  if(type_iclw != NCL_double) {
+    iclw = (void *)calloc(size_output, sizeof(float));
+    tmp_iclw = (double *)calloc(nynx,sizeof(double));
+    if(tmp_iclw == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    iclw = (void *)calloc(size_output, sizeof(double));
+  }
+  if(iclw == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/* 
+ * Allocate space for output dimension sizes and set them.
+ */
+  ndims_iclw = ndims_leftmost + 2;
+  dsizes_iclw = (int*)calloc(ndims_iclw,sizeof(int));  
+  if( dsizes_iclw == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_iclw: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_iclw-2; i++) dsizes_iclw[i] = dsizes_p[i];
+  dsizes_iclw[ndims_iclw-2] = ny;
+  dsizes_iclw[ndims_iclw-1] = nx;
+
+/*
+ * Loop across leftmost dimensions and call the Fortran routine for each
+ * subsection of the input arrays..
+ */
+  index_p = index_iclw = 0;
+
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of p (tmp_p) to double if necessary.
+ */
+    if(type_p != NCL_double) {
+      coerce_subset_input_double(p,tmp_p,index_p,type_p,nznynx,0,NULL,NULL);
+    }
+    else {
+      tmp_p = &((double*)p)[index_p];
+    }
+
+/*
+ * Coerce subsection of qc (tmp_qc) to double if necessary.
+ */
+    if(type_qc != NCL_double) {
+      coerce_subset_input_double(qc,tmp_qc,index_p,type_qc,nznynx,0,NULL,NULL);
+    }
+    else {
+      tmp_qc = &((double*)qc)[index_p];
+    }
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_iclw == NCL_double) tmp_iclw = &((double*)iclw)[index_iclw];
+
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(dcomputeiclw,DCOMPUTEICLW)(tmp_iclw, tmp_p, tmp_qc, &nx, &ny, &nz);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_iclw == NCL_float) {
+      coerce_output_float_only(iclw,tmp_iclw,nynx,index_iclw);
+    }
+    index_p    += nznynx;
+    index_iclw += nynx;
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if(type_p    != NCL_double) NclFree(tmp_p);
+  if(type_qc   != NCL_double) NclFree(tmp_qc);
+  if(type_iclw != NCL_double) NclFree(tmp_iclw);
+
+/*
+ * Return value back to NCL script.
+ */
+  return(NclReturnValue(iclw,ndims_iclw,dsizes_iclw,NULL,type_iclw,0));
 }
