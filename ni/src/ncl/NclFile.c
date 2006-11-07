@@ -22,8 +22,7 @@
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
 
-#include "NclGRIB.h"
-#include "NclGRIB2.h"
+extern int grib_version;
 
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
@@ -3245,17 +3244,28 @@ int rw_status;
 
  	/*
      	 * If a GRIB file, check version.  First verify that the file exists
-     	 * and is accessible (path to it must be searchable).
+     	 * and is accessible (path to it must be searchable). _NclFormatEqual handles the 
+	 * case-less comparison of all possible variants of the the extension.
+	 * Note we also need to check here for extensions added to the real path.
      	 */
-        if ((strcmp(end_of_name, "grb")) == 0 || (strcmp(end_of_name, "grib")) == 0
-             || (strcmp(end_of_name, "grib2")) == 0 || (strcmp(end_of_name, "grb2")) == 0) {
-        	if (stat(_NGResolvePath(NrmQuarkToString(path)), &buf) == -1) {
-            		NhlPError(NhlFATAL, NhlEUNKNOWN," File does not exist as (%s), can't add.",
-                    	the_path);
-            		return NULL;
-	        }
-
-                grib_version = GribVersion(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(path))));
+	if (_NclFormatEqual(NrmStringToQuark("grb"),NrmStringToQuark(end_of_name))) {
+		the_real_path = path;
+		if(stat(_NGResolvePath(NrmQuarkToString(path)),&buf) == -1) {
+			tmp_path = NclMalloc(len_path+1);
+			strncpy(tmp_path,the_path,len_path);
+			tmp_path[len_path] = '\0';
+			if(stat(_NGResolvePath(tmp_path),&buf) == -1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "_NclCreateFile: Requested file does not exist as (%s) or as (%s), can't add file",
+					  the_path,tmp_path);
+				NclFree(tmp_path);
+				return(NULL);
+			} else {
+				the_real_path = NrmStringToQuark(tmp_path);
+				NclFree(tmp_path);
+			}
+		}
+                grib_version = _NclGribVersion(NrmStringToQuark(_NGResolvePath(NrmQuarkToString(the_real_path))));
         }
 
 	if(inst == NULL) {
@@ -5240,30 +5250,3 @@ int num;
 	}
 }
 
-NclFormatFunctionRecPtr GribAddFileFormat 
-#if	NhlNeedProto
-(char *path)
-#else 
-(path)
-    char *path;
-#endif
-{
-    switch (grib_version) {
-        case 0:
-            /* fallthrough */
-
-        case 1:
-            return(&GribRec);
-            break;
-
-        case 2:
-            return(&Grib2Rec);
-            break;
-
-        case -1:
-            /* fallthrough */
-
-        default:
-            return NULL;   
-    }
-}

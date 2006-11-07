@@ -9,6 +9,12 @@ extern "C" {
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
 
+extern int grib_version;
+
+extern NclFormatFunctionRec GribRec;
+#include "NclGRIB2.h"
+extern NclFormatFunctionRec Grib2Rec;
+
 #ifdef BuildHDFEOS
 extern NclFormatFunctionRecPtr HDFEOSAddFileFormat(
 #if	NhlNeedProto
@@ -63,6 +69,34 @@ void _NclAddFileFormats
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
 	return;
 }
+
+NclFormatFunctionRecPtr GribAddFileFormat 
+#if	NhlNeedProto
+(void)
+#else 
+()
+#endif
+{
+    switch (grib_version) {
+        case 0:
+            /* fallthrough */
+
+        case 1:
+            return(&GribRec);
+            break;
+
+        case 2:
+            return(&Grib2Rec);
+            break;
+
+        case -1:
+            /* fallthrough */
+
+        default:
+            return NULL;   
+    }
+}
+
 
 
 #ifdef __cpluplus

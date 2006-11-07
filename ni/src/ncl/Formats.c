@@ -15,7 +15,7 @@ NclAddFileFormat format_func;
 NclFormatList *formats;
 int format_list_size = 32;
 int num_formats = 0;
-
+int grib_version;
 
 void _NclRegisterFormat
 #if	NhlNeedProto
@@ -129,7 +129,7 @@ NclQuark file_ext2;
 	return 0;
 }
 
-int GribVersion
+int _NclGribVersion
 #if NhlNeedProto
 (NclQuark path)
 #else

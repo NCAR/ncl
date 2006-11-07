@@ -1,3 +1,5 @@
+#include "NclMultiDValData.h"
+#include "NclOneDValCoordData.h"
 
 # define GRIB2EOF    0
 # define GRIB2ERROR -1

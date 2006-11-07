@@ -1,3 +1,5 @@
+#include "NclMultiDValData.h"
+#include "NclOneDValCoordData.h"
 
 typedef union cvt{
         char c[4];
@@ -383,7 +385,3 @@ typedef struct _GribTable {
 #define DEFAULT_MISSING_FLOAT ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval
 #define DEFAULT_MISSING_INT ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval
 
-/*
- * Define here; filled in NclGRIB.c
- */
-NclFormatFunctionRec GribRec;

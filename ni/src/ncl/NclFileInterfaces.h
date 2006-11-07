@@ -446,3 +446,9 @@ logical _NclFormatEqual(
 #endif
 );
 
+int _NclGribVersion(
+#if NhlNeedProto
+	NclQuark path
+#endif
+);
+

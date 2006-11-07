@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.18 2006-11-04 02:20:55 dbrown Exp $
+ *      $Id: NclFile.h,v 1.19 2006-11-07 02:31:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,8 +24,6 @@
 #define NclFile_h
 
 #include "NclData.h"
-
-int grib_version;
 
 typedef struct _NclFileRec NclFileRec;
 typedef struct _NclFileClassRec NclFileClassRec;
