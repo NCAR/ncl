@@ -86,7 +86,9 @@ NclFormatFunctionRecPtr GribAddFileFormat
             break;
 
         case 2:
-            return(&Grib2Rec);
+            NhlPError(NhlWARNING, NhlEUNKNOWN, " GRIB v2 currently not supported.");
+            return NULL;
+/*            return(&Grib2Rec);*/
             break;
 
         case -1:
