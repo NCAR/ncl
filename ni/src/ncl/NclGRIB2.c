@@ -5154,6 +5154,7 @@ static g2codeTable *Grib2ReadCodeTable
                                 break;
 
                             case 1:
+                                /* Category */
                                 len = strlen(rol);
                                 ct->cat = NclMalloc(len * sizeof(char) + 1);
                                 if (ct->cat == NULL) {
@@ -5168,6 +5169,7 @@ static g2codeTable *Grib2ReadCodeTable
                                 break;
 
                             case 2:
+                                /* Description */
                                 len = strlen(rol);
                                 ct->descrip = NclMalloc(len * sizeof(char) + 1);
                                 if (ct->descrip == NULL) {
@@ -5183,22 +5185,7 @@ static g2codeTable *Grib2ReadCodeTable
                                 break;
                   
                             case 3:
-                                len = strlen(rol);
-                                ct->shname = NclMalloc(len * sizeof(char) + 1);
-                                if (ct->shname == NULL) {
-                                    NhlPError(NhlFATAL, NhlEUNKNOWN,
-                                        "Could not allocate memory for code table entry.");
-                                    (void) fclose(fp);
-                                    return NULL;
-                                }
-
-                                strncpy(ct->shname, rol, len);
-                                ct->shname[len] = '\0';
-                                ++where;
-                                break;
-
-                            case 4:
-                                 /* Some units are of length == 1 */
+                                /* Units */
                                 len = strlen(rol);
                                 ct->units = NclMalloc(len * sizeof(char) + 1);
                                 if (ct->units == NULL) {
@@ -5210,6 +5197,22 @@ static g2codeTable *Grib2ReadCodeTable
 
                                 strncpy(ct->units, rol, len);
                                 ct->units[len] = '\0';
+                                ++where;
+                                break;
+
+                            case 4:
+                                /* "Short Name" */
+                                len = strlen(rol);
+                                ct->shname = NclMalloc(len * sizeof(char) + 1);
+                                if (ct->shname == NULL) {
+                                    NhlPError(NhlFATAL, NhlEUNKNOWN,
+                                        "Could not allocate memory for code table entry.");
+                                    (void) fclose(fp);
+                                    return NULL;
+                                }
+
+                                strncpy(ct->shname, rol, len);
+                                ct->shname[len] = '\0';
                                 ++where;
                                 break;
 
@@ -5315,6 +5318,122 @@ static void *Grib2CreateFile
     NhlPError(NhlFATAL, NhlEUNKNOWN,
         "GRIB v2 files can only be read, not created using NCL");
     return NULL;
+}
+
+
+static void Grib2FreeGrib2Rec
+# if    NhlNeedProto
+(G2Rec  **rec)
+# else
+(rec)
+    G2Rec   **rec;
+# endif /* NhlNeedProto */
+{
+    int i = 0,
+        j = 0,
+        nr = 0,
+        nrp = 0;
+
+    G2Sec2  **sec2_p;
+    G2Sec3  **sec3_p;
+    G2Sec4  **sec4_p;
+    G2Sec5  **sec5_p;
+    G2Sec6  **sec6_p;
+    G2Sec7  **sec7_p;
+
+
+    nr = rec[0]->numrecs;
+    nrp = rec[0]->num_rptd;
+
+    for (i = 0; i < nr; i++) {
+        sec2_p = rec[i]->sec2;
+        sec3_p = rec[i]->sec3;
+        sec4_p = rec[i]->sec4;
+        sec5_p = rec[i]->sec5;
+        sec6_p = rec[i]->sec6;
+        sec7_p = rec[i]->sec7;
+
+        for (j = 0; j < nrp; j++) {
+            /* Section 2 */
+            if (sec2_p[j]->local != NULL)
+                NclFree(sec2_p[j]->local);
+            NclFree(sec2_p[j]);
+
+            /* Section 3 */
+            if (sec3_p[j]->shape_of_earth != NULL) {
+                if (sec3_p[j]->shape_of_earth->earthShape != NULL)
+                    NclFree(sec3_p[j]->shape_of_earth->earthShape);
+        
+                NclFree(sec3_p[j]->shape_of_earth);
+            }
+
+            if (sec3_p[j]->res_comp != NULL)
+                NclFree(sec3_p[j]->res_comp);
+
+            if (sec3_p[j]->scan_mode != NULL)
+                NclFree(sec3_p[j]->scan_mode);
+
+            NclFree(sec3_p[j]->grid_def_name);
+            NclFree(sec3_p[j]->interp_opt_name);
+            NclFree(sec3_p[j]);
+
+            /* Section 4 */
+            if (sec4_p[j]->prod_params != NULL) {
+                NclFree(sec4_p[j]->prod_params->param_cat_name);
+                NclFree(sec4_p[j]->prod_params->param_name);
+                NclFree(sec4_p[j]->prod_params->short_name);
+                NclFree(sec4_p[j]->prod_params->gen_proc_name);
+                NclFree(sec4_p[j]->prod_params->time_range_unit);
+                NclFree(sec4_p[j]->prod_params->first_fixed_sfc);
+                NclFree(sec4_p[j]->prod_params->units_first_fixed_sfc);
+                if (sec4_p[j]->prod_params->second_fixed_sfc != NULL) {
+                    NclFree(sec4_p[j]->prod_params->second_fixed_sfc);
+                    NclFree(sec4_p[j]->prod_params->units_second_fixed_sfc);
+                }
+                NclFree(sec4_p[j]->prod_params->ensemble_fx_type);
+                NclFree(sec4_p[j]->prod_params->stat_proc);
+                NclFree(sec4_p[j]->prod_params->incr_betw_fields);
+                NclFree(sec4_p[j]->prod_params->itr_unit);
+                NclFree(sec4_p[j]->prod_params->itr_succ_unit);
+                NclFree(sec4_p[j]->prod_params);
+            }
+
+            NclFree(sec4_p[j]->prod_def_name);
+            NclFree(sec4_p[j]->coord_list);
+            NclFree(sec4_p[j]);
+
+            /* Section 5 */
+            if (sec5_p[j]->data_repr != NULL)
+                NclFree(sec5_p[j]->data_repr);
+
+            NclFree(sec5_p[j]->drt_desc);
+            NclFree(sec5_p[j]);
+
+            /* Section 6 */
+            if (sec6_p[j]->bmap != NULL)
+                NclFree(sec6_p[j]->bmap);
+
+            NclFree(sec6_p[j]->bmap_desc);
+            NclFree(sec6_p[j]);
+
+            /* Section 7 */
+            if (sec7_p[j]->data != NULL)
+                NclFree(sec7_p[j]->data);
+
+            NclFree(sec7_p[j]);
+        }
+        
+        NclFree(sec2_p);
+        NclFree(sec3_p);
+        NclFree(sec4_p);
+        NclFree(sec5_p);
+        NclFree(sec6_p);
+        NclFree(sec7_p);
+
+        NclFree(rec[i]);
+    }
+
+    return;
 }
 
 static void *Grib2OpenFile
@@ -6995,6 +7114,7 @@ static void *Grib2OpenFile
 
         fclose(fd);
         NclFree(vbuf);
+        Grib2FreeGrib2Rec(g2rec);
         return g2frec;
     }
 }
@@ -8171,33 +8291,3 @@ extern NclFormatFunctionRec Grib2Rec = {
 /* NclDelVarAttFunc        del_var_att; */		NULL,
 /* NclSetOptionFunc        set_option;  */              Grib2SetOption
 };
-
-#ifdef NOTNOW
-NclFormatFunctionRecPtr GribAddFileFormat 
-#if	NhlNeedProto
-(char *path)
-#else 
-(path)
-    char *path;
-#endif
-{
-    switch (grib_version) {
-        case 0:
-            /* fallthrough */
-
-        case 1:
-            return(&GribRec);
-            break;
-
-        case 2:
-            return(&Grib2Rec);
-            break;
-
-        case -1:
-            /* fallthrough */
-
-        default:
-            return NULL;   
-    }
-}
-#endif
