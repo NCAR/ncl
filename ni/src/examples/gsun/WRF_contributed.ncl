@@ -1,4 +1,7 @@
 ;*************************************************************************
+; Note: several of the functions/procedures are used
+;       to invoke old [ugly!] function names. 
+;*************************************************************************
 ; D. Shea
 ;
 ;      convert WRF character variable "Times" to udunits
@@ -92,12 +95,12 @@ begin
   Time   = new( N ,"double") ; preset to "double"
   delete(Time@_FillValue)    ; coord variables should not have a _FillValue
 
-  Time   = stringtointeger((/Times(:,0:3)/))  *10000000000 + \  ; yyyy
-           stringtointeger((/Times(:,5:6)/))  *100000000   + \  ; mm
-           stringtointeger((/Times(:,8:9)/))  *1000000     + \  ; dd
-           stringtointeger((/Times(:,11:12)/))*10000       + \  ; hh
-           stringtointeger((/Times(:,14:15)/))*100         + \  ; mn
-           stringtointeger((/Times(:,17:18)/))                  ; ss
+  Time   = stringtointeger((/Times(:,0:3)/))  *1d10 + \  ; yyyy
+           stringtointeger((/Times(:,5:6)/))  *1d8  + \  ; mm
+           stringtointeger((/Times(:,8:9)/))  *1d6  + \  ; dd
+           stringtointeger((/Times(:,11:12)/))*1d4  + \  ; hh
+           stringtointeger((/Times(:,14:15)/))*1d2  + \  ; mn
+           stringtointeger((/Times(:,17:18)/))*1d0       ; ss
 
   Time!0          = "Time"
   Time@long_name  = "Time"
@@ -254,3 +257,31 @@ procedure WRF_resLamCon_c (f:file, res:logical, opt)
 begin
   WRF_map_c (f, res, opt)
 end
+
+;*************************************************************************
+; D. Shea
+; interface for newly named procedure
+undef("WRF_mapres")
+procedure WRF_mapres (f:file, res:logical, opt)
+begin
+  WRF_map_c (f, res, opt)
+end
+;************************************************************************* 
+; D. Shea                                                    
+; single interface to convert WRF character variable "Times"
+; to user specified numeric values               
+undef ("WRF_Times")                             
+function WRF_Times(Times:character, opt:integer)
+begin                                          
+   if (opt.ge.0 .and. opt.le.1) then 
+       return(WRF_Times2Udunits_c(Times, opt) ) 
+   end if                                                                               
+
+   if (opt.eq.2) then
+       return(WRF_Times2double_c(Times, opt) )
+   end if                                    
+
+   if (opt.eq.3) then 
+       return(WRF_Times_to_ymdh(Times, opt) ) 
+   end if  
+end       
