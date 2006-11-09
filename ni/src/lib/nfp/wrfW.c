@@ -4032,11 +4032,22 @@ NhlErrorTypes wrf_iclw_W( void )
  * Return variable
  */
   void *iclw;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
   double *tmp_iclw;
   int ndims_iclw, *dsizes_iclw;
   int has_missing_iclw;
   NclScalar missing_iclw;
   NclBasicDataTypes type_iclw;
+  NclObjClass type_obj_iclw;
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 
 /*
  * Various
@@ -4121,7 +4132,8 @@ NhlErrorTypes wrf_iclw_W( void )
 /*
  * The output type defaults to float, unless either input array is double.
  */
-  type_iclw = NCL_float;
+  type_iclw     = NCL_float;
+  type_obj_iclw = nclTypefloatClass;
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -4140,7 +4152,8 @@ NhlErrorTypes wrf_iclw_W( void )
     }
   }
   else {
-    type_iclw = NCL_double;
+    type_iclw     = NCL_double;
+    type_obj_iclw = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_qc.
@@ -4153,7 +4166,8 @@ NhlErrorTypes wrf_iclw_W( void )
     }
   }
   else {
-    type_iclw = NCL_double;
+    type_iclw     = NCL_double;
+    type_obj_iclw = nclTypedoubleClass;
   }
 
 /*
@@ -4247,7 +4261,100 @@ NhlErrorTypes wrf_iclw_W( void )
   if(type_iclw != NCL_double) NclFree(tmp_iclw);
 
 /*
- * Return value back to NCL script.
+ * Set up some attributes ("description" and "units") to return.
  */
-  return(NclReturnValue(iclw,ndims_iclw,dsizes_iclw,NULL,type_iclw,0));
+  cdescription = (char *)calloc(16,sizeof(char));
+  cunits       = (char *)calloc(3,sizeof(char));
+  strcpy(cdescription,"Int Cloud Water");
+  strcpy(cunits,"mm");
+  description = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  units       = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up return value.
+ */
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)iclw,
+                            NULL,
+                            ndims_iclw,
+                            dsizes_iclw,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_iclw
+                            );
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
