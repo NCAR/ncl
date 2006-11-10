@@ -140,7 +140,7 @@ int _NclGribVersion
 # define GBUFSZ_T 1024
     unsigned char buf[4 * GBUFSZ_T];
     int len,
-    version;
+        version = -1;
 
     int i,
         j;
@@ -152,12 +152,15 @@ int _NclGribVersion
     vbuf = (void *) NclMalloc(4 * getpagesize());
     setvbuf(fd, vbuf, _IOFBF, 4 * getpagesize());
 
+    /*
+     * Read file, look for sequence 'G' 'R' 'I' 'B' ; version will follow
+     */
     (void) fseek(fd, 0L, SEEK_SET);
     i = 0;
     while (i < 100) {
-        len = fread((void*) buf, 1, 4 * GBUFSZ_T, fd);
+        len = fread((void *) buf, 1, 4 * GBUFSZ_T, fd);
         if (len > 0) {
-            for (j = 0; j < len; j++) {
+            for (j = 0; j < len - 8; j++) {
                 /* look for "GRIB" indicator */
                 if (buf[j] != 'G') {
                     continue;
