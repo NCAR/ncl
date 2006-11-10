@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.210 2006-10-30 22:08:00 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.211 2006-11-10 20:20:45 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1055,11 +1055,13 @@ NhlErrorTypes _Nclsystem
 		if(cmd_line == 1) {
 			pager = getenv("PAGER");
 			if(pager == NULL) {
-				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))+ strlen(" | more"));
+				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))
+						    + strlen(" | more") + 1);
 				strcpy(command,NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
 				strcat(command," | more");
 			} else {
-				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))+ strlen(pager) + strlen(" | ")+1);
+				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))+ 
+						    strlen(pager) + strlen(" | ")+1);
 				strcpy(command,NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
 				strcat(command," | ");
 				strcat(command,pager);
