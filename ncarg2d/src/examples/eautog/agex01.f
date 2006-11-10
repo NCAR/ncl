@@ -52,7 +52,7 @@ C Pseudo-random-number generator.
 C
         DOUBLE PRECISION X
         SAVE X
-        DATA X / 2.718281828459045 /
+        DATA X / 2.718281828459045D0 /
         X=MOD(9821.D0*X+.211327D0,1.D0)
         FRAN=REAL(X)
         RETURN
