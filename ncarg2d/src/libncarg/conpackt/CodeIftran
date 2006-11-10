@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.17 2006-10-20 21:40:31 kennison Exp $
+I $Id: CodeIftran,v 1.18 2006-11-10 22:01:36 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K T   -   I N T R O D U C T I O N
@@ -15069,7 +15069,7 @@ C
         DOUBLE PRECISION X
         SAVE X
 C
-        DATA X / 2.718281828459045 /
+        DATA X / 2.718281828459045D0 /
 C
         X=MOD(9821.D0*X+.211327D0,1.D0)
         CTFRAN=REAL(X)
