@@ -1,5 +1,5 @@
 C
-C $Id: TdpackDemo.f,v 1.6 2002-07-23 23:47:55 kennison Exp $
+C $Id: TdpackDemo.f,v 1.7 2006-11-10 21:52:14 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1679,7 +1679,7 @@ C Pseudo-random-number generator.
 C
         DOUBLE PRECISION X
         SAVE X
-        DATA X / 2.718281828459045 /
+        DATA X / 2.718281828459045D0 /
         X=MOD(9821.D0*X+.211327D0,1.D0)
         FRAN=REAL(X)
         RETURN
