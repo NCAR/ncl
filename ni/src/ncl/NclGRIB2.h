@@ -1,6 +1,7 @@
 #include "NclMultiDValData.h"
 #include "NclOneDValCoordData.h"
 
+
 # define GRIB2EOF    0
 # define GRIB2ERROR -1
 # define GRIB2OK     1
@@ -19,7 +20,6 @@ typedef struct g2_tble2 {
 } G2_TBLE2;
 
 typedef struct g2_ens {
-	int extension_type; /* 0 - NCEP, 1 .. n - ECMWF  local definition */
 	int type;
 	int id;
 	int prod_id;
@@ -404,6 +404,7 @@ struct _Grib2InternalVarRec {
 
 struct _Grib2ParamList {
     int param_number;
+    int param_index; /* discipline * 10^6 + category * 10^3 + number */
     int grid_number;
     int has_gds;
     int gds_type;
@@ -450,8 +451,12 @@ struct _Grib2AttInqRecList {
 };
 
 struct _Grib2RecordInqRec {
+    off_t offset;
+    int field_num;
+    int rec_size;
     NclQuark    var_name_q;
     int param_number;
+    int param_index; /* discipline * 10^6 + category * 10^3 + number */
     G2_TBLE2   *ptable_rec;
     int grid_number;
     int version;
@@ -656,4 +661,3 @@ typedef struct codeTable {
 # define    G2_DEFAULT_MISSING_INT \
         ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval
 
-NclFormatFunctionRec Grib2Rec;

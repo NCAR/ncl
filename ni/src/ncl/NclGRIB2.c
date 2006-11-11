@@ -167,8 +167,8 @@ void g2GetThinnedLonParams
 # if NhlNeedProto
 (G2_GDS *gds,
  int nlat,
- int lo1,
- int lo2,
+ double lo1,
+ double lo2,
  int idir,
  int *nlon,
  double *di
@@ -177,8 +177,8 @@ void g2GetThinnedLonParams
 (gds, nlat, lo1, lo2, idir, nlon, di)
     G2_GDS *gds,
     int nlat;
-    int lo1;
-    int lo2;
+    double lo1;
+    double lo2;
     int idir;
     int *nlon;
     double *di;
@@ -189,7 +189,7 @@ void g2GetThinnedLonParams
     int max_ix = 0;
     int i,
         n;
-    int diff;
+    double diff;
 
     *nlon = 0;
     pl_ix = gds->grid_list_num_oct_num;
@@ -239,8 +239,8 @@ void g2GetThinnedLatParams
 /*(unsigned char *gds,*/
  (G2_GDS *gds,
  int nlon,
- int la1,
- int la2,
+ double la1,
+ double la2,
  int jdir,
  int *nlat,
  double *dj
@@ -250,8 +250,8 @@ void g2GetThinnedLatParams
 /*    unsigned char *gds;*/
     G2_GDS *gds,
     int nlon;
-    int la1;
-    int la2;
+    double la1;
+    double la2;
     int jdir;
     int *nlat;
     double *dj;
@@ -263,7 +263,7 @@ void g2GetThinnedLatParams
     int max_ix = 0;
     int i,
         n;
-    int diff;
+    double diff;
 
     *nlat = 0;
 /*    pl_ix = (gds[4] == 255) ? -1 : (int) gds[3] * 4 + (int) gds[4] - 1;*/
@@ -480,10 +480,7 @@ void g2GDSCEGrid
 # endif
 {
     G2_GDS *gds;
-    int la1;
-    int lo1;
-    int la2;
-    int lo2;
+    double la1,la2,lo1,lo2;
     double di;
     double dj;
 /*    int latXlon;*/
@@ -555,7 +552,7 @@ void g2GDSCEGrid
          * Adapted from the NCEP code: it should account for all cases of
          * modular longitude values 
          */
-        di = 1000 * ((fmod((lo2 - lo1) * 1e-3 - 1.0 + 3600.0, 360.0) +1.0) / (double) (nlon - 1));
+        di = (fmod((lo2 - lo1) - 1.0 + 3600.0, 360.0) +1.0) / (double) (nlon - 1);
         if (di < 0)
             di = -di;
     }
@@ -567,7 +564,7 @@ void g2GDSCEGrid
         dj = (la2 - la1) / (double) (nlat - 1);
         if (dj < 0)
             dj = -dj;
-	}
+    }
 			
     *dimsizes_lat = (int *) NclMalloc(sizeof(int));
     *dimsizes_lon = (int *) NclMalloc(sizeof(int));
@@ -956,55 +953,22 @@ G2_ENS *ens;
 {
 	char buf[256];
 
-	if (ens->extension_type == 0) { /* NCEP extension */
-		if (ens->prod_id == 1) {
-			switch (ens->type) {
-			case 1:
-				sprintf(buf,"%s resolution control forecast",(ens->id == 1 ? "high" : "low"));
-				break;
-			case 2:
-				sprintf(buf,"negative pertubation # %d",ens->id);
-				break;
-			case 3:
-				sprintf(buf,"positive pertubation # %d",ens->id);
-				break;
-			default:
-				sprintf(buf,"type: %d, id: %d, prod_id: %d",ens->type,ens->id,ens->prod_id);
+	switch (ens->type) {
+	case 0: 
+		sprintf(buf,"unperturbed high-resolution control forecast");
+		break;
+	case 1:
+		sprintf(buf,"unperturbed low-resolution control forecast");
+		break;
+	case 2:
+		sprintf(buf,"negatively perturbed forecast # %d",ens->id);
+		break;
+	case 3:
+		sprintf(buf,"positively perturbed forecast # %d",ens->id);
+		break;
+	default:
+		sprintf(buf,"type: %d, id: %d",ens->type,ens->id);
 
-			}
-		}
-		else {
-			sprintf(buf,"type: %d, id: %d, prod_id: %d",ens->type,ens->id,ens->prod_id);
-		}
-	}
-	else if (ens->extension_type == 1) {  /* ECMWF local definition 1 */
-		switch (ens->type) {
-		case 10:
-			sprintf(buf,"control forecast");
-			break;
-		case 11:
-			if (ens->id % 2 == 0) 
-				sprintf(buf,"negative pertubation # %d",ens->id / 2);
-			else 
-				sprintf(buf,"positive pertubation # %d",ens->id / 2 + 1);
-			break;
-		case 17:
-			sprintf(buf,"ensemble mean");
-			break;
-		case 18:
-			sprintf(buf,"ensemble standard deviation");
-			break;
-		default:
-			sprintf(buf,"type: %d, id: %d",ens->type,ens->id);
-		}
-
-	}
-	else {   /* other ECMWF local definitions */
-		if (ens->id == 0) 
-			sprintf(buf,"control forecast");
-		else
-			sprintf(buf,"perturbed forecast # %d",ens->id);
-			
 	}
 
 	return NrmStringToQuark(buf);
@@ -1136,32 +1100,32 @@ unsigned char *offset;
 
 static int _g2GetLevels
 # if NhlNeedProto
-(int *l0, int *l1, int ind_l1, int l1_val)
+(int *l0, int *l1, int l0_type, int l1_type, int l0_val, int l1_val)
 # else
-/*(l0, l1, indicator, lv)*/
-(l0, l1, ind_l1, ind_l2)
+(l0, l1, l0_type, l1_type, l0_val, l1_val)
 int *l0;
 int *l1;
-int ind_l1;
+int l0_type;
+int l1_type;
+int l0_val;
 int l1_val;
 # endif
 {
-    /*
-     * Special Levels.  See GRIB2 Table 4.5
-     */
-    if (ind_l1 < 100) {
+	int i;
+	int ltype;
+	int lval;
+
         *l0 = -1;
         *l1 = -1;
-    }
 
-    switch (ind_l1) {
-        case 1:
-            /* Ground or Water Surface */
-            *l0 = -1;
-            *l1 = -1;
-            return 1;
-            break;
-
+	if (l0_type != 255) {
+		*l0 = l0_val;
+	}
+	if (l1_type != 255) {
+		*l1 = l1_val;
+	}
+#if 0
+        switch (ltype) {
         case 100:
             /* Isobaric Surface */
             *l0 = l1_val;
@@ -1259,6 +1223,7 @@ int l1_val;
             *l1 = -1;
             break;
     }
+#endif
 
     return 0;
 }
@@ -1279,6 +1244,9 @@ void *s2;
 	if((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
 			if(s_1->rec_inq->level1 == s_2->rec_inq->level1) {
+				return (0);
+			}
+			else {
 				return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
 			}
 		} else {
@@ -1286,8 +1254,11 @@ void *s2;
 		}
 	} else {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
-			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+			return(0);
 		}
+		else {
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+		}	
 	} 
 }
 
@@ -1338,13 +1309,8 @@ void *s2;
 
 	if (! s_1->rec_inq->is_ensemble) /* if one is an ensemble they both have to be */
 		return g2date_comp(s1,s2);
-	result = s_1->rec_inq->ens.extension_type - s_2->rec_inq->ens.extension_type;
-	if (! result) {
-		result = s_1->rec_inq->ens.prod_id - s_2->rec_inq->ens.prod_id;
-	}
-	if (! result) {
-		result =  s_1->rec_inq->ens.type - s_2->rec_inq->ens.type;
-	}
+	result =  s_1->rec_inq->ens.type - s_2->rec_inq->ens.type;
+
 	if (! result) {
 		result =  s_1->rec_inq->ens.id - s_2->rec_inq->ens.id;
 	}
@@ -2007,6 +1973,7 @@ static Grib2ParamList *_g2NewListNode
 	tmp->thelist = list;
 	tmp->var_info.var_name_quark = grib_rec->var_name_q;
 	tmp->var_info.data_type = g2GribMapToNcl((void *) &(grib_rec->int_or_float));
+	tmp->param_index = grib_rec->param_index;
 	tmp->param_number = grib_rec->param_number;
 	tmp->grid_number = grib_rec->grid_number;
 	tmp->has_gds= grib_rec->has_gds;
@@ -2293,10 +2260,10 @@ static int _g2FirstCheck
 {
     int gridcomp;
 
-    if (step->param_number <  grib_rec->param_number)
+    if (step->param_index <  grib_rec->param_index)
         return 0;
 
-    if (step->param_number > grib_rec->param_number) {
+    if (step->param_index > grib_rec->param_index) {
         therec->var_list = _g2NewListNode(grib_rec);
         therec->var_list->next = step;
         therec->n_vars++;
@@ -2523,10 +2490,8 @@ int g2it_equal(G2_GIT *it1, G2_GIT* it2)
 
 int g2ens_equal(G2_ENS *ens1, G2_ENS *ens2)
 {
-    if ((ens1->prod_id == ens2->prod_id)
-            && (ens1->type == ens2->type)
-            && (ens1->id == ens2->id)
-            && (ens1->extension_type == ens2->extension_type))
+    if ((ens1->type == ens2->type)
+	&& (ens1->id == ens2->id))
         return 1;
 
     return 0;
@@ -3486,9 +3451,7 @@ Grib2ParamList* step;
 							m++;
 						} else {
 							strt[i].rec_inq = NULL;
-							fprintf(stdout,"%s is missing ft: %d lv: %d\n",name,
-								tmp_ft_vals[k],
-								tmp_lv_vals[m]);
+							PRINT_MISSING(the_end->ens_ix,j,k,m);
 							m++;
 						}
 						i++;
@@ -5140,9 +5103,14 @@ static g2codeTable *Grib2ReadCodeTable
         return (g2codeTable *) NULL;
     } else {
         while (fgets(s, 256, fp)) {
-            s[strlen(s) - 1] = '\0';
+	    int len = strlen(s);
+            if (len < 2)
+		continue;
+            s[len - 1] = '\0';
             if (s[0] != '#') {
                 rol = strtok(s, sep);
+                if (rol == NULL)
+		    continue;
                 /* first field */
                 ct->oct = (int) strtol(rol, (char **) NULL, 10);
                 if (ct->oct == oct) {
@@ -5503,6 +5471,7 @@ static void *Grib2OpenFile
             tmp_dataTime[16];
 
     char    fnam[256];
+    double  scale_factor;
 
     /* NCL GRIB2 records */
     Grib2FileRecord *g2frec;
@@ -5545,12 +5514,15 @@ static void *Grib2OpenFile
      */
     grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
     if (grib2_codetable_dir == NULL) {
+	    grib2_codetable_dir = getenv("NCARG_GRIB2_CODETABLES");
+    }
+    if (grib2_codetable_dir == NULL) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
             " Unable to locate GRIB v2 code tables, cannot continue.");
-
         NhlFree(g2rec[nrecs]);
         return NULL;
     }
+	  
 
     g2_codetable_dirname_len = strlen(grib2_codetable_dir);
 
@@ -5687,6 +5659,14 @@ static void *Grib2OpenFile
                     subcenterid = sec1[1];
                     break;
 
+                case 74:
+                    /* UK Met. Office */
+                    center = "ecmwf";
+                    center_len = strlen(center);
+                    centerid = sec1[0];
+                    subcenterid = sec1[1];
+                    break;
+
                 case 78:
                     /* DWD Offenbach */
                     center = "dwd";
@@ -5694,7 +5674,7 @@ static void *Grib2OpenFile
                     centerid = sec1[0];
                     subcenterid = sec1[1];
                     break;
-
+	        case 34: /* JMA -- use ECMWF for now */
                 case 98:
                     /* ECMWF */
                     center = "ecmwf";
@@ -5704,6 +5684,7 @@ static void *Grib2OpenFile
                     break;
 
                 default:
+		    /* this will cause a core dump -- need to do something about it */
                     center = NULL;
                     center_len = 0;
                     centerid = subcenterid = -1;
@@ -5987,19 +5968,28 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec3[i]->shape_of_earth->lat_last_gridpt = g2fld->igdtmpl[14];
             g2rec[nrecs]->sec3[i]->shape_of_earth->lon_last_gridpt = g2fld->igdtmpl[15];
 
-            g2rec[nrecs]->sec3[i]->lat_first_gridpt = g2fld->igdtmpl[11] / G2_SCALE_FACTOR;
-            g2rec[nrecs]->sec3[i]->lon_first_gridpt = g2fld->igdtmpl[12] / G2_SCALE_FACTOR;
-            g2rec[nrecs]->sec3[i]->lat_last_gridpt = g2fld->igdtmpl[14] / G2_SCALE_FACTOR;
-            g2rec[nrecs]->sec3[i]->lon_last_gridpt = g2fld->igdtmpl[15] / G2_SCALE_FACTOR;
+	    if (g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle != 0 &&
+		g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain != 0) {
+		    scale_factor = g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain /
+			    (double) g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle;
+	    }
+	    else {
+		    scale_factor = 1.0 / (double) G2_SCALE_FACTOR;
+	    }
+
+            g2rec[nrecs]->sec3[i]->lat_first_gridpt = g2fld->igdtmpl[11] * scale_factor;
+            g2rec[nrecs]->sec3[i]->lon_first_gridpt = g2fld->igdtmpl[12] * scale_factor;
+            g2rec[nrecs]->sec3[i]->lat_last_gridpt = g2fld->igdtmpl[14]  * scale_factor;
+            g2rec[nrecs]->sec3[i]->lon_last_gridpt = g2fld->igdtmpl[15]  * scale_factor;
 
 
 
             g2rec[nrecs]->sec3[i]->shape_of_earth->idir_incr = (int) g2fld->igdtmpl[16];
             g2rec[nrecs]->sec3[i]->shape_of_earth->jdir_incr = (int) g2fld->igdtmpl[17];
             g2rec[nrecs]->sec3[i]->shape_of_earth->idir_incr_scaled
-                    = (float) g2fld->igdtmpl[16] / G2_SCALE_FACTOR;
+                    = (float) g2fld->igdtmpl[16] * scale_factor;
             g2rec[nrecs]->sec3[i]->shape_of_earth->jdir_incr_scaled
-                    = (float) g2fld->igdtmpl[17] / G2_SCALE_FACTOR;
+                    = (float) g2fld->igdtmpl[17] * scale_factor;
 
             g2rec[nrecs]->sec3[i]->scan_mode->idir
                     = g2getbits(g2fld->igdtmpl[18], 7, 1);
@@ -6087,9 +6077,12 @@ static void *Grib2OpenFile
                             strlen(ct->shname) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->short_name, ct->shname);
                 } else {
-                    g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(8 * sizeof(char));
-                    (void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->param_name, "VAR_%d",
-                            g2rec[nrecs]->sec4[i]->prod_params->param_num);
+                    g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(18 * sizeof(char));
+                    (void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->short_name, "VAR_%d_%d_%d",
+				   g2rec[nrecs]->sec0.discipline,
+				   g2rec[nrecs]->sec4[i]->prod_params->param_cat,
+				   g2rec[nrecs]->sec4[i]->prod_params->param_num);
+				   
                 }
 
                 if (ct->units != NULL) {
@@ -6106,10 +6099,11 @@ static void *Grib2OpenFile
                 (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->param_name,
                         "Unknown Variable Name");
 
-                g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(8 * sizeof(char));
-                (void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->param_name, "VAR_%d",
-                        g2rec[nrecs]->sec4[i]->prod_params->param_num);
-
+		g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(14 * sizeof(char));
+		(void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->short_name, "VAR_%d_%d",
+			       g2rec[nrecs]->sec4[i]->prod_params->param_cat,
+			       g2rec[nrecs]->sec4[i]->prod_params->param_num);
+				   
                 g2rec[nrecs]->sec4[i]->prod_params->units = NclMalloc(strlen("unknown") + 1);
                 (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units, "unknown");
             }
@@ -6234,13 +6228,6 @@ static void *Grib2OpenFile
                      */
                     break;
 
-                case 1:
-                    /*
-                     * Individual ensemble forecast, control and perturbed, at a
-                     * horizontal level or in a horizontal layer at a point in time.
-                     */
-                    break;
-
                 case 2:
                     /*
                      * Derived forecasts based on all ensemble members at a
@@ -6311,6 +6298,11 @@ static void *Grib2OpenFile
                      */
                     break;
 
+                case 1:
+                    /*
+                     * Individual ensemble forecast, control and perturbed, at a
+                     * horizontal level or in a horizontal layer at a point in time.
+                     */
                 case 11:
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
@@ -6337,7 +6329,7 @@ static void *Grib2OpenFile
                     
                     g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16];
                     g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17];
-
+		    break;
                     /* statistical processing */
                     g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
                             = g2fld->ipdtmpl[18];
@@ -6626,7 +6618,7 @@ static void *Grib2OpenFile
     for (i = 0; i < nrecs; i++)
         g2rec[i]->numrecs = nrecs;
 
-/* debug */
+/* debug 
     Grib2PrintRecords(g2rec);
 /* debug */
 
@@ -6643,6 +6635,9 @@ static void *Grib2OpenFile
         for (j = 0; j < g2rec[i]->num_rptd; j++) {
             g2inqrec = NclMalloc(sizeof(Grib2RecordInqRec));
             g2inqrec->rec_num = i + 1;
+            g2inqrec->offset = g2rec[i]->offset;
+	    g2inqrec->rec_size = g2rec[i]->rec_size;
+            g2inqrec->field_num = j + 1; /* counting from 1 */
             g2inqrec->the_dat = NULL;
             g2inqrec->version = g2rec[i]->version;
             g2inqrec->var_name = NULL;
@@ -6700,6 +6695,8 @@ static void *Grib2OpenFile
                 g2inqrec->has_bms = 0;
 
             g2inqrec->param_number = g2rec[i]->sec4[j]->prod_params->param_num;
+	    g2inqrec->param_index = g2rec[i]->sec4[j]->pds_num * 100000000 + g2rec[i]->sec0.discipline * 1000000 +
+		g2rec[i]->sec4[j]->prod_params->param_cat * 1000 + g2rec[i]->sec4[j]->prod_params->param_num;
             g2inqrec->grid_number = g2rec[i]->sec3[j]->grid_num;
 
             g2inqrec->center = NclMalloc(strlen(g2rec[i]->sec1.center_name) + 1);
@@ -6753,10 +6750,6 @@ static void *Grib2OpenFile
 
             g2inqrec->ptable_rec = NclMalloc(sizeof(G2_TBLE2));
             memcpy(g2inqrec->ptable_rec, g2name_rec, sizeof(G2_TBLE2));
-
-            g2inqrec->var_name = NclMalloc(strlen(g2rec[i]->sec4[j]->prod_params->short_name) + 1);
-            (void) strcpy(g2inqrec->var_name, g2rec[i]->sec4[j]->prod_params->short_name);
-            g2inqrec->var_name_q = NrmStringToQuark(g2inqrec->var_name);
             g2inqrec->long_name_q = NrmStringToQuark(g2name_rec->long_name);
             g2inqrec->units_q = NrmStringToQuark(g2name_rec->units);
 
@@ -6775,8 +6768,10 @@ static void *Grib2OpenFile
             g2inqrec->min = g2rec[i]->sec1.date_time.min;
             g2inqrec->sec = g2rec[i]->sec1.date_time.sec;
 
-            g2inqrec->time_offset = g2rec[i]->sec4[j]->prod_params->forecast_time
-                    - g2rec[i]->sec4[j]->prod_params->hrs_after_reftime_cutoff;
+            g2inqrec->time_offset = g2rec[i]->sec4[j]->prod_params->forecast_time;
+	    g2inqrec->time_unit_indicator = g2rec[i]->sec4[j]->prod_params->time_range; /* this is the integer unit designator */
+
+/*                    - g2rec[i]->sec4[j]->prod_params->hrs_after_reftime_cutoff; */
 
             g2inqrec->per1 = 0;
             g2inqrec->per2 = 0;
@@ -6784,14 +6779,27 @@ static void *Grib2OpenFile
             /* Levels */
             g2inqrec->level_indicator = g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc;
             _g2GetLevels(&g2inqrec->level0, &g2inqrec->level1,
-                    (int) g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc,
-                    (int) g2rec[i]->sec4[j]->prod_params->typeof_second_fixed_sfc);
-/*                    (unsigned char *) g2rec[i]->sec4[j]->prod_params->scaled_val_first_fixed_sfc);*/
+			 (int) g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc,
+			 (int) g2rec[i]->sec4[j]->prod_params->typeof_second_fixed_sfc,
+			 (int) g2rec[i]->sec4[j]->prod_params->scaled_val_first_fixed_sfc,
+			 (int) g2rec[i]->sec4[j]->prod_params->scaled_val_second_fixed_sfc);
+
+
+            g2inqrec->var_name = NclMalloc(strlen(g2rec[i]->sec4[j]->prod_params->short_name) + 20);
+	    /*(void) strcpy(g2inqrec->var_name, g2rec[i]->sec4[j]->prod_params->short_name);*/
+	    sprintf(g2inqrec->var_name,"%s_P%d_L%d",
+		    g2rec[i]->sec4[j]->prod_params->short_name,
+		    g2rec[i]->sec4[j]->pds_num,
+		    g2inqrec->level_indicator);
+            g2inqrec->var_name_q = NrmStringToQuark(g2inqrec->var_name);
+	    printf("%s\n",g2inqrec->var_name);
+
 
             /* Ensembles */
             g2inqrec->is_ensemble = 0;
             memset(&g2inqrec->ens, 0, sizeof(G2_ENS));
             /* Ensemble or not?  Determined by PDS number */
+	    
             switch (g2rec[i]->sec4[j]->pds_num) {
                 case 0:
                     /*
@@ -6801,13 +6809,6 @@ static void *Grib2OpenFile
                     g2inqrec->is_ensemble = 0;
                     break;
 
-                case 1:
-                    /*
-                     * Individual ensemble forecast, control and perturbed, at a
-                     * horizontal level or in a horizontal layer at a point in time.
-                     */
-                    g2inqrec->is_ensemble = 1;
-                    break;
 
                 case 2:
                     /*
@@ -6836,6 +6837,11 @@ static void *Grib2OpenFile
                     g2inqrec->is_ensemble = 1;
                     break;
 
+                case 1:
+                    /*
+                     * Individual ensemble forecast, control and perturbed, at a
+                     * horizontal level or in a horizontal layer at a point in time.
+                     */
                 case 11:
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
@@ -6843,9 +6849,10 @@ static void *Grib2OpenFile
                      * or non-continuous time interval.
                      */
                     g2inqrec->is_ensemble = 1;
-                    g2inqrec->ens.extension_type = 1;   /* ensemble */
-                    g2inqrec->ens.type = g2rec[i]->sec4[j]->prod_params->typeof_ensemble_fx;
-/*                    g2inqrec->ens.id = */
+                    g2inqrec->ens.type = (g2rec[i]->sec4[j]->prod_params->typeof_ensemble_fx >= 0 &&
+			    g2rec[i]->sec4[j]->prod_params->typeof_ensemble_fx < 4) ?
+			    g2rec[i]->sec4[j]->prod_params->typeof_ensemble_fx : 255;
+		    g2inqrec->ens.id = g2rec[i]->sec4[j]->prod_params->perturb_num;
                     break;
 
                 case 12:
@@ -6889,12 +6896,12 @@ static void *Grib2OpenFile
                 if (! _g2FirstCheck(g2frec, g2plist, g2inqrec)) {
                     /* keep an inorder list */
                     while ((g2plist->next != NULL)
-                            && (g2plist->next->param_number < g2inqrec->param_number)) {
+			   && (g2plist->next->param_index < g2inqrec->param_index)) {
                         g2plist = g2plist->next;
                     }
 
-                    if ((g2plist->next == NULL)
-                            || (g2plist->next->param_number > g2inqrec->param_number)) {
+                    if ((g2plist->next == NULL) ||
+			(g2plist->next->param_index > g2inqrec->param_index)) {
                         /* no current instance of this param; insert */
                         g2plist_n = _g2NewListNode(g2inqrec);
                         _g2InsertNodeAfter(g2plist, g2plist_n);
@@ -6902,22 +6909,22 @@ static void *Grib2OpenFile
                     } else if (g2GridCompare(g2plist->next, g2inqrec) <= 0) {
                         /* param number found, "->next" points to first occurrence of it */
                         while ((g2plist->next != NULL)
-                                && (g2plist->next->param_number == g2inqrec->param_number)
+                                && (g2plist->next->param_index == g2inqrec->param_index)
                                 && (g2GridCompare(g2plist->next, g2inqrec) < 0)) {
                             g2plist = g2plist->next;
                         }
 
                         if ((g2plist->next == NULL)
-                                || (g2plist->next->param_number != g2inqrec->param_number)
+                                || (g2plist->next->param_index != g2inqrec->param_index)
                                 || (g2GridCompare(g2plist->next, g2inqrec) > 0)) {
                             g2plist_n = _g2NewListNode(g2inqrec);
                             _g2InsertNodeAfter(g2plist, g2plist_n);
                             g2frec->n_vars++;
                         } else if (g2plist->next->time_range_indicator
                                 <= g2inqrec->time_range_indicator) {
-                            /* param_number, grid found */
+                            /* param_index, grid found */
                             while ((g2plist->next != NULL)
-                                    && (g2plist->next->param_number == g2inqrec->param_number)
+                                    && (g2plist->next->param_index == g2inqrec->param_index)
                                     && (g2GridCompare(g2plist->next, g2inqrec) == 0)
                                     && (g2plist->next->time_range_indicator
                                         < g2inqrec->time_range_indicator)) {
@@ -6925,7 +6932,7 @@ static void *Grib2OpenFile
                             }
 
                             if ((g2plist->next == NULL)
-                                    || (g2plist->next->param_number != g2inqrec->param_number)
+                                    || (g2plist->next->param_index != g2inqrec->param_index)
                                     || (g2plist->next->grid_number != g2inqrec->grid_number)
                                     || (g2GridCompare(g2plist->next, g2inqrec) != 0)
                                     || (g2plist->next->time_range_indicator
@@ -6935,26 +6942,26 @@ static void *Grib2OpenFile
                                 g2frec->n_vars++;
                             } else if (g2plist->next->time_period <= g2inqrec->time_period) {
                                 while ((g2plist->next != NULL)
-                                        && (g2plist->next->param_number == g2inqrec->param_number)
+                                        && (g2plist->next->param_index == g2inqrec->param_index)
                                         && (g2GridCompare(g2plist->next, g2inqrec) == 0)
                                         && (g2plist->next->time_period < g2inqrec->time_period)) {
                                     g2plist = g2plist->next;
                                 }
 
                                 if ((g2plist->next == NULL)
-                                        || (g2plist->next->param_number != g2inqrec->param_number)
-                                        || (g2GridCompare(g2plist->next, g2inqrec) != 0)
-                                        || (g2plist->next->time_range_indicator
-                                            != g2inqrec->time_range_indicator)
-                                        || (g2plist->next->time_period > g2inqrec->time_period)) {
+				    || (g2plist->next->param_index != g2inqrec->param_index)
+				    || (g2GridCompare(g2plist->next, g2inqrec) != 0)
+				    || (g2plist->next->time_range_indicator
+					!= g2inqrec->time_range_indicator)
+				    || (g2plist->next->time_period > g2inqrec->time_period)) {
                                     g2plist_n = _g2NewListNode(g2inqrec);
                                     _g2InsertNodeAfter(g2plist, g2plist_n);
                                     g2frec->n_vars++;
                                 } else if (g2plist->next->level_indicator
                                         <= g2inqrec->level_indicator) {
-                                    while ((g2plist->next != NULL)
-                                            && (g2plist->next->param_number
-                                                == g2inqrec->param_number)
+				    while ((g2plist->next != NULL)
+                                            && (g2plist->next->param_index
+                                                == g2inqrec->param_index)
                                             && (g2GridCompare(g2plist->next, g2inqrec) == 0)
                                             && (g2plist->next->time_range_indicator
                                                 == g2inqrec->time_range_indicator)
@@ -6966,21 +6973,21 @@ static void *Grib2OpenFile
                                     }
 
                                     if ((g2plist->next == NULL)
-                                            || (g2plist->next->param_number
-                                                != g2inqrec->param_number)
-                                            || (g2GridCompare(g2plist->next, g2inqrec) != 0)
-                                            || (g2plist->next->time_range_indicator
-                                                != g2inqrec->time_range_indicator)
-                                            || (g2plist->next->time_period
-                                                != g2inqrec->time_period)
-                                            || (g2plist->next->level_indicator
-                                                > g2inqrec->level_indicator)) {
-                                        g2plist = _g2NewListNode(g2inqrec);
+					|| (g2plist->next->param_index
+					    != g2inqrec->param_index)
+					|| (g2GridCompare(g2plist->next, g2inqrec) != 0)
+					|| (g2plist->next->time_range_indicator
+					    != g2inqrec->time_range_indicator)
+					|| (g2plist->next->time_period
+					    != g2inqrec->time_period)
+					|| (g2plist->next->level_indicator
+					    > g2inqrec->level_indicator)) {
+                                        g2plist_n = _g2NewListNode(g2inqrec);
                                         _g2InsertNodeAfter(g2plist, g2plist_n);
                                         g2frec->n_vars++;
                                     } else {
                                         /*
-                                         * At this point, fall through param_number, grid_number,
+                                         * At this point, fall through param_index, grid_number,
                                          * time_range_indicator, time_period, and level_indicator
                                          * are all equal.  Add the record.
                                          */
@@ -7032,11 +7039,10 @@ static void *Grib2OpenFile
              */
             while (g2inqrec_list != NULL) {
                 g2sort[i] = g2inqrec_list;
-#ifdef NOTNOW
-                g2inqrec_list->rec_inq->time_offset
-                        = _g2GetTimeOffset(g2inqrec_list->rec_inq->time_offset,
+                g2inqrec_list->rec_inq->time_offset = 0;
+/*                        = _g2GetTimeOffset(g2inqrec_list->rec_inq->time_offset,
                             (unsigned char *) &(g2inqrec_list->rec_inq->per1));
-#endif
+*/
                 g2inqrec_list = g2inqrec_list->next;
 		i++;
             }
@@ -7728,6 +7734,113 @@ Grib2RecordInqRec *current_rec;
 	return(NULL);
 }
 
+static void *GetData
+#if	NhlNeedProto
+(FILE *fp, Grib2RecordInqRec *rec,void **missing)
+#else
+(fp, rec,missing)
+FILE *fp;
+Grib2RecordInqRec *rec;
+void **missing;
+#endif
+{
+	int size;
+	unsigned char *buf;
+	gribfield *gfld;
+	int err;
+	float *ret_val;
+	int i,n;
+
+	buf = NclMalloc(rec->rec_size);
+	fseek(fp,rec->offset,SEEK_SET);
+	size = fread(buf,1,rec->rec_size,fp);
+	if (size < rec->rec_size) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
+		return NULL;
+	}
+	err = g2_getfld(buf,rec->field_num,1,1,&gfld);
+	if (err || ! gfld->unpacked || gfld->ndpts == 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
+		return NULL;
+	}
+	*missing = (void*)NclMalloc((unsigned)sizeof(float));
+	*(float*)(*missing) = G2_DEFAULT_MISSING_FLOAT;
+
+	if (gfld->ibmap != 255 && gfld->bmap != NULL) {
+		if (gfld->numoct_opt > 0) { /* thinned grid */
+			n = rec->the_dat->multidval.n_dims;
+			ret_val = NclMalloc(sizeof(float) * 
+					    rec->the_dat->multidval.dim_sizes[n-2] *
+					    rec->the_dat->multidval.dim_sizes[n-1]);
+		}
+		else {
+			ret_val = NclMalloc(gfld->ngrdpts * sizeof(float));
+		}
+		n = 0;
+		for (i = 0; i < gfld->ngrdpts; i++) {
+			if (gfld->bmap[i]) {
+				ret_val[i]  =  gfld->fld[n++];
+			}
+			else {
+				ret_val[i]  = *(float*)(*missing);
+			}
+		}
+	}
+	else if (gfld->numoct_opt > 0) { /* thinned grid */
+		n = rec->the_dat->multidval.n_dims;
+		ret_val = NclMalloc(sizeof(float) * 
+				    rec->the_dat->multidval.dim_sizes[n-2] *
+				    rec->the_dat->multidval.dim_sizes[n-1]);
+		memcpy(ret_val,(void*)gfld->fld,gfld->ngrdpts * sizeof(float));
+	}
+	else {
+		ret_val = gfld->fld;
+		gfld->fld = NULL;
+	}
+	if (gfld->numoct_opt > 0) { /* thinned grid */
+		int jpmax;
+		int kcode;
+		int kret =1;
+		float *ztemp, *zline, *zwork;
+		float pmsval = DEFAULT_MISSING_FLOAT;
+		int nlat,nlon;
+		
+		n = rec->the_dat->multidval.n_dims;
+		nlat = rec->the_dat->multidval.dim_sizes[n-2];
+		nlon = rec->the_dat->multidval.dim_sizes[n-1];
+		
+		if (gfld->interp_opt == 1) { /* thinned longitude */
+			n = nlat;
+			kcode = rec->interp_method == 0 ? 1 : 3;
+		}
+		else {
+			n = nlon;
+			kcode = rec->interp_method == 0 ? 11 : 13;
+		}
+		if (gfld->num_opt != n) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
+			return NULL;
+		}
+		jpmax = MAX(nlat,nlon/2 + 1);
+		ztemp = NclMalloc(jpmax * jpmax * 2 * sizeof(float));
+		zline = NclMalloc(jpmax * 2 * sizeof(float));
+		zwork = NclMalloc((2 * jpmax + 3) * 3 * sizeof(float));
+		if (! (ztemp && zline && zwork)) {
+			NhlPError(NhlFATAL,ENOMEM,NULL);
+			return NULL;
+		}
+					  
+		NGCALLF(qu2reg2,QU2REG2)(ret_val,gfld->list_opt,&nlat,&nlon,&kcode,&pmsval,&kret,
+					 &jpmax,ztemp,zline,zwork);
+		NclFree(ztemp);
+		NclFree(zline);
+		NclFree(zwork);
+	}
+	g2_free(gfld);
+	NclFree(buf);
+	return ret_val;
+}
+	
 
 
 static void *Grib2ReadVar
@@ -7760,7 +7873,6 @@ void* storage;
 	void *tmp;
 	void *missing;
 	NclScalar missingv;
-	int int_or_float;
 	FILE* fd;
 	int grid_dim_sizes[3];
 	int n_grid_dims;
@@ -7967,7 +8079,14 @@ void* storage;
 	/*
 	* grid and grid_gds will overwrite tmp
 	*/
-					tmp = current_rec->the_dat->multidval.val;
+					missing = NULL;
+					tmp = NULL;
+					tmp = GetData(fd,current_rec,&missing);
+					if (tmp &&  current_rec->the_dat->multidval.val) {
+						NclFree(current_rec->the_dat->multidval.val);
+						current_rec->the_dat->multidval.val = tmp;
+					}
+					
 
 /***
                     if ((current_rec->has_gds) && (current_rec->grid_number == 255)) {
@@ -7990,31 +8109,17 @@ void* storage;
 ***/
 
 					if(tmp != NULL) {
-						if(int_or_float) {
-							if(missing != NULL) {
-								missingv.intval = *(int*)missing;
-							} else {
-								missingv.intval = G2_DEFAULT_MISSING_INT;
-							}
-	/*
-	* Needed to fix chicken/egg problem with respect to type and missing values
-	*/
-							_g2NclAdjustCacheTypeAndMissing(int_or_float,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
-
-							NclFree(missing);
+						if(missing != NULL) {
+							missingv.floatval = *(float*)missing;
 						} else {
-							if(missing != NULL) {
-								missingv.floatval = *(float*)missing;
-							} else {
-								missingv.floatval = G2_DEFAULT_MISSING_FLOAT;
-							}
+							missingv.floatval = G2_DEFAULT_MISSING_FLOAT;
+						}
 	/*
 	* Needed to fix chicken/egg problem with respect to type and missing values
 	*/
-							_g2NclAdjustCacheTypeAndMissing(int_or_float,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
+						_g2NclAdjustCacheTypeAndMissing(0,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
 
-							NclFree(missing);
-						}
+						NclFree(missing);
 					} else {
 	/*
 	* Need to figure out what to do here
@@ -8253,7 +8358,7 @@ static int Grib2SetOption
 }
 
 
-extern NclFormatFunctionRec Grib2Rec = {
+NclFormatFunctionRec Grib2Rec = {
 /* NclInitializeFileRecFunc initialize_file_rec */      Grib2InitializeFileRec,
 /* NclCreateFileFunc	   create_file; */		Grib2CreateFile,
 /* NclOpenFileFunc         open_file; */		Grib2OpenFile,
