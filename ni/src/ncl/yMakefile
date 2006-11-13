@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.115 2006-09-05 17:33:14 haley Exp $
+#      $Id: yMakefile,v 1.116 2006-11-13 21:32:01 grubin Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2006-09-05 17:33:14 $
+#	Date:		$Date: 2006-11-13 21:32:01 $
 #
 #	Description:	
 #
@@ -82,7 +82,20 @@ HACKOBJS	=	hphack.o
 DYNAMIC_LIBS	=	-ldl
 #endif
 
-EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(HDFEOS_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS)
+#
+# GRIB2 g2c API interface           http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/
+#
+# Uses JPEG2000 library 'jasper'    http://www.ece.uvic.ca/~mdadams/jasper/
+#
+JPEG2000LIBS = -ljasper
+
+GRIB2_G2C_HDR = grib2.h
+GRIB2_G2C_LIBS = -lgrib2c
+GRIB2_G2C_DEFINES = -DUSE_JPEG2000
+
+GRIB2_LIBS = $(GRIB2_G2C_LIBS) $(JPEG2000_LIBS)
+
+EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(HDFEOS_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) $(GRIB2_G2C_DEFINES)
 
 API_DEFS	=	-DMAKEAPI
 
@@ -92,14 +105,14 @@ DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS)
 
 #if defined(SUN)
-# EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3.1_dp -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3.1_dp -llapack -lblas	-lnsl -lintl -lsocket -ldl -lw
+# EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas	-lnsl -lintl -lsocket -ldl -lw
 #elif defined(AIX)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3.1_dp -llapack -lblas -lxlf90 -lxlopt
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas -lxlf90 -lxlopt
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3.1_dp -llapack -lblas
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas
 #else
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) -lsphere3.1_dp -llapack -lblas
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas
 #endif
 
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
@@ -132,7 +145,8 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			ecmwf_170_gtb.h ecmwf_180_gtb.h fnmoc_gtb.h \
 			fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h ncep_opn_gtb.h \
 			ncep_reanal_gtb.h omb_gtb.h ecmwf_132_gtb.h \
-			ecmwf_162_gtb.h ecmwf_200_gtb.h
+			ecmwf_162_gtb.h ecmwf_200_gtb.h NclGRIB2.h \
+			$(GRIB2_G2C_HDR)
 
 
 INSTALL_HDRS	= defs.h HluClasses.h NclApi.h ApiRecords.h NclVar.h \
@@ -175,7 +189,7 @@ STATIC_IO_SRCS  =       AddFileFormats.c AttSupport.c DataSupport.c \
 			FileSupport.c Formats.c GetGrids.c \
 			InitData.c Memory.c NclAtt.c NclCCM.c \
 			NclCoordVar.c NclData.c NclFile.c NclFileVar.c \
-			NclGRIB.c NclHDF.c NclMultiDValnclfileData.c \
+			NclGRIB.c NclGRIB2.c NclHDF.c NclMultiDValnclfileData.c \
 			NclNetCdf.c NclOneDValCoordData.c NclType.c \
 			NclTypelist.c NclVar.c VarSupport.c \
 			ctoiee.c date.c 
@@ -215,7 +229,7 @@ STATIC_IO_OBJS  =       AddFileFormats.o AttSupport.o DataSupport.o \
 			FileSupport.o Formats.o GetGrids.o \
 			InitData.o Memory.o NclAtt.o NclCCM.o \
 			NclCoordVar.o NclData.o NclFile.o NclFileVar.o \
-			NclGRIB.o NclHDF.o NclMultiDValnclfileData.o \
+			NclGRIB.o NclGRIB2.o NclHDF.o NclMultiDValnclfileData.o \
 			NclNetCdf.o NclOneDValCoordData.o NclType.o \
 			NclTypelist.o NclVar.o VarSupport.o \
 			ctoiee.o date.o 
