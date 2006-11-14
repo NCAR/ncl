@@ -167,17 +167,21 @@ int _NclGribVersion
                 } else {
                     if ((buf[j + 1] == 'R' && buf[j + 2] == 'I' && buf[j + 3] == 'B')) {
                         version = buf[j + 7];
-                        break;
+			/* we have the version; return immediately */
+			fclose(fd);
+			return version;
                     }
                 }
             }
             i++;
         }
-
+	else {
+	    /* end of file reached */
+	    break;		
+	}
     }
 
     if (fd) {
-        (void) fseek(fd, 0L, SEEK_SET);
         fclose(fd);
     }
 
