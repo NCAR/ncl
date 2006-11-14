@@ -5354,20 +5354,10 @@ static void Grib2FreeGrib2Rec
                 NclFree(sec4_p[j]->prod_params->time_range_unit);
                 NclFree(sec4_p[j]->prod_params->first_fixed_sfc);
                 NclFree(sec4_p[j]->prod_params->units_first_fixed_sfc);
-                if (sec4_p[j]->prod_params->second_fixed_sfc != NULL) {
-                    NclFree(sec4_p[j]->prod_params->second_fixed_sfc);
-                    NclFree(sec4_p[j]->prod_params->units_second_fixed_sfc);
-                }
-                NclFree(sec4_p[j]->prod_params->ensemble_fx_type);
-                NclFree(sec4_p[j]->prod_params->stat_proc);
-                NclFree(sec4_p[j]->prod_params->incr_betw_fields);
-                NclFree(sec4_p[j]->prod_params->itr_unit);
-                NclFree(sec4_p[j]->prod_params->itr_succ_unit);
                 NclFree(sec4_p[j]->prod_params);
             }
 
             NclFree(sec4_p[j]->prod_def_name);
-            NclFree(sec4_p[j]->coord_list);
             NclFree(sec4_p[j]);
 
             /* Section 5 */
@@ -5385,9 +5375,6 @@ static void Grib2FreeGrib2Rec
             NclFree(sec6_p[j]);
 
             /* Section 7 */
-            if (sec7_p[j]->data != NULL)
-                NclFree(sec7_p[j]->data);
-
             NclFree(sec7_p[j]);
         }
         
@@ -5459,11 +5446,13 @@ static void *Grib2OpenFile
             *table;
 
     int ctflen = 0;
-    char    *center = NULL,         /* center name */
-            *sub_center = NULL;     /* subcenter name */
+    char    *center = NULL,              /* center name */
+            *center_name = NULL,
+            *subcenter_name = NULL;      /* subcenter name */
+            
     int center_len = 0;
-    int centerid,
-        subcenterid;                /* center, subcenter IDs */
+    int centerID = -1,
+        subcenterID = -1;                /* center, subcenter IDs */
 
     int secid = 0;
 
@@ -5514,7 +5503,7 @@ static void *Grib2OpenFile
      */
     grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
     if (grib2_codetable_dir == NULL) {
-	    grib2_codetable_dir = getenv("NCARG_GRIB2_CODETABLES");
+	    grib2_codetable_dir = getenv("NCL_GRIB2_CODETABLES");
     }
     if (grib2_codetable_dir == NULL) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
@@ -5592,107 +5581,136 @@ static void *Grib2OpenFile
         g2rec[nrecs]->sec1.centerID = sec1[0];
         g2rec[nrecs]->sec1.subcenterID = sec1[1];
 
-        /* originating center */
-        ct = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID);
-        if (ct == (g2codeTable *) NULL) {
-            NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "Could not read GRIB v2 code table data.");
-            NhlFree(g2rec);
-            return;
-        }
-
-        g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(ct->descrip) + 1);
-        (void) strcpy(g2rec[nrecs]->sec1.center_name, ct->descrip);
-        /* if center has a "short name" */
-        if (ct->shname != NULL) {
-            g2rec[nrecs]->sec1.subcenter_name = NclMalloc(strlen(ct->shname) + 1);
-            if (g2rec[nrecs]->sec1.subcenter_name == NULL) {
-                NhlPError(NhlFATAL, NhlEUNKNOWN,
-                    "Could not allocate memory for GRIB v2 entry data.");
-                    NhlFree(g2rec);
-                    return NULL;
-            }
-        
-            (void) strcpy(g2rec[nrecs]->sec1.subcenter_name, ct->shname);
-        } else {
-            g2rec[nrecs]->sec1.subcenter_name = NULL;
-        }
-
-        /* 
-         * Set originating center info for codetable searches.
-         * NOTE: not all known centers are represented, only the most commonly
-         * used as per GRIB v1 usage in NCL.  Add as necessary.
+        /*
+         * Originating center
+         *
+         * If center (subcenter) are the same as previous record(s), no need
+         * to reopen/search the centers table.
          */
-        if (! center) {
-            switch (sec1[0]) {
-                case 7:
-                case 8:
-                case 9:
-                    /* NCEP */
-                    center = "ncep";
-                    center_len = strlen(center);
-                    centerid = sec1[0];
-                    subcenterid = sec1[1];
-                    break;
+        if (centerID == sec1[0]) {
+            g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(center_name) + 1);
+            (void) strcpy(g2rec[nrecs]->sec1.center_name, center_name);
 
-                case 58:
-                    /* US Navy FNMOC */
-                    center = "fnmoc";
-                    center_len = strlen(center);
-                    centerid = sec1[0];
-                    subcenterid = sec1[1];
-                    break;
-
-                case 59:
-                    /* NOAA FSL */
-                    center = "fsl";
-                    center_len = strlen(center);
-                    centerid = sec1[0];
-                    subcenterid = sec1[1];
-                    break;
-
-                case 60:
-                    /* NCAR */
-                    center = "ncar";
-                    center_len = strlen(center);
-                    centerid = sec1[0];
-                    subcenterid = sec1[1];
-                    break;
-
-                case 74:
-                    /* UK Met. Office */
-                    center = "ecmwf";
-                    center_len = strlen(center);
-                    centerid = sec1[0];
-                    subcenterid = sec1[1];
-                    break;
-
-                case 78:
-                    /* DWD Offenbach */
-                    center = "dwd";
-                    center_len = strlen(center);
-                    centerid = sec1[0];
-                    subcenterid = sec1[1];
-                    break;
-	        case 34: /* JMA -- use ECMWF for now */
-                case 98:
-                    /* ECMWF */
-                    center = "ecmwf";
-                    center_len = strlen(center);
-                    centerid = sec1[0];
-                    subcenterid = sec1[1];
-                    break;
-
-                default:
-		    /* this will cause a core dump -- need to do something about it */
-                    center = NULL;
-                    center_len = 0;
-                    centerid = subcenterid = -1;
-                    break;
+            if (subcenter_name != NULL) {
+                g2rec[nrecs]->sec1.subcenter_name = NclMalloc(strlen(subcenter_name) + 1);
+                (void) strcpy(g2rec[nrecs]->sec1.subcenter_name, subcenter_name);
+            } else {
+                g2rec[nrecs]->sec1.subcenter_name = NULL;
+            }
+        } else {
+            ct = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID);
+            if (ct == (g2codeTable *) NULL) {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "Could not read GRIB v2 code table data.");
+                NhlFree(g2rec);
+                return;
             }
 
-            /* codetable filename base length: length of center name + 1 (section ID) */
-            ctflen = center_len + 1;
+            g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(ct->descrip) + 1);
+            (void) strcpy(g2rec[nrecs]->sec1.center_name, ct->descrip);
+
+            center_name = NclMalloc(strlen(ct->descrip) + 1);
+            (void) strcpy(center_name, ct->descrip);
+
+            /* if center has a "short name" */
+            if (ct->shname != NULL) {
+                g2rec[nrecs]->sec1.subcenter_name = NclMalloc(strlen(ct->shname) + 1);
+                if (g2rec[nrecs]->sec1.subcenter_name == NULL) {
+                    NhlPError(NhlFATAL, NhlEUNKNOWN,
+                        "Could not allocate memory for GRIB v2 entry data.");
+                        NhlFree(g2rec);
+                        return NULL;
+                }
+        
+                (void) strcpy(g2rec[nrecs]->sec1.subcenter_name, ct->shname);
+
+                subcenter_name = NclMalloc(strlen(ct->shname) + 1);
+                (void) strcpy(subcenter_name, ct->shname);
+            } else {
+                g2rec[nrecs]->sec1.subcenter_name = NULL;
+                subcenter_name = NULL;
+            }
+
+            /* 
+             * Set originating center info for codetable searches.
+             * NOTE: not all known centers are represented, only the most commonly
+             * used as per GRIB v1 usage in NCL.  Add as necessary.
+             */
+            if (! center) {
+                switch (sec1[0]) {
+                    case 7:
+                    case 8:
+                    case 9:
+                        /* NCEP */
+                        center = "ncep";
+                        center_len = strlen(center);
+                        centerID = sec1[0];
+                        subcenterID = sec1[1];
+                        break;
+
+                        case 58:
+                        /* US Navy FNMOC */
+                        center = "fnmoc";
+                        center_len = strlen(center);
+                        centerID = sec1[0];
+                        subcenterID = sec1[1];
+                        break;
+
+                    case 59:
+                        /* NOAA FSL */
+                        center = "fsl";
+                        center_len = strlen(center);
+                        centerID = sec1[0];
+                        subcenterID = sec1[1];
+                        break;
+
+                    case 60:
+                        /* NCAR */
+                        center = "ncar";
+                        center_len = strlen(center);
+                        centerID = sec1[0];
+                        subcenterID = sec1[1];
+                        break;
+
+                    case 74:
+                        /* UK Met. Office */
+                        center = "ecmwf";
+                        center_len = strlen(center);
+                        centerID = sec1[0];
+                        subcenterID = sec1[1];
+                        break;
+
+                    case 78:
+                        /* DWD Offenbach */
+                        center = "dwd";
+                        center_len = strlen(center);
+                        centerID = sec1[0];
+                        subcenterID = sec1[1];
+                        break;
+
+                    case 34:
+                        /* JMA -- use ECMWF for now */
+                        /* FALLTHROUGH */
+
+                    case 98:
+                        /* ECMWF */
+                        center = "ecmwf";
+                        center_len = strlen(center);
+                        centerID = sec1[0];
+                        subcenterID = sec1[1];
+                        break;
+
+    	            default:
+                        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                            " Undefined originating center, cannot continue.");
+                        NhlFree(g2rec);
+                        return NULL;
+                        break;
+                }
+
+                /* codetable filename base length: length of center name + 1 (section ID) */
+                ctflen = center_len + 1;
+            }
         }
 
         g2rec[nrecs]->sec1.master_table_ver = sec1[2];
@@ -6099,10 +6117,10 @@ static void *Grib2OpenFile
                 (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->param_name,
                         "Unknown Variable Name");
 
-		g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(14 * sizeof(char));
-		(void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->short_name, "VAR_%d_%d",
-			       g2rec[nrecs]->sec4[i]->prod_params->param_cat,
-			       g2rec[nrecs]->sec4[i]->prod_params->param_num);
+                g2rec[nrecs]->sec4[i]->prod_params->short_name = NclMalloc(14 * sizeof(char));
+                (void) sprintf(g2rec[nrecs]->sec4[i]->prod_params->short_name, "VAR_%d_%d",
+                    g2rec[nrecs]->sec4[i]->prod_params->param_cat,
+                    g2rec[nrecs]->sec4[i]->prod_params->param_num);
 				   
                 g2rec[nrecs]->sec4[i]->prod_params->units = NclMalloc(strlen("unknown") + 1);
                 (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units, "unknown");
