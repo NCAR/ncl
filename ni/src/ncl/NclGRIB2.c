@@ -773,29 +773,29 @@ int *dimsizes_lon;
 
 static void g2Merge2
 #if 	NhlNeedProto
-(int *tmp_lvs,int *tmp_lvs1,int *tmp_n_lvs,int *lv_vals,int *lv_vals1,int n_lv,int** out_lvs0,int **out_lvs1)
+(float *tmp_lvs,float *tmp_lvs1,int *tmp_n_lvs,float *lv_vals,float *lv_vals1,int n_lv,float** out_lvs0,float **out_lvs1)
 #else
 (tmp_lvs,tmp_lvs,tmp_n_lvs,lv_vals,lv_vals1,n_lv,out_lvs0,out_lvs1)
-int *tmp_lvs;
-int *tmp_lvs1;
+float *tmp_lvs;
+float *tmp_lvs1;
 int *tmp_n_lvs;
-int *lv_vals;
-int *lv_vals1;
+float *lv_vals;
+float *lv_vals1;
 int n_lv;
-int **out_lvs0;
-int **out_lvs1;
+float **out_lvs0;
+float **out_lvs1;
 #endif
 {
 	int i,j,k;
-	int *tmp_out_lvs = NULL;
-	int *tmp_out_lvs1 = NULL;
+	float *tmp_out_lvs = NULL;
+	float *tmp_out_lvs1 = NULL;
 
 	i = 0;	
 	j = 0;
 	k = 0;
 
-	tmp_out_lvs = (int*)NclMalloc((unsigned)sizeof(int)*(*tmp_n_lvs + n_lv));
-	tmp_out_lvs1 = (int*)NclMalloc((unsigned)sizeof(int)*(*tmp_n_lvs + n_lv));
+	tmp_out_lvs = (float*)NclMalloc((unsigned)sizeof(float)*(*tmp_n_lvs + n_lv));
+	tmp_out_lvs1 = (float*)NclMalloc((unsigned)sizeof(float)*(*tmp_n_lvs + n_lv));
 
 
 		
@@ -842,25 +842,25 @@ int **out_lvs1;
 	return;
 }
 
-static int *g2Merge
+static float *g2Merge
 #if 	NhlNeedProto
-(int *tmp_lvs,int *tmp_n_lvs,int *lv_vals,int n_lv)
+(float *tmp_lvs,int *tmp_n_lvs,float *lv_vals,int n_lv)
 #else
 (tmp_lvs,tmp_n_lvs,lv_vals,n_lv)
-int *tmp_lvs;
+float *tmp_lvs;
 int *tmp_n_lvs;
-int *lv_vals;
+float *lv_vals;
 int n_lv;
 #endif
 {
 	int i,j,k;
-	int *out_lvs = NULL;
+	float *out_lvs = NULL;
 
 	i = 0;	
 	j = 0;
 	k = 0;
 
-	out_lvs = (int*)NclMalloc((unsigned)sizeof(int)*(*tmp_n_lvs + n_lv));
+	out_lvs = (float*)NclMalloc((unsigned)sizeof(float)*(*tmp_n_lvs + n_lv));
 
 		
 	while ((i < *tmp_n_lvs)&&(j< n_lv)) {
@@ -896,6 +896,62 @@ int n_lv;
 	NclFree(tmp_lvs);
 	*tmp_n_lvs = k;	
 	return(out_lvs);
+}
+
+static int *g2MergeFT
+#if 	NhlNeedProto
+(int *tmp_fts,int *tmp_n_fts,int *ft_vals,int n_ft)
+#else
+(tmp_fts,tmp_n_fts,ft_vals,n_ft)
+int *tmp_fts;
+int *tmp_n_fts;
+int *ft_vals;
+int n_ft;
+#endif
+{
+	int i,j,k;
+	int *out_fts = NULL;
+
+	i = 0;	
+	j = 0;
+	k = 0;
+
+	out_fts = (int*)NclMalloc((unsigned)sizeof(int)*(*tmp_n_fts + n_ft));
+
+		
+	while ((i < *tmp_n_fts)&&(j< n_ft)) {
+		if (tmp_fts[i] == ft_vals[j]) {
+			out_fts[k] = tmp_fts[i];
+			i++;
+			j++;
+			k++;
+		} else if(tmp_fts[i] < ft_vals[j]) {
+			out_fts[k] = tmp_fts[i];
+			k++;
+			i++;
+		} else {
+			out_fts[k] = ft_vals[j];
+			k++;
+			j++;
+		}
+	}
+
+	if (i< *tmp_n_fts) {
+		for( ; i < *tmp_n_fts;i++) {
+			out_fts[k] = tmp_fts[i];
+			k++;
+		}	
+	} else {
+		for( ; j < n_ft ;j++) {
+			out_fts[k] = ft_vals[j];
+			k++;
+		}	
+	}
+	
+
+	NclFree(tmp_fts);
+	*tmp_n_fts = k;	
+	return(out_fts);
 }
 
 static NrmQuark g2GetItQuark
@@ -1025,16 +1081,16 @@ static int g2LVNotEqual( Grib2RecordInqRecList *s_1, Grib2RecordInqRecList *s_2)
 			if (s_1->rec_inq->level1 == s_2->rec_inq->level1) {
 				return(0);
 			} else {
-				return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
+				return(s_1->rec_inq->level1 - s_2->rec_inq->level1 > 0 ? 1 : -1);
 			}
 		} else {
-			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0 > 0 ? 1 : -1);
 		}
 	} else {
 		if (s_1->rec_inq->level0 == s_2->rec_inq->level0) {
 			return(0);
 		} else {
-			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0 > 0 ? 1 : -1);
 		}
 	} 
 }
@@ -1100,15 +1156,17 @@ unsigned char *offset;
 
 static int _g2GetLevels
 # if NhlNeedProto
-(int *l0, int *l1, int l0_type, int l1_type, int l0_val, int l1_val)
+(float *l0, float *l1, int l0_type, int l1_type, int l0_val, int l0_scale_fac, int l1_val, int l1_scale_fac)
 # else
-(l0, l1, l0_type, l1_type, l0_val, l1_val)
-int *l0;
-int *l1;
+	(l0, l1, l0_type, l1_type, l0_val, l0_scale_fac, l1_val, l1_scale_fac)
+float *l0;
+float *l1;
 int l0_type;
 int l1_type;
 int l0_val;
+int l0_scale_fac;
 int l1_val;
+int l1_scale_fac;
 # endif
 {
 	int i;
@@ -1119,10 +1177,16 @@ int l1_val;
         *l1 = -1;
 
 	if (l0_type != 255) {
-		*l0 = l0_val;
+		if (l0_scale_fac == 0) 
+			*l0 = l0_val;
+		else
+			*l0 = l0_val * pow(0.1,l0_scale_fac);
 	}
 	if (l1_type != 255) {
-		*l1 = l1_val;
+		if (l1_scale_fac == 0) 
+			*l1 = l1_val;
+		else
+			*l1 = l1_val * pow(0.1,l1_scale_fac);
 	}
 #if 0
         switch (ltype) {
@@ -1247,17 +1311,17 @@ void *s2;
 				return (0);
 			}
 			else {
-				return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
+				return(s_1->rec_inq->level1 - s_2->rec_inq->level1 > 0 ? 1 : -1);
 			}
 		} else {
-			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0 > 0 ? 1 : -1);
 		}
 	} else {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
 			return(0);
 		}
 		else {
-			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
+			return(s_1->rec_inq->level0 - s_2->rec_inq->level0 > 0 ? 1 : -1);
 		}	
 	} 
 }
@@ -1338,7 +1402,7 @@ Grib2FileRecord *therec;
 	Grib2AttInqRecList *att_list_ptr= NULL;
 	Grib2AttInqRec 	*att_ptr= NULL;
 	int i;
-	int *tmp_level = NULL;
+	float *tmp_level = NULL;
 	void *tmp_fill = NULL;
 
 
@@ -1392,14 +1456,14 @@ Grib2FileRecord *therec;
             step->theatts = att_list_ptr;
             step->n_atts++;
         } else if ((step->levels_isatt) && (step->levels_has_two)) {
-            tmp_level = (int*)NclMalloc(sizeof(int) * 2);
+            tmp_level = (float*)NclMalloc(sizeof(float) * 2);
             att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
             att_list_ptr->next = step->theatts;
             att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
             att_list_ptr->att_inq->name = NrmStringToQuark("level");
             /* att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->levels0; */
-            tmp_level[0] = *(int*)step->levels0->multidval.val;
-            tmp_level[1] = *(int*)step->levels1->multidval.val;
+            tmp_level[0] = *(float*)step->levels0->multidval.val;
+            tmp_level[1] = *(float*)step->levels1->multidval.val;
             tmp_dimsizes = 2;
             att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(
                     NULL, NULL, Ncl_MultiDValData, 0, (void *) tmp_level, NULL, 1, 
@@ -1413,7 +1477,7 @@ Grib2FileRecord *therec;
             step->levels1= NULL;
             step->theatts = att_list_ptr;
             step->n_atts++;
-		}
+	}
 
         att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
         att_list_ptr->next = step->theatts;
@@ -2516,13 +2580,13 @@ int g2it_comp (G2_GIT *it1, G2_GIT* it2)
 
 static int g2GetLVList
 # if    NhlNeedProto
-(Grib2ParamList *thevar, Grib2RecordInqRecList *lstep, int** lv_vals, int** lv_vals1) 
+(Grib2ParamList *thevar, Grib2RecordInqRecList *lstep, float** lv_vals, float** lv_vals1) 
 # else
 (thevar, lstep, lv_vals, lv_vals1) 
  Grib2ParamList *thevar;
  Grib2RecordInqRecList *lstep;
- int** lv_vals; 
- int** lv_vals1; 
+ float** lv_vals; 
+ float** lv_vals1; 
 # endif
 {
     int n_lvs = 1;
@@ -2530,6 +2594,7 @@ static int g2GetLVList
     Grib2RecordInqRecList   *strt,
                             *tmp;
 
+    *lv_vals1 = NULL;
     strt = lstep;
     while(strt->next != NULL) {
         if (!g2LVNotEqual(strt, strt->next)) {
@@ -2548,18 +2613,35 @@ static int g2GetLVList
     }
 
     strt = lstep;
-    *lv_vals = (int *) NclMalloc((unsigned)sizeof(int) * n_lvs);
-    if (strt->rec_inq->level1 != -1) {
-        *lv_vals1 = (int *) NclMalloc((unsigned)sizeof(int) * n_lvs);
-    }
+    *lv_vals = (float *) NclMalloc((unsigned)sizeof(float) * n_lvs);
 
     for (i = 0; i < n_lvs; i++) {
-        (*lv_vals)[i] = strt->rec_inq->level0;
         if (strt->rec_inq->level1 != -1) {
-            (*lv_vals1)[i] = strt->rec_inq->level1;
-        }
-
+		*lv_vals1 = (float *) NclMalloc((unsigned)sizeof(float) * n_lvs);
+		break;
+	}
         strt = strt->next;
+    }
+
+    strt = lstep;
+    if (*lv_vals1) {
+	    for (i = 0; i < n_lvs; i++) {
+		    (*lv_vals)[i] = strt->rec_inq->level0;
+		    if (strt->rec_inq->level1 != -1) {
+			    (*lv_vals1)[i] = strt->rec_inq->level1;
+		    }
+		    else {
+			    strt->rec_inq->level1 =
+				    (*lv_vals1)[i] = strt->rec_inq->level0;
+		    }
+		    strt = strt->next;
+	    }
+    }
+    else {
+	    for (i = 0; i < n_lvs; i++) {
+		    (*lv_vals)[i] = strt->rec_inq->level0;
+		    strt = strt->next;
+	    }
     }
 	
     return n_lvs;
@@ -2623,7 +2705,7 @@ int n_it;
 static G2_FTLIST *g2GetFTList
 # if    NhlNeedProto
 (Grib2ParamList *thevar, Grib2RecordInqRecList *step, int* n_ft, int **ft_vals,
- int* total_valid_lv, int** valid_lv_vals, int** valid_lv_vals1)
+ int* total_valid_lv, float** valid_lv_vals, float** valid_lv_vals1)
 # else
 (thevar, step, n_ft, ft_vals, total_valid_lv, valid_lv_vals, valid_lv_vals1)
  Grib2ParamList *thevar;
@@ -2631,8 +2713,8 @@ static G2_FTLIST *g2GetFTList
  int* n_ft;
  int **ft_vals;
  int* total_valid_lv;
- int** valid_lv_vals;
- int** valid_lv_vals1;
+ float** valid_lv_vals;
+ float** valid_lv_vals1;
 # endif
 {
     int i;
@@ -2646,8 +2728,8 @@ static G2_FTLIST *g2GetFTList
     G2_FTLIST header;
     G2_FTLIST   *the_end,
                 *tmp;
-    int *tmp_lvs = NULL;
-    int *tmp_lvs1 = NULL;
+    float *tmp_lvs = NULL;
+    float *tmp_lvs1 = NULL;
     int tmp_n_lvs = 0;
 
 
@@ -2675,20 +2757,20 @@ static G2_FTLIST *g2GetFTList
 
             if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 == -1)) {
                 if (tmp_lvs == NULL) {
-                    tmp_lvs = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+                    tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
                     tmp_n_lvs = the_end->n_lv;
-                    memcpy((void *) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
+                    memcpy((void *) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
                 } else {
                     tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
                 }
             } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)){
                 /* Handle multiple value coordinate levels */
                 if (tmp_lvs == NULL) {
-                    tmp_lvs = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
-                    tmp_lvs1 = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+                    tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
+                    tmp_lvs1 = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
                     tmp_n_lvs = the_end->n_lv;
-                    memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
-                    memcpy((void* )tmp_lvs1, the_end->lv_vals1, the_end->n_lv * sizeof(int));
+                    memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
+                    memcpy((void* )tmp_lvs1, the_end->lv_vals1, the_end->n_lv * sizeof(float));
                 } else {
                     g2Merge2(tmp_lvs, tmp_lvs1, &tmp_n_lvs, the_end->lv_vals, the_end->lv_vals1,
                             the_end->n_lv, &tmp_lvs, &tmp_lvs1);
@@ -2724,18 +2806,18 @@ static G2_FTLIST *g2GetFTList
         if (tmp_lvs != NULL) {
             tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
         } else {
-            tmp_lvs = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+            tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
             tmp_n_lvs = the_end->n_lv;
-            memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
+            memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
         }
     } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)) {
         /* Handle multiple value coordinate levels */
         if (tmp_lvs == NULL) {
-            tmp_lvs = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
-            tmp_lvs1 = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+            tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
+            tmp_lvs1 = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
             tmp_n_lvs = the_end->n_lv;
-            memcpy((void *) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
-            memcpy((void *) tmp_lvs1, the_end->lv_vals1, the_end->n_lv * sizeof(int));
+            memcpy((void *) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
+            memcpy((void *) tmp_lvs1, the_end->lv_vals1, the_end->n_lv * sizeof(float));
         } else {
             g2Merge2(tmp_lvs, tmp_lvs1, &tmp_n_lvs, the_end->lv_vals, the_end->lv_vals1,
                     the_end->n_lv, &tmp_lvs, &tmp_lvs1);
@@ -2767,8 +2849,8 @@ static G2_ITLIST *g2GetITList
  int* n_ft,
  int **ft_vals,
  int* total_valid_lv,
- int** valid_lv_vals, 
- int** valid_lv_vals1)
+ float** valid_lv_vals, 
+ float** valid_lv_vals1)
 #else
 (thevar, step, n_it, it_vals, n_ft, ft_vals, total_valid_lv, valid_lv_vals, valid_lv_vals1)
  Grib2ParamList *thevar;
@@ -2778,8 +2860,8 @@ static G2_ITLIST *g2GetITList
  int* n_ft;
  int **ft_vals;
  int* total_valid_lv;
- int** valid_lv_vals;
- int** valid_lv_vals1;
+ float** valid_lv_vals;
+ float** valid_lv_vals1;
 #endif
 {
     int i;
@@ -2794,8 +2876,8 @@ static G2_ITLIST *g2GetITList
                 *tmp;
     int tmp_n_ft;
     int *tmp_ft_vals = NULL;
-    int *tmp_lvs = NULL;
-    int *tmp_lvs1 = NULL;
+    float *tmp_lvs = NULL;
+    float *tmp_lvs1 = NULL;
     int tmp_n_lvs = 0;
     G2_GIT current_it;
 
@@ -2834,26 +2916,26 @@ static G2_ITLIST *g2GetITList
                 tmp_n_ft = the_end->n_ft;
                 memcpy((void*) tmp_ft_vals, the_end->ft_vals, the_end->n_ft * sizeof(int));
             } else {
-                tmp_ft_vals = g2Merge(tmp_ft_vals, &tmp_n_ft, the_end->ft_vals, the_end->n_ft);
+                tmp_ft_vals = g2MergeFT(tmp_ft_vals, &tmp_n_ft, the_end->ft_vals, the_end->n_ft);
             }
         }
 
         if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 == -1)) {
             if (tmp_lvs == NULL) {
-                tmp_lvs = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+                tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
                 tmp_n_lvs = the_end->n_lv;
-                memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
+                memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
             } else {
                 tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
             }
         } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)){
             /* Handle multiple value coordinate levels */
             if (tmp_lvs == NULL) {
-                tmp_lvs = (int*) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
-                tmp_lvs1 = (int*) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+                tmp_lvs = (float*) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
+                tmp_lvs1 = (float*) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
                 tmp_n_lvs = the_end->n_lv;
-                memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
-                memcpy((void*) tmp_lvs1,the_end->lv_vals1, the_end->n_lv * sizeof(int));
+                memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
+                memcpy((void*) tmp_lvs1,the_end->lv_vals1, the_end->n_lv * sizeof(float));
             } else {
                 g2Merge2(tmp_lvs, tmp_lvs1, &tmp_n_lvs, the_end->lv_vals, the_end->lv_vals1,
                         the_end->n_lv, &tmp_lvs, &tmp_lvs1);
@@ -2881,7 +2963,7 @@ static G2_ITLIST *g2GetITList
             tmp_n_ft = the_end->n_ft;
             memcpy((void*) tmp_ft_vals, the_end->ft_vals, the_end->n_ft * sizeof(int));
         } else {
-            tmp_ft_vals = g2Merge(tmp_ft_vals, &tmp_n_ft, the_end->ft_vals, the_end->n_ft);
+            tmp_ft_vals = g2MergeFT(tmp_ft_vals, &tmp_n_ft, the_end->ft_vals, the_end->n_ft);
         }
     }
 
@@ -2889,18 +2971,18 @@ static G2_ITLIST *g2GetITList
         if (tmp_lvs != NULL) {
             tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
         } else {
-            tmp_lvs = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+            tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
             tmp_n_lvs = the_end->n_lv;
-            memcpy((void *) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
+            memcpy((void *) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
         }
     } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)) {
         /* Handle multiple value coordinate levels */
         if (tmp_lvs == NULL) {
-            tmp_lvs = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
-            tmp_lvs1 = (int *) NclMalloc((unsigned)sizeof(int) * the_end->n_lv);
+            tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
+            tmp_lvs1 = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
             tmp_n_lvs = the_end->n_lv;
-            memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(int));
-            memcpy((void*) tmp_lvs1, the_end->lv_vals1, the_end->n_lv * sizeof(int));
+            memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
+            memcpy((void*) tmp_lvs1, the_end->lv_vals1, the_end->n_lv * sizeof(float));
         } else {
             g2Merge2(tmp_lvs, tmp_lvs1, &tmp_n_lvs, the_end->lv_vals, the_end->lv_vals1,
                     the_end->n_lv, &tmp_lvs, &tmp_lvs1);
@@ -2951,8 +3033,8 @@ Grib2ParamList* step;
                 *free_it = NULL;
     G2_FTLIST   *ftstep = NULL,
                 *free_ft = NULL;
-    int *tmp_lv_vals = NULL;
-    int *tmp_lv_vals1 = NULL;
+    float *tmp_lv_vals = NULL;
+    float *tmp_lv_vals1 = NULL;
     int n_tmp_lv_vals = 0;
     int *tmp_ft_vals = NULL;
     int n_tmp_ft_vals = 0;
@@ -3019,19 +3101,19 @@ Grib2ParamList* step;
             tmp_ens_vals[i] = the_end->ens;
             if ((the_end->n_lv > 0)&&(the_end->lv_vals1 == NULL) ) {
 				if(tmp_lv_vals == NULL) {
-					tmp_lv_vals = NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
+					tmp_lv_vals = NclMalloc((unsigned)sizeof(float)*the_end->n_lv);
 					n_tmp_lv_vals = the_end->n_lv;
-					memcpy((void*)tmp_lv_vals,the_end->lv_vals,the_end->n_lv*sizeof(int));
+					memcpy((void*)tmp_lv_vals,the_end->lv_vals,the_end->n_lv*sizeof(float));
 				} else 	{
 					tmp_lv_vals  = g2Merge(tmp_lv_vals,&n_tmp_lv_vals,the_end->lv_vals,the_end->n_lv);
 				}
 			} else {
 				if(tmp_lv_vals == NULL) {
-					tmp_lv_vals = NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
-					tmp_lv_vals1 = NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
+					tmp_lv_vals = NclMalloc((unsigned)sizeof(float)*the_end->n_lv);
+					tmp_lv_vals1 = NclMalloc((unsigned)sizeof(float)*the_end->n_lv);
 					n_tmp_lv_vals = the_end->n_lv;
-					memcpy((void*)tmp_lv_vals,the_end->lv_vals,the_end->n_lv*sizeof(int));
-					memcpy((void*)tmp_lv_vals1,the_end->lv_vals1,the_end->n_lv*sizeof(int));
+					memcpy((void*)tmp_lv_vals,the_end->lv_vals,the_end->n_lv*sizeof(float));
+					memcpy((void*)tmp_lv_vals1,the_end->lv_vals1,the_end->n_lv*sizeof(float));
 				} else 	{
 					g2Merge2(tmp_lv_vals, tmp_lv_vals1, &n_tmp_lv_vals,
                         the_end->lv_vals, the_end->lv_vals1, the_end->n_lv, &tmp_lv_vals,
@@ -3045,7 +3127,7 @@ Grib2ParamList* step;
 					n_tmp_ft_vals = the_end->n_ft;
 					memcpy((void *) tmp_ft_vals, the_end->ft_vals, the_end->n_ft * sizeof(int));
 				} else {
-                    tmp_ft_vals = g2Merge(tmp_ft_vals, &n_tmp_ft_vals, the_end->ft_vals,
+					tmp_ft_vals = g2MergeFT(tmp_ft_vals, &n_tmp_ft_vals, the_end->ft_vals,
                                             the_end->n_ft);
 				}
 			}
@@ -3243,7 +3325,7 @@ Grib2ParamList* step;
 						(void*)&n_tmp_lv_vals,
 						TEMPORARY,
 						NULL,
-						nclTypeintClass);
+						nclTypefloatClass);
 			step->levels0 = NULL;
 			step->levels1 = NULL;
 			i++;
@@ -3261,7 +3343,7 @@ Grib2ParamList* step;
 						(void*)&n_tmp_lv_vals,
 						TEMPORARY,
 						NULL,
-						nclTypeintClass);
+						nclTypefloatClass);
 			step->levels0 = NULL;
 			step->levels1 = NULL;
 		} else {
@@ -3285,7 +3367,7 @@ Grib2ParamList* step;
 						(void*)&n_tmp_lv_vals,
 						TEMPORARY,
 						NULL,
-						nclTypeintClass);
+						nclTypefloatClass);
 			step->levels1 = (NclMultiDValData)_NclCreateVal(
 						NULL,
 						NULL,
@@ -3297,7 +3379,7 @@ Grib2ParamList* step;
 						(void*)&n_tmp_lv_vals,
 						TEMPORARY,
 						NULL,
-						nclTypeintClass);
+						nclTypefloatClass);
 			step->levels_has_two = 1;
 			i++;
 				step->levels_isatt = 0;
@@ -3315,7 +3397,7 @@ Grib2ParamList* step;
 						(void*)&n_tmp_lv_vals,
 						TEMPORARY,
 						NULL,
-						nclTypeintClass);
+						nclTypefloatClass);
 			step->levels1 = (NclMultiDValData)_NclCreateVal(
 						NULL,
 						NULL,
@@ -3327,7 +3409,7 @@ Grib2ParamList* step;
 						(void*)&n_tmp_lv_vals,
 						TEMPORARY,
 						NULL,
-						nclTypeintClass);
+						nclTypefloatClass);
 			step->levels_has_two = 1;
 		} else {
 			step->levels_isatt = 0;
@@ -3407,9 +3489,9 @@ Grib2ParamList* step;
 		sprintf(&(buf[strlen(buf)])," ft: %d",tmp_ft_vals[ft_ix]); \
 	if (n_tmp_lv_vals > 1) \
 		if (! step->levels_has_two) \
-			sprintf(&(buf[strlen(buf)])," lv: %d",tmp_lv_vals[lv_ix]); \
+			sprintf(&(buf[strlen(buf)])," lv: %f",tmp_lv_vals[lv_ix]); \
 		else \
-			sprintf(&(buf[strlen(buf)])," lv: (%d, %d)",tmp_lv_vals[lv_ix],tmp_lv_vals1[lv_ix]); \
+			sprintf(&(buf[strlen(buf)])," lv: (%f, %f)",tmp_lv_vals[lv_ix],tmp_lv_vals1[lv_ix]); \
 	NhlPError(NhlWARNING,NhlEUNKNOWN,buf)
 			
 	while(the_end != NULL) {
@@ -3441,7 +3523,7 @@ Grib2ParamList* step;
 				}
 				m = 0;
 				if(!step->levels_has_two) {
-					while(rstep != NULL) {
+					while(rstep != NULL && m < n_tmp_lv_vals) {
 						if((tmp_lv_vals == NULL) ||(rstep->rec_inq->level0 == tmp_lv_vals[m])) {
 							strt[i].rec_inq = rstep->rec_inq;	
 							icount +=1;
@@ -3464,7 +3546,7 @@ Grib2ParamList* step;
 						}
 					}
 				} else {
-					while(rstep != NULL) {
+					while(rstep != NULL && m < n_tmp_lv_vals) {
 						if((rstep->rec_inq->level0 == tmp_lv_vals[m])
 						   &&(rstep->rec_inq->level1 == tmp_lv_vals1[m])) {
 							strt[i].rec_inq = rstep->rec_inq;	
@@ -3884,7 +3966,7 @@ static void _g2SetFileDimsAndCoordVars
 				tmp->dim_number = therec->total_dims;
 				tmp->is_gds = -1;
 				tmp->size = step->levels->multidval.dim_sizes[0];
-    			sprintf(buffer, "levels%d", therec->total_dims);
+				sprintf(buffer, "levels%d", therec->total_dims);
 				tmp->dim_name = NrmStringToQuark(buffer);
 				therec->total_dims++;
 				ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
@@ -3893,14 +3975,9 @@ static void _g2SetFileDimsAndCoordVars
 				therec->lv_dims = ptr;
 				therec->n_lv_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-
-/********
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-    			*tmp_string = NrmStringToQuark(level_str_long_name[i]);
-********/
-
+				att_list_ptr = NULL;
 				_Grib2AddInternalVar(therec,tmp->dim_name, &tmp->dim_number,
-                        (NclMultiDValData) step->levels, att_list_ptr, 2);
+						     (NclMultiDValData) step->levels, att_list_ptr, 2);
 				att_list_ptr = NULL;
 				step->levels = NULL;
 			} else {
@@ -3948,6 +4025,17 @@ static void _g2SetFileDimsAndCoordVars
 				tmp->dim_number = therec->total_dims;
 				tmp->is_gds = -1;
 				tmp->size = step->levels0->multidval.dim_sizes[0];
+			
+				sprintf(buffer,"levels%d",therec->total_dims);
+				tmp->dim_name = NrmStringToQuark(buffer);
+				therec->total_dims++;
+				ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+				ptr->dim_inq = tmp;
+				ptr->next = therec->lv_dims;
+				therec->lv_dims = ptr;
+				therec->n_lv_dims++;
+				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+				sprintf(name_buffer,"%s%s",buffer,"_l0");
 /***
 				for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
 					if(level_index[i] == step->level_indicator) {
@@ -3986,13 +4074,15 @@ static void _g2SetFileDimsAndCoordVars
 				}
 				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
 ***/
-				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels0,att_list_ptr,2);
+
+				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
+						     &tmp->dim_number,(NclMultiDValData)step->levels0,att_list_ptr,2);
 
 				att_list_ptr = NULL;
 
 				sprintf(name_buffer,"%s%s",buffer,"_l1");
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 /***
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 				if(i < sizeof(level_index)/sizeof(int)) {
 					*tmp_string = NrmStringToQuark(level_units_str[i]);
 				} else {
@@ -4006,9 +4096,11 @@ static void _g2SetFileDimsAndCoordVars
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
-***/
+
 				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,(NclMultiDValData)step->levels1,att_list_ptr,2);
+***/
+				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
+						     &tmp->dim_number,(NclMultiDValData)step->levels1,att_list_ptr,2);
 
 
 				att_list_ptr = NULL;
@@ -4102,11 +4194,13 @@ static void _g2SetFileDimsAndCoordVars
                 if (step->has_gds) {
                     switch (step->grid_number) {
                         case 0:
-                            /* Latitude/Longitude (Template 3.0) */
+				
+                            /* Latitude/Longitude (Template 3.0)
                             g2GetGrid_0(step, &tmp_lat, &n_dims_lat, &dimsizes_lat,
                                 &tmp_lon, &n_dims_lon, &dimsizes_lon, &tmp_rot,
                                 &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
                                 &rot_att_list_ptr, &nrotatts);
+			    */
                             break;
 
                         case 1:
@@ -5544,7 +5638,7 @@ static void *Grib2OpenFile
         NhlFree(g2rec[nrecs]);
         return NULL;
     }
-
+    memset(ct,0,sizeof(g2codeTable));
     fd = fopen(NrmQuarkToString(path), "r");
     vbuf = (void *) NclMalloc(4 * getpagesize());
     setvbuf(fd, vbuf, _IOFBF, 4 * getpagesize());
@@ -6082,6 +6176,7 @@ static void *Grib2OpenFile
 
             /* table 4.1: Parameter Category by Product Discipline */
             g2rec[nrecs]->sec4[i]->prod_params = NclMalloc(sizeof(G2prodParams));
+	    memset(g2rec[nrecs]->sec4[i]->prod_params,0,sizeof(G2prodParams));
             g2rec[nrecs]->sec4[i]->prod_params->param_cat = g2fld->ipdtmpl[0];
             table = "4.1.table";
             err = Grib2ReadCodeTable(center, secid, table,
@@ -6655,14 +6750,13 @@ static void *Grib2OpenFile
             memcpy(g2rec[nrecs]->sec7[i]->data, g2fld->fld, g2fld->ndpts);
 ***/
 
-            ++nrecs;
             g2_free(g2fld);
         }
-
+	++nrecs;
         NclFree(g2buf);
-        Grib2FreeCodeTableRec(ct);
     }
-
+    Grib2FreeCodeTableRec(ct);
+	
     for (i = 0; i < nrecs; i++)
         g2rec[i]->numrecs = nrecs;
 
@@ -6757,8 +6851,8 @@ static void *Grib2OpenFile
                 g2inqrec->sub_center = NULL;
             }
 
-            if ((NrmQuark) (g2frec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values ==
-                    NrmStringToQuark("cubic")))
+            if (((NrmQuark) g2frec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values) ==
+		NrmStringToQuark("cubic"))
                 g2inqrec->interp_method = 1;
             else
                 g2inqrec->interp_method =  0;
@@ -6830,7 +6924,10 @@ static void *Grib2OpenFile
 			 (int) g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc,
 			 (int) g2rec[i]->sec4[j]->prod_params->typeof_second_fixed_sfc,
 			 (int) g2rec[i]->sec4[j]->prod_params->scaled_val_first_fixed_sfc,
-			 (int) g2rec[i]->sec4[j]->prod_params->scaled_val_second_fixed_sfc);
+			 (int) g2rec[i]->sec4[j]->prod_params->scale_factor_first_fixed_sfc,
+			 (int) g2rec[i]->sec4[j]->prod_params->scaled_val_second_fixed_sfc,			 
+			 (int) g2rec[i]->sec4[j]->prod_params->scale_factor_second_fixed_sfc
+		    );
 
 
             g2inqrec->var_name = NclMalloc(strlen(g2rec[i]->sec4[j]->prod_params->short_name) + 20);
@@ -8325,7 +8422,7 @@ void* storage;
 	return(NULL);
 }
 
-static int Grib2MapToNcl
+static NclBasicDataTypes Grib2MapToNcl
 # if    NhlNeedProto
 (void* the_type)
 # else

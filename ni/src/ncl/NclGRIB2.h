@@ -33,8 +33,8 @@ typedef struct g2_ens_list {
 	int n_ft;
 	int *ft_vals;
 	int n_lv;
-	int *lv_vals;
-	int *lv_vals1;
+	float *lv_vals;
+	float *lv_vals1;
 	struct g2_it_list *thelist;
 	struct g2_ens_list *next;
 } G2_ENSLIST;
@@ -44,8 +44,8 @@ typedef struct g2_it_list {
     int n_ft;
     int *ft_vals;
     int n_lv;
-    int *lv_vals;
-    int *lv_vals1;
+    float *lv_vals;
+    float *lv_vals1;
     struct g2_ft_list   *thelist;
     struct g2_it_list   *next;
 } G2_ITLIST;
@@ -53,8 +53,8 @@ typedef struct g2_it_list {
 typedef struct g2_ft_list {
     int ft;
     int n_lv;
-    int *lv_vals;
-    int *lv_vals1;
+    float *lv_vals;
+    float *lv_vals1;
     struct _Grib2RecordInqRecList   *thelist;
     struct g2_ft_list   *next;
 } G2_FTLIST;
@@ -473,8 +473,8 @@ struct _Grib2RecordInqRec {
     /* this is P2 - P1 -- the period for acc, avg and diff type records */
     int time_period;
     int level_indicator;
-    int level0;
-    int level1;
+    float level0;
+    float level1;
 
     int time_range_indicator;
     int time_unit_indicator;
