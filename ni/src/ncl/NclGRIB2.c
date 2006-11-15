@@ -5021,67 +5021,87 @@ static void Grib2PrintRecords
     }
 }
 
-
-static g2codeTable *Grib2ReadCodeTable
+static void Grib2FreeCodeTableRec
 # if NhlNeedProto
-(char *center, int secid, char *table, int oct)
+(g2codeTable *ct)
+# else
+(ct)
+    g2codeTable *ct;
+# endif
+{
+
+    if (ct->cat != NULL)
+        NclFree(ct->cat);
+
+    if (ct->descrip != NULL)
+        NclFree(ct->descrip);
+
+    if (ct->shname != NULL)
+        NclFree(ct->shname);
+
+    if (ct->units != NULL)
+        NclFree(ct->units);
+
+    NclFree(ct);
+}
+
+
+int Grib2ReadCodeTable
+# if NhlNeedProto
+(char *center, int secid, char *table, int oct, g2codeTable *ct)
 # else
 (center, secid, table, oct)
     char    *center;
     int secid;
     char    *table;
     int oct;
+    g2codetable *ct;
 # endif
 {
     FILE    *fp = NULL;
     char    *ctf = NULL;
 
-    char    *s = NULL;
+    char    s[256];
 
     char    *rol = NULL;
     char    *sep = ":";
-/*    char    *sep = "\\/:;=+&^%$@!()?";*/
 
     int len;
 
-    g2codeTable    *ct;
     int where = 0;
+    int err = 0;
 
 
-    /* table entries */
-    s = NclMalloc(256 * sizeof(char));
-    if (s == NULL) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "Code table: could not allocate entry memory.");
-        return NULL;
-    }
-
-
-    ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
-    if (ct == NULL) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN,
-            "Could not allocate memory for code table.");
-        return NULL;
-    }
-
+    /* default values */
     ct->oct = -1;
+    if (ct->cat != NULL)
+        NclFree(ct->cat);
     ct->cat = NULL;
+
+    if (ct->descrip != NULL)
+        NclFree(ct->descrip);
     ct->descrip = NULL;
+
+    if (ct->shname != NULL)
+        NclFree(ct->shname);
     ct->shname = NULL;
+
+    if (ct->units != NULL)
+        NclFree(ct->units);
     ct->units = NULL;
 
 
     /*
      * construct pathname:
-     *      codetable dir + center + section + table
-     *      special case: reading the "centers" table -- don't know "center" yet
+     *  codetable dir + center + section + table
+     *  special case: reading the "centers" table -- don't know "center" yet
      */
     if (secid == -1) {
         /* reading table of centers */
         ctf = NclMalloc(g2_codetable_dirname_len + strlen(table) + 2);
         if (ctf == NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN, "Could not allocate memory for code table.");
-            return NULL;
+            return err = -1;
         }
 
         (void) sprintf(ctf, "%s/%s", grib2_codetable_dir, table);
@@ -5089,7 +5109,7 @@ static g2codeTable *Grib2ReadCodeTable
         ctf = NclMalloc(g2_codetable_dirname_len + strlen(center) + 5 + strlen(table));
         if (ctf == NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN, "Could not allocate memory for code table.");
-            return NULL;
+            return err = -1;
         }
 
         (void) sprintf(ctf, "%s/%s/%d/%s", grib2_codetable_dir, center, secid, table);
@@ -5100,17 +5120,19 @@ static g2codeTable *Grib2ReadCodeTable
         NhlPError(NhlFATAL, NhlEUNKNOWN,
             " NclGRIB2: codetable file \"%s/%s\" not a valid GRIB2 code table.\n",
                 grib2_codetable_dir, ctf);
-        return (g2codeTable *) NULL;
+        NclFree(ctf);
+        return err = -1;
     } else {
         while (fgets(s, 256, fp)) {
-	    int len = strlen(s);
+    	    len = strlen(s);
             if (len < 2)
-		continue;
+	    	    continue;
             s[len - 1] = '\0';
             if (s[0] != '#') {
                 rol = strtok(s, sep);
                 if (rol == NULL)
-		    continue;
+                    continue;
+
                 /* first field */
                 ct->oct = (int) strtol(rol, (char **) NULL, 10);
                 if (ct->oct == oct) {
@@ -5129,9 +5151,10 @@ static g2codeTable *Grib2ReadCodeTable
                                     NhlPError(NhlFATAL, NhlEUNKNOWN,
                                         "Could not allocate memory for code table entry.");
                                     (void) fclose(fp);
-                                    return NULL;
+                                    NclFree(ctf);
+                                    return err = -1;
                                 }
-
+    
                                 strncpy(ct->cat, rol, len);
                                 ++where;
                                 break;
@@ -5144,7 +5167,8 @@ static g2codeTable *Grib2ReadCodeTable
                                     NhlPError(NhlFATAL, NhlEUNKNOWN,
                                         "Could not allocate memory for code table entry.");
                                     (void) fclose(fp);
-                                    return NULL;
+                                    NclFree(ctf);
+                                    return err = -1;
                                 }
 
                                 strncpy(ct->descrip, rol, len);
@@ -5160,7 +5184,8 @@ static g2codeTable *Grib2ReadCodeTable
                                     NhlPError(NhlFATAL, NhlEUNKNOWN,
                                         "Could not allocate memory for code table entry.");
                                     (void) fclose(fp);
-                                    return NULL;
+                                    NclFree(ctf);
+                                    return err = -1;
                                 }
 
                                 strncpy(ct->units, rol, len);
@@ -5176,8 +5201,9 @@ static g2codeTable *Grib2ReadCodeTable
                                     NhlPError(NhlFATAL, NhlEUNKNOWN,
                                         "Could not allocate memory for code table entry.");
                                     (void) fclose(fp);
-                                    return NULL;
-                                }
+                                    NclFree(ctf);
+                                    return err = -1;
+                                }       
 
                                 strncpy(ct->shname, rol, len);
                                 ct->shname[len] = '\0';
@@ -5188,15 +5214,17 @@ static g2codeTable *Grib2ReadCodeTable
                                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                                     "Could not decode code table.");
                                 (void) fclose(fp);
-                                return NULL;
+                                NclFree(ctf);
+                                return err = -1;
                                 break;
                         }
-    
+  
                         rol = strtok(NULL, sep);
                     }
 
                     (void) fclose(fp);
-                    return ct;
+                    NclFree(ctf);
+                    return err;
                 } else {
                     continue;
                 }
@@ -5209,11 +5237,13 @@ static g2codeTable *Grib2ReadCodeTable
         ct->descrip = NULL;
         ct->shname = NULL;
         ct->units = NULL;
-        return ct;
+        NclFree(ctf);
+        return err = -1;
     }
 
     (void) fclose(fp);
-    return ct;
+    NclFree(ctf);
+    return err;
 }
 
 
@@ -5433,13 +5463,6 @@ static void *Grib2OpenFile
     G2Rec   **g2rec,
             **tmp_g2rec;
 
-    G2Sec2  *tmp_sec2;
-    G2Sec3  *tmp_sec3;
-    G2Sec4  *tmp_sec4;
-    G2Sec5  *tmp_sec5;
-    G2Sec6  *tmp_sec6;
-    G2Sec7  *tmp_sec7;
-
     /* codetable variables */
     g2codeTable *ct = NULL;
     char    *ctfnam,
@@ -5514,6 +5537,13 @@ static void *Grib2OpenFile
 	  
 
     g2_codetable_dirname_len = strlen(grib2_codetable_dir);
+    ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
+    if (ct == NULL) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN,
+            " Unable to allocate code table data, cannot continue.");
+        NhlFree(g2rec[nrecs]);
+        return NULL;
+    }
 
     fd = fopen(NrmQuarkToString(path), "r");
     vbuf = (void *) NclMalloc(4 * getpagesize());
@@ -5598,7 +5628,7 @@ static void *Grib2OpenFile
                 g2rec[nrecs]->sec1.subcenter_name = NULL;
             }
         } else {
-            ct = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID);
+            err = Grib2ReadCodeTable("", -1, "centers.table", g2rec[nrecs]->sec1.centerID, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -5719,7 +5749,7 @@ static void *Grib2OpenFile
         /* table 1.2: Significance of Reference Time */
         g2rec[nrecs]->sec1.ref_time = sec1[4];
         table = "1.2.table";
-        ct = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.ref_time);
+        err = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.ref_time, ct);
         if (ct == (g2codeTable *) NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not read GRIB v2 code table data.");
@@ -5751,7 +5781,7 @@ static void *Grib2OpenFile
         /* table 1.3: Production Status of Data */
         g2rec[nrecs]->sec1.prod_status = sec1[11];
         table = "1.3.table";
-        ct = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.prod_status);
+        err = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.prod_status, ct);
         if (ct == (g2codeTable *) NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not read GRIB v2 code table data.");
@@ -5765,7 +5795,7 @@ static void *Grib2OpenFile
         /* table 1.4: Type of Data */
         g2rec[nrecs]->sec1.data_type = sec1[12];
         table = "1.4.table";
-        ct = Grib2ReadCodeTable(center,secid,table, g2rec[nrecs]->sec1.data_type);
+        err = Grib2ReadCodeTable(center,secid,table, g2rec[nrecs]->sec1.data_type, ct);
         if (ct == (g2codeTable *) NULL) {
             NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not read GRIB v2 code table data.");
@@ -5868,7 +5898,7 @@ static void *Grib2OpenFile
             /* table 3.0: Source of Grid Defn */
             g2rec[nrecs]->sec3[i]->grid_def_src = g2fld->griddef;
             table = "3.0.table";
-            ct = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec3[i]->grid_def_src);
+            err = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec3[i]->grid_def_src, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -5880,7 +5910,7 @@ static void *Grib2OpenFile
                 case 0:
                     /* table 3.1: Grid Defn Template Num */
                     table = "3.1.table";
-                    ct = Grib2ReadCodeTable(center, secid, table, ct->oct);
+                    err = Grib2ReadCodeTable(center, secid, table, ct->oct, ct);
                     if (ct == (g2codeTable *) NULL) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
@@ -5917,8 +5947,8 @@ static void *Grib2OpenFile
             /* table 3.11: Interpretation of List of Numbers Defining Number of Pts */
             g2rec[nrecs]->sec3[i]->interp_opt_num_pts = g2fld->interp_opt;
             table = "3.11.table";
-            ct = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec3[i]->interp_opt_num_pts);
+            err = Grib2ReadCodeTable(center, secid, table,
+                    g2rec[nrecs]->sec3[i]->interp_opt_num_pts, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -5946,8 +5976,8 @@ static void *Grib2OpenFile
 
             g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth = g2fld->igdtmpl[0];
             table = "3.2.table";
-            ct = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth);
+            err = Grib2ReadCodeTable(center, secid, table,
+                    g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6039,7 +6069,7 @@ static void *Grib2OpenFile
             /* table 4.0: Product Defn Template Number */
             g2rec[nrecs]->sec4[i]->pds_num = g2fld->ipdtnum;
             table = "4.0.table";
-            ct = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec4[i]->pds_num);
+            err = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec4[i]->pds_num, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6054,8 +6084,8 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec4[i]->prod_params = NclMalloc(sizeof(G2prodParams));
             g2rec[nrecs]->sec4[i]->prod_params->param_cat = g2fld->ipdtmpl[0];
             table = "4.1.table";
-            ct = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec4[i]->prod_params->param_cat);
+            err = Grib2ReadCodeTable(center, secid, table,
+                    g2rec[nrecs]->sec4[i]->prod_params->param_cat, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6075,8 +6105,8 @@ static void *Grib2OpenFile
             memset(fnam, '\0', 256);
             (void) sprintf(fnam, "4.2.%d.%d.table", g2rec[nrecs]->sec0.discipline,
                     g2rec[nrecs]->sec4[i]->prod_params->param_cat);
-            ct = Grib2ReadCodeTable(center, secid, fnam,
-                    g2rec[nrecs]->sec4[i]->prod_params->param_num);
+            err = Grib2ReadCodeTable(center, secid, fnam,
+                    g2rec[nrecs]->sec4[i]->prod_params->param_num, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6129,8 +6159,8 @@ static void *Grib2OpenFile
             /* table 4.3: Type of Generating Process */
             g2rec[nrecs]->sec4[i]->prod_params->gen_process = g2fld->ipdtmpl[2];
             table = "4.3.table";
-            ct = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec4[i]->prod_params->gen_process);
+            err = Grib2ReadCodeTable(center, secid, table,
+                    g2rec[nrecs]->sec4[i]->prod_params->gen_process, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6148,8 +6178,8 @@ static void *Grib2OpenFile
             /* table 4.4: Indicator of Unit of Time Range */
             g2rec[nrecs]->sec4[i]->prod_params->time_range = g2fld->ipdtmpl[7];
             table = "4.4.table";
-            ct = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec4[i]->prod_params->time_range);
+            err = Grib2ReadCodeTable(center, secid, table,
+                    g2rec[nrecs]->sec4[i]->prod_params->time_range, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6165,8 +6195,8 @@ static void *Grib2OpenFile
             /* table 4.5: Fixed Surface Types and Units */
             g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[9];
             table = "4.5.table";
-            ct = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc);
+            err = Grib2ReadCodeTable(center, secid, table,
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6192,8 +6222,8 @@ static void *Grib2OpenFile
 
 
             g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[12];
-            ct = Grib2ReadCodeTable(center, secid, table,
-                g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc);
+            err = Grib2ReadCodeTable(center, secid, table,
+                g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6331,8 +6361,8 @@ static void *Grib2OpenFile
                     /* table 4.6: Type of Ensemble Forecast */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[15];
                     table = "4.6.table";
-                    ct = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx);
+                    err = Grib2ReadCodeTable(center, secid, table,
+                            g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx, ct);
                     if (ct == (g2codeTable *) NULL) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
@@ -6371,8 +6401,8 @@ static void *Grib2OpenFile
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
                             = g2fld->ipdtmpl[26];
                     table = "4.10.table";
-                    ct = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc);
+                    err = Grib2ReadCodeTable(center, secid, table,
+                            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc, ct);
                     if (ct == (g2codeTable *) NULL) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
@@ -6389,8 +6419,8 @@ static void *Grib2OpenFile
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
                             = g2fld->ipdtmpl[27];
                     table = "4.11.table";
-                    ct = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields);
+                    err = Grib2ReadCodeTable(center, secid, table,
+                            g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields, ct);
                     if (ct == (g2codeTable *) NULL) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
@@ -6407,8 +6437,8 @@ static void *Grib2OpenFile
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[28];
                     table = "4.4.table";
-                    ct = Grib2ReadCodeTable(center, secid, table,
-                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done);
+                    err = Grib2ReadCodeTable(center, secid, table,
+                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done, ct);
                     if (ct == (g2codeTable *) NULL) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
@@ -6426,8 +6456,8 @@ static void *Grib2OpenFile
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
                             = g2fld->ipdtmpl[30];
                     table = "4.4.table";
-                    ct = Grib2ReadCodeTable(center, secid, table,
-                            g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields);
+                    err = Grib2ReadCodeTable(center, secid, table,
+                            g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields, ct);
                     if (ct == (g2codeTable *) NULL) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
@@ -6551,7 +6581,7 @@ static void *Grib2OpenFile
             /* table 5.0: Data Representation Template Number */
             g2rec[nrecs]->sec5[i]->drt_templ_num = g2fld->idrtnum;
             table = "5.0.table";
-            ct = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec5[i]->drt_templ_num);
+            err = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec5[i]->drt_templ_num, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6571,8 +6601,8 @@ static void *Grib2OpenFile
             /* table 5.1: Type of Original Field Values */
             g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = g2fld->idrtmpl[4];
             table = "5.1.table";
-            ct = Grib2ReadCodeTable(center, secid, table,
-                    g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals);
+            err = Grib2ReadCodeTable(center, secid, table,
+                    g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6595,7 +6625,7 @@ static void *Grib2OpenFile
             /* table 6.0: Bitmap Indicator */
             g2rec[nrecs]->sec6[i]->bmap_ind = g2fld->ibmap;
             table = "6.0.table";
-            ct = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec6[i]->bmap_ind);
+            err = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec6[i]->bmap_ind, ct);
             if (ct == (g2codeTable *) NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
@@ -6630,7 +6660,7 @@ static void *Grib2OpenFile
         }
 
         NclFree(g2buf);
-        NclFree(ct);
+        Grib2FreeCodeTableRec(ct);
     }
 
     for (i = 0; i < nrecs; i++)
