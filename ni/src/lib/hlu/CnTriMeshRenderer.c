@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.6 2005-10-14 20:25:09 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.7 2006-11-17 18:20:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3549,7 +3549,7 @@ NhlErrorTypes _NhlTriMeshRasterFill
 	ysoff = Ysoff + .5 * (1.0 - Ysoff);
 	yeoff = Yeoff + .5 * (1.0 - Yeoff);
 
-	tol1 = 0.0001 * MIN(Cnl->view.width,Cnl->view.height);
+	tol1 = 0.00001 * MIN(Cnl->view.width,Cnl->view.height);
 	tol2 = 0.5 * MIN(Cnl->view.width,Cnl->view.height);
 	
 /*
