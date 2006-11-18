@@ -21,6 +21,22 @@
 # include "grib2.h"
 # include "NclGRIB2.h"
 
+static void Grib2FreeCodeTableRec(
+#if NhlNeedProto
+g2codeTable *ct
+#endif
+);
+
+static int Grib2ReadCodeTable(
+#if NhlNeedProto
+char *center, 
+int secid, 
+char *table, 
+int oct, 
+g2codeTable *ct
+#endif
+);
+
 # define    NCL_GRIB_CACHE_SIZE     150
 
 static void *vbuf;
@@ -47,6 +63,7 @@ unsigned int
 g2getbits(unsigned int x, int p, int n) {
     return (x >> (p + 1 - n)) & ~(~0 << n);
 }
+
 
 /***
 static void g2GenAtts
@@ -1404,6 +1421,14 @@ Grib2FileRecord *therec;
 	int i;
 	float *tmp_level = NULL;
 	void *tmp_fill = NULL;
+	g2codeTable *ct = NULL;
+	ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
+	if (ct == NULL) {
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  " Unable to allocate code table data, cannot continue.");
+		return;
+	}
+	memset(ct,0,sizeof(g2codeTable));
 
 
 	step = therec->var_list;
@@ -1630,16 +1655,25 @@ Grib2FileRecord *therec;
         att_list_ptr->next = step->theatts;
         att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
         att_list_ptr->att_inq->name = NrmStringToQuark("center");
+	Grib2ReadCodeTable("", -1, "centers.table", grib_rec->center, ct);
+	if (ct == (g2codeTable *) NULL) {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                "Could not read GRIB v2 code table data.");
+                      return;
+	}
+
         tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-        *tmp_string = NrmStringToQuark(grib_rec->center);		
+        *tmp_string = NrmStringToQuark(ct->descrip);		
         att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
                 Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
                 PERMANENT, NULL, nclTypestringClass);
         step->theatts = att_list_ptr;
         step->n_atts++;
+	
 
+#if 0
         /* subcenter */
-        if (grib_rec->sub_center != NULL) {
+        if (grib_rec->sub_center != -1) {
             att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
             att_list_ptr->next = step->theatts;
             att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
@@ -1652,10 +1686,13 @@ Grib2FileRecord *therec;
             step->theatts = att_list_ptr;
             step->n_atts++;
         }
+#endif
 
         step = step->next;
 
     }
+    Grib2FreeCodeTableRec(ct);
+	
 
     return;
 }
@@ -1936,6 +1973,8 @@ static void _Grib2FreeGrib2InqRec
 Grib2RecordInqRec *grib_rec;
 #endif
 {
+#if 0
+  /* these are no longer string variables
     /* string variables */
     if (grib_rec->center != NULL) {
         NclFree(grib_rec->center);
@@ -1944,6 +1983,12 @@ Grib2RecordInqRec *grib_rec;
     if (grib_rec->sub_center != NULL) {
         NclFree(grib_rec->sub_center);
     }
+#endif
+    /* but this one is a new one */
+
+    if (grib_rec->table_source) {
+        NclFree(grib_rec->table_source);
+    }	    
 
     if (grib_rec->var_name != NULL) {
         NclFree(grib_rec->var_name);
@@ -3776,6 +3821,15 @@ static void _g2SetFileDimsAndCoordVars
     Grib2AttInqRecList  *lat_att_list_ptr = NULL;
     Grib2AttInqRecList  *lon_att_list_ptr = NULL;
     Grib2AttInqRecList  *rot_att_list_ptr = NULL;
+    g2codeTable *ct = NULL;
+
+    ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
+    if (ct == NULL) {
+	    NhlPError(NhlFATAL, NhlEUNKNOWN,
+		      " Unable to allocate code table data, cannot continue.");
+	    return;
+    }
+    memset(ct,0,sizeof(g2codeTable));
 
 
     therec->total_dims = 0;
@@ -4035,12 +4089,19 @@ static void _g2SetFileDimsAndCoordVars
 			}
 
 			if (dstep == NULL) {
-                /* Need a new dimension entry name and number */
+				/* Need a new dimension entry name and number */
+				Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+							 "4.5.table",step->thelist->rec_inq->level_indicator,ct);
 				tmp = (Grib2DimInqRec *) NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 				tmp->dim_number = therec->total_dims;
 				tmp->is_gds = -1;
 				tmp->size = step->levels->multidval.dim_sizes[0];
-				sprintf(buffer, "levels%d", therec->total_dims);
+				if (ct->shname) {
+					sprintf(buffer, "lv_%s%d", ct->shname,therec->total_dims);
+				}
+				else {
+					sprintf(buffer, "levels%d", ct->shname,therec->total_dims);
+				}
 				tmp->dim_name = NrmStringToQuark(buffer);
 				therec->total_dims++;
 				ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
@@ -4050,9 +4111,25 @@ static void _g2SetFileDimsAndCoordVars
 				therec->n_lv_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 				att_list_ptr = NULL;
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(ct->units) {
+					*tmp_string = NrmStringToQuark(ct->units);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				if(ct->descrip) {
+					*tmp_string = NrmStringToQuark(ct->descrip);
+				} else {
+					*tmp_string = NrmStringToQuark("unknown");
+				}
+				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
 				_Grib2AddInternalVar(therec,tmp->dim_name, &tmp->dim_number,
 						     (NclMultiDValData) step->levels, att_list_ptr, 2);
-				att_list_ptr = NULL;
 				step->levels = NULL;
 			} else {
 				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
@@ -4095,12 +4172,19 @@ static void _g2SetFileDimsAndCoordVars
 			}
 			if (dstep == NULL) {
                 /* Need a new dimension entry w name and number */
+				Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+							 "4.5.table",step->thelist->rec_inq->level_indicator,ct);
 				tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 				tmp->dim_number = therec->total_dims;
 				tmp->is_gds = -1;
 				tmp->size = step->levels0->multidval.dim_sizes[0];
 			
-				sprintf(buffer,"levels%d",therec->total_dims);
+				if (ct->shname) {
+					sprintf(buffer, "lv_%s%d", ct->shname,therec->total_dims);
+				}
+				else {
+					sprintf(buffer, "levels%d", ct->shname,therec->total_dims);
+				}
 				tmp->dim_name = NrmStringToQuark(buffer);
 				therec->total_dims++;
 				ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
@@ -4110,69 +4194,45 @@ static void _g2SetFileDimsAndCoordVars
 				therec->n_lv_dims++;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 				sprintf(name_buffer,"%s%s",buffer,"_l0");
-/***
-				for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
-					if(level_index[i] == step->level_indicator) {
-						break;
-					}
-				}
-				if(i < sizeof(level_index)/sizeof(int)) {
-					sprintf(buffer,"lv_%s%d",level_str[i],therec->total_dims);
-				} else {
-					sprintf(buffer,"levels%d",therec->total_dims);
-				}
 			
-				tmp->dim_name = NrmStringToQuark(buffer);
-				therec->total_dims++;
-				ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
-				ptr->dim_inq = tmp;
-				ptr->next = therec->lv_dims;
-				therec->lv_dims = ptr;
-				therec->n_lv_dims++;
-				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				sprintf(name_buffer,"%s%s",buffer,"_l0");
-
+				att_list_ptr = NULL;
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				if(ct->units) {
+					*tmp_string = NrmStringToQuark(ct->units);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
 				Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				if(ct->descrip) {
+					*tmp_string = NrmStringToQuark(ct->descrip);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
 				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-***/
 
 				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
 						     &tmp->dim_number,(NclMultiDValData)step->levels0,att_list_ptr,2);
 
-				att_list_ptr = NULL;
-
 				sprintf(name_buffer,"%s%s",buffer,"_l1");
-/***
+				att_list_ptr = NULL;
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_units_str[i]);
+				if(ct->units) {
+					*tmp_string = NrmStringToQuark(ct->units);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
 				Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(i < sizeof(level_index)/sizeof(int)) {
-					*tmp_string = NrmStringToQuark(level_str_long_name[i]);
+				if(ct->descrip) {
+					*tmp_string = NrmStringToQuark(ct->descrip);
 				} else {
 					*tmp_string = NrmStringToQuark("unknown");
 				}
-
 				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-***/
+
 				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
 						     &tmp->dim_number,(NclMultiDValData)step->levels1,att_list_ptr,2);
 
@@ -4268,25 +4328,28 @@ static void _g2SetFileDimsAndCoordVars
                 if (step->has_gds) {
                     switch (step->grid_number) {
                         case 0:
-				
-                            /* Latitude/Longitude (Template 3.0)
-                            g2GetGrid_0(step, &tmp_lat, &n_dims_lat, &dimsizes_lat,
-                                &tmp_lon, &n_dims_lon, &dimsizes_lon, &tmp_rot,
-                                &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
-                                &rot_att_list_ptr, &nrotatts);
-			    */
+                            g2GDSCEGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
+					&n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
+					&lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
+					&rot_att_list_ptr, &nrotatts);
                             break;
 
                         case 1:
                             /* Rotated Latitude/Longitude (Template 3.1) */
+			    NhlPError(NhlWARNING, NhlEUNKNOWN,
+				      "NclGRIB2: NCL does not yet support rotated lat/lon grids.");
                             break;
 
                         case 2:
                             /* Stretched Latitude/Longitude (Template 3.2) */
+			    NhlPError(NhlWARNING, NhlEUNKNOWN,
+				      "NclGRIB2: NCL does not yet support stretched lat/lon grids.");
                             break;
 
                         case 3:
                             /* Rotated and Stretched Latitude/Longitude (Template 3.3) */
+			    NhlPError(NhlWARNING, NhlEUNKNOWN,
+				      "NclGRIB2: NCL does not yet support rotated and stretched lat/lon grids.");
                             break;
 
                         case 4: case 5: case 6: case 7: case 8: case 9:
@@ -4305,6 +4368,8 @@ static void _g2SetFileDimsAndCoordVars
                         case 20:
                             /* Polar Stereographic Projection (North or South) */
                             /* Template 3.20 */
+			    NhlPError(NhlWARNING, NhlEUNKNOWN,
+				      "NclGRIB2: NCL does not yet support Polar Stereographic grids.");
                             break;
 
                         case 21: case 22: case 23: case 24: case 25: case 26:
@@ -4315,14 +4380,18 @@ static void _g2SetFileDimsAndCoordVars
                         case 30:
                             /* Lambert Conformal (secant, tangent, conical or biploar */
                             /*  Template 3.30 */
+			    NhlPError(NhlWARNING, NhlEUNKNOWN,
+				      "NclGRIB2: NCL does not yet support Lambert Conformal grids.");
                             break;
 
                         default:
+				NhlPError(NhlWARNING, NhlEUNKNOWN,
+					  "NclGRIB2: Unknown or unsupported grid type.");
                             break;
                     }
 
 
-					/*
+		    /*
                      * Get the atts if a grid has been set up but the atts have not
                      * been defined yet -- the new way is to set them in the 'grid' function
                      */
@@ -4331,30 +4400,25 @@ static void _g2SetFileDimsAndCoordVars
                     else if (nlatatts == 0) {
                         int grid_oriented = 0;
                         /*
-						 * if there's a gds, gds[16] determines whether the uv rotation is 
-						 * grid or earth based; otherwise assume that if a rotation variable was
-						 * created the rotation is grid-based
-						 */
-
-						if (step->has_gds)
-							grid_oriented
-                                = (step->thelist->rec_inq->gds->res_comp->idir_given > 0 ) 
+			 * if there's a gds, gds[16] determines whether the uv rotation is 
+			 * grid or earth based; otherwise assume that if a rotation variable was
+			 * created the rotation is grid-based
+			 */
+			
+			if (step->has_gds)
+				grid_oriented
+					= (step->thelist->rec_inq->gds->res_comp->idir_given > 0 ) 
                                         ? 1 : 0;
-						else
-							grid_oriented = do_rot;
-
-					}
-				}
+			else
+				grid_oriented = do_rot;
+			
+		    }
+		}
 
                 /*
                  * If a pre-defined grid has not been set up and there is a gds
                  * grid type that applies do this
                  */
-                g2GDSCEGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
-                        &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
-                        &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
-                        &rot_att_list_ptr, &nrotatts);
-
 	
                 _g2NclNewGridCache(therec,step->grid_number, step->has_gds, 1,
                         /*step->grid_gds_tbl_index,*/ n_dims_lat, dimsizes_lat, n_dims_lon,
@@ -4704,6 +4768,7 @@ static void _g2SetFileDimsAndCoordVars
 	}
 
     _g2CreateSupplementaryTimeVariables(therec);
+    Grib2FreeCodeTableRec(ct);
 
 	return;
 }
@@ -5214,7 +5279,7 @@ static void Grib2FreeCodeTableRec
 }
 
 
-int Grib2ReadCodeTable
+static int Grib2ReadCodeTable
 # if NhlNeedProto
 (char *center, int secid, char *table, int oct, g2codeTable *ct)
 # else
@@ -5416,7 +5481,6 @@ int Grib2ReadCodeTable
     NclFree(ctf);
     return err;
 }
-
 
 
 static int g2InitializeOptions 
@@ -5849,7 +5913,14 @@ static void *Grib2OpenFile
              * NOTE: not all known centers are represented, only the most commonly
              * used as per GRIB v1 usage in NCL.  Add as necessary.
              */
-            if (! center) {
+	    if (sec1[11] == 4 || sec1[11] == 5) {
+		    /*tigge data -- use tigge tables regardless of the actual center */
+		    center = "tigge";
+		    center_len = strlen(center);
+		    centerID = sec1[0];
+		    subcenterID = sec1[1];
+	    }
+            else if (! center) {
                 switch (sec1[0]) {
                     case 7:
                     case 8:
@@ -5922,10 +5993,11 @@ static void *Grib2OpenFile
                 }
 
                 /* codetable filename base length: length of center name + 1 (section ID) */
-                ctflen = center_len + 1;
-            }
+	    }
+	    ctflen = center_len + 1;
         }
-
+	g2rec[nrecs]->table_source_name = NclMalloc(ctflen);
+	strcpy(g2rec[nrecs]->table_source_name,center);
         g2rec[nrecs]->sec1.master_table_ver = sec1[2];
         g2rec[nrecs]->sec1.local_table_ver = sec1[3];
 
@@ -6078,6 +6150,9 @@ static void *Grib2OpenFile
             secid = 3;
             g2rec[nrecs]->sec3[i]->secid = 3;
 
+#if 0
+	    /* not much reason to read this table since we just using the octet number anyway
+	       to figure out what to do next */
             /* table 3.0: Source of Grid Defn */
             g2rec[nrecs]->sec3[i]->grid_def_src = g2fld->griddef;
             table = "3.0.table";
@@ -6088,12 +6163,13 @@ static void *Grib2OpenFile
                 NhlFree(g2rec);
                 return;
             }
+#endif
 
-            switch (ct->oct) {
+            switch ( g2rec[nrecs]->sec3[i]->grid_def_src) {
                 case 0:
                     /* table 3.1: Grid Defn Template Num */
                     table = "3.1.table";
-                    cterr = Grib2ReadCodeTable(center, secid, table, ct->oct, ct);
+                    cterr = Grib2ReadCodeTable(center, secid, table, g2fld->igdtnum, ct);
                     if (cterr < 0) {
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
@@ -6398,9 +6474,11 @@ static void *Grib2OpenFile
                         ct->units);
             }
             g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[10];
+	    /*
             if (g2fld->ipdtmpl[11] < -127)
                 g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc = -127;
             else
+	    */
                 g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
                         = g2fld->ipdtmpl[11];
 
@@ -6425,9 +6503,11 @@ static void *Grib2OpenFile
                         ct->units);
             }
             g2rec[nrecs]->sec4[i]->prod_params->scale_factor_second_fixed_sfc = g2fld->ipdtmpl[13];
+	    /*
             if (g2fld->ipdtmpl[14] < -127)
                 g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc = -127;
             else
+	    */
                 g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc
                         = g2fld->ipdtmpl[14];
 
@@ -6872,7 +6952,9 @@ static void *Grib2OpenFile
             g2inqrec->the_dat = NULL;
             g2inqrec->version = g2rec[i]->version;
             g2inqrec->var_name = NULL;
-
+	    /* transfer the table source name to the g2inqrec */
+	    g2inqrec->table_source = g2rec[i]->table_source_name;
+	    g2rec[i]->table_source_name = NULL;
 
             /* PDS */
             g2inqrec->pds = NclMalloc(sizeof(G2_PDS));
@@ -6930,15 +7012,16 @@ static void *Grib2OpenFile
 		g2rec[i]->sec4[j]->prod_params->param_cat * 1000 + g2rec[i]->sec4[j]->prod_params->param_num;
             g2inqrec->grid_number = g2rec[i]->sec3[j]->grid_num;
 
-            g2inqrec->center = NclMalloc(strlen(g2rec[i]->sec1.center_name) + 1);
-            (void) strcpy(g2inqrec->center, g2rec[i]->sec1.center_name);
-
+            g2inqrec->center = g2rec[i]->sec1.centerID;
+	    g2inqrec->sub_center = g2rec[i]->sec1.subcenterID;
+/*
             if (g2rec[i]->sec1.subcenter_name != NULL) {
                 g2inqrec->sub_center = NclMalloc(strlen(g2rec[i]->sec1.subcenter_name) + 1);
                 (void) strcpy(g2inqrec->sub_center, g2rec[i]->sec1.subcenter_name);
             } else {
                 g2inqrec->sub_center = NULL;
             }
+*/
 
             if (((NrmQuark) g2frec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values) ==
 		NrmStringToQuark("cubic"))
@@ -7273,10 +7356,10 @@ static void *Grib2OpenFile
              */
             while (g2inqrec_list != NULL) {
                 g2sort[i] = g2inqrec_list;
-                g2inqrec_list->rec_inq->time_offset = 0;
-/*                        = _g2GetTimeOffset(g2inqrec_list->rec_inq->time_offset,
-                            (unsigned char *) &(g2inqrec_list->rec_inq->per1));
-*/
+		/*
+                g2inqrec_list->rec_inq->time_offset
+			= _g2GetTimeOffset(g2inqrec_list->rec_inq->time_unit_indicator,
+		*/
                 g2inqrec_list = g2inqrec_list->next;
 		i++;
             }

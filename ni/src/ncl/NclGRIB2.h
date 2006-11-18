@@ -295,6 +295,7 @@ typedef struct  _g2Rec {
     off_t offset;
     int rec_size;
     int version;        /* GRIB version */
+    char *table_source_name;
     G2Sec0  sec0;
     G2Sec1  sec1;
     /*
@@ -461,8 +462,9 @@ struct _Grib2RecordInqRec {
     int grid_number;
     int version;
     int rec_num;
-    char    *center;
-    char    *sub_center;
+    int center;
+    int sub_center;
+    char *table_source;
     /*
      * Time offset from beginning reference time of the parameter set.
      * Units are set in the Grib2ParamList structure
