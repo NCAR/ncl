@@ -104,9 +104,14 @@ NhlErrorTypes student_t_W( void )
   for(i = 0; i < ndims_t; i++) size_output *= dsizes_t[i];
 
 /*
- * The output type defaults to float, unless this input array is double.
+ * The output type defaults to float, unless either input array is double.
  */
-  type_prob = NCL_float;
+  if(type_t == NCL_double || type_df == NCL_double) {
+    type_prob = NCL_double;
+  }
+  else {
+    type_prob = NCL_float;
+  }
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -122,9 +127,6 @@ NhlErrorTypes student_t_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"student_t: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
-  }
-  else {
-    type_prob = NCL_double;
   }
 /*
  * Allocate space for tmp_df.
