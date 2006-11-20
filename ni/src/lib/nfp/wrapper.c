@@ -423,6 +423,7 @@ extern NhlErrorTypes specxy_anal_W(void);
 extern NhlErrorTypes chiinv_W(void);
 extern NhlErrorTypes betainc_W(void);
 extern NhlErrorTypes gammainc_W(void);
+extern NhlErrorTypes student_t_W(void);
 extern NhlErrorTypes ttest_W(void);
 extern NhlErrorTypes ftest_W(void);
 extern NhlErrorTypes rtest_W(void);
@@ -5685,6 +5686,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(gammainc_W,args,"gammainc",nargs);
 
+/*
+ * Register "student_t".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(2);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(student_t_W,args,"student_t",nargs);
 /*
  * Register "ttest".
  */
