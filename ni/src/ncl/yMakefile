@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.116 2006-11-13 21:32:01 grubin Exp $
+#      $Id: yMakefile,v 1.117 2006-11-20 16:14:02 grubin Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2006-11-13 21:32:01 $
+#	Date:		$Date: 2006-11-20 16:14:02 $
 #
 #	Description:	
 #
@@ -87,10 +87,10 @@ DYNAMIC_LIBS	=	-ldl
 #
 # Uses JPEG2000 library 'jasper'    http://www.ece.uvic.ca/~mdadams/jasper/
 #
-JPEG2000LIBS = -ljasper
+JPEG2000_LIBS = -ljasper
 
 GRIB2_G2C_HDR = grib2.h
-GRIB2_G2C_LIBS = -lgrib2c
+GRIB2_G2C_LIBS = -lgrib2c -ljasper
 GRIB2_G2C_DEFINES = -DUSE_JPEG2000
 
 GRIB2_LIBS = $(GRIB2_G2C_LIBS) $(JPEG2000_LIBS)
