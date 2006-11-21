@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: xercon.f,v 1.1 2006-10-27 16:34:14 haley Exp $
+C   $Id: xercon.f,v 1.2 2006-11-21 01:10:20 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      LOGICAL FUNCTION XERCON(INC,JUMP,N,LOT)
+      LOGICAL FUNCTION DXERCON(INC,JUMP,N,LOT)
       INTEGER INC,JUMP,N,LOT
       INTEGER I,J,JNEW,LCM
 C
@@ -24,7 +24,7 @@ C     For multiple FFTs to execute correctly, input parameters INC,
 C     JUMP, N and LOT must be consistent ... otherwise at least one
 C     array element mistakenly is transformed more than once.
 C
-C     XERCON = .TRUE. if and only if INC, JUMP, N and LOT are
+C     DXERCON = .TRUE. if and only if INC, JUMP, N and LOT are
 C     consistent.
 C
 C     ------------------------------------------------------------------
@@ -48,9 +48,9 @@ C
 C Check consistency of INC, JUMP, N, LOT
 C
       IF (LCM.LE. (N-1)*INC .AND. LCM.LE. (LOT-1)*JUMP) THEN
-          XERCON = .FALSE.
+          DXERCON = .FALSE.
       ELSE
-          XERCON = .TRUE.
+          DXERCON = .TRUE.
       END IF
 C
       RETURN

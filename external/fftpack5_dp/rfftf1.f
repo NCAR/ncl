@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: rfftf1.f,v 1.1 2006-10-27 16:34:13 haley Exp $
+C   $Id: rfftf1.f,v 1.2 2006-11-21 01:10:19 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE RFFTF1(N,IN,C,CH,WA,FAC)
+      SUBROUTINE DRFFTF1(N,IN,C,CH,WA,FAC)
       DOUBLE PRECISION SN
       DOUBLE PRECISION TSN
       DOUBLE PRECISION TSNM
@@ -33,38 +33,38 @@ C
           IX2 = IW + IDO
           IX3 = IX2 + IDO
           IF (NA.NE.0) GO TO 101
-          CALL R1F4KF(IDO,L1,C,IN,CH,1,WA(IW),WA(IX2),WA(IX3))
+          CALL DR1F4KF(IDO,L1,C,IN,CH,1,WA(IW),WA(IX2),WA(IX3))
           GO TO 110
-  101     CALL R1F4KF(IDO,L1,CH,1,C,IN,WA(IW),WA(IX2),WA(IX3))
+  101     CALL DR1F4KF(IDO,L1,CH,1,C,IN,WA(IW),WA(IX2),WA(IX3))
           GO TO 110
   102     IF (IP.NE.2) GO TO 104
           IF (NA.NE.0) GO TO 103
-          CALL R1F2KF(IDO,L1,C,IN,CH,1,WA(IW))
+          CALL DR1F2KF(IDO,L1,C,IN,CH,1,WA(IW))
           GO TO 110
-  103     CALL R1F2KF(IDO,L1,CH,1,C,IN,WA(IW))
+  103     CALL DR1F2KF(IDO,L1,CH,1,C,IN,WA(IW))
           GO TO 110
   104     IF (IP.NE.3) GO TO 106
           IX2 = IW + IDO
           IF (NA.NE.0) GO TO 105
-          CALL R1F3KF(IDO,L1,C,IN,CH,1,WA(IW),WA(IX2))
+          CALL DR1F3KF(IDO,L1,C,IN,CH,1,WA(IW),WA(IX2))
           GO TO 110
-  105     CALL R1F3KF(IDO,L1,CH,1,C,IN,WA(IW),WA(IX2))
+  105     CALL DR1F3KF(IDO,L1,CH,1,C,IN,WA(IW),WA(IX2))
           GO TO 110
   106     IF (IP.NE.5) GO TO 108
           IX2 = IW + IDO
           IX3 = IX2 + IDO
           IX4 = IX3 + IDO
           IF (NA.NE.0) GO TO 107
-          CALL R1F5KF(IDO,L1,C,IN,CH,1,WA(IW),WA(IX2),WA(IX3),WA(IX4))
+          CALL DR1F5KF(IDO,L1,C,IN,CH,1,WA(IW),WA(IX2),WA(IX3),WA(IX4))
           GO TO 110
-  107     CALL R1F5KF(IDO,L1,CH,1,C,IN,WA(IW),WA(IX2),WA(IX3),WA(IX4))
+  107     CALL DR1F5KF(IDO,L1,CH,1,C,IN,WA(IW),WA(IX2),WA(IX3),WA(IX4))
           GO TO 110
   108     IF (IDO.EQ.1) NA = 1 - NA
           IF (NA.NE.0) GO TO 109
-          CALL R1FGKF(IDO,IP,L1,IDL1,C,C,C,IN,CH,CH,1,WA(IW))
+          CALL DR1FGKF(IDO,IP,L1,IDL1,C,C,C,IN,CH,CH,1,WA(IW))
           NA = 1
           GO TO 110
-  109     CALL R1FGKF(IDO,IP,L1,IDL1,CH,CH,CH,1,C,C,IN,WA(IW))
+  109     CALL DR1FGKF(IDO,IP,L1,IDL1,CH,CH,CH,1,C,C,IN,WA(IW))
           NA = 0
   110     L2 = L1
   111 CONTINUE

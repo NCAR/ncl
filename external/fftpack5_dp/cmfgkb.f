@@ -7,12 +7,12 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: cmfgkb.f,v 1.1 2006-10-27 16:34:08 haley Exp $
+C   $Id: cmfgkb.f,v 1.2 2006-11-21 01:10:16 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE CMFGKB(LOT,IDO,IP,L1,LID,NA,CC,CC1,IM1,IN1,CH,CH1,IM2,
-     +                  IN2,WA)
+      SUBROUTINE DCMFGKB(LOT,IDO,IP,L1,LID,NA,CC,CC1,IM1,IN1,CH,CH1,
+     +                   IM2,IN2,WA)
       DOUBLE PRECISION WAR
       DOUBLE PRECISION WAI
       DOUBLE PRECISION CHOLD1

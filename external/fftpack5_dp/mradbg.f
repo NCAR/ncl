@@ -7,12 +7,12 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: mradbg.f,v 1.1 2006-10-27 16:34:10 haley Exp $
+C   $Id: mradbg.f,v 1.2 2006-11-21 01:10:17 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE MRADBG(M,IDO,IP,L1,IDL1,CC,C1,C2,IM1,IN1,CH,CH2,IM2,
-     +                  IN2,WA)
+      SUBROUTINE DMRADBG(M,IDO,IP,L1,IDL1,CC,C1,C2,IM1,IN1,CH,CH2,IM2,
+     +                   IN2,WA)
       DOUBLE PRECISION TPI
       DOUBLE PRECISION ARG
       DOUBLE PRECISION DCP

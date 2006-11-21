@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: xerfft.f,v 1.1 2006-10-27 16:34:14 haley Exp $
+C   $Id: xerfft.f,v 1.2 2006-11-21 01:10:20 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE XERFFT(SRNAME,INFO)
+      SUBROUTINE DXERFFT(SRNAME,INFO)
 C
 C     .. Scalar Arguments ..
       CHARACTER*6 SRNAME

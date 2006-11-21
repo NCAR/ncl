@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: factor.f,v 1.1 2006-10-27 16:34:09 haley Exp $
+C   $Id: factor.f,v 1.2 2006-11-21 01:10:17 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE FACTOR(N,NF,FAC)
+      SUBROUTINE DFACTOR(N,NF,FAC)
       DOUBLE PRECISION FAC(*)
       INTEGER NTRYH(4)
       DATA NTRYH(1),NTRYH(2),NTRYH(3),NTRYH(4)/4,2,3,5/

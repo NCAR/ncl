@@ -7,33 +7,33 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: cost1f.f,v 1.1 2006-10-27 16:34:09 haley Exp $
+C   $Id: cost1f.f,v 1.2 2006-11-21 01:10:17 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE COST1F(N,INC,X,LENX,WSAVE,LENSAV,WORK,LENWRK,IER)
+      SUBROUTINE DCOST1F(N,INC,X,LENX,WSAVE,LENSAV,WORK,LENWRK,IER)
       INTEGER N,INC,LENX,LENSAV,LENWRK,IER
       DOUBLE PRECISION X(INC,*),WSAVE(LENSAV),WORK(LENWRK)
 C
       IER = 0
       IF (LENX.LT.INC* (N-1)+1) THEN
           IER = 1
-          CALL XERFFT('COST1F',6)
+          CALL DXERFFT('COST1F',6)
           GO TO 100
       ELSE IF (LENSAV.LT.2*N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('COST1F',8)
+          CALL DXERFFT('COST1F',8)
           GO TO 100
       ELSE IF (LENWRK.LT.N-1) THEN
           IER = 3
-          CALL XERFFT('COST1F',10)
+          CALL DXERFFT('COST1F',10)
           GO TO 100
       END IF
 C
-      CALL COSTF1(N,INC,X,WSAVE,WORK,IER1)
+      CALL DCOSTF1(N,INC,X,WSAVE,WORK,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('COST1F',-5)
+          CALL DXERFFT('COST1F',-5)
       END IF
 C
   100 CONTINUE

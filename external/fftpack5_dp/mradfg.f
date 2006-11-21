@@ -7,12 +7,12 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: mradfg.f,v 1.1 2006-10-27 16:34:11 haley Exp $
+C   $Id: mradfg.f,v 1.2 2006-11-21 01:10:18 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE MRADFG(M,IDO,IP,L1,IDL1,CC,C1,C2,IM1,IN1,CH,CH2,IM2,
-     +                  IN2,WA)
+      SUBROUTINE DMRADFG(M,IDO,IP,L1,IDL1,CC,C1,C2,IM1,IN1,CH,CH2,IM2,
+     +                   IN2,WA)
       DOUBLE PRECISION TPI
       DOUBLE PRECISION ARG
       DOUBLE PRECISION DCP

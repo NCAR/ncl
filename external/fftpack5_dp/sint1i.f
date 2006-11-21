@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: sint1i.f,v 1.1 2006-10-27 16:34:14 haley Exp $
+C   $Id: sint1i.f,v 1.2 2006-11-21 01:10:20 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE SINT1I(N,WSAVE,LENSAV,IER)
+      SUBROUTINE DSINT1I(N,WSAVE,LENSAV,IER)
       DOUBLE PRECISION PI
       DOUBLE PRECISION DT
       INTEGER N,LENSAV,IER
@@ -21,7 +21,7 @@ C
 C
       IF (LENSAV.LT.N/2+N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('SINT1I',3)
+          CALL DXERFFT('SINT1I',3)
           GO TO 300
       END IF
 C
@@ -34,10 +34,10 @@ C
           WSAVE(K) = 2.D0*SIN(K*DT)
   101 CONTINUE
       LNSV = NP1 + INT(LOG(DBLE(NP1))) + 4
-      CALL RFFT1I(NP1,WSAVE(NS2+1),LNSV,IER1)
+      CALL DRFFT1I(NP1,WSAVE(NS2+1),LNSV,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('SINT1I',-5)
+          CALL DXERFFT('SINT1I',-5)
       END IF
 C
   300 CONTINUE

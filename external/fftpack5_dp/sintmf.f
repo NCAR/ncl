@@ -7,42 +7,42 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: sintmf.f,v 1.1 2006-10-27 16:34:14 haley Exp $
+C   $Id: sintmf.f,v 1.2 2006-11-21 01:10:20 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE SINTMF(LOT,JUMP,N,INC,X,LENX,WSAVE,LENSAV,WORK,LENWRK,
-     +                  IER)
+      SUBROUTINE DSINTMF(LOT,JUMP,N,INC,X,LENX,WSAVE,LENSAV,WORK,
+     +                  LENWRK,IER)
       INTEGER LOT,JUMP,N,INC,LENX,LENSAV,LENWRK,IER
       DOUBLE PRECISION X(INC,*),WSAVE(LENSAV),WORK(LENWRK)
-      LOGICAL XERCON
+      LOGICAL DXERCON
 C
       IER = 0
 C
       IF (LENX.LT. (LOT-1)*JUMP+INC* (N-1)+1) THEN
           IER = 1
-          CALL XERFFT('SINTMF',6)
+          CALL DXERFFT('SINTMF',6)
           GO TO 100
       ELSE IF (LENSAV.LT.N/2+N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('SINTMF',8)
+          CALL DXERFFT('SINTMF',8)
           GO TO 100
       ELSE IF (LENWRK.LT.LOT* (2*N+4)) THEN
           IER = 3
-          CALL XERFFT('SINTMF',10)
+          CALL DXERFFT('SINTMF',10)
           GO TO 100
-      ELSE IF (.NOT.XERCON(INC,JUMP,N,LOT)) THEN
+      ELSE IF (.NOT.DXERCON(INC,JUMP,N,LOT)) THEN
           IER = 4
-          CALL XERFFT('SINTMF',-1)
+          CALL DXERFFT('SINTMF',-1)
           GO TO 100
       END IF
 C
       IW1 = LOT + LOT + 1
       IW2 = IW1 + LOT* (N+1)
-      CALL MSNTF1(LOT,JUMP,N,INC,X,WSAVE,WORK,WORK(IW1),WORK(IW2),IER1)
+      CALL DMSNTF1(LOT,JUMP,N,INC,X,WSAVE,WORK,WORK(IW1),WORK(IW2),IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('SINTMF',-5)
+          CALL DXERFFT('SINTMF',-5)
       END IF
   100 CONTINUE
       RETURN

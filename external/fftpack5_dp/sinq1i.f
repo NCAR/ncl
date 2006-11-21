@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: sinq1i.f,v 1.1 2006-10-27 16:34:13 haley Exp $
+C   $Id: sinq1i.f,v 1.2 2006-11-21 01:10:19 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE SINQ1I(N,WSAVE,LENSAV,IER)
+      SUBROUTINE DSINQ1I(N,WSAVE,LENSAV,IER)
       INTEGER N,LENSAV,IER
       DOUBLE PRECISION WSAVE(LENSAV)
 C
@@ -19,14 +19,14 @@ C
 C
       IF (LENSAV.LT.2*N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('SINQ1I',3)
+          CALL DXERFFT('SINQ1I',3)
           GO TO 300
       END IF
 C
-      CALL COSQ1I(N,WSAVE,LENSAV,IER1)
+      CALL DCOSQ1I(N,WSAVE,LENSAV,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('SINQ1I',-5)
+          CALL DXERFFT('SINQ1I',-5)
       END IF
   300 RETURN
       END

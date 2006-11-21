@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: mrfti1.f,v 1.1 2006-10-27 16:34:11 haley Exp $
+C   $Id: mrfti1.f,v 1.2 2006-11-21 01:10:18 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE MRFTI1(N,WA,FAC)
+      SUBROUTINE DMRFTI1(N,WA,FAC)
       DOUBLE PRECISION FI
       DOUBLE PRECISION WA(N),FAC(15)
       INTEGER NTRYH(4)

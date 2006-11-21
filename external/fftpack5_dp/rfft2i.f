@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: rfft2i.f,v 1.1 2006-10-27 16:34:12 haley Exp $
+C   $Id: rfft2i.f,v 1.2 2006-11-21 01:10:19 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE RFFT2I(L,M,WSAVE,LENSAV,IER)
+      SUBROUTINE DRFFT2I(L,M,WSAVE,LENSAV,IER)
       INTEGER L,M,LENSAV,IER
       INTEGER LWSAV,MWSAV
       DOUBLE PRECISION WSAVE(LENSAV)
@@ -26,21 +26,21 @@ C
       MWSAV = 2*M + INT(LOG(DBLE(M))) + 4
       IF (LENSAV.LT.LWSAV+MWSAV) THEN
           IER = 2
-          CALL XERFFT('RFFT2I',4)
+          CALL DXERFFT('RFFT2I',4)
           GO TO 100
       END IF
 C
-      CALL RFFTMI(L,WSAVE(1),L+INT(LOG(DBLE(L)))+4,IER1)
+      CALL DRFFTMI(L,WSAVE(1),L+INT(LOG(DBLE(L)))+4,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('RFFT2I',-5)
+          CALL DXERFFT('RFFT2I',-5)
           GO TO 100
       END IF
-      CALL CFFTMI(M,WSAVE(L+INT(LOG(DBLE(L)))+5),
+      CALL DCFFTMI(M,WSAVE(L+INT(LOG(DBLE(L)))+5),
      +            2*M+INT(LOG(DBLE(M)))+4,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('RFFT2I',-5)
+          CALL DXERFFT('RFFT2I',-5)
       END IF
 C
   100 CONTINUE

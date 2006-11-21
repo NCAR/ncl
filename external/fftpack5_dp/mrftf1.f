@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: mrftf1.f,v 1.1 2006-10-27 16:34:11 haley Exp $
+C   $Id: mrftf1.f,v 1.2 2006-11-21 01:10:18 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE MRFTF1(M,IM,N,IN,C,CH,WA,FAC)
+      SUBROUTINE DMRFTF1(M,IM,N,IN,C,CH,WA,FAC)
       DOUBLE PRECISION SN
       DOUBLE PRECISION TSN
       DOUBLE PRECISION TSNM
@@ -33,40 +33,40 @@ C
           IX2 = IW + IDO
           IX3 = IX2 + IDO
           IF (NA.NE.0) GO TO 101
-          CALL MRADF4(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3))
+          CALL DMRADF4(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3))
           GO TO 110
-  101     CALL MRADF4(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3))
+  101     CALL DMRADF4(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3))
           GO TO 110
   102     IF (IP.NE.2) GO TO 104
           IF (NA.NE.0) GO TO 103
-          CALL MRADF2(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW))
+          CALL DMRADF2(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW))
           GO TO 110
-  103     CALL MRADF2(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW))
+  103     CALL DMRADF2(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW))
           GO TO 110
   104     IF (IP.NE.3) GO TO 106
           IX2 = IW + IDO
           IF (NA.NE.0) GO TO 105
-          CALL MRADF3(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2))
+          CALL DMRADF3(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2))
           GO TO 110
-  105     CALL MRADF3(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2))
+  105     CALL DMRADF3(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2))
           GO TO 110
   106     IF (IP.NE.5) GO TO 108
           IX2 = IW + IDO
           IX3 = IX2 + IDO
           IX4 = IX3 + IDO
           IF (NA.NE.0) GO TO 107
-          CALL MRADF5(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3),
+          CALL DMRADF5(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3),
      +                WA(IX4))
           GO TO 110
-  107     CALL MRADF5(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3),
+  107     CALL DMRADF5(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3),
      +                WA(IX4))
           GO TO 110
   108     IF (IDO.EQ.1) NA = 1 - NA
           IF (NA.NE.0) GO TO 109
-          CALL MRADFG(M,IDO,IP,L1,IDL1,C,C,C,IM,IN,CH,CH,1,M,WA(IW))
+          CALL DMRADFG(M,IDO,IP,L1,IDL1,C,C,C,IM,IN,CH,CH,1,M,WA(IW))
           NA = 1
           GO TO 110
-  109     CALL MRADFG(M,IDO,IP,L1,IDL1,CH,CH,CH,1,M,C,C,IM,IN,WA(IW))
+  109     CALL DMRADFG(M,IDO,IP,L1,IDL1,CH,CH,CH,1,M,C,C,IM,IN,WA(IW))
           NA = 0
   110     L2 = L1
   111 CONTINUE

@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: mrftb1.f,v 1.1 2006-10-27 16:34:11 haley Exp $
+C   $Id: mrftb1.f,v 1.2 2006-11-21 01:10:18 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE MRFTB1(M,IM,N,IN,C,CH,WA,FAC)
+      SUBROUTINE DMRFTB1(M,IM,N,IN,C,CH,WA,FAC)
       DOUBLE PRECISION HALF
       DOUBLE PRECISION HALFM
       DOUBLE PRECISION CH(M,*),C(IN,*),WA(N),FAC(15)
@@ -64,24 +64,24 @@ C
           IX2 = IW + IDO
           IX3 = IX2 + IDO
           IF (NA.NE.0) GO TO 101
-          CALL MRADB4(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3))
+          CALL DMRADB4(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3))
           GO TO 102
-  101     CALL MRADB4(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3))
+  101     CALL DMRADB4(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3))
   102     NA = 1 - NA
           GO TO 115
   103     IF (IP.NE.2) GO TO 106
           IF (NA.NE.0) GO TO 104
-          CALL MRADB2(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW))
+          CALL DMRADB2(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW))
           GO TO 105
-  104     CALL MRADB2(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW))
+  104     CALL DMRADB2(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW))
   105     NA = 1 - NA
           GO TO 115
   106     IF (IP.NE.3) GO TO 109
           IX2 = IW + IDO
           IF (NA.NE.0) GO TO 107
-          CALL MRADB3(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2))
+          CALL DMRADB3(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2))
           GO TO 108
-  107     CALL MRADB3(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2))
+  107     CALL DMRADB3(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2))
   108     NA = 1 - NA
           GO TO 115
   109     IF (IP.NE.5) GO TO 112
@@ -89,17 +89,17 @@ C
           IX3 = IX2 + IDO
           IX4 = IX3 + IDO
           IF (NA.NE.0) GO TO 110
-          CALL MRADB5(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3),
+          CALL DMRADB5(M,IDO,L1,C,IM,IN,CH,1,M,WA(IW),WA(IX2),WA(IX3),
      +                WA(IX4))
           GO TO 111
-  110     CALL MRADB5(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3),
+  110     CALL DMRADB5(M,IDO,L1,CH,1,M,C,IM,IN,WA(IW),WA(IX2),WA(IX3),
      +                WA(IX4))
   111     NA = 1 - NA
           GO TO 115
   112     IF (NA.NE.0) GO TO 113
-          CALL MRADBG(M,IDO,IP,L1,IDL1,C,C,C,IM,IN,CH,CH,1,M,WA(IW))
+          CALL DMRADBG(M,IDO,IP,L1,IDL1,C,C,C,IM,IN,CH,CH,1,M,WA(IW))
           GO TO 114
-  113     CALL MRADBG(M,IDO,IP,L1,IDL1,CH,CH,CH,1,M,C,C,IM,IN,WA(IW))
+  113     CALL DMRADBG(M,IDO,IP,L1,IDL1,CH,CH,CH,1,M,C,C,IM,IN,WA(IW))
   114     IF (IDO.EQ.1) NA = 1 - NA
   115     L1 = L2
           IW = IW + (IP-1)*IDO

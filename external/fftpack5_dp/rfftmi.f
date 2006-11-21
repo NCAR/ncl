@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: rfftmi.f,v 1.1 2006-10-27 16:34:13 haley Exp $
+C   $Id: rfftmi.f,v 1.2 2006-11-21 01:10:19 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE RFFTMI(N,WSAVE,LENSAV,IER)
+      SUBROUTINE DRFFTMI(N,WSAVE,LENSAV,IER)
       INTEGER N,LENSAV,IER
       DOUBLE PRECISION WSAVE(LENSAV)
 C
@@ -19,11 +19,11 @@ C
 C
       IF (LENSAV.LT.N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('RFFTMI ',3)
+          CALL DXERFFT('RFFTMI ',3)
       END IF
 C
       IF (N.EQ.1) RETURN
 C
-      CALL MRFTI1(N,WSAVE(1),WSAVE(N+1))
+      CALL DMRFTI1(N,WSAVE(1),WSAVE(N+1))
       RETURN
       END

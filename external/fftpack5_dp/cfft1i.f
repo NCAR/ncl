@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: cfft1i.f,v 1.1 2006-10-27 16:34:07 haley Exp $
+C   $Id: cfft1i.f,v 1.2 2006-11-21 01:10:16 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE CFFT1I(N,WSAVE,LENSAV,IER)
+      SUBROUTINE DCFFT1I(N,WSAVE,LENSAV,IER)
       INTEGER N,LENSAV,IER
       DOUBLE PRECISION WSAVE(LENSAV)
 C
@@ -19,12 +19,12 @@ C
 C
       IF (LENSAV.LT.2*N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('CFFTMI ',3)
+          CALL DXERFFT('CFFTMI ',3)
       END IF
 C
       IF (N.EQ.1) RETURN
 C
       IW1 = N + N + 1
-      CALL MCFTI1(N,WSAVE,WSAVE(IW1),WSAVE(IW1+1))
+      CALL DMCFTI1(N,WSAVE,WSAVE(IW1),WSAVE(IW1+1))
       RETURN
       END

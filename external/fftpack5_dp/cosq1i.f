@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: cosq1i.f,v 1.1 2006-10-27 16:34:08 haley Exp $
+C   $Id: cosq1i.f,v 1.2 2006-11-21 01:10:16 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE COSQ1I(N,WSAVE,LENSAV,IER)
+      SUBROUTINE DCOSQ1I(N,WSAVE,LENSAV,IER)
       DOUBLE PRECISION PIH
       DOUBLE PRECISION DT
       DOUBLE PRECISION FK
@@ -21,7 +21,7 @@ C
       IER = 0
       IF (LENSAV.LT.2*N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('COSQ1I',3)
+          CALL DXERFFT('COSQ1I',3)
           GO TO 300
       END IF
 C
@@ -33,10 +33,10 @@ C
           WSAVE(K) = COS(FK*DT)
   101 CONTINUE
       LNSV = N + INT(LOG(DBLE(N))) + 4
-      CALL RFFT1I(N,WSAVE(N+1),LNSV,IER1)
+      CALL DRFFT1I(N,WSAVE(N+1),LNSV,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('COSQ1I',-5)
+          CALL DXERFFT('COSQ1I',-5)
       END IF
   300 CONTINUE
       RETURN

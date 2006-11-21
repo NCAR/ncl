@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: sinqmi.f,v 1.1 2006-10-27 16:34:13 haley Exp $
+C   $Id: sinqmi.f,v 1.2 2006-11-21 01:10:19 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE SINQMI(N,WSAVE,LENSAV,IER)
+      SUBROUTINE DSINQMI(N,WSAVE,LENSAV,IER)
       INTEGER N,LENSAV,IER
       DOUBLE PRECISION WSAVE(LENSAV)
 C
@@ -19,14 +19,14 @@ C
 C
       IF (LENSAV.LT.2*N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('SINQMI',3)
+          CALL DXERFFT('SINQMI',3)
           GO TO 300
       END IF
 C
-      CALL COSQMI(N,WSAVE,LENSAV,IER1)
+      CALL DCOSQMI(N,WSAVE,LENSAV,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('SINQMI',-5)
+          CALL DXERFFT('SINQMI',-5)
       END IF
   300 CONTINUE
       RETURN

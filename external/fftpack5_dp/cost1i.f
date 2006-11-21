@@ -7,11 +7,11 @@ C   Licensed under the GNU General Public License (GPL)
 C
 C   Authors:  Paul N. Swarztrauber and Richard A. Valent
 C
-C   $Id: cost1i.f,v 1.1 2006-10-27 16:34:09 haley Exp $
+C   $Id: cost1i.f,v 1.2 2006-11-21 01:10:17 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      SUBROUTINE COST1I(N,WSAVE,LENSAV,IER)
+      SUBROUTINE DCOST1I(N,WSAVE,LENSAV,IER)
       DOUBLE PRECISION PI
       DOUBLE PRECISION DT
       DOUBLE PRECISION FK
@@ -22,7 +22,7 @@ C
 C
       IF (LENSAV.LT.2*N+INT(LOG(DBLE(N)))+4) THEN
           IER = 2
-          CALL XERFFT('COST1I',3)
+          CALL DXERFFT('COST1I',3)
           GO TO 300
       END IF
 C
@@ -40,10 +40,10 @@ C
           WSAVE(KC) = 2.D0*COS(FK*DT)
   101 CONTINUE
       LNSV = NM1 + INT(LOG(DBLE(NM1))) + 4
-      CALL RFFT1I(NM1,WSAVE(N+1),LNSV,IER1)
+      CALL DRFFT1I(NM1,WSAVE(N+1),LNSV,IER1)
       IF (IER1.NE.0) THEN
           IER = 20
-          CALL XERFFT('COST1I',-5)
+          CALL DXERFFT('COST1I',-5)
       END IF
   300 CONTINUE
       RETURN
