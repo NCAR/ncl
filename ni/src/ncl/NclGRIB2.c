@@ -150,7 +150,7 @@ Grib2AttInqRecList **rot_att_list, int *rotatts)
 		Do_Rotation_Atts(NrmNULLQUARK,rot_att_list_ptr,nrotatts,grid_oriented);
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark(grid[thevarrec->grid_tbl_index].grid_name);
-		GribPushAtt(rot_att_list_ptr,"grid_description",tmp_string,1,nclTypestringClass); (*nrotatts)++;
+		Grib2PushAtt(rot_att_list_ptr,"grid_description",tmp_string,1,nclTypestringClass); (*nrotatts)++;
 	}
 #endif
     return;
@@ -388,27 +388,27 @@ void g2GetAtts_1
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("MERCATOR");
-	GribPushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+	Grib2PushAtt(lat_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 0.0;
-	GribPushAtt(lat_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	Grib2PushAtt(lat_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 180.0;
-	GribPushAtt(lat_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+	Grib2PushAtt(lat_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 
 	tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	*tmp_string = NrmStringToQuark("MERCATOR");
-	GribPushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+	Grib2PushAtt(lon_att_list_ptr,"mpProjection",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 0.0;
-	GribPushAtt(lon_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	Grib2PushAtt(lon_att_list_ptr,"mpCenterLatF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
 	tmp_float= (float*)NclMalloc(sizeof(float));
 	*tmp_float = 180.0;
-	GribPushAtt(lon_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+	Grib2PushAtt(lon_att_list_ptr,"mpCenterLonF",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 
     g2GenAtts(thevarrec, lat_att_list_ptr, nlatatts, lon_att_list_ptr, nlonatts,
             do_rot, grid_oriented, rot_att_list_ptr, nrotatts);
@@ -1655,12 +1655,11 @@ Grib2FileRecord *therec;
         att_list_ptr->next = step->theatts;
         att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
         att_list_ptr->att_inq->name = NrmStringToQuark("center");
-	Grib2ReadCodeTable("", -1, "centers.table", grib_rec->center, ct);
-	if (ct == (g2codeTable *) NULL) {
-                NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "Could not read GRIB v2 code table data.");
-                      return;
-	}
+        if ((Grib2ReadCodeTable("", -1, "centers.table", grib_rec->center, ct)) < 0) {
+            NhlPError(NhlFATAL, NhlEUNKNOWN,
+            "Could not read GRIB v2 code table data.");
+            return;
+        }
 
         tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
         *tmp_string = NrmStringToQuark(ct->descrip);		
@@ -2008,6 +2007,7 @@ Grib2RecordInqRec *grib_rec;
         NclFree(grib_rec->ptable_rec);
     }
 
+# if 0
     /* PDS record */
     if (grib_rec->pds != NULL) {
         if (grib_rec->pds->prod_def_name != NULL)
@@ -2046,15 +2046,20 @@ Grib2RecordInqRec *grib_rec;
 
         NclFree(grib_rec->pds);
     }
+# endif
 
     /* GDS record */
     if (grib_rec->gds != NULL) {
-        NclFree(grib_rec->gds->grid_def_name);
-        NclFree(grib_rec->gds->interp_opt_name);
+        if (grib_rec->gds->grid_def_name)
+            NclFree(grib_rec->gds->grid_def_name);
+        if (grib_rec->gds->interp_opt_name)
+            NclFree(grib_rec->gds->interp_opt_name);
 
         if (grib_rec->gds->shape_of_earth != NULL) {
+/*
             if (grib_rec->gds->shape_of_earth->earthShape != NULL)
                 NclFree(grib_rec->gds->shape_of_earth->earthShape);
+*/
 
             NclFree(grib_rec->gds->shape_of_earth);
         }
@@ -4336,24 +4341,28 @@ static void _g2SetFileDimsAndCoordVars
 
                         case 1:
                             /* Rotated Latitude/Longitude (Template 3.1) */
-			    NhlPError(NhlWARNING, NhlEUNKNOWN,
-				      "NclGRIB2: NCL does not yet support rotated lat/lon grids.");
+                            NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "NclGRIB2: NCL does not yet support rotated lat/lon grids.");
+                            return;
                             break;
 
                         case 2:
                             /* Stretched Latitude/Longitude (Template 3.2) */
 			    NhlPError(NhlWARNING, NhlEUNKNOWN,
 				      "NclGRIB2: NCL does not yet support stretched lat/lon grids.");
+                            return;
                             break;
 
                         case 3:
                             /* Rotated and Stretched Latitude/Longitude (Template 3.3) */
 			    NhlPError(NhlWARNING, NhlEUNKNOWN,
 				      "NclGRIB2: NCL does not yet support rotated and stretched lat/lon grids.");
+                            return;
                             break;
 
                         case 4: case 5: case 6: case 7: case 8: case 9:
                             /* Reserved */
+                            return;
                             break;
 
                         case 10:
@@ -4363,6 +4372,7 @@ static void _g2SetFileDimsAndCoordVars
                         case 11: case 12: case 13: case 14: case 15: case 16:
                         case 17: case 18: case 19:
                             /* Reserved */
+                            return;
                             break;
 
                         case 20:
@@ -4370,11 +4380,13 @@ static void _g2SetFileDimsAndCoordVars
                             /* Template 3.20 */
 			    NhlPError(NhlWARNING, NhlEUNKNOWN,
 				      "NclGRIB2: NCL does not yet support Polar Stereographic grids.");
+                            return;
                             break;
 
                         case 21: case 22: case 23: case 24: case 25: case 26:
                         case 27: case 28: case 29:
                             /* Reserved */
+                            return;
                             break;
 
                         case 30:
@@ -4382,11 +4394,20 @@ static void _g2SetFileDimsAndCoordVars
                             /*  Template 3.30 */
 			    NhlPError(NhlWARNING, NhlEUNKNOWN,
 				      "NclGRIB2: NCL does not yet support Lambert Conformal grids.");
+                            return;
+                            break;
+
+                        case 40:
+                            /* Gaussian Latitude/Longitude   Template 3.40 */
+			    NhlPError(NhlWARNING, NhlEUNKNOWN,
+				      "NclGRIB2: NCL does not yet support Gaussian Latitude/Longitude grids.");
+                            return;
                             break;
 
                         default:
 				NhlPError(NhlWARNING, NhlEUNKNOWN,
 					  "NclGRIB2: Unknown or unsupported grid type.");
+                            return;
                             break;
                     }
 
@@ -4851,8 +4872,10 @@ static void Grib2PrintRecords
             fprintf(stdout, "\t Shape of Earth info:\n");
             fprintf(stdout, "\t\t shape of earth: %d\n",
                 g2rec[i]->sec3[j]->shape_of_earth->shapeOfEarth);
+/*
             fprintf(stdout, "\t\t earth shape: %s\n",
                 g2rec[i]->sec3[j]->shape_of_earth->earthShape);
+*/
             fprintf(stdout, "\t\t scale factor rad sph earth: %d\n",
                 g2rec[i]->sec3[j]->shape_of_earth->scale_factor_rad_sph_earth);
             fprintf(stdout, "\t\t scaled val rad sph earth: %d\n",
@@ -5204,7 +5227,8 @@ static void Grib2PrintRecords
                             || g2rec[i]->sec4[j]->pds_num <= 32767)
                         /* Reserved by WMO */
                         ;;
-                        break;
+                        
+                    /* FALLTHROUGH */
 
                     if (g2rec[i]->sec4[j]->pds_num >= 32768
                             || g2rec[i]->sec4[j]->pds_num <= 65534)
@@ -5294,7 +5318,8 @@ static int Grib2ReadCodeTable
     FILE    *fp = NULL;
     char    *ctf = NULL;
 
-    char    *s;
+    char    s[256],
+            *sp;
 
     char    *rol = NULL;
     char    *sep = ":";
@@ -5356,15 +5381,15 @@ static int Grib2ReadCodeTable
         NclFree(ctf);
         return err = -1;
     } else {
-        s = NclMalloc(256 * sizeof(char));
         while (fgets(s, 256, fp)) {
+            sp = &s[0];
     	    len = strlen(s);
             if (len < 2)
 	    	    continue;
             s[len - 1] = '\0';
-            while (isspace(*s))
-                ++s;
-            if (*s != '#') {
+            while (isspace(*sp))
+                ++sp;
+            if (*sp != '#') {
                 rol = strtok(s, sep);
                 if (rol == NULL)
                     continue;
@@ -5594,8 +5619,10 @@ static void Grib2FreeGrib2Rec
 
             /* Section 3 */
             if (sec3_p[j]->shape_of_earth != NULL) {
+/*
                 if (sec3_p[j]->shape_of_earth->earthShape != NULL)
                     NclFree(sec3_p[j]->shape_of_earth->earthShape);
+*/
         
                 NclFree(sec3_p[j]->shape_of_earth);
             }
@@ -5706,8 +5733,8 @@ static void *Grib2OpenFile
         t_nrecs = 0;
 
     /* GRIB2 records */
-    G2Rec   **g2rec,
-            **tmp_g2rec;
+    G2Rec   **g2rec = NULL,
+            **tmp_g2rec = NULL;
 
     /* codetable variables */
     g2codeTable *ct = NULL;
@@ -5828,7 +5855,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not extend memory for GRIB v2 data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
             tmp_g2rec[nrecs] = NclMalloc(sizeof(G2Rec));
             if (tmp_g2rec[nrecs] == NULL) {
@@ -5880,7 +5907,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(ct->descrip) + 1);
@@ -6009,7 +6036,7 @@ static void *Grib2OpenFile
             NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not read GRIB v2 code table data.");
             NhlFree(g2rec);
-            return;
+            return NULL;
         }
 
         g2rec[nrecs]->sec1.sig_ref_time = NclMalloc(strlen(ct->descrip) + 1);
@@ -6041,7 +6068,7 @@ static void *Grib2OpenFile
             NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not read GRIB v2 code table data.");
             NhlFree(g2rec);
-            return;
+            return NULL;
         }
 
         g2rec[nrecs]->sec1.proc_prod_status = NclMalloc(strlen(ct->descrip) + 1);
@@ -6055,7 +6082,7 @@ static void *Grib2OpenFile
             NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not read GRIB v2 code table data.");
             NhlFree(g2rec);
-            return;
+            return NULL;
         }
 
         if (ct->descrip) {
@@ -6122,11 +6149,17 @@ static void *Grib2OpenFile
 
         for (i = 0; i < nfields; i++) {
             g2rec[nrecs]->sec2[i] = NclMalloc(sizeof(G2Sec2));
+            memset(g2rec[nrecs]->sec2[i], 0, sizeof(G2Sec2));
             g2rec[nrecs]->sec3[i] = NclMalloc(sizeof(G2Sec3));
+            memset(g2rec[nrecs]->sec3[i], 0, sizeof(G2Sec3));
             g2rec[nrecs]->sec4[i] = NclMalloc(sizeof(G2Sec4));
+            memset(g2rec[nrecs]->sec4[i], 0, sizeof(G2Sec4));
             g2rec[nrecs]->sec5[i] = NclMalloc(sizeof(G2Sec5));
+            memset(g2rec[nrecs]->sec5[i], 0, sizeof(G2Sec5));
             g2rec[nrecs]->sec6[i] = NclMalloc(sizeof(G2Sec6));
+            memset(g2rec[nrecs]->sec6[i], 0, sizeof(G2Sec6));
             g2rec[nrecs]->sec7[i] = NclMalloc(sizeof(G2Sec7));
+            memset(g2rec[nrecs]->sec7[i], 0, sizeof(G2Sec7));
         }
         g2rec[nrecs]->num_rptd = nfields;
 
@@ -6165,7 +6198,7 @@ static void *Grib2OpenFile
             }
 #endif
 
-            switch ( g2rec[nrecs]->sec3[i]->grid_def_src) {
+            switch (g2fld->griddef) {
                 case 0:
                     /* table 3.1: Grid Defn Template Num */
                     table = "3.1.table";
@@ -6174,7 +6207,7 @@ static void *Grib2OpenFile
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
                         NhlFree(g2rec);
-                        return;
+                        return NULL;
                     }
 
                     g2rec[nrecs]->sec3[i]->grid_num = ct->oct;
@@ -6203,6 +6236,7 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec3[i]->num_grid_data_pts = g2fld->ngrdpts;
             g2rec[nrecs]->sec3[i]->num_oct_opt = g2fld->numoct_opt;
 
+#if 0
             /* table 3.11: Interpretation of List of Numbers Defining Number of Pts */
             g2rec[nrecs]->sec3[i]->interp_opt_num_pts = g2fld->interp_opt;
             table = "3.11.table";
@@ -6212,11 +6246,13 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec3[i]->interp_opt_name = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec3[i]->interp_opt_name, ct->descrip);
+#endif
+
             g2rec[nrecs]->sec3[i]->grid_def_templ_num = g2fld->igdtnum;
 
             if (g2fld->numoct_opt != 0) {
@@ -6234,6 +6270,9 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec3[i]->scan_mode = NclMalloc(sizeof(G2scanModeFlags));
 
             g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth = g2fld->igdtmpl[0];
+
+/* this info not used/necessary */
+#if 0
             table = "3.2.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
                     g2rec[nrecs]->sec3[i]->shape_of_earth->shapeOfEarth, ct);
@@ -6241,12 +6280,12 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec3[i]->shape_of_earth->earthShape = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec3[i]->shape_of_earth->earthShape, ct->descrip);
-
+#endif
             g2rec[nrecs]->sec3[i]->shape_of_earth->scale_factor_rad_sph_earth
                     = (int) g2fld->igdtmpl[1];
             g2rec[nrecs]->sec3[i]->shape_of_earth->scaled_val_rad_sph_earth
@@ -6333,7 +6372,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec4[i]->prod_def_name = NclMalloc(strlen(ct->descrip) + 1);
@@ -6350,7 +6389,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec4[i]->prod_params->param_cat_name
@@ -6371,7 +6410,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             if (ct->oct != -1) {
@@ -6425,7 +6464,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NclMalloc(strlen(ct->descrip) + 1);
@@ -6444,7 +6483,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec4[i]->prod_params->time_range_unit
@@ -6461,7 +6500,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec4[i]->prod_params->first_fixed_sfc
@@ -6490,7 +6529,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec4[i]->prod_params->second_fixed_sfc
@@ -6631,7 +6670,7 @@ static void *Grib2OpenFile
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
                         NhlFree(g2rec);
-                        return;
+                        return NULL;
                     }
 
                     g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type
@@ -6671,7 +6710,7 @@ static void *Grib2OpenFile
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
                         NhlFree(g2rec);
-                        return;
+                        return NULL;
                     }
 
                     g2rec[nrecs]->sec4[i]->prod_params->stat_proc
@@ -6689,7 +6728,7 @@ static void *Grib2OpenFile
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
                         NhlFree(g2rec);
-                        return;
+                        return NULL;
                     }
 
                     g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields
@@ -6707,7 +6746,7 @@ static void *Grib2OpenFile
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
                         NhlFree(g2rec);
-                        return;
+                        return NULL;
                     }
 
                     g2rec[nrecs]->sec4[i]->prod_params->itr_unit
@@ -6726,7 +6765,7 @@ static void *Grib2OpenFile
                         NhlPError(NhlFATAL, NhlEUNKNOWN,
                         "Could not read GRIB v2 code table data.");
                         NhlFree(g2rec);
-                        return;
+                        return NULL;
                     }
 
                     g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit
@@ -6822,7 +6861,8 @@ static void *Grib2OpenFile
                             || g2rec[nrecs]->sec4[i]->pds_num <= 32767)
                         /* Reserved by WMO */
                         ;;
-                        break;
+
+                        /* FALLTHROUGH */
 
                     if (g2rec[nrecs]->sec4[i]->pds_num >= 32768
                             || g2rec[nrecs]->sec4[i]->pds_num <= 65534)
@@ -6850,7 +6890,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec5[i]->drt_desc = NclMalloc(strlen(ct->descrip) + 1);
@@ -6871,7 +6911,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec5[i]->data_repr->field_vals = NclMalloc(strlen(ct->descrip) + 1);
@@ -6894,7 +6934,7 @@ static void *Grib2OpenFile
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not read GRIB v2 code table data.");
                 NhlFree(g2rec);
-                return;
+                return NULL;
             }
 
             g2rec[nrecs]->sec6[i]->bmap_desc = NclMalloc(strlen(ct->descrip) + 1);
@@ -6945,6 +6985,7 @@ static void *Grib2OpenFile
     for (i = 0; i < nrecs; i++) {
         for (j = 0; j < g2rec[i]->num_rptd; j++) {
             g2inqrec = NclMalloc(sizeof(Grib2RecordInqRec));
+memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
             g2inqrec->rec_num = i + 1;
             g2inqrec->offset = g2rec[i]->offset;
 	    g2inqrec->rec_size = g2rec[i]->rec_size;
@@ -6957,6 +6998,7 @@ static void *Grib2OpenFile
 	    g2rec[i]->table_source_name = NULL;
 
             /* PDS */
+# if 0
             g2inqrec->pds = NclMalloc(sizeof(G2_PDS));
             g2inqrec->pds->prod_params = NclMalloc(sizeof(G2prodParams));
             if (g2rec[i]->sec4[j]->num_coord > 0) {
@@ -6967,6 +7009,7 @@ static void *Grib2OpenFile
             }
 
             memcpy(g2inqrec->pds, g2rec[i]->sec4[j], sizeof(G2_PDS));
+# endif
             g2inqrec->time_range_indicator = g2rec[i]->sec4[j]->prod_params->typeof_stat_proc;
 	    /* this is temporary */
 	    g2inqrec->time_unit_indicator = 1;
@@ -7870,7 +7913,7 @@ NclQuark thevar;
 NclQuark theatt;
 #endif
 {
-	Grib2FileRecord *thefile = (Grib2FileRecord*)therec;
+	Grib2FileRecord *thefile = (Grib2FileRecord *) therec;
 	Grib2ParamList *step;
 	Grib2InternalVarList *vstep;
 	Grib2AttInqRecList *theatts;
@@ -7933,9 +7976,7 @@ static void _g2NclAdjustCacheTypeAndMissing
 			the_dat->multidval.missing_value.has_missing = 0;
 		}
 	} else {
-/*
-* Type is float by defaul/
-*/
+        /* Type is float by default */
 		if(missingv != NULL) {
 			the_dat->multidval.missing_value.has_missing = 1;
 			the_dat->multidval.missing_value.value = *missingv;
@@ -8522,7 +8563,7 @@ static void *Grib2ReadCoord
     return Grib2ReadVar(therec, thevar, start, finish, stride, storage);
 }
 
-static void Grib2ReadAtt
+static void *Grib2ReadAtt
 #if	NhlNeedProto
 (void *therec,NclQuark theatt,void* storage)
 #else
@@ -8532,8 +8573,7 @@ NclQuark theatt;
 void* storage;
 #endif
 {
-    return;
-/*    return(NULL);*/
+    return NULL;
 }
 
 

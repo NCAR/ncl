@@ -127,7 +127,7 @@ typedef struct _g2Sec2 {
 # define    G2_SCALE_FACTOR     1000000
 
 typedef struct  _g2shapeOfEarth {
-    char    *earthShape;
+/*    char    *earthShape;*/
     int shapeOfEarth;
     int scale_factor_rad_sph_earth;
     int scaled_val_rad_sph_earth;
