@@ -18,7 +18,7 @@
 #include "NclGRIB.h"
 #include "NclFile.h"
 
-# include "grib2.h"
+# include <grib2.h>
 # include "NclGRIB2.h"
 
 static void Grib2FreeCodeTableRec(
