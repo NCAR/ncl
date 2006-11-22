@@ -1169,13 +1169,13 @@ C This version of CPMPXY implements what has sometimes, in the past,
 C been called a "parameterized distortion", but it does it on the
 C surface of the globe and then maps the globe as determined by the
 C current state of EZMAP.  If IMAP has the value 3, then, for given
-C input values of XINP and YINP, where XINP lies in the interval [1,101]
-C and YINP lies in the interval [1,116], CPMPXY generates output values
-C of XOUT and YOUT, representing the transformed position of a point on
-C a 101x116 grid on the surface of the globe.  If IMAP has the value -3,
-C CPMPXY performs the inverse transformation.
+C input values of XINP and YINP, where XINP lies in the interval
+C [1,IDIM] and YINP lies in the interval [1,JDIM], CPMPXY generates
+C output values of XOUT and YOUT, representing the transformed position
+C of a point on an IDIMxJDIM grid on the surface of the globe.  If IMAP
+C has the value -3, CPMPXY performs the inverse transformation.
 C
-C For each (I,J), where 1.LE.I.LE.101, and 1.LE.J.LE.116, one of the
+C For each (I,J), where 1.LE.I.LE.IDIM, and 1.LE.J.LE.JDIM, one of the
 C vectors (XQSP(K,I,J),K=1,4) and (XQDP(K,I,J),K=1,4) is a 4-element
 C vector containing the cosine of the latitude, the sine of the
 C latitude, the cosine of the longitude, and the sine of the longitude
@@ -1185,7 +1185,9 @@ C XQDP.  IBEG, IEND, JBEG, and JEND keep track of which box the last
 C point inverse-transformed turned out to be in.  The calling routine
 C is responsible for initializing all these values properly.
 C
-        COMMON /TESTCM/ XQSP(4,101,116),XQDP(4,101,116),ISOD,
+        PARAMETER (IDIM=101,JDIM=116,IDM1=IDIM-1,JDM1=JDIM-1)
+C
+        COMMON /TESTCM/ XQSP(4,IDIM,JDIM),XQDP(4,IDIM,JDIM),ISOD,
      +                  IBEG,IEND,JBEG,JEND
           DOUBLE PRECISION XQDP
         SAVE   /TESTCM/
@@ -1234,8 +1236,8 @@ C
 C IGRD and JGRD are the indices of the lower left corner of the grid
 C box in which the input point falls.
 C
-          IGRD=MAX(1,MIN(100,INT(XINP)))
-          JGRD=MAX(1,MIN(115,INT(YINP)))
+          IGRD=MAX(1,MIN(IDM1,INT(XINP)))
+          JGRD=MAX(1,MIN(JDM1,INT(YINP)))
 C
 C Interpolate in the grid box to find the desired point, get its
 C latitude and longitude, and call the EZMAP transformation routine
@@ -1326,80 +1328,58 @@ C
 C
 C Jump if in same box:
 C
-                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICSP.EQ.0) GO TO 101
+                ICSP=ICEGSP(RQSP,XQSP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                IF (ICSP.EQ.0) GO TO 103
 C
 C Jump if in adjacent box:
 C
-                IBEG=MAX(  1,IBEG-1)
-                IEND=MIN(101,IEND+1)
-                JBEG=MAX(  1,JBEG-1)
-                JEND=MIN(116,JEND+1)
-                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICSP.EQ.0) GO TO 101
+                IBEG=MAX(   1,IBEG-1)
+                IEND=MIN(IDIM,IEND+1)
+                JBEG=MAX(   1,JBEG-1)
+                JEND=MIN(JDIM,JEND+1)
+                ICSP=ICEGSP(RQSP,XQSP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                IF (ICSP.EQ.0) GO TO 103
 C
 C Jump if in near-by box:
 C
-                IBEG=MAX(  1,IBEG-1)
-                IEND=MIN(101,IEND+1)
-                JBEG=MAX(  1,JBEG-1)
-                JEND=MIN(116,JEND+1)
-                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICSP.EQ.0) GO TO 101
+                IBEG=MAX(   1,IBEG-1)
+                IEND=MIN(IDIM,IEND+1)
+                JBEG=MAX(   1,JBEG-1)
+                JEND=MIN(JDIM,JEND+1)
+                ICSP=ICEGSP(RQSP,XQSP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                IF (ICSP.EQ.0) GO TO 103
 C
               END IF
 C
-C If that didn't work, look for a "quarter" of the grid containing the
-C point we want.  (Starting with the entire grid is problematical
+C If that didn't work, look for a smaller piece of the grid containing
+C the point we want.  (Starting with the entire grid is problematical
 C because of the way ICEGSP works.)
 C
-C Jump if in lower left quadrant:
+              IEND=1
 C
-              IBEG=1
-              IEND=51
-              JBEG=1
-              JEND=58
-              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101
+              DO 102 I=1,3
+                IBEG=IEND
+                IEND=I*IDIM/3
+                JEND=1
+                DO 101 J=1,3
+                  JBEG=JEND
+                  JEND=J*JDIM/3
+                  ICSP=ICEGSP(RQSP,XQSP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                  IF (ICSP.EQ.0) GO TO 103
+  101           CONTINUE
+  102         CONTINUE
 C
-C Jump if in lower right quadrant:
-C
-              IBEG=51
-              IEND=101
-              JBEG=1
-              JEND=58
-              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101
-C
-C Jump if in upper left quadrant:
-C
-              IBEG=1
-              IEND=51
-              JBEG=58
-              JEND=116
-              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101
-C
-C Jump if in upper right quadrant:
-C
-              IBEG=51
-              IEND=101
-              JBEG=58
-              JEND=116
-              ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICSP.EQ.0) GO TO 101
-C
-C Point was not in any "quarter" of the grid, so treat it as outside
-C the grid.
+C Point was not in any piece of the grid, so treat it as outside the
+C grid.
 C
               XOUT=0.
               YOUT=0.
 C
-              GO TO 103
+              GO TO 107
 C
 C Now, find out what particular grid cell contains the point.
 C
-  101         IF (IEND-IBEG.GE.JEND-JBEG) THEN
+  103         IF (IEND-IBEG.GE.JEND-JBEG) THEN
                 IF (IEND-IBEG.EQ.1) THEN
                   CALL FPIQSP (XQSP(1,IBEG,JBEG),XQSP(1,IEND,JBEG),
      +                         XQSP(1,IBEG,JEND),XQSP(1,IEND,JEND),
@@ -1411,10 +1391,10 @@ C
                     XOUT=REAL(IBEG)+XFSP
                     YOUT=REAL(JBEG)+YFSP
                   END IF
-                  GO TO 103
+                  GO TO 107
                 END IF
                 IMID=(IBEG+IEND)/2
-                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IMID,JBEG,JEND)
+                ICSP=ICEGSP(RQSP,XQSP,IDIM,JDIM,IBEG,IMID,JBEG,JEND)
                 IF (ICSP.NE.0) THEN
                   IBEG=IMID
                 ELSE
@@ -1422,7 +1402,7 @@ C
                 END IF
               ELSE
                 JMID=(JBEG+JEND)/2
-                ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JMID)
+                ICSP=ICEGSP(RQSP,XQSP,IDIM,JDIM,IBEG,IEND,JBEG,JMID)
                 IF (ICSP.NE.0) THEN
                   JBEG=JMID
                 ELSE
@@ -1437,17 +1417,17 @@ C (I have not yet seen this happen with this version of the code,
 C that deals with the globe, but I did see it happen with a version
 C in the plane.)
 C
-C*            ICSP=ICEGSP(RQSP,XQSP,101,116,IBEG,IEND,JBEG,JEND)
+C*            ICSP=ICEGSP(RQSP,XQSP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
 C*            IF (ICSP.NE.0) THEN
 C*              PRINT * , 'ALGORITHM FAILURE'
 C*              PRINT * , 'IBEG,IEND,JBEG,JEND,ICSP = ',
 C*   +                     IBEG,IEND,JBEG,JEND,ICSP
 C*              XOUT=0.
 C*              YOUT=0.
-C*              GO TO 103
+C*              GO TO 107
 C*            END IF
 C
-              GO TO 101
+              GO TO 103
 C
             END IF
 C
@@ -1481,83 +1461,51 @@ C Check a little area around the last box used (in hopes of quickly
 C finding the correct box often enough so as to speed the process up).
 C
               IF (IEND-IBEG.EQ.1.AND.JEND-JBEG.EQ.1) THEN
-C
-C Jump if in same box.
-C
-                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICDP.EQ.0) GO TO 102
-C
-C Jump if in adjacent box.
-C
-                IBEG=MAX(  1,IBEG-1)
-                IEND=MIN(101,IEND+1)
-                JBEG=MAX(  1,JBEG-1)
-                JEND=MIN(116,JEND+1)
-                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICDP.EQ.0) GO TO 102
-C
-C Jump if in near-by box.
-C
-                IBEG=MAX(  1,IBEG-1)
-                IEND=MIN(101,IEND+1)
-                JBEG=MAX(  1,JBEG-1)
-                JEND=MIN(116,JEND+1)
-                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-                IF (ICDP.EQ.0) GO TO 102
-C
+                ICDP=ICEGDP(RQDP,XQDP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                IF (ICDP.EQ.0) GO TO 106  !  Same box.
+                IBEG=MAX(   1,IBEG-1)
+                IEND=MIN(IDIM,IEND+1)
+                JBEG=MAX(   1,JBEG-1)
+                JEND=MIN(JDIM,JEND+1)
+                ICDP=ICEGDP(RQDP,XQDP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                IF (ICDP.EQ.0) GO TO 106  !  Adjacent box.
+                IBEG=MAX(   1,IBEG-1)
+                IEND=MIN(IDIM,IEND+1)
+                JBEG=MAX(   1,JBEG-1)
+                JEND=MIN(JDIM,JEND+1)
+                ICDP=ICEGDP(RQDP,XQDP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                IF (ICDP.EQ.0) GO TO 106  !  Near-by box.
               END IF
 C
-C If that didn't work, look for a "quarter" of the grid containing the
-C point we want.  (Starting with the entire grid is problematical
+C If that didn't work, look for a smaller piece of the grid containing
+C the point we want.  (Starting with the entire grid is problematical
 C because of the way ICEGDP works.)
 C
-C Jump if in lower left quadrant.
+              IEND=1
 C
-              IBEG=1
-              IEND=51
-              JBEG=1
-              JEND=58
-              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102
+              DO 105 I=1,3
+                IBEG=IEND
+                IEND=I*IDIM/3
+                JEND=1
+                DO 104 J=1,3
+                  JBEG=JEND
+                  JEND=J*JDIM/3
+                  ICDP=ICEGDP(RQDP,XQDP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
+                  IF (ICDP.EQ.0) GO TO 106  !  Box (I,J).
+  104           CONTINUE
+  105         CONTINUE
 C
-C Jump if in lower right quadrant.
-C
-              IBEG=51
-              IEND=101
-              JBEG=1
-              JEND=58
-              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102
-C
-C Jump if in upper left quadrant.
-C
-              IBEG=1
-              IEND=51
-              JBEG=58
-              JEND=116
-              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102
-C
-C Jump if in upper right quadrant.
-C
-              IBEG=51
-              IEND=101
-              JBEG=58
-              JEND=116
-              ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
-              IF (ICDP.EQ.0) GO TO 102
-C
-C Point was not in any "quarter" of the grid, so treat it as outside
-C the grid.
+C Point was not in any piece of the grid, so treat it as outside the
+C grid.
 C
               XOUT=0.
               YOUT=0.
 C
-              GO TO 103
+              GO TO 107
 C
 C Now, find out what particular grid cell contains the point.
 C
-  102         IF (IEND-IBEG.GE.JEND-JBEG) THEN
+  106         IF (IEND-IBEG.GE.JEND-JBEG) THEN
                 IF (IEND-IBEG.EQ.1) THEN
                   CALL FPIQDP (XQDP(1,IBEG,JBEG),XQDP(1,IEND,JBEG),
      +                         XQDP(1,IBEG,JEND),XQDP(1,IEND,JEND),
@@ -1569,10 +1517,10 @@ C
                     XOUT=REAL(IBEG)+REAL(XFDP)
                     YOUT=REAL(JBEG)+REAL(YFDP)
                   END IF
-                  GO TO 103
+                  GO TO 107
                 END IF
                 IMID=(IBEG+IEND)/2
-                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IMID,JBEG,JEND)
+                ICDP=ICEGDP(RQDP,XQDP,IDIM,JDIM,IBEG,IMID,JBEG,JEND)
                 IF (ICDP.NE.0) THEN
                   IBEG=IMID
                 ELSE
@@ -1580,7 +1528,7 @@ C
                 END IF
               ELSE
                 JMID=(JBEG+JEND)/2
-                ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JMID)
+                ICDP=ICEGDP(RQDP,XQDP,IDIM,JDIM,IBEG,IEND,JBEG,JMID)
                 IF (ICDP.NE.0) THEN
                   JBEG=JMID
                 ELSE
@@ -1595,17 +1543,17 @@ C (I have not yet seen this happen with this version of the code,
 C that deals with the globe, but I did see it happen with a version
 C in the plane.)
 C
-C*            ICDP=ICEGDP(RQDP,XQDP,101,116,IBEG,IEND,JBEG,JEND)
+C*            ICDP=ICEGDP(RQDP,XQDP,IDIM,JDIM,IBEG,IEND,JBEG,JEND)
 C*            IF (ICDP.NE.0) THEN
 C*              PRINT * , 'ALGORITHM FAILURE'
 C*              PRINT * , 'IBEG,IEND,JBEG,JEND,ICDP = ',
 C*   +                     IBEG,IEND,JBEG,JEND,ICDP
 C*              XOUT=0.
 C*              YOUT=0.
-C*              GO TO 103
+C*              GO TO 107
 C*            END IF
 C
-              GO TO 102
+              GO TO 106
 C
             END IF
           END IF
@@ -1621,7 +1569,7 @@ C
 C
 C Done.
 C
-  103   RETURN
+  107   RETURN
 C
       END
 
