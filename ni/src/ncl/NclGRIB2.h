@@ -413,6 +413,7 @@ struct _Grib2ParamList {
     int time_range_indicator;
     int time_period;            /* 0 unless ave,diff, or acc; then: (p2 - p1) */
     int time_unit_indicator;
+    int variable_time_unit;
     int level_indicator;
     G2_GIT minimum_it;
     NclGrib2FVarRec var_info;
@@ -561,6 +562,7 @@ struct _Grib2FileRecord {
     Grib2DimInqRecList  *ft_dims;
     int n_lv_dims;
     Grib2DimInqRecList  *lv_dims;
+    int n_grids;  /* number of lat/lon or real_im/lat/lon pairs */
     int n_grid_dims;
     Grib2DimInqRecList  *grid_dims;
     NclGrib2CacheList   *grib_grid_cache;

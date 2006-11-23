@@ -1113,61 +1113,99 @@ static int g2LVNotEqual( Grib2RecordInqRecList *s_1, Grib2RecordInqRecList *s_2)
 }
 
 
-static int _g2GetTimeOffset 
-# if    NhlNeedProto
-(int time_indicator, unsigned char *offset)
-# else
-(time_indicator, offset)
+static int _g2SetCommonTimeUnit
+#if	NhlNeedProto
+(Grib2ParamList *node, Grib2RecordInqRec* grib_rec)
+#else
+(node,grib_rec)
+Grib2ParamList *node;
+Grib2RecordInqRec* grib_rec;
+#endif
+{
+	int cix, nix;
+	static int month_ix = 7;
+	/* 
+	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
+	 * short to long duration. 
+	 */
+
+	static int unit_code_order[] = { 13,0,1,10,11,12,2,3,4,5,6,7 };
+	for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
+		if (node->time_unit_indicator == unit_code_order[cix])
+			break;
+	}
+	for (nix = 0; nix < NhlNumber(unit_code_order); nix++) {
+		if ((int)grib_rec->time_unit_indicator == unit_code_order[nix])
+			break;
+	}
+	if (nix >= NhlNumber(unit_code_order)) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NclGRIB: Unsupported time unit found for parameter (%s), continuing anyways.",
+			  NrmQuarkToString(grib_rec->var_name_q));
+	}
+	else if (cix >= NhlNumber(unit_code_order)) { 
+		/* current time units are unsupported so use the new unit */
+		node->time_unit_indicator = (int)grib_rec->time_unit_indicator;
+	}
+	else if (unit_code_order[nix] < unit_code_order[cix]) { 
+		/* choose the shortest duration as the common unit */
+		node->time_unit_indicator = (int)grib_rec->time_unit_indicator;
+	}
+	if (nix >= month_ix) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NclGRIB: Variable time unit codes representing time durations of a month or more in variable (%s): requires approximation to convert to common unit",
+			  NrmQuarkToString(grib_rec->var_name_q));
+	}
+		
+	/* Set the variable_time_unit flag */
+	node->variable_time_unit = True;
+
+	return;
+}
+
+static int _g2GetConvertedTimeOffset 
+#if	NhlNeedProto
+(int common_time_unit, int time_unit, int time_offset)
+#else
+(common_time_unit, time_unit, time_indicator, offset)
+int common_time_unit;
+int time_unit;
 int time_indicator;
 unsigned char *offset;
-# endif
+#endif
 {
-    switch (time_indicator) {
-        case 0: /* reference time + P1 */
-        case 1: /* reference time + P1 */
-            return (int)offset[0];
-            break;
+	int cix,tix;
+	/* 
+	 * These are the codes in GRIB 2 - Table 4.4 - for time units arranged in order from 
+	 * short to long duration. The convert table below is the conversion from
+	 * the shortest duration (second) to each of the other units. (For periods longer
+	 * than a day there is inaccuracy because the periods vary depending on which which 
+	 * month and/or year we are talking about. For now use average based on 365.25 days per year.
+	 * This will need to be refined.
+	 */
 
-        case 2: /* reference time + P1 < t < reference time + P2 */
-        case 3: /* Average from reference time + P1 to reference time + P2 */
-        case 4: /* Accumulation from reference time + P1 to reference time + P2 */
-        case 5: /* Difference from reference time + P1 to reference time + P2 */
-            return (int)offset[1];
-            break;
+	double c_factor = 1.0;
+	static int unit_code_order[] = { 13,0,1,10,11,12,2,3,4,5,6,7 };
+	double unit_convert[] = { 1.0, 60.0, 3600.0, 10800.0, 21600.0, /* 1 sec - 6 hr */
+				  43200.0,86400.0,2629800.0, 31557600.0, /* 12 hr - 1 yr */
+				  315576000.0,946728000.0,3155760000.0};   /* 10 yr - 100 yr */
 
-        case 6: /* Average from reference time - P1 to reference time - P2 */
-            return -(int)offset[1];
-            break;
 
-        case 7: /* Average from reference time - P1 to reference time + P2 */
-            return (int)offset[1];
-            break;
-
-        case 10:/* P1 occupies both bytes */
-            return UnsignedCnvtToDecimal(2,offset);
-            break;
-
-        case 51:
-        case 113:
-        case 114:
-        case 115:
-        case 116:
-        case 118:
-        case 123:
-        case 124:
-            return 0;
-            break;
-
-        case 117:
-            return (int)offset[0];
-            break;
-
-        default:
-            NhlPError(NhlWARNING, NhlEUNKNOWN,
-                "NclGRIB2: Unknown or unsupported time range indicator detected.");
-            return -1;
-            break;
-    }
+	if (common_time_unit != time_unit) {
+		for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
+			if (common_time_unit == unit_code_order[cix])
+				break;
+		}
+		for (tix = 0; tix < NhlNumber(unit_code_order); tix++) {
+			if (time_unit == unit_code_order[tix])
+				break;
+		}
+		/* this condition must be met in order to do a valid conversion */
+		if (cix < NhlNumber(unit_code_order) && tix < NhlNumber(unit_code_order)) { 
+			c_factor = unit_convert[tix] / unit_convert[cix];
+		}
+	}
+	return ((int)(time_offset * c_factor));
 }
 
 
@@ -2056,11 +2094,6 @@ Grib2RecordInqRec *grib_rec;
             NclFree(grib_rec->gds->interp_opt_name);
 
         if (grib_rec->gds->shape_of_earth != NULL) {
-/*
-            if (grib_rec->gds->shape_of_earth->earthShape != NULL)
-                NclFree(grib_rec->gds->shape_of_earth->earthShape);
-*/
-
             NclFree(grib_rec->gds->shape_of_earth);
         }
 
@@ -2172,7 +2205,7 @@ static Grib2ParamList *_g2NewListNode
 	tmp->time_range_indicator = grib_rec->time_range_indicator;
 	tmp->time_period = grib_rec->time_period;
 	tmp->time_unit_indicator = grib_rec->time_unit_indicator;
-	
+	tmp->variable_time_unit = False;
 	tmp->levels = NULL;
 	tmp->levels0 = NULL;
 	tmp->levels1 = NULL;
@@ -2253,7 +2286,7 @@ Grib2RecordInqRec* grib_rec;
 #endif
 {
     Grib2RecordInqRecList * grib_rec_list = (Grib2RecordInqRecList *)
-        NclMalloc((unsigned) sizeof(Grib2RecordInqRecList));
+	    NclMalloc((unsigned) sizeof(Grib2RecordInqRecList));
 
     if ((grib_rec->initial_time.year < node->minimum_it.year)
             || ((grib_rec->initial_time.year == node->minimum_it.year)	
@@ -2265,9 +2298,12 @@ Grib2RecordInqRec* grib_rec;
 	}
 
     if (node->time_unit_indicator != grib_rec->time_unit_indicator) {
-        NhlPError(NhlWARNING, NhlEUNKNOWN,
-            "NclGRIB: Time unit indicator varies for parameter (%s), continuing anyway.",
-            NrmQuarkToString(grib_rec->var_name_q));
+	    _g2SetCommonTimeUnit(node,grib_rec);
+#if 0
+	      NhlPError(NhlWARNING, NhlEUNKNOWN,
+	      "NclGRIB: Time unit indicator varies for parameter (%s), continuing anyway.",
+	      NrmQuarkToString(grib_rec->var_name_q));
+#endif
 	}
 
     grib_rec_list->rec_inq = grib_rec;
@@ -3848,6 +3884,7 @@ static void _g2SetFileDimsAndCoordVars
     therec->lv_dims = NULL;
     therec->n_grid_dims = 0;
     therec->grid_dims = NULL;
+    therec->n_grids = 0;
     step = therec->var_list;
 
     while (step != NULL) {
@@ -3890,7 +3927,7 @@ static void _g2SetFileDimsAndCoordVars
                 memcpy(tmp->gds, therec->var_list->thelist->rec_inq->gds, sizeof(G2_GDS));
                 tmp->dim_number = therec->total_dims;
                 tmp->size = step->ensemble->multidval.dim_sizes[0];
-                sprintf(buffer, "ensemble%d", therec->total_dims);
+                sprintf(buffer, "ensemble%d", therec->n_ensemble_dims);
                 tmp->dim_name = NrmStringToQuark(buffer);
                 tmp->is_gds = -1;
                 therec->total_dims++;
@@ -3898,7 +3935,6 @@ static void _g2SetFileDimsAndCoordVars
                 ptr->dim_inq = tmp;
                 ptr->next = therec->ensemble_dims;
                 therec->ensemble_dims = ptr;
-                therec->n_ensemble_dims++;
                 step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 
                 tmp_string = (NclQuark *) NclMalloc(sizeof(NclQuark));
@@ -3918,11 +3954,12 @@ static void _g2SetFileDimsAndCoordVars
                 *tmp_string = NrmStringToQuark("ensemble elements description");
                 Grib2PushAtt(&tmp_att_list_ptr, "long_name", tmp_string, 1, nclTypestringClass); 
 
-                sprintf(&(buffer[strlen(buffer)]), "_info", therec->total_dims);
+                sprintf(&(buffer[strlen(buffer)]), "_info", therec->n_ensemble_dims);
                 _Grib2AddInternalVar(therec, NrmStringToQuark(buffer), &tmp->dim_number,
                         (NclMultiDValData) step->ensemble, tmp_att_list_ptr, 1);
                 tmp_att_list_ptr = NULL;
                 step->ensemble = NULL;
+                therec->n_ensemble_dims++;
             } else {
                 step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
                 _NclDestroyObj((NclObj) step->ens_indexes);
@@ -3968,7 +4005,7 @@ static void _g2SetFileDimsAndCoordVars
 				tmp = (Grib2DimInqRec *) NclMalloc((unsigned) sizeof(Grib2DimInqRec));
 				tmp->dim_number = therec->total_dims;
 				tmp->size = step->yymmddhh->multidval.dim_sizes[0];
-				sprintf(buffer, "initial_time%d", therec->total_dims);
+				sprintf(buffer, "initial_time%d", therec->n_it_dims);
 				tmp->dim_name = NrmStringToQuark(buffer);
 				tmp->is_gds = -1;
 				therec->total_dims++;
@@ -4033,7 +4070,7 @@ static void _g2SetFileDimsAndCoordVars
 				tmp = (Grib2DimInqRec *) NclMalloc((unsigned) sizeof(Grib2DimInqRec));
 				tmp->dim_number = therec->total_dims;
 				tmp->size = step->forecast_time->multidval.dim_sizes[0];
-				sprintf(buffer, "forecast_time%d", therec->total_dims);
+				sprintf(buffer, "forecast_time%d", therec->n_ft_dims);
 				tmp->dim_name = NrmStringToQuark(buffer);
 				tmp->is_gds = -1;
 				therec->total_dims++;
@@ -4102,10 +4139,10 @@ static void _g2SetFileDimsAndCoordVars
 				tmp->is_gds = -1;
 				tmp->size = step->levels->multidval.dim_sizes[0];
 				if (ct->shname) {
-					sprintf(buffer, "lv_%s%d", ct->shname,therec->total_dims);
+					sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
 				}
 				else {
-					sprintf(buffer, "levels%d", ct->shname,therec->total_dims);
+					sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
 				}
 				tmp->dim_name = NrmStringToQuark(buffer);
 				therec->total_dims++;
@@ -4183,12 +4220,11 @@ static void _g2SetFileDimsAndCoordVars
 				tmp->dim_number = therec->total_dims;
 				tmp->is_gds = -1;
 				tmp->size = step->levels0->multidval.dim_sizes[0];
-			
 				if (ct->shname) {
-					sprintf(buffer, "lv_%s%d", ct->shname,therec->total_dims);
+					sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
 				}
 				else {
-					sprintf(buffer, "levels%d", ct->shname,therec->total_dims);
+					sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
 				}
 				tmp->dim_name = NrmStringToQuark(buffer);
 				therec->total_dims++;
@@ -4452,346 +4488,290 @@ static void _g2SetFileDimsAndCoordVars
                  */
                 m = 0;
                 while ((m < step->n_entries) && (step->thelist[m].rec_inq == NULL))
-                    m++;
+			m++;
 
                 if ((n_dims_lon == 1) && (n_dims_lat == 1)) {
-                    if ((step->has_gds )&& (step->gds_type == 50)) {
-                        step->var_info.dim_sizes[current_dim] = 2;
-                        step->var_info.dim_sizes[current_dim + 1] = dimsizes_lat[0];
-                        step->var_info.dim_sizes[current_dim + 2] = dimsizes_lon[0];
-                        step->var_info.file_dim_num[current_dim] = therec->total_dims;
-                        step->var_info.file_dim_num[current_dim + 1] = therec->total_dims + 1;
-                        step->var_info.file_dim_num[current_dim + 2] = therec->total_dims + 2;
-                        sprintf(buffer, "real_imaginary");
-                        tmp = (Grib2DimInqRec*)NclMalloc((unsigned) sizeof(Grib2DimInqRec));
-                        tmp->dim_number = therec->total_dims;
-                        tmp->size = 2;
-                        tmp->dim_name = NrmStringToQuark(buffer);
-                        tmp->is_gds = step->gds_type;
+			if ((step->has_gds )&& (step->gds_type == 50)) {
+				step->var_info.dim_sizes[current_dim] = 2;
+				step->var_info.dim_sizes[current_dim + 1] = dimsizes_lat[0];
+				step->var_info.dim_sizes[current_dim + 2] = dimsizes_lon[0];
+				step->var_info.file_dim_num[current_dim] = therec->total_dims;
+				step->var_info.file_dim_num[current_dim + 1] = therec->total_dims + 1;
+				step->var_info.file_dim_num[current_dim + 2] = therec->total_dims + 2;
+				sprintf(buffer, "real_imaginary");
+				tmp = (Grib2DimInqRec*)NclMalloc((unsigned) sizeof(Grib2DimInqRec));
+				tmp->dim_number = therec->total_dims;
+				tmp->size = 2;
+				tmp->dim_name = NrmStringToQuark(buffer);
+				tmp->is_gds = step->gds_type;
 
-                        tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
-                        memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
+				tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
+				memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
 
-                        ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
-                        ptr->dim_inq= tmp;
-                        ptr->next = therec->grid_dims;
-                        therec->grid_dims = ptr;
-                        therec->n_grid_dims++;
-						step->var_info.doff = 2;
-                    } else {
-                        step->var_info.dim_sizes[current_dim] = dimsizes_lat[0];
-                        step->var_info.dim_sizes[current_dim+1] = dimsizes_lon[0];
-                        step->var_info.file_dim_num[current_dim] = therec->total_dims;
-                        step->var_info.file_dim_num[current_dim+1] = therec->total_dims + 1;
-                        step->var_info.doff = 1;
-                    }
-
-                    /*
-                     * y (longitude) first
-                     */
-                    if ((step->has_gds) && (step->grid_number == 255)) {
-                        (void) sprintf(buffer, "g%d_lon_%d",
-                            step->gds_type, therec->total_dims + step->var_info.doff);
-                    } else {
-                        (void) sprintf(buffer,"lon_%d",step->grid_number);
-                    }
-
-                    tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
-                    tmp->dim_number = therec->total_dims + step->var_info.doff;
-                    tmp->size = dimsizes_lon[0];
-                    tmp->dim_name = NrmStringToQuark(buffer);
-                    tmp->is_gds = step->gds_type;
-
-                    tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
-                    memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
-
-                    ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
-                    ptr->dim_inq= tmp;
-                    ptr->next = therec->grid_dims;
-                    therec->grid_dims = ptr;
-                    therec->n_grid_dims++;
-
-                    if (tmp_lon != NULL) {	
-                        _Grib2AddInternalVar(therec, tmp->dim_name, &tmp->dim_number,
-                                (NclMultiDValData)_NclCreateVal(
-                                    NULL,
-                                    NULL,
-                                    Ncl_MultiDValData,
-                                    0,
-                                    (void *) tmp_lon,
-                                    NULL,
-                                    n_dims_lon,
-                                    dimsizes_lon,
-                                    TEMPORARY,
-                                    NULL,
-                                    nclTypefloatClass),
-                            lon_att_list_ptr,nlonatts);
-                    }
-
-                    NclFree(dimsizes_lon);
-
-					if((step->has_gds)&&(step->grid_number == 255)) {
-						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims + (step->var_info.doff - 1));
-					} else {
-						sprintf(buffer,"lat_%d",step->grid_number);
-					}
-					tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
-					tmp->dim_number = therec->total_dims + (step->var_info.doff - 1);
-					tmp->size = dimsizes_lat[0];
-					tmp->dim_name = NrmStringToQuark(buffer);
-					tmp->is_gds = step->gds_type;
-
-                    tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
-                    memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
-
-					ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
-					ptr->dim_inq= tmp;
-					ptr->next = therec->grid_dims;
-					therec->grid_dims = ptr;
-					therec->n_grid_dims++;
-
-					if(tmp_lat != NULL) {
-						_Grib2AddInternalVar(therec,tmp->dim_name,&tmp->dim_number,
-								    (NclMultiDValData)_NclCreateVal(
-									    NULL,
-									    NULL,
-									    Ncl_MultiDValData,
-									    0,
-									    (void*)tmp_lat,
-									    NULL,
-									    n_dims_lat,
-									    dimsizes_lat,
-									    TEMPORARY,
-									    NULL,
-									    nclTypefloatClass),
-								    lat_att_list_ptr,nlatatts);
-					}
-					NclFree(dimsizes_lat);
-					therec->total_dims += step->var_info.doff+1;
-
-
-				} else if ((n_dims_lon == 2) && (n_dims_lat == 2)
-                        && (dimsizes_lat[0] == dimsizes_lon[0])
-                        && (dimsizes_lat[1] == dimsizes_lon[1])) {
-					char *uv_m = "m";
-					step->var_info.dim_sizes[current_dim] = dimsizes_lat[0];
-					step->var_info.dim_sizes[current_dim + 1] = dimsizes_lon[1];
-					step->var_info.file_dim_num[current_dim] = therec->total_dims;
-					step->var_info.file_dim_num[current_dim + 1] = therec->total_dims + 1;
-					step->var_info.doff=1;
-
-					if ((step->has_gds) && (step->grid_number == 255)) {
-						if (step->gds_type != 203) {
-							sprintf(buffer,"g%d_y_%d",step->gds_type,therec->total_dims + 1);
-						}
-						else {
-                        if (Is_UV(step->param_number))
-                            uv_m = "v";
-							(void) sprintf(buffer, "g%d%s_y_%d",
-                                step->gds_type, uv_m, therec->total_dims + 1);
-						}
-					} else {
-						sprintf(buffer, "gridy_%d", step->grid_number);
-					}
-
-					tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
-					tmp->dim_number = therec->total_dims + 1;
-					tmp->size = dimsizes_lon[1];
-					tmp->dim_name = NrmStringToQuark(buffer);
-					tmp->is_gds = step->gds_type;
-					tmp->is_uv = step->gds_type == 203 && Is_UV(step->param_number);
-
-                    tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
-                    memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
-
-					ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
-					ptr->dim_inq= tmp;
-					ptr->next = therec->grid_dims;
-					therec->grid_dims = ptr;
-					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255)) {
-						if (step->gds_type != 203) {
-							sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims + 1);
-						}
-						else {
-							sprintf(buffer,"g%d%s_lon_%d",step->gds_type,uv_m,therec->total_dims + 1);
-						}
-					} else {
-						sprintf(buffer,"gridlon_%d",step->grid_number);
-					}
-					step->aux_coords[1] = NrmStringToQuark(buffer);
-					tmp_file_dim_numbers[0] = therec->total_dims;
-					tmp_file_dim_numbers[1] = therec->total_dims+ 1;
-
-					tmp_float = NclMalloc((unsigned)sizeof(float)*4);
-					tmp_float[0] = tmp_lon[0];
-					tmp_float[1] = tmp_lon[dimsizes_lon[1]-1];
-					tmp_float[3] = tmp_lon[(dimsizes_lon[0]-1) * dimsizes_lon[1]];
-					tmp_float[2] = tmp_lon[(dimsizes_lon[0] * dimsizes_lon[1])-1];
-					Grib2PushAtt(&lon_att_list_ptr,"corners",tmp_float,4,nclTypefloatClass); nlonatts++;
-
-					_Grib2AddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,
-							    (NclMultiDValData)_NclCreateVal(
-								    NULL,
-								    NULL,
-								    Ncl_MultiDValData,
-								    0,
-								    (void*)tmp_lon,
-								    NULL,
-								    n_dims_lon,
-								    dimsizes_lon,
-								    TEMPORARY,
-								    NULL,
-								    nclTypefloatClass),
-							    lon_att_list_ptr,nlonatts);
-					NclFree(dimsizes_lon);
-						
-					if((step->has_gds)&&(step->grid_number == 255)) {
-						if (step->gds_type != 203) {
-							sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
-						}
-						else {
-							sprintf(buffer,"g%d%s_x_%d",step->gds_type,uv_m,therec->total_dims);
-						}
-					} else {
-						sprintf(buffer,"gridx_%d",step->grid_number);
-					}
-					tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
-					tmp->dim_number = therec->total_dims;
-					tmp->size = dimsizes_lat[0];
-					tmp->dim_name = NrmStringToQuark(buffer);
-					tmp->is_gds = step->gds_type;
-					tmp->is_uv = step->gds_type == 203 && Is_UV(step->param_number);
-
-                    tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
-                    memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
-
-					ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
-					ptr->dim_inq= tmp;
-					ptr->next = therec->grid_dims;
-					therec->grid_dims = ptr;
-					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255)) {
-						if (step->gds_type != 203) {
-							sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
-						}
-						else {
-							sprintf(buffer,"g%d%s_lat_%d",step->gds_type,uv_m,therec->total_dims);
-						}
-					} else {
-						sprintf(buffer,"gridlat_%d",step->grid_number);
-					}
-					step->aux_coords[0] = NrmStringToQuark(buffer);
-					tmp_float = NclMalloc((unsigned)sizeof(float)*4);
-					tmp_float[0] = tmp_lat[0];
-					tmp_float[1] = tmp_lat[dimsizes_lat[1]-1];
-					tmp_float[3] = tmp_lat[(dimsizes_lat[0]-1) * dimsizes_lat[1]];
-					tmp_float[2] = tmp_lat[(dimsizes_lat[0] * dimsizes_lat[1])-1];
-					Grib2PushAtt(&lat_att_list_ptr,"corners",tmp_float,4,nclTypefloatClass); nlatatts++;
-
-					_Grib2AddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,(NclMultiDValData)_NclCreateVal(
-								    NULL,
-								    NULL,
-								    Ncl_MultiDValData,
-								    0,
-								    (void*)tmp_lat,
-								    NULL,
-								    n_dims_lat,
-								    dimsizes_lat,
-								    TEMPORARY,
-								    NULL,
-								    nclTypefloatClass),lat_att_list_ptr,nlatatts);
-
-					therec->total_dims += 2;
-					if (tmp_rot != NULL) {
-						/* the rotation array is assumed to be the same size as the lat and lon arrays */
-						if((step->has_gds)&&(step->grid_number == 255)) {
-							if (step->gds_type != 203) {
-								sprintf(buffer,"g%d_rot_%d",step->gds_type,therec->total_dims);
-							}
-							else {
-								sprintf(buffer,"g%d%s_rot_%d",step->gds_type,uv_m,therec->total_dims);
-							}
-						} else {
-							sprintf(buffer,"gridrot_%d",step->grid_number);
-						}
-						_Grib2AddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,
-								    (NclMultiDValData)_NclCreateVal(NULL,
-												    NULL,
-												    Ncl_MultiDValData,
-												    0,
-												    (void*)tmp_rot,
-												    NULL,
-												    n_dims_lat,
-												    dimsizes_lat,
-												    TEMPORARY,
-												    NULL,
-												    nclTypefloatClass),rot_att_list_ptr,nrotatts);
-					}
-					NclFree(dimsizes_lat);
-				} else {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Couldn't handle dimension information returned by grid decoding");
-					is_err = NhlFATAL;
-				}
+				ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+				ptr->dim_inq= tmp;
+				ptr->next = therec->grid_dims;
+				therec->grid_dims = ptr;
+				therec->n_grid_dims++;
+				step->var_info.doff = 2;
 			} else {
-				Grib2InternalVarList	*iv;
-				int dnum1, dnum2;
-				int count = 0;
-				if(dstep->dim_inq->is_gds==50) {
-					step->var_info.dim_sizes[current_dim+1] = dstep->dim_inq->size;
-					dnum1 = step->var_info.file_dim_num[current_dim+1] = dstep->dim_inq->dim_number;
-					step->var_info.dim_sizes[current_dim+2] = dstep->next->dim_inq->size;
-					dnum2 = step->var_info.file_dim_num[current_dim+2] = dstep->next->dim_inq->dim_number;
-					step->var_info.dim_sizes[current_dim] = 2;
-					step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number-1;
-					step->var_info.doff = 2;
-				} else {
-					step->var_info.dim_sizes[current_dim] = dstep->dim_inq->size;
-					dnum1 = step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
-					step->var_info.dim_sizes[current_dim+1] = dstep->next->dim_inq->size;
-					dnum2 = step->var_info.file_dim_num[current_dim+1] = dstep->next->dim_inq->dim_number;
-					step->var_info.doff = 1;
-				}
-				/* find the auxiliary coordinate variables if they exist */
-				for (iv = therec->internal_var_list; iv != NULL; iv = iv->next) {
-					if (iv->int_var->var_info.num_dimensions != 2)
-						continue;
-					if ( !(iv->int_var->var_info.file_dim_num[0] == dnum1 &&
-					       iv->int_var->var_info.file_dim_num[1] == dnum2)) 
-						continue;
-					if (strstr(NrmQuarkToString(iv->int_var->var_info.var_name_quark),"rot"))
-						continue;
-					step->aux_coords[count] = iv->int_var->var_info.var_name_quark;
-					count++;
-					if (count == 2) {
-						break;
-					}
-				}
+				step->var_info.dim_sizes[current_dim] = dimsizes_lat[0];
+				step->var_info.dim_sizes[current_dim+1] = dimsizes_lon[0];
+				step->var_info.file_dim_num[current_dim] = therec->total_dims;
+				step->var_info.file_dim_num[current_dim+1] = therec->total_dims + 1;
+				step->var_info.doff = 1;
 			}
-		}
-		if(is_err > NhlFATAL) {
 
-			last = step;	
-			step = step->next;
+			/*
+			 * y (longitude) first
+			 */
+			(void) sprintf(buffer,"lon_%d",therec->n_grids);
+
+			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+			tmp->dim_number = therec->total_dims + step->var_info.doff;
+			tmp->size = dimsizes_lon[0];
+			tmp->dim_name = NrmStringToQuark(buffer);
+			tmp->is_gds = step->gds_type;
+
+			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
+			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
+
+			ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
+			ptr->dim_inq= tmp;
+			ptr->next = therec->grid_dims;
+			therec->grid_dims = ptr;
+			therec->n_grid_dims++;
+
+			if (tmp_lon != NULL) {	
+				_Grib2AddInternalVar(therec, tmp->dim_name, &tmp->dim_number,
+						     (NclMultiDValData)_NclCreateVal(
+							     NULL,
+							     NULL,
+							     Ncl_MultiDValData,
+							     0,
+							     (void *) tmp_lon,
+							     NULL,
+							     n_dims_lon,
+							     dimsizes_lon,
+							     TEMPORARY,
+							     NULL,
+							     nclTypefloatClass),
+						     lon_att_list_ptr,nlonatts);
+			}
+
+			NclFree(dimsizes_lon);
+
+			sprintf(buffer,"lat_%d",therec->n_grids);
+			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+			tmp->dim_number = therec->total_dims + (step->var_info.doff - 1);
+			tmp->size = dimsizes_lat[0];
+			tmp->dim_name = NrmStringToQuark(buffer);
+			tmp->is_gds = step->gds_type;
+
+			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
+			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
+
+			ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+			ptr->dim_inq= tmp;
+			ptr->next = therec->grid_dims;
+			therec->grid_dims = ptr;
+			therec->n_grid_dims++;
+
+			if(tmp_lat != NULL) {
+				_Grib2AddInternalVar(therec,tmp->dim_name,&tmp->dim_number,
+						     (NclMultiDValData)_NclCreateVal(
+							     NULL,
+							     NULL,
+							     Ncl_MultiDValData,
+							     0,
+							     (void*)tmp_lat,
+							     NULL,
+							     n_dims_lat,
+							     dimsizes_lat,
+							     TEMPORARY,
+							     NULL,
+							     nclTypefloatClass),
+						     lat_att_list_ptr,nlatatts);
+			}
+			NclFree(dimsizes_lat);
+			therec->total_dims += step->var_info.doff+1;
+			therec->n_grids++;
+
+		} else if ((n_dims_lon == 2) && (n_dims_lat == 2)
+			   && (dimsizes_lat[0] == dimsizes_lon[0])
+			   && (dimsizes_lat[1] == dimsizes_lon[1])) {
+			char *uv_m = "m";
+			step->var_info.dim_sizes[current_dim] = dimsizes_lat[0];
+			step->var_info.dim_sizes[current_dim + 1] = dimsizes_lon[1];
+			step->var_info.file_dim_num[current_dim] = therec->total_dims;
+			step->var_info.file_dim_num[current_dim + 1] = therec->total_dims + 1;
+			step->var_info.doff=1;
+
+			sprintf(buffer, "gridy_%d", therec->n_grids);
+
+			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+			tmp->dim_number = therec->total_dims + 1;
+			tmp->size = dimsizes_lon[1];
+			tmp->dim_name = NrmStringToQuark(buffer);
+			tmp->is_gds = step->gds_type;
+			tmp->is_uv = step->gds_type == 203 && Is_UV(step->param_number);
+
+			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
+			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
+
+			ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+			ptr->dim_inq= tmp;
+			ptr->next = therec->grid_dims;
+			therec->grid_dims = ptr;
+			therec->n_grid_dims++;
+			sprintf(buffer,"gridlon_%d",therec->n_grids);
+			step->aux_coords[1] = NrmStringToQuark(buffer);
+			tmp_file_dim_numbers[0] = therec->total_dims;
+			tmp_file_dim_numbers[1] = therec->total_dims+ 1;
+
+			tmp_float = NclMalloc((unsigned)sizeof(float)*4);
+			tmp_float[0] = tmp_lon[0];
+			tmp_float[1] = tmp_lon[dimsizes_lon[1]-1];
+			tmp_float[3] = tmp_lon[(dimsizes_lon[0]-1) * dimsizes_lon[1]];
+			tmp_float[2] = tmp_lon[(dimsizes_lon[0] * dimsizes_lon[1])-1];
+			Grib2PushAtt(&lon_att_list_ptr,"corners",tmp_float,4,nclTypefloatClass); nlonatts++;
+
+			_Grib2AddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,
+					     (NclMultiDValData)_NclCreateVal(
+						     NULL,
+						     NULL,
+						     Ncl_MultiDValData,
+						     0,
+						     (void*)tmp_lon,
+						     NULL,
+						     n_dims_lon,
+						     dimsizes_lon,
+						     TEMPORARY,
+						     NULL,
+						     nclTypefloatClass),
+					     lon_att_list_ptr,nlonatts);
+			NclFree(dimsizes_lon);
+			sprintf(buffer,"gridx_%d",therec->n_grids);
+
+			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+			tmp->dim_number = therec->total_dims;
+			tmp->size = dimsizes_lat[0];
+			tmp->dim_name = NrmStringToQuark(buffer);
+			tmp->is_gds = step->gds_type;
+			tmp->is_uv = step->gds_type == 203 && Is_UV(step->param_number);
+
+			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
+			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
+
+			ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+			ptr->dim_inq= tmp;
+			ptr->next = therec->grid_dims;
+			therec->grid_dims = ptr;
+			therec->n_grid_dims++;
+			sprintf(buffer,"gridlat_%d",therec->n_grids);
+			step->aux_coords[0] = NrmStringToQuark(buffer);
+			tmp_float = NclMalloc((unsigned)sizeof(float)*4);
+			tmp_float[0] = tmp_lat[0];
+			tmp_float[1] = tmp_lat[dimsizes_lat[1]-1];
+			tmp_float[3] = tmp_lat[(dimsizes_lat[0]-1) * dimsizes_lat[1]];
+			tmp_float[2] = tmp_lat[(dimsizes_lat[0] * dimsizes_lat[1])-1];
+			Grib2PushAtt(&lat_att_list_ptr,"corners",tmp_float,4,nclTypefloatClass); nlatatts++;
+
+			_Grib2AddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,(NclMultiDValData)_NclCreateVal(
+						     NULL,
+						     NULL,
+						     Ncl_MultiDValData,
+						     0,
+						     (void*)tmp_lat,
+						     NULL,
+						     n_dims_lat,
+						     dimsizes_lat,
+						     TEMPORARY,
+						     NULL,
+						     nclTypefloatClass),lat_att_list_ptr,nlatatts);
+
+			therec->total_dims += 2;
+			if (tmp_rot != NULL) {
+				/* the rotation array is assumed to be the same size as the lat and lon arrays */
+				sprintf(buffer,"gridrot_%d",therec->n_grids);
+				_Grib2AddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,
+						     (NclMultiDValData)_NclCreateVal(NULL,
+										     NULL,
+										     Ncl_MultiDValData,
+										     0,
+										     (void*)tmp_rot,
+										     NULL,
+										     n_dims_lat,
+										     dimsizes_lat,
+										     TEMPORARY,
+										     NULL,
+										     nclTypefloatClass),rot_att_list_ptr,nrotatts);
+			}
+			NclFree(dimsizes_lat);
+			therec->n_grids++;
 		} else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Deleting reference to parameter because of decoding error");
-			is_err = NhlNOERROR;
-			if(last != NULL) {
-				last->next = step->next;
-			} else {
-				therec->var_list = step->next;
-			}
-			tmpstep = step;
-			step = step->next;
-			_Grib2FreeParamRec(tmpstep);
-			therec->n_vars--;
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Couldn't handle dimension information returned by grid decoding");
+			is_err = NhlFATAL;
 		}
+	    } else {
+		    Grib2InternalVarList	*iv;
+		    int dnum1, dnum2;
+		    int count = 0;
+		    if(dstep->dim_inq->is_gds==50) {
+			    step->var_info.dim_sizes[current_dim+1] = dstep->dim_inq->size;
+			    dnum1 = step->var_info.file_dim_num[current_dim+1] = dstep->dim_inq->dim_number;
+			    step->var_info.dim_sizes[current_dim+2] = dstep->next->dim_inq->size;
+			    dnum2 = step->var_info.file_dim_num[current_dim+2] = dstep->next->dim_inq->dim_number;
+			    step->var_info.dim_sizes[current_dim] = 2;
+			    step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number-1;
+			    step->var_info.doff = 2;
+		    } else {
+			    step->var_info.dim_sizes[current_dim] = dstep->dim_inq->size;
+			    dnum1 = step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+			    step->var_info.dim_sizes[current_dim+1] = dstep->next->dim_inq->size;
+			    dnum2 = step->var_info.file_dim_num[current_dim+1] = dstep->next->dim_inq->dim_number;
+			    step->var_info.doff = 1;
+		    }
+		    /* find the auxiliary coordinate variables if they exist */
+		    for (iv = therec->internal_var_list; iv != NULL; iv = iv->next) {
+			    if (iv->int_var->var_info.num_dimensions != 2)
+				    continue;
+			    if ( !(iv->int_var->var_info.file_dim_num[0] == dnum1 &&
+				   iv->int_var->var_info.file_dim_num[1] == dnum2)) 
+				    continue;
+			    if (strstr(NrmQuarkToString(iv->int_var->var_info.var_name_quark),"rot"))
+				    continue;
+			    step->aux_coords[count] = iv->int_var->var_info.var_name_quark;
+			    count++;
+			    if (count == 2) {
+				    break;
+			    }
+		    }
+	    }
 	}
+	if(is_err > NhlFATAL) {
+		
+		last = step;	
+		step = step->next;
+	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Deleting reference to parameter because of decoding error");
+		is_err = NhlNOERROR;
+		if(last != NULL) {
+			last->next = step->next;
+		} else {
+			therec->var_list = step->next;
+		}
+		tmpstep = step;
+		step = step->next;
+		_Grib2FreeParamRec(tmpstep);
+		therec->n_vars--;
+	}
+    }
 
     _g2CreateSupplementaryTimeVariables(therec);
     Grib2FreeCodeTableRec(ct);
 
-	return;
+    return;
 }
 
 
@@ -5604,6 +5584,20 @@ static void Grib2FreeGrib2Rec
     nrp = rec[0]->num_rptd;
 
     for (i = 0; i < nr; i++) {
+	    if (rec[i]->sec1.center_name) {
+		    NclFree(rec[i]->sec1.center_name);
+	    }
+	    if (rec[i]->sec1.proc_data_type) {
+		    NclFree(rec[i]->sec1.proc_data_type);
+	    }
+	    if (rec[i]->sec1.proc_prod_status) {
+		    NclFree(rec[i]->sec1.proc_prod_status);
+	    }
+	    if (rec[i]->sec1.sig_ref_time) {
+		    NclFree(rec[i]->sec1.sig_ref_time);
+	    }
+
+	    
         sec2_p = rec[i]->sec2;
         sec3_p = rec[i]->sec3;
         sec4_p = rec[i]->sec4;
@@ -5617,6 +5611,7 @@ static void Grib2FreeGrib2Rec
                 NclFree(sec2_p[j]->local);
             NclFree(sec2_p[j]);
 
+#if 0
             /* Section 3 */
             if (sec3_p[j]->shape_of_earth != NULL) {
 /*
@@ -5637,6 +5632,7 @@ static void Grib2FreeGrib2Rec
             NclFree(sec3_p[j]->interp_opt_name);
             NclFree(sec3_p[j]);
 
+#endif
             /* Section 4 */
             if (sec4_p[j]->prod_params != NULL) {
                 if (sec4_p[j]->prod_params->param_cat_name != NULL)
@@ -5653,6 +5649,12 @@ static void Grib2FreeGrib2Rec
                     NclFree(sec4_p[j]->prod_params->first_fixed_sfc);
                 if (sec4_p[j]->prod_params->units_first_fixed_sfc != NULL)
                     NclFree(sec4_p[j]->prod_params->units_first_fixed_sfc);
+                if (sec4_p[j]->prod_params->ensemble_fx_type != NULL)
+                    NclFree(sec4_p[j]->prod_params->ensemble_fx_type);
+                if (sec4_p[j]->prod_params->second_fixed_sfc != NULL)
+                    NclFree(sec4_p[j]->prod_params->second_fixed_sfc);
+                if (sec4_p[j]->prod_params->units_second_fixed_sfc != NULL)
+                    NclFree(sec4_p[j]->prod_params->units_second_fixed_sfc);
 
                 NclFree(sec4_p[j]->prod_params);
             }
@@ -5662,6 +5664,9 @@ static void Grib2FreeGrib2Rec
             NclFree(sec4_p[j]);
 
             /* Section 5 */
+            if (sec5_p[j]->data_repr->field_vals != NULL)
+                NclFree(sec5_p[j]->data_repr->field_vals);
+
             if (sec5_p[j]->data_repr != NULL)
                 NclFree(sec5_p[j]->data_repr);
 
@@ -6187,7 +6192,6 @@ static void *Grib2OpenFile
 	    /* not much reason to read this table since we just using the octet number anyway
 	       to figure out what to do next */
             /* table 3.0: Source of Grid Defn */
-            g2rec[nrecs]->sec3[i]->grid_def_src = g2fld->griddef;
             table = "3.0.table";
             cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec3[i]->grid_def_src, ct);
             if (cterr < 0) {
@@ -6198,7 +6202,8 @@ static void *Grib2OpenFile
             }
 #endif
 
-            switch (g2fld->griddef) {
+            g2rec[nrecs]->sec3[i]->grid_def_src = g2fld->griddef;
+            switch ( g2fld->griddef) {
                 case 0:
                     /* table 3.1: Grid Defn Template Num */
                     table = "3.1.table";
@@ -7015,7 +7020,9 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
 	    g2inqrec->time_unit_indicator = 1;
 
             /* GDS */
+#if 0
             g2inqrec->gds = NclMalloc(sizeof(G2_GDS));
+            memset(g2inqrec->gds,0,sizeof(G2_GDS));
             if (g2rec[i]->sec3[j]->num_oct_opt > 0) {
                 g2inqrec->gds->grid_list_num_oct_opt = NclMalloc(
                         g2rec[i]->sec3[j]->num_oct_opt * sizeof(int *));
@@ -7024,9 +7031,14 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
             }
 
             g2inqrec->gds->shape_of_earth = NclMalloc(sizeof(G2shapeOfEarth));
+            memset(g2inqrec->gds->shape_of_earth,0,sizeof(G2shapeOfEarth));
             g2inqrec->gds->res_comp = NclMalloc(sizeof(G2resComponentFlags));
+            memset(g2inqrec->gds->res_comp,0,sizeof(G2resComponentFlags));
             g2inqrec->gds->scan_mode = NclMalloc(sizeof(G2scanModeFlags));
+            memset(g2inqrec->gds->scan_mode,0,sizeof(G2scanModeFlags));
             memcpy(g2inqrec->gds, g2rec[i]->sec3[j], sizeof(G2_GDS));
+#endif
+            g2inqrec->gds = (G2_GDS *)g2rec[i]->sec3[j];
 
             /* Bitmap */
 /*            g2inqrec->bms_off = NOT NEEDED ? */
@@ -7105,8 +7117,7 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
                 g2name_rec->units = NULL;
             }
 
-            g2inqrec->ptable_rec = NclMalloc(sizeof(G2_TBLE2));
-            memcpy(g2inqrec->ptable_rec, g2name_rec, sizeof(G2_TBLE2));
+            g2inqrec->ptable_rec = g2name_rec;
             g2inqrec->long_name_q = NrmStringToQuark(g2name_rec->long_name);
             g2inqrec->units_q = NrmStringToQuark(g2name_rec->units);
 
@@ -7116,7 +7127,7 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
             g2inqrec->initial_time.days_from_jan1 = HeisDayDiff(1, 1,
                 g2rec[i]->sec1.date_time.year, g2rec[i]->sec1.date_time.day,
                 g2rec[i]->sec1.date_time.mon, g2rec[i]->sec1.date_time.year);
-            g2inqrec->initial_time.minute_of_day = g2rec[i]->sec1.date_time.min;
+            g2inqrec->initial_time.minute_of_day =  g2rec[i]->sec1.date_time.hour * 60 + g2rec[i]->sec1.date_time.min;
 
             g2inqrec->year = g2rec[i]->sec1.date_time.year;
             g2inqrec->mon = g2rec[i]->sec1.date_time.mon;
@@ -7397,15 +7408,24 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
              * 'time_range_indicator.'  Then: determine offset in same units from top of
              * parameter list's time reference.
              */
-            while (g2inqrec_list != NULL) {
-                g2sort[i] = g2inqrec_list;
-		/*
-                g2inqrec_list->rec_inq->time_offset
-			= _g2GetTimeOffset(g2inqrec_list->rec_inq->time_unit_indicator,
-		*/
-                g2inqrec_list = g2inqrec_list->next;
-		i++;
-            }
+	    if (g2plist->variable_time_unit) {
+		    while(g2inqrec_list != NULL) {
+			    g2sort[i] = g2inqrec_list;
+			    g2inqrec_list->rec_inq->time_offset = _g2GetConvertedTimeOffset(
+				    g2plist->time_unit_indicator,
+				    g2inqrec_list->rec_inq->time_unit_indicator,
+				    g2inqrec_list->rec_inq->time_offset);
+			    g2inqrec_list = g2inqrec_list->next;
+			    i++;
+		    }
+	    }
+	    else {
+		    while (g2inqrec_list != NULL) {
+			    g2sort[i] = g2inqrec_list;
+			    g2inqrec_list = g2inqrec_list->next;
+			    i++;
+		    }
+	    }
 
             qsort((void *) g2sort, i, sizeof(Grib2RecordInqRecList *), g2record_comp);
 

@@ -169,6 +169,7 @@ int _NclGribVersion
                         version = buf[j + 7];
 			/* we have the version; return immediately */
 			fclose(fd);
+			NclFree(vbuf);
 			return version;
                     }
                 }
@@ -185,5 +186,6 @@ int _NclGribVersion
         fclose(fd);
     }
 
+    NclFree(vbuf);
     return version;
 }
