@@ -336,6 +336,8 @@ extern NhlErrorTypes escorc_W(void);
 extern NhlErrorTypes escovc_W(void);
 extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
+extern NhlErrorTypes fft2df_W(void);
+extern NhlErrorTypes fft2db_W(void);
 extern NhlErrorTypes lspoly_W(void);
 extern NhlErrorTypes fourier_info_W(void);
 extern NhlErrorTypes stdatmus_z2tdp_W(void);
@@ -4829,6 +4831,31 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(ezfftb_W,args,"ezfftb",nargs);
+
+/*
+ * Register "fft2df".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+
+    NclRegisterFunc(fft2df_W,args,"fft2df",nargs);
+
+/*
+ * Register "fft2db".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+
+    NclRegisterFunc(fft2db_W,args,"fft2db",nargs);
+
 /*
  * Register "lspoly".
  *
