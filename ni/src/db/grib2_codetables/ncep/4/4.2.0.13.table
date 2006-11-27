@@ -1,0 +1,10 @@
+# Product Discipline 0: Meteorological products, Parameter Category 13: Aerosols
+0:0:Aerosol type (Code table 4.205)
+# 1-191 Reserved
+# 192-254 Reserved for local use
+192:192:Particulate matter (coarse):mmg m-3:PMTC
+193:193:Particulate matter (fine):mmg m-3:PMTF
+194:194:Particulate matter (fine):log10(mmg m-3):LPMTF
+195:195:Integrated column particulate matter (fine):log10(mmg m-3):LIPMF
+255:255:Missing
+

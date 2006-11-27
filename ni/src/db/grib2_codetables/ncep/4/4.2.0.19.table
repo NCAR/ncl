@@ -1,0 +1,37 @@
+# Product Discipline 0: Meteorological products, Parameter Category 19: Physical atmospheric properties
+0:0:Visibility:m:VIS
+1:1:Albedo:%:ALBDO
+2:2:Thunderstorm probability:%:TSTM
+3:3:mixed layer depth:m:MIXHT
+4:4:Volcanic ash (Code table 4.206)
+5:5:Icing top:m:ICETOP
+6:6:Icing base:m:ICEBAS
+7:7:Icing
+8:8:Turbulence top:m:TRBTOP
+9:9:Turbulence base:m:TRBBAS
+10:10:Turbulence (Code table 4.208)
+11:11:Turbulent kinetic energy:J kg-1:TURBKE
+12:12:Planetary boundary layer regime (Code table 4.209)
+13:13:Contrail intensity
+14:14:Contrail engine type
+15:15:Contrail top:m:CNTRLTOP
+16:16:Contrail base:m:CNTRLBAS
+17:17:Maximum snow albedo:%:MXSALB
+18:18:Snow free albedo:%:SNFALB
+# 19-191 Reserved
+#192-254 Reserved for local use
+192:192:Maximum Snow Albedo:%:MXSALB
+193:193:Snow-Free Albedo:%:SNFALB
+194:194:Slight risk convective outlook
+195:195:Moderate risk convective outlook
+196:196:High risk convective outlook
+197:197:Tornado probability:%:TRNDPROB
+198:198:Hail probability:%:HAILPROB
+199:199:Wind Probability:%:WINDPROB
+200:200:Significant Tornado probability:%:SIGTRNDPROB
+201:201:Significant Hail probability:%:SIGHAILPROB
+202:202:Significant Wind probability:%:SIGWINDPROB
+203:203:Categorical Thunderstorm (1-yes, 0-no)
+204:204:Number of mixed layers next to surface:integer:MIXLY
+255:255:Missing
+

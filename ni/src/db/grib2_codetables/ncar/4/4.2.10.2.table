@@ -1,0 +1,12 @@
+# Product Discipline 10: Oceanographic products, Parameter Category 2: Ice
+0:0:Ice cover:Proportion:ICECOV
+1:1:Ice:m:thicknessICETHK
+2:2:Direction of ice drift:Degree true:ICEDRFTDIR
+3:3:Speed of ice drift:m s-1:ICEDRFTVEL
+4:4:u-component of ice drift:m s-1:UICEDRFT
+5:5:v-component of ice drift:m s-1:VICEDRFT
+6:6:Ice growth rate:m s-1:ICEGWTH
+7:7:Ice divergence:s-1:ICEDRVG
+# 8-191 Reserved
+#192-254 Reserved for local use
+255:255:Missing

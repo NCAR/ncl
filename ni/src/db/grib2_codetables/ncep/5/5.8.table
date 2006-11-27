@@ -1,0 +1,5 @@
+# CODE TABLE 5.8, lossless compression method
+1:no:no compression method
+2:lzw:lzw compression
+3:lzwhd:lzw compression - horizontal differencing
+255:255:Missing

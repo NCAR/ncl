@@ -1,0 +1,13 @@
+# CODE TABLE 4.10, Type of statistical processing
+0:0:Average
+1:1:Accumulation
+2:2:Maximum
+3:3:Minimum
+4:4:Difference (Value at the end of time range minus value at the beginning)
+5:5:Root mean square
+6:6:Standard deviation
+7:7:Covariance (Temporal variance)
+8:8:Difference (Value at the start of time range minus value at the end)
+9:9:Ratio
+# 192 254  Reserved for local use
+255:255:Missing

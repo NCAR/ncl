@@ -1,0 +1,21 @@
+# Product Discipline 2: Land surface products, Parameter Category 3: Soil Products
+0:0:Soil type (Code table 4.213)
+1:1:Upper layer soil temperature:K:ULTSOIL
+2:2:Upper layer soil moisture:kg m-3:ULSOILM
+3:3:Lower layer soil moisture:kg m-3:LLSOILM
+4:4:Bottom layer soil temperature:K:BLTSOIL
+5:5:Liquid volumetric soil moisture (non-frozen):Proportion:LVOLSOILM
+6:6:Number of soil layers in root zone:Numeric:NLSOIL
+7:7:Transpiration stress-onset (soil moisture):Proportion:TSO
+8:8:Direct evaporation cease (soil moisture):Proportion:DEVAPC
+9:9:Soil porosity:Proportion:SOILPOR
+# 10-191 Reserved
+#192-254 Reserved for local use
+192:192:Liquid volumetric soil moisture (non-frozen):Proportion:LVOLSOILM
+193:193:Number of soil layers in root zone:non-dim:NLSOIL
+194:194:Surface Slope Type:Index:SFCSLTYP
+195:195:Transpiration stress-onset (soil moisture):Proportion:TSO
+196:196:Direct evaporation cease (soil moisture):Proportion:DEVAPC
+197:197:Soil porosity:Proportion:SOILPOR
+255:255:Missing
+

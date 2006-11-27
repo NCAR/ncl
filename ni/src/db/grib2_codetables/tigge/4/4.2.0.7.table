@@ -1,0 +1,21 @@
+# Product Discipline 0: Meteorological products, Parameter Category 7: Thermodynamic Stability Indices
+0:0:Parcel lifted index (to 500 mb):K:PLI
+1:1:Best lifted index (to 500 mb):K:BLI
+2:2:K index:K:KX
+3:3:KO index:K:KOX
+4:4:Total totals index:K:TOTIX
+5:5:Sweat index:Numeric:SX
+6:6:Convective available potential energy:J kg-1:CAPE
+7:7:Convective inhibition:J kg-1:CIN
+8:8:Storm relative helicity:J kg-1:HLCY
+9:9:Energy helicity index:Numeric:EHLCY
+10:10:Surface lifted index:K:LFTX
+11:11:Best (4-layer) lifted index:K:4LFTX
+12:12:Richardson number:Numeric:RI
+#13-191 Reserved
+#192-254 Reserved for local use
+192:192:Surface Lifted Index:K:LFTX
+193:193:Best (4 layer) Lifted Index:K:4LFTX
+194:194:Richardson Number:Numeric:RI
+255:255:Missing
+
