@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.11 2006-03-11 01:05:19 kennison Exp $
+C	$Id: wmstnm.f,v 1.12 2006-11-28 01:43:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -914,6 +914,14 @@ C
       ENDIF
 C
 C   Current air temperature.
+C
+C     The input data is assumed to be expressed in whole degrees C 
+C     and tenths.  So, for example, an input value of 211 would 
+C     be 21.1 degrees C.  If IUNITS=0 (the default), then use Imperial 
+C     units, so an input of 211 would be plotted as 70 degrees F.
+C     If IUNITS is non-zero, then the temperature is plotted in
+C     metric units as whole degrees C and tenths.  So, 211 would 
+C     be plotted as 21.1.
 C
       IF (IUNITS .EQ. 0) THEN
         IRTEMP = NINT(0.18*REAL(TTT)+32.)
