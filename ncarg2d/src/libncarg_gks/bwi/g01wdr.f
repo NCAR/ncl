@@ -1,5 +1,5 @@
 C
-C	$Id: g01wdr.f,v 1.11 2003-02-13 23:58:23 fred Exp $
+C	$Id: g01wdr.f,v 1.12 2006-11-28 01:44:22 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -400,7 +400,7 @@ C  Copy LUN for output.
 C
       MFGLUN = MCONID
 C
-C  Open metacode output unit.
+C  Open  metacode output unit.
 C
       CALL G01MIO (1, MFGLUN, FNAME(1:ILEN), MOUTBF, 1, RERR)
       IF (RERR .NE. 0)  RETURN
