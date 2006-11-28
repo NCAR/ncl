@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.120 2006-11-23 02:06:13 dbrown Exp $
+#      $Id: yMakefile,v 1.121 2006-11-28 00:00:42 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2006-11-23 02:06:13 $
+#	Date:		$Date: 2006-11-28 00:00:42 $
 #
 #	Description:	
 #
@@ -105,14 +105,14 @@ DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS)
 
 #if defined(SUN)
-# EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas	-lnsl -lintl -lsocket -ldl -lw
+# EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -lfftpack5_dp -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -lfftpack5_dp -llapack -lblas	-lnsl -lintl -lsocket -ldl -lw
 #elif defined(AIX)
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas -lxlf90 -lxlopt
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -lfftpack5_dp -llapack -lblas -lxlf90 -lxlopt
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -lfftpack5_dp -llapack -lblas
 #else
-EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -llapack -lblas
+EXTRA_LIBS      =	$(NCDFLIBS) $(HDFEOSLIB) $(HDFLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2_LIBS) -lsphere3.1_dp -lfftpack5_dp -llapack -lblas
 #endif
 
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
