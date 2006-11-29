@@ -291,10 +291,18 @@ NhlErrorTypes fft2db_W( void )
   NclObjClass type_obj_x;
 
 /*
+ * Variables for retrieving attributes from input array.
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+
+/*
  * Various
  */
   int i, j, m, l, ldim, l21, ml, mldim, ml21, lwsave, lwork, ier;
   int ix0, ix1, ir0, ir1, ic0, ic1, size_coef;
+  logical calculate_lval;
   double *wsave, *work;
 
 /*
@@ -319,6 +327,59 @@ NhlErrorTypes fft2db_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"fft2db: The first dimension of coef must be 2");
     return(NhlFATAL);
   }
+
+/*
+ * Check if the N attribute is attached to the input array (there should
+ * also be an M attribute, but we don't need this).
+ *
+ * This will tell us the original size of the array passed to "fft2df".
+ * If N is not attached as an attribute, then we will just calculate N
+ * (which is "l" in the code below).
+ */
+  calculate_lval = True;
+  stack_entry = _NclGetArg(0, 1, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given; will have to calculate "l".
+ */
+      break;
+    }
+/* 
+ * Look for attributes.
+ */
+    if (attr_obj->att.n_atts == 0) {
+      break;
+    }
+    else {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "N")) == 0) {
+          l = *(int *) attr_list->attvalue->multidval.val;
+          if (l > 0) {
+            calculate_lval = False;
+          }
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
 /* 
  * Allocate space for coercing input array. Since we have to copy
  * the input array to a bigger array (tmp_r), we will go ahead and
@@ -326,8 +387,10 @@ NhlErrorTypes fft2db_W( void )
  */
   m         = dsizes_coef[1];
   l21       = dsizes_coef[2];
-  l         = (l21-1) * 2;
-  ldim      = 2 * l21;
+  if(calculate_lval) {
+    l = (l21-1) * 2;
+  }
+ ldim      = 2 * l21;
   ml        = m * l;
   mldim     = m * ldim;
   ml21      = m * l21;
