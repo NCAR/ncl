@@ -2093,6 +2093,9 @@ Grib2RecordInqRec *grib_rec;
         if (grib_rec->gds->interp_opt_name)
             NclFree(grib_rec->gds->interp_opt_name);
 
+        if (grib_rec->gds->grid_list_num_oct_opt != NULL)
+            NclFree(grib_rec->gds->grid_list_num_oct_opt);
+
         if (grib_rec->gds->shape_of_earth != NULL) {
             NclFree(grib_rec->gds->shape_of_earth);
         }
@@ -3777,6 +3780,7 @@ Grib2ParamList* step;
 		if(free_ens->it_vals != NULL) 
 			NclFree(free_ens->it_vals);
 		NclFree(free_ens);
+NclFree(the_end);
 	}
 	while(i<total) strt[i++].rec_inq = NULL;
 	step->thelist = strt;
@@ -5497,13 +5501,13 @@ static int g2InitializeOptions
 # endif /* NhlNeedProto */
 {
     Grib2Options *g2options;
-    int i;
 
     g2tmp->n_options = GRIB_NUM_OPTIONS;
 	
     g2options = NclMalloc(g2tmp->n_options * sizeof(Grib2Options));
     if (! g2options) {
         NhlPError(NhlFATAL, ENOMEM, NULL);
+        NclFree(g2options);
         return 0;
     }
 
@@ -5611,8 +5615,10 @@ static void Grib2FreeGrib2Rec
                 NclFree(sec2_p[j]->local);
             NclFree(sec2_p[j]);
 
-#if 0
             /* Section 3 */
+#if 0
+            if (sec3_p[j]->grid_list_num_oct_opt != NULL)
+                NclFree(sec3_p[j]->grid_list_num_oct_opt);
             if (sec3_p[j]->shape_of_earth != NULL) {
 /*
                 if (sec3_p[j]->shape_of_earth->earthShape != NULL)
@@ -5630,8 +5636,8 @@ static void Grib2FreeGrib2Rec
 
             NclFree(sec3_p[j]->grid_def_name);
             NclFree(sec3_p[j]->interp_opt_name);
-            NclFree(sec3_p[j]);
 
+            NclFree(sec3_p[j]);
 #endif
             /* Section 4 */
             if (sec4_p[j]->prod_params != NULL) {
@@ -5789,7 +5795,8 @@ static void *Grib2OpenFile
     if (g2rec == NULL) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not allocate memory for GRIB v2 data.");
-            NhlFree(g2rec);
+/*            NhlFree(g2rec);*/
+            Grib2FreeGrib2Rec(g2rec);
             return NULL;
     }
     g2rec[nrecs] = NclMalloc(sizeof(G2Rec));
@@ -6264,9 +6271,12 @@ static void *Grib2OpenFile
                 /* non-regular grid */
                 g2rec[nrecs]->sec3[i]->grid_list_num_oct_num = g2fld->num_opt;
                 g2rec[nrecs]->sec3[i]->grid_list_num_oct_opt
-                        = NclMalloc(g2fld->num_opt * sizeof(int *));
+                        = NclMalloc(g2fld->num_opt * sizeof(int));
                 memcpy(g2rec[nrecs]->sec3[i]->grid_list_num_oct_opt, g2fld->list_opt,
                         g2fld->num_opt * sizeof(int));
+            } else {
+                g2rec[nrecs]->sec3[i]->grid_list_num_oct_num = g2fld->num_opt;
+                g2rec[nrecs]->sec3[i]->grid_list_num_oct_opt = NULL;
             }
 
             /* table 3.2: Shape of Earth */
@@ -7020,14 +7030,18 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
 	    g2inqrec->time_unit_indicator = 1;
 
             /* GDS */
-#if 0
             g2inqrec->gds = NclMalloc(sizeof(G2_GDS));
             memset(g2inqrec->gds,0,sizeof(G2_GDS));
-            if (g2rec[i]->sec3[j]->num_oct_opt > 0) {
+            if (g2rec[i]->sec3[j]->grid_list_num_oct_num > 0) {
+                g2inqrec->gds->grid_list_num_oct_num = g2rec[i]->sec3[j]->grid_list_num_oct_num;
                 g2inqrec->gds->grid_list_num_oct_opt = NclMalloc(
-                        g2rec[i]->sec3[j]->num_oct_opt * sizeof(int *));
+                        g2rec[i]->sec3[j]->grid_list_num_oct_num * sizeof(int));
                 memcpy(g2inqrec->gds->grid_list_num_oct_opt,
-                        g2rec[i]->sec3[j]->grid_list_num_oct_opt, g2rec[i]->sec3[j]->num_oct_opt);
+                        g2rec[i]->sec3[j]->grid_list_num_oct_opt,
+                        g2rec[i]->sec3[j]->grid_list_num_oct_num * sizeof(int));
+            } else {
+                g2inqrec->gds->grid_list_num_oct_num = g2rec[i]->sec3[j]->grid_list_num_oct_num;
+                g2inqrec->gds->grid_list_num_oct_opt = NULL;
             }
 
             g2inqrec->gds->shape_of_earth = NclMalloc(sizeof(G2shapeOfEarth));
@@ -7037,8 +7051,7 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
             g2inqrec->gds->scan_mode = NclMalloc(sizeof(G2scanModeFlags));
             memset(g2inqrec->gds->scan_mode,0,sizeof(G2scanModeFlags));
             memcpy(g2inqrec->gds, g2rec[i]->sec3[j], sizeof(G2_GDS));
-#endif
-            g2inqrec->gds = (G2_GDS *)g2rec[i]->sec3[j];
+/*            g2inqrec->gds = (G2_GDS *)g2rec[i]->sec3[j];*/
 
             /* Bitmap */
 /*            g2inqrec->bms_off = NOT NEEDED ? */
@@ -7500,6 +7513,10 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
 
         fclose(fd);
         NclFree(vbuf);
+if (center_name != NULL)
+NclFree(center_name);
+if (subcenter_name != NULL)
+NclFree(subcenter_name);
         Grib2FreeGrib2Rec(g2rec);
         return g2frec;
     }
