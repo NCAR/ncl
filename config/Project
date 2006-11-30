@@ -1,13 +1,13 @@
 /*
- *      $Id: Project,v 1.73 2006-11-02 21:48:07 haley Exp $
+ *      $Id: Project,v 1.74 2006-11-30 17:36:17 grubin Exp $
  */
 
 /************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
+*                                                                       *
+*           Copyright (C) 1993                                          *
+*       University Corporation for Atmospheric Research                 *
+*           All Rights Reserved                                         *
+*                                                                       *
 ************************************************************************/
 
 /*
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2006-11-02 21:48:07 $
+ *	$Date: 2006-11-30 17:36:17 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -35,6 +35,14 @@
 #undef	BuildHDFEOS
 #endif
 #endif	/* BuildHDFEOS */
+
+#ifndef	BuildGRIB2
+#define	BuildGRIB2
+#else
+#if	!BuildGRIB2
+#undef	BuildGRIB2
+#endif
+#endif	/* BuildGRIB2 */
 
 #ifndef	BuildUdunits
 #define	BuildUdunits
@@ -145,6 +153,10 @@
 #ifndef	HDFEOSlib
 #define	HDFEOSlib   -lhdfeos -lGctp
 #endif	/* HDFEOSlib */
+
+#ifndef	GRIB2lib
+#define	GRIB2lib   -lgrib2c -ljasper
+#endif	/* GRIB2lib */
 
 #ifndef	NetCDFlib
 #define	NetCDFlib	-lnetcdf
@@ -308,7 +320,7 @@ NGENV_DESCRIPT	= \
 		"ngurl",NULL,"ngwww",NULL,NULL,			\
 		"sysresfile",NULL,"ncarg",NULL,NULL,		\
 		"sysappres",NULL,"ncarg",NULL,NULL,		\
-		"grib2_codetables",NULL,"ncarg",NULL,NULL, \
+		"grib2_codetables","NCL_GRIB2_CODETABLES","ncarg",NULL,NULL, \
 		NULL}
 
 NGENVDEF	=	-DENV_DEFS=$(NGENV_DESCRIPT)
@@ -458,6 +470,7 @@ NETCDFLIB	=
 NCDFLIBS	= NetCDFlib
 HDFLIB		= HDFlib
 HDFEOSLIB	= HDFEOSlib
+GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
 V5DLIB      = V5Dlib
 XDRLIB		= XdrLibrary

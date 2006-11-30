@@ -10,10 +10,14 @@ extern "C" {
 #include "NclFileInterfaces.h"
 
 extern int grib_version;
-
 extern NclFormatFunctionRec GribRec;
+
+#ifdef BuildGRIB2
+
 #include "NclGRIB2.h"
 extern NclFormatFunctionRec Grib2Rec;
+
+#endif   /* BuildGRIB2 */
 
 #ifdef BuildHDFEOS
 extern NclFormatFunctionRecPtr HDFEOSAddFileFormat(
@@ -64,8 +68,10 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(GribAddFileFormat,"grb");
 	_NclRegisterFormat(GribAddFileFormat,"grib");
+#ifdef  BuildGRIB2
 	_NclRegisterFormat(GribAddFileFormat,"grib2");
 	_NclRegisterFormat(GribAddFileFormat,"grb2");
+#endif  /* BuildGRIB2 */
 	_NclRegisterFormat(CcmAddFileFormat,"ccm");
 	return;
 }
@@ -85,11 +91,13 @@ NclFormatFunctionRecPtr GribAddFileFormat
             return(&GribRec);
             break;
 
+#ifdef  BuildGRIB2
         case 2:
             NhlPError(NhlWARNING, NhlEUNKNOWN, " GRIB v2 currently not supported.");
             return NULL;
 /*            return(&Grib2Rec);*/
             break;
+#endif  /* BuildGRIB2 */
 
         case -1:
             /* fallthrough */
