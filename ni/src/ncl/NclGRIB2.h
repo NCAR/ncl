@@ -315,6 +315,7 @@ typedef struct  _g2Rec {
 } G2Rec;
 
 
+#if 0
 /* Grid Def Template (GDS) */
 typedef struct _g2GDS {
     int secid;
@@ -336,6 +337,9 @@ typedef struct _g2GDS {
     float   lat_last_gridpt;        /* scaled */
     float   lon_last_gridpt;        /* scaled */
 } G2_GDS;
+#endif
+
+typedef G2Sec3 G2_GDS;
 
 /* Product Def Template (PDS) */
 typedef struct _g2PDS {
@@ -407,8 +411,6 @@ struct _Grib2ParamList {
     int param_number;
     int param_index; /* discipline * 10^6 + category * 10^3 + number */
     int grid_number;
-    int has_gds;
-    int gds_type;
     int n_entries;
     int time_range_indicator;
     int time_period;            /* 0 unless ave,diff, or acc; then: (p2 - p1) */
@@ -419,7 +421,7 @@ struct _Grib2ParamList {
     NclGrib2FVarRec var_info;
     NrmQuark    aux_coords[2];
     int ensemble_isatt;
-    NclOneDValCoordData ensemble;
+    NclMultiDValData ensemble;
     NclOneDValCoordData ens_indexes;
     int yymmddhh_isatt;
     NclOneDValCoordData yymmddhh;
@@ -520,11 +522,10 @@ struct _Grib2RecordInqRec {
 
 struct _Grib2DimInqRec {
     int dim_number;     /* assigned in order of occurence in grib record */
-    int is_gds;
-    G2_GDS  *gds;
     NclQuark    dim_name;
     long    size;
-    int is_uv;          /* only applicable to staggered grids */
+    G2_GDS  *gds;       /* for horizontal dims only */
+    int grid_number;    /* grid template number */
 };
     
 struct _Grib2AttInqRec {
