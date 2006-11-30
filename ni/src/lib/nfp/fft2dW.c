@@ -389,6 +389,7 @@ NhlErrorTypes fft2db_W( void )
   l21       = dsizes_coef[2];
   if(calculate_lval) {
     l = (l21-1) * 2;
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"fft2db: 'N' was either not attached as an attribute to the input array, or it had an invalid value.\nThe size of the output array will have to be calculated based on the size of the input array.");
   }
  ldim      = 2 * l21;
   ml        = m * l;
