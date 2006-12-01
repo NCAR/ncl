@@ -4593,11 +4593,15 @@ static void _g2SetFileDimsAndCoordVars
 
 	dstep = therec->grid_dims;
 	while (dstep != NULL) {
-		if (dstep->dim_inq->grid_number != step->grid_number)
+		if (dstep->dim_inq->grid_number != step->grid_number) {
+			dstep = dstep->next;
 			continue;
+		}
 		if (memcmp(dstep->dim_inq->gds->shape_of_earth, 
-			   step->thelist->rec_inq->gds->shape_of_earth, sizeof(G2shapeOfEarth)))
+			   step->thelist->rec_inq->gds->shape_of_earth, sizeof(G2shapeOfEarth))) {
+			dstep = dstep->next;
 			continue;
+		}
 		break;
 	}		    
     
