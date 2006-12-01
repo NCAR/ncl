@@ -1,0 +1,26 @@
+#
+#      $Id: yMakefile,v 1.1 2006-12-01 20:07:05 grubin Exp $
+#
+#########################################################################
+#                                                                       #
+#               Copyright (C) 2006                                      #
+#       University Corporation for Atmospheric Research                 #
+#               All Rights Reserved                                     #
+#                                                                       #
+#########################################################################
+#
+#       File:		yMakefile
+#
+#       Author:     Jeff W. Boote
+#                   National Center for Atmospheric Research
+#                   POB 3000, Boulder, Colorado
+#
+#       Date:
+#
+#       Description:   yMakefile for ncarg/ni/src/db/grib2_codetables/ncep
+
+#if !defined(CRAY)
+#define	IHaveSubdirs
+SUBDIRS = 0 1 2 3 4 5 6 7
+#endif
+
