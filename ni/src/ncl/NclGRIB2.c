@@ -6079,7 +6079,7 @@ static void *Grib2OpenFile
      */
     grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
     if (grib2_codetable_dir == NULL) {
-	    grib2_codetable_dir = getenv("NCL_GRIB2_CODETABLES");
+	    grib2_codetable_dir = getenv("NIO_GRIB2_CODETABLES");
     }
     if (grib2_codetable_dir == NULL) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
