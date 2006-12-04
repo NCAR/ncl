@@ -193,7 +193,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
 NhlErrorTypes wmgetp_W(void)
 {
 /*
- *  Get values for fitpack parameters.
+ *  Get values for wmap parameters.
  */
 
   char  *arg1, *cval;
@@ -344,7 +344,7 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
 
 NhlErrorTypes wmbarb_W( void )
 {
-  int grlist,gkswid,i;
+  int grlist,gkswid,i,btot;
   int *nwid,nid,ezf;
   float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
  
@@ -352,18 +352,25 @@ NhlErrorTypes wmbarb_W( void )
   float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
 
 /*
- *  Definte a variable to store the HLU object identifier.
+ *  Define a variable to store the HLU object identifier.
  */
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[1];
+  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
   float *y;
-  int ndims_y,dsizes_y[1];
+  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
   float *u;
-  int ndims_u,dsizes_u[1];
+  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
   float *v;
-  int ndims_v,dsizes_v[1];
+  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv;
+  NclScalar missing_ru, missing_rv;
+  NclBasicDataTypes type_u, type_v;
+
+  float u_missing, v_missing;
 
 /*
  * Retrieve parameters
@@ -377,25 +384,39 @@ NhlErrorTypes wmbarb_W( void )
 
   x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
   y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
-  u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, NULL,NULL,NULL,2);
-  v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, NULL,NULL,NULL,2);
+  u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
+            &missing_u, &has_missing_u, &type_u, 2);
+  v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
+            &missing_v, &has_missing_v, &type_v, 2);
+
 /*
- * Check the input dimension sizes.
+ * Check that the input dimensions and dimension sizes are the same.
  */
-  if( ndims_x != 1 || ndims_y != 1 || ndims_u != 1 || ndims_v != 1) {
+  if( ndims_x != ndims_y || ndims_y != ndims_u || ndims_u != ndims_v) {
         NhlPError(NhlFATAL,NhlEUNKNOWN,
-               "wmbarb: input arguments must be singly-dimensioned");
+               "wmbarb: input arguments must have the same dimensions.");
         return(NhlFATAL);
   }
 /*
- * Check the input sizes.
+ * Check the dimension sizes.
  */
-  if (dsizes_x[0] != dsizes_y[0] || dsizes_y[0] != dsizes_u[0] || 
-      dsizes_u[0] != dsizes_v[0]) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,
-               "wmbarb: input arguments must all have the same array size");
-        return(NhlFATAL);
+  for (i = 0; i < ndims_x; i++) {
+    if (dsizes_x[i] != dsizes_y[i] || dsizes_y[i] != dsizes_u[i] ||
+        dsizes_u[i] != dsizes_v[i]) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "wmbarb: input arguments must all have the same dimension sizes");
+          return(NhlFATAL);
+    }
   }
+
+
+/*
+ * Coerce missing values to float.
+ */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
+  u_missing = missing_ru.floatval;
+  v_missing = missing_rv.floatval;
 
 /*
  *  Determine the NCL identifier for the graphic object in nid.
@@ -413,13 +434,22 @@ NhlErrorTypes wmbarb_W( void )
   NhlGetValues(nid,grlist);
 
 /*
+ *  Calculate the total number of wind barbs to draw.
+ */
+  btot = 1;
+  for (i = 0; i < ndims_x; i++) {
+    btot = btot*dsizes_x[i];
+  }
+
+/*
  * The following section calls the c_wmbarb function.
  */
   gactivate_ws (gkswid);
   c_wmgeti("ezf",&ezf);
   if (ezf != -1) {
-    for (i = 0; i < dsizes_x[0]; i++) {
-      c_getset(&x1,&x2,&y1,&y2,&xx1,&xx2,&yy1,&yy2,&itrn);
+    for (i = 0; i < btot; i++) {
+      if ( (*(u+i) != u_missing) && (*(v+i) != v_missing)) {
+        c_getset(&x1,&x2,&y1,&y2,&xx1,&xx2,&yy1,&yy2,&itrn);
 /*
  * Find a small vector *on the map* in the direction of the wind barb.
  * The cos term is introduced to accommodate for the latitude of the
@@ -427,21 +457,26 @@ NhlErrorTypes wmbarb_W( void )
  * in degrees is less than the same spacial distance in degrees
  * longitude.
  */
-      ang1 = atan2(u[i],v[i]);
-      c_maptrn(x[i], y[i], &xt, &yt);
-      if (xt != 1.e12) {
-        c_maptrn(x[i]+0.1*cos(ang1),y[i]+0.1*sin(ang1)/cos(d2r*x[i]),&xtn,&ytn);
-        ang2 = atan2(ytn-yt,xtn-xt);
-        vlen = sqrt(u[i]*u[i]+v[i]*v[i]);
-        utmp = vlen*cos(ang2);
-        vtmp = vlen*sin(ang2);
-        c_wmbarb(xt, yt, utmp,vtmp);
+        ang1 = atan2(*(u+i),*(v+i));
+        c_maptrn(*(x+i), *(y+i), &xt, &yt);
+        if (xt != 1.e12) {
+          c_maptrn(*(x+i)+0.1*cos(ang1),*(y+i)+0.1*sin(ang1)/cos(*(x+i)*d2r),&xtn,&ytn);
+          ang2 = atan2(ytn-yt,xtn-xt);
+          utmp = *(u+i);
+          vtmp = *(v+i);
+          vlen = sqrt(utmp*utmp + vtmp*vtmp);
+          utmp = vlen*cos(ang2);
+          vtmp = vlen*sin(ang2);
+          c_wmbarb(xt, yt, utmp,vtmp);
+        }
       }
     }
   }
   else {
-    for (i = 0; i < dsizes_x[0]; i++) {
-        c_wmbarb(*(x+i), *(y+i), *(u+i), *(v+i));
+    for (i = 0; i < btot; i++) {
+      if ( (*(u+i) != u_missing) && (*(v+i) != v_missing)) {
+          c_wmbarb(*(x+i), *(y+i), *(u+i), *(v+i));
+      }
     }
   }
   gdeactivate_ws (gkswid);
@@ -468,9 +503,16 @@ NhlErrorTypes wmbarbmap_W( void )
   float *y;
   int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
   float *u;
-  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS];
+  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
   float *v;
-  int ndims_v,dsizes_v[5];
+  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv;
+  NclScalar missing_ru, missing_rv;
+  NclBasicDataTypes type_u, type_v;
+
+  float u_missing, v_missing;
 
 /*
  * Retrieve parameters
@@ -484,8 +526,18 @@ NhlErrorTypes wmbarbmap_W( void )
 
   x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
   y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
-  u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, NULL,NULL,NULL,2);
-  v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, NULL,NULL,NULL,2);
+  u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
+            &missing_u, &has_missing_u, &type_u, 2);
+  v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
+            &missing_v, &has_missing_v, &type_v, 2);
+
+/*
+ * Coerce missing values to float.
+ */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
+  u_missing = missing_ru.floatval;
+  v_missing = missing_rv.floatval;
 
 /*
  * Check that the input dimensions and dimension sizes are the same.
@@ -558,17 +610,19 @@ NhlErrorTypes wmbarbmap_W( void )
  * in degrees is less than the same spacial distance in degrees
  * longitude.
  */
-    ang1 = atan2(*(u+i),*(v+i));
-    c_maptrn(*(x+i), *(y+i), &xt, &yt);
-    if (xt != 1.e12) {
-      c_maptrn(*(x+i)+0.1*cos(ang1),*(y+i)+0.1*sin(ang1)/cos(*(x+i)*d2r),&xtn,&ytn);
-      ang2 = atan2(ytn-yt,xtn-xt);
-      utmp = *(u+i);
-      vtmp = *(v+i);
-      vlen = sqrt(utmp*utmp + vtmp*vtmp);
-      utmp = vlen*cos(ang2);
-      vtmp = vlen*sin(ang2);
-      c_wmbarb(xt, yt, utmp,vtmp);
+    if ( (*(u+i) != u_missing) && (*(v+i) != v_missing)) {
+      ang1 = atan2(*(u+i),*(v+i));
+      c_maptrn(*(x+i), *(y+i), &xt, &yt);
+      if (xt != 1.e12) {
+        c_maptrn(*(x+i)+0.1*cos(ang1),*(y+i)+0.1*sin(ang1)/cos(*(x+i)*d2r),&xtn,&ytn);
+        ang2 = atan2(ytn-yt,xtn-xt);
+        utmp = *(u+i);
+        vtmp = *(v+i);
+        vlen = sqrt(utmp*utmp + vtmp*vtmp);
+        utmp = vlen*cos(ang2);
+        vtmp = vlen*sin(ang2);
+        c_wmbarb(xt, yt, utmp,vtmp);
+      }
     }
   }
 

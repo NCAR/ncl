@@ -3088,10 +3088,10 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
 
     SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
     NclRegisterProc(wmbarb_W,args,"wmbarb",nargs);
 
 /*
