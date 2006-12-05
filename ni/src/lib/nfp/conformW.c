@@ -237,6 +237,15 @@ NhlErrorTypes conform_W( void )
     }
   }
 /*
+ * Free unneeded memory.
+ */
+  if(!copy_scalar) {
+    NclFree(skip_x);
+    NclFree(indices);
+    NclFree(skip_c);
+  }
+
+/*
  * Return values.
  */
   if(tmp_md->multidval.missing_value.has_missing) {
