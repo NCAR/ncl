@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.211 2006-11-10 20:20:45 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.212 2006-12-05 21:33:23 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12203,7 +12203,7 @@ NhlErrorTypes _NclIGetVarDims
 	int i;
 	string name;
 	int dimsizes;
-	NclApiDataList *data;
+	NclApiDataList *data = NULL;
 	NhlErrorTypes ret = NhlNOERROR;
 	NclStackEntry val;
 	NclVar tmp_var;
@@ -12252,6 +12252,8 @@ NhlErrorTypes _NclIGetVarDims
 	} else {
 		ret  = NhlFATAL;
 	}
+	if (data)
+		_NclFreeApiDataList((void*)data);
 	return(ret);
 
 
@@ -12266,7 +12268,7 @@ NhlErrorTypes _NclIGetVarAtts
 {
 	string name;
 	int dimsizes;
-	NclApiDataList *data;
+	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
 	NclVar tmp_var;
@@ -12344,7 +12346,7 @@ NhlErrorTypes _NclIFileVarDimsizes
 	int name_has_missing;
 	int out_val = -1;
 	int dimsizes;
-	NclApiDataList *data;
+	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
 	NclVar tmp_var;
@@ -12419,7 +12421,8 @@ NhlErrorTypes _NclIFileVarDimsizes
 	} else {
 		dimsizes = 1;
 		ret = NclReturnValue((void*)&((NclTypeClass)nclTypeintClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypeintClass)->type_class.default_mis, ((NclTypeClass)nclTypeintClass)->type_class.data_type, 1);
-		_NclFreeApiDataList((void*)data);
+		if (data)
+			_NclFreeApiDataList((void*)data);
 		return(ret);
 	}
 }
@@ -12437,7 +12440,7 @@ NhlErrorTypes _NclIGetFileVarDims
 	int name_has_missing;
 	string out_val = -1;
 	int dimsizes;
-	NclApiDataList *data;
+	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
 	NclVar tmp_var;
@@ -12510,7 +12513,8 @@ NhlErrorTypes _NclIGetFileVarDims
 	} else {
 		dimsizes = 1;
 		ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
-		_NclFreeApiDataList((void*)data);
+		if (data)
+			_NclFreeApiDataList((void*)data);
 		return(ret);
 	}
 }
@@ -12527,7 +12531,7 @@ NhlErrorTypes _NclIGetFileVarAtts
 	int name_has_missing;
 	string out_val = -1;
 	int dimsizes;
-	NclApiDataList *data;
+	NclApiDataList *data = NULL;
 	NhlErrorTypes ret;
 	NclStackEntry val;
 	NclVar tmp_var;
@@ -12595,7 +12599,8 @@ NhlErrorTypes _NclIGetFileVarAtts
 	} else {
 		dimsizes = 1;
 		ret = NclReturnValue((void*)&((NclTypeClass)nclTypestringClass)->type_class.default_mis, 1, &dimsizes, &((NclTypeClass)nclTypestringClass)->type_class.default_mis, ((NclTypeClass)nclTypestringClass)->type_class.data_type, 1);
-		_NclFreeApiDataList((void*)data);
+		if (data)
+			_NclFreeApiDataList((void*)data);
 		return(ret);
 	}
 
@@ -12869,7 +12874,8 @@ NhlErrorTypes _NclIFileAttDef
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
                                 return(NhlWARNING);
                         }
-			_NclFreeApiDataList((void*)tmp);
+			if (tmp)
+				_NclFreeApiDataList((void*)tmp);
 
 			break;
 		default:
@@ -12982,7 +12988,8 @@ NhlErrorTypes _NclIFileVarAttDef
                                 NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
                                 return(NhlWARNING);
                         }
-			_NclFreeApiDataList((void*)tmp);
+			if (tmp)
+				_NclFreeApiDataList((void*)tmp);
 			break;
 		default:
 			if(data.u.data_var->var.att_id != -1) {
