@@ -5,6 +5,8 @@
 3:3:Downward long-wave radiation flux:W m-2:DLWRF
 4:4:Upward long-wave radiation flux:W m-2:ULWRF
 # 5-191 Reserved
+5:5:Time-integrated outgoing long wave radiation:W m-2 s:TTR
+#5:5:Time-integrated surface net thermal radiation:W m-2 s:STR
 #192-254 Reserved for local use
 192:192:Downward Long-Wave Rad. Flux:W m-2:DLWRF
 193:193:Upward Long-Wave Rad. Flux:W m-2:ULWRF

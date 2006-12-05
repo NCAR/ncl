@@ -1,14 +1,16 @@
 # Product Discipline 0: Meteorological products, Parameter Category 3: Mass
- 0:0:Pressure:Pa:PRES
+ 0:0:Mean sea level pressure:Pa:MSL
+#0:0:Surface pressure:Pa:SP
  1:1:Pressure reduced to MSL: Pa:PRMSL
  2:2:Pressure tendency:Pa s-1:PTEND
  3:3:ICAO Standard Atmosphere Reference Height:m:ICAHT
  4:4:Geopotential:m2 s-2:GP
- 5:5:Geopotential height:gpm:HGT
+ 5:5:Geopotential height:gpm:GH
+#5:5:Orography:gpm:OROG
  6:6:Geometric height:m:DIST
  7:7:Standard deviation of height:m:HSTDV
  8:8:Pressure anomaly:Pa:PRESA
- 9:9:Geopotential height anomaly:gpm:GPA
+ 9:9:Geopotential height anomaly:gpm:GHA
  10:10:Density:kg m-3:DEN
  11:11:Altimeter setting:Pa:ALTMT
  12:12:Thickness:m:THICK

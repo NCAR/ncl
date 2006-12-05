@@ -1,7 +1,7 @@
 # Product Discipline 2: Land surface products, Parameter Category 0: Vegetation/Biomass
-0:0:Land cover (0=sea, 1=land):Proportion:LAND
+0:0:Land sea mask (0 = sea, 1 = land):Proportion:LSM
 1:1:Surface roughness:m:SFCR
-2:2:Soil temperature:K:TSOIL
+2:2:Soil temperature:K:ST
 3:3:Soil moisture content:kg m-2:SOILM
 4:4:Vegetation:%:VEG
 5:5:Water runoff:kg m-2:WATR
@@ -21,6 +21,7 @@
 19:19:Temperature parameter in canopy conductance:Proportion:RCT
 20:20:Soil moisture parameter in canopy conductance:Proportion:RCSOL
 21:21:Humidity parameter in canopy conductance:Proportion:RCQ
+22:22:Soil Moisture:kg m-3:SM
 # 22-191 Reserved
 #192-254 Reserved for local use
 192:192:Volumetric soil moisture content:Proportion:SOILW

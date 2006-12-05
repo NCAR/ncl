@@ -1,6 +1,6 @@
 # Product Discipline 0: Meteorological products, Parameter Category 6: Cloud
 0:0:Cloud ice:kg m-2:CICE
-1:1:Total cloud cover:%:TCDC
+1:1:Total cloud cover:%:TCC
 2:2:Convective cloud cover:%:CDCON
 3:3:Low cloud cover:%:LCDC
 4:4:Medium cloud cover:%:MCDC
@@ -22,7 +22,7 @@
 20:20:Total column-integrated condensate:kg m-2:TCOLC
 21:21:Ice fraction of total condensate:Proportion:FICE
 # 22-191 Reserved
-22:22:Sunshine duration (ECMWF proposal, not WMO approved):s:SUN
+24:24:Sunshine duration (ECMWF proposal, not WMO approved):s:SUND
 # 192-254 Reserved for local use
 192:192:Non-Convective Cloud Cover:%:CDLYR
 193:193:Cloud Work Function:J kg-1:CWORK

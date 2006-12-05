@@ -8,7 +8,7 @@
 6:6:Radiance (with respect to wave length):W m-3 sr-1:SWRAD
 7:7:Downward short-wave radiation flux:W m-2:DSWRF
 # 9:191:Reserved
-9:9:Upward short-wave radiation flux:W m-2:USWRF
+9:9:Time-integrated surface net solar radiation:W m-2:SSR
 #192-254 Reserved for local use
 192:192:Downward Short-Wave Rad. Flux:W m-2:DSWRF
 193:193:Upward Short-Wave Rad. Flux:W m-2:USWRF

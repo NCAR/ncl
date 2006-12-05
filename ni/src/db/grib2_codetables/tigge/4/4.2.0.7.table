@@ -6,7 +6,7 @@
 4:4:Total totals index:K:TOTIX
 5:5:Sweat index:Numeric:SX
 6:6:Convective available potential energy:J kg-1:CAPE
-7:7:Convective inhibition:J kg-1:CIN
+7:7:Convective inhibition:J kg-1:CI
 8:8:Storm relative helicity:J kg-1:HLCY
 9:9:Energy helicity index:Numeric:EHLCY
 10:10:Surface lifted index:K:LFTX

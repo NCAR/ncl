@@ -1,8 +1,10 @@
 # Product Discipline 0: Meteorological products, Parameter Category 2: Momentum
 0:0:Wind direction (from which blowing):deg true:WDIR
 1:1:Wind speed:m s-1:WIND
-2:2:u-component of wind:m s-1:UGRD
-3:3:v-component of wind:m s-1:VGRD
+2:2:u velocity:m s-1:U
+#2:2:10 meter u-velocity:m s-1:10U
+3:3:v velocity:m s-1:V
+#3:3:10 meter v-velocity:m s-1:10V
 4:4:Stream function:m2 s-1:STRM
 5:5:Velocity potential:m2 s-1:VPOT
 6:6:Montgomery stream function:m2 s-2:MNTSF

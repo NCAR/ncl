@@ -1,5 +1,5 @@
  # Product Discipline 0: Meteorological products, Parameter Category 1: Moisture
- 0:0:Specific humidity:kg kg-1:SPFH
+ 0:0:Specific humidity:kg kg-1:Q
  1:1:Relative humidity:%:RH
  2:2:Humidity mixing ratio:kg kg-1:MIXR
  3:3:Precipitable water:kg m-2:PWAT
@@ -48,6 +48,10 @@
  45:45:Total column integrated rain:kg m-2:TCOLR
  46:46:Total column integrated snow:kg m-2:TCOLS
 #47-191 Reserved
+ 51:51:Total column water:kg m-2:TCW
+ 52:52:total precipitation:kg m-2:TP
+ 53:53:Snow fall water equivalent:kg m-2:SF
+ 60:60:Snow fall depth equivalent:kg m-2:SD
 #192-254 Reserved for local use
 192:192:Categorical Rain:non-dim:CRAIN
 193:193:Categorical Freezing Rain:non-dim:CFRZR
