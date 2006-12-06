@@ -24,7 +24,7 @@ NhlErrorTypes betainc_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i;
+  int i, ret;
 /*
  * Retrieve parameters
  *
@@ -193,7 +193,8 @@ NhlErrorTypes betainc_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_x,0));
+  ret = NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_x,0);
+  return(ret);
 }
 
 
@@ -216,7 +217,7 @@ NhlErrorTypes gammainc_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i;
+  int i, ret;
 /*
  * Retrieve parameters
  *
@@ -348,5 +349,7 @@ NhlErrorTypes gammainc_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(cum,ndims_x,dsizes_x,NULL,type_x,0));
+  ret = NclReturnValue(cum,ndims_x,dsizes_x,NULL,type_x,0);
+  return(ret);
+
 }

@@ -46,7 +46,7 @@ NhlErrorTypes dim_avg_wgt_W( void )
 /*
  * Various
  */
-  int nx, index_x;
+  int nx, index_x, ret;
   int i, ndims_leftmost, size_output;
 
 /*
@@ -219,17 +219,19 @@ NhlErrorTypes dim_avg_wgt_W( void )
  */
   if(has_missing_x) {
     if(type_xavg == NCL_double) {
-      return(NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_dbl_x,
-			    type_xavg,0));
+      ret = NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_dbl_x,
+			    type_xavg,0);
     }
     else {
-      return(NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_flt_x,
-			    type_xavg,0));
+      ret = NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_flt_x,
+			    type_xavg,0);
     }
   }
   else {
-    return(NclReturnValue(xavg,ndims_xavg,dsizes_xavg,NULL,type_xavg,0));
+    ret = NclReturnValue(xavg,ndims_xavg,dsizes_xavg,NULL,type_xavg,0);
   }
+  NclFree(dsizes_xavg);
+  return(ret);
 }
 
 NhlErrorTypes dim_sum_wgt_W( void )
@@ -272,7 +274,7 @@ NhlErrorTypes dim_sum_wgt_W( void )
 /*
  * Various
  */
-  int nx, index_x;
+  int nx, index_x, ret;
   int i, ndims_leftmost, size_output;
 
 /*
@@ -445,15 +447,17 @@ NhlErrorTypes dim_sum_wgt_W( void )
  */
   if(has_missing_x) {
     if(type_xavg == NCL_double) {
-      return(NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_dbl_x,
-			    type_xavg,0));
+      ret = NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_dbl_x,
+			    type_xavg,0);
     }
     else {
-      return(NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_flt_x,
-			    type_xavg,0));
+      ret = NclReturnValue(xavg,ndims_xavg,dsizes_xavg,&missing_flt_x,
+			    type_xavg,0);
     }
   }
   else {
-    return(NclReturnValue(xavg,ndims_xavg,dsizes_xavg,NULL,type_xavg,0));
+    ret = NclReturnValue(xavg,ndims_xavg,dsizes_xavg,NULL,type_xavg,0);
   }
+  NclFree(dsizes_xavg);
+  return(ret);
 }

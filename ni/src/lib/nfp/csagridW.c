@@ -6,7 +6,7 @@ char csamsg[61];
 
 NhlErrorTypes csa1xs_W(void)
 {
-  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost;
+  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost, ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
@@ -152,12 +152,15 @@ NhlErrorTypes csa1xs_W(void)
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_float, 0));
+  ret = NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_float, 0);
+  NclFree(dsizes_yo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa1s_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   float *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
@@ -268,13 +271,14 @@ NhlErrorTypes csa1s_W(void)
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_float, 0));
-
+  ret = NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_float, 0);
+  NclFree(dsizes_yo);
+  return(ret);
 }
 
 NhlErrorTypes csa2s_W(void)
 {
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_zo = 0;
 
   float *xi;
@@ -392,14 +396,17 @@ NhlErrorTypes csa2s_W(void)
     free(zo_tmp);
   }
   
-  return(NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
-                         NCL_float, 0));
+  ret = NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
+                        NCL_float, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa2xs_W(void)
 {
   int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int ier = 0, index_in = 0, index_zo = 0, ret;
 
   float *xi;
   int dsizes_xi[1];
@@ -549,13 +556,16 @@ NhlErrorTypes csa2xs_W(void)
     free(zo_tmp);
   }
 
-  return(NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
-                         NCL_float, 0));
+  ret = NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
+                         NCL_float, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa2ls_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
   float *xi;
@@ -680,13 +690,16 @@ NhlErrorTypes csa2ls_W(void)
     free(zo_tmp);
   }
 
-  return(NclReturnValue((void *) zo, ndims_zo, dsizes_zo, NULL, NCL_float,
-                        0));
+  ret = NclReturnValue((void *) zo, ndims_zo, dsizes_zo, NULL, NCL_float,
+                        0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa2lxs_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int scalar_zo, scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0;
 
@@ -847,14 +860,17 @@ NhlErrorTypes csa2lxs_W(void)
     index_zo += nxo;
     free(zo_tmp);
   }
-  return(NclReturnValue((void *) zo,ndims_zo,dsizes_zo,NULL,NCL_float,0));
+  ret = NclReturnValue((void *) zo,ndims_zo,dsizes_zo,NULL,NCL_float,0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3xs_W(void)
 {
   int i, j, npts, nxo, nyo, nzo, nxyz;
   int size_output, size_leftmost, scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0, index_in = 0, index_uo = 0, ret;
 
   float *xi;
   int dsizes_xi[1];
@@ -1022,14 +1038,17 @@ NhlErrorTypes csa3xs_W(void)
     index_uo += nxyz;
     free(uo_tmp);
   }
-  return(NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
-                         NULL, NCL_float, 0));
+  ret = NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
+                         NULL, NCL_float, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3s_W(void)
 {
   int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost;
+  int size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_uo = 0;
 
   float *xi;
@@ -1164,13 +1183,16 @@ NhlErrorTypes csa3s_W(void)
     index_uo += nxyz;
     free(uo_tmp);
   }
-  return(NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL, 
-                         NCL_float, 0));
+  ret = NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL, 
+                         NCL_float, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3lxs_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int scalar_uo, scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
@@ -1356,14 +1378,17 @@ NhlErrorTypes csa3lxs_W(void)
     free(uo_tmp);
   }
 
-  return(NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
-                         NULL, NCL_float, 0));
+  ret = NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
+                         NULL, NCL_float, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3ls_W(void)
 {
   int i, j, npts, nxo, size_output, size_leftmost, scalar_uo;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0, index_in = 0, index_uo = 0, ret;
 
   float *xi;
   int dsizes_xi[1];
@@ -1514,13 +1539,16 @@ NhlErrorTypes csa3ls_W(void)
     index_uo += nxo;
     free(uo_tmp);
   }
-  return(NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL,
-                         NCL_float, 0));
+  ret = NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL,
+                         NCL_float, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa1xd_W(void)
 {
-  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost;
+  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost, ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
   double *xi;
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
@@ -1663,12 +1691,15 @@ NhlErrorTypes csa1xd_W(void)
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_double, 0));
+  ret = NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_double, 0);
+  NclFree(dsizes_yo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa1d_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int ier = 0, index_xi = 0, index_yi = 0, index_yo = 0;
 
   double *xi;
@@ -1779,13 +1810,14 @@ NhlErrorTypes csa1d_W(void)
     index_yo += nxo;
     free(yo_tmp);
   }
-  return(NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_double, 0));
-
+  ret = NclReturnValue( (void *) yo, ndims_yi, dsizes_yo, NULL, NCL_double, 0);
+  NclFree(dsizes_yo);
+  return(ret);
 }
 
 NhlErrorTypes csa2d_W(void)
 {
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_zo = 0;
 
   double *xi;
@@ -1903,14 +1935,17 @@ NhlErrorTypes csa2d_W(void)
     free(zo_tmp);
   }
   
-  return(NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
-                         NCL_double, 0));
+  ret = NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
+                         NCL_double, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa2xd_W(void)
 {
   int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int ier = 0, index_in = 0, index_zo = 0, ret;
 
   double *xi;
   int dsizes_xi[1];
@@ -2060,13 +2095,16 @@ NhlErrorTypes csa2xd_W(void)
     free(zo_tmp);
   }
 
-  return(NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
-                         NCL_double, 0));
+  ret = NclReturnValue( (void *) zo,  ndims_zo, dsizes_zo, NULL, 
+                         NCL_double, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa2ld_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
   double *xi;
@@ -2191,13 +2229,16 @@ NhlErrorTypes csa2ld_W(void)
     free(zo_tmp);
   }
 
-  return(NclReturnValue((void *) zo, ndims_zo, dsizes_zo, NULL, NCL_double,
-                        0));
+  ret = NclReturnValue((void *) zo, ndims_zo, dsizes_zo, NULL, NCL_double,
+                        0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa2lxd_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int scalar_zo, scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0;
 
@@ -2358,12 +2399,15 @@ NhlErrorTypes csa2lxd_W(void)
     index_zo += nxo;
     free(zo_tmp);
   }
-  return(NclReturnValue((void *) zo,ndims_zo,dsizes_zo,NULL,NCL_double,0));
+  ret = NclReturnValue((void *) zo,ndims_zo,dsizes_zo,NULL,NCL_double,0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3xd_W(void)
 {
-  int i, j, npts, nxo, nyo, nzo, nxyz;
+  int i, j, npts, nxo, nyo, nzo, nxyz, ret;
   int size_output, size_leftmost, scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
@@ -2533,14 +2577,17 @@ NhlErrorTypes csa3xd_W(void)
     index_uo += nxyz;
     free(uo_tmp);
   }
-  return(NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
-                         NULL, NCL_double, 0));
+  ret = NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
+                         NULL, NCL_double, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3d_W(void)
 {
   int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost;
+  int size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_uo = 0;
 
   double *xi;
@@ -2675,13 +2722,16 @@ NhlErrorTypes csa3d_W(void)
     index_uo += nxyz;
     free(uo_tmp);
   }
-  return(NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL, 
-                         NCL_double, 0));
+  ret = NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL, 
+                         NCL_double, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3lxd_W(void)
 {
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int scalar_uo, scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
@@ -2867,14 +2917,17 @@ NhlErrorTypes csa3lxd_W(void)
     free(uo_tmp);
   }
 
-  return(NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
-                         NULL, NCL_double, 0));
+  ret = NclReturnValue( (void *) uo, ndims_uo, dsizes_uo, 
+                         NULL, NCL_double, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa3ld_W(void)
 {
   int i, j, npts, nxo, size_output, size_leftmost, scalar_uo;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0, index_in = 0, index_uo = 0, ret;
 
   double *xi;
   int dsizes_xi[1];
@@ -3025,8 +3078,11 @@ NhlErrorTypes csa3ld_W(void)
     index_uo += nxo;
     free(uo_tmp);
   }
-  return(NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL,
-                         NCL_double, 0));
+  ret = NclReturnValue( (void *) uo,  ndims_uo, dsizes_uo, NULL,
+                         NCL_double, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 NhlErrorTypes csa1x_W(void)
@@ -3041,7 +3097,7 @@ NhlErrorTypes csa1x_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost;
+  int i, j, npts, nxo, scalar_wts, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_yo = 0;
 /*
  * Output variables.
@@ -3270,7 +3326,10 @@ NhlErrorTypes csa1x_W(void)
   if(type_smth != NCL_double)               NclFree(tmp_smth);
   if(type_xo   != NCL_double)               NclFree(tmp_xo);
 
-  return(NclReturnValue(yo, ndims_yi, dsizes_yo, NULL, type_yo, 0));
+  ret = NclReturnValue(yo, ndims_yi, dsizes_yo, NULL, type_yo, 0);
+  NclFree(dsizes_yo);
+  return(ret);
+
 }
 
 
@@ -3286,7 +3345,7 @@ NhlErrorTypes csa1_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_yo = 0;
 /*
  * Output variables.
@@ -3454,7 +3513,10 @@ NhlErrorTypes csa1_W(void)
   if(type_yi   != NCL_double) NclFree(tmp_yi);
   if(type_xo   != NCL_double) NclFree(tmp_xo);
 
-  return(NclReturnValue(yo, ndims_yi, dsizes_yo, NULL, type_yo, 0));
+  ret = NclReturnValue(yo, ndims_yi, dsizes_yo, NULL, type_yo, 0);
+  NclFree(dsizes_yo);
+  return(ret);
+
 
 }
 
@@ -3472,7 +3534,7 @@ NhlErrorTypes csa2_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost;
+  int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_zo = 0;
 
 /*
@@ -3637,7 +3699,10 @@ NhlErrorTypes csa2_W(void)
   if(type_xo   != NCL_double) NclFree(tmp_xo);
   if(type_yo   != NCL_double) NclFree(tmp_yo);
   
-  return(NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0));
+  ret = NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 
@@ -3658,7 +3723,7 @@ NhlErrorTypes csa2x_W(void)
  * Various. 
  */
   int i, j, npts, nxo, nyo, nxonyo, size_output, size_leftmost, scalar_wts;
-  int ier = 0, index_in = 0, index_zo = 0;
+  int ier = 0, index_in = 0, index_zo = 0, ret;
 /*
  * Output variables.
  */
@@ -3881,7 +3946,10 @@ NhlErrorTypes csa2x_W(void)
   if(type_xo   != NCL_double)               NclFree(tmp_xo);
   if(type_yo   != NCL_double)               NclFree(tmp_yo);
   
-  return(NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0));
+  ret = NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 
@@ -3899,7 +3967,7 @@ NhlErrorTypes csa2l_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_zo = 0, scalar_zo;
 
 /*
@@ -4069,7 +4137,10 @@ NhlErrorTypes csa2l_W(void)
   if(type_xo   != NCL_double) NclFree(tmp_xo);
   if(type_yo   != NCL_double) NclFree(tmp_yo);
   
-  return(NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0));
+  ret = NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 
@@ -4088,7 +4159,7 @@ NhlErrorTypes csa2lx_W(void)
 /*
  * Various. 
  */
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int scalar_zo, scalar_wts;
   int ier = 0, index_in = 0, index_zo = 0;
 
@@ -4322,7 +4393,10 @@ NhlErrorTypes csa2lx_W(void)
   if(type_xo   != NCL_double)               NclFree(tmp_xo);
   if(type_yo   != NCL_double)               NclFree(tmp_yo);
   
-  return(NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0));
+  ret = NclReturnValue( zo,  ndims_zo, dsizes_zo, NULL, type_zo, 0);
+  NclFree(dsizes_zo);
+  return(ret);
+
 }
 
 
@@ -4344,7 +4418,7 @@ NhlErrorTypes csa3x_W(void)
  */
   int i, j, npts, nxo, nyo, nzo, nxyz;
   int size_output, size_leftmost, scalar_wts;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0, index_in = 0, index_uo = 0, ret;
 
 /*
  * Output variables.
@@ -4577,7 +4651,10 @@ NhlErrorTypes csa3x_W(void)
   if(type_yo   != NCL_double)               NclFree(tmp_yo);
   if(type_zo   != NCL_double)               NclFree(tmp_zo);
   
-  return(NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0));
+  ret = NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0);
+  NclFree(dsizes_uo);
+  return(ret);
+
 }
 
 
@@ -4596,7 +4673,7 @@ NhlErrorTypes csa3_W(void)
  * Various. 
  */
   int i, j, npts, nxo, nyo, nzo, nxyz;
-  int size_output, size_leftmost;
+  int size_output, size_leftmost, ret;
   int ier = 0, index_in = 0, index_uo = 0;
 
 /*
@@ -4769,7 +4846,9 @@ NhlErrorTypes csa3_W(void)
   if(type_yo != NCL_double) NclFree(tmp_yo);
   if(type_zo != NCL_double) NclFree(tmp_zo);
   
-  return(NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0));
+  ret = NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0);
+  NclFree(dsizes_uo);
+  return(ret);
 }
 
 
@@ -4789,7 +4868,7 @@ NhlErrorTypes csa3lx_W(void)
 /*
  * Various
  */
-  int i, j, npts, nxo, size_output, size_leftmost;
+  int i, j, npts, nxo, size_output, size_leftmost, ret;
   int scalar_uo, scalar_wts;
   int ier = 0, index_in = 0, index_uo = 0;
 
@@ -5031,7 +5110,9 @@ NhlErrorTypes csa3lx_W(void)
   if(type_yo   != NCL_double)               NclFree(tmp_yo);
   if(type_zo   != NCL_double)               NclFree(tmp_zo);
   
-  return(NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0));
+  ret = NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0);
+  NclFree(dsizes_uo);
+  return(ret);
 }
 
 
@@ -5050,7 +5131,7 @@ NhlErrorTypes csa3l_W(void)
  * Various. 
  */
   int i, j, npts, nxo, size_output, size_leftmost, scalar_uo;
-  int ier = 0, index_in = 0, index_uo = 0;
+  int ier = 0, index_in = 0, index_uo = 0, ret;
 
 /*
  * Output variables.
@@ -5228,6 +5309,8 @@ NhlErrorTypes csa3l_W(void)
   if(type_yo != NCL_double)  NclFree(tmp_yo);
   if(type_zo != NCL_double)  NclFree(tmp_zo);
   
-  return(NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0));
+  ret = NclReturnValue( uo,  ndims_uo, dsizes_uo, NULL, type_uo, 0);
+  NclFree(dsizes_uo);
+  return(ret);
 }
 

@@ -27,7 +27,7 @@ NhlErrorTypes dim_gbits_W( void )
   int i, j, n, size_leftmost, size_isam, tmp_ibit, tmp_nbits, tmp_nskip;
   int *tmp_npack, *tmp_npack2;
 
-  int size_npack_type, size_int_type;
+  int size_npack_type, size_int_type, ret;
   int index_npack = 0, index_isam = 0;
   NclTypeClass typeclass_npack;
 /*
@@ -207,8 +207,10 @@ NhlErrorTypes dim_gbits_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue( (void *) isam, ndims_npack, dsizes_isam, 
-                         NULL, type_npack, 0));
+  ret = NclReturnValue( (void *) isam, ndims_npack, dsizes_isam, NULL,
+                        type_npack, 0);
+  NclFree(dsizes_isam);
+  return(ret);
 }
 
 NhlErrorTypes getbitsone_W( void )
@@ -228,7 +230,7 @@ NhlErrorTypes getbitsone_W( void )
 /*
  * Various.
  */
-  int i, j, n, size_npack, size_isam, ibit, nbits, nskip, size_npack_type;
+  int i, j, n, size_npack, size_isam, ibit, nbits, nskip, size_npack_type, ret;
   int *tmp_npack, *tmp_npack2;
 
   NclTypeClass typeclass_npack;
@@ -367,7 +369,10 @@ NhlErrorTypes getbitsone_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue( (void *) isam, ndims_npack+1, dsizes_isam, 
-                         NULL, type_npack, 0));
+  ret = NclReturnValue( (void *) isam, ndims_npack+1, dsizes_isam, NULL,
+                        type_npack, 0);
+  NclFree(dsizes_isam);
+  return(ret);
+
 }
 

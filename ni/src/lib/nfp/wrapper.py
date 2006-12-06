@@ -964,7 +964,7 @@ if work_array_names != []:
 #---------------------------------------------------------------------
 if have_leftmost:
   if isfunc:
-    w1file.write("  int i, ndims_leftmost, size_leftmost, size_output;\n")
+    w1file.write("  int i, ndims_leftmost, size_leftmost, size_output, ret;\n")
   else:
     w1file.write("  int i, ndims_leftmost, size_leftmost;\n")
 else:
@@ -1555,27 +1555,30 @@ if isfunc:
   if ret_has_missing:
     if ret_arg.ntype == "numeric":
       w1file.write("  if(" + ret_arg.type_name + " != NCL_double) {\n")
-      w1file.write("    return(NclReturnValue(" + ret_arg.name + "," + \
+      w1file.write("    ret = NclReturnValue(" + ret_arg.name + "," + \
                    ret_arg.ndims_name + "," + ret_arg.dsizes_name + \
                    ",&" + ret_arg.msg_fname + "," + \
-                   ret_arg.type_name + ",0));\n")
+                   ret_arg.type_name + ",0);\n")
       w1file.write("  }\n")
       w1file.write("  else {\n")
-      w1file.write("    return(NclReturnValue(" + ret_arg.name + "," + \
+      w1file.write("    ret = NclReturnValue(" + ret_arg.name + "," + \
                    ret_arg.ndims_name + "," + ret_arg.dsizes_name + \
                    ",&" + ret_arg.msg_dname + "," + \
-                   ret_arg.type_name + ",0));\n")
+                   ret_arg.type_name + ",0);\n")
       w1file.write("  }\n")
     else:
       w1file.write("  else {\n")
-      w1file.write("    return(NclReturnValue(" + ret_arg.name + "," + \
+      w1file.write("    ret = NclReturnValue(" + ret_arg.name + "," + \
                    ret_arg.ndims_name + "," + ret_arg.dsizes_name + "," + \
-                   ret_arg.msg_name + "," + ret_arg.type_name + ",0));\n")
+                   ret_arg.msg_name + "," + ret_arg.type_name + ",0);\n")
       w1file.write("  }\n")
   else:
-    w1file.write("  return(NclReturnValue(" + ret_arg.name + "," + \
+    w1file.write("  ret = NclReturnValue(" + ret_arg.name + "," + \
                 ret_arg.ndims_name + "," + ret_arg.dsizes_name + ",NULL," + \
-                ret_arg.type_name + ",0));\n")
+                ret_arg.type_name + ",0);\n")
+
+  w1file.write("  NclFree(" + ret_arg.dsizes_name + ");\n")
+  w1file.write("  return(ret);\n")
 else:
   w1file.write("""
 /*
