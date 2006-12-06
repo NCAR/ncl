@@ -5918,6 +5918,8 @@ static void Grib2FreeGrib2Rec
                     NclFree(sec4_p[j]->prod_params->param_name);
                 if (sec4_p[j]->prod_params->short_name != NULL)
                     NclFree(sec4_p[j]->prod_params->short_name);
+                if (sec4_p[j]->prod_params->units != NULL)
+                    NclFree(sec4_p[j]->prod_params->units);
                 if (sec4_p[j]->prod_params->gen_proc_name != NULL)
                     NclFree(sec4_p[j]->prod_params->gen_proc_name);
                 if (sec4_p[j]->prod_params->time_range_unit != NULL)
@@ -5972,6 +5974,7 @@ static void Grib2FreeGrib2Rec
 
         NclFree(rec[i]);
     }
+    NclFree(rec);
 
     return;
 }
@@ -6081,7 +6084,9 @@ static void *Grib2OpenFile
     /*
      * Code table directory
      */
+/***** temporarily removed
     grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
+***/
     if (grib2_codetable_dir == NULL) {
 	    grib2_codetable_dir = getenv("NIO_GRIB2_CODETABLES");
     }
@@ -6133,22 +6138,21 @@ static void *Grib2OpenFile
         
         if (nrecs > t_nrecs) {
             ++t_nrecs;
-            tmp_g2rec = NclRealloc(g2rec, (nrecs + 1) * sizeof(G2Rec *));
-            if (tmp_g2rec == NULL) {
+            g2rec = NclRealloc(g2rec, (nrecs + 1) * sizeof(G2Rec *));
+            if (g2rec == NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "Could not extend memory for GRIB v2 data.");
                 NhlFree(g2rec);
                 return NULL;
             }
-            tmp_g2rec[nrecs] = NclMalloc(sizeof(G2Rec));
-            if (tmp_g2rec[nrecs] == NULL) {
+            g2rec[nrecs] = NclMalloc(sizeof(G2Rec));
+            if (g2rec[nrecs] == NULL) {
                 NhlPError(NhlFATAL, NhlEUNKNOWN,
                     "Could not allocate temporary memory for GRIB v2 data.");
                     NhlFree(g2rec);
                     return NULL;
             }
 
-            g2rec = tmp_g2rec;
         }
 
         g2rec[nrecs]->offset = lskip;
@@ -6220,6 +6224,7 @@ static void *Grib2OpenFile
              * Set originating center info for codetable searches.
              * NOTE: not all known centers are represented, only the most commonly
              * used as per GRIB v1 usage in NCL.  Add as necessary.
+	     * DB: Now default is to try to use NCEP tables if center is unrecognized.
              */
 	    if (sec1[11] == 4 || sec1[11] == 5) {
 		    /*tigge data -- use tigge tables regardless of the actual center */
@@ -6227,12 +6232,22 @@ static void *Grib2OpenFile
 		    center_len = strlen(center);
 		    centerID = sec1[0];
 		    subcenterID = sec1[1];
+		    
 	    }
             else if (! center) {
+		    /* for now just use ECMWF or NCEP tables if not TIGGE */
+		    /* default to NCEP -- maybe it should be ECMWF */
                 switch (sec1[0]) {
                     case 7:
                     case 8:
                     case 9:
+                        /* US Navy FNMOC */
+		    case 58:
+                        /* NOAA FSL */
+                    case 59:
+                        /* NCAR */
+                    case 60:
+    	            default:
                         /* NCEP */
                         center = "ncep";
                         center_len = strlen(center);
@@ -6240,46 +6255,14 @@ static void *Grib2OpenFile
                         subcenterID = sec1[1];
                         break;
 
-                        case 58:
-                        /* US Navy FNMOC */
-                        center = "fnmoc";
-                        center_len = strlen(center);
-                        centerID = sec1[0];
-                        subcenterID = sec1[1];
-                        break;
-
-                    case 59:
-                        /* NOAA FSL */
-                        center = "fsl";
-                        center_len = strlen(center);
-                        centerID = sec1[0];
-                        subcenterID = sec1[1];
-                        break;
-
-                    case 60:
-                        /* NCAR */
-                        center = "ncar";
-                        center_len = strlen(center);
-                        centerID = sec1[0];
-                        subcenterID = sec1[1];
-                        break;
 
                     case 74:
                         /* UK Met. Office */
-                        center = "ecmwf";
-                        center_len = strlen(center);
-                        centerID = sec1[0];
-                        subcenterID = sec1[1];
-                        break;
+			/* fallthrough */
 
                     case 78:
                         /* DWD Offenbach */
-                        center = "dwd";
-                        center_len = strlen(center);
-                        centerID = sec1[0];
-                        subcenterID = sec1[1];
-                        break;
-
+			/* fallthrough */
                     case 34:
                         /* JMA -- use ECMWF for now */
                         /* FALLTHROUGH */
@@ -6290,13 +6273,6 @@ static void *Grib2OpenFile
                         center_len = strlen(center);
                         centerID = sec1[0];
                         subcenterID = sec1[1];
-                        break;
-
-    	            default:
-                        NhlPError(NhlFATAL, NhlEUNKNOWN,
-                            " Undefined originating center, cannot continue.");
-                        NhlFree(g2rec);
-                        return NULL;
                         break;
                 }
 
@@ -6770,11 +6746,9 @@ static void *Grib2OpenFile
                         ct->units);
             }
             g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[10];
-	    /*
-            if (g2fld->ipdtmpl[11] < -127)
-                g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc = -127;
+            if (g2fld->ipdtmpl[10] == -127)
+		    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc = 0;
             else
-	    */
                 g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
                         = g2fld->ipdtmpl[11];
 
@@ -6797,11 +6771,9 @@ static void *Grib2OpenFile
                         ct->units);
             }
             g2rec[nrecs]->sec4[i]->prod_params->scale_factor_second_fixed_sfc = g2fld->ipdtmpl[13];
-	    /*
-            if (g2fld->ipdtmpl[14] < -127)
-                g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc = -127;
+            if (g2fld->ipdtmpl[13] == -127)
+		    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc = 0;
             else
-	    */
                 g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc
                         = g2fld->ipdtmpl[14];
 
@@ -7254,6 +7226,7 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
 	    g2inqrec->time_unit_indicator = 1;
 
             /* GDS */
+#if 0
             g2inqrec->gds = NclMalloc(sizeof(G2_GDS));
             memset(g2inqrec->gds,0,sizeof(G2_GDS));
             if (g2rec[i]->sec3[j]->grid_list_num_oct_num > 0) {
@@ -7275,7 +7248,8 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
             g2inqrec->gds->scan_mode = NclMalloc(sizeof(G2scanModeFlags));
             memset(g2inqrec->gds->scan_mode,0,sizeof(G2scanModeFlags));
             memcpy(g2inqrec->gds, g2rec[i]->sec3[j], sizeof(G2_GDS));
-/*            g2inqrec->gds = (G2_GDS *)g2rec[i]->sec3[j];*/
+#endif
+            g2inqrec->gds = (G2_GDS *)g2rec[i]->sec3[j];
 
             /* Bitmap */
 /*            g2inqrec->bms_off = NOT NEEDED ? */
@@ -7731,10 +7705,10 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
 
         fclose(fd);
         NclFree(vbuf);
-if (center_name != NULL)
-NclFree(center_name);
-if (subcenter_name != NULL)
-NclFree(subcenter_name);
+	if (center_name != NULL)
+		NclFree(center_name);
+	if (subcenter_name != NULL)
+		NclFree(subcenter_name);
         Grib2FreeGrib2Rec(g2rec);
         return g2frec;
     }
