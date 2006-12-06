@@ -38,7 +38,7 @@ NhlErrorTypes hyi2hyo_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_ps, index_xi, index_xo, l, m;
+  int i, index_ps, index_xi, index_xo, l, m, ret;
   int nlat, mlon, klevi, klevo, nlatmlon, klevinlatmlon, klevonlatmlon;
 
 /*
@@ -332,7 +332,9 @@ NhlErrorTypes hyi2hyo_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0));
+  ret = NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0);
+  NclFree(dsizes_xo);
+  return(ret);
 }
 
 

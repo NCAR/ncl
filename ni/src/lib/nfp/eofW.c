@@ -6714,7 +6714,7 @@ NhlErrorTypes eof2data_W( void )
   NclScalar missing_evec, missing_devec, missing_revec;
   NclBasicDataTypes type_evec, type_evects;
   int nrow, ncol, nobs, msta, total_size_evec, total_size_evects;
-  int neval, npts, ntim, i;
+  int neval, npts, ntim, i, ret;
 /*
  * Output array variables
  */
@@ -6831,10 +6831,10 @@ NhlErrorTypes eof2data_W( void )
     NclFree(dx);
 
     if(has_missing_evec) {
-      return(NclReturnValue(x,ndims_evec,dsizes_x,&missing_revec,type_x,0));
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,&missing_revec,type_x,0);
     }
     else {
-      return(NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0));
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0);
     }
   }
   else {
@@ -6842,10 +6842,12 @@ NhlErrorTypes eof2data_W( void )
  * Return double values. 
  */
     if(has_missing_evec) {
-      return(NclReturnValue(x,ndims_evec,dsizes_x,&missing_devec,type_x,0));
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,&missing_devec,type_x,0);
     }
     else {
-      return(NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0));
+      ret = NclReturnValue(x,ndims_evec,dsizes_x,NULL,type_x,0);
     }
   }
+  NclFree(dsizes_x);
+  return(ret);
 }

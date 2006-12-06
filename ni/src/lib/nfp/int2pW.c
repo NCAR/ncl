@@ -33,7 +33,8 @@ NhlErrorTypes int2p_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, j, index_in, index_out, npin, npout, ier = 0, nmiss = 0, nmono = 0;
+  int i, j, index_in, index_out, npin, npout, ier = 0, ret;
+  int nmiss = 0, nmono = 0;
 /*
  * Retrieve parameters
  *
@@ -343,14 +344,16 @@ NhlErrorTypes int2p_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_rx,
-                          NCL_float,0));
+    ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_rx,
+                          NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_dx,
-                          NCL_double,0));
+    ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_dx,
+                          NCL_double,0);
   }
+  NclFree(dsizes_xout);
+  return(ret);
 }

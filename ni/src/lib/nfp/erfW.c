@@ -30,7 +30,7 @@ NhlErrorTypes erf_W( void )
 /*
  * Various
  */
-  int i, size_output;
+  int i, size_output, ret;
 
 /*
  * Retrieve parameters.
@@ -144,7 +144,9 @@ NhlErrorTypes erf_W( void )
 /*
  * Return value back to NCL script.
  */
-  return(NclReturnValue(result,ndims_x,dsizes_result,NULL,type_result,0));
+  ret = NclReturnValue(result,ndims_x,dsizes_result,NULL,type_result,0);
+  NclFree(dsizes_result);
+  return(ret);
 }
 
 NhlErrorTypes erfc_W( void )
@@ -171,7 +173,7 @@ NhlErrorTypes erfc_W( void )
 /*
  * Various
  */
-  int i, size_output, iopt = 0;
+  int i, size_output, iopt = 0, ret;
 
 /*
  * Retrieve parameters.
@@ -287,5 +289,7 @@ NhlErrorTypes erfc_W( void )
 /*
  * Return value back to NCL script.
  */
-  return(NclReturnValue(result,ndims_x,dsizes_result,NULL,type_result,0));
+  ret = NclReturnValue(result,ndims_x,dsizes_result,NULL,type_result,0);
+  NclFree(dsizes_result);
+  return(ret);
 }

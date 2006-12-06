@@ -206,7 +206,7 @@ NhlErrorTypes triple2grid_W( void )
 /*
  * Various
  */
-  int i, npts, ngx, ngy, ngxy, ier, index_z, index_grid;
+  int i, npts, ngx, ngy, ngxy, ier, index_z, index_grid, ret;
   logical strict = False;
   double domain = 0.;
 /*
@@ -472,11 +472,13 @@ NhlErrorTypes triple2grid_W( void )
  * of its values filled in.
  */
   if(type_grid == NCL_double) {
-    return(NclReturnValue(grid,ndims_grid,dsizes_grid,&missing_dz,type_grid,0));
+    ret = NclReturnValue(grid,ndims_grid,dsizes_grid,&missing_dz,type_grid,0);
   }
   else {
-    return(NclReturnValue(grid,ndims_grid,dsizes_grid,&missing_rz,type_grid,0));
+    ret = NclReturnValue(grid,ndims_grid,dsizes_grid,&missing_rz,type_grid,0);
   }
+  NclFree(dsizes_grid);
+  return(ret);
 }
 
 NhlErrorTypes triple2grid2d_W( void )

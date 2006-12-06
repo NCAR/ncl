@@ -272,7 +272,8 @@ NhlErrorTypes ftcurv_W(void)
 /*
  * Various
  */
-  int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  int i, npts, nxo, ret;
+  int size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo;
 
@@ -445,7 +446,9 @@ NhlErrorTypes ftcurv_W(void)
   NclFree(tmp_xi);
   NclFree(tmp_yi);
 
-  return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 ));
+  ret = NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 );
+  NclFree(dsizes_yo);
+  return(ret);
 }
 
 NhlErrorTypes ftcurvd_W(void)
@@ -466,6 +469,7 @@ NhlErrorTypes ftcurvd_W(void)
  * Various
  */
   int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  int ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo;
 
@@ -638,7 +642,9 @@ NhlErrorTypes ftcurvd_W(void)
   NclFree(tmp_xi);
   NclFree(tmp_yi);
 
-  return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 ));
+  ret = NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 );
+  NclFree(dsizes_yo);
+  return(ret);
 }
 
 NhlErrorTypes ftcurvi_W(void)
@@ -659,7 +665,7 @@ NhlErrorTypes ftcurvi_W(void)
 /*
  * Various
  */
-  int i, npts, size_leftmost, index_xi = 0, index_yi = 0;
+  int i, npts, size_leftmost, index_xi = 0, index_yi = 0, ret;
   void *tmp_xi, *tmp_yi, *tmp_xl, *tmp_xr, *tmp_int;
   NclBasicDataTypes type_xi, type_yi, type_xl, type_xr, type_int;
 
@@ -851,7 +857,9 @@ NhlErrorTypes ftcurvi_W(void)
   NclFree(tmp_xi);
   NclFree(tmp_yi);
 
-  return(NclReturnValue((void *)integral,ndims_int,dsizes_int,NULL,type_int,0 ));
+  ret = NclReturnValue((void *)integral,ndims_int,dsizes_int,NULL,type_int,0 );
+  NclFree(dsizes_int);
+  return(ret);
 }
 
 NhlErrorTypes ftcurvp_W(void)
@@ -874,6 +882,7 @@ NhlErrorTypes ftcurvp_W(void)
  * Various
  */
   int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
+  int ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_p;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_p;
 
@@ -1062,7 +1071,9 @@ NhlErrorTypes ftcurvp_W(void)
   NclFree(tmp_xi);
   NclFree(tmp_yi);
 
-  return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 ));
+  ret = NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 );
+  NclFree(dsizes_yo);
+  return(ret);
 }
 
 NhlErrorTypes ftcurvpi_W(void)
@@ -1084,7 +1095,7 @@ NhlErrorTypes ftcurvpi_W(void)
 /*
  * Various
  */
-  int i, npts, size_leftmost, index_xi = 0, index_yi = 0;
+  int i, npts, size_leftmost, index_xi = 0, index_yi = 0, ret;
   void *tmp_xi, *tmp_yi, *tmp_xl, *tmp_xr, *tmp_int, *tmp_p;
   NclBasicDataTypes type_xi, type_yi, type_xl, type_xr, type_int, type_p;
 
@@ -1293,8 +1304,10 @@ NhlErrorTypes ftcurvpi_W(void)
   NclFree(tmp_xi);
   NclFree(tmp_yi);
 
-  return(NclReturnValue((void *)integral,ndims_int,dsizes_int,NULL,
-                        type_int,0 ));
+  ret = NclReturnValue((void *)integral,ndims_int,dsizes_int,NULL,
+                        type_int,0 );
+  NclFree(dsizes_int);
+  return(ret);
 }
 
 NhlErrorTypes ftcurvs_W(void)
@@ -1318,7 +1331,7 @@ NhlErrorTypes ftcurvs_W(void)
  * Various
  */
   int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
-  int isw;
+  int isw, ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_d;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_d;
 
@@ -1515,7 +1528,9 @@ NhlErrorTypes ftcurvs_W(void)
   NclFree(tmp_xi);
   NclFree(tmp_yi);
 
-  return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 ));
+  ret = NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 );
+  NclFree(dsizes_yo);
+  return(ret);
 }
 
 NhlErrorTypes ftcurvps_W(void)
@@ -1539,7 +1554,7 @@ NhlErrorTypes ftcurvps_W(void)
  * Various
  */
   int i, npts, nxo, size_leftmost, index_xi = 0, index_yi = 0, index_out = 0;
-  int isw;
+  int isw, ret;
   void *tmp_xi, *tmp_yi, *tmp_xo, *tmp_yo, *tmp_d, *tmp_p;
   NclBasicDataTypes type_xi, type_yi, type_xo, type_yo, type_d, type_p;
 
@@ -1754,7 +1769,9 @@ NhlErrorTypes ftcurvps_W(void)
   NclFree(tmp_xi);
   NclFree(tmp_yi);
 
-  return(NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 ));
+  ret = NclReturnValue((void *)yo,ndims_yi,dsizes_yo,NULL,type_yo,0 );
+  NclFree(dsizes_yo);
+  return(ret);
 }
 
 NhlErrorTypes ftkurv_W(void)
