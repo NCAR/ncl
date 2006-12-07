@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncl_filedump,v 1.6 2006-02-23 18:46:39 grubin Exp $
+#   $Id: ncl_filedump,v 1.7 2006-12-07 18:59:56 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -107,7 +107,7 @@ endif
 # Make sure the file has an appropriate suffix so that NCL knows
 # what kind of file it is.
 #
-set valid_suffixes = ("nc" "cdf" "netcdf" "grb" "grib" "GRIB" "hdf" "hdfeos" "ccm")
+set valid_suffixes = ("nc" "cdf" "netcdf" "grb" "grib" "GRIB" "grb2" "grib2" "GRIB2"  "hdf" "hdfeos" "ccm")
 set no_suffix
 set psfx = "$file:e"
 set suffix = `echo $psfx | tr '[A-Z]' '[a-z]'`
