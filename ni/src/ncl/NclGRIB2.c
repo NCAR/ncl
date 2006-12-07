@@ -2308,6 +2308,42 @@ Grib2FileRecord *therec;
 	return;
 }
 
+static void _g2MakeVarnamesUnique
+#if 	NhlNeedProto
+(Grib2FileRecord *therec)
+#else
+(therec)
+Grib2FileRecord *therec;
+#endif
+{
+	Grib2ParamList *step = NULL;
+	char buffer[80];
+
+	for (step = therec->var_list; step != NULL; step = step->next) {
+		NclQuark qvname = step->var_info.var_name_quark;
+		int nfound = 0;
+		Grib2ParamList *tstep = step->next;
+		
+		for (tstep = step->next; tstep != NULL; tstep = tstep->next) {
+			int i;
+
+			if (tstep->var_info.var_name_quark != qvname)
+				continue;
+			nfound++;
+			sprintf(buffer,"%s_%d",NrmQuarkToString(qvname),nfound);
+			tstep->var_info.var_name_quark = NrmStringToQuark(buffer);
+
+			for (i = 0; i < tstep->n_entries; i++) {
+				Grib2RecordInqRec *rec = tstep->thelist[i].rec_inq;
+				NclFree(rec->var_name);
+				rec->var_name = (char*)NclMalloc((unsigned)strlen((char*)buffer) + 1);
+				strcpy(rec->var_name,(char*)buffer);
+				rec->var_name_q = tstep->var_info.var_name_quark;
+			}
+		}
+	}
+}
+
 static void _Grib2FreeGrib2InqRec
 #if	NhlNeedProto
 (Grib2RecordInqRec *grib_rec)
@@ -2501,6 +2537,7 @@ static Grib2ParamList *_g2NewListNode
 	list->rec_inq = grib_rec;
 	list->next = NULL;
 	tmp->thelist = list;
+	tmp->traits = grib_rec->traits;
 	tmp->var_info.var_name_quark = grib_rec->var_name_q;
 	tmp->var_info.data_type = g2GribMapToNcl((void *) &(grib_rec->int_or_float));
 	tmp->param_index = grib_rec->param_index;
@@ -2766,11 +2803,13 @@ static int _g2FirstCheck
 #endif
 {
     int gridcomp;
+    int result;
 
-    if (step->param_index <  grib_rec->param_index)
+    result = memcmp(&step->traits,&grib_rec->traits,sizeof(Grib2VarTraits));
+
+    if (result < 0)
         return 0;
-
-    if (step->param_index > grib_rec->param_index) {
+    else if (result > 0) {
         therec->var_list = _g2NewListNode(grib_rec);
         therec->var_list->next = step;
         therec->n_vars++;
@@ -2788,41 +2827,39 @@ static int _g2FirstCheck
         return 1;
     }
 
-    if (step->time_range_indicator < grib_rec->time_range_indicator)
-        return 0;
-
-    if (step->time_range_indicator > grib_rec->time_range_indicator) {
-        therec->var_list = _g2NewListNode(grib_rec);
-        therec->var_list->next = step;
-        therec->n_vars++;
-        return 1;
-    }
-
-    if (step->time_period < (int)grib_rec->time_period)
-        return 0;
-
-    if (step->time_period > (int)grib_rec->time_period) {
-        therec->var_list = _g2NewListNode(grib_rec);
-        therec->var_list->next = step;
-        therec->n_vars++;
-        return 1;
-    }
-
-    if (step->level_indicator < grib_rec->level_indicator)
-        return 0;
-
-    if (step->level_indicator > grib_rec->level_indicator) {
-        therec->var_list = _g2NewListNode(grib_rec);
-        therec->var_list->next = step;
-        therec->n_vars++;
-        return 1;
-    }
-
     /* this record is belongs to existing variable */
 
     _g2AddRecordToNode(step,grib_rec);
 
     return 1;
+}
+
+static int _g2CompareRecord
+#if NhlNeedProto
+(Grib2ParamList *step, Grib2RecordInqRec *grib_rec)
+#else
+(step, grib_rec)
+    Grib2ParamList *step;
+    Grib2RecordInqRec *grib_rec;
+#endif
+{
+    int gridcomp;
+    int result;
+
+    result = memcmp(&step->traits,&grib_rec->traits,sizeof(Grib2VarTraits));
+
+    if (result < 0)
+	    return -1;
+    else if (result > 0)
+	    return 1;
+
+    gridcomp = g2GridCompare(step,grib_rec);
+    if (gridcomp < 0)
+	    return -1;
+    else if (gridcomp > 0)
+	    return 1;
+
+    return 0;
 }
 
 
@@ -6069,7 +6106,6 @@ static void *Grib2OpenFile
     if (g2rec == NULL) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
             "Could not allocate memory for GRIB v2 data.");
-/*            NhlFree(g2rec);*/
             Grib2FreeGrib2Rec(g2rec);
             return NULL;
     }
@@ -6084,9 +6120,8 @@ static void *Grib2OpenFile
     /*
      * Code table directory
      */
-/***** temporarily removed
+
     grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
-***/
     if (grib2_codetable_dir == NULL) {
 	    grib2_codetable_dir = getenv("NIO_GRIB2_CODETABLES");
     }
@@ -6797,7 +6832,7 @@ static void *Grib2OpenFile
              * available that what's been extracted to this point.  This is determined
              * by the Product Definition Templates (PDTs).
              */
-            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = 0;
+            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = -1;
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
                 case 0:
                     /*
@@ -6858,6 +6893,92 @@ static void *Grib2OpenFile
                      * or in a horizontal layer in a continuous or
                      * non-continuous time interval.
                      */
+
+                    g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
+                            = g2fld->ipdtmpl[15];
+                    g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval
+                            = g2fld->ipdtmpl[16];
+                    g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval
+                            = g2fld->ipdtmpl[17];
+                    g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval
+                            = g2fld->ipdtmpl[18];
+                    g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval
+                            = g2fld->ipdtmpl[19];
+                    g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval
+                            = g2fld->ipdtmpl[20];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                            = g2fld->ipdtmpl[21];
+
+                    g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
+                            = g2fld->ipdtmpl[22];
+
+                    /* table 4.10: Type of Statistical Processing */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
+                            = g2fld->ipdtmpl[23];
+                    table = "4.10.table";
+                    cterr = Grib2ReadCodeTable(center, secid, table,
+                            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc, ct);
+                    if (cterr < NhlWARNING) {
+                        NhlFree(g2rec);
+                        return NULL;
+                    }
+
+                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc
+                            = NclMalloc(strlen(ct->descrip) + 1);
+                    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->stat_proc,
+                            ct->descrip);
+    
+		    break;
+                    /* table 4.11: Type of Time Intervals */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
+                            = g2fld->ipdtmpl[24];
+                    table = "4.11.table";
+                    cterr = Grib2ReadCodeTable(center, secid, table,
+                            g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields, ct);
+                    if (cterr < NhlWARNING) {
+                        NhlFree(g2rec);
+                        return NULL;
+                    }
+
+                    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields
+                            = NclMalloc(strlen(ct->descrip) + 1);
+                    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields,
+                            ct->descrip);
+    
+                    /* table 4.4: Indicator of Unit of Time Range */
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[25];
+                    table = "4.4.table";
+                    cterr = Grib2ReadCodeTable(center, secid, table,
+                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done, ct);
+                    if (cterr < NhlWARNING) {
+                        NhlFree(g2rec);
+                        return NULL;
+                    }
+
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_unit
+                            = NclMalloc(strlen(ct->descrip) + 1);
+                    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_unit,
+                            ct->descrip);
+                    g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[26];
+
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
+                            = g2fld->ipdtmpl[27];
+                    table = "4.4.table";
+                    cterr = Grib2ReadCodeTable(center, secid, table,
+                            g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields, ct);
+                    if (cterr < NhlWARNING) {
+                        NhlFree(g2rec);
+                        return NULL;
+                    }
+
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit
+                            = NclMalloc(strlen(ct->descrip) + 1);
+                    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit,
+                            ct->descrip);
+                    g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
+                            = g2fld->ipdtmpl[28];
                     break;
 
                 case 9:
@@ -6880,7 +7001,9 @@ static void *Grib2OpenFile
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
                      * horizontal level or in a horizontal layer at a point in time.
+		     * FALLTHROUGH
                      */
+
                 case 11:
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
@@ -6905,7 +7028,9 @@ static void *Grib2OpenFile
                     
                     g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16];
                     g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17];
-		    break;
+
+		    if (g2rec[nrecs]->sec4[i]->pds_num == 1) 
+			    break;
                     /* statistical processing */
                     g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
                             = g2fld->ipdtmpl[18];
@@ -6941,6 +7066,7 @@ static void *Grib2OpenFile
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->stat_proc,
                             ct->descrip);
     
+		    break;
                     /* table 4.11: Type of Time Intervals */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
                             = g2fld->ipdtmpl[27];
@@ -7195,8 +7321,10 @@ static void *Grib2OpenFile
 
     for (i = 0; i < nrecs; i++) {
         for (j = 0; j < g2rec[i]->num_rptd; j++) {
+	    int comp_val;
+
             g2inqrec = NclMalloc(sizeof(Grib2RecordInqRec));
-memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
+	    memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
             g2inqrec->rec_num = i + 1;
             g2inqrec->offset = g2rec[i]->offset;
 	    g2inqrec->rec_size = g2rec[i]->rec_size;
@@ -7282,6 +7410,20 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
                 g2inqrec->sub_center = NULL;
             }
 */
+	    /* set up the Grib2VarTraits structure for comparing parameters */
+	    g2inqrec->traits.center =  g2rec[i]->sec1.centerID;
+	    g2inqrec->traits.subcenter =  g2rec[i]->sec1.subcenterID;
+	    g2inqrec->traits.prod_status = g2rec[i]->sec1.prod_status;
+	    g2inqrec->traits.proc_data_type = 0; /*g2rec[i]->sec1.data_type;*/
+	    g2inqrec->traits.sig_ref_time = g2rec[i]->sec1.ref_time;
+	    g2inqrec->traits.pds_template = g2rec[i]->sec4[j]->pds_num; 
+	    g2inqrec->traits.discipline = g2rec[i]->sec0.discipline;
+	    g2inqrec->traits.param_cat = g2rec[i]->sec4[j]->prod_params->param_cat;
+	    g2inqrec->traits.param_number = g2rec[i]->sec4[j]->prod_params->param_num;
+	    g2inqrec->traits.stat_proc_type = g2rec[i]->sec4[j]->prod_params->typeof_stat_proc;
+	    g2inqrec->traits.first_level_type = g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc;
+	    g2inqrec->traits.second_level_type =  g2rec[i]->sec4[j]->prod_params->typeof_second_fixed_sfc;
+
 
             if (((NrmQuark) g2frec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values) ==
 		NrmStringToQuark("cubic"))
@@ -7466,133 +7608,39 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
             if (g2frec->var_list == NULL) {
                 g2frec->var_list = _g2NewListNode(g2inqrec);
                 g2frec->n_vars = 1;
-            } else {
-                g2plist = g2frec->var_list;
-
-                if (! _g2FirstCheck(g2frec, g2plist, g2inqrec)) {
-                    /* keep an inorder list */
-                    while ((g2plist->next != NULL)
-			   && (g2plist->next->param_index < g2inqrec->param_index)) {
-                        g2plist = g2plist->next;
-                    }
-
-                    if ((g2plist->next == NULL) ||
-			(g2plist->next->param_index > g2inqrec->param_index)) {
-                        /* no current instance of this param; insert */
-                        g2plist_n = _g2NewListNode(g2inqrec);
-                        _g2InsertNodeAfter(g2plist, g2plist_n);
-                        g2frec->n_vars++;
-                    } else if (g2GridCompare(g2plist->next, g2inqrec) <= 0) {
-                        /* param number found, "->next" points to first occurrence of it */
-                        while ((g2plist->next != NULL)
-                                && (g2plist->next->param_index == g2inqrec->param_index)
-                                && (g2GridCompare(g2plist->next, g2inqrec) < 0)) {
-                            g2plist = g2plist->next;
-                        }
-
-                        if ((g2plist->next == NULL)
-                                || (g2plist->next->param_index != g2inqrec->param_index)
-                                || (g2GridCompare(g2plist->next, g2inqrec) > 0)) {
-                            g2plist_n = _g2NewListNode(g2inqrec);
-                            _g2InsertNodeAfter(g2plist, g2plist_n);
-                            g2frec->n_vars++;
-                        } else if (g2plist->next->time_range_indicator
-                                <= g2inqrec->time_range_indicator) {
-                            /* param_index, grid found */
-                            while ((g2plist->next != NULL)
-                                    && (g2plist->next->param_index == g2inqrec->param_index)
-                                    && (g2GridCompare(g2plist->next, g2inqrec) == 0)
-                                    && (g2plist->next->time_range_indicator
-                                        < g2inqrec->time_range_indicator)) {
-                                g2plist = g2plist->next;
-                            }
-
-                            if ((g2plist->next == NULL)
-                                    || (g2plist->next->param_index != g2inqrec->param_index)
-                                    || (g2plist->next->grid_number != g2inqrec->grid_number)
-                                    || (g2GridCompare(g2plist->next, g2inqrec) != 0)
-                                    || (g2plist->next->time_range_indicator
-                                        > g2inqrec->time_range_indicator)) {
-                                g2plist_n = _g2NewListNode(g2inqrec);
-                                _g2InsertNodeAfter(g2plist, g2plist_n);
-                                g2frec->n_vars++;
-                            } else if (g2plist->next->time_period <= g2inqrec->time_period) {
-                                while ((g2plist->next != NULL)
-                                        && (g2plist->next->param_index == g2inqrec->param_index)
-                                        && (g2GridCompare(g2plist->next, g2inqrec) == 0)
-                                        && (g2plist->next->time_period < g2inqrec->time_period)) {
-                                    g2plist = g2plist->next;
-                                }
-
-                                if ((g2plist->next == NULL)
-				    || (g2plist->next->param_index != g2inqrec->param_index)
-				    || (g2GridCompare(g2plist->next, g2inqrec) != 0)
-				    || (g2plist->next->time_range_indicator
-					!= g2inqrec->time_range_indicator)
-				    || (g2plist->next->time_period > g2inqrec->time_period)) {
-                                    g2plist_n = _g2NewListNode(g2inqrec);
-                                    _g2InsertNodeAfter(g2plist, g2plist_n);
-                                    g2frec->n_vars++;
-                                } else if (g2plist->next->level_indicator
-                                        <= g2inqrec->level_indicator) {
-				    while ((g2plist->next != NULL)
-                                            && (g2plist->next->param_index
-                                                == g2inqrec->param_index)
-                                            && (g2GridCompare(g2plist->next, g2inqrec) == 0)
-                                            && (g2plist->next->time_range_indicator
-                                                == g2inqrec->time_range_indicator)
-                                            && (g2plist->next->time_period
-                                                == g2inqrec->time_period)
-                                            && (g2plist->next->level_indicator
-                                                < g2inqrec->level_indicator)) {
-                                        g2plist = g2plist->next;
-                                    }
-
-                                    if ((g2plist->next == NULL)
-					|| (g2plist->next->param_index
-					    != g2inqrec->param_index)
-					|| (g2GridCompare(g2plist->next, g2inqrec) != 0)
-					|| (g2plist->next->time_range_indicator
-					    != g2inqrec->time_range_indicator)
-					|| (g2plist->next->time_period
-					    != g2inqrec->time_period)
-					|| (g2plist->next->level_indicator
-					    > g2inqrec->level_indicator)) {
-                                        g2plist_n = _g2NewListNode(g2inqrec);
-                                        _g2InsertNodeAfter(g2plist, g2plist_n);
-                                        g2frec->n_vars++;
-                                    } else {
-                                        /*
-                                         * At this point, fall through param_index, grid_number,
-                                         * time_range_indicator, time_period, and level_indicator
-                                         * are all equal.  Add the record.
-                                         */
-                                        _g2AddRecordToNode(g2plist->next, g2inqrec);
-                                    }
-                                } else {
-                                    g2plist_n = _g2NewListNode(g2inqrec);
-                                    _g2InsertNodeAfter(g2plist, g2plist_n);
-                                    g2frec->n_vars++;
-                                }
-                            } else {
-                                g2plist_n = _g2NewListNode(g2inqrec);
-                                _g2InsertNodeAfter(g2plist, g2plist_n);
-                                g2frec->n_vars++;
-                            }
-                        } else {
-                            g2plist_n = _g2NewListNode(g2inqrec);
-                            _g2InsertNodeAfter(g2plist, g2plist_n);
-                            g2frec->n_vars++;
-                        }
-                    } else {
-                        g2plist_n = _g2NewListNode(g2inqrec);
-                        _g2InsertNodeAfter(g2plist, g2plist_n);
-                        g2frec->n_vars++;
-                    }
-                }
-            }
-        }
+            } else if ((comp_val =_g2CompareRecord(g2frec->var_list,g2inqrec)) > 0) {
+		    Grib2ParamList *vlist = g2frec->var_list;
+		    g2frec->var_list = _g2NewListNode(g2inqrec);
+		    g2frec->var_list->next = vlist;
+		    g2frec->n_vars++;
+	    }
+	    else if (comp_val == 0) {
+		    _g2AddRecordToNode(g2frec->var_list, g2inqrec);
+	    }
+	    else {
+		    g2plist = g2frec->var_list;
+		    while (g2plist->next && (comp_val = _g2CompareRecord(g2plist->next,g2inqrec)) < 0) {
+			    g2plist = g2plist->next;
+		    }
+		    if (g2plist->next) {
+			    if (comp_val > 0) { /* insert before g2plist->next */
+				    g2plist_n = _g2NewListNode(g2inqrec);
+				    _g2InsertNodeAfter(g2plist, g2plist_n);
+				    g2frec->n_vars++;
+			    }
+			    else { /* must be 0 */
+				    _g2AddRecordToNode(g2plist->next, g2inqrec);
+			    }
+		    }
+		    else { 
+			    g2plist_n = _g2NewListNode(g2inqrec);
+			    _g2InsertNodeAfter(g2plist, g2plist_n);
+			    g2frec->n_vars++;
+		    }
+	    }
+	}
     }
+
 
     if (g2frec != NULL) {
         g2frec->grib_grid_cache = NULL;
@@ -7701,7 +7749,7 @@ memset(g2inqrec, 0, sizeof(Grib2RecordInqRec));
          */
         _g2SetFileDimsAndCoordVars(g2frec);
         _g2SetAttributeLists(g2frec);
-/*        _MakeVarnamesUnique(g2frec);   NOT NEEDED ?? */
+        _g2MakeVarnamesUnique(g2frec); 
 
         fclose(fd);
         NclFree(vbuf);

@@ -407,9 +407,30 @@ struct _Grib2InternalVarRec {
     Grib2AttInqRecList  *theatts;
 };
 
+/*
+ * The following structure is used to distinguish records that
+ * need to be separate variables. 
+ * A comparision of the GDS values is also needed;
+ */
+typedef struct _Grib2VarTraits { 
+	int center;
+	int subcenter;
+	int prod_status;
+	int proc_data_type;
+	int sig_ref_time;
+	int pds_template;
+	int discipline;
+	int param_cat;
+	int param_number;
+	int stat_proc_type;
+	int first_level_type;
+	int second_level_type;
+} Grib2VarTraits;
+
 struct _Grib2ParamList {
     int param_number;
     int param_index; /* discipline * 10^6 + category * 10^3 + number */
+    Grib2VarTraits traits;
     int grid_number;
     int n_entries;
     int time_range_indicator;
@@ -454,10 +475,12 @@ struct _Grib2AttInqRecList {
     Grib2AttInqRecList  *next;
 };
 
+
 struct _Grib2RecordInqRec {
     off_t offset;
     int field_num;
     int rec_size;
+    Grib2VarTraits traits;
     NclQuark    var_name_q;
     int param_number;
     int param_index; /* discipline * 10^6 + category * 10^3 + number */
