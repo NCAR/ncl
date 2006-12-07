@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.188 2006-10-15 05:42:03 haley Exp $
+;      $Id: gsn_code.ncl,v 1.189 2006-12-07 19:44:30 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -145,6 +145,7 @@ undef("gsn_vector_scalar")
 undef("gsn_vector_scalar_map")
 undef("gsn_xy")
 undef("gsn_y")
+undef("gsn_contour_shade")
 
 ;***********************************************************************;
 ; function : smooth92d                                                  ;
@@ -9177,4 +9178,160 @@ begin
 ;
   xy = gsn_xy(wks,x,y,res2)
   return(xy)
+end
+
+
+;***********************************************************************;
+; Function : gsn_contour_shade                                          ;
+;                                                                       ;
+; This function shades contour regions given low and/or high values     ;
+; using colors or patterns.                                             ;
+;                                                                       ;
+; This function was written by Adam Phillips, 2006                      ;
+;***********************************************************************;
+
+function gsn_contour_shade(plot:graphic,nval:numeric,pval:numeric,opt:logical) 
+
+local cnlvls, colist, i, N, shaden, shadep, shadem
+begin
+
+   getvalues plot
+      "pmOverlaySequenceIds" : ovrly_ids
+   end getvalues
+   if (.not.any(ismissing(ovrly_ids))) then
+      do i=0,dimsizes(ovrly_ids)-1
+         if (NhlClassName(ovrly_ids(i)).eq."contourPlotClass")
+            idstring = ovrly_ids(i)
+	    end if
+      end do
+   end if 
+   getvalues idstring
+     "cnLevels"  : cnlvls
+   end getvalues
+
+   if (opt.and.(isatt(opt,"printcnlevels"))) then
+      if (opt@printcnlevels) then
+	    print(cnlvls)
+	 end if
+   end if
+   N = dimsizes(cnlvls)
+   if (ismissing(N) .or. N.le.0) then
+       print ("gsn_contour_shade: dimsizes(cnlvls)="+N+" return (non-fatal)")
+       return (plot)
+   end if
+
+   if (.not.opt) then
+      print("gsn_contour_shade: Options list must be used as one of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
+   end if
+
+   CC = 0
+   if (opt.and.(isatt(opt,"gsnShadeLow"))) then
+      shaden = opt@gsnShadeLow
+	 if (typeof(shaden).eq."string") then
+	    CC = 1
+	 end if
+   end if
+   if (opt.and.(isatt(opt,"gsnShadeMid"))) then
+      shadem = opt@gsnShadeMid
+	 if (typeof(shadem).eq."string") then
+	    CC = 1
+	 end if
+   end if
+   if (opt.and.(isatt(opt,"gsnShadeHigh"))) then
+      shadep = opt@gsnShadeHigh
+	 if (typeof(shadep).eq."string") then
+	    CC = 1
+	 end if
+   end if
+
+   if (opt.and.(isatt(opt,"gsnShadeFillType"))) then
+       if (opt@gsnShadeFillType.eq."pattern".and.CC.eq.1) 
+	     print("You may not use strings in the option resources opt@gsnShadeLow, opt@gsnShadeHigh, and opt@gsnShadeMid when pattern filling. Please change to integers. return (non-fatal)")
+		return(plot)
+	  end if
+   end if
+
+   if (isvar("shaden").eq.False.and.isvar("shadep").eq.False.and.isvar("shadem").eq.False) then 
+      print("gsn_contour_shade: one or more of the following option resources must be set: opt@gsnShadeLow, opt@gsnShadeHigh, opt@gsnShadeMid. return (non-fatal)")
+	 return(plot)
+   end if
+
+   if (CC.eq.1) then
+       colist  = new(dimsizes(cnlvls)+1,string)  ; Create array for fill 
+   else
+	  colist  = new(dimsizes(cnlvls)+1,integer)  ; Create array for fill 
+   end if
+   colist(:)  = -1    ; color and intitialize, set all to transparent
+
+   if (isvar("shaden").and.isvar("shadep").eq.False.and.isvar("shadem").eq.False) then   ; =~"ShadeLeContour"
+      if (any(cnlvls.le.nval)) then     
+         do i=0,N-1                                ; Fill contour levels 
+	       if (cnlvls(i).le.nval) then   
+               colist(i)   = shaden
+            end if
+         end do
+	    delete(shaden)
+	 end if   
+   end if
+
+   if (isvar("shadep").and.isvar("shaden").eq.False.and.isvar("shadem").eq.False) then   ; =~"ShadeGeContour"
+      if (any(cnlvls.ge.pval)) then     
+         do i=0,N-1                                ; Fill contour levels 
+            if (cnlvls(i).ge.pval ) then
+	          colist(i+1) = shadep
+	       end if
+         end do
+	    delete(shadep)
+	 end if
+   end if
+
+   if (isvar("shadem").and.isvar("shadep").eq.False.and.isvar("shaden").eq.False) then   ; =~"ShadeGeLeContour"
+      if (any(cnlvls.ge.pval) .or. any(cnlvls.le.nval)) then     
+	    crn = 0
+         do i=0,N-1                                ; Fill contour levels 
+            if (cnlvls(i).ge.nval.and.cnlvls(i).le.pval) then
+		     if (crn.eq.0) then
+	             colist(i+1) = shadem
+			   crn = 1
+			else 
+			   colist(i) = shadem
+			end if
+	       end if
+         end do
+	    delete(crn)
+	    delete(shadem)
+	 end if
+   end if
+
+   if (isvar("shaden").and.isvar("shadep").and.isvar("shadem").eq.False) then   ; =~"ShadeLeGeContour"   
+      if (any(cnlvls.ge.pval) .or. any(cnlvls.le.nval)) then     
+         do i=0,N-1                                ; Fill contour levels 
+            if (cnlvls(i).ge.pval ) then
+	          colist(i+1) = shadep
+	       end if
+	       if (cnlvls(i).le.nval) then   
+               colist(i)   = shaden
+            end if
+         end do
+	    delete(shadep)
+	    delete(shaden)
+	 end if
+   end if
+
+   if (.not.(isatt(opt,"gsnShadeFillType")).or.opt@gsnShadeFillType.eq."color") then
+	 setvalues idstring               
+	    "cnFillOn"          : True
+         "cnMonoFillPattern" : True
+         "cnMonoFillColor"   : False
+         "cnFillColors"      : colist			   
+	 end setvalues
+   else
+	 setvalues idstring               
+	    "cnFillOn"          : True
+         "cnMonoFillColor"   : True
+         "cnMonoFillPattern" : False
+         "cnFillPatterns"    : colist	   
+	 end setvalues
+   end if
+   return (plot)
 end
