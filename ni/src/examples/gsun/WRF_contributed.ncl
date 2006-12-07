@@ -261,8 +261,8 @@ end
 ;*************************************************************************
 ; D. Shea
 ; interface for newly named procedure
-undef("WRF_mapres")
-procedure WRF_mapres (f:file, res:logical, opt)
+undef("wrf_mapres_c")
+procedure wrf_mapres_c(f:file, res:logical, opt)
 begin
   WRF_map_c (f, res, opt)
 end
@@ -270,12 +270,17 @@ end
 ; D. Shea                                                    
 ; single interface to convert WRF character variable "Times"
 ; to user specified numeric values               
-undef ("WRF_Times")                             
-function WRF_Times(Times:character, opt:integer)
+;
+; M. Haley
+; At some point we decided to rename this from WRF_Times to wrf_times_c
+; Also added error check for opt.
+;
+undef ("wrf_times_c")                             
+function wrf_times_c(Times:character, opt:integer)
 begin                                          
    if (opt.ge.0 .and. opt.le.1) then 
        return(WRF_Times2Udunits_c(Times, opt) ) 
-   end if                                                                               
+   end if
 
    if (opt.eq.2) then
        return(WRF_Times2double_c(Times, opt) )
