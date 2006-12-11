@@ -27,7 +27,7 @@ NhlErrorTypes zonal_mpsi_W( void )
  * Various.
  */
   int i, index_v, index_ps, index_zmpsi, size_zmpsi;
-  int nlat, nlon, nlev, ntim, nlatlon, nlatlev, nlatlonlev;
+  int nlat, nlon, nlev, ntim, nlatlon, nlatlev, nlatlonlev, ret;
 /*
  * Retrieve parameters
  *
@@ -281,11 +281,13 @@ NhlErrorTypes zonal_mpsi_W( void )
  * Return.
  */
   if(type_zmpsi != NCL_double) {
-     return(NclReturnValue(zmpsi,ndims_zmpsi,dsizes_zmpsi,&missing_rv,
-                           NCL_float,0));
+     ret = NclReturnValue(zmpsi,ndims_zmpsi,dsizes_zmpsi,&missing_rv,
+                           NCL_float,0);
   }
   else {
-    return(NclReturnValue(zmpsi,ndims_zmpsi,dsizes_zmpsi,&missing_dv,
-                          NCL_double,0));
+    ret = NclReturnValue(zmpsi,ndims_zmpsi,dsizes_zmpsi,&missing_dv,
+                          NCL_double,0);
   }
+  NclFree(dsizes_zmpsi);
+  return(ret);
 }

@@ -1023,7 +1023,7 @@ NhlErrorTypes fo2fsh_W( void )
  */
   int i, j, index_goff, index_greg, ioff, ier = 0, kmiss = 0;
   int total_size_leftmost, jlatilon, jlat1ilon;
-  int total_size_goff, total_size_greg;
+  int total_size_goff, total_size_greg, ret;
 /*
  * Retrieve parameters
  *
@@ -1189,17 +1189,19 @@ NhlErrorTypes fo2fsh_W( void )
  */
   if(has_missing_goff) {
     if(type_greg == NCL_float) {
-      return(NclReturnValue(greg,ndims_goff,dsizes_greg,&missing_rgoff,
-                            type_greg,0));
+      ret = NclReturnValue(greg,ndims_goff,dsizes_greg,&missing_rgoff,
+                            type_greg,0);
     }
     else {
-      return(NclReturnValue(greg,ndims_goff,dsizes_greg,&missing_dgoff,
-                            type_greg,0));
+      ret = NclReturnValue(greg,ndims_goff,dsizes_greg,&missing_dgoff,
+                            type_greg,0);
     }
   }
   else {
-    return(NclReturnValue(greg,ndims_goff,dsizes_greg,NULL,type_greg,0));
+    ret = NclReturnValue(greg,ndims_goff,dsizes_greg,NULL,type_greg,0);
   }
+  NclFree(dsizes_greg);
+  return(ret);
 }
 
 
@@ -1231,7 +1233,7 @@ NhlErrorTypes f2fosh_W( void )
  */
   int i, j, index_greg, index_goff, ioff, ier = 0, kmiss = 0;
   int total_size_leftmost, jlat1ilon, jlatilon;
-  int total_size_greg, total_size_goff;
+  int total_size_greg, total_size_goff, ret;
 /*
  * Retrieve parameters
  *
@@ -1395,17 +1397,19 @@ NhlErrorTypes f2fosh_W( void )
  */
   if(has_missing_greg) {
     if(type_goff == NCL_float) {
-      return(NclReturnValue(goff,ndims_greg,dsizes_goff,&missing_rgreg,
-                            type_goff,0));
+      ret = NclReturnValue(goff,ndims_greg,dsizes_goff,&missing_rgreg,
+                            type_goff,0);
     }
     else {
-      return(NclReturnValue(goff,ndims_greg,dsizes_goff,&missing_dgreg,
-                            type_goff,0));
+      ret = NclReturnValue(goff,ndims_greg,dsizes_goff,&missing_dgreg,
+                            type_goff,0);
     }
   }
   else {
-    return(NclReturnValue(goff,ndims_greg,dsizes_goff,NULL,type_goff,0));
+    ret = NclReturnValue(goff,ndims_greg,dsizes_goff,NULL,type_goff,0);
   }
+  NclFree(dsizes_goff);
+  return(ret);
 }
 
 void compute_jlatilon(int *dsizes,int ndims,int *jlat,int *ilon,

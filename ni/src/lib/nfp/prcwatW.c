@@ -26,7 +26,7 @@ NhlErrorTypes prcwater_dp_W( void )
 /*
  * various
  */
-  int i, klvl, total_size_leftmost, index_q;
+  int i, klvl, total_size_leftmost, index_q, ret;
 /*
  * Retrieve parameters
  *
@@ -204,14 +204,16 @@ NhlErrorTypes prcwater_dp_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(prcwat,ndims_prcwat,dsizes_prcwat,&missing_rq,
-                          NCL_float,0));
+    ret = NclReturnValue(prcwat,ndims_prcwat,dsizes_prcwat,&missing_rq,
+                          NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(prcwat,ndims_prcwat,dsizes_prcwat,&missing_dq,
-                          NCL_double,0));
+    ret = NclReturnValue(prcwat,ndims_prcwat,dsizes_prcwat,&missing_dq,
+                          NCL_double,0);
   }
+  NclFree(dsizes_prcwat);
+  return(ret);
 }

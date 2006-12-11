@@ -54,7 +54,7 @@ NhlErrorTypes rip_cape_3d_W( void )
  */
   int i, miy, mjx, mkzh, ntime, size_cape, size_output, size_zsfc;
   int i3dflag=1, scalar_zsfc, index_cape, index_zsfc, index_cin;
-  int iter;
+  int iter, ret;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -455,7 +455,9 @@ NhlErrorTypes rip_cape_3d_W( void )
 /*
  * Set up variable to return.
  */
-  return(NclReturnValue(cape,ndims_cape,dsizes_cape,NULL,type_cape,0));
+  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,NULL,type_cape,0);
+  NclFree(dsizes_cape);
+  return(ret);
 }
 
 
@@ -504,7 +506,7 @@ NhlErrorTypes rip_cape_2d_W( void )
   int size_left_zsfc, i3dflag=0, scalar_zsfc, index_cape, index_zsfc;
   int index_output_cape, index_output_cin, index_output_lcl;
   int index_output_lfc, mkzh0_index, mkzh1_index, mkzh2_index;
-  int iter;
+  int iter, ret;
 
 /*
  * The default is to use $NCARG_ROOT/lib/ncarg/data/asc/psadilookup.dat
@@ -911,6 +913,8 @@ NhlErrorTypes rip_cape_2d_W( void )
 /*
  * Set up variable to return.
  */
-  return(NclReturnValue(cape,ndims_cape,dsizes_cape,NULL,type_cape,0));
+  ret = NclReturnValue(cape,ndims_cape,dsizes_cape,NULL,type_cape,0);
+  NclFree(dsizes_cape);
+  return(ret);
 }
 

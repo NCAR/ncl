@@ -42,7 +42,7 @@ NhlErrorTypes rcm2rgrid_W( void )
  * Other variables
  */
   int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier;
+  int i, j, index_fi, index_fo, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -261,7 +261,9 @@ NhlErrorTypes rcm2rgrid_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0));
+  ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0);
+  NclFree(dsizes_fo);
+  return(ret);
 }
 
 
@@ -290,7 +292,7 @@ NhlErrorTypes rgrid2rcm_W( void )
  * Other variables
  */
   int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier;
+  int i, j, index_fi, index_fo, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -506,7 +508,9 @@ NhlErrorTypes rgrid2rcm_W( void )
   if(type_opt   != NCL_double) NclFree(tmp_opt);
   if(type_fo    != NCL_double) NclFree(tmp_fo);
 
-  return(NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0));
+  ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0);
+  NclFree(dsizes_fo);
+  return(ret);
 }
 
 
@@ -535,7 +539,7 @@ NhlErrorTypes rcm2points_W( void )
  * Other variables
  */
   int nlon2d, nlat2d, nfi, nlat1d, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier;
+  int i, j, index_fi, index_fo, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -758,7 +762,9 @@ NhlErrorTypes rcm2points_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(fo,ndims_fo,dsizes_fo,&missing_fo,type_fo,0));
+  ret = NclReturnValue(fo,ndims_fo,dsizes_fo,&missing_fo,type_fo,0);
+  NclFree(dsizes_fo);
+  return(ret);
 }
 
 

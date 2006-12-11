@@ -38,7 +38,7 @@ NhlErrorTypes linint1_W( void )
  * Other variables
  */
   int nxi, nxi2, nxo, nfo, size_leftmost, size_fo;
-  int i, j, index_xi, index_fi, index_fo, ier;
+  int i, j, index_xi, index_fi, index_fo, ier, ret;
   double *xiw, *fxiw;
 /*
  * Retrieve parameters
@@ -258,14 +258,16 @@ NhlErrorTypes linint1_W( void )
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_dfi,NCL_double,0));
+    ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_dfi,NCL_double,0);
   }
   else {
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_rfi,NCL_float,0));
+    ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_rfi,NCL_float,0);
   }
+  NclFree(dsizes_fo);
+  return(ret);
 }
 
 NhlErrorTypes linint2_W( void )
@@ -292,7 +294,7 @@ NhlErrorTypes linint2_W( void )
  * Other variables
  */
   int nxi, nyi, nxi2, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
-  int i, j, index_xi, index_yi, index_fi, index_fo, ier;
+  int i, j, index_xi, index_yi, index_fi, index_fo, ier, ret;
   double *xiw, *fxiw;
 /*
  * Retrieve parameters
@@ -565,14 +567,16 @@ NhlErrorTypes linint2_W( void )
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_dfi,NCL_double,0));
+    ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_dfi,NCL_double,0);
   }
   else {
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_rfi,NCL_float,0));
+    ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_rfi,NCL_float,0);
   }
+  NclFree(dsizes_fo);
+  return(ret);
 }
 
 NhlErrorTypes linint2_points_W( void )
@@ -600,7 +604,7 @@ NhlErrorTypes linint2_points_W( void )
  */
   double *xiw, *fxiw;
   int nxi, nxi2, nyi, nfi, nxyo, size_leftmost, size_fo;
-  int i, j, index_xi, index_yi, index_fi, index_fo, ier;
+  int i, j, index_xi, index_yi, index_fi, index_fo, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -874,12 +878,14 @@ NhlErrorTypes linint2_points_W( void )
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(fo,ndims_fi-1,dsizes_fo,&missing_dfi,NCL_double,0));
+    ret = NclReturnValue(fo,ndims_fi-1,dsizes_fo,&missing_dfi,NCL_double,0);
   }
   else {
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(fo,ndims_fi-1,dsizes_fo,&missing_rfi,NCL_float,0));
+    ret = NclReturnValue(fo,ndims_fi-1,dsizes_fo,&missing_rfi,NCL_float,0);
   }
+  NclFree(dsizes_fo);
+  return(ret);
 }

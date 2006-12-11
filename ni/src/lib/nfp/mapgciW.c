@@ -610,6 +610,8 @@ NhlErrorTypes gc_latlon_W( void )
                           NULL,
                           TEMPORARY
                           );
+
+  NclFree(dsizes_dist);
 /*
  * Return output grid and attributes to NCL.
  */

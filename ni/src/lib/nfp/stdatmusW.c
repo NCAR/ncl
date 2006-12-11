@@ -29,7 +29,7 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
 /*
  * Various
  */
-  int i, nz, size_leftmost, index_z, index_t, index_d, index_p;
+  int i, nz, size_leftmost, index_z, index_t, index_d, index_p, ret;
 
 /*
  * Retrieve parameter.
@@ -151,7 +151,9 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
     NclFree(tmp_p);
   }
 
-  return(NclReturnValue(tdp,ndims_tdp,dsizes_tdp,NULL,type_tdp,0));
+  ret = NclReturnValue(tdp,ndims_tdp,dsizes_tdp,NULL,type_tdp,0);
+  NclFree(dsizes_tdp);
+  return(ret);
 }
 
 
@@ -176,7 +178,7 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
 /*
  * Various
  */
-  int i, np, size_leftmost, index_p, index_t, index_d, index_z;
+  int i, np, size_leftmost, index_p, index_t, index_d, index_z, ret;
 
 /*
  * Retrieve parameter.
@@ -298,6 +300,8 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
     NclFree(tmp_z);
   }
 
-  return(NclReturnValue(tdz,ndims_tdz,dsizes_tdz,NULL,type_tdz,0));
+  ret = NclReturnValue(tdz,ndims_tdz,dsizes_tdz,NULL,type_tdz,0);
+  NclFree(dsizes_tdz);
+  return(ret);
 }
 

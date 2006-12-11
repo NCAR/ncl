@@ -28,7 +28,7 @@ NhlErrorTypes z2geouv_W( void )
  * Various.
  */
   int i, index_z, size_leftmost;
-  int nlat, nlon, nlatlon;
+  int nlat, nlon, nlatlon, ret;
 /*
  * Retrieve parameters
  *
@@ -216,11 +216,13 @@ NhlErrorTypes z2geouv_W( void )
  * Return.
  */
   if(type_uv != NCL_double) {
-     return(NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_rz,
-                           NCL_float,0));
+     ret = NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_rz,
+                           NCL_float,0);
   }
   else {
-    return(NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_dz,
-                          NCL_double,0));
+    ret = NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_dz,
+                          NCL_double,0);
   }
+  NclFree(dsizes_uv);
+  return(ret);
 }

@@ -119,7 +119,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * various
  */
-  int i, total_size_x, total_size_date, index_date, return_missing;
+  int i, total_size_x, total_size_date, index_date, return_missing, ret;
 
 /*
  * Before we do anything, initialize the Udunits package.
@@ -318,8 +318,10 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Return all missing values.
  */
-    return(NclReturnValue(date,ndims_date,dsizes_date,
-                          &missing_date,type_date,0));
+    ret = NclReturnValue(date,ndims_date,dsizes_date,
+                          &missing_date,type_date,0);
+    NclFree(dsizes_date);
+    return(ret);
   }
             
 /*
@@ -475,11 +477,13 @@ NhlErrorTypes ut_calendar_W( void )
  * Return.
  */ 
   if(has_missing_x) {
-    return(NclReturnValue(date,ndims_date,dsizes_date,&missing_date,type_date,0));
+    ret = NclReturnValue(date,ndims_date,dsizes_date,&missing_date,type_date,0);
   }
   else {
-    return(NclReturnValue(date,ndims_date,dsizes_date,NULL,type_date,0));
+    ret = NclReturnValue(date,ndims_date,dsizes_date,NULL,type_date,0);
   }
+  NclFree(dsizes_date);
+  return(ret);
 }
 
 NhlErrorTypes ut_inv_calendar_W( void )

@@ -27,7 +27,7 @@ NhlErrorTypes lspoly_W( void )
 /*
  * Other variables
  */
-  int i, j, ierr, index_x, index_coef;
+  int i, j, ierr, index_x, index_coef, ret;
   int size_leftmost, total_size_x, total_size_coef, npts, is_scalar_wgt;
 /*
  * Retrieve parameters
@@ -247,5 +247,7 @@ NhlErrorTypes lspoly_W( void )
   if(type_coef != NCL_double) NclFree(tmp_coef);
   NclFree(tmp_wgt);
 
-  return(NclReturnValue(coef,ndims_x,dsizes_coef,NULL,type_coef,0));
+  ret = NclReturnValue(coef,ndims_x,dsizes_coef,NULL,type_coef,0);
+  NclFree(dsizes_coef);
+  return(ret);
 }

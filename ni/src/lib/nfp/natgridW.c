@@ -25,7 +25,7 @@ NhlErrorTypes natgrids_W( void )
   float *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
   int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
-  int index_in = 0, index_out = 0;
+  int index_in = 0, index_out = 0, ret;
 
 /*
  * Retrieve parameters
@@ -184,7 +184,9 @@ NhlErrorTypes natgrids_W( void )
     index_out += nzo;
     free(zo_tmp);
   }
-  return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_float,0));
+  ret = NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_float,0);
+  NclFree(dsizes_zo);
+  return(ret);
 }
 
 NhlErrorTypes natgridd_W( void )
@@ -204,7 +206,7 @@ NhlErrorTypes natgridd_W( void )
   double *zo, *zo_tmp;
   int ndims_zo, *dsizes_zo;
   int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
-  int index_in = 0, index_out = 0;
+  int index_in = 0, index_out = 0, ret;
 
 /*
  * Retrieve parameters
@@ -363,7 +365,9 @@ NhlErrorTypes natgridd_W( void )
     index_out += nzo;
     free(zo_tmp);
   }
-  return(NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_double,0));
+  ret = NclReturnValue((void*)zo,ndims_zo,dsizes_zo,NULL,NCL_double,0);
+  NclFree(dsizes_zo);
+  return(ret);
 }
 
 NhlErrorTypes natgrid_W( void )
@@ -400,7 +404,7 @@ NhlErrorTypes natgrid_W( void )
  * Various
  */
   int i, j, npts, nxo, nyo, nzo, size_leftmost, size_input, size_output;
-  int ier = 0, nmiss = 0, index_z = 0, index_zo = 0;
+  int ier = 0, nmiss = 0, index_z = 0, index_zo = 0, ret;
 
 /*
  * Retrieve parameters
@@ -654,11 +658,13 @@ NhlErrorTypes natgrid_W( void )
   if(type_yo != NCL_double) NclFree(tmp_yo);
 
   if(has_missing_z) {
-    return(NclReturnValue(zo,ndims_zo,dsizes_zo,&missing_zo,type_zo,0));
+    ret = NclReturnValue(zo,ndims_zo,dsizes_zo,&missing_zo,type_zo,0);
   }
   else {
-    return(NclReturnValue(zo,ndims_zo,dsizes_zo,NULL,type_zo,0));
+    ret = NclReturnValue(zo,ndims_zo,dsizes_zo,NULL,type_zo,0);
   }
+  NclFree(dsizes_zo);
+  return(ret);
 }
 
 NhlErrorTypes nnsetp_W(void)

@@ -847,7 +847,7 @@ NhlErrorTypes dv2uvF_W( void )
 /*
  * various
  */
-  int total_size_in;
+  int total_size_in, ret;
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_dv, index_ud, index_vd, nmiss;
@@ -1094,11 +1094,13 @@ NhlErrorTypes dv2uvF_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(uvd,ndims_uvd,dsizes_uvd,&missing_uvd,type_uvd,0));
+    ret = NclReturnValue(uvd,ndims_uvd,dsizes_uvd,&missing_uvd,type_uvd,0);
   }
   else {
-    return(NclReturnValue(uvd,ndims_uvd,dsizes_uvd,NULL,type_uvd,0));
+    ret = NclReturnValue(uvd,ndims_uvd,dsizes_uvd,NULL,type_uvd,0);
   }
+  NclFree(dsizes_uvd);
+  return(ret);
 }
 
 
@@ -1124,7 +1126,7 @@ NhlErrorTypes dv2uvG_W( void )
 /*
  * various
  */
-  int total_size_in;
+  int total_size_in, ret;
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_dv, index_ud, index_vd, nmiss;
@@ -1372,11 +1374,13 @@ NhlErrorTypes dv2uvG_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"dv2uvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(uvd,ndims_uvd,dsizes_uvd,&missing_uvd,type_uvd,0));
+    ret = NclReturnValue(uvd,ndims_uvd,dsizes_uvd,&missing_uvd,type_uvd,0);
   }
   else {
-    return(NclReturnValue(uvd,ndims_uvd,dsizes_uvd,NULL,type_uvd,0));
+    ret = NclReturnValue(uvd,ndims_uvd,dsizes_uvd,NULL,type_uvd,0);
   }
+  NclFree(dsizes_uvd);
+  return(ret);
 }
 
 
@@ -7520,7 +7524,7 @@ NhlErrorTypes uv2sfvpF_W( void )
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, index_sf, index_vp, nmiss;
@@ -7806,12 +7810,14 @@ NhlErrorTypes uv2sfvpF_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,&missing_sfvp,
-                          type_sfvp,0));
+    ret = NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,&missing_sfvp,
+                          type_sfvp,0);
   }
   else {
-    return(NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,NULL,type_sfvp,0));
+    ret = NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,NULL,type_sfvp,0);
   }
+  NclFree(dsizes_sfvp);
+  return(ret);
 }
 
 
@@ -8188,7 +8194,7 @@ NhlErrorTypes uv2sfvpG_W( void )
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, index_sf, index_vp, nmiss;
@@ -8474,12 +8480,14 @@ NhlErrorTypes uv2sfvpG_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2sfvpG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,&missing_sfvp,
-                          type_sfvp,0));
+    ret = NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,&missing_sfvp,
+                          type_sfvp,0);
   }
   else {
-    return(NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,NULL,type_sfvp,0));
+    ret = NclReturnValue(sfvp,ndims_sfvp,dsizes_sfvp,NULL,type_sfvp,0);
   }
+  NclFree(dsizes_sfvp);
+  return(ret);
 }
 
 
@@ -12114,7 +12122,7 @@ NhlErrorTypes uv2vrdvF_W( void )
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, index_vr, index_dv, nmiss;
@@ -12407,13 +12415,14 @@ NhlErrorTypes uv2vrdvF_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,&missing_vrdv,
-                          type_vrdv,0));
+    ret = NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,&missing_vrdv,
+                          type_vrdv,0);
   }
   else {
-    return(NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,NULL,type_vrdv,0));
+    ret = NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,NULL,type_vrdv,0);
   }
-
+  NclFree(dsizes_vrdv);
+  return(ret);
 }
 
 
@@ -12799,7 +12808,7 @@ NhlErrorTypes uv2vrdvG_W( void )
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
+  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, ret;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int nt, nlat, nlon, nlatnlon, total_size_in;
   int index_uv, index_vr, index_dv, nmiss;
@@ -13091,12 +13100,14 @@ NhlErrorTypes uv2vrdvG_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"uv2vrdvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,&missing_vrdv,
-                          type_vrdv,0));
+    ret = NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,&missing_vrdv,
+                          type_vrdv,0);
   }
   else {
-    return(NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,NULL,type_vrdv,0));
+    ret = NclReturnValue(vrdv,ndims_vrdv,dsizes_vrdv,NULL,type_vrdv,0);
   }
+  NclFree(dsizes_vrdv);
+  return(ret);
 }
 
 
@@ -13438,7 +13449,7 @@ NhlErrorTypes vr2uvF_W( void )
 /*
  * various
  */
-  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3;
+  int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2, l3, ret;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_vr, index_ur, index_vort, nmiss;
 /*
@@ -13682,11 +13693,13 @@ NhlErrorTypes vr2uvF_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(uvr,ndims_uvr,dsizes_uvr,&missing_uvr,type_uvr,0));
+    ret = NclReturnValue(uvr,ndims_uvr,dsizes_uvr,&missing_uvr,type_uvr,0);
   }
   else {
-    return(NclReturnValue(uvr,ndims_uvr,dsizes_uvr,NULL,type_uvr,0));
+    ret = NclReturnValue(uvr,ndims_uvr,dsizes_uvr,NULL,type_uvr,0);
   }
+  NclFree(dsizes_uvr);
+  return(ret);
 }
 
 
@@ -14035,7 +14048,7 @@ NhlErrorTypes vr2uvG_W( void )
 /*
  * Workspace variables
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
+  int nt, nlat, nlon, nlatnlon, total_size_in, ret;
   int lwork1, lwork2, lwork3, ldwork1, ldwork2, lshagc, lvhsgc;
   double *work1, *work2, *work3, *dwork1, *dwork2;
   double *wshagc, *wvhsgc, *a, *b, *pertrb;
@@ -14273,11 +14286,13 @@ NhlErrorTypes vr2uvG_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"vr2uvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(uvr,ndims_uvr,dsizes_uvr,&missing_uvr,type_uvr,0));
+    ret = NclReturnValue(uvr,ndims_uvr,dsizes_uvr,&missing_uvr,type_uvr,0);
   }
   else {
-    return(NclReturnValue(uvr,ndims_uvr,dsizes_uvr,NULL,type_uvr,0));
+    ret = NclReturnValue(uvr,ndims_uvr,dsizes_uvr,NULL,type_uvr,0);
   }
+  NclFree(dsizes_uvr);
+  return(ret);
 }
 
 
@@ -14674,7 +14689,7 @@ NhlErrorTypes vrdv2uvF_W( void )
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
+  int nt, nlat, nlon, nlatnlon, total_size_in, ret;
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_u, index_v, index_vrdv, nmiss;
@@ -14974,11 +14989,13 @@ NhlErrorTypes vrdv2uvF_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvF: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_uv,type_uv,0));
+    ret = NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_uv,type_uv,0);
   }
   else {
-    return(NclReturnValue(uv,ndims_uv,dsizes_uv,NULL,type_uv,0));
+    ret = NclReturnValue(uv,ndims_uv,dsizes_uv,NULL,type_uv,0);
   }
+  NclFree(dsizes_uv);
+  return(ret);
 }
 
 
@@ -15372,7 +15389,7 @@ NhlErrorTypes vrdv2uvG_W( void )
 /*
  * various
  */
-  int nt, nlat, nlon, nlatnlon, total_size_in;
+  int nt, nlat, nlon, nlatnlon, total_size_in, ret;
   int i, j, l, isym, idvw, jdvw, mdab, ndab, l1, l2;
   int ier=0, jer=0, ker=0, mer=0, ner=0, one=1;
   int index_u, index_v, index_vrdv, nmiss;
@@ -15670,12 +15687,13 @@ NhlErrorTypes vrdv2uvG_W( void )
  */
   if(nmiss) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"vrdv2uvG: %d 2-dimensional input array(s) contained missing values. No interpolation performed on these arrays",nmiss);
-    return(NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_uv,type_uv,0));
+    ret = NclReturnValue(uv,ndims_uv,dsizes_uv,&missing_uv,type_uv,0);
   }
   else {
-    return(NclReturnValue(uv,ndims_uv,dsizes_uv,NULL,type_uv,0));
+    ret = NclReturnValue(uv,ndims_uv,dsizes_uv,NULL,type_uv,0);
   }
-
+  NclFree(dsizes_uv);
+  return(ret);
 }
 
 
@@ -18946,7 +18964,7 @@ NhlErrorTypes shsgc_R42_W( void )
 /*
  * various
  */
-  int i, index_ab, index_g;
+  int i, index_ab, index_g, ret;
   int size_leftmost, size_rightmost_g, size_rightmost_ab;
 
 /*
@@ -19105,7 +19123,9 @@ NhlErrorTypes shsgc_R42_W( void )
   if(type_b != NCL_double) NclFree(tmp_b);
   if(type_g != NCL_double) NclFree(tmp_g);
 
-  return(NclReturnValue(g,ndims_a,dsizes_g,NULL,type_g,0));
+  ret = NclReturnValue(g,ndims_a,dsizes_g,NULL,type_g,0);
+  NclFree(dsizes_g);
+  return(ret);
 }
 
 

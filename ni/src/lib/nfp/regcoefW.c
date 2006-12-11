@@ -38,7 +38,7 @@ NhlErrorTypes regcoef_W( void )
   int i, j, k, ly, lx, ln, dimsizes_same;
   int total_size_leftmost_x, total_size_leftmost_y; 
   int total_size_x, total_size_y, total_size_rcoef;
-  int ier = 0, ier_count5 = 0, ier_count6 = 0;
+  int ier = 0, ier_count5 = 0, ier_count6 = 0, ret;
 /*
  * Retrieve parameters
  *
@@ -372,16 +372,18 @@ NhlErrorTypes regcoef_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_ry,
-                          NCL_float,0));
+    ret = NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_ry,
+                          NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_dy,
-                          NCL_double,0));
+    ret = NclReturnValue(rcoef,ndims_rcoef,dsizes_rcoef,&missing_dy,
+                          NCL_double,0);
   }
+  NclFree(dsizes_rcoef);
+  return(ret);
 }
 
 

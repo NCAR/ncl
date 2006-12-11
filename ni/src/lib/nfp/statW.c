@@ -700,7 +700,7 @@ NhlErrorTypes stat_medrng_W( void )
   int ndims_xrange, dsizes_xrange[NCL_MAX_DIMENSIONS];
   int ndims_xmrange, dsizes_xmrange[NCL_MAX_DIMENSIONS];
   int ndims_nptused, dsizes_nptused[NCL_MAX_DIMENSIONS];
-  int ndims_out, *dsizes_out;
+  int ndims_out;
   NclBasicDataTypes type_xmedian, type_xmrange, type_xrange;
 /*
  * various
@@ -737,9 +737,6 @@ NhlErrorTypes stat_medrng_W( void )
  * Calculate what the size is supposed to be of our output arrays.
  */
   ndims_out = max(ndims_x-1,1);
-  dsizes_out = (int*)NclMalloc(ndims_out*sizeof(int));
-  dsizes_out[0] = 1;
-  for(i = 0; i < ndims_x-1; i++ ) dsizes_out[i] = dsizes_x[i];
 /* 
  * Get output variables.
  */
@@ -795,10 +792,10 @@ NhlErrorTypes stat_medrng_W( void )
  * Check the dimension sizes of xmedian, xrange, and nptused.
  */
   for(i = 0; i < ndims_out; i++ ) {
-    if( dsizes_xmedian[i] != dsizes_out[i] || 
-        dsizes_xmrange[i] != dsizes_out[i] ||
-        dsizes_xrange[i]  != dsizes_out[i] || 
-        dsizes_nptused[i] != dsizes_out[i] ) {
+    if( dsizes_xmedian[i] != dsizes_x[i] || 
+        dsizes_xmrange[i] != dsizes_x[i] ||
+        dsizes_xrange[i]  != dsizes_x[i] || 
+        dsizes_nptused[i] != dsizes_x[i] ) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The dimensions of xmedian, xrange, xmrange, and nptused must be the same as the left-most dimensions of x");
       return(NhlFATAL);
     }
@@ -2882,7 +2879,7 @@ NhlErrorTypes dim_stat4_W( void )
 /*
  * various
  */
-  int i, total_leftmost, ier = 0, index_x, npts;
+  int i, total_leftmost, ier = 0, index_x, npts, ret;
   double xsd, *tmp_x;
 /*
  * Retrieve parameters
@@ -2971,14 +2968,16 @@ NhlErrorTypes dim_stat4_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_rx,NCL_float,0));
+    ret = NclReturnValue(stat,ndims_x,dsizes_out,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(stat,ndims_x,dsizes_out,&missing_dx,NCL_double,0));
+    ret = NclReturnValue(stat,ndims_x,dsizes_out,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_out);
+  return(ret);
 }
 
 

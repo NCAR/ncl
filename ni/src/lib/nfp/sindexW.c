@@ -33,7 +33,6 @@ NhlErrorTypes sindex_yrmo_W( void )
  */
   void *soi;
   double *tmp_soi, *soi_noise;
-  int *dsizes_soi;
   NclBasicDataTypes type_soi;
 /*
  * various
@@ -320,7 +319,6 @@ NhlErrorTypes snindex_yrmo_W( void )
  */
   void *soi, *soi_noise;
   double *tmp_soi, *tmp_soi_noise;
-  int *dsizes_soi;
   NclBasicDataTypes type_soi;
 /*
  * various

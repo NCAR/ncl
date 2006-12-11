@@ -40,7 +40,7 @@ NhlErrorTypes pres_hybrid_W( void )
 /*
  * Various.
  */
-  int i, j, index_phy, klvl, size_leftmost, size_phy;
+  int i, j, index_phy, klvl, size_leftmost, size_phy, ret;
 /*
  * Retrieve parameters
  *
@@ -208,7 +208,9 @@ NhlErrorTypes pres_hybrid_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0));
+  ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  NclFree(dsizes_phy);
+  return(ret);
 }
 
 
@@ -233,7 +235,7 @@ NhlErrorTypes dpres_hybrid_W( void )
 /*
  * Various.
  */
-  int i, j, index_phy, klvl, klvl1, size_leftmost, size_phy;
+  int i, j, index_phy, klvl, klvl1, size_leftmost, size_phy, ret;
 /*
  * Retrieve parameters
  *
@@ -401,7 +403,9 @@ NhlErrorTypes dpres_hybrid_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0));
+  ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  NclFree(dsizes_phy);
+  return(ret);
 }
 
 NhlErrorTypes pres_hybrid_ccm_W( void )
@@ -425,7 +429,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
  * Various.
  */
   int i, j, index_psfc, index_phy, nlat, nlon, klvl, nlatnlon, klvlnlatnlon;
-  int size_leftmost, size_phy;
+  int size_leftmost, size_phy, ret;
 /*
  * Retrieve parameters
  *
@@ -600,7 +604,9 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0));
+  ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  NclFree(dsizes_phy);
+  return(ret);
 }
 
 
@@ -626,7 +632,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
  * Various.
  */
   int i, j, nlat, nlon, klvl, klvl1, nlatnlon, klvl1nlatnlon;
-  int index_psfc, index_phy, size_leftmost, size_phy;
+  int index_psfc, index_phy, size_leftmost, size_phy, ret;
 /*
  * Retrieve parameters
  *
@@ -801,7 +807,9 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0));
+  ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  NclFree(dsizes_phy);
+  return(ret);
 }
 
 NhlErrorTypes sigma2hybrid_W( void )
@@ -829,7 +837,7 @@ NhlErrorTypes sigma2hybrid_W( void )
  */
   double *tmp_sigo;
   int i, scalar_psfc, nlvi, nlvo;
-  int index_x, index_xhybrid, size_leftmost, size_xhybrid;
+  int index_x, index_xhybrid, size_leftmost, size_xhybrid, ret;
 /*
  * Retrieve parameters
  *
@@ -1060,8 +1068,10 @@ NhlErrorTypes sigma2hybrid_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(xhybrid,ndims_x,dsizes_xhybrid,NULL,
-                        type_xhybrid,0));
+  ret = NclReturnValue(xhybrid,ndims_x,dsizes_xhybrid,NULL,
+                        type_xhybrid,0);
+  NclFree(dsizes_xhybrid);
+  return(ret);
 }
 
 
@@ -1087,7 +1097,7 @@ NhlErrorTypes pres2hybrid_W( void )
 /*
  * Various.
  */
-  int i, j, index_xi, index_xo, index_ps, size_leftmost, size_xo;
+  int i, j, index_xi, index_xo, index_ps, size_leftmost, size_xo, ret;
   int nlat, nlon, nlevi, nlevo, nlat_nlon, nlat_nlon_nlevi, nlat_nlon_nlevo;
 /*
  * Retrieve parameters
@@ -1346,5 +1356,7 @@ NhlErrorTypes pres2hybrid_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0));
+  ret = NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0);
+  NclFree(dsizes_xo);
+  return(ret);
 }

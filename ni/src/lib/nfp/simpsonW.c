@@ -29,7 +29,7 @@ NhlErrorTypes simpeq_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_f, npts, size_leftmost;
+  int i, index_f, npts, size_leftmost, ret;
 
 /*
  * Retrieve arguments.
@@ -166,13 +166,15 @@ NhlErrorTypes simpeq_W( void )
   }
 
   if(nmiss) {
-    return(NclReturnValue(simpeq,ndims_simpeq,dsizes_simpeq,
-                          &missing_simpeq,type_simpeq,0));
+    ret = NclReturnValue(simpeq,ndims_simpeq,dsizes_simpeq,
+                          &missing_simpeq,type_simpeq,0);
   }
   else {
-    return(NclReturnValue(simpeq,ndims_simpeq,dsizes_simpeq,NULL,
-                          type_simpeq,0));
+    ret = NclReturnValue(simpeq,ndims_simpeq,dsizes_simpeq,NULL,
+                          type_simpeq,0);
   }
+  NclFree(dsizes_simpeq);
+  return(ret);
 }
 
 NhlErrorTypes simpne_W( void )
@@ -201,7 +203,7 @@ NhlErrorTypes simpne_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_y, npts, size_leftmost;
+  int i, index_y, npts, size_leftmost, ret;
 
 /*
  * Retrieve arguments.
@@ -403,11 +405,13 @@ NhlErrorTypes simpne_W( void )
   }
 
   if(nmiss) {
-    return(NclReturnValue(simpne,ndims_simpne,dsizes_simpne,
-                          &missing_simpne,type_simpne,0));
+    ret = NclReturnValue(simpne,ndims_simpne,dsizes_simpne,
+                          &missing_simpne,type_simpne,0);
   }
   else {
-    return(NclReturnValue(simpne,ndims_simpne,dsizes_simpne,NULL,
-                          type_simpne,0));
+    ret = NclReturnValue(simpne,ndims_simpne,dsizes_simpne,NULL,
+                          type_simpne,0);
   }
+  NclFree(dsizes_simpne);
+  return(ret);
 }

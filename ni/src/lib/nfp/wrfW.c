@@ -1328,6 +1328,8 @@ NhlErrorTypes wrf_slp_W( void )
                           NULL,
                           TEMPORARY
                           );
+
+  NclFree(dsizes_slp);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -1727,6 +1729,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dsizes_v2d);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -2113,6 +2116,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dsizes_v2d);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -2524,6 +2528,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dsizes_v_out);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -2557,7 +2562,7 @@ NhlErrorTypes wrf_bint_W( void )
 /*
  * Various
  */
-  int i, nx, ny, nz, nobsicrs, nobsjcrs, size_leftmost; 
+  int i, nx, ny, nz, nobsicrs, nobsjcrs, size_leftmost, ret;
   int nxyz, nobsij, nobsijz, index_data_in, index_data_out, index_nobsij;
 
 /*
@@ -2821,8 +2826,10 @@ NhlErrorTypes wrf_bint_W( void )
   if(type_obsjj    != NCL_double) NclFree(tmp_obsjj);
   if(type_data_out != NCL_double) NclFree(tmp_data_out);
 
-  return(NclReturnValue(data_out,ndims_data_in,dsizes_data_out,NULL,
-                        type_data_out,0));
+  ret = NclReturnValue(data_out,ndims_data_in,dsizes_data_out,NULL,
+                        type_data_out,0);
+  NclFree(dsizes_data_out);
+  return(ret);
 }
 
 NhlErrorTypes wrf_maptform_W( void )
@@ -3176,7 +3183,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
  */
   int ny, nx, nynx, nloc = 2;
   int index_array, index_loc;
-  int i, ndims_leftmost, size_leftmost, size_output;
+  int i, ndims_leftmost, size_leftmost, size_output, ret;
 
 /*
  * Retrieve parameters.
@@ -3450,8 +3457,9 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   if(type_lon       != NCL_double) NclFree(tmp_lon);
 
   missing_loc.intval = -999;
-  return(NclReturnValue(loc,ndims_loc,dsizes_loc,&missing_loc,NCL_int,0));
-
+  ret = NclReturnValue(loc,ndims_loc,dsizes_loc,&missing_loc,NCL_int,0);
+  NclFree(dsizes_loc);
+  return(ret);
 }
 
 NhlErrorTypes wrf_uvmet_W( void )
@@ -3997,6 +4005,7 @@ NhlErrorTypes wrf_uvmet_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dsizes_uvmet);
 /*
  * Return output grid and attributes to NCL.
  */
@@ -4349,6 +4358,7 @@ NhlErrorTypes wrf_iclw_W( void )
                           NULL,
                           TEMPORARY
                           );
+  NclFree(dsizes_iclw);
 /*
  * Return output grid and attributes to NCL.
  */
