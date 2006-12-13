@@ -38,6 +38,7 @@ g2codeTable *ct
 );
 
 # define    NCL_GRIB_CACHE_SIZE     150
+#define GRIB2_MISSING_LEVEL_VAL     -9999.0
 
 static void *vbuf;
 
@@ -1402,7 +1403,7 @@ static void *g2GribMapFromNcl
 static int g2LVNotEqual( Grib2RecordInqRecList *s_1, Grib2RecordInqRecList *s_2)
 {
 
-	if ((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
+	if (s_1->rec_inq->traits.second_level_type != 255) {
 		if (s_1->rec_inq->level0 == s_2->rec_inq->level0) {
 			if (s_1->rec_inq->level1 == s_2->rec_inq->level1) {
 				return(0);
@@ -1537,121 +1538,22 @@ int l1_scale_fac;
 	int ltype;
 	int lval;
 
-        *l0 = -1;
-        *l1 = -1;
+        *l0 = GRIB2_MISSING_LEVEL_VAL;
+        *l1 = GRIB2_MISSING_LEVEL_VAL;
 
-	if (l0_type != 255) {
+	if (l0_type != 255 && l0_val != 255) {
 		if (l0_scale_fac == 0) 
 			*l0 = l0_val;
-		else
+		else if (l0_scale_fac != -127)
 			*l0 = l0_val * pow(0.1,l0_scale_fac);
 	}
-	if (l1_type != 255) {
+	if (l1_type != 255 && l1_val != 255) {
 		if (l1_scale_fac == 0) 
 			*l1 = l1_val;
-		else
+		else if (l1_scale_fac != -127)
 			*l1 = l1_val * pow(0.1,l1_scale_fac);
 	}
-#if 0
-        switch (ltype) {
-        case 100:
-            /* Isobaric Surface */
-            *l0 = l1_val;
-            *l1 = -1;
-            return 1;
-            break;
 
-        case 101:
-            /* Mean Sea Level */
-            *l0 = -1;
-            *l1 = -1;
-            return 1;
-            break;
-
-        case 102:
-            /* Specific Altitude Above Mean Sea Level */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 103:
-            /* Specified Height Level Above Ground */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 104:
-            /* Sigma Level */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 105:
-            /* Hybrid Level */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 106:
-            /* Depth Below Land Surface */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 107:
-            /* Isentropic (theta) Level
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 108:
-            /* Level at Specified Pressure Difference from Ground to Level */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 109:
-            /* Potential Vorticity Surface */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 111:
-            /* Eta Level */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 117:
-            /* Mixed Layer Depth */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 160:
-            /* Depth Below Sea Level */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 200:
-            /* Entire Atmosphere (considered as a single layer */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        case 201:
-            /* Entire Ocean (considered as a single layer */
-            *l0 = l1_val;
-            *l1 = -1;
-            break;
-
-        default: 
-            *l0 = -1;
-            *l1 = -1;
-            break;
-    }
-#endif
 
     return 0;
 }
@@ -1669,7 +1571,7 @@ void *s2;
 	Grib2RecordInqRecList *s_1 = *(Grib2RecordInqRecList**)s1;
 	Grib2RecordInqRecList *s_2 = *(Grib2RecordInqRecList**)s2;
 
-	if((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
+	if(s_1->rec_inq->traits.second_level_type != 255) {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
 			if(s_1->rec_inq->level1 == s_2->rec_inq->level1) {
 				return (0);
@@ -1769,6 +1671,7 @@ Grib2FileRecord *therec;
 	float *tmp_level = NULL;
 	void *tmp_fill = NULL;
 	g2codeTable *ct = NULL;
+	char buf[512];
 	ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
 	if (ct == NULL) {
 		NhlPError(NhlFATAL, NhlEUNKNOWN,
@@ -1781,257 +1684,316 @@ Grib2FileRecord *therec;
 	step = therec->var_list;
 	
 	while(step != NULL) {
-        /* Handle long_name, units, center, sub_center, model and _FillValue */
-        for (i = 0; i < step->n_entries; i++) {
-            if (step->thelist[i].rec_inq != NULL) {
-                grib_rec = step->thelist[i].rec_inq;
-                break;
-            }
-        }
+		/* Handle long_name, units, center, sub_center, model and _FillValue */
+		for (i = 0; i < step->n_entries; i++) {
+			if (step->thelist[i].rec_inq != NULL) {
+				grib_rec = step->thelist[i].rec_inq;
+				break;
+			}
+		}
+		if (! grib_rec)
+			continue;
 
-        /* Handle coordinate attributes,  level, initial_time, forecast_time */
-        if (step->yymmddhh_isatt) {
-            att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("initial_time");
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->yymmddhh;
+		/* Handle coordinate attributes,  level, initial_time, forecast_time */
+		if (step->yymmddhh_isatt) {
+			att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("initial_time");
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->yymmddhh;
 
-            /* Don't want two references */
-            step->yymmddhh = NULL;
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-        }
+			/* Don't want two references */
+			step->yymmddhh = NULL;
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
 
-        if (step->forecast_time_isatt) {
-            att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("forecast_time");
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->forecast_time;
+		if (step->forecast_time_isatt) {
+			att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("forecast_time");
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->forecast_time;
 
-            /* Don't want two references */
-            step->forecast_time= NULL;
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-        }
+			/* Don't want two references */
+			step->forecast_time= NULL;
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
 
-        if ((step->levels_isatt)&&(!step->levels_has_two)) {
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("level");
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->levels;
+		if ((step->levels_isatt)&&(!step->levels_has_two) && (step->traits.first_level_type != 255)) {
+			if (grib_rec->level0 != GRIB2_MISSING_LEVEL_VAL) {
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("level");
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->levels;
 
-            /* Don't want two references */
-            step->levels= NULL;
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-        } else if ((step->levels_isatt) && (step->levels_has_two)) {
-            tmp_level = (float*)NclMalloc(sizeof(float) * 2);
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("level");
-            /* att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->levels0; */
-            tmp_level[0] = *(float*)step->levels0->multidval.val;
-            tmp_level[1] = *(float*)step->levels1->multidval.val;
-            tmp_dimsizes = 2;
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(
-                    NULL, NULL, Ncl_MultiDValData, 0, (void *) tmp_level, NULL, 1, 
-                    &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
-            tmp_dimsizes = 1;
+				/* Don't want two references */
+				step->levels= NULL;
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
 
-            /* Don't want two references */
-            _NclDestroyObj((NclObj)step->levels0);
-            _NclDestroyObj((NclObj)step->levels1);
-            step->levels0= NULL;
-            step->levels1= NULL;
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-	}
+		} else if ((step->levels_isatt) && (step->levels_has_two)) {
+			if (grib_rec->level0 != GRIB2_MISSING_LEVEL_VAL &&
+			    grib_rec->level1 != GRIB2_MISSING_LEVEL_VAL) {
+				tmp_level = (float*)NclMalloc(sizeof(float) * 2);
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("level");
+				tmp_level[0] = *(float*)step->levels0->multidval.val;
+				tmp_level[1] = *(float*)step->levels1->multidval.val;
+				tmp_dimsizes = 2;
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(
+					NULL, NULL, Ncl_MultiDValData, 0, (void *) tmp_level, NULL, 1, 
+					&tmp_dimsizes, PERMANENT, NULL, nclTypefloatClass);
+				tmp_dimsizes = 1;
 
-        att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-        att_list_ptr->next = step->theatts;
-        att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-        att_list_ptr->att_inq->name = NrmStringToQuark("parameter_number");
-        tmp_int = (int*)NclMalloc(sizeof(int));
-        *tmp_int= grib_rec->param_number;
-        att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes, 
-                PERMANENT, NULL, nclTypeintClass);
-        step->theatts = att_list_ptr;
-        step->n_atts++;
+				/* Don't want two references */
+				_NclDestroyObj((NclObj)step->levels0);
+				_NclDestroyObj((NclObj)step->levels1);
+				step->levels0= NULL;
+				step->levels1= NULL;
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}
 
-/*
-        att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-        att_list_ptr->next = step->theatts;
-        att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-        att_list_ptr->att_inq->name = NrmStringToQuark("gds_type");
-        tmp_int = (int *) NclMalloc(sizeof(int));
-        *tmp_int = grib_rec->gds_type;
-        att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes,
-                PERMANENT, NULL, nclTypeintClass);
-        step->theatts = att_list_ptr;
-        step->n_atts++;
-*/
+		}
 
-        att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-        att_list_ptr->next = step->theatts;
-        att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-        att_list_ptr->att_inq->name = NrmStringToQuark("grid_number");
-        tmp_int = (int*)NclMalloc(sizeof(int));
-        *tmp_int = grib_rec->grid_number;
-        att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes, 
-                PERMANENT, NULL, nclTypeintClass);
-        step->theatts = att_list_ptr;
-        step->n_atts++;
-
-        att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-        att_list_ptr->next = step->theatts;
-        att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-        att_list_ptr->att_inq->name = NrmStringToQuark("level_indicator");
-        tmp_int = (int*)NclMalloc(sizeof(int));
-        *tmp_int= grib_rec->level_indicator;
-        att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                Ncl_MultiDValData, 0, (void*)tmp_int, NULL, 1, &tmp_dimsizes,
-                PERMANENT, NULL, nclTypeintClass);
-        step->theatts = att_list_ptr;
-        step->n_atts++;
-
-        /*
-         * if 2D coordinates, this adds the CF compliant attribute "coordinates", to point to the
-         * auxiliary coordinate variables
-         */
-
-        if (step->aux_coords[0] != NrmNULLQUARK) {
-            char buffer[80];
-
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("coordinates");
-            tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-            sprintf(buffer,"%s %s",NrmQuarkToString(step->aux_coords[0]),
-                NrmQuarkToString(step->aux_coords[1]));
-            *tmp_string = NrmStringToQuark(buffer);		
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                    Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
-                    PERMANENT, NULL, nclTypestringClass);
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-        }
-
-        att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-        att_list_ptr->next = step->theatts;
-        att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-        att_list_ptr->att_inq->name = NrmStringToQuark(NCL_MISSING_VALUE_ATT);
-        if (step->var_info.data_type == NCL_int) {
-            tmp_fill = NclMalloc(sizeof(int));
-            *(int *) tmp_fill = G2_DEFAULT_MISSING_INT;
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                    Ncl_MultiDValData, 0, (void *) tmp_fill, NULL, 1, &tmp_dimsizes,
-                    PERMANENT, NULL, nclTypeintClass);
-        } else {
-            tmp_fill = NclMalloc(sizeof(float));
-            *(float *) tmp_fill = G2_DEFAULT_MISSING_FLOAT;
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                    Ncl_MultiDValData, 0, (void *) tmp_fill, NULL, 1, &tmp_dimsizes, 
-                    PERMANENT, NULL, nclTypefloatClass);
-        }
-
-        step->theatts = att_list_ptr;
-        step->n_atts++;
+		if (step->levels_isatt && step->traits.first_level_type != 255) {
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			if (!step->levels_has_two ||
+			    step->traits.first_level_type == step->traits.second_level_type) {
+				att_list_ptr->att_inq->name = NrmStringToQuark("level_type");
+			}
+			else if (step->traits.second_level_type != 255) {
+				att_list_ptr->att_inq->name = NrmStringToQuark("first_level_type");
+			}
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+					   "4.5.table",step->traits.first_level_type,ct);
+			if (ct->descrip) {
+				if (ct->units && strcmp("none",ct->units)) {
+					sprintf(buf,"%s (%s)",ct->descrip,ct->units);
+					*tmp_string = NrmStringToQuark(buf);
+				}
+				else {
+					*tmp_string = NrmStringToQuark(ct->descrip);
+				}
+			}
+			else {
+				sprintf(buf,"%d",step->traits.first_level_type);
+				*tmp_string = NrmStringToQuark(buf);
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1, &tmp_dimsizes,
+					      PERMANENT, NULL, nclTypestringClass);
+				
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+		if (step->levels_has_two && step->levels_isatt && step->traits.second_level_type != 255 &&
+		    step->traits.second_level_type != step->traits.first_level_type) {
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("second_level_type");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+					   "4.5.table",step->traits.second_level_type,ct);
+			if (ct->descrip) {
+				if (ct->units && strcmp("none",ct->units)) {
+					sprintf(buf,"%s (%s)",ct->descrip,ct->units);
+					*tmp_string = NrmStringToQuark(buf);
+				}
+				else {
+					*tmp_string = NrmStringToQuark(ct->descrip);
+				}
+			}
+			else {
+				sprintf(buf,"%d",step->traits.second_level_type);
+				*tmp_string = NrmStringToQuark(buf);
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1, &tmp_dimsizes,
+					      PERMANENT, NULL, nclTypestringClass);
+				
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
 		
-        if (grib_rec->ptable_rec !=NULL) {
-            /* units */
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("units");
-            tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-            *tmp_string = NrmStringToQuark(grib_rec->ptable_rec->units);		
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL, 
-                    Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
-                    PERMANENT, NULL, nclTypestringClass);
-            step->theatts = att_list_ptr;
-            step->n_atts++;
+		if (step->traits.stat_proc_type != 255) {
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("type_of_statistical_processing");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+					   "4.10.table",step->traits.stat_proc_type,ct);
+			if (ct->descrip) {
+				*tmp_string = NrmStringToQuark(ct->descrip);
+			}
+			else {
+				sprintf(buf,"%d",step->traits.stat_proc_type);
+				*tmp_string = NrmStringToQuark(buf);
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+	
 
-            /* long_name */
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
-            tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-            *tmp_string = NrmStringToQuark(grib_rec->ptable_rec->long_name);		
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL, 
-                    Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
-                    PERMANENT, NULL, nclTypestringClass);
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-        } else {
-            /* units */
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("units");
-            tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-            *tmp_string = grib_rec->units_q;		
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, 
-                    Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1, &tmp_dimsizes, 
-                    PERMANENT, NULL, nclTypestringClass);
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
-            tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-            *tmp_string = grib_rec->long_name_q;		
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL, 
-                    Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1, &tmp_dimsizes, 
-                    PERMANENT, NULL, nclTypestringClass);
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-        }
+/* param number */
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_number");
+		tmp_int = (int*)NclMalloc(sizeof(int));
+		*tmp_int= grib_rec->param_number;
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+			_NclCreateVal(NULL, NULL,
+				      Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes, 
+				      PERMANENT, NULL, nclTypeintClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
 
-        /* center */
-        att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-        att_list_ptr->next = step->theatts;
-        att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-        att_list_ptr->att_inq->name = NrmStringToQuark("center");
-        if ((Grib2ReadCodeTable("", -1, "centers.table", grib_rec->center, ct)) < NhlWARNING)
-            return;
 
-        tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-        *tmp_string = NrmStringToQuark(ct->descrip);		
-        att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
-                PERMANENT, NULL, nclTypestringClass);
-        step->theatts = att_list_ptr;
-        step->n_atts++;
+
+/* grid number */
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("grid_number");
+		tmp_int = (int*)NclMalloc(sizeof(int));
+		*tmp_int = grib_rec->grid_number;
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+			_NclCreateVal(NULL, NULL,
+				      Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes, 
+				      PERMANENT, NULL, nclTypeintClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+
+
+		/*
+		 * if 2D coordinates, this adds the CF compliant attribute "coordinates", to point to the
+		 * auxiliary coordinate variables
+		 */
+
+		if (step->aux_coords[0] != NrmNULLQUARK) {
+			char buffer[80];
+
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("coordinates");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			sprintf(buffer,"%s %s",NrmQuarkToString(step->aux_coords[0]),
+				NrmQuarkToString(step->aux_coords[1]));
+			*tmp_string = NrmStringToQuark(buffer);		
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark(NCL_MISSING_VALUE_ATT);
+		if (step->var_info.data_type == NCL_int) {
+			tmp_fill = NclMalloc(sizeof(int));
+			*(int *) tmp_fill = G2_DEFAULT_MISSING_INT;
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_fill, NULL, 1, &tmp_dimsizes,
+					      PERMANENT, NULL, nclTypeintClass);
+		} else {
+			tmp_fill = NclMalloc(sizeof(float));
+			*(float *) tmp_fill = G2_DEFAULT_MISSING_FLOAT;
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_fill, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypefloatClass);
+		}
+
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+		
+		/* units */
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("units");
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = step->var_info.units_q;		
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+			_NclCreateVal(NULL, NULL, 
+				      Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1, &tmp_dimsizes, 
+				      PERMANENT, NULL, nclTypestringClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = step->var_info.long_name_q;		
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+			_NclCreateVal(NULL, NULL, 
+				      Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1, &tmp_dimsizes, 
+				      PERMANENT, NULL, nclTypestringClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+
+
+		/* center */
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("center");
+		if ((Grib2ReadCodeTable("", -1, "centers.table", grib_rec->center, ct)) < NhlWARNING)
+			return;
+
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = NrmStringToQuark(ct->descrip);		
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+			_NclCreateVal(NULL, NULL,
+				      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
+				      PERMANENT, NULL, nclTypestringClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
 	
 
 #if 0
-        /* subcenter */
-        if (grib_rec->sub_center != -1) {
-            att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-            att_list_ptr->next = step->theatts;
-            att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-            att_list_ptr->att_inq->name = NrmStringToQuark("subcenter");
-            tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-            *tmp_string = NrmStringToQuark(grib_rec->sub_center);
-            att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal(NULL, NULL,
-                    Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
-                    PERMANENT, NULL, nclTypestringClass);
-            step->theatts = att_list_ptr;
-            step->n_atts++;
-        }
+		/* subcenter */
+		if (grib_rec->sub_center != -1) {
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("subcenter");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = NrmStringToQuark(grib_rec->sub_center);
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
 #endif
 
-        step = step->next;
+		step = step->next;
 
     }
     Grib2FreeCodeTableRec(ct);
@@ -2540,7 +2502,6 @@ static Grib2ParamList *_g2NewListNode
 	tmp->traits = grib_rec->traits;
 	tmp->var_info.var_name_quark = grib_rec->var_name_q;
 	tmp->var_info.data_type = g2GribMapToNcl((void *) &(grib_rec->int_or_float));
-	tmp->param_index = grib_rec->param_index;
 	tmp->param_number = grib_rec->param_number;
 	tmp->grid_number = grib_rec->grid_number;
 	tmp->level_indicator = grib_rec->level_indicator;
@@ -2594,8 +2555,8 @@ static Grib2RecordInqRec* _g2MakeMissingRec
 	grib_rec->grid_number = -1;
 	grib_rec->time_offset = -1;
 	grib_rec->time_period = -1;
-	grib_rec->level0 = -1;
-	grib_rec->level1 = -1;
+	grib_rec->level0 = GRIB2_MISSING_LEVEL_VAL;
+	grib_rec->level1 = GRIB2_MISSING_LEVEL_VAL;
 	grib_rec->var_name = NULL;
 	grib_rec->long_name_q = -1;
 	grib_rec->units_q = -1;
@@ -3095,24 +3056,16 @@ static int g2GetLVList
     strt = lstep;
     *lv_vals = (float *) NclMalloc((unsigned)sizeof(float) * n_lvs);
 
-    for (i = 0; i < n_lvs; i++) {
-        if (strt->rec_inq->level1 != -1) {
-		*lv_vals1 = (float *) NclMalloc((unsigned)sizeof(float) * n_lvs);
-		break;
-	}
-        strt = strt->next;
+    if (strt->rec_inq->traits.second_level_type != 255) {
+	    *lv_vals1 = (float *) NclMalloc((unsigned)sizeof(float) * n_lvs);
     }
 
     strt = lstep;
     if (*lv_vals1) {
 	    for (i = 0; i < n_lvs; i++) {
 		    (*lv_vals)[i] = strt->rec_inq->level0;
-		    if (strt->rec_inq->level1 != -1) {
+		    if (strt->rec_inq->traits.second_level_type != 255) {
 			    (*lv_vals1)[i] = strt->rec_inq->level1;
-		    }
-		    else {
-			    strt->rec_inq->level1 =
-				    (*lv_vals1)[i] = strt->rec_inq->level0;
 		    }
 		    strt = strt->next;
 	    }
@@ -3235,7 +3188,7 @@ static G2_FTLIST *g2GetFTList
             the_end->n_lv = 0;
             the_end->n_lv = g2GetLVList(thevar, strt, &the_end->lv_vals, &the_end->lv_vals1);
 
-            if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 == -1)) {
+            if (strt->rec_inq->traits.second_level_type == 255) {
                 if (tmp_lvs == NULL) {
                     tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
                     tmp_n_lvs = the_end->n_lv;
@@ -3243,7 +3196,7 @@ static G2_FTLIST *g2GetFTList
                 } else {
                     tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
                 }
-            } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)){
+            } else {
                 /* Handle multiple value coordinate levels */
                 if (tmp_lvs == NULL) {
                     tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
@@ -3282,7 +3235,7 @@ static G2_FTLIST *g2GetFTList
     the_end->n_lv = 0;
     the_end->n_lv = g2GetLVList(thevar, strt, &the_end->lv_vals, &the_end->lv_vals1);
 
-    if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 == -1)) {
+    if (strt->rec_inq->traits.second_level_type == 255) {
         if (tmp_lvs != NULL) {
             tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
         } else {
@@ -3290,7 +3243,7 @@ static G2_FTLIST *g2GetFTList
             tmp_n_lvs = the_end->n_lv;
             memcpy((void*) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
         }
-    } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)) {
+    } else {
         /* Handle multiple value coordinate levels */
         if (tmp_lvs == NULL) {
             tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
@@ -3400,7 +3353,7 @@ static G2_ITLIST *g2GetITList
             }
         }
 
-        if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 == -1)) {
+        if (strt->rec_inq->traits.second_level_type == 255) {
             if (tmp_lvs == NULL) {
                 tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
                 tmp_n_lvs = the_end->n_lv;
@@ -3408,7 +3361,7 @@ static G2_ITLIST *g2GetITList
             } else {
                 tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
             }
-        } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)){
+        } else {
             /* Handle multiple value coordinate levels */
             if (tmp_lvs == NULL) {
                 tmp_lvs = (float*) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
@@ -3447,7 +3400,7 @@ static G2_ITLIST *g2GetITList
         }
     }
 
-    if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 == -1)) {
+    if (strt->rec_inq->traits.second_level_type == 255) {
         if (tmp_lvs != NULL) {
             tmp_lvs = g2Merge(tmp_lvs, &tmp_n_lvs, the_end->lv_vals, the_end->n_lv);
         } else {
@@ -3455,7 +3408,7 @@ static G2_ITLIST *g2GetITList
             tmp_n_lvs = the_end->n_lv;
             memcpy((void *) tmp_lvs, the_end->lv_vals, the_end->n_lv * sizeof(float));
         }
-    } else if ((strt->rec_inq->level0 != -1) && (strt->rec_inq->level1 != -1)) {
+    } else {
         /* Handle multiple value coordinate levels */
         if (tmp_lvs == NULL) {
             tmp_lvs = (float *) NclMalloc((unsigned)sizeof(float) * the_end->n_lv);
@@ -4288,71 +4241,71 @@ static void _g2SetFileDimsAndCoordVars
             current_dim++;
         }
 
-		if (!step->yymmddhh_isatt) {
-			dstep = therec->it_dims;
-			for (i = 0; i < therec->n_it_dims; i++) {
-				if (dstep->dim_inq->size == step->yymmddhh->multidval.dim_sizes[0]) {
-					tmp_md = _Grib2GetInternalVar(therec, dstep->dim_inq->dim_name, &test);
-					if (tmp_md != NULL) {
-						it_lhs = (NclQuark *) tmp_md->multidval.val;
+	if (!step->yymmddhh_isatt) {
+		dstep = therec->it_dims;
+		for (i = 0; i < therec->n_it_dims; i++) {
+			if (dstep->dim_inq->size == step->yymmddhh->multidval.dim_sizes[0]) {
+				tmp_md = _Grib2GetInternalVar(therec, dstep->dim_inq->dim_name, &test);
+				if (tmp_md != NULL) {
+					it_lhs = (NclQuark *) tmp_md->multidval.val;
 	
-						it_rhs = (NclQuark *) step->yymmddhh->multidval.val;
-						j = 0;
-						while (j < dstep->dim_inq->size) {
-							if (it_lhs[j] != it_rhs[j])
-								break;
-							else
-								j++;
-						}
-
-						if (j == dstep->dim_inq->size)
+					it_rhs = (NclQuark *) step->yymmddhh->multidval.val;
+					j = 0;
+					while (j < dstep->dim_inq->size) {
+						if (it_lhs[j] != it_rhs[j])
 							break;
 						else
-							dstep= dstep->next;
-					} else {
-						dstep = dstep->next;
-                    }
+							j++;
+					}
+
+					if (j == dstep->dim_inq->size)
+						break;
+					else
+						dstep= dstep->next;
 				} else {
 					dstep = dstep->next;
 				}
-			}
-
-            /* All pointers to coordate will end up in dim list not in param list */
-			if (dstep == NULL) {
-                /* Need a new dimension entry w name and number */
-				tmp = (Grib2DimInqRec *) NclMalloc((unsigned) sizeof(Grib2DimInqRec));
-				tmp->dim_number = therec->total_dims;
-				tmp->size = step->yymmddhh->multidval.dim_sizes[0];
-				sprintf(buffer, "initial_time%d", therec->n_it_dims);
-				tmp->dim_name = NrmStringToQuark(buffer);
-				tmp->grid_number = -1;
-				therec->total_dims++;
-				ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
-				ptr->dim_inq = tmp;
-				ptr->next = therec->it_dims;
-				therec->it_dims = ptr;
-				therec->n_it_dims++;
-				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				
-				tmp_string = (NclQuark *) NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark("mm/dd/yyyy (hh:mm)");
-				Grib2PushAtt(&tmp_att_list_ptr, "units", tmp_string, 1, nclTypestringClass); 
-
-				tmp_string = (NclQuark *) NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark("Initial time of first record");
-				Grib2PushAtt(&tmp_att_list_ptr, "long_name", tmp_string, 1, nclTypestringClass); 
-
-				_Grib2AddInternalVar(therec,tmp->dim_name, &tmp->dim_number,
-                        (NclMultiDValData) step->yymmddhh, tmp_att_list_ptr, 2);
-				tmp_att_list_ptr = NULL;
-				step->yymmddhh = NULL;
 			} else {
-				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
-				_NclDestroyObj((NclObj) step->yymmddhh);
-				step->yymmddhh = NULL;
+				dstep = dstep->next;
 			}
-			current_dim++;
 		}
+
+		/* All pointers to coordate will end up in dim list not in param list */
+		if (dstep == NULL) {
+			/* Need a new dimension entry w name and number */
+			tmp = (Grib2DimInqRec *) NclMalloc((unsigned) sizeof(Grib2DimInqRec));
+			tmp->dim_number = therec->total_dims;
+			tmp->size = step->yymmddhh->multidval.dim_sizes[0];
+			sprintf(buffer, "initial_time%d", therec->n_it_dims);
+			tmp->dim_name = NrmStringToQuark(buffer);
+			tmp->grid_number = -1;
+			therec->total_dims++;
+			ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
+			ptr->dim_inq = tmp;
+			ptr->next = therec->it_dims;
+			therec->it_dims = ptr;
+			therec->n_it_dims++;
+			step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+				
+			tmp_string = (NclQuark *) NclMalloc(sizeof(NclQuark));
+			*tmp_string = NrmStringToQuark("mm/dd/yyyy (hh:mm)");
+			Grib2PushAtt(&tmp_att_list_ptr, "units", tmp_string, 1, nclTypestringClass); 
+
+			tmp_string = (NclQuark *) NclMalloc(sizeof(NclQuark));
+			*tmp_string = NrmStringToQuark("Initial time of first record");
+			Grib2PushAtt(&tmp_att_list_ptr, "long_name", tmp_string, 1, nclTypestringClass); 
+
+			_Grib2AddInternalVar(therec,tmp->dim_name, &tmp->dim_number,
+					     (NclMultiDValData) step->yymmddhh, tmp_att_list_ptr, 2);
+			tmp_att_list_ptr = NULL;
+			step->yymmddhh = NULL;
+		} else {
+			step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+			_NclDestroyObj((NclObj) step->yymmddhh);
+			step->yymmddhh = NULL;
+		}
+		current_dim++;
+	}
 
         if (!step->forecast_time_isatt) {
 			dstep = therec->ft_dims;
@@ -4419,194 +4372,194 @@ static void _g2SetFileDimsAndCoordVars
 			current_dim++;
         }
 
-		if ((!step->levels_isatt) && (step->levels != NULL)) {
-			dstep = therec->lv_dims;
-			for (i = 0; i < therec->n_lv_dims; i++) {
-				if (dstep->dim_inq->size == step->levels->multidval.dim_sizes[0]) {
-					tmp_md = _Grib2GetInternalVar(therec, dstep->dim_inq->dim_name, &test);
-					if (tmp_md != NULL ) {
-						lhs = (int *) tmp_md->multidval.val;
-						rhs = (int *) step->levels->multidval.val;
-						j = 0;
-						while (j < dstep->dim_inq->size) {
-							if (lhs[j] != rhs[j]) {
-								break;
-							} else {
-								j++;
-							}
-						}
-						if (j == dstep->dim_inq->size) {
+	if ((!step->levels_isatt) && (step->levels != NULL)) {
+		dstep = therec->lv_dims;
+		for (i = 0; i < therec->n_lv_dims; i++) {
+			if (dstep->dim_inq->size == step->levels->multidval.dim_sizes[0]) {
+				tmp_md = _Grib2GetInternalVar(therec, dstep->dim_inq->dim_name, &test);
+				if (tmp_md != NULL ) {
+					lhs = (int *) tmp_md->multidval.val;
+					rhs = (int *) step->levels->multidval.val;
+					j = 0;
+					while (j < dstep->dim_inq->size) {
+						if (lhs[j] != rhs[j]) {
 							break;
 						} else {
-							dstep= dstep->next;
+							j++;
 						}
+					}
+					if (j == dstep->dim_inq->size) {
+						break;
 					} else {
 						dstep= dstep->next;
 					}
 				} else {
-					dstep = dstep->next;
+					dstep= dstep->next;
 				}
-			}
-
-			if (dstep == NULL) {
-				/* Need a new dimension entry name and number */
-				Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-							 "4.5.table",step->thelist->rec_inq->level_indicator,ct);
-				tmp = (Grib2DimInqRec *) NclMalloc((unsigned)sizeof(Grib2DimInqRec));
-				tmp->dim_number = therec->total_dims;
-				tmp->grid_number = -1;
-				tmp->size = step->levels->multidval.dim_sizes[0];
-				if (ct->shname) {
-					sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
-				}
-				else {
-					sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
-				}
-				tmp->dim_name = NrmStringToQuark(buffer);
-				therec->total_dims++;
-				ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
-				ptr->dim_inq = tmp;
-				ptr->next = therec->lv_dims;
-				therec->lv_dims = ptr;
-				therec->n_lv_dims++;
-				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				att_list_ptr = NULL;
-
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(ct->units) {
-					*tmp_string = NrmStringToQuark(ct->units);
-				} else {
-					*tmp_string = NrmStringToQuark("unknown");
-				}
-				Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
-
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(ct->descrip) {
-					*tmp_string = NrmStringToQuark(ct->descrip);
-				} else {
-					*tmp_string = NrmStringToQuark("unknown");
-				}
-				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-
-				_Grib2AddInternalVar(therec,tmp->dim_name, &tmp->dim_number,
-						     (NclMultiDValData) step->levels, att_list_ptr, 2);
-				step->levels = NULL;
 			} else {
-				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
-				_NclDestroyObj((NclObj)step->levels);
-				step->levels = NULL;
+				dstep = dstep->next;
 			}
-			current_dim++;
-		} else if ((!step->levels_isatt) && (step->levels0 != NULL) && (step->levels1 != NULL)) {
-			dstep = therec->lv_dims;
-			for (i = 0; i < therec->n_lv_dims; i++) {
-				if (dstep->dim_inq->size == step->levels0->multidval.dim_sizes[0]) {
-					sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_l0");
-					tmp_md = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
-					sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_l1");
-					tmp_md1 = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
-					if ((tmp_md != NULL )&&(tmp_md1 != NULL) ) {
-						lhs = (int*)tmp_md->multidval.val;
-						rhs = (int*)step->levels0->multidval.val;
-						lhs1 = (int*)tmp_md1->multidval.val;
-						rhs1 = (int*)step->levels1->multidval.val;
-						j = 0;
-						while (j<dstep->dim_inq->size) {
-							if ((lhs[j] != rhs[j])||(lhs1[j] != rhs1[j])) {
-								break;
-							} else {
-								j++;
-							}
-						}
-						if (j == dstep->dim_inq->size) {
+		}
+
+		if (dstep == NULL) {
+			/* Need a new dimension entry name and number */
+			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+					   "4.5.table",step->thelist->rec_inq->level_indicator,ct);
+			tmp = (Grib2DimInqRec *) NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+			tmp->dim_number = therec->total_dims;
+			tmp->grid_number = -1;
+			tmp->size = step->levels->multidval.dim_sizes[0];
+			if (ct->shname) {
+				sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
+			}
+			else {
+				sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
+			}
+			tmp->dim_name = NrmStringToQuark(buffer);
+			therec->total_dims++;
+			ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
+			ptr->dim_inq = tmp;
+			ptr->next = therec->lv_dims;
+			therec->lv_dims = ptr;
+			therec->n_lv_dims++;
+			step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+			att_list_ptr = NULL;
+
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if(ct->units) {
+				*tmp_string = NrmStringToQuark(ct->units);
+			} else {
+				*tmp_string = NrmStringToQuark("unknown");
+			}
+			Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if(ct->descrip) {
+				*tmp_string = NrmStringToQuark(ct->descrip);
+			} else {
+				*tmp_string = NrmStringToQuark("unknown");
+			}
+			Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+			_Grib2AddInternalVar(therec,tmp->dim_name, &tmp->dim_number,
+					     (NclMultiDValData) step->levels, att_list_ptr, 2);
+			step->levels = NULL;
+		} else {
+			step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+			_NclDestroyObj((NclObj)step->levels);
+			step->levels = NULL;
+		}
+		current_dim++;
+	} else if ((!step->levels_isatt) && (step->levels0 != NULL) && (step->levels1 != NULL)) {
+		dstep = therec->lv_dims;
+		for (i = 0; i < therec->n_lv_dims; i++) {
+			if (dstep->dim_inq->size == step->levels0->multidval.dim_sizes[0]) {
+				sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_l0");
+				tmp_md = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+				sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_l1");
+				tmp_md1 = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+				if ((tmp_md != NULL )&&(tmp_md1 != NULL) ) {
+					lhs = (int*)tmp_md->multidval.val;
+					rhs = (int*)step->levels0->multidval.val;
+					lhs1 = (int*)tmp_md1->multidval.val;
+					rhs1 = (int*)step->levels1->multidval.val;
+					j = 0;
+					while (j<dstep->dim_inq->size) {
+						if ((lhs[j] != rhs[j])||(lhs1[j] != rhs1[j])) {
 							break;
 						} else {
-							dstep= dstep->next;
+							j++;
 						}
+					}
+					if (j == dstep->dim_inq->size) {
+						break;
 					} else {
 						dstep= dstep->next;
 					}
 				} else {
-					dstep = dstep->next;
+					dstep= dstep->next;
 				}
+			} else {
+				dstep = dstep->next;
 			}
-			if (dstep == NULL) {
-                /* Need a new dimension entry w name and number */
-				Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-							 "4.5.table",step->thelist->rec_inq->level_indicator,ct);
-				tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
-				tmp->dim_number = therec->total_dims;
-				tmp->grid_number = -1;
-				tmp->size = step->levels0->multidval.dim_sizes[0];
-				if (ct->shname) {
-					sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
-				}
-				else {
-					sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
-				}
-				tmp->dim_name = NrmStringToQuark(buffer);
-				therec->total_dims++;
-				ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
-				ptr->dim_inq = tmp;
-				ptr->next = therec->lv_dims;
-				therec->lv_dims = ptr;
-				therec->n_lv_dims++;
-				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
-				sprintf(name_buffer,"%s%s",buffer,"_l0");
+		}
+		if (dstep == NULL) {
+			/* Need a new dimension entry w name and number */
+			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+					   "4.5.table",step->thelist->rec_inq->level_indicator,ct);
+			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+			tmp->dim_number = therec->total_dims;
+			tmp->grid_number = -1;
+			tmp->size = step->levels0->multidval.dim_sizes[0];
+			if (ct->shname) {
+				sprintf(buffer, "lv_%s%d", ct->shname,therec->n_lv_dims);
+			}
+			else {
+				sprintf(buffer, "levels%d", ct->shname,therec->n_lv_dims);
+			}
+			tmp->dim_name = NrmStringToQuark(buffer);
+			therec->total_dims++;
+			ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+			ptr->dim_inq = tmp;
+			ptr->next = therec->lv_dims;
+			therec->lv_dims = ptr;
+			therec->n_lv_dims++;
+			step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+			sprintf(name_buffer,"%s%s",buffer,"_l0");
 			
-				att_list_ptr = NULL;
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(ct->units) {
-					*tmp_string = NrmStringToQuark(ct->units);
-				} else {
-					*tmp_string = NrmStringToQuark("unknown");
-				}
-				Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
-
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(ct->descrip) {
-					*tmp_string = NrmStringToQuark(ct->descrip);
-				} else {
-					*tmp_string = NrmStringToQuark("unknown");
-				}
-				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-
-				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
-						     &tmp->dim_number,(NclMultiDValData)step->levels0,att_list_ptr,2);
-
-				sprintf(name_buffer,"%s%s",buffer,"_l1");
-				att_list_ptr = NULL;
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(ct->units) {
-					*tmp_string = NrmStringToQuark(ct->units);
-				} else {
-					*tmp_string = NrmStringToQuark("unknown");
-				}
-				Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
-
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				if(ct->descrip) {
-					*tmp_string = NrmStringToQuark(ct->descrip);
-				} else {
-					*tmp_string = NrmStringToQuark("unknown");
-				}
-				Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
-
-				_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
-						     &tmp->dim_number,(NclMultiDValData)step->levels1,att_list_ptr,2);
-
-
-				att_list_ptr = NULL;
-				step->levels0 = NULL;
-				step->levels1 = NULL;
+			att_list_ptr = NULL;
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if(ct->units) {
+				*tmp_string = NrmStringToQuark(ct->units);
 			} else {
-				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
-				_NclDestroyObj((NclObj)step->levels0);
-				_NclDestroyObj((NclObj)step->levels1);
-				step->levels0 = NULL;
-				step->levels1 = NULL;
+				*tmp_string = NrmStringToQuark("unknown");
 			}
-			current_dim++;
+			Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if(ct->descrip) {
+				*tmp_string = NrmStringToQuark(ct->descrip);
+			} else {
+				*tmp_string = NrmStringToQuark("unknown");
+			}
+			Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+			_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
+					     &tmp->dim_number,(NclMultiDValData)step->levels0,att_list_ptr,2);
+
+			sprintf(name_buffer,"%s%s",buffer,"_l1");
+			att_list_ptr = NULL;
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if(ct->units) {
+				*tmp_string = NrmStringToQuark(ct->units);
+			} else {
+				*tmp_string = NrmStringToQuark("unknown");
+			}
+			Grib2PushAtt(&att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if(ct->descrip) {
+				*tmp_string = NrmStringToQuark(ct->descrip);
+			} else {
+				*tmp_string = NrmStringToQuark("unknown");
+			}
+			Grib2PushAtt(&att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+			_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),
+					     &tmp->dim_number,(NclMultiDValData)step->levels1,att_list_ptr,2);
+
+
+			att_list_ptr = NULL;
+			step->levels0 = NULL;
+			step->levels1 = NULL;
+		} else {
+			step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+			_NclDestroyObj((NclObj)step->levels0);
+			_NclDestroyObj((NclObj)step->levels1);
+			step->levels0 = NULL;
+			step->levels1 = NULL;
+		}
+		current_dim++;
         }
 
         /*
@@ -6016,6 +5969,163 @@ static void Grib2FreeGrib2Rec
     return;
 }
 
+typedef struct _tigge_info {
+
+  int flag;  /* parameter type descripter */
+  int disc;  /* Section 0 Discipline */
+  int pcat;  /* Section 4 table 4.0 Parameter category */
+  int pnum;  /* Section 4 table 4.0 Parameter number */
+  int tstat;  /* Section 4 type of statistical processing */
+  int toffs;  /* Type of first fixed surface */
+  int sfffs;  /* Scale factor of first fixed surface */
+  int svffs;  /* scale value of first fixed surface */
+  int tosfs;  /* type of second fixed surface */
+  int sfsfs;  /* scale factor of second fixed surface */
+  int svsfs;  /* scale value of second fixed surface */
+   
+  const char *name;
+  const char *desc;
+  const char *unit;
+} TiggeInfo;
+
+static TiggeInfo tigge_info[] = {
+  /* TIGGE table entries 
+     by Doug Schuster */
+
+  {2, 0, 0, 0,    2, 103, 255,   255,   255, 255, 255, "mx2t6", "surface air maximum temperature", "K" },
+  {2, 0, 0, 0,    3, 103, 255,   255,   255, 255, 255, "mn2t6", "surface air minimum temperature", "K" },
+  {2, 0, 1, 53,   1,   1, 255,   255,   255, 255, 255, "sf", "snow fall water equivalent", "kg/m^2" },
+  {2, 0, 6, 24,   1,   1, 255,   255,   255, 255, 255, "sund", "sunshine duration", "s" },
+  {2, 0, 0, 10,   1,   1, 255,   255,   255, 255, 255, "slhf", "time integrated surface latent heat flux", "W/m^2 s" },
+  {2, 0, 4, 9,    1,   1, 255,   255,   255, 255, 255, "ssr", "time integrated surface net solar radiation", "W/m^2 s" },
+  {2, 0, 0, 11,   1,   1, 255,   255,   255, 255, 255, "sshf", "time integrated surface sensible heat flux", "W/m^2 s" },
+  {2, 0, 1, 52,   1,   1, 255,   255,   255, 255, 255, "tp", "total precipitation", "kg/m^2" },
+  {2, 0, 5, 5,    1,   8, 255,   255,   255, 255, 255, "ttr", "time integrated outgoing long wave radiation", "W/m^2 s" },
+  {2, 0, 5, 5,    1,   1, 255,   255,   255, 255, 255, "str", "time integrated surface net thermal radiation", "W/m^2 s" },
+  {3, 2, 0, 22, 255, 106,   0,     0,   106,   1,   2, "sm", "soil moisture", "kg/m^3" },
+  {3, 2, 0, 2,  255, 106,   0,     0,   106,   1,   2, "st", "soil temperature", "K"}, 
+  {4, 0, 6, 1,  255,   1, 255,   255,     8, 255, 255, "tcc", "total cloud cover", "%" },
+  {4, 0, 1, 51, 255,   1, 255,   255,     8, 255, 255, "tcw", "total column water", "kg/m^2" },
+  {4, 0, 7, 6,  255,   1, 255,   255,     8, 255, 255, "cape", "Convective available potential energy", "J/kg" },
+  {4, 0, 7, 7,  255,   1, 255,   255,     8, 255, 255, "ci", "convective inhibition", "J/kg" },
+  {5, 0, 0, 2,  255, 109,   6,     2,   255, 255, 255, "pt", "potential temperature", "K" },
+  {5, 0, 2, 14, 255, 107,   0,   320,   255, 255, 255, "pv", "potential vorticity", "km^2/kg/s" },
+  {5, 0, 2, 2,  255, 103,   0,    10,   255, 255, 255, "10u", "10 meter u velocity", "m/s" },
+  {5, 0, 2, 3,  255, 103,   0,    10,   255, 255, 255, "10v", "10 meter v velocity", "m/s" }, 
+  {6, 0, 2, 2,  255, 255, 255,   255,   255, 255, 255, "u", "u velocity", "m/s" },
+  {6, 0, 2, 3,  255, 255, 255,   255,   255, 255, 255, "v", "v velocity", "m/s" },
+  {1, 0, 0, 17, 255,   1, 255,   255,   255, 255, 255, "skt", "skin temperature", "K" },
+  {1, 0, 1, 60, 255,   1, 255,   255,   255, 255, 255, "sd", "snow depth water equivalent", "kg/m^2" },
+  {1, 0, 0, 0,  255, 100, 255,   255,   255, 255, 255, "t", "temperature", "K" },
+  {1, 0, 0, 6,  255, 103, 255,   255,   255, 255, 255, "2d", "surface air dew point temperature", "K" },
+  {1, 0, 0, 0,  255, 103, 255,   255,   255, 255, 255, "2t", "surface air temperature", "K" },
+  {1, 0, 1, 0,  255, 100, 255,   255,   255, 255, 255, "q", "specific humidity", "kg/kg" },
+  {1, 0, 3, 0,  255,   1, 255,   255,   255, 255, 255, "sp", "surface pressure", "Pa" },
+  {1, 0, 3, 0,  255, 101, 255,   255,   255, 255, 255, "msl", "mean sea level pressure", "Pa" },
+  {1, 0, 3, 5,  255, 100, 255,   255,   255, 255, 255, "gh", "geopotential height", "gpm" },
+  {1, 2, 0, 0,  255,   1, 255,   255,   255, 255, 255, "lsm", "land sea mask", "fraction" },
+  {1, 0, 3, 5,  255,   1, 255,   255,   255, 255, 255, "orog", "orography", "gpm" },
+  /* END MARKER */
+  { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, NULL, NULL, NULL }
+};
+
+static void _g2SetVarInfo
+#if    NhlNeedProto
+(
+    Grib2FileRecord *g2frec,
+    Grib2ParamList  *g2plist
+)
+#else
+(g2frec,g2plist)
+Grib2FileRecord *g2frec;
+Grib2ParamList  *g2plist;
+#endif /* NhlNeedProto */
+{
+	Grib2RecordInqRec   *g2inqrec;
+	int i;
+	Grib2VarTraits *trp = &g2plist->traits;
+	g2codeTable ct;
+	char buf[512];
+	NhlErrorTypes cterr;
+
+	for (i = 0; i < g2plist->n_entries; i++) {
+            if (g2plist->thelist[i].rec_inq != NULL) {
+                g2inqrec = g2plist->thelist[i].rec_inq;
+                break;
+            }
+        }
+	if (!g2inqrec) {
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  "NclGRIB2.c: Variable contains no records.");
+		return;
+	}
+	g2plist->var_info.var_name_quark = NrmNULLQUARK;
+	if (g2inqrec->table_source && ! strcmp(g2inqrec->table_source,"tigge")) {
+		i = 0;
+		while (tigge_info[i].flag != -1) {
+			TiggeInfo *tip = &tigge_info[i];
+			i++;
+			if (tip->disc != trp->discipline)
+				continue;
+			if (tip->pcat != trp->param_cat)
+				continue;
+			if (tip->pnum != trp->param_number)
+				continue;
+			if (tip->flag == 2 && tip->tstat != trp->stat_proc_type)
+				continue;
+			if (tip->flag != 6 && tip->toffs != trp->first_level_type)
+				continue;
+			if ((tip->flag == 3 || tip->flag == 4) && tip->tosfs != trp->second_level_type)
+				continue;
+			sprintf(buf,"%s_P%d_L%d",tip->name,trp->pds_template,trp->first_level_type);
+			g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
+			g2plist->var_info.long_name_q = NrmStringToQuark(tip->desc);
+			g2plist->var_info.units_q = NrmStringToQuark(tip->unit);
+			break;
+		}
+		if (g2plist->var_info.var_name_quark > NrmNULLQUARK)
+			return;
+	}
+	memset(&ct,0,sizeof(g2codeTable));
+	sprintf(buf, "4.2.%d.%d.table", trp->discipline,trp->param_cat);
+	cterr = Grib2ReadCodeTable(g2inqrec->table_source, 4, buf,trp->param_number,&ct);
+	if (cterr < NhlWARNING) {
+		return;
+	}
+	if (ct.oct != -1) {
+                /* found parameter in table */
+		g2plist->var_info.long_name_q = NrmStringToQuark(ct.descrip);
+
+		if (ct.shname != NULL) {
+			sprintf(buf,"%s_P%d_L%d",ct.shname,trp->pds_template,trp->first_level_type);
+		} else {
+			sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",trp->discipline,trp->param_cat,trp->param_number,
+				trp->pds_template,trp->first_level_type);
+		}
+		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
+
+		if (ct.units != NULL) {
+			g2plist->var_info.units_q = NrmStringToQuark(ct.units);
+
+		} else {
+			g2plist->var_info.units_q = NrmStringToQuark("unknown");
+		}
+	} else {
+                /* parameter not found */
+		g2plist->var_info.long_name_q = NrmStringToQuark("unknown variable name");
+		sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",trp->discipline,trp->param_cat,trp->param_number,
+			trp->pds_template,trp->first_level_type);
+		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
+		g2plist->var_info.units_q = NrmStringToQuark("unknown");
+	}
+	return;
+}
+	
+			
+		
+	
+
+
 static void *Grib2OpenFile
 # if    NhlNeedProto
 (void *rec, NclQuark path, int wr_status)
@@ -6322,6 +6432,8 @@ static void *Grib2OpenFile
 
         /* table 1.2: Significance of Reference Time */
         g2rec[nrecs]->sec1.ref_time = sec1[4];
+	g2rec[nrecs]->sec1.sig_ref_time = NULL;
+#if 0
         table = "1.2.table";
         cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.ref_time, ct);
         if (cterr < NhlWARNING) {
@@ -6338,6 +6450,7 @@ static void *Grib2OpenFile
         }
 
         (void) strcpy(g2rec[nrecs]->sec1.sig_ref_time, ct->descrip);
+#endif
 
         g2rec[nrecs]->sec1.date_time.year = sec1[5];
         g2rec[nrecs]->sec1.date_time.mon = sec1[6];
@@ -6352,6 +6465,8 @@ static void *Grib2OpenFile
 
         /* table 1.3: Production Status of Data */
         g2rec[nrecs]->sec1.prod_status = sec1[11];
+	g2rec[nrecs]->sec1.proc_prod_status = NULL;
+#if 0
         table = "1.3.table";
         cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.prod_status, ct);
         if (cterr < NhlWARNING) {
@@ -6361,9 +6476,12 @@ static void *Grib2OpenFile
 
         g2rec[nrecs]->sec1.proc_prod_status = NclMalloc(strlen(ct->descrip) + 1);
         (void) strcpy(g2rec[nrecs]->sec1.proc_prod_status, ct->descrip);
+#endif
 
         /* table 1.4: Type of Data */
         g2rec[nrecs]->sec1.data_type = sec1[12];
+	g2rec[nrecs]->sec1.proc_data_type = NULL;
+#if 0
         table = "1.4.table";
         cterr = Grib2ReadCodeTable(center,secid,table, g2rec[nrecs]->sec1.data_type, ct);
         if (cterr < NhlWARNING) {
@@ -6377,6 +6495,7 @@ static void *Grib2OpenFile
         } else {
             g2rec[nrecs]->sec1.proc_data_type = NULL;
         }
+#endif
 
         /*
          * Get GRIB v2 sections 2 thru 7.  These sections may be repeated
@@ -6482,6 +6601,9 @@ static void *Grib2OpenFile
 #endif
 
             g2rec[nrecs]->sec3[i]->grid_def_src = g2fld->griddef;
+	    g2rec[nrecs]->sec3[i]->grid_def_name = NULL;
+	    g2rec[nrecs]->sec3[i]->grid_num = g2fld->igdtnum;
+#if 0
             switch ( g2fld->griddef) {
                 case 0:
                     /* table 3.1: Grid Defn Template Num */
@@ -6492,7 +6614,6 @@ static void *Grib2OpenFile
                         return NULL;
                     }
 
-                    g2rec[nrecs]->sec3[i]->grid_num = ct->oct;
                     g2rec[nrecs]->sec3[i]->grid_def_name = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec3[i]->grid_def_name, ct->descrip);
                     break;
@@ -6514,6 +6635,7 @@ static void *Grib2OpenFile
                     /* grid def doesn't apply */
                     break;
             }
+#endif
 
             g2rec[nrecs]->sec3[i]->num_grid_data_pts = g2fld->ngrdpts;
             g2rec[nrecs]->sec3[i]->num_oct_opt = g2fld->numoct_opt;
@@ -6647,6 +6769,8 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec4[i]->secid = 4;
             /* table 4.0: Product Defn Template Number */
             g2rec[nrecs]->sec4[i]->pds_num = g2fld->ipdtnum;
+	    g2rec[nrecs]->sec4[i]->prod_def_name = NULL;
+#if 0
             table = "4.0.table";
             cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec4[i]->pds_num, ct);
             if (cterr < NhlWARNING) {
@@ -6656,11 +6780,14 @@ static void *Grib2OpenFile
 
             g2rec[nrecs]->sec4[i]->prod_def_name = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec4[i]->prod_def_name, ct->descrip);
+#endif
 
             /* table 4.1: Parameter Category by Product Discipline */
             g2rec[nrecs]->sec4[i]->prod_params = NclMalloc(sizeof(G2prodParams));
 	    memset(g2rec[nrecs]->sec4[i]->prod_params,0,sizeof(G2prodParams));
             g2rec[nrecs]->sec4[i]->prod_params->param_cat = g2fld->ipdtmpl[0];
+	    g2rec[nrecs]->sec4[i]->prod_params->param_cat_name = NULL;
+#if 0
             table = "4.1.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
                     g2rec[nrecs]->sec4[i]->prod_params->param_cat, ct);
@@ -6672,6 +6799,7 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec4[i]->prod_params->param_cat_name
                     = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->param_cat_name, ct->descrip);
+#endif
 
             /*
              * table 4.2.x.y: Product Discipline
@@ -6731,7 +6859,9 @@ static void *Grib2OpenFile
 
             /* table 4.3: Type of Generating Process */
             g2rec[nrecs]->sec4[i]->prod_params->gen_process = g2fld->ipdtmpl[2];
-            table = "4.3.table";
+	    g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NULL;
+#if 0
+	    table = "4.3.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
                     g2rec[nrecs]->sec4[i]->prod_params->gen_process, ct);
             if (cterr < NhlWARNING) {
@@ -6741,6 +6871,7 @@ static void *Grib2OpenFile
 
             g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name, ct->descrip);
+#endif
             g2rec[nrecs]->sec4[i]->prod_params->bkgd_gen_process = g2fld->ipdtmpl[3];
             g2rec[nrecs]->sec4[i]->prod_params->gen_processID = g2fld->ipdtmpl[4];
             g2rec[nrecs]->sec4[i]->prod_params->hrs_after_reftime_cutoff = g2fld->ipdtmpl[5];
@@ -6748,6 +6879,8 @@ static void *Grib2OpenFile
 
             /* table 4.4: Indicator of Unit of Time Range */
             g2rec[nrecs]->sec4[i]->prod_params->time_range = g2fld->ipdtmpl[7];
+            g2rec[nrecs]->sec4[i]->prod_params->time_range_unit = NULL;
+#if 0
             table = "4.4.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
                     g2rec[nrecs]->sec4[i]->prod_params->time_range, ct);
@@ -6759,10 +6892,14 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec4[i]->prod_params->time_range_unit
                     = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->time_range_unit, ct->descrip);
+#endif
             g2rec[nrecs]->sec4[i]->prod_params->forecast_time = g2fld->ipdtmpl[8];
 
             /* table 4.5: Fixed Surface Types and Units */
             g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[9];
+	    g2rec[nrecs]->sec4[i]->prod_params->first_fixed_sfc = NULL;
+	    g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc = NULL;
+#if 0
             table = "4.5.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc, ct);
@@ -6780,15 +6917,19 @@ static void *Grib2OpenFile
                 (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc,
                         ct->units);
             }
+#endif
             g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[10];
             if (g2fld->ipdtmpl[10] == -127)
-		    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc = 0;
+		    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc;
             else
                 g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
                         = g2fld->ipdtmpl[11];
 
 
             g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[12];
+            g2rec[nrecs]->sec4[i]->prod_params->second_fixed_sfc = NULL;
+	    g2rec[nrecs]->sec4[i]->prod_params->units_second_fixed_sfc = NULL;
+#if 0
             cterr = Grib2ReadCodeTable(center, secid, table,
                 g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc, ct);
             if (cterr < NhlWARNING) {
@@ -6805,6 +6946,7 @@ static void *Grib2OpenFile
                 (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc,
                         ct->units);
             }
+#endif
             g2rec[nrecs]->sec4[i]->prod_params->scale_factor_second_fixed_sfc = g2fld->ipdtmpl[13];
             if (g2fld->ipdtmpl[13] == -127)
 		    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc = 0;
@@ -6832,7 +6974,7 @@ static void *Grib2OpenFile
              * available that what's been extracted to this point.  This is determined
              * by the Product Definition Templates (PDTs).
              */
-            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = -1;
+            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = 255;
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
                 case 0:
                     /*
@@ -6915,6 +7057,8 @@ static void *Grib2OpenFile
                     /* table 4.10: Type of Statistical Processing */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
                             = g2fld->ipdtmpl[23];
+                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
+#if 0
                     table = "4.10.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                             g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc, ct);
@@ -6927,11 +7071,13 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->stat_proc,
                             ct->descrip);
+#endif
     
-		    break;
                     /* table 4.11: Type of Time Intervals */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
                             = g2fld->ipdtmpl[24];
+                    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
+#if 0		    
                     table = "4.11.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                             g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields, ct);
@@ -6944,10 +7090,13 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields,
                             ct->descrip);
+#endif
     
                     /* table 4.4: Indicator of Unit of Time Range */
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[25];
+		    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+#if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                         g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done, ct);
@@ -6960,11 +7109,14 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_unit,
                             ct->descrip);
+#endif
                     g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[26];
 
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
                             = g2fld->ipdtmpl[27];
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
+#if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                             g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields, ct);
@@ -6977,6 +7129,7 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit,
                             ct->descrip);
+#endif
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
                             = g2fld->ipdtmpl[28];
                     break;
@@ -7013,6 +7166,8 @@ static void *Grib2OpenFile
 
                     /* table 4.6: Type of Ensemble Forecast */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[15];
+                    g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type = NULL;
+#if 0
                     table = "4.6.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                             g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx, ct);
@@ -7025,6 +7180,7 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type,
                             ct->descrip);
+#endif
                     
                     g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16];
                     g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17];
@@ -7053,6 +7209,8 @@ static void *Grib2OpenFile
                     /* table 4.10: Type of Statistical Processing */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
                             = g2fld->ipdtmpl[26];
+                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
+#if 0
                     table = "4.10.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                             g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc, ct);
@@ -7065,11 +7223,13 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->stat_proc,
                             ct->descrip);
+#endif
     
-		    break;
                     /* table 4.11: Type of Time Intervals */
                     g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
                             = g2fld->ipdtmpl[27];
+                    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
+#if 0
                     table = "4.11.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                             g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields, ct);
@@ -7082,10 +7242,13 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields,
                             ct->descrip);
+#endif
     
                     /* table 4.4: Indicator of Unit of Time Range */
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[28];
+		    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+#if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                         g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done, ct);
@@ -7098,11 +7261,14 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_unit,
                             ct->descrip);
+#endif
                     g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[29];
 
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
                             = g2fld->ipdtmpl[30];
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
+#if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
                             g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields, ct);
@@ -7115,6 +7281,7 @@ static void *Grib2OpenFile
                             = NclMalloc(strlen(ct->descrip) + 1);
                     (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit,
                             ct->descrip);
+#endif
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
                             = g2fld->ipdtmpl[31];
                     break;
@@ -7227,6 +7394,8 @@ static void *Grib2OpenFile
 
             /* table 5.0: Data Representation Template Number */
             g2rec[nrecs]->sec5[i]->drt_templ_num = g2fld->idrtnum;
+            g2rec[nrecs]->sec5[i]->drt_desc = NULL;
+#if 0
             table = "5.0.table";
             cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec5[i]->drt_templ_num, ct);
             if (cterr < NhlWARNING) {
@@ -7236,6 +7405,7 @@ static void *Grib2OpenFile
 
             g2rec[nrecs]->sec5[i]->drt_desc = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec5[i]->drt_desc, ct->descrip);
+#endif
 
             g2rec[nrecs]->sec5[i]->data_repr = NclMalloc(sizeof(G2dataRepr));
             g2rec[nrecs]->sec5[i]->data_repr->refVal = (double) g2fld->idrtmpl[0];
@@ -7245,6 +7415,8 @@ static void *Grib2OpenFile
 
             /* table 5.1: Type of Original Field Values */
             g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = g2fld->idrtmpl[4];
+            g2rec[nrecs]->sec5[i]->data_repr->field_vals = NULL;
+#if 0
             table = "5.1.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
                     g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals, ct);
@@ -7255,6 +7427,7 @@ static void *Grib2OpenFile
 
             g2rec[nrecs]->sec5[i]->data_repr->field_vals = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec5[i]->data_repr->field_vals, ct->descrip);
+#endif
 
             /* type allocated is based on value read from table/template */
             g2rec[nrecs]->sec5[i]->ndpts = g2fld->ndpts;
@@ -7267,6 +7440,8 @@ static void *Grib2OpenFile
 
             /* table 6.0: Bitmap Indicator */
             g2rec[nrecs]->sec6[i]->bmap_ind = g2fld->ibmap;
+            g2rec[nrecs]->sec6[i]->bmap_desc = NULL;
+#if 0
             table = "6.0.table";
             cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec6[i]->bmap_ind, ct);
             if (cterr < NhlWARNING) {
@@ -7276,8 +7451,9 @@ static void *Grib2OpenFile
 
             g2rec[nrecs]->sec6[i]->bmap_desc = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec6[i]->bmap_desc, ct->descrip);
+#endif
 
-            if (ct->oct == 255) {
+            if (g2fld->ibmap == 255) {
                 /* no bitmap specified */
                 g2rec[nrecs]->sec6[i]->bmap = NULL;
             } else {
@@ -7333,8 +7509,8 @@ static void *Grib2OpenFile
             g2inqrec->version = g2rec[i]->version;
             g2inqrec->var_name = NULL;
 	    /* transfer the table source name to the g2inqrec */
-	    g2inqrec->table_source = g2rec[i]->table_source_name;
-	    g2rec[i]->table_source_name = NULL;
+	    g2inqrec->table_source = NclMalloc(strlen(g2rec[i]->table_source_name)+1);
+	    strcpy(g2inqrec->table_source,g2rec[i]->table_source_name);
 
             /* PDS */
 # if 0
@@ -7397,8 +7573,6 @@ static void *Grib2OpenFile
                 g2inqrec->has_bms = 0;
 
             g2inqrec->param_number = g2rec[i]->sec4[j]->prod_params->param_num;
-	    g2inqrec->param_index = g2rec[i]->sec4[j]->pds_num * 100000000 + g2rec[i]->sec0.discipline * 1000000 +
-		g2rec[i]->sec4[j]->prod_params->param_cat * 1000 + g2rec[i]->sec4[j]->prod_params->param_num;
 
             g2inqrec->center = g2rec[i]->sec1.centerID;
 	    g2inqrec->sub_center = g2rec[i]->sec1.subcenterID;
@@ -7465,8 +7639,10 @@ static void *Grib2OpenFile
             }
 
             g2inqrec->ptable_rec = g2name_rec;
+#if 0
             g2inqrec->long_name_q = NrmStringToQuark(g2name_rec->long_name);
             g2inqrec->units_q = NrmStringToQuark(g2name_rec->units);
+#endif
 
             /* Time */
             g2inqrec->time_period = 0;
@@ -7502,7 +7678,7 @@ static void *Grib2OpenFile
 			 (int) g2rec[i]->sec4[j]->prod_params->scale_factor_second_fixed_sfc
 		    );
 
-
+#if 0
             g2inqrec->var_name = NclMalloc(strlen(g2rec[i]->sec4[j]->prod_params->short_name) + 20);
 	    /*(void) strcpy(g2inqrec->var_name, g2rec[i]->sec4[j]->prod_params->short_name);*/
 	    sprintf(g2inqrec->var_name,"%s_P%d_L%d",
@@ -7511,7 +7687,8 @@ static void *Grib2OpenFile
 		    g2inqrec->level_indicator);
             g2inqrec->var_name_q = NrmStringToQuark(g2inqrec->var_name);
 	    printf("%s\n",g2inqrec->var_name);
-
+#endif
+            g2inqrec->var_name_q = NrmNULLQUARK;
 
             /* Ensembles */
             g2inqrec->is_ensemble = 0;
@@ -7650,6 +7827,7 @@ static void *Grib2OpenFile
         k = 0;
 
         while (g2plist != NULL) {
+	    _g2SetVarInfo(g2frec,g2plist);
             g2inqrec_list = g2plist->thelist;
             g2sort = (Grib2RecordInqRecList **) NclMalloc(
                     (unsigned int) sizeof(Grib2RecordInqRecList *) * g2plist->n_entries);

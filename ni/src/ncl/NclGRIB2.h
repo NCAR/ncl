@@ -388,6 +388,8 @@ struct _NclGrib2CacheRec {
 
 struct _NclGrib2FVarRec {
     NclQuark var_name_quark;
+    NclQuark long_name_q;
+    NclQuark units_q;
     NclBasicDataTypes data_type;
     int doff;
     int num_dimensions;
@@ -429,7 +431,6 @@ typedef struct _Grib2VarTraits {
 
 struct _Grib2ParamList {
     int param_number;
-    int param_index; /* discipline * 10^6 + category * 10^3 + number */
     Grib2VarTraits traits;
     int grid_number;
     int n_entries;
@@ -483,7 +484,6 @@ struct _Grib2RecordInqRec {
     Grib2VarTraits traits;
     NclQuark    var_name_q;
     int param_number;
-    int param_index; /* discipline * 10^6 + category * 10^3 + number */
     G2_TBLE2   *ptable_rec;
     int grid_number;
     int version;
