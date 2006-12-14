@@ -48,6 +48,21 @@
 #include "fnmoc_gtb.h"
 
 #define NCL_GRIB_CACHE_SIZE  150
+/* 
+ * These are the codes in ON388 - Table 4 - for time units arranged in order from 
+ * short to long duration. The convert table below is the conversion from
+ * the shortest duration (second) to each of the other units. (For periods longer
+ * than a day there is inaccuracy because the periods vary depending on which which 
+ * month and/or year we are talking about. For now use average based on 365.25 days per year.
+ * This will need to be refined. This is for comparision of time periods in common units.
+ * 
+ */
+
+
+static int Unit_Code_Order[] = { 254,0,1,10,11,12,2,3,4,5,6,7 };
+static double Unit_Convert[] = { 1.0, 60.0, 3600.0, 10800.0, 21600.0, /* 1 sec - 6 hr */
+			  43200.0,86400.0,2629800.0, 31557600.0, /* 12 hr - 1 yr */
+			  315576000.0,946728000.0,3155760000.0};   /* 10 yr - 100 yr */
 
 /*
  * this is a hack function that applies to GRID TYPE 203 only
@@ -4798,25 +4813,24 @@ GribRecordInqRec* grib_rec;
 	 * short to long duration. 
 	 */
 
-	static int unit_code_order[] = { 254,0,1,10,11,12,2,3,4,5,6,7 };
-	for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
-		if (node->time_unit_indicator == unit_code_order[cix])
+	for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
+		if (node->time_unit_indicator == Unit_Code_Order[cix])
 			break;
 	}
-	for (nix = 0; nix < NhlNumber(unit_code_order); nix++) {
-		if ((int)grib_rec->pds[17] == unit_code_order[nix])
+	for (nix = 0; nix < NhlNumber(Unit_Code_Order); nix++) {
+		if ((int)grib_rec->pds[17] == Unit_Code_Order[nix])
 			break;
 	}
-	if (nix >= NhlNumber(unit_code_order)) {
+	if (nix >= NhlNumber(Unit_Code_Order)) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "NclGRIB: Unsupported time unit found for parameter (%s), continuing anyways.",
 			  NrmQuarkToString(grib_rec->var_name_q));
 	}
-	else if (cix >= NhlNumber(unit_code_order)) { 
+	else if (cix >= NhlNumber(Unit_Code_Order)) { 
 		/* current time units are unsupported so use the new unit */
 		node->time_unit_indicator = (int)grib_rec->pds[17];
 	}
-	else if (unit_code_order[nix] < unit_code_order[cix]) { 
+	else if (Unit_Code_Order[nix] < Unit_Code_Order[cix]) { 
 		/* choose the shortest duration as the common unit */
 		node->time_unit_indicator = (int)grib_rec->pds[17];
 	}
@@ -4889,34 +4903,21 @@ unsigned char *offset;
 #endif
 {
 	int cix,tix, ret_val;
-	/* 
-	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
-	 * short to long duration. The convert table below is the conversion from
-	 * the shortest duration (second) to each of the other units. (For periods longer
-	 * than a day there is inaccuracy because the periods vary depending on which which 
-	 * month and/or year we are talking about. For now use average based on 365.25 days per year.
-	 * This will need to be refined.
-	 */
-
 	double c_factor = 1.0;
-	int unit_code_order[] = { 254,0,1,10,11,12,2,3,4,5,6,7 };
-	double unit_convert[] = { 1.0, 60.0, 3600.0, 10800.0, 21600.0, /* 1 sec - 6 hr */
-				  43200.0,86400.0,2629800.0, 31557600.0, /* 12 hr - 1 yr */
-				  315576000.0,946728000.0,3155760000.0};   /* 10 yr - 100 yr */
 
 
 	if (common_time_unit != time_unit) {
-		for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
-			if (common_time_unit == unit_code_order[cix])
+		for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
+			if (common_time_unit == Unit_Code_Order[cix])
 				break;
 		}
-		for (tix = 0; tix < NhlNumber(unit_code_order); tix++) {
-			if (time_unit == unit_code_order[tix])
+		for (tix = 0; tix < NhlNumber(Unit_Code_Order); tix++) {
+			if (time_unit == Unit_Code_Order[tix])
 				break;
 		}
 		/* this condition must be met in order to do a valid conversion */
-		if (cix < NhlNumber(unit_code_order) && tix < NhlNumber(unit_code_order)) { 
-			c_factor = unit_convert[tix] / unit_convert[cix];
+		if (cix < NhlNumber(Unit_Code_Order) && tix < NhlNumber(Unit_Code_Order)) { 
+			c_factor = Unit_Convert[tix] / Unit_Convert[cix];
 		}
 	}
 	switch(time_indicator) {
@@ -5337,6 +5338,75 @@ GribRecordInqRec *grib_rec;
 }
 #endif
 
+static int _CompareTimePeriod
+#if NhlNeedProto
+(GribParamList *node, GribRecordInqRec *grib_rec)
+#else
+(node, grib_rec)
+GribParamList *node;
+GribRecordInqRec *grib_rec;
+#endif
+{
+	int cix,nix, ret_val;
+	int common_time_unit;
+	int time_unit;
+	double c_factor = 1.0;
+
+	if (node->time_unit_indicator == (int)grib_rec->pds[17]) {
+		return node->time_period - (int)grib_rec->time_period;
+	}
+
+	for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
+		if (node->time_unit_indicator == Unit_Code_Order[cix])
+			break;
+	}
+	for (nix = 0; nix < NhlNumber(Unit_Code_Order); nix++) {
+		if ((int)grib_rec->pds[17] == Unit_Code_Order[nix])
+			break;
+	}
+	if (nix >= NhlNumber(Unit_Code_Order)) {
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "NclGRIB: Unsupported time unit found for parameter (%s), continuing anyways.",
+			  NrmQuarkToString(grib_rec->var_name_q));
+	}
+	else if (cix >= NhlNumber(Unit_Code_Order)) { 
+		/* current time units are unsupported so use the new unit */
+		common_time_unit = (int)grib_rec->pds[17];
+		time_unit = node->time_unit_indicator;
+	}
+	else if (Unit_Code_Order[nix] < Unit_Code_Order[cix]) { 
+		/* choose the shortest duration as the common unit */
+		common_time_unit = (int)grib_rec->pds[17];
+		time_unit = node->time_unit_indicator;
+	}
+	else {
+		common_time_unit = node->time_unit_indicator;
+		time_unit = (int)grib_rec->pds[17];
+	}
+		
+	if (common_time_unit != time_unit) {
+		for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
+			if (common_time_unit == Unit_Code_Order[cix])
+				break;
+		}
+		for (nix = 0; nix < NhlNumber(Unit_Code_Order); nix++) {
+			if (time_unit == Unit_Code_Order[nix])
+				break;
+		}
+		/* this condition must be met in order to do a valid conversion */
+		if (cix < NhlNumber(Unit_Code_Order) && nix < NhlNumber(Unit_Code_Order)) { 
+			c_factor = Unit_Convert[nix] / Unit_Convert[cix];
+		}
+	}
+	if (common_time_unit == node->time_unit_indicator) {
+		return node->time_period - (int)grib_rec->time_period * c_factor;
+	}
+	else {
+		return node->time_period * c_factor - (int)grib_rec->time_period;
+	}
+}
+	
+
 static int _FirstCheck
 #if NhlNeedProto
 (GribFileRecord *therec,GribParamList *step, GribRecordInqRec *grib_rec)
@@ -5347,7 +5417,7 @@ GribParamList *step;
 GribRecordInqRec *grib_rec;
 #endif
 {
-	int gridcomp;
+	int comp;
 
 	if (step->param_number <  grib_rec->param_number)
 		return 0;
@@ -5357,10 +5427,10 @@ GribRecordInqRec *grib_rec;
 		therec->n_vars++;
 		return(1);
 	}
-	gridcomp = GridCompare(step,grib_rec);
-	if (gridcomp < 0)
+	comp = GridCompare(step,grib_rec);
+	if (comp < 0)
 		return 0;
-	if (gridcomp > 0) {
+	if (comp > 0) {
 		therec->var_list = _NewListNode(grib_rec);
 		therec->var_list->next = step;
 		therec->n_vars++;
@@ -5374,9 +5444,10 @@ GribRecordInqRec *grib_rec;
 		therec->n_vars++;
 		return(1);
 	}
-	if (step->time_period < (int)grib_rec->time_period)
+	comp = _CompareTimePeriod(step,grib_rec);
+	if (comp < 0)
 		return 0;
-	if (step->time_period > (int)grib_rec->time_period) {
+	if (comp > 0) {
 		therec->var_list = _NewListNode(grib_rec);
 		therec->var_list->next = step;
 		therec->n_vars++;
@@ -6501,19 +6572,19 @@ int wr_status;
 									step2 = _NewListNode(grib_rec);
 									_InsertNodeAfter(step,step2);
 									therec->n_vars++;
-								} else if(step->next->time_period <= grib_rec->time_period) {
+								} else if(_CompareTimePeriod(step->next,grib_rec) <= 0) {
 									while((step->next != NULL) 
 									      &&(step->next->param_number == grib_rec->param_number)
 									      &&(GridCompare(step->next, grib_rec) == 0)
 									      &&(step->next->time_range_indicator == (int)grib_rec->pds[20])
-									      &&(step->next->time_period < grib_rec->time_period)){
+									      &&(_CompareTimePeriod(step->next,grib_rec) < 0)){
 										step = step->next;
 									}
 									if((step->next == NULL)
 									   ||(step->next->param_number != grib_rec->param_number)
 									   ||(GridCompare(step->next, grib_rec) != 0)
 									   ||(step->next->time_range_indicator != (int)grib_rec->pds[20])
-									   ||(step->next->time_period > grib_rec->time_period)) {
+									   ||(_CompareTimePeriod(step->next,grib_rec) > 0)) {
 										step2 = _NewListNode(grib_rec);	
 										_InsertNodeAfter(step,step2);
 										therec->n_vars++;
@@ -6522,7 +6593,7 @@ int wr_status;
 										      &&(step->next->param_number == grib_rec->param_number)
 										      &&(GridCompare(step->next, grib_rec) == 0)
 										      &&(step->next->time_range_indicator == (int)grib_rec->pds[20])
-										      &&(step->next->time_period == grib_rec->time_period)
+										      &&(_CompareTimePeriod(step->next,grib_rec) == 0)
 										      &&(step->next->level_indicator < grib_rec->level_indicator)){
 											step = step->next;
 										}
@@ -6530,7 +6601,7 @@ int wr_status;
 										   ||(step->next->param_number != grib_rec->param_number)
 										   ||(GridCompare(step->next, grib_rec) != 0)
 										   ||(step->next->time_range_indicator != (int)grib_rec->pds[20])
-										   ||(step->next->time_period != grib_rec->time_period)
+										   ||(_CompareTimePeriod(step->next,grib_rec) != 0)
 										   ||(step->next->level_indicator > grib_rec->level_indicator)) {
 											step2 = _NewListNode(grib_rec);	
 											_InsertNodeAfter(step,step2);
