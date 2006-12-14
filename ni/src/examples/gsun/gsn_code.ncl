@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.189 2006-12-07 19:44:30 haley Exp $
+;      $Id: gsn_code.ncl,v 1.190 2006-12-14 06:56:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -146,6 +146,8 @@ undef("gsn_vector_scalar_map")
 undef("gsn_xy")
 undef("gsn_y")
 undef("gsn_contour_shade")
+undef("fillres")
+undef("gsn_table")
 
 ;***********************************************************************;
 ; function : smooth92d                                                  ;
@@ -9335,3 +9337,304 @@ begin
    end if
    return (plot)
 end
+
+procedure fillres(res1:logical,res2:logical,ncr[2]:integer,attnames[*]:string)
+local natts, i, dsizes, rank, success, nrows, ncols
+begin
+  nrows = ncr(0)
+  ncols = ncr(1)
+  natts = dimsizes(attnames)
+
+  if(res1.and.natts.ge.1) then
+    res2 = True
+;
+; Loop through each attribute, check its size, and copy it to new
+; 2D variable if needed. We have to do this so that later we don't
+; have to check each attribute for the right size.
+;
+    do i=0,natts-1
+      if(isatt(res1,attnames(i))) then
+;
+; Get the dimension size and rank of this attribute.
+;
+        dsizes  = dimsizes(res1@$attnames(i)$)
+        rank    = dimsizes(dsizes)
+        success = False
+;
+; We need elseif here!!
+;
+        if(rank.eq.1) then
+          if(dsizes.eq.1) then
+;
+; Scalar attribute.
+;
+            res2@$attnames(i)$ = new(nrows*ncols,typeof(res1@$attnames(i)$))
+            res2@$attnames(i)$(:) = res1@$attnames(i)$
+            success = True
+          else
+;
+; 1D attribute of length nrows (ncols must be 1).
+;
+            if(dsizes.eq.nrows.and.ncols.eq.1) then
+              res2@$attnames(i)$ = new(nrows*ncols,typeof(res1@$attnames(i)$))
+              res2@$attnames(i)$(:) = res1@$attnames(i)$
+              success = True
+            else
+;
+; 1D attribute of length ncols (nrows must be 1).
+;
+              if(dsizes.eq.ncols.and.nrows.eq.1) then
+                res2@$attnames(i)$ = new(nrows*ncols,typeof(res1@$attnames(i)$))
+                res2@$attnames(i)$(:) = res1@$attnames(i)$
+                success = True
+              end if
+            end if
+          end if
+        else
+          if(rank.eq.2.and.dsizes(0).eq.nrows.and.dsizes(1).eq.ncols) then
+;
+; 2D attribute of size nrows x ncols.
+;
+            res2@$attnames(i)$ = ndtooned(res1@$attnames(i)$)
+            success = True
+          end if
+        end if
+        if(.not.success) then
+          print("fillres: attribute '" + attnames(i) + "' is the wrong size.")
+          print("         Not using it.")
+        end if
+        delete(dsizes)
+      end if
+    end do
+  end if
+end
+
+;***********************************************************************;
+; Procedure : gsn_table                                                 ;
+; This procedure draws a grid given the workstation                     ;
+; to draw to, the beginning X and ending Y values (in NDC coords),      ;
+; and the number of rows and columns.  Text strings are drawn           ;
+; in the center of each cell, if specified.                             ;
+;                                                                       ;
+;  draw_grid(                                                           ;
+;             wks    - workstation value returned from gsn_open_wks.    ;
+;             ncr[2] - integers, number of rows and columns             ;
+;             x      - begin and end values of x position of table      ;
+;             y      - begin and end values of y position of table      ;
+;             text   - optional list of text strings. Use:              ;
+;                          text = new(1,string)                         ;
+;                      if you don't want any text strings.              ;
+;             res    - optional list of "gs" (for the table lines)      ;
+;                      or "tx" (for the text) resources.                ;
+;          )                                                            ;
+;***********************************************************************;
+procedure gsn_table(wks:graphic,ncr[2]:integer,x[2]:numeric, \
+                         y[2]:numeric,text:string,res:logical)
+local nrows, ncols, i, ii, txres, txres2, lnres, attnames, natts, text2d
+begin
+  nrows = ncr(0)
+  ncols = ncr(1)
+;
+; Error checking.
+;
+  if(nrows.lt.1.or.ncols.lt.1) then
+     print("gsn_table: nrows and ncols must be >= 1.")
+     exit
+  end if
+  if(any(x.lt.0.or.x.gt.1.or.y.lt.0.or.y.gt.1)) then
+     print("gsn_table: the begin and end x and y values must")
+     print("           be in the range [0,1].")
+     exit
+  end if
+
+  if(x(1).le.x(0).or.y(1).le.y(0)) then
+    print("gsn_table: the begin x,y points must be less")
+    print("           than the end x,y points.")
+    exit
+  end if
+
+;
+; Check if text desired.
+;
+  if(.not.all(ismissing(text))) then
+    text_avail = True
+  else
+    text_avail = False
+  end if
+
+  if(text_avail) then
+; 
+; Check that the text dimens are correct.  If you have nrows x ncols,
+; then the text can either be (nrows x ncols) strings, a scalar string,
+; or (ncols) if nrows=1, or (nrows) if ncols=1.
+;
+    dsizes_text = dimsizes(text)
+    rank_text   = dimsizes(dsizes_text)
+    if( (rank_text.ne.2.and.rank_text.ne.1).or.\
+        (rank_text.eq.1.and.(nrows.ne.1.and.ncols.ne.1)).or.\
+        (rank_text.eq.1.and.(nrows.eq.1.and.ncols.ne.dsizes_text)).or.\
+        (rank_text.eq.1.and.(ncols.eq.1.and.nrows.ne.dsizes_text)).or.\
+        (rank_text.ne.2.and.(nrows.gt.1.and.ncols.gt.1)) ) then
+      print("gsn_table: the dimensionality of the text must be ")
+      print("           " + nrows + " row(s) x " + ncols + " column(s).")
+      exit
+    end if
+  end if
+
+;
+; Check all resource values. They must either be scalars, or
+; arrays of same size as nrows x ncols.
+;
+  res2     = False
+  attnames = getvaratts(res)
+  fillres(res,res2,ncr,attnames)
+  delete(attnames)                    ; We're going to use this later.
+
+;
+; Get ready to draw table.
+;
+  xsize = (x(1) - x(0))/ncols         ; width of grid cell
+  ysize = (y(1) - y(0))/nrows         ; height of grid cell
+
+  lnres = get_res_eq(res2,"gs")       ; Resource list for lines.
+
+;
+; Check for a box fill color.
+;
+  fill_on = False
+  if(isatt(res2,"gsFillColor").or.isatt(res2,"gsFillIndex")) then
+    fill_on = True
+  end if
+
+;
+; Check for desired filling of each grid cell. Do this before drawing
+; grid lines, because we want lines drawn on top of filled boxes.
+;
+  if(fill_on) then
+    gonres = get_res_eq(res2,"gsFill")     ; Get fill resources.
+    gonres2 = True
+    attnames = getvaratts(gonres)
+    natts    = dimsizes(attnames)
+    do nr = 0,nrows-1
+      ypos = y(1) - ((nr+1) * ysize)
+      do nc = 0,ncols-1
+        ii = nr*ncols+nc
+;
+; Copy all resources over to temporary array.
+;
+        do i=0,natts-1
+          gonres2@$attnames(i)$ = gonres@$attnames(i)$(ii)
+        end do
+        xpos = x(0) + (nc * xsize)
+        gsn_polygon_ndc(wks,(/xpos,xpos+xsize,xpos+xsize,xpos,xpos/), \
+                            (/ypos,ypos,ypos+ysize,ypos+ysize,ypos/),gonres2)
+      end do
+    end do
+    delete(attnames)                    ; We're going to use this later.
+  end if
+
+; Draw horizontal lines, top to bottom.
+  do nr = 0,nrows
+    ypos = y(1) - (nr * ysize)
+    gsn_polyline_ndc(wks,(/x(0),x(1)/),(/ypos,ypos/),lnres)
+  end do
+
+; Draw vertical lines, left to right.
+  do nc = 0,ncols
+    xpos = x(0) + (nc * xsize)
+    gsn_polyline_ndc(wks,(/xpos,xpos/),(/y(0),y(1)/),lnres)
+  end do
+
+;
+; Draw text, if any.  The text will be drawn left to right,
+; top to bottom.
+;
+  if(text_avail) then
+    txres = get_res_eq(res2,"tx")     ; Get text resources.
+;
+; Conform text to nrows x ncols if it is 1D.
+;
+    if(rank_text.eq.1) then
+      text2d = new((/nrows,ncols/),string)
+      if(nrows.eq.1) then
+        text2d(0,:) = text
+      else
+        text2d(:,0) = text
+      end if
+    else
+      text2d = text       ; Already 2D.
+    end if
+
+    xsize2 = xsize/2.     ; Half width of box.
+    ysize2 = ysize/2.     ; Half height of box.
+
+;
+; All text resources should be nrows x ncols at this point. Now,
+; for each individual text string, we need to grab the appropriate
+; resource value, and attach it to a new resource list.
+;
+    txres2 = True    ; True no matter what, because we have to at least set
+                     ; txJust.
+;
+; If txJust is not being set, use "CenterCenter" for each one.
+; Note that if txres is set to False and it is setting txJust,
+; it will be ignored. that's because setting txres=False means
+; ignore all attributes set to this logical variable.
+;
+    if(.not.txres.or.(txres.and..not.isatt(txres,"txJust"))) then
+      txres = True
+      txres@txJust    = new(nrows*ncols,string)
+      txres@txJust(:) = "CenterCenter"
+    end if      
+
+    attnames = getvaratts(txres)
+    natts    = dimsizes(attnames)
+
+    do nr = 0,nrows-1
+      do nc = 0,ncols-1
+        
+        if(.not.ismissing(text2d(nr,nc))) then
+          ii = nr*ncols+nc
+;
+; Copy all resources over to temporary array.
+;
+          do i=0,natts-1
+            txres2@$attnames(i)$ = txres@$attnames(i)$(ii)
+          end do
+;
+; Check the text justification.
+;
+          txjust = txres2@txJust
+
+          if(any(lower_case(txjust).eq. \
+                 (/"bottomleft","bottomcenter","bottomright"/))) then
+            ypos = y(1) - ((nr+1) * ysize)
+          end if
+          if(any(lower_case(txjust).eq. \
+                 (/"centerleft","centercenter","centerright"/))) then
+            ypos = (y(1) - ((nr+1) * ysize)) + ysize2
+          end if
+          if(any(lower_case(txjust).eq. \
+                 (/"topleft","topcenter","topright"/))) then
+            ypos = y(1) - (nr * ysize)
+          end if
+          if(any(lower_case(txjust).eq. \
+                 (/"bottomleft","centerleft","topleft"/))) then
+            xpos = x(0) + (nc * xsize)
+          end if
+          if(any(lower_case(txjust).eq. \
+                 (/"bottomcenter","centercenter","topcenter"/))) then
+            xpos = (x(0) + (nc * xsize)) + xsize2
+          end if
+          if(any(lower_case(txjust).eq. \
+                 (/"bottomright","centerright","topright"/))) then
+            xpos = x(0) + ((nc+1) * xsize)
+          end if
+; Draw text.
+          gsn_text_ndc(wks,text2d(nr,nc),xpos,ypos,txres2)
+        end if
+      end do
+    end do
+  end if
+end
+
