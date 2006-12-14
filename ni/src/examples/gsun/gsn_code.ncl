@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.190 2006-12-14 06:56:46 haley Exp $
+;      $Id: gsn_code.ncl,v 1.191 2006-12-14 08:57:03 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9432,6 +9432,8 @@ procedure gsn_table(wks:graphic,ncr[2]:integer,x[2]:numeric, \
                          y[2]:numeric,text:string,res:logical)
 local nrows, ncols, i, ii, txres, txres2, lnres, attnames, natts, text2d
 begin
+  debug = get_res_value(res,"gsnDebug",False)
+
   nrows = ncr(0)
   ncols = ncr(1)
 ;
@@ -9537,12 +9539,22 @@ begin
   do nr = 0,nrows
     ypos = y(1) - (nr * ysize)
     gsn_polyline_ndc(wks,(/x(0),x(1)/),(/ypos,ypos/),lnres)
+
+    if(debug) then
+      print("Horizontal line from (" + x(0) + "," + ypos + ") to (" + \
+                                      x(1) + "," + ypos + ")")
+    end if
   end do
 
 ; Draw vertical lines, left to right.
   do nc = 0,ncols
     xpos = x(0) + (nc * xsize)
     gsn_polyline_ndc(wks,(/xpos,xpos/),(/y(0),y(1)/),lnres)
+
+    if(debug) then
+      print("Vertical line from (" + xpos + "," + y(0) + ") to (" + \
+                                     xpos + "," + y(1) + ")")
+    end if
   end do
 
 ;
