@@ -37,7 +37,7 @@
 203:203:Temperature parameter in canopy conductance:Fraction:RCT
 204:204:Humidity parameterin canopy conductance:Fraction:RCQ
 205:205:Soil moisture parameter in canopy conductance:Fraction:RCSOL
-206:206:Rate of water dropping from canopy to:RDRIP:ground
-207:207:Ice-free water:ICWAT:surface
+206:206:Rate of water dropping from canopy to ground:unknown:RDRIP
+207:207:Ice-free water surface:%:ICWAT
 255:255:Missing
 
