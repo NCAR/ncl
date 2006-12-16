@@ -490,24 +490,23 @@ struct _Grib2RecordInqRec {
     int rec_num;
     int center;
     int sub_center;
+    int prod_status;
     char *table_source;
     /*
      * Time offset from beginning reference time of the parameter set.
      * Units are set in the Grib2ParamList structure
      */
     G2_GIT initial_time;
-    long time_offset;
-
-    /* this is P2 - P1 -- the period for acc, avg and diff type records */
+    int forecast_time; /* from the template */
+    long time_offset; /* converted to common units and adjusted to account for
+			 the time period -- this is used as the NCL GRIB2 "forecast_time" */
     int time_period;
+    int forecast_time_units;
+    int time_period_units;
     int level_indicator;
     float level0;
     float level1;
 
-    int time_range_indicator;
-    int time_unit_indicator;
-    int per1,   /* P1 */
-        per2;   /* P2 */
 
     int year;
     int mon;

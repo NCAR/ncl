@@ -768,6 +768,104 @@ TRY2:
 	}
 }
 
+
+
+void g2GDSUnknownGrid
+#if NhlNeedProto
+(
+	Grib2ParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	Grib2AttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	Grib2AttInqRecList** lon_att_list, 
+	int* nlonatts,
+	Grib2AttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	G2_GDS *gds;
+	int nlon,nlat;
+	int is_thinned_lat;
+	int is_thinned_lon;
+	int gds_type;
+	
+	
+	*lat = NULL;
+	*n_dims_lat = 0;
+	*dimsizes_lat = NULL;
+	*lon = NULL;
+	*n_dims_lon= 0;
+	*dimsizes_lon = NULL;
+	*rot = NULL;
+	*n_dims_rot = 0;
+	*dimsizes_rot = NULL;
+	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+		return;
+
+	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	if (gds == NULL) {
+		return;
+	}
+
+	nlon = gds->shape_of_earth->npts_along_meridian;
+	nlat = gds->shape_of_earth->npts_along_parallel;
+	if (nlon <= 1 || nlat <= 1 ) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "g2GDSUnknownGrid: Invalid grid detected");
+		*lat = NULL;
+		*n_dims_lat = 0;
+		*dimsizes_lat = NULL;
+		*lon = NULL;
+		*n_dims_lon = 0;
+		*dimsizes_lon = NULL;
+		return;
+	}
+
+	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = nlon;
+	*(*dimsizes_lat) = nlat;
+	*n_dims_lat = 1;
+	*n_dims_lon = 1;
+	gds_type = gds->grid_num;
+	NhlPError(NhlWARNING,NhlEUNKNOWN,
+		  "NCL does not yet support GRIB2 Grid template %d, no coordinate variables will be supplied for this grid",
+		  gds_type);
+
+	return;
+}
+
+
+
 void g2GDSCEGrid
 # if NhlNeedProto
 (
@@ -1445,7 +1543,7 @@ Grib2RecordInqRec* grib_rec;
 			break;
 	}
 	for (nix = 0; nix < NhlNumber(unit_code_order); nix++) {
-		if ((int)grib_rec->time_unit_indicator == unit_code_order[nix])
+		if ((int)grib_rec->forecast_time_units == unit_code_order[nix])
 			break;
 	}
 	if (nix >= NhlNumber(unit_code_order)) {
@@ -1455,11 +1553,11 @@ Grib2RecordInqRec* grib_rec;
 	}
 	else if (cix >= NhlNumber(unit_code_order)) { 
 		/* current time units are unsupported so use the new unit */
-		node->time_unit_indicator = (int)grib_rec->time_unit_indicator;
+		node->time_unit_indicator = (int)grib_rec->forecast_time_units;
 	}
 	else if (unit_code_order[nix] < unit_code_order[cix]) { 
 		/* choose the shortest duration as the common unit */
-		node->time_unit_indicator = (int)grib_rec->time_unit_indicator;
+		node->time_unit_indicator = (int)grib_rec->forecast_time_units;
 	}
 	if (nix >= month_ix) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
@@ -1721,6 +1819,62 @@ Grib2FileRecord *therec;
 			step->n_atts++;
 		}
 
+		if (step->traits.stat_proc_type != 255) {
+			if (step->forecast_time_isatt) {
+				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+				att_list_ptr->next = step->theatts;
+				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+				att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
+				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+						       "4.4.table",step->time_unit_indicator,ct) < NhlWARNING) {
+					return;
+				}
+				if (ct->descrip) {
+					if (step->time_unit_indicator < 8) {
+						sprintf(buf,"%d %ss (ending at forecast time)",step->time_period,ct->descrip);
+					}
+					else {
+						sprintf(buf,"%d units of %s (ending at forecast time)",step->time_period,ct->descrip);
+					}
+				}
+				else {
+					sprintf(buf,"%d unknown units (ending at forecast time)",step->time_period,ct->descrip);
+				}
+
+				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+				*tmp_string = NrmStringToQuark(buf);
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal(NULL, NULL,
+						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+						      PERMANENT, NULL, nclTypestringClass);
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+			}				
+
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("type_of_statistical_processing");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+					       "4.10.table",step->traits.stat_proc_type,ct) < NhlWARNING) {
+				return;
+			}
+			if (ct->descrip) {
+				*tmp_string = NrmStringToQuark(ct->descrip);
+			}
+			else {
+				sprintf(buf,"%d",step->traits.stat_proc_type);
+				*tmp_string = NrmStringToQuark(buf);
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+
 		if ((step->levels_isatt)&&(!step->levels_has_two) && (step->traits.first_level_type != 255)) {
 			if (grib_rec->level0 != GRIB2_MISSING_LEVEL_VAL) {
 				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
@@ -1828,57 +1982,99 @@ Grib2FileRecord *therec;
 			step->n_atts++;
 		}
 		
-		if (step->traits.stat_proc_type != 255) {
-			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("type_of_statistical_processing");
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-					   "4.10.table",step->traits.stat_proc_type,ct);
-			if (ct->descrip) {
-				*tmp_string = NrmStringToQuark(ct->descrip);
-			}
-			else {
-				sprintf(buf,"%d",step->traits.stat_proc_type);
-				*tmp_string = NrmStringToQuark(buf);
-			}
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
-				_NclCreateVal(NULL, NULL,
-					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
-					      PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
-		}
 	
 
-/* param number */
+/* param characterization array */
 		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 		att_list_ptr->next = step->theatts;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_number");
-		tmp_int = (int*)NclMalloc(sizeof(int));
-		*tmp_int= grib_rec->param_number;
+		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_template_discipline_category_number");
+		tmp_int = (int*)NclMalloc(4 * sizeof(int));
+		tmp_int[0] = step->traits.pds_template;
+		tmp_int[1] = step->traits.discipline;
+		tmp_int[2] = step->traits.param_cat;
+		tmp_int[3] = step->traits.param_number;
+		tmp_dimsizes = 4;
 		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
 			_NclCreateVal(NULL, NULL,
 				      Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes, 
 				      PERMANENT, NULL, nclTypeintClass);
+		tmp_dimsizes = 1;
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+
+/* param characterization string */
+
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("parameter_discipline_and_category");
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 0, 
+				       "0.0.table",step->traits.discipline,ct) < NhlWARNING) {
+			return;
+		}
+		if (ct->descrip) {
+			sprintf(buf,"%s, ",ct->descrip);
+			
+		}
+		else {
+			sprintf(buf,"%d, ",step->traits.discipline);
+		}
+		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
+				       "4.1.table",step->traits.param_cat,ct) < NhlWARNING) {
+			return;
+		}
+		if (ct->descrip) {
+			sprintf(&(buf[strlen(buf)]),"%s",ct->descrip);
+			
+		}
+		else {
+			sprintf(&(buf[strlen(buf)]),"%d",step->traits.param_cat);
+		}
+		*tmp_string = NrmStringToQuark(buf);
+
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+			_NclCreateVal(NULL, NULL,
+				      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+				      PERMANENT, NULL, nclTypestringClass);
 		step->theatts = att_list_ptr;
 		step->n_atts++;
 
 
+/* grid type */
 
-/* grid number */
 		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 		att_list_ptr->next = step->theatts;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-		att_list_ptr->att_inq->name = NrmStringToQuark("grid_number");
-		tmp_int = (int*)NclMalloc(sizeof(int));
-		*tmp_int = grib_rec->grid_number;
+		att_list_ptr->att_inq->name = NrmStringToQuark("grid_type");
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 3, 
+				       "3.1.table",grib_rec->grid_number,ct) < NhlWARNING) {
+			return;
+		}
+		if (grib_rec->gds->shape_of_earth->npts_along_meridian == -1 ||
+		    grib_rec->gds->shape_of_earth->npts_along_parallel == -1) {
+			if (ct->descrip) {
+				sprintf(buf,"%s (quasi-regular grid expanded by interpolation)",ct->descrip);
+				*tmp_string = NrmStringToQuark(buf);
+			}
+			else {
+				sprintf(buf,"%d (quasi-regular grid expanded by interpolation)",grib_rec->grid_number);
+				*tmp_string = NrmStringToQuark(buf);
+			}
+		}
+		else if (ct->descrip) {
+			*tmp_string = NrmStringToQuark(ct->descrip);
+		}
+		else {
+			sprintf(buf,"%d",grib_rec->grid_number);
+			*tmp_string = NrmStringToQuark(buf);
+		}
 		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
 			_NclCreateVal(NULL, NULL,
-				      Ncl_MultiDValData, 0, (void *) tmp_int, NULL, 1, &tmp_dimsizes, 
-				      PERMANENT, NULL, nclTypeintClass);
+				      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+				      PERMANENT, NULL, nclTypestringClass);
 		step->theatts = att_list_ptr;
 		step->n_atts++;
 
@@ -1943,6 +2139,8 @@ Grib2FileRecord *therec;
 				      PERMANENT, NULL, nclTypestringClass);
 		step->theatts = att_list_ptr;
 		step->n_atts++;
+
+		/* long name */
 		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 		att_list_ptr->next = step->theatts;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
@@ -1956,6 +2154,29 @@ Grib2FileRecord *therec;
 		step->theatts = att_list_ptr;
 		step->n_atts++;
 
+		/* production status */
+		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("production_status");
+
+		if (Grib2ReadCodeTable(grib_rec->table_source, 1, "1.3.table", grib_rec->prod_status, ct) < NhlWARNING) {
+			return;
+		}
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		if (ct->descrip) {
+			*tmp_string = NrmStringToQuark(ct->descrip);
+		}
+		else {
+			sprintf(buf,"%d",grib_rec->prod_status);
+			*tmp_string = NrmStringToQuark(buf);
+		}
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+			_NclCreateVal(NULL, NULL,
+				      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
+				      PERMANENT, NULL, nclTypestringClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
 
 		/* center */
 		att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
@@ -2507,9 +2728,8 @@ static Grib2ParamList *_g2NewListNode
 	tmp->level_indicator = grib_rec->level_indicator;
 	tmp->n_entries = 1;
 	tmp->minimum_it = grib_rec->initial_time;
-	tmp->time_range_indicator = grib_rec->time_range_indicator;
 	tmp->time_period = grib_rec->time_period;
-	tmp->time_unit_indicator = grib_rec->time_unit_indicator;
+	tmp->time_unit_indicator = grib_rec->forecast_time_units;
 	tmp->variable_time_unit = False;
 	tmp->levels = NULL;
 	tmp->levels0 = NULL;
@@ -2553,6 +2773,7 @@ static Grib2RecordInqRec* _g2MakeMissingRec
 	grib_rec->param_number = -1;
 	grib_rec->ptable_rec = NULL;
 	grib_rec->grid_number = -1;
+	grib_rec->forecast_time = -1;
 	grib_rec->time_offset = -1;
 	grib_rec->time_period = -1;
 	grib_rec->level0 = GRIB2_MISSING_LEVEL_VAL;
@@ -2564,10 +2785,8 @@ static Grib2RecordInqRec* _g2MakeMissingRec
 	grib_rec->bds_size = 0;
 	grib_rec->pds = NULL;
 /*	grib_rec->pds_size = 0; */
-    grib_rec->time_range_indicator = 0;
-    grib_rec->time_unit_indicator = 0;
-    grib_rec->per1 = 0;
-    grib_rec->per2 = 0;
+	grib_rec->forecast_time_units = 0;
+	grib_rec->time_period_units = 0;
 	grib_rec->gds = NULL;
 /*	grib_rec->gds_off = 0; */
 /*	grib_rec->gds_size = 0; */
@@ -2601,14 +2820,9 @@ Grib2RecordInqRec* grib_rec;
 		node->minimum_it = grib_rec->initial_time;
 	}
 
-    if (node->time_unit_indicator != grib_rec->time_unit_indicator) {
+    if (node->time_unit_indicator != grib_rec->forecast_time_units) {
 	    _g2SetCommonTimeUnit(node,grib_rec);
-#if 0
-	      NhlPError(NhlWARNING, NhlEUNKNOWN,
-	      "NclGRIB2: Time unit indicator varies for parameter (%s), continuing anyway.",
-	      NrmQuarkToString(grib_rec->var_name_q));
-#endif
-	}
+    }
 
     grib_rec_list->rec_inq = grib_rec;
     grib_rec_list->next = node->thelist;
@@ -2663,95 +2877,6 @@ Grib2RecordInqRec *grib_rec;
 	return r1;
 }
 
-#if 0
-static int g2InsertGribRec
-#if NhlNeedProto
-(Grib2FileRecord *therec, Grib2ParamList *step, Grib2ParamList *prev, Grib2RecordInqRec *grib_rec)
-#else
-(therec, step, prev,grib_rec)
-Grib2FileRecord *therec;
-Grib2ParamList *step;
-Grib2ParamList *prev;
-Grib2RecordInqRec *grib_rec;
-#endif
-{
-	Grib2ParamList *new;
-	int gridcomp;
-
-	if (step->param_number <  grib_rec->param_number)
-		return 0;
-
-	if (step->param_number > grib_rec->param_number) {
-		new = _g2NewListNode(grib_rec);
-		new->next = step;
-		if (prev)
-			prev->next = new;
-		else
-			therec->var_list = new;
-		therec->n_vars++;
-		return 1;
-	}
-
-	gridcomp = g2GridCompare(step,grib_rec);
-	if (gridcomp < 0)
-		return 0;
-	if (gridcomp > 0) {
-		new = _g2NewListNode(grib_rec);
-		new->next = step;
-		if (prev)
-			prev->next = new;
-		else
-			therec->var_list = new;
-		therec->n_vars++;
-		return 1;
-	}
-
-	if (step->time_range_indicator < (int)grib_rec->pds[20])
-		return 0;
-
-	if (step->time_range_indicator > (int)grib_rec->pds[20]) {
-		new = _g2NewListNode(grib_rec);
-		new->next = step;
-		if (prev)
-			prev->next = new;
-		else
-			therec->var_list = new;
-		therec->n_vars++;
-		return 1;
-	}
-
-	if (step->time_period < (int)grib_rec->time_period)
-		return 0;
-
-	if (step->time_period > (int)grib_rec->time_period) {
-		new = _g2NewListNode(grib_rec);
-		new->next = step;
-		if (prev)
-			prev->next = new;
-		else
-			therec->var_list = new;
-		therec->n_vars++;
-		return 1;
-	}
-
-	if (step->level_indicator < grib_rec->level_indicator)
-		return 0;
-
-	if (step->level_indicator > grib_rec->level_indicator) {
-		new = _g2NewListNode(grib_rec);
-		new->next = step;
-		if (prev)
-			prev->next = new;
-		else
-			therec->var_list = new;
-		therec->n_vars++;
-		return 1;
-	}
-
-	_g2AddRecordToNode(step,grib_rec);
-	return 1;
-}
-#endif
 
 static int _g2FirstCheck
 #if NhlNeedProto
@@ -2823,7 +2948,29 @@ static int _g2CompareRecord
     return 0;
 }
 
+static void _g2AdjustTimeOffset
+#if	NhlNeedProto
+(Grib2ParamList *g2plist,Grib2RecordInqRec *grec)
+#else
+(g2plist,grec)
+Grib2ParamList *g2plist;
+Grib2RecordInqRec *grec;
+#endif
+{
+	if (grec->time_period == 0)
+		return;
+	if (g2plist->time_unit_indicator == grec->time_period_units)
+		grec->time_offset = grec->time_offset + grec->time_period;
+	else {
+		int period;
+		period = _g2GetConvertedTimeOffset(g2plist->time_unit_indicator,
+						   grec->time_period_units,
+						   grec->time_period);
+		grec->time_offset = grec->time_offset + period;
+	}
+}
 
+#if 0
 static int g2AdjustedTimePeriod
 #if	NhlNeedProto
 (Grib2RecordInqRec *grec, int time_period, int unit_code,char *buf)
@@ -2871,32 +3018,23 @@ static int g2AdjustedTimePeriod
                 is_leap = 1;
             }
 
-            if (grec->per2 == 7) {
-                /*
-                 * Special processing for GODAS -- although maybe it should be
-                 * universal -- see if we're really talking about a monthly average
-                 */
-                if (grec->day - grec->per1 == 1 && grec->day + grec->per2 == month_days) {
-                    sprintf(buf, "1m");
-                    time_period = 1;
-                }
-            } else {
-                ix = month - 1;
-                while (time_period < 0) {
+
+	    ix = month - 1;
+	    while (time_period < 0) {
                     if (ix == 1 && is_leap) {
-                        time_period = days_per_month[ix] + 1 + time_period;
+			    time_period = days_per_month[ix] + 1 + time_period;
                     } else {
-                        time_period = days_per_month[ix] + time_period;
+			    time_period = days_per_month[ix] + time_period;
                     }
 
                     ix = (ix + 1) % 12;
                     if (ix == 0) {
                         is_leap =  HeisLeapYear(grec->initial_time.year + 1);
                     }
-                }
+	    }
 
-                sprintf(buf, "%dd", time_period);
-            }
+	    sprintf(buf, "%dd", time_period);
+
 		
             break;
 
@@ -2955,7 +3093,7 @@ static int g2AdjustedTimePeriod
 
 	return time_period;
 }
-
+#endif
 
 static NclMultiDValData  _Grib2GetInternalVar
 #if	NhlNeedProto
@@ -4621,31 +4759,33 @@ static void _g2SetFileDimsAndCoordVars
 				    &rot_att_list_ptr, &nrotatts);
 			break;
 
+
+		case 40:
+			/* Gaussian Latitude/Longitude   Template 3.40 */
+			g2GDSGAGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
+				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
+				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
+				    &rot_att_list_ptr, &nrotatts);
+			break;
+#if 0
+
 		case 1:
 			/* Rotated Latitude/Longitude (Template 3.1) */
 			NhlPError(NhlWARNING, NhlEUNKNOWN,
 				  "NclGRIB2: NCL does not yet support rotated lat/lon grids.");
-			is_err = NhlFATAL;
-			break;
 
 		case 2:
 			/* Stretched Latitude/Longitude (Template 3.2) */
 			NhlPError(NhlWARNING, NhlEUNKNOWN,
 				  "NclGRIB2: NCL does not yet support stretched lat/lon grids.");
-			is_err = NhlFATAL;
-			break;
 
 		case 3:
 			/* Rotated and Stretched Latitude/Longitude (Template 3.3) */
 			NhlPError(NhlWARNING, NhlEUNKNOWN,
 				  "NclGRIB2: NCL does not yet support rotated and stretched lat/lon grids.");
-			is_err = NhlFATAL;
-			break;
 
 		case 4: case 5: case 6: case 7: case 8: case 9:
 			/* Reserved */
-			is_err = NhlFATAL;
-			break;
 
 		case 10:
 			/* Mercator (Template 3.10) */
@@ -4655,44 +4795,31 @@ static void _g2SetFileDimsAndCoordVars
 		case 11: case 12: case 13: case 14: case 15: case 16:
 		case 17: case 18: case 19:
 			/* Reserved */
-			is_err = NhlFATAL;
-			break;
 
 		case 20:
 			/* Polar Stereographic Projection (North or South) */
 			/* Template 3.20 */
 			NhlPError(NhlWARNING, NhlEUNKNOWN,
 				  "NclGRIB2: NCL does not yet support Polar Stereographic grids.");
-			is_err = NhlFATAL;
-			break;
 
 		case 21: case 22: case 23: case 24: case 25: case 26:
 		case 27: case 28: case 29:
 			/* Reserved */
-			is_err = NhlFATAL;
-			break;
 
 		case 30:
 			/* Lambert Conformal (secant, tangent, conical or biploar */
 			/*  Template 3.30 */
 			NhlPError(NhlWARNING, NhlEUNKNOWN,
 				  "NclGRIB2: NCL does not yet support Lambert Conformal grids.");
-			is_err = NhlFATAL;
-			break;
-
-		case 40:
-			/* Gaussian Latitude/Longitude   Template 3.40 */
-			g2GDSGAGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
+#endif
+		default:
+			g2GDSUnknownGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
 				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
+			is_err = NhlWARNING;
 			break;
-
-		default:
-			NhlPError(NhlWARNING, NhlEUNKNOWN,
-				  "NclGRIB2: Unknown or unsupported grid type.");
-			is_err = NhlFATAL;
-			break;
+			
 		}
 		if (is_err < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -6975,6 +7102,7 @@ static void *Grib2OpenFile
              * by the Product Definition Templates (PDTs).
              */
             g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = 255;
+	    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done = 0;
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
                 case 0:
                     /*
@@ -7525,9 +7653,6 @@ static void *Grib2OpenFile
 
             memcpy(g2inqrec->pds, g2rec[i]->sec4[j], sizeof(G2_PDS));
 # endif
-            g2inqrec->time_range_indicator = g2rec[i]->sec4[j]->prod_params->typeof_stat_proc;
-	    /* this is temporary */
-	    g2inqrec->time_unit_indicator = 1;
 
             /* GDS */
 #if 0
@@ -7566,6 +7691,7 @@ static void *Grib2OpenFile
             /* Table 3.0: Source of Grid Defn */
 
             g2inqrec->grid_number = g2rec[i]->sec3[j]->grid_num;
+	    g2inqrec->prod_status =  g2rec[i]->sec1.prod_status;
 
             if (g2rec[i]->sec6[j]->bmap != NULL)
                 g2inqrec->has_bms = 1;
@@ -7645,7 +7771,6 @@ static void *Grib2OpenFile
 #endif
 
             /* Time */
-            g2inqrec->time_period = 0;
             g2inqrec->initial_time.year = g2rec[i]->sec1.date_time.year;
             g2inqrec->initial_time.days_from_jan1 = HeisDayDiff(1, 1,
                 g2rec[i]->sec1.date_time.year, g2rec[i]->sec1.date_time.day,
@@ -7659,13 +7784,11 @@ static void *Grib2OpenFile
             g2inqrec->min = g2rec[i]->sec1.date_time.min;
             g2inqrec->sec = g2rec[i]->sec1.date_time.sec;
 
-            g2inqrec->time_offset = g2rec[i]->sec4[j]->prod_params->forecast_time;
-	    g2inqrec->time_unit_indicator = g2rec[i]->sec4[j]->prod_params->time_range; /* this is the integer unit designator */
+            g2inqrec->forecast_time = g2rec[i]->sec4[j]->prod_params->forecast_time;
+	    g2inqrec->forecast_time_units = g2rec[i]->sec4[j]->prod_params->time_range; /* this is the integer unit designator */
+	    g2inqrec->time_period = g2rec[i]->sec4[j]->prod_params->len_time_range_unit_stat_proc_done;
+	    g2inqrec->time_period_units =  g2rec[i]->sec4[j]->prod_params->ind_time_range_unit_stat_proc_done;
 
-/*                    - g2rec[i]->sec4[j]->prod_params->hrs_after_reftime_cutoff; */
-
-            g2inqrec->per1 = 0;
-            g2inqrec->per2 = 0;
 
             /* Levels */
             g2inqrec->level_indicator = g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc;
@@ -7844,8 +7967,9 @@ static void *Grib2OpenFile
 			    g2sort[i] = g2inqrec_list;
 			    g2inqrec_list->rec_inq->time_offset = _g2GetConvertedTimeOffset(
 				    g2plist->time_unit_indicator,
-				    g2inqrec_list->rec_inq->time_unit_indicator,
-				    g2inqrec_list->rec_inq->time_offset);
+				    g2inqrec_list->rec_inq->forecast_time_units,
+				    g2inqrec_list->rec_inq->forecast_time);
+			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
 			    g2inqrec_list = g2inqrec_list->next;
 			    i++;
 		    }
@@ -7853,6 +7977,8 @@ static void *Grib2OpenFile
 	    else {
 		    while (g2inqrec_list != NULL) {
 			    g2sort[i] = g2inqrec_list;
+			    g2inqrec_list->rec_inq->time_offset	= g2inqrec_list->rec_inq->forecast_time;
+			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
 			    g2inqrec_list = g2inqrec_list->next;
 			    i++;
 		    }
@@ -8589,10 +8715,10 @@ void **missing;
 		else {
 			ret_val = NclMalloc(gfld->ngrdpts * sizeof(float));
 		}
-		n = 0;
+
 		for (i = 0; i < gfld->ngrdpts; i++) {
 			if (gfld->bmap[i]) {
-				ret_val[i]  =  gfld->fld[n++];
+				ret_val[i]  =  gfld->fld[i];
 			}
 			else {
 				ret_val[i]  = *(float*)(*missing);
