@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.208 2006-11-06 17:17:19 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.209 2006-12-18 12:37:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6366,7 +6366,7 @@ begin
 
 ; This section tests for regular resources.
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
-    stres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","gsnMask"/))
+    stres = get_res_ne(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
 
 ; Before we create the objects, turn off draw and frame for them.
     stres           = True
