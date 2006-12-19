@@ -1108,12 +1108,12 @@ void g2GDSCEGrid
 
 static void _g2NclNewGridCache
 #if NhlNeedProto
-(Grib2FileRecord *therec,int grid_number,int gds_tbl_index,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
+(Grib2FileRecord *therec,int grid_index,int grid_number,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
 #else
-(therec,grid_number,gds_tbl_index,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon)
+(therec,grid_index,grid_number,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon)
 Grib2FileRecord *therec;
+int grid_index;
 int grid_number;
-int gds_tbl_index;
 int n_dims_lat;
 int *dimsizes_lat;
 int n_dims_lon;
@@ -1130,7 +1130,7 @@ int *dimsizes_lon;
 	}
 		
 	therec->grib_grid_cache->grid_number = grid_number;
-	therec->grib_grid_cache->grid_gds_tbl_index = gds_tbl_index;
+	therec->grib_grid_cache->grid_index = grid_index;
 	if((n_dims_lon == 1) &&(n_dims_lat ==1)) {
 		therec->grib_grid_cache->n_dims = 2;
 		therec->grib_grid_cache->dimsizes[1] = *dimsizes_lon;
@@ -1156,7 +1156,7 @@ int *dimsizes_lon;
 
     return;
 }
-
+#if 0
 static void _g2NclNewSHGridCache
 #if NhlNeedProto
 (Grib2FileRecord *therec,int grid_number,int gds_tbl_index,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
@@ -1194,7 +1194,7 @@ int *dimsizes_lon;
     return;
 }
 
-
+#endif
 
 static void g2Merge2
 #if 	NhlNeedProto
@@ -4863,9 +4863,9 @@ static void _g2SetFileDimsAndCoordVars
 		 * grid type that applies do this
 		 */
 	
-		_g2NclNewGridCache(therec,step->grid_number, 1,
-				   /*step->grid_gds_tbl_index,*/ n_dims_lat, dimsizes_lat, n_dims_lon,
-				   dimsizes_lon);
+		step->grid_index = therec->n_grids;
+		_g2NclNewGridCache(therec,step->grid_index, step->grid_number, 
+				   n_dims_lat, dimsizes_lat, n_dims_lon,dimsizes_lon);
 
 		/*
 		 * Grids always need to be inserted into the grid_dim list in the
@@ -4891,6 +4891,7 @@ static void _g2SetFileDimsAndCoordVars
 				tmp->size = 2;
 				tmp->dim_name = NrmStringToQuark(buffer);
 				tmp->grid_number = step->grid_number;
+				tmp->grid_index = therec->n_grids;
 				tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
 				memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
 				ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
@@ -4917,6 +4918,7 @@ static void _g2SetFileDimsAndCoordVars
 			tmp->size = dimsizes_lon[0];
 			tmp->dim_name = NrmStringToQuark(buffer);
 			tmp->grid_number = step->grid_number;
+			tmp->grid_index = therec->n_grids;
 			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
 			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
 			ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
@@ -4950,7 +4952,7 @@ static void _g2SetFileDimsAndCoordVars
 			tmp->size = dimsizes_lat[0];
 			tmp->dim_name = NrmStringToQuark(buffer);
 			tmp->grid_number = step->grid_number;
-
+			tmp->grid_index = therec->n_grids;
 			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
 			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
 
@@ -4997,6 +4999,7 @@ static void _g2SetFileDimsAndCoordVars
 			tmp->size = dimsizes_lon[1];
 			tmp->dim_name = NrmStringToQuark(buffer);
 			tmp->grid_number = step->grid_number;
+			tmp->grid_index = therec->n_grids;
 
 			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
 			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
@@ -5040,6 +5043,7 @@ static void _g2SetFileDimsAndCoordVars
 			tmp->size = dimsizes_lat[0];
 			tmp->dim_name = NrmStringToQuark(buffer);
 			tmp->grid_number = step->grid_number;
+			tmp->grid_index = therec->n_grids;
 
 			tmp->gds = (G2_GDS *) NclMalloc(sizeof(G2_GDS));
 			memcpy(tmp->gds, step->thelist[m].rec_inq->gds, sizeof(G2_GDS));
@@ -5108,6 +5112,7 @@ static void _g2SetFileDimsAndCoordVars
 		Grib2InternalVarList	*iv;
 		int dnum1, dnum2;
 		int count = 0;
+		step->grid_index = dstep->dim_inq->grid_index;
 		if(dstep->dim_inq->grid_number==50) {
 			step->var_info.dim_sizes[current_dim+1] = dstep->dim_inq->size;
 			dnum1 = step->var_info.file_dim_num[current_dim+1] = dstep->dim_inq->dim_number;
@@ -8602,7 +8607,7 @@ Grib2RecordInqRec *current_rec;
 	void *val;
 	thelist = therec->grib_grid_cache;
 	while(thelist != NULL) {
-		if (thelist->grid_number == step->grid_number) {
+		if (thelist->grid_index == step->grid_index) {
 			if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
 				tmp = thelist->tail;
 				tmp->rec->the_dat = NULL;

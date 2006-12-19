@@ -93,9 +93,7 @@ NclFormatFunctionRecPtr GribAddFileFormat
 
 #ifdef  BuildGRIB2
         case 2:
-            NhlPError(NhlWARNING, NhlEUNKNOWN, " GRIB v2 currently not supported.");
-            return NULL;
-/*            return(&Grib2Rec);*/
+            return(&Grib2Rec);
             break;
 #endif  /* BuildGRIB2 */
 

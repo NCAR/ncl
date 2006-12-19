@@ -6,7 +6,7 @@ typedef enum{dayerr,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday} We
 /* Module initialization */
 #ifndef __SASC_650
   void _DateInit(void);
-  #undef __MakeLib
+#undef __MakeLib
 #endif
 
 #ifndef __MakeLib

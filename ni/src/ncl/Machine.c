@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.87 2006-05-01 17:49:03 grubin Exp $
+ *      $Id: Machine.c,v 1.88 2006-12-19 01:57:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2916,6 +2916,6 @@ int _NclPutRealInstr
 
 	return(old_offset);
 }
-	#ifdef __cplusplus
+#ifdef __cplusplus
 	}
 #endif

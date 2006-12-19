@@ -1563,7 +1563,7 @@ NhlErrorTypes _NclIRemoveOverlay
 NhlErrorTypes _NclIAddToOverlay2
 #if	NhlNeedProto
 (void)
- #else
+#else
 ()
 #endif
 {

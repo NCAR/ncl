@@ -368,9 +368,8 @@ typedef struct  _NclGrib2CacheList      NclGrib2CacheList;
 typedef struct  _Grib2Options           Grib2Options;
 
 struct _NclGrib2CacheList {
+    int grid_index;
     int grid_number;
-    int has_gds;
-    int grid_gds_tbl_index;
     int n_dims;
     int dimsizes[3];
     int n_entries;
@@ -433,6 +432,7 @@ struct _Grib2ParamList {
     int param_number;
     Grib2VarTraits traits;
     int grid_number;
+    int grid_index;
     int n_entries;
     int time_range_indicator;
     int time_period;            /* 0 unless ave,diff, or acc; then: (p2 - p1) */
@@ -548,6 +548,7 @@ struct _Grib2DimInqRec {
     long    size;
     G2_GDS  *gds;       /* for horizontal dims only */
     int grid_number;    /* grid template number */
+    int grid_index;
 };
     
 struct _Grib2AttInqRec {

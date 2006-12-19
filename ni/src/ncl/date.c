@@ -256,17 +256,17 @@
 *
 */
 
- #include "date.h"
- #include <stdlib.h> /* abs()   */
- #include <math.h>   /* floor() */
+#include "date.h"
+#include <stdlib.h> /* abs()   */
+#include <math.h>   /* floor() */
 
 
  /* This is only for AMIGA */
- #ifndef __SASC_650
-   #undef __MakeLib
- #endif
- #ifdef __MakeLib
-   #include <exec/libraries.h>
+#ifndef __SASC_650
+#undef __MakeLib
+#endif
+#ifdef __MakeLib
+#include <exec/libraries.h>
 
    void __regargs __chkabort(void);
    void __regargs __chkabort(void)
@@ -276,7 +276,7 @@
    void __regargs _CXBRK(void)
    {}
 
- #endif
+#endif
 
  static unsigned short	BeforeGregorianDay, BeforeGregorianMonth,
 			AfterGregorianDay, AfterGregorianMonth,
@@ -286,11 +286,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm JulianLeapYear(register __d0 const int year)
- #else
+#else
    bool JulianLeapYear(const int year)
- #endif
+#endif
 
 /*
 ******* Date/JulianLeapYear *************************************************
@@ -347,11 +347,11 @@
   }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm GregorianLeapYear(register __d0 const int year)
- #else
+#else
    bool GregorianLeapYear(const int year)
- #endif
+#endif
 
 /*
 ******* Date/GregorianLeapYear **********************************************
@@ -414,11 +414,11 @@
   }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm HeisLeapYear(register __d0 const int year)
- #else
+#else
    bool HeisLeapYear(const int year)
- #endif
+#endif
 
 /*
 ******* Date/HeisLeapYear ***************************************************
@@ -489,11 +489,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm JulianMonthDays(register __d0 const unsigned short month, register __d1 const int year)
- #else
+#else
    unsigned short JulianMonthDays(const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/JulianMonthDays ************************************************
@@ -562,11 +562,11 @@
   }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm GregorianMonthDays(register __d0 const unsigned short month, register __d1 const int year)
- #else
+#else
    unsigned short GregorianMonthDays(const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/GregorianMonthDays *********************************************
@@ -634,11 +634,11 @@
   }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm HeisMonthDays(register __d0 const unsigned short month, register __d1 const int year)
- #else
+#else
    unsigned short HeisMonthDays(const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/HeisMonthDays **************************************************
@@ -701,11 +701,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned int __saveds __asm JulianYearDays(register __d0 const int year)
- #else
+#else
    unsigned int JulianYearDays(const int year)
- #endif
+#endif
 
 /*
 ******* Date/JulianYearDays *************************************************
@@ -761,11 +761,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned int __saveds __asm GregorianYearDays(register __d0 const int year)
- #else
+#else
    unsigned int GregorianYearDays(const int year)
- #endif
+#endif
 
 /*
 ******* Date/GregorianYearDays **********************************************
@@ -821,11 +821,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned int __saveds __asm HeisYearDays(register __d0 const int year)
- #else
+#else
    unsigned int HeisYearDays(const int year)
- #endif
+#endif
 
 /*
 ******* Date/HeisYearDays ***************************************************
@@ -882,11 +882,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm JulianDaySmaller(register __d0 const unsigned short day1, register __d1 const unsigned short month1, register __d2 const int year1, register __d3 const unsigned short day2, register __d4 const unsigned short month2, register __d5 const int year2)
- #else
+#else
    bool JulianDaySmaller(const unsigned short day1, const unsigned short month1, const int year1, const unsigned short day2, const unsigned short month2, const int year2)
- #endif
+#endif
 
 /*
 ******* Date/JulianDaySmaller ***********************************************
@@ -950,11 +950,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm GregorianDaySmaller(register __d0 const unsigned short day1, register __d1 const unsigned short month1, register __d2 const int year1, register __d3 const unsigned short day2, register __d4 const unsigned short month2, register __d5 const int year2)
- #else
+#else
    bool GregorianDaySmaller(const unsigned short day1, const unsigned short month1, const int year1, const unsigned short day2, const unsigned short month2, const int year2)
- #endif
+#endif
 
 /*
 ******* Date/GregorianDaySmaller ********************************************
@@ -1011,11 +1011,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm HeisDaySmaller(register __d0 const unsigned short day1, register __d1 const unsigned short month1, register __d2 const int year1, register __d3 const unsigned short day2, register __d4 const unsigned short month2, register __d5 const int year2)
- #else
+#else
    bool HeisDaySmaller(const unsigned short day1, const unsigned short month1, const int year1, const unsigned short day2, const unsigned short month2, const int year2)
- #endif
+#endif
 
 /*
 ******* Date/HeisDaySmaller *************************************************
@@ -1074,11 +1074,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm JulianDayGreater(register __d0 const unsigned short day1, register __d1 const unsigned short month1, register __d2 const int year1, register __d3 const unsigned short day2, register __d4 const unsigned short month2, register __d5 const int year2)
- #else
+#else
    bool JulianDayGreater(const unsigned short day1, const unsigned short month1, const int year1, const unsigned short day2, const unsigned short month2, const int year2)
- #endif
+#endif
 
 /*
 ******* Date/JulianDayGreater ***********************************************
@@ -1142,11 +1142,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm GregorianDayGreater(register __d0 const unsigned short day1, register __d1 const unsigned short month1, register __d2 const int year1, register __d3 const unsigned short day2, register __d4 const unsigned short month2, register __d5 const int year2)
- #else
+#else
    bool GregorianDayGreater(const unsigned short day1, const unsigned short month1, const int year1, const unsigned short day2, const unsigned short month2, const int year2)
- #endif
+#endif
 
 /*
 ******* Date/GregorianDayGreater ********************************************
@@ -1203,11 +1203,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    bool __saveds __asm HeisDayGreater(register __d0 const unsigned short day1, register __d1 const unsigned short month1, register __d2 const int year1, register __d3 const unsigned short day2, register __d4 const unsigned short month2, register __d5 const int year2)
- #else
+#else
    bool HeisDayGreater(const unsigned short day1, const unsigned short month1, const int year1, const unsigned short day2, const unsigned short month2, const int year2)
- #endif
+#endif
 
 /*
 ******* Date/HeisDayGreater *************************************************
@@ -1266,11 +1266,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    long __saveds __asm JulianDayDiff(register __d0 const unsigned short day1, register __d1 unsigned short month1, register __d2 int year1, register __d3 const unsigned short day2, register __d4 unsigned short month2, register __d5 int year2)
- #else
+#else
    long JulianDayDiff(const unsigned short day1, unsigned short month1, int year1, const unsigned short day2, unsigned short month2, int year2)
- #endif
+#endif
 
 /*
 ******* Date/JulianDayDiff **************************************************
@@ -1356,11 +1356,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    long __saveds __asm GregorianDayDiff(register __d0 const unsigned short day1, register __d1 unsigned short month1, register __d2 int year1, register __d3 const unsigned short day2, register __d4 unsigned short month2, register __d5 int year2)
- #else
+#else
    long GregorianDayDiff(const unsigned short day1, unsigned short month1, int year1, const unsigned short day2, unsigned short month2, int year2)
- #endif
+#endif
 
 /*
 ******* Date/GregorianDayDiff ***********************************************
@@ -1464,11 +1464,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    long __saveds __asm HeisDayDiff(register __d0 const unsigned short day1, register __d1 unsigned short month1, register __d2 int year1, register __d3 const unsigned short day2, register __d4 unsigned short month2, register __d5 int year2)
- #else
+#else
    long HeisDayDiff(const unsigned short day1, unsigned short month1, int year1, const unsigned short day2, unsigned short month2, int year2)
- #endif
+#endif
 
 /*
 ******* Date/HeisDayDiff ****************************************************
@@ -1573,11 +1573,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    Weekdays __saveds __asm JulianWeekday(register __d0 const unsigned short day, register __d1 unsigned short month, register __d2 int year)
- #else
+#else
    Weekdays JulianWeekday(const unsigned short day, unsigned short month, int year)
- #endif
+#endif
 
 /*
 ******* Date/JulianWeekday **************************************************
@@ -1654,11 +1654,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    Weekdays __saveds __asm GregorianWeekday(register __d0 const unsigned short day, register __d1 unsigned short month, register __d2 int year)
- #else
+#else
    Weekdays GregorianWeekday(const unsigned short day, unsigned short month, int year)
- #endif
+#endif
 
 /*
 ******* Date/GregorianWeekday ***********************************************
@@ -1738,11 +1738,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    Weekdays __saveds __asm HeisWeekday(register __d0 const unsigned short day, register __d1 unsigned short month, register __d2 int year)
- #else
+#else
    Weekdays HeisWeekday(const unsigned short day, unsigned short month, int year)
- #endif
+#endif
 
 /*
 ******* Date/HeisWeekday ****************************************************
@@ -1816,11 +1816,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm JulianDaysBeforeWeekday(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 const Weekdays weekday)
- #else
+#else
    unsigned short JulianDaysBeforeWeekday(const unsigned short day, const unsigned short month, const int year, const Weekdays weekday)
- #endif
+#endif
 
 /*
 ******* Date/JulianDaysBeforeWeekday ****************************************
@@ -1888,11 +1888,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm GregorianDaysBeforeWeekday(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 const Weekdays weekday)
- #else
+#else
    unsigned short GregorianDaysBeforeWeekday(const unsigned short day, const unsigned short month, const int year, const Weekdays weekday)
- #endif
+#endif
 
 /*
 ******* Date/GregorianDaysBeforeWeekday *************************************
@@ -1960,11 +1960,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm HeisDaysBeforeWeekday(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 const Weekdays weekday)
- #else
+#else
    unsigned short HeisDaysBeforeWeekday(const unsigned short day, const unsigned short month, const int year, const Weekdays weekday)
- #endif
+#endif
 
 /*
 ******* Date/HeisDaysBeforeWeekday ******************************************
@@ -2033,11 +2033,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm JulianDaysAfterWeekday(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 const Weekdays weekday)
- #else
+#else
    unsigned short JulianDaysAfterWeekday(const unsigned short day, const unsigned short month, const int year, const Weekdays weekday)
- #endif
+#endif
 
 /*
 ******* Date/JulianDaysAfterWeekday *****************************************
@@ -2104,11 +2104,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm GregorianDaysAfterWeekday(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 const Weekdays weekday)
- #else
+#else
    unsigned short GregorianDaysAfterWeekday(const unsigned short day, const unsigned short month, const int year, const Weekdays weekday)
- #endif
+#endif
 
 /*
 ******* Date/GregorianDaysAfterWeekday **************************************
@@ -2175,11 +2175,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm HeisDaysAfterWeekday(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 const Weekdays weekday)
- #else
+#else
    unsigned short HeisDaysAfterWeekday(const unsigned short day, const unsigned short month, const int year, const Weekdays weekday)
- #endif
+#endif
 
 /*
 ******* Date/HeisDaysAfterWeekday *******************************************
@@ -2247,11 +2247,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    void __saveds __asm JulianDiffDate(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 int days, register __a0 unsigned short *dday, register __a1 unsigned short *dmonth, register __a2 int *dyear)
- #else
+#else
    void JulianDiffDate(const unsigned short day, const unsigned short month, const int year, int days, unsigned short *dday, unsigned short *dmonth, int *dyear)
- #endif
+#endif
 
 /*
 ******* Date/JulianDiffDate *************************************************
@@ -2354,11 +2354,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    void __saveds __asm GregorianDiffDate(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 int days, register __a0 unsigned short *dday, register __a1 unsigned short *dmonth, register __a2 int *dyear)
- #else
+#else
    void GregorianDiffDate(const unsigned short day, const unsigned short month, const int year, int days, unsigned short *dday, unsigned short *dmonth, int *dyear)
- #endif
+#endif
 
 /*
 ******* Date/GregorianDiffDate **********************************************
@@ -2462,11 +2462,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    void __saveds __asm HeisDiffDate(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year, register __d3 int days, register __a0 unsigned short *dday, register __a1 unsigned short *dmonth, register __a2 int *dyear)
- #else
+#else
    void HeisDiffDate(const unsigned short day, const unsigned short month, const int year, int days, unsigned short *dday, unsigned short *dmonth, int *dyear)
- #endif
+#endif
 
 /*
 ******* Date/HeisDiffDate ***************************************************
@@ -2570,11 +2570,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned int __saveds __asm JYearToScaliger(register __d0 const int year)
- #else
+#else
    unsigned int JYearToScaliger(const int year)
- #endif
+#endif
 
 /*
 ******* Date/JYearToScaliger ************************************************
@@ -2626,11 +2626,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned int __saveds __asm GYearToScaliger(register __d0 const int year)
- #else
+#else
    unsigned int GYearToScaliger(const int year)
- #endif
+#endif
 
 /*
 ******* Date/GYearToScaliger ************************************************
@@ -2677,11 +2677,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned int __saveds __asm HYearToScaliger(register __d0 const int year)
- #else
+#else
    unsigned int HYearToScaliger(const int year)
- #endif
+#endif
 
 /*
 ******* Date/HYearToScaliger ************************************************
@@ -2729,11 +2729,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    int __saveds __asm ScaligerYearToJ(register __d0 const unsigned int syear)
- #else
+#else
    int ScaligerYearToJ(const unsigned int syear)
- #endif
+#endif
 
 /*
 ******* Date/ScaligerYearToJ ************************************************
@@ -2782,11 +2782,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    int __saveds __asm ScaligerYearToG(register __d0 const unsigned int syear)
- #else
+#else
    int ScaligerYearToG(const unsigned int syear)
- #endif
+#endif
 
 /*
 ******* Date/ScaligerYearToG ************************************************
@@ -2832,11 +2832,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    int __saveds __asm ScaligerYearToH(register __d0 const unsigned int syear)
- #else
+#else
    int ScaligerYearToH(const unsigned int syear)
- #endif
+#endif
 
 /*
 ******* Date/ScaligerYearToH ************************************************
@@ -2884,11 +2884,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm JSYearToJD(register __d0 const unsigned int syear)
- #else
+#else
    unsigned long JSYearToJD(const unsigned int syear)
- #endif
+#endif
 
 /*
 ******* Date/JSYearToJD *****************************************************
@@ -2934,11 +2934,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm GSYearToJD(register __d0 const unsigned int syear)
- #else
+#else
    unsigned long GSYearToJD(const unsigned int syear)
- #endif
+#endif
 
 /*
 ******* Date/GSYearToJD *****************************************************
@@ -2989,11 +2989,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm HSYearToJD(register __d0 const unsigned int syear)
- #else
+#else
    unsigned long HSYearToJD(const unsigned int syear)
- #endif
+#endif
 
 /*
 ******* Date/HSYearToJD *****************************************************
@@ -3042,11 +3042,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm JDtoMJD(register __d0 const unsigned long jd)
- #else
+#else
    unsigned long JDtoMJD(const unsigned long jd)
- #endif
+#endif
 
 /*
 ******* Date/JDtoMJD ********************************************************
@@ -3093,11 +3093,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm MJDtoJD(register __d0 const unsigned long mjd)
- #else
+#else
    unsigned long MJDtoJD(const unsigned long mjd)
- #endif
+#endif
 
 /*
 ******* Date/MJDtoJD ********************************************************
@@ -3144,11 +3144,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm JulianToJD(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year)
- #else
+#else
    unsigned long JulianToJD(const unsigned short day, const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/JulianToJD *****************************************************
@@ -3198,11 +3198,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm GregorianToJD(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year)
- #else
+#else
    unsigned long GregorianToJD(const unsigned short day, const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/GregorianToJD **************************************************
@@ -3252,11 +3252,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm HeisToJD(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year)
- #else
+#else
    unsigned long HeisToJD(const unsigned short day, const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/HeisToJD *******************************************************
@@ -3306,11 +3306,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    float __saveds __asm TimeToJD(register __d0 const unsigned short hour, register __d1 const unsigned short min, register __d2 const unsigned short sec)
- #else
+#else
    float TimeToJD(const unsigned short hour, const unsigned short min, const unsigned short sec)
- #endif
+#endif
 
 /*
 ******* Date/TimeToJD *******************************************************
@@ -3359,11 +3359,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    void __saveds __asm JDToTime(register __d0 float jd, register __a0 unsigned short *rhour, register __a1 unsigned short *rmin, register __a2 unsigned short *rsec)
- #else
+#else
    void JDToTime(float jd, unsigned short *rhour, unsigned short *rmin, unsigned short *rsec)
- #endif
+#endif
 
 /*
 ******* Date/JDToTime *******************************************************
@@ -3879,11 +3879,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm GregorianMoonAge(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year)
- #else
+#else
    unsigned short GregorianMoonAge(const unsigned short day, const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/GregorianMoonAge ***********************************************
@@ -4018,11 +4018,11 @@
 */
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    void __saveds __asm GregorianEaster(register __d0 const int year, register __a0 unsigned short *dday, register __a1 unsigned short *dmonth)
- #else
+#else
    void GregorianEaster(const int year, unsigned short *dday, unsigned short *dmonth)
- #endif
+#endif
 
 /*
 ******* Date/GregorianEaster ************************************************
@@ -4101,11 +4101,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    short __saveds __asm TimeZoneFactor(register __d0 const short degree)
- #else
+#else
    short TimeZoneFactor(const short degree)
- #endif
+#endif
 
 /*
 ******* Date/TimeZoneFactor *************************************************
@@ -4161,11 +4161,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    long __saveds __asm LMT(register __d0 const unsigned long secs, register __d1 const float meridiandegree, register __d2 const float posdegree)
- #else
+#else
    long LMT(const unsigned long secs, const float meridiandegree, const float posdegree)
- #endif
+#endif
 
 /*
 ******* Date/LMT ************************************************************
@@ -4214,11 +4214,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned long __saveds __asm TimeToSec(register __d0 const unsigned short hour, register __d1 const unsigned short min, register __d2 const unsigned short sec)
- #else
+#else
    unsigned long TimeToSec(const unsigned short hour, const unsigned short min, const unsigned short sec)
- #endif
+#endif
 
 /*
 ******* Date/TimeToSec ******************************************************
@@ -4267,11 +4267,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    void __saveds __asm SecToTime(register __d0 unsigned long secs, register __a0 unsigned short *hour, register __a1 unsigned short *min, register __a2 unsigned short *sec)
- #else
+#else
    void SecToTime(unsigned long secs, unsigned short *hour, unsigned short *min, unsigned short *sec)
- #endif
+#endif
 
 /*
 ******* Date/SecToTime ******************************************************
@@ -4324,11 +4324,11 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm JulianWeek(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year)
- #else
+#else
    unsigned short JulianWeek(const unsigned short day, const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/JulianWeek *****************************************************
@@ -4407,11 +4407,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm GregorianWeek(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year)
- #else
+#else
    unsigned short GregorianWeek(const unsigned short day, const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/GregorianWeek **************************************************
@@ -4490,11 +4490,11 @@
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    unsigned short __saveds __asm HeisWeek(register __d0 const unsigned short day, register __d1 const unsigned short month, register __d2 const int year)
- #else
+#else
    unsigned short HeisWeek(const unsigned short day, const unsigned short month, const int year)
- #endif
+#endif
 
 /*
 ******* Date/HeisWeek *******************************************************
@@ -4574,15 +4574,15 @@
 
  /* ----------------------------------------------------------------------- */
 
- #ifdef __SASC_650
-   #ifdef __MakeLib
+#ifdef __SASC_650
+#ifdef __MakeLib
      int __saveds __UserLibInit(struct Library *libbase)
-   #else
+#else
      void _STI_600__DateInit(void)
-   #endif
- #else
+#endif
+#else
    void _DateInit(void)
- #endif
+#endif
 
 /*
 ******* Date/_DateInit ******************************************************
@@ -4648,13 +4648,13 @@
      Griechenland
        ??.??.1923-??.??.1923 */
   /* Bremen/Arbergen = 8° 55' 23" East, 53° 4' 8" North */
-  #ifdef __MakeLib
+#ifdef __MakeLib
     return(0);
-  #endif
+#endif
  }
 
 
- #ifdef __MakeLib
+#ifdef __MakeLib
    void __saveds __UserLibCleanup(struct Library *libbase)
    {}
- #endif
+#endif
