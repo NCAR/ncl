@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c,v 1.1 2006-12-19 05:22:22 dbrown Exp $
+ *      $Id: ncarg_path.c.sed,v 1.1 2006-12-19 18:27:27 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -240,7 +240,7 @@ const char
 const	char	*_NGGetNCARGEnv(name)
 	const char	*name;
 {
-	static char	*env_vars[] = {"tmp","TMPDIR",NULL,"/tmp",NULL,			"fontcap","FONTCAP",NULL,NULL,NULL,				"graphcap","GRAPHCAP",NULL,NULL,NULL,				"root",NULL,NULL,"/usr/local/ncarg","/lib/ncarg/fontcaps/font1",		"usrresfile",NULL,NULL,"~/.hluresfile",NULL,			"gks_output",NULL,NULL,"gmeta",NULL,				"bin",NULL,"root",NULL,NULL,					"lib",NULL,"root",NULL,NULL,					"include",NULL,"root",NULL,NULL,				"man",NULL,"root",NULL,NULL,					"ncarg",NULL,"lib",NULL,NULL,					"config",NULL,"ncarg",NULL,NULL,				"data",NULL,"ncarg",NULL,NULL,					"database",NULL,"ncarg",NULL,NULL,				"doc",NULL,"ncarg",NULL,NULL,					"fontcaps",NULL,"ncarg",NULL,NULL,				"graphcaps",NULL,"ncarg",NULL,NULL,				"colormaps",NULL,"ncarg",NULL,NULL,				"rangs","NCARG_RANGS","database",NULL,NULL,			"udunits","UDUNITS_PATH","ncarg",NULL,NULL,			"psadilookup","PSADILOOKUP_PATH",NULL,NULL,NULL,		"examples",NULL,"ncarg",NULL,NULL,				"hluex",NULL,"ncarg",NULL,NULL,					"nclex",NULL,"ncarg",NULL,NULL,					"pynglex",NULL,"ncarg",NULL,NULL,				"resfiles",NULL,"ncarg",NULL,NULL,				"tests",NULL,"ncarg",NULL,NULL,					"tutorial",NULL,"ncarg",NULL,NULL,				"xapp",NULL,"ncarg",NULL,NULL,					"ngwww",NULL,"ncarg",NULL,NULL,					"ngurl",NULL,"ngwww",NULL,NULL,					"sysresfile",NULL,"ncarg",NULL,NULL,				"sysappres",NULL,"ncarg",NULL,NULL,				"grib2_codetables","NIO_GRIB2_CODETABLES","ncarg",NULL,NULL, 		NULL};
+	static char	*env_vars[] = SED_ENV_DEFS;
 	static char	*env_vals[(sizeof(env_vars)/sizeof(env_vars[0]))] =
 					{ NULL };
 
