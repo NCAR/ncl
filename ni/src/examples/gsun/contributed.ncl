@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.128 2006-11-07 19:29:26 shea Exp $
+;      $Id: contributed.ncl,v 1.129 2006-12-19 16:55:13 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -475,18 +475,19 @@ end
 ; This assumes that all rows have the same number of columns
 ;      and the columns are separated by spaces.
 ;
+; This approach was suggested by: 
+; Date: Thu, 7 Dec 2006 11:39:37 -0800
+; From: "Lunde, Bruce N CIV NAVOCEANO, NP1" <bruce.lunde@navy.mil>
+;
+; It replaced the original version which read the entire file.
+;
 ; Usage:   ncol = numAsciiCol ("/my/path/ascii_file") 
 
 undef ("numAsciiCol")
 function numAsciiCol (fNam:string)
-local tokens, filString, nrow, ncol
 begin
-  tokens    = stringtointeger( systemfunc("wc -w "+fNam) )
-
-  filString = asciiread ( fNam, -1, "string")
-  nrow      = dimsizes(filString)
-  ncol      = tokens/nrow
-  return (ncol)
+  ncol = stringtointeger( systemfunc("head -1 "+fNam+" | wc -w") )
+  return(ncol)
 end
 
 
