@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c.sed,v 1.1 2006-12-19 18:27:27 dbrown Exp $
+ *      $Id: ncarg_path.c.sed,v 1.2 2006-12-20 19:03:12 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -53,7 +53,7 @@
 #include <errno.h>
 #include <ncarg/c.h>
 #include "ncarg_path.h"
-#include <Error.h>
+#include <ncarg/hlu/Error.h>
 
 #ifdef	cray
 #include <fortran.h>
