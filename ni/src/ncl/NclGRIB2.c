@@ -7975,6 +7975,7 @@ static void *Grib2OpenFile
 				    g2inqrec_list->rec_inq->forecast_time_units,
 				    g2inqrec_list->rec_inq->forecast_time);
 			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
+			    g2inqrec_list->rec_inq->var_name_q = g2plist->var_info.var_name_quark;
 			    g2inqrec_list = g2inqrec_list->next;
 			    i++;
 		    }
@@ -7984,6 +7985,7 @@ static void *Grib2OpenFile
 			    g2sort[i] = g2inqrec_list;
 			    g2inqrec_list->rec_inq->time_offset	= g2inqrec_list->rec_inq->forecast_time;
 			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
+			    g2inqrec_list->rec_inq->var_name_q = g2plist->var_info.var_name_quark;
 			    g2inqrec_list = g2inqrec_list->next;
 			    i++;
 		    }
