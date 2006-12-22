@@ -8,6 +8,7 @@
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#include <ncarg/hlu/hluutil.h>
 #include "defs.h"
 #include <netcdf.h>
 #include "NclDataDefs.h"
@@ -624,7 +625,7 @@ TRY2:
 		/* -j direction implies north to south*/
 		i = nlat -1;
 		while(i >= 0) {
-			if(_NhlCmpDAny2(la1,rtod*theta[i] - 90,5,1e-20) >= 0) {
+			if(_NhlCmpDAny2(la1,rtod*theta[i] - 90,5,1.0e-20) >= 0.0) {
 				break;
 			} else {
 				i--;	
@@ -644,7 +645,7 @@ TRY2:
 		}
 		k = 0;
 		while((k<(*dimsizes_lat)[0])&&(i>=0)) {
-			if(_NhlCmpDAny2(la2,rtod*theta[i] - 90,5,1e-20) <= 0) {
+			if(_NhlCmpDAny2(la2,rtod*theta[i] - 90,5,1.0e-20) >=0.0) {
 				break;
 			} else {
 				(*lat)[k++] = rtod*theta[i] - 90.0;
@@ -659,7 +660,7 @@ TRY2:
 		/* +j direction implies south to north*/
 		i = 0;
 		while(i<nlat) {
-			if(_NhlCmpDAny2(la1,rtod*theta[i] - 90,5,1e-20) <= 0) {
+			if(_NhlCmpDAny2(la1,rtod*theta[i] - 90,5,1.0e-20) <= 0.0) {
 				break;
 			} else {
 				i++;		
@@ -679,7 +680,7 @@ TRY2:
 		}
 		k = 0;
 		while((i<nlat)&&(k<(*dimsizes_lat)[0])) {
-			if(_NhlCmpDAny2(la2,rtod*theta[i] - 90,5,1e-20) >= 0) {
+			if(_NhlCmpDAny2(la2,rtod*theta[i] - 90,5,1.0e-20) <= 0.0) {
 				break;
 			} else {
 				(*lat)[k++] = rtod*theta[i] - 90.0;
@@ -703,68 +704,68 @@ TRY2:
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1;
-		GribPushAtt(lon_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = lo1;
-		GribPushAtt(lon_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la2;
-		GribPushAtt(lon_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = lo2;
-		GribPushAtt(lon_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = di;
-		GribPushAtt(lon_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = nlat/2.0;
-		GribPushAtt(lon_att_list,"N",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"N",tmp_float,1,nclTypefloatClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("degrees_east");
-		GribPushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (is_thinned_lon) {
 			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid (Quasi-Regular)");
 		} else {
 			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid");
 		}
-		GribPushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("longitude");
-		GribPushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
+		Grib2PushAtt(lon_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	}
 	if(lat_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1;
-		GribPushAtt(lat_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"La1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = lo1;
-		GribPushAtt(lat_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"Lo1",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la2;
-		GribPushAtt(lat_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"La2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = lo2;
-		GribPushAtt(lat_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"Lo2",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = di;
-		GribPushAtt(lat_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"Di",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = nlat/2.0;
-		GribPushAtt(lat_att_list,"N",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"N",tmp_float,1,nclTypefloatClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("degrees_north");
-		GribPushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (is_thinned_lon) {
 			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid (Quasi-Regular)");
 		} else {
 			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid");
 		}
-		GribPushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"GridType",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("latitude");
-		GribPushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
+		Grib2PushAtt(lat_att_list,"long_name",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 	}
 }
 
@@ -1521,7 +1522,7 @@ static int g2LVNotEqual( Grib2RecordInqRecList *s_1, Grib2RecordInqRecList *s_2)
 }
 
 
-static int _g2SetCommonTimeUnit
+static void _g2SetCommonTimeUnit
 #if	NhlNeedProto
 (Grib2ParamList *node, Grib2RecordInqRec* grib_rec)
 #else
@@ -9248,8 +9249,7 @@ static void *Grib2MapFromNcl
     return((void *) tmp);
 }
 
-
-static int Grib2SetOption
+static NhlErrorTypes Grib2SetOption
 #if	NhlNeedProto
 (void *therec,NclQuark option, NclBasicDataTypes data_type, int n_items, void * values)
 #else
@@ -9321,3 +9321,5 @@ NclFormatFunctionRec Grib2Rec = {
 /* NclDelVarAttFunc        del_var_att; */		NULL,
 /* NclSetOptionFunc        set_option;  */              Grib2SetOption
 };
+
+
