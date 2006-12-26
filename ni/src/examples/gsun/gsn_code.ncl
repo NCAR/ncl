@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.191 2006-12-14 08:57:03 haley Exp $
+;      $Id: gsn_code.ncl,v 1.192 2006-12-26 21:49:26 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -146,7 +146,7 @@ undef("gsn_vector_scalar_map")
 undef("gsn_xy")
 undef("gsn_y")
 undef("gsn_contour_shade")
-undef("fillres")
+undef("fill_res")
 undef("gsn_table")
 
 ;***********************************************************************;
@@ -9338,7 +9338,7 @@ begin
    return (plot)
 end
 
-procedure fillres(res1:logical,res2:logical,ncr[2]:integer,attnames[*]:string)
+procedure fill_res(res1:logical,res2:logical,ncr[2]:integer,attnames[*]:string)
 local natts, i, dsizes, rank, success, nrows, ncols
 begin
   nrows = ncr(0)
@@ -9400,7 +9400,7 @@ begin
           end if
         end if
         if(.not.success) then
-          print("fillres: attribute '" + attnames(i) + "' is the wrong size.")
+          print("fill_res: attribute '" + attnames(i) + "' is the wrong size.")
           print("         Not using it.")
         end if
         delete(dsizes)
@@ -9489,7 +9489,7 @@ begin
 ;
   res2     = False
   attnames = getvaratts(res)
-  fillres(res,res2,ncr,attnames)
+  fill_res(res,res2,ncr,attnames)
   delete(attnames)                    ; We're going to use this later.
 
 ;
