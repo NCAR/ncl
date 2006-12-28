@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.192 2006-12-26 21:49:26 haley Exp $
+;      $Id: gsn_code.ncl,v 1.193 2006-12-28 23:36:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4233,7 +4233,7 @@ begin
 ; Check for special resources.
 ; 
   panel_save     = get_res_value_keep(res,"gsnPanelSave",True)
-  panel_debug    = get_res_value_keep(res,"gsnDebug",False)
+  panel_debug    = get_res_value_keep(res,"gsnPanelDebug",False)
   panel_center   = get_res_value_keep(res,"gsnPanelCenter",True)
   panel_labelbar = get_res_value_keep(res,"gsnPanelLabelBar",False)
   calldraw       = get_res_value_keep(res,"gsnDraw",True)
@@ -4397,7 +4397,7 @@ begin
     right  = bb(3)
     delete(bb)
   else
-    print("Error: ngl_panel: all of the plots passed to gsn_panel appear to be invalid")
+    print("Error: gsn_panel: all of the plots passed to gsn_panel appear to be invalid")
     exit
   end if
   nvalid_plots = dimsizes(ind_nomsg)
