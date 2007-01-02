@@ -1,14 +1,9 @@
-;
-;      $Id: skewt_func.ncl,v 1.8 2006-07-19 02:12:21 haley Exp $
-;
 ; -------------------------------------------------
 ; This library requires that the "gsn_code.ncl" library
 ; be loaded prior to use by skewt_func.ncl
 ; -------------------------------------------------
 ; Dennis Shea
 ; email: shea@ucar.edu
-;        pres   -   pressure  [mb / hPa]
-;        temp   -   
 ; ------------------------------------------------
 
 undef("skewty")
@@ -23,6 +18,17 @@ function skewtx(temp[*]:float,y[*]:float) ; x-coord given temperature (c)
    return (0.54*temp+0.90692*y)
   end
 
+undef ("getSkewTColorIndex") 
+function getSkewTColorIndex (wks:graphic, color:string)
+  local iColor
+  begin
+    if (color.eq."Foreground") then
+        iColor = 1
+    else
+        iColor = NhlGetNamedColorIndex(wks,color)
+    end if
+    return( iColor )
+  end 
 
 undef("skewT_BackGround")
 function skewT_BackGround (wks:graphic,  Opts:logical)
@@ -675,14 +681,14 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
      "tmYLLabelFontHeightF"  : tmYLLabelFontHeightF
   end getvalues
                                           ; assorted color 'indices'
-  colForeGround = "Foreground"
+  colForeGround = "Foreground"            ; defaults
   colTemperature= "Foreground"
-  colDewPt      = "RoyalBlue"
+  colDewPt      = "RoyalBlue" 
   colCape       = "Red"
-  colZLabel     = "Foreground"
-  colWindP      = "Black"   
-  colWindZ      = "Blue"   
-  colWindH      = "Magenta"    
+  colZLabel     = colTemperature
+  colWindP      = colTemperature
+  colWindZ      = colTemperature
+  colWindH      = colTemperature
   colThermoInfo = "Sienna"
                                           ; Change defaults
   if (isatt(localOpts,"colTemperature")) then
@@ -715,20 +721,24 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
   gsOpts@gsLineDashPattern = 0            ; solid (default)
   gsOpts@gsLineThicknessF  = 3.0          ; make thicker
 
-  if (isatt(localOpts,"gsLineDashPattern")) then
-      gsOpts@gsLineDashPattern = localOpts@gsLineDashPattern
-  end if
-  if (isatt(localOpts,"gsLineThicknessF")) then
-      gsOpts@gsLineThicknessF = localOpts@gsLineThicknessF
-  end if
-
   yp   = skewty (p)                    
   xtc  = skewtx (tc , yp)              ; T-P plot
-  gsOpts@gsLineColor  = colTemperature   
+  gsOpts@gsLineColor        = colTemperature   
+  gsOpts@gsLineDashPattern  = 0   
+  if (isatt(localOpts,"linePatternTemperature")) then
+      gsOpts@gsLineDashPattern = localOpts@linePatternTemperature
+  end if
+  if (isatt(localOpts,"lineThicknessTemperature")) then
+      gsOpts@gsLineThicknessF = localOpts@lineThicknessTemperature
+  end if
   gsn_polyline  (wks,skewt_bkgd,xtc ,yp,gsOpts) 
 
   xtdc = skewtx (tdc, yp)              ;Dew Pt-P plot
-  gsOpts@gsLineColor  = colDewPt     
+  gsOpts@gsLineColor        = colDewPt     
+  gsOpts@gsLineDashPattern  = 0
+  if (isatt(localOpts,"linePatternDewPt")) then
+      gsOpts@gsLineDashPattern  = localOpts@linePatternDewPt
+  end if
   gsn_polyline  (wks,skewt_bkgd,xtdc,yp,gsOpts) 
 
   delete (gsOpts)
@@ -776,6 +786,9 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
           gsOpts                   = True
           gsOpts@gsLineColor       = colCape   
           gsOpts@gsLineDashPattern = 1         ; 14          
+          if (isatt(localOpts,"gsLineDashPatternCape")) then
+              gsOpts@gsLineDashPattern  = localOpts@linePatternCape
+           end if
           gsOpts@gsLineThicknessF  = 2.0
 
           yp   = skewty (p)                    
@@ -838,14 +851,18 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
           end if
 
           wbcol = wmgetp("col")             ; get current wbarb color
-          wmsetp("col",NhlGetNamedColorIndex(wks,colWindP)) ; set new color 
+          wmsetp("col",getSkewTColorIndex(wks,colWindP)) ; set new color 
                                                 ; see skewT_BackGround
           ypWind = skewty (pw) 
           xpWind = new (dimsizes(pw), float)
-          xpWind = skewtx (45. , skewty(1013.) ) ; location of wind barb
+          if (isatt(localOpts,"xpWind")) then
+              xpWind = skewtx (localOpts@xpWind , skewty(1013.) ) ; location of wind barb
+          else
+              xpWind = skewtx (45. , skewty(1013.) ) ; location of wind barb
+          end if
+
           wmbarb(wks, xpWind, ypWind, up, vp )
           wmsetp("col",wbcol)               ; reset to initial color value 
-
                                             ; chk for soundings where Z/wind
                                             ; were merged but no pressure
           idz = ind ( ismissing(P) .and.  .not. ismissing(Z) .and.   \
@@ -865,7 +882,7 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
               pz   = ftcurv (Z(idzp),P(idzp),zw)  ; map zw to p levels
 
               wbcol = wmgetp("col")             ; get current wbarb color
-              wmsetp("col",NhlGetNamedColorIndex(wks,colWindZ)) ; set new color 
+              wmsetp("col",getSkewTColorIndex(wks,colWindZ)) ; set new color 
                                                 ; see skewT_BackGround
               yzWind = skewty (pz) 
               xzWind = new (dimsizes(pz), float)
@@ -900,7 +917,7 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
               ph   = ftcurv (Z(idzp),P(idzp),dataOpts@Height) ; Height to p levels
 
               wbcol = wmgetp("col")             ; get current color index
-              wmsetp("col",NhlGetNamedColorIndex(wks,colWindH)) ; set new color 
+              wmsetp("col",getSkewTColorIndex(wks,colWindH)) ; set new color 
 
               yhWind = skewty (ph) 
               xhWind = new (dimsizes(ph), float)
