@@ -4797,7 +4797,7 @@ unsigned char *lv;
 	return(0);
 }
 
-static int _SetCommonTimeUnit
+static void _SetCommonTimeUnit
 #if	NhlNeedProto
 (GribParamList *node, GribRecordInqRec* grib_rec)
 #else

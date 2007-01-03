@@ -2770,6 +2770,7 @@ static Grib2RecordInqRec* _g2MakeMissingRec
 {
 	Grib2RecordInqRec* grib_rec = (Grib2RecordInqRec*)NclMalloc(sizeof(Grib2RecordInqRec));
 
+        memset(grib_rec,0,sizeof(Grib2RecordInqRec));
 	grib_rec->var_name_q = -1;
 	grib_rec->param_number = -1;
 	grib_rec->ptable_rec = NULL;
@@ -8811,9 +8812,9 @@ void* storage;
 	long *grid_finish;
 	long *grid_stride;
 	int n_other_dims;
-	int current_index[3];
-	int dim_sizes[3] = {-1,-1,-1};
-	int i,tg;
+	int current_index[5] = {0,0,0,0,0};
+	int dim_offsets[5] = {-1,-1,-1,-1,-1};
+	int i,j,tg;
 	int offset;
 	int done = 0,inc_done =0;
 	int data_offset = 0;
@@ -8875,11 +8876,12 @@ void* storage;
 				grid_finish = &(finish[(step->var_info.num_dimensions - 2) ]);
 				grid_stride = &(stride[(step->var_info.num_dimensions - 2) ]);
 				n_other_dims = step->var_info.num_dimensions - 2;
-				
-			
 				for(i = 0; i < n_other_dims; i++) {
 					current_index[i] = start[i];
-					dim_sizes[i] = step->var_info.dim_sizes[i];
+					dim_offsets[i] = step->var_info.dim_sizes[i];
+					for (j = i + 1; j < n_other_dims; j++) {
+						dim_offsets[i] *= step->var_info.dim_sizes[j];
+					}
 				}
 				n_grid_dims = 2;
 				grid_dim_sizes[0] = step->var_info.dim_sizes[step->var_info.num_dimensions - 2];
@@ -8906,7 +8908,10 @@ void* storage;
 			
 				for(i = 0; i < n_other_dims; i++) {
 					current_index[i] = start[i];
-					dim_sizes[i] = step->var_info.dim_sizes[i];
+					dim_offsets[i] = step->var_info.dim_sizes[i];
+					for (j = i + 1; j < n_other_dims; j++) {
+						dim_offsets[i] *= step->var_info.dim_sizes[j];
+					}
 				}
 				n_grid_dims = 3;
 				grid_dim_sizes[0] = step->var_info.dim_sizes[step->var_info.num_dimensions - 3];
@@ -8939,7 +8944,7 @@ void* storage;
 				offset = 0;
 				if(n_other_dims > 0 ) {
 					for(i = 0; i < n_other_dims - 1; i++) {
-						offset += dim_sizes[i+1] * current_index[i];
+						offset += dim_offsets[i+1] * current_index[i];
 					}
 					offset += current_index[n_other_dims-1];
 				}
