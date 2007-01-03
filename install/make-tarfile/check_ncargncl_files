@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.1 2007-01-03 16:59:02 haley Exp $
+#   $Id: check_ncargncl_files,v 1.2 2007-01-03 16:59:38 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -42,6 +42,7 @@ bin/med
 bin/ncargcc
 bin/ncargex
 bin/ncargf77
+bin/ncargf90
 bin/ncargfile
 bin/ncargpath
 bin/ncargrun
@@ -58,6 +59,7 @@ bin/ncl_grib2nc
 bin/ng4ex
 bin/nhlcc
 bin/nhlf77
+bin/nhlf90
 bin/nnalg
 bin/pre2ncgm
 bin/pre2ncgm.prog
