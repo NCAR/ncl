@@ -158,7 +158,7 @@ C that points to the edge node; i.e., ITRI(IEDG(IPTE+3))=IPTE.  The base
 C index of the triangle node defining that triangle is IPTT, where
 C IPTT=LOTN*((IEDG(IPTE+3)-1)/LOTN), and the index of the pointer to
 C the edge within the triangle node is IPTI=IEDG(IPTE+3)-IPTT, so that
-C IEDG(IPTT+IPTI)=IPTE.  Similar comments apply to element 4 of an edge
+C ITRI(IPTT+IPTI)=IPTE.  Similar comments apply to element 4 of an edge
 C node, which points into the triangle node defining the triangle to the
 C right of the edge.
 C
