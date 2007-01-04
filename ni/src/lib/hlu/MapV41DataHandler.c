@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.23 2006-10-06 23:17:35 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.24 2007-01-04 00:07:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -459,9 +459,9 @@ static NhlErrorTypes Init_Entity_Recs
         char lname_buf[256];
 	NrmQuark cur_dataset_q;
 
-	RDatasets[0] = NrmStringToQuark("earth..1");
-	RDatasets[1] = NrmStringToQuark("earth..2");
-	RDatasets[2] = NrmStringToQuark("earth..3");
+	RDatasets[0] = NrmStringToQuark("Earth..1");
+	RDatasets[1] = NrmStringToQuark("Earth..2");
+	RDatasets[2] = NrmStringToQuark("Earth..3");
 	RDatasets[3] = NrmNULLQUARK;
 
         mv41p->entity_recs = NhlMalloc
