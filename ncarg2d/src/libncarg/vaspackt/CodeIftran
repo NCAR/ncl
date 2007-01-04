@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.4 2006-11-10 22:01:36 kennison Exp $
+I $Id: CodeIftran,v 1.5 2007-01-04 20:15:33 kennison Exp $
 I
 I***********************************************************************
 I  V A S P A C K T   -   I N T R O D U C T I O N
@@ -101,7 +101,7 @@ C
         COMMON /VTCOM1/ NLBS  !  NEEDED? (NUMBER OF LABELS)
         COMMON /VTCOM1/ NLSD,NLZF,NOMF,NPNT
         COMMON /VTCOM1/ NR04  !  NEEDED? (LABEL-LIST MANAGEMENT)
-        COMMON /VTCOM1/ NSDL,NSDR,NTRI,OORV,PCPU,PCPV,PCPW
+        COMMON /VTCOM1/ NSDL,NSDR,NTRI,OORV,PCPX,PCPY,PCPZ
         COMMON /VTCOM1/ PITH  !  NEEDED? (STREAMLINE INTERPOLATION)
         COMMON /VTCOM1/ SCFS,SCFU  !  NEEDED? (SCALE FACTORS)
         COMMON /VTCOM1/ SLLN,SLLR,SLPS,SLPR,SLSP,SLSR,SVSP,SVSR
@@ -225,9 +225,10 @@ C
 C
 C ANM1 and ANM2 are the parameters 'AM1' and 'AM2', maximum angles to
 C be allowed between any pair of velocity vectors at the vertices of a
-C triangle being considered.  The first serves to limit the starting
-C positions of streamline generators, streamlines, and curly vectors,
-C while the second serves to terminate them.
+C triangle being considered.  The first serves to limit the placement
+C of curly vectors and the starting positions of streamline generators
+C and streamlines, while the second serves to terminate streamline
+C generators and streamlines.
 C
         DATA ANM1,ANM2 / 90. , 0. /
 C
@@ -244,7 +245,7 @@ C
         DATA CHWM / 1. /
 C
 C CTMA and CTMB are character-variable temporaries, used for various
-C purposes throughout the code.
+C purposes throughout the code.  CTMA is the parameter 'CTM'.
 C
         DATA CTMA,CTMB / ' ',' ' /
 C
@@ -733,12 +734,12 @@ C VTMPXY for both coordinates of a point which is invisible.
 C
         DATA OORV / 0. /
 C
-C (PCPU,PCPV,PCPW) is a "projection center point" for the mesh, used in
+C (PCPX,PCPY,PCPZ) is a "projection center point" for the mesh, used in
 C the process of projecting each velocity vector into the plane of its
-C associated triangle.  The three coordinates are the parameters 'PCU',
-C 'PCV', and 'PCW'.
+C associated triangle.  The three coordinates are the parameters 'PCX',
+C 'PCY', and 'PCZ'.
 C
-        DATA PCPU,PCPV,PCPW / 0.,0.,0. /
+        DATA PCPX,PCPY,PCPZ / 0.,0.,0. /
 C
 C PITH is the parameter 'PIT', the "point interpolation threshold".  In
 C routines that map polylines using VTMPXY, this value is used to check
@@ -866,13 +867,13 @@ C in the informational label, as a fraction of the viewport width.
 C
         DATA WCIL / .012 /
 C
-C WLCF is a line-width specifier for the box around a constant-field
-C label.
+C WLCF is the parameter 'CFL', a line-width specifier for the box
+C around a constant-field label.
 C
         DATA WLCF / 0. /
 C
-C WLIL is a line-width specifier for the box around an informational
-C label.
+C WLIL is the parameter 'ILL', a line-width specifier for the box
+C around an informational label.
 C
         DATA WLIL / 0. /
 C
@@ -1259,12 +1260,12 @@ C
           RVAL=REAL(IPIS)
         ELSE IF (WHCH(1:3).EQ.'PIT'.OR.WHCH(1:3).EQ.'pit')
           RVAL=PITH
-        ELSE IF (WHCH(1:3).EQ.'PCU'.OR.WHCH(1:3).EQ.'pcu')
-          RVAL=PCPU
-        ELSE IF (WHCH(1:3).EQ.'PCV'.OR.WHCH(1:3).EQ.'pcv')
-          RVAL=PCPV
-        ELSE IF (WHCH(1:3).EQ.'PCW'.OR.WHCH(1:3).EQ.'pcw')
-          RVAL=PCPW
+        ELSE IF (WHCH(1:3).EQ.'PCX'.OR.WHCH(1:3).EQ.'pcx')
+          RVAL=PCPX
+        ELSE IF (WHCH(1:3).EQ.'PCY'.OR.WHCH(1:3).EQ.'pcy')
+          RVAL=PCPY
+        ELSE IF (WHCH(1:3).EQ.'PCZ'.OR.WHCH(1:3).EQ.'pcz')
+          RVAL=PCPZ
         ELSE IF (WHCH(1:3).EQ.'RNG'.OR.WHCH(1:3).EQ.'rng')
           RVAL=REAL(IRNG)
         ELSE IF (WHCH(1:3).EQ.'RWC'.OR.WHCH(1:3).EQ.'rwc')
@@ -1290,7 +1291,7 @@ C
         ELSE IF (WHCH(1:3).EQ.'STC'.OR.WHCH(1:3).EQ.'stc')
           RVAL=REAL(ICST)
         ELSE IF (WHCH(1:3).EQ.'SVS'.OR.WHCH(1:3).EQ.'svs')
-          RVAL=REAL(SVSP)
+          RVAL=SVSP
         ELSE IF (WHCH(1:3).EQ.'SVT'.OR.WHCH(1:3).EQ.'svt')
           RVAL=REAL(ISVT)
         ELSE IF (WHCH(1:3).EQ.'TBA'.OR.WHCH(1:3).EQ.'tba')
@@ -2160,9 +2161,9 @@ C
         NOMF=6
         NSDL=4
         OORV=0.
-        PCPU=0.
-        PCPV=0.
-        PCPW=0.
+        PCPX=0.
+        PCPY=0.
+        PCPZ=0.
         PITH=0.
         SCFS=1.
         SCFU=1.
@@ -2454,12 +2455,12 @@ C
           OORV=RVAL
         ELSE IF (WHCH(1:3).EQ.'PAI'.OR.WHCH(1:3).EQ.'pai')
           IPAI=INT(RVAL)
-        ELSE IF (WHCH(1:3).EQ.'PCU'.OR.WHCH(1:3).EQ.'pcu')
-          PCPU=RVAL
-        ELSE IF (WHCH(1:3).EQ.'PCV'.OR.WHCH(1:3).EQ.'pcv')
-          PCPV=RVAL
-        ELSE IF (WHCH(1:3).EQ.'PCW'.OR.WHCH(1:3).EQ.'pcw')
-          PCPW=RVAL
+        ELSE IF (WHCH(1:3).EQ.'PCX'.OR.WHCH(1:3).EQ.'pcx')
+          PCPX=RVAL
+        ELSE IF (WHCH(1:3).EQ.'PCY'.OR.WHCH(1:3).EQ.'pcy')
+          PCPY=RVAL
+        ELSE IF (WHCH(1:3).EQ.'PCZ'.OR.WHCH(1:3).EQ.'pcz')
+          PCPZ=RVAL
         ELSE IF (WHCH(1:3).EQ.'PIE'.OR.WHCH(1:3).EQ.'pie')
           IPIE=INT(RVAL)
         ELSE IF (WHCH(1:3).EQ.'PIS'.OR.WHCH(1:3).EQ.'pis')
@@ -2608,9 +2609,8 @@ C Compute the squares of the cosines of the angles between the velocity
 C vectors at pairs of vertices of the triangle.  (We use the squares in
 C order to avoid taking square roots, and, actually, we compute "signed
 C squares" such that, as the angles range from 0 degrees to 180 degrees,
-C the values we get range from -1 to +1.)  These values will be used to
-C order the triangles from most desirable as the starting point of a
-C curly vector to least desirable.
+C the values we get range from -1 to +1.)  We avoid starting a curly
+C vector in any triangle where this measure is too large.
 C
           RWRK(I/LOTN+1)=1.
 C
@@ -2659,23 +2659,18 @@ C
           END IF
         END DO
 C
-C Compute a maximum acceptable value of the measure that we used to
-C order the triangles.
+C Compute a maximum acceptable value of the angular measures that were
+C computed for the triangles above.
 C
         TMAX=COS(DTOR*ANM1)
         TMAX=-TMAX*ABS(TMAX)
 C
-C Loop through the triangles in the specified order.
+C Loop through the triangles in the specified random order.
 C
         DO (IIII=1,NIND)
 C
-C Avoid using the triangle (or any following it) if the greatest angle
-C between the velocity vectors at its vertices is too large.
-C
-C         IF (RWRK(IWRK(IIII)).GT.TMAX) GO TO 104
-C
-C (DEBUG) Avoid using the triangle if the greatest angle between the
-C velocity vectors at its vertices is too large.
+C Avoid using the triangle if the greatest angle between the velocity
+C vectors at its vertices is too large.
 C
           IF (RWRK(IWRK(IIII)).GT.TMAX) GO TO 103
 C
@@ -8271,25 +8266,25 @@ C case of most interest to us, but it will not work for an arbitrary
 C triangular mesh.  This is a problem I'll have to look into later.
 C
         T=-((UCP1+UVP1)*A+(VCP1+VVP1)*B+(WCP1+WVP1)*C+D)/
-     +     ((UCP1+UVP1-PCPU)*A+(VCP1+VVP1-PCPV)*B+(WCP1+WVP1-PCPW)*C)
+     +     ((UCP1+UVP1-PCPX)*A+(VCP1+VVP1-PCPY)*B+(WCP1+WVP1-PCPZ)*C)
 C
-        UPP1=UVP1+(UCP1+UVP1-PCPU)*T
-        VPP1=VVP1+(VCP1+VVP1-PCPV)*T
-        WPP1=WVP1+(WCP1+WVP1-PCPW)*T
+        UPP1=UVP1+(UCP1+UVP1-PCPX)*T
+        VPP1=VVP1+(VCP1+VVP1-PCPY)*T
+        WPP1=WVP1+(WCP1+WVP1-PCPZ)*T
 C
         T=-((UCP2+UVP2)*A+(VCP2+VVP2)*B+(WCP2+WVP2)*C+D)/
-     +     ((UCP2+UVP2-PCPU)*A+(VCP2+VVP2-PCPV)*B+(WCP2+WVP2-PCPW)*C)
+     +     ((UCP2+UVP2-PCPX)*A+(VCP2+VVP2-PCPY)*B+(WCP2+WVP2-PCPZ)*C)
 C
-        UPP2=UVP2+(UCP2+UVP2-PCPU)*T
-        VPP2=VVP2+(VCP2+VVP2-PCPV)*T
-        WPP2=WVP2+(WCP2+WVP2-PCPW)*T
+        UPP2=UVP2+(UCP2+UVP2-PCPX)*T
+        VPP2=VVP2+(VCP2+VVP2-PCPY)*T
+        WPP2=WVP2+(WCP2+WVP2-PCPZ)*T
 C
         T=-((UCP3+UVP3)*A+(VCP3+VVP3)*B+(WCP3+WVP3)*C+D)/
-     +     ((UCP3+UVP3-PCPU)*A+(VCP3+VVP3-PCPV)*B+(WCP3+WVP3-PCPW)*C)
+     +     ((UCP3+UVP3-PCPX)*A+(VCP3+VVP3-PCPY)*B+(WCP3+WVP3-PCPZ)*C)
 C
-        UPP3=UVP3+(UCP3+UVP3-PCPU)*T
-        VPP3=VVP3+(VCP3+VVP3-PCPV)*T
-        WPP3=WVP3+(WCP3+WVP3-PCPW)*T
+        UPP3=UVP3+(UCP3+UVP3-PCPX)*T
+        VPP3=VVP3+(VCP3+VVP3-PCPY)*T
+        WPP3=WVP3+(WCP3+WVP3-PCPZ)*T
 C
 C Use cross products with the normal to the triangle to generate
 C vectors perpendicular to the velocity vectors.
@@ -9607,25 +9602,25 @@ C case of most interest to us, but it will not work for an arbitrary
 C triangular mesh.  This is a problem I'll have to look into later.
 C
         T=-((UCP1+UVP1)*A+(VCP1+VVP1)*B+(WCP1+WVP1)*C+D)/
-     +     ((UCP1+UVP1-PCPU)*A+(VCP1+VVP1-PCPV)*B+(WCP1+WVP1-PCPW)*C)
+     +     ((UCP1+UVP1-PCPX)*A+(VCP1+VVP1-PCPY)*B+(WCP1+WVP1-PCPZ)*C)
 C
-        UPP1=UVP1+(UCP1+UVP1-PCPU)*T
-        VPP1=VVP1+(VCP1+VVP1-PCPV)*T
-        WPP1=WVP1+(WCP1+WVP1-PCPW)*T
+        UPP1=UVP1+(UCP1+UVP1-PCPX)*T
+        VPP1=VVP1+(VCP1+VVP1-PCPY)*T
+        WPP1=WVP1+(WCP1+WVP1-PCPZ)*T
 C
         T=-((UCP2+UVP2)*A+(VCP2+VVP2)*B+(WCP2+WVP2)*C+D)/
-     +     ((UCP2+UVP2-PCPU)*A+(VCP2+VVP2-PCPV)*B+(WCP2+WVP2-PCPW)*C)
+     +     ((UCP2+UVP2-PCPX)*A+(VCP2+VVP2-PCPY)*B+(WCP2+WVP2-PCPZ)*C)
 C
-        UPP2=UVP2+(UCP2+UVP2-PCPU)*T
-        VPP2=VVP2+(VCP2+VVP2-PCPV)*T
-        WPP2=WVP2+(WCP2+WVP2-PCPW)*T
+        UPP2=UVP2+(UCP2+UVP2-PCPX)*T
+        VPP2=VVP2+(VCP2+VVP2-PCPY)*T
+        WPP2=WVP2+(WCP2+WVP2-PCPZ)*T
 C
         T=-((UCP3+UVP3)*A+(VCP3+VVP3)*B+(WCP3+WVP3)*C+D)/
-     +     ((UCP3+UVP3-PCPU)*A+(VCP3+VVP3-PCPV)*B+(WCP3+WVP3-PCPW)*C)
+     +     ((UCP3+UVP3-PCPX)*A+(VCP3+VVP3-PCPY)*B+(WCP3+WVP3-PCPZ)*C)
 C
-        UPP3=UVP3+(UCP3+UVP3-PCPU)*T
-        VPP3=VVP3+(VCP3+VVP3-PCPV)*T
-        WPP3=WVP3+(WCP3+WVP3-PCPW)*T
+        UPP3=UVP3+(UCP3+UVP3-PCPX)*T
+        VPP3=VVP3+(VCP3+VVP3-PCPY)*T
+        WPP3=WVP3+(WCP3+WVP3-PCPZ)*T
 C
 C Modify these values, using cross products with the normal to the
 C triangle to generate vectors perpendicular to the velocity vectors.
@@ -11003,25 +10998,25 @@ C case of most interest to us, but it will not work for an arbitrary
 C triangular mesh.  This is a problem I'll have to look into later.
 C
         T=-((UCP1+UVP1)*A+(VCP1+VVP1)*B+(WCP1+WVP1)*C+D)/
-     +     ((UCP1+UVP1-PCPU)*A+(VCP1+VVP1-PCPV)*B+(WCP1+WVP1-PCPW)*C)
+     +     ((UCP1+UVP1-PCPX)*A+(VCP1+VVP1-PCPY)*B+(WCP1+WVP1-PCPZ)*C)
 C
-        UPP1=UVP1+(UCP1+UVP1-PCPU)*T
-        VPP1=VVP1+(VCP1+VVP1-PCPV)*T
-        WPP1=WVP1+(WCP1+WVP1-PCPW)*T
+        UPP1=UVP1+(UCP1+UVP1-PCPX)*T
+        VPP1=VVP1+(VCP1+VVP1-PCPY)*T
+        WPP1=WVP1+(WCP1+WVP1-PCPZ)*T
 C
         T=-((UCP2+UVP2)*A+(VCP2+VVP2)*B+(WCP2+WVP2)*C+D)/
-     +     ((UCP2+UVP2-PCPU)*A+(VCP2+VVP2-PCPV)*B+(WCP2+WVP2-PCPW)*C)
+     +     ((UCP2+UVP2-PCPX)*A+(VCP2+VVP2-PCPY)*B+(WCP2+WVP2-PCPZ)*C)
 C
-        UPP2=UVP2+(UCP2+UVP2-PCPU)*T
-        VPP2=VVP2+(VCP2+VVP2-PCPV)*T
-        WPP2=WVP2+(WCP2+WVP2-PCPW)*T
+        UPP2=UVP2+(UCP2+UVP2-PCPX)*T
+        VPP2=VVP2+(VCP2+VVP2-PCPY)*T
+        WPP2=WVP2+(WCP2+WVP2-PCPZ)*T
 C
         T=-((UCP3+UVP3)*A+(VCP3+VVP3)*B+(WCP3+WVP3)*C+D)/
-     +     ((UCP3+UVP3-PCPU)*A+(VCP3+VVP3-PCPV)*B+(WCP3+WVP3-PCPW)*C)
+     +     ((UCP3+UVP3-PCPX)*A+(VCP3+VVP3-PCPY)*B+(WCP3+WVP3-PCPZ)*C)
 C
-        UPP3=UVP3+(UCP3+UVP3-PCPU)*T
-        VPP3=VVP3+(VCP3+VVP3-PCPV)*T
-        WPP3=WVP3+(WCP3+WVP3-PCPW)*T
+        UPP3=UVP3+(UCP3+UVP3-PCPX)*T
+        VPP3=VVP3+(VCP3+VVP3-PCPY)*T
+        WPP3=WVP3+(WCP3+WVP3-PCPZ)*T
 C
 C For each of the projected velocity vectors at the three vertices of
 C the triangle, find R and S such that the vector may be expressed as R
