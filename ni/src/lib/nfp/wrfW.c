@@ -39,7 +39,7 @@ extern void NGCALLF(dcomputeuvmet,DCOMPUTEUVMET)(double *, double *, double *,
                                                  int *, int *, int *);
 
 extern void NGCALLF(dcomputeiclw,DCOMPUTEICLW)(double *, double *, double *, 
-					       int *, int *, int *);
+                                               int *, int *, int *);
 
 extern void NGCALLF(dbint3d,DBINT3D)(double *,double *,double *, double *,
                                      int *, int *, int *, int *,
@@ -49,6 +49,9 @@ extern void NGCALLF(dbint3d,DBINT3D)(double *,double *,double *, double *,
 extern void NGCALLF(dmaptform,DMAPTFORM)(double *,int *,int *, int *, double *,
                                          double *,double *,double *,double *,
                                          double *,double *,double *,int *);
+
+extern void var_zero(double *, int);
+
 
 NhlErrorTypes wrf_tk_W( void )
 {
@@ -438,7 +441,7 @@ NhlErrorTypes wrf_td_W( void )
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nx,sizeof(double));
     if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for coercing 't' to double");
       return(NhlFATAL);
     }
   }
@@ -447,14 +450,17 @@ NhlErrorTypes wrf_td_W( void )
     type_obj_t = nclTypedoubleClass;
   }
 
-  if(type_qv != NCL_double) {
-    tmp_qv = (double *)calloc(nx,sizeof(double));
-    if(tmp_qv == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
+/*
+ * Allocate space for tmp_qv no matter what, because we want to set
+ * values of qv that are less than zero to zero, but we don't want
+ * these values retained when the function is done.
+ */
+  tmp_qv = (double *)malloc(nx*sizeof(double));
+  if(tmp_qv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for coercing 'qv' to double");
+    return(NhlFATAL);
   }
-  else {
+  if(type_qv == NCL_double) {
     type_t     = NCL_double;
     type_obj_t = nclTypedoubleClass;
   }
@@ -493,15 +499,19 @@ NhlErrorTypes wrf_td_W( void )
       tmp_p = &((double*)p)[index_p];
     }
 /*
- * Coerce subsection of qv (tmp_qv) to double if ncessary.
+ * Coerce subsection of qv (tmp_qv) to double if ncessary. Otherwise,
+ * just do a memcpy. Afterwards, set all values < 0 to 0.
  */
     if(type_qv != NCL_double) {
       coerce_subset_input_double(qv,tmp_qv,index_p,type_qv,nx,
                                  0,NULL,NULL);
     }
     else {
-      tmp_qv = &((double*)qv)[index_p];
+      (void *)memcpy((void*)((char*)tmp_qv),
+                     (void*)((char*)qv + (index_p*sizeof(double))),
+                     sizeof(double)*nx);
     }
+    var_zero(tmp_qv, nx);    /* Set all values < 0 to 0. */
 
 /*
  * Point temporary output array to void output array if appropriate.
@@ -524,8 +534,8 @@ NhlErrorTypes wrf_td_W( void )
 /*
  * Free up memory.
  */
+  NclFree(tmp_qv);
   if(type_p  != NCL_double) NclFree(tmp_p);
-  if(type_qv != NCL_double) NclFree(tmp_qv);
   if(type_t  != NCL_double) NclFree(tmp_t);
 
 /*
@@ -661,7 +671,6 @@ NhlErrorTypes wrf_rh_W( void )
  */
   int i, nx, size_leftmost, index_qv;
 
-
 /*
  * Variables for return the output array with attributes attached.
  */
@@ -729,7 +738,7 @@ NhlErrorTypes wrf_rh_W( void )
   size_rh = size_leftmost * nx;
 
 /* 
- * Allocate space for coercing input arrays.  If the input qv, p, or t
+ * Allocate space for coercing input arrays.  If the input p or t
  * are already double, then we don't need to allocate space for
  * temporary arrays, because we'll just change the pointer into
  * the void array appropriately.
@@ -739,21 +748,26 @@ NhlErrorTypes wrf_rh_W( void )
  */
   type_rh     = NCL_float;
   type_obj_rh = nclTypefloatClass;
-  if(type_qv != NCL_double) {
-    tmp_qv = (double *)calloc(nx,sizeof(double));
-    if(tmp_qv == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
+/*
+ * Allocate space for tmp_qv no matter what, because we want to set
+ * values of qv that are less than zero to zero, but we don't want
+ * these values retained when the function is done.
+ */
+  tmp_qv = (double*)malloc(nx * sizeof(double));
+  if(tmp_qv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing 'qv' to double");
+    return(NhlFATAL);
   }
-  else {
+
+  if(type_qv == NCL_double) {
     type_rh     = NCL_double;
     type_obj_rh = nclTypedoubleClass;
   }
+
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nx,sizeof(double));
     if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing 'p' to double");
       return(NhlFATAL);
     }
   }
@@ -765,7 +779,7 @@ NhlErrorTypes wrf_rh_W( void )
   if(type_t != NCL_double) {
     tmp_t = (double *)calloc(nx,sizeof(double));
     if(tmp_t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_rh: Unable to allocate memory for coercing 't' to double");
       return(NhlFATAL);
     }
   }
@@ -799,14 +813,18 @@ NhlErrorTypes wrf_rh_W( void )
   index_qv = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
- * Coerce subsection of qv (tmp_qv) to double if necessary.
+ * Coerce subsection of qv (tmp_qv) to double if necessary. Otherwise,
+ * just do a memcpy. Afterwards, set all values < 0 to 0.
  */
     if(type_qv != NCL_double) {
       coerce_subset_input_double(qv,tmp_qv,index_qv,type_qv,nx,0,NULL,NULL);
     }
     else {
-      tmp_qv = &((double*)qv)[index_qv];
+      (void *)memcpy((void*)((char*)tmp_qv),
+                     (void*)((char*)qv + (index_qv*sizeof(double))),
+                     sizeof(double)*nx);
     }
+    var_zero(tmp_qv, nx);    /* Set all values < 0 to 0. */
 /*
  * Coerce subsection of p (tmp_p) to double if necessary.
  */
@@ -848,7 +866,7 @@ NhlErrorTypes wrf_rh_W( void )
 /*
  * Free up memory.
  */
-  if(type_qv != NCL_double) NclFree(tmp_qv);
+  NclFree(tmp_qv);
   if(type_p  != NCL_double) NclFree(tmp_p);
   if(type_t  != NCL_double) NclFree(tmp_t);
   if(type_rh != NCL_double) NclFree(tmp_rh);
@@ -1087,10 +1105,26 @@ NhlErrorTypes wrf_slp_W( void )
   type_slp     = NCL_float;
   type_obj_slp = nclTypefloatClass;
 
+/*
+ * Allocate space for tmp_q no matter what, because we want to set
+ * values of q that are less than zero to zero, but we don't want
+ * these values retained when the function is done.
+ */
+  tmp_q = (double*)malloc(nxyz * sizeof(double));
+  if(tmp_q == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing 'q' to double");
+    return(NhlFATAL);
+  }
+
+  if(type_q == NCL_double) {
+    type_slp     = NCL_double;
+    type_obj_slp = nclTypedoubleClass;
+  }
+
   if(type_z != NCL_double) {
     tmp_z = (double *)calloc(nxyz,sizeof(double));
     if(tmp_z == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing 'z' to double");
       return(NhlFATAL);
     }
   }
@@ -1102,7 +1136,7 @@ NhlErrorTypes wrf_slp_W( void )
   if(type_t != NCL_double) {
     tmp_t = (double *)calloc(nxyz,sizeof(double));
     if(tmp_t == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing 't' to double");
       return(NhlFATAL);
     }
   }
@@ -1114,19 +1148,7 @@ NhlErrorTypes wrf_slp_W( void )
   if(type_p != NCL_double) {
     tmp_p = (double *)calloc(nxyz,sizeof(double));
     if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    type_slp     = NCL_double;
-    type_obj_slp = nclTypedoubleClass;
-  }
-
-  if(type_q != NCL_double) {
-    tmp_q = (double *)calloc(nxyz,sizeof(double));
-    if(tmp_q == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing input array to double");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for coercing 'p' to double");
       return(NhlFATAL);
     }
   }
@@ -1172,6 +1194,19 @@ NhlErrorTypes wrf_slp_W( void )
   index_nxy = index_nxyz = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
+ * Coerce subsection of q (tmp_q) to double if necessary.  Otherwise,
+ * just do a memcpy. Afterwards, set all values < 0 to 0.
+ */
+    if(type_q != NCL_double) {
+      coerce_subset_input_double(q,tmp_q,index_nxyz,type_q,nxyz,0,NULL,NULL);
+    }
+    else {
+      (void *)memcpy((void*)((char*)tmp_q),
+                     (void*)((char*)q + (index_nxyz*sizeof(double))),
+                     sizeof(double)*nxyz);
+    }
+    var_zero(tmp_q, nxyz);   /* Set all values < 0 to 0. */
+/*
  * Coerce subsection of z (tmp_z) to double if necessary.
  */
     if(type_z != NCL_double) {
@@ -1200,15 +1235,6 @@ NhlErrorTypes wrf_slp_W( void )
     }
 
 /*
- * Coerce subsection of q (tmp_q) to double if necessary.
- */
-    if(type_q != NCL_double) {
-      coerce_subset_input_double(q,tmp_q,index_nxyz,type_q,nxyz,0,NULL,NULL);
-    }
-    else {
-      tmp_q = &((double*)q)[index_nxyz];
-    }
-/*
  * Point temporary output array to void output array if appropriate.
  */
     if(type_slp == NCL_double) tmp_slp = &((double*)slp)[index_nxy];
@@ -1231,7 +1257,7 @@ NhlErrorTypes wrf_slp_W( void )
 /*
  * Free up memory.
  */
-  if(type_q   != NCL_double) NclFree(tmp_q);
+  NclFree(tmp_q);
   if(type_p   != NCL_double) NclFree(tmp_p);
   if(type_t   != NCL_double) NclFree(tmp_t);
   if(type_slp != NCL_double) NclFree(tmp_slp);
@@ -3020,20 +3046,20 @@ NhlErrorTypes wrf_maptform_W( void )
 
 NhlErrorTypes wrf_smooth_2d_W( void )
 {
-
 /*
  * Input variables
  *
  */
-  void *a, *b;
+  void *a;
   int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
-  int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_a, type_b;
+  NclBasicDataTypes type_a;
   int *it;
 
 /*
  * Various
  */
+  double *db;
+  float *fb;
   int ny, nx, nynx,  i, index_a, size_leftmost;
 
 /*
@@ -3047,7 +3073,7 @@ NhlErrorTypes wrf_smooth_2d_W( void )
  */
   a = (void*)NclGetArgValue(
            0,
-           3,
+           2,
            &ndims_a,
            dsizes_a,
            NULL,
@@ -3073,43 +3099,9 @@ NhlErrorTypes wrf_smooth_2d_W( void )
 /*
  * Get argument # 1
  */
-  b = (void*)NclGetArgValue(
-           1,
-           3,
-           &ndims_b,
-           dsizes_b,
-           NULL,
-           NULL,
-           &type_b,
-           1);
-
-/*
- * Check dimension sizes and input type.
- */
-  if(ndims_b < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'b' array must have at least 2 dimensions");
-    return(NhlFATAL);
-  }
-  if(dsizes_b[ndims_b-2] != ny || dsizes_b[ndims_b-1] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The last two dimensions of b must be ny x nx");
-    return(NhlFATAL);
-  }
-  if(type_b != NCL_double && type_b != NCL_float) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'b' array must be float or double");
-    return(NhlFATAL);
-  }
-
-  if(type_a != type_b) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The 'a' and 'b' arrays must be the same type");
-    return(NhlFATAL);
-  }
-
-/*
- * Get argument # 2
- */
   it = (int*)NclGetArgValue(
+           1,
            2,
-           3,
            NULL,
            NULL,
            NULL,
@@ -3121,13 +3113,26 @@ NhlErrorTypes wrf_smooth_2d_W( void )
  * Calculate size of leftmost dimensions.
  */
   size_leftmost  = 1;
-  for(i = 0; i < ndims_a-2; i++) {
-    if(dsizes_b[i] != dsizes_a[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: The leftmost dimensions of a and b must be the same");
+  for(i = 0; i < ndims_a-2; i++) size_leftmost *= dsizes_a[i];
+
+/*
+ * Allocate space for "b", which "a" will be copied to inside
+ * Fortran routine.
+ */
+  if(type_a == NCL_double) {
+    db = (double *)malloc(nynx*sizeof(double));
+    if(db == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: Unable to allocate memory for temporary array");
       return(NhlFATAL);
     }
-    size_leftmost *= dsizes_a[i];
   }
+  else {
+    fb = (float *)malloc(nynx*sizeof(float));
+    if(fb == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_smooth_2d: Unable to allocate memory for temporary array");
+      return(NhlFATAL);
+    } 
+ }
 
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
@@ -3137,18 +3142,20 @@ NhlErrorTypes wrf_smooth_2d_W( void )
 
   for(i = 0; i < size_leftmost; i++) {
     if(type_a == NCL_double) {
-      NGCALLF(dfilter2d,DFILTER2D)(&((double*)a)[index_a],
-                                   &((double*)b)[index_a],
-                                   &nx, &ny, it);
+      NGCALLF(dfilter2d,DFILTER2D)(&((double*)a)[index_a], db, &nx, &ny, it);
     }
     else {
-      NGCALLF(filter2d,FILTER2D)(&((float*)a)[index_a],
-                                 &((float*)b)[index_a],
-                                 &nx, &ny, it);
+      NGCALLF(filter2d,FILTER2D)(&((float*)a)[index_a], fb, &nx, &ny, it);
     }
     index_a += nynx;
   }
 
+  if(type_a == NCL_double) {
+    NclFree(db);
+  }
+  else {
+    NclFree(fb);
+  }
 /*
  * This is a procedure, so no values are returned.
  */
@@ -4368,3 +4375,21 @@ NhlErrorTypes wrf_iclw_W( void )
   return(NhlNOERROR);
 
 }
+
+/*
+ * This routine sets all values of var < 0 to 0.0. This is
+ * so you don't have to do this in the NCL script. It's the
+ * equivalent of:
+ *
+ * tmp_var = tmp_var > 0.0
+ *
+ */
+void var_zero(double *tmp_var, int n)
+{
+  int i;
+
+  for(i = 0; i < n; i++) {
+    if(tmp_var[i] < 0.0) tmp_var[i] = 0.0;
+  }
+}
+
