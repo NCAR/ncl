@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.193 2006-12-28 23:36:08 haley Exp $
+;      $Id: gsn_code.ncl,v 1.194 2007-01-05 16:27:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9247,7 +9247,7 @@ begin
    end if
 
    if (opt.and.(isatt(opt,"gsnShadeFillType"))) then
-       if (opt@gsnShadeFillType.eq."pattern".and.CC.eq.1) 
+       if (lower_case(opt@gsnShadeFillType).eq."pattern".and.CC.eq.1) 
 	     print("You may not use strings in the option resources opt@gsnShadeLow, opt@gsnShadeHigh, and opt@gsnShadeMid when pattern filling. Please change to integers. return (non-fatal)")
 		return(plot)
 	  end if
@@ -9320,7 +9320,8 @@ begin
 	 end if
    end if
 
-   if (.not.(isatt(opt,"gsnShadeFillType")).or.opt@gsnShadeFillType.eq."color") then
+   if (.not.(isatt(opt,"gsnShadeFillType")).or. \
+        lower_case(opt@gsnShadeFillType).eq."color") then
 	 setvalues idstring               
 	    "cnFillOn"          : True
          "cnMonoFillPattern" : True
