@@ -8496,20 +8496,21 @@ int* nrotatts;
 			GetThinnedLonParams(thevarrec->thelist->rec_inq->gds,
 					    nlat,ilo1,ilo2,idir,&nlon,&loinc);
 		} else {
-			/* Unfortunately for hi-res grids the DI value may not have enough resolution
-			   so don't do it that way */
-			/*
-			int itmp = (int)CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[23]);
-			if (itmp != 65535) {
-				loinc = (double) itmp;
+			if (idir == 1) {
+				int ti = ilo2;
+				while (ti < ilo1) {
+					ti += 360000;
+				}
+				loinc = (ti - ilo1) / (double) (nlon - 1);
 			}
 			else {
-			*/
-			loinc = (ilo2 - ilo1) / (double) (nlon - 1);
-			loinc = loinc < 0 ? -loinc : loinc;
-			/*
+				int ti = ilo1;
+				while (ti < ilo2) {
+					ti += 360000;
+				}
+				loinc = (ti - ilo2) / (double) (nlon - 1);
 			}
-			*/
+
 		}
 		(*dimsizes_lon)[0] = nlon;
 		*lon = malloc(sizeof(float)*nlon);
@@ -9133,18 +9134,28 @@ int* nrotatts;
 		if (itmp != 65535) {
 			di = (double) itmp;
 		}
-		else {
 		*/
-		/* this is more accurate in any case: do it this way */
-		/* not specified: must be calculated from the endpoints and number of steps */
-
-		/*
-		di = (lo2 - lo1) / (double)(nlon - 1);
-		*/
-		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values */
+		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values 
+		   --- but actually doesn't work in all cases - like when the longitude range is < one degree
 
 		di = 1000 * ((fmod((lo2 - lo1) * 1e-3 - 1.0 + 3600.0,360.0)+1.0) / (double) (nlon - 1));
 		if (di < 0) di = -di;
+		*/
+		/* this seems to work */
+		if (idir == 1) {
+			int ti = lo2;
+			while (ti < lo1) {
+				ti += 360000;
+			}
+			di = (ti - lo1) / (double) (nlon - 1);
+		}
+		else {
+			int ti = lo1;
+			while (ti < lo2) {
+				ti += 360000;
+			}
+			di = (ti - lo2) / (double) (nlon - 1);
+		}
 	}
 
 	if (is_thinned_lat) {
@@ -9577,15 +9588,25 @@ int* nrotatts;
 			di = (double) itmp / 1000.0;
 		}
 		else {
-		*/
-		/* this is more accurate */
-		/* not specified: must be calculated from the endpoints and number of steps */
-		/*
-		di = (lo2 - lo1) / (double)(ni - 1);
-		if (di < 0) di = -di;
-		*/
-		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values */
+		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values 
+		--- but actually doesn't work in all cases - like when the longitude range is < one degree
 		di = (idir * (fmod(idir * (lo2 - lo1) - 1.0 + 3600.0,360.0)+1.0) / (double) (ni - 1));
+		*/
+		/* so now we do it this way */
+		if (idir == 1) {
+			float ti = lo2;
+			while (ti < lo1) {
+				ti += 360;
+			}
+			di = (ti - lo1) / (double) (ni - 1);
+		}
+		else {
+			float ti = lo1;
+			while (ti < lo2) {
+				ti += 360;
+			}
+			di = (ti - lo2) / (double) (ni - 1);
+		}
 
 	}
 

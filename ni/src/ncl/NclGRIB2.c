@@ -586,18 +586,20 @@ int* nrotatts;
 	if (is_thinned_lon) {
 		g2GetThinnedLonParams(gds, nlat, lo1, lo2, idir, &nlon, &di);
 	} else {
-		/* 
-		 * This is more accurate in any case: do it this way
-		 * Not specified: must be calculated from the endpoints and number of steps
-		 */
-
-		/*
-		 * Adapted from the NCEP code: it should account for all cases of
-		 * modular longitude values 
-		 */
-		di = (fmod((lo2 - lo1) - 1.0 + 3600.0, 360.0) +1.0) / (double) (nlon - 1);
-		if (di < 0)
-			di = -di;
+		if (idir == 1) {
+			float ti = lo2;
+			while (ti < lo1) {
+				ti += 360.0;
+			}
+			di = (ti - lo1) / (double) (nlon - 1);
+		}
+		else {
+			float ti = lo1;
+			while (ti < lo2) {
+				ti += 3600.0;
+			}
+			di = (ti - lo2) / (double) (nlon - 1);
+		}
 	}
 	*dimsizes_lon = (int *) NclMalloc(sizeof(int));
 	*(*dimsizes_lon) = nlon;
@@ -973,18 +975,20 @@ void g2GDSCEGrid
     if (is_thinned_lon) {
         g2GetThinnedLonParams(gds, nlat, lo1, lo2, idir, &nlon, &di);
     } else {
-        /* 
-         * This is more accurate in any case: do it this way
-         * Not specified: must be calculated from the endpoints and number of steps
-         */
-
-        /*
-         * Adapted from the NCEP code: it should account for all cases of
-         * modular longitude values 
-         */
-        di = (fmod((lo2 - lo1) - 1.0 + 3600.0, 360.0) +1.0) / (double) (nlon - 1);
-        if (di < 0)
-            di = -di;
+	    if (idir == 1) {
+		    float ti = lo2;
+		    while (ti < lo1) {
+			    ti += 360.0;
+		    }
+		    di = (ti - lo1) / (double) (nlon - 1);
+	    }
+	    else {
+		    float ti = lo1;
+		    while (ti < lo2) {
+			    ti += 360.0;
+		    }
+		    di = (ti - lo2) / (double) (nlon - 1);
+	    }
     }
 
     if (is_thinned_lat) {
