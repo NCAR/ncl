@@ -877,7 +877,7 @@ NhlErrorTypes eof_varimax_msg_W( void )
 			      Ncl_MultiDValData,
 			      0,
 			      evec_out,
-			      NULL,
+			      &missing_evec_out,
 			      ndims_evec,
 			      dsizes_evec,
 			      TEMPORARY,
