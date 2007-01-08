@@ -1,5 +1,5 @@
 C NCLFORTSTART
-      SUBROUTINE VORS(NV,NF,V,A,B,C,ND,XMSG)
+      SUBROUTINE VORSMSG(NV,NF,V,A,B,C,ND,XMSG)
       IMPLICIT NONE
       INTEGER NV,NF,ND
       DOUBLE PRECISION V(ND,NF),A(NV),B(NV),C(NV), XMSG
@@ -8,7 +8,7 @@ C NCLEND
       INTEGER I,J,KR,M,N
       DOUBLE PRECISION T,PI,TWOPI,REPS,AA,BB,CC,DD,XN,XD,Y,CY,SY,TEMP
 
-      DOUBLE PRECISION SUMF,SCPF
+      DOUBLE PRECISION DSUMFMSG,DSCPFMSG
 
 c +++ very old fortran 66 ++++ used arithmetic "if"
 c         I have made some minor changes made
@@ -65,7 +65,7 @@ C this matches IMSL
 
 C normalize the rows of v
       DO I = 1,NV
-          B(I) = SQRT(SUMF(V, (-I), (-NF),ND,XMSG))
+          B(I) = SQRT(DSUMFMSG(V, (-I), (-NF),ND,XMSG))
           IF (B(I).NE.0.0D0 .AND. B(I).NE.XMSG) THEN
               DO J = 1,NF
                  IF (V(I,J).NE.XMSG) THEN
@@ -88,10 +88,11 @@ C compute angle of rotation
                       END IF
                   END DO
 
-                  AA = SUMF(A,1,NV,ND,XMSG)
-                  BB = SUMF(C,1,NV,ND,XMSG)
-                  CC = SUMF(A,1,(-NV),ND,XMSG) - SUMF(C,1,(-NV),ND,XMSG)
-                  DD = SCPF(A,C,1,1,NV,ND,XMSG)*2.0D0
+                  AA = DSUMFMSG(A,1,NV,ND,XMSG)
+                  BB = DSUMFMSG(C,1,NV,ND,XMSG)
+                  CC = DSUMFMSG(A,1,(-NV),ND,XMSG) - 
+     +                 DSUMFMSG(C,1,(-NV),ND,XMSG)
+                  DD = DSCPFMSG(A,C,1,1,NV,ND,XMSG)*2.0D0
                   XN = DD - 2.0D0*AA*BB/T
 c compute angle of rotation
                   XD = CC - (AA*AA-BB*BB)/T
@@ -129,7 +130,7 @@ c denormailize rows of v
               END IF
           END DO
 c % variation
-          A(J) = (SUMF(V,J, (-NV),ND,XMSG)/T)*100.D0
+          A(J) = (DSUMFMSG(V,J, (-NV),ND,XMSG)/T)*100.D0
       END DO
 
       DO I = 1,NV
@@ -142,7 +143,7 @@ C % communitalities
       RETURN
       END
 c ------------------------------------
-      DOUBLE PRECISION FUNCTION SUMF(X,KK,NN,ND,XMSG)
+      DOUBLE PRECISION FUNCTION DSUMFMSG(X,KK,NN,ND,XMSG)
       IMPLICIT NONE
       INTEGER KK,NN,ND
       DOUBLE PRECISION X(ND,1), XMSG
@@ -162,7 +163,7 @@ c       aclling routine
 C local
       INTEGER N,K,I
 
-      SUMF = 0.0D0
+      DSUMFMSG = 0.0D0
       N = IABS(NN)
       K = IABS(KK)
       IF (NN.LE.0) THEN
@@ -177,7 +178,7 @@ C local
    15 CONTINUE
       DO I = 1,N
           IF (X(K,I).NE.XMSG) THEN
-              SUMF = SUMF + X(K,I)*X(K,I)
+              DSUMFMSG = DSUMFMSG + X(K,I)*X(K,I)
           END IF
       END DO
       RETURN
@@ -185,7 +186,7 @@ C local
    25 CONTINUE
       DO I = 1,N
           IF (X(I,K).NE.XMSG) THEN
-              SUMF = SUMF + X(I,K)*X(I,K)
+              DSUMFMSG = DSUMFMSG + X(I,K)*X(I,K)
           END IF
       END DO
       RETURN
@@ -193,7 +194,7 @@ C local
    35 CONTINUE
       DO I = 1,N
           IF (X(K,I).NE.XMSG) THEN
-              SUMF = SUMF + X(K,I)
+              DSUMFMSG = DSUMFMSG + X(K,I)
           END IF
       END DO
       RETURN
@@ -201,7 +202,7 @@ C local
    45 CONTINUE
       DO I = 1,N
           IF (X(I,K).NE.XMSG) THEN
-              SUMF = SUMF + X(I,K)
+              DSUMFMSG = DSUMFMSG + X(I,K)
           END IF
       END DO
    55 CONTINUE
@@ -209,7 +210,7 @@ C local
 
       END
 c ------------------------------------------------
-      DOUBLE PRECISION FUNCTION SCPF(X,Y,KX,KY,N,ND,XMSG)
+      DOUBLE PRECISION FUNCTION DSCPFMSG(X,Y,KX,KY,N,ND,XMSG)
       IMPLICIT NONE
       INTEGER KX,KY,N,ND
       DOUBLE PRECISION X(ND,1),Y(ND,1),XMSG
@@ -229,7 +230,7 @@ c nd    - actual first dimension of x in the calling routine
 
       J = IABS(KX)
       K = IABS(KY)
-      SCPF = 0.0D0
+      DSCPFMSG = 0.0D0
 
       IF (KX.LE.0) THEN
           IF (KX.EQ.0) GO TO 55
@@ -243,7 +244,7 @@ c nd    - actual first dimension of x in the calling routine
    15 CONTINUE
       DO I = 1,N
           IF (X(J,I).NE.XMSG .AND. Y(K,I).NE.XMSG) THEN
-              SCPF = SCPF + X(J,I)*Y(K,I)
+              DSCPFMSG = DSCPFMSG + X(J,I)*Y(K,I)
           END IF
       END DO
       RETURN
@@ -251,7 +252,7 @@ c nd    - actual first dimension of x in the calling routine
    25 CONTINUE
       DO I = 1,N
           IF (X(J,I).NE.XMSG .AND. Y(I,K).NE.XMSG) THEN
-              SCPF = SCPF + X(J,I)*Y(I,K)
+              DSCPFMSG = DSCPFMSG + X(J,I)*Y(I,K)
           END IF
       END DO
       RETURN
@@ -259,7 +260,7 @@ c nd    - actual first dimension of x in the calling routine
    35 CONTINUE
       DO I = 1,N
           IF (X(I,J).NE.XMSG .AND. Y(K,I).NE.XMSG) THEN
-              SCPF = SCPF + X(I,J)*Y(K,I)
+              DSCPFMSG = DSCPFMSG + X(I,J)*Y(K,I)
           END IF
       END DO
       RETURN
@@ -267,7 +268,7 @@ c nd    - actual first dimension of x in the calling routine
    45 CONTINUE
       DO I = 1,N
           IF (X(I,J).NE.XMSG .AND. Y(I,K).NE.XMSG) THEN
-              SCPF = SCPF + X(I,J)*Y(I,K)
+              DSCPFMSG = DSCPFMSG + X(I,J)*Y(I,K)
           END IF
       END DO
       RETURN
