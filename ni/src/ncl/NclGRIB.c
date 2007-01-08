@@ -5996,6 +5996,14 @@ int wr_status;
 				tmp_size = sizeof(buffer) < size ? sizeof(buffer) : size;
 				fread((void*)buffer,1,tmp_size,fd);
 				grib_rec->pds_size = CnvtToDecimal(3,&(buffer[0]));
+				if (grib_rec->pds_size <= 0 || grib_rec->pds_size > size) {
+					NhlPError(NhlWARNING, NhlEUNKNOWN, 
+						  "NclGRIB: Detected invalid record, skipping record");
+					NclFree(grib_rec);
+					offset = nextoff;
+					continue;
+				}
+					
 				grib_rec->pds =  NclMalloc((unsigned)grib_rec->pds_size);
 				if (grib_rec->pds_size > tmp_size) {
 					fseek(fd,offset+(version?8:4),SEEK_SET);
