@@ -5,7 +5,7 @@
 extern void NGCALLF(dhyi2hyob,DHYI2HYOB)(double*,double*,double*,double*,
                                          int*,int*,int*,double*,double*,
                                          double*,int*,double*,double*,
-                                         double*,int*);
+                                         double*,int*,double*);
 
 NhlErrorTypes hyi2hyo_W( void )
 {
@@ -15,12 +15,13 @@ NhlErrorTypes hyi2hyo_W( void )
   void *p0, *hyai, *hybi, *ps, *xi, *hyao, *hybo;
   double *tmp_p0, *tmp_ps, *tmp_xi; 
   double *tmp_hyai, *tmp_hybi, *tmp_hyao, *tmp_hybo;
-  int *option;
+  int *option, intflag;
   int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int has_missing_xi, ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   int dsizes_hyao[1], dsizes_hybo[1], dsizes_hyai[1], dsizes_hybi[1];
   NclBasicDataTypes type_p0, type_ps, type_xi;
   NclBasicDataTypes type_hyai, type_hybi, type_hyao, type_hybo;
+  NclScalar missing_xi, missing_dxi;
 
 /*
  * Work arrays.
@@ -33,6 +34,7 @@ NhlErrorTypes hyi2hyo_W( void )
   void *xo;
   double *tmp_xo;
   int *dsizes_xo, size_xo, size_leftmost;
+  NclScalar missing_xo;
   NclBasicDataTypes type_xo;
 
 /*
@@ -40,6 +42,7 @@ NhlErrorTypes hyi2hyo_W( void )
  */
   int i, index_ps, index_xi, index_xo, l, m, ret;
   int nlat, mlon, klevi, klevo, nlatmlon, klevinlatmlon, klevonlatmlon;
+  int return_missing;
 
 /*
  * Retrieve arguments.
@@ -89,8 +92,8 @@ NhlErrorTypes hyi2hyo_W( void )
           8,
           &ndims_xi,
           dsizes_xi,
-          NULL,
-          NULL,
+          &missing_xi,
+          &has_missing_xi,
           &type_xi,
           2);
 
@@ -191,6 +194,17 @@ NhlErrorTypes hyi2hyo_W( void )
   size_xo = size_leftmost*klevonlatmlon;
 
 /*
+ * Get missing value of xi, in case we need to use it for setting
+ * output values to missing. Otherwise, set the missing value to
+ * a default of 1.e20.
+ */
+  if(has_missing_xi) {
+    coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
+  }
+  else {
+    missing_dxi.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
+  }
+/*
  * Allocate space for ps if necessary.
  */
   if(type_ps != NCL_double) {
@@ -279,7 +293,15 @@ NhlErrorTypes hyi2hyo_W( void )
  * Call the Fortran version of this routine.
  */
   index_ps = index_xi = index_xo = 0;
+  return_missing = 0;
   for( i = 0; i < size_leftmost; i++ ) {
+/*
+ * Make sure to reset intflag to the original value of "option" every
+ * time in this loop, because in the Fortran function, Dennis uses
+ * "intflag" to also return a -1 to indicate missing values reside
+ * in the output array. 
+ */
+    intflag = *option;
 /*
  * Coerce subsection of ps/tv array to double.
  */
@@ -302,13 +324,22 @@ NhlErrorTypes hyi2hyo_W( void )
 
     NGCALLF(dhyi2hyob,DHYI2HYOB)(tmp_p0,tmp_hyai,tmp_hybi,tmp_ps,
                                  &mlon,&nlat,&klevi,tmp_xi,tmp_hyao,
-                                 tmp_hybo,&klevo,tmp_xo,pi,po,option);
+                                 tmp_hybo,&klevo,tmp_xo,pi,po,&intflag,
+                                 &missing_dxi.doubleval);
 /*
  * Coerce output to float if necessary.
  */
     if(type_xo != NCL_double) {
       coerce_output_float_only(xo,tmp_xo,klevonlatmlon,index_xo);
-     }
+    }
+/*
+ * If intflag is -1, then this means there are missing values present in
+ * the output, and hence we need to make sure the return value has a
+ * missing value attached (later).
+ */
+    if(intflag == -1) {
+      return_missing = 1;
+    }
     index_ps += nlatmlon;
     index_xi += klevinlatmlon;
     index_xo += klevonlatmlon;
@@ -330,11 +361,21 @@ NhlErrorTypes hyi2hyo_W( void )
   if(type_xo   != NCL_double) NclFree(tmp_xo);
 
 /*
- * Return.
+ * Return values to NCL script. First check if we also need to
+ * set a _FillValue attribute for the return variable.
  */
-  ret = NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0);
+  if(return_missing) {
+    if(type_xo == NCL_double) {
+      missing_xo.doubleval = missing_dxi.doubleval;
+    }
+    else {
+      missing_xo.floatval = (float)missing_dxi.doubleval;
+    }
+    ret = NclReturnValue(xo,ndims_xi,dsizes_xo,&missing_xo,type_xo,0);
+  }
+  else {
+    ret = NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0);
+  }
   NclFree(dsizes_xo);
   return(ret);
 }
-
-

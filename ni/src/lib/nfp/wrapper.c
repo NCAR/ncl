@@ -38,6 +38,7 @@ extern NhlErrorTypes eofcor_ts_pcmsg_W(void);
 extern NhlErrorTypes eof2data_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes eof_varimax2_W(void);
+extern NhlErrorTypes eof_varimax_msg_W(void);
 extern NhlErrorTypes center_finite_diff_W(void);
 extern NhlErrorTypes uv2vr_cfd_W(void);
 extern NhlErrorTypes uv2dv_cfd_W(void);
@@ -857,6 +858,18 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterFunc(eof_varimax2_W,args,"eofunc_varimax",nargs);
+
+/*
+ * Register "eofunc_varimax_msg".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    NclRegisterFunc(eof_varimax_msg_W,args,"eofunc_varimax_msg",nargs);
 
 /*
  * Register "eof2data".
