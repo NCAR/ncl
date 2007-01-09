@@ -1,5 +1,5 @@
       SUBROUTINE DHYI2HYOB(P0,HYAI,HYBI,PSFC,MLON,NLAT,KLEVI,XI,HYAO,
-     +                     HYBO,KLEVO,XO,PI,PO,INTFLG, XMSG)
+     +                     HYBO,KLEVO,XO,PI,PO,INTFLG, MSGFLG, XMSG)
       IMPLICIT NONE
 c NCL: xo = hyi2hyo (p0,hyai,hybi,psfc,xi,hyao,hybo)
 
@@ -20,9 +20,11 @@ c          hybo   - is the "b" or sigma coeficient
 c          klevo  - number of output levels
 c          xmsg   = missing code; if none present set to
 c                   some bogus value [eg, 1d20]
+c          intflg - if  0 set all values outside of input P to xmsg
+c                   if  1 set output values to closest input pressure level
 c     output
 c          xo     - pressure at hybrid levels [Pa]
-c          intflg - if  0 no missing values upon return
+c          msgflg - if  0 no missing values upon return
 c                   if -1 missing values are present.
 
 c                                                 ! input
@@ -33,10 +35,9 @@ c                                                 ! input
 c                                                 ! output
       DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
 c                                                 ! local
-      INTEGER NL,ML,KI,KO
+      INTEGER NL,ML,KI,KO, MSGFLG
 c f77
-
-      INTFLG = 0
+      MSGFLG = 0
 
       DO NL = 1,NLAT
           DO ML = 1,MLON
@@ -49,11 +50,23 @@ c f77
               END DO
 
               DO KO = 1,KLEVO
-C outlier check: set flag for interface routine and value                
+C outlier check: set flag for interface routine and value    
                  IF (PO(KO).LT.PI(1) .OR. PO(KO).GT.PI(KLEVI)) THEN
-                     INTFLG = -1
-                     XO(ML,NL,KO) = XMSG
+C must be outside input pressure range
+                     IF (INTFLG.EQ.0) THEN 
+C default is to set to xmsg
+                         MSGFLG       = -1
+                         XO(ML,NL,KO) = XMSG
+                     ELSEIF (INTFLG.EQ.1) THEN 
+C set to nearest input value
+                         IF (PO(KO).LT.PI(1)) THEN
+                             XO(ML,NL,KO) = XI(ML,NL,1) 
+                         ELSEIF (PO(KO).GT.PI(KLEVI)) THEN
+                             XO(ML,NL,KO) = XI(ML,NL,KLEVI) 
+                         END IF
+                     END IF
                  ELSE
+C This was the original code
                      DO KI = 1,KLEVI-1
                         IF ((PO(KO).GE.PI(KI) .AND. 
      +                       PO(KO).LT.PI(KI+1)))THEN
