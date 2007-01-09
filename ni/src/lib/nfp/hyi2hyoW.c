@@ -5,7 +5,7 @@
 extern void NGCALLF(dhyi2hyob,DHYI2HYOB)(double*,double*,double*,double*,
                                          int*,int*,int*,double*,double*,
                                          double*,int*,double*,double*,
-                                         double*,int*,double*);
+                                         double*,int*, int*,double*);
 
 NhlErrorTypes hyi2hyo_W( void )
 {
@@ -15,7 +15,7 @@ NhlErrorTypes hyi2hyo_W( void )
   void *p0, *hyai, *hybi, *ps, *xi, *hyao, *hybo;
   double *tmp_p0, *tmp_ps, *tmp_xi; 
   double *tmp_hyai, *tmp_hybi, *tmp_hyao, *tmp_hybo;
-  int *option, intflag;
+  int *option, msgflag;
   int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
   int has_missing_xi, ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   int dsizes_hyao[1], dsizes_hybo[1], dsizes_hyai[1], dsizes_hybi[1];
@@ -296,13 +296,6 @@ NhlErrorTypes hyi2hyo_W( void )
   return_missing = 0;
   for( i = 0; i < size_leftmost; i++ ) {
 /*
- * Make sure to reset intflag to the original value of "option" every
- * time in this loop, because in the Fortran function, Dennis uses
- * "intflag" to also return a -1 to indicate missing values reside
- * in the output array. 
- */
-    intflag = *option;
-/*
  * Coerce subsection of ps/tv array to double.
  */
     if(type_ps != NCL_double) {
@@ -324,8 +317,8 @@ NhlErrorTypes hyi2hyo_W( void )
 
     NGCALLF(dhyi2hyob,DHYI2HYOB)(tmp_p0,tmp_hyai,tmp_hybi,tmp_ps,
                                  &mlon,&nlat,&klevi,tmp_xi,tmp_hyao,
-                                 tmp_hybo,&klevo,tmp_xo,pi,po,&intflag,
-                                 &missing_dxi.doubleval);
+                                 tmp_hybo,&klevo,tmp_xo,pi,po,option,
+                                 &msgflag,&missing_dxi.doubleval);
 /*
  * Coerce output to float if necessary.
  */
@@ -333,11 +326,11 @@ NhlErrorTypes hyi2hyo_W( void )
       coerce_output_float_only(xo,tmp_xo,klevonlatmlon,index_xo);
     }
 /*
- * If intflag is -1, then this means there are missing values present in
+ * If msgflag is -1, then this means there are missing values present in
  * the output, and hence we need to make sure the return value has a
  * missing value attached (later).
  */
-    if(intflag == -1) {
+    if(msgflag == -1) {
       return_missing = 1;
     }
     index_ps += nlatmlon;
