@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.c.sed,v 1.2 2006-12-20 19:03:12 dbrown Exp $
+ *      $Id: nio_path.c.sed,v 1.1 2007-01-10 00:50:38 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,7 +25,7 @@
 ************************************************************************/
 
 /*
- *	File:		ncarg_path.c
+ *	File:		nio_path.c
  *
  *	Author:		John Clyne
  *			National Center for Atmospheric Research
@@ -52,7 +52,7 @@
 #include <pwd.h>
 #include <errno.h>
 #include <ncarg/c.h>
-#include "ncarg_path.h"
+#include "nio_path.h"
 #include <ncarg/hlu/Error.h>
 
 #ifdef	cray
@@ -164,12 +164,17 @@ const char
 				break;
 
 			case '$':
-
+				/* 
+				 * NIO does not recognize NCARG prefix as anything special
+				 * in path names (at least for now)
+				 */
+#if 0
 				if(!strncmp(piece+1,PREFIX,strlen(PREFIX)))
 					cs = _NGGetNCARGEnv(piece+ 1+
 								strlen(PREFIX));
 				else
-					cs = getenv(piece + 1);
+#endif
+				cs = getenv(piece + 1);
 
 				if(cs == NULL){
 					NhlPError(NhlFATAL,E_UNKNOWN,
@@ -193,10 +198,10 @@ const char
 }
 
 /*
- * Function:	GetNCARGEnv
+ * Function:	_NGGetNCARGEnv
  *
  * Description:		
- *			To get GetNCARGEnv to know about additional vars
+ *			To get _NGGetNCARGEnv to know about additional vars
  *			simply add them to the directvars,ngdirectdirs,
  *			ngrootdirs, or nglibdirs lists.
  *			These lists are NULL terminated.

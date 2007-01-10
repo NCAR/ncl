@@ -1,5 +1,5 @@
 /*
- *      $Id: ncarg_path.h,v 1.1 2006-12-19 05:22:22 dbrown Exp $
+ *      $Id: nio_path.h,v 1.1 2007-01-10 00:50:38 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -25,7 +25,7 @@
 ************************************************************************/
 
 /*
- *	File:		ncarg_path.h
+ *	File:		nio_path.h
  *
  *	Author:		John Clyne
  *			National Center for Atmospheric Research
@@ -36,8 +36,8 @@
  *	Description:	
  */
 
-#ifndef	_ncarg_path_
-#define	_ncarg_path_
+#ifndef	_nio_path_
+#define	_nio_path_
 
 #ifndef	PATH_MAX
 #ifdef	_POSIX_PATH_MAX
