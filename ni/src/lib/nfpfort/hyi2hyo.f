@@ -36,7 +36,9 @@ c                                                 ! output
       DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
 c                                                 ! local
       INTEGER NL,ML,KI,KO, MSGFLG
+      DOUBLE PRECISION PEPS
 c f77
+      PEPS   = 1.0D-3
       MSGFLG = 0
 
       DO NL = 1,NLAT
@@ -44,6 +46,7 @@ c f77
               DO KI = 1,KLEVI
                   PI(KI) = HYAI(KI)*P0 + HYBI(KI)*PSFC(ML,NL)
               END DO
+              PILOW = PI(KLEVI) - PEPS
 
               DO KO = 1,KLEVO
                   PO(KO) = HYAO(KO)*P0 + HYBO(KO)*PSFC(ML,NL)
@@ -51,7 +54,7 @@ c f77
 
               DO KO = 1,KLEVO
 C outlier check: set flag for interface routine and value    
-                 IF (PO(KO).LT.PI(1) .OR. PO(KO).GT.PI(KLEVI) ) THEN
+                 IF (PO(KO).LT.PI(1) .OR. PO(KO).GT.PILOW ) THEN
 C must be outside input pressure range
                      IF (INTFLG.EQ.0) THEN 
 C default is to set to xmsg
@@ -61,7 +64,7 @@ C default is to set to xmsg
 C set to nearest input value
                          IF (PO(KO).LT.PI(1)) THEN
                              XO(ML,NL,KO) = XI(ML,NL,1) 
-                         ELSEIF (PO(KO).GT.PI(KLEVI)) THEN
+                         ELSEIF (PO(KO).GT.PILOW) THEN
                              XO(ML,NL,KO) = XI(ML,NL,KLEVI) 
                          END IF
                      END IF
