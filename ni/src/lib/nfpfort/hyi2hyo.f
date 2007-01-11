@@ -36,7 +36,7 @@ c                                                 ! output
       DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
 c                                                 ! local
       INTEGER NL,ML,KI,KO, MSGFLG
-      DOUBLE PRECISION PEPS
+      DOUBLE PRECISION PEPS, PILOW
 c f77
       PEPS   = 1.0D-3
       MSGFLG = 0
