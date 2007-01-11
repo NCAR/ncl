@@ -51,7 +51,7 @@ c f77
 
               DO KO = 1,KLEVO
 C outlier check: set flag for interface routine and value    
-                 IF (PO(KO).LT.PI(1) .OR. PO(KO).GT.PSFC(ML,NL)) THEN
+                 IF (PO(KO).LT.PI(1) .OR. PO(KO).GT.PI(KLEVI) ) THEN
 C must be outside input pressure range
                      IF (INTFLG.EQ.0) THEN 
 C default is to set to xmsg
@@ -61,7 +61,7 @@ C default is to set to xmsg
 C set to nearest input value
                          IF (PO(KO).LT.PI(1)) THEN
                              XO(ML,NL,KO) = XI(ML,NL,1) 
-                         ELSEIF (PO(KO).GT.PSFC(ML,NL)) THEN
+                         ELSEIF (PO(KO).GT.PI(KLEVI)) THEN
                              XO(ML,NL,KO) = XI(ML,NL,KLEVI) 
                          END IF
                      END IF
