@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.212 2006-12-05 21:33:23 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.213 2007-01-12 02:42:09 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2171,7 +2171,7 @@ NhlErrorTypes _Nclidsfft
 		for(i = 0; i < dimsizes; i++) {
 			if(has_missing) {
 				if((arg[0])[i] == missing.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values can not continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				} else if((arg[0])[i] > xmax) {
 					xmax = (arg[0])[i];
@@ -2187,7 +2187,7 @@ NhlErrorTypes _Nclidsfft
 			}
 			if(has_missing1) {
 				if((arg[1])[i] == missing1.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values can not continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				} else if((arg[1])[i] > ymax) {
 					ymax = (arg[1])[i];
@@ -2203,7 +2203,7 @@ NhlErrorTypes _Nclidsfft
 			}
 			if(has_missing2) {
 				if((arg[2])[i] == missing2.floatval) {
-					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values can not continue");
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"_Nclisdfft: input contains missing values, cannot continue");
 					return(NhlFATAL);
 				}
 			}
@@ -12143,7 +12143,7 @@ NhlErrorTypes _NclIgaus
 
 	if(has_missing&&(*nlat==missing.intval)) {
 		dimsizes[0]= 1;
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input can not computes gaussian vals");
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"gaus: missing value in input cannot compute gaussian vals");
 		NclReturnValue(
 			nlat,
 			1,
@@ -13949,7 +13949,7 @@ NhlErrorTypes _NclICreateFile(void)
 					ncattput(cdfid,varids[i],"_FillValue",the_type,nclattlist->attvalue->multidval.totalelements,nclattlist->attvalue->multidval.val);
 				} else {
 					if(nclattlist->quark == NrmStringToQuark("_FillValue"))  {
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: _FillValue attributes can not be set in VarInfo parameter, use set_fillvalue, using default missing value for variable type");
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: _FillValue attributes cannot be set in VarInfo parameter, use set_fillvalue, using default missing value for variable type");
 					} else {
 						NhlPError(NhlWARNING,NhlEUNKNOWN,"createfile: set_fillvalue attribute is a different type than the variable, using default missing value for variable type");
 					}
