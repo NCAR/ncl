@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.25 2006-10-27 00:37:13 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.26 2007-01-12 20:09:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1601,7 +1601,7 @@ NclFile thefile;
 		tmp->u.file->name = thefile->file.fname;
 		tmp->u.file->path = thefile->file.fpath;
 		tmp->u.file->wr_status = thefile->file.wr_status;
-		tmp->u.file->file_type = thefile->file.file_type;
+		tmp->u.file->file_format = (int)thefile->file.file_format;
 		tmp->u.file->n_dims = thefile->file.n_file_dims;
 		tmp->u.file->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.file->n_dims);
 		for(j = 0; j < tmp->u.file->n_dims; j++) {

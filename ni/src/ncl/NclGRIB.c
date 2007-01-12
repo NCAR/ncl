@@ -5903,9 +5903,10 @@ GribFileRecord *tmp;
 
 static void *GribInitializeFileRec
 #if	NhlNeedProto
-(void)
+(NclFileFormat *format)
 #else
-()
+(format)
+NclFileFormatType *format;
 #endif
 {
 	GribFileRecord *therec = NULL;
@@ -5916,6 +5917,7 @@ static void *GribInitializeFileRec
 		return NULL;
 	}
 	InitializeOptions(therec);
+	*format = _NclGRIB;
 	return (void *) therec;
 }
 

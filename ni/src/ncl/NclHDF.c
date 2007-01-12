@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.22 2006-09-26 18:09:50 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.23 2007-01-12 20:09:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -616,9 +616,10 @@ static void ProcessDuplicateNames
 
 static void *HDFInitializeFileRec
 #if	NhlNeedProto
-(void)
+(NclFileFormat *format)
 #else
-()
+(format)
+NclFileFormatType *format;
 #endif
 {
 	HDFFileRecord *therec = NULL;
@@ -628,6 +629,7 @@ static void *HDFInitializeFileRec
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return NULL;
 	}
+	*format = _NclHDF;
 	return (void *) therec;
 }
 

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.4 2005-07-23 00:49:57 dbrown Exp $
+ *      $Id: NclHDFEOS.c,v 1.5 2007-01-12 20:09:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -388,9 +388,10 @@ static void HDFEOSIntFileAddAtt(HDFEOSFileRecord *the_file,NclQuark sw_ncl_name,
 
 static void *HDFEOSInitializeFileRec
 #if	NhlNeedProto
-(void)
+(NclFileFormat *format)
 #else
-()
+(format)
+NclFileFormatType *format;
 #endif
 {
 	HDFEOSFileRecord *therec = NULL;
@@ -400,6 +401,7 @@ static void *HDFEOSInitializeFileRec
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		return NULL;
 	}
+	*format = _NclHDFEOS;
 	return (void *) therec;
 }
 

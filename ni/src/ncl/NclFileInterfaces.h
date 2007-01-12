@@ -1,3 +1,5 @@
+#ifndef NclFileInterfaces_h
+#define NclFileInterfaces_h
 typedef struct _NclFormatFunctionRecord *NclFormatFunctionRecPtr;
 typedef struct _NclFormatFunctionRecord NclFormatFunctionRec;
 typedef struct _NclFAttRec	NclFAttRec;
@@ -27,6 +29,7 @@ struct _NclFDimRec {
 	int is_unlimited;
 };	
 
+
 typedef NclFormatFunctionRecPtr (*NclAddFileFormat) (
 #if	NhlNeedProto
 void
@@ -41,11 +44,21 @@ void *
 /*
 * Returns pointer a pointer to a special record used by
 * the file format to store private information about the
-* file.
+* file, as well as an enumerated variable indicating the
+* supported file type class used to process the file.
 */
+typedef enum _NclFileFormat {
+	_NclCCM = 1,
+	_NclNETCDF,
+	_NclHDF,
+	_NclHDFEOS,
+	_NclGRIB,
+	_NclGRIB2
+} NclFileFormat;
+
 typedef void * (*NclInitializeFileRecFunc)(
 #if	NhlNeedProto
-void
+	NclFileFormat *format
 #endif
 );
 
@@ -452,3 +465,4 @@ int _NclGribVersion(
 #endif
 );
 
+#endif

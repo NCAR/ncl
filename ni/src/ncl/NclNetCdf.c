@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.40 2006-10-19 23:27:39 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.41 2007-01-12 20:09:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -389,9 +389,10 @@ NetCdfFileRecord *tmp;
 
 static void *NetInitializeFileRec
 #if	NhlNeedProto
-(void)
+(NclFileFormat *format)
 #else
-()
+(format)
+NclFileFormatType *format;
 #endif
 {
 	NetCdfFileRecord *therec = NULL;
@@ -409,6 +410,7 @@ static void *NetInitializeFileRec
 		NclFree(therec);
 		return NULL;
 	}
+	*format = _NclNETCDF;
 	return (void *) therec;
 }
 

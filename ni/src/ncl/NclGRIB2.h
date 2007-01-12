@@ -433,6 +433,7 @@ struct _Grib2ParamList {
     Grib2VarTraits traits;
     int grid_number;
     int grid_index;
+    int is_thinned_grid;
     int n_entries;
     int time_range_indicator;
     int time_period;            /* 0 unless ave,diff, or acc; then: (p2 - p1) */
@@ -481,17 +482,13 @@ struct _Grib2RecordInqRec {
     off_t offset;
     int field_num;
     int rec_size;
+    int rec_num;
+    int version;
+
     Grib2VarTraits traits;
     NclQuark    var_name_q;
-    int param_number;
-    G2_TBLE2   *ptable_rec;
-    int grid_number;
-    int version;
-    int rec_num;
-    int center;
-    int sub_center;
-    int prod_status;
     char *table_source;
+
     /*
      * Time offset from beginning reference time of the parameter set.
      * Units are set in the Grib2ParamList structure
@@ -503,40 +500,17 @@ struct _Grib2RecordInqRec {
     int time_period;
     int forecast_time_units;
     int time_period_units;
+
     int level_indicator;
     float level0;
     float level1;
 
-
-    int year;
-    int mon;
-    int day;
-    int hour;
-    int min;
-    int sec;
-
-    int gen_proc;       /* model from originating center; defined in GDS */
-
-    char    *var_name;
-    NclQuark    long_name_q;
-    NclQuark    units_q;
-    unsigned int    bds_flags;
-    unsigned int    bds_size;
-    int int_or_float;
-    G2_PDS  *pds;
-
-    int has_gds;
-    int gds_type;
+    int grid_number;
     G2_GDS  *gds;
-    int La1,    /* latitude */
-        La2,
-        Lo1,    /* longitude */
-        Lo2;
-    int res_comp_flags;
     int interp_method;   /* 0 - linear; 1 - cubic */
 
-    int has_bms;
-    unsigned int    bms_size;
+    unsigned int    bds_flags;
+    int int_or_float;
     NclMultiDValData    the_dat;
     int is_ensemble;
     G2_ENS ens;

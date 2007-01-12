@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.19 2006-11-07 02:31:07 dbrown Exp $
+ *      $Id: NclFile.h,v 1.20 2007-01-12 20:09:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,6 +24,7 @@
 #define NclFile_h
 
 #include "NclData.h"
+#include "NclFileInterfaces.h"
 
 typedef struct _NclFileRec NclFileRec;
 typedef struct _NclFileClassRec NclFileClassRec;
@@ -320,7 +321,7 @@ typedef struct _NclFilePart {
 	NclQuark	fname;
 	NclQuark	fpath;
 	int		wr_status;
-	int		file_type;
+	NclFileFormat	file_format;
 	int		n_vars;
 	struct _NclFVarRec 	*var_info[NCL_MAX_FVARS];
 	NclFileAttInfoList *var_att_info[NCL_MAX_FVARS];

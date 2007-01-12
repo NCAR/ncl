@@ -1169,11 +1169,54 @@ NclMultiDValData value;
 	return NhlNOERROR;
 }
 
+static NhlErrorTypes UpdateGridTypeAtt 
+#if	NhlNeedProto
+(
+	NclFile  thefile
+)
+#else
+(thefile)
+NclFile thefile;
+#endif
+{
+	NclQuark *vnames;
+	int n_vnames;
+	int i;
+	int vindex,att_id;
+	NrmQuark grid_type_att_name;
+	void *val;
+	NclMultiDValData tmp_md;
+
+	if (thefile->file.file_format != _NclGRIB2)
+		return NhlNOERROR;
+
+	grid_type_att_name = NrmStringToQuark("grid_type");
+	vnames = (*thefile->file.format_funcs->get_var_names)(thefile->file.private_rec,&n_vnames);
+	for(i = 0; i < n_vnames; i++){
+		vindex = FileIsVar(thefile,vnames[i]);
+		if(thefile->file.var_att_ids[vindex] == -1) {
+			LoadVarAtts(thefile,vnames[i]);
+			continue;
+		}
+		att_id = thefile->file.var_att_ids[vindex];
+		if (! _NclIsAtt(att_id,NrmQuarkToString(grid_type_att_name)))
+			continue;
+
+		tmp_md = _NclGetAtt(att_id,NrmQuarkToString(grid_type_att_name),NULL);
+		(*thefile->file.format_funcs->read_var_att)(thefile->file.private_rec,vnames[i],grid_type_att_name,&val);
+
+		*((NrmQuark*)tmp_md->multidval.val) = (NrmQuark)val;
+		_NclAddAtt(att_id,NrmQuarkToString(grid_type_att_name),tmp_md,NULL);
+	}
+	NclFree((void*)vnames);
+	return NhlNOERROR;
+}
+
 
 NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF PreFill */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF define mode */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB thinned grid interpolation method */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, UpdateGridTypeAtt },  /* GRIB thinned grid interpolation method */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },  /* NetCDF header reserve space */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* NetCDF suppress close option */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 3, NULL },  /* NetCDF file format option */
@@ -3275,7 +3318,7 @@ int rw_status;
 		file_out = (NclFile)inst;
 	}
 	file_out->file.fname = fname_q;
-	file_out->file.file_type = 0;
+	file_out->file.file_format = 0;
 	file_out->file.n_vars = 0;
 	file_out->file.file_atts_id = -1;
 	for(i = 0; i < NCL_MAX_FVARS; i++) {
@@ -3295,7 +3338,7 @@ int rw_status;
 			NclFree((void*)file_out);
 		return(NULL);
 	}
-	file_out->file.private_rec = (*file_out->file.format_funcs->initialize_file_rec)();
+	file_out->file.private_rec = (*file_out->file.format_funcs->initialize_file_rec)(&file_out->file.file_format);
 	if(file_out->file.private_rec == NULL) {
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 		if(file_out_free) 

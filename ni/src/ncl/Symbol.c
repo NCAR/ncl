@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.63 2002-09-26 22:14:42 haley Exp $
+ *      $Id: Symbol.c,v 1.64 2007-01-12 20:09:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1863,7 +1863,7 @@ NclQuark file_sym_name;
 					tmp->u.file->name = thevar->u.data_var->var.var_quark;
 					tmp->u.file->path = thefile->file.fpath;
 					tmp->u.file->wr_status = thefile->file.wr_status;
-					tmp->u.file->file_type = thefile->file.file_type;
+					tmp->u.file->file_format = (int) thefile->file.file_format;
 					tmp->u.file->n_dims = thefile->file.n_file_dims;
 					tmp->u.file->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.file->n_dims);
 					for(j = 0; j < tmp->u.file->n_dims; j++) {
@@ -1934,7 +1934,7 @@ NclApiDataList *_NclGetDefinedFileInfo
 								tmp->u.file->name = thevar->u.data_var->var.var_quark;
 								tmp->u.file->path = thefile->file.fpath;
 								tmp->u.file->wr_status = thefile->file.wr_status;
-								tmp->u.file->file_type = thefile->file.file_type;
+								tmp->u.file->file_format = (int)thefile->file.file_format;
 								tmp->u.file->n_dims = thefile->file.n_file_dims;
 								tmp->u.file->dim_info = (NclDimRec*)NclMalloc(sizeof(NclDimRec)*tmp->u.file->n_dims);
 								for(j = 0; j < tmp->u.file->n_dims; j++) {

@@ -995,9 +995,10 @@ static char *time_units( int date, int sec,char* units)
 
 static void *CcmInitializeFileRec
 #if	NhlNeedProto
-(void)
+(NclFileFormat *format)
 #else
-()
+(format)
+NclFileFormatType *format;
 #endif
 {
 	CCMFileRec *therec = NULL;
@@ -1006,6 +1007,7 @@ static void *CcmInitializeFileRec
 	if (! therec) {
 		NhlPError(NhlFATAL,ENOMEM,NULL);
 	}
+	*format = _NclCCM;
 	return (void *) therec;
 }
 

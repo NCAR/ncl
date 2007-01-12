@@ -75,7 +75,7 @@ struct _NclApiVarInfoRec {
 struct _NclApiFileInfoRec {
 	NclQuark name;
 	NclQuark path;
-	int file_type;
+	int file_format;
 	int wr_status;
 	int 	n_dims;
 	NclDimRec *dim_info;
