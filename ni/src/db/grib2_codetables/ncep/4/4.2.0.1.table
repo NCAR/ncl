@@ -33,10 +33,10 @@
  30:30:Precipitable water category (Code table 4.202)
  31:31:Hail:m:HAIL
  32:32:Graupel (snow pellets):kg kg-1:GRAUP
- 33:33:Categorical rain (Code table 4.222):CRAIN
- 34:34:Categorical freezing rain (Code table 4.222):CFRZR
- 35:35:Categorical ice pellets (Code table 4.222):CICEP
- 36:36:Categorical snow (Code table 4.222):CSNOW
+ 33:33:Categorical rain : (See Code table 4.222):CRAIN
+ 34:34:Categorical freezing rain :(See Code table 4.222):CFRZR
+ 35:35:Categorical ice pellets : (See Code table 4.222):CICEP
+ 36:36:Categorical snow :(See Code table 4.222):CSNOW
  37:37:Convective precipitation rate:kg m-2 s-1:CPRAT
  38:38:Horizontal moisture divergence:kg kg-1 s-1:MCONV
  39:39:Percent frozen precipitation:%:CPOFP
