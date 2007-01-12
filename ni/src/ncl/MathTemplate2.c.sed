@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathTemplate2.c.sed,v 1.3 1997-04-14 23:57:16 ethan Exp $
+ *      $Id: MathTemplate2.c.sed,v 1.4 2007-01-12 02:39:02 haley Exp $
  */
 /************************************************************************
 *									*
@@ -240,7 +240,7 @@ NhlErrorTypes _NclFUNCNAME
 		}
 
 	} else {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME parameter 0 and paramter 1 are not the same size");
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME parameter 0 and parameter 1 are not the same size");
 		return(NhlFATAL);
 	}
 }
