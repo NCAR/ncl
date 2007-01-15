@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.129 2006-12-19 16:55:13 shea Exp $
+;      $Id: contributed.ncl,v 1.130 2007-01-15 20:48:54 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -956,39 +956,42 @@ begin
       if (isatt(x,"missing_value")) then
            FillValue = x@missing_value
       else
-           if (typeof(x).eq."float") then
-               FillValue = -999.
-           end if
-           if (typeof(x).eq."double") then
-               FillValue = -9999.
-           end if
-           if (typeof(x).eq."integer") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."logical") then
-               FillValue = -1
-           end if
-           if (typeof(x).eq."byte") then
-               FillValue = 0377
-           end if
-           if (typeof(x).eq."short") then
-               FillValue = -99
-           end if
-           if (typeof(x).eq."graphic") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."file") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."list") then
-               FillValue = -9999
-           end if
-           if (typeof(x).eq."character") then
-               FillValue = "\0"
-           end if
-           if (typeof(x).eq."string") then
-               FillValue = "missing"
-           end if
+           FillValue = "No_FillValue"
+
+;;         The following was the original code
+;;         if (typeof(x).eq."float") then
+;;             FillValue = -999.
+;;         end if
+;;         if (typeof(x).eq."double") then
+;;             FillValue = -9999.
+;;         end if
+;;         if (typeof(x).eq."integer") then
+;;             FillValue = -99
+;;         end if
+;;         if (typeof(x).eq."logical") then
+;;             FillValue = -1
+;;         end if
+;;         if (typeof(x).eq."byte") then
+;;             FillValue = 0377
+;;         end if
+;;         if (typeof(x).eq."short") then
+;;             FillValue = -99
+;;         end if
+;;         if (typeof(x).eq."graphic") then
+;;             FillValue = -9999
+;;         end if
+;;         if (typeof(x).eq."file") then
+;;             FillValue = -9999
+;;         end if
+;;         if (typeof(x).eq."list") then
+;;             FillValue = -9999
+;;         end if
+;;         if (typeof(x).eq."character") then
+;;             FillValue = "\0"
+;;         end if
+;;         if (typeof(x).eq."string") then
+;;             FillValue = "missing"
+;;         end if
       end if
   end if
 
@@ -7435,8 +7438,6 @@ begin
 
   if (rankx.eq.1) then
       xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
-      xAnnual@long_name = x@long_name
-      xAnnual@units     = x@units
 
       nyr = -1
       do nt=0,ntim-1,12
@@ -7468,6 +7469,14 @@ begin
       xAnnual!0    = "year"
       xAnnual&year =  yyyy(0:ntim-1:12)
       copy_VarCoords_skipDim0 (x, xAnnual)
+
+      if (isatt(x, "long_name")) then
+          xAnnual@long_name = x@long_name
+      end if
+      if (isatt(x, "units")) then
+          xAnnual@units     = x@units
+      end if
+
       return(xAnnual)
   end if
 
@@ -7506,6 +7515,14 @@ begin
       xAnnual!0    = "year"
       xAnnual&year =  yyyy(0:ntim-1:12)
       copy_VarCoords_skipDim0 (x, xAnnual)
+
+      if (isatt(x, "long_name")) then
+          xAnnual@long_name = x@long_name
+      end if
+      if (isatt(x, "units")) then
+          xAnnual@units     = x@units
+      end if
+
       return(xAnnual)
   end if
 
@@ -7547,6 +7564,14 @@ begin
       xAnnual!0    = "year"
       xAnnual&year =  yyyy(0:ntim-1:12)
       copy_VarCoords_skipDim0 (x, xAnnual)
+
+      if (isatt(x, "long_name")) then
+          xAnnual@long_name = x@long_name
+      end if
+      if (isatt(x, "units")) then
+          xAnnual@units     = x@units
+      end if
+
       return(xAnnual)
   end if
 
@@ -7589,6 +7614,14 @@ begin
       xAnnual!0    = "year"
       xAnnual&year =  yyyy(0:ntim-1:12)
       copy_VarCoords_skipDim0 (x, xAnnual)
+
+      if (isatt(x, "long_name")) then
+          xAnnual@long_name = x@long_name
+      end if
+      if (isatt(x, "units")) then
+          xAnnual@units     = x@units
+      end if
+
       return(xAnnual)
    end if
 end
@@ -8445,4 +8478,25 @@ begin
       end if
   end if
 
+end
+
+;-------------------------------------------------------------
+; find indices corresponding to closest distance   
+; to a coordinate array [ie: 1D mononic array]
+;
+undef("ind_nearest_coord")
+function ind_nearest_coord ( z[*]:numeric, zgrid[*]:numeric, iopt:integer) 
+local n, nz, iz, zz, mnzz, imn
+begin
+  nz  = dimsizes(z)
+  iz  = new(nz, "integer", "No_FillValue")
+  do n=0,nz-1                  ; loop over each value
+     zz    = abs(z(n)-zgrid)   ; distances
+     mnzz  = min( zz )         ; min distance
+     imn   = ind(zz.eq.mnzz)   ; index on min distance: may be more than one 
+     iz(n) = imn(0)            ; select only the 1st one
+     delete(imn)
+  end do
+
+  return(iz)
 end
