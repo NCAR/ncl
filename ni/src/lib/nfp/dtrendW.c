@@ -606,7 +606,12 @@ NhlErrorTypes dtrend_msg_W( void )
  */
   npts = dsizes_y[ndims_y-1];
   if( npts < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: The last dimension of x must be greater than 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: The last dimension of y must be greater than 2");
+    return(NhlFATAL);
+  }
+
+  if( dsizes_x[0] != npts) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dtrend_msg: The length of x must be the same as the rightmost dimension of y");
     return(NhlFATAL);
   }
   
