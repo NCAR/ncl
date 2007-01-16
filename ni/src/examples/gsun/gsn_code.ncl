@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.194 2007-01-05 16:27:50 haley Exp $
+;      $Id: gsn_code.ncl,v 1.195 2007-01-16 23:23:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4476,8 +4476,20 @@ begin
           font_height = 0.6*font_height
         else
           font_height = 0.01
-          print("Warning: gsn_panel: unrecognized plot type, thus unable to get information for font height.")
-          print("Defaulting to " + font_height)
+          if((is_figure_strings.and. \
+              .not.isatt(res,"gsnPanelFigureStringsFontHeightF")).or. \
+             (panel_labelbar.and..not.isatt(res,"lbLabelFontHeightF"))) then
+            print("Warning: gsn_panel: unrecognized plot type.")
+            print("Unable to get information for various font heights.")
+            print("Make sure your font heights look okay.")
+            if(is_figure_strings.and..not.isatt(res,"gsnPanelFigureStringsFontHeightF"))
+              print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
+            end if
+
+            if(panel_labelbar.and..not.isatt(res,"lbLabelFontHeightF")) then
+              print("Set lbLabelFontHeightF resource to control labelbar font heights.")
+            end if
+          end if
         end if
       end if
     end if
