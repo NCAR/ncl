@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.32 2006-12-02 16:55:54 haley Exp $
+#      $Id: Configure,v 1.33 2007-01-18 16:15:31 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2006-12-02 16:55:54 $
+#	$Date: 2007-01-18 16:15:31 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -136,10 +136,15 @@ set loclib=`$makecmd LSEARCH`
 echo -n "..."
 set locinc=`$makecmd ISEARCH`
 echo -n "..."
-set pythondir=`$makecmd PYTHONDIR`
-echo -n "..."
-set pythonversion=`$makecmd PYTHONVERS`
-echo -n "..."
+#
+# The python stuff is commented out for now. One should use
+# the "setup.py" method for building python software, and not
+# the ymake system.
+#
+# set pythondir=`$makecmd PYTHONDIR`
+# echo -n "..."
+# set pythonversion=`$makecmd PYTHONVERS`
+# echo -n "..."
 set buildxlibstuff=`$makecmd XSTUFF`
 echo -n "..."
 set buildhdf=`$makecmd HDFSTUFF`
@@ -152,8 +157,8 @@ set buildgrib2=`$makecmd GRIB2STUFF`
 echo -n "..."
 set buildv5d=`$makecmd V5DSTUFF`
 echo -n "..."
-set buildpyngl=`$makecmd PYNGLSTUFF`
-echo -n "..."
+# set buildpyngl=`$makecmd PYNGLSTUFF`
+# echo -n "..."
 set buildf90=`$makecmd F90STUFF`
 set f90comp="f90"
 echo -n "..."
@@ -766,101 +771,105 @@ else
 endif
 
 #
+# The python stuff is commented out for now. One should use
+# the "setup.py" method for building python software, and not
+# the ymake system.
+#
 # PyNGL
 #
-if (-e pyngl) then
-  if ($?verbose_option) then
-    cat <<"EOF"
-
-    PyNGL is a Python module that allows you to access NCL's graphical
-    library.  Enabling this option will	cause PyNGL to be built, but
-    not installed.  In order to have this functionality, you must
-    have Python and Numeric installed on your system.
-
-"EOF"
-  endif
-
-  echo ""
-  echo "Build PyNGL ($buildpyngl)"
-  echo "(requires Python from python.org and Numeric from www.pfdubois.com/numpy/"
-  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-  set answer="$<"
-  if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildpyngl")) then
-	set buildpyngl = $answer
-	set newbuildpyngl
-        set altered
-  endif
-  if ("$buildpyngl" == "y") then
-
-#
-# Get Python version
+# if (-e pyngl) then
+#   if ($?verbose_option) then
+#     cat <<"EOF"
 # 
-    set pythonversion = "$pythonversion"
-proc_pythonversion:
-    echo ""
-    echo "Enter Python version : $pythonversion"
-    echo -n "Enter Return (default), new version, or q(quit) > "
-    set answer="$<"
-
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" != "") then
-      set pythonversion = "$answer"
-      set npythonvers
-      set altered
-    endif
-#
-# Get Python path. This must be the path leading up to the lib, bin, 
-# and include directories associated with Python.
+#     PyNGL is a Python module that allows you to access NCL's graphical
+#     library.  Enabling this option will	cause PyNGL to be built, but
+#     not installed.  In order to have this functionality, you must
+#     have Python and Numeric installed on your system.
 # 
-    set pythondir = "$pythondir"
-proc_pythondir:
-    echo ""
-    echo "Enter Python path : $pythondir"
-    echo "(enter path leading up to Python's lib, bin, and include directories.)"
-    echo -n "Enter Return (default), new directory, or q(quit) > "
-    set answer="$<"
-
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" != "") then
-      set pythondir = "$answer"
-      set npythondir
-      set altered
-    endif
-    if ("$pythondir" != "") then
-      if (! -d $pythondir) then
-        echo "  *** Warning: <$pythondir> does not exist"
-        echo ""
-        goto proc_pythondir
-      endif
-    endif
-    set pythonincdir = "$pythondir/include/python$pythonversion"
-    set pythonlibdir  = $pythondir/lib
-    set pythonbindir  = $pythondir/bin
-    set pythonpkgs   = "$pythonlibdir/python$pythonversion/site-packages"
-    if (! -d $pythonbindir || ! -d $pythonpkgs || ! -d $pythonincdir) then
-      echo "  *** Warning: <$pythonpkgs> and/or <$pythonincdir> does not exist"
-      echo ""
-      goto proc_pythondir
-    endif
-    set pythonlib = "-L$pythonlibdir"
-    set pythoninc = "-I$pythonincdir"
+# "EOF"
+#   endif
 # 
-# Decide whether to use Numeric or NumPy.
+#   echo ""
+#   echo "Build PyNGL ($buildpyngl)"
+#   echo "(requires Python from python.org and Numeric from www.pfdubois.com/numpy/"
+#   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+#   set answer="$<"
+#   if ("$answer" == "q") goto cleanup
+#   if (("$answer" != "") && ("$answer" != "$buildpyngl")) then
+# 	set buildpyngl = $answer
+# 	set newbuildpyngl
+#         set altered
+#   endif
+#   if ("$buildpyngl" == "y") then
 # 
-    set usenumpy = 0
-    echo ""
-    echo "Use Numeric (0) or NumPy (1)? : $usenumpy "
-    echo -n "Enter Return (default), (0) Numeric, (1) NumPy, or q(quit) > "
-    set answer="$<"
-
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" != "") then
-      set usenumpy = "$answer"
-      set altered
-    endif
-  endif 
-endif
+# #
+# # Get Python version
+# # 
+#     set pythonversion = "$pythonversion"
+# proc_pythonversion:
+#     echo ""
+#     echo "Enter Python version : $pythonversion"
+#     echo -n "Enter Return (default), new version, or q(quit) > "
+#     set answer="$<"
+# 
+#     if ("$answer" == "q") goto cleanup
+#     if ("$answer" != "") then
+#       set pythonversion = "$answer"
+#       set npythonvers
+#       set altered
+#     endif
+# #
+# # Get Python path. This must be the path leading up to the lib, bin, 
+# # and include directories associated with Python.
+# # 
+#     set pythondir = "$pythondir"
+# proc_pythondir:
+#     echo ""
+#     echo "Enter Python path : $pythondir"
+#     echo "(enter path leading up to Python's lib, bin, and include directories.)"
+#     echo -n "Enter Return (default), new directory, or q(quit) > "
+#     set answer="$<"
+# 
+#     if ("$answer" == "q") goto cleanup
+#     if ("$answer" != "") then
+#       set pythondir = "$answer"
+#       set npythondir
+#       set altered
+#     endif
+#     if ("$pythondir" != "") then
+#       if (! -d $pythondir) then
+#         echo "  *** Warning: <$pythondir> does not exist"
+#         echo ""
+#         goto proc_pythondir
+#       endif
+#     endif
+#     set pythonincdir = "$pythondir/include/python$pythonversion"
+#     set pythonlibdir  = $pythondir/lib
+#     set pythonbindir  = $pythondir/bin
+#     set pythonpkgs   = "$pythonlibdir/python$pythonversion/site-packages"
+#     if (! -d $pythonbindir || ! -d $pythonpkgs || ! -d $pythonincdir) then
+#       echo "  *** Warning: <$pythonpkgs> and/or <$pythonincdir> does not exist"
+#       echo ""
+#       goto proc_pythondir
+#     endif
+#     set pythonlib = "-L$pythonlibdir"
+#     set pythoninc = "-I$pythonincdir"
+# # 
+# # Decide whether to use Numeric or NumPy.
+# # 
+#     set usenumpy = 0
+#     echo ""
+#     echo "Use Numeric (0) or NumPy (1)? : $usenumpy "
+#     echo -n "Enter Return (default), (0) Numeric, (1) NumPy, or q(quit) > "
+#     set answer="$<"
+# 
+#     if ("$answer" == "q") goto cleanup
+#     if ("$answer" != "") then
+#       set usenumpy = "$answer"
+#       set altered
+#     endif
+#   endif 
+# endif
 
 #
 #  Library Search Path
