@@ -244,7 +244,11 @@ int _nclfprintf_pager
 	va_list ap;
 #endif
 {
+#if 1
+	char buffer[262144];
+#else
 	char buffer[32768];
+#endif
 
 	int ret = 0;
 	int n;
