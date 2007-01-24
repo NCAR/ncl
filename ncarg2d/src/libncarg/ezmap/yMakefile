@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.19 2002-08-21 20:28:20 kennison Exp $
+#       $Id: yMakefile,v 1.20 2007-01-24 23:39:41 kennison Exp $
 #
 
 MYNAME	= ezmap
@@ -23,7 +23,8 @@ GENERIC_SRCS = hlumapeod.f hlumapusr.f \
 	mdsetc.f mdsetd.f mdseti.f mdsetl.f mdsetr.f mpgetc.f mpgetd.f \
 	mpgeti.f mpgetl.f mpgetr.f mprset.f mpsetc.f mpsetd.f mpseti.f \
 	mpsetl.f mpsetr.f rbgdfe.f rbglen.f rbidfe.f supcon.f supmap.f \
-	rdpnaz.f rdpndw.f rdpntz.f rdpnuw.f
+	rdpnaz.f rdpndw.f rdpntz.f rdpnuw.f mdlltd.f mdllnd.f mdgnid.f \
+        mdlacd.f mdlocd.f
 
 GENERIC_OBJS = hlumapeod.o hlumapusr.o \
 	idictl.o  mapbd.o mapdrw.o mapeod.o mapfst.o mapgci.o mapgrd.o \
@@ -44,7 +45,8 @@ GENERIC_OBJS = hlumapeod.o hlumapusr.o \
 	mdsetc.o mdsetd.o mdseti.o mdsetl.o mdsetr.o mpgetc.o mpgetd.o \
 	mpgeti.o mpgetl.o mpgetr.o mprset.o mpsetc.o mpsetd.o mpseti.o \
 	mpsetl.o mpsetr.o rbgdfe.o rbglen.o rbidfe.o supcon.o supmap.o \
-	rdpnaz.o rdpndw.o rdpntz.o rdpnuw.o
+	rdpnaz.o rdpndw.o rdpntz.o rdpnuw.o mdlltd.o mdllnd.o mdgnid.o \
+        mdlacd.o mdlocd.o
 
 UNIX_SRCS = mpdbdi.f
 

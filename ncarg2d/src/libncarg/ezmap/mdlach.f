@@ -1,5 +1,5 @@
 C
-C $Id: mdlach.f,v 1.4 2005-06-22 21:36:44 kennison Exp $
+C $Id: mdlach.f,v 1.5 2007-01-24 23:39:40 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,7 +36,7 @@ C
         INTEGER          IDEG,IMIN,ISEC,NSEC
 C
 C Compute the absolute value of the latitude in seconds, limiting it to
-C the range from 0 to 90 degrees (0 to 32,400 seconds), and rounding to
+C the range from 0 to 90 degrees (0 to 324,000 seconds), and rounding to
 C the nearest second.
 C
         NSEC=MIN(324000,INT(3600.D0*ABS(RLAT)+.5D0))

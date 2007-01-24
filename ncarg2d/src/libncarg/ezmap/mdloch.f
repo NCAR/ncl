@@ -1,5 +1,5 @@
 C
-C $Id: mdloch.f,v 1.4 2005-06-22 21:36:44 kennison Exp $
+C $Id: mdloch.f,v 1.5 2007-01-24 23:39:41 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -43,10 +43,10 @@ C
         IF (ALON.GE.180.D0) ALON=ALON-360.D0
 C
 C Compute the absolute value of the longitude in seconds, limiting it to
-C the range from 0 to 180 degrees (0 to 64,800 seconds), and rounding to
-C the nearest second.
+C the range from 0 to 180 degrees (0 to 648,000 seconds), and rounding
+C to the nearest second.
 C
-        NSEC=MIN(648000,INT(3600.*ABS(ALON)+.5))
+        NSEC=MIN(648000,INT(3600.D0*ABS(ALON)+.5D0))
 C
 C Compute the degree, minute, and second quantities, as integers.
 C
