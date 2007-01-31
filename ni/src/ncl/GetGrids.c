@@ -895,13 +895,12 @@ void GenLambert
 				double tmpx =  nx0 + j * ndcdx;
 				double tmpy =  ny0 + i * ndcdy;
 				double tmplat,tmplon;
-				double dlon,trot;
 				NGCALLF(mdptri,MDPTRI)
 					(&tmpx,&tmpy,&tmplat,&tmplon);
 				(*lat)[i * nx + j] = (float)tmplat;
 				(*lon)[i * nx + j] = (float)tmplon;
-				dlon = fmod(tmplon - lon0 + 180 + 3600, 360) - 180.0;
-				(*rot)[i * nx + j] = (float) an * dlon * dtor;
+				tlon = fmod(tmplon - lon0 + 180 + 3600, 360) - 180.0;
+				(*rot)[i * nx + j] = (float) (an * tlon * dtor);
 			}
 		}
 	} else {
@@ -936,8 +935,8 @@ void GenLambert
 					(&tmpx,&tmpy,&tmplat,&tmplon);
 				(*lat)[i * nx + j] = (float)tmplat;
 				(*lon)[i * nx + j] = (float)tmplon;
-				dlon = fmod(tmplon - lon0 + 180 + 3600, 360) - 180.0;
-				(*rot)[i * nx + j] = (float) an * dlon * dtor;
+				tlon = fmod(tmplon - lon0 + 180 + 3600, 360) - 180.0;
+				(*rot)[i * nx + j] = (float) (an * tlon * dtor);
 			}
 		}
 	}

@@ -624,9 +624,35 @@ FILE    *fp;
 				if(ret < 0) {	
 					return(NhlWARNING);
 				}
-			} else {
-				ret = nclfprintf(fp,"<ARRAY>\n");
-				if(ret < NhlINFO) {	
+			} else if (thefile->file.file_atts[i]->num_elements > 1 &&
+				   thefile->file.file_atts[i]->num_elements < 11) {
+				tmp_md = _NclFileReadAtt(thefile,thefile->file.file_atts[i]->att_name_quark,NULL);
+				ret = nclfprintf(fp,"( ");
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
+				for (j = 0; j < tmp_md->multidval.totalelements; j++) {
+					char *val = (char*)tmp_md->multidval.val + 
+						j * tmp_md->multidval.type->type_class.size; 
+					ret1 = _Nclprint(tmp_md->multidval.type,fp,val);
+					if(ret1 < NhlINFO) {
+						return(ret1);
+					}
+					if (j < tmp_md->multidval.totalelements - 1) {
+						ret = nclfprintf(fp,", ");
+						if(ret < 0) {
+							return(NhlWARNING);
+						}
+					}
+				}
+				ret = nclfprintf(fp," )\n");
+				if(ret < 0) {
+					return(NhlWARNING);
+				}
+			}
+			else {
+				ret = nclfprintf(fp,"<ARRAY of %d elements>\n",thefile->file.file_atts[i]->num_elements);
+				if(ret < 0) {	
 					return(NhlWARNING);
 				}
 			}
@@ -682,8 +708,33 @@ FILE    *fp;
 					if(ret < 0) {	
 						return(NhlWARNING);
 					}
+				} else if (step->the_att->num_elements > 1 &&
+					   step->the_att->num_elements < 11) {
+					tmp_md = _NclFileReadVarAtt(thefile,thefile->file.var_info[i]->var_name_quark,step->the_att->att_name_quark,NULL);
+					ret = nclfprintf(fp,"( ");
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+					for (j = 0; j < tmp_md->multidval.totalelements; j++) {
+						char *val = (char*)tmp_md->multidval.val + 
+							j * tmp_md->multidval.type->type_class.size; 
+						ret1 = _Nclprint(tmp_md->multidval.type,fp,val);
+						if(ret1 < NhlINFO) {
+							return(ret1);
+						}
+						if (j < tmp_md->multidval.totalelements - 1) {
+							ret = nclfprintf(fp,", ");
+							if(ret < 0) {
+								return(NhlWARNING);
+							}
+						}
+					}
+					ret = nclfprintf(fp," )\n");
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
 				} else {
-					ret = nclfprintf(fp,"<ARRAY>\n");
+					ret = nclfprintf(fp,"<ARRAY of %d elements>\n",step->the_att->num_elements);
 					if(ret < 0) {	
 						return(NhlWARNING);
 					}

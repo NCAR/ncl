@@ -149,6 +149,114 @@ typedef struct  _g2shapeOfEarth {
     float   jdir_incr_scaled;
 } G2shapeOfEarth;
 
+typedef struct _g2EarthParams {
+	int shapeOfEarth;
+	int scale_factor_rad_sph_earth;
+	int scaled_val_rad_sph_earth;
+	int scale_factor_maj_axis_obl_sph_earth;
+	int scaled_val_maj_axis_obl_sph_earth;
+	int scale_factor_min_axis_obl_sph_earth;
+	int scaled_val_min_axis_obl_sph_earth;
+} g2EarthParams;
+
+typedef struct _g2CETemplate {    /* template 0 : lat/lon */
+	g2EarthParams ep;
+	int npts_along_parallel;
+	int npts_along_meridian;
+	int angl_init_prod_domain;
+	int subdiv_basic_angle;
+	int lat_first_gridpt;   /* not scaled; factor == 1000000 */
+	int lon_first_gridpt;   /* not scaled; factor == 1000000 */
+	int res_comp_flags;
+	int lat_last_gridpt;    /* not scaled; factor == 1000000 */
+	int lon_last_gridpt;    /* not scaled; factor == 1000000 */
+	int idir_incr;          /* not scaled; factor == 1000000 */
+	int jdir_incr;          /* not scaled; factor == 1000000 */
+	int scan_mode_flags;
+} g2CETemplate;
+
+typedef struct _g2RotCETemplate {   /* template 1 : rotated lat/lon */
+	g2CETemplate ce;
+	int lat_south_pole_proj;
+	int lon_south_pole_proj;
+	int rot_ang_proj;
+} g2RotCETemplate;
+
+typedef struct _g2METemplate {      /* template 10 : mercator */
+	g2EarthParams ep;
+	int npts_along_parallel;
+	int npts_along_meridian;
+	int lat_first_gridpt;   /* not scaled; factor == 1000000 */
+	int lon_first_gridpt;   /* not scaled; factor == 1000000 */
+	int res_comp_flags;
+	int latD_intersect;
+	int lat_last_gridpt;    /* not scaled; factor == 1000000 */
+	int lon_last_gridpt;    /* not scaled; factor == 1000000 */
+	int scan_mode_flags;
+	int orientation;
+	int idir_incr;          /* units of 10-3 meters (at latitude latD_intersect) */
+	int jdir_incr;          /* units of 10-3 meters (at latitude latD_intersect) */
+} g2METemplate;
+
+typedef struct _g2STTemplate {   /* template 20 : polar stereographic */
+	g2EarthParams ep;
+	int npts_along_x_axis;
+	int npts_along_y_axis;
+	int lat_first_gridpt;   /* not scaled; factor == 1000000 */
+	int lon_first_gridpt;   /* not scaled; factor == 1000000 */
+	int res_comp_flags;
+	int latD_intersect;
+	int loV_orientation;    /* not scaled; factor == 1000000 */
+	int dx_incr;            /* units of 10-3 meters (at latitude latD_intersect) */
+	int dy_incr;            /* units of 10-3 meters (at latitude latD_intersect) */
+	int proj_center_flag;
+	int scan_mode_flags;
+} g2STTemplate;
+
+typedef struct _g2LCTemplate {   /* template 30 : lambert conformal */
+	g2EarthParams ep;
+	int npts_along_x_axis;
+	int npts_along_y_axis;
+	int lat_first_gridpt;   /* not scaled; factor == 1000000 */
+	int lon_first_gridpt;   /* not scaled; factor == 1000000 */
+	int res_comp_flags;
+	int latD_intersect;
+	int loV_central_meridian;    /* not scaled; factor == 1000000 */
+	int dx_incr;            /* units of 10-3 meters (at latitude latD_intersect) */
+	int dy_incr;            /* units of 10-3 meters (at latitude latD_intersect) */
+	int proj_center_flag;
+	int scan_mode_flags;
+	int latin1; /* first latitude at which secant cone cuts the sphere */
+	int latin2; /* second latitude at which secant cone cuts the sphere */
+	int lat_south_pole_proj;
+	int lon_south_pole_proj;
+} g2LCTemplate;
+
+typedef struct _g2GATemplate {    /* template 40 : gaussian lat/lon */
+	g2EarthParams ep;
+	int npts_along_parallel;
+	int npts_along_meridian;
+	int angl_init_prod_domain;
+	int subdiv_basic_angle;
+	int lat_first_gridpt;   /* not scaled; factor == 1000000 */
+	int lon_first_gridpt;   /* not scaled; factor == 1000000 */
+	int res_comp_flags;
+	int lat_last_gridpt;    /* not scaled; factor == 1000000 */
+	int lon_last_gridpt;    /* not scaled; factor == 1000000 */
+	int idir_incr;          /* not scaled; factor == 1000000 */
+	int nparallels_pole2equator;
+	int scan_mode_flags;
+} g2GATemplate;
+
+typedef struct _g2SHTemplate {  /* template 50 */
+	int j_pent_res;
+	int k_pent_res;
+	int m_pent_res;
+	int rep_type;  /* table 3.6 */
+	int rep_mode;  /* table 3.7 */
+} g2SHTemplate;
+
+
 typedef struct  _g2resComponentFlags {
     int   idir_given;
     int   jdir_given;
@@ -166,7 +274,7 @@ typedef struct  _g2scanModeFlags {
 typedef struct _g2Sec3 {
     int secid;
     int grid_def_src;
-    int grid_num;
+    int grid_num;          /* template */
     char    *grid_def_name;
     int num_grid_data_pts;
     int num_oct_opt;
@@ -175,6 +283,10 @@ typedef struct _g2Sec3 {
     int *grid_list_num_oct_opt;
     int grid_list_num_oct_num;
     int grid_def_templ_num;
+    int len_grid_template;
+    int *grid_template;
+    int is_thinned_grid;
+#if 0
     G2shapeOfEarth  *shape_of_earth;
     G2resComponentFlags *res_comp;
     G2scanModeFlags *scan_mode;
@@ -182,6 +294,7 @@ typedef struct _g2Sec3 {
     float   lon_first_gridpt;       /* scaled */
     float   lat_last_gridpt;        /* scaled */
     float   lon_last_gridpt;        /* scaled */
+#endif
 } G2Sec3;
 
 /* PDS Parameters */
@@ -315,30 +428,6 @@ typedef struct  _g2Rec {
 } G2Rec;
 
 
-#if 0
-/* Grid Def Template (GDS) */
-typedef struct _g2GDS {
-    int secid;
-    int grid_def_src;
-    int grid_num;
-    char    *grid_def_name;
-    int num_grid_data_pts;
-    int num_oct_opt;
-    int interp_opt_num_pts;
-    char    *interp_opt_name;
-    int *grid_list_num_oct_opt;
-    int grid_list_num_oct_num;
-    int grid_def_templ_num;
-    G2shapeOfEarth  *shape_of_earth;
-    G2resComponentFlags *res_comp;
-    G2scanModeFlags *scan_mode;
-    float   lat_first_gridpt;       /* scaled */
-    float   lon_first_gridpt;       /* scaled */
-    float   lat_last_gridpt;        /* scaled */
-    float   lon_last_gridpt;        /* scaled */
-} G2_GDS;
-#endif
-
 typedef G2Sec3 G2_GDS;
 
 /* Product Def Template (PDS) */
@@ -433,7 +522,7 @@ struct _Grib2ParamList {
     Grib2VarTraits traits;
     int grid_number;
     int grid_index;
-    int is_thinned_grid;
+    G2_GDS  *gds;
     int n_entries;
     int time_range_indicator;
     int time_period;            /* 0 unless ave,diff, or acc; then: (p2 - p1) */

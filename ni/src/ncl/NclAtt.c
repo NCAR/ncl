@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.21 2004-09-22 22:16:37 dbrown Exp $
+ *      $Id: NclAtt.c,v 1.22 2007-01-31 00:59:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -374,6 +374,7 @@ FILE *fp;
 	NclAttList *tmp;
 	int ret = 0;
 	NhlErrorTypes ret1 = NhlNOERROR;
+	int i;
 	
 	tmp = theattobj->att.att_list;
 	ret = nclfprintf(fp,"Number Of Attributes: %d\n",theattobj->att.n_atts);
@@ -387,13 +388,38 @@ FILE *fp;
 			if(ret1 < NhlINFO) {
 				return(ret1);
 			}
-		} else {
-			ret = nclfprintf(fp,"<ARRAY>",tmp->attname);
+		} else if (tmp->attvalue->multidval.totalelements > 1 &&
+			   tmp->attvalue->multidval.totalelements < 11) {
+			ret = nclfprintf(fp,"( ");
+			if(ret < 0) {
+				return(NhlWARNING);
+			}
+			for (i = 0; i < tmp->attvalue->multidval.totalelements; i++) {
+				char *val = (char*)tmp->attvalue->multidval.val + 
+					i * tmp->attvalue->multidval.type->type_class.size; 
+				ret1 = _Nclprint(tmp->attvalue->multidval.type,fp,val);
+				if(ret1 < NhlINFO) {
+					return(ret1);
+				}
+				if (i < tmp->attvalue->multidval.totalelements - 1) {
+					ret = nclfprintf(fp,", ");
+					if(ret < 0) {
+						return(NhlWARNING);
+					}
+				}
+			}
+			ret = nclfprintf(fp," )");
 			if(ret < 0) {
 				return(NhlWARNING);
 			}
 		}
-		ret = nclfprintf(fp,"\n",tmp->attname);
+		else {
+			ret = nclfprintf(fp,"<ARRAY of %d elements>",tmp->attvalue->multidval.totalelements);
+			if(ret < 0) {	
+				return(NhlWARNING);
+			}
+		}
+		ret = nclfprintf(fp,"\n");
 		if(ret < 0) {
 			return(NhlWARNING);
 		}
