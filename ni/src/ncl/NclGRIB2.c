@@ -8883,7 +8883,9 @@ static void *Grib2OpenFile
         _g2SetFileDimsAndCoordVars(g2frec);
         _g2SetAttributeLists(g2frec);
         _g2MakeVarnamesUnique(g2frec); 
+#if 0
 	_g2PrintRecordInfo(g2frec);
+#endif
 
         fclose(fd);
         NclFree(vbuf);
