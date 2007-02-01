@@ -5562,13 +5562,11 @@ char * buf;
 			month_days++;
 			is_leap = 1;
 		}
-		if (grec->pds[20] == 7) {
+		if (grec->pds[20] == 7 && grec->pds[14] - grec->pds[18] == 1 && grec->pds[14] + grec->pds[19] == month_days) {
 			/* special processing for GODAS -- although maybe it should be universal --
 			   see if we're really talking about a monthly average */
-			if (grec->pds[14] - grec->pds[18] == 1 && grec->pds[14] + grec->pds[19] == month_days) {
-				sprintf(buf,"1m");
-				time_period = 1;
-			}
+			sprintf(buf,"1m");
+			time_period = 1;
 		}
 		else {
 			ix = month - 1;
