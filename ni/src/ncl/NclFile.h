@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.20 2007-01-12 20:09:35 dbrown Exp $
+ *      $Id: NclFile.h,v 1.21 2007-02-01 02:40:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -275,7 +275,8 @@ typedef enum {
 #ifdef USE_NETCDF4
 	Ncl_COMPRESSION_LEVEL,
 #endif
-	Ncl_DEFAULT_NCEP_PTABLE
+	Ncl_DEFAULT_NCEP_PTABLE,
+	Ncl_PRINT_RECORD_INFO
 } NclFileOptionValues;
 
 typedef struct _NclFileClassPart {

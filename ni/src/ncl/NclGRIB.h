@@ -247,7 +247,8 @@ struct _GribAttInqRec {
 #define GRIB_THINNED_GRID_INTERPOLATION_OPT 0
 #define GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT 1
 #define GRIB_DEFAULT_NCEP_PTABLE_OPT 2
-#define GRIB_NUM_OPTIONS 3
+#define GRIB_PRINT_RECORD_INFO 3
+#define GRIB_NUM_OPTIONS 4
 
 struct _GribOptions {
 	NclQuark name;

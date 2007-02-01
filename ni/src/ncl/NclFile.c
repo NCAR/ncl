@@ -1278,7 +1278,8 @@ NclFileOption file_options[] = {
 #ifdef USE_NETCDF4
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
 #endif
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB default NCEP parameter table */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }, /* GRIB default NCEP parameter table */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB print record info */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1596,6 +1597,22 @@ static NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 
+
+	/* GRIB (2) option PrintRecordInfo */
+	fcp->options[Ncl_PRINT_RECORD_INFO].format = NrmStringToQuark("grb");
+	fcp->options[Ncl_PRINT_RECORD_INFO].name = NrmStringToQuark("printrecordinfo");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_PRINT_RECORD_INFO].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = False;
+	fcp->options[Ncl_PRINT_RECORD_INFO].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	fcp->options[Ncl_PRINT_RECORD_INFO].valid_values = NULL;
 	/* End of options */
 
 	return ret;

@@ -1456,6 +1456,62 @@ GribFileRecord *therec;
 	}
 }
 
+static void _PrintRecordInfo
+#if 	NhlNeedProto
+(GribFileRecord *therec)
+#else
+(therec)
+GribFileRecord *therec;
+#endif
+{
+	GribParamList *step = NULL;
+	GribRecordInqRecList *tstep;
+	int i,j;
+
+	for (step = therec->var_list; step != NULL; step = step->next) {
+		NclQuark qvname = step->var_info.var_name_quark;
+		int cur_ix[5] = { 0,0,0,0,0};
+		int n_dims = step->var_info.doff == 1 ? 
+			step->var_info.num_dimensions - 2 : step->var_info.num_dimensions - 3;
+		
+		printf("%s (",NrmQuarkToString(qvname));
+		for (i = 0; i < step->var_info.num_dimensions; i++) {
+			printf("%d%s",step->var_info.dim_sizes[i],
+			       i == step->var_info.num_dimensions - 1 ? ")\n" : ",");
+		}
+				
+		if (n_dims == 0) {
+			tstep = &step->thelist[0];
+			printf("%s \t",step->var_info.doff == 1 ? "(:,:)" : "(:,:,:)");
+			if (tstep->rec_inq)
+				printf("%d\n",tstep->rec_inq->rec_num);
+			else
+				printf("missing record\n");
+			continue;
+		}
+		for (i = 0; i < step->n_entries; i++) {
+			printf("(");
+			for (j = 0; j < n_dims; j++) {
+				printf("%d,",cur_ix[j]);
+			}
+			printf("%s) \t",step->var_info.doff == 1 ? ":,:" : ":,:,:");
+			cur_ix[n_dims-1]++;
+			tstep = &step->thelist[i];
+			if (tstep->rec_inq)
+				printf("%d\n",tstep->rec_inq->rec_num);
+			else
+				printf("missing record\n");
+			for (j = n_dims -1; j > 0; j--) {
+				if (cur_ix[j] == step->var_info.dim_sizes[j]) {
+					cur_ix[j-1]++;
+					cur_ix[j] = 0;
+				}
+			}
+		}
+	}
+}
+
+
 int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_size2) {
 	int i;
 	/* 
@@ -5897,6 +5953,10 @@ GribFileRecord *tmp;
 	options[GRIB_DEFAULT_NCEP_PTABLE_OPT].n_values = 1;
 	options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values = (void *) NrmStringToQuark("operational");
 
+	options[GRIB_PRINT_RECORD_INFO].data_type = NCL_logical;
+	options[GRIB_PRINT_RECORD_INFO].n_values = 1;
+	options[GRIB_PRINT_RECORD_INFO].values = (void *) 0;
+
 	tmp->options = options;
 	return 1;
 }
@@ -6816,6 +6876,9 @@ int wr_status;
 			_SetFileDimsAndCoordVars(therec);
 			_SetAttributeLists(therec);
 			_MakeVarnamesUnique(therec);
+			if ((int)(therec->options[GRIB_PRINT_RECORD_INFO].values) != 0) {
+				_PrintRecordInfo(therec);
+			}
 
 #if 0
 			/* this is for debugging */
@@ -7807,6 +7870,9 @@ static NhlErrorTypes GribSetOption
 	
 	if (option ==  NrmStringToQuark("defaultncepptable")) {
 		rec->options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values = (void*) *(NrmQuark *)values;
+	}
+	if (option ==  NrmStringToQuark("printrecordinfo")) {
+		rec->options[GRIB_PRINT_RECORD_INFO].values = (void*) *(int *)values;
 	}
 	
 	return NhlNOERROR;

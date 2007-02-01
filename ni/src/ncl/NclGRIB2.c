@@ -3359,15 +3359,52 @@ Grib2FileRecord *therec;
 {
 	Grib2ParamList *step = NULL;
 	Grib2RecordInqRecList *tstep;
-	int i;
+	int i,j;
 
 	for (step = therec->var_list; step != NULL; step = step->next) {
 		NclQuark qvname = step->var_info.var_name_quark;
+		int cur_ix[5] = { 0,0,0,0,0};
+		int n_dims = step->var_info.doff == 1 ? 
+			step->var_info.num_dimensions - 2 : step->var_info.num_dimensions - 3;
+		
+		printf("%s (",NrmQuarkToString(qvname));
+		for (i = 0; i < step->var_info.num_dimensions; i++) {
+			printf("%d%s",step->var_info.dim_sizes[i],
+			       i == step->var_info.num_dimensions - 1 ? ")\n" : ",");
+		}
+				
+		if (n_dims == 0) {
+			tstep = &step->thelist[0];
+			printf("%s \t",step->var_info.doff == 1 ? "(:,:)" : "(:,:,:)");
+			if (! tstep->rec_inq)
+				printf("missing record\n");
+			else if (tstep->rec_inq->field_num > 0)
+				printf("%d, %d\n",tstep->rec_inq->rec_num,tstep->rec_inq->field_num);
+			else
+				printf("%d\n",tstep->rec_inq->rec_num);
 
-		printf("%s ==============\n",NrmQuarkToString(qvname));
+			continue;
+		}
 		for (i = 0; i < step->n_entries; i++) {
+			printf("(");
+			for (j = 0; j < n_dims; j++) {
+				printf("%d,",cur_ix[j]);
+			}
+			printf("%s) \t",step->var_info.doff == 1 ? ":,:" : ":,:,:");
+			cur_ix[n_dims-1]++;
 			tstep = &step->thelist[i];
-			printf("%d\n",tstep->rec_inq->rec_num);
+			if (! tstep->rec_inq)
+				printf("missing record\n");
+			else if (tstep->rec_inq->field_num > 0)
+				printf("%d, %d\n",tstep->rec_inq->rec_num,tstep->rec_inq->field_num);
+			else
+				printf("%d\n",tstep->rec_inq->rec_num);
+			for (j = n_dims -1; j > 0; j--) {
+				if (cur_ix[j] == step->var_info.dim_sizes[j]) {
+					cur_ix[j-1]++;
+					cur_ix[j] = 0;
+				}
+			}
 		}
 	}
 }
@@ -6765,6 +6802,10 @@ static int g2InitializeOptions
     g2options[GRIB_DEFAULT_NCEP_PTABLE_OPT].n_values = 1;
     g2options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values = (void *) NrmStringToQuark("operational");
 
+    g2options[GRIB_PRINT_RECORD_INFO].data_type = NCL_logical;
+    g2options[GRIB_PRINT_RECORD_INFO].n_values = 1;
+    g2options[GRIB_PRINT_RECORD_INFO].values = (void *) 0;
+
     g2tmp->options = g2options;
     return 1;
 }
@@ -8504,7 +8545,12 @@ static void *Grib2OpenFile
             g2inqrec->rec_num = i + 1;
             g2inqrec->offset = g2rec[i]->offset;
 	    g2inqrec->rec_size = g2rec[i]->rec_size;
-            g2inqrec->field_num = j + 1; /* counting from 1 */
+	    if (g2rec[i]->num_rptd == 1) {
+		    g2inqrec->field_num = 0; /* field_num == 0 indicates only 1 field in record */
+	    } 
+	    else {
+		    g2inqrec->field_num = j + 1; /* counting from 1 */
+	    }
             g2inqrec->the_dat = NULL;
             g2inqrec->version = g2rec[i]->version;
 	    /* transfer the table source name to the g2inqrec */
@@ -8883,9 +8929,9 @@ static void *Grib2OpenFile
         _g2SetFileDimsAndCoordVars(g2frec);
         _g2SetAttributeLists(g2frec);
         _g2MakeVarnamesUnique(g2frec); 
-#if 0
-	_g2PrintRecordInfo(g2frec);
-#endif
+	if ((int)(g2frec->options[GRIB_PRINT_RECORD_INFO].values) != 0) {
+	    _g2PrintRecordInfo(g2frec);
+	}
 
         fclose(fd);
         NclFree(vbuf);
@@ -9535,6 +9581,7 @@ void **missing;
 	int err;
 	float *ret_val;
 	int i,n;
+	int field_num;
 
 	buf = NclMalloc(rec->rec_size);
 	fseek(fp,rec->offset,SEEK_SET);
@@ -9543,7 +9590,8 @@ void **missing;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
 		return NULL;
 	}
-	err = g2_getfld(buf,rec->field_num,1,1,&gfld);
+	field_num = MAX(1,rec->field_num);
+	err = g2_getfld(buf,field_num,1,1,&gfld);
 	if (err || ! gfld->unpacked || gfld->ndpts == 0) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
 		return NULL;
@@ -10188,6 +10236,9 @@ static NhlErrorTypes Grib2SetOption
 	
 	if (option ==  NrmStringToQuark("defaultncepptable")) {
 		rec->options[GRIB_DEFAULT_NCEP_PTABLE_OPT].values = (void*) *(NrmQuark *)values;
+	}
+	if (option ==  NrmStringToQuark("printrecordinfo")) {
+		rec->options[GRIB_PRINT_RECORD_INFO].values = (void*) *(int *)values;
 	}
 	
 	return NhlNOERROR;
