@@ -6870,9 +6870,9 @@ static void Grib2FreeGrib2Rec
 
 
     nr = rec[0]->numrecs;
-    nrp = rec[0]->num_rptd;
 
     for (i = 0; i < nr; i++) {
+	    nrp = rec[i]->num_rptd;
 	    if (rec[i]->table_source_name) {
 		    NclFree(rec[i]->table_source_name);
 	    }
@@ -7072,7 +7072,7 @@ Grib2ParamList  *g2plist;
 	Grib2RecordInqRec   *g2inqrec;
 	int i;
 	Grib2VarTraits *trp = &g2plist->traits;
-	g2codeTable ct;
+	g2codeTable *ct;
 	char buf[512];
 	NhlErrorTypes cterr;
 
@@ -7114,26 +7114,31 @@ Grib2ParamList  *g2plist;
 		if (g2plist->var_info.var_name_quark > NrmNULLQUARK)
 			return;
 	}
-	memset(&ct,0,sizeof(g2codeTable));
+	ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
+	if (ct == NULL) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return;
+	}
+	memset(ct,0,sizeof(g2codeTable));
 	sprintf(buf, "4.2.%d.%d.table", trp->discipline,trp->param_cat);
-	cterr = Grib2ReadCodeTable(g2inqrec->table_source, 4, buf,trp->param_number,&ct);
+	cterr = Grib2ReadCodeTable(g2inqrec->table_source, 4, buf,trp->param_number,ct);
 	if (cterr < NhlWARNING) {
 		return;
 	}
-	if (ct.oct != -1) {
+	if (ct->oct != -1) {
                 /* found parameter in table */
-		g2plist->var_info.long_name_q = NrmStringToQuark(ct.descrip);
+		g2plist->var_info.long_name_q = NrmStringToQuark(ct->descrip);
 
-		if (ct.shname != NULL) {
-			sprintf(buf,"%s_P%d_L%d",ct.shname,trp->pds_template,trp->first_level_type);
+		if (ct->shname != NULL) {
+			sprintf(buf,"%s_P%d_L%d",ct->shname,trp->pds_template,trp->first_level_type);
 		} else {
 			sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",trp->discipline,trp->param_cat,trp->param_number,
 				trp->pds_template,trp->first_level_type);
 		}
 		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
 
-		if (ct.units != NULL) {
-			g2plist->var_info.units_q = NrmStringToQuark(ct.units);
+		if (ct->units != NULL) {
+			g2plist->var_info.units_q = NrmStringToQuark(ct->units);
 
 		} else {
 			g2plist->var_info.units_q = NrmStringToQuark("unknown");
@@ -7146,10 +7151,10 @@ Grib2ParamList  *g2plist;
 		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
 		g2plist->var_info.units_q = NrmStringToQuark("unknown");
 	}
+	Grib2FreeCodeTableRec(ct);
 	return;
 }
 	
-			
 		
 	
 
