@@ -64,18 +64,19 @@ c                                                 ! ? output ascending order
       IF (IER.NE.0) RETURN
 
       CALL P2HYB(PI,MLON,NLAT,KLEVI,XI,PSFC,P0,HYAO,HYBO,KLEVO,XO,PO 
-     +          ,IFLAG, KFLAG)
+     +          ,IFLAG, KFLAG, XMSG)
       RETURN
       END
 
 C NCLFORTSTART
       SUBROUTINE P2HYB(PI,MLON,NLAT,KLEVI,XI,PSFC,P0,HYAO,HYBO,KLEVO 
-     +                ,XO,PO,IFLAG, KFLAG)
+     +                ,XO,PO,IFLAG, KFLAG, XMSG)
       IMPLICIT NONE
+c                                                 ! input
       INTEGER MLON,NLAT,KLEVI,KLEVO,IFLAG, KFLAG
       DOUBLE PRECISION P0,HYAI(KLEVI),HYBI(KLEVI),HYAO(KLEVO),
      +                 HYBO(KLEVO),PSFC(MLON,NLAT),XI(MLON,NLAT,KLEVI),
-     +                 PI(KLEVI),PO(KLEVO)
+     +                 PI(KLEVI),PO(KLEVO),XMSG
 c                                                 ! output
       DOUBLE PRECISION XO(MLON,NLAT,KLEVO)
 C NCLEND
@@ -97,7 +98,7 @@ c f77
           POMAX = PO(KLEVO)
 
           DO KO = 1,KLEVO
-             XO(ML,NL,KO) = 1.D20
+             XO(ML,NL,KO) = XMSG
             DO KI = 1,KLEVI-1
                IF (PO(KO).GE.PIMIN .AND. PO(KO).LE.PIMAX ) THEN     
 
