@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.196 2007-02-06 00:05:27 haley Exp $
+;      $Id: gsn_code.ncl,v 1.197 2007-02-06 15:38:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -70,8 +70,7 @@ undef("get_contour_line_thicknesses")
 undef("fix_zero_contour")
 undef("set_zero_line_thickness")
 undef("set_line_thickness_scale")
-undef("set_neg_line_pattern")
-undef("set_pos_line_pattern")
+undef("set_pos_neg_line_pattern")
 undef("maximize_bb")
 undef("gsnp_turn_off_tickmarks")
 undef("gsnp_point_tickmarks_outward")
@@ -1184,83 +1183,62 @@ begin
 end
 
 ;***********************************************************************;
-; Function : set_neg_line_pattern                                       ;
+; Function : set_pos_neg_line_pattern                                   ;
 ;                plot : graphic                                         ;
-;             pattern : numeric                                         ;
+;             npattern : numeric                                        ;
+;             ppattern : numeric                                        ;
 ;                                                                       ;
-; Set the dash pattern of negative contour lines.                       ;
+; Set the dash pattern of negative and/or positive contour lines.       ;
 ;                                                                       ;
 ; Note that this function also sets the rest of the line patterns to 0  ;
-; because it assumes if the user wants to set the patterns of the other ;
-; lines, he/she can do so with the cnLineDashPatterns resource.         ;
+; if both npattern and ppattern aren't both set.                        ;
+; The user can use the cnLineDashPatterns resource to override this.    ;
 ;                                                                       ;
 ;***********************************************************************;
-function set_neg_line_pattern(plot:graphic,pattern)
+function set_pos_neg_line_pattern(plot:graphic,ppattern,npattern)
+local set_pos, set_neg, levels, n, nlevels, patterns, overlay_plot
 begin
   levels  = get_contour_levels (plot)
   nlevels = dimsizes(levels)
 
   if (any(ismissing(levels)) .or. nlevels.le.0) then
-    print ("set_neg_line_pattern: invalid contour levels, returning...")
+    print ("set_pos_neg_line_pattern: invalid contour levels, returning...")
     return (plot)
   end if
 
   levels   = fix_zero_contour (levels)
   patterns = new(nlevels,integer)
-  patterns = 0     ; default to solid line.
+  patterns = 0                                 ; default to solid line.
 
-  if(.not.any(ismissing(patterns))) then
-    do n=0,nlevels-1
-      if (levels(n).lt.0.) then
-        patterns(n) = pattern
-      end if
-    end do
+;
+; Check if we have negative and/or positive patterns to set.
+;
+  if(.not.any(ismissing(npattern))) then
+    set_neg = True
+  else
+    set_neg = False
   end if
+
+  if(.not.any(ismissing(ppattern))) then
+    set_pos = True
+  else
+    set_pos = False
+  end if
+
+;
+; Loop through and set each contour level, if applicable.
+;
+  do n=0,nlevels-1
+    if (set_neg.and.levels(n).lt.0.) then
+      patterns(n) = npattern
+    end if
+    if (set_pos.and.levels(n).gt.0.) then
+      patterns(n) = ppattern
+    end if
+  end do
 
   overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
-  setvalues overlay_plot
-    "cnMonoLineDashPattern" : False
-    "cnLineDashPatterns"    : patterns
-  end setvalues
 
-  return (plot)
-end
-
-;***********************************************************************;
-; Function : set_pos_line_pattern                                       ;
-;                plot : graphic                                         ;
-;             pattern : numeric                                         ;
-;                                                                       ;
-; Set the dash pattern of positive contour lines.                       ;
-;                                                                       ;
-; Note that this function also sets the rest of the line patterns to 0  ;
-; because it assumes if the user wants to set the patterns of the other ;
-; lines, he/she can do so with the cnLineDashPatterns resource.         ;
-;                                                                       ;
-;***********************************************************************;
-function set_pos_line_pattern(plot:graphic,pattern)
-begin
-  levels  = get_contour_levels (plot)
-  nlevels = dimsizes(levels)
-
-  if (any(ismissing(levels)) .or. nlevels.le.0) then
-    print ("set_pos_line_pattern: invalid contour levels, returning...")
-    return (plot)
-  end if
-
-  levels   = fix_zero_contour (levels)
-  patterns = new(nlevels,integer)
-  patterns = 0     ; default to solid line.
-
-  if(.not.any(ismissing(patterns))) then
-    do n=0,nlevels-1
-      if (levels(n).gt.0.) then
-        patterns(n) = pattern
-      end if
-    end do
-  end if
-
-  overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
   setvalues overlay_plot
     "cnMonoLineDashPattern" : False
     "cnLineDashPatterns"    : patterns
@@ -7378,11 +7356,15 @@ begin
     if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
       npattern = res2@gsnContourNegLineDashPattern
       delete(res2@gsnContourNegLineDashPattern)
+    else
+      npattern = new(1,integer)    ; Set to missing
     end if
 
     if(res2.and.isatt(res2,"gsnContourPosLineDashPattern")) then
       ppattern = res2@gsnContourPosLineDashPattern
       delete(res2@gsnContourPosLineDashPattern)
+    else
+      ppattern = new(1,integer)    ; Set to missing
     end if
 
     check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
@@ -7416,14 +7398,8 @@ begin
       delete(linescale)
     end if
 
-    if(isvar("npattern")) then
-      plot_object = set_neg_line_pattern(plot_object,npattern)
-      delete(npattern)
-    end if
-
-    if(isvar("ppattern")) then
-      plot_object = set_pos_line_pattern(plot_object,ppattern)
-      delete(ppattern)
+    if(.not.ismissing(npattern).or..not.ismissing(ppattern)) then
+      plot_object = set_pos_neg_line_pattern(plot_object,ppattern,npattern)
     end if
 
     if(sprdcols)
@@ -8302,11 +8278,15 @@ begin
     if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
       npattern = res2@gsnContourNegLineDashPattern
       delete(res2@gsnContourNegLineDashPattern)
+    else
+      npattern = new(1,integer)    ; Set to missing
     end if
 
     if(res2.and.isatt(res2,"gsnContourPosLineDashPattern")) then
       ppattern = res2@gsnContourPosLineDashPattern
       delete(res2@gsnContourPosLineDashPattern)
+    else
+      ppattern = new(1,integer)    ; Set to missing
     end if
 
     vfres = get_res_eq(res2,"vf")
@@ -8329,14 +8309,9 @@ begin
       delete(linescale)
     end if
 
-    if(isvar("npattern")) then
-      contour_object = set_neg_line_pattern(contour_object,npattern)
-      delete(npattern)
-    end if
-
-    if(isvar("ppattern")) then
-      contour_object = set_pos_line_pattern(contour_object,ppattern)
-      delete(ppattern)
+    if(.not.ismissing(npattern).or..not.ismissing(ppattern)) then
+      contour_object = set_pos_neg_line_pattern(contour_object, \
+                                                ppattern,npattern)
     end if
 
     if(sprdcols)
@@ -8456,11 +8431,15 @@ begin
     if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
       npattern = res2@gsnContourNegLineDashPattern
       delete(res2@gsnContourNegLineDashPattern)
+    else
+      npattern = new(1,integer)    ; Set to missing
     end if
 
     if(res2.and.isatt(res2,"gsnContourPosLineDashPattern")) then
       ppattern = res2@gsnContourPosLineDashPattern
       delete(res2@gsnContourPosLineDashPattern)
+    else
+      ppattern = new(1,integer)    ; Set to missing
     end if
 
     vfres = get_res_eq(res2,"vf")
@@ -8483,14 +8462,9 @@ begin
       delete(linescale)
     end if
 
-    if(isvar("npattern")) then
-      contour_object = set_neg_line_pattern(contour_object,npattern)
-      delete(npattern)
-    end if
-
-    if(isvar("ppattern")) then
-      contour_object = set_pos_line_pattern(contour_object,ppattern)
-      delete(ppattern)
+    if(.not.ismissing(npattern).or..not.ismissing(ppattern)) then
+      contour_object = set_pos_neg_line_pattern(contour_object, \
+                                                ppattern,npattern)
     end if
 
     if(sprdcols)
@@ -8611,11 +8585,15 @@ begin
     if(res2.and.isatt(res2,"gsnContourNegLineDashPattern")) then
       npattern = res2@gsnContourNegLineDashPattern
       delete(res2@gsnContourNegLineDashPattern)
+    else
+      npattern = new(1,integer)    ; Set to missing
     end if
 
     if(res2.and.isatt(res2,"gsnContourPosLineDashPattern")) then
       ppattern = res2@gsnContourPosLineDashPattern
       delete(res2@gsnContourPosLineDashPattern)
+    else
+      ppattern = new(1,integer)    ; Set to missing
     end if
 
     vfres = get_res_eq(res2,"vf")
@@ -8640,14 +8618,9 @@ begin
       delete(linescale)
     end if
 
-    if(isvar("npattern")) then
-      contour_object = set_neg_line_pattern(contour_object,npattern)
-      delete(npattern)
-    end if
-
-    if(isvar("ppattern")) then
-      contour_object = set_pos_line_pattern(contour_object,ppattern)
-      delete(ppattern)
+    if(.not.ismissing(npattern).or..not.ismissing(ppattern)) then
+      contour_object = set_pos_neg_line_pattern(contour_object, \
+                                                ppattern,npattern)
     end if
 
     if(sprdcols)
