@@ -23,8 +23,8 @@
 # 192-254 Reserved for local use
 192:192:MSLP (Eta model reduction):Pa:MSLET
 193:193:5-Wave Geopotential Height:gpm:5WAVH
-194:194:Zonal Flux of Gravity Wave Stress:N m-2:GWD
-195:195:Meridional Flux of Gravity Wave Stress:N m-2:GWD
+194:194:Zonal Flux of Gravity Wave Stress:N m-2:UGWD
+195:195:Meridional Flux of Gravity Wave Stress:N m-2:VGWD
 196:196:Planetary Boundary Layer Height:m:HPBL
 197:197:5-Wave Geopotential Height Anomaly:gpm:5WAVA
 198:198:MSLP (MAPS System Reduction):Pa:MSLMA

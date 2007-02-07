@@ -66,4 +66,6 @@
 206:206:Total Icing Potential Diagnostic:non-dim:TIPD
 207:207:Number concentration for ice particles:non-dim:NCIP
 208:208:Snow Temperature:K:SNOT
+209:209:Total column-integrated supercooled liquid water:kg m-2:TCLSW
+210:210:Total column-integrated melting ice:kg m-2:TCOLM
 255:255:Missing
