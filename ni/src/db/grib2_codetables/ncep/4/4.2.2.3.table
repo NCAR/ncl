@@ -1,5 +1,5 @@
 # Product Discipline 2: Land surface products, Parameter Category 3: Soil Products
-0:0:Soil type (Code table 4.213)
+0:0:Soil type:index - see code table 4.213:SOTYP
 1:1:Upper layer soil temperature:K:ULTSOIL
 2:2:Upper layer soil moisture:kg m-3:ULSOILM
 3:3:Lower layer soil moisture:kg m-3:LLSOILM
