@@ -1,7 +1,7 @@
 C NCLFORTSTART
-      SUBROUTINE P2HYA(PI,MLON,NLAT,KLEVI,XI,PSFC
+      SUBROUTINE P2HYO(PI,MLON,NLAT,KLEVI,XI,PSFC
      +                 ,P0,HYAO,HYBO,KLEVO,XO,XMSG
-     +                 ,KFLAG,IER)    
+     +                 ,IFLAG,KFLAG,IER)    
       IMPLICIT NONE
 
 c NCL: xo = p2hyo (p,xi,psfc,hyao,hybo)
@@ -35,9 +35,10 @@ c          ier    - error code  [=0 no error detected]
 c                               [.ne.0 error detected: one or both
 c                                      pressure arrays not top->bot order]
 c     output
+c          iflag  - indicates whether missing values in output
 c          xo     - pressure at hybrid levels [Pa]
 c                                                 ! input
-      INTEGER MLON,NLAT,KLEVI,KLEVO,KFLAG,IER
+      INTEGER MLON,NLAT,KLEVI,KLEVO,IFLAG,KFLAG,IER
       DOUBLE PRECISION P0,PI(KLEVI),PSFC(MLON,NLAT),XI(MLON,NLAT,KLEVI),
      +                 HYAO(KLEVO),HYBO(KLEVO),XMSG
 c                                                 ! output
@@ -45,7 +46,6 @@ c                                                 ! output
 C NCLEND
 c                                                 ! local (automatic)
       DOUBLE PRECISION PO(KLEVO)
-      INTEGER IFLAG
 
       IFLAG = 0
 c                                                 ! ? input asending order     
@@ -109,9 +109,8 @@ c f77
      +                               (DLOG(PI(KI+1))-DLOG(PI(KI)))
                    END IF
                ELSE
-                   IFLAG = 1
-                  
                    IF (KFLAG.EQ.0) THEN
+                       IFLAG = 1
                        GO TO 100
                    END IF
 
