@@ -18,7 +18,8 @@ extern void NGCALLF(dh2sdrv,DH2SDRV)(double*,double*,double*,double*,
                                      int*,int*);
 
 extern void NGCALLF(p2hyo,P2HYO)(double*,int*,int*,int*,double*,double*,
-                                 double*,double*,double*,int*,double*);
+                                 double*,double*,double*,int*,double*,
+                                 double*,int*,int*,int*);
 
 NhlErrorTypes pres_hybrid_W( void )
 {
@@ -1081,12 +1082,13 @@ NhlErrorTypes pres2hybrid_W( void )
  * Input variables
  */
   void *p, *ps, *p0, *xi, *hyao, *hybo;
-  int *iflag;
+  int *kflag;
   double *tmp_p, *tmp_ps, *tmp_p0, *tmp_xi, *tmp_hyao, *tmp_hybo;
   int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
+  int has_missing_xi, ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS];
   int  dsizes_p[1], dsizes_hyao[1], dsizes_hybo[1];
   NclBasicDataTypes type_p, type_p0, type_ps, type_xi, type_hyao, type_hybo;
+  NclScalar missing_xi, missing_dxi;
 /*
  * Output variables
  */
@@ -1094,11 +1096,13 @@ NhlErrorTypes pres2hybrid_W( void )
   double *tmp_xo;
   int *dsizes_xo;
   NclBasicDataTypes type_xo;
+  NclScalar missing_xo;
 /*
  * Various.
  */
-  int i, j, index_xi, index_xo, index_ps, size_leftmost, size_xo, ret;
+  int i, j, index_xi, index_xo, index_ps, size_leftmost, size_xo;
   int nlat, nlon, nlevi, nlevo, nlat_nlon, nlat_nlon_nlevi, nlat_nlon_nlevo;
+  int iflag, ret, ier, return_missing;
 /*
  * Retrieve parameters
  *
@@ -1137,8 +1141,8 @@ NhlErrorTypes pres2hybrid_W( void )
           7,
           &ndims_xi, 
           dsizes_xi,
-          NULL,
-          NULL,
+          &missing_xi,
+          &has_missing_xi,
           &type_xi,
           2);
   hyao = (void*)NclGetArgValue(
@@ -1160,7 +1164,7 @@ NhlErrorTypes pres2hybrid_W( void )
           &type_hybo,
           2);
 
-  iflag = (int*)NclGetArgValue(
+  kflag = (int*)NclGetArgValue(
           6,
           7,
           NULL,
@@ -1209,6 +1213,21 @@ NhlErrorTypes pres2hybrid_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pres2hybrid: The leftmost n-2 dimensions of 'ps' and n-3 dimensions of 'xi' must be the same");
       return(NhlFATAL);
     }
+  }
+
+/*
+ * Get missing value of xi, in case we need to use it for setting
+ * output values to missing. Otherwise, set the missing value to
+ * a default of 1.e20.
+ *
+ * This was added in version 4.2.0.a035 of ncl to cover the extrapolation
+ * algorithms Dennis added.
+ */
+  if(has_missing_xi) {
+    coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
+  }
+  else {
+    missing_dxi.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
   }
 
 /*
@@ -1332,7 +1351,16 @@ NhlErrorTypes pres2hybrid_W( void )
     if(type_xo == NCL_double) tmp_xo = &((double*)xo)[index_xo];
 
     NGCALLF(p2hyo,P2HYO)(tmp_p,&nlon,&nlat,&nlevi,tmp_xi,tmp_ps,tmp_p0,
-                         tmp_hyao,tmp_hybo,&nlevo,tmp_xo);
+                         tmp_hyao,tmp_hybo,&nlevo,tmp_xo,
+                         &missing_dxi.doubleval,&iflag,kflag,&ier);
+/*
+ * If iflag is 1, then this means there are missing values present in
+ * the output, and hence we need to make sure the return value has a
+ * missing value attached (later).
+ */
+    if(iflag == 1) {
+      return_missing = 1;
+    }
 /*
  * Copy output values from temporary tmp_xo to xo.
  */
@@ -1354,9 +1382,22 @@ NhlErrorTypes pres2hybrid_W( void )
   if(type_hybo != NCL_double) NclFree(tmp_hybo);
   if(type_xo   != NCL_double) NclFree(tmp_xo);
 /*
- * Return.
+ * Return values to NCL script. First check if we also need to
+ * set a _FillValue attribute for the return variable.
  */
-  ret = NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0);
+  if(return_missing) {
+    if(type_xo == NCL_double) {
+      missing_xo.doubleval = missing_dxi.doubleval;
+    }
+    else {
+      missing_xo.floatval = (float)missing_dxi.doubleval;
+    }
+    ret = NclReturnValue(xo,ndims_xi,dsizes_xo,&missing_xo,type_xo,0);
+  }
+  else {
+    ret = NclReturnValue(xo,ndims_xi,dsizes_xo,NULL,type_xo,0);
+  }
+
   NclFree(dsizes_xo);
   return(ret);
 }
