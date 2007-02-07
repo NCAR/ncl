@@ -1473,14 +1473,9 @@ GribFileRecord *therec;
 		int cur_ix[5] = { 0,0,0,0,0};
 		int n_dims = step->var_info.doff == 1 ? 
 			step->var_info.num_dimensions - 2 : step->var_info.num_dimensions - 3;
-		
-		printf("%s (",NrmQuarkToString(qvname));
-		for (i = 0; i < step->var_info.num_dimensions; i++) {
-			printf("%d%s",step->var_info.dim_sizes[i],
-			       i == step->var_info.num_dimensions - 1 ? ")\n" : ",");
-		}
-				
+
 		if (n_dims == 0) {
+			printf("%s",NrmQuarkToString(qvname));
 			tstep = &step->thelist[0];
 			printf("%s \t",step->var_info.doff == 1 ? "(:,:)" : "(:,:,:)");
 			if (tstep->rec_inq)
@@ -1490,6 +1485,7 @@ GribFileRecord *therec;
 			continue;
 		}
 		for (i = 0; i < step->n_entries; i++) {
+			printf("%s",NrmQuarkToString(qvname));
 			printf("(");
 			for (j = 0; j < n_dims; j++) {
 				printf("%d,",cur_ix[j]);

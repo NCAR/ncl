@@ -480,7 +480,7 @@ void g2GetAtts_1
 
 
 
-void g2GDSUnknownGrid
+void g2GDSDimsOnlyGrid
 #if NhlNeedProto
 (
 	Grib2ParamList* thevarrec, 
@@ -527,15 +527,20 @@ int* nrotatts;
 	int is_thinned_lat;
 	int is_thinned_lon;
 	g2CETemplate *ce;
-	
+
+	/* 
+	 * This can handle any grid that has the dimensions of the grid specified as 
+	 * elements 7 and 8 of the g2clib grid template -- whatever the dims happen to be called
+	 * currently includes templates 1,2,3, 31, 41, 42, 43, 90, and 110. 
+	 */
 	
 	*lat = NULL;
+	*lon = NULL;
+	*rot = NULL;
 	*n_dims_lat = 0;
 	*dimsizes_lat = NULL;
-	*lon = NULL;
 	*n_dims_lon= 0;
 	*dimsizes_lon = NULL;
-	*rot = NULL;
 	*n_dims_rot = 0;
 	*dimsizes_rot = NULL;
 	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
@@ -550,14 +555,6 @@ int* nrotatts;
 	nlon = ce->npts_along_parallel;
 	nlat = ce->npts_along_meridian;
 	if (nlon <= 1 || nlat <= 1 ) {
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "g2GDSUnknownGrid: Cannot decode grid template %d",gds->grid_num);
-		*lat = NULL;
-		*n_dims_lat = 0;
-		*dimsizes_lat = NULL;
-		*lon = NULL;
-		*n_dims_lon = 0;
-		*dimsizes_lon = NULL;
 		return;
 	}
 
@@ -567,9 +564,6 @@ int* nrotatts;
 	*(*dimsizes_lat) = nlat;
 	*n_dims_lat = 1;
 	*n_dims_lon = 1;
-	NhlPError(NhlWARNING,NhlEUNKNOWN,
-		  "NCL does not yet support GRIB2 Grid template %d, no coordinate variables will be supplied for this grid",
-		  gds->grid_num);
 
 	return;
 }
@@ -1928,6 +1922,84 @@ TRY2:
 }
 
 
+/* Grid template 50 */
+void g2GDSSHGrid
+#if NhlNeedProto
+(
+	Grib2ParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	Grib2AttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	Grib2AttInqRecList** lon_att_list, 
+	int* nlonatts,
+	Grib2AttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+Grib2AttInqRecList** lat_att_list; 
+int* nlatatts; 
+Grib2AttInqRecList** lon_att_list; 
+int* nlonatts;
+Grib2AttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	G2_GDS *gds;
+	g2SHTemplate *sh;
+
+	*lat = NULL;
+	*n_dims_lat = 0;
+	*dimsizes_lat = NULL;
+	*lon = NULL;
+	*n_dims_lon= 0;
+	*dimsizes_lon= NULL;
+	if ((thevarrec->thelist == NULL)  ||  (thevarrec->thelist->rec_inq == NULL)) 
+		return;
+
+	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	if (gds == NULL) {
+		return;
+	}
+	sh = (g2SHTemplate *) gds->grid_template;
+
+	if (sh->j_pent_res < 1)
+		return;
+
+	*n_dims_lat =  1;
+	*dimsizes_lat = NclMalloc(sizeof(int));
+	*(*dimsizes_lat) = sh->j_pent_res + 1;
+	*lon = NULL;
+	*n_dims_lon= 1;
+	*dimsizes_lon= NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = sh->j_pent_res + 1;
+
+	return;
+	
+}
+
+
+
 static void _g2NclNewGridCache
 #if NhlNeedProto
 (Grib2FileRecord *therec,int grid_index,int grid_number,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
@@ -1943,6 +2015,7 @@ int *dimsizes_lon;
 #endif
 {
 	NclGrib2CacheList *newlist;
+
 	if(therec->grib_grid_cache == NULL) {
 		therec->grib_grid_cache = NclMalloc(sizeof(NclGrib2CacheList));
 		newlist = NULL;
@@ -1953,70 +2026,38 @@ int *dimsizes_lon;
 		
 	therec->grib_grid_cache->grid_number = grid_number;
 	therec->grib_grid_cache->grid_index = grid_index;
-	if((n_dims_lon == 1) &&(n_dims_lat ==1)) {
+	if (grid_number == 50) {
+		therec->grib_grid_cache->n_dims = 3;
+		therec->grib_grid_cache->dimsizes[0] = 2;
+		therec->grib_grid_cache->dimsizes[2] = *dimsizes_lon;
+		therec->grib_grid_cache->dimsizes[1] = *dimsizes_lat;
+	}
+	else {
 		therec->grib_grid_cache->n_dims = 2;
-		therec->grib_grid_cache->dimsizes[1] = *dimsizes_lon;
-		therec->grib_grid_cache->dimsizes[0] = *dimsizes_lat;
-	} else if((n_dims_lon ==2) &&(n_dims_lat ==2)&&(dimsizes_lon[0] == dimsizes_lat[0])&&(dimsizes_lon[1] == dimsizes_lat[1])) {
-		therec->grib_grid_cache->n_dims = 2;
-		therec->grib_grid_cache->dimsizes[1] = dimsizes_lon[1];
-		therec->grib_grid_cache->dimsizes[0] = dimsizes_lon[0];
-	} else {
-		if(n_dims_lat ==2) {
-			therec->grib_grid_cache->n_dims = 2;
-			therec->grib_grid_cache->dimsizes[1] = dimsizes_lat[1];
-			therec->grib_grid_cache->dimsizes[0] = dimsizes_lat[0];
-		} else if(n_dims_lon ==2) {
-			therec->grib_grid_cache->n_dims = 2;
+		if((n_dims_lon == 1) &&(n_dims_lat ==1)) {
+			therec->grib_grid_cache->dimsizes[1] = *dimsizes_lon;
+			therec->grib_grid_cache->dimsizes[0] = *dimsizes_lat;
+		} else if((n_dims_lon ==2) &&(n_dims_lat ==2)
+			  &&(dimsizes_lon[0] == dimsizes_lat[0])&&(dimsizes_lon[1] == dimsizes_lat[1])) {
 			therec->grib_grid_cache->dimsizes[1] = dimsizes_lon[1];
 			therec->grib_grid_cache->dimsizes[0] = dimsizes_lon[0];
+		} else {
+			if(n_dims_lat ==2) {
+				therec->grib_grid_cache->dimsizes[1] = dimsizes_lat[1];
+				therec->grib_grid_cache->dimsizes[0] = dimsizes_lat[0];
+			} else if(n_dims_lon ==2) {
+				therec->grib_grid_cache->dimsizes[1] = dimsizes_lon[1];
+				therec->grib_grid_cache->dimsizes[0] = dimsizes_lon[0];
+			}
 		}
 	}
+
 	therec->grib_grid_cache->n_entries = 0;
 	therec->grib_grid_cache->thelist = NULL;
 	therec->grib_grid_cache->next = newlist;
 
-    return;
+	return;
 }
-#if 0
-static void _g2NclNewSHGridCache
-#if NhlNeedProto
-(Grib2FileRecord *therec,int grid_number,int gds_tbl_index,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
-#else
-(therec,grid_number,gds_tbl_index,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon)
-
-Grib2FileRecord *therec;
-int grid_number;
-int gds_tbl_index;
-int n_dims_lat;
-int *dimsizes_lat;
-int n_dims_lon;
-int *dimsizes_lon;
-#endif
-{
-	NclGrib2CacheList *newlist;
-	if(therec->grib_grid_cache == NULL) {
-		therec->grib_grid_cache = NclMalloc(sizeof(NclGrib2CacheList));
-		newlist = NULL;
-	} else {
-		newlist = therec->grib_grid_cache;
-                therec->grib_grid_cache = NclMalloc(sizeof(NclGrib2CacheList));
-	}
-		
-	therec->grib_grid_cache->grid_number = grid_number;
-	therec->grib_grid_cache->grid_gds_tbl_index = gds_tbl_index;
-	therec->grib_grid_cache->n_dims = 3;
-	therec->grib_grid_cache->dimsizes[0] = 2;
-	therec->grib_grid_cache->dimsizes[2] = *dimsizes_lon;
-	therec->grib_grid_cache->dimsizes[1] = *dimsizes_lat;
-	therec->grib_grid_cache->n_entries = 0;
-	therec->grib_grid_cache->thelist = NULL;
-	therec->grib_grid_cache->next = newlist;
-
-    return;
-}
-
-#endif
 
 static void g2Merge2
 #if 	NhlNeedProto
@@ -2697,7 +2738,7 @@ Grib2FileRecord *therec;
 			step->n_atts++;
 		}
 
-		if ((step->levels_isatt)&&(!step->levels_has_two) && (step->traits.first_level_type != 255)) {
+		if ((step->levels_isatt) && (!step->levels_has_two) && (step->traits.first_level_type != 255)) {
 			if (grib_rec->level0 != GRIB2_MISSING_LEVEL_VAL) {
 				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 				att_list_ptr->next = step->theatts;
@@ -2738,7 +2779,7 @@ Grib2FileRecord *therec;
 
 		}
 
-		if (step->levels_isatt && step->traits.first_level_type != 255) {
+		if (step->traits.first_level_type != 255) {
 			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
@@ -2773,7 +2814,7 @@ Grib2FileRecord *therec;
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 		}
-		if (step->levels_has_two && step->levels_isatt && step->traits.second_level_type != 255 &&
+		if (step->levels_has_two && step->traits.second_level_type != 255 &&
 		    step->traits.second_level_type != step->traits.first_level_type) {
 			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
@@ -3367,13 +3408,15 @@ Grib2FileRecord *therec;
 		int n_dims = step->var_info.doff == 1 ? 
 			step->var_info.num_dimensions - 2 : step->var_info.num_dimensions - 3;
 		
-		printf("%s (",NrmQuarkToString(qvname));
+/*
 		for (i = 0; i < step->var_info.num_dimensions; i++) {
 			printf("%d%s",step->var_info.dim_sizes[i],
 			       i == step->var_info.num_dimensions - 1 ? ")\n" : ",");
 		}
+*/
 				
 		if (n_dims == 0) {
+			printf("%s",NrmQuarkToString(qvname));
 			tstep = &step->thelist[0];
 			printf("%s \t",step->var_info.doff == 1 ? "(:,:)" : "(:,:,:)");
 			if (! tstep->rec_inq)
@@ -3386,6 +3429,7 @@ Grib2FileRecord *therec;
 			continue;
 		}
 		for (i = 0; i < step->n_entries; i++) {
+			printf("%s",NrmQuarkToString(qvname));
 			printf("(");
 			for (j = 0; j < n_dims; j++) {
 				printf("%d,",cur_ix[j]);
@@ -5144,6 +5188,7 @@ static void _g2SetFileDimsAndCoordVars
     Grib2AttInqRecList  *lon_att_list_ptr = NULL;
     Grib2AttInqRecList  *rot_att_list_ptr = NULL;
     g2codeTable *ct = NULL;
+    char *name_suffix = "";
 
     ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
     if (ct == NULL) {
@@ -5651,6 +5696,35 @@ static void _g2SetFileDimsAndCoordVars
 				break;
 			}
 		}
+		/* adjust the variable name */
+		switch (step->grid_number) {
+		case 0:
+			name_suffix = "LL";
+			break;
+		case 10:
+			name_suffix = "ME";
+			break;
+
+		case 20:
+			name_suffix = "ST";
+			break;
+
+		case 30:
+			name_suffix = "LC";
+			break;
+
+		case 40:
+			name_suffix = "GA";
+			break;
+
+		case 50:
+			name_suffix = "SH";
+			break;
+		default:
+			break;
+		}
+		sprintf(buffer,"%s_G%s%d",NrmQuarkToString(step->var_info.var_name_quark),name_suffix,step->grid_index);
+		step->var_info.var_name_quark = NrmStringToQuark(buffer);
 	}
 	else {
 		nlonatts = 0;
@@ -5676,6 +5750,7 @@ static void _g2SetFileDimsAndCoordVars
 				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
+			name_suffix = "LL";
 			break;
 
 
@@ -5685,6 +5760,7 @@ static void _g2SetFileDimsAndCoordVars
 				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
+			name_suffix = "ME";
 			break;
 
 		case 20:
@@ -5695,6 +5771,7 @@ static void _g2SetFileDimsAndCoordVars
 				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
+			name_suffix = "ST";
 			break;
 
 		case 30:
@@ -5704,6 +5781,7 @@ static void _g2SetFileDimsAndCoordVars
 				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
+			name_suffix = "LC";
 			break;
 
 		case 40:
@@ -5712,48 +5790,65 @@ static void _g2SetFileDimsAndCoordVars
 				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
+			name_suffix = "GA";
 			break;
-#if 0
 
-		case 1:
-			/* Rotated Latitude/Longitude (Template 3.1) */
-			NhlPError(NhlWARNING, NhlEUNKNOWN,
-				  "NclGRIB2: NCL does not yet support rotated lat/lon grids.");
-
-		case 2:
-			/* Stretched Latitude/Longitude (Template 3.2) */
-			NhlPError(NhlWARNING, NhlEUNKNOWN,
-				  "NclGRIB2: NCL does not yet support stretched lat/lon grids.");
-
-		case 3:
-			/* Rotated and Stretched Latitude/Longitude (Template 3.3) */
-			NhlPError(NhlWARNING, NhlEUNKNOWN,
-				  "NclGRIB2: NCL does not yet support rotated and stretched lat/lon grids.");
-
-		case 4: case 5: case 6: case 7: case 8: case 9:
-			/* Reserved */
-
-		case 11: case 12: case 13: case 14: case 15: case 16:
-		case 17: case 18: case 19:
-			/* Reserved */
-
-		case 21: case 22: case 23: case 24: case 25: case 26:
-		case 27: case 28: case 29:
-			/* Reserved */
-
-#endif
-		default:
-			g2GDSUnknownGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
+		case 50:
+			/* Spherical Harmonic coefficients */
+			g2GDSSHGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
 				    &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
-			is_err = NhlWARNING;
+			name_suffix = "SH";
+
+
+			if (n_dims_lat == 0) {
+				is_err = NhlFATAL;
+			}
+			else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  "Support for grids using Spherical Harmonic coefficients is incomplete; please contact NCL support.",
+					  step->grid_number);
+				is_err = NhlWARNING;
+			}
+			break;
+
+		case 1:
+		case 2:
+		case 3:
+		case 31:
+		case 41:
+		case 42:
+		case 43:
+		case 90:
+		case 110:
+			/* 
+			 * We do not have code to produce coordinates for these grids, but at least
+			 * we can know the data dimensions and can therefore provide the data.
+			 */
+			g2GDSDimsOnlyGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
+					 &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
+				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
+				    &rot_att_list_ptr, &nrotatts);
+			
+			if (n_dims_lat == 0) {
+				is_err = NhlFATAL;
+			}
+			else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  "NCL does not yet fully support GRIB2 Grid template %d, no coordinate variables will be supplied for this grid",
+					  step->grid_number);
+				is_err = NhlWARNING;
+			}
+			
 			break;
 			
+		default:
+			is_err = NhlFATAL;
 		}
 		if (is_err < NhlWARNING) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "NclGRIB2: Deleting reference to parameter because of decoding error");
+				  "NclGRIB2: Deleting reference to parameter; unable to decode grid template 3.%d",step->grid_number);
 			is_err = NhlNOERROR;
 			if(last != NULL) {
 				last->next = step->next;
@@ -5764,13 +5859,9 @@ static void _g2SetFileDimsAndCoordVars
 			step = step->next;
 			_Grib2FreeParamRec(tmpstep);
 			therec->n_vars--;
+			continue;
 		}
 		
-
-		/*
-		 * If a pre-defined grid has not been set up and there is a gds
-		 * grid type that applies do this
-		 */
 	
 		step->grid_index = therec->n_grids;
 		_g2NclNewGridCache(therec,step->grid_index, step->grid_number, 
@@ -5784,6 +5875,10 @@ static void _g2SetFileDimsAndCoordVars
 		m = 0;
 		while ((m < step->n_entries) && (step->thelist[m].rec_inq == NULL))
 			m++;
+
+		/* add info about the Grid to the variable name */
+		sprintf(buffer, "%s_G%s%d",NrmQuarkToString(step->var_info.var_name_quark),name_suffix,step->grid_index);
+		step->var_info.var_name_quark = NrmStringToQuark(buffer);
 
 		if ((n_dims_lon == 1) && (n_dims_lat == 1)) {
 			if (step->grid_number == 50) {
@@ -7130,10 +7225,32 @@ Grib2ParamList  *g2plist;
 		g2plist->var_info.long_name_q = NrmStringToQuark(ct->descrip);
 
 		if (ct->shname != NULL) {
-			sprintf(buf,"%s_P%d_L%d",ct->shname,trp->pds_template,trp->first_level_type);
+			if (trp->second_level_type == 255) {
+				sprintf(buf,"%s_P%d_L%d",ct->shname,trp->pds_template,trp->first_level_type);
+			}
+			else if (trp->second_level_type == trp->first_level_type) {
+				sprintf(buf,"%s_P%d_2L%d",ct->shname,trp->pds_template,trp->first_level_type);
+			}
+			else {
+				sprintf(buf,"%s_P%d_2L%d_%d",
+					ct->shname,trp->pds_template,trp->first_level_type,trp->second_level_type);
+			}
 		} else {
-			sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",trp->discipline,trp->param_cat,trp->param_number,
-				trp->pds_template,trp->first_level_type);
+			if (trp->second_level_type == 255) {
+				sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",
+					trp->discipline,trp->param_cat,trp->param_number,
+					trp->pds_template,trp->first_level_type);
+			}
+			else if (trp->second_level_type == trp->first_level_type) {
+				sprintf(buf, "VAR_%d_%d_%d_P%d_2L%d",
+					trp->discipline,trp->param_cat,trp->param_number,
+					trp->pds_template,trp->first_level_type);
+			}
+			else {
+				sprintf(buf, "VAR_%d_%d_%d_P%d_2L%d_%d",
+					trp->discipline,trp->param_cat,trp->param_number,
+					trp->pds_template,trp->first_level_type,trp->second_level_type);
+			}
 		}
 		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
 
@@ -9604,7 +9721,25 @@ void **missing;
 	*missing = (void*)NclMalloc((unsigned)sizeof(float));
 	*(float*)(*missing) = G2_DEFAULT_MISSING_FLOAT;
 
-	if (gfld->ibmap != 255 && gfld->bmap != NULL) {
+	if (gfld->igdtnum == 50) {
+		float *real, *img;
+		int n,ri,nx,ny;
+
+		n = rec->the_dat->multidval.n_dims;
+		ri = 2;
+		nx = rec->the_dat->multidval.dim_sizes[n-1];
+		ny = rec->the_dat->multidval.dim_sizes[n-2];  
+
+		ret_val = NclMalloc(sizeof(float) * ri * nx * ny);
+		memset(ret_val,0,sizeof(float) * ri * nx * ny);
+		
+		real = ret_val;
+		img = real + nx * ny;
+		
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "Not yet returning valid fields for spherical harmonic data");
+	}
+	else if (gfld->ibmap != 255 && gfld->bmap != NULL) {
 		if (gfld->numoct_opt > 0) { /* thinned grid */
 			n = rec->the_dat->multidval.n_dims;
 			ret_val = NclMalloc(sizeof(float) * 
