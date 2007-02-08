@@ -68,6 +68,8 @@ void _NclAddFileFormats
 	_NclRegisterFormat(HDFAddFileFormat,"hd");
 	_NclRegisterFormat(GribAddFileFormat,"grb");
 	_NclRegisterFormat(GribAddFileFormat,"grib");
+	_NclRegisterFormat(GribAddFileFormat,"grb1");
+	_NclRegisterFormat(GribAddFileFormat,"grib1");
 #ifdef  BuildGRIB2
 	_NclRegisterFormat(GribAddFileFormat,"grib2");
 	_NclRegisterFormat(GribAddFileFormat,"grb2");
