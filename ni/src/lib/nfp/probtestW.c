@@ -893,6 +893,8 @@ NhlErrorTypes rtest_W( void )
   void *prob;
   double *tmp_prob;
   NclBasicDataTypes type_prob;
+  int has_missing_prob;
+  NclScalar missing_prob;
 /*
  * Declare various variables for random purposes.
  */
@@ -996,11 +998,12 @@ NhlErrorTypes rtest_W( void )
  * Check for missing values.
  */
   coerce_missing(type_r,has_missing_r,&missing_r,&missing_dr,&missing_rr);
-
 /*
  * Call the Fortran version of this routine.
  */
   if(scalar_n) tmp_n = *n;
+
+  has_missing_prob = 0;
 
   for( i = 0; i < size_prob; i++ ) {
     if(type_r != NCL_double) {
@@ -1017,8 +1020,19 @@ NhlErrorTypes rtest_W( void )
     }
     if(!scalar_n) tmp_n = n[i];
 
-    NGCALLF(drtest,DRTEST)(tmp_r,&tmp_n,tmp_prob);
-
+/*
+ * Added in version 4.2.0.a035:
+ *
+ * N must be at least 3 (but ideally 8) for this to work, otherwise
+ * set subset of output to missing.
+ */
+    if(tmp_n < 3) {
+      *tmp_prob        = missing_dr.doubleval;
+      has_missing_prob = 1;
+    }
+    else {
+      NGCALLF(drtest,DRTEST)(tmp_r,&tmp_n,tmp_prob);
+    }
     coerce_output_float_or_double(prob,tmp_prob,type_prob,1,i);
   }
 /*
@@ -1030,7 +1044,17 @@ NhlErrorTypes rtest_W( void )
 /*
  * Return.
  */
-  return(NclReturnValue(prob,ndims_r,dsizes_r,NULL,type_prob,0));
+  if(has_missing_prob) {
+    if(type_prob == NCL_float) {
+      return(NclReturnValue(prob,ndims_r,dsizes_r,&missing_rr,type_prob,0));
+    }
+    else {
+      return(NclReturnValue(prob,ndims_r,dsizes_r,&missing_dr,type_prob,0));
+    }
+  }
+  else {
+    return(NclReturnValue(prob,ndims_r,dsizes_r,NULL,type_prob,0));
+  }
 }
 
 NhlErrorTypes equiv_sample_size_W( void )
