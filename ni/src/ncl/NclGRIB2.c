@@ -761,9 +761,9 @@ void g2GDSCEGrid
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (is_thinned_lat || is_thinned_lon)
 			*tmp_string = NrmStringToQuark(
-                    "Cylindrical Equidistant Projection Grid (Quasi-Regular)");
+                    "Latitude/longitude Grid (Quasi-Regular)");
 		else 
-			*tmp_string = NrmStringToQuark("Cylindrical Equidistant Projection Grid");
+			*tmp_string = NrmStringToQuark("Latitude/longitude Grid");
 		Grib2PushAtt(lon_att_list,"grid_type",tmp_string,1,nclTypestringClass);
         (*nlonatts)++;
 
@@ -805,9 +805,9 @@ void g2GDSCEGrid
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (is_thinned_lon || is_thinned_lat)
 			*tmp_string = NrmStringToQuark(
-                    "Cylindrical Equidistant Projection Grid (Quasi-Regular)");
+                    "Latitude/longitude Grid (Quasi-Regular)");
 		else 
-			*tmp_string = NrmStringToQuark("Cylindrical Equidistant Projection Grid");
+			*tmp_string = NrmStringToQuark("Latitude/longitude Grid");
 		Grib2PushAtt(lat_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -2921,12 +2921,12 @@ Grib2FileRecord *therec;
 				NrmStringToQuark("cubic") ? 1 : 0;
 			if (ct->descrip) {
 				sprintf(buf,"%s (quasi-regular grid expanded by %s interpolation)",
-					ct->descrip, method ? "cubic" : "linear");
+					ct->descrip, (method && ! step->has_bmap) ? "cubic" : "linear");
 				*tmp_string = NrmStringToQuark(buf);
 			}
 			else {
 				sprintf(buf,"%d (quasi-regular grid expanded by %s interpolation)",
-					grib_rec->grid_number,method ? "cubic" : "linear");
+					grib_rec->grid_number, (method && ! step->has_bmap) ? "cubic" : "linear");
 				*tmp_string = NrmStringToQuark(buf);
 			}
 		}
@@ -3656,6 +3656,7 @@ static Grib2ParamList *_g2NewListNode
 	tmp->param_number = grib_rec->traits.param_number;
 	tmp->grid_number = grib_rec->grid_number;
 	tmp->level_indicator = grib_rec->level_indicator;
+	tmp->has_bmap = 0;
 	tmp->n_entries = 1;
 	tmp->minimum_it = grib_rec->initial_time;
 	tmp->time_period = grib_rec->time_period;
@@ -6887,7 +6888,7 @@ static int g2InitializeOptions
 
     g2options[GRIB_THINNED_GRID_INTERPOLATION_OPT].data_type = NCL_string;
     g2options[GRIB_THINNED_GRID_INTERPOLATION_OPT].n_values = 1;
-    g2options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void *) NrmStringToQuark("linear");
+    g2options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void *) NrmStringToQuark("cubic");
 
     g2options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].data_type = NCL_string;
     g2options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].n_values = 1;
@@ -8745,6 +8746,7 @@ static void *Grib2OpenFile
             else
                 g2inqrec->interp_method =  0;
 
+	    g2inqrec->has_bmap = g2rec[i]->sec6[j]->bmap_ind != 255 ? 1 : 0;
             g2inqrec->bds_flags = g2rec[i]->sec5[j]->drt_templ_num;
             g2inqrec->int_or_float = g2rec[i]->sec5[j]->data_repr->typeof_field_vals;
 
@@ -8966,6 +8968,9 @@ static void *Grib2OpenFile
 				    g2inqrec_list->rec_inq->forecast_time);
 			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
 			    g2inqrec_list->rec_inq->var_name_q = g2plist->var_info.var_name_quark;
+			    /* if any records have a bitmap the variable is treated as having a bitmap */
+			    if (g2inqrec_list->rec_inq->has_bmap) 
+				    g2plist->has_bmap = 1;
 			    g2inqrec_list = g2inqrec_list->next;
 			    i++;
 		    }
@@ -8976,6 +8981,9 @@ static void *Grib2OpenFile
 			    g2inqrec_list->rec_inq->time_offset	= g2inqrec_list->rec_inq->forecast_time;
 			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
 			    g2inqrec_list->rec_inq->var_name_q = g2plist->var_info.var_name_quark;
+			    /* if any records have a bitmap the variable is treated as having a bitmap */
+			    if (g2inqrec_list->rec_inq->has_bmap) 
+				    g2plist->has_bmap = 1;
 			    g2inqrec_list = g2inqrec_list->next;
 			    i++;
 		    }
@@ -9704,6 +9712,8 @@ void **missing;
 	float *ret_val;
 	int i,n;
 	int field_num;
+	int force_linear = 0;
+	int has_missing = 0;
 
 	buf = NclMalloc(rec->rec_size);
 	fseek(fp,rec->offset,SEEK_SET);
@@ -9745,6 +9755,7 @@ void **missing;
 			ret_val = NclMalloc(sizeof(float) * 
 					    rec->the_dat->multidval.dim_sizes[n-2] *
 					    rec->the_dat->multidval.dim_sizes[n-1]);
+			force_linear = 1;
 		}
 		else {
 			ret_val = NclMalloc(gfld->ngrdpts * sizeof(float));
@@ -9756,6 +9767,9 @@ void **missing;
 			}
 			else {
 				ret_val[i]  = *(float*)(*missing);
+                                /*
+				has_missing = 1;
+				*/
 			}
 		}
 	}
@@ -9784,11 +9798,11 @@ void **missing;
 		
 		if (gfld->interp_opt == 1) { /* thinned longitude */
 			n = nlat;
-			kcode = rec->interp_method == 0 ? 1 : 3;
+			kcode = (rec->interp_method == 0 || force_linear) ? 1 : 3;
 		}
 		else {
 			n = nlon;
-			kcode = rec->interp_method == 0 ? 11 : 13;
+			kcode = (rec->interp_method == 0 || force_linear) ? 11 : 13;
 		}
 		if (gfld->num_opt != n) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
@@ -9802,6 +9816,10 @@ void **missing;
 			NhlPError(NhlFATAL,ENOMEM,NULL);
 			return NULL;
 		}
+		/*
+		printf("%s -- has_missing: %d, force_linear: %d\n",
+		       NrmQuarkToString(rec->var_name_q),has_missing,force_linear);
+		*/
 					  
 		NGCALLF(qu2reg2,QU2REG2)(ret_val,gfld->list_opt,&nlat,&nlon,&kcode,&pmsval,&kret,
 					 &jpmax,ztemp,zline,zwork);
@@ -10327,12 +10345,12 @@ static void _g2UpdateGridTypeAttribute
 				}
 				if (ct->descrip) {
 					sprintf(buf,"%s (quasi-regular grid expanded by %s interpolation)",
-						ct->descrip, method ? "cubic" : "linear");
+						ct->descrip, (method && ! step->has_bmap) ? "cubic" : "linear");
 					*tmp_string = NrmStringToQuark(buf);
 				}
 				else {
 					sprintf(buf,"%d (quasi-regular grid expanded by %s interpolation)",
-						step->grid_number,method ? "cubic" : "linear");
+						step->grid_number, (method && ! step->has_bmap) ? "cubic" : "linear");
 					*tmp_string = NrmStringToQuark(buf);
 				}
 				break;

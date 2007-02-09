@@ -1395,12 +1395,12 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].name = NrmStringToQuark("thinnedgridinterpolation");
 	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
-	*sval = NrmStringToQuark("linear");
+	*sval = NrmStringToQuark("cubic");
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(sizeof(string));
-	*sval = NrmStringToQuark("linear");
+	*sval = NrmStringToQuark("cubic");
 	fcp->options[Ncl_THINNED_GRID_INTERPOLATION].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);

@@ -6815,11 +6815,11 @@ GribParamList* thevarrec;
 			}
 			if (is_thinned_lon) {
 				n = nlat;
-				kcode = therec->interp_method == 0 ? 1 : 3;
+				kcode = (therec->interp_method == 0 || therec->has_bms) ? 1 : 3;
 			}
 			else {
 				n = nlon;
-				kcode = therec->interp_method == 0 ? 11 : 13;
+				kcode = (therec->interp_method == 0 || therec->has_bms) ? 11 : 13;
 			}
 			rc_count = (int*)NclMalloc(sizeof(int)*n);
 			jpmax = MAX(lat_size,lon_size / 2 + 1);

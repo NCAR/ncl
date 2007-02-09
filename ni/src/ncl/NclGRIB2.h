@@ -529,6 +529,7 @@ struct _Grib2ParamList {
     int time_unit_indicator;
     int variable_time_unit;
     int level_indicator;
+    int has_bmap;
     G2_GIT minimum_it;
     NclGrib2FVarRec var_info;
     NrmQuark    aux_coords[2];
@@ -597,6 +598,7 @@ struct _Grib2RecordInqRec {
     int grid_number;
     G2_GDS  *gds;
     int interp_method;   /* 0 - linear; 1 - cubic */
+    int has_bmap;
 
     unsigned int    bds_flags;
     int int_or_float;

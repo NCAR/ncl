@@ -5937,7 +5937,7 @@ GribFileRecord *tmp;
 	}
 	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].data_type = NCL_string;
 	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].n_values = 1;
-	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void *) NrmStringToQuark("linear");
+	options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values = (void *) NrmStringToQuark("cubic");
 
 	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].data_type = NCL_string;
 	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].n_values = 1;
