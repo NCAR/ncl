@@ -38,4 +38,4 @@ OBJS = caxpy.o ccopy.o cdotc.o cdotu.o cgbmv.o cgemm.o cgemv.o cgerc.o \
 	zswap.o zsymm.o zsyr2k.o zsyrk.o ztbmv.o ztbsv.o ztpmv.o ztpsv.o \
 	ztrmm.o ztrmv.o ztrsm.o ztrsv.o 
 
-BuildAndInstallLibraryTarget($(MYLIB),$(OBJS))  
+LibraryTarget($(MYLIB),$(OBJS))  
