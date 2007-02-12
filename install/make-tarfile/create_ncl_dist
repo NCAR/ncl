@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.9 2006-12-26 21:52:07 haley Exp $
+#   $Id: create_ncl_dist,v 1.10 2007-02-12 17:16:42 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -70,6 +70,7 @@ set sys_version = `uname -r`
 set sys         = `uname -m`
 set name        = `uname -n`
 set os          = `uname -s`
+set proc        = `uname -p`
 set exe_suffix  = ""
 set scpmach     = "meeker.scd.ucar.edu"
 set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/a034"
@@ -81,29 +82,7 @@ if ("$os" == "AIX") then
   set pwr = "pwr"`echo $b | cut -c 14- `
   set system = "{$os}_5.{$sys_version}_{$pwr}"
 else if ("$os" == "Darwin") then
-  if("$sys" == "Power Macintosh") then
-    if($sys_version == "7.9.0") then
-      set system = "MacOS_PPC_Panther"
-    else if($sys_version == "8.7.0") then
-      set system = "MacOS_PPC_Tiger"
-    else
-      echo "MacOS system not recognized."
-      echo "sys  = $sys"
-      echo "vers = $sys_version"
-      echo "MacOS system not recognized."
-      exit 1
-    endif
-  else
-    if($sys_version == "8.7.1") then
-      set system = "MacOS_Intel_Tiger"
-    else
-      echo "MacOS system not recognized."
-      echo "sys  = $sys"
-      echo "vers = $sys_version"
-      echo "MacOS system not recognized."
-      exit 1
-    endif
-  endif
+  set system = "MacOS_{$proc}_{$sys_version}"
 else if ("$os" == "SunOS") then
   set system     = "{$os}_{$sys_version}"
 else if ("$os" == "CYGWIN_NT-5.0") then
