@@ -5,8 +5,8 @@
 extern void NGCALLF(vors,VORS)(int *, int *, double *, double *, double *, 
                                double *, int *);
 
-extern void NGCALLF(vorsmsg,VORSMSG)(int *, int *, double *, double *,
-                                     double *, double *, int *, double *);
+extern void NGCALLF(roteof,ROTEOF)(int *, int *, double *, int *, double*,
+                                   double *, double *, double *, int *, int *);
 
 NhlErrorTypes eof_varimax_W( void )
 {
@@ -320,24 +320,24 @@ NhlErrorTypes eof_varimax_W( void )
 
 }
 
-NhlErrorTypes eof_varimax2_W( void )
+NhlErrorTypes eofunc_varimax_W( void )
 {
 /*
  * Input array variables
  */
   void *evec = NULL, *trace = NULL;
-  double *devec;
+  double *devec, *deval, *dpcvar;
   int dsizes_evec[NCL_MAX_DIMENSIONS], ndims_evec, has_missing_evec;
   logical *opt;
-  NclScalar missing_evec, missing_devec;
-  NclBasicDataTypes type_evec;
+  NclScalar missing_evec, missing_devec, missing_revec, missing_evec_out;
+  NclBasicDataTypes type_evec, type_eval, type_pcvar;
   NclTypeClass type_trace_class;
 
 /*
  * Various and work array variables.
  */
-  double *a, *b, *w;
-  int nvar, nfac, ldevec, total_size_evec;
+  double *drotvar;
+  int kflag, nvar, nfac, ldevec, total_size_evec;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -362,8 +362,9 @@ NhlErrorTypes eof_varimax2_W( void )
   NclVar tmp_var;
   NclStackEntry return_data;
   int i;
+  void *rotvar;
   float *pcvar;
-  logical return_trace = False;
+  logical return_trace = False, found_eval = False, found_pcvar = False;
 
 /*
  * Retrieve evec.
@@ -378,8 +379,11 @@ NhlErrorTypes eof_varimax2_W( void )
            &type_evec,
            2);
 
+  nfac = dsizes_evec[0];
+
 /*
- * Retrieve opt. Currently it is not used for anything.
+ * Retrieve opt. As of version 4.2.0.a035, it is now used to indicate
+ * if the eigenvectors should be scaled (and maybe rotated).
  */
   opt = (logical*)NclGetArgValue(
            1,
@@ -400,8 +404,11 @@ NhlErrorTypes eof_varimax2_W( void )
   }
 
 /*
+ * Loop through the attributes that may be attached to the "evec" variable.
  * Check if the input data array has "trace" set as an attribute.
  * If so, make sure it gets returned.
+ * 
+ * Attributes "eval" and "pcvar" *must* be found, or an error will result.
  */
   stack_entry = _NclGetArg(0, 2, DONT_CARE);
   switch (stack_entry.kind) {
@@ -427,10 +434,10 @@ NhlErrorTypes eof_varimax2_W( void )
  */
       attr_list = attr_obj->att.att_list;
 /*
- * Loop through attributes and check them. The only one recognized is
- * "trace".
+ * Loop through attributes and check them. The only three recognized are
+ * "trace", "pcvar", and "eval".
  */
-      while (attr_list != NULL && !return_trace) {
+      while (attr_list != NULL) {
 /*
  * Check for "trace".
  */
@@ -439,18 +446,42 @@ NhlErrorTypes eof_varimax2_W( void )
           trace        = attr_list->attvalue->multidval.val;
           type_trace_class = (NclTypeClass)(_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(attr_list->attvalue->multidval.data_type))));
         }
+/*
+ * Check for "eval".
+ */
+        else if (!strcmp(attr_list->attname, "eval")) {
+          found_eval = True;
+          type_eval = attr_list->attvalue->multidval.data_type;
+          deval = coerce_input_double(attr_list->attvalue->multidval.val,
+                                      type_eval,nfac,0,NULL,NULL);
+        }
+/*
+ * Check for "pcvar".
+ */
+        else if (!strcmp(attr_list->attname, "pcvar")) {
+          found_pcvar = True;
+          type_pcvar = attr_list->attvalue->multidval.data_type;
+          dpcvar = coerce_input_double(attr_list->attvalue->multidval.val,
+                                       type_pcvar,nfac,0,NULL,NULL);
+        }
         attr_list = attr_list->next;
       }
     }
   default:
     break;
   }
+/*
+ * Return an error if we didn't find eval or pcvar attributes.
+ */
+  if( !found_eval || !found_pcvar ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Could not find attributes 'pcvar' or 'eval' attached to the input array. These should be present if you used eofunc.");
+    return(NhlFATAL);
+  }
 
 /*
- * Calculate size of output array.
+ * Calculate size of output array.  "nvar" represents all but the first
+ * dimension.
  */
-  nfac = dsizes_evec[0];
-
   nvar = 1;
   for( i = 1; i <= ndims_evec-1; i++ ) {
     nvar *= dsizes_evec[i];
@@ -464,33 +495,30 @@ NhlErrorTypes eof_varimax2_W( void )
   total_size_evec = nvar * nfac;
 
 /*
- * Coerce missing values, if any.
+ * Coerce missing values, if any. Prior to 4.2.0.a034, this routine
+ * didn't handle missing values.
  */
   coerce_missing(type_evec,has_missing_evec,&missing_evec,&missing_devec,
-                 NULL);
+                 &missing_revec);
 /*
  * Coerce evec to double no matter what, since we need to make a copy of
  * the input array anyway.
  */
-  devec = (double *)calloc(total_size_evec,sizeof(double));
-  a     = (double *)calloc(nvar,sizeof(double));
-  b     = (double *)calloc(nvar,sizeof(double));
-  pcvar = (float *)calloc(nfac,sizeof(float));
-  if( devec == NULL || a == NULL || b == NULL || pcvar == NULL) {
+  devec   = (double *)calloc(total_size_evec,sizeof(double));
+  drotvar = (double *)calloc(nfac,sizeof(double));
+  pcvar   = (float *)calloc(nfac,sizeof(float));
+  if(type_evec != NCL_double) {
+    rotvar = (float *)calloc(nfac,sizeof(float));
+  }
+  else {
+    rotvar = (double *)calloc(nfac,sizeof(double));
+  }
+  if( devec == NULL || drotvar == NULL || pcvar == NULL || rotvar == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Unable to allocate memory for input/output arrays");
     return(NhlFATAL);
   }
   coerce_subset_input_double(evec,devec,0,type_evec,total_size_evec,
                              has_missing_evec,&missing_evec,&missing_devec);
-/*
- * Check for a missing value.
- */
-  if(contains_missing(devec,total_size_evec,has_missing_evec,
-                      missing_devec.doubleval)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: The input array contains missing values.");
-    return(NhlFATAL);
-  }
-
 /*
  * Allocate space for output array.
  */
@@ -510,44 +538,60 @@ NhlErrorTypes eof_varimax2_W( void )
     type_evec_out = NCL_double;
     evec_out      = (void*)devec;
   }
+
 /*
- * Allocate memory for work array.
+ * Call the Fortran 77 version of 'roteof' with the full argument list.
  */
-  w = (double *)calloc(nvar,sizeof(double));
-  if(w == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: Unable to allocate memory for work array");
-    return(NhlFATAL);
+  NGCALLF(roteof,ROTEOF)(&nvar, &nfac, devec, &ldevec, deval, dpcvar, drotvar,
+                         &missing_devec.doubleval,opt,&kflag);
+
+  if(type_evec_out == NCL_float) {
+/*
+ * Need to coerce evec and rotvar back to float before we return them.
+ */
+    coerce_output_float_only(evec_out,devec,total_size_evec,0);
+    coerce_output_float_only(rotvar,drotvar,nfac,0);
+   
+    if(kflag == 1) {
+      missing_evec_out = missing_revec;
+    }
+    NclFree(devec);
+    NclFree(drotvar);
   }
-
-/*
- * Call the Fortran 77 version of 'vors' with the full argument list.
- */
-  NGCALLF(vors,VORS)(&nvar, &nfac, devec, a, b, w, &ldevec);
-
-/*
- * Free unneeded memory.
- */
-  NclFree(w);
-  NclFree(b);
+  else {
+    rotvar = (void*)drotvar;
+    if(kflag == 1) {
+      missing_evec_out = missing_devec;
+    }
+  }
 
 /*
  * Return pcvar as float no matter what.
  */
-  for( i = 0; i < nfac; i++ ) pcvar[i] = (float)a[i];
-  NclFree(a);
+  for( i = 0; i < nfac; i++ ) pcvar[i] = (float)dpcvar[i];
 
-  if(type_evec_out == NCL_float) {
 /*
- * Need to coerce output array back to float before we return it.
- */
-    coerce_output_float_only(evec_out,devec,total_size_evec,0);
-    NclFree(devec);
-  }
-/*
- * Set up return value.
+ * Set up return value. If kflag is 1, then this means missing values
+ * are in the input, and we need to return a missing value.
  */
   type_evec_out_class = (NclTypeClass)(_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_evec_out))));
-  return_md = _NclCreateVal(
+  if(kflag == 1) {
+    return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            evec_out,
+                            &missing_evec_out,
+                            ndims_evec,
+                            dsizes_evec,
+                            TEMPORARY,
+                            NULL,
+                            (NclObjClass)type_evec_out_class
+                            );
+  }
+  else { 
+    return_md = _NclCreateVal(
                             NULL,
                             NULL,
                             Ncl_MultiDValData,
@@ -560,6 +604,7 @@ NhlErrorTypes eof_varimax2_W( void )
                             NULL,
                             (NclObjClass)type_evec_out_class
                             );
+  }
 
 /*
  * Initialize att_id so we can return some attributes.
@@ -583,6 +628,26 @@ NhlErrorTypes eof_varimax2_W( void )
   _NclAddAtt(
              att_id,
              "pcvar_varimax",
+             att_md,
+             NULL
+             );
+
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         rotvar,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)type_evec_out_class
+                         );
+  _NclAddAtt(
+             att_id,
+             "variance_varimax",
              att_md,
              NULL
              );
@@ -640,341 +705,3 @@ NhlErrorTypes eof_varimax2_W( void )
 
 }
 
-NhlErrorTypes eof_varimax_msg_W( void )
-{
-/*
- * Input array variables
- */
-  void *evec = NULL, *trace = NULL;
-  double *devec;
-  int dsizes_evec[NCL_MAX_DIMENSIONS], ndims_evec, has_missing_evec;
-  logical *opt;
-  NclScalar missing_evec, missing_devec;
-  NclBasicDataTypes type_evec;
-  NclTypeClass type_trace_class;
-
-/*
- * Various and work array variables.
- */
-  double *a, *b, *w, evecmsg;
-  int nvar, nfac, ldevec, total_size_evec;
-
-/*
- * Variables for retrieving attributes from "opt".
- */
-  NclAttList  *attr_list;
-  NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
-
-/*
- * Output array variables
- */
-  void  *evec_out;
-  NclBasicDataTypes type_evec_out;
-  NclScalar missing_evec_out;
-  NclTypeClass type_evec_out_class;
-
-/*
- * Variables for returning attributes.
- */
-  int att_id;
-  int dsizes[1];
-  NclMultiDValData att_md, return_md;
-  NclVar tmp_var;
-  NclStackEntry return_data;
-  int i;
-  float *pcvar;
-  logical return_trace = False;
-
-/*
- * Retrieve evec.
- */
-  evec = (void*)NclGetArgValue(
-           0,
-           2,
-           &ndims_evec, 
-           dsizes_evec,
-           &missing_evec,
-           &has_missing_evec,
-           &type_evec,
-           2);
-
-/*
- * Retrieve opt. Currently it is not used for anything.
- */
-  opt = (logical*)NclGetArgValue(
-           1,
-           2,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-
-/*
- * Check dimensions.
- */
-  if( ndims_evec < 2 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_msg: The input array must be at least 2-dimensional");
-    return(NhlFATAL);
-  }
-
-/*
- * Check if the input data array has "trace" set as an attribute.
- * If so, make sure it gets returned.
- */
-  stack_entry = _NclGetArg(0, 2, DONT_CARE);
-  switch (stack_entry.kind) {
-  case NclStk_VAR:
-    if (stack_entry.u.data_var->var.att_id != -1) {
-      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-      if (attr_obj == NULL) {
-        break;
-      }
-    }
-    else {
-/*
- * att_id == -1 ==> no optional args given.
- */
-      break;
-    }
-/* 
- * Get optional arguments.
- */
-    if (attr_obj->att.n_atts > 0) {
-/*
- * Get list of attributes.
- */
-      attr_list = attr_obj->att.att_list;
-/*
- * Loop through attributes and check them. The only one recognized is
- * "trace".
- */
-      while (attr_list != NULL && !return_trace) {
-/*
- * Check for "trace".
- */
-        if (!strcmp(attr_list->attname, "trace")) {
-          return_trace = True;
-          trace        = attr_list->attvalue->multidval.val;
-          type_trace_class = (NclTypeClass)(_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(attr_list->attvalue->multidval.data_type))));
-        }
-        attr_list = attr_list->next;
-      }
-    }
-  default:
-    break;
-  }
-
-/*
- * Calculate size of output array.
- */
-  nfac = dsizes_evec[0];
-
-  nvar = 1;
-  for( i = 1; i <= ndims_evec-1; i++ ) {
-    nvar *= dsizes_evec[i];
-  }
-  ldevec = nvar;
-
-  if( nvar < 1 || nfac < 1 ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_msg: The dimensions of the input array must both be at least 1");
-    return(NhlFATAL);
-  }
-  total_size_evec = nvar * nfac;
-
-/*
- * Coerce missing values, if any.
- */
-  coerce_missing(type_evec,has_missing_evec,&missing_evec,&missing_devec,
-                 NULL);
-/*
- * Coerce evec to double no matter what, since we need to make a copy of
- * the input array anyway.
- */
-  devec = (double *)calloc(total_size_evec,sizeof(double));
-  a     = (double *)calloc(nvar,sizeof(double));
-  b     = (double *)calloc(nvar,sizeof(double));
-  pcvar = (float *)calloc(nfac,sizeof(float));
-  if( devec == NULL || a == NULL || b == NULL || pcvar == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_msg: Unable to allocate memory for input/output arrays");
-    return(NhlFATAL);
-  }
-  coerce_subset_input_double(evec,devec,0,type_evec,total_size_evec,
-                             has_missing_evec,&missing_evec,&missing_devec);
-/*
- * Check for a missing value. We may want to remove this test later.
- */
-  if(contains_missing(devec,total_size_evec,has_missing_evec,
-                      missing_devec.doubleval)) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"eofunc_varimax_msg: The input array contains missing values.");
-  }
-
-/*
- * Allocate space for output array.
- */
-  if(type_evec != NCL_double) {
-    type_evec_out = NCL_float;
-    evec_out      = (void*)calloc(total_size_evec,sizeof(float));
-    if(evec_out == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_msg: Unable to allocate memory for work array");
-      return(NhlFATAL);
-    }
-    missing_evec_out.floatval = (float)missing_devec.doubleval;
-  }
-  else {
-/*
- * We've already allocated a double precision output variable, so
- * just point to it.
- */ 
-    type_evec_out = NCL_double;
-    evec_out      = (void*)devec;
-    missing_evec_out.doubleval = missing_devec.doubleval;
-  }
-/*
- * Allocate memory for work array.
- */
-  w = (double *)calloc(nvar,sizeof(double));
-  if(w == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax_msg: Unable to allocate memory for work array");
-    return(NhlFATAL);
-  }
-
-/*
- * Call the Fortran 77 version of 'vors' with the full argument list.
- */
-  NGCALLF(vorsmsg,VORSMSG)(&nvar, &nfac, devec, a, b, w, &ldevec,
-                           &missing_devec.doubleval);
-
-/*
- * Free unneeded memory.
- */
-  NclFree(w);
-  NclFree(b);
-
-/*
- * Return pcvar as float no matter what.
- */
-  for( i = 0; i < nfac; i++ ) pcvar[i] = (float)a[i];
-  NclFree(a);
-
-  if(type_evec_out == NCL_float) {
-/*
- * Need to coerce output array back to float before we return it.
- */
-    coerce_output_float_only(evec_out,devec,total_size_evec,0);
-    NclFree(devec);
-  }
-/*
- * Set up return value.
- */
-  type_evec_out_class = (NclTypeClass)(_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_evec_out))));
-  if(has_missing_evec) {
-    return_md = _NclCreateVal(
-			      NULL,
-			      NULL,
-			      Ncl_MultiDValData,
-			      0,
-			      evec_out,
-			      &missing_evec_out,
-			      ndims_evec,
-			      dsizes_evec,
-			      TEMPORARY,
-			      NULL,
-			      (NclObjClass)type_evec_out_class
-			      );
-  }
-  else {
-    return_md = _NclCreateVal(
-			      NULL,
-			      NULL,
-			      Ncl_MultiDValData,
-			      0,
-			      evec_out,
-			      NULL,
-			      ndims_evec,
-			      dsizes_evec,
-			      TEMPORARY,
-			      NULL,
-			      (NclObjClass)type_evec_out_class
-			      );
-  }
-/*
- * Initialize att_id so we can return some attributes.
- */
-  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-
-  dsizes[0] = nfac;
-  att_md = _NclCreateVal(
-                         NULL,
-                         NULL,
-                         Ncl_MultiDValData,
-                         0,
-                         pcvar,
-                         NULL,
-                         1,
-                         dsizes,
-                         TEMPORARY,
-                         NULL,
-                         (NclObjClass)nclTypefloatClass
-                         );
-  _NclAddAtt(
-             att_id,
-             "pcvar_varimax",
-             att_md,
-             NULL
-             );
-
-
-/*
- * Return "trace" attribute, if it exists.
- *
- */
-  if(return_trace) {
-    dsizes[0] = 1;
-    att_md = _NclCreateVal(
-                           NULL,
-                           NULL,
-                           Ncl_MultiDValData,
-                           0,
-                           trace,
-                           NULL,
-                           1,
-                           dsizes,
-                           TEMPORARY,
-                           NULL,
-                           (NclObjClass)type_trace_class
-                           );
-    _NclAddAtt(
-               att_id,
-               "trace",
-               att_md,
-               NULL
-               );
-
-  }
-
-  tmp_var = _NclVarCreate(
-                          NULL,
-                          NULL,
-                          Ncl_Var,
-                          0,
-                          NULL,
-                          return_md,
-                          NULL,
-                          att_id,
-                          NULL,
-                          RETURNVAR,
-                          NULL,
-                          TEMPORARY
-                          );
-/*
- * Return output grid and attributes to NCL.
- */
-  return_data.kind = NclStk_VAR;
-  return_data.u.data_var = tmp_var;
-  _NclPlaceReturn(return_data);
-  return(NhlNOERROR);
-
-}
