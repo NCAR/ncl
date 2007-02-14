@@ -329,7 +329,7 @@ NhlErrorTypes eofunc_varimax_W( void )
   double *devec, *deval, *dpcvar;
   int dsizes_evec[NCL_MAX_DIMENSIONS], ndims_evec, has_missing_evec;
   NclScalar missing_evec, missing_devec, missing_revec, missing_evec_out;
-  NclBasicDataTypes type_evec, type_eval, type_pcvar, type_opt;;
+  NclBasicDataTypes type_evec, type_eval, type_pcvar, type_opt;
   NclTypeClass type_trace_class;
 
 /*
