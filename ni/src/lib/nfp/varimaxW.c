@@ -325,19 +325,18 @@ NhlErrorTypes eofunc_varimax_W( void )
 /*
  * Input array variables
  */
-  void *evec = NULL, *trace = NULL;
+  void *evec = NULL, *trace = NULL, *opt = NULL;
   double *devec, *deval, *dpcvar;
   int dsizes_evec[NCL_MAX_DIMENSIONS], ndims_evec, has_missing_evec;
-  logical *opt;
   NclScalar missing_evec, missing_devec, missing_revec, missing_evec_out;
-  NclBasicDataTypes type_evec, type_eval, type_pcvar;
+  NclBasicDataTypes type_evec, type_eval, type_pcvar, type_opt;;
   NclTypeClass type_trace_class;
 
 /*
  * Various and work array variables.
  */
   double *drotvar;
-  int kflag, nvar, nfac, ldevec, total_size_evec;
+  int iopt, kflag, nvar, nfac, ldevec, total_size_evec;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -385,16 +384,31 @@ NhlErrorTypes eofunc_varimax_W( void )
  * Retrieve opt. As of version 4.2.0.a035, it is now used to indicate
  * if the eigenvectors should be scaled (and maybe rotated).
  */
-  opt = (logical*)NclGetArgValue(
+  opt = (void*)NclGetArgValue(
            1,
            2,
            NULL,
            NULL,
            NULL,
            NULL,
-           NULL,
+           &type_opt,
            2);
 
+  if(type_opt != NCL_int && type_opt != NCL_logical) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: 'opt' must be an integer or a logical scalar");
+    return(NhlFATAL);
+  }
+  if(type_opt == NCL_logical) {
+    if( ((logical*)opt)[0])  {
+      iopt = 1;
+    }
+    else {
+      iopt = 0;
+    }
+  }
+  else {
+    iopt = ((int*)opt)[0];
+  }
 /*
  * Check dimensions.
  */
@@ -543,7 +557,7 @@ NhlErrorTypes eofunc_varimax_W( void )
  * Call the Fortran 77 version of 'roteof' with the full argument list.
  */
   NGCALLF(roteof,ROTEOF)(&nvar, &nfac, devec, &ldevec, deval, dpcvar, drotvar,
-                         &missing_devec.doubleval,opt,&kflag);
+                         &missing_devec.doubleval,&iopt,&kflag);
 
   if(type_evec_out == NCL_float) {
 /*

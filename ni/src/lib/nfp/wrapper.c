@@ -855,7 +855,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,0,1,dimsizes);nargs++;
     NclRegisterFunc(eofunc_varimax_W,args,"eofunc_varimax",nargs);
 
 /*
@@ -5649,7 +5649,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(8);
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;

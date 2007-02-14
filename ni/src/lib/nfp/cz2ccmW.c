@@ -13,10 +13,10 @@ NhlErrorTypes cz2ccm_W( void )
  * Input array variables
  */
   void *ps, *phis, *tv, *p0, *hyam, *hybm, *hyai, *hybi;
-  double *tmp_ps, *tmp_phis, *tmp_tv, *tmp_p0;
+  double *tmp, *tmp_ps, *tmp_phis, *tmp_tv, *tmp_p0;
   double *tmp_hyam, *tmp_hybm, *tmp_hyai, *tmp_hybi;
   int ndims_ps, dsizes_ps[NCL_MAX_DIMENSIONS];
-  int dsizes_phis[NCL_MAX_DIMENSIONS];
+  int ndims_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
   int ndims_tv, dsizes_tv[NCL_MAX_DIMENSIONS];
   int dsizes_hyam[NCL_MAX_DIMENSIONS];
   int dsizes_hybm[NCL_MAX_DIMENSIONS];
@@ -38,7 +38,7 @@ NhlErrorTypes cz2ccm_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_ps, index_z2, l, m;
+  int i, index_ps, index_z2, l, m, scalar_phis;
   int nlat, mlon, klev, klev1, nlatmlon, klevnlatmlon;
   int any_double=0, size_input, size_z2;
 
@@ -58,7 +58,7 @@ NhlErrorTypes cz2ccm_W( void )
   phis = (void*)NclGetArgValue(
           1,
           8,
-          NULL,
+          &ndims_phis,
           dsizes_phis,
           NULL,
           NULL,
@@ -140,6 +140,28 @@ NhlErrorTypes cz2ccm_W( void )
     return(NhlFATAL);
   }
 /*
+ * Check phis dimension sizes. phis can be scalar, 2D or 3D. If 2D or 3D,
+ * then ps must be exact same size.
+ */
+  scalar_phis = is_scalar(ndims_phis,dsizes_phis);
+  if(!scalar_phis) {
+    if(ndims_phis < 2) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: The input array 'phis' must be a scalar or at least 2 dimensions");
+      return(NhlFATAL);
+    }
+    else if(ndims_phis > 2 && ndims_phis != ndims_ps) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: The input array 'phis' must be a scalar, 2 dimensions, or the same size as 'ps'");
+      return(NhlFATAL);
+    }
+    for( i = 1; i <= ndims_phis; i++ ) {
+      if( dsizes_ps[ndims_ps-i] != dsizes_phis[ndims_phis-i] ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: The input array 'phis' must be a scalar or the same rightmost dimensions as 'ps'");
+        return(NhlFATAL);
+      }
+    }
+  }
+
+/*
  * Get nlat, mlon, klev, klev1.
  */ 
   nlat = dsizes_ps[ndims_ps-2];
@@ -148,13 +170,6 @@ NhlErrorTypes cz2ccm_W( void )
   klev1 = dsizes_hyai[0];
   nlatmlon = nlat * mlon;
   klevnlatmlon = klev * nlatmlon;
-/*
- * Check dimension sizes of phis.
- */
-  if( dsizes_phis[0] != nlat || dsizes_phis[1] != mlon ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"cz2ccm: The dimensions of 'phis' must be nlat x mlon");
-    return(NhlFATAL);
-  }
 /*
  * Check dimension sizes of tv.
  */
@@ -213,9 +228,25 @@ NhlErrorTypes cz2ccm_W( void )
     }
   }
 /*
+ * Allocate space for phis and coerce if necessary.
+ * The case of ndims_phis > 2 will be handled in for
+ * loop below.
+ */
+  if(scalar_phis) {
+    tmp_phis = (double *)malloc(nlatmlon*sizeof(double*));
+    tmp = coerce_input_double(phis,type_phis,1,0,NULL,NULL);
+    for(i = 0; i < nlatmlon; i++) tmp_phis[i] = tmp[0];
+    if(type_phis != NCL_double) free(tmp);
+  }
+  else if(ndims_phis == 2) {
+    tmp_phis = coerce_input_double(phis,type_phis,nlatmlon,0,NULL,NULL);
+  }
+  else if(ndims_phis > 2) {
+    tmp_phis = (double *)malloc(nlatmlon*sizeof(double*));
+  }
+/*
  * Coerce input arrays to double if necessary.
  */
-  tmp_phis = coerce_input_double(phis,type_phis,nlatmlon,0,NULL,NULL);
   tmp_p0   = coerce_input_double(p0,type_p0,1,0,NULL,NULL);
   tmp_hyam = coerce_input_double(hyam,type_hyam,klev,0,NULL,NULL);
   tmp_hybm = coerce_input_double(hybm,type_hybm,klev,0,NULL,NULL);
@@ -288,6 +319,18 @@ NhlErrorTypes cz2ccm_W( void )
     else {
       tmp_tv = &((double*)tv)[index_z2];
     }
+/*
+ * Coerce subsection of phis to double if necessary.
+ */
+    if(ndims_phis > 2) {
+      if(type_phis != NCL_double) {
+        coerce_subset_input_double(phis,tmp_phis,index_ps,type_phis,
+                                   nlatmlon,0,NULL,NULL);
+      }
+      else {
+        tmp_phis = &((double*)phis)[index_ps];
+      }
+    }
 
     if(type_z2 == NCL_double) tmp_z2 = &((double*)z2)[index_z2];
 
@@ -317,7 +360,6 @@ NhlErrorTypes cz2ccm_W( void )
   NclFree(pterm);
 
   if(type_ps   != NCL_double) NclFree(tmp_ps);
-  if(type_phis != NCL_double) NclFree(tmp_phis);
   if(type_tv   != NCL_double) NclFree(tmp_tv);
   if(type_p0   != NCL_double) NclFree(tmp_p0);
   if(type_hyam != NCL_double) NclFree(tmp_hyam);
@@ -325,6 +367,7 @@ NhlErrorTypes cz2ccm_W( void )
   if(type_hyai != NCL_double) NclFree(tmp_hyai);
   if(type_hybi != NCL_double) NclFree(tmp_hybi);
   if(type_z2 != NCL_double) NclFree(tmp_z2);
+  if(ndims_phis == 2 && type_phis != NCL_double) NclFree(tmp_phis);
 
 /*
  * Return.
