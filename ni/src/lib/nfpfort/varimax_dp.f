@@ -23,7 +23,7 @@ C check for missing values: Use appropriate subroutine
       END DO
   100 CONTINUE
 
-      IF (IOPT.LE.0) THEN
+      IF (IOPT.NE.0) THEN
 C Scale the input eigenvector matrix
           DO N=1,NF
             DO M=1,ND
@@ -55,7 +55,7 @@ C Scale the input eigenvector matrix
       
 C % variance explained
 
-      IF (IOPT.LE.0) THEN
+      IF (IOPT.NE.0) THEN
           DO N=1,NF
             ROTPCV(N) = (ROTVAR(N)/TVAR)*100D0
           END DO
@@ -65,19 +65,17 @@ C % variance explained
           END DO
       END IF
       
-      IF (IABS(IOPT).EQ.1) RETURN
+      IF (IOPT.LE.0) RETURN
 
 C unscale [denormalize]
 
-      IF (IOPT.EQ.0) THEN
-          DO N=1,NF
-            DO M=1,ND
-               IF (V(M,N).NE.VMSG) THEN
-                   V(M,N) = V(M,N)/DSQRT( ROTVAR(N) )
-               END IF
-            END DO
-          END DO
-      END IF
+      DO N=1,NF
+        DO M=1,ND
+           IF (V(M,N).NE.VMSG) THEN
+               V(M,N) = V(M,N)/DSQRT( ROTVAR(N) )
+           END IF
+        END DO
+      END DO
 
 
       RETURN
