@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.5 2007-01-04 20:15:33 kennison Exp $
+I $Id: CodeIftran,v 1.6 2007-02-15 00:15:05 kennison Exp $
 I
 I***********************************************************************
 I  V A S P A C K T   -   I N T R O D U C T I O N
@@ -65,7 +65,7 @@ I length) to tell the caller where the requested space is.  Note: If
 I the value of $NBRW$ is made larger than 9, the code setting up the
 I equivalence statements defining IRnn and LRnn must be changed.
 I
-.RE /$NBRW$/4/
+.RE /$NBRW$/2/
 I
 I The VASPACKT common blocks
 I --- -------- ------ ------
@@ -79,24 +79,22 @@ C
 C VTCOM1 contains integer and real variables.
 C
         COMMON /VTCOM1/ AHAW,AHLN,AHLR,AHSP,AHSR
-        COMMON /VTCOM1/ ANCF,ANIL,ANM1,ANM2,AVEL,CHWM,CXCF,CXIL
-        COMMON /VTCOM1/ CYCF,CYIL,DCNU,DCNV,DCNW,DMAX
+        COMMON /VTCOM1/ ANIL,ANM1,ANM2,ANZF,AVEL,CHWM,CXIL,CXZF
+        COMMON /VTCOM1/ CYIL,CYZF,DCNU,DCNV,DCNW,DMAX
         COMMON /VTCOM1/ DMIN,DVAL  !  REUSE FOR FLOWMIN AND FLOWMAX?
         COMMON /VTCOM1/ EMAX,EPSI
-        COMMON /VTCOM1/ IBCF,IBIL,ICCF,ICFF,ICIL,ICLR($MCLR$)
-        COMMON /VTCOM1/ ICSG,ICST,ICTT,ICTV,IDBG,IISP
+        COMMON /VTCOM1/ IBIL,IBZF,ICIL,ICLR($MCLR$)
+        COMMON /VTCOM1/ ICSG,ICST,ICTT,ICTV,ICZF,IDBG,IISP
         COMMON /VTCOM1/ IIWS($NBIW$),IIWU,ILBC,IMPF
         COMMON /VTCOM1/ INIL  !  NEEDED? (INFORMATIONAL LABEL INDEX)
-        COMMON /VTCOM1/ INIT,IPAI,IPCF,IPIS
-        COMMON /VTCOM1/ IPIE  !  NEEDED? (STREAMLINE INTERPOLATION)
-        COMMON /VTCOM1/ IPIL,IRNG,IRWS($NBRW$),IRWU,ISET,ISTA(625)
-        COMMON /VTCOM1/ ISVT,ITBM,IWSO,JODP,JOMA
+        COMMON /VTCOM1/ INIT,IPAI,IPIS
+        COMMON /VTCOM1/ IPIL,IPZF,IRNG,IRWS($NBRW$),IRWU,ISET,ISTA(625)
+        COMMON /VTCOM1/ ISVT,ITBM,IWSO,IZFF,JODP,JOMA
         COMMON /VTCOM1/ JOTZ,LCTM,LEA1,LEA2,LEA3,LEE1,LEE2,LEE3
-        COMMON /VTCOM1/ LIWB,LIWK,LIWM,LIWS($NBIW$),LNLG
+        COMMON /VTCOM1/ LIWB,LIWK,LIWS($NBIW$),LNLG
         COMMON /VTCOM1/ LOEN,LOPN,LOTN
-        COMMON /VTCOM1/ LRWC  !  REUSE FOR STREAMLINE WORKSPACE?
-        COMMON /VTCOM1/ LRWK,LRWM,LRWS($NBRW$)
-        COMMON /VTCOM1/ LSDD,LSDL,LSDM,LTCF,LTIL,MIRO,NCLR
+        COMMON /VTCOM1/ LRWK,LRWS($NBRW$)
+        COMMON /VTCOM1/ LSDD,LSDL,LSDM,LTIL,LTZF,MIRO,NCLR
         COMMON /VTCOM1/ NDGL,NEDG,NEXL,NEXT,NEXU
         COMMON /VTCOM1/ NLBS  !  NEEDED? (NUMBER OF LABELS)
         COMMON /VTCOM1/ NLSD,NLZF,NOMF,NPNT
@@ -109,8 +107,8 @@ C
         COMMON /VTCOM1/ UVPB,UVPL,UVPR,UVPS,UVPT,UWDB,UWDL
         COMMON /VTCOM1/ UWDR,UWDT,VFRA,VRLN,VRLR,VRMG,VRMR
         COMMON /VTCOM1/ VVMM
-        COMMON /VTCOM1/ WCCF,WCIL,WLCF,WLIL
-        COMMON /VTCOM1/ WWCF,WWIL
+        COMMON /VTCOM1/ WCIL,WCZF,WLIL,WLZF
+        COMMON /VTCOM1/ WWIL,WWZF
         COMMON /VTCOM1/ XLBC,XMAX,XMIN,XVPL,XVPR,XWDL,XWDR
         COMMON /VTCOM1/ YLBC,YMAX,YMIN,YVPB,YVPT,YWDB,YWDT,ZMAX,ZMIN
 C
@@ -175,12 +173,12 @@ C
 C VTCOM2 holds character parameters.
 C
         COMMON /VTCOM2/ CHEX,CTMA,CTMB,FRMT
-        COMMON /VTCOM2/ TXCF,TXIL
+        COMMON /VTCOM2/ TXIL,TXZF
         CHARACTER*13 CHEX
         CHARACTER*$LOCV$ CTMA,CTMB
         CHARACTER*8 FRMT
-        CHARACTER*64 TXCF
         CHARACTER*128 TXIL
+        CHARACTER*64 TXZF
 .IF <$SAVE-COMMON$.NE.0>
         SAVE   /VTCOM2/
 .ENDIF
@@ -213,11 +211,6 @@ C necessary.
 C
         DATA AHSP / .16 /
 C
-C ANCF is the parameter 'CFA', which is the angle, in degrees, at which
-C the constant-field label is to be written.
-C
-        DATA ANCF / 0. /
-C
 C ANIL is the parameter 'ILA', which is the angle, in degrees, at which
 C the informational label is to be written.
 C
@@ -231,6 +224,11 @@ C and streamlines, while the second serves to terminate streamline
 C generators and streamlines.
 C
         DATA ANM1,ANM2 / 90. , 0. /
+C
+C ANZF is the parameter 'ZFA', which is the angle, in degrees, at which
+C the zero-field label is to be written.
+C
+        DATA ANZF / 0. /
 C
 C AVEL is the parameter 'AEL' (for retrieval only), which is the average
 C edge length in the triangular mesh.
@@ -249,12 +247,12 @@ C purposes throughout the code.  CTMA is the parameter 'CTM'.
 C
         DATA CTMA,CTMB / ' ',' ' /
 C
-C CXCF and CYCF are the parameters 'CFX' and 'CFY', which are the X and
-C Y coordinates of a basepoint relative to which the constant-field
+C CXZF and CYZF are the parameters 'ZFX' and 'ZFY', which are the X and
+C Y coordinates of a basepoint relative to which the zero-field
 C label is to be positioned.  These coordinates are given in a
 C fractional coordinate system superimposed on the user-system window.
 C
-        DATA CXCF,CYCF / .50,.50 /
+        DATA CXZF,CYZF / .50,.50 /
 C
 C CXIL and CYIL are the parameters 'ILX' and 'ILY', which are the X and
 C Y coordinates of a basepoint relative to which the informational label
@@ -290,32 +288,27 @@ C
 C FRMT is a format to be used by the routine VTNUMB.  It is constructed
 C as needed by the routine VTINRC.
 C
-C IBCF is the parameter 'CFB', which is zero if no box is to be drawn
-C around the constant-field label.  Adding 1 to the value causes the box
-C to be drawn and adding 2 to it causes the box to be filled.
-C
-        DATA IBCF / 0 /
-C
 C IBIL is the parameter 'ILB', which is zero if no box is to be drawn
 C around the informational label.  Adding 1 to the value causes the box
 C to be drawn and adding 2 to it causes the box to be filled.
 C
         DATA IBIL / 0 /
 C
-C ICCF is the parameter 'CFC', which determines the color of the
-C constant-field label.
+C IBZF is the parameter 'ZFB', which is zero if no box is to be drawn
+C around the zero-field label.  Adding 1 to the value causes the box
+C to be drawn and adding 2 to it causes the box to be filled.
 C
-        DATA ICCF / -1 /
-C
-C ICFF is the parameter 'CFF' (output only) which is non-zero if the
-C field being dealt with is constant.
-C
-        DATA ICFF / 0 /
+        DATA IBZF / 0 /
 C
 C ICIL is the parameter 'ILC', which determines the color of the
 C informational label.
 C
         DATA ICIL / -1 /
+C
+C ICZF is the parameter 'ZFC', which determines the color of the
+C zero-field label.
+C
+        DATA ICZF / -1 /
 C
 C ICLR is the parameter array 'CLR', which holds color indices for use
 C on streamlines.
@@ -383,25 +376,20 @@ C IPAI is the parameter 'PAI', which is the index for parameter arrays.
 C
         DATA IPAI / 0 /
 C
-C IPCF is the parameter 'CFP', specifying how the constant-field label
-C is to be positioned.
-C
-        DATA IPCF / 0 /
-C
 C IPIS is the parameter 'PIS', which indicates the number of points to
 C interpolate between each pair of points defining a streamline.
 C
         DATA IPIS / 0 /
 C
-C IPIE is the parameter 'PIE', which indicates the number of points to
-C interpolate between each pair of points defining an "edge" line.
-C
-        DATA IPIE / 0 /
-C
 C IPIL is the parameter 'ILP', specifying how the informational label
 C is to be positioned.
 C
         DATA IPIL / 4 /
+C
+C IPZF is the parameter 'ZFP', specifying how the zero-field label
+C is to be positioned.
+C
+        DATA IPZF / 0 /
 C
 C IRNG is the parameter 'RNG', specifying by how many steps the random
 C number generator is to be spun up during initialization of VTCVDM,
@@ -553,6 +541,11 @@ C overflow occurs.
 C
         DATA IWSO / 1 /
 C
+C IZFF is the parameter 'ZFF' (output only) which is non-zero if the
+C flow field being dealt with is essentially zero.
+C
+        DATA IZFF / 0 /
+C
 C JODP, JOMA, and JOTZ are used to hold 0/1 flags extracted from the
 C parameter 'NOF'.  Each is non-zero if and only if some extraneous
 C portion of a numeric label may be omitted.
@@ -576,12 +569,6 @@ C
 C LIWK is the length of the user's integer workspace array, as declared
 C in the last call to VTMESH.
 C
-C LIWM is the parameter 'IWM', which specifies the length of the integer
-C workspaces to be used in calls to ARDRLN (for the argument arrays IAI
-C and IAG).
-C
-        DATA LIWM / 10 /
-C
 C LIWS is described with IIWS, above.
 C
 C LNLG is the linear/log flag for the SET call defining the mapping
@@ -590,21 +577,8 @@ C
 C LOEN, LOPN, and LOTN are the lengths of an edge node, a point node,
 C and a triangle node, respectively, as set by the routine VTMESH.
 C
-C LRWC is the parameter 'RWC', the number of words to be used in the
-C real workspace array to hold X coordinates of points defining a piece
-C of a streamline; 2*LRWC words will be required, LRWC for X coordinates
-C and LRWC for Y coordinates.
-C
-        DATA LRWC / 1000 /
-C
 C LRWK is the length of the user's real workspace array, as declared in
 C the last call to VTMESH.
-C
-C LRWM is the parameter 'RWM', which specifies the length of the real
-C workspaces to be used in calls to ARDRLN (for the argument arrays XCS
-C and YCS).
-C
-        DATA LRWM / 100 /
 C
 C LRWS is described with IRWS, above.
 C
@@ -618,13 +592,13 @@ C
 C LSDM is set by VTMESH to indicate the position of the leftmost
 C significant digit in MAX(ABS(DMIN),ABS(DMAX)).
 C
-C LTCF is the length of the constant-field label, before substitution.
-C
-        DATA LTCF / 31 /
-C
 C LTIL is the length of the informational label, before substitution.
 C
-        DATA LTIL / 36 /
+        DATA LTIL / 21 /
+C
+C LTZF is the length of the zero-field label, before substitution.
+C
+        DATA LTZF / 10 /
 C
 C MIRO is a flag used to signal that the coordinate transformations in
 C effect will cause mirror imaging.
@@ -802,13 +776,13 @@ C be used to color streamlines.
 C
         DATA TVAL / <$MCLR$+2>*0. /
 C
-C TXCF is the parameter 'CFT', the text of the constant-field label.
-C
-        DATA TXCF / 'CONSTANT FIELD - VALUE IS $DVA$' /
-C
 C TXIL is the parameter 'ILT', the text of the informational label.
 C
-        DATA TXIL / 'CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$' /
+        DATA TXIL / 'SCALE FACTOR IS $SFU$' /
+C
+C TXZF is the parameter 'ZFT', the text of the zero-field label.
+C
+        DATA TXZF / 'ZERO FIELD' /
 C
 C UVPL, UVPR, UVPB, and UVPT are the parameters 'VPL', 'VPR', 'VPB',
 C and 'VPT', specifying the edges of an area in which the viewport is
@@ -855,39 +829,39 @@ C
 C VVMM is the parameter 'VVM', which is the velocity vector magnitude
 C minimum, below which the velocity is considered to be zero.
 C
-        DATA VVMM / .001 /
-C
-C WCCF is the parameter 'CFS', which specifies the width of a character
-C in the constant-field label, as a fraction of the viewport width.
-C
-        DATA WCCF / .012 /
+        DATA VVMM / 0. /
 C
 C WCIL is the parameter 'ILS', which specifies the width of a character
 C in the informational label, as a fraction of the viewport width.
 C
         DATA WCIL / .012 /
 C
-C WLCF is the parameter 'CFL', a line-width specifier for the box
-C around a constant-field label.
+C WCZF is the parameter 'ZFS', which specifies the width of a character
+C in the zero-field label, as a fraction of the viewport width.
 C
-        DATA WLCF / 0. /
+        DATA WCZF / .012 /
 C
 C WLIL is the parameter 'ILL', a line-width specifier for the box
 C around an informational label.
 C
         DATA WLIL / 0. /
 C
-C WWCF is the parameter 'CFW', which specifies the width of the white
-C space around the constant-field label, as a fraction of the viewport
-C width.
+C WLZF is the parameter 'ZFL', a line-width specifier for the box
+C around a zero-field label.
 C
-        DATA WWCF / .005 /
+        DATA WLZF / 0. /
 C
 C WWIL is the parameter 'ILW', which specifies the width of the white
 C space around the informational label, as a fraction of the viewport
 C width.
 C
         DATA WWIL / .005 /
+C
+C WWZF is the parameter 'ZFW', which specifies the width of the white
+C space around the zero-field label, as a fraction of the viewport
+C width.
+C
+        DATA WWZF / .005 /
 C
 C XLBC is the parameter 'LBX', which may be retrieved in any of the
 C change routines and specifies the X position of the label's center,
@@ -1041,9 +1015,7 @@ C
 C
 C Get the appropriate parameter value.
 C
-        IF      (WHCH(1:3).EQ.'CFT'.OR.WHCH(1:3).EQ.'cft')
-          CVAL=TXCF(1:LTCF)
-        ELSE IF (WHCH(1:3).EQ.'CTM'.OR.WHCH(1:3).EQ.'ctm')
+        IF      (WHCH(1:3).EQ.'CTM'.OR.WHCH(1:3).EQ.'ctm')
           CVAL=CTMA(1:LCTM)
         ELSE IF (WHCH(1:3).EQ.'DVA'.OR.WHCH(1:3).EQ.'dva')
           CALL VTSBST ('$DVA$',CVAL,LCVL)
@@ -1051,6 +1023,8 @@ C
           CALL VTSBST ('$DVAU$',CVAL,LCVL)
         ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt')
           CVAL=TXIL(1:LTIL)
+        ELSE IF (WHCH(1:3).EQ.'ZFT'.OR.WHCH(1:3).EQ.'zft')
+          CVAL=TXZF(1:LTZF)
         ELSE
           CTMB(1:36)='VTGETC - PARAMETER NAME NOT KNOWN - '
           CTMB(37:39)=WHCH(1:3)
@@ -1156,26 +1130,6 @@ C
           RVAL=ANM1
         ELSE IF (WHCH(1:3).EQ.'AM2'.OR.WHCH(1:3).EQ.'am2')
           RVAL=ANM2
-        ELSE IF (WHCH(1:3).EQ.'CFA'.OR.WHCH(1:3).EQ.'cfa')
-          RVAL=ANCF
-        ELSE IF (WHCH(1:3).EQ.'CFB'.OR.WHCH(1:3).EQ.'cfb')
-          RVAL=REAL(IBCF)
-        ELSE IF (WHCH(1:3).EQ.'CFC'.OR.WHCH(1:3).EQ.'cfc')
-          RVAL=REAL(ICCF)
-        ELSE IF (WHCH(1:3).EQ.'CFF'.OR.WHCH(1:3).EQ.'cff')
-          RVAL=ICFF
-        ELSE IF (WHCH(1:3).EQ.'CFL'.OR.WHCH(1:3).EQ.'cfl')
-          RVAL=WLCF
-        ELSE IF (WHCH(1:3).EQ.'CFP'.OR.WHCH(1:3).EQ.'cfp')
-          RVAL=REAL(IPCF)
-        ELSE IF (WHCH(1:3).EQ.'CFS'.OR.WHCH(1:3).EQ.'cfs')
-          RVAL=WCCF
-        ELSE IF (WHCH(1:3).EQ.'CFW'.OR.WHCH(1:3).EQ.'cfw')
-          RVAL=WWCF
-        ELSE IF (WHCH(1:3).EQ.'CFX'.OR.WHCH(1:3).EQ.'cfx')
-          RVAL=CXCF
-        ELSE IF (WHCH(1:3).EQ.'CFY'.OR.WHCH(1:3).EQ.'cfy')
-          RVAL=CYCF
         ELSE IF (WHCH(1:3).EQ.'CLR'.OR.WHCH(1:3).EQ.'clr')
           RVAL=REAL(ICLR(IPAI))
         ELSE IF (WHCH(1:3).EQ.'CTV'.OR.WHCH(1:3).EQ.'ctv')
@@ -1214,8 +1168,6 @@ C
           RVAL=REAL(IISP)
         ELSE IF (WHCH(1:3).EQ.'IWB'.OR.WHCH(1:3).EQ.'iwb')
           RVAL=REAL(LIWB)
-        ELSE IF (WHCH(1:3).EQ.'IWM'.OR.WHCH(1:3).EQ.'iwm')
-          RVAL=REAL(LIWM)
         ELSE IF (WHCH(1:3).EQ.'IWU'.OR.WHCH(1:3).EQ.'iwu')
           RVAL=REAL(IIWU)
         ELSE IF (WHCH(1:3).EQ.'LBC'.OR.WHCH(1:3).EQ.'lbc')
@@ -1254,8 +1206,6 @@ C
           RVAL=OORV
         ELSE IF (WHCH(1:3).EQ.'PAI'.OR.WHCH(1:3).EQ.'pai')
           RVAL=REAL(IPAI)
-        ELSE IF (WHCH(1:3).EQ.'PIE'.OR.WHCH(1:3).EQ.'pie')
-          RVAL=REAL(IPIE)
         ELSE IF (WHCH(1:3).EQ.'PIS'.OR.WHCH(1:3).EQ.'pis')
           RVAL=REAL(IPIS)
         ELSE IF (WHCH(1:3).EQ.'PIT'.OR.WHCH(1:3).EQ.'pit')
@@ -1268,10 +1218,6 @@ C
           RVAL=PCPZ
         ELSE IF (WHCH(1:3).EQ.'RNG'.OR.WHCH(1:3).EQ.'rng')
           RVAL=REAL(IRNG)
-        ELSE IF (WHCH(1:3).EQ.'RWC'.OR.WHCH(1:3).EQ.'rwc')
-          RVAL=REAL(LRWC)
-        ELSE IF (WHCH(1:3).EQ.'RWM'.OR.WHCH(1:3).EQ.'rwm')
-          RVAL=REAL(LRWM)
         ELSE IF (WHCH(1:3).EQ.'RWU'.OR.WHCH(1:3).EQ.'rwu')
           RVAL=REAL(IRWU)
         ELSE IF (WHCH(1:3).EQ.'SET'.OR.WHCH(1:3).EQ.'set')
@@ -1342,6 +1288,26 @@ C
           RVAL=YMIN
         ELSE IF (WHCH(1:3).EQ.'YMX'.OR.WHCH(1:3).EQ.'ymx')
           RVAL=YMAX
+        ELSE IF (WHCH(1:3).EQ.'ZFA'.OR.WHCH(1:3).EQ.'zfa')
+          RVAL=ANZF
+        ELSE IF (WHCH(1:3).EQ.'ZFB'.OR.WHCH(1:3).EQ.'zfb')
+          RVAL=REAL(IBZF)
+        ELSE IF (WHCH(1:3).EQ.'ZFC'.OR.WHCH(1:3).EQ.'zfc')
+          RVAL=REAL(ICZF)
+        ELSE IF (WHCH(1:3).EQ.'ZFF'.OR.WHCH(1:3).EQ.'zff')
+          RVAL=IZFF
+        ELSE IF (WHCH(1:3).EQ.'ZFL'.OR.WHCH(1:3).EQ.'zfl')
+          RVAL=WLZF
+        ELSE IF (WHCH(1:3).EQ.'ZFP'.OR.WHCH(1:3).EQ.'zfp')
+          RVAL=REAL(IPZF)
+        ELSE IF (WHCH(1:3).EQ.'ZFS'.OR.WHCH(1:3).EQ.'zfs')
+          RVAL=WCZF
+        ELSE IF (WHCH(1:3).EQ.'ZFW'.OR.WHCH(1:3).EQ.'zfw')
+          RVAL=WWZF
+        ELSE IF (WHCH(1:3).EQ.'ZFX'.OR.WHCH(1:3).EQ.'zfx')
+          RVAL=CXZF
+        ELSE IF (WHCH(1:3).EQ.'ZFY'.OR.WHCH(1:3).EQ.'zfy')
+          RVAL=CYZF
         ELSE IF (WHCH(1:3).EQ.'ZMN'.OR.WHCH(1:3).EQ.'zmn')
           RVAL=ZMIN
         ELSE IF (WHCH(1:3).EQ.'ZMX'.OR.WHCH(1:3).EQ.'zmx')
@@ -1568,9 +1534,11 @@ C
             TMAX=DMAX
           END IF
 C   
-          DO (I=1,NCLR)
-            TVAL(I)=TMIN+REAL(I)*(TMAX-TMIN)/REAL(NCLR+1)
+          DO (I=1,NCLR-1)
+            TVAL(I)=TMIN+REAL(I)*(TMAX-TMIN)/REAL(NCLR)
           END DO
+C
+          TVAL(NCLR)=TMAX
 C 
         END IF
 C
@@ -1793,26 +1761,28 @@ C
           SCFU=SCFS
         END IF
 C
-C If the field is (effectively) constant, set a flag to indicate that
+C If the flow field is (effectively) zero, set a flag to indicate that
 C and force the scale factor back to 1.  Otherwise, clear the flag.
 C
+C Code here needs work ... ???
+C
         IF (DMAX-DMIN.LE.10.*EPSI*ABS((DMIN+DMAX)/2.))
-          ICFF=1
+          IZFF=1
           SCFU=1.
         ELSE
-          ICFF=0
+          IZFF=0
         END IF
 C
 C Find the positions of the leftmost significant digits in the largest
 C absolute value in the field and in the difference between the minimum
 C and the maximum values in the field.  If the field is effectively
-C constant, the latter value is set equal to the former.
+C zero, the latter value is set equal to the former.
 C
         CALL VTNUMB (MAX(ABS(DMIN/SCFU),ABS(DMAX/SCFU)),1,-10000,-1,-1,
      +                      ' ',' ',' ',0,0,0,0,0,0,SCHR,NCHS,NDGS,IEVA)
         LSDM=IEVA-1
 C
-        IF (ICFF.EQ.0)
+        IF (IZFF.EQ.0)
           CALL VTNUMB ((DMAX-DMIN)/SCFU,1,-10000,-1,-1,
      +                      ' ',' ',' ',0,0,0,0,0,0,SCHR,NCHS,NDGS,IEVA)
           LSDD=IEVA-1
@@ -1884,11 +1854,11 @@ C
         JODP=MOD(MAX(0,MIN(7,NOMF))/2,2)
         JOTZ=MOD(MAX(0,MIN(7,NOMF))  ,2)
 C
-C If the field is not constant and the scale factor is to be chosen
+C If the field is not zero and the scale factor is to be chosen
 C here, do it now.  The parameter which specifies where the leftmost
 C significant digit is assumed to be also must be updated.
 C
-        IF (ICFF.EQ.0.AND.SCFS.LE.0..AND.SCFS.GE.-3.)
+        IF (IZFF.EQ.0.AND.SCFS.LE.0..AND.SCFS.GE.-3.)
           ITMP=0
           IF (SCFS.EQ.0..OR.(SCFS.EQ.-3..AND.LSDM.LT.-1)) ITMP=LSDM+1
           IF (SCFS.EQ.-1.) ITMP=LSDM
@@ -2105,28 +2075,27 @@ C
         AHAW=30.
         AHLN=.04
         AHSP=.16
-        ANCF=0.
         ANIL=0.
+        ANZF=0.
         AVEL=0.
         CHWM=1.
         CTMA=' '
         CTMB=' '
-        CXCF=.50
         CXIL=.98
-        CYCF=.50
+        CXZF=.50
         CYIL=-.02
+        CYZF=.50
         DMAX=0.
         DMIN=0.
         DVAL=0.
-        IBCF=0
         IBIL=0
-        ICCF=-1
-        ICFF=0
+        IBZF=0
         ICIL=-1
         ICSG=1
         ICST=1
         ICTT=1
         ICTV=0
+        ICZF=-1
         IDBG=0
         IISP=0
         IIWU=0
@@ -2134,22 +2103,20 @@ C
         IMPF=0
         INIT=0
         IPAI=0
-        IPCF=0
-        IPIE=0
         IPIL=4
         IPIS=0
+        IPZF=0
         IRNG=0
         IRWU=0
         ISET=1
         ISVT=5
         ITBM=1
         IWSO=1
+        IZFF=0
         LCTM=1
         LIWB=2500
-        LRWC=1000
-        LRWM=100
-        LTCF=31
-        LTIL=36
+        LTZF=10
+        LTIL=21
         MIRO=0
         NCLR=0
         NEXL=0
@@ -2173,8 +2140,8 @@ C
         SVSP=0.
         TTLL=.018
         TTSP=.036
-        TXCF='CONSTANT FIELD - VALUE IS $DVA$'
-        TXIL='CONTOUR FROM $CMN$ TO $CMX$ BY $CIU$'
+        TXIL='SCALE FACTOR IS $SFU$'
+        TXZF='ZERO FIELD'
         UVPL=.05
         UVPR=.95
         UVPB=.05
@@ -2185,15 +2152,15 @@ C
         UWDB=0.
         UWDT=0.
         VFRA=0.
-        VVMM=.001
+        VVMM=0.
         VRLN=0.
         VRMG=0.
-        WCCF=.012
         WCIL=.012
-        WLCF=0.
+        WCZF=.012
         WLIL=0.
-        WWCF=.005
+        WLZF=0.
         WWIL=.005
+        WWZF=.005
         XLBC=0.
         XMAX=0.
         XMIN=0.
@@ -2265,15 +2232,15 @@ C
 C
 C Set the proper parameter.
 C
-        IF      (WHCH(1:3).EQ.'CFT'.OR.WHCH(1:3).EQ.'cft')
-          TXCF=CVAL
-          LTCF=MAX(1,MIN(40,LCVL))
-        ELSE IF (WHCH(1:3).EQ.'CTM'.OR.WHCH(1:3).EQ.'ctm')
+        IF      (WHCH(1:3).EQ.'CTM'.OR.WHCH(1:3).EQ.'ctm')
           CTMA=CVAL
           LCTM=MAX(1,MIN($LOCV$,LCVL))
         ELSE IF (WHCH(1:3).EQ.'ILT'.OR.WHCH(1:3).EQ.'ilt')
           TXIL=CVAL
           LTIL=MAX(1,MIN(100,LCVL))
+        ELSE IF (WHCH(1:3).EQ.'ZFT'.OR.WHCH(1:3).EQ.'zft')
+          TXZF=CVAL
+          LTZF=MAX(1,MIN(40,LCVL))
         ELSE
           CTMB(1:36)='VTSETC - PARAMETER NAME NOT KNOWN - '
           CTMB(37:39)=WHCH(1:3)
@@ -2379,24 +2346,6 @@ C
           ANM1=MAX(0.,RVAL)
         ELSE IF (WHCH(1:3).EQ.'AM2'.OR.WHCH(1:3).EQ.'am2')
           ANM2=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'CFA'.OR.WHCH(1:3).EQ.'cfa')
-          ANCF=RVAL
-        ELSE IF (WHCH(1:3).EQ.'CFB'.OR.WHCH(1:3).EQ.'cfb')
-          IBCF=MAX(0,MIN(3,INT(RVAL)))
-        ELSE IF (WHCH(1:3).EQ.'CFC'.OR.WHCH(1:3).EQ.'cfc')
-          ICCF=MAX(-1,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'CFL'.OR.WHCH(1:3).EQ.'cfl')
-          WLCF=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'CFP'.OR.WHCH(1:3).EQ.'cfp')
-          IPCF=MAX(-4,MIN(4,INT(RVAL)))
-        ELSE IF (WHCH(1:3).EQ.'CFS'.OR.WHCH(1:3).EQ.'cfs')
-          WCCF=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'CFW'.OR.WHCH(1:3).EQ.'cfw')
-          WWCF=MAX(0.,RVAL)
-        ELSE IF (WHCH(1:3).EQ.'CFX'.OR.WHCH(1:3).EQ.'cfx')
-          CXCF=RVAL
-        ELSE IF (WHCH(1:3).EQ.'CFY'.OR.WHCH(1:3).EQ.'cfy')
-          CYCF=RVAL
         ELSE IF (WHCH(1:3).EQ.'CLR'.OR.WHCH(1:3).EQ.'clr')
           ICLR(IPAI)=INT(RVAL)
         ELSE IF (WHCH(1:3).EQ.'CTV'.OR.WHCH(1:3).EQ.'ctv')
@@ -2429,8 +2378,6 @@ C
           IISP=MAX(0,MIN(1,INT(RVAL)))
         ELSE IF (WHCH(1:3).EQ.'IWB'.OR.WHCH(1:3).EQ.'iwb')
           LIWB=MAX(1,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'IWM'.OR.WHCH(1:3).EQ.'iwm')
-          LIWM=MAX(1,INT(RVAL))
         ELSE IF (WHCH(1:3).EQ.'LBC'.OR.WHCH(1:3).EQ.'lbc')
           ILBC=MAX(-1,INT(RVAL))
         ELSE IF (WHCH(1:3).EQ.'MAP'.OR.WHCH(1:3).EQ.'map')
@@ -2461,18 +2408,12 @@ C
           PCPY=RVAL
         ELSE IF (WHCH(1:3).EQ.'PCZ'.OR.WHCH(1:3).EQ.'pcz')
           PCPZ=RVAL
-        ELSE IF (WHCH(1:3).EQ.'PIE'.OR.WHCH(1:3).EQ.'pie')
-          IPIE=INT(RVAL)
         ELSE IF (WHCH(1:3).EQ.'PIS'.OR.WHCH(1:3).EQ.'pis')
           IPIS=INT(RVAL)
         ELSE IF (WHCH(1:3).EQ.'PIT'.OR.WHCH(1:3).EQ.'pit')
           PITH=RVAL
         ELSE IF (WHCH(1:3).EQ.'RNG'.OR.WHCH(1:3).EQ.'rng')
           IRNG=MAX(0,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'RWC'.OR.WHCH(1:3).EQ.'rwc')
-          LRWC=MAX(5,INT(RVAL))
-        ELSE IF (WHCH(1:3).EQ.'RWM'.OR.WHCH(1:3).EQ.'rwm')
-          LRWM=MAX(2,INT(RVAL))
         ELSE IF (WHCH(1:3).EQ.'SET'.OR.WHCH(1:3).EQ.'set')
           ISET=MAX(0,MIN(1,INT(RVAL)))
         ELSE IF (WHCH(1:3).EQ.'SFS'.OR.WHCH(1:3).EQ.'sfs'.OR.
@@ -2532,6 +2473,24 @@ C
           UWDT=RVAL
         ELSE IF (WHCH(1:3).EQ.'WSO'.OR.WHCH(1:3).EQ.'wso')
           IWSO=MAX(0,MIN(3,INT(RVAL)))
+        ELSE IF (WHCH(1:3).EQ.'ZFA'.OR.WHCH(1:3).EQ.'zfa')
+          ANZF=RVAL
+        ELSE IF (WHCH(1:3).EQ.'ZFB'.OR.WHCH(1:3).EQ.'zfb')
+          IBZF=MAX(0,MIN(3,INT(RVAL)))
+        ELSE IF (WHCH(1:3).EQ.'ZFC'.OR.WHCH(1:3).EQ.'zfc')
+          ICZF=MAX(-1,INT(RVAL))
+        ELSE IF (WHCH(1:3).EQ.'ZFL'.OR.WHCH(1:3).EQ.'zfl')
+          WLZF=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'ZFS'.OR.WHCH(1:3).EQ.'zfs')
+          WCZF=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'ZFP'.OR.WHCH(1:3).EQ.'zfp')
+          IPZF=MAX(-4,MIN(4,INT(RVAL)))
+        ELSE IF (WHCH(1:3).EQ.'ZFW'.OR.WHCH(1:3).EQ.'zfw')
+          WWZF=MAX(0.,RVAL)
+        ELSE IF (WHCH(1:3).EQ.'ZFX'.OR.WHCH(1:3).EQ.'zfx')
+          CXZF=RVAL
+        ELSE IF (WHCH(1:3).EQ.'ZFY'.OR.WHCH(1:3).EQ.'zfy')
+          CYZF=RVAL
         ELSE
           CTMB(1:36)='VTSETR - PARAMETER NAME NOT KNOWN - '
           CTMB(37:39)=WHCH(1:3)
@@ -2586,6 +2545,14 @@ C
           TEMP=VTRAND()
         END DO
 C
+C Get the required real and integer workspaces.
+C
+        CALL VTGRWS (RWRK,1,NTRI/LOTN,IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('VTCVDM',2).NE.0) GO TO 104
+C
+        CALL VTGIWS (IWRK,1,NTRI/LOTN,IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('VTCVDM',3).NE.0) GO TO 104
+C
 C Do an initialization loop through all of the triangle nodes.
 C
         DO (I=0,NTRI-LOTN,LOTN)
@@ -2612,7 +2579,7 @@ C squares" such that, as the angles range from 0 degrees to 180 degrees,
 C the values we get range from -1 to +1.)  We avoid starting a curly
 C vector in any triangle where this measure is too large.
 C
-          RWRK(I/LOTN+1)=1.
+          RWRK(IR01+I/LOTN+1)=1.
 C
           DNM1=(RPNT(IPP1+4)**2+RPNT(IPP1+5)**2+RPNT(IPP1+6)**2)*
      +         (RPNT(IPP2+4)**2+RPNT(IPP2+5)**2+RPNT(IPP2+6)**2)
@@ -2638,7 +2605,7 @@ C
      +          RPNT(IPP3+6)*RPNT(IPP1+6))
           CSA3=CSA3*ABS(CSA3)/DNM3
 C
-          RWRK(I/LOTN+1)=-MIN(CSA1,CSA2,CSA3)
+          RWRK(IR01+I/LOTN+1)=-MIN(CSA1,CSA2,CSA3)
 C
         END DO
 C
@@ -2647,15 +2614,15 @@ C
         NIND=NTRI/LOTN
 C
         DO (IIII=1,NIND)
-          IWRK(IIII)=IIII
+          IWRK(II01+IIII)=IIII
         END DO
 C
         DO (IIII=1,NIND-1)
           JJJJ=MAX(1,MIN(NIND,IIII+INT(REAL(NIND-IIII+1)*VTRAND())))
           IF (IIII.NE.JJJJ)
-            ITMP=IWRK(IIII)
-            IWRK(IIII)=IWRK(JJJJ)
-            IWRK(JJJJ)=ITMP
+            ITMP=IWRK(II01+IIII)
+            IWRK(II01+IIII)=IWRK(II01+JJJJ)
+            IWRK(II01+JJJJ)=ITMP
           END IF
         END DO
 C
@@ -2672,11 +2639,11 @@ C
 C Avoid using the triangle if the greatest angle between the velocity
 C vectors at its vertices is too large.
 C
-          IF (RWRK(IWRK(IIII)).GT.TMAX) GO TO 103
+          IF (RWRK(IR01+IWRK(II01+IIII)).GT.TMAX) GO TO 103
 C
 C Otherwise, compute the base index of the triangle.
 C
-          IBEG=(IWRK(IIII)-1)*LOTN
+          IBEG=(IWRK(II01+IIII)-1)*LOTN
 C
 C Avoid using the triangle if there are already curly vectors passing
 C through it.
@@ -2763,9 +2730,14 @@ C
 C
   103   END DO
 C
+C Release the real and integer workspaces acquired above.
+C
+  104   LR01=0
+        LI01=0
+C
 C Done.
 C
-  104   RETURN
+        RETURN
 C
       END
 
@@ -2839,6 +2811,14 @@ C
           TEMP=VTRAND()
         END DO
 C
+C Get the required real and integer workspaces.
+C
+        CALL VTGRWS (RWRK,1,NTRI/LOTN,IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('VTSLDM',2).NE.0) GO TO 104
+C
+        CALL VTGIWS (IWRK,1,NTRI/LOTN,IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('VTSLDM',3).NE.0) GO TO 104
+C
 C Do an initialization loop through all of the triangle nodes.
 C
         DO (I=0,NTRI-LOTN,LOTN)
@@ -2866,7 +2846,7 @@ C the values we get range from -1 to +1.)  These values will be used to
 C order the triangles from most desirable as the starting point of a
 C streamline generator to least desirable.
 C
-          RWRK(I/LOTN+1)=1.
+          RWRK(IR01+I/LOTN+1)=1.
 C
           DNM1=(RPNT(IPP1+4)**2+RPNT(IPP1+5)**2+RPNT(IPP1+6)**2)*
      +         (RPNT(IPP2+4)**2+RPNT(IPP2+5)**2+RPNT(IPP2+6)**2)
@@ -2892,13 +2872,13 @@ C
      +          RPNT(IPP3+6)*RPNT(IPP1+6))
           CSA3=CSA3*ABS(CSA3)/DNM3
 C
-          RWRK(I/LOTN+1)=-MIN(CSA1,CSA2,CSA3)
+          RWRK(IR01+I/LOTN+1)=-MIN(CSA1,CSA2,CSA3)
 C
         END DO
 C
 C Generate an index array for the values in RWRK.
 C
-        CALL VTSORT (RWRK,NTRI/LOTN,IWRK)
+        CALL VTSORT (RWRK(IR01+1),NTRI/LOTN,IWRK(II01+1))
 C
 C Compute a maximum acceptable value of the measure that we used to
 C order the triangles.
@@ -2914,11 +2894,11 @@ C
 C Avoid using the triangle (or any following it) if the greatest angle
 C between the velocity vectors at its vertices is too large.
 C
-          IF (RWRK(IWRK(IIII)).GT.TMAX) GO TO 104
+          IF (RWRK(IR01+IWRK(II01+IIII)).GT.TMAX) GO TO 104
 C
 C Otherwise, compute the base index of the triangle.
 C
-          IBEG=(IWRK(IIII)-1)*LOTN
+          IBEG=(IWRK(II01+IIII)-1)*LOTN
 C
 C Avoid using the triangle if there are already streamlines passing
 C through it.
@@ -3045,9 +3025,14 @@ C
 C
   103   END DO
 C
+C Release the real and integer workspaces acquired above.
+C
+  104   LR01=0
+        LI01=0
+C
 C Done.
 C
-  104   RETURN
+        RETURN
 C
       END
 
@@ -3155,6 +3140,8 @@ C
 C
           END FOR
 C
+          GO TO 103
+C
         ELSE
 C 
 C More complicated algorithm - first, initialize the "seed" for the
@@ -3165,6 +3152,11 @@ C
           DO (I=1,IRNG)
             TEMP=VTRAND()
           END DO
+C
+C Get the required integer workspace.
+C
+        CALL VTGIWS (IWRK,1,NTRI/LOTN,IWSE)
+        IF (IWSE.NE.0.OR.ICFELL('VTSVDM',2).NE.0) GO TO 102
 C
 C Zero the utility flags in all of the triangle nodes.
 C
@@ -3177,15 +3169,15 @@ C
           NIND=NTRI/LOTN
 C
           DO (I=1,NIND)
-            IWRK(I)=I
+            IWRK(II01+I)=I
           END DO
 C
           DO (I=1,NIND-1)
             J=MAX(I,MIN(NIND,I+INT(REAL(NIND-I+1)*VTRAND())))
             IF (I.NE.J)
-              ITMP=IWRK(I)
-              IWRK(I)=IWRK(J)
-              IWRK(J)=ITMP
+              ITMP=IWRK(II01+I)
+              IWRK(II01+I)=IWRK(II01+J)
+              IWRK(II01+J)=ITMP
             END IF
           END DO
 C
@@ -3193,7 +3185,7 @@ C Loop through the triangles in random order.
 C
           FOR (I = 1 TO NIND)
 C
-            IIII=LOTN*(IWRK(I)-1)
+            IIII=LOTN*(II01+IWRK(I)-1)
 C
 C Use the current triangle only if it has not been marked yet.
 C
@@ -3270,9 +3262,13 @@ C
 C
         END IF
 C
+C Release the integer workspace acquired above.
+C
+  102   LI01=0
+C
 C Done.
 C
-        RETURN
+  103   RETURN
 C
 C The following internal procedure draws a simple vector centered on
 C the triangle whose base address is IIII.
@@ -3307,7 +3303,7 @@ C
 C
 C Skip the triangle if it's blocked.
 C
-          IF (ITBF(ITRI(IIII+4)).NE.0) GO TO 102
+          IF (ITBF(ITRI(IIII+4)).NE.0) GO TO 104
 C
 C Compute the coefficients A, B, C, and D in the equation defining the
 C plane of the triangle (Ax+By+Cz+D=0).
@@ -3322,7 +3318,7 @@ C are not well-defined, skip the triangle.
 C
           DNOM=SQRT(A**2+B**2+C**2)
 C
-          IF (DNOM.EQ.0.) GO TO 102
+          IF (DNOM.EQ.0.) GO TO 104
 C
           DCNU=A/DNOM
           DCNV=B/DNOM
@@ -3358,7 +3354,7 @@ C
 C
           CALL VTCUDR (UCRV,VCRV,WCRV,CCRV,2,ICOL,1,IAMA,RTPL)
 C
-  102   END BLOCK
+  104   END BLOCK
 C
       END
 .OP   BI=77
@@ -4131,74 +4127,6 @@ I  V A S P A C K T   -   U S E R - C A L L B A C K   R O U T I N E S
 I***********************************************************************
 
 
-      SUBROUTINE HLUVTCHCF (IFLG)
-C
-C This routine stands between VASPACKT and the user call-back routine
-C VTCHCF.  When HLUs are not in use, this version of the routine gets
-C loaded, so that VTCHCF is called.  When HLUs are in use, another
-C version gets loaded; it either does the appropriate thing for the
-C purposes of the HLUs or calls VTCHCF.
-C
-        CALL VTCHCF (IFLG)
-C
-        RETURN
-C
-      END
-
-
-      SUBROUTINE VTCHCF (IFLG)
-C
-C This routine is a dummy.  It is called just before and just after
-C each action involving a constant-field label.  A user version may
-C take action to change the label.
-C
-C IFLG is positive if an action is about to be taken, negative if an
-C action has just been completed.  The action in question is implied
-C by the absolute value of IFLG, as follows:
-C
-C   1 - computing the size of the constant-field label
-C   2 - filling the box around the constant-field label
-C   3 - drawing the constant-field label
-C   4 - outlining the box around the constant-field label
-C
-C When IFLG = 2, 3, or 4, VTCHCF may make GKS calls to change color
-C or line width; during the following call with IFLG = -2, -3, or -4,
-C such changes should be undone.
-C
-        RETURN
-C
-      END
-
-
-      SUBROUTINE HLUVTCHSL (IFLG)
-C
-C This routine stands between VASPACKT and the user call-back routine
-C VTCHSL.  When HLUs are not in use, this version of the routine gets
-C loaded, so that VTCHSL is called.  When HLUs are in use, another
-C version gets loaded; it either does the appropriate thing for the
-C purposes of the HLUs or calls VTCHSL.
-C
-        CALL VTCHSL (IFLG)
-C
-        RETURN
-C
-      END
-
-
-      SUBROUTINE VTCHSL (IFLG)
-C
-C This routine is a dummy.  It is called just before and just after each
-C streamline is drawn.  A user version may be substituted to change dash
-C pattern, color, and/or line width.
-C
-C IFLG is +1 if a streamline is about to be drawn, -1 if a streamline
-C has just been drawn.
-C
-        RETURN
-C
-      END
-
-
       SUBROUTINE HLUVTCHIL (IFLG)
 C
 C This routine stands between VASPACKT and the user call-back routine
@@ -4241,6 +4169,45 @@ C done for either IFLG = 1 or IFLG = 3, it must be done for both, and
 C the same replacement label must be supplied in both cases.
 C
 C When IFLG = 2, 3, or 4, VTCHIL may make GKS calls to change color
+C or line width; during the following call with IFLG = -2, -3, or -4,
+C such changes should be undone.
+C
+        RETURN
+C
+      END
+
+
+      SUBROUTINE HLUVTCHZF (IFLG)
+C
+C This routine stands between VASPACKT and the user call-back routine
+C VTCHZF.  When HLUs are not in use, this version of the routine gets
+C loaded, so that VTCHZF is called.  When HLUs are in use, another
+C version gets loaded; it either does the appropriate thing for the
+C purposes of the HLUs or calls VTCHZF.
+C
+        CALL VTCHZF (IFLG)
+C
+        RETURN
+C
+      END
+
+
+      SUBROUTINE VTCHZF (IFLG)
+C
+C This routine is a dummy.  It is called just before and just after
+C each action involving a zero-field label.  A user version may
+C take action to change the label.
+C
+C IFLG is positive if an action is about to be taken, negative if an
+C action has just been completed.  The action in question is implied
+C by the absolute value of IFLG, as follows:
+C
+C   1 - computing the size of the zero-field label
+C   2 - filling the box around the zero-field label
+C   3 - drawing the zero-field label
+C   4 - outlining the box around the zero-field label
+C
+C When IFLG = 2, 3, or 4, VTCHZF may make GKS calls to change color
 C or line width; during the following call with IFLG = -2, -3, or -4,
 C such changes should be undone.
 C
@@ -4826,7 +4793,7 @@ C
           ITRI(IPTT+4)=IAND(ITRI(IPTT+4),127)
         END DO
 C
-C Release the integer workspace.
+C Release the integer workspace acquired above.
 C
   105   LI01=0
 C
@@ -5075,11 +5042,11 @@ I  V A S P A C K T   -   I N T E R N A L   S U B R O U T I N E S
 I***********************************************************************
 
 
-      SUBROUTINE VTCFLB (IACT,RWRK,IAMA)
+      SUBROUTINE VTZFLB (IACT,RWRK,IAMA)
 C
         DIMENSION RWRK(*),IAMA(*)
 C
-C VTCFLB generates the constant-field label.  If IACT = 1, the label is
+C VTZFLB generates the zero-field label.  If IACT = 1, the label is
 C plotted.  If IACT = 2, the label box is added to the area map in IAMA.
 C
 C Declare all of the VASPACKT common blocks.
@@ -5106,57 +5073,57 @@ C
         CALL GQCNTN (IGER,NCNT)
 C
         IF (IGER.NE.0)
-          CALL SETER ('VTCFLB - ERROR EXIT FROM GQCNTN',1,1)
+          CALL SETER ('VTZFLB - ERROR EXIT FROM GQCNTN',1,1)
           RETURN
         END IF
 C
         CALL GQNT (NCNT,IGER,WIND,VPRT)
 C
         IF (IGER.NE.0)
-          CALL SETER ('VTCFLB - ERROR EXIT FROM GQNT',2,1)
+          CALL SETER ('VTZFLB - ERROR EXIT FROM GQNT',2,1)
           RETURN
         END IF
 C
-C If the text string for the constant-field label is blank, do nothing.
+C If the text string for the zero-field label is blank, do nothing.
 C
-        IF (TXCF(1:LTCF).EQ.' ') RETURN
+        IF (TXZF(1:LTZF).EQ.' ') RETURN
 C
-C Otherwise, form the constant-field label ...
+C Otherwise, form the zero-field label ...
 C
         DVAL=DMIN
-        CALL VTSBST (TXCF(1:LTCF),CTMA,LCTM)
+        CALL VTSBST (TXZF(1:LTZF),CTMA,LCTM)
 C
 C ... get sizing information for the label ...
 C
-        XPFS=XVPL+CXCF*(XVPR-XVPL)
-        YPFS=YVPB+CYCF*(YVPT-YVPB)
+        XPFS=XVPL+CXZF*(XVPR-XVPL)
+        YPFS=YVPB+CYZF*(YVPT-YVPB)
         XLBC=CFUX(XPFS)
-        IF (ICFELL('VTCFLB',3).NE.0) RETURN
+        IF (ICFELL('VTZFLB',3).NE.0) RETURN
         YLBC=CFUY(YPFS)
-        IF (ICFELL('VTCFLB',4).NE.0) RETURN
-        WCFS=CHWM*WCCF*(XVPR-XVPL)
-        WWFS=CHWM*WWCF*(XVPR-XVPL)
+        IF (ICFELL('VTZFLB',4).NE.0) RETURN
+        WCFS=CHWM*WCZF*(XVPR-XVPL)
+        WWFS=CHWM*WWZF*(XVPR-XVPL)
 C
         CALL PCGETI ('TE',ISTE)
-        IF (ICFELL('VTCFLB',5).NE.0) RETURN
+        IF (ICFELL('VTZFLB',5).NE.0) RETURN
         CALL PCSETI ('TE',1)
-        IF (ICFELL('VTCFLB',6).NE.0) RETURN
-        CALL HLUVTCHCF (+1)
-        IF (ICFELL('VTCFLB',7).NE.0) RETURN
+        IF (ICFELL('VTZFLB',6).NE.0) RETURN
+        CALL HLUVTCHZF (+1)
+        IF (ICFELL('VTZFLB',7).NE.0) RETURN
         CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,360.,0.)
-        IF (ICFELL('VTCFLB',8).NE.0) RETURN
-        CALL HLUVTCHCF (-1)
-        IF (ICFELL('VTCFLB',9).NE.0) RETURN
+        IF (ICFELL('VTZFLB',8).NE.0) RETURN
+        CALL HLUVTCHZF (-1)
+        IF (ICFELL('VTZFLB',9).NE.0) RETURN
         CALL PCGETR ('DL',DSTL)
-        IF (ICFELL('VTCFLB',10).NE.0) RETURN
+        IF (ICFELL('VTZFLB',10).NE.0) RETURN
         CALL PCGETR ('DR',DSTR)
-        IF (ICFELL('VTCFLB',11).NE.0) RETURN
+        IF (ICFELL('VTZFLB',11).NE.0) RETURN
         CALL PCGETR ('DB',DSTB)
-        IF (ICFELL('VTCFLB',12).NE.0) RETURN
+        IF (ICFELL('VTZFLB',12).NE.0) RETURN
         CALL PCGETR ('DT',DSTT)
-        IF (ICFELL('VTCFLB',13).NE.0) RETURN
+        IF (ICFELL('VTZFLB',13).NE.0) RETURN
         CALL PCSETI ('TE',ISTE)
-        IF (ICFELL('VTCFLB',14).NE.0) RETURN
+        IF (ICFELL('VTZFLB',14).NE.0) RETURN
         DSTL=DSTL+WWFS
         DSTR=DSTR+WWFS
         DSTB=DSTB+WWFS
@@ -5165,10 +5132,10 @@ C
 C ... and then take the desired action, either plotting the label or
 C putting a box around it into the area map.
 C
-        SINA=SIN(.017453292519943*ANCF)
-        COSA=COS(.017453292519943*ANCF)
+        SINA=SIN(.017453292519943*ANZF)
+        COSA=COS(.017453292519943*ANZF)
 C
-        IXPO=MOD(IPCF+4,3)-1
+        IXPO=MOD(IPZF+4,3)-1
 C
         IF (IXPO.LT.0)
           XPFS=XPFS+DSTL*COSA
@@ -5178,7 +5145,7 @@ C
           YPFS=YPFS-DSTR*SINA
         END IF
 C
-        IYPO=(IPCF+4)/3-1
+        IYPO=(IPZF+4)/3-1
 C
         IF (IYPO.LT.0)
           XPFS=XPFS-DSTB*SINA
@@ -5189,170 +5156,170 @@ C
         END IF
 C
         XLBC=CFUX(XPFS)
-        IF (ICFELL('VTCFLB',15).NE.0) RETURN
+        IF (ICFELL('VTZFLB',15).NE.0) RETURN
         YLBC=CFUY(YPFS)
-        IF (ICFELL('VTCFLB',16).NE.0) RETURN
+        IF (ICFELL('VTZFLB',16).NE.0) RETURN
 C
         IF (IACT.EQ.1)
-          IF (MOD(IBCF/2,2).NE.0)
+          IF (MOD(IBZF/2,2).NE.0)
             JLBC=ILBC
             IF (JLBC.GE.0)
               CALL GQFACI (IGER,ISFC)
               IF (IGER.NE.0)
-                CALL SETER ('VTCFLB - ERROR EXIT FROM GQFACI',17,1)
+                CALL SETER ('VTZFLB - ERROR EXIT FROM GQFACI',17,1)
                 RETURN
               END IF
               IF (ISFC.NE.JLBC) CALL GSFACI (JLBC)
             END IF
-            CALL HLUVTCHCF (+2)
-            IF (ICFELL('VTCFLB',18).NE.0) RETURN
+            CALL HLUVTCHZF (+2)
+            IF (ICFELL('VTZFLB',18).NE.0) RETURN
             BFXC(1)=CFWX(XPFS-DSTL*COSA+DSTB*SINA)
-            IF (ICFELL('VTCFLB',19).NE.0) RETURN
+            IF (ICFELL('VTZFLB',19).NE.0) RETURN
             BFYC(1)=CFWY(YPFS-DSTL*SINA-DSTB*COSA)
-            IF (ICFELL('VTCFLB',20).NE.0) RETURN
+            IF (ICFELL('VTZFLB',20).NE.0) RETURN
             BFXC(2)=CFWX(XPFS+DSTR*COSA+DSTB*SINA)
-            IF (ICFELL('VTCFLB',21).NE.0) RETURN
+            IF (ICFELL('VTZFLB',21).NE.0) RETURN
             BFYC(2)=CFWY(YPFS+DSTR*SINA-DSTB*COSA)
-            IF (ICFELL('VTCFLB',22).NE.0) RETURN
+            IF (ICFELL('VTZFLB',22).NE.0) RETURN
             BFXC(3)=CFWX(XPFS+DSTR*COSA-DSTT*SINA)
-            IF (ICFELL('VTCFLB',23).NE.0) RETURN
+            IF (ICFELL('VTZFLB',23).NE.0) RETURN
             BFYC(3)=CFWY(YPFS+DSTR*SINA+DSTT*COSA)
-            IF (ICFELL('VTCFLB',24).NE.0) RETURN
+            IF (ICFELL('VTZFLB',24).NE.0) RETURN
             BFXC(4)=CFWX(XPFS-DSTL*COSA-DSTT*SINA)
-            IF (ICFELL('VTCFLB',25).NE.0) RETURN
+            IF (ICFELL('VTZFLB',25).NE.0) RETURN
             BFYC(4)=CFWY(YPFS-DSTL*SINA+DSTT*COSA)
-            IF (ICFELL('VTCFLB',26).NE.0) RETURN
+            IF (ICFELL('VTZFLB',26).NE.0) RETURN
             CALL GFA (4,BFXC,BFYC)
-            CALL HLUVTCHCF (-2)
-            IF (ICFELL('VTCFLB',27).NE.0) RETURN
+            CALL HLUVTCHZF (-2)
+            IF (ICFELL('VTZFLB',27).NE.0) RETURN
             IF (JLBC.GE.0)
               IF (ISFC.NE.JLBC) CALL GSFACI (ISFC)
             END IF
           END IF
           CALL GQPLCI (IGER,ISLC)
           IF (IGER.NE.0)
-            CALL SETER ('VTCFLB - ERROR EXIT FROM GQPLCI',28,1)
+            CALL SETER ('VTZFLB - ERROR EXIT FROM GQPLCI',28,1)
             RETURN
           END IF
           CALL GQTXCI (IGER,ISTC)
           IF (IGER.NE.0)
-            CALL SETER ('VTCFLB - ERROR EXIT FROM GQTXCI',29,1)
+            CALL SETER ('VTZFLB - ERROR EXIT FROM GQTXCI',29,1)
             RETURN
           END IF
-          IF (ICCF.GE.0)
-            JCCF=ICCF
+          IF (ICZF.GE.0)
+            JCZF=ICZF
           ELSE
-            JCCF=ISTC
+            JCZF=ISTC
           END IF
           JSLC=ISLC
           JSTC=ISTC
-          IF (JSLC.NE.JCCF)
+          IF (JSLC.NE.JCZF)
             CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('VTCFLB',30).NE.0) RETURN
-            CALL GSPLCI (JCCF)
-            JSLC=JCCF
+            IF (ICFELL('VTZFLB',30).NE.0) RETURN
+            CALL GSPLCI (JCZF)
+            JSLC=JCZF
           END IF
-          IF (JSTC.NE.JCCF)
-            CALL GSTXCI (JCCF)
-            JSTC=JCCF
+          IF (JSTC.NE.JCZF)
+            CALL GSTXCI (JCZF)
+            JSTC=JCZF
           END IF
           CALL GQCLIP (IGER,IGCF,DUMI)
           IF (IGER.NE.0)
-            CALL SETER ('VTCFLB - ERROR EXIT FROM GQCLIP',31,1)
+            CALL SETER ('VTZFLB - ERROR EXIT FROM GQCLIP',31,1)
             RETURN
           END IF
           IF (IGCF.NE.0)
             CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('VTCFLB',32).NE.0) RETURN
+            IF (ICFELL('VTZFLB',32).NE.0) RETURN
             CALL GSCLIP (0)
           END IF
-          CALL HLUVTCHCF (+3)
-          IF (ICFELL('VTCFLB',33).NE.0) RETURN
-          CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,ANCF,0.)
-          IF (ICFELL('VTCFLB',34).NE.0) RETURN
-          CALL HLUVTCHCF (-3)
-          IF (ICFELL('VTCFLB',35).NE.0) RETURN
+          CALL HLUVTCHZF (+3)
+          IF (ICFELL('VTZFLB',33).NE.0) RETURN
+          CALL PLCHHQ (XLBC,YLBC,CTMA(1:LCTM),WCFS,ANZF,0.)
+          IF (ICFELL('VTZFLB',34).NE.0) RETURN
+          CALL HLUVTCHZF (-3)
+          IF (ICFELL('VTZFLB',35).NE.0) RETURN
           IF (IGCF.NE.0)
             CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('VTCFLB',36).NE.0) RETURN
+            IF (ICFELL('VTZFLB',36).NE.0) RETURN
             CALL GSCLIP (IGCF)
           END IF
-          IF (MOD(IBCF,2).NE.0)
-            WDTH=WLCF
+          IF (MOD(IBZF,2).NE.0)
+            WDTH=WLZF
             IF (WDTH.GT.0.)
               CALL GQLWSC (IGER,SFLW)
               IF (IGER.NE.0)
-                CALL SETER ('VTCFLB - ERROR EXIT FROM GQLWSC',37,1)
+                CALL SETER ('VTZFLB - ERROR EXIT FROM GQLWSC',37,1)
                 RETURN
               END IF
               CALL PLOTIF (0.,0.,2)
-              IF (ICFELL('VTCFLB',38).NE.0) RETURN
+              IF (ICFELL('VTZFLB',38).NE.0) RETURN
               CALL GSLWSC (WDTH)
             END IF
-            CALL HLUVTCHCF (+4)
-            IF (ICFELL('VTCFLB',39).NE.0) RETURN
+            CALL HLUVTCHZF (+4)
+            IF (ICFELL('VTZFLB',39).NE.0) RETURN
             CALL PLOTIF (XPFS-DSTL*COSA+DSTB*SINA,
      +                   YPFS-DSTL*SINA-DSTB*COSA,0)
-            IF (ICFELL('VTCFLB',40).NE.0) RETURN
+            IF (ICFELL('VTZFLB',40).NE.0) RETURN
             CALL PLOTIF (XPFS+DSTR*COSA+DSTB*SINA,
      +                   YPFS+DSTR*SINA-DSTB*COSA,1)
-            IF (ICFELL('VTCFLB',41).NE.0) RETURN
+            IF (ICFELL('VTZFLB',41).NE.0) RETURN
             CALL PLOTIF (XPFS+DSTR*COSA-DSTT*SINA,
      +                   YPFS+DSTR*SINA+DSTT*COSA,1)
-            IF (ICFELL('VTCFLB',42).NE.0) RETURN
+            IF (ICFELL('VTZFLB',42).NE.0) RETURN
             CALL PLOTIF (XPFS-DSTL*COSA-DSTT*SINA,
      +                   YPFS-DSTL*SINA+DSTT*COSA,1)
-            IF (ICFELL('VTCFLB',43).NE.0) RETURN
+            IF (ICFELL('VTZFLB',43).NE.0) RETURN
             CALL PLOTIF (XPFS-DSTL*COSA+DSTB*SINA,
      +                   YPFS-DSTL*SINA-DSTB*COSA,1)
-            IF (ICFELL('VTCFLB',44).NE.0) RETURN
+            IF (ICFELL('VTZFLB',44).NE.0) RETURN
             CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('VTCFLB',45).NE.0) RETURN
-            CALL HLUVTCHCF (-4)
-            IF (ICFELL('VTCFLB',46).NE.0) RETURN
+            IF (ICFELL('VTZFLB',45).NE.0) RETURN
+            CALL HLUVTCHZF (-4)
+            IF (ICFELL('VTZFLB',46).NE.0) RETURN
             IF (WDTH.GT.0.)
               CALL PLOTIF (0.,0.,2)
-              IF (ICFELL('VTCFLB',47).NE.0) RETURN
+              IF (ICFELL('VTZFLB',47).NE.0) RETURN
               CALL GSLWSC (SFLW)
             END IF
           END IF
           IF (ISLC.NE.JSLC)
             CALL PLOTIF (0.,0.,2)
-            IF (ICFELL('VTCFLB',48).NE.0) RETURN
+            IF (ICFELL('VTZFLB',48).NE.0) RETURN
             CALL GSPLCI (ISLC)
           END IF
           IF (ISTC.NE.JSTC) CALL GSTXCI (ISTC)
         ELSE
           CALL VTGRWS (RWRK,1,10,IWSE)
-          IF (IWSE.NE.0.OR.ICFELL('VTCFLB',49).NE.0) RETURN
-          ANLB=.017453292519943*ANCF
+          IF (IWSE.NE.0.OR.ICFELL('VTZFLB',49).NE.0) RETURN
+          ANLB=.017453292519943*ANZF
           SALB=SIN(ANLB)
           CALB=COS(ANLB)
           RWRK(IR01+ 1)=CFUX(XPFS-DSTL*CALB+DSTB*SALB)
-          IF (ICFELL('VTCFLB',50).NE.0) RETURN
+          IF (ICFELL('VTZFLB',50).NE.0) RETURN
           RWRK(IR01+ 2)=CFUX(XPFS+DSTR*CALB+DSTB*SALB)
-          IF (ICFELL('VTCFLB',51).NE.0) RETURN
+          IF (ICFELL('VTZFLB',51).NE.0) RETURN
           RWRK(IR01+ 3)=CFUX(XPFS+DSTR*CALB-DSTT*SALB)
-          IF (ICFELL('VTCFLB',52).NE.0) RETURN
+          IF (ICFELL('VTZFLB',52).NE.0) RETURN
           RWRK(IR01+ 4)=CFUX(XPFS-DSTL*CALB-DSTT*SALB)
-          IF (ICFELL('VTCFLB',53).NE.0) RETURN
+          IF (ICFELL('VTZFLB',53).NE.0) RETURN
           RWRK(IR01+ 5)=RWRK(IR01+1)
           RWRK(IR01+ 6)=CFUY(YPFS-DSTL*SALB-DSTB*CALB)
-          IF (ICFELL('VTCFLB',54).NE.0) RETURN
+          IF (ICFELL('VTZFLB',54).NE.0) RETURN
           RWRK(IR01+ 7)=CFUY(YPFS+DSTR*SALB-DSTB*CALB)
-          IF (ICFELL('VTCFLB',55).NE.0) RETURN
+          IF (ICFELL('VTZFLB',55).NE.0) RETURN
           RWRK(IR01+ 8)=CFUY(YPFS+DSTR*SALB+DSTT*CALB)
-          IF (ICFELL('VTCFLB',56).NE.0) RETURN
+          IF (ICFELL('VTZFLB',56).NE.0) RETURN
           RWRK(IR01+ 9)=CFUY(YPFS-DSTL*SALB+DSTT*CALB)
-          IF (ICFELL('VTCFLB',57).NE.0) RETURN
+          IF (ICFELL('VTZFLB',57).NE.0) RETURN
           RWRK(IR01+10)=RWRK(IR01+6)
           IF ((XWDL.LT.XWDR.AND.YWDB.LT.YWDT).OR.
      +        (XWDL.GT.XWDR.AND.YWDB.GT.YWDT))
             CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,-1,0)
-            IF (ICFELL('VTCFLB',58).NE.0) RETURN
+            IF (ICFELL('VTZFLB',58).NE.0) RETURN
           ELSE
             CALL AREDAM (IAMA,RWRK(IR01+1),RWRK(IR01+6),5,IGLB,0,-1)
-            IF (ICFELL('VTCFLB',59).NE.0) RETURN
+            IF (ICFELL('VTZFLB',59).NE.0) RETURN
           END IF
           LR01=0
         END IF
