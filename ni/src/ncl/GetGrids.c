@@ -30,31 +30,31 @@ static void InitMapTrans
 #if NhlNeedProto
 (
 	char *proj,
-	float plat,
-	float plon,
-	float prot
+	double plat,
+	double plon,
+	double prot
 )
 #else
 (proj,plat,plon,prot)
 	char *proj;
-	float plat;
-	float plon;
-	float prot;
+	double plat;
+	double plon;
+	double prot;
 
 #endif
 {
-	float rl[2] = {0,0};
-	float fl = 0.1,fr = 0.99 ,fb = 0.1 ,ft = 0.99;
+	double rl[2] = {0,0};
+	double fl = 0.1,fr = 0.99 ,fb = 0.1 ,ft = 0.99;
 	int len;
 	NGstring str;
 
-	NGCALLF(mappos,MAPPOS)(&fl,&fr,&fb,&ft);
+	NGCALLF(mdppos,MDPPOS)(&fl,&fr,&fb,&ft);
 	len = NGSTRLEN(proj);
 	str = NGCstrToFstr(proj,len);
-	NGCALLF(maproj,MAPROJ)(str,&plat,&plon,&prot);
+	NGCALLF(mdproj,MDPROJ)(str,&plat,&plon,&prot);
 	len = NGSTRLEN("MA");
 	str = NGCstrToFstr("MA",len);
-	NGCALLF(mapset,MAPSET)(str,&rl,&rl,&rl,&rl);
+	NGCALLF(mdpset,MDPSET)(str,&rl,&rl,&rl,&rl);
 	NGCALLF(mdpint,MDPINT)();
 }
 
@@ -220,7 +220,9 @@ static int printbinary(int val) {
 	return(count);
 }
 
-
+/* 
+ * lo1, lo2 in millidegrees; di output in millidegrees 
+ */
 void GetThinnedLonParams
 #if NhlNeedProto
 (unsigned char *gds,
@@ -287,6 +289,10 @@ void GetThinnedLonParams
 	*di =  diff / (double) (*nlon - 1);
 	return;
 }
+
+/* 
+ * la1, la2 in millidegrees; dj output in millidegrees 
+ */
 
 void GetThinnedLatParams
 #if NhlNeedProto
@@ -8490,11 +8496,15 @@ int* nrotatts;
 		*dimsizes_lon = malloc(sizeof(int));
 		nlon = CnvtToDecimal(2,&thevarrec->thelist->rec_inq->gds[6]);
 		idir = ((char)0200 & thevarrec->thelist->rec_inq->gds[27]) ? -1 : 1;
+
 		if (nlon == 0xffff) {
 			is_thinned_lon = 1;
 			GetThinnedLonParams(thevarrec->thelist->rec_inq->gds,
 					    nlat,ilo1,ilo2,idir,&nlon,&loinc);
-		} else {
+		} else if (nlon == 1) {
+			loinc = ((double)CnvtToDecimal(2,&((thevarrec->thelist->rec_inq->gds)[23])));
+		}
+		else {
 			if (idir == 1) {
 				int ti = ilo2;
 				while (ti < ilo1) {
@@ -9088,7 +9098,7 @@ int* nrotatts;
 	nlat = CnvtToDecimal(2,&(gds[8]));
 	is_thinned_lon = (nlon == 65535); /* all bits set indicates missing: missing means thinned */
 	is_thinned_lat = (nlat == 65535);
-	if (nlon <= 1 || nlat <= 1 || (is_thinned_lon && is_thinned_lat)) {
+	if (nlon < 1 || nlat < 1 || (is_thinned_lon && is_thinned_lat)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "GdsCEGrid: Invalid grid detected");
 		*lat = NULL;
@@ -9128,12 +9138,6 @@ int* nrotatts;
 		GetThinnedLonParams(gds,nlat,lo1,lo2,idir,&nlon,&di);
 	}
 	else {
-		/*
-		itmp =  CnvtToDecimal(2,&gds[23]);
-		if (itmp != 65535) {
-			di = (double) itmp;
-		}
-		*/
 		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values 
 		   --- but actually doesn't work in all cases - like when the longitude range is < one degree
 
@@ -9141,7 +9145,10 @@ int* nrotatts;
 		if (di < 0) di = -di;
 		*/
 		/* this seems to work */
-		if (idir == 1) {
+		if (nlon == 1) {
+			di = ((double)CnvtToDecimal(2,&gds[23]));
+		}
+		else if (idir == 1) {
 			int ti = lo2;
 			while (ti < lo1) {
 				ti += 360000;
@@ -9161,20 +9168,15 @@ int* nrotatts;
 		GetThinnedLatParams(gds,nlon,la1,la2,jdir,&nlat,&dj);
 	}
 	else {
-		/*
-		itmp = (double) CnvtToDecimal(2,&gds[25]);
-		if (itmp != 65535.0) {
-			dj = (double) itmp;
+		/* this is more accurate: do it this way */
+		/* not specified: must be calculated from the endpoints and number of steps */
+		if (nlat == 1) {
+			dj  = ((double) CnvtToDecimal(2,&gds[25]));
 		}
 		else {
-		*/
-		/* this is more accurate: do it this way */
-			/* not specified: must be calculated from the endpoints and number of steps */
 			dj = (la2 - la1) / (double) (nlat - 1);
 			if (dj < 0) dj = -dj;
-		/*	
 		}
-		*/
 	}
 			
 	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
@@ -9186,10 +9188,10 @@ int* nrotatts;
 	*lat = (float*)NclMalloc((unsigned)sizeof(float)* nlat);
 	*lon = (float*)NclMalloc((unsigned)sizeof(float)* nlon);
 	for(i = 0;i < *(*dimsizes_lat) ; i++) {
-		(*lat)[i] = (float)(la1 + jdir * i * dj) / 1000.0;
+		(*lat)[i] = (float)((double)(la1 + jdir * i * dj)) / 1000.0;
 	}
 	for(i = 0;i < *(*dimsizes_lon) ; i++) {
-		(*lon)[i] = (float)(lo1 + idir * i * di) / 1000.0;
+		(*lon)[i] = (float)((double)(lo1 + idir * i * di)) / 1000.0;
 	}
 	
 	if(lon_att_list != NULL) {
@@ -9375,19 +9377,19 @@ int* nrotatts;
 
 static void rot2ll
 (
-	float latpole,
-	float lonpole,
-	float latin,
-	float lonin,
-	float *latout,
-	float *lonout
+	double latpole,
+	double lonpole,
+	double latin,
+	double lonin,
+	double *latout,
+	double *lonout
 )
 {
-	float dtr = atan(1) / 45.0;
-	float x,y,z;
-	float rotang,sinrot,cosrot;
-	float rx,ry,rz;
-	float tlat,tlon;
+	double dtr = atan(1) / 45.0;
+	double x,y,z;
+	double rotang,sinrot,cosrot;
+	double rx,ry,rz;
+	double tlat,tlon;
 	    
 	/* convert to xyz coordinates */
 
@@ -9478,7 +9480,7 @@ int* nrotatts;
 #endif
 {
 	unsigned char *gds;
-	float la1,lo1,la2,lo2;
+	double la1,lo1,la2,lo2;
 	double di;
 	double dj;
 	int latXlon;
@@ -9495,15 +9497,16 @@ int* nrotatts;
 	NclQuark* tmp_string;
 	int ni, nj;
 	int itmp;
-	float lasp;
-	float losp;
-	float rotang;
-	float clat,llat,llon,rlat,rlon;
-	float dux,ux0,ux1,duy,uy0,uy1;
+	double lasp;
+	double losp;
+	double rotang;
+	double clat,llat,llon,rlat,rlon;
+	double dux,ux0,ux1,duy,uy0,uy1;
 	int gds_type = 10;
 	NhlBoolean do_rot = True;
 	NhlBoolean grid_oriented;
 	NrmQuark grid_name;
+	int do_180;
 		
 	*lat = NULL;
 	*n_dims_lat = 0;
@@ -9527,7 +9530,7 @@ int* nrotatts;
 	nj = CnvtToDecimal(2,&(gds[8]));
 	is_thinned_lon = (ni == 65535); /* all bits set indicates missing: missing means thinned */
 	is_thinned_lat = (nj == 65535);
-	if (ni <= 1 || nj <= 1 || (is_thinned_lon && is_thinned_lat)) {
+	if (ni < 1 || nj < 1 || (is_thinned_lon && is_thinned_lat)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			  "GdsRLLGrid: Invalid grid detected");
 		return;
@@ -9540,67 +9543,64 @@ int* nrotatts;
 	tmp[0] = (char)0177 & gds[10];
 	tmp[1] = gds[11];
 	tmp[2] = gds[12];
-	la1 = sign * CnvtToDecimal(3,tmp) / 1000.0;
+	la1 = sign * ((double)CnvtToDecimal(3,tmp)) / 1000.0;
 	sign = ((char)0200 & gds[13] )? -1 : 1;
 	tmp[0] = (char)0177 & gds[13];
 	tmp[1] = gds[14];
 	tmp[2] = gds[15];
-	lo1 = sign * CnvtToDecimal(3,tmp) / 1000.0;
+	lo1 = sign * ((double)CnvtToDecimal(3,tmp)) / 1000.0;
 	sign = ((char)0200 & gds[17] )? -1 : 1;
 	tmp[0] = (char)0177 & gds[17];
 	tmp[1] = gds[18];
 	tmp[2] = gds[19];
-	la2 = sign * CnvtToDecimal(3,tmp) / 1000.0;
+	la2 = sign * ((double)CnvtToDecimal(3,tmp)) / 1000.0;
 	sign = ((char)0200 & gds[20] )? -1 : 1;
 	tmp[0] = (char)0177 & gds[20];
 	tmp[1] = gds[21];
 	tmp[2] = gds[22];
-	lo2 = sign * CnvtToDecimal(3,tmp) / 1000.0;
+	lo2 = sign * ((double)CnvtToDecimal(3,tmp)) / 1000.0;
 
 	sign = ((char)0200 & gds[32] )? -1 : 1;
 	tmp[0] = (char)0177 & gds[32];
 	tmp[1] = gds[33];
 	tmp[2] = gds[34];
-	lasp = ((float) sign * CnvtToDecimal(3,tmp)) / 1000.0;
+	lasp = ((double) sign * CnvtToDecimal(3,tmp)) / 1000.0;
 
 	sign = ((char)0200 & gds[35] )? -1 : 1;
 	tmp[0] = (char)0177 & gds[35];
 	tmp[1] = gds[36];
 	tmp[2] = gds[37];
-	losp = ((float) sign * CnvtToDecimal(3,tmp)) / 1000.0;
+	losp = ((double) sign * CnvtToDecimal(3,tmp)) / 1000.0;
 
 	sign = ((char)0200 & gds[38] )? -1 : 1;
 	tmp[0] = (char)0177 & gds[38];
 	tmp[1] = gds[39];
 	tmp[2] = gds[40];
 	tmp[3] = gds[41];
-	rotang = (float)sign * ((float)CnvtToDecimal(3,&(tmp[1])) * pow(2.0,-24.0) * pow(16.0,tmp[0] - 64));
+	rotang = (double)sign * ((double)CnvtToDecimal(3,&(tmp[1])) * pow(2.0,-24.0) * pow(16.0,tmp[0] - 64));
 
 	has_dir_inc = ((char)0200 & gds[16]) ? 1 : 0;
 	if (is_thinned_lon) {
-		GetThinnedLonParams(gds,nj,lo1,lo2,idir,&ni,&di);
+		GetThinnedLonParams(gds,nj,(int)(lo1*1000.0),(int)(lo2*1000.0),idir,&ni,&di);
 	}
 	else {
-		/*
-		itmp =  CnvtToDecimal(2,&gds[23]);
-		if (itmp != 65535 && has_dir_inc) {
-			di = (double) itmp / 1000.0;
-		}
-		else {
 		/* this is adapted from the NCEP code: it should account for all cases of modular longitude values 
 		--- but actually doesn't work in all cases - like when the longitude range is < one degree
 		di = (idir * (fmod(idir * (lo2 - lo1) - 1.0 + 3600.0,360.0)+1.0) / (double) (ni - 1));
 		*/
 		/* so now we do it this way */
-		if (idir == 1) {
-			float ti = lo2;
+		if (ni == 1) {
+			di = ((double)CnvtToDecimal(2,&gds[23])) / 1000.0;
+		}
+		else if (idir == 1) {
+			double ti = lo2;
 			while (ti < lo1) {
 				ti += 360;
 			}
 			di = (ti - lo1) / (double) (ni - 1);
 		}
 		else {
-			float ti = lo1;
+			double ti = lo1;
 			while (ti < lo2) {
 				ti += 360;
 			}
@@ -9610,23 +9610,18 @@ int* nrotatts;
 	}
 
 	if (is_thinned_lat) {
-		GetThinnedLatParams(gds,ni,la1,la2,jdir,&nj,&dj);
+		GetThinnedLatParams(gds,ni,(int)(la1*1000.0),(int)(la2*1000.0),jdir,&nj,&dj);
 	}
 	else {
-		/*
-		itmp = (double) CnvtToDecimal(2,&gds[25]);
-		if (itmp != 65535.0 && has_dir_inc) {
-			dj = (double) itmp / 1000.0;
+		if (nj == 1) {
+			dj  = ((double) CnvtToDecimal(2,&gds[25])) / 1000.0;
 		}
 		else {
-		*/
-		/* this is more accurate */
-			/* not specified: must be calculated from the endpoints and number of steps */
-			dj = (la2 - la1) / (double) (nj - 1);
-
-		/*
+			if (jdir == 1) 
+				dj = (la2 - la1) / (double) (nj - 1);
+			else
+				dj = (la1 - la2) / (double) (nj - 1);
 		}
-		*/
 	}
 
 	grid_oriented  = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
@@ -9639,7 +9634,7 @@ int* nrotatts;
 		return;
 	}
 	else {
-		float uxc,uyc;
+		double uxc,uyc;
 
 		*dimsizes_lat = (int*)NclMalloc(2 * sizeof(int));
 		*dimsizes_lon = (int*)NclMalloc(2 * sizeof(int));
@@ -9653,31 +9648,46 @@ int* nrotatts;
 		*lon = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
 
 		clat = lasp + 90.0;
-		InitMapTrans("CE",clat,losp,rotang);
 		rot2ll(lasp,losp,la1,lo1,&llat,&llon);
 		rot2ll(lasp,losp,la2,lo2,&rlat,&rlon);
-		NGCALLF(maptrn,MAPTRN)(&llat,&llon,&ux0,&uy0);
-		NGCALLF(maptrn,MAPTRN)(&rlat,&rlon,&ux1,&uy1);
-		dux = (ux1 - ux0) / (ni - 1);
-		duy = (uy1 - uy0) / (nj - 1);
+
+		if (idir == 1) {
+			if (llon > rlon) {
+				llon -= 360;
+			}
+			if (llon < 0 && rlon > 0) {
+				do_180 = 1;
+			}
+		}
+		else {
+			if (rlon > llon) {
+				rlon -= 360;
+			}
+			if (rlon < 0 && llon > 0) {
+				do_180 = 1;
+			}
+		}
+			
 
 		if (do_rot) {
 			double gridlatc;
 			double dtr = atan(1) / 45.0;
-
 			*rot = (float*)NclMalloc((unsigned)sizeof(float)* nj * ni);
-			NGCALLF(maptrn,MAPTRN)(&clat,&losp,&uxc,&uyc);
-			gridlatc = (uyc / (uy1 - uy0)) * nj * dj; 
 
 			for(j = 0;j < nj; j++) {
-				float uy = uy0 + j * duy;
+				double rlat = jdir == 1 ? la1 : la2; 
 				for (i = 0; i < ni; i++) {
+					double tlon,tlat;
 					double cgridlat, slon,srot;
-					float ux = ux0 + i * dux;
-					NGCALLF(maptri,MAPTRI)
-						(&ux,&uy,&((*lat)[j * ni + i]),&((*lon)[j * ni + i]));
-					slon = sin(((*lon)[j * ni + i] - losp)*dtr);
-					cgridlat = cos((j * dj - gridlatc)* dtr);
+					double rlon = idir == 1 ? lo1 : lo2;
+					rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
+					if (do_180) {
+						tlon = tlon > 180 ? tlon - 360 : tlon;
+					}
+					(*lat)[j * ni + i] = (float)tlat;
+					(*lon)[j * ni + i] = (float)tlon;
+					slon = sin((tlon - losp)*dtr);
+					cgridlat = cos((rlat + j * jdir * dj) * dtr);
 					if (cgridlat <= 0.0)
 						(*rot)[j * ni + i] = 0.0;
 					else {
@@ -9689,11 +9699,16 @@ int* nrotatts;
 		}
 		else {
 			for(j = 0;j < nj; j++) {
-				float uy = uy0 + j * duy;
+				double rlat = jdir == 1 ? la1 : la2; 
 				for (i = 0; i < ni; i++) {
-					float ux = ux0 + i * dux;
-					NGCALLF(maptri,MAPTRI)
-						(&ux,&uy,&((*lat)[j * ni + i]),&((*lon)[j * ni + i]));
+					double tlon,tlat;
+					double rlon = idir == 1 ? lo1 : lo2;
+					rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
+					if (do_180) {
+						tlon = tlon > 180 ? tlon - 360 : tlon;
+					}
+					(*lat)[j * ni + i] = (float)tlat;
+					(*lon)[j * ni + i] = (float)tlon;
 				}
 			}
 		}

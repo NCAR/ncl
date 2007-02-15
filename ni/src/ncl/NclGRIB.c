@@ -2884,7 +2884,14 @@ GribFileRecord *therec;
 							sprintf(buffer,"g%d%s_y_%d",step->gds_type,uv_m,therec->total_dims + 1);
 						}
 					} else {
-						sprintf(buffer,"gridy_%d",step->grid_number);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"gridy_%d",step->grid_number);
+						}
+						else {
+							if (Is_UV(step->param_number))
+								uv_m = "v";
+							sprintf(buffer,"gridy_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+						}
 					}
 					tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
 					tmp->dim_number = therec->total_dims + 1;
@@ -2908,7 +2915,12 @@ GribFileRecord *therec;
 							sprintf(buffer,"g%d%s_lon_%d",step->gds_type,uv_m,therec->total_dims + 1);
 						}
 					} else {
-						sprintf(buffer,"gridlon_%d",step->grid_number);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"gridlon_%d",step->grid_number);
+						}
+						else {
+							sprintf(buffer,"gridlon_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+						}
 					}
 					step->aux_coords[1] = NrmStringToQuark(buffer);
 					tmp_file_dim_numbers[0] = therec->total_dims;
@@ -2945,7 +2957,14 @@ GribFileRecord *therec;
 							sprintf(buffer,"g%d%s_x_%d",step->gds_type,uv_m,therec->total_dims);
 						}
 					} else {
-						sprintf(buffer,"gridx_%d",step->grid_number);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"gridx_%d",step->grid_number);
+						}
+						else {
+							if (Is_UV(step->param_number))
+								uv_m = "v";
+							sprintf(buffer,"gridx_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+						}
 					}
 					tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
 					tmp->dim_number = therec->total_dims;
@@ -2969,7 +2988,12 @@ GribFileRecord *therec;
 							sprintf(buffer,"g%d%s_lat_%d",step->gds_type,uv_m,therec->total_dims);
 						}
 					} else {
-						sprintf(buffer,"gridlat_%d",step->grid_number);
+						if (step->gds_type != 203) {
+							sprintf(buffer,"gridlat_%d",step->grid_number);
+						}
+						else {
+							sprintf(buffer,"gridlat_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+						}
 					}
 					step->aux_coords[0] = NrmStringToQuark(buffer);
 					tmp_float = NclMalloc((unsigned)sizeof(float)*4);
@@ -3003,7 +3027,12 @@ GribFileRecord *therec;
 								sprintf(buffer,"g%d%s_rot_%d",step->gds_type,uv_m,therec->total_dims);
 							}
 						} else {
-							sprintf(buffer,"gridrot_%d",step->grid_number);
+							if (step->gds_type != 203) {
+								sprintf(buffer,"gridrot_%d",step->grid_number,therec->total_dims);
+							}
+							else {
+								sprintf(buffer,"gridrot_%d%s",step->grid_number,uv_m,therec->total_dims);
+							}
 						}
 						_GribAddInternalVar(therec,NrmStringToQuark(buffer),tmp_file_dim_numbers,
 								    (NclMultiDValData)_NclCreateVal(NULL,
