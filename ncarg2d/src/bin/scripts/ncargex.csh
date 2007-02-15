@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.159 2005-07-01 20:28:43 kennison Exp $
+#   $Id: ncargex.csh,v 1.160 2007-02-15 00:32:46 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -627,6 +627,20 @@ set threed_clist = ($threed_cfnd)
 set f_list = ($f_list $threed_flist)
 set c_list = ($c_list $threed_clist)
 
+#*************************#
+#                         #
+#  Set vaspackt examples  #
+#                         #
+#*************************#
+set vaspackt_fex   = (vtex01 vtex02 vtex03)
+set vaspackt_flist = ($vaspackt_fex)
+
+set vaspackt_cex   = ()
+set vaspackt_clist = ($vaspackt_cex)
+
+set f_list = ($f_list $vaspackt_flist)
+set c_list = ($c_list $vaspackt_clist)
+
 #**********************#
 #                      #
 # set vectors examples #
@@ -710,12 +724,13 @@ set list_cx11 = (c_xwndws)
 set list_fex = ($areas_fex $autograph_fex $colconv_fex $conpack_fex \
 		$conpackt_fex $ezmap_fex $field_fex $labelbar_fex $ngmath_fex \
 		$plotchar_fex $polypack_fex ${scrlld_title_fex} $softfill_fex \
-		$spps_fex $surface_fex $tdpack_fex $wmap_fex $misc_fex)
+		$spps_fex $surface_fex $tdpack_fex $wmap_fex $misc_fex \
+		$vaspackt_fex)
 
 set list_cex  = ($autograph_cex $colconv_cex $conpack_cex $conpackt_cex \
 		$ezmap_cex $field_cex $gks_cex $labelbar_cex $ngmath_cex \
 		$plotchar_cex $polypack_cex ${scrlld_title_cex} $softfill_cex \
-		$surface_cex $tdpack_cex $wmap_cex)
+		$surface_cex $tdpack_cex $wmap_cex $vaspackt_cex)
 
 set list_ftst = ($areas_ftst $autograph_ftst $colconv_ftst $conpack_ftst \
                 ${cnrn_family_ftst} ${cnrc_family_ftst} $dashline_ftst \
@@ -1018,6 +1033,11 @@ while ($#argv > 0)
     case "-threed":
       shift
       set names=($names $threed_flist $threed_clist)
+      breaksw
+
+    case "-vaspackt":
+      shift
+      set names=($names $vaspackt_flist $vaspackt_clist)
       breaksw
 
     case "-vectors":
@@ -2059,7 +2079,8 @@ echo "   [-halftone] [-histogram] [-isosrfhr] [-isosurface]       "
 echo "   [-labelbar] [-natgrid] [-ngmisc] [-plotchar]             "
 echo "   [-polypack] [-pwrite_family] [-scrolled_title]           "
 echo "   [-seter] [-shgrid] [-softfill] [-spps] [-streamlines]    "
-echo "   [-surface] [-threed] [-vectors] [-wmap] [-misc]          "
+echo "   [-surface] [-threed] [-vaspackt][-vectors] [-wmap]       "
+echo "   [-misc]                                                  "
 echo ""
 echo " Other options:"
 echo "   [-W workstation_type] [-n] [-clean] [-onebyone] names"
