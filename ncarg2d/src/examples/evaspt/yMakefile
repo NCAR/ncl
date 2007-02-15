@@ -1,0 +1,19 @@
+#
+#       $Id: yMakefile,v 1.1 2007-02-15 00:23:55 kennison Exp $
+#
+
+MYNAME  = econpt
+
+SRCS =  vtex01.f vtex02.f vtex03.f
+
+OBJS =  vtex01.o vtex02.o vtex03.o
+
+PROG_LIBS		= $(NCARGLIBS)
+SYS_LIBS		= -lm
+EXTRA_LIBS		= $(XLIB)
+
+InstallTarget($(SRCS),$(INSTALL_LIB),$(EXAMPLESPATH))
+
+FExampleTarget(vtex01,vtex01.o)
+FExampleTarget(vtex02,vtex02.o)
+FExampleTarget(vtex03,vtex03.o)
