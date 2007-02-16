@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.132 2007-02-16 22:53:45 shea Exp $
+;      $Id: contributed.ncl,v 1.133 2007-02-16 23:03:50 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7595,7 +7595,6 @@ begin
   end if
 
   if (rankx.eq.4) then
-print("++++++++++++++++++++++++++ ENTER 4D")
       dName   = getvardims(x)
       nz      = dimx(1)      ; nlev
       ny      = dimx(2)      ; nlat
