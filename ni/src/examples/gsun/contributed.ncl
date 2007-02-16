@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.131 2007-02-16 16:22:24 shea Exp $
+;      $Id: contributed.ncl,v 1.132 2007-02-16 22:53:45 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7393,17 +7393,17 @@ begin
    end if
 return
 end
-
 ; *****************************************************************
 ; D. Shea
 
 undef("month_to_annual_weighted")
 function month_to_annual_weighted(yyyymm[*]:numeric, x:numeric, opt:integer)
 local dimx, rankx, ntim, nyr, nyrs, nt, nx, ny, nz, nn, nmo \
-    , dName, xAnnual, xTemp
+    , dName, xAnnual, xTemp, nmos
 begin
   yyyy  = yyyymm/100
   mm    = yyyymm - (yyyy*100)     ; mm=1,...,12
+  nmos  = 12
   if (any(mm.lt.1 .or. mm.gt.12)) then
       print("month_to_annual_weighted: mm must be 1-to-12 inclusive")
       exit
@@ -7436,34 +7436,47 @@ begin
 
   dymon = days_in_month ( yyyy, mm)      ; accounts for leap year
 
+  if (typeof(x).eq."double") then
+      wSum_1 = 365d0
+      wSum_2 = 366d0
+  else
+      wSum_1 = 365.
+      wSum_2 = 366.
+  end if
+
   if (rankx.eq.1) then
-      xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed.ncl
+      xAnnual = new ( nyrs, typeof(x), getFillValue(x)) ;  contributed
 
       nyr = -1
       do nt=0,ntim-1,12
          nyr  = nyr+1
 
-         nMsg = 0
-         if (isatt(x,"_FillValue")) then
-             nMsg = num (ismissing(x(nt:nt+11)) )
-         end if
+        ;nMsg = 0
+        ;if (isatt(x,"_FillValue")) then
+        ;    nMsg = num (ismissing(x(nt:nt+11)) )
+        ;end if
 
-         if (nMsg.eq.0) then
+        ;if (nMsg.eq.0) then
              wgt          = dymon(nt:nt+11)                ; days for each month
              xTemp        = x(nt:nt+11)*wgt                ; values(:)*wgt(:)
              xAnnual(nyr) = sum( xTemp )                   ; opt=0
+             nAnnual      = num( .not.ismissing(xTemp) )
                                                           
              if (opt.eq.1) then                          
-                 wgtSum = 365
+                 wgtSum = wSum_1
                  if (isleapyear(yyyy(nt))) then
-                     wgtSum = 366
+                     wgtSum = wSum_2
                  end if
                  xAnnual(nyr) = xAnnual(nyr)/wgtSum        ; weighted average
              end if
              if (opt.eq.2) then
                  xAnnual(nyr) = xAnnual(nyr)/12            
              end if
-         end if
+
+             if (nAnnual.ne.12) then
+                 xAnnual(nyr) = x@_FillValue
+             end if
+        ;end if
       end do
 
       xAnnual!0    = "year"
@@ -7482,34 +7495,37 @@ begin
 
   if (rankx.eq.2) then
       dName  = getvardims(x)    ; get dim names
-      xAnnual= new ( (/nyrs,dimx(1)/), typeof(x), getFillValue(x)) ;  contributed.ncl
+      xAnnual= new ( (/nyrs,dimx(1)/), typeof(x), getFillValue(x)) ;  contributed
 
       nyr    = -1
       do nt=0,ntim-1,12
-         nyr   = nyr+1
-         xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+11)  
+         nyr     = nyr+1
+         xTemp   = x($dName(1)$|:,$dName(0)$|nt:nt+11)  
 
-         nMsg = 0
-         if (isatt(x,"_FillValue")) then
-             nMsg = num (ismissing(xTemp) ) 
-         end if
+        ;nMsg = 0
+        ;if (isatt(x,"_FillValue")) then
+        ;    nMsg = num (ismissing(xTemp) ) 
+        ;end if
 
-         if (nMsg.eq.0) then
+        ;if (nMsg.eq.0) then
              wgt            = conform(xTemp, dymon(nt:nt+11), 1)
              xTemp          = xTemp*wgt                       ; values*wgt 
              xAnnual(nyr,:) = dim_sum( xTemp )                ; opt=3
+             nAnnual        = dim_num (.not.ismissing(xTemp) )  
 
              if (opt.eq.1) then                               
-                 wgtSum = 365
+                 wgtSum = wSum_1
                  if (isleapyear(yyyy(nt))) then
-                     wgtSum = 366
+                     wgtSum = wSum_2
                  end if
                  xAnnual(nyr,:) = xAnnual(nyr,:)/wgtSum
              end if
              if (opt.eq.2) then
                  xAnnual(nyr,:) = xAnnual(nyr,:)/12
              end if
-         end if
+
+             xAnnual(nyr,:) = mask( xAnnual(nyr,:), nAnnual.eq.12, True)
+        ;end if
       end do
 
       xAnnual!0    = "year"
@@ -7530,7 +7546,7 @@ begin
       dName  = getvardims(x)
       ny     = dimx(1)      ; nlat
       mx     = dimx(2)      ; mlon
-      xAnnual = new ( (/nyrs,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
+      xAnnual = new ( (/nyrs,ny,mx/), typeof(x), getFillValue(x)) ;  contributed
 
       nyr    = -1
       do nt=0,ntim-1,12
@@ -7538,27 +7554,30 @@ begin
 
          nyr   = nyr+1
 
-         nMsg = 0
-         if (isatt(x,"_FillValue")) then
-             nMsg = num (ismissing(xTemp) )
-         end if
+        ;nMsg = 0
+        ;if (isatt(x,"_FillValue")) then
+        ;    nMsg = num (ismissing(xTemp) )
+        ;end if
 
-         if (nMsg.eq.0) then
+        ;if (nMsg.eq.0) then
              wgt              = conform(xTemp, dymon(nt:nt+11), 2)
              xTemp            = xTemp*wgt
              xAnnual(nyr,:,:) = dim_sum ( xTemp )   ; opt=0
+             nAnnual          = dim_num (.not.ismissing(xTemp) )  
 
              if (opt.eq.1) then
-                 wgtSum = 365
+                 wgtSum = wSum_1
                  if (isleapyear(yyyy(nt))) then
-                     wgtSum = 366
+                     wgtSum = wSum_2
                  end if
                  xAnnual(nyr,:,:) = xAnnual(nyr,:,:)/wgtSum
              end if
              if (opt.eq.2) then
                  xAnnual(nyr,:,:) = xAnnual(nyr,:,:)/12
              end if
-         end if
+
+             xAnnual(nyr,:,:) = mask( xAnnual(nyr,:,:), nAnnual.eq.12, True)
+        ;end if
       end do
 
       xAnnual!0    = "year"
@@ -7576,11 +7595,12 @@ begin
   end if
 
   if (rankx.eq.4) then
+print("++++++++++++++++++++++++++ ENTER 4D")
       dName   = getvardims(x)
       nz      = dimx(1)      ; nlev
       ny      = dimx(2)      ; nlat
       mx      = dimx(3)      ; mlon
-      xAnnual = new ( (/nyrs,nz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
+      xAnnual = new ( (/nyrs,nz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed
 
       nyr    = -1
       do nt=0,ntim-1,12
@@ -7588,27 +7608,30 @@ begin
 
          nyr   = nyr+1
 
-         nMsg = 0
-         if (isatt(x,"_FillValue")) then
-             nMsg = num (ismissing(xTemp) )
-         end if
+        ;nMsg = 0
+        ;if (isatt(x,"_FillValue")) then
+        ;    nMsg = num (ismissing(xTemp) )
+        ;end if
 
-         if (nMsg.eq.0) then
+        ;if (nMsg.eq.0) then
              wgt                = conform(xTemp, dymon(nt:nt+11),3)
              xTemp              = xTemp*wgt
              xAnnual(nyr,:,:,:) = dim_sum ( xTemp )   ; opt=0
+             nAnnual            = dim_num (.not.ismissing(xTemp) )  
 
              if (opt.eq.1) then
-                 wgtSum = 365
+                 wgtSum = wSum_1
                  if (isleapyear(yyyy(nt))) then
-                     wgtSum = 366
+                     wgtSum = wSum_2
                  end if
                  xAnnual(nyr,:,:,:) = xAnnual(nyr,:,:,:)/wgtSum
              end if
              if (opt.eq.2) then
-                 xAnnual(nyr,:,:,:) = xAnnual(nyr,:,:,:)/12
+                 xAnnual(nyr,:,:,:) = xAnnual(nyr,:,:,:)/12.
              end if
-         end if
+
+             xAnnual(nyr,:,:,:) = mask( xAnnual(nyr,:,:,:), nAnnual.eq.12, True)
+        ;end if
       end do
 
       xAnnual!0    = "year"
@@ -7625,6 +7648,7 @@ begin
       return(xAnnual)
    end if
 end
+
 ; *****************************************************************
 ; D. Shea
 ; Convert monthly total values [eg, precipitation] to "per day" values.
