@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.130 2007-01-15 20:48:54 shea Exp $
+;      $Id: contributed.ncl,v 1.131 2007-02-16 16:22:24 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7379,7 +7379,7 @@ begin
 
           if (nMsg.gt.0) then
               nGood              = dim_num(.not.ismissing( xTemp ) )
-              xAnnual(nyr,:,:,:) = mask( xAnnual(nyr,:,:,:), nGood.ge.nmos, False)
+              xAnnual(nyr,:,:,:) = mask( xAnnual(nyr,:,:,:), nGood.ge.nmos, True)
               print("month_to_annual: some grid points have missing data: nt="+nt \
                    +" nyr="+nyr+"  num(nGood)="+num(nGood.gt.0))
           end if
