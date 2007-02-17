@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.133 2007-02-16 23:03:50 shea Exp $
+;      $Id: contributed.ncl,v 1.134 2007-02-17 18:51:45 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4590,13 +4590,13 @@ begin
 end
 
 undef ("eofunc_varimax_Wrap")
-function eofunc_varimax_Wrap (eof:numeric, optEVX:logical)
+function eofunc_varimax_Wrap (eof:numeric, optEVX:integer)
 local eofEVX
 begin
   eofEVX = eof
-  if (isatt(eofEVX,"pcvar")) then
-      delete(eofEVX@pcvar)          ; avoid confusion
-  end if
+ ;if (isatt(eofEVX,"pcvar")) then
+ ;    delete(eofEVX@pcvar)          ; avoid confusion: a034 and earlier
+ ;end if
   eofEVX = (/ eofunc_varimax(eof, optEVX) /); invoke built-in function
   eofEVX@op = "Kaiser Varimax Rotation"
   return  (eofEVX)                        ; return
