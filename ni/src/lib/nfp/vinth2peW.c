@@ -8,7 +8,7 @@ NhlErrorTypes vinth2p_ecmwf_W
 ()
 #endif
 {
-    int i, j, nc, nt, sz,nblk,nblk_out,psf_blk;
+    int i, j, nc, nt, sz,nblk,nblk_out,psf_blk, index_phis;
     NclVar  tmp_var;
     NclMultiDValData x_coord_md;
     NclVar lev_coord_var;
@@ -89,7 +89,7 @@ NhlErrorTypes vinth2p_ecmwf_W
     double *phis_d = NULL;
     int phis_n_dims;
     NclBasicDataTypes phis_type;
-    int phis_dimsizes[3];
+    int phis_dimsizes[4];
 
     double *plevi;
     NclScalar missing;
@@ -458,8 +458,8 @@ NhlErrorTypes vinth2p_ecmwf_W
                         NULL,
                         &phis_type,
                         0);
-    if(phis_n_dims != 2 && phis_n_dims != 3 || phis_n_dims > psfc_n_dims) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Surface geopotential must either be a 2 or 3-dimensional array, and must have the same or fewer dimensions than surface pressure");
+    if(phis_n_dims < 2 || phis_n_dims > 4 || phis_n_dims > psfc_n_dims) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf: Surface geopotential must either be a 2, 3, or 4-dimensional array, and must have the same or fewer dimensions than surface pressure");
     }
     for(i = 0; i < phis_n_dims; i++) {
       if(phis_dimsizes[i] != psfc_dimsizes[psfc_n_dims-phis_n_dims+i]) {
@@ -487,16 +487,13 @@ NhlErrorTypes vinth2p_ecmwf_W
       }
 /*
  * Loop across leftmost dimensions and pass subsections of the input
- * arrays to the Fortran routine.  Since phis can only be 2 or 3 
+ * arrays to the Fortran routine.  Since phis can be 2 to 4
  * dimensions, and psfc, tbot, datai can be 3 to 5 dimensions, we
  * have to loop separately across number of cases and times so
  * we can correctly deal with the subsections of phis, psfc, tbot, datai.
  */
-      i = j = 0;
+      i = index_phis = 0;
       for(nc = 0; nc < ncase ; nc++) {
-        if(phis_n_dims == 3) {
-          j = 0;
-        }
         for(nt = 0; nt < ntime ; nt++) {
 /*
  * The input is not double, so we have to coerce it.
@@ -509,9 +506,9 @@ NhlErrorTypes vinth2p_ecmwf_W
           _Nclcoerce((NclTypeClass)nclTypedoubleClass, tbot_d,
                      ((char*)tbot+sz*psf_blk*i),psf_blk,NULL,NULL,
                      (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(tbot_type))));
-          if(phis_n_dims == 3) {
+          if(phis_n_dims >= 3) {
             _Nclcoerce((NclTypeClass)nclTypedoubleClass, phis_d,
-                       ((char*)phis+sz*psf_blk*j),psf_blk,NULL,NULL,
+                       ((char*)phis+sz*psf_blk*index_phis),psf_blk,NULL,NULL,
                        (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
           }
           NGCALLF(vinth2pecmwf,VINTH2PECMWF)(tmp_datai,tmp_datao,hbcofa,hbcofb,
@@ -524,7 +521,10 @@ NhlErrorTypes vinth2p_ecmwf_W
             ((float*)datao)[i*nblk_out + j] = (float)tmp_datao[j];
           }
           i++;
-          j++;
+          index_phis++;
+        }
+        if(phis_n_dims == 3) {
+          index_phis = 0;
         }
       }
       NclFree(psfc_d);
@@ -566,18 +566,15 @@ NhlErrorTypes vinth2p_ecmwf_W
       }
 /*
  * Loop across leftmost dimensions and pass subsections of the input
- * arrays to the Fortran routine.  Since phis can only be 2 or 3 
+ * arrays to the Fortran routine.  Since phis can 2 to 4 
  * dimensions, and psfc, tbot, datai can be 3 to 5 dimensions, we
  * have to loop separately across number of cases and times so
  * we can correctly deal with the subsections of phis, psfc, tbot, datai.
  */
-      i = j = 0;
+      i = index_phis = 0;
       for(nc = 0; nc < ncase ; nc++) {
-        if(phis_n_dims == 3) {
-          j = 0;
-        }
         for(nt = 0; nt < ntime ; nt++) {
-          if(phis_n_dims == 3) {
+          if(phis_n_dims >= 3) {
 /*
  * phis_n_dims is 3D and needs to be coerced.
  */
@@ -594,7 +591,7 @@ NhlErrorTypes vinth2p_ecmwf_W
                                                (((char*)tbot_d)+
                                                 sizeof(double)*psf_blk*i),
                                                (((char*)phis_d)+
-                                                sizeof(double)*psf_blk*j));
+                                                sizeof(double)*psf_blk*index_phis));
           }
           else {
 /*
@@ -615,7 +612,10 @@ NhlErrorTypes vinth2p_ecmwf_W
                                                phis_d);
           }
           i++;
-          j++;
+          index_phis++;
+        }
+        if(phis_n_dims == 3) {
+          index_phis = 0;
         }
       }
       if((void*)psfc_d != psfc) {
