@@ -47,9 +47,11 @@ C Scale the input eigenvector matrix
       END IF  
 
       DO N=1,NF
-         ROTVAR(N)   = 0.0D0
+        ROTVAR(N) = 0.0D0
         DO M=1,ND
-           ROTVAR(N) = ROTVAR(N) + V(M,N)**2
+           IF (V(M,N).NE.VMSG) THEN
+              ROTVAR(N) = ROTVAR(N) + V(M,N)**2
+           END IF
         END DO
       END DO
       
