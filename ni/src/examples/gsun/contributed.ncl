@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.134 2007-02-17 18:51:45 shea Exp $
+;      $Id: contributed.ncl,v 1.135 2007-02-21 18:32:25 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4497,10 +4497,6 @@ end
 ; usage:   eof   = eofcov (x,neval)
 ;          eofts = eofcov_ts (x,eof)  ; where 'deof' is the data used
 ;          EOF   = eoftsData2eof(eof_ts, deof, False) 
-;          eofts_varimax = varimax_eofts_Qmode(eofts, eof@eval, eof@pcvar )
-;      and/or
-;          eof_opt = True    ; currently not used
-;          EOF_Q = eoftsData2eof(eofts_varimax, deof, False) 
 ;
 ; currently: the option argument is not used. 
 ;
@@ -4593,12 +4589,10 @@ undef ("eofunc_varimax_Wrap")
 function eofunc_varimax_Wrap (eof:numeric, optEVX:integer)
 local eofEVX
 begin
-  eofEVX = eof
- ;if (isatt(eofEVX,"pcvar")) then
- ;    delete(eofEVX@pcvar)          ; avoid confusion: a034 and earlier
- ;end if
-  eofEVX = (/ eofunc_varimax(eof, optEVX) /); invoke built-in function
-  eofEVX@op = "Kaiser Varimax Rotation"
+  eofEVX    = eofunc_varimax(eof, optEVX) ; invoke built-in function
+  eofEVX@op = "Kaiser Varimax Rotation: opt="+optEVX
+  copy_VarCoords(eof, eofEVX)
+
   return  (eofEVX)                        ; return
 end
 
