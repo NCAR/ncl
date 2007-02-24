@@ -17,7 +17,7 @@ c The returned 'dp' are equivalent to having used  beta factors.
 C                                                ! local
       integer mono, nt, kl, nl, ml, kll
       double precision    plvl(klvl), dplvl(klvl), pbot, pspan, peps
-      double precision    dpsum, psfcmx, psfcmn
+      double precision    dpsum, psfcmx, psfcmn, work(klvl)
       data    peps /0.001d0/
 
 c
@@ -142,11 +142,11 @@ c if necessary return to original order [reuse dplvl]
 
              if (mono.lt.0) then
                  do kl=1,klvl
-                    dplvl(kl) = dp(ml,nl,kl,nt)
+                    work(kl) = dp(ml,nl,kl,nt)
                  end do
 
                  do kl=1,klvl
-                    dp(ml,nl,kl,nt) = dplvl(klvl-kl+1)
+                    dp(ml,nl,kl,nt) = work(klvl-kl+1)
                  end do
              end if
 
