@@ -1,5 +1,5 @@
 C
-C	$Id: ncarbd.f,v 1.9 2006-05-19 20:13:29 haley Exp $
+C	$Id: ncarbd.f,v 1.10 2007-02-25 15:07:45 haley Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,6 +27,7 @@ C
       CALL CONBD
       CALL CONBDN
       CALL CPBLDA
+      CALL CTBLDA
       CALL DASHBD
       CALL DPBLDA
       CALL G01BKD
@@ -56,7 +57,7 @@ C
       CALL THREBD
       CALL UTILBD
       CALL VELDAT
+      CALL VTBLDA
       CALL VVDATA
       CALL WMBLDA
-
       END
