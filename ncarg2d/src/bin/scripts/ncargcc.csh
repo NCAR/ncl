@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.46 2002-05-30 20:55:18 haley Exp $
+#	$Id: ncargcc.csh,v 1.47 2007-02-25 15:15:20 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -53,9 +53,11 @@ set newargv = "$cc $defines $loadflags"
 set ctrans_libs = ""
 set stub_file   = ""
 
-set smooth = "$ro/libdashsmth.o"
-set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
-set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
+set ncarbd   = "$ro/libncarbd.o"
+set ngmathbd = "$ro/libngmathbd.o"
+set smooth   = "$ro/libdashsmth.o"
+set quick    = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
+set super    = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 #
 # set up default libraries
@@ -66,19 +68,33 @@ set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 
 set robjs
+unset NGMATH_LD
+unset NGMATH_BLOCKD_LD
 
 foreach arg ($argv)
 
 	switch ($arg)
 
-    case "-ngmath":
-      set libmath     = "-lngmath"
-      breaksw
+	case "-ngmath":
+		set libmath     = "-lngmath"
+		set NGMATH_LD
+	breaksw
 
 	case "-sungks":
 		echo "Using Sun GKS"
 		set libgks="-lgks77 -lgks -lsuntool -lsunwindow -lpixrect -lm"
 		breaksw
+
+	case "-ncarbd":
+		set robjs = "$robjs $ncarbd"
+		set NGMATH_BLOCKD_LD
+        breaksw
+
+	case "-ngmathbd":
+		set robjs = "$robjs $ngmathbd"
+# Make sure the ngmath blockdata routine doesn't get loaded twice.
+		unset NGMATH_BLOCKD_LD
+        breaksw
 
 	case "-smooth":
 		echo "Smooth f77 of NCAR Graphics"
@@ -167,6 +183,15 @@ foreach arg ($argv)
 	endsw
 
 end
+
+#
+# If -ncarbd was set, *and* the ngmath library was loaded,
+# then automatically take care of loading libngmathbd.o.
+#
+if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
+  set robjs = "$robjs $ngmathbd"
+endif
+
 set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
 
 set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $libextra"
