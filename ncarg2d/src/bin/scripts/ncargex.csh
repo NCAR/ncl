@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.160 2007-02-15 00:32:46 kennison Exp $
+#   $Id: ncargex.csh,v 1.161 2007-02-25 15:10:27 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -770,6 +770,8 @@ set list_cps = (c_pgkex21)
 #                                                    #
 #****************************************************#
 set X11_option
+set ncarbd_flag
+set ngmathbd_flag
 
 #*******************************#
 #                               #
@@ -1223,6 +1225,16 @@ invalid:
       shift
       breaksw
 
+    case "-ncarbd":
+      shift
+      set ncarbd_flag = "-ncarbd"
+      breaksw
+
+    case "-ngmathbd":
+      shift
+      set ngmathbd_flag = "-ngmathbd"
+      breaksw
+
     case "-noX11":
     case "-nox11":
     case "-NCGMonly":
@@ -1596,7 +1608,7 @@ if ($?Unique && -f $graphic_file) goto theend
 # Set initial compiler flags #
 #                            #
 #****************************#
-set comp_flags = ($xoption)
+set comp_flags = ($ncarbd_flag $ngmathbd_flag $xoption)
 
 #**********************************#
 #                                  #

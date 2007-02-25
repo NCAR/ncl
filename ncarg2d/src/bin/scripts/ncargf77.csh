@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.34 2005-06-03 14:20:55 haley Exp $
+#   $Id: ncargf77.csh,v 1.35 2007-02-25 15:10:27 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -62,12 +62,15 @@ set libgks     = "-lncarg_gks"
 set libncarg_c = "-lncarg_c"
 set libmath  = ""
 
-
-set smooth = "$ro/libdashsmth.o"
-set quick  = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
-set super  = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
+set ncarbd   = "$ro/libncarbd.o"
+set ngmathbd = "$ro/libngmathbd.o"
+set smooth   = "$ro/libdashsmth.o"
+set quick    = "$ro/libdashline.o $ro/libconrcqck.o $ro/libconraq.o"
+set super    = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 
 set robjs
+unset NGMATH_LD
+unset NGMATH_BLOCKD_LD
 
 foreach arg ($argv)
 
@@ -75,11 +78,23 @@ foreach arg ($argv)
 
     case "-ngmath":
       set libmath     = "-lngmath"
+      set NGMATH_LD
       breaksw
 
     case "-sungks":
         echo "Using Sun GKS"
         set libgks="-lgks77 -lgks -lsuntool -lsunwindow -lpixrect -lm"
+        breaksw
+
+    case "-ncarbd":
+        set robjs = "$robjs $ncarbd"
+        set NGMATH_BLOCKD_LD
+        breaksw
+
+    case "-ngmathbd":
+        set robjs = "$robjs $ngmathbd"
+# Make sure the ngmath blockdata routine doesn't get loaded twice.
+        unset NGMATH_BLOCKD_LD
         breaksw
 
     case "-smooth":
@@ -176,6 +191,14 @@ foreach arg ($argv)
 
     endsw
 end
+ 
+#
+# If -ncarbd was set, *and* the ngmath library was loaded,
+# then automatically take care of loading libngmathbd.o.
+#
+if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
+  set robjs = "$robjs $ngmathbd"
+endif
 
 set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
 set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $libextra"
