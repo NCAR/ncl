@@ -1,9 +1,9 @@
 C NCLFORTSTART
-      subroutine dpresplvl(klvl,plevel
-     +                    ,ntim,nlat,mlon,psfc,pmsg,ptop,dp,iopt,ier)
+      subroutine dpresplvl(klvl,plevel,ntim,nlat,mlon,psfc,pmsg
+     +                    ,ptop,dp,iopt,kflag,ier)
       implicit none
 C                                                ! input 
-      integer  klvl,ntim,nlat,mlon,iopt,ier
+      integer  klvl,ntim,nlat,mlon,iopt,kflag,ier
       double precision     plevel(klvl), psfc(mlon,nlat,ntim),ptop,pmsg
 C                                                ! output
       double precision     dp(mlon,nlat,klvl,ntim)
@@ -18,8 +18,9 @@ C                                                ! local
       integer mono, nt, kl, nl, ml, kll
       double precision    plvl(klvl), dplvl(klvl), pbot, pspan, peps
       double precision    dpsum, psfcmx, psfcmn, work(klvl)
-      data    peps /0.001d0/
 
+      kflag = 0
+      peps  = 0.001d0
 c
 c check to see if ptop is reasonable
 c .   ptop < 0      is not allowed
@@ -94,12 +95,11 @@ c modify the default dp
       do nt=1,ntim
         do nl=1,nlat
           do ml=1,mlon
-             if (psfc(ml,nl,nt).eq.pmsg) then
+             IF (psfc(ml,nl,nt).eq.pmsg) THEN
                  do kl=1,klvl
                     dp(ml,nl,kl,nt) = 0.0d0
                  end do
-                 go to 300
-             else
+             ELSE
 
              if (ptop.gt.0.0d0) then
                  do kl=1,klvl-1
@@ -138,21 +138,32 @@ c should probably be a fatal error .... indicates something is wrong
              if (dpsum.gt.(pspan+peps) .or. dpsum.lt.(pspan-peps) ) then
                  ier = ier-1
              end if
+c c c                         IF (psfc(ml,nl,nt).eq.pmsg) THEN
+c c c                         ELSE
+           END IF 
 
-c if necessary return to original order [reuse dplvl]
+c if necessary return to original order
 
-             if (mono.lt.0) then
-                 do kl=1,klvl
-                    work(kl) = dp(ml,nl,kl,nt)
-                 end do
+           if (mono.lt.0) then
+               do kl=1,klvl
+                  work(kl) = dp(ml,nl,kl,nt)
+               end do
 
-                 do kl=1,klvl
-                    dp(ml,nl,kl,nt) = work(klvl-kl+1)
-                 end do
-             end if
+               do kl=1,klvl
+                  dp(ml,nl,kl,nt) = work(klvl-kl+1)
+               end do
+           end if
 
-           end if 
-  300      continue
+c set all dp=0 to pmsg
+
+           do kl=1,klvl
+              if (dp(ml,nl,kl,nt).eq.0.) then
+                  kflag = 1
+                  dp(ml,nl,kl,nt) = pmsg
+              end if
+           end do
+
+c                                  end do   for ml,nl,nt
           end do
         end do
       end do
