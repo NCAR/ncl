@@ -70,7 +70,7 @@ c initialize to nominal dplvl
       do kl=2,klvl-1 
          dplvl(kl)= 0.5d0*(plvl(kl+1) - plvl(kl-1))
       end do
-      dplvl(klvl) = psfcmx -(plvl(klvl)-plvl(klvl-1))*0.5d0
+      dplvl(klvl) = psfcmx -(plvl(klvl)+plvl(klvl-1))*0.5d0
 
 c levels outside the range should be ste to 0.0
 
@@ -98,6 +98,7 @@ c modify the default dp
                  do kl=1,klvl
                     dp(ml,nl,kl,nt) = 0.0d0
                  end do
+                 go to 300
              else
 
              if (ptop.gt.0.0d0) then
@@ -151,6 +152,7 @@ c if necessary return to original order [reuse dplvl]
              end if
 
            end if 
+  300      continue
           end do
         end do
       end do
