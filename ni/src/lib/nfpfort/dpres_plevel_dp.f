@@ -112,7 +112,7 @@ c modify the default dp
 
   100        pbot  = psfc(ml,nl,nt)
              if (pbot.gt.plvl(klvl)) then
-                 dp(ml,nl,kl,nt) = pbot -(plvl(klvl-1)+plvl(klvl))*0.5d0
+                 dp(ml,nl,klvl,nt) = pbot -(plvl(klvl-1)+plvl(klvl))*0.5d0
              else
                  do kl=1,klvl-1
                     if (pbot.ge.plvl(kl) .and. pbot.lt.plvl(kl+1)) then
