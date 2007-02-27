@@ -146,7 +146,7 @@ NCAR Graphics Contouring and Mapping Tutorial
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br

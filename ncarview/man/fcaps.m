@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: fcaps.m,v 1.20 2006-01-04 00:15:50 haley Exp $
+.\"	$Id: fcaps.m,v 1.21 2007-02-27 18:21:23 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH FCAPS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -47,7 +47,7 @@ The fontcaps.
 Hardcopy:
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br

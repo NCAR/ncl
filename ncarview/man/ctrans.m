@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ctrans.m,v 1.33 2006-01-04 00:15:50 haley Exp $
+.\"	$Id: ctrans.m,v 1.34 2007-02-27 18:21:23 haley Exp $
 .\"
 .\" ctrans 3.2 
 .TH CTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -700,7 +700,7 @@ in question to
 Consult the aforementioned publication for a discussion of 
 Graphcaps and Fontcaps as well.
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br

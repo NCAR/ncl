@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncgm2cgm.m,v 1.19 2006-01-04 00:15:51 haley Exp $
+.\"	$Id: ncgm2cgm.m,v 1.20 2007-02-27 18:21:23 haley Exp $
 .\"
 .\"	ncgm2cgm.l 3.00 10/5/89 NCAR View
 .TH NCGM2CGM 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -44,7 +44,7 @@ not be the case that the aforementioned interpreters will be able to translate
 vanilla metafiles, such as produced by 
 .B ncgm2cgm.
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br

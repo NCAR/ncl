@@ -32,7 +32,7 @@ and ncarg_c, preferably in that order.
 .SH SEE ALSO
 Online URL: http://ngwww.ucar.edu/ngdoc/ng/gks/gkshome.html
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br

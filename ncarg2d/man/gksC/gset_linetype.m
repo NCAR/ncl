@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gset_linetype.m,v 1.13 2006-01-04 00:13:07 haley Exp $
+.\"	$Id: gset_linetype.m,v 1.14 2007-02-27 18:20:23 haley Exp $
 .\"
 .TH GSET_LINETYPE 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -48,7 +48,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br

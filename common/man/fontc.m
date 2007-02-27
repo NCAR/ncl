@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: fontc.m,v 1.12 2006-01-04 00:11:32 haley Exp $
+.\"	$Id: fontc.m,v 1.13 2007-02-27 18:20:03 haley Exp $
 .\"
 .TH FONTC 1NCARG "April 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -24,7 +24,7 @@ different system architectures.
 Online:
 ctrans(1NCARG), fontcap(5NCARG)
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br

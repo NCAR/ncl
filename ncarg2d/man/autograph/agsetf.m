@@ -78,7 +78,7 @@ ezmy,
 ezxy,
 ezy
 .SH COPYRIGHT
-Copyright (C) 1987-2006
+Copyright (C) 1987-2007
 .br
 University Corporation for Atmospheric Research
 .br
