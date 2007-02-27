@@ -365,6 +365,7 @@ extern NhlErrorTypes pres_hybrid_W(void);
 extern NhlErrorTypes pres_hybrid_ccm_W(void);
 extern NhlErrorTypes dpres_hybrid_W(void);
 extern NhlErrorTypes dpres_hybrid_ccm_W(void);
+extern NhlErrorTypes dpres_plevel_W(void);
 extern NhlErrorTypes pres2hybrid_W(void);
 extern NhlErrorTypes hyi2hyo_W(void);
 extern NhlErrorTypes pres_sigma_W(void);
@@ -5187,6 +5188,19 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(dpres_hybrid_ccm_W,args,"dpres_hybrid_ccm",nargs);
 
+/*
+ * Register "dpres_plevel".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+
+    NclRegisterFunc(dpres_plevel_W,args,"dpres_plevel",nargs);
 
 /*
  * Register "pres2hybrid".

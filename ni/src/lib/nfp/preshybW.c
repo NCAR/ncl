@@ -21,6 +21,10 @@ extern void NGCALLF(p2hyo,P2HYO)(double*,int*,int*,int*,double*,double*,
                                  double*,double*,double*,int*,double*,
                                  double*,int*,int*,int*);
 
+extern void NGCALLF(dpresplvl,DPRESPLVL)(int *,double *,int *,int *,int *,
+                                         double *,double *,double *,double *,
+                                         int *,int *,int *);
+
 NhlErrorTypes pres_hybrid_W( void )
 {
 /*
@@ -810,6 +814,226 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
  */
   ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
   NclFree(dsizes_phy);
+  return(ret);
+}
+
+NhlErrorTypes dpres_plevel_W( void )
+{
+/*
+ * Input variables
+ */
+  void *plev, *psfc, *ptop;
+  int *iopt;
+  double *tmp_plev, *tmp_psfc, *tmp_ptop;
+  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS], dsizes_plev[1];
+  int has_missing_psfc, is_scalar_psfc;
+  NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
+  NclBasicDataTypes type_plev, type_psfc, type_ptop;
+/*
+ * Output variables
+ */
+  void *dp;
+  double *tmp_dp;
+  int ndims_dp, *dsizes_dp;
+  NclBasicDataTypes type_dp;
+  NclScalar missing_dp;
+/*
+ * Various.
+ */
+  int i, j, ntim, nlat, nlon, klvl, kflag, ier;
+  int nlatnlon, klvlnlatnlon, ntimnlatnlon, ntimklvlnlatnlon;
+  int index_psfc, index_dp, size_leftmost, ret;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+  plev = (void*)NclGetArgValue(
+          0,
+          4,
+          NULL,
+          dsizes_plev,
+          NULL,
+          NULL,
+          &type_plev,
+          2);
+
+  psfc = (void*)NclGetArgValue(
+          1,
+          4,
+          &ndims_psfc, 
+          dsizes_psfc,
+          &missing_psfc,
+          &has_missing_psfc,
+          &type_psfc,
+          2);
+    
+  ptop = (void*)NclGetArgValue(
+          2,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          &type_ptop,
+          2);
+
+  iopt = (int*)NclGetArgValue(
+          3,
+          4,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+/*
+ * Check dimension sizes for psfc.
+ */
+  is_scalar_psfc = is_scalar(ndims_psfc,dsizes_psfc);
+
+  if(ndims_psfc > 3 || (!is_scalar_psfc && ndims_psfc == 1)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: The 'psfc' array must be a scalar or be a 2 or 3 dimensional array with rightmost dimensions lat x lon");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get dimension sizes.
+ */
+  klvl = dsizes_plev[0];
+  if(ndims_psfc == 1) {
+    ntim = nlat = nlon = 1;
+  }
+  else if(ndims_psfc == 2) {
+    ntim = 1;
+    nlat = dsizes_psfc[ndims_psfc-2];
+    nlon = dsizes_psfc[ndims_psfc-1];
+  }
+  else {
+    ntim = dsizes_psfc[ndims_psfc-3];
+    nlat = dsizes_psfc[ndims_psfc-2];
+    nlon = dsizes_psfc[ndims_psfc-1];
+  }
+
+  nlatnlon         = nlat * nlon;
+  ntimnlatnlon     = ntim * nlatnlon;
+  klvlnlatnlon     = klvl * nlatnlon;
+  ntimklvlnlatnlon = ntim * klvlnlatnlon;
+
+/*
+ * Determine type of output. It depends on the type of psfc only.
+ */
+  if(type_psfc == NCL_double) {
+    type_dp = NCL_double;
+  }
+  else {
+    type_dp = NCL_float;
+  }
+
+/*
+ * Determine dimension size of output array.
+ */
+  if(is_scalar_psfc) {
+    ndims_dp = 1;      /* will be length klvl */
+  }
+  else {
+    ndims_dp = ndims_psfc + 1;
+  }
+
+  dsizes_dp = (int*)calloc(ndims_dp,sizeof(int));  
+  if( dsizes_dp == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+
+  if(ndims_psfc == 1) {
+    dsizes_dp[0] = klvl;
+  }
+  else if(ndims_psfc == 2) {
+    dsizes_dp[0] = klvl;
+    dsizes_dp[1] = nlat;
+    dsizes_dp[2] = nlon;
+  }
+  else {
+    dsizes_dp[0] = ntim;
+    dsizes_dp[1] = klvl;
+    dsizes_dp[2] = nlat;
+    dsizes_dp[3] = nlon;
+  }
+
+  if(has_missing_psfc) {
+    coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
+                   &missing_dpsfc,&missing_rpsfc);
+  }
+  else {
+    missing_dpsfc.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
+    missing_rpsfc.doubleval = 1.e20;
+  }
+
+
+/*
+ * Coerce data to double if necessary.
+ */
+  tmp_psfc = coerce_input_double(psfc,type_psfc,ntimnlatnlon,0,NULL,NULL);
+  tmp_plev = coerce_input_double(plev,type_plev,klvl,0,NULL,NULL);
+  tmp_ptop = coerce_input_double(ptop,type_ptop,1,0,NULL,NULL);
+  if( tmp_ptop == NULL || tmp_psfc == NULL || tmp_plev == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to coerce input to double precision");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_dp == NCL_float) {
+    dp     = (void*)calloc(ntimklvlnlatnlon,sizeof(float));
+    tmp_dp = (double*)calloc(ntimklvlnlatnlon,sizeof(double));
+    if(tmp_dp == NULL || dp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    missing_dp = missing_rpsfc;
+  }
+  else {
+    dp = (void*)calloc(ntimklvlnlatnlon,sizeof(double));
+    tmp_dp = &((double*)dp)[0];
+    if(dp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dpres_plevel: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    missing_dp = missing_dpsfc;
+  }
+
+  NGCALLF(dpresplvl,DPRESPLVL)(&klvl,tmp_plev,&ntim,&nlat,&nlon,tmp_psfc,
+                               &missing_dpsfc.doubleval,tmp_ptop,tmp_dp,
+                               iopt,&kflag,&ier);
+
+/*
+ * Copy output values from temporary tmp_dp to dp.
+ */
+  if(type_dp != NCL_double) {
+    coerce_output_float_only(dp,tmp_dp,ntimklvlnlatnlon,0);
+  }
+
+/*
+ * Free memory.
+ */
+  if(type_psfc != NCL_double) NclFree(tmp_psfc);
+  if(type_plev != NCL_double) NclFree(tmp_plev);
+  if(type_ptop != NCL_double) NclFree(tmp_ptop);
+  if(type_dp   != NCL_double) NclFree(tmp_dp);
+
+/*
+ * Return. kflag == 1 --> there are missing values in the output.
+ */
+  if(kflag == 1) {
+    ret = NclReturnValue(dp,ndims_dp,dsizes_dp,&missing_dp,type_dp,0);
+  }
+  else {
+    ret = NclReturnValue(dp,ndims_dp,dsizes_dp,NULL,type_dp,0);
+  }
+  NclFree(dsizes_dp);
   return(ret);
 }
 
