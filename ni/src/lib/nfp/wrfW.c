@@ -369,7 +369,7 @@ NhlErrorTypes wrf_td_W( void )
 /*
  * Various
  */
-  int i, nx, size_leftmost, index_p;
+  int i, np, nx, size_leftmost, index_p;
 
 /*
  * Variables for returning the output array with attributes attached.
@@ -438,14 +438,18 @@ NhlErrorTypes wrf_td_W( void )
  */
   type_t     = NCL_float;
   type_obj_t = nclTypefloatClass;
-  if(type_p != NCL_double) {
-    tmp_p = (double *)calloc(nx,sizeof(double));
-    if(tmp_p == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for coercing 't' to double");
-      return(NhlFATAL);
-    }
+/*
+ * Allocate space for tmp_p no matter what, because we have to
+ * convert the values from hPa to Pa, and we don't want to do
+ * this to the original array.
+ */
+  tmp_p = (double *)calloc(nx,sizeof(double));
+  if(tmp_p == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for coercing 't' to double");
+    return(NhlFATAL);
   }
-  else {
+
+  if(type_p == NCL_double) {
     type_t     = NCL_double;
     type_obj_t = nclTypedoubleClass;
   }
@@ -490,14 +494,19 @@ NhlErrorTypes wrf_td_W( void )
   index_p = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
- * Coerce subsection of p (tmp_p) to double if necessary.
+ * Coerce subsection of p (tmp_p) to double if necessary. Otherwise,
+ * just do a memcpy. Afterwards, convert the p values to Pa units,
+ * as they are coming in as hPa.
  */
     if(type_p != NCL_double) {
       coerce_subset_input_double(p,tmp_p,index_p,type_p,nx,0,NULL,NULL);
     }
     else {
-      tmp_p = &((double*)p)[index_p];
+      (void *)memcpy((void*)((char*)tmp_p),
+                     (void*)((char*)p + (index_p*sizeof(double))),
+                     sizeof(double)*nx);
     }
+    for(np = 0; np < nx; np++) tmp_p[np] *= 0.01;
 /*
  * Coerce subsection of qv (tmp_qv) to double if ncessary. Otherwise,
  * just do a memcpy. Afterwards, set all values < 0 to 0.
@@ -535,7 +544,7 @@ NhlErrorTypes wrf_td_W( void )
  * Free up memory.
  */
   NclFree(tmp_qv);
-  if(type_p  != NCL_double) NclFree(tmp_p);
+  NclFree(tmp_p);
   if(type_t  != NCL_double) NclFree(tmp_t);
 
 /*
