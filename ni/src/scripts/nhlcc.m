@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: nhlcc.m,v 1.1 2002-03-29 16:04:41 haley Exp $
+.\"	$Id: nhlcc.m,v 1.2 2007-02-28 22:19:00 haley Exp $
 .\"
 .TH NHLCC 1NCARG "April 1995" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -8,6 +8,8 @@ high-level utilities.
 .SH SYNOPSIS
 \fBnhlcc\fP 
 [\fB\-ngmath\fR]
+[\fB\-ncarbd\fR]
+[\fB\-ngmathbd\fR]
 [\fB\-netcdf\fR]
 [\fB\-hdf\fR] ...
 .SH DESCRIPTION
@@ -41,6 +43,21 @@ libraries must have been created in a similar fashion.
 .I OPTIONS
 .IP "\-ngmath"
 Links in the NCAR Graphics ngmath library.
+.sp
+.IP "\-ncarbd"
+Use this option for compilers that appear to be having trouble
+initializing blockdata variables. It will cause a small subroutine to
+be linked in that helps force the loading of blockdata initialization
+routines.
+.sp
+.IP "\-ngmathbd"
+Just like with the \fB\-ncarbd\fR option, use this option for compilers
+that appear to be having trouble initializing Ngmath-related blockdata
+variables. It will cause a small subroutine to be linked in that helps
+force the loading of Ngmath blockdata initialization routines.
+.sp
+Note: this option doesn't need to be specified separately if you are
+already including the \fB\-ncarbd\fR  and \fB\-ngmath\fR options.
 .sp
 .IP "\-netcdf"
 Links in the netCDF library.  This library is not part of NCAR Graphics,

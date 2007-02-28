@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.7 2005-03-04 17:14:15 haley Exp $
+#   $Id: ng4ex.csh,v 1.8 2007-02-28 22:19:00 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -429,6 +429,8 @@ unset NCGM
 unset X11
 unset PS
 unset PDF
+set ncarbd_flag
+set ngmathbd_flag
 set num_set = 0
 
 while ($#argv > 0)
@@ -512,6 +514,16 @@ while ($#argv > 0)
       shift
       breaksw
         
+    case "-ncarbd":
+      shift
+      set ncarbd_flag = "-ncarbd"
+      breaksw
+
+    case "-ngmathbd":
+      shift
+      set ngmathbd_flag = "-ngmathbd"
+      breaksw
+
     case "-app":
       shift
       set names=($names $app_list)
@@ -787,7 +799,7 @@ set inc_file
 set ascdata_file
 set bindata_file
 set ncl_file
-set comp_flags
+set comp_flags = ($ncarbd_flag $ngmathbd_flag)
 set generic_name = `expr $name : '\(.*[0-9][0-9]\).*'`
 set prog_type = `expr $name : '.*[0-9][0-9]\(.\)'`
 set resfile_dir = "$res_dir/$obj_dir"
@@ -883,7 +895,7 @@ switch($name)
         echo "You must have the netCDF library installed on your system"
         echo "in order to compile this example."
         echo ""
-        set comp_flags = "-netcdf"
+        set comp_flags = ($comp_flags "-netcdf")
     breaksw
 
     case xy12c:
@@ -895,7 +907,7 @@ switch($name)
         echo "The output will be displayed to an X11 window, and an"
         echo "NCGM/PS/PDF file may or may not be produced."
         echo ""
-        set comp_flags = "-XmXt"
+        set comp_flags = ($comp_flags "-XmXt")
         if ("$name" == "xy12c") set ascdata_file = "xy12c.asc"
     breaksw
 
@@ -939,7 +951,7 @@ switch($name)
         echo "This example requires the math library, -lngmath, to be"
         echo "loaded during the link phase."
         echo ""
-        set comp_flags = "-ngmath"
+        set comp_flags = ($comp_flags "-ngmath")
     breaksw
 endsw
 

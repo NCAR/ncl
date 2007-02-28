@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlf77.csh,v 1.1 2000-04-18 21:22:50 haley Exp $
+#	$Id: nhlf77.csh,v 1.2 2007-02-28 22:19:00 haley Exp $
 #
 
 #*********************************************#
@@ -36,13 +36,30 @@ set libgks      = "-lncarg_gks"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 set libhlu      = "-lhlu"
+set ncarbd      = "$ro/libncarbd.o"
+set ngmathbd    = "$ro/libngmathbd.o"
 set extra_libs
+
+set robjs
+unset NGMATH_LD
+unset NGMATH_BLOCKD_LD
 
 foreach arg ($argv)
   switch ($arg)
 
   case "-ngmath":
     set libmath     = "-lngmath"
+    breaksw
+
+  case "-ncarbd":
+    set robjs = "$robjs $ncarbd"
+    set NGMATH_BLOCKD_LD
+    breaksw
+
+  case "-ngmathbd":
+    set robjs = "$robjs $ngmathbd"
+# Make sure the ngmath blockdata routine doesn't get loaded twice.
+    unset NGMATH_BLOCKD_LD
     breaksw
 
   case "-netcdf":
@@ -58,9 +75,18 @@ foreach arg ($argv)
     set newargv = "$newargv $arg"
   endsw
 end
+
+#
+# If -ncarbd was set, *and* the ngmath library was loaded,
+# then automatically take care of loading libngmathbd.o.
+#
+if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
+  set robjs = "$robjs $ngmathbd"
+endif
+
 set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
 
-set newargv = "$newargv $libpath $incpath $extra_libs $ncarg_libs $xlibs $f77libs"
+set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $f77libs"
 
 echo $newargv
 eval $newargv
