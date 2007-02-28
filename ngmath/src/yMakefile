@@ -1,5 +1,12 @@
 #
-#	$Id: yMakefile,v 1.6 1997-03-03 04:16:25 haley Exp $
+#	$Id: yMakefile,v 1.7 2007-02-28 01:49:32 fred Exp $
 #
 #define IHaveSubdirs
+
 SUBDIRS = lib bin examples 
+
+OBJECTS = ngmathbd.o
+FSOURCES = ngmathbd.f
+
+RelocatableTarget(libngmathbd.o,$(OBJECTS))
+
