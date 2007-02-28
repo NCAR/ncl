@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.33 2007-01-18 16:15:31 haley Exp $
+#      $Id: Configure,v 1.34 2007-02-28 05:29:20 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2007-01-18 16:15:31 $
+#	$Date: 2007-02-28 05:29:20 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -141,6 +141,8 @@ echo -n "..."
 # the "setup.py" method for building python software, and not
 # the ymake system.
 #
+set buildncl=`$makecmd NCLSTUFF`
+echo -n "..."
 # set pythondir=`$makecmd PYTHONDIR`
 # echo -n "..."
 # set pythonversion=`$makecmd PYTHONVERS`
@@ -162,7 +164,7 @@ echo -n "..."
 set buildf90=`$makecmd F90STUFF`
 set f90comp="f90"
 echo -n "..."
-set buildDODS=`$makecmd DODSSTUFF`
+set builddods=`$makecmd DODSSTUFF`
 echo -n "..."
 set ncargversion=`$makecmd NGVERS`
 echo ""
@@ -234,6 +236,45 @@ cat <<"EOF"
 echo -n "Enter Return to continue, or q(quit) > "
 set answer="$<"
 if ("$answer" == "q") goto cleanup
+
+#
+# Whether to build NCL or not.
+#
+if (-e ni) then
+  if ($?verbose_option) then
+    cat <<"EOF"
+
+	The NCAR Command Language (NCL) is a free interpreted language
+        designed specifically for scientific data processing and
+        visualization. NCL has robust file input and output. It can
+        read in netCDF, HDF4, HDF4-EOS, GRIB, binary and ASCII data.
+        It requires several external packages (like netCDF and HDF),
+        and has several optional packages you can build in (UDUNITS,
+        HDF-EOS, and Vis5D functions).
+
+        NCL is a separate software package from NCAR Graphics. You
+        don't don't need it in order to use NCAR Graphics.
+"EOF"
+  endif
+
+  echo ""
+  echo "Build NCL ($buildncl)?"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildncl")) then
+    set buildncl = $answer
+    set newbuildncl
+    set altered
+  endif
+else
+#  echo ""
+#  echo "Not building NCL...source code directory is not available."
+  set buildncl = "n"
+  set buildudunits = "n"
+  set newbuildncl
+  set altered
+endif
 
 #
 # Binary directory.
@@ -613,10 +654,10 @@ if (("$answer" != "") && ("$answer" != "$buildhdf")) then
 endif
 
 #
-# Only ask about UDUNITS and HDFEOS and Vis5d+ support if we are actually
-# planning to build NCL.
+# Only ask about UDUNITS, HDFEOS, Vis5d+, and other external software
+#  support if we are actually planning to build NCL.
 #
-if (-e ni/src/ncl) then
+if ("$buildncl" == "y" || "$buildncl" == "Y") then
 #
 # Udunits
 #
@@ -705,10 +746,10 @@ if (-e ni/src/ncl) then
   if ($?verbose_option) then
     cat <<"EOF"
 
-    GRIB v2 support is currently limited to TIGGE-specific data
-    files.  Support for GRIB v2 data from other data centers is
+    GRIB2 support is currently limited to TIGGE-specific data
+    files.  Support for GRIB2 data from other data centers is
     planned.  In order to have this functionality, you must have
-    both the NCEP GRIB v2 decoder library and the jasper JPEG2000
+    both the NCEP GRIB2 decoder library and the jasper JPEG2000
     library installed on your system.  THIS LIBRARY IS NOT NEEDED
     FOR BUILDING NCAR GRAPHICS.
 
@@ -716,8 +757,8 @@ if (-e ni/src/ncl) then
   endif
 
   echo ""
-  echo "Build GRIB v2 support (optional) into NCL ($buildgrib2)"
-  echo "(requires the GRIB v2 decoder library:  http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/"
+  echo "Build GRIB2 support (optional) into NCL ($buildgrib2)"
+  echo "(requires the GRIB2 decoder library:  http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/"
   echo " and jasper:  http://www.ece.uvic.ca/~mdadams/jasper/)"
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
@@ -748,25 +789,28 @@ if (-e ni/src/ncl) then
   endif
 
   echo ""
-  echo "Build OPeNDAP support (optional) into NCL ($buildDODS)"
+  echo "Build OPeNDAP support (optional) into NCL ($builddods)"
   echo "(requires the external netCDF software available from http://www.unidata.ucar.edu/packages/dods/home/sw.html)"
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
   if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildDODS")) then
-	set buildDODS = $answer
-	set newbuildDODS
+  if (("$answer" != "") && ("$answer" != "$builddods")) then
+	set builddods = $answer
+	set newbuilddods
         set altered
   endif
 
 else
   set buildhdfeos  = "n"
   set buildudunits = "n"
+  set buildgrib2 = "n"
+  set buildv5d = "n"
+  set builddods = "n"
   set newbuildhdfeos
-  set newbuildgrib2
   set newbuildudunits
+  set newbuildgrib2
   set newbuildv5d
-  set newbuildDODS
+  set newbuilddods
   set altered
 endif
 
@@ -1072,6 +1116,14 @@ endif
 
 echo "" >> Site.local
 
+if ($?newbuildncl) then
+	if ("$buildncl" == "y") then
+		echo "#define BuildNCL TRUE" >> Site.local
+	else
+		echo "#define BuildNCL FALSE" >> Site.local
+	endif
+endif
+
 if ($?newbuildf90) then
 	if ("$buildf90" == "y") then
 		echo "#define BuildWithF90 TRUE" >> Site.local
@@ -1128,8 +1180,8 @@ if ($?newbuildv5d) then
 	endif
 endif
 
-if ($?newbuildDODS) then
-	if ("$buildDODS" == "y") then
+if ($?newbuilddods) then
+	if ("$builddods" == "y") then
 		echo "#define BuildDODS TRUE" >> Site.local
 	else
 		echo "#define BuildDODS FALSE" >> Site.local
