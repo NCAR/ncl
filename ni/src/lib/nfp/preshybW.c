@@ -1008,7 +1008,9 @@ NhlErrorTypes dpres_plevel_W( void )
   NGCALLF(dpresplvl,DPRESPLVL)(&klvl,tmp_plev,&ntim,&nlat,&nlon,tmp_psfc,
                                &missing_dpsfc.doubleval,tmp_ptop,tmp_dp,
                                iopt,&kflag,&ier);
-
+  if(ier < 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dpres_plevel: At one or more grid points the sum of the layer thicknesses is not equal to (psfc-ptop). Are units of plev, psfc and ptop matching?");
+  }
 /*
  * Copy output values from temporary tmp_dp to dp.
  */
