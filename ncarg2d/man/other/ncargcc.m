@@ -1,5 +1,5 @@
-.\"
-.\"	$Id: ncargcc.m,v 1.13 2002-06-05 22:02:18 haley Exp $
+\.\"
+.\"	$Id: ncargcc.m,v 1.14 2007-02-28 21:54:59 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGCC 1NCARG "February 1993" NCAR "NCAR GRAPHICS"
@@ -13,6 +13,8 @@ utilities
 [\fB\-quick\fR]
 [\fB\-super\fR]
 [\fB\-agupwrtx\fR]
+[\fB\-ncarbd\fR] ...
+[\fB\-ngmathbd\fR] ...
 [\fB\-noX11\fR] ...
 .SH DESCRIPTION
 .sp
@@ -72,6 +74,21 @@ Link in the "super" objects.
 .sp
 .IP "\-agupwrtx"
 Link in the "agupwrtx" library.
+.sp
+.IP "\-ncarbd"
+Use this option for compilers that appear to be having trouble
+initializing blockdata variables. It will cause a small subroutine to
+be linked in that helps force the loading of blockdata initialization
+routines.
+.sp
+.IP "\-ngmathbd"
+Just like with the \fB\-ncarbd\fR option, use this option for compilers
+that appear to be having trouble initializing Ngmath-related blockdata
+variables. It will cause a small subroutine to be linked in that helps
+force the loading of Ngmath blockdata initialization routines.
+.sp
+Note: this option doesn't need to be specified separately if you are
+already including the \fB\-ncarbd\fR  and \fB\-ngmath\fR options.
 .sp
 .IP "\-noX11"
 Do not link in the X library when linking the code.

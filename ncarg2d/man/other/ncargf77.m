@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargf77.m,v 1.12 2002-06-05 22:02:19 haley Exp $
+.\"	$Id: ncargf77.m,v 1.13 2007-02-28 21:54:59 haley Exp $
 .\"
 .TH NCARGF77 1NCARG "March 1993" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -12,6 +12,8 @@ low-level utilities
 [\fB\-quick\fR]
 [\fB\-super\fR]
 [\fB\-agupwrtx\fR]
+[\fB\-ncarbd\fR]
+[\fB\-ngmathbd\fR]
 [\fB\-ictrans\fR]
 [\fB\-noX11\fR] ...
 .SH DESCRIPTION
@@ -59,9 +61,23 @@ Link in the "agupwrtx" library.
 .IP "\-ictrans"
 When \fIncargf77\fR is invoked with the this option, the resulting
 executable will, upon invocation, send its metafile output to the translator 
-\fBictrans\fR  . The environment variable GRAPHCAP must be set to a valid
+\fBictrans\fR. The environment variable GRAPHCAP must be set to a valid
 graphics output device whenever the executable is executed.
 .sp
+.IP "\-ncarbd"
+Use this option for compilers that appear to be having trouble
+initializing blockdata variables. It will cause a small subroutine to
+be linked in that helps force the loading of blockdata initialization
+routines.
+.sp
+.IP "\-ngmathbd"
+Just like with the \fB\-ncarbd\fR option, use this option for compilers
+that appear to be having trouble initializing Ngmath-related blockdata
+variables. It will cause a small subroutine to be linked in that helps
+force the loading of Ngmath blockdata initialization routines.
+.sp
+Note: this option doesn't need to be specified separately if you are
+already including the \fB\-ncarbd\fR  and \fB\-ngmath\fR options.
 .sp
 .IP "\-noX11"
 Do not link in the X library when linking the code.

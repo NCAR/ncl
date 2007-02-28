@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.62 2005-07-01 20:30:47 kennison Exp $
+.\"	$Id: ncargex.m,v 1.63 2007-02-28 21:54:59 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -11,18 +11,18 @@ ncargex \- NCAR Graphics Fortran and C Low-Level Utility Examples
 [\fB-U\fR] [\fB-C\fR] [\fB-Fortran\fR] [\fB-class\fR] [\fB-ps\fR]
 [\fB-x11\fR] [\fB-W workstation_type\fR] [\fB-areas]
 [\fB-autograph\fR] [\fB-bivar\fR] [\fB-colconv\fR] [\fB-conpack\fR]
-[\fB-conpackt\fR]
-[\fB-conran_family\fR] [\fB-conrec_family\fR] [\fB-csagrid\fR]
-[\fB-cssgrid\fR] [\fB-dashline\fR] [\fB-dashpack\fR] [\fB-dsgrid\fR]
-[\fB-ezmap\fR] [\fB-field_flow\fR] [\fB-fitgrid\fR] [\fB-gflash\fR]
-[\fB-gks\fR] [\fB-gridall\fR] [\fB-halftone\fR] [\fB-histogram\fR]
-[\fB-isosrfhr\fR] [\fB-isosurface\fR] [\fB-labelbar\fR]
+[\fB-conpackt\fR] [\fB-conran_family\fR] [\fB-conrec_family\fR]
+[\fB-csagrid\fR] [\fB-cssgrid\fR] [\fB-dashline\fR] [\fB-dashpack\fR]
+[\fB-dsgrid\fR] [\fB-ezmap\fR] [\fB-field_flow\fR] [\fB-fitgrid\fR]
+[\fB-gflash\fR] [\fB-gks\fR] [\fB-gridall\fR] [\fB-halftone\fR]
+[\fB-histogram\fR] [\fB-isosrfhr\fR] [\fB-isosurface\fR] [\fB-labelbar\fR]
 [\fB-natgrid\fR] [\fB-ngmath\fR] [\fB-ngmisc\fR] [\fB-plotchar\fR]
 [\fB-polypack\fR] [\fB-pwrite_family\fR] [\fB-scrolled_title\fR]
 [\fB-seter\fR] [\fB-shgrid\fR] [\fB-softfill\fR] [\fB-spps\fR]
 [\fB-streamlines\fR] [\fB-surface\fR] [\fB-tdpack\fR] [\fB-threed\fR]
-[\fB-vectors\fR] [\fB-wmap\fR] [\fB-misc\fR] [\fB-clean\fR] [\fB-n\fR]
-[\fB-noX11\fR] [\fB-onebyone\fR] \fBexample_name ...\fR
+[\fB-vaspackt\fR] [\fB-vectors\fR] [\fB-wmap\fR] [\fB-misc\fR]
+[\fB-clean\fR] [\fB-n\fR] [\fB-ncarbd\fR] [\fB-noX11\fR] [\fB-onebyone\fR]
+\fBexample_name ...\fR
 .fi
 .SH DESCRIPTION
 .I ncargex
@@ -281,6 +281,9 @@ Generate all Tdpack C/Fortran examples.
 .IP \-threed " " ""
 Generate all Threed C/Fortran examples.
 .sp
+.IP \-vaspackt " " ""
+Generate all Vaspackt C/Fortran examples.
+.sp
 .IP \-vectors " " ""
 Generate all Vectors C/Fortran examples.
 .sp
@@ -296,6 +299,15 @@ Remove everything but the ".ncgm" file.
 .IP \-n " " ""
 Specifies that the example should not be compiled, linked, or run, but
 just copied into your local directory.
+.sp
+.IP "\-ncarbd"
+Use this option for compilers that appear to be having trouble
+initializing blockdata variables. It will cause a small subroutine to
+be linked in that helps force the loading of blockdata initialization
+routines.
+.sp
+Note: this option doesn't need to be specified separately if you are
+already including the \fB\-ncarbd\fR  and \fB\-ngmath\fR options.
 .sp
 .IP \-noX11 " " ""
 Do not link in the X library when linking the selected examples and/or
