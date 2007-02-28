@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.24 2007-01-04 00:07:59 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.25 2007-02-28 00:59:12 fred Exp $
  */
 /************************************************************************
 *									*
@@ -2814,7 +2814,7 @@ static NhlErrorTypes mpSetUpAreamap
                 int ll;
                 float xp[5],yp[5];
                 
-		c_mpseti("VS",8);
+		c_mpseti("VS",1);
 		c_mpseti("G2",2);
 		c_mpseti("G1",1);
 		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
