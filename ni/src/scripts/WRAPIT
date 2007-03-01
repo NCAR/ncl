@@ -12,31 +12,31 @@ if ($argv[1]:q == "-h" || $argv[1]:q == "-help") then
 echo written by Mark Stevens, formerly of NCAR/CGD/Climate Modeling Section
 echo "----------------------------------------------------------------------"
 echo "WRAPIT works on SunOS, IRIX64, IRIX (Sgi), AIX (IBM), OSF1 (alpha),"
-echo MacOSX, HP-UX, Linux and FreeBSD operating systems. WRAPIT can handle 
-echo both f77 and f90 files. The f77 files must have a suffix of .f, and the 
-echo f90 files a suffix of .f90, on all of the operating systems. All .f90
-echo files MUST have a corresponding '"stub"' file which contains the declara-
-echo tions of the f90 subroutine in fortran 77 syntax, for example in the 
-echo file '"file1.stub"' we might have the following:
-echo C NCLFORTSTART
+echo "MacOSX, HP-UX, Linux and FreeBSD operating systems. WRAPIT can handle "
+echo "both f77 and f90 files. The f77 files must have a suffix of .f, and the "
+echo "f90 files a suffix of .f90, on all of the operating systems. All .f90"
+echo "files MUST have a corresponding '"stub"' file which contains the declara-"
+echo "tions of the f90 subroutine in fortran 77 syntax, for example in the "
+echo "file '"file1.stub"' we might have the following:"
+echo "C NCLFORTSTART"
 echo "     subroutine DOIT (x, y, z)"
 echo "     real x, y"
 echo "     integer z"
-echo C NCLEND
+echo "C NCLEND"
 echo "The two comment lines C NCLFORTSTART and C NCLEND (called"
 echo "delimiters) are REQUIRED. The C NCLFORTSTART appears before the"
-echo subroutine statement. The NCLEND is placed after all the declaration
-echo statements pertaining to the arguments passed from NCL.
-echo These delimiters can be upper or lower case, or mixed case.
-echo All user fortran77 subroutines invoked from NCL must contain these 
-echo delimiters. User f77 subroutines do not require a separate '"stub"'
-echo file. User supplied f90 subroutines invoked from NCL and f90
+echo "subroutine statement. The NCLEND is placed after all the declaration"
+echo "statements pertaining to the arguments passed from NCL."
+echo "These delimiters can be upper or lower case, or mixed case."
+echo "All user fortran77 subroutines invoked from NCL must contain these "
+echo "delimiters. User f77 subroutines do not require a separate 'stub'"
+echo "file. User supplied f90 subroutines invoked from NCL and f90"
 echo "subroutines invoked from external libraries (eg: IMSL, NAG, ..)"
-echo require such '"stub"' files.
+echo "require such '"stub"' files."
 echo " "
 echo "-------------------- Command Line Options --------------------------"
-echo The six available options must appear on the command line before
-echo the fortran file names. 
+echo "The six available options must appear on the command line before"
+echo "the fortran file names. "
 echo "OPTION: -d turns on array bounds checking, turns off optimization,"
 echo "displays some debug information and prevents file cleanup." 
 echo "OPTION: -h displays information comments and usage examples."
@@ -58,12 +58,12 @@ echo "OPTION: -r8 is used to promote floats of real*4 to real*8."
 echo "OPTION: -fPIC is used to compile with the '-fPIC' option."
 echo " "
 echo "------------------------ Linux Compilers ---------------------------"
-echo The default linux fortran compiler is the gnu g77 compiler. If your
-echo system has one of the supported linux fortran compilers you must
-echo specify which one you want to use by the appropriate command line
-echo option, otherwise the g77 compiler will be used. 
-echo The supported linux fortran compilers are the Portland Group
-echo "(pgf90), the Lahey/Fujitsu (lf95), and the g95 compiler (g95),
+echo "The default linux fortran compiler is the gnu g77 compiler. If your"
+echo "system has one of the supported linux fortran compilers you must"
+echo "specify which one you want to use by the appropriate command line"
+echo "option, otherwise the g77 compiler will be used. "
+echo "The supported linux fortran compilers are the Portland Group"
+echo "(pgf90), the Lahey/Fujitsu (lf95), and the g95 compiler (g95),"
 echo "and the Intel compiler (ifc/ifort)."
 echo "OPTION: -pg  to specify the Portland Group compiler."
 echo "OPTION: -lf  to specify the Lahey/Fujitsu compiler."
@@ -71,7 +71,7 @@ echo "OPTION: -in  to specify the Intel compiler."
 echo "OPTION: -g95 to specify the g95 compiler."
 echo " " 
 echo "-------------------- Some Usage Examples ---------------------------"
-echo One argument
+echo "One argument"
 echo "WRAPIT file1.f"                         
 echo "WRAPIT subdir/file1.f"                         
 echo " "
@@ -83,27 +83,27 @@ echo "WRAPIT -r8 subdir/file1.f               # -r8 option"
 echo "WRAPIT file1.stub file1.f90"
 echo "WRAPIT subdir/file1.stub subdir/file1.f90"
 echo " " 
-echo Three arguments
-echo "WRAPIT file1.f file2.f file3.f          # no options"       
+echo "Three arguments"
+echo "WRAPIT file1.f file2.f file3.f"          # no options"       
 echo "WRAPIT file1.stub file1.f90 file2.f"
 echo "WRAPIT file1.f file2.stub file2.f90"
-echo "WRAPIT -r8 file1.f file2.f              # -r8 only"
+echo "WRAPIT -r8 file1.f file2.f"              # -r8 only"
 echo "WRAPIT -r8 file1.stub file1.f90"
-echo "WRAPIT -n foo file1.f                   # -n <so name> only"
-echo "WRAPIT -l imsl_mp file1.f               # -l <libname> only"
+echo "WRAPIT -n foo file1.f"                   # -n <so name> only"
+echo "WRAPIT -l imsl_mp file1.f"               # -l <libname> only"
 echo " "
-echo Four arguments
-echo "WRAPIT file1.f file2.f file3.f file4.f      # no options"
-echo "WRAPIT -r8 file1.f file2.f file3.f          # -r8 only"
+echo "Four arguments"
+echo "WRAPIT file1.f file2.f file3.f file4.f"      # no options"
+echo "WRAPIT -r8 file1.f file2.f file3.f"          # -r8 only"
 echo "WRAPIT -r8 file1.f file2.stub file2.f90"
-echo "WRAPIT -r8 -n foo file1.f                   # -r8 -n <so name>"
-echo "WRAPIT -r8 -l imsl_mp file1.f               # -r8 -l <libname>" 
-echo "WRAPIT -n foo file1.f file2.f               # -n <so name> only"
-echo "WRAPIT -n foo -r8 file1.f                   # -n <so name> -r8"
-echo "WRAPIT -l imsl_mp file1.stub file1.f90      # -l <libname> only"
-echo "WRAPIT -l imsl_mp -r8 file1.f               # -l <libname> -r8"
+echo "WRAPIT -r8 -n foo file1.f"                   # -r8 -n <so name>"
+echo "WRAPIT -r8 -l imsl_mp file1.f"               # -r8 -l <libname>" 
+echo "WRAPIT -n foo file1.f file2.f"               # -n <so name> only"
+echo "WRAPIT -n foo -r8 file1.f"                   # -n <so name> -r8"
+echo "WRAPIT -l imsl_mp file1.stub file1.f90"      # -l <libname> only"
+echo "WRAPIT -l imsl_mp -r8 file1.f"               # -l <libname> -r8"
 echo " "
-echo Many arguments
+echo "Many arguments"
 echo "WRAPIT -l blas_mp -L /usr/local/lib64/r4i4 -l imsl_mp file1.f"
 echo " "
 exit 1
