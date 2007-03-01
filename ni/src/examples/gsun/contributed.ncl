@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.135 2007-02-21 18:32:25 shea Exp $
+;      $Id: contributed.ncl,v 1.136 2007-03-01 00:15:58 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3179,7 +3179,7 @@ end
 ; vars.  It adds the longitude and latitude coordinates.
 
 undef("linint1_Wrap")
-function linint1_Wrap (xi[*]:numeric, fi:numeric, wrapX:logical \
+function linint1_Wrap (xi:numeric, fi:numeric, wrapX:logical \
                       ,xo[*]:numeric, Opt)
 
 ; wrapper for NCL function "linint1"  that copies attributes and coordinate vars.
