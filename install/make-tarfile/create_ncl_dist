@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.11 2007-03-02 23:40:43 haley Exp $
+#   $Id: create_ncl_dist,v 1.12 2007-03-02 23:51:19 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -374,7 +374,7 @@ else
 endif
 
 if ($?SCP) then
-  echo "scp (via meeker) or mv file to $scpdir..."
+  echo "scp (via windom) or mv file to $scpdir..."
   if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
     /bin/mv $tardir/$tar_filename.gz $scpdir
   else
