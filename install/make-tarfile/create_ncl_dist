@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.10 2007-02-12 17:16:42 haley Exp $
+#   $Id: create_ncl_dist,v 1.11 2007-03-02 23:40:43 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -18,7 +18,7 @@
 #
 #   Date:       Wed Aug 26 08:29:55 MDT 1998
 #
-#   Description:  Tars up ncl and necessary files so 
+#   Description:  Tar up ncl and necessary files so 
 #                 somebody has the necessary software to run NCL.
 #
 #   Options:   -r :  root directory
@@ -26,6 +26,7 @@
 #              -s :  system to tar up
 #              -c :  scp to windom.ucar.edu
 #              -v :  version number
+#              -o : include libraries for OPeNDAP
 #              -b :  bit (32 or 64, required for AIX and IRIX64)
 #
 #
@@ -72,8 +73,8 @@ set name        = `uname -n`
 set os          = `uname -s`
 set proc        = `uname -p`
 set exe_suffix  = ""
-set scpmach     = "meeker.scd.ucar.edu"
-set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/a034"
+set scpmach     = "windom.ucar.edu"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/a035"
 
 if ("$os" == "AIX") then
   set system = "{$os}_5.1"
@@ -153,6 +154,11 @@ while ($#argv > 0)
       shift
       set extra = "$1"
       shift
+      breaksw
+
+    case "-o":
+      shift
+      set OPENDAP
       breaksw
 
     case "-rangs":
@@ -241,7 +247,12 @@ set bin_files = "ctrans$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suf
 set inc_files = "gks.h c.h ncargC.h"
 set inc_dirs  = "hlu ncl"
 
-set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt"
+if ($?OPENDAP) then
+  set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt libnc-dap.so.3 libdap.so.4 libcurl.so.3"
+else 
+  set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt"
+endif
+
 set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/grib2_codetables ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/udunits"
 
 set all_files
@@ -274,11 +285,15 @@ end
 #
 # Tar up ncl and necessary files.
 #
-set ncl_filename = "ncl-$version.$system.tar"
+if ($?OPENDAP) then
+  set tar_filename = "ncl-$version.${system}_opendap.tar"
+else
+  set tar_filename = "ncl-$version.$system.tar"
+endif
 cd $rootdir
 
 echo "Tarring up the files in $rootdir..."
-echo -n "The tar file is called $ncl_filename and it will be put in $tardir. Continue? (y/n) "
+echo -n "The tar file is called $tar_filename and it will be put in $tardir. Continue? (y/n) "
 set answer="$<"
 if ("$answer" != "y") then
   exit
@@ -322,7 +337,7 @@ find $all_files -exec chmod u+w {} \;
 #
 # Now tar up everything.
 #
-tar -cvhf $tardir/$ncl_filename $all_files $all_dirs
+tar -cvhf $tardir/$tar_filename $all_files $all_dirs
 
 #
 # Set permissions back for group writes.
@@ -350,9 +365,9 @@ endif
 # Compress file.
 #
 echo "Gzipping the tar file..."
-gzip $tardir/$ncl_filename
-if (-f $tardir/$ncl_filename.gz) then 
-  echo "Created '$tardir/$ncl_filename.gz'..."
+gzip $tardir/$tar_filename
+if (-f $tardir/$tar_filename.gz) then 
+  echo "Created '$tardir/$tar_filename.gz'..."
 else
   echo "Error, no compressed tar file created."
   exit
@@ -361,9 +376,9 @@ endif
 if ($?SCP) then
   echo "scp (via meeker) or mv file to $scpdir..."
   if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
-    /bin/mv $tardir/$ncl_filename.gz $scpdir
+    /bin/mv $tardir/$tar_filename.gz $scpdir
   else
-    scp $tardir/$ncl_filename.gz $scpmach\:$scpdir
+    scp $tardir/$tar_filename.gz $scpmach\:$scpdir
   endif
 endif
 
