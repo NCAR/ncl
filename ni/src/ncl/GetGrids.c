@@ -9506,7 +9506,7 @@ int* nrotatts;
 	NhlBoolean do_rot = True;
 	NhlBoolean grid_oriented;
 	NrmQuark grid_name;
-	int do_180;
+	int do_180 = 0;
 		
 	*lat = NULL;
 	*n_dims_lat = 0;
@@ -9678,7 +9678,8 @@ int* nrotatts;
 				double rlat = jdir == 1 ? la1 : la2; 
 				for (i = 0; i < ni; i++) {
 					double tlon,tlat;
-					double cgridlat, slon,srot;
+					double cgridlat, slon,srot,crot;
+					double crot1, eps;
 					double rlon = idir == 1 ? lo1 : lo2;
 					rot2ll(lasp,losp,rlat + j * jdir * dj,rlon + i * idir * di,&tlat,&tlon);
 					if (do_180) {
@@ -9691,9 +9692,23 @@ int* nrotatts;
 					if (cgridlat <= 0.0)
 						(*rot)[j * ni + i] = 0.0;
 					else {
-						srot = sin(-clat * dtr) * slon / cgridlat;
+						crot = (cos(clat * dtr) * cos(tlat * dtr) + 
+							 sin(clat * dtr) * sin(tlat * dtr) * cos(tlon * dtr)) / cgridlat;
+						srot =  -sin(clat * dtr) * slon / cgridlat;
 						(*rot)[j * ni + i] = (float) asin(srot);
+						(*rot)[j * ni + i] = (float) acos(crot);
+						(*rot)[j * ni + i] = (float) atan2(srot,crot);
+						crot1 = sqrt(1 - srot * srot);
+						eps = fabs(crot) - fabs(crot1);
+
 					}
+#if 0					
+					if ((i%10 == 0 && j%10 == 0) ) {
+						printf("j/i %d %d lat/lon %f %f rot %f slon cgridlat srot crot %f %f %f %f crot1 eps %f %f\n",
+						       j,i,tlat,tlon,(*rot)[j * ni + i],
+						       slon,cgridlat,srot,crot,crot1,eps);
+					}
+#endif
 				}
 			}
 		}
