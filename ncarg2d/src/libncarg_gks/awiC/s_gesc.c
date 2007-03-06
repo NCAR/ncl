@@ -1,5 +1,5 @@
 /*
- *	$Id: s_gesc.c,v 1.5 2004-08-01 17:12:20 haley Exp $
+ *	$Id: s_gesc.c,v 1.6 2007-03-06 21:38:27 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,7 +36,7 @@
 #include "gstore.h"
 
 /* This values will change when fred allows filename's longer that 80 char's */
-#define MAX_FILE_LEN    80
+#define MAX_FILE_LEN    256
 
 /* this is the length of each row of the data	*/
 
