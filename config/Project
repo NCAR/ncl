@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.77 2007-02-28 05:29:52 haley Exp $
+ *      $Id: Project,v 1.78 2007-03-08 04:24:07 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2007-02-28 05:29:52 $
+ *	$Date: 2007-03-08 04:24:07 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -353,7 +353,7 @@ NVIEWLIBSRC	= $(NVIEWSRC)/lib
 NISRC		= $(TOP)/ni/src
 NIBINSRC	= $(NISRC)/bin
 NILIBSRC	= $(NISRC)/lib
-
+EXTERNALSRC	= $(TOP)/external
 NCARGCLIBSRC	= $(COMMONSRC)/libncarg_c
 NCARGLIBSRC	= $(NCARG2DSRC)/libncarg
 NCARGGKSLIBSRC	= $(NCARG2DSRC)/libncarg_gks
@@ -363,6 +363,10 @@ CTRANSLIBSRC	= $(NVIEWLIBSRC)/libctrans
 ICTRANSLIBSRC	= $(NVIEWLIBSRC)/libictrans
 NCARGRASLIBSRC	= $(NVIEWLIBSRC)/libncarg_ras
 HLULIBSRC	= $(NILIBSRC)/hlu
+BLASSRC	        = $(EXTERNALSRC)/blas
+LAPACKSRC       = $(EXTERNALSRC)/lapack
+SPHERESRC	= $(EXTERNALSRC)/sphere3.1_dp
+FFTPACK5SRC	= $(EXTERNALSRC)/fftpack5_dp
 NGOLIBSRC	= $(NILIBSRC)/ngo
 XCBLIBSRC	= $(NILIBSRC)/xcb
 NFPLIBSRC	= $(NILIBSRC)/nfp
@@ -386,6 +390,10 @@ NFPFORTLIB	= -lnfpfort
 NIOLIB		= -lnio
 NCLLIB		=
 NCLAPILIB	= -lNGncl
+BLASLIB	        = -lblas
+LAPACKLIB       = -llapack
+SPHERELIB	= -lsphere3.1_dp
+FFTPACK5LIB	= -lfftpack5_dp
 
 CTRANSLIB	= -lNGctrans
 ICTRANS_LIB	= -lNGictrans
@@ -403,6 +411,10 @@ DEPNCLAPILIB	=
 DEPNFPLIB	=
 DEPNIOLIB	=
 DEPNFPFORTLIB	=
+DEPBLASLIB	=
+DEPLAPACKLIB	=
+DEPSPHERELIB	=
+DEPFFTPACK5LIB	=
 
 DEPCTRANSLIB	=
 DEPICTRANS_LIB	=
@@ -422,6 +434,10 @@ NIOLIB		= _UseLib(-L$(NIOLIBSRC),-lnio)
 XCBLIB		= _UseLib(-L$(XCBLIBSRC),-lXcb)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
+BLASLIB         = _UseLib(-L$(BLASSRC),-lblas)
+LAPACKLIB       = _UseLib(-L$(LAPACKSRC),-llapack)
+SPHERELIB	= _UseLib(-L$(SPHERESRC),-lsphere3.1_dp)
+FFTPACK5LIB	= _UseLib(-L$(FFTPACK5SRC),-lfftpack5_dp)
 
 CTRANSLIB	= _DepLib($(CTRANSLIBSRC),$(ROBJROOT),libctrans.o)
 ICTRANS_LIB	= _DepLib($(ICTRANSLIBSRC),$(ROBJROOT),libictrans_.o)
@@ -452,7 +468,8 @@ NGMATHLIBS	= $(NGMATHLIB)
 HLULIBS		= $(HLULIB)
 NCLLIBS		= $(NCLAPILIB)
 NFPLIBS		= $(NFPLIB) $(NFPFORTLIB)
-NIOLIBS     = $(NIOLIB)
+NIOLIBS		= $(NIOLIB)
+EXTERNALLIBS    = $(SPHERELIB) $(FFTPACK5LIB) $(LAPACKLIB) $(BLASLIB)
 
 DEPNCARGLIBS	= $(DEPNCARGLIB) $(DEPNCARGGKSLIB) $(DEPNCARGCLIB)
 DEPHLULIBS	= $(DEPHLULIB)
