@@ -9695,20 +9695,24 @@ int* nrotatts;
 						crot = (cos(clat * dtr) * cos(tlat * dtr) + 
 							 sin(clat * dtr) * sin(tlat * dtr) * cos(tlon * dtr)) / cgridlat;
 						srot =  -sin(clat * dtr) * slon / cgridlat;
+						/*
 						(*rot)[j * ni + i] = (float) asin(srot);
 						(*rot)[j * ni + i] = (float) acos(crot);
+						*/
 						(*rot)[j * ni + i] = (float) atan2(srot,crot);
+
+#if 0					
+						/* diagnostics */
 						crot1 = sqrt(1 - srot * srot);
 						eps = fabs(crot) - fabs(crot1);
 
 					}
-#if 0					
 					if ((i%10 == 0 && j%10 == 0) ) {
 						printf("j/i %d %d lat/lon %f %f rot %f slon cgridlat srot crot %f %f %f %f crot1 eps %f %f\n",
 						       j,i,tlat,tlon,(*rot)[j * ni + i],
 						       slon,cgridlat,srot,crot,crot1,eps);
-					}
 #endif
+					}
 				}
 			}
 		}

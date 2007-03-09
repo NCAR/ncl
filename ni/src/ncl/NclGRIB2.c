@@ -994,8 +994,10 @@ void g2GDSRLLGrid
     lo2 = rll->ce.lon_last_gridpt * scale_factor;
     lasp = rll->lat_south_pole_proj;
     losp = rll->lon_south_pole_proj;
+#if 0
     /* temp fix for test file */
     lo1 = -12.5;
+#endif
     rotang = rll->rot_ang_proj;
     grid_oriented = g2getbits(rll->ce.res_comp_flags, 3, 1) == 0 ? 0 : 1;
     do_rot = 1;
@@ -1110,16 +1112,18 @@ void g2GDSRLLGrid
 				    crot = (cos(clat * dtr) * cos(tlat * dtr) + sin(clat * dtr) * sin(tlat * dtr) * cos(tlon * dtr)) / cgridlat;
 				    srot = - sin(clat * dtr) * slon / cgridlat;
 				    (*rot)[j * ni + i] = (float) atan2(srot,crot);
+#if 0
+
+				    /* diagnostics */
 				    crot1 = sqrt(1 - srot * srot);
 				    eps = fabs(crot)-fabs(crot1);
 			    }
-#if 0
 			    if ((i%10 == 0 && j%10 == 0) ) {
 				    printf("j/i %d %d lat/lon %f %f rot %f slon cgridlat srot crot %f %f %f %f crot1 eps %f %f\n",
 					   j,i,tlat,tlon,(*rot)[j * ni + i],
 					   slon,cgridlat,srot,crot,crot1,eps);
-			    }
 #endif
+			    }
 		    }
 	    }
     }
@@ -2396,11 +2400,11 @@ int* nrotatts;
 
 	*n_dims_lat =  1;
 	*dimsizes_lat = NclMalloc(sizeof(int));
-	*(*dimsizes_lat) = sh->j_pent_res + 1;
+	*(*dimsizes_lat) = sh->k_pent_res + 1;
 	*lon = NULL;
 	*n_dims_lon= 1;
 	*dimsizes_lon= NclMalloc(sizeof(int));
-	*(*dimsizes_lon) = sh->j_pent_res + 1;
+	*(*dimsizes_lon) = sh->m_pent_res + 1;
 
 	return;
 	
@@ -6222,12 +6226,6 @@ static void _g2SetFileDimsAndCoordVars
 			if (n_dims_lat == 0) {
 				is_err = NhlFATAL;
 			}
-			else {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  "Support for grids using Spherical Harmonic coefficients is incomplete; please contact NCL support.",
-					  step->grid_number);
-				is_err = NhlWARNING;
-			}
 			break;
 
 		case 2:
@@ -7565,7 +7563,7 @@ static TiggeInfo tigge_info[] = {
   {1, 2, 0, 0,  255,   1, 255,   255,   255, 255, 255, "lsm", "land sea mask", "fraction" },
   {1, 0, 3, 5,  255,   1, 255,   255,   255, 255, 255, "orog", "orography", "gpm" },
   /* END MARKER */
-  { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, NULL, NULL, NULL }
+  { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, NULL, NULL, NULL }
 };
 
 static void _g2SetVarInfo
@@ -8986,7 +8984,13 @@ static void *Grib2OpenFile
             (void) strcpy(g2rec[nrecs]->sec5[i]->drt_desc, ct->descrip);
 #endif
 
+	    /* the data repr applies only to data rep template 0-3 -- totally wrong for spherical harmonic data */
+	    /* the ref value must be converted to floating point using grib2lib 'rdieee' function (or equivalent)
+	       -- but we don't need it because the library does all the unpacking 
+	       -- dib --
+	    */
             g2rec[nrecs]->sec5[i]->data_repr = NclMalloc(sizeof(G2dataRepr));
+
             g2rec[nrecs]->sec5[i]->data_repr->refVal = (double) g2fld->idrtmpl[0];
             g2rec[nrecs]->sec5[i]->data_repr->bin_scale_factor = g2fld->idrtmpl[1];
             g2rec[nrecs]->sec5[i]->data_repr->dec_scale_factor = g2fld->idrtmpl[2];
@@ -8994,6 +8998,7 @@ static void *Grib2OpenFile
 
             /* table 5.1: Type of Original Field Values */
             g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = g2fld->idrtmpl[4];
+            g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = 0; /* always float */
             g2rec[nrecs]->sec5[i]->data_repr->field_vals = NULL;
 #if 0
             table = "5.1.table";
@@ -10110,6 +10115,55 @@ Grib2RecordInqRec *current_rec;
 	return(NULL);
 }
 
+static void *GetSphericalHarmonicData
+#if	NhlNeedProto
+(
+	gribfield *gfld, 
+	float *real, 
+	float *imag
+)
+#else
+(gfld,real,imag)
+	gribfield *gfld;
+	float *real;
+	float *imag;
+#endif
+{
+	g2SHTemplate *sh;
+	float *fld;
+	int JJ,KK,MM; /* full dataset */
+	int Ts,Js,Ks,Ms; /* unpacked subset */
+	int m,n,Ns,Nm;
+	int fldix;
+	float norm_factor;
+
+	sh = (g2SHTemplate *) gfld->igdtmpl;
+	JJ = sh->j_pent_res;
+	KK = sh->k_pent_res;
+	MM = sh->m_pent_res;
+
+	Js = gfld->idrtmpl[5];
+	Ks = gfld->idrtmpl[6];
+	Ms = gfld->idrtmpl[7];
+	Ts = gfld->idrtmpl[8];
+	fld = gfld->fld;
+	norm_factor = sqrt(2.0) * 2.0;
+
+	fldix = 0;
+	for (m=0; m<=MM; m++) {
+		Nm=JJ;      /* triangular or trapezoidal */
+		if ( KK == JJ+MM ) Nm=JJ+m;          /* rhombodial */
+		Ns=Js;      /* triangular or trapezoidal */
+		if ( Ks == Js+Ms ) Ns=Js+m;          /* rhombodial */
+		for (n=m; n<=Nm; n++) {
+			real[n * (KK+1) + m] = norm_factor * fld[fldix++];
+			imag[n * (KK+1) + m] = norm_factor * fld[fldix++];
+		}
+	}
+	return;
+}
+	
+
 static void *GetData
 #if	NhlNeedProto
 (FILE *fp, Grib2RecordInqRec *rec,void **missing)
@@ -10134,17 +10188,20 @@ void **missing;
 	fseek(fp,rec->offset,SEEK_SET);
 	size = fread(buf,1,rec->rec_size,fp);
 	if (size < rec->rec_size) {
+		NclFree(buf);
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
 		return NULL;
 	}
 	field_num = MAX(1,rec->field_num);
 	err = g2_getfld(buf,field_num,1,1,&gfld);
 	if (err || ! gfld->unpacked || gfld->ndpts == 0) {
+		NclFree(buf);
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
 		return NULL;
 	}
 	*missing = (void*)NclMalloc((unsigned)sizeof(float));
 	*(float*)(*missing) = G2_DEFAULT_MISSING_FLOAT;
+	NclFree(buf);
 
 	if (gfld->igdtnum == 50) {
 		float *real, *img;
@@ -10161,8 +10218,12 @@ void **missing;
 		real = ret_val;
 		img = real + nx * ny;
 		
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "Not yet returning valid fields for spherical harmonic data");
+		if (gfld->idrtmpl[9] != 1 || gfld->idrtnum != 51) { 
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Cannot decode spherical harmonic data that is not 32-bit float and stored using complex packing");
+			g2_free(gfld);
+			return ret_val;
+		}
+		GetSphericalHarmonicData(gfld,real,img);
 	}
 	else if (gfld->ibmap != 255 && gfld->bmap != NULL) {
 		if (gfld->numoct_opt > 0) { /* thinned grid */
@@ -10243,7 +10304,6 @@ void **missing;
 		NclFree(zwork);
 	}
 	g2_free(gfld);
-	NclFree(buf);
 	return ret_val;
 }
 	
