@@ -5970,7 +5970,7 @@ GribFileRecord *tmp;
 
 	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].data_type = NCL_string;
 	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].n_values = 1;
-	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values = (void *) NrmStringToQuark("string");
+	options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values = (void *) NrmStringToQuark("numeric");
 
 	options[GRIB_DEFAULT_NCEP_PTABLE_OPT].data_type = NCL_string;
 	options[GRIB_DEFAULT_NCEP_PTABLE_OPT].n_values = 1;

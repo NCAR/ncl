@@ -1523,12 +1523,12 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].name = NrmStringToQuark("initialtimecoordinatetype");
 	len_dims = 1;
 	sval = (string*) NclMalloc(sizeof(string));
-	*sval = NrmStringToQuark("string");
+	*sval = NrmStringToQuark("numeric");
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	sval = (string*) NclMalloc(sizeof(string));
-	*sval = NrmStringToQuark("string");
+	*sval = NrmStringToQuark("numeric");
 	fcp->options[Ncl_INITIAL_TIME_COORDINATE_TYPE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
