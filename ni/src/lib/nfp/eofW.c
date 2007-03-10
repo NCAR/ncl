@@ -71,7 +71,9 @@ extern void NGCALLF(dstat2,DSTAT2)(double *, int *, double *, double *,
  * If use_old_transpose = use_new_transpose = False, then the old
  * routine is used.  If use_old_transpose = True, then Dennis' transpose
  * routine is used. If use_new_transpose = True, then SCRIPPS transpose
- * routine is used.
+ * routine is used. Note: use_old_tranpose should only be used for
+ * debugging purposes. It is not intended to be used by the user.
+ *
  */
 
 
@@ -92,7 +94,7 @@ NhlErrorTypes eof_W( void )
  * Various.
  */
   double *pcrit;
-  float *rpcrit;
+  float *rpcrit, scale_factor;
   NclBasicDataTypes type_pcrit;
   int iopt = 0, jopt = 0, i, j, l1, l2, ier = 0;
   logical tr_setbyuser = False, anomalies = False, debug = False;
@@ -124,8 +126,8 @@ NhlErrorTypes eof_W( void )
   NclStackEntry return_data;
   char *cmatrix, *cmethod;
   NclQuark *matrix, *method;
-  double *trace, *eval, *pcvar, *prncmp;
-  float *rpcvar, *rtrace, *reval;
+  double *trace, *eval, *eval2, *pcvar, *prncmp;
+  float *rpcvar, *rtrace, *reval, *reval2;
 /*
  * Output array variables
  */
@@ -406,10 +408,10 @@ NhlErrorTypes eof_W( void )
   }
 
 /*
- * Strip all grid points that have less that "PCRIT" valid values.
+ * Strip all grid points that have less than "PCRIT" valid values.
  * Create "dx_strip". This may have fewer columns/grid-pts
  * than the original "dx" array, if not all columns 
- * had the minimun number of valid values.
+ * had the minimum number of valid values.
  */
   mcsta = 0;
 
@@ -739,7 +741,7 @@ NhlErrorTypes eof_W( void )
   }
 /*
  * If we are dealing with the old eofcov routine, or the new SCRIPPS
- * routine, then we need to "fix" the evec (or revec if float)
+ * routine, then we need to reshape the evec (or revec if float)
  * array.  Note  that for the old eofcov routine, wevec is actually
  * the same size as evec, whereas for the new routine, it's the same 
  * size only if mcsta == msta. 
@@ -911,14 +913,29 @@ NhlErrorTypes eof_W( void )
  * Coerce eval to float.
  */
       reval = (float *)calloc(*neval,sizeof(float));
+      if( reval == NULL ) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for eigenvalue array");
+        return(NhlFATAL);
+      }
       for( i = 0; i < *neval; i++ ) reval[i] = (float)eval[i];
 /*
- * Free double precision eval.
+ * If we didn't use the SCRIPPS routine, then the eigenvalues
+ * returned are okay as is. Otherwise, we have to apply a scale
+ * factor and return both the original values and the scaled values.
  */
-      NclFree(eval);
-
-      dsizes[0] = *neval;
-      att_md = _NclCreateVal(
+      if(use_new_transpose) {
+        reval2 = (float *)calloc(*neval,sizeof(float));
+        if( reval2 == NULL ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for eigenvalue array");
+          return(NhlFATAL);
+        }
+        scale_factor = (mcsta-1)/(nrow-1);
+        for( i = 0; i < *neval; i++ ) reval2[i] = scale_factor * reval[i];
+/*
+ * First return original eigenvalues as "eval_transpose".
+ */
+        dsizes[0] = *neval;
+        att_md = _NclCreateVal(
                              NULL,
                              NULL,
                              Ncl_MultiDValData,
@@ -931,12 +948,65 @@ NhlErrorTypes eof_W( void )
                              NULL,
                              (NclObjClass)nclTypefloatClass
                              );
-      _NclAddAtt(
+        _NclAddAtt(
+                 att_id,
+                 "eval_transpose",
+                 att_md,
+                 NULL
+                 );
+/*
+ * Now return scaled eigenvalues as simply "eval".
+ */
+        att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)reval2,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+        _NclAddAtt(
                  att_id,
                  "eval",
                  att_md,
                  NULL
                  );
+      }
+      else {
+/*
+ * We didn't call the tranpose routine, so we only need to return
+ * one set of eigenvalues. 
+ */
+        dsizes[0] = *neval;
+        att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)reval,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypefloatClass
+                             );
+        _NclAddAtt(
+                 att_id,
+                 "eval",
+                 att_md,
+                 NULL
+                 );
+      }
+/*
+ * Free up original eval array, since we don't need it anymore.
+ */
+      NclFree(eval);
     }
 /*
  * Only return the trace if the appropriate option has been set.
@@ -994,8 +1064,24 @@ NhlErrorTypes eof_W( void )
  * Only return the eigenvalues if the appropriate option has been set.
  */
     if(return_eval) {
-      dsizes[0] = *neval;
-      att_md = _NclCreateVal(
+/*
+ * If we didn't use the SCRIPPS routine, then the eigenvalues
+ * returned are okay as is. Otherwise, we have to apply a scale
+ * factor and return both the original values and the scaled values.
+ */
+      if(use_new_transpose) {
+        eval2 = (double *)calloc(*neval,sizeof(double));
+        if( eval2 == NULL ) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: Unable to allocate memory for eigenvalue array");
+          return(NhlFATAL);
+        }
+        scale_factor = (mcsta-1)/(nrow-1);
+        for( i = 0; i < *neval; i++ ) eval2[i] = scale_factor * eval[i];
+/*
+ * First return original eigenvalues as "eval_transpose".
+ */
+        dsizes[0] = *neval;
+        att_md = _NclCreateVal(
                              NULL,
                              NULL,
                              Ncl_MultiDValData,
@@ -1008,12 +1094,61 @@ NhlErrorTypes eof_W( void )
                              NULL,
                              (NclObjClass)nclTypedoubleClass
                              );
-      _NclAddAtt(
+        _NclAddAtt(
+                 att_id,
+                 "eval_transpose",
+                 att_md,
+                 NULL
+                 );
+/*
+ * Now return scaled eigenvalues as simply "eval".
+ */
+        att_md = _NclCreateVal(
+                             NULL,
+                             NULL,
+                             Ncl_MultiDValData,
+                             0,
+                             (void*)eval2,
+                             NULL,
+                             1,
+                             dsizes,
+                             TEMPORARY,
+                             NULL,
+                             (NclObjClass)nclTypedoubleClass
+                             );
+        _NclAddAtt(
                  att_id,
                  "eval",
                  att_md,
                  NULL
                  );
+      }
+      else {
+/*
+ * We didn't call the tranpose routine, so we only need to return
+ * one set of eigenvalues. 
+ */
+        dsizes[0] = *neval;
+        att_md = _NclCreateVal(
+                               NULL,
+                               NULL,
+                               Ncl_MultiDValData,
+                               0,
+                               (void*)eval,
+                               NULL,
+                               1,
+                               dsizes,
+                               TEMPORARY,
+                               NULL,
+                               (NclObjClass)nclTypedoubleClass
+                               );
+        _NclAddAtt(
+                   att_id,
+                   "eval",
+                   att_md,
+                   NULL
+                   );
+      }
     }
 
     if(!use_new_transpose && return_trace) {
