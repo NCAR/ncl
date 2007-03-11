@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.12 2007-03-02 23:51:19 haley Exp $
+#   $Id: create_ncl_dist,v 1.13 2007-03-11 23:51:01 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -248,7 +248,8 @@ set inc_files = "gks.h c.h ncargC.h"
 set inc_dirs  = "hlu ncl"
 
 if ($?OPENDAP) then
-  set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt libnc-dap.so.3 libdap.so.4 libcurl.so.3"
+  set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt libnc-dap.so libdap.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4"
+
 else 
   set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt"
 endif
