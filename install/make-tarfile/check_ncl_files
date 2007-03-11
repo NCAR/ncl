@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.5 2007-03-10 06:06:01 haley Exp $
+#   $Id: check_ncl_files,v 1.6 2007-03-11 22:38:32 haley Exp $
 #
 # Check for existence of NCL files in a particular version of
 # a distribution.
@@ -10,7 +10,7 @@
 #
 # set echo verbose timestamp
 
-set version = "4.2.0.a034"
+set version = "4.2.0.a035"
 set pwddir  = `pwd`
 
 echo "Checking files for version $version in dir $pwddir..."
@@ -61,8 +61,8 @@ include/ncarg/hlu/CnTriMeshRendererP.h
 include/ncarg/hlu/ContourPlot.h
 include/ncarg/hlu/ContourPlotI.h
 include/ncarg/hlu/ContourPlotP.h
-include/ncarg/hlu/ConvertersP.h
 include/ncarg/hlu/Convert.h
+include/ncarg/hlu/ConvertersP.h
 include/ncarg/hlu/ConvertP.h
 include/ncarg/hlu/CoordApprox.h
 include/ncarg/hlu/CoordArrays.h
@@ -211,44 +211,45 @@ lib/ncarg/colormaps/BlAqGrYeOrReVi200.rgb
 lib/ncarg/colormaps/BlGrYeOrReVi200.gp
 lib/ncarg/colormaps/BlGrYeOrReVi200.rgb
 lib/ncarg/colormaps/BlRe.rgb
-lib/ncarg/colormaps/BlueRedGray.rgb
 lib/ncarg/colormaps/BlueRed.rgb
+lib/ncarg/colormaps/BlueRedGray.rgb
 lib/ncarg/colormaps/BlWhRe.gp
 lib/ncarg/colormaps/BlWhRe.rgb
-lib/ncarg/colormaps/cosam12.rgb
 lib/ncarg/colormaps/cosam.rgb
+lib/ncarg/colormaps/cosam12.rgb
 lib/ncarg/colormaps/default.rgb
 lib/ncarg/colormaps/detail.ncmap
 lib/ncarg/colormaps/extrema.ncmap
 lib/ncarg/colormaps/GreenYellow.rgb
 lib/ncarg/colormaps/gui_default.rgb
-lib/ncarg/colormaps/helix1.ncmap
 lib/ncarg/colormaps/helix.ncmap
+lib/ncarg/colormaps/helix1.ncmap
 lib/ncarg/colormaps/hlu_default.rgb
 lib/ncarg/colormaps/hotres.ncmap
 lib/ncarg/colormaps/ncview_default.ncmap
-lib/ncarg/colormaps/nrl_sirkes_nowhite.rgb
 lib/ncarg/colormaps/nrl_sirkes.rgb
+lib/ncarg/colormaps/nrl_sirkes_nowhite.rgb
 lib/ncarg/colormaps/posneg_1.rgb
 lib/ncarg/colormaps/posneg_2.rgb
 lib/ncarg/colormaps/prcp_1.rgb
 lib/ncarg/colormaps/prcp_2.rgb
 lib/ncarg/colormaps/prcp_3.rgb
-lib/ncarg/colormaps/rainbow.gp
+lib/ncarg/colormaps/radar_1.rgb
 lib/ncarg/colormaps/rainbow+gray.gp
-lib/ncarg/colormaps/rainbow+white.gp
 lib/ncarg/colormaps/rainbow+white+gray.gp
+lib/ncarg/colormaps/rainbow+white.gp
+lib/ncarg/colormaps/rainbow.gp
 lib/ncarg/colormaps/so4_21.gp
 lib/ncarg/colormaps/so4_23.gp
 lib/ncarg/colormaps/tbr_240-300.gp
 lib/ncarg/colormaps/tbr_240-300.rgb
-lib/ncarg/colormaps/tbrAvg1.rgb
-lib/ncarg/colormaps/tbrStd1.gp
-lib/ncarg/colormaps/tbrStd1.rgb
 lib/ncarg/colormaps/tbr_stdev_0-30.gp
 lib/ncarg/colormaps/tbr_stdev_0-30.rgb
 lib/ncarg/colormaps/tbr_var_0-500.gp
 lib/ncarg/colormaps/tbr_var_0-500.rgb
+lib/ncarg/colormaps/tbrAvg1.rgb
+lib/ncarg/colormaps/tbrStd1.gp
+lib/ncarg/colormaps/tbrStd1.rgb
 lib/ncarg/colormaps/tbrVar1.gp
 lib/ncarg/colormaps/tbrVar1.rgb
 lib/ncarg/colormaps/testcmap.rgb
@@ -279,35 +280,9 @@ lib/ncarg/data/asc/sounding_ATS.asc
 lib/ncarg/data/asc/sounding_testdata.asc
 lib/ncarg/data/asc/u.cocos
 lib/ncarg/data/asc/uvdata0.asc
+lib/ncarg/data/asc/xy.asc
 lib/ncarg/data/asc/xy08.asc
 lib/ncarg/data/asc/xy12c.asc
-lib/ncarg/data/asc/xy.asc
-lib/ncarg/database/Earth..1.areas
-lib/ncarg/database/Earth..1.lines
-lib/ncarg/database/Earth..1.names
-lib/ncarg/database/Earth..2.areas
-lib/ncarg/database/Earth..2.lines
-lib/ncarg/database/Earth..2.names
-lib/ncarg/database/Earth..3.areas
-lib/ncarg/database/Earth..3.lines
-lib/ncarg/database/Earth..3.names
-lib/ncarg/database/ezmap_area_ids
-lib/ncarg/database/EzmapAreaInfo.CO
-lib/ncarg/database/EzmapAreaInfo.PO
-lib/ncarg/database/EzmapAreaInfo.PS
-lib/ncarg/database/EzmapAreaInfo.US
-lib/ncarg/database/ezmapdata
-lib/ncarg/database/EzmapOutlines.CO
-lib/ncarg/database/EzmapOutlines.PO
-lib/ncarg/database/EzmapOutlines.PS
-lib/ncarg/database/EzmapOutlines.US
-lib/ncarg/database/NhlMapData
-lib/ncarg/database/PlotcharData
-lib/ncarg/database/pwritdata
-lib/ncarg/database/ranfdata
-lib/ncarg/database/rgb.dir
-lib/ncarg/database/rgb.pag
-lib/ncarg/database/rgb.txt
 lib/ncarg/data/bin/ex01B1_uv300.hs.mdl
 lib/ncarg/data/cdf/941110_P.cdf
 lib/ncarg/data/cdf/941110_UV.cdf
@@ -346,16 +321,20 @@ lib/ncarg/data/cdf/ctcbay.nc
 lib/ncarg/data/cdf/ctnccl.nc
 lib/ncarg/data/cdf/ex01B1_uv300.hs.nc
 lib/ncarg/data/cdf/fice.nc
+lib/ncarg/data/cdf/hgt.nc
 lib/ncarg/data/cdf/hswm_d000000p000.g2.nc
+lib/ncarg/data/cdf/ice5g_21k_1deg.nc
 lib/ncarg/data/cdf/landsea.nc
 lib/ncarg/data/cdf/meccatemp.cdf
 lib/ncarg/data/cdf/meteo_data.nc
 lib/ncarg/data/cdf/ocean.nc
+lib/ncarg/data/cdf/panel2.nc
 lib/ncarg/data/cdf/pop.nc
 lib/ncarg/data/cdf/Pstorm.cdf
 lib/ncarg/data/cdf/scatter1.nc
 lib/ncarg/data/cdf/seam.nc
 lib/ncarg/data/cdf/sst30e_netcdf.nc
+lib/ncarg/data/cdf/sstanom.robinsonproj.nc
 lib/ncarg/data/cdf/sstdata_netcdf.nc
 lib/ncarg/data/cdf/traj_data.nc
 lib/ncarg/data/cdf/trinidad.nc
@@ -366,6 +345,32 @@ lib/ncarg/data/cdf/V500storm.cdf
 lib/ncarg/data/cdf/vinth2p.nc
 lib/ncarg/data/cdf/Vstorm.cdf
 lib/ncarg/data/grb/ced1.lf00.t00z.eta.grb
+lib/ncarg/database/Earth..1.areas
+lib/ncarg/database/Earth..1.lines
+lib/ncarg/database/Earth..1.names
+lib/ncarg/database/Earth..2.areas
+lib/ncarg/database/Earth..2.lines
+lib/ncarg/database/Earth..2.names
+lib/ncarg/database/Earth..3.areas
+lib/ncarg/database/Earth..3.lines
+lib/ncarg/database/Earth..3.names
+lib/ncarg/database/ezmap_area_ids
+lib/ncarg/database/EzmapAreaInfo.CO
+lib/ncarg/database/EzmapAreaInfo.PO
+lib/ncarg/database/EzmapAreaInfo.PS
+lib/ncarg/database/EzmapAreaInfo.US
+lib/ncarg/database/ezmapdata
+lib/ncarg/database/EzmapOutlines.CO
+lib/ncarg/database/EzmapOutlines.PO
+lib/ncarg/database/EzmapOutlines.PS
+lib/ncarg/database/EzmapOutlines.US
+lib/ncarg/database/NhlMapData
+lib/ncarg/database/PlotcharData
+lib/ncarg/database/pwritdata
+lib/ncarg/database/ranfdata
+lib/ncarg/database/rgb.dir
+lib/ncarg/database/rgb.pag
+lib/ncarg/database/rgb.txt
 lib/ncarg/fontcaps/font1
 lib/ncarg/fontcaps/font10
 lib/ncarg/fontcaps/font11
