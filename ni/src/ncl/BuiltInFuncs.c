@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.213 2007-01-12 02:42:09 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.214 2007-03-12 17:43:09 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3559,7 +3559,16 @@ NhlErrorTypes _NclIasciiwrite
 	if(is_stdout) {
 		fd = stdout;
 	} else {
+		errno = 0;
 		fd = fopen(path_string,"w+");
+		if (fd == NULL && errno) {
+			NhlPError(NhlFATAL,errno,"asciiwrite: Unable to open file for writing");
+			return(NhlFATAL);
+		}
+		else if (fd == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiwrite: Unable to open file for writing");
+			return(NhlFATAL);
+		}
 		tmp = _NclSetPrintFunc(vfprintf);
 	}
 	step = (char*)tmp_md->multidval.val;
@@ -4113,8 +4122,17 @@ NhlErrorTypes _NclIasciiread
 		totalsize = size;
 		
 		tmp_ptr = NclMalloc(size*thetype->type_class.size);
+		errno = 0;
 		fp = fopen(path_string,"r");
-		if((tmp_ptr != NULL)&&(fp != NULL)) {
+		if (fp == NULL && errno) {
+			NhlPError(NhlFATAL,errno,"asciiread: Unable to open file for reading");
+			return(NhlFATAL);
+		}
+		else if (fp == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Unable to open file for reading: check permissions");
+			return(NhlFATAL);
+		}
+		if(tmp_ptr != NULL) {
 			
 			tmp_md = _NclCreateMultiDVal(
 				NULL,
@@ -4254,119 +4272,100 @@ NhlErrorTypes _NclIasciiread
 			_NclPlaceReturn(data_out);
 			fclose(fp);
 			return(ret);
-		} else if (fp == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
 		}
 	} else if(size == -1) {
 		int total = 0;
+		errno = 0;
 		fp = fopen(path_string,"r");
-		if(fp != NULL) {
-			tmp_ptr = NclMalloc(thetype->type_class.size);
+		if (fp == NULL && errno) {
+			NhlPError(NhlFATAL,errno,"asciiread: Unable to open file for reading");
+			return(NhlFATAL);
+		}
+		else if (fp == NULL) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Unable to open file for reading: check permissions");
+			return(NhlFATAL);
+		}
+		tmp_ptr = NclMalloc(thetype->type_class.size);
 
-			if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
-				char *end = "";
-				int lret;
-				int count;
-				char *rem;
-				totalsize = 0;
-				while (1) {
-					if (*end == '\0') {
-						count = fread(buf,1,bufsize-1,fp);
-						if (count <= 0) {
-							break;
-						}
-						buf[count] = '\0';
-						end = buf;
-						cp = strchr(buf,' ');
-						while (cp != NULL) {
-							*cp = '\n';
-							cp = strchr(cp+1,' ');
-						}
+		if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+			char *end = "";
+			int lret;
+			int count;
+			char *rem;
+			totalsize = 0;
+			while (1) {
+				if (*end == '\0') {
+					count = fread(buf,1,bufsize-1,fp);
+					if (count <= 0) {
+						break;
 					}
-					rem = NULL;
-					if (thetype->type_class.type == Ncl_Typefloat ||
-					    thetype->type_class.type == Ncl_Typedouble) {
-						lret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
-					}
-					else {
-						lret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
-					}
-					if (rem) {
-						/* dangling characters not fully parsed:
-						 *  copy to the beginning of the buffer and try again
-						 */
-						for (j = 0; rem[j] != '\0'; j++) {
-							buf[j] = rem[j];
-						}
-						count = fread(&(buf[j]),1,bufsize-j-1,fp);
-						if (count <= 0) {
-							if (lret) {
-								/* since the last return was good, add it to the total */
-								totalsize++;
-							}
-							break;
-						}
-						buf[j + count] = '\0';
-						/* now we're going to try again */
-						end = buf;
-						cp = strchr(buf,' ');
-						while (cp != NULL) {
-							*cp = '\n';
-							cp = strchr(cp+1,' ');
-						}
-						continue;
-					}
-					if (lret) {
-						totalsize++;
-					} else {
-						continue;
+					buf[count] = '\0';
+					end = buf;
+					cp = strchr(buf,' ');
+					while (cp != NULL) {
+						*cp = '\n';
+						cp = strchr(cp+1,' ');
 					}
 				}
+				rem = NULL;
+				if (thetype->type_class.type == Ncl_Typefloat ||
+				    thetype->type_class.type == Ncl_Typedouble) {
+					lret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+				}
+				else {
+					lret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+				}
+				if (rem) {
+					/* dangling characters not fully parsed:
+					 *  copy to the beginning of the buffer and try again
+					 */
+					for (j = 0; rem[j] != '\0'; j++) {
+						buf[j] = rem[j];
+					}
+					count = fread(&(buf[j]),1,bufsize-j-1,fp);
+					if (count <= 0) {
+						if (lret) {
+							/* since the last return was good, add it to the total */
+							totalsize++;
+						}
+						break;
+					}
+					buf[j + count] = '\0';
+					/* now we're going to try again */
+					end = buf;
+					cp = strchr(buf,' ');
+					while (cp != NULL) {
+						*cp = '\n';
+						cp = strchr(cp+1,' ');
+					}
+					continue;
+				}
+				if (lret) {
+					totalsize++;
+				} else {
+					continue;
+				}
 			}
-			else if(thetype->type_class.type==Ncl_Typechar) {
-				stat(path_string,&statbuf);
-				totalsize = statbuf.st_size;
+		}
+		else if(thetype->type_class.type==Ncl_Typechar) {
+			stat(path_string,&statbuf);
+			totalsize = statbuf.st_size;
+		}
+		else if(thetype->type_class.type==Ncl_Typestring) {
+			totalsize = 0;
+			while(!feof(fp)) {
+				if(fgetc(fp) == '\n') {
+					totalsize++;
+				} 
 			}
-			else if(thetype->type_class.type==Ncl_Typestring) {
-				totalsize = 0;
-				while(!feof(fp)) {
-					if(fgetc(fp) == '\n') {
-                                                totalsize++;
-                                        } 
-                                }
-			}
-			NclFree(tmp_ptr);
-			if (totalsize == 0) {
-				fclose(fp);
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-	      "asciiread: No elements read from file, returning a single element with the default missing value for the requested type");
-				tmp_ptr = NclMalloc(1*thetype->type_class.size);
-				dimsizes[0] = 1;
-				tmp_md = _NclCreateMultiDVal(
-					NULL,
-					NULL,
-					Ncl_MultiDValData,
-					0,
-					tmp_ptr,
-					NULL,
-					n_dimensions,
-					dimsizes,
-					TEMPORARY,
-					NULL,
-					thetype);
-				if(tmp_md == NULL) 
-					return(NhlFATAL);
-				memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
-				data_out.kind = NclStk_VAL;
-				data_out.u.data_obj = tmp_md;
-				_NclPlaceReturn(data_out);
-				return(ret);
-			}
-			tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
-			dimsizes[0] = totalsize;
+		}
+		NclFree(tmp_ptr);
+		if (totalsize == 0) {
 			fclose(fp);
-			fp = fopen(path_string,"r");
-			
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "asciiread: No elements read from file, returning a single element with the default missing value for the requested type");
+			tmp_ptr = NclMalloc(1*thetype->type_class.size);
+			dimsizes[0] = 1;
 			tmp_md = _NclCreateMultiDVal(
 				NULL,
 				NULL,
@@ -4381,122 +4380,144 @@ NhlErrorTypes _NclIasciiread
 				thetype);
 			if(tmp_md == NULL) 
 				return(NhlFATAL);
-
-			if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
-				char *end = "";
-				int lret;
-				int count;
-				char *rem;
-				while (total < totalsize) {
-					if (*end == '\0') {
-						count = fread(buf,1,bufsize-1,fp);
-						if (count <= 0) {
-							break;
-						}
-						buf[count] = '\0';
-						end = buf;
-						cp = strchr(buf,' ');
-						while (cp != NULL) {
-							*cp = '\n';
-							cp = strchr(cp+1,' ');
-						}
-					}
-					rem = NULL;
-					if (thetype->type_class.type == Ncl_Typefloat ||
-					    thetype->type_class.type == Ncl_Typedouble) {
-						lret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
-					}
-					else {
-						lret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
-					}
-					if (rem) {
-						/* dangling characters not fully parsed:
-						 *  copy to the beginning of the buffer and try again
-						 */
-						for (j = 0; rem[j] != '\0'; j++) {
-							buf[j] = rem[j];
-						}
-						count = fread(&(buf[j]),1,bufsize-j-1,fp);
-						if (count <= 0) {
-							if (lret) {
-								/* since the last return was good, add it to the total */
-								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-								total++;
-							}
-							break;
-						}
-						buf[j + count] = '\0';
-						/* now we're going to try again */
-						end = buf;
-						cp = strchr(buf,' ');
-						while (cp != NULL) {
-							*cp = '\n';
-							cp = strchr(cp+1,' ');
-						}
-						continue;
-					}
-					if (lret) {
-						tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-						total++;
-					} else {
-						continue;
-					}
-				}
-			}
-			else if(thetype->type_class.type==Ncl_Typechar) {
-				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
-					*(char*)tmp_ptr = fgetc(fp);
-					tmp_ptr = (void*)((char*)tmp_ptr+1);
-					total++;
-				}
-			}
-			else if(thetype->type_class.type==Ncl_Typestring) {
-				char *buffer;
-				char *step;
-				int cur_size = NCL_MAX_STRING;
-
-				buffer = NclMalloc(cur_size * sizeof(char));
-				step =buffer;
-				for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
-					for(j = 0; ; j++) {
-						if (j == cur_size) {
-							cur_size *= 2;
-							buffer = NclRealloc(buffer,cur_size * sizeof(char));
-							step = &buffer[j];
-						}
-						if(!feof(fp)) {
-							*step = fgetc(fp);
-							if(*step == '\n') {
-								*step = '\0';
-								*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
-								step = buffer;
-								tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
-								total++;
-								break;
-							} else {
-								step++;
-							}
-						} else {
-							break;
-						}
-					}
-				}
-				NclFree(buffer);
-			}
-			else {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
-				return(NhlFATAL);
-			}
-
-
+			memcpy(tmp_ptr,&(thetype->type_class.default_mis),thetype->type_class.size);
 			data_out.kind = NclStk_VAL;
 			data_out.u.data_obj = tmp_md;
 			_NclPlaceReturn(data_out);
-			fclose(fp);
 			return(ret);
-		} else if (fp == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: could not open file check permissions");
 		}
+		tmp_ptr = NclMalloc(totalsize*thetype->type_class.size);
+		dimsizes[0] = totalsize;
+		fclose(fp);
+		fp = fopen(path_string,"r");
+			
+		tmp_md = _NclCreateMultiDVal(
+			NULL,
+			NULL,
+			Ncl_MultiDValData,
+			0,
+			tmp_ptr,
+			NULL,
+			n_dimensions,
+			dimsizes,
+			TEMPORARY,
+			NULL,
+			thetype);
+		if(tmp_md == NULL) 
+			return(NhlFATAL);
+
+		if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+			char *end = "";
+			int lret;
+			int count;
+			char *rem;
+			while (total < totalsize) {
+				if (*end == '\0') {
+					count = fread(buf,1,bufsize-1,fp);
+					if (count <= 0) {
+						break;
+					}
+					buf[count] = '\0';
+					end = buf;
+					cp = strchr(buf,' ');
+					while (cp != NULL) {
+						*cp = '\n';
+						cp = strchr(cp+1,' ');
+					}
+				}
+				rem = NULL;
+				if (thetype->type_class.type == Ncl_Typefloat ||
+				    thetype->type_class.type == Ncl_Typedouble) {
+					lret = asciifloat(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+				}
+				else {
+					lret = asciiinteger(end,&end,thetype->type_class.type,tmp_ptr,&rem);
+				}
+				if (rem) {
+					/* dangling characters not fully parsed:
+					 *  copy to the beginning of the buffer and try again
+					 */
+					for (j = 0; rem[j] != '\0'; j++) {
+						buf[j] = rem[j];
+					}
+					count = fread(&(buf[j]),1,bufsize-j-1,fp);
+					if (count <= 0) {
+						if (lret) {
+							/* since the last return was good, add it to the total */
+							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+							total++;
+						}
+						break;
+					}
+					buf[j + count] = '\0';
+					/* now we're going to try again */
+					end = buf;
+					cp = strchr(buf,' ');
+					while (cp != NULL) {
+						*cp = '\n';
+						cp = strchr(cp+1,' ');
+					}
+					continue;
+				}
+				if (lret) {
+					tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+					total++;
+				} else {
+					continue;
+				}
+			}
+		}
+		else if(thetype->type_class.type==Ncl_Typechar) {
+			for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
+				*(char*)tmp_ptr = fgetc(fp);
+				tmp_ptr = (void*)((char*)tmp_ptr+1);
+				total++;
+			}
+		}
+		else if(thetype->type_class.type==Ncl_Typestring) {
+			char *buffer;
+			char *step;
+			int cur_size = NCL_MAX_STRING;
+
+			buffer = NclMalloc(cur_size * sizeof(char));
+			step =buffer;
+			for(i = 0; ((i<totalsize) && !feof(fp)); i++) {
+				for(j = 0; ; j++) {
+					if (j == cur_size) {
+						cur_size *= 2;
+						buffer = NclRealloc(buffer,cur_size * sizeof(char));
+						step = &buffer[j];
+					}
+					if(!feof(fp)) {
+						*step = fgetc(fp);
+						if(*step == '\n') {
+							*step = '\0';
+							*(NclQuark*)tmp_ptr = NrmStringToQuark(buffer);
+							step = buffer;
+							tmp_ptr = (void*)((char*)tmp_ptr + thetype->type_class.size);
+							total++;
+							break;
+						} else {
+							step++;
+						}
+					} else {
+						break;
+					}
+				}
+			}
+			NclFree(buffer);
+		}
+		else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Attempt to read unsupported type");
+			return(NhlFATAL);
+		}
+
+
+		data_out.kind = NclStk_VAL;
+		data_out.u.data_obj = tmp_md;
+		_NclPlaceReturn(data_out);
+		fclose(fp);
+		return(ret);
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: Dimension size less than 1 specified, can't determine size");
 		return(NhlFATAL);
