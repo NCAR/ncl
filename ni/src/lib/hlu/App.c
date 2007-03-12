@@ -1,5 +1,5 @@
 /*
- *      $Id: App.c,v 1.40 1999-12-07 23:36:12 dbrown Exp $
+ *      $Id: App.c,v 1.41 2007-03-12 18:16:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -577,6 +577,12 @@ AppInitialize
 			strcpy(anew->app.sys_appdir,cs);
 			strcpy(tname,anew->app.sys_appdir);
 			strcat(tname,_NhlPATHDELIMITER);
+			if (strlen(tname) + strlen(anew->base.name) 
+			    + strlen(anew->app.file_suffix) + 1 > _NhlMAXFNAMELEN) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "App path length is too long");
+				return NhlFATAL;
+			}
 			strcat(tname,anew->base.name);
 			strcat(tname,anew->app.file_suffix);
 			NrmCombineFileDB(tname,&anew->app.appDB,True);
@@ -602,6 +608,12 @@ AppInitialize
 			strcpy(anew->app.usr_appdir,cs);
 			strcpy(tname,anew->app.usr_appdir);
 			strcat(tname,_NhlPATHDELIMITER);
+			if (strlen(tname) + strlen(anew->base.name) 
+			    + strlen(anew->app.file_suffix) + 1 > _NhlMAXFNAMELEN) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "App path length is too long");
+				return NhlFATAL;
+			}
 			strcat(tname,anew->base.name);
 			strcat(tname,anew->app.file_suffix);
 			NrmCombineFileDB(tname,&anew->app.appDB,True);

@@ -1,5 +1,5 @@
 /*
- *      $Id: CnStdRenderer.c,v 1.9 2006-07-14 17:24:31 dbrown Exp $
+ *      $Id: CnStdRenderer.c,v 1.10 2007-03-12 18:16:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1622,7 +1622,7 @@ static NhlErrorTypes GetDataBound
 				cxd[1] = dx[1];
 				cyd[1] = dy[1];
 			}
-			if (limit_mode == NhlLATLON & rel_center_lon)
+			if (limit_mode == NhlLATLON && rel_center_lon)
 				center_lon = center_lon + min_lon 
 					+ (max_lon - min_lon) / 2;
 
