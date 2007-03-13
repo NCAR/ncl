@@ -279,14 +279,34 @@ while ($#argv)
 end      
 
 # check for g77 compiler if needed
-if (($OS == Linux && $f90c == g77) || ($OS == Darwin && $f90c == g77) || \
-     $OS == FreeBSD) then 
+if (($OS == Linux && $f90c == g77) || $OS == FreeBSD) then 
   which g77
   if ($status) then
     echo "FATAL ERROR: GNU g77 compiler NOT found."
     echo EXITING WRAPIT
     echo " "
     exit 1
+  endif
+endif
+
+# check for g77, gfortran, g95 compiler if needed
+if (($OS == Linux && $f90c == g77) || ($OS == Darwin && $f90c == g77) || $OS == FreeBSD) then 
+  which g77 >! /dev/null
+  if ($status) then
+    which g95 >! /dev/null
+    if ($status) then
+      which gfortran >! /dev/null
+      if ($status) then
+        echo "FATAL ERROR: g77, g95, gfortran compilers NOT found."
+        echo EXITING WRAPIT
+        echo " "
+        exit 1
+      else
+        set f90c = gfortran
+      endif
+    else
+      set f90c = g95
+    endif
   endif
 endif
 
