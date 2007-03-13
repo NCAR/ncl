@@ -3578,7 +3578,7 @@ Grib2FileRecord *therec;
 		}
 		cp = strrchr(NrmQuarkToString(dimq),'_');
 		if (cp && ! strcmp(cp,"_hours")) {
-			if ((NrmQuark)therec->options[GRIB2_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("hours"))
+			if ((NrmQuark)therec->options[GRIB2_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("numeric"))
 				continue;
 			sprintf(buffer,NrmQuarkToString(dimq));
 			cp = strrchr(buffer,'_');

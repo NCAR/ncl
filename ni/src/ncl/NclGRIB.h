@@ -209,7 +209,7 @@ struct _GribRecordInqRec {
 	char *var_name;
 	NclQuark long_name_q;
 	NclQuark units_q;
-	unsigned int start;
+	off_t offset;
 	unsigned int bds_off;
 	unsigned int bds_flags;
 	unsigned int bds_size;
@@ -284,7 +284,7 @@ GribOptions     *options;
 
 typedef int (*GribUnPackData)(
 #if NhlNeedProto
-FILE */*fd*/,
+int /*fd*/,
 void** /* output */,
 void**  /* missing */,
 GribRecordInqRec* /* therec */,

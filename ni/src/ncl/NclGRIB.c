@@ -90,7 +90,9 @@ extern GridInfoRecord grid[];
 extern GridGDSInfoRecord grid_gds[];
 extern int grid_tbl_len;
 extern int grid_gds_tbl_len;
-static void  *vbuf;
+static unsigned char  *vbuf;
+static int vbuflen;
+static int vbufpos;
 static PtableInfo *Ptables = NULL;
 
 extern void GribPushAtt(
@@ -1979,7 +1981,7 @@ GribFileRecord *therec;
 		}
 		cp = strrchr(NrmQuarkToString(dimq),'_');
 		if (cp && ! strcmp(cp,"_hours")) {
-			if ((NrmQuark)therec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("hours"))
+			if ((NrmQuark)therec->options[GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT].values == NrmStringToQuark("numeric"))
 				continue;
 			sprintf(buffer,NrmQuarkToString(dimq));
 			cp = strrchr(buffer,'_');
@@ -4518,27 +4520,26 @@ unsigned char *val;
 	return(tmp.ivalue);
 }
 
+	
 int GetNextGribOffset
 #if NhlNeedProto
-(FILE *gribfile, unsigned int *offset, unsigned int *totalsize, unsigned int startoff, unsigned int *nextoff,int* version)
+(int gribfile,off_t *offset, unsigned int *totalsize, off_t startoff, off_t *nextoff,int* version)
 #else
 (gribfile, offset, totalsize, startoff, nextoff,version)
-FILE* gribfile;
-unsigned int *offset;
+int gribfile;
+off_t *offset;
 unsigned int *totalsize;
-unsigned int startoff;
-unsigned int *nextoff;
+off_t startoff;
+off_t *nextoff;
 int *version;
 #endif
 {
-	int i,j,ret1,ret4;
+	int j,ret1,ret4;
 	unsigned char *is; /* pointer to indicator section */
-	unsigned char buf[1024];
-	int buflen = 1024;
 	char test[10];
 	unsigned char nd[10];
 	unsigned int size;
-	unsigned int t;
+	off_t t;
 	int len;
 	int tries = 0;
 #ifdef GRIBRECDUMP
@@ -4551,10 +4552,11 @@ int *version;
 
 	ret1 = 0;
 	ret4 = 0;
+	off_t off;
 
 	test[4] = '\0';
 
-	i = startoff;
+	off = startoff;
 	while(1) {
 		tries++;
 		if (tries > 100) {
@@ -4562,28 +4564,28 @@ int *version;
 			*totalsize = 0;
 			return(GRIBEOF);
 		}	 
-		/* jump into GRIB file, read 1024 bytes at a time */
-		fseek(gribfile,i,SEEK_SET);
-		ret1 = fread((void*)buf,1,buflen,gribfile);
+		/* jump into GRIB file, read vbuflen bytes at a time */
+		lseek(gribfile,off,SEEK_SET);
+		ret1 = read(gribfile,(void*)vbuf,vbuflen);
 		if(ret1 > 0) {
 			len = ret1 - LEN_HEADER_PDS;
 			for (j = 0; j < len; j++) {
 				/* look for "GRIB" indicator */
-				if (buf[j] != 'G') 
+				if (vbuf[j] != 'G') 
 					continue;
-				if (! (buf[j+1] == 'R' && buf[j+2] == 'I' && buf[j+3] == 'B'))
+				if (! (vbuf[j+1] == 'R' && vbuf[j+2] == 'I' && vbuf[j+3] == 'B'))
 					continue;
 
-				*version = buf[j+7];
+				*version = vbuf[j+7];
 /*
 				fprintf(stdout,"found GRIB\n");
 */
 				if(*version == 1){
-					is = &(buf[j]);
+					is = &(vbuf[j]);
 /*
 					fprintf(stdout,"found GRIB version 1\n");
 */
-					*offset = i + j;
+					*offset = off + j;
 					size = UnsignedCnvtToDecimal(3,&(is[4]));
 #ifdef GRIBRECDUMP
 					if(count == 0) {
@@ -4592,8 +4594,8 @@ int *version;
 					if(count < 3) {
 						tmp = NclMalloc(sizeof(char)*size);
 				
-						fseek(gribfile,*offset,SEEK_SET);	
-						fread(tmp,1,size,gribfile);
+						lseek(gribfile,*offset,SEEK_SET);	
+						read(gribfile,tmp,size);
 						write(fd_out,tmp,size);
 						count++;
 					}
@@ -4602,8 +4604,8 @@ int *version;
 						count++;
 					}
 #endif
-					fseek(gribfile,*offset+size - 4,SEEK_SET);
-					ret4 = fread((void*)nd,1,4,gribfile);
+					lseek(gribfile,*offset+size - 4,SEEK_SET);
+					ret4 = read(gribfile,(void*)nd,4);
 					if(ret4 < 4) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 						*totalsize = 0;
@@ -4634,9 +4636,9 @@ int *version;
 					int k;
 					int tsize;
 
-					is = &(buf[j]);
+					is = &(vbuf[j]);
 					pds = is + 4;
-					*offset = i + j;
+					*offset = off + j;
 /*
   					fprintf(stdout,"found GRIB version 0 at offset %d\n",*offset);
 */
@@ -4644,27 +4646,27 @@ int *version;
 					has_bms = (pds[7] & (char)0100) ? 1 : 0;
 					size = 4;
 					t = *offset + size;
-					fseek(gribfile,t,SEEK_SET);
-					ret4 = fread((void*)nd,1,4,gribfile);
+					lseek(gribfile,t,SEEK_SET);
+					ret4 = read(gribfile,(void*)nd,4);
 					pdssize = UnsignedCnvtToDecimal(3,nd);
 					size += pdssize;
 					t = *offset + size;
 					if (has_gds) {
-						fseek(gribfile,t,SEEK_SET);
-						ret4 = fread((void*)nd,1,4,gribfile);
+						lseek(gribfile,t,SEEK_SET);
+						ret4 = read(gribfile,(void*)nd,4);
 						gdssize = UnsignedCnvtToDecimal(3,nd);
 						size += gdssize;
 						t = *offset + size;
 					}
 					if (has_bms) {
-						fseek(gribfile,t,SEEK_SET);
-						ret4 = fread((void*)nd,1,4,gribfile);
+						lseek(gribfile,t,SEEK_SET);
+						ret4 = read(gribfile,(void*)nd,4);
 						bmssize = UnsignedCnvtToDecimal(3,nd);
 						size += bmssize;
 						t = *offset + size;
 					}
-					fseek(gribfile,t,SEEK_SET);
-					ret4 = fread((void*)nd,1,4,gribfile);
+					lseek(gribfile,t,SEEK_SET);
+					ret4 = read(gribfile,(void*)nd,4);
 					bdssize = UnsignedCnvtToDecimal(3,nd);
 					size += bdssize;
 					tsize = size;
@@ -4673,16 +4675,16 @@ int *version;
 					}
 					while (1) {
 						t = *offset + tsize;
-						fseek(gribfile,t,SEEK_SET);
-						ret4 = fread((void*)buf,1,buflen,gribfile);
+						lseek(gribfile,t,SEEK_SET);
+						ret4 = read(gribfile,(void*)vbuf,vbuflen);
 						if (ret4 < 4) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 							break;
 						}
-						for (k = 0; k < buflen-4; k++) {
-						     if (! buf[k] == '7')
+						for (k = 0; k < vbuflen-4; k++) {
+						     if (! vbuf[k] == '7')
 							     continue;
-						     if(strncmp("7777",(char*)&buf[k],4))
+						     if(strncmp("7777",(char*)&vbuf[k],4))
 							     continue;
 						     tsize += (k + 4);
 						     *nextoff = *offset + tsize ;
@@ -4698,7 +4700,7 @@ int *version;
 						     }
 						     return(GRIBOK);
 						}
-						tsize += buflen-8; /* make sure we don't lose the beginning of the end indicator */
+						tsize += vbuflen-8; /* make sure we don't lose the beginning of the end indicator */
 					}
 
 #if 0
@@ -4708,8 +4710,8 @@ int *version;
 					size = 4;
 					while(1) {
 						t = *offset + size;
-						fseek(gribfile,t,SEEK_SET);
-						ret4 = fread((void*)nd,1,4,gribfile);
+						lseek(gribfile,t,SEEK_SET);
+						ret4 = read(gribfile,(void*)nd,4);
 						if (ret4 < 4) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Premature end-of-file, file appears to be truncated");
 							break;
@@ -4734,7 +4736,7 @@ int *version;
 #endif
 				}
 			}
-			i += (buflen - LEN_HEADER_PDS);
+			off += (vbuflen - LEN_HEADER_PDS);
 		} else {
 			*totalsize = 0;
 			return(GRIBEOF);
@@ -5056,7 +5058,7 @@ void *s2;
 	if((s_1->rec_inq->level0 != -1)&&(s_1->rec_inq->level1 != -1)) {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
 			if(s_1->rec_inq->level1 == s_2->rec_inq->level1) {
-				return(s_1->rec_inq->start - s_2->rec_inq->start);
+				return(s_1->rec_inq->offset - s_2->rec_inq->offset);
 			} else {
 				return(s_1->rec_inq->level1 - s_2->rec_inq->level1);
 			}
@@ -5065,7 +5067,7 @@ void *s2;
 		}
 	} else {
 		if(s_1->rec_inq->level0 == s_2->rec_inq->level0) {
-			return(s_1->rec_inq->start- s_2->rec_inq->start);
+			return(s_1->rec_inq->offset - s_2->rec_inq->offset);
 		} else {
 			return(s_1->rec_inq->level0 - s_2->rec_inq->level0);
 		}
@@ -5224,7 +5226,7 @@ static GribRecordInqRec* _MakeMissingRec
 	grib_rec->var_name = NULL;
 	grib_rec->long_name_q = -1;
 	grib_rec->units_q = -1;
-	grib_rec->start = 0;
+	grib_rec->offset = 0;
 	grib_rec->bds_off= 0;
 	grib_rec->pds = NULL;
 	grib_rec->pds_size = 0;
@@ -6014,11 +6016,11 @@ NclQuark path;
 int wr_status;
 #endif
 {
-	FILE* fd;
+	int fd;
 	int done = 0;
-	unsigned int offset = 0;
+	off_t offset = 0;
+	off_t nextoff = 0;
 	unsigned int size = 0;
-	unsigned int nextoff = 0;
 	GribFileRecord *therec = (GribFileRecord *)rec;
 	GribRecordInqRec *grib_rec = NULL;
 	GribRecordInqRecList *grib_rec_list = NULL;
@@ -6042,6 +6044,7 @@ int wr_status;
 	int rec_num = 0;
 	int subcenter, center, process,ptable_version;
 	NhlErrorTypes retvalue;
+	struct stat statbuf;
 
 	if (! Ptables) {
 		InitPtables();
@@ -6057,9 +6060,17 @@ int wr_status;
 	if(wr_status <= 0) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Grib files are read only continuing but opening file as read only");
 	}
-	fd = fopen(NrmQuarkToString(path),"r");
-	vbuf = (void*)NclMalloc(4*getpagesize());
+	if(stat(NrmQuarkToString(path),&statbuf) == -1) {
+		NhlPError(NhlFATAL, NhlEUNKNOWN,"NclGRIB: Unable to open input file (%s)",NrmQuarkToString(path));
+		return NULL;
+	}
+	fd = open(NrmQuarkToString(path),O_RDONLY);
+	vbuflen = statbuf.st_blksize;
+	vbuf = (void*)NclMalloc(vbuflen);
+
+	/*
 	setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
+	*/
 
 	
 	if(fd != NULL) {
@@ -6077,11 +6088,12 @@ int wr_status;
 				grib_rec->the_dat = NULL;
 				grib_rec->version = version;
 				grib_rec->var_name = NULL;
-				fseek(fd,offset+(version?8:4),SEEK_SET);
-				tmp_size = sizeof(buffer) < size ? sizeof(buffer) : size;
-				fread((void*)buffer,1,tmp_size,fd);
-				grib_rec->pds_size = CnvtToDecimal(3,&(buffer[0]));
-				if (grib_rec->pds_size <= 0 || grib_rec->pds_size > size) {
+				lseek(fd,offset+(version?8:4),SEEK_SET);
+				read(fd,(void*)vbuf,vbuflen);
+				vbufpos = 0;
+				grib_rec->pds_size = CnvtToDecimal(3,&(vbuf[0]));
+				if (grib_rec->pds_size <= 0 || grib_rec->pds_size > size 
+					|| grib_rec->pds_size > vbuflen) {
 					NhlPError(NhlWARNING, NhlEUNKNOWN, 
 						  "NclGRIB: Detected invalid record, skipping record");
 					NclFree(grib_rec);
@@ -6090,13 +6102,8 @@ int wr_status;
 				}
 					
 				grib_rec->pds =  NclMalloc((unsigned)grib_rec->pds_size);
-				if (grib_rec->pds_size > tmp_size) {
-					fseek(fd,offset+(version?8:4),SEEK_SET);
-					fread((void*)grib_rec->pds,1,grib_rec->pds_size,fd);
-				}
-				else {
-					memcpy(grib_rec->pds,buffer,grib_rec->pds_size);
-				}
+				memcpy(grib_rec->pds,vbuf,grib_rec->pds_size);
+				vbufpos += grib_rec->pds_size;
 /*
 				fprintf(stdout,"Found: %d\n",(int)(int)grib_rec->pds[8]);
 */
@@ -6123,7 +6130,7 @@ int wr_status;
 					fprintf(stdout,"Found one with bms (%d,%d)\n",grib_rec->param_number,grib_rec->grid_number);
 				}
 */
-				grib_rec->start = offset;
+				grib_rec->offset = offset;
 
 				if(version) {
 					grib_rec->initial_time.year = (short)(((short)grib_rec->pds[24] - 1 )*100 + (short)(int)grib_rec->pds[12]);
@@ -6160,17 +6167,29 @@ int wr_status;
 						grib_rec->interp_method = 0;
 					}
 					if(grib_rec->has_gds) {
-						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
-						fread((void*)buffer,1,6,fd);
-						grib_rec->gds_size = CnvtToDecimal(3,buffer);
 						grib_rec->gds_off = (version?8:4) + grib_rec->pds_size;
-						grib_rec->gds_type = (int)buffer[5];
+						if (vbuflen - vbufpos > 6) {
+							grib_rec->gds_size = CnvtToDecimal(3,&(vbuf[vbufpos]));
+							grib_rec->gds_type = (int)vbuf[vbufpos + 5];
+						}
+						else {
+							lseek(fd,(unsigned)(grib_rec->offset + (version?8:4) + grib_rec->pds_size),SEEK_SET);
+							read(fd,(void*)vbuf,6);
+							grib_rec->gds_size = CnvtToDecimal(3,vbuf);
+							grib_rec->gds_type = (int)vbuf[5];
+						}
 						/*
 						  fprintf(stdout,"%d\n",grib_rec->gds_type);
 						*/
 						grib_rec->gds = (unsigned char*)NclMalloc((unsigned)sizeof(char)*grib_rec->gds_size);
-						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size),SEEK_SET);
-						fread((void*)grib_rec->gds,1,grib_rec->gds_size,fd);
+						if (vbuflen - vbufpos > grib_rec->gds_size) {
+							memcpy(grib_rec->gds,&(vbuf[vbufpos]),grib_rec->gds_size);
+						}
+						else {
+							lseek(fd,(unsigned)(grib_rec->offset + (version?8:4) + grib_rec->pds_size),SEEK_SET);
+							read(fd,(void*)grib_rec->gds,grib_rec->gds_size);
+						}
+						vbufpos += grib_rec->gds_size;
 					} else {
 						grib_rec->gds_off = 0;	
 						grib_rec->gds_size = 0;
@@ -6218,23 +6237,36 @@ int wr_status;
 					}
 
 					if(grib_rec->has_bms) {
-						fseek(fd,(unsigned)(grib_rec->start + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
-						fread((void*)tmpc,1,3,fd);
-						grib_rec->bms_size = CnvtToDecimal(3,tmpc);
+						if (vbuflen - vbufpos > 3) {
+							grib_rec->bms_size = CnvtToDecimal(3,&(vbuf[vbufpos]));
+						}
+						else {
+							lseek(fd,(unsigned)(grib_rec->offset + (version?8:4) + grib_rec->pds_size + grib_rec->gds_size),SEEK_SET);
+							read(fd,(void*)tmpc,3);
+							grib_rec->bms_size = CnvtToDecimal(3,tmpc);
+						}
 						grib_rec->bms_off = (version?8:4) + grib_rec->pds_size + grib_rec->gds_size;
 					} else {
 						grib_rec->bms_off = 0;
 						grib_rec->bms_size = 0;
 					}
 					grib_rec->bds_off = (version ? 8:4) + grib_rec->pds_size + grib_rec->bms_size + grib_rec->gds_size;
-					fseek(fd,(unsigned)(grib_rec->start + grib_rec->bds_off),SEEK_SET);
-					fread((void*)tmpc,1,4,fd);
-					grib_rec->bds_flags = tmpc[3];
-					grib_rec->bds_size = CnvtToDecimal(3,tmpc);
-					grib_rec->int_or_float = (int)(tmpc[3]  & (char)0040) ? 1 : 0;
+					vbufpos += grib_rec->bms_size;
+					if (vbuflen - vbufpos > 3) {
+						grib_rec->bds_size = CnvtToDecimal(3,&(vbuf[vbufpos]));
+						grib_rec->bds_flags = vbuf[vbufpos+3];
+						grib_rec->int_or_float = (int)(grib_rec->bds_flags & (char)0040) ? 1 : 0;
+					}
+					else {
+						lseek(fd,(unsigned)(grib_rec->offset + grib_rec->bds_off),SEEK_SET);
+						read(fd,(void*)tmpc,4);
+						grib_rec->bds_flags = tmpc[3];
+						grib_rec->bds_size = CnvtToDecimal(3,tmpc);
+						grib_rec->int_or_float = (int)(tmpc[3]  & (char)0040) ? 1 : 0;
+					}
 				}
 
-		
+	
 				name_rec = NULL;	
 				if (grib_rec != NULL) {
 					TBLE2 *ptable = NULL;
@@ -6946,8 +6978,9 @@ int wr_status;
 				
 			}
 #endif
-			fclose(fd);	
+			close(fd);	
 			NclFree(vbuf);
+
 			return(therec);
 		} 
 	}
@@ -7326,7 +7359,7 @@ void* storage;
 	void *missing;
 	NclScalar missingv;
 	int int_or_float;
-	FILE* fd;
+	int fd;
 	int grid_dim_sizes[3];
 	int n_grid_dims;
 	NclMultiDValData tmp_md;
@@ -7370,9 +7403,11 @@ void* storage;
 	step = rec->var_list;
 	while(step != NULL) {
 		if(step->var_info.var_name_quark == thevar) {
-			fd = fopen(NrmQuarkToString(rec->file_path_q),"r");
+			fd = open(NrmQuarkToString(rec->file_path_q),O_RDONLY);
+			/*
 			vbuf = (void*)NclMalloc(4*getpagesize());
 			setvbuf(fd,vbuf,_IOFBF,4*getpagesize());
+			*/
 
 			out_data = storage;
 
@@ -7530,8 +7565,10 @@ void* storage;
 						if(current_rec->the_dat == NULL){
 							NhlPError(NhlFATAL,NhlEUNKNOWN,
 								  "NclGRIB: Unrecoverable caching error reading variable %s; can't continue",current_rec->var_name);
-							fclose(fd);
+							close(fd);
+							/*
 							NclFree(vbuf);
+							*/
 							return(NULL);
 						}
 					}
@@ -7596,8 +7633,10 @@ void* storage;
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
 						  "NclGRIB: Unrecoverable error reading variable %s; can't continue",
 						  current_rec->var_name);
-					fclose(fd);
+					close(fd);
+					/*
 					NclFree(vbuf);
+					*/
 					return(NULL);
 				}
 
@@ -7622,8 +7661,10 @@ void* storage;
 					done = 1;
 				}
 			}
-			fclose(fd);
+			close(fd);
+			/*
 			NclFree(vbuf);
+			*/
 			return(out_data);
 		} 
 		step = step->next;
