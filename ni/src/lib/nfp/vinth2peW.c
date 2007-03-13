@@ -59,7 +59,7 @@ NhlErrorTypes vinth2p_ecmwf_W
     double *psfc_d = NULL;
     int psfc_n_dims,psfc_has_missing;
     NclBasicDataTypes psfc_type;
-    int psfc_dimsizes[3];
+    int psfc_dimsizes[4];
     NclScalar psfc_missing;
 
     void *p0_ptr = NULL;
