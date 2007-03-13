@@ -83,7 +83,7 @@ NhlErrorTypes vinth2p_ecmwf_W
     double *tbot_d = NULL;
     int tbot_n_dims;
     NclBasicDataTypes tbot_type;
-    int tbot_dimsizes[3];
+    int tbot_dimsizes[4];
 
     void *phis = NULL;
     double *phis_d = NULL;
