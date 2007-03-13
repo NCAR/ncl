@@ -681,7 +681,7 @@ switch ($OS)
      if ($debug == 1) then
        gcc -fPIC -shared $ld_suffix -lg2c
      else
-       gcc -fPIC -shared $ld_suffix
+       gcc -fPIC -shared $ld_suffix -lg2c
      endif
    endif
    breaksw
@@ -689,7 +689,7 @@ switch ($OS)
    if ($debug == 1) then
      gcc -shared $ld_suffix -lg2c
    else
-     gcc -shared $ld_suffix
+     gcc -shared $ld_suffix -lg2c
    endif
    breaksw
  case OSF1:                        # OSF1
@@ -702,7 +702,7 @@ switch ($OS)
    if ($debug == 1) then
      gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c
    else
-     gcc -bundle -flat_namespace -undefined suppress $ld_suffix
+     gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c
    endif
    breaksw
  case HP-UX:                       # HP-UX
