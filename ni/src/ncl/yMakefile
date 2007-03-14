@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.126 2007-03-12 00:17:14 haley Exp $
+#      $Id: yMakefile,v 1.127 2007-03-14 17:10:51 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2007-03-12 00:17:14 $
+#	Date:		$Date: 2007-03-14 17:10:51 $
 #
 #	Description:	
 #
@@ -78,6 +78,7 @@ CC_LD		= xlC_r
 DODS_LIBS	= -lnc-dap -ldap -lcurl -lxml2 -lpthread -lssl
 #elif defined(linux)
 DODS_LIBS	= -lnc-dap -ldap -lcurl -lrx -lxml2 -lpthread -lssl -lcrypto
+CC_LD		= g\+\+
 #else
 DODS_LIBS	= -lnc-dap -ldap -lcurl -lrx -lxml2 -lpthread -lssl
 CC_LD		= g\+\+
