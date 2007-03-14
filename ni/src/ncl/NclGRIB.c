@@ -4542,6 +4542,7 @@ int *version;
 	off_t t;
 	int len;
 	int tries = 0;
+	off_t off;
 #ifdef GRIBRECDUMP
 	static int fd_out;
 	static int count = 0;
@@ -4552,7 +4553,6 @@ int *version;
 
 	ret1 = 0;
 	ret4 = 0;
-	off_t off;
 
 	test[4] = '\0';
 
@@ -6073,7 +6073,7 @@ int wr_status;
 	*/
 
 	
-	if(fd != NULL) {
+	if (fd > 0) {
 		while(!done) {
 			ret = GetNextGribOffset(fd,&offset,&size,offset,&nextoff,&version);
 			if(ret == GRIBEOF) {
@@ -6984,7 +6984,7 @@ int wr_status;
 			return(therec);
 		} 
 	}
-	if(fd != NULL) {
+	if (fd > 0) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Could not open (%s) no grib records found",NrmQuarkToString(path));
 	} else {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Could not open (%s) check permissions",NrmQuarkToString(path));
