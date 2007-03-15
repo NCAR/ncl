@@ -4509,15 +4509,18 @@ static int g2GetLVList
     strt = lstep;
     while(strt->next != NULL) {
         if (!g2LVNotEqual(strt, strt->next)) {
-            tmp = strt->next;
-            strt->next = strt->next->next;
-            thevar->n_entries--;
-             /* dib note 2002-12-13: doesn't free the_dat -- why not?? */
-            NclFree(tmp->rec_inq);
-            NclFree(tmp);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: NCL cannot distinguish between records %d and %d found in variable %s. Record %d will be ignored.",
+			  strt->rec_inq->rec_num, strt->next->rec_inq->rec_num,
+			  NrmQuarkToString(thevar->var_info.var_name_quark),strt->next->rec_inq->rec_num);
+		tmp = strt->next;
+		strt->next = strt->next->next;
+		thevar->n_entries--;
+		/* dib note 2002-12-13: doesn't free the_dat -- why not?? */
+		NclFree(tmp->rec_inq);
+		NclFree(tmp);
         } else {
-            n_lvs++;
-            strt = strt->next;
+		n_lvs++;
+		strt = strt->next;
         }
     }
 
