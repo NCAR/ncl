@@ -7723,7 +7723,7 @@ static void *Grib2OpenFile
     g2int   expand = 0;
 
     int unpack = 0;
-    long    lgrib,
+    g2int   lgrib,
             lskip,
             seek = 0;
 
@@ -9069,9 +9069,11 @@ static void *Grib2OpenFile
     for (i = 0; i < nrecs; i++)
         g2rec[i]->numrecs = nrecs;
 
-/* debug 
-    Grib2PrintRecords(g2rec);
-/* debug */
+#if 0
+    /* debug */
+   Grib2PrintRecords(g2rec);
+   /* debug */
+#endif
 
     g2frec = (Grib2FileRecord *) rec;
     g2frec->n_vars = 0;
