@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.214 2007-03-12 17:43:09 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.215 2007-03-16 23:16:31 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9016,6 +9016,303 @@ NhlErrorTypes _Nclsum
 		out_val,
 		1,
 		&dimsizes,
+		NULL,
+		tmp_md->multidval.type->type_class.data_type,
+		0
+	));
+}
+
+NhlErrorTypes _Ncldim_cumsum
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry data0,data1;
+	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData opt_md = NULL;
+	void *out_val = NULL;
+	logical *tmp = NULL;
+	int i,j;
+	int m,n,sz;
+	NclScalar *missing = NULL;
+	int opt;
+
+
+	data0 = _NclGetArg(0,2,DONT_CARE);
+	switch(data0.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data0.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	data1 = _NclGetArg(1,2,DONT_CARE);
+	switch(data1.kind) {
+		case NclStk_VAR:
+			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			opt_md = (NclMultiDValData)data1.u.data_obj;
+			break;
+	}
+	if(opt_md == NULL)
+		return(NhlFATAL);
+	opt = *((int*)opt_md->multidval.val);
+
+
+	n = 1;
+	m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
+	if(tmp_md->multidval.n_dims > 1) {
+		for(i = 0; i < tmp_md->multidval.n_dims -1 ; i++) {
+			n = n* tmp_md->multidval.dim_sizes[i];
+		}
+	}
+	tmp = (logical*)NclMalloc(sizeof(logical)*m);
+	sz = tmp_md->multidval.type->type_class.size;
+	out_val = (void*)NclMalloc(sz * tmp_md->multidval.totalelements);
+
+	if(tmp_md->multidval.missing_value.has_missing) {
+		for(i = 0; i < n ; i++) {
+			int goffset;
+			int dim_offset = i * m * sz;
+			int missing_flag = 0;
+			_Ncleq(tmp_md->multidval.type,tmp,((char*)tmp_md->multidval.val) + dim_offset,
+			       &(tmp_md->multidval.missing_value.value),NULL,NULL,m,1);
+			switch (opt) {
+			default:
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_cumsum: invalid value for opt argument: defaulting to 0");
+			case 0: /* all values after first missing become missing */
+				memcpy(out_val + dim_offset,
+				       tmp_md->multidval.val + dim_offset,sz);
+				if (tmp[0]) {
+					missing_flag = 1;
+				}
+				for(j = 1; j < m; j++) {
+					int last_offset = dim_offset + (j-1) * sz;
+					int offset = dim_offset + j * sz;
+					if (missing_flag || tmp[j]) {
+						missing_flag = 1;
+			 			memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
+					}
+					else {
+						_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+							 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+					}
+				}
+				missing = &tmp_md->multidval.missing_value.value;
+				break;
+			case 1: /* missing values are skipped */
+				for (j = 0; j < m && tmp[j]; j++) {
+					int offset = dim_offset + j * sz;
+					memcpy(out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
+				}
+				if (j < m) {
+					goffset = dim_offset + j * sz;
+					memcpy(out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,sz);
+				}
+				for(j++; j < m; j++) {
+					int offset = dim_offset + j * sz;
+					if (tmp[j]) {
+						memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
+					}
+					else {
+						_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+							 (char*)(tmp_md->multidval.val) + offset,out_val + goffset,NULL,NULL,1,1);
+						goffset = offset;
+					}
+				}
+				missing = &tmp_md->multidval.missing_value.value;
+				break;
+			case 2: /* missing values treated as 0 */
+				for (j = 0; j < m && tmp[j]; j++) {
+					int offset = dim_offset + j * sz;
+					memset(out_val + offset,0,sz);
+				}
+				if (j == 0) {
+					memcpy(out_val + dim_offset,tmp_md->multidval.val + dim_offset,sz);
+					j++;
+				}
+				for(; j < m; j++) {
+					int last_offset = dim_offset + (j-1) * sz;
+					int offset = dim_offset + j * sz;
+					if (tmp[j]) {
+						memcpy((char*)out_val + offset,out_val + last_offset,sz);
+					}
+					else {
+						_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+							 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+					}
+				}
+				break;
+			}
+		}
+	} else {
+		for(i = 0; i < n ; i++) {
+			int dim_offset = i * m * sz;
+			memcpy(out_val + dim_offset,tmp_md->multidval.val + dim_offset,sz);
+			for(j = 1; j < m; j++) {
+				int last_offset = dim_offset + (j-1) * sz;
+				int offset = dim_offset + j * sz;
+				_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+					 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+			}
+		}
+	}
+	if(tmp != NULL)
+		NclFree(tmp);
+
+	ret = NclReturnValue(
+		out_val,
+		tmp_md->multidval.n_dims,
+		tmp_md->multidval.dim_sizes,
+		missing,
+		tmp_md->multidval.type->type_class.data_type,
+		0);
+	return(ret);
+}
+
+NhlErrorTypes _Nclcumsum
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data0,data1;
+	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData opt_md = NULL;
+	int opt;
+	void *out_val;
+	logical *tmp = NULL;
+	int i,missing_flag;
+	int goffset;
+
+	data0 = _NclGetArg(0,2,DONT_CARE);
+	switch(data0.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data0.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	data1 = _NclGetArg(1,2,DONT_CARE);
+	switch(data1.kind) {
+		case NclStk_VAR:
+			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			opt_md = (NclMultiDValData)data1.u.data_obj;
+			break;
+	}
+	if(opt_md == NULL)
+		return(NhlFATAL);
+	opt = *((int*)opt_md->multidval.val);
+
+
+	out_val = (void*)NclMalloc(tmp_md->multidval.type->type_class.size * tmp_md->multidval.totalelements);
+	if(tmp_md->multidval.missing_value.has_missing) {
+		tmp = (logical*)NclMalloc(sizeof(logical)*tmp_md->multidval.totalelements);
+		_Ncleq(tmp_md->multidval.type,tmp,tmp_md->multidval.val,
+		       &(tmp_md->multidval.missing_value.value),NULL,NULL,tmp_md->multidval.totalelements,1);
+
+		switch (opt) {
+		default:
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"cumsum: invalid value for opt argument: defaulting to 0");
+		case 0: /* all values after first missing become missing */
+			memcpy(out_val,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
+			if (tmp[0]) {
+				missing_flag = 1;
+			}
+			for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+				int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+				int offset = i * tmp_md->multidval.type->type_class.size;
+				if (missing_flag || tmp[i]) {
+					missing_flag = 1;
+					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
+					       tmp_md->multidval.type->type_class.size);
+				}
+				else {
+					_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+						 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+				}
+			}
+			break;
+		case 1: /* missing values are skipped */
+			i = 0;
+			while (tmp[i]) {
+				int offset = i * tmp_md->multidval.type->type_class.size;
+				memcpy(out_val + offset,&(tmp_md->multidval.missing_value.value),
+				       tmp_md->multidval.type->type_class.size);
+				i++;
+			}
+			if (i < tmp_md->multidval.totalelements) {
+				goffset = i * tmp_md->multidval.type->type_class.size;
+				memcpy(out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,tmp_md->multidval.type->type_class.size);
+			}
+			for(i++; i < tmp_md->multidval.totalelements; i++) {
+				int offset = i * tmp_md->multidval.type->type_class.size;
+				if (tmp[i]) {
+					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
+					       tmp_md->multidval.type->type_class.size);
+				}
+				else {
+					_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+						 (char*)(tmp_md->multidval.val) + offset,out_val + goffset,NULL,NULL,1,1);
+					goffset = offset;
+				}
+			}
+			break;
+		case 2: /* missing values treated as 0 */
+			i = 0;
+			while (tmp[i]) {
+				int offset = i * tmp_md->multidval.type->type_class.size;
+				memset(out_val + offset,0,tmp_md->multidval.type->type_class.size);
+				i++;
+			}
+			if (i == 0) {
+				memcpy(out_val,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
+				i++;
+			}
+			for(; i < tmp_md->multidval.totalelements; i++) {
+				int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+				int offset = i * tmp_md->multidval.type->type_class.size;
+				if (tmp[i]) {
+					memcpy((char*)out_val + offset,out_val + last_offset,
+					       tmp_md->multidval.type->type_class.size);
+				}
+				else {
+					_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+						 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+				}
+			}
+			break;
+		}
+	} else {
+		memcpy(out_val,tmp_md->multidval.val,tmp_md->multidval.type->type_class.size);
+		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
+			int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
+			int offset = i * tmp_md->multidval.type->type_class.size;
+			_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,(char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+		}
+	}
+	if(tmp != NULL) 
+		NclFree(tmp);
+
+	return(NclReturnValue(
+		out_val,
+		tmp_md->multidval.n_dims,
+		tmp_md->multidval.dim_sizes,
 		NULL,
 		tmp_md->multidval.type->type_class.data_type,
 		0

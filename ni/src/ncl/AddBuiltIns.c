@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.78 2006-10-20 17:40:18 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.79 2007-03-16 23:16:31 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -245,6 +245,17 @@ void
 #endif
 );
 extern NhlErrorTypes _Nclsum(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Ncldim_cumsum(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _Nclcumsum(
 #if NhlNeedProto
 void
 #endif
@@ -1365,6 +1376,20 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	NclRegisterFunc( _Nclsum,args,"sum",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
+	SetArgTemplate(args,nargs, "integer", 1, dimsizes);  nargs++;
+	NclRegisterFunc( _Ncldim_cumsum,args,"dim_cumsum",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
+	SetArgTemplate(args,nargs, "integer", 1, dimsizes);  nargs++;
+	NclRegisterFunc( _Nclcumsum,args,"cumsum",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
