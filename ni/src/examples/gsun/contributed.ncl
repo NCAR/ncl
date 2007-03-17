@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.136 2007-03-01 00:15:58 shea Exp $
+;      $Id: contributed.ncl,v 1.137 2007-03-17 17:24:49 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2001,6 +2001,29 @@ begin
      exit
  end if
  
+end
+; *******************************************************************
+; D. Shea
+; returns cumulative sum of each rightmost dimension
+; Copies over all the attribures and coordinate variables
+; x    - multidimensional variable 
+;
+undef ("dim_cumsum_Wrap")
+function dim_cumsum_Wrap (x:numeric)     
+local xCumSum
+begin
+
+ xCumSum = dim_cumsum(x)     
+ copy_VarAtts(x, xCumSum)
+ copy_VarCoords(x, xCumSum)
+ 
+ if (isatt(x,"long_name")) then
+     xCumSum@long_name = "Cumulative Sum: "+getLongName(x)
+ else
+     xCumSum@long_name = "Cumulative Sum"
+ end if
+ 
+ return (xCumSum)
 end
 
 ;**********************************************************
