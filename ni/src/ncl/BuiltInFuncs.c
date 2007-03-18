@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.215 2007-03-16 23:16:31 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.216 2007-03-18 22:58:05 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9191,7 +9191,7 @@ NhlErrorTypes _Nclcumsum
 	int opt;
 	void *out_val;
 	logical *tmp = NULL;
-	int i,missing_flag;
+	int i,missing_flag = 0;
 	int goffset;
 
 	data0 = _NclGetArg(0,2,DONT_CARE);
