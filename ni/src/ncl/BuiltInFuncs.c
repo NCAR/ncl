@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.216 2007-03-18 22:58:05 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.217 2007-03-19 00:15:29 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9188,6 +9188,7 @@ NhlErrorTypes _Nclcumsum
 	NclStackEntry data0,data1;
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData opt_md = NULL;
+	NclScalar *missing = NULL;
 	int opt;
 	void *out_val;
 	logical *tmp = NULL;
@@ -9247,6 +9248,7 @@ NhlErrorTypes _Nclcumsum
 						 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
 				}
 			}
+			missing = &tmp_md->multidval.missing_value.value;
 			break;
 		case 1: /* missing values are skipped */
 			i = 0;
@@ -9272,6 +9274,7 @@ NhlErrorTypes _Nclcumsum
 					goffset = offset;
 				}
 			}
+			missing = &tmp_md->multidval.missing_value.value;
 			break;
 		case 2: /* missing values treated as 0 */
 			i = 0;
@@ -9313,7 +9316,7 @@ NhlErrorTypes _Nclcumsum
 		out_val,
 		tmp_md->multidval.n_dims,
 		tmp_md->multidval.dim_sizes,
-		NULL,
+		missing,
 		tmp_md->multidval.type->type_class.data_type,
 		0
 	));
