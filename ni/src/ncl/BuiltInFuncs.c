@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.217 2007-03-19 00:15:29 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.218 2007-03-19 01:46:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9089,8 +9089,8 @@ NhlErrorTypes _Ncldim_cumsum
 			default:
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_cumsum: invalid value for opt argument: defaulting to 0");
 			case 0: /* all values after first missing become missing */
-				memcpy(out_val + dim_offset,
-				       tmp_md->multidval.val + dim_offset,sz);
+				memcpy((char*)out_val + dim_offset,
+				       (char*)tmp_md->multidval.val + dim_offset,sz);
 				if (tmp[0]) {
 					missing_flag = 1;
 				}
@@ -9103,7 +9103,7 @@ NhlErrorTypes _Ncldim_cumsum
 					}
 					else {
 						_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
-							 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+							 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 					}
 				}
 				missing = &tmp_md->multidval.missing_value.value;
@@ -9111,11 +9111,11 @@ NhlErrorTypes _Ncldim_cumsum
 			case 1: /* missing values are skipped */
 				for (j = 0; j < m && tmp[j]; j++) {
 					int offset = dim_offset + j * sz;
-					memcpy(out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
+					memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),sz);
 				}
 				if (j < m) {
 					goffset = dim_offset + j * sz;
-					memcpy(out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,sz);
+					memcpy((char*)out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,sz);
 				}
 				for(j++; j < m; j++) {
 					int offset = dim_offset + j * sz;
@@ -9124,7 +9124,7 @@ NhlErrorTypes _Ncldim_cumsum
 					}
 					else {
 						_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
-							 (char*)(tmp_md->multidval.val) + offset,out_val + goffset,NULL,NULL,1,1);
+							 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + goffset,NULL,NULL,1,1);
 						goffset = offset;
 					}
 				}
@@ -9133,21 +9133,21 @@ NhlErrorTypes _Ncldim_cumsum
 			case 2: /* missing values treated as 0 */
 				for (j = 0; j < m && tmp[j]; j++) {
 					int offset = dim_offset + j * sz;
-					memset(out_val + offset,0,sz);
+					memset((char*)out_val + offset,0,sz);
 				}
 				if (j == 0) {
-					memcpy(out_val + dim_offset,tmp_md->multidval.val + dim_offset,sz);
+					memcpy((char*)out_val + dim_offset,(char*)tmp_md->multidval.val + dim_offset,sz);
 					j++;
 				}
 				for(; j < m; j++) {
 					int last_offset = dim_offset + (j-1) * sz;
 					int offset = dim_offset + j * sz;
 					if (tmp[j]) {
-						memcpy((char*)out_val + offset,out_val + last_offset,sz);
+						memcpy((char*)out_val + offset,(char*)out_val + last_offset,sz);
 					}
 					else {
 						_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
-							 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+							 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 					}
 				}
 				break;
@@ -9156,12 +9156,12 @@ NhlErrorTypes _Ncldim_cumsum
 	} else {
 		for(i = 0; i < n ; i++) {
 			int dim_offset = i * m * sz;
-			memcpy(out_val + dim_offset,tmp_md->multidval.val + dim_offset,sz);
+			memcpy((char*)out_val + dim_offset,(char*)tmp_md->multidval.val + dim_offset,sz);
 			for(j = 1; j < m; j++) {
 				int last_offset = dim_offset + (j-1) * sz;
 				int offset = dim_offset + j * sz;
 				_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
-					 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+					 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 			}
 		}
 	}
@@ -9245,7 +9245,7 @@ NhlErrorTypes _Nclcumsum
 				}
 				else {
 					_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
-						 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+						 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 				}
 			}
 			missing = &tmp_md->multidval.missing_value.value;
@@ -9254,13 +9254,13 @@ NhlErrorTypes _Nclcumsum
 			i = 0;
 			while (tmp[i]) {
 				int offset = i * tmp_md->multidval.type->type_class.size;
-				memcpy(out_val + offset,&(tmp_md->multidval.missing_value.value),
+				memcpy((char*)out_val + offset,&(tmp_md->multidval.missing_value.value),
 				       tmp_md->multidval.type->type_class.size);
 				i++;
 			}
 			if (i < tmp_md->multidval.totalelements) {
 				goffset = i * tmp_md->multidval.type->type_class.size;
-				memcpy(out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,tmp_md->multidval.type->type_class.size);
+				memcpy((char*)out_val + goffset,(char*)(tmp_md->multidval.val) + goffset,tmp_md->multidval.type->type_class.size);
 			}
 			for(i++; i < tmp_md->multidval.totalelements; i++) {
 				int offset = i * tmp_md->multidval.type->type_class.size;
@@ -9270,7 +9270,7 @@ NhlErrorTypes _Nclcumsum
 				}
 				else {
 					_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
-						 (char*)(tmp_md->multidval.val) + offset,out_val + goffset,NULL,NULL,1,1);
+						 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + goffset,NULL,NULL,1,1);
 					goffset = offset;
 				}
 			}
@@ -9280,7 +9280,7 @@ NhlErrorTypes _Nclcumsum
 			i = 0;
 			while (tmp[i]) {
 				int offset = i * tmp_md->multidval.type->type_class.size;
-				memset(out_val + offset,0,tmp_md->multidval.type->type_class.size);
+				memset((char*)out_val + offset,0,tmp_md->multidval.type->type_class.size);
 				i++;
 			}
 			if (i == 0) {
@@ -9291,12 +9291,12 @@ NhlErrorTypes _Nclcumsum
 				int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
 				int offset = i * tmp_md->multidval.type->type_class.size;
 				if (tmp[i]) {
-					memcpy((char*)out_val + offset,out_val + last_offset,
+					memcpy((char*)out_val + offset,(char*)out_val + last_offset,
 					       tmp_md->multidval.type->type_class.size);
 				}
 				else {
 					_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
-						 (char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+						 (char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 				}
 			}
 			break;
@@ -9306,7 +9306,7 @@ NhlErrorTypes _Nclcumsum
 		for(i = 1; i < tmp_md->multidval.totalelements; i++) {
 			int last_offset = (i-1) *  tmp_md->multidval.type->type_class.size;
 			int offset = i * tmp_md->multidval.type->type_class.size;
-			_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,(char*)(tmp_md->multidval.val) + offset,out_val + last_offset,NULL,NULL,1,1);
+			_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,(char*)(tmp_md->multidval.val) + offset,(char*)out_val + last_offset,NULL,NULL,1,1);
 		}
 	}
 	if(tmp != NULL) 
