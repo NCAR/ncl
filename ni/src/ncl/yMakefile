@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.128 2007-03-14 17:13:25 haley Exp $
+#      $Id: yMakefile,v 1.129 2007-03-19 01:37:36 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2007-03-14 17:13:25 $
+#	Date:		$Date: 2007-03-19 01:37:36 $
 #
 #	Description:	
 #
@@ -399,6 +399,12 @@ NclTypeRule(byte,$(NUM_OP_TMPL))
 #if defined(CRAY)
 BuiltInFuncs.o:  BuiltInFuncs.c
 	$(CC) -g $(CFLAGS) -c BuiltInFuncs.c
+#endif
+
+#if defined(linux)
+HLUFunctions.o: HLUFunctions.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c HLUFunctions.c
+
 #endif
 
 #
