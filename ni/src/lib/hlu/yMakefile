@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.74 2006-06-19 21:36:44 kennison Exp $
+#      $Id: yMakefile,v 1.75 2007-03-19 01:38:02 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -152,6 +152,12 @@ cmpf.o: cmpf.c
 #if defined(linux) && defined(x86_64)
 Quarks.o: Quarks.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Quarks.c
+
+#endif
+
+#if defined(linux)
+Format.o: Format.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Format.c
 
 #endif
 
