@@ -524,6 +524,7 @@ struct _Grib2ParamList {
     int grid_index;
     G2_GDS  *gds;
     int n_entries;
+    int forecast_time_iszero;
     int time_range_indicator;
     int time_period;            /* 0 unless ave,diff, or acc; then: (p2 - p1) */
     int time_unit_indicator;

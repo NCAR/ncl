@@ -1305,6 +1305,7 @@ void g2GDSMEGrid
 {
     G2_GDS *gds;
     double la1,la2,lo1,lo2;
+    double tlo1,tlo2;
     double di;
     double dj;
     int idir;
@@ -1381,24 +1382,20 @@ void g2GDSMEGrid
 	    earth_radius = Earth_Radius[6];
     else 
 	    earth_radius = Earth_Radius[me->ep.shapeOfEarth];	
-    
+
+    tlo1 = lo1;
+    tlo2 = lo2;
     if (idir == 1) {
-	    while (lo2 < lo1) {
-		    lo2 += 360.0;
-	    }
-	    if (lo1 < 180 && lo2 > 180) {
-		    zero360 = 1;
+	    if (tlo2 < tlo1) {
+		    tlo1 -= 360.0;
 	    }
     }
     else {
-	    while (lo2 > lo1) {
-		    lo2 -= 360.0;
-	    }
-	    if (lo1 > 180 && lo2 < 180) {
-		    zero360 = 1;
+	    if (tlo2 > tlo1) {
+		    tlo2 -= 360.0;
 	    }
     }
-    dlon = (lo2 - lo1) / (double) (nlon - 1);
+    dlon = (tlo2 - tlo1) / (double) (nlon - 1);
     dlat = jdir * dj / (earth_radius * cos(latd * RadPerDeg));
     ye = 1 - log(tan(((la1 + 90.0)/ 2.0) * RadPerDeg)) / dlat;
     			
@@ -1411,23 +1408,10 @@ void g2GDSMEGrid
     *lat = (float *) NclMalloc((unsigned)sizeof(float) * nlat);
     *lon = (float *) NclMalloc((unsigned)sizeof(float) * nlon);
 
-    if (zero360) {
-	    for (i = 0; i < *(*dimsizes_lon) ; i++) {
-		    double tlon = (float)(lo1 + idir * i * dlon);
-		    tlon = tlon > 360 ? tlon - 360 : tlon;
-		    tlon = tlon < -360 ? tlon + 360 : tlon;
-		    (*lon)[i] = tlon;
-	    }
+    for (i = 0; i < *(*dimsizes_lon) ; i++) {
+	    double tlon = (float)(lo1 + idir * i * dlon);
+	    (*lon)[i] = tlon;
     }
-    else {
-	    for (i = 0; i < *(*dimsizes_lon) ; i++) {
-		    double tlon = (float)(lo1 + idir * i * dlon);
-		    tlon = tlon > 180 ? tlon - 360 : tlon;
-		    tlon = tlon < -180 ? tlon + 360 : tlon;
-		    (*lon)[i] = tlon;
-	    }
-    }
-	    
 
     for (i = 0; i < *(*dimsizes_lat) ; i++) {
 	    double tlat = 2 * atan(exp(dlat * (i + 1 - ye))) * DegPerRad - 90.0;
@@ -3025,6 +3009,102 @@ void *s2;
 	return result;
 }
 
+static void AppendStatProcInfoToVarName
+#if 	NhlNeedProto
+(Grib2ParamList *param,
+ int stat_type_only)
+#else
+(param, stat_type_only)
+Grib2ParamList *param;
+int stat_type_only
+#endif
+{
+	char buffer[128];
+
+	strcpy(buffer,NrmQuarkToString(param->var_info.var_name_quark));
+
+	switch (param->traits.stat_proc_type) {
+	case 0:
+		strcat(buffer,"_avg");
+		break;
+	case 1:
+		strcat(buffer,"_acc");
+		break;
+	case 2:
+		strcat(buffer,"_max");
+		break;
+	case 3:
+		strcat(buffer,"_min");
+		break;
+	case 4:
+		strcat(buffer,"_dife");
+		break;
+	case 5:
+		strcat(buffer,"_rms");
+		break;
+	case 6:
+		strcat(buffer,"_std");
+		break;
+	case 7:
+		strcat(buffer,"_cov");
+		break;
+	case 8:
+		strcat(buffer,"_difb");
+		break;
+	case 9:
+		strcat(buffer,"_rat");
+		break;
+	}
+	if (stat_type_only) {
+		param->var_info.var_name_quark = NrmStringToQuark(buffer);
+		return;
+	}
+
+	switch (param->time_unit_indicator) {
+	case 0:
+		sprintf(&(buffer[strlen(buffer)]),"%dmin",param->time_period);
+		break;
+	case 1:
+		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period);
+		break;
+	case 2:
+		sprintf(&(buffer[strlen(buffer)]),"%dd",param->time_period);
+		break;
+	case 3:
+		sprintf(&(buffer[strlen(buffer)]),"%dm",param->time_period);
+		break;
+	case 4:
+		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period);
+		break;
+	case 5:
+		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period * 10);
+		break;
+	case 6:
+		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period * 30);
+		break;
+	case 7:
+		sprintf(&(buffer[strlen(buffer)]),"%dy",param->time_period * 100);
+		break;
+	case 10:
+		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period * 3);
+		break;
+	case 11:
+		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period * 6);
+		break;
+	case 12:
+		sprintf(&(buffer[strlen(buffer)]),"%dh",param->time_period * 12);
+		break;
+	case 13:
+		sprintf(&(buffer[strlen(buffer)]),"%dsec",param->time_period);
+		break;
+	default:
+		sprintf(&(buffer[strlen(buffer)]),"%d",param->time_period);
+		break;
+	}
+	param->var_info.var_name_quark = NrmStringToQuark(buffer);
+	return;
+}
+
 static void _g2SetAttributeLists
 #if 	NhlNeedProto
 (Grib2FileRecord *therec)
@@ -3095,16 +3175,19 @@ Grib2FileRecord *therec;
 		}
 
 		if (step->traits.stat_proc_type != 255) {
-			if (step->forecast_time_isatt) {
-				att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-				att_list_ptr->next = step->theatts;
-				att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-				att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
+			if (step->forecast_time_isatt || ! step->forecast_time_iszero) {
 				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
 						       "4.4.table",step->time_unit_indicator,ct) < NhlWARNING) {
 					return;
 				}
-				if (ct->descrip) {
+				if (step->forecast_time_iszero) {
+					sprintf(buf,"initial time to forecast time");
+				}
+				else if (ct->descrip) {
 					if (step->time_unit_indicator < 8) {
 						sprintf(buf,"%d %ss (ending at forecast time)",step->time_period,ct->descrip);
 					}
@@ -3115,16 +3198,24 @@ Grib2FileRecord *therec;
 				else {
 					sprintf(buf,"%d unknown units (ending at forecast time)",step->time_period,ct->descrip);
 				}
+				if (! step->forecast_time_iszero)
+					AppendStatProcInfoToVarName(step,False);
+				else 
+					AppendStatProcInfoToVarName(step,True);
 
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark(buf);
-				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
-					_NclCreateVal(NULL, NULL,
-						      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
-						      PERMANENT, NULL, nclTypestringClass);
-				step->theatts = att_list_ptr;
-				step->n_atts++;
 			}				
+			else {
+				sprintf(buf,"initial time to forecast time");
+				AppendStatProcInfoToVarName(step,True);
+			}
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = NrmStringToQuark(buf);
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
 
 			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
@@ -4071,6 +4162,7 @@ static Grib2ParamList *_g2NewListNode
 	tmp->has_bmap = 0;
 	tmp->n_entries = 1;
 	tmp->minimum_it = grib_rec->initial_time;
+	tmp->forecast_time_iszero = (grib_rec->forecast_time == 0);
 	tmp->time_period = grib_rec->time_period;
 	tmp->time_unit_indicator = grib_rec->forecast_time_units;
 	tmp->variable_time_unit = False;
@@ -4153,6 +4245,12 @@ Grib2RecordInqRec* grib_rec;
     if (node->time_unit_indicator != grib_rec->forecast_time_units) {
 	    _g2SetCommonTimeUnit(node,grib_rec);
     }
+#if 0
+    if (grib_rec->time_period != node->time_period) {
+	    printf("grib_rec %d has time period %d; node has time period %d\n",
+		   grib_rec->rec_num, grib_rec->time_period,node->time_period);
+    }
+#endif
 
     grib_rec_list->rec_inq = grib_rec;
     grib_rec_list->next = node->thelist;
@@ -4234,6 +4332,18 @@ static int _g2FirstCheck
         return 1;
     }
 
+    if (! (step->forecast_time_iszero && grib_rec->forecast_time == 0)) {
+	    result = step->time_period - grib_rec->time_period;
+    }
+    if (result < 0)
+	    return 0;
+    else if (result > 0) {
+        therec->var_list = _g2NewListNode(grib_rec);
+        therec->var_list->next = step;
+        therec->n_vars++;
+	return 1;
+    }
+
     gridcomp = g2GridCompare(step,grib_rec);
     if (gridcomp < 0)
         return 0;
@@ -4266,6 +4376,14 @@ static int _g2CompareRecord
 
     result = memcmp(&step->traits,&grib_rec->traits,sizeof(Grib2VarTraits));
 
+    if (result < 0)
+	    return -1;
+    else if (result > 0)
+	    return 1;
+
+    if (! (step->forecast_time_iszero && grib_rec->forecast_time == 0)) {
+	    result = step->time_period - grib_rec->time_period;
+    }
     if (result < 0)
 	    return -1;
     else if (result > 0)
@@ -4509,9 +4627,10 @@ static int g2GetLVList
     strt = lstep;
     while(strt->next != NULL) {
         if (!g2LVNotEqual(strt, strt->next)) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: NCL cannot distinguish between records %d and %d found in variable %s. Record %d will be ignored.",
-			  strt->rec_inq->rec_num, strt->next->rec_inq->rec_num,
-			  NrmQuarkToString(thevar->var_info.var_name_quark),strt->next->rec_inq->rec_num);
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB2: %s contains possibly duplicated records %d and %d. Record %d will be ignored.",
+			  NrmQuarkToString(thevar->var_info.var_name_quark),strt->rec_inq->rec_num, 
+			  strt->next->rec_inq->rec_num,
+			  strt->next->rec_inq->rec_num);
 		tmp = strt->next;
 		strt->next = strt->next->next;
 		thevar->n_entries--;
@@ -6868,6 +6987,8 @@ static void Grib2PrintRecords
                     /* EPS info */
                     fprintf(stdout, "\t\t level: %d\n",
                         g2rec[i]->sec4[j]->prod_params->level);
+                    fprintf(stdout, "\t\t level: %d\n",
+                        g2rec[i]->sec4[j]->prod_params->level);
                     fprintf(stdout, "\t\t typeof ensemblefx: %d\n",
                         g2rec[i]->sec4[j]->prod_params->typeof_ensemble_fx);
                     fprintf(stdout, "\t\t ensemble fx type: %s\n",
@@ -8712,6 +8833,47 @@ static void *Grib2OpenFile
 #endif
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
                             = g2fld->ipdtmpl[28];
+#if 0
+                    fprintf(stdout, "Record: %d\n",nrecs + 1);
+                    fprintf(stdout, "\t\t level: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->level);
+                    fprintf(stdout, "\t\t typeof ensemblefx: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx);
+                    fprintf(stdout, "\t\t perturb num: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->perturb_num);
+                    fprintf(stdout, "\t\t num fx ensemble: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble);
+                    fprintf(stdout, "\t\t year end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval);
+                    fprintf(stdout, "\t\t mon end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval);
+                    fprintf(stdout, "\t\t day end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval);
+                    fprintf(stdout, "\t\t hour end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval);
+                    fprintf(stdout, "\t\t min end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval);
+                    fprintf(stdout, "\t\t sec end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval);
+                    fprintf(stdout, "\t\t num timerange spec time interval calc: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc);
+                    fprintf(stdout, "\t\t total num missing data vals: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals);
+
+                    fprintf(stdout, "\t\t typeof stat proc: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc);
+                    fprintf(stdout, "\t\t typeof incr betw fields: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields);
+                    fprintf(stdout, "\t\t ind time range unit stat proc done: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done);
+                    fprintf(stdout, "\t\t len time range unit stat proc done: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done);
+                    fprintf(stdout, "\t\t ind time unit incr succ fields: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields);
+                    fprintf(stdout, "\t\t time incr betw fields: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields);
+#endif
+
                     break;
 
                 case 9:
@@ -8864,6 +9026,46 @@ static void *Grib2OpenFile
 #endif
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
                             = g2fld->ipdtmpl[31];
+#if 0
+                    fprintf(stdout, "Record: %d\n",nrecs + 1);
+                    fprintf(stdout, "\t\t level: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->level);
+                    fprintf(stdout, "\t\t typeof ensemblefx: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx);
+                    fprintf(stdout, "\t\t perturb num: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->perturb_num);
+                    fprintf(stdout, "\t\t num fx ensemble: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble);
+                    fprintf(stdout, "\t\t year end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval);
+                    fprintf(stdout, "\t\t mon end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval);
+                    fprintf(stdout, "\t\t day end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval);
+                    fprintf(stdout, "\t\t hour end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval);
+                    fprintf(stdout, "\t\t min end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval);
+                    fprintf(stdout, "\t\t sec end overall time interval: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval);
+                    fprintf(stdout, "\t\t num timerange spec time interval calc: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc);
+                    fprintf(stdout, "\t\t total num missing data vals: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals);
+
+                    fprintf(stdout, "\t\t typeof stat proc: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc);
+                    fprintf(stdout, "\t\t typeof incr betw fields: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields);
+                    fprintf(stdout, "\t\t ind time range unit stat proc done: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done);
+                    fprintf(stdout, "\t\t len time range unit stat proc done: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done);
+                    fprintf(stdout, "\t\t ind time unit incr succ fields: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields);
+                    fprintf(stdout, "\t\t time incr betw fields: %d\n",
+                        g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields);
+#endif
                     break;
 
                 case 12:
@@ -10120,7 +10322,7 @@ Grib2RecordInqRec *current_rec;
 	return(NULL);
 }
 
-static void *GetSphericalHarmonicData
+static void GetSphericalHarmonicData
 #if	NhlNeedProto
 (
 	gribfield *gfld, 
