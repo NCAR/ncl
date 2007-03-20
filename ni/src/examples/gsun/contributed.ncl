@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.137 2007-03-17 17:24:49 shea Exp $
+;      $Id: contributed.ncl,v 1.138 2007-03-20 19:54:25 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2007,13 +2007,14 @@ end
 ; returns cumulative sum of each rightmost dimension
 ; Copies over all the attribures and coordinate variables
 ; x    - multidimensional variable 
+; opt  - option argument, must be 0, 1, or 2
 ;
 undef ("dim_cumsum_Wrap")
-function dim_cumsum_Wrap (x:numeric)     
+function dim_cumsum_Wrap (x:numeric,opt:integer)
 local xCumSum
 begin
 
- xCumSum = dim_cumsum(x)     
+ xCumSum = dim_cumsum(x,opt)
  copy_VarAtts(x, xCumSum)
  copy_VarCoords(x, xCumSum)
  
