@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.6 2007-03-11 22:38:32 haley Exp $
+#   $Id: check_ncl_files,v 1.7 2007-03-20 03:14:13 haley Exp $
 #
 # Check for existence of NCL files in a particular version of
 # a distribution.
@@ -201,7 +201,6 @@ include/ncarg/ncl/nio.h
 lib/libnclapi.a
 lib/ncarg/colormaps/3gauss.ncmap
 lib/ncarg/colormaps/3saw.ncmap
-lib/ncarg/colormaps/amwg.rgb
 lib/ncarg/colormaps/BkBlAqGrYeOrReViWh200.gp
 lib/ncarg/colormaps/BkBlAqGrYeOrReViWh200.rgb
 lib/ncarg/colormaps/BlAqGrYeOrRe.gp
@@ -211,16 +210,33 @@ lib/ncarg/colormaps/BlAqGrYeOrReVi200.rgb
 lib/ncarg/colormaps/BlGrYeOrReVi200.gp
 lib/ncarg/colormaps/BlGrYeOrReVi200.rgb
 lib/ncarg/colormaps/BlRe.rgb
-lib/ncarg/colormaps/BlueRed.rgb
-lib/ncarg/colormaps/BlueRedGray.rgb
 lib/ncarg/colormaps/BlWhRe.gp
 lib/ncarg/colormaps/BlWhRe.rgb
+lib/ncarg/colormaps/BlueDarkOrange18.rgb
+lib/ncarg/colormaps/BlueDarkRed18.rgb
+lib/ncarg/colormaps/BlueGreen14.rgb
+lib/ncarg/colormaps/BlueRed.rgb
+lib/ncarg/colormaps/BlueRedGray.rgb
+lib/ncarg/colormaps/BrownBlue12.rgb
+lib/ncarg/colormaps/Cat12.rgb
+lib/ncarg/colormaps/GreenMagenta16.rgb
+lib/ncarg/colormaps/GreenYellow.rgb
+lib/ncarg/colormaps/StepSeq25.rgb
+lib/ncarg/colormaps/ViBlGrWhYeOrRe.gp
+lib/ncarg/colormaps/ViBlGrWhYeOrRe.rgb
+lib/ncarg/colormaps/WhBlGrYeRe.gp
+lib/ncarg/colormaps/WhBlGrYeRe.rgb
+lib/ncarg/colormaps/WhBlReWh.gp
+lib/ncarg/colormaps/WhViBlGrYeOrRe.gp
+lib/ncarg/colormaps/WhViBlGrYeOrRe.rgb
+lib/ncarg/colormaps/WhViBlGrYeOrReWh.gp
+lib/ncarg/colormaps/WhViBlGrYeOrReWh.rgb
+lib/ncarg/colormaps/amwg.rgb
 lib/ncarg/colormaps/cosam.rgb
 lib/ncarg/colormaps/cosam12.rgb
 lib/ncarg/colormaps/default.rgb
 lib/ncarg/colormaps/detail.ncmap
 lib/ncarg/colormaps/extrema.ncmap
-lib/ncarg/colormaps/GreenYellow.rgb
 lib/ncarg/colormaps/gui_default.rgb
 lib/ncarg/colormaps/helix.ncmap
 lib/ncarg/colormaps/helix1.ncmap
@@ -241,30 +257,21 @@ lib/ncarg/colormaps/rainbow+white.gp
 lib/ncarg/colormaps/rainbow.gp
 lib/ncarg/colormaps/so4_21.gp
 lib/ncarg/colormaps/so4_23.gp
+lib/ncarg/colormaps/tbrAvg1.rgb
+lib/ncarg/colormaps/tbrStd1.gp
+lib/ncarg/colormaps/tbrStd1.rgb
+lib/ncarg/colormaps/tbrVar1.gp
+lib/ncarg/colormaps/tbrVar1.rgb
 lib/ncarg/colormaps/tbr_240-300.gp
 lib/ncarg/colormaps/tbr_240-300.rgb
 lib/ncarg/colormaps/tbr_stdev_0-30.gp
 lib/ncarg/colormaps/tbr_stdev_0-30.rgb
 lib/ncarg/colormaps/tbr_var_0-500.gp
 lib/ncarg/colormaps/tbr_var_0-500.rgb
-lib/ncarg/colormaps/tbrAvg1.rgb
-lib/ncarg/colormaps/tbrStd1.gp
-lib/ncarg/colormaps/tbrStd1.rgb
-lib/ncarg/colormaps/tbrVar1.gp
-lib/ncarg/colormaps/tbrVar1.rgb
 lib/ncarg/colormaps/testcmap.rgb
 lib/ncarg/colormaps/thelix.rgb
-lib/ncarg/colormaps/ViBlGrWhYeOrRe.gp
-lib/ncarg/colormaps/ViBlGrWhYeOrRe.rgb
 lib/ncarg/colormaps/wgne15.rgb
 lib/ncarg/colormaps/wh-bl-gr-ye-re.gp
-lib/ncarg/colormaps/WhBlGrYeRe.gp
-lib/ncarg/colormaps/WhBlGrYeRe.rgb
-lib/ncarg/colormaps/WhBlReWh.gp
-lib/ncarg/colormaps/WhViBlGrYeOrRe.gp
-lib/ncarg/colormaps/WhViBlGrYeOrRe.rgb
-lib/ncarg/colormaps/WhViBlGrYeOrReWh.gp
-lib/ncarg/colormaps/WhViBlGrYeOrReWh.rgb
 lib/ncarg/colormaps/wxpEnIR.rgb
 lib/ncarg/data/asc/cn03f.asc
 lib/ncarg/data/asc/cn04n.asc
