@@ -1,5 +1,5 @@
 C
-C $Id: dmapgci.f,v 1.1 2005-03-24 00:04:29 haley Exp $
+C $Id: dmapgci.f,v 1.2 2007-03-20 22:56:21 fred Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -201,7 +201,7 @@ C
 c
 c calculate the great circle distance between two points
 c
-c usuage: dist = gcdist (rlat1,rlon1,rlat2,rlon2,iu)
+c usage: dist = gcdist (rlat1,rlon1,rlat2,rlon2,iu)
 c
 c nomenclature :
 c .   rlat1,rlon1 - latitude and longtitude of the first point
