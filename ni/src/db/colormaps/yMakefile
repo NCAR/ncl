@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.6 2007-03-10 06:01:33 haley Exp $
+#       $Id: yMakefile,v 1.7 2007-03-20 03:11:52 haley Exp $
 #
 FILES		= \
 		3gauss.ncmap  \
@@ -68,7 +68,14 @@ FILES		= \
 		thelix.rgb \
                 wgne15.rgb \
 		wh-bl-gr-ye-re.gp \
-		wxpEnIR.rgb
+		wxpEnIR.rgb \
+		BlueDarkOrange18.rgb \
+		BlueDarkRed18.rgb \
+		BlueGreen14.rgb \
+		BrownBlue12.rgb \
+		Cat12.rgb \
+		GreenMagenta16.rgb \
+		StepSeq25.rgb
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
 INSTALL_CM = $(INSTALL_DB)
