@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.7 2007-03-20 03:14:13 haley Exp $
+#   $Id: check_ncl_files,v 1.8 2007-03-22 23:03:27 haley Exp $
 #
 # Check for existence of NCL files in a particular version of
 # a distribution.
@@ -352,6 +352,8 @@ lib/ncarg/data/cdf/V500storm.cdf
 lib/ncarg/data/cdf/vinth2p.nc
 lib/ncarg/data/cdf/Vstorm.cdf
 lib/ncarg/data/grb/ced1.lf00.t00z.eta.grb
+lib/ncarg/data/grb/fh.0012_tl.press_gr.awp211.grb2
+lib/ncarg/data/grb/wafsgfs_L_t06z_intdsk60.grib2
 lib/ncarg/database/Earth..1.areas
 lib/ncarg/database/Earth..1.lines
 lib/ncarg/database/Earth..1.names
