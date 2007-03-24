@@ -1,6 +1,6 @@
 #!/bin/csh -f
 # set echo verbose timestamp
-set version = 090806    # YYMMDD
+set version = 032407    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -110,6 +110,7 @@ exit 1
 endif
 #---------------------------------------------------------------------- 
 set OS = `uname`
+
 if ($OS != "SunOS" && $OS != "IRIX64" && $OS != "IRIX" && $OS != "AIX" \
  && $OS != "Linux" && $OS != "OSF1" && $OS != "Darwin" && $OS != "HP-UX" \
  && $OS != "FreeBSD") then
@@ -699,10 +700,10 @@ switch ($OS)
    endif
    breaksw
  case Darwin:                      # MacOSX
-   if ($debug == 1) then
+   if (-e /sw/lib/libg2c.a) then
      gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c
    else
-     gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c
+     gcc -bundle -flat_namespace -undefined suppress $ld_suffix
    endif
    breaksw
  case HP-UX:                       # HP-UX
