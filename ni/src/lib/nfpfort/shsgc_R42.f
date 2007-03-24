@@ -807,7 +807,7 @@ c
 c
       IHEM = 1
       IH = 1
-      ILEV = KX
+      ILEV = 1
 c
 c     now set up indexing arrays to improve efficiency
 c
