@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.129 2007-03-19 01:37:36 haley Exp $
+#      $Id: yMakefile,v 1.130 2007-03-24 05:39:50 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2007-03-19 01:37:36 $
+#	Date:		$Date: 2007-03-24 05:39:50 $
 #
 #	Description:	
 #
@@ -38,6 +38,7 @@ LEX			=	flex
 EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 #endif
 
+
 #ifdef BuildHDFEOS
 HDFEOS_DEFS = -DBuildHDFEOS
 HDFEOS_SRCS = NclHDFEOS.c
@@ -49,7 +50,11 @@ HDFEOS_OBJS = NclHDFEOS.o
 #endif
 
 #ifdef BuildGRIB2
+#if defined(IRIX64) || defined(x86_64)
+GRIB2_DEFS = -DBuildGRIB2 -D__64BIT__
+#else
 GRIB2_DEFS = -DBuildGRIB2
+#endif
 GRIB2_SRCS = NclGRIB2.c
 GRIB2_OBJS = NclGRIB2.o
 #else
