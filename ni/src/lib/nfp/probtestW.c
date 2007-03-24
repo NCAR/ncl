@@ -1021,7 +1021,7 @@ NhlErrorTypes rtest_W( void )
     if(!scalar_n) tmp_n = n[i];
 
 /*
- * Added in version 4.2.0.a035:
+ * Added in version 4.3.0:
  *
  * N must be at least 3 (but ideally 8) for this to work, otherwise
  * set subset of output to missing.

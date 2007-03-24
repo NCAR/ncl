@@ -1446,7 +1446,7 @@ NhlErrorTypes pres2hybrid_W( void )
  * output values to missing. Otherwise, set the missing value to
  * a default of 1.e20.
  *
- * This was added in version 4.2.0.a035 of ncl to cover the extrapolation
+ * This was added in version 4.3.0 of ncl to cover the extrapolation
  * algorithms Dennis added.
  */
   if(has_missing_xi) {

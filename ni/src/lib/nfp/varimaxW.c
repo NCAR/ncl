@@ -381,7 +381,7 @@ NhlErrorTypes eofunc_varimax_W( void )
   nfac = dsizes_evec[0];
 
 /*
- * Retrieve opt. As of version 4.2.0.a035, it is now used to indicate
+ * Retrieve opt. As of version 4.3.0, it is now used to indicate
  * if the eigenvectors should be scaled (and maybe rotated).
  */
   opt = (void*)NclGetArgValue(
