@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.13 2007-03-11 23:51:01 haley Exp $
+#   $Id: create_ncl_dist,v 1.14 2007-03-24 22:21:11 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -74,7 +74,7 @@ set os          = `uname -s`
 set proc        = `uname -p`
 set exe_suffix  = ""
 set scpmach     = "windom.ucar.edu"
-set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/a035"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/4.3.0"
 
 if ("$os" == "AIX") then
   set system = "{$os}_5.1"
