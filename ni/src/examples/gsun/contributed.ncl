@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.138 2007-03-20 19:54:25 haley Exp $
+;      $Id: contributed.ncl,v 1.139 2007-03-26 13:29:52 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4050,14 +4050,14 @@ end
 ; data to netcdf, or dealing with netcdf data that has no attributes.
 
 undef("assignFillValue")
-procedure assignFillValue(var_from:numeric,var_to:numeric)
+procedure assignFillValue(var_from:numeric, var_to:numeric)
 local value
 begin
 
-  value = getFillValue(var_from)
-
-  var_to@_FillValue    = value
-  var_to@missing_value = value
+  if (isatt(var_from,"_FillValue")) then
+      var_to@_FillValue    = var_from@_FillValue
+      var_to@missing_value = var_from@_FillValue
+  end if
 
 end
 ;*****************************************************************
