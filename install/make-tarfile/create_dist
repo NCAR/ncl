@@ -1,0 +1,548 @@
+#!/bin/csh -f
+#
+#   $Id: create_dist,v 1.1 2007-03-28 02:30:09 haley Exp $
+#
+#######################################################################
+#                                                                     #
+#              Copyright (C)  2007                                    #
+#        University Corporation for Atmospheric Research              #
+#              All Rights Reserved                                    #
+#                                                                     #
+#######################################################################
+#
+#   File:       create_dist
+#
+#   Author:     Mary Haley
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
+#
+#   Date:       Tue Mar 27 09:27:53 MDT 2007
+#
+#   Description:  Tars up NCL and/or NCAR Graphics for release to users.
+#
+# There are four types of releases possible:
+#
+#      - NCL and NCAR Graphics for the general user (the default)
+#      - NCL for the general user (option "-1")
+#      - NCAR Graphics for the general user (option "-2")
+#      - NCL, NCAR Graphics, and other internal files (option "-i")
+#        These are files that we can't or don't need to release yet to the
+#        general user (HLU library, NCL libraries, LAPACK, FFTPACK, etc)
+#
+#   Options:   -r :  root directory
+#              -d :  tar file directory
+#              -s :  system to tar up 
+#              -i :  tar up *everything*, for internal purposes
+#              -1 :  tar up just NCL (not NCAR Graphics)
+#              -2 :  tar up just NCAR Graphics (not NCL)
+#              -g :  include rangs database
+#              -c :  scp to windom.ucar.edu
+#              -v :  version number
+#              -o :  include libraries for OPeNDAP
+#              -b :  bit (32 or 64, required for AIX and IRIX64)
+#
+#
+# Here's what various options to uname return on various systems:
+#
+# machine       uname -n                uname -m          uname -s
+# ----------------------------------------------------------------
+# tempest       tempest                 IP35              IRIX64  
+# clock         clock.scd.ucar.edu      i386              Darwin
+# reader        reader.scd.ucar.edu     Power Macintosh   Darwin  
+# lightning     ln0126en                x86_64            Linux   
+# bluesky       bs1201en                0023F7EA4C00      AIX     
+# huron         huron                   sun4u             SunOS
+# windom        windom                  sun4u             SunOS
+# longs         longs                   i686              Linux
+# screw         screw                   i686              Linux
+# jewell        jewell                  i686              CYGWIN_NT-5.0
+# gallifrey     gallifrey               ia64              Linux
+#
+# machine        uname -r
+# -------------------------------
+# tempest        6.5
+# reader         8.7.0
+# willow         7.9.0
+# clock          8.7.1
+# lightning      2.6.5-7.147-smp
+# bluesky        1
+# huron          5.9
+# windom         5.10
+# longs          2.4.21-37.ELsmp
+# screw          2.6.8-2-686-smp
+# jewell         1.5.19(0.150/4/2)
+# gallifrey      2.6.5-7.267-sn2
+#
+# Set defaults for the root directory, the tar file directory, the
+# version number, and the system.
+#
+# set echo verbose timestamp
+#
+set rootdir     = $NCARG_ROOT
+set sys_version = `uname -r`
+set sys         = `uname -m`
+set name        = `uname -n`
+set os          = `uname -s`
+set proc        = `uname -p`
+set exe_sfx     = ""
+set scpmach     = "windom.ucar.edu"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles"
+set version     = `$rootdir/bin/ncl -V`
+
+if ("$os" == "AIX") then
+  set system = "{$os}_5.1"
+  set a = `/usr/sbin/lsconf | grep POWER`
+  set b = $a[3] 
+  set pwr = "pwr"`echo $b | cut -c 14- `
+  set system = "{$os}_5.{$sys_version}_{$pwr}"
+else if ("$os" == "Darwin") then
+  set system = "MacOS_{$proc}_{$sys_version}"
+else if ("$os" == "SunOS") then
+  set system     = "{$os}_{$sys_version}"
+else if ("$os" == "CYGWIN_NT-5.0") then
+  set os         = "CYGWIN"
+  set system     = "{$os}_{$sys}"
+  set exe_sfx    = ".exe"
+else
+  set system      = "{$os}_{$sys}"
+endif
+set tardir1     = "/fs/scd/home1/ncargd/dist/tarfiles"
+set tardir2     = "/fis/scd/home/ncargd"
+set extra       = ""
+
+if (-e $tardir1) then
+  set tardir = $tardir1
+else if (-e $tardir2) then 
+  set tardir = $tardir2
+else
+  set tardir = "./"
+endif
+
+#
+# Sort through options.
+#
+
+unset SCP
+
+set NCARGNCL
+
+while ($#argv > 0)
+  switch ($1)
+    case "-b":
+      shift
+      set bit = "$1"
+      shift
+      breaksw
+
+    case "-i":
+      set INTERNAL
+      unset NCARGNCL
+      shift
+      breaksw
+
+    case "-1":
+      set NCLONLY
+      unset NCARGNCL
+      shift
+      breaksw
+
+    case "-2":
+      set NCARGONLY
+      unset NCARGNCL
+      shift
+      breaksw
+
+    case "-v":
+      shift
+      set version = "$1"
+      shift
+      breaksw
+
+    case "-s":
+      shift
+      set system = "$1"
+      shift
+      breaksw
+
+    case "-d":
+      shift
+      set tardir = "$1"
+      shift
+      breaksw
+
+    case "-c":
+      set SCP
+      shift
+      breaksw
+
+    case "-e":
+      shift
+      set extra = "$1"
+      shift
+      breaksw
+
+    case "-o":
+      shift
+      set OPENDAP
+      breaksw
+
+    case "-g":
+      set KEEPRANGS
+      shift
+      breaksw
+
+    case "-r":
+      shift
+      set rootdir = "$1"
+      shift
+      breaksw
+
+    case "-h":
+    case "-help":
+      goto usage
+      breaksw
+
+    default:
+      echo "option not recognized"
+      exit 1
+    endsw
+end
+
+#
+# If -1 and -2 were specified, which is the default, then unset
+# the individual variables associated with these options.
+#
+if ($?NCLONLY && $?NCARGONLY) then
+  set NCARGNCL
+  unset NCARGONLY
+  unset NCLONLY
+  unset INTERNAL
+endif
+
+if ($?INTERNAL) then
+  echo ""
+  echo "Warning: you selected the 'internal' option. Hence this"
+  echo "         should only be used for internal purposes."
+  echo ""
+  unset NCARGNCL
+  unset NCARGONLY
+  unset NCLONLY
+endif
+
+if ($?NCLONLY) then
+  set tar_prefix = "ncl"
+else if ($?NCARGONLY) then
+  set tar_prefix = "ncarg"
+else if ($?NCARGNCL) then
+  set tar_prefix = "ncl_ncarg"
+else    # INTERNAL, for internal purposes only
+  set tar_prefix = "ncl_ncarg_internal"
+endif
+
+if ($?OPENDAP) then
+  set tar_filename = "$tar_prefix-$version.${system}_opendap.tar"
+else
+  set tar_filename = "$tar_prefix-$version.$system.tar"
+endif
+
+#
+# Error checking.
+#
+if (! -e $tardir) then
+  echo "Directory $tardir does not exist. Please choose another directory."
+endif
+
+if (($os == "IRIX64" || $os == "AIX") && ! $?bit) then
+  echo "Need the -b 32|64 option for $os"
+  exit
+endif
+
+if ($extra != "") then
+  set system = "{$system}_{$extra}"
+endif
+
+#
+# For most systems, use the OS name and the version. Some, like "AIX,
+# need more info.
+#
+if ($os == "IRIX64") then
+  if ($bit == "32") then
+    set system = "{$system}_n32"
+  else if ($bit == "64") then
+    set system = "{$system}_64"
+  else
+    echo "Invalid bit information. Should be '32' or '64'."
+    exit
+  endif
+else  if ($os == "AIX") then
+  if ($bit == "32") then
+    set system = "{$system}_32"
+  else if ($bit == "64") then
+    set system = "{$system}_64"
+  else
+    echo "Invalid bit information. Should be '32' or '64'."
+    exit
+  endif
+endif
+
+
+# Temporarily remove link to high-resolution coastline (rangs) files.
+# These files should be downloaded by the user separately.
+
+if (-e $rootdir/lib/ncarg/database/rangs && ! $?KEEPRANGS) then
+  echo "Temporarily removing rangs link..."
+  sleep 1
+  /bin/mv $rootdir/lib/ncarg/database/rangs $rootdir/lib/ncarg/rangs.tmp
+  set removedrangs
+endif
+#if ($?KEEPRANGS) then
+#  echo "Copying files to rangs dir so we can tar it up..."
+#  cp -r /fs/scd/home1/ncargd/dev/COMMON/lib/ncarg/database/rangs $rootdir/lib/ncarg/database/.
+#endif
+
+
+#
+# Set the files we want to tar up.
+#
+# First set files common to all four possible distributions.
+#
+set common_bin_files = "ctrans$exe_sfx ictrans$exe_sfx idt$exe_sfx med$exe_sfx ncargpath$exe_sfx ncarlogo2ps$exe_sfx psplit$exe_sfx"
+
+set common_inc_files = "ncarg/gks.h ncarg/c.h ncarg/ncargC.h"
+
+set common_inc_dirs  = ""
+
+set common_lib_files = ""
+
+set common_lib_dirs  = "ncarg/data ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngwww ncarg/xapp"
+
+#
+# Set files specific to NCL.
+#
+if ($?NCLONLY || $?NCARGNCL || $?INTERNAL) then
+  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90 ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc"
+
+  set ncl_inc_files = ""
+
+  set ncl_inc_dirs  = "ncarg/hlu ncarg/ncl"
+
+  set ncl_lib_files = "libnclapi.a ncarg/sysresfile"
+
+  set ncl_lib_dirs  = "ncarg/colormaps ncarg/grib2_codetables ncarg/nclex ncarg/nclscripts ncarg/resfiles ncarg/udunits"
+endif
+
+#
+# Set files specific to NCARG.
+#
+if ($?NCARGONLY || $?NCARGNCL || $?INTERNAL) then
+  set ncarg_bin_files = "ConvertMapData$exe_sfx WriteLineFile$exe_sfx WriteNameFile$exe_sfx WritePlotcharData$exe_sfx cgm2ncgm$exe_sfx ctlib ezmapdemo$exe_sfx fcaps findg$exe_sfx fontc$exe_sfx gcaps graphc$exe_sfx ncargcc ncargex ncargf77 ncargf90 ncargfile ncargrun ncargversion ncargworld$exe_sfx ncarlogo2ps$exe_sfx ncarvversion ncgm2cgm$exe_sfx ncgmstat$exe_sfx nnalg$exe_sfx pre2ncgm pre2ncgm.prog$exe_sfx psblack$exe_sfx psplit$exe_sfx pswhite$exe_sfx pwritxnt$exe_sfx ras2ccir601$exe_sfx rascat$exe_sfx rasgetpal$exe_sfx rasls$exe_sfx rassplit$exe_sfx rasstat$exe_sfx rasview$exe_sfx tdpackdemo$exe_sfx tgks0a$exe_sfx tlocal$exe_sfx"
+
+  set ncarg_inc_files = "ncarg/cgm_tools.h ncarg/cgmdef.h ncarg/ctrans.h ncarg/gksP.h ncarg/ncarg_ras.h ncarg/ngmath.h"
+
+  set ncarg_inc_dirs  = ""
+
+  set ncarg_lib_files = "libcgm.a libncarg.a libncarg_c.a libncarg_gks.a libncarg_ras.a libngmath.a"
+
+  set ncarg_lib_dirs  = "ncarg/examples ncarg/robj ncarg/tests ncarg/tutorial"
+endif
+
+#
+# Set files that only should be included for internal installations, 
+# for example, an NCAR supercomputer.
+#
+if ($?INTERNAL) then
+  set intrnl_bin_files = "MakeNcl"
+
+  set intrnl_inc_files = ""
+
+  set intrnl_inc_dirs  = ""
+
+  set intrnl_lib_files = "libhlu.a libncl.a libnfp.a libnfpfort.a libnio.a libblas.a libfftpack5_dp.a liblapack.a libsphere3.1_dp.a"
+
+  set intrnl_lib_dirs  = "ncarg/hluex"
+
+endif
+
+#
+# If you have an opendap-enabled NCL, it may depend on some shared
+# libraries. This part is not well done, because these library versions
+# change more times than I change underwear.
+#
+if ($?OPENDAP) then
+  set opendap_lib_files = "libnc-dap.so libdap.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4"
+endif
+
+#
+# Now start gathering up all the files and directories, depending
+# on which of the four distributions we're doing.
+#
+set all_files
+set all_dirs
+
+set bin_files = "$common_bin_files"
+set inc_files = "$common_inc_files"
+set inc_dirs  = "$common_inc_dirs"
+set lib_files = "$common_lib_files"
+set lib_dirs  = "$common_lib_dirs"
+
+if ($?NCLONLY || $?NCARGNCL || $?INTERNAL) then
+  set bin_files = "$bin_files $ncl_bin_files"
+  set inc_files = "$inc_files $ncl_inc_files"
+  set inc_dirs  = "$inc_dirs  $ncl_inc_dirs"
+  set lib_files = "$lib_files $ncl_lib_files"
+  set lib_dirs  = "$lib_dirs  $ncl_lib_dirs"
+
+  if ($?OPENDAP) then
+    set lib_files = "$lib_files $opendap_lib_files"
+  endif
+endif
+
+if ($?NCARGONLY || $?NCARGNCL || $?INTERNAL) then
+  set bin_files = "$bin_files $ncarg_bin_files"
+  set inc_files = "$inc_files $ncarg_inc_files"
+  set inc_dirs  = "$inc_dirs  $ncarg_inc_dirs"
+  set lib_files = "$lib_files $ncarg_lib_files"
+  set lib_dirs  = "$lib_dirs  $ncarg_lib_dirs"
+endif
+
+if ($?INTERNAL) then
+  set bin_files = "$bin_files $intrnl_bin_files"
+  set inc_files = "$inc_files $intrnl_inc_files"
+  set inc_dirs  = "$inc_dirs  $intrnl_inc_dirs"
+  set lib_files = "$lib_files $intrnl_lib_files"
+  set lib_dirs  = "$lib_dirs  $intrnl_lib_dirs"
+endif
+
+foreach f($bin_files)
+  set all_files = ("bin/$f" $all_files)
+end
+
+foreach f($lib_files)
+  set all_files = ("lib/$f" $all_files)
+end
+
+foreach f($lib_dirs)
+  set all_dirs  = ("lib/$f" $all_dirs)
+end
+
+foreach f($inc_dirs)
+  set all_dirs = ("include/$f" $all_dirs)
+end
+
+foreach f($inc_files)
+  set all_files = ("include/$f" $all_files)
+end
+
+#
+# Tar up necessary files.
+#
+cd $rootdir
+
+echo "Tarring up the files in $rootdir..."
+echo -n "The tar file is called $tar_filename and it will be put in $tardir. Continue? (y/n) "
+set answer="$<"
+if ("$answer" != "y") then
+  exit
+endif
+
+#
+# Give us a chance to clean up ncargcc, ncargf77 ncargf90, nhlcc, nhlf77,
+# and nhlf90 and remove *~ files that shouldn't be there.
+#
+if ($?NCLONLY) then
+  emacs bin/nhlcc bin/nhlf77 bin/nhlf90 
+else if ($?NCARGONLY) then
+  emacs bin/ncargcc bin/ncargf77 bin/ncargf90
+else
+  emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
+endif
+/bin/rm bin/*~
+
+#
+# Make sure permissions are correct for install.
+#
+echo "Make sure permissions are correct..."
+
+#
+# These "ncarg" directories have to be done separately, because
+# they are not part of "all_dirs"
+#
+chmod gou+r,go-w,u+w include/ncarg
+chmod gou+r,go-w,u+w lib/ncarg
+
+foreach dir($all_dirs)
+  echo "Removing *~ files..."
+  find $dir -name '*~' -print -exec /bin/rm {} \;
+  find $dir -name '*' -exec chmod gou+r,go-w,u+w {} \;
+end
+
+find $all_files -exec chmod gou+r,go-w,u+w {} \;
+
+#
+# Now tar up everything.
+#
+tar -cvhf $tardir/$tar_filename $all_files $all_dirs
+
+#
+# Set permissions back for group writes.
+#
+echo "Putting permissions back..."
+
+chmod g+w include/ncarg
+chmod g+w lib/ncarg
+find $all_files -exec chmod g+w {} \;
+foreach dir($all_dirs)
+  find $dir -name '*' -exec chmod g+w {} \;
+end
+
+
+#
+# Put rangs link back
+#
+
+if ($?removedrangs) then
+  echo "Putting rangs link back..."
+  /bin/mv $rootdir/lib/ncarg/rangs.tmp $rootdir/lib/ncarg/database/rangs 
+endif 
+
+#
+# Compress file.
+#
+echo "Gzipping the tar file..."
+gzip $tardir/$tar_filename
+if (-f $tardir/$tar_filename.gz) then 
+  echo "Created '$tardir/$tar_filename.gz'..."
+else
+  echo "Error, no compressed tar file created."
+  exit
+endif
+
+if ($?SCP) then
+  echo "scp (via windom) or mv file to $scpdir..."
+  if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
+    /bin/mv $tardir/$tar_filename.gz $scpdir
+  else
+    scp $tardir/$tar_filename.gz $scpmach\:$scpdir
+  endif
+endif
+
+exit 0
+
+usage:
+echo "usage: create_dist [options]"
+echo ""
+echo "   Options:   -r :  root directory"
+echo "              -d :  tar file directory"
+echo "              -s :  system to tar up "
+echo "              -n :  Tar up just NCL (not NCAR Graphics)"
+echo "              -c :  scp to windom.ucar.edu"
+echo "              -v :  version number"
+echo "              -o : include libraries for OPeNDAP"
+echo "              -b :  bit (32 or 64, required for AIX and IRIX64)"
+echo "              -e :  extra string to include in tarfile name"
+echo "              -g : include rangs directory"
+echo "              -a : tar up *everything*, for internal purposes'
+echo "              -1 : tar up NCL files only"
+echo "              -2 : tar up NCAR Graphics files only"
+echo ""
+exit
