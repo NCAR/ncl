@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.209 2006-12-18 12:37:21 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.210 2007-03-28 21:40:23 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3789,8 +3789,8 @@ begin
     lon_spacing  = get_res_value(res2,"tmXBTickSpacingF",lon_spacing)
     mlat_spacing = get_res_value(res2,"gsnMinorLatSpacing",0.)
     mlon_spacing = get_res_value(res2,"gsnMinorLonSpacing",0.)
-    center_lon   = get_res_value(res2, "mpCenterLonF",  0)
-    center_lat   = get_res_value(res2, "mpCenterLatF",  0)
+    center_lon   = get_res_value_keep(res2, "mpCenterLonF",  0)
+    center_lat   = get_res_value_keep(res2, "mpCenterLatF",  0)
     rel_c_lat    = get_res_value(res2, "mpRelativeCenterLat", False)
     rel_c_lon    = get_res_value(res2, "mpRelativeCenterLon", False)
     shape_mode   = get_res_value(res2,"mpShapeMode","FixedAspectFitBB")
