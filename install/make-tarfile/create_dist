@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.1 2007-03-28 02:30:09 haley Exp $
+#   $Id: create_dist,v 1.2 2007-03-28 02:32:06 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -533,7 +533,7 @@ echo "usage: create_dist [options]"
 echo ""
 echo "   Options:   -r :  root directory"
 echo "              -d :  tar file directory"
-echo "              -s :  system to tar up "
+echo "              -s :  system to tar up"
 echo "              -n :  Tar up just NCL (not NCAR Graphics)"
 echo "              -c :  scp to windom.ucar.edu"
 echo "              -v :  version number"
@@ -541,7 +541,7 @@ echo "              -o : include libraries for OPeNDAP"
 echo "              -b :  bit (32 or 64, required for AIX and IRIX64)"
 echo "              -e :  extra string to include in tarfile name"
 echo "              -g : include rangs directory"
-echo "              -a : tar up *everything*, for internal purposes'
+echo "              -a : tar up *everything*, for internal purposes"
 echo "              -1 : tar up NCL files only"
 echo "              -2 : tar up NCAR Graphics files only"
 echo ""
