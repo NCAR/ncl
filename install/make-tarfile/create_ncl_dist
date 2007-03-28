@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.14 2007-03-24 22:21:11 haley Exp $
+#   $Id: create_ncl_dist,v 1.15 2007-03-28 02:05:22 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -11,6 +11,7 @@
 #######################################################################
 #
 #   File:       create_ncl_dist
+#               Use create_dist instead! This one is just for NCL.
 #
 #   Author:     Mary Haley
 #           National Center for Atmospheric Research
@@ -18,7 +19,7 @@
 #
 #   Date:       Wed Aug 26 08:29:55 MDT 1998
 #
-#   Description:  Tar up ncl and necessary files so 
+#   Description:  Tar up NCL and necessary files so 
 #                 somebody has the necessary software to run NCL.
 #
 #   Options:   -r :  root directory
@@ -74,7 +75,7 @@ set os          = `uname -s`
 set proc        = `uname -p`
 set exe_suffix  = ""
 set scpmach     = "windom.ucar.edu"
-set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/4.3.0"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles"
 
 if ("$os" == "AIX") then
   set system = "{$os}_5.1"
@@ -161,7 +162,7 @@ while ($#argv > 0)
       set OPENDAP
       breaksw
 
-    case "-rangs":
+    case "-g":
       set KEEPRANGS
       shift
       breaksw
@@ -182,6 +183,8 @@ while ($#argv > 0)
       exit 1
     endsw
 end
+
+tar_prefix = "ncl"
 
 #
 # Error checking.
@@ -245,13 +248,12 @@ endif
 set bin_files = "ctrans$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargpath$exe_suffix ng4ex nhlcc nhlf77 nhlf90 ncarlogo2ps$exe_suffix ncl$exe_suffix wrapit77$exe_suffix psplit$exe_suffix WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc"
 
 set inc_files = "gks.h c.h ncargC.h"
-set inc_dirs  = "hlu ncl"
+set inc_dirs  = "ncarg/hlu ncarg/ncl"
+
+set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt"
 
 if ($?OPENDAP) then
-  set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt libnc-dap.so libdap.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4"
-
-else 
-  set lib_files = "libnclapi.a ncarg/sysresfile ncarg/xapp/Idt"
+  set lib_files = "$lib_files libnc-dap.so libdap.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4"
 endif
 
 set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/grib2_codetables ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/udunits"
@@ -271,10 +273,6 @@ foreach f($lib_dirs)
   set all_dirs  = ("lib/$f" $all_dirs)
 end
 
-#
-# The include files are needed by people who want to create NCL
-# shared objects.
-#
 foreach f($inc_files)
   set all_files = ("include/ncarg/$f" $all_files)
 end
@@ -287,9 +285,9 @@ end
 # Tar up ncl and necessary files.
 #
 if ($?OPENDAP) then
-  set tar_filename = "ncl-$version.${system}_opendap.tar"
+  set tar_filename = "$tar_prefix-$version.${system}_opendap.tar"
 else
-  set tar_filename = "ncl-$version.$system.tar"
+  set tar_filename = "$tar_prefix-$version.$system.tar"
 endif
 cd $rootdir
 
@@ -316,24 +314,16 @@ echo "Make sure permissions are correct..."
 # These "ncarg" directories have to be done separately, because
 # they are not part of "all_dirs"
 #
-chmod gou+r include/ncarg
-chmod gou+r lib/ncarg
-chmod go-w include/ncarg
-chmod go-w lib/ncarg
-chmod u+w include/ncarg
-chmod u+w lib/ncarg
+chmod gou+r,go-w,u+w include/ncarg
+chmod gou+r,go-w,u+w lib/ncarg
 
 foreach dir($all_dirs)
   echo "Removing *~ files..."
   find $dir -name '*~' -print -exec /bin/rm {} \;
-  find $dir -name '*' -exec chmod gou+r {} \;
-  find $dir -name '*' -exec chmod go-w {} \;
-  find $dir -name '*' -exec chmod u+w {} \;
+  find $dir -name '*' -exec chmod gou+r,go-w,u+w {} \;
 end
 
-find $all_files -exec chmod gou+r {} \;
-find $all_files -exec chmod go-w {} \;
-find $all_files -exec chmod u+w {} \;
+find $all_files -exec chmod gou+r,go-w,u+w {} \;
 
 #
 # Now tar up everything.
@@ -391,6 +381,6 @@ echo ""
 echo " Options:"
 echo ""
 echo "  -r root_directory -d tarfile_directory -s system -v version"
-echo "  -b 32|64 -e extra_string -rangs"
+echo "  -b 32|64 -e extra_string -g"
 echo ""
 exit

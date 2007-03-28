@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncarg_dist,v 1.4 2007-03-21 17:35:36 haley Exp $
+#   $Id: create_ncarg_dist,v 1.5 2007-03-28 02:05:22 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -11,6 +11,7 @@
 #######################################################################
 #
 #   File:       create_ncarg_dist
+#               Use create_dist instead! This one is just for NCARG/NCL.
 #
 #   Author:     Mary Haley
 #           National Center for Atmospheric Research
@@ -18,13 +19,14 @@
 #
 #   Date:       Tue Sep 26 10:58:18 MDT 2006
 #
-#   Description:  Tars up NCL NCAR Graphics for release to local users.
+#   Description:  Tars up NCL and NCAR Graphics for release to local users.
 #
 #   Options:   -r :  root directory
 #              -d :  tar file directory
 #              -s :  system to tar up
 #              -c :  scp to windom.ucar.edu
 #              -v :  version number
+#              -o : include libraries for OPeNDAP
 #              -b :  bit (32 or 64, required for AIX and IRIX64)
 #
 #
@@ -37,11 +39,13 @@
 # reader        reader.scd.ucar.edu     Power Macintosh   Darwin  
 # lightning     ln0126en                x86_64            Linux   
 # bluesky       bs1201en                0023F7EA4C00      AIX     
-# meeker        meeker                  sun4u             SunOS
+# huron         huron                   sun4u             SunOS
+# windom        windom                  sun4u             SunOS
 # longs         longs                   i686              Linux
 # screw         screw                   i686              Linux
 # jewell        jewell                  i686              CYGWIN_NT-5.0
-
+# gallifrey     gallifrey               ia64              Linux
+#
 # machine        uname -r
 # -------------------------------
 # tempest        6.5
@@ -50,10 +54,12 @@
 # clock          8.7.1
 # lightning      2.6.5-7.147-smp
 # bluesky        1
-# meeker         5.9
+# huron          5.9
+# windom         5.10
 # longs          2.4.21-37.ELsmp
 # screw          2.6.8-2-686-smp
 # jewell         1.5.19(0.150/4/2)
+# gallifrey      2.6.5-7.267-sn2
 #
 # Set defaults for the root directory, the tar file directory, the
 # version number, and the system.
@@ -68,7 +74,7 @@ set os          = `uname -s`
 set proc        = `uname -p`
 set exe_suffix  = ""
 set scpmach     = "windom.ucar.edu"
-set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles/ncarg"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles"
 
 if ("$os" == "AIX") then
   set system = "{$os}_5.1"
@@ -148,6 +154,11 @@ while ($#argv > 0)
       shift
       set extra = "$1"
       shift
+      breaksw
+
+    case "-o":
+      shift
+      set OPENDAP
       breaksw
 
     case "-rangs":
@@ -231,20 +242,21 @@ endif
 #
 # Set the files we want to tar up.
 #
-set bin_files = "ConvertMapData MakeNcl WRAPIT WriteLineFile WriteNameFile WritePlotcharData cgm2ncgm ctlib ctrans ezmapdemo fcaps findg fontc gcaps graphc ictrans idt med ncargcc ncargex ncargf77 ncargf90 ncargfile ncargpath ncargrun ncargversion ncargworld ncarlogo2ps ncarvversion ncgm2cgm ncgmstat ncl ncl_convert2nc ncl_filedump ncl_grib2nc ng4ex nhlcc nhlf77 nhlf90 nnalg pre2ncgm pre2ncgm.prog psblack psplit pswhite pwritxnt ras2ccir601 rascat rasgetpal rasls rassplit rasstat rasview tdpackdemo tgks0a tlocal wrapit77"
-
-set lib_files = "libcgm.a libhlu.a libncarg.a libncarg_c.a libncarg_gks.a libncarg_ras.a libncl.a libnclapi.a libnfp.a libnfpfort.a libngmath.a libnio.a"
+set bin_files = "ConvertMapData$exe_suffix MakeNcl WRAPIT WriteLineFile$exe_suffix WriteNameFile$exe_suffix WritePlotcharData$exe_suffix cgm2ncgm$exe_suffix ctlib ctrans$exe_suffix ezmapdemo$exe_suffix fcaps findg$exe_suffix fontc$exe_suffix gcaps graphc$exe_suffix ictrans$exe_suffix idt$exe_suffix med$exe_suffix ncargcc ncargex ncargf77 ncargf90 ncargfile ncargpath$exe_suffix ncargrun ncargversion ncargworld$exe_suffix ncarlogo2ps$exe_suffix ncarvversion ncgm2cgm$exe_suffix ncgmstat$exe_suffix ncl$exe_suffix ncl_convert2nc ncl_filedump ncl_grib2nc ng4ex nhlcc nhlf77 nhlf90 nnalg$exe_suffix pre2ncgm pre2ncgm.prog$exe_suffix psblack$exe_suffix psplit$exe_suffix pswhite$exe_suffix pwritxnt$exe_suffix ras2ccir601$exe_suffix rascat$exe_suffix rasgetpal$exe_suffix rasls$exe_suffix rassplit$exe_suffix rasstat$exe_suffix rasview$exe_suffix tdpackdemo$exe_suffix tgks0a$exe_suffix tlocal$exe_suffix wrapit77$exe_suffix"
 
 set inc_dirs  = "ncarg"
-set lib_dirs  = "ncarg"
+
+set lib_files = "libcgm.a libhlu.a libncarg.a libncarg_c.a libncarg_gks.a libncarg_ras.a libncl.a libnclapi.a libnfp.a libnfpfort.a libngmath.a libnio.a ncarg/sysresfile"
+
+if ($?OPENDAP) then
+  set lib_files = "$lib_files libnc-dap.so libdap.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4"
+endif
+
+set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/examples ncarg/fontcaps ncarg/graphcaps ncarg/grib2_codetables ncarg/hluex ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/robj ncarg/tests ncarg/tutorial ncarg/udunits ncarg/xapp"
 
 set all_files
 set all_dirs
 
-#
-# Not dealing with $exe_suffix for now. We'll need to do this if you run
-# this script under Cygwin.
-#
 foreach f($bin_files)
   set all_files = ("bin/$f" $all_files)
 end
@@ -264,7 +276,11 @@ end
 #
 # Tar up ncl and necessary files.
 #
-set tar_filename = "ncl_ncarg-$version.$system.tar"
+if ($?OPENDAP) then
+  set tar_filename = "ncl_ncarg-$version.${system}_opendap.tar"
+else
+  set tar_filename = "ncl_ncarg-$version.$system.tar"
+endif
 cd $rootdir
 
 echo "Tarring up the files in $rootdir..."
@@ -290,24 +306,16 @@ echo "Make sure permissions are correct..."
 # These "ncarg" directories have to be done separately, because
 # they are not part of "all_dirs"
 #
-chmod gou+r include/ncarg
-chmod gou+r lib/ncarg
-chmod go-w include/ncarg
-chmod go-w lib/ncarg
-chmod u+w include/ncarg
-chmod u+w lib/ncarg
+chmod gou+r,go-w,u+w include/ncarg
+chmod gou+r,go-w,u+w lib/ncarg
 
 foreach dir($all_dirs)
   echo "Removing *~ files..."
   find $dir -name '*~' -print -exec /bin/rm {} \;
-  find $dir -name '*' -exec chmod gou+r {} \;
-  find $dir -name '*' -exec chmod go-w {} \;
-  find $dir -name '*' -exec chmod u+w {} \;
+  find $dir -name '*' -exec chmod gou+r,go-w,u+w {} \;
 end
 
-find $all_files -exec chmod gou+r {} \;
-find $all_files -exec chmod go-w {} \;
-find $all_files -exec chmod u+w {} \;
+find $all_files -exec chmod gou+r,go-w,u+w {} \;
 
 #
 # Now tar up everything.
@@ -349,7 +357,7 @@ else
 endif
 
 if ($?SCP) then
-  echo "scp (via windom) or mv file to $scpmach..."
+  echo "scp (via windom) or mv file to $scpdir..."
   if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
     /bin/mv $tardir/$tar_filename.gz $scpdir
   else
