@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.197 2007-02-06 15:38:15 haley Exp $
+;      $Id: gsn_code.ncl,v 1.198 2007-03-29 02:30:06 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4148,6 +4148,7 @@ begin
   else
     bb = NhlGetBB(plot)
   end if
+
   gsres = True
 ;  gsres@gsLineThicknessF = 5.0
   gsres@gsLineColor      = "red"
@@ -4823,9 +4824,9 @@ begin
 ; Print min/max information.
 ;
   if(panel_debug) then
-    print("-------min/max X,Y positions for plots-------")
-    print("min/max x position = " + min_xpos + "/" + max_xpos)
-    print("min/max y position = " + min_ypos + "/" + max_ypos)
+    print("-------min/max X,Y viewport positions for plots-------")
+    print("min/max x viewport position = " + min_xpos + "/" + max_xpos)
+    print("min/max y viewport position = " + min_ypos + "/" + max_ypos)
   end if
 ;
 ; Calculate the biggest rescaled widths and heights (technically, they
@@ -4955,7 +4956,7 @@ begin
 ; won't work in this case, because that resource is only used to control
 ; where the plots are drawn in a 0 to 1 square, and *not* to indicate the
 ; rightmost location of the rightmost graphic (which could be a vertical 
-; labelbar.
+; labelbar).
 ;
 ; Not dealing with the case of gsnPanelRowSpec = True yet.
 ;  
@@ -5056,6 +5057,24 @@ begin
       frame(wks)
     end if
   end if
+;
+; Debug information
+;
+  if(panel_debug) then
+    bb_dbg = NhlGetBB(newplots)
+    if(dimsizes(newplots).gt.1) then
+      print("-------min/max NDC values for all objects in panel-------")
+      print("min/max x position = " + min(bb_dbg(:,2)) + "/" + max(bb_dbg(:,3)))
+      print("min/max y position = " + min(bb_dbg(:,1)) + "/" + max(bb_dbg(:,0)))
+    else
+      print("-------min/max NDC values for the object in panel-------")
+      print("min/max x position = " + min(bb_dbg(2)) + "/" + max(bb_dbg(3)))
+      print("min/max y position = " + min(bb_dbg(1)) + "/" + max(bb_dbg(0)))
+    end if
+    delete(bb_dbg)
+print("done")
+  end if
+    
 ;
 ; Restore plots to original size.
 ;
