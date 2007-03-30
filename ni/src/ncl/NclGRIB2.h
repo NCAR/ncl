@@ -256,6 +256,24 @@ typedef struct _g2SHTemplate {  /* template 50 */
 	int rep_mode;  /* table 3.7 */
 } g2SHTemplate;
 
+typedef struct _g2SVTemplate {   /* template 90 : space view perspective or orthographic */
+	g2EarthParams ep;
+	int npts_along_x_axis;
+	int npts_along_y_axis;
+	int lat_sub_satellite_pt;
+	int lon_sub_satellite_pt;
+	int res_comp_flags;
+	int dx;                 /* apparent diameter of Earth in grid lengths, x-direction */
+	int dy;                 /* apparent diameter of Earth in grid lengths, y-direction */
+	int xp_grid;            /* x-coordinate of sub-satellite point (units of 10-3 grid length as integer) */
+	int yp_grid;            /* y-coordinate of sub-satellite point (units of 10-3 grid length as integer) */
+	int scan_mode_flags;
+	int orientation;        /* grid orientation (angle between the increasing y-axis and the sub-satellite point meridian */
+	int Nr_altitude;        /* altitude of camera from center of earth (units of earth radius at equator x 10-6)
+	int x_origin;           /* x-coordinate of origin of sector image */
+	int y_origin;           /* y-coordinate of origin of sector image */
+} g2SVTemplate;
+
 
 typedef struct  _g2resComponentFlags {
     int   idir_given;

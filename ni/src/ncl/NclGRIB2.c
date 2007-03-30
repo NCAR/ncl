@@ -2898,13 +2898,13 @@ int l1_scale_fac;
         *l0 = GRIB2_MISSING_LEVEL_VAL;
         *l1 = GRIB2_MISSING_LEVEL_VAL;
 
-	if (l0_type != 255 && l0_val != 255) {
+	if ((l0_type >= 0 && l0_type < 255) && l0_val != 255) {
 		if (l0_scale_fac == 0) 
 			*l0 = l0_val;
 		else if (l0_scale_fac != -127)
 			*l0 = l0_val * pow(0.1,l0_scale_fac);
 	}
-	if (l1_type != 255 && l1_val != 255) {
+	if ((l1_type >= 0 && l1_type < 255) && l1_val != 255) {
 		if (l1_scale_fac == 0) 
 			*l1 = l1_val;
 		else if (l1_scale_fac != -127)
@@ -3054,6 +3054,9 @@ int stat_type_only
 	case 9:
 		strcat(buffer,"_rat");
 		break;
+	default:
+		strcat(buffer,"_unsp");
+		break;
 	}
 	if (stat_type_only) {
 		param->var_info.var_name_quark = NrmStringToQuark(buffer);
@@ -3161,7 +3164,10 @@ Grib2FileRecord *therec;
 			step->n_atts++;
 		}
 
-		if (step->forecast_time_isatt) {
+		/* 
+		 * don't create this att for observational data -- pds_templates 20 and 30 (as far as I can tell)
+		 */
+		if (step->forecast_time_isatt && step->traits.pds_template != 20 && step->traits.pds_template != 30 ) {
 			att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
@@ -3174,7 +3180,7 @@ Grib2FileRecord *therec;
 			step->n_atts++;
 		}
 
-		if (step->traits.stat_proc_type != 255) {
+		if (step->traits.stat_proc_type != -1) {
 			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
@@ -4245,6 +4251,14 @@ Grib2RecordInqRec* grib_rec;
     if (node->time_unit_indicator != grib_rec->forecast_time_units) {
 	    _g2SetCommonTimeUnit(node,grib_rec);
     }
+    if (node->forecast_time_iszero &&
+	grib_rec->forecast_time != 0 && grib_rec->time_period == node->time_period) {
+	    /* in this case there are multiple forecast times with equal stat processing
+	     * periods, rather than stat processing from initial time to forecast time
+	     */
+	    node->forecast_time_iszero = 0;
+    }
+
 #if 0
     if (grib_rec->time_period != node->time_period) {
 	    printf("grib_rec %d has time period %d; node has time period %d\n",
@@ -6255,6 +6269,9 @@ static void _g2SetFileDimsAndCoordVars
 		case 50:
 			name_suffix = "SH";
 			break;
+		case 90:
+			name_suffix = "SV";
+			break;
 		default:
 			break;
 		}
@@ -6350,13 +6367,15 @@ static void _g2SetFileDimsAndCoordVars
 			}
 			break;
 
+		case 90:
+			name_suffix = "SV";
+			/* fall through */
 		case 2:
 		case 3:
 		case 31:
 		case 41:
 		case 42:
 		case 43:
-		case 90:
 		case 110:
 			/* 
 			 * We do not have code to produce coordinates for these grids, but at least
@@ -7269,11 +7288,11 @@ static NhlErrorTypes Grib2ReadCodeTable
 
     fp = fopen(ctf, "r");
     if (fp == (FILE *) NULL) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN,
+        NhlPError(NhlWARNING, NhlEUNKNOWN,
             " NclGRIB2: codetable file \"%s/%s\" not a valid GRIB2 code table.\n",
                 grib2_codetable_dir, ctf);
         NclFree(ctf);
-        return err = NhlFATAL;
+        return err = NhlWARNING;
     } else {
         while (fgets(s, 256, fp)) {
             sp = &s[0];
@@ -7763,28 +7782,44 @@ Grib2ParamList  *g2plist;
 		g2plist->var_info.long_name_q = NrmStringToQuark(ct->descrip);
 
 		if (ct->shname != NULL) {
-			if (trp->second_level_type == 255) {
+			if (trp->first_level_type == 255) {
+				/* no valid level */
+				sprintf(buf,"%s_P%d",ct->shname,trp->pds_template);
+			}
+			else if (trp->second_level_type == 255) {
+				/* only one valid level */
 				sprintf(buf,"%s_P%d_L%d",ct->shname,trp->pds_template,trp->first_level_type);
 			}
 			else if (trp->second_level_type == trp->first_level_type) {
+				/* 2 levels of the same type */
 				sprintf(buf,"%s_P%d_2L%d",ct->shname,trp->pds_template,trp->first_level_type);
 			}
 			else {
+				/* 2 levels of different types */
 				sprintf(buf,"%s_P%d_2L%d_%d",
 					ct->shname,trp->pds_template,trp->first_level_type,trp->second_level_type);
 			}
 		} else {
-			if (trp->second_level_type == 255) {
+			if (trp->first_level_type == 255) {
+				/* no valid level */
+				sprintf(buf, "VAR_%d_%d_%d_P%d",
+					trp->discipline,trp->param_cat,trp->param_number,
+					trp->pds_template);
+			}
+			else if (trp->second_level_type == 255) {
+				/* only one valid level */
 				sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",
 					trp->discipline,trp->param_cat,trp->param_number,
 					trp->pds_template,trp->first_level_type);
 			}
 			else if (trp->second_level_type == trp->first_level_type) {
+				/* 2 levels of the same type */
 				sprintf(buf, "VAR_%d_%d_%d_P%d_2L%d",
 					trp->discipline,trp->param_cat,trp->param_number,
 					trp->pds_template,trp->first_level_type);
 			}
 			else {
+				/* 2 levels of different types */
 				sprintf(buf, "VAR_%d_%d_%d_P%d_2L%d_%d",
 					trp->discipline,trp->param_cat,trp->param_number,
 					trp->pds_template,trp->first_level_type,trp->second_level_type);
@@ -7801,10 +7836,32 @@ Grib2ParamList  *g2plist;
 	} else {
                 /* parameter not found */
 		g2plist->var_info.long_name_q = NrmStringToQuark("unknown variable name");
-		sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",trp->discipline,trp->param_cat,trp->param_number,
-			trp->pds_template,trp->first_level_type);
-		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
 		g2plist->var_info.units_q = NrmStringToQuark("unknown");
+		if (trp->first_level_type == 255) {
+			/* no valid level */
+			sprintf(buf, "VAR_%d_%d_%d_P%d",
+				trp->discipline,trp->param_cat,trp->param_number,
+				trp->pds_template);
+		}
+		else if (trp->second_level_type == 255) {
+			/* only one valid level */
+			sprintf(buf, "VAR_%d_%d_%d_P%d_L%d",
+				trp->discipline,trp->param_cat,trp->param_number,
+				trp->pds_template,trp->first_level_type);
+		}
+		else if (trp->second_level_type == trp->first_level_type) {
+			/* 2 levels of the same type */
+			sprintf(buf, "VAR_%d_%d_%d_P%d_2L%d",
+				trp->discipline,trp->param_cat,trp->param_number,
+				trp->pds_template,trp->first_level_type);
+		}
+		else {
+			/* 2 levels of different types */
+			sprintf(buf, "VAR_%d_%d_%d_P%d_2L%d_%d",
+				trp->discipline,trp->param_cat,trp->param_number,
+				trp->pds_template,trp->first_level_type,trp->second_level_type);
+		}
+		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
 	}
 	Grib2FreeCodeTableRec(ct);
 	return;
@@ -8506,6 +8563,7 @@ static void *Grib2OpenFile
              * use sec0.discipline to form table name
              */
             g2rec[nrecs]->sec4[i]->prod_params->param_num = g2fld->ipdtmpl[1];
+#if 0
             memset(fnam, '\0', 256);
             (void) sprintf(fnam, "4.2.%d.%d.table", g2rec[nrecs]->sec0.discipline,
                     g2rec[nrecs]->sec4[i]->prod_params->param_cat);
@@ -8556,6 +8614,7 @@ static void *Grib2OpenFile
                 g2rec[nrecs]->sec4[i]->prod_params->units = NclMalloc(strlen("unknown") + 1);
                 (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->units, "unknown");
             }
+#endif
 
             /* table 4.3: Type of Generating Process */
             g2rec[nrecs]->sec4[i]->prod_params->gen_process = g2fld->ipdtmpl[2];
@@ -8674,7 +8733,7 @@ static void *Grib2OpenFile
              * available that what's been extracted to this point.  This is determined
              * by the Product Definition Templates (PDTs).
              */
-            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = 255;
+            g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = -1;
 	    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done = 0;
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
                 case 0:
@@ -9096,12 +9155,20 @@ static void *Grib2OpenFile
                     /*
                      * Radar product.
                      */
-                    break;
+			/* fall through  - same deal as satellite obs */
 
                 case 30:
                     /*
                      * Satellite product.
                      */
+		    /* we don't have proper product template data structures yet,
+		     * but for sure the level types are not applicable to satellite data,
+		     * also forecast time is not relevant to observational data
+                     */
+		    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = 255;
+		    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = 255;
+		    g2rec[nrecs]->sec4[i]->prod_params->time_range = 1;
+		    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = 0;
                     break;
 
                 case 254:
