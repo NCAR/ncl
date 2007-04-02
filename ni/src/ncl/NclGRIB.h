@@ -137,6 +137,7 @@ struct _GribInternalVarRec {
 
 struct _GribParamList {
 	int param_number;
+	int ptable_version;
 	int grid_number;
 	int grid_tbl_index;
 	int has_gds;
@@ -187,6 +188,7 @@ struct _GribAttInqRecList {
 struct _GribRecordInqRec {
 	NclQuark var_name_q;
 	int param_number;
+	int ptable_version;
 	TBLE2 *ptable_rec;
 	int grid_tbl_index;
 	int grid_number;
