@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.139 2007-03-26 13:29:52 shea Exp $
+;      $Id: contributed.ncl,v 1.140 2007-04-03 23:42:07 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3240,7 +3240,6 @@ end
 ; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
 ; vars.  It adds the longitude and latitude coordinates.
 
-undef ("linint2_Wrap")
 function linint2_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
                       ,xo[*]:numeric,yo[*]:numeric, Opt)
 
@@ -3255,15 +3254,16 @@ begin
 
   copy_VarAtts (fi, fo)                         ; copy variable attributes
   copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
-                                                ; except for 2 rightmost
 
   fo!(nDim-2) = "Y"                             ; default named dimensions
   fo!(nDim-1) = "X"
                                                 ; override if possible
-  if (.not.ismissing(xo!0) .and. .not.ismissing(yo!0)) then
+  if (isdimnamed(xo,0) .and. isdimnamed(yo,0) ) then
+
       fo!(nDim-2) = yo!0                        ; if present, use xo name
       fo!(nDim-1) = xo!0                        ; if present, use xo name
   else 
+
       do nD=nDim-2,nDim-1                       ; two rightmost dimensions
          if (.not.ismissing(fi!nD)) then
              fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
@@ -3276,6 +3276,7 @@ begin
 
   return (fo)
 end
+
 
 ; **********************************************************************
 ; D. Shea
