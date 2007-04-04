@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.140 2007-04-03 23:42:07 shea Exp $
+;      $Id: contributed.ncl,v 1.141 2007-04-04 16:54:58 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3259,11 +3259,9 @@ begin
   fo!(nDim-1) = "X"
                                                 ; override if possible
   if (isdimnamed(xo,0) .and. isdimnamed(yo,0) ) then
-
       fo!(nDim-2) = yo!0                        ; if present, use xo name
       fo!(nDim-1) = xo!0                        ; if present, use xo name
   else 
-
       do nD=nDim-2,nDim-1                       ; two rightmost dimensions
          if (.not.ismissing(fi!nD)) then
              fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
