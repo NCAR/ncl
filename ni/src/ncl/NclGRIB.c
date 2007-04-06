@@ -576,9 +576,11 @@ static int LVNotEqual( GribRecordInqRecList *s_1,GribRecordInqRecList *s_2)
 }
 static int GetLVList
 #if 	NhlNeedProto
-(GribParamList *thevar,GribRecordInqRecList *lstep,int** lv_vals, int** lv_vals1) 
+(GribFileRecord *therec,
+ GribParamList *thevar,GribRecordInqRecList *lstep,int** lv_vals, int** lv_vals1) 
 #else
-(thevar,lstep,lv_vals, lv_vals1) 
+(therec,thevar,lstep,lv_vals, lv_vals1) 
+GribFileRecord *therec;
 GribParamList *thevar;
 GribRecordInqRecList *lstep;
 int** lv_vals; 
@@ -608,10 +610,13 @@ int** lv_vals1;
 
 	while(strt->next != NULL) {
 		if(!LVNotEqual(strt,strt->next)) {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: %s contains possibly duplicated records %d and %d. Record %d will be ignored.",
-				  NrmQuarkToString(thevar->var_info.var_name_quark),strt->rec_inq->rec_num, 
-				  strt->next->rec_inq->rec_num,
-				  strt->next->rec_inq->rec_num);
+			if ((int)(therec->options[GRIB_PRINT_RECORD_INFO].values) != 0) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  "NclGRIB: %s contains possibly duplicated records %d and %d. Record %d will be ignored.",
+					  NrmQuarkToString(thevar->var_info.var_name_quark),strt->rec_inq->rec_num, 
+					  strt->next->rec_inq->rec_num,
+					  strt->next->rec_inq->rec_num);
+			}
 /*
 		if((strt->rec_inq->level0 == strt->next->rec_inq->level0)&&(strt->rec_inq->level1 == strt->next->rec_inq->level1)) {
 			if((strt->rec_inq->bds_flags & (char)0360) != (strt->next->rec_inq->bds_flags&(char)0360)) {
@@ -901,9 +906,13 @@ int n_it;
 
 static FTLIST *GetFTList
 #if 	NhlNeedProto
-(GribParamList *thevar,GribRecordInqRecList *step,int* n_ft,int **ft_vals,int* total_valid_lv ,int** valid_lv_vals,int** valid_lv_vals1)
+(GribFileRecord *therec,
+ GribParamList *thevar,
+ GribRecordInqRecList *step,
+ int* n_ft,int **ft_vals,int* total_valid_lv ,int** valid_lv_vals,int** valid_lv_vals1)
 #else
-(thevar,step, n_ft, ft_vals,total_valid_lv, valid_lv_vals, valid_lv_vals1)
+(therec,thevar,step, n_ft, ft_vals,total_valid_lv, valid_lv_vals, valid_lv_vals1)
+GribFileRecord *therec;
 GribParamList *thevar;
 GribRecordInqRecList *fstep;
 int* n_ft;
@@ -946,7 +955,7 @@ int** valid_lv_vals1;
 			the_end->lv_vals = NULL;
 			the_end->lv_vals1 = NULL;
 			the_end->n_lv = 0;
-			the_end->n_lv = GetLVList(thevar,strt,&the_end->lv_vals,&the_end->lv_vals1);
+			the_end->n_lv = GetLVList(therec,thevar,strt,&the_end->lv_vals,&the_end->lv_vals1);
 			if((strt->rec_inq->level0 != -1)&&(strt->rec_inq->level1 == -1)) {
 				if(tmp_lvs == NULL) {
 					tmp_lvs = (int*)NclMalloc((unsigned)sizeof(int)*the_end->n_lv);
@@ -991,7 +1000,7 @@ int** valid_lv_vals1;
 	the_end->lv_vals = NULL;
 	the_end->lv_vals1 = NULL;
 	the_end->n_lv = 0;
-	the_end->n_lv = GetLVList(thevar,strt,&the_end->lv_vals,&the_end->lv_vals1);
+	the_end->n_lv = GetLVList(therec,thevar,strt,&the_end->lv_vals,&the_end->lv_vals1);
 	if((strt->rec_inq->level0 != -1)&&(strt->rec_inq->level1 == -1)){
 		if(tmp_lvs != NULL) {
 			tmp_lvs = Merge(tmp_lvs,&tmp_n_lvs,the_end->lv_vals,the_end->n_lv);
@@ -1131,6 +1140,47 @@ ENS *ens;
 	return NrmStringToQuark(buf);
 }
 
+static NrmQuark ForecastTimeUnitsToQuark
+#if 	NhlNeedProto
+(int forecast_time_unit)
+#else
+(forecast_time_unit)
+ int forecast_time_unit;
+#endif
+{
+	switch (forecast_time_unit) {
+	case 0:
+		return (NrmStringToQuark("minutes"));
+	case 1:
+		return (NrmStringToQuark("hours"));
+	case 2:
+		return (NrmStringToQuark("days"));
+	case 3:
+		return (NrmStringToQuark("months"));
+	case 4:
+		return (NrmStringToQuark("years"));
+	case 5:
+		return (NrmStringToQuark("decades"));
+	case 6:
+		return (NrmStringToQuark("normals (30 years)"));
+	case 7:
+		return (NrmStringToQuark("centuries"));
+	case 10:
+		return (NrmStringToQuark("3 hours"));
+	case 11:
+		return (NrmStringToQuark("6 hours"));
+	case 12:
+		return (NrmStringToQuark("12 hours"));
+	case 13:
+		return (NrmStringToQuark("15 minutes"));
+	case 14:
+		return (NrmStringToQuark("30 minutes"));
+	case 254:
+		return (NrmStringToQuark("seconds"));
+	default:
+		return (NrmStringToQuark("unknown"));
+	}
+}
 
 static void _SetAttributeLists
 #if 	NhlNeedProto
@@ -1183,6 +1233,18 @@ GribFileRecord *therec;
 			step->n_atts++;
 		}
 		if(step->forecast_time_isatt) {
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("forecast_time_units");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = ForecastTimeUnitsToQuark(step->time_unit_indicator);
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, 
+					       (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+
 			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
@@ -2107,7 +2169,6 @@ GribFileRecord *therec;
 }
 	
 	
-			
 
 static void _SetFileDimsAndCoordVars
 #if 	NhlNeedProto
@@ -2370,7 +2431,7 @@ GribFileRecord *therec;
 				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark("hours");
+				*tmp_string = ForecastTimeUnitsToQuark(step->time_unit_indicator);
 				GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
 				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -3120,12 +3181,15 @@ GribFileRecord *therec;
 
 static ITLIST *GetITList
 #if 	NhlNeedProto
-(GribParamList *thevar,GribRecordInqRecList *step,
+(GribFileRecord *therec,
+ GribParamList *thevar,
+ GribRecordInqRecList *step,
  int* n_it, GIT **it_vals,
  int* n_ft,int **ft_vals,
  int* total_valid_lv ,int** valid_lv_vals,int** valid_lv_vals1)
 #else
-(thevar,step, n_it,it_vals,n_ft, ft_vals,total_valid_lv, valid_lv_vals, valid_lv_vals1)
+(therec,thevar,step, n_it,it_vals,n_ft, ft_vals,total_valid_lv, valid_lv_vals, valid_lv_vals1)
+GribFileRecord *therec;
 GribParamList *thevar;
 GribRecordInqRecList *step;
 int* n_it;
@@ -3176,7 +3240,7 @@ int** valid_lv_vals1;
 		the_end->ft_vals = NULL;
 		the_end->lv_vals = NULL;
 		the_end->lv_vals1 = NULL;
-		the_end->thelist = GetFTList(thevar,strt,&the_end->n_ft,&the_end->ft_vals,
+		the_end->thelist = GetFTList(therec,thevar,strt,&the_end->n_ft,&the_end->ft_vals,
 					     &the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
 		if(the_end->n_ft > 0) {
 			if(tmp_ft_vals == NULL) {
@@ -3221,7 +3285,7 @@ int** valid_lv_vals1;
 	the_end->lv_vals = NULL;
 	the_end->lv_vals1 = NULL;
 	the_end->n_lv = 0;
-	the_end->thelist = GetFTList(thevar,strt,&the_end->n_ft,&the_end->ft_vals,
+	the_end->thelist = GetFTList(therec,thevar,strt,&the_end->n_ft,&the_end->ft_vals,
 				     &the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
 	if(the_end->n_ft > 0) {
 		if(tmp_ft_vals == NULL) {
@@ -3331,7 +3395,8 @@ GribParamList* step;
 				the_end = the_end->next;
 				the_end->next = NULL;
 				the_end->it = strt->rec_inq->initial_time;
-				the_end->thelist = GetFTList(step,strt,&the_end->n_ft,&the_end->ft_vals,&the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
+				the_end->thelist = GetFTList(therec,step,strt,&the_end->n_ft,
+							     &the_end->ft_vals,&the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
 				strt = rstep;
 				n_it++;
 			} else {
@@ -3342,7 +3407,7 @@ GribParamList* step;
 		the_end = the_end->next;
 		the_end->next = NULL;
 		the_end->it = strt->rec_inq->initial_time;
-		the_end->thelist = GetFTList(step,strt,&the_end->n_ft,&the_end->ft_vals,&the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
+		the_end->thelist = GetFTList(therec,step,strt,&the_end->n_ft,&the_end->ft_vals,&the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
 		n_it++;
 		name = NrmQuarkToString(strt->rec_inq->var_name_q);
 
@@ -3420,7 +3485,7 @@ GribParamList* step;
 		header.next->ft_vals = NULL;
 		header.next->next = NULL;
 		header.next->it = step->minimum_it;
-		header.next->thelist = GetFTList(step,step->thelist,&n_tmp_ft_vals,&tmp_ft_vals,&n_tmp_lv_vals,&tmp_lv_vals,&tmp_lv_vals1);
+		header.next->thelist = GetFTList(therec,step,step->thelist,&n_tmp_ft_vals,&tmp_ft_vals,&n_tmp_lv_vals,&tmp_lv_vals,&tmp_lv_vals1);
 /*
 		fprintf(stdout,"%d/%d/%d\t(%d:%d)-%d,%d\t%d,%d\ttoff=%d\t%d,%d,%d\n",
 			(int)step->thelist->rec_inq->pds[13],
@@ -3869,7 +3934,7 @@ GribParamList* step;
 			the_end->next = NULL;
 			the_end->ens = strt->rec_inq->ens;
 			the_end->ens_ix = n_ens;
-			the_end->thelist = GetITList(step,strt,&the_end->n_it,&the_end->it_vals,
+			the_end->thelist = GetITList(therec,step,strt,&the_end->n_it,&the_end->it_vals,
 						     &the_end->n_ft,&the_end->ft_vals,
 						     &the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
 			strt = rstep;
@@ -3880,7 +3945,7 @@ GribParamList* step;
 		the_end->next = NULL;
 		the_end->ens = strt->rec_inq->ens;
 		the_end->ens_ix = n_ens;
-		the_end->thelist = GetITList(step,strt,&the_end->n_it,&the_end->it_vals,
+		the_end->thelist = GetITList(therec,step,strt,&the_end->n_it,&the_end->it_vals,
 					     &the_end->n_ft,&the_end->ft_vals,
 					     &the_end->n_lv,&the_end->lv_vals,&the_end->lv_vals1);
 		n_ens++;
@@ -3962,7 +4027,7 @@ GribParamList* step;
 		header.next = (ENSLIST*)NclMalloc((unsigned)sizeof(ENSLIST));
 		memset(header.next,0,sizeof(ENSLIST));
 		memset(&header.next->ens,0,sizeof(ENS));
-		the_end->thelist = GetITList(step,step->thelist,&n_tmp_it_vals,&tmp_it_vals,
+		the_end->thelist = GetITList(therec,step,step->thelist,&n_tmp_it_vals,&tmp_it_vals,
 					     &n_tmp_ft_vals,&tmp_ft_vals,
 					     &n_tmp_lv_vals,&tmp_lv_vals,&tmp_lv_vals1);
 /*
@@ -5608,6 +5673,20 @@ char * buf;
 			time_period = 24 + time_period;
 		sprintf(buf,"%dh",time_period);
 		time_period /= 12;
+		break;
+	case 13: /*15 minutes*/
+		time_period *= 15;
+		while (time_period < 0)
+			time_period = 60 + time_period;
+		sprintf(buf,"%dmin",time_period);
+		time_period /= 15;
+		break;
+	case 14: /*30 minutes*/
+		time_period *= 30;
+		while (time_period < 0)
+			time_period = 60 + time_period;
+		sprintf(buf,"%dmin",time_period);
+		time_period /= 30;
 		break;
 	case 254: /*Second*/
 		while (time_period < 0)

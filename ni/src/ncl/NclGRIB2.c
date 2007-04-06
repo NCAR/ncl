@@ -4251,21 +4251,13 @@ Grib2RecordInqRec* grib_rec;
     if (node->time_unit_indicator != grib_rec->forecast_time_units) {
 	    _g2SetCommonTimeUnit(node,grib_rec);
     }
-    if (node->forecast_time_iszero &&
-	grib_rec->forecast_time != 0 && grib_rec->time_period == node->time_period) {
-	    /* in this case there are multiple forecast times with equal stat processing
-	     * periods, rather than stat processing from initial time to forecast time
-	     */
-	    node->forecast_time_iszero = 0;
-    }
 
-#if 0
-    if (grib_rec->time_period != node->time_period) {
-	    printf("grib_rec %d has time period %d; node has time period %d\n",
-		   grib_rec->rec_num, grib_rec->time_period,node->time_period);
+    if (node->traits.stat_proc_type != -1) {
+	    if (node->forecast_time_iszero && grib_rec->forecast_time != 0) {
+		    node->forecast_time_iszero = 0;
+		    node->time_period = grib_rec->time_period;
+	    }
     }
-#endif
-
     grib_rec_list->rec_inq = grib_rec;
     grib_rec_list->next = node->thelist;
     node->thelist = grib_rec_list;
@@ -4346,18 +4338,6 @@ static int _g2FirstCheck
         return 1;
     }
 
-    if (! (step->forecast_time_iszero && grib_rec->forecast_time == 0)) {
-	    result = step->time_period - grib_rec->time_period;
-    }
-    if (result < 0)
-	    return 0;
-    else if (result > 0) {
-        therec->var_list = _g2NewListNode(grib_rec);
-        therec->var_list->next = step;
-        therec->n_vars++;
-	return 1;
-    }
-
     gridcomp = g2GridCompare(step,grib_rec);
     if (gridcomp < 0)
         return 0;
@@ -4390,14 +4370,6 @@ static int _g2CompareRecord
 
     result = memcmp(&step->traits,&grib_rec->traits,sizeof(Grib2VarTraits));
 
-    if (result < 0)
-	    return -1;
-    else if (result > 0)
-	    return 1;
-
-    if (! (step->forecast_time_iszero && grib_rec->forecast_time == 0)) {
-	    result = step->time_period - grib_rec->time_period;
-    }
     if (result < 0)
 	    return -1;
     else if (result > 0)
@@ -4623,9 +4595,12 @@ int g2it_comp (G2_GIT *it1, G2_GIT* it2)
 
 static int g2GetLVList
 # if    NhlNeedProto
-(Grib2ParamList *thevar, Grib2RecordInqRecList *lstep, float** lv_vals, float** lv_vals1) 
+(Grib2FileRecord *g2frec,
+ Grib2ParamList *thevar, 
+ Grib2RecordInqRecList *lstep, float** lv_vals, float** lv_vals1) 
 # else
-(thevar, lstep, lv_vals, lv_vals1) 
+(g2frec,thevar, lstep, lv_vals, lv_vals1) 
+Grib2FileRecord *g2frec;
  Grib2ParamList *thevar;
  Grib2RecordInqRecList *lstep;
  float** lv_vals; 
@@ -4641,10 +4616,12 @@ static int g2GetLVList
     strt = lstep;
     while(strt->next != NULL) {
         if (!g2LVNotEqual(strt, strt->next)) {
-		NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB2: %s contains possibly duplicated records %d and %d. Record %d will be ignored.",
-			  NrmQuarkToString(thevar->var_info.var_name_quark),strt->rec_inq->rec_num, 
-			  strt->next->rec_inq->rec_num,
-			  strt->next->rec_inq->rec_num);
+		if ((int)(g2frec->options[GRIB_PRINT_RECORD_INFO].values) != 0) {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB2: %s contains possibly duplicated records %d and %d. Record %d will be ignored.",
+				  NrmQuarkToString(thevar->var_info.var_name_quark),strt->rec_inq->rec_num, 
+				  strt->next->rec_inq->rec_num,
+				  strt->next->rec_inq->rec_num);
+		}
 		tmp = strt->next;
 		strt->next = strt->next->next;
 		thevar->n_entries--;
@@ -4741,10 +4718,14 @@ int n_it;
 
 static G2_FTLIST *g2GetFTList
 # if    NhlNeedProto
-(Grib2ParamList *thevar, Grib2RecordInqRecList *step, int* n_ft, int **ft_vals,
+(Grib2FileRecord *g2frec,
+ Grib2ParamList *thevar, 
+ Grib2RecordInqRecList *step, 
+ int* n_ft, int **ft_vals,
  int* total_valid_lv, float** valid_lv_vals, float** valid_lv_vals1)
 # else
-(thevar, step, n_ft, ft_vals, total_valid_lv, valid_lv_vals, valid_lv_vals1)
+(g2frec,thevar, step, n_ft, ft_vals, total_valid_lv, valid_lv_vals, valid_lv_vals1)
+ Grib2FileRecord *g2frec;
  Grib2ParamList *thevar;
  Grib2RecordInqRecList *fstep;
  int* n_ft;
@@ -4790,7 +4771,7 @@ static G2_FTLIST *g2GetFTList
             the_end->lv_vals = NULL;
             the_end->lv_vals1 = NULL;
             the_end->n_lv = 0;
-            the_end->n_lv = g2GetLVList(thevar, strt, &the_end->lv_vals, &the_end->lv_vals1);
+            the_end->n_lv = g2GetLVList(g2frec,thevar, strt, &the_end->lv_vals, &the_end->lv_vals1);
 
             if (strt->rec_inq->traits.second_level_type == 255) {
                 if (tmp_lvs == NULL) {
@@ -4837,7 +4818,7 @@ static G2_FTLIST *g2GetFTList
     the_end->lv_vals = NULL;
     the_end->lv_vals1 = NULL;
     the_end->n_lv = 0;
-    the_end->n_lv = g2GetLVList(thevar, strt, &the_end->lv_vals, &the_end->lv_vals1);
+    the_end->n_lv = g2GetLVList(g2frec,thevar, strt, &the_end->lv_vals, &the_end->lv_vals1);
 
     if (strt->rec_inq->traits.second_level_type == 255) {
         if (tmp_lvs != NULL) {
@@ -4879,7 +4860,8 @@ static G2_FTLIST *g2GetFTList
 
 static G2_ITLIST *g2GetITList
 #if 	NhlNeedProto
-(Grib2ParamList *thevar, 
+(Grib2FileRecord *g2frec,
+ Grib2ParamList *thevar, 
  Grib2RecordInqRecList *step,
  int* n_it, 
  G2_GIT **it_vals,
@@ -4889,7 +4871,8 @@ static G2_ITLIST *g2GetITList
  float** valid_lv_vals, 
  float** valid_lv_vals1)
 #else
-(thevar, step, n_it, it_vals, n_ft, ft_vals, total_valid_lv, valid_lv_vals, valid_lv_vals1)
+(g2frec,thevar, step, n_it, it_vals, n_ft, ft_vals, total_valid_lv, valid_lv_vals, valid_lv_vals1)
+ Grib2FileRecord *g2frec; 
  Grib2ParamList *thevar;
  Grib2RecordInqRecList *step;
  int* n_it;
@@ -4945,7 +4928,7 @@ static G2_ITLIST *g2GetITList
         the_end->ft_vals = NULL;
         the_end->lv_vals = NULL;
         the_end->lv_vals1 = NULL;
-        the_end->thelist = g2GetFTList(thevar, strt, &the_end->n_ft, &the_end->ft_vals,
+        the_end->thelist = g2GetFTList(g2frec,thevar, strt, &the_end->n_ft, &the_end->ft_vals,
                                 &the_end->n_lv, &the_end->lv_vals, &the_end->lv_vals1);
         if (the_end->n_ft > 0) {
             if (tmp_ft_vals == NULL) {
@@ -4991,7 +4974,7 @@ static G2_ITLIST *g2GetITList
     the_end->lv_vals = NULL;
     the_end->lv_vals1 = NULL;
     the_end->n_lv = 0;
-    the_end->thelist = g2GetFTList(thevar, strt, &the_end->n_ft, &the_end->ft_vals,
+    the_end->thelist = g2GetFTList(g2frec,thevar, strt, &the_end->n_ft, &the_end->ft_vals,
                         &the_end->n_lv, &the_end->lv_vals, &the_end->lv_vals1);
 
     if (the_end->n_ft > 0) {
@@ -5110,7 +5093,7 @@ Grib2ParamList* step;
 		    the_end->next = NULL;
 		    the_end->ens = strt->rec_inq->ens;
 		    the_end->ens_ix = n_ens;
-		    the_end->thelist = g2GetITList(step, strt, &the_end->n_it, &the_end->it_vals,
+		    the_end->thelist = g2GetITList(therec,step, strt, &the_end->n_it, &the_end->it_vals,
 						   &the_end->n_ft, &the_end->ft_vals, &the_end->n_lv, &the_end->lv_vals,
 						   &the_end->lv_vals1);
 		    strt = rstep;
@@ -5122,7 +5105,7 @@ Grib2ParamList* step;
 	    the_end->next = NULL;
 	    the_end->ens = strt->rec_inq->ens;
 	    the_end->ens_ix = n_ens;
-	    the_end->thelist = g2GetITList(step, strt, &the_end->n_it, &the_end->it_vals,
+	    the_end->thelist = g2GetITList(therec,step, strt, &the_end->n_it, &the_end->it_vals,
 					   &the_end->n_ft, &the_end->ft_vals, &the_end->n_lv, &the_end->lv_vals,
 					   &the_end->lv_vals1);
 	    n_ens++;
@@ -5210,7 +5193,7 @@ Grib2ParamList* step;
 	    header.next = (G2_ENSLIST *) NclMalloc((unsigned) sizeof(G2_ENSLIST));
 	    memset(header.next, 0, sizeof(G2_ENSLIST));
 	    memset(&(header.next->ens), 0, sizeof(G2_ENS));
-	    the_end->thelist = g2GetITList(step, step->thelist, &n_tmp_it_vals, &tmp_it_vals,
+	    the_end->thelist = g2GetITList(therec,step, step->thelist, &n_tmp_it_vals, &tmp_it_vals,
 					   &n_tmp_ft_vals, &tmp_ft_vals, &n_tmp_lv_vals, &tmp_lv_vals, &tmp_lv_vals1);
     }
 
@@ -7649,6 +7632,146 @@ static void Grib2FreeGrib2Rec
     return;
 }
 
+static Grib2ParamList  *
+_g2AdjustTimeAndStatProcVars
+#if    NhlNeedProto
+(
+    Grib2FileRecord *g2frec,
+    Grib2ParamList  *g2plist
+)
+#else
+(g2frec,g2plist)
+Grib2FileRecord *g2frec;
+Grib2ParamList  *g2plist;
+#endif /* NhlNeedProto */
+{
+	Grib2RecordInqRec   *g2inqrec;
+	Grib2RecordInqRecList *g2rlist, *prevrlist;
+	int time_period_count;
+	int *time_periods;
+	int max_count;
+	int unique_zero_forecast_period;
+	int zero_forecast_period;
+	int max_period;
+	int i;
+	Grib2VarTraits *trp = &g2plist->traits;
+	Grib2ParamList  *newplist, *tplist, *ttplist;
+	
+	g2rlist = g2plist->thelist;
+
+	if (trp->stat_proc_type == -1 || g2plist->forecast_time_iszero) {
+		while (g2rlist != NULL) {
+			if (! g2plist->variable_time_unit) {
+				g2rlist->rec_inq->time_offset = g2rlist->rec_inq->forecast_time;
+			}
+			else {
+				g2rlist->rec_inq->time_offset = _g2GetConvertedTimeOffset(
+					g2plist->time_unit_indicator,
+					g2rlist->rec_inq->forecast_time_units,
+					g2rlist->rec_inq->forecast_time);
+			}
+			_g2AdjustTimeOffset(g2plist,g2rlist->rec_inq);
+			g2rlist = g2rlist->next;
+		}
+		return NULL;
+	}
+
+	time_period_count = 0;
+	unique_zero_forecast_period = 0;
+	max_count = 10;
+	time_periods = NclMalloc(max_count * sizeof(int));
+	for (i = 0; i < max_count; i++) {
+		time_periods[i] = -999;
+	}
+	max_period = zero_forecast_period = -999;
+
+	while (g2rlist != NULL) {
+		if (! g2plist->variable_time_unit) {
+			g2rlist->rec_inq->time_offset = g2rlist->rec_inq->forecast_time;
+		}
+		else {
+			g2rlist->rec_inq->time_offset = _g2GetConvertedTimeOffset(
+				g2plist->time_unit_indicator,
+				g2rlist->rec_inq->forecast_time_units,
+				g2rlist->rec_inq->forecast_time);
+		}
+		_g2AdjustTimeOffset(g2plist,g2rlist->rec_inq);
+		for (i = 0; i < time_period_count; i++) {
+			if (g2rlist->rec_inq->time_period == time_periods[i])
+				break;
+		}
+		if (i < time_period_count && g2rlist->rec_inq->forecast_time != 0 &&
+		    time_periods[i] == zero_forecast_period) {
+			unique_zero_forecast_period = 0;
+		}
+		else if (i == time_period_count) {
+			if (time_period_count == max_count) {
+				max_count *= 2;
+				time_periods = NclRealloc(time_periods,max_count * sizeof(int));
+			}
+			time_periods[i] = g2rlist->rec_inq->time_period;
+			if (g2rlist->rec_inq->forecast_time == 0) {
+				unique_zero_forecast_period = 1;
+				zero_forecast_period = time_periods[i];
+			}
+			if (time_periods[i] > max_period) {
+				max_period = time_periods[i];
+			}
+			time_period_count++;
+		}
+		g2rlist = g2rlist->next;
+	}
+	newplist = NULL;
+	if (unique_zero_forecast_period < 0) 
+		unique_zero_forecast_period = 0;
+	g2plist->time_period = max_period;
+	for (i = 0; i < time_period_count - unique_zero_forecast_period - 1; i++) {
+		if (time_periods[i] == max_period || time_periods[i] == unique_zero_forecast_period)
+			continue;
+		g2rlist = g2plist->thelist;
+		tplist = NULL;
+		prevrlist = NULL;
+		while (g2rlist != NULL) {
+			if (g2rlist->rec_inq->time_period != time_periods[i]) {
+				prevrlist = g2rlist;
+				g2rlist = g2rlist->next;
+			}
+			else {
+				if (! tplist) {
+					tplist = _g2NewListNode(g2rlist->rec_inq);
+					memcpy(&tplist->var_info,&g2plist->var_info,sizeof(NclGrib2FVarRec));
+					tplist->forecast_time_iszero = 0;
+				}
+				else {
+					_g2AddRecordToNode(tplist,g2rlist->rec_inq);
+				}
+				if (! prevrlist) {
+					g2plist->thelist = g2plist->thelist->next;
+					NclFree(g2rlist);
+					g2rlist = g2plist->thelist;
+				}
+				else {
+					prevrlist->next = g2rlist->next;
+					NclFree(g2rlist);
+					g2rlist = prevrlist->next;
+				}
+				g2plist->n_entries--;
+			}
+		}
+		if (! newplist) {
+			newplist = tplist;
+		}
+		else {
+			for (ttplist = newplist; ttplist->next != NULL; ttplist = ttplist->next) {
+				;
+			}
+			ttplist->next = tplist;
+		}
+	}
+	NclFree(time_periods);
+	return newplist;
+}
+
 typedef struct _tigge_info {
 
   int flag;  /* parameter type descripter */
@@ -7709,6 +7832,8 @@ static TiggeInfo tigge_info[] = {
   { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, NULL, NULL, NULL }
 };
 
+
+
 static void _g2SetVarInfo
 #if    NhlNeedProto
 (
@@ -7722,17 +7847,20 @@ Grib2ParamList  *g2plist;
 #endif /* NhlNeedProto */
 {
 	Grib2RecordInqRec   *g2inqrec;
+	Grib2RecordInqRecList *g2rlist;
 	int i;
 	Grib2VarTraits *trp = &g2plist->traits;
 	g2codeTable *ct;
 	char buf[512];
 	NhlErrorTypes cterr;
 
-	for (i = 0; i < g2plist->n_entries; i++) {
-            if (g2plist->thelist[i].rec_inq != NULL) {
-                g2inqrec = g2plist->thelist[i].rec_inq;
+	g2rlist = g2plist->thelist;
+	while (g2rlist != NULL) {
+            if (g2rlist->rec_inq != NULL) {
+                g2inqrec = g2rlist->rec_inq;
                 break;
             }
+	    g2rlist = g2rlist->next;
         }
 	if (!g2inqrec) {
 		NhlPError(NhlFATAL, NhlEUNKNOWN,
@@ -8892,46 +9020,6 @@ static void *Grib2OpenFile
 #endif
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
                             = g2fld->ipdtmpl[28];
-#if 0
-                    fprintf(stdout, "Record: %d\n",nrecs + 1);
-                    fprintf(stdout, "\t\t level: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->level);
-                    fprintf(stdout, "\t\t typeof ensemblefx: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx);
-                    fprintf(stdout, "\t\t perturb num: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->perturb_num);
-                    fprintf(stdout, "\t\t num fx ensemble: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble);
-                    fprintf(stdout, "\t\t year end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval);
-                    fprintf(stdout, "\t\t mon end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval);
-                    fprintf(stdout, "\t\t day end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval);
-                    fprintf(stdout, "\t\t hour end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval);
-                    fprintf(stdout, "\t\t min end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval);
-                    fprintf(stdout, "\t\t sec end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval);
-                    fprintf(stdout, "\t\t num timerange spec time interval calc: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc);
-                    fprintf(stdout, "\t\t total num missing data vals: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals);
-
-                    fprintf(stdout, "\t\t typeof stat proc: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc);
-                    fprintf(stdout, "\t\t typeof incr betw fields: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields);
-                    fprintf(stdout, "\t\t ind time range unit stat proc done: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done);
-                    fprintf(stdout, "\t\t len time range unit stat proc done: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done);
-                    fprintf(stdout, "\t\t ind time unit incr succ fields: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields);
-                    fprintf(stdout, "\t\t time incr betw fields: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields);
-#endif
 
                     break;
 
@@ -8941,6 +9029,10 @@ static void *Grib2OpenFile
                      * horizontal layer in a continuous or non-continuous
                      * time interval.
                      */
+		    /*
+		    printf("probability lower limit %f\n",g2fld->ipdtmpl[19] * pow(10.0,(double)-g2fld->ipdtmpl[18]));
+		    printf("probability upper limit %f\n",g2fld->ipdtmpl[21] * pow(10.0,(double)-g2fld->ipdtmpl[20]));
+		    */
                     break;
 
                 case 10:
@@ -9085,46 +9177,6 @@ static void *Grib2OpenFile
 #endif
                     g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
                             = g2fld->ipdtmpl[31];
-#if 0
-                    fprintf(stdout, "Record: %d\n",nrecs + 1);
-                    fprintf(stdout, "\t\t level: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->level);
-                    fprintf(stdout, "\t\t typeof ensemblefx: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx);
-                    fprintf(stdout, "\t\t perturb num: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->perturb_num);
-                    fprintf(stdout, "\t\t num fx ensemble: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble);
-                    fprintf(stdout, "\t\t year end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval);
-                    fprintf(stdout, "\t\t mon end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval);
-                    fprintf(stdout, "\t\t day end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval);
-                    fprintf(stdout, "\t\t hour end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval);
-                    fprintf(stdout, "\t\t min end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval);
-                    fprintf(stdout, "\t\t sec end overall time interval: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval);
-                    fprintf(stdout, "\t\t num timerange spec time interval calc: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc);
-                    fprintf(stdout, "\t\t total num missing data vals: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals);
-
-                    fprintf(stdout, "\t\t typeof stat proc: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc);
-                    fprintf(stdout, "\t\t typeof incr betw fields: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields);
-                    fprintf(stdout, "\t\t ind time range unit stat proc done: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done);
-                    fprintf(stdout, "\t\t len time range unit stat proc done: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done);
-                    fprintf(stdout, "\t\t ind time unit incr succ fields: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields);
-                    fprintf(stdout, "\t\t time incr betw fields: %d\n",
-                        g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields);
-#endif
                     break;
 
                 case 12:
@@ -9634,6 +9686,22 @@ static void *Grib2OpenFile
 
 
     if (g2frec != NULL) {
+        g2plist = g2frec->var_list;
+        while (g2plist != NULL) {
+		_g2SetVarInfo(g2frec,g2plist);
+		g2plist_n = _g2AdjustTimeAndStatProcVars(g2frec,g2plist);
+		if (! g2plist_n) {
+			g2plist = g2plist->next;
+			continue;
+		}
+		g2plist_tmp = g2plist->next;
+		g2plist->next = g2plist_n;
+		while (g2plist_n->next != NULL)
+			g2plist_n = g2plist_n->next;
+		g2plist_n->next = g2plist_tmp;
+		g2plist = g2plist_tmp;
+	}
+
         g2frec->grib_grid_cache = NULL;
 
         /* sort by time, then level, for each variable in the list */
@@ -9641,46 +9709,20 @@ static void *Grib2OpenFile
         k = 0;
 
         while (g2plist != NULL) {
-	    _g2SetVarInfo(g2frec,g2plist);
             g2inqrec_list = g2plist->thelist;
             g2sort = (Grib2RecordInqRecList **) NclMalloc(
                     (unsigned int) sizeof(Grib2RecordInqRecList *) * g2plist->n_entries);
             i = 0;
-            /*
-             * Scan thru records and compute time offset from top of GRIB record.
-             * All offsets based on 'time_units_indicator' of the top of GRIB parameter record.
-             * First: determine an offset in time units based on 'time_units_indicator' and
-             * 'time_range_indicator.'  Then: determine offset in same units from top of
-             * parameter list's time reference.
-             */
-	    if (g2plist->variable_time_unit) {
-		    while(g2inqrec_list != NULL) {
-			    g2sort[i] = g2inqrec_list;
-			    g2inqrec_list->rec_inq->time_offset = _g2GetConvertedTimeOffset(
-				    g2plist->time_unit_indicator,
-				    g2inqrec_list->rec_inq->forecast_time_units,
-				    g2inqrec_list->rec_inq->forecast_time);
-			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
-			    g2inqrec_list->rec_inq->var_name_q = g2plist->var_info.var_name_quark;
-			    /* if any records have a bitmap the variable is treated as having a bitmap */
-			    if (g2inqrec_list->rec_inq->has_bmap) 
-				    g2plist->has_bmap = 1;
-			    g2inqrec_list = g2inqrec_list->next;
-			    i++;
-		    }
-	    }
-	    else {
-		    while (g2inqrec_list != NULL) {
-			    g2sort[i] = g2inqrec_list;
-			    g2inqrec_list->rec_inq->time_offset	= g2inqrec_list->rec_inq->forecast_time;
-			    _g2AdjustTimeOffset(g2plist,g2inqrec_list->rec_inq);
-			    g2inqrec_list->rec_inq->var_name_q = g2plist->var_info.var_name_quark;
-			    /* if any records have a bitmap the variable is treated as having a bitmap */
-			    if (g2inqrec_list->rec_inq->has_bmap) 
-				    g2plist->has_bmap = 1;
-			    g2inqrec_list = g2inqrec_list->next;
-			    i++;
-		    }
+
+	    while (g2inqrec_list != NULL) {
+		    g2sort[i] = g2inqrec_list;
+		    g2inqrec_list->rec_inq->var_name_q = g2plist->var_info.var_name_quark;
+
+		    /* if any records have a bitmap the variable is treated as having a bitmap */
+		    if (g2inqrec_list->rec_inq->has_bmap) 
+			    g2plist->has_bmap = 1;
+		    g2inqrec_list = g2inqrec_list->next;
+		    i++;
 	    }
 
             qsort((void *) g2sort, i, sizeof(Grib2RecordInqRecList *), g2record_comp);
