@@ -116,6 +116,8 @@ struct _NclGribCacheRec {
 
 struct _NclGribFVarRec {
         NclQuark var_name_quark;
+	NclQuark long_name_q;
+	NclQuark units_q;
         NclBasicDataTypes data_type;
 	int 	doff;
         int     num_dimensions;
@@ -138,6 +140,7 @@ struct _GribInternalVarRec {
 struct _GribParamList {
 	int param_number;
 	int ptable_version;
+	unsigned char aux_ids[4];
 	int grid_number;
 	int grid_tbl_index;
 	int has_gds;

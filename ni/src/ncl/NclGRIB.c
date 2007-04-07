@@ -1402,6 +1402,7 @@ GribFileRecord *therec;
 		step->theatts = att_list_ptr;
 		step->n_atts++;
 		
+#if 0
 		if(grib_rec->ptable_rec !=NULL) {
 /*
 * units
@@ -1428,6 +1429,7 @@ GribFileRecord *therec;
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 		} else {
+#endif
 /*
 * units
 */
@@ -1436,7 +1438,7 @@ GribFileRecord *therec;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("units");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = grib_rec->units_q;		
+			*tmp_string = step->var_info.units_q;
 			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
@@ -1445,11 +1447,13 @@ GribFileRecord *therec;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = grib_rec->long_name_q;		
+			*tmp_string = step->var_info.long_name_q;	
 			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
+#if 0
 		}
+#endif
 
 /*
 * center
@@ -5223,6 +5227,14 @@ static GribParamList *_NewListNode
 	list->next = NULL;
 	tmp->thelist = list;
 	tmp->var_info.var_name_quark = grib_rec->var_name_q;
+	if (grib_rec->ptable_rec) {
+		tmp->var_info.long_name_q = NrmStringToQuark(grib_rec->ptable_rec->long_name);
+		tmp->var_info.units_q = NrmStringToQuark(grib_rec->ptable_rec->units);
+	}
+	else {
+		tmp->var_info.long_name_q = grib_rec->long_name_q;
+		tmp->var_info.units_q = grib_rec->units_q;
+	}
 	tmp->var_info.data_type = GribMapToNcl((void*)&(grib_rec->int_or_float));
 	tmp->param_number = grib_rec->param_number;
 	tmp->ptable_version = grib_rec->ptable_version;
@@ -5254,6 +5266,80 @@ static GribParamList *_NewListNode
 	tmp->yymmddhh = NULL;
 	tmp->forecast_time = NULL;
 	tmp->n_atts = 0;
+
+	/* special processing for DWD */
+	if (centers[grib_rec->center_ix].index == 78 &&
+	     grib_rec->ptable_version == 205 &&
+	     grib_rec->pds[9] == 222 && 
+	    (grib_rec->param_number == 3 || grib_rec->param_number == 4)) {
+		char buf[256];
+		char *desc = NULL;
+		char *wave;
+		char *name = NrmQuarkToString(tmp->var_info.var_name_quark);
+		tmp->aux_ids[0] = grib_rec->pds[11];
+		tmp->aux_ids[1] = grib_rec->pds[46];
+		if (grib_rec->param_number == 3) {
+			sprintf(buf,"MVIRI_K%d_T%d%s",(int)tmp->aux_ids[0],
+				(int)tmp->aux_ids[1],&(name[5]));
+			switch ((int)tmp->aux_ids[0]) {
+			case 1:
+				wave = "Channel 1 (WV 6.4)";
+				break;
+			case 2:
+				wave = "Channel 2 (IR 11.5)";
+				break;
+			}
+		}
+		else {
+			sprintf(buf,"SEVIRI_K%d_T%d%s",3 + (int)tmp->aux_ids[0],
+				(int)tmp->aux_ids[1],&(name[5]));
+			switch ((int)tmp->aux_ids[0]) {
+			case 1:
+				wave = "channel 4 (IR 3.9)";
+				break;
+			case 2:
+				wave = "channel 5 (WV 6.2)";
+				break;
+			case 3:
+				wave = "channel 6 (WV 7.3)";
+				break;
+			case 4:
+				wave = "channel 7 (IR 8.7)";
+				break;
+			case 5:
+				wave = "channel 8 (IR 9.7)";
+				break;
+			case 6:
+				wave = "channel 9 (IR 10.8)";
+				break;
+			case 7:
+				wave = "channel 10 (IR 12.1)";
+				break;
+			case 8:
+				wave = "channel 11 (13.4)";
+				break;
+			}
+		}
+		tmp->var_info.var_name_quark = NrmStringToQuark(buf);
+		tmp->var_info.units_q = NrmStringToQuark("non-dim");
+		switch ((int)tmp->aux_ids[1]) {
+		case 1:
+			desc = "Cloudy brightness temperature";
+			break;
+		case 2:
+			desc = "Clear-sky brightness temperature";
+			break;
+		case 3:
+			desc = "Cloudy radiance";
+			break;
+		case 4:
+			desc = "Clear-sky radiance";
+			break;
+		}
+		sprintf(buf,"%s, %s",desc,wave);
+		tmp->var_info.long_name_q = NrmStringToQuark(buf);
+	}
+
 	return(tmp);
 }
 
@@ -5502,6 +5588,21 @@ GribRecordInqRec *grib_rec;
 		return comp;
 
 	comp = node->param_number - grib_rec->param_number;
+
+	if (comp)
+		return comp;
+
+	/* special processing for DWD */
+	if (!(centers[grib_rec->center_ix].index == 78 &&
+	      grib_rec->ptable_version == 205 &&
+	      grib_rec->pds[9] == 222 && 
+	      (grib_rec->param_number == 3 || grib_rec->param_number == 4)))
+		return 0;
+	       
+	comp = (int) node->aux_ids[0] - (int) grib_rec->pds[11];
+	if (comp)
+		return comp;
+	comp = (int) node->aux_ids[1] - (int) grib_rec->pds[46];
 
 	return comp;
 }
