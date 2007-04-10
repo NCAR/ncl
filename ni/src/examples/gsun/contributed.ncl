@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.141 2007-04-04 16:54:58 shea Exp $
+;      $Id: contributed.ncl,v 1.142 2007-04-10 17:30:33 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5141,7 +5141,7 @@ begin
 
   nmos    = 12
   ntim    = dimx(0)
-  modCheck ("month_to_season12", ntim, nmos)
+  modCheck ("month_to_season", ntim, nmos)
 
   if (rank.ge.3) then
       nlat    = dimx(rank-2)
@@ -5156,7 +5156,7 @@ begin
       nyrStrt = 1
   end if
   if (NMO.eq.nmos-1) then
-      NYRStrt = nyrs-2
+      nyrLast = nyrs-2
   end if
 
   if (rank.eq.1) then
