@@ -22,6 +22,9 @@
 #include "dwd_201_gtb.h"
 #include "dwd_202_gtb.h"
 #include "dwd_203_gtb.h"
+#include "dwd_204_gtb.h"
+#include "dwd_205_gtb.h"
+#include "dwd_206_gtb.h"
 #include "ecmwf_128_gtb.h"
 #include "ecmwf_129_gtb.h"
 #include "ecmwf_130_gtb.h"
@@ -6486,6 +6489,18 @@ int wr_status;
 						case 203:
 							ptable = &dwd_203_params[0];
 							ptable_count = sizeof(dwd_203_params)/sizeof(TBLE2);
+							break;
+						case 204:
+							ptable = &dwd_204_params[0];
+							ptable_count = sizeof(dwd_204_params)/sizeof(TBLE2);
+							break;
+						case 205:
+							ptable = &dwd_205_params[0];
+							ptable_count = sizeof(dwd_205_params)/sizeof(TBLE2);
+							break;
+						case 206:
+							ptable = &dwd_206_params[0];
+							ptable_count = sizeof(dwd_206_params)/sizeof(TBLE2);
 							break;
 						}
 						break;
