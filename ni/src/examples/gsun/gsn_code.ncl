@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.198 2007-03-29 02:30:06 haley Exp $
+;      $Id: gsn_code.ncl,v 1.199 2007-04-11 18:35:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5072,7 +5072,6 @@ begin
       print("min/max y position = " + min(bb_dbg(1)) + "/" + max(bb_dbg(0)))
     end if
     delete(bb_dbg)
-print("done")
   end if
     
 ;
