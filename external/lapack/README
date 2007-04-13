@@ -1,0 +1,4 @@
+
+April 12, 2007: On an Intel Mac (using g95) and an i686 Linux system
+(using gfortran 4.x), the dlamch.f file has to be compiled with -g, or
+else you end up with svd_lapack going into an infinite loop.
