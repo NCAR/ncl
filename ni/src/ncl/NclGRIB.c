@@ -4781,9 +4781,10 @@ static GribParamList *_NewListNode
 		char *wave;
 		char *cp;
 		int pos;
+		char *name = NrmQuarkToString(tmp->var_info.var_name_quark);
+
 		tmp->aux_ids[0] = grib_rec->pds[11];
 		tmp->aux_ids[1] = grib_rec->pds[46];
-		char *name = NrmQuarkToString(tmp->var_info.var_name_quark);
 		cp = strchr(name,'_');
 		pos = cp - name;
 		strcpy(buf,name);
