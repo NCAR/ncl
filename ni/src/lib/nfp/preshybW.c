@@ -968,7 +968,7 @@ NhlErrorTypes dpres_plevel_W( void )
   }
   else {
     missing_dpsfc.doubleval = 1.e20;   /* Don't use NCL default of -9999. */
-    missing_rpsfc.doubleval = 1.e20;
+    missing_rpsfc.floatval  = 1.e20;
   }
 
 
