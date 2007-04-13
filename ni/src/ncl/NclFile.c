@@ -1022,9 +1022,9 @@ NclMultiDValData value;
 {
 	int i;
 	NclMultiDValData tmp_md;
-	NclQuark loption,lvalue;
+	NclQuark loption;
+	NclQuark *lvalue = NULL;
 	NclFileClassPart *fcp = &(nclFileClassRec.file_class);
-	lvalue = NrmNULLQUARK;
 	
 	loption = _NclGetLower(option);
 	if (thefile) {
@@ -1078,19 +1078,31 @@ NclMultiDValData value;
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
-				int ok = 0;
-				int j;
+				int ok;
+				int j,k;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
-					lvalue = _NclGetLower(*((string *)tmp_md->multidval.val));
-					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
-						NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
-						if (lvalue != valid_val)
-							continue;
-						ok = 1;
-						break;
+					lvalue = NclMalloc(tmp_md->multidval.totalelements * sizeof(NclQuark));
+					ok = 0;
+					for (k = 0; k < tmp_md->multidval.totalelements; k++) {
+						lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
+						for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
+							NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+							if (lvalue[k] != valid_val)
+								continue;
+							ok = 1;
+							break;
+						}
+					}
+					if (! ok) {
+						NclFree(lvalue);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,
+							  "FileSetFileOption: invalid value supplied for option %s",
+							  NrmQuarkToString(option));
+						return(NhlWARNING);
 					}
 				}
 				else {
+					/* doesn't handle array valued options */
 					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
 						if (memcmp(tmp_md->multidval.val,
 							   (char*)fcp->options[i].valid_values->multidval.val +
@@ -1109,11 +1121,12 @@ NclMultiDValData value;
 					return(NhlWARNING);
 				}
 			}
-			if (lvalue != NrmNULLQUARK) {
+			if (lvalue) {
 				thefile->file.format_funcs->set_option(thefile->file.private_rec,loption,
 									tmp_md->multidval.data_type,
 									tmp_md->multidval.totalelements,
-									(void *) &lvalue);
+									(void *) lvalue);
+				NclFree(lvalue);
 			}
 			else {
 				thefile->file.format_funcs->set_option(thefile->file.private_rec,loption,
@@ -1163,19 +1176,31 @@ NclMultiDValData value;
 				return(NhlWARNING);
 			}
 			if (fcp->options[i].valid_values) {
-				int ok = 0;
-				int j;
+				int ok;
+				int j,k;
 				if (fcp->options[i].value->multidval.data_type == NCL_string) {
-					lvalue = _NclGetLower(*((string *)tmp_md->multidval.val));
-					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
-						NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
-						if (lvalue != valid_val)
-							continue;
-						ok = 1;
-						break;
+					lvalue = NclMalloc(tmp_md->multidval.totalelements * sizeof(NclQuark));
+					ok = 0;
+					for (k = 0; k < tmp_md->multidval.totalelements; k++) {
+						lvalue[k] = _NclGetLower(*(NclQuark*)(((char *)tmp_md->multidval.val)+ k * sizeof(NclQuark)));
+						for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
+							NclQuark valid_val = ((string *)fcp->options[i].valid_values->multidval.val)[j];
+							if (lvalue[k] != valid_val)
+								continue;
+							ok = 1;
+							break;
+						}
+					}
+					if (! ok) {
+						NclFree(lvalue);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,
+							  "FileSetFileOption: invalid value supplied for option %s",
+							  NrmQuarkToString(option));
+						return(NhlWARNING);
 					}
 				}
 				else {
+					/* doesn't handle array valued options yet -- see the string handling */
 					for (j = 0; j < fcp->options[i].valid_values->multidval.totalelements; j++) {
 						if (memcmp(tmp_md->multidval.val,
 							   (char*)fcp->options[i].valid_values->multidval.val +
@@ -1194,11 +1219,14 @@ NclMultiDValData value;
 					return(NhlWARNING);
 				}
 			}
-			if (lvalue != NrmNULLQUARK) {
+			if (lvalue) {
 				/* store the lower-cased name */
-				*(string *)fcp->options[i].value->multidval.val = lvalue;
+				NclFree(fcp->options[i].value->multidval.val);
+				fcp->options[i].value->multidval.val = (void *)lvalue;
+				fcp->options[i].value->multidval.totalelements = tmp_md->multidval.totalelements;
 			}
 			else {
+				/* doesn't handle array valued options yet -- see the string handling */
 				memcpy(fcp->options[i].value->multidval.val,tmp_md->multidval.val,
 				       tmp_md->multidval.type->type_class.size);
 			}
@@ -1279,7 +1307,8 @@ NclFileOption file_options[] = {
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 2, NULL },   /* NetCDF 4 compression option level */
 #endif
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }, /* GRIB default NCEP parameter table */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB print record info */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB single element dimensions */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1615,6 +1644,31 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_PRINT_RECORD_INFO].valid_values = NULL;
 	/* End of options */
 
+	/* Grib option Single element dimensions */
+	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].format = NrmStringToQuark("grb");
+	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].name = NrmStringToQuark("singleelementdimensions");
+	len_dims = 1;
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("none");
+	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(sizeof(string));
+	*sval = NrmStringToQuark("none");
+	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+	sval = (string*) NclMalloc(6 * sizeof(string));
+	sval[0] = NrmStringToQuark("none");
+	sval[1] = NrmStringToQuark("all");
+	sval[2] = NrmStringToQuark("ensemble");
+	sval[3] = NrmStringToQuark("initial_time");
+	sval[4] = NrmStringToQuark("forecast_time");
+	sval[5] = NrmStringToQuark("level");
+	len_dims = 6;
+	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].valid_values = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
 	return ret;
 }
 

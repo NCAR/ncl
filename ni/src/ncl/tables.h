@@ -450,7 +450,7 @@ char *level_str_long_name[] = {
 	"sea bottom", /*9*/
 	"temperature in 1/100 K", /*20*/
 	"isobaric level",	/*100*/
-	"layer between tow isobaric levels",	/*101*/
+	"layer between two isobaric levels",	/*101*/
 	"mean sea level",	/*102*/
 	"fixed height level",	/*103*/
 	"layer between two height levels above msl",	/*104*/

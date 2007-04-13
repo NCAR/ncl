@@ -676,6 +676,7 @@ struct _Grib2FileRecord {
     NclGrib2CacheList   *grib_grid_cache;
     int n_options;
     Grib2Options    *options;
+    int single_dims;
 };
 
 

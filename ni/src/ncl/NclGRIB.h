@@ -236,6 +236,7 @@ struct _GribRecordInqRec {
 
 struct _GribDimInqRec {
 	int dim_number; /* assigned in order of occurance in grib record */
+	int sub_type_id;    /* identifier of the dimension type */
 	int is_gds;
 	int gds_size;
 	unsigned char *gds;
@@ -252,8 +253,16 @@ struct _GribAttInqRec {
 #define GRIB_THINNED_GRID_INTERPOLATION_OPT 0
 #define GRIB_INITIAL_TIME_COORDINATE_TYPE_OPT 1
 #define GRIB_DEFAULT_NCEP_PTABLE_OPT 2
-#define GRIB_PRINT_RECORD_INFO 3
-#define GRIB_NUM_OPTIONS 4
+#define GRIB_PRINT_RECORD_INFO_OPT 3
+#define GRIB_SINGLE_ELEMENT_DIMENSIONS_OPT 4
+#define GRIB_NUM_OPTIONS 5
+
+#define GRIB_No_Dims 0
+#define GRIB_All_Dims  0xffffffff
+#define GRIB_Level_Dims 0x1
+#define GRIB_Forecast_Time_Dims 0x2
+#define GRIB_Initial_Time_Dims 0x4
+#define GRIB_Ensemble_Dims 0x8
 
 struct _GribOptions {
 	NclQuark name;
@@ -285,6 +294,7 @@ GribDimInqRecList *grid_dims;
 NclGribCacheList *grib_grid_cache;
 int             n_options;
 GribOptions     *options;
+int             single_dims;
 };
 
 typedef int (*GribUnPackData)(
