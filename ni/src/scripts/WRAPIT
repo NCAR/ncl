@@ -69,6 +69,7 @@ echo "OPTION: -pg  to specify the Portland Group compiler."
 echo "OPTION: -lf  to specify the Lahey/Fujitsu compiler."
 echo "OPTION: -in  to specify the Intel compiler."
 echo "OPTION: -g95 to specify the g95 compiler."
+echo "OPTION: -gf  to specify the gfortran compiler."
 echo " " 
 echo "-------------------- Some Usage Examples ---------------------------"
 echo "One argument"
@@ -184,6 +185,14 @@ while ($#argv)
     else
       echo "WARNING: option -g95 INVALID for $OS system"
     endif
+  else if ($arg:q == "-gf") then
+    which gfortran >! /dev/null
+    if ($status) then
+      echo WARNING: gfortran fortran compiler NOT found.
+      echo Will try gnu g77 or g95 compiler.
+    else
+      set f90c = gfortran
+    endif
   else if ($arg:q == "-in") then
     if ($OS == Linux) then
       which ifort              # newer version (8.1)
@@ -218,8 +227,8 @@ while ($#argv)
     shift
     if ($argv[1]:q == "-l" || $argv[1]:q == "-L" || $argv[1]:q == "-r8" || \
         $argv[1]:q == "-pg" || $argv[1]:q == "-lf" || $argv[1]:q == "-in" || \
-        $argv[1]:q == "-g95" || $argv[1]:q == "-q32" || $argv[1]:q == "-d" || \
-        $argv[1]:q == "-h") then
+        $argv[1]:q == "-g95" || $argv[1]:q == "-gf" || \
+        $argv[1]:q == "-q32" || $argv[1]:q == "-d" || $argv[1]:q == "-h") then
       echo "FATAL ERROR: missing shared object name after -n option"
       echo EXITING WRAPIT
       echo " "
@@ -236,8 +245,8 @@ while ($#argv)
     shift
     if ($argv[1]:q == "-l" || $argv[1]:q == "-n" || $argv[1]:q == "-r8" || \
         $argv[1]:q == "-pg" || $argv[1]:q == "-lf" || $argv[1]:q == "-in" || \
-        $argv[1]:q == "-g95" || $argv[1]:q == "-q32" || $argv[1]:q == "-d" ||\
-        $argv[1]:q == "-h") then
+        $argv[1]:q == "-g95" || $argv[1]:q == "-gf" || \
+        $argv[1]:q == "-q32" || $argv[1]:q == "-d" || $argv[1]:q == "-h") then
       echo "FATAL ERROR: missing library path after -L option"
       echo EXITING WRAPIT
       echo " "
@@ -258,8 +267,8 @@ while ($#argv)
     shift
     if ($argv[1]:q == "-L" || $argv[1]:q == "-n" || $argv[1]:q == "-r8" || \
         $argv[1]:q == "-pg" || $argv[1]:q == "-lf" || $argv[1]:q == "-in" || \
-        $argv[1]:q == "-g95" || $argv[1]:q == "-q32" || $argv[1]:q == "-d" ||\
-        $argv[1]:q == "-h") then
+        $argv[1]:q == "-g95" || $argv[1]:q == "-gf" || \
+        $argv[1]:q == "-q32" || $argv[1]:q == "-d" || $argv[1]:q == "-h") then
       echo "FATAL ERROR: missing library name after -l option"
       echo EXITING WRAPIT
       echo " "
@@ -336,9 +345,15 @@ switch ($OS)
      if ($real8 == 1) then
        set fopts = "$fopts -r8"
      endif
-   else                              # GNU g77
+   else if ($f90c == g77) then     # GNU g77
      if ($debug == 1) then
        set fopts = "$fopts -fPIC -v -c -ffortran-bounds-check -fno-second-underscore" 
+     else
+       set fopts = "$fopts -fPIC -c -O -fno-second-underscore"
+     endif 
+   else                              # gfortran or g95
+     if ($debug == 1) then
+       set fopts = "$fopts -fPIC -v -c -fno-second-underscore" 
      else
        set fopts = "$fopts -fPIC -c -O -fno-second-underscore"
      endif 
@@ -382,15 +397,15 @@ switch ($OS)
      set fopts = "$fopts -r8"
    endif
    breaksw
- case Darwin:                        # MacOSX (g77)
-   if ($debug == 1) then
+ case Darwin:                                # MacOSX (g77)
+   if ($debug == 1 && $f90c == g77) then     # GNU g77
      set fopts = "$fopts -v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
    else
      set fopts = "$fopts -c -O -fno-common -fno-second-underscore"
    endif
    breaksw
- case FreeBSD:                       # FreeBSD (g77)
-   if ($debug == 1) then
+ case FreeBSD:                               # FreeBSD (g77)
+   if ($debug == 1 && $f90c == g77) then     # GNU g77
      set fopts = "$fopts -v -c -ffortran-bounds-check -fno-second-underscore"
    else
      set fopts = "$fopts -c -O -fno-second-underscore"
@@ -470,71 +485,87 @@ endif
 switch ($OS)
  case AIX:
    if ($debug == 1) then
-     xlc $copts -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
-      -c -q{$nbits} -qmaxmem=-1 -qarch=auto -I${NCARG_ROOT}/include WRAPIT.c 
+     set cmd = "xlc $copts -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -c -q{$nbits} -qmaxmem=-1 -qarch=auto -I${NCARG_ROOT}/include WRAPIT.c "
+     echo $cmd
    else
-     xlc $copts -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 \
-      -c -q{$nbits} -qmaxmem=-1 -qarch=auto -O -I${NCARG_ROOT}/include WRAPIT.c 
+     set cmd = "xlc $copts -DRS6000 -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -c -q{$nbits} -qmaxmem=-1 -qarch=auto -O -I${NCARG_ROOT}/include WRAPIT.c "
    endif
+   $cmd
    breaksw
  case IRIX64:
 #  -woff turns off warning messages about variables not used or set
    if ($nbits == 32) then
      if ($debug == 1) then
-       cc $copts -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "cc $copts -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c"
+       echo $cmd
      else
-       cc $copts -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "cc $copts -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c"
      endif
+     $cmd
    else     # 64-bit default
      if ($debug == 1) then
-       cc $copts -c -64 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "cc $copts -c -64 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c"
+       echo $cmd
      else
-       cc $copts -c -64 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "cc $copts -c -64 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c"
      endif
+     $cmd
    endif
    breaksw
  case IRIX:
    if ($debug == 1) then
-     cc $copts -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "cc $copts -c -n32 -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c"
+     echo $cmd
    else
-     cc $copts -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "cc $copts -c -n32 -O -woff 1174 -woff 1552 -I${NCARG_ROOT}/include WRAPIT.c"
    endif
+   $cmd
    breaksw
  case Darwin:
    if ($debug == 1) then
-     gcc $copts -c -fno-common -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "gcc $copts -c -fno-common -I${NCARG_ROOT}/include WRAPIT.c"
+     echo $cmd
    else
-     gcc $copts -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "gcc $copts -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c"
    endif
+   $cmd
    breaksw
  case HP-UX:
    if ($debug == 1) then
-     cc $copts +z -c -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "cc $copts +z -c -I${NCARG_ROOT}/include WRAPIT.c"
+     echo $cmd
    else
-     cc $copts +z -c -O -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "cc $copts +z -c -O -I${NCARG_ROOT}/include WRAPIT.c"
    endif
+   $cmd
    breaksw
  case Linux:                       # Linux
    if ($f90c == pgf90 || $f90c == lf95 || $f90c == ifc || $f90c == ifort) then
      if ($debug == 1) then
-       cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c"
+       echo $cmd
      else
-       cc $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "cc $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c"
      endif
+     $cmd
    else
      if ($debug == 1) then
-       gcc -fPIC -c -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "gcc -fPIC -c -I${NCARG_ROOT}/include WRAPIT.c"
+       echo $cmd
      else
-       gcc -fPIC $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c
+       set cmd = "gcc -fPIC $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c"
      endif
+     $cmd
    endif
    breaksw
  default:          # OSF1, SunOS, FreeBSD
    if ($debug == 1) then
-     cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c"
+     echo $cmd
    else
-     cc $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c
+     set cmd = "cc $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c"
    endif
+   $cmd
    breaksw
 endsw
 
@@ -553,26 +584,42 @@ foreach arg ($args)
       echo COMPILING $arg
       if ($OS == AIX) then                 # AIX
         if ($arg:e == "f") then            # fixed format
-          xlf90 $fopts -qfixed $arg
+          set cmd = "xlf90 $fopts -qfixed $arg"
         else                               # free format
-          xlf90 $fopts -qsuffix=f=f90 $arg
+          set cmd = "xlf90 $fopts -qsuffix=f=f90 $arg"
         endif
+        if ($debug == 1) then
+          echo $cmd
+        endif
+        $cmd
       else if ($OS == Linux || $OS == Darwin || $OS == FreeBSD) then  
         if ($arg:e == "f90" && $f90c == "g77") then           
           echo FATAL ERROR: g77 can not compile f90 code
           echo " "
           exit 1
         else
-          $f90c $fopts $arg
+          set cmd = "$f90c $fopts $arg"
+          if ($debug == 1) then
+            echo $cmd
+          endif
+          $cmd
         endif
       else if ($OS == SunOS) then          # SunOS
         if ($arg:e == "f90") then           
-          /opt/SUNWspro/bin/f90 $fopts $arg
+          set cmd = "/opt/SUNWspro/bin/f90 $fopts $arg"
         else
-          /opt/SUNWspro/bin/f77 $fopts $arg
+          set cmd = "/opt/SUNWspro/bin/f77 $fopts $arg"
         endif
+        if ($debug == 1) then
+          echo $cmd
+        endif
+        $cmd
       else                               # IRIX,IRIX64,OSF1,HP-UX
-        f90 $fopts $arg
+        set cmd = "f90 $fopts $arg"
+        if ($debug == 1) then
+          echo $cmd
+        endif
+        $cmd
       endif
       set objfile = {$arg:t}              # remove path 
       echo {$objfile:r}.o >> objects      # remove extension
@@ -616,31 +663,39 @@ switch ($OS)
    set pwr = `echo $b | cut -c 14- `
    if ($pwr == 4) then
      if ($debug == 1) then
-       ld -bnoquiet -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf -lxlopt $ld_suffix
+       set cmd = "ld -bnoquiet -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf -lxlopt $ld_suffix"
+       echo $cmd
      else
-       ld -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf -lxlopt $ld_suffix
+       set cmd = "ld -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf -lxlopt $ld_suffix"
      endif
+     $cmd
    else
      if ($debug == 1) then
-       ld -bnoquiet -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix
+       set cmd = "ld -bnoquiet -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix"
+       echo $cmd
      else
-       ld -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix
+       set cmd = "ld -G -b{$nbits} -bnoentry -bexpall -lm -lc -lxlf90 -lxlf $ld_suffix"
      endif
+     $cmd
    endif
    breaksw
  case IRIX64:                      # IRIX64
    if ($nbits == 32) then
      if ($debug == 1) then
-       ld -n32 -v -V -shared $ld_suffix
+       set cmd = "ld -n32 -v -V -shared $ld_suffix"
+       echo $cmd
      else
-       ld -n32 -shared $ld_suffix
+       set cmd = "ld -n32 -shared $ld_suffix"
      endif
+     $cmd
    else      # default 64-bits
      if ($debug == 1) then
-       ld -64 -v -V -shared $ld_suffix
+       set cmd = "ld -64 -v -V -shared $ld_suffix"
+       echo $cmd
      else
-       ld -64 -shared $ld_suffix
+       set cmd = "ld -64 -shared $ld_suffix"
      endif
+     $cmd     
    endif
    if (-e so_locations) then
      'rm' so_locations
@@ -648,10 +703,12 @@ switch ($OS)
    breaksw
  case IRIX:                        # IRIX
    if ($debug == 1) then
-     ld -n32 -v -V -shared $ld_suffix
+     set cmd = "ld -n32 -v -V -shared $ld_suffix"
+     echo $cmd
    else
-     ld -n32 -shared $ld_suffix
+     set cmd = "ld -n32 -shared $ld_suffix"
    endif
+   $cmd     
    if (-e so_locations) then
      'rm' so_locations
    endif
@@ -659,44 +716,70 @@ switch ($OS)
  case Linux:                       # Linux
    if ($f90c == pgf90) then        # PG compiler
      if ($debug == 1) then
-       $f90c -V -v -shared $ld_suffix
+       set cmd = "$f90c -V -v -shared $ld_suffix"
+       echo $cmd
      else
-       $f90c -shared $ld_suffix
+       set cmd = "$f90c -shared $ld_suffix"
      endif
+     $cmd     
    else if ($f90c == lf95) then    # LF compiler
-     $f90c --shared -lfj9f6 -lfj9i6 -lfj9e6 $ld_suffix
+     set cmd = "$f90c --shared -lfj9f6 -lfj9i6 -lfj9e6 $ld_suffix"
+     if ($debug == 1) then
+       echo $cmd
+     endif
+     $cmd     
    else if ($f90c == ifc || $f90c == ifort) then     # INTEL compiler
-     $f90c -shared $ld_suffix
+     set cmd = "$f90c -shared $ld_suffix"
+     if ($debug == 1) then
+       echo $cmd
+     endif
+     $cmd     
    else                            # GNU g77               
      if ($debug == 1) then
-       gcc -fPIC -shared $ld_suffix -lg2c
+       set cmd = "gcc -fPIC -shared $ld_suffix -lg2c"
+       echo $cmd
      else
-       gcc -fPIC -shared $ld_suffix -lg2c
+       set cmd = "gcc -fPIC -shared $ld_suffix -lg2c"
      endif
+     $cmd     
    endif
    breaksw
  case FreeBSD:                     # FreeBSD
    if ($debug == 1) then
-     gcc -shared $ld_suffix -lg2c
+     set cmd = "gcc -shared $ld_suffix -lg2c"
+     echo $cmd
    else
-     gcc -shared $ld_suffix -lg2c
+     set cmd = "gcc -shared $ld_suffix -lg2c"
    endif
+   $cmd     
    breaksw
  case OSF1:                        # OSF1
-   f90 -shared $ld_suffix
+   set cmd = "f90 -shared $ld_suffix"
+   if ($debug == 1) then
+     echo $cmd
+   endif
+   $cmd     
    if (-e so_locations) then
      'rm' so_locations
    endif
    breaksw
  case Darwin:                      # MacOSX
    if (-e /sw/lib/libg2c.a) then
-     gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c
+     set cmd = "gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c"
    else
-     gcc -bundle -flat_namespace -undefined suppress $ld_suffix
+     set cmd = "gcc -bundle -flat_namespace -undefined suppress $ld_suffix"
    endif
+   if ($debug == 1) then
+     echo $cmd
+   endif
+   $cmd     
    breaksw
  case HP-UX:                       # HP-UX
-   ld -b $ld_suffix
+   set cmd = "ld -b $ld_suffix"
+   if ($debug == 1) then
+     echo $cmd
+   endif
+   $cmd     
    breaksw
  default:                          # SunOS
    if (-e /opt/SUNWspro/lib/libsunperf.so) then   # extra SUN libraries
@@ -705,10 +788,12 @@ switch ($OS)
      set ld_suffix = "-L/opt/SUNWspro/lib $ld_suffix"
    endif
    if ($debug == 1) then
-     ld -V -G $ld_suffix
+     set cmd = "ld -V -G $ld_suffix"
+     echo $cmd
    else
-     ld -G $ld_suffix
+     set cmd = "ld -G $ld_suffix"
    endif
+   $cmd     
    breaksw
 endsw
 
