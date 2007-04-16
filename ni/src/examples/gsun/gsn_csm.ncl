@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.210 2007-03-28 21:40:23 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.211 2007-04-16 21:18:08 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4925,7 +4925,12 @@ begin
       set_attr(res2,"sfYCEndV",   90.)
     end if
 
-; Check if a zonal mean plot is desired.
+; Check if a zonal mean plot is desired. First make sure data
+; is not all missing.
+
+    if(zonal_mean_plot.and.all(ismissing(datanew))) then
+      zonal_mean_plot = False
+    end if
 
     if(zonal_mean_plot) then
       if(is_valid_latlon_coord(datanew,"y","lat",res2).and. \
