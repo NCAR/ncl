@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.132 2007-04-10 20:58:23 grubin Exp $
+#      $Id: yMakefile,v 1.133 2007-04-17 17:38:33 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2007-04-10 20:58:23 $
+#	Date:		$Date: 2007-04-17 17:38:33 $
 #
 #	Description:	
 #
@@ -145,7 +145,7 @@ STATIC_HDRS	=	AttSupport.h DataSupport.h FileSupport.h Keywords.h \
 			editline.h editline_unix.h ListSupport.h NclList.h \
 			NclMultiDVallistData.h NclTypelist.h \
 			cptec_254_gtb.h dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
-			dwd_203_gtb.h dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h \
+			dwd_203_gtb.h dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h dwd_207_gtb.h \
 			ecmwf_128_gtb.h ecmwf_129_gtb.h ecmwf_130_gtb.h ecmwf_131_gtb.h \
 			ecmwf_140_gtb.h ecmwf_150_gtb.h ecmwf_160_gtb.h \
 			ecmwf_170_gtb.h ecmwf_180_gtb.h fnmoc_gtb.h \

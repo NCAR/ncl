@@ -25,6 +25,7 @@
 #include "dwd_204_gtb.h"
 #include "dwd_205_gtb.h"
 #include "dwd_206_gtb.h"
+#include "dwd_207_gtb.h"
 #include "ecmwf_128_gtb.h"
 #include "ecmwf_129_gtb.h"
 #include "ecmwf_130_gtb.h"
@@ -1091,7 +1092,21 @@ ENS *ens;
 	char buf[256];
 
 	if (ens->extension_type == 0) { /* NCEP extension */
-		if (ens->prod_id == 1) {
+		if (ens->type == 5 && ens->prob_type > 0) {
+			switch (ens->prob_type) {
+			case 1:
+				sprintf(buf,"Probability of event below %f",ens->lower_prob * 1e-6);
+				break;
+			case 2:
+				sprintf(buf,"Probability of event above %f",ens->upper_prob * 1e-6);
+				break;
+			case 3:
+				sprintf(buf,"Probability of event between %f and %f",
+					ens->lower_prob * 1e-6,ens->upper_prob * 1e-6);
+				break;
+			}
+		}
+		else {
 			switch (ens->type) {
 			case 1:
 				sprintf(buf,"%s resolution control forecast",(ens->id == 1 ? "high" : "low"));
@@ -1102,13 +1117,19 @@ ENS *ens;
 			case 3:
 				sprintf(buf,"positive pertubation # %d",ens->id);
 				break;
+			case 4:
+				sprintf(buf,"cluster, prod_id = %d",ens->prod_id);
+				break;
+			case 5:
+				if (ens->n_members > 0) 
+					sprintf(buf,"whole ensemble (%d members): prod_id = %d",ens->n_members,ens->prod_id);
+				else 
+					sprintf(buf,"whole ensemble: prod_id = %d",ens->prod_id);
+				break;
 			default:
 				sprintf(buf,"type: %d, id: %d, prod_id: %d",ens->type,ens->id,ens->prod_id);
 
 			}
-		}
-		else {
-			sprintf(buf,"type: %d, id: %d, prod_id: %d",ens->type,ens->id,ens->prod_id);
 		}
 	}
 	else if (ens->extension_type == 1) {  /* ECMWF local definition 1 */
@@ -1220,8 +1241,60 @@ GribFileRecord *therec;
 
 
 /*
-* Handle coordinate attributes,  level, initial_time, forecast_time
+* Handle coordinate attributes,  ensemble, level, initial_time, forecast_time
 */
+		if(step->ensemble_isatt && step->prob_param) {
+			float *tmp_probs;
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			switch (grib_rec->ens.prob_type) {
+			case 1:
+				att_list_ptr->att_inq->name = NrmStringToQuark("probability_of_event_below_limit");
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->probability;
+				step->probability = NULL;
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+				break;
+			case 2:
+				att_list_ptr->att_inq->name = NrmStringToQuark("probability_of_event_above_limit");
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->probability;
+				step->probability = NULL;
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+				break;
+			case 3:
+				tmp_probs = (float*)NclMalloc(sizeof(float) * 2);
+				att_list_ptr->att_inq->name = NrmStringToQuark("probability_of_event_between_limits");
+				tmp_probs[0] = *(int*)step->lower_probs->multidval.val;
+				tmp_probs[1] = *(int*)step->upper_probs->multidval.val;
+				tmp_dimsizes = 2;
+				att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+					_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, 
+						       (void*)tmp_probs, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypeintClass);
+				tmp_dimsizes = 1;
+				_NclDestroyObj((NclObj)step->lower_probs);
+				_NclDestroyObj((NclObj)step->upper_probs);
+				step->lower_probs = step->upper_probs = NULL;
+				step->theatts = att_list_ptr;
+				step->n_atts++;
+				break;
+			}
+		}
+		else if (grib_rec->is_ensemble && step->ensemble_isatt) {
+			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("ensemble_info");
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->ensemble;
+			step->ensemble = NULL;
+
+			_NclDestroyObj((NclObj)step->ens_indexes);
+			step->ens_indexes = NULL;
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+
 		if(step->yymmddhh_isatt) {
 			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 			att_list_ptr->next = step->theatts;
@@ -1281,9 +1354,7 @@ GribFileRecord *therec;
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("level");
-/*
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)step->levels0;
-*/
+
 			tmp_level[0] = *(int*)step->levels0->multidval.val;
 			tmp_level[1] = *(int*)step->levels1->multidval.val;
 			tmp_dimsizes = 2;
@@ -1404,59 +1475,55 @@ GribFileRecord *therec;
 
 		step->theatts = att_list_ptr;
 		step->n_atts++;
-		
+
 #if 0
-		if(grib_rec->ptable_rec !=NULL) {
 /*
-* units
-*/
+ * whole_ensemble_product
+ */
+		if (step->prob_ix == 191 || step->prob_ix == 192) {
 			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("units");
+			att_list_ptr->att_inq->name = NrmStringToQuark("whole_ensemble_product_type");
 			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = NrmStringToQuark(grib_rec->ptable_rec->units);		
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			if (step->prob_ix == 191)
+				*tmp_string = NrmStringToQuark("probability from ensemble");
+			else 
+				*tmp_string = NrmStringToQuark("probability from ensemble normalized with respect to climate expectancy");
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 
+					       1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
 			step->theatts = att_list_ptr;
 			step->n_atts++;
-/*
-* long_name
-*/
-			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = NrmStringToQuark(grib_rec->ptable_rec->long_name);		
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
-		} else {
-#endif
-/*
-* units
-*/
-			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("units");
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = step->var_info.units_q;
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
-			att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = step->var_info.long_name_q;	
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
-#if 0
 		}
 #endif
+		
+/*
+* units
+*/
+		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("units");
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = step->var_info.units_q;
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+/*
+ * long_name
+ */
+		att_list_ptr = (GribAttInqRecList*)NclMalloc((unsigned)sizeof(GribAttInqRecList));
+		att_list_ptr->next = step->theatts;
+		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
+		att_list_ptr->att_inq->name = NrmStringToQuark("long_name");
+		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+		*tmp_string = step->var_info.long_name_q;	
+		att_list_ptr->att_inq->thevalue = (NclMultiDValData)_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+		step->theatts = att_list_ptr;
+		step->n_atts++;
+
+
 
 /*
 * center
@@ -1642,6 +1709,20 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 	}
 	return 0;
 }
+
+float bytes2float (unsigned char *bytes)
+{
+	int sign;
+	float a,b;
+	float val;
+
+	sign = (bytes[0] & (char) 0200) ? 1 : 0;
+	a = (float) (bytes[0] & (char) 0177);
+	b = (float) CnvtToDecimal(3,&(bytes[1]));
+	val = b * pow(2.0, -24.0) * pow(16.0, (double)(a - 64));
+	return val;
+}
+					
 
 void _Do109(GribFileRecord *therec,GribParamList *step) {
 	int dimsizes_level;
@@ -2201,7 +2282,7 @@ GribFileRecord *therec;
 	NclQuark *it_rhs, *it_lhs;
 	int *rhs, *lhs;
 	int *rhs1, *lhs1;
-	float *rhs_f, *lhs_f;
+	float *rhs_f,*rhs_f1,*lhs_f,*lhs_f1;
 	int i,j,m;
 	int current_dim = 0;
 	NclMultiDValData tmp_md;
@@ -2234,6 +2315,7 @@ GribFileRecord *therec;
 	GribAttInqRecList *lat_att_list_ptr = NULL;
 	GribAttInqRecList *lon_att_list_ptr = NULL;
 	GribAttInqRecList *rot_att_list_ptr = NULL;
+	char *ens_name;
 
 	therec->total_dims = 0;
 	therec->n_scalar_dims = 0;
@@ -2255,82 +2337,258 @@ GribFileRecord *therec;
 	while(step != NULL) {
 		current_dim = 0;
 		step->aux_coords[0] = step->aux_coords[1] = NrmNULLQUARK;
-		if(!step->ensemble_isatt) {
-			dstep = therec->ensemble_dims;
-			for(i = 0; i < therec->n_ensemble_dims; i++) {
-				if(dstep->dim_inq->size == step->ensemble->multidval.dim_sizes[0]) {
-					tmp_md = _GribGetInternalVar(therec,dstep->dim_inq->dim_name,&test);
-					if(tmp_md != NULL) {
-						lhs = (int*)tmp_md->multidval.val;
-						rhs = (int*)step->ens_indexes->multidval.val;
-						j = 0;
-						while(j<dstep->dim_inq->size) {
-							if(lhs[j] != rhs[j]) {
+		if (step->prob_param > 0) {
+			if(!step->ensemble_isatt) {
+				dstep = therec->ensemble_dims;
+				if (step->probability) { /* either a lower or an upper limit (but not both) */
+					for(i = 0; i < therec->n_ensemble_dims; i++) {
+						if(dstep->dim_inq->size == step->upper_probs->multidval.dim_sizes[0]) {
+							tmp_md = _GribGetInternalVar(therec,dstep->dim_inq->dim_name,&test);
+							if(tmp_md != NULL) {
+								lhs_f = (float*)tmp_md->multidval.val;
+								rhs_f = (float*)step->probability->multidval.val;
+								j = 0;
+								while(j<dstep->dim_inq->size) {
+									if(lhs_f[j] != rhs_f[j]) {
+										break;
+									} else {
+										j++;
+									}
+								}
+								if(j == dstep->dim_inq->size) {
+									break;
+								} else {
+									dstep= dstep->next;
+								}
+							} else {
+								dstep  = dstep->next;
+							}
+						} else {
+							dstep = dstep->next;
+						}
+					}
+					if (dstep) {
+						step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+						_NclDestroyObj((NclObj)step->probability);
+						step->probability = NULL;
+					}
+					else {
+
+                                        /*
+					 * Need a new dimension entry w name and number
+					 */
+						tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
+						tmp->dim_number = therec->total_dims;
+						tmp->size = step->probability->multidval.dim_sizes[0];
+						ens_name = "probability";
+						sprintf(buffer,"%s_%s%d",step->prob_param->abrev,ens_name,therec->total_dims);
+						tmp->dim_name = NrmStringToQuark(buffer);
+						tmp->is_gds = -1;
+						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
+						ptr->dim_inq = tmp;
+						ptr->next = therec->ensemble_dims;
+						therec->ensemble_dims = ptr;
+						therec->n_ensemble_dims++;
+						step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(step->prob_param->units);
+						GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+						if (step->thelist->rec_inq->ens.prob_type == 2) {
+							sprintf(buffer,"probability of %s above limit",step->prob_param->long_name);
+						}
+						else {
+							sprintf(buffer,"probability of %s below limit",step->prob_param->long_name);
+						}
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(buffer);
+						GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+						_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,
+								    (NclMultiDValData)step->probability,tmp_att_list_ptr,2);
+						tmp_att_list_ptr = NULL;
+						step->probability = NULL;
+						therec->total_dims++;
+					}
+					current_dim++;
+				}
+				else if (step->upper_probs && step->lower_probs) {
+					for(i = 0; i < therec->n_ensemble_dims; i++) {
+						if(dstep->dim_inq->size == step->probability->multidval.dim_sizes[0]) {
+							sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_upper");
+							tmp_md = _GribGetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+							sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_lower");
+							tmp_md1 = _GribGetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+							if((tmp_md != NULL )&&(tmp_md1 != NULL) ) {
+								lhs_f = (float*)tmp_md->multidval.val;
+								rhs_f = (float*)step->levels0->multidval.val;
+								lhs_f1 = (float*)tmp_md1->multidval.val;
+								rhs_f1 = (float*)step->levels1->multidval.val;
+								j = 0;
+								while(j<dstep->dim_inq->size) {
+									if((lhs_f[j] != rhs_f[j])||(lhs_f1[j] != rhs_f1[j])) {
+										break;
+									} else {
+										j++;
+									}
+								}
+							}
+							if(j == dstep->dim_inq->size) {
 								break;
 							} else {
-								j++;
+								dstep= dstep->next;
 							}
-						}
-						if(j == dstep->dim_inq->size) {
-							break;
 						} else {
-							dstep= dstep->next;
+							dstep = dstep->next;
 						}
-					} else {
-						dstep  = dstep->next;
 					}
-				} else {
-					dstep = dstep->next;
+					if (dstep) {
+						step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+						_NclDestroyObj((NclObj)step->upper_probs);
+						step->upper_probs = NULL;
+						_NclDestroyObj((NclObj)step->lower_probs);
+						step->lower_probs = NULL;
+					}
+					else {
+
+                                        /*
+					 * Need a new dimension entry w name and number
+					 */
+						tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
+						tmp->dim_number = therec->total_dims;
+						tmp->size = step->probability->multidval.dim_sizes[0];
+						ens_name = "probability";
+						sprintf(buffer,"%s_%s%d",step->prob_param->abrev,ens_name,therec->total_dims);
+						tmp->dim_name = NrmStringToQuark(buffer);
+						tmp->is_gds = -1;
+						ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
+						ptr->dim_inq = tmp;
+						ptr->next = therec->ensemble_dims;
+						therec->ensemble_dims = ptr;
+						therec->n_ensemble_dims++;
+						step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(step->prob_param->units);
+						GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+						sprintf(buffer,"probability of %s between limits, lower limit",
+							step->prob_param->long_name);
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(buffer);
+						GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+						sprintf(name_buffer,"%s%s",buffer,"_lower");
+
+						_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,
+								    (NclMultiDValData)step->lower_probs,tmp_att_list_ptr,2);
+						tmp_att_list_ptr = NULL;
+						step->lower_probs = NULL;
+
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(step->prob_param->units);
+						GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+						sprintf(buffer,"probability of %s between limits, upper limit",
+							step->prob_param->long_name);
+						tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+						*tmp_string = NrmStringToQuark(buffer);
+						GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+						sprintf(name_buffer,"%s%s",buffer,"_upper");
+
+						_GribAddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,
+								    (NclMultiDValData)step->upper_probs,tmp_att_list_ptr,2);
+						tmp_att_list_ptr = NULL;
+						step->upper_probs = NULL;
+
+						therec->total_dims++;
+					}
+					current_dim++;
 				}
 			}
-			if(dstep == NULL) {
+		}
+		else {
+			if(!step->ensemble_isatt) {
+				dstep = therec->ensemble_dims;
+				for(i = 0; i < therec->n_ensemble_dims; i++) {
+					if(dstep->dim_inq->size == step->ensemble->multidval.dim_sizes[0]) {
+						tmp_md = _GribGetInternalVar(therec,dstep->dim_inq->dim_name,&test);
+						if(tmp_md != NULL) {
+							lhs = (int*)tmp_md->multidval.val;
+							rhs = (int*)step->ens_indexes->multidval.val;
+							j = 0;
+							while(j<dstep->dim_inq->size) {
+								if(lhs[j] != rhs[j]) {
+									break;
+								} else {
+									j++;
+								}
+							}
+							if(j == dstep->dim_inq->size) {
+								break;
+							} else {
+								dstep= dstep->next;
+							}
+						} else {
+							dstep  = dstep->next;
+						}
+					} else {
+						dstep = dstep->next;
+					}
+				}
+				if(dstep == NULL) {
 /*
-* Need a new dimension entry w name and number
-*/
-				tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
-				tmp->dim_number = therec->total_dims;
-				tmp->size = step->ensemble->multidval.dim_sizes[0];
-				sprintf(buffer,"ensemble%d",therec->total_dims);
-				tmp->dim_name = NrmStringToQuark(buffer);
-				tmp->is_gds = -1;
-				therec->total_dims++;
-				ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
-				ptr->dim_inq = tmp;
-				ptr->next = therec->ensemble_dims;
-				therec->ensemble_dims = ptr;
-				therec->n_ensemble_dims++;
-				step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+ * Need a new dimension entry w name and number
+ */
+					tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
+					tmp->dim_number = therec->total_dims;
+					tmp->size = step->ensemble->multidval.dim_sizes[0];
+					ens_name = "ensemble";
+					sprintf(buffer,"%s%d",ens_name,therec->total_dims);
+					tmp->dim_name = NrmStringToQuark(buffer);
+					tmp->is_gds = -1;
+					ptr = (GribDimInqRecList*)NclMalloc((unsigned)sizeof(GribDimInqRecList));
+					ptr->dim_inq = tmp;
+					ptr->next = therec->ensemble_dims;
+					therec->ensemble_dims = ptr;
+					therec->n_ensemble_dims++;
+					step->var_info.file_dim_num[current_dim] = tmp->dim_number;
 
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark("non-dim");
-				GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = NrmStringToQuark("non-dim");
+					GribPushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
 
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark("ensemble indexes");
-				GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+					sprintf(buffer,"%s indexes",ens_name);
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = NrmStringToQuark(buffer);
+					GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
 
-				_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,
-						    (NclMultiDValData)step->ens_indexes,tmp_att_list_ptr,2);
-				tmp_att_list_ptr = NULL;
-				step->ens_indexes = NULL;
+					_GribAddInternalVar(therec,tmp->dim_name,&tmp->dim_number,
+							    (NclMultiDValData)step->ens_indexes,tmp_att_list_ptr,2);
+					tmp_att_list_ptr = NULL;
+					step->ens_indexes = NULL;
 
-				tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-				*tmp_string = NrmStringToQuark("ensemble elements description");
-				GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					sprintf(buffer,"%s elements description",ens_name);
+					*tmp_string = NrmStringToQuark(buffer);
+					GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
 
-				sprintf(&(buffer[strlen(buffer)]),"_info",therec->total_dims);
-				_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tmp->dim_number,
-						    (NclMultiDValData)step->ensemble,tmp_att_list_ptr,1);
-				tmp_att_list_ptr = NULL;
-				step->ensemble = NULL;
-			} else {
-				step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
-				_NclDestroyObj((NclObj)step->ens_indexes);
-				step->ens_indexes = NULL;
-				_NclDestroyObj((NclObj)step->ensemble);
-				step->ensemble = NULL;
+					sprintf(buffer,"%s%d",ens_name,therec->total_dims);
+					sprintf(&(buffer[strlen(buffer)]),"_info",therec->total_dims);
+					_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tmp->dim_number,
+							    (NclMultiDValData)step->ensemble,tmp_att_list_ptr,1);
+					tmp_att_list_ptr = NULL;
+					step->ensemble = NULL;
+					therec->total_dims++;
+				} else {
+					step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+					_NclDestroyObj((NclObj)step->ens_indexes);
+					step->ens_indexes = NULL;
+					_NclDestroyObj((NclObj)step->ensemble);
+					step->ensemble = NULL;
+				}
+				current_dim++;
 			}
-			current_dim++;
 		}
 		if(!step->yymmddhh_isatt) {
 			dstep = therec->it_dims;
@@ -2465,6 +2723,7 @@ GribFileRecord *therec;
 			}
 			current_dim++;
 		}
+
 		if((!step->levels_isatt)&& (step->levels!=NULL)) {
 			dstep = therec->lv_dims;
 			for(i = 0; i < therec->n_lv_dims; i++) {
@@ -3367,11 +3626,24 @@ int it_equal(GIT *it1,GIT* it2)
 
 int ens_equal(ENS *ens1, ENS *ens2)
 {
-	if ((ens1->prod_id == ens2->prod_id) &&
-	    (ens1->type == ens2->type) &&
-	    (ens1->id == ens2->id) &&
-	    (ens1->extension_type == ens2->extension_type))
+	if (ens1->type == 5 && ens1->prob_param > 0) { 
+		/* a probability product */
+		if ((ens1->type == ens2->type) &&
+		    (ens1->prob_type == ens2->prob_type) &&
+		    (ens1->lower_prob == ens2->lower_prob) &&
+		    (ens1->upper_prob == ens2->upper_prob)) {
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	}
+	else if ((ens1->prod_id == ens2->prod_id) &&
+		 (ens1->type == ens2->type) &&
+		 (ens1->id == ens2->id) &&
+		 (ens1->extension_type == ens2->extension_type)) {
 		return 1;
+	}
 	return 0;
 }
 
@@ -3407,6 +3679,7 @@ GribParamList* step;
 	int total;
 	int doff;
 	char *name;
+	float *lprob, *uprob;
 	NhlErrorTypes returnval = NhlNOERROR;
 
 	doff = step->var_info.doff;
@@ -3548,7 +3821,88 @@ GribParamList* step;
 
 	i = 0;
 	step->var_info.num_dimensions = 0;
-	if (n_tmp_ens_vals > 0) {
+	if (step->prob_param > 0 && n_tmp_ens_vals > 0) {
+		float minlp, maxlp, minup, maxup;
+		NhlBoolean const_lp, const_up;
+		lprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
+		uprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
+		minlp = maxlp = tmp_ens_vals[0].lower_prob;
+		minup = maxup = tmp_ens_vals[0].upper_prob;
+		for (j = 0; j < n_tmp_ens_vals; j++) {
+			lprob[j] = tmp_ens_vals[j].lower_prob * 1e-6;
+			uprob[j] = tmp_ens_vals[j].upper_prob * 1e-6;
+			/*
+			if (lprob[j] < minlp) minlp = lprob[j];
+			if (lprob[j] > maxlp) maxlp = lprob[j];
+			if (uprob[j] < minup) minup = uprob[j];
+			if (uprob[j] > maxup) maxup = uprob[j];
+			*/
+		}
+		/*
+		const_lp = maxlp == minlp;
+		const_up = maxup == minup;
+		*/
+		step->lower_probs = NULL;
+		step->upper_probs = NULL;
+		step->probability = NULL;
+		if (tmp_ens_vals[0].prob_type == 1) {
+			step->probability = (NclOneDValCoordData)_NclCreateVal(
+				NULL,
+				NULL,
+				Ncl_OneDValCoordData,
+				0,
+				(void*)lprob,
+				NULL,
+				1,
+				(void*)&n_tmp_ens_vals,
+				TEMPORARY,
+				NULL,
+				nclTypefloatClass);
+			NclFree(uprob);
+		}
+		else if (tmp_ens_vals[0].prob_type == 2) {
+			step->probability = (NclOneDValCoordData)_NclCreateVal(
+				NULL,
+				NULL,
+				Ncl_OneDValCoordData,
+				0,
+				(void*)uprob,
+				NULL,
+				1,
+				(void*)&n_tmp_ens_vals,
+				TEMPORARY,
+				NULL,
+				nclTypefloatClass);
+			NclFree(lprob);
+		}
+		else {
+			step->lower_probs = (NclMultiDValData)_NclCreateVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				(void*)lprob,
+				NULL,
+				1,
+				(void*)&n_tmp_ens_vals,
+				TEMPORARY,
+				NULL,
+				nclTypefloatClass);
+			step->upper_probs = (NclMultiDValData)_NclCreateVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				(void*)uprob,
+				NULL,
+				1,
+				(void*)&n_tmp_ens_vals,
+				TEMPORARY,
+				NULL,
+				nclTypefloatClass);
+		}
+	}
+	else if (n_tmp_ens_vals > 0) {
 		ens_vals_q = (NclQuark *) NclMalloc(sizeof(NclQuark) * n_tmp_ens_vals);
 		ens_indexes = (int *) NclMalloc(sizeof(int) * n_tmp_ens_vals);
 		for (j = 0; j < n_tmp_ens_vals; j++) {
@@ -4692,7 +5046,7 @@ void *s2;
 {
 	GribRecordInqRecList *s_1 = *(GribRecordInqRecList**)s1;
 	GribRecordInqRecList *s_2 = *(GribRecordInqRecList**)s2;
-	short result = 0;
+	int result = 0;
 
 	if (! s_1->rec_inq->is_ensemble) /* if one is an ensemble they both have to be */
 		return date_comp(s1,s2);
@@ -4704,9 +5058,22 @@ void *s2;
 		result =  s_1->rec_inq->ens.type - s_2->rec_inq->ens.type;
 	}
 	if (! result) {
-		result =  s_1->rec_inq->ens.id - s_2->rec_inq->ens.id;
+		if (s_1->rec_inq->ens.prob_param > 0 || s_2->rec_inq->ens.prob_param > 0) {
+			result = s_1->rec_inq->ens.prob_param - s_2->rec_inq->ens.prob_param;
+			if (! result) {
+				result =  s_1->rec_inq->ens.prob_type - s_2->rec_inq->ens.prob_type;
+			}
+			if (! result && (s_1->rec_inq->ens.prob_type == 1 ||  s_1->rec_inq->ens.prob_type == 3)) {
+				result =  s_1->rec_inq->ens.lower_prob - s_2->rec_inq->ens.lower_prob;
+			}
+			if (! result && (s_1->rec_inq->ens.prob_type == 2 ||  s_1->rec_inq->ens.prob_type == 3)) {
+				result =  s_1->rec_inq->ens.upper_prob - s_2->rec_inq->ens.upper_prob;
+			}
+		}
+		else {
+			result =  s_1->rec_inq->ens.id - s_2->rec_inq->ens.id;
+		}
 	}
-
 	if (! result) {
 		return date_comp(s1,s2);
 	}
@@ -4743,6 +5110,7 @@ static GribParamList *_NewListNode
 	tmp->param_number = grib_rec->param_number;
 	tmp->ptable_version = grib_rec->ptable_version;
 	tmp->grid_number = grib_rec->grid_number;
+	tmp->prob_param = grib_rec->ens.prob_param;
 /*
 	tmp->grid_number = 255;
 */
@@ -4763,6 +5131,9 @@ static GribParamList *_NewListNode
 	tmp->time_unit_indicator = (int)grib_rec->pds[17];
 	tmp->variable_time_unit = False;
 	
+	tmp->probability = NULL;
+	tmp->lower_probs = NULL;
+	tmp->upper_probs = NULL;
 	tmp->levels = NULL;
 	tmp->levels0 = NULL;
 	tmp->levels1 = NULL;
@@ -5098,6 +5469,11 @@ GribRecordInqRec *grib_rec;
 		return comp;
 
 	comp = node->param_number - grib_rec->param_number;
+
+	if (comp)
+		return comp;
+
+	comp = node->prob_param -  grib_rec->ens.prob_param; 
 
 	if (comp)
 		return comp;
@@ -5694,6 +6070,7 @@ int wr_status;
 	int subcenter, center, process,ptable_version;
 	NhlErrorTypes retvalue;
 	struct stat statbuf;
+	int probability_index;
 
 	if (! Ptables) {
 		InitPtables();
@@ -6013,6 +6390,10 @@ int wr_status;
 							ptable = &dwd_206_params[0];
 							ptable_count = sizeof(dwd_206_params)/sizeof(TBLE2);
 							break;
+						case 207:
+							ptable = &dwd_207_params[0];
+							ptable_count = sizeof(dwd_207_params)/sizeof(TBLE2);
+							break;
 						}
 						break;
 					case 59: /* FSL */
@@ -6075,6 +6456,7 @@ int wr_status;
 									ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
 								}
 							}
+							
 							break;
 						case 128: /* ocean modeling branch */
 							ptable = &omb_params[0];
@@ -6120,7 +6502,7 @@ int wr_status;
 						ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
 					}
 					for (i = 0; i < ptable_count; i++) {
- 						if (ptable[i].num == grib_rec->param_number) {
+						if (ptable[i].num == grib_rec->param_number) {
 							name_rec = ptable + i;
 							break;
 						}
@@ -6281,23 +6663,43 @@ int wr_status;
 						grib_rec->is_ensemble = 1;
 						grib_rec->ens.extension_type = 0;
 						grib_rec->ens.type = grib_rec->pds[41];
-						grib_rec->ens.id = grib_rec->pds[42];
-						grib_rec->ens.prod_id = grib_rec->pds[43];
-						/*
-						switch (grib_rec->ensemble_type) {
-						case 1:
-							grib_rec->ensemble_ix = 0;
-							break;
-						case 2:
-							grib_rec->ensemble_ix = 1 + 2 * (grib_rec->ensemble_id - 1);
-							break;
-						case 3:
-							grib_rec->ensemble_ix = 2 * (grib_rec->ensemble_id);
-							break;
-						default:
-							grib_rec->ensemble_ix = grib_rec->ensemble_id;
+						if (grib_rec->ens.type != 5) {
+							grib_rec->ens.id = grib_rec->pds[42];
+							grib_rec->ens.prod_id = grib_rec->pds[43];
 						}
-						*/
+						else {
+							TBLE2 *ptable;
+							int ptable_count;
+
+							grib_rec->ens.prob_type = 0;
+							grib_rec->ens.lower_prob = 0;
+							grib_rec->ens.upper_prob = 0;
+							if (grib_rec->pds_size >= 47 &&
+							    (grib_rec->param_number == 191 || grib_rec->param_number == 192)) {
+								/* a Probability  product */
+
+								ptable = &ncep_opn_params[0];
+								ptable_count = sizeof(ncep_opn_params)/sizeof(TBLE2);
+								grib_rec->ens.prob_param = NULL;
+								for (i = 0; i < ptable_count; i++) {
+									if (ptable[i].num == grib_rec->pds[45]) {
+										grib_rec->ens.prob_param = ptable + i;
+										break;
+									}
+								}
+								if (grib_rec->pds_size >= 47)
+									grib_rec->ens.prob_type = grib_rec->pds[46];
+								if (grib_rec->pds_size >= 51)
+									grib_rec->ens.lower_prob = 
+										bytes2float(&(grib_rec->pds[47]));
+								if (grib_rec->pds_size >= 54)
+									grib_rec->ens.upper_prob = 
+										bytes2float(&(grib_rec->pds[51]));
+								if (grib_rec->pds_size >= 61)
+									grib_rec->ens.n_members = grib_rec->pds[60];
+							}
+								
+						}
 					}
 					if(therec->var_list == NULL) {
 						therec->var_list = _NewListNode(grib_rec);

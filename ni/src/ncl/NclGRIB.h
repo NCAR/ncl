@@ -1,6 +1,13 @@
 #include "NclMultiDValData.h"
 #include "NclOneDValCoordData.h"
 
+typedef struct tble2 {
+        int  num;
+        char *long_name;
+        char *units;
+        char *abrev;
+}TBLE2;
+
 typedef union cvt{
         char c[4];
         unsigned int value;
@@ -22,6 +29,11 @@ typedef struct _ens {
 	int type;
 	int id;
 	int prod_id;
+	TBLE2 *prob_param; 
+	int prob_type;
+	float lower_prob;
+	float upper_prob;
+	int  n_members;
 } ENS;
 
 typedef struct ens_list {
@@ -59,12 +71,6 @@ typedef struct ft_list {
 	struct ft_list *next;
 }FTLIST;
 
-typedef struct tble2 {
-        int  num;
-        char *long_name;
-        char *units;
-        char *abrev;
-}TBLE2;
 
 typedef struct _ptableinfo {
 	struct _ptableinfo *next;
@@ -158,6 +164,10 @@ struct _GribParamList {
 	int ensemble_isatt;
 	NclMultiDValData ensemble;
 	NclOneDValCoordData ens_indexes;
+	TBLE2 *prob_param;
+	NclOneDValCoordData probability;
+	NclMultiDValData lower_probs;
+	NclMultiDValData upper_probs;
 	int yymmddhh_isatt;
 	NclOneDValCoordData yymmddhh;
 	GIT *it_vals;

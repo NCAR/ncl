@@ -3055,7 +3055,7 @@ int stat_type_only
 		strcat(buffer,"_rat");
 		break;
 	default:
-		strcat(buffer,"_unsp");
+		strcat(buffer,"_");
 		break;
 	}
 	if (stat_type_only) {
