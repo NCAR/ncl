@@ -1658,14 +1658,15 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(6 * sizeof(string));
+	sval = (string*) NclMalloc(7 * sizeof(string));
 	sval[0] = NrmStringToQuark("none");
 	sval[1] = NrmStringToQuark("all");
 	sval[2] = NrmStringToQuark("ensemble");
 	sval[3] = NrmStringToQuark("initial_time");
 	sval[4] = NrmStringToQuark("forecast_time");
 	sval[5] = NrmStringToQuark("level");
-	len_dims = 6;
+	sval[6] = NrmStringToQuark("probability");
+	len_dims = 7;
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].valid_values = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);

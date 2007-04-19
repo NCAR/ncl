@@ -763,7 +763,7 @@ void g2GDSCEGrid
 			*tmp_string = NrmStringToQuark(
                     "Latitude/longitude Grid (Quasi-Regular)");
 		else 
-			*tmp_string = NrmStringToQuark("Latitude/longitude Grid");
+			*tmp_string = NrmStringToQuark("Latitude/Longitude");
 		Grib2PushAtt(lon_att_list,"grid_type",tmp_string,1,nclTypestringClass);
         (*nlonatts)++;
 
@@ -807,7 +807,7 @@ void g2GDSCEGrid
 			*tmp_string = NrmStringToQuark(
                     "Latitude/longitude Grid (Quasi-Regular)");
 		else 
-			*tmp_string = NrmStringToQuark("Latitude/longitude Grid");
+			*tmp_string = NrmStringToQuark("Latitude/Longitude");
 		Grib2PushAtt(lat_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -1444,7 +1444,7 @@ void g2GDSMEGrid
 	    *tmp_string = NrmStringToQuark("degrees_east");
 	    Grib2PushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-	    *tmp_string = NrmStringToQuark("Mercator Projection Grid");
+	    *tmp_string = NrmStringToQuark("Mercator");
 	    Grib2PushAtt(lon_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 	    tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 	    *tmp_string = NrmStringToQuark("longitude");
@@ -1692,7 +1692,7 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_east");
 		Grib2PushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Polar sterographic can be south or north");
+		*tmp_string = NrmStringToQuark("Polar Sterographic Projection (North or South)");
 		Grib2PushAtt(lon_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("longitude");
@@ -1718,7 +1718,7 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_north");
 		Grib2PushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Polar sterographic can be south or north");
+		*tmp_string = NrmStringToQuark("Polar Sterographic Projection (North or South)");
 		grid_name = *tmp_string;
 		Grib2PushAtt(lat_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -1960,7 +1960,7 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_east");
 		Grib2PushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Lambert Conformal Secant or Tangent, Conical or bipolar");
+		*tmp_string = NrmStringToQuark("Lambert Conformal (secant, tangent, conical or bipolar)");
 		Grib2PushAtt(lon_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		*tmp_string = NrmStringToQuark("longitude");
@@ -1992,7 +1992,7 @@ int* nrotatts;
 		*tmp_string = NrmStringToQuark("degrees_north");
 		Grib2PushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark("Lambert Conformal Secant or Tangent, Conical or bipolar");
+		*tmp_string = NrmStringToQuark("Lambert Conformal (secant, tangent, conical or bipolar)");
 		grid_name = *tmp_string;
 		Grib2PushAtt(lat_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -2273,9 +2273,9 @@ TRY2:
 		Grib2PushAtt(lon_att_list,"units",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (is_thinned_lon) {
-			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid (Quasi-Regular)");
+			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude (Quasi-Regular)");
 		} else {
-			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid");
+			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude");
 		}
 		Grib2PushAtt(lon_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlonatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -2306,9 +2306,9 @@ TRY2:
 		Grib2PushAtt(lat_att_list,"units",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
 		if (is_thinned_lon) {
-			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid (Quasi-Regular)");
+			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude (Quasi-Regular)");
 		} else {
-			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude Grid");
+			*tmp_string = NrmStringToQuark("Gaussian Latitude/Longitude");
 		}
 		Grib2PushAtt(lat_att_list,"grid_type",tmp_string,1,nclTypestringClass); (*nlatatts)++;
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
@@ -2992,7 +2992,7 @@ void *s2;
 {
 	Grib2RecordInqRecList *s_1 = *(Grib2RecordInqRecList**)s1;
 	Grib2RecordInqRecList *s_2 = *(Grib2RecordInqRecList**)s2;
-	short result = 0;
+	int result = 0;
 
 	if (! s_1->rec_inq->is_ensemble) /* if one is an ensemble they both have to be */
 		return g2date_comp(s1,s2);
@@ -3000,6 +3000,27 @@ void *s2;
 	result =  s_1->rec_inq->ens.id - s_2->rec_inq->ens.id;
 	if (! result) {
 		result =  s_1->rec_inq->ens.type - s_2->rec_inq->ens.type;
+	}
+	if (! result) {
+		/* the prob_type has to be the same for records to be in the same variable */
+		if  (s_1->rec_inq->ens.prob_type > -1) {
+			switch (s_1->rec_inq->ens.prob_type) {
+				/* case 0,3 involve lower limit case 1,4 upper limit case 2 both */
+			case 0:
+			case 2:
+			case 3:
+				result = s_1->rec_inq->ens.lower_limit_scale - s_2->rec_inq->ens.lower_limit_scale;
+				if (! result)
+					result = s_1->rec_inq->ens.lower_limit_value - s_2->rec_inq->ens.lower_limit_value;
+				if  (s_1->rec_inq->ens.prob_type != 2)
+					break;
+			case 1:
+			case 4:
+				result = s_1->rec_inq->ens.upper_limit_scale - s_2->rec_inq->ens.upper_limit_scale;
+				if (! result)
+					result = s_1->rec_inq->ens.upper_limit_value - s_2->rec_inq->ens.upper_limit_value;
+			}
+		}
 	}
 
 	if (! result) {
@@ -3108,6 +3129,59 @@ int stat_type_only
 	return;
 }
 
+static void SetTimePeriodString
+#if 	NhlNeedProto
+(char *buf, int period, int indicator)
+#else
+(buf,period,indicator)
+char *buf;
+int period;
+int indicator;
+#endif
+{
+	switch (indicator) {
+	case 0:
+		sprintf(buf,"%d minutes",period);
+		return;
+	case  1:
+		sprintf(buf,"%d hours",period);
+		return;
+	case  2:
+		sprintf(buf,"%d days",period);
+		return;
+	case  3:
+		sprintf(buf,"%d months",period);
+		return;
+	case  4:
+		sprintf(buf,"%d years",period);
+		return;
+	case  5:
+		sprintf(buf,"%d decades",period);
+		return;
+	case  6:
+		sprintf(buf,"%d decades",period * 3);
+		return;
+	case  7:
+		sprintf(buf,"%d centuries",period);
+		return;
+	case  10:
+		sprintf(buf,"%d hours",period * 3);
+		return;
+	case  11:
+		sprintf(buf,"%d hours",period * 6);
+		return;
+	case  12:
+		sprintf(buf,"%d hours",period * 12);
+		return;
+	case  13:
+		sprintf(buf,"%d seconds",period);
+		return;
+	default:
+		sprintf(buf,"%d (unknown units)",period);
+		return;
+	}
+}
+		
 static void _g2SetAttributeLists
 #if 	NhlNeedProto
 (Grib2FileRecord *therec)
@@ -3186,23 +3260,12 @@ Grib2FileRecord *therec;
 			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 			att_list_ptr->att_inq->name = NrmStringToQuark("statistical_process_duration");
 			if (step->forecast_time_isatt || ! step->forecast_time_iszero) {
-				if (Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-						       "4.4.table",step->time_unit_indicator,ct) < NhlWARNING) {
-					return;
-				}
 				if (step->forecast_time_iszero) {
 					sprintf(buf,"initial time to forecast time");
 				}
-				else if (ct->descrip) {
-					if (step->time_unit_indicator < 8) {
-						sprintf(buf,"%d %ss (ending at forecast time)",step->time_period,ct->descrip);
-					}
-					else {
-						sprintf(buf,"%d units of %s (ending at forecast time)",step->time_period,ct->descrip);
-					}
-				}
 				else {
-					sprintf(buf,"%d unknown units (ending at forecast time)",step->time_period,ct->descrip);
+					SetTimePeriodString(buf,step->time_period,step->time_unit_indicator);
+					sprintf(&buf[strlen(buf)]," (ending at forecast time)");
 				}
 				if (! step->forecast_time_iszero)
 					AppendStatProcInfoToVarName(step,False);
@@ -3246,6 +3309,35 @@ Grib2FileRecord *therec;
 			step->theatts = att_list_ptr;
 			step->n_atts++;
 		}
+		if (step->prob_type > -1) {
+			att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("probability_type");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			switch(step->prob_type) {
+			case 0:
+			case 4:
+				*tmp_string = NrmStringToQuark("Probability of event below limit");
+				break;
+			case 1:
+			case 3:
+				*tmp_string = NrmStringToQuark("Probability of event above limit");
+				break;
+			case 2:
+				*tmp_string = NrmStringToQuark("Probability of event between upper and lower limits (range includes lower limit but not the upper limit)");
+				break;
+			default:
+				*tmp_string = NrmStringToQuark("Unknown");
+			}
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal(NULL, NULL,
+					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes, 
+					      PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+		}
+			
 
 		if ((step->levels_isatt) && (!step->levels_has_two) && (step->traits.first_level_type != 255)) {
 			if (grib_rec->level0 != GRIB2_MISSING_LEVEL_VAL) {
@@ -3507,7 +3599,10 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 		att_list_ptr->att_inq->name = NrmStringToQuark("units");
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = step->var_info.units_q;		
+		if (step->prob_type <=  -1)
+			*tmp_string = step->var_info.units_q;		
+		else
+			*tmp_string = NrmStringToQuark("percent");
 		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
 			_NclCreateVal(NULL, NULL, 
 				      Ncl_MultiDValData, 0, (void*)tmp_string, NULL, 1, &tmp_dimsizes, 
@@ -4046,21 +4141,6 @@ Grib2RecordInqRec *grib_rec;
         NclFree(grib_rec->table_source);
     }	    
 
-#if 0
-    /* PTABLE record */
-    if (grib_rec->ptable_rec != NULL) {
-        if (grib_rec->ptable_rec->long_name != NULL)
-            NclFree(grib_rec->ptable_rec->long_name);
-
-        if (grib_rec->ptable_rec->units != NULL)
-            NclFree(grib_rec->ptable_rec->units);
-
-        if (grib_rec->ptable_rec->abrev != NULL)
-            NclFree(grib_rec->ptable_rec->abrev);
-
-        NclFree(grib_rec->ptable_rec);
-    }
-#endif
 
     /* PDS record */
 
@@ -4172,12 +4252,18 @@ static Grib2ParamList *_g2NewListNode
 	tmp->time_period = grib_rec->time_period;
 	tmp->time_unit_indicator = grib_rec->forecast_time_units;
 	tmp->variable_time_unit = False;
+	tmp->prob_type = grib_rec->ens.prob_type;
 	tmp->levels = NULL;
 	tmp->levels0 = NULL;
 	tmp->levels1 = NULL;
 	tmp->levels_has_two = 0;
 	tmp->yymmddhh = NULL;
 	tmp->forecast_time = NULL;
+	tmp->ensemble = NULL;
+	tmp->ens_indexes = NULL;
+	tmp->probability = NULL;
+	tmp->lower_probs = NULL;
+	tmp->upper_probs = NULL;
 	tmp->n_atts = 0;
 
 	return tmp;
@@ -4314,48 +4400,6 @@ Grib2RecordInqRec *grib_rec;
 }
 
 
-static int _g2FirstCheck
-#if NhlNeedProto
-(Grib2FileRecord *therec, Grib2ParamList *step, Grib2RecordInqRec *grib_rec)
-#else
-(therec, step, grib_rec)
-    Grib2FileRecord *therec;
-    Grib2ParamList *step;
-    Grib2RecordInqRec *grib_rec;
-#endif
-{
-    int gridcomp;
-    int result;
-
-    result = memcmp(&step->traits,&grib_rec->traits,sizeof(Grib2VarTraits));
-
-    if (result < 0)
-        return 0;
-    else if (result > 0) {
-        therec->var_list = _g2NewListNode(grib_rec);
-        therec->var_list->next = step;
-        therec->n_vars++;
-        return 1;
-    }
-
-    gridcomp = g2GridCompare(step,grib_rec);
-    if (gridcomp < 0)
-        return 0;
-
-    if (gridcomp > 0) {
-        therec->var_list = _g2NewListNode(grib_rec);
-        therec->var_list->next = step;
-        therec->n_vars++;
-        return 1;
-    }
-
-    /* this record is belongs to existing variable */
-
-    _g2AddRecordToNode(step,grib_rec);
-
-    return 1;
-}
-
 static int _g2CompareRecord
 #if NhlNeedProto
 (Grib2ParamList *step, Grib2RecordInqRec *grib_rec)
@@ -4370,6 +4414,12 @@ static int _g2CompareRecord
 
     result = memcmp(&step->traits,&grib_rec->traits,sizeof(Grib2VarTraits));
 
+    if (result < 0)
+	    return -1;
+    else if (result > 0)
+	    return 1;
+
+    result = step->prob_type - grib_rec->ens.prob_type;
     if (result < 0)
 	    return -1;
     else if (result > 0)
@@ -4569,10 +4619,38 @@ int g2it_equal(G2_GIT *it1, G2_GIT* it2)
 
 int g2ens_equal(G2_ENS *ens1, G2_ENS *ens2)
 {
-    if ((ens1->type == ens2->type)
-	&& (ens1->id == ens2->id))
-        return 1;
+    if (ens1->prob_type <= -1) {
+	    if ((ens1->type == ens2->type)
+		&& (ens1->id == ens2->id)) {
+		    return 1;
+	    }
+    }
+    else {
+	    switch (ens1->prob_type) {
+		    /* case 0,3 involve lower limit case 1,4 upper limit case 2 both */
+	    case 0:
+	    case 3:
+		    if (ens1->lower_limit_scale == ens2->lower_limit_scale &&
+			ens1->lower_limit_value == ens2->lower_limit_value) {
+			    return 1;
+		    }
+	    case 1:
+	    case 4:
+		    if (ens1->upper_limit_scale == ens2->upper_limit_scale &&
+			ens1->upper_limit_value == ens2->upper_limit_value) {
+			    return 1;
+		    }
+	    case 2:
+		    if (ens1->lower_limit_scale == ens2->lower_limit_scale &&
+			ens1->lower_limit_value == ens2->lower_limit_value &&
+			ens1->upper_limit_scale == ens2->upper_limit_scale &&
+			ens1->upper_limit_value == ens2->upper_limit_value) {
+			    return 1;
+		    }
 
+	    }
+    }
+		
     return 0;
 }
 
@@ -5073,6 +5151,7 @@ Grib2ParamList* step;
     int total;
     int doff;
     char *name;
+    float *lprob, *uprob;
     NhlErrorTypes returnval = NhlNOERROR;
 
 
@@ -5208,7 +5287,77 @@ Grib2ParamList* step;
 
     i = 0;
     step->var_info.num_dimensions = 0;
-    if (n_tmp_ens_vals > 0) {
+
+    if (step->prob_type > -1 && n_tmp_ens_vals > 0) {
+	    lprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
+	    uprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
+	    for (j = 0; j < n_tmp_ens_vals; j++) {
+		    lprob[j] = tmp_ens_vals[j].lower_limit_value *
+			    pow(10.0,-(double)tmp_ens_vals[j].lower_limit_scale);
+		    uprob[j] = tmp_ens_vals[j].upper_limit_value *
+			    pow(10.0,-(double)tmp_ens_vals[j].upper_limit_scale);
+	    }
+	    step->lower_probs = NULL;
+	    step->upper_probs = NULL;
+	    step->probability = NULL;
+	    if (tmp_ens_vals[0].prob_type == 0 || tmp_ens_vals[0].prob_type == 3) {
+		    step->probability = (NclOneDValCoordData)_NclCreateVal(
+			    NULL,
+			    NULL,
+			    Ncl_OneDValCoordData,
+			    0,
+			    (void*)lprob,
+			    NULL,
+			    1,
+			    (void*)&n_tmp_ens_vals,
+			    TEMPORARY,
+			    NULL,
+			    nclTypefloatClass);
+		    NclFree(uprob);
+	    }
+	    else if (tmp_ens_vals[0].prob_type == 1 ||  tmp_ens_vals[0].prob_type == 4) {
+		    step->probability = (NclOneDValCoordData)_NclCreateVal(
+			    NULL,
+			    NULL,
+			    Ncl_OneDValCoordData,
+			    0,
+			    (void*)uprob,
+			    NULL,
+			    1,
+			    (void*)&n_tmp_ens_vals,
+			    TEMPORARY,
+			    NULL,
+			    nclTypefloatClass);
+		    NclFree(lprob);
+	    }
+	    else if (tmp_ens_vals[0].prob_type == 2) {
+		    step->lower_probs = (NclMultiDValData)_NclCreateVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    (void*)lprob,
+			    NULL,
+			    1,
+			    (void*)&n_tmp_ens_vals,
+			    TEMPORARY,
+			    NULL,
+			    nclTypefloatClass);
+		    step->upper_probs = (NclMultiDValData)_NclCreateVal(
+			    NULL,
+			    NULL,
+			    Ncl_MultiDValData,
+			    0,
+			    (void*)uprob,
+			    NULL,
+			    1,
+			    (void*)&n_tmp_ens_vals,
+			    TEMPORARY,
+			    NULL,
+			    nclTypefloatClass);
+	    }
+    }
+    else if (n_tmp_ens_vals > 0) {
 	    ens_vals_q = (NclQuark *) NclMalloc(sizeof(NclQuark) * n_tmp_ens_vals);
 	    ens_indexes = (int *) NclMalloc(sizeof(int) * n_tmp_ens_vals);
 	    for (j = 0; j < n_tmp_ens_vals; j++) {
@@ -5688,8 +5837,8 @@ static void _g2SetFileDimsAndCoordVars
     int *rhs1,
         *lhs1;
 
-    float   *rhs_f,
-            *lhs_f;
+    float   *rhs_f, *rhs_f1,
+            *lhs_f, *lhs_f1;
     int i,
         j,
         m;
@@ -5752,6 +5901,10 @@ static void _g2SetFileDimsAndCoordVars
     therec->total_dims = 0;
     therec->n_scalar_dims = 0;
     therec->scalar_dims = NULL;
+    therec->n_probability_dims = 0;
+    therec->probability_dims = NULL;
+    therec->n_ensemble_dims = 0;
+    therec->ensemble_dims = NULL;
     therec->n_it_dims = 0;
     therec->it_dims = NULL;
     therec->n_ft_dims = 0;
@@ -5767,7 +5920,168 @@ static void _g2SetFileDimsAndCoordVars
     while (step != NULL) {
         current_dim = 0;
         step->aux_coords[0] = step->aux_coords[1] = NrmNULLQUARK;
-        if (!step->ensemble_isatt) {
+	if (step->prob_type > -1) {
+		if(!step->ensemble_isatt) {
+			dstep = therec->probability_dims;
+			if (step->probability) { /* either a lower or an upper limit (but not both) */
+				for(i = 0; i < therec->n_probability_dims; i++) {
+					if(dstep->dim_inq->size == step->upper_probs->multidval.dim_sizes[0]) {
+						tmp_md = _Grib2GetInternalVar(therec,dstep->dim_inq->dim_name,&test);
+						if(tmp_md != NULL) {
+							lhs_f = (float*)tmp_md->multidval.val;
+							rhs_f = (float*)step->probability->multidval.val;
+							j = 0;
+							while(j<dstep->dim_inq->size) {
+								if(lhs_f[j] != rhs_f[j]) {
+									break;
+								} else {
+									j++;
+								}
+							}
+							if(j == dstep->dim_inq->size) {
+								break;
+							} else {
+								dstep= dstep->next;
+							}
+						} else {
+							dstep  = dstep->next;
+						}
+					} else {
+						dstep = dstep->next;
+					}
+				}
+				if (dstep) {
+					step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+					_NclDestroyObj((NclObj)step->probability);
+					step->probability = NULL;
+				}
+				else {
+
+                                        /*
+					 * Need a new dimension entry w name and number
+					 */
+					tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+					tmp->dim_number = therec->total_dims;
+					tmp->size = step->probability->multidval.dim_sizes[0];
+					sprintf(buffer,"%s_probability%d",NrmQuarkToString(step->var_info.param_q),therec->n_ensemble_dims);
+					tmp->dim_name = NrmStringToQuark(buffer);
+					ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+					ptr->dim_inq = tmp;
+					ptr->next = therec->probability_dims;
+					therec->probability_dims = ptr;
+					therec->n_probability_dims++;
+					step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = step->var_info.units_q;
+					Grib2PushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+					sprintf(buffer,"%s limits",NrmQuarkToString(step->var_info.long_name_q));
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = NrmStringToQuark(buffer);
+					Grib2PushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+
+					_Grib2AddInternalVar(therec,tmp->dim_name,&tmp->dim_number,
+							    (NclMultiDValData)step->probability,tmp_att_list_ptr,2);
+					tmp_att_list_ptr = NULL;
+					step->probability = NULL;
+					therec->total_dims++;
+				}
+				current_dim++;
+			}
+			else if (step->upper_probs && step->lower_probs) {
+				for(i = 0; i < therec->n_probability_dims; i++) {
+					if(dstep->dim_inq->size == step->probability->multidval.dim_sizes[0]) {
+						sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_upper");
+						tmp_md = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+						sprintf(name_buffer,"%s%s",NrmQuarkToString(dstep->dim_inq->dim_name),"_lower");
+						tmp_md1 = _Grib2GetInternalVar(therec,NrmStringToQuark(name_buffer),&test);
+						if((tmp_md != NULL )&&(tmp_md1 != NULL) ) {
+							lhs_f = (float*)tmp_md->multidval.val;
+							rhs_f = (float*)step->levels0->multidval.val;
+							lhs_f1 = (float*)tmp_md1->multidval.val;
+							rhs_f1 = (float*)step->levels1->multidval.val;
+							j = 0;
+							while(j<dstep->dim_inq->size) {
+								if((lhs_f[j] != rhs_f[j])||(lhs_f1[j] != rhs_f1[j])) {
+									break;
+								} else {
+									j++;
+								}
+							}
+						}
+						if(j == dstep->dim_inq->size) {
+							break;
+						} else {
+							dstep= dstep->next;
+						}
+					} else {
+						dstep = dstep->next;
+					}
+				}
+				if (dstep) {
+					step->var_info.file_dim_num[current_dim] = dstep->dim_inq->dim_number;
+					_NclDestroyObj((NclObj)step->upper_probs);
+					step->upper_probs = NULL;
+					_NclDestroyObj((NclObj)step->lower_probs);
+					step->lower_probs = NULL;
+				}
+				else {
+
+                                        /*
+					 * Need a new dimension entry w name and number
+					 */
+					tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
+					tmp->dim_number = therec->total_dims;
+					tmp->size = step->probability->multidval.dim_sizes[0];
+					sprintf(buffer,"%s_probability%d",NrmQuarkToString(step->var_info.param_q),therec->n_ensemble_dims);
+					tmp->dim_name = NrmStringToQuark(buffer);
+					ptr = (Grib2DimInqRecList*)NclMalloc((unsigned)sizeof(Grib2DimInqRecList));
+					ptr->dim_inq = tmp;
+					ptr->next = therec->probability_dims;
+					therec->probability_dims = ptr;
+					therec->n_probability_dims++;
+					step->var_info.file_dim_num[current_dim] = tmp->dim_number;
+
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = step->var_info.param_q;
+					Grib2PushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+					sprintf(buffer,"%s lower limits",NrmQuarkToString(step->var_info.long_name_q));
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = NrmStringToQuark(buffer);
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = NrmStringToQuark(buffer);
+					Grib2PushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+					sprintf(name_buffer,"%s%s",buffer,"_lower");
+
+					_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,
+							    (NclMultiDValData)step->lower_probs,tmp_att_list_ptr,2);
+					tmp_att_list_ptr = NULL;
+					step->lower_probs = NULL;
+
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = step->var_info.param_q;
+					Grib2PushAtt(&tmp_att_list_ptr,"units",tmp_string,1,nclTypestringClass); 
+
+					sprintf(buffer,"%s upper limits",NrmQuarkToString(step->var_info.long_name_q));
+					tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+					*tmp_string = NrmStringToQuark(buffer);
+					Grib2PushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
+					sprintf(name_buffer,"%s%s",buffer,"_upper");
+
+					_Grib2AddInternalVar(therec,NrmStringToQuark(name_buffer),&tmp->dim_number,
+							    (NclMultiDValData)step->upper_probs,tmp_att_list_ptr,2);
+					tmp_att_list_ptr = NULL;
+					step->upper_probs = NULL;
+
+					therec->total_dims++;
+				}
+				current_dim++;
+			}
+		}
+	}
+        else if (!step->ensemble_isatt) {
             dstep = therec->ensemble_dims;
             for (i = 0; i < therec->n_ensemble_dims; i++) {
                 if (dstep->dim_inq->size == step->ensemble->multidval.dim_sizes[0]) {
@@ -7918,7 +8232,12 @@ Grib2ParamList  *g2plist;
 			g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
 			g2plist->var_info.long_name_q = NrmStringToQuark(tip->desc);
 			g2plist->var_info.units_q = NrmStringToQuark(tip->unit);
+			g2plist->var_info.param_q = NrmStringToQuark(tip->name);
 			break;
+		}
+		if (g2plist->prob_type > -1) {
+			sprintf(buf,"%s probability",NrmQuarkToString(g2plist->var_info.long_name_q));
+			g2plist->var_info.long_name_q = NrmStringToQuark(buf);
 		}
 		if (g2plist->var_info.var_name_quark > NrmNULLQUARK)
 			return;
@@ -7939,6 +8258,7 @@ Grib2ParamList  *g2plist;
 		g2plist->var_info.long_name_q = NrmStringToQuark(ct->descrip);
 
 		if (ct->shname != NULL) {
+			g2plist->var_info.param_q = NrmStringToQuark(ct->shname);
 			if (trp->first_level_type == 255) {
 				/* no valid level */
 				sprintf(buf,"%s_P%d",ct->shname,trp->pds_template);
@@ -7957,6 +8277,10 @@ Grib2ParamList  *g2plist;
 					ct->shname,trp->pds_template,trp->first_level_type,trp->second_level_type);
 			}
 		} else {
+			sprintf(buf, "VAR_%d_%d_%d_P%d",
+				trp->discipline,trp->param_cat,trp->param_number,
+				trp->pds_template);
+			g2plist->var_info.param_q = NrmStringToQuark(buf);
 			if (trp->first_level_type == 255) {
 				/* no valid level */
 				sprintf(buf, "VAR_%d_%d_%d_P%d",
@@ -7994,6 +8318,9 @@ Grib2ParamList  *g2plist;
                 /* parameter not found */
 		g2plist->var_info.long_name_q = NrmStringToQuark("unknown variable name");
 		g2plist->var_info.units_q = NrmStringToQuark("unknown");
+		sprintf(buf, "VAR_%d_%d_%d_P%d",
+			trp->discipline,trp->param_cat,trp->param_number,trp->pds_template);
+		g2plist->var_info.param_q = NrmStringToQuark(buf);
 		if (trp->first_level_type == 255) {
 			/* no valid level */
 			sprintf(buf, "VAR_%d_%d_%d_P%d",
@@ -8019,6 +8346,10 @@ Grib2ParamList  *g2plist;
 				trp->pds_template,trp->first_level_type,trp->second_level_type);
 		}
 		g2plist->var_info.var_name_quark = NrmStringToQuark(buf);
+	}
+	if (g2plist->prob_type > -1) {
+		sprintf(buf,"%s probability",NrmQuarkToString(g2plist->var_info.long_name_q));
+		g2plist->var_info.long_name_q = NrmStringToQuark(buf);
 	}
 	Grib2FreeCodeTableRec(ct);
 	return;
@@ -8932,18 +9263,73 @@ static void *Grib2OpenFile
                      */
                     break;
 
-                case 5:
-                    /*
-                     * Probability forecasts at a horizontal level or in a
-                     * horizontal layer at a point in time.
-                     */
-                    break;
 
                 case 6:
                     /*
                      * Percentile forecasts at a horizontal level or in a
                      * horizontal layer at a point in time.
                      */
+		     break;
+                    
+                case 5:
+                case 9:
+                    /*
+                     * Probability forecasts at a horizontal level or in a
+                     * horizontal layer at a point in time.
+		     * fall through to  case 9
+                     */
+
+			g2rec[nrecs]->sec4[i]->prod_params->forecast_probability_number = g2fld->ipdtmpl[15];
+			g2rec[nrecs]->sec4[i]->prod_params->total_forecast_probabilities = g2fld->ipdtmpl[16];
+			g2rec[nrecs]->sec4[i]->prod_params->probability_type = g2fld->ipdtmpl[17];
+ 			g2rec[nrecs]->sec4[i]->prod_params->scale_factor_lower_limit = g2fld->ipdtmpl[18];
+			g2rec[nrecs]->sec4[i]->prod_params->scaled_value_lower_limit = g2fld->ipdtmpl[19];
+ 			g2rec[nrecs]->sec4[i]->prod_params->scale_factor_upper_limit = g2fld->ipdtmpl[20];
+			g2rec[nrecs]->sec4[i]->prod_params->scaled_value_upper_limit = g2fld->ipdtmpl[21];
+			
+			if (g2rec[nrecs]->sec4[i]->pds_num == 5) 
+				break;
+
+                    /* case 9 only
+                     * Probability forecasts at a horizontal level or in a
+                     * horizontal layer in a continuous or non-continuous
+                     * time interval.
+                     */
+
+		     
+                    g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
+                            = g2fld->ipdtmpl[22];
+                    g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval
+                            = g2fld->ipdtmpl[23];
+                    g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval
+                            = g2fld->ipdtmpl[24];
+                    g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval
+                            = g2fld->ipdtmpl[25];
+                    g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval
+                            = g2fld->ipdtmpl[26];
+                    g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval
+                            = g2fld->ipdtmpl[27];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                            = g2fld->ipdtmpl[28];
+                    g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
+                            = g2fld->ipdtmpl[29];
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
+                            = g2fld->ipdtmpl[30];
+                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
+                            = g2fld->ipdtmpl[31];
+                    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[32];
+		    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[33];
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
+                            = g2fld->ipdtmpl[34];
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
+                            = g2fld->ipdtmpl[35];
+
                     break;
 
                 case 7:
@@ -9060,17 +9446,6 @@ static void *Grib2OpenFile
 
                     break;
 
-                case 9:
-                    /*
-                     * Probability forecasts at a horizontal level or in a
-                     * horizontal layer in a continuous or non-continuous
-                     * time interval.
-                     */
-		    /*
-		    printf("probability lower limit %f\n",g2fld->ipdtmpl[19] * pow(10.0,(double)-g2fld->ipdtmpl[18]));
-		    printf("probability upper limit %f\n",g2fld->ipdtmpl[21] * pow(10.0,(double)-g2fld->ipdtmpl[20]));
-		    */
-                    break;
 
                 case 10:
                     /*
@@ -9592,6 +9967,7 @@ static void *Grib2OpenFile
             /* Ensembles */
             g2inqrec->is_ensemble = 0;
             memset(&g2inqrec->ens, 0, sizeof(G2_ENS));
+	    g2inqrec->ens.prob_type = -1;
             /* Ensemble or not?  Determined by PDS number */
 	    
             switch (g2rec[i]->sec4[j]->pds_num) {
@@ -9630,7 +10006,17 @@ static void *Grib2OpenFile
                      */
                     g2inqrec->is_ensemble = 1;
                     break;
-
+	        case 5:
+	        case 9:
+		    /* probability forecasts share the ensemble dimension */
+                    g2inqrec->is_ensemble = 1;
+		    g2inqrec->ens.prob_type = g2rec[i]->sec4[j]->prod_params->probability_type;
+		    g2inqrec->ens.lower_limit_scale = g2rec[i]->sec4[j]->prod_params->scale_factor_lower_limit;
+		    g2inqrec->ens.lower_limit_value = g2rec[i]->sec4[j]->prod_params->scaled_value_lower_limit;
+		    g2inqrec->ens.upper_limit_scale = g2rec[i]->sec4[j]->prod_params->scale_factor_upper_limit;
+		    g2inqrec->ens.upper_limit_value = g2rec[i]->sec4[j]->prod_params->scaled_value_upper_limit;
+		    break;
+				
                 case 1:
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
@@ -9897,6 +10283,17 @@ static void Grib2FreeFileRec
 		ivars = ivars->next;
 		NclFree(itmp);
 	}
+	dim = thefile->probability_dims;
+	if(dim != NULL) {
+		while(dim != NULL) {
+			dim1 = dim->next;
+			if(dim->dim_inq != NULL) {
+				NclFree(dim->dim_inq);
+			}
+			NclFree(dim);
+			dim = dim1;
+		}
+	}
 	dim = thefile->ensemble_dims;
 	if(dim != NULL) {
 		while(dim != NULL) {
@@ -10084,6 +10481,12 @@ static NclQuark *Grib2GetDimNames
     	dstep = dstep->next;
     }
 
+    dstep = thefile->probability_dims;
+    for(j=0; j < thefile->n_probability_dims; j++) {
+	    dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
+    	dstep = dstep->next;
+    }
+
     dstep = thefile->ensemble_dims;
     for(j=0; j < thefile->n_ensemble_dims; j++) {
 	    dims[dstep->dim_inq->dim_number] = dstep->dim_inq->dim_name;	
@@ -10137,6 +10540,17 @@ tmp = NrmQuarkToString(dim_name_q);
 * first character is either i,f, g or l
 */
 	dstep = thefile->scalar_dims;
+	while(dstep != NULL) {
+		if(dstep->dim_inq->dim_name == dim_name_q) {
+			tmpd = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
+			tmpd->dim_name_quark = dim_name_q;
+			tmpd->dim_size = dstep->dim_inq->size;
+			tmpd->is_unlimited = 0;
+			return tmpd;
+		}
+		dstep = dstep->next;
+	}		
+	dstep = thefile->probability_dims;
 	while(dstep != NULL) {
 		if(dstep->dim_inq->dim_name == dim_name_q) {
 			tmpd = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec));
@@ -11245,6 +11659,9 @@ static NhlErrorTypes Grib2SetOption
 			else if (((NrmQuark*)values)[i] == NrmStringToQuark("all")) {
 				rec->single_dims = GRIB_All_Dims;
 				break;
+			}
+			else if (((NrmQuark*)values)[i] == NrmStringToQuark("probability")) {
+				rec->single_dims |= GRIB_Ensemble_Dims;
 			}
 			else if (((NrmQuark*)values)[i] == NrmStringToQuark("ensemble")) {
 				rec->single_dims |= GRIB_Ensemble_Dims;

@@ -23,6 +23,11 @@ typedef struct g2_ens {
 	int type;
 	int id;
 	int prod_id;
+	int prob_type;
+	int lower_limit_scale;
+	int lower_limit_value;
+	int upper_limit_scale;
+	int upper_limit_value;
 } G2_ENS;
 
 typedef struct g2_ens_list {
@@ -376,6 +381,14 @@ typedef struct _g2prodParams {
     int    ind_time_unit_incr_succ_fields;
     char    *itr_succ_unit;
     unsigned int    time_incr_betw_fields;
+    /* probability forecasts */
+    int forecast_probability_number;
+    int total_forecast_probabilities;
+    int probability_type;
+    int scale_factor_lower_limit;
+    int scaled_value_lower_limit;
+    int scale_factor_upper_limit;
+    int scaled_value_upper_limit;
 } G2prodParams;
 
 /* Product Def Template (PDS) */
@@ -496,6 +509,7 @@ struct _NclGrib2FVarRec {
     NclQuark var_name_quark;
     NclQuark long_name_q;
     NclQuark units_q;
+    NclQuark param_q;
     NclBasicDataTypes data_type;
     int doff;
     int num_dimensions;
@@ -555,6 +569,10 @@ struct _Grib2ParamList {
     int ensemble_isatt;
     NclMultiDValData ensemble;
     NclOneDValCoordData ens_indexes;
+    int prob_type;
+    NclOneDValCoordData probability; /* the 'probability' dimension is shared with the ensemble dimension */
+    NclMultiDValData lower_probs;
+    NclMultiDValData upper_probs;
     int yymmddhh_isatt;
     NclOneDValCoordData yymmddhh;
     G2_GIT *it_vals;
@@ -662,6 +680,8 @@ struct _Grib2FileRecord {
     int total_dims;
     int n_scalar_dims;
     Grib2DimInqRecList  *scalar_dims;
+    int n_probability_dims;
+    Grib2DimInqRecList  *probability_dims;
     int n_ensemble_dims;
     Grib2DimInqRecList  *ensemble_dims;
     int n_it_dims;
