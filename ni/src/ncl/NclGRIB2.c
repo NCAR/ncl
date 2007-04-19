@@ -4703,8 +4703,7 @@ Grib2FileRecord *g2frec;
 		tmp = strt->next;
 		strt->next = strt->next->next;
 		thevar->n_entries--;
-		/* dib note 2002-12-13: doesn't free the_dat -- why not?? */
-		NclFree(tmp->rec_inq);
+		_Grib2FreeGrib2InqRec(tmp->rec_inq);
 		NclFree(tmp);
         } else {
 		n_lvs++;
