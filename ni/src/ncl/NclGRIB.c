@@ -927,12 +927,11 @@ int** valid_lv_vals1;
 #endif
 {
 	int i;
-	GribRecordInqRecList *strt,*fnsh,*fstep,*last;
+	GribRecordInqRecList *strt,*fnsh,*fstep;
 	int n_fts = 0;
-	int n_nodes;
 	int current_offset;
 	FTLIST header;
-	FTLIST *the_end,*tmp;
+	FTLIST *the_end;
 	int *tmp_lvs = NULL;
 	int *tmp_lvs1 = NULL;
 	int tmp_n_lvs = 0;
@@ -943,12 +942,10 @@ int** valid_lv_vals1;
 	
 	strt = fstep = step;
 
-	last = fstep;
 	current_offset = strt->rec_inq->time_offset;
 	while(fstep->next != NULL) {
 		if(fstep->next->rec_inq->time_offset != current_offset) {
 			fnsh = fstep;
-			last = fstep;
 			fstep = fstep->next;
 			fnsh->next = NULL;
 			the_end->next = (FTLIST*)NclMalloc((unsigned)sizeof(FTLIST));
@@ -987,13 +984,6 @@ int** valid_lv_vals1;
 			n_fts++;
 		} else {
 			fstep = fstep->next;
-/*
-			if(last != NULL) {
-				last->next = fstep->next;
-				fstep = last->next;
-				thevar->n_entries--;
-			}
-*/
 		}
 	}
 	the_end->next =(FTLIST*)NclMalloc((unsigned)sizeof(FTLIST));
@@ -1051,8 +1041,6 @@ GIT *the_it;
 	int y = 0;
 	unsigned short mn = 0;
 	unsigned short d = 0;
-	int h = 0;
-	int mi = 0;
 	char buffer[100];
 
 	HeisDiffDate(1,1,the_it->year,the_it->days_from_jan1,&d,&mn,&y);
@@ -1220,7 +1208,6 @@ GribFileRecord *therec;
 	int tmp_dimsizes = 1;
 	GribRecordInqRec *grib_rec = NULL;
 	GribAttInqRecList *att_list_ptr= NULL;
-	GribAttInqRec 	*att_ptr= NULL;
 	int i;
 	int *tmp_level = NULL;
 	void *tmp_fill = NULL;
@@ -1739,14 +1726,14 @@ int GdsCompare(unsigned char *gds1,int gds_size1,unsigned char *gds2,int gds_siz
 
 float bytes2float (unsigned char *bytes)
 {
-	int sign;
+	float sign;
 	float a,b;
 	float val;
 
-	sign = (bytes[0] & (char) 0200) ? 1 : 0;
+	sign = (bytes[0] & (char) 0200) ? -1 : 1;
 	a = (float) (bytes[0] & (char) 0177);
 	b = (float) CnvtToDecimal(3,&(bytes[1]));
-	val = b * pow(2.0, -24.0) * pow(16.0, (double)(a - 64));
+	val = sign * b * pow(2.0, -24.0) * pow(16.0, (double)(a - 64));
 	return val;
 }
 					
@@ -1771,7 +1758,6 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	int count;
 	int interface = 0;
 	GribAttInqRecList *att_list_ptr= NULL;	
-        GribAttInqRec   *att_ptr= NULL;
 	int attcount;
 	GribDimInqRec *tdim;
 	GribDimInqRecList *dimptr;
@@ -2091,7 +2077,7 @@ int dimsize;
 		int y,m,d,h;
 		float min;
 		str = NrmQuarkToString(vals[i]);
-		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
+		sscanf(str,"%2d/%2d/%4d (%2d:%2f)",&m,&d,&y,&h,&min);
 		ddates[i] = y * 1e6 + m * 1e4 + d * 1e2 + h + min / 60.;
 	}
 				       
@@ -2123,7 +2109,6 @@ int dimsize;
 	for (i = 0; i < dimsize; i++) {
 		int y,m,d,h,min;
 		long jddiff;
-		int iyear;
 		str = NrmQuarkToString(vals[i]);
 		sscanf(str,"%2d/%2d/%4d (%2d:%2d)",&m,&d,&y,&h,&min);
 		jddiff = HeisDayDiff(1,1,1800,d,m,y);
@@ -2143,14 +2128,13 @@ static void SetInitialTimeCoordinates
 GribFileRecord *therec;
 #endif
 {
-	GribDimInqRecList *step,*ptr;
+	GribDimInqRecList *step;
 	GribInternalVarList *vstep,*nvstep;
 	GribDimInqRec *tmp;
 	int i,j,k;
 
 	step = therec->it_dims;
 	for (i = 0; i < therec->n_it_dims; i++) {
-		int dimsize;
 		char buffer[128];
 		char *cp;
 		NrmQuark dimq,newdimq;
@@ -2224,7 +2208,6 @@ GribFileRecord *therec;
 {
 	GribDimInqRecList *step,*ptr;
 	GribInternalVarList *vstep;
-	GribDimInqRec *tmp;
 	int i,j;
 
 	step = therec->it_dims;
@@ -2594,7 +2577,7 @@ GribFileRecord *therec;
 					GribPushAtt(&tmp_att_list_ptr,"long_name",tmp_string,1,nclTypestringClass); 
 
 					sprintf(buffer,"%s%d",ens_name,therec->total_dims);
-					sprintf(&(buffer[strlen(buffer)]),"_info",therec->total_dims);
+					sprintf(&(buffer[strlen(buffer)]),"_info");
 					_GribAddInternalVar(therec,NrmStringToQuark(buffer),&tmp->dim_number,
 							    (NclMultiDValData)step->ensemble,tmp_att_list_ptr,1);
 					tmp_att_list_ptr = NULL;
@@ -3257,7 +3240,7 @@ GribFileRecord *therec;
 						else {
 							if (Is_UV(step->param_number))
 								uv_m = "v";
-							sprintf(buffer,"gridy_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+							sprintf(buffer,"gridy_%d%s",step->grid_number,uv_m);
 						}
 					}
 					tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
@@ -3286,7 +3269,7 @@ GribFileRecord *therec;
 							sprintf(buffer,"gridlon_%d",step->grid_number);
 						}
 						else {
-							sprintf(buffer,"gridlon_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+							sprintf(buffer,"gridlon_%d%s",step->grid_number,uv_m);
 						}
 					}
 					step->aux_coords[1] = NrmStringToQuark(buffer);
@@ -3330,7 +3313,7 @@ GribFileRecord *therec;
 						else {
 							if (Is_UV(step->param_number))
 								uv_m = "v";
-							sprintf(buffer,"gridx_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+							sprintf(buffer,"gridx_%d%s",step->grid_number,uv_m);
 						}
 					}
 					tmp = (GribDimInqRec*)NclMalloc((unsigned)sizeof(GribDimInqRec));
@@ -3359,7 +3342,7 @@ GribFileRecord *therec;
 							sprintf(buffer,"gridlat_%d",step->grid_number);
 						}
 						else {
-							sprintf(buffer,"gridlat_%d%s",step->grid_number,uv_m,therec->total_dims + 1);
+							sprintf(buffer,"gridlat_%d%s",step->grid_number,uv_m);
 						}
 					}
 					step->aux_coords[0] = NrmStringToQuark(buffer);
