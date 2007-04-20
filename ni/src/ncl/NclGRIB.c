@@ -1766,7 +1766,7 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	NrmQuark qldim;
 	int ix;
 	GribInternalVarList *ivar;
-	int dim_var = 0;
+	int is_dwd = 0;
 
 	for(i = 0; i < step->var_info.num_dimensions; i++) {
 		sprintf(buffer,"lv_HYBL%d",step->var_info.file_dim_num[i]);
@@ -1803,8 +1803,8 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		 * by averaging the interface values above and below.
 		 */
 	}
-	else if (centers[ix].index == 78 && nv == dimsizes_level + 4) {
-		dim_var = 1;
+	else if (centers[ix].index == 78 && nv >= dimsizes_level + 4) {
+		is_dwd = 1;
 		sprintf(buffer,"lv_HYBL%d_vc",tmp_file_dim_number);
 	}
 
@@ -1823,12 +1823,17 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 				tmpf[(i-(pl-1))/4] = -tmpf[(i-(pl-1))/4];
 			}
 		}
-		if (dim_var) {
+		if (is_dwd) {
 			float *tf;
 			af = (float*)NclMalloc(sizeof(float)*dimsizes_level);
 			for(i =0; i < dimsizes_level; i++) {
-				af[i] = tmpf[i+4];
+				int ix = ((int*)tmp_md->multidval.val)[i] + 3;
+				if (ix >= 0 && ix < dimsizes_level + 4)
+					af[i] = tmpf[ix];
+				else
+					af[i] = DEFAULT_MISSING_FLOAT;
 			}
+			/* first four elements are special parameters */
 			attcount = 0;
 			att_list_ptr = NULL;
 			tf = (float*)NclMalloc(sizeof(float));
