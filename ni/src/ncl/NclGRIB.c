@@ -1766,6 +1766,7 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	NrmQuark qldim;
 	int ix;
 	GribInternalVarList *ivar;
+	int dim_var = 0;
 
 	for(i = 0; i < step->var_info.num_dimensions; i++) {
 		sprintf(buffer,"lv_HYBL%d",step->var_info.file_dim_num[i]);
@@ -1785,6 +1786,7 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		return;
 	}
 	ix = step->thelist->rec_inq->center_ix;
+	sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
 	if ((centers[ix].index == 98) && (nv / 2 > dimsizes_level)) {
 		/* 
 		 * ECMWF data - we know that ERA 40 and ERA 15 use level interfaces for A and B 
@@ -1801,8 +1803,11 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 		 * by averaging the interface values above and below.
 		 */
 	}
+	else if (centers[ix].index == 78 && nv == dimsizes_level + 4) {
+		dim_var = 1;
+		sprintf(buffer,"lv_HYBL%d_vc",tmp_file_dim_number);
+	}
 
-	sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
 	if((_GribGetInternalVar(therec,NrmStringToQuark(buffer),&test) ==NULL)) {
 		pl = (int)step->thelist->rec_inq->gds[4];
 		tmpf = (float*)NclMalloc(nv*sizeof(float));
@@ -1818,7 +1823,51 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 				tmpf[(i-(pl-1))/4] = -tmpf[(i-(pl-1))/4];
 			}
 		}
-		if (interface) {
+		if (dim_var) {
+			float *tf;
+			af = (float*)NclMalloc(sizeof(float)*dimsizes_level);
+			for(i =0; i < dimsizes_level; i++) {
+				af[i] = tmpf[i+4];
+			}
+			attcount = 0;
+			att_list_ptr = NULL;
+			tf = (float*)NclMalloc(sizeof(float));
+			*tf = tmpf[0];
+			GribPushAtt(&att_list_ptr,"p0s1",tf,1,nclTypefloatClass); 
+			attcount++;
+			tf = (float*)NclMalloc(sizeof(float));
+			*tf = tmpf[1];
+			GribPushAtt(&att_list_ptr,"t0s1",tf,1,nclTypefloatClass); 
+			attcount++;
+			tf = (float*)NclMalloc(sizeof(float));
+			*tf = tmpf[2];
+			GribPushAtt(&att_list_ptr,"dt01p",tf,1,nclTypefloatClass); 
+			attcount++;
+			tf = (float*)NclMalloc(sizeof(float));
+			*tf = tmpf[3];
+			GribPushAtt(&att_list_ptr,"vcflat",tf,1,nclTypefloatClass); 
+			attcount++;
+			qstr = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*qstr = NrmStringToQuark("vertical coordinate");
+			GribPushAtt(&att_list_ptr,"long_name",qstr,1,nclTypestringClass); 
+			attcount++;
+			_GribAddInternalVar(therec,NrmStringToQuark(buffer),
+					    &tmp_file_dim_number,(NclMultiDValData)_NclCreateVal(
+						    NULL,
+						    NULL,
+						    Ncl_MultiDValData,
+						    0,
+						    (void*)af,
+						    NULL,
+						    1,
+						    &dimsizes_level,
+						    TEMPORARY,
+						    NULL,
+						    nclTypefloatClass),att_list_ptr,attcount);
+			NclFree(tmpf);
+			return;
+		}
+		else if (interface) {
 			/* 
 			 * interface levels are specified -- we need a new dimension,
 			 * this depends on _Do109 being called after the regular level dimension 
@@ -1869,8 +1918,14 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 			af = (float*)NclMalloc(sizeof(float)*dimsizes_level);
 			bf = (float*)NclMalloc(sizeof(float)*dimsizes_level);
 			for(i =0; i < dimsizes_level; i++) {
-				af[i] = tmpf[((int*)tmp_md->multidval.val)[i] ]/100000.0;
-				bf[i] = tmpf[nv/2+((int*)tmp_md->multidval.val)[i]];
+				if (((int*)tmp_md->multidval.val)[i] < dimsizes_level)
+					af[i] = tmpf[((int*)tmp_md->multidval.val)[i] ]/100000.0;
+				else 
+					af[i] = DEFAULT_MISSING_FLOAT;
+				if (nv/2+((int*)tmp_md->multidval.val)[i] < dimsizes_level)
+					bf[i] = tmpf[nv/2+((int*)tmp_md->multidval.val)[i]];
+				else 
+					bf[i] = DEFAULT_MISSING_FLOAT;
 			}
 		}
 		NclFree(tmpf);
