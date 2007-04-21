@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.18 2005-05-01 21:49:23 haley Exp $
+ *      $Id: LINUX,v 1.19 2007-04-21 20:35:00 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,7 +30,8 @@
 #define CCompiler   gcc
 #define FCompiler   g77
 #define CtoFLibraries   -lg2c -lgcc -lm
-#define CcOptions      -ansi
+#define CcOptions      -ansi -fPIC
+#define FcOptions      -fPIC -fno-second-underscore
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lX11 -lXext
