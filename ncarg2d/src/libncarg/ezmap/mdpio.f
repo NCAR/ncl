@@ -1,5 +1,5 @@
 C
-C $Id: mdpio.f,v 1.4 2005-06-22 21:36:45 kennison Exp $
+C $Id: mdpio.f,v 1.5 2007-04-23 17:28:16 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -45,7 +45,7 @@ C
 C
 C Declare a variable in which to form the name of an outline data file.
 C
-        CHARACTER*128    FLNM
+        CHARACTER*256    FLNM
 C
 C Declare other local variables.
 C
@@ -62,7 +62,7 @@ C
           CALL MPDBDI (FLNM,ISTA)
           IF (ISTA.EQ.-1) GO TO 901
 C
-          DO 101 I=1,111
+          DO 101 I=1,LEN(FLNM)-17
             IF (FLNM(I:I).EQ.CHAR(0)) THEN
               FLNM(I:I+17)='/EzmapOutlines.'//DDCT(NOUT+1)//CHAR(0)
               GO TO 102
