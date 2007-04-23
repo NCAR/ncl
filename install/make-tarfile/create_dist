@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.2 2007-03-28 02:32:06 haley Exp $
+#   $Id: create_dist,v 1.3 2007-04-23 14:50:33 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -366,10 +366,10 @@ endif
 #
 # If you have an opendap-enabled NCL, it may depend on some shared
 # libraries. This part is not well done, because these library versions
-# change more times than I change underwear.
+# often.
 #
 if ($?OPENDAP) then
-  set opendap_lib_files = "libnc-dap.so libdap.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4"
+  set opendap_lib_files = "libnc-dap.so libdap.so libdapclient.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4 libdapclient.so.1 libssl.so libssl.so.0.9.8 libcrypto.so libcrypto.so.0.9.8 libdap.so.4"
 endif
 
 #
