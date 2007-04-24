@@ -1,5 +1,5 @@
 C
-C $Id: mdpio.f,v 1.5 2007-04-23 17:28:16 kennison Exp $
+C $Id: mdpio.f,v 1.6 2007-04-24 22:48:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -45,7 +45,7 @@ C
 C
 C Declare a variable in which to form the name of an outline data file.
 C
-        CHARACTER*256    FLNM
+        CHARACTER*1024   FLNM
 C
 C Declare other local variables.
 C
