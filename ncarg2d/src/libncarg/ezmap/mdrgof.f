@@ -1,5 +1,5 @@
 C
-C $Id: mdrgof.f,v 1.3 2005-06-22 21:36:47 kennison Exp $
+C $Id: mdrgof.f,v 1.4 2007-04-24 22:44:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -31,7 +31,7 @@ C
 C FLNM is a character variable in which to build the names of files to
 C be opened by a call to NGOFRO.
 C
-        CHARACTER*129 FLNM
+        CHARACTER*1025 FLNM
 C
 C NCAT, NCEL, and NRIM hold the names of the catalog file, the cell
 C file, and the rim data file to be read.
@@ -47,7 +47,7 @@ C
         CALL MDRGDI (FLNM)
         IF (ICFELL('MDRGOF',1).NE.0) RETURN
 C
-        DO 101 I=1,112
+        DO 101 I=1,LEN(FLNM)-17
           IF (FLNM(I:I).EQ.' '.OR.FLNM(I:I).EQ.CHAR(0)) THEN
             INAM=I
             IF (I.NE.1) THEN
