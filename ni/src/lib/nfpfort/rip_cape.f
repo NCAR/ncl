@@ -31,7 +31,6 @@ C NCLFORTSTART
      +                       MKZH,I3DFLAG,TER_FOLLOW,PSAFILE)
 c
       IMPLICIT NONE
-      DOUBLE PRECISION XX1,XX2,XX3,XX4,XX5,XX6
       INTEGER MIY,MJX,MKZH,I3DFLAG,TER_FOLLOW
       DOUBLE PRECISION PRS(MIY,MJX,MKZH)
       DOUBLE PRECISION TMK(MIY,MJX,MKZH)
@@ -217,38 +216,10 @@ c
                   E = MAX(1.D-20,QVPPARI*PRSPARI/ (EPS+QVPPARI))
                   TLCL = TLCLC1/ (LOG(TMKPARI**TLCLC2/E)-TLCLC3) +
      +                   TLCLC4
-                  print *,'TMKPARI',TMKPARI
-                  print *,'PRSPARI',PRSPARI
-                  print *,'PRSPARI',PRSPARI
-                  print *,'GAMMA',GAMMA
-                  print *,'GAMMAMD',GAMMAMD
-                  print *,'THTECON1',THTECON1
-                  print *,'TLCL',TLCL
-                  print *,'THTECON2',THTECON2
-                  print *,'QVPPARI',QVPPARI
-                  print *,'THTECON3',THTECON3
-                  XX1 = TMKPARI* (1000.D0/PRSPARI)**
-     +                 (GAMMA* (1.D0+GAMMAMD*QVPPARI))
-                  XX2 = (THTECON1/TLCL-THTECON2)*QVPPARI
-                  XX3 = (1.D0+THTECON3*QVPPARI)
-                  XX4 = XX2*XX3
-                  XX5 = EXP(XX4)
-                  print *,'XX1',XX1
-                  print *,'XX2',XX2
-                  print *,'XX3',XX3
-                  print *,'XX4',XX4
-                  print *,'XX5',XX5
-                  ETHPARI = XX1 * XX5 
-                  print *,'THTECON1/TLCL',THTECON1/TLCL
-                  print *,'QVPPARI',QVPPARI
-                  print *,'THTECON3,QVPPARI',THTECON3,QVPPARI
-                  print *,'1.D0+THTECON3*QVPPARI',1.d0+THTECON3*QVPPARI
-                  print *, '(THTECON1/TLCL-THTECON2)*QVPPARI',
-     +                      (THTECON1/TLCL-THTECON2)*QVPPARI
-C                  ETHPARI = TMKPARI* (1000.D0/PRSPARI)**
-C     +                      (GAMMA* (1.D0+GAMMAMD*QVPPARI))*
-C     +                      EXP((THTECON1/TLCL-THTECON2)*QVPPARI*
-C     +                      (1.D0+THTECON3*QVPPARI))
+                  ETHPARI = TMKPARI* (1000.D0/PRSPARI)**
+     +                      (GAMMA* (1.D0+GAMMAMD*QVPPARI))*
+     +                      EXP((THTECON1/TLCL-THTECON2)*QVPPARI*
+     +                      (1.D0+THTECON3*QVPPARI))
                   ZLCL = GHTPARI + (TMKPARI-TLCL)/ (GRAV/CPM)
 c
 c   Calculate buoyancy and relative height of lifted parcel at
@@ -293,7 +264,6 @@ c
                           GHTLIFT = ZLCL
                           ILCL = 1
                       ELSE
-                         print *,'ETHPARI',ETHPARI
                           TMKLIFT = TONPSADIABAT(ETHPARI,PRS(I,J,K),
      +                              PSADITHTE,PSADIPRS,PSADITMK,GAMMA)
                           ESLIFT = EZERO*EXP(ESLCON1* (TMKLIFT-CELKEL)/
