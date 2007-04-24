@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.118 2006-08-24 22:54:05 dbrown Exp $
+ *      $Id: Execute.c,v 1.119 2007-04-24 18:23:08 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1194,6 +1194,7 @@ void CallJMPFALSE(void) {
 				NclStackEntry data;
 				NclMultiDValData val;
 				unsigned long offset;
+				NclObj free_obj = NULL;
 
 				ptr++;lptr++;fptr++;
 				offset = *ptr;
@@ -1201,9 +1202,16 @@ void CallJMPFALSE(void) {
 				switch(data.kind) {
 				case NclStk_VAL:
 					val = data.u.data_obj;	
+					if(val->obj.status != PERMANENT) 
+						free_obj = (NclObj)val;
 					break;
 				case NclStk_VAR:
+					if(data.u.data_var->obj.status == TEMPORARY)
+						free_obj = (NclObj)data.u.data_var;
 					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
+					/*
+					val = _NclVarValueRead(data.u.data_var,NULL,NULL);
+					*/
 					break;
 				default:
 					estatus = NhlFATAL;
@@ -1222,11 +1230,12 @@ void CallJMPFALSE(void) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"The result of the conditional expression yields a missing value. NCL can not determine branch, see ismissing function");
 						estatus = NhlFATAL;
 					}
-					if(val->obj.status != PERMANENT) 
-						_NclDestroyObj((NclObj)val);
+
+					if (free_obj)
+						_NclDestroyObj(free_obj);
 				} else {
-					if(val->obj.status != PERMANENT) 
-						_NclDestroyObj((NclObj)val);
+					if (free_obj)
+						_NclDestroyObj(free_obj);
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"Conditional statements (if and do while) require SCALAR logical values, see all and any functions");
 					estatus = NhlFATAL;
 				}
