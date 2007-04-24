@@ -31,6 +31,7 @@ C NCLFORTSTART
      +                       MKZH,I3DFLAG,TER_FOLLOW,PSAFILE)
 c
       IMPLICIT NONE
+      DOUBLE PRECISION XX1,XX2,XX3,XX4,XX5,XX6
       INTEGER MIY,MJX,MKZH,I3DFLAG,TER_FOLLOW
       DOUBLE PRECISION PRS(MIY,MJX,MKZH)
       DOUBLE PRECISION TMK(MIY,MJX,MKZH)
@@ -63,6 +64,29 @@ c Local variables
      +                 PRSF(MIY,MJX,MKZH)
       DOUBLE PRECISION PSADITHTE(150),PSADIPRS(150),PSADITMK(150,150)
 c
+C The comments were taken from a Mark Stoelinga email, 23 Apr 2007,
+C in response to a user getting the "Outside of lookup table bounds"
+C error message. 
+C
+C TMKPARI  - Initial temperature of parcel, K
+C    Values of 300 okay. (Not sure how much from this you can stray.)
+C
+C PRSPARI - Initial pressure of parcel, hPa
+C    Values of 980 okay. (Not sure how much from this you can stray.)
+C
+C THTECON1, THTECON2, THTECON3
+C     These are all constants, the first in K and the other two have
+C     no units.  Values of 3376, 2.54, and 0.81 were stated as being
+C     okay.
+C
+C TLCL - The temperature at the parcel's lifted condensation level, K
+C        should be a reasonable atmospheric temperature around 250-300 K
+C        (398 is "way too high")
+C
+C QVPPARI - The initial water vapor mixing ratio of the parcel,
+C           kg/kg (should range from 0.000 to 0.025)
+C
+
 c Constants
       IUP = 6
       CELKEL = 273.15D0
@@ -193,10 +217,38 @@ c
                   E = MAX(1.D-20,QVPPARI*PRSPARI/ (EPS+QVPPARI))
                   TLCL = TLCLC1/ (LOG(TMKPARI**TLCLC2/E)-TLCLC3) +
      +                   TLCLC4
-                  ETHPARI = TMKPARI* (1000.D0/PRSPARI)**
-     +                      (GAMMA* (1.D0+GAMMAMD*QVPPARI))*
-     +                      EXP((THTECON1/TLCL-THTECON2)*QVPPARI*
-     +                      (1.D0+THTECON3*QVPPARI))
+                  print *,'TMKPARI',TMKPARI
+                  print *,'PRSPARI',PRSPARI
+                  print *,'PRSPARI',PRSPARI
+                  print *,'GAMMA',GAMMA
+                  print *,'GAMMAMD',GAMMAMD
+                  print *,'THTECON1',THTECON1
+                  print *,'TLCL',TLCL
+                  print *,'THTECON2',THTECON2
+                  print *,'QVPPARI',QVPPARI
+                  print *,'THTECON3',THTECON3
+                  XX1 = TMKPARI* (1000.D0/PRSPARI)**
+     +                 (GAMMA* (1.D0+GAMMAMD*QVPPARI))
+                  XX2 = (THTECON1/TLCL-THTECON2)*QVPPARI
+                  XX3 = (1.D0+THTECON3*QVPPARI)
+                  XX4 = XX2*XX3
+                  XX5 = EXP(XX4)
+                  print *,'XX1',XX1
+                  print *,'XX2',XX2
+                  print *,'XX3',XX3
+                  print *,'XX4',XX4
+                  print *,'XX5',XX5
+                  ETHPARI = XX1 * XX5 
+                  print *,'THTECON1/TLCL',THTECON1/TLCL
+                  print *,'QVPPARI',QVPPARI
+                  print *,'THTECON3,QVPPARI',THTECON3,QVPPARI
+                  print *,'1.D0+THTECON3*QVPPARI',1.d0+THTECON3*QVPPARI
+                  print *, '(THTECON1/TLCL-THTECON2)*QVPPARI',
+     +                      (THTECON1/TLCL-THTECON2)*QVPPARI
+C                  ETHPARI = TMKPARI* (1000.D0/PRSPARI)**
+C     +                      (GAMMA* (1.D0+GAMMAMD*QVPPARI))*
+C     +                      EXP((THTECON1/TLCL-THTECON2)*QVPPARI*
+C     +                      (1.D0+THTECON3*QVPPARI))
                   ZLCL = GHTPARI + (TMKPARI-TLCL)/ (GRAV/CPM)
 c
 c   Calculate buoyancy and relative height of lifted parcel at
@@ -241,6 +293,7 @@ c
                           GHTLIFT = ZLCL
                           ILCL = 1
                       ELSE
+                         print *,'ETHPARI',ETHPARI
                           TMKLIFT = TONPSADIABAT(ETHPARI,PRS(I,J,K),
      +                              PSADITHTE,PSADIPRS,PSADITMK,GAMMA)
                           ESLIFT = EZERO*EXP(ESLCON1* (TMKLIFT-CELKEL)/
