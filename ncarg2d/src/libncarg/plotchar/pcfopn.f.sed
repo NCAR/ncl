@@ -1,5 +1,5 @@
 C
-C $Id: pcfopn.f.sed,v 1.4 2007-04-24 22:19:23 kennison Exp $
+C $Id: pcfopn.f.sed,v 1.5 2007-04-24 22:52:28 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@ C
 C
 C Declare space in which to acquire the database directory path.
 C
-        CHARACTER*256 FLNM
+        CHARACTER*1024 FLNM
 C
 C Declare a character temporary of 113 characters (the length of the
 C largest error message SETER can handle).
