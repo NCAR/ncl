@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncl_dist,v 1.15 2007-03-28 02:05:22 haley Exp $
+#   $Id: create_ncl_dist,v 1.16 2007-04-26 22:08:24 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -184,7 +184,7 @@ while ($#argv > 0)
     endsw
 end
 
-tar_prefix = "ncl"
+set tar_prefix = "ncl"
 
 #
 # Error checking.
@@ -278,7 +278,7 @@ foreach f($inc_files)
 end
 
 foreach f($inc_dirs)
-  set all_dirs = ("include/ncarg/$f" $all_dirs)
+  set all_dirs = ("include/$f" $all_dirs)
 end
 
 #
