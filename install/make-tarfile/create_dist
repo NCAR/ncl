@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.4 2007-04-24 22:30:03 haley Exp $
+#   $Id: create_dist,v 1.5 2007-04-26 22:59:27 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -239,6 +239,11 @@ else    # INTERNAL, for internal purposes only
   set tar_prefix = "ncl_ncarg_internal"
 endif
 
+echo "extra = $extra"
+if ($extra != "") then
+  set system = "{$system}_{$extra}"
+endif
+
 if ($?OPENDAP) then
   set tar_filename = "$tar_prefix-$version.${system}_opendap.tar"
 else
@@ -255,10 +260,6 @@ endif
 if (($os == "IRIX64" || $os == "AIX") && ! $?bit) then
   echo "Need the -b 32|64 option for $os"
   exit
-endif
-
-if ($extra != "") then
-  set system = "{$system}_{$extra}"
 endif
 
 #
