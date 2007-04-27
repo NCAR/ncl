@@ -682,10 +682,10 @@ switch ($OS)
  case IRIX64:                      # IRIX64
    if ($nbits == 32) then
      if ($debug == 1) then
-       set cmd = "ld -n32 -v -V -shared $ld_suffix"
+       set cmd = "ld -n32 -v -V -shared $ld_suffix -lfortran"
        echo $cmd
      else
-       set cmd = "ld -n32 -shared $ld_suffix"
+       set cmd = "ld -n32 -shared $ld_suffix -lfortran"
      endif
      $cmd
    else      # default 64-bits
@@ -703,10 +703,10 @@ switch ($OS)
    breaksw
  case IRIX:                        # IRIX
    if ($debug == 1) then
-     set cmd = "ld -n32 -v -V -shared $ld_suffix"
+     set cmd = "ld -n32 -v -V -shared $ld_suffix -lfortran"
      echo $cmd
    else
-     set cmd = "ld -n32 -shared $ld_suffix"
+     set cmd = "ld -n32 -shared $ld_suffix -lfortran"
    endif
    $cmd     
    if (-e so_locations) then
