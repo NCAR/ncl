@@ -4311,9 +4311,7 @@ GribParamList* step;
 							m++;
 						} else {
 							strt[i].rec_inq = NULL;
-							fprintf(stdout,"%s is missing ft: %d lv: %d\n",name,
-								tmp_ft_vals[k],
-								tmp_lv_vals[m]);
+							PRINT_MISSING(the_end->ens_ix,j,k,m);
 							m++;
 						}
 						i++;
