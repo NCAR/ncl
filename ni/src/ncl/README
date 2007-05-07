@@ -1,3 +1,44 @@
+To build an OPeNDAP version on reader:
+
+
+I started from scratch, and downloaded the latest versions of libdap
+(3.7.6) and libnc-dap (3.7.0). I went ahead and built both shared and
+static libraries, which seems to be the default.
+
+I just used the system libraries for curl, xml2, and ssl.
+
+I couldn't build NCL using the shared versions of the nc-dap,
+dapclient, and dap libraries. I get the same problem that we've had in
+the past, and that is "cdf_routine_name" is undefined.
+
+When I use static libraries, it works. However, the order that the files
+are listed in the yMakefile seem to be wrong. I had to reorder them to
+be  "-lnc-dap -ldapclient -ldap".
+
+I get an ncl executable that looks like this with "otool -L":
+
+reader[193] otool -l ncl
+         /usr/lib/libcurl.3.dylib (compatibility version 4.0.0, current version\
+ 4.0.0)
+         /sw/lib/libxml2.2.dylib (compatibility version 9.0.0, current version \
+9.7.0)
+         /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current versi\
+on 88.1.8)
+         /usr/lib/libssl.0.9.7.dylib (compatibility version 0.9.7, current vers\
+ion 0.9.7)
+         /usr/X11R6/lib/libXpm.4.dylib (compatibility version 4.11.0, current v\
+ersion 4.11.0)
+         /usr/X11R6/lib/libX11.6.dylib (compatibility version 6.2.0, current ve\
+rsion 6.2.0)
+         /usr/X11R6/lib/libXext.6.dylib (compatibility version 6.4.0, current v\
+ersion 6.4.0)
+         /usr/lib/libstdc++.6.dylib (compatibility version 7.0.0, current 
+on 7.4.0)
+         /usr/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current versio\
+n 1.0.0)
+
+
+
 
 1. There are weird problems with the "markers.ncl" script in
 ncargtest/nclscripts/plotting on some systems (seems to be with Linux
