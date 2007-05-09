@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.79 2007-03-24 16:36:11 haley Exp $
+ *      $Id: Project,v 1.80 2007-05-09 14:47:38 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2007-03-24 16:36:11 $
+ *	$Date: 2007-05-09 14:47:38 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -25,7 +25,7 @@
  */
 
 #define NcargVersion 4.4.2
-#define NclVersion 4.3.0
+#define NclVersion 4.3.1
 
 #ifndef	BuildNCL
 #define	BuildNCL
