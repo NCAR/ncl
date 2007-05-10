@@ -1,6 +1,6 @@
 #!/bin/csh -f
 # set echo verbose timestamp
-set version = 041207    # YYMMDD
+set version = 051007    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -716,10 +716,10 @@ switch ($OS)
  case Linux:                       # Linux
    if ($f90c == pgf90) then        # PG compiler
      if ($debug == 1) then
-       set cmd = "$f90c -V -v -shared $ld_suffix"
+       set cmd = "$f90c $exfopts -V -v -shared $ld_suffix"
        echo $cmd
      else
-       set cmd = "$f90c -shared $ld_suffix"
+       set cmd = "$f90c $exfopts -shared $ld_suffix"
      endif
      $cmd     
    else if ($f90c == lf95) then    # LF compiler
