@@ -1,0 +1,3 @@
+When using the PGI compilers, the creation of font22 causes a seg fault.
+I have to compile with -g to fix.
+
