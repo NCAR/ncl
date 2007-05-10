@@ -81,6 +81,8 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       end do
   end if
 
+print(localOpts)
+
 ; --- declare isotherm [C] values and pressures [hPa] where isotherms 
 ; --- intersect the edge of the skew-t diagram.
 
@@ -255,9 +257,9 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
   xyOpts@tmXBLabelFontHeightF = 0.014
   xyOpts@tmYLLabelFontHeightF = xyOpts@tmXBLabelFontHeightF
   if (localOpts@DrawFahrenheit) then
-      xyOpts@tiXAxisString        = "Temperature (F)"
+      xyOpts@tiXAxisString    = "Temperature (F)"
   else
-      xyOpts@tiXAxisString        = "Temperature (C)"
+      xyOpts@tiXAxisString    = "Temperature (C)"
   end if
   xyOpts@tiXAxisFont          = localOpts@Font
   xyOpts@tiXAxisFontColor     = "Foreground"   ; colTan
@@ -271,8 +273,19 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
   xyOpts@tiMainString         = localOpts@tiMainString
   xyOpts@tiMainFont           = localOpts@Font
   xyOpts@tiMainFontColor      = "Foreground"   
+
   xyOpts@tiMainFontHeightF    = 0.025
+  if (isatt(localOpts,"tiMainFontHeightF")) then
+      xyOpts@tiMainFontHeightF   = localOpts@tiMainFontHeightF
+  end if
   xyOpts@tiMainOffsetXF       = -0.1
+  if (isatt(localOpts,"tiMainOffsetXF")) then
+      xyOpts@tiMainOffsetXF   = localOpts@tiMainOffsetXF
+  end if
+  xyOpts@tiMainOffsetYF       =  0.0
+  if (isatt(localOpts,"tiMainOffsetYF")) then
+      xyOpts@tiMainOffsetYF   = localOpts@tiMainOffsetYF
+  end if
 
   if (localOpts@DrawHeightScale) then   ; special for rhs
 
@@ -307,7 +320,6 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
   end if    ; DrawHeightScale
 
   xy = gsn_xy (wks,xc,yc,xyOpts)   ; draw outline; x and y axis
-
                       ; right *label* MUST be added AFTER xy created
   if (localOpts@DrawHeightScale) then
       txOpts                   = True
@@ -779,6 +791,10 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
       txOpts@txFontHeightF     = 0.5*tiMainFontHeightF
       xinfo                    = vpXF  + 0.5*vpWidthF + tiMainOffsetXF
       yinfo                    = vpYF  + 0.5*tiMainFontHeightF 
+      if (isatt(localOpts,"offsetThermoInfo")) then
+          yinfo = yinfo + localOpts@offsetThermoInfo
+      end if
+
       gsn_text_ndc (wks,info,xinfo,yinfo,txOpts) 
       delete (txOpts)
 
