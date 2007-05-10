@@ -81,7 +81,9 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       end do
   end if
 
-print(localOpts)
+  if (localOpts@PrintOpts) then
+     print(localOpts)
+  end if
 
 ; --- declare isotherm [C] values and pressures [hPa] where isotherms 
 ; --- intersect the edge of the skew-t diagram.
@@ -336,6 +338,9 @@ print(localOpts)
    
   if (localOpts@DrawColAreaFill) then
       color1 = "PaleGreen"       ; "LightGreen"
+      if (isatt(localOpts,"DrawColAreaColor")) then
+        color1 = localOpts@DrawColAreaColor
+      end if
       color2 = "White"
       gsOpts = True
       do i=0,ntemp-2
