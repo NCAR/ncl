@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.5 2007-04-26 22:59:27 haley Exp $
+#   $Id: create_dist,v 1.6 2007-05-11 14:48:40 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -454,8 +454,10 @@ if ($?NCLONLY) then
   emacs bin/nhlcc bin/nhlf77 bin/nhlf90 
 else if ($?NCARGONLY) then
   emacs bin/ncargcc bin/ncargf77 bin/ncargf90
+  chmod gou+x bin/ncargcc bin/ncargf77 bin/ncargf90
 else
   emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
+  chmod gou+x bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
 endif
 /bin/rm bin/*~
 
