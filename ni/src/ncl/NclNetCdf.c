@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.41 2007-01-12 20:09:35 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.42 2007-05-16 22:08:55 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -275,7 +275,7 @@ NetCdfAttInqRec* frec
 				continue;
 			break;
 		}
-		if (! vl || vl->var_inq->n_dims > 1)
+		if (! vl || vl->var_inq->n_dims > 1 || (vl->var_inq->dim[0] != dim_inq->dimid))
 			continue;
 		if (dim_inq->size == 0)
 			continue;
