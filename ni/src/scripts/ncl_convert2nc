@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.5 2007-01-17 23:28:11 grubin Exp $
+#       $Id: ncl_convert2nc,v 1.6 2007-05-17 18:24:48 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -13,7 +13,8 @@
 #       National Center for Atmospheric Research
 #       POB 3000, Boulder, Colorado
 
-# This script converts a NCL-supported file type (GRIB, HDF, HDF-EOS) to a netCDF-formatted file.
+# This script converts a NCL-supported file type (GRIB[1, 2], HDF, HDF-EOS) to a
+# netCDF-formatted file.
 # It does not handle CCM data.  See:  http://www.cgd.ucar.edu/cms/ccm3/tools.
 #
 # This script determines what data type it was invoked with based on the suffix of the data
@@ -25,6 +26,8 @@
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
 #       [-e extension]        file type, defined by extension, to convert
+#       [-itime]              set single element time record dimension to "initial_time"
+#       [-ftime]              set single element time record dimension to "forecast_time"
 #       [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
 #       [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
@@ -46,6 +49,7 @@ set tmpdir = `ncargpath tmp`
 
 # Input and output directories default values
 set idirs = ()
+set hasdirin = 0
 set dirin = `pwd`
 set dirout = `pwd`
 
@@ -62,6 +66,11 @@ set nvars = 0
 
 set ncdfcomment = ""
 set ncdflrgf_t = "classic"
+
+# Single Element Dimensions variables
+set sed_n = 0
+set seDims_t = ""
+set singleElemDims = ""
 
 #
 # Background/redirect mode
@@ -118,20 +127,36 @@ while ($#argv > 0)
         case "-i"
             shift
             set dirin = $1
-            shift
+            set len = `echo $dirin | awk '{print length($0)}'`
+            if ($len > 0) then
+                shift
+                set hasdirin = 1
+            else
+                echo "${progname}: no input directory specified, defaulting to current directory."
+            endif
             breaksw
 
         case "-o"
             shift
             set dirout = $1
-            shift
+            set len = `echo $dirout | awk '{print length($0)}'`
+            if ($len > 0) then
+                shift
+            else
+                echo "${progname}: no output directory specified, defaulting to current directory."
+            endif
             breaksw
 
         case "-e"
             shift
             set esfx = "$1"
-            set have_esfx = 1
-            shift
+            set len = `echo $esfx | awk '{print length($0)}'`
+            if ($len > 0) then
+                set have_esfx = 1
+                shift
+            else
+                echo "${progname}: no file extension specified, ignoring."
+            endif
             breaksw
 
         case "-d"
@@ -139,18 +164,40 @@ while ($#argv > 0)
             shift
             breaksw
 
+        case "-itime"
+            @ sed_n = ($sed_n + 1)
+            set seDims_t = `echo $seDims_t "initial_time"`
+            shift
+            breaksw
+
+        case "-ftime"
+            @ sed_n = ($sed_n + 1)
+            set seDims_t = `echo $seDims_t "forecast_time"`
+            shift
+            breaksw
+
         case "-u"
             shift
             set time_name = "$1"
-            shift
-            set tmnm_set = 1
+            set len = `echo $time_name | awk '{print length($0)}'`
+            if ($len > 0) then
+                shift
+                set tmnm_set = 1
+            else
+                echo "${progname}: no NCL unlimited time dimension specified, ignoring."
+            endif
             breaksw
 
         case "-U"
             shift
             set TIME_NAME = "$1"
-            shift
-            set TMNM_set
+            set len = `echo $TIME_NAME | awk '{print length($0)}'`
+            if ($len > 0) then
+                shift
+                set TMNM_set
+            else
+                echo "${progname}: no NCL-named time dimension specified for renaming, ignoring."
+            endif
             breaksw
 
 
@@ -255,6 +302,23 @@ if ($?TMNM_set && ! $?tmnm_set) then
 endif
 
 #
+# Single Element Dimensions
+#
+if ($sed_n > 0) then
+    @ i = 1
+    set singleElemDims = ( '\(/'\\\"$seDims_t[$i]\\\" )
+    @ i = ($i + 1)
+    while ($i <= $sed_n)
+        set singleElemDims = ( $singleElemDims\',\'\\\"$seDims_t[$i]\\\" )
+        @ i = ($i + 1)
+    end
+
+    set singleElemDims = ( $singleElemDims'/\)' )
+else
+    set singleElemDims = ( '\(/'\\\"none\\\"'/\)' )
+endif
+
+#
 # Split filenames into (full, relative) paths and filenames.  This will
 # ensure that file arguments entered with full/relative paths are properly
 # accounted for.  Files without a path will be assigned the value given
@@ -300,23 +364,29 @@ while ($n <= $nfiles)
 
     set valid_file
     set fil = `basename $ifiles_t[$n]`
-    set dir = `dirname $ifiles_t[$n]`
+    if ($hasdirin == 1) then
+        set dir = $dirin
+    else
+        set dir = `dirname $ifiles_t[$n]`
+    endif
+
+    set relpath = `echo $dir | grep -c '.'`
     set haspath = `echo $dir | grep -c '/'`
 
     # Does the file exist, and is it readble, as named?
     # Must account for different data directory if specified
     # If an input file already has an extension, ignore "-e"
     # for that file.
+    set sfxlen = `echo $fil:e | awk '{print length($0)}'`
     if (((-e $ifiles_t[$n]) && (-r $ifiles_t[$n])) \
             || ((-e $dirin/$ifiles_t[$n]) && (-r $dirin/$ifiles_t[$n]))) then
-        set sfxlen = `echo $fil:e | awk '{print length($0)}'`
-        if ($sfxlen == "") then
-            set sfxlen = 0
-        endif
-
-        if (($have_esfx == 1) && ($sfxlen == 0)) then
-            set psfx = $esfx
-            set fil = $fil.$psfx
+        if ($sfxlen == 0) then
+            if ($have_esfx == 1) then
+                set psfx = $esfx
+                set fil = $fil.$psfx
+            else
+                goto VALID_FILE
+            endif
         else
             set psfx = "$fil:e"
         endif
@@ -324,15 +394,14 @@ while ($n <= $nfiles)
         # Does the file have a suffix (delineated by a ".") or
         # was a suffix specified via command-line options? If
         # yes, does the suffix indicate requested data type?
-        switch ($psfx)
+        set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
+        switch ($lsfx)
             case grb:
             case grib:
-            case GRB:
-            case GRIB:
+            case grb1:
+            case grib1:
             case grb2:
             case grib2:
-            case GRB2:
-            case GRIB2:
                 set ftype = "GRIB"
                 set if = $fil
                 set of = $fil:r
@@ -342,7 +411,6 @@ while ($n <= $nfiles)
                 breaksw
 
             case hdf:
-            case HDF:
                 set ftype = "HDF"
                 set if = $fil
                 set of = $fil:r
@@ -352,7 +420,6 @@ while ($n <= $nfiles)
                 breaksw
 
             case hdfeos:
-            case HDFEOS:
                 set ftype = "HDFEOS"
                 set if = $fil
                 set of = $fil:r
@@ -362,7 +429,6 @@ while ($n <= $nfiles)
                 breaksw
 
             case ccm:
-            case CCM:
                 echo "${progname}: file '${fil}': CCM files not supported.  Please use: ccm2nc"
                 echo "  Download at:  http://www.cgd.ucar.edu/cms/ccm3/tools"
                 echo
@@ -370,7 +436,6 @@ while ($n <= $nfiles)
                 @ n += 1
                 continue
                 breaksw
-
         endsw
     else
         # The file, as named, doesn't exist or isn't readable.
@@ -378,40 +443,60 @@ while ($n <= $nfiles)
         # (ex.: 'ruc.grb' ==> 'ruc' exists).  This emulates NCL's
         # 'addfile()' functionality.  If found, keep it as input.
 
-        set psfx = "$fil:e"
-        switch ($psfx)
+        if ($have_esfx == 1) then
+            if (( !(-e $ifiles_t[$n]:r) && !(-r $ifiles_t[$n]:r)) \
+                    || ( !(-e $dirin/$ifiles_t[$n]:r) && !(-r $dirin/$ifiles_t[$n]:r))) then
+                set valid_file
+                goto VALID_FILE
+            endif
+
+            if ($sfxlen == 0) then
+                set psfx = $esfx
+            else
+                set psfx = "$fil:e"
+            endif
+        else
+            if (( !(-e $ifiles_t[$n]:r) && !(-r $ifiles_t[$n]:r)) \
+                    || ( !(-e $dirin/$ifiles_t[$n]:r) && !(-r $dirin/$ifiles_t[$n]:r))) then
+                set valid_file
+                goto VALID_FILE
+            endif
+
+            set psfx = "$fil:e"
+        endif
+
+        set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
+        switch ($lsfx)
             case grb:
             case grib:
-            case GRB:
-            case GRIB:
+            case grb1:
+            case grib1:
             case grb2:
             case grib2:
-            case GRB2:
-            case GRIB2:
                 set ftype = "GRIB"
                 set if = $fil
                 set of = $fil:r
                 unset valid_file
+                goto VALID_FILE
                 breaksw
 
             case hdf:
-            case HDF:
                 set ftype = "HDF"
                 set if = $fil
                 set of = $fil:r
                 unset valid_file
+                goto VALID_FILE
                 breaksw
 
             case hdfeos:
-                 HDFEOS:
                 set ftype = "HDFEOS"
                 set if = $fil
                 set of = $fil:r
                 unset valid_file
+                goto VALID_FILE
                 breaksw
 
             case ccm:
-            case CCM:
                 echo "${progname}: file '${fil}': CCM files not supported.  Please use: ccm2nc"
                 echo "  Download at:  http://www.cgd.ucar.edu/cms/ccm3/tools"
                 echo
@@ -434,7 +519,7 @@ VALID_FILE:
         @ n += 1
         continue
     else
-        if ($haspath == 1) then
+        if (($haspath == 1) || ($relpath == 1)) then
             set idirs = ( $idirs $dir )
             set ifiles = ( $ifiles $if )
             set ofiles = ( $ofiles $of )
@@ -470,16 +555,26 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;***************************************************
 ;
 ; ncl_convert2nc inputFile
-;             [-i directory_of_input_file] 
-;             [-o directory_of_output_file] 
-;             [-v var1[,...]] 
-;             [-c information_included_with_file_attribute]
-;             [-d] 
-;             [-h] 
+;           [-i input_directory]
+;           [-o output_directory]
+;           [-e extension]
+;           [-itime]
+;           [-ftime]
+;           [-u time_name]
+;           [-U new_time_name]
+;           [-v var1[,...]]
+;           [-L]
+;           [-c comment]
+;           [-d]
+;           [-B] <file>
+;           [-h]
+;
 ; inputFile             name of GRIB/HDF/HDF-EOS file [required]
 ; [-i input_directory]  location of input file  [default: current directory] 
 ; [-o output_directory] location of output file [default: current directory] 
 ; [-e extension]        file type, defined by extension, to convert
+; [-itime]              set single element time record dimension to initial_time
+; [-ftime]              set single element time record dimension to forecast_time
 ; [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
 ; [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
 ; [-v var1[,...]]       user specified subset of variables [default: all variables]
@@ -520,12 +615,12 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;                          [contains only three variables]
 ;                          [supports large files (>2Gb) for netCDF]
 ;
-;      (9) ncl_convert2nc U78677.grb -u initial_time0_hours
+;      (9) ncl_convert2nc U78677.grb -itime -u initial_time0_hours
 ;             => double initial_time0_hours(initial_time0_hours)       ; UNLIMITED
 ;             => initial_time0_hours:units = "hours since 1800-01-01 00:00" 
 ;             => float D_GDS4_HYBL_123(initial_time0_hours, lv_HYBL3, g4_lat_1, g4_lon_2) ;
-
-;     (10) ncl_convert2nc U78677.grb -u initial_time0_hours -U time
+;
+;     (10) ncl_convert2nc U78677.grb -itime -u initial_time0_hours -U time
 ;             => double time(time) ;                            ; UNLIMITED
 ;             => time:units = "hours since 1800-01-01 00:00" ;
 ;             => float D_GDS4_HYBL_123(time, lv_HYBL3, g4_lat_1, g4_lon_2) ;
@@ -550,8 +645,8 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;                                           "PRES_236_SFC,"NCPCP_236_SFC_acc1h"/)  anyFile2nc.ncl_v1
 ;      (h) ncl 'fili="U12345.grb"' 'varSelect=(/"gridlat_236","gridlon_236", \
 ;                                           "PRES_236_SFC/) -L  anyFile2nc.ncl_v1
-;      (i) ncl 'fili="U78677.hdf"' -u "initial_time0_hours"
-;      (j) ncl 'fili="U78677.hdfeos"' -u "initial_time0_hours -U time"
+;      (i) ncl 'fili="U78677.hdf"' -ftime -u "forecast_time0_hours"
+;      (j) ncl 'fili="U78677.hdfeos"' -itime -u "initial_time0_hours -U time"
 ;***************************************************
 
 begin
@@ -586,12 +681,6 @@ begin
     end if
 
 ;***************************************************
-; open file with appropriate extension
-;***************************************************
-    iFileName = diri + fili
-    f = addfile(iFileName, "r")     ; suffix ok 
-
-;***************************************************
 ; Specify that COARDS style output desired
 ; NOTE: [not yet implemented]
 ;***************************************************
@@ -599,12 +688,27 @@ begin
 
 ;***************************************************
 ; Specify the type of time coordinate
-; [default is 'numeric']
+; [default is 'numeric'] [obsolete]
+;
+; Specify the type(s) of time record dimension
 ; NOTE: valid for GRIB files only
 ;***************************************************
     if (ftype .eq. "GRIB") then
-        setfileoption(f, "InitialTimeCoordinateType", "numeric")
+;        setfileoption(f, "InitialTimeCoordinateType", "numeric")
+
+        sed = singleElemDims
+        if (debug) then
+            print("Setting file option: SingleElementDimensions: " + sed)
+        end if
+
+        setfileoption("grib", "SingleElementDimensions", sed)
     end if
+
+;***************************************************
+; open file with appropriate extension
+;***************************************************
+    iFileName = diri + fili
+    f = addfile(iFileName, "r")     ; suffix ok 
 
 ;***************************************************
 ; Get all the global [file] attributes.  These will
@@ -828,17 +932,17 @@ while ($n <= $nfiles)
     if ("$redirect" == 0) then
         echo "Processing file: $ifiles_r[$n]..."
         if ($?vars) then
-            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
         else
-            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
         endif
     else
         # redirection requested
         (echo "Processing file: $ifiles_r[$n]..." >&! $f_rdir)
         if ($?vars) then
-            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout) >&! $f_rdir
         else
-            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout &) >&! $f_rdir
+            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout &) >&! $f_rdir
         endif
     endif
 
@@ -885,10 +989,12 @@ exit 1
 
 USAGE:
 echo "${progname} inputFile(s) OPTIONS"
-echo "  inputFile(s)          name(s) of data file(s) [required] [valid types: GRIB HDF HDF-EOS]"
+echo "  inputFile(s)          name(s) of data file(s) [required] [valid types: GRIB1 GRIB2 HDF HDF-EOS]"
 echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
 echo "  [-o output_directory] location of output file(s) [default: current directory]"
 echo "  [-e extension]        file type, defined by extension, to convert [example: grb]"
+echo "  [-itime]              set time record dimension to initial_time"
+echo "  [-ftime]              set time record dimension to forecast_time"
 echo "  [-u time_name]        name of the NCL-named time dimension to be UNLIMITED"
 echo "  [-U new_time_name]    if -u is specified: new name of UNLIMITED variable and dimension"
 echo "  [-v var1[,...]]       user specified subset of variables [default: all variables]"

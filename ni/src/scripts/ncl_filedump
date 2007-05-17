@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncl_filedump,v 1.7 2006-12-07 18:59:56 grubin Exp $
+#   $Id: ncl_filedump,v 1.8 2007-05-17 18:24:49 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -18,6 +18,8 @@
 #       ncl_filedump [-c] [-v var1[,...]] [-h] file
 #           [-c]                coordinate variable and header information
 #           [-v var1[,...]]     data for variable(s) <var1>,...
+#           [-itime]            set single element time record dimension to initial time
+#           [-ftime]            set single element time record dimension to forecast time
 #           [-h]                usage message
 
 onintr cleanup
@@ -29,6 +31,11 @@ endif
 
 set nvars = 0
 set coords = 0
+
+# Single Element Dimensions variables
+set sed_n = 0
+set seDims_t = ""
+set singleElemDims = ""
 
 #
 # Sort through options.
@@ -78,6 +85,18 @@ while ($#argv > 0)
             shift
             breaksw
 
+        case "-itime"
+            @ sed_n = ($sed_n + 1)
+            set seDims_t = `echo $seDims_t "initial_time"`
+            shift
+            breaksw
+
+        case "-ftime"
+            @ sed_n = ($sed_n + 1)
+            set seDims_t = `echo $seDims_t "forecast_time"`
+            shift
+            breaksw
+
         case "-h":
             goto usage
             exit 0
@@ -107,7 +126,7 @@ endif
 # Make sure the file has an appropriate suffix so that NCL knows
 # what kind of file it is.
 #
-set valid_suffixes = ("nc" "cdf" "netcdf" "grb" "grib" "GRIB" "grb2" "grib2" "GRIB2"  "hdf" "hdfeos" "ccm")
+set valid_suffixes = ("nc" "cdf" "netcdf" "grb" "grb1" "grib" "grib1" "grb2" "grib2" "hdf" "hdfeos" "ccm")
 set no_suffix
 set psfx = "$file:e"
 set suffix = `echo $psfx | tr '[A-Z]' '[a-z]'`
@@ -132,7 +151,7 @@ endif
 
 #
 # It may be the case that the user added a suffix to the file
-# so that NCL knows how to open it with addfile.  Check for the
+# so that NCL knows how to open it with addfile().  Check for the
 # existence of the file both with and without the suffix.
 # 
 if (! -e $file && ! -e $prefix) then
@@ -141,6 +160,53 @@ if (! -e $file && ! -e $prefix) then
     echo
     exit 1
 endif
+
+#
+# Single Element Dimensions
+#
+if ($sed_n > 0) then
+    @ i = 1
+    set singleElemDims = ( '\(/'\\\"$seDims_t[$i]\\\" )
+    @ i = ($i + 1)
+    while ($i <= $sed_n)
+        set singleElemDims = ( $singleElemDims\',\'\\\"$seDims_t[$i]\\\" )
+        @ i = ($i + 1)
+    end
+
+    set singleElemDims = ( $singleElemDims'/\)' )
+else
+    set singleElemDims = ( '\(/'\\\"none\\\"'/\)' )
+endif
+
+switch ($suffix)
+    case grb:
+    case grib:
+    case grb1:
+    case grib1:
+    case grb2:
+    case grib2:
+        set ftype = "GRIB"
+        breaksw
+
+    case hdf:
+        set ftype = "HDF"
+        breaksw
+
+    case hdfeos:
+        set ftype = "HDFEOS"
+        breaksw
+
+    case ccm:
+        set ftype = "CCM"
+        breaksw
+
+    case nc:
+    case cdf:
+    case netcdf:
+        set ftype = "netCDF"
+        breaksw
+
+endsw
 
 
 #
@@ -223,6 +289,12 @@ cat << 'EOF_NCL' >! $tmp_nclfile
     end
 
     begin
+        if (ftype .eq. "GRIB") then
+            sed = singleElemDims
+            setfileoption("grib", "SingleElementDimensions", sed)
+        end if
+
+
         f = addfile(filename, "r")
         print(f)
 
@@ -300,9 +372,9 @@ cat << 'EOF_NCL' >! $tmp_nclfile
 # Construct the command line.
 #
 if ($?vars) then
-    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords vars=$vars $tmp_nclfile
+    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords vars=$vars ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims $tmp_nclfile
 else
-    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords $tmp_nclfile
+    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims $tmp_nclfile
 endif
 
 #
@@ -321,4 +393,6 @@ usage:
 echo "${progname} [-c] [-v var1[,...]] [-h] file"
 echo "  [-c]                coordinate variable and header information"
 echo "  [-v var1[,...]]     data for variable(s) <var1>,..."
+echo "  [-itime]            set single element time record dimension to initial time"
+echo "  [-ftime]            set single element time record dimension to forecast time"
 echo "  [-h]                this usage message"
