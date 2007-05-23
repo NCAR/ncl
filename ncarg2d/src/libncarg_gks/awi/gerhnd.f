@@ -1,5 +1,5 @@
 C
-C	$Id: gerhnd.f,v 1.6 2000-08-22 15:07:59 haley Exp $
+C	$Id: gerhnd.f,v 1.7 2007-05-23 00:35:31 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -40,6 +40,21 @@ C  Record number of error message and maximum number of allowable
 C  errors before abort.
 C
       DATA MNERR/0/
+C
+      print *,'Got to gerhnd',mxermg
+      IF (MXERMG .LE. 0) THEN
+        WRITE(6,500) 
+  500   FORMAT(' '/
+     +         '    GKS load error: '/
+     +         '       The flag specifying the maximum number '/
+     +         '       of error messages is less than or equal to '/
+     +         '       zero.  This usually means that blockdata '/
+     +         '       has not been loaded and indicates an error '/
+     +         '       with your loader.  Contact your vendor, or '/
+     +         '       try using g77.'/
+     +         ' ')
+        STOP
+      ENDIF
 C
       MNERR = MNERR+1
       IF (MNERR .GT. MXERMG) THEN
