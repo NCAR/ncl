@@ -10,7 +10,7 @@ c routine to calculate filter wgts and the associated response function
 
 c see an article by c. duchon (u. of oklahoma):
 c                   j. applied meteorology;  august,1979; pp 1016-1022
-c                   "lancos filtering in one and two dimensions"
+c                   "lanczos filtering in one and two dimensions"
 
       INTEGER NWT,IHP,IER
       DOUBLE PRECISION FCA,FCB,NSIGMA
