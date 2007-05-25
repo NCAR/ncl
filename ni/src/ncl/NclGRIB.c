@@ -2407,7 +2407,7 @@ GribFileRecord *therec;
 	while(step != NULL) {
 		current_dim = 0;
 		step->aux_coords[0] = step->aux_coords[1] = NrmNULLQUARK;
-		if (step->prob_param > 0) {
+		if (step->prob_param) {
 			if(!step->ensemble_isatt) {
 				dstep = therec->ensemble_dims;
 				if (step->probability) { /* either a lower or an upper limit (but not both) */
@@ -3689,7 +3689,7 @@ int it_equal(GIT *it1,GIT* it2)
 
 int ens_equal(ENS *ens1, ENS *ens2)
 {
-	if (ens1->type == 5 && ens1->prob_param > 0) { 
+	if (ens1->type == 5 && ens1->prob_param) { 
 		/* a probability product */
 		if ((ens1->type == ens2->type) &&
 		    (ens1->prob_type == ens2->prob_type) &&
@@ -3884,7 +3884,7 @@ GribParamList* step;
 
 	i = 0;
 	step->var_info.num_dimensions = 0;
-	if (step->prob_param > 0 && n_tmp_ens_vals > 0) {
+	if (step->prob_param && n_tmp_ens_vals > 0) {
 		float minlp, maxlp, minup, maxup;
 		NhlBoolean const_lp, const_up;
 		lprob = NclMalloc(n_tmp_ens_vals * sizeof(float));
@@ -5119,8 +5119,8 @@ void *s2;
 		result =  s_1->rec_inq->ens.type - s_2->rec_inq->ens.type;
 	}
 	if (! result) {
-		if (s_1->rec_inq->ens.prob_param > 0 || s_2->rec_inq->ens.prob_param > 0) {
-			result = s_1->rec_inq->ens.prob_param - s_2->rec_inq->ens.prob_param;
+		if (s_1->rec_inq->ens.prob_param && s_2->rec_inq->ens.prob_param) {
+			result = s_1->rec_inq->ens.prob_param->num - s_2->rec_inq->ens.prob_param->num;
 			if (! result) {
 				result =  s_1->rec_inq->ens.prob_type - s_2->rec_inq->ens.prob_type;
 			}
