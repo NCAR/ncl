@@ -7,7 +7,7 @@ extern void NGCALLF(dfiltrq,DFILTRQ)(int*,double*,double*,double*,int*,
 
 extern void NGCALLF(filwgtnorm,filwgtnormal)(int*,double*,int*,double*,int*);
 
-NhlErrorTypes filwgts_lancos_W( void )
+NhlErrorTypes filwgts_lanczos_W( void )
 {
 /*
  * Input array variables
@@ -48,11 +48,11 @@ NhlErrorTypes filwgts_lancos_W( void )
           2);
 
   if(*nwgt < 3) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: nwgt must be >= 3");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: nwgt must be >= 3");
     return(NhlFATAL);
   }
   if(!(*nwgt % 2)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: nwgt must be odd");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: nwgt must be odd");
     return(NhlFATAL);
   }
   nfreq = (*nwgt*2)+3;
@@ -70,7 +70,7 @@ NhlErrorTypes filwgts_lancos_W( void )
           2);
 
   if(*ihp < 0 || *ihp > 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: ihp must be 0 <= ihp <= 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: ihp must be 0 <= ihp <= 2");
     return(NhlFATAL);
   }
 
@@ -111,22 +111,22 @@ NhlErrorTypes filwgts_lancos_W( void )
   tmp_fcb    = coerce_input_double(fcb,type_fcb,1,0,NULL,NULL);
   tmp_nsigma = coerce_input_double(nsigma,type_nsigma,1,0,NULL,NULL);
   if(tmp_fca == NULL || tmp_fcb == NULL || tmp_nsigma == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for coercing input to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: Unable to allocate memory for coercing input to double");
     return(NhlFATAL);
   }
 
   if(*tmp_fca < 0. || *tmp_fca > 0.5) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: fca must be 0 <= fca <= 0.5");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: fca must be 0 <= fca <= 0.5");
     return(NhlFATAL);
   }
 
   if(*ihp == 2) {
     if(*tmp_fcb < 0. || *tmp_fcb > 0.5) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: fcb must be 0 <= fcb <= 0.5");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: fcb must be 0 <= fcb <= 0.5");
       return(NhlFATAL);
     }
     if(*tmp_fcb < *tmp_fca) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: fca must be <= fcb");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: fca must be <= fcb");
       return(NhlFATAL);
     }
   }
@@ -139,7 +139,7 @@ NhlErrorTypes filwgts_lancos_W( void )
 
   tmp_wgt  = (double*)calloc(nwgt2,sizeof(double));
   if(tmp_wgt == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -150,7 +150,7 @@ NhlErrorTypes filwgts_lancos_W( void )
     resp = (void*)calloc(nfreq,sizeof(double));
 
     if(wgt == NULL || freq == NULL || resp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for output arrays");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
 /*
@@ -172,7 +172,7 @@ NhlErrorTypes filwgts_lancos_W( void )
 
     if(wgt  == NULL || freq == NULL || resp == NULL || 
        tmp_freq == NULL || tmp_resp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lancos: Unable to allocate memory for output arrays");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: Unable to allocate memory for output arrays");
       return(NhlFATAL);
     }
   }

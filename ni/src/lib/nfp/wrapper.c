@@ -413,6 +413,7 @@ extern NhlErrorTypes wgt_volrmse_W(void);
 extern NhlErrorTypes wgt_volrmse_ccm_W(void);
 extern NhlErrorTypes wgt_volave_ccm_W(void);
 extern NhlErrorTypes filwgts_lancos_W(void);
+extern NhlErrorTypes filwgts_lanczos_W(void);
 extern NhlErrorTypes filwgts_normal_W(void);
 extern NhlErrorTypes dtrend_W(void);
 extern NhlErrorTypes dtrend_quadratic_W(void);
@@ -5569,7 +5570,8 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(wgt_volrmse_ccm_W,args,"wgt_volrmse_ccm",nargs);
 
 /*
- * Register "filwgts_lancos".
+ * Register "filwgts_lancos" and "filwgts_lanczos". These routines
+ * are identical. One is the misspelled, original version (filwgts_lancos).
  */
     nargs = 0;
     args = NewArgs(5);
@@ -5579,7 +5581,8 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    NclRegisterFunc(filwgts_lancos_W,args,"filwgts_lancos",nargs);
+    NclRegisterFunc(filwgts_lanczos_W,args,"filwgts_lanczos",nargs);
+    NclRegisterFunc(filwgts_lanczos_W,args,"filwgts_lancos",nargs);
 
 /*
  * Register "filwgts_normal".
