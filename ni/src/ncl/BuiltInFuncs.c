@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.218 2007-03-19 01:46:20 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.219 2007-05-30 23:02:05 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -7173,6 +7173,25 @@ NhlErrorTypes _NclIstringtointeger
 		0
 	));
 }
+
+static void TransD2E
+#if     NhlNeedProto
+	(char *val)
+#else
+(val)
+char *val;
+#endif
+{
+	char *cp;
+	for (cp = val; *cp != '\0'; cp++) {
+		if (! (*cp == 'd' || *cp == 'D'))
+			continue;
+		*cp = 'e';
+		return;
+	}
+}
+
+
 NhlErrorTypes _NclIstringtodouble
 #if     NhlNeedProto
 (void)
@@ -7188,8 +7207,10 @@ NhlErrorTypes _NclIstringtodouble
         int total=1;
         int i;
 	double tval;
+	char tbuf[128];
 	char *val;
 	char *end;
+	int bufsiz = 128;
 
         value = (string*)NclGetArgValue(
                         0,
@@ -7204,9 +7225,20 @@ NhlErrorTypes _NclIstringtodouble
                 total *= dimsizes[i];
         }
 	out_val = (double*) NclMalloc(((NclTypeClass)nclTypedoubleClass)->type_class.size *total);
+	/*
+	 * stringtodouble is now enhanced to recognize 'd' or 'D' as
+	 * indicators of an exponent in the double context. However
+	 * note that when changing 'd' to 'e' in the context of 
+	 * Quarks that you cannot simply change the string pointed to
+	 * by the Quark. In the case of string variables that would cause
+	 * the variable itself to change -- no good -- so the string must
+	 * be copied.
+	 */
 	if(has_missing) {
 		errno = 0;
-		val = NrmQuarkToString(missing.stringval);
+		strncpy(tbuf,NrmQuarkToString(missing.stringval),bufsiz-1);
+		val = tbuf;
+		TransD2E(val);
 		tval = strtod(val,&end);
 		if (end == val || errno == ERANGE) {
 			missing2.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
@@ -7219,7 +7251,12 @@ NhlErrorTypes _NclIstringtodouble
 				out_val[i] = missing2.doubleval;
 			} else {
 				errno = 0;
+				strncpy(tbuf,NrmQuarkToString(value[i]),bufsiz-1);
+				val = tbuf;
+				/*
 				val = NrmQuarkToString(value[i]);
+				*/
+				TransD2E(val);
 				tval = strtod(val,&end);
 				if (end == val) {
                                         NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -7238,7 +7275,12 @@ NhlErrorTypes _NclIstringtodouble
 		missing2.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
 		for(i = 0; i < total; i++) {
 			errno = 0;
+			strncpy(tbuf,NrmQuarkToString(value[i]),bufsiz-1);
+			val = tbuf;
+			/*
 			val = NrmQuarkToString(value[i]);
+			*/
+			TransD2E(val);
 			tval = strtod(val,&end);
 			if (end == val) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
