@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.142 2007-04-10 17:30:33 shea Exp $
+;      $Id: contributed.ncl,v 1.143 2007-05-31 18:17:33 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -943,7 +943,8 @@ end
 ; D. Shea
 ; set a _FillValue "automatically" 
 ; If a variable has a "_FillValue" use it, if not "missing_value" etc.
-; if none on file, then set default by variable type 
+; if none on file, then return "No_FillValue"  
+; This function should be used within the "new" statement.
 ; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
 
 undef("getFillValue")
@@ -957,45 +958,64 @@ begin
            FillValue = x@missing_value
       else
            FillValue = "No_FillValue"
-
-;;         The following was the original code
-;;         if (typeof(x).eq."float") then
-;;             FillValue = -999.
-;;         end if
-;;         if (typeof(x).eq."double") then
-;;             FillValue = -9999.
-;;         end if
-;;         if (typeof(x).eq."integer") then
-;;             FillValue = -99
-;;         end if
-;;         if (typeof(x).eq."logical") then
-;;             FillValue = -1
-;;         end if
-;;         if (typeof(x).eq."byte") then
-;;             FillValue = 0377
-;;         end if
-;;         if (typeof(x).eq."short") then
-;;             FillValue = -99
-;;         end if
-;;         if (typeof(x).eq."graphic") then
-;;             FillValue = -9999
-;;         end if
-;;         if (typeof(x).eq."file") then
-;;             FillValue = -9999
-;;         end if
-;;         if (typeof(x).eq."list") then
-;;             FillValue = -9999
-;;         end if
-;;         if (typeof(x).eq."character") then
-;;             FillValue = "\0"
-;;         end if
-;;         if (typeof(x).eq."string") then
-;;             FillValue = "missing"
-;;         end if
       end if
   end if
 
    return (FillValue)
+end
+;********************************************************************
+; D. Shea
+; set a numeric _FillValue "automatically" 
+; If a variable has a "_FillValue" use it, if not "missing_value" etc.
+; if none on file, then set default by variable type 
+; example of inline use: var = new(dimsizes(x),typeof(x),getFillValue(x))
+
+undef("getVarFillValue")
+function getVarFillValue (x)
+local FillValue
+begin
+  if (isatt(x,"_FillValue")) then
+      FillValue = x@_FillValue
+  else
+      if (isatt(x,"missing_value")) then
+           FillValue = x@missing_value
+      else
+           if (typeof(x).eq."float") then
+               FillValue = -999.
+           end if
+           if (typeof(x).eq."double") then
+               FillValue = -9999.
+           end if
+           if (typeof(x).eq."integer") then
+               FillValue = -99
+           end if
+           if (typeof(x).eq."logical") then
+               FillValue = -1
+           end if
+           if (typeof(x).eq."byte") then
+               FillValue = 0377
+           end if
+           if (typeof(x).eq."short") then
+               FillValue = -99
+           end if
+           if (typeof(x).eq."graphic") then
+               FillValue = -9999
+           end if
+           if (typeof(x).eq."file") then
+               FillValue = -9999
+           end if
+           if (typeof(x).eq."list") then
+               FillValue = -9999
+           end if
+           if (typeof(x).eq."character") then
+               FillValue = "\0"
+           end if
+           if (typeof(x).eq."string") then
+               FillValue = "missing"
+           end if
+      end if
+  end if
+  return (FillValue)
 end
 ; **************************************************************
 ; D. Shea
@@ -4617,6 +4637,37 @@ begin
   copy_VarCoords(eof, eofEVX)
 
   return  (eofEVX)                        ; return
+end
+
+;*******************************************************************
+; Returns the varimax rotated EOFs in descending order.
+;*******************************************************************
+undef("eof_varimax_reorder")
+procedure eof_varimax_reorder ( eofr )
+local dime, rank, neof, ip, EOFR
+begin
+  dime = dimsizes( eofr )
+  rank = dimsizes( dime )
+  if (rank.lt.2 .or. rank.gt.3) then
+      print("eof_varimax_reorder: Currently eofr must be 2D or 3D.")
+      print("eof_varimax_reorder: ***** Return original array ****")
+  end if
+  neofr= dime(0)
+  
+  ip   = dim_pqsort( eofr@pcvar_varimax, -1 )   ; descending order
+
+  EOFR = eofr                                   ; temp and copt meta
+  do ne=0,neofr-1
+     if (rank.eq.2) then
+         eofr(ne,:)   = (/ EOFR(ip(ne),:) /)
+     end if
+     if (rank.eq.3) then
+         eofr(ne,:,:) = (/ EOFR(ip(ne),:,:) /)
+     end if
+     eofr@pcvar_varimax(ne)    = (/ EOFR@pcvar_varimax(ip(ne))    /)
+     eofr@variance_varimax(ne) = (/ EOFR@variance_varimax(ip(ne)) /)
+  end do
+  
 end
 
 ; **************************************************************
