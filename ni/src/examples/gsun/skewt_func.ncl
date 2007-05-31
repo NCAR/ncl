@@ -81,7 +81,7 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       end do
   end if
 
-  if (localOpts@PrintOpts) then
+  if (isatt(localOpts,"PrintOpts").and.localOpts@PrintOpts) then
      print(localOpts)
   end if
 
