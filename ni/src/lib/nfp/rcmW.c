@@ -624,7 +624,7 @@ NhlErrorTypes rcm2points_W( void )
     return(NhlFATAL);
   }
 
-  if(nlon2d <= 1 || nlat2d <= 1 || nlat1d <= 1) {
+  if(nlon2d < 2 || nlat2d < 2 || nlat1d < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2points: The input lat/lon grids must have at least 2 elements, and the output lat/lon arrays 1 element");
     return(NhlFATAL);
   }
