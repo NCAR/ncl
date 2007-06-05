@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.219 2007-05-30 23:02:05 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.220 2007-06-05 23:33:51 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -13234,7 +13234,7 @@ NhlErrorTypes _NclIFileAttDef
 					}
 				}
 			} else {
-                                NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: File variable (%s) has no attributes to assign",NrmQuarkToString(data.u.data_var->var.var_quark));
                                 return(NhlWARNING);
                         }
 			if (tmp)
@@ -13245,7 +13245,7 @@ NhlErrorTypes _NclIFileAttDef
 			if(data.u.data_var->var.att_id != -1) {
 				tmp_attobj = (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
 			} else {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: Variable (%s) has no attributes to assign", NrmQuarkToString(data.u.data_var->var.var_quark));
 				return(NhlWARNING);
 			}
 			the_att_list = tmp_attobj->att.att_list;
@@ -13348,7 +13348,7 @@ NhlErrorTypes _NclIFileVarAttDef
 					}
 				}
 			} else {
-                                NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+                                NhlPError(NhlWARNING,NhlEUNKNOWN,"FileVarAttDef:  File variable (%s) has no attributes to assign",NrmQuarkToString(data.u.data_var->var.var_quark));
                                 return(NhlWARNING);
                         }
 			if (tmp)
@@ -13358,7 +13358,7 @@ NhlErrorTypes _NclIFileVarAttDef
 			if(data.u.data_var->var.att_id != -1) {
 				tmp_attobj = (NclAtt)_NclGetObj(data.u.data_var->var.att_id);
 			} else {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,"FileAttDef: No attributes to assign");
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"FileVarAttDef:  Variable (%s) has no attributes to assign", NrmQuarkToString(data.u.data_var->var.var_quark));
 				return(NhlWARNING);
 			}
 			for(i = 0; i < dimsize; i++) {
