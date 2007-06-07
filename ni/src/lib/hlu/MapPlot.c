@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.97 2006-06-15 16:45:56 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.98 2007-06-07 23:04:04 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2415,6 +2415,9 @@ static NhlErrorTypes mpDraw
 		NULL);
 
 	NGCALLF(setdashchar,SETDASHCHAR)();
+
+	c_mpsetr("OT",0.0);
+
 
 
 /* Do the fill first */

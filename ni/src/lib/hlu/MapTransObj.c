@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.59 2005-06-30 20:48:21 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.60 2007-06-07 23:04:04 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -602,6 +602,8 @@ NhlLayer parent;
 	double denom;
 
 	ret =(*NhltransObjClassRec.trobj_class.set_trans)(instance,parent);
+
+	c_mpsetr("OT",0.0);
 
 	xl = minstance->trobj.x;
 	yt = minstance->trobj.y;

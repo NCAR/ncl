@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.7 2006-11-17 18:20:11 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.8 2007-06-07 23:04:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2706,6 +2706,7 @@ static NhlErrorTypes GetDataBound
 		 * map overlay permutation. It should be examined in
 		 * detail at some point.
                  */
+#if 0
 		if (*xlinear || *ylinear) {
 			float tx[2],ty[2];
 			float fx[2],fy[2];
@@ -2759,6 +2760,7 @@ static NhlErrorTypes GetDataBound
 			bbox->b = MIN(fy[0],fy[1]);
 			bbox->t = MAX(fy[0],fy[1]);
 		}
+#endif
 	}
 	GetCellInfo(cnp,cxd,cyd,*xlinear,*ylinear,mcount,ncount,
 		    &xsoff,&xeoff,&ysoff,&yeoff,&xexact,&yexact);
