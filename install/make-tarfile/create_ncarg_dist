@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncarg_dist,v 1.5 2007-03-28 02:05:22 haley Exp $
+#   $Id: create_ncarg_dist,v 1.6 2007-06-09 18:34:29 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -111,7 +111,7 @@ endif
 # has its own version.  Just use the NCL version here, even though
 # the versions are different.
 #
-set version = `cat $NCARG/NclVersion`
+set version = `cat $NCARG/NcargVersion`
 
 #
 # Sort through options.

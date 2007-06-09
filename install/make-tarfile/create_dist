@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.6 2007-05-11 14:48:40 haley Exp $
+#   $Id: create_dist,v 1.7 2007-06-09 18:34:28 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -149,6 +149,7 @@ while ($#argv > 0)
     case "-2":
       set NCARGONLY
       unset NCARGNCL
+      set version = `cat $NCARG/NcargVersion`
       shift
       breaksw
 
