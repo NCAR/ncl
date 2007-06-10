@@ -1046,9 +1046,13 @@ for i in range(len(args)):
 """)
     w1file.write("  if(" + args[i].ndims_name + " < " + \
                 str(args[i].min_ndims) + ") {\n")
-    w1file.write(fatal_str + 'The ' + args[i].name + \
-                ' array must have at least ' + str(args[i].min_ndims) + \
-                ' dimensions");\n')
+    if (args[i].min_ndims == 1):
+      w1file.write(fatal_str + 'The ' + args[i].name + \
+                  ' array must have at least one dimension");\n')
+    else:
+      w1file.write(fatal_str + 'The ' + args[i].name + \
+                  ' array must have at least ' + str(args[i].min_ndims) + \
+                  ' dimensions");\n')
     w1file.write(return_fatal_str)
     w1file.write('  }\n')
 
@@ -1405,7 +1409,7 @@ if have_leftmost:
   w1file.write("""
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
- * subsection of the input arrays..
+ * subsection of the input arrays.
  */
 """)
   index_str = "  "
