@@ -40,8 +40,8 @@ c     jl      = number of points along 2nd dimension to be filled
 c     maxscn  = maximum number of passes allowed in relaxation
 c     crit    = criterion for ending relaxation before "maxscn" limit
 c     relc    = relaxation constant
-c     gtype   = 0 : cyclic in x
-c               1 : not cyclic in x
+c     gtype   = 0 : not cyclic in x
+c               1 : cyclic in x
 c     guess   = 0 : use 0.0 as an initial guess
 c             = 1 : at each "y" use the average values for that "y"
 c                   think zonal averages
