@@ -160,6 +160,7 @@ extern NhlErrorTypes pop_remap_W(void);
 extern NhlErrorTypes smth9_W(void);
 extern NhlErrorTypes simpeq_W(void);
 extern NhlErrorTypes simpne_W(void);
+extern NhlErrorTypes poisson_grid_fill_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 extern NhlErrorTypes ngritd_W(void);
@@ -2433,6 +2434,25 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
     NclRegisterFunc(simpne_W,args,"simpne",nargs);
+
+/*
+ * Register "poisson_grid_fill".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(7);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterProc(poisson_grid_fill_W,args,"poisson_grid_fill",nargs);
 
 /*
  * Register "simpeq"
