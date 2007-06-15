@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.42 2007-05-16 22:08:55 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.43 2007-06-15 23:00:03 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -569,23 +569,30 @@ int wr_status;
 						stepalptr = &((*stepalptr)->next);
 					}
 					
-					if (((int)(tmp->options[NC_MISSING_TO_FILL_VALUE_OPT].values) == 1) && missing_val_recp  && ! has_fill) {
-						(*stepalptr) = (NetCdfAttInqRecList*)NclMalloc(
-							(unsigned)sizeof(NetCdfAttInqRecList));
-						(*stepalptr)->att_inq = (NetCdfAttInqRec*)NclMalloc(
-							(unsigned)sizeof(NetCdfAttInqRec));
-						(*stepalptr)->next = NULL;
-						(*stepalptr)->att_inq->att_num = (*stepvlptr)->var_inq->natts;
-						(*stepvlptr)->var_inq->natts++;
-						(*stepalptr)->att_inq->name = qfill_val;
-						(*stepalptr)->att_inq->varid = i;
-						(*stepalptr)->att_inq->data_type =  missing_val_recp->data_type;
-						(*stepalptr)->att_inq->len = missing_val_recp->len;
-						(*stepalptr)->att_inq->value = 
-							NclMalloc(nctypelen(missing_val_recp->data_type)* missing_val_recp->len);
-						memcpy((*stepalptr)->att_inq->value, missing_val_recp->value,
-						       nctypelen(missing_val_recp->data_type)* missing_val_recp->len);
-						(*stepalptr)->att_inq->virtual = 1;
+					if (((int)(tmp->options[NC_MISSING_TO_FILL_VALUE_OPT].values) == 1) &&
+					    missing_val_recp  && ! has_fill) {
+						if (missing_val_recp->data_type == (*stepvlptr)->var_inq->data_type) {
+							(*stepalptr) = (NetCdfAttInqRecList*)NclMalloc(
+								(unsigned)sizeof(NetCdfAttInqRecList));
+							(*stepalptr)->att_inq = (NetCdfAttInqRec*)NclMalloc(
+								(unsigned)sizeof(NetCdfAttInqRec));
+							(*stepalptr)->next = NULL;
+							(*stepalptr)->att_inq->att_num = (*stepvlptr)->var_inq->natts;
+							(*stepvlptr)->var_inq->natts++;
+							(*stepalptr)->att_inq->name = qfill_val;
+							(*stepalptr)->att_inq->varid = i;
+							(*stepalptr)->att_inq->data_type =  missing_val_recp->data_type;
+							(*stepalptr)->att_inq->len = missing_val_recp->len;
+							(*stepalptr)->att_inq->value = 
+								NclMalloc(nctypelen(missing_val_recp->data_type)* missing_val_recp->len);
+							memcpy((*stepalptr)->att_inq->value, missing_val_recp->value,
+							       nctypelen(missing_val_recp->data_type)* missing_val_recp->len);
+							(*stepalptr)->att_inq->virtual = 1;
+						}
+						else {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,
+								  "NetOpenFile: MissingToFillValue option set True, but missing_value attribute and data variable (%s) types differ: not adding virtual _FillValue attribute",NrmQuarkToString((*stepvlptr)->var_inq->name));
+						}
 					}
 				} else {
 					((*stepvlptr)->var_inq->att_list) = NULL;
