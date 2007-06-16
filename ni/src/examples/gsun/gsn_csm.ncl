@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.211 2007-04-16 21:18:08 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.212 2007-06-16 00:51:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3732,6 +3732,16 @@ begin
     main_zone     = 2         ; Zone for main title (may change later)
     res2 = get_resources(resources)
 ;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
+                       "gsn_csm_map_ce",res2,0)
+    end if
+
+;
 ; Make sure user is not calling this function, and then trying to
 ; change the map projection, because this can cause problems later.
 ;
@@ -4053,6 +4063,15 @@ begin
     center_lat    = 0.0 
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
+                       "gsn_csm_map_polar",res2,0)
+    end if
 
 ; This section tests for special resources: those that start with "gsn."
 
@@ -4449,7 +4468,15 @@ left_string, center_string, right_string, main_zone, res2
 begin
 ; Initialize.
     res2 = get_resources(resources)
-
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
+                       "gsn_csm_map_other",res2,0)
+    end if
 ;
 ; Need to check what kind of tickmarks are being used so we can set
 ; the zone appropriately. It may be the case that it's okay to always
@@ -4617,6 +4644,16 @@ end
 function gsn_csm_map(wks:graphic,resources:logical)
 begin
   res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
+                     "gsn_csm_map",res2,0)
+  end if
+
   if(res2.and.(isatt(res2,"gsnPolarNH").or.isatt(res2,"gsnPolarSH").or.\
                isatt(res2,"gsnPolar")))
     return(gsn_csm_map_polar(wks,res2))
@@ -4685,6 +4722,16 @@ begin
 ; Initialize.
     lbar_on       = False     ; Labelbar flag
     res2          = get_resources(resources) ; Copy of resources
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),\
+                       "gsn_csm_contour_map_polar",res2,1)
+    end if
+
     lbar_zone     = 3         ; Zone for labelbar (may change later)
     mpres         = True      ; Will hold map resources
 
@@ -4881,7 +4928,15 @@ begin
     zonal_zone     = 2        ; Zone for zonal means plot
 
     res2 = get_resources(resources)
-
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),\
+                       "gsn_csm_contour_map_ce",res2,1)
+    end if
 ;
 ; Default is no zonal mean plot.
 ; Also get min and max X values, if any.
@@ -5278,6 +5333,15 @@ begin
     zonal_zone     = 2        ; Zone for zonal means plot
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float), \
+                       "gsn_csm_contour_map_other",res2,1)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -5476,6 +5540,14 @@ begin
     lbar_on        = False
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_ce",res2,2)
+    end if
 
     if(isatt(res2,"vcRefAnnoOrthogonalPosF")) then
       user_set_ref_orth = True
@@ -5704,6 +5776,14 @@ begin
     lbar_zone      = 2        ; Zone for labelbar (may change later)
     mpres          = True
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_polar",res2,2)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -5876,6 +5956,14 @@ begin
     mpres          = True
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_other",res2,2)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -6034,6 +6122,14 @@ begin
     mpres          = True
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_ce",res2,2)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -6198,6 +6294,14 @@ begin
 ; Initialize.
     mpres          = True
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_polar",res2,2)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -6326,6 +6430,14 @@ begin
     mpres          = True
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_other",res2,2)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -6447,6 +6559,14 @@ begin
     lbar_on        = True
     mpres          = True
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_ce",res2,3)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -6688,6 +6808,15 @@ begin
 ;
 ; Initialize.
     res2  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_polar",res2,3)
+    end if
+
     mpres = True
 
 ; Check for cyclic point (default is True if we are not setting both
@@ -6882,6 +7011,14 @@ begin
     mpres          = True
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_other",res2,3)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -7067,6 +7204,15 @@ begin
     refanno_on     = True
     lbar_on        = True
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar",res2,3)
+    end if
+
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; Check for cyclic point (default is True if we are not setting both
@@ -7343,6 +7489,15 @@ begin
     lbar_on        = True
     mpres          = True
     res2           = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map_ce",res2,3)
+    end if
+
     if(isatt(res2,"vcRefAnnoOrthogonalPosF")) then
       user_set_ref_orth = True
     else
@@ -7652,6 +7807,15 @@ begin
 ;
 ; Initialize.
     res2  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map_polar",res2,3)
+    end if
+
     mpres = True
 
 ; Check for cyclic point (default is True if we are not setting both
@@ -7887,6 +8051,14 @@ begin
     mpres          = True
 
     res2           = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map_other",res2,3)
+    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes).
@@ -8095,6 +8267,16 @@ function gsn_csm_contour_map(wks:graphic,data:numeric,resources:logical)
 local res
 begin
   res = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(data,new(1,float),new(1,float),\
+                     "gsn_csm_contour_map",res,1)
+  end if
+
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
     return(gsn_csm_contour_map_polar(wks,data,res))
@@ -8127,6 +8309,14 @@ function gsn_csm_streamline_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
 local res
 begin
   res = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map",res,2)
+  end if
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
@@ -8160,6 +8350,14 @@ function gsn_csm_vector_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
 local res
 begin
   res  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map",res,2)
+  end if
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
@@ -8195,6 +8393,14 @@ function gsn_csm_vector_scalar_map(wks:graphic,u[*][*]:numeric, \
 local res
 begin
   res  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map",res,3)
+  end if
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
@@ -8231,6 +8437,14 @@ function gsn_csm_streamline_contour_map(wks:graphic,u[*][*]:numeric, \
 local res
 begin
   res  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map",res,3)
+  end if
 
   if(res.and.(isatt(res,"gsnPolarNH").or.isatt(res,"gsnPolarSH").or.\
               isatt(res,"gsnPolar")))
@@ -8408,6 +8622,15 @@ begin
     yref_line_on  = False     ; Y reference line flag
     yref_fill_on  = False     ; Whether to fill above/below Y ref line.
     res2          = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(x,y,new(1,float),"gsn_csm_xy",res2,2)
+    end if
+
     left_string   = False
     center_string = False
     right_string  = False
@@ -9320,6 +9543,14 @@ local dsizes_y, npts, x, rank_y, xy
 begin
   res2 = get_resources(resources)
 ;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(y,new(1,float),new(1,float),"gsn_csm_y",res2,1)
+    end if
+;
 ; Get dimension sizes of Y array.
 ;
   dsizes_y = dimsizes(y)
@@ -10126,6 +10357,15 @@ begin
     lbar_on       = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_contour",res2,1)
+    end if
+
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
@@ -10306,6 +10546,14 @@ begin
 
 ; Initialize.
     res2         = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_hov",res2,1)
+    end if
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
     callframe    = get_res_value(res2,"gsnFrame",True)
@@ -10385,6 +10633,14 @@ begin
 
 ; Initialize.
     res2         = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_lat_time",res2,1)
+    end if
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
     callframe    = get_res_value(res2,"gsnFrame",True)
@@ -10450,6 +10706,14 @@ begin
 
 ; Initialize.
     res2         = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_time_lat",res2,1)
+    end if
 
     calldraw     = get_res_value(res2,"gsnDraw", True)
     callframe    = get_res_value(res2,"gsnFrame",True)
@@ -10520,6 +10784,14 @@ begin
     pres_reverse  =  True  ; Default is to assume pressure values
                            ; already reversed.
     res2          = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_pres_hgt",res2,1)
+    end if
 
     add_hgt_label = get_res_value(res2,"gsnPresHgtHeightLabelOn",True)
     calldraw      = get_res_value(res2,"gsnDraw", True)
@@ -10726,6 +10998,15 @@ begin
     lbar_on       = False     ; Labelbar flag
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector",res2,2)
+    end if
+
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
@@ -10889,6 +11170,14 @@ function gsn_csm_pres_hgt_vector(wks:graphic,data[*][*]:numeric, \
 local res2, cnres, vcres, calldraw, callframe, npres, lbar_zone, anno_zone
 begin
   res2      = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(data,u,v,"gsn_csm_pres_hgt_vector",res2,3)
+  end if
 
   calldraw  = get_res_value(res2,"gsnDraw", True)
   callframe = get_res_value(res2,"gsnFrame",True)
@@ -11000,6 +11289,15 @@ begin
 ; Initialize.
     main_zone     = 2         ; Zone for main title (may change later)
     res2          = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline",res2,2)
+    end if
+
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
@@ -11143,6 +11441,14 @@ function gsn_csm_pres_hgt_streamline(wks:graphic,data[*][*]:numeric, \
 local res2, cnres, stres, calldraw, callframe, npres
 begin
   res2      = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(data,u,v,"gsn_csm_pres_hgt_streamline",res2,3)
+  end if
 
   calldraw  = get_res_value(res2,"gsnDraw", True)
   callframe = get_res_value(res2,"gsnFrame",True)

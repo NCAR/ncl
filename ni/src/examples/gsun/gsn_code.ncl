@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.199 2007-04-11 18:35:33 haley Exp $
+;      $Id: gsn_code.ncl,v 1.200 2007-06-16 00:51:21 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -72,6 +72,12 @@ undef("set_zero_line_thickness")
 undef("set_line_thickness_scale")
 undef("set_pos_neg_line_pattern")
 undef("maximize_bb")
+undef("write_lines")
+undef("add_latlon2d_debug_info")
+undef("fix_latlon2d_debug_info")
+undef("write_latlon2d_lines")
+undef("write_debug_res_file")
+undef("gsnp_write_debug_info")
 undef("gsnp_turn_off_tickmarks")
 undef("gsnp_point_tickmarks_outward")
 undef("gsnp_uniform_tickmark_labels")
@@ -1663,6 +1669,409 @@ begin
   return((/new_vpx,new_vpy,new_vpw,new_vph/))
 end
 
+;***********************************************************************;
+; This procedure writes a series of strings to a given string array and ;
+; increments the line counter.                                          ;
+;***********************************************************************;
+procedure write_lines(strs, thelines, numlines)
+local nstrs
+begin
+  nstrs   = dimsizes(strs)        ; Number of strings to write.
+  ntlines = dimsizes(thelines)    ; Number of available lines.
+
+  if((numlines+nstrs).gt.ntlines) then
+    print("write_lines: error: array is not big enough to hold new lines")
+    print("             no lines will be written")
+    return
+  end if
+
+  thelines(numlines:numlines+nstrs-1) = strs          ; Add strings
+  numlines                            = numlines + nstrs
+end
+
+;***********************************************************************;
+; This procedure is to be used in conjunction with gsnp_write_debug_info.    ;
+; It takes care of the special case where "lat2d" and "lon2d" attributes;
+; may be attached to the data array. You can't write 2D attributes to a ;
+; netCDF file, so we write them as 1D with information that we can use  ;
+; to reconstruct the 2D array later.                                    ;
+; increments the line counter.                                          ;
+;***********************************************************************;
+procedure add_latlon2d_debug_info(data)
+local dims_lat, dims_lon
+begin
+  if(isatt(data,"lat2d")) then
+    dims_lat = dimsizes(data@lat2d)
+    if(dimsizes(dims_lat).eq.2) then
+      data@lat1d_yndim = dims_lat(0)
+      data@lat1d_xndim = dims_lat(1)
+      data@lat1d       = ndtooned(data@lat2d)
+      delete(data@lat2d)
+    end if
+  end if
+  if(isatt(data,"lon2d")) then
+    dims_lon = dimsizes(data@lon2d)
+    if(dimsizes(dims_lon).eq.2) then
+      data@lon1d_yndim = dims_lon(0)
+      data@lon1d_xndim = dims_lon(1)
+      data@lon1d       = ndtooned(data@lon2d)
+      delete(data@lon2d)
+    end if
+  end if
+end
+
+;***********************************************************************;
+; This procedure is used in conjunction with add_laton2d_debug_info.    ;
+; It adds back lat2d/lon2d attributes that were removed earlier, and    ;
+; removes attribute info that was added to a data array (all in support ;
+; of the gsnp_write_debug_info procedure).                                   ;
+;***********************************************************************;
+procedure fix_latlon2d_debug_info(ldata)
+begin
+  if(isatt(ldata,"lat1d").and. \
+     isatt(ldata,"lat1d_yndim").and.\
+     isatt(ldata,"lat1d_xndim").and.\
+     isatt(ldata,"lon1d").and. \
+     isatt(ldata,"lon1d_yndim").and.\
+     isatt(ldata,"lon1d_xndim")) then
+    ldata@lat2d = onedtond(ldata@lat1d,(/ldata@lat1d_yndim,ldata@lat1d_xndim/))
+    ldata@lon2d = onedtond(ldata@lon1d,(/ldata@lon1d_yndim,ldata@lon1d_xndim/))
+    delete(ldata@lat1d_yndim)
+    delete(ldata@lat1d_xndim)
+    delete(ldata@lon1d_yndim)
+    delete(ldata@lon1d_xndim)
+    delete(ldata@lat1d)
+    delete(ldata@lon1d)
+  end if
+end
+
+;***********************************************************************;
+; This procedure is used in conjunction with add_laton2d_debug_info.    ;
+; and gsnp_write_debug_info. It writes lines to an NCL script that           ;
+; reconstructs lat2d and lon2d attribute information.                   ;
+;***********************************************************************;
+procedure write_latlon2d_lines(ldata, ldata_name[1]:string, thelines, numlines)
+local nlines
+begin
+  if(isatt(ldata,"lat1d").and. \
+     isatt(ldata,"lat1d_yndim").and.\
+     isatt(ldata,"lat1d_xndim").and.\
+     isatt(ldata,"lon1d").and. \
+     isatt(ldata,"lon1d_yndim").and.\
+     isatt(ldata,"lon1d_xndim")) then
+    nlines = (/"  " + ldata_name + "@lat2d = onedtond(" + ldata_name + \
+               "@lat1d,(/" + ldata_name + "@lat1d_yndim," + ldata_name + \
+               "@lat1d_xndim/))", \
+               "  " + ldata_name + "@lon2d = onedtond(" + ldata_name + \
+               "@lon1d,(/" + ldata_name + "@lon1d_yndim," + ldata_name + \
+               "@lon1d_xndim/))"/)
+    
+    write_lines( nlines, thelines, numlines)
+  end if
+end
+
+;***********************************************************************;
+; This procedure writes a standard resource file that changes the font  ;
+; to helvetica, foreground/background colors to white/black, and the    ;
+; function code to "~".                                                 ;
+;***********************************************************************;
+procedure write_debug_res_file(resfname[1]:string)
+local reslines
+begin
+  reslines = (/"*wkForegroundColor : (/0.,0.,0./)", \
+               "*wkBackgroundColor : (/1.,1.,1./)", \
+               "*Font              : helvetica",    \
+               "*TextFuncCode      : ~"/)
+
+  asciiwrite(resfname,reslines)
+end
+
+;***********************************************************************;
+; This procedure writes some debug info (data and plot resource values) ;
+; to a netCDF file and creates an NCL file to plot the data.            ;
+;***********************************************************************;
+procedure gsnp_write_debug_info(data1,data2,data3,gsn_name[1]:string,\
+                           plot_res[1]:logical,ndfiles[1]:integer)
+begin
+;
+; Can only deal with up to three data files.
+;
+  if(ndfiles.lt.0.or.ndfiles.gt.3) then
+    print("gsnp_write_debug_info: error: can only have 0-3 data files.")
+    exit
+  end if
+;
+; Valid plot function names that this routine can be use for.
+;
+  gsn_names = (/"gsn_contour", "gsn_contour_map", "gsn_csm_contour", \
+                "gsn_csm_contour_map", "gsn_csm_contour_map_ce", \
+                "gsn_csm_contour_map_other", \
+                "gsn_csm_contour_map_polar", "gsn_csm_hov", \
+                "gsn_csm_lat_time", "gsn_csm_map", "gsn_csm_map_ce", \
+                "gsn_csm_map_other", "gsn_csm_map_polar", \
+                "gsn_csm_pres_hgt", "gsn_csm_pres_hgt_streamline", \
+                "gsn_csm_pres_hgt_vector", "gsn_csm_streamline", \
+                "gsn_csm_streamline_contour_map", \
+                "gsn_csm_streamline_contour_map_ce", \
+                "gsn_csm_streamline_contour_map_other", \
+                "gsn_csm_streamline_contour_map_polar", \
+                "gsn_csm_streamline_map", "gsn_csm_streamline_map_ce", \
+                "gsn_csm_streamline_map_other", \
+                "gsn_csm_streamline_map_polar", "gsn_csm_time_lat", \
+                "gsn_csm_vector", "gsn_csm_vector_map", \
+                "gsn_csm_vector_map_ce", "gsn_csm_vector_map_other", \
+                "gsn_csm_vector_map_polar", "gsn_csm_vector_scalar", \
+                "gsn_csm_vector_scalar_map", \
+                "gsn_csm_vector_scalar_map_ce", \
+                "gsn_csm_vector_scalar_map_other", \
+                "gsn_csm_vector_scalar_map_polar", "gsn_csm_xy", \
+                "gsn_csm_y", "gsn_histogram", "gsn_map", \
+                "gsn_streamline", "gsn_streamline_contour", \
+                "gsn_streamline_map", "gsn_vector", \
+                "gsn_vector_contour", "gsn_vector_contour_map", \
+                "gsn_vector_map", "gsn_vector_scalar", \
+                "gsn_vector_scalar_map", "gsn_xy", "gsn_y"/)
+
+  if(.not.any(gsn_name.eq.gsn_names)) then
+    print("gsnp_write_debug_info: error: do not recognize " + gsn_name + " as a")
+    print("valid plot function name that can be used with this procedure.")
+    exit
+  end if
+
+;
+; Create netCDF and NCL files to write to. The default will be
+; "debug.ncl" and "debug.nc" unless otherwise specified.
+;
+  debug_file = get_res_value(plot_res,"gsnDebugWriteFileName", \
+                             unique_string("debug"))
+
+  cdf_debug_file = debug_file +  ".nc"
+  ncl_debug_file = debug_file +  ".ncl"
+  res_debug_file = debug_file +  ".res"
+
+  if(isfilepresent(cdf_debug_file).or.isfilepresent(ncl_debug_file).or.\
+     isfilepresent(res_debug_file)) then
+    print("gsnp_write_debug_info: error: debug files '" + cdf_debug_file + "',")
+    print("'" + ncl_debug_file + "' and/or " + res_debug_file + " exist.")
+    print("Please remove file(s) and start script again.")
+    exit
+  else
+    dfile = addfile(cdf_debug_file,"c")
+  end if
+
+;
+; Write the plot data to the netCDF file.  If the data contains the
+; special 2D lat2d/lon2d arrays, we have to write these as 1D arrays
+; and reconstruct them as 2D later.
+;
+  if(ndfiles.ge.1) then
+    add_latlon2d_debug_info(data1)
+    dfile->PlotData = data1           ; Write the data
+  end if
+  if(ndfiles.ge.2) then
+    add_latlon2d_debug_info(data2)
+    dfile->PlotData2 = data2
+  end if
+  if(ndfiles.ge.3) then
+    add_latlon2d_debug_info(data3)
+    dfile->PlotData3 = data3
+  end if
+
+  dfile@gsn_function = stringtochar(gsn_name)  ; Write name of gsn_xxx routine
+
+;
+; If the colormap is not a name of a colormap, or a string array of
+; colors, then this means we have a colormap that we need to write
+; to the netCDF file as data.
+;
+  colormap = get_res_value(plot_res,"gsnDebugWriteColorMap","")
+  if(typeof(colormap).ne."string")
+    dfile->ColorMap = colormap         ; Write to file so we can read later.
+  end if
+
+;
+; Get plot resources, if any.
+;
+  pattnames = getvaratts(plot_res)
+  if(.not.any(ismissing(pattnames))) then
+    natt = dimsizes(pattnames)
+  else
+    natt = 0
+  end if
+;
+; Get plot attributes, if any, and check if any of them are ones
+; that can contain big data arrays, like sfXArray, vfYArray, etc.
+; If so, then write these to the netCDF file. Otherwise, write them
+; to the file as attributes.
+;
+  array_resources = (/"sfXArray","sfYArray","vfXArray","vfYArray"/)
+
+  if(natt.gt.0) then
+    do i=0,natt-1
+      if(any(pattnames(i).eq.array_resources)) then
+        dfile->$pattnames(i)$ = plot_res@$pattnames(i)$
+      else
+        if(typeof(plot_res@$pattnames(i)$).eq."logical") then
+          if(plot_res@$pattnames(i)$) then
+            dfile@$pattnames(i)$ = 1
+          else
+            dfile@$pattnames(i)$ = 0
+          end if
+        else
+          dfile@$pattnames(i)$ = plot_res@$pattnames(i)$
+        end if
+      end if
+    end do
+  end if
+
+;
+; Create NCL script that plots data.
+;
+  q = inttochar(34)      ; 34 is the decimal equivalent of double quote (")
+
+  lines  = new(30+natt,string)   ; Roughly how many lines we need
+  nlines = 0
+
+  write_lines("load " + q + "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl" + q, lines, nlines)
+  write_lines("load " + q + "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" + q, lines, nlines)
+  write_lines("", lines, nlines)
+  write_lines("begin", lines, nlines)
+  write_lines(";", lines, nlines)
+  write_lines("; Read in data.", lines, nlines)
+  write_lines(";", lines, nlines)
+  write_lines("  cdf_file = addfile(" + q + cdf_debug_file + q + "," + q + "r" + q + ")", lines, nlines)
+
+  if(ndfiles.ge.1) then
+    write_lines("  data1 = cdf_file->PlotData", lines, nlines)
+    write_latlon2d_lines(data1, "data1", lines, nlines)
+  end if
+  if(ndfiles.ge.2) then
+    write_lines("  data2 = cdf_file->PlotData2", lines, nlines)
+    write_latlon2d_lines(data2, "data2", lines, nlines)
+  end if
+  if(ndfiles.ge.3) then
+    write_lines("  data3 = cdf_file->PlotData3", lines, nlines)
+    write_latlon2d_lines(data3, "data3", lines, nlines)
+  end if
+  write_lines("", lines, nlines)
+  write_lines(";", lines, nlines)
+  write_lines("; Open X11 file.", lines, nlines)
+  write_lines(";", lines, nlines)
+  write_lines("  wks = gsn_open_wks(" + q + "x11" + q + ", " + q + debug_file + q + ")", lines, nlines)
+;
+; Set colormap, if one inputted by user.
+;
+  if(typeof(colormap).ne."string") then
+    write_lines("  gsn_define_colormap(wks, cdf_file->ColorMap)", \
+                lines, nlines)
+  else
+    if(colormap.ne."") then
+      write_lines("  gsn_define_colormap(wks," +  q + colormap + q + \
+                  ")", lines, nlines)
+    else
+      write_lines(";  gsn_define_colormap(wks, " + colormap + ")", lines, nlines)
+    end if
+  end if
+  write_lines("", lines, nlines)
+
+;
+; Loop through resources written to netCDF file and add them to NCL
+; script. If one of the array resources are encountered, this means the
+; value should be read off the file as a variable.
+;
+; If one of the ignore_resources is encountered, write it to
+; the script, but comment it out.
+;
+  ignore_resources = (/"gsnDraw","gsnFrame"/)
+
+  if(natt.gt.0) then
+    write_lines("  res = True", lines, nlines)
+    do i=0,natt-1
+      if(any(pattnames(i).eq.ignore_resources)) then
+        cc = ";"      ; Set comment char
+      else
+        cc = ""       ; Don't set comment char
+      end if
+      if(typeof(plot_res@$pattnames(i)$).eq."string") then
+        qc = q      ; Set quote char
+      else
+        qc = ""     ; Don't set quote char
+      end if
+      if(any(pattnames(i).eq.array_resources)) then
+        write_lines(cc + "  res@" + pattnames(i) + " = cdf_file->" + \
+                    pattnames(i), lines, nlines)
+      else
+        narr = dimsizes(plot_res@$pattnames(i)$)
+        if(narr.eq.1) then
+          write_lines(cc + "  res@" + pattnames(i) + " = " + qc + \
+                      plot_res@$pattnames(i)$ + qc, lines, nlines)
+        else
+;
+; We have to write out an array of attribute values.
+;
+          build_str = cc + "  res@" + pattnames(i) + " = (/"
+          do na=0,narr-2
+            build_str = build_str + qc + plot_res@$pattnames(i)$(na) + qc + ", "
+          end do
+          build_str = build_str + qc + plot_res@$pattnames(i)$(narr-1) + qc + "/)"
+          write_lines(build_str, lines, nlines)
+        end if
+      end if
+      delete(qc)
+    end do
+  else
+    write_lines("  res = False", lines, nlines)
+  end if
+
+  write_lines("", lines, nlines)
+  if(ndfiles.eq.0) then
+    if(gsn_name.eq."gsn_map") then
+      proj = get_res_value_keep(plot_res,"mpProjection","CylindricalEquidistant")
+      write_lines("  plot = " + gsn_name + "(wks," + q + proj + \
+                  q + ", res)", lines, nlines)
+    else
+      write_lines("  plot = " + gsn_name + "(wks, res)", lines, nlines)
+    end if
+  else
+    if(ndfiles.eq.1) then
+      write_lines("  plot = " + gsn_name + "(wks, data1, res)", lines, nlines)
+    else
+      if(ndfiles.eq.2) then
+        write_lines("  plot = " + gsn_name + "(wks, data1, data2, res)", lines, nlines)
+      else
+        write_lines("  plot = " + gsn_name + "(wks, data1, data2, data3, res)", lines, nlines)
+      end if
+    end if
+  end if
+  write_lines("end", lines, nlines)
+
+;
+; Write NCL script and resource file.
+;
+  asciiwrite(ncl_debug_file,lines(:nlines-1))
+  write_debug_res_file(res_debug_file)
+
+;
+; Print some information.
+;
+  print("gsnp_write_debug_info: debug info written to:")
+  print("  '" + ncl_debug_file + "'")
+  print("  '" + cdf_debug_file + "'")
+  print("  '" + res_debug_file + "'")
+;
+; Clean up. Put the lat2d/lon2d attributes back, if there were any.
+;  
+  if(ndfiles.ge.1) then
+    fix_latlon2d_debug_info(data1)
+  end if
+  if(ndfiles.ge.2) then
+    fix_latlon2d_debug_info(data2)
+  end if
+  if(ndfiles.ge.3) then
+    fix_latlon2d_debug_info(data3)
+  end if
+
+end
 
 ;***********************************************************************;
 ; Procedure : gsnp_turn_off_tickmarks                                   ;
@@ -6681,6 +7090,17 @@ begin
 ; 1. Retrieve special resources.
 ;
   res2       = get_resources(resources)
+
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(xdata,new(1,float),new(1,float),"gsn_histogram", \
+                     res2,1)
+  end if
+
   calldraw   = get_res_value(res2,"gsnDraw", True)
   callframe  = get_res_value(res2,"gsnFrame",True)
   maxbb      = get_bb_res(res2)
@@ -7302,6 +7722,14 @@ begin
     cnres     = False
     llres     = False
     res2      = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_contour",res2,1)
+    end if
 
     force_x_linear = False
     force_y_linear = False
@@ -7499,6 +7927,14 @@ begin
     end if
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_contour_map",res2,1)
+    end if
 
     wksname = get_res_value_keep(wks,"name","gsnapp")
 
@@ -7581,9 +8017,21 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_map(wks:graphic, projection:string, resources:logical )
-local i, plot_object, res2
+local i, plot_object, res2, res3
 begin
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(.not.isatt(res2,"mpProjection")) then
+      res2@mpProjection = "CylindricalEquidistant"
+    end if
+    gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),"gsn_map", \
+                     res2,0)
+  end if
 
 ; Create plot object.
 
@@ -7649,6 +8097,15 @@ trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2, scale, shape
 begin
     llres = False
     res2  = get_resources(resources)
+
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_streamline",res2,2)
+    end if
 
     force_x_linear = False
     force_y_linear = False
@@ -7750,6 +8207,15 @@ local i, data_object, contour_object, res, vf_res_index, \
 st_res_index, mp_res_index, map_object, res2
 begin
     res2 = get_resources(resources)
+
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_streamline_map",res2,2)
+    end if
 
 ; Create the data object.
 
@@ -8128,6 +8594,14 @@ trxmin, trxmax, trymin, trymax, ll_res_index, llres, res2
 begin
     llres = False
     res2  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_vector",res2,2)
+    end if
 
     force_x_linear = False
     force_y_linear = False
@@ -8251,7 +8725,14 @@ begin
     end if
 
     res2 = get_resources(resources)
-
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_vector_contour",res2,3)
+    end if
 ;
 ; Create the scalar and vector field object.
 ;
@@ -8407,6 +8888,19 @@ begin
 
     res2 = get_resources(resources)
 ;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_streamline_contour",res2,3)
+    end if
+;
 ; Create the vector and scalar fields.
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
@@ -8555,6 +9049,14 @@ begin
     end if
 
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_vector_contour_map",res2,3)
+    end if
 ;
 ; Create the vector and scalar field objects.
 ;
@@ -8706,6 +9208,14 @@ local i, data_object, contour_object, res, vf_res_index, \
 vc_res_index, mp_res_index, map_object, res2, sprdcols
 begin
     res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,new(1,float),"gsn_vector_map",res2,2)
+    end if
 
 ; Create the data object.
 
@@ -8808,6 +9318,14 @@ begin
 
     llres = False
     res2  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_vector_scalar",res2,3)
+    end if
 
     force_x_linear = False
     force_y_linear = False
@@ -8941,6 +9459,15 @@ begin
 
     res2 = get_resources(resources)
 ;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(u,v,data,"gsn_vector_scalar_map",res2,3)
+    end if
+
+;
 ; Create the vector and scalar field object.
 ;
     wksname = get_res_value_keep(wks,"name","gsnapp")
@@ -9034,6 +9561,14 @@ xy_res_index, xydp_res_index, dspec, res2, set_dash
 begin
     set_dash = True       ; Default is to set some dash patterns.
     res2     = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+      gsnp_write_debug_info(x,y,new(1,float),"gsn_xy",res2,2)
+    end if
 
 ; Determine if we have multiple lines or just one line.
 
@@ -9240,7 +9775,14 @@ function gsn_y(wks:graphic, y:numeric, resources:logical )
 local dsizes_y, npts, x, rank_y, xy
 begin
   res2 = get_resources(resources)
-
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    gsnp_write_debug_info(y,new(1,float),new(1,float),"gsn_y",res2,1)
+  end if
 ;
 ; Get dimension sizes of Y array.
 ;
