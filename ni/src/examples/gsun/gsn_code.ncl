@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.200 2007-06-16 00:51:21 haley Exp $
+;      $Id: gsn_code.ncl,v 1.201 2007-06-18 23:03:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1690,7 +1690,7 @@ begin
 end
 
 ;***********************************************************************;
-; This procedure is to be used in conjunction with gsnp_write_debug_info.    ;
+; This procedure is to be used in conjunction with gsnp_write_debug_info;
 ; It takes care of the special case where "lat2d" and "lon2d" attributes;
 ; may be attached to the data array. You can't write 2D attributes to a ;
 ; netCDF file, so we write them as 1D with information that we can use  ;
@@ -1724,7 +1724,7 @@ end
 ; This procedure is used in conjunction with add_laton2d_debug_info.    ;
 ; It adds back lat2d/lon2d attributes that were removed earlier, and    ;
 ; removes attribute info that was added to a data array (all in support ;
-; of the gsnp_write_debug_info procedure).                                   ;
+; of the gsnp_write_debug_info procedure).                              ;
 ;***********************************************************************;
 procedure fix_latlon2d_debug_info(ldata)
 begin
@@ -1747,7 +1747,7 @@ end
 
 ;***********************************************************************;
 ; This procedure is used in conjunction with add_laton2d_debug_info.    ;
-; and gsnp_write_debug_info. It writes lines to an NCL script that           ;
+; and gsnp_write_debug_info. It writes lines to an NCL script that      ;
 ; reconstructs lat2d and lon2d attribute information.                   ;
 ;***********************************************************************;
 procedure write_latlon2d_lines(ldata, ldata_name[1]:string, thelines, numlines)
@@ -1791,7 +1791,7 @@ end
 ; to a netCDF file and creates an NCL file to plot the data.            ;
 ;***********************************************************************;
 procedure gsnp_write_debug_info(data1,data2,data3,gsn_name[1]:string,\
-                           plot_res[1]:logical,ndfiles[1]:integer)
+                                plot_res[1]:logical,ndfiles[1]:integer)
 begin
 ;
 ; Can only deal with up to three data files.
@@ -7096,7 +7096,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+  if(isatt(res2,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(xdata,new(1,float),new(1,float),"gsn_histogram", \
                      res2,1)
   end if
@@ -7727,7 +7727,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_contour",res2,1)
     end if
 
@@ -7932,7 +7932,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_contour_map",res2,1)
     end if
 
@@ -8025,7 +8025,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+  if(isatt(res2,"gsnDebugWriteFileName")) then
     if(.not.isatt(res2,"mpProjection")) then
       res2@mpProjection = "CylindricalEquidistant"
     end if
@@ -8103,7 +8103,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_streamline",res2,2)
     end if
 
@@ -8213,7 +8213,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_streamline_map",res2,2)
     end if
 
@@ -8599,7 +8599,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_vector",res2,2)
     end if
 
@@ -8730,7 +8730,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_vector_contour",res2,3)
     end if
 ;
@@ -8897,7 +8897,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_streamline_contour",res2,3)
     end if
 ;
@@ -9054,7 +9054,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_vector_contour_map",res2,3)
     end if
 ;
@@ -9213,7 +9213,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_vector_map",res2,2)
     end if
 
@@ -9323,7 +9323,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_vector_scalar",res2,3)
     end if
 
@@ -9463,7 +9463,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_vector_scalar_map",res2,3)
     end if
 
@@ -9566,7 +9566,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(x,y,new(1,float),"gsn_xy",res2,2)
     end if
 
@@ -9780,7 +9780,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+  if(isatt(res2,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(y,new(1,float),new(1,float),"gsn_y",res2,1)
   end if
 ;

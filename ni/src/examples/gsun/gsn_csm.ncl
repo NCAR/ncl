@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.212 2007-06-16 00:51:21 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.213 2007-06-18 23:03:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3736,7 +3736,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
                        "gsn_csm_map_ce",res2,0)
     end if
@@ -4068,7 +4068,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
                        "gsn_csm_map_polar",res2,0)
     end if
@@ -4473,7 +4473,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
                        "gsn_csm_map_other",res2,0)
     end if
@@ -4649,7 +4649,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+  if(isatt(res2,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(new(1,float),new(1,float),new(1,float),\
                      "gsn_csm_map",res2,0)
   end if
@@ -4727,7 +4727,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),\
                        "gsn_csm_contour_map_polar",res2,1)
     end if
@@ -4933,7 +4933,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),\
                        "gsn_csm_contour_map_ce",res2,1)
     end if
@@ -5338,7 +5338,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float), \
                        "gsn_csm_contour_map_other",res2,1)
     end if
@@ -5545,7 +5545,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_ce",res2,2)
     end if
 
@@ -5781,7 +5781,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_polar",res2,2)
     end if
 
@@ -5961,7 +5961,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map_other",res2,2)
     end if
 
@@ -6127,7 +6127,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_ce",res2,2)
     end if
 
@@ -6299,7 +6299,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_polar",res2,2)
     end if
 
@@ -6435,7 +6435,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map_other",res2,2)
     end if
 
@@ -6564,7 +6564,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_ce",res2,3)
     end if
 
@@ -6813,7 +6813,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_polar",res2,3)
     end if
 
@@ -7016,7 +7016,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map_other",res2,3)
     end if
 
@@ -7209,7 +7209,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar",res2,3)
     end if
 
@@ -7494,7 +7494,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map_ce",res2,3)
     end if
 
@@ -7812,7 +7812,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map_polar",res2,3)
     end if
 
@@ -8056,7 +8056,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map_other",res2,3)
     end if
 
@@ -8272,7 +8272,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+  if(isatt(res,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(data,new(1,float),new(1,float),\
                      "gsn_csm_contour_map",res,1)
   end if
@@ -8314,7 +8314,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+  if(isatt(res,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline_map",res,2)
   end if
 
@@ -8355,7 +8355,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+  if(isatt(res,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector_map",res,2)
   end if
 
@@ -8398,7 +8398,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+  if(isatt(res,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar_map",res,3)
   end if
 
@@ -8442,7 +8442,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res,"gsnDebugWriteInfo",False)) then
+  if(isatt(res,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(u,v,data,"gsn_csm_streamline_contour_map",res,3)
   end if
 
@@ -8627,7 +8627,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(x,y,new(1,float),"gsn_csm_xy",res2,2)
     end if
 
@@ -9547,7 +9547,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(y,new(1,float),new(1,float),"gsn_csm_y",res2,1)
     end if
 ;
@@ -10362,7 +10362,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_contour",res2,1)
     end if
 
@@ -10551,7 +10551,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_hov",res2,1)
     end if
 
@@ -10638,7 +10638,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_lat_time",res2,1)
     end if
 
@@ -10711,7 +10711,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_time_lat",res2,1)
     end if
 
@@ -10789,7 +10789,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_pres_hgt",res2,1)
     end if
 
@@ -11003,7 +11003,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector",res2,2)
     end if
 
@@ -11175,7 +11175,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+  if(isatt(res2,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(data,u,v,"gsn_csm_pres_hgt_vector",res2,3)
   end if
 
@@ -11294,7 +11294,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-    if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+    if(isatt(res2,"gsnDebugWriteFileName")) then
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline",res2,2)
     end if
 
@@ -11446,7 +11446,7 @@ begin
 ; reconstruct plot if desired, without all the computational
 ; code beforehand.
 ;
-  if(get_res_value(res2,"gsnDebugWriteInfo",False)) then
+  if(isatt(res2,"gsnDebugWriteFileName")) then
     gsnp_write_debug_info(data,u,v,"gsn_csm_pres_hgt_streamline",res2,3)
   end if
 
