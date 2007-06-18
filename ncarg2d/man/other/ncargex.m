@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargex.m,v 1.63 2007-02-28 21:54:59 haley Exp $
+.\"	$Id: ncargex.m,v 1.64 2007-06-18 22:07:00 haley Exp $
 .\"
 .\" @(#)f77.1 1.4 86/07/31 SMI; 
 .TH NCARGEX 1NCARG "June 1998" NCAR "NCAR GRAPHICS"
@@ -301,6 +301,12 @@ Specifies that the example should not be compiled, linked, or run, but
 just copied into your local directory.
 .sp
 .IP "\-ncarbd"
+Use this option for compilers that appear to be having trouble
+initializing blockdata variables. It will cause one or two small
+subroutines to be linked in that helps force the loading of
+blockdata initialization routines.
+.sp
+.IP "\-ngmathbd"
 Use this option for compilers that appear to be having trouble
 initializing blockdata variables. It will cause a small subroutine to
 be linked in that helps force the loading of blockdata initialization
