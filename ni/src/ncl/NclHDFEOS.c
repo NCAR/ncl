@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.6 2007-06-12 18:02:19 dbrown Exp $
+ *      $Id: NclHDFEOS.c,v 1.7 2007-06-21 01:35:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -531,7 +531,7 @@ int wr_status;
 	int32 PTid = 0;
 	int32 GDid = 0;
 	int32 natts;
-	int32 dims[HDF_BUFFSIZE];
+
 	int32 ndims;
 	int32 nmaps;
 	int32 ngeofields;
@@ -541,6 +541,7 @@ int wr_status;
 	int32 npt,nsw,ngd,i,j,k;
 	int ngroups;
 	int32 bsize;
+	int32 *dimsizes;
 	char *tmp,*tmp2;
 	int32 ndata = 0;
 	NclQuark *sw_hdf_names;
@@ -565,7 +566,7 @@ int wr_status;
 	char vgroup_class[100];
   	int32 tmp_id;
 	intn oginfo;
-	int32 orgincode=0;
+	int32 origincode=0;
 	int32 projcode = 0;
 	int32 zonecode =0 ;
 	int32 spherecode = 0;
@@ -577,12 +578,17 @@ int wr_status;
 	char version[100];
 	int32 *fldorder = NULL;
 	int32 *fldtype = NULL;
-	float64 projparm[100];
+	float64 projparm[15];
 	NclScalar missing;
 	NclScalar *tmp_missing;
 	int *is_unsigned;
+	int32 xdimsize,ydimsize;
+	float64 upper_left[2],lower_right[2];
 	char *buffer;
 	int cur_buf_size = 1024;
+	int32 *field_ranks;
+	int max_fields = 1024;
+	HDFEOSVarInqRecList *vstep;
 
 	if(the_file == NULL) {
 		return(NULL);
@@ -604,15 +610,19 @@ int wr_status;
 		return(NULL);
 	}
 	buffer = NclMalloc(cur_buf_size);
+	field_ranks = NclMalloc(max_fields * sizeof(int32));
+
 	if((nsw = SWinqswath(NrmQuarkToString(path),NULL,&bsize)) > 0) {
 		if (bsize + 1 > cur_buf_size) {
-			buffer = NclMalloc(bsize + 1);
+			buffer = NclRealloc(buffer,bsize + 1);
 			cur_buf_size = bsize + 1;
 		}
 		nsw = SWinqswath(NrmQuarkToString(path),buffer,&bsize);
 		SWfid = SWopen(NrmQuarkToString(path),DFACC_READ);
 		HDFEOSParseName(buffer,&sw_hdf_names,&sw_ncl_names,nsw);
 		for(i = 0; i < nsw; i++) {
+			NrmQuark lat_name = NrmNULLQUARK, lon_name = NrmNULLQUARK;
+			int32 y_dim_num = -1, x_dim_num = -1;
 			SWid = SWattach(SWfid,NrmQuarkToString(sw_hdf_names[i]));
 			if(! (SWid > 0 ))
 				continue;
@@ -620,7 +630,7 @@ int wr_status;
 			natts = SWinqattrs(SWid,NULL,&bsize);
 			if(natts > 0 ) {
 				if (bsize + 1 > cur_buf_size) {
-					buffer = NclMalloc(bsize + 1);
+					buffer = NclRealloc(buffer,bsize + 1);
 					cur_buf_size = bsize + 1;
 				}
 				natts = SWinqattrs(SWid,buffer,&bsize);
@@ -648,14 +658,15 @@ int wr_status;
 				return(NULL);
 			}
 			if (bsize + 1 > cur_buf_size) {
-				buffer = NclMalloc(bsize + 1);
+				buffer = NclRealloc(buffer,bsize + 1);
 				cur_buf_size = bsize + 1;
 			}
-			ndims = SWinqdims(SWid,buffer,dims);
+			dimsizes = NclMalloc(ndims * sizeof(int32));
+			ndims = SWinqdims(SWid,buffer,dimsizes);
 			HDFEOSParseName(buffer,&dim_hdf_names,&dim_ncl_names,ndims);
 			for(j = 0; j < ndims; j++) {
 				HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],
-						SWdiminfo(SWid,NrmQuarkToString(dim_hdf_names[j])),sw_hdf_names[i],sw_ncl_names[i],the_file->file_path_q);
+						dimsizes[j],sw_hdf_names[i],sw_ncl_names[i],the_file->file_path_q);
 			}
 			NclFree(dim_hdf_names);
 			NclFree(dim_ncl_names);
@@ -668,7 +679,7 @@ int wr_status;
 				off = NclMalloc(nmaps * sizeof(int32));
 				inc = NclMalloc(nmaps * sizeof(int32));
 				if (bsize + 1 > cur_buf_size) {
-					buffer = NclMalloc(bsize + 1);
+					buffer = NclRealloc(buffer,bsize + 1);
 					cur_buf_size = bsize + 1;
 				}
 				nmaps = SWinqmaps(SWid, buffer, off, inc);
@@ -682,7 +693,7 @@ int wr_status;
 				int32 *sizes;
 				sizes = NclMalloc(nmaps * sizeof(int32));
 				if (bsize + 1 > cur_buf_size) {
-					buffer = NclMalloc(bsize + 1);
+					buffer = NclRealloc(buffer,bsize + 1);
 					cur_buf_size = bsize + 1;
 				}
 				nmaps = SWinqidxmaps(SWid, buffer, sizes);
@@ -693,25 +704,33 @@ int wr_status;
 			/* Geolocation fields */
 
 			ngeofields = SWnentries(SWid, HDFE_NENTGFLD, &bsize);
+			if (ngeofields > max_fields) {
+				max_fields = ngeofields;
+				field_ranks = NclRealloc(field_ranks,max_fields * sizeof(int32));
+			}
 			if (ngeofields > 0) {
 				if (bsize + 1 > cur_buf_size) {
-					buffer = NclMalloc(bsize + 1);
+					buffer = NclRealloc(buffer,bsize + 1);
 					cur_buf_size = bsize + 1;
 				}
-				ngeofields = SWinqgeofields(SWid,buffer,NULL,NULL);
+				ngeofields = SWinqgeofields(SWid,buffer,field_ranks,NULL);
 				the_file->n_vars += ngeofields;
 				HDFEOSParseName(buffer,&var_hdf_names,&var_ncl_names,ngeofields);
 				for(j = 0; j < ngeofields; j++) {
+					if (field_ranks[j] > ndims) {
+						ndims = field_ranks[j];
+						dimsizes = NclRealloc(dimsizes,ndims * sizeof(int32));
+					}
 					if(SWfieldinfo(SWid,NrmQuarkToString(var_hdf_names[j]),
-						       &tmp_rank,dims,&tmp_type,buffer) == 0) {
+						       &tmp_rank,dimsizes,&tmp_type,buffer) == 0) {
 						HDFEOSParseName(buffer,&tmp_names,&tmp_ncl_names,tmp_rank);
 						for(k = 0; k < tmp_rank; k++) {
 							HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),
-									tmp_names[k],tmp_ncl_names[k],dims[k],sw_hdf_names[i],
+									tmp_names[k],tmp_ncl_names[k],dimsizes[k],sw_hdf_names[i],
 									sw_ncl_names[i],the_file->file_path_q);
 						}
 						HDFEOSIntAddVar(&(the_file->vars),var_hdf_names[j],var_ncl_names[j],
-								the_file->dims,tmp_rank,dims,tmp_type,tmp_ncl_names,
+								the_file->dims,tmp_rank,dimsizes,tmp_type,tmp_ncl_names,
 								SWATH,sw_hdf_names[i],sw_ncl_names[i]);
 						if(SWgetfillvalue(SWid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1) {
 							tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
@@ -725,6 +744,9 @@ int wr_status;
 							HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("unsigned"),
 									(void*)is_unsigned,1,NCL_logical);
 						}
+						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+						*(NclQuark*)tmp_value = var_hdf_names[j];
+						HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("hdfeos_name"),(void*)tmp_value,1,NCL_string);
 						if (var_hdf_names[j] == NrmStringToQuark("Longitude")) {
 							NrmQuark *qval = (NrmQuark *)NclMalloc(sizeof(NrmQuark));
 							*qval = NrmStringToQuark("degrees_east");
@@ -734,6 +756,11 @@ int wr_status;
 							*qval = NrmStringToQuark("longitude");
 							HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("long_name"),
 									(void*)qval,1,NCL_string);
+							lon_name = the_file->vars->var_inq->name;
+							if (tmp_rank == 2) {
+								y_dim_num = the_file->vars->var_inq->dim[0];
+								x_dim_num = the_file->vars->var_inq->dim[1];
+							}
 						}
 						else if (var_hdf_names[j] == NrmStringToQuark("Latitude")) {
 							NrmQuark *qval = (NrmQuark *)NclMalloc(sizeof(NrmQuark));
@@ -744,6 +771,7 @@ int wr_status;
 							*qval = NrmStringToQuark("latitude");
 							HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("long_name"),
 									(void*)qval,1,NCL_string);
+							lat_name = the_file->vars->var_inq->name;
 						}
 						else if (var_hdf_names[j] == NrmStringToQuark("Colatitude")) {
 							NrmQuark *qval = (NrmQuark *)NclMalloc(sizeof(NrmQuark));
@@ -754,6 +782,7 @@ int wr_status;
 							*qval = NrmStringToQuark("colatitude");
 							HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("long_name"),
 									(void*)qval,1,NCL_string);
+							lat_name = the_file->vars->var_inq->name;
 						}
 						else if (var_hdf_names[j] == NrmStringToQuark("Time") && HDFEOSMapTypeNumber(tmp_type) == NCL_double) {
 							NrmQuark *qval;
@@ -781,27 +810,32 @@ int wr_status;
 			}
 
 			ndata = SWnentries(SWid, HDFE_NENTDFLD, &bsize);
-			if(! (ndata > 0)) {
-				continue;
-			}
 			if (bsize + 1 > cur_buf_size) {
-				buffer = NclMalloc(bsize + 1);
+				buffer = NclRealloc(buffer,bsize + 1);
 				cur_buf_size = bsize + 1;
 			}
-			ndata = SWinqdatafields(SWid,buffer,NULL,NULL);
+			if (ndata > max_fields) {
+				max_fields = ndata;
+				field_ranks = NclRealloc(field_ranks,max_fields * sizeof(int32));
+			}
+			ndata = SWinqdatafields(SWid,buffer,field_ranks,NULL);
 			the_file->n_vars += ndata;
 			HDFEOSParseName(buffer,&var_hdf_names,&var_ncl_names,ndata);
 			for(j = 0; j < ndata; j++) {
+				if (field_ranks[j] > ndims) {
+					ndims = field_ranks[j];
+					dimsizes = NclRealloc(dimsizes,ndims * sizeof(int32));
+				}
 				if(SWfieldinfo(SWid,NrmQuarkToString(var_hdf_names[j]),
-					       &tmp_rank,dims,&tmp_type,buffer) == 0) {
+					       &tmp_rank,dimsizes,&tmp_type,buffer) == 0) {
 					HDFEOSParseName(buffer,&tmp_names,&tmp_ncl_names,tmp_rank);
 					for(k = 0; k < tmp_rank; k++) {
 						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),
-								tmp_names[k],tmp_ncl_names[k],dims[k],sw_hdf_names[i],
+								tmp_names[k],tmp_ncl_names[k],dimsizes[k],sw_hdf_names[i],
 								sw_ncl_names[i],the_file->file_path_q);
 					}
 					HDFEOSIntAddVar(&(the_file->vars),var_hdf_names[j],var_ncl_names[j],
-							the_file->dims,tmp_rank,dims,tmp_type,tmp_ncl_names,
+							the_file->dims,tmp_rank,dimsizes,tmp_type,tmp_ncl_names,
 							SWATH,sw_hdf_names[i],sw_ncl_names[i]);
 					if(SWgetfillvalue(SWid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1) {
 						tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
@@ -817,13 +851,36 @@ int wr_status;
 						HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("unsigned"),
 								(void*)is_unsigned,1,NCL_logical);
 					}
+					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+					*(NclQuark*)tmp_value = var_hdf_names[j];
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("hdfeos_name"),(void*)tmp_value,1,NCL_string);
+					
 					NclFree(tmp_ncl_names);
 					NclFree(tmp_names);
+				}
+			}
+			if (! (lon_name == NrmNULLQUARK || lat_name == NrmNULLQUARK ||
+			       y_dim_num == -1 || x_dim_num == -1)) { 
+				for (vstep = the_file->vars; vstep != NULL; vstep = vstep->next) {
+					if (vstep->var_inq->var_class != SWATH ||
+					    vstep->var_inq->var_class_name != sw_hdf_names[i] ||
+					    vstep->var_inq->name == lat_name ||
+					    vstep->var_inq->name == lon_name ||
+					    vstep->var_inq->n_dims < 2 ||
+					    vstep->var_inq->dim[vstep->var_inq->n_dims-1] != x_dim_num ||
+					    vstep->var_inq->dim[vstep->var_inq->n_dims-2] != y_dim_num)
+						continue;
+					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+					sprintf(buffer,"%s, %s",NrmQuarkToString(lat_name),NrmQuarkToString(lon_name));
+					*(NclQuark*)tmp_value = NrmStringToQuark(buffer);
+					HDFEOSIntAddAtt(vstep->var_inq,NrmStringToQuark("coordinates"),(void*)tmp_value,1,NCL_string);
 				}
 			}
 			NclFree(var_hdf_names);
 			NclFree(var_ncl_names);
 			SWdetach(SWid);	
+			if (ndims > 0)
+				NclFree(dimsizes);
 		}
 		SWclose(SWfid);
 		NclFree(sw_hdf_names);
@@ -832,22 +889,84 @@ int wr_status;
 
 	if((ngd = GDinqgrid(NrmQuarkToString(path),NULL,&bsize)) > 0) {
 		if (bsize + 1 > cur_buf_size) {
-			buffer = NclMalloc(bsize + 1);
+			buffer = NclRealloc(buffer,bsize + 1);
 			cur_buf_size = bsize + 1;
 		}
 		ngd = GDinqgrid(NrmQuarkToString(path),buffer,&bsize);
 		GDfid = GDopen(NrmQuarkToString(path),DFACC_READ);
 		HDFEOSParseName(buffer,&gd_hdf_names,&gd_ncl_names,ngd);
 		for(i = 0; i < ngd; i++) {
+			double *lat2d, *lon2d;
+			int32 *cols, *rows;
+			int k, l;
+			int32 pixregcode;
+			intn status;
+			int has_xdim_var = 0, has_ydim_var = 0;
+			NrmQuark xdim_name = NrmNULLQUARK, ydim_name = NrmNULLQUARK;
+			NrmQuark qproj_name = NrmNULLQUARK;
+
 			GDid = GDattach(GDfid,NrmQuarkToString(gd_hdf_names[i]));
 			if(! (GDid > 0) ) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occurred while reading (%s) can't continue",NrmQuarkToString(path));
+				NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occurred while reading (%s) can't continue",
+					  NrmQuarkToString(path));
 				return(NULL);
 			}
+			status = GDprojinfo(GDid,&projcode,&zonecode,&spherecode,projparm);
+			if (status == FAIL) {
+				projcode = -1;
+			}
+			else {
+				switch(projcode) {
+				case GCTP_GEO:
+					qproj_name = NrmStringToQuark("Geographic");
+					break;
+				case GCTP_UTM:
+					qproj_name = NrmStringToQuark("Universal Transverse Mercator");
+					break;
+				case GCTP_ALBERS:
+					qproj_name = NrmStringToQuark("Albers Conical Equal_Area");
+					break;
+				case GCTP_LAMCC:
+					qproj_name = NrmStringToQuark("Lambert Conformal Conic");
+					break;
+				case GCTP_MERCAT:
+					qproj_name = NrmStringToQuark("Mercator");
+					break;
+				case GCTP_PS:
+					qproj_name = NrmStringToQuark("Polar Stereographic");
+					break;
+				case GCTP_POLYC:
+					qproj_name = NrmStringToQuark("Polyconic");
+					break;
+				case GCTP_TM:
+					qproj_name = NrmStringToQuark("Transverse Mercator");
+					break;
+				case GCTP_LAMAZ:
+					qproj_name = NrmStringToQuark("Lambert Azimuthal Equal Area");
+					break;
+				case GCTP_HOM:
+					qproj_name = NrmStringToQuark("Hotine Oblique Mercator");
+					break;
+				case GCTP_SOM:
+					qproj_name = NrmStringToQuark("Space Oblique Mercator");
+					break;
+				case GCTP_GOOD:
+					qproj_name = NrmStringToQuark("Interrupted Goode Homolosine");
+					break;
+				case GCTP_ISINUS:
+				case GCTP_ISINUS1:
+					qproj_name = NrmStringToQuark("Integerized Sinusoidal Projection");
+					break;
+				case GCTP_CEA:
+				case GCTP_BCEA:
+					qproj_name = NrmStringToQuark("Cylindrical Equal-Area Projection");
+					break;
+				}
+			}			
 			natts = GDinqattrs(GDid,NULL,&bsize);
 			if(natts > 0 ) {
 				if (bsize + 1 > cur_buf_size) {
-					buffer = NclMalloc(bsize + 1);
+					buffer = NclRealloc(buffer,bsize + 1);
 					cur_buf_size = bsize + 1;
 				}
 				natts = GDinqattrs(GDid,buffer,&bsize);
@@ -866,42 +985,62 @@ int wr_status;
 			}
 			ndims = GDnentries(GDid,HDFE_NENTDIM,&bsize);
 			if(ndims > 0 ) {
+				dimsizes = NclMalloc(ndims * sizeof(int32));
 				if (bsize + 1 > cur_buf_size) {
-					buffer = NclMalloc(bsize + 1);
+					buffer = NclRealloc(buffer,bsize + 1);
 					cur_buf_size = bsize + 1;
 				}
-				ndims = GDinqdims(GDid,buffer,dims);
+				ndims = GDinqdims(GDid,buffer,dimsizes);
 				HDFEOSParseName(buffer,&dim_hdf_names,&dim_ncl_names,ndims);
 				for(j = 0; j < ndims; j++) {
 					HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_hdf_names[j],dim_ncl_names[j],
-							GDdiminfo(GDid,NrmQuarkToString(dim_hdf_names[j])),gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+							dimsizes[j],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
 				}
 				NclFree(dim_hdf_names);
 				NclFree(dim_ncl_names);
 			}
 
 			ndata = GDnentries(GDid, HDFE_NENTDFLD, &bsize);
-			if(! (ndata > 0)) {
-				continue;
+			if (ndata > max_fields) {
+				max_fields = ndata;
+				field_ranks = NclRealloc(field_ranks,max_fields * sizeof(int32));
 			}
 			if (bsize + 1 > cur_buf_size) {
-				buffer = NclMalloc(bsize + 1);
+				buffer = NclRealloc(buffer,bsize + 1);
 				cur_buf_size = bsize + 1;
 			}
-			ndata = GDinqfields(GDid,buffer,NULL,NULL);
+			ndata = GDinqfields(GDid,buffer,field_ranks,NULL);
 			the_file->n_vars += ndata;
 			HDFEOSParseName(buffer,&var_hdf_names,&var_ncl_names,ndata);
 			for(j = 0; j < ndata; j++) {
-				if(GDfieldinfo(GDid,NrmQuarkToString(var_hdf_names[j]),&tmp_rank,dims,&tmp_type,buffer) == 0) {
+				int has_xdim = 0, has_ydim = 0;
+				HDFEOSVarInqRec *data_var = NULL;
+				if (field_ranks[j] > ndims) {
+					if (ndims == 0)
+						dimsizes = NclMalloc(field_ranks[j] * sizeof(int32));
+					else 
+						dimsizes = NclRealloc(dimsizes,field_ranks[j] * sizeof(int32));
+					ndims = field_ranks[j];
+				}
+				if (NrmStringToQuark("XDim") == var_hdf_names[j]) 
+					has_xdim_var = 1;
+				if (NrmStringToQuark("YDim") == var_hdf_names[j]) 
+					has_ydim_var = 1;
+				if(GDfieldinfo(GDid,NrmQuarkToString(var_hdf_names[j]),&tmp_rank,dimsizes,&tmp_type,buffer) == 0) {
 					HDFEOSParseName(buffer,&tmp_names,&tmp_ncl_names,tmp_rank);
 					for(k = 0; k < tmp_rank; k++) {
+						if (tmp_names[k] == NrmStringToQuark("XDim")) 
+							has_xdim = 1;
+						if (tmp_names[k] == NrmStringToQuark("YDim")) 
+							has_ydim = 1;
 						HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),tmp_names[k],tmp_ncl_names[k],
-								dims[k],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+								dimsizes[k],gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
 					}
 						
 
 					HDFEOSIntAddVar(&(the_file->vars),var_hdf_names[j],var_ncl_names[j],
-							the_file->dims,tmp_rank,dims,tmp_type,tmp_ncl_names,GRID,gd_hdf_names[i],gd_ncl_names[i]);
+							the_file->dims,tmp_rank,dimsizes,tmp_type,tmp_ncl_names,GRID,gd_hdf_names[i],gd_ncl_names[i]);
+					data_var = the_file->vars->var_inq;
 					if(GDgetfillvalue(GDid,NrmQuarkToString(var_hdf_names[j]),&missing) != -1) {
 						tmp_missing = (NclScalar*)NclMalloc(sizeof(NclScalar));
 						*tmp_missing = missing;
@@ -917,107 +1056,169 @@ int wr_status;
 					NclFree(tmp_ncl_names);
 					NclFree(tmp_names);
 				}
+				if (projcode > -1 && has_xdim && has_ydim) {
+					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+					*(NclQuark*)tmp_value = qproj_name;
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
+				}
+				tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+				*(NclQuark*)tmp_value = var_hdf_names[j];
+				HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("hdfeos_name"),(void*)tmp_value,1,NCL_string);
+			}
 
-/*
- *
- *
- *
- *
- *------------> Still need to insert this ifo
- *
- *
- *
- *
- */
-				oginfo = GDorigininfo(GDid,&orgincode);
-				GDprojinfo(GDid,&projcode,&zonecode,&spherecode,projparm);
+			status = GDorigininfo(GDid,&origincode);
+			if (status == SUCCEED)
+				status = GDpixreginfo(GDid,&pixregcode);
+			if (status == SUCCEED)
+				status = GDgridinfo(GDid,&xdimsize,&ydimsize,upper_left,lower_right);
+			if (status == SUCCEED)
+				status = GDprojinfo(GDid,&projcode,&zonecode,&spherecode,projparm);
+			if (status == FAIL) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN, 
+					  "NclHDFEOS: Invalid projection information for GRID (%s); no coordinates will be provided",
+					  NrmQuarkToString(gd_hdf_names[i]));
+			}
+			else {
+				NrmQuark dim_names[2];
+				int32 dim_sizes[2];
 
-/*
- *
- *
- *
- *
- *
- */
-				switch(projcode) {
-				case GCTP_GEO:
+				dim_names[1] = NrmStringToQuark("XDim");
+				HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[1],dim_names[1],
+						xdimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+				dim_names[0] = NrmStringToQuark("YDim");
+				HDFEOSIntAddDim(&(the_file->dims),&(the_file->n_dims),dim_names[0],dim_names[0],
+						ydimsize,gd_hdf_names[i],gd_ncl_names[i],the_file->file_path_q);
+				dim_sizes[0] = ydimsize;
+				dim_sizes[1] = xdimsize;
+				if (projcode == GCTP_GEO) { /* 1D coordinate */
+					HDFEOSVarInqRec *var = NULL;
+					if (! has_xdim_var) {
+						the_file->n_vars++;
+						HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lon"),NrmStringToQuark("XDim"),
+								the_file->dims,1,&(dim_sizes[1]),DFNT_FLOAT64,&(dim_names[1]),
+								GRID,gd_hdf_names[i],gd_ncl_names[i]);
+						var = the_file->vars->var_inq;
+
+					}
+					else {
+						/* some files provide coordinate variables, we don't need to duplicate */
+						for (vstep = the_file->vars; vstep != NULL; vstep = vstep->next) {
+							if (vstep->var_inq->hdf_name == NrmStringToQuark("XDim")) {
+								var = vstep->var_inq;
+								break;
+							}
+						}
+					}
+					if (var) {
+						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+						*(NclQuark*)tmp_value = NrmStringToQuark("degrees_east");
+						HDFEOSIntAddAtt(var,NrmStringToQuark("units"),(void*)tmp_value,1,NCL_string);
+						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+						*(NclQuark*)tmp_value = NrmStringToQuark("longitude");
+						HDFEOSIntAddAtt(var,NrmStringToQuark("long_name"),(void*)tmp_value,1,NCL_string);
+						xdim_name = var->name;
+						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+						*(NclQuark*)tmp_value = qproj_name;
+						HDFEOSIntAddAtt(var,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
+					}
+					var = NULL;
+					if (! has_ydim_var) {
+						the_file->n_vars++;
+						HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lat"),NrmStringToQuark("YDim"),
+								the_file->dims,1,&(dim_sizes[0]),DFNT_FLOAT64,&(dim_names[0]),
+								GRID,gd_hdf_names[i],gd_ncl_names[i]);
+						var = the_file->vars->var_inq;
+					}
+					else {
+						/* some files provide coordinate variables, we don't need to duplicate */
+						for (vstep = the_file->vars; vstep != NULL; vstep = vstep->next) {
+							if (vstep->var_inq->hdf_name == NrmStringToQuark("YDim")) {
+								var = vstep->var_inq;
+								break;
+							}
+						}
+					}
+					if (var) {
+						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+						*(NclQuark*)tmp_value = NrmStringToQuark("degrees_north");
+						HDFEOSIntAddAtt(var,NrmStringToQuark("units"),(void*)tmp_value,1,NCL_string);
+						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+						*(NclQuark*)tmp_value = NrmStringToQuark("latitude");
+						HDFEOSIntAddAtt(var,NrmStringToQuark("long_name"),(void*)tmp_value,1,NCL_string);
+						tmp_value = (void*)NclMalloc(sizeof(NclQuark));
+						*(NclQuark*)tmp_value = qproj_name;
+						HDFEOSIntAddAtt(var,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
+						ydim_name = var->name;
+					}
+				}
+				else {
+					int32 cols[4],rows[4];
+					double lat2d[4], lon2d[4];
+					double *corners;
+
+					cols[0] = rows[0] = 0;
+					cols[1] = xdimsize - 1;
+					rows[1] = 0;
+					cols[2] = xdimsize - 1;
+					rows[2] = ydimsize - 1;
+					cols[3] = 0;
+					rows[3] = ydimsize - 1;
+					GDij2ll(projcode,zonecode,projparm,spherecode,xdimsize,ydimsize,
+						upper_left,lower_right,4,rows,cols,lon2d,lat2d,pixregcode,origincode);
+					
+					the_file->n_vars += 2;
+					HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lon"),NrmStringToQuark("GridLon"),
+							the_file->dims,2,dim_sizes,DFNT_FLOAT64,dim_names,GRID,gd_hdf_names[i],gd_ncl_names[i]);
 					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Geographic");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_UTM:
+					*(NclQuark*)tmp_value = NrmStringToQuark("degrees_east");
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),(void*)tmp_value,1,NCL_string);
 					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Universal Transverse Mercator");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_ALBERS:
+					*(NclQuark*)tmp_value = NrmStringToQuark("longitude");
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("long_name"),(void*)tmp_value,1,NCL_string);
+					corners = (double*)NclMalloc(4 * sizeof(double));
+					memcpy(corners,lon2d,4 * sizeof(double));
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("corners"),(void*)corners,4,NCL_double);
 					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Albers Conical Equal_Area");
+					*(NclQuark*)tmp_value = qproj_name;
 					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_LAMCC:
+					xdim_name = the_file->vars->var_inq->name;
+					
+					HDFEOSIntAddVar(&(the_file->vars),NrmStringToQuark("lat"),NrmStringToQuark("GridLat"),
+							the_file->dims,2,dim_sizes,DFNT_FLOAT64,dim_names,GRID,gd_hdf_names[i],gd_ncl_names[i]);
 					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Lambert Conformal Conic");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_MERCAT:
+					*(NclQuark*)tmp_value = NrmStringToQuark("degrees_north");
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),(void*)tmp_value,1,NCL_string);
 					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Mercator");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_PS:
+					*(NclQuark*)tmp_value = NrmStringToQuark("latitude");
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("long_name"),(void*)tmp_value,1,NCL_string);
+					corners = (double*)NclMalloc(4 * sizeof(double));
+					memcpy(corners,lat2d,4 * sizeof(double));
+					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("corners"),(void*)corners,4,NCL_double);
 					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Polar Stereographic");
+					*(NclQuark*)tmp_value = qproj_name;
 					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_POLYC:
+					ydim_name = the_file->vars->var_inq->name;
+				}
+			}
+			/* add the "coordinates" attribute if not a 1D coordinate and the coordinates have been defined properly */
+			if (projcode != GCTP_GEO && ! (xdim_name == NrmNULLQUARK || ydim_name == NrmNULLQUARK)) { 
+				for (vstep = the_file->vars; vstep != NULL; vstep = vstep->next) {
+					if (vstep->var_inq->var_class != GRID ||
+					    vstep->var_inq->var_class_name != gd_hdf_names[i] ||
+					    vstep->var_inq->hdf_name == NrmStringToQuark("lon") ||
+					    vstep->var_inq->hdf_name == NrmStringToQuark("lat"))
+						continue;
 					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Polyconic");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_TM:
-					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Transverse Mercator");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_LAMAZ:
-					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Lambert Azimuthal Equal Area");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_HOM:
-					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Hotine Oblique Mercator");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_SOM:
-					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Space Oblique Mercator");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_GOOD:
-					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Interrupted Goode Homolosine");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_ISINUS:
-				case GCTP_ISINUS1:
-					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Integerized Sinusoidal Projection");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
-				case GCTP_CEA:
-				case GCTP_BCEA:
-					tmp_value = (void*)NclMalloc(sizeof(NclQuark));
-					*(NclQuark*)tmp_value = NrmStringToQuark("Cylindrical Equal-Area Projection");
-					HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("projection"),(void*)tmp_value,1,NCL_string);
-					break;
+					sprintf(buffer,"%s, %s",NrmQuarkToString(ydim_name),NrmQuarkToString(xdim_name));
+					*(NclQuark*)tmp_value = NrmStringToQuark(buffer);
+					HDFEOSIntAddAtt(vstep->var_inq,NrmStringToQuark("coordinates"),(void*)tmp_value,1,NCL_string);
 				}
 			}
 			GDdetach(GDid);	
 			NclFree(var_hdf_names);
 			NclFree(var_ncl_names);
-
+			if (ndims > 0)
+				NclFree(dimsizes);
 		}
 		GDclose(GDfid);
 		NclFree(gd_hdf_names);
@@ -1025,8 +1226,10 @@ int wr_status;
 	}
 
 	if((npt = PTinqpoint(NrmQuarkToString(path),NULL,&bsize)) > 0)  {
+		NhlPError(NhlWARNING,NhlEUNKNOWN, "NclHDFEOS: File (%s) contains %d Point data sets; NCL does not yet handle this type of data",
+			  NrmQuarkToString(path),npt);
 		if (bsize + 1 > cur_buf_size) {
-			buffer = NclMalloc(bsize + 1);
+			buffer = NclRealloc(buffer,bsize + 1);
 			cur_buf_size = bsize + 1;
 		}
 		npt = PTinqpoint(NrmQuarkToString(path),buffer,&bsize);
@@ -1044,7 +1247,7 @@ int wr_status;
 					nrc = PTnrecs(PTid,j);
 					nfd = PTnfields(PTid,j,&bsize);
 					if (bsize + 1 > cur_buf_size) {
-						buffer = NclMalloc(bsize + 1);
+						buffer = NclRealloc(buffer,bsize + 1);
 						cur_buf_size = bsize + 1;
 					}
 					fldtype  = (int32*)NclMalloc(sizeof(int32)*nfd);
@@ -1052,7 +1255,7 @@ int wr_status;
 					nfd = PTlevelinfo(PTid,j,buffer,fldtype,fldorder);
 					HDFEOSParseName(buffer,&var_hdf_names,&var_ncl_names,nfd);
 					for(k = 0; k < nfd; k++) {
-						fprintf(stdout,"%s\n",NrmQuarkToString(var_hdf_names[k]));
+						fprintf(stdout,"Point data set %s\n",NrmQuarkToString(var_hdf_names[k]));
 					}
 					NclFree(fldtype);
 					NclFree(fldorder);
@@ -1068,6 +1271,8 @@ int wr_status;
 	}
 
 #if 0
+	{
+		{
 			ndims = PTinqdims(PTid,dimnames,dims);
 			if(ndims != -1) {
 				HDFEOSParseName(dimnames,&dim_hdf_names,&dim_ncl_names,ndims);
@@ -1131,9 +1336,14 @@ int wr_status;
 				NhlPError(NhlFATAL,NhlEUNKNOWN, "NclHDFEOS: An internal HDF error occurred while reading (%s) can't continue",NrmQuarkToString(path));
 				return(NULL);
 			}
+		}
+	}
+			
 #endif
 
-
+	NclFree(field_ranks);
+	NclFree(buffer);
+			
 	if((npt==0)&&(nsw == 0) && (ngd ==0)) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclHDFEOS: No swath, grid or point data found. File is not HDFEOS-4");
 		NclFree(the_file);
@@ -1416,6 +1626,101 @@ NclQuark thevar;
 {
 }
 
+static int ReadCoordVar
+(int32 GDid, HDFEOSVarInqRec *var, int32 *start, int32 *stride, int32 *edge, void *storage)
+{
+	int32 origincode;
+	int32 projcode;
+	int32 zonecode;
+	int32 spherecode;
+	int32 pixregcode;
+	int32 xdimsize,ydimsize;
+	float64 upper_left[2],lower_right[2];
+	float64 projparm[15];
+	int32 *cols, *rows;
+	int i, j;
+	int total;
+	double *latitude, *longitude;
+	intn status;
+	int islon;
+
+	status = GDorigininfo(GDid,&origincode);
+	if (status == SUCCEED)
+		status = GDpixreginfo(GDid,&pixregcode);
+	if (status == SUCCEED)
+		status = GDgridinfo(GDid,&xdimsize,&ydimsize,upper_left,lower_right);
+	if (status == SUCCEED)
+		status = GDprojinfo(GDid,&projcode,&zonecode,&spherecode,projparm);
+	if (status == FAIL) {
+		return -1;
+	}
+
+	if (var->hdf_name == NrmStringToQuark("lon")) {
+		islon = 1;
+	}
+	else {
+		islon = 0;
+	}
+	if (var->n_dims == 1) {
+		total = edge[0];
+
+		cols = NclMalloc(total * sizeof(int32));
+		rows = NclMalloc(total * sizeof(int32));
+		if (islon) {
+			for (i = 0; i < total; i++) {
+				int32 jx = 0;
+				int32 ix = start[0] + i * stride[0];
+				cols[i] = ix;
+				rows[i] = jx;
+			}
+		}
+		else {
+			for (j = 0; j < total; j++) {
+				int32 jx =  start[0] + j * stride[0];
+				int32 ix = 0;
+				cols[j] = ix;
+				rows[j] = jx;
+			}
+		}
+	}
+	else {
+		total = edge[0] * edge[1];
+		cols = NclMalloc(total * sizeof(int32));
+		rows = NclMalloc(total * sizeof(int32));
+		for (j = 0; j < edge[0]; j++) {
+			for (i = 0; i < edge[1]; i++) {
+				int32 jx = start[0] + j * stride[0];
+				int32 ix = start[1] + i * stride[1];
+				cols[j * edge[1] + i] = ix;
+				rows[j * edge[1] + i] = jx;
+			}
+		}
+	}
+	if (islon) {
+		latitude = NclMalloc(total * sizeof(double));
+		longitude = (double *) storage;
+	}
+	else {
+		longitude = NclMalloc(total * sizeof(double));
+		latitude = (double *) storage;
+	}
+
+	GDij2ll(projcode,zonecode,projparm,spherecode,xdimsize,ydimsize,
+		upper_left,lower_right,total,rows,cols,longitude,latitude,pixregcode,origincode);
+				
+	if (islon)
+		NclFree(latitude);
+	else
+		NclFree(longitude);
+
+		
+	NclFree(rows);
+	NclFree(cols);
+
+	return 0;
+}
+
+
 static void *HDFEOSReadVar
 #if	NhlNeedProto
 (void* therec, NclQuark thevar, long* start, long* finish,long* stride,void* storage)
@@ -1453,7 +1758,13 @@ void* storage;
 					tmpf = stridei[j];
 	                                edgei[j] =(int)(fabs(((double)(finish[j] - start[j]))) /tmpf) + 1;
 				}
-				out = GDreadfield(did,NrmQuarkToString(thelist->var_inq->hdf_name),starti,stridei,edgei,storage);
+				if (thelist->var_inq->hdf_name == NrmStringToQuark("lat") ||
+				    thelist->var_inq->hdf_name == NrmStringToQuark("lon")) { /* a coordinate variable */
+					out = ReadCoordVar(did,thelist->var_inq,starti,stridei,edgei,storage);
+				}
+				else {
+					out = GDreadfield(did,NrmQuarkToString(thelist->var_inq->hdf_name),starti,stridei,edgei,storage);
+				}
 				if(out == 0) {
 					GDdetach(did);
 					GDclose(fid);
@@ -1524,6 +1835,7 @@ long* stride;
 void* storage;
 #endif
 {
+	return(HDFEOSReadVar(therec,thevar,start,finish,stride,storage));
 }
 
 static void *HDFEOSReadAtt

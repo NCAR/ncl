@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.43 2007-06-15 23:00:03 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.44 2007-06-21 01:35:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1967,27 +1967,18 @@ long* dim_sizes;
 			if((n_dims == 1)&&(dim_ids[0] == -5)) {
 				ret = nc_def_var(cdfid,NrmQuarkToString(thevar),*the_data_type, 0, NULL,&var_id);
 			} else {
+				ret = nc_def_var(cdfid,NrmQuarkToString(thevar),
+						 *the_data_type, n_dims, dim_ids,&var_id);
 #ifdef USE_NETCDF4
-
-				struct nc_var_options vop;
-				memset(&vop,0,sizeof(struct nc_var_options));
-				if ((int)(rec->options[NC_COMPRESSION_LEVEL_OPT].values) > -1) {
-					vop.deflate = 1;
-					vop.deflate_level = (int)(rec->options[NC_COMPRESSION_LEVEL_OPT].values);
-					vop.shuffle = True;
+				if (ret == NC_NOERR && rec->format > 2 &&
+				    ((int)(rec->options[NC_COMPRESSION_LEVEL_OPT].values) > -1)) {
+					int shuffle = 1;
+					int deflate = 1;
+					int deflate_level;
+					deflate_level = (int)(rec->options[NC_COMPRESSION_LEVEL_OPT].values);
+					ret  = nc_def_var_deflate(cdfid,var_id,shuffle,deflate,deflate_level);
 				}
-				if (rec->format > 2) {
-					ret  = nc_def_var_full(cdfid,NrmQuarkToString(thevar),*the_data_type, 
-							       n_dims, dim_ids,&var_id,&vop);
-				}
-				else {
-					ret = nc_def_var(cdfid,NrmQuarkToString(thevar),
-							 *the_data_type, n_dims, dim_ids,&var_id);
-				}
-#else
-				ret = nc_def_var(cdfid,NrmQuarkToString(thevar),*the_data_type, n_dims, dim_ids,&var_id);
 #endif
-
 			}
 			if(ret < 0) {
 				NclFree(the_data_type);
@@ -2463,7 +2454,7 @@ static NhlErrorTypes NetSetOption
 		}
 		else if ((int)(rec->options[NC_HEADER_SPACE_OPT].values) < 0) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  "NetSetOption: option %s value cannot be negative",NrmQuarkToString(option));
+				  "NetSetOption: option (%s) value cannot be negative",NrmQuarkToString(option));
 			return(NhlWARNING);
 		}
 	}
@@ -2477,7 +2468,7 @@ static NhlErrorTypes NetSetOption
 		rec->options[NC_FORMAT_OPT].values = (void*) *(NrmQuark*)values;
 		if (rec->file_path_q != NrmNULLQUARK) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  "NetSetOption: option %s can only be set when file before file is created",NrmQuarkToString(option));
+				  "NetSetOption: option (%s) can only be set prior to creating file",NrmQuarkToString(option));
 			return(NhlWARNING);
 		}
 	}
@@ -2488,7 +2479,7 @@ static NhlErrorTypes NetSetOption
 	else if (option == NrmStringToQuark("compressionlevel")) {
 		if (*(int*)values < -1 || *(int*)values > 9) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
-				  "NetSetOption: option %s value cannot be less than -1 or greater than 9",NrmQuarkToString(option));
+				  "NetSetOption: option (%s) value cannot be less than -1 or greater than 9",NrmQuarkToString(option));
 			return(NhlWARNING);
 		}
 		rec->options[NC_COMPRESSION_LEVEL_OPT].values = (void*) *(int*)values;
