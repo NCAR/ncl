@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.8 2007-06-25 13:48:21 haley Exp $
+#   $Id: create_dist,v 1.9 2007-06-25 14:46:49 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -337,7 +337,7 @@ endif
 # Set files specific to NCARG.
 #
 if ($?NCARGONLY || $?NCARGNCL || $?INTERNAL) then
-  set ncarg_bin_files = "ConvertMapData$exe_sfx WriteLineFile$exe_sfx WriteNameFile$exe_sfx WritePlotcharData$exe_sfx cgm2ncgm$exe_sfx ctlib ezmapdemo$exe_sfx fcaps findg$exe_sfx fontc$exe_sfx gcaps graphc$exe_sfx ncargcc ncargex ncargf77 ncargf90 ncargfile ncargrun ncargversion ncargworld$exe_sfx ncarlogo2ps$exe_sfx ncarvversion ncgm2cgm$exe_sfx ncgmstat$exe_sfx nnalg$exe_sfx pre2ncgm pre2ncgm.prog$exe_sfx psblack$exe_sfx psplit$exe_sfx pswhite$exe_sfx pwritxnt$exe_sfx ras2ccir601$exe_sfx rascat$exe_sfx rasgetpal$exe_sfx rasls$exe_sfx rassplit$exe_sfx rasstat$exe_sfx rasview$exe_sfx tdpackdemo$exe_sfx tgks0a$exe_sfx tlocal$exe_sfx"
+  set ncarg_bin_files = "ConvertMapData$exe_sfx WriteLineFile$exe_sfx WriteNameFile$exe_sfx WritePlotcharData$exe_sfx cgm2ncgm$exe_sfx ctlib ezmapdemo$exe_sfx fcaps findg$exe_sfx fontc$exe_sfx gcaps graphc$exe_sfx ncargcc ncargex ncargf77 ncargf90 ncargfile ncargrun ncargversion ncargworld$exe_sfx ncarlogo2ps$exe_sfx ncarvversion ncgm2cgm$exe_sfx ncgmstat$exe_sfx nnalg$exe_sfx pre2ncgm pre2ncgm.prog psblack$exe_sfx psplit$exe_sfx pswhite$exe_sfx pwritxnt$exe_sfx ras2ccir601$exe_sfx rascat$exe_sfx rasgetpal$exe_sfx rasls$exe_sfx rassplit$exe_sfx rasstat$exe_sfx rasview$exe_sfx tdpackdemo$exe_sfx tgks0a$exe_sfx tlocal$exe_sfx"
 
   set ncarg_inc_files = "ncarg/cgm_tools.h ncarg/cgmdef.h ncarg/ctrans.h ncarg/gksP.h ncarg/ncarg_ras.h ncarg/ngmath.h"
 
