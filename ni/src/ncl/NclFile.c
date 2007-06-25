@@ -1407,12 +1407,12 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_DEFINE_MODE].name = NrmStringToQuark("definemode");
 	len_dims = 1;
 	lval = (logical*) NclMalloc(sizeof(logical));
-	*lval = False;
+	*lval = True;
 	fcp->options[Ncl_DEFINE_MODE].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	lval = (logical*) NclMalloc(sizeof(logical));
-	*lval = False;
+	*lval = True;
 	fcp->options[Ncl_DEFINE_MODE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
@@ -1462,12 +1462,12 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_SUPPRESS_CLOSE].name = NrmStringToQuark("suppressclose");
 	len_dims = 1;
 	lval = (logical*) NclMalloc(sizeof(logical));
-	*lval = False;
+	*lval = True;
 	fcp->options[Ncl_SUPPRESS_CLOSE].value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	lval = (logical*) NclMalloc(sizeof(logical));
-	*lval = False;
+	*lval = True;
 	fcp->options[Ncl_SUPPRESS_CLOSE].def_value = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
