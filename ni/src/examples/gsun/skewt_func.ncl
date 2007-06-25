@@ -393,7 +393,7 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
 
 ; --- draw diagonal isotherms. 
 ;     [brown with labels interspersed at 45 degree angle]
-;     http://ngwww.ucar.edu/ngdoc/ng/ref/hlu/obj/GraphicStyle.obj.html
+;     http://www.ncl.ucar.edu/Document/HLUs/Classes/GraphicStyle.shtml
    
   if (localOpts@DrawIsotherm) then
       gsOpts                   = True

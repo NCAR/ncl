@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.23 2006-08-24 21:00:08 haley Exp $
+;      $Id: shea_util.ncl,v 1.24 2007-06-25 15:43:41 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -257,7 +257,8 @@ function ZeroNegDashLineContour (plot:graphic)
 
 ; operates on a plot object created by "gsn_csm.ncl" code
 ; Make zero line twice as thick and set neg contourlines to dash
-; Dash line patterns: http://ngwww.ucar.edu/ngdoc/ng/ref/dashpatterns.html
+; Dash line patterns:
+;    http://www.ncl.ucar.edu/Document/Graphics/dash_patterns.shtml
 
 local cnlvls, cnlinepat, cnlinethk, n, N
 begin
@@ -305,7 +306,8 @@ function ZeroNegDashLineContourOverlay (plot:graphic)
 
 ; operates on a plot object created by "gsn_csm.ncl" code
 ; Make zero line twice as thick and set neg contourlines to dash
-; Dash line patterns: http://ngwww.ucar.edu/ngdoc/ng/ref/dashpatterns.html
+; Dash line patterns:
+;   http://www.ncl.ucar.edu/Document/Graphics/dash_patterns.shtml
 
 local cnlvls, cnlinepat, cnlinethk, n, N, ovrly_plot
 begin
@@ -362,7 +364,8 @@ function ZeroGoneNegDashLineContour(plot:graphic)
 
 ; operates on a plot object created by "gsn_csm.ncl" code
 ; Minimizes the zero line and set neg contourlines to dash
-; Dash line patterns: http://ngwww.ucar.edu/ngdoc/ng/ref/dashpatterns.html
+; Dash line patterns:
+;   http://www.ncl.ucar.edu/Document/Graphics/dash_patterns.shtml
 local cnlvls, N, flags, cnlinepat, cnlevflg, n
 begin
   cnlvls = get_cnLevels (plot)    ; get contour level by querrying plot
@@ -416,7 +419,8 @@ function NegDashLineContour (plot:graphic)
 
 ; operates on a plot object created by "gsn_csm.ncl" code
 ; Set neg contourlines to dash
-; Dash line patterns: http://ngwww.ucar.edu/ngdoc/ng/ref/dashpatterns.html
+; Dash line patterns:
+;   http://www.ncl.ucar.edu/Document/Graphics/dash_patterns.shtml
 
 local cnlvls, cnlinepat, n, N
 begin
@@ -458,7 +462,7 @@ function ShadeLtContour (plot:graphic, CnLt:float, FillPatLt:integer )
 ; operates on a plot object created by "gsn_csm.ncl" code
 ; Fill all contours less than "CnLt" to the
 ;      pattern corresponding to "FillPatLt" 
-;      http://ngwww.ucar.edu/ngdoc/ng/ref/fillpatterns.html
+;   http://www.ncl.ucar.edu/Document/Graphics/fill_patterns.shtml
 
 local cnlvls, patterns, i, N
 begin
@@ -502,7 +506,7 @@ function ShadeGtContour (plot:graphic, CnGt:float, FillPatGt:integer )
 ; operates on a plot object created by "gsn_csm.ncl" code
 ; Fill all contours greater than "CnGt" to the
 ;      pattern corresponding to "FillPatGt" 
-;      http://ngwww.ucar.edu/ngdoc/ng/ref/fillpatterns.html
+;      http://www.ncl.ucar.edu/Document/Graphics/fill_patterns.shtml
 
 local cnlvls, patterns, i, N
 begin
@@ -551,7 +555,7 @@ function ShadeLtGtContour (plot:graphic
 ; operates on a contour object created by "gsn_csm.ncl" code
 ; Fill all contours less-than/greater-than "CnLt/CnGt" to the
 ;      pattern corresponding to "FillPat" 
-;      http://ngwww.ucar.edu/ngdoc/ng/ref/fillpatterns.html
+;      http://www.ncl.ucar.edu/Document/Graphics/fill_patterns.shtml
 
 local cnlvls, patterns, i, N
 begin
@@ -602,7 +606,7 @@ function ShadeGeLeContour (plot:graphic
 ; operates on a contour object created by "gsn_csm.ncl" code
 ; Fill all contours greater-than-eq2/less-than-eq2 "CnGe/CnLe" to the
 ;      pattern corresponding to "FillPat" 
-;      http://ngwww.ucar.edu/ngdoc/ng/ref/fillpatterns.html
+;      http://www.ncl.ucar.edu/Document/Graphics/fill_patterns.shtml
 
 local cnlvls, patterns, i, N
 begin
@@ -649,7 +653,7 @@ function ShadeGeLeContourDensity (plot:graphic ,CnGe:float, CnLe:float \
 ; operates on a contour object created by "gsn_csm.ncl" code
 ; Fill all contours greater-than-eq2/less-than-eq2 "CnGe/CnLe" to the
 ;      pattern corresponding to "FillPat" 
-;      http://ngwww.ucar.edu/ngdoc/ng/ref/fillpatterns.html
+;      http://www.ncl.ucar.edu/Document/Graphics/fill_patterns.shtml
 
 local cnlvls, patterns, i, N
 begin
@@ -1154,7 +1158,6 @@ procedure genCmapNameCol (wks:graphic, colors[*]:string)
 ; generates RGB values for input named colors 
 ; http://www.scd.ucar.edu/zine/99/spring/text/gfx/2.gifs.html
 ; http://www.scd.ucar.edu/zine/99/spring/text/gfx/rgb.txt
-; http://ngwww.ucar.edu/ngdoc/ng4.1.1beta/ref/colorspecs.html#NhlTColorDefinitionGenArray
 
 ; FYI: Did you know you can build a color table with named colors *and*
 ;      RGB triplets?  You can have something like:
@@ -1242,7 +1245,7 @@ procedure infoTimeStamp ( wks:graphic, chSize:float, FileInfo:string )
 ;              infoTimeStamp (wks, size, mssPath+mssName )
 ;              [plot]
 
-; txJust: http://ngwww.ucar.edu/ngdoc/ng4.1/./qsg/textitem/tx06.html
+; txJust: http://www.ncl.ucar.edu/Document/Graphics/Resources/tx.shtml#txJust
 
 local yBot, xLeft, xRight, txres, TimeStamp
 begin
@@ -1724,7 +1727,7 @@ function ShadeLeGeContourDensity (plot:graphic
                           ,CnGt:float, FillPatGt:integer, FillDenGt:float ) 
 ; operates on a contour object created by "gsn_csm.ncl" code
 ; pattern corresponding to "FillPat*" 
-; http://ngwww.ucar.edu/ngdoc/ng/ref/fillpatterns.html
+;  http://www.ncl.ucar.edu/Document/Graphics/fill_patterns.shtml
 ;  res@cnMonoFillPattern = False      ; want multiple patterns 
 ;  res@cnMonoFillScale   = False      ; want patterns w/ diff densities 
 ;  res@cnFillOn          = True       ; fill contour intervals
@@ -2269,7 +2272,7 @@ procedure TimeSourceStamp (wks:graphic, chSize:float, Data:string )
 ;          (0) wks =  gsn_open_wks("ncgm","bogus") 
 ;          (1) TimeSourceStamp (wks, 0.01, "slp.mon.mean.nc")
 ;              [plot]
-; txJust: http://ngwww.ucar.edu/ngdoc/ng4.1/./qsg/textitem/tx06.html
+; txJust: http://www.ncl.ucar.edu/Document/Graphics/Resources/tx.shtml#txJust
 
 local yBot, xLeft, xRight, xoff_set, yoff_set,txres, TimeStamp, script_name \
     , ps_xLeft, ps_yLeft, ps_xRight, ps_orient

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.201 2007-06-18 23:03:02 haley Exp $
+;      $Id: gsn_code.ncl,v 1.202 2007-06-25 15:43:41 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -22,7 +22,7 @@
 ;;               examples in the "Getting started using NCL" documention.
 ;;               The URL for this document is:
 ;;
-;;                   http://ngwww.ucar.edu/ngdoc/ng/ug/ncl/gsun/
+;;               http://www.ncl.ucar.edu/Document/Manuals/Getting_Started/
 ;;
 ;;               To use the functions and procedures in this script,
 ;;               you must have the line:
