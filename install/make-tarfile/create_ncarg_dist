@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_ncarg_dist,v 1.6 2007-06-09 18:34:29 haley Exp $
+#   $Id: create_ncarg_dist,v 1.7 2007-06-25 14:13:29 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -252,7 +252,7 @@ if ($?OPENDAP) then
   set lib_files = "$lib_files libnc-dap.so libdap.so libcurl.so libnc-dap.so.3 libdap.so.6 libcurl.so.4"
 endif
 
-set lib_dirs  = "ncarg/colormaps ncarg/data ncarg/database ncarg/examples ncarg/fontcaps ncarg/graphcaps ncarg/grib2_codetables ncarg/hluex ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/robj ncarg/tests ncarg/tutorial ncarg/udunits ncarg/xapp"
+set lib_dirs  = "ncarg/colormaps ncarg/database ncarg/examples ncarg/fontcaps ncarg/graphcaps ncarg/grib2_codetables ncarg/hluex ncarg/nclex ncarg/nclscripts ncarg/ngwww ncarg/resfiles ncarg/robj ncarg/tests ncarg/tutorial ncarg/udunits ncarg/xapp"
 
 set all_files
 set all_dirs
