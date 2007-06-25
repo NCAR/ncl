@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.7 2007-06-09 18:34:28 haley Exp $
+#   $Id: create_dist,v 1.8 2007-06-25 13:48:21 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -316,7 +316,7 @@ set common_inc_dirs  = ""
 
 set common_lib_files = ""
 
-set common_lib_dirs  = "ncarg/data ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngwww ncarg/xapp"
+set common_lib_dirs  = "ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngwww ncarg/xapp"
 
 #
 # Set files specific to NCL.
@@ -330,7 +330,7 @@ if ($?NCLONLY || $?NCARGNCL || $?INTERNAL) then
 
   set ncl_lib_files = "libnclapi.a ncarg/sysresfile"
 
-  set ncl_lib_dirs  = "ncarg/colormaps ncarg/grib2_codetables ncarg/nclex ncarg/nclscripts ncarg/resfiles ncarg/udunits"
+  set ncl_lib_dirs  = "ncarg/data ncarg/colormaps ncarg/grib2_codetables ncarg/nclex ncarg/nclscripts ncarg/resfiles ncarg/udunits"
 endif
 
 #
