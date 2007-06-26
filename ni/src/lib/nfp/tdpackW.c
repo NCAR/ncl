@@ -1095,27 +1095,21 @@ NhlErrorTypes tditri_W( void )
 
 NhlErrorTypes tdmtri_W( void )
 {
-  float *u, *v, *w, *s, *rtri;
-  float *umin, *vmin, *wmin, *umax, *vmax, *wmax;
+  float *uvw, *s, *rtri;
+  float *uvwmin, *uvwmax;
   int *imrk, *ntri, mtri, *irst;
   int dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
-  imrk =   (int*)NclGetArgValue( 0,14,NULL,NULL,NULL,NULL,NULL,2);
-  u    = (float*)NclGetArgValue( 1,14,NULL,NULL,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue( 2,14,NULL,NULL,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue( 3,14,NULL,NULL,NULL,NULL,NULL,2);
-  s    = (float*)NclGetArgValue( 4,14,NULL,NULL,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue( 5,14,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue( 6,14,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue( 7,14,NULL,NULL,NULL,NULL,NULL,2);
-  umin = (float*)NclGetArgValue( 8,14,NULL,NULL,NULL,NULL,NULL,2);
-  vmin = (float*)NclGetArgValue( 9,14,NULL,NULL,NULL,NULL,NULL,2);
-  wmin = (float*)NclGetArgValue(10,14,NULL,NULL,NULL,NULL,NULL,2);
-  umax = (float*)NclGetArgValue(11,14,NULL,NULL,NULL,NULL,NULL,2);
-  vmax = (float*)NclGetArgValue(12,14,NULL,NULL,NULL,NULL,NULL,2);
-  wmax = (float*)NclGetArgValue(13,14,NULL,NULL,NULL,NULL,NULL,2);
+  imrk =     (int*)NclGetArgValue( 0,8,NULL,NULL,NULL,NULL,NULL,2);
+  uvw  =   (float*)NclGetArgValue( 1,8,NULL,NULL,NULL,NULL,NULL,2);
+  s    =   (float*)NclGetArgValue( 2,8,NULL,NULL,NULL,NULL,NULL,2);
+  rtri =   (float*)NclGetArgValue( 3,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =     (int*)NclGetArgValue( 4,8,NULL,NULL,NULL,NULL,NULL,2);
+  irst =     (int*)NclGetArgValue( 5,8,NULL,NULL,NULL,NULL,NULL,2);
+  uvwmin = (float*)NclGetArgValue( 6,8,NULL,NULL,NULL,NULL,NULL,2);
+  uvwmax = (float*)NclGetArgValue( 7,8,NULL,NULL,NULL,NULL,NULL,2);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1123,8 +1117,9 @@ NhlErrorTypes tdmtri_W( void )
     return(NhlFATAL);
   }
 
-  c_tdmtri(*imrk, *u, *v, *w, *s, rtri, mtri, ntri, *irst, 
-           *umin, *vmin, *wmin, *umax, *vmax, *wmax);
+  c_tdmtri(*imrk, uvw[0], uvw[1], uvw[2], *s, rtri, mtri, ntri, *irst, 
+           uvwmin[0], uvwmin[1], uvwmin[2], 
+           uvwmax[0], uvwmax[1], uvwmax[2]);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdmtri: triangle list overflow");
