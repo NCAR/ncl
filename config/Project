@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.81 2007-06-28 16:23:22 haley Exp $
+ *      $Id: Project,v 1.82 2007-06-28 23:10:15 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2007-06-28 16:23:22 $
+ *	$Date: 2007-06-28 23:10:15 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -178,7 +178,7 @@
 #endif	/* NetCDFlib */
 
 #ifndef	NetCDF4lib
-#define	NetCDF4lib	-lhdf5 -lhdf5_hl
+#define	NetCDF4lib	-lhdf5_hl -lhdf5 -lsz
 #endif	/* NetCDF4lib */
 
 #ifndef	UdUnitslib
