@@ -2872,13 +2872,11 @@ void NclAddUserFuncs(void)
  * Register tdstri.
  */
         nargs = 0;
-        args = NewArgs(8);
+        args = NewArgs(6);
 
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
 
         SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
@@ -2889,15 +2887,12 @@ void NclAddUserFuncs(void)
  * Register tditri.
  */
         nargs = 0;
-        args = NewArgs(11);
+        args = NewArgs(8);
 
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",3,NclANY);nargs++;
 
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;

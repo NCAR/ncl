@@ -1013,19 +1013,17 @@ NhlErrorTypes tddtri_W( void )
 NhlErrorTypes tdstri_W( void )
 {
   float *u, *v, *w, *rtri;
-  int *idim, *jdim, *ntri, mtri, *irst;
-  int dsizes_w[2], dsizes_rtri[2];
+  int nu, nv, *ntri, mtri, *irst;
+  int dsizes_u[1], dsizes_v[1], dsizes_w[2], dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
-  u    = (float*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,2);
-  idim =   (int*)NclGetArgValue(1,8,NULL,NULL,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue(2,8,NULL,NULL,NULL,NULL,NULL,2);
-  jdim =   (int*)NclGetArgValue(3,8,NULL,NULL,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue(4,8,NULL,dsizes_w,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(5,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
+  u    = (float*)NclGetArgValue(0,6,NULL,dsizes_u,NULL,NULL,NULL,2);
+  v    = (float*)NclGetArgValue(1,6,NULL,dsizes_v,NULL,NULL,NULL,2);
+  w    = (float*)NclGetArgValue(2,6,NULL,dsizes_w,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(3,6,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,2);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1033,13 +1031,15 @@ NhlErrorTypes tdstri_W( void )
     return(NhlFATAL);
   }
 
-  if(dsizes_w[0] < *jdim || dsizes_w[1] < *idim) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the dimensions of w must greater than or equal to nv x nu");
+  nu = dsizes_u[0];
+  nv = dsizes_v[0];
+
+  if(dsizes_w[0] != nv || dsizes_w[1] != nu) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdstri: the dimensions of w must be nv x nu");
     return(NhlFATAL);
   }
 
-  NGCALLF(tdstri,TDSTRI)(u, idim, v, jdim, w, &dsizes_w[1], rtri, &mtri, ntri,
-                         irst);
+  NGCALLF(tdstri,TDSTRI)(u, &nu, v, &nv, w, &nu, rtri, &mtri, ntri, irst);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdstri: triangle list overflow");
@@ -1053,22 +1053,19 @@ NhlErrorTypes tdstri_W( void )
 NhlErrorTypes tditri_W( void )
 {
   float *u, *v, *w, *f, *fiso, *rtri;
-  int *idim, *jdim, *kdim, *ntri, mtri, *irst;
-  int dsizes_f[3], dsizes_rtri[2];
+  int nu, nv, nw, *ntri, mtri, *irst;
+  int dsizes_u[1], dsizes_v[1], dsizes_w[1], dsizes_f[3], dsizes_rtri[2];
 /*
  * Retrieve parameters.
  */
-  u    = (float*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
-  idim =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
-  jdim =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  kdim =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
-  f    = (float*)NclGetArgValue( 6,11,NULL,dsizes_f,NULL,NULL,NULL,2);
-  fiso = (float*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue( 8,11,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
+  u    = (float*)NclGetArgValue( 0,8,NULL,dsizes_u,NULL,NULL,NULL,2);
+  v    = (float*)NclGetArgValue( 1,8,NULL,dsizes_v,NULL,NULL,NULL,2);
+  w    = (float*)NclGetArgValue( 2,8,NULL,dsizes_w,NULL,NULL,NULL,2);
+  f    = (float*)NclGetArgValue( 3,8,NULL,dsizes_f,NULL,NULL,NULL,2);
+  fiso = (float*)NclGetArgValue( 4,8,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue( 5,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue( 6,8,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue( 7,8,NULL,NULL,NULL,NULL,NULL,2);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1076,13 +1073,17 @@ NhlErrorTypes tditri_W( void )
     return(NhlFATAL);
   }
 
-  if(dsizes_f[0] < *kdim || dsizes_f[1] < *jdim || dsizes_f[2] < *idim) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the dimensions of f must be greater than or equal to nw x nv x nu");
+  nu = dsizes_u[0];
+  nv = dsizes_v[0];
+  nw = dsizes_w[0];
+  
+  if(dsizes_f[0] != nw || dsizes_f[1] != nv || dsizes_f[2] != nu) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tditri: the dimensions of f must be nw x nv x nu");
     return(NhlFATAL);
   }
 
-  NGCALLF(tditri,TDITRI)(u,idim,v,jdim,w,kdim,f,&dsizes_f[2],&dsizes_f[1],
-          fiso,rtri,&mtri,ntri,irst);
+  NGCALLF(tditri,TDITRI)(u,&nu,v,&nv,w,&nw,f,&nu,&nv,fiso,rtri,&mtri,ntri,
+			 irst);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tditri: triangle list overflow");

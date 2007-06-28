@@ -158,9 +158,9 @@ else:
 
 valid = False
 while not valid:
-  ncl_name = raw_input("\nEnter NCL name of your " + wrapper_type + ": ")
+  ncl_name = raw_input("\nEnter NCL/PyNGL name of your " + wrapper_type + ": ")
   if ncl_name == "":
-    print "Invalid name for NCL function or procedure, reenter."
+    print "Invalid name for NCL/PyNGL function or procedure, reenter."
   else:
     valid = True
 
@@ -177,7 +177,7 @@ while not valid:
 
 valid = False
 while not valid:
-  wrapper_name = raw_input("\nEnter name of wrapper C file (without '.c') " +\
+  wrapper_name = raw_input("\nEnter name you want to give the wrapper C file (without the '.c') " +\
                            ": ")
   if wrapper_name == "":
     print "Invalid name for wrapper name, reenter."
@@ -194,7 +194,7 @@ return_fatal_str = '    return(NhlFATAL);\n'
 
 valid = False
 while not valid:
-  rinput = raw_input('\nHow many input arguments are there for ' + \
+  rinput = raw_input('\nHow many input arguments will there be for ' + \
                      ncl_name + '? ')
   try:
     num_args = int(rinput)
