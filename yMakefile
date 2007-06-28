@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.35 2007-02-28 05:29:20 haley Exp $
+ *      $Id: yMakefile,v 1.36 2007-06-28 16:22:32 haley Exp $
  */
 /************************************************************************
 *									*
@@ -178,6 +178,14 @@ UDUNITSSTUFF:
 	@echo "y"
 #else
 UDUNITSSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildNetCDF4
+NETCDF4STUFF:
+	@echo "y"
+#else
+NETCDF4STUFF:
 	@echo "n"
 #endif
 
