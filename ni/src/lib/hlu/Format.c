@@ -1,5 +1,5 @@
 /*
- *      $Id: Format.c,v 1.17 1999-06-23 16:18:48 dbrown Exp $
+ *      $Id: Format.c,v 1.18 2007-06-28 23:01:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -828,7 +828,7 @@ NhlString _NhlFormatFloat
         char *c2[] = { "e","E","10**","10:S:" };
         int lex2[] = { 0,0,4,2 };
         char *c3[] = { " "," "," ",":N:" };
-	char cex1[10],cex2[6],cex3[4];
+	char cex1[11],cex2[7],cex3[5];
         int lex3[] = { 0,0,0,0 };
         int len_diff[] = { 0,0,0,15 };
 	int exp_len[] = {1,1,5,15 };
