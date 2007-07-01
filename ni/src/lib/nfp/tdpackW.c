@@ -1133,31 +1133,27 @@ NhlErrorTypes tdmtri_W( void )
 
 NhlErrorTypes tdttri_W( void )
 {
-  float *ucra, *vcra, *wcra, *umin, *vmin, *wmin, *umax, *vmax, *wmax;
+  float *ucra, *vcra, *wcra, *uvwmin, *uvwmax;
   float *rmrk, *smrk, *rtri;
   int *imrk, *ntri, *irst, mtri, ncra;
   int dsizes_rtri[2], dsizes_ucra[1], dsizes_vcra[1], dsizes_wcra[1];
 /*
  * Retrieve parameters.
  */
-  ucra = (float*)NclGetArgValue( 0,15,NULL,dsizes_ucra,NULL,NULL,NULL,2);
-  vcra = (float*)NclGetArgValue( 1,15,NULL,dsizes_vcra,NULL,NULL,NULL,2);
-  wcra = (float*)NclGetArgValue( 2,15,NULL,dsizes_wcra,NULL,NULL,NULL,2);
+  ucra = (float*)NclGetArgValue( 0,11,NULL,dsizes_ucra,NULL,NULL,NULL,2);
+  vcra = (float*)NclGetArgValue( 1,11,NULL,dsizes_vcra,NULL,NULL,NULL,2);
+  wcra = (float*)NclGetArgValue( 2,11,NULL,dsizes_wcra,NULL,NULL,NULL,2);
 
-  imrk =   (int*)NclGetArgValue( 3,15,NULL,NULL,NULL,NULL,NULL,2);
-  rmrk = (float*)NclGetArgValue( 4,15,NULL,NULL,NULL,NULL,NULL,2);
-  smrk = (float*)NclGetArgValue( 5,15,NULL,NULL,NULL,NULL,NULL,2);
+  imrk =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
+  rmrk = (float*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
+  smrk = (float*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
 
-  rtri = (float*)NclGetArgValue( 6,15,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue( 7,15,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue( 8,15,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue( 6,11,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
 
-  umin = (float*)NclGetArgValue( 9,15,NULL,NULL,NULL,NULL,NULL,2);
-  vmin = (float*)NclGetArgValue(10,15,NULL,NULL,NULL,NULL,NULL,2);
-  wmin = (float*)NclGetArgValue(11,15,NULL,NULL,NULL,NULL,NULL,2);
-  umax = (float*)NclGetArgValue(12,15,NULL,NULL,NULL,NULL,NULL,2);
-  vmax = (float*)NclGetArgValue(13,15,NULL,NULL,NULL,NULL,NULL,2);
-  wmax = (float*)NclGetArgValue(14,15,NULL,NULL,NULL,NULL,NULL,2);
+  uvwmin = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
+  uvwmax = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1173,7 +1169,8 @@ NhlErrorTypes tdttri_W( void )
 
   NGCALLF(tdttri,TDTTRI)(ucra, vcra, wcra, &ncra, imrk, rmrk, smrk, rtri, 
                          &mtri, ntri, irst, 
-                         umin, vmin, wmin, umax, vmax, wmax);
+                         &uvwmin[0], &uvwmin[1], &uvwmin[2],
+			 &uvwmax[0], &uvwmax[1], &uvwmax[2]);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdttri: triangle list overflow");
@@ -1251,24 +1248,23 @@ NhlErrorTypes tdotri_W( void )
 NhlErrorTypes tdsort_W( void )
 {
   float *rwrk;
-  int *iwrk, *iord, nwrk;
-  int dsizes_rwrk[1], dsizes_iwrk[1];
+  int *iwrk, *iord, nwrk, dsizes_rwrk[1], ret;
 /*
  * Retrieve parameters.
  */
-  rwrk = (float*)NclGetArgValue(0,3,NULL,dsizes_rwrk,NULL,NULL,NULL,2);
-  iord =   (int*)NclGetArgValue(1,3,NULL,NULL,NULL,NULL,NULL,2);
-  iwrk =   (int*)NclGetArgValue(2,3,NULL,dsizes_iwrk,NULL,NULL,NULL,2);
+  rwrk = (float*)NclGetArgValue(0,2,NULL,dsizes_rwrk,NULL,NULL,NULL,2);
+  iord =   (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
   nwrk = dsizes_rwrk[0];
 
-  if(dsizes_iwrk[0] != nwrk) {
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdsort: the two work arrays, rwrk and iwrk must be the same length");
+  iwrk = (int*)calloc(nwrk,sizeof(int));
+  if(iwrk == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdsort: Unable to allocate memory for permutation vector");
     return(NhlFATAL);
   }
 
   c_tdsort(rwrk, nwrk, *iord, iwrk);
 
-  return(NhlNOERROR);
+  ret = NclReturnValue(iwrk,1,dsizes_rwrk,NULL,NCL_int,0);
 }
 
 

@@ -2925,7 +2925,7 @@ void NclAddUserFuncs(void)
  * Register tdttri.
  */
         nargs = 0;
-        args = NewArgs(15);
+        args = NewArgs(11);
 
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
@@ -2940,10 +2940,7 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        dimsizes[0] = 3;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
@@ -2979,14 +2976,13 @@ void NclAddUserFuncs(void)
  * Register tdsort.
  */
         nargs = 0;
-        args = NewArgs(3);
+        args = NewArgs(2);
 
         SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
-        NclRegisterProc(tdsort_W,args,"tdsort",nargs);
+        NclRegisterFunc(tdsort_W,args,"tdsort",nargs);
 /*
  *  Register wmsetp.
  */
