@@ -1212,25 +1212,30 @@ NhlErrorTypes tdctri_W( void )
 
 NhlErrorTypes tdotri_W( void )
 {
-  int *ntri, mtri, *iord, dsizes_rtri[2];
+  int *ntri, mtri, *iord, dsizes_rtri[2], dsizes_itwk[1];
   float *rtri;
 /*
  * Work arrays.
  */
   float *rtwk;
-  int *itwk;
+  int *itwk, ret;
 /*
  * Retrieve parameters.
  */
-  rtri = (float*)NclGetArgValue(0,5,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(1,5,NULL,NULL,NULL,NULL,NULL,2);
-  rtwk = (float*)NclGetArgValue(2,5,NULL,NULL,NULL,NULL,NULL,2);
-  itwk =   (int*)NclGetArgValue(3,5,NULL,NULL,NULL,NULL,NULL,2);
-  iord =   (int*)NclGetArgValue(4,5,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(0,4,NULL,dsizes_rtri,NULL,NULL,NULL,2);
+  ntri =   (int*)NclGetArgValue(1,4,NULL,NULL,NULL,NULL,NULL,2);
+  rtwk = (float*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,2);
+  iord =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,2);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
     NhlPError(NhlFATAL, NhlEUNKNOWN, "tdotri: the second dimension of ntri must be 10");
+    return(NhlFATAL);
+  }
+
+  itwk = (int*)calloc(mtri,sizeof(int));
+  if(itwk == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"tdotri: Unable to allocate memory for permutation vector");
     return(NhlFATAL);
   }
 
@@ -1241,7 +1246,9 @@ NhlErrorTypes tdotri_W( void )
     return(NhlFATAL);
   }
 
-  return(NhlNOERROR);
+  dsizes_itwk[0] = mtri;
+
+  ret = NclReturnValue(itwk,1,dsizes_itwk,NULL,NCL_int,0);
 }
 
 

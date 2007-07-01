@@ -2962,16 +2962,15 @@ void NclAddUserFuncs(void)
  * Register tdotri.
  */
         nargs = 0;
-        args = NewArgs(5);
+        args = NewArgs(4);
 
         SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
         SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"float",2,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
-        NclRegisterProc(tdotri_W,args,"tdotri",nargs);
+        NclRegisterFunc(tdotri_W,args,"tdotri",nargs);
 /*
  * Register tdsort.
  */
