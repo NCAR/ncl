@@ -1,15 +1,4 @@
 /*
- *      $Id: AIX_RS6000,v 1.18 2006-01-09 18:47:26 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		AIX_RS6000.32
  *
  *	Author:		Jeff W. Boote
  *			National Center for Atmospheric Research
@@ -21,11 +10,14 @@
  *			tell ymake how the RS6k is different from a
  *			default setup.
  */
-#define HdfDefines    -DIBM6000
-#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1
-#define CCompiler     xlc
-#define FCompiler     xlf
-#define CcOptions     -D_LARGE_FILES
+#define HdfDefines    -DIBM6000 -DAIX5L64
+#define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT
+#define CCompiler     xlc_r
+#define FCompiler     xlf_r
+#define CcOptions     -qarch=auto -q64
+#define FcOptions     -qarch=auto -q64
+#define LdCommand     ld -b64
+#define ArCommand     ar -X64
 #define COptimizeFlag -O3 -qstrict
 #define FOptimizeFlag -O3 -qstrict
 #define Cstatic       -bnso

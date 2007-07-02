@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.19 2007-04-21 20:35:00 haley Exp $
+ *      $Id: LINUX,v 1.20 2007-07-02 16:36:46 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -29,12 +29,12 @@
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define FCompiler   g77
-#define CtoFLibraries   -lg2c -lgcc -lm
+#define CtoFLibraries   -L /opt/gcc33/lib -lg2c -lgcc -lm
 #define CcOptions      -ansi -fPIC
 #define FcOptions      -fPIC -fno-second-underscore
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
-#define XLibrary -lX11 -lXext
+#define XLibrary -L/usr/X11R6/lib64 -lX11 -lXext
 #define ExtraExportFlags -rdynamic
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
