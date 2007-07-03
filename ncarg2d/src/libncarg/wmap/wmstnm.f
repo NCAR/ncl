@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.12 2006-11-28 01:43:05 fred Exp $
+C	$Id: wmstnm.f,v 1.13 2007-07-03 02:22:15 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -68,7 +68,7 @@ C
 C             '8', then IMDAT(I)(2:2) =  Nh - fraction of sky cover
 C                       IMDAT(I)(3:3) =  CL - cloud type, low clouds
 C                       IMDAT(I)(4:4) =  CM - cloud type, medium clouds
-C                       IMDAT(I)(4:4) =  CH - cloud type, high clouds
+C                       IMDAT(I)(5:5) =  CH - cloud type, high clouds
 C
       include 'wmcomn.h'
 C
@@ -114,6 +114,24 @@ C
 C
 C  IPRSNT is an array indicating whether a value for a symbol
 C  has been entered.
+C
+C    IPRSNT -
+C     index sym       type          IMDAT          Character #
+C     ----- ---  ---------------  --------------   -----------
+C       1    CH      high clouds   IMDAT(10)(5:5)         49
+C       2    CM    medium clouds   IMDAT(10)(4:4)         48
+C       3   TTT      temperature   IMDAT( 3)(2:5)      11-14
+C       4   PPP   pressure @ sea   IMDAT( 6)(2:5)      26-29
+C       5    VV       visibility   IMDAT( 1)(4:5)       3- 4
+C       6    WW     past weather   IMDAT( 9)(4:4)         43
+C       7    PP    pressure chg.   IMDAT( 7)(3:5)      32-34
+C       8     A        barograph   IMDAT( 7)(2:2)         31
+C       9    Td        dew point   IMDAT( 4)(2:5)      16-19
+C      10    CL       low clouds   IMDAT(10)(3:3)         47
+C      11    Nh        sky cover   IMDAT(10)(2:2)         46
+C      12     W   prsent weather   IMDAT( 9)(2:3)      41-42
+C      13     h     lowest cloud   IMDAT( 1)(3:3)          2
+C      14    RR           precip.  IMDAT( 8)(2:4)      36-38
 C
       DIMENSION SYMPOS(2,NUMSYM),IFNTNM(NUMSYM),IPRSNT(NUMSYM)
       CHARACTER*3 CHRS(NUMSYM)
