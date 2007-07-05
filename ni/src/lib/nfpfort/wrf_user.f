@@ -587,10 +587,9 @@ C
 C Also, I'm subtracing 1 here, because it will be returned to NCL
 C script which has 0-based indexing.
 C 
-      IF(IR.ne.-999.and.JR.ne.-999) then
-        II = NINT(IR)-1
-        JJ = NINT(JR)-1
-      ELSE
+      II = NINT(IR)-1
+      JJ = NINT(JR)-1
+      IF (II.LE.0 .OR. JJ.LE.0 .OR. II.GE.NX-1 .OR. JJ.GE.NY-1) THEN
         II = -999
         JJ = -999
       END IF
