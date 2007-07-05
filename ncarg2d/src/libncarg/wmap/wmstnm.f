@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.13 2007-07-03 02:22:15 fred Exp $
+C	$Id: wmstnm.f,v 1.14 2007-07-05 22:47:54 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -354,6 +354,7 @@ C
 C
 C  Move CH, CM, and TT to the left.
 C
+        ISYM = 1
         CALL WMCEXT(ISYM,IFNTNM(ISYM),SYMPOS(1,ISYM),SYMPOS(2,ISYM),
      +            CHRS(ISYM),SIZ,CHREXT)
         OFFSET = EPS+0.5*(CHREXT(3)-CHREXT(1))
