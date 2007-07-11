@@ -3181,8 +3181,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   double *tmp_lat_array, *tmp_lon_array, *tmp_lat_loc, *tmp_lon_loc;
   int ndims_lat_array, dsizes_lat_array[NCL_MAX_DIMENSIONS];
   int ndims_lon_array, dsizes_lon_array[NCL_MAX_DIMENSIONS];
-  int ndims_lat_loc, dsizes_lat_loc[NCL_MAX_DIMENSIONS];
-  int ndims_lon_loc, dsizes_lon_loc[NCL_MAX_DIMENSIONS];
+  int dsizes_lat_loc[1], dsizes_lon_loc[1];
   NclBasicDataTypes type_lat_array, type_lon_array;
   NclBasicDataTypes type_lat_loc, type_lon_loc;
   int is_scalar_latlon_loc;
@@ -3197,7 +3196,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
 /*
  * Various
  */
-  int ny, nx, nynx, nretlocs, nlatlonlocs;
+  int ny, nx, nynx, nretlocs;
   int index_array, index_ret;
   int i, j, ndims_leftmost, size_leftmost, size_output;
 
@@ -3263,7 +3262,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   lat_loc = (void*)NclGetArgValue(
            2,
            4,
-           &ndims_lat_loc,
+           NULL,
            dsizes_lat_loc,
            NULL,
            NULL,
@@ -3276,7 +3275,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
   lon_loc = (void*)NclGetArgValue(
            3,
            4,
-           &ndims_lon_loc,
+           NULL,
            dsizes_lon_loc,
            NULL,
            NULL,
@@ -3284,23 +3283,18 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
            2);
 
 /*
- * Check dimension sizes of lat,lon locations and calculate total number
- * of locations.
+ * Check dimension sizes of lat,lon locations.
  */
-  if(ndims_lat_loc != ndims_lon_loc) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lat/lon locations must have the same number of dimensions");
+  if(dsizes_lon_loc[0] != dsizes_lat_loc[0]) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lat,lon locations must be the same length");
     return(NhlFATAL);
   }
-
-  nlatlonlocs = 1;
-  for(i = 0; i < ndims_lon_loc; i++) {
-    if(dsizes_lon_loc[i] != dsizes_lat_loc[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The dimension sizes of the lat,lon locations must be the same");
-      return(NhlFATAL);
-    }
-    nlatlonlocs *= dsizes_lon_loc[i];
+  if(dsizes_lon_loc[0] == 1) {
+    is_scalar_latlon_loc = 1;
   }
-  is_scalar_latlon_loc = is_scalar(ndims_lat_loc,dsizes_lat_loc);
+  else {
+    is_scalar_latlon_loc = 0;
+  }
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -3350,11 +3344,11 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
 /*
  * Calculate size of output array.  The output array will have dimension
  * sizes equal to the leftmost dimensions of the lat,lon arrays (minus
- * the last two dimensions), all the dimensions of the lat,lon locations
+ * the last two dimensions), the length of the lat,lon locations
  * (if not a scalar), and the last dimension will be 2, which holds the
  * i,j location on the grid.
  */
-  nretlocs    = size_leftmost * nlatlonlocs;
+  nretlocs    = size_leftmost * dsizes_lat_loc[0];
   size_output = 2 * nretlocs;
 
 /* 
@@ -3379,14 +3373,14 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
  *   Lat,lon array are 5 x 90 x 180, lat,lon locations are length 10:
  *     Output will be array of length 5 x 10 x 2. 
  *
- *   Lat,lon array are 3 x 5 x 90 x 180, lat,lon locations are 4 x 10:
- *     Output will be array of length 3 x 5 x 4 x 10 x 2.
+ *   Lat,lon array are 3 x 5 x 90 x 180, lat,lon locations are length 4:
+ *     Output will be array of length 3 x 5 x 4 x 2.
  */
   if(is_scalar_latlon_loc) {
     ndims_ret = ndims_leftmost + 1;
   }
   else {
-    ndims_ret = ndims_leftmost + ndims_lat_loc + 1;
+    ndims_ret = ndims_leftmost + 2;
   }
   dsizes_ret = (int*)calloc(ndims_ret,sizeof(int));  
   if( dsizes_ret == NULL ) {
@@ -3400,9 +3394,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
     dsizes_ret[i] = dsizes_lat_array[i];
   }
   if(!is_scalar_latlon_loc) {
-    for(i = 0; i < ndims_lat_loc; i++) {
-      dsizes_ret[ndims_leftmost+i] = dsizes_lat_loc[i];
-    }
+    dsizes_ret[ndims_leftmost] = dsizes_lat_loc[0];
   }
   dsizes_ret[ndims_ret-1] = 2;
 
@@ -3437,7 +3429,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
 /*
  * Loop across lat,lon locations.
  */
-    for(j = 0; j < nlatlonlocs; j++) {
+    for(j = 0; j < dsizes_lat_loc[0]; j++) {
 
 /*
  * Coerce subsection of lat_loc (tmp_lat_loc) to double if necessary.

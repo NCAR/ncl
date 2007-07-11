@@ -1273,8 +1273,8 @@ void NclAddUserFuncs(void)
 
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
         NclRegisterFunc(wrf_latlon_to_ij_W,args,"wrf_latlon_to_ij",nargs);
 /*
