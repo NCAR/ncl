@@ -5966,8 +5966,11 @@ static void InitPtables
  
 	path = getenv("NCL_GRIB_PTABLE_PATH");
 
-	if (! path)
-		return;
+	if (! path) {
+		path = getenv("NIO_GRIB_PTABLE_PATH");
+                if (! path)
+			return;
+	}
 		
 	d = opendir(_NGResolvePath(path));
 	if (! d && errno == ENOTDIR) {
