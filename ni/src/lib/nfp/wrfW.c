@@ -3177,29 +3177,29 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
 /*
  * Input variables
  */
-  void *lat_array, *lon_array, *lat, *lon;
-  double *tmp_lat_array, *tmp_lon_array, *tmp_lat, *tmp_lon;
+  void *lat_array, *lon_array, *lat_loc, *lon_loc;
+  double *tmp_lat_array, *tmp_lon_array, *tmp_lat_loc, *tmp_lon_loc;
   int ndims_lat_array, dsizes_lat_array[NCL_MAX_DIMENSIONS];
   int ndims_lon_array, dsizes_lon_array[NCL_MAX_DIMENSIONS];
-  int ndims_lat, dsizes_lat[NCL_MAX_DIMENSIONS];
-  int ndims_lon, dsizes_lon[NCL_MAX_DIMENSIONS];
+  int ndims_lat_loc, dsizes_lat_loc[NCL_MAX_DIMENSIONS];
+  int ndims_lon_loc, dsizes_lon_loc[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_lat_array, type_lon_array;
-  NclBasicDataTypes type_lat, type_lon;
-  int is_scalar_lat, is_scalar_lon;
+  NclBasicDataTypes type_lat_loc, type_lon_loc;
+  int is_scalar_latlon_loc;
 
 /*
  * Return variable
  */
-  int *loc;
-  int ndims_loc, *dsizes_loc;
-  NclScalar missing_loc;
+  int iret, *ret;
+  int ndims_ret, *dsizes_ret;
+  NclScalar missing_ret;
 
 /*
  * Various
  */
-  int ny, nx, nynx, nloc = 2;
-  int index_array, index_loc;
-  int i, ndims_leftmost, size_leftmost, size_output, ret;
+  int ny, nx, nynx, nretlocs, nlatlonlocs;
+  int index_array, index_ret;
+  int i, j, ndims_leftmost, size_leftmost, size_output;
 
 /*
  * Retrieve parameters.
@@ -3221,18 +3221,6 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
            2);
 
 /*
- * Check dimension sizes.
- */
-  if(ndims_lat_array < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lat_array array must have at least 2 dimensions");
-    return(NhlFATAL);
-  }
-
-  ny = dsizes_lat_array[ndims_lat_array-2];
-  nx = dsizes_lat_array[ndims_lat_array-1];
-  nynx = ny * nx;
-
-/*
  * Get argument # 1
  */
   lon_array = (void*)NclGetArgValue(
@@ -3246,85 +3234,80 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
            2);
 
 /*
- * Check dimension sizes.
+ * Check dimension sizes of lat,lon arrays and calculate size of
+ * leftmost dimensions.
  */
-  if(ndims_lon_array != ndims_lat_array) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: lat_array and lon_array must have the same number of dimensions");
+  if(ndims_lat_array < 2 || ndims_lon_array < 2 || 
+     ndims_lon_array != ndims_lat_array) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lat,lon arrays must have at least two dimensions and the same number of dimensions as each other");
     return(NhlFATAL);
   }
 
-  if(dsizes_lon_array[ndims_lon_array-2] != ny ||
-     dsizes_lon_array[ndims_lon_array-1] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The last two dimensions of lon_array must be of ny x nx");
-    return(NhlFATAL);
+  ny = dsizes_lat_array[ndims_lat_array-2];
+  nx = dsizes_lat_array[ndims_lat_array-1];
+  nynx = ny * nx;
+
+  size_leftmost  = 1;
+  ndims_leftmost = ndims_lat_array-2;
+  for(i = 0; i < ndims_lon_array; i++) {
+    if(dsizes_lon_array[i] != dsizes_lat_array[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The dimension sizes of the lat,lon arrays must be the same");
+      return(NhlFATAL);
+    }
+    if(i < ndims_leftmost) size_leftmost *= dsizes_lat_array[i];
   }
 
 /*
  * Get argument # 2
  */
-  lat = (void*)NclGetArgValue(
+  lat_loc = (void*)NclGetArgValue(
            2,
            4,
-           &ndims_lat,
-           dsizes_lat,
+           &ndims_lat_loc,
+           dsizes_lat_loc,
            NULL,
            NULL,
-           &type_lat,
+           &type_lat_loc,
            2);
 
 /*
  * Get argument # 3
  */
-  lon = (void*)NclGetArgValue(
+  lon_loc = (void*)NclGetArgValue(
            3,
            4,
-           &ndims_lon,
-           dsizes_lon,
+           &ndims_lon_loc,
+           dsizes_lon_loc,
            NULL,
            NULL,
-           &type_lon,
+           &type_lon_loc,
            2);
 
 /*
- * Check dimension sizes.
+ * Check dimension sizes of lat,lon locations and calculate total number
+ * of locations.
  */
-  is_scalar_lat = is_scalar(ndims_lat,dsizes_lat);
-  is_scalar_lon = is_scalar(ndims_lon,dsizes_lon);
-  if(ndims_lat != ndims_lon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lat/lon values must have the same number of dimensions");
-    return(NhlFATAL);
-  }
-  if( !is_scalar_lat && ndims_lat != ndims_lat_array-2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lat values must either be a scalar, or equal to the leftmost dimensions of the lat array'");
-    return(NhlFATAL);
-  }
-  if( !is_scalar_lon && ndims_lon != ndims_lon_array-2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lon values must either be a scalar, or equal to the leftmost dimensions of the lon array'");
+  if(ndims_lat_loc != ndims_lon_loc) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The lat/lon locations must have the same number of dimensions");
     return(NhlFATAL);
   }
 
-/*
- * Calculate size of leftmost dimensions and check more dimension sizes.
- */
-  size_leftmost  = 1;
-  ndims_leftmost = ndims_lat_array-2;
-  for(i = 0; i < ndims_leftmost; i++) {
-    if(dsizes_lon_array[i] != dsizes_lat_array[i] ||
-       (!is_scalar_lat && dsizes_lat[i] != dsizes_lat_array[i]) ||
-       (!is_scalar_lon && dsizes_lon[i] != dsizes_lat_array[i])) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The leftmost dimensions of lat_array, lon_array, lat and lon must be the same");
+  nlatlonlocs = 1;
+  for(i = 0; i < ndims_lon_loc; i++) {
+    if(dsizes_lon_loc[i] != dsizes_lat_loc[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: The dimension sizes of the lat,lon locations must be the same");
       return(NhlFATAL);
     }
-    size_leftmost *= dsizes_lat_array[i];
+    nlatlonlocs *= dsizes_lon_loc[i];
   }
+  is_scalar_latlon_loc = is_scalar(ndims_lat_loc,dsizes_lat_loc);
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
  * is already double, then we don't need to allocate space for
  * temporary arrays, because we'll just change the pointer into
  * the void array appropriately.
- */
-/*
+ *
  * Allocate space for tmp_lat_array.
  */
   if(type_lat_array != NCL_double) {
@@ -3345,68 +3328,89 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
     }
   }
 /*
- * Allocate space for tmp_lat.
+ * Allocate space for tmp_lat_loc.
  */
-  if(is_scalar_lat) {
-    tmp_lat = coerce_input_double(lat,type_lat,1,0,NULL,NULL);
-  }
-  else if(type_lat != NCL_double) {
-    tmp_lat = (double *)calloc(1,sizeof(double));
-    if(tmp_lat == NULL) {
+  if(type_lat_loc != NCL_double) {
+    tmp_lat_loc = (double *)calloc(1,sizeof(double));
+    if(tmp_lat_loc == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
 /*
- * Allocate space for tmp_lon.
+ * Allocate space for tmp_lon_loc.
  */
-  if(is_scalar_lat) {
-    tmp_lon = coerce_input_double(lon,type_lon,1,0,NULL,NULL);
-  }
-  else if(type_lon != NCL_double) {
-    tmp_lon = (double *)calloc(1,sizeof(double));
-    if(tmp_lon == NULL) {
+  if(type_lon_loc != NCL_double) {
+    tmp_lon_loc = (double *)calloc(1,sizeof(double));
+    if(tmp_lon_loc == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
 /*
- * Calculate size of output array.
+ * Calculate size of output array.  The output array will have dimension
+ * sizes equal to the leftmost dimensions of the lat,lon arrays (minus
+ * the last two dimensions), all the dimensions of the lat,lon locations
+ * (if not a scalar), and the last dimension will be 2, which holds the
+ * i,j location on the grid.
  */
-  size_output = size_leftmost * nloc;
+  nretlocs    = size_leftmost * nlatlonlocs;
+  size_output = 2 * nretlocs;
 
 /* 
  * Allocate space for output array.
  */
-  loc = (int*)calloc(size_output, sizeof(int));
-  if(loc == NULL) {
+  ret = (int*)calloc(size_output, sizeof(int));
+  if(ret == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
 /* 
- * Allocate space for output dimension sizes and set them.
+ * Allocate space for output dimension sizes and set them. The last dimension
+ * will always be 2, in order to hold the i,j locations. Some examples:
+ *
+ *  Lat,lon array are 90 x 180, lat,lon locations are scalars:
+ *    Output will be array with 2 elements.
+ *
+ *   Lat,lon array are 5 x 90 x 180, lat,lon locations are scalars:
+ *     Output will be array of length 5 x 2.
+ *
+ *   Lat,lon array are 5 x 90 x 180, lat,lon locations are length 10:
+ *     Output will be array of length 5 x 10 x 2. 
+ *
+ *   Lat,lon array are 3 x 5 x 90 x 180, lat,lon locations are 4 x 10:
+ *     Output will be array of length 3 x 5 x 4 x 10 x 2.
  */
-  if(is_scalar_lat) {
-    ndims_loc = 1;
+  if(is_scalar_latlon_loc) {
+    ndims_ret = ndims_leftmost + 1;
   }
   else {
-    ndims_loc = ndims_leftmost + 1;
+    ndims_ret = ndims_leftmost + ndims_lat_loc + 1;
   }
-  dsizes_loc = (int*)calloc(ndims_loc,sizeof(int));  
-  if( dsizes_loc == NULL ) {
+  dsizes_ret = (int*)calloc(ndims_ret,sizeof(int));  
+  if( dsizes_ret == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_latlon_to_ij: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
-  for(i = 0; i < ndims_loc-1; i++) dsizes_loc[i] = dsizes_lat_array[i];
-  dsizes_loc[ndims_loc-1] = nloc;
+/*
+ * Fill in dimension sizes for output array.  See above examples.
+ */
+  for(i = 0; i < ndims_leftmost; i++) {
+    dsizes_ret[i] = dsizes_lat_array[i];
+  }
+  if(!is_scalar_latlon_loc) {
+    for(i = 0; i < ndims_lat_loc; i++) {
+      dsizes_ret[ndims_leftmost+i] = dsizes_lat_loc[i];
+    }
+  }
+  dsizes_ret[ndims_ret-1] = 2;
 
 /*
- * Loop across leftmost dimensions and call the Fortran routine for each
- * subsection of the input arrays..
+ * Loop across leftmost dimensions of lat,lon array, the lat,lon locations,
+ * and call the Fortran routine for each subsection of the input arrays.
  */
-  index_array = index_loc = 0;
-
+  index_array = index_ret = 0;
   for(i = 0; i < size_leftmost; i++) {
 /*
  * Coerce subsection of lat_array (tmp_lat_array) to double if necessary.
@@ -3418,7 +3422,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
     else {
       tmp_lat_array = &((double*)lat_array)[index_array];
     }
-
+    
 /*
  * Coerce subsection of lon_array (tmp_lon_array) to double if necessary.
  */
@@ -3431,37 +3435,43 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
     }
 
 /*
- * Coerce subsection of lat (tmp_lat) to double if necessary.
+ * Loop across lat,lon locations.
  */
-    if(!is_scalar_lat) {
-      if (type_lat != NCL_double) {
-        coerce_subset_input_double(lat,tmp_lat,i,type_lat,1,0,NULL,NULL);
-      }
-      else {
-        tmp_lat = &((double*)lat)[i];
-      }
-    }
+    for(j = 0; j < nlatlonlocs; j++) {
 
 /*
- * Coerce subsection of lon (tmp_lon) to double if necessary.
+ * Coerce subsection of lat_loc (tmp_lat_loc) to double if necessary.
  */
-    if(type_lon != NCL_double) {
-      coerce_subset_input_double(lon,tmp_lon,i,type_lon,1,0,NULL,NULL);
-    }
-    else {
-      tmp_lon = &((double*)lon)[i];
-    }
+      if (type_lat_loc != NCL_double) {
+        coerce_subset_input_double(lat_loc,tmp_lat_loc,j,type_lat_loc,1,0,
+                                   NULL,NULL);
+      }
+      else {
+        tmp_lat_loc = &((double*)lat_loc)[j];
+      }
+
+/*
+ * Coerce subsection of lon_loc (tmp_lon_loc) to double if necessary.
+ */
+      if(type_lon_loc != NCL_double) {
+        coerce_subset_input_double(lon_loc,tmp_lon_loc,j,type_lon_loc,1,0,
+                                   NULL,NULL);
+      }
+      else {
+        tmp_lon_loc = &((double*)lon_loc)[j];
+      }
 
 /*
  * Call the Fortran routine. Make sure you return the i,j index
  * swapped, since we are going from Fortran to C.
  */
-    NGCALLF(dgetijlatlong,DGETIJLATLONG)(tmp_lat_array, tmp_lon_array, 
-                                         tmp_lat, tmp_lon,
-                                         &loc[index_loc+1], 
-                                         &loc[index_loc], &nx, &ny);
+      NGCALLF(dgetijlatlong,DGETIJLATLONG)(tmp_lat_array, tmp_lon_array, 
+                                           tmp_lat_loc, tmp_lon_loc,
+                                           &ret[index_ret+1], 
+                                           &ret[index_ret], &nx, &ny);
+      index_ret+=2;
+    }
     index_array += nynx;
-    index_loc += 2;
   }
 
 /*
@@ -3469,13 +3479,13 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
  */
   if(type_lat_array != NCL_double) NclFree(tmp_lat_array);
   if(type_lon_array != NCL_double) NclFree(tmp_lon_array);
-  if(type_lat       != NCL_double) NclFree(tmp_lat);
-  if(type_lon       != NCL_double) NclFree(tmp_lon);
+  if(type_lat_loc   != NCL_double) NclFree(tmp_lat_loc);
+  if(type_lon_loc   != NCL_double) NclFree(tmp_lon_loc);
 
-  missing_loc.intval = -999;
-  ret = NclReturnValue(loc,ndims_loc,dsizes_loc,&missing_loc,NCL_int,0);
-  NclFree(dsizes_loc);
-  return(ret);
+  missing_ret.intval = -999;
+  iret = NclReturnValue(ret,ndims_ret,dsizes_ret,&missing_ret,NCL_int,0);
+  NclFree(dsizes_ret);
+  return(iret);
 }
 
 NhlErrorTypes wrf_uvmet_W( void )
