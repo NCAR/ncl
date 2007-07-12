@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.9 2004-05-04 16:54:17 haley Exp $
+#   $Id: yMakefile,v 1.10 2007-07-12 19:41:37 haley Exp $
 #
 #   Makefile for GSUN examples
 #
@@ -17,7 +17,7 @@ GSN_SCRIPTS = gsn_code.ncl gsn_csm.ncl
 OTHER_SCRIPTS = ccm_func.ncl contributed.ncl popRemap.ncl shea_util.ncl \
 	skewt_func.ncl wind_rose.ncl
  
-WRF_SCRIPTS = WRF_contributed.ncl
+WRF_SCRIPTS = WRF_contributed.ncl WRFUserARW.ncl
 
 #if !defined(CRAY)
 InstallTarget($(EXAMPLES),$(INSTALL_LIB),$(NCLEXROOT)/$(MYNAME))
