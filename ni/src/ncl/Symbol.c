@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.64 2007-01-12 20:09:35 dbrown Exp $
+ *      $Id: Symbol.c,v 1.65 2007-07-13 17:12:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2911,6 +2911,38 @@ NclQuark attname;
 	}
 	return(NULL);
 }
+
+void _NclFileCleanUp (
+#if NhlNeedProto
+void
+#endif
+)
+
+{
+	NrmQuark *flist;
+	int i,num_names;
+	NclSymbol *s;
+	NclStackEntry *thevar = NULL;
+	NclFile thefile = NULL;
+	NclMultiDValData theid;
+
+	flist = _NclGetFileSymNames(&num_names);
+	for (i = 0; i < num_names; i++) {
+		s = _NclLookUp(NrmQuarkToString(flist[i]));
+		if((s != NULL)&&(s->type != UNDEF)) {
+			if(s->type == VAR) {
+				thevar = _NclRetrieveRec(s,DONT_CARE);
+				if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
+					theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
+					thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+					_NclDestroyObj((NclObj)thefile);
+				}
+			}
+		}
+	}
+	return;
+}
+
 #ifdef __cplusplus
 }
 #endif

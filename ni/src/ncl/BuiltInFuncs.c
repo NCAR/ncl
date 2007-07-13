@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.220 2007-06-05 23:33:51 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.221 2007-07-13 17:12:28 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -212,7 +212,7 @@ NhlErrorTypes _NclIListFiles
 	tmp = _NclGetDefinedFileInfo();
 	step = tmp;
 	while(step != NULL) {
-		ret = nclfprintf(fp,"\n%s\t%s\n",NrmQuarkToString(step->u.file->name),(step->u.file->wr_status ? "READ ONLY" : "READ/WRITE"));
+		ret = nclfprintf(fp,"\n%s\t%s\n",NrmQuarkToString(step->u.file->name),(step->u.file->wr_status > 0 ? "READ ONLY" : "READ/WRITE"));
 		if(ret < 0) {
 			_NclFreeApiDataList((void*)tmp);
 			return(NhlWARNING);

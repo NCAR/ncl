@@ -447,6 +447,7 @@ main(int argc, char **argv) {
     (void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
     (void) fclose(theoptr);
 #endif /* NCLDEBUG */
+    _NclFileCleanUp();
     NhlClose();
     exit(0);
 }

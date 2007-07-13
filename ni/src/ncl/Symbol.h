@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.28 2006-09-08 22:06:59 dbrown Exp $
+ *      $Id: Symbol.h,v 1.29 2007-07-13 17:12:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -505,6 +505,12 @@ NclQuark /*attname*/
 
 extern NhlErrorTypes _NclWalkSymTable(
 #if	NhlNeedProto
+void
+#endif
+);
+
+extern void _NclFileCleanUp (
+#if NhlNeedProto
 void
 #endif
 );
