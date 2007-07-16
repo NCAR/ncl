@@ -1487,15 +1487,18 @@ static NhlErrorTypes InitializeFileOptions
 	*sval = NrmStringToQuark("classic");
 	fcp->options[Ncl_FORMAT].def_value = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 						    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
-	sval = (string*) NclMalloc(3 * sizeof(string));
-	sval[0] = NrmStringToQuark("classic");
-	sval[1] = NrmStringToQuark("64bitoffset");
-	sval[2] = NrmStringToQuark("largefile");
 #ifdef USE_NETCDF4
-	sval[3] = NrmStringToQuark("netcdf4classic");
 	len_dims = 4;
 #else
 	len_dims = 3;
+#endif
+	sval = (string*) NclMalloc(len_dims * sizeof(string));
+	sval[0] = NrmStringToQuark("classic");
+	sval[1] = NrmStringToQuark("64bitoffset");
+	sval[2] = NrmStringToQuark("largefile");
+
+#ifdef USE_NETCDF4
+	sval[3] = NrmStringToQuark("netcdf4classic");
 #endif
 
 	fcp->options[Ncl_FORMAT].valid_values = 
