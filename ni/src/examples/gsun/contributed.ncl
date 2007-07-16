@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.143 2007-05-31 18:17:33 shea Exp $
+;      $Id: contributed.ncl,v 1.144 2007-07-16 22:23:28 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1920,6 +1920,36 @@ begin
       xsum@sum_op_ncl= "dim_sum over dimension: "+x!Ndx1
  else
       xsum@sum_op_ncl= "dim_sum function was applied"
+ end if
+ 
+ return (xsum)
+end
+; *******************************************************************
+; D. Shea
+; Compute a dimension sum of "x" [x may have many dimensions]
+; return with one less dimension
+; Copies over all the attribures and coordinate variables
+; x    - multidimensional variable 
+
+
+undef ("dim_sum_wgt_Wrap")
+function dim_sum_wgt_Wrap (x:numeric, w[*]:numeric, opt[1]:integer )  
+local xsum, dimx, Ndx, Ndx1
+begin
+
+ xsum = dim_sum_wgt(x, w, opt) ; arithmetic weighted  sum 
+ 
+ copy_VarAtts (x, xsum)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ dimx = dimsizes(x)         ; size of each dimension
+ Ndx  = dimsizes(dimx)      ; number of dimensions
+ copy_VarCoords_1 (x, xsum) ; one less dimension 
+                                       ; add an extra attribute
+ Ndx1 = Ndx-1                          ; last dimension
+ if (.not.ismissing(x!Ndx1)) then   
+      xsum@sum_op_ncl= "dim_sum_wgt over dimension: "+x!Ndx1
+ else
+      xsum@sum_op_ncl= "dim_sum_wgt function was applied"
  end if
  
  return (xsum)
