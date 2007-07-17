@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.24 2007-06-25 15:43:41 haley Exp $
+;      $Id: shea_util.ncl,v 1.25 2007-07-17 13:42:28 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2024,8 +2024,9 @@ end
 ;
 undef("ShadeCOI")
 function ShadeCOI(wks:graphic,plot:graphic,w,time, gsres:logical)
-local newtime, newcoi, ni, indices, do_both
+local newtime, newcoi, ni, indices, do_both, gsres2
 begin
+  gsres2 = gsres    ; Make a copy b/c we have to make changes to gsres.
 ;
 ; Error checking.
 ;
@@ -2041,9 +2042,9 @@ begin
 ;
 ; Set up some polygon resources.
 ;
-  set_attr(gsres,"gsFillIndex",5)
-  set_attr(gsres,"gsEdgeThicknessF",3.)
-  set_attr(gsres,"gsEdgesOn",True)
+  set_attr(gsres2,"gsFillIndex",5)
+  set_attr(gsres2,"gsEdgeThicknessF",3.)
+  set_attr(gsres2,"gsEdgesOn",True)
 
 ;
 ; Get the limits of the plot.
@@ -2080,13 +2081,13 @@ begin
 ;
 ; Create some arrays to hold the polygon.
 ;
-    newtime = new(ni+7,typeof(time))
-    newcoi  = new(ni+7,typeof(w@coi))
+    newtime = new(ni+7,float)
+    newcoi  = new(ni+7,float)
 
     newtime(0)      = xmin
-    newtime(1)      = time(indices(0))
-    newtime(2:ni+1) = time(indices)
-    newtime(ni+2)   = time(indices(dimsizes(indices)-1))
+    newtime(1)      = tofloat(time(indices(0)))
+    newtime(2:ni+1) = tofloat(time(indices))
+    newtime(ni+2)   = tofloat(time(indices(dimsizes(indices)-1)))
     newtime(ni+3)   = xmax
     newtime(ni+4)   = xmax
     newtime(ni+5)   = xmin
@@ -2094,7 +2095,7 @@ begin
 
     newcoi(0)      = ymin
     newcoi(1)      = ymin
-    newcoi(2:ni+1) = w@coi(indices)
+    newcoi(2:ni+1) = tofloat(w@coi(indices))
     newcoi(ni+2)   = ymin
     newcoi(ni+3)   = ymin
     newcoi(ni+4)   = ymax
@@ -2104,8 +2105,8 @@ begin
 ;
 ; Create some arrays to hold the polygon.
 ;
-    newtime = new(ni+6,typeof(time))
-    newcoi  = new(ni+6,typeof(w@coi))
+    newtime = new(ni+6,float)
+    newcoi  = new(ni+6,float)
 ;
 ; Figure out whether coi values are increasing or decreasing.
 ;
@@ -2117,8 +2118,8 @@ begin
 
     if(increasing) then
       newtime(0)      = xmin
-      newtime(1)      = time(indices(0))
-      newtime(2:ni+1) = time(indices)
+      newtime(1)      = tofloat(time(indices(0)))
+      newtime(2:ni+1) = tofloat(time(indices))
       newtime(ni+2)   = xmax
       newtime(ni+3)   = xmax
       newtime(ni+4)   = xmin
@@ -2126,23 +2127,23 @@ begin
   
       newcoi(0)       = ymin
       newcoi(1)       = ymin
-      newcoi(2:ni+1)  = w@coi(indices)
-      newcoi(ni+2)    = w@coi(indices(ni-1))
+      newcoi(2:ni+1)  = tofloat(w@coi(indices))
+      newcoi(ni+2)    = tofloat(w@coi(indices(ni-1)))
       newcoi(ni+3)    = ymax
       newcoi(ni+4)    = ymax
       newcoi(ni+5)    = ymin
     else
       newtime(0)      = xmin
       newtime(1)      = xmin
-      newtime(2:ni+1) = time(indices)
-      newtime(ni+2)   = time(indices(ni-1))
+      newtime(2:ni+1) = tofloat(time(indices))
+      newtime(ni+2)   = tofloat(time(indices(ni-1)))
       newtime(ni+3)   = xmax
       newtime(ni+4)   = xmax
       newtime(ni+5)   = xmin
   
       newcoi(0)       = ymax
-      newcoi(1)       = w@coi(indices(0))
-      newcoi(2:ni+1)  = w@coi(indices)
+      newcoi(1)       = tofloat(w@coi(indices(0)))
+      newcoi(2:ni+1)  = tofloat(w@coi(indices))
       newcoi(ni+2)    = ymin
       newcoi(ni+3)    = ymin
       newcoi(ni+4)    = ymax
@@ -2152,7 +2153,7 @@ begin
 ;
 ; Add cone of influence polygon.
 ;
-  coi           = gsn_add_polygon(wks,plot,newtime,newcoi,gsres)
+  coi           = gsn_add_polygon(wks,plot,newtime,newcoi,gsres2)
   newstr        = unique_string("coi")
   plot@$newstr$ = coi
 
