@@ -1,4 +1,4 @@
-#	$Id: yMakefile,v 1.51 2002-11-25 17:31:45 haley Exp $
+#	$Id: yMakefile,v 1.52 2007-07-18 18:49:23 haley Exp $
 #
 #	Makefile for libraster - libraries for dealing with
 #	a variety of raster image formats.
@@ -98,6 +98,10 @@ BINARY_DEFS =	-DBuildRasterBinary
 YUV_OBJS =	yuv.o
 YUV_SRCS =	yuv.c
 YUV_DEFS =	-DBuildRasterYUV
+#endif
+
+#if defined(Darwin) && defined(i386)
+EXTRA_CCOPTIONS = -D__UNIXOS2__
 #endif
 
 EXTRA_DEFINES =	$(HDF_DEFS) $(HPPCL_DEFS) $(NRIF_DEFS) $(SUN_DEFS) \

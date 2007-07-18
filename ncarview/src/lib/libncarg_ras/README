@@ -1,3 +1,9 @@
+For Intel mac, to get rid of wchar_t error message, you need
+-D__UNIXOS2__:
+
+gcc -D__UNIXOS2__ -ansi  -O  -I../../../.././include -I/usr/X11R6/include -I/sw/include   -DBuildRasterHDF -DDARWIN -DBuildRasterHPPCL -DBuildRasterNrif -DBuildRasterSun    -DBuildRasterXWD  -DBuildRasterAVS -DBuildRasterSGI              -DBuildRasterAbekas  -DBuildRasterBinary -DBuildRasterYUV               -DNGTMPDIR='"tmp"' -Di386 -DApple -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -DNeedFuncProto    -c -o xwd.o xwd.c
+
+
 Sun
 ---
 The 24-bit RGB RLE portion of the driver needs work.
