@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <ncarg/hlu/App.h>
@@ -6,6 +7,8 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include "wrapper.h"
+
+#define NINT(x) ( (ceil((x))-(x)) > ( (x)-floor((x)))) ? floor((x)) : ceil((x))
 
 NhlErrorTypes wmfndn(float, float, float, float, float *, float *);
 
@@ -1004,9 +1007,9 @@ NhlErrorTypes wmstnm_W( void )
   Gclip clip_ind_rect;
 
   int grlist,gkswid,i;
-  int *nwid,nid,ezf;
-  char *arg1;
-  float xt,yt;
+  int *nwid,nid,ezf,iang;
+  char *arg1,tang[3];
+  float xt,yt,xtt,ytt,fang;
 
 /*
  *  Definte a variable to store the HLU object identifier.
@@ -1020,7 +1023,6 @@ NhlErrorTypes wmstnm_W( void )
   string *symtyp;
   int ndims_symtyp, dsizes_symtyp[NCL_MAX_DIMENSIONS];
   
-
 /*
  * Retrieve parameters
  */
@@ -1101,6 +1103,17 @@ NhlErrorTypes wmstnm_W( void )
     for (i = 0; i < dsizes_x[0]; i++) {
       c_maptrn(x[i],y[i],&xt,&yt);
       if (xt != 1.e12) {
+        tang[0] = arg1[6];
+        tang[1] = arg1[7];
+        tang[2] = 0;
+        fang = 10.*0.0174532925199*atof(tang); 
+        c_maptrn(x[i]+0.1*cos(fang), 
+             y[i]+0.1/cos(0.0174532925199*x[i])*sin(fang), &xtt, &ytt);
+        fang = fmod(57.2957795130823*atan2(xtt-xt, ytt-yt)+360., 360.);
+        iang = (int) max(0,min(35,NINT(fang/10.)));
+        sprintf(tang,"%2d",iang);
+        arg1[6] = tang[0];
+        arg1[7] = tang[1];
         c_wmstnm(xt, yt, arg1);
       }
     }
