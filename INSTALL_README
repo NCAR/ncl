@@ -1,10 +1,10 @@
 
-How to download and build NCAR Graphics 4.4.0 from source code
+How to download and build NCAR Graphics 4.4.2 from source code
 ==============================================================
 
 The latest version of this document can be found at:
 
-    http://ngwwww.ucar.edu/ng/installsrc.html
+    http://wwww.ncarg.ucar.edu/ng/installsrc.html
 
 Table of Contents
 
@@ -60,18 +60,18 @@ Please note that accessing, downloading, and/or using NCAR Graphics
 implies acceptance of the GNU General Public License. To download the
 NCAR Graphics source code, follow the instructions at the URL:
 
-    http://ngwww.ucar.edu/ng/download.html
+    http://www.ncarg.ucar.edu/ng/download.html
 
 The NCAR Graphics source code that you download will be a single
-compressed tar file. Move the "ncarg-4.4.0.src.tar.gz" file to a
+compressed tar file. Move the "ncarg_src-4.4.2.tar.gz" file to a
 temporary directory where you have plenty of disk space (around 250
 megabytes to hold all of the source code, object files, binaries, and
 so on). Then, uncompress and un-tar the file as follows:
 
-    gunzip ncarg-4.4.0.src.tar.gz
-    tar -xvf ncarg-4.4.0.src.tar
+    gunzip ncarg_src-4.4.2.tar.gz
+    tar -xvf ncarg_src-4.4.2.tar
 
-The above steps will create a directory called "ncarg-4.4.0".  Set the
+The above steps will create a directory called "ncarg-4.4.2".  Set the
 environment variable NCARG to the name of this directory. For purposes
 of convenience, we use the notation $NCARG to mean the top level of
 the NCAR Graphics source tree.
@@ -79,7 +79,7 @@ the NCAR Graphics source tree.
 For example, if you untarred the files from the directory
 /usr/local/src, then you would do the following:
 
-    setenv NCARG /usr/local/src/ncarg-4.4.0
+    setenv NCARG /usr/local/src/ncarg-4.4.2
 
 ----------------------------------------------------------------------
 
@@ -100,10 +100,12 @@ Note that some of the NCAR Graphics source files include a few of the
 HDF include files, and they look for these include files in a
 subdirectory called "hdf". Make sure the HDF include files are indeed
 in a subdirectory called "hdf" before you build and install NCAR
-Graphics.  When you run the NCAR Graphics
-"Configure" script and it asks you to enter local include search
-paths, be sure to list the include file path name leading up to the
-"hdf" subdirectory.
+Graphics (by using the --includedir option when running configure
+to configure the HDF software installation).
+
+When you run the NCAR Graphics "Configure" script and it asks you to
+enter local include search paths, be sure to list the include file
+path name leading up to the "hdf" subdirectory.
 
 For example, if the HDF include files are in /usr/local/include/hdf,
 then enter "/usr/local/include" when Configure asks you to enter local
@@ -582,6 +584,9 @@ a few supplemental packages:
 
     This takes awhile, so grab some lunch or see a movie.
 
+    You can also try installing g95 or gfortran. We've had success
+    with the newest versions of these compilers.
+
  - X11 server
 
    An X11 server will enable you to display NCAR Graphics graphical
@@ -651,9 +656,9 @@ before you can start using NCAR Graphics:
 Here's an example (using csh) that assumes you installed everything to
 the parent directory /usr/local:
 
-    setenv &nbsp; NCARG_ROOT &nbsp; /usr/local
-    setenv &nbsp; PATH    &nbsp; $NCARG_ROOT/bin:$PATH
-    setenv &nbsp; MANPATH &nbsp; $NCARG_ROOT/man:$MANPATH
+    setenv NCARG_ROOT /usr/local
+    setenv PATH    $NCARG_ROOT/bin:$PATH
+    setenv MANPATH $NCARG_ROOT/man:$MANPATH
 
 ----------------------------------------------------------------------
 
@@ -689,7 +694,7 @@ If you are having trouble running the ctrans command on a Sun system,
 you may need to add /usr/openwin/lib to your LD_LIBRARY_PATH
 environment variable:
 
-    setenv &nbsp; LD_LIBRARY_PATH &nbsp; $LD_LIBRARY_PATH:/usr/openwin/lib
+    setenv LD_LIBRARY_PATH  $LD_LIBRARY_PATH:/usr/openwin/lib
 
 You can test the version number by typing:
 
