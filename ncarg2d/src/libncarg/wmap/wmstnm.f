@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.14 2007-07-05 22:47:54 fred Exp $
+C	$Id: wmstnm.f,v 1.15 2007-07-19 18:55:35 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -149,6 +149,15 @@ C
 C  Check error status.
 C
       IF (ICFELL('WMSTNM - Uncleared prior error',1) .NE. 0) RETURN
+C
+C  Color setting.
+C
+      CALL WMGETI('COL',ICOL)
+      ICOLOR = ICOL
+      CALL GQTXCI(IER,ITXCOL)
+      CALL GSTXCI(ICOL)
+      CALL PCGETI('CC',IPCOL)
+      CALL PCSETI('CC',ICOL)
 C
 C  Initialize and decode the data.
 C
@@ -1331,6 +1340,8 @@ C
 C  Restore original settings.
 C
       CALL GSELNT(NTRO)
+      CALL GSTXCI(ITXCOL)
+      CALL PCSETI('CC',IPCOL)
       CALL PCSETI('FN',IFOLD)
       CALL PCSETI('TE',ITEOLD)
 C
