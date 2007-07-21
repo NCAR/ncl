@@ -9,7 +9,8 @@ extern void NGCALLF(grid2triple,GRID2TRIPLE)(double*,double*,double*,int*,
 extern void NGCALLF(triple2grid,TRIPLE2GRID)(int*,double*,double*,double*,
                                              double*,int*,int*,double*,
                                              double*,double*,double*,
-                                             logical*,int*);
+                                             logical*,int*,int*,double*,
+                                             double*,double*,int*);
 
 extern void NGCALLF(triple2grid2d,TRIPLE2GRID2D)(double *,double *,double *,
                                                  int *,double *,double *,
@@ -204,9 +205,14 @@ NhlErrorTypes triple2grid_W( void )
   int ndims_grid, *dsizes_grid, size_grid, size_leftmost;
   NclBasicDataTypes type_grid;
 /*
+ * Work arrays
+ */
+  double *gbig, *gxbig, *gybig;
+/*
  * Various
  */
-  int i, npts, ngx, ngy, ngxy, ier, index_z, index_grid, ret;
+  int i, npts, ngx, ngy, ngx2, ngy2, ngxy2, ngxy;
+  int ier, index_z, index_grid, ret;
   logical strict = False;
   double domain = 0.;
 /*
@@ -304,9 +310,12 @@ NhlErrorTypes triple2grid_W( void )
     size_leftmost *= dsizes_z[i];
     dsizes_grid[i] = dsizes_z[i];
   }
-  ngx = dsizes_gridx[0];
-  ngy = dsizes_gridy[0];
-  ngxy = ngx * ngy;
+  ngx   = dsizes_gridx[0];
+  ngy   = dsizes_gridy[0];
+  ngx2  = ngx + 2;
+  ngy2  = ngy + 2;
+  ngxy  = ngx * ngy;
+  ngxy2 = ngx2 * ngy2;
   size_grid = size_leftmost * ngxy;
 
   dsizes_grid[ndims_grid-2] = ngy;
@@ -421,6 +430,16 @@ NhlErrorTypes triple2grid_W( void )
   }
 
 /*
+ * Allocate space for work arrays.
+ */
+  gxbig = (double *)calloc(ngx2,sizeof(double));
+  gybig = (double *)calloc(ngy2,sizeof(double));
+  gbig  = (double *)calloc(ngxy2,sizeof(double));
+  if(gxbig == NULL || gybig == NULL || gbig == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to create work arrays");
+    return(NhlFATAL);
+  }
+/*
  * Loop across the leftmost dimensions of z and call the 
  * Fortran subroutine.
  */
@@ -445,7 +464,8 @@ NhlErrorTypes triple2grid_W( void )
     NGCALLF(triple2grid,TRIPLE2GRID)(&npts,tmp_x,tmp_y,tmp_z,
                                      &missing_dz.doubleval,&ngx,&ngy,
                                      tmp_gridx,tmp_gridy,tmp_grid,&domain,
-                                     &strict,&ier);
+                                     &strict,&ngx2,&ngy2,gxbig,gybig,
+                                     gbig,&ier);
 /*
  * Coerce grid back to float if necessary.
  *
@@ -465,7 +485,9 @@ NhlErrorTypes triple2grid_W( void )
   if(type_gridx != NCL_double) NclFree(tmp_gridx);
   if(type_gridy != NCL_double) NclFree(tmp_gridy);
   if(type_grid  != NCL_double) NclFree(tmp_grid);
-
+  NclFree(gxbig);
+  NclFree(gybig);
+  NclFree(gbig);
 /*
  * Return with missing value set no matter what, b/c even though input
  * may not have missing values, the output grid is bound to not have all
@@ -480,6 +502,7 @@ NhlErrorTypes triple2grid_W( void )
   NclFree(dsizes_grid);
   return(ret);
 }
+
 
 NhlErrorTypes triple2grid2d_W( void )
 {

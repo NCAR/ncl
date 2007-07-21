@@ -1,19 +1,20 @@
 C NCLFORTSTART
       SUBROUTINE TRIPLE2GRID(KZ,XI,YI,ZI,ZMSG,MX,NY,GX,GY,GRID,DOMAIN,
-     +                       STRICT,IER)
+     +                       STRICT,MX2,NY2,GXBIG,GYBIG,GBIG,IER)
       IMPLICIT NONE
 
 c NCL:  grid = triple2grid(xi,yi,zi,gx,gy,option)
 
-      INTEGER MX,NY,KZ,IER
+      INTEGER MX,NY,KZ,MX2,NY2,IER
       DOUBLE PRECISION GRID(MX,NY),GX(MX),GY(NY),DOMAIN
       DOUBLE PRECISION XI(KZ),YI(KZ),ZI(KZ),ZMSG
+      DOUBLE PRECISION GXBIG(0:MX2-1),GYBIG(0:NY2-1)
+      DOUBLE PRECISION GBIG(0:MX2-1,0:NY2-1)
       LOGICAL STRICT
 C NCLEND
 
       INTEGER M,N,K,KOUT,KPTS
       DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ)
-      DOUBLE PRECISION GBIG(0:MX+1,0:NY+1),GXBIG(0:MX+1),GYBIG(0:NY+1)
       DOUBLE PRECISION DD,XX,YY,SLPY,SLPX
 cdbug real     t0, t1, t2, second
 cdbug logical  debug
@@ -67,7 +68,7 @@ c                           domain is arbitrary
           GXBIG(0) = GX(1) - DOMAIN* (GX(2)-GX(1))
           GXBIG(MX+1) = GX(MX) + DOMAIN* (GX(MX)-GX(MX-1))
 
-          CALL TRIP2GRD(KPTS,X,Y,Z,ZMSG,MX+2,NY+2,GXBIG,GYBIG,GBIG,
+          CALL TRIP2GRD(KPTS,X,Y,Z,ZMSG,MX2,NY2,GXBIG,GYBIG,GBIG,
      +                  STRICT,IER)
 
 c                           store interior of gbig in return array
