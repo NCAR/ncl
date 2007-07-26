@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.30 1997-08-14 16:29:54 dbrown Exp $
+ *      $Id: Error.c,v 1.31 2007-07-26 19:50:30 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -386,8 +386,10 @@ ErrorInitialize
 	int		nargs;	/* nargs	*/
 #endif
 {
+/***
 	extern int	sys_nerr;
 	extern char	*sys_errlist[];
+***/
 	NhlErrorClass	elc = (NhlErrorClass)lc;
 	NhlErrorLayer		enew = (NhlErrorLayer)new;
 	NhlClass		childclass;
@@ -607,7 +609,8 @@ ErrorInitialize
 
 	errorLayer = enew;
 
-	ret = NhlErrAddTable(0,sys_nerr,(Const char **)sys_errlist);
+/*	ret = NhlErrAddTable(0,sys_nerr,(Const char **)sys_errlist);*/
+	ret = NhlErrAddTable(0, errno, (Const char **) strerror(errno));
 	if (ret != NhlNOERROR){
 		NHLPERROR((ret,NhlEUNKNOWN,"Error loading System Error Table"));
 	}
