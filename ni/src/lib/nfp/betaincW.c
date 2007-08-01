@@ -11,10 +11,11 @@ NhlErrorTypes betainc_W( void )
  */
   void *x, *a, *b;
   double *tmp_x, *tmp_a, *tmp_b;
-  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
+  int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
   int ndims_b, dsizes_b[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_x, type_a, type_b;
+  NclScalar missing_x, missing_dx;
 /*
  * output variable 
  */
@@ -40,8 +41,8 @@ NhlErrorTypes betainc_W( void )
           3,
           &ndims_x,
           dsizes_x,
-          NULL,
-          NULL,
+          &missing_x,
+          &has_missing_x,
           &type_x,
           2);
 
@@ -83,6 +84,11 @@ NhlErrorTypes betainc_W( void )
       return(NhlFATAL);
     }
   }
+/*
+ * Coerce x's missing value to double, if any.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,NULL);
+
 /*
  * Calculate size of output value.
  */
@@ -177,7 +183,13 @@ NhlErrorTypes betainc_W( void )
       tmp_b = &((double*)b)[i];
     }
     if(type_x == NCL_double) tmp_alpha = &((double*)alpha)[i];
-    NGCALLF(betainc,BETAINC)(tmp_x,tmp_a,tmp_b,tmp_alpha);
+
+    if(contains_missing(tmp_x,1,has_missing_x,missing_dx.doubleval)) {
+      *tmp_alpha = missing_dx.doubleval;
+    }
+    else {
+      NGCALLF(betainc,BETAINC)(tmp_x,tmp_a,tmp_b,tmp_alpha);
+    }
     if(type_x != NCL_double) ((float*)alpha)[i] = (float)*tmp_alpha;
   }
 /*
@@ -191,9 +203,14 @@ NhlErrorTypes betainc_W( void )
   if(type_b != NCL_double) NclFree(tmp_b);
 
 /*
- * Return.
+ * Return. 
  */
-  ret = NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_x,0);
+  if(has_missing_x) {
+    ret = NclReturnValue(alpha,ndims_x,dsizes_x,&missing_x,type_x,0);
+  }
+  else {
+    ret = NclReturnValue(alpha,ndims_x,dsizes_x,NULL,type_x,0);
+  }
   return(ret);
 }
 
