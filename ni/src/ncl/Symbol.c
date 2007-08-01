@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.65 2007-07-13 17:12:28 dbrown Exp $
+ *      $Id: Symbol.c,v 1.66 2007-08-01 16:05:19 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -2935,6 +2935,8 @@ void
 				if((thevar->kind == NclStk_VAR)&&(thevar->u.data_var->obj.obj_type_mask & Ncl_FileVar)) {
 					theid = _NclVarValueRead(thevar->u.data_var,NULL,NULL);
 					thefile = (NclFile)_NclGetObj(*(int*)theid->multidval.val);
+					if (thefile == NULL)
+						return;
 					_NclDestroyObj((NclObj)thefile);
 				}
 			}
