@@ -6355,10 +6355,12 @@ void NclAddUserFuncs(void)
 /*
  * Register "write_matrix"
  *
- * There are three functions associated with write_matrix() -- see the
+ * There are five functions associated with write_matrix() -- see the
  * source file $NCARG_ROOT/ni/src/lib/nfp/writeMatrix.f
  *
  * Supported numeric data types:
+ *      byte data (type: NCL_byte)
+ *      short integer data (type: NCL_short)
  *      integer data (type: NCL_short, NCL_int, NCL_long)
  *      floating point data (type: NCL_float)
  *      double precision data (type: NCL_double)

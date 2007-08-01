@@ -12,11 +12,19 @@
  * a corresponding length argument passed to the FORTRAN function.  These
  * arguments follow the function's signature arguments (as type "int").
  *
- * There are three different functions, based on data type:
- *      NCL_int (short/int/long): FORTRAN type INTEGER -- writematrixi()
+ * There are five different functions, based on data type:
+ *      NCL_byte (byte): FORTRAN type INTEGER*1 -- writematrixb()
+ *      NCL_short (short): FORTRAN type INTEGER*2 -- writematrixs()
+ *      NCL_int (int/long): FORTRAN type INTEGER -- writematrixi()
  *      NCL_float (float): FORTRAN type REAL -- writematrixf()
  *      NCL_double (double): FORTRAN type DOUBLE PRECISION -- writematrixd()
  */
+
+extern void NGCALLF(writematrixb, WRITEMATRIXB)(char *, int *, int *, byte *, char *,
+                                        char *, int *, int *, int, int, int);
+
+extern void NGCALLF(writematrixs, WRITEMATRIXS)(char *, int *, int *, short *, char *,
+                                        char *, int *, int *, int, int, int);
 
 extern void NGCALLF(writematrixi, WRITEMATRIXI)(char *, int *, int *, int *, char *,
                                         char *, int *, int *, int, int, int);
@@ -181,8 +189,18 @@ NhlErrorTypes   write_matrix_W(void)
 
     /* call FORTRAN function */
     switch (data_type) {
+        case NCL_byte:
+            NGCALLF(writematrixb, WRITEMATRIXB)(filename, &dimsz[0], &dimsz[1], data,
+                    format, title, &tspace, &rownumbers, strlen(filename),
+                    strlen(format), strlen(title));
+            break;
+
         case NCL_short:
-            /* fall through */
+            NGCALLF(writematrixs, WRITEMATRIXS)(filename, &dimsz[0], &dimsz[1], data,
+                    format, title, &tspace, &rownumbers, strlen(filename),
+                    strlen(format), strlen(title));
+            break;
+
         case NCL_int:
             /* fall through */
         case NCL_long:
