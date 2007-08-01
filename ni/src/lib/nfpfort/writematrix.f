@@ -149,19 +149,19 @@ C NCLFORTSTART
 C NCL procedure: writematrixd(fname, x, fmtx, title, titsp, iopt)
 
       character*(*) title, fname, fmtx
+      character*2   titspc
       integer       ncol,nrow,iopt,titsp
       double precision       x(ncol,nrow)
 
 C NCLEND
       integer       nr, nc
       character*96  newfmt, titfmt
-      character*2   titspc
 
       if (titsp.gt.0) then
           write(titspc,"(i2)") titsp
           titfmt = "(" // titspc // "x, a)"
       else
-          titfmt = " "
+          titfmt = "(x, a)"
       end if
 
       if (fname.ne."*") then
