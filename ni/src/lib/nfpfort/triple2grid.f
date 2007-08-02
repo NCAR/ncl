@@ -1,29 +1,35 @@
 C NCLFORTSTART
-      SUBROUTINE TRIPLE2GRID(KZ,XI,YI,ZI,ZMSG,MX,NY,GX,GY,GRID,DOMAIN,
-     +                       STRICT,MX2,NY2,GXBIG,GYBIG,GBIG,IER)
+      SUBROUTINE TRIPLE2GRID1(KZ,XI,YI,ZI,ZMSG,MX,NY,GX,GY,GRID
+     +                       ,DOMAIN,LOOP,METHOD,DISTMX,IER)
       IMPLICIT NONE
 
 c NCL:  grid = triple2grid(xi,yi,zi,gx,gy,option)
 
-      INTEGER MX,NY,KZ,MX2,NY2,IER
-      DOUBLE PRECISION GRID(MX,NY),GX(MX),GY(NY),DOMAIN
+      INTEGER MX,NY,KZ,IER, LOOP,METHOD
+      DOUBLE PRECISION GRID(MX,NY),GX(MX),GY(NY),DISTMX,DOMAIN
       DOUBLE PRECISION XI(KZ),YI(KZ),ZI(KZ),ZMSG
-      DOUBLE PRECISION GXBIG(0:MX2-1),GYBIG(0:NY2-1)
-      DOUBLE PRECISION GBIG(0:MX2-1,0:NY2-1)
-      LOGICAL STRICT
 C NCLEND
 
-      INTEGER M,N,K,KOUT,KPTS
+      INTEGER M,N,K,KOUT,KPTS, MFLAG,NFLAG
       DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ)
-      DOUBLE PRECISION DD,XX,YY,SLPY,SLPX
-cdbug real     t0, t1, t2, second
-cdbug logical  debug
+      DOUBLE PRECISION GBIG(0:MX+1,0:NY+1),GXBIG(0:MX+1),GYBIG(0:NY+1)
+      DOUBLE PRECISION DD,XX,YY,SLPY,SLPX,DDEPS,DDCRIT
 
-      IER = 0
-cdbug debug = .false.
-cdbug t0    = second()
+c c c real     t0, t1, t2, second
+      logical  debug
+
+      IER   = 0
+      DDEPS = 1D-3
+      IF (DISTMX.LE.0.0D0) THEN
+          DDCRIT = 1D20
+      ELSE
+          DDCRIT = DISTMX
+      END IF
+          
+      debug = .false.
+c c c t0    = second()
 c                     strip out missing data (kpts)
-c                     count the number of pts outside the grid (kout)
+c                     count the number of pts outside the grid (KOUT)
       KPTS = 0
       KOUT = 0
       DO K = 1,KZ
@@ -37,9 +43,9 @@ c                     count the number of pts outside the grid (kout)
           END IF
       END DO
 
-cdbug if (debug) then
-cdbug     print *, "STRIP MSG: kout=",kout,":  telapse=", (second()-t0)
-cdbug end if
+c c c if (debug) then
+c c c     print *, "STRIP MSG: kout=",kout,":  telapse=", (second()-t0)
+c c c end if
 c                     return if no valid pts
       IF (KPTS.EQ.0) THEN
           DO N = 1,NY
@@ -50,58 +56,230 @@ c                     return if no valid pts
           RETURN
       END IF
 
-      IF (DOMAIN.LE.0.D0 .OR. KOUT.EQ.0) THEN
-          CALL TRIP2GRD(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID,STRICT,IER)
+c To facilitate faster subscripting, check to see if the grid is equally spaced
+c                    equally spaced in x ???
+      MFLAG = 1
+      DD    = ABS( GX(2)-GX(1) )
+      DO M=2,MX-1
+c c c    IF (DD.NE.(GX(M+1)-GX(M))) THEN
+         IF (DD.LT.(GX(M+1)-GX(M))-DDEPS   .OR.
+     +       DD.GT.(GX(M+1)-GX(M))+DDEPS ) THEN
+             MFLAG = 0
+             GO TO 10 
+         END IF
+      END DO
+
+c                    equally spaced in y ???
+   10 NFLAG = 1
+      DD    = ABS( GY(2)-GY(1) )
+      DO N=2,NY-1
+c c c    IF (DD.NE.(GY(N+1)-GY(N))) THEN
+         IF (DD.LT.(GY(N+1)-GY(N))-DDEPS   .OR.
+     +       DD.GT.(GY(N+1)-GY(N))+DDEPS ) THEN
+             NFLAG = 0
+             GO TO 20 
+         END IF
+      END DO
+   20 CONTINUE
+          
+c                     default: LOOP=0   [NCL: option=False]
+      IF (KOUT.EQ.0) THEN
+          IF (LOOP.EQ.0) THEN
+              CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID
+     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+          ELSE
+              CALL TRIP2GRD3(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID
+     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+          END IF
       ELSE
-c                          create an oversized (big) grid
-c                          allows outliers to influence grid
+c          create an oversized (big) grid
+c          allows outliers to influence grid
           DO N = 1,NY
-              GYBIG(N) = GY(N)
+             GYBIG(N) = GY(N)
           END DO
 
           DO M = 1,MX
-              GXBIG(M) = GX(M)
+             GXBIG(M) = GX(M)
           END DO
-c                           domain is arbitrary
-          GYBIG(0) = GY(1) - DOMAIN* (GY(2)-GY(1))
-          GYBIG(NY+1) = GY(NY) + DOMAIN* (GY(NY)-GY(NY-1))
-          GXBIG(0) = GX(1) - DOMAIN* (GX(2)-GX(1))
-          GXBIG(MX+1) = GX(MX) + DOMAIN* (GX(MX)-GX(MX-1))
+c          domain is arbitrary
+          GYBIG(0)    = GY(1)  - DOMAIN*(GY(2)-GY(1))
+          GYBIG(NY+1) = GY(NY) + DOMAIN*(GY(NY)-GY(NY-1))
+          GXBIG(0)    = GX(1)  - DOMAIN*(GX(2)-GX(1))
+          GXBIG(MX+1) = GX(MX) + DOMAIN*(GX(MX)-GX(MX-1))
 
-          CALL TRIP2GRD(KPTS,X,Y,Z,ZMSG,MX2,NY2,GXBIG,GYBIG,GBIG,
-     +                  STRICT,IER)
-
-c                           store interior of gbig in return array
+          IF (LOOP.EQ.0) THEN
+              CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX+2,NY+2,GXBIG,GYBIG,GBIG
+     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+          ELSE
+              CALL TRIP2GRD3(KPTS,X,Y,Z,ZMSG,MX+2,NY+2,GXBIG,GYBIG,GBIG
+     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+          END IF
+c           store interior of gbig in return array
           DO N = 1,NY
-              DO M = 1,MX
-                  GRID(M,N) = GBIG(M,N)
-              END DO
+            DO M = 1,MX
+               GRID(M,N) = GBIG(M,N)
+            END DO
           END DO
-
       END IF
-cdbug if (debug) then
-cdbug     print *, "TOTAL TIME    :  telapse=", (second()-t0)
-cdbug end if
+
+c c c if (debug) then
+c c c     print *, "TOTAL TIME    :  telapse=", (second()-t0)
+c c c end if
 
       RETURN
       END
 C ------------
-      SUBROUTINE TRIP2GRD(KZ,X,Y,Z,ZMSG,MX,NY,GXOUT,GYOUT,GOUT,STRICT,
-     +                    IER)
+      SUBROUTINE TRIP2GRD2(KZ,X,Y,Z,ZMSG,MX,NY,GXOUT,GYOUT,GOUT
+     +                    ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+
+c This sub assigns each "Z" to a grid point.
+c It is possible that the number of grid points having values assigned
+c .   will be less than the number KZ due to over writing the same grid pt.
 
       IMPLICIT NONE
-      INTEGER MX,NY,KZ,IER
+      INTEGER MX,NY,KZ,IER, MFLAG,NFLAG,METHOD
       DOUBLE PRECISION GXOUT(MX),GYOUT(NY),GOUT(MX,NY)
-      DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG
-      LOGICAL STRICT
+      DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG,DISTMX
 c                          local
       INTEGER M,N,K,MM,NN,KSUM,KPTS
-      DOUBLE PRECISION DOUT(MX,NY),DD,XX,YY,SLPY,SLPX
-cdbug real     t0, t1, t2, second
-cdbug logical  debug
+      DOUBLE PRECISION DOUT(MX,NY)
+      DOUBLE PRECISION DD,XX,YY,SLPY,SLPX,DX,DY,ATMP,YLAT,RE,RAD,DDCRIT 
 
-cdbug debug = .false.
-cdbug t0    = second()
+c c c real     t0, t1, t2, second
+      logical  debug
+
+      IER   = 0
+      debug = .true.
+c c c t0    = second()
+
+      IF (DISTMX.LE.0.0D0) THEN
+          DDCRIT = 1D20
+      ELSE
+          DDCRIT = DISTMX
+      END IF
+c                     strip out missing data (kpts)
+c                     count the number of pts outside the grid (kout)
+      IER = 0
+      KPTS = KZ
+      DX   = ABS( GXOUT(3)-GXOUT(2) )
+      DY   = ABS( GYOUT(3)-GYOUT(2) )
+c                          initialize
+      DO N = 1,NY
+        DO M = 1,MX
+           DOUT(M,N) = 1.D20
+           GOUT(M,N) = ZMSG
+        END DO
+      END DO
+c                     EXACT MATCHES ONLY 
+c c c t1  = second()
+      KSUM = 0
+      DO K = 1,KPTS
+        DO N=1,NY
+           IF (Y(K).EQ.GYOUT(N)) THEN
+               DO M=1,MX
+                  IF (X(K).EQ.GXOUT(M)) THEN
+                      GOUT(M,N) = Z(K)
+                      DOUT(M,N) = 0.0D0
+                      KSUM = KSUM + 1
+                      GO TO 10
+                   END IF
+                END DO
+            END IF
+        END DO
+   10   CONTINUE
+      END DO
+
+
+c  Did all kpts input get assigned to the gout?
+c  ier = -1 is not really an error; it is just informational
+c           meaning that no 'nearest neighbor' stuff was used.
+
+      IF (KSUM.EQ.KPTS) THEN
+          IER = -1
+          RETURN
+      END IF
+c                     LOOP OVER THE X/Y/Z POINTS
+c                     ASSIGN TO NEARBY GRID POINT
+      KSUM = 0
+      DO K = 1,KPTS
+c                     determine subscripts to nearest grid pt
+         NN = -1
+         IF (NFLAG.EQ.1) THEN
+             NN = ((Y(K)-GYOUT(1))/DY) + 1 
+         ELSE
+             DO N=1,NY-1
+                IF (Y(K).GE.GYOUT(N) .AND. Y(K).LT.GYOUT(N+1) ) THEN   
+                    DY   = Y(K)-GYOUT(N)
+                    SLPY = DY/(GYOUT(N+1)-GYOUT(N))
+                    YY   = N + SLPY
+                    NN   = NINT(YY)
+                    GO TO 20
+                END IF
+             END DO
+         END IF
+
+   20    MM = -1
+         IF (MFLAG.EQ.1) THEN
+             MM = ((X(K)-GXOUT(1))/DX) + 1 
+         ELSE
+             DO M=1,MX-1
+                IF (X(K).GE.GXOUT(M) .AND. X(K).LT.GXOUT(M+1) ) THEN   
+                    DX   = X(K)-GXOUT(M)
+                    SLPX = DX/(GXOUT(M+1)-GXOUT(M))
+                    XX   = M + SLPX
+                    MM   = NINT(XX)
+                    GO TO 30
+                END IF
+             END DO
+         END IF
+        
+  30     IF (MM.GE.1 .AND. NN.GE.1) THEN
+c                                     mm,nn =>  nearest grid pt
+             IF (METHOD.EQ.0) THEN
+                 DD = SQRT( SLPX**2 + SLPY**2 )
+             ELSE
+                 YLAT = Y(K)*RAD
+                 ATMP = SIN(YLAT)*SIN(GXOUT(MM)*RAD)
+     +                       + COS(YLAT)*COS(GYOUT(NN)*RAD)*
+     +                         COS((X(K)-GXOUT(MM))*RAD)
+                 ATMP  = MIN(1.D0,MAX(-1.D0,ATMP))
+                 DD    = ACOS(ATMP)*RE
+             END IF
+
+             IF (DD.LT.DOUT(MM,NN) .AND. DD.LT.DDCRIT) THEN
+                 KSUM = KSUM + 1
+                 GOUT(MM,NN) = Z(K)
+                 DOUT(MM,NN) = DD
+             END IF
+         END IF
+   
+      END DO
+
+c     if (debug) then
+c c c     print *, "gout interior :  kpts=",kpts,":  ksum=",ksum
+c c c+                                 ,": telapse=", (second()-t1)
+c     end if
+
+      RETURN
+      END
+C ------------
+      SUBROUTINE TRIP2GRD3(KZ,X,Y,Z,ZMSG,MX,NY,GXOUT,GYOUT,GOUT
+     +                    ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+
+      IMPLICIT NONE
+      INTEGER MX,NY,KZ,IER, MFLAG,NFLAG,METHOD
+      DOUBLE PRECISION GXOUT(MX),GYOUT(NY),GOUT(MX,NY)
+      DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG, DISTMX
+c                          local
+      INTEGER M,N,K,MM,NN,KSUM,KPTS
+      DOUBLE PRECISION DOUT(MX,NY), DIST(KZ)
+     +                ,RE,RAD,DMIN,RLAT,RLON,ATMP 
+
+c c c real     t0, t1, t2, second
+      logical  debug
+
+      debug = .true.
+c c c t0    = second()
 
       IER = 0
       KPTS = KZ
@@ -112,89 +290,199 @@ c                          initialize
               GOUT(M,N) = ZMSG
           END DO
       END DO
-c                     exact matches
-cdbug t1  = second()
-
+c                     EXACT MATCHES ONLY 
+c c c t1  = second()
       KSUM = 0
-      DO N = 1,NY
-          DO M = 1,MX
-
-              DO K = 1,KPTS
-                  IF (X(K).EQ.GXOUT(M) .AND. Y(K).EQ.GYOUT(N)) THEN
+      DO K = 1,KPTS
+         DO N=1,NY
+            IF (Y(K).EQ.GYOUT(N)) THEN
+                DO M=1,MX
+                   IF (X(K).EQ.GXOUT(M)) THEN
                       GOUT(M,N) = Z(K)
                       DOUT(M,N) = 0.0D0
                       KSUM = KSUM + 1
                       GO TO 10
-                  END IF
-              END DO
-   10         CONTINUE
-
-          END DO
+                   END IF
+                END DO
+            END IF
+         END DO
+   10    CONTINUE
       END DO
 
-cdbug if (debug) then
-cdbug     print *, "EXACT MATCH: ksum=",ksum,":  telapse=",(second()-t1)
-cdbug end if
+c c c if (debug) then
+c c c     print *, "EXACT MATCH: ksum=",ksum,":  telapse=",(second()-t1)
+c c c end if
 
 c  Did all kpts input get assigned to the gout?
 c  ier = -1 is not really an error; it is just informational
 c           meaning that no 'nearest neighbor' stuuf was used.
 
       IF (KSUM.EQ.KPTS) THEN
-          IER = -1
+          IER = -11
           RETURN
       END IF
 
-cdbug t1  = second()
-c                     gout interior:crude and lewd
-      KSUM = 0
+c c c t1  = second()
+
+      RE   = 6371.2200D0 
+      RAD  = 4.D0*ATAN(1.0D0)/180.D0
+C                                        LOOP OVER EACH GRID POINT
       DO N = 1,NY
-          DO M = 1,MX
-c c c     if (dout(m,n).ne.0.0) then
+         DO M = 1,MX
+            IF (DOUT(M,N).NE.0.D0) then
+C                                        LOOP OVER EACH OBSERVATION
+C                                        DISTANCE TO CURRENT GRID PT
+                IF (METHOD.EQ.0) THEN
+                    DO K = 1,KPTS
+                       DIST(K) = SQRT( (X(K)-GXOUT(M))**2 
+     +                               + (Y(K)-GYOUT(N))**2)
+                    END DO
+                ELSE
+                    RLAT = GYOUT(N)*RAD
+                    DO K = 1,KPTS
+C
+C The ATMP variable is necessary to make sure the
+C value passed to ACOS is between -1 and 1.
+C (Otherwise, you might get "NaN".)
+C
+                        ATMP = SIN(RLAT)*SIN(Y(K)*RAD)
+     +                       + COS(RLAT)*COS(Y(K)*RAD)*
+     +                         COS((X(K)-GXOUT(M))*RAD)
+                        ATMP  = MIN(1.D0,MAX(-1.D0,ATMP))
+                        DIST(K) = ACOS(ATMP)*RE
+                    END DO
+                END IF
+c                              assign z(k) to nearest grid point
+                DO K = 1,KPTS
+                   IF (Z(K).NE.ZMSG) THEN
+                       IF (DIST(K).LT.DOUT(M,N) .AND. 
+     +                    DIST(K) .LT.DISTMX)   THEN
+                          DOUT(M,N)      = DIST(K)
+                          GOUT(M,N) = Z(K)
+                       END IF
+                   END IF
+                END DO
 
-              DO K = 1,KPTS
-                  IF ((X(K).GE.GXOUT(M).AND.X(K).LT.GXOUT(M+1)) .AND.
-     +                (Y(K).GE.GYOUT(N).AND.Y(K).LT.GYOUT(N+1))) THEN
+            END IF
 
-                      SLPX = (X(K)-GXOUT(M))/ (GXOUT(M+1)-GXOUT(M))
-                      SLPY = (Y(K)-GYOUT(N))/ (GYOUT(N+1)-GYOUT(N))
-                      XX = M + SLPX
-                      YY = N + SLPY
-                      IF (STRICT) THEN
-c                                     mm,nn =>  nearest grid pt
-                          MM = M + NINT(XX)
-                          NN = N + NINT(YY)
-                          DD = (XX-MM)**2 + (YY-NN)**2
-                          IF (DD.LT.DOUT(MM,NN)) THEN
-                              KSUM = KSUM + 1
-                              GOUT(MM,NN) = Z(K)
-                              DOUT(MM,NN) = DD
-                          END IF
-                      ELSE
-c                                    allow value to influence nearby pts
-                          DO NN = N,N + 1
-                              DO MM = M,M + 1
-                                  DD = (XX-MM)**2 + (YY-NN)**2
-                                  IF (DD.LT.DOUT(MM,NN)) THEN
-                                      KSUM = KSUM + 1
-                                      GOUT(MM,NN) = Z(K)
-                                      DOUT(MM,NN) = DD
-                                  END IF
-                              END DO
-                          END DO
-                      END IF
-
-                  END IF
-              END DO
-
-c c c     end if
-          END DO
+         END DO
       END DO
-
-cdbug if (debug) then
-cdbug     print *, "gout interior :  kpts=",kpts,":  ksum=",ksum
-cdbug+                                 ,": telapse=", (second()-t1)
-cdbug end if
 
       RETURN
       END
+
+c ------------------
+C TRIP2GRID4 ... not used ....keep for historical reasons
+c ------------------
+cc    SUBROUTINE TRIP2GRD4(KZ,X,Y,Z,ZMSG,MX,NY,GXOUT,GYOUT,GOUT,STRICT,
+cc   +                    ,METHOD,IER)
+
+cc    IMPLICIT NONE
+cc    INTEGER MX,NY,KZ,IER, METHOD
+cc    DOUBLE PRECISION GXOUT(MX),GYOUT(NY),GOUT(MX,NY)
+cc    DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG
+cc    LOGICAL STRICT
+c                          local
+cc    INTEGER M,N,K,MM,NN,KSUM,KPTS
+cc    DOUBLE PRECISION DOUT(MX,NY),DD,XX,YY,SLPY,SLPX
+
+cc    real     t0, t1, t2, second
+cc    logical  debug
+
+cc    debug = .true.
+cc    t0    = second()
+
+cc    IER = 0
+cc    KPTS = KZ
+c                          initialize
+cc    DO N = 1,NY
+cc        DO M = 1,MX
+cc            DOUT(M,N) = 1.D20
+cc            GOUT(M,N) = ZMSG
+cc        END DO
+cc    END DO
+c                     EXACT MATCHES ONLY 
+cc    t1  = second()
+cc    KSUM = 0
+cc    DO K = 1,KPTS
+cc       DO N=1,NY
+cc          IF (Y(K).EQ.GYOUT(N)) THEN
+cc              DO M=1,MX
+cc                 IF (X(K).EQ.GXOUT(M)) THEN
+cc                    GOUT(M,N) = Z(K)
+cc                    DOUT(M,N) = 0.0D0
+cc                    KSUM = KSUM + 1
+cc                    GO TO 10
+cc                 END IF
+cc              END DO
+cc          END IF
+cc       END DO
+cc 10    CONTINUE
+cc    END DO
+
+cc    if (debug) then
+cc        print *, "EXACT MATCH: ksum=",ksum,":  telapse=",(second()-t1)
+cc    end if
+
+c  Did all kpts input get assigned to the gout?
+c  ier = -1 is not really an error; it is just informational
+c           meaning that no 'nearest neighbor' stuuf was used.
+
+cc    IF (KSUM.EQ.KPTS) THEN
+cc        IER = -1
+cc        RETURN
+cc    END IF
+
+cc    t1  = second()
+c                     LOOP OVER POINTS
+cc    KSUM = 0
+cc    DO N = 1,NY
+cc        DO M = 1,MX
+cc        IF (DOUT(M,N).NE.0.0) THEN
+
+cc            DO K = 1,KPTS
+cc                IF ((X(K).GE.GXOUT(M).AND.X(K).LT.GXOUT(M+1)) .AND.
+cc   +                (Y(K).GE.GYOUT(N).AND.Y(K).LT.GYOUT(N+1))) THEN
+
+cc                    SLPX = (X(K)-GXOUT(M))/ (GXOUT(M+1)-GXOUT(M))
+cc                    SLPY = (Y(K)-GYOUT(N))/ (GYOUT(N+1)-GYOUT(N))
+cc                    XX = M + SLPX
+cc                    YY = N + SLPY
+cc                    IF (STRICT) THEN
+c                                     mm,nn =>  nearest grid pt
+cc                        MM = NINT(XX)
+cc                        NN = NINT(YY)
+cc                        DD = SQRT(X-MM)**2 + (YY-NN)**2)
+cc                        IF (DD.LT.DOUT(MM,NN)) THEN
+cc                            KSUM = KSUM + 1
+cc                            GOUT(MM,NN) = Z(K)
+cc                            DOUT(MM,NN) = DD
+cc                        END IF
+cc                    ELSE
+c                                    allow value to influence nearby pts
+cc                        DO NN = N,N + 1
+cc                            DO MM = M,M + 1
+cc                                DD = (XX-MM)**2 + (YY-NN)**2
+cc                                IF (DD.LT.DOUT(MM,NN)) THEN
+cc                                    KSUM = KSUM + 1
+cc                                    GOUT(MM,NN) = Z(K)
+cc                                    DOUT(MM,NN) = DD
+cc                                END IF
+cc                            END DO
+cc                        END DO
+cc                    END IF
+
+cc                END IF
+cc            END DO
+
+c c c     end if
+cc        END DO
+cc    END DO
+
+cc    if (debug) then
+cc        print *, "gout interior :  kpts=",kpts,":  ksum=",ksum
+cc   +                                 ,": telapse=", (second()-t1)
+cc    end if
+
+cc    RETURN
+cc    END
