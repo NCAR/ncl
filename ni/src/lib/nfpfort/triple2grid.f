@@ -64,7 +64,6 @@ c                    equally spaced in x ???
       MFLAG = 1
       DD    = ABS( GX(2)-GX(1) )
       DO M=2,MX-1
-c c c    IF (DD.NE.(GX(M+1)-GX(M))) THEN
          IF (DD.LT.(GX(M+1)-GX(M))-DDEPS   .OR.
      +       DD.GT.(GX(M+1)-GX(M))+DDEPS ) THEN
              MFLAG = 0
@@ -76,7 +75,6 @@ c                    equally spaced in y ???
    10 NFLAG = 1
       DD    = ABS( GY(2)-GY(1) )
       DO N=2,NY-1
-c c c    IF (DD.NE.(GY(N+1)-GY(N))) THEN
          IF (DD.LT.(GY(N+1)-GY(N))-DDEPS   .OR.
      +       DD.GT.(GY(N+1)-GY(N))+DDEPS ) THEN
              NFLAG = 0
@@ -89,10 +87,10 @@ c                     default: LOOP=0   [NCL: option=False]
       IF (KOUT.EQ.0) THEN
           IF (LOOP.EQ.0) THEN
               CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID
-     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+     +                      ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
           ELSE
               CALL TRIP2GRD3(KPTS,X,Y,Z,ZMSG,MX,NY,GX,GY,GRID
-     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+     +                      ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
           END IF
       ELSE
 c          create an oversized (big) grid
@@ -112,10 +110,10 @@ c          domain is arbitrary
 
           IF (LOOP.EQ.0) THEN
               CALL TRIP2GRD2(KPTS,X,Y,Z,ZMSG,MX+2,NY+2,GXBIG,GYBIG,GBIG
-     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+     +                      ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
           ELSE
               CALL TRIP2GRD3(KPTS,X,Y,Z,ZMSG,MX+2,NY+2,GXBIG,GYBIG,GBIG
-     +                      ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+     +                      ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
           END IF
 c           store interior of gbig in return array
           DO N = 1,NY
@@ -133,7 +131,7 @@ c c c end if
       END
 C ------------
       SUBROUTINE TRIP2GRD2(KZ,X,Y,Z,ZMSG,MX,NY,GXOUT,GYOUT,GOUT
-     +                    ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+     +                    ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
 
 c This sub assigns each "Z" to a grid point.
 c It is possible that the number of grid points having values assigned
@@ -142,11 +140,11 @@ c .   will be less than the number KZ due to over writing the same grid pt.
       IMPLICIT NONE
       INTEGER MX,NY,KZ,IER, MFLAG,NFLAG,METHOD
       DOUBLE PRECISION GXOUT(MX),GYOUT(NY),GOUT(MX,NY)
-      DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG,DISTMX
+      DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG,DDCRIT
 c                          local
       INTEGER M,N,K,MM,NN,KSUM,KPTS
       DOUBLE PRECISION DOUT(MX,NY)
-      DOUBLE PRECISION DD,XX,YY,SLPY,SLPX,DX,DY,ATMP,YLAT,RE,RAD,DDCRIT 
+      DOUBLE PRECISION DD,XX,YY,SLPY,SLPX,DX,DY,ATMP,YLAT,RE,RAD 
 
 c c c real     t0, t1, t2, second
       logical  debug
@@ -155,11 +153,6 @@ c c c real     t0, t1, t2, second
       debug = .true.
 c c c t0    = second()
 
-      IF (DISTMX.LE.0.0D0) THEN
-          DDCRIT = 1D20
-      ELSE
-          DDCRIT = DISTMX
-      END IF
 c                     strip out missing data (kpts)
 c                     count the number of pts outside the grid (kout)
       IER = 0
@@ -267,12 +260,12 @@ c     end if
       END
 C ------------
       SUBROUTINE TRIP2GRD3(KZ,X,Y,Z,ZMSG,MX,NY,GXOUT,GYOUT,GOUT
-     +                    ,MFLAG,NFLAG,METHOD,DISTMX,IER)
+     +                    ,MFLAG,NFLAG,METHOD,DDCRIT,IER)
 
       IMPLICIT NONE
       INTEGER MX,NY,KZ,IER, MFLAG,NFLAG,METHOD
       DOUBLE PRECISION GXOUT(MX),GYOUT(NY),GOUT(MX,NY)
-      DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG, DISTMX
+      DOUBLE PRECISION X(KZ),Y(KZ),Z(KZ),ZMSG, DDCRIT
 c                          local
       INTEGER M,N,K,MM,NN,KSUM,KPTS
       DOUBLE PRECISION DOUT(MX,NY), DIST(KZ)
@@ -359,9 +352,9 @@ c                              assign z(k) to nearest grid point
                 DO K = 1,KPTS
                    IF (Z(K).NE.ZMSG) THEN
                        IF (DIST(K).LT.DOUT(M,N) .AND. 
-     +                    DIST(K) .LT.DISTMX)   THEN
-                          DOUT(M,N)      = DIST(K)
-                          GOUT(M,N) = Z(K)
+     +                     DIST(K) .LT.DDCRIT)   THEN
+                           DOUT(M,N) = DIST(K)
+                           GOUT(M,N) = Z(K)
                        END IF
                    END IF
                 END DO
