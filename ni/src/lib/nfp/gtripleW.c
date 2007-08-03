@@ -6,7 +6,7 @@ extern void NGCALLF(grid2triple,GRID2TRIPLE)(double*,double*,double*,int*,
                                              int*,double*,int*,int*,double*,
                                              int*);
 
-extern void NGCALLF(triple2grid,1TRIPLE2GRID1)(int*,double*,double*,double*,
+extern void NGCALLF(triple2grid1,TRIPLE2GRID1)(int*,double*,double*,double*,
                                                double*,int*,int*,double*,
                                                double*,double*,double*,
                                                int*,int*,double*,int*,int*,
