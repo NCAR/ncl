@@ -207,6 +207,7 @@ C
 C  Finds the area of a convex quadrilateral patch on a sphere whose 
 C  vertices are given in degrees as lat/lon pairs.
 C
+      DOUBLE PRECISION GCTAREA
       DOUBLE PRECISION LAT1, LON1, LAT2, LON2, LAT3, LON3, LAT4, LON4
 C
       GCQAREA = ABS(GCTAREA(LAT1, LON1, LAT2, LON2, LAT3, LON3))  +
