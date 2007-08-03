@@ -6,11 +6,11 @@ extern void NGCALLF(grid2triple,GRID2TRIPLE)(double*,double*,double*,int*,
                                              int*,double*,int*,int*,double*,
                                              int*);
 
-extern void NGCALLF(triple2grid,TRIPLE2GRID)(int*,double*,double*,double*,
-                                             double*,int*,int*,double*,
-                                             double*,double*,double*,
-                                             logical*,int*,int*,double*,
-                                             double*,double*,int*);
+extern void NGCALLF(triple2grid,1TRIPLE2GRID1)(int*,double*,double*,double*,
+                                               double*,int*,int*,double*,
+                                               double*,double*,double*,
+                                               int*,int*,double*,int*,int*,
+                                               double*,double*,double*,int*);
 
 extern void NGCALLF(triple2grid2d,TRIPLE2GRID2D)(double *,double *,double *,
                                                  int *,double *,double *,
@@ -211,10 +211,10 @@ NhlErrorTypes triple2grid_W( void )
 /*
  * Various
  */
+  int method = 0, loop = 0;
   int i, npts, ngx, ngy, ngx2, ngy2, ngxy2, ngxy;
   int ier, index_z, index_grid, ret;
-  logical strict = False;
-  double domain = 0.;
+  double distmx = 0., domain = 0.;
 /*
  * Variables for retrieving attributes from "options".
  */
@@ -381,6 +381,7 @@ NhlErrorTypes triple2grid_W( void )
  * need to retrieve.
  */
   if(*option) {
+    loop = 1;
 /*
  * Retrieve  "option" again, this time getting all the stuff that
  * might be attached to it (attributes).
@@ -413,11 +414,15 @@ NhlErrorTypes triple2grid_W( void )
         attr_list = attr_obj->att.att_list;
         while (attr_list != NULL) {
           if ((strcmp(attr_list->attname, "domain")) == 0) {
-            domain = (double)(*(float *) attr_list->attvalue->multidval.val);
+            domain = *(double *) attr_list->attvalue->multidval.val;
           }
 
-          if ((strcmp(attr_list->attname, "strict")) == 0) {
-            strict = *(logical *) attr_list->attvalue->multidval.val;
+          if ((strcmp(attr_list->attname, "distmx")) == 0) {
+            distmx = *(double *) attr_list->attvalue->multidval.val;
+          }
+
+          if ((strcmp(attr_list->attname, "method")) == 0) {
+            method = *(int *) attr_list->attvalue->multidval.val;
           }
           
           attr_list = attr_list->next;
@@ -461,11 +466,11 @@ NhlErrorTypes triple2grid_W( void )
 
     if(type_grid == NCL_double) tmp_grid = &((double*)grid)[index_grid];
 
-    NGCALLF(triple2grid,TRIPLE2GRID)(&npts,tmp_x,tmp_y,tmp_z,
-                                     &missing_dz.doubleval,&ngx,&ngy,
-                                     tmp_gridx,tmp_gridy,tmp_grid,&domain,
-                                     &strict,&ngx2,&ngy2,gxbig,gybig,
-                                     gbig,&ier);
+    NGCALLF(triple2grid1,TRIPLE2GRID1)(&npts,tmp_x,tmp_y,tmp_z,
+                                       &missing_dz.doubleval,&ngx,&ngy,
+                                       tmp_gridx,tmp_gridy,tmp_grid,&domain,
+                                       &loop,&method,&distmx,&ngx2,&ngy2,
+                                       gxbig,gybig,gbig,&ier);
 /*
  * Coerce grid back to float if necessary.
  *
