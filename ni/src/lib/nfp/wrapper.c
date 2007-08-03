@@ -79,6 +79,15 @@ extern NhlErrorTypes linrood_latwgt_W(void);
 extern NhlErrorTypes linrood_wgt_W(void);
 extern NhlErrorTypes wgt_vert_avg_beta_W(void);
 
+extern NhlErrorTypes gc_tarea_W(void);
+extern NhlErrorTypes gc_qarea_W(void);
+extern NhlErrorTypes gc_pnt2gc_W(void);
+extern NhlErrorTypes gc_dangle_W(void);
+extern NhlErrorTypes gc_aangle_W(void);
+extern NhlErrorTypes gc_clkwise_W(void);
+extern NhlErrorTypes gc_inout_W(void);
+extern NhlErrorTypes gc_onarc_W(void);
+
 extern NhlErrorTypes dv2uvf_W(void);
 extern NhlErrorTypes dv2uvg_W(void);
 extern NhlErrorTypes dv2uvF_W(void);
@@ -1422,6 +1431,100 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(wgt_vert_avg_beta_W,args,"wgt_vert_avg_beta",nargs);
+
+/*
+ * Register "gc_onarc".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_onarc_W,args,"gc_onarc",nargs);
+
+/*
+ * Register "gc_pnt2gc".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_pnt2gc_W,args,"gc_pnt2gc",nargs);
+
+/*
+ * Register "gc_aangle".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_aangle_W,args,"gc_aangle",nargs);
+
+/*
+ * Register "gc_clkwise".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_clkwise_W,args,"gc_clkwise",nargs);
+
+/*
+ * Register "gc_inout".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_inout_W,args,"gc_inout",nargs);
+
+/*
+ * Register "gc_qarea".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_qarea_W,args,"gc_qarea",nargs);
+
+/*
+ * Register "gc_tarea".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_tarea_W,args,"gc_tarea",nargs);
+
+/*
+ * Register "gc_dangle".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(gc_dangle_W,args,"gc_dangle",nargs);
 
 /*
  * Register "dv2uvf".
