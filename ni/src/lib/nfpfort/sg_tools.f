@@ -249,7 +249,7 @@ C  Distance from a point (LAT3,LON3) to a great circle defined by the
 C  arc from (LAT1,LON1) to (LAT2,LON2).
 C
       DOUBLE PRECISION LAT1, LON1, LAT2, LON2, LAT3, LON3
-      DOUBLE PRECISION AT(4), BT(4), CT(4), D2R
+      DOUBLE PRECISION AT(4), BT(4), CT(4), D2R, DPGCDP
       DATA D2R/0.017453292519943D0/
 C
       AT(1) = COS(D2R*LAT1)
