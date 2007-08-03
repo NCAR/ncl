@@ -9,10 +9,10 @@ C
 C
 C  Find the initial direction.
 C
-      IDIR = SIGN(1,GCDANGLE(QLAT(1),QLON(1),QLAT(2),QLON(2),
+      IDIR = SIGN(1.D0,GCDANGLE(QLAT(1),QLON(1),QLAT(2),QLON(2),
      +            QLAT(3),QLON(3)))
       DO 10 I=2,NPTS
-        ISGN = SIGN(1,GCDANGLE(QLAT(I),QLON(I),
+        ISGN = SIGN(1.D0,GCDANGLE(QLAT(I),QLON(I),
      +                       QLAT(MOD(I+1,NPTS)),QLON(MOD(I+1,NPTS)),
      +                       QLAT(MOD(I+2,NPTS)),QLON(MOD(I+2,NPTS))))
         IF (ISGN .NE. IDIR) THEN
