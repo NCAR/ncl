@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.144 2007-07-16 22:23:28 shea Exp $
+;      $Id: contributed.ncl,v 1.145 2007-08-05 02:05:04 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1226,10 +1226,10 @@ function flt2dble (xF:float)
 local xD
 begin
  xD = new (dimsizes(xF), double, getFillValue(xF))
- if (.not.isatt(xF,"_FillValue")     .and. \
-     .not.isatt(xF,"missing_value")) then
-     delete(xD@_FillValue)     ; no _FillValue or missing_value on input
- end if
+;if (.not.isatt(xF,"_FillValue")     .and. \
+;    .not.isatt(xF,"missing_value")) then
+;    delete(xD@_FillValue)     ; no _FillValue or missing_value on input
+;end if
  xD = xF  ; variable-to-variable transfer [all meta data copied]
 
  if (isatt(xD,"missing_value") .and. \
