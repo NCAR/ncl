@@ -214,7 +214,9 @@ NhlErrorTypes triple2grid_W( void )
   int method = 0, loop = 0;
   int i, npts, ngx, ngy, ngx2, ngy2, ngxy2, ngxy;
   int ier, index_z, index_grid, ret;
-  double distmx = 0., domain = 0.;
+  double *distmx, *domain;
+  logical has_domain=False, has_distmx=False;
+  NclBasicDataTypes type_domain, type_distmx;
 /*
  * Variables for retrieving attributes from "options".
  */
@@ -414,11 +416,17 @@ NhlErrorTypes triple2grid_W( void )
         attr_list = attr_obj->att.att_list;
         while (attr_list != NULL) {
           if ((strcmp(attr_list->attname, "domain")) == 0) {
-            domain = *(double *) attr_list->attvalue->multidval.val;
+            type_domain = attr_list->attvalue->multidval.data_type;
+            has_domain = True;
+            domain = coerce_input_double(attr_list->attvalue->multidval.val,
+                                         type_domain,1,0,NULL,NULL);
           }
 
           if ((strcmp(attr_list->attname, "distmx")) == 0) {
-            distmx = *(double *) attr_list->attvalue->multidval.val;
+            has_distmx = True;
+            type_distmx = attr_list->attvalue->multidval.data_type;
+            distmx = coerce_input_double(attr_list->attvalue->multidval.val,
+                                         type_distmx,1,0,NULL,NULL);
           }
 
           if ((strcmp(attr_list->attname, "method")) == 0) {
@@ -432,6 +440,15 @@ NhlErrorTypes triple2grid_W( void )
     default:
       break;
     }
+  }
+
+  if(!has_distmx) {
+    distmx  = (double *)malloc(sizeof(double));
+    *distmx = 0.;
+  }
+  if(!has_domain) {
+    domain  = (double *)malloc(sizeof(double));
+    *domain = 0.;
   }
 
 /*
@@ -468,8 +485,8 @@ NhlErrorTypes triple2grid_W( void )
 
     NGCALLF(triple2grid1,TRIPLE2GRID1)(&npts,tmp_x,tmp_y,tmp_z,
                                        &missing_dz.doubleval,&ngx,&ngy,
-                                       tmp_gridx,tmp_gridy,tmp_grid,&domain,
-                                       &loop,&method,&distmx,&ngx2,&ngy2,
+                                       tmp_gridx,tmp_gridy,tmp_grid,domain,
+                                       &loop,&method,distmx,&ngx2,&ngy2,
                                        gxbig,gybig,gbig,&ier);
 /*
  * Coerce grid back to float if necessary.
@@ -532,7 +549,9 @@ NhlErrorTypes triple2grid2d_W( void )
  */
   int i, npts, nlon, nlat, size_grid, ier;
   int mopt = 0;
-  double distmx = 1.e20;
+  double *distmx;
+  logical has_distmx = False;
+  NclBasicDataTypes type_domain, type_distmx;
 /*
  * Variables for retrieving attributes from "options".
  */
@@ -708,7 +727,10 @@ NhlErrorTypes triple2grid2d_W( void )
         attr_list = attr_obj->att.att_list;
         while (attr_list != NULL) {
           if ((strcmp(attr_list->attname, "distmx")) == 0) {
-            distmx = (double)(*(float *) attr_list->attvalue->multidval.val);
+            has_distmx = True;
+            type_distmx = attr_list->attvalue->multidval.data_type;
+            distmx = coerce_input_double(attr_list->attvalue->multidval.val,
+                                         type_distmx,1,0,NULL,NULL);
           }
           
           if ((strcmp(attr_list->attname, "mopt")) == 0) {
@@ -722,11 +744,16 @@ NhlErrorTypes triple2grid2d_W( void )
     }
   }
 
+  if(!has_distmx) {
+    distmx  = (double *)malloc(sizeof(double));
+    *distmx = 1.e20;
+  }
+
 /*
  * Call the Fortran subroutine.
  */
   NGCALLF(triple2grid2d,TRIPLE2GRID2D)(tmp_x,tmp_y,tmp_z,&npts,
-                                       &missing_dz.doubleval,&distmx,&mopt,
+                                       &missing_dz.doubleval,distmx,&mopt,
                                        tmp_gridy,tmp_gridx,tmp_grid,
                                        &nlat,&nlon);
 /*
