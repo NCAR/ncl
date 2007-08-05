@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.3 2007-07-12 19:42:36 haley Exp $
+#   $Id: check_files,v 1.4 2007-08-05 17:12:08 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -63,7 +63,7 @@ if ($?NCLONLY && $?NCARGONLY) then
 endif
 
 
-set nclversion = "4.3.0"
+set nclversion = "4.3.1"
 set pwddir  = `pwd`
 
 if ($?NCARGNCL) then
