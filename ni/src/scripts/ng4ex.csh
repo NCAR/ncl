@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.8 2007-02-28 22:19:00 haley Exp $
+#   $Id: ng4ex.csh,v 1.9 2007-08-06 14:46:53 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -1110,7 +1110,7 @@ end
 #********************************#
 set rmfiles = ($src_file $res_file $inc_file $ascdata_file $bindata_file)
 if (! $?nprog) then
-  set rmfiles = ($name.o $nameSED_EXE_SUFFIX $rmfiles)
+  set rmfiles = ($name.o $name.SED_EXE_SUFFIX $rmfiles)
 endif
 
 #******************************#
