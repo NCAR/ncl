@@ -211,7 +211,7 @@ NhlErrorTypes triple2grid_W( void )
 /*
  * Various
  */
-  int method = 0, loop = 0;
+  int method, loop;
   int i, npts, ngx, ngy, ngx2, ngy2, ngxy2, ngxy;
   int ier, index_z, index_grid, ret;
   double *distmx, *domain;
@@ -383,7 +383,13 @@ NhlErrorTypes triple2grid_W( void )
  * need to retrieve.
  */
   if(*option) {
-    loop = 1;
+/*
+ * "method" may be set by the user; it's default is 1 if option is True.
+ * "loop" is just an integer representation of "option". loop = 0 if
+ * option = False.
+ */ 
+    loop   = 1;
+    method = 1;
 /*
  * Retrieve  "option" again, this time getting all the stuff that
  * might be attached to it (attributes).
@@ -441,6 +447,13 @@ NhlErrorTypes triple2grid_W( void )
       break;
     }
   }
+/*
+ * Else option is False, so set these two variables to 0.
+ */
+  else {
+    loop   = 0;
+    method = 0;
+  }
 
   if(!has_distmx) {
     distmx  = (double *)malloc(sizeof(double));
@@ -450,7 +463,6 @@ NhlErrorTypes triple2grid_W( void )
     domain  = (double *)malloc(sizeof(double));
     *domain = 0.;
   }
-
 /*
  * Allocate space for work arrays.
  */
