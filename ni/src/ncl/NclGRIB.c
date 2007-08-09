@@ -239,8 +239,8 @@ GribRecordInqRec *current_rec;
 	int i;
 	int tg;
 	void *val;
-	thelist = therec->grib_grid_cache;
 	int nvar_dims;
+	thelist = therec->grib_grid_cache;
 
 	nvar_dims = step->var_info.num_dimensions;
 	while(thelist != NULL) {
