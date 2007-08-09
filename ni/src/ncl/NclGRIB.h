@@ -106,6 +106,7 @@ struct _NclGribCacheList {
 	int has_gds;
 	int grid_gds_tbl_index;
 	int n_dims;
+        int dim_ids[3];
 	int dimsizes[3];
 	int n_entries;
 	struct _NclGribCacheList *next;

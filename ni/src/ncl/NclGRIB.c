@@ -139,20 +139,16 @@ static void _NclAdjustCacheTypeAndMissing
 
 static void _NclNewGridCache
 #if NhlNeedProto
-(GribFileRecord *therec,int grid_number,int has_gds,int gds_tbl_index,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
+(GribFileRecord *therec,GribParamList *step)
 #else
-(therec,grid_number,has_gds,gds_tbl_index,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon)
+(therec,step)
 GribFileRecord *therec;
-int grid_number;
-int has_gds;
-int gds_tbl_index;
-int n_dims_lat;
-int *dimsizes_lat;
-int n_dims_lon;
-int *dimsizes_lon;
+GribParamList *step;
 #endif
 {
 	NclGribCacheList *newlist;
+	int nvar_dims;
+
 	if(therec->grib_grid_cache == NULL) {
 		therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
 		newlist = NULL;
@@ -161,14 +157,19 @@ int *dimsizes_lon;
                 therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
 	}
 		
-	therec->grib_grid_cache->grid_number = grid_number;
-	therec->grib_grid_cache->has_gds = has_gds;
-	therec->grib_grid_cache->grid_gds_tbl_index = gds_tbl_index;
-	if((n_dims_lon == 1) &&(n_dims_lat ==1)) {
-		therec->grib_grid_cache->n_dims = 2;
-		therec->grib_grid_cache->dimsizes[1] = *dimsizes_lon;
-		therec->grib_grid_cache->dimsizes[0] = *dimsizes_lat;
-	} else if((n_dims_lon ==2) &&(n_dims_lat ==2)&&(dimsizes_lon[0] == dimsizes_lat[0])&&(dimsizes_lon[1] == dimsizes_lat[1])) {
+	therec->grib_grid_cache->grid_number = step->grid_number;
+	therec->grib_grid_cache->has_gds = step->has_gds;
+	therec->grib_grid_cache->grid_gds_tbl_index = step->grid_gds_tbl_index;
+	therec->grib_grid_cache->n_dims = 2;
+	nvar_dims = step->var_info.num_dimensions;
+	therec->grib_grid_cache->dimsizes[0] = step->var_info.dim_sizes[nvar_dims - 2];
+	therec->grib_grid_cache->dimsizes[1] = step->var_info.dim_sizes[nvar_dims - 1];
+	therec->grib_grid_cache->dim_ids[0] = step->var_info.file_dim_num[nvar_dims - 2];
+	therec->grib_grid_cache->dim_ids[1] = step->var_info.file_dim_num[nvar_dims - 1];
+
+#if 0
+	/* i don't think there are any grib grids where one of the coordinates is 2d and the other is 1d */
+	} else if ((n_dims_lon ==2) &&(n_dims_lat ==2)) {
 		therec->grib_grid_cache->n_dims = 2;
 		therec->grib_grid_cache->dimsizes[1] = dimsizes_lon[1];
 		therec->grib_grid_cache->dimsizes[0] = dimsizes_lon[0];
@@ -183,26 +184,23 @@ int *dimsizes_lon;
 			therec->grib_grid_cache->dimsizes[0] = dimsizes_lon[0];
 		}
 	}
+#endif
 	therec->grib_grid_cache->n_entries = 0;
 	therec->grib_grid_cache->thelist = NULL;
 	therec->grib_grid_cache->next = newlist;
 }
 static void _NclNewSHGridCache
 #if NhlNeedProto
-(GribFileRecord *therec,int grid_number,int has_gds,int gds_tbl_index,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
+(GribFileRecord *therec,GribParamList *step)
 #else
-(therec,grid_number,has_gds,gds_tbl_index,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon)
+(therec,step)
 GribFileRecord *therec;
-int grid_number;
-int has_gds;
-int gds_tbl_index;
-int n_dims_lat;
-int *dimsizes_lat;
-int n_dims_lon;
-int *dimsizes_lon;
+GribParamList *step;
 #endif
 {
 	NclGribCacheList *newlist;
+	int nvar_dims;
+
 	if(therec->grib_grid_cache == NULL) {
 		therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
 		newlist = NULL;
@@ -211,13 +209,17 @@ int *dimsizes_lon;
                 therec->grib_grid_cache = NclMalloc(sizeof(NclGribCacheList));
 	}
 		
-	therec->grib_grid_cache->grid_number = grid_number;
-	therec->grib_grid_cache->has_gds = has_gds;
-	therec->grib_grid_cache->grid_gds_tbl_index = gds_tbl_index;
+	therec->grib_grid_cache->grid_number = step->grid_number;
+	therec->grib_grid_cache->has_gds = step->has_gds;
+	therec->grib_grid_cache->grid_gds_tbl_index = step->grid_gds_tbl_index;
 	therec->grib_grid_cache->n_dims = 3;
+	nvar_dims = step->var_info.num_dimensions;
 	therec->grib_grid_cache->dimsizes[0] = 2;
-	therec->grib_grid_cache->dimsizes[2] = *dimsizes_lon;
-	therec->grib_grid_cache->dimsizes[1] = *dimsizes_lat;
+	therec->grib_grid_cache->dimsizes[1] = step->var_info.dim_sizes[nvar_dims - 2];
+	therec->grib_grid_cache->dimsizes[2] = step->var_info.dim_sizes[nvar_dims - 1];
+	therec->grib_grid_cache->dim_ids[0] = step->var_info.file_dim_num[nvar_dims - 3];
+	therec->grib_grid_cache->dim_ids[1] = step->var_info.file_dim_num[nvar_dims - 2];
+	therec->grib_grid_cache->dim_ids[2] = step->var_info.file_dim_num[nvar_dims - 1];
 	therec->grib_grid_cache->n_entries = 0;
 	therec->grib_grid_cache->thelist = NULL;
 	therec->grib_grid_cache->next = newlist;
@@ -232,98 +234,97 @@ GribParamList *step;
 GribRecordInqRec *current_rec;
 #endif
 {
-/*
-	NclGribCacheList *thelist;
-	void *val;
-	thelist = therec->grib_grid_cache;
-				val = NclMalloc(sizeof(float)*thelist->dimsizes[0]*thelist->dimsizes[1]);
-
-                                return(_NclCreateVal(NULL,
-                                                                NULL,
-                                                                Ncl_MultiDValData,
-                                                                0,
-                                                                val,
-                                                                NULL,
-                                                                thelist->n_dims,
-                                                                thelist->dimsizes,
-                                                                PERMANENT,
-                                                                NULL,
-                                                                nclTypefloatClass));
-*/
 	NclGribCacheList *thelist;
 	NclGribCacheRec *tmp;
 	int i;
 	int tg;
 	void *val;
 	thelist = therec->grib_grid_cache;
+	int nvar_dims;
+
+	nvar_dims = step->var_info.num_dimensions;
 	while(thelist != NULL) {
+	  /*
 		if((thelist->grid_number == step->grid_number)&&(thelist->has_gds ==step->has_gds)
 		   &&(thelist->grid_gds_tbl_index == step->grid_gds_tbl_index)) {
-			if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
-				tmp = thelist->tail;
-				tmp->rec->the_dat = NULL;
-				tmp->rec = current_rec;
-				tmp->prev->next = NULL;
-				thelist->tail = tmp->prev;
-				tmp->prev = NULL;
-				tmp->next = thelist->thelist;
-				tmp->next->prev = tmp;
-				thelist->thelist = tmp;
-				return(tmp->thevalue);
-			} 
-			if(thelist->n_entries == 0) {
-				thelist->thelist = NclMalloc(sizeof(NclGribCacheRec));
-				thelist->thelist->prev = NULL;
-				thelist->thelist->next = NULL;
-				thelist->thelist->rec = current_rec;
-				thelist->tail = thelist->thelist;
-				tg = 1;
-				for(i = 0; i< thelist->n_dims; i++) {
-					tg*=thelist->dimsizes[i];
-				}
-				val = NclMalloc(sizeof(float)*tg);
-				thelist->thelist->thevalue = _NclCreateVal(NULL,
-								NULL,
-								Ncl_MultiDValData,
-								0,
-								val,
-								NULL,
-								thelist->n_dims,
-								thelist->dimsizes,
-								PERMANENT,
-								NULL,
-								nclTypefloatClass);
-				thelist->n_entries = 1;
-				return(thelist->thelist->thevalue);
-			} else {
-				tmp = NclMalloc(sizeof(NclGribCacheRec));
-				tmp->prev = NULL;
-				tmp->next = thelist->thelist;
-				tmp->next->prev = tmp;
-				tmp->rec = current_rec;
-				tg = 1;
-				for(i = 0; i< thelist->n_dims; i++) {
-					tg*=thelist->dimsizes[i];
-				}
-				val = NclMalloc(sizeof(float)*tg);
-                                tmp->thevalue = _NclCreateVal(NULL,
-                                                                NULL,
-                                                                Ncl_MultiDValData,
-                                                                0,
-                                                                val,
-                                                                NULL,
-                                                                thelist->n_dims,
-                                                                thelist->dimsizes,
-                                                                PERMANENT,
-                                                                NULL,
-                                                                nclTypefloatClass);
-				++thelist->n_entries;
-				
-				thelist->thelist = tmp;
-				return(tmp->thevalue);
+	  */
+	        if (step->var_info.doff == 2) {
+	                if (thelist->n_dims != 3 ||
+			    thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-2] ||
+			    thelist->dim_ids[2] != step->var_info.file_dim_num[nvar_dims-1]) {
+			        thelist = thelist->next;
+			        continue;
 			}
+		}		    
+		else if (thelist->n_dims != 2 ||
+			 thelist->dim_ids[0] != step->var_info.file_dim_num[nvar_dims-2] ||
+			 thelist->dim_ids[1] != step->var_info.file_dim_num[nvar_dims-1]) {
+		         thelist = thelist->next;
+		         continue;
+		}		    
+		
+		if(thelist->n_entries == NCL_GRIB_CACHE_SIZE) {
+		        tmp = thelist->tail;
+			tmp->rec->the_dat = NULL;
+			tmp->rec = current_rec;
+			tmp->prev->next = NULL;
+			thelist->tail = tmp->prev;
+			tmp->prev = NULL;
+			tmp->next = thelist->thelist;
+			tmp->next->prev = tmp;
+			thelist->thelist = tmp;
+			return(tmp->thevalue);
+		} 
+		if(thelist->n_entries == 0) {
+			thelist->thelist = NclMalloc(sizeof(NclGribCacheRec));
+			thelist->thelist->prev = NULL;
+			thelist->thelist->next = NULL;
+			thelist->thelist->rec = current_rec;
+			thelist->tail = thelist->thelist;
+			tg = 1;
+			for(i = 0; i< thelist->n_dims; i++) {
+			        tg*=thelist->dimsizes[i];
+			}
+			val = NclMalloc(sizeof(float)*tg);
+			thelist->thelist->thevalue = _NclCreateVal(NULL,
+								   NULL,
+								   Ncl_MultiDValData,
+								   0,
+								   val,
+								   NULL,
+								   thelist->n_dims,
+								   thelist->dimsizes,
+								   PERMANENT,
+								   NULL,
+								   nclTypefloatClass);
+			thelist->n_entries = 1;
+			return(thelist->thelist->thevalue);
 		} else {
-			thelist = thelist->next;
+			tmp = NclMalloc(sizeof(NclGribCacheRec));
+			tmp->prev = NULL;
+			tmp->next = thelist->thelist;
+			tmp->next->prev = tmp;
+			tmp->rec = current_rec;
+			tg = 1;
+			for(i = 0; i< thelist->n_dims; i++) {
+				tg*=thelist->dimsizes[i];
+			}
+			val = NclMalloc(sizeof(float)*tg);
+			tmp->thevalue = _NclCreateVal(NULL,
+						      NULL,
+						      Ncl_MultiDValData,
+						      0,
+						      val,
+						      NULL,
+						      thelist->n_dims,
+						      thelist->dimsizes,
+						      PERMANENT,
+						      NULL,
+						      nclTypefloatClass);
+			++thelist->n_entries;
+				
+			thelist->thelist = tmp;
+			return(tmp->thevalue);
 		}
 	}
 	return(NULL);
@@ -3136,12 +3137,6 @@ GribFileRecord *therec;
 						 &lat_att_list_ptr,&nlatatts,&lon_att_list_ptr,&nlonatts,&rot_att_list_ptr,&nrotatts);
 				}
 	
-				if((step->has_gds )&& (step->gds_type == 50)) {
-					_NclNewSHGridCache(therec,step->grid_number,step->has_gds,step->grid_gds_tbl_index,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon);
-				} else {
-					_NclNewGridCache(therec,step->grid_number,step->has_gds,step->grid_gds_tbl_index,n_dims_lat,dimsizes_lat,n_dims_lon,dimsizes_lon);
-				}
-
 	/*
 	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	* Grids always need to be inserted into the grid_dim list in the right order. First lon is pushed then lat so that dstep->dim_inq
@@ -3461,6 +3456,13 @@ GribFileRecord *therec;
 				} else {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Couldn't handle dimension information returned by grid decoding");
 					is_err = NhlFATAL;
+				}
+				if (is_err == NhlNOERROR) {
+				        if((step->has_gds )&& (step->gds_type == 50)) {
+				                _NclNewSHGridCache(therec,step);
+				        } else {
+					        _NclNewGridCache(therec,step);
+				        }
 				}
 			} else {
 				GribInternalVarList	*iv;
