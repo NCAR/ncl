@@ -79,6 +79,13 @@ extern NhlErrorTypes linrood_latwgt_W(void);
 extern NhlErrorTypes linrood_wgt_W(void);
 extern NhlErrorTypes wgt_vert_avg_beta_W(void);
 
+extern NhlErrorTypes rgbhsv_W(void);
+extern NhlErrorTypes hsvrgb_W(void);
+extern NhlErrorTypes rgbhls_W(void);
+extern NhlErrorTypes hlsrgb_W(void);
+extern NhlErrorTypes rgbyiq_W(void);
+extern NhlErrorTypes yiqrgb_W(void);
+
 extern NhlErrorTypes gc_tarea_W(void);
 extern NhlErrorTypes gc_qarea_W(void);
 extern NhlErrorTypes gc_pnt2gc_W(void);
@@ -1503,6 +1510,66 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     NclRegisterFunc(gc_qarea_W,args,"gc_qarea",nargs);
+
+/*
+ * Register "rgbhsv".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(rgbhsv_W,args,"rgbhsv",nargs);
+
+/*
+ * Register "hsvrgb".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(hsvrgb_W,args,"hsvrgb",nargs);
+
+/*
+ * Register "rgbhls".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(rgbhls_W,args,"rgbhls",nargs);
+
+/*
+ * Register "hlsrgb".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(hlsrgb_W,args,"hlsrgb",nargs);
+
+/*
+ * Register "rgbyiq".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(rgbyiq_W,args,"rgbyiq",nargs);
+
+/*
+ * Register "yiqrgb".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    NclRegisterFunc(yiqrgb_W,args,"yiqrgb",nargs);
 
 /*
  * Register "gc_tarea".
