@@ -10,6 +10,7 @@
  */
 extern NhlErrorTypes vinth2p_W(void);
 extern NhlErrorTypes vinth2p_ecmwf_W(void);
+extern NhlErrorTypes vintp2p_ecmwf_W(void);
 
 extern NhlErrorTypes g2gsh_W(void);
 extern NhlErrorTypes f2gsh_W(void);
@@ -550,6 +551,27 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,10,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,11,"numeric",0,NclANY);nargs++;
         NclRegisterFunc(vinth2p_ecmwf_W,args,"vinth2p_ecmwf",nargs);
+
+/*
+ * Register "vintp2p_ecmwf".
+ *
+ * Create private argument array.
+ */
+ 
+        nargs = 0;
+        args = NewArgs(10);
+        SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,1,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,2,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,3,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,4,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,5,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,6,"logical",1,dimsizes);nargs++;
+        SetArgTemplate(args,7,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,8,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,9,"numeric",0,NclANY);nargs++;
+
+        NclRegisterFunc(vintp2p_ecmwf_W,args,"vintp2p_ecmwf",nargs);
 
 /*
  * Register "g2gsh".
