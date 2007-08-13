@@ -1,0 +1,86 @@
+
+Adding a Fortran function to NCL:
+ 
+   o  Add the function to the nfpfort directory:
+        ncarg/ni/src/lib/nfpfort
+      and do a "cvs add" on it.
+
+      Note: If there is an underscore in the function name, then
+            g77 adds an extra underscore at the end of the name.
+            This should be handled by putting
+
+              #define FcOptions -fno-second-underscore
+
+            in $NCARG/config/DARWIN, but that does not seem
+            to be working for me.
+      
+      So, it seems like avoiding underscores in the names is advisable.
+
+   o  Add the function reference to the yMakefile in the nfpfort
+      directory and do:
+          cvs update 
+          make me
+          make
+      to make libnfpfort.a .
+
+      Test compilations on all test machines.
+
+   o  Go to directory ncarg/ni/src/lib/nfp
+
+   o  Create the "W" file that calls the Fortran.
+        --> Be sure to prototype the Fortran function/subroutine.
+      The "W" file may contain several functions or procedures
+      and those names will have an "_W" after them.
+
+   o  Add the prototype to wrapper.c in directory ncarg/ni/src/lib/nfp.
+
+   o  Add the registration to wrapper.c ***Make sure the routine is
+                                           properly registered as a
+                                           function or procedure***
+      The registered NCL name will be the same as the "_W" name
+      without the "_W".
+
+   o  Add the "W" file name to the yMakefile.
+
+   o  In the nfp directory do:
+        cvs update
+        make me
+        make
+
+   o  Go to ncarg/ni/src/ncl and do
+        cvs update
+        make me
+        make
+      to make ncl and then use xncl (/Users/fred/ncarg/ni/src/ncl/ncl) to test.
+
+   o  Add test scripts to:
+        ncargtest/nclscripts
+
+   o  Add documentation to:
+        webdoc/ncl/Document/Functions/Built-in
+
+      Add newversion tag like:
+
+       <newversion>
+       4.3.1
+       </newversion>
+
+      Add the new file names to the yMakefile
+ 
+      The script at:
+        webdoc/ncl/Document/Functions/func-xml2html.py
+        will convert to .shtml, but without the css functionality.
+        To review the final doc., do an "updatenclweb".
+
+     While still in the Built-in driectory, execute:
+        ../func-xml2html.py
+        
+  
+  o  From the Built-In directory, do:
+
+      cd ..
+      cvs ci builtin_categories builtin_summaries
+
+  o  Edit webdoc/ncl/future_release.xml
+     to add the new stuff.
+
