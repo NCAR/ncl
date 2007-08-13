@@ -1,20 +1,31 @@
-
-Adding a Fortran function to NCL:
+Adding a Fortran routine to NCL:
  
-   o  Add the function to the nfpfort directory:
-        ncarg/ni/src/lib/nfpfort
+   o  Add the routine to the nfpfort directory:
+
+        $NCARG/ni/src/lib/nfpfort
+
       and do a "cvs add" on it.
 
-      Note: If there is an underscore in the function name, then
-            g77 adds an extra underscore at the end of the name.
-            This should be handled by putting
+      This should be a double precision version.
+      Instead of coding a double precision version 
+      directly it is less error prone to use 
+      the NAG single to double precision converter.  This
+      is on windom in /usr/local/NAGWare-4.1/bin/nag_apt .
+      The default execution of nag_apt is to take a single
+      precision .f file and convert it to double precision.
+      The original file is backed up to a .orig file and 
+      the input file is overwritten with the double precision
+      version.
+
+      If there is an underscore in the Fortran routine name, then
+      g77 adds an extra underscore at the end of the name.
+      On a Mac this should be handled by putting
 
               #define FcOptions -fno-second-underscore
 
-            in $NCARG/config/DARWIN, but that does not seem
-            to be working for me.
-      
-      So, it seems like avoiding underscores in the names is advisable.
+      in $NCARG/config/DARWIN, but that does not seem
+      to always work.  Avoiding underscores in the 
+      Fortran routine names is advisable.
 
    o  Add the function reference to the yMakefile in the nfpfort
       directory and do:
