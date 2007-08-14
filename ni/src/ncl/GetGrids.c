@@ -6960,7 +6960,7 @@ GribParamList* thevarrec;
 			kmain = UnsignedCnvtToDecimal(2,&(therec->gds[8]));
 			mmain = UnsignedCnvtToDecimal(2,&(therec->gds[10]));
 			if((j==k)&&(k==m)/*&&(jmain==kmain)&&(kmain==mmain)*/) {
-				factor = malloc(sizeof(float)*(jmain+1));
+				factor = NclMalloc(sizeof(float)*(jmain+1));
 /*
 * compute number of values  in the unpcacked portion
 */
@@ -7079,6 +7079,7 @@ GribParamList* thevarrec;
 /*
 * sindex now points to begining of packed data
 */
+			NclFree(factor);
 		} else{
 			*outdat = NULL;
 		}

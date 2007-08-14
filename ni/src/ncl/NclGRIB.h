@@ -109,6 +109,8 @@ struct _NclGribCacheList {
         int dim_ids[3];
 	int dimsizes[3];
 	int n_entries;
+	NclMultiDValData int_missing_rec;       /* shared by all integer vars */
+	NclMultiDValData float_missing_rec;     /* shared by all float vars */
 	struct _NclGribCacheList *next;
 	struct _NclGribCacheRec *thelist;
 	struct _NclGribCacheRec *tail;

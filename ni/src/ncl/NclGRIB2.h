@@ -493,6 +493,8 @@ struct _NclGrib2CacheList {
     int n_dims;
     int dimsizes[3];
     int n_entries;
+    NclMultiDValData int_missing_rec;       /* shared by all integer vars */
+    NclMultiDValData float_missing_rec;     /* shared by all float vars */
     struct _NclGrib2CacheList   *next;
     struct _NclGrib2CacheRec    *thelist;
     struct _NclGrib2CacheRec    *tail;

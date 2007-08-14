@@ -2396,7 +2396,7 @@ int* nrotatts;
 
 
 
-static void _g2NclNewGridCache
+static void _g2NewGridCache
 #if NhlNeedProto
 (Grib2FileRecord *therec,int grid_index,int grid_number,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
 #else
@@ -2422,6 +2422,8 @@ int *dimsizes_lon;
 		
 	therec->grib_grid_cache->grid_number = grid_number;
 	therec->grib_grid_cache->grid_index = grid_index;
+	therec->grib_grid_cache->int_missing_rec = NULL;
+	therec->grib_grid_cache->float_missing_rec = NULL;
 	if (grid_number == 50) {
 		therec->grib_grid_cache->n_dims = 3;
 		therec->grib_grid_cache->dimsizes[0] = 2;
@@ -4149,8 +4151,10 @@ Grib2RecordInqRec *grib_rec;
 	    Grib2FreeGDS(grib_rec->gds);
     }
 
+    /* if var_name_q is not set then it's a missing record -- shared for all missing records */
     if (grib_rec->the_dat != NULL) {
-        _NclDestroyObj((NclObj) grib_rec->the_dat);
+	    if (grib_rec->var_name_q > NrmNULLQUARK)
+		    _NclDestroyObj((NclObj) grib_rec->the_dat);
     }
 
     NclFree(grib_rec);
@@ -6740,7 +6744,7 @@ static void _g2SetFileDimsAndCoordVars
 		
 	
 		step->grid_index = therec->n_grids;
-		_g2NclNewGridCache(therec,step->grid_index, step->grid_number, 
+		_g2NewGridCache(therec,step->grid_index, step->grid_number, 
 				   n_dims_lat, dimsizes_lat, n_dims_lon,dimsizes_lon);
 
 		/*
@@ -10255,6 +10259,12 @@ static void Grib2FreeFileRec
 	}
 	thelist = thefile->grib_grid_cache;
         while(thelist != NULL) {
+		if (thelist->int_missing_rec) {
+			_NclDestroyObj((NclObj)thelist->int_missing_rec);
+		}
+		if (thelist->float_missing_rec) {
+			_NclDestroyObj((NclObj)thelist->float_missing_rec);
+		}
 		ctmp = thelist->thelist;
 		while(ctmp!=NULL) {	
 			ctmp0 = ctmp;
@@ -10752,7 +10762,7 @@ NclQuark theatt;
 	return NULL;
 }
 
-static void _g2NclAdjustCacheTypeAndMissing
+static void _g2AdjustCacheTypeAndMissing
 #if NhlNeedProto
 (int int_or_float,NclMultiDValData the_dat,NclScalar *missingv)
 #else
@@ -10782,7 +10792,7 @@ static void _g2NclAdjustCacheTypeAndMissing
 	}
 }
 
-static NclMultiDValData  _g2NclGetCacheVal
+static NclMultiDValData  _g2GetCacheVal
 #if	NhlNeedProto
 (Grib2FileRecord *therec, Grib2ParamList *step, Grib2RecordInqRec *current_rec)
 #else
@@ -10792,24 +10802,6 @@ Grib2ParamList *step;
 Grib2RecordInqRec *current_rec;
 #endif
 {
-/*
-	NclGribCacheList *thelist;
-	void *val;
-	thelist = therec->grib_grid_cache;
-				val = NclMalloc(sizeof(float)*thelist->dimsizes[0]*thelist->dimsizes[1]);
-
-                                return(_NclCreateVal(NULL,
-                                                                NULL,
-                                                                Ncl_MultiDValData,
-                                                                0,
-                                                                val,
-                                                                NULL,
-                                                                thelist->n_dims,
-                                                                thelist->dimsizes,
-                                                                PERMANENT,
-                                                                NULL,
-                                                                nclTypefloatClass));
-*/
 	NclGrib2CacheList *thelist;
 	NclGrib2CacheRec *tmp;
 	int i;
@@ -10887,6 +10879,89 @@ Grib2RecordInqRec *current_rec;
 	}
 	return(NULL);
 }
+
+static NclMultiDValData  _g2GetCacheMissingVal
+#if	NhlNeedProto
+(Grib2FileRecord *therec, Grib2ParamList *step, Grib2RecordInqRec *current_rec)
+#else
+(therec,step,current_rec)
+Grib2FileRecord *therec;
+Grib2ParamList *step;
+Grib2RecordInqRec *current_rec;
+#endif
+{
+	NclGrib2CacheList *thelist;
+	int i;
+	int tg;
+	void *tmp;
+	NclScalar missingv;
+
+	thelist = therec->grib_grid_cache;
+	while(thelist != NULL) {
+		if (thelist->grid_index != step->grid_index) {
+			thelist = thelist->next;
+			continue;
+		}
+		if(step->var_info.data_type == NCL_int) {
+			if (thelist->int_missing_rec != NULL) {
+				return thelist->int_missing_rec;
+			}
+			tg = 1;
+			for(i = 0; i <  thelist->n_dims; i++) {
+				tg *= thelist->dimsizes[i];	
+			}
+			tmp = NclMalloc(sizeof(int) * tg);
+			for( i = 0; i < tg; i++){
+				((int*)tmp)[i] = G2_DEFAULT_MISSING_INT;
+			}
+			missingv.intval = G2_DEFAULT_MISSING_INT;
+			
+			thelist->int_missing_rec  = _NclCreateVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				tmp,
+				&missingv,
+				thelist->n_dims,
+				thelist->dimsizes,
+				PERMANENT,
+				NULL,
+				nclTypeintClass);
+			return thelist->int_missing_rec;
+		} else {
+			if (thelist->float_missing_rec != NULL) {
+				return thelist->float_missing_rec;
+			}
+			tg = 1;
+			for(i = 0; i <  thelist->n_dims; i++) {
+				tg *= thelist->dimsizes[i];	
+			}
+			tmp = NclMalloc(sizeof(float) * tg);
+			for( i = 0; i < tg; i++){
+				((float*)tmp)[i] = G2_DEFAULT_MISSING_FLOAT;
+			}
+			missingv.floatval = G2_DEFAULT_MISSING_FLOAT;
+			
+			thelist->float_missing_rec  = _NclCreateVal(
+				NULL,
+				NULL,
+				Ncl_MultiDValData,
+				0,
+				tmp,
+				&missingv,
+				thelist->n_dims,
+				thelist->dimsizes,
+				PERMANENT,
+				NULL,
+				nclTypefloatClass
+				);
+			return thelist->float_missing_rec;
+		}
+	}
+	return(NULL);
+}
+
 
 static void GetSphericalHarmonicData
 #if	NhlNeedProto
@@ -11242,62 +11317,12 @@ void* storage;
 				current_rec = step->thelist[offset].rec_inq;
 	/*
 	* For now(4/27/98) missing records persist, Eventually I'll implement one missing record per grid type for
-	* general use.
+	* general use. (8/13/07: now the data is shared although the records are still created -- dib)
 	*/
 				if(current_rec == NULL) {
-					if(step->var_info.data_type == NCL_int) {
-						tg = 1;
-						for(i = 0; i< n_grid_dims; i++) {
-							tg *= grid_dim_sizes[i];	
-						}
-						tmp = NclMalloc(sizeof(int) * tg);
-						for( i = 0; i < tg; i++){
-							((int*)tmp)[i] = G2_DEFAULT_MISSING_INT;
-							
-						}
-						missingv.intval = G2_DEFAULT_MISSING_INT;
-						step->thelist[offset].rec_inq = _g2MakeMissingRec();
-						current_rec = step->thelist[offset].rec_inq;
-						current_rec->the_dat = _NclCreateVal(
-									NULL,
-									NULL,
-									Ncl_MultiDValData,
-									0,
-									tmp,
-									&missingv,
-									n_grid_dims,
-									grid_dim_sizes,
-									PERMANENT,
-									NULL,
-									nclTypeintClass
-								);
-					} else {
-						tg = 1;
-                                                for(i = 0; i< n_grid_dims; i++) {
-                                                        tg *= grid_dim_sizes[i];        
-                                                }
-						tmp = NclMalloc(sizeof(float) * tg);
-						for( i = 0; i < tg; i++){
-							((float*)tmp)[i] = G2_DEFAULT_MISSING_FLOAT;
-						}
-						missingv.floatval = G2_DEFAULT_MISSING_FLOAT;
-
-						step->thelist[offset].rec_inq = _g2MakeMissingRec();
-						current_rec = step->thelist[offset].rec_inq;
-						current_rec->the_dat = _NclCreateVal(
-									NULL,
-									NULL,
-									Ncl_MultiDValData,
-									0,
-									tmp,
-									&missingv,
-									n_grid_dims,
-									grid_dim_sizes,
-									PERMANENT,
-									NULL,
-									nclTypefloatClass
-								);
-					}
+					step->thelist[offset].rec_inq = _g2MakeMissingRec();
+					current_rec = step->thelist[offset].rec_inq;
+					current_rec->the_dat = _g2GetCacheMissingVal(therec,step,current_rec);
 				}
 				
 				if((current_rec->the_dat == NULL) || 
@@ -11310,7 +11335,7 @@ void* storage;
 						current_rec->interp_method = current_interp_method;
 					}
 					else {
-						current_rec->the_dat = _g2NclGetCacheVal(therec,step,current_rec);
+						current_rec->the_dat = _g2GetCacheVal(therec,step,current_rec);
 						if(current_rec->the_dat == NULL){
 							NhlPError(NhlFATAL,NhlEUNKNOWN,
 								  "NclGRIB2: Unrecoverable caching error reading variable %s; can't continue",
@@ -11346,7 +11371,7 @@ void* storage;
 						/*
 						 * Needed to fix chicken/egg problem with respect to type and missing values
 						 */
-						_g2NclAdjustCacheTypeAndMissing(0,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
+						_g2AdjustCacheTypeAndMissing(0,current_rec->the_dat,(missing == NULL) ? NULL : &missingv);
 
 						NclFree(missing);
 					} else {
