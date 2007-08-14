@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.4 2007-08-05 17:12:08 haley Exp $
+#   $Id: check_files,v 1.5 2007-08-14 13:25:41 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -1774,10 +1774,6 @@ lib/libncl.a
 lib/libnfp.a
 lib/libnfpfort.a
 lib/libnio.a
-lib/libblas.a
-lib/libfftpack5_dp.a
-lib/liblapack.a
-lib/libsphere3.1_dp.a
 lib/ncarg/hluex/app/ap01c.c
 lib/ncarg/hluex/app/ap01f.f
 lib/ncarg/hluex/basic/basic01c.c
