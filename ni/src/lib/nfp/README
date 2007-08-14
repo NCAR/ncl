@@ -67,7 +67,7 @@
         make me
         make
 
-   o  Go to ncarg/ni/src/ncl and do
+   o  Go to $NCARG/ni/src/ncl and do
 
         cvs update
         make me
@@ -75,22 +75,26 @@
 
       to make ncl for testing purposes.
 
-   o  Add test scripts to:
+   o  Add analysis test scripts to:
 
-        $NCARG/ncargtest/nclscripts
+        ncargtest/nclscripts
+
+   o  Add plotting test scripts to:
+
+        ncargtest/nclscripts/plotting
 
    o  After testing is complete,
          +  Check in the original Fortran source in
             directory $NCARG/ni/src/lib/nfpfort
          +  Add and check in the test scripts in
-            directory $NCARG/ncargtest/nclscripts.
+            directory ncargtest/nclscripts.
          +  Add the "W" wrapper in directory
             $NCARG/ni/src/lib/nfp and check in
             wrapper.c, yMakefile, and the wrapper.
 
    o  Add NCL routine documentation to:
 
-        $NCARG/webdoc/ncl/Document/Functions/Built-in
+        webdoc/ncl/Document/Functions/Built-in
 
       Determine the version number of the release where the new
       routine will appear Add a newversion tag like to the source like:
@@ -101,17 +105,18 @@
 
       For details on the formatting of the .xml files, see:
  
-        $NCARG/webdoc/ncl/Document/Functions/Built-in/README
+        webdoc/ncl/Document/Functions/Built-in/README
 
       Add the new file names to the yMakefile
  
       The script at:
 
-        $NCARG/webdoc/ncl/Document/Functions/func-xml2html.py
+        webdoc/ncl/Document/Functions/func-xml2html.py
         will convert to .xml to .shtml, but without the css 
         functionality being recognized.  To review the final 
-        documentation, do an "updatenclweb" and look at it 
-        in location 
+        documentation, do an "updatenclweb" (which is available
+        in webdoc/ncl/internal/about_website//updatenclweb) and
+        look at it in location 
 
           http://www.ncl.ucar.edu/Document/Functions/Built-in/new_routine.shtml
   
@@ -119,10 +124,10 @@
 
       Add and check in the new .xml files as well as the yMakefile.
 
-  o  Edit $NCARG/webdoc/ncl/future_release.xml to add the new stuff.
+  o  Edit webdoc/ncl/future_release.xml to add the new stuff.
 
-  o  If the new routine results in there being a new example to be
-     added to the Appliction examples, see:
+  o  If you want to add an Applications example that shows usage of
+     the new routine, see
 
-       $NCARG/webdoc/ncl/Applications/README
+       webdoc/ncl/Applications/README
 
