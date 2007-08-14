@@ -38,7 +38,10 @@
       to make libnfpfort.a .
 
       Test compilations on all test machines.  This is not necessary
-      if you are super confident about the source.
+      if you are super confident about the source. You can see a 
+      list of test machines at
+
+      https://www.ncl.ucar.edu/internal/ncl-dev/systems.shtml
 
    o  Go to directory $NCARG/ni/src/lib/nfp
 
