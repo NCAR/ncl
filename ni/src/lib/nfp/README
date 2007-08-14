@@ -1,4 +1,5 @@
-Adding a Fortran routine to NCL:
+ Adding a Fortran routine to NCL:
+ ------ - ------- ------- -- ---
  
    o  Add the routine to the nfpfort directory:
 
@@ -6,7 +7,7 @@ Adding a Fortran routine to NCL:
 
       and do a "cvs add" on it.
 
-      This should be a double precision version.
+      The routine should be a double precision version.
       Instead of coding a double precision version 
       directly it is less error prone to use 
       the NAG single to double precision converter.  This
@@ -29,69 +30,99 @@ Adding a Fortran routine to NCL:
 
    o  Add the function reference to the yMakefile in the nfpfort
       directory and do:
+
           cvs update 
           make me
           make
+
       to make libnfpfort.a .
 
-      Test compilations on all test machines.
+      Test compilations on all test machines.  This is not necessary
+      if you are super confident about the source.
 
-   o  Go to directory ncarg/ni/src/lib/nfp
+   o  Go to directory $NCARG/ni/src/lib/nfp
 
    o  Create the "W" file that calls the Fortran.
+ 
         --> Be sure to prototype the Fortran function/subroutine.
-      The "W" file may contain several functions or procedures
-      and those names will have an "_W" after them.
 
-   o  Add the prototype to wrapper.c in directory ncarg/ni/src/lib/nfp.
+        --> The "W" file may contain several functions or procedures
+            and those names will have an "_W" after them.
 
-   o  Add the registration to wrapper.c ***Make sure the routine is
-                                           properly registered as a
-                                           function or procedure***
+   o  Add the prototype to wrapper.c in directory $NCARG/ni/src/lib/nfp.
+
+   o  Add the registration to wrapper.c 
+
+      Make sure the routine is properly registered as either a
+      function or procedure.                          
+
       The registered NCL name will be the same as the "_W" name
       without the "_W".
 
    o  Add the "W" file name to the yMakefile.
 
    o  In the nfp directory do:
+
         cvs update
         make me
         make
 
    o  Go to ncarg/ni/src/ncl and do
+
         cvs update
         make me
         make
-      to make ncl and then use xncl (/Users/fred/ncarg/ni/src/ncl/ncl) to test.
+
+      to make ncl for testing purposes.
 
    o  Add test scripts to:
-        ncargtest/nclscripts
 
-   o  Add documentation to:
-        webdoc/ncl/Document/Functions/Built-in
+        $NCARG/ncargtest/nclscripts
 
-      Add newversion tag like:
+   o  After testing is complete,
+         +  Check in the original Fortran source in
+            directory $NCARG/ni/src/lib/nfpfort
+         +  Add and check in the test scripts in
+            directory $NCARG/ncargtest/nclscripts.
+         +  Add the "W" wrapper in directory
+            $NCARG/ni/src/lib/nfp and check in
+            wrapper.c, yMakefile, and the wrapper.
 
-       <newversion>
-       4.3.1
-       </newversion>
+   o  Add NCL routine documentation to:
+
+        $NCARG/webdoc/ncl/Document/Functions/Built-in
+
+      Determine the version number of the release where the new
+      routine will appear Add a newversion tag like to the source like:
+
+         <newversion>
+         4.3.1
+         </newversion>
+
+      For details on the formatting of the .xml files, see:
+ 
+        $NCARG/webdoc/ncl/Document/Functions/Built-in/README
 
       Add the new file names to the yMakefile
  
       The script at:
-        webdoc/ncl/Document/Functions/func-xml2html.py
-        will convert to .shtml, but without the css functionality.
-        To review the final doc., do an "updatenclweb".
 
-     While still in the Built-in driectory, execute:
-        ../func-xml2html.py
-        
+        $NCARG/webdoc/ncl/Document/Functions/func-xml2html.py
+        will convert to .xml to .shtml, but without the css 
+        functionality being recognized.  To review the final 
+        documentation, do an "updatenclweb" and look at it 
+        in location 
+
+          http://www.ncl.ucar.edu/Document/Functions/Built-in/new_routine.shtml
   
-  o  From the Built-In directory, do:
+         where "new_routine is the name of the NCL routine just added.
 
-      cd ..
-      cvs ci builtin_categories builtin_summaries
+      Add and check in the new .xml files as well as the yMakefile.
 
-  o  Edit webdoc/ncl/future_release.xml
-     to add the new stuff.
+  o  Edit $NCARG/webdoc/ncl/future_release.xml to add the new stuff.
+
+  o  If the new routine results in there being a new example to be
+     added to the Appliction examples, see:
+
+       $NCARG/webdoc/ncl/Applications/README
 
