@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.9 2007-06-25 14:46:49 haley Exp $
+#   $Id: create_dist,v 1.10 2007-08-14 13:23:48 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -359,7 +359,13 @@ if ($?INTERNAL) then
 
   set intrnl_inc_dirs  = ""
 
-  set intrnl_lib_files = "libhlu.a libncl.a libnfp.a libnfpfort.a libnio.a libblas.a libfftpack5_dp.a liblapack.a libsphere3.1_dp.a"
+  set intrnl_lib_files = "libhlu.a libncl.a libnfp.a libnfpfort.a libnio.a"
+
+#
+# Generally, I don't want to include these libraries, because they may
+# already be installed on a system via some other package.
+#
+#  "libblas.a libfftpack5_dp.a liblapack.a libsphere3.1_dp.a"
 
   set intrnl_lib_dirs  = "ncarg/hluex"
 
