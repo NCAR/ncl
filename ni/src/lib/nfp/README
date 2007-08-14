@@ -100,7 +100,7 @@
         webdoc/ncl/Document/Functions/Built-in
 
       Determine the version number of the release where the new
-      routine will appear Add a newversion tag like to the source like:
+      routine will appear.  Add a newversion tag to the source like:
 
          <newversion>
          4.3.1
@@ -115,15 +115,20 @@
       The script at:
 
         webdoc/ncl/Document/Functions/func-xml2html.py
-        will convert to .xml to .shtml, but without the css 
-        functionality being recognized.  To review the final 
+        will convert .xml to .shtml.  To review the final 
         documentation, do an "updatenclweb" (which is available
         in webdoc/ncl/internal/about_website//updatenclweb) and
         look at it in location 
 
           http://www.ncl.ucar.edu/Document/Functions/Built-in/new_routine.shtml
   
-         where "new_routine is the name of the NCL routine just added.
+         where "new_routine" is the name of the NCL routine just added.
+      
+      If you want to do a quick review of the documentation locally
+      without copying it to the web server you could use a browser, or 
+      something like "open" on a Mac.  If you do this, you will not
+      see the effects of the CSS elements in the .shtml file.  The
+      final review should be of the file on the web server.
 
       Add and check in the new .xml files as well as the yMakefile.
 
