@@ -1,5 +1,5 @@
- Adding a Fortran routine to NCL:
- ------ - ------- ------- -- ---
+ Adding a Fortran routine as an NCL built-in:
+ ------ - ------- ------- -- -- --- --------
  
    o  Add the routine to the nfpfort directory:
 
@@ -19,14 +19,10 @@
       version.
 
       If there is an underscore in the Fortran routine name, then
-      g77 adds an extra underscore at the end of the name.
-      On a Mac this should be handled by putting
+      g77 adds an extra underscore at the end of the name.  This
+      can cause load problems unless care is taken to account for this.
 
-              #define FcOptions -fno-second-underscore
-
-      in $NCARG/config/DARWIN, but that does not seem
-      to always work.  Avoiding underscores in the 
-      Fortran routine names is advisable.
+      Avoiding underscores in the Fortran routine names is advisable.
 
    o  Add the function reference to the yMakefile in the nfpfort
       directory and do:
@@ -112,25 +108,26 @@
 
       Add the new file names to the yMakefile
  
-      The script at:
+      To review the new documentation use
 
-        webdoc/ncl/Document/Functions/func-xml2html.py
-        will convert .xml to .shtml.  To review the final 
-        documentation, do an "updatenclweb" (which is available
-        in webdoc/ncl/internal/about_website//updatenclweb) and
-        look at it in location 
+         webdoc/ncl/internal/about_website/updatetnclweb
 
-          http://www.ncl.ucar.edu/Document/Functions/Built-in/new_routine.shtml
+      to create a .shtml file from the .xml and copy that 
+      to the NCL test web site  http://test.www.ncl.ucar.edu/
+      (note the "t" that distinguishes updatetnclweb from updatenclweb).
+
+      You can then review the documentation at
+
+  http://test.www.ncl.ucar.edu/Document/Functions/Built-in/new_routine.shtml
+
   
-         where "new_routine" is the name of the NCL routine just added.
-      
-      If you want to do a quick review of the documentation locally
-      without copying it to the web server you could use a browser, or 
-      something like "open" on a Mac.  If you do this, you will not
-      see the effects of the CSS elements in the .shtml file.  The
-      final review should be of the file on the web server.
+      where "new_routine" is the name of the NCL routine just added.
+
+      When you are satisfied with the documentation, use
+      updatenclweb to copy it to the live web site.
 
       Add and check in the new .xml files as well as the yMakefile.
+      Do not check in .shtml files.
 
   o  Edit webdoc/ncl/future_release.xml to add the new stuff.
 
