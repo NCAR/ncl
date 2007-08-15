@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.6 2007-05-17 18:24:48 grubin Exp $
+#       $Id: ncl_convert2nc,v 1.7 2007-08-15 19:13:20 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -906,13 +906,136 @@ begin
 
 ;***************************************************
 ; write *only* data values to predefined locations
+; if the variable exceeds a certain size, perform the operation in a loop to save on 
+; in core memory. There is no way to get the size of a type in NCL (!!!).
+; The approach used could be inefficient if the leftmost dimensions
+; have more elements than the rightmost. Hopefully that is a rare 
+; occurence -- certainly it would be very rare in GRIB files.
 ;***************************************************
+    fvar_types = getfilevartypes(f,fVarNames)
+    threshold_size = 250000000
     do i = 0, nfNames - 1
         if (varType(i) .ne. "string") then
             if (debug) then
                 print("write loop: i = " + i + "  " + fVarNames(i))
             end if
-            fnc->$ncVarNames(i)$ = (/ f->$fVarNames(i)$ /)
+            dsizes = getfilevardimsizes(f,fVarNames(i))
+	    type_size = 1
+	    if (fvar_types(i) .eq. "double") then
+	        type_size =  8
+            else if (fvar_types(i) .eq. "short") then
+	        type_size = 2
+            else if (fvar_types(i) .ne. "byte" .and. fvar_types(i) .ne. "character") then
+	        type_size = 4
+            end if
+            end if
+            end if
+	    tsize = product(dsizes) * type_size
+	    if (debug) then
+ 	        print(fVarNames(i) + " : " + tsize  + " (size in bytes) :  " + dimsizes(dsizes) + " (number of dimensions)")
+	    end if
+	    ndims = dimsizes(dsizes)
+            ; no special handling for ndims greater than 6 or less than 3
+	    if (tsize .lt. threshold_size .or. ndims .gt. 7 .or. ndims .lt. 3) then
+                fnc->$ncVarNames(i)$ = (/ f->$fVarNames(i)$ /)
+	    else
+	        if (ndims .eq. 7) then
+		    if (tsize / dsizes(0) .lt. threshold_size) then
+	                do j = 0, dsizes(0) - 1
+			    if (debug) then
+				print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:,:,:)")
+			    end if
+                            fnc->$ncVarNames(i)$(j,:,:,:,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:,:,:,:) /)
+                        end do
+                    else
+	                do j = 0, dsizes(0) - 1
+                            do k = 0, dsizes(1) -1
+		                if (debug) then
+				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:,:,:)")
+			        end if
+                                fnc->$ncVarNames(i)$(j,k,:,:,:,:,:) = (/ f->$fVarNames(i)$(j,k,:,:,:,:,:) /)
+                            end do
+                        end do
+                    end if
+		end if
+	        if (ndims .eq. 6) then
+		    if (tsize / dsizes(0) .lt. threshold_size) then
+	                do j = 0, dsizes(0) - 1
+			    if (debug) then
+				print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:,:)")
+			    end if
+                            fnc->$ncVarNames(i)$(j,:,:,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:,:,:) /)
+                        end do
+                    else
+	                do j = 0, dsizes(0) - 1
+                            do k = 0, dsizes(1) -1
+		                if (debug) then
+				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:,:)")
+			        end if
+                                fnc->$ncVarNames(i)$(j,k,:,:,:,:) = (/ f->$fVarNames(i)$(j,k,:,:,:,:) /)
+                            end do
+                        end do
+                    end if
+		end if
+	        if (ndims .eq. 5) then
+		    if (tsize / dsizes(0) .lt. threshold_size) then
+	                do j = 0, dsizes(0) - 1
+			    if (debug) then
+				print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:)")
+			    end if
+                            fnc->$ncVarNames(i)$(j,:,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:,:) /)
+                        end do
+                    else
+	                do j = 0, dsizes(0) - 1
+                            do k = 0, dsizes(1) -1
+		                if (debug) then
+				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:)")
+			        end if
+                                fnc->$ncVarNames(i)$(j,k,:,:,:) = (/ f->$fVarNames(i)$(j,k,:,:,:) /)
+                            end do
+                        end do
+                    end if
+		end if
+	        if (ndims .eq. 4) then
+		    if (tsize / dsizes(0) .lt. threshold_size) then
+	                do j = 0, dsizes(0) - 1
+			    if (debug) then
+				print("copying " + fVarNames(i) + "(" + j + ",:,:,:)")
+			    end if
+                            fnc->$ncVarNames(i)$(j,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:) /)
+                        end do
+                    else
+	                do j = 0, dsizes(0) - 1
+                            do k = 0, dsizes(1) -1
+		                if (debug) then
+				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:)")
+			        end if
+                                fnc->$ncVarNames(i)$(j,k,:,:) = (/ f->$fVarNames(i)$(j,k,:,:) /)
+                            end do
+                        end do
+                    end if
+		end if
+	        if (ndims .eq. 3) then
+		    if (tsize / dsizes(0) .lt. threshold_size) then
+	                do j = 0, dsizes(0) - 1
+			    if (debug) then
+				print("copying " + fVarNames(i) + "(" + j + ",:,:)")
+			    end if
+                            fnc->$ncVarNames(i)$(j,:,:) = (/ f->$fVarNames(i)$(j,:,:) /)
+                        end do
+                    else
+	                do j = 0, dsizes(0) - 1
+                            do k = 0, dsizes(1) -1
+		                if (debug) then
+				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:)")
+			        end if
+                                fnc->$ncVarNames(i)$(j,k,:) = (/ f->$fVarNames(i)$(j,k,:) /)
+                            end do
+                        end do
+                    end if
+		end if
+            end if
+            delete(dsizes)
         end if
     end do
 
