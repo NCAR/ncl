@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.8 2007-06-07 23:04:03 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.9 2007-08-17 21:05:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1058,6 +1058,8 @@ static NhlErrorTypes BuildNativeMeshFromBounds
 	return NhlNOERROR;
 
 }
+
+#ifdef BuildTRIANGLE
 		 
 static NhlErrorTypes BuildDelaunayMesh 
 #if	NhlNeedProto
@@ -1252,7 +1254,7 @@ static NhlErrorTypes BuildDelaunayMesh
 	return NhlNOERROR;
 
 }
-
+#endif
 
 /*
  * Function:	CnTriMeshRendererInitialize
@@ -3040,7 +3042,13 @@ static NhlErrorTypes InitMesh
 					(tmp,cnl,entry_name);
 			}				
 			else {
+#ifdef BuildTRIANGLE
 				ret = BuildDelaunayMesh(tmp,cnl,entry_name);
+#else
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "Cannot create triangular mesh: supply additional resources or build with Triangle package");
+				return NhlFATAL;
+#endif
 			}
 		}
 		else {

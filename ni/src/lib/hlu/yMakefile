@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.75 2007-03-19 01:38:02 haley Exp $
+#      $Id: yMakefile,v 1.76 2007-08-17 21:05:22 dbrown Exp $
 #
 #########################################################################
 #                                                                       #
@@ -20,7 +20,19 @@
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
 MYNAME		= libhlu
 
-EXTRA_CDEFINES	=	$(OS_DEF)
+#ifdef BuildTRIANGLE
+TRIANGLE_DEF = -DBuildTRIANGLE
+TRIANGLE_HDR = triangle.h
+TRIANGLE_SRC = triangle.c
+TRIANGLE_OBJ = triangle.o
+#else
+#define TRIANGLE_DEF
+#define TRIANGLE_HDR
+#define TRIANGLE_SRC
+#define TRIANGLE_OBJ
+#endif 
+
+EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF)
 
 HDRS1   	= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CoordApprox.h Error.h ErrorI.h ErrorP.h IrregularTransObj.h \
@@ -60,10 +72,10 @@ HDRS2           = FortranP.h ScalarField.h ScalarFieldP.h ScalarFieldFloatP.h \
 		CnTriMeshRenderer.h CnTriMeshRendererP.h \
 		TriMeshTransObj.h TriMeshTransObjP.h \
 		ImageWorkstation.h ImageWorkstationP.h \
-		MeshScalarField.h MeshScalarFieldP.h \
-		triangle.h
+		MeshScalarField.h MeshScalarFieldP.h 
 
-HDRS            = $(HDRS1) $(HDRS2)
+
+HDRS            = $(HDRS1) $(HDRS2) $(TRIANGLE_HDR)
 
 CSRCS1   	= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -86,9 +98,9 @@ CSRCS2          = MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
 		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c \
-		MeshScalarField.c triangle.c
+		MeshScalarField.c
 
-CSRCS           = $(CSRCS1) $(CSRCS2)
+CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC)
 
 COBJS1    	= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -111,9 +123,9 @@ COBJS2          = ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
 		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o \
-		MeshScalarField.o triangle.o
+		MeshScalarField.o
 
-COBJS           = $(COBJS1) $(COBJS2)
+COBJS           = $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ)
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
@@ -141,8 +153,10 @@ InstallTarget(sysresfile,$(INSTALL_INC),$(PYNGLNCARGPATH))
 #endif
 DependTarget($(CSRCS))
 
+#ifdef BuildTRIANGLE
 triangle.o: triangle.c
 	$(CC) $(CCOPTIONS) -DNO_TIMER -DTRILIBRARY -c triangle.c
+#endif
 
 #if defined(IRIX64)
 cmpf.o: cmpf.c
