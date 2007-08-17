@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.84 2007-08-13 17:33:38 haley Exp $
+ *      $Id: Project,v 1.85 2007-08-17 21:50:17 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2007-08-13 17:33:38 $
+ *	$Date: 2007-08-17 21:50:17 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -50,6 +50,14 @@
 #undef	BuildGRIB2
 #endif
 #endif	/* BuildGRIB2 */
+
+#ifndef	BuildTRIANGLE
+#define	BuildTRIANGLE
+#else
+#if	!BuildTRIANGLE
+#undef	BuildTRIANGLE
+#endif
+#endif	/* BuildTRIANGLE */
 
 #ifndef	BuildUdunits
 #define	BuildUdunits

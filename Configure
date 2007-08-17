@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.35 2007-06-28 16:22:32 haley Exp $
+#      $Id: Configure,v 1.36 2007-08-17 21:49:44 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2007-06-28 16:22:32 $
+#	$Date: 2007-08-17 21:49:44 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -149,6 +149,8 @@ echo -n "..."
 # echo -n "..."
 set buildxlibstuff=`$makecmd XSTUFF`
 echo -n "..."
+set buildtriangle=`$makecmd TRIANGLESTUFF`
+echo -n "..."
 set buildhdf=`$makecmd HDFSTUFF`
 echo -n "..."
 set buildnetcdf4=`$makecmd NETCDF4STUFF`
@@ -252,7 +254,7 @@ if (-e ni) then
         read in netCDF, HDF4, HDF4-EOS, GRIB, binary and ASCII data.
         It requires several external packages (like netCDF and HDF),
         and has several optional packages you can build in (UDUNITS,
-        HDF-EOS, and Vis5D functions).
+        Triangle, HDF-EOS, and Vis5D functions).
 
         NCL is a separate software package from NCAR Graphics. You
         don't don't need it in order to use NCAR Graphics.
@@ -274,6 +276,7 @@ else
 #  echo "Not building NCL...source code directory is not available."
   set buildncl = "n"
   set buildudunits = "n"
+  set buildtriangle = "n"
   set newbuildncl
   set altered
 endif
@@ -656,10 +659,46 @@ if (("$answer" != "") && ("$answer" != "$buildhdf")) then
 endif
 
 #
-# Only ask about NetCDF- UDUNITS, HDFEOS, Vis5d+, and other external
-# software support if we are actually planning to build NCL.
+# Only ask about NetCDF- UDUNITS, HDFEOS, Triangle, Vis5d+, and
+# other external software support if we are actually planning to
+# build NCL.
 #
 if ("$buildncl" == "y" || "$buildncl" == "Y") then
+#
+# Triangle
+#
+  if ($?verbose_option) then
+    cat <<"EOF"
+
+	The Triangle code is what allows you to generate triangular
+        meshes so that you can contour non-uniform grids.
+	In order to have this functionality, you must download the
+        Triangle code from http://www.cs.cmu.edu/~quake/triangle.html
+        and agree to Jonathan Shewchuk's license restrictions that
+        are mentioned on that page. Once you download the code
+        ('triangle.c' and 'triangle.h'), put these two files in the 
+        ni/src/lib/hlu subdirectory, answer "y" to this question,
+        and you should be set.
+
+"EOF"
+  endif
+
+  echo ""
+  echo "Build Triangle support (optional) into NCL ($buildtriangle)"
+  echo "Requires 'triangle.c' and 'triangle.h' code from"
+  echo " http://www.cs.cmu.edu/~quake/triangle.html."
+  echo "You must agree to the license restrictions in the above URL,"
+  echo "download these two files, and put them in ni/src/lib/hlu"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildtriangle")) then
+	set buildtriangle = $answer
+	set newbuildtriangle
+        set altered
+  endif
+
+
 #
 # NetCdf-4
 #
@@ -832,12 +871,14 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 else
   set buildhdfeos  = "n"
   set buildnetcdf4 = "n"
+  set buildtriangle = "n"
   set buildudunits = "n"
   set buildgrib2 = "n"
   set buildv5d = "n"
   set builddods = "n"
   set newbuildhdfeos
   set newbuildnetcdf4
+  set newbuildtriangle
   set newbuildudunits
   set newbuildgrib2
   set newbuildv5d
@@ -1181,6 +1222,14 @@ if ($?newbuildnetcdf4) then
 	else
 		echo "#define BuildNetCDF4 FALSE" >> Site.local
 		echo "#define NetCDF4lib" >> Site.local
+	endif
+endif
+
+if ($?newbuildtriangle) then
+	if ("$buildtriangle" == "y") then
+		echo "#define BuildTRIANGLE TRUE" >> Site.local
+	else
+		echo "#define BuildTRIANGLE FALSE" >> Site.local
 	endif
 endif
 
