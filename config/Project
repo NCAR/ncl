@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.85 2007-08-17 21:50:17 haley Exp $
+ *      $Id: Project,v 1.86 2007-08-20 14:25:18 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2007-08-17 21:50:17 $
+ *	$Date: 2007-08-20 14:25:18 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -402,8 +402,8 @@ NFPFORTLIB	= -lnfpfort
 NIOLIB		= -lnio
 NCLLIB		=
 NCLAPILIB	= -lNGncl
-BLASLIB	        = -lblas
-LAPACKLIB       = -llapack
+BLASLIB	        = -lblas_ncl
+LAPACKLIB       = -llapack_ncl
 SPHERELIB	= -lsphere3.1_dp
 FFTPACK5LIB	= -lfftpack5_dp
 
@@ -446,8 +446,8 @@ NIOLIB		= _UseLib(-L$(NIOLIBSRC),-lnio)
 XCBLIB		= _UseLib(-L$(XCBLIBSRC),-lXcb)
 NCLLIB		= _UseLib(-L$(NCLLIBSRC),-lncl)
 NCLAPILIB	= _UseLib(-L$(NCLLIBSRC),-lnclapi)
-BLASLIB         = _UseLib(-L$(BLASSRC),-lblas)
-LAPACKLIB       = _UseLib(-L$(LAPACKSRC),-llapack)
+BLASLIB         = _UseLib(-L$(BLASSRC),-lblas_ncl)
+LAPACKLIB       = _UseLib(-L$(LAPACKSRC),-llapack_ncl)
 SPHERELIB	= _UseLib(-L$(SPHERESRC),-lsphere3.1_dp)
 FFTPACK5LIB	= _UseLib(-L$(FFTPACK5SRC),-lfftpack5_dp)
 
