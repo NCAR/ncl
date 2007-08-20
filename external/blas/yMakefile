@@ -1,4 +1,4 @@
-MYLIB = libblas
+MYLIB = libblas_ncl
 
 SRCS = caxpy.f ccopy.f cdotc.f cdotu.f cgbmv.f cgemm.f cgemv.f cgerc.f \
 	cgeru.f chbmv.f chemm.f chemv.f cher.f cher2.f cher2k.f cherk.f \

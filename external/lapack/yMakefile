@@ -1,4 +1,4 @@
-MYLIB = liblapack
+MYLIB = liblapack_ncl
 
 
 OBJS1 = cbdsqr.o cgbbrd.o cgbcon.o cgbequ.o cgbrfs.o cgbsv.o cgbsvx.o \
