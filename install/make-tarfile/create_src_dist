@@ -1,0 +1,268 @@
+#!/bin/csh -f
+#
+#   $Id: create_src_dist,v 1.1 2007-08-20 16:28:58 haley Exp $
+#
+#######################################################################
+#                                                                     #
+#              Copyright (C)  2007                                    #
+#        University Corporation for Atmospheric Research              #
+#              All Rights Reserved                                    #
+#                                                                     #
+#######################################################################
+#
+#   File:       create_src_dist
+#
+#   Author:     Mary Haley
+#           National Center for Atmospheric Research
+#           PO 3000, Boulder, Colorado
+#
+#   
+#   Date:       Tue Mar 27 09:27:53 MDT 2007
+#
+#   Description:  Tars up NCL and/or NCAR Graphics source for release to users.
+#
+# There are two types of releases possible:
+#
+#      - NCL and NCAR Graphics source code (default)
+#      - NCAR Graphics source code
+#
+#   Options:   -r :  root directory
+#              -1 :  tar up just NCAR Graphics (not NCL)
+#              -c :  scp to windom.ucar.edu
+#              -v :  version number
+#
+# Set defaults for the root directory, the tar file directory, and the
+# version number.
+#
+# set echo verbose timestamp
+#
+set rootdir     = "$NCARG"
+set parentdir   = `pwd`
+set scpmach     = "windom.ucar.edu"
+set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles"
+set version     = ""
+set cvsroot     = "windom.ucar.edu:/fs/scd/home1/ncargd/CVS"
+set cvsrsh      = "ssh"
+set tardir1     = "/fs/scd/home1/ncargd/dist/tarfiles"
+set tardir2     = "/fis/scd/home/ncargd"
+set extra       = ""
+
+if (-e $tardir1) then
+  set tardir = $tardir1
+else if (-e $tardir2) then 
+  set tardir = $tardir2
+else
+  set tardir = `pwd`
+endif
+
+#
+# Sort through options.
+#
+
+unset SCP
+
+set NCARGNCL
+
+while ($#argv > 0)
+  switch ($1)
+    case "-1":
+      set NCARGONLY
+      unset NCARGNCL
+      shift
+      breaksw
+
+    case "-v":
+      shift
+      set version = "$1"
+      shift
+      breaksw
+
+    case "-d":
+      shift
+      set tardir = "$1"
+      shift
+      breaksw
+
+    case "-c":
+      set SCP
+      shift
+      breaksw
+
+    case "-e":
+      shift
+      set extra = "$1"
+      shift
+      breaksw
+
+    case "-r":
+      shift
+      set rootdir = "$1"
+      shift
+      breaksw
+
+    case "-p":
+      shift
+      set parentdir = "$1"
+      shift
+      breaksw
+
+    case "-h":
+    case "-help":
+      goto usage
+      breaksw
+
+    default:
+      echo "option not recognized"
+      exit 1
+    endsw
+end
+
+#
+# Error checking.
+#
+if (! -e $tardir) then
+  echo "Directory $tardir does not exist. Please choose another directory."
+  exit 1
+endif
+
+#
+# CVS check out the latest source code.
+#
+# First set some CVS environment variables.
+#
+setenv CVSROOT $cvsroot
+setenv CVS_RSH $cvsrsh
+
+echo "I will be CVS checking out the source code in the directory"
+echo -n "'$parentdir'. Continue? (y/n) "
+set answer="$<"
+if ("$answer" != "y") then
+  exit
+endif
+
+#
+# What if there's already an "ncarg" directory?
+#
+cd $parentdir
+if (-e ncarg) then
+  echo "Directory $parentdir/ncarg already exists." 
+  echo -n "Do you want me to remove it? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    echo "Directory '$parentdir/ncarg' already exists and may not be"
+    echo "the correct source code. Can't continue."
+    exit
+  endif
+  set cmd = "/bin/rm -rf $parentdir/ncarg"
+  echo "$cmd"
+  $cmd
+endif
+
+# 
+# Check out all of $CVSROOT/ncarg
+#
+set cmd = "cvs co ncarg"
+echo "$cmd"
+$cmd
+if (! -e ncarg) then
+  echo "Directory '$parentdir/ncarg' does not exist. The CVS command might"
+  echo "have failed. Can't continue."
+  exit
+endif
+
+#
+# Get the version, if not already set by user.
+#
+if ($version == "") then
+  if ($?NCARGONLY) then
+    set version = `cat ncarg/NcargVersion`
+  else
+    set version = `cat ncarg/NclVersion`
+  endif
+endif
+
+if ($?NCARGONLY) then
+  set src_prefix = "ncarg-$version"
+  set tar_prefix = "ncarg_src"
+else
+  set src_prefix = "ncl_ncarg-$version"
+  set tar_prefix = "ncl_ncarg_src"
+endif
+set src_tar_dir = "$parentdir/$src_prefix"
+ 
+if ($extra != "") then
+  set tar_prefix = "{$tar_prefix}_{$extra}"
+endif
+
+set tar_filename = "$tar_prefix-$version.tar"
+
+# 
+# Set up directories and files to remove (that is, that we don't
+# want to give to the user).
+#
+
+if ($?NCARGONLY) then
+  set stuff_to_remove = "install pynio ni external"
+else
+  set stuff_to_remove = "install pynio ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h"
+
+endif
+
+foreach f($stuff_to_remove)
+  set cmd = "/bin/rm -rf $parentdir/ncarg/$f"
+  echo "$cmd"
+  $cmd
+end
+
+#
+# Rename the parent "ncarg" directory to something that indicates
+# what kind of source we have, and what version.
+#
+mv ncarg $src_prefix
+
+echo -n "The tar file will be called $tar_filename and it will be put in $tardir. Continue? (y/n) "
+set answer="$<"
+if ("$answer" != "y") then
+  exit
+endif
+
+#
+# Tar up source directory
+#
+echo "Tarring up the files..."
+tar -chf $tardir/$tar_filename $src_prefix
+
+#
+# Compress file.
+#
+echo "Gzipping the tar file..."
+gzip $tardir/$tar_filename
+if (-f $tardir/$tar_filename.gz) then 
+  echo "Created '$tardir/$tar_filename.gz'..."
+else
+  echo "Error, no compressed tar file created."
+  exit
+endif
+
+if ($?SCP) then
+  echo "scp (via windom) or move file to $scpdir..."
+  if ("$name" == "meeker" || "$name" == "windom" || "$name" == "longs") then
+    /bin/mv $tardir/$tar_filename.gz $scpdir
+  else
+    scp $tardir/$tar_filename.gz $scpmach\:$scpdir
+  endif
+endif
+
+exit 0
+
+usage:
+echo "usage: create_src_dist [options]"
+echo ""
+echo "   Options:   -r : root directory"
+echo "              -d : tar file directory"
+echo "              -c : scp to windom.ucar.edu"
+echo "              -v : version number"
+echo "              -e : extra string to include in tarfile name"
+echo "              -1 : tar up NCARG source files only"
+echo ""
+exit
