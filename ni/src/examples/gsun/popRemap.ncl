@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.11 2006-07-19 02:12:21 haley Exp $
+;      $Id: popRemap.ncl,v 1.12 2007-08-21 19:17:52 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -127,7 +127,9 @@ begin
  ;print ("create_rotPopFileName: gridSrc="+gridSrc+"  gridDst="+gridDst)
 
                                         ; names with rot angles
-  rotPOP  = (/ "POPX3","POP23", "POP43", "gx1v3", "gx1v2" \
+  rotPOP  = (/ "POPX3","POP23" , "POP43", "gx1v3", "gx1v2" \
+             , "gx3v3", "gx3v4", "gx3v5", "gx3v6", "gx3v7" \
+             , "gx3Uum", "gx3uum"  \
              , "gx3", "gx3p", "hx1", "crx3" /)
 
   indRot  = ind(gridSrc.eq.rotPOP)
