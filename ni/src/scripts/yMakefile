@@ -1,14 +1,11 @@
 #
-#	$Id: yMakefile,v 1.9 2007-08-22 04:45:24 haley Exp $
+#	$Id: yMakefile,v 1.10 2007-08-22 13:54:12 haley Exp $
 #
 
 SCRIPTS1 = nhlcc nhlf77 nhlf90 ng4ex 
 SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc
 
-#ifdef	BuildWithF90
-MOREMAN1 = nhlf90
-#endif
-MAN1 = ng4ex nhlcc nhlf77 $(MOREMAN1)
+MAN1 = ng4ex nhlcc nhlf77 nhlf90
 
 nhlf77: nhlf77.csh Makefile
 	@sed \
