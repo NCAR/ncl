@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.9 2007-08-06 14:46:53 haley Exp $
+#   $Id: ng4ex.csh,v 1.10 2007-08-22 04:45:24 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -1126,7 +1126,7 @@ if (! $?NoRunOption) then
       if ($?cprog) then
         nhlcc -o $name $src_file $comp_flags
       else
-        SED_FCSCRIPT -o $name $src_file $comp_flags
+        nhlf77 -o $name $src_file $comp_flags
       endif
       if ($status != 0) then
           echo ""

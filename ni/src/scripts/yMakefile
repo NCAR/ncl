@@ -1,14 +1,8 @@
 #
-#	$Id: yMakefile,v 1.8 2006-08-28 17:40:06 haley Exp $
+#	$Id: yMakefile,v 1.9 2007-08-22 04:45:24 haley Exp $
 #
 
-#ifdef	BuildWithF90
-NHF_SCRIPT	=	nhlf90
-#else
-NHF_SCRIPT	=	nhlf77
-#endif
-
-SCRIPTS1 = nhlcc $(NHF_SCRIPT) ng4ex 
+SCRIPTS1 = nhlcc nhlf77 nhlf90 ng4ex 
 SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc
 
 #ifdef	BuildWithF90
@@ -16,7 +10,7 @@ MOREMAN1 = nhlf90
 #endif
 MAN1 = ng4ex nhlcc nhlf77 $(MOREMAN1)
 
-$(NHF_SCRIPT): nhlf77.csh Makefile
+nhlf77: nhlf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
@@ -31,7 +25,24 @@ $(NHF_SCRIPT): nhlf77.csh Makefile
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	<nhlf77.csh > $(NHF_SCRIPT)
+	<nhlf77.csh > nhlf77
+
+nhlf90: nhlf77.csh Makefile
+	@sed \
+	-e 's+SED_FC+$(F77)+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_INCSEARCH+$(INCSEARCH)+' \
+	-e 's+SED_LDFFLAGS+$(FC_LDOPTIONS)+' \
+	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_INCDIR+$(INCDIR)+' \
+	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
+	-e 's+SED_HDFLIB+$(HDFLIB)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<nhlf77.csh > nhlf90
 
 nhlcc: nhlcc.csh Makefile
 	@sed \
@@ -75,7 +86,6 @@ ng4ex: ng4ex.csh Makefile
 	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
 	-e 's+SED_NCLEXDIR+$(NCLEXDIR)+' \
 	-e 's+SED_RESDIR+$(RESDIR)+' \
-	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
 	-e 's+SED_DATADIR+$(DATADIR)+' \
 	< ng4ex.csh > ng4ex
 #else
@@ -84,7 +94,6 @@ ng4ex: ng4ex.cry.csh Makefile
         -e 's+SED_EXE_SUFFIX+$(EXE_SUFFIX)+' \
 	-e 's+SED_HLUEXDIR+$(HLUEXDIR)+' \
 	-e 's+SED_RESDIR+$(RESDIR)+' \
-	-e 's+SED_FCSCRIPT+$(NHF_SCRIPT)+' \
 	-e 's+SED_DATADIR+$(DATADIR)+' \
 	< ng4ex.cry.csh > ng4ex
 #endif
