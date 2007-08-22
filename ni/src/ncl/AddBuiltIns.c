@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.79 2007-03-16 23:16:31 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.80 2007-08-22 21:02:44 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -728,6 +728,13 @@ extern NhlErrorTypes _NclIListSetType(
 void
 #endif
 );
+
+extern NhlErrorTypes _NclINhlGetErrorObjectId(
+#if     NhlNeedProto
+void
+#endif
+);
+
 
 void _NclAddBuiltIns
 #if     NhlNeedProto
@@ -1639,6 +1646,9 @@ void _NclAddBuiltIns
 	NclRegisterFunc(_NclINhlGetWorkspaceObjectId,args,"NhlGetWorkspaceObjectId",nargs);
 	nargs = 0;
 	NclRegisterFunc(_NclINhlAppGetDefaultParentId,args,"NhlAppGetDefaultParentId",nargs);
+
+	nargs = 0;
+	NclRegisterFunc(_NclINhlGetErrorObjectId,args,"NhlGetErrorObjectId",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

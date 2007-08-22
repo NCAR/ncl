@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.c,v 1.31 2007-07-26 19:50:30 grubin Exp $
+ *      $Id: Error.c,v 1.32 2007-08-22 21:03:53 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -44,6 +44,7 @@
 static char		def_file[] = "stderr";
 static NhlErrorLayer	errorLayer = NULL;
 #define	DEF_UNIT	(74)
+
 
 /************************************************************************
 *									*
@@ -2093,4 +2094,37 @@ void _NHLCALLF(nhlpfgerhnd,NHLPFGERHND)
 		c_seter(_NhlGKSERRMSG,_NhlGKSERRNUM,1);
 
 	return;
+}
+
+/*
+ * Function:    NhlGetErrorObjectId
+ *
+ * Description: This function returns the pid associated wit the
+ *              errorLayer object, so that a user can set Error
+ *              object ressources.
+ *
+ * Scope:       Global Public
+ * Returns:     The pid associated with the errorLayer, or one
+ *              of NhlErrorTypes if errorLayer is unavailable.
+ *
+ */
+int
+NhlGetErrorObjectId
+#if NhlNeedProto
+(
+    void
+)
+#else
+()
+#endif
+{
+    char    *e_text;
+    char    *entry_name = "NhlErrorGetId";
+
+    if (errorLayer != NULL)
+        return errorLayer->base.id;
+
+    e_text = "%s: Error Object not found";
+    NhlPError(NhlFATAL, NhlEUNKNOWN, e_text, entry_name);
+    return NhlFATAL;
 }

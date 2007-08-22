@@ -1,5 +1,5 @@
 /*
- *      $Id: Error.h,v 1.9 2000-02-08 01:18:09 dbrown Exp $
+ *      $Id: Error.h,v 1.10 2007-08-22 21:03:53 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -166,6 +166,13 @@ extern char *NhlErrSPrintMsg(
 #if	NhlNeedProto
 	char		*buffer,	/* buffer to print message to	*/
 	Const NhlErrMsg	*msg		/* message to print		*/
+#endif
+);
+
+
+extern int  NhlGetErrorObjectId(
+#if NhlNeedProto
+    void
 #endif
 );
 

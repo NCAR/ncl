@@ -3276,13 +3276,13 @@ NhlErrorTypes _NclINhlGetWorkspaceObjectId
 ()
 #endif
 {
-        int n_dims_ = 1, len_dims = 1;
-        int tmp;
-	obj *out_ids;
-	struct _NclHLUObjRec *tmp_hlu;
-	NclStackEntry data_out;
-	NhlErrorTypes ret = NhlNOERROR;
-	NhlLayer tmp_layer;
+    int n_dims_ = 1, len_dims = 1;
+    int tmp;
+    obj *out_ids;
+    struct _NclHLUObjRec *tmp_hlu;
+    NclStackEntry data_out;
+    NhlErrorTypes ret = NhlNOERROR;
+    NhlLayer tmp_layer;
 
 
 	
@@ -4347,4 +4347,36 @@ NhlErrorTypes _NclINewMarker
                 );
 
 	return(MIN(ret,subret));
+}
+
+NhlErrorTypes _NclINhlGetErrorObjectId
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    int n_dims_ = 1, len_dims = 1;
+    int tmp;
+    obj *out_ids;
+    struct _NclHLUObjRec *tmp_hlu;
+    NclStackEntry data_out;
+    NhlErrorTypes ret = NhlNOERROR;
+    NhlLayer tmp_layer;
+
+	
+    tmp = NhlGetErrorObjectId();
+    tmp_layer = _NhlGetLayer(tmp);
+    tmp_hlu = _NclHLUObjCreate(NULL, NULL, Ncl_HLUObj, 0, STATIC,
+                tmp, -1, tmp_layer->base.layer_class);
+    out_ids = (obj *) NclMalloc(sizeof(obj));
+    *out_ids = tmp_hlu->obj.id;
+    data_out.kind = NclStk_VAL;
+    data_out.u.data_obj = _NclMultiDValHLUObjDataCreate(
+                NULL, NULL, Ncl_MultiDValHLUObjData,
+                0, (void *) out_ids,
+                &((NclTypeClass)nclTypeobjClass)->type_class.default_mis,n_dims_,
+                &len_dims,TEMPORARY,NULL);
+    _NclPlaceReturn(data_out);
+    return ret;
 }
