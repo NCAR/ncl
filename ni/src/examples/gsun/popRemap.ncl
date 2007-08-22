@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.12 2007-08-21 19:17:52 shea Exp $
+;      $Id: popRemap.ncl,v 1.13 2007-08-22 14:41:39 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -780,7 +780,7 @@ begin
                                          ; REMAP
                                          ; uvNew will have extra dim
 
-  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "crx3"/)
+  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "gx3v3",  "gx3v5",  "crx3"/)
  ;print(gridSrcType)
  ;print(types)
   if (nDu.eq.2) then
