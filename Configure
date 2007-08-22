@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.36 2007-08-17 21:49:44 haley Exp $
+#      $Id: Configure,v 1.37 2007-08-22 04:39:12 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2007-08-17 21:49:44 $
+#	$Date: 2007-08-22 04:39:12 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -122,13 +122,7 @@ echo "Makefile built, checking defaults..."
 echo ""
 echo ""
 
-set bindir=`$makecmd BROOT`
-echo -n "..."
-set libdir=`$makecmd LROOT`
-echo -n "..."
-set incdir=`$makecmd IROOT`
-echo -n "..."
-set mandir=`$makecmd MROOT`
+set parentdir=`$makecmd ROOT`
 echo -n "..."
 set tmpdir=`$makecmd TROOT`
 echo -n "..."
@@ -165,13 +159,9 @@ set buildv5d=`$makecmd V5DSTUFF`
 echo -n "..."
 # set buildpyngl=`$makecmd PYNGLSTUFF`
 # echo -n "..."
-set buildf90=`$makecmd F90STUFF`
-set f90comp="f90"
-echo -n "..."
 set builddods=`$makecmd DODSSTUFF`
 echo -n "..."
 set ncargversion=`$makecmd NGVERS`
-echo ""
 echo -n "..."
 set nclversion=`$makecmd NCLVERS`
 echo ""
@@ -181,7 +171,7 @@ onintr cleanup
 
 QuestionAndAnswer:
 echo ""
-echo "*** Configuration Procedure for NCARG V$ncargversion and NCL V$nclversion ***"
+echo "*** Configuration Procedure for NCL and NCAR Graphics V$nclversion ***"
 echo ""
 
 if ($?verbose_option) then
@@ -216,26 +206,6 @@ if ($?verbose_option) then
   if ("$answer" == "q") goto cleanup
 
 endif
-
-cat <<"EOF"
-
-	As of version 3.2 of NCAR Graphics, every user will need to
-	set at least one environment variable in order to use the
-	package.  Depending on how you install NCAR Graphics on
-	your system, users may also need to set additional environment
-	variables.  To keep from having to do this, it is a good
-	idea to install NCAR Graphics libraries, binaries, and
-	include files under one root directory; for example,
-	/usr/local/lib, /usr/local/bin, and /usr/local/include.
-	The root directory in this case is /usr/local.
-
-	If you install everything to one root directory, then users
-	will only need to setenv NCARG_ROOT to this directory.
-	Otherwise, they will need to set the environment variables
-	NCARG_BIN, NCARG_LIB, and NCARG_INCLUDE to point to the
-	respective directories.
-
-"EOF"
 
 echo -n "Enter Return to continue, or q(quit) > "
 set answer="$<"
@@ -282,232 +252,61 @@ else
 endif
 
 #
-# Binary directory.
+# Parent installation directory for NCL/NCAR Graphics.
 #
 
-proc_bin:
+proc_parent:
 if ($?verbose_option) then
   cat <<"EOF"
 
-	The executables must be installed in a directory ending in
-	'bin'. It is a good idea to install them to a directory that
-	will be on the "search path" of the NCAR Graphics user.
-	This procedure will check to make sure that the directory
-	specified is writable by the installation process.
+	The NCL/NCAR Graphics software must be installed in a parent 
+        directory containing subdirectiries 'bin', 'include', 'lib',
+        and 'man'. This procedure will make sure that these
+        directories are writable by the installation process.
 
 "EOF"
 endif
 
 echo ""
-echo "Executable installation directory : $bindir"
+echo "Parent installation directory : $parentdir"
 echo -n "Enter Return (default), new directory, or q(quit) > "
 set answer="$<"
 if ("$answer" == "q") goto cleanup
 if ("$answer" != "") then
-  set bindir="$answer"
+  set parentdir="$answer"
   set altered
 endif
 
-set tail="$bindir:t"
-
-if ("$tail" != "bin") then
-  echo ""
-  echo "  *** Warning: <$bindir> does not end in 'bin'."
-  goto proc_bin
-endif
-
-if (-d $bindir) then
-  if (! -w "$bindir") then
-    echo "<$bindir> is not writable."
+if (-d $parentdir) then
+  if (! -w "$parentdir") then
+    echo "<$parentdir> is not writable."
     echo "New directory name? (y)"
     echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
     set answer="$<"
     if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_bin
-  endif
-else
-  set parent="$bindir:h"
-  if (! -w "$parent") then
-    echo "  *** Warning: <$parent> is not writable."
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_bin
+    if ("$answer" == "y" || "$answer" == "") goto proc_parent
   endif
 endif
-
 
 #
-# Library directory.
+# Make sure subdirs bin, include, lib, and man are writable.
 #
 
-proc_lib:
+set instdirs = ("bin" "include" "lib" "man")
 
-if ($?verbose_option) then
-  cat <<"EOF"
-
-	NCAR Graphics libraries must be installed in a directory
-	ending in 'lib'.  It is a good idea, if possible, to install
-	them to a directory that is on the default search path for
-	the loader.  This procedure will check to make sure that the
-	directory specified is writable by the installation process.
-
-"EOF"
-endif
-
-echo ""
-echo "Library installation directory    : $libdir"
-echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if ("$answer" != "") then
-  set libdir="$answer"
-  set altered
-endif
-
-set tail="$libdir:t"
-if ("$tail" != "lib") then
-  echo ""
-  echo "  *** Warning: <$libdir> does not end in 'lib'."
-  goto proc_lib
-endif
-
-if (-d $libdir) then
-  if (! -w "$libdir") then
-    echo "<$libdir> is not writable"
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_lib
+foreach d($instdirs)
+  set dir = "$parentdir/$d"
+  if (-d "$dir") then
+    if (! -w "$dir") then
+      echo "<$dir> is not writable"
+      echo "New parent directory name? (y)"
+      echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
+      set answer="$<"
+      if ("$answer" == "q") goto cleanup
+      if ("$answer" == "y" || "$answer" == "") goto proc_parent
+    endif
   endif
-else
-  set parent="$libdir:h"
-  if (! -w "$parent") then
-    echo "  *** Warning: <$parent> is not writable"
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_lib
-  endif
-endif
-
-
-#
-# Include directory.
-#
-
-proc_inc:
-
-if ($?verbose_option) then
-  cat <<"EOF"
-
-	NCAR Graphics include files must be installed in a directory
-	ending in 'include'. This procedure will check to make sure
-	that the directory specified is writable by the installation
-	process.
-
-"EOF"
-endif
-
-echo ""
-echo "Include file installation directory    : $incdir"
-echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if ("$answer" != "") then
-  set incdir="$answer"
-  set altered
-endif
-
-set tail="$incdir:t"
-if ("$tail" != "include") then
-  echo ""
-  echo "  *** Warning: <$incdir> does not end in 'include'."
-  goto proc_inc
-endif
-
-if (-d $incdir) then
-  if (! -w "$incdir") then
-    echo "<$incdir> is not writable"
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_inc
-  endif
-else
-  set parent="$incdir:h"
-  if("$parent" == "") set parent="/"
-  if (! -w "$parent") then
-    echo "  *** Warning: <$parent> is not writable"
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_inc
-  endif
-endif
-
-
-#
-# Man page directory.
-#
-
-proc_man:
-
-if ($?verbose_option) then
-  cat <<"EOF"
-
-	NCAR Graphics man pages must be installed in a directory
-	ending in 'man'.  The directory should be one that the "man"
-	program automatically searches.  This procedure will check
-	to make sure that the directory specified is writable by the
-	installation process.
-
-"EOF"
-endif
-
-echo ""
-echo "Man page installation directory   : $mandir"
-echo -n "Enter Return (default), new directory, or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if ("$answer" != "") then
-  set mandir="$answer"
-  set newman
-  set altered
-endif
-
-set tail="$mandir:t"
-if ("$tail" != "man") then
-  echo ""
-  echo "  *** Warning: <$mandir> does not end in 'man'."
-  goto proc_man
-endif
-
-if (-d "$mandir") then
-  if (! -w "$mandir") then
-    echo "<$mandir> is not writable"
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_man
-  endif
-else
-  set parent="$mandir:h"
-  if (! -w "$parent") then
-    echo "  *** Warning: <$mandir:h> is not writable"
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_man
-  endif
-endif
+end
 
 #
 # Temp space directory.
@@ -548,58 +347,6 @@ if (-d "$tmpdir") then
     set answer="$<"
     if ("$answer" == "q") goto cleanup
     if ("$answer" == "y" || "$answer" == "") goto proc_tmp
-  endif
-else
-  if ("$tmpdir:h" == "") then
-    set parent="/"
-  else
-    set parent="$tmpdir:h"
-  endif
-  if (! -w "$parent") then
-    echo "  *** Warning: <$tmpdir:h> is not writable"
-    echo "New directory name? (y)"
-    echo -n "Enter Return(default), y(yes), n(no), or q(quit) > "
-    set answer="$<"
-    if ("$answer" == "q") goto cleanup
-    if ("$answer" == "y" || "$answer" == "") goto proc_tmp
-  endif
-endif
-
-#
-# F90 stuff
-#
-if ($?verbose_option) then
-  cat <<"EOF"
-
-	The default Fortran compiler used to build NCAR Graphics is 
-	Fortran 77.  You may specify that you want to use Fortran 90
-	instead. If you don't want to use Fortran 90, answer "n" to 
-	the next question."
-
-"EOF"
-endif
-
-echo ""
-echo "Use Fortran 90 to build Fortran libraries? ($buildf90)"
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if (("$answer" != "") && ("$answer" != "$buildf90")) then
-	set buildf90 = $answer
-	set newbuildf90
-	set altered
-endif
-
-if ("$buildf90" == "y") then
-  echo ""
-  echo "What is the name of your Fortran 90 compiler? ($f90comp)"
-  echo -n "Enter Return (default), name of Fortran 90 compiler, or q(quit) > "
-  set answer="$<"
-  if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$buildf90")) then
-	set f90comp = $answer
-	set newf90comp
-	set altered
   endif
 endif
 
@@ -1081,30 +828,12 @@ endif
 #
 # Summarize configuration
 #
-if ($libdir:h != $bindir:h || $libdir:h != $incdir:h || $bindir:h != $incdir:h ) then
-  cat <<EOF
+cat <<"EOF"
 
-	Since you did not specify to have the libraries, binaries, and
-	include files installed under one root directory, every user of
-	NCAR Graphics will need to set the following environment
-	variables:
+	Every user of NCL and NCAR Graphics will need to set
+	the following environment variable:
 
-        setenv NCARG_LIB $libdir
-        setenv NCARG_BIN $bindir
-        setenv NCARG_INCLUDE $incdir
-
-EOF
-	
-else
-    set commonroot = ($libdir:h)
-    cat <<EOF
-
-	Since you specified to have the libraries, binaries, and
-	include files installed under one root directory, every user
-	of NCAR Graphics will only need to set the following
-	environment variable:
-
-        setenv NCARG_ROOT $commonroot
+        setenv NCARG_ROOT $parentdir
 
 EOF
 	
@@ -1149,17 +878,8 @@ echo "" >> Site.local
 echo "#ifdef SecondSite" >> Site.local
 echo "" >> Site.local
 
-if ($?commonroot) then
-	echo "#define YmakeRoot $commonroot" >> Site.local
-else
-	echo "#define BinRoot $bindir" >> Site.local
-	echo "#define IncRoot $incdir" >> Site.local
-	echo "#define LibRoot $libdir" >> Site.local
-endif
+echo "#define YmakeRoot $parentdir" >> Site.local
 
-if ($?newman) then
-	echo "#define ManRoot $mandir" >> Site.local
-endif
 if ($?newtmp) then
 	echo "#define TmpRoot $tmpdir" >> Site.local
 endif
@@ -1193,15 +913,6 @@ if ($?newbuildncl) then
 		echo "#define BuildNCL TRUE" >> Site.local
 	else
 		echo "#define BuildNCL FALSE" >> Site.local
-	endif
-endif
-
-if ($?newbuildf90) then
-	if ("$buildf90" == "y") then
-		echo "#define BuildWithF90 TRUE" >> Site.local
-		echo "#define FCompiler $f90comp" >> Site.local
-	else
-		echo "#define BuildWithF90 FALSE" >> Site.local
 	endif
 endif
 

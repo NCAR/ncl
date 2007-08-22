@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.37 2007-08-17 21:49:44 haley Exp $
+ *      $Id: yMakefile,v 1.38 2007-08-22 04:39:12 haley Exp $
  */
 /************************************************************************
 *									*
@@ -122,17 +122,8 @@ includes::
 dist-clean::
 	$(RM) -r include
 
-BROOT:
-	@echo "$(BINROOT)"
-
-LROOT:
-	@echo "$(LIBROOT)"
-
-IROOT:
-	@echo "$(INCROOT)"
-
-MROOT:
-	@echo "$(MANROOT)"
+ROOT:
+	@echo "$(YMAKEROOT)"
 
 TROOT:
 	@echo "$(TMPROOT)"
@@ -234,14 +225,6 @@ PYNGLSTUFF:
 	@echo "y"
 #else
 PYNGLSTUFF:
-	@echo "n"
-#endif
-
-#ifdef	BuildWithF90
-F90STUFF:
-	@echo "y"
-#else
-F90STUFF:
 	@echo "n"
 #endif
 
