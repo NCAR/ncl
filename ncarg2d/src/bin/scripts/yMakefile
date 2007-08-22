@@ -1,26 +1,22 @@
 #
-#	$Id: yMakefile,v 1.48 2005-08-03 21:13:02 haley Exp $
+#	$Id: yMakefile,v 1.49 2007-08-22 04:41:22 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
 SRC_SCRIPTS	=	ncargsrc ncargsrcy
 #endif
 
-#ifdef	BuildWithF90
-NGF_SCRIPT	=	ncargf90
-#else
-NGF_SCRIPT	=	ncargf77
-#endif
+NGF_SCRIPTS	=	ncargf90 ncargf77
 
 SCRIPTS = ncargfile ncargcc ncargversion ncargrun ncargex \
-	pre2ncgm $(SRC_SCRIPTS) $(NGF_SCRIPT)
+	pre2ncgm $(SRC_SCRIPTS) $(NGF_SCRIPTS)
 
 FILES = ngurl
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 InstallTarget($(FILES),$(INSTALL_LIB),$(WWWPATH))
 
-CleanFilesTarget($(NGF_SCRIPT) ncargcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
+CleanFilesTarget($(NGF_SCRIPTS) ncargcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
 
 ncargversion:	version.sed
 	@sed \
@@ -33,7 +29,7 @@ ncargversion:	version.sed
 EXTRA_SYS_LIBS =
 #endif
 
-$(NGF_SCRIPT): ncargf77.csh Makefile
+ncargf77: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
@@ -44,7 +40,20 @@ $(NGF_SCRIPT): ncargf77.csh Makefile
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
-	<ncargf77.csh > $(NGF_SCRIPT)
+	<ncargf77.csh > ncargf77
+
+ncargf90: ncargf77.csh Makefile
+	@sed \
+	-e 's+SED_FC+$(F77)+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<ncargf77.csh > ncargf90
 
 ncargcc: ncargcc.csh Makefile
 	@sed \
