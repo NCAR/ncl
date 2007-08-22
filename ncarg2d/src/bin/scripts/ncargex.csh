@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.161 2007-02-25 15:10:27 haley Exp $
+#   $Id: ncargex.csh,v 1.162 2007-08-22 04:48:48 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1296,7 +1296,7 @@ if ( `expr "$name" : "c_.*"`) then
 else
   set fprog
   set prog_type = "Fortran"
-  set comp_script = "SED_FCSCRIPT"
+  set comp_script = "ncargf77"
 endif
 
 #*************************************#

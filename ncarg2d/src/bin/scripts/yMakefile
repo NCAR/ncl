@@ -1,22 +1,20 @@
 #
-#	$Id: yMakefile,v 1.49 2007-08-22 04:41:22 haley Exp $
+#	$Id: yMakefile,v 1.50 2007-08-22 04:48:48 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
 SRC_SCRIPTS	=	ncargsrc ncargsrcy
 #endif
 
-NGF_SCRIPTS	=	ncargf90 ncargf77
-
 SCRIPTS = ncargfile ncargcc ncargversion ncargrun ncargex \
-	pre2ncgm $(SRC_SCRIPTS) $(NGF_SCRIPTS)
+	pre2ncgm $(SRC_SCRIPTS) ncargf90 ncargf77
 
 FILES = ngurl
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 InstallTarget($(FILES),$(INSTALL_LIB),$(WWWPATH))
 
-CleanFilesTarget($(NGF_SCRIPTS) ncargcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
+CleanFilesTarget(ncargf77 ncargf90 ncargcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
 
 ncargversion:	version.sed
 	@sed \
@@ -77,7 +75,6 @@ ncargex: ncargex.csh Makefile
 	-e 's+SED_EXAMPLESDIR+$(EXAMPLESDIR)+' \
 	-e 's+SED_TESTSDIR+$(TESTSDIR)+' \
 	-e 's+SED_TUTORIALDIR+$(TUTORIALDIR)+' \
-	-e 's+SED_FCSCRIPT+$(NGF_SCRIPT)+' \
 	<ncargex.csh >ncargex
 
 ncargfile: ncargfile.csh Makefile
