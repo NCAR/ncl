@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.145 2007-08-05 02:05:04 shea Exp $
+;      $Id: contributed.ncl,v 1.146 2007-08-22 16:12:16 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8279,8 +8279,11 @@ begin
   xNew        = new ( dim_xNew, typeof(x1), getFillValue(x1) )
                                    ; chk _FillValue stuff
   if (.not.isatt(x1,"_FillValue") ) then
-      delete(xNew@_FillValue)
+      if (isatt(xNew,"_FillValue") ) then
+          delete(xNew@_FillValue)
+      end if
   end if
+
   if (isatt(x2,"_FillValue") ) then
       xNew@_FillValue = x2@_FillValue
   end if
