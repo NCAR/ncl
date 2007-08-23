@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.37 2007-08-22 04:39:12 haley Exp $
+#      $Id: Configure,v 1.38 2007-08-23 13:21:24 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2007-08-22 04:39:12 $
+#	$Date: 2007-08-23 13:21:24 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -835,7 +835,7 @@ cat <<"EOF"
 
         setenv NCARG_ROOT $parentdir
 
-EOF
+"EOF"
 	
 endif
 
