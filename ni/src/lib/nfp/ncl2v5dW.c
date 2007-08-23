@@ -1,5 +1,5 @@
 /*
- *      $Id: ncl2v5dW.c,v 1.1 2003-11-26 22:04:49 grubin Exp $
+ *      $Id: ncl2v5dW.c,v 1.2 2007-08-23 19:38:10 grubin Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *                  National Center for Atmospheric Research
  *                  POB 3000, Boulder, Colorado
  *
- *  Date:           $Date: 2003-11-26 22:04:49 $
+ *  Date:           $Date: 2007-08-23 19:38:10 $
  *
  *  Description:    Wrappers for ncl to output v5d files.
  *                  NOT complete - only the functions I had to have.
@@ -270,17 +270,15 @@ NhlErrorTypes v5d_write_W(void)
 
     /* Time Step */
     it = (int *) NclGetArgValue(0, 3, NULL, NULL, NULL, NULL, NULL, 0);
-    if ((*it < 0) || (*it > (V5DNumTimes - 1))) {
-        NhlPError(NhlFATAL,NhlEUNKNOWN,
-                "v5d_write - time step mismatch");
+    if (*it <= 0) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN, "v5d_write - time step mismatch");
         return NhlFATAL;
     }
 
     /* Var Num */
     iv = (int *) NclGetArgValue(1, 3, NULL, NULL, NULL, NULL, NULL, 0);
-    if ((*iv < 0) || (*iv > (V5DNumVars - 1))) {
-        NhlPError(NhlFATAL, NhlEUNKNOWN,
-                "v5d_write - var index mismatch");
+    if (*iv <= 0) {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "v5d_write - var index mismatch");
         return NhlFATAL;
     }
 
@@ -288,14 +286,13 @@ NhlErrorTypes v5d_write_W(void)
     data = (float *) NclGetArgValue(2, 3, NULL, dsizes, NULL, NULL, NULL, 0);
 
     if ((V5DNumLevels != NULL) &&
-        (dsizes[0]*dsizes[1] * dsizes[2]) !=
-                (V5DNumRows * V5DNumCols * V5DNumLevels[*iv])){
+        (dsizes[0] * dsizes[1] * dsizes[2]) != (V5DNumRows * V5DNumCols * V5DNumLevels[0])) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
                 "v5d_write - data size mismatch");
         return NhlFATAL;
     }
 
-    if (!v5dWrite(*it + 1, *iv + 1, data)) {
+    if (!v5dWrite(*it, *iv, data)) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,"v5d_write: Write Error");
         return NhlFATAL;
     }
