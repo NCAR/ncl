@@ -10,6 +10,7 @@ extern "C" {
 #include   <unistd.h>
 #include   <string.h>
 #include   <dirent.h>
+#include   <stdlib.h>
 
 #include   <ncarg/hlu/hlu.h>
 #include   <ncarg/hlu/NresDB.h>
@@ -278,6 +279,8 @@ main(int argc, char **argv) {
     theoptr = NULL;
 #endif /* NCLDEBUG */
 
+    atexit(NhlClose);;
+    atexit(_NclFileCleanUp);
     NhlInitialize();
     NhlVACreate(&appid, "ncl", NhlappClass, NhlDEFAULT_APP,
         NhlNappDefaultParent, 1, NhlNappUsrDir, "./", NULL);
@@ -447,8 +450,6 @@ main(int argc, char **argv) {
     (void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
     (void) fclose(theoptr);
 #endif /* NCLDEBUG */
-    _NclFileCleanUp();
-    NhlClose();
     exit(0);
 }
 

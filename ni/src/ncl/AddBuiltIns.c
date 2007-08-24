@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.80 2007-08-22 21:02:44 grubin Exp $
+ *      $Id: AddBuiltIns.c,v 1.81 2007-08-24 18:12:11 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -537,6 +537,11 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIExit(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIStatusExit(
 #if     NhlNeedProto
 void
 #endif
@@ -1493,6 +1498,12 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	NclRegisterProc( _NclIExit,args,"exit",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	NclRegisterProc( _NclIStatusExit,args,"status_exit",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

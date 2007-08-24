@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.221 2007-07-13 17:12:28 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.222 2007-08-24 18:12:11 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -7554,6 +7554,7 @@ NhlErrorTypes _NclIIsProc
 		0
 	));
 }
+
 NhlErrorTypes _NclIExit
 #if     NhlNeedProto
 (void)
@@ -7564,6 +7565,39 @@ NhlErrorTypes _NclIExit
 	exit(0);
 	return(NhlNOERROR);
 }
+
+NhlErrorTypes _NclIStatusExit
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry   data;
+	NclMultiDValData   tmp_md = NULL;
+	int exit_status;
+	int i;
+
+	data = _NclGetArg(0, 1, DONT_CARE);
+	switch (data.kind) {
+        case NclStk_VAR:
+		tmp_md = _NclVarValueRead(data.u.data_var, NULL, NULL);
+		break;
+
+        case NclStk_VAL:
+		tmp_md = (NclMultiDValData) data.u.data_obj;
+		break;
+	}
+
+	if (tmp_md == NULL)
+		return NhlFATAL;
+
+	exit_status = *(int *) tmp_md->multidval.val;
+
+	exit(exit_status);
+
+}
+
 NhlErrorTypes _NclIIsFunc
 #if	NhlNeedProto
 (void)

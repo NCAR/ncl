@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.18 2000-03-10 20:33:56 ethan Exp $
+ *      $Id: NclData.c,v 1.19 2007-08-24 18:12:12 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -588,10 +588,12 @@ NclStatus requested;
 }
 
 static int current_id = 0;
-#define  OBJ_LIST_START_SIZE 1021
+#define  OBJ_LIST_START_SIZE 8192
 static struct _NclObjList objs[OBJ_LIST_START_SIZE];
 static int current_size = OBJ_LIST_START_SIZE;
-
+#define FREE_ID_LIST_SIZE 256
+static int free_id_list[FREE_ID_LIST_SIZE];
+static long long total_obj_count = 0;
 
 void _NclUnRegisterObj
 #if	NhlNeedProto
@@ -603,12 +605,19 @@ NclObj self;
 {
 	int tmp;
 	NclObjList *step,*temp;
+	int i;
 
 	tmp = self->obj.id % current_size;
 	if(objs[tmp].id == -1) {
 		return;
 	}
 	if(objs[tmp].id == self->obj.id) {
+		for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
+			if (free_id_list[i] != -1) 
+				continue;
+			free_id_list[i] = objs[tmp].id;
+			break;
+		}
 		objs[tmp].id = -1;
 		objs[tmp].theobj = NULL;
 		if(objs[tmp].next != NULL) {
@@ -618,12 +627,18 @@ NclObj self;
 		}
 	} else {
 		step = &objs[tmp];
-		while((step->next != NULL)&&(step->next->id < self->obj.id)) {
+		while((step->next != NULL)&&(step->next->id != self->obj.id)) {
 			step= step->next;
 		}
 		if((step->next != NULL)&&(step->next->id == self->obj.id)) {
 			temp = step->next;
 			step->next = step->next->next;
+			for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
+				if (free_id_list[i] != -1) 
+					continue;
+				free_id_list[i] = self->obj.id;
+				break;
+			}
 			NclFree(temp);
 		}
 	}
@@ -759,7 +774,7 @@ static struct _NclObjRec *find_in_list
 (NclObjList *ptr,int id)
 #endif
 {
-	while((ptr != NULL)&&(ptr->id < id)) {
+	while((ptr != NULL)&&(ptr->id != id)) {
 		ptr = ptr->next;
 	}
 	if((ptr == NULL) || (ptr->id != id)) {
@@ -794,6 +809,8 @@ NclObj self;
 	int tmp;
 	NclObjList *ptr;
 	static int first = 1;
+	int new_id;
+	int i;
 
 	if(first) {
 		first  = 0;
@@ -808,7 +825,11 @@ NclObj self;
 			objs[tmp].theobj = NULL;
 			objs[tmp].next = NULL;
 		}
+		for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
+			free_id_list[i] = -1;
+		}
 	} 
+	/* huh -- I don't get this? -- dib 2007/08/21 */
 	switch(current_id) {
 	case 40:
 	case 191:
@@ -818,10 +839,21 @@ NclObj self;
 	default:
 		break;
 	}
-
+	/* end of huh I don't get this */
 	
+	new_id = -1;
+	for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
+		if (free_id_list[i] == -1) 
+			continue;
+		new_id = free_id_list[i];
+		free_id_list[i] = -1;
+		break;
+	}
+	if (new_id == -1) {
+		new_id = current_id;
+	}
 	
-	tmp = current_id % current_size;
+	tmp = new_id % current_size;
 	if(objs[tmp].id == -1) {
 		ptr = &(objs[tmp]);
 	} else if(objs[tmp].next == NULL) {
@@ -837,11 +869,13 @@ NclObj self;
 		ptr = ptr->next;
 		ptr->next = NULL;
 	}
-	ptr->id = current_id;
+	ptr->id = new_id;
 	ptr->obj_type = self->obj.obj_type;
 	ptr->obj_type_mask = self->obj.obj_type_mask;
 	ptr->theobj = self;
-	current_id++;
+	if (new_id == current_id)
+		current_id++;
+	total_obj_count++;
 	return(ptr->id);
 }
 
@@ -853,5 +887,5 @@ void _NclObjsSize
 	FILE *fp;
 #endif
 {
-	fprintf(fp,"The size of objs list is %d elements of size %d with %d elements used\n",current_size,sizeof(NclObjList),current_id-1);
+	fprintf(fp,"The size of objs list is %d elements of size %d with %ld elements used\n",current_size,sizeof(NclObjList),total_obj_count);
 }
