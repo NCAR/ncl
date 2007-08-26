@@ -1001,14 +1001,15 @@ NhlErrorTypes wmlabs_W( void )
   
 }
 
+
 NhlErrorTypes wmstnm_W( void )
 {
   int ier;
   Gclip clip_ind_rect;
 
-  int grlist,gkswid,i;
+  int grlist,gkswid,i,num_strings;
   int *nwid,nid,ezf,iang;
-  char *arg1,tang[3];
+  char *arg1,tang[3],*tsym;
   float xt,yt,xtt,ytt,fang;
 
 /*
@@ -1017,11 +1018,18 @@ NhlErrorTypes wmstnm_W( void )
   NclHLUObj tmp_hlu_obj;
 
   float *x;
-  int ndims_x,dsizes_x[1];
+  int ndims_x,dsizes_x[1],has_missing_x;
   float *y;
-  int ndims_y,dsizes_y[1];
+  int ndims_y,dsizes_y[1],has_missing_y;
   string *symtyp;
   int ndims_symtyp, dsizes_symtyp[NCL_MAX_DIMENSIONS];
+
+  NclScalar missing_x, missing_y;
+  NclScalar missing_dx, missing_dy;
+  NclScalar missing_rx, missing_ry;
+  NclBasicDataTypes type_x, type_y;
+
+  float x_missing, y_missing;
   
 /*
  * Retrieve parameters
@@ -1033,8 +1041,10 @@ NhlErrorTypes wmstnm_W( void )
  */
   nwid = (int*)  NclGetArgValue(0,4,     NULL,     NULL, NULL,NULL,NULL,2);
 
-  x   = (float*) NclGetArgValue(1,4, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,4, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,4, &ndims_x, dsizes_x,
+                         &missing_x, &has_missing_x, &type_x, 2);
+  y   = (float*) NclGetArgValue(2,4, &ndims_y, dsizes_y,
+                         &missing_y, &has_missing_y, &type_y, 2);
 
 /*
  * Check the input dimension sizes.
@@ -1066,6 +1076,7 @@ NhlErrorTypes wmstnm_W( void )
           NULL,
           2);
 
+
 /*
  * Check number of dimensions for the model data.
  */
@@ -1074,7 +1085,30 @@ NhlErrorTypes wmstnm_W( void )
               "wmstnm: Argument #4 has the wrong number of dimensions.");
     return(NhlFATAL);
   }
+
+
+/*
+ * Coerce missing values to float.
+ */
+  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_y,has_missing_y,&missing_y,&missing_dy,&missing_ry);
+  x_missing = missing_rx.floatval;
+  y_missing = missing_ry.floatval;
+
   arg1 = NrmQuarkToString(*symtyp);
+/*
+ *  Calculate the number of strings (this is just a product of
+ *  the dimension sizes over the number of dimensions).
+ */
+  if(ndims_symtyp > 1) {
+    num_strings = 1;     
+    for (i = 0; i < ndims_symtyp; i++ ) {
+      num_strings *= dsizes_symtyp[i];
+    }
+  }
+  else {
+    num_strings = dsizes_symtyp[0];
+  }
 
 
 /*
@@ -1092,19 +1126,25 @@ NhlErrorTypes wmstnm_W( void )
   NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
   NhlGetValues(nid,grlist);
 
+
 /*
  * The following section calls the c_wmstnm function.
  */
   gactivate_ws (gkswid);
   ginq_clip(&ier,&clip_ind_rect);
   gset_clip_ind(GIND_CLIP);
-  c_wmgeti("ezf",&ezf);
-  if (ezf != -1) {
-    for (i = 0; i < dsizes_x[0]; i++) {
+
+  for (i = 0; i < num_strings; i++) {
+
+    c_wmgeti("ezf",&ezf);
+    if (ezf != -1) {
+      arg1 = NrmQuarkToString(symtyp[i]);
+      tsym = (char *)calloc(strlen(arg1)+1,sizeof(char));
+      strcpy(tsym,arg1);
       c_maptrn(x[i],y[i],&xt,&yt);
       if (xt != 1.e12) {
-        tang[0] = arg1[6];
-        tang[1] = arg1[7];
+        tang[0] = tsym[6];
+        tang[1] = tsym[7];
         tang[2] = 0;
         fang = 10.*0.0174532925199*atof(tang); 
         c_maptrn(x[i]+0.1*cos(fang), 
@@ -1112,17 +1152,19 @@ NhlErrorTypes wmstnm_W( void )
         fang = fmod(57.2957795130823*atan2(xtt-xt, ytt-yt)+360., 360.);
         iang = (int) max(0,min(35,NINT(fang/10.)));
         sprintf(tang,"%2d",iang);
-        arg1[6] = tang[0];
-        arg1[7] = tang[1];
-        c_wmstnm(xt, yt, arg1);
+        tsym[6] = tang[0];
+        tsym[7] = tang[1];
+        c_wmstnm(xt, yt, tsym);
+        free(tsym);
+      }
+    }
+    else {
+      for (i = 0; i < dsizes_x[0]; i++) {
+        c_wmstnm(*(x+i), *(y+i), arg1);
       }
     }
   }
-  else {
-    for (i = 0; i < dsizes_x[0]; i++) {
-      c_wmstnm(*(x+i), *(y+i), arg1);
-    }
-  }
+
   gset_clip_ind(clip_ind_rect.clip_ind);
   gdeactivate_ws (gkswid);
 
@@ -1131,3 +1173,4 @@ NhlErrorTypes wmstnm_W( void )
   return(NhlNOERROR);
   
 }
+
