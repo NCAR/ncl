@@ -1,17 +1,17 @@
 #include "wrapper.h"
 
-extern void NGCALLF(rgbhsv,RGBHSV)(double*,double*,double*,
-                                   double*,double*,double*);
-extern void NGCALLF(hsvrgb,HSVRGB)(double*,double*,double*,
-                                   double*,double*,double*);
-extern void NGCALLF(rgbhls,RGBHLS)(double*,double*,double*,
-                                   double*,double*,double*);
-extern void NGCALLF(hlsrgb,HLSRGB)(double*,double*,double*,
-                                   double*,double*,double*);
-extern void NGCALLF(rgbyiq,RGBYIQ)(double*,double*,double*,
-                                   double*,double*,double*);
-extern void NGCALLF(yiqrgb,RGBYIQ)(double*,double*,double*,
-                                   double*,double*,double*);
+extern void NGCALLF(drgbhsv,DRGBHSV)(double*,double*,double*,
+                                     double*,double*,double*);
+extern void NGCALLF(dhsvrgb,DHSVRGB)(double*,double*,double*,
+                                     double*,double*,double*);
+extern void NGCALLF(drgbhls,DRGBHLS)(double*,double*,double*,
+                                     double*,double*,double*);
+extern void NGCALLF(dhlsrgb,DHLSRGB)(double*,double*,double*,
+                                     double*,double*,double*);
+extern void NGCALLF(drgbyiq,DRGBYIQ)(double*,double*,double*,
+                                     double*,double*,double*);
+extern void NGCALLF(dyiqrgb,DYIQRGB)(double*,double*,double*,
+                                     double*,double*,double*);
 
 NhlErrorTypes rgbhsv_W( void )
 {
