@@ -44,6 +44,11 @@
    o  Create the "W" file that calls the Fortran.
  
         --> Be sure to prototype the Fortran function/subroutine.
+            Make sure the you are prototyping the
+            correct routine, in particular that you are
+            referencing the double precision version in the
+            cases where there double precision and single
+            precision versions available.
 
         --> The "W" file may contain several functions or procedures
             and those names will have an "_W" after them.
