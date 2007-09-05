@@ -199,17 +199,14 @@ NhlErrorTypes stat2_W( void )
     NGCALLF(dstat2,DSTAT2)(tmp_x,&npts,&missing_dx.doubleval,tmp_xmean,
                            tmp_xvar,&xsd,&nptused[i],&ier);
     if (ier == 2) {
-      set_subset_output_missing(xmean,i,type_x,1,missing_dx.doubleval);
-      set_subset_output_missing(xvar, i,type_x,1,missing_dx.doubleval);
+      *tmp_xmean = *tmp_xvar = missing_dx.doubleval;
       ier_count++;
     }
-    else {
-      if(type_xmean == NCL_float) {
-        coerce_output_float_only(xmean,tmp_xmean,1,i);
-      }
-      if(type_xvar  == NCL_float) {
-        coerce_output_float_only(xvar,tmp_xvar,1,i);
-      }
+    if(type_xmean == NCL_float) {
+      coerce_output_float_only(xmean,tmp_xmean,1,i);
+    }
+    if(type_xvar  == NCL_float) {
+      coerce_output_float_only(xvar,tmp_xvar,1,i);
     }
     index_x += npts;
   }
@@ -250,7 +247,7 @@ NhlErrorTypes stat_trim_W( void )
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, npts;
+  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
   double xvart, *work;
 /*
  * Retrieve parameters
@@ -394,7 +391,7 @@ NhlErrorTypes stat_trim_W( void )
 /*
  * Call the f77 version of 'stat_trim' with the full argument list.
  */
-  index_x = 0;
+  index_x = ier_count = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_x != NCL_double) {
 /*
@@ -416,6 +413,14 @@ NhlErrorTypes stat_trim_W( void )
     NGCALLF(dstat2t,DSTAT2T)(tmp_x,&npts,&missing_dx.doubleval,tmp_xmeant,
                              &xvart,tmp_xsdt,&nptused[i],work,tmp_ptrim,&ier);
 
+    if (ier == 2) {
+      *tmp_xmeant = *tmp_xsdt = missing_dx.doubleval;
+      ier_count++;
+    }
+    if (ier == 4) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: not enough trimmed values");
+      return(NhlFATAL);
+    }
     if(type_xmeant == NCL_float) {
       coerce_output_float_only(xmeant,tmp_xmeant,1,i);
     }
@@ -424,15 +429,9 @@ NhlErrorTypes stat_trim_W( void )
     }
 
     index_x += npts;
-
-    if (ier == 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: The first input array contains all missing values");
-      return(NhlFATAL);
-    }
-    if (ier == 4) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_trim: not enough trimmed values");
-      return(NhlFATAL);
-    }
+  }
+  if(ier_count > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"stat_trim: %d rightmost sections of the input array contained all missing values.\nOutput values set to missing in these sections",ier_count);
   }
 /*
  * Free unneeded memory.
@@ -658,25 +657,23 @@ NhlErrorTypes stat4_W( void )
  * Input was all missing for this subset, so set output to missing
  * as well.
  */
-      set_subset_output_missing(xmean,i,type_x,1,missing_dx.doubleval);
-      set_subset_output_missing(xvar, i,type_x,1,missing_dx.doubleval);
-      set_subset_output_missing(xskew,i,type_x,1,missing_dx.doubleval);
-      set_subset_output_missing(xkurt,i,type_x,1,missing_dx.doubleval);
+      *tmp_xmean = missing_dx.doubleval;
+      *tmp_xvar  = missing_dx.doubleval;
+      *tmp_xskew = missing_dx.doubleval;
+      *tmp_xkurt = missing_dx.doubleval;
       ier_count++;
     }
-    else {
-      if(type_xmean == NCL_float) {
-        coerce_output_float_only(xmean,tmp_xmean,1,i);
-      }
-      if(type_xvar  == NCL_float) {
-        coerce_output_float_only(xvar,tmp_xvar,1,i);
-      }
-      if(type_xskew == NCL_float) {
-        coerce_output_float_only(xskew,tmp_xskew,1,i);
-      }
-      if(type_xkurt == NCL_float) {
-        coerce_output_float_only(xkurt,tmp_xkurt,1,i);
-      }
+    if(type_xmean == NCL_float) {
+      coerce_output_float_only(xmean,tmp_xmean,1,i);
+    }
+    if(type_xvar  == NCL_float) {
+      coerce_output_float_only(xvar,tmp_xvar,1,i);
+    }
+    if(type_xskew == NCL_float) {
+      coerce_output_float_only(xskew,tmp_xskew,1,i);
+    }
+    if(type_xkurt == NCL_float) {
+      coerce_output_float_only(xkurt,tmp_xkurt,1,i);
     }
 
     index_x += npts;
@@ -892,21 +889,19 @@ NhlErrorTypes stat_medrng_W( void )
                  tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
 
     if (ier == 2) {
-      set_subset_output_missing(xmedian, i,type_x,1,missing_dx.doubleval);
-      set_subset_output_missing(xmrange, i,type_x,1,missing_dx.doubleval);
-      set_subset_output_missing(xrange,  i,type_x,1,missing_dx.doubleval);
+      *tmp_xmedian = missing_dx.doubleval;
+      *tmp_xmrange = missing_dx.doubleval;
+      *tmp_xrange  = missing_dx.doubleval;
       ier_count++;
     }
-    else {
-      if(type_xmedian == NCL_float) {
-        coerce_output_float_only(xmedian,tmp_xmedian,1,i);
-      }
-      if(type_xmrange  == NCL_float) {
-        coerce_output_float_only(xmrange,tmp_xmrange,1,i);
-      }
-      if(type_xrange  == NCL_float) {
-        coerce_output_float_only(xrange,tmp_xrange,1,i);
-      }
+    if(type_xmedian == NCL_float) {
+      coerce_output_float_only(xmedian,tmp_xmedian,1,i);
+    }
+    if(type_xmrange  == NCL_float) {
+      coerce_output_float_only(xmrange,tmp_xmrange,1,i);
+    }
+    if(type_xrange  == NCL_float) {
+      coerce_output_float_only(xrange,tmp_xrange,1,i);
     }
     index_x += npts;
   }
@@ -2496,8 +2491,7 @@ NhlErrorTypes esccr_shields_W( void )
 /*
  * Call the f77 version of 'descros' with the full argument list.
  */
-  index_x = index_y = index_ccr = 0;
-  ier_count = 0;
+  index_x = index_y = index_ccr = ier_count = 0;
   for(nc = 0; nc <= ncases-1; nc++) {
     index_x = nc * total_size_x1 * npts;
     for(i = 1; i <= total_size_x1; i++) {
@@ -2767,8 +2761,7 @@ NhlErrorTypes esccv_W( void )
  * Call the f77 version of 'descros' with the full argument list.
  */
   if(dimsizes_same) {
-    index_x = index_ccv = 0;
-    ier_count = 0;
+    index_x = index_ccv = ier_count = 0;
     for(i = 1; i <= total_size_x1; i++) {
       if(type_x != NCL_double) {
 /*
@@ -2811,8 +2804,7 @@ NhlErrorTypes esccv_W( void )
     }
   }
   else {
-    index_x = index_ccv = 0;
-    ier_count = 0;
+    index_x = index_ccv = ier_count = 0;
     for(i = 1; i <= total_size_x1; i++) {
       if(type_x != NCL_double) {
 /*
@@ -2975,22 +2967,16 @@ NhlErrorTypes dim_stat4_W( void )
  * Input was all missing for this subset, so set output to missing
  * as well.
  */
-      set_subset_output_missing(stat,i,               type_x,1,
-                                missing_dx.doubleval);
-      set_subset_output_missing(stat,i+total_leftmost,type_x,1,
-                                missing_dx.doubleval);
-      set_subset_output_missing(stat,i+total_leftmost*2,type_x,1,
-                                missing_dx.doubleval);
-      set_subset_output_missing(stat,i+total_leftmost*3,type_x,1,
-                                missing_dx.doubleval);
+      dxmean = missing_dx.doubleval;
+      dxvar  = missing_dx.doubleval;
+      dxskew = missing_dx.doubleval;
+      dxkurt = missing_dx.doubleval;
       ier_count++;
     }
-    else {
-      coerce_output_float_or_double(stat,&dxmean,type_x,1,i);
-      coerce_output_float_or_double(stat,&dxvar,type_x,1,i+total_leftmost);
-      coerce_output_float_or_double(stat,&dxskew,type_x,1,i+total_leftmost*2); 
-      coerce_output_float_or_double(stat,&dxkurt,type_x,1,i+total_leftmost*3);
-    }
+    coerce_output_float_or_double(stat,&dxmean,type_x,1,i);
+    coerce_output_float_or_double(stat,&dxvar, type_x,1,i+total_leftmost);
+    coerce_output_float_or_double(stat,&dxskew,type_x,1,i+total_leftmost*2); 
+    coerce_output_float_or_double(stat,&dxkurt,type_x,1,i+total_leftmost*3);
     index_x += npts;
   }
   if(ier_count > 0) {
