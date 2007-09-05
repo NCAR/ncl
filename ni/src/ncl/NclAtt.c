@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.22 2007-01-31 00:59:18 dbrown Exp $
+ *      $Id: NclAtt.c,v 1.23 2007-09-05 00:20:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -42,59 +42,65 @@ NhlArgVal udata;
 {
 	NclAtt theattobj;
 	int	thevalue_id;
-        NclAttList *thelist,*tmp;
+        NclAttList *thelist;
 	NhlArgVal selector;
+	NclAttList *tmp = NULL;
+	NclMultiDValData attval_md;
 
 	theattobj = (NclAtt)_NclGetObj(udata.intval);
-	if(theattobj != NULL) {
-		thevalue_id = cbdata.intval;
-		thelist = theattobj->att.att_list;
-		if(thelist != NULL) {
-			if(thelist->attvalue->obj.id == thevalue_id) {
-				tmp = thelist;
-				theattobj->att.att_list= thelist->next;
-				theattobj->att.n_atts--;
-				_NhlCBDelete(tmp->cb);
-				if(theattobj->obj.cblist != NULL) {
-					if(NrmStringToQuark(NCL_MISSING_VALUE_ATT)==tmp->quark) {
-						cbdata.ptrval = NULL;
-						selector.lngval = MISSINGNOTIFY;
-						_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
-					}
-					cbdata.lngval = tmp->quark;
-					selector.lngval = ATTDESTROYED;
-					_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
-				}
-				NclFree(tmp);
-				return;
-			} else {
-				while(thelist->next != NULL) {
-					if(thelist->next->attvalue->obj.id == thevalue_id) {
-						tmp = thelist->next;
-						theattobj->att.n_atts--;
-						thelist->next = thelist->next->next;
-						_NhlCBDelete(tmp->cb);
-						if(theattobj->obj.cblist != NULL) {
-							if(NrmStringToQuark(NCL_MISSING_VALUE_ATT)==tmp->quark) {
-								cbdata.ptrval = NULL;
-								selector.lngval = MISSINGNOTIFY;
-								_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
-							}
-							cbdata.lngval = tmp->quark;
-							selector.lngval = ATTDESTROYED;
-							_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
-						}
-						NclFree(tmp);
-						return;
-					} else {
-						thelist = thelist->next;
-					}
-				}
+	if(theattobj == NULL) {
+		return;
+	}
+	thevalue_id = cbdata.intval;
+	thelist = theattobj->att.att_list;
+	if(thelist == NULL) {
+		return;
+	}
+	if(thelist->attvalue->obj.id == thevalue_id) {
+		tmp = thelist;
+		attval_md = thelist->attvalue;
+		theattobj->att.att_list= thelist->next;
+		theattobj->att.n_atts--;
+	} else {
+		while(thelist->next != NULL) {
+			if(thelist->next->attvalue->obj.id != thevalue_id) {
+				thelist = thelist->next;
+				continue;
 			}
-		} else {
-			return;
+			tmp = thelist->next;
+			attval_md = thelist->next->attvalue;
+			theattobj->att.n_atts--;
+			thelist->next = thelist->next->next;
+			break;
 		}
 	}
+	if (tmp) {
+		NclRefList *plist, *tmp_plist;
+		_NhlCBDelete(tmp->cb);
+		if(theattobj->obj.cblist != NULL) {
+			if(NrmStringToQuark(NCL_MISSING_VALUE_ATT)==tmp->quark) {
+				cbdata.ptrval = NULL;
+				selector.lngval = MISSINGNOTIFY;
+				_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
+			}
+			cbdata.lngval = tmp->quark;
+			selector.lngval = ATTDESTROYED;
+			_NhlCBCallCallbacks(theattobj->obj.cblist,selector,cbdata);
+		}
+		if (attval_md->obj.parents) {
+			plist = attval_md->obj.parents;
+			while (plist) {
+				tmp_plist = plist;
+				plist = plist->next;
+				NclFree(tmp_plist);
+			}
+			attval_md->obj.ref_count = 0;
+		}
+		if (tmp->attname)
+			NclFree(tmp->attname);
+		NclFree(tmp);
+	}
+	return;
 }
 
 static void AttDestroyObj

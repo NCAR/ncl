@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.222 2007-08-24 18:12:11 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.223 2007-09-05 00:20:49 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -887,11 +887,15 @@ NhlErrorTypes _Nclsystemfunc
 			new_pipe_fd = dup(fildes[1]);
 			close(fildes[1]);
 			command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val); 
+			/*
+			 * Note: the child should use _exit() rather than exit() to avoid calling the
+			 * registered atexit() functions prematurely
+			 */
 			if(!system(command)) {
 				close(new_pipe_fd);
-				exit(0);
+				_exit(0);
 			} else {
-				exit(1);
+				_exit(1);
 			}
 		} else {
 			buffer = NclMalloc(current_buf_size);

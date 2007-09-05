@@ -1,4 +1,4 @@
-/*  $Revision: 1.2 $
+/*  $Revision: 1.3 $
 **
 **  Main editing routines for editline library.
 */
@@ -20,7 +20,7 @@
 #define ISMETA(x)	((x) & 0x80)
 #define UNMETA(x)	((x) & 0x7F)
 #if	!defined(HIST_SIZE)
-#define HIST_SIZE	20
+#define HIST_SIZE	1000
 #endif	/* !defined(HIST_SIZE) */
 
 /*

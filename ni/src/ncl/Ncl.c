@@ -279,8 +279,12 @@ main(int argc, char **argv) {
     theoptr = NULL;
 #endif /* NCLDEBUG */
 
-    atexit(NhlClose);;
+    /* 
+     * Note:  child processes should use _exit() instead of exit() to avoid calling the atexit() functions prematurely 
+     */
+    atexit(NhlClose);
     atexit(_NclFileCleanUp);
+
     NhlInitialize();
     NhlVACreate(&appid, "ncl", NhlappClass, NhlDEFAULT_APP,
         NhlNappDefaultParent, 1, NhlNappUsrDir, "./", NULL);

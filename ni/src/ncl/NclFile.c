@@ -3892,7 +3892,8 @@ int type;
 
 /* Situation where missing values are not equal and can't just overwrite input's*/
 
-						tmp_md = _NclCopyVal(value,(NclScalar*)mis_md->multidval.val);
+						memcpy(&tmp_scalar,mis_md->multidval.val,mis_md->multidval.totalsize);
+						tmp_md = _NclCopyVal(value,&tmp_scalar);
 						free_tmp_md = 1;
 					}
 				} else if(value->multidval.missing_value.has_missing) {

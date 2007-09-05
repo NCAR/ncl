@@ -358,7 +358,8 @@ void _NclStartCmdLinePager
 		tmp = execlp(pager,arg0,NULL);
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error Forking pager again, check PATH environment variable, can't continue");
 		close(new_pipe_fd);
-		exit(1);
+		/* cannot use exit() if we do not want the atexit functions to get called */
+		_exit(1);
 	} else {
 		child_status = 1;
 		signal(SIGPIPE,child_stat_notify);
