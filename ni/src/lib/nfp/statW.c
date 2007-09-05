@@ -10,8 +10,8 @@ extern void NGCALLF(dstat4,DSTAT4)(double*, int*, double*, double*, double*,
                                    double*, double*, double*, int*, int*); 
 
 extern void NGCALLF(dstat2t,DSTAT2T)(double *,int *, double *,double *,
-									 double *,double *,int *,double *,
-									 double *, int*);
+                                     double *,double *,int *,double *,
+                                     double *, int*);
 
 extern void NGCALLF(drmvmean,DRMVMEAN)(double*, int*, double*, int*);
 
@@ -57,7 +57,7 @@ NhlErrorTypes stat2_W( void )
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, npts;
+  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
   double xsd;
 /*
  * Retrieve parameters
@@ -177,7 +177,7 @@ NhlErrorTypes stat2_W( void )
 /*
  * Call the f77 version of 'stat2' with the full argument list.
  */
-  index_x = 0;
+  index_x = ier_count = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_x != NCL_double) {
 /*
@@ -198,18 +198,23 @@ NhlErrorTypes stat2_W( void )
 
     NGCALLF(dstat2,DSTAT2)(tmp_x,&npts,&missing_dx.doubleval,tmp_xmean,
                            tmp_xvar,&xsd,&nptused[i],&ier);
-    if(type_xmean == NCL_float) {
-      coerce_output_float_only(xmean,tmp_xmean,1,i);
-    }
-    if(type_xvar  == NCL_float) {
-      coerce_output_float_only(xvar,tmp_xvar,1,i);
-    }
-
-    index_x += npts;
     if (ier == 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat2: The first input array contains all missing values");
-      return(NhlFATAL);
+      set_subset_output_missing(xmean,i,type_x,1,missing_dx.doubleval);
+      set_subset_output_missing(xvar, i,type_x,1,missing_dx.doubleval);
+      ier_count++;
     }
+    else {
+      if(type_xmean == NCL_float) {
+        coerce_output_float_only(xmean,tmp_xmean,1,i);
+      }
+      if(type_xvar  == NCL_float) {
+        coerce_output_float_only(xvar,tmp_xvar,1,i);
+      }
+    }
+    index_x += npts;
+  }
+  if(ier_count > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"stat2: %d rightmost sections of the input array contained all missing values.\nOutput values set to missing in these sections",ier_count);
   }
 /*
  * Free unneeded memory.
@@ -468,7 +473,7 @@ NhlErrorTypes stat4_W( void )
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, npts;
+  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
   double xsd;
 /*
  * Retrieve parameters
@@ -623,7 +628,7 @@ NhlErrorTypes stat4_W( void )
 /*
  * Call the f77 version of 'stat4' with the full argument list.
  */
-  index_x = 0;
+  index_x = ier_count = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_x != NCL_double) {
 /*
@@ -639,7 +644,6 @@ NhlErrorTypes stat4_W( void )
       tmp_x = &((double*)x)[index_x];
     }
 
-
     if(type_xmean == NCL_double) tmp_xmean = &((double*)xmean)[i];
     if(type_xvar  == NCL_double) tmp_xvar  = &((double*)xvar)[i];
     if(type_xskew == NCL_double) tmp_xskew = &((double*)xskew)[i];
@@ -649,25 +653,38 @@ NhlErrorTypes stat4_W( void )
     NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,tmp_xmean,
                            tmp_xvar,&xsd,tmp_xskew,tmp_xkurt,&nptused[i],&ier);
 
-    if(type_xmean == NCL_float) {
-      coerce_output_float_only(xmean,tmp_xmean,1,i);
+    if (ier == 2) {
+/*
+ * Input was all missing for this subset, so set output to missing
+ * as well.
+ */
+      set_subset_output_missing(xmean,i,type_x,1,missing_dx.doubleval);
+      set_subset_output_missing(xvar, i,type_x,1,missing_dx.doubleval);
+      set_subset_output_missing(xskew,i,type_x,1,missing_dx.doubleval);
+      set_subset_output_missing(xkurt,i,type_x,1,missing_dx.doubleval);
+      ier_count++;
     }
-    if(type_xvar  == NCL_float) {
-      coerce_output_float_only(xvar,tmp_xvar,1,i);
-    }
-    if(type_xskew == NCL_float) {
-      coerce_output_float_only(xskew,tmp_xskew,1,i);
-    }
-    if(type_xkurt == NCL_float) {
-      coerce_output_float_only(xkurt,tmp_xkurt,1,i);
+    else {
+      if(type_xmean == NCL_float) {
+        coerce_output_float_only(xmean,tmp_xmean,1,i);
+      }
+      if(type_xvar  == NCL_float) {
+        coerce_output_float_only(xvar,tmp_xvar,1,i);
+      }
+      if(type_xskew == NCL_float) {
+        coerce_output_float_only(xskew,tmp_xskew,1,i);
+      }
+      if(type_xkurt == NCL_float) {
+        coerce_output_float_only(xkurt,tmp_xkurt,1,i);
+      }
     }
 
     index_x += npts;
-    if (ier == 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat4: The first input array contains all missing values");
-      return(NhlFATAL);
-    }
   }
+  if(ier_count > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"stat4: %d rightmost sections of the input array contained all missing values.\nOutput values set to missing in these sections",ier_count);
+  }
+
 /*
  * Free unneeded memory.
  */
@@ -705,7 +722,7 @@ NhlErrorTypes stat_medrng_W( void )
 /*
  * various
  */
-  int i, index_x, size_leftmost, ier = 0, npts;
+  int i, index_x, size_leftmost, ier = 0, ier_count, npts;
   double *work;
 /*
  * Retrieve parameters
@@ -851,7 +868,7 @@ NhlErrorTypes stat_medrng_W( void )
 /*
  * Call the f77 version of 'stat_medrng' with the full argument list.
  */
-  index_x = 0;
+  index_x = ier_count = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_x != NCL_double) {
 /*
@@ -874,23 +891,29 @@ NhlErrorTypes stat_medrng_W( void )
     NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&npts,&missing_dx.doubleval,
                  tmp_xmedian,tmp_xmrange,tmp_xrange,&nptused[i],&ier);
 
-    if(type_xmedian == NCL_float) {
-      coerce_output_float_only(xmedian,tmp_xmedian,1,i);
-    }
-    if(type_xmrange  == NCL_float) {
-      coerce_output_float_only(xmrange,tmp_xmrange,1,i);
-    }
-    if(type_xrange  == NCL_float) {
-      coerce_output_float_only(xrange,tmp_xrange,1,i);
-    }
-
-    index_x += npts;
-
     if (ier == 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"stat_medrng: The first input array contains all missing values");
-      return(NhlFATAL);
+      set_subset_output_missing(xmedian, i,type_x,1,missing_dx.doubleval);
+      set_subset_output_missing(xmrange, i,type_x,1,missing_dx.doubleval);
+      set_subset_output_missing(xrange,  i,type_x,1,missing_dx.doubleval);
+      ier_count++;
     }
+    else {
+      if(type_xmedian == NCL_float) {
+        coerce_output_float_only(xmedian,tmp_xmedian,1,i);
+      }
+      if(type_xmrange  == NCL_float) {
+        coerce_output_float_only(xmrange,tmp_xmrange,1,i);
+      }
+      if(type_xrange  == NCL_float) {
+        coerce_output_float_only(xrange,tmp_xrange,1,i);
+      }
+    }
+    index_x += npts;
   }
+  if(ier_count > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"stat_medrng: %d rightmost sections of the input array contained all missing values.\nOutput values set to missing in these sections",ier_count);
+  }
+
 /*
  * Free unneeded memory.
  */
@@ -2879,7 +2902,7 @@ NhlErrorTypes dim_stat4_W( void )
 /*
  * various
  */
-  int i, total_leftmost, ier = 0, index_x, npts, ret;
+  int i, total_leftmost, ier = 0, index_x, npts, ret, ier_count;
   double xsd, *tmp_x;
 /*
  * Retrieve parameters
@@ -2931,9 +2954,10 @@ NhlErrorTypes dim_stat4_W( void )
   dsizes_out[0] = 4;
   for(i = 1; i <= ndims_x-1; i++ ) dsizes_out[i] = dsizes_x[i-1];
 /*
- * Call the f77 version of 'dim_stat4' with the full argument list.
+ * Loop across leftmost dimensions, and call the f77 version of 
+ * 'dim_stat4' with the appropriate subset of 'x'.
  */
-  index_x = 0;
+  index_x = ier_count = 0;
   for(i = 0; i < total_leftmost; i++) {
     if(type_x != NCL_double) {
 /*
@@ -2947,14 +2971,30 @@ NhlErrorTypes dim_stat4_W( void )
     NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,&dxmean,&dxvar,
                            &xsd,&dxskew,&dxkurt,&nptused,&ier);
     if (ier == 2) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4: The input array contains all missing values");
-      return(NhlFATAL);
+/*
+ * Input was all missing for this subset, so set output to missing
+ * as well.
+ */
+      set_subset_output_missing(stat,i,               type_x,1,
+                                missing_dx.doubleval);
+      set_subset_output_missing(stat,i+total_leftmost,type_x,1,
+                                missing_dx.doubleval);
+      set_subset_output_missing(stat,i+total_leftmost*2,type_x,1,
+                                missing_dx.doubleval);
+      set_subset_output_missing(stat,i+total_leftmost*3,type_x,1,
+                                missing_dx.doubleval);
+      ier_count++;
     }
-    coerce_output_float_or_double(stat,&dxmean,type_x,1,i);
-    coerce_output_float_or_double(stat,&dxvar,type_x,1,i+total_leftmost);
-    coerce_output_float_or_double(stat,&dxskew,type_x,1,i+total_leftmost*2); 
-    coerce_output_float_or_double(stat,&dxkurt,type_x,1,i+total_leftmost*3);
-    index_x    += npts;
+    else {
+      coerce_output_float_or_double(stat,&dxmean,type_x,1,i);
+      coerce_output_float_or_double(stat,&dxvar,type_x,1,i+total_leftmost);
+      coerce_output_float_or_double(stat,&dxskew,type_x,1,i+total_leftmost*2); 
+      coerce_output_float_or_double(stat,&dxkurt,type_x,1,i+total_leftmost*3);
+    }
+    index_x += npts;
+  }
+  if(ier_count > 0) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_stat4: %d rightmost sections of the input array contained all missing values.\nOutput values set to missing in these sections",ier_count);
   }
 /*
  * free memory.
@@ -2979,5 +3019,3 @@ NhlErrorTypes dim_stat4_W( void )
   NclFree(dsizes_out);
   return(ret);
 }
-
-
