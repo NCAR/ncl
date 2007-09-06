@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.146 2007-08-22 16:12:16 shea Exp $
+;      $Id: contributed.ncl,v 1.147 2007-09-06 22:36:38 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5508,7 +5508,7 @@ begin
   NMO1   = ind(SEASON(0).eq.season)
                                      ; error checking done
   if (rank.eq.1) then                ; (time,lat,lon)
-      xSeaN = new ( (/N,nyrs/),  typeof(xSea12))
+      xSeaN = new ( (/N,nyrs/),  typeof(xSea12), getFillValue(xMon))
       do ns =0,N-1
          NMO= ind(SEASON(ns).eq.season)
          if (.not.ismissing(NMO)) then
@@ -5518,7 +5518,8 @@ begin
   end if
 
   if (rank.eq.3) then                ; (time,lat,lon)
-      xSeaN = new ( (/N,nyrs,dimx(1),dimx(2)/),  typeof(xSea12))
+      xSeaN = new ( (/N,nyrs,dimx(1),dimx(2)/),  typeof(xSea12), \
+                   getFillValue(xMon))
       do ns =0,N-1
          NMO= ind(SEASON(ns).eq.season)
          if (.not.ismissing(NMO)) then
@@ -5528,7 +5529,8 @@ begin
   end if
                
   if (rank.eq.4) then                ; (time,lev,lat,lon)
-      xSeaN = new ( (/N,nyrs,dimx(1),dimx(2),dimx(3)/),  typeof(xSea12))
+      xSeaN = new ( (/N,nyrs,dimx(1),dimx(2),dimx(3)/),  typeof(xSea12), \
+                   getFillValue(xMon))
       do ns =0,N-1
          NMO= ind(SEASON(ns).eq.season)
          if (.not.ismissing(NMO)) then
