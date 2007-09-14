@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.148 2007-09-14 14:49:28 shea Exp $
+;      $Id: contributed.ncl,v 1.149 2007-09-14 15:01:29 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8631,6 +8631,7 @@ end
 ; Christophe Cassou [CERFACS, Toulouse CEDEX France] and Dennis Shea
 ; Generate unique subscript indicies
 
+undef("generate_unique_indicies")
 function generate_unique_indicies( N:integer)
 local r
 begin
