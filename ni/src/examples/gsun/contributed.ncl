@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.149 2007-09-14 15:01:29 shea Exp $
+;      $Id: contributed.ncl,v 1.150 2007-09-15 00:50:17 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8629,10 +8629,10 @@ end
 
 ;****************************************************************
 ; Christophe Cassou [CERFACS, Toulouse CEDEX France] and Dennis Shea
-; Generate unique subscript indicies
+; Generate unique random subscript indices
 
-undef("generate_unique_indicies")
-function generate_unique_indicies( N:integer)
+undef("generate_unique_indices")
+function generate_unique_indices( N:integer)
 local r
 begin
   r   = random_uniform(0,100,N)
