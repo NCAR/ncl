@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.25 2007-07-17 13:42:28 haley Exp $
+;      $Id: shea_util.ncl,v 1.26 2007-09-15 03:05:51 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -819,7 +819,7 @@ begin
    cmap             = new((/ncol+3,3/),float); create array
    cmap(0,:)        = (/1.,1.,1./)           ; white background
    cmap(1,:)        = (/0.,0.,0./)           ; black foreground
-   cmap(2:ncol+1,:) = hsv2rgb(h,s,v)
+   cmap(2:ncol+1,:) = hsvrgb((/h,s,v/))
    cmap(  ncol+2,:) = (/0.90, 0.90, 0.90 /)  ; append gray
 
   ;print ("ncol="+ncol)

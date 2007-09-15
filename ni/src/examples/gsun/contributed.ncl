@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.150 2007-09-15 00:50:17 shea Exp $
+;      $Id: contributed.ncl,v 1.151 2007-09-15 03:05:50 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8512,7 +8512,7 @@ end
 ; D Shea
 ; requires NCL version a034 or later
 ;
-; Get the indicies [subscripts] of the 2D lat/lon arrays
+; Get the indices [subscripts] of the 2D lat/lon arrays
 ; closest to each LAT/LON coordinate pair.
 ;
 undef("getind_latlon2d")
@@ -8540,7 +8540,7 @@ begin
      delete(mndist)
      delete(ind1d)
   end do
-  ij@long_name = "indicies closest to specified LAT/LON coordinate pairs"
+  ij@long_name = "indices closest to specified LAT/LON coordinate pairs"
 
   if (.not.any(ismissing(ij))) then
       delete(ij@_FillValue)

@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.202 2007-06-25 15:43:41 haley Exp $
+;      $Id: gsn_code.ncl,v 1.203 2007-09-15 03:05:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -251,6 +251,10 @@ end
 ;                 h:float                                               ;
 ;                 s:float                                               ;
 ;                 v:float                                               ;
+;                                                                       ;
+; Note: after V4.3.1, the built-in function hsvrgb was added. This      ;
+; should be used instead of this one.                                   ;
+;                                                                       ;
 ; This function maps values from the HSV color model to the RGB color   ;
 ; model. HSV is a good model for generating smooth color maps. See      ;
 ; (Computer Graphics: Principles and Practice by Foley). The return     ;
@@ -258,6 +262,7 @@ end
 ; value from this function can be directly assigned to the "wkColorMap" ;
 ; resource of a workstation object or to the second argument of         ;
 ; gsn_define_colormap.                                                  ;
+;                                                                       ;
 ;***********************************************************************;
 function hsv2rgb (h_old[*]:float,s_old[*]:float,v_old[*]:float)
 begin
