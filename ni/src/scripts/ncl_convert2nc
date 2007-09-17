@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.7 2007-08-15 19:13:20 dbrown Exp $
+#       $Id: ncl_convert2nc,v 1.8 2007-09-17 21:58:48 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -380,6 +380,11 @@ while ($n <= $nfiles)
     set sfxlen = `echo $fil:e | awk '{print length($0)}'`
     if (((-e $ifiles_t[$n]) && (-r $ifiles_t[$n])) \
             || ((-e $dirin/$ifiles_t[$n]) && (-r $dirin/$ifiles_t[$n]))) then
+        if ($have_esfx == 1) then
+            set psfx = $esfx
+            set fil = $fil.psfx
+        endif
+
         if ($sfxlen == 0) then
             if ($have_esfx == 1) then
                 set psfx = $esfx
