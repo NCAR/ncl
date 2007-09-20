@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsx.f,v 1.6 2005-06-22 21:36:48 kennison Exp $
+C $Id: mdrgsx.f,v 1.7 2007-09-20 21:44:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -414,8 +414,7 @@ C
 C
             END IF
 C
-C We get here if we read a segment byte in which ITMP was zero.  Go back
-C to read another segment byte.
+C Go back to read another segment byte.
 C
             GO TO 102
 C
@@ -431,7 +430,8 @@ C
 C Add the coordinates of the closure point to the buffers, edit the
 C polygon, and take the desired action (draw portions of it that lie
 C in the interior of the unit square, fill it directly, or send it to
-C an area map).
+C an area map).  The statement beginning "IF (ILAT.GE.55 ... " is
+C necessary to fix an error in the GSHHS/RANGS database.
 C
             IF (XCRA(NCRA).NE.REAL(PLON).OR.
      +          YCRA(NCRA).NE.REAL(PLAT)) THEN
@@ -449,10 +449,14 @@ C
      +                                                 ITYP.EQ.2) ITYP=1
               CALL MDRGED (IRGL,IPID,ILAT,ILON,ICWP,XCRA,YCRA,NCRA,MCRA)
               IF (IFLL.EQ.0) THEN
+                CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
                 CALL MDRGDR (XCRA,YCRA,NCRA,ITYP+1)
+                CALL SET    (0.,1.,0.,1.,0.,1.,0.,1.,1)
               ELSE IF (IFLL.EQ.1) THEN
                 CALL MDRGIP (XCRA,YCRA,NCRA)
+                CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
                 CALL MDRGFP (XCRA,YCRA,NCRA,ITYP+1)
+                CALL SET    (0.,1.,0.,1.,0.,1.,0.,1.,1)
               ELSE
                 IF (ICWP.NE.0) THEN
                   CALL MDRGAM (IAMA,XCRA,YCRA,NCRA,1,ITYP+1,ITYP)
@@ -485,6 +489,10 @@ C
 C
         END IF
 C
+C Restore the original SET state.
+C
+        CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
+C
 C Scan the area map, retrieving polygons from it, mapping them as
 C directed by the current state of EZMAP, and filling them.
 C
@@ -494,10 +502,6 @@ C
           CALL ARSCAM (IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,1,MDRGFA)
           CALL ARSETI ('RC(1)',IRC1)
         END IF
-C
-C Restore the original SET state.
-C
-        CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
 C
 C Normal return.
 C

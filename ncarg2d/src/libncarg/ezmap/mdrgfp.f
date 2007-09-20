@@ -1,5 +1,5 @@
 C
-C $Id: mdrgfp.f,v 1.2 2005-06-22 21:36:47 kennison Exp $
+C $Id: mdrgfp.f,v 1.3 2007-09-20 21:44:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,8 +33,6 @@ C
 C
         IF (NCRA.GT.2.AND.ITYP.GT.0) THEN
           IF (ICSF(ITYP).GE.0) THEN
-            CALL GETSET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
-            CALL MDPRS
             NCRM=0
             DO 101 I=1,NCRA
               CALL MAPTRN (OLAT+YCRA(I),OLON+XCRA(I),UVAL,VVAL)
@@ -48,7 +46,6 @@ C
               CALL GSFACI (ICSF(ITYP))
               CALL GFA    (NCRM,XCRA,YCRA)
             END IF
-            CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
           END IF
         END IF
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.8 2005-06-22 21:36:47 kennison Exp $
+C $Id: mdrgsq.f,v 1.9 2007-09-20 21:44:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -470,8 +470,7 @@ C
 C
             END IF
 C
-C We get here if we read a segment byte in which ITMP was zero.  Go back
-C to read another segment byte.
+C Go back to read another segment byte.
 C
             GO TO 102
 C
@@ -559,7 +558,8 @@ C
               END IF
 C
 C Add the mapped coordinates of the closure point to the buffers and
-C fill the polygon.
+C fill the polygon.  The statement beginning "IF (ILAT.GE.55 ... " is
+C necessary to fix an error in the GSHHS/RANGS database.
 C
               NCRA=NCRA+1
               CALL MDPTRN (PLAT,PLON,XCRD,YCRD)
