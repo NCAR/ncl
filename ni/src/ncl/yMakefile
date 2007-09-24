@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.136 2007-09-24 21:50:05 dbrown Exp $
+#      $Id: yMakefile,v 1.137 2007-09-24 22:51:01 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2007-09-24 21:50:05 $
+#	Date:		$Date: 2007-09-24 22:51:01 $
 #
 #	Description:	
 #
@@ -219,7 +219,7 @@ STATIC_SRCS	=	AddBuiltIns.c AddHLUObjs.c \
 
 FIO_SRCS        =       llmap.f llmisc.f
 
-FSRCS		=	qu2reg3.F rowina3.F scm0.F ncepcode.f
+FSRCS		=	qu2reg3.f rowina3.f scm0.f ncepcode.f
 
 FEXE_IOSRCS     =       fortranio.f
 
