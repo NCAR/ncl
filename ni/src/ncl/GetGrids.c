@@ -6613,6 +6613,7 @@ GribParamList* thevarrec;
 	Index_Func index_func = compute_index;
 	int lat_size, lon_size;
 	int j;
+	int has_missing, operio, oveggy;
 	
 	if (therec->has_gds) {
 		nlon = CnvtToDecimal(2,&(therec->gds[6]));
@@ -6743,6 +6744,7 @@ GribParamList* thevarrec;
 					data = *outdat;
 				}
 			}
+			has_missing = 0;
 			while((index < grid_size)&&(dnum < total)) {
 				if(is_gpoint(bms,index)) {
 					X = UnsignedCnvtToDecimal(4,&(bds[i]));
@@ -6764,6 +6766,7 @@ GribParamList* thevarrec;
 					i = (int)(tbits/8.0) + 11;
 					bboff = tbits % 8;
 				} else {
+					has_missing = 1;
 					 if(integer) {
                                                 ((int*)data)[index] = DEFAULT_MISSING_INT;
                                                 index++;
@@ -6842,9 +6845,10 @@ GribParamList* thevarrec;
 			for (i = 0; i < n; i++) {
 				rc_count[i] = CnvtToDecimal(2,&(gds[pl_ix + i * 2]));
 			}
-					  
-			NGCALLF(qu2reg2,QU2REG2)(*outdat,rc_count,&lat_size,&lon_size,&kcode,&pmsval,&kret,
-				                 &jpmax,ztemp,zline,zwork);
+			operio = 0;
+			oveggy = 0;
+			NGCALLF(qu2reg3,QU2REG3)(*outdat,rc_count,&lat_size,&lon_size,&kcode,&pmsval,&kret,
+				                 &has_missing,&operio,&oveggy,&jpmax,ztemp,zline,zwork);
 			NclFree(rc_count);
 			NclFree(ztemp);
 			NclFree(zline);

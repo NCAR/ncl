@@ -11091,9 +11091,7 @@ void **missing;
 			}
 			else {
 				ret_val[i]  = *(float*)(*missing);
-                                /*
 				has_missing = 1;
-				*/
 			}
 		}
 	}
@@ -11115,6 +11113,8 @@ void **missing;
 		float *ztemp, *zline, *zwork;
 		float pmsval = DEFAULT_MISSING_FLOAT;
 		int nlat,nlon;
+		int operio = 0;
+                int oveggy = 0;
 		
 		n = rec->the_dat->multidval.n_dims;
 		nlat = rec->the_dat->multidval.dim_sizes[n-2];
@@ -11145,8 +11145,8 @@ void **missing;
 		       NrmQuarkToString(rec->var_name_q),has_missing,force_linear);
 		*/
 					  
-		NGCALLF(qu2reg2,QU2REG2)(ret_val,gfld->list_opt,&nlat,&nlon,&kcode,&pmsval,&kret,
-					 &jpmax,ztemp,zline,zwork);
+		NGCALLF(qu2reg3,QU2REG3)(ret_val,gfld->list_opt,&nlat,&nlon,&kcode,&pmsval,&kret,
+					 &has_missing,&operio,&oveggy,&jpmax,ztemp,zline,zwork);
 		NclFree(ztemp);
 		NclFree(zline);
 		NclFree(zwork);
