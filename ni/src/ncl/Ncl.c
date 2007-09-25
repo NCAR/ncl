@@ -9,6 +9,7 @@ extern "C" {
 #include   <fcntl.h>
 #include   <unistd.h>
 #include   <string.h>
+#include   <strings.h>
 #include   <dirent.h>
 #include   <stdlib.h>
 
@@ -83,6 +84,7 @@ short   NCLecho = 0;            /* echo typed commands, off by default */
 short   NCLoverrideEcho = 0;    /* override echo; non-advertised option */
 short   NCLnoCopyright = 0;     /* override copyright notice; non-advertised option */
 short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
+short   NCLnoSysPager = 0;      /* don't pipe commands to system() to PAGER */
 
 int
 main(int argc, char **argv) {
@@ -171,8 +173,12 @@ main(int argc, char **argv) {
      *  -Q      override: don't echo copyright notice (unannounced option)
      */
     opterr = 0;     /* turn off getopt() msgs */
-    while ((c = getopt (argc, argv, "hnxVXQ")) != -1) {
+    while ((c = getopt (argc, argv, "hnxVXQp")) != -1) {
         switch (c) {
+            case 'p':
+                NCLnoSysPager = 1;
+                break;
+
             case 'n':
                 NCLnoPrintElem = 1;
                 break;
@@ -197,8 +203,9 @@ main(int argc, char **argv) {
                 break;
 
             case 'h':
-                (void) fprintf(stdout, "Usage: ncl -hnxV <args> <file.ncl>\n");
+                (void) fprintf(stdout, "Usage: ncl -hnpxV <args> <file.ncl>\n");
                 (void) fprintf(stdout, "\t -n: don't enumerate values in print()\n");
+                (void) fprintf(stdout, "\t -p: don't page output from the system() command\n");
                 (void) fprintf(stdout, "\t -x: echo NCL commands\n");
                 (void) fprintf(stdout, "\t -V: print NCL version and exit\n");
                 (void) fprintf(stdout, "\t -h: print this message and exit\n");

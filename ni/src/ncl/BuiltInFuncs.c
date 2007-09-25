@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.223 2007-09-05 00:20:49 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.224 2007-09-25 21:01:10 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -67,6 +67,8 @@ extern "C" {
 
 
 extern int cmd_line;
+extern int NCLnoSysPager;
+
 NhlErrorTypes _NclIListHLUObjs
 #if	NhlNeedProto
 (void)
@@ -1034,60 +1036,76 @@ NhlErrorTypes _Nclsystem
 ()
 #endif
 {
-        NclStackEntry val,data;
-        NclMultiDValData tmp_md = NULL;
-        logical *lval;
-        int dimsize = 1;
-	char* command;
-	char *pager;
+    NclStackEntry val,data;
+    NclMultiDValData tmp_md = NULL;
+    logical *lval;
+    int dimsize = 1;
+    char* command;
+    char *pager;
+    char *no_sys_pager = NULL;
 
-        val = _NclGetArg(0,1,DONT_CARE);
-/*
-* Should be constrained to be a SCALAR md
-*/
-        switch(val.kind) {
-        case NclStk_VAL:
-                tmp_md = val.u.data_obj;
-                break;
-        case NclStk_VAR:
-                tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
-                break;
-        default:
-                return(NhlFATAL);
+    val = _NclGetArg(0,1,DONT_CARE);
+
+    /* Should be constrained to be a SCALAR md */
+    switch(val.kind) {
+    case NclStk_VAL:
+        tmp_md = val.u.data_obj;
+        break;
+
+    case NclStk_VAR:
+        tmp_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
+        break;
+
+    default:
+        return(NhlFATAL);
+    }
+
+    if ((tmp_md != NULL) && (tmp_md->multidval.type->type_class.type & Ncl_Typestring)) {
+        if ((strlen(NrmQuarkToString(*(NclQuark *) tmp_md->multidval.val))) == 0) {
+            NhlPError(NhlWARNING, NhlEUNKNOWN, "system: invalid argument (zero length)");
+            return NhlWARNING;
         }
-	if((tmp_md != NULL)&&(tmp_md->multidval.type->type_class.type & Ncl_Typestring)) {
-		if(cmd_line == 1) {
-			pager = getenv("PAGER");
-			if(pager == NULL) {
-				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))
-						    + strlen(" | more") + 1);
-				strcpy(command,NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
-				strcat(command," | more");
-			} else {
-				command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val))+ 
-						    strlen(pager) + strlen(" | ")+1);
-				strcpy(command,NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
-				strcat(command," | ");
-				strcat(command,pager);
-			}
-			if(!system(command)) {
-				NhlFree(command);
-				return(NhlNOERROR);
-			} else {
-				NhlFree(command);
-                		return(NhlWARNING);
-			}
-		} else {
-			command = NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val); 
-			if(!system(command)) {
-				return(NhlNOERROR);
-			} else {
-                		return(NhlWARNING);
-			}
-		}
-	} else {
-                return(NhlFATAL);
-	}
+
+        no_sys_pager = getenv("NCL_NO_SYSTEM_PAGER");
+        if (cmd_line == 1) {
+            if ((no_sys_pager == NULL) && (!NCLnoSysPager)) {
+                pager = getenv("PAGER");
+                if (pager == NULL) {
+                    command = NclMalloc(strlen(NrmQuarkToString(
+                        *(NclQuark *)tmp_md->multidval.val)) + strlen(" | more") + 1);
+                    strcpy(command, NrmQuarkToString(*(NclQuark *) tmp_md->multidval.val));
+                    strcat(command, " | more");
+                } else {
+                    command = NclMalloc(strlen(NrmQuarkToString(
+                        *(NclQuark *) tmp_md->multidval.val)) + strlen(" | ") + strlen(pager) + 1);
+                    strcpy(command, NrmQuarkToString(*(NclQuark *) tmp_md->multidval.val));
+                    strcat(command, " | ");
+                    strcat(command, pager);
+                }
+            } else {
+                /* user does not want to use a PAGER */
+                command = NclMalloc(strlen(NrmQuarkToString(*(NclQuark *)tmp_md->multidval.val)));
+                strcpy(command, NrmQuarkToString(*(NclQuark *) tmp_md->multidval.val));
+            }
+        
+            if (!system(command)) {
+                NhlFree(command);
+                return(NhlNOERROR);
+            } else {
+                NhlFree(command);
+                return(NhlWARNING);
+            }
+        } else {
+            command = NrmQuarkToString(*(NclQuark *) tmp_md->multidval.val); 
+            if (!system(command)) {
+                return(NhlNOERROR);
+            } else {
+                return(NhlWARNING);
+            }
+        }
+    } else {
+        return(NhlFATAL);
+    }
 }
 
 NhlErrorTypes _NclIIsMissing
