@@ -1,11 +1,12 @@
 ;--------------------------------------------------------------------------------
-; function wrf_user_set_xy( var:float, xp:float, yp:float, x1:float, y1:float, \
-;                           angle:float ,opts )
-; function wrf_user_intrp3d( var3d:float, z:float, plot_type:string, \
-;                            loc_param:float, angle:float, opts:logical )
+; function wrf_user_set_xy( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
+;                           y1:numeric,angle:numeric ,opts )
+; function wrf_user_intrp3d( var3d:numeric, z:numeric, plot_type:string, \
+;                            loc_param:numeric, angle:numeric, opts:logical )
 ; function wrf_user_getvar( nc_file:file, variable:string, time:integer )
 ; function wrf_user_list_times( nc_file:file )
-; function wrf_user_latlon_to_ij( nc_file:file, latitude:float, longitude:float )
+; function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, 
+;                                 longitude:numeric )
 ; function wrf_contour(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
 ;                      opt_args[1]:logical)
 ; function wrf_vector(nc_file:file,wks[1]: graphic, data_u[*][*]:numeric, \
@@ -23,9 +24,38 @@
 ; procedure print_header(icount:integer,debug)
 ;--------------------------------------------------------------------------------
  
+;***********************************************************************;
+; function : tointeger                                                  ;
+;                x:numeric                                              ;
+;                                                                       ;
+; Convert input to integer.                                             ;
+;                                                                       ;
+;***********************************************************************;
+undef("tointeger")
+function tointeger(x:numeric)
+local xi
+begin
+  if(typeof(x).eq."double")
+    xi = doubletointeger(x)
+  else
+    if(typeof(x).eq."float")
+      xi = floattointeger(x)
+    else
+      if(isatt(x,"_FillValue"))
+        xi = new(dimsizes(x),integer,x@_FillValue)
+      else
+        xi = new(dimsizes(x),integer)
+        delete(xi@_FillValue)
+      end if
+      xi = x
+    end if
+  end if
+  return(xi)
+end
+
 undef("wrf_user_set_xy")
-function wrf_user_set_xy( var:float, xp:float, yp:float, x1:float, y1:float, \
-                                     angle:float, opts )
+function wrf_user_set_xy( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
+                          y1:numeric, angle:numeric, opts )
 
 ;  mass coordinate version of ncl user routines
 
@@ -136,11 +166,11 @@ begin
   dx = x1 - x0
   dy = y1 - y0
   distance = (dx*dx + dy*dy)^0.5
-  npts = floattointeger(distance)
-  dxy = new(1,float)
+  npts = tointeger(distance)
+  dxy = new(1,typeof(distance))
   dxy = distance/npts
 
-  xy = new((/ npts, 2 /),float)
+  xy = new((/ npts, 2 /),typeof(x1))
 
   dx = dx/npts
   dy = dy/npts
@@ -158,9 +188,9 @@ end
 ;--------------------------------------------------------------------------------
  
 undef("wrf_user_intrp3d")
-function wrf_user_intrp3d( var3d:float, z:float, \
+function wrf_user_intrp3d( var3d:numeric, z:numeric, \
                            plot_type:string, \
-                           loc_param:float, angle:float, opts:logical )
+                           loc_param:numeric, angle:numeric, opts:logical )
 
 ; var3d      - field to inerpolate (all input fields must be unstaggered
 ; z          - interpolate to this field (either p/z)
@@ -214,10 +244,10 @@ begin
      z_min = min(var2dz)
      dz = 0.01*(z_max - z_min)
      nlevels = 101
-     z_var2d = new( (/nlevels/), float)
+     z_var2d = new( (/nlevels/), typeof(var2dz))
      z_var2d(0) = z_min
 
-     var2d = new( (/nlevels, xp(0)/), float)
+     var2d = new( (/nlevels, xp(0)/), typeof(var2dz))
  
      if(var2dz(0,0) .gt. var2dz(1,0) ) then  ; monotonically decreasing coordinate
         dz = -dz
@@ -234,10 +264,10 @@ begin
      end do
 
 
-     st_x = floattoint(xy(0,0)) + 1
-     st_y = floattoint(xy(0,1)) + 1
-     ed_x = floattoint(xy(xp(0)-1,0)) + 1
-     ed_y = floattoint(xy(xp(0)-1,1)) + 1
+     st_x = tointeger(xy(0,0)) + 1
+     st_y = tointeger(xy(0,1)) + 1
+     ed_x = tointeger(xy(xp(0)-1,0)) + 1
+     ed_y = tointeger(xy(xp(0)-1,1)) + 1
      if (opts) then
        var2d@Orientation = "Cross-Sesion: (" + \
                             st_x + "," + st_y + ") to (" + \
@@ -278,7 +308,7 @@ begin
        u = nc_file->U(time,:,:,:)
        dimu = dimsizes(u)
 
-       uvmet = new( (/ 2, dimu(0), dimu(1), dimv(2)/), float)
+       uvmet = new( (/ 2, dimu(0), dimu(1), dimv(2)/), typeof(u))
 
        map_projection = nc_file@MAP_PROJ
 
@@ -540,7 +570,8 @@ end
 ;--------------------------------------------------------------------------------
 
 undef("wrf_user_latlon_to_ij")
-function wrf_user_latlon_to_ij( nc_file:file, latitude:float, longitude:float )
+function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, \
+                                longitude:numeric )
 
 begin
 
@@ -884,14 +915,14 @@ begin
 ;
 ; Only the contour interval is specified.
 ;
-      nlev   = floattointeger((mx-mn)/opts@ContourParameters)+1
+      nlev   = tointeger((mx-mn)/opts@ContourParameters)+1
       levels = nice_mnmxintvl(mn,mx,nlev,True)
       if(levels(0) .lt. 0.) then
         ; Set a zero contour.
-        nlev = floattointeger(levels(0)/opts@ContourParameters) - 1
+        nlev = tointeger(levels(0)/opts@ContourParameters) - 1
         levels(0) = nlev*opts@ContourParameters
       end if
-      nlev = floattointeger((levels(1)-levels(0))/opts@ContourParameters)+1
+      nlev = tointeger((levels(1)-levels(0))/opts@ContourParameters)+1
       levels(1) = levels(0) + nlev*opts@ContourParameters
       levels(2) = opts@ContourParameters
     else
