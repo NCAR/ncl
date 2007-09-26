@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.12 2006-10-06 23:17:35 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.13 2007-09-26 22:52:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -652,8 +652,11 @@ static NhlErrorTypes    mdhManageDynamicArrays
 
 	need_check = False;
 	if (ga != mdhp->dynamic_groups) {
-		if (! mdhp->dynamic_groups ||
-                    mdhp->dynamic_groups->num_elements != outline_rec_count) {
+		if (! mdhp->dynamic_groups) {
+                        NhlFreeGenArray(ga);
+			ga = NULL;
+                }
+		else if (mdhp->dynamic_groups->num_elements != outline_rec_count) {
 			e_text = 
 			  "%s: %s GenArray must contain %d elements: ignoring";
 			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
@@ -676,7 +679,8 @@ static NhlErrorTypes    mdhManageDynamicArrays
 		mdhp->dynamic_groups = ga;
 
 	}
-	if (need_check || mdhp->area_group_count < omdhp->area_group_count) {
+	if (ga && 
+	    (need_check || mdhp->area_group_count < omdhp->area_group_count)) {
 		ip = (int *) ga->data;
 		for (i=0; i < ga->num_elements; i++) {
 			use_default = False;
@@ -2032,6 +2036,7 @@ static NhlErrorTypes MapV40DHUpdateDrawList
                     mpp->spec_fill_direct != ompp->spec_fill_direct ||
                     mpp->area_names != ompp->area_names ||
                     mpp->dynamic_groups != ompp->dynamic_groups ||
+                    mpp->area_group_count != ompp->area_group_count ||
                     mpp->area_masking_on != ompp->area_masking_on ||
                     mpp->spec_fill_priority != ompp->spec_fill_priority)
                         build_fill_list = True;

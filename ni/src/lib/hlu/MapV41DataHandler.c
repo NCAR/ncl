@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.25 2007-02-28 00:59:12 fred Exp $
+ *      $Id: MapV41DataHandler.c,v 1.26 2007-09-26 22:52:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -152,6 +152,7 @@ static NhlMapPlotLayer Mpl;
 static NhlMapPlotLayerPart *Mpp;
 static NhlMapV41DataHandlerClassPart	*Mv41cp;
 static NhlMapV41DataHandlerLayerPart	*Mv41p;
+static NhlMapDataHandlerLayerPart *Mdhp;
 static NhlBoolean Grid_Setup;
 static mpDrawOp Draw_Op;
 static NhlBoolean Count_Points_Only = False;
@@ -931,6 +932,7 @@ static NhlErrorTypes    mdhManageDynamicArrays
 	if (ga != mdhp->dynamic_groups) {
 		if (! mdhp->dynamic_groups) { 
                         NhlFreeGenArray(ga);
+			ga = NULL;
                 }
                 else if (mdhp->dynamic_groups->num_elements
                          != entity_rec_count) {
@@ -956,7 +958,8 @@ static NhlErrorTypes    mdhManageDynamicArrays
 		mdhp->dynamic_groups = ga;
 
 	}
-	if (need_check || mdhp->area_group_count < omdhp->area_group_count) {
+	if (ga &&
+	    (need_check || mdhp->area_group_count < omdhp->area_group_count)) {
 		ip = (int *) ga->data;
 		for (i=0; i < ga->num_elements; i++) {
 			use_default = False;
@@ -2089,6 +2092,47 @@ static NhlErrorTypes    mv41BuildFillDrawList
 				    mv41p->fill_recs[i].level);
 		}
         }
+
+	if (mdhp->dynamic_groups) {
+		for (i = 0; i < mv41p->entity_rec_count; i++) {
+			v41EntityRec *erec = &mv41p->entity_recs[i];
+			int ix = i + 1;
+			if (ix == LandId) {
+				erec->dynamic_gid = erec->fixed_gid =
+					NhlmpLANDGROUPINDEX;
+			}
+			else if (NGCALLF(mpipai,MPIPAI)(&ix,&LandId)) {
+				erec->fixed_gid = NhlmpLANDGROUPINDEX;
+				erec->dynamic_gid = ((int*)mdhp->dynamic_groups->data)[erec->canonical_ix];
+			}
+			else if (ix == OceanId || ix == WaterId)
+				erec->dynamic_gid = erec->fixed_gid
+					= NhlmpOCEANGROUPINDEX;
+			else 
+				erec->dynamic_gid = erec->fixed_gid
+					= NhlmpINLANDWATERGROUPINDEX;
+		}
+	}
+	else {
+		for (i = 0; i < mv41p->entity_rec_count; i++) {
+			v41EntityRec *erec = &mv41p->entity_recs[i];
+			int ix = i + 1;
+			if (ix == LandId) {
+				erec->dynamic_gid = erec->fixed_gid =
+					NhlmpLANDGROUPINDEX;
+			}
+			else if (NGCALLF(mpipai,MPIPAI)(&ix,&LandId)) {
+				erec->fixed_gid = NhlmpLANDGROUPINDEX;
+				erec->dynamic_gid = NGCALLF(mpisci,MPISCI)(&ix) + 2;
+			}
+			else if (ix == OceanId || ix == WaterId)
+				erec->dynamic_gid = erec->fixed_gid
+					= NhlmpOCEANGROUPINDEX;
+			else 
+				erec->dynamic_gid = erec->fixed_gid
+					= NhlmpINLANDWATERGROUPINDEX;
+		}
+	}
         
         return ret;
         
@@ -2427,7 +2471,9 @@ static NhlErrorTypes MapV41DHUpdateDrawList
                     mpp->mask_area_specs != ompp->mask_area_specs ||
                     mpp->area_names != ompp->area_names ||
                     mpp->area_masking_on != ompp->area_masking_on ||
-		    mpp->data_set_name != ompp->data_set_name)
+		    mpp->data_set_name != ompp->data_set_name ||
+		    mpp->dynamic_groups != ompp->dynamic_groups ||
+		    mpp->area_group_count != ompp->area_group_count)
                         build_fill_list = True;
                 
                 if (mpp->database_version != ompp->database_version ||
@@ -2553,7 +2599,7 @@ static int (_NHLCALLF(hlumapfill,HLUMAPFILL))
 			ix = NGCALLF(mpiosa,MPIOSA)(&geo_ix,&level);
 			if (level < 2)
 				gid = Mv41p->entity_recs[ix-1].fixed_gid;
-			else
+                        else
 				gid = Mv41p->entity_recs[ix-1].dynamic_gid;
 		}
 
@@ -3214,6 +3260,7 @@ static NhlErrorTypes MapV41DHDrawMapList
 	Mpp = mpp;
 	Mpl = mpl;
 	Mv41p = &mv41l->mapv41dh;
+	Mdhp = &mv41l->mapdh;
 
 	/*
 	 * this is necessary to ensure that Ezmap is using the

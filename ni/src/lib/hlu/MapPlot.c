@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlot.c,v 1.98 2007-06-07 23:04:04 dbrown Exp $
+ *      $Id: MapPlot.c,v 1.99 2007-09-26 22:52:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -843,7 +843,9 @@ static NhlErrorTypes mpSetUpDataHandler(
 #if	NhlNeedProto
 	NhlMapPlotLayer	mpnew,
 	NhlMapPlotLayer	mpold,
-	NhlBoolean	init
+	NhlBoolean	init,
+	_NhlArgList	args,
+	int		num_args
 #endif
 );
 
@@ -1300,7 +1302,7 @@ MapPlotInitialize
         
 /* Set up the Map data handler */
 
-        subret = mpSetUpDataHandler(mpl, (NhlMapPlotLayer) req, True);
+        subret = mpSetUpDataHandler(mpl, (NhlMapPlotLayer) req, True, args, num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
                                     
@@ -1663,7 +1665,7 @@ static NhlErrorTypes MapPlotSetValues
         
 /* Set up the Map data handler */
 
-        subret = mpSetUpDataHandler(mpl,ompl,False);
+        subret = mpSetUpDataHandler(mpl,ompl,False,args,num_args);
 	if ((ret = MIN(ret,subret)) < NhlWARNING) 
 		return ret;
         
@@ -3659,13 +3661,18 @@ static NhlErrorTypes mpSetUpDataHandler
 (
 	NhlMapPlotLayer	mpnew,
 	NhlMapPlotLayer	mpold,
-	NhlBoolean	init
+	NhlBoolean	init,
+	_NhlArgList	args,
+	int		num_args
 )
 #else 
-(mpnew,mpold,init)
+
+(mpnew,mpold,init,args,num_args)
 	NhlMapPlotLayer	mpnew;
 	NhlMapPlotLayer	mpold;
 	NhlBoolean	init;
+        _NhlArgList     args;
+        int             num_args;
 #endif
 {
 	NhlMapPlotLayerPart 	*mpp = &(mpnew->mapplot);
@@ -3684,12 +3691,18 @@ static NhlErrorTypes mpSetUpDataHandler
         
         if (mpp->area_names)
                 NhlSetSArg(&sargs[nargs++],NhlNmpAreaNames,mpp->area_names);
-        if (mpp->dynamic_groups)
+        if ((init && mpp->dynamic_groups) || 
+	    _NhlArgIsSet(args,num_args,NhlNmpDynamicAreaGroups))
                 NhlSetSArg(&sargs[nargs++],
                            NhlNmpDynamicAreaGroups,mpp->dynamic_groups);
         if (mpp->data_set_name)
                 NhlSetSArg(&sargs[nargs++],
                            NhlNmpDataSetName,mpp->data_set_name);
+
+	if (init ||
+	    (!init && mpp->area_group_count != ompp->area_group_count))
+                NhlSetSArg(&sargs[nargs++],
+                           NhlNmpAreaGroupCount,mpp->area_group_count);
         
 	if (! init && mpp->database_version != ompp->database_version) {
                 NhlDestroy(mpp->map_data_handler->base.id);
