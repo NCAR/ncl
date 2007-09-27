@@ -1,15 +1,15 @@
 c nclfortstart
       subroutine paleooutline(mask,zdat,lat,lon,nlat,nlon,jm,im,
-     +                        name,mskval)
+     +                        iwrk,liwk,name,mskval)
       integer nlat,nlon
-      integer im,jm
+      integer im,jm,liwk
       real lat1,latn,lon1,lonn
       double precision mask(nlon,nlat), lat(nlat), lon(nlon)
       real zdat(im,jm), mskval
       character*(*) name
+      integer iwrk(liwk)
 c nclend
       integer i,j
-      integer iwrk(2000)
 C
 C The subroutine SVBLED requires that the input mask array be twice as
 C large(+1) as the orginal. This is an artificat of the original 
@@ -48,7 +48,7 @@ C
       lonn = real(lon(nlon))
       lonn = 360.
 C     
-      CALL SVBLED (ZDAT,im,jm,IWRK,2000,mskval,ilft,lon1,irgt,lonn,
+      CALL SVBLED (ZDAT,im,jm,IWRK,liwk,mskval,ilft,lon1,irgt,lonn,
      +     ibot,lat1,itop,latn,'Land','Water',name)
 
 c ZDAT = data (idim,jdim)
