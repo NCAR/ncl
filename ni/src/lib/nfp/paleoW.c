@@ -2,8 +2,8 @@
 #include "wrapper.h"
 
 extern void NGCALLF(paleooutline,PALEOOUTLINE)(double*,float*,double*,double*,
-                                               int*,int*,int*,int*,char*,
-                                               float*,int);
+                                               int*,int*,int*,int*,int*,int*,
+                                               char*,float*,int);
 NhlErrorTypes paleo_outline_W( void )
 {
 /*
@@ -20,7 +20,7 @@ NhlErrorTypes paleo_outline_W( void )
  */
   float *zdat;
   char *cname;
-  int nlat, nlon, jm, im;
+  int *iwrk, liwk, nlat, nlon, jm, im;
 /*
  * Retrieve arguments.
  */
@@ -93,13 +93,17 @@ NhlErrorTypes paleo_outline_W( void )
     return(NhlFATAL);
   }
 /*
- * Allocate space for work array.
+ * Allocate space for work arrays.
  */
   jm   = 2*nlat+1;
   im   = 2*nlon+1;
+  liwk = max(im * jm,2000);         /* 2000 is the old value that iwrk 
+                                       was hard-wired to. */
+
   zdat = (float*)malloc(jm*im*sizeof(float));
-  if(zdat == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"paleo_outline: Unable to allocate memory for work array");
+  iwrk = (int*)malloc(liwk*sizeof(int));
+  if(zdat == NULL || iwrk == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"paleo_outline: Unable to allocate memory for work arrays");
     return(NhlFATAL);
   }
 
@@ -107,13 +111,14 @@ NhlErrorTypes paleo_outline_W( void )
  * Call the Fortran paleo_outline routine.
  */
   NGCALLF(paleooutline,PALEOOUTLINE)(tmp_oro,zdat,tmp_lat,tmp_lon,
-                                     &nlat,&nlon,&jm,&im,cname,landmask,
-                                     strlen(cname));
+                                     &nlat,&nlon,&jm,&im,iwrk,&liwk,
+                                     cname,landmask,strlen(cname));
   if(type_oro != NCL_double) NclFree(tmp_oro);
   if(type_lat != NCL_double) NclFree(tmp_lat);
   if(type_lon != NCL_double) NclFree(tmp_lon);
 
   NclFree(zdat);
+  NclFree(iwrk);
 
   return(NhlNOERROR);
 }
