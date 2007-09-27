@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.26 2007-09-15 03:05:51 haley Exp $
+;      $Id: shea_util.ncl,v 1.27 2007-09-27 20:21:24 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -788,42 +788,40 @@ begin
    hright     = fabs(hueRange(1))
    colorWheel = hueRange(2)
 
-   h          = new (ncol,float) 
-   s          = new (ncol,float) 
-   v          = new (ncol,float)        ; keep at 1.0 
+   hsv        = new ((/ncol,3/),float)  ; keep v part at 1.0 
 
    sMax       = 0.90                    ; 1.0/0.8 fine also 
    sMin       = 0.15                       
    if (colorWheel.eq.0.) then
-       nc2           = ncol/2
-       h(0:nc2-1)    = hleft
-       h(nc2:ncol-1) = hright
+       nc2               = ncol/2
+       hsv(0:nc2-1,0)    = hleft
+       hsv(nc2:ncol-1,0) = hright
 
-       s(0:nc2-1)    = fspan(sMax,sMin,nc2)
-       s(nc2:ncol-1) = fspan(sMin,sMax,nc2)
+       hsv(0:nc2-1,1)    = fspan(sMax,sMin,nc2)
+       hsv(nc2:ncol-1,1) = fspan(sMin,sMax,nc2)
 
-       v(0:ncol-1)   = 1.0
+       hsv(0:ncol-1,2)   = 1.0
       ;vmax          = 1.00
       ;vmin          = 1.00
       ;v(0:nc2-1)    = fspan(vmax,vmin,nc2)
       ;v(nc2:ncol-1) = fspan(vmin,vmax,nc2)
    else 
        print ("genCmapColorWheelInternal: hleft="+hleft+" hright="+hright)
-       h             = new (ncol,float) 
-       h(0:ncol-1)   = fspan(hleft,hright,ncol)
-       s(0:ncol-1)   = sMax                      ; keep constant
-       v(0:ncol-1)   = 1.0
-       print ("genCmapColorWheelInternal: h="+h+"  s="+s)
+       hsv           = new ((/ncol,3/),float) 
+       hsv(0:ncol-1,0)   = fspan(hleft,hright,ncol)
+       hsv(0:ncol-1,1)   = sMax                      ; keep constant
+       hsv(0:ncol-1,2)   = 1.0
+       print ("genCmapColorWheelInternal: h="+hsv(:,0)+"  s="+s(:,1))
    end if 
 
    cmap             = new((/ncol+3,3/),float); create array
    cmap(0,:)        = (/1.,1.,1./)           ; white background
    cmap(1,:)        = (/0.,0.,0./)           ; black foreground
-   cmap(2:ncol+1,:) = hsvrgb((/h,s,v/))
+   cmap(2:ncol+1,:) = hsvrgb(hsv)
    cmap(  ncol+2,:) = (/0.90, 0.90, 0.90 /)  ; append gray
 
   ;print ("ncol="+ncol)
-  ;print ("h="+h +"  s="+s+"  v="+v)
+  ;print ("h="+hsv(:,0) +"  s="+hsv(:,1)+"  v="+hsv(:,2))
   ;do n=0,ncol+1
   ;   print ("cmap="+n+"  "+cmap(n,0)+"  "+cmap(n,1)+"  "+cmap(n,2))
   ;end do
