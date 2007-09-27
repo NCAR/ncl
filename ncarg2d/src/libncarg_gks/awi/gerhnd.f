@@ -1,5 +1,5 @@
 C
-C	$Id: gerhnd.f,v 1.7 2007-05-23 00:35:31 fred Exp $
+C	$Id: gerhnd.f,v 1.8 2007-09-27 16:53:26 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,7 +41,6 @@ C  errors before abort.
 C
       DATA MNERR/0/
 C
-      print *,'Got to gerhnd',mxermg
       IF (MXERMG .LE. 0) THEN
         WRITE(6,500) 
   500   FORMAT(' '/
