@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.5 2007-08-14 13:25:41 haley Exp $
+#   $Id: check_files,v 1.6 2007-09-28 20:32:17 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -443,6 +443,7 @@ lib/ncarg/colormaps/thelix.rgb
 lib/ncarg/colormaps/wgne15.rgb
 lib/ncarg/colormaps/wh-bl-gr-ye-re.gp
 lib/ncarg/colormaps/wxpEnIR.rgb
+lib/ncarg/data/asc/climdivcorr.txt
 lib/ncarg/data/asc/cn03f.asc
 lib/ncarg/data/asc/cn04n.asc
 lib/ncarg/data/asc/cn11f.asc

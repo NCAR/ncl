@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.11 2007-07-12 19:42:37 haley Exp $
+#   $Id: check_ncl_files,v 1.12 2007-09-28 20:32:17 haley Exp $
 #
 # Use check_files instead! This one is just for NCL.
 # 
@@ -276,6 +276,7 @@ lib/ncarg/colormaps/thelix.rgb
 lib/ncarg/colormaps/wgne15.rgb
 lib/ncarg/colormaps/wh-bl-gr-ye-re.gp
 lib/ncarg/colormaps/wxpEnIR.rgb
+lib/ncarg/data/asc/climdivcorr.txt
 lib/ncarg/data/asc/cn03f.asc
 lib/ncarg/data/asc/cn04n.asc
 lib/ncarg/data/asc/cn11f.asc
