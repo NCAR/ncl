@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin,v 1.7 2006-09-07 22:12:31 haley Exp $
+ *      $Id: Darwin,v 1.8 2007-10-05 14:07:36 haley Exp $
  */
 /************************************************************************
 *									*
@@ -23,19 +23,22 @@
  */
 #define HdfDefines  -DDARWIN
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE
-#define Cstatic 
-#define Cdynamic 
+#define Cstatic
+#define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
 #define FCompiler   g77
-#define CtoFLibraries   -lg2c 
+#define CtoFLibraries   -lg2c -lgcc
 #define CcOptions      -ansi
+
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
+#define HDFlib  -lmfhdf -ldf /Users/haley/lib/libjpeg.a /Users/haley/lib/libz.a
+#define V5Dlib  /Users/haley/lib/libv5d.a
 
-#define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib
-#define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include
+#define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib -L/Users/haley/lib
+#define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include -I/Users/haley/include
 
 FC = $(F77)
 
