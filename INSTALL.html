@@ -1,0 +1,1837 @@
+<html>
+<head>
+<title>How to build NCL and NCAR Graphics from source code</title>
+</head>
+
+<h1>How to build NCL and NCAR Graphics from source code</h1>
+
+NCL and NCAR Graphics can only be built on UNIX systems.  This
+software has been successfully built using native compilers on Suns,
+SGIs (32 or 64-bit mode), IBMs running AIX (32 or 64-bit), HPs, and
+Compaq Alphas, and using other compilers (GNU, Portland Group, Intel,
+Pathscale, Lahey) on systems running Linux (32 or 64-bit), MacOSX (PPC
+or Intel), Cygwin, and Solaris X86.
+<p>
+
+This document is meant to be an all-encompassing document on how to
+set up your environment to build NCL and NCAR Graphics, what external
+software packages you need and which are optional, and finally how
+to build and test NCL and NCAR Graphics.
+<p>
+
+<blockquote>
+<b>Note on building NCAR Graphics only:</b><p>
+
+You do have the option during the build process to indicate you do not
+want to build NCL, effectively building just NCAR Graphics.  This
+simplifies the build somewhat, since you can get by with not having to
+install most, if any, of the external software packages listed below.
+<p>
+
+If you are already familiar with building NCAR Graphics from
+source code, then all the instructions you know from before are the
+same. The one difference is that when you run "./Configure", be sure
+to answer "no" when it asks whether you want to build NCL.
+</blockquote>
+<p>
+
+This is a new venture for us, so please <a
+href="http://mailman.ucar.edu/mailman/listinfo/ncl-talk">email
+ncl-talk@ucar.edu</a> if you have any problems understanding this
+document or building any of this software.
+<p>
+
+<i>Note that in the instructions below, "NCL" will be used to mean
+both NCL and NCAR Graphics. A reference to "NCARG" means
+NCAR Graphics only.</i>
+
+<UL>
+
+<LI><A HREF="#SetupBuildEnvironment">Set up and test build environment
+for NCL</A>
+
+<UL>
+<LI><A HREF="#CompilersNeeded">Compilers needed to build NCL</A>
+
+<LI><A HREF="#TestBlockdataInit">Test that your Fortran compiler does
+blockdata initializations correctly</A>
+
+<LI><A HREF="#X11Libs">Install X11 libraries and include files needed</A>
+
+</UL>
+
+<LI><A HREF="#BuildNonOptionalSoftware">Download and build
+non-optional external software</A><br>
+(If you are doing just an NCARG build, then only HDF-4 is needed, and
+this is only if you need support for writing HDF image files)
+
+<UL>
+<LI><A HREF="#NetCDF3">NetCDF-3</A>
+<LI><A HREF="#JPEG">JPEG</A>
+<LI><A HREF="#ZLIB">ZLIB</A>
+<LI><A HREF="#HDF-4">HDF-4</A>
+</UL>
+
+<LI><A HREF="#BuildOptionalSoftware">Download and build optional
+external software</A><br>
+(If you are just doing an NCARG build, none of these are needed.)
+
+<UL>
+<LI><A HREF="#GRIB2">GRIB2</A>
+<LI><A HREF="#HDFEOS2">HDF-EOS 2</A>
+<LI><A HREF="#NetCDF4">NetCDF-4</A>
+<LI><A HREF="#Triangle">Triangle</A>
+<LI><A HREF="#OPeNDAP">OPeNDAP</A>
+<LI><A HREF="#Vis5D">Vis5D+</A>
+</UL>
+
+<LI><A HREF="#GetNCLSourceCode">Download the source code for NCL</A>
+
+<LI><A HREF="#CustomizeNCLBuildEnvironment">Customize NCL build
+environment</A>
+
+<UL>
+<LI><A HREF="#TestIfSystemRecognized">Test if your system is
+recognized by NCL build environment</A>
+
+<LI><A HREF="#GetConfigFileName">Get name of configuration file</A>
+
+<LI><A HREF="#ModifySystemConfigFile">Modify system configuration file
+to change default values</A> (may not be necessary)
+
+</UL>
+
+<LI><A HREF="#BuildNCLFromSource">Build NCL from source code</A>
+
+<UL>
+<LI><A HREF="#RunConfigure">Run Configure script</A>
+
+<UL>
+<LI><A HREF="#AIX">Special note for AIX systems</A>
+<LI><A HREF="#IRIX">Special note for IRIX systems</A>
+<LI><A HREF="#Linux">Special note for Linux systems</A>
+<LI><A HREF="#MacOSX">Special note for MacOSX systems</A>
+</UL>
+
+<LI><A HREF="#StartBuildAndInstall">Start the build and install process</A>
+
+</UL>
+
+<LI><A HREF="#SetUpEnvironment">Set up your environment to run NCL</A>
+
+<LI><A HREF="#TestInstallation">Test the NCL and/or NCAR Graphics
+installation</A>
+
+<LI><A HREF="#AppendixA">Appendix A - Modifying configuration files to
+recognize your system</A>
+
+<UL>
+
+<LI><A HREF="#ModifyYmakeFile">Modify the "ymake" file to recognize
+your system</A>
+
+<LI><A HREF="#SetUpConfigFile">Set up a configuration file</A>
+
+<LI><A HREF="#ExampleConfigFile">Example configuration file</A>
+
+<LI><A HREF="#ModifyMachineDependentRoutines">Modify machine-dependent
+routines</A>
+
+</UL>
+
+<LI><A HREF="#AppendixB">Appendix B - General information on build process</A>
+
+<UL>
+<LI><A HREF="#ConfigurationFiles">Configuration files</A>
+
+<LI><A HREF="#RestartingInstallation">Restarting the installation</A>
+
+<LI><A HREF="#ymake">ymake</A>
+
+<LI><A HREF="#MachineDependentRoutines">machine-dependent support
+routines</A>
+
+</UL>
+
+</UL>
+
+</UL>
+
+<A NAME="SetupBuildEnvironment"></A>
+<HR>
+<H2>Set up and test build environment for NCL</H2>
+<p>
+
+<A NAME="CompilersNeeded"></A>
+<b>Compilers needed to build NCL</b><p>
+
+You need a Fortran 77 or 90 compiler and an ANSI C compiler to build
+NCL. If your system has native Fortran and C compilers (for example
+"xlf" on IBM/AIX systems), we recommend using these. In addition to
+native compilers, NCL has been successfully built with a wide-range of
+compilers including <a href="http://gcc.gnu.org/">gcc</a>, <a
+href="http://www.gnu.org/software/fortran/fortran.html">g77</a>, <a
+href="http://gcc.gnu.org/wiki/GFortran">gfortran</a>, <a
+href="http://g95.org/">g95</a>, Intel <a
+href="http://www.intel.com/cd/software/products/asmo-na/eng/282048.htm">Fortran</a>
+and <a
+href="http://www.intel.com/cd/software/products/asmo-na/eng/284132.htm">C</a>, <a href="http://www.pgroup.com/">Portland Group</a>.
+<p>
+
+<A NAME="TestBlockdataInit"></A>
+<b>Test that your Fortran compiler does blockdata initializations
+correctly</b><p>
+
+The NCL code depends heavily on Fortran blockdata variables
+being initialized correctly. We have found that some Fortran compilers
+don't handle blockdata initializations correctly, and hence can't
+be used to build NCL.
+<p>
+
+To test if your Fortran compiler handles blockdata initializations
+correctly, download the small <a
+href="http://www.ncl.ucar.edu/Download/files/blockdata_test.tar">blockdata_test.tar</a>
+tar file, and untar it with:
+
+<pre>
+  tar -xvf blockdata_test.tar
+</pre>
+
+Cd to "blockdata_test" and edit the "Makefile" to change "g77" to
+whatever compiler you are using. Then, type:
+
+<pre>
+  make main.good main.bad main.init
+  ./main.good
+  ./main.init
+  ./main.bad
+</pre>
+
+If the "main.bad" and "main.init" programs give you the output:
+
+<pre>
+  TESTSUB: WK =  0...it should be 20
+</pre>
+
+then your compiler doesn't handle blockdata initializations
+correctly, and you won't be able to use this Fortran compiler
+to build NCL.
+<p>
+
+If "main.init" gives you the correct output, but "main.bad" doesn't,
+then you will be able to use this compiler, but you will need to
+include the special options "-ncarbd" and "-ngmathbd" if you compile
+an NCAR Graphics or HLU C or Fortran program using "ncargf77",
+"ncargf90", "ncargcc", "nhlf77", "nhlf90", and/or "nhlcc".
+<p>
+
+<A NAME="X11Libs"></A>
+<b>Install X11 libraries and include files needed</b><p>
+
+In order to build some of the X applications that are part of NCL
+(like <a
+href="http://www.ncl.ucar.edu/Document/Tools/idt.shtml">idt</a>), you
+must have some of the X11 libraries installed on your system. At a
+minimum, you should have the following libraries (and associated
+include files) installed on your system: X11, Xaw, Xext, Xm, Xmu, Xt.
+<p>
+
+These libraries are usually installed as part of an X developer's
+package, and will reside in a directory like /usr/X11R6/lib.<P>
+
+<A NAME="BuildNonOptionalSoftware"></A>
+<HR>
+<H2>Download and build non-optional external software</H2>
+<p>
+
+The software listed below is not optional if you plan to build NCL.
+If you are building NCARG only, then you only need to build and
+install <A HREF="#HDF-4">HDF-4</A>.
+
+<blockquote>
+
+<i>Once you download and install any external software to use with
+NCL, you must comply with the license of that software, regardless of
+what NCL's license is.</i>
+
+</blockquote>
+
+<p>
+
+<b>Note:</b> it makes things easier if you install all of the external
+software needed (with the exception of the X11 libraries and include
+files) to the same parent directory.  This will be important later
+when you have to tell the NCL build system where all the external
+software has been installed. We will use <i>/usr/local</i> in all of
+our examples below for installing external software.
+<p>
+
+If you want to build NCAR Graphics only, then you only need to build
+and install HDF 4, and even this is optional unless you need HDF
+support in <a
+href="http://www.ncl.ucar.edu/Document/Tools/ctrans.shtml">ctrans</a>,
+<a
+href="http://www.ncl.ucar.edu/Document/Tools/ictrans.shtml">ictrans</a>,
+and <a
+href="http://www.ncl.ucar.edu/Document/Tools/idt.shtml">idt</a>.
+<p>
+
+<ul>
+
+<A NAME="NetCDF3"></A>
+<li><a
+href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF-3</a> - not
+needed if you are only doing an NCARG build.<p>
+
+Download version 3.6.1 or later. (Do not download version 4.x.x.)
+<p>
+
+Once you have the netCDF source code, you can build and install it
+with:
+
+<pre>
+  cd netcdf-3.6.2
+  ./configure --prefix=/usr/local
+  make all install
+</pre>
+<p>
+
+<A NAME="JPEG"></A>
+<li><a href="http://www.ijg.org/">JPEG</a> - not
+needed if you are only doing an NCARG build.<p>
+
+Download version 6b or later.
+<p>
+
+Once you have the jpeg source code, you can build and install it
+with:
+
+<pre>
+  cd jpeg-6b
+  ./configure --prefix=/usr/local
+  make all install install-lib install-headers
+</pre>
+<p>
+
+<A NAME="ZLIB"></A>
+<li><a href="http://www.zlib.net/">zlib</a> -  not
+needed if you are only doing an NCARG build.<p>
+
+Download version 1.2.3 or later.
+<p>
+
+Once you have the zlib source code, you can build and install it
+with:
+
+<pre>
+  cd zlib-1.2.3
+  ./configure --prefix=/usr/local
+  make all install
+</pre>
+<p>
+
+<A NAME="HDF-4"></A>
+<li><a href="http://hdf.ncsa.uiuc.edu/products/hdf4/">HDF-4</a> -
+Download version 4.1 or later (do not download version 5.<i>x.y</i>).
+<p>
+
+Once you have the HDF source code, set the environment variable CFLAGS
+to -DHAVE_NETCDF. For example:
+
+<pre>
+  export CFLAGS=-DHAVE_NETCDF
+</pre>
+
+or 
+
+<pre>
+  setenv CFLAGS -DHAVE_NETCDF
+</pre>
+
+You can then build and install HDF-4 with:
+
+<pre>
+  cd HDF4.2r1
+ ./configure --prefix=/usr/local --with-zlib=/usr/local \
+       --with-jpeg=/usr/local --includedir=/usr/local/include/hdf
+  make all install
+</pre>
+
+The paths used for the "--with-zlib" and "--with-jpeg" options must be
+set to whatever you used above for these two software packages.
+<p>
+
+Normally the HDF include files would get installed to
+/usr/local/include.  Since this will cause some netCDF include files
+to get overwritten, you <i>must</i> use the "--includedir" option to
+install the HDF include files to an "hdf" subdirectory.
+
+</ul>
+<p>
+
+<A NAME="BuildOptionalSoftware"></A>
+<HR>
+<H2>Download and build optional external software, if needed</H2>
+<p>
+
+None of this software is needed if you are only building NCARG.
+<p>
+
+Again, as with the above section, it makes things easier if you
+install all of the external software needed to the same parent
+directory.  We will use <i>/usr/local</i> in all of our examples below
+for installing external software.
+<p>
+
+
+<p>
+<A NAME="GRIB2"></A>
+<b>GRIB2 software</b> - not needed if you are only doing an NCARG
+build.<p>
+
+If you need support for reading <a
+href="http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc.shtml">GRIB2</a>
+files, then you will need to download and install the following
+packages:
+
+<ul>
+
+<li><a href="http://www.ece.uvic.ca/~mdadams/jasper/">Jasper</a> -
+Download version 1.900 or later.
+<p>
+
+Once you have the Jasper source code, you can build and install it
+with:
+
+<pre>
+  cd jasper-1.900.1
+  ./configure --prefix=/usr/local
+  make all install
+</pre>
+<p>
+
+<li><a href="http://www.nco.ncep.noaa.gov/pmb/codes/GRIB2/">g2clib</a>
+- Download version 1.0.4 or later. There's a bug in version 1.0.4, so
+additionally download a modified version of the file "<a
+href="http://www.ncl.ucar.edu/Download/files/g2_unpack2.c">g2_unpack2.c</a>"
+and put it in the "g2clib-1.0.4" directory.  If you download a
+different version of g2clib, be sure you incorporate the changed
+g2_unpack2.c file, rather than just copying it over.
+<p>
+
+Once you have the g2clib source code and the modified file, make
+changes to "makefile" to:
+
+<ol>
+
+<li>change the compiler (CC line) and flags (CFLAGS lines)
+
+<li>set the DEFS line to just "-DUSE_JPEG2000" (remove -DUSE_PNG)
+
+<li>add the appropriate location of the Jasper include files to the
+INC line
+
+</ol>
+<p>
+
+Now type:
+
+<pre>
+  make all install
+  cp libgrib2c.a /usr/local/lib
+  cp grib2.h" /usr/local/include
+</pre>
+<p>
+</ul>
+<p>
+
+<A NAME="HDFEOS2"></A>
+<b>HDF-EOS 2 software</b>  - not needed if you are only doing an NCARG
+build.<p>
+
+If you need support for reading <a
+href="http://hdf.ncsa.uiuc.edu/hdfeos.html">HDF-EOS 2</a> files, then you
+will need to download and install the following packages:
+
+<ul>
+<li><a href="http://www.hdfeos.org/software/">HDFEOS 2</a> - Download
+version 2.14.v1 or later.
+<p>
+
+<pre>
+  cd HDF-EOS2.14v1.00
+  bin/INSTALL-HDFEOS
+</pre>
+<p>
+
+Answer questions about location of HDF-4 lib and include files. You
+must include "hdf" subdir for include directory (for example,
+"/usr/local/include/hdf").
+<p>
+
+Pay attention to where "libhdfeos.a" file gets installed under the
+hdfeos/lib directory, and move this file to where you are installing
+other libraries.  Do <b>not</b> move libGctp.a!  Cd to ../../include and
+<b>copy</b> all of the files there to the approriate include
+(/usr/local/include) directory.
+<p>
+
+<li><a href="http://edcftp.cr.usgs.gov/pub//software/gctpc/">gctp</a>
+- Download latest version available.
+<p>
+
+<pre>
+  cd gctp/src
+</pre>
+
+Copy appropriate make<i>xxxx</i> file to "makefile", edit as
+necessary, and be sure to change LIBDIR appropriately
+(/usr/local/lib).
+
+Then type:
+
+<pre>
+  make all install
+</pre>
+<p>
+
+</ul>
+
+<A NAME="NetCDF4"></A>
+<b>NetCDF-4 software</b> - not needed if you are only doing an NCARG
+build.<p>
+
+If you need support for reading/writing classic <a
+href="http://www.unidata.ucar.edu/software/netcdf/netcdf-4/">NetCDF-4</a>
+files, then you will need to download and install the following
+packages:
+
+<ul>
+
+<li><a href="http://www.compressconsult.com/szip/">szip</a> - Download
+version 2.0 or later.
+<p>
+
+<pre>
+  cd szip-2.0
+  ./configure --prefix=/usr/local  --disable-shared
+  make all install >& make-output
+</pre>
+<p>
+
+<li><a href="http://hdf.ncsa.uiuc.edu/products/hdf5/">HDF5</a> - Download
+version 1.8.0-beta1  or later.
+<p>
+
+<pre>
+  cd hdf5-1.8.0-beta1 
+  ./configure --with-szlib=/usr/local --prefix=/usr/local --disable-shared
+  make all install >& make-output
+</pre>
+<p>
+
+<li><a
+href="http://www.unidata.ucar.edu/software/netcdf/netcdf-4/">NetCDF-4</a>
+- Download version 4.0-beta1 or later.
+<p>
+
+<pre>
+  cd netcdf-4.0-beta1
+  ./configure --with-hdf5=/usr/local --prefix=/usr/local --disable-f90 \
+       --enable-netcdf4
+</pre>
+<p>
+
+</ul>
+<p>
+
+<A NAME="Triangle"></A>
+<b>Triangle software</b>  - not needed if you are only doing an NCARG
+build.<p>
+
+If you need to use the <a
+href="http://www-2.cs.cmu.edu/~quake/triangle.html">Triangle</a> code
+(for generating <a
+href="http://www.ncl.ucar.edu/Applications/trimesh.shtml">triangular
+meshes that you can contour</a>), then you will need to download the
+source code, and copy over
+<i>only the files</i> "triangle.c" and "triangle.h" to the
+$NCL/ni/src/lib/hlu directory in the NCL source tree (you may not have
+downloaded the NCL source code yet, so wait until you get to this part
+to copy over the two files).
+<p>
+
+Note that Triangle has a more restrictive license than NCL's license
+which disallows you from selling any source code or product that
+contains Triangle.  If you build NCL with Triangle included, you will
+be bound by Triangle's license.
+<p>
+
+
+<A NAME="OPeNDAP"></A>
+<b>OPeNDAP software</b> - not needed if you are only doing an NCARG
+build.<p>
+
+If you need OPeNDAP support built into NCL for accessing remote data,
+then you'll need to download and install the following packages.  OPeNDAP
+requires SSL (Secure Sockets Layer) libraries, which may or may not already
+be installed on your host.
+
+<UL>
+<li><a href="http://www.openssl.org">Open SSL</a>
+<p>
+Download version 0.9.8e or later.  Once you have the source code, you can
+build and install it with:
+
+<pre>
+./config --prefix=/usr/local
+</pre>
+
+This will determine your host and default compiler, and configure Open SSL
+properly.
+<p>
+<li><a href="http://curl.haxx.se">libcurl</a>
+<p>
+Download version 7.16.4 or later.  Once you have the source code, you can
+build and install it with:
+
+<pre>
+./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+</pre>
+
+Note that you'll need to build and install the <A HREF="#ZLIB">zlib</A>
+software first.
+<p>
+
+<li><a href="http://xmlsoft.org">libxml2</a>
+<p>
+Download version 2.6.27 or later.  Once you have the source code, you can
+build and install it with:
+
+<pre>
+./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+</pre>
+
+<li><a href="http://www.opendap.org/download/libdap++.html">libdap</a>
+<p>
+Download version 3.7.7 or later.  Once you have the source code, you can
+build and install it with:
+
+<pre>
+./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+</pre>
+
+<li><a href="http://www.opendap.org/download/nc-dods.html">libnc-dap</a>
+<p>
+Download version 3.7.0 or later.  Once you have the source code, you can
+build and install it with:
+
+<pre>
+./configure --prefix=/usr/local --enable-64bit --with-pic
+</pre>
+<p>
+Note that libnc-dap is only compatible with <A HREF="#NetCDF3">netCDF-3</A>.
+
+</ul>
+
+<p>
+
+<A NAME="Vis5D"></A>
+<b>Vis5D+ software</b> - not needed if you are only doing an NCARG
+build.<p>
+
+If you need to use any of the v5d_<i>xxx</i> functions (see the <a
+href="http://www.ncl.ucar.edu/Document/Functions/list_alpha.shtml#V">"V"</a>
+section of the NCL function list), then you need to install Vis5d+.
+<p>
+Download the <a href="http://vis5d.sourceforge.net/">vis5d+</a> source code.
+Once you have the source code, you can build and install it with:
+
+<pre>
+./configure --prefix=/usr/local --with-netcdf=/usr/local/lib/libnetcdf.a
+</pre>
+
+<A NAME="GetNCLSourceCode"></A>
+<HR>
+<H2>Download the source code for NCL</H2>
+
+Accessing, downloading, and/or using NCL implies acceptance of <A
+HREF="http://www.ncl.ucar.edu/Download/NCL_source_license.shtml">NCL
+source code license</a>, which is based on the OSI <a
+href="http://www.opensource.org/licenses/apache2.0.php">Apache
+License, Version 2.0</a> license.
+<p>
+
+To download the NCL source code, follow the instructions at the URL:
+
+<BLOCKQUOTE>
+<B>
+<A HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
+</B>
+</BLOCKQUOTE>
+
+The NCL source code you download will be a single compressed tar
+file (we'll call it "ncl_ncarg_src-5.0.0.tar.gz"). Move the
+"ncl_ncarg_src-5.0.0.tar.gz" file to a temporary directory where you
+have plenty of disk space (around 250 megabytes to hold all of the
+source code, object files, binaries, and so on). Then, uncompress and
+untar the file as follows:<P>
+
+<pre>
+  gunzip ncl_ncarg_src-5.0.0.tar.gz
+  tar -xvf ncl_ncarg_src-5.0.0.tar
+</pre>
+
+The above steps will create a directory called "ncl_ncarg-5.0.0".  For
+convenience, we'll use the notation $NCARG to mean the top level of
+the NCL/NCAR Graphics source tree. Set the environment variable NCARG
+to the full path of this directory.
+
+For example, if you untarred the files from the directory
+/usr/local/src, then you would do the following:
+
+<pre>
+  setenv NCARG /usr/local/src/ncl_ncarg-5.0.0
+</pre>
+
+or 
+
+<pre>
+  export NCARG=/usr/local/src/ncl_ncarg-5.0.0
+</pre>
+<p>
+
+
+<HR>
+<A NAME="CustomizeNCLBuildEnvironment"></A>
+<H2>Customize NCL build environment</H2>
+
+<UL>
+
+<A NAME="TestIfSystemRecognized"></A>
+<LI><b>Test if your system is recognized by NCL build environment</b>
+<p>
+
+Before you try to build NCL, you need to quickly check if your system
+will be recognized by the NCL build environment. Type:
+
+<pre>
+  cd $NCARG/config
+  ./ymake
+</pre>
+<p>
+
+If no output is echoed to the screen, then go to the next section on
+<a href="#GetConfigFileName">getting your configuration file
+name</a>. Otherwise, go to <a href="#AppendixA">Appendix A</A> for
+information on modifying your system configuration files so they
+recognize your system.
+<p>
+
+<A NAME="GetConfigFileName"></A>
+<LI><b>Get name of configuration file</b>
+<p>
+
+If no output is echoed to the screen, then this most likely means that
+the NCL build environment recognizes your system.  You can then get
+the name of your configuration file by typing (in the same directory):
+
+<pre>
+  grep SYSTEM_INCLUDE Makefile
+</pre>
+
+This should echo something like:
+
+<pre>
+SYSTEM_INCLUDE          = "Darwin"
+</pre>
+
+which means "Darwin" is the name of the configuration file it will
+use in the $NCARG/config directory.
+<p>
+
+<A NAME="ModifySystemConfigFile"></A>
+<li><b>Modify system configuration file to change default values</b>
+<p>
+
+Once you've run "./Configure" and it successfully recognizes your
+system, you can type:
+
+<BLOCKQUOTE>
+<B>
+cd $NCARG<BR>
+make Info
+</B>
+</BLOCKQUOTE>
+
+to make sure your configuration is set up properly.  The "make Info"
+command will report the installation directories, what C and
+Fortran compilers are being used, and what options to the compilers
+are being set. The name of the system configuration file being used
+will also appear on the line that starts with "System File".<P>
+
+If you need to change the compilers or the options used, then modify
+the file "$NCARG/config/<I>system_file</I>", where <I>system_file</I>
+is the system configuration file being used.
+
+In particular, you may want to pay attention to how the following
+macros are being set:<P>
+
+<PRE>
+    CCompiler
+    FCompiler
+    ExtraSysLibraries
+    CcOptions
+    FcOptions
+    NgCallF
+</PRE>
+
+and change them as desired. <P>
+
+If you don't see these macros being defined in your system
+configuration file, then that means that the default value, which is
+defined in the $NCARG/config/Template file, is being used. To
+change the default, just add it to your system configuration file with
+the new value.<P>
+
+For example, on Sun systems, the default "f77" compiler is used. If
+you want to change this to "g77", then modify the file
+$NCARG/config/Sun4Solaris, and add the line:<P>
+
+<PRE>
+#define FCompiler  g77
+</PRE>
+
+along with the other macro definitions.
+<P>
+</ul>
+
+<A NAME="BuildNCLFromSource"></A>
+<HR>
+<H2>Build NCL from source code</H2>
+<p>
+
+In order to build NCL from source, you must have a
+Fortran 77 or 90 compiler and an ANSI C compiler. <P>
+
+Here are the general steps for building NCL from source:
+
+<OL>
+
+<LI><A HREF="#RunConfigure">Run Configure script</A>
+
+<LI><A HREF="#StartBuildAndInstall">Start the build and install process</A>
+
+<LI><A HREF="#CheckThe Installation">Check that the installation was
+successful</A>
+
+<LI><A HREF="#SetUpEnvironment">Set up your environment to use NCL</A>
+
+<LI><A HREF="#TestInstallation">Test the NCL and/or NCAR Graphics
+installation</A>
+
+</OL>
+
+<A NAME="RunConfigure"></A>
+<HR>
+<H2>Run Configure script</H2>
+<p>
+
+Before you build and install NCL, you need to run a script called
+"Configure" to answer several questions about where you want
+the software installed, what optional software you want to include,
+and the location of the optional software.
+<p>
+
+Enter the following commands to run this script (you must be running
+csh):<P>
+
+<pre>
+  cd $NCARG
+  ./Configure  -v
+</pre>
+
+If Configure doesn't recognize your system, it will quit right
+away with an error message. Otherwise, it will start asking you
+several questions.<P>
+
+If it quits with an error message that indicates it doesn't recognize
+your system, then read and follow the instructions in the section on
+<a href="#TestIfSystemRecognized">testing if your system is recognized
+by the NCL build environment</a> before running Configure again.
+<p>
+
+If Configure does recognize your system, then answer all of the
+questions about where you want the software installed, whether you
+want to use a Fortran 90 compiler, whether you want X11 support and/or
+HDF support, and so on.
+<p>
+
+Once you have finished running Configure, you should get a message
+indicating that the configuration process is complete, and that you
+can start building and installing the software.
+
+First verify that you have the correct compilers, options, and paths
+by typing:
+
+<BLOCKQUOTE>
+<B>make  Info</B>
+</BLOCKQUOTE>
+
+If everything looks okay, then you can skip the next few sections and
+go directly to "<A HREF="#StartBuildAndInstall">Start the build and
+install process</A>."<P>
+
+If the installation paths look wrong, then rerun Configure and reenter
+the installation paths. <P>
+
+If something else looks wrong, like the name of the compilers or the
+compiler options listed, then go to the section "<A
+HREF="#ModifySystemConfigFile">Modify system configuration file to
+change default values</A>."
+<P>
+
+<A NAME="AIX"></A>
+<B>Special note for AIX systems</B><P>
+
+If you are going to build on an AIX system, then you need to decide if
+you want to build using the 32-bit option (-q32) or the 64-bit option
+(-q64). The AIX configuration file is set up to use whatever the
+default is on your system.  If you want to compile using a specific
+precision, then copy the appropriate
+<B>$NCARG/config/AIX_RS6000.<I>xx</I></B> file to
+<B>$NCARG/config/AIX_RS6000</B>, and make any necessary changes.<P>
+
+You can also setenv the OBJECT_MODE environment variable to 64 or 32,
+and this will build in that precision without having to set any
+compiler options.<P>
+
+<A NAME="IRIX"></A>
+<B>Special note for IRIX systems</B><P>
+
+If you are going to build on an IRIX system, then you need to decide
+if you want to build using the 32-bit option (-n32) or the 64-bit
+option (-64). The configuration file is set up to use whatever the
+default is on your systemm.  If you want to compile using a specific
+precision, then copy the appropriate
+<B>$NCARG/config/SGI_IRIX.<I>xx</I></B> file to
+<B>$NCARG/config/SGI_IRIX</B>, and make any necessary changes.<P>
+
+<A NAME="Linux"></A>
+<B>Special note for Linux systems</B><P>
+
+The default configuration file for Linux assumes you have a 32-bit
+architecture and are using the GNU compilers (gcc and g77). If you
+have a different compiler or architecture (i.e. 64-bit) you want to
+use, you need to copy the appropriate
+$NCARG/config/LINUX.<I>xxx</I> file to $NCARG/config/LINUX. Some of
+the available configuration files include:
+
+<OL>
+<LI>LINUX.GNU - GNU compilers (32-bit architecture)<P>
+<LI>LINUX.64.GNU - GNU compilers (64-bit architecture)<P>
+<LI>LINUX.PGI - Portland Group compilers (32-bit architecture)<P>
+<LI>LINUX.64.PGI - Portland Group compilers (64-bit architecture)<P>
+<LI>LINUX.INTEL - Intel compilers (32-bit architecture)<P>
+<LI>LINUX.64.INTEL - Intel compilers (64-bit architecture)<P>
+
+</OL>
+
+<A NAME="MacOSX"></A>
+<B>Special note for MacOSX systems</B><P>
+
+To build NCL on an MacOSX system, you must first install
+a few supplemental packages:
+
+<OL>
+<LI>MacOSX Developer Tools<P>
+  
+If you have a "/Developers/Tools" directory, cd to that directory and
+search for a PDF file that will contain instructions on how to install
+the Developer's Tools.<P>
+
+Also, the developer's tools may be on a CD that you received with
+your Mac.<P>
+
+If you don't have the directory or the CD, you can get the Developer's
+Tools from the <A
+HREF="http://connect.apple.com">http://connect.apple.com</A>
+site. (You may need to create an account with them first.)  Once you
+are logged in, click on "Download Software", and then "Mac OS X". You
+should then see a link for downloading the Developer's Tools.<P>
+
+<LI>fink<P>
+
+Fink is a must-have application for MacOSX users. In the words of the
+fink developers, fink "makes existing Open Source software easily
+available to casual users as a coherent, comfortable distribution that
+matches what Linux users are used to". (In this case, fink will be
+used to install the next required package, g77.)<P>
+
+To install fink, go to:
+
+<BLOCKQUOTE>
+<A
+HREF="http://fink.sourceforge.net">http://fink.sourceforge.net</A>
+</BLOCKQUOTE>
+
+and click on "Download" on the left. Follow the instructions under
+"Quick Start".  Basically, you just download the binary installer that
+they have a link to, and then click on the resultant
+"Fink-<I>x.x.x</I>-Installer.dmg" file that should have appeared on
+your Mac desktop window.  Follow the rest of the instructions to make
+sure your fink environment is set up correctly.<P>
+
+Be sure to run:
+
+<PRE>
+    fink selfupdate-cvs
+</PRE>
+
+to make sure all of the packages are up to date.<P>
+
+
+<LI>GNU fortran 77 compiler (g77)<P>
+
+If you don't have a Fortran 77 compiler, then you
+can use "fink" to install a free one. Type:
+
+<PRE>
+    fink install g77
+</PRE>
+
+This takes awhile, so grab some lunch or see a movie.<P>
+
+<LI>X11 server<P>
+
+An X11 server will enable you to display NCL graphical
+output to your screen. We recommend that you install Apple's X11
+server, which you can obtain from:
+
+<BLOCKQUOTE>
+<A HREF="http://www.apple.com/macosx/features/x11/">http://www.apple.com/macosx/features/x11/</A>
+</BLOCKQUOTE>
+
+If you end up installing "xfree86" instead of Apple's X11 server, then
+be sure to run:
+
+<PRE>
+    fink install system-xfree86
+</PRE>
+
+so fink will know about it.<P>
+
+</OL>
+
+NCL will build on a MacOSX system using the GNU or Absoft ProFortran
+compilers.  It will <B>not</B> build using the Absoft XLF compilers,
+because there's a problem with the way it handles the initialization
+of common block routines. The problem was reported in July 2004; as of
+December 2004, we hadn't heard of a fix. (If this problem has been
+fixed and this information is out-of-date, please email <a
+href="mailto:haley@ucar.edu">Mary Haley</a> and let her know.)<P>
+
+
+<A NAME="StartBuildAndInstall"></A>
+<HR>
+<H2>Start the build and install process</H2>
+
+
+Once you've run "Configure", and "make Info" gives you the correct
+information, you can initiate the build and install process by
+typing:<P>
+
+<BLOCKQUOTE>
+<B>
+cd $NCARG <BR>
+make  Everything  >&  make-output  &
+</B>
+</BLOCKQUOTE>
+
+Be patient; this can take from thirty minutes to a few hours depending
+on your machine and its current load. During the installation, you may
+examine the contents of the make-output file with the command:<P>
+
+<BLOCKQUOTE>
+<B>
+tail  -f  make-output
+</B>
+</BLOCKQUOTE>
+
+If you encounter errors during the build process, you can restart
+without losing any of the work already accomplished. Refer to the
+section "<A HREF="#RestartingInstallation">Restarting the
+installation</A>" for details about recovering from errors that occur
+during installation.
+<P>
+ 
+<A NAME="SetUpEnvironment"></A>
+<HR>
+<H2>Set up your environment to use NCL</H2>
+
+Once the build process is complete, you need to do the following
+before you can start using NCL:
+
+<OL>
+<LI>Set the environment variable NCARG_ROOT to the parent directory of
+where you installed everything.
+
+<LI>Make sure "$NCARG_ROOT/bin" is on your search path.
+
+<LI>Make sure "$NCARG_ROOT/man" is on your man path.
+
+</OL>
+
+Here's an example (using csh) that assumes you installed
+everything to the parent directory /usr/local:<P>
+
+<BLOCKQUOTE>
+<B>
+setenv &nbsp; NCARG_ROOT &nbsp; /usr/local<BR>
+setenv &nbsp; PATH    &nbsp; $NCARG_ROOT/bin:$PATH<BR>
+setenv &nbsp; MANPATH &nbsp; $NCARG_ROOT/man:$MANPATH
+</B>
+</BLOCKQUOTE>
+</OL>
+<P>
+
+<A NAME="TestInstallation"></A>
+<HR>
+<H2>Test the NCL and/or NCAR Graphics installation</H2>
+
+You can quickly test if NCL is installed properly by typing "ncl" with
+the "-V" option to get the version, and then running a quick program:
+
+<pre>
+    ncl -V
+    ng4ex gsun01n
+</pre>
+
+The <b>ng4ex</b> command will copy an NCL script called
+<b>gsun01n.ncl</b> into your current working directory, and run it
+with NCL. An X11 window should pop up with an XY plot drawn on it.
+Click on this plot with your left mouse button to keep advancing to
+the next frame.
+<p>
+
+Once this file is in your directory, you can also run it yourself
+with:
+
+<pre>
+    ncl gsun01n.ncl
+</pre>
+
+If "ncl" seems to be working, then this indicates that your build
+of NCAR Graphics was at least mostly successful, since NCL depends
+on the NCAR Graphcis libraries.
+<p>
+
+To test NCAR Graphics only, there's an extensive suite of examples
+available. You should refer to the <I><A
+HREF="http://www.ncarg.ucar.edu/fund/fundhome.html">NCAR Graphics
+Fundamentals</A></I>. It will show you how to run examples and test
+programs, and how to view the resulting graphics. Using the
+<B>ncargex</B> and <B>ctrans</B> programs is the easiest way to test
+the installation and become familiar with the use of NCAR Graphics.<P>
+
+For a quick test, try the following:
+
+<pre>
+    ncargex cpex08
+    ctrans -d X11 cpex08.ncgm
+</pre>
+
+The first command will copy a file called <B>cpex08.f</B> into your
+current working directory, compile, link, and execute it, and create a
+graphics file called <B>cpex08.ncgm</B>.  The second command will
+display the graphic on an X11 window on your screen. You must have
+your DISPLAY environment variable set correctly for this command to
+work.  Right-click on the X11 window to make the graphic go away.<P>
+<P>
+
+<A NAME="AppendixA"></A>
+<H1>Appendix A - Modify configuration files to recognize your system</H1>
+<HR>
+
+You only need to read this section if $NCARG/ymake did not recognize
+your system. (We'll refer to this as an <I>unsupported system</I>.) If
+the Configure script recognized your system, then skip to the section
+"<A HREF="#ModifySystemConfigFile">Modify system configuration file to
+change default values</A>".<P>
+
+The three steps you'll need to follow before building NCL on
+an unsupported system are:
+
+<OL>
+
+<LI><A HREF="#ModifyYmakeFile">Modify the "ymake" file to recognize your system</A>.
+
+<LI><A HREF="#SetUpConfigFile">Set up a configuration file</A>.
+
+<LI><A HREF="#ModifyMachineDependentRoutines">Modify machine-dependent
+routines</A> (if necessary).
+
+</OL>
+
+Once you've completed these three steps, then you need to run the
+Configure script again as described in the "<A
+HREF="#RunConfigure">Run Configure script</A>" section.<P>
+
+<A NAME="ModifyYmakeFile"></A>
+<B>1. Modify the "ymake" file to recognize your system</B><P>
+
+For the first step, modify the file $NCARG/config/ymake and go
+to the lines that read:<P>
+
+<PRE>
+    #   Figure out what kind of system we are on. We need to know the OS
+    #   and the machine architecture.
+</PRE>
+
+Notice that the UNIX command "uname" is used to determine the
+architecture type and operating system name. Once you figure out what
+the various options that uname reports on your system, add your
+machine architecture and operating system names to the case statements
+that follow in the same manner as the other systems are done. You also
+need to come up with a name for your configuration file. This is the
+value you'll give to the "sysincs" variable. <A
+HREF="#ExampleConfigFile">An example</A> will be provided below after
+step 2.<P>
+
+<A NAME="SetUpConfigFile"></A>
+<B>2. Set up a configuration file</B><P>
+
+For the second step, cd to $NCARG/config and prepare a configuration
+file for your system that has the same name you used for the "sysincs"
+variable in the ymake file. Use one of the existing configuration
+files as a foundation (for example, "Sun4Solaris").  You will notice
+several macros being defined in the configuration file. You only need
+to define a macro if you want it to be something different than what
+is defined in the "Template" file. The Template file is where all the
+default values are set. For example, the default Fortran compiler is
+set to "f77" in the Template file. If your Fortran compiler is called
+"g77", then you would add the following line to your configuration
+file:<P>
+
+<PRE>
+    #define    FCompiler       g77
+</PRE>
+
+To see what other macros are available and what the default values are
+set to, see the Template file.  In particular, you may need to change
+the following macros:<P>
+
+<PRE>
+    CCompiler
+    FCompiler
+    ExtraSysLibraries
+    CcOptions
+    FcOptions
+    NgCallF
+</PRE>
+<P>
+
+<A NAME="ExampleConfigFile"></A>
+<B>Example on how to modify ymake file and set up configuration file</B><P>
+
+As an example for the first two steps, suppose you are trying to build
+a configuration file for a Koblinsky Systems Inc. SlothStation running
+ChaOS version 5.4. Assume that the command "uname -s" returns "ChaOS"
+and that "uname -m" returns "Sloth999". Modify the file
+$NCARG/config/ymake and add:<P>
+
+<PRE>
+    case  ChaOS:
+</PRE>
+
+right after the first occurrence of the statement:<P>
+
+<PRE>
+    switch ("$foo")
+</PRE>
+
+You should now see something like:<P>
+
+<PRE>
+    switch ("$foo")
+    case  ChaOS:
+    case  SunOS:
+    case  AIX:
+    ...
+</PRE>
+
+Then, after the first occurrence of the statement:<P>
+
+<PRE>
+    switch("$opsys")
+</PRE>
+
+add the lines:<P>
+
+<PRE>
+    case  ChaOS:
+        set  os      = $opsys
+        set  arch    = $mach
+        set  sysincs = Sloth
+        set  vendor  = Koblinsky
+    breaksw
+</PRE>
+
+and after the second occurrence add:<P>
+
+<PRE>
+    case  ChaOS:
+</PRE>
+
+where appropriate to get the correct major and minor operating system
+version numbers defined.<P>
+
+Let's further assume that this system is similar to a Sun workstation
+running Solaris, so use the Sun4Solaris configuration file as a
+foundation:<P>
+
+<BLOCKQUOTE>
+<B>
+cd  $NCARG/config<BR>
+cp  Sun4Solaris  Sloth
+</B>
+</BLOCKQUOTE>
+
+The file name "Sloth" is used because this is the value we gave
+to the "sysincs" variable above. Make any obvious changes to the file
+"Sloth". As mentioned above, you may need to change the following
+macros:<P>
+
+<PRE>
+    CCompiler
+    FCompiler
+    ExtraSysLibraries
+    CcOptions
+    FcOptions
+    NgCallF
+</PRE>
+
+Of particular note is the "NgCallF" macro. First, a little background:
+the NCL code is predominantly Fortran code, but the Fortran
+code relies on a number of C support routines. Since not all systems
+support the same calling conventions (for example, some systems
+require an underscore after a Fortran routine name, while others
+require the name to be in uppercase), the installation system is
+programmed to apply the macro "NgCallF" to all Fortran-called C
+code.
+<p>
+
+The default value of this macro handles the case where an underscore
+is appended after the Fortran routine name, so you won't need to
+define this macro if this is the behavior of your compiler. If, however,
+your compiler does not append an underscore (the IBM xlf/xlf90 compilers
+are two such examples), then you need to set this macro as follows:
+
+<PRE>
+    NgCallF  reg
+</PRE>
+
+If your compiler converts the Fortran routine name to uppercase (this
+is the case with old Cray and the Absoft ProFortran compilers),
+then you need to set the macro to: 
+
+<PRE>
+    NgCallF  caps
+</PRE>
+<P>
+
+<A NAME="ModifyMachineDependentRoutines"></A>
+<B>3. Modify machine-dependent routines</B><P>
+
+There are some machine dependent routines that you may need to modify
+to indicate things like the standard input/output units, the number of
+bits per integer, the smallest positive magnitude, and so on. All of
+these machine-dependent requirements have been isolated in several
+subroutines and it may be necessary to modify these subroutines before
+building the software.<P>
+
+The routines in question are:<P>
+
+<PRE>
+    GBYTES  ISHIFT
+    G01MIO  I1MACH
+    IAND    R1MACH
+    IOR     SBYTES
+</PRE>
+
+These routines are referred to as "low-level support routines" in the
+remainder of this section. Complete functional descriptions for these
+routines appear in the section "<A
+HREF="#MachineDependentRoutines">Machine-dependent support
+routines</A>". Examples of implementations of all of these subroutines
+except G01MIO are given in the directory:<P>
+
+<BLOCKQUOTE>
+<B>
+$NCARG/common/src/libncarg_c
+</B>
+</BLOCKQUOTE>
+
+A Fortran implementation of the support routine G01MIO is contained in
+the directory:<P>
+
+<BLOCKQUOTE>
+<B>
+$NCARG/ncarg2d/src/libncarg_gks/bwi
+</B>
+</BLOCKQUOTE>
+
+G01MIO is the basic I/O routine for NCAR's GKS package, and it is not
+used anywhere else but in that package.<P>
+
+The subroutines in the above two directories are examples only. These
+examples may help you, and some may actually run on your machine, but
+care must be taken to ensure that the implemented routines satisfy the
+functional descriptions as given in the "<A
+HREF="#MachineDependentRoutines">Machine-dependent support
+routines</A>" section. Some of the examples given are coded in C.<P>
+
+There is source code for creating an executable for testing
+implementations of the low-level routines in the directory:<P>
+
+<BLOCKQUOTE>
+<B>
+$NCARG/ncarg2d/src/bin/impltest
+</B>
+</BLOCKQUOTE>
+
+The source in this directory may require changes only when
+moving to a machine with a word size other than 32 or 64.<P>
+
+This directory contains a program called "tlocal" that can be
+used to test the implementations of IOR, IAND, ISHIFT, GBYTES, and
+SBYTES. Read the prologue documentation in the code for tlocal
+for implementation instructions. Success or failure messages will be
+issued to Fortran unit 6. There are no tests for I1MACH and R1MACH,
+but the success of the tlocal test depends on proper
+implementation of I1MACH and R1MACH. Constants for I1MACH and R1MACH
+for a large number of computers appear in the comment cards of I1MACH
+and R1MACH. If constants for your host computer appear there, simply
+uncomment the appropriate cards for your implementation of I1MACH and
+R1MACH. Otherwise be very careful to implement I1MACH and R1MACH
+correctly since there is no test for them. The support routine G01MIO
+is used only by NCAR's GKS package, and no test for it is provided in
+tlocal.<P>
+
+Since many of the low-level support routines are executed frequently
+throughout the package, efficient versions are desirable. There are
+portable Fortran versions of GBYTES and SBYTES in the directory:<P>
+
+<BLOCKQUOTE>
+<B>
+$NCARG/common/src/libncarg_c
+</B>
+</BLOCKQUOTE>
+
+but they run very slowly. GBYTES and SBYTES are used primarily in the
+NCGM translator; machine-language versions of these routines could
+greatly speed up the translator. Machine-language versions of IAND,
+IOR, and ISHIFT are also desirable.
+<P>
+
+
+<A NAME="AppendixB"></A>
+<H1>Appendix B - General information on build process</H1>
+<HR>
+
+This section contains general information on building NCL
+that you may find useful.  It includes information on:
+
+<UL>
+
+<LI><A HREF="#ConfigurationFiles">configuration files</A>
+
+<LI><A HREF="#RestartingInstallation">how to restart the
+installation if it bombs</A>
+
+<LI><A HREF="#ymake">the ymake system</A>
+
+<LI><A HREF="#MachineDependentRoutines">machine-dependent support
+routines</A>
+
+</UL>
+<P>
+
+<A NAME="ConfigurationFiles"></A>
+<H3>Configuration files</H3>
+
+Configuration files contain make macros. At installation time, these
+macros are used by ymake to construct all of the Makefiles for
+the NCL release.  Any change you make in your configuration
+file will be distributed throughout the entire system. Refer to the
+"<A HREF="#ymake">ymake</A>" section for more information.<P>
+
+Configuration files reside in the directory $NCARG/config. They have
+names like Sun4Solaris and SGI_IRIX to indicate the machine on which
+they operate. For example, If you are on a Sun running Solaris, you
+should make changes to the file $NCARG/config/SunSolaris. There is one
+other file, "Rules", which contains make macros. Generally, you would
+only change this file when you attempt to port the package to a new
+system.<P>
+
+A few of the macros are quite likely to change from system to system,
+but most are not. The Configure script allows the installer to
+make some of these minor changes to the configuration file without
+editing it. You must be running csh in order to run
+Configure.<P>
+
+<A NAME="RestartingInstallation"></A>
+<H3>Restarting the installation</H3>
+
+The standard build process is initiated by telling make to build the
+"Everything" target, which results in a series of actions. First, a
+hierarchy of Makefiles is constructed, based on your system
+configuration. Next, all old object code is removed, dependencies are
+created, and then compilation, the most time-consuming step,
+begins. Finally, libraries and executables are built and then
+installed. This can take from thirty minutes to a few hours. If you
+encounter an error along the way, it is very important that you avoid
+wasting the work that has already been done. There are other targets
+besides "Everything". The following targets may be used to gracefully
+restart the installation process:<P>
+
+<PRE>
+    Everything = (Makefiles, clean, all, install)
+    All        = (Makefiles, all, install)
+    all        = (compile and build libraries)
+    install    = (move objects to destinations)
+    clean      = (remove object files, core dumps, etc.)
+</PRE>
+
+If a compilation fails halfway through the install process and you
+have already created the Makefiles, cleaned out old object code, and
+compiled a large number of files, you may first correct the problem and
+then restart the install process.
+
+To correct the problem, you need to first look carefully at the error
+message in the make-output file.  By looking at the last several lines
+of the make-output file, you should be able to determine which
+directory the make stopped in.  For example, let's say see the
+following in your make-output file:
+
+<PRE>
+...
+Making ./ncarview/src/lib/libncarg_ras
+cc -Xc  -O  -I../../../.././include -I/usr/openwin/include -I/usr/dt/include   -DBuildRasterHDF -DSUN -DBuildRasterHPPCL -DBuildRasterNrif -DBuildRasterSun  -DBuildRasterXWD  -DBuildRasterAVS -DBuildRasterSGI  -DBuildRasterAbekas  -DBuildRasterBinary -DBuildRasterYUV  -DNGTMPDIR='"tmp"' -Dsun4 -DSUN -DSYSV -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -D__EXTENSIONS__ -DNeedFuncProto   -c  raster.c
+cc -Xc  -O  -I../../../.././include -I/usr/openwin/include -I/usr/dt/include   -DBuildRasterHDF -DSUN -DBuildRasterHPPCL -DBuildRasterNrif -DBuildRasterSun  -DBuildRasterXWD  -DBuildRasterAVS -DBuildRasterSGI  -DBuildRasterAbekas  -DBuildRasterBinary -DBuildRasterYUV  -DNGTMPDIR='"tmp"' -Dsun4 -DSUN -DSYSV -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -D__EXTENSIONS__ -DNeedFuncProto   -c  hdf.c
+"hdf.c", line 44: cannot find include file: &lt;hdf/hdf.h&gt;
+"hdf.c", line 45: cannot find include file: &lt;hdf/dfgr.h&gt;
+"hdf.c", line 192: cannot recover from previous errors
+cc: acomp failed for hdf.c
+*** Error code 2
+make: Fatal error: Command failed for target `hdf.o'
+</PRE>
+
+You can see from the:
+
+<PRE>
+    Making ./ncarview/src/lib/libncarg_ras
+</PRE>
+
+line that the make bombed in the directory
+"ncarview/src/lib/libncarg_ras". The error message here indicates that
+it can't find the HDF include files.  To fix this problem, then, you
+would need to do one of three things:
+
+<OL>
+
+<LI>Install HDF on your system (see the section <A
+HREF="#GetHDF">"Download the source code or binaries for HDF"</A>),
+and then also follow step #2.
+
+<LI>If HDF is already installed on your system, run "Configure" and
+include the paths to HDF when it asks for local library and
+include directory search paths.
+
+<LI>Run "Configure" and answer <B>no</B> to the question: "Build HDF
+support into raster library?".
+
+</OL>
+
+In most cases, the fix just involves modifying source files and
+recompiling. If this is the case, then after you fix the source
+file(s), you can restart the install process by typing:
+
+<BLOCKQUOTE>
+<B>
+cd $NCARG<BR>
+make all install >& make-output &
+</B>
+</BLOCKQUOTE>
+
+In our example above with the HDF software, the fix involved something
+that would affect the Makefiles.  In this case, then, you need to
+regenerate the Makefiles. To do this, type:<P>
+
+<BLOCKQUOTE>
+<B>
+cd $NCARG<BR>
+make All >& make-output &
+</B>
+</BLOCKQUOTE>
+<P>
+
+<A NAME="ymake"></A>
+<H3>ymake</H3>
+
+A utility named "ymake" is used by this package to generate the
+Makefile hierarchy.<P>
+
+A file named yMakefile exists in each directory and is
+converted to a regular Makefile using the C preprocessor and a
+collection of general and system-specific macros. The ymake
+system resides in $NCARG/config. This allows the redundant
+information in each Makefile to be isolated, in addition to
+providing Makefile conditionals. The C preprocessor knows what
+system it is running on. (The same technique is being employed in
+other systems, including MIT's X Window System.)  If you need to
+change a Makefile, implement the changes in the
+yMakefile and then type:<P>
+
+<BLOCKQUOTE>
+<B>
+make me
+</B>
+</BLOCKQUOTE>
+
+If you completely destroy a Makefile, you can usually recover
+by typing:<P>
+
+<BLOCKQUOTE>
+<B>
+$NCARG/config/ymkmf
+</B>
+</BLOCKQUOTE>
+
+There is more information about ymake in the ymake man
+page which resides in the directory $NCARG/config.
+<P>
+
+<A NAME="MachineDependentRoutines"></A>
+<H3>Machine-dependent support routines</H3>
+
+Following are functional descriptions of the required
+locally-implemented support routines. A test suite is distributed for
+this package so that an implementor may verify that the
+implementations are correct. The routine G01MIO is needed only if the
+NCAR GKS package is being implemented.<P>
+
+<B>FUNCTION I1MACH(I)</B><P>
+
+This function is used to set up 16 machine constants.<P>
+
+<BLOCKQUOTE>
+I1MACH(1) = the standard input unit<BR>
+I1MACH(2) = the standard output unit<BR>
+I1MACH(3) = the standard punch unit<BR>
+I1MACH(4) = the standard error message unit<BR>
+I1MACH(5) = the number of bits per integer storage unit<BR>
+I1MACH(6) = the number of characters per integer storage unit
+</BLOCKQUOTE>
+
+Assume that integers are represented in the S-digit, base-A form:<P>
+
+<BLOCKQUOTE>
+SIGN*(X(S-1)*A**(S-1)+...+X(1)*A+X(0))
+</BLOCKQUOTE>
+
+in which 0 .LT. X(I) .LT. A for I=0,...,S-1.<P>
+
+<BLOCKQUOTE>
+I1MACH(7) = A, the base<BR>
+I1MACH(8) = S, the number of base-A digits<BR>
+I1MACH(9) = A**S-1, the largest magnitude
+</BLOCKQUOTE>
+
+Assume that floating-point numbers are represented in the T-digit,
+base-B form:<P>
+
+<BLOCKQUOTE>
+SIGN*(B**E)*((X(1)/B+...+(X(T)/B**T))
+</BLOCKQUOTE>
+
+in which 0 .LT. X(1), and EMIN .LE. E .LE. EMAX.
+
+<BLOCKQUOTE>
+I1MACH(10) = B, the base
+</BLOCKQUOTE>
+
+<B>Single-precision constants</B><P>
+
+<BLOCKQUOTE>
+I1MACH(11) = T, the number of base-B digits<BR>
+I1MACH(12) = EMIN, the smallest exponent E<BR>
+I1MACH(13) = EMAX, the largest exponent E
+</BLOCKQUOTE>
+
+<B>Double-precision constants</B><P>
+
+<BLOCKQUOTE>
+I1MACH(14) = T, the number of base-B digits<BR>
+I1MACH(15) = EMIN, the smallest exponent E<BR>
+I1MACH(16) = EMAX, the largest exponent E
+</BLOCKQUOTE>
+
+<B>FUNCTION R1MACH(I)</B><P>
+
+This function sets five single-precision machine constants:<P>
+
+<BLOCKQUOTE>
+R1MACH(1) = B**(EMIN-1), the smallest positive magnitude<BR>
+R1MACH(2) = B**EMAX*(1-B**(-T)), the largest magnitude<BR>
+R1MACH(3) = B**(-T), the smallest relative spacing<BR>
+R1MACH(4) = B**(1-T), the largest relative spacing<BR>
+R1MACH(5) = LOG10(B)
+</BLOCKQUOTE>
+
+<B>FUNCTION ISHIFT(IWORD,N)<P></B><P>
+
+IWORD is shifted by N bits. If N > 0, a left circular shift is
+performed (all bits are shifted left N bits, and the bits that are
+shifted out of the word to the left are shifted back into the word at
+the right). If N < 0, a right end-off shift is performed (all bits are
+shifted right by N bits, and the bits that are shifted out of the
+right of the word are lost)-if the leftmost bit is 0, then the vacated
+positions are filled with zeros; if the leftmost bit is 1, then the
+vacated positions are undefined.  The implementor may assume that
+IABS(N) .LE. word_length.<P>
+
+<B>FUNCTION IAND(K1,K2)</B><P>
+
+The bit-by-bit logical product of K1 and K2. If K3 = IAND(K1,K2), then
+the nth bit of K3 is 0 if the nth bit of either K1 or K2 is 0;
+otherwise the nth bit of K3 is 1.  FUNCTION IOR(K1,K2) The bit-by-bit
+logical sum of K1 and K2. If K3 = IOR(K1,K2), then the nth bit of K3
+is 0 if and only if the nth bit of both K1 and K2 is 0.<P>
+
+<B>SUBROUTINE G01MIO(IOP,IUNIT,FNAME,IBUFF,LENGTH,IERROR)</B><P>
+
+This output routine is the central one for the metafile generator. A
+Fortran implementation of this subroutine is in the directory:<P>
+
+<BLOCKQUOTE>
+<B>$NCARG/ncarg2d/src/libncarg_gks/bwi</B>
+</BLOCKQUOTE>
+
+<B>Input arguments</B><P>
+
+<DL>
+
+<DT>IOP
+<DD>Indicates type of operation desired: IOP = 1 means OPEN workstation for 
+output on IABS(IUNIT). IOP = 2 means CLOSE workstation for output on 
+IABS(IUNIT). IOP = 3 means write IBUF to IABS(IUNIT). IOP = 4 means read 
+IABS(IUNIT) into IBUF. IOP = 5 means position the record pointer to the 
+beginning of the file. IOP = 6 means position the record pointer to the 
+beginning of the previous record.
+
+<DT>IUNIT
+<DD>IABS(IUNIT) is the Fortran logical unit number on which IOP is to occur. 
+
+<DT>FNAME
+<DD>The filename to be used for the open operation. 
+
+<DT>IBUFF
+<DD>Buffer containing data for a read or write operation.
+
+<DT>LENGTH
+<DD>Length of data in IBUFF, in integer words.
+
+</DL>
+
+<B>Output arguments</B><P>
+
+<DL>
+
+<DT>IERROR
+<DD>Error indicator that equals 0 if no errors.
+</DL>
+
+<B>SUBROUTINE GBYTES(NPACK,ISAM,IBIT,NBITS,NSKIP,ITER)</B><P>
+
+This subroutine is used to unpack bit chunks from NPACK into the ISAM
+array. A portable Fortran version of this routine is distributed, but
+the Fortran version is inefficient and should be replaced with a more
+efficient implementation.<P>
+
+<DL>
+
+<DT>NPACK
+<DD>Address of first word of the array to be unpacked. For the
+purposes of this subroutine, NPACK is viewed as a bit stream.
+
+<DT>ISAM
+<DD>Array to receive the unpacked bit chunks. They will be right
+justified with zero-fill in this array. ISAM should be dimensioned for
+ITER.
+
+<DT>IBIT
+<DD>A bit-count offset to be used before the first bit chunk is
+unpacked. For example, if IBIT=3, and NBITS=5, then 3 bits in NPACK
+will be skipped and the next 5 bits will be unpacked into ISAM(1).
+
+<DT>NBITS
+
+<DD>The number of bits in each bit chunk to be unpacked. An error
+condition occurs if NBITS is larger than the number of bits-per-word
+on the machine.
+
+<DT>NSKIP
+<DD>The number of bits to skip between each bit chunk to be
+unpacked. Bits are skipped only after the first bit chunk has been
+unpacked.
+
+<DT>ITER
+<DD>The number of bit chunks to be unpacked.
+</DL>
+
+For example:<P>
+
+<PRE>
+       CALL GBYTES(NPB,ISB,3,6,9,2)
+</PRE>
+
+In this call, three bits would be skipped at the beginning of NPB; the
+next six bits would be unpacked into ISB(1) and right-justified with
+zero-fill; nine bits would be skipped in NPB, and then the next six
+bits of NPB would be unpacked into ISB(2) and right-justified with
+zero-fill.<P>
+
+<B>SUBROUTINE SBYTES(NPACK,ISAM,IBIT,NBITS,NSKIP,ITER)</B><P>
+
+This subroutine is the reverse of GBYTES as described above.
+NPACK-Address of first word of array to be packed.  ISAM-Array to be
+packed into NPACK. The rightmost NBITS bits of each word will be
+packed. ISAM should be dimensioned for at least ITER.  IBIT-A
+bit-count offset to be used before the first bits are packed into
+NPACK.
+
+For example, if IBIT=3, and NBITS=5, 3 bits in NPACK will be skipped
+before the rightmost 5 bits of ISAM(1) are packed into it.  NBITS-The
+number of bits in each word of ISAM to be unpacked. An error condition
+occurs if NBITS exceeds the word size on the machine.  NSKIP-The
+number of bits to skip between each bit chunk packed.  ITER-The number
+of bit chunks to be packed.<P>
+
+For example:<P>
+
+<PRE>
+       CALL SBYTES(NPC,ISB,45,6,3,2)
+</PRE>
+
+In this call, 45 bits would be skipped at the beginning of NPC; the
+rightmost 6 bits of ISB(1) would be packed into NPC; 3 bits would be
+skipped in NPC, and the rightmost 6 bits of ISB(2) would be packed
+into NPC.<P>
+
+    
+<!--#include virtual="/footer.html"--><br>
+
+</div>
+</body>
+</html>

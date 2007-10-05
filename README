@@ -1,14 +1,12 @@
-NCAR Graphics and NCL home pages:
+As of version 5.0.0, NCL and NCAR Graphics are now released as one
+package, but they still have their own home pages:
 
   http://www.ncl.ucar.edu/
   http://www.ncarg.ucar.edu/
 
-Instructions for downloading NCL binaries can be found at:
+Instructions for downloading NCL/NCAR Graphics binaries or
+source code can be found at:
 
   http://www.ncl.ucar.edu/Download/
 
-Instructions for downloading NCAR Graphics binaries and/or source
-code can be found at:
-
-    http://www.ncarg.ucar.edu/ng/download.html
-
+or in the "INSTALL.html" file in this directory.

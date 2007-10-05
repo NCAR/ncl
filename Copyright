@@ -1,21 +1,75 @@
-The contents of this directory are copyright protected:
--------------------------------------------------------
-NCAR Graphics - UNIX Version 4.4.2
-Copyright (C) 1987-2007
+NCL - UNIX Version 5.0.0
+Copyright (C) 2007
 University Corporation for Atmospheric Research
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or (at
-your option) any later version.
+NCL Source Code License
 
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+Copyright (c) 2007 University Corporation for Atmospheric Research
+(UCAR).  All rights reserved.  Developed by NCAR's Computational and
+Information Systems Laboratory, UCAR, www.cisl.ucar.edu, with the
+following contributions:
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-USA.
-                                       
+dcdflib
+The University of Texas, M.D. Anderson Cancer Center
+http://www.netlib.org/random/
+
+FFTPACK5
+Copyright (c) 1995-2004
+UCAR
+http://www.cisl.ucar.edu/css/software/fftpack5/
+
+GRIBEX
+Copyright (c) 1981-2007
+European Centre for Medium-Range Weather Forecast
+http://www.ecmwf.int/products/data/software/grib.html
+
+LAPACK
+Copyright (c) 1999
+Society for Industrial and Applied Mathematics
+http://www.netlib.org/lapack/lug/lapack_lug.html
+
+random
+The University of Texas, M.D. Anderson Cancer Center
+http://www.netlib.org/random/
+
+RANGS / GSHHS
+Dr. Rainer Feistel
+Baltic Sea Research Institute Warnemunde
+http://www.io-warnemuende.de/homepages/rfeistel/
+
+Spherepack
+Copyright (c) 1998
+UCAR
+http://www.cisl.ucar.edu/css/software/spherepack/
+
+Udunits
+Copyright (c) 1992, 1995
+UCAR/Unidata
+http://www.unidata.ucar.edu/software/udunits/
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+Neither the names of NCAR's Computational and Information Systems
+Laboratory, the University Corporation for Atmospheric Research, nor
+the names of its contributors may be used to endorse or promote
+products derived from this Software without specific prior written
+permission.
+
+Redistributions of source code must retain the above copyright
+notice, this list of conditions, and the disclaimer below.
+
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions, and the disclaimer below in the
+documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE CONTRIBUTORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, INDIRECT, INCIDENTAL, SPECIAL,
+EXEMPLARY, OR CONSEQUENTIAL DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS WITH THE
+SOFTWARE.
