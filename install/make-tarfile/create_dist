@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.10 2007-08-14 13:23:48 haley Exp $
+#   $Id: create_dist,v 1.11 2007-10-08 20:15:48 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -25,6 +25,9 @@
 #      - NCL and NCAR Graphics for the general user (the default)
 #      - NCL for the general user (option "-1")
 #      - NCAR Graphics for the general user (option "-2")
+#
+#  Note: the following option is no longer available, as we are
+#  now fully open source.
 #      - NCL, NCAR Graphics, and other internal files (option "-i")
 #        These are files that we can't or don't need to release yet to the
 #        general user (HLU library, NCL libraries, LAPACK, FFTPACK, etc)
@@ -32,7 +35,6 @@
 #   Options:   -r :  root directory
 #              -d :  tar file directory
 #              -s :  system to tar up 
-#              -i :  tar up *everything*, for internal purposes
 #              -1 :  tar up just NCL (not NCAR Graphics)
 #              -2 :  tar up just NCAR Graphics (not NCL)
 #              -g :  include rangs database
@@ -123,7 +125,6 @@ endif
 #
 
 unset SCP
-
 set NCARGNCL
 
 while ($#argv > 0)
@@ -131,12 +132,6 @@ while ($#argv > 0)
     case "-b":
       shift
       set bit = "$1"
-      shift
-      breaksw
-
-    case "-i":
-      set INTERNAL
-      unset NCARGNCL
       shift
       breaksw
 
@@ -217,17 +212,6 @@ if ($?NCLONLY && $?NCARGONLY) then
   set NCARGNCL
   unset NCARGONLY
   unset NCLONLY
-  unset INTERNAL
-endif
-
-if ($?INTERNAL) then
-  echo ""
-  echo "Warning: you selected the 'internal' option. Hence this"
-  echo "         should only be used for internal purposes."
-  echo ""
-  unset NCARGNCL
-  unset NCARGONLY
-  unset NCLONLY
 endif
 
 if ($?NCLONLY) then
@@ -236,11 +220,8 @@ else if ($?NCARGONLY) then
   set tar_prefix = "ncarg"
 else if ($?NCARGNCL) then
   set tar_prefix = "ncl_ncarg"
-else    # INTERNAL, for internal purposes only
-  set tar_prefix = "ncl_ncarg_internal"
 endif
 
-echo "extra = $extra"
 if ($extra != "") then
   set system = "{$system}_{$extra}"
 endif
@@ -321,22 +302,22 @@ set common_lib_dirs  = "ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngww
 #
 # Set files specific to NCL.
 #
-if ($?NCLONLY || $?NCARGNCL || $?INTERNAL) then
-  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90 ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc"
+if ($?NCLONLY || $?NCARGNCL) then
+  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90 ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc MakeNcl"
 
   set ncl_inc_files = ""
 
   set ncl_inc_dirs  = "ncarg/hlu ncarg/ncl"
 
-  set ncl_lib_files = "libnclapi.a ncarg/sysresfile"
+  set ncl_lib_files = "libnclapi.a ncarg/sysresfile libhlu.a libncl.a libnfp.a libnfpfort.a libnio.a libblas_ncl.a libfftpack5_dp.a liblapack_ncl.a libsphere3.1_dp.a"
 
-  set ncl_lib_dirs  = "ncarg/data ncarg/colormaps ncarg/grib2_codetables ncarg/nclex ncarg/nclscripts ncarg/resfiles ncarg/udunits"
+  set ncl_lib_dirs  = "ncarg/data ncarg/colormaps ncarg/grib2_codetables ncarg/nclex ncarg/hluex ncarg/nclscripts ncarg/resfiles ncarg/udunits"
 endif
 
 #
 # Set files specific to NCARG.
 #
-if ($?NCARGONLY || $?NCARGNCL || $?INTERNAL) then
+if ($?NCARGONLY || $?NCARGNCL) then
   set ncarg_bin_files = "ConvertMapData$exe_sfx WriteLineFile$exe_sfx WriteNameFile$exe_sfx WritePlotcharData$exe_sfx cgm2ncgm$exe_sfx ctlib ezmapdemo$exe_sfx fcaps findg$exe_sfx fontc$exe_sfx gcaps graphc$exe_sfx ncargcc ncargex ncargf77 ncargf90 ncargfile ncargrun ncargversion ncargworld$exe_sfx ncarlogo2ps$exe_sfx ncarvversion ncgm2cgm$exe_sfx ncgmstat$exe_sfx nnalg$exe_sfx pre2ncgm pre2ncgm.prog psblack$exe_sfx psplit$exe_sfx pswhite$exe_sfx pwritxnt$exe_sfx ras2ccir601$exe_sfx rascat$exe_sfx rasgetpal$exe_sfx rasls$exe_sfx rassplit$exe_sfx rasstat$exe_sfx rasview$exe_sfx tdpackdemo$exe_sfx tgks0a$exe_sfx tlocal$exe_sfx"
 
   set ncarg_inc_files = "ncarg/cgm_tools.h ncarg/cgmdef.h ncarg/ctrans.h ncarg/gksP.h ncarg/ncarg_ras.h ncarg/ngmath.h"
@@ -346,29 +327,6 @@ if ($?NCARGONLY || $?NCARGNCL || $?INTERNAL) then
   set ncarg_lib_files = "libcgm.a libncarg.a libncarg_c.a libncarg_gks.a libncarg_ras.a libngmath.a"
 
   set ncarg_lib_dirs  = "ncarg/examples ncarg/robj ncarg/tests ncarg/tutorial"
-endif
-
-#
-# Set files that only should be included for internal installations, 
-# for example, an NCAR supercomputer.
-#
-if ($?INTERNAL) then
-  set intrnl_bin_files = "MakeNcl"
-
-  set intrnl_inc_files = ""
-
-  set intrnl_inc_dirs  = ""
-
-  set intrnl_lib_files = "libhlu.a libncl.a libnfp.a libnfpfort.a libnio.a"
-
-#
-# Generally, I don't want to include these libraries, because they may
-# already be installed on a system via some other package.
-#
-#  "libblas.a libfftpack5_dp.a liblapack.a libsphere3.1_dp.a"
-
-  set intrnl_lib_dirs  = "ncarg/hluex"
-
 endif
 
 #
@@ -393,7 +351,7 @@ set inc_dirs  = "$common_inc_dirs"
 set lib_files = "$common_lib_files"
 set lib_dirs  = "$common_lib_dirs"
 
-if ($?NCLONLY || $?NCARGNCL || $?INTERNAL) then
+if ($?NCLONLY || $?NCARGNCL) then
   set bin_files = "$bin_files $ncl_bin_files"
   set inc_files = "$inc_files $ncl_inc_files"
   set inc_dirs  = "$inc_dirs  $ncl_inc_dirs"
@@ -405,20 +363,12 @@ if ($?NCLONLY || $?NCARGNCL || $?INTERNAL) then
   endif
 endif
 
-if ($?NCARGONLY || $?NCARGNCL || $?INTERNAL) then
+if ($?NCARGONLY || $?NCARGNCL) then
   set bin_files = "$bin_files $ncarg_bin_files"
   set inc_files = "$inc_files $ncarg_inc_files"
   set inc_dirs  = "$inc_dirs  $ncarg_inc_dirs"
   set lib_files = "$lib_files $ncarg_lib_files"
   set lib_dirs  = "$lib_dirs  $ncarg_lib_dirs"
-endif
-
-if ($?INTERNAL) then
-  set bin_files = "$bin_files $intrnl_bin_files"
-  set inc_files = "$inc_files $intrnl_inc_files"
-  set inc_dirs  = "$inc_dirs  $intrnl_inc_dirs"
-  set lib_files = "$lib_files $intrnl_lib_files"
-  set lib_dirs  = "$lib_dirs  $intrnl_lib_dirs"
 endif
 
 foreach f($bin_files)
@@ -550,8 +500,6 @@ echo "              -o : include libraries for OPeNDAP"
 echo "              -b : bit (32 or 64, required for AIX and IRIX64)"
 echo "              -e : extra string to include in tarfile name"
 echo "              -g : include rangs directory"
-echo "              -i : tar up *everything*, for internal purposes"
-echo "                   (includes NCL and HLU libraries)"
 echo "              -1 : tar up NCL files only"
 echo "              -2 : tar up NCAR Graphics files only"
 echo ""

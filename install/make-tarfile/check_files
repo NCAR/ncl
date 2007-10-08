@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.7 2007-10-08 16:54:51 haley Exp $
+#   $Id: check_files,v 1.8 2007-10-08 20:15:47 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -97,8 +97,6 @@ bin/psplit
 include/ncarg/c.h
 include/ncarg/gks.h
 include/ncarg/ncargC.h
-include/ncarg/zconf.h
-include/ncarg/zlib.h
 lib/ncarg/database/Earth..1.areas
 lib/ncarg/database/Earth..1.lines
 lib/ncarg/database/Earth..1.names
