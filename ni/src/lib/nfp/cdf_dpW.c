@@ -17,7 +17,7 @@ extern void NGCALLF(dcdfcdftt,DCDFCDFTT)(int *, double *, double *, double* ,
 extern void NGCALLF(dcdfcdftp,DCDFCDFTP)(int *, double *, double *, double* , 
                                          int *);
 
-NhlErrorTypes dcdfbinp_W( void ) {
+NhlErrorTypes cdfbin_p_W( void ) {
         void    *s, *xn, *pr, *p;
         int     dummy=0;
         int s_dimsizes[NCL_MAX_DIMENSIONS], xn_dimsizes[NCL_MAX_DIMENSIONS];
@@ -68,13 +68,13 @@ NhlErrorTypes dcdfbinp_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((s_ndims != xn_ndims) || (s_ndims != pr_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinp: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_p: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<s_ndims;i++) {
                         if((s_dimsizes[i] != xn_dimsizes[i]) || (s_dimsizes[i] != pr_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinp: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_p: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -92,19 +92,19 @@ NhlErrorTypes dcdfbinp_W( void ) {
         */
         tmp_s = (double *)coerce_input_double(s,type_s, size_x, 0, NULL, NULL);
         if(tmp_s == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinp: Unable to coerce 's' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: Unable to coerce 's' to double");
                 return(NhlFATAL);
         }
 
         tmp_xn = (double *)coerce_input_double(xn,type_xn, size_x, 0, NULL, NULL);
         if(tmp_xn == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinp: Unable to coerce 'xn' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: Unable to coerce 'xn' to double");
                 return(NhlFATAL);
         }
 
         tmp_pr = (double *)coerce_input_double(pr,type_pr, size_x, 0, NULL, NULL);
         if(tmp_pr == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinp: Unable to coerce 'pr' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: Unable to coerce 'pr' to double");
                 return(NhlFATAL);
         }
 
@@ -116,7 +116,7 @@ NhlErrorTypes dcdfbinp_W( void ) {
                 p = (void *) calloc(size_x, sizeof(float));
                 tmp_p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL || tmp_p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinp: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -124,7 +124,7 @@ NhlErrorTypes dcdfbinp_W( void ) {
                 type_p = NCL_double;
                 p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinp: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -153,7 +153,7 @@ NhlErrorTypes dcdfbinp_W( void ) {
 }
 
 
-NhlErrorTypes dcdfbinx_W( void ) {
+NhlErrorTypes cdfbin_s_W( void ) {
         void    *s, *xn, *pr, *p;
         int     dummy=0;
         int xn_dimsizes[NCL_MAX_DIMENSIONS];
@@ -204,13 +204,13 @@ NhlErrorTypes dcdfbinx_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((p_ndims != xn_ndims) || (p_ndims != pr_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinx: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_s: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<p_ndims;i++) {
                         if((p_dimsizes[i] != xn_dimsizes[i]) || (p_dimsizes[i] != pr_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinx: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_s: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -229,19 +229,19 @@ NhlErrorTypes dcdfbinx_W( void ) {
         */
         tmp_p = (double *)coerce_input_double(p,type_p, size_x, 0, NULL, NULL);
         if(tmp_p == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinx: Unable to coerce 'p' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_s: Unable to coerce 'p' to double");
                 return(NhlFATAL);
         }
 
         tmp_xn = (double *)coerce_input_double(xn,type_xn, size_x, 0, NULL, NULL);
         if(tmp_xn == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinx: Unable to coerce 'xn' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_s: Unable to coerce 'xn' to double");
                 return(NhlFATAL);
         }
 
         tmp_pr = (double *)coerce_input_double(pr,type_pr, size_x, 0, NULL, NULL);
         if(tmp_pr == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinx: Unable to coerce 'pr' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_s: Unable to coerce 'pr' to double");
                 return(NhlFATAL);
         }
 
@@ -253,7 +253,7 @@ NhlErrorTypes dcdfbinx_W( void ) {
                 s = (void *) calloc(size_x, sizeof(float));
                 tmp_s = (double *) calloc(size_x, sizeof(double));
                 if(s == NULL || tmp_s == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinx: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_s: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -261,7 +261,7 @@ NhlErrorTypes dcdfbinx_W( void ) {
                 type_s = NCL_double;
                 s = (double *) calloc(size_x, sizeof(double));
                 if(s == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinx: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_s: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -290,7 +290,7 @@ NhlErrorTypes dcdfbinx_W( void ) {
 }
 
 
-NhlErrorTypes dcdfbinxn_W( void ) {
+NhlErrorTypes cdfbin_xn_W( void ) {
         void    *xn, *s, *pr, *p;
         int     dummy=0;
         int s_dimsizes[NCL_MAX_DIMENSIONS];
@@ -341,13 +341,13 @@ NhlErrorTypes dcdfbinxn_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((p_ndims != s_ndims) || (p_ndims != pr_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinxn: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_xn: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<p_ndims;i++) {
                         if((p_dimsizes[i] != s_dimsizes[i]) || (p_dimsizes[i] != pr_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinxn: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_xn: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -366,19 +366,19 @@ NhlErrorTypes dcdfbinxn_W( void ) {
         */
         tmp_p = (double *)coerce_input_double(p,type_p, size_x, 0, NULL, NULL);
         if(tmp_p == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinxn: Unable to coerce 'p' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_xn: Unable to coerce 'p' to double");
                 return(NhlFATAL);
         }
 
         tmp_s = (double *)coerce_input_double(s,type_s, size_x, 0, NULL, NULL);
         if(tmp_s == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinxn: Unable to coerce 's' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_xn: Unable to coerce 's' to double");
                 return(NhlFATAL);
         }
 
         tmp_pr = (double *)coerce_input_double(pr,type_pr, size_x, 0, NULL, NULL);
         if(tmp_pr == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinxn: Unable to coerce 'pr' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_xn: Unable to coerce 'pr' to double");
                 return(NhlFATAL);
         }
 
@@ -390,7 +390,7 @@ NhlErrorTypes dcdfbinxn_W( void ) {
                 xn = (void *) calloc(size_x, sizeof(float));
                 tmp_xn = (double *) calloc(size_x, sizeof(double));
                 if(xn == NULL || tmp_xn == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinxn: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_xn: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -398,7 +398,7 @@ NhlErrorTypes dcdfbinxn_W( void ) {
                 type_xn = NCL_double;
                 xn = (double *) calloc(size_x, sizeof(double));
                 if(xn == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinxn: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_xn: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -427,7 +427,7 @@ NhlErrorTypes dcdfbinxn_W( void ) {
 }
 
 
-NhlErrorTypes dcdfbinpr_W( void ) {
+NhlErrorTypes cdfbin_pr_W( void ) {
         void    *pr, *s, *xn, *p;
         int     dummy=0;
         int s_dimsizes[NCL_MAX_DIMENSIONS];
@@ -478,13 +478,13 @@ NhlErrorTypes dcdfbinpr_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((p_ndims != s_ndims) || (p_ndims != xn_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinpr: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_pr: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<p_ndims;i++) {
                         if((p_dimsizes[i] != s_dimsizes[i]) || (p_dimsizes[i] != xn_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfbinpr: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfbin_pr: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -503,19 +503,19 @@ NhlErrorTypes dcdfbinpr_W( void ) {
         */
         tmp_p = (double *)coerce_input_double(p,type_p, size_x, 0, NULL, NULL);
         if(tmp_p == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinpr: Unable to coerce 'p' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_pr: Unable to coerce 'p' to double");
                 return(NhlFATAL);
         }
 
         tmp_s = (double *)coerce_input_double(s,type_s, size_x, 0, NULL, NULL);
         if(tmp_s == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinpr: Unable to coerce 's' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_pr: Unable to coerce 's' to double");
                 return(NhlFATAL);
         }
 
         tmp_xn = (double *)coerce_input_double(xn,type_xn, size_x, 0, NULL, NULL);
         if(tmp_xn == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinpr: Unable to coerce 'xn' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_pr: Unable to coerce 'xn' to double");
                 return(NhlFATAL);
         }
 
@@ -527,7 +527,7 @@ NhlErrorTypes dcdfbinpr_W( void ) {
                 pr = (void *) calloc(size_x, sizeof(float));
                 tmp_pr = (double *) calloc(size_x, sizeof(double));
                 if(pr == NULL || tmp_pr == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinpr: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_pr: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -535,7 +535,7 @@ NhlErrorTypes dcdfbinpr_W( void ) {
                 type_pr = NCL_double;
                 pr = (double *) calloc(size_x, sizeof(double));
                 if(pr == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfbinpr: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfbin_pr: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -564,7 +564,7 @@ NhlErrorTypes dcdfbinpr_W( void ) {
 }
 
 
-NhlErrorTypes dcdfgamp_W( void ) {
+NhlErrorTypes cdfgam_p_W( void ) {
         void    *x, *shape, *scale, *p;
         int     dummy=0;
         int x_dimsizes[NCL_MAX_DIMENSIONS], shape_dimsizes[NCL_MAX_DIMENSIONS];
@@ -615,13 +615,13 @@ NhlErrorTypes dcdfgamp_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((x_ndims != shape_ndims) || (x_ndims != scale_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfgamp: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfgam_p: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<x_ndims;i++) {
                         if((x_dimsizes[i] != shape_dimsizes[i]) || (x_dimsizes[i] != scale_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfgamp: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfgam_p: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -639,19 +639,19 @@ NhlErrorTypes dcdfgamp_W( void ) {
         */
         tmp_x = (double *)coerce_input_double(x,type_x, size_x, 0, NULL, NULL);
         if(tmp_x == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamp: Unable to coerce 'x' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_p: Unable to coerce 'x' to double");
                 return(NhlFATAL);
         }
 
         tmp_shape = (double *)coerce_input_double(shape,type_shape, size_x, 0, NULL, NULL);
         if(tmp_shape == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamp: Unable to coerce 'shape' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_p: Unable to coerce 'shape' to double");
                 return(NhlFATAL);
         }
 
         tmp_scale = (double *)coerce_input_double(scale,type_scale, size_x, 0, NULL, NULL);
         if(tmp_scale == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamp: Unable to coerce 'scale' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_p: Unable to coerce 'scale' to double");
                 return(NhlFATAL);
         }
 
@@ -663,7 +663,7 @@ NhlErrorTypes dcdfgamp_W( void ) {
                 p = (void *) calloc(size_x, sizeof(float));
                 tmp_p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL || tmp_p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamp: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -671,7 +671,7 @@ NhlErrorTypes dcdfgamp_W( void ) {
                 type_p = NCL_double;
                 p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamp: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -701,7 +701,7 @@ NhlErrorTypes dcdfgamp_W( void ) {
 
 
 
-NhlErrorTypes dcdfgamx_W( void ) {
+NhlErrorTypes cdfgam_x_W( void ) {
         void    *p, *shape, *scale, *x;
         int     dummy=0;
         int p_dimsizes[NCL_MAX_DIMENSIONS], shape_dimsizes[NCL_MAX_DIMENSIONS];
@@ -752,13 +752,13 @@ NhlErrorTypes dcdfgamx_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((p_ndims != shape_ndims) || (p_ndims != scale_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfgamx: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfgam_x: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<p_ndims;i++) {
                         if((p_dimsizes[i] != shape_dimsizes[i]) || (p_dimsizes[i] != scale_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfgamx: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfgam_x: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -777,19 +777,19 @@ NhlErrorTypes dcdfgamx_W( void ) {
         */
         tmp_p = (double *)coerce_input_double(p,type_p, size_x, 0, NULL, NULL);
         if(tmp_p == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamx: Unable to coerce 'p' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_x: Unable to coerce 'p' to double");
                 return(NhlFATAL);
         }
 
         tmp_shape = (double *)coerce_input_double(shape,type_shape, size_x, 0, NULL, NULL);
         if(tmp_shape == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamx: Unable to coerce 'shape' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_x: Unable to coerce 'shape' to double");
                 return(NhlFATAL);
         }
 
         tmp_scale = (double *)coerce_input_double(scale,type_scale, size_x, 0, NULL, NULL);
         if(tmp_scale == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamx: Unable to coerce 'scale' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_x: Unable to coerce 'scale' to double");
                 return(NhlFATAL);
         }
 
@@ -801,7 +801,7 @@ NhlErrorTypes dcdfgamx_W( void ) {
                 x = (void *) calloc(size_x, sizeof(float));
                 tmp_x = (double *) calloc(size_x, sizeof(double));
                 if(x == NULL || tmp_x == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamx: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_x: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -809,7 +809,7 @@ NhlErrorTypes dcdfgamx_W( void ) {
                 type_x = NCL_double;
                 x = (double *) calloc(size_x, sizeof(double));
                 if(x == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfgamx: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfgam_x: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -838,7 +838,7 @@ NhlErrorTypes dcdfgamx_W( void ) {
 }
 
 
-NhlErrorTypes dcdfnorp_W( void ) {
+NhlErrorTypes cdfnor_p_W( void ) {
         void    *x, *mean, *sd, *p;
         int     dummy=0;
         int x_dimsizes[NCL_MAX_DIMENSIONS], mean_dimsizes[NCL_MAX_DIMENSIONS];
@@ -889,13 +889,13 @@ NhlErrorTypes dcdfnorp_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((x_ndims != mean_ndims) || (x_ndims != sd_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfnorp: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfnor_p: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<x_ndims;i++) {
                         if((x_dimsizes[i] != mean_dimsizes[i]) || (x_dimsizes[i] != sd_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfnorp: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfnor_p: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -914,19 +914,19 @@ NhlErrorTypes dcdfnorp_W( void ) {
         */
         tmp_x = (double *)coerce_input_double(x,type_x, size_x, 0, NULL, NULL);
         if(tmp_x == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorp: Unable to coerce 'x' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_p: Unable to coerce 'x' to double");
                 return(NhlFATAL);
         }
 
         tmp_mean = (double *)coerce_input_double(mean,type_mean, size_x, 0, NULL, NULL);
         if(tmp_mean == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorp: Unable to coerce 'mean' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_p: Unable to coerce 'mean' to double");
                 return(NhlFATAL);
         }
 
         tmp_sd = (double *)coerce_input_double(sd,type_sd, size_x, 0, NULL, NULL);
         if(tmp_sd == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorp: Unable to coerce 'sd' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_p: Unable to coerce 'sd' to double");
                 return(NhlFATAL);
         }
 
@@ -938,7 +938,7 @@ NhlErrorTypes dcdfnorp_W( void ) {
                 p = (void *) calloc(size_x, sizeof(float));
                 tmp_p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL || tmp_p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorp: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -946,7 +946,7 @@ NhlErrorTypes dcdfnorp_W( void ) {
                 type_p = NCL_double;
                 p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorp: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -975,7 +975,7 @@ NhlErrorTypes dcdfnorp_W( void ) {
 }
 
 
-NhlErrorTypes dcdfnorx_W( void ) {
+NhlErrorTypes cdfnor_x_W( void ) {
         void    *p, *mean, *sd, *x;
         int     dummy=0;
         int p_dimsizes[NCL_MAX_DIMENSIONS], mean_dimsizes[NCL_MAX_DIMENSIONS];
@@ -1026,13 +1026,13 @@ NhlErrorTypes dcdfnorx_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if((p_ndims != mean_ndims) || (p_ndims != sd_ndims)) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfnorx: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfnor_x: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<p_ndims;i++) {
                         if((p_dimsizes[i] != mean_dimsizes[i]) || (p_dimsizes[i] != sd_dimsizes[i]) ) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfnorx: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfnor_x: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -1050,19 +1050,19 @@ NhlErrorTypes dcdfnorx_W( void ) {
         */
         tmp_p = (double *)coerce_input_double(p,type_p, size_x, 0, NULL, NULL);
         if(tmp_p == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorx: Unable to coerce 'p' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_x: Unable to coerce 'p' to double");
                 return(NhlFATAL);
         }
 
         tmp_mean = (double *)coerce_input_double(mean,type_mean, size_x, 0, NULL, NULL);
         if(tmp_mean == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorx: Unable to coerce 'mean' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_x: Unable to coerce 'mean' to double");
                 return(NhlFATAL);
         }
 
         tmp_sd = (double *)coerce_input_double(sd,type_sd, size_x, 0, NULL, NULL);
         if(tmp_sd == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorx: Unable to coerce 'sd' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_x: Unable to coerce 'sd' to double");
                 return(NhlFATAL);
         }
 
@@ -1074,7 +1074,7 @@ NhlErrorTypes dcdfnorx_W( void ) {
                 x = (void *) calloc(size_x, sizeof(float));
                 tmp_x = (double *) calloc(size_x, sizeof(double));
                 if(x == NULL || tmp_x == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorx: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_x: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -1082,7 +1082,7 @@ NhlErrorTypes dcdfnorx_W( void ) {
                 type_x = NCL_double;
                 x = (double *) calloc(size_x, sizeof(double));
                 if(x == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfnorx: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfnor_x: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -1111,7 +1111,7 @@ NhlErrorTypes dcdfnorx_W( void ) {
 }
 
 
-NhlErrorTypes dcdfchip_W( void ) {
+NhlErrorTypes cdfchi_p_W( void ) {
         void    *x, *df, *p;
         int     dummy=0;
         int x_dimsizes[NCL_MAX_DIMENSIONS], df_dimsizes[NCL_MAX_DIMENSIONS];
@@ -1151,13 +1151,13 @@ NhlErrorTypes dcdfchip_W( void ) {
         * Make sure all of the input arguments are of equal dimensions.
         */
         if(x_ndims != df_ndims) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfchip: The input arrays must have the same number of dimensions");
+                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfchi_p: The input arrays must have the same number of dimensions");
                 return(NhlFATAL);
         }
         else {
                 for(i=0;i<x_ndims;i++) {
                         if(x_dimsizes[i] != df_dimsizes[i]) {
-                                NhlPError(NhlFATAL,NhlEUNKNOWN, "dcdfchip: The input arrays must have the same dimension sizes");
+                                NhlPError(NhlFATAL,NhlEUNKNOWN, "cdfchi_p: The input arrays must have the same dimension sizes");
                                 return(NhlFATAL);
                         }
                 }
@@ -1175,13 +1175,13 @@ NhlErrorTypes dcdfchip_W( void ) {
         */
         tmp_x = (double *)coerce_input_double(x,type_x, size_x, 0, NULL, NULL);
         if(tmp_x == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to coerce 'x' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfchi_p: Unable to coerce 'x' to double");
                 return(NhlFATAL);
         }
 
         tmp_df = (double *)coerce_input_double(df,type_df, size_x, 0, NULL, NULL);
         if(tmp_df == NULL) {
-                NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to coerce 'df' to double");
+                NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfchi_p: Unable to coerce 'df' to double");
                 return(NhlFATAL);
         }
 
@@ -1194,7 +1194,7 @@ NhlErrorTypes dcdfchip_W( void ) {
                 p = (void *) calloc(size_x, sizeof(float));
                 tmp_p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL || tmp_p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfchi_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
@@ -1202,7 +1202,7 @@ NhlErrorTypes dcdfchip_W( void ) {
                 type_p = NCL_double;
                 p = (double *) calloc(size_x, sizeof(double));
                 if(p == NULL) {
-                        NhlPError(NhlFATAL,NhlEUNKNOWN,"dcdfchip: Unable to allocate memory for output array");
+                        NhlPError(NhlFATAL,NhlEUNKNOWN,"cdfchi_p: Unable to allocate memory for output array");
                         return(NhlFATAL);
                 }
         }
