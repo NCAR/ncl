@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin,v 1.8 2007-10-05 14:07:36 haley Exp $
+ *      $Id: Darwin,v 1.9 2007-10-08 19:38:49 haley Exp $
  */
 /************************************************************************
 *									*
@@ -34,11 +34,9 @@
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
-#define HDFlib  -lmfhdf -ldf /Users/haley/lib/libjpeg.a /Users/haley/lib/libz.a
-#define V5Dlib  /Users/haley/lib/libv5d.a
 
-#define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib -L/Users/haley/lib
-#define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include -I/Users/haley/include
+#define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib
+#define ArchRecIncSearch    -I/usr/X11R6/include -I/sw/include
 
 FC = $(F77)
 
