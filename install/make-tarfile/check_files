@@ -1,31 +1,32 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.6 2007-09-28 20:32:17 haley Exp $
+#   $Id: check_files,v 1.7 2007-10-08 16:54:51 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
 #
-# This script should be run from wherever you untar the files (right
-# above the bin, lib, and include directories.
+# This script should be run from the $NCARG_ROOT directory.
+# Note that it does not check "man" pages.
 #
-# set echo verbose timestamp
+# On a related note, the files 
+#   webdoc/ncl/Download/files/NCL_NCARG_files.txt
+#   webdoc/ncl/Download/files/NCARG_files.txt
+#
+# should also be updated.
 #
 #   Options:
-#              -i :  check all files - this differs from the default,
-#                    which just checks files we actually send to users.
-#                    Since the HLUs and the NCL libraries are not
-#                     releasable yet, these don't get checked (unless
-#                     -i is specified)
+#              -a :  check all files (NCL and NCARG). This used to be
+#                    similar to the -i option. This is the default.
 #              -1 :  check just NCL files
 #              -2 :  check just NCARG files
+#
+# set echo verbose timestamp
 
 set NCARGNCL
 
 while ($#argv > 0)
   switch ($1)
-    case "-i":
-      set INTERNAL
-      unset NCARGNCL
+    case "-a":
       shift
       breaksw
 
@@ -59,11 +60,10 @@ if ($?NCLONLY && $?NCARGONLY) then
   set NCARGNCL
   unset NCARGONLY
   unset NCLONLY
-  unset INTERNAL
 endif
 
 
-set nclversion = "4.3.1"
+set nclversion = "5.0.0"
 set pwddir  = `pwd`
 
 if ($?NCARGNCL) then
@@ -72,8 +72,6 @@ else if ($?NCLONLY) then
   echo "Checking files for NCL version $nclversion in dir $pwddir..."
 else if ($?NCARGONLY) then
   echo "Checking files for NCAR Graphics version $nclversion in dir $pwddir..."
-else
-  echo "Checking files for *all* NCL and NCAR Graphics files, version $nclversion in dir $pwddir..."
 endif
 
 set that_file_list      = "tmp_that_file_list$$"
@@ -99,6 +97,8 @@ bin/psplit
 include/ncarg/c.h
 include/ncarg/gks.h
 include/ncarg/ncargC.h
+include/ncarg/zconf.h
+include/ncarg/zlib.h
 lib/ncarg/database/Earth..1.areas
 lib/ncarg/database/Earth..1.lines
 lib/ncarg/database/Earth..1.names
@@ -201,8 +201,9 @@ lib/ncarg/ngwww/ngurl
 lib/ncarg/xapp/Idt
 'EOF'
 
-if ($?NCLONLY || $?NCARGNCL || $?INTERNAL) then
+if ($?NCLONLY || $?NCARGNCL) then
 cat << 'EOF' >>! $this_file_list
+bin/MakeNcl
 bin/WRAPIT
 bin/ncl
 bin/ncl_convert2nc
@@ -368,7 +369,16 @@ include/ncarg/ncl/NclFileInterfaces.h
 include/ncarg/ncl/NclVar.h
 include/ncarg/ncl/defs.h
 include/ncarg/ncl/nio.h
+lib/libblas_ncl.a
+lib/libfftpack5_dp.a
+lib/libhlu.a
+lib/liblapack_ncl.a
+lib/libncl.a
 lib/libnclapi.a
+lib/libnfp.a
+lib/libnfpfort.a
+lib/libnio.a
+lib/libsphere3.1_dp.a
 lib/ncarg/colormaps/3gauss.ncmap
 lib/ncarg/colormaps/3saw.ncmap
 lib/ncarg/colormaps/BkBlAqGrYeOrReViWh200.gp
@@ -991,6 +1001,196 @@ lib/ncarg/grib2_codetables/tigge/5/5.6.table
 lib/ncarg/grib2_codetables/tigge/5/5.7.table
 lib/ncarg/grib2_codetables/tigge/5/5.8.table
 lib/ncarg/grib2_codetables/tigge/6/6.0.table
+lib/ncarg/hluex/app/ap01c.c
+lib/ncarg/hluex/app/ap01f.f
+lib/ncarg/hluex/basic/basic01c.c
+lib/ncarg/hluex/basic/basic01f.f
+lib/ncarg/hluex/basic/basic02c.c
+lib/ncarg/hluex/basic/basic02f.f
+lib/ncarg/hluex/basic/basic03c.c
+lib/ncarg/hluex/basic/basic03f.f
+lib/ncarg/hluex/basic/basic04c.c
+lib/ncarg/hluex/basic/basic04f.f
+lib/ncarg/hluex/basic/basic05c.c
+lib/ncarg/hluex/basic/basic05f.f
+lib/ncarg/hluex/basic/basic06c.c
+lib/ncarg/hluex/basic/basic06f.f
+lib/ncarg/hluex/basic/basic07c.c
+lib/ncarg/hluex/basic/basic07f.f
+lib/ncarg/hluex/basic/basic08c.c
+lib/ncarg/hluex/basic/basic08f.f
+lib/ncarg/hluex/basic/basic09c.c
+lib/ncarg/hluex/basic/basic09f.f
+lib/ncarg/hluex/contourplot/cn01c.c
+lib/ncarg/hluex/contourplot/cn01f.f
+lib/ncarg/hluex/contourplot/cn02c.c
+lib/ncarg/hluex/contourplot/cn02f.f
+lib/ncarg/hluex/contourplot/cn03c.c
+lib/ncarg/hluex/contourplot/cn03c.h
+lib/ncarg/hluex/contourplot/cn03f.f
+lib/ncarg/hluex/contourplot/cn04c.c
+lib/ncarg/hluex/contourplot/cn04f.f
+lib/ncarg/hluex/contourplot/cn05c.c
+lib/ncarg/hluex/contourplot/cn05f.f
+lib/ncarg/hluex/contourplot/cn06c.c
+lib/ncarg/hluex/contourplot/cn06f.f
+lib/ncarg/hluex/contourplot/cn07c.c
+lib/ncarg/hluex/contourplot/cn07f.f
+lib/ncarg/hluex/contourplot/cn08c.c
+lib/ncarg/hluex/contourplot/cn08f.f
+lib/ncarg/hluex/contourplot/cn09c.c
+lib/ncarg/hluex/contourplot/cn09f.f
+lib/ncarg/hluex/contourplot/cn10c.c
+lib/ncarg/hluex/contourplot/cn10f.f
+lib/ncarg/hluex/contourplot/cn11c.c
+lib/ncarg/hluex/contourplot/cn11c.h
+lib/ncarg/hluex/contourplot/cn11f.f
+lib/ncarg/hluex/contourplot/cn12c.c
+lib/ncarg/hluex/contourplot/cn12f.f
+lib/ncarg/hluex/contourplot/cn13c.c
+lib/ncarg/hluex/contourplot/cn13f.f
+lib/ncarg/hluex/contourplot/cn14c.c
+lib/ncarg/hluex/contourplot/cn14f.f
+lib/ncarg/hluex/contourplot/cn15c.c
+lib/ncarg/hluex/contourplot/cn15f.f
+lib/ncarg/hluex/contourplot/cn16c.c
+lib/ncarg/hluex/contourplot/cn16f.f
+lib/ncarg/hluex/contourplot/cn17c.c
+lib/ncarg/hluex/contourplot/cn17f.f
+lib/ncarg/hluex/labelbar/lb01c.c
+lib/ncarg/hluex/labelbar/lb01f.f
+lib/ncarg/hluex/labelbar/lb02c.c
+lib/ncarg/hluex/labelbar/lb02f.f
+lib/ncarg/hluex/legend/lg01c.c
+lib/ncarg/hluex/legend/lg01f.f
+lib/ncarg/hluex/legend/lg02c.c
+lib/ncarg/hluex/legend/lg02f.f
+lib/ncarg/hluex/legend/lg03c.c
+lib/ncarg/hluex/legend/lg03f.f
+lib/ncarg/hluex/mapplot/mp01c.c
+lib/ncarg/hluex/mapplot/mp01f.f
+lib/ncarg/hluex/mapplot/mp02c.c
+lib/ncarg/hluex/mapplot/mp02f.f
+lib/ncarg/hluex/mapplot/mp03c.c
+lib/ncarg/hluex/mapplot/mp03f.f
+lib/ncarg/hluex/mapplot/mp04c.c
+lib/ncarg/hluex/mapplot/mp04f.f
+lib/ncarg/hluex/mapplot/mp05c.c
+lib/ncarg/hluex/mapplot/mp05f.f
+lib/ncarg/hluex/mapplot/mp06c.c
+lib/ncarg/hluex/mapplot/mp06f.f
+lib/ncarg/hluex/mapplot/mp07c.c
+lib/ncarg/hluex/mapplot/mp07f.f
+lib/ncarg/hluex/ngmath/nm01c.c
+lib/ncarg/hluex/ngmath/nm01f.f
+lib/ncarg/hluex/ngmath/nm02c.c
+lib/ncarg/hluex/ngmath/nm02f.f
+lib/ncarg/hluex/ngmath/nm03c.c
+lib/ncarg/hluex/ngmath/nm03f.f
+lib/ncarg/hluex/ngmath/nm04c.c
+lib/ncarg/hluex/ngmath/nm04f.f
+lib/ncarg/hluex/ngmath/nm05c.c
+lib/ncarg/hluex/ngmath/nm05f.f
+lib/ncarg/hluex/ngmath/nm06c.c
+lib/ncarg/hluex/ngmath/nm06f.f
+lib/ncarg/hluex/primitives/pr01c.c
+lib/ncarg/hluex/primitives/pr01f.f
+lib/ncarg/hluex/primitives/pr02c.c
+lib/ncarg/hluex/primitives/pr02f.f
+lib/ncarg/hluex/primitives/pr03c.c
+lib/ncarg/hluex/primitives/pr03f.f
+lib/ncarg/hluex/primitives/pr04c.c
+lib/ncarg/hluex/primitives/pr04f.f
+lib/ncarg/hluex/primitives/pr05c.c
+lib/ncarg/hluex/primitives/pr05f.f
+lib/ncarg/hluex/streamlineplot/st01c.c
+lib/ncarg/hluex/streamlineplot/st01f.f
+lib/ncarg/hluex/streamlineplot/st02c.c
+lib/ncarg/hluex/streamlineplot/st02f.f
+lib/ncarg/hluex/streamlineplot/st03c.c
+lib/ncarg/hluex/streamlineplot/st03f.f
+lib/ncarg/hluex/streamlineplot/st04c.c
+lib/ncarg/hluex/streamlineplot/st04f.f
+lib/ncarg/hluex/textitem/tx01c.c
+lib/ncarg/hluex/textitem/tx01f.f
+lib/ncarg/hluex/textitem/tx02c.c
+lib/ncarg/hluex/textitem/tx02f.f
+lib/ncarg/hluex/textitem/tx03c.c
+lib/ncarg/hluex/textitem/tx03f.f
+lib/ncarg/hluex/textitem/tx04c.c
+lib/ncarg/hluex/textitem/tx04f.f
+lib/ncarg/hluex/textitem/tx05c.c
+lib/ncarg/hluex/textitem/tx05f.f
+lib/ncarg/hluex/textitem/tx06c.c
+lib/ncarg/hluex/textitem/tx06f.f
+lib/ncarg/hluex/textitem/tx07c.c
+lib/ncarg/hluex/textitem/tx07f.f
+lib/ncarg/hluex/textitem/tx08c.c
+lib/ncarg/hluex/textitem/tx08f.f
+lib/ncarg/hluex/tickmark/tm01c.c
+lib/ncarg/hluex/tickmark/tm01f.f
+lib/ncarg/hluex/tickmark/tm02c.c
+lib/ncarg/hluex/tickmark/tm02f.f
+lib/ncarg/hluex/tickmark/tm03c.c
+lib/ncarg/hluex/tickmark/tm03c.h
+lib/ncarg/hluex/tickmark/tm03f.f
+lib/ncarg/hluex/title/ti01c.c
+lib/ncarg/hluex/title/ti01f.f
+lib/ncarg/hluex/title/ti02c.c
+lib/ncarg/hluex/title/ti02f.f
+lib/ncarg/hluex/title/ti03c.c
+lib/ncarg/hluex/title/ti03f.f
+lib/ncarg/hluex/vectorplot/vc01c.c
+lib/ncarg/hluex/vectorplot/vc01f.f
+lib/ncarg/hluex/vectorplot/vc02c.c
+lib/ncarg/hluex/vectorplot/vc02f.f
+lib/ncarg/hluex/vectorplot/vc03c.c
+lib/ncarg/hluex/vectorplot/vc03f.f
+lib/ncarg/hluex/vectorplot/vc04c.c
+lib/ncarg/hluex/vectorplot/vc04f.f
+lib/ncarg/hluex/vectorplot/vc05c.c
+lib/ncarg/hluex/vectorplot/vc05f.f
+lib/ncarg/hluex/vectorplot/vc06c.c
+lib/ncarg/hluex/vectorplot/vc06f.f
+lib/ncarg/hluex/vectorplot/vc07c.c
+lib/ncarg/hluex/vectorplot/vc07f.f
+lib/ncarg/hluex/vectorplot/vc08c.c
+lib/ncarg/hluex/vectorplot/vc08f.f
+lib/ncarg/hluex/vectorplot/vc09c.c
+lib/ncarg/hluex/vectorplot/vc09f.f
+lib/ncarg/hluex/xyplot/xy01c.c
+lib/ncarg/hluex/xyplot/xy01f.f
+lib/ncarg/hluex/xyplot/xy02c.c
+lib/ncarg/hluex/xyplot/xy02f.f
+lib/ncarg/hluex/xyplot/xy03c.c
+lib/ncarg/hluex/xyplot/xy03f.f
+lib/ncarg/hluex/xyplot/xy04c.c
+lib/ncarg/hluex/xyplot/xy04f.f
+lib/ncarg/hluex/xyplot/xy05c.c
+lib/ncarg/hluex/xyplot/xy05f.f
+lib/ncarg/hluex/xyplot/xy06c.c
+lib/ncarg/hluex/xyplot/xy06f.f
+lib/ncarg/hluex/xyplot/xy07c.c
+lib/ncarg/hluex/xyplot/xy07f.f
+lib/ncarg/hluex/xyplot/xy08c.c
+lib/ncarg/hluex/xyplot/xy08f.f
+lib/ncarg/hluex/xyplot/xy09c.c
+lib/ncarg/hluex/xyplot/xy09f.f
+lib/ncarg/hluex/xyplot/xy10c.c
+lib/ncarg/hluex/xyplot/xy10f.f
+lib/ncarg/hluex/xyplot/xy11c.c
+lib/ncarg/hluex/xyplot/xy11f.f
+lib/ncarg/hluex/xyplot/xy12c.c
+lib/ncarg/hluex/xyplot/xy13c.c
+lib/ncarg/hluex/xyplot/xy13c.h
+lib/ncarg/hluex/xyplot/xy14c.c
+lib/ncarg/hluex/xyplot/xy14f.f
+lib/ncarg/hluex/xyplot/xy15c.c
+lib/ncarg/hluex/xyplot/xy15f.f
+lib/ncarg/hluex/xyplot/xy16c.c
+lib/ncarg/hluex/xyplot/xy16f.f
+lib/ncarg/hluex/xyplot/xy17c.c
+lib/ncarg/hluex/xyplot/xy17f.f
 lib/ncarg/nclex/app/ap01n.ncl
 lib/ncarg/nclex/basic/basic01n.ncl
 lib/ncarg/nclex/basic/basic02n.ncl
@@ -1120,8 +1320,8 @@ lib/ncarg/nclscripts/csm/popRemap.ncl
 lib/ncarg/nclscripts/csm/shea_util.ncl
 lib/ncarg/nclscripts/csm/skewt_func.ncl
 lib/ncarg/nclscripts/csm/wind_rose.ncl
-lib/ncarg/nclscripts/wrf/WRF_contributed.ncl
 lib/ncarg/nclscripts/wrf/WRFUserARW.ncl
+lib/ncarg/nclscripts/wrf/WRF_contributed.ncl
 lib/ncarg/resfiles/app/ap01.res
 lib/ncarg/resfiles/basic/basic03.res
 lib/ncarg/resfiles/basic/basic07.res
@@ -1190,7 +1390,7 @@ lib/ncarg/udunits/udunits.dat
 'EOF'
 endif
 
-if ($?NCARGONLY || $?NCARGNCL || $?INTERNAL) then
+if ($?NCARGONLY || $?NCARGNCL) then
 
 cat << 'EOF' >>! $this_file_list
 bin/cgm2ncgm
@@ -1766,207 +1966,6 @@ lib/ncarg/tutorial/ggdini.f
 'EOF'
 endif
 
-if ($?INTERNAL) then
-
-cat << 'EOF' >>! $this_file_list
-bin/MakeNcl
-lib/libhlu.a
-lib/libncl.a
-lib/libnfp.a
-lib/libnfpfort.a
-lib/libnio.a
-lib/ncarg/hluex/app/ap01c.c
-lib/ncarg/hluex/app/ap01f.f
-lib/ncarg/hluex/basic/basic01c.c
-lib/ncarg/hluex/basic/basic01f.f
-lib/ncarg/hluex/basic/basic02c.c
-lib/ncarg/hluex/basic/basic02f.f
-lib/ncarg/hluex/basic/basic03c.c
-lib/ncarg/hluex/basic/basic03f.f
-lib/ncarg/hluex/basic/basic04c.c
-lib/ncarg/hluex/basic/basic04f.f
-lib/ncarg/hluex/basic/basic05c.c
-lib/ncarg/hluex/basic/basic05f.f
-lib/ncarg/hluex/basic/basic06c.c
-lib/ncarg/hluex/basic/basic06f.f
-lib/ncarg/hluex/basic/basic07c.c
-lib/ncarg/hluex/basic/basic07f.f
-lib/ncarg/hluex/basic/basic08c.c
-lib/ncarg/hluex/basic/basic08f.f
-lib/ncarg/hluex/basic/basic09c.c
-lib/ncarg/hluex/basic/basic09f.f
-lib/ncarg/hluex/contourplot/cn01c.c
-lib/ncarg/hluex/contourplot/cn01f.f
-lib/ncarg/hluex/contourplot/cn02c.c
-lib/ncarg/hluex/contourplot/cn02f.f
-lib/ncarg/hluex/contourplot/cn03c.c
-lib/ncarg/hluex/contourplot/cn03c.h
-lib/ncarg/hluex/contourplot/cn03f.f
-lib/ncarg/hluex/contourplot/cn04c.c
-lib/ncarg/hluex/contourplot/cn04f.f
-lib/ncarg/hluex/contourplot/cn05c.c
-lib/ncarg/hluex/contourplot/cn05f.f
-lib/ncarg/hluex/contourplot/cn06c.c
-lib/ncarg/hluex/contourplot/cn06f.f
-lib/ncarg/hluex/contourplot/cn07c.c
-lib/ncarg/hluex/contourplot/cn07f.f
-lib/ncarg/hluex/contourplot/cn08c.c
-lib/ncarg/hluex/contourplot/cn08f.f
-lib/ncarg/hluex/contourplot/cn09c.c
-lib/ncarg/hluex/contourplot/cn09f.f
-lib/ncarg/hluex/contourplot/cn10c.c
-lib/ncarg/hluex/contourplot/cn10f.f
-lib/ncarg/hluex/contourplot/cn11c.c
-lib/ncarg/hluex/contourplot/cn11c.h
-lib/ncarg/hluex/contourplot/cn11f.f
-lib/ncarg/hluex/contourplot/cn12c.c
-lib/ncarg/hluex/contourplot/cn12f.f
-lib/ncarg/hluex/contourplot/cn13c.c
-lib/ncarg/hluex/contourplot/cn13f.f
-lib/ncarg/hluex/contourplot/cn14c.c
-lib/ncarg/hluex/contourplot/cn14f.f
-lib/ncarg/hluex/contourplot/cn15c.c
-lib/ncarg/hluex/contourplot/cn15f.f
-lib/ncarg/hluex/contourplot/cn16c.c
-lib/ncarg/hluex/contourplot/cn16f.f
-lib/ncarg/hluex/contourplot/cn17c.c
-lib/ncarg/hluex/contourplot/cn17f.f
-lib/ncarg/hluex/labelbar/lb01c.c
-lib/ncarg/hluex/labelbar/lb01f.f
-lib/ncarg/hluex/labelbar/lb02c.c
-lib/ncarg/hluex/labelbar/lb02f.f
-lib/ncarg/hluex/legend/lg01c.c
-lib/ncarg/hluex/legend/lg01f.f
-lib/ncarg/hluex/legend/lg02c.c
-lib/ncarg/hluex/legend/lg02f.f
-lib/ncarg/hluex/legend/lg03c.c
-lib/ncarg/hluex/legend/lg03f.f
-lib/ncarg/hluex/mapplot/mp01c.c
-lib/ncarg/hluex/mapplot/mp01f.f
-lib/ncarg/hluex/mapplot/mp02c.c
-lib/ncarg/hluex/mapplot/mp02f.f
-lib/ncarg/hluex/mapplot/mp03c.c
-lib/ncarg/hluex/mapplot/mp03f.f
-lib/ncarg/hluex/mapplot/mp04c.c
-lib/ncarg/hluex/mapplot/mp04f.f
-lib/ncarg/hluex/mapplot/mp05c.c
-lib/ncarg/hluex/mapplot/mp05f.f
-lib/ncarg/hluex/mapplot/mp06c.c
-lib/ncarg/hluex/mapplot/mp06f.f
-lib/ncarg/hluex/mapplot/mp07c.c
-lib/ncarg/hluex/mapplot/mp07f.f
-lib/ncarg/hluex/ngmath/nm01c.c
-lib/ncarg/hluex/ngmath/nm01f.f
-lib/ncarg/hluex/ngmath/nm02c.c
-lib/ncarg/hluex/ngmath/nm02f.f
-lib/ncarg/hluex/ngmath/nm03c.c
-lib/ncarg/hluex/ngmath/nm03f.f
-lib/ncarg/hluex/ngmath/nm04c.c
-lib/ncarg/hluex/ngmath/nm04f.f
-lib/ncarg/hluex/ngmath/nm05c.c
-lib/ncarg/hluex/ngmath/nm05f.f
-lib/ncarg/hluex/ngmath/nm06c.c
-lib/ncarg/hluex/ngmath/nm06f.f
-lib/ncarg/hluex/primitives/pr01c.c
-lib/ncarg/hluex/primitives/pr01f.f
-lib/ncarg/hluex/primitives/pr02c.c
-lib/ncarg/hluex/primitives/pr02f.f
-lib/ncarg/hluex/primitives/pr03c.c
-lib/ncarg/hluex/primitives/pr03f.f
-lib/ncarg/hluex/primitives/pr04c.c
-lib/ncarg/hluex/primitives/pr04f.f
-lib/ncarg/hluex/primitives/pr05c.c
-lib/ncarg/hluex/primitives/pr05f.f
-lib/ncarg/hluex/streamlineplot/st01c.c
-lib/ncarg/hluex/streamlineplot/st01f.f
-lib/ncarg/hluex/streamlineplot/st02c.c
-lib/ncarg/hluex/streamlineplot/st02f.f
-lib/ncarg/hluex/streamlineplot/st03c.c
-lib/ncarg/hluex/streamlineplot/st03f.f
-lib/ncarg/hluex/streamlineplot/st04c.c
-lib/ncarg/hluex/streamlineplot/st04f.f
-lib/ncarg/hluex/textitem/tx01c.c
-lib/ncarg/hluex/textitem/tx01f.f
-lib/ncarg/hluex/textitem/tx02c.c
-lib/ncarg/hluex/textitem/tx02f.f
-lib/ncarg/hluex/textitem/tx03c.c
-lib/ncarg/hluex/textitem/tx03f.f
-lib/ncarg/hluex/textitem/tx04c.c
-lib/ncarg/hluex/textitem/tx04f.f
-lib/ncarg/hluex/textitem/tx05c.c
-lib/ncarg/hluex/textitem/tx05f.f
-lib/ncarg/hluex/textitem/tx06c.c
-lib/ncarg/hluex/textitem/tx06f.f
-lib/ncarg/hluex/textitem/tx07c.c
-lib/ncarg/hluex/textitem/tx07f.f
-lib/ncarg/hluex/textitem/tx08c.c
-lib/ncarg/hluex/textitem/tx08f.f
-lib/ncarg/hluex/tickmark/tm01c.c
-lib/ncarg/hluex/tickmark/tm01f.f
-lib/ncarg/hluex/tickmark/tm02c.c
-lib/ncarg/hluex/tickmark/tm02f.f
-lib/ncarg/hluex/tickmark/tm03c.c
-lib/ncarg/hluex/tickmark/tm03c.h
-lib/ncarg/hluex/tickmark/tm03f.f
-lib/ncarg/hluex/title/ti01c.c
-lib/ncarg/hluex/title/ti01f.f
-lib/ncarg/hluex/title/ti02c.c
-lib/ncarg/hluex/title/ti02f.f
-lib/ncarg/hluex/title/ti03c.c
-lib/ncarg/hluex/title/ti03f.f
-lib/ncarg/hluex/vectorplot/vc01c.c
-lib/ncarg/hluex/vectorplot/vc01f.f
-lib/ncarg/hluex/vectorplot/vc02c.c
-lib/ncarg/hluex/vectorplot/vc02f.f
-lib/ncarg/hluex/vectorplot/vc03c.c
-lib/ncarg/hluex/vectorplot/vc03f.f
-lib/ncarg/hluex/vectorplot/vc04c.c
-lib/ncarg/hluex/vectorplot/vc04f.f
-lib/ncarg/hluex/vectorplot/vc05c.c
-lib/ncarg/hluex/vectorplot/vc05f.f
-lib/ncarg/hluex/vectorplot/vc06c.c
-lib/ncarg/hluex/vectorplot/vc06f.f
-lib/ncarg/hluex/vectorplot/vc07c.c
-lib/ncarg/hluex/vectorplot/vc07f.f
-lib/ncarg/hluex/vectorplot/vc08c.c
-lib/ncarg/hluex/vectorplot/vc08f.f
-lib/ncarg/hluex/vectorplot/vc09c.c
-lib/ncarg/hluex/vectorplot/vc09f.f
-lib/ncarg/hluex/xyplot/xy01c.c
-lib/ncarg/hluex/xyplot/xy01f.f
-lib/ncarg/hluex/xyplot/xy02c.c
-lib/ncarg/hluex/xyplot/xy02f.f
-lib/ncarg/hluex/xyplot/xy03c.c
-lib/ncarg/hluex/xyplot/xy03f.f
-lib/ncarg/hluex/xyplot/xy04c.c
-lib/ncarg/hluex/xyplot/xy04f.f
-lib/ncarg/hluex/xyplot/xy05c.c
-lib/ncarg/hluex/xyplot/xy05f.f
-lib/ncarg/hluex/xyplot/xy06c.c
-lib/ncarg/hluex/xyplot/xy06f.f
-lib/ncarg/hluex/xyplot/xy07c.c
-lib/ncarg/hluex/xyplot/xy07f.f
-lib/ncarg/hluex/xyplot/xy08c.c
-lib/ncarg/hluex/xyplot/xy08f.f
-lib/ncarg/hluex/xyplot/xy09c.c
-lib/ncarg/hluex/xyplot/xy09f.f
-lib/ncarg/hluex/xyplot/xy10c.c
-lib/ncarg/hluex/xyplot/xy10f.f
-lib/ncarg/hluex/xyplot/xy11c.c
-lib/ncarg/hluex/xyplot/xy11f.f
-lib/ncarg/hluex/xyplot/xy12c.c
-lib/ncarg/hluex/xyplot/xy13c.c
-lib/ncarg/hluex/xyplot/xy13c.h
-lib/ncarg/hluex/xyplot/xy14c.c
-lib/ncarg/hluex/xyplot/xy14f.f
-lib/ncarg/hluex/xyplot/xy15c.c
-lib/ncarg/hluex/xyplot/xy15f.f
-lib/ncarg/hluex/xyplot/xy16c.c
-lib/ncarg/hluex/xyplot/xy16f.f
-lib/ncarg/hluex/xyplot/xy17c.c
-lib/ncarg/hluex/xyplot/xy17f.f
-'EOF'
-endif
 
 #
 # Sort the two lists before we compare them.
@@ -1993,7 +1992,7 @@ echo "usage: check_files [options]"
 echo ""
 echo "   Options:"
 echo "              -h : help"
-echo "              -i : check all files"
+echo "              -a : check all files"
 echo "              -1 : check NCL files only"
 echo "              -2 : check NCARG files only"
 echo ""
