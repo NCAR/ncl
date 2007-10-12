@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.1 2007-08-20 16:28:58 haley Exp $
+#   $Id: create_src_dist,v 1.2 2007-10-12 21:13:47 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -28,6 +28,8 @@
 #
 #   Options:   -r :  root directory
 #              -1 :  tar up just NCAR Graphics (not NCL)
+#              -i :  Tar up files for internal use. Includes "install"
+#                    directory
 #              -c :  scp to windom.ucar.edu
 #              -v :  version number
 #
@@ -67,6 +69,12 @@ while ($#argv > 0)
   switch ($1)
     case "-1":
       set NCARGONLY
+      unset NCARGNCL
+      shift
+      breaksw
+
+    case "-i":
+      set INTERNAL
       unset NCARGNCL
       shift
       breaksw
@@ -170,6 +178,15 @@ if (! -e ncarg) then
   exit
 endif
 
+# 
+# Remove "CVS" directories
+#
+cd $parentdir/ncarg
+set cmd = "find . -name 'CVS' -type d -exec /bin/rm -rf {} \;"
+echo "$cmd"
+find . -name 'CVS' -type d -exec /bin/rm -rf {} \;
+cd $parentdir
+
 #
 # Get the version, if not already set by user.
 #
@@ -184,9 +201,12 @@ endif
 if ($?NCARGONLY) then
   set src_prefix = "ncarg-$version"
   set tar_prefix = "ncarg_src"
-else
+else if ($?NCARGNCL) then
   set src_prefix = "ncl_ncarg-$version"
   set tar_prefix = "ncl_ncarg_src"
+else
+  set src_prefix = "ncl_ncarg_internal-$version"
+  set tar_prefix = "ncl_ncarg_internal_src"
 endif
 set src_tar_dir = "$parentdir/$src_prefix"
  
@@ -201,12 +221,16 @@ set tar_filename = "$tar_prefix-$version.tar"
 # want to give to the user).
 #
 
+set stuff_to_always_remove = "pynio"
 if ($?NCARGONLY) then
-  set stuff_to_remove = "install pynio ni external"
+  set more_stuff_to_remove = "install ni external"
+else if ($?NCARGNCL) then
+  set more_stuff_to_remove = "install ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h external/fftpack5 external/sphere3.1 external/sphere3_dp"
 else
-  set stuff_to_remove = "install pynio ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h"
-
+  set more_stuff_to_remove = "ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo external/fftpack5 external/sphere3.1 external/sphere3_dp"
 endif
+
+set stuff_to_remove = "$stuff_to_always_remove $more_stuff_to_remove"
 
 foreach f($stuff_to_remove)
   set cmd = "/bin/rm -rf $parentdir/ncarg/$f"
@@ -264,5 +288,6 @@ echo "              -c : scp to windom.ucar.edu"
 echo "              -v : version number"
 echo "              -e : extra string to include in tarfile name"
 echo "              -1 : tar up NCARG source files only"
+echo "              -i : tar up source for internal use"
 echo ""
 exit
