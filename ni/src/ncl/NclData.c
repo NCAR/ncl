@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.19 2007-08-24 18:12:12 dbrown Exp $
+ *      $Id: NclData.c,v 1.20 2007-10-12 23:17:06 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -873,6 +873,7 @@ NclObj self;
 	ptr->obj_type = self->obj.obj_type;
 	ptr->obj_type_mask = self->obj.obj_type_mask;
 	ptr->theobj = self;
+        self->obj.obj_num = total_obj_count;  /* this uniquely identifies the individual object even though the id may be reused */
 	if (new_id == current_id)
 		current_id++;
 	total_obj_count++;
