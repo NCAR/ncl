@@ -1341,7 +1341,7 @@ begin
 ;
     if(in_file@MAP_PROJ .eq. 2)
       projection          = "Stereographic"
-      opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", in_file@TRUELAT1)
+      opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", in_file@CEN_LAT)
       if(isatt(in_file,"STAND_LON"))
         opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
       else
