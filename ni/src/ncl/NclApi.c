@@ -1,5 +1,5 @@
 /*
- *      $Id: NclApi.c,v 1.59 2006-04-10 16:41:26 grubin Exp $
+ *      $Id: NclApi.c,v 1.60 2007-10-19 21:46:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -57,6 +57,7 @@ short    NCLverbose = 0;
 short    NCLecho = 0;
 short   NCLoverrideEcho = 0;    /* override echo; non-advertised option */
 short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
+short   NCLnoSysPager = 0;
 
 int force_reset = 0;
 int start_state = 0;
