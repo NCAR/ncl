@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.12 2007-10-12 23:17:06 dbrown Exp $
+ *      $Id: NclData.h,v 1.13 2007-10-19 19:03:54 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -61,7 +61,6 @@ typedef struct _NclObjPart {
 	NclStatus   status;
 	NclRefList                      *parents;
 	int 	ref_count;
-	long long obj_num;
 	 _NhlCBList                      cblist;
 } NclObjPart;
 

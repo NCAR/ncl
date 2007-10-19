@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.120 2007-10-12 23:17:06 dbrown Exp $
+ *      $Id: Execute.c,v 1.121 2007-10-19 19:03:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3269,8 +3269,6 @@ void CallASSIGN_VAR_COORD_OP(void) {
 				NclSelectionRecord *sel_ptr = NULL;
 				NclMultiDValData thevalue = NULL;
 				int i,id;
-				long long obj_num;
-				NclObj obj;
 				
 				cvar = _NclPop();
 				switch(cvar.kind) {
@@ -3372,10 +3370,8 @@ void CallASSIGN_VAR_COORD_OP(void) {
 						if(thevalue != NULL) {
 /*
 * DAMN write coord is al F'ed up The followin is  a kludge so I can know if WRiteCoordVar actually destroyed tehvaleu
-* So now that object ids can be reused, we need to rely on the object number to uniquely identify an object
 */
 							id = thevalue->obj.id;
-							obj_num = thevalue->obj.obj_num;
 							ret = _NclWriteCoordVar(var->u.data_var,thevalue,coord_name,sel_ptr);
 							if(data.kind == NclStk_VAR) {
 								_NclAttCopyWrite(_NclReadCoordVar(var->u.data_var,coord_name,NULL),data.u.data_var);
@@ -3392,8 +3388,7 @@ void CallASSIGN_VAR_COORD_OP(void) {
 */
 						switch(data.kind) {
 						case NclStk_VAL: 
-							obj = _NclGetObj(id);
-							if(obj && obj->obj.obj_num == obj_num && data.u.data_obj->obj.status != PERMANENT)
+							if( (_NclGetObj(id)!= NULL)&&(data.u.data_obj->obj.status != PERMANENT))
 								_NclDestroyObj((NclObj)data.u.data_obj);
 							break;
 						case NclStk_VAR:

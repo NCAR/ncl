@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.20 2007-10-12 23:17:06 dbrown Exp $
+ *      $Id: NclData.c,v 1.21 2007-10-19 19:03:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,6 +20,7 @@
  *
  *	Description:	
  */
+#include <limits.h>
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include "defs.h"
@@ -591,9 +592,22 @@ static int current_id = 0;
 #define  OBJ_LIST_START_SIZE 8192
 static struct _NclObjList objs[OBJ_LIST_START_SIZE];
 static int current_size = OBJ_LIST_START_SIZE;
-#define FREE_ID_LIST_SIZE 256
-static int free_id_list[FREE_ID_LIST_SIZE];
 static long long total_obj_count = 0;
+static int recycled = 0;
+/*  
+ * If we have to recycle go back to an id well above the low number that will tend
+ * to be permanently assigned, but also well below the max id which will keep things
+ * separate from recently assigned ids.
+ */
+
+#define RECYCLE_START_ID 100000000
+#define MAX_ID INT_MAX - 10
+
+/*
+#define MAX_ID 1000000
+#define RECYCLE_START_ID 250000
+*/
+
 
 void _NclUnRegisterObj
 #if	NhlNeedProto
@@ -605,19 +619,12 @@ NclObj self;
 {
 	int tmp;
 	NclObjList *step,*temp;
-	int i;
 
 	tmp = self->obj.id % current_size;
 	if(objs[tmp].id == -1) {
 		return;
 	}
 	if(objs[tmp].id == self->obj.id) {
-		for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
-			if (free_id_list[i] != -1) 
-				continue;
-			free_id_list[i] = objs[tmp].id;
-			break;
-		}
 		objs[tmp].id = -1;
 		objs[tmp].theobj = NULL;
 		if(objs[tmp].next != NULL) {
@@ -633,12 +640,6 @@ NclObj self;
 		if((step->next != NULL)&&(step->next->id == self->obj.id)) {
 			temp = step->next;
 			step->next = step->next->next;
-			for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
-				if (free_id_list[i] != -1) 
-					continue;
-				free_id_list[i] = self->obj.id;
-				break;
-			}
 			NclFree(temp);
 		}
 	}
@@ -703,16 +704,24 @@ FILE *fp;
 {
 	int i;
 	NclObjList *tmp;
+	int count;
+	int total = 0;
+	int min_count,max_count;
 
 	if(current_id > 0) {	
+		min_count = 1000000000;
+		max_count = 0;
 		for(i = 0; i < current_size; i++) {
+			count = 0;
 			if(objs[i].id != -1) {
 				fprintf(fp,"\n------%d------\n",objs[i].id);
 				fprintf(fp,"Index: %d\n",i);
 				fprintf(fp,"Object Class: %s\n",objs[i].theobj->obj.class_ptr->obj_class.class_name);
 				fprintf(fp,"Object Status: %s\n",_NclStatusString(objs[i].theobj->obj.status));
 
-				(void) _NclPrint(objs[i].theobj,fp);
+				/*(void) _NclPrint(objs[i].theobj,fp);*/
+				count++;
+				total++;
 			}
 			tmp = objs[i].next;
 			while(tmp != NULL) {
@@ -721,10 +730,19 @@ FILE *fp;
 				fprintf(fp,"Object Class: %s\n",tmp->theobj->obj.class_ptr->obj_class.class_name);
 				fprintf(fp,"Object Status: %s\n",_NclStatusString(tmp->theobj->obj.status));
 	
-				(void)_NclPrint(tmp->theobj,fp);
-				tmp = tmp->next;			
+				/*(void)_NclPrint(tmp->theobj,fp);*/
+				count++;
+				total++;
+				tmp = tmp->next;
 			}
+			fprintf(fp,"Entries for this hash index: %d\n",count);
+			if (count > max_count) max_count = count;
+			if (count < min_count) min_count = count;
+			
 		}
+		fprintf(fp,"Min entries per index: %d; max entries per index: %d\n",min_count,max_count);
+		fprintf(fp,"Current object total: %d\n", total);
+		
 /*
 		NclFree(objs);
 */
@@ -798,6 +816,7 @@ struct _NclObjRec *_NclGetObj
 #endif
 	return((objs[tmp].id == id) ? objs[tmp].theobj : find_in_list(ptr,id));
 }
+
 int _NclRegisterObj
 #if	NhlNeedProto
 (NclObj self)
@@ -807,17 +826,16 @@ NclObj self;
 #endif
 {
 	int tmp;
-	NclObjList *ptr;
+	NclObjList *last_ptr,*ptr;
 	static int first = 1;
 	int new_id;
-	int i;
 
 	if(first) {
 		first  = 0;
-/*
-	if(objs == NULL) {
-		objs = (NclObjList*)NclMalloc((unsigned)sizeof(NclObjList)*current_size);
-*/
+		/*
+		  if(objs == NULL) {
+		  objs = (NclObjList*)NclMalloc((unsigned)sizeof(NclObjList)*current_size);
+		*/
 		for(tmp = 0; tmp < current_size; tmp++) {
 			objs[tmp].id = -1;
 			objs[tmp].obj_type = Ncl_None;
@@ -825,11 +843,8 @@ NclObj self;
 			objs[tmp].theobj = NULL;
 			objs[tmp].next = NULL;
 		}
-		for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
-			free_id_list[i] = -1;
-		}
 	} 
-	/* huh -- I don't get this? -- dib 2007/08/21 */
+
 	switch(current_id) {
 	case 40:
 	case 191:
@@ -839,44 +854,57 @@ NclObj self;
 	default:
 		break;
 	}
-	/* end of huh I don't get this */
+
 	
-	new_id = -1;
-	for (i = 0; i < FREE_ID_LIST_SIZE; i++) {
-		if (free_id_list[i] == -1) 
-			continue;
-		new_id = free_id_list[i];
-		free_id_list[i] = -1;
-		break;
-	}
-	if (new_id == -1) {
-		new_id = current_id;
+	
+	if (recycled) {
+		/* 
+		 * Make sure we don't use an object that exists;
+		 */
+		while (_NclGetObj(current_id)) 
+			current_id++;
 	}
 	
-	tmp = new_id % current_size;
+	tmp = current_id % current_size;
+	if (objs[tmp].id == current_id) {
+		NhlPError(NhlFATAL, NhlEUNKNOWN, 
+			  "_NclRegisterObj: internal error; invalid duplication of object id %d\n",new_id);
+		return (NhlFATAL);
+	}
+
 	if(objs[tmp].id == -1) {
 		ptr = &(objs[tmp]);
-	} else if(objs[tmp].next == NULL) {
+	}
+	else if(objs[tmp].next == NULL) {
 		objs[tmp].next = (NclObjList*)NclMalloc(sizeof(NclObjList));
 		ptr = objs[tmp].next;
 		ptr->next = NULL;
-	} else {
+	} 
+	else {
 		ptr = objs[tmp].next;
-		while(ptr->next != NULL) {
+		while (ptr->next != NULL) {
+			if (ptr->id == current_id) {
+				NhlPError(NhlFATAL, NhlEUNKNOWN, 
+					  "_NclRegisterObj: internal error; invalid duplication of object id %d\n",new_id);
+				return (NhlFATAL);
+			}
 			ptr = ptr->next;
 		}
 		ptr->next = (NclObjList*)NclMalloc(sizeof(NclObjList));
 		ptr = ptr->next;
 		ptr->next = NULL;
 	}
-	ptr->id = new_id;
+
+	ptr->id = current_id;
 	ptr->obj_type = self->obj.obj_type;
 	ptr->obj_type_mask = self->obj.obj_type_mask;
 	ptr->theobj = self;
-        self->obj.obj_num = total_obj_count;  /* this uniquely identifies the individual object even though the id may be reused */
-	if (new_id == current_id)
-		current_id++;
-	total_obj_count++;
+	current_id++;
+	if (current_id == MAX_ID) {
+		recycled = 1;
+		current_id = RECYCLE_START_ID;
+	}
+	total_obj_count++;   /* the count of all objects created */
 	return(ptr->id);
 }
 
