@@ -1,5 +1,5 @@
 
-C	$Id: wmlabs.f,v 1.10 2000-08-22 15:07:46 haley Exp $
+C	$Id: wmlabs.f,v 1.11 2007-10-23 18:17:39 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -57,6 +57,13 @@ C
      +        -0.360, -0.330, -1.000, -1.000  /
       DATA YY/-0.030, -0.030, -0.120,  0.000,
      +         0.120,  0.030,  0.030, -0.030  /
+      CHARACTER*1 FCODE
+C
+C  Save the current text function code and set it to a colon for
+C  this subroutine.
+C
+      CALL PCGETC('FC',FCODE)
+      CALL PCSETC('FC',':')
 C
 C  Save the current line and fill colors and set them to ICOLOR.
 C
@@ -589,6 +596,7 @@ C
       CALL GSWN(1,OLDWN(1),OLDWN(2),OLDWN(3),OLDWN(4))
       CALL GSVP(1,OLDVP(1),OLDVP(2),OLDVP(3),OLDVP(4))
       CALL PCSETI('TE',0)
+      CALL PCSETC('FC',FCODE)
 C
       RETURN
       END
