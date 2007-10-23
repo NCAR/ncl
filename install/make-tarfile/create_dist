@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.12 2007-10-12 02:40:40 haley Exp $
+#   $Id: create_dist,v 1.13 2007-10-23 21:36:38 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -88,7 +88,6 @@ set os          = `uname -s`
 set proc        = `uname -p`
 set exe_sfx     = ""
 set scpmach     = "windom.ucar.edu"
-set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles"
 set version     = `$rootdir/bin/ncl -V`
 
 if ("$os" == "AIX") then
@@ -203,6 +202,9 @@ while ($#argv > 0)
       exit 1
     endsw
 end
+
+# Set directory to scp files to.
+set scpdir  = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/$version"
 
 #
 # If -1 and -2 were specified, which is the default, then unset

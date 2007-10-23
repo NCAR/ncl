@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.2 2007-10-12 21:13:47 haley Exp $
+#   $Id: create_src_dist,v 1.3 2007-10-23 21:36:38 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -41,7 +41,6 @@
 set rootdir     = "$NCARG"
 set parentdir   = `pwd`
 set scpmach     = "windom.ucar.edu"
-set scpdir      = "/fs/scd/home1/ncargd/dist/tarfiles"
 set version     = ""
 set cvsroot     = "windom.ucar.edu:/fs/scd/home1/ncargd/CVS"
 set cvsrsh      = "ssh"
@@ -132,6 +131,10 @@ if (! -e $tardir) then
   echo "Directory $tardir does not exist. Please choose another directory."
   exit 1
 endif
+
+# Set directory to scp source files to.
+
+set scpdir = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/$version"
 
 #
 # CVS check out the latest source code.
