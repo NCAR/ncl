@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.10 2007-08-22 04:45:24 haley Exp $
+#   $Id: ng4ex.csh,v 1.11 2007-10-23 21:43:54 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -1110,7 +1110,7 @@ end
 #********************************#
 set rmfiles = ($src_file $res_file $inc_file $ascdata_file $bindata_file)
 if (! $?nprog) then
-  set rmfiles = ($name.o $name.SED_EXE_SUFFIX $rmfiles)
+  set rmfiles = ($name.o ${name}SED_EXE_SUFFIX $rmfiles)
 endif
 
 #******************************#
@@ -1181,6 +1181,7 @@ endif
 #                       #
 #***********************#
 if ($?CleanOption) then
+echo "reached clean option. rmfiles = $rmfiles"
     /bin/rm $rmfiles >>& /dev/null
 endif
 
