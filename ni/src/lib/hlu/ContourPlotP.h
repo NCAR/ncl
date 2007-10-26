@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.34 2007-10-26 18:57:29 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.35 2007-10-26 23:36:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -156,7 +156,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlBoolean      lbar_end_labels_on_set;
 	NhlBoolean	lbar_end_labels_on;
 	NhlBoolean      lbar_end_style_set;
-	NhlcnLabelBarEndStyle lbar_end_style;
+	NhlLabelBarEndStyle lbar_end_style;
 	NhlBoolean	explicit_lgnd_labels_on;
 	NhlGenArray	lgnd_level_flags;
 	NhlBoolean      raster_mode_on_set;

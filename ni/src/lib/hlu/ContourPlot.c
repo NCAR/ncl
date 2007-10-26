@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.139 2007-10-26 18:57:29 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.140 2007-10-26 23:36:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -129,7 +129,7 @@ static NhlResource resources[] = {
 		 Oset(lbar_end_style_set),NhlTImmediate,
 		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNcnLabelBarEndStyle,NhlCcnLabelBarEndStyle,
-		 NhlTcnLabelBarEndStyle,sizeof(NhlcnLabelBarEndStyle),
+		 NhlTLabelBarEndStyle,sizeof(NhlLabelBarEndStyle),
 		 Oset(lbar_end_style),
 	         NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnExplicitLegendLabelsOn,NhlCcnExplicitLegendLabelsOn,
@@ -1740,11 +1740,6 @@ ContourPlotClassInitialize
         {NhlCELLFILL,      	"CellFill"}
         };
 
-        _NhlEnumVals   labelbarendstylelist[] = {
-	{NhlINCLUDEOUTERBOXES,		"IncludeOuterBoxes"},
-	{NhlINCLUDEMAXMINLABELS,	"IncludeMaxMinLabels"},
-	{NhlEXCLUDEOUTERBOXES,		"ExcludeOuterBoxes"}
-        };
 
 	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnLevelUseMode,
 		leveluselist,NhlNumber(leveluselist));
@@ -1757,8 +1752,6 @@ ContourPlotClassInitialize
 	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnFillMode,
 		fillmodelist,NhlNumber(fillmodelist));
 
-	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnLabelBarEndStyle,
-		labelbarendstylelist,NhlNumber(labelbarendstylelist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);

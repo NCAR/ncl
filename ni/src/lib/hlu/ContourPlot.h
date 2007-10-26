@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.20 2007-10-26 18:57:29 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.21 2007-10-26 23:36:27 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -91,13 +91,6 @@ typedef enum _NhlcnFillMode {
 
 #define NhlTcnFillMode	"cnFillMode"
 
-typedef enum _NhlcnLabelBarEndStyle {
-	NhlINCLUDEOUTERBOXES,
-	NhlINCLUDEMAXMINLABELS,
-	NhlEXCLUDEOUTERBOXES
-} NhlcnLabelBarEndStyle;
-
-#define NhlTcnLabelBarEndStyle	"cnLabelBarEndStyle"
 
 /*
  * ContourPlot instance resources

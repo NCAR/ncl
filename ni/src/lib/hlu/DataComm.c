@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.45 1999-08-14 01:25:49 dbrown Exp $
+ *      $Id: DataComm.c,v 1.46 2007-10-26 23:36:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -674,10 +674,18 @@ DataCommClassInitialize
 	{NhlINTEGERLINELABELS,	"IntegerLineLabels"} /* obsolete synonym */
         };
 
+        _NhlEnumVals   labelbarendstylelist[] = {
+	{NhlINCLUDEOUTERBOXES,		"IncludeOuterBoxes"},
+	{NhlINCLUDEMAXMINLABELS,	"IncludeMaxMinLabels"},
+	{NhlEXCLUDEOUTERBOXES,		"ExcludeOuterBoxes"}
+        };
+
 	_NhlRegisterEnumType(NhldataCommClass,NhlTLevelSelectionMode,
 		levelselectionlist,NhlNumber(levelselectionlist));
 	_NhlRegisterEnumType(NhldataCommClass,NhlTScalingMode,scalingmodelist,
 			     NhlNumber(scalingmodelist));
+	_NhlRegisterEnumType(NhldataCommClass,NhlTLabelBarEndStyle,
+		labelbarendstylelist,NhlNumber(labelbarendstylelist));
 
 	QListCompiled = NrmStringToQuark(_NhlTDListCompiled);
 	QGenArray = NrmStringToQuark(NhlTGenArray);
