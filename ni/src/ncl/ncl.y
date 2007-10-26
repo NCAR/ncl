@@ -830,6 +830,7 @@ get_resource : 					{
 	| STRING COLON identifier		{
 							((NclGenericRefNode*)$3)->ref_type = Ncl_WRITEIT;
 						 	$$ = _NclMakeGetResource(_NclMakeStringExpr($1),$3);
+							NclFree($1);
 
 						}
 	| identifier COLON identifier		{
@@ -903,6 +904,7 @@ resource : 					{
 						}
 	| STRING COLON expr 			{
 						 	$$ = _NclMakeResource(_NclMakeStringExpr($1),$3);
+							NclFree($1);
 						}
 	| identifier COLON expr 		{
 						 	$$ = _NclMakeResource($1,$3);

@@ -762,6 +762,7 @@ NclObj self;
 	NclFile thefile = (NclFile) self;
 	int i;
 	NclFileAttInfoList *step,*tmp;
+	NclRefList *p, *pt;
 
 	_NclUnRegisterObj((NclObj)self);
 	if(thefile->file.format_funcs->free_file_rec != NULL) {
@@ -798,6 +799,14 @@ NclObj self;
 	if(thefile->obj.cblist != NULL) {
 		_NhlCBDestroy(thefile->obj.cblist);
 	}
+	p = thefile->obj.parents;
+	while (p) {
+		pt = p;
+		p = p->next;
+		NclFree(pt);
+	}
+		
+		
 	NclFree(thefile);
 	return;
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.224 2007-09-25 21:01:10 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.225 2007-10-26 18:39:18 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -13750,13 +13750,14 @@ NhlErrorTypes _NclIAttSetValues( void )
 			}
                 }
 	}
-        for(; i > 0; i--) {
-                if((gen_array != NULL)&&(gen_array[i-1]))
-                        NhlFreeGenArray(gen_array[i-1]);
-        }
-
-	NhlFree(gen_array);
-	NhlRLDestroy(rl_list);
+        if (tmp_attobj && gen_array) {
+		for(i = 0; i < tmp_attobj->att.n_atts; i++) {
+			if(gen_array[i])
+				NhlFreeGenArray(gen_array[i]);
+		}
+		NhlFree(gen_array);
+		NhlRLDestroy(rl_list);
+	}
 	return(NhlNOERROR);
 }
 

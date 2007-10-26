@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.h,v 1.3 1997-05-09 21:38:01 ethan Exp $
+ *      $Id: NclHLUVar.h,v 1.4 2007-10-26 18:39:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,6 +31,7 @@ typedef struct _NclHLUVarClassPart {
 
 typedef struct _NclHLUVarPart {
 	_NhlCB cb;
+        void  *udata;
 }NclHLUVarPart;
  
 typedef struct _NclHLUVarClassRec{

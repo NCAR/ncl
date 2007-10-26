@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.14 1998-11-19 02:38:13 ethan Exp $
+ *      $Id: NclHLUVar.c,v 1.15 2007-10-26 18:39:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -60,6 +60,7 @@ struct _NclObjRec*      self;
 
 	if((self_var->var.var_type == NORMAL)||(self_var->var.var_type == HLUOBJ)) {
 		_NhlCBDelete(self_var->hvar.cb);
+		NhlFree(self_var->hvar.udata);
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if(self_var->var.thesym != NULL) {
 				_NclDelHLURef(((obj*)tmp_md->multidval.val)[i],self_var->var.var_quark,-1,i,self_var->var.thesym->level);
@@ -277,6 +278,7 @@ NclStatus status)
 			((NclHLUUData*)udata.ptrval)->level = -1;
 		}
 		hvar->hvar.cb = _NclAddCallback((NclObj)tmp_md,NULL,_NclHLUVarValChange,HLUVALCHANGE,&udata);
+		hvar->hvar.udata = udata.ptrval;
 		for(i = 0; i < tmp_md->multidval.totalelements; i++) {
 			if(thesym != NULL) {
 				_NclAddHLURef(((obj*)tmp_md->multidval.val)[i],((NclHLUUData*)udata.ptrval)->vq,-1,i,thesym->level);
