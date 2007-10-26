@@ -6,6 +6,9 @@
 #include <ncarg/hlu/XWorkstation.h>
 #include "wrapper.h"
 
+extern void NGCALLF(tdcurv,tdcurv)(float *,float *,float*,int *,int *, float *,
+				   float *);
+
 extern void NGCALLF(tdttri,tdttri)(float *,float *,float*,int *,int *, float *,
                                    float *,float *,int *,int *,int *,float *, 
                                    float *,float *,float *,float *,float *);
@@ -229,32 +232,22 @@ NhlErrorTypes tdgetp_W(void)
 /*
  *  Check to see if the parameter name is valid.
  */
-  numpi = sizeof(params_i)/sizeof(void *);
   numpf = sizeof(params_f)/sizeof(void *);
-  for (i = 0; i < numpi; i++) {
-    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+  numpi = sizeof(params_i)/sizeof(void *);
+  for (i = 0; i < numpf; i++) {
+    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
       goto OK_NAME;
     }
   }
-  for (i = 0; i < numpf; i++) {
-    if (!strncmp(arg1, params_f[i], strlen(params_f[i]))) {
+  for (i = 0; i < numpi; i++) {
+    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
       goto OK_NAME;
     }
   }
   NhlPError(NhlFATAL, NhlEUNKNOWN, "tdgetp: unrecognized parameter name");
   return(NhlFATAL);
 
-/*
- *  Process the parameter if it has an integer value.
- */
-OK_NAME:  for (i = 0; i < numpi; i++) {
-    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
-      ival = (int *) calloc(1,sizeof(int));
-      c_tdgeti(arg1, ival);
-      return(NclReturnValue( (void *) ival, 1, &ret_size, NULL, NCL_int, 0));
-    }
-  }
-
+OK_NAME:
 /*
  *  Process the parameter if it has a float value.
  */
@@ -263,6 +256,17 @@ OK_NAME:  for (i = 0; i < numpi; i++) {
       fval = (float *) calloc(1,sizeof(float));
       c_tdgetr(arg1, fval);
       return(NclReturnValue((void *) fval, 1, &ret_size, NULL, NCL_float, 0));
+    }
+  }
+
+/*
+ *  Process the parameter if it has an integer value.
+ */
+  for (i = 0; i < numpi; i++) {
+    if (!strncmp(arg1, params_i[i], strlen(params_i[i]))) {
+      ival = (int *) calloc(1,sizeof(int));
+      c_tdgeti(arg1, ival);
+      return(NclReturnValue( (void *) ival, 1, &ret_size, NULL, NCL_int, 0));
     }
   }
 
@@ -702,6 +706,61 @@ NhlErrorTypes tdlnpa_W( void )
  */
   gactivate_ws (gkswid);
   c_tdlnpa(uvw1[0], uvw1[1], uvw2[0], uvw2[1]);
+  gdeactivate_ws (gkswid);
+
+  return(NhlNOERROR);
+}
+
+
+NhlErrorTypes tdcurv_W( void )
+{
+  int *nwid, *iarh;
+  float *ucrv, *vcrv, *wcrv, *arhl, *arhw;
+/*
+ * Variables for retrieving workstation information.
+ */
+  int grlist, gkswid, nid;
+  NclHLUObj tmp_hlu_obj;
+  int ncrv, dsizes_ucrv[1], dsizes_vcrv[1], dsizes_wcrv[1];
+
+/*
+ * Retrieve parameters.
+ */
+  nwid   =   (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
+  ucrv   = (float*)NclGetArgValue(1,7,NULL,dsizes_ucrv,NULL,NULL,NULL,2);
+  vcrv   = (float*)NclGetArgValue(2,7,NULL,dsizes_vcrv,NULL,NULL,NULL,2);
+  wcrv   = (float*)NclGetArgValue(3,7,NULL,dsizes_wcrv,NULL,NULL,NULL,2);
+  iarh   =   (int*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
+  arhl   = (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
+  arhw   = (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
+
+  if(dsizes_ucrv[0] != dsizes_vcrv[0] || dsizes_ucrv[0] != dsizes_wcrv[0]) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdcurv: ucurv, vcurv, and wcurv must be the same length");
+    return(NhlFATAL);
+  }
+  ncrv = dsizes_ucrv[0];
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid         = tmp_hlu_obj->hlu.hlu_id;
+
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist, NhlNwkGksWorkId, &gkswid);
+  NhlGetValues(nid, grlist);
+ 
+/*
+ * The following section activates the workstation, calls the 
+ * c_tdcurv function, and then deactivates the workstation.
+ */
+  gactivate_ws (gkswid);
+  NGCALLF(tdcurv,TDCURV)(ucrv, vcrv, wcrv, &ncrv, iarh, arhl, arhw);
+
   gdeactivate_ws (gkswid);
 
   return(NhlNOERROR);

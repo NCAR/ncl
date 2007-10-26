@@ -301,6 +301,7 @@ extern NhlErrorTypes tdgrid_W(void);
 extern NhlErrorTypes tdlbls_W(void);
 extern NhlErrorTypes tdlbla_W(void);
 extern NhlErrorTypes tdplch_W(void);
+extern NhlErrorTypes tdcurv_W(void);
 extern NhlErrorTypes tddtri_W(void);
 extern NhlErrorTypes tdstri_W(void);
 extern NhlErrorTypes tditri_W(void);
@@ -3048,6 +3049,22 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
 
         NclRegisterProc(tdplch_W,args,"tdplch",nargs);
+/*
+ * Register tdplch.
+ */
+        nargs = 0;
+        args = NewArgs(7);
+
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"float",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"float",1,dimsizes);nargs++;
+
+        NclRegisterProc(tdcurv_W,args,"tdcurv",nargs);
 /*
  * Register tddtri.
  */
