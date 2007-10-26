@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ng4ex.csh,v 1.11 2007-10-23 21:43:54 haley Exp $
+#   $Id: ng4ex.csh,v 1.12 2007-10-26 16:01:47 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -1181,7 +1181,6 @@ endif
 #                       #
 #***********************#
 if ($?CleanOption) then
-echo "reached clean option. rmfiles = $rmfiles"
     /bin/rm $rmfiles >>& /dev/null
 endif
 
