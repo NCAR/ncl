@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.106 2005-08-24 21:12:13 dbrown Exp $
+ *      $Id: Workstation.c,v 1.107 2007-10-26 18:57:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2857,6 +2857,8 @@ static NhlErrorTypes WorkstationInitialize
  * two resources. If one resource is smaller than the other, or NULL, then
  * default values are supplied for each missing item.
  */
+/*
+  The following seems totally useless; I am removing it
 
 	len1 = 0;
 	mparams = NULL;
@@ -2870,7 +2872,7 @@ static NhlErrorTypes WorkstationInitialize
 		return NhlFATAL;
 	}
 	ga->my_data = False;
-
+ */
 	newl->work.marker_table = (NhlMarkerTable) 
 		NhlMalloc(Marker_Table_Len * sizeof(NhlMarkerSpec *));
 	if (newl->work.marker_table == NULL) {

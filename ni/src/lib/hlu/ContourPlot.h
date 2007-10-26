@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.h,v 1.19 2004-07-23 21:24:54 dbrown Exp $
+ *      $Id: ContourPlot.h,v 1.20 2007-10-26 18:57:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -91,6 +91,14 @@ typedef enum _NhlcnFillMode {
 
 #define NhlTcnFillMode	"cnFillMode"
 
+typedef enum _NhlcnLabelBarEndStyle {
+	NhlINCLUDEOUTERBOXES,
+	NhlINCLUDEMAXMINLABELS,
+	NhlEXCLUDEOUTERBOXES
+} NhlcnLabelBarEndStyle;
+
+#define NhlTcnLabelBarEndStyle	"cnLabelBarEndStyle"
+
 /*
  * ContourPlot instance resources
  */
@@ -128,6 +136,7 @@ typedef enum _NhlcnFillMode {
 #define NhlNcnLegendLevelFlags		"cnLegendLevelFlags"
 #define NhlNcnExplicitLabelBarLabelsOn	"cnExplicitLabelBarLabelsOn"
 #define NhlNcnLabelBarEndLabelsOn	"cnLabelBarEndLabelsOn"
+#define NhlNcnLabelBarEndStyle		"cnLabelBarEndStyle"
 #define NhlNcnRasterModeOn		"cnRasterModeOn"
 #define NhlNcnRasterCellSizeF		"cnRasterCellSizeF"
 #define NhlNcnRasterSmoothingOn		"cnRasterSmoothingOn"
@@ -339,6 +348,7 @@ typedef enum _NhlcnFillMode {
 #define NhlCcnExplicitLineLabelsOn	"CnExplicitLineLabelsOn"
 #define NhlCcnExplicitLabelBarLabelsOn	"CnExplicitLabelBarLabelsOn"
 #define NhlCcnLabelBarEndLabelsOn	"CnLabelBarEndLabelsOn"
+#define NhlCcnLabelBarEndStyle		"CnLabelBarEndStyle"
 #define NhlCcnExplicitLegendLabelsOn	"CnExplicitLegendLabelsOn"
 #define NhlCcnLegendLevelFlags		"CnLegendLevelFlags"
 #define NhlCcnRasterModeOn		"CnRasterModeOn"

@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.138 2006-08-22 18:48:12 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.139 2007-10-26 18:57:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -118,10 +118,20 @@ static NhlResource resources[] = {
 		 NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(explicit_lbar_labels_on),
 		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(lbar_end_labels_on_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNcnLabelBarEndLabelsOn,NhlCcnLabelBarEndLabelsOn,
 		 NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(lbar_end_labels_on),
-		 NhlTImmediate,_NhlUSET((NhlPointer) False),0,NULL},
+	         NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		 Oset(lbar_end_style_set),NhlTImmediate,
+		 _NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
+	{NhlNcnLabelBarEndStyle,NhlCcnLabelBarEndStyle,
+		 NhlTcnLabelBarEndStyle,sizeof(NhlcnLabelBarEndStyle),
+		 Oset(lbar_end_style),
+	         NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),0,NULL},
 	{NhlNcnExplicitLegendLabelsOn,NhlCcnExplicitLegendLabelsOn,
 		 NhlTBoolean,sizeof(NhlBoolean),
 		 Oset(explicit_lgnd_labels_on),
@@ -1730,6 +1740,12 @@ ContourPlotClassInitialize
         {NhlCELLFILL,      	"CellFill"}
         };
 
+        _NhlEnumVals   labelbarendstylelist[] = {
+	{NhlINCLUDEOUTERBOXES,		"IncludeOuterBoxes"},
+	{NhlINCLUDEMAXMINLABELS,	"IncludeMaxMinLabels"},
+	{NhlEXCLUDEOUTERBOXES,		"ExcludeOuterBoxes"}
+        };
+
 	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnLevelUseMode,
 		leveluselist,NhlNumber(leveluselist));
 	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnLineLabelPlacementMode,
@@ -1740,6 +1756,9 @@ ContourPlotClassInitialize
 			     NhlNumber(highlowlabeloverlaplist));
 	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnFillMode,
 		fillmodelist,NhlNumber(fillmodelist));
+
+	_NhlRegisterEnumType(NhlcontourPlotClass,NhlTcnLabelBarEndStyle,
+		labelbarendstylelist,NhlNumber(labelbarendstylelist));
 
 	Qint = NrmStringToQuark(NhlTInteger);
 	Qstring = NrmStringToQuark(NhlTString);
@@ -2012,8 +2031,14 @@ ContourPlotInitialize
 			cnp->fill_mode = NhlAREAFILL;
 	}
 
-
-		
+	if (! cnp->lbar_end_style_set) {
+		if (cnp->lbar_end_labels_on_set) {
+			cnp->lbar_end_style = NhlINCLUDEMAXMINLABELS;
+		}
+		else {
+			cnp->lbar_end_style = NhlINCLUDEOUTERBOXES;
+		}
+	}
 
 /* Initialize private members */
 
@@ -2038,6 +2063,9 @@ ContourPlotInitialize
 	cnp->lbar_labels_set = False;
 	cnp->lbar_labels = NULL;
 	cnp->lbar_labels_res_set = cnp->lbar_labels_res ? True : False;
+	cnp->lbar_fill_colors = NULL;
+	cnp->lbar_fill_patterns = NULL;
+	cnp->lbar_fill_scales = NULL;
 	cnp->lgnd_labels_set = False;
 	cnp->lgnd_labels = NULL;
 	cnp->lgnd_labels_res_set = cnp->lgnd_labels_res ? True : False;
@@ -2189,6 +2217,8 @@ ContourPlotInitialize
 	cnp->info_lbl.height_set = False;
 	cnp->constf_lbl.height_set = False;
 	cnp->lbar_labels_res_set = False;
+	cnp->lbar_end_labels_on_set = False;
+	cnp->lbar_end_style_set = False;
 	cnp->lgnd_labels_res_set = False;
 	cnp->llabel_interval_set = False;
 	cnp->levels_set = False;
@@ -2230,6 +2260,7 @@ static NhlBoolean NewDrawArgs
 		NhlNtfBaseHeightF,
 		NhlNcnExplicitLabelBarLabelsOn,
 		NhlNcnLabelBarEndLabelsOn,
+		NhlNcnLabelBarEndStyle,
 		NhlNcnExplicitLegendLabelsOn,
 		NhlNcnLegendLevelFlags,
 		NhlNcnInfoLabelOn,
@@ -2410,6 +2441,10 @@ static NhlErrorTypes ContourPlotSetValues
 		cnp->constf_lbl.height_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNlbLabelStrings))
 		cnp->lbar_labels_res_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNcnLabelBarEndLabelsOn))
+		cnp->lbar_end_labels_on_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNcnLabelBarEndStyle))
+		cnp->lbar_end_style_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNlgLabelStrings))
 		cnp->lgnd_labels_res_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnLevels))
@@ -2436,6 +2471,15 @@ static NhlErrorTypes ContourPlotSetValues
 			cnp->fill_mode = NhlRASTERFILL;
 		else if (cnp->fill_mode == NhlRASTERFILL)
 			cnp->fill_mode = NhlAREAFILL;
+	}
+
+	if (cnp->lbar_end_labels_on_set && ! cnp->lbar_end_style_set) {
+		if (cnp->lbar_end_labels_on) {
+			cnp->lbar_end_style = NhlINCLUDEMAXMINLABELS;
+		}
+		else {
+			cnp->lbar_end_style = NhlINCLUDEOUTERBOXES;
+		}
 	}
 
 /* Manage the data */
@@ -2557,6 +2601,8 @@ static NhlErrorTypes ContourPlotSetValues
 	cnp->line_lbls.height_set = False;
 	cnp->info_lbl.height_set = False;
 	cnp->constf_lbl.height_set = False;
+	cnp->lbar_end_labels_on_set = False;
+	cnp->lbar_end_style_set = False;
 	cnp->lbar_labels_res_set = False;
 	cnp->lgnd_labels_res_set = False;
 	cnp->llabel_interval_set = False;
@@ -2957,6 +3003,12 @@ NhlLayer inst;
  */
 	if (cnp->lbar_labels != NULL)
 		NhlFreeGenArray(cnp->lbar_labels);
+	if (cnp->lbar_fill_colors != NULL)
+		NhlFreeGenArray(cnp->lbar_fill_colors);
+	if (cnp->lbar_fill_patterns != NULL)
+		NhlFreeGenArray(cnp->lbar_fill_patterns);
+	if (cnp->lbar_fill_scales != NULL)
+		NhlFreeGenArray(cnp->lbar_fill_scales);
 	
 	if (cnp->fws_id > 0)
 		_NhlFreeWorkspace(cnp->fws_id);
@@ -5951,8 +6003,9 @@ static NhlErrorTypes ManageLabelBar
 	NhlContourPlotLayerPart	*cnp = &(cnnew->contourplot);
 	NhlContourPlotLayerPart	*ocnp = &(cnold->contourplot);
 	NhlTransformLayerPart	*tfp = &(cnnew->trans);
-	NhlBoolean		copy_line_label_strings = False;
+	NhlBoolean		redo_lbar = False;
 	NhlBoolean		set_all = False;
+	NhlBoolean              limit_mode = False;
 
 	entry_name = (init) ? "ContourPlotInitialize" : "ContourPlotSetValues";
         
@@ -6011,40 +6064,66 @@ static NhlErrorTypes ManageLabelBar
 
 	if (cnp->const_field) return ret;
 
-	if (! cnp->explicit_lbar_labels_on) {
-		cnp->lbar_labels_set = False;
-		if (init || set_all ||
-		    cnp->llabel_strings != ocnp->llabel_strings ||
-		    cnp->lbar_end_labels_on != ocnp->lbar_end_labels_on ||
-		    cnp->explicit_lbar_labels_on 
-		    			!= ocnp->explicit_lbar_labels_on) {
-			copy_line_label_strings = True;
-		}
-		if (cnp->lbar_end_labels_on) {
-			if (cnp->zmin != ocnp->zmin ||
-			    cnp->zmax != ocnp->zmax) 
-			copy_line_label_strings = True;
+	if (init || cnp->lbar_end_style != ocnp->lbar_end_style) {
+		redo_lbar = True;
+		if (cnp->lbar_end_style == NhlINCLUDEMAXMINLABELS) {
 			cnp->lbar_alignment = NhlEXTERNALEDGES;
 		}
-		else
-			cnp->lbar_alignment = NhlINTERIOREDGES;
-	}
-	else if (! cnp->lbar_labels_set) {
-		copy_line_label_strings = True;
-		if (cnp->lbar_end_labels_on)
+		else if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES) {
 			cnp->lbar_alignment = NhlEXTERNALEDGES;
-		else
+		}
+		else {
 			cnp->lbar_alignment = NhlINTERIOREDGES;
-		cnp->lbar_labels_set = True;
+		}
 	}
 
-	if (copy_line_label_strings) {
+	if (! cnp->explicit_lbar_labels_on) {
+		cnp->lbar_labels_set = False; 
+		if (init || set_all ||
+		    cnp->llabel_strings != ocnp->llabel_strings ||
+		    cnp->explicit_lbar_labels_on != ocnp->explicit_lbar_labels_on) {
+			redo_lbar = True;
+		}
+	}
+	else if (! cnp->lbar_labels_set) {
+		redo_lbar = True;
+		cnp->lbar_labels_set = True;  /* this must remain set as long as explcit mode is on in order
+						 to prevent the explicit labels from being reset automatically */
+	}
+	else {
+		/* don't copy line label strings if set to explcit and lbar_labels_set is True */
+		redo_lbar = False;
+	}
+
+
+	if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES) {
+		cnp->lbar_fill_count = cnp->level_count - 1;
+		if (init || 
+		    cnp->mono_fill_color != ocnp->mono_fill_color ||
+		    cnp->mono_fill_pattern != ocnp->mono_fill_pattern ||
+		    cnp->mono_fill_scale != ocnp->mono_fill_scale ||
+		    cnp->fill_colors != ocnp->fill_colors ||
+		    cnp->fill_patterns != ocnp->fill_patterns ||
+		    cnp->fill_scales != ocnp->fill_scales)
+			redo_lbar = True;
+	}
+	else {
+		cnp->lbar_fill_count = cnp->fill_count;
+		NhlFreeGenArray(cnp->lbar_fill_colors);
+		cnp->lbar_fill_colors = NULL;
+		NhlFreeGenArray(cnp->lbar_fill_patterns);
+		cnp->lbar_fill_patterns = NULL;
+		NhlFreeGenArray(cnp->lbar_fill_scales);
+		cnp->lbar_fill_scales = NULL;
+	}
+
+	if (redo_lbar) {
 		NhlGenArray ga;
 
 		cnp->lbar_func_code = cnp->line_lbls.fcode[0];
 		if (cnp->lbar_labels != NULL) 
 			NhlFreeGenArray(cnp->lbar_labels);
-		if (! cnp->lbar_end_labels_on) {
+		if (cnp->lbar_end_style == NhlINCLUDEOUTERBOXES) {
 			if ((ga = _NhlCopyGenArray(cnp->llabel_strings,
 						   True)) == NULL) {
 				e_text = "%s: error copying GenArray";
@@ -6053,7 +6132,57 @@ static NhlErrorTypes ManageLabelBar
 				return NhlFATAL;
 			}
 		}
-		else {
+		else if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES) {
+			int i;
+			if ((ga = _NhlCopyGenArray(cnp->llabel_strings,
+						   True)) == NULL) {
+				e_text = "%s: error copying GenArray";
+				NhlPError(NhlFATAL,
+					  NhlEUNKNOWN,e_text,entry_name);
+				return NhlFATAL;
+			}
+			if (! cnp->mono_fill_color) {
+				int *new_fcolors;
+				int *fcolors = (int*) cnp->fill_colors->data;
+				new_fcolors = NhlMalloc(cnp->lbar_fill_count * sizeof(int));
+				for (i = 0; i < cnp->lbar_fill_count; i++) {
+					new_fcolors[i] = fcolors[i+1];
+				}
+				NhlFreeGenArray(cnp->lbar_fill_colors);
+				cnp->lbar_fill_colors = NhlCreateGenArray((NhlPointer)new_fcolors,NhlTColorIndex,
+									  sizeof(int),1,&cnp->lbar_fill_count);
+				cnp->lbar_fill_colors->my_data = True;
+				ocnp->lbar_fill_colors = NULL;
+				
+			}
+			if (! cnp->mono_fill_pattern) {
+				int *new_fpatterns;
+				int *fpatterns = (int*) cnp->fill_patterns->data;
+				new_fpatterns = NhlMalloc(cnp->lbar_fill_count * sizeof(int));
+				for (i = 0; i < cnp->lbar_fill_count; i++) {
+					new_fpatterns[i] = fpatterns[i+1];
+				}
+				NhlFreeGenArray(cnp->lbar_fill_patterns);
+				cnp->lbar_fill_patterns = NhlCreateGenArray((NhlPointer)new_fpatterns,NhlTInteger,
+								sizeof(int),1,&cnp->lbar_fill_count);
+				cnp->lbar_fill_patterns->my_data = True;
+				ocnp->lbar_fill_patterns = NULL;
+			}
+			if (! cnp->mono_fill_scale) {
+				int *new_fscales;
+				int *fscales = (int*) cnp->fill_scales->data;
+				new_fscales = NhlMalloc(cnp->lbar_fill_count * sizeof(int));
+				for (i = 0; i < cnp->lbar_fill_count; i++) {
+					new_fscales[i] = fscales[i+1];
+				}
+				NhlFreeGenArray(cnp->lbar_fill_scales);
+				cnp->lbar_fill_scales = NhlCreateGenArray((NhlPointer)new_fscales,NhlTFloat,
+									  sizeof(float),1,&cnp->lbar_fill_count);
+				cnp->lbar_fill_scales->my_data = True;
+				ocnp->lbar_fill_scales = NULL;
+			}
+		}
+		else { /* NhlINCLUDEMAXMINLABELS */
 			NhlString *to_sp, *from_sp;
 			NhlString s;
 			int i, count;
@@ -6125,6 +6254,7 @@ static NhlErrorTypes ManageLabelBar
 					  NhlEUNKNOWN,e_text,entry_name);
 				return NhlFATAL;
 			}
+			ga->my_data = True;
 		}
 		cnp->lbar_labels = ga;
 		ocnp->lbar_labels = NULL;
@@ -6135,7 +6265,7 @@ static NhlErrorTypes ManageLabelBar
 			   NhlNlbRasterFillOn,
 			   (cnp->fill_mode == NhlRASTERFILL ? True : False));
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbBoxCount,cnp->fill_count);
+			   NhlNlbBoxCount,cnp->lbar_fill_count);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelAlignment,cnp->lbar_alignment);
 		NhlSetSArg(&sargs[(*nargs)++],
@@ -6147,19 +6277,19 @@ static NhlErrorTypes ManageLabelBar
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillColor,cnp->fill_color);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillColors,cnp->fill_colors);
+			   NhlNlbFillColors,cnp->lbar_fill_colors ? cnp->lbar_fill_colors : cnp->fill_colors);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbMonoFillPattern,cnp->mono_fill_pattern);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillPattern,cnp->fill_pattern);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillPatterns,cnp->fill_patterns);
+			   NhlNlbFillPatterns,cnp->lbar_fill_patterns ? cnp->lbar_fill_patterns : cnp->fill_patterns);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbMonoFillScale,cnp->mono_fill_scale);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillScaleF,cnp->fill_scale);
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillScales,cnp->fill_scales);
+			   NhlNlbFillScales,cnp->lbar_fill_scales ? cnp->lbar_fill_scales : cnp->fill_scales);
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
 		return ret;
@@ -6171,9 +6301,9 @@ static NhlErrorTypes ManageLabelBar
 	     ocnp->fill_mode ==  NhlRASTERFILL))
 		NhlSetSArg(&sargs[(*nargs)++],NhlNlbRasterFillOn,
 			   (cnp->fill_mode == NhlRASTERFILL ? True : False));
-	if (cnp->fill_count != ocnp->fill_count)
+	if (cnp->lbar_fill_count != ocnp->lbar_fill_count) 
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbBoxCount,cnp->fill_count);
+			   NhlNlbBoxCount,cnp->lbar_fill_count);
 	if (cnp->lbar_alignment != ocnp->lbar_alignment)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbLabelAlignment,cnp->lbar_alignment);
@@ -6189,27 +6319,27 @@ static NhlErrorTypes ManageLabelBar
 	if (cnp->fill_color != ocnp->fill_color)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillColor,cnp->fill_color);
-	if (cnp->fill_colors != ocnp->fill_colors)
+	if (cnp->fill_colors != ocnp->fill_colors || cnp->lbar_fill_colors != ocnp->lbar_fill_colors)
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillColors,cnp->fill_colors);
+			   NhlNlbFillColors,cnp->lbar_fill_colors ? cnp->lbar_fill_colors : cnp->fill_colors);
 	if (cnp->mono_fill_pattern != ocnp->mono_fill_pattern)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbMonoFillPattern,cnp->mono_fill_pattern);
 	if (cnp->fill_pattern != ocnp->fill_pattern)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillPattern,cnp->fill_pattern);
-	if (cnp->fill_patterns != ocnp->fill_patterns)
+	if (cnp->fill_patterns != ocnp->fill_patterns || cnp->lbar_fill_patterns != ocnp->lbar_fill_patterns)
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillPatterns,cnp->fill_patterns);
+			   NhlNlbFillPatterns,cnp->lbar_fill_patterns ? cnp->lbar_fill_patterns : cnp->fill_patterns);
 	if (cnp->mono_fill_scale != ocnp->mono_fill_scale)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbMonoFillScale,cnp->mono_fill_scale);
 	if (cnp->fill_scale != ocnp->fill_scale)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillScaleF,cnp->fill_scale);
-	if (cnp->fill_scales != ocnp->fill_scales)
+	if (cnp->fill_scales != ocnp->fill_scales || cnp->lbar_fill_scales != ocnp->lbar_fill_scales)
 		NhlSetSArg(&sargs[(*nargs)++],
-			   NhlNlbFillScales,cnp->fill_scales);
+			   NhlNlbFillScales,cnp->lbar_fill_scales ? cnp->lbar_fill_scales : cnp->fill_scales);
 	if (cnp->fill_dot_size != ocnp->fill_dot_size)
 		NhlSetSArg(&sargs[(*nargs)++],
 			   NhlNlbFillDotSizeF,cnp->fill_dot_size);
