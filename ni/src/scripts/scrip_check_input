@@ -1,0 +1,179 @@
+#!/bin/csh -f
+#
+#       $Id: scrip_check_input,v 1.1 2007-10-27 22:25:16 fred Exp $
+#
+#       Copyright (C) 2007
+#       University Corporation for Atmospheric Research
+#       All Rights Reserved
+#
+#       File:       scrip_check_input
+#       Author:     Fred Clare
+#
+#       National Center for Atmospheric Research
+#       POB 3000, Boulder, Colorado
+#
+#  This script takes as its single argument a NetCDF file used as 
+#  an input file for SCRIP and tests whether the coordinates of all 
+#  cells are entered in counterclockwise order and also tests whether
+#  the cell centers are on the interior of the cells.  For details
+#  on SCRIP, see: http://climate.lanl.gov/Software/SCRIP/
+#  
+
+set progname = `basename $0`
+
+#
+#  Precisely one argument accepted.
+#
+if (($#argv < 1) || ($#argv > 1)) then
+    goto USAGE
+endif
+
+set input_file = $1
+
+#
+#  Put the NCL script in a temporary file.
+#
+set tmpdir = `ncargpath tmp`
+set tmp_nclf = "$tmpdir/tmp$$.ncl"
+/bin/rm $tmp_nclf >& /dev/null
+
+cat << 'EOF_NCL' >! $tmp_nclf
+begin
+
+;
+;  Check that file_in was specified in the call.
+;
+  if (.not. isvar("file_in")) then
+    print("")
+    print("scrip_check_input.ncl - no input file entered.")
+    print("")
+    return(1)
+    exit
+  end if
+
+  r2d = 180./3.1415926536
+
+;
+;  Read the SCRIP input file.
+;
+  f = addfile(file_in,"r")
+  lat_corners = f->grid_corner_lat
+  lon_corners = f->grid_corner_lon
+  lat_centers = f->grid_center_lat
+  lon_centers = f->grid_center_lon
+  center_lat_units = f->grid_center_lat@units
+  center_lon_units = f->grid_center_lon@units
+  corner_lat_units = f->grid_corner_lat@units
+  corner_lon_units = f->grid_corner_lon@units
+
+  if (center_lat_units .eq. "radians") then
+    conv_center_lat= r2d  
+  end if
+  if (center_lat_units .eq. "degrees") then
+    conv_center_lat= 1.
+  end if
+  if (center_lat_units.ne."radians" .and. center_lat_units.ne."degrees") then
+    print("")
+    print("scrip_check_input.ncl - The grid_center_lat units must")
+    print("                        be specified as either")
+    print("                        'radians' or 'degrees'")
+    print("")
+    return(1)
+  end if
+
+  if (center_lon_units .eq. "radians") then
+    conv_center_lon= r2d
+  end if
+  if (center_lon_units .eq. "degrees") then
+    conv_center_lon= 1.
+  end if
+  if (center_lon_units.ne."radians" .and. center_lon_units.ne."degrees") then
+    print("")
+    print("scrip_check_input.ncl - The grid_center_lon units must")
+    print("                        be specified as either")
+    print("                        'radians' or 'degrees'")
+    print("")
+    return(1)
+  end if
+
+  if (corner_lat_units .eq. "radians") then
+    conv_corner_lat= r2d
+  end if
+  if (corner_lat_units .eq. "degrees") then
+    conv_corner_lat= 1.
+  end if
+  if (corner_lat_units.ne."radians" .and. corner_lat_units.ne."degrees") then
+    print("")
+    print("scrip_check_input.ncl - The grid_corner_lat units must")
+    print("                        be specified as either")
+    print("                        'radians' or 'degrees'")
+    print("")
+    return(1)
+  end if
+
+  if (corner_lon_units .eq. "radians") then
+    conv_corner_lon= r2d
+  end if
+  if (corner_lon_units .eq. "degrees") then
+    conv_corner_lon= 1.
+  end if
+  if (corner_lon_units.ne."radians" .and. corner_lon_units.ne."degrees") then
+    print("")
+    print("scrip_check_input.ncl - The grid_corner_lon units must")
+    print("                        be specified as either")
+    print("                        'radians' or 'degrees'")
+    print("")
+    return(1)
+  end if
+
+  clck = gc_clkwise(conv_corner_lat*lat_corners,    \
+                    conv_corner_lon*lon_corners)
+  if (num(ind(clck)) .gt. 0) then
+    print("scrip_check_input - The corner points for cells with the")
+    print("                    following indices are not listed in ")
+    print("                    counterclockwise order: ")
+    print("                     " + ind(clck))
+  end if
+
+  do i=0,dimsizes(lat_centers)-1
+    inside = gc_inout(conv_center_lat*lat_centers(i),    \
+                      conv_center_lon*lon_centers(i),    \
+                      conv_center_lat*lat_corners(i,:),  \
+                      conv_center_lon*lon_corners(i,:))
+    if (inside .eq. False) then
+      print("scrip_check_input - The center point for the cell with the")
+      print("                    following cell index is not within the")
+      print("                    cell boundary: " + i)
+    end if
+  end do
+end
+
+'EOF_NCL'
+
+#
+#  Execute the NCL script.
+#
+eval ncl file_in=\\\"$input_file\\\" $tmp_nclf
+
+#
+# Clean up
+#
+/bin/rm -f $tmp_nclf
+exit 0
+
+USAGE:
+echo ""
+echo "Usage:  ${progname} input_file"
+echo ""
+echo "  input_file   name of the NetCDF-formatted file that is to"
+echo "               be used as an input file for the SCRIP package."
+echo "               For details on the required file structure and"
+echo "               the SCRIP package see:"
+echo "               http://climate.lanl.gov/Software/SCRIP/"
+echo ""
+echo "  This script tests whether the coordinates of all cells "
+echo "  in the input file are entered in counterclockwise order "
+echo "  and also tests whether the cell centers are on the interior "
+echo "  of the cells.  "
+echo " "
+
