@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.141 2007-10-29 20:13:36 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.142 2007-10-29 22:06:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2029,7 +2029,7 @@ ContourPlotInitialize
 	}
 	if (! cnp->lbar_end_style_set) {
 		if (cnp->lbar_end_labels_on) {
-			cnp->lbar_end_style = NhlINCLUDEMAXMINLABELS;
+			cnp->lbar_end_style = NhlINCLUDEMINMAXLABELS;
 		}
 		else {
 			cnp->lbar_end_style = NhlINCLUDEOUTERBOXES;
@@ -2471,7 +2471,7 @@ static NhlErrorTypes ContourPlotSetValues
 
 	if (cnp->lbar_end_labels_on_set && ! cnp->lbar_end_style_set) {
 		if (cnp->lbar_end_labels_on) {
-			cnp->lbar_end_style = NhlINCLUDEMAXMINLABELS;
+			cnp->lbar_end_style = NhlINCLUDEMINMAXLABELS;
 		}
 		else {
 			cnp->lbar_end_style = NhlINCLUDEOUTERBOXES;
@@ -6062,7 +6062,7 @@ static NhlErrorTypes ManageLabelBar
 
 	if (init || cnp->lbar_end_style != ocnp->lbar_end_style) {
 		redo_lbar = True;
-		if (cnp->lbar_end_style == NhlINCLUDEMAXMINLABELS) {
+		if (cnp->lbar_end_style == NhlINCLUDEMINMAXLABELS) {
 			cnp->lbar_alignment = NhlEXTERNALEDGES;
 		}
 		else if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES) {
@@ -6178,7 +6178,7 @@ static NhlErrorTypes ManageLabelBar
 				ocnp->lbar_fill_scales = NULL;
 			}
 		}
-		else { /* NhlINCLUDEMAXMINLABELS */
+		else { /* NhlINCLUDEMINMAXLABELS */
 			NhlString *to_sp, *from_sp;
 			NhlString s;
 			int i, count;

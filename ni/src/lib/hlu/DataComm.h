@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.h,v 1.16 2007-10-26 23:36:28 dbrown Exp $
+ *      $Id: DataComm.h,v 1.17 2007-10-29 22:06:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -52,7 +52,7 @@ typedef enum _NhlScalingMode {
 
 typedef enum _NhlLabelBarEndStyle {
 	NhlINCLUDEOUTERBOXES,
-	NhlINCLUDEMAXMINLABELS,
+	NhlINCLUDEMINMAXLABELS,
 	NhlEXCLUDEOUTERBOXES
 } NhlLabelBarEndStyle;
 

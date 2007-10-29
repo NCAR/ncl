@@ -1,5 +1,5 @@
 /*
- *      $Id: DataComm.c,v 1.46 2007-10-26 23:36:28 dbrown Exp $
+ *      $Id: DataComm.c,v 1.47 2007-10-29 22:06:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -676,7 +676,7 @@ DataCommClassInitialize
 
         _NhlEnumVals   labelbarendstylelist[] = {
 	{NhlINCLUDEOUTERBOXES,		"IncludeOuterBoxes"},
-	{NhlINCLUDEMAXMINLABELS,	"IncludeMaxMinLabels"},
+	{NhlINCLUDEMINMAXLABELS,	"IncludeMinMaxLabels"},
 	{NhlEXCLUDEOUTERBOXES,		"ExcludeOuterBoxes"}
         };
 
