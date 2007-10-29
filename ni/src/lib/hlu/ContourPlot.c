@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.140 2007-10-26 23:36:27 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.141 2007-10-29 20:13:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2024,8 +2024,11 @@ ContourPlotInitialize
 			cnp->fill_mode = NhlAREAFILL;
 	}
 
+        if (! cnp->lbar_end_labels_on_set) {
+		cnp->lbar_end_labels_on = False;
+	}
 	if (! cnp->lbar_end_style_set) {
-		if (cnp->lbar_end_labels_on_set) {
+		if (cnp->lbar_end_labels_on) {
 			cnp->lbar_end_style = NhlINCLUDEMAXMINLABELS;
 		}
 		else {
