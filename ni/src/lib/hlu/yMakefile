@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.77 2007-10-29 22:06:51 dbrown Exp $
+#      $Id: yMakefile,v 1.78 2007-10-29 22:34:14 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -20,7 +20,6 @@
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
 MYNAME		= libhlu
 
-#define BuildTRIANGLE
 #ifdef BuildTRIANGLE
 TRIANGLE_DEF = -DBuildTRIANGLE
 TRIANGLE_HDR = triangle.h
