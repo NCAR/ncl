@@ -1,9 +1,9 @@
 #
-#	$Id: yMakefile,v 1.10 2007-08-22 13:54:12 haley Exp $
+#	$Id: yMakefile,v 1.11 2007-10-29 01:44:38 fred Exp $
 #
 
 SCRIPTS1 = nhlcc nhlf77 nhlf90 ng4ex 
-SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc
+SCRIPTS2 = WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input
 
 MAN1 = ng4ex nhlcc nhlf77 nhlf90
 
