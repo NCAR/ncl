@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.8 2007-10-08 20:15:47 haley Exp $
+#   $Id: check_files,v 1.9 2007-10-29 22:36:56 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -211,6 +211,7 @@ bin/ng4ex
 bin/nhlcc
 bin/nhlf77
 bin/nhlf90
+bin/scrip_check_input
 bin/wrapit77
 include/ncarg/hlu/AnnoManager.h
 include/ncarg/hlu/AnnoManagerP.h

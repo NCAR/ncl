@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.8 2007-09-28 20:32:17 haley Exp $
+#   $Id: check_ncargncl_files,v 1.9 2007-10-29 22:36:56 haley Exp $
 #
 # Use check_files instead! This one is just for NCL/NCARG.
 #
@@ -75,6 +75,7 @@ bin/rasls
 bin/rassplit
 bin/rasstat
 bin/rasview
+bin/scrip_check_input
 bin/tdpackdemo
 bin/tgks0a
 bin/tlocal
