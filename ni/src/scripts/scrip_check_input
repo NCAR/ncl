@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: scrip_check_input,v 1.1 2007-10-27 22:25:16 fred Exp $
+#       $Id: scrip_check_input,v 1.2 2007-10-30 03:17:37 fred Exp $
 #
 #       Copyright (C) 2007
 #       University Corporation for Atmospheric Research
@@ -15,8 +15,8 @@
 #  This script takes as its single argument a NetCDF file used as 
 #  an input file for SCRIP and tests whether the coordinates of all 
 #  cells are entered in counterclockwise order and also tests whether
-#  the cell centers are on the interior of the cells.  For details
-#  on SCRIP, see: http://climate.lanl.gov/Software/SCRIP/
+#  the cell centers are on the interior (or boundary) of the cells.  
+#  For details on SCRIP, see: http://climate.lanl.gov/Software/SCRIP/
 #  
 
 set progname = `basename $0`
@@ -51,12 +51,36 @@ begin
     exit
   end if
 
+  f = addfile(file_in,"r")
+;
+; Get variable names in the file.
+;
+ varnames = getfilevarnames(f) 
+;
+; Make sure the input file has the required variable names 
+; and attributes.
+;
+  check_varnames = (/"grid_corner_lat", "grid_corner_lon",  \
+                     "grid_center_lat", "grid_center_lon"/)
+
+  do i=0,dimsizes(check_varnames)-1
+    if(.not.any(check_varnames(i) .eq. varnames)) then
+      print("Input file does not contain variable '" + check_varnames(i) + "'.")
+      print("Can't continue.")
+      exit
+    end if
+    if(.not.isatt(f->$check_varnames(i)$,"units")) then
+      print("'" + check_varnames(i) + "' does not contain 'units' attribute.")
+      print("Can't continue.")
+      exit
+    end if
+  end do
+
   r2d = 180./3.1415926536
 
 ;
 ;  Read the SCRIP input file.
 ;
-  f = addfile(file_in,"r")
   lat_corners = f->grid_corner_lat
   lon_corners = f->grid_corner_lon
   lat_centers = f->grid_center_lat
@@ -134,7 +158,13 @@ begin
     print("                    counterclockwise order: ")
     print("                     " + ind(clck))
   end if
+  if (num(ind(clck)) .eq. 0) then
+    print("scrip_check_input - point ordering (counterclockwise) test")
+    print("                    for input cells completed, no errors.")
+    print("")
+  end if
 
+  ierror = 0
   do i=0,dimsizes(lat_centers)-1
     inside = gc_inout(conv_center_lat*lat_centers(i),    \
                       conv_center_lon*lon_centers(i),    \
@@ -142,10 +172,17 @@ begin
                       conv_center_lon*lon_corners(i,:))
     if (inside .eq. False) then
       print("scrip_check_input - The center point for the cell with the")
-      print("                    following cell index is not within the")
-      print("                    cell boundary: " + i)
+      print("                    following cell index is not within or on")
+      print("                    the cell boundary: " + i)
+      ierror = 1
     end if
   end do
+
+  if (ierror .eq. 0) then
+    print("scrip_check_input - cell centers inside cells test")
+    print("                    completed, no errors.")
+  end if
+
 end
 
 'EOF_NCL'
