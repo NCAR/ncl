@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.13 2007-10-23 21:36:38 haley Exp $
+#   $Id: create_dist,v 1.14 2007-10-30 04:01:13 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -305,7 +305,7 @@ set common_lib_dirs  = "ncarg/database ncarg/fontcaps ncarg/graphcaps ncarg/ngww
 # Set files specific to NCL.
 #
 if ($?NCLONLY || $?NCARGNCL) then
-  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90 ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc MakeNcl"
+  set ncl_bin_files = "ng4ex nhlcc nhlf77 nhlf90 ncl$exe_sfx wrapit77$exe_sfx WRAPIT ncl_filedump ncl_grib2nc ncl_convert2nc scrip_check_input MakeNcl"
 
   set ncl_inc_files = ""
 
