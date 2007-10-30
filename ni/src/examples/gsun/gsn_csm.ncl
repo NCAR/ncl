@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.214 2007-10-30 03:58:39 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.215 2007-10-30 14:02:36 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -21,8 +21,8 @@
 ;;               used by CGD for the CSM processor. To use the functions
 ;;               and procedures in this script, you must have the lines:
 ;;
-;;                   load "gsn_code.ncl"
-;;                   load "gsn_csm.ncl"
+;;       load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+;;       load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 ;; 
 ;;               at the top of your NCL script, before the begin statement.
 ;;
@@ -1814,8 +1814,6 @@ end
 ; Procedure : add_labelbar                                              ;
 ;                wks: graphic                                           ;
 ;               plot: graphic                                           ;
-;               xmin: numeric                                           ;
-;               xmax: numeric                                           ;
 ;               zone: integer                                           ;
 ;        font_height: numeric                                           ;
 ;               type: string                                            ;
@@ -1829,24 +1827,16 @@ end
 ; can be positioned differently depending on the plot.                  ;
 ;***********************************************************************;
  
-procedure add_labelbar(wks:graphic,plot,xmin,xmax,zone:integer, \
+procedure add_labelbar(wks:graphic,plot,zone:integer, \
                        font_height:numeric,type:string,res:logical)
 local anno, num_res, amres, lbres, labelbar_object, lbar_orient, \
 lbar_side, lbar_just, fill_patterns, fill_scales, mono_fill_pat, \
-mono_fill_scl, mono_fill_col, levels, slevels, ii
+mono_fill_scl, mono_fill_col, levels
 begin
 ;
-; if lbLabelBarOn is set to False, then don't bother with a labelbar.
+; If lbLabelBarOn is set to False, then don't bother with a labelbar.
 ;
-; Also, and this was added in V5.0.0: if pmLabelBarDisplayMode is set
-; to "Always" or "Conditionnal", then make sure it is used instead of
-; creating the labelbar by hand.
-;
-  if(check_attr(res,"lbLabelBarOn",False,False).or. \
-     check_attr(res,"pmLabelBarDisplayMode","Always",True).or.\
-     check_attr(res,"pmLabelBarDisplayMode","Conditional",True).or.\
-     check_attr(res,"pmLabelBarDisplayMode",2,False).or.\
-     check_attr(res,"pmLabelBarDisplayMode",3,False)) then
+  if(check_attr(res,"lbLabelBarOn",False,False))
     return
   end if
 
@@ -1951,19 +1941,33 @@ begin
       "cnMonoFillPattern"     : mono_fill_pat
       "cnMonoFillScale"       : mono_fill_scl
       "cnMonoFillColor"       : mono_fill_col
-      "lbLabelStrings"        : lbstrings
       "cnLabelBarEndStyle"    : end_labelbar_style
       "cnLabelBarEndLabelsOn" : end_labels_on
+      "lbLabelStrings"        : lbstrings
     end getvalues
 ;
-; Style "2" means to leave off the end labelbar boxes, so we need to
-; make sure to not include the end colors, scales, or patterns, since
-; we are generating labelbar from scratch.
+; cnLabelBarEndLabelsOn was deprecated in V5.0, but we still need to
+; check for it. It's been replaced by cnLabelBarEndStyle.
 ;
-    if(end_labelbar_style.eq.1) then
+; The three styles are:
+;
+; 0 - IncludeOuterBoxes  (default)
+; 1 - IncludeMinMaxLabels (the equivalent of cnLabelBarEndLabelsOn=True)
+; 2 - ExcludeOuterBoxes
+; 
+; If the style is 0 (the default) *and* xxLabelBarEndLabelsOn is
+; True, then set the style to 1. If the style is 1 or 2 (the only
+; other valid values), then xxLabelBarEndLabelsOn should be set True.
+;
+    if(end_labelbar_style.eq.0) then
+      if(end_labels_on) then
+        end_labelbar_style = 1
+      end if
+    else
       end_labels_on = True
     end if
     if(end_labelbar_style.eq.2) then
+; Don't use the first fill color, scale, or pattern.
       nc2 = dimsizes(tmp_colors)
       end_labels_on = True
       colors        = tmp_colors(1:nc2-2)
@@ -2012,46 +2016,46 @@ begin
     end getvalues
   end if
 ;
-; If user set cn/vcLabelBarEndLabelsOn to True, then we need to
-; add an additional label at each end.
+; Vector and Streamline don't have the xxLabelBarEndStyle resource
+; implemented yet. So, based on setting of xxLabelBarEndLabelsOn,
+; we can set the style.
+;
+  if(.not.isvar("end_labelbar_style")) then
+    if(end_labels_on) then
+      end_labelbar_style = 1
+    else
+      end_labelbar_style = 0
+    end if
+  end if
+;
+; If user set cn/vcLabelBarEndLabelsOn to True or the LabelBarStyle
+; resource to 1, then we need to add min/max labels. Use lbstrings (rather
+; than actual min/max of data) because the labels will already be 
+; formatted correctly.
 ;
   if(end_labels_on) then
-    if(.not.(isvar("end_labelbar_style").and.end_labelbar_style.eq.2)) then
+    if(end_labelbar_style.eq.1) then
       nlev              = dimsizes(levels)
       newlevels         = new(nlev+2,typeof(levels))
       newlevels(1:nlev) = levels
-      if(xmin.lt.levels(0)) then
-        newlevels(0) = stringtoxxx(xmin,typeof(newlevels))
-      end if
-      if(xmax.gt.levels(nlev-1)) then
-        newlevels(nlev+1) = stringtoxxx(xmax,typeof(newlevels))
-      end if
+      newlevels(0)      = stringtoxxx(lbstrings(0),typeof(newlevels))
+      newlevels(nlev+1) = stringtoxxx(lbstrings(nlev+1),typeof(newlevels))
       delete(levels)
       levels = newlevels
       delete(newlevels)
     end if
     set_attr(lbres,"lbLabelAlignment","ExternalEdges")
   end if
-  delete(lbstrings)
 
   levels = fix_zero_contour(levels)
 
-; Convert to string.
-  slevels = "" + levels
-  ii = ind(ismissing(slevels))
-  if(.not.any(ismissing(ii))) then
-    slevels(ii) = ""
-  end if
-  delete(ii)
-
-  labelbar_object = create_labelbar(wks,dimsizes(colors),colors,slevels,lbres)
-
-  delete(slevels)
-  delete(levels)
+  labelbar_object = create_labelbar(wks,dimsizes(colors),colors,levels,lbres)
 
   anno = NhlAddAnnotation(plot,labelbar_object)
 
   attsetvalues_check(anno,amres)   ; Set annotation resources.
+
+  delete(levels)
 
   return
 end
@@ -4907,7 +4911,7 @@ begin
 ; Create a labelbar.
 
     if(lbar_on)
-      add_labelbar(wks,contour_object,min(datanew),max(datanew),lbar_zone,\
+      add_labelbar(wks,contour_object,lbar_zone,\
                    font_height,"polar",lbres)
     end if
   
@@ -5230,8 +5234,7 @@ begin
 ; Create a labelbar.
 
     if(lbar_on)
-      add_labelbar(wks,contour_object,min(datanew),max(datanew),lbar_zone,\
-                   xbfontf,"ce",lbres)
+      add_labelbar(wks,contour_object,lbar_zone,xbfontf,"ce",lbres)
     end if
 
 ; Add a zonal mean plot if requested.
@@ -5445,18 +5448,6 @@ begin
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT","gsnMask"/))
     cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnMask"/))
 
-;
-; This was added in V5.0.0. If pmLabelBarDisplayMode is set, then
-; make sure it is used. This is a way around using the more tedious
-; add_labelbar procedure for creating the labelbar from scratch.
-;
-    if(isatt(res2,"pmLabelBarDisplayMode")) then
-      cnres = True
-      cnres@pmLabelBarDisplayMode = res2@pmLabelBarDisplayMode
-      cnres@lbPerimOn     = get_res_value(res2,"lbPerimOn",False)
-      cnres@lbOrientation = get_res_value(res2,"lbOrientation","horizontal")
-    end if
-
     if(cnres)
       if(check_attr(cnres,"cnFillOn",True,False))
         set_attr(cnres,"cnInfoLabelOn",False)
@@ -5544,7 +5535,7 @@ begin
 ; Create a labelbar.
 
     if(lbar_on) then
-      add_labelbar(wks,contour_object,min(datanew),max(datanew),lbar_zone,\
+      add_labelbar(wks,contour_object,lbar_zone,\
                    0.6 * font_height,"other",lbres)
     end if
 
@@ -5786,8 +5777,7 @@ begin
 ; Create a labelbar.
 
     if(lbar_on)
-      add_labelbar(wks,vector_object,min(unew),max(unew),lbar_zone,xbfontf, \
-                   "vector",lbres)
+      add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -5970,7 +5960,7 @@ begin
 ; Create a labelbar.
 
     if(lbar_on)
-      add_labelbar(wks,vector_object,min(unew),max(unew),lbar_zone, \
+      add_labelbar(wks,vector_object,lbar_zone, \
                    font_height,"vector",lbres)
     end if
   
@@ -6133,8 +6123,7 @@ begin
 ; Create a labelbar.
 
     if(lbar_on)
-      add_labelbar(wks,vector_object,min(unew),max(unew),2,0.6 * font_height, \
-                   "other",lbres)
+      add_labelbar(wks,vector_object,2,0.6 * font_height,"other",lbres)
     end if
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -6827,8 +6816,7 @@ begin
         lbar_zone = 3
       end if
 
-      add_labelbar(wks,stream_object@contour,min(datanew),max(datanew),\
-                   lbar_zone,xbfontf,"vector",lbres)
+      add_labelbar(wks,stream_object@contour,lbar_zone,xbfontf,"vector",lbres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -7028,7 +7016,7 @@ begin
 ;
       lbres = get_res_eq(res2,(/"lb","pm"/))
 
-      add_labelbar(wks,stream_object@contour,min(datanew),max(datanew),\
+      add_labelbar(wks,stream_object@contour, \
                    lbar_zone,font_height,"vector",lbres)
     end if
   
@@ -7218,8 +7206,7 @@ begin
 ;
       lbres = get_res_eq(res2,(/"lb","pm"/))
 
-      add_labelbar(wks,stream_object@contour,min(datanew),max(datanew),\
-                   lbar_zone,font_height,"vector",lbres)
+      add_labelbar(wks,stream_object@contour,lbar_zone,font_height,"vector",lbres)
     end if
   
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -7492,12 +7479,10 @@ begin
       end if
 
       if(scalar_contour)
-        add_labelbar(wks,vector_object@contour,min(datanew),max(datanew), \
-                     lbar_zone,xbfontf, \
+        add_labelbar(wks,vector_object@contour,lbar_zone,xbfontf, \
                      "vector",lbres)
       else
-        add_labelbar(wks,vector_object,min(unew),max(unew),lbar_zone,xbfontf, \
-                     "vector",lbres)
+        add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbres)
       end if
     end if
   
@@ -7813,12 +7798,10 @@ begin
       end if
 
       if(scalar_contour)
-        add_labelbar(wks,vector_object@contour,min(datanew),max(datanew),\
-                     lbar_zone,xbfontf, \
+        add_labelbar(wks,vector_object@contour,lbar_zone,xbfontf, \
                      "vector",lbres)
       else
-        add_labelbar(wks,vector_object,min(unew),max(unew),lbar_zone,xbfontf, \
-                     "vector",lbres)
+        add_labelbar(wks,vector_object,lbar_zone,xbfontf,"vector",lbres)
       end if
     end if
   
@@ -8054,12 +8037,10 @@ begin
       lbres = get_res_eq(res2,(/"lb","pm"/))
 
       if(scalar_contour)
-        add_labelbar(wks,vector_object@contour,min(datanew),max(datanew),\
-                     lbar_zone,font_height, \
+        add_labelbar(wks,vector_object@contour,lbar_zone,font_height, \
                      "vector",lbres)
       else
-        add_labelbar(wks,vector_object,min(unew),max(unew),lbar_zone,\
-                     font_height,"vector",lbres)
+        add_labelbar(wks,vector_object,lbar_zone,font_height,"vector",lbres)
       end if
     end if
   
@@ -8297,12 +8278,10 @@ begin
       lbres = get_res_eq(res2,(/"lb","pm"/))
 
       if(scalar_contour)
-        add_labelbar(wks,vector_object@contour,min(datanew),max(datanew),\
-                     lbar_zone,font_height, \
+        add_labelbar(wks,vector_object@contour,lbar_zone,font_height, \
                      "vector",lbres)
       else
-        add_labelbar(wks,vector_object,min(unew),max(unew),lbar_zone,\
-                     font_height, \
+        add_labelbar(wks,vector_object,lbar_zone,font_height, \
                      "vector",lbres)
       end if
     end if
@@ -10579,8 +10558,7 @@ begin
 
     if (lbar_on)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-      add_labelbar(wks,contour_object,min(datanew),max(datanew),3,\
-                   font_height,"contour",lbres)
+      add_labelbar(wks,contour_object,3,font_height,"contour",lbres)
     end if
   
 ; Set up three subtitles at top, if they exist.
@@ -11208,8 +11186,7 @@ begin
 
     if (lbar_on)
       lbres = get_res_eq(res2,(/"lb","pm"/))
-      add_labelbar(wks,vector_object,min(unew),max(unew),3,font_height, \
-                   "vector",lbres)
+      add_labelbar(wks,vector_object,3,font_height,"vector",lbres)
     end if
   
 ; Set up three subtitles at top, if they exist.
