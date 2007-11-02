@@ -4,7 +4,7 @@
 </head>
 
 [The latest version of this document can be found at
- http://www.ncl.ucar.edu/Download/build_from_src.shtml]
+ <a href="http://www.ncl.ucar.edu/Download/build_from_src.shtml">http://www.ncl.ucar.edu/Download/build_from_src.shtml</a>]
 
 <h1>How to build NCL and NCAR Graphics from source code</h1>
 
@@ -13,13 +13,16 @@ software has been successfully built using native compilers on Suns,
 SGIs (32 or 64-bit mode), IBMs running AIX (32 or 64-bit), HPs, and
 Compaq Alphas, and using other compilers (GNU, Portland Group, Intel,
 Pathscale, Lahey) on systems running Linux (32 or 64-bit), MacOSX (PPC
-or Intel), Cygwin, and Solaris X86.
+or Intel), Windows/Cygwin, and Solaris X86.
 <p>
 
 This document is meant to be an all-encompassing document on how to
 set up your environment to build NCL and NCAR Graphics, what external
 software packages you need and which are optional, and finally how
-to build and test NCL and NCAR Graphics.
+to build and test NCL and NCAR Graphics. It's a bit long, but that's
+partially due to the itstructions on building external packages,
+and instructions on building on unsupported platforms.  Take
+a deep breath before you proceed!
 <p>
 
 <blockquote>
@@ -44,9 +47,9 @@ ncl-talk@ucar.edu</a> if you have any problems understanding this
 document or building any of this software.
 <p>
 
-<i>Note that in the instructions below, "NCL" will be used to mean
-both NCL and NCAR Graphics. A reference to "NCARG" means
-NCAR Graphics only.</i>
+<i>Note that in the instructions below, "NCL" will sometimes be used
+to mean both NCL and NCAR Graphics. If something is for NCAR Graphics
+only, we try to indicate this.</i>
 
 <UL>
 
@@ -65,8 +68,9 @@ blockdata initializations correctly</A>
 
 <LI><A HREF="#BuildNonOptionalSoftware">Download and build
 non-optional external software</A><br>
-(If you are doing just an NCARG build, then only HDF-4 is needed, and
-this is only if you need support for writing HDF image files)
+(If you are doing just an NCAR Graphics build, then only HDF-4 is
+needed, and this is only if you need support for writing HDF image
+files)
 
 <UL>
 <LI><A HREF="#NetCDF3">NetCDF-3</A>
@@ -77,7 +81,8 @@ this is only if you need support for writing HDF image files)
 
 <LI><A HREF="#BuildOptionalSoftware">Download and build optional
 external software</A><br>
-(If you are just doing an NCARG build, none of these are needed.)
+(If you are just doing an NCAR Graphics build, none of these are
+needed.)
 
 <UL>
 <LI><A HREF="#GRIB2">GRIB2</A>
@@ -85,6 +90,7 @@ external software</A><br>
 <LI><A HREF="#NetCDF4">NetCDF-4</A>
 <LI><A HREF="#Triangle">Triangle</A>
 <LI><A HREF="#OPeNDAP">OPeNDAP</A>
+<LI><A HREF="#Udunits">Udunits</A>
 <LI><A HREF="#Vis5D">Vis5D+</A>
 </UL>
 
@@ -118,9 +124,13 @@ to change default values</A> (may not be necessary)
 
 <LI><A HREF="#StartBuildAndInstall">Start the build and install process</A>
 
+<LI><A HREF="#CheckTheInstallation">Check that the installation was
+successful</A>
+
 </UL>
 
-<LI><A HREF="#SetUpEnvironment">Set up your environment to run NCL</A>
+<LI><A HREF="#SetUpEnvironment">Set up your environment to run NCL
+and/or NCAR Graphics</A>
 
 <LI><A HREF="#TestInstallation">Test the NCL and/or NCAR Graphics
 installation</A>
@@ -248,8 +258,8 @@ package, and will reside in a directory like /usr/X11R6/lib.<P>
 <p>
 
 The software listed below is not optional if you plan to build NCL.
-If you are building NCARG only, then you only need to build and
-install <A HREF="#HDF-4">HDF-4</A>.
+If you are building NCAR Graphics only, then you need to build and
+install <A HREF="#HDF-4">HDF-4</A> only if you need HDF support.
 
 <blockquote>
 
@@ -262,11 +272,11 @@ what NCL's license is.</i>
 <p>
 
 <b>Note:</b> it makes things easier if you install all of the external
-software needed (with the exception of the X11 libraries and include
-files) to the same parent directory.  This will be important later
-when you have to tell the NCL build system where all the external
-software has been installed. We will use <i>/usr/local</i> in all of
-our examples below for installing external software.
+software needed (with the exception of the X11 libraries and X11
+include files) to the same parent directory.  This will be important
+later when you have to tell the NCL build system where all the
+external software has been installed. We will use <i>/usr/local</i> in
+all of our examples below for installing external software.
 <p>
 
 If you want to build NCAR Graphics only, then you only need to build
@@ -284,7 +294,7 @@ href="http://www.ncl.ucar.edu/Document/Tools/idt.shtml">idt</a>.
 <A NAME="NetCDF3"></A>
 <li><a
 href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF-3</a> - not
-needed if you are only doing an NCARG build.<p>
+needed if you are only doing an NCAR Graphics build.<p>
 
 Download version 3.6.1 or later. (Do not download version 4.x.x.)
 <p>
@@ -293,7 +303,6 @@ Once you have the netCDF source code, you can build and install it
 with:
 
 <pre>
-  cd netcdf-3.6.2
   ./configure --prefix=/usr/local
   make all install
 </pre>
@@ -301,7 +310,7 @@ with:
 
 <A NAME="JPEG"></A>
 <li><a href="http://www.ijg.org/">JPEG</a> - not
-needed if you are only doing an NCARG build.<p>
+needed if you are only doing an NCAR Graphics build.<p>
 
 Download version 6b or later.
 <p>
@@ -310,7 +319,6 @@ Once you have the jpeg source code, you can build and install it
 with:
 
 <pre>
-  cd jpeg-6b
   ./configure --prefix=/usr/local
   make all install install-lib install-headers
 </pre>
@@ -318,7 +326,7 @@ with:
 
 <A NAME="ZLIB"></A>
 <li><a href="http://www.zlib.net/">zlib</a> -  not
-needed if you are only doing an NCARG build.<p>
+needed if you are only doing an NCAR Graphics build.<p>
 
 Download version 1.2.3 or later.
 <p>
@@ -327,7 +335,6 @@ Once you have the zlib source code, you can build and install it
 with:
 
 <pre>
-  cd zlib-1.2.3
   ./configure --prefix=/usr/local
   make all install
 </pre>
@@ -354,7 +361,6 @@ or
 You can then build and install HDF-4 with:
 
 <pre>
-  cd HDF4.2r1
  ./configure --prefix=/usr/local --with-zlib=/usr/local \
        --with-jpeg=/usr/local --includedir=/usr/local/include/hdf
   make all install
@@ -377,7 +383,8 @@ install the HDF include files to an "hdf" subdirectory.
 <H2>Download and build optional external software, if needed</H2>
 <p>
 
-None of this software is needed if you are only building NCARG.
+None of this software is needed if you are only building NCAR
+Graphics.
 <p>
 
 Again, as with the above section, it makes things easier if you
@@ -389,8 +396,8 @@ for installing external software.
 
 <p>
 <A NAME="GRIB2"></A>
-<b>GRIB2 software</b> - not needed if you are only doing an NCARG
-build.<p>
+<b>GRIB2 software</b> - not needed if you are only doing an NCAR
+Graphics build.<p>
 
 If you need support for reading <a
 href="http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc.shtml">GRIB2</a>
@@ -407,7 +414,6 @@ Once you have the Jasper source code, you can build and install it
 with:
 
 <pre>
-  cd jasper-1.900.1
   ./configure --prefix=/usr/local
   make all install
 </pre>
@@ -421,6 +427,7 @@ and put it in the "g2clib-1.0.4" directory.  If you download a
 different version of g2clib, be sure you incorporate the changed
 g2_unpack2.c file, rather than just copying it over.
 <p>
+
 
 Once you have the g2clib source code and the modified file, make
 changes to "makefile" to:
@@ -449,8 +456,8 @@ Now type:
 <p>
 
 <A NAME="HDFEOS2"></A>
-<b>HDF-EOS 2 software</b>  - not needed if you are only doing an NCARG
-build.<p>
+<b>HDF-EOS 2 software</b> - not needed if you are only doing an NCAR
+Graphics build.<p>
 
 If you need support for reading <a
 href="http://hdf.ncsa.uiuc.edu/hdfeos.html">HDF-EOS 2</a> files, then you
@@ -462,7 +469,6 @@ version 2.14.v1 or later.
 <p>
 
 <pre>
-  cd HDF-EOS2.14v1.00
   bin/INSTALL-HDFEOS
 </pre>
 <p>
@@ -501,8 +507,8 @@ Then type:
 </ul>
 
 <A NAME="NetCDF4"></A>
-<b>NetCDF-4 software</b> - not needed if you are only doing an NCARG
-build.<p>
+<b>NetCDF-4 software</b> - not needed if you are only doing an NCAR
+Graphics build.<p>
 
 If you need support for reading/writing classic <a
 href="http://www.unidata.ucar.edu/software/netcdf/netcdf-4/">NetCDF-4</a>
@@ -516,7 +522,6 @@ version 2.0 or later.
 <p>
 
 <pre>
-  cd szip-2.0
   ./configure --prefix=/usr/local  --disable-shared
   make all install >& make-output
 </pre>
@@ -527,7 +532,6 @@ version 1.8.0-beta1  or later.
 <p>
 
 <pre>
-  cd hdf5-1.8.0-beta1 
   ./configure --with-szlib=/usr/local --prefix=/usr/local --disable-shared
   make all install >& make-output
 </pre>
@@ -539,9 +543,9 @@ href="http://www.unidata.ucar.edu/software/netcdf/netcdf-4/">NetCDF-4</a>
 <p>
 
 <pre>
-  cd netcdf-4.0-beta1
   ./configure --with-hdf5=/usr/local --prefix=/usr/local --disable-f90 \
        --enable-netcdf4
+  make all install >& make-output
 </pre>
 <p>
 
@@ -549,8 +553,8 @@ href="http://www.unidata.ucar.edu/software/netcdf/netcdf-4/">NetCDF-4</a>
 <p>
 
 <A NAME="Triangle"></A>
-<b>Triangle software</b>  - not needed if you are only doing an NCARG
-build.<p>
+<b>Triangle software</b> - not needed if you are only doing an NCAR
+Graphics build.<p>
 
 If you need to use the <a
 href="http://www-2.cs.cmu.edu/~quake/triangle.html">Triangle</a> code
@@ -572,8 +576,8 @@ be bound by Triangle's license.
 
 
 <A NAME="OPeNDAP"></A>
-<b>OPeNDAP software</b> - not needed if you are only doing an NCARG
-build.<p>
+<b>OPeNDAP software</b> - not needed if you are only doing an NCAR
+Graphics build.<p>
 
 If you need OPeNDAP support built into NCL for accessing remote data,
 then you'll need to download and install the following packages.  OPeNDAP
@@ -587,7 +591,8 @@ Download version 0.9.8e or later.  Once you have the source code, you can
 build and install it with:
 
 <pre>
-./config --prefix=/usr/local
+  ./config --prefix=/usr/local
+  make all install >& make-output
 </pre>
 
 This will determine your host and default compiler, and configure Open SSL
@@ -599,7 +604,8 @@ Download version 7.16.4 or later.  Once you have the source code, you can
 build and install it with:
 
 <pre>
-./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+  ./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+  make all install >& make-output
 </pre>
 
 Note that you'll need to build and install the <A HREF="#ZLIB">zlib</A>
@@ -612,7 +618,8 @@ Download version 2.6.27 or later.  Once you have the source code, you can
 build and install it with:
 
 <pre>
-./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+  ./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+  make all install >& make-output
 </pre>
 
 <li><a href="http://www.opendap.org/download/libdap++.html">libdap</a>
@@ -621,7 +628,8 @@ Download version 3.7.7 or later.  Once you have the source code, you can
 build and install it with:
 
 <pre>
-./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+  ./configure --prefix=/usr/local --with-zlib=/usr/local --with-pic
+  make all install >& make-output
 </pre>
 
 <li><a href="http://www.opendap.org/download/nc-dods.html">libnc-dap</a>
@@ -630,7 +638,8 @@ Download version 3.7.0 or later.  Once you have the source code, you can
 build and install it with:
 
 <pre>
-./configure --prefix=/usr/local --enable-64bit --with-pic
+  ./configure --prefix=/usr/local --enable-64bit --with-pic
+  make all install >& make-output
 </pre>
 <p>
 Note that libnc-dap is only compatible with <A HREF="#NetCDF3">netCDF-3</A>.
@@ -639,9 +648,31 @@ Note that libnc-dap is only compatible with <A HREF="#NetCDF3">netCDF-3</A>.
 
 <p>
 
-<A NAME="Vis5D"></A>
-<b>Vis5D+ software</b> - not needed if you are only doing an NCARG
+<A NAME="Udunits"></A>
+<b>Udunits</b> - not needed if you are only doing an NCAR Graphics
 build.<p>
+
+If you need the conversion functions <a
+href="/Document/Functions/Built-in/ut_calendar.shtml"><strong>ut_calendar</strong></a>
+and <a
+href="/Document/Functions/Built-in/ut_inv_calendar.shtml"><strong>ut_inv_calendar</strong></a>,
+then you need to install Udunits.
+<p>
+
+Download the <a
+href="http://www.unidata.ucar.edu/software/udunits/">Udunits</a>
+source code.  Once you have the source code, you can build and install
+it with:
+
+<pre>
+  ./configure --prefix=/usr/local
+  make all install >& make-output
+</pre>
+
+
+<A NAME="Vis5D"></A>
+<b>Vis5D+ software</b> - not needed if you are only doing an NCAR
+Graphics build.<p>
 
 If you need to use any of the v5d_<i>xxx</i> functions (see the <a
 href="http://www.ncl.ucar.edu/Document/Functions/list_alpha.shtml#V">"V"</a>
@@ -651,7 +682,8 @@ Download the <a href="http://vis5d.sourceforge.net/">vis5d+</a> source code.
 Once you have the source code, you can build and install it with:
 
 <pre>
-./configure --prefix=/usr/local --with-netcdf=/usr/local/lib/libnetcdf.a
+  ./configure --prefix=/usr/local --with-netcdf=/usr/local/lib/libnetcdf.a
+  make all install >& make-output
 </pre>
 
 <A NAME="GetNCLSourceCode"></A>
@@ -659,7 +691,7 @@ Once you have the source code, you can build and install it with:
 <H2>Download the source code for NCL</H2>
 
 Accessing, downloading, and/or using NCL implies acceptance of <A
-HREF="http://www.ncl.ucar.edu/Download/NCL_source_license.shtml">NCL
+href="http://www.ncl.ucar.edu/Download/NCL_source_license.shtml">NCL
 source code license</a>, which is based on the OSI <a
 href="http://www.opensource.org/licenses/apache2.0.php">Apache
 License, Version 2.0</a> license.
@@ -669,7 +701,8 @@ To download the NCL source code, follow the instructions at the URL:
 
 <BLOCKQUOTE>
 <B>
-<A HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
+<A
+HREF="http://www.ncl.ucar.edu/Download/">http://www.ncl.ucar.edu/Download/</A>
 </B>
 </BLOCKQUOTE>
 
@@ -775,15 +808,19 @@ will also appear on the line that starts with "System File".<P>
 
 If you need to change the compilers or the options used, then modify
 the file "$NCARG/config/<I>system_file</I>", where <I>system_file</I>
-is the system configuration file being used.
+is the system configuration file being used. See the "README" file
+in that directory for a description of some of the available
+configuration files.
+<p>
 
-In particular, you may want to pay attention to how the following
-macros are being set:<P>
+When modifying your configuration file, you may want to pay particular
+attention to how the following macros are being set:<P>
 
 <PRE>
     CCompiler
     FCompiler
     ExtraSysLibraries
+    CtoFLibraries
     CcOptions
     FcOptions
     NgCallF
@@ -825,7 +862,7 @@ Here are the general steps for building NCL from source:
 
 <LI><A HREF="#StartBuildAndInstall">Start the build and install process</A>
 
-<LI><A HREF="#CheckThe Installation">Check that the installation was
+<LI><A HREF="#CheckTheInstallation">Check that the installation was
 successful</A>
 
 <LI><A HREF="#SetUpEnvironment">Set up your environment to use NCL</A>
@@ -897,13 +934,11 @@ change default values</A>."
 <A NAME="AIX"></A>
 <B>Special note for AIX systems</B><P>
 
-If you are going to build on an AIX system, then you need to decide if
-you want to build using the 32-bit option (-q32) or the 64-bit option
-(-q64). The AIX configuration file is set up to use whatever the
-default is on your system.  If you want to compile using a specific
-precision, then copy the appropriate
-<B>$NCARG/config/AIX_RS6000.<I>xx</I></B> file to
-<B>$NCARG/config/AIX_RS6000</B>, and make any necessary changes.<P>
+The configuration file for AIX is called "AIX_RS6000".  If you are
+building on an AIX system in 32-bit mode, then you need to edit this 
+file and change the appropriate options. See "AIX_RS6000.32" for
+a sample.
+<p>
 
 You can also setenv the OBJECT_MODE environment variable to 64 or 32,
 and this will build in that precision without having to set any
@@ -912,33 +947,20 @@ compiler options.<P>
 <A NAME="IRIX"></A>
 <B>Special note for IRIX systems</B><P>
 
-If you are going to build on an IRIX system, then you need to decide
-if you want to build using the 32-bit option (-n32) or the 64-bit
-option (-64). The configuration file is set up to use whatever the
-default is on your systemm.  If you want to compile using a specific
-precision, then copy the appropriate
-<B>$NCARG/config/SGI_IRIX.<I>xx</I></B> file to
-<B>$NCARG/config/SGI_IRIX</B>, and make any necessary changes.<P>
+The configuration file for SGI/IRIX is called "SGI_IRIX".  If you are
+building on an IRIX system in 32-bit mode, then you need to edit this
+file and change the appropriate options.  See "SGI_IRIX.n32" for a
+sample.
+<p>
 
 <A NAME="Linux"></A>
 <B>Special note for Linux systems</B><P>
 
-The default configuration file for Linux assumes you have a 32-bit
-architecture and are using the GNU compilers (gcc and g77). If you
-have a different compiler or architecture (i.e. 64-bit) you want to
-use, you need to copy the appropriate
-$NCARG/config/LINUX.<I>xxx</I> file to $NCARG/config/LINUX. Some of
-the available configuration files include:
-
-<OL>
-<LI>LINUX.GNU - GNU compilers (32-bit architecture)<P>
-<LI>LINUX.64.GNU - GNU compilers (64-bit architecture)<P>
-<LI>LINUX.PGI - Portland Group compilers (32-bit architecture)<P>
-<LI>LINUX.64.PGI - Portland Group compilers (64-bit architecture)<P>
-<LI>LINUX.INTEL - Intel compilers (32-bit architecture)<P>
-<LI>LINUX.64.INTEL - Intel compilers (64-bit architecture)<P>
-
-</OL>
+The default configuration file for Linux is "LINUX". You need to
+edit this file for i386, i686, and x86_64 systems. There
+are several LINUX.<i>xxxx</i> sample configuration files
+to help you modify this file for your purpose. Also, 
+see the "README" file in the "config" directory for more information.
 
 <A NAME="MacOSX"></A>
 <B>Special note for MacOSX systems</B><P>
@@ -1068,12 +1090,69 @@ installation</A>" for details about recovering from errors that occur
 during installation.
 <P>
  
+
+<A NAME="CheckTheInstallation"></A>
+<HR>
+<H2>Check that the installation was successful</H2>
+
+To test that your build of NCL was successful, test the list of files
+installed on your system against the <a
+href="files/NCL_NCARG_files.txt">master list of NCL/NCAR Graphics
+files</a>. If you just built and installed NCAR Graphics, then check
+your files against this <a href="files/NCARG_files.txt">smaller list
+of NCAR Graphics files</a>.
+<p>
+
+If it looks like not all the files were installed, then take a look at
+the make-output file, and check for words like "fatal" or
+"error". Don't worry too much about warnings, unless they are followed
+by errors.
+<p>
+
+If you find an error, try to determine the nature of the error, make
+any necessary adjustments, and either start the build from scratch
+or from where it left off.
+<p>
+
+If the nature of the error appears to be something like an option not
+being included on every compile line, then you need to change the
+system configuration file in $NCARG/config, add the necessary
+option(s), and restart the build from scratch (using a different
+output file):
+
+<BLOCKQUOTE>
+<B>
+cd $NCARG<br>
+make Everything >& make-output.2
+</B>
+</BLOCKQUOTE>
+
+If the nature of the error is such that you just need to tweak a
+particular file or Makefile somewhere in the NCL/NCARG Graphics source
+tree, then cd to the problem directory, make the change, and then type
+the following to recompile the local change (to make sure your change
+was successful) and start the build from where it left off:
+
+<BLOCKQUOTE>
+<B>
+make me<br>                   
+make includes depend all install<br>
+cd $NCARG<br>
+make all install >>& make-output
+</B>
+</BLOCKQUOTE>
+
+See <A HREF="#AppendixB">Appendix B</A> for more information on
+editing configuration files and restarting the installation.
+<P>
+
+
 <A NAME="SetUpEnvironment"></A>
 <HR>
-<H2>Set up your environment to use NCL</H2>
+<H2>Set up your environment to use NCL and/or NCAR Graphics</H2>
 
 Once the build process is complete, you need to do the following
-before you can start using NCL:
+before you can start using NCL or NCAR Graphics:
 
 <OL>
 <LI>Set the environment variable NCARG_ROOT to the parent directory of
@@ -1465,17 +1544,18 @@ routines</A>
 
 Configuration files contain make macros. At installation time, these
 macros are used by ymake to construct all of the Makefiles for
-the NCL release.  Any change you make in your configuration
-file will be distributed throughout the entire system. Refer to the
-"<A HREF="#ymake">ymake</A>" section for more information.<P>
+building NCL and NCAR Graphics.  Any change you make in your
+configuration file will cause a change in your Makefile(s), if you run
+something like "make Everything", "make Makefiles", or "make me" to
+regenerate the Makefile(s). Refer to the "<A HREF="#ymake">ymake</A>"
+section for more information.<P>
 
 Configuration files reside in the directory $NCARG/config. They have
-names like Sun4Solaris and SGI_IRIX to indicate the machine on which
-they operate. For example, If you are on a Sun running Solaris, you
-should make changes to the file $NCARG/config/SunSolaris. There is one
-other file, "Rules", which contains make macros. Generally, you would
-only change this file when you attempt to port the package to a new
-system.<P>
+names like "Sun4Solaris" and "SGI_IRIX" to indicate the machine on
+which they operate. For example, If you are on a Sun running Solaris,
+you should make changes to the file $NCARG/config/SunSolaris. See the
+"README" file in this directory for more information about the various
+configuration files.<P>
 
 A few of the macros are quite likely to change from system to system,
 but most are not. The Configure script allows the installer to
@@ -1832,9 +1912,6 @@ rightmost 6 bits of ISB(1) would be packed into NPC; 3 bits would be
 skipped in NPC, and the rightmost 6 bits of ISB(2) would be packed
 into NPC.<P>
 
-    
-<!--#include virtual="/footer.html"--><br>
-
-</div>
 </body>
 </html>
+
