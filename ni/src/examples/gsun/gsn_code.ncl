@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.203 2007-09-15 03:05:51 haley Exp $
+;      $Id: gsn_code.ncl,v 1.204 2007-11-07 16:58:59 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1113,9 +1113,8 @@ end
 ;                                                                       ;
 ; Make the 0-th contour line the given thickness.                       ;
 ;                                                                       ;
-; Note that this function also sets the rest of the line thicknesses to ;
-; 1, because it assumes if the user wants to set the thickness of other ;
-; lines, he/she can do so with the cnLineThicknesses resource.          ;
+; Note that this function now recognizes the cnLineThicknesses resource ;
+; and will set the contour lines to this thickness, if set.             ;
 ;                                                                       ;
 ; If thickness is equal to 0, then the line is just not drawn.          ;
 ;                                                                       ;
@@ -1131,21 +1130,34 @@ begin
   end if
 
   levels      = fix_zero_contour (levels)
-  thicknesses = new(dimsizes(levels), float)
-  thicknesses = cthickness
+  thicknesses = new(nlevels, float)
+;
+; If cthickness is an array, then deal with that here.
+;
+  ncthk = dimsizes(cthickness)
+  if(ncthk.gt.1) then
+    thicknesses = 1.      ; First, default them to default thickness.
+    i = 0
+    do while(i.lt.ncthk.and.i.lt.nlevels)
+      thicknesses(i) = cthickness(i)
+      i = i + 1
+    end do
+  else
+    thicknesses = cthickness
+  end if
 
   zeroind = ind(levels.eq.0.0)      ; Get index where level equals 0.0
   if(.not.ismissing(zeroind)) then
     if(zthickness.gt.0) then
       thicknesses(zeroind) = zthickness
-    else
+   else
       thicknesses(zeroind)  = 1.    ; Make it 1.0, but it doesn't matter
                                     ; b/c we are turning off the drawing
                                     ; of this line.
       levels@flags(zeroind) = 0     ; Turn off the zero contour line
     end if
   end if
-  
+
   overlay_plot = get_overlay_plot (plot, "contourPlotClass", 0)
    
   if(zthickness.gt.0) then
@@ -7795,7 +7807,12 @@ begin
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
-      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      if(.not.get_res_value_keep(res2,"cnMonoLineThickness",True).and.\
+         isatt(res2,"cnLineThicknesses")) then
+        cthickness = get_res_value(res2,"cnLineThicknesses",1.)
+      else
+        cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      end if
       delete(res2@gsnContourZeroLineThicknessF)
     end if
 
@@ -8770,7 +8787,12 @@ begin
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
-      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      if(.not.get_res_value_keep(res2,"cnMonoLineThickness",True).and.\
+         isatt(res2,"cnLineThicknesses")) then
+        cthickness = get_res_value(res2,"cnLineThicknesses",1.)
+      else
+        cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      end if
       delete(res2@gsnContourZeroLineThicknessF)
     end if
 
@@ -8936,7 +8958,12 @@ begin
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
-      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      if(.not.get_res_value_keep(res2,"cnMonoLineThickness",True).and.\
+         isatt(res2,"cnLineThicknesses")) then
+        cthickness = get_res_value(res2,"cnLineThicknesses",1.)
+      else
+        cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      end if
       delete(res2@gsnContourZeroLineThicknessF)
     end if
 
@@ -9098,7 +9125,12 @@ begin
 
     if(res2.and.isatt(res2,"gsnContourZeroLineThicknessF")) then
       zthickness = res2@gsnContourZeroLineThicknessF
-      cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      if(.not.get_res_value_keep(res2,"cnMonoLineThickness",True).and.\
+         isatt(res2,"cnLineThicknesses")) then
+        cthickness = get_res_value(res2,"cnLineThicknesses",1.)
+      else
+        cthickness = get_res_value(res2,"cnLineThicknessF",1.)
+      end if
       delete(res2@gsnContourZeroLineThicknessF)
     end if
 
