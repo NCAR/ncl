@@ -191,7 +191,7 @@ NhlErrorTypes z2geouv_W( void )
       tmp_v = &((double*)uv)[index_z+size_z];
     }
 
-    NGCALLF(z2geouv,Z@GEOUV)(tmp_z,&nlon,&nlat,&missing_dz.doubleval,
+    NGCALLF(z2geouv,Z2GEOUV)(tmp_z,&nlon,&nlat,&missing_dz.doubleval,
                              tmp_lon,tmp_lat,tmp_u,tmp_v,iopt);
 /*
  * Copy output values from temporary tmp_u, tmp_v to uv.
