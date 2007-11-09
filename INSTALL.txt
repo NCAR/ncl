@@ -505,7 +505,7 @@ or
       system will be recognized by the NCL build environment. Type:
 
         cd $NCARG/config
-        ./ymake
+        ./ymake -config `pwd`
 
       If no output is echoed to the screen, then go to the next section
       on getting your configuration file name <#GetConfigFileName>.
