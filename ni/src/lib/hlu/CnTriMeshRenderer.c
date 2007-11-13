@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.9 2007-08-17 21:05:21 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.10 2007-11-13 21:54:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -30,8 +30,10 @@
 #include <ncarg/hlu/CurvilinearTransObj.h>
 #include <ncarg/hlu/SphericalTransObj.h>
 #include <ncarg/hlu/TriMeshTransObj.h>
+#ifdef BuildTRIANGLE
 #define REAL double
 #include <ncarg/hlu/triangle.h>
+#endif
 
 #define Oset(field) \
     NhlOffset(NhlCnTriMeshRendererLayerRec,cntrimeshrenderer.field)
