@@ -309,6 +309,7 @@ typedef struct _g2Sec3 {
     int len_grid_template;
     int *grid_template;
     int is_thinned_grid;
+    int scan_mode_offset;
 #if 0
     G2shapeOfEarth  *shape_of_earth;
     G2resComponentFlags *res_comp;
@@ -408,6 +409,8 @@ typedef struct _g2dataRepr {
     int    nbits_packed_val;
     int    typeof_field_vals;
     char    *field_vals;
+    int own_missing;
+    NclScalar missing;
 } G2dataRepr;
 
 /* Data Representation Template Section (DRS) */
@@ -565,6 +568,8 @@ struct _Grib2ParamList {
     int variable_time_unit;
     int level_indicator;
     int has_bmap;
+    int has_own_missing;
+    NclScalar missing;
     G2_GIT minimum_it;
     NclGrib2FVarRec var_info;
     NrmQuark    aux_coords[2];
@@ -638,6 +643,8 @@ struct _Grib2RecordInqRec {
     G2_GDS  *gds;
     int interp_method;   /* 0 - linear; 1 - cubic */
     int has_bmap;
+    int has_own_missing;
+    NclScalar missing;
 
     unsigned int    bds_flags;
     int int_or_float;

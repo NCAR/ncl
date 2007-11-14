@@ -722,7 +722,10 @@ void g2GDSCEGrid
 
     for (i = 0; i < *(*dimsizes_lon) ; i++)
         (*lon)[i] = (float)(lo1 + idir * i * di) ;
-	
+
+    /* save the scan mode flags -- needed for decoding the data */
+    thevarrec->gds->scan_mode_offset = (int*)&(ce->scan_mode_flags) - (int*)ce;
+
 	if (lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
 		*tmp_float = la1;
@@ -982,6 +985,9 @@ void g2GDSRLLGrid
 
     idir = g2getbits(rll->ce.scan_mode_flags, 7, 1) == 0 ? 1 : -1;
     jdir = g2getbits(rll->ce.scan_mode_flags, 6, 1) == 0 ? -1 : 1;
+    /* save the scan mode flags -- needed for decoding the data */
+    thevarrec->gds->scan_mode_offset = (int*)&(rll->ce.scan_mode_flags) - (int*)rll;
+
     if (rll->ce.subdiv_basic_angle != 0 && rll->ce.angl_init_prod_domain != 0)
 	    scale_factor = (double) rll->ce.angl_init_prod_domain / 
 		    (double) rll->ce.subdiv_basic_angle;
@@ -1052,6 +1058,7 @@ void g2GDSRLLGrid
 			    dj = -dj;
 	    }
     }
+
 
     *dimsizes_lat = (int*)NclMalloc(2 * sizeof(int));
     *dimsizes_lon = (int*)NclMalloc(2 * sizeof(int));
@@ -1368,6 +1375,9 @@ void g2GDSMEGrid
     jdir = g2getbits(me->scan_mode_flags, 6, 1) == 0 ? -1 : 1;
     scale_factor = 1.0 / (double) G2_SCALE_FACTOR;
 
+    /* save the scan mode flags -- needed for decoding the data */
+    thevarrec->gds->scan_mode_offset = (int*)&(me->scan_mode_flags) - (int*)me;
+
     la1 = me->lat_first_gridpt * scale_factor;
     lo1 = me->lon_first_gridpt * scale_factor;
     la2 = me->lat_last_gridpt * scale_factor;
@@ -1578,6 +1588,9 @@ int* nrotatts;
 
 	dx = st->dx_incr * scale_factor;  /* units of 10-3 meters converted to kilometers */
 	dy = st->dy_incr * scale_factor;
+
+	/* save the scan mode flags -- needed for decoding the data */
+	thevarrec->gds->scan_mode_offset = (int*)&(st->scan_mode_flags) - (int*)st;
 
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
@@ -1833,6 +1846,10 @@ int* nrotatts;
 	dy = lc->dy_incr * scale_factor;
 	latin1 = lc->latin1 * scale_factor;
 	latin2 = lc->latin2 * scale_factor;
+
+	/* save the scan mode flags -- needed for decoding the data */
+	thevarrec->gds->scan_mode_offset = (int*)(&(lc->scan_mode_flags)) - (int*)lc;
+
 
 	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
 	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
@@ -2104,6 +2121,8 @@ int* nrotatts;
 			(double) ga->subdiv_basic_angle;
 	else 
 		scale_factor = 1.0 / (double) G2_SCALE_FACTOR;
+	/* save the scan mode flags -- needed for decoding the data */
+	thevarrec->gds->scan_mode_offset = (int*)(&(ga->scan_mode_flags)) - (int*)ga;
 
 	la1 = ga->lat_first_gridpt * scale_factor;
 	lo1 = ga->lon_first_gridpt * scale_factor;
@@ -3578,14 +3597,20 @@ Grib2FileRecord *therec;
 		att_list_ptr->att_inq->name = NrmStringToQuark(NCL_MISSING_VALUE_ATT);
 		if (step->var_info.data_type == NCL_int) {
 			tmp_fill = NclMalloc(sizeof(int));
-			*(int *) tmp_fill = G2_DEFAULT_MISSING_INT;
+			if (step->has_own_missing)
+				*(int *) tmp_fill = step->missing.intval;
+			else
+				*(int *) tmp_fill = G2_DEFAULT_MISSING_INT;
 			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
 				_NclCreateVal(NULL, NULL,
 					      Ncl_MultiDValData, 0, (void *) tmp_fill, NULL, 1, &tmp_dimsizes,
 					      PERMANENT, NULL, nclTypeintClass);
 		} else {
 			tmp_fill = NclMalloc(sizeof(float));
-			*(float *) tmp_fill = G2_DEFAULT_MISSING_FLOAT;
+			if (step->has_own_missing)
+				*(float *) tmp_fill = step->missing.floatval;
+			else
+				*(float *) tmp_fill = G2_DEFAULT_MISSING_FLOAT;
 			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
 				_NclCreateVal(NULL, NULL,
 					      Ncl_MultiDValData, 0, (void *) tmp_fill, NULL, 1, &tmp_dimsizes, 
@@ -4250,6 +4275,9 @@ static Grib2ParamList *_g2NewListNode
 	tmp->grid_number = grib_rec->grid_number;
 	tmp->level_indicator = grib_rec->level_indicator;
 	tmp->has_bmap = 0;
+	tmp->has_own_missing = grib_rec->has_own_missing;
+	tmp->missing = grib_rec->missing;
+	tmp->gds->scan_mode_offset = -1;
 	tmp->n_entries = 1;
 	tmp->minimum_it = grib_rec->initial_time;
 	tmp->forecast_time_iszero = (grib_rec->forecast_time == 0);
@@ -6540,6 +6568,7 @@ static void _g2SetFileDimsAndCoordVars
 		int count = 0;
 		step->grid_index = dstep->dim_inq->grid_index;
 		step->gds->is_thinned_grid = dstep->dim_inq->gds->is_thinned_grid;
+		step->gds->scan_mode_offset = dstep->dim_inq->gds->scan_mode_offset;
 		if(dstep->dim_inq->grid_number==50) {
 			step->var_info.dim_sizes[current_dim+1] = dstep->dim_inq->size;
 			dnum1 = step->var_info.file_dim_num[current_dim+1] = dstep->dim_inq->dim_number;
@@ -8914,6 +8943,7 @@ static void *Grib2OpenFile
 	    g2rec[nrecs]->sec3[i]->grid_template = (int *)g2fld->igdtmpl; 
 	    g2fld->igdtmpl = NULL;
 	    g2rec[nrecs]->sec3[i]->is_thinned_grid = 0; /* this is determined later */
+	    g2rec[nrecs]->sec3[i]->scan_mode_offset = -1; /* this is determined later */
 	    
 
 #if 0
@@ -9730,6 +9760,22 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec5[i]->data_repr->bin_scale_factor = g2fld->idrtmpl[1];
             g2rec[nrecs]->sec5[i]->data_repr->dec_scale_factor = g2fld->idrtmpl[2];
             g2rec[nrecs]->sec5[i]->data_repr->nbits_packed_val = g2fld->idrtmpl[3];
+	    g2rec[nrecs]->sec5[i]->data_repr->own_missing = 0;
+	    g2rec[nrecs]->sec5[i]->data_repr->missing.doubleval = 0;
+	    if (g2fld->idrtnum == 2 || g2fld->idrtnum == 3) {
+		    /* These data representation types may use their own missing value */
+		    if (g2fld->idrtmpl[6] > 0 && g2fld->idrtmpl[6] < 3) {
+			    g2rec[nrecs]->sec5[i]->data_repr->own_missing = 1;
+			    if (g2fld->idrtmpl[4] == 0) {
+				    float tfloat;
+				    rdieee(g2fld->idrtmpl + 7,&tfloat,1);
+				    g2rec[nrecs]->sec5[i]->data_repr->missing.floatval = tfloat;
+			    }
+			    else {
+				    g2rec[nrecs]->sec5[i]->data_repr->missing.floatval = (float)g2fld->idrtmpl[7];
+			    }
+		    }
+	    }
 
             /* table 5.1: Type of Original Field Values */
             g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = g2fld->idrtmpl[4];
@@ -9906,6 +9952,8 @@ static void *Grib2OpenFile
 	    g2inqrec->has_bmap = g2rec[i]->sec6[j]->bmap_ind != 255 ? 1 : 0;
             g2inqrec->bds_flags = g2rec[i]->sec5[j]->drt_templ_num;
             g2inqrec->int_or_float = g2rec[i]->sec5[j]->data_repr->typeof_field_vals;
+	    g2inqrec->has_own_missing = g2rec[i]->sec5[j]->data_repr->own_missing;
+	    g2inqrec->missing = g2rec[i]->sec5[j]->data_repr->missing;
 
             /*
              * Variable info.  Fields will be populated per code above that reads
@@ -11014,12 +11062,13 @@ static void GetSphericalHarmonicData
 
 static void *GetData
 #if	NhlNeedProto
-(FILE *fp, Grib2RecordInqRec *rec,void **missing)
+(FILE *fp, Grib2RecordInqRec *rec,void **missing,int scan_mode_offset)
 #else
-(fp, rec,missing)
+(fp, rec,missing,scan_mode_offset)
 FILE *fp;
 Grib2RecordInqRec *rec;
 void **missing;
+int scan_mode_offset;
 #endif
 {
 	int size;
@@ -11027,10 +11076,14 @@ void **missing;
 	gribfield *gfld;
 	int err;
 	float *ret_val;
-	int i,n;
+	int i,j,k,n;
 	int field_num;
 	int force_linear = 0;
 	int has_missing = 0;
+	float missing2;
+	int j_consecutive = 0;
+	int alternating_direction = 0;
+	int scan_mode = 0;
 
 	buf = NclMalloc(rec->rec_size);
 	fseek(fp,rec->offset,SEEK_SET);
@@ -11047,8 +11100,37 @@ void **missing;
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Error reading GRIB file");
 		return NULL;
 	}
+	if (scan_mode_offset > -1) {
+		scan_mode = gfld->igdtmpl[scan_mode_offset];
+	}
 	*missing = (void*)NclMalloc((unsigned)sizeof(float));
 	*(float*)(*missing) = G2_DEFAULT_MISSING_FLOAT;
+	if (gfld->idrtnum == 2 || gfld->idrtnum == 3) {
+		if (gfld->idrtmpl[6] == 1) {
+			if (gfld->idrtmpl[4] == 0)
+				rdieee(gfld->idrtmpl + 7,(float *)(*missing),1);
+			else
+				*(float *)(*missing) = (float) gfld->idrtmpl[7];
+		}
+		else if (gfld->idrtmpl[6] == 2) {
+			if (gfld->idrtmpl[4] == 0) {
+				rdieee(gfld->idrtmpl + 7,(float *)(*missing),1);
+				rdieee(gfld->idrtmpl + 8,&missing2,1);
+			}
+			else {
+				*(float *)(*missing) = (float) gfld->idrtmpl[7];
+				missing2 = (float) gfld->idrtmpl[8];
+			}
+			/* since we cannot handle 2 missing values we're going to 
+			   set all values that equal the second missing value to
+			   the first missing value */
+			for (i = 0; i < gfld->ngrdpts; i++) {
+				if (gfld->fld[i] == missing2) {
+					gfld->fld[i] = *(float *)(*missing);
+				}
+			}
+		}
+	}
 	NclFree(buf);
 
 	if (gfld->igdtnum == 50) {
@@ -11151,6 +11233,33 @@ void **missing;
 		NclFree(zline);
 		NclFree(zwork);
 	}
+
+	/* If the scan_mode indicates, then data may need to be reordered */
+
+	if (scan_mode_offset > -1) {
+		j_consecutive = g2getbits(scan_mode, 5, 1); /* not yet supported */
+		alternating_direction = g2getbits(scan_mode, 4, 1);
+	}
+
+	if (alternating_direction) {
+		int nx,ny;
+		float *tmprow;
+
+		n = rec->the_dat->multidval.n_dims;
+		nx = rec->the_dat->multidval.dim_sizes[n-1];
+		ny = rec->the_dat->multidval.dim_sizes[n-2];  
+		tmprow = NclMalloc(sizeof(float) * nx);
+
+		/* every other row is reversed */
+		for (i = 1; i < ny; i+= 2) {
+			memcpy(tmprow,ret_val + i * nx, nx * sizeof(float));
+			for (j = 0, k = nx - 1; j < nx; j++, k--) {
+				*(ret_val + i * nx + j) = tmprow[k];
+			}
+		}
+		NclFree(tmprow);
+	}
+		
 	g2_free(gfld);
 	return ret_val;
 }
@@ -11347,7 +11456,7 @@ void* storage;
 					}
 					missing = NULL;
 					tmp = NULL;
-					tmp = GetData(fd,current_rec,&missing);
+					tmp = GetData(fd,current_rec,&missing,step->gds->scan_mode_offset);
 					if (tmp &&  current_rec->the_dat->multidval.val) {
 						NclFree(current_rec->the_dat->multidval.val);
 						current_rec->the_dat->multidval.val = tmp;
