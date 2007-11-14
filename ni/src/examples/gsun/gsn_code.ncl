@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.204 2007-11-07 16:58:59 haley Exp $
+;      $Id: gsn_code.ncl,v 1.205 2007-11-14 16:43:59 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7692,6 +7692,7 @@ begin
     histogram@MidBarLocs   = bar_locs + 0.5*bar_width
     histogram@EndBarLocs   = bar_locs + bar_width
   end if
+  histogram@BinLocs       = num_in_bins@binlocs
   histogram@NumInBins     = num_in_bins
   histogram@NumMissing    = num_in_bins@NumMissing
   histogram@Percentages   = num_in_bins@percentages
