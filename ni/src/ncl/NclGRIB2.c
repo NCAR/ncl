@@ -8182,6 +8182,8 @@ static TiggeInfo tigge_info[] = {
   {2, 0, 5, 5,    1,   1, 255,   255,   255, 255, 255, "str", "time integrated surface net thermal radiation", "W/m^2 s" },
   {3, 2, 0, 22, 255, 106,   0,     0,   106,   1,   2, "sm", "soil moisture", "kg/m^3" },
   {3, 2, 0, 2,  255, 106,   0,     0,   106,   1,   2, "st", "soil temperature", "K"}, 
+  {3, 2, 3, 7,  255, 106,   0,     0,   106,   1,   2, "cap", "field_capacity", "proportion" },
+  {3, 2, 0, 17, 255, 106,   0,     0,   106,   1,   2, "wilt", "wilting point", "proportion" },
   {4, 0, 6, 1,  255,   1, 255,   255,     8, 255, 255, "tcc", "total cloud cover", "%" },
   {4, 0, 1, 51, 255,   1, 255,   255,     8, 255, 255, "tcw", "total column water", "kg/m^2" },
   {4, 0, 7, 6,  255,   1, 255,   255,     8, 255, 255, "cape", "Convective available potential energy", "J/kg" },
