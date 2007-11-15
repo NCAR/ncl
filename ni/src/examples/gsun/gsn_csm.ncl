@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.215 2007-10-30 14:02:36 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.216 2007-11-15 04:03:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -7268,6 +7268,7 @@ begin
       gsnp_write_debug_info(u,v,data,"gsn_csm_vector_scalar",res2,3)
     end if
 
+    tm_scale      = get_res_value_keep(res2,"gsnScale",True)
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; Check for cyclic point (default is True if we are not setting both
@@ -7411,18 +7412,11 @@ begin
       "tmXBLabelFontHeightF" : xbfontf
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
-      "tmYLMajorLengthF"     : ylength
-      "tmXBMajorLengthF"     : xlength
-      "tmYLMinorLengthF"     : ymlength
-      "tmXBMinorLengthF"     : xmlength
     end getvalues
 
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
                                           ; function of the size of the
                                           ; X/Y axis labels.
-
-    major_length = min((/ylength,xlength/))    ; New length for major ticks.
-    minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
 
 ; If the plot is close to square in size, then make the 
 ; three top titles and the tick marks smaller.
@@ -7438,16 +7432,29 @@ begin
 
     scale = font_scale(index(0))
     font_height  = scale * font_height
+
+    if(tm_scale) then
 ;
 ; Make tick marks same length and point outward.
 ;
-    major_length = scale * major_length
-    minor_length = scale * minor_length
+      getvalues vector_object
+        "tmYLMajorLengthF"     : ylength
+        "tmXBMajorLengthF"     : xlength
+        "tmYLMinorLengthF"     : ymlength
+        "tmXBMinorLengthF"     : xmlength
+      end getvalues
 
-    tmres = get_res_eq(res2,"tm")
-    gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
-                                 xmlength,ymlength,\
-                                 major_length,minor_length,point_outward)
+      major_length = min((/ylength,xlength/))    ; New length for major ticks.
+      minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
+
+      major_length = scale * major_length
+      minor_length = scale * minor_length
+
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(vector_object,tmres,xlength,ylength,\
+                                   xmlength,ymlength,\
+                                   major_length,minor_length,point_outward)
+    end if
 
 ; Make sure info labels, line labels, and vector labels are same size.
     if(scalar_contour)
@@ -8687,6 +8694,7 @@ begin
     center_string = False
     right_string  = False
     bar_chart     = False
+    tm_scale      = get_res_value_keep(res2,"gsnScale",True)
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; Check if frame and/or draw are not supposed to be called.
@@ -8908,9 +8916,9 @@ begin
     end if                  ; Done checking special resources.
 
     res2          = True
-    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
-    res2@gsnFrame = False   ; frame since we take care of that later.
-    res2@gsnScale = True    ; force labels and ticks to be same.
+    res2@gsnDraw  = False     ; Internally, don't draw plot or advance
+    res2@gsnFrame = False     ; frame since we take care of that later.
+    res2@gsnScale = tm_scale  ; Force labels and ticks to be same.
 
 ; If user explicitly sets X or Y tick marks, then don't label the X 
 ; or Y axis automatically.
@@ -10418,6 +10426,7 @@ begin
       gsnp_write_debug_info(data,new(1,float),new(1,float),"gsn_csm_contour",res2,1)
     end if
 
+    tm_scale      = get_res_value_keep(res2,"gsnScale",True)
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
@@ -10492,9 +10501,9 @@ begin
     end if
 
     res2          = True
-    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
-    res2@gsnFrame = False   ; frame since we take care of that later.
-    res2@gsnScale = True    ; force labels and ticks to be same.
+    res2@gsnDraw  = False     ; Internally, don't draw plot or advance
+    res2@gsnFrame = False     ; frame since we take care of that later.
+    res2@gsnScale = tm_scale  ; Force labels and ticks to be same, if True.
 
     cnres = get_res_ne(res2,(/"tx","am"/))
     contour_object = gsn_contour(wks,datanew,cnres)
@@ -10513,11 +10522,6 @@ begin
   
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
-
-      "tmYLMajorLengthF"     : ylength
-      "tmXBMajorLengthF"     : xlength
-      "tmYLMinorLengthF"     : ymlength
-      "tmXBMinorLengthF"     : xmlength
     end getvalues
 
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
@@ -10545,13 +10549,22 @@ begin
 ;
 ; Make tick marks same length and point outward.
 ;
-      major_length = scale * min((/ylength,xlength/))
-      minor_length = scale * min((/ymlength,xmlength/))
+      if(tm_scale) then
+        getvalues contour_plot
+          "tmYLMajorLengthF"     : ylength
+          "tmXBMajorLengthF"     : xlength
+          "tmYLMinorLengthF"     : ymlength
+          "tmXBMinorLengthF"     : xmlength
+        end getvalues
 
-      tmres = get_res_eq(res2,"tm")
-      gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
-                                   xmlength,ymlength,\
-                                   major_length,minor_length,point_outward)
+        major_length = scale * min((/ylength,xlength/))
+        minor_length = scale * min((/ymlength,xmlength/))
+
+        tmres = get_res_eq(res2,"tm")
+        gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
+                                     xmlength,ymlength,\
+                                     major_length,minor_length,point_outward)
+      end if
     end if
 
 ; Create a labelbar.
@@ -11059,6 +11072,7 @@ begin
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_vector",res2,2)
     end if
 
+    tm_scale      = get_res_value_keep(res2,"gsnScale",True)
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
@@ -11121,9 +11135,9 @@ begin
     end if
 
     res2          = True
-    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
-    res2@gsnFrame = False   ; frame since we take care of that later.
-    res2@gsnScale = True    ; force labels and ticks to be same.
+    res2@gsnDraw  = False     ; Internally, don't draw plot or advance
+    res2@gsnFrame = False     ; frame since we take care of that later.
+    res2@gsnScale = tm_scale  ; Force labels and ticks to be same.
 
     vcres = get_res_ne(res2,(/"tx"/))
     vector_object = gsn_vector(wks,unew,vnew,vcres)
@@ -11142,19 +11156,11 @@ begin
   
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
-  
-      "tmYLMajorLengthF"     : ylength
-      "tmXBMajorLengthF"     : xlength
-      "tmYLMinorLengthF"     : ymlength
-      "tmXBMinorLengthF"     : xmlength
     end getvalues
 
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
                                           ; function of the size of the
                                           ; X/Y axis labels.
-
-    major_length = min((/ylength,xlength/))    ; New length for major ticks.
-    minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
 
 ; If the plot is close to square in size, then make the 
 ; three top titles and the tick marks smaller.
@@ -11170,17 +11176,29 @@ begin
 
     scale = font_scale(index(0))
     font_height  = scale * font_height
+
+    if(tm_scale) then
 ;
 ; Make tick marks same length and point outward.
 ;
-    major_length = scale * major_length
-    minor_length = scale * minor_length
+      getvalues vector_plot
+        "tmYLMajorLengthF"     : ylength
+        "tmXBMajorLengthF"     : xlength
+        "tmYLMinorLengthF"     : ymlength
+        "tmXBMinorLengthF"     : xmlength
+      end getvalues
 
-    tmres = get_res_eq(res2,"tm")
-    gsnp_point_tickmarks_outward(vector_plot,tmres,xlength,ylength,\
-                                 xmlength,ymlength,\
-                                 major_length,minor_length,point_outward)
+      major_length = min((/ylength,xlength/))    ; New length for major ticks.
+      minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
 
+      major_length = scale * major_length
+      minor_length = scale * minor_length
+
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(vector_plot,tmres,xlength,ylength,\
+                                   xmlength,ymlength,\
+                                   major_length,minor_length,point_outward)
+    end if
 
 ; Create a labelbar.
 
@@ -11350,6 +11368,7 @@ begin
       gsnp_write_debug_info(u,v,new(1,float),"gsn_csm_streamline",res2,2)
     end if
 
+    tm_scale      = get_res_value_keep(res2,"gsnScale",True)
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; This section tests for more special resources: those that start
@@ -11398,9 +11417,9 @@ begin
     check_for_coord_arrays(unew,res2,"vector")
 
     res2          = True
-    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
-    res2@gsnFrame = False   ; frame since we take care of that later.
-    res2@gsnScale = True    ; force labels and ticks to be same.
+    res2@gsnDraw  = False     ; Internally, don't draw plot or advance
+    res2@gsnFrame = False     ; frame since we take care of that later.
+    res2@gsnScale = tm_scale  ; Force labels and ticks to be same.
 
     stres = get_res_ne(res2,(/"tx"/))
     stream_object = gsn_streamline(wks,unew,vnew,stres)
@@ -11421,19 +11440,11 @@ begin
   
       "tiXAxisFontHeightF"   : xfontf
       "tiYAxisFontHeightF"   : yfontf
-  
-      "tmYLMajorLengthF"     : ylength
-      "tmXBMajorLengthF"     : xlength
-      "tmYLMinorLengthF"     : ymlength
-      "tmXBMinorLengthF"     : xmlength
     end getvalues
 
     font_height = min((/xfontf,yfontf/))  ; Make subtitle label sizes a
                                           ; function of the size of the
                                           ; X/Y axis labels.
-
-    major_length = min((/ylength,xlength/))    ; New length for major ticks.
-    minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
 
 ; If the plot is close to square in size, then make the 
 ; three top titles and the tick marks smaller.
@@ -11449,16 +11460,29 @@ begin
 
     scale = font_scale(index(0))
     font_height  = scale * font_height
+
+    if(tm_scale) then
 ;
 ; Make tick marks same length and point outward.
 ;
-    major_length = scale * major_length
-    minor_length = scale * minor_length
+      getvalues streamline_plot
+        "tmYLMajorLengthF"     : ylength
+        "tmXBMajorLengthF"     : xlength
+        "tmYLMinorLengthF"     : ymlength
+        "tmXBMinorLengthF"     : xmlength
+      end getvalues
 
-    tmres = get_res_eq(res2,"tm")
-    gsnp_point_tickmarks_outward(streamline_plot,tmres,xlength,ylength,\
-                                 xmlength,ymlength,\
-                                 major_length,minor_length,point_outward)
+      major_length = min((/ylength,xlength/))    ; New length for major ticks.
+      minor_length = min((/ymlength,xmlength/))  ; New length for minor ticks.
+
+      major_length = scale * major_length
+      minor_length = scale * minor_length
+
+      tmres = get_res_eq(res2,"tm")
+      gsnp_point_tickmarks_outward(streamline_plot,tmres,xlength,ylength,\
+                                   xmlength,ymlength,\
+                                   major_length,minor_length,point_outward)
+    end if
 
 ; Set up three subtitles at top, if they exist.
     subres = get_res_eq(res2,(/"am","tx"/))  ; Get textitem resources
