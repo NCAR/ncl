@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.151 2007-09-15 03:05:50 haley Exp $
+;      $Id: contributed.ncl,v 1.152 2007-11-16 18:54:35 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6303,6 +6303,39 @@ function yyyymm_time (yrStrt:integer, yrLast:integer, TYPE:string)
 begin
      return( timeCoads2YYYYMM (yrStrt, yrLast, TYPE) )     
 end
+;*************************************************************************
+; Nadine Salzmann and Simon Scherrer
+
+undef ("yyyymmdd_time")
+
+function yyyymmdd_time (yrStrt:integer, yrLast:integer, TYPE:string)
+local n, nmos, nyrs, ntim, year, nmo, ndy, tdum
+begin
+  nmos = 12
+  nyrs = yrLast-yrStrt+1
+  ntim = nyrs*nmos*31 ; make long enough array
+  tdum = new ( ntim, TYPE, "No_FillValue" )
+
+  n = -1 ; initialize day counter
+  do year = yrStrt,yrLast
+    do nmo=1,nmos
+       YRM  = year*10000 + nmo*100
+       nday = days_in_month(year, nmo)
+      do ndy = 1,nday
+         n = n+1
+         tdum(n) = YRM + ndy
+      end do
+    end do
+  end do
+
+  time      = tdum(0:n) ; cut out only filled in times
+  time@long_name = "time"
+  time@units     = "YYYYMMDD"
+  time!0    = "time"
+  time&time =  time
+  return (time)
+end
+
 ;************************************************************************* 
 ; D. Shea 
 ; Read simple f90 namelist file as indicated by Ben Foster [HAO]
