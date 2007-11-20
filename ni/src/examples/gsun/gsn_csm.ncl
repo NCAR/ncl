@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.216 2007-11-15 04:03:11 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.217 2007-11-20 00:00:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -51,6 +51,7 @@ undef("set_axis_string")
 undef("set_subtitles_res")
 undef("is_valid_coord")
 undef("is_valid_latlon2d_attr")
+undef("is_tm_obj_valid")
 undef("check_for_coord_arrays")
 undef("check_class_name")
 undef("get_allowed_latnames")
@@ -912,6 +913,35 @@ begin
   end if
   return(False)
 end 
+
+
+;***********************************************************************;
+; Function : is_tm_obj_valid                                            ;
+;                                                                       ;
+;          pobj : plot object to retrieve trGridType from               ;
+;          tdata: data variable to see if it has 2D lat/lon coords      ;
+;                                                                       ;
+; This function checks to see if the given plot object has had a tick   ;
+; mark object created for it. A tickmark object can't be created if     ;
+; you have 2D lat/lon coordinates *and* trGridType was not set to       ;
+; "TriangularMesh".                                                     ;
+;                                                                       ;
+;***********************************************************************;
+function is_tm_obj_valid(pobj,tdata)
+local tr_grid_type
+begin
+  if(is_valid_latlon2d_attr(tdata,"lat2d").and. \
+     is_valid_latlon2d_attr(tdata,"lon2d")) then
+    getvalues pobj
+      "trGridType" : tr_grid_type
+    end getvalues
+; trGridType == 5 --> TriangularMesh
+    if(tr_grid_type.ne.5) then
+      return(False)
+    end if
+  end if
+  return(True)
+end
 
 
 ;***********************************************************************;
@@ -7432,8 +7462,11 @@ begin
 
     scale = font_scale(index(0))
     font_height  = scale * font_height
-
-    if(tm_scale) then
+;
+; If gsnScale is True, then make sure we have a valid tickmark
+; object before we do anything else.
+;
+    if(tm_scale.and.is_tm_obj_valid(vector_object,unew)) then
 ;
 ; Make tick marks same length and point outward.
 ;
@@ -10501,8 +10534,8 @@ begin
     end if
 
     res2          = True
-    res2@gsnDraw  = False     ; Internally, don't draw plot or advance
-    res2@gsnFrame = False     ; frame since we take care of that later.
+    res2@gsnDraw  = False   ; Internally, don't draw plot or advance
+    res2@gsnFrame = False   ; frame since we take care of that later.
     res2@gsnScale = tm_scale  ; Force labels and ticks to be same, if True.
 
     cnres = get_res_ne(res2,(/"tx","am"/))
@@ -10549,7 +10582,7 @@ begin
 ;
 ; Make tick marks same length and point outward.
 ;
-      if(tm_scale) then
+      if(tm_scale.and.is_tm_obj_valid(contour_plot,datanew)) then
         getvalues contour_plot
           "tmYLMajorLengthF"     : ylength
           "tmXBMajorLengthF"     : xlength
@@ -10561,6 +10594,7 @@ begin
         minor_length = scale * min((/ymlength,xmlength/))
 
         tmres = get_res_eq(res2,"tm")
+
         gsnp_point_tickmarks_outward(contour_plot,tmres,xlength,ylength,\
                                      xmlength,ymlength,\
                                      major_length,minor_length,point_outward)
@@ -11177,7 +11211,7 @@ begin
     scale = font_scale(index(0))
     font_height  = scale * font_height
 
-    if(tm_scale) then
+    if(tm_scale.and.is_tm_obj_valid(vector_plot,unew)) then
 ;
 ; Make tick marks same length and point outward.
 ;
@@ -11461,7 +11495,7 @@ begin
     scale = font_scale(index(0))
     font_height  = scale * font_height
 
-    if(tm_scale) then
+    if(tm_scale.and.is_tm_obj_valid(streamline_plot,unew)) then
 ;
 ; Make tick marks same length and point outward.
 ;

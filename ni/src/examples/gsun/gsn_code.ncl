@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.205 2007-11-14 16:43:59 haley Exp $
+;      $Id: gsn_code.ncl,v 1.206 2007-11-20 00:00:49 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2287,46 +2287,80 @@ end
 ;***********************************************************************;
 ; Procedure : gsnp_scale_plot                                           ;
 ;              plot:graphic                                             ;
+;              prefix:string                                            ;
+;               res:logical                                             ;
 ;                                                                       ;
 ; If gsnScale is set to True, then the plot is scaled such the tickmarks;
 ; and tickmark labels are the same size on both axes.                   ;
+;                                                                       ;
+; As of 5.0.1, this procedure checks the resource list to see if the    ;
+; xxX/YArray resources are attached, and if they are 2D. If so, then we ;
+; also need to make sure trGridType is TriangularMesh, otherwise we     ;
+; can't have a tickmark object.                                         ;
 ;***********************************************************************;
-procedure gsnp_scale_plot(plot:graphic)
-local xfont, yfont, xbfont, xlength, xmlength, ylfont, ylength, ymlength
+procedure gsnp_scale_plot(plot:graphic,scalar_prefix,res:logical)
+local xfont, yfont, xbfont, xlength, xmlength, ylfont, ylength, ymlength, \
+xresname, yresname, valid_tm, tr_grid_type
 begin
+;
+; We can get/set the title sizes no matter what.
+;
   getvalues plot
     "tiXAxisFontHeightF"   : xfont
     "tiYAxisFontHeightF"   : yfont
-    "tmXBLabelFontHeightF" : xbfont
-    "tmXBMajorLengthF"     : xlength
-    "tmXBMinorLengthF"     : xmlength
-    "tmYLLabelFontHeightF" : ylfont
-    "tmYLMajorLengthF"     : ylength
-    "tmYLMinorLengthF"     : ymlength
   end getvalues
-
-  if(xlength.ne.0..and.ylength.ne.0.)
-    major_length = (ylength+xlength)/2. 
-    xlength = major_length
-    ylength = major_length
-  end if
-
-  if(xmlength.ne.0..and.ymlength.ne.0.)
-    minor_length = (ymlength+xmlength)/2. 
-    xmlength = minor_length
-    ymlength = minor_length
-  end if
-
   setvalues plot
     "tiXAxisFontHeightF"   : (xfont+yfont)/2.
     "tiYAxisFontHeightF"   : (xfont+yfont)/2.
-    "tmXBLabelFontHeightF" : (xbfont+ylfont)/2.
-    "tmXBMajorLengthF"     : xlength
-    "tmXBMinorLengthF"     : xmlength
-    "tmYLLabelFontHeightF" : (xbfont+ylfont)/2.
-    "tmYLMajorLengthF"     : ylength
-    "tmYLMinorLengthF"     : ymlength
   end setvalues
+;
+; Here's the code for checking if we have a valid tickmark object.
+;
+  valid_tm = True       ; Assume we have a valid one, unless proven otherwise.
+  if(res.and.scalar_prefix.ne."") then
+    xresname = scalar_prefix + "XArray"
+    yresname = scalar_prefix + "YArray"
+    if(((isatt(res,xresname).and.dimsizes(dimsizes(res@$xresname$)).gt.1).or.\
+        (isatt(res,yresname).and.dimsizes(dimsizes(res@$yresname$)).gt.1))) then
+      getvalues plot
+        "trGridType" : tr_grid_type
+      end getvalues
+      if(tr_grid_type.ne.5) then
+        valid_tm = False
+      end if
+    end if
+  end if
+  if(valid_tm) then
+    getvalues plot
+      "tmXBLabelFontHeightF" : xbfont
+      "tmXBMajorLengthF"     : xlength
+      "tmXBMinorLengthF"     : xmlength
+      "tmYLLabelFontHeightF" : ylfont
+      "tmYLMajorLengthF"     : ylength
+      "tmYLMinorLengthF"     : ymlength
+    end getvalues
+
+    if(xlength.ne.0..and.ylength.ne.0.) then
+      major_length = (ylength+xlength)/2. 
+      xlength = major_length
+      ylength = major_length
+    end if
+
+    if(xmlength.ne.0..and.ymlength.ne.0.) then
+      minor_length = (ymlength+xmlength)/2. 
+      xmlength = minor_length
+      ymlength = minor_length
+    end if
+
+    setvalues plot
+      "tmXBLabelFontHeightF" : (xbfont+ylfont)/2.
+      "tmXBMajorLengthF"     : xlength
+      "tmXBMinorLengthF"     : xmlength
+      "tmYLLabelFontHeightF" : (xbfont+ylfont)/2.
+      "tmYLMajorLengthF"     : ylength
+      "tmYLMinorLengthF"     : ymlength
+    end setvalues
+  end if
 end
 
 ;***********************************************************************;
@@ -2847,7 +2881,7 @@ begin
 ; and tick marks are the same size.
 
   if(scale)
-    gsnp_scale_plot(canvas)
+    gsnp_scale_plot(canvas,"",False)
   end if
 
   draw_and_frame(wks,canvas,calldraw,callframe,False,maxbb)
@@ -7890,7 +7924,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(plot_object)
+      gsnp_scale_plot(plot_object,"sf",resources)
     end if
 ;
 ; Check if we need to force the X or Y axis to be linear or log.
@@ -8009,7 +8043,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(contour_object)
+      gsnp_scale_plot(contour_object,"sf",resources)
     end if
 
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -8179,7 +8213,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(plot_object)
+      gsnp_scale_plot(plot_object,"vf",resources)
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
@@ -8278,7 +8312,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(stream_object)
+      gsnp_scale_plot(stream_object,"vf",resources)
     end if
 
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -8683,7 +8717,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(plot_object)
+      gsnp_scale_plot(plot_object,"vf",resources)
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
@@ -8861,7 +8895,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(vector_object)
+      gsnp_scale_plot(vector_object,"vf",resources)
     end if
 
     draw_and_frame(wks,vector_object,calldraw,callframe,0,maxbb)
@@ -9028,7 +9062,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(stream_object)
+      gsnp_scale_plot(stream_object,"vf",resources)
     end if
 
     draw_and_frame(wks,stream_object,calldraw,callframe,0,maxbb)
@@ -9202,7 +9236,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(vector_object)
+      gsnp_scale_plot(vector_object,"vf",resources)
     end if
 
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -9302,7 +9336,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(vector_object)
+      gsnp_scale_plot(vector_object,"vf",resources)
     end if
 
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -9429,7 +9463,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(plot_object)
+      gsnp_scale_plot(plot_object,"vf",resources)
     end if
 
 ; Check if we need to force the X or Y axis to be linear or log.
@@ -9559,7 +9593,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(vector_object)
+      gsnp_scale_plot(vector_object,"vf",resources)
     end if
 
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
@@ -9787,7 +9821,7 @@ begin
 ; and tick marks are the same size.
 ; 
     if(scale)
-      gsnp_scale_plot(plot_object)
+      gsnp_scale_plot(plot_object,"",False)
     end if
 
     draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
