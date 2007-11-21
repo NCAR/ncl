@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.38 2007-08-23 13:21:24 haley Exp $
+#      $Id: Configure,v 1.39 2007-11-21 19:16:02 grubin Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2007-08-23 13:21:24 $
+#	$Date: 2007-11-21 19:16:02 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -402,7 +402,20 @@ if ("$answer" == "q") goto cleanup
 if (("$answer" != "") && ("$answer" != "$buildhdf")) then
 	set buildhdf = $answer
 	set newbuildhdf
-        set altered
+    set altered
+endif
+
+if (("$answer" == "y") || ("$answer" == "Y")) then
+    set hdfwithszip = "n"
+    echo ""
+    echo "Did you build HDF with szip support? ($hdfwithszip)"
+    echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+    set answer="$<"
+    if ("$answer" == "q") goto cleanup
+    if (("$answer" != "") && ("$answer" != "$hdfwithszip")) then
+        set hdfwithszip = "$answer"
+        set hdflib = "-lmfhdf -ldf -ljpeg -lz -lsz"
+    endif
 endif
 
 #
@@ -885,6 +898,12 @@ if ($?newtmp) then
 endif
 
 echo "" >> Site.local
+
+if ("$hdfwithszip" == "y") then
+    echo "#define HDFlib $hdflib" >> Site.local
+    echo "" >> Site.local
+endif
+
 
 if ($?nloclib) then
 	echo "#define LibSearch $loclib" >> Site.local
