@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.217 2007-11-20 00:00:49 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.218 2007-11-21 15:56:07 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6656,18 +6656,22 @@ begin
     end if
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes). Check the vector and contour data separately.
 
     set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")).or.\
-                       (isatt(data,"lat2d").and.isatt(data,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
+    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
-      datanew = gsn_add_cyclic_point(data)
     else
       unew    = u
       vnew    = v
+    end if
+
+    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
+    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+      datanew = gsn_add_cyclic_point(data)
+    else
       datanew = data
     end if
 
@@ -6906,18 +6910,22 @@ begin
     mpres = True
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes). Check the vector and contour data separately.
 
     set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")).or.\
-                       (isatt(data,"lat2d").and.isatt(data,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
+    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
-      datanew = gsn_add_cyclic_point(data)
     else
       unew    = u
       vnew    = v
+    end if
+
+    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
+    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+      datanew = gsn_add_cyclic_point(data)
+    else
       datanew = data
     end if
 
@@ -7107,18 +7115,22 @@ begin
     end if
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes). Check the vector and contour data separately.
 
     set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")).or.\
-                       (isatt(data,"lat2d").and.isatt(data,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
+    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
-      datanew = gsn_add_cyclic_point(data)
     else
       unew = u
       vnew = v
+    end if
+
+    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
+    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+      datanew = gsn_add_cyclic_point(data)
+    else
       datanew = data
     end if
 
@@ -7302,18 +7314,22 @@ begin
     point_outward = get_res_value(res2,"gsnTickMarksPointOutward",True)
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes). Check the vector and contour data separately.
 
     set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")).or.\
-                       (isatt(data,"lat2d").and.isatt(data,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
+    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
-      datanew = gsn_add_cyclic_point(data)
     else
       unew    = u
       vnew    = v
+    end if
+
+    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d")) 
+    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+      datanew = gsn_add_cyclic_point(data)
+    else
       datanew = data
     end if
 
@@ -7599,18 +7615,22 @@ begin
     end if
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes). Check the vector and contour data separately.
 
     set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")).or.\
-                       (isatt(data,"lat2d").and.isatt(data,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
+    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
-      datanew = gsn_add_cyclic_point(data)
     else
       unew    = u
       vnew    = v
+    end if
+
+    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
+    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+      datanew = gsn_add_cyclic_point(data)
+    else
       datanew = data
     end if
 
@@ -7912,18 +7932,22 @@ begin
     mpres = True
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes). Check the vector and contour data separately.
 
     set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")).or.\
-                       (isatt(data,"lat2d").and.isatt(data,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
+    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
       unew    = gsn_add_cyclic_point(u)
       vnew    = gsn_add_cyclic_point(v)
-      datanew = gsn_add_cyclic_point(data)
     else
       unew    = u
       vnew    = v
+    end if
+
+    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
+    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+      datanew = gsn_add_cyclic_point(data)
+    else
       datanew = data
     end if
 
@@ -8153,18 +8177,22 @@ begin
     end if
 
 ; Check for cyclic point (default is True if we are not setting both
-; lon2d/lat2d attributes).
+; lon2d/lat2d attributes). Check the vector and contour data separately.
 
     set_cyclic = .not.((isatt(u,"lat2d").and.isatt(u,"lon2d")).or.\
-                       (isatt(v,"lat2d").and.isatt(v,"lon2d")).or.\
-                       (isatt(data,"lat2d").and.isatt(data,"lon2d")))
-    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+                       (isatt(v,"lat2d").and.isatt(v,"lon2d")))
+    if(get_res_value_keep(res2,"gsnAddCyclic",set_cyclic)) then
       unew = gsn_add_cyclic_point(u)
       vnew = gsn_add_cyclic_point(v)
-      datanew = gsn_add_cyclic_point(data)
     else
       unew = u
       vnew = v
+    end if
+
+    set_cyclic = .not.(isatt(data,"lat2d").and.isatt(data,"lon2d"))
+    if(get_res_value(res2,"gsnAddCyclic",set_cyclic)) then
+      datanew = gsn_add_cyclic_point(data)
+    else
       datanew = data
     end if
 
