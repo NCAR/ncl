@@ -7642,9 +7642,16 @@ static NhlErrorTypes Grib2ReadCodeTable
 
     fp = fopen(ctf, "r");
     if (fp == (FILE *) NULL) {
+	/* Note that in some cases it is not fatal that a table was not found, but
+	 *  if the centers table was not found it definitely is FATAL.
+	 */
+	if (secid == -1) {
+		NhlPError(NhlFATAL, NhlEUNKNOWN,
+			  " NclGRIB2: codetable directory \"%s\" invalid",grib2_codetable_dir);
+		return err = NhlFATAL;
+	}
         NhlPError(NhlWARNING, NhlEUNKNOWN,
-            " NclGRIB2: codetable file \"%s/%s\" not a valid GRIB2 code table.\n",
-                grib2_codetable_dir, ctf);
+            " NclGRIB2: codetable file \"%s\" not a valid GRIB2 code table.",ctf);
         NclFree(ctf);
         return err = NhlWARNING;
     } else {
@@ -8498,9 +8505,9 @@ static void *Grib2OpenFile
      * Code table directory
      */
 
-    grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
+    grib2_codetable_dir = getenv("NIO_GRIB2_CODETABLES");
     if (grib2_codetable_dir == NULL) {
-	    grib2_codetable_dir = getenv("NIO_GRIB2_CODETABLES");
+	    grib2_codetable_dir = _NGGetNCARGEnv("grib2_codetables");
     }
     if (grib2_codetable_dir == NULL) {
         NhlPError(NhlFATAL, NhlEUNKNOWN,
@@ -8508,7 +8515,6 @@ static void *Grib2OpenFile
         NhlFree(g2rec[nrecs]);
         return NULL;
     }
-	  
 
     g2_codetable_dirname_len = strlen(grib2_codetable_dir);
     ct = (g2codeTable *) NclMalloc(1 * sizeof(g2codeTable));
@@ -8606,6 +8612,7 @@ static void *Grib2OpenFile
                 NhlFree(g2rec);
                 return NULL;
             }
+		    
 
             g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec1.center_name, ct->descrip);
