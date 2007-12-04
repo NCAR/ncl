@@ -5,7 +5,7 @@
 extern void NGCALLF(dfiltrq,DFILTRQ)(int*,double*,double*,double*,int*,
                                      double*,double*,double*,int*);
 
-extern void NGCALLF(filwgtnorm,filwgtnormal)(int*,double*,int*,double*,int*);
+extern void NGCALLF(filwgtnormal,FILWGTNORMAL)(int*,double*,int*,double*,int*);
 
 NhlErrorTypes filwgts_lanczos_W( void )
 {

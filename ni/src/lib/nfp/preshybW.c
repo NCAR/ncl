@@ -4,8 +4,8 @@
 extern void NGCALLF(preshybrid,PRESHYBRID)(double*,double*,double*,double*,
                                            int*,double*);
 
-extern void NGCALLF(dpreshybrid,DRESPHYBRID)(double*,double*,double*,double*,
-                                             int*,double*);
+extern void NGCALLF(dpreshybrid,DPRESPHYBRID)(double*,double*,double*,double*,
+                                              int*,double*);
 
 extern void NGCALLF(dphybrid,DPHYBRID)(double*,double*,double*,double*,
                                        int*,int*,int*,double*);
