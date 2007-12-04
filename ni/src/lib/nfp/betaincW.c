@@ -351,7 +351,7 @@ NhlErrorTypes gammainc_W( void )
     }
 
     if(type_x == NCL_double) tmp_cum = &((double*)cum)[i];
-    NGCALLF(cumgam,GAMMAINC)(tmp_x,tmp_a,tmp_cum,&tmp_ccum);
+    NGCALLF(cumgam,CUMGAM)(tmp_x,tmp_a,tmp_cum,&tmp_ccum);
     if(type_x != NCL_double) ((float*)cum)[i] = (float)*tmp_cum;
   }
 /*
