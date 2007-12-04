@@ -378,7 +378,7 @@ NhlErrorTypes filwgts_normal_W( void )
 /*
  * Call the Fortran version of this routine.
  */
-  NGCALLF(filwgtnormal,DFILWGTNORMAL)(nwgt,tmp_wgt,option,tmp_sigma,&ier);
+  NGCALLF(filwgtnormal,FILWGTNORMAL)(nwgt,tmp_wgt,option,tmp_sigma,&ier);
   
   if(type_wgt == NCL_float) {
     coerce_output_float_only(wgt,tmp_wgt,*nwgt,0);

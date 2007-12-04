@@ -1368,7 +1368,7 @@ NhlErrorTypes cdft_t_W( void )
 
     if(type_t == NCL_double) tmp_t = &((double*)t)[index_p];
 
-    NGCALLF(dcdfcdftt,DCDFCDFFT)(&n, tmp_p, tmp_t, tmp_df, &ier);
+    NGCALLF(dcdfcdftt,DCDFCDFTT)(&n, tmp_p, tmp_t, tmp_df, &ier);
 
     if(type_t == NCL_float) {
       coerce_output_float_only(t,tmp_t,n,index_p);
