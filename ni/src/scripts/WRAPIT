@@ -734,12 +734,17 @@ switch ($OS)
        echo $cmd
      endif
      $cmd     
-   else                            # GNU g77               
+   else                            # GNU g77 or gfortran
      if ($debug == 1) then
        set cmd = "gcc -fPIC -shared $ld_suffix -lg2c"
-       echo $cmd
      else
        set cmd = "gcc -fPIC -shared $ld_suffix -lg2c"
+     endif
+     if ($f90c == gfortran) then     # gfortran compiler
+       set cmd = "$cmd -lgfortran"
+     endif
+     if ($debug == 1) then
+       echo $cmd
      endif
      $cmd     
    endif
@@ -750,6 +755,9 @@ switch ($OS)
      echo $cmd
    else
      set cmd = "gcc -shared $ld_suffix -lg2c"
+   endif
+   if ($f90c == gfortran) then     # gfortran compiler
+     set cmd = "$cmd -lgfortran"
    endif
    $cmd     
    breaksw
@@ -768,6 +776,9 @@ switch ($OS)
      set cmd = "gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c"
    else
      set cmd = "gcc -bundle -flat_namespace -undefined suppress $ld_suffix"
+   endif
+   if ($f90c == gfortran) then     # gfortran compiler
+       set cmd = "$cmd -lgfortran"
    endif
    if ($debug == 1) then
      echo $cmd
