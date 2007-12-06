@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.152 2007-11-16 18:54:35 shea Exp $
+;      $Id: contributed.ncl,v 1.153 2007-12-06 16:34:44 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3523,6 +3523,9 @@ begin
   xNew&lat = lat                                ; add new coord var
   xNew&lon = lon
 
+  if (isatt(xNew,"gwt")) then
+      delete(xNew@gwt)
+  end if
   xNew@gwt = gwt                                ; attach as attribute
 
   return (xNew)
@@ -3598,6 +3601,10 @@ begin
       
   xNew&lat = lat                                ; add new coord var
   xNew&lon = lon
+
+  if (isatt(xNew,"gwt")) then
+      delete(xNew@gwt)
+  end if
   xNew@gwt = gwt                                ; attach gaussian weights
 
   return (xNew)
@@ -3769,7 +3776,14 @@ begin
   vNew&lat       =  lat                         ; add new coord var
   vNew&lon       =  lon
 
+  if (isatt(uNew,"gwt")) then
+      delete(uNew@gwt)                 
+  end if
   uNew@gwt       = gwt                          ; attach gaussian weights
+
+  if (isatt(vNew,"gwt")) then
+      delete(vNew@gwt)
+  end if
   vNew@gwt       = gwt                          ; attach gaussian weights
 end
 
@@ -3861,7 +3875,14 @@ begin
   vNew&lat       = lat                          ; add new coord var
   vNew&lon       = lon
 
+  if (isatt(uNew,"gwt")) then
+      delete(uNew@gwt)
+  end if
   uNew@gwt       = gwt                          ; attach gaussian weights
+
+  if (isatt(vNew,"gwt")) then
+      delete(vNew@gwt)
+  end if
   vNew@gwt       = gwt                          ; attach gaussian weights
 end
 
