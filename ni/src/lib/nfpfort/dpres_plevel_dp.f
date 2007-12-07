@@ -19,6 +19,10 @@ C                                                ! local
       double precision    plvl(klvl), dplvl(klvl), pbot, pspan, peps
       double precision    dpsum, psfcmx, psfcmn, work(klvl)
 
+c beta stuff are place holders: they have not been checked out
+cbeta double precision    beta(klvl), PMAX
+cbeta double precision    PMAX should be an argument
+
       kflag = 0
       peps  = 0.001d0
 c
@@ -84,7 +88,7 @@ c levels outside the range should be ste to 0.0
         do kl=1,klvl
           do nl=1,nlat
             do ml=1,mlon
-               dp(ml,nl,kl,nt) = dplvl(kl)
+               dp(ml,nl,kl,nt)   = dplvl(kl)
             end do
           end do
         end do
@@ -95,9 +99,15 @@ c modify the default dp
       do nt=1,ntim
         do nl=1,nlat
           do ml=1,mlon
+
+cbeta       do kl=1,klvl
+cbeta          beta(kl) = 1.0d0
+cbeta       end do
+
              IF (psfc(ml,nl,nt).eq.pmsg) THEN
                  do kl=1,klvl
                     dp(ml,nl,kl,nt) = 0.0d0
+cbeta               beta(kl)        = 0.0d0
                  end do
              ELSE
 
@@ -105,20 +115,24 @@ c modify the default dp
                  do kl=1,klvl-1
                     if (ptop.ge.plvl(kl) .and. ptop.lt.plvl(kl+1)) then
                        dp(ml,nl,kl,nt) =(plvl(kl)+plvl(kl+1))*0.5d0-ptop
+cbeta                  beta(kl) =  (plvl(kl)-ptop)/(plvl(kl+1)-plvl(kl))
                        go to 100
                     end if
                  end do
              end if
 
   100        pbot  = psfc(ml,nl,nt)
-             if (pbot.gt.plvl(klvl)) then
+             if (pbot.ge.plvl(klvl)) then
                  dp(ml,nl,klvl,nt) = pbot -(plvl(klvl-1)+plvl(klvl))*0.5d0
+cbeta            beta(klvl) =  (pbot - plvl(klvl))/(PMAX-plvl(klvl))
              else
                  do kl=1,klvl-1
                     if (pbot.ge.plvl(kl) .and. pbot.lt.plvl(kl+1)) then
                         dp(ml,nl,kl,nt)=pbot-(plvl(kl)+plvl(kl-1))*0.5d0
+cbeta                   beta(kl) =  (pbot - plvl(kl))/(PMAX-plvl(kl))
                         do kll=(kl+1),klvl
                            dp(ml,nl,kll,nt) = 0.0d0
+cbeta                      beta(kll)        = 0.0d0
                         end do
                         go to 200
                     end if
