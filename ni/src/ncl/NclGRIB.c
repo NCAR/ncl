@@ -1887,7 +1887,8 @@ void _Do109(GribFileRecord *therec,GribParamList *step) {
 	}
 	ix = step->thelist->rec_inq->center_ix;
 	sprintf(buffer,"lv_HYBL%d_a",tmp_file_dim_number);
-	if ((centers[ix].index == 98) && (nv / 2 > dimsizes_level)) {
+	if ((centers[ix].index == 98 || step->thelist->rec_inq->eff_center == 98) && 
+	    (nv / 2 > dimsizes_level)) {
 		/* 
 		 * ECMWF data - we know that ERA 40 and ERA 15 use level interfaces for A and B 
 		 * coefficients in the GRIB file data. And from looking at the ECMWF web site, 
@@ -6307,12 +6308,21 @@ int wr_status;
 				process = (int)grib_rec->pds[5];
 				ptable_version = (int)grib_rec->pds[3];
 				grib_rec->ptable_version = ptable_version;
+				grib_rec->eff_center = -1; 
 				grib_rec->center_ix = -1;
 				for (i = 0; i < sizeof(centers)/sizeof(GribTable); i++) {
 				  if (centers[i].index == (int) grib_rec->pds[4]) {
 				    grib_rec->center_ix = i;
 				    break;
 				  }
+				}
+				if (subcenter == 98) {
+					for (i = 0; i < sizeof(ecmwf_members)/ sizeof(int); i++) {
+						if (center != ecmwf_members[i])
+							continue;
+						grib_rec->eff_center = 98;
+						break;
+					}
 				}
 /*
 				if((grib_rec->has_gds) && (grib_rec->grid_number != 255)) {
@@ -6463,7 +6473,11 @@ int wr_status;
 				if (grib_rec != NULL) {
 					TBLE2 *ptable = NULL;
 					int ptable_count = 0;
-					switch(center) {
+					int lcenter = center;
+					if (grib_rec->eff_center > 0)
+						lcenter = grib_rec->eff_center;
+
+					switch(lcenter) {
 					case 98:           /* ECMWF */
 						switch (ptable_version) {
 						case 0:
@@ -6713,7 +6727,7 @@ int wr_status;
 					grib_rec->is_ensemble = 0;
 					memset(&grib_rec->ens,0,sizeof(ENS));
 					/* check for ensemble dimension */
-					if (center == 98 && grib_rec->pds_size > 50) {
+					if ((center == 98 || grib_rec->eff_center == 98) && grib_rec->pds_size > 50) {
 						switch ((int) grib_rec->pds[40]) {
 						case 1:
 							if (CnvtToDecimal(2,&(grib_rec->pds[43])) == 1035) {

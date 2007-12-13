@@ -211,6 +211,7 @@ struct _GribRecordInqRec {
 	int version;
 	int rec_num;
 	int center_ix;
+	int eff_center; /* the effective center -- that provides the tables */
 /*
 * This is the time offset from the beginning reference
 * time of the parameter set. The units are set in
