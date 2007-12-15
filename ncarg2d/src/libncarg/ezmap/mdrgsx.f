@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsx.f,v 1.7 2007-09-20 21:44:45 kennison Exp $
+C $Id: mdrgsx.f,v 1.8 2007-12-15 00:21:39 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -489,10 +489,6 @@ C
 C
         END IF
 C
-C Restore the original SET state.
-C
-        CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
-C
 C Scan the area map, retrieving polygons from it, mapping them as
 C directed by the current state of EZMAP, and filling them.
 C
@@ -502,6 +498,10 @@ C
           CALL ARSCAM (IAMA,XCRA,YCRA,MCRA,IAAI,IAGI,1,MDRGFA)
           CALL ARSETI ('RC(1)',IRC1)
         END IF
+C
+C Restore the original SET state.
+C
+        CALL SET (XVPL,XVPR,YVPB,YVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
 C
 C Normal return.
 C
