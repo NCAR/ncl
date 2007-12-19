@@ -1,5 +1,5 @@
 
-C	$Id: wmlabs.f,v 1.11 2007-10-23 18:17:39 fred Exp $
+C	$Id: wmlabs.f,v 1.12 2007-12-19 02:21:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,9 +41,12 @@ C         'RS' (Rain and snow)
 C         'SNOWFLAKES'
 C         'SUN'
 C         'THUNDERSTORM'
+C         'VECTOR'
 C         'WIND'
 C
       CHARACTER*(*) SYMTYP
+      CHARACTER*1 FCODE
+      CHARACTER*5 CHRDIST
 C
       include 'wmcomn.h'
 C
@@ -57,7 +60,11 @@ C
      +        -0.360, -0.330, -1.000, -1.000  /
       DATA YY/-0.030, -0.030, -0.120,  0.000,
      +         0.120,  0.030,  0.030, -0.030  /
-      CHARACTER*1 FCODE
+C
+C  Array for vector draws.
+C
+      PARAMETER (IVSDM=5)
+      DIMENSION VECTSX(IVSDM),VECTSY(IVSDM)
 C
 C  Save the current text function code and set it to a colon for
 C  this subroutine.
@@ -237,6 +244,57 @@ C
           CALL GSPLCI(IAROUC)
           CALL GPL(IADIM,ARROWX,ARROWY)
         ENDIF
+      ELSE IF (SYMTYP(1:1).EQ.'V' .OR. SYMTYP(1:1).EQ.'v') THEN
+C
+C  Draw a vector scaled by a size based on the ratio between
+C  VCNREF and VCUREF, in direction VCWDIR with the
+C  tail of the vector at (X,Y).  Scale the vector arrow head 
+C  by VCHSIZ.
+C
+C
+C  Create a base vector of the correct size that will be 
+C  rotated and translated appropirately.
+C
+        SCALE = VCNREF/VCUREF
+        HEADANG = VHDANG*D2RAD
+        VECTSX(1) = 0.
+        VECTSX(2) = SCALE*VCSIZE
+        VECTSX(3) = VECTSX(2)-COS(HEADANG)*VCHSIZ
+        VECTSX(4) = VECTSX(2)
+        VECTSX(5) = VECTSX(3)
+C
+        VECTSY(1) = 0.
+        VECTSY(2) = 0.
+        VECTSY(3) = SIN(HEADANG)*VCHSIZ
+        VECTSY(4) = 0.
+        VECTSY(5) = -VECTSY(3)
+C
+C  Rotate.
+C
+        COSANG = COS(D2RAD*VCWDIR)
+        SINANG = SIN(D2RAD*VCWDIR)
+        DO 110 I=1,IVSDM
+          TMPX(I) = VECTSX(I)*COSANG-VECTSY(I)*SINANG
+          TMPY(I) = VECTSX(I)*SINANG+VECTSY(I)*COSANG
+  110   CONTINUE
+        DO 111 I=1,IVSDM
+          VECTSX(I) = TMPX(I)
+          VECTSY(I) = TMPY(I)
+  111   CONTINUE
+C
+C  Translate the vector.
+C
+        DO 120 I=1,IVSDM
+          VECTSX(I) = VECTSX(I)+XNDC
+          VECTSY(I) = VECTSY(I)+YNDC
+  120   CONTINUE
+C
+C  Draw the vector.
+C
+        CALL GSPLCI(VCCOLR)
+        CALL GSLWSC(VCLWID)
+        CALL GPL(IVSDM,VECTSX,VECTSY)
+
       ELSE IF (SYMTYP(1:1).EQ.'D' .OR. SYMTYP(1:1).EQ.'d') THEN
 C
 C  Draw a dot to mark a city location.

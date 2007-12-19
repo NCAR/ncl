@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.16 2005-01-04 18:38:25 fred Exp $
+C	$Id: wmcomn.h,v 1.17 2007-12-19 02:21:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -97,6 +97,17 @@ C                  means plot the barb shaft away from the wind;
 C                  WDF non-zero means plot the barb shaft in the 
 C                  direction of the wind (the meteorological convention).
 C    WBLSIZ  WBL   Size of text labels in station model display.
+C    VCCOLR  VCC   Vector color.
+C    VCHSIZ  VCH   Scale factor for vector head sizes.
+C    VCUREF  VRS   Size of reference vector that will map to VRN NDC units.
+C    VCNREF  VRN   Size of NDC length that a reference vector of length VRS
+C                  will be mapped to.
+C    VCWDIR  VCD   Direction of wind vector.
+C    VCLWID  VCW   Vector line width.
+C    VCSIZE  VCS   Vector size that will be scaled in accordance with
+C                  VRS and VRN settings.
+C    VLBLFC  VLF   Forground color for vector label box.
+C    VLBLFC  VLB   Background color for vector label box.
 C    ISUNC1  SC1   Color index for center of sun symbol.
 C    ISUNC2  SC2   Color index for points of sun symbol.
 C    ISUNC3  SC3   Color index for outline of sun symbol.
@@ -142,6 +153,21 @@ C    OBSERR  OER   Observational weights for data for smoothing spline routines.
 C    RSMRET  ---   Used to return the default setting of RSMOTH.
 C    OBSRET  ---   Used to return the default setting of OBSERR.
 C
+      REAL SYMWID, BEGDST, ENDDST, BETDST, CRVLEN, SLOPE1, SLOPE2, 
+     +     SLOPEL, SLOPER, RLINWD, SLINWD, WSIZET, WSIZEC, WSIZEW, 
+     +     WSIZES, WSIZER, ARWSIZ, ARWLEN, ARWDIR, CDOTSZ, CTYMRG, 
+     +     TMPMRG, WBSHFT, WBFTIC, WBDIST, WBCLMR, WBBANG, WBXL  , 
+     +     WBXR  , WBYB  , WBYT  , WBBASE, WBLSIZ, DLINWD, TNSION, 
+     +     RSMOTH, OBSERR, RSMRET, OBSRET, BRBLWD, VCNREF, VCUREF, 
+     +     VCHSIZ, VCWDIR, VCLWID, VCSIZE, VHDANG
+      INTEGER MAXSYM, IARNDX, IFRONT, ISLFLG, IALOFT, IWDTYP, ICOLOR,
+     +        NPTSBZ, IBGCTY, IFGTRG, IDOTCO, IWBBAS, IWBDIR, ISUNC1, 
+     +        ISUNC2, ISUNC3, ISUNC4, ICLDC1, ICLDC2, ICLDC3, ILTNC1, 
+     +        ILTNC2, ILTNC3, NUMSYO, IWARMC, ICOLDC, IHIGC1, IHIGC2, 
+     +        IHIGC3, ILOWC1, ILOWC2, ILOWC3, IRGLC1, IRGLC2, IRGLC3,        
+     +        IRGLC4, IDOTBG, IAROWC, IARSHC, IRLLSC, IRLOUC, IRLBKC, 
+     +        IHIGC4, IAROUC, IRGLC5, ITRO1C, ITRO2C, ILOWC4, IEZFLG,
+     +        ISMOTH, IUNITS, VCCOLR, VLBLFC, VLBLBC, ISTYPE 
       COMMON /WMCOMI/ SYMWID, BEGDST, ENDDST, BETDST, MAXSYM, IARNDX, 
      +                IFRONT, CRVLEN, ISLFLG, SLOPE1, SLOPE2, SLOPEL,
      +                SLOPER, IALOFT, RLINWD, IWDTYP, SLINWD, ICOLOR,
@@ -157,7 +183,9 @@ C
      +                IARSHC, IRLLSC, IRLOUC, IRLBKC, IHIGC4, IAROUC, 
      +                IRGLC5, ITRO1C, ITRO2C, ILOWC4, IEZFLG, TNSION, 
      +                ISMOTH, RSMOTH, OBSERR, RSMRET, OBSRET, IUNITS,
-     +                BRBLWD, ISTYPE(ISDIM)
+     +                BRBLWD, VCNREF, VCUREF, VCHSIZ, VCCOLR, VCWDIR, 
+     +                VCLWID, VCSIZE, VHDANG, VLBLFC, VLBLBC,
+     +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.
 C

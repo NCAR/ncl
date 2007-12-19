@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.13 2006-03-11 01:05:19 kennison Exp $
+C	$Id: wmseti.f,v 1.14 2007-12-19 02:21:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -477,6 +477,27 @@ C
       ELSE IF (CNP(1:3).EQ.'UNT' .OR. CNP(1:3).EQ.'unt' .OR.
      +    CNP(1:3).EQ.'Unt') THEN
         IUNITS = IVP
+        GO TO 120
+C
+C  VCC - color index for vectors.
+C
+      ELSE IF (CNP(1:3).EQ.'VCC' .OR. CNP(1:3).EQ.'Vcc' .OR.
+     +    CNP(1:3).EQ.'Vcc') THEN
+        VCCOLR = IVP
+        GO TO 120
+C
+C  VLF - Foreground color for vector label box.
+C
+      ELSE IF (CNP(1:3).EQ.'VLF' .OR. CNP(1:3).EQ.'vlf' .OR.
+     +         CNP(1:3).EQ.'Vlf') THEN
+        VLBLFC = IVP
+        GO TO 120
+C
+C  VLB - Background color for vector label box.
+C
+      ELSE IF (CNP(1:3).EQ.'VLB' .OR. CNP(1:3).EQ.'vlb' .OR.
+     +         CNP(1:3).EQ.'Vlb') THEN
+        VLBLBC = IVP
         GO TO 120
       ELSE
         CTM(1:36) = 'WMSETI - Parameter name not known - '

@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.14 2004-09-08 21:52:33 fred Exp $
+C	$Id: wmgeti.f,v 1.15 2007-12-19 02:21:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -263,6 +263,18 @@ C
       ELSE IF (CNP(1:3).EQ.'UNT' .OR. CNP(1:3).EQ.'unt' .OR. 
      +    CNP(1:3).EQ.'Unt') THEN
         IVP = IUNITS
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VCC' .OR. CNP(1:3).EQ.'vcc' .OR. 
+     +    CNP(1:3).EQ.'Vcc') THEN
+        IVP = VCCOLR
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VLF' .OR. CNP(1:3).EQ.'vlf' .OR.
+     +         CNP(1:3).EQ.'Vlf') THEN
+        IVP = VLBLFC
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VLB' .OR. CNP(1:3).EQ.'vlb' .OR.
+     +         CNP(1:3).EQ.'Vlb') THEN
+        IVP = VLBLBC
         GO TO 110
       ELSE
         CTM(1:36) = 'WMGETI - Parameter name not known - '

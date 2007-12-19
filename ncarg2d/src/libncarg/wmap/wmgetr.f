@@ -1,5 +1,5 @@
 C
-C	$Id: wmgetr.f,v 1.7 2005-01-04 18:38:25 fred Exp $
+C	$Id: wmgetr.f,v 1.8 2007-12-19 02:21:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -222,6 +222,42 @@ C
       ELSE IF (CNP(1:3).EQ.'WBL' .OR. CNP(1:3).EQ.'wbl' .OR. 
      +    CNP(1:3).EQ.'Wbl') THEN
         RVP = WBLSIZ
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VRS' .OR. CNP(1:3).EQ.'vrs' .OR. 
+     +    CNP(1:3).EQ.'Vrs') THEN
+        RVP = VCUREF
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VRN' .OR. CNP(1:3).EQ.'vrn' .OR. 
+     +    CNP(1:3).EQ.'Vrn') THEN
+        RVP = VCNREF
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VCH' .OR. CNP(1:3).EQ.'vch' .OR. 
+     +    CNP(1:3).EQ.'Vch') THEN
+        RVP = VCHSIZ
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VCD' .OR. CNP(1:3).EQ.'vcd' .OR. 
+     +    CNP(1:3).EQ.'Vcd') THEN
+        RVP = VCWDIR
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VCW' .OR. CNP(1:3).EQ.'vcw' .OR. 
+     +    CNP(1:3).EQ.'Vcw') THEN
+        RVP = VCLWID
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VCS' .OR. CNP(1:3).EQ.'vcs' .OR. 
+     +    CNP(1:3).EQ.'Vcs') THEN
+        RVP = VCSIZE
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VVA' .OR. CNP(1:3).EQ.'vva' .OR. 
+     +    CNP(1:3).EQ.'Vva') THEN
+        RVP = VHDANG
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VBX' .OR. CNP(1:3).EQ.'vbx' .OR. 
+     +    CNP(1:3).EQ.'Vbx') THEN
+        RVP = VRFBXX
+        GO TO 110
+      ELSE IF (CNP(1:3).EQ.'VBY' .OR. CNP(1:3).EQ.'vby' .OR. 
+     +    CNP(1:3).EQ.'Vby') THEN
+        RVP = VRFBXY
         GO TO 110
       ELSE
         CTM(1:36) = 'WMGETR - Parameter name not known - '

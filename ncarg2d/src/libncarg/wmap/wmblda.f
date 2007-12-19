@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.14 2005-01-04 18:38:25 fred Exp $
+C	$Id: wmblda.f,v 1.15 2007-12-19 02:21:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -183,6 +183,43 @@ C
 C  Extent of barb ticks.
 C
       DATA WBXL,WBXR,WBYB,WBYT/0.,0.,0.,0./
+C
+C  Scale limits for vectors.  A vector of length VCUREF will
+C  be scaled to NDC length VCNREF.
+C
+      DATA VCUREF,VCNREF/10.,0.02/
+C
+C  NDC length of vector arrow head line.
+C
+      DATA VCHSIZ/0.02/
+C
+C  Linewidth scale factor for vectors.
+C
+      DATA VCLWID/1.0/
+C
+C  Vector color.
+C
+      DATA VCCOLR/1/
+C
+C  Vector direction.
+C
+      DATA VCWDIR/0./
+C
+C  Vector size.
+C
+      DATA VCSIZE/10./
+C
+C  Angle between vector head and tail.
+C
+      DATA VHDANG/25./
+C
+C  Foreground color for vector label box.
+C
+      DATA VLBLFC/1/
+C
+C  Background color for vector label box.
+C
+      DATA VLBLBC/0/
 C
 C  Color indices for sun, cloud, and lightening bolt symbols.
 C

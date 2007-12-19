@@ -1,5 +1,5 @@
 C
-C	$Id: wmsetr.f,v 1.8 2005-01-04 18:38:25 fred Exp $
+C	$Id: wmsetr.f,v 1.9 2007-12-19 02:21:50 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -286,6 +286,61 @@ C
       ELSE IF (CNP(1:3).EQ.'WBL' .OR. CNP(1:3).EQ.'wbl' .OR.
      +         CNP(1:3).EQ.'Wbl') THEN
         WBLSIZ = ABS(RVP)
+        GO TO 120
+C
+C  VRS - Size of the wind speed vector that will be scaled
+C        to the NDC length specified by VRN.  All vectors
+C        will be scaled in keeping with the settings of
+C        VRS and VRN.
+C
+      ELSE IF (CNP(1:3).EQ.'VRS' .OR. CNP(1:3).EQ.'vrs' .OR.
+     +         CNP(1:3).EQ.'Vrs') THEN
+        VCUREF = ABS(RVP)
+        GO TO 120
+C
+C  VRN - Size, in NDC coordinates, that a vector of length
+C        specified by VRS is to scale to.  All vectors
+C        will be scaled in keeping with the settings of
+C        VRS and VRN.
+C
+      ELSE IF (CNP(1:3).EQ.'VRN' .OR. CNP(1:3).EQ.'vrn' .OR.
+     +         CNP(1:3).EQ.'Vrn') THEN
+        VCNREF = ABS(RVP)
+        GO TO 120
+C
+C  VCH - Scale factor for the arrow heads of vectors.
+C
+      ELSE IF (CNP(1:3).EQ.'VCH' .OR. CNP(1:3).EQ.'vch' .OR.
+     +         CNP(1:3).EQ.'Vch') THEN
+        VCHSIZ = RVP
+        GO TO 120
+C
+C  VCD - direction of vector (in degrees).
+C
+      ELSE IF (CNP(1:3).EQ.'VCD' .OR. CNP(1:3).EQ.'vcd' .OR.
+     +         CNP(1:3).EQ.'Vcd') THEN
+        VCWDIR = RVP
+        GO TO 120
+C
+C  VCW - vector linewidth scale factor.
+C
+      ELSE IF (CNP(1:3).EQ.'VCW' .OR. CNP(1:3).EQ.'vcw' .OR.
+     +         CNP(1:3).EQ.'Vcw') THEN
+        VCLWID = ABS(RVP)
+        GO TO 120
+C
+C  VCS - vector size.
+C
+      ELSE IF (CNP(1:3).EQ.'VCS' .OR. CNP(1:3).EQ.'vcs' .OR.
+     +         CNP(1:3).EQ.'Vcs') THEN
+        VCSIZE = ABS(RVP)
+        GO TO 120
+C
+C  VVA - vector arrow head angle from tail.
+C
+      ELSE IF (CNP(1:3).EQ.'VVA' .OR. CNP(1:3).EQ.'vva' .OR.
+     +         CNP(1:3).EQ.'Vva') THEN
+        VHDANG = ABS(RVP)
         GO TO 120
 C
       ELSE
