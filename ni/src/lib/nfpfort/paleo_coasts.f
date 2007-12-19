@@ -1,78 +1,106 @@
 c nclfortstart
-      subroutine paleooutline(mask,zdat,lat,lon,nlat,nlon,jm,im,
-     +                        iwrk,liwk,name,mskval)
-      integer nlat,nlon
-      integer im,jm,liwk
-      real lat1,latn,lon1,lonn
-      double precision mask(nlon,nlat), lat(nlat), lon(nlon)
-      real zdat(im,jm), mskval
-      character*(*) name
-      integer iwrk(liwk)
+      SUBROUTINE PALEOOUTLINE (MASK,ZDAT,LAT,LON,NLAT,NLON,JM,IM,
+     +                         IWRK,LIWK,NAME,MSKVAL)
+C
+        INTEGER NLAT,NLON
+        INTEGER IM,JM,LIWK
+        REAL LAT1,LATN,LON1,LONN
+        DOUBLE PRECISION MASK(NLON,NLAT),LAT(NLAT),LON(NLON)
+        REAL ZDAT(IM,JM),MSKVAL
+        CHARACTER*(*) NAME
+        INTEGER IWRK(LIWK)
 c nclend
-      integer i,j
+        INTEGER I,J
 C
-C The subroutine SVBLED requires that the input mask array be twice as
-C large(+1) as the orginal. This is an artificat of the original 
-C program written for Pat Behling. 
+C The object of this routine is to generate the map database files
+C required by EZMAP to represent the land/water boundaries defined by
+C a given "mask" array.  It does this using a routine called SVBLED
+C (which was originally written for Pat Behling) and it makes use of
+C this routine in a particular way; certain restrictions on the nature
+C of the the input data are assumed.  (It could perhaps be modified to
+C ease some of these restrictions, but that has not been done.)
 C
-      do i=1,im
-         do j=1,jm
-            zdat(i,j)=1.-mskval
-         enddo
-      enddo
-      do i=1,nlon
-         do j=1,nlat
-            ZDAT(2*I,2*J)=REAL(mask(I,J))
-         enddo
-      enddo
+C The arguments of PALEOOUTLINE are as follows:
 C
-C The last longitude point is not actually 360, but 360-xx. So 
-C index 2*nlon+2 represents lon=360, and index 2*nlon+2
-C represents lon=360-xx. Index 2 represents lon=0.
+C   MASK is an array, dimensioned NLONxNLAT, in which a value equal to
+C   MSKVAL represents a land element and a value not equal to MSKVAL
+C   represents a water element.
 C
-C For latitude, index 2 represents lat(1), and index 2*nlat represents
-C lat(nlat). (Because index 0 should represent lat=-90, and index 
-C 2*nlat+1 represents lat=90.)
+C   ZDAT is a scratch array, dimensioned IMxJM.
 C
-C      lon1 = real(lon(1))
-C      lonn = real(lon(nlon))
+C   LAT is an array of latitudes, dimensioned NLAT, and LON is an array
+C   of longitudes, dimensioned NLON.  The value of MASK(I,J) represents
+C   the nature of the point on the earth with lat/lon coordinates
+C   (LAT(J),LON(I)).  Note, however, that SVBLED assumes that both the
+C   latitude values and the longitude values are evenly spaced.  Note
+C   also that there should be no points of overlap in the longitudinal
+C   direction.
 C
-      ibot = 2
-      lat1 = real(lat(1))
-      itop = 2 * nlat
-      latn = real(lat(nlat))
+C   JM is the second dimension of ZDAT and must be equal to 2*NLAT+1.
+C
+C   IM is the first dimension of ZDAT and must be equal to 2*NLON+1.
+C
+C   IWRK is an integer scratch array, dimensioned LIWK.
+C
+C   LIWK is the size of IWRK; its size depends on both the size and
+C   the complexity of the array MASK.
+C
+C   NAME is of type CHARACTER and is the base name of the files to be
+C   created.
+C
+C   MSKVAL is the value that, when used in the array MASK, represents
+C   land.
+C
+C Each dimension of SVBLED's input array "ZDAT" is required to have
+C one more than twice as many elements as the corresponding dimension
+C of the original mask array ("MASK").  The elements of MASK are
+C embedded in ZDAT, using only even values of its subscripts.
+C
+        DO 102 I=1,IM
+          DO 101 J=1,JM
+            ZDAT(I,J)=1.-MSKVAL
+  101     CONTINUE
+  102   CONTINUE
+C
+        DO 104 I=1,NLON
+          DO 103 J=1,NLAT
+            ZDAT(2*I,2*J)=REAL(MASK(I,J))
+  103     CONTINUE
+  104   CONTINUE
+C
+C We have to tell SVBLED what the latitude is corresponding to values
+C of the second subscript equal to 2 and 2*NLAT.  The latitudes for
+C other values of the second subscript will be inferred from these by
+C assuming a linear mapping.
+C
+        IBOT=2
+        LAT1=REAL(LAT(1))
+C
+        ITOP=2*NLAT
+        LATN=REAL(LAT(NLAT))
+C
+C Similarly, we have to tell SVBLED what longitudes correspond to
+C values of the first subscript equal to 2 and 2*NLON.  The longitudes
+C for other values of the first subscript will be inferred from these
+C by assuming a linear mapping.
+C
+        ILFT=2
+        LON1=REAL(LON(1))
+C
+        IRGT=2*NLON
+        LONN=REAL(LON(NLON))
+C
+C Call SVBLED to finish the job.
+C
+        CALL SVBLED (ZDAT,IM,JM,IWRK,LIWK,MSKVAL,ILFT,LON1,IRGT,LONN,
+     +               IBOT,LAT1,ITOP,LATN,'Land','Water',NAME)
+C
+C Done.
+C
+      RETURN
+C
+      END
 
-      ilft = 2
-      lon1 = real(lon(1))
-      irgt = 2 * nlon
-      lonn = real(lon(nlon))
-      lonn = 360.
-C     
-      CALL SVBLED (ZDAT,im,jm,IWRK,liwk,mskval,ilft,lon1,irgt,lonn,
-     +     ibot,lat1,itop,latn,'Land','Water',name)
-
-c ZDAT = data (idim,jdim)
-c IWRK = scratch (LIWK) 
-c SVAL = "special value".  The "special value" area of the
-C data array is considered to be the union of all grid boxes having a
-C special value at one or more of their corners.  
-
-c XLFT = longitude of first subscript of ZDAT
-c XRGT = longitude of last  subscript of ZDAT 
-c YBOT = latitude  of first subscript of ZDAT
-c YTOP = latitude  of last  subscript of ZDAT
-
-c NAML and NAMR are the
-C names of the areas to the left and right, respectively, of the
-C boundary lines.  this program automatically puts the special value
-c to the left, so if we are creating a landmask, then NAML='Land'
-c and NAMR='Water'
-
-c FLNM is the base name of the two files to which the EZMAP data are to be 
-c written.
-
-      return
-      end
 
       SUBROUTINE SVBLED (ZDAT,IDIM,JDIM,IWRK,LIWK,SVAL,ILFT,XLFT,
      +                   IRGT,XRGT,JBOT,YBOT,JTOP,YTOP,NAML,NAMR,FLNM)
@@ -437,7 +465,6 @@ C
       END
 
 
-
       SUBROUTINE WRNUMB (IFDE,CHRS,MCHR,NCHR,INUM)
 C
         CHARACTER*1 CHRS(MCHR)
@@ -480,7 +507,6 @@ C
       END
 
 
-
       SUBROUTINE WRCHAR (IFDE,CHRS,MCHR,NCHR,ICHR)
 C
         CHARACTER*1 CHRS(MCHR),ICHR
@@ -508,7 +534,6 @@ C
       END
 
 
-
       INTEGER FUNCTION IOFNBC (CHRS)
 C
         CHARACTER*(*) CHRS
@@ -528,7 +553,6 @@ C
         RETURN
 C
       END
-
 
 
       INTEGER FUNCTION IOLNBC (CHRS)
