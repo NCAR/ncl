@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.14 2007-12-19 02:21:50 fred Exp $
+C	$Id: wmseti.f,v 1.15 2007-12-20 19:39:52 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -481,7 +481,7 @@ C
 C
 C  VCC - color index for vectors.
 C
-      ELSE IF (CNP(1:3).EQ.'VCC' .OR. CNP(1:3).EQ.'Vcc' .OR.
+      ELSE IF (CNP(1:3).EQ.'VCC' .OR. CNP(1:3).EQ.'vcc' .OR.
      +    CNP(1:3).EQ.'Vcc') THEN
         VCCOLR = IVP
         GO TO 120
