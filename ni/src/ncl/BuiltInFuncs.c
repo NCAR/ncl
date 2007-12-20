@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.225 2007-10-26 18:39:18 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.226 2007-12-20 20:01:16 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -67,7 +67,7 @@ extern "C" {
 
 
 extern int cmd_line;
-extern int NCLnoSysPager;
+extern short NCLnoSysPager;
 
 NhlErrorTypes _NclIListHLUObjs
 #if	NhlNeedProto
@@ -7584,7 +7584,7 @@ NhlErrorTypes _NclIExit
 ()
 #endif
 {
-	exit(0);
+	_NclExit(0);
 	return(NhlNOERROR);
 }
 
@@ -7616,7 +7616,7 @@ NhlErrorTypes _NclIStatusExit
 
 	exit_status = *(int *) tmp_md->multidval.val;
 
-	exit(exit_status);
+	_NclExit(exit_status);
 
 }
 

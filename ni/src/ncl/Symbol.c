@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.68 2007-10-12 23:17:06 dbrown Exp $
+ *      $Id: Symbol.c,v 1.69 2007-12-20 20:01:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2946,6 +2946,13 @@ void
                 NclFree(flist);
 	return;
 }
+
+void _NclExit(int status) {
+	_NclFileCleanUp();
+        NhlClose();
+	exit(0);
+}
+
 
 #ifdef __cplusplus
 }

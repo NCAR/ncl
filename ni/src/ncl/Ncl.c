@@ -86,6 +86,7 @@ short   NCLnoCopyright = 0;     /* override copyright notice; non-advertised opt
 short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 short   NCLnoSysPager = 0;      /* don't pipe commands to system() to PAGER */
 
+
 int
 main(int argc, char **argv) {
 
@@ -289,8 +290,7 @@ main(int argc, char **argv) {
     /* 
      * Note:  child processes should use _exit() instead of exit() to avoid calling the atexit() functions prematurely 
      */
-    atexit(NhlClose);
-    atexit(_NclFileCleanUp);
+
 
     NhlInitialize();
     NhlVACreate(&appid, "ncl", NhlappClass, NhlDEFAULT_APP,
@@ -461,7 +461,8 @@ main(int argc, char **argv) {
     (void) fprintf(stdout,"Number of constants used %d\n",number_of_constants);
     (void) fclose(theoptr);
 #endif /* NCLDEBUG */
-    exit(0);
+
+    _NclExit(0);
 }
 
 #ifdef __cplusplus

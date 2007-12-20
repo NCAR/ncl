@@ -235,7 +235,7 @@ int status;
 	if ( loading >= MAX_INCLUDE_DEPTH )
 	{
 		fprintf( stderr, "Includes nested too deeply" );
-		exit( 1 );
+		_NclExit( 1 );
 	}
 	line_numbers[loading] = cur_line_number;
 	SetLine(0);
@@ -321,7 +321,7 @@ digit	[0-9]
 	if ( loading >= MAX_INCLUDE_DEPTH )
 	{
 		fprintf( stderr, "Includes nested too deeply" );
-		exit( 1 );
+		_NclExit( 1 );
 	}
 	line_numbers[loading] = cur_line_number;
 	file_names[loading] = cur_load_file;

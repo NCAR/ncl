@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.29 2007-07-13 17:12:28 dbrown Exp $
+ *      $Id: Symbol.h,v 1.30 2007-12-20 20:01:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -512,6 +512,12 @@ void
 extern void _NclFileCleanUp (
 #if NhlNeedProto
 void
+#endif
+);
+
+extern void _NclExit(
+#if NhlNeedProto
+int status
 #endif
 );
 

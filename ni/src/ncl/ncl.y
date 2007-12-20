@@ -2624,7 +2624,7 @@ yyerror
 		}
 	} else if((is_error == NCL_MAX_ERROR)&&(cmd_line != 2)) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Maximum number of errors exceeded, terminating");
-			exit(0);
+			_NclExit(0);
 	} else {
 /*
 * GUI STUFF

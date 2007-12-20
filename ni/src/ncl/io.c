@@ -334,7 +334,7 @@ void _NclStartCmdLinePager
 		close(fildes[0]);
 		if(fdopen(new_pipe_fd,"rw") == NULL) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"Error Forking pager");
-			exit(0);
+			_NclExit(0);
 		}
 		pager = getenv("PAGER");
 		if(pager == NULL) {
