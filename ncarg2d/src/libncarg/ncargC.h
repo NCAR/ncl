@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.20 2006-04-11 02:15:25 haley Exp $
+ *  $Id: ncargC.h,v 1.21 2007-12-20 17:56:55 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3377,6 +3377,31 @@ extern void c_wmbarb(
     float y,
     float u,
     float v
+#endif
+);
+
+extern void c_wmvect(
+#ifdef NeedFuncProto
+    float x,
+    float y,
+    float u,
+    float v
+#endif
+);
+
+extern void c_wmvectmap(
+#ifdef NeedFuncProto
+    float x,
+    float y,
+    float u,
+    float v
+#endif
+);
+
+extern void c_wmvlbl(
+#ifdef NeedFuncProto
+    float x,
+    float y
 #endif
 );
 
