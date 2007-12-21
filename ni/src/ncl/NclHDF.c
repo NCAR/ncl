@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.25 2007-06-21 01:35:32 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.26 2007-12-21 00:49:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1253,7 +1253,7 @@ void* storage;
 	while(stepvl != NULL) {
 		if(stepvl->var_inq->name == thevar) {
 			for(i= 0; i< stepvl->var_inq->n_dims; i++) {
-				count[i] = (int)floor((float)(finish[i] - start[i])/(float)stride[i]) + 1;
+				count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
 				n_elem *= count[i];
 				if(stride[i] != 1) {
 					no_stride = 0;
@@ -1476,7 +1476,7 @@ long *stride;
 		while(stepvl != NULL) {
 			if(stepvl->var_inq->name == thevar) {
 				for(i= 0; i< stepvl->var_inq->n_dims; i++) {
-					count[i] = (int)floor((float)(finish[i] - start[i])/(float)stride[i]) + 1;
+					count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
 					n_elem *= count[i];
 					if(stride[i] != 1) {
 						no_stride = 0;

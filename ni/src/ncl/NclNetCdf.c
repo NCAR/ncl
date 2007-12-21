@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.46 2007-09-05 00:20:50 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.47 2007-12-21 00:49:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1150,7 +1150,7 @@ void* storage;
 			}
 			for(i= 0; i< stepvl->var_inq->n_dims; i++) {
 				int dimid;
-				count[i] = (int)floor((float)(finish[i] - start[i])/(float)stride[i]) + 1;
+				count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
 				n_elem *= count[i];
 				if(stride[i] != 1) {
 					no_stride = 0;
@@ -1462,7 +1462,7 @@ long *stride;
 					stepvl->var_inq->value = NULL;
 				}
 				for(i= 0; i< stepvl->var_inq->n_dims; i++) {
-					count[i] = (int)floor((float)(finish[i] - start[i])/(float)stride[i]) + 1;
+					count[i] = (int)floor((finish[i] - start[i])/(double)stride[i]) + 1;
 					n_elem *= count[i];
 					if(stride[i] != 1) {
 						no_stride = 0;

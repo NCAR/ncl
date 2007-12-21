@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.23 2002-09-26 22:14:39 haley Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.24 2007-12-21 00:49:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -210,9 +210,7 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
+				n_elem = (int)((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
 					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
 
 /*
@@ -238,10 +236,8 @@ static struct _NclDataRec *MultiDVal_HluObj_ReadSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((float)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/((float)sel_ptr->u.sub.stride)) + 1;
+				n_elem = (int)((sel_ptr->u.sub.finish 	- sel_ptr->u.sub.start)
+					/((double)sel_ptr->u.sub.stride)) + 1;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -617,9 +613,7 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
+				n_elem = (int)((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
 					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
 
 /*
@@ -645,10 +639,8 @@ static NhlErrorTypes MultiDVal_HLUObj_md_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((float)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/((float)sel_ptr->u.sub.stride)) + 1;
+				n_elem = (int)((sel_ptr->u.sub.finish 	- sel_ptr->u.sub.start)
+					       /((double)sel_ptr->u.sub.stride)) + 1;
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
                                         current_index[i] = sel_ptr->u.sub.finish - (sel_ptr->u.sub.finish - sel_ptr->u.sub.start) % abs(sel_ptr->u.sub.stride);
@@ -982,9 +974,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((double)
-					(sel_ptr->u.sub.start 
-					- sel_ptr->u.sub.finish))
+				n_elem = (int)((sel_ptr->u.sub.start - sel_ptr->u.sub.finish)
 					/(double)fabs(((double)sel_ptr->u.sub.stride))) + 1;
 
 /*
@@ -1011,10 +1001,8 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
                                         sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem = (int)(((float)
-					(sel_ptr->u.sub.finish 
-					- sel_ptr->u.sub.start))
-					/((float)sel_ptr->u.sub.stride)) + 1;
+				n_elem = (int)((sel_ptr->u.sub.finish 	- sel_ptr->u.sub.start)
+					       /((double)sel_ptr->u.sub.stride)) + 1;
 
 				if(sel_ptr->u.sub.stride < 0){
                                         compare_sel[i] = -1;
@@ -1384,10 +1372,8 @@ NclSelectionRecord *from_selection;
                                         to_sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem_target = (int)(((double)
-					(to_sel_ptr->u.sub.start 
-					- to_sel_ptr->u.sub.finish))
-					/(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1;
+				n_elem_target = (int)((to_sel_ptr->u.sub.start 	- to_sel_ptr->u.sub.finish)
+						      /(double)fabs(((double)to_sel_ptr->u.sub.stride))) + 1;
 
 /*
 * Need to be able to determine which type of comparision < or > is needed to
@@ -1412,10 +1398,8 @@ NclSelectionRecord *from_selection;
                                         to_sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem_target = (int)(((float)
-					(to_sel_ptr->u.sub.finish 
-					- to_sel_ptr->u.sub.start))
-					/((float)to_sel_ptr->u.sub.stride)) + 1;
+				n_elem_target = (int)((to_sel_ptr->u.sub.finish - to_sel_ptr->u.sub.start)
+						      /((double)to_sel_ptr->u.sub.stride)) + 1;
 
 				if(to_sel_ptr->u.sub.stride < 0){
                                         to_compare_sel[i] = -1;
@@ -1498,9 +1482,7 @@ NclSelectionRecord *from_selection;
                                         from_sel_ptr->u.sub.stride = 1;
                                 }
 
-				n_elem_value = (int)(((double)
-					(from_sel_ptr->u.sub.start 
-					- from_sel_ptr->u.sub.finish))
+				n_elem_value = (int)((from_sel_ptr->u.sub.start -  from_sel_ptr->u.sub.finish)
 					/(double)fabs(((double)from_sel_ptr->u.sub.stride))) + 1;
 
 /*
@@ -1526,10 +1508,8 @@ NclSelectionRecord *from_selection;
 					return(NhlFATAL);
 				}
 
-				n_elem_value = (int)(((float)
-					(from_sel_ptr->u.sub.finish 
-					- from_sel_ptr->u.sub.start))
-					/((float)from_sel_ptr->u.sub.stride)) + 1;
+				n_elem_value = (int)((from_sel_ptr->u.sub.finish - from_sel_ptr->u.sub.start)
+						     /((double)from_sel_ptr->u.sub.stride)) + 1;
 
                                 if(from_sel_ptr->u.sub.stride < 0){
                                         from_compare_sel[i] = -1;
