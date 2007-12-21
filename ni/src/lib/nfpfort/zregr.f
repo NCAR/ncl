@@ -1,8 +1,9 @@
 C NCLFORTSTART
-      SUBROUTINE DZREGR1(N,M,Y,YMSG,X,XMSG,C,RESID,CON,CNORM)
+      SUBROUTINE DZREGR1(N,M,Y,YMSG,X,XMSG,C,RESID,CON,CNORM,WK)
       IMPLICIT NONE
       INTEGER  N,M
       DOUBLE PRECISION Y(N),X(N,M),C(M),CNORM(M),RESID(N),XMSG,YMSG,CON 
+      DOUBLE PRECISION WK(N,2*N)
 C NCLEND
 
 C NCL:    C = reg_multlin (y[*], x[*][*], opt)
@@ -10,7 +11,11 @@ C NCL:    C = reg_multlin (y[*], x[*][*], opt)
 C Nomenclature:
 C .   C      - the raw partial correlation coef
 C .   CNORM  - the standardized partial correlation coef
-
+C
+C The WK array used to be allocated inside the DZREGR2 subroutine,
+C but this caused a problem for some compilers. The C wrapper for
+C this function is now allocating this array and passing it in.
+C
 C ADJUSTABLE ARRAYS (LOCAL)
       INTEGER I,J,IERROR,NPTUSED,IER
       DOUBLE PRECISION YY(N),COV(M,M),VAR,XSD(M),YSD,XMEAN(M),YMEAN
@@ -32,7 +37,7 @@ C .   THIS ELIMINATES ANY X/Y MISSING VALUES FROM THE COMPUTATIONS.
 
 C RESID ARE CALCULATED USING THE RAW PARTIAL REGRESSION COEF
 
-      CALL DZREGR2(IERROR,N,M,YY,YMSG,X,C,RESID,COV)
+      CALL DZREGR2(IERROR,N,M,YY,YMSG,X,C,RESID,COV,WK)
 
 C CALCULATE THE CONSTANT TERM
 C .   CON = YMEAN - c(1)*XMEAN_1 - c(2)*XMEAN_2 - ... -c(J)*XMEAN_J
@@ -49,10 +54,11 @@ C .   CON = YMEAN - c(1)*XMEAN_1 - c(2)*XMEAN_2 - ... -c(J)*XMEAN_J
       RETURN
       END
 C --------------------------------------------------------
-      SUBROUTINE DZREGR2(IERROR,N,M,T,TMSG,F,C,RESID,COV)
+      SUBROUTINE DZREGR2(IERROR,N,M,T,TMSG,F,C,RESID,COV,WK)
       IMPLICIT NONE
       INTEGER  IERROR,N,M
       DOUBLE PRECISION T(N),F(N,M),C(M),RESID(N),COV(M,M),TMSG
+      DOUBLE PRECISION WK(N,2*N)
 
 C The modelled regession time series T(I) (I=1,2,...,N) is given by
 C (see vector notation on the RIGHT):
@@ -150,7 +156,7 @@ C   http://code916.gsfc.nasa.gov/Data_services/cloud_slice/regress.html
 
 C local ... some are adjustable arrays
       INTEGER NGOOD,I,J,K,L,IPRINT,ICHECK
-      DOUBLE PRECISION WK(N,2*N),A(M,M),AINV(M,M),S(M)
+      DOUBLE PRECISION A(M,M),AINV(M,M),S(M)
       DOUBLE PRECISION U,SSUM,SIGSQR
 
       NGOOD = 0

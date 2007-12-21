@@ -8,7 +8,7 @@ extern void NGCALLF(dregcoef,DREGCOEF)(double *,double *,int *,double *,
 
 extern void  NGCALLF(dzregr1,DZREGR1)(int *,int *,double *,double *,double *,
                                       double *,double *,double *,double *, 
-                                      double *);
+                                      double *,double *);
 
 NhlErrorTypes regcoef_W( void )
 {
@@ -1082,27 +1082,27 @@ NhlErrorTypes regCoef_shields_W( void )
                    &missing_y,&missing_dy);
       }
       else {
-	tmp_y  = &((double*)y)[ly];
+        tmp_y  = &((double*)y)[ly];
       }
       
       if(type_rcoef == NCL_double) {
-	tmp_tval  = &((double*)tval)[ln];
-	tmp_rstd  = &((double*)rstd)[ln];
-	tmp_rcoef = &((double*)rcoef)[ln];
+        tmp_tval  = &((double*)tval)[ln];
+        tmp_rstd  = &((double*)rstd)[ln];
+        tmp_rcoef = &((double*)rcoef)[ln];
       }
       
       NGCALLF(dregcoef,DREGCOEF)(tmp_x,tmp_y,&npts,&missing_dx.doubleval,
-				 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
-				 &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
+                                 &missing_dy.doubleval,tmp_rcoef,tmp_tval,
+                                 &nptxy[ln],&xave,&yave,tmp_rstd,&ier);
       if (ier == 5) ier_count5++;
       if (ier == 6) ier_count6++;
 /*
  * Coerce output to float if necessary.
  */
       if(type_rcoef != NCL_double) {
-	((float*)tval)[ln]  = (float)*tmp_tval;
-	((float*)rstd)[ln]  = (float)*tmp_rstd;
-	((float*)rcoef)[ln] = (float)*tmp_rcoef;
+        ((float*)tval)[ln]  = (float)*tmp_tval;
+        ((float*)rstd)[ln]  = (float)*tmp_rstd;
+        ((float*)rcoef)[ln] = (float)*tmp_rcoef;
       }
       
       ly += npts;
@@ -1796,6 +1796,7 @@ NhlErrorTypes reg_multlin_W( void )
  * Various
  */
   double *cnorm, *resid, *tmp_constant;
+  double *wk;
 /*
  * Output variables
  */
@@ -1886,8 +1887,8 @@ NhlErrorTypes reg_multlin_W( void )
   cnorm        = (double*)calloc(mpts,sizeof(double));
   resid        = (double*)calloc(npts,sizeof(double));
   tmp_constant = (double*)calloc(1,sizeof(double));
-
-  if(cnorm == NULL || resid == NULL || tmp_constant == NULL) {
+  wk           = (double*)calloc(2*npts*npts,sizeof(double));
+  if(cnorm == NULL || resid == NULL || tmp_constant == NULL || wk == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"reg_multlin: Unable to allocate memory for input arrays");
     return(NhlFATAL);
   }
@@ -1913,7 +1914,7 @@ NhlErrorTypes reg_multlin_W( void )
 
   NGCALLF(dzregr1,DZREGR1)(&npts,&mpts,tmp_y,&missing_dy.doubleval,tmp_x,
                            &missing_dx.doubleval,tmp_coef,resid,tmp_constant,
-                           cnorm);
+                           cnorm,wk);
 
 /*
  * Coerce tmp_constant scalar to appropriate type.
@@ -1928,7 +1929,8 @@ NhlErrorTypes reg_multlin_W( void )
   NclFree(cnorm);
   NclFree(resid);
   NclFree(tmp_constant);
-
+  NclFree(wk);
+  
 /*
  * Get ready to return the data and add a "constant" attribute.
  */
