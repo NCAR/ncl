@@ -320,6 +320,9 @@ extern NhlErrorTypes ngsetp_W(void);
 extern NhlErrorTypes nggetp_W(void);
 extern NhlErrorTypes wmbarb_W(void);
 extern NhlErrorTypes wmbarbmap_W(void);
+extern NhlErrorTypes wmvect_W(void);
+extern NhlErrorTypes wmvectmap_W(void);
+extern NhlErrorTypes wmvlbl_W(void);
 extern NhlErrorTypes wmdrft_W(void);
 extern NhlErrorTypes wmlabs_W(void);
 extern NhlErrorTypes wmstnm_W(void);
@@ -3324,6 +3327,46 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
     NclRegisterProc(wmbarbmap_W,args,"wmbarbmap",nargs);
+
+/*
+ * Register wmvect
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    NclRegisterProc(wmvect_W,args,"wmvect",nargs);
+
+/*
+ * Register wmvectmap
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    NclRegisterProc(wmvectmap_W,args,"wmvectmap",nargs);
+
+/*
+ * Register wmvlbl
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"graphic",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
+    NclRegisterProc(wmvlbl_W,args,"wmvlbl",nargs);
 
 /*
  * Register wmdrft

@@ -30,7 +30,8 @@ NhlErrorTypes wmsetp_W(void)
                       "rc4", "rc5", "rev", "rfc", "rls", "ros",
                       "sc1", "sc2", "sc3", "sc4", "slf", "sty",
                       "t1c", "t2c", "wbf", "wfc", "wty", "ezf",
-                      "smf", "loc", "wdf", "unt",
+                      "smf", "loc", "wdf", "unt", "vcc", "vlb",
+                      "vlf",
                       "ALO", "AOC", "ASC", "AWC", "CBC", "CC1", 
                       "CC2", "CC3", "CFC", "COL", "DBC", "DTC",
                       "HIB", "HIC", "HIF", "HIS", "LC1", "LC2",
@@ -39,7 +40,8 @@ NhlErrorTypes wmsetp_W(void)
                       "RC4", "RC5", "REV", "RFC", "RLS", "ROS",
                       "SC1", "SC2", "SC3", "SC4", "SLF", "STY",
                       "T1C", "T2C", "WBF", "WFC", "WTY", "EZF",
-                      "SMF", "LOC", "WDF", "UNT"
+                      "SMF", "LOC", "WDF", "UNT", "VCC", "VLB",
+                      "VLF"
                      };
 
   char *params_f[] = {"arc", "ard", "arl", "ars", "beg", "bet",
@@ -47,13 +49,15 @@ NhlErrorTypes wmsetp_W(void)
                       "end", "lin", "lwd", "oer", "rht", "rmg",
                       "sht", "sig", "sl1", "sl2", "smt", "swi",
                       "tht", "wba", "wbc", "wbd", "wbl", "wbr",
-                      "wbs", "wbt", "wht", "blw",
+                      "wbs", "wbt", "wht", "blw", "vrs", "vrn",
+                      "vch", "vcd", "vcw", "vva",
                       "ARC", "ARD", "ARL", "ARS", "BEG", "BET",
                       "CHT", "CMG", "CS1", "CS2", "DTS", "DWD",
                       "END", "LIN", "LWD", "OER", "RHT", "RMG",
                       "SHT", "SIG", "SL1", "SL2", "SMT", "SWI",
                       "THT", "WBA", "WBC", "WBD", "WBL", "WBR",
-                      "WBS", "WBT", "WHT", "BLW"
+                      "WBS", "WBT", "WHT", "BLW", "VRS", "VRN",
+                      "VCH", "VCD", "VCW", "VVA"
                      };
 
   char *params_c[] = {"erf", "fro",
@@ -635,6 +639,347 @@ NhlErrorTypes wmbarbmap_W( void )
   c_wmseti("ezf",ezf);
   c_wmseti("wdf",wdf);
 
+  gdeactivate_ws (gkswid);
+
+  NhlRLDestroy(grlist);
+
+  return(NhlNOERROR);
+  
+}
+
+NhlErrorTypes wmvect_W( void )
+{
+  int grlist,gkswid,i,btot;
+  int *nwid,nid,ezf;
+  float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
+ 
+  int itrn;
+  float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
+
+/*
+ *  Define a variable to store the HLU object identifier.
+ */
+  NclHLUObj tmp_hlu_obj;
+
+  float *x;
+  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  float *y;
+  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  float *u;
+  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
+  float *v;
+  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv;
+  NclScalar missing_ru, missing_rv;
+  NclBasicDataTypes type_u, type_v;
+
+  float u_missing, v_missing;
+
+/*
+ * Retrieve parameters
+ */
+
+/*
+ *  nwid points to the HLU identifier of the graphic object; this is
+ *  converted to the NCL workstation identifier below.
+ */
+  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,2);
+
+  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
+  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
+            &missing_u, &has_missing_u, &type_u, 2);
+  v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
+            &missing_v, &has_missing_v, &type_v, 2);
+
+/*
+ * Check that the input dimensions and dimension sizes are the same.
+ */
+  if( ndims_x != ndims_y || ndims_y != ndims_u || ndims_u != ndims_v) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmvect: input arguments must have the same dimensions.");
+        return(NhlFATAL);
+  }
+/*
+ * Check the dimension sizes.
+ */
+  for (i = 0; i < ndims_x; i++) {
+    if (dsizes_x[i] != dsizes_y[i] || dsizes_y[i] != dsizes_u[i] ||
+        dsizes_u[i] != dsizes_v[i]) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "wmvect: input arguments must all have the same dimension sizes");
+          return(NhlFATAL);
+    }
+  }
+
+
+/*
+ * Coerce missing values to float.
+ */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
+  u_missing = missing_ru.floatval;
+  v_missing = missing_rv.floatval;
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid = tmp_hlu_obj->hlu.hlu_id;
+
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+  
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(nid,grlist);
+
+/*
+ *  Calculate the total number of vectors to draw.
+ */
+  btot = 1;
+  for (i = 0; i < ndims_x; i++) {
+    btot = btot*dsizes_x[i];
+  }
+
+/*
+ * The following section calls the c_wmvect function.
+ */
+  gactivate_ws (gkswid);
+  c_wmgeti("ezf",&ezf);
+  if (ezf != -1) {
+    for (i = 0; i < btot; i++) {
+      if ( (*(u+i) != u_missing) && (*(v+i) != v_missing)) {
+        c_getset(&x1,&x2,&y1,&y2,&xx1,&xx2,&yy1,&yy2,&itrn);
+/*
+ * Find a small vector *on the map* in the direction of the vector.
+ * The cos term is introduced to accommodate for the latitude of the
+ * vector - as you approach the poles, a given spacial distance in latitude 
+ * in degrees is less than the same spacial distance in degrees
+ * longitude.
+ */
+        ang1 = atan2(*(u+i),*(v+i));
+        c_maptrn(*(x+i), *(y+i), &xt, &yt);
+        if (xt != 1.e12) {
+          c_maptrn(*(x+i)+0.1*cos(ang1),*(y+i)+0.1*sin(ang1)/cos(*(x+i)*d2r),&xtn,&ytn);
+          ang2 = atan2(ytn-yt,xtn-xt);
+          utmp = *(u+i);
+          vtmp = *(v+i);
+          vlen = sqrt(utmp*utmp + vtmp*vtmp);
+          utmp = vlen*cos(ang2);
+          vtmp = vlen*sin(ang2);
+          c_wmvect(xt, yt, utmp,vtmp);
+        }
+      }
+    }
+  }
+  else {
+    for (i = 0; i < btot; i++) {
+      if ( (*(u+i) != u_missing) && (*(v+i) != v_missing)) {
+          c_wmvect(*(x+i), *(y+i), *(u+i), *(v+i));
+      }
+    }
+  }
+  gdeactivate_ws (gkswid);
+
+  NhlRLDestroy(grlist);
+
+  return(NhlNOERROR);
+  
+}
+
+NhlErrorTypes wmvectmap_W( void )
+{
+  int grlist,gkswid,i,btot;
+  int *nwid,nid,ezf;
+  float xt,yt,xtn,ytn,ang1,ang2,utmp,vtmp,vlen,d2r=0.01745329;
+ 
+  int itrn;
+  float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
+
+/*
+ *  Define a variable to store the HLU object identifier.
+ */
+  NclHLUObj tmp_hlu_obj;
+
+  float *x;
+  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  float *y;
+  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+  float *u;
+  int ndims_u,dsizes_u[NCL_MAX_DIMENSIONS],has_missing_u;
+  float *v;
+  int ndims_v,dsizes_v[NCL_MAX_DIMENSIONS],has_missing_v;
+
+  NclScalar missing_u, missing_v;
+  NclScalar missing_du, missing_dv;
+  NclScalar missing_ru, missing_rv;
+  NclBasicDataTypes type_u, type_v;
+
+  float u_missing, v_missing;
+
+/*
+ * Retrieve parameters
+ */
+
+/*
+ *  nwid points to the HLU identifier of the graphic object; this is
+ *  converted to the NCL workstation identifier below.
+ */
+  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,2);
+
+  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
+  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
+            &missing_u, &has_missing_u, &type_u, 2);
+  v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
+            &missing_v, &has_missing_v, &type_v, 2);
+
+/*
+ * Check that the input dimensions and dimension sizes are the same.
+ */
+  if( ndims_x != ndims_y || ndims_y != ndims_u || ndims_u != ndims_v) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmvectmap: input arguments must have the same dimensions.");
+        return(NhlFATAL);
+  }
+/*
+ * Check the dimension sizes.
+ */
+  for (i = 0; i < ndims_x; i++) {
+    if (dsizes_x[i] != dsizes_y[i] || dsizes_y[i] != dsizes_u[i] ||
+        dsizes_u[i] != dsizes_v[i]) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,
+                 "wmvectmap: input arguments must all have the same dimension sizes");
+          return(NhlFATAL);
+    }
+  }
+
+
+/*
+ * Coerce missing values to float.
+ */
+  coerce_missing(type_u,has_missing_u,&missing_u,&missing_du,&missing_ru);
+  coerce_missing(type_v,has_missing_v,&missing_v,&missing_dv,&missing_rv);
+  u_missing = missing_ru.floatval;
+  v_missing = missing_rv.floatval;
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid = tmp_hlu_obj->hlu.hlu_id;
+
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+  
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(nid,grlist);
+
+/*
+ *  Calculate the total number of vectorsto draw.
+ */
+  btot = 1;
+  for (i = 0; i < ndims_x; i++) {
+    btot = btot*dsizes_x[i];
+  }
+
+/*
+ * The following section calls the c_wmvectmap function.
+ */
+  gactivate_ws (gkswid);
+  for (i = 0; i < btot; i++) {
+    if ( (*(u+i) != u_missing) && (*(v+i) != v_missing)) {
+        c_wmvectmap(*(x+i), *(y+i), *(u+i), *(v+i));
+    }
+  }
+  gdeactivate_ws (gkswid);
+
+  NhlRLDestroy(grlist);
+
+  return(NhlNOERROR);
+  
+}
+
+NhlErrorTypes wmvlbl_W( void )
+{
+  int grlist,gkswid,i,btot;
+  int *nwid,nid,ezf;
+  float xt,yt,xtn,ytn,ang1,ang2,vlen,d2r=0.01745329;
+ 
+  int itrn;
+  float x1,x2,y1,y2,xx1,xx2,yy1,yy2;
+
+/*
+ *  Define a variable to store the HLU object identifier.
+ */
+  NclHLUObj tmp_hlu_obj;
+
+  float *x;
+  int ndims_x,dsizes_x[NCL_MAX_DIMENSIONS];
+  float *y;
+  int ndims_y,dsizes_y[NCL_MAX_DIMENSIONS];
+
+/*
+ * Retrieve parameters
+ */
+
+/*
+ *  nwid points to the HLU identifier of the graphic object; this is
+ *  converted to the NCL workstation identifier below.
+ */
+  nwid = (int*)  NclGetArgValue(0,3,     NULL,     NULL, NULL,NULL,NULL,2);
+
+  x   = (float*) NclGetArgValue(1,3, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
+  y   = (float*) NclGetArgValue(2,3, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+
+/*
+ * Check that the input dimensions and dimension sizes are the same.
+ */
+  if( ndims_x != ndims_y) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+               "wmvectmap: input arguments must have the same dimensions.");
+        return(NhlFATAL);
+  }
+/*
+ * Check the dimension sizes.
+ */
+  for (i = 0; i < ndims_x; i++) {
+    if (dsizes_x[i] != dsizes_y[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,
+          "wmvlbl: input arguments must all have the same dimension sizes");
+          return(NhlFATAL);
+    }
+  }
+
+
+/*
+ *  Determine the NCL identifier for the graphic object in nid.
+ */
+  tmp_hlu_obj = (NclHLUObj) _NclGetObj(*nwid);
+  nid = tmp_hlu_obj->hlu.hlu_id;
+
+/*
+ * Retrieve the GKS workstation id from the workstation object.
+ */
+  
+  grlist = NhlRLCreate(NhlGETRL);
+  NhlRLClear(grlist);
+  NhlRLGetInteger(grlist,NhlNwkGksWorkId,&gkswid);
+  NhlGetValues(nid,grlist);
+
+/*
+ * The following section calls the c_wmvlbl function.
+ */
+  gactivate_ws (gkswid);
+  c_wmvlbl(*x, *y);
   gdeactivate_ws (gkswid);
 
   NhlRLDestroy(grlist);
