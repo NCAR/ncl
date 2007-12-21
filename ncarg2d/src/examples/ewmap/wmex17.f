@@ -60,10 +60,8 @@ C
       CALL WMSETI('VCC - vector color',7)
       CALL WMVECTMAP(70.,-40.,-80.,-80.)
 C
-C  Select normalization transformation zero and draw
-C  label box.
+C  Draw label box.
 C
-      CALL GSELNT(0)
       CALL WMVLBL(0.95,0.0015)
 C
       CALL FRAME
