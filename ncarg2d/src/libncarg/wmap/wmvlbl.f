@@ -1,5 +1,5 @@
 C
-C	$Id: wmvlbl.f,v 1.1 2007-12-19 02:21:50 fred Exp $
+C	$Id: wmvlbl.f,v 1.2 2007-12-21 01:49:42 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,7 +32,7 @@ C
       include 'wmcomn.h'
 C
       PARAMETER (R2D=57.2957795131)
-      DIMENSION XX(5),YY(5)
+      DIMENSION XX(5),YY(5),CRECT(4)
       CHARACTER*8 CHRDIST
       INTEGER VCC,FN,CC
 C
@@ -41,20 +41,16 @@ C
       CALL GQPLCI(IER,ILCLRO)
       CALL GQFACI(IER,IFCLRO)
       CALL GQLWSC(IER,RLNWTH)
-C
-      CALL GSLWSC(VCLWID)
-C
-C  Convert X and Y to NDC and work in NDC space.
-C
-      CALL WMW2NX(1,X,XNDC)
-      CALL WMW2NY(1,Y,YNDC)
       CALL GQCNTN(IER,NTRO)
+      CALL GQCLIP(IER,NCLIPO,CRECT)
+
+      CALL GSLWSC(VCLWID)
       CALL GSELNT(0)
 C
 C  Draw boundary box.
 C
-      XX(1) = XNDC
-      YY(1) = YNDC
+      XX(1) = X
+      YY(1) = Y
       XX(2) = XX(1)
       YY(2) = YY(1)+0.05
       XX(3) = XX(2)-0.10
@@ -85,7 +81,7 @@ C
       CALL WMSETR('VCH',0.02)
       CALL WMSETI('VCC',VLBLFC)
 C
-      CALL WMVECT(XNDC-0.10+0.015,YNDC+0.015,0.07,0.)
+      CALL WMVECT(X-0.10+0.015,Y+0.015,0.07,0.)
       CALL WMSETR('VRS',VRS)
       CALL WMSETR('VRN',VRN)
       CALL WMSETR('VCW',VCW)
@@ -102,7 +98,7 @@ C
       CALL PCSETI('CC',VLBLFC)
       CALL PCSETI('FN',21)
 
-      CALL PLCHHQ(XNDC-0.10+0.05,YNDC+0.035,CHRDIST,0.01275,0.,0.)
+      CALL PLCHHQ(X-0.10+0.05,Y+0.035,CHRDIST,0.01275,0.,0.)
       CALL PCSETI('CC',CC)
       CALL PCSETI('FN',FN)
 C
@@ -112,6 +108,7 @@ C
       CALL GSFACI(IFCLRO)
       CALL GSELNT(NTRO)
       CALL GSLWSC(RLNWTH)
+      CALL GSCLIP(NCLIPO)
 C
       RETURN
       END
