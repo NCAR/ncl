@@ -4,3 +4,7 @@ compiling Convert.c with optimization turned off.
 If having troubles compiling Create.c on Cygwin because of an sa_handler
 error message, try compiling without -ansi.
 
+I had trouble compiling Workstation.c on an x86_64 Linux system using
+the Intel (icc) compiler. I got an internal error message. So, I
+used gcc to compile just this one file.
+
