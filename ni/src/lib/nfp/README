@@ -10,8 +10,9 @@
       The routine should be a double precision version.
       Instead of coding a double precision version 
       directly it is less error prone to use 
-      the NAG single to double precision converter.  This
-      is on windom in /usr/local/NAGWare-4.1/bin/nag_apt .
+      the NAG single-to-double-precision converter.  This
+      is on windom: /usr/local/NAGWare-4.1/bin/nag_apt .
+
       The default execution of nag_apt is to take a single
       precision .f file and convert it to double precision.
       The original file is backed up to a .orig file and 
@@ -101,11 +102,14 @@
         webdoc/ncl/Document/Functions/Built-in
 
       Determine the version number of the release where the new
-      routine will appear.  Add a newversion tag to the source like:
+      routine will appear.  Add a "newversion" tag to the source like:
 
          <newversion>
          4.3.1
          </newversion>
+
+      This version tag should appear after the </summary> tag and
+      before the <synopsis ...> tag.
 
       For details on the formatting of the .xml files, see:
  
@@ -131,13 +135,36 @@
       When you are satisfied with the documentation, use
       updatenclweb to copy it to the live web site.
 
-      Add and check in the new .xml files as well as the yMakefile.
-      Do not check in .shtml files.
+      CVS add and check in the new .xml files as well as the
+      yMakefile.  Do not check in .shtml files.
 
-  o  Edit webdoc/ncl/future_release.xml to add the new stuff.
+   o  Update various function lists on the web, for example, those
+      that you see in:
 
-  o  If you want to add an Applications example that shows usage of
-     the new routine, see
+      http://www.ncl.ucar.edu/Document/Functions/index.shtml
+      http://www.ncl.ucar.edu/Document/Functions/list_type.shtml
+      http://www.ncl.ucar.edu/Document/Functions/list_alpha.shtml
+      http://www.ncl.ucar.edu/Document/Functions/Built-in/index.shtml
 
-       webdoc/ncl/Applications/README
+      To do this, cd to webdoc/ncl/Document/Functions and run:
+
+         ./update_lists
+
+      This may take awhile and generate a lot of output. It will
+      also try to run "cvs update" in several directories. For
+      a list of available options, type "./update_lists -h".
+
+      To only copy files to the test web machine, type:
+
+         ./update_lists -t
+
+      You don't need to CVS check-in anything here.
+
+   o  Edit webdoc/ncl/future_release.xml to add the new stuff.
+      CVS check-in this file.
+
+   o  If you want to add an Applications example that shows usage of
+      the new routine, see
+
+        webdoc/ncl/Applications/README
 
