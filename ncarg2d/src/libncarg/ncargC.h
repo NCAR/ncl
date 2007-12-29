@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.21 2007-12-20 17:56:55 fred Exp $
+ *  $Id: ncargC.h,v 1.22 2007-12-29 01:13:12 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -3847,6 +3847,13 @@ extern void c_set(
 #endif
 );
 
+extern void c_seti(
+#ifdef  NeedFuncProto
+    int ix,
+    int iy
+#endif
+);
+
 extern void c_setusv(
 #ifdef  NeedFuncProto
     char *vn,
@@ -3960,6 +3967,15 @@ extern void c_slgetr(
     float *rval
 #endif                
 );                
+
+extern void c_slogap(
+#ifdef NeedFuncProto
+    float time,
+    int mtst
+#endif
+);
+
+extern void c_slrset();
 
 extern void c_slseti(
 #ifdef  NeedFuncProto
@@ -4283,6 +4299,8 @@ extern void c_q8qst4(
     char *vrsion
 #endif
 );
+
+extern void c_reset();
 
 extern void c_retsr(
 #ifdef  NeedFuncProto
@@ -4776,6 +4794,15 @@ extern void c_tdstrs(
     float ustp,
     float vstp,
     float wstp
+#endif
+);
+
+extern void c_tick4(
+#ifdef NeedFuncProto
+    int lmjx,
+    int lmnx,
+    int lmjy,
+    int lmny
 #endif
 );
 
