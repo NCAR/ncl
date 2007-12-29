@@ -72,6 +72,11 @@
         make me
         make
 
+   o  If instead of your having added a new routine to the nfpfort
+      directory, but rather have added a new Fortran routine to
+      libncarg, be sure to write the C wrappers and prototype them
+      in $NCARG/ncarg2d/src/libncarg/ncargC.h .
+
    o  Go to $NCARG/ni/src/ncl and do
 
         cvs update
