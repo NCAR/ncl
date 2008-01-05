@@ -1,5 +1,5 @@
 /*
- *      $Id: CnRendererP.h,v 1.1 2004-03-11 02:00:16 dbrown Exp $
+ *      $Id: CnRendererP.h,v 1.2 2008-01-05 01:18:22 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,23 @@
 
 #include <ncarg/hlu/CnRenderer.h>
 #include <ncarg/hlu/ContourPlotP.h>
+
+extern NhlErrorTypes CnGetDataBound (
+#if	NhlNeedProto
+	NhlContourPlotLayer	cl,
+	NhlBoundingBox		*bbox,
+        NhlBoolean		*xlinear,  
+        NhlBoolean		*ylinear,
+	int			*mcount,
+	int			*ncount,
+	float                   *xsoff,
+	float                   *xeoff,
+	float                   *ysoff,
+	float                   *yeoff,
+	NhlString		entry_name
+#endif
+	);
+
 
 
 typedef struct _NhlCnRendererLayerPart {
