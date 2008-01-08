@@ -1,5 +1,5 @@
 C
-C $Id: pcblda.f,v 1.13 2000-08-22 15:05:20 haley Exp $
+C $Id: pcblda.f,v 1.14 2008-01-08 19:21:53 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -162,7 +162,7 @@ C
 C
 C ITEF is the "compute-text-extent-vectors" flag.  When it is set, calls
 C to PLCHHQ with ANGD = 360. plot nothing; they cause the parameters
-C DSTL, DSTT, DSTB, and DSTT (the magnitudes of the text extent vectors)
+C DSTL, DSTR, DSTB, and DSTT (the magnitudes of the text extent vectors)
 C to be computed for recovery by the calling program.
 C
       DATA ITEF / 0 /
