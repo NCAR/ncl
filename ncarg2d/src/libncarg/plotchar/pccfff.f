@@ -1,5 +1,5 @@
 C
-C	$Id: pccfff.f,v 1.5 2002-03-28 00:18:06 fred Exp $
+C	$Id: pccfff.f,v 1.6 2008-01-08 19:37:51 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -61,7 +61,7 @@ C
 C For each odd value of I greater than 2, RDGU(I) is an X coordinate
 C and RDGU(I+1) is a Y coordinate of some point on a polyline that is
 C to be drawn or filled, with the following exception:  each polyline
-C is is terminated by a "point" with X coordinate -2048. or -2047.; 
+C is terminated by a "point" with X coordinate -2048. or -2047.; 
 C the value -2048. implies that the polyline is to be drawn and -2047. 
 C that it is to be filled.  This point is not actually part of the 
 C polyline, it simply marks the end of the polyline.  The Y coordinate
