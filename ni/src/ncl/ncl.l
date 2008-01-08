@@ -802,3 +802,4 @@ digit	[0-9]
 	printtoken(yytext[0],(char*)NULL);
 	return(yytext[0]);
 }
+
