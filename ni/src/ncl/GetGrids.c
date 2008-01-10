@@ -8018,15 +8018,15 @@ int* nrotatts;
 	static int rlist = -1;
 	int nx;
 	int ny;
-	float la1;
-	float lo1;
-	float lov,tlon;
-	float dx;
-	float dy;
+	double la1;
+	double lo1;
+	double lov,tlon;
+	double dx;
+	double dy;
 	float deltax;
 	float deltay;
-	float latin1;
-	float latin2;
+	double latin1;
+	double latin2;
 	int north;
 	unsigned char tmpc[4];
 	int status,idir,jdir,i,j;
@@ -8048,182 +8048,37 @@ int* nrotatts;
 	tmpc[0] = gds[10] & (unsigned char) 0177;
 	tmpc[1] = gds[11];
 	tmpc[2] = gds[12];
-	la1 = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	la1 = (double)(UnsignedCnvtToDecimal(3,tmpc))/1000.0;
 	la1 = ((gds[10] & (unsigned char) 0200)? -la1:la1);
 
 	tmpc[0] = gds[13] & (unsigned char) 0177;
 	tmpc[1] = gds[14];
 	tmpc[2] = gds[15];
-	lo1 = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	lo1 = (double)(UnsignedCnvtToDecimal(3,tmpc))/1000.0;
 	lo1 = ((gds[13] & (unsigned char) 0200)? -lo1:lo1);
 
 	tmpc[0] = gds[17] & (unsigned char) 0177;
 	tmpc[1] = gds[18];
 	tmpc[2] = gds[19];
-	lov = (UnsignedCnvtToDecimal(3,tmpc))/1000.0;
+	lov = (double)(UnsignedCnvtToDecimal(3,tmpc))/1000.0;
 	lov = ((gds[17] & (unsigned char) 0200)? -lov:lov);
 
-	dx = (float)UnsignedCnvtToDecimal(3,&(gds[20]));
-	dy = (float)UnsignedCnvtToDecimal(3,&(gds[23]));
+	dx = (double)UnsignedCnvtToDecimal(3,&(gds[20])) / 1000;
+	dy = (double)UnsignedCnvtToDecimal(3,&(gds[23])) / 1000;
 	tmpc[0] = gds[28] & (unsigned char) 0177;
 	tmpc[1] = gds[29];
 	tmpc[2] = gds[30];
-	latin1 = UnsignedCnvtToDecimal(3,tmpc)/1000.0;
+	latin1 = (double)UnsignedCnvtToDecimal(3,tmpc)/1000.0;
 	latin1 = ((gds[28] & (unsigned char) 0200)? -latin1:latin1);
 
 	tmpc[0] = gds[31] & (unsigned char) 0177;
 	tmpc[1] = gds[32];
 	tmpc[2] = gds[33];
-	latin2 = UnsignedCnvtToDecimal(3,tmpc)/1000.0;
+	latin2 = (double)UnsignedCnvtToDecimal(3,tmpc)/1000.0;
 	latin2 = ((gds[28] & (unsigned char) 0200)? -latin2:latin2);
 
-        *dimsizes_lat = (int*)NclMalloc(sizeof(int) * 2);
-        *dimsizes_lon = (int*)NclMalloc(sizeof(int) * 2);
-        *n_dims_lat = 2;
-        *n_dims_lon = 2;
-        (*dimsizes_lat)[0] = ny;
-        (*dimsizes_lat)[1] = nx;
-        (*dimsizes_lon)[0] = ny;
-        (*dimsizes_lon)[1] = nx;
-	*lat = (float*)NclMalloc(sizeof(float)*nx*ny);
-	*lon = (float*)NclMalloc(sizeof(float)*nx*ny);
-	north= ((unsigned char)0200 & (unsigned char)gds[26])?1:0;
-	idir = ((unsigned char)0200 & (unsigned char)gds[27])?-1:1;
-	jdir = ((unsigned char)0100 & (unsigned char)gds[27])?1:-1;
-	do_rot = 1;
-	grid_oriented =  ((unsigned char)010 & (unsigned char)gds[16])?1:0;
-#if 0
-	if((latin1 < 0)&&(latin2 < 0)) {
-		float minlat,maxlat;
-
-		minlat = (latin1>latin2)?latin2:latin1;
-		maxlat = (latin1>latin2)?latin1:latin2;
-		
-		InitMapTrans("LC",minlat,lov,maxlat);
-
-		C = 2 * pi * EAR * cos(degtorad * latin1)*1000.0;
-		d_per_km = 360.0/C;
-		dlon = dx * d_per_km;
-/*
-* latin1 is always closest to pole
-*/
-		tlon = lov + dlon;
-		NGCALLF(maptrn,MAPTRN)(&minlat,&lov,&nx0,&ny0);
-		NGCALLF(maptrn,MAPTRN)(&minlat,&tlon,&nx1,&ny1);
-		deltax = fabs(nx0 - nx1);
-		deltay = dy/dx * deltax;
-		NGCALLF(maptrn,MAPTRN)(&la1,&lo1,&nx0,&ny0);
-		for(j = 0; j < ny; j++) {
-			for(i = 0; i < nx; i++) {
-				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
-				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
-			}
-		}
-		for(j = 0; j < ny; j++) {
-			for(i = 0; i < nx; i++) {
-				float tmplon = (*lon)[j * nx + i];
-				float tmplat = (*lat)[j * nx + i];
-				NGCALLF(maptri,MAPTRI)
-				(&tmplon,&tmplat,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
-			}
-		}
-	} else {
-		float minlat,maxlat;
-
-		
-		minlat = (latin1>latin2)?latin2:latin1;
-		maxlat = (latin1>latin2)?latin1:latin2;
-	
-		InitMapTrans("LC",maxlat,lov,minlat);
-/*
-* Northern case
-*/
-		C = 2 * pi * EAR * cos(degtorad * latin1)*1000.0;
-		d_per_km = 360.0/C;
-		dlon = dx * d_per_km;
-/*
-* latin1 is always closest to pole
-*/
-		tlon = lov + dlon;
-		NGCALLF(maptrn,MAPTRN)(&maxlat,&lov,&nx0,&ny0);
-		NGCALLF(maptrn,MAPTRN)(&maxlat,&tlon,&nx1,&ny1);
-		
-		deltax = fabs(nx0 - nx1);
-		deltay = dy/dx * deltax;
-		NGCALLF(maptrn,MAPTRN)(&la1,&lo1,&nx0,&ny0);
-
-		for(j = 0; j < ny; j++) {
-			for(i = 0; i < nx; i++) {
-				(*lon)[j * nx + i] = nx0 + idir * i * deltax;
-				(*lat)[j * nx + i] = ny0 + jdir * j * deltay;
-			}
-		}
-		for(j = 0; j < ny; j++) {
-			for(i = 0; i < nx; i++) {
-				float tmplon = (*lon)[j * nx + i];
-				float tmplat = (*lat)[j * nx + i];
-				NGCALLF(maptri,MAPTRI)
-				(&tmplon,&tmplat,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
-			}
-		}
-	}
-#endif
-
-#if 1
-	{
-		int kgds[32];
-		int iopt;
-		int npts;
-		float fillval;
-		int lrot;
-		int nret;
-		float *srot = NULL;
-		
-		kgds[0] = 3;
-		kgds[1] = nx;
-		kgds[2] = ny;
-		kgds[3] = la1 * 1000;
-		kgds[4] = lo1 * 1000;
-		if (do_rot) {
-			/* force gdswiz to think uv components are grid oriented so rotation angles are produced */
-			unsigned char res_comp_flag = gds[16] | 010;
-			kgds[5] = UnsignedCnvtToDecimal(1,&res_comp_flag);
-		}
-		else {
-			kgds[5] = UnsignedCnvtToDecimal(1,&gds[16]);
-		}
-		kgds[6] = lov * 1000;
-		kgds[7] = dx;
-		kgds[8] = dy;
-		kgds[9] = UnsignedCnvtToDecimal(1,&(gds[26]));;
-		kgds[10] = UnsignedCnvtToDecimal(1,&(gds[27]));
-		kgds[11] = latin1 * 1000;
-		kgds[12] = latin2 * 1000;
-
-		iopt = 0;
-		lrot = do_rot;
-		npts = nx * ny;
-		if (do_rot) {
-			srot = NhlMalloc(npts * sizeof(float));
-			*rot = NhlMalloc(npts * sizeof(float));
-		}
-	
-		NGCALLF(gdswiz,GDSWIZ)(kgds,&iopt,&npts,&fillval,*lon,*lat,*lon,*lat,&nret,&lrot,*rot,srot);
-
-		if (do_rot) {
-			for (i = 0; i < npts; i++) {
-				(*rot)[i] = asin(srot[i]);
-				(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
-			}
-			NhlFree(srot);
-		}
-		else {
-			for (i = 0; i < npts; i++) {
-				(*lon)[i] = (*lon)[i] > 180.0 ? (*lon)[i] - 360.0 : (*lon)[i];
-			}
-		}
-	}
-#endif
+	GenLambert(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon, rot,
+		   latin1, latin2, lov, dx,dy,la1,lo1,nx,ny);
 
 	if(lon_att_list != NULL) {
 		tmp_float= (float*)NclMalloc(sizeof(float));
