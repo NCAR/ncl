@@ -1,5 +1,5 @@
 C
-C $Id: pcblda.f,v 1.14 2008-01-08 19:21:53 fred Exp $
+C $Id: pcblda.f,v 1.15 2008-01-11 23:55:43 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -110,7 +110,11 @@ C
       DATA INIT / 0 /
 C
 C IORD is a flag that says in what order characters are to be drawn by
-C PLCHHQ.  If its value is positive, characters are to be drawn in the
+C PLCHHQ.  IORD is the value of the parameter 'DO'. The parameter
+C setting for 'DO' can be used in combination with the setting for
+C the 'SS' parameter to achieve stacking effects.   See frame 8
+C of the ncargex example 'epltch' to observe these effects.
+C If its value is positive, characters are to be drawn in the
 C order in which they occur in an input string (from left to right);
 C otherwise, they are to be drawn in the reverse order (from right to
 C left).  The absolute value of IORD should be either a 1 or a 2; the
