@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 2005-10-11 08:20:11 haley Exp $
+#      $Id: yMakefile,v 1.5 2008-01-14 19:44:50 haley Exp $
 #
 #########################################################################
 #									#
@@ -55,11 +55,11 @@ SRCS		=	$(GEN_SRCS) $(STATIC_SRCS)
 
 GEN_SRCS	=	y.tab.c lex.yy.c
 
-STATIC_SRCS	=	Symbol.c wrapit.c
+STATIC_SRCS	=	Symbol.c wrapit_main.c
 
 GEN_OBJS	=	y.tab.o lex.yy.o
 
-STATIC_OBJS	=	Symbol.o wrapit.o
+STATIC_OBJS	=	Symbol.o wrapit_main.o
 
 OBJS		=	$(GEN_OBJS) $(STATIC_OBJS)
 
