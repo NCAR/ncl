@@ -464,6 +464,7 @@ extern NhlErrorTypes nice_mnmxintvl_W(void);
 extern NhlErrorTypes dim_gbits_W(void);
 extern NhlErrorTypes getbitsone_W(void);
 extern NhlErrorTypes conform_W(void);
+extern NhlErrorTypes conform_dims_W(void);
 extern NhlErrorTypes paleo_outline_W(void);
 extern NhlErrorTypes inverse_matrix_W(void);
 extern NhlErrorTypes solve_linsys_W(void);
@@ -6143,10 +6144,19 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(3);
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
-    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
     SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
     NclRegisterFunc(conform_W, args, "conform", nargs);
+/*
+ *  Register conform_dims.
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, 0, 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "integer", 1, NclANY);  nargs++;
+    NclRegisterFunc(conform_dims_W, args, "conform_dims", nargs);
 /*
  *  Register omega_ccm.
  */
