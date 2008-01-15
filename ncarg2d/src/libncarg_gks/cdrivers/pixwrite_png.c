@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.8 2004-10-22 17:22:18 fred Exp $
+ *      $Id: pixwrite_png.c,v 1.9 2008-01-15 17:54:22 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -69,7 +69,7 @@ static FILE *OpenPNGFile (PIXddp *xi)
   strncpy(buf,xi->filename,127);
   cp = &(buf[strlen(xi->filename)]);
   if (xi->frame_count > 0) {
-    sprintf(cp,".%d.png",xi->frame_count);
+    sprintf(cp,".%06d.png",xi->frame_count);
   }
   else {
     sprintf(cp,".png");
