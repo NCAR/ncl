@@ -1,5 +1,5 @@
 /*
- *      $Id: pixcontrol.c,v 1.6 2005-11-16 20:17:46 fred Exp $
+ *      $Id: pixcontrol.c,v 1.7 2008-01-15 19:04:39 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -673,6 +673,7 @@ PIX_OpenWorkstation
         int                     *iptr = (int *) gksc->i.list;
         _NGCesc                 *cesc;
         _NGCPixConfig          *pixc=NULL;
+        char                   *filename;
 
         if((xi = (PIXddp *) malloc (sizeof (PIXddp))) == (PIXddp *) NULL){
                 ESprintf(ERR_DTABLE_MEMORY, "malloc(%d)", sizeof(PIXddp));
@@ -698,7 +699,6 @@ PIX_OpenWorkstation
         xi->size_change = NULL;
         xi->sref = NULL;
 	xi->format = 1;
-        xi->filename = "gmeta";
 	xi->clear = 1;
 
         while(cesc = _NGGetCEscInit()){
@@ -750,6 +750,7 @@ PIX_OpenWorkstation
                 return ERR_WIN_ATTRIB;
         }
 
+        xi->filename = NULL;
         if(pixc){
                 pixc->width = xwa.width;
                 pixc->height = xwa.height;
@@ -761,6 +762,10 @@ PIX_OpenWorkstation
 			strcpy(xi->filename,pixc->filename);
 		}
         }
+        if (! xi->filename) {
+		xi->filename = malloc(5 * sizeof(char));
+	        strcpy(xi->filename,"gmeta");
+	}
         xi->scr = xwa.screen;
         xi->vis = xwa.visual;
         xi->cmap = xwa.colormap;
@@ -796,8 +801,8 @@ PIX_OpenWorkstation
                 xi->color_ava = TRUE;
 
         xi->depth = xwa.depth;
-
         init_color(xi);
+        
 	XFillRectangle(xi->dpy,xi->pix,xi->bg_gc,0,0,xwa.width,xwa.height);
 	xi->frame_count = 0;
 
