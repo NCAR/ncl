@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.9 2008-01-15 17:54:22 dbrown Exp $
+ *      $Id: pixwrite_png.c,v 1.10 2008-01-15 18:15:22 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -62,7 +62,7 @@ int isf(int i);
 
 static FILE *OpenPNGFile (PIXddp *xi)
 {
-  char buf[136];
+  char buf[256];
   char *cp;
   FILE *fp;
 
