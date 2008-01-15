@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.39 2007-11-21 19:16:02 grubin Exp $
+#      $Id: Configure,v 1.40 2008-01-15 22:18:01 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2007-11-21 19:16:02 $
+#	$Date: 2008-01-15 22:18:01 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -405,8 +405,8 @@ if (("$answer" != "") && ("$answer" != "$buildhdf")) then
     set altered
 endif
 
-if (("$answer" == "y") || ("$answer" == "Y")) then
-    set hdfwithszip = "n"
+set hdfwithszip = "n"
+if (("$buildhdf" == "y") || ("$buildhdf" == "Y")) then
     echo ""
     echo "Did you build HDF with szip support? ($hdfwithszip)"
     echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
