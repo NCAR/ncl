@@ -1,5 +1,5 @@
 C
-C $Id: mdptrn.f,v 1.5 2005-06-22 21:36:46 kennison Exp $
+C $Id: mdptrn.f,v 1.6 2008-01-16 21:09:13 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -97,7 +97,7 @@ C Set up U and V for the fast paths.  U is a longitude, in degrees,
 C between -180. and +180., inclusive, and V is a latitude, in degrees.
 C
         TEMP=RLON-PHOC
-        U=TEMP-SIGN(180.D0,TEMP+180.D0)+SIGN(180.D0,180.D0-TEMP)
+        U=TEMP+(SIGN(180.D0,180.D0-TEMP)-SIGN(180.D0,TEMP+180.D0))
         V=MAX(-90.D0,MIN(90.D0,RLAT))
 C
 C If a fast-path projection is in use and the rotation angle is 180,
@@ -139,7 +139,7 @@ C
      +      IPRF.EQ. 8.OR.IPRF.EQ.16.OR.IPRF.EQ.17.OR.IPRF.EQ.18.OR.
      +      IPRF.EQ.19.OR.IPRF.EQ.21) THEN
           TMP1=RLON-UTPA(5)
-          P=TMP1-SIGN(180.D0,TMP1+180.D0)+SIGN(180.D0,180.D0-TMP1)
+          P=TMP1+(SIGN(180.D0,180.D0-TMP1)-SIGN(180.D0,TMP1+180.D0))
           IF ((IPRF.EQ.3.OR.IPRF.EQ.8).AND.ABS(RLAT).GT.89.999999D0)
      +                                                         GO TO 200
         ELSE IF (IPRF.EQ.9) THEN

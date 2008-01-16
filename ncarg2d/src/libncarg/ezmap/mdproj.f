@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.4 2005-06-22 21:36:46 kennison Exp $
+C $Id: mdproj.f,v 1.5 2008-01-16 21:09:13 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -65,8 +65,8 @@ C
         JPRJ=I-1
 C
         PHIA=MAX(-90.D0,MIN(90.D0,ARG2))
-        PHIO=ARG3-SIGN(180.D0,ARG3+180.D0)+SIGN(180.D0,180.D0-ARG3)
-        ROTA=ARG4-SIGN(180.D0,ARG4+180.D0)+SIGN(180.D0,180.D0-ARG4)
+        PHIO=ARG3+(SIGN(180.D0,180.D0-ARG3)-SIGN(180.D0,ARG3+180.D0))
+        ROTA=ARG4+(SIGN(180.D0,180.D0-ARG4)-SIGN(180.D0,ARG4+180.D0))
 C
         IF (JPRJ.EQ.3) THEN
           CALL MDSETD ('SA',0.D0)

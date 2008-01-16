@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.6 2006-03-06 21:02:19 kennison Exp $
+C $Id: mdpint.f,v 1.7 2008-01-16 21:09:13 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -682,7 +682,7 @@ C
         RLAT=RLAT+DLAT
         DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
         IF (RLAT.GT.-90.D0.AND.RLAT.LT.90.D0) GO TO 633
-        SLOM=RLON-SIGN(180.D0,RLON+180.D0)+SIGN(180.D0,180.D0-RLON)
+        SLOM=RLON+(SIGN(180.D0,180.D0-RLON)-SIGN(180.D0,RLON+180.D0))
 C
 C Find the maximum longitude.
 C
@@ -706,7 +706,7 @@ C
         RLAT=RLAT+DLAT
         DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
         IF (RLAT.GT.-90.D0.AND.RLAT.LT.90.D0) GO TO 643
-        BLOM=RLON-SIGN(180.D0,RLON+180.D0)+SIGN(180.D0,180.D0-RLON)
+        BLOM=RLON+(SIGN(180.D0,180.D0-RLON)-SIGN(180.D0,RLON+180.D0))
         IF (BLOM.LE.SLOM) BLOM=BLOM+360.D0
         GO TO 701
 C
