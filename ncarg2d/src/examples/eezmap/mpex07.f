@@ -194,8 +194,8 @@ C
 C Reduce the angle to the range from -180 to +180 and
 C find its equivalent in radians.
 C
-        ANGD=ANGD-SIGN(180.,ANGD+180.)
-     +           +SIGN(180.,180.-ANGD)
+        ANGD=ANGD+(SIGN(180.,180.-ANGD)
+     +            -SIGN(180.,ANGD+180.))
         ANGR=.017453292519943*ANGD
 C
 C Figure out where the end of the meridian is.
