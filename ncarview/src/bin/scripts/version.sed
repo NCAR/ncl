@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: version.sed,v 1.21 2007-02-27 18:21:28 haley Exp $
+#	$Id: version.sed,v 1.22 2008-01-17 03:18:40 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@
 echo ""
 cat <<EOF
 NCAR View - UNIX Version VERSION
-Copyright (C) 1987-2007
+Copyright (C) 1987-2008
 University Corporation for Atmospheric Research
 
 This software is distributed in the hope that it will be useful, but
