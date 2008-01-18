@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.69 2007-12-20 20:01:17 dbrown Exp $
+ *      $Id: Symbol.c,v 1.70 2008-01-18 18:13:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2950,7 +2950,7 @@ void
 void _NclExit(int status) {
 	_NclFileCleanUp();
         NhlClose();
-	exit(0);
+	exit(status);
 }
 
 
