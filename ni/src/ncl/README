@@ -1,5 +1,32 @@
-To build an OPeNDAP version on reader:
 
+To build NCL using the Intel "ifort" Fortran compiler, and GNU "gcc"
+compilers on an Intel Mac:
+  
+  1. I used "-m32" with ifort, otherwise it defaults to trying to
+     compile for an x86_64 system. (I have an older Mac.)
+
+  2. The "CToFLibraries" needs to be:
+
+         -lifcore -lsvml -limf -lirc
+
+  3. In order to build NCL, I had to include "-bind_at_load" on the
+     "CC_LD" line, otherwise I got a bunch of errors like:
+
+      symbol _fdim used from dynamic library
+     /usr/lib/system/libmathCommon.A.dylib(single module) not from earlier
+     dynamic library libimf.dylib(fdim_stub.o)
+
+  4. In order to run fontc, graphc, ncl, etc, I had to set:
+
+        setenv DYLD_LIBRARY_PATH /opt/intel/fc/10.1.007/lib
+
+     This should be done for you if you do something like:
+
+        source /opt/intel/fc/10.1.007/bin/ifortvars.csh 
+  
+----------------------------------------------------------------------
+
+To build an OPeNDAP version on reader (a PPC Mac):
 
 I started from scratch, and downloaded the latest versions of libdap
 (3.7.6) and libnc-dap (3.7.0). I went ahead and built both shared and
