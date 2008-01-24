@@ -1,5 +1,5 @@
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -517,7 +517,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -546,7 +546,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -576,7 +576,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -614,7 +614,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -651,7 +651,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -688,7 +688,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -725,7 +725,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -765,7 +765,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -914,7 +914,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -943,7 +943,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1594,7 +1594,7 @@ C
         RLAT=RLAT+DLAT
         DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
         IF (RLAT.GT.-90.D0.AND.RLAT.LT.90.D0) GO TO 633
-        SLOM=RLON-SIGN(180.D0,RLON+180.D0)+SIGN(180.D0,180.D0-RLON)
+        SLOM=RLON+(-SIGN(180.D0,RLON+180.D0)+SIGN(180.D0,180.D0-RLON))
 C
 C Find the maximum longitude.
 C
@@ -1618,7 +1618,7 @@ C
         RLAT=RLAT+DLAT
         DLAT=SIGN(ABS(DLAT)+SRCH,-DLAT)
         IF (RLAT.GT.-90.D0.AND.RLAT.LT.90.D0) GO TO 643
-        BLOM=RLON-SIGN(180.D0,RLON+180.D0)+SIGN(180.D0,180.D0-RLON)
+        BLOM=RLON+(-SIGN(180.D0,RLON+180.D0)+SIGN(180.D0,180.D0-RLON))
         IF (BLOM.LE.SLOM) BLOM=BLOM+360.D0
         GO TO 701
 C
@@ -1690,7 +1690,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1760,7 +1760,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1837,8 +1837,8 @@ C
         END IF
 C
         PHIA=MAX(-90.D0,MIN(90.D0,ARG2))
-        PHIO=ARG3-SIGN(180.D0,ARG3+180.D0)+SIGN(180.D0,180.D0-ARG3)
-        ROTA=ARG4-SIGN(180.D0,ARG4+180.D0)+SIGN(180.D0,180.D0-ARG4)
+        PHIO=ARG3+(-SIGN(180.D0,ARG3+180.D0)+SIGN(180.D0,180.D0-ARG3))
+        ROTA=ARG4+(-SIGN(180.D0,ARG4+180.D0)+SIGN(180.D0,180.D0-ARG4))
 C
 C Set the flag to indicate that initialization is now required.
 C
@@ -1855,7 +1855,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1942,7 +1942,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2337,7 +2337,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2435,7 +2435,7 @@ C Set up U and V for the fast paths.  U is a longitude, in degrees,
 C between -180. and +180., inclusive, and V is a latitude, in degrees.
 C
         TEMP=RLON-PHOC
-        U=TEMP-SIGN(180.D0,TEMP+180.D0)+SIGN(180.D0,180.D0-TEMP)
+        U=TEMP+(-SIGN(180.D0,TEMP+180.D0)+SIGN(180.D0,180.D0-TEMP))
         V=MAX(-90.D0,MIN(90.D0,RLAT))
 C
 C If a fast-path projection is in use and the rotation angle is 180,
@@ -2477,7 +2477,7 @@ c        IF (IPRF.EQ. 3.OR.IPRF.EQ. 4.OR.IPRF.EQ. 5.OR.IPRF.EQ. 7.OR.
 c     +      IPRF.EQ. 8.OR.IPRF.EQ.16.OR.IPRF.EQ.17.OR.IPRF.EQ.18.OR.
 c     +      IPRF.EQ.19.OR.IPRF.EQ.21) THEN
 c          TMP1=RLON-UTPA(5)
-c          P=TMP1-SIGN(180.D0,TMP1+180.D0)+SIGN(180.D0,180.D0-TMP1)
+c          P=TMP1+(-SIGN(180.D0,TMP1+180.D0)+SIGN(180.D0,180.D0-TMP1))
 c          IF ((IPRF.EQ.3.OR.IPRF.EQ.8).AND.ABS(RLAT).GT.89.999999D0)
 c     +                                                         GO TO 200
 c        ELSE IF (IPRF.EQ.9) THEN
@@ -2676,7 +2676,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2797,7 +2797,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2875,7 +2875,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2951,7 +2951,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -3040,7 +3040,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -3090,7 +3090,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.1 2005-05-27 00:01:23 dbrown Exp $
+C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

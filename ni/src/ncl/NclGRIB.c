@@ -1524,7 +1524,7 @@ GribFileRecord *therec;
 		att_list_ptr->next = step->theatts;
 		att_list_ptr->att_inq = (GribAttInqRec*)NclMalloc((unsigned)sizeof(GribAttInqRec));
 		tmp_int = (int*)NclMalloc(sizeof(int));
-		if((step->has_gds)&&(step->grid_number == 255 || step->grid_tbl_index == -1)) {
+		if((step->has_gds)&&(step->grid_number == 255 || step->grid_number == 0 ||  step->grid_tbl_index == -1)) {
 			att_list_ptr->att_inq->name = NrmStringToQuark("gds_grid_type");
 			*tmp_int = grib_rec->gds_type;
 		}
@@ -2487,6 +2487,7 @@ GribFileRecord *therec;
 	GribAttInqRecList *lon_att_list_ptr = NULL;
 	GribAttInqRecList *rot_att_list_ptr = NULL;
 	char *ens_name;
+	int use_gds;
 
 	therec->total_dims = 0;
 	therec->n_scalar_dims = 0;
@@ -3110,7 +3111,7 @@ GribFileRecord *therec;
 *       define lat_### and lon_### and add them as variables of the same name (real coordinate variables)
 */
 
-
+		use_gds = step->has_gds && (step->grid_number == 0 || step->grid_number == 255); 
 		if((step->grid_tbl_index != -1)&&(grid[step->grid_tbl_index].get_grid != NULL)) {
 /* 
 * Search for both gridlat_## and gridx_## grid number will always be added in sequence so finding lat or x means
@@ -3127,7 +3128,7 @@ GribFileRecord *therec;
 				is_err = NhlFATAL;
 			}
 		} else {
-			if (step->has_gds && step->grid_number == 255) {
+			if (use_gds) {
 				NhlPError(NhlWARNING,NhlEUNKNOWN,"NclGRIB: Unsupported GDS grid type (%d) can't decode",step->gds_type);
 			}
 			else {
@@ -3281,7 +3282,7 @@ GribFileRecord *therec;
 					/*
 					 * y or lon first!
 					 */
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if(use_gds) {
 						sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims+step->var_info.doff);
 					} else {
 						sprintf(buffer,"lon_%d",step->grid_number);
@@ -3325,7 +3326,7 @@ GribFileRecord *therec;
 								    lon_att_list_ptr,nlonatts);
 					}
 					NclFree(dimsizes_lon);
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if(use_gds) {
 						sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims + (step->var_info.doff - 1));
 					} else {
 						sprintf(buffer,"lat_%d",step->grid_number);
@@ -3379,7 +3380,7 @@ GribFileRecord *therec;
 					step->var_info.file_dim_num[current_dim+1] = therec->total_dims + 1;
 					step->var_info.doff=1;
 
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if(use_gds) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_y_%d",step->gds_type,therec->total_dims + 1);
 						}
@@ -3412,7 +3413,7 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if (use_gds) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_lon_%d",step->gds_type,therec->total_dims + 1);
 						}
@@ -3454,7 +3455,7 @@ GribFileRecord *therec;
 							    lon_att_list_ptr,nlonatts);
 					NclFree(dimsizes_lon);
 						
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if (use_gds) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_x_%d",step->gds_type,therec->total_dims);
 						}
@@ -3485,7 +3486,7 @@ GribFileRecord *therec;
 					ptr->next = therec->grid_dims;
 					therec->grid_dims = ptr;
 					therec->n_grid_dims++;
-					if((step->has_gds)&&(step->grid_number == 255)) {
+					if (use_gds) {
 						if (step->gds_type != 203) {
 							sprintf(buffer,"g%d_lat_%d",step->gds_type,therec->total_dims);
 						}
@@ -3524,7 +3525,7 @@ GribFileRecord *therec;
 					therec->total_dims += 2;
 					if (tmp_rot != NULL) {
 						/* the rotation array is assumed to be the same size as the lat and lon arrays */
-						if((step->has_gds)&&(step->grid_number == 255)) {
+						if (use_gds) {
 							if (step->gds_type != 203) {
 								sprintf(buffer,"g%d_rot_%d",step->gds_type,therec->total_dims);
 							}
@@ -6398,7 +6399,7 @@ int wr_status;
 						grib_rec->gds_type = -1;
 						grib_rec->gds = NULL;
 					}
-					if((grib_rec->has_gds) && (grib_rec->grid_number == 255) ) {
+					if((grib_rec->has_gds) && (grib_rec->grid_number == 255 || grib_rec->grid_number == 0) ) { 
 						for(i = 0; i < grid_gds_tbl_len ; i++) {
 							if(grib_rec->gds_type == grid_gds_index[i]) { 
 								grib_rec->grid_gds_tbl_index = i;
@@ -6802,7 +6803,7 @@ int wr_status;
 					if (grib_rec->ens.prob_param) {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%s",grib_rec->ens.prob_param->abrev);
 					}
-					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255)) {
+					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255 || grib_rec->grid_number == 0)) {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_GDS%d",grib_rec->gds_type);
 					} else {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",grib_rec->grid_number);
@@ -7766,7 +7767,9 @@ void* storage;
 	* grid and grid_gds will overwrite tmp
 	*/
 					tmp = current_rec->the_dat->multidval.val;
-					if((current_rec->has_gds)&&(current_rec->grid_number == 255)&&(current_rec->grid_gds_tbl_index > -1)) {
+					if((current_rec->has_gds) &&
+					   (current_rec->grid_number == 255 || current_rec->grid_number == 0) &&
+					   (current_rec->grid_gds_tbl_index > -1)) {
 						if(grid_gds[current_rec->grid_gds_tbl_index].un_pack != NULL) {
 							int_or_float = (*grid_gds[current_rec->grid_gds_tbl_index].un_pack)
 								(fd,&tmp,&missing,current_rec,step);
