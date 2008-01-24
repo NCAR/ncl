@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.40 2008-01-15 22:18:01 haley Exp $
+#      $Id: Configure,v 1.41 2008-01-24 17:26:34 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2008-01-15 22:18:01 $
+#	$Date: 2008-01-24 17:26:34 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -144,6 +144,8 @@ echo -n "..."
 set buildxlibstuff=`$makecmd XSTUFF`
 echo -n "..."
 set buildtriangle=`$makecmd TRIANGLESTUFF`
+echo -n "..."
+set buildpng=`$makecmd PNGSTUFF`
 echo -n "..."
 set buildhdf=`$makecmd HDFSTUFF`
 echo -n "..."
@@ -373,6 +375,35 @@ if ($?verbose_option) then
 	answer "n" to the next question.
 
 "EOF"
+endif
+
+#
+# PNG
+#
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	There's some experimental code in the GKS library in NCAR
+	Graphics that allows you to create PNG files in the
+	same way that you can output to an NCGM, PS, or PDF file. 
+	If you want to try this code, then you'll need to download
+	and install the png and zlib source code and link against
+	their libraries whenever you link an NCAR Graphics program.
+
+"EOF"
+endif
+
+echo ""
+echo "Build png/zlib support (optional) into GKS library? ($buildpng)"
+echo "(requires the external png/zlib libraries available from"
+echo "http://www.libpng.org/pub/png/libpng.html and http://www.zlib.net/) "
+echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+set answer="$<"
+if ("$answer" == "q") goto cleanup
+if (("$answer" != "") && ("$answer" != "$buildpng")) then
+	set buildpng = $answer
+	set newbuildpng
+    set altered
 endif
 
 #
@@ -943,6 +974,15 @@ if ($?newbuildhdf) then
 	else
 		echo "#define BuildRasterHDF FALSE" >> Site.local
 		echo "#define HDFlib" >> Site.local
+	endif
+endif
+
+if ($?newbuildpng) then
+	if ("$buildpng" == "y") then
+		echo "#define BuildPNG TRUE" >> Site.local
+	else
+		echo "#define BuildPNG FALSE" >> Site.local
+		echo "#define PNGlib" >> Site.local
 	endif
 endif
 
