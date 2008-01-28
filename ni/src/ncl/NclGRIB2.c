@@ -5914,6 +5914,7 @@ static void _g2SetFileDimsAndCoordVars
     int nlatatts = 0;
     int nrotatts = 0;
 
+    Grib2RecordInqRec   *g2inqrec = NULL;
     Grib2AttInqRecList  *lat_att_list_ptr = NULL;
     Grib2AttInqRecList  *lon_att_list_ptr = NULL;
     Grib2AttInqRecList  *rot_att_list_ptr = NULL;
@@ -5949,6 +5950,17 @@ static void _g2SetFileDimsAndCoordVars
     last = NULL;
 
     while (step != NULL) {
+	for(i = 0; i < step->n_entries; i++) {
+		if(step->thelist[i].rec_inq != NULL) {
+			g2inqrec = step->thelist[i].rec_inq;
+			break;
+		}
+	}
+	if (!g2inqrec) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Variable contains no GRIB records");
+		is_err = NhlFATAL;
+	}
+
         current_dim = 0;
         step->aux_coords[0] = step->aux_coords[1] = NrmNULLQUARK;
 	if (step->prob_type > -1) {
@@ -6359,8 +6371,8 @@ static void _g2SetFileDimsAndCoordVars
 
 		if (dstep == NULL) {
 			/* Need a new dimension entry name and number */
-			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-					   "4.5.table",step->thelist->rec_inq->level_indicator,ct);
+			Grib2ReadCodeTable(g2inqrec->table_source, 4, 
+					   "4.5.table",g2inqrec->level_indicator,ct);
 			tmp = (Grib2DimInqRec *) NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->gds = NULL;
 			tmp->dim_number = therec->total_dims;
@@ -6445,8 +6457,8 @@ static void _g2SetFileDimsAndCoordVars
 		}
 		if (dstep == NULL) {
 			/* Need a new dimension entry w name and number */
-			Grib2ReadCodeTable(step->thelist->rec_inq->table_source, 4, 
-					   "4.5.table",step->thelist->rec_inq->level_indicator,ct);
+			Grib2ReadCodeTable(g2inqrec->table_source, 4, 
+					   "4.5.table",g2inqrec->level_indicator,ct);
 			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->gds = NULL;
 			tmp->dim_number = therec->total_dims;

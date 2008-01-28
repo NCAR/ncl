@@ -2488,6 +2488,7 @@ GribFileRecord *therec;
 	GribAttInqRecList *rot_att_list_ptr = NULL;
 	char *ens_name;
 	int use_gds;
+	GribRecordInqRec *grib_rec = NULL;
 
 	therec->total_dims = 0;
 	therec->n_scalar_dims = 0;
@@ -2507,6 +2508,18 @@ GribFileRecord *therec;
 	last = NULL;
 
 	while(step != NULL) {
+
+		for(i = 0; i < step->n_entries; i++) {
+			if(step->thelist[i].rec_inq != NULL) {
+				grib_rec = step->thelist[i].rec_inq;
+				break;
+			}
+		}
+		if (!grib_rec) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Variable contains no GRIB records");
+			is_err = NhlFATAL;
+		}
+
 		current_dim = 0;
 		step->aux_coords[0] = step->aux_coords[1] = NrmNULLQUARK;
 		if (step->prob_param) {
@@ -3147,7 +3160,7 @@ GribFileRecord *therec;
 				while(dstep != NULL) {
 					if((dstep->dim_inq->is_gds == step->gds_type)&&
 						(GdsCompare(dstep->dim_inq->gds,dstep->dim_inq->gds_size,
-							    step->thelist->rec_inq->gds,step->thelist->rec_inq->gds_size))) {
+							    grib_rec->gds,grib_rec->gds_size))) {
 						if ((step->gds_type == 203) && (dstep->dim_inq->is_uv != Is_UV(step->param_number))) {
 							dstep = dstep->next;
 							continue;
@@ -3188,8 +3201,8 @@ GribFileRecord *therec;
 				if(step->grid_tbl_index!=-1) {
 					int do_rot;
 #if 0
-					if (step->thelist->rec_inq->has_gds) {
-						printf("vector rotation %s for pre-defined grid %d\n",((unsigned char)010 & step->thelist->rec_inq->gds[16]) ? 
+					if (grib_rec->has_gds) {
+						printf("vector rotation %s for pre-defined grid %d\n",((unsigned char)010 & grib_rec->gds[16]) ? 
 						       "grid relative" : "earth relative", step->grid_number);
 					}
 #endif
@@ -3215,7 +3228,7 @@ GribFileRecord *therec;
 						 */
 
 						if (step->has_gds)
-							grid_oriented = (step->thelist->rec_inq->gds[16] & 010 )  ? 1 : 0;
+							grid_oriented = (grib_rec->gds[16] & 010 )  ? 1 : 0;
 						else
 							grid_oriented = do_rot;
 
@@ -3229,7 +3242,7 @@ GribFileRecord *therec;
 
 				if (tmp_lat == NULL && step->grid_gds_tbl_index != -1) {
 #if 0
-					printf("vector rotation %s for gds grid %d\n",((unsigned char)010 & step->thelist->rec_inq->gds[16]) ? 
+					printf("vector rotation %s for gds grid %d\n",((unsigned char)010 & grib_rec->gds[16]) ? 
 					       "grid relative" : "earth relative", step->gds_type);
 #endif
 					(*grid_gds[step->grid_gds_tbl_index].get_gds_grid)
