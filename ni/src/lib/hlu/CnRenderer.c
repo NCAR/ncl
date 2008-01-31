@@ -1,5 +1,5 @@
 /*
- *      $Id: CnRenderer.c,v 1.2 2008-01-05 01:18:22 dbrown Exp $
+ *      $Id: CnRenderer.c,v 1.3 2008-01-31 19:33:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -27,6 +27,7 @@
 #include <ncarg/hlu/IrregularTransObjP.h>
 #include <ncarg/hlu/CurvilinearTransObj.h>
 #include <ncarg/hlu/SphericalTransObj.h>
+#include <ncarg/hlu/TriMeshTransObjP.h>
 #include <ncarg/hlu/CnRendererP.h>
 
 static NhlErrorTypes CnRendererInitialize(
@@ -410,6 +411,15 @@ NhlErrorTypes CnGetDataBound
 		_NhlWinToNDC(cnp->trans_obj,tx,ty,
 			      2,fx,fy,&status,NULL,NULL);
 
+		bbox->l = MIN(fx[0],fx[1]);
+		bbox->r = MAX(fx[0],fx[1]);
+		bbox->b = MIN(fy[0],fy[1]);
+		bbox->t = MAX(fy[0],fy[1]);
+	}
+	else if (cnp->trans_obj->base.layer_class->base_class.class_name ==
+		 NhltriMeshTransObjClass->base_class.class_name) {
+		_NhlWinToNDC(cnp->trans_obj,cxd,cyd,
+			     2,fx,fy,&status,NULL,NULL);
 		bbox->l = MIN(fx[0],fx[1]);
 		bbox->r = MAX(fx[0],fx[1]);
 		bbox->b = MIN(fy[0],fy[1]);
