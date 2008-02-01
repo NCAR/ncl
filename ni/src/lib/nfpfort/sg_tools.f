@@ -90,7 +90,7 @@ C
 C  Computes the shortest (undirected) angular distance between the points
 C  on the globe (LAT1,LON1) and (LAT2,LON2).
 C
-      DOUBLE PRECISION AT(4), BT(4), CT(4), D2R, ADGCDP
+      DOUBLE PRECISION AT(4), BT(4), CT(4), D2R, XADGCDP
       DOUBLE PRECISION LAT1,LON1,LAT2,LON2
       DATA D2R/0.017453292519943D0/
 C
@@ -104,7 +104,7 @@ C
       BT(3) = COS(D2R*LON2)
       BT(4) = SIN(D2R*LON2)
 C
-      GCDIST = ADGCDP(AT,BT)
+      GCDIST = XADGCDP(AT,BT)
 C
       RETURN
       END
@@ -250,7 +250,7 @@ C  Distance from a point (LAT3,LON3) to a great circle defined by the
 C  arc from (LAT1,LON1) to (LAT2,LON2).
 C
       DOUBLE PRECISION LAT1, LON1, LAT2, LON2, LAT3, LON3
-      DOUBLE PRECISION AT(4), BT(4), CT(4), D2R, DPGCDP
+      DOUBLE PRECISION AT(4), BT(4), CT(4), D2R, XDPGCDP
       DATA D2R/0.017453292519943D0/
 C
       AT(1) = COS(D2R*LAT1)
@@ -268,13 +268,13 @@ C
       CT(3) = COS(D2R*LON3)
       CT(4) = SIN(D2R*LON3)
 C
-      GCPNT2GC = DPGCDP (AT,BT,CT)
+      GCPNT2GC = XDPGCDP (AT,BT,CT)
 C 
       RETURN
       END 
-      DOUBLE PRECISION FUNCTION DPGCDP (AQDP,BQDP,CQDP)
+      DOUBLE PRECISION FUNCTION XDPGCDP (AQDP,BQDP,CQDP)
 C
-C (DPGCDP = Distance of Point from Great Circle, Double Precision)
+C (XDPGCDP = Distance of Point from Great Circle, Double Precision)
 C 
 C Author: David Kennison
 C
@@ -298,7 +298,7 @@ C
         DOUBLE PRECISION      YCC3,ZCC3
         DOUBLE PRECISION DNOM
 C
-        DOUBLE PRECISION ADGCDP
+        DOUBLE PRECISION XADGCDP
 C
 C Define a multiplicative constant to convert from radians to degrees.
 C
@@ -332,16 +332,16 @@ C case when A and B are the same point as well).
 C
         IF (YCB3.NE.0.D0 .OR. ZCB3.NE.0.D0) THEN
           DNOM   = SQRT(YCB3*YCB3+ZCB3*ZCB3)
-          DPGCDP = RTOD*ASIN((ZCC3*YCB3-YCC3*ZCB3)/DNOM)
+          XDPGCDP = RTOD*ASIN((ZCC3*YCB3-YCC3*ZCB3)/DNOM)
         ELSE
-          DPGCDP = ADGCDP(AQDP,CQDP)
+          XDPGCDP = XADGCDP(AQDP,CQDP)
         END IF
 C
         RETURN
       END
-      DOUBLE PRECISION FUNCTION ADGCDP (AQDP,BQDP)
+      DOUBLE PRECISION FUNCTION XADGCDP (AQDP,BQDP)
 C
-C (ADGCDP = Angle in Degrees along Great Circle, Double Precision)
+C (XADGCDP = Angle in Degrees along Great Circle, Double Precision)
 C
         DOUBLE PRECISION AQDP(4),BQDP(4)
 C
@@ -361,7 +361,7 @@ C and multiply by two.
 C
         DATA RDTT / 114.5915590261646D0 /
 C
-        ADGCDP=RDTT*
+        XADGCDP=RDTT*
      +         ASIN(SQRT((AQDP(1)*AQDP(3)-BQDP(1)*BQDP(3))**2+
      +                   (AQDP(1)*AQDP(4)-BQDP(1)*BQDP(4))**2+
      +                   (AQDP(2)        -BQDP(2)        )**2)/2.D0)
@@ -466,7 +466,7 @@ C  finds the angle between the great circles that contain the arcs
 C  AB and AC.  The returned angle is positive if C is in the hemisphere 
 C  to the "left" of the great circle through A and B, negative otherwise.
 C  
-      DOUBLE PRECISION D2R,ABGCDP,LAT1,LON1,LAT2,LON2,LAT3,LON3
+      DOUBLE PRECISION D2R,XABGCDP,LAT1,LON1,LAT2,LON2,LAT3,LON3
       PARAMETER (D2R=0.017453292519943D0)
 C
       DOUBLE PRECISION PT1(4),PT2(4),PT3(4)
@@ -486,7 +486,7 @@ C
       PT3(3) = DCOS(D2R*LON3)
       PT3(4) = DSIN(D2R*LON3)
 C
-      GCDANGLE = ABGCDP(PT1,PT2,PT3)
+      GCDANGLE = XABGCDP(PT1,PT2,PT3)
 C          
       RETURN
       END
@@ -559,9 +559,9 @@ C
 C
       RETURN
       END 
-      DOUBLE PRECISION FUNCTION ABGCDP (AQDP,BQDP,CQDP)
+      DOUBLE PRECISION FUNCTION XABGCDP (AQDP,BQDP,CQDP)
 C
-C (ABGCDP = Angle Between Great Circles, Double Precision)
+C (XABGCDP = Angle Between Great Circles, Double Precision)
 C
         DOUBLE PRECISION AQDP(4),BQDP(4),CQDP(4)
 C
@@ -651,9 +651,9 @@ C
 C The angle between the great circles is now easily computed.
 C
         IF (YCC4.NE.0.D0.OR.ZCC4.NE.0.D0) THEN
-          ABGCDP=RTOD*DATAN2(ZCC4,YCC4)
+          XABGCDP=RTOD*DATAN2(ZCC4,YCC4)
         ELSE
-          ABGCDP=0.D0
+          XABGCDP=0.D0
         END IF
 C
 C Done.
@@ -680,7 +680,7 @@ C sine of the longitude, in that order, of the point X.  Describing
 C the point positions in this way makes this routine execute faster
 C than if the latitudes and longitudes themselves are used.
 C
-        DOUBLE PRECISION ADST,ACAPDP,ADGCDP
+        DOUBLE PRECISION ADST,ACAPDP,XADGCDP
 C
 C If the total angle swept out by a vector tangent to the sphere at the
 C point P and pointing in the direction of the shortest great circle
@@ -703,7 +703,7 @@ C
 C Sum over all distinct points of Q:
 C
         DO 101 I=1,NPIQ-1
-          ADST=ADST+ADGCDP(PQDP,QQDP(1,I))
+          ADST=ADST+XADGCDP(PQDP,QQDP(1,I))
   101   CONTINUE
 C
 C Set the function value.
@@ -747,14 +747,14 @@ C sine of the longitude, in that order, of the point X.  Describing
 C the point positions in this way makes this routine execute faster
 C than if the latitudes and longitudes themselves are used.
 C
-        DOUBLE PRECISION ANCH,ABGCDP
+        DOUBLE PRECISION ANCH,XABGCDP
 C
         ANCH=0.D0
 C
 C Trace the edge:
 C
         DO 101 I=1,NPIQ-1
-          ANCH=ANCH+ABGCDP(PQDP,QQDP(1,I),QQDP(1,I+1))
+          ANCH=ANCH+XABGCDP(PQDP,QQDP(1,I),QQDP(1,I+1))
   101   CONTINUE
 C
 C Set the function value.
