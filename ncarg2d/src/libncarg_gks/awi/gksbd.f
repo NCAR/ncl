@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.29 2007-10-18 01:02:11 fred Exp $
+C	$Id: gksbd.f,v 1.30 2008-02-01 21:16:27 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -217,7 +217,7 @@ C-----------------------------------------------------------------------
 C**************************************************************************
 C******** Be sure and change the dimension of LSWK in gkscom.h when    ****
 C******** adding a new workstation type (as well as changing the value ****
-C******** of WK above to the same number.                              ****
+C******** of WK above to the same number).                              ****
 C**************************************************************************
       DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31/       
 C**************************************************************************
