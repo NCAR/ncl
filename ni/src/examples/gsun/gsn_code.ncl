@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.206 2007-11-20 00:00:49 haley Exp $
+;      $Id: gsn_code.ncl,v 1.207 2008-02-04 04:46:12 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4719,6 +4719,7 @@ begin
   panel_debug    = get_res_value_keep(res,"gsnPanelDebug",False)
   panel_center   = get_res_value_keep(res,"gsnPanelCenter",True)
   panel_labelbar = get_res_value_keep(res,"gsnPanelLabelBar",False)
+  panel_plotid   = get_res_value_keep(res,"gsnPanelScalePlotIndex",-1)
   calldraw       = get_res_value_keep(res,"gsnDraw",True)
   callframe      = get_res_value_keep(res,"gsnFrame",True)
   xwsp_perc      = get_res_value_keep(res,"gsnPanelXWhiteSpacePercent",1.)
@@ -4871,18 +4872,22 @@ begin
 ; isn't, and use this one to determine plot size.
 ;
   ind_nomsg = ind(.not.ismissing(plot(0:nplots-1)))
-  if(.not.any(ismissing(ind_nomsg))) then
-    valid_plot = ind_nomsg(0)
-    bb     = NhlGetBB(plot(valid_plot))   ; Get bounding box of plot with
-    top    = bb(0)                        ; all of its annotations.
-    bottom = bb(1)
-    left   = bb(2)
-    right  = bb(3)
-    delete(bb)
-  else
+  if(all(ismissing(ind_nomsg))) then
     print("Error: gsn_panel: all of the plots passed to gsn_panel appear to be invalid")
     exit
   end if
+  if(panel_plotid.ge.0.and.panel_plotid.le.(nplots-1).and. \
+     .not.ismissing(plot(panel_plotid))) then
+    valid_plot = panel_plotid
+  else
+    valid_plot = ind_nomsg(0)
+  end if
+  bb     = NhlGetBB(plot(valid_plot))   ; Get bounding box of this plot
+  top    = bb(0)
+  bottom = bb(1)
+  left   = bb(2)
+  right  = bb(3)
+  delete(bb)
   nvalid_plots = dimsizes(ind_nomsg)
   delete(ind_nomsg)
 
@@ -5049,7 +5054,7 @@ begin
   xrange = x_rgt - x_lft
   yrange = y_top - y_bot
 
-  if(lbhor)
+  if(lbhor) then
 ;
 ; Previously, we used to include xrange and yrange as part of the min
 ; statement. This seemed to cause problems if you set one of
