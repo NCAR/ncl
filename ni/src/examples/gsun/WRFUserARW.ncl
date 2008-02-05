@@ -900,7 +900,22 @@ begin
 ; fill_on = True  : filled contour plot
 ;
   fill_on = get_res_value_keep(opts,"cnFillOn",False)
-
+  if(fill_on) then
+; Somewhat convoluted way to see if a labelbar is not desired.
+    if(check_attr(opts,"pmTickMarkDisplayMode","Never",True).or.\
+       check_attr(opts,"pmTickMarkDisplayMode",-1,False).or.\
+       check_attr(opts,"pmTickMarkDisplayMode",0,False).or. \
+       check_attr(opts,"lbLabelBarOn",False,False).or.\
+       check_attr(opts,"lbLabelBarOn",0,False)) then
+      lbar_on = False
+    else
+      lbar_on = True
+    end if
+  else
+    lbar_on = False
+  end if
+  atmp = get_res_value(opts,"lbLabelBarOn",True) ; Remove this resource
+  delete(atmp)                                   ; just in case.
 ;
 ; The ContourParameters resource can either be a scalar that
 ; represents the contour level spacing, or it can be an array
@@ -986,21 +1001,22 @@ begin
 ;
 ; Labelbar resources
 ;
-    opts2@pmLabelBarDisplayMode = get_res_value_keep(opts2, "pmLabelBarDisplayMode", "Always")
-    opts2@pmLabelBarSide    = get_res_value_keep(opts2,"pmLabelBarSide", "Bottom")
-    opts2@lbAutoManage      = get_res_value_keep(opts2,"lbAutoManage",False)
-    opts2@lbOrientation     = get_res_value_keep(opts2,"lbOrientation", "Horizontal")
-    opts2@lbPerimOn         = get_res_value_keep(opts2,"lbPerimOn", False)
-    if(units.ne."") then
-      opts2@lbTitleOn         = get_res_value_keep(opts2,"lbTitleOn", True)
-      opts2@lbTitleString     = get_res_value_keep(opts2,"lbTitleString", units)
+    if(lbar_on) then
+      opts2@pmLabelBarDisplayMode = get_res_value_keep(opts2, "pmLabelBarDisplayMode", "Always")
+      opts2@pmLabelBarSide    = get_res_value_keep(opts2,"pmLabelBarSide", "Bottom")
+      opts2@lbAutoManage      = get_res_value_keep(opts2,"lbAutoManage",False)
+      opts2@lbOrientation     = get_res_value_keep(opts2,"lbOrientation", "Horizontal")
+      opts2@lbPerimOn         = get_res_value_keep(opts2,"lbPerimOn", False)
+      if(units.ne."") then
+        opts2@lbTitleOn         = get_res_value_keep(opts2,"lbTitleOn", True)
+        opts2@lbTitleString     = get_res_value_keep(opts2,"lbTitleString", units)
+      end if
+      opts2@lbLabelJust       = get_res_value_keep(opts2,"lbLabelJust", "BottomCenter")
+      opts2@lbLabelAutoStride = get_res_value_keep(opts2,"lbLabelAutoStride",True)
+      opts2@lbBoxMinorExtentF = get_res_value_keep(opts2, "lbBoxMinorExtentF", 0.13)
+      opts2@lbTitleJust       = get_res_value_keep(opts2,"lbTitleJust", "BottomCenter")
+      opts2@lbTitleOffsetF    = get_res_value_keep(opts2,"lbTitleOffsetF", -0.4)
     end if
-    opts2@lbLabelJust       = get_res_value_keep(opts2,"lbLabelJust", "BottomCenter")
-    opts2@lbLabelAutoStride = get_res_value_keep(opts2,"lbLabelAutoStride",True)
-    opts2@lbBoxMinorExtentF = get_res_value_keep(opts2, "lbBoxMinorExtentF", 0.13)
-    opts2@lbTitleJust       = get_res_value_keep(opts2,"lbTitleJust", "BottomCenter")
-    opts2@lbTitleOffsetF    = get_res_value_keep(opts2,"lbTitleOffsetF", -0.4)
-    
   end if
 ;
 ; Set resources that apply for both filled and line contour plots.
@@ -1446,9 +1462,38 @@ procedure wrf_map_overlay(wks:graphic,base[1]:graphic, \
  
 ; This procedure takes an array of plots and overlays them on a
 ; base plot - map background.
-; It will advance the plot and cleanup
- 
+;
+; It will advance the plot and cleanup, unless you set the
+; PanelPlot resource to True.
+;
+;  Attributes recognized by this procedure:
+;     NoTitles                  (don't do any titles) 
+;     PanelPlot
+;
+; If the "NoTitles" attribute exists and is set True, then
+; don't create the top-left titles, and leave the main titles alone.
+; This resource can be useful if you are planning to panel
+; the plots.
+;
+; If PanelPlot is set to True, then this flags to wrf_map_overlay
+; that these plots are going to be eventually paneled (likely
+; by gsn_panel), and hence 1) draw and frame should not be called
+; (unless gsnDraw and/or gsnFrame are explicitly set to True),
+; and 2) the overlays and titles should not be removed with
+; NhlRemoveOverlay and NhlRemoveAnnotation.
+;
 begin
+  opts = opt_arg      ; Make a copy of the resource list
+  opts = True
+
+  if(opts.and.isatt(opts,"NoTitles").and.opts@NoTitles) then
+    no_titles = True
+  else
+    no_titles = False
+  end if
+
+  panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+
   nplots = dimsizes(plots)
 ;  font_color = "Black"
 
@@ -1465,65 +1510,85 @@ begin
 ;          font_color = line_color      
 ;        end if       
 ;      end if
-      getvalues plots(i)
-        "tiMainString" : SubTitle
-      end getvalues
-      if(i.eq.0) then
-        SubTitles = SubTitle
+      if(.not.no_titles) then
+        getvalues plots(i)
+          "tiMainString" : SubTitle
+        end getvalues
+        if(i.eq.0) then
+          SubTitles = SubTitle
+        else
+          SubTitles = SubTitles + "~C~" + SubTitle
+        end if
+	setvalues plots(i)
+          "tfDoNDCOverlay" : True
+          "tiMainOn"       : False
+        end setvalues
       else
-        SubTitles = SubTitles + "~C~" + SubTitle
+	setvalues plots(i)
+          "tfDoNDCOverlay" : True
+        end setvalues
       end if
-      setvalues plots(i)
-        "tfDoNDCOverlay" : True
-        "tiMainOn"       : False
-      end setvalues
       overlay(base,plots(i))
     else
       print("wrf_map_overlay: Warning: overlay plot #" + i + " is not valid.")
     end if
   end do
 
-  font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
-  txt = create "map_titles" textItemClass wks
-    "txString"      : SubTitles
-    "txFontHeightF" : font_height
-   ;"txFontColor"   : font_color
-  end create
-  anno = NhlAddAnnotation(base,txt)
-  setvalues anno
-    "amZone"           : 3
-    "amJust"           : "BottomLeft"
-    "amSide"           : "Top"
-    "amParallelPosF"   : 0.005
-    "amOrthogonalPosF" : 0.03
-    "amResizeNotify"   : False
-  end setvalues
-  base@map_titles = anno
-
-  opts = opt_arg      ; Make a copy of the resource list.
-  opts = True
-  opts@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     False)
-  opts@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    False)
+  if(.not.no_titles) then
+    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
+    txt = create "map_titles" textItemClass wks
+      "txString"      : SubTitles
+      "txFontHeightF" : font_height
+     ;"txFontColor"   : font_color
+    end create
+    anno = NhlAddAnnotation(base,txt)
+    setvalues anno
+      "amZone"           : 3
+      "amJust"           : "BottomLeft"
+      "amSide"           : "Top"
+      "amParallelPosF"   : 0.005
+      "amOrthogonalPosF" : 0.03
+      "amResizeNotify"   : False
+    end setvalues
+    base@map_titles = anno
+  end if
+;
+; gsnDraw and gsnFrame should default to True if not a panel plot.
+; gsnFrame will default to False if opt_arg is False.
+;
+  if(panel_plot.or..not.opt_arg) then
+    call_frame = False
+  else
+    call_frame = True
+  end if
+  if(panel_plot) then
+    call_draw = False
+  else
+    call_draw = True
+  end if
+  opts@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     call_draw)
+  opts@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    call_frame)
   opts@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
 
   draw_and_frame(wks,base,opts@gsnDraw,opts@gsnFrame,False, \
                  opts@gsnMaximize)
-  draw(base)
-  if ( opt_arg ) then
-    frame(wks)
-  end if
-  do i=0,nplots-1
-    if(.not.ismissing(plots(i))) then
-      NhlRemoveOverlay(base,plots(i),False)
-    else
-      print("wrf_remove_map_overlay: Warning: overlay plot #" + i + " is not valid.")
-      print("                        Nothing to remove.")
-    end if
-  end do
 
-  if(isatt(base,"map_titles")) then
-    NhlRemoveAnnotation(base,base@map_titles)
-    delete(base@map_titles)
+  if(.not.panel_plot) then
+    do i=0,nplots-1
+      if(.not.ismissing(plots(i))) then
+        NhlRemoveOverlay(base,plots(i),False)
+      else
+        print("wrf_remove_map_overlay: Warning: overlay plot #" + i + " is not valid.")
+        print("                        Nothing to remove.")
+      end if
+    end do
+  end if
+
+  if(.not.no_titles.and..not.panel_plot) then
+    if(isatt(base,"map_titles")) then
+      NhlRemoveAnnotation(base,base@map_titles)
+      delete(base@map_titles)
+    end if
   end if
 end
 
@@ -1533,21 +1598,56 @@ undef("wrf_overlay")
 procedure wrf_overlay(wks:graphic, plots[*]:graphic, \
                           opt_arg[1]:logical)
  
-; This procedure takes an array of plots and overlays them
-; It will advance the plot and cleanup
- 
+; This procedure takes an array of plots and overlays them.
+;
+; It will advance the plot and cleanup, unless you set the
+; PanelPlot resource to True.
+; 
+;  Attributes recognized by this procedure:
+;     NoTitles                  (don't do any titles) 
+;     PanelPlot
+;
+; If the "NoTitles" attribute exists and is set True, then
+; don't create the top-left titles, and leave the main titles alone.
+; This resource can be useful if you are planning to panel
+; the plots.
+;
+; If PanelPlot is set to True, then this flags to wrf_overlay
+; that these plots are going to be eventually paneled (likely
+; by gsn_panel), and hence 1) draw and frame should not be called
+; (unless gsnDraw and/or gsnFrame are explicitly set to True),
+; and 2) the overlays and titles should not be removed with
+; NhlRemoveOverlay and NhlRemoveAnnotation.
+;
 begin
+  opts = opt_arg      ; Make a copy of the resource list.
+  opts = True
+
+  if(opts.and.isatt(opts,"NoTitles").and.opts@NoTitles) then
+    no_titles = True
+  else
+    no_titles = False
+  end if
+
+  panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+
   nplots = dimsizes(plots)
     
   base = plots(0)
-  getvalues plots(0)
-    "tiMainString" : SubTitle
-  end getvalues
-  SubTitles = SubTitle
-  setvalues plots(0)
-    "tfDoNDCOverlay" : True
-    "tiMainOn"       : False
-  end setvalues
+  if(.not.no_titles) then
+    getvalues plots(0)
+      "tiMainString" : SubTitle
+    end getvalues
+    SubTitles = SubTitle
+    setvalues plots(0)
+      "tfDoNDCOverlay" : True
+      "tiMainOn"       : False
+    end setvalues
+  else
+    setvalues plots(0)
+      "tfDoNDCOverlay" : True
+    end setvalues
+  end if
 
   if (nplots.eq.1) then 
     blank = create "BlankPlot" logLinPlotClass wks
@@ -1558,63 +1658,83 @@ begin
 
   do i=1,nplots-1
     if(.not.ismissing(plots(i))) then
-      getvalues plots(i)
-        "tiMainString" : SubTitle
-      end getvalues
-      SubTitles = SubTitles + "~C~" + SubTitle
-      setvalues plots(i)
-        "tfDoNDCOverlay" : True
-        "tiMainOn"       : False
-      end setvalues
+      if(.not.no_titles) then
+        getvalues plots(i)
+          "tiMainString" : SubTitle
+        end getvalues
+        SubTitles = SubTitles + "~C~" + SubTitle
+        setvalues plots(i)
+          "tfDoNDCOverlay" : True
+          "tiMainOn"       : False
+        end setvalues
+      else
+        setvalues plots(i)
+          "tfDoNDCOverlay" : True
+        end setvalues
+      end if
       overlay(base,plots(i))
     else
       print("wrf_overlay: Warning: overlay plot #" + i + " is not valid.")
     end if
   end do
 
-  font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
-  txt = create "map_titles" textItemClass wks
-    "txString"      : SubTitles
-    "txFontHeightF" : font_height
-  end create
-  anno = NhlAddAnnotation(base,txt)
-  setvalues anno
-    "amZone"           : 3
-    "amJust"           : "BottomLeft"
-    "amSide"           : "Top"
-    "amParallelPosF"   : 0.005
-    "amOrthogonalPosF" : 0.03
-    "amResizeNotify"   : False
-  end setvalues
-  base@map_titles = anno
+  if(.not.no_titles) then
+    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
 
-  opts = opt_arg      ; Make a copy of the resource list.
-  opts = True
-  opts@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     False)
-  opts@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    False)
+    txt = create "map_titles" textItemClass wks
+      "txString"      : SubTitles
+      "txFontHeightF" : font_height
+    end create
+    anno = NhlAddAnnotation(base,txt)
+    setvalues anno
+      "amZone"           : 3
+      "amJust"           : "BottomLeft"
+      "amSide"           : "Top"
+      "amParallelPosF"   : 0.005
+      "amOrthogonalPosF" : 0.03
+      "amResizeNotify"   : False
+    end setvalues
+    base@map_titles = anno
+  end if
+
+;
+; gsnDraw and gsnFrame should default to True if not a panel plot.
+; gsnFrame will default to False if opt_arg is False.
+;
+  if(panel_plot.or..not.opt_arg) then
+    call_frame = False
+  else
+    call_frame = True
+  end if
+  if(panel_plot) then
+    call_draw = False
+  else
+    call_draw = True
+  end if
+  opts@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     call_draw)
+  opts@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    call_frame)
   opts@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
 
   draw_and_frame(wks,base,opts@gsnDraw,opts@gsnFrame,False, \
                  opts@gsnMaximize)
-  draw(base)
-  if ( opt_arg ) then
-    frame(wks)
+
+  if(.not.no_titles.and..not.panel_plot) then
+    NhlRemoveAnnotation(base,base@map_titles)
+    delete(base@map_titles)
   end if
 
-  NhlRemoveAnnotation(base,base@map_titles)
-  delete(base@map_titles)
-
-  if ( nplots .ge. 2 ) then
-  do i=1,nplots-1
-    if(.not.ismissing(plots(i))) then
-      NhlRemoveOverlay(base,plots(i),False)
-    else
-      print("wrf_remove_overlay: Warning: overlay plot #" + i + " is not valid.")
-      print("                        Nothing to remove.")
+  if(.not.panel_plot) then
+    if ( nplots .ge. 2 ) then
+      do i=1,nplots-1
+        if(.not.ismissing(plots(i))) then
+          NhlRemoveOverlay(base,plots(i),False)
+        else
+          print("wrf_remove_overlay: Warning: overlay plot #" + i + " is not valid.")
+          print("                        Nothing to remove.")
+        end if
+      end do
     end if
-  end do
   end if
-
 end
 
 ;--------------------------------------------------------------------------------
