@@ -786,6 +786,9 @@ switch ($OS)
    if ($f90c == gfortran) then     # gfortran compiler
        set cmd = "$cmd -lgfortran"
    endif
+   if ($f90c == g95) then          # g95 compiler
+     set cmd = "$cmd -lf95"
+   endif
    if ($debug == 1) then
      echo $cmd
    endif
