@@ -1,5 +1,5 @@
 C
-C	$Id: cfaamn.f.sed,v 1.1 2004-08-03 16:24:37 haley Exp $
+C	$Id: cfaamn.f.sed,v 1.2 2008-02-05 04:23:18 fred Exp $
 C                                                                      
 C			     Copyright (C)  1997
 C	     University Corporation for Atmospheric Research
@@ -70,8 +70,10 @@ C
 C  CAPFNT
 C  ------
 C
-C  The binary output file is stored in common CAPFNT.  There are
-C  two important arrays in this common block:  CPNTRS dimensioned
+C  The binary output file for stroked fonts is stored in common CAPFNT.  
+C  (The binary output for the filled fonts is stored in BUFFER, see
+C  the comments in fntcom.h for details on that encoding.)
+C  There are two important arrays in common CAPFNT:  CPNTRS dimensioned
 C  for CHRSM1 (set in a data statement), and  CSTRKS dimensioned
 C  for CHRSM2 (set in a data statement.)  
 C
