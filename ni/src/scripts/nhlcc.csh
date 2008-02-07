@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.2 2007-02-28 22:19:00 haley Exp $
+#	$Id: nhlcc.csh,v 1.3 2008-02-07 00:22:03 haley Exp $
 #
 
 #*********************************************#
@@ -15,6 +15,7 @@ if ($status != 0) then
 endif
 
 set xlibs = "SED_XLIB"
+set pnglib = "SED_PNGLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set cc       = "SED_CC"
 set defines  = "SED_STDDEF SED_PROJDEF"
@@ -93,7 +94,7 @@ endif
 
 set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
 
-set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $f77libs"
+set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $pnglib $f77libs"
 
 echo $newargv
 eval $newargv

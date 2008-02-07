@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 2007-10-29 01:44:38 fred Exp $
+#	$Id: yMakefile,v 1.12 2008-02-07 00:22:03 haley Exp $
 #
 
 SCRIPTS1 = nhlcc nhlf77 nhlf90 ng4ex 
@@ -16,6 +16,7 @@ nhlf77: nhlf77.csh Makefile
 	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_PNGLIB+$(PNGLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
@@ -33,6 +34,7 @@ nhlf90: nhlf77.csh Makefile
 	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_PNGLIB+$(PNGLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
@@ -56,6 +58,7 @@ nhlcc: nhlcc.csh Makefile
 	-e 's+SED_NCDFLIBS+$(NCDFLIBS)+' \
 	-e 's+SED_HDFLIB+$(HDFLIB)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_PNGLIB+$(PNGLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
