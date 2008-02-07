@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.35 2007-02-25 15:10:27 haley Exp $
+#   $Id: ncargf77.csh,v 1.36 2008-02-07 00:21:22 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -35,6 +35,7 @@ endif
 
 set syslibdir = "SED_LIBSEARCH"
 set xlib     = "SED_XLIB"
+set pnglib   = "SED_PNGLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set fortran  = "SED_FC"
 set loadflags  = "SED_LDFLAGS"
@@ -201,7 +202,7 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
 endif
 
 set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
-set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $libextra"
+set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $pnglib $libextra"
 
 echo $newargv
 eval $newargv

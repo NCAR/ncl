@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.47 2007-02-25 15:15:20 haley Exp $
+#	$Id: ncargcc.csh,v 1.48 2008-02-07 00:21:22 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -35,6 +35,7 @@ endif
 
 set syslibdir = "SED_LIBSEARCH"
 set xlib     = "SED_XLIB"
+set pnglib   = "SED_PNGLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set cc       = "SED_CC"
 set defines  = "SED_STDDEF SED_PROJDEF"
@@ -194,7 +195,7 @@ endif
 
 set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
 
-set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $libextra"
+set newargv = "$newargv $stub_file $libpath $incpath $ctrans_libs $robjs $ncarg_libs $f77libs $xlib $pnglib $libextra"
 
 echo $newargv
 eval $newargv

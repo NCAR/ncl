@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.50 2007-08-22 04:48:48 haley Exp $
+#	$Id: yMakefile,v 1.51 2008-02-07 00:21:22 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -34,6 +34,7 @@ ncargf77: ncargf77.csh Makefile
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_PNGLIB+$(PNGLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
@@ -47,6 +48,7 @@ ncargf90: ncargf77.csh Makefile
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_PNGLIB+$(PNGLIB)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
@@ -62,6 +64,7 @@ ncargcc: ncargcc.csh Makefile
 	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_PNGLIB+$(PNGLIB)+' \
 	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
