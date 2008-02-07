@@ -1,5 +1,5 @@
 /*
- *      $Id: ImageWorkstation.c,v 1.2 2004-03-24 02:14:14 dbrown Exp $
+ *      $Id: ImageWorkstation.c,v 1.3 2008-02-07 00:23:19 haley Exp $
  */
 /************************************************************************
 *									*
@@ -28,10 +28,17 @@ static NhlResource resources[] = {
 
 /* Begin-documented-resources */
 
+#ifdef BuildPNG
 	{NhlNwkImageFormat,NhlCwkImageFormat,NhlTImageFormat,
 	 sizeof(NhlImageFormat),
 		Oset(pixconfig.format),NhlTImmediate,(NhlPointer)NhlPNG,
 		_NhlRES_NOSACCESS,NULL},
+#else
+	{NhlNwkImageFormat,NhlCwkImageFormat,NhlTImageFormat,
+	 sizeof(NhlImageFormat),
+		Oset(pixconfig.format),NhlTImmediate,(NhlPointer)NhlXWD,
+		_NhlRES_NOSACCESS,NULL},
+#endif
 	{NhlNwkImageFileName,NhlCwkImageFileName,NhlTString,
 		sizeof(NhlString),Oset(pixconfig.filename),NhlTImmediate,
 		(NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},

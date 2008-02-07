@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.78 2007-10-29 22:34:14 haley Exp $
+#      $Id: yMakefile,v 1.79 2008-02-07 00:23:19 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -20,6 +20,12 @@
 #	Description:	yMakefile for ncarg/ni/src/lib/hlu
 MYNAME		= libhlu
 
+#ifdef BuildPNG
+PNG_DEF = -DBuildPNG
+#else
+#define PNG_DEF
+#endif
+
 #ifdef BuildTRIANGLE
 TRIANGLE_DEF = -DBuildTRIANGLE
 TRIANGLE_HDR = triangle.h
@@ -32,7 +38,7 @@ TRIANGLE_OBJ = triangle.o
 #define TRIANGLE_OBJ
 #endif 
 
-EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF)
+EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF)
 
 HDRS1   	= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CoordApprox.h Error.h ErrorI.h ErrorP.h IrregularTransObj.h \
