@@ -1,5 +1,5 @@
 /*
- *      $Id: pixcontrol.c,v 1.7 2008-01-15 19:04:39 dbrown Exp $
+ *      $Id: pixcontrol.c,v 1.8 2008-02-07 00:20:28 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -967,8 +967,10 @@ int OutputFrame
 	case PIX_XWD:
 		
 		return PIX_Write_XWD(xi);
+#ifdef BuildPNG
 	case PIX_PNG:
 		return PIX_Write_PNG(xi);
+#endif
 	}
 	ESprintf(ERR_INV_INDEX,"Invalid PIX driver format");
 	return(ERR_INV_INDEX);

@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.10 2004-03-20 00:06:55 dbrown Exp $
+#	$Id: yMakefile,v 1.11 2008-02-07 00:20:28 haley Exp $
 #
 
 MYNAME		= cdrivers
@@ -14,8 +14,15 @@ PDFSRC          = pdf.c pdfdevice.c pdf_conv.c pdffill.c
 
 PIXSRC 		= pixcontrol.c     pixoutput.c pixdevice.c \
 		pix_conv.c       pixattribute.c  pixinquiry.c \
-		pixwrite_xwd.c pixwrite_png.c
-
+		pixwrite_xwd.c
+#ifdef BuildPNG
+PNGSRC		=  pixwrite_png.c
+PNGOBJ		=  pixwrite_png.o
+EXTRA_DEFINES   = -DBuildPNG
+#else
+#define PNGSRC
+#define PNGOBJ
+#endif
 BASICOBJ	= fort_c.o gks_device.o gksc.o transform.o gksP.o
 CTXTOBJ		= ctxt_device.o ctxt.o ctxt_conv.o
 XOBJ		= xdevice.o font.o text.o x_conv.o xattribute.o xcontrol.o \
@@ -25,10 +32,10 @@ PDFOBJ          = pdf.o pdfdevice.o pdf_conv.o pdffill.o
 
 PIXOBJ 		= pixcontrol.o     pixoutput.o pixdevice.o  \
 		pix_conv.o       pixattribute.o  pixinquiry.o \
-		pixwrite_xwd.o pixwrite_png.o
+		pixwrite_xwd.o $(PNGOBJ)
 
-SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC) $(PDFSRC) $(PIXSRC)
-OBJECTS		= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ)
+SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC) $(PDFSRC) $(PIXSRC) $(PNGSRC)
+OBJECTS		= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ) $(PNGOBJ)
 
 EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS -DPDF -DPIX
 
