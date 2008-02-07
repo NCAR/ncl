@@ -1,5 +1,5 @@
 /*
- *      $Id: pixwrite_png.c,v 1.10 2008-01-15 18:15:22 dbrown Exp $
+ *      $Id: pixwrite_png.c,v 1.11 2008-02-07 22:06:17 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -55,7 +55,7 @@ typedef unsigned long Pixel;
 #include "x.h"
 #include "pix_device.h"
 #include "pixddi.h"
-#include "../libpng/png.h"
+#include <png.h>
 
 void write_png(unsigned char *, unsigned long, unsigned long, int, FILE *);
 int isf(int i);
