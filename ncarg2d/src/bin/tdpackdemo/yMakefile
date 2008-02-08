@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.6 2003-05-01 22:43:14 haley Exp $
+#       $Id: yMakefile,v 1.7 2008-02-08 12:47:25 haley Exp $
 #
 
 MYNAME  = tdpackdemo
@@ -7,7 +7,7 @@ MYNAME  = tdpackdemo
 SRC    = TdpackDemo.f
 OBJ    = TdpackDemo.o
 
-PROG_LIBS =	$(NCARGLIBS)
+PROG_LIBS =	$(NCARGLIBS) $(PNGLIB)
 DEP_LIBS =	$(DEPNCARGLIBS)
 SYS_LIBS	= $(XLIB)
 
