@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.219 2008-02-10 21:48:10 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.220 2008-02-10 23:02:06 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1422,9 +1422,14 @@ begin
  
 end
  
-function calculate_zonal_means(data2,zref)
+
+;***********************************************************************;
+; This function calculates the zonal means.                             ;
+;***********************************************************************;
+function calculate_zonal_means(data2,res2)
 local zms2, nmeans
 begin
+  zref  = get_res_value(res2,"gsnZonalMeanYRefLine",0.)
   zmns2 = dim_avg(data2)
 ;
 ; The "if" code below was originally checking for le/ge "0.", rather
@@ -3442,6 +3447,111 @@ begin
     return
 end
 
+
+;***********************************************************************;
+; Function : add_zonal_means_plot                                       ;
+;                                                                       ;
+;    map_object : map plot to attach zonal plot to                      ;
+;    zmeans     : Y data for zonal plot                                 ;
+;    datanew    : original data array, used for _FillValue              ;
+;    zonal_zone : zone for zonal plot                                   ;
+;    map_vphf   : view port height of map                               ;
+;    xbfontf    : font height for X labels                              ;
+;    xlength    : length of major tickmarks                             ;
+;    xmlength   : length of minor tickmarks                             ;
+;    res2       : optional resource list                                ;
+;                                                                       ;
+; This function creates a zonal means plot and attaches it to the       ;
+; given map object.                                                     ;
+;                                                                       ;
+;***********************************************************************;
+function add_zonal_means_plot(wks,map_object,zmeans,datanew,zonal_zone, \
+                              map_vphf,xbfontf,xlength,xmlength,res2)
+local vphf, min_lat, max_lat, data_object
+begin
+;
+; Retrieve the view port size of the map plot so we know where
+; to put zonal means plot.
+;
+  getvalues map_object
+    "vpHeightF"    : vphf
+    "mpMinLatF"    : min_lat
+    "mpMaxLatF"    : max_lat
+  end getvalues
+
+; Create data object.
+  if(is_valid_latlon_coord(datanew,"y","lat",res2)) then
+    data_object = create "data" coordArraysClass noparent
+      "caXArray" : zmeans
+      "caYArray" : datanew&$datanew!0$
+    end create
+; Check for missing values.
+    if(isatt(zmeans,"_FillValue")) then
+      setvalues data_object
+        "caXMissingV" : zmeans@_FillValue
+      end setvalues
+    end if
+
+; Create zonal means XY plot.
+    xy_object = create "xyplot" xyPlotClass wks
+      "xyCoordData"            : data_object
+      "vpHeightF"              : vphf
+      "vpWidthF"               : 0.15 * map_vphf
+      "trYMaxF"                : max_lat
+      "trYMinF"                : min_lat
+      "tmXBLabelFontHeightF"   : xbfontf
+      "tmYLOn"                 : False
+      "tmYROn"                 : False
+      "tmXBMaxTicks"           : 3
+      "tmXBMinorPerMajor"      : 1
+      "tmXTMinorPerMajor"      : 1
+      "tmXBMajorLengthF"       : xlength
+      "tmXBMinorLengthF"       : xmlength
+      "tmYRMajorLengthF"       : xlength
+      "tmYRMinorLengthF"       : xmlength
+      "tmXBMajorOutwardLengthF": xlength
+      "tmXBMinorOutwardLengthF": xmlength
+      "tmYRMajorOutwardLengthF": xlength
+      "tmYRMinorOutwardLengthF": xmlength
+      "tiXAxisOn"              : False
+      "tiYAxisOn"              : False
+    end create
+
+; Check for missing value.
+    if(isatt(zmeans,"_FillValue")) then
+      setvalues data_object
+        "caXMissingV" : zmeans@_FillValue
+      end setvalues
+    end if
+
+; Check if user wants to change minimum of X axis.
+    if(isatt(res2,"gsnZonalMeanXMinF")) then
+      setvalues xy_object
+        "trXMinF" : get_res_value(res2,"gsnZonalMeanXMinF",0.)
+      end setvalues
+    end if 
+
+; Check if user wants to change maximum of X axis.
+  if(isatt(res2,"gsnZonalMeanXMaxF")) then
+      setvalues xy_object
+        "trXMaxF" : get_res_value(res2,"gsnZonalMeanXMaxF",0.)
+      end setvalues
+    end if 
+
+; Add XY plot as annotation of map plot.
+    anno = NhlAddAnnotation(map_object,xy_object)
+    setvalues anno
+      "amZone"          : zonal_zone   ; Just outside plot area
+      "amSide"          : "right"      ; Plot at right.
+      "amResizeNotify"  : True         ; Resize if map resized.
+      "amParallelPosF"  : 0.5          ; 0.5 is center of plot
+      "amOrthogonalPosF": 0.05         ; Move away from right edge
+    end setvalues
+  end if
+  return(xy_object)
+end
+
+
 ;***********************************************************************;
 ; Function : mask_lambert_conformal                                     ;
 ;                 wks: graphic                                          ;
@@ -5049,17 +5159,6 @@ begin
 ; Also get min and max X values, if any.
 ;
     zonal_mean_plot = get_res_value(res2,"gsnZonalMean",False)
-    zonal_xmin      = isatt(res2,"gsnZonalMeanXMinF")
-    zonal_xmax      = isatt(res2,"gsnZonalMeanXMaxF")
-    zonal_ref       = get_res_value(res2,"gsnZonalMeanYRefLine",0.)
-
-    if(zonal_xmin) then
-      trxmin = get_res_value(res2,"gsnZonalMeanXMinF",1.)
-    end if
-
-    if(zonal_xmax) then
-      trxmax = get_res_value(res2,"gsnZonalMeanXMaxF",1.)
-    end if
 
 ; Check for cyclic point (default is True if we are not setting both
 ; lon2d/lat2d attributes and data is not 1D).
@@ -5100,14 +5199,14 @@ begin
         if(isatt(res2,"vpHeightF"))
           map_vphf = res2@vpHeightF
         else
-          map_vphf  = 0.7 ; make sure zonalplot will fit in view port
+          map_vphf  = 0.7 ; make sure zonal plot will fit in view port
 
           set_attr(res2,"vpHeightF",0.7)
           set_attr(res2, "vpWidthF",0.7)
           set_attr(res2,     "vpXF",0.1)
           set_attr(res2,     "vpYF",0.9)
         end if
-        zmeans = calculate_zonal_means(datanew,zonal_ref)
+        zmeans = calculate_zonal_means(datanew,res2)
       else
         print("gsn_csm_contour_map_ce: Warning: The resource gsnZonalMean can only be set to True")
         print("if the data has one of the coordinate variables " + get_allowed_latnames() + "and " + get_allowed_lonnames())
@@ -5177,7 +5276,7 @@ begin
 ; This section tests for regular resources.
     lbres = get_res_eq(res2,(/"lb","pm"/))
     mpres = get_res_eq(res2,(/"mp","vp","tm","ti","tx","am","pmA","pmO","pmT"/))
-    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm"/))
+    cnres = get_res_ne(res2,(/"mp","vp","tm","lb","tx","am","pm","gsnZonal"/))
 
     if(cnres)
       if(check_attr(cnres,"cnFillOn",True,False))
@@ -5283,82 +5382,9 @@ begin
 ; Add a zonal mean plot if requested.
 
     if(zonal_mean_plot)
-
-; Retrieve the view port size of the map plot so we know where
-; to put zonal means plot (if there is one).
-
-      getvalues map_object
-        "vpHeightF"    : vphf
-        "mpMinLatF"    : min_lat
-        "mpMaxLatF"    : max_lat
-      end getvalues
-
-; Create data object.
-      if(is_valid_latlon_coord(datanew,"y","lat",res2)) then
-        data_object = create "data" coordArraysClass noparent
-          "caXArray" : zmeans
-          "caYArray" : datanew&$datanew!0$
-        end create
-; Check for missing values.
-        if(isatt(zmeans,"_FillValue")) then
-          setvalues data_object
-            "caXMissingV" :zmeans@_FillValue
-          end setvalues
-        end if
-
-; Create zonal means XY plot.
-        xy_object = create "xyplot" xyPlotClass wks
-          "xyCoordData"            : data_object
-          "vpHeightF"              : vphf
-          "vpWidthF"               : 0.15 * map_vphf
-          "trYMaxF"                : max_lat
-          "trYMinF"                : min_lat
-          "tmXBLabelFontHeightF"   : xbfontf
-          "tmYLOn"                 : False
-          "tmYROn"                 : False
-          "tmXBMaxTicks"           : 3
-          "tmXBMinorPerMajor"      : 1
-          "tmXTMinorPerMajor"      : 1
-          "tmXBMajorLengthF"       : xlength
-          "tmXBMinorLengthF"       : xmlength
-          "tmYRMajorLengthF"       : xlength
-          "tmYRMinorLengthF"       : xmlength
-          "tmXBMajorOutwardLengthF": xlength
-          "tmXBMinorOutwardLengthF": xmlength
-          "tmYRMajorOutwardLengthF": xlength
-          "tmYRMinorOutwardLengthF": xmlength
-          "tiXAxisOn"              : False
-          "tiYAxisOn"              : False
-        end create
-
-;
-; Check if user wants to change minimum of X axis.
-;
-        if(zonal_xmin) then
-          setvalues xy_object
-            "trXMinF" : trxmin
-          end setvalues
-        end if 
-;
-; Check if user wants to change maximum of X axis.
-;
-        if(zonal_xmax) then
-          setvalues xy_object
-            "trXMaxF" : trxmax
-          end setvalues
-        end if 
-
-; Add XY plot as annotation of map plot.
-        anno = NhlAddAnnotation(map_object,xy_object)
-        setvalues anno
-          "amZone"          : zonal_zone   ; Just outside plot area
-          "amSide"          : "right"      ; Plot at right.
-          "amResizeNotify"  : True         ; Resize if map resized.
-          "amParallelPosF"  : 0.5          ; 0.5 is center of plot
-          "amOrthogonalPosF": 0.05         ; Move away from right edge
-        end setvalues
-      end if
-
+      zonal_object = add_zonal_means_plot(wks,map_object,zmeans,datanew, \
+                                          zonal_zone,map_vphf,xbfontf, \
+                                          xlength,xmlength,res2)
     end if  
 
 ; Draw all this stuff: map plot, subtitles, and tick marks.
@@ -5370,7 +5396,7 @@ begin
     map_object@data    = contour_object@data
     map_object@contour = contour_object
     if(zonal_mean_plot)
-      map_object@xy = xy_object
+      map_object@xy = zonal_object
     end if
     return(map_object)
 end
