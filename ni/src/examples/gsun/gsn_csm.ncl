@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.218 2007-11-21 15:56:07 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.219 2008-02-10 21:48:10 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -64,6 +64,7 @@ undef("get_allowed_lat_units")
 undef("get_allowed_lon_units")
 undef("is_valid_latlon_coord")
 undef("gsn_geop_hgt")
+undef("calculate_zonal_means")
 undef("check_for_y_lat_coord")
 undef("check_for_x_lat_coord")
 undef("check_for_lon_coord")
@@ -1421,6 +1422,27 @@ begin
  
 end
  
+function calculate_zonal_means(data2,zref)
+local zms2, nmeans
+begin
+  zmns2 = dim_avg(data2)
+;
+; The "if" code below was originally checking for le/ge "0.", rather
+; than "zref". I think this is a bug, because I think originally, 
+; the zref line was set to 0. no matter what.
+;
+  if(min(zmns2).le.zref.or.max(zmns2).ge.zref) then
+    nmeans    = dimsizes(zmns2)
+    zmns      = new((/2,nmeans/),typeof(zmns2))
+    zmns(0,:) = zmns2
+    zmns(1,:) = fspan(zref,zref,nmeans)
+  else
+    zmns = zmns2
+  end if
+  delete(zmns2)
+  return(zmns)
+end
+
 ;***********************************************************************;
 ; Procedure : check_for_y_lat_coord                                     ;
 ;                data: numeric                                          ;
@@ -4792,7 +4814,7 @@ end
 function gsn_csm_contour_map_polar(wks:graphic,data:numeric,resources:logical)
 local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
 lbar_on, calldraw, callframe, main_offset, datanew, res2, cnres, mpres, \
-vpwf, vphf, font_height, levels, colors, zonal_zone, lbres, \
+vpwf, vphf, font_height, levels, colors, lbres, \
 infolabel_on, infolabel_zone, lbar_zone, lbar_height, lbar_width
 begin
 ;
@@ -4994,7 +5016,7 @@ local i, contour_object, labelbar_object, xy_object, map_object, \
 calldraw, callframe, lbar_on, zonal_mean_plot, min_lat, max_lat, datanew, \
 res, res2, lbres, xy_res, mpres, cnres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
-map_vpwf, map_vphf, vphf, contour_plot
+map_vpwf, map_vphf, vphf, contour_plot, zonal_zone
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -5085,16 +5107,7 @@ begin
           set_attr(res2,     "vpXF",0.1)
           set_attr(res2,     "vpYF",0.9)
         end if
-        zmeans2 = dim_avg(datanew)
-        if(min(zmeans2).le.0.or.max(zmeans2).ge.0)
-          nmeans = dimsizes(zmeans2)
-          zmeans = new((/2,nmeans/),typeof(zmeans2))
-          zmeans(0,:) = zmeans2
-          zmeans(1,:) = fspan(zonal_ref,zonal_ref,nmeans)
-        else
-          zmeans = zmeans2
-        end if
-        delete(zmeans2)
+        zmeans = calculate_zonal_means(datanew,zonal_ref)
       else
         print("gsn_csm_contour_map_ce: Warning: The resource gsnZonalMean can only be set to True")
         print("if the data has one of the coordinate variables " + get_allowed_latnames() + "and " + get_allowed_lonnames())
@@ -5415,7 +5428,6 @@ begin
 
     infolabel_zone = 2        ; Zone for info label (may change later)
     lbar_zone      = 2        ; Zone for labelbar (may change later)
-    zonal_zone     = 2        ; Zone for zonal means plot
 
     res2 = get_resources(resources)
 ;
