@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.7 2007-06-21 01:35:32 dbrown Exp $
+ *      $Id: NclHDFEOS.c,v 1.8 2008-02-12 14:28:03 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 #include "defs.h"
 #define HAVE_NETCDF
 #include <hdf/mfhdf.h>
-#include <hdf/netcdf.h>
 #include "NclDataDefs.h"
 #include "NclFileInterfaces.h"
 #include <math.h>

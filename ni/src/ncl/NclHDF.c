@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.26 2007-12-21 00:49:23 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.27 2008-02-12 14:28:02 grubin Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,6 @@
 #include "defs.h"
 #define HAVE_NETCDF
 #include <hdf/mfhdf.h>
-#include <hdf/netcdf.h>
 #include "NclData.h"
 #include "NclFileInterfaces.h"
 #include <math.h>
