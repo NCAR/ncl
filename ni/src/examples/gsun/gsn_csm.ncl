@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.224 2008-02-14 14:34:53 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.225 2008-02-14 17:56:22 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4847,27 +4847,62 @@ end
 ; Function : gsn_csm_zonal_means                                        ;
 ;                                                                       ;
 ;    wks        : Workstation object                                    ;
-;    map_object : map plot to attach zonal plot to                      ;
 ;    zdata      : data for calculating zonal means                      ;
 ;    zres       : optional resource list                                ;
 ;                                                                       ;
-; This function creates a zonal means plot. Since this function is      ;
-; meant to be used to create a zonal plot to attach to another plot,    ;
-; it doesn't draw the plot or advance the frame, unless gsnDraw         ;
-; and/or gsnFrame are set to True.                                      ;
+; This function creates a zonal means plot.                             ;
 ;                                                                       ;
 ;***********************************************************************;
-function gsn_csm_zonal_means(wks,map_object,zdata,zres)
-local vphf, min_lat, max_lat, zres2, zmeans
+function gsn_csm_zonal_means(wks,zdata,zres)
+local max_lat, zres2, zmeans
 begin
 ; Calculate zonal means, and add Y reference line curve if requested.
   zmeans = calculate_zonal_means(zdata,zres)
 
   if(zres) then
-    zres2 = zres     ; Copy all attributes too
-  else
-    zres2 = True
+    zres2 = zres
   end if
+
+  zres2 = True
+
+; Set up rest of resource list.
+  zres2@xyDashPattern = get_res_value(zres2,"xyDashPattern",0)
+
+; Set trXMinF/trXMaxF only if specified by user.
+  if(isatt(zres,"gsnZonalMeanXMinF")) then
+    zres2@trXMinF = get_res_value(zres2,"gsnZonalMeanXMinF",0.)
+  end if
+
+  if(isatt(zres,"gsnZonalMeanXMaxF")) then
+    zres2@trXMaxF = get_res_value(zres2,"gsnZonalMeanXMaxF",0.)
+  end if
+
+; Create zonal XY plot, using the coordinate array of the Y axis for
+; the Y values.
+
+  xy_object = gsn_csm_xy(wks,zmeans,zdata&$zdata!0$,zres2)
+
+  return(xy_object)
+end
+
+;***********************************************************************;
+; Function : gsn_csm_attach_zonal_means                                 ;
+;                                                                       ;
+;    wks        : Workstation object                                    ;
+;    map_object : map plot to attach zonal plot to                      ;
+;    zdata      : data for calculating zonal means                      ;
+;    zres       : optional resource list                                ;
+;                                                                       ;
+; This function creates a zonal means plot and attaches it to the       ;
+; given map object.                                                     ;
+;                                                                       ;
+;***********************************************************************;
+function gsn_csm_attach_zonal_means(wks,map_object,zdata,zres)
+local zres2, zres3
+begin
+; Create zonal means plot, but don't draw it or advance frame.
+  zres2 = get_res_ne(zres,"am")
+  zres2 = True
 
 ;
 ; Retrieve the lat limits and view port size of the map plot so we plot
@@ -4878,12 +4913,9 @@ begin
     "mpMinLatF"    : min_lat
     "mpMaxLatF"    : max_lat
   end getvalues
-
 ;
 ; If the map has tickmarks, then retrieve font heights and tickmark lengths.
 ;
-  zres2 = True
-
   if(isatt(map_object,"tickmarks")) then
     getvalues map_object@tickmarks
       "tmXBLabelFontHeightF" : xbfontf
@@ -4931,48 +4963,13 @@ begin
   zres2@tmXTMinorPerMajor = get_res_value(zres2,"tmXTMinorPerMajor",1)
   zres2@tiXAxisOn         = get_res_value(zres2,"tiXAxisOn",False)
   zres2@tiYAxisOn         = get_res_value(zres2,"tiYAxisOn",False)
-  zres2@xyDashPattern     = get_res_value(zres2,"xyDashPattern",0)
-  zres2@gsnDraw           = get_res_value(zres2,"gsnDraw",True)
-  zres2@gsnFrame          = get_res_value(zres2,"gsnFrame",True)
-
-; Set trXMinF/trXMaxF only if specified by user.
-  if(isatt(zres,"gsnZonalMeanXMinF")) then
-    zres2@trXMinF = get_res_value(zres2,"gsnZonalMeanXMinF",0.)
-  end if
-
-  if(isatt(zres,"gsnZonalMeanXMaxF")) then
-    zres2@trXMaxF = get_res_value(zres2,"gsnZonalMeanXMaxF",0.)
-  end if
+  zres2@gsnDraw           = get_res_value(zres,"gsnDraw",False)
+  zres2@gsnFrame          = get_res_value(zres,"gsnFrame",False)
 
 ; Create zonal XY plot, using the coordinate array of the Y axis for
 ; the Y values.
 
-  xy_object = gsn_csm_xy(wks,zmeans,zdata&$zdata!0$,zres2)
-
-  return(xy_object)
-end
-
-;***********************************************************************;
-; Function : gsn_csm_attach_zonal_means                                 ;
-;                                                                       ;
-;    wks        : Workstation object                                    ;
-;    map_object : map plot to attach zonal plot to                      ;
-;    zdata      : data for calculating zonal means                      ;
-;    zres       : optional resource list                                ;
-;                                                                       ;
-; This function creates a zonal means plot and attaches it to the       ;
-; given map object.                                                     ;
-;                                                                       ;
-;***********************************************************************;
-function gsn_csm_attach_zonal_means(wks,map_object,zdata,zres)
-local zres2, zres3
-begin
-; Create zonal means plot, but don't draw it or advance frame.
-  zres2          = get_res_ne(zres,"am")
-  zres2          = True
-  zres2@gsnDraw  = get_res_value(zres,"gsnDraw",False)
-  zres2@gsnFrame = get_res_value(zres,"gsnFrame",False)
-  zonal_plot     = gsn_csm_zonal_means(wks,map_object,zdata,zres2)
+  zonal_plot = gsn_csm_zonal_means(wks,zdata,zres2)
 
   zres3 = zres
 ; Add zonal plot as annotation of map plot.
