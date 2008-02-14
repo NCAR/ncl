@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.221 2008-02-12 05:05:42 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.222 2008-02-14 06:11:36 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -89,8 +89,8 @@ undef("pop_latlon_grid")
 undef("mask_lambert_conformal")
 undef("gsn_csm_xy")
 undef("gsn_csm_y")
-undef("gsn_zonal_means_plot")
-undef("add_zonal_means_plot")
+undef("gsn_csm_zonal_means")
+undef("gsn_csm_attach_zonal_means")
 undef("gsn_csm_map_ce")
 undef("gsn_csm_map_polar")
 undef("gsn_csm_map")
@@ -4844,7 +4844,7 @@ end
 
 
 ;***********************************************************************;
-; Function : gsn_zonal_means_plot                                       ;
+; Function : gsn_csm_zonal_means                                        ;
 ;                                                                       ;
 ;    wks        : Workstation object                                    ;
 ;    map_object : map plot to attach zonal plot to                      ;
@@ -4857,7 +4857,7 @@ end
 ; and/or gsnFrame are set to True.                                      ;
 ;                                                                       ;
 ;***********************************************************************;
-function gsn_zonal_means_plot(wks,map_object,zdata,zres)
+function gsn_csm_zonal_means(wks,map_object,zdata,zres)
 local vphf, min_lat, max_lat, zres2, zmeans
 begin
 ; Calculate zonal means, and add Y reference line curve if requested.
@@ -4879,9 +4879,49 @@ begin
     "mpMaxLatF"    : max_lat
   end getvalues
 
-; Set up resource list.
-  zres2                   = True
+;
+; If the map has tickmarks, then retrieve font heights and tickmark lengths.
+;
+  zres2 = True
+
+  if(isatt(map_object,"tickmarks")) then
+    getvalues map_object@tickmarks
+      "tmXBLabelFontHeightF" : xbfontf
+      "tmXBMajorLengthF"     : xlength
+      "tmXBMinorLengthF"     : xmlength
+    end getvalues
+    zres2@tmXBLabelFontHeightF    = get_res_value(zres, \
+                                                  "tmXBLabelFontHeightF", \
+                                                   xbfontf)
+    zres2@tmXBMajorLengthF        = get_res_value(zres, \
+                                                  "tmXBMajorLengthF", \
+                                                  xlength)
+    zres2@tmYRMajorLengthF        = get_res_value(zres, \
+                                                  "tmYRMajorLengthF", \
+                                                  xlength)
+    zres2@tmXBMajorOutwardLengthF = get_res_value(zres, \
+                                                  "tmXBMajorOutwardLengthF", \
+                                                  xlength)
+    zres2@tmYRMajorOutwardLengthF = get_res_value(zres, \
+                                                  "tmYRMajorOutwardLengthF", \
+                                                  xlength)
+    zres2@tmXBMinorLengthF        = get_res_value(zres, \
+                                                  "tmXBMinorLengthF", \
+                                                  xmlength)
+    zres2@tmYRMinorLengthF        = get_res_value(zres, \
+                                                  "tmYRMinorLengthF", \
+                                                  xmlength)
+    zres2@tmXBMinorOutwardLengthF = get_res_value(zres, \
+                                                  "tmXBMinorOutwardLengthF", \
+                                                  xmlength)
+    zres2@tmYRMinorOutwardLengthF = get_res_value(zres, \
+                                                  "tmYRMinorOutwardLengthF", \
+                                                  xmlength)
+  end if
+
+; Set up rest of resource list.
   zres2@vpHeightF         = get_res_value(zres,"vpHeightF",vphf)
+  zres2@vpWidthF          = get_res_value(zres,"vpWidthF",0.15)
   zres2@trYMaxF           = get_res_value(zres,"trYMaxF",max_lat)
   zres2@trYMinF           = get_res_value(zres,"trYMinF",min_lat)
   zres2@tmYLOn            = get_res_value(zres,"tmYLOn",False)
@@ -4913,7 +4953,7 @@ begin
 end
 
 ;***********************************************************************;
-; Function : add_zonal_means_plot                                       ;
+; Function : gsn_csm_attach_zonal_means                                 ;
 ;                                                                       ;
 ;    wks        : Workstation object                                    ;
 ;    map_object : map plot to attach zonal plot to                      ;
@@ -4924,10 +4964,10 @@ end
 ; given map object.                                                     ;
 ;                                                                       ;
 ;***********************************************************************;
-function add_zonal_means_plot(wks,map_object,zdata,zres)
+function gsn_csm_attach_zonal_means(wks,map_object,zdata,zres)
 begin
   zres2 = get_res_ne(zres,"am")
-  zonal_plot = gsn_zonal_means_plot(wks,map_object,zdata,zres2)
+  zonal_plot = gsn_csm_zonal_means(wks,map_object,zdata,zres2)
 
 ; Add XY plot as annotation of map plot.
   anno = NhlAddAnnotation(map_object,zonal_plot)
@@ -6359,8 +6399,6 @@ begin
 
     getvalues map_object@tickmarks
       "tmXBLabelFontHeightF" : xbfontf
-      "tmXBMajorLengthF"     : xlength
-      "tmXBMinorLengthF"     : xmlength
     end getvalues
 
     getvalues map_object
@@ -6406,17 +6444,8 @@ begin
       zres                         = get_res_eq(res2,"gsnZonal")
       zres                         = True   ; Make sure it is True
       zres@vpWidthF                = 0.15 * map_vphf
-      zres@tmXBLabelFontHeightF    = xbfontf
-      zres@tmXBMajorLengthF        = xlength
-      zres@tmYRMajorLengthF        = xlength
-      zres@tmXBMajorOutwardLengthF = xlength
-      zres@tmYRMajorOutwardLengthF = xlength
-      zres@tmXBMinorLengthF        = xmlength
-      zres@tmYRMinorLengthF        = xmlength
-      zres@tmXBMinorOutwardLengthF = xmlength
-      zres@tmYRMinorOutwardLengthF = xmlength
       zres@amZone                  = zonal_zone
-      zonal_object = add_zonal_means_plot(wks,map_object,datanew,zres)
+      zonal_object = gsn_csm_attach_zonal_means(wks,map_object,datanew,zres)
 
       map_object@xy = zonal_object
     end if  
@@ -6692,7 +6721,7 @@ begin
       zres                      = True            ; Make sure it is True
       zres@vpWidthF             = 0.15 * map_vphf
       zres@tmXBLabelFontHeightF = 0.6*font_height      
-      zonal_object = add_zonal_means_plot(wks,map_object,datanew,zres)
+      zonal_object = gsn_csm_attach_zonal_means(wks,map_object,datanew,zres)
       map_object@xy = zonal_object
     end if  
 
