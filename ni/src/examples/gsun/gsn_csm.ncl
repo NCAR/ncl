@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.222 2008-02-14 06:11:36 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.223 2008-02-14 06:17:46 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4965,18 +4965,20 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 function gsn_csm_attach_zonal_means(wks,map_object,zdata,zres)
+local zres2, zres3
 begin
   zres2 = get_res_ne(zres,"am")
   zonal_plot = gsn_csm_zonal_means(wks,map_object,zdata,zres2)
 
+  zres3 = zres
 ; Add XY plot as annotation of map plot.
   anno = NhlAddAnnotation(map_object,zonal_plot)
   setvalues anno
-    "amZone"          : get_res_value(zres,"amZone",2)
-    "amSide"          : get_res_value(zres,"amSide","right")
-    "amResizeNotify"  : get_res_value(zres,"amResizeNotify",True)
-    "amParallelPosF"  : get_res_value(zres,"amParallelPosF",0.5)
-    "amOrthogonalPosF": get_res_value(zres,"amOrthogonalPosF",0.05)
+    "amZone"          : get_res_value(zres3,"amZone",2)
+    "amSide"          : get_res_value(zres3,"amSide","right")
+    "amResizeNotify"  : get_res_value(zres3,"amResizeNotify",True)
+    "amParallelPosF"  : get_res_value(zres3,"amParallelPosF",0.5)
+    "amOrthogonalPosF": get_res_value(zres3,"amOrthogonalPosF",0.05)
   end setvalues
 
   return(zonal_plot)
