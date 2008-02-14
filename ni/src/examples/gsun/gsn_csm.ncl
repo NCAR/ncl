@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.223 2008-02-14 06:17:46 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.224 2008-02-14 14:34:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4890,50 +4890,50 @@ begin
       "tmXBMajorLengthF"     : xlength
       "tmXBMinorLengthF"     : xmlength
     end getvalues
-    zres2@tmXBLabelFontHeightF    = get_res_value(zres, \
+    zres2@tmXBLabelFontHeightF    = get_res_value(zres2, \
                                                   "tmXBLabelFontHeightF", \
                                                    xbfontf)
-    zres2@tmXBMajorLengthF        = get_res_value(zres, \
+    zres2@tmXBMajorLengthF        = get_res_value(zres2, \
                                                   "tmXBMajorLengthF", \
                                                   xlength)
-    zres2@tmYRMajorLengthF        = get_res_value(zres, \
+    zres2@tmYRMajorLengthF        = get_res_value(zres2, \
                                                   "tmYRMajorLengthF", \
                                                   xlength)
-    zres2@tmXBMajorOutwardLengthF = get_res_value(zres, \
+    zres2@tmXBMajorOutwardLengthF = get_res_value(zres2, \
                                                   "tmXBMajorOutwardLengthF", \
                                                   xlength)
-    zres2@tmYRMajorOutwardLengthF = get_res_value(zres, \
+    zres2@tmYRMajorOutwardLengthF = get_res_value(zres2, \
                                                   "tmYRMajorOutwardLengthF", \
                                                   xlength)
-    zres2@tmXBMinorLengthF        = get_res_value(zres, \
+    zres2@tmXBMinorLengthF        = get_res_value(zres2, \
                                                   "tmXBMinorLengthF", \
                                                   xmlength)
-    zres2@tmYRMinorLengthF        = get_res_value(zres, \
+    zres2@tmYRMinorLengthF        = get_res_value(zres2, \
                                                   "tmYRMinorLengthF", \
                                                   xmlength)
-    zres2@tmXBMinorOutwardLengthF = get_res_value(zres, \
+    zres2@tmXBMinorOutwardLengthF = get_res_value(zres2, \
                                                   "tmXBMinorOutwardLengthF", \
                                                   xmlength)
-    zres2@tmYRMinorOutwardLengthF = get_res_value(zres, \
+    zres2@tmYRMinorOutwardLengthF = get_res_value(zres2, \
                                                   "tmYRMinorOutwardLengthF", \
                                                   xmlength)
   end if
 
 ; Set up rest of resource list.
-  zres2@vpHeightF         = get_res_value(zres,"vpHeightF",vphf)
-  zres2@vpWidthF          = get_res_value(zres,"vpWidthF",0.15)
-  zres2@trYMaxF           = get_res_value(zres,"trYMaxF",max_lat)
-  zres2@trYMinF           = get_res_value(zres,"trYMinF",min_lat)
-  zres2@tmYLOn            = get_res_value(zres,"tmYLOn",False)
-  zres2@tmYROn            = get_res_value(zres,"tmYROn",False)
-  zres2@tmXBMaxTicks      = get_res_value(zres,"tmXBMaxTicks",3)
-  zres2@tmXBMinorPerMajor = get_res_value(zres,"tmXBMinorPerMajor",1)
-  zres2@tmXTMinorPerMajor = get_res_value(zres,"tmXTMinorPerMajor",1)
-  zres2@tiXAxisOn         = get_res_value(zres,"tiXAxisOn",False)
-  zres2@tiYAxisOn         = get_res_value(zres,"tiYAxisOn",False)
-  zres2@xyDashPattern     = get_res_value(zres,"xyDashPattern",0)
-  zres2@gsnDraw           = get_res_value(zres,"gsnDraw",False)
-  zres2@gsnFrame          = get_res_value(zres,"gsnFrame",False)
+  zres2@vpHeightF         = get_res_value(zres2,"vpHeightF",vphf)
+  zres2@vpWidthF          = get_res_value(zres2,"vpWidthF",0.15)
+  zres2@trYMaxF           = get_res_value(zres2,"trYMaxF",max_lat)
+  zres2@trYMinF           = get_res_value(zres2,"trYMinF",min_lat)
+  zres2@tmYLOn            = get_res_value(zres2,"tmYLOn",False)
+  zres2@tmYROn            = get_res_value(zres2,"tmYROn",False)
+  zres2@tmXBMaxTicks      = get_res_value(zres2,"tmXBMaxTicks",3)
+  zres2@tmXBMinorPerMajor = get_res_value(zres2,"tmXBMinorPerMajor",1)
+  zres2@tmXTMinorPerMajor = get_res_value(zres2,"tmXTMinorPerMajor",1)
+  zres2@tiXAxisOn         = get_res_value(zres2,"tiXAxisOn",False)
+  zres2@tiYAxisOn         = get_res_value(zres2,"tiYAxisOn",False)
+  zres2@xyDashPattern     = get_res_value(zres2,"xyDashPattern",0)
+  zres2@gsnDraw           = get_res_value(zres2,"gsnDraw",True)
+  zres2@gsnFrame          = get_res_value(zres2,"gsnFrame",True)
 
 ; Set trXMinF/trXMaxF only if specified by user.
   if(isatt(zres,"gsnZonalMeanXMinF")) then
@@ -4967,11 +4967,15 @@ end
 function gsn_csm_attach_zonal_means(wks,map_object,zdata,zres)
 local zres2, zres3
 begin
-  zres2 = get_res_ne(zres,"am")
-  zonal_plot = gsn_csm_zonal_means(wks,map_object,zdata,zres2)
+; Create zonal means plot, but don't draw it or advance frame.
+  zres2          = get_res_ne(zres,"am")
+  zres2          = True
+  zres2@gsnDraw  = get_res_value(zres,"gsnDraw",False)
+  zres2@gsnFrame = get_res_value(zres,"gsnFrame",False)
+  zonal_plot     = gsn_csm_zonal_means(wks,map_object,zdata,zres2)
 
   zres3 = zres
-; Add XY plot as annotation of map plot.
+; Add zonal plot as annotation of map plot.
   anno = NhlAddAnnotation(map_object,zonal_plot)
   setvalues anno
     "amZone"          : get_res_value(zres3,"amZone",2)
