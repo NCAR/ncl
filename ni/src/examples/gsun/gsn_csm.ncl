@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.225 2008-02-14 17:56:22 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.226 2008-02-15 16:22:00 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4900,8 +4900,10 @@ end
 function gsn_csm_attach_zonal_means(wks,map_object,zdata,zres)
 local zres2, zres3
 begin
-; Create zonal means plot, but don't draw it or advance frame.
-  zres2 = get_res_ne(zres,"am")
+
+; Resources for creating the zonal plot. Make sure gsnMaximize is not
+; set for this phase.
+  zres2 = get_res_ne(zres,(/"am","gsnDraw","gsnFrame","gsnMaximize"/))
   zres2 = True
 
 ;
@@ -4963,15 +4965,28 @@ begin
   zres2@tmXTMinorPerMajor = get_res_value(zres2,"tmXTMinorPerMajor",1)
   zres2@tiXAxisOn         = get_res_value(zres2,"tiXAxisOn",False)
   zres2@tiYAxisOn         = get_res_value(zres2,"tiYAxisOn",False)
-  zres2@gsnDraw           = get_res_value(zres,"gsnDraw",False)
-  zres2@gsnFrame          = get_res_value(zres,"gsnFrame",False)
+  zres2@gsnDraw           = False
+  zres2@gsnFrame          = False
 
 ; Create zonal XY plot, using the coordinate array of the Y axis for
 ; the Y values.
 
   zonal_plot = gsn_csm_zonal_means(wks,zdata,zres2)
+;
+; Resources for attaching the zonal plot. By default, we don't
+; want the attached plots drawn or the frame advanced.
+;
+  zres3          = zres
+  maxbb          = get_bb_res(zres)
+  zres3          = True
+  zres3@gsnDraw  = get_res_value(zres3,"gsnDraw",False)
+  zres3@gsnFrame = get_res_value(zres3,"gsnFrame",False)
+;
+; Make maximize True by default, because the zonal plot is likely to
+; go off the frame.
+;
+  maxbb = get_res_value(zres3,"gsnMaximize",True)
 
-  zres3 = zres
 ; Add zonal plot as annotation of map plot.
   anno = NhlAddAnnotation(map_object,zonal_plot)
   setvalues anno
@@ -4981,6 +4996,8 @@ begin
     "amParallelPosF"  : get_res_value(zres3,"amParallelPosF",0.5)
     "amOrthogonalPosF": get_res_value(zres3,"amOrthogonalPosF",0.05)
   end setvalues
+
+  draw_and_frame(wks,map_object,zres3@gsnDraw,zres3@gsnFrame,0,maxbb)
 
   return(zonal_plot)
 end
