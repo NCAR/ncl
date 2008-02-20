@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.47 2007-12-21 00:49:23 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.48 2008-02-20 00:33:57 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -121,6 +121,11 @@ NetCdfAttInqRecList *file_atts;
 int             n_options;
 NetCdfOptions   *options;
 int             cdfid;
+/*
+ * since any value of cdfid is now allowed (including -1) the
+ * 'open' flag member is added to indicate whether the file open state
+ */
+int             open;    
 int             header_reserve_space;
 int             define_mode;
 int             format;
@@ -319,7 +324,7 @@ int sync;
 #if NETCDF_DEBUG
 		fprintf(stderr,"CloseOrNot:ncclose(%d);\n",cdfid);
 #endif                
-		
+		rec->open = 0;
 		rec->cdfid = -1;
 	}
 	else {
@@ -329,6 +334,7 @@ int sync;
 			fprintf(stderr,"nc_sync(%d);\n",cdfid);
 #endif                
 		}
+		rec->open = 1;
 		rec->cdfid = cdfid;
 	}
 }
@@ -439,6 +445,7 @@ NclFileFormatType *format;
 		return NULL;
 	}
 	therec->cdfid = -1;
+	therec->open = 0;
 	therec->header_reserve_space = 0;
 	therec->define_mode = 0;
 	if (! InitializeOptions(therec)) {
@@ -475,6 +482,7 @@ int wr_status;
 	NetCdfDimInqRecList *tmpdlptr;
 	NrmQuark qmissing_val = NrmStringToQuark("missing_value");
 	NrmQuark qfill_val = NrmStringToQuark("_FillValue");
+	static int count = 0;
 
 	if(tmp == NULL) {
 		return(NULL);
@@ -488,13 +496,14 @@ int wr_status;
 	tmp->n_file_atts = 0;
 	tmp->file_atts= NULL;
 
-	if (tmp->cdfid > -1) {
+	if (tmp->open) {
 		cdfid = tmp->cdfid;
 	}
 	else if(wr_status > 0) {
 		nc_ret = nc__open(NrmQuarkToString(path),NC_NOWRITE,&ChunkSizeHint,&cdfid);
 #if NETCDF_DEBUG
 		fprintf(stderr,"nc__open(\"%s\",NC_NOWRITE,&ChunkSizeHint,&cdfid);\n",NrmQuarkToString(path));
+		fprintf(stderr,"%d: cdfid = %d\n",count++,cdfid);
 #endif                
 		tmp->define_mode = 0;
 		tmp->cdfid = cdfid;
@@ -520,6 +529,8 @@ int wr_status;
 		NclFree(tmp);
 		return(NULL);
 	}
+
+	tmp->open = 1;
 #ifdef USE_NETCDF4
 	nc_inq_format(cdfid,&(tmp->format));
 #if NETCDF_DEBUG
@@ -755,10 +766,11 @@ NclQuark path;
 #if NETCDF_DEBUG
 	fprintf(stderr,"nc__create(\"%s\",0x%x,1024,%d,&id);\n",NrmQuarkToString(path),mode,ChunkSizeHint);
 #endif                
-	if(nc_ret == NC_NOERR && id > -1) {
+	if(nc_ret == NC_NOERR) {
 		tmp->cdfid = id;
 		tmp->define_mode = 1;
 		tmp->format = format;
+		tmp->open = 1;
 		if ((int)(tmp->options[NC_DEFINE_MODE_OPT].values) == 0) {
 			EndDefineModeIf(tmp,id);
 			CloseOrNot(tmp,id,0);
@@ -782,7 +794,7 @@ void *therec;
         NetCdfVarInqRecList *stepvl;
         NetCdfDimInqRecList *stepdl;
 
-	if (rec->cdfid > -1) {
+	if (rec->open) {
 		ncclose(rec->cdfid);
 #if NETCDF_DEBUG
 		fprintf(stderr,"NetFreeFileRec:ncclose(%d);\n",rec->cdfid);
@@ -1163,7 +1175,7 @@ void* storage;
 			}
 			out_data = storage;
 
-			if (rec->cdfid > -1) {
+			if (rec->open) {
 				cdfid = rec->cdfid;
 				EndDefineModeIf(rec,cdfid);
 			}
@@ -1192,6 +1204,7 @@ void* storage;
 				return(NULL);
 			}
 
+			rec->open = 1;
 			if(no_stride) {	
 				ret = ncvargetg(cdfid,
 					stepvl->var_inq->varid,
@@ -1276,7 +1289,7 @@ void* storage;
 				}
 				return(storage);
 			}
-			if (rec->cdfid > -1) {
+			if (rec->open) {
 				cdfid = rec->cdfid;
 			}				
 			else {
@@ -1290,6 +1303,7 @@ void* storage;
 						  NrmQuarkToString(rec->file_path_q));
 					return(NULL);
 				}
+				rec->open = 1;
 				rec->cdfid = cdfid;
 				rec->define_mode = 0;
 			}
@@ -1310,7 +1324,7 @@ void* storage;
 #endif                
 			}
 			if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0) {
-				if (rec->cdfid > -1) {
+				if (rec->open) {
 					EndDefineModeIf(rec, cdfid);
 				}
 				CloseOrNot(rec,cdfid,0);
@@ -1369,7 +1383,7 @@ void* storage;
 							  NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q),NrmQuarkToString(thevar));
 						return NULL;
 					}
-					if (rec->cdfid > -1) {
+					if (rec->open) {
 						cdfid = rec->cdfid;
 					}
 					else {
@@ -1387,6 +1401,7 @@ void* storage;
 						}
 						rec->cdfid = cdfid;
 						rec->define_mode = 0;
+						rec->open = 1;
 					}
 			
 					if(stepal->att_inq->data_type == NC_CHAR) {
@@ -1476,7 +1491,7 @@ long *stride;
 					}
 					
 				}
-				if (rec->cdfid > -1) {
+				if (rec->open) {
 					cdfid = rec->cdfid;
 					EndDefineModeIf(rec, cdfid);
 				}
@@ -1486,16 +1501,12 @@ long *stride;
 					fprintf(stderr,"nc__open(\"%s\",NC_WRITE,&ChunkSizeHint,&cdfid);\n",NrmQuarkToString(rec->file_path_q));
 #endif                
 					/* printf ("got size = %d\n",ChunkSizeHint); */
-					rec->cdfid = cdfid;
-					rec->define_mode = 0;
 				}
 				else {
 					nc_ret = nc__open(NrmQuarkToString(rec->file_path_q),NC_WRITE,&ChunkSizeHint,&cdfid);
 #if NETCDF_DEBUG
 					fprintf(stderr,"nc__open(\"%s\",NC_WRITE,&ChunkSizeHint,&cdfid);\n",NrmQuarkToString(rec->file_path_q));
 #endif                
-					rec->cdfid = cdfid;
-					rec->define_mode = 0;
 				}
 				if(nc_ret != NC_NOERR) {
 					NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -1503,6 +1514,10 @@ long *stride;
 						  NrmQuarkToString(rec->file_path_q));
 					return(NhlFATAL);
 				}
+
+				rec->cdfid = cdfid;
+				rec->define_mode = 0;
+				rec->open = 1;
 				if ((int)(rec->options[NC_PREFILL_OPT].values) == 0) {
 					nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
 #if NETCDF_DEBUG
@@ -1592,7 +1607,7 @@ void *data;
 		stepal = rec->file_atts;
 		while(stepal != NULL) {
 			if(stepal->att_inq->name == theatt) {
-				if (rec->cdfid > -1) {
+				if (rec->open) {
 					cdfid = rec->cdfid;
 				}
 				else {
@@ -1608,6 +1623,7 @@ void *data;
 					}
 					rec->cdfid = cdfid;
 					rec->define_mode = 0;
+					rec->open = 1;
 				}
 				if(stepal->att_inq->data_type == NC_CHAR) {
 					buffer = NrmQuarkToString(*(NclQuark*)data);
@@ -1700,7 +1716,7 @@ NclQuark theatt;
 				continue;
 			}
 			if (! stepal->att_inq->virtual) {
-				if (rec->cdfid > -1) {
+				if (rec->open) {
 					cdfid = rec->cdfid;
 				}
 				else {
@@ -1716,6 +1732,7 @@ NclQuark theatt;
 					}
 					rec->cdfid = cdfid;
 					rec->define_mode = 0;
+					rec->open = 1;
 				}
 				if (! rec->define_mode) {
 					ncredef(cdfid);
@@ -1787,7 +1804,7 @@ NclQuark theatt;
 						continue;
 					}
 					if (! stepal->att_inq->virtual) {
-						if (rec->cdfid > -1) {
+						if (rec->open) {
 							cdfid = rec->cdfid;
 						}
 						else {
@@ -1804,6 +1821,7 @@ NclQuark theatt;
 							}
 							rec->cdfid = cdfid;
 							rec->define_mode = 0;
+							rec->open = 1;
 						}
 						if (! rec->define_mode) {
 							ncredef(cdfid);
@@ -1874,7 +1892,7 @@ void* data;
 				stepal = stepvl->var_inq->att_list;
 				while(stepal != NULL) {
 					if(stepal->att_inq->name == theatt) {
-						if (rec->cdfid > -1) {
+						if (rec->open) {
 							cdfid = rec->cdfid;
 						}
 						else {
@@ -1891,6 +1909,7 @@ void* data;
 							}
 							rec->cdfid = cdfid;
 							rec->define_mode = 0;
+							rec->open = 1;
 						}
 						if(stepal->att_inq->data_type == NC_CHAR) {	
 							buffer = NrmQuarkToString(*(NclQuark*)data);
@@ -1990,7 +2009,7 @@ int is_unlimited;
 			add_scalar = 1;
 		}
 		else {
-			if (rec->cdfid > -1) {
+			if (rec->open) {
 				cdfid = rec->cdfid;
 			}
 			else {
@@ -2006,6 +2025,7 @@ int is_unlimited;
 				}
 				rec->cdfid = cdfid;
 				rec->define_mode = 0;
+				rec->open = 1;
 			}
 			if (! rec->define_mode) {
 				ncredef(cdfid);
@@ -2113,7 +2133,7 @@ long* dim_sizes;
 	int fill_mode;
 
 	if(rec->wr_status <= 0) {
-		if (rec->cdfid > -1) {
+		if (rec->open) {
 			cdfid = rec->cdfid;
 		}
 		else {
@@ -2129,6 +2149,7 @@ long* dim_sizes;
 			}
 			rec->cdfid = cdfid;
 			rec->define_mode = 0;
+			rec->open = 1;
 		}
 		if ((int)(rec->options[NC_PREFILL_OPT].values) == 0) {
 			nc_set_fill(cdfid,NC_NOFILL,&fill_mode);
@@ -2297,7 +2318,7 @@ NclBasicDataTypes data_type;
 	nc_type *the_data_type;
 
 	if(rec->wr_status <= 0) {
-		if (rec->cdfid > -1) {
+		if (rec->open) {
 			cdfid = rec->cdfid;
 		}
 		else {
@@ -2313,6 +2334,7 @@ NclBasicDataTypes data_type;
 			}
 			rec->cdfid = cdfid;
 			rec->define_mode = 0;
+			rec->open = 1;
 		}
 		the_data_type = NetMapFromNcl(data_type);
 		if(the_data_type != NULL) {
@@ -2340,6 +2362,7 @@ NclBasicDataTypes data_type;
 						fprintf(stderr,"ncclose(%d);\n",cdfid);
 #endif                
 						rec->cdfid = -1;
+						rec->open = 0;
 						NclFree(the_data_type);
 						return(NhlFATAL);
 					} 
@@ -2387,6 +2410,7 @@ NclBasicDataTypes data_type;
 			fprintf(stderr,"ncclose(%d);\n",cdfid);
 #endif                
 			rec->cdfid = -1;
+			rec->open = 0;
 		}
 	} else {	
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"File (%s) was opened as a read only file, can not write to it",NrmQuarkToString(rec->file_path_q));
@@ -2421,7 +2445,7 @@ NclQuark to;
 				stepdl->dim_inq->name = to;
 				return(NhlNOERROR);
 			}
-			if (rec->cdfid > -1) {
+			if (rec->open) {
 				cdfid = rec->cdfid;
 			}
 			else {
@@ -2437,6 +2461,7 @@ NclQuark to;
 				}
 				rec->cdfid = cdfid;
 				rec->define_mode = 0;
+				rec->open = 1;
 			}
 			if (! rec->define_mode) {
 				ncredef(cdfid);
@@ -2517,7 +2542,7 @@ static NhlErrorTypes NetAddAtt
 	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)NetMapFromNcl(data_type);
 		if(the_data_type != NULL) {
-			if (rec->cdfid > -1) {
+			if (rec->open) {
 				cdfid = rec->cdfid;
 			}
 			else {
@@ -2534,6 +2559,7 @@ static NhlErrorTypes NetAddAtt
 				}
 				rec->cdfid = cdfid;
 				rec->define_mode = 0;
+				rec->open = 1;
 			}
 			if (! rec->define_mode) {
 				ncredef(cdfid);
@@ -2615,7 +2641,7 @@ static NhlErrorTypes NetAddVarAtt
 	if(rec->wr_status <= 0) {
 		the_data_type = (nc_type*)NetMapFromNcl(data_type);
 		if(the_data_type != NULL) {
-			if (rec->cdfid > -1) {
+			if (rec->open) {
 				cdfid = rec->cdfid;
 			}
 			else {
@@ -2632,6 +2658,7 @@ static NhlErrorTypes NetAddVarAtt
 				}
 				rec->cdfid = cdfid;
 				rec->define_mode = 0;
+				rec->open = 1;
 			}
 			stepvl = rec->vars;	
 			while(stepvl != NULL) {
@@ -2721,7 +2748,7 @@ static NhlErrorTypes NetSetOption
 	}
 	else if (option == NrmStringToQuark("definemode")) {
 		rec->options[NC_DEFINE_MODE_OPT].values = (void*) *(int*)values;
-		if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0 && rec->cdfid > -1 && rec->define_mode == 1) {
+		if ((int)(rec->options[NC_DEFINE_MODE_OPT].values) == 0 && rec->open && rec->define_mode == 1) {
 			EndDefineModeIf(rec, rec->cdfid);
 			CloseOrNot(rec,rec->cdfid,0);
 		}
@@ -2739,7 +2766,7 @@ static NhlErrorTypes NetSetOption
 	}
 	else if (option == NrmStringToQuark("suppressclose")) {
 		rec->options[NC_SUPPRESS_CLOSE_OPT].values = (void*) *(int*)values;
-		if ((int)(rec->options[NC_SUPPRESS_CLOSE_OPT].values) == 0 && rec->cdfid > -1) {
+		if ((int)(rec->options[NC_SUPPRESS_CLOSE_OPT].values) == 0 && rec->open) {
 			CloseOrNot(rec,rec->cdfid,1);
 		}
 	}
