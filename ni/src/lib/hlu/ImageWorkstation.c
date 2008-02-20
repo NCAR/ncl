@@ -1,5 +1,5 @@
 /*
- *      $Id: ImageWorkstation.c,v 1.3 2008-02-07 00:23:19 haley Exp $
+ *      $Id: ImageWorkstation.c,v 1.4 2008-02-20 23:14:03 haley Exp $
  */
 /************************************************************************
 *									*
@@ -258,7 +258,9 @@ ImageWorkstationClassInitialize
 	};
 	_NhlEnumVals	fmtvals[] = {
 		{NhlXWD,	"XWD"},
+#ifdef BuildPNG
 		{NhlPNG,	"PNG"},
+#endif
 	};
 
 
