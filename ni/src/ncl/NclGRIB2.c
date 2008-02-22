@@ -8663,16 +8663,15 @@ static void *Grib2OpenFile
              * Set originating center info for codetable searches.
              * NOTE: not all known centers are represented, only the most commonly
              * used as per GRIB v1 usage in NCL.  Add as necessary.
-	     * DB: Now default is to try to use NCEP tables if center is unrecognized.
+             * DB: Now default is to try to use NCEP tables if center is unrecognized.
              */
-	    if (sec1[11] == 4 || sec1[11] == 5) {
-		    /*tigge data -- use tigge tables regardless of the actual center */
-		    center = "tigge";
-		    center_len = strlen(center);
-		    centerID = sec1[0];
-		    subcenterID = sec1[1];
-		    
-	    }
+            if (sec1[11] == 4 || sec1[11] == 5) {
+                /*tigge data -- use tigge tables regardless of the actual center */
+                center = "tigge";
+                center_len = strlen(center);
+                centerID = sec1[0];
+                subcenterID = sec1[1];
+            }
             else if (! center) {
 		    /* for now just use ECMWF or NCEP tables if not TIGGE */
 		    /* default to NCEP -- maybe it should be ECMWF */
@@ -8681,7 +8680,7 @@ static void *Grib2OpenFile
                     case 8:
                     case 9:
                         /* US Navy FNMOC */
-		    case 58:
+                    case 58:
                         /* NOAA FSL */
                     case 59:
                         /* NCAR */
@@ -8697,11 +8696,11 @@ static void *Grib2OpenFile
 
                     case 74:
                         /* UK Met. Office */
-			/* fallthrough */
+                        /* fallthrough */
 
                     case 78:
                         /* DWD Offenbach */
-			/* fallthrough */
+                        /* fallthrough */
                     case 34:
                         /* JMA -- use ECMWF for now */
                         /* FALLTHROUGH */
@@ -8719,14 +8718,14 @@ static void *Grib2OpenFile
 	    }
 	    ctflen = center_len + 1;
         }
-	g2rec[nrecs]->table_source_name = NclMalloc(ctflen);
-	strcpy(g2rec[nrecs]->table_source_name,center);
+        g2rec[nrecs]->table_source_name = NclMalloc(ctflen);
+        strcpy(g2rec[nrecs]->table_source_name,center);
         g2rec[nrecs]->sec1.master_table_ver = sec1[2];
         g2rec[nrecs]->sec1.local_table_ver = sec1[3];
 
         /* table 1.2: Significance of Reference Time */
         g2rec[nrecs]->sec1.ref_time = sec1[4];
-	g2rec[nrecs]->sec1.sig_ref_time = NULL;
+        g2rec[nrecs]->sec1.sig_ref_time = NULL;
 #if 0
         table = "1.2.table";
         cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.ref_time, ct);
@@ -8759,7 +8758,7 @@ static void *Grib2OpenFile
 
         /* table 1.3: Production Status of Data */
         g2rec[nrecs]->sec1.prod_status = sec1[11];
-	g2rec[nrecs]->sec1.proc_prod_status = NULL;
+        g2rec[nrecs]->sec1.proc_prod_status = NULL;
 #if 0
         table = "1.3.table";
         cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec1.prod_status, ct);
@@ -8774,7 +8773,7 @@ static void *Grib2OpenFile
 
         /* table 1.4: Type of Data */
         g2rec[nrecs]->sec1.data_type = sec1[12];
-	g2rec[nrecs]->sec1.proc_data_type = NULL;
+        g2rec[nrecs]->sec1.proc_data_type = NULL;
 #if 0
         table = "1.4.table";
         cterr = Grib2ReadCodeTable(center,secid,table, g2rec[nrecs]->sec1.data_type, ct);
@@ -8865,6 +8864,119 @@ static void *Grib2OpenFile
         /* loop over repeated sections, creating new records */
         for (i = 0; i < nfields; i++) {
             err = g2_getfld(g2buf, i + 1, unpack, expand, &g2fld);
+            if (err != 0) {
+                /*
+                 * g2clib could not correctly unpack the GRIB2 record
+                 * error codes listed in g2clib source file g2_getfld.c
+                 * g2clib will issue its own error message
+                 */
+                switch (err) {
+                    case 1:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "Begin record characters \"GRIB\" not found.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 2:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Not a GRIB2 record.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 3:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Invalid data field request.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 4:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "End record characters at invalid location.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 6:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                            "GRIB record does not contain requested data fields.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 7:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "End record characters not found.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 8:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Unrecognized section.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 9:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Data Representation Template not yet implemented.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 10:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Error unpacking GRIB record section 3.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 11:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Error unpacking GRIB record section 4.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 12:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Error unpacking GRIB record section 5.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 13:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Error unpacking GRIB record section 6.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 14:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Error unpacking GRIB record section 7.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 15:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Error unpacking GRIB record section 1.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 16:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Error unpacking GRIB record section 2.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    case 17:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Specified bitmap does not exist.");
+                            NhlFree(g2rec);
+                            return NULL;
+                            break;
+
+                    default:
+                        NhlPError(NhlWARNING, NhlEUNKNOWN, "Could not decode GRIB record.");
+                            NhlFree(g2rec);
+                            return NULL;
+                        break;
+                }
+            }
+
             g2rec[nrecs]->version = g2fld->version;
 
             /* GRIB2 section 2 */
@@ -8895,8 +9007,8 @@ static void *Grib2OpenFile
 #endif
 
             g2rec[nrecs]->sec3[i]->grid_def_src = g2fld->griddef;
-	    g2rec[nrecs]->sec3[i]->grid_def_name = NULL;
-	    g2rec[nrecs]->sec3[i]->grid_num = g2fld->igdtnum;
+            g2rec[nrecs]->sec3[i]->grid_def_name = NULL;
+            g2rec[nrecs]->sec3[i]->grid_num = g2fld->igdtnum;
 #if 0
             switch ( g2fld->griddef) {
                 case 0:
@@ -8963,16 +9075,16 @@ static void *Grib2OpenFile
                 g2rec[nrecs]->sec3[i]->grid_list_num_oct_opt = NULL;
             }
             g2rec[nrecs]->sec3[i]->len_grid_template = g2fld->igdtlen;
-	    /* 
-	     * rather than malloc a new template data area, just copy the pointer
-	     * and then NULL it out so it wont get freed prematurely. 
-	     * consider whether we need to use g2int (it seems like it's always 
-	     * 32 bits ; so I'm not sure why)
-	     */
-	    g2rec[nrecs]->sec3[i]->grid_template = (int *)g2fld->igdtmpl; 
-	    g2fld->igdtmpl = NULL;
-	    g2rec[nrecs]->sec3[i]->is_thinned_grid = 0; /* this is determined later */
-	    g2rec[nrecs]->sec3[i]->scan_mode_offset = -1; /* this is determined later */
+            /* 
+             * rather than malloc a new template data area, just copy the pointer
+             * and then NULL it out so it wont get freed prematurely. 
+             * consider whether we need to use g2int (it seems like it's always 
+             * 32 bits ; so I'm not sure why)
+             */
+            g2rec[nrecs]->sec3[i]->grid_template = (int *)g2fld->igdtmpl; 
+            g2fld->igdtmpl = NULL;
+            g2rec[nrecs]->sec3[i]->is_thinned_grid = 0; /* this is determined later */
+            g2rec[nrecs]->sec3[i]->scan_mode_offset = -1; /* this is determined later */
 	    
 
 #if 0
@@ -9024,14 +9136,14 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec3[i]->shape_of_earth->lat_last_gridpt = g2fld->igdtmpl[14];
             g2rec[nrecs]->sec3[i]->shape_of_earth->lon_last_gridpt = g2fld->igdtmpl[15];
 
-	    if (g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle != 0 &&
-		g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain != 0) {
-		    scale_factor = g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain /
-			    (double) g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle;
-	    }
-	    else {
-		    scale_factor = 1.0 / (double) G2_SCALE_FACTOR;
-	    }
+            if (g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle != 0 &&
+                    g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain != 0) {
+                scale_factor = g2rec[nrecs]->sec3[i]->shape_of_earth->angl_init_prod_domain /
+                (double) g2rec[nrecs]->sec3[i]->shape_of_earth->subdiv_basic_angle;
+            }
+            else {
+                scale_factor = 1.0 / (double) G2_SCALE_FACTOR;
+            }
 
             g2rec[nrecs]->sec3[i]->lat_first_gridpt = g2fld->igdtmpl[11] * scale_factor;
             g2rec[nrecs]->sec3[i]->lon_first_gridpt = g2fld->igdtmpl[12] * scale_factor;
@@ -9076,7 +9188,7 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec4[i]->secid = 4;
             /* table 4.0: Product Defn Template Number */
             g2rec[nrecs]->sec4[i]->pds_num = g2fld->ipdtnum;
-	    g2rec[nrecs]->sec4[i]->prod_def_name = NULL;
+            g2rec[nrecs]->sec4[i]->prod_def_name = NULL;
 #if 0
             table = "4.0.table";
             cterr = Grib2ReadCodeTable(center, secid, table, g2rec[nrecs]->sec4[i]->pds_num, ct);
@@ -9091,9 +9203,16 @@ static void *Grib2OpenFile
 
             /* table 4.1: Parameter Category by Product Discipline */
             g2rec[nrecs]->sec4[i]->prod_params = NclMalloc(sizeof(G2prodParams));
-	    memset(g2rec[nrecs]->sec4[i]->prod_params,0,sizeof(G2prodParams));
-            g2rec[nrecs]->sec4[i]->prod_params->param_cat = g2fld->ipdtmpl[0];
-	    g2rec[nrecs]->sec4[i]->prod_params->param_cat_name = NULL;
+            memset(g2rec[nrecs]->sec4[i]->prod_params,0,sizeof(G2prodParams));
+            if (g2fld->ipdtmpl != NULL)
+                g2rec[nrecs]->sec4[i]->prod_params->param_cat = g2fld->ipdtmpl[0];
+            else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
+            g2rec[nrecs]->sec4[i]->prod_params->param_cat_name = NULL;
 #if 0
             table = "4.1.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
@@ -9112,7 +9231,14 @@ static void *Grib2OpenFile
              * table 4.2.x.y: Product Discipline
              * use sec0.discipline to form table name
              */
-            g2rec[nrecs]->sec4[i]->prod_params->param_num = g2fld->ipdtmpl[1];
+            if (g2fld->ipdtmpl != NULL)
+                g2rec[nrecs]->sec4[i]->prod_params->param_num = g2fld->ipdtmpl[1];
+            else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 #if 0
             memset(fnam, '\0', 256);
             (void) sprintf(fnam, "4.2.%d.%d.table", g2rec[nrecs]->sec0.discipline,
@@ -9167,8 +9293,15 @@ static void *Grib2OpenFile
 #endif
 
             /* table 4.3: Type of Generating Process */
-            g2rec[nrecs]->sec4[i]->prod_params->gen_process = g2fld->ipdtmpl[2];
-	    g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NULL;
+            if (g2fld->ipdtmpl != NULL)
+                g2rec[nrecs]->sec4[i]->prod_params->gen_process = g2fld->ipdtmpl[2];
+            else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
+            g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NULL;
 #if 0
 	    table = "4.3.table";
             cterr = Grib2ReadCodeTable(center, secid, table,
@@ -9181,8 +9314,15 @@ static void *Grib2OpenFile
             g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name = NclMalloc(strlen(ct->descrip) + 1);
             (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->gen_proc_name, ct->descrip);
 #endif
-            g2rec[nrecs]->sec4[i]->prod_params->bkgd_gen_process = g2fld->ipdtmpl[3];
-            g2rec[nrecs]->sec4[i]->prod_params->gen_processID = g2fld->ipdtmpl[4];
+            if (g2fld->ipdtmpl != NULL) {
+                g2rec[nrecs]->sec4[i]->prod_params->bkgd_gen_process = g2fld->ipdtmpl[3];
+                g2rec[nrecs]->sec4[i]->prod_params->gen_processID = g2fld->ipdtmpl[4];
+            } else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 
 	    if (g2rec[nrecs]->sec4[i]->pds_num > 14) {
 		    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = 255;
@@ -9191,11 +9331,25 @@ static void *Grib2OpenFile
 		    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = 0;
 	    }
 	    else {
-		    g2rec[nrecs]->sec4[i]->prod_params->hrs_after_reftime_cutoff = g2fld->ipdtmpl[5];
-		    g2rec[nrecs]->sec4[i]->prod_params->min_after_reftime_cutoff = g2fld->ipdtmpl[6];
+            if (g2fld->ipdtmpl != NULL) {
+    		    g2rec[nrecs]->sec4[i]->prod_params->hrs_after_reftime_cutoff = g2fld->ipdtmpl[5];
+	    	    g2rec[nrecs]->sec4[i]->prod_params->min_after_reftime_cutoff = g2fld->ipdtmpl[6];
+            } else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 
 		    /* table 4.4: Indicator of Unit of Time Range */
-		    g2rec[nrecs]->sec4[i]->prod_params->time_range = g2fld->ipdtmpl[7];
+            if (g2fld->ipdtmpl != NULL)
+    		    g2rec[nrecs]->sec4[i]->prod_params->time_range = g2fld->ipdtmpl[7];
+            else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 		    g2rec[nrecs]->sec4[i]->prod_params->time_range_unit = NULL;
 #if 0
 		    table = "4.4.table";
@@ -9210,10 +9364,24 @@ static void *Grib2OpenFile
 			    = NclMalloc(strlen(ct->descrip) + 1);
 		    (void) strcpy(g2rec[nrecs]->sec4[i]->prod_params->time_range_unit, ct->descrip);
 #endif
-		    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = g2fld->ipdtmpl[8];
+            if (g2fld->ipdtmpl != NULL)
+    		    g2rec[nrecs]->sec4[i]->prod_params->forecast_time = g2fld->ipdtmpl[8];
+            else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 
 		    /* table 4.5: Fixed Surface Types and Units */
-		    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[9];
+            if (g2fld->ipdtmpl != NULL)
+    		    g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc = g2fld->ipdtmpl[9];
+            else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 		    g2rec[nrecs]->sec4[i]->prod_params->first_fixed_sfc = NULL;
 		    g2rec[nrecs]->sec4[i]->prod_params->units_first_fixed_sfc = NULL;
 #if 0
@@ -9235,15 +9403,29 @@ static void *Grib2OpenFile
 					  ct->units);
 		    }
 #endif
-		    g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[10];
-		    if (g2fld->ipdtmpl[10] == -127)
-			    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc;
-		    else
-			    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
-				    = g2fld->ipdtmpl[11];
+            if (g2fld->ipdtmpl != NULL) {
+    		    g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc = g2fld->ipdtmpl[10];
+	    	    if (g2fld->ipdtmpl[10] == -127)
+		    	    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc;
+		        else
+			        g2rec[nrecs]->sec4[i]->prod_params->scaled_val_first_fixed_sfc
+				        = g2fld->ipdtmpl[11];
+            } else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 
 
-		    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[12];
+            if (g2fld->ipdtmpl != NULL)
+    		    g2rec[nrecs]->sec4[i]->prod_params->typeof_second_fixed_sfc = g2fld->ipdtmpl[12];
+            else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 		    g2rec[nrecs]->sec4[i]->prod_params->second_fixed_sfc = NULL;
 		    g2rec[nrecs]->sec4[i]->prod_params->units_second_fixed_sfc = NULL;
 #if 0
@@ -9264,12 +9446,19 @@ static void *Grib2OpenFile
 					  ct->units);
 		    }
 #endif
-		    g2rec[nrecs]->sec4[i]->prod_params->scale_factor_second_fixed_sfc = g2fld->ipdtmpl[13];
-		    if (g2fld->ipdtmpl[13] == -127)
-			    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc = 0;
-		    else
-			    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc
-				    = g2fld->ipdtmpl[14];
+            if (g2fld->ipdtmpl != NULL) {
+    		    g2rec[nrecs]->sec4[i]->prod_params->scale_factor_second_fixed_sfc = g2fld->ipdtmpl[13];
+	    	    if (g2fld->ipdtmpl[13] == -127)
+		    	    g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc = 0;
+		        else
+			        g2rec[nrecs]->sec4[i]->prod_params->scaled_val_second_fixed_sfc
+				        = g2fld->ipdtmpl[14];
+            } else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Product Definition Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
 
 		    switch (g2rec[nrecs]->sec4[i]->prod_params->typeof_first_fixed_sfc) {
 		    case 1: /* ground or water surface */
@@ -9278,10 +9467,18 @@ static void *Grib2OpenFile
 			    break;
 
 		    default:
-			    if (g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc < 100)
-				    g2rec[nrecs]->sec4[i]->prod_params->level = g2fld->ipdtmpl[1];
-			    else
-				    g2rec[nrecs]->sec4[i]->prod_params->level = g2fld->ipdtmpl[1] / 100;
+			    g2rec[nrecs]->sec4[i]->prod_params->level = -1;
+                if (g2fld->ipdtmpl != NULL) {
+    			    if (g2rec[nrecs]->sec4[i]->prod_params->scale_factor_first_fixed_sfc < 100)
+		    		    g2rec[nrecs]->sec4[i]->prod_params->level = g2fld->ipdtmpl[1];
+			        else
+				        g2rec[nrecs]->sec4[i]->prod_params->level = g2fld->ipdtmpl[1] / 100;
+                } else {
+                    NhlPError(NhlFATAL, NhlEUNKNOWN,
+                        "NclGRIB2: Invalid Product Definition Template.");
+                        NhlFree(g2rec);
+                        return NULL;
+                }
 
 			    break;
 		    }
@@ -9292,7 +9489,7 @@ static void *Grib2OpenFile
              * by the Product Definition Templates (PDTs).
              */
             g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc = -1;
-	    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done = 0;
+            g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done = 0;
             switch (g2rec[nrecs]->sec4[i]->pds_num) {
                 case 0:
                     /*
@@ -9331,34 +9528,34 @@ static void *Grib2OpenFile
                      * Percentile forecasts at a horizontal level or in a
                      * horizontal layer at a point in time.
                      */
-		     break;
+                    break;
                     
                 case 5:
                 case 9:
                     /*
                      * Probability forecasts at a horizontal level or in a
                      * horizontal layer at a point in time.
-		     * fall through to  case 9
                      */
 
-			g2rec[nrecs]->sec4[i]->prod_params->forecast_probability_number = g2fld->ipdtmpl[15];
-			g2rec[nrecs]->sec4[i]->prod_params->total_forecast_probabilities = g2fld->ipdtmpl[16];
-			g2rec[nrecs]->sec4[i]->prod_params->probability_type = g2fld->ipdtmpl[17];
- 			g2rec[nrecs]->sec4[i]->prod_params->scale_factor_lower_limit = g2fld->ipdtmpl[18];
-			g2rec[nrecs]->sec4[i]->prod_params->scaled_value_lower_limit = g2fld->ipdtmpl[19];
- 			g2rec[nrecs]->sec4[i]->prod_params->scale_factor_upper_limit = g2fld->ipdtmpl[20];
-			g2rec[nrecs]->sec4[i]->prod_params->scaled_value_upper_limit = g2fld->ipdtmpl[21];
+                    if (g2fld->ipdtmpl != NULL) {
+                        g2rec[nrecs]->sec4[i]->prod_params->forecast_probability_number = g2fld->ipdtmpl[15];
+                        g2rec[nrecs]->sec4[i]->prod_params->total_forecast_probabilities = g2fld->ipdtmpl[16];
+                        g2rec[nrecs]->sec4[i]->prod_params->probability_type = g2fld->ipdtmpl[17];
+                        g2rec[nrecs]->sec4[i]->prod_params->scale_factor_lower_limit = g2fld->ipdtmpl[18];
+                        g2rec[nrecs]->sec4[i]->prod_params->scaled_value_lower_limit = g2fld->ipdtmpl[19];
+                        g2rec[nrecs]->sec4[i]->prod_params->scale_factor_upper_limit = g2fld->ipdtmpl[20];
+                        g2rec[nrecs]->sec4[i]->prod_params->scaled_value_upper_limit = g2fld->ipdtmpl[21];
+                    } else {
+                        NhlPError(NhlFATAL, NhlEUNKNOWN,
+                            "NclGRIB2: Invalid Product Definition Template.");
+                            NhlFree(g2rec);
+                            return NULL;
+                    }
 			
-			if (g2rec[nrecs]->sec4[i]->pds_num == 5) 
-				break;
+                    if (g2rec[nrecs]->sec4[i]->pds_num == 5) 
+                        break;
 
-                    /* case 9 only
-                     * Probability forecasts at a horizontal level or in a
-                     * horizontal layer in a continuous or non-continuous
-                     * time interval.
-                     */
-
-		     
+                    /* case 9 only */
                     g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
                             = g2fld->ipdtmpl[22];
                     g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval
@@ -9383,7 +9580,7 @@ static void *Grib2OpenFile
                     g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[32];
-		    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
                     g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[33];
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
@@ -9468,7 +9665,7 @@ static void *Grib2OpenFile
                     /* table 4.4: Indicator of Unit of Time Range */
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[25];
-		    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
 #if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
@@ -9521,7 +9718,7 @@ static void *Grib2OpenFile
                     /*
                      * Individual ensemble forecast, control and perturbed, at a
                      * horizontal level or in a horizontal layer at a point in time.
-		     * FALLTHROUGH
+                     * FALLTHROUGH
                      */
 
                 case 11:
@@ -9552,8 +9749,9 @@ static void *Grib2OpenFile
                     g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16];
                     g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17];
 
-		    if (g2rec[nrecs]->sec4[i]->pds_num == 1) 
-			    break;
+                    if (g2rec[nrecs]->sec4[i]->pds_num == 1) 
+                        break;
+
                     /* statistical processing */
                     g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
                             = g2fld->ipdtmpl[18];
@@ -9614,7 +9812,7 @@ static void *Grib2OpenFile
                     /* table 4.4: Indicator of Unit of Time Range */
                     g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
                             = g2fld->ipdtmpl[28];
-		    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
 #if 0
                     table = "4.4.table";
                     cterr = Grib2ReadCodeTable(center, secid, table,
@@ -9681,16 +9879,133 @@ static void *Grib2OpenFile
                     /*
                      * Radar product.
                      */
-			/* fall through  - same deal as satellite obs */
+                    /* fall through  - same deal as satellite obs */
 
                 case 30:
                     /*
                      * Satellite product.
                      */
-		    /* we don't have proper product template data structures yet,
-		     * but for sure the level types are not applicable to satellite data,
-		     * also forecast time is not relevant to observational data
+                    /* we don't have proper product template data structures yet,
+                     * but for sure the level types are not applicable to satellite data,
+                     * also forecast time is not relevant to observational data
                      */
+                    break;
+
+                case 40:
+                    /*
+                     * Analysis or forecast at a horizontal level or in a horizontal
+                     * layer at a point in time for atmospheric chemical or physical
+                     * constituents
+                     */
+                    break;
+
+                case 41:
+                    /* FALLTHROUGH */
+                case 43:
+                    /*
+                     * Individual ensemble forecast, control and perturbed, at a horizontal
+                     * level or in a horizontal layer at a point in time for atmospheric
+                     * chemical or physical constituents
+                     */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_ensemble_fx = g2fld->ipdtmpl[15];
+                    g2rec[nrecs]->sec4[i]->prod_params->ensemble_fx_type = NULL;
+                    
+                    g2rec[nrecs]->sec4[i]->prod_params->perturb_num = g2fld->ipdtmpl[16];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_fx_ensemble = g2fld->ipdtmpl[17];
+
+                    if (g2rec[nrecs]->sec4[i]->pds_num == 41) 
+                        break;
+
+                    /* statistical processing */
+                    g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
+                            = g2fld->ipdtmpl[18];
+                    g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval
+                            = g2fld->ipdtmpl[19];
+                    g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval
+                            = g2fld->ipdtmpl[20];
+                    g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval
+                            = g2fld->ipdtmpl[21];
+                    g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval
+                            = g2fld->ipdtmpl[22];
+                    g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval
+                            = g2fld->ipdtmpl[23];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                            = g2fld->ipdtmpl[24];
+
+                    g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
+                            = g2fld->ipdtmpl[25];
+
+                    /* table 4.10: Type of Statistical Processing */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
+                            = g2fld->ipdtmpl[26];
+                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
+    
+                    /* table 4.11: Type of Time Intervals */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
+                            = g2fld->ipdtmpl[27];
+                    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
+    
+                    /* table 4.4: Indicator of Unit of Time Range */
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[28];
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[29];
+
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
+                            = g2fld->ipdtmpl[30];
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
+                            = g2fld->ipdtmpl[31];
+                    break;
+
+                case 42:
+                    /*
+                     * Average, accumulation, extreme values or other statistically
+                     * processed values at a horizontal level or in a horizontal layer
+                     * in a continuous or non-continuous time interval for atmospheric
+                     * chemical or physical constituents
+                     */
+                    g2rec[nrecs]->sec4[i]->prod_params->year_end_overall_time_interval
+                            = g2fld->ipdtmpl[15];
+                    g2rec[nrecs]->sec4[i]->prod_params->mon_end_overall_time_interval
+                            = g2fld->ipdtmpl[16];
+                    g2rec[nrecs]->sec4[i]->prod_params->day_end_overall_time_interval
+                            = g2fld->ipdtmpl[17];
+                    g2rec[nrecs]->sec4[i]->prod_params->hour_end_overall_time_interval
+                            = g2fld->ipdtmpl[18];
+                    g2rec[nrecs]->sec4[i]->prod_params->min_end_overall_time_interval
+                            = g2fld->ipdtmpl[19];
+                    g2rec[nrecs]->sec4[i]->prod_params->sec_end_overall_time_interval
+                            = g2fld->ipdtmpl[20];
+                    g2rec[nrecs]->sec4[i]->prod_params->num_timerange_spec_time_interval_calc
+                            = g2fld->ipdtmpl[21];
+
+                    g2rec[nrecs]->sec4[i]->prod_params->total_num_missing_data_vals
+                            = g2fld->ipdtmpl[22];
+
+                    /* table 4.10: Type of Statistical Processing */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_stat_proc
+                            = g2fld->ipdtmpl[23];
+                    g2rec[nrecs]->sec4[i]->prod_params->stat_proc = NULL;
+    
+                    /* table 4.11: Type of Time Intervals */
+                    g2rec[nrecs]->sec4[i]->prod_params->typeof_incr_betw_fields
+                            = g2fld->ipdtmpl[24];
+                    g2rec[nrecs]->sec4[i]->prod_params->incr_betw_fields = NULL;
+    
+                    /* table 4.4: Indicator of Unit of Time Range */
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[25];
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->len_time_range_unit_stat_proc_done
+                            = g2fld->ipdtmpl[26];
+
+                    g2rec[nrecs]->sec4[i]->prod_params->ind_time_unit_incr_succ_fields
+                            = g2fld->ipdtmpl[27];
+                    g2rec[nrecs]->sec4[i]->prod_params->itr_succ_unit = NULL;
+                    g2rec[nrecs]->sec4[i]->prod_params->time_incr_betw_fields
+                            = g2fld->ipdtmpl[28];
                     break;
 
                 case 254:
@@ -9778,33 +10093,46 @@ static void *Grib2OpenFile
             (void) strcpy(g2rec[nrecs]->sec5[i]->drt_desc, ct->descrip);
 #endif
 
-	    /* the data repr applies only to data rep template 0-3 -- totally wrong for spherical harmonic data */
-	    /* the ref value must be converted to floating point using grib2lib 'rdieee' function (or equivalent)
-	       -- but we don't need it because the library does all the unpacking 
-	       -- dib --
-	    */
+            /*
+             * the data repr applies only to data rep template 0-3 -- totally wrong for
+             * spherical harmonic data
+             */
+            
+            /*
+             * the ref value must be converted to floating point using grib2lib 'rdieee'
+             * function (or equivalent) -- but we don't need it because the library does
+             * all the unpacking -- dib --
+             */
             g2rec[nrecs]->sec5[i]->data_repr = NclMalloc(sizeof(G2dataRepr));
 
-            g2rec[nrecs]->sec5[i]->data_repr->refVal = (double) g2fld->idrtmpl[0];
-            g2rec[nrecs]->sec5[i]->data_repr->bin_scale_factor = g2fld->idrtmpl[1];
-            g2rec[nrecs]->sec5[i]->data_repr->dec_scale_factor = g2fld->idrtmpl[2];
-            g2rec[nrecs]->sec5[i]->data_repr->nbits_packed_val = g2fld->idrtmpl[3];
-	    g2rec[nrecs]->sec5[i]->data_repr->own_missing = 0;
-	    g2rec[nrecs]->sec5[i]->data_repr->missing.doubleval = 0;
-	    if (g2fld->idrtnum == 2 || g2fld->idrtnum == 3) {
-		    /* These data representation types may use their own missing value */
-		    if (g2fld->idrtmpl[6] > 0 && g2fld->idrtmpl[6] < 3) {
-			    g2rec[nrecs]->sec5[i]->data_repr->own_missing = 1;
-			    if (g2fld->idrtmpl[4] == 0) {
-				    float tfloat;
-				    rdieee(g2fld->idrtmpl + 7,&tfloat,1);
-				    g2rec[nrecs]->sec5[i]->data_repr->missing.floatval = tfloat;
-			    }
-			    else {
-				    g2rec[nrecs]->sec5[i]->data_repr->missing.floatval = (float)g2fld->idrtmpl[7];
-			    }
-		    }
-	    }
+            if (g2fld->idrtmpl != NULL) {
+                g2rec[nrecs]->sec5[i]->data_repr->refVal = (double) g2fld->idrtmpl[0];
+                g2rec[nrecs]->sec5[i]->data_repr->bin_scale_factor = g2fld->idrtmpl[1];
+                g2rec[nrecs]->sec5[i]->data_repr->dec_scale_factor = g2fld->idrtmpl[2];
+                g2rec[nrecs]->sec5[i]->data_repr->nbits_packed_val = g2fld->idrtmpl[3];
+                g2rec[nrecs]->sec5[i]->data_repr->own_missing = 0;
+                g2rec[nrecs]->sec5[i]->data_repr->missing.doubleval = 0;
+            } else {
+                NhlPError(NhlFATAL, NhlEUNKNOWN,
+                    "NclGRIB2: Invalid Data Representation Template.");
+                    NhlFree(g2rec);
+                    return NULL;
+            }
+
+            if (g2fld->idrtnum == 2 || g2fld->idrtnum == 3) {
+                /* These data representation types may use their own missing value */
+                if (g2fld->idrtmpl[6] > 0 && g2fld->idrtmpl[6] < 3) {
+                    g2rec[nrecs]->sec5[i]->data_repr->own_missing = 1;
+                    if (g2fld->idrtmpl[4] == 0) {
+                        float tfloat;
+                        rdieee(g2fld->idrtmpl + 7, &tfloat, 1);
+                        g2rec[nrecs]->sec5[i]->data_repr->missing.floatval = tfloat;
+                    }
+                    else {
+                        g2rec[nrecs]->sec5[i]->data_repr->missing.floatval = (float)g2fld->idrtmpl[7];
+                    }
+                }
+            }
 
             /* table 5.1: Type of Original Field Values */
             g2rec[nrecs]->sec5[i]->data_repr->typeof_field_vals = g2fld->idrtmpl[4];
