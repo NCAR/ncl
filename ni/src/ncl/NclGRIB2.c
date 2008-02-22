@@ -3097,7 +3097,9 @@ int stat_type_only
 		strcat(buffer,"_rat");
 		break;
 	default:
-		strcat(buffer,"_");
+		/* add an underscore only if time period is to be appended */
+		if (! stat_type_only) 
+			strcat(buffer,"_"); 
 		break;
 	}
 	if (stat_type_only) {
@@ -3288,7 +3290,9 @@ Grib2FileRecord *therec;
 					SetTimePeriodString(buf,step->time_period,step->time_unit_indicator);
 					sprintf(&buf[strlen(buf)]," (ending at forecast time)");
 				}
-				if (! step->forecast_time_iszero)
+				if ((int)(therec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values) == 0)
+					AppendStatProcInfoToVarName(step,True);
+				else if (! step->forecast_time_iszero)
 					AppendStatProcInfoToVarName(step,False);
 				else 
 					AppendStatProcInfoToVarName(step,True);
@@ -7835,6 +7839,10 @@ static int g2InitializeOptions
     g2options[GRIB_SINGLE_ELEMENT_DIMENSIONS_OPT].n_values = 1;
     g2options[GRIB_SINGLE_ELEMENT_DIMENSIONS_OPT].values = (void *) NrmStringToQuark("none");
 
+    g2options[GRIB_TIME_PERIOD_SUFFIX_OPT].data_type = NCL_logical;
+    g2options[GRIB_TIME_PERIOD_SUFFIX_OPT].n_values = 1;
+    g2options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void *) 1;
+
     g2tmp->options = g2options;
     return 1;
 }
@@ -11830,6 +11838,9 @@ static NhlErrorTypes Grib2SetOption
 				rec->single_dims |= GRIB_Level_Dims;
 			}
 		}
+	}
+	if (option ==  NrmStringToQuark("timeperiodsuffix")) {
+		rec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void*) *(int *)values;
 	}
 	
 	return NhlNOERROR;

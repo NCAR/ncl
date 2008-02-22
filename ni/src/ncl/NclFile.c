@@ -1317,7 +1317,8 @@ NclFileOption file_options[] = {
 #endif
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }, /* GRIB default NCEP parameter table */
 	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB print record info */
-	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB single element dimensions */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL },  /* GRIB single element dimensions */
+	{ NrmNULLQUARK, NrmNULLQUARK, NULL, NULL, NULL, 0, NULL }  /* GRIB time period suffix */
 };
 
 NclFileClassRec nclFileClassRec = {
@@ -1654,7 +1655,6 @@ static NhlErrorTypes InitializeFileOptions
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
 	fcp->options[Ncl_PRINT_RECORD_INFO].valid_values = NULL;
-	/* End of options */
 
 	/* Grib option Single element dimensions */
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].format = NrmStringToQuark("grb");
@@ -1682,6 +1682,26 @@ static NhlErrorTypes InitializeFileOptions
 	fcp->options[Ncl_SINGLE_ELEMENT_DIMENSIONS].valid_values = 
 		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)sval,
 				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypestringClass);
+
+	/* GRIB option TimePeriodSuffix */
+
+	fcp->options[Ncl_TIME_PERIOD_SUFFIX].format = NrmStringToQuark("grb");
+	fcp->options[Ncl_TIME_PERIOD_SUFFIX].name = NrmStringToQuark("timeperiodsuffix");
+	len_dims = 1;
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	fcp->options[Ncl_TIME_PERIOD_SUFFIX].value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	lval = (logical*) NclMalloc(sizeof(logical));
+	*lval = True;
+	fcp->options[Ncl_TIME_PERIOD_SUFFIX].def_value = 
+		_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void *)lval,
+				    NULL,1,&len_dims,PERMANENT,NULL,(NclTypeClass)nclTypelogicalClass);
+	fcp->options[Ncl_TIME_PERIOD_SUFFIX].valid_values = NULL;
+
+	/* End of options */
+
 	return ret;
 }
 

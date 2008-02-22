@@ -6187,6 +6187,10 @@ GribFileRecord *tmp;
 	options[GRIB_SINGLE_ELEMENT_DIMENSIONS_OPT].n_values = 1;
 	options[GRIB_SINGLE_ELEMENT_DIMENSIONS_OPT].values = (void *) NrmStringToQuark("none");
 
+	options[GRIB_TIME_PERIOD_SUFFIX_OPT].data_type = NCL_logical;
+	options[GRIB_TIME_PERIOD_SUFFIX_OPT].n_values = 1;
+	options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void *) 1;
+
 	tmp->options = options;
 	return 1;
 }
@@ -6251,6 +6255,7 @@ int wr_status;
 	NhlErrorTypes retvalue;
 	struct stat statbuf;
 	int probability_index;
+	int suffix;
 
 	if (! Ptables) {
 		InitPtables();
@@ -6818,7 +6823,7 @@ int wr_status;
 					}
 					if((grib_rec->has_gds)&&(grib_rec->grid_number == 255 || grib_rec->grid_number == 0)) {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_GDS%d",grib_rec->gds_type);
-					} else {
+ 					} else {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%d",grib_rec->grid_number);
 					}
 					for(i = 0; i < sizeof(level_index)/sizeof(int); i++) {
@@ -6834,6 +6839,7 @@ int wr_status;
 						}
 					}
 					grib_rec->time_period = 0;
+					suffix = (int)(therec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values);
 					switch((int)grib_rec->pds[20]) {
 						char tpbuf[16];
 					case 0:
@@ -6847,6 +6853,7 @@ int wr_status;
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
 								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
+							if (! suffix) tpbuf[0] = '\0';
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
 						break;
@@ -6857,6 +6864,7 @@ int wr_status;
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
 								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
+							if (! suffix) tpbuf[0] = '\0';
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_acc%s",tpbuf);
 						}
 						break;
@@ -6867,6 +6875,7 @@ int wr_status;
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
 								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
+							if (! suffix) tpbuf[0] = '\0';
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_dif%s",tpbuf);
 						}
 						break;
@@ -6877,6 +6886,7 @@ int wr_status;
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
 								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
+							if (! suffix) tpbuf[0] = '\0';
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
 						break;
@@ -6888,6 +6898,7 @@ int wr_status;
 						else {
 							grib_rec->time_period = AdjustedTimePeriod
 								(grib_rec,grib_rec->time_period,grib_rec->pds[17],tpbuf);
+							if (! suffix) tpbuf[0] = '\0';
 							sprintf((char*)&(buffer[strlen((char*)buffer)]),"_ave%s",tpbuf);
 						}
 						break;
@@ -8173,6 +8184,9 @@ static NhlErrorTypes GribSetOption
 				rec->single_dims |= GRIB_Level_Dims;
 			}
 		}
+	}
+	if (option ==  NrmStringToQuark("timeperiodsuffix")) {
+		rec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values = (void*) *(int *)values;
 	}
 	
 	return NhlNOERROR;

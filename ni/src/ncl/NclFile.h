@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.22 2007-04-13 00:26:04 dbrown Exp $
+ *      $Id: NclFile.h,v 1.23 2008-02-22 00:52:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -277,7 +277,8 @@ typedef enum {
 #endif
 	Ncl_DEFAULT_NCEP_PTABLE,
 	Ncl_PRINT_RECORD_INFO,
-	Ncl_SINGLE_ELEMENT_DIMENSIONS
+	Ncl_SINGLE_ELEMENT_DIMENSIONS,
+	Ncl_TIME_PERIOD_SUFFIX
 } NclFileOptionValues;
 
 typedef struct _NclFileClassPart {
