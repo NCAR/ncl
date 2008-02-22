@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.8 2007-09-17 21:58:48 grubin Exp $
+#       $Id: ncl_convert2nc,v 1.9 2008-02-22 20:23:26 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -26,10 +26,14 @@
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
 #       [-e extension]        file type, defined by extension, to convert
-#       [-itime]              set single element time record dimension to "initial_time"
-#       [-ftime]              set single element time record dimension to "forecast_time"
 #       [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
 #       [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
+#       [-sed sed1[,...]]     set single element record dimensions [default: None]
+#                             GRIB files only; choices are Initial_time, Forecast_time, Level,
+#                             Ensemble, Probability, All, None
+#       [-tps]                GRIB files only; remove suffix representing a time period (e.g. 2h)
+#                             from statistically processed variables, leaving only type of
+#                             processing as a suffix (e.g. _acc, _avg)
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
 #       [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
@@ -48,6 +52,7 @@ endif
 set tmpdir = `ncargpath tmp`
 
 # Input and output directories default values
+set valid_file = 0
 set idirs = ()
 set hasdirin = 0
 set dirin = `pwd`
@@ -67,10 +72,13 @@ set nvars = 0
 set ncdfcomment = ""
 set ncdflrgf_t = "classic"
 
-# Single Element Dimensions variables
+# Single Element Dimension variables
 set sed_n = 0
-set seDims_t = ""
-set singleElemDims = ""
+set sed_args = ""
+set seds = ( '\(/'\\\"None\\\"'/\)' )
+
+# Time Period Suffix variables
+set tps = True
 
 #
 # Background/redirect mode
@@ -124,7 +132,9 @@ end
 #
 while ($#argv > 0)
     switch ($1)
-        case "-i"
+        case "-i":
+        case "-in":
+        case "-input":
             shift
             set dirin = $1
             set len = `echo $dirin | awk '{print length($0)}'`
@@ -136,7 +146,9 @@ while ($#argv > 0)
             endif
             breaksw
 
-        case "-o"
+        case "-o":
+        case "-out":
+        case "-output":
             shift
             set dirout = $1
             set len = `echo $dirout | awk '{print length($0)}'`
@@ -147,7 +159,9 @@ while ($#argv > 0)
             endif
             breaksw
 
-        case "-e"
+        case "-e":
+        case "-ext":
+        case "-extension";
             shift
             set esfx = "$1"
             set len = `echo $esfx | awk '{print length($0)}'`
@@ -164,19 +178,8 @@ while ($#argv > 0)
             shift
             breaksw
 
-        case "-itime"
-            @ sed_n = ($sed_n + 1)
-            set seDims_t = `echo $seDims_t "initial_time"`
-            shift
-            breaksw
-
-        case "-ftime"
-            @ sed_n = ($sed_n + 1)
-            set seDims_t = `echo $seDims_t "forecast_time"`
-            shift
-            breaksw
-
-        case "-u"
+        case "-u":
+        case "-unlim":
             shift
             set time_name = "$1"
             set len = `echo $time_name | awk '{print length($0)}'`
@@ -188,7 +191,7 @@ while ($#argv > 0)
             endif
             breaksw
 
-        case "-U"
+        case "-U":
             shift
             set TIME_NAME = "$1"
             set len = `echo $TIME_NAME | awk '{print length($0)}'`
@@ -201,7 +204,49 @@ while ($#argv > 0)
             breaksw
 
 
+        case "-sed":
+        case "-singleelemdims":
+        case "-singleElemDims":
+            shift
+            set sed_args = "$1"
+
+            # Determine number of args (count commas)
+            set sed_n = `echo $* | awk -F, '{print NF}'`
+            if ($sed_n == 0) then
+                echo "${progname}: no single element dimension(s) specified." ; echo
+                breaksw
+            endif
+
+            set sac = `echo $* | sed 's/, /,/g'`
+            set sa = $sac[1]
+            shift
+
+            set sedline = `echo $sa | sed 's/,/ /g'`
+            set seds = ( '\(/' )
+            set n = 1
+            while ($n < $sed_n)
+                set i  = `expr $n + 1`
+                set s = $sedline[$n]
+                set seds = ( $seds\\\"$s\\\"\',\' )
+                @ n = ($n + 1)
+            end
+
+            set seds = ( $seds\\\"$sedline[$n]\\\"'/\)' )
+            breaksw
+
+        case "-tps":
+        case "-timeperiodsuffix":
+        case "-timePeriodSuffix":
+        case "-TimePeriodSuffix":
+            shift
+            set tps = False
+            breaksw
+
         case "-v":
+        case "-var":
+        case "-vars":
+        case "-variable":
+        case "-variables":
             shift
 
             # Determine number of variables specified (count commas)
@@ -244,12 +289,14 @@ while ($#argv > 0)
             breaksw
 
         case "-c":
+        case "-comment":
             shift
             set ncdfcomment = "$1"
             shift
             breaksw
 
         case "-B":
+        case "-redirect":
             set fout = $d_fout
             shift
             if ("$1" == "") then
@@ -271,6 +318,8 @@ while ($#argv > 0)
             breaksw
 
         case "-h":
+        case "-help":
+        case "--help":
             goto USAGE
             exit 0
             breaksw
@@ -299,23 +348,6 @@ endif
 if ($?TMNM_set && ! $?tmnm_set) then
     echo "New netCDF time dimension '$TIME_NAME' specified but no NCL-named time"
     echo "dimension to rename was specified; ignoring '$TIME_NAME'."
-endif
-
-#
-# Single Element Dimensions
-#
-if ($sed_n > 0) then
-    @ i = 1
-    set singleElemDims = ( '\(/'\\\"$seDims_t[$i]\\\" )
-    @ i = ($i + 1)
-    while ($i <= $sed_n)
-        set singleElemDims = ( $singleElemDims\',\'\\\"$seDims_t[$i]\\\" )
-        @ i = ($i + 1)
-    end
-
-    set singleElemDims = ( $singleElemDims'/\)' )
-else
-    set singleElemDims = ( '\(/'\\\"none\\\"'/\)' )
 endif
 
 #
@@ -362,7 +394,7 @@ while ($n <= $nfiles)
         continue
     endif
 
-    set valid_file
+    set valid_file = 0
     set fil = `basename $ifiles_t[$n]`
     if ($hasdirin == 1) then
         set dir = $dirin
@@ -382,13 +414,12 @@ while ($n <= $nfiles)
             || ((-e $dirin/$ifiles_t[$n]) && (-r $dirin/$ifiles_t[$n]))) then
         if ($have_esfx == 1) then
             set psfx = $esfx
-            set fil = $fil.psfx
+            set fil = $fil.$psfx
         endif
 
         if ($sfxlen == 0) then
             if ($have_esfx == 1) then
                 set psfx = $esfx
-                set fil = $fil.$psfx
             else
                 goto VALID_FILE
             endif
@@ -411,7 +442,7 @@ while ($n <= $nfiles)
                 set if = $fil
                 set of = $fil:r
 
-                unset valid_file
+                set valid_file = 1
                 goto VALID_FILE
                 breaksw
 
@@ -420,7 +451,7 @@ while ($n <= $nfiles)
                 set if = $fil
                 set of = $fil:r
 
-                unset valid_file
+                set valid_file = 1
                 goto VALID_FILE
                 breaksw
 
@@ -429,13 +460,21 @@ while ($n <= $nfiles)
                 set if = $fil
                 set of = $fil:r
 
-                unset valid_file
+                set valid_file = 1
                 goto VALID_FILE
                 breaksw
 
             case ccm:
                 echo "${progname}: file '${fil}': CCM files not supported.  Please use: ccm2nc"
                 echo "  Download at:  http://www.cgd.ucar.edu/cms/ccm3/tools"
+                echo
+                @ nbadf += 1
+                @ n += 1
+                continue
+                breaksw
+
+            default:
+                echo "${progname}: filetype '${lsfx}' not supported."
                 echo
                 @ nbadf += 1
                 @ n += 1
@@ -451,7 +490,10 @@ while ($n <= $nfiles)
         if ($have_esfx == 1) then
             if (( !(-e $ifiles_t[$n]:r) && !(-r $ifiles_t[$n]:r)) \
                     || ( !(-e $dirin/$ifiles_t[$n]:r) && !(-r $dirin/$ifiles_t[$n]:r))) then
-                set valid_file
+                set if = $ifiles_t[$n]
+                set of = $ifiles_t[$n]:r
+                set ftype = $ifiles_t[$n]:e
+                set valid_file = 1
                 goto VALID_FILE
             endif
 
@@ -463,7 +505,10 @@ while ($n <= $nfiles)
         else
             if (( !(-e $ifiles_t[$n]:r) && !(-r $ifiles_t[$n]:r)) \
                     || ( !(-e $dirin/$ifiles_t[$n]:r) && !(-r $dirin/$ifiles_t[$n]:r))) then
-                set valid_file
+                set if = $ifiles_t[$n]
+                set of = $ifiles_t[$n]:r
+                set ftype = $ifiles_t[$n]:e
+                set valid_file = 1
                 goto VALID_FILE
             endif
 
@@ -481,7 +526,7 @@ while ($n <= $nfiles)
                 set ftype = "GRIB"
                 set if = $fil
                 set of = $fil:r
-                unset valid_file
+                set valid_file = 0
                 goto VALID_FILE
                 breaksw
 
@@ -489,7 +534,7 @@ while ($n <= $nfiles)
                 set ftype = "HDF"
                 set if = $fil
                 set of = $fil:r
-                unset valid_file
+                set valid_file = 0
                 goto VALID_FILE
                 breaksw
 
@@ -497,7 +542,7 @@ while ($n <= $nfiles)
                 set ftype = "HDFEOS"
                 set if = $fil
                 set of = $fil:r
-                unset valid_file
+                set valid_file = 0
                 goto VALID_FILE
                 breaksw
 
@@ -517,7 +562,8 @@ while ($n <= $nfiles)
     # directory.  Output directory is set by "-o" or assumed to be the current
     # working directory (default).
 VALID_FILE:
-    if ($?valid_file) then
+#    if ($?valid_file) then
+    if ($valid_file == 0) then
         echo "${progname}: file '$fil' not readable, does not contain recognized data, or doesn't exist, skipping."
         echo
         @ nbadf += 1
@@ -563,10 +609,10 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;           [-i input_directory]
 ;           [-o output_directory]
 ;           [-e extension]
-;           [-itime]
-;           [-ftime]
 ;           [-u time_name]
 ;           [-U new_time_name]
+;           [-sed sed1[,...]]
+;           [-tps]
 ;           [-v var1[,...]]
 ;           [-L]
 ;           [-c comment]
@@ -578,10 +624,14 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ; [-i input_directory]  location of input file  [default: current directory] 
 ; [-o output_directory] location of output file [default: current directory] 
 ; [-e extension]        file type, defined by extension, to convert
-; [-itime]              set single element time record dimension to initial_time
-; [-ftime]              set single element time record dimension to forecast_time
 ; [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
 ; [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
+; [-sed sed1[,...]]     set single element time record dimensions [default: None]
+;                         GRIB files only; choices are Initial_time, Forecast_time, Level,
+;                         Ensemble, Probability, All, None
+; [-tps]                GRIB files only; remove suffix representing a time period (e.g. 2h)
+;                         from statistically processed variables, leaving only type of
+;                         processing as a suffix (e.g. _acc, _avg)
 ; [-v var1[,...]]       user specified subset of variables [default: all variables]
 ;                       ncl_filedump can be used to determine desired variable names
 ; [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]"
@@ -620,15 +670,18 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;                          [contains only three variables]
 ;                          [supports large files (>2Gb) for netCDF]
 ;
-;      (9) ncl_convert2nc U78677.grb -itime -u initial_time0_hours
+;      (9) ncl_convert2nc U78677.grb -u initial_time0_hours
 ;             => double initial_time0_hours(initial_time0_hours)       ; UNLIMITED
 ;             => initial_time0_hours:units = "hours since 1800-01-01 00:00" 
 ;             => float D_GDS4_HYBL_123(initial_time0_hours, lv_HYBL3, g4_lat_1, g4_lon_2) ;
 ;
-;     (10) ncl_convert2nc U78677.grb -itime -u initial_time0_hours -U time
+;     (10) ncl_convert2nc U78677.grb -u initial_time0_hours -U time
 ;             => double time(time) ;                            ; UNLIMITED
 ;             => time:units = "hours since 1800-01-01 00:00" ;
 ;             => float D_GDS4_HYBL_123(time, lv_HYBL3, g4_lat_1, g4_lon_2) ;
+;
+;     (11) ncl_convert2nc U78677.grb -sed initial_time,forecast_time
+;             => set Single Element Dimensions 'initial_time' and 'forecast_time'
 ;
 ;
 ;***************************************************
@@ -650,8 +703,9 @@ cat << 'EOF_NCL' >! $tmp_nclf
 ;                                           "PRES_236_SFC,"NCPCP_236_SFC_acc1h"/)  anyFile2nc.ncl_v1
 ;      (h) ncl 'fili="U12345.grb"' 'varSelect=(/"gridlat_236","gridlon_236", \
 ;                                           "PRES_236_SFC/) -L  anyFile2nc.ncl_v1
-;      (i) ncl 'fili="U78677.hdf"' -ftime -u "forecast_time0_hours"
-;      (j) ncl 'fili="U78677.hdfeos"' -itime -u "initial_time0_hours -U time"
+;      (i) ncl 'fili="U78677.hdf"' -u "forecast_time0_hours"
+;      (j) ncl 'fili="U78677.hdfeos"' -u "initial_time0_hours -U time"
+;      (k) ncl 'fili="U78677.grb"'  'singleElemDims=(/"forecast_time", "initial_time"/)
 ;***************************************************
 
 begin
@@ -707,6 +761,13 @@ begin
         end if
 
         setfileoption("grib", "SingleElementDimensions", sed)
+
+        tps = timePeriodSuffix
+        if (debug) then
+            print("Setting file option: TimePeriodSuffix: " + tps)
+        end if
+
+        setfileoption("grib", "TimePeriodSuffix", tps)
     end if
 
 ;***************************************************
@@ -909,14 +970,13 @@ begin
 
     setfileoption(fnc, "definemode", False) ; not necessary
 
-;***************************************************
-; write *only* data values to predefined locations
-; if the variable exceeds a certain size, perform the operation in a loop to save on 
-; in core memory. There is no way to get the size of a type in NCL (!!!).
-; The approach used could be inefficient if the leftmost dimensions
-; have more elements than the rightmost. Hopefully that is a rare 
-; occurence -- certainly it would be very rare in GRIB files.
-;***************************************************
+;***************************************************************************************
+; Write *only* data values to predefined locations.  If the variable exceeds a         *
+; certain size, perform the operation in a loop to save on core memory. There          *
+; is no way to get the size of a type in NCL (!!!).  The approach used could be        *
+; inefficient if the leftmost dimensions have more elements than the rightmost.        *
+; Hopefully that is a rare occurence -- certainly it would be very rare in GRIB files. *
+;***************************************************************************************
     fvar_types = getfilevartypes(f,fVarNames)
     threshold_size = 250000000
     do i = 0, nfNames - 1
@@ -924,129 +984,144 @@ begin
             if (debug) then
                 print("write loop: i = " + i + "  " + fVarNames(i))
             end if
+
             dsizes = getfilevardimsizes(f,fVarNames(i))
-	    type_size = 1
-	    if (fvar_types(i) .eq. "double") then
-	        type_size =  8
+            type_size = 1
+            if (fvar_types(i) .eq. "double") then
+                type_size =  8
             else if (fvar_types(i) .eq. "short") then
-	        type_size = 2
+                type_size = 2
             else if (fvar_types(i) .ne. "byte" .and. fvar_types(i) .ne. "character") then
-	        type_size = 4
+                type_size = 4
             end if
             end if
             end if
-	    tsize = product(dsizes) * type_size
-	    if (debug) then
- 	        print(fVarNames(i) + " : " + tsize  + " (size in bytes) :  " + dimsizes(dsizes) + " (number of dimensions)")
-	    end if
-	    ndims = dimsizes(dsizes)
+
+            tsize = product(dsizes) * type_size
+            if (debug) then
+                print(fVarNames(i) + " : " + tsize  + " (size in bytes) :  " + dimsizes(dsizes) + " (number of dimensions)")
+            end if
+
+            ndims = dimsizes(dsizes)
             ; no special handling for ndims greater than 6 or less than 3
-	    if (tsize .lt. threshold_size .or. ndims .gt. 7 .or. ndims .lt. 3) then
+            if (tsize .lt. threshold_size .or. ndims .gt. 7 .or. ndims .lt. 3) then
                 fnc->$ncVarNames(i)$ = (/ f->$fVarNames(i)$ /)
-	    else
-	        if (ndims .eq. 7) then
-		    if (tsize / dsizes(0) .lt. threshold_size) then
-	                do j = 0, dsizes(0) - 1
-			    if (debug) then
-				print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:,:,:)")
-			    end if
+            else
+                if (ndims .eq. 7) then
+                    if (tsize / dsizes(0) .lt. threshold_size) then
+                        do j = 0, dsizes(0) - 1
+                            if (debug) then
+                                print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:,:,:)")
+                            end if
+
                             fnc->$ncVarNames(i)$(j,:,:,:,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:,:,:,:) /)
                         end do
                     else
-	                do j = 0, dsizes(0) - 1
+                        do j = 0, dsizes(0) - 1
                             do k = 0, dsizes(1) -1
-		                if (debug) then
-				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:,:,:)")
-			        end if
+                                if (debug) then
+                                    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:,:,:)")
+                                end if
+
                                 fnc->$ncVarNames(i)$(j,k,:,:,:,:,:) = (/ f->$fVarNames(i)$(j,k,:,:,:,:,:) /)
                             end do
                         end do
                     end if
-		end if
-	        if (ndims .eq. 6) then
-		    if (tsize / dsizes(0) .lt. threshold_size) then
-	                do j = 0, dsizes(0) - 1
-			    if (debug) then
-				print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:,:)")
-			    end if
+                end if
+
+	        
+                if (ndims .eq. 6) then
+                    if (tsize / dsizes(0) .lt. threshold_size) then
+                        do j = 0, dsizes(0) - 1
+                            if (debug) then
+                                print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:,:)")
+                            end if
+
                             fnc->$ncVarNames(i)$(j,:,:,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:,:,:) /)
                         end do
                     else
-	                do j = 0, dsizes(0) - 1
-                            do k = 0, dsizes(1) -1
-		                if (debug) then
-				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:,:)")
-			        end if
+                        do j = 0, dsizes(0) - 1
+                            do k = 0, dsizes(1) - 1
+                                if (debug) then
+                                    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:,:)")
+                                end if
+
                                 fnc->$ncVarNames(i)$(j,k,:,:,:,:) = (/ f->$fVarNames(i)$(j,k,:,:,:,:) /)
                             end do
                         end do
                     end if
-		end if
-	        if (ndims .eq. 5) then
-		    if (tsize / dsizes(0) .lt. threshold_size) then
-	                do j = 0, dsizes(0) - 1
-			    if (debug) then
-				print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:)")
-			    end if
+                end if
+
+                if (ndims .eq. 5) then
+                    if (tsize / dsizes(0) .lt. threshold_size) then
+                        do j = 0, dsizes(0) - 1
+                            if (debug) then
+                                print("copying " + fVarNames(i) + "(" + j + ",:,:,:,:)")
+                            end if
+
                             fnc->$ncVarNames(i)$(j,:,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:,:) /)
                         end do
                     else
-	                do j = 0, dsizes(0) - 1
+                        do j = 0, dsizes(0) - 1
                             do k = 0, dsizes(1) -1
-		                if (debug) then
-				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:)")
-			        end if
+                                if (debug) then
+                                    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:,:)")
+                                end if
+
                                 fnc->$ncVarNames(i)$(j,k,:,:,:) = (/ f->$fVarNames(i)$(j,k,:,:,:) /)
                             end do
                         end do
                     end if
-		end if
-	        if (ndims .eq. 4) then
-		    if (tsize / dsizes(0) .lt. threshold_size) then
-	                do j = 0, dsizes(0) - 1
-			    if (debug) then
-				print("copying " + fVarNames(i) + "(" + j + ",:,:,:)")
-			    end if
+                end if
+
+                if (ndims .eq. 4) then
+                    if (tsize / dsizes(0) .lt. threshold_size) then
+                        do j = 0, dsizes(0) - 1
+                            if (debug) then
+                                print("copying " + fVarNames(i) + "(" + j + ",:,:,:)")
+                            end if
+
                             fnc->$ncVarNames(i)$(j,:,:,:) = (/ f->$fVarNames(i)$(j,:,:,:) /)
                         end do
                     else
-	                do j = 0, dsizes(0) - 1
+                        do j = 0, dsizes(0) - 1
                             do k = 0, dsizes(1) -1
-		                if (debug) then
-				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:)")
-			        end if
+                                if (debug) then
+                                    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:,:)")
+                                end if
+
                                 fnc->$ncVarNames(i)$(j,k,:,:) = (/ f->$fVarNames(i)$(j,k,:,:) /)
                             end do
                         end do
                     end if
-		end if
-	        if (ndims .eq. 3) then
-		    if (tsize / dsizes(0) .lt. threshold_size) then
-	                do j = 0, dsizes(0) - 1
-			    if (debug) then
-				print("copying " + fVarNames(i) + "(" + j + ",:,:)")
-			    end if
+                end if
+
+                if (ndims .eq. 3) then
+                    if (tsize / dsizes(0) .lt. threshold_size) then
+                        do j = 0, dsizes(0) - 1
+                            if (debug) then
+                                print("copying " + fVarNames(i) + "(" + j + ",:,:)")
+                            end if
+
                             fnc->$ncVarNames(i)$(j,:,:) = (/ f->$fVarNames(i)$(j,:,:) /)
                         end do
                     else
-	                do j = 0, dsizes(0) - 1
+                        do j = 0, dsizes(0) - 1
                             do k = 0, dsizes(1) -1
-		                if (debug) then
-				    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:)")
-			        end if
+                                if (debug) then
+                                    print("copying " + fVarNames(i) + "(" + j + "," + k +  ",:)")
+                                end if
+
                                 fnc->$ncVarNames(i)$(j,k,:) = (/ f->$fVarNames(i)$(j,k,:) /)
                             end do
                         end do
                     end if
-		end if
+                end if
             end if
+            
             delete(dsizes)
         end if
     end do
-
-;    if (isvar("ncDump") .and. ncDump) then
-;        print(fnc)
-;    end if
 
     delete(f)   ; not necessary
  end 
@@ -1060,17 +1135,17 @@ while ($n <= $nfiles)
     if ("$redirect" == 0) then
         echo "Processing file: $ifiles_r[$n]..."
         if ($?vars) then
-            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
         else
-            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
         endif
     else
         # redirection requested
         (echo "Processing file: $ifiles_r[$n]..." >&! $f_rdir)
         if ($?vars) then
-            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout) >&! $f_rdir
         else
-            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$singleElemDims 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout &) >&! $f_rdir
+            (eval ncl -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout &) >&! $f_rdir
         endif
     endif
 
@@ -1121,10 +1196,14 @@ echo "  inputFile(s)          name(s) of data file(s) [required] [valid types: G
 echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
 echo "  [-o output_directory] location of output file(s) [default: current directory]"
 echo "  [-e extension]        file type, defined by extension, to convert [example: grb]"
-echo "  [-itime]              set time record dimension to initial_time"
-echo "  [-ftime]              set time record dimension to forecast_time"
 echo "  [-u time_name]        name of the NCL-named time dimension to be UNLIMITED"
 echo "  [-U new_time_name]    if -u is specified: new name of UNLIMITED variable and dimension"
+echo "  [-sed sed1[,...]]     set single element record dimensions [default: None]"
+echo "                        GRIB files only; choices are Initial_time, Forecast_time, Level,"
+echo "                          Ensemble, Probability, All, None"
+echo "  [-tps]                GRIB files only; remove suffix representing a time period (e.g. 2h)"
+echo "                          from statistically processed variables, leaving only type of"
+echo "                          processing as a suffix (e.g. _acc, _avg)"
 echo "  [-v var1[,...]]       user specified subset of variables [default: all variables]"
 echo "                        ncl_filedump can be used to determine desired variable names"
 echo "  [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]"
