@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncl_filedump,v 1.8 2007-05-17 18:24:49 grubin Exp $
+#   $Id: ncl_filedump,v 1.9 2008-02-27 20:03:33 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -20,6 +20,9 @@
 #           [-v var1[,...]]     data for variable(s) <var1>,...
 #           [-itime]            set single element time record dimension to initial time
 #           [-ftime]            set single element time record dimension to forecast time
+#           [-tps]              GRIB files only; remove suffix representing a time period (e.g. 2h)
+#                                 from statistically processed variables, leaving only type of
+#                                 processing as a suffix (e.g. _acc, _avg)
 #           [-h]                usage message
 
 onintr cleanup
@@ -36,6 +39,9 @@ set coords = 0
 set sed_n = 0
 set seDims_t = ""
 set singleElemDims = ""
+
+# Time Period Suffix variables
+set tps = True
 
 #
 # Sort through options.
@@ -95,6 +101,14 @@ while ($#argv > 0)
             @ sed_n = ($sed_n + 1)
             set seDims_t = `echo $seDims_t "forecast_time"`
             shift
+            breaksw
+
+        case "-tps":
+        case "-timeperiodsuffix":
+        case "-timePeriodSuffix":
+        case "-TimePeriodSuffix":
+            shift
+            set tps = False
             breaksw
 
         case "-h":
@@ -288,10 +302,14 @@ cat << 'EOF_NCL' >! $tmp_nclfile
         return(mv2d)
     end
 
+    ; main
     begin
         if (ftype .eq. "GRIB") then
             sed = singleElemDims
             setfileoption("grib", "SingleElementDimensions", sed)
+
+            tps = timePeriodSuffix
+            setfileoption("grib", "TimePeriodSuffix", tps)
         end if
 
 
@@ -372,9 +390,9 @@ cat << 'EOF_NCL' >! $tmp_nclfile
 # Construct the command line.
 #
 if ($?vars) then
-    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords vars=$vars ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims $tmp_nclfile
+    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords vars=$vars ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
 else
-    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims $tmp_nclfile
+    eval ncl -n filename=\\\"$file\\\" nvars=$nvars coords=$coords ftype=\\\"$ftype\\\" singleElemDims=$singleElemDims 'timePeriodSuffix=$tps' $tmp_nclfile
 endif
 
 #
@@ -395,4 +413,7 @@ echo "  [-c]                coordinate variable and header information"
 echo "  [-v var1[,...]]     data for variable(s) <var1>,..."
 echo "  [-itime]            set single element time record dimension to initial time"
 echo "  [-ftime]            set single element time record dimension to forecast time"
+echo "  [-tps]              GRIB files only; remove suffix representing a time period (e.g. 2h)"
+echo "                        from statistically processed variables, leaving only type of"
+echo "                        processing as a suffix (e.g. _acc, _avg)"
 echo "  [-h]                this usage message"
