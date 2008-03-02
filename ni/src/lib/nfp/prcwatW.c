@@ -3,7 +3,7 @@
 #include "wrapper.h"
 
 extern void NGCALLF(dprcwatdp,DPRCWATDP)(double *,double *,int *,double *,
-                                         double*);
+                                         double*,double*);
 
 NhlErrorTypes prcwater_dp_W( void )
 {
@@ -13,7 +13,8 @@ NhlErrorTypes prcwater_dp_W( void )
   void *q, *dp;
   double *tmp_q, *tmp_dp;
   int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS], has_missing_q;
-  int ndims_dp, dsizes_dp[NCL_MAX_DIMENSIONS];
+  int ndims_dp, dsizes_dp[NCL_MAX_DIMENSIONS], has_missing_dp;
+  NclScalar missing_dp, missing_ddp;
   NclScalar missing_q, missing_dq, missing_rq;
   NclBasicDataTypes type_q, type_dp;
 /*
@@ -48,8 +49,8 @@ NhlErrorTypes prcwater_dp_W( void )
                             2,
                             &ndims_dp, 
                             dsizes_dp,
-                            NULL,
-                            NULL,
+                            &missing_dp,
+                            &has_missing_dp,
                             &type_dp,
                             2);
 /*
@@ -85,6 +86,7 @@ NhlErrorTypes prcwater_dp_W( void )
 /*
  * Check for missing values.
  */
+  coerce_missing(type_dp,has_missing_dp,&missing_dp,&missing_ddp,NULL);
   coerce_missing(type_q,has_missing_q,&missing_q,&missing_dq,&missing_rq);
 
 /*
@@ -176,7 +178,7 @@ NhlErrorTypes prcwater_dp_W( void )
     if(type_prcwat == NCL_double) tmp_prcwat = &((double*)prcwat)[i];
 
     NGCALLF(dprcwatdp,DPRCWATDP)(tmp_q,tmp_dp,&klvl,&missing_dq.doubleval,
-                                 tmp_prcwat);
+                                 &missing_ddp.doubleval,tmp_prcwat);
 /*
  * Coerce output to float if necessary.
  */
