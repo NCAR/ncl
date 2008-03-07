@@ -1,5 +1,5 @@
 /*
- *      $Id: gksc.c,v 1.9 2003-01-06 23:30:14 fred Exp $
+ *      $Id: gksc.c,v 1.10 2008-03-07 18:10:44 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -36,7 +36,7 @@
  *      Description:    This file manages the GKSC structure. gksc's are 
  *                      used to shuttle GKS commands to a particular device
  *                      driver's support routine.  Each gksc contains pointers
- *                      to the support routines for which ever instance of 
+ *                      to the support routines for whichever instance of 
  *                      of a particular driver it is associated with. For 
  *                      example, a gksc which was created for an X window
  *                      will contain all the necessary funtions for 
@@ -258,11 +258,11 @@ static  GKSC_Ptr        gks_mem_manage(comp_data, size)
  *      [exported]
  *      
  *      Convert raw GKS data provided by provided by the Fortran 
- *      interface, ngkdvr, into the format specified by the gksc. The 
+ *      interface, ggkwdr, into the format specified by the gksc. The 
  *      converted data is then written into the gksc. The result of this
- *      call is a gksc which can be execute the requested GKS command provided
+ *      call is a gksc which can execute the requested GKS command provided
  *      all the GKS data is available. This procedure may be called 
- *      multiple times for single GKS command. After the first invocation
+ *      multiple times for a single GKS command. After the first invocation,
  *      subsequent calls will concatenate the raw data to the data already
  *      in the gksc. The gksc maintains a record of how much data it contains.
  *      To begin a new command it is necessary to clear the gksc with the 
