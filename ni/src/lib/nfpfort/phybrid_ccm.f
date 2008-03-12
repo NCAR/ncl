@@ -32,6 +32,8 @@ c f77
               DO ML = 1,MLON
                  IF (PSFC(ML,NL).NE.PMSG) then
                      PHY(ML,NL,KL) = HYA(KL)*P0 + HYB(KL)*PSFC(ML,NL)
+                 ELSE
+                     PHY(ML,NL,KL) = PMSG
                  END IF
               END DO
           END DO
@@ -88,6 +90,8 @@ c local
                      DPHY(ML,NL,KL) = ABS(PB-PA)
 c c c       dphy(ml,nl,kl) = abs((hya(kl+1)-hya(kl))*p0
 c c c*                     -     (hyb(kl+1)-hya(kl))*psfc(ml,nl))
+                 ELSE
+                     DPHY(ML,NL,KL) = PMSG
                  END IF
               END DO
           END DO
