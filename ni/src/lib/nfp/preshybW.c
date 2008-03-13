@@ -8,10 +8,10 @@ extern void NGCALLF(dpreshybrid,DPRESPHYBRID)(double*,double*,double*,double*,
                                               int*,double*);
 
 extern void NGCALLF(dphybrid,DPHYBRID)(double*,double*,double*,double*,
-                                       int*,int*,int*,double*);
+                                       int*,int*,int*,double*,double*);
 
 extern void NGCALLF(ddphybrid,DDPHYBRID)(double*,double*,double*,double*,
-                                         int*,int*,int*,double*);
+                                         int*,int*,int*,double*,double*);
 
 extern void NGCALLF(dh2sdrv,DH2SDRV)(double*,double*,double*,double*,
                                      double*,double*,double*,int*,double*,
@@ -422,7 +422,9 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
   double *tmp_psfc, *tmp_p0, *tmp_hya, *tmp_hyb;
   int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
   int dsizes_hya[NCL_MAX_DIMENSIONS], dsizes_hyb[NCL_MAX_DIMENSIONS];
+  int has_missing_psfc;
   NclBasicDataTypes type_p0, type_psfc, type_hya, type_hyb;
+  NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
 /*
  * Output variables
  */
@@ -446,8 +448,8 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
           4,
           &ndims_psfc, 
           dsizes_psfc,
-          NULL,
-          NULL,
+          &missing_psfc,
+          &has_missing_psfc,
           &type_psfc,
           2);
   p0 = (void*)NclGetArgValue(
@@ -502,6 +504,11 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
   else {
     type_phy = NCL_float;
   }
+/*
+ * Get double precision missing value, if any.
+ */
+  coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
+                 &missing_dpsfc,&missing_rpsfc);
 /*
  * Calculate total size of output array.
  */
@@ -588,7 +595,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
     NGCALLF(dphybrid,DPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&nlon,&nlat,
-                               &klvl,tmp_phy);
+                               &klvl,tmp_phy,&missing_dpsfc.doubleval);
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -609,7 +616,19 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
 /*
  * Return.
  */
-  ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  if(has_missing_psfc) {
+    if(type_phy != NCL_double) {
+      ret = NclReturnValue(phy,ndims_phy,dsizes_phy,&missing_rpsfc,type_phy,
+                           0);
+    }
+    else {
+      ret = NclReturnValue(phy,ndims_phy,dsizes_phy,&missing_dpsfc,type_phy,
+                           0);
+    }
+  }
+  else {
+    ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  }
   NclFree(dsizes_phy);
   return(ret);
 }
@@ -625,7 +644,9 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
   double *tmp_psfc, *tmp_p0, *tmp_hya, *tmp_hyb;
   int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
   int dsizes_hya[NCL_MAX_DIMENSIONS], dsizes_hyb[NCL_MAX_DIMENSIONS];
+  int has_missing_psfc;
   NclBasicDataTypes type_p0, type_psfc, type_hya, type_hyb;
+  NclScalar missing_psfc, missing_dpsfc, missing_rpsfc;
 /*
  * Output variables
  */
@@ -649,8 +670,8 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
           4,
           &ndims_psfc, 
           dsizes_psfc,
-          NULL,
-          NULL,
+          &missing_psfc,
+          &has_missing_psfc,
           &type_psfc,
           2);
   p0 = (void*)NclGetArgValue(
@@ -751,6 +772,11 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
     }
   }
 /*
+ * Get double precision missing value, if any.
+ */
+  coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
+                 &missing_dpsfc,&missing_rpsfc);
+/*
  * Allocate space for output array.
  */
   if(type_phy == NCL_float) {
@@ -791,7 +817,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
     if(type_phy == NCL_double) tmp_phy = &((double*)phy)[index_phy];
 
     NGCALLF(ddphybrid,DDPHYBRID)(tmp_p0,tmp_hya,tmp_hyb,tmp_psfc,&nlon,&nlat,
-                                 &klvl,tmp_phy);
+                                 &klvl,tmp_phy,&missing_dpsfc.doubleval);
 /*
  * Copy output values from temporary tmp_phy to phy.
  */
@@ -812,7 +838,19 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
 /*
  * Return.
  */
-  ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  if(has_missing_psfc) {
+    if(type_phy != NCL_double) {
+      ret = NclReturnValue(phy,ndims_phy,dsizes_phy,&missing_rpsfc,type_phy,
+                           0);
+    }
+    else {
+      ret = NclReturnValue(phy,ndims_phy,dsizes_phy,&missing_dpsfc,type_phy,
+                           0);
+    }
+  }
+  else {
+    ret = NclReturnValue(phy,ndims_phy,dsizes_phy,NULL,type_phy,0);
+  }
   NclFree(dsizes_phy);
   return(ret);
 }
