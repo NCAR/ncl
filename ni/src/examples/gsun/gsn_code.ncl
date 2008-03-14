@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.207 2008-02-04 04:46:12 haley Exp $
+;      $Id: gsn_code.ncl,v 1.208 2008-03-14 02:23:54 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2977,6 +2977,17 @@ end
 ; boxes, the colors and labels to use, and an optional list of          ;
 ; labelbar resources. By default, lbAutoManage is set to False, the     ;
 ; perimeter is turned off, and the fill patterns are set to solid.      ;
+;                                                                       ;
+; "EndStyle" is a special internal resource that comes from the         ;
+; cnLabelBarEndStyle resource. It defaults to 0 (include outer boxes),  ;
+; and can be set to 1 (include min/max labels) or 2 (exclude outer      ; 
+; boxes). The assumption is that if this resource is set to 2, then the ;
+; nbox, colors, and labels that are input are set up expecting one more ;
+; box than you have labels (i.e. you are expecting to label the         ;
+; interior edges only). If set to 2, then the assumption is that the    ;
+; labels already contain the min/max values, and you have the correct   ;
+; nbox and colors.                                                      ;
+;                                                                       ;
 ;***********************************************************************;
 function create_labelbar(wks:graphic, nbox:integer, colors, labels, \
 lbres:logical)
@@ -2989,20 +3000,45 @@ begin
   vpyf          = get_res_value(lbres,"vpYF",0.1)
   vpwidthf      = get_res_value(lbres,"vpWidthF",0.8)
   vpheightf     = get_res_value(lbres,"vpHeightF",0.3)
-  new_colors    = get_res_value(lbres,"lbFillColors",colors)
   new_labels    = get_res_value(lbres,"lbLabelStrings",labels)
   orientation   = get_res_value(lbres,"lbOrientation","horizontal")
   perim_on      = get_res_value(lbres,"lbPerimOn",False)
-  label_align   = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
   font_height   = get_res_value(lbres,"lbLabelFontHeightF",0.1)
   mono_fill_pat = get_res_value(lbres,"lbMonoFillPattern",True);
+
+  if(isatt(lbres,"EndStyle")) then
+    end_style = get_res_value(lbres,"EndStyle",0)
+    if(.not.(end_style.ge.0.and.end_style.le.2)) then
+      end_style = 0
+    end if
+    if(end_style.eq.2) then
+; Exclude outer boxes
+      nbox2       = nbox-2
+      new_colors  = get_res_value(lbres,"lbFillColors",colors(1:))
+      label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
+    else
+      nbox2       = nbox
+      new_colors  = get_res_value(lbres,"lbFillColors",colors)
+      if(end_style.eq.0) then
+; Include outer boxes
+        label_align = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
+      else
+; Include min max labels
+        label_align = get_res_value(lbres,"lbLabelAlignment","ExternalEdges")
+      end if
+    end if
+  else
+    nbox2       = nbox
+    new_colors  = get_res_value(lbres,"lbFillColors",colors)
+    label_align = get_res_value(lbres,"lbLabelAlignment","InteriorEdges")
+  end if
 
   labelbar_object = create "labelbar" labelBarClass wks
     "vpXF"              : vpxf
     "vpYF"              : vpyf
     "vpWidthF"          : vpwidthf
     "vpHeightF"         : vpheightf
-    "lbBoxCount"        : nbox
+    "lbBoxCount"        : nbox2
     "lbFillColors"      : new_colors
     "lbLabelStrings"    : new_labels
     "lbOrientation"     : orientation
@@ -4906,6 +4942,13 @@ begin
 ; Get the font height.
 ;
   if(is_figure_strings.or.panel_labelbar) then
+;
+; The cnLabelBarEndStyle resource is only available with contour 
+; plots, and it is 0 by default (IncludeOuterBoxes). We need to check
+; if it is 1 (IncludeMinMaxLabels) or 2 (ExcludeOuterBoxes) and do
+; the appropriate thing. IncludeMinMaxLabels is not currently supported.
+;
+    end_style = 0     ; IncludeOuterBoxes
     if(new_plot@plot_type.eq."contour") then
       getvalues new_plot
         "cnInfoLabelFontHeightF" : font_height
@@ -4920,6 +4963,7 @@ begin
           "cnMonoFillScale"   : mono_fill_scl
           "cnMonoFillColor"   : mono_fill_col
           "cnLevels"          : levels
+          "cnLabelBarEndStyle" : end_style
         end getvalues
       else
         panel_labelbar = False
@@ -5304,6 +5348,12 @@ begin
 ; Check if a labelbar is to be drawn at the bottom.
 ;
   if(panel_labelbar) then
+    if(end_style.eq.0.or.end_style.eq.2) then
+      lbres@EndStyle = end_style
+    else
+      lbres@EndStyle = 0
+      print("Warning: gsn_panel: this routine only supports a cnLabelBarEndStyle that is set to 'IncludeOuterBoxes' or 'ExcludeOuterBoxes'")
+    end if
 ;
 ; If plot type is unknown or xy, then we can't get labelbar information.
 ;
