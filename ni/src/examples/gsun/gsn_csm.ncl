@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.226 2008-02-15 16:22:00 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.227 2008-03-17 22:48:50 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4197,6 +4197,8 @@ begin
           mlt_below_bar_colors = False
           mlt_above_bar_pttrns = False
           mlt_below_bar_pttrns = False
+          mlt_above_bar_scales = False
+          mlt_below_bar_scales = False
           colors2              = False      ; Flag to indicate whether the
           pttrns2              = False      ; 3rd resource is being used.
 ;
@@ -4375,6 +4377,17 @@ begin
               mlt_below_bar_pttrns = False
             end if            
           end if
+;
+; Check for fill scales above and below.
+;
+          if(isatt(res2,"gsnAboveYRefLineBarFillScales")) then
+            mlt_above_bar_scales = True
+            bar_scales_above = get_res_value(res2,"gsnAboveYRefLineBarFillScales",1)
+          end if  
+          if(isatt(res2,"gsnBelowYRefLineBarFillScales")) then
+            mlt_below_bar_scales = True
+            bar_scales_below = get_res_value(res2,"gsnBelowYRefLineBarFillScales",1)
+          end if  
 
 ;
 ; Loop across curves and figure out which points are above, below,
@@ -4541,6 +4554,15 @@ begin
             end if
           end if
 ;
+; Single bar fill scale for each above and below bars.
+;
+          if(mlt_above_bar_scales) then
+            gsres@gsFillScaleF = bar_scales_above(0)
+            if(dimsizes(yref_line_above).gt.1)
+              gsres@gsFillScaleF = bar_scales_above(i)
+            end if
+          end if
+;
 ; Multiple bar colors and/or patterns.
 ;
           if(mlt_above_bar_colors.or.mlt_above_bar_pttrns) then
@@ -4604,6 +4626,15 @@ begin
             gsres@gsFillColor = yref_line_below(0)
             if(dimsizes(yref_line_below).gt.1)
               gsres@gsFillColor = yref_line_below(i)
+            end if
+          end if
+;
+; Single bar fill scale for each above and below bars.
+;
+          if(mlt_below_bar_scales) then
+            gsres@gsFillScaleF = bar_scales_below(0)
+            if(dimsizes(yref_line_below).gt.1)
+              gsres@gsFillScaleF = bar_scales_below(i)
             end if
           end if
 ;
