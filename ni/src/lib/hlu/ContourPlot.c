@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.142 2007-10-29 22:06:50 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.143 2008-03-19 00:12:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5100,8 +5100,10 @@ static NhlErrorTypes SetLabelScale
 	if (! init &&
 	    ! cnp->data_changed &&
 	    (cnp->label_scaling_mode == ocnp->label_scaling_mode) &&
-	    (cnp->label_scale_value == ocnp->label_scale_value))
+	    (cnp->label_scale_value == ocnp->label_scale_value) &&
+	    (cnp->max_data_format.fstring == ocnp->max_data_format.fstring))
 		return ret;
+
 	entry_name =  init ? "ContourPlotInitialize" : "ContourPlotSetValues";
 
 	if (cnp->max_data_format.left_sig_digit_flag == NhlffDYNAMIC) {
