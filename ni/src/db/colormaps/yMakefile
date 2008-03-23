@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.7 2007-03-20 03:11:52 haley Exp $
+#       $Id: yMakefile,v 1.8 2008-03-23 23:27:40 haley Exp $
 #
 FILES		= \
 		3gauss.ncmap  \
@@ -75,7 +75,9 @@ FILES		= \
 		BrownBlue12.rgb \
 		Cat12.rgb \
 		GreenMagenta16.rgb \
-		StepSeq25.rgb
+		StepSeq25.rgb \
+		amwg_blueyellowred.rgb
+
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
 INSTALL_CM = $(INSTALL_DB)
