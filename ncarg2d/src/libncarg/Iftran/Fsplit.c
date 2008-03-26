@@ -1,5 +1,5 @@
 /*
- *      $Id: Fsplit.c,v 1.2 2004-06-29 19:01:35 kennison Exp $
+ *      $Id: Fsplit.c,v 1.3 2008-03-26 02:14:50 kennison Exp $
  */
 
 #include <stdio.h>
@@ -19,6 +19,10 @@
  * past column 72.  It depends on the input to be in undisguised FORTRAN form
  * (for example, the word "SUBROUTINE" should not be spread over more than one
  * line, and, if there is a main program, it should have a "PROGRAM" statement).
+ *
+ * (03/25/2008) I have added a new feature:  If any comment line between the
+ * end of one routine and the beginning of the next contains, in columns 2-8,
+ * the characters "NOSPLIT", the two routines will be put in the same file.
  */
 
 main(int argc, char **argv) {
@@ -36,12 +40,18 @@ main(int argc, char **argv) {
 
   char chsaved[73],*pchsaved=chsaved;
 
-  int c,collecting,column=0,comment,cvs=3,
-      chrspast72=0,errorflag=0,found,i,tabs=0;
+  char lastfile[73];
+
+  char nscode[]="NOSPLIT";
+
+  int c,collecting,column=0,comment,cvs=3,chrspast72=0,
+      errorflag=0,found,i,match,nosplit=0,tabs=0;
 
   FILE *psrc,*pdst;
 
   for (i=0;i<sizeof(type)/sizeof(char*);i++) tlen[i]=strlen(type[i]);
+
+  lastfile[1]='\0';
 
   objectname=*argv;
 
@@ -119,49 +129,58 @@ main(int argc, char **argv) {
           if (!found) {
             fprintf(stderr,"%s: Can't find output file name.\n",objectname);
             return errorflag=4;
-          }
-          if ((pdst=fopen(pkeyword,"w"))==(FILE*)NULL) {
+          } else if (!nosplit&&(pdst=fopen(pkeyword,"w"))==(FILE*)NULL) {
             fprintf(stderr,"%s: Can't open file \"%s\".\n",objectname,pkeyword);
             return errorflag=5;
+          } else if (nosplit&&(pdst=fopen(pkeyword=lastfile,"a"))==(FILE*)NULL) {
+            fprintf(stderr,"%s: Can't reopen file \"%s\".\n",objectname,pkeyword);
+            return errorflag=6;
           } else printf("%s: Opening file \"%s\".\n",objectname,pkeyword);
-	  if (cvs==2||cvs==3) {
-	    fprintf(pdst,"C\nC $I");
-	    fprintf(pdst,       "d$\nC\n");
-	  }
-          if (cvs==1||cvs==3) {
-            fprintf(pdst,"C                Copyright (C)  2000\n");
-            fprintf(pdst,"C        University Corporation for Atmospheric Research\n");
-            fprintf(pdst,"C                All Rights Reserved\n");
-            fprintf(pdst,"C\n");
-            fprintf(pdst,"C This file is free software; you can redistribute it and/or modify\n");
-            fprintf(pdst,"C it under the terms of the GNU General Public License as published\n");
-            fprintf(pdst,"C by the Free Software Foundation; either version 2 of the License, or\n");
-            fprintf(pdst,"C (at your option) any later version.\n");
-            fprintf(pdst,"C\n");
-            fprintf(pdst,"C This software is distributed in the hope that it will be useful, but\n");
-            fprintf(pdst,"C WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-            fprintf(pdst,"C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n");
-            fprintf(pdst,"C General Public License for more details.\n");
-            fprintf(pdst,"C\n");
-            fprintf(pdst,"C You should have received a copy of the GNU General Public License\n");
-            fprintf(pdst,"C along with this software; if not, write to the Free Software\n");
-            fprintf(pdst,"C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n");
-            fprintf(pdst,"C USA.\n");
-            fprintf(pdst,"C\n");
+          strcpy(lastfile,pkeyword);
+          if (!nosplit) {
+            if (cvs==2||cvs==3) {
+              fprintf(pdst,"C\nC $I");
+              fprintf(pdst,       "d$\nC\n");
+            }
+            if (cvs==1||cvs==3) {
+              fprintf(pdst,"C                Copyright (C)  2000\n");
+              fprintf(pdst,"C        University Corporation for Atmospheric Research\n");
+              fprintf(pdst,"C                All Rights Reserved\n");
+              fprintf(pdst,"C\n");
+              fprintf(pdst,"C This file is free software; you can redistribute it and/or modify\n");
+              fprintf(pdst,"C it under the terms of the GNU General Public License as published\n");
+              fprintf(pdst,"C by the Free Software Foundation; either version 2 of the License, or\n");
+              fprintf(pdst,"C (at your option) any later version.\n");
+              fprintf(pdst,"C\n");
+              fprintf(pdst,"C This software is distributed in the hope that it will be useful, but\n");
+              fprintf(pdst,"C WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+              fprintf(pdst,"C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n");
+              fprintf(pdst,"C General Public License for more details.\n");
+              fprintf(pdst,"C\n");
+              fprintf(pdst,"C You should have received a copy of the GNU General Public License\n");
+              fprintf(pdst,"C along with this software; if not, write to the Free Software\n");
+              fprintf(pdst,"C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n");
+              fprintf(pdst,"C USA.\n");
+              fprintf(pdst,"C\n");
+            }
           }
           fprintf(pdst,"%s",chsaved);
           pchsaved=chsaved;
           putc(c,pdst);
         }
+      } else if (lastfile[1]!='\0') {
+        if (column==1) match=0;
+        else if (column<=8&&c==nscode[column-2]) if (++match==7) nosplit=1;
       }
     } else {
       putc(c,pdst);
       if (c=='\n' && pkeyword-keyword==3 && strcmp(keyword,"end")==0) {
         if (fclose(pdst)!=0) {
           fprintf(stderr,"%s: Can't close output file.\n",objectname);
-          return errorflag=6;
+          return errorflag=7;
         }
         pdst=(FILE*)NULL;
+        nosplit=0;
       }
     }
 
@@ -172,27 +191,27 @@ main(int argc, char **argv) {
 
   if (pdst!=(FILE*)NULL) {
     fprintf(stderr,"%s: No \"END\" statement in final routine.\n",objectname);
-    errorflag=7;
+    errorflag=8;
     if (fclose(pdst)!=0) {
       fprintf(stderr,"%s: Can't close output file.\n",objectname);
-      errorflag=8;
+      errorflag=9;
     }
   }
 
   if (fclose(psrc)!=0) {
     fprintf(stderr,"%s: Can't close source file.\n",objectname);
-    errorflag=9;
+    errorflag=10;
   }
 
   if (tabs!=0) {
     fprintf(stderr,"%s: There were tabs in the source file.\n",objectname);
-    errorflag=10;
+    errorflag=11;
   }
 
   if (chrspast72!=0) {
     fprintf(stderr,"%s: There were non-blank",objectname);
     fprintf(stderr," characters past column 72 in the source file.\n");
-    errorflag=11;
+    errorflag=12;
   }
 
   return errorflag;
