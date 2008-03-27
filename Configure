@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.41 2008-01-24 17:26:34 haley Exp $
+#      $Id: Configure,v 1.42 2008-03-27 03:22:09 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2008-01-24 17:26:34 $
+#	$Date: 2008-03-27 03:22:09 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -407,33 +407,48 @@ if (("$answer" != "") && ("$answer" != "$buildpng")) then
 endif
 
 #
-# HDF
+# HDF. This is not optional if you are building NCL.
 #
 if ($?verbose_option) then
   cat <<"EOF"
 
-	The raster library supports several different raster
-	formats, some which may require external non-NCAR Graphics
-	libraries in order to compile.  If you don't want support
-	for a particular raster format or else you don't have the
-	required external library, answer "n" to the following
-	question(s)."
+	If you answered yes to the "build NCL?" question, then you must
+	build the HDF libraries according to the NCL/NCAR Graphics
+	source code installation instructions at:
+
+	http://www.ncl.ucar.edu/Download/build_from_src.shtml#HDF-4
+
+	If you try to build HDF without reading these instructions,
+	you will run into problems with trying to link against the
+	HDF libraries and include files.
+
+	If you are not building NCL, and are only interested in building
+	NCAR Graphics, then you only need to build HDF if you need
+	HDF support built into the NCAR Graphics raster library.
 
 "EOF"
 endif
 
-echo ""
-echo "Build HDF support (optional) into raster library? ($buildhdf)"
-echo "(requires the external HDF libraries available from http://hdf.ncsa.uiuc.edu/) "
-echo "Note: HDF is required if you plan to build NCL, so you must answer 'yes'"
-echo "in this case. "
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if (("$answer" != "") && ("$answer" != "$buildhdf")) then
-	set buildhdf = $answer
-	set newbuildhdf
+if ("$buildncl" == "y" || "$buildncl" == "Y") then
+  echo ""
+  echo "Informational note: since you are building NCL, you must build the"
+  echo "external HDF libraries available from http://hdf.ncsa.uiuc.edu/."
+  echo "Please see the instructions at"
+  echo "http://www.ncl.ucar.edu/Download/build_from_src.shtml#HDF-4"
+  echo "to make sure your HDF software is built according to NCL requirements."
+else
+  echo ""
+  echo "Build HDF support (optional) into raster library? ($buildhdf)"
+  echo "(requires the external HDF libraries available from http://hdf.ncsa.uiuc.edu/) "
+  echo "(Note: HDF is required if you plan to build NCL.)"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildhdf")) then
+  	set buildhdf = $answer
+  	set newbuildhdf
     set altered
+  endif
 endif
 
 set hdfwithszip = "n"
