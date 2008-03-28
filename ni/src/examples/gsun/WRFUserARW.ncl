@@ -3,6 +3,8 @@
 ;                           y1:numeric,angle:numeric ,opts )
 ; function wrf_user_intrp3d( var3d:numeric, z:numeric, plot_type:string, \
 ;                            loc_param:numeric, angle:numeric, opts:logical )
+; function wrf_user_intrp2d( var2d:numeric, \
+;                            loc_param:numeric, angle:numeric, opts:logical )
 ; function wrf_user_getvar( nc_file:file, variable:string, time:integer )
 ; function wrf_user_list_times( nc_file:file )
 ; function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, 
@@ -12,6 +14,14 @@
 ; function wrf_vector(nc_file:file,wks[1]: graphic, data_u[*][*]:numeric, \
 ;                     data_v[*][*]:numeric, opt_args[1]:logical)
 ; function wrf_map(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical)   
+; function wrf_map_overlays(in_file[1]:file,wks:graphic,base[1]:graphic, \
+;                           plots[*]:graphic,opt_arg[1]:logical,mp_arg[1]:logical)
+; function wrf_overlays(in_file[1]:file,wks:graphic, plots[*]:graphic, \
+;                       opt_arg[1]:logical)
+;
+; These next three functions are obsolete as of version 5.0.1 of NCL.
+; Do not use them. Use wrf_overlays and wrf_map_overlays instead.
+;
 ; function wrf_map_zoom(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical, \
 ;                       y1:integer,y2:integer,x1:integer,x2:integer)
 ; procedure wrf_map_overlay(wks:graphic,base[1]:graphic, \
@@ -19,6 +29,7 @@
 ;                           opt_arg[1]:logical)
 ; procedure wrf_overlay(wks:graphic, plots[*]:graphic, \
 ;                           opt_arg[1]:logical)
+;
 ; function add_white_space(str:string,maxlen:integer)
 ; procedure print_opts(opts_name,opts,debug)
 ; procedure print_header(icount:integer,debug)
@@ -289,6 +300,48 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
+ 
+undef("wrf_user_intrp2d")
+function wrf_user_intrp2d( var2d:numeric, \
+                           loc_param:numeric, angle:numeric, opts:logical )
+
+; var2d      - field to inerpolate 
+; loc_param  - plane for vertical plots (2 values representing an xy point 
+;              on the model domain through which the vertical plane will pass
+;              OR 4 values specifying start and end values
+; angle      - 0.0 for horizontal plots, and 
+;              an angle for vertical plots - 90 represent a WE cross section
+; opts         Used IF opts is TRUE, else use loc_param and angle to determine crosssection
+
+begin
+
+     dims = dimsizes(var2d)
+     var2dtmp = new( (/1,dims(0),dims(1)/), typeof(var2d))
+     var2dtmp(0,:,:) = var2d(:,:)
+
+; set vertical cross section
+     if (opts) then
+       xy = wrf_user_set_xy( var2dtmp, \
+                             loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
+                             loc_param(2)-1, loc_param(3)-1, \
+                             angle, opts )
+     else
+       xy = wrf_user_set_xy( var2dtmp, \
+                             loc_param(0), loc_param(1), \
+                             0.0, 0.0, angle, opts )
+     end if
+     xp = dimsizes(xy)
+
+     var1dtmp = wrf_interp_2d_xy( var2dtmp, xy)
+
+     dims = dimsizes(var1dtmp)
+     var = new( (/dims(1)/), typeof(var1dtmp))
+     var(:) = var1dtmp(0,:)
+
+  return(var)
+
+end
+
  
 undef("wrf_user_getvar")
 function wrf_user_getvar( nc_file:file, variable:string, time:integer )
@@ -602,7 +655,7 @@ procedure delete_attrs(opts:logical)
 begin
   list_attrs = (/"MainTitle","MainTitlePos","MainTitlePosF", \
                  "InitTime","ValidTime","TimePos","TimePosF", \
-                 "NoTitles","TimeLabel","LevelLabel", \
+                 "NoHeaderFooter","TimeLabel","LevelLabel", \
                  "FieldTitle","UnitLabel","NumVectors","AspectRatio", \
                  "SubFieldTitle","PlotOrientation","PlotLevelID", \
                  "ContourParameters","FontHeightF","Footer"/)
@@ -615,6 +668,248 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
+undef("set_cn_resources")
+function set_cn_resources (data[*][*]:numeric, res:logical)
+
+begin
+
+  opts = res
+
+; The ContourParameters resource can either be a scalar that
+; represents the contour level spacing, or it can be an array
+; of three elements that represent the minimum level, the maximum
+; level, and the level spacing.
+;
+  mx = max(data)
+  mn = min(data)
+
+  if(mn.ne.mx.and.opts.and.isatt(opts,"ContourParameters")) then
+    if(dimsizes(opts@ContourParameters) .eq. 1) then
+
+; Only the contour interval is specified.
+      nlev   = tointeger((mx-mn)/opts@ContourParameters)+1
+      levels = nice_mnmxintvl(mn,mx,nlev,True)
+      if(levels(0) .lt. 0.) then
+        ; Set a zero contour.
+        nlev = tointeger(levels(0)/opts@ContourParameters) - 1
+        levels(0) = nlev*opts@ContourParameters
+      end if
+      nlev = tointeger((levels(1)-levels(0))/opts@ContourParameters)+1
+      levels(1) = levels(0) + nlev*opts@ContourParameters
+      levels(2) = opts@ContourParameters
+
+; Min level, max level, and level spacing are specified by user.
+    else
+      if(dimsizes(opts@ContourParameters) .eq. 3) then
+        levels = opts@ContourParameters
+      else
+        print("wrf_contour: Warning: illegal setting for ContourParameters attribute")
+      end if
+    end if
+
+  end if
+
+; Contour levels
+  if(isvar("levels")) then
+    opts@cnLevelSelectionMode = get_res_value_keep(opts, "cnLevelSelectionMode", "ManualLevels")
+    opts@cnMinLevelValF       = get_res_value_keep(opts, "cnMinLevelValF", levels(0))
+    opts@cnMaxLevelValF       = get_res_value_keep(opts, "cnMaxLevelValF", levels(1))
+    opts@cnLevelSpacingF      = get_res_value_keep(opts, "cnLevelSpacingF",levels(2))
+    delete(levels)
+  end if
+
+
+; Set the default zero line thickness to 2, and the negative contour
+; line dash pattern to 1 (0 is solid).
+  opts@gsnContourZeroLineThicknessF = get_res_value_keep(opts, "gsnContourZeroLineThicknessF",2.0)
+  opts@gsnContourNegLineDashPattern = get_res_value_keep(opts, "gsnContourNegLineDashPattern",1)
+
+
+; Set resources that apply for both filled and line contour plots.
+  opts@cnFillDrawOrder            = get_res_value_keep(opts,"cnFillDrawOrder", "PreDraw")
+
+
+  opts@cnLineLabelAngleF          = get_res_value_keep(opts,"cnLineLabelAngleF", 0.0)
+  opts@cnLineLabelFontHeightF     = get_res_value_keep(opts,"cnLineLabelFontHeightF", 0.015)
+  opts@cnInfoLabelFontHeightF     = get_res_value_keep(opts,"cnInfoLabelFontHeightF", 0.015)
+  opts@cnLineLabelPerimOn         = get_res_value_keep(opts,"cnLineLabelPerimOn", True)
+  opts@cnInfoLabelPerimOn         = get_res_value_keep(opts,"cnInfoLabelPerimOn", False)
+  opts@cnLineLabelBackgroundColor = get_res_value_keep(opts,"cnLineLabelBackgroundColor", -1)
+  opts@cnHighLabelBackgroundColor = get_res_value_keep(opts,"cnHighLabelBackgroundColor", -1)
+  opts@cnLowLabelBackgroundColor  = get_res_value_keep(opts,"cnLowLabelBackgroundColor", -1)
+  opts@cnLineColor                = get_res_value_keep(opts,"cnLineColor", "Black")
+  opts@cnLineLabelFontColor       = opts@cnLineColor
+  opts@cnLineLabelPerimColor      = opts@cnLineColor
+  opts@cnInfoLabelFontColor       = opts@cnLineColor
+  opts@cnHighLabelFontColor       = opts@cnLineColor
+  opts@cnLowLabelFontColor        = opts@cnLineColor
+
+
+; Set field Title and levels if available
+  if(isatt(opts,"FieldTitle")) then
+    opts@cnInfoLabelString     = opts@FieldTitle + " Contours: $CMN$ to $CMX$ by $CIU$"
+  else
+    if(isatt(data,"description")) then
+      opts@cnInfoLabelString     = data@description + " Contours: $CMN$ to $CMX$ by $CIU$"
+    else
+      opts@cnInfoLabelString     = " Contours: $CMN$ to $CMX$ by $CIU$"
+    end if
+  end if
+
+
+  return(opts)
+end
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
+undef("set_lb_resources")
+function set_lb_resources (data[*][*]:numeric, res:logical)
+
+begin
+
+  opts = res
+
+
+; Somewhat convoluted way to see if a labelbar is not desired.
+  if(check_attr(opts,"pmTickMarkDisplayMode","Never",True).or.\
+     check_attr(opts,"pmTickMarkDisplayMode",-1,False).or.\
+     check_attr(opts,"pmTickMarkDisplayMode",0,False).or. \
+     check_attr(opts,"lbLabelBarOn",False,False).or.\
+     check_attr(opts,"lbLabelBarOn",0,False)) then
+    lbar_on = False
+  else
+    lbar_on = True
+  end if
+  atmp = get_res_value(opts,"lbLabelBarOn",True) ; Remove this resource
+  delete(atmp)                                   ; just in case.
+
+
+; Possible title for the labelbar
+  if(isatt(opts,"FieldTitle")) then
+    lb_desc = opts@FieldTitle 
+  else
+    if(isatt(data,"description")) then
+      lb_desc = data@description 
+    else
+      lb_desc = ""  
+    end if
+  end if
+
+  if(isatt(opts,"UnitLabel") ) then
+    lb_desc = lb_desc + "  (" + opts@UnitLabel + ")"
+  else
+    if(isatt(data,"units") .and. .not.(data@units.eq."")) then
+      lb_desc = lb_desc + "  (" + data@units + ")"
+    end if
+  end if
+
+
+  if(.not.isatt(opts,"cnFillColors")) then
+    opts@gsnSpreadColors = get_res_value_keep(opts, "gsnSpreadColors", True)
+  end if
+  opts@cnInfoLabelOn   = get_res_value_keep(opts,"cnInfoLabelOn", False)
+  opts@cnLinesOn       = get_res_value_keep(opts,"cnLinesOn", False)
+  opts@cnLineLabelsOn  = get_res_value_keep(opts,"cnLineLabelsOn", False)
+
+; Labelbar resources
+  if(lbar_on) then
+    opts@pmLabelBarDisplayMode    = get_res_value_keep(opts,"pmLabelBarDisplayMode", "Always")
+    opts@pmLabelBarSide           = get_res_value_keep(opts,"pmLabelBarSide", "Bottom")
+    opts@lbAutoManage             = get_res_value_keep(opts,"lbAutoManage",False)
+    opts@lbOrientation            = get_res_value_keep(opts,"lbOrientation", "Horizontal")
+    opts@lbPerimOn                = get_res_value_keep(opts,"lbPerimOn", False)
+    opts@lbLabelJust              = get_res_value_keep(opts,"lbLabelJust", "BottomCenter")
+    opts@lbLabelAutoStride        = get_res_value_keep(opts,"lbLabelAutoStride",True)
+    opts@lbBoxMinorExtentF        = get_res_value_keep(opts,"lbBoxMinorExtentF", 0.13)
+    opts@lbTitleFontHeightF       = get_res_value_keep(opts,"lbTitleFontHeightF", 0.015)
+    opts@lbLabelFontHeightF       = get_res_value_keep(opts,"lbLabelFontHeightF", 0.015)
+    opts@pmLabelBarOrthogonalPosF = get_res_value_keep(opts,"pmLabelBarOrthogonalPosF", -0.1)
+
+    opts@lbTitleOn                = get_res_value_keep(opts,"lbTitleOn", True)
+    if(lb_desc.ne."" .and. opts@lbTitleOn) then
+      opts@lbTitleOn              = get_res_value_keep(opts,"lbTitleOn", True)
+      opts@lbTitleString          = get_res_value_keep(opts,"lbTitleString", lb_desc)
+      opts@lbTitleJust            = get_res_value_keep(opts,"lbTitleJust", "BottomCenter")
+      opts@lbTitleOffsetF         = get_res_value_keep(opts,"lbTitleOffsetF", -0.5)
+    else
+      opts@lbTitleOn = False
+    end if
+  end if
+
+
+  return(opts)
+end
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
+undef("set_title_resources")
+function set_title_resources (data[*][*]:numeric, res:logical)
+
+begin
+
+  opts = res
+
+; Set field Title and levels if available
+  if(isatt(opts,"FieldTitle")) then
+    SubTitles = opts@FieldTitle
+  else
+    if(isatt(data,"description")) then
+      SubTitles = data@description
+    else
+      SubTitles = "UnKnown"
+    end if
+  end if
+
+  if(isatt(opts,"SubFieldTitle")) then
+    SubTitles = SubTitles + " " +  opts@SubFieldTitle
+  end if
+  if(isatt(opts,"UnitLabel")) then
+    SubTitles = SubTitles + "   (" +  opts@UnitLabel + ")"
+  else
+     if(isatt(data,"units") .and. .not.(data@units.eq."")) then
+      SubTitles = SubTitles + "   (" +  data@units + ")"
+    end if
+  end if
+  if (isatt(opts,"PlotLevelID")) then
+    SubTitles = SubTitles + "     at   " +  opts@PlotLevelID 
+  else
+    if (isatt(data,"PlotLevelID")) then
+       SubTitles = SubTitles + "     at   " +  data@PlotLevelID 
+    end if
+  end if
+  opts@tiMainString = SubTitles      
+
+  return(opts)
+end
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
+undef("set_vc_resources")
+function set_vc_resources (res:logical)
+
+begin
+
+  opts = res
+
+  if ( isatt(opts,"vpWidthF") ) then
+  ; num_vectors is used for vcMinDistanceF and vcRefLengthF
+    width = opts@vpWidthF
+    num_vectors = get_res_value(opts,"NumVectors",25.0)
+    opts@vcMinDistanceF   = get_res_value_keep(opts,"vcMinDistanceF", width/num_vectors)
+    opts@vcRefLengthF     = get_res_value_keep(opts,"vcRefLengthF", width/num_vectors)
+  else
+    opts@vcMinDistanceF   = get_res_value_keep(opts,"vcMinDistanceF", 0.02)
+    opts@vcRefLengthF     = get_res_value_keep(opts,"vcRefLengthF", 0.02)
+  end if
+
+
+  opts@vcGlyphStyle     = get_res_value_keep(opts,"vcGlyphStyle", "WindBarb")
+  opts@vcWindBarbColor  = get_res_value_keep(opts,"vcWindBarbColor", "Black")
+  opts@vcRefAnnoOn      = get_res_value_keep(opts,"vcRefAnnoOn", False)
+  opts@vcMinFracLengthF = get_res_value_keep(opts,"vcMinFracLengthF", .2)
+ 
+  return(opts)
+end
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
 
 procedure _SetMainTitle(nc_file:file,wks[1]:graphic,cn[1]:graphic,opts)
  
@@ -625,14 +920,14 @@ procedure _SetMainTitle(nc_file:file,wks[1]:graphic,cn[1]:graphic,opts)
 ;     MainTitle                 (main title - top left)
 ;                               (with Init time top right)
 ;     TimeLabel                 (valid time  - right  under init time)
-;     NoTitles                  (don't do any titles) 
+;     NoHeaderFooter            (switch all headers and footers off - mainly for panels)
 ;
-; If the "NoTitles" attribute exists and is set True, then
+; If the "NoHeaderFooter" attribute exists and is set True, then
 ; don't create any titles.
 
 begin
 ;
-  if(opts.and.isatt(opts,"NoTitles").and.opts@NoTitles) then
+  if(opts.and.isatt(opts,"NoHeaderFooter").and.opts@NoHeaderFooter) then
     return
   end if
 
@@ -673,7 +968,7 @@ begin
     MTOPosF = 0.20
   end if
 
-  txt0 = create "MainPlotTille" textItemClass wks
+  txt0 = create "MainPlotTilte" textItemClass wks
     "txString"      : opts@MainTitle
     "txFontHeightF" : font_height*1.5
   end create
@@ -703,7 +998,7 @@ begin
     end if
   end if
 
-  if ( opts@InitTime ) then
+  if( isatt(nc_file,"START_DATE") .and. opts@InitTime ) then
     InitTime = "Init: " + nc_file@START_DATE
     txt1 = create "InitTime" textItemClass wks
       "txString"      : InitTime
@@ -817,6 +1112,126 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
+function wrf_contour_ps(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
+                     opt_args[1]:logical)
+
+begin
+
+  callFrame = True
+  if ( isatt(opt_args,"FrameIT") ) then
+    if ( .not.opt_args@FrameIT ) then
+      callFrame = False
+    end if
+    delete (opt_args@FrameIT)
+  end if
+
+  lat2U = nc_file->XLAT_U(0,:,:)
+  lon2U = nc_file->XLONG_U(0,:,:)
+
+  opts = opt_args
+  opts@sfXArray = lon2U
+  opts@sfYArray = lat2U
+  opts@sfDataArray = data
+  opts@mpProjection         = "Stereographic"
+  opts@mpEllipticalBoundary = True
+  opts@mpFillOn = False
+ 
+  opts@mpGeophysicalLineColor      = get_res_value_keep(opts, "mpGeophysicalLineColor","Gray")
+  opts@mpGeophysicalLineThicknessF = get_res_value_keep(opts, "mpGeophysicalLineThicknessF",2.0)
+
+
+  ; Set the contour resources
+  opts = set_cn_resources(data,opts)
+  opts@cnInfoLabelFontHeightF = 0.012
+  opts@cnLineLabelPerimOn = False
+  opts@cnInfoLabelPerimOn = True
+
+
+  ; Find out if we are working with a contour or a shaded plot
+  ; fill_on = False : line contour plot
+  ; fill_on = True  : filled contour plot
+  fill_on = get_res_value_keep(opts,"cnFillOn",False)
+  if(fill_on) then      ; set lb resources if needed
+    opts@pmLabelBarDisplayMode    = get_res_value_keep(opts,"pmLabelBarDisplayMode", "Never")
+    opts = set_lb_resources(data,opts)
+    opts@pmLabelBarOrthogonalPosF = 0.0
+    opts@lbTitleJust = "BottomLeft"
+  end if
+  
+
+
+  opts@gsnDraw = False   
+  opts@gsnFrame = False
+  opts@gsnMaximize = False
+  delete_attrs(opts)
+  cn = gsn_csm_contour_map_polar(wks,data,opts)          ; Create the plot.
+
+  draw(cn)
+
+
+  if ( callFrame ) then
+    frame(wks)
+  end if
+
+return (cn)
+end
+;--------------------------------------------------------------------------------
+function wrf_vector_ps(nc_file:file,wks[1]: graphic, \
+                       data_u[*][*]:numeric, data_v[*][*]:numeric, \
+                       opt_args[1]:logical)
+
+begin
+
+  callFrame = True
+  if ( isatt(opt_args,"FrameIT") ) then
+    if ( .not.opt_args@FrameIT ) then
+      callFrame = False
+    end if
+    delete (opt_args@FrameIT)
+  end if
+
+  if(isfilevar(nc_file,"XLAT"))
+    lat2T = nc_file->XLAT(0,:,:)
+    lon2T = nc_file->XLONG(0,:,:)
+  else
+    lat2T = nc_file->XLAT_M(0,:,:)
+    lon2T = nc_file->XLONG_M(0,:,:)
+  end if
+
+  opts = opt_args
+  opts@vfXArray = lon2T
+  opts@vfYArray = lat2T
+  opts@vfUDataArray = data_u
+  opts@vfVDataArray = data_v
+  opts@mpProjection         = "Stereographic"
+  opts@mpEllipticalBoundary = True
+  opts@mpFillOn = False
+
+  opts@mpGeophysicalLineColor      = get_res_value_keep(opts, "mpGeophysicalLineColor","Gray")
+  opts@mpGeophysicalLineThicknessF = get_res_value_keep(opts, "mpGeophysicalLineThicknessF",2.0)
+
+
+; Set vector resources
+  opts = set_vc_resources(opts) 
+
+
+ opts@gsnDraw = False   
+ opts@gsnFrame = False
+ opts@gsnMaximize = False
+ delete_attrs(opts)
+ cn = gsn_csm_vector_map_polar(wks,data_u,data_v,opts)          ; Create the plot.
+
+  draw(cn)
+
+
+  if ( callFrame ) then
+    frame(wks)
+  end if
+
+return (cn)
+end
+;--------------------------------------------------------------------------------
 
 undef("wrf_contour")
 function wrf_contour(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
@@ -852,11 +1267,12 @@ begin
   if(opts.and.isatt(opts,"mpOutlineBoundarySets")) then
     delete(opts@mpOutlineBoundarySets)
   end if
-;
+
+
 ; Calculate ratio of plot width and height. Note that this doesn't
 ; affect the setting of gsnMaximize to True, because gsnMaximize will
 ; retain the aspect ratio of the plot.
-;
+
   if(opts.and.isatt(opts,"AspectRatio")) then
     ratio = opts@AspectRatio
   else
@@ -878,218 +1294,50 @@ begin
     height = 0.85 * ratio
   end if
 
-;
-; Set some basic plot variables as we mostly use these
-;
   opts@vpWidthF = get_res_value_keep(opts,"vpWidthF",  width)
   opts@vpHeightF = get_res_value_keep(opts,"vpHeightF", height)
-  opts@cnLineLabelAngleF = get_res_value_keep(opts,"cnLineLabelAngleF", 0.0)
-  opts@cnLineLabelFontHeightF = get_res_value_keep(opts,"cnLineLabelFontHeightF", 0.015)
-  opts@cnLineLabelPerimOn = get_res_value_keep(opts,"cnLineLabelPerimOn", True) 
- ;opts@cnLineLabelBackgroundColor = get_res_value_keep(opts,"cnLineLabelBackgroundColor", -1) 
-  opts@cnLineLabelBackgroundColor = get_res_value_keep(opts,"cnLineLabelBackgroundColor", 0) 
-  opts@cnHighLabelBackgroundColor = get_res_value_keep(opts,"cnHighLabelBackgroundColor", -1) 
-  opts@cnLowLabelBackgroundColor = get_res_value_keep(opts,"cnLowLabelBackgroundColor", -1) 
-  opts@cnInfoLabelFontHeightF = get_res_value_keep(opts,"cnInfoLabelFontHeightF", 0.015)
-  opts@lbTitleFontHeightF = get_res_value_keep(opts,"lbTitleFontHeightF", 0.015)
-  opts@lbLabelFontHeightF = get_res_value_keep(opts,"lbLabelFontHeightF", 0.015)
 
-;
+
+; Set some basic contour resources 
+  opts = set_cn_resources(data,opts)
+
+
 ; Find out if we are working with a contour or a shaded plot
 ; fill_on = False : line contour plot
 ; fill_on = True  : filled contour plot
-;
   fill_on = get_res_value_keep(opts,"cnFillOn",False)
-  if(fill_on) then
-; Somewhat convoluted way to see if a labelbar is not desired.
-    if(check_attr(opts,"pmTickMarkDisplayMode","Never",True).or.\
-       check_attr(opts,"pmTickMarkDisplayMode",-1,False).or.\
-       check_attr(opts,"pmTickMarkDisplayMode",0,False).or. \
-       check_attr(opts,"lbLabelBarOn",False,False).or.\
-       check_attr(opts,"lbLabelBarOn",0,False)) then
-      lbar_on = False
-    else
-      lbar_on = True
-    end if
-  else
-    lbar_on = False
-  end if
-  atmp = get_res_value(opts,"lbLabelBarOn",True) ; Remove this resource
-  delete(atmp)                                   ; just in case.
-;
-; The ContourParameters resource can either be a scalar that
-; represents the contour level spacing, or it can be an array
-; of three elements that represent the minimum level, the maximum
-; level, and the level spacing.
-;
-  mx = max(data)
-  mn = min(data)
-
-  if(mn.ne.mx.and.opts.and.isatt(opts,"ContourParameters")) then
-    if(dimsizes(opts@ContourParameters) .eq. 1) then
-;
-; Only the contour interval is specified.
-;
-      nlev   = tointeger((mx-mn)/opts@ContourParameters)+1
-      levels = nice_mnmxintvl(mn,mx,nlev,True)
-      if(levels(0) .lt. 0.) then
-        ; Set a zero contour.
-        nlev = tointeger(levels(0)/opts@ContourParameters) - 1
-        levels(0) = nlev*opts@ContourParameters
-      end if
-      nlev = tointeger((levels(1)-levels(0))/opts@ContourParameters)+1
-      levels(1) = levels(0) + nlev*opts@ContourParameters
-      levels(2) = opts@ContourParameters
-    else
-;
-;  Min level, max level, and level spacing are specified by user.
-;
-      if(dimsizes(opts@ContourParameters) .eq. 3) then
-        levels = opts@ContourParameters
-      else
-        print("wrf_contour: Warning: illegal setting for ContourParameters attribute")
-      end if
-    end if
+  if(fill_on) then      ; set lb resources if needed
+    opts = set_lb_resources(data,opts)
+    atmp = get_res_value(opts,"lbLabelBarOn",True) ; Remove this resource
+    delete(atmp)                                   ; just in case.
   end if
 
-  opts2 = opts    ; Copy resources to new variable.
-  opts2 = True
 
-;
-; Set some contour resources.
-;
+; Set Title resources
+  opts = set_title_resources(data,opts)
+
+
 ; Setting gsnScale to True ensures that the tickmark lengths and labels
 ; will be the same size on both axes.
-;
-  opts2@gsnScale    = get_res_value_keep(opts2,"gsnScale",    True)
+  opts@gsnScale    = get_res_value_keep(opts,"gsnScale",    True)
 
-;
-; Set the default zero line thickness to 2, and the negative contour
-; line dash pattern to 1 (0 is solid).
-;
-  opts2@gsnContourZeroLineThicknessF = get_res_value_keep(opts2, "gsnContourZeroLineThicknessF",2.0)
-  opts2@gsnContourNegLineDashPattern = get_res_value_keep(opts2, "gsnContourNegLineDashPattern",1)
 
-;
-;
-; Possible title for the labelbar
-;
-  if(isatt(opts,"FieldTitle")) then
-    units = opts@FieldTitle 
-  else
-    if(isatt(data,"description")) then
-      units = data@description 
-    else
-      units = ""  
-    end if
-  end if
-  if(isatt(opts,"UnitLabel") ) then
-    units = units + "  (" + opts@UnitLabel + ")"
-  else
-    if(isatt(data,"units") .and. .not.(data@units.eq."")) then
-      units = units + "  (" + data@units + ")"
-    end if
-  end if
-
-  if(fill_on) then
-    if(.not.isatt(opts2,"cnFillColors")) then
-      opts2@gsnSpreadColors = get_res_value_keep(opts2, "gsnSpreadColors", True)
-    end if
-    opts2@cnInfoLabelOn   = get_res_value_keep(opts2,"cnInfoLabelOn", False)
-    opts2@cnLinesOn       = get_res_value_keep(opts2,"cnLinesOn", False)
-    opts2@cnLineLabelsOn  = get_res_value_keep(opts2,"cnLineLabelsOn", False)
-;
-; Labelbar resources
-;
-    if(lbar_on) then
-      opts2@pmLabelBarDisplayMode = get_res_value_keep(opts2, "pmLabelBarDisplayMode", "Always")
-      opts2@pmLabelBarSide    = get_res_value_keep(opts2,"pmLabelBarSide", "Bottom")
-      opts2@lbAutoManage      = get_res_value_keep(opts2,"lbAutoManage",False)
-      opts2@lbOrientation     = get_res_value_keep(opts2,"lbOrientation", "Horizontal")
-      opts2@lbPerimOn         = get_res_value_keep(opts2,"lbPerimOn", False)
-      if(units.ne."") then
-        opts2@lbTitleOn         = get_res_value_keep(opts2,"lbTitleOn", True)
-        opts2@lbTitleString     = get_res_value_keep(opts2,"lbTitleString", units)
-      end if
-      opts2@lbLabelJust       = get_res_value_keep(opts2,"lbLabelJust", "BottomCenter")
-      opts2@lbLabelAutoStride = get_res_value_keep(opts2,"lbLabelAutoStride",True)
-      opts2@lbBoxMinorExtentF = get_res_value_keep(opts2, "lbBoxMinorExtentF", 0.13)
-      opts2@lbTitleJust       = get_res_value_keep(opts2,"lbTitleJust", "BottomCenter")
-      opts2@lbTitleOffsetF    = get_res_value_keep(opts2,"lbTitleOffsetF", -0.4)
-    end if
-  end if
-;
-; Set resources that apply for both filled and line contour plots.
-; 
-  opts2@cnFillDrawOrder      = get_res_value_keep(opts2,"cnFillDrawOrder", "PreDraw")
-;
-; Contour levels
-;
-  if(isvar("levels")) then
-    opts2@cnLevelSelectionMode = get_res_value_keep(opts2, "cnLevelSelectionMode", "ManualLevels")
-    opts2@cnMinLevelValF       = get_res_value_keep(opts2, "cnMinLevelValF", levels(0))
-    opts2@cnMaxLevelValF       = get_res_value_keep(opts2, "cnMaxLevelValF", levels(1))
-    opts2@cnLevelSpacingF      = get_res_value_keep(opts2, "cnLevelSpacingF",levels(2))
-    delete(levels)
-  end if
-
-  opts2@cnLineColor         = get_res_value_keep(opts2, "cnLineColor", "Black")
-  opts2@cnInfoLabelFontHeightF = get_res_value_keep(opts2, "cnInfoLabelFontHeightF", 0.015)
-  opts2@cnLineLabelFontColor  = opts2@cnLineColor
-  opts2@cnLineLabelPerimColor = opts2@cnLineColor
-  opts2@cnInfoLabelFontColor  = opts2@cnLineColor
-  opts2@cnHighLabelFontColor  = opts2@cnLineColor
-  opts2@cnLowLabelFontColor   = opts2@cnLineColor
-  opts2@cnInfoLabelPerimOn  = get_res_value_keep(opts2, "cnInfoLabelPerimOn", "False")
-
-;
 ; The default is not to draw the plot or advance the frame, and
 ; to maximize the plot in the frame.
-;
-  opts2@gsnDraw          = False    ; Make sure don't draw or frame or,
-  opts2@gsnFrame         = False    ; maximize, b/c we'll do this later.
-  opts2@gsnMaximize      = False
+  opts@gsnDraw          = False    ; Make sure don't draw or frame or,
+  opts@gsnFrame         = False    ; maximize, b/c we'll do this later.
+  opts@gsnMaximize      = False
 
 
-; Set field Title and levels is available
-  if(isatt(opts,"FieldTitle")) then
-    opts2@cnInfoLabelString     = opts@FieldTitle + " Contours: $CMN$ to $CMX$ by $CIU$"
-    SubTitles = opts@FieldTitle
-  else
-    if(isatt(data,"description")) then
-      opts2@cnInfoLabelString     = data@description + " Contours: $CMN$ to $CMX$ by $CIU$"
-      SubTitles = data@description
-    else
-      SubTitles = "UnKnown"
-    end if
-  end if
-  if(isatt(opts,"SubFieldTitle")) then
-    SubTitles = SubTitles + " " +  opts@SubFieldTitle
-  end if
-  if(isatt(opts,"UnitLabel")) then
-    SubTitles = SubTitles + "   (" +  opts@UnitLabel + ")"
-    else
-      if(isatt(data,"units") .and. .not.(data@units.eq."")) then
-        SubTitles = SubTitles + "   (" +  data@units + ")"
-      end if
-  end if
-  if (isatt(opts,"PlotLevelID")) then
-    SubTitles = SubTitles + "     at   " +  opts@PlotLevelID 
-  else
-    if (isatt(data,"PlotLevelID")) then
-       SubTitles = SubTitles + "     at   " +  data@PlotLevelID 
-    end if
-  end if
-  opts2@tiMainString = SubTitles      
-
+  opts2 = opts
   delete_attrs(opts2)                       ; Clean up.
   cn = gsn_contour(wks,data,opts2)          ; Create the plot.
   _SetMainTitle(nc_file,wks,cn,opts)        ; Set some titles
 
-  opts2@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     False)
-  opts2@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    False)
-  opts2@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
 
+  opts2@gsnDraw     = get_res_value_keep(opts2,"gsnDraw",     False)
+  opts2@gsnFrame    = get_res_value_keep(opts2,"gsnFrame",    False)
+  opts2@gsnMaximize = get_res_value_keep(opts2,"gsnMaximize", True)
   draw_and_frame(wks,cn,opts2@gsnDraw,opts2@gsnFrame,False,opts2@gsnMaximize)
 
   return(cn)                                ; Return
@@ -1148,78 +1396,38 @@ begin
 
   opts@vpWidthF  = get_res_value_keep(opts,"vpWidthF",  width)
   opts@vpHeightF = get_res_value_keep(opts,"vpHeightF", height)
-  opts@vcGlyphStyle = get_res_value_keep(opts,"vcGlyphStyle", "WindBarb")
-  opts@vcWindBarbColor = get_res_value_keep(opts,"vcWindBarbColor", "Black")
-  opts@vcRefAnnoOn = get_res_value_keep(opts,"vcRefAnnoOn", False)
 
-;
-; num_vectors is used for vcMinDistanceF and vcRefLengthF
-; 
-  num_vectors = get_res_value(opts,"NumVectors",25.0)
 
-  opts2 = opts    ; Copy resources to new variable.
-  opts2 = True
+; Set Title resources
+  opts = set_title_resources(data_u,opts)
 
-;
-; Set some vector resources.
-;
+
+; Set vector resources
+  opts = set_vc_resources(opts)
+
+
 ; Setting gsnScale to True ensures that the tickmark lengths and labels
 ; will be the same size on both axes.
-;
-  opts2@gsnScale         = get_res_value_keep(opts2,"gsnScale",    True)
+  opts@gsnScale = get_res_value_keep(opts,"gsnScale",    True)
 
-  opts2@vcMinDistanceF   = get_res_value_keep(opts2,"vcMinDistanceF", width/num_vectors)
-  opts2@vcRefLengthF     = get_res_value_keep(opts2,"vcRefLengthF", width/num_vectors)
-  opts2@vcMinFracLengthF = get_res_value_keep(opts2,"vcMinFracLengthF", .2)
-;
+
 ; The default is not to draw the plot or advance the frame, and
 ; to maximize the plot in the frame.
-;
-  opts2@gsnDraw          = False    ; Make sure don't draw or frame or,
-  opts2@gsnFrame         = False    ; maximize, b/c we'll do this later.
-  opts2@gsnMaximize      = False
+  opts@gsnDraw          = False    ; Make sure don't draw or frame or,
+  opts@gsnFrame         = False    ; maximize, b/c we'll do this later.
+  opts@gsnMaximize      = False
 
+  opts2 = opts
   delete_attrs(opts2)                             ; Clean up.
-
-; Set field Title and levels is available
-  if(isatt(opts,"FieldTitle")) then
-    SubTitles = opts@FieldTitle
-  else
-    if(isatt(data_u,"description")) then
-      SubTitles = data_u@description
-    else
-      SubTitles = "UnKnown"
-    end if
-  end if
-  if(isatt(opts,"SubFieldTitle")) then
-    SubTitles = SubTitles + " " +  opts@SubFieldTitle
-  end if
-  if(isatt(opts,"UnitLabel")) then
-    SubTitles = SubTitles + "   (" +  opts@UnitLabel + ")"
-    else
-      if(isatt(data_u,"units") .and. .not.(data_u@units.eq."")) then
-        SubTitles = SubTitles + "   (" +  data_u@units + ")"
-      end if
-  end if
-  if (isatt(opts,"PlotLevelID")) then
-    SubTitles = SubTitles + "     at   " +  opts@PlotLevelID 
-  else
-    if (isatt(data_u,"PlotLevelID")) then
-       SubTitles = SubTitles + "     at   " +  data_u@PlotLevelID 
-    end if
-  end if
-  opts2@tiMainString = SubTitles      
-
   vct = gsn_vector(wks,data_u,data_v,opts2)       ; Create vector plot.
-
-    _SetMainTitle(nc_file,wks,vct,opts) 
+  _SetMainTitle(nc_file,wks,vct,opts) 
 
   opts2@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     False)
   opts2@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    False)
   opts2@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
-
   draw_and_frame(wks,vct,opts2@gsnDraw,opts2@gsnFrame,False, \
                  opts2@gsnMaximize)
+
   return(vct)                                     ; Return.
 end
 
@@ -1294,11 +1502,53 @@ begin
 ;
 ; Select portion of the map to view.
 ;
+    ;if(any(in_file@MAP_PROJ.eq.(/1,2,3/))) then
       opts@mpLimitMode           = get_res_value_keep(opts, "mpLimitMode","Corners")
       opts@mpLeftCornerLatF      = get_res_value_keep(opts, "mpLeftCornerLatF",lat(0,0))
       opts@mpLeftCornerLonF      = get_res_value_keep(opts, "mpLeftCornerLonF",lon(0,0))
       opts@mpRightCornerLatF     = get_res_value_keep(opts, "mpRightCornerLatF", lat(dims(0)-1,dims(1)-1))
       opts@mpRightCornerLonF     = get_res_value_keep(opts, "mpRightCornerLonF", lon(dims(0)-1,dims(1)-1))
+      if ( isatt(opts,"ZoomIn") .and. opts@ZoomIn ) then
+
+        y1 = 0
+        x1 = 0
+        y2 = dims(0)-1
+        x2 = dims(1)-1
+        if ( isatt(opts,"Ystart") ) then
+          y1 = opts@Ystart
+          delete(opts@Ystart)
+        end if
+        if ( isatt(opts,"Xstart") ) then
+          x1 = opts@Xstart
+          delete(opts@Xstart)
+        end if
+        if ( isatt(opts,"Yend") ) then
+          if ( opts@Yend .le. y2 ) then
+            y2 = opts@Yend
+          end if
+          delete(opts@Yend)
+        end if
+        if ( isatt(opts,"Xend") ) then
+          if ( opts@Xend .le. x2 ) then
+            x2 = opts@Xend
+          end if
+          delete(opts@Xend)
+        end if
+
+        opts@mpLeftCornerLatF      = lat(y1,x1)
+        opts@mpLeftCornerLonF      = lon(y1,x1)
+        opts@mpRightCornerLatF     = lat(y2,x2)
+        opts@mpRightCornerLonF     = lon(y2,x2)
+
+        delete(opts@ZoomIn)
+      end if
+
+      if ( opts@mpRightCornerLonF .lt. 0.0 ) then
+        opts@mpRightCornerLonF  = opts@mpRightCornerLonF + 360.0
+        ;print(opts@mpLeftCornerLonF)
+        ;print(opts@mpRightCornerLonF)
+      end if 
+    ;end if
 ;
 ; Set some other resources for line colors and grid spacing.
 ;
@@ -1392,6 +1642,10 @@ begin
     if(in_file@MAP_PROJ .eq. 6)
       projection          = "CylindricalEquidistant"
       opts@mpGridSpacingF = 45
+      opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+      if( isatt(in_file,"POLE_LAT") ) then
+        opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
+      end if
     end if
 
 ;
@@ -1431,11 +1685,330 @@ end
 
 ;--------------------------------------------------------------------------------
 
+undef("wrf_map_overlays")
+function wrf_map_overlays(in_file[1]:file, \
+                          wks:graphic, \
+                          plots[*]:graphic, \
+                          opt_arg[1]:logical, \
+                          opt_mp[1]:logical) 
+ 
+; This procedure takes an array of plots and overlays them on a
+; base plot - map background.
+;
+; It will advance the plot and cleanup, unless you set the
+; PanelPlot resource to True.
+;
+;  Attributes recognized by this procedure:
+;     FramePlot
+;     PanelPlot
+;     NoTitles                  (don't do any titles) 
+;     CommonTitle & PlotTile is used to overwrite field titles
+;        CommonTitle will super-seed NoTitles
+;
+; If FramePlot False, then Draw the plot but do not Frame.
+; In this case a user want to add to the drawing, and will
+; have to advance the Frame manually in the script.
+;
+; If the "NoTitles" attribute exists and is set True, then
+; don't create the top-left titles, and leave the main titles alone.
+; This resource can be useful if you are planning to panel
+; the plots.
+;
+; If PanelPlot is set to True, then this flags to wrf_map_overlays
+; that these plots are going to be eventually paneled (likely
+; by gsn_panel), and hence 1) draw and frame should not be called
+; (unless gsnDraw and/or gsnFrame are explicitly set to True),
+; and 2) the overlays and titles should not be removed with
+; NhlRemoveOverlay and NhlRemoveAnnotation.
+;
+begin
+
+  ; Let's make the map first
+  base = wrf_map(wks,in_file,opt_mp)
+
+  opts = opt_arg      ; Make a copy of the resource list
+
+  no_titles  = get_res_value(opts,"NoTitles",False)     ; Do we want field titles?
+  com_title  = get_res_value(opts,"CommonTitle",False)     ; Do we have a common title?
+  if ( com_title ) then
+    plot_title = get_res_value(opts,"PlotTitle","  ")
+    no_titles = True
+  end if
+  
+  call_draw  = True
+  call_frame = get_res_value(opts,"FramePlot",True)     ; Do we want to frame the plot?
+  panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+  opts@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
+
+  nplots = dimsizes(plots)
+;  font_color = "Black"
+
+  do i=0,nplots-1
+    if(.not.ismissing(plots(i))) then
+;      class_name = NhlClassName(plots(i))
+;      print(class_name)
+;      if(class_name.eq."contourPlotClass") then
+;        getvalues plots(i)
+;          "cnFillOn"    : fill_on
+;          "cnLineColor" : line_color
+;        end getvalues
+;        if (.not.fill_on) then
+;          font_color = line_color      
+;        end if       
+;      end if
+      if(.not.no_titles) then
+        getvalues plots(i)
+          "tiMainString" : SubTitle
+        end getvalues
+        if(i.eq.0) then
+          SubTitles = SubTitle
+        else
+          SubTitles = SubTitles + "~C~" + SubTitle
+        end if
+      end if
+      if(com_title .and. i .eq. nplots-1) then
+        getvalues plots(i)
+          "tiMainString" : SubTitle
+        end getvalues
+        SubTitles = plot_title
+      end if
+      setvalues plots(i)
+        "tfDoNDCOverlay" : True
+        "tiMainOn"       : False
+      end setvalues
+      overlay(base,plots(i))
+    else
+      print("wrf_map_overlays: Warning: overlay plot #" + i + " is not valid.")
+    end if
+  end do
+
+  if(.not.no_titles .or. com_title) then
+    font_height = get_res_value_keep(opts,"FontHeightF",0.01)
+    txt = create "map_titles" textItemClass wks
+      "txString"      : SubTitles
+      "txFontHeightF" : font_height
+     ;"txFontColor"   : font_color
+    end create
+    anno = NhlAddAnnotation(base,txt)
+    setvalues anno
+      "amZone"           : 3
+      "amJust"           : "BottomLeft"
+      "amSide"           : "Top"
+      "amParallelPosF"   : 0.005
+      "amOrthogonalPosF" : 0.03
+      "amResizeNotify"   : False
+    end setvalues
+    base@map_titles = anno
+  end if
+;
+; gsnDraw and gsnFrame default to False if panel plot.
+;
+  if(panel_plot) then
+    call_draw = False
+    call_frame= False
+  end if
+
+
+  opts@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     call_draw)
+  opts@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    call_frame)
+
+  draw_and_frame(wks,base,opts@gsnDraw,opts@gsnFrame,False, \
+                 opts@gsnMaximize)
+
+  if(.not.panel_plot) then
+    do i=0,nplots-1
+      if(.not.ismissing(plots(i))) then
+        NhlRemoveOverlay(base,plots(i),False)
+      else
+        print("wrf_remove_map_overlays: Warning: overlay plot #" + i + " is not valid.")
+        print("                        Nothing to remove.")
+      end if
+    end do
+  end if
+
+  if(.not.no_titles.and..not.panel_plot) then
+    if(isatt(base,"map_titles")) then
+      NhlRemoveAnnotation(base,base@map_titles)
+      delete(base@map_titles)
+    end if
+  end if
+
+return(base)
+end
+
+;--------------------------------------------------------------------------------
+
+undef("wrf_overlays")
+function wrf_overlays(in_file[1]:file, \
+                     wks:graphic, plots[*]:graphic, \
+                     opt_arg[1]:logical)
+ 
+; This procedure takes an array of plots and overlays them.
+;
+; It will advance the plot and cleanup, unless you set the
+; PanelPlot resource to True.
+; 
+;  Attributes recognized by this procedure:
+;     FramePlot
+;     PanelPlot
+;     NoTitles                  (don't do any titles) 
+;     CommonTitle & PlotTile is used to overwrite field titles
+;        CommonTitle will super-seed NoTitles
+;
+; If FramePlot False, then Draw the plot but do not Frame.
+; In this case a user want to add to the drawing, and will
+; have to advance the Frame manually in the script.
+;
+; If the "NoTitles" attribute exists and is set True, then
+; don't create the top-left titles, and leave the main titles alone.
+; This resource can be useful if you are planning to panel
+; the plots.
+;
+; If PanelPlot is set to True, then this flags to wrf_overlays
+; that these plots are going to be eventually paneled (likely
+; by gsn_panel), and hence 1) draw and frame should not be called
+; (unless gsnDraw and/or gsnFrame are explicitly set to True),
+; and 2) the overlays and titles should not be removed with
+; NhlRemoveOverlay and NhlRemoveAnnotation.
+;
+begin
+  opts = opt_arg      ; Make a copy of the resource list.
+
+  no_titles  = get_res_value(opts,"NoTitles",False)     ; Do we want field titles?
+  com_title  = get_res_value(opts,"CommonTitle",False)     ; Do we have a common title?
+  if ( com_title ) then
+    plot_title = get_res_value(opts,"PlotTitle","  ")
+    no_titles = True
+  end if
+
+  call_draw  = True
+  call_frame = get_res_value(opts,"FramePlot",True)     ; Do we want to frame the plot?
+  panel_plot = get_res_value(opts,"PanelPlot",False)    ; Are we paneling?
+  opts@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
+
+  nplots = dimsizes(plots)
+    
+  base = plots(0)
+  if(.not.no_titles) then
+    getvalues plots(0)
+      "tiMainString" : SubTitle
+    end getvalues
+    SubTitles = SubTitle
+    setvalues plots(0)
+      "tfDoNDCOverlay" : True
+      "tiMainOn"       : False
+    end setvalues
+  else
+    setvalues plots(0)
+      "tfDoNDCOverlay" : True
+    end setvalues
+  end if
+
+  if (nplots.eq.1) then 
+    blank = create "BlankPlot" logLinPlotClass wks
+      ;"cnConstFLabelOn" : False
+    end create
+    overlay(base,blank)
+  end if
+
+  do i=1,nplots-1
+    if(.not.ismissing(plots(i))) then
+      if(.not.no_titles) then
+        getvalues plots(i)
+          "tiMainString" : SubTitle
+        end getvalues
+        if(i.eq.0) then
+          SubTitles = SubTitle
+        else
+          SubTitles = SubTitles + "~C~" + SubTitle
+        end if
+      end if
+      if(com_title .and. i .eq. nplots-1) then
+        getvalues plots(i)
+          "tiMainString" : SubTitle
+        end getvalues
+        SubTitles = plot_title
+      end if
+      setvalues plots(i)
+        "tfDoNDCOverlay" : True
+        "tiMainOn"       : False
+      end setvalues
+      overlay(base,plots(i))
+    else
+      print("wrf_overlays: Warning: overlay plot #" + i + " is not valid.")
+    end if
+  end do
+
+  if(.not.no_titles .or. com_title) then
+    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
+
+    txt = create "map_titles" textItemClass wks
+      "txString"      : SubTitles
+      "txFontHeightF" : font_height
+    end create
+    anno = NhlAddAnnotation(base,txt)
+    setvalues anno
+      "amZone"           : 3
+      "amJust"           : "BottomLeft"
+      "amSide"           : "Top"
+      "amParallelPosF"   : 0.005
+      "amOrthogonalPosF" : 0.03
+      "amResizeNotify"   : False
+    end setvalues
+    base@map_titles = anno
+  end if
+
+;
+; gsnDraw and gsnFrame should default to True if not a panel plot.
+;  
+  if(panel_plot) then
+    call_draw = False
+    call_frame= False
+  end if
+
+  opts@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     call_draw)
+  opts@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    call_frame)
+  opts@gsnMaximize = get_res_value_keep(opts,"gsnMaximize", True)
+
+  draw_and_frame(wks,base,opts@gsnDraw,opts@gsnFrame,False, \
+                 opts@gsnMaximize)
+
+  if(.not.no_titles.and..not.panel_plot) then
+    NhlRemoveAnnotation(base,base@map_titles)
+    delete(base@map_titles)
+  end if
+
+  if(.not.panel_plot) then
+    if ( nplots .ge. 2 ) then
+      do i=1,nplots-1
+        if(.not.ismissing(plots(i))) then
+          NhlRemoveOverlay(base,plots(i),False)
+        else
+          print("wrf_remove_overlays: Warning: overlay plot #" + i + " is not valid.")
+          print("                        Nothing to remove.")
+        end if
+      end do
+    end if
+  end if
+
+return(base)
+end
+
+;--------------------------------------------------------------------------------
+
 undef("wrf_map_zoom")
 function wrf_map_zoom(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical, \
                       y1:integer,y2:integer,x1:integer,x2:integer)
 
+; As of version 5.0.1, this routine is redundant. Use the special "ZoomIn"
+; resource in wrf_map to accomplish the same thing. This function is
+; being kept for backwards capability. There should be no need for it
+; except to run old WRF-NCL codes.  Do not make any changes to it except
+; possibly to fix bugs.
+;
 begin
+      print("wrf_map_zoom: Warning: This function is obsolete. Consider using")
+      print("                       the 'ZoomIn' resource in wrf_map instead.")
       if(isfilevar(in_file,"XLAT"))
         lat = in_file->XLAT(0,:,:)
         lon = in_file->XLONG(0,:,:)
@@ -1460,6 +2033,10 @@ procedure wrf_map_overlay(wks:graphic,base[1]:graphic, \
                           plots[*]:graphic, \
                           opt_arg[1]:logical)
  
+; As of version 5.0.1, this procedure is obsolete. Use wrf_map_overlays
+; instead. It is being kept for backwards capability. Do not make any
+; changes to it except possibly to fix bugs.
+;
 ; This procedure takes an array of plots and overlays them on a
 ; base plot - map background.
 ;
@@ -1483,6 +2060,9 @@ procedure wrf_map_overlay(wks:graphic,base[1]:graphic, \
 ; NhlRemoveOverlay and NhlRemoveAnnotation.
 ;
 begin
+  print("wrf_map_overlay: Warning: This procedure is obsolete. Consider" )
+  print("                          using wrf_map_overlays instead.")
+
   opts = opt_arg      ; Make a copy of the resource list
   opts = True
 
@@ -1598,11 +2178,15 @@ undef("wrf_overlay")
 procedure wrf_overlay(wks:graphic, plots[*]:graphic, \
                           opt_arg[1]:logical)
  
+; As of version 5.0.1, this procedure is obsolete. Use wrf_overlays
+; instead. It is being kept for backwards capability. Do not make any
+; changes to it except possibly to fix bugs.
+;
 ; This procedure takes an array of plots and overlays them.
 ;
 ; It will advance the plot and cleanup, unless you set the
 ; PanelPlot resource to True.
-; 
+;
 ;  Attributes recognized by this procedure:
 ;     NoTitles                  (don't do any titles) 
 ;     PanelPlot
@@ -1620,6 +2204,9 @@ procedure wrf_overlay(wks:graphic, plots[*]:graphic, \
 ; NhlRemoveOverlay and NhlRemoveAnnotation.
 ;
 begin
+  print("wrf_overlay: Warning: This procedure is obsolete. Consider using")
+  print("                      wrf_overlays instead.")
+
   opts = opt_arg      ; Make a copy of the resource list.
   opts = True
 
