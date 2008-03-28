@@ -405,6 +405,9 @@ extern NhlErrorTypes isleapyear_W(void);
 extern NhlErrorTypes greg2jul_W(void);
 extern NhlErrorTypes jul2greg_W(void);
 
+extern NhlErrorTypes utm2ll_W(void);
+extern NhlErrorTypes ll2utm_W(void);
+
 #ifdef BuildUdunits
 extern NhlErrorTypes ut_calendar_W(void);
 extern NhlErrorTypes ut_inv_calendar_W(void);
@@ -5671,6 +5674,23 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(ut_inv_calendar_W,args,"ut_inv_calendar",nargs);
 #endif
+
+/*
+ * Register "utm2ll" and "ll2utm".
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(utm2ll_W,args,"utm2ll",nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(ll2utm_W,args,"ll2utm",nargs);
 
 /*
  * Register "angmom_atm".
