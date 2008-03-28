@@ -1720,7 +1720,8 @@ pack_grammar()
 print_grammar()
 {
     register int i, j, k;
-    int spacing;
+/*    int spacing;*/
+    size_t spacing;
     register FILE *f = verbose_file;
 
     if (!vflag) return;

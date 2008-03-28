@@ -224,7 +224,7 @@ unsigned n;
 
 create_file_names()
 {
-    int i, len;
+    int  i, len;
     char *tmpdir;
 
     tmpdir = getenv("TMPDIR");
