@@ -14,15 +14,14 @@
 #endif
 
 
-NhlErrorTypes utm2ll_W( void )
+NhlErrorTypes utm2latlon_W( void )
 {
 /*
  * Input array variables
  */
   void *xy;
   double *tmp_xy;
-  int *option;
-  unsigned char coption;
+  int *datum;
   int ndims_xy, dsizes_xy[NCL_MAX_DIMENSIONS], has_missing_xy;
   NclScalar missing_xy, missing_dxy;
   NclBasicDataTypes type_xy;
@@ -34,7 +33,6 @@ NhlErrorTypes utm2ll_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   string *grid_zone;
-
 /*
  * Output variables.
  */
@@ -45,7 +43,8 @@ NhlErrorTypes utm2ll_W( void )
 /*
  * various
  */
-  int i, total_size_xy, npts, inpts, return_missing, ret, ier;
+  int i, total_size_xy, npts, inpts,  ret, ier;
+  int bad_datum = 0, found_grid_zone = 0;
   UTM utm;
   LL ll;
 
@@ -66,14 +65,14 @@ NhlErrorTypes utm2ll_W( void )
            2);
 
   if(dsizes_xy[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"utm2ll: The leftmost dimension of 'xy' must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"utm2latlon: The leftmost dimension of 'xy' must be 2");
     return(NhlFATAL);
   }
 
 /*
- * Get option.
+ * Get datum.
  */
-  option = (int*)NclGetArgValue(
+  datum = (int*)NclGetArgValue(
            1,
            2,
            NULL,
@@ -82,6 +81,11 @@ NhlErrorTypes utm2ll_W( void )
            NULL,
            NULL,
            1);
+
+  if(*datum < 0 || *datum > 2) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon: Unrecognized datum. All missing values will be returned.");
+    bad_datum = 1;
+  }
 
 /*
  * Calculate size of input array.
@@ -109,7 +113,7 @@ NhlErrorTypes utm2ll_W( void )
  * Make sure we have enough memory for output.
  */
   if( latlon == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"utm2ll: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"utm2latlon: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -122,8 +126,6 @@ NhlErrorTypes utm2ll_W( void )
  * The "grid_zone" attribute of "xy" must be set, otherwise missing
  * values will be returned.
  */
-  return_missing = 1;
-
   stack_entry = _NclGetArg(0, 2, DONT_CARE);
   switch (stack_entry.kind) {
   case NclStk_VAR:
@@ -158,7 +160,7 @@ NhlErrorTypes utm2ll_W( void )
         if ((strcmp(attr_list->attname, "grid_zone")) == 0) {
           grid_zone     = (string *) attr_list->attvalue->multidval.val;
           strcpy(utm.grid_zone,NrmQuarkToString(*grid_zone));
-          return_missing = 0;
+          found_grid_zone = 1;
         }
         attr_list = attr_list->next;
       }
@@ -166,15 +168,15 @@ NhlErrorTypes utm2ll_W( void )
   default:
     break;
   }
-
+  if(!found_grid_zone) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon: The 'grid_zone' attribute was either not set, or not recognized. All missing values will be returned.");
+  }
 /* 
- * If we reach this point and return_missing is not 0, then "grid_zone"
- * was either invalid or wasn't set. We have to return all missing 
- * values in this case.
+ * If we reach this point and either the datum was unrecognized, or
+ * "grid_zone" was either invalid or wasn't set, then we have to
+ * return all missing values.
  */
-  if(return_missing) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2ll: The 'grid_zone' attribute was either not set, or its value not recognized. Setting to all missing.");
-
+  if(!found_grid_zone || bad_datum) { 
     if(type_latlon == NCL_float) {
       for(i = 0; i < total_size_xy; i++ ) {
         ((float*)latlon)[i] = missing_latlon.floatval;
@@ -195,8 +197,8 @@ NhlErrorTypes utm2ll_W( void )
 /*
  * Convert input to double if necessary.
  */
-  tmp_xy = coerce_input_double(xy,type_xy,total_size_xy,has_missing_xy,&missing_xy,
-                  &missing_dxy);
+  tmp_xy = coerce_input_double(xy,type_xy,total_size_xy,has_missing_xy,
+                  &missing_xy,&missing_dxy);
 
 /* 
  * Loop through each element.
@@ -209,7 +211,7 @@ NhlErrorTypes utm2ll_W( void )
 
       utm.x = tmp_xy[i];
       utm.y = tmp_xy[inpts];
-      ier   = utm2ll (&utm, &ll, coption);
+      ier   = utm2ll (&utm, &ll, (unsigned char)(*datum));
 
       if(!ier) {
         coerce_output_float_or_double(latlon,&ll.latitude, type_latlon,1,i);
@@ -247,15 +249,14 @@ NhlErrorTypes utm2ll_W( void )
 }
 
 
-NhlErrorTypes ll2utm_W( void )
+NhlErrorTypes latlon2utm_W( void )
 {
 /*
  * Input array variables
  */
   void *latlon;
   double *tmp_latlon;
-  int *option;
-  unsigned char coption;
+  int *datum;
   int ndims_latlon, dsizes_latlon[NCL_MAX_DIMENSIONS], has_missing_latlon;
   NclScalar missing_latlon, missing_dlatlon;
   NclBasicDataTypes type_latlon;
@@ -271,7 +272,7 @@ NhlErrorTypes ll2utm_W( void )
 /*
  * various
  */
-  int i, total_size_latlon, npts, inpts, return_missing, ret, ier;
+  int i, total_size_latlon, npts, inpts, ret, ier;
   UTM utm;
   LL ll;
 
@@ -301,14 +302,14 @@ NhlErrorTypes ll2utm_W( void )
            2);
 
   if(dsizes_latlon[0] != 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ll2utm: The leftmost dimension of 'latlon' must be 2");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"latlon2utm: The leftmost dimension of 'latlon' must be 2");
     return(NhlFATAL);
   }
 
 /*
- * Get option.
+ * Get datum.
  */
-  option = (int*)NclGetArgValue(
+  datum = (int*)NclGetArgValue(
            1,
            2,
            NULL,
@@ -346,7 +347,7 @@ NhlErrorTypes ll2utm_W( void )
  * Make sure we have enough memory for output.
  */
   if( xy == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ll2utm: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"latlon2utm: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
 
@@ -354,6 +355,29 @@ NhlErrorTypes ll2utm_W( void )
  * Coerce missing values to double.
  */
   coerce_missing(type_latlon,has_missing_latlon,&missing_latlon,&missing_dlatlon,NULL);
+
+/*
+ * Return all missing if not a recognized datum.
+ */
+  if(*datum < 0 || *datum > 2) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"latlon2utm: Unrecognized datum. All missing values will be returned.");
+
+    if(type_xy == NCL_float) {
+      for(i = 0; i < total_size_latlon; i++ ) {
+        ((float*)xy)[i] = missing_xy.floatval;
+      }
+    }
+    else {
+      for(i = 0; i < total_size_latlon; i++ ) {
+        ((double*)xy)[i] = missing_xy.doubleval;
+      }
+    }
+/*
+ * Return all missing values.
+ */
+    ret = NclReturnValue(xy,ndims_latlon,dsizes_latlon,&missing_xy,type_xy,0);
+    return(ret);
+  }
 
 /*
  * Convert input to double if necessary.
@@ -373,7 +397,7 @@ NhlErrorTypes ll2utm_W( void )
 
       ll.latitude  = tmp_latlon[i];
       ll.longitude = tmp_latlon[inpts];
-      ier          = ll2utm (&ll, &utm, coption);
+      ier          = ll2utm (&ll, &utm, (unsigned char)(*datum));
 
       if(!ier) {
         coerce_output_float_or_double(xy,&utm.x,type_xy,1,i);
@@ -505,7 +529,7 @@ NhlErrorTypes ll2utm_W( void )
  * Copyright (C) 1998 Massachusetts Institute of Technology
  *               All Rights Reserved
  *
- * RCS ID: $Id: convert_datum.c,v 1.3 2008-03-29 14:37:06 haley Exp $
+ * RCS ID: $Id: convert_datum.c,v 1.4 2008-03-29 19:30:23 haley Exp $
  */
 
 
