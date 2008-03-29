@@ -173,7 +173,7 @@ NhlErrorTypes utm2ll_W( void )
  * values in this case.
  */
   if(return_missing) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"utm2ll: The 'grid_zone' attribute was either not set, or its value not recognized. Setting to all missing.");
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2ll: The 'grid_zone' attribute was either not set, or its value not recognized. Setting to all missing.");
 
     if(type_latlon == NCL_float) {
       for(i = 0; i < total_size_xy; i++ ) {
@@ -504,7 +504,7 @@ NhlErrorTypes ll2utm_W( void )
  * Copyright (C) 1998 Massachusetts Institute of Technology
  *               All Rights Reserved
  *
- * RCS ID: $Id: convert_datum.c,v 1.1 2008-03-28 18:37:19 haley Exp $
+ * RCS ID: $Id: convert_datum.c,v 1.2 2008-03-29 13:27:00 haley Exp $
  */
 
 
