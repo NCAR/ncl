@@ -204,8 +204,8 @@ NhlErrorTypes utm2ll_W( void )
   for( i = 0; i < npts; i++ ) {
     inpts = i + npts;
     if(!has_missing_xy ||
-       (has_missing_xy && tmp_xy[i]     != missing_dxy.doubleval && 
-                          tmp_xy[inpts] != missing_dxy.doubleval)) {
+       (has_missing_xy && (tmp_xy[i]     != missing_dxy.doubleval &&
+                           tmp_xy[inpts] != missing_dxy.doubleval))) {
 
       utm.x = tmp_xy[i];
       utm.y = tmp_xy[inpts];
@@ -215,18 +215,18 @@ NhlErrorTypes utm2ll_W( void )
         coerce_output_float_or_double(latlon,&ll.latitude, type_latlon,1,i);
         coerce_output_float_or_double(latlon,&ll.longitude,type_latlon,1,inpts);
       }
+    }
+    else {
+      if(type_latlon == NCL_float) {
+        ((float*)latlon)[i]     = missing_latlon.floatval;
+        ((float*)latlon)[inpts] = missing_latlon.floatval;
+      }
       else {
-        if(type_latlon == NCL_float) {
-          ((float*)latlon)[i]     = missing_latlon.floatval;
-          ((float*)latlon)[inpts] = missing_latlon.floatval;
-        }
-        else {
-          ((double*)latlon)[i]     = missing_latlon.doubleval;
-          ((double*)latlon)[inpts] = missing_latlon.doubleval;
-        }
+        ((double*)latlon)[i]     = missing_latlon.doubleval;
+        ((double*)latlon)[inpts] = missing_latlon.doubleval;
       }
     }
- }
+  }
 
 /*
  * Free the work arrays.
@@ -367,8 +367,9 @@ NhlErrorTypes ll2utm_W( void )
   for( i = 0; i < npts; i++ ) {
     inpts = i + npts;
     if(!has_missing_latlon ||
-       (has_missing_latlon && tmp_latlon[i]     != missing_dlatlon.doubleval && 
-                          tmp_latlon[inpts] != missing_dlatlon.doubleval)) {
+       (has_missing_latlon && 
+        (tmp_latlon[i]     != missing_dlatlon.doubleval &&
+         tmp_latlon[inpts] != missing_dlatlon.doubleval))) {
 
       ll.latitude  = tmp_latlon[i];
       ll.longitude = tmp_latlon[inpts];
@@ -378,18 +379,18 @@ NhlErrorTypes ll2utm_W( void )
         coerce_output_float_or_double(xy,&utm.x,type_xy,1,i);
         coerce_output_float_or_double(xy,&utm.y,type_xy,1,inpts);
       }
+    }
+    else {
+      if(type_xy == NCL_float) {
+        ((float*)xy)[i]     = missing_xy.floatval;
+        ((float*)xy)[inpts] = missing_xy.floatval;
+      }
       else {
-        if(type_xy == NCL_float) {
-          ((float*)xy)[i]     = missing_xy.floatval;
-          ((float*)xy)[inpts] = missing_xy.floatval;
-        }
-        else {
-          ((double*)xy)[i]     = missing_xy.doubleval;
-          ((double*)xy)[inpts] = missing_xy.doubleval;
-        }
+        ((double*)xy)[i]     = missing_xy.doubleval;
+        ((double*)xy)[inpts] = missing_xy.doubleval;
       }
     }
- }
+  }
 
 /*
  * Free the work arrays.
@@ -504,7 +505,7 @@ NhlErrorTypes ll2utm_W( void )
  * Copyright (C) 1998 Massachusetts Institute of Technology
  *               All Rights Reserved
  *
- * RCS ID: $Id: convert_datum.c,v 1.2 2008-03-29 13:27:00 haley Exp $
+ * RCS ID: $Id: convert_datum.c,v 1.3 2008-03-29 14:37:06 haley Exp $
  */
 
 
