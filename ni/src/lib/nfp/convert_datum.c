@@ -33,6 +33,7 @@ NhlErrorTypes utm2latlon_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   string *grid_zone;
+  int total_size_grid_zone;
 /*
  * Output variables.
  */
@@ -44,7 +45,7 @@ NhlErrorTypes utm2latlon_W( void )
  * various
  */
   int i, total_size_xy, npts, inpts,  ret, ier;
-  int bad_datum = 0, found_grid_zone = 0;
+  int zlen, bad_datum = 0, found_grid_zone = 0;
   UTM utm;
   LL ll;
 
@@ -158,9 +159,17 @@ NhlErrorTypes utm2latlon_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "grid_zone")) == 0) {
-          grid_zone     = (string *) attr_list->attvalue->multidval.val;
-          strcpy(utm.grid_zone,NrmQuarkToString(*grid_zone));
-          found_grid_zone = 1;
+/*
+ * If we find grid_zone, we have to make sure it is a scalar, or 
+ * the same size as xy.
+ */
+          grid_zone = (string *) attr_list->attvalue->multidval.val;
+          total_size_grid_zone = 1;
+          for( i = 0; i < attr_list->attvalue->multidval.n_dims; i++ ) 
+            total_size_grid_zone *= attr_list->attvalue->multidval.dim_sizes[i];
+          if(total_size_grid_zone == 1 || total_size_grid_zone == npts) {
+            found_grid_zone = 1;
+          }
         }
         attr_list = attr_list->next;
       }
@@ -169,7 +178,7 @@ NhlErrorTypes utm2latlon_W( void )
     break;
   }
   if(!found_grid_zone) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon: The 'grid_zone' attribute was either not set, or not recognized. All missing values will be returned.");
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon: The 'grid_zone' attribute was either not set or not the right size. All missing values will be returned.");
   }
 /* 
  * If we reach this point and either the datum was unrecognized, or
@@ -205,9 +214,22 @@ NhlErrorTypes utm2latlon_W( void )
  */
   for( i = 0; i < npts; i++ ) {
     inpts = i + npts;
-    if(!has_missing_xy ||
+    ier   = 0;
+    if(  total_size_grid_zone > 1 ||
+         (total_size_grid_zone == 1 && i==0)) {
+      zlen = strlen(NrmQuarkToString(grid_zone[i]));
+      if(0 < zlen && zlen < GRID_ZONE_LENGTH) {
+        
+        strcpy(utm.grid_zone,NrmQuarkToString(grid_zone[i]));
+      }
+      else {
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon: The grid_zone '%s' is invalid. Missing values will be returned for this subset.",NrmQuarkToString(grid_zone[i]));
+        ier = -1;
+      }
+    }
+    if(!ier && (!has_missing_xy ||
        (has_missing_xy && (tmp_xy[i]     != missing_dxy.doubleval &&
-                           tmp_xy[inpts] != missing_dxy.doubleval))) {
+                           tmp_xy[inpts] != missing_dxy.doubleval)))) {
 
       utm.x = tmp_xy[i];
       utm.y = tmp_xy[inpts];
@@ -219,6 +241,9 @@ NhlErrorTypes utm2latlon_W( void )
       }
     }
     else {
+      ier = -1;
+    }
+    if(ier) {
       if(type_latlon == NCL_float) {
         ((float*)latlon)[i]     = missing_latlon.floatval;
         ((float*)latlon)[inpts] = missing_latlon.floatval;
@@ -280,7 +305,7 @@ NhlErrorTypes latlon2utm_W( void )
  * Attribute variable for returning "grid_zone"
  */
   NclQuark *grid_zone;
-  int att_id, dsizes[1];
+  int att_id, dsizes_grid_zone[NCL_MAX_DIMENSIONS], ndims_grid_zone;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
   NclStackEntry return_data;
@@ -323,7 +348,17 @@ NhlErrorTypes latlon2utm_W( void )
  * Calculate size of input array.
  */
   npts = 1;
-  for( i = 1; i < ndims_latlon; i++ ) npts *= dsizes_latlon[i];
+  for( i = 1; i < ndims_latlon; i++ ) {
+    npts *= dsizes_latlon[i];
+    dsizes_grid_zone[i-1] = dsizes_latlon[i];
+  }
+  if(ndims_latlon > 1) {
+    ndims_grid_zone     = ndims_latlon-1;
+  }
+  else {
+    dsizes_grid_zone[0] = 1;
+    ndims_grid_zone     = 1;
+  }
   total_size_latlon = 2 * npts;     /* We know first dimension is 2. */
 
 /*
@@ -342,6 +377,7 @@ NhlErrorTypes latlon2utm_W( void )
     missing_xy  = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
     xy          = (double *)calloc(total_size_latlon,sizeof(double));
   }
+  grid_zone = (NclQuark *)calloc(npts,sizeof(NclQuark));
 
 /*
  * Make sure we have enough memory for output.
@@ -382,8 +418,9 @@ NhlErrorTypes latlon2utm_W( void )
 /*
  * Convert input to double if necessary.
  */
-  tmp_latlon = coerce_input_double(latlon,type_latlon,total_size_latlon,has_missing_latlon,&missing_latlon,
-                               &missing_dlatlon);
+  tmp_latlon = coerce_input_double(latlon,type_latlon,total_size_latlon,
+                                   has_missing_latlon,&missing_latlon,
+                                   &missing_dlatlon);
 
 /* 
  * Loop through each element.
@@ -402,9 +439,14 @@ NhlErrorTypes latlon2utm_W( void )
       if(!ier) {
         coerce_output_float_or_double(xy,&utm.x,type_xy,1,i);
         coerce_output_float_or_double(xy,&utm.y,type_xy,1,inpts);
+        grid_zone[i] = NrmStringToQuark(utm.grid_zone);
       }
     }
     else {
+      ier = -1;
+    }
+    if(ier) {
+      grid_zone[i] = NrmStringToQuark("missing");
       if(type_xy == NCL_float) {
         ((float*)xy)[i]     = missing_xy.floatval;
         ((float*)xy)[inpts] = missing_xy.floatval;
@@ -458,11 +500,6 @@ NhlErrorTypes latlon2utm_W( void )
  * Set up attributes to return.
  */
   att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
-  dsizes[0] = 1;
-
-  grid_zone  = (NclQuark*)NclMalloc(sizeof(NclQuark));
-  *grid_zone = NrmStringToQuark(utm.grid_zone);
-
   att_md = _NclCreateVal(
                          NULL,
                          NULL,
@@ -470,8 +507,8 @@ NhlErrorTypes latlon2utm_W( void )
                          0,
                          (void*)grid_zone,
                          NULL,
-                         1,
-                         dsizes,
+                         ndims_grid_zone,
+                         dsizes_grid_zone,
                          TEMPORARY,
                          NULL,
                          (NclObjClass)nclTypestringClass
@@ -529,11 +566,10 @@ NhlErrorTypes latlon2utm_W( void )
  * Copyright (C) 1998 Massachusetts Institute of Technology
  *               All Rights Reserved
  *
- * RCS ID: $Id: convert_datum.c,v 1.4 2008-03-29 19:30:23 haley Exp $
+ * RCS ID: $Id: convert_datum.c,v 1.5 2008-03-30 17:15:50 haley Exp $
  */
 
-
-#ifdef DEBUG
+/*
 int
 main (int argc, char **argv)
 {
@@ -559,7 +595,7 @@ main (int argc, char **argv)
 
   return(0);
 }
-#endif
+*/
 
 void
 get_grid_zone (LL *ll, char grid_zone[GRID_ZONE_LENGTH], double *lambda0)
@@ -660,7 +696,7 @@ get_lambda0 (char grid_zone[GRID_ZONE_LENGTH], double *lambda0)
   /* Check the grid zone format */
 
   if (!isdigit(grid_zone[0]) || !isdigit(grid_zone[1])) {
-    fprintf (stderr, "Invalid grid zone format: [%s]\n",
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon/latlon2utm: Invalid grid zone format: [%s]\n",
              grid_zone);
     return(-1);
   }
@@ -706,7 +742,7 @@ get_lambda0 (char grid_zone[GRID_ZONE_LENGTH], double *lambda0)
       return(0);
       break;
     case 32: case 34: case 36:
-      fprintf (stderr, "Zone %02d%c does not exist!\n",
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon/latlon2utm: Zone %02d%c does not exist!\n",
                zone_long,
                zone_lat);
       return(-1);
@@ -750,7 +786,7 @@ ll2utm(LL *ll, UTM *utm, unsigned char datum)
     b = 6356752.31425;          /* semiminor axis of ellipsoid (meters) */
     break;
   default:
-   fprintf (stderr, "Unknown datum: %d\n",
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon/latlon2utm: Unknown datum: %d\n",
             datum);
    return(-1);
   }
@@ -906,7 +942,7 @@ utm2ll (UTM *utm, LL *ll, unsigned char datum)
     b = 6356752.31425;          /* semiminor axis of ellipsoid (meters) */
     break;
   default:
-   fprintf (stderr, "Unknown datum: %d\n",
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon/latlon2utm: Unknown datum: %d\n",
             datum);
    return(-1);
   }
@@ -923,7 +959,7 @@ utm2ll (UTM *utm, LL *ll, unsigned char datum)
   /* Given the UTM grid zone, generate a baseline lambda0 */
 
   if (get_lambda0 (utm->grid_zone, &lambda0) < 0) {
-    fprintf (stderr, "unable to translate UTM to LL\n");
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"utm2latlon/latlon2utm: unable to translate UTM to LL\n");
     return(-1);
   }
 
