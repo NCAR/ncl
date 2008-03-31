@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.9 2007-10-29 22:36:56 haley Exp $
+#   $Id: check_files,v 1.10 2008-03-31 22:27:47 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -411,6 +411,7 @@ lib/ncarg/colormaps/WhViBlGrYeOrRe.rgb
 lib/ncarg/colormaps/WhViBlGrYeOrReWh.gp
 lib/ncarg/colormaps/WhViBlGrYeOrReWh.rgb
 lib/ncarg/colormaps/amwg.rgb
+lib/ncarg/colormaps/amwg_blueyellowred.rgb
 lib/ncarg/colormaps/cosam.rgb
 lib/ncarg/colormaps/cosam12.rgb
 lib/ncarg/colormaps/default.rgb
@@ -1797,6 +1798,8 @@ lib/ncarg/examples/wmex12.f
 lib/ncarg/examples/wmex13.f
 lib/ncarg/examples/wmex14.f
 lib/ncarg/examples/wmex15.f
+lib/ncarg/examples/wmex16.f
+lib/ncarg/examples/wmex17.f
 lib/ncarg/robj/ggkwdr_stub.o
 lib/ncarg/robj/libagupwrtx.o
 lib/ncarg/robj/libconraq.o
