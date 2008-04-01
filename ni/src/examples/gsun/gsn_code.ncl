@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.208 2008-03-14 02:23:54 haley Exp $
+;      $Id: gsn_code.ncl,v 1.209 2008-04-01 21:53:36 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3096,6 +3096,9 @@ begin
     resltn   = get_res_value(wkresnew,"wkPSResolution",1800)
     visualt  = get_res_value(wkresnew,"wkVisualType","color")
 
+; Be sure to add any resources set here to "res_list" in gsn_open_wks
+; so they don't get set again.
+
     ps = create res_file psWorkstationClass defaultapp
       "wkColorModel"   : cmodel
       "wkPSResolution" : resltn
@@ -3166,6 +3169,9 @@ begin
     cmodel   = get_res_value(wkresnew,"wkColorModel","rgb")
     resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
     visualt  = get_res_value(wkresnew,"wkVisualType","color")
+
+; Be sure to add any resources set here to "res_list" in gsn_open_wks
+; so they don't get set again.
 
     pdf = create res_file pdfWorkstationClass defaultapp
       "wkColorModel"    : cmodel
@@ -3338,7 +3344,8 @@ begin
   varatts = getvaratts(type2)
   if(.not.any(ismissing(varatts))) then
     wks_res = True
-    res_list = (/"wkColorMap","wkWidth","wkHeight","wkColorModel"/)
+    res_list = (/"wkColorMap","wkWidth","wkHeight","wkColorModel", \
+                 "wkPSResolution","wkPDFResolution","wkVisualType"/)
     do i=0,dimsizes(varatts)-1
       if(all(varatts(i).ne.res_list)) then
         wks_res@$varatts(i)$ = type2@$varatts(i)$
