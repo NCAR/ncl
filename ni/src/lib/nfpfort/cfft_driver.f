@@ -1,4 +1,4 @@
-C NLFORTSTART
+C NCLFORTSTART
       subroutine cfftfdriver (nmx,x,acoef,bcoef)
       implicit none
 c                                      ! INPUT       
@@ -23,14 +23,14 @@ c                                      ! create complex input
       call cfftf(nmx, carr, work)
 
       do n=1,nmx
-         acoef(n) = dble ( carr(n) )
+         acoef(n) = dble ( carr(n) ) 
          bcoef(n) = dimag( carr(n) )
       end do
 
       return
       end
 
-C NLFORTSTART
+C NCLFORTSTART
       subroutine cfftbdriver (nmx,x,acoef,bcoef)
       implicit none
 c                                      ! INPUT       
@@ -53,9 +53,9 @@ c                                      ! create complex input
       end do
 
       call cfftb(nmx, carr, work)
-
+c                                      ! reconstruct 
       do n=1,nmx
-         x(n) = dble( carr(n) )
+         x(n) = dble( carr(n) ) / nmx
       end do
 
       return

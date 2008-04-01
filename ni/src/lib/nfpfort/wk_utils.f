@@ -80,11 +80,11 @@ c c c   STOP
        do i = 1,N
         j = i-nmi+1
         if (j.le.0.or.j.gt.nn) then
-         ts(i) = 0.
+         ts(i) = 0.0d0
         elseif (j.le.tp) then
-         ts(i) =  ts(i)*0.5d0*(1.0d0-COS((j-1)*Pi/float(tp)))
+         ts(i) =  ts(i)*0.5d0*(1.0d0-COS((j-1)*Pi/dble(tp)))
         elseif (j.gt.(nn-tp).and.j.le.nn) then
-         ts(i) =  ts(i)*0.5d0*(1.0d0-COS((nn-j)*Pi/float(tp)))
+         ts(i) =  ts(i)*0.5d0*(1.0d0-COS((nn-j)*Pi/dble(tp)))
         else
          ts(i) =  ts(i)
         end if
@@ -104,7 +104,7 @@ c Removes the linear-squares best fit line for the series.
 c Only the data from vmi to vmi+nv-1 is deemed useful, and
 c the rest is zeroed. (There are nv points of useful data)
 c The line of best fit is given by X2'  =  a + bX1.
-c The X1s are assumed to be evenly spaced ( i.e. X1 = float(i) )
+c The X1s are assumed to be evenly spaced ( i.e. X1 = dble(i) )
 c
 c m1  =  mean of X1
 c m2  =  mean of X2
@@ -127,11 +127,11 @@ c m5  =  mean of (X2*X2)
        m5 = 0.0d0
 
        do i = vmi,vmi+nv-1
-        m1  =  m1+float(i)/float(nv)
-        m2  =  m2+X2(i)/float(nv)
-        m3  =  m3+(float(i)*X2(i))/float(nv)
-        m4  =  m4+(float(i)*float(i))/float(nv)
-        m5  =  m5+(X2(i)*X2(i))/float(nv)
+        m1  =  m1+dble(i)/dble(nv)
+        m2  =  m2+X2(i)/dble(nv)
+        m3  =  m3+(dble(i)*X2(i))/dble(nv)
+        m4  =  m4+(dble(i)*dble(i))/dble(nv)
+        m5  =  m5+(X2(i)*X2(i))/dble(nv)
        end do   
 
        r = (m3-m1*m2)/(sqrt(m4-m1**2)*sqrt(m5-m2**2))
@@ -139,7 +139,7 @@ c m5  =  mean of (X2*X2)
        a = m2-b*m1
 
        do i = vmi,vmi+nv-1
-        X2(i)  =  X2(i) - (a + b*float(i))
+        X2(i)  =  X2(i) - (a + b*dble(i))
        end do
 c      print*,'Trend line has a = ',a,' b = ',b
 
