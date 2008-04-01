@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.226 2007-12-20 20:01:16 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.227 2008-04-01 18:24:04 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -10669,17 +10669,17 @@ NhlErrorTypes _Nclispan
 	dimsizes  = abs(fnsh-strt)/spacing + 1;
 
 	if((fnsh - strt) > 0) {
-		out_val = (int*)NclMalloc(dimsizes*sizeof(float));
+		out_val = (int*)NclMalloc(dimsizes*sizeof(int));
 		for(i = 0; i < dimsizes; i++) {
 			out_val[i] = strt + i * spacing;
 		}
 	} else if((fnsh - strt) < 0) {
-		out_val = (int*)NclMalloc(dimsizes*sizeof(float));
+		out_val = (int*)NclMalloc(dimsizes*sizeof(int));
 		for(i = 0; i < dimsizes; i++) {
 			out_val[i] = strt - i * spacing;
 		}
 	} else {
-		out_val = (int*)NclMalloc(sizeof(float));
+		out_val = (int*)NclMalloc(sizeof(int));
 		*out_val = strt;
 		dimsizes = 1;
 	}
