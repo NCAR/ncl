@@ -1,5 +1,5 @@
 C NCLFORTSTART
-      subroutine frq_cfft (npts,fmsg,frq)
+      subroutine frqcfft (npts,fmsg,frq)
       implicit none
 c                                                  ! input
       integer npts
