@@ -8,7 +8,7 @@ c                                      ! OUTPUT
       double precision acoef(nmx), bcoef(nmx) 
 c NCLEND
 c
-c NCL:  coef = cfftf( x )
+c NCL:  coef = cfftf( x )              ! coef(2,...)
 c                                      ! LOCAL        
       integer  n
       double precision work(4*nmx+25)
@@ -53,9 +53,34 @@ c                                      ! create complex input
       end do
 
       call cfftb(nmx, carr, work)
-c                                      ! reconstruct 
+c                                      ! reconstruct ... normalize 
       do n=1,nmx
          x(n) = dble( carr(n) ) / nmx
+      end do
+
+      return
+      end
+
+C NCLFORTSTART
+      subroutine frq_cfft (npts,frq)
+      implicit none
+c
+c SPECIAL to generate frequencies for frq attribute: cfftf
+c .   Need to allow for a back transform so no order change
+c                                                  ! input
+      integer npts
+c                                                  ! output
+      double precision frq(npts)
+C NCLEND
+c                                                  ! local
+      integer n
+      double precision df
+c                                      frequency interval
+      df  =  1.0d0/npts
+c                                      generate frequencies
+      do n=1,npts
+         frq(n) = (n-1)*df
+         if (frq(n).gt.0.5d0) frq(n) = frq(n) - 1.0d0
       end do
 
       return
