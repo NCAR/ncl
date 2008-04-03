@@ -62,7 +62,7 @@ c                                      ! reconstruct ... normalize
       end
 
 C NCLFORTSTART
-      subroutine frq_cfft (npts,frq)
+      subroutine frqcfft (npts,frq)
       implicit none
 c
 c SPECIAL to generate frequencies for frq attribute: cfftf
