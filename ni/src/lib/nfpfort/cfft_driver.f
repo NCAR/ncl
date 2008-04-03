@@ -1,10 +1,9 @@
 C NCLFORTSTART
-      subroutine cfftfdriver (nmx,x,acoef,bcoef,work,nwrk)
+      subroutine cfftfdriver (nmx,x,acoef,bcoef)
       implicit none
 c                                      ! INPUT       
-      integer  nmx,nwrk
+      integer  nmx
       double precision x(nmx)
-      double precision work(nwrk)      ! 4*nmx+25
 c                                      ! OUTPUT       
       double precision acoef(nmx), bcoef(nmx) 
 c NCLEND
@@ -12,6 +11,7 @@ c
 c NCL:  coef = cfftf( x )              ! coef(2,...)
 c                                      ! LOCAL        
       integer  n
+      double precision work(4*nmx+25)
       double complex   carr(nmx)       
 
       call cffti(nmx,work)               
@@ -31,19 +31,19 @@ c                                      ! create complex input
       end
 
 C NCLFORTSTART
-      subroutine cfftbdriver (nmx,x,acoef,bcoef,work,nwrk)
+      subroutine cfftbdriver (nmx,x,acoef,bcoef)
       implicit none
 c                                      ! INPUT       
-      integer  nmx,nwrk
+      integer  nmx
       double precision acoef(nmx), bcoef(nmx) 
 c                                      ! OUTPUT       
       double precision x(nmx)
-      double precision work(nwrk)      ! 4*nmx+25
 c NCLEND
 c
 c NCL:  coef = cfftb( acoef, bcoef )
 c                                      ! LOCAL        
       integer  n
+      double precision work(4*nmx+25)
       double complex   carr(nmx)       
 
       call cffti(nmx,work)               
@@ -82,6 +82,58 @@ c                                      generate frequencies
          frq(n) = (n-1)*df
          if (frq(n).gt.0.5d0) frq(n) = frq(n) - 1.0d0
       end do
+
+      return
+      end
+
+C NCLFORTSTART
+      subroutine cfftffrqreorder (npts,frqi,cfai,cfbi,frqo,cfao,cfbo)
+      implicit none
+c
+c SPECIAL to reorder frequencies to range from -0.5 to +0.5
+c .   Generally, for graphics reasons only. 
+c                                                  ! input
+      integer npts
+      double precision frqi(npts), cfai(npts), cfbi(npts) 
+c                                                  ! output
+      double precision frqo(npts), cfao(npts), cfbo(npts)
+C NCLEND
+c
+c NCL: cf_reorder = cfftf_frq_reorder( cf )
+c                                                  ! local
+      integer n, n2
+
+      n2  = npts/2
+c                             for clarity use two differnt sections
+      if (mod(npts,2).eq.0) then
+c                                                  ! even         
+          do n=1,n2
+             frqo(n) = frqi(n+n2)
+             cfao(n) = cfai(n+n2)
+             cfbo(n) = cfbi(n+n2)
+          end do
+
+          if (frqo(1).gt.0.0d0) frqo(1) = -frqo(1) 
+    
+          do n=1,n2
+             frqo(n2+n) = frqi(n)
+             cfao(n2+n) = cfai(n)
+             cfbo(n2+n) = cfbi(n)
+          end do
+      else
+c                                                  ! odd          
+          do n=1,n2
+             frqo(n)    = frqi(n+n2+1)
+             cfao(n)    = cfai(n+n2+1)
+             cfbo(n)    = cfbi(n+n2+1)
+          end do
+
+          do n=1,n2+1
+             frqo(n2+n) = frqi(n)
+             cfao(n2+n) = cfai(n)
+             cfbo(n2+n) = cfbi(n)
+          end do
+      end if
 
       return
       end
