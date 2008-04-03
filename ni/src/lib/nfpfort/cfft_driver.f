@@ -2,7 +2,7 @@ C NCLFORTSTART
       subroutine cfftfdriver (nmx,x,acoef,bcoef,work,nwrk)
       implicit none
 c                                      ! INPUT       
-      integer  nmx
+      integer  nmx,nwrk
       double precision x(nmx)
       double precision work(nwrk)      ! 4*nmx+25
 c                                      ! OUTPUT       
@@ -34,7 +34,7 @@ C NCLFORTSTART
       subroutine cfftbdriver (nmx,x,acoef,bcoef,work,nwrk)
       implicit none
 c                                      ! INPUT       
-      integer  nmx
+      integer  nmx,nwrk
       double precision acoef(nmx), bcoef(nmx) 
 c                                      ! OUTPUT       
       double precision x(nmx)
