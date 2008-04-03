@@ -2,3 +2,21 @@ This directory, impltest, contains implementation dependent code in
 file tlocal*.f.  The yMakefile contains the system dependencies. 
 Currently, there is a tlocalcray.f, for the Cray, and a tlocal32.f
 for other 32 bit machines.
+
+If you have problems compiling tlocal32.f because of the following error:
+
+tlocal32.f:242.31:
+
+     +  MASK1(33) / z'ffffffff'/                                        
+                              1
+Error: Arithmetic overflow converting INTEGER(8) to INTEGER(4) at (1)
+tlocal32.f:174.31:
+
+     +  MASK0(32) / z'80000000'/                                        
+                              1
+Error: Arithmetic overflow converting INTEGER(8) to INTEGER(4) at (1)
+make: *** [tlocal32.o] Error 1
+
+then add "-fno-range-check" to your gfortran compile line.
+You can do this using "CcOptions" in the configuration file
+in $NCARG/config.
