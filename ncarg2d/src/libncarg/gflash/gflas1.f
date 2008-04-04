@@ -1,5 +1,5 @@
 C
-C	$Id: gflas1.f,v 1.5 2000-08-22 15:04:29 haley Exp $
+C	$Id: gflas1.f,v 1.6 2008-04-04 21:02:49 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -117,10 +117,6 @@ C_END PROLOGUE GFLAS1
 C
 C-------------------------------------------------------------------------
 C
-C  Make sure that the BLOCKDATA is loaded.
-C
-      EXTERNAL GFLSBD
-C
 C  IOPWKS is an array containing the workstation identifiers for
 C  all open workstations; IOACT is an array of flags indicating
 C  whether the open workstation is also active.
@@ -130,6 +126,10 @@ C
 C     CHARACTER*80 IDR(1),ODR(1)
 C
       SAVE
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL GFLSBD
 C
 C  Check on proper mode value (MODEF keeps track of where we are
 C  in a GFLASH sequence.)

@@ -1,5 +1,5 @@
 C
-C	$Id: pwt.f,v 1.4 2000-08-22 04:34:23 haley Exp $
+C	$Id: pwt.f,v 1.5 2008-04-04 21:02:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -140,7 +140,7 @@ C  PLCN   --  Bit offset to extract PEN control bit from fontcap.
 C  FNTMAX --  Number of fonts obtained from FONT LIST (defaults to 1).
 C  FNTS   --  An array of pointers associating indices obtained from
 C             FONT INDEX elements with the internally supported fonts.
-C             Consult the documentation in BLOCKDATA TRNDAT for a
+C             Consult the documentation in BLOCKDATA TRNDATX for a
 C             list of supported fonts.
 C  FLEFT  --  An array of character left values for proportionally
 C             spaced fonts.

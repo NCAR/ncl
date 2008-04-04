@@ -1,5 +1,5 @@
 C
-C $Id: pcblda.f,v 1.15 2008-01-11 23:55:43 fred Exp $
+C $Id: pcblda.f,v 1.16 2008-04-04 21:02:52 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCK DATA PCBLDA
+      SUBROUTINE PCBLDA
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA PCBLDAX
 C
 C Specify default values of internal parameters of PLCHHQ, PLCHMQ, and
 C the routine PCCFFC, which is called to retrieve a character from a

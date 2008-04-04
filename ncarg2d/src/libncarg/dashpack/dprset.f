@@ -1,5 +1,5 @@
 C
-C $Id: dprset.f,v 1.3 2000-08-22 15:03:23 haley Exp $
+C $Id: dprset.f,v 1.4 2008-04-04 21:02:45 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -38,7 +38,7 @@ C
         SAVE   /DPCMRI/
 C
 C Set all values.  For descriptions of the parameters being set, see
-C the BLOCK DATA routine DPBLDA.
+C the BLOCK DATA routine DPBLDAX.
 C
         ANGF=360.
         CHDP='$$$$$$$$$$$$$$$$'

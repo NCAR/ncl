@@ -1,5 +1,5 @@
 C
-C $Id: isosrf.f,v 1.6 2006-03-10 14:23:18 kennison Exp $
+C $Id: isosrf.f,v 1.7 2008-04-04 21:02:51 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -31,10 +31,6 @@ C
      +                XVPR,YVPB,YVPT
       SAVE   /ISCOMN/
 C
-C Force the BLOCK DATA routine to load.
-C
-      EXTERNAL ISBLDA
-C
 C Arithmetic statement function for taking an average of two reals.
 C
       AVE(A,B) = (A+B)*.5
@@ -44,6 +40,10 @@ C
       SU(UTEMP) = UTEMP
       SV(VTEMP) = VTEMP
       SW(WTEMP) = WTEMP
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL ISBLDA
 C
 C  Initialize machine constants.
 C

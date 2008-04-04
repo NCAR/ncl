@@ -1,5 +1,5 @@
 C
-C $Id: tdpara.f,v 1.3 2000-08-22 15:07:11 haley Exp $
+C $Id: tdpara.f,v 1.4 2008-04-04 21:02:56 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -38,9 +38,9 @@ C
         COMMON /TDCOM2/ XACP,YACP,ZACP,XCDX,YCDX,ZCDX,XCDY,YCDY,ZCDY
         SAVE   /TDCOM2/
 C
-C Declare the BLOCK DATA routine external to force it to load.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-        EXTERNAL TDBLDA
+        CALL TDBLDA
 C
 C Check for an uncleared prior error.
 C

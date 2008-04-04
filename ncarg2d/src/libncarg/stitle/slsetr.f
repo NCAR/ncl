@@ -1,5 +1,5 @@
 C
-C $Id: slsetr.f,v 1.5 2000-08-22 15:06:34 haley Exp $
+C $Id: slsetr.f,v 1.6 2008-04-04 21:02:54 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -43,10 +43,9 @@ C Define a character variable in which messages may be formed.
 C
         CHARACTER*29 CMSG
 C
-C Declare the block data routine SLBLDA external to force it to load,
-C so that the internal parameters will be initialized.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-        EXTERNAL SLBLDA
+        CALL SLBLDA
 C
 C Check for an uncleared prior error.
 C

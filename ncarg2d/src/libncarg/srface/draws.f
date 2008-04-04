@@ -1,5 +1,5 @@
 C
-C $Id: draws.f,v 1.4 2006-03-10 14:46:00 kennison Exp $
+C $Id: draws.f,v 1.5 2008-04-04 21:02:54 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,9 +33,12 @@ C
      2                NUPPER     ,NRSWT      ,BIGD       ,UMIN       ,
      3                UMAX       ,VMIN       ,VMAX       ,RZERO      ,
      4                IOFFP      ,NSPVAL     ,SPVAL      ,BIGEST
-      EXTERNAL        SRFABD
       DATA STEEP/5./
       DATA MX,MY/0,0/
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL SRFABD
 C
 C MAKE LINE LEFT TO RIGHT.
 C

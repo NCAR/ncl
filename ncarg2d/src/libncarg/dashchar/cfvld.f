@@ -1,5 +1,5 @@
 C
-C	$Id: cfvld.f,v 1.5 2006-03-10 23:48:14 kennison Exp $
+C	$Id: cfvld.f,v 1.6 2008-04-04 21:02:45 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -42,17 +42,13 @@ C THE VARIABLES IN DSAVE1 HAVE TO BE SAVED FOR THE NEXT CALL TO CFVLD.
 C
       COMMON /DSAVE1/ X,Y,X2,Y2,X3,Y3,M,BTI,IB,IX,IY
 C
-C THE FLAGS IFSTFL AND IVCTFG ARE INITIALIZED IN THE BLOCK DATA DASHBD.
+C THE FLAGS IFSTFL AND IVCTFG ARE INITIALIZED IN THE BLOCK DATA DASHBDX.
 C IFSTFL CONTROLS THAT FRSTD IS CALLED BEFORE VECTD IS CALLED.
 C IVCTFG IS A FLAG TO INDICATE IF CFVLD IS BEING CALLED FROM VECTD OR
 C LASTD.
 C
       COMMON /DCFLAG/ IFSTFL
       COMMON /CFFLAG/ IVCTFG
-C
-C Necessary on some machines to get BLOCK DATA loaded:
-C
-      EXTERNAL DASHBD
 C
       SAVE
 C
@@ -91,6 +87,10 @@ C
 C     BTI - BITS THIS INCREMENT
 C     BPBX,BPBY BITS PER BIT X(Y)
 C
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL DASHBD
 C
 C BRANCH DEPENDING ON FUNCTION TO BE PERFORMED.
 C

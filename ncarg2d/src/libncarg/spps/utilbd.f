@@ -1,5 +1,5 @@
 C
-C $Id: utilbd.f,v 1.7 2006-03-10 00:25:37 kennison Exp $
+C $Id: utilbd.f,v 1.8 2008-04-04 21:02:54 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCKDATA UTILBD
+      SUBROUTINE UTILBD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA UTILBDX
 C
 C The common block IUTLCM contains integer utility variables which are
 C user-settable by the routine SETUSV and user-retrievable by the

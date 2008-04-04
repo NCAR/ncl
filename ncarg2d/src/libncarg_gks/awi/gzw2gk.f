@@ -1,5 +1,5 @@
 C
-C	$Id: gzw2gk.f,v 1.3 2000-08-22 15:08:36 haley Exp $
+C	$Id: gzw2gk.f,v 1.4 2008-04-04 21:02:59 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,8 +33,11 @@ C
       INTEGER IOS,STATUS
       REAL TWIND(4),TVIEW(4)
 C
-      EXTERNAL GSEGDT
       include 'trbufr.h'
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL GSEGDT
 C
 C  Use normalization transformation 1 set to the identity (we use 1
 C  so that the window can be changed for clipping).

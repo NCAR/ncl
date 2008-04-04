@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.19 2003-11-24 19:20:33 fred Exp $
+C	$Id: ngseti.f,v 1.20 2008-04-04 21:02:51 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -40,13 +40,13 @@ C
 C
       include 'ngcomn.h'
 C
-C Declare the block data routine external to force its loading.
-C
-      EXTERNAL NGBLDA
-C
 C  Input and output data records for ESCAPE function calls.
 C
       CHARACTER*80 IDR,CDUM
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL NGBLDA
 C
 C  Check for an uncleared prior error.
 C

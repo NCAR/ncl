@@ -1,5 +1,5 @@
 C
-C	$Id: trans.f.sed,v 1.1 2004-08-03 16:31:25 haley Exp $
+C	$Id: trans.f.sed,v 1.2 2008-04-04 21:02:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,6 @@ C
 C  Main program for the NCAR Fortran CGM translator.  This translator
 C  will also accept NCAR pre-CGM metafiles.
 C
-      EXTERNAL TRNDAT, TRNDT2
       COMMON/TREROR/ ALLOK, MFRCHK, MTOPER, METRDC, REDERR, TYPCHG
      1             ,INVTYP, MINVLD, TYPERR, FRMEND, ENCINT, IVDCDT
      2             ,GCOERR, GCRERR, GCCERR, FCOERR, FCRERR, FCCERR
@@ -94,6 +93,11 @@ C
 C
       INTEGER IOS, STATUS
       CHARACTER*1 STRING(80)
+C
+C Do calls forcing BLOCKDATAs to be loaded from a binary library.
+C
+      CALL TRNDAT
+      CALL TRNDT2
 C
 C  Set the machine dependent constants.
 C

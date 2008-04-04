@@ -1,7 +1,7 @@
 .OP LS=10001 LI=1 CB RT ES=< ET=> OC UC=0 BI=77 IF=2
 .EL I
 I
-I $Id: CodeIftran,v 1.10 2006-10-20 21:37:52 kennison Exp $
+I $Id: CodeIftran,v 1.11 2008-04-04 21:02:43 kennison Exp $
 I
 I***********************************************************************
 I C O N P A C K   -   I N T R O D U C T I O N
@@ -210,7 +210,18 @@ I C O N P A C K   -   B L O C K   D A T A   ( D E F A U L T S )
 I***********************************************************************
 
 
-      BLOCK DATA CPBLDA
+      SUBROUTINE CPBLDA
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+C
+CNOSPLIT - makes Fsplit put next routine in same file as last routine.
+C
+      BLOCKDATA CPBLDAX
 C
 C Declare all of the CONPACK common blocks.
 C
@@ -9259,9 +9270,9 @@ C Declare all of the CONPACK common blocks.
 C
 .CALL CPCOMN,/$SAVE-COMMON$/1/
 C
-C Force the block data routine to load.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-        EXTERNAL CPBLDA
+        CALL CPBLDA
 C
 C Find out how many significant digits a real can represent and use it
 C to compute machine constants "epsilon" and "1+epsilon" and to set up

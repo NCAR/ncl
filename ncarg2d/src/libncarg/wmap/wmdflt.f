@@ -1,5 +1,5 @@
 C
-C	$Id: wmdflt.f,v 1.7 2001-08-07 18:37:35 fred Exp $
+C	$Id: wmdflt.f,v 1.8 2008-04-04 21:02:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,7 +23,7 @@ C
       SUBROUTINE WMDFLT()
 C
 C  Sets all attributes to their default values.  All values should
-C  agree with those set in BLOCKDATA WMBLDA.
+C  agree with those set in BLOCKDATA WMBLDAX.
 C
       include 'wmcomn.h'
 C

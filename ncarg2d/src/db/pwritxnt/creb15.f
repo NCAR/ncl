@@ -1,5 +1,5 @@
 C
-C	$Id: creb15.f,v 1.3 2000-08-22 14:36:36 haley Exp $
+C	$Id: creb15.f,v 1.4 2008-04-04 21:02:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -55,7 +55,7 @@ C
 C TEMPORARY STORAGE TO CONTAIN 1 CARD IMAGE.
       DIMENSION ICARD(16)
 C
-C SEE BLOCK DATA DPORT FOR MEANING OF CONSTANTS IN COMMON BLOCK.
+C SEE BLOCK DATA DPORTX FOR MEANING OF CONSTANTS IN COMMON BLOCK.
       COMMON /IDC1/ NBWD, IZERO, MA15
 C
 C

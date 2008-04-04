@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.7 2005-06-22 21:38:22 kennison Exp $
+I $Id: CodeIftran,v 1.8 2008-04-04 21:02:48 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -1735,7 +1735,7 @@ C
         INTEGER IAM(*),MCS,IAI(*),IAG(*),MAI
         REAL    XCS(*),YCS(*)
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -1951,7 +1951,7 @@ C
 C
         INTEGER IAMP(*),IGRP,IDLT,IDRT
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCMC/  IGI1,IGI2,NCRA,NOVS,XCRA(100),YCRA(100)
@@ -1993,7 +1993,7 @@ C
         INTEGER IAM(*),MCS,IAI(*),IAG(*),MAI
         REAL    XCS(*),YCS(*)
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCMC/  IGI1,IGI2,NCRA,NOVS,XCRA(100),YCRA(100)
@@ -2035,7 +2035,7 @@ C
         DOUBLE PRECISION XLAT,XLON
         INTEGER          IFST,IAMP(*),IGRP,IDLT,IDRT
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -2396,7 +2396,7 @@ C
         INTEGER          IFST,IAM(*),MCS,IAI(*),IAG(*),MAI
         REAL             XCS(*),YCS(*)
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -2758,7 +2758,7 @@ C
 C When IPRT is positive, IDPT is the dash pattern to be used.  If IPRT
 C is negative, IDPT is ignored.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,

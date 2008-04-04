@@ -1,5 +1,5 @@
 C
-C $Id: mdrgip.f,v 1.2 2005-06-22 21:36:47 kennison Exp $
+C $Id: mdrgip.f,v 1.3 2008-04-04 21:02:47 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -30,7 +30,7 @@ C lies on the edge of the unit square.  The object of this is to
 C prevent edge effects between adjacent lat/lon squares filled using
 C the RANGS/GSHHS database.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON

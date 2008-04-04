@@ -1,5 +1,5 @@
 C
-C $Id: bccurv.f,v 1.4 2001-09-06 16:24:32 haley Exp $
+C $Id: bccurv.f,v 1.5 2008-04-04 21:02:55 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -64,10 +64,6 @@ C             process.
 C
       include 'bccom.h'
 C
-C Declare the BLOCK DATA routine external to force it to load.
-C
-      EXTERNAL BCBKD
-C
       PARAMETER (UNDEF=2.**100, NLEV=8, MXCRV=2**(NLEV-1))
 C
       DIMENSION BXI(4),BYI(4),XO(NO),YO(NO)
@@ -78,6 +74,10 @@ C  computed at that level are stored in these arrays.
 C
       DIMENSION BZPTSX(4,MXCRV),BZPTSY(4,MXCRV),BZX(4),BZY(4)
       DIMENSION TWIN(4),TVPT(4)
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL BCBKD
 C
 C  Set the flatness tolerance value EPS in user coordinates.
 C

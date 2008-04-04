@@ -1,5 +1,5 @@
 C
-C $Id: idsetr.f,v 1.3 2000-08-22 15:06:54 haley Exp $
+C $Id: idsetr.f,v 1.4 2008-04-04 21:02:55 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,10 +41,9 @@ C Define a character variable in which messages may be formed.
 C
         CHARACTER*37 CMSG
 C
-C Declare the block data routine IDBLDA external to force it to load,
-C so that the internal parameters will be initialized.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-        EXTERNAL IDBLDA
+        CALL IDBLDA
 C
 C Check for an uncleared prior error.
 C

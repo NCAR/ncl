@@ -1,5 +1,5 @@
 C
-C	$Id: csgetd.f,v 1.5 2000-08-22 15:19:10 haley Exp $
+C	$Id: csgetd.f,v 1.6 2008-04-04 21:03:02 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,9 +41,9 @@ C
 C
       include 'cscomn.h'
 C
-C Declare the block data routine external to force its loading.
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL CSBLDA
+      CALL CSBLDA
 C
 C  Check for an uncleared prior error.
 C

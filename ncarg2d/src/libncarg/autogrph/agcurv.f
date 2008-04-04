@@ -1,5 +1,5 @@
 C
-C $Id: agcurv.f,v 1.7 2006-03-09 22:56:04 kennison Exp $
+C $Id: agcurv.f,v 1.8 2008-04-04 21:02:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -43,7 +43,7 @@ C no windowing.  If 'WINDOW.' is non-zero, AGQURV is called; it omits
 C portions of the curve which fall outside the current curve window.
 C
 C The argument KDSH specifies the dash pattern to be used.  If KDSH is
-C negative, the function MOD(IABS(KDSH),26) is used to select a solid
+C negative, the function MOD(ABS(KDSH),26) is used to select a solid
 C line interrupted by one of the alphabetic characters.  If KDSH is
 C zero, the user is assumed to have done his own DASHD call.  If KDSH
 C is positive, the function MOD(KDSH,NODP) is used to select one of the
@@ -73,10 +73,6 @@ C
      +                RBOX(6),DBOX(6,4),SBOX(6,4)
       SAVE /AGCONP/
 C
-C Declare the block data routine external to force it to load.
-C
-      EXTERNAL AGDFLT
-C
 C DASH receives alphabetic dash patterns.
 C
       CHARACTER*10 DASH
@@ -86,6 +82,10 @@ C
       CHARACTER*26 ALPH
 C
       DATA ALPH / 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' /
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL AGDFLT
 C
 C Check for an alphabetic dash pattern.
 C

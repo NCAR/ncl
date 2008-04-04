@@ -1,5 +1,5 @@
 C
-C	$Id: pwrity.f,v 1.4 2006-03-11 00:13:19 kennison Exp $
+C	$Id: pwrity.f,v 1.5 2008-04-04 21:02:53 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -344,9 +344,14 @@ C
       DATA LENTRY/.FALSE./
       DATA LRES/15/
       DATA DEGRAD/0.017453293/
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL PWRYBD
+C
       IF (USABLE) GO TO 101
 C
-C  THIS IS A PWRITY CALL
+C THIS IS A PWRITY CALL
 C
       CALL Q8QST4 ('GRAPHX','PWRITY','PWRITY','VERSION  1')
   101 USABLE = .FALSE.

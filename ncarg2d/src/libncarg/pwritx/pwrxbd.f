@@ -1,5 +1,5 @@
 C
-C	$Id: pwrxbd.f,v 1.3 2000-08-22 15:05:45 haley Exp $
+C	$Id: pwrxbd.f,v 1.4 2008-04-04 21:02:53 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,7 +21,16 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
 C
-      BLOCK DATA PWRXBD
+      SUBROUTINE PWRXBD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA PWRXBDX
 C
 C
 C  SAVE DATA VALUES FOR LATER PASSES

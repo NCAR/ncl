@@ -1,5 +1,5 @@
 C
-C	$Id: conras.f,v 1.3 2000-08-22 15:10:07 haley Exp $
+C	$Id: conras.f,v 1.4 2008-04-04 21:03:00 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -108,7 +108,7 @@ C                        saved and returned to the next invocation  of
 C                        CONRAS.
 C
 C          ENTRY POINTS  CONRAS, CONDET, CONINT, CONCAL, CONLOC, CONTNG,
-C                        CONDRW, CONCLS, CONSTP, CONBDN,
+C                        CONDRW, CONCLS, CONSTP, CONBDN, CONBDNX,
 C                        CONTLK, CONPDV, CONOP1, CONOP2, CONOP3, CONOP4,
 C                        CONXCH, CONREO, CONCOM, CONCLD, CONPMS, CONSTP,
 C                        CONGEN, CONLOD, CONECD, CONOUT, CONOT2, CONCLD,
@@ -901,7 +901,7 @@ C                        ISTEP is changed by the SSD option.
 C
 C                  NOTE  If NCP.GT.25, arrays DSQ0 and IPC0 in CONDET
 C                        must  be adjusted accordingly.  Also NCPSZ in
-C                        CONBDN (25 by default), must be increased to
+C                        CONBDNX (25 by default), must be increased to
 C                        NCP.   The  default  value of NCP, which is 4,
 C                        produces pleasing  pictures  in  most  cases.
 C                        However, fine-tuning of the interpolation can
@@ -976,7 +976,6 @@ C                     errors should the user wish to use them in that
 C                     fashion.  The documentation on the ERPRT77 package
 C                     explains how to recover from an error.
 C
-      EXTERNAL        CONBDN
 C
 C Note:  The common blocks listed include all the common used by
 C        the entire CONRAN family.  Not all members will use all
@@ -1199,7 +1198,11 @@ C IBELOW, IBEL2 AMOUNT MESSAGE IS BELOW PLOT
 C
         DATA IABOVE,IBELOW,IBEL2/30,-30,-45/
 C
-C  THE FOLLOWING CALL IS FOR MONOTORING LIBRARY USE AT NCAR
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL CONBDN
+C
+C  THE FOLLOWING CALL IS FOR MONITORING LIBRARY USE AT NCAR
 C
       CALL Q8QST4 ('NSSL','CONRAS','CONRAS','VERSION 01')
 C

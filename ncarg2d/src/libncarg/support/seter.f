@@ -1,5 +1,5 @@
 C
-C $Id: seter.f,v 1.6 2000-08-22 15:06:58 haley Exp $
+C $Id: seter.f,v 1.7 2008-04-04 21:02:56 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -56,10 +56,6 @@ C   2 - NERRF equal to 0.
 C   3 - an unrecovered error followed by another error.
 C   4 - bad value for IROPT (less than 1 or greater than 2).
 C
-C Force load of the BLOCK DATA subroutine.
-C
-        EXTERNAL SEBLDA
-C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
 C of types INTEGER and CHARACTER, respectively, for the routine SETER
 C and associated routines.  For descriptions of these variables and for
@@ -71,6 +67,10 @@ C
         COMMON /SECOMC/ ERMSG
           CHARACTER*256 ERMSG
         SAVE   /SECOMC/
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL SEBLDA
 C
 C The unit number for error messages is I1MACH(4).  Save that value,
 C if it has not already been done.

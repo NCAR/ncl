@@ -1,5 +1,5 @@
 C
-C $Id: histgr.f,v 1.8 2006-03-10 17:48:03 kennison Exp $
+C $Id: histgr.f,v 1.9 2008-04-04 21:02:50 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -181,7 +181,7 @@ C    ON OUTPUT  All arguments remain unchanged except the scratch
 C               array WRK.
 C
 C ENTRY POINTS  HSTBKD, HSTEXP, HSTMED, HSTOPC, HSTOPL, HSTOPR,
-C               HSTOPI, HSTSTR, HISTGR, HSTLST, NWTSTR
+C               HSTOPI, HSTSTR, HISTGR, HSTLST, NWTSTR, HSTBKDX
 C
 C COMMON BLOCKS HSTGC1, HSTGC2
 C
@@ -669,7 +669,6 @@ C         'CLA=ON',  default values: 2 = medium, 0 = horizontal labels.
 C
 C-----------------------------------------------------------------------
 C
-      EXTERNAL HSTBKD
       COMMON /HSTGC1/ HORZNT, PERCNT, MIDVAL, SHADE, MEDIAN, PERIM,
      -       HFRAME, LISTOP, WINDOW, COLORS, HSTFOR, TITLE, LABEL,
      -       FREQNC, HWIND(4), COLSHA, COLREC, COLAXI, COLMED, COLTEX,
@@ -698,6 +697,10 @@ C
       REAL     NEWWIN(4), LASTLB
       LOGICAL  DONE, COMPAR, SPEC, ASSIGN
       DATA BLANK /' '/
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL HSTBKD
 C
 C  THE FOLLOWING IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
 C

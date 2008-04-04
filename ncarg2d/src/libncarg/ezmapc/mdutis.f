@@ -1,5 +1,5 @@
 C
-C $Id: mdutis.f,v 1.1 2001-08-16 23:12:46 kennison Exp $
+C $Id: mdutis.f,v 1.2 2008-04-04 21:02:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,10 +36,6 @@ C
         INTEGER IPRF
         SAVE   /USGSC1/
 C
-C Declare the USGS "BLOCK DATA" external to force it to load.
-C
-        EXTERNAL GTPZBD
-C
 C Declare required coordinate arrays.
 C
         DIMENSION CRDI(2),CRDO(2),CRDT(2)
@@ -48,6 +44,10 @@ C Define a couple of conversion constants.
 C
         DATA DTOR / .017453292519943E0 /
         DATA RTOD / 57.2957795130823E0 /
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL GTPZBD
 C
 C If the USGS package is initialized, zero the error flag; otherwise,
 C take an error exit.

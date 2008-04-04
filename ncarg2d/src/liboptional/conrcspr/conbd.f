@@ -1,5 +1,5 @@
 C
-C	$Id: conbd.f,v 1.3 2000-08-22 15:10:13 haley Exp $
+C	$Id: conbd.f,v 1.4 2008-04-04 21:03:00 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -22,7 +22,16 @@ C USA.
 C
 C
 C
-      BLOCK DATA CONBD
+      SUBROUTINE CONBD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA CONBDX
       COMMON /CONRE1/ IOFFP      ,SPVAL      ,IHILO
       COMMON /CONRE2/ IX         ,IY         ,IDX        ,IDY        ,
      1                IS         ,ISS        ,NP         ,CV         ,

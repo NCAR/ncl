@@ -1,5 +1,5 @@
 C
-C	$Id: pcrbin.f,v 1.3 2000-08-22 14:36:37 haley Exp $
+C	$Id: pcrbin.f,v 1.4 2008-04-04 21:02:42 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -47,10 +47,10 @@ C GKS package.  Also, the entry SETER of the error package ERPRT77
 C is invoked.
 C
 C Before executing PCRBIN the implementation-dependent canstants in
-C the BLOCKDATA DPORT must be set.  Also, make the four files
+C the BLOCKDATA DPORTX must be set.  Also, make the four files
 C PWRITXC1, PWRITXC2, PWRITXD1, and PWRITXD2 available on the
-C units specified in BLOCKDATA DPORT.  Ready the unit specified
-C in BLOCKDATA DPORT to receive the created binary output file
+C units specified in BLOCKDATA DPORTX.  Ready the unit specified
+C in BLOCKDATA DPORTX to receive the created binary output file
 C (the file which will ultimately be used by PWRITX.)
 C
 C **********************************************************************
@@ -79,11 +79,13 @@ C
       COMMON/PINIT2/FLAG
       LOGICAL FLAG
 C
-C CONSTANTS DEFINED IN BLOCK DATA DPORT.
+C CONSTANTS DEFINED IN BLOCK DATA DPORTX.
 C
       COMMON /IDC3/ IU1,IU2,IU3,IU4,IOUT,ICNUM1,ICNUM2,IDDLEN,INDLEN
 C
-      EXTERNAL DPORT
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL DPORT
 C
 C CHECK IF IMPLEMENTATION DEPENDENT CONSTANTS ARE INITIALIZED.
 C

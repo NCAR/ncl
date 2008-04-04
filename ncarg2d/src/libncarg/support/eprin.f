@@ -1,5 +1,5 @@
 C
-C $Id: eprin.f,v 1.5 2000-08-22 15:06:51 haley Exp $
+C $Id: eprin.f,v 1.6 2008-04-04 21:02:55 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,7 +27,7 @@ C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
 C of types INTEGER and CHARACTER, respectively, for the routine SETER
 C and associated routines.  For descriptions of these variables and for
-C default values of them, see the block data routine SEBLDA.
+C default values of them, see the block data routine SEBLDAX.
 C
         COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
         SAVE   /SECOMI/

@@ -1,5 +1,5 @@
 C
-C $Id: dpdraw.f,v 1.11 2006-03-09 23:23:15 kennison Exp $
+C $Id: dpdraw.f,v 1.12 2008-04-04 21:02:45 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -69,10 +69,6 @@ C
      +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
-C Declare the block data external to force it to load.
-C
-        EXTERNAL DPBLDA
-C
 C Declare the arrays that are used to hold the descriptors of the
 C constituent elements of the dash pattern.  For a value of I between
 C 1 and NDPE, IDPE(I) will be -1 for a gap in which no characters will
@@ -137,6 +133,10 @@ C
 C Define a multiplicative constant to get from radians to degrees.
 C
         DATA RTOD / 57.2957795130823 /
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL DPBLDA
 C
 C Check for an uncleared prior error.
 C

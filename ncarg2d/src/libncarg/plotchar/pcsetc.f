@@ -1,5 +1,5 @@
 C
-C $Id: pcsetc.f,v 1.13 2000-08-22 15:05:27 haley Exp $
+C $Id: pcsetc.f,v 1.14 2008-04-04 21:02:52 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -44,9 +44,9 @@ C
       CHARACTER*18 LFNM
       SAVE   /PCFNNM/
 C
-C Declare the BLOCK DATA routine external to force it to load.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL PCBLDA
+      CALL PCBLDA
 C
 C Check for an uncleared prior error.
 C

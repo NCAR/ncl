@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.30 2008-02-01 21:16:27 fred Exp $
+C	$Id: gksbd.f,v 1.31 2008-04-04 21:02:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCKDATA GKSBD
+      SUBROUTINE GKSBD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA GKSBDX
 C
       include 'gkscom.h'
 C

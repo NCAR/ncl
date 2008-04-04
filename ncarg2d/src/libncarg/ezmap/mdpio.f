@@ -1,5 +1,5 @@
 C
-C $Id: mdpio.f,v 1.6 2007-04-24 22:48:17 kennison Exp $
+C $Id: mdpio.f,v 1.7 2008-04-04 21:02:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -29,7 +29,7 @@ C for MDPLOT.  The argument IACT specifies what is to be done:  1 asks
 C that the dataset be positioned at the beginning of the desired "file",
 C 2 that the next record be read.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM3/  ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,

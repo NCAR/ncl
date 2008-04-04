@@ -1,5 +1,5 @@
 C
-C $Id: lbgetr.f,v 1.6 2000-08-22 15:05:05 haley Exp $
+C $Id: lbgetr.f,v 1.7 2008-04-04 21:02:51 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -38,13 +38,13 @@ C
         COMMON /LBCOMN/ ICBL,ICFL,ICLB,WOBL,WOFL,WOLB
         SAVE   /LBCOMN/
 C
-C Declare the block data routine external to force it to load.
-C
-        EXTERNAL LBBLDA
-C
 C Define a character temporary for use in forming error messages.
 C
         CHARACTER*39 CTMP
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL LBBLDA
 C
 C Check for an uncleared prior error.
 C

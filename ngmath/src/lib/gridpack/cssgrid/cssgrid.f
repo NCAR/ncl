@@ -1,5 +1,5 @@
 C
-C	$Id: cssgrid.f,v 1.10 2002-09-03 22:02:33 fred Exp $
+C	$Id: cssgrid.f,v 1.11 2008-04-04 21:03:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,8 +25,6 @@ C
       DOUBLE PRECISION RLATD,RLOND,WK(*),TFVAL,DGMX,STOL,DSMX
       INTEGER N,NI,NJ,IWK(*),IER
       REAL RLATI(N),RLONI(N),F(N),RLATO(NI),RLONO(NJ),FF(NI,NJ)
-C
-      EXTERNAL CSBLDA
 C
       include 'cscomn.h'
 C
@@ -138,6 +136,10 @@ C IST =   Parameter for CSINTRC1
 C NN =    Local copy of N
 C NST =   Initial value for IST
 C NX,NY = Local copies of NI and NJ
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL CSBLDA
 C
 C  Zero out the workspaces.
 C

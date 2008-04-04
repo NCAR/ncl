@@ -1,5 +1,5 @@
 C
-C	$Id: markl.f,v 1.4 2006-03-16 17:55:03 kennison Exp $
+C	$Id: markl.f,v 1.5 2008-04-04 21:03:02 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -34,7 +34,7 @@ C
 C ***********************************
 C
 C ISKIP IS USED TO ADJUST DASHSUPR TO THE SIZE OF THE MODEL PICTURE AS
-C DEFINED IN THE SUBROUTINE REMOVE. ISKIP IS INITIALIZED IN DASHBD.
+C DEFINED IN THE SUBROUTINE REMOVE. ISKIP IS INITIALIZED IN DASHBDX.
 C
       COMMON /DSUP1/ ISKIP
 C

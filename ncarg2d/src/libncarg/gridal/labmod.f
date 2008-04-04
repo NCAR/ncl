@@ -1,5 +1,5 @@
 C
-C $Id: labmod.f,v 1.6 2000-08-22 15:04:37 haley Exp $
+C $Id: labmod.f,v 1.7 2008-04-04 21:02:49 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -37,10 +37,9 @@ C
         CHARACTER*10    FNLX,FNLY
         SAVE   /GACHAR/
 C
-C Declare the block data "routine" external.  This should force it to
-C be loaded.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-        EXTERNAL GABLDT
+        CALL GABLDT
 C
 C Check for an uncleared prior error.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: gabldt.f,v 1.7 2000-10-25 22:27:36 kennison Exp $
+C $Id: gabldt.f,v 1.8 2008-04-04 21:02:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCK DATA GABLDT
+      SUBROUTINE GABLDT
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA GABLDTX
 C
 C This "routine" declares default values for all of the GRIDAL
 C parameters.

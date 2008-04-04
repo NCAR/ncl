@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsx.f,v 1.8 2007-12-15 00:21:39 kennison Exp $
+C $Id: mdrgsx.f,v 1.9 2008-04-04 21:02:47 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -42,7 +42,7 @@ C here for the call to MDRGED.  The array IAMA is an area map array.
 C The arrays XCRA and YCRA are used to hold the coordinates of points
 C defining polygons retrieved from the data arrays.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON

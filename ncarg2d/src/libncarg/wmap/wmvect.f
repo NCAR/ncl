@@ -1,5 +1,5 @@
 C
-C	$Id: wmvect.f,v 1.1 2007-12-19 02:21:50 fred Exp $
+C	$Id: wmvect.f,v 1.2 2008-04-04 21:02:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,10 +25,13 @@ C
 C  This subroutine plots wind vectors with the origin of the vector at
 C  (X,Y).  U and V are the components of the wind vector.
 C
-      EXTERNAL WMBLDA
       include 'wmcomn.h'
 C
       PARAMETER (R2D=57.2957795131)
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL WMBLDA
 C
 C  Save the current line and fill colors and set them to ICOLOR.
 C

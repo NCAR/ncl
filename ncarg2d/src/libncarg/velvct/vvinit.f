@@ -1,5 +1,5 @@
 C
-C       $Id: vvinit.f,v 1.15 2006-03-16 22:56:57 kennison Exp $
+C       $Id: vvinit.f,v 1.16 2008-04-04 21:02:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -146,9 +146,9 @@ C
 C
 C --------------------------------------------------------------------
 C
-C Force the block data routine, which sets default variables, to load. 
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL VVDATA 
+      CALL VVDATA
 C
 C ---------------------------------------------------------------------
 C

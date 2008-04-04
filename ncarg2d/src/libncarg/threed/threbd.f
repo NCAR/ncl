@@ -1,5 +1,5 @@
 C
-C $Id: threbd.f,v 1.4 2006-03-10 15:31:41 kennison Exp $
+C $Id: threbd.f,v 1.5 2008-04-04 21:02:56 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCKDATA THREBD
+      SUBROUTINE THREBD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA THREBDX
       COMMON /TEMPRT/ RZERO
       COMMON /SET31/  ISCALE     ,XMIN       ,XMAX       ,YMIN       ,
      1                YMAX       ,BIGD       ,R0         ,NLX        ,

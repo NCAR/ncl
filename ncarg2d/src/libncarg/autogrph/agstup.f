@@ -1,5 +1,5 @@
 C
-C $Id: agstup.f,v 1.10 2006-03-17 22:36:58 kennison Exp $
+C $Id: agstup.f,v 1.11 2008-04-04 21:02:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -63,9 +63,9 @@ C
      +                INIF
       SAVE /AGORIP/
 C
-C Declare the block data routine external to force it to load.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL AGDFLT
+      CALL AGDFLT
 C
 C If initialization has not yet been done, do it.
 C

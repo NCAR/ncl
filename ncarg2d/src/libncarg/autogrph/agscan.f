@@ -1,5 +1,5 @@
 C
-C $Id: agscan.f,v 1.7 2006-03-09 22:56:07 kennison Exp $
+C $Id: agscan.f,v 1.8 2008-04-04 21:02:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -75,9 +75,9 @@ C
      +                RBOX(6),DBOX(6,4),SBOX(6,4)
       SAVE /AGCONP/
 C
-C Declare the block data routine EXTERNAL to force loading of it.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL AGDFLT
+      CALL AGDFLT
 C
 C Extract the values of a couple of required dimensions.
 C

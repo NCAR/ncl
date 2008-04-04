@@ -1,5 +1,5 @@
 C
-C $Id: llmisc.f,v 1.1 2005-05-27 00:01:24 dbrown Exp $
+C $Id: llmisc.f,v 1.2 2008-04-04 21:03:04 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -27,7 +27,7 @@ C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
 C of types INTEGER and CHARACTER, respectively, for the routine SETER
 C and associated routines.  For descriptions of these variables and for
-C default values of them, see the block data routine SEBLDA.
+C default values of them, see the block data routine SEBLDAX.
 C
         COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
         SAVE   /SECOMI/
@@ -47,7 +47,7 @@ C
 C
       END
 C
-C $Id: llmisc.f,v 1.1 2005-05-27 00:01:24 dbrown Exp $
+C $Id: llmisc.f,v 1.2 2008-04-04 21:03:04 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -104,14 +104,10 @@ C   2 - NERRF equal to 0.
 C   3 - an unrecovered error followed by another error.
 C   4 - bad value for IROPT (less than 1 or greater than 2).
 C
-C Force load of the BLOCK DATA subroutine.
-C
-        EXTERNAL SEBLDA
-C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
 C of types INTEGER and CHARACTER, respectively, for the routine SETER
 C and associated routines.  For descriptions of these variables and for
-C default values of them, see the block data routine SEBLDA.
+C default values of them, see the block data routine SEBLDAX.
 C
         COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
         SAVE   /SECOMI/
@@ -119,6 +115,10 @@ C
         COMMON /SECOMC/ ERMSG
           CHARACTER*256 ERMSG
         SAVE   /SECOMC/
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL SEBLDA
 C
 C The unit number for error messages is I1MACH(4).  Save that value,
 C if it has not already been done.
@@ -209,7 +209,7 @@ C
 C
       END
 C
-C $Id: llmisc.f,v 1.1 2005-05-27 00:01:24 dbrown Exp $
+C $Id: llmisc.f,v 1.2 2008-04-04 21:03:04 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -294,7 +294,7 @@ C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
 C of types INTEGER and CHARACTER, respectively, for the routine SETER
 C and associated routines.  For descriptions of these variables and for
-C default values of them, see the block data routine SEBLDA.
+C default values of them, see the block data routine SEBLDAX.
 C
         COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
         SAVE   /SECOMI/
@@ -343,7 +343,7 @@ C
 C
       END
 C
-C $Id: llmisc.f,v 1.1 2005-05-27 00:01:24 dbrown Exp $
+C $Id: llmisc.f,v 1.2 2008-04-04 21:03:04 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -383,7 +383,7 @@ C
 C
       END
 C
-C $Id: llmisc.f,v 1.1 2005-05-27 00:01:24 dbrown Exp $
+C $Id: llmisc.f,v 1.2 2008-04-04 21:03:04 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -709,7 +709,7 @@ C
       A = 16777216*A1 + D
       END
 C
-C $Id: llmisc.f,v 1.1 2005-05-27 00:01:24 dbrown Exp $
+C $Id: llmisc.f,v 1.2 2008-04-04 21:03:04 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -730,12 +730,21 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCK DATA SEBLDA
+      SUBROUTINE SEBLDA
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA SEBLDAX
 C
 C The common blocks SECOMI and SECOMC are used to hold shared variables
 C of types INTEGER and CHARACTER, respectively, for the routine SETER
 C and associated routines.  For descriptions of these variables and for
-C default values of them, see the block data routine SEBLDA.
+C default values of them, see the block data routine SEBLDAX.
 C
         COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
         SAVE   /SECOMI/

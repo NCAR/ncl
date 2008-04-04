@@ -1,5 +1,5 @@
 C
-C $Id: opngks.f,v 1.6 2006-03-10 00:25:35 kennison Exp $
+C $Id: opngks.f,v 1.7 2008-04-04 21:02:53 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -28,9 +28,9 @@ C
       COMMON /IUTLCM/ IU(100)
       SAVE /IUTLCM/
 C
-C Force the required BLOCKDATA to load.
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL UTILBD
+      CALL UTILBD
 C
 C Make sure that, if there is an uncleared prior error, the error
 C message gets printed.  Go ahead and open GKS, though.

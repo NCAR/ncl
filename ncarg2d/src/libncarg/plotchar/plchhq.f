@@ -1,5 +1,5 @@
 C
-C $Id: plchhq.f,v 1.25 2006-03-06 21:18:28 kennison Exp $
+C $Id: plchhq.f,v 1.26 2008-04-04 21:02:52 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -65,10 +65,6 @@ C
 C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW
       SAVE   /PCPFLQ/
-C
-C Declare some BLOCK DATA routines external to force them to load.
-C
-      EXTERNAL PCBLDA,PCBDFF
 C
 C Define X and Y coordinate arrays to be used in calls to GPL and GFA.
 C
@@ -212,6 +208,11 @@ C
 C
 C I N I T I A L I Z A T I O N
 C
+C
+C Do calls forcing BLOCKDATAs to be loaded from a binary library.
+C
+      CALL PCBLDA
+      CALL PCBDFF
 C
 C Check for an uncleared prior error.
 C

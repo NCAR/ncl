@@ -1,5 +1,5 @@
 C
-C       $Id: velvct.f,v 1.20 2006-03-16 22:56:56 kennison Exp $
+C       $Id: velvct.f,v 1.21 2008-04-04 21:02:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -51,10 +51,6 @@ C
       COMMON /VEC2/   BIG        ,INCX       ,INCY
 C     
       SAVE /VEC1/, /VEC2/
-C
-C Force the block data routine, which sets default variables, to load.
-C
-      EXTERNAL        VELDAT
 C
 C Internal parameters of VELVCT are as follows.
 C
@@ -272,6 +268,10 @@ C
       DATA IDA / 0 / 
 C
 C -------------------------------------------------------------------
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL VELDAT
 C
 C Save the values of all internal parameters that might be reset
 C

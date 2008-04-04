@@ -1,5 +1,5 @@
 C
-C $Id: agback.f,v 1.9 2006-03-17 22:36:57 kennison Exp $
+C $Id: agback.f,v 1.10 2008-04-04 21:02:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -56,9 +56,9 @@ C
      +                INIF
       SAVE /AGORIP/
 C
-C Declare the block data routine external to force it to load.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL AGDFLT
+      CALL AGDFLT
 C
 C Do an appropriate SET call for the following routines.  The call is
 C equivalent to "CALL SET (XLCW,XRCW,YBCW,YTCW,0.,1.,0.,1.,1)", but

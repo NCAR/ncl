@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.5 2005-06-22 21:36:45 kennison Exp $
+C $Id: mdplmb.f,v 1.6 2008-04-04 21:02:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
 C The routine MDPLMB is called by MDPGRD and/or MDPLOT to draw the limb
 C lines.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI

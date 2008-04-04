@@ -1,5 +1,5 @@
 C
-C $Id: mdpsav.f,v 1.3 2005-06-22 21:36:46 kennison Exp $
+C $Id: mdpsav.f,v 1.4 2008-04-04 21:02:47 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@ C
 C
         INTEGER IFNO
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM3/  ITPN,NOUT,NPTS,IGID,IDLS,IDRS,BLAG,SLAG,BLOG,

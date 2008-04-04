@@ -1,5 +1,5 @@
 C
-C $Id: bcfcrv.f,v 1.3 2000-08-22 15:06:50 haley Exp $
+C $Id: bcfcrv.f,v 1.4 2008-04-04 21:02:55 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -29,11 +29,11 @@ C  the Bezier curve.  This subroutine is invoked only when the
 C  subdivision algorithm is being overridden by user request.
 C
 C
-C Declare the BLOCK DATA routine external to force it to load.
-C
-      EXTERNAL PCBLDA
-C
       DIMENSION BXI(4),BYI(4),XO(NO),YO(NO)
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL PCBLDA
 C
 C  Compute the cubic polynomial coefficients.
 C

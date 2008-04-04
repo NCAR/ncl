@@ -1,5 +1,5 @@
 C
-C	$Id: gopks.f,v 1.7 2003-05-19 21:53:06 fred Exp $
+C	$Id: gopks.f,v 1.8 2008-04-04 21:02:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -26,13 +26,19 @@ C  OPEN GKS
 C
 C  Force load of all BLOCKDATAs.
 C
-      EXTERNAL GKSBD,G01BKD,GWIBKD,GSEGDT
       COMMON /SECOMI/ IERRU,IERRF,IRECF,LOMSG
       INTEGER EOPKS
       PARAMETER (EOPKS=0)
       INTEGER ERRFIL,BUFA
 C
       include 'gkscom.h'
+C
+C  Do calls forcing BLOCKDATAs to be loaded from a binary library.
+C
+        CALL GKSBD
+        CALL G01BKD
+        CALL GWIBKD
+        CALL GSEGDT
 C
 C  Check if GKS is in the proper state.
 C

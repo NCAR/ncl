@@ -1,5 +1,5 @@
 C
-C $Id: set3.f,v 1.5 2006-03-10 15:31:41 kennison Exp $
+C $Id: set3.f,v 1.6 2008-04-04 21:02:56 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -150,7 +150,7 @@ C                           PWRZT.
 C
 C ENTRY POINTS          FENCE3, TRN32T, FRST3, VECT3, LIN3,
 C                       POINT3, CURVE3, PSYM3, PERIM3, LINE3W,
-C                       DRAWT, TICK43, TICK3, THREBD
+C                       DRAWT, TICK43, TICK3, THREBD, THREBDX
 C
 C COMMON BLOCKS         TEMPRT, SET31, PWRZ1T, TCK31, PRM31, THRINT
 C
@@ -188,8 +188,6 @@ C
      1                WWMIN      ,WWMAX      ,DELCRT     ,EYEU       ,
      2                EYEV       ,EYEW
 C
-      EXTERNAL        THREBD
-C
       AVE(A,B) = (A+B)*.5
 C
 C ARITHMETIC STATEMENT FUNCTION FOR SCALING
@@ -197,6 +195,10 @@ C
       SU(UTEMP) = UTEMP
       SV(VTEMP) = VTEMP
       SW(WTEMP) = WTEMP
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL THREBD
 C
 C SET UP FRAME SIZE
 C

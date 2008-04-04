@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsf.f,v 1.6 2006-03-06 21:02:19 kennison Exp $
+C $Id: mdrgsf.f,v 1.7 2008-04-04 21:02:47 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -29,7 +29,7 @@ C This routine is called to draw RANGS/GSHHS polygons in the current
 C EZMAP window.  The argument IRGL specifies the level of resolution
 C to be used, from 0 (highest resolution) to 4 (lowest resolution).
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM2/  BLAM,BLOM,PEPS,SLAM,SLOM,UCEN,UMAX,UMIN,UOFF,

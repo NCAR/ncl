@@ -1,5 +1,5 @@
 C
-C $Id: gridal.f,v 1.8 2000-10-25 22:27:37 kennison Exp $
+C $Id: gridal.f,v 1.9 2008-04-04 21:02:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -35,11 +35,6 @@ C
         CHARACTER*10    FNLX,FNLY
         SAVE   /GACHAR/
 C
-C Declare the block data "routine" external.  This should force it to
-C be loaded.
-C
-        EXTERNAL GABLDT
-C
 C Declare an array in which to receive the "clipping rectangle".
 C
         DIMENSION CLPR(4)
@@ -60,6 +55,10 @@ C
         SAVE EPSI,OPEP
 C
         DATA EPSI,OPEP / 0.D0 , 1.D0 /
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL GABLDT
 C
 C Check for an uncleared prior error.
 C

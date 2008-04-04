@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.18 2006-03-09 23:28:49 kennison Exp $
+C $Id: supmap.f,v 1.19 2008-04-04 21:02:48 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -26,7 +26,7 @@ C
       INTEGER JPRJ,JLTS,JGRD,IOUT,IDOT,IERR
       REAL    PLAT,PLON,ROTA,PLM1(2),PLM2(2),PLM3(2),PLM4(2)
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),

@@ -1,5 +1,5 @@
 C
-C	$Id: dashbd.f,v 1.4 2003-06-02 19:15:15 kennison Exp $
+C	$Id: dashbd.f,v 1.5 2008-04-04 21:02:45 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,18 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCKDATA DASHBD
+      SUBROUTINE DASHBD
 C
-C DASHBD IS USED TO INITIALIZE VARIABLES IN NAMED COMMON.
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA DASHBDX
+C
+C DASHBDX IS USED TO INITIALIZE VARIABLES IN NAMED COMMON.
 C
       COMMON /DASHD1/  ISL,  L,  ISIZE,  IP(100),  NWDSM1,  IPFLAG(100)
      1                 ,MNCSTR, IGP

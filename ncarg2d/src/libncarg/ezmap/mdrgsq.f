@@ -1,5 +1,5 @@
 C
-C $Id: mdrgsq.f,v 1.9 2007-09-20 21:44:45 kennison Exp $
+C $Id: mdrgsq.f,v 1.10 2008-04-04 21:02:47 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -35,7 +35,7 @@ C non-zero) or just draws them (if IFLL is zero).  The arrays XCRA and
 C YCRA are used to hold the coordinates of points defining polygons
 C retrieved from the data arrays.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON

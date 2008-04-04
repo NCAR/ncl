@@ -1,5 +1,5 @@
 C
-C $Id: agdflt.f,v 1.5 2006-03-09 22:56:04 kennison Exp $
+C $Id: agdflt.f,v 1.6 2008-04-04 21:02:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,9 +20,18 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCK DATA AGDFLT
+      SUBROUTINE AGDFLT
 C
-C The block data subroutine AGDFLT defines the default values of those
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA AGDFLTX
+C
+C The block data subroutine AGDFLTX defines the default values of those
 C AUTOGRAPH parameters which can be declared in a DATA statement.  See
 C AGINIT for code initializing other AUTOGRAPH parameters.
 C

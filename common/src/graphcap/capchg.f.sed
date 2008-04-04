@@ -1,5 +1,5 @@
 C
-C	$Id: capchg.f.sed,v 1.1 2004-08-03 16:26:29 haley Exp $
+C	$Id: capchg.f.sed,v 1.2 2008-04-04 21:02:11 kennison Exp $
 C                                                                      
 C			     Copyright (C)  1997
 C	     University Corporation for Atmospheric Research
@@ -669,11 +669,17 @@ C  Size of the COMMON
 C
       INTEGER  IOS, STATUS, II
       CHARACTER*80 DFLNAM
+C
 C Modification for UNIX Version
-
+C
       CHARACTER*80 ARG1, ARG2
-
+C
 C End of modification for UNIX Version
+C
+C Do calls forcing BLOCKDATAs to be loaded from a binary library.
+C
+      CALL CAPAST
+      CALL CAPDAT
 C
 C  Initialize STATUS to ALLOK.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: plotif.f,v 1.9 2006-03-10 00:25:35 kennison Exp $
+C $Id: plotif.f,v 1.10 2008-04-04 21:02:54 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -44,15 +44,14 @@ C
       COMMON /PLTCM/ JX,JY
       SAVE /PLTCM/
 C
-C Force loading of the block data routine which initializes the contents
-C of the common blocks.
-C
-      EXTERNAL UTILBD
-C
 C VP and WD hold viewport and window parameters obtained, when needed,
 C from GKS.
 C
       DIMENSION VP(4),WD(4)
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL UTILBD
 C
 C Check for an uncleared prior error.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: fdvdld.f,v 1.4 2006-03-16 17:41:12 kennison Exp $
+C	$Id: fdvdld.f,v 1.5 2008-04-04 21:03:01 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -111,7 +111,8 @@ C                          routines to a dashed line package the first
 C                          call should not be to VECTD.
 C
 C ENTRY POINTS             DASHDB, DASHDC, CURVED, FRSTD, VECTD, LINED,
-C                          RESET, LASTD, CFVLD, FDVDLD, DRAWPV, DASHBD
+C                          RESET, LASTD, CFVLD, FDVDLD, DRAWPV, DASHBD,
+C                          DASHBDX
 C
 C COMMON BLOCKS            INTPR, DASHD1, DASHD2, DDFLAG, DCFLAG, DSAVE1,
 C                          DSAVE6, DSAVE3, DSAVE5, CFFLAG, SMFLAG, DFFLAG,
@@ -169,7 +170,7 @@ C
       COMMON /DSAVE5/ XSAVE(70), YSAVE(70), XSVN, YSVN, XSV1, YSV1,
      1                SLP1, SLPN, SSLP1, SSLPN, N, NSEG
 C
-C IOFFS IS AN INTERNAL PARAMETER. IT IS INITIALIZED IN DASHBD AND
+C IOFFS IS AN INTERNAL PARAMETER. IT IS INITIALIZED IN DASHBDX AND
 C REFERENCED IN FDVDLD AND DRAWPV.
 C
       COMMON /SMFLAG/ IOFFS

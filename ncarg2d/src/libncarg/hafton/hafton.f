@@ -1,5 +1,5 @@
 C
-C	$Id: hafton.f,v 1.4 2006-03-10 17:38:25 kennison Exp $
+C	$Id: hafton.f,v 1.5 2008-04-04 21:02:50 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -207,7 +207,8 @@ C                            plotter instructions per picture, averaging
 C                            over 100,000 line-draws per frame when M = N.
 C
 C
-C     ENTRY POINTS           EZHFTN, HAFTON, ZLSET, GRAY, BOUND, HFINIT
+C     ENTRY POINTS           EZHFTN, HAFTON, ZLSET, GRAY, BOUND, HFINIT,
+C                            HFINITX
 C
 C     COMMON BLOCKS          HAFT01, HAFT02, HAFT03, HAFT04
 C
@@ -295,7 +296,6 @@ C
       DIMENSION       ZLEV(16)    ,VIEW(4)     ,WIND(4)  ,RECT(4)
       DIMENSION                    VIEW2(4)    ,WIND2(4)
       CHARACTER*11    IDUMMY
-      EXTERNAL        HFINIT
 C
 C
       COMMON /HAFTO1/ I          ,J          ,INTEN
@@ -306,6 +306,9 @@ C
      2                NCRTF      ,IL(135)
       COMMON /HAFTO4/ NPTMAX     ,NPOINT     ,XPNT(50)  ,YPNT(50)
 C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL HFINIT
 C
 C THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
 C

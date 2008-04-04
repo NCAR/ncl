@@ -1,5 +1,5 @@
 C
-C $Id: stitle.f,v 1.7 2006-03-10 00:32:20 kennison Exp $
+C $Id: stitle.f,v 1.8 2008-04-04 21:02:54 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -94,11 +94,6 @@ C a character string, not counting terminal blanks.
 C
         INTEGER SLSTLN
 C
-C Declare the block data routine SLBLDA external to force it to load,
-C so that the internal parameters will be initialized.
-C
-        EXTERNAL SLBLDA
-C
 C Define the corners of the plotter frame for the GPM calls below.
 C
         DATA XCPF(1),XCPF(2),XCPF(3),XCPF(4) / 0. , 1. , 1. , 0. /
@@ -111,6 +106,10 @@ C CPFY because it is more efficient and because it avoids problems due
 C to a possible user call to the old routine SETI.
 C
         FRCT(IARG)=(IARG-1)/1023.
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL SLBLDA
 C
 C Check for an uncleared prior error.
 C

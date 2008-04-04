@@ -1,5 +1,5 @@
 C
-C	$Id: csstrid.f,v 1.3 2000-08-22 15:19:21 haley Exp $
+C	$Id: csstrid.f,v 1.4 2008-04-04 21:03:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,8 +23,6 @@ C
       SUBROUTINE CSSTRID(N,RLATI,RLONI,NT,NTRI,IWK,WK,IER)
       DOUBLE PRECISION RLATI(N),RLONI(N)
       DOUBLE PRECISION WK(*)
-C
-      EXTERNAL CSBLDA
 C
       DOUBLE PRECISION UN
       INTEGER N,NT,NTRI(3,*),IWK(*),IER
@@ -93,6 +91,11 @@ C
 C Modules required by CSSTRI:  CSTRMESH, CSTRLIST
 C
 C***********************************************************
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL CSBLDA
+C
       IF (N .LT. 4) THEN
           IER = 1
           GO TO 200

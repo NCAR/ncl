@@ -1,5 +1,5 @@
 C
-C	$Id: wmgeti.f,v 1.15 2007-12-19 02:21:50 fred Exp $
+C	$Id: wmgeti.f,v 1.16 2008-04-04 21:02:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,9 +41,9 @@ C
 C
       include 'wmcomn.h'
 C
-C Declare the block data routine external to force its loading.
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL WMBLDA
+      CALL WMBLDA
 C
 C  Check for an uncleared prior error.
 C

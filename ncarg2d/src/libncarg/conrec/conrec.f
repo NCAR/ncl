@@ -1,5 +1,5 @@
 C
-C	$Id: conrec.f,v 1.4 2006-03-10 17:28:10 kennison Exp $
+C	$Id: conrec.f,v 1.5 2008-04-04 21:02:44 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -156,7 +156,8 @@ C     FOR CONREC
 C
 C
 C     ENTRY POINTS           CONREC, CLGEN, REORD, STLINE, CRDRLN,
-C                            MINMAX, PNTVAL, CALCNT, EZCNTR, CONBD
+C                            MINMAX, PNTVAL, CALCNT, EZCNTR, CONBD,
+C                            CONBDX
 C
 C     COMMON BLOCKS          INTPR, RECINT, CONRE1, CONRE2, CONRE3,
 C                            CONRE4,CONRE5
@@ -310,8 +311,6 @@ C                            ISOLID   1023   Dash pattern for
 C                                            non-negative contour lines.
 C
 C
-      EXTERNAL        CONBD
-C
       SAVE
       CHARACTER*1     IGAP       ,ISOL       ,RCHAR
       CHARACTER       ENCSCR*22  ,IWORK*126
@@ -333,7 +332,9 @@ C
 C ISOL AND IGAP (DOLLAR-SIGN AND APOSTROPHE) ARE USED TO CONSTRUCT PAT-
 C TERNS PASSED TO ROUTINE DASHDC IN THE SOFTWARE DASHED-LINE PACKAGE.
 C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
+      CALL CONBD
 C
 C THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
 C

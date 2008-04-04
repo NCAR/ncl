@@ -1,5 +1,5 @@
 C
-C	$Id: srface.f,v 1.3 2000-08-22 15:06:27 haley Exp $
+C	$Id: srface.f,v 1.4 2008-04-04 21:02:54 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -286,12 +286,15 @@ C                                        known data when IOFFP=1.
 C
 C
 C
-      EXTERNAL        SRFABD
-C
       DIMENSION       X(NX)      ,Y(NY)      ,Z(MX,NY)   ,M(2,NX,NY) ,
      1                S(6)
       DIMENSION       WIND(4)    ,VIEW(4)    ,LASF(13)
       COMMON /SRFINT/ ISRFMJ     ,ISRFMN     ,ISRFTX
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL SRFABD
+C
       CALL Q8QST4 ('GRAPHX','SRFACE','SRFACE','VERSION 01')
 C
 C     THIS DRIVER SAVES THE CURRENT NORMALIZATION TRANSFORMATION

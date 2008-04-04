@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin,v 1.9 2007-10-08 19:38:49 haley Exp $
+ *      $Id: Darwin,v 1.10 2008-04-04 21:02:40 kennison Exp $
  */
 /************************************************************************
 *									*
@@ -30,6 +30,8 @@
 #define FCompiler   g77
 #define CtoFLibraries   -lg2c -lgcc
 #define CcOptions      -ansi
+
+#define ExtraSysLibraries       -lSystemStubs      /* Extra line */
 
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO

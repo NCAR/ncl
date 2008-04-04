@@ -1,5 +1,5 @@
 C
-C $Id: mdpchi.f,v 1.3 2005-06-22 21:36:44 kennison Exp $
+C $Id: mdpchi.f,v 1.4 2008-04-04 21:02:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -50,7 +50,7 @@ C
 C When IPRT is positive and IDTG is zero, IDPT is the dash pattern to be
 C used.  If IPRT is negative or IDTG is non-zero, IDPT is ignored.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,

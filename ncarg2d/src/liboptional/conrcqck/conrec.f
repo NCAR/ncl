@@ -1,5 +1,5 @@
 C
-C	$Id: conrec.f,v 1.5 2006-03-16 17:15:20 kennison Exp $
+C	$Id: conrec.f,v 1.6 2008-04-04 21:03:00 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -156,7 +156,7 @@ C     FOR CONREC
 C
 C
 C     ENTRY POINTS           CONREC, CLGEN, QUICK, MAXMIN, PNTVAL,
-C                            CALCNT, EZCNTR, CONBD
+C                            CALCNT, EZCNTR, CONBD, CONBDX
 C
 C     COMMON BLOCKS          CONRE1, CONRE4, CONRE5
 C
@@ -282,9 +282,6 @@ C                                              is to be plotted.
 C                                            . IOFFM non-zero if the
 C                                              message is to be omitted.
 C
-C
-      EXTERNAL        CONBD
-C
       SAVE
       CHARACTER       ENCSCR*22  ,IWORK*126
       DIMENSION       LNGTHS(5)  ,HOLD(5)
@@ -298,11 +295,12 @@ C
      3                NLM        ,XLT        ,YBT        ,SIDE
       COMMON /CONRE5/ SCLY
 C
-C
-C
       DATA  LNGTHS(1),LNGTHS(2),LNGTHS(3),LNGTHS(4),LNGTHS(5)
      1      /  12,       3,        20,       9,        17       /
 C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL CONBD
 C
 C THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
 C

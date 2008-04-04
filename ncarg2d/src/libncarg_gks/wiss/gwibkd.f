@@ -1,5 +1,5 @@
 C
-C	$Id: gwibkd.f,v 1.8 2000-08-22 15:09:57 haley Exp $
+C	$Id: gwibkd.f,v 1.9 2008-04-04 21:02:59 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCKDATA GWIBKD
+      SUBROUTINE GWIBKD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA GWIBKDX
 C
 C  BLOCKDATA module for workstation driver type 3 (WISS).
 C

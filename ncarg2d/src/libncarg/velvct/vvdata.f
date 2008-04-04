@@ -1,5 +1,5 @@
 C
-C       $Id: vvdata.f,v 1.13 2000-08-22 15:07:33 haley Exp $
+C       $Id: vvdata.f,v 1.14 2008-04-04 21:02:57 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCK DATA VVDATA
+      SUBROUTINE VVDATA
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA VVDATAX
 C
 C This 'routine' sets the default values of the VVECTR parameters.
 C

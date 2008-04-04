@@ -1,5 +1,5 @@
 C
-C $Id: issetr.f,v 1.6 2006-03-10 14:23:19 kennison Exp $
+C $Id: issetr.f,v 1.7 2008-04-04 21:02:51 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -43,13 +43,13 @@ C
       COMMON /TEMPRX/ RZERO
       SAVE   /TEMPRX/
 C
-C Force the BLOCK DATA routine to load.
-C
-      EXTERNAL ISBLDA
-C
 C Define a character temporary to hold an error message.
 C
       CHARACTER*48 CTM
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL ISBLDA
 C
 C Check for a parameter name that is too short.
 C

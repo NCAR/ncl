@@ -1,5 +1,5 @@
 C
-C	$Id: srfabd.f,v 1.3 2000-08-22 15:06:27 haley Exp $
+C	$Id: srfabd.f,v 1.4 2008-04-04 21:02:54 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCKDATA SRFABD
+      SUBROUTINE SRFABD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA SRFABDX
       COMMON /SRFBLK/ LIMU(1024) ,LIML(1024) ,CL(41)     ,NCL        ,
      1                LL         ,FACT       ,IROT       ,NDRZ       ,
      2                NUPPER     ,NRSWT      ,BIGD       ,UMIN       ,

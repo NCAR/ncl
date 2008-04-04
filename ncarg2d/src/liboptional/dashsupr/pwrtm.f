@@ -1,5 +1,5 @@
 C
-C	$Id: pwrtm.f,v 1.4 2006-03-16 17:55:03 kennison Exp $
+C	$Id: pwrtm.f,v 1.5 2008-04-04 21:03:02 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -34,7 +34,7 @@ C IS A USER ENTRY POINT
 C
       CHARACTER*(*) CHARS
 C
-C ISKIP IS INITIALIZED AND DESCRIBED IN BLOCKDATA DASHBD.
+C ISKIP IS INITIALIZED AND DESCRIBED IN BLOCKDATA DASHBDX.
 C
       COMMON /DSUP1/ ISKIP
 C

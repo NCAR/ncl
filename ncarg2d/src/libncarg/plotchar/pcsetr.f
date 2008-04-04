@@ -1,5 +1,5 @@
 C
-C $Id: pcsetr.f,v 1.14 2000-08-22 15:05:27 haley Exp $
+C $Id: pcsetr.f,v 1.15 2008-04-04 21:02:52 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -40,9 +40,9 @@ C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW
       SAVE   /PCPFLQ/
 C
-C Declare the BLOCK DATA routine external to force it to load.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL PCBLDA
+      CALL PCBLDA
 C
 C Check for an uncleared prior error.
 C

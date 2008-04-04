@@ -1,5 +1,5 @@
 C
-C $Id: plchlq.f,v 1.10 2000-08-22 15:05:28 haley Exp $
+C $Id: plchlq.f,v 1.11 2008-04-04 21:02:52 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,13 +36,13 @@ C
       COMMON /PCPFLQ/ IMAP,OORV,RHTW
       SAVE   /PCPFLQ/
 C
-C Declare the BLOCK DATA routine external to force it to load.
-C
-      EXTERNAL PCBLDA
-C
 C Define arrays in which to save the current viewport and window.
 C
       DIMENSION VPRT(4),WNDW(4)
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL PCBLDA
 C
 C Check for an uncleared prior error.
 C

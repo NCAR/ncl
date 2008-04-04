@@ -1,5 +1,5 @@
 C
-C $Id: mdutin.f,v 1.2 2006-03-06 21:08:28 kennison Exp $
+C $Id: mdutin.f,v 1.3 2008-04-04 21:02:49 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,10 +36,6 @@ C
 C Declare some double precision variables that we need.
 C
         DOUBLE PRECISION UVDP,VVDP,DTMP
-C
-C Declare the USGS "BLOCK DATA" external to force it to load.
-C
-        EXTERNAL GTPZBD
 C
 C Declare arrays in which to put State Plane limit information.
 C
@@ -242,63 +238,67 @@ C
      +              5300,   0,   0, 800,   0, 800,   0,   0,   0,   0,
      +              5400,   0,   0, 800,   0, 800,   0,   0,   0,   0/
 C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL GTPZBD
+C
 C Set the value of the projection selector to be passed to PJIN[SD]P.
 C
-          JPRJ=MAX(1,MIN(23,IPRJ))
+        JPRJ=MAX(1,MIN(23,IPRJ))
 C
 C Set the value of the zone number to be passed to PJIN[SD]P.  UTM zone
 C numbers are limited to the legal range.  For State Plane Zone number
 C "1901" (the District of Columbia), we use "1900" (Maryland).
 C
-          IF (JPRJ.EQ.1) THEN
-            JZON=SIGN(MAX(1,MIN(60,ABS(IZON))),IZON)
-          ELSE IF (JPRJ.EQ.2) THEN
-            JZON=IZON
-            IF (JZON.EQ.1901) JZON=1900
-          ELSE
-            JZON=0
-          END IF
+        IF (JPRJ.EQ.1) THEN
+          JZON=SIGN(MAX(1,MIN(60,ABS(IZON))),IZON)
+        ELSE IF (JPRJ.EQ.2) THEN
+          JZON=IZON
+          IF (JZON.EQ.1901) JZON=1900
+        ELSE
+          JZON=0
+        END IF
 C
 C Set the value of the spheroid selector to be passed to PJIN[SD]P.
 C
-          IF (JPRJ.EQ.2) THEN
-            IF (ISPH.EQ.0) THEN
-              JSPH=0
-            ELSE
-              JSPH=8
-            END IF
-          ELSE IF (JPRJ.EQ.23) THEN
+        IF (JPRJ.EQ.2) THEN
+          IF (ISPH.EQ.0) THEN
             JSPH=0
           ELSE
-            JSPH=MAX(-1,MIN(19,ISPH))
+            JSPH=8
           END IF
+        ELSE IF (JPRJ.EQ.23) THEN
+          JSPH=0
+        ELSE
+          JSPH=MAX(-1,MIN(19,ISPH))
+        END IF
 C
 C Decide whether to use real or double-precision arithmetic and call the
 C appropriate initialization routine.
 C
-      CALL MDPIN2 (TST1,TST2,TST3)
+        CALL MDPIN2 (TST1,TST2,TST3)
 C
-      IF (TST1.NE.TST2.AND.TST2.NE.TST3) THEN
+        IF (TST1.NE.TST2.AND.TST2.NE.TST3) THEN
 C
-        IROD=0
+          IROD=0
 C
-        DO 101 I=1,15
-          PASP(I)=REAL(PADP(I))
-  101   CONTINUE
+          DO 101 I=1,15
+            PASP(I)=REAL(PADP(I))
+  101     CONTINUE
 C
-        CALL PJINSP (JPRJ,JZON,JSPH,PASP)
+          CALL PJINSP (JPRJ,JZON,JSPH,PASP)
 C
-        DO 102 I=1,15
-          PADP(I)=DBLE(PASP(I))
-  102   CONTINUE
+          DO 102 I=1,15
+            PADP(I)=DBLE(PASP(I))
+  102     CONTINUE
 C
-      ELSE
+        ELSE
 C
-        IROD=1
+          IROD=1
 C
-        CALL PJINDP (JPRJ,JZON,JSPH,PADP)
+          CALL PJINDP (JPRJ,JZON,JSPH,PADP)
 C
-      END IF
+        END IF
 C
 C Initialize minimum and maximum values in the USGS code's common block.
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: wmvmap.f,v 1.1 2007-12-19 02:21:50 fred Exp $
+C	$Id: wmvmap.f,v 1.2 2008-04-04 21:02:58 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -26,10 +26,13 @@ C  This subroutine plots wind vectors over a map with the origin
 C  of the vector at lat/lon coordinate (X,Y).  U and V are the 
 C  components of the wind vector.
 C
-      EXTERNAL WMBLDA
       include 'wmcomn.h'
 C
       PARAMETER (R2D=57.2957795131,D2R=0.0174532925)
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL WMBLDA
 C
 C  Adjust the vector direction depending on its location
 C  on a map.

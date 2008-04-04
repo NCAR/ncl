@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.7 2008-01-16 21:09:13 kennison Exp $
+C $Id: mdpint.f,v 1.8 2008-04-04 21:02:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -22,7 +22,7 @@ C USA.
 C
       SUBROUTINE MDPINT
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI

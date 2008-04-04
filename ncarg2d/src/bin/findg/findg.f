@@ -1,5 +1,5 @@
 C
-C	$Id: findg.f,v 1.3 2000-08-22 04:34:18 haley Exp $
+C	$Id: findg.f,v 1.4 2008-04-04 21:02:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -76,6 +76,10 @@ C
       CHARACTER*66  LINE
       LOGICAL CALLS, NOTFND
       INTEGER COLPOS, CHARS
+C
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL FNGBKD
 C
 C  Initialize variables.
 C

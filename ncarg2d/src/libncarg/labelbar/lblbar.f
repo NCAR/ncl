@@ -1,5 +1,5 @@
 C
-C $Id: lblbar.f,v 1.10 2000-08-22 15:05:05 haley Exp $
+C $Id: lblbar.f,v 1.11 2008-04-04 21:02:51 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -87,10 +87,6 @@ C
         COMMON /LBCOMN/ ICBL,ICFL,ICLB,WOBL,WOFL,WOLB
         SAVE   /LBCOMN/
 C
-C Declare the block data routine external to force it to load.
-C
-        EXTERNAL LBBLDA
-C
 C Define local arrays to hold X and Y coordinates of boxes.
 C
         DIMENSION XCRA(5),YCRA(5)
@@ -98,6 +94,10 @@ C
 C Define local arrays for use as work arrays by the routine SFSGFA.
 C
         DIMENSION RWRK(6),IWRK(8)
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL LBBLDA
 C
 C Check for an uncleared prior error.
 C

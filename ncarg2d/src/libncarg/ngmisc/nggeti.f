@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.15 2002-05-07 01:04:03 fred Exp $
+C	$Id: nggeti.f,v 1.16 2008-04-04 21:02:51 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,9 +41,9 @@ C
 C
       include 'ngcomn.h'
 C
-C Declare the block data routine external to force its loading.
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL NGBLDA
+      CALL NGBLDA
 C
 C  Check for an uncleared prior error.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: gagetr.f,v 1.5 2000-08-22 15:04:35 haley Exp $
+C $Id: gagetr.f,v 1.6 2008-04-04 21:02:49 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -34,10 +34,9 @@ C
      +                  RWMJ,RWMN
         SAVE   /GAREIN/
 C
-C Declare the block data "routine" external.  This should force it to
-C be loaded.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-        EXTERNAL GABLDT
+        CALL GABLDT
 C
 C Check for an uncleared prior error.
 C

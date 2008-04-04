@@ -1,5 +1,5 @@
 C
-C $Id: shgrid.f,v 1.5 2000-08-23 20:44:47 fred Exp $
+C $Id: shgrid.f,v 1.6 2008-04-04 21:03:03 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -80,7 +80,9 @@ C  been set.
 C
       COMMON /SHCOMI/ NMLSTQ, NMINFL, NMCELS
 C
-      EXTERNAL SHBLDA
+C  Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL SHBLDA
 C
       IF (NMLSTQ .LT. 0) THEN
         NMLSTQ = MIN(17,N-1)

@@ -1,5 +1,5 @@
 C
-C	$Id: dport.f,v 1.3 2000-08-22 14:36:37 haley Exp $
+C	$Id: dport.f,v 1.4 2008-04-04 21:02:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,7 +21,16 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
 
-      BLOCKDATA DPORT
+      SUBROUTINE DPORT
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA DPORTX
 C
 C FOR INITIALIZATION OF CONSTANTS.
 C

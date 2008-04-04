@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.4 2006-03-10 00:10:37 kennison Exp $
+I $Id: CodeIftran,v 1.5 2008-04-04 21:02:53 kennison Exp $
 I
 
 I***********************************************************************
@@ -44,9 +44,9 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL SFBLDA
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -136,9 +136,9 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL SFBLDA
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -179,9 +179,9 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL SFBLDA
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -565,13 +565,13 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
-C
-      EXTERNAL SFBLDA
-C
 C Declare a local character variable in which to form an error message.
 C
       CHARACTER*38 CTM
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -649,9 +649,9 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL SFBLDA
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -689,13 +689,13 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
-C
-      EXTERNAL SFBLDA
-C
 C Declare a local character variable in which to form an error message.
 C
       CHARACTER*38 CTM
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -756,13 +756,13 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
-C
-      EXTERNAL SFBLDA
-C
 C Declare a local character variable in which to form an error message.
 C
       CHARACTER*38 CTM
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -834,9 +834,9 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-      EXTERNAL SFBLDA
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -873,13 +873,13 @@ C Declare the labeled common block.
 C
       COMMON /SFCOMN/ AID,DBL,ITY,LPA,RDS,IDC,LCH,LDP(8,8)
 C
-C Declare the block data routine external to force its loading.
-C
-      EXTERNAL SFBLDA
-C
 C Declare a local character variable in which to form an error message.
 C
       CHARACTER*38 CTM
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL SFBLDA
 C
 C Check for an uncleared prior error.
 C
@@ -1003,7 +1003,18 @@ C
       END                                                               
 
 
-      BLOCK DATA SFBLDA
+      SUBROUTINE SFBLDA
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+C
+CNOSPLIT - makes Fsplit put next routine in same file as last routine.
+C
+      BLOCKDATA SFBLDAX
 C
 C Specify default values for the internal parameters.
 C

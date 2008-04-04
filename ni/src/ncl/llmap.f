@@ -1,5 +1,5 @@
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCK DATA MAPBD
+      SUBROUTINE MAPBD
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA MAPBDX
 C
         PARAMETER (MNAI=6000)
 C
@@ -517,7 +526,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -546,7 +555,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -576,7 +585,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -614,7 +623,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -651,7 +660,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -688,7 +697,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -725,7 +734,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -765,7 +774,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -788,7 +797,7 @@ C USA.
 C
       SUBROUTINE MDPIN1
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -820,15 +829,14 @@ C
         DOUBLE PRECISION FLT1,FLT2
         EQUIVALENCE      (PHIA,FLT1),(ROTA,FLT2)
 C
-C Ensure that the block data routine will load, so that variables will
-C have the proper default values.
-C
-        EXTERNAL MAPBD
-C
 C Declare local variables.
 C
         DOUBLE PRECISION CHI1,CHI2,COST,SINT,TMP1,TMP2
         REAL             TST1,TST2,TST3
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL MAPBD
 C
 C Decide whether MAPTRN should use real or double-precision arithmetic.
 C The subroutine call is necessary to fool some compilers into storing
@@ -914,7 +922,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -943,7 +951,7 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -966,7 +974,7 @@ C USA.
 C
       SUBROUTINE MDPINT
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -1690,7 +1698,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1715,7 +1723,7 @@ C
 C
         DOUBLE PRECISION ARG1,ARG2,ARG3,ARG4
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
@@ -1760,7 +1768,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1786,7 +1794,7 @@ C
         CHARACTER*(*)    ARG1
         DOUBLE PRECISION ARG2,ARG3,ARG4
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
@@ -1855,7 +1863,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1881,7 +1889,7 @@ C
         CHARACTER*(*)    ARG1
         DOUBLE PRECISION ARG2(2),ARG3(2),ARG4(2),ARG5(2)
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
@@ -1942,7 +1950,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -1967,7 +1975,7 @@ C
 C
         DOUBLE PRECISION UVAL,VVAL,RLAT,RLON
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -2337,7 +2345,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2366,7 +2374,7 @@ C Given the latitude, RLAT, and the longitude, RLON, of a point on the
 C earth, this routine returns the U and V coordinates of the projection
 C of that point on the map.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -2676,7 +2684,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2702,7 +2710,7 @@ C
         CHARACTER*(*)    WHCH
         DOUBLE PRECISION DVAL
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -2797,7 +2805,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2875,7 +2883,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -2951,7 +2959,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -3040,7 +3048,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -3090,7 +3098,7 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.2 2008-01-24 00:14:42 dbrown Exp $
+C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -3115,7 +3123,7 @@ C
 C
         DOUBLE PRECISION RLAT,RLON,UVAL,VVAL
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,

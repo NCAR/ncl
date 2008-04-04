@@ -1,5 +1,5 @@
 C
-C $Id: mdptrn.f,v 1.6 2008-01-16 21:09:13 kennison Exp $
+C $Id: mdptrn.f,v 1.7 2008-04-04 21:02:47 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -28,7 +28,7 @@ C Given the latitude, RLAT, and the longitude, RLON, of a point on the
 C earth, this routine returns the U and V coordinates of the projection
 C of that point on the map.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI

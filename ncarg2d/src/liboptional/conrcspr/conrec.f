@@ -1,5 +1,5 @@
 C
-C	$Id: conrec.f,v 1.5 2006-03-16 18:30:43 kennison Exp $
+C	$Id: conrec.f,v 1.6 2008-04-04 21:03:01 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -159,7 +159,8 @@ C     FOR CONREC
 C
 C
 C     ENTRY POINTS           CONREC, CLGEN, REORD, STLINE, CRDRLN,
-C                            MINMAX, PNTVAL, CALCNT, EZCNTR, CONBD
+C                            MINMAX, PNTVAL, CALCNT, EZCNTR, CONBD,
+C                            CONBDX
 C
 C     COMMON BLOCKS          INTPR, SPRINT, CONRE1, CONRE2, CONRE3,
 C                            CONRE4,CONRE5
@@ -330,7 +331,6 @@ C
 C
 C
 C
-      EXTERNAL        CONBD
       SAVE
       CHARACTER*1     ISOL       ,IGAP       ,RCHAR
       CHARACTER       IWORK*126  ,ENCSCR*22
@@ -350,8 +350,9 @@ C
       DATA EXT,IOFFD,NULBLL,IOFFM,ILAB/.25,0,3,0,1/
       DATA  ISOL, IGAP /'$', ''''/
 C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
 C
-C
+      CALL CONBD
 C
 C THE FOLLOWING CALL IS FOR GATHERING STATISTICS ON LIBRARY USE AT NCAR
 C

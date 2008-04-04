@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.4 2005-06-22 21:36:45 kennison Exp $
+C $Id: mdpin1.f,v 1.5 2008-04-04 21:02:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -22,7 +22,7 @@ C USA.
 C
       SUBROUTINE MDPIN1
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
@@ -54,15 +54,14 @@ C
         DOUBLE PRECISION FLT1,FLT2
         EQUIVALENCE      (PHIA,FLT1),(ROTA,FLT2)
 C
-C Ensure that the block data routine will load, so that variables will
-C have the proper default values.
-C
-        EXTERNAL MAPBD
-C
 C Declare local variables.
 C
         DOUBLE PRECISION CHI1,CHI2,COST,SINT,TMP1,TMP2
         REAL             TST1,TST2,TST3
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL MAPBD
 C
 C Decide whether MAPTRN should use real or double-precision arithmetic.
 C The subroutine call is necessary to fool some compilers into storing

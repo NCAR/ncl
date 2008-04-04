@@ -1,5 +1,5 @@
 C
-C $Id: dpsetc.f,v 1.5 2000-08-22 15:03:23 haley Exp $
+C $Id: dpsetc.f,v 1.6 2008-04-04 21:02:45 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -40,13 +40,13 @@ C
      +                  ISCF,LCDP,RLS1,RLS2,RMFS,TENS,WCHR,WGAP,WSLD
         SAVE   /DPCMRI/
 C
-C Declare the block data external to force it to load.
-C
-        EXTERNAL DPBLDA
-C
 C Declare a temporary variable in which to form error messages.
 C
         CHARACTER*39 CTMP
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+        CALL DPBLDA
 C
 C Check for an uncleared prior error.
 C

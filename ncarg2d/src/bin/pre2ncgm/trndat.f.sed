@@ -1,5 +1,5 @@
 C
-C	$Id: trndat.f.sed,v 1.1 2004-08-03 16:31:26 haley Exp $
+C	$Id: trndat.f.sed,v 1.2 2008-04-04 21:02:41 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,7 +20,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      BLOCKDATA TRNDAT
+      SUBROUTINE TRNDAT
+C
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA TRNDATX
 C
 C  DEFINE ALL CONSTANT DATA FOR THE METAFILE TRANSLATOR
 C
@@ -180,7 +189,7 @@ C  STORAGE
 C
 C  WHEN ADDING TO AN EXISTING ELEMENT CLASS INSERT AT THE END OF
 C  THE ELEMENT CODE LIST FOR THE CLASS, CHANGE THE COUNT ON THE
-C  ELEMENT CODE COUNT, AND ADD TO TRNDAT BLOCKDATA FOR DEFINITION
+C  ELEMENT CODE COUNT, AND ADD TO TRNDATX BLOCKDATA FOR DEFINITION
 C
 C  WHEN CREATING A NEW ELEMENT CODE YOU NEED TO:
 C       1.  CREATE AN ELEMENT CODE VARIABLE
@@ -190,7 +199,7 @@ C           OF ELEMENT CODES
 C       4.  EQUIVALENCE A POINTER TO THE BEGINNING OF THE ELEMENT CLASS LIST
 C       5.  GENERATE CODE IN SUBROUTINE MELCMP SIMILAR TO THAT WHICH EXISTS
 C           FOR THE OTHER ELEMENT CODES
-C       6.  ADD TO TRNDAT BLOCKDATA FOR DEFINITION
+C       6.  ADD TO TRNDATX BLOCKDATA FOR DEFINITION
 C
 C       LIST OF VALID ELEMENT CODES AND CLASS VARIABLES
 C
@@ -312,7 +321,7 @@ C  PLCN   --  Bit offset to extract PEN control bit from fontcap.
 C  FNTMAX --  Number of fonts obtained from FONT LIST (defaults to 1).
 C  FNTS   --  An array of pointers associating indices obtained from
 C             FONT INDEX elements with the internally supported fonts.
-C             Consult the documentation in BLOCKDATA TRNDAT for a
+C             Consult the documentation in BLOCKDATA TRNDATX for a
 C             list of supported fonts.
 C  FLEFT  --  An array of character left values for proportionally
 C             spaced fonts.

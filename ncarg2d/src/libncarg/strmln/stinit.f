@@ -1,5 +1,5 @@
 C
-C       $Id: stinit.f,v 1.13 2006-03-16 22:44:58 kennison Exp $
+C       $Id: stinit.f,v 1.14 2008-04-04 21:02:55 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -50,10 +50,6 @@ C
 C Output parameters:
 C
 C None
-C
-C Force the block data routine, which sets default variables, to load. 
-C
-      EXTERNAL STDATA
 C
 C ---------------------------------------------------------------------
 C
@@ -157,6 +153,10 @@ C
      +           P5D2PI = 7.85398163397448) 
 C
 C ---------------------------------------------------------------------
+C
+C Do a call forcing a BLOCKDATA to be loaded from a binary library.
+C
+      CALL STDATA
 C
 C Write the array sizes into the common block
 C 

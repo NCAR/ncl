@@ -1,5 +1,5 @@
 C
-C $Id: mditve.f,v 1.3 2005-06-22 21:36:44 kennison Exp $
+C $Id: mditve.f,v 1.4 2008-04-04 21:02:46 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -38,7 +38,7 @@ C projection or is separated from it by a "crossover" boundary, returns
 C similar quantities for an intermediate point at the very edge of the
 C visible area or on the "crossover" boundary.
 C
-C Declare required common blocks.  See MAPBD for descriptions of these
+C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
         COMMON /MAPCM8/  P,Q,R
