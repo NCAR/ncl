@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.40 2003-06-10 00:20:22 dbrown Exp $
+ *      $Id: SrcTree.c,v 1.41 2008-04-04 23:26:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1719,7 +1719,7 @@ void * _NclMakeRealExpr
 (double real,char *string_rep)
 #else
 (real,string_rep)
-float real;
+double real;
 char *string_rep;
 #endif
 {	
