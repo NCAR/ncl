@@ -1,5 +1,5 @@
 C
-C	$Id: sftbkd.f,v 1.3 2000-08-22 03:53:14 haley Exp $
+C	$Id: sftbkd.f,v 1.4 2008-04-04 21:01:25 kennison Exp $
 C
 C                                                                      
 C			     Copyright (C)  1997
@@ -21,9 +21,16 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
+      SUBROUTINE SFTBKD
 C
-
-      BLOCKDATA SFTBKD
+C Calling this do-nothing subroutine forces "ld" to load the following
+C block data routine (but only if they are in the same ".f" file).
+C
+        RETURN
+C
+      END
+CNOSPLIT
+      BLOCKDATA SFTBKDX
 C
 C  COMMON data definitions for fontcap parser for stroked fonts.
 C

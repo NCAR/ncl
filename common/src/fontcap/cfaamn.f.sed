@@ -1,5 +1,5 @@
 C
-C	$Id: cfaamn.f.sed,v 1.2 2008-02-05 04:23:18 fred Exp $
+C	$Id: cfaamn.f.sed,v 1.3 2008-04-04 21:01:25 kennison Exp $
 C                                                                      
 C			     Copyright (C)  1997
 C	     University Corporation for Atmospheric Research
@@ -217,6 +217,11 @@ C
       INTEGER  IOS, STATUS, II
       CHARACTER*80  DFLNAM
       CHARACTER*80 ARG1, ARG2, ARG3
+C
+C Do calls forcing BLOCKDATAs to be loaded from a binary library.
+C
+      CALL FFTBKD
+      CALL SFTBKD
 C
 C  Set the status field to ALLOK and inititalize the array to 
 C  receive the name of the character fontcap file.
