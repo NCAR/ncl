@@ -1,5 +1,5 @@
 C
-C	$Id: ncarbd.f,v 1.11 2008-04-04 21:03:02 kennison Exp $
+C	$Id: ncarbd.f,v 1.12 2008-04-05 01:40:24 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,44 +25,44 @@ C
 C Call all of the do-nothing routines that, by virtue of being called,
 C force the associated block data routines to be loaded.
 C
-        CALL AGDFLT
-        CALL ARBLDA
-        CALL BCBKD
-        CALL CONBD
-        CALL CONBDN
-        CALL CPBLDA
-        CALL CTBLDA
-        CALL DASHBD
-        CALL DPBLDA
-        CALL G01BKD
-        CALL GABLDT
-        CALL GFLSBD
-        CALL GKSBD
-        CALL GSEGDT
-        CALL GTPZBD
-        CALL GWIBKD
-        CALL HFINIT
-        CALL HSTBKD
-        CALL IDBLDA
-        CALL ISBLDA
-        CALL LBBLDA
-        CALL MAPBD
-        CALL NGBLDA
-        CALL PCBDFF
-        CALL PCBLDA
-        CALL PWRXBD
-        CALL PWRYBD
-        CALL SEBLDA
-        CALL SFBLDA
-        CALL SLBLDA
-        CALL SRFABD
-        CALL STDATA
-        CALL TDBLDA
-        CALL THREBD
-        CALL UTILBD
-        CALL VELDAT
-        CALL VTBLDA
-        CALL VVDATA
-        CALL WMBLDA
+        CALL AGDFLTX
+        CALL ARBLDAX
+        CALL BCBKDX
+        CALL CONBDX
+        CALL CONBDNX
+        CALL CPBLDAX
+        CALL CTBLDAX
+        CALL DASHBDX
+        CALL DPBLDAX
+        CALL G01BKDX
+        CALL GABLDTX
+        CALL GFLSBDX
+        CALL GKSBDX
+        CALL GSEGDTX
+        CALL GTPZBDX
+        CALL GWIBKDX
+        CALL HFINITX
+        CALL HSTBKDX
+        CALL IDBLDAX
+        CALL ISBLDAX
+        CALL LBBLDAX
+        CALL MAPBDX
+        CALL NGBLDAX
+        CALL PCBDFFX
+        CALL PCBLDAX
+        CALL PWRXBDX
+        CALL PWRYBDX
+        CALL SEBLDAX
+        CALL SFBLDAX
+        CALL SLBLDAX
+        CALL SRFABDX
+        CALL STDATAX
+        CALL TDBLDAX
+        CALL THREBDX
+        CALL UTILBDX
+        CALL VELDATX
+        CALL VTBLDAX
+        CALL VVDATAX
+        CALL WMBLDAX
 C
       END
