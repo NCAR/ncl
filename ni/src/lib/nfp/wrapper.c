@@ -360,6 +360,7 @@ extern NhlErrorTypes ezfftf_W(void);
 extern NhlErrorTypes ezfftb_W(void);
 extern NhlErrorTypes cfftf_W(void);
 extern NhlErrorTypes cfftb_W(void);
+extern NhlErrorTypes cfftf_frq_reorder_W(void);
 extern NhlErrorTypes fft2df_W(void);
 extern NhlErrorTypes fft2db_W(void);
 extern NhlErrorTypes lspoly_W(void);
@@ -5123,6 +5124,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
 
     NclRegisterFunc(cfftb_W,args,"cfftb",nargs);
+
+/*
+ * Register "cfftf_frq_reorder".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterFunc(cfftf_frq_reorder_W,args,"cfftf_frq_reorder",nargs);
 
 /*
  * Register "fft2df".
