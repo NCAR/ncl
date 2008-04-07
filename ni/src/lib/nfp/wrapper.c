@@ -178,6 +178,7 @@ extern NhlErrorTypes smth9_W(void);
 extern NhlErrorTypes simpeq_W(void);
 extern NhlErrorTypes simpne_W(void);
 extern NhlErrorTypes poisson_grid_fill_W(void);
+extern NhlErrorTypes wk_smooth121_W(void);
 
 extern NhlErrorTypes nggcog_W(void);
 extern NhlErrorTypes ngritd_W(void);
@@ -2656,6 +2657,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterProc(poisson_grid_fill_W,args,"poisson_grid_fill",nargs);
+
+/*
+ * Register "wk_smooth121".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(1);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    NclRegisterProc(wk_smooth121_W,args,"wk_smooth121",nargs);
 
 /*
  * Register "simpeq"
