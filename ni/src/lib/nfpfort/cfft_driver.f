@@ -1,9 +1,9 @@
 C NCLFORTSTART
-      subroutine cfftfdriver (nmx,x,acoef,bcoef)
+      subroutine cfftfdriver (nmx,x,acoef,bcoef,work,nw)
       implicit none
 c                                      ! INPUT       
-      integer  nmx
-      double precision x(nmx)
+      integer  nmx,nw
+      double precision x(nmx),work(nw)
 c                                      ! OUTPUT       
       double precision acoef(nmx), bcoef(nmx) 
 c NCLEND
@@ -11,7 +11,7 @@ c
 c NCL:  coef = cfftf( x )              ! coef(2,...)
 c                                      ! LOCAL        
       integer  n
-      double precision work(4*nmx+25)
+c      double precision work(4*nmx+25)  
       double complex   carr(nmx)       
 
       call cffti(nmx,work)               
@@ -31,11 +31,11 @@ c                                      ! create complex input
       end
 
 C NCLFORTSTART
-      subroutine cfftbdriver (nmx,x,acoef,bcoef)
+      subroutine cfftbdriver (nmx,x,acoef,bcoef,work,nw)
       implicit none
 c                                      ! INPUT       
-      integer  nmx
-      double precision acoef(nmx), bcoef(nmx) 
+      integer  nmx,nw
+      double precision acoef(nmx), bcoef(nmx), work(nw)
 c                                      ! OUTPUT       
       double precision x(nmx)
 c NCLEND
@@ -43,7 +43,7 @@ c
 c NCL:  coef = cfftb( acoef, bcoef )
 c                                      ! LOCAL        
       integer  n
-      double precision work(4*nmx+25)
+c      double precision work(4*nmx+25)
       double complex   carr(nmx)       
 
       call cffti(nmx,work)               
