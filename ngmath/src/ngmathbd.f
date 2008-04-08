@@ -1,5 +1,5 @@
 C
-C	$Id: ngmathbd.f,v 1.1 2007-02-28 01:49:32 fred Exp $
+C	$Id: ngmathbd.f,v 1.2 2008-04-08 04:15:12 haley Exp $
 C                                                                      
 C                Copyright (C)  2007
 C        University Corporation for Atmospheric Research
@@ -21,6 +21,6 @@ C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
       SUBROUTINE NGMATHBD
-      CALL CSBLDA
-      CALL SHBLDA
+      CALL CSBLDAX
+      CALL SHBLDAX
       END
