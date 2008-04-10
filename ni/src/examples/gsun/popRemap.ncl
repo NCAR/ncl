@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.13 2007-08-22 14:41:39 shea Exp $
+;      $Id: popRemap.ncl,v 1.14 2008-04-10 19:11:40 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -40,6 +40,7 @@
 ;- T85   : gaussian ccm grid
 ;- T170  : gaussian ccm grid
 ;- 1x1d  : 1 degree lat/lon grid used by Levitus
+;- 1.9x2.5 : finite volume
 
 ; --------------------------------------------------------------------
 undef ("create_rmpPopFileName")
@@ -238,7 +239,7 @@ begin
       gDst.eq."T42" .or. gDst.eq."T21" .or. \
       gDst.eq."TwoD" .or.gDst.eq."OneD".or. \
       gDst.eq."HlfD" .or.gDst.eq."1x1d".or. \
-      gDst.eq."T31") then
+      gDst.eq."T31"  .or.gDst.eq."1.9x2.5") then
 
       if (gDst.eq."T170".or. gDst.eq."T85" .or. \
           gDst.eq."T63" .or. gDst.eq."T62" .or. \
@@ -271,16 +272,30 @@ begin
           lat =  latStart + fspan (0,(nlat-1)*dlat, nlat); generate latitudes
       end if
 
-     ;print(lonStart)
-     ;print("^^^^^^")
-     
       lon  = lonStart + fspan (0,(mlon-1)*dlon, mlon); generate longitudes
      ;print(lon)
 
-      lat@long_name = "latitude"   
-      lon@long_name = "longitude"   
-      lat@units     = "degrees_north"
-      lon@units     = "degrees_east"
+      if (isvar("lat")) then
+          lat@long_name = "latitude"   
+          lat@units     = "degrees_north"
+      end if
+      if (isvar("lon")) then
+          lon@long_name = "longitude"   
+          lon@units     = "degrees_east"
+      end if
+;                                    ; MAJOR kluge 3/16/2008
+      if (gDst.eq."1.9x2.5") then 
+          if (isvar("lat")) then
+              delete(lat)                     ; DJS stuck this in 3/16/2008
+          end if
+          if (isvar("lon")) then
+              delete(lon)
+          end if
+          nlat = 96
+          mlon = 144
+          lat  = latGlobeF(nlat, "lat", "latitude", "degrees_north")
+          lon  = lonGlobeF(mlon, "lon", "longitude", "degrees_east")
+      end if
 
       x!(nDx-2) = "lat"                   ; name dimensions
       x!(nDx-1) = "lon"
