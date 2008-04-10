@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.10 2008-03-12 15:20:21 grubin Exp $
+#       $Id: ncl_convert2nc,v 1.11 2008-04-10 19:26:05 grubin Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -443,10 +443,13 @@ while ($n <= $nfiles)
         # yes, does the suffix indicate requested data type?
         set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
         switch ($lsfx)
+            case gr:
+            case gr1:
             case grb:
             case grib:
             case grb1:
             case grib1:
+            case gr2:
             case grb2:
             case grib2:
                 set ftype = "GRIB"
@@ -499,61 +502,57 @@ while ($n <= $nfiles)
         # 'addfile()' functionality.  If found, keep it as input.
 
         if ($have_esfx == 1) then
-            if (( !(-e $ifiles_t[$n]:r) && !(-r $ifiles_t[$n]:r)) \
-                    || ( !(-e $dirin/$ifiles_t[$n]:r) && !(-r $dirin/$ifiles_t[$n]:r))) then
+            if (( (-e $ifiles_t[$n]:r.$esfx) && (-r $ifiles_t[$n]:r.$esfx)) \
+                    || ( (-e $dirin/$ifiles_t[$n]:r.$esfx) && (-r $dirin/$ifiles_t[$n]:r.$esfx))) then
+                set psfx = $esfx
                 set if = $ifiles_t[$n]
                 set of = $ifiles_t[$n]:r
-                set ftype = $ifiles_t[$n]:e
-                set valid_file = 1
-                goto VALID_FILE
-            endif
-
-            if ($sfxlen == 0) then
-                set psfx = $esfx
-            else
-                set psfx = "$fil:e"
             endif
         else
             if (( !(-e $ifiles_t[$n]:r) && !(-r $ifiles_t[$n]:r)) \
                     || ( !(-e $dirin/$ifiles_t[$n]:r) && !(-r $dirin/$ifiles_t[$n]:r))) then
-                set if = $ifiles_t[$n]
-                set of = $ifiles_t[$n]:r
-                set ftype = $ifiles_t[$n]:e
-                set valid_file = 1
-                goto VALID_FILE
+            goto VALID_FILE
             endif
+        endif
 
-            set psfx = "$fil:e"
+        if ($sfxlen == 0) then
+            goto VALID_FILE
+        else
+            set psfx = $ifiles_t[$n]:e
         endif
 
         set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
+
         switch ($lsfx)
+            case gr:
+            case gr1:
             case grb:
             case grib:
             case grb1:
             case grib1:
+            case gr2:
             case grb2:
             case grib2:
                 set ftype = "GRIB"
-                set if = $fil
+                set if = $fil:r.$lsfx
                 set of = $fil:r
-                set valid_file = 0
+                set valid_file = 1
                 goto VALID_FILE
                 breaksw
 
             case hdf:
                 set ftype = "HDF"
-                set if = $fil
+                set if = $fil:r.$lsfx
                 set of = $fil:r
-                set valid_file = 0
+                set valid_file = 1
                 goto VALID_FILE
                 breaksw
 
             case hdfeos:
                 set ftype = "HDFEOS"
-                set if = $fil
+                set if = $fil:r.$lsfx
                 set of = $fil:r
-                set valid_file = 0
+                set valid_file = 1
                 goto VALID_FILE
                 breaksw
 
