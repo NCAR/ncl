@@ -1940,7 +1940,7 @@ begin
   end do
 
   if(.not.no_titles .or. com_title) then
-    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
+    font_height = get_res_value_keep(opts,"FontHeightF",0.01)
 
     txt = create "map_titles" textItemClass wks
       "txString"      : SubTitles
@@ -2115,7 +2115,7 @@ begin
   end do
 
   if(.not.no_titles) then
-    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
+    font_height = get_res_value_keep(opts,"FontHeightF",0.01)
     txt = create "map_titles" textItemClass wks
       "txString"      : SubTitles
       "txFontHeightF" : font_height
@@ -2266,7 +2266,7 @@ begin
   end do
 
   if(.not.no_titles) then
-    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
+    font_height = get_res_value_keep(opts,"FontHeightF",0.01)
 
     txt = create "map_titles" textItemClass wks
       "txString"      : SubTitles
