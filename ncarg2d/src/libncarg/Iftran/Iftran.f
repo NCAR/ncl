@@ -1,6 +1,6 @@
       PROGRAM IFTRAN
 C
-C $Id: Iftran.f,v 1.6 2008-04-04 21:02:42 kennison Exp $
+C $Id: Iftran.f,v 1.7 2008-04-11 20:11:24 kennison Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -98,7 +98,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
  1001 FORMAT ('*** IFTRAN SUMMARY - ',I5,' CARDS, ',I3,' ERRORS ***')
       END
       SUBROUTINE IFTRBD
-        RETURN
+      RETURN
       END
 CNOSPLIT - makes Fsplit put next routine in same file as last routine.
       BLOCKDATA IFTRBDX
