@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.64.INTEL,v 1.1 2004-12-17 06:52:25 haley Exp $
+ *      $Id: LINUX.64.INTEL,v 1.2 2008-04-11 15:54:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -21,7 +21,7 @@
  *          tell ymake how to build NCAR Graphics on a 64-bit Linux
  *          system using the INTEL compilers.
  */
-#define HdfDefines  -DIA64
+#define HdfDefines  -DLINUX64
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
 #define Cstatic
@@ -30,8 +30,7 @@
 #define CCompiler   icc
 #define FCompiler   ifort
 #define CtoFLibraries   -lm -lifcore
-#define CcOptions    -ansi -size_lp64
-#define FcOptions     -size_lp64
+#define CcOptions    -ansi
 #define COptimizeFlag    -O2
 #define FOptimizeFlag    -O2
 #define XToolLibrary    -lXt -lSM -lICE

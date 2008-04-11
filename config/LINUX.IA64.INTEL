@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.IA64.INTEL,v 1.1 2007-10-06 02:05:30 haley Exp $
+ *      $Id: LINUX.IA64.INTEL,v 1.2 2008-04-11 15:54:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -31,7 +31,8 @@
 #define CCompiler   icc
 #define FCompiler   ifort
 #define CtoFLibraries   -lm -lifcore
-#define CcOptions    -ansi 
+#define CcOptions    -ansi  -size_lp64
+#define FcOptions     -size_lp64
 #define COptimizeFlag    -O2
 #define FOptimizeFlag    -O2
 #define XToolLibrary    -lXt -lSM -lICE

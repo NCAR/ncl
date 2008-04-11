@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX.64.GNU,v 1.3 2007-04-21 20:35:00 haley Exp $
+ *      $Id: LINUX.64.GNU,v 1.4 2008-04-11 15:54:49 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -21,7 +21,7 @@
  *          tell ymake how to build NCAR Graphics on a 64-bit LINUX
  *          system using the GNU compilers.
  */
-#define HdfDefines  -DLINUX
+#define HdfDefines  -DLINUX64
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
 #define Cstatic
