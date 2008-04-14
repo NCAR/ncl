@@ -1,23 +1,23 @@
 C NCLFORTSTART
-      subroutine cfftfdriver (nmx,x,acoef,bcoef,work,nw)
+      subroutine cfftfdriver (nmx,xr,xi,acoef,bcoef,work,nw)
       implicit none
 c                                      ! INPUT       
       integer  nmx,nw
-      double precision x(nmx),work(nw)
+      double precision xr(nmx),xi(nmx),work(nw)
 c                                      ! OUTPUT       
       double precision acoef(nmx), bcoef(nmx) 
 c NCLEND
 c
-c NCL:  coef = cfftf( x )              ! coef(2,...)
+c NCL:  coef = cfftf( xr, xi, opt)     ! coef(2,...)
 c                                      ! LOCAL        
       integer  n
-c      double precision work(4*nmx+25)  
+c     double precision work(4*nmx+25)  
       double complex   carr(nmx)       
 
       call cffti(nmx,work)               
 c                                      ! create complex input
       do n=1,nmx
-         carr(n) = cmplx( x(n), 0.0d0 )     
+         carr(n) = cmplx( xr(n), xi(n) )     
       end do
 
       call cfftf(nmx, carr, work)
@@ -31,16 +31,16 @@ c                                      ! create complex input
       end
 
 C NCLFORTSTART
-      subroutine cfftbdriver (nmx,x,acoef,bcoef,work,nw)
+      subroutine cfftbdriver (nmx,xr,xi,acoef,bcoef,work,nw)
       implicit none
 c                                      ! INPUT       
       integer  nmx,nw
       double precision acoef(nmx), bcoef(nmx), work(nw)
 c                                      ! OUTPUT       
-      double precision x(nmx)
+      double precision xr(nmx), xi(nmx)
 c NCLEND
 c
-c NCL:  coef = cfftb( acoef, bcoef )
+c NCL:  coef = cfftb( acoef, bcoef, opt )
 c                                      ! LOCAL        
       integer  n
 c      double precision work(4*nmx+25)
@@ -55,7 +55,8 @@ c                                      ! create complex input
       call cfftb(nmx, carr, work)
 c                                      ! reconstruct ... normalize 
       do n=1,nmx
-         x(n) = dble( carr(n) ) / nmx
+         xr(n) = dble ( carr(n) ) / nmx
+         xi(n) = dimag( carr(n) ) / nmx
       end do
 
       return
