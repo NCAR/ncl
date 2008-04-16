@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.153 2007-12-06 16:34:44 shea Exp $
+;      $Id: contributed.ncl,v 1.154 2008-04-16 15:29:08 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -370,7 +370,7 @@ end
 ; used on variables that have been operated on by a dim_* function.
 ; It also copies both the attributes and the coordinate variables.
 
-;undef("copyatt")
+undef("copyatt")
 procedure copyatt(var_to,var_from) 
 local n, att_names, i, dName, rankto, natts 
 begin
@@ -4720,6 +4720,17 @@ begin
   end do
   
 end
+; **************************************************************
+; D. Shea
+; different entry name .... 
+; **************************************************************
+
+undef("eofunc_varimax_reorder")
+procedure eofunc_varimax_reorder ( eofr )
+begin
+   eof_varimax_reorder( eofr )
+end
+
 
 ; **************************************************************
 ; D. Shea
@@ -6562,6 +6573,7 @@ begin
   res@cnLevelSpacingF      = mnmxint(2)
 end
 
+undef("isStrSubset")
 function isStrSubset(S[1]:string, s[1]:string)
 ; return True or False is "s" is a subset of "S" 
 local SC, sc, nsc, nSC, n, sTF
@@ -6586,6 +6598,7 @@ begin
    return (sTF)
 end
 
+undef("indStrSubset")
 function indStrSubset(S[1]:string, s[1]:string)
 ; return the indices of the characters
 ; of "S" of which "s" is a subset. 
