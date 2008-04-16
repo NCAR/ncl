@@ -5118,7 +5118,8 @@ void NclAddUserFuncs(void)
  * Create private argument array.
  */
     nargs = 0;
-    args = NewArgs(2);
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;

@@ -3,10 +3,10 @@
 #include "wrapper.h"
 
 extern void NGCALLF(cfftfdriver,CFFTFDRIVER)(int*,double*,double*,double*,
-                                             double*,int*);
+                                             double*,double*,int*);
 
 extern void NGCALLF(cfftbfdriver,CFFTBDRIVER)(int*,double*,double*,double*,
-                                              double*,int*);
+                                              double*,double*,int*);
 
 extern void NGCALLF(frqcfft,FRQCFFT)(int*,double*);
 
@@ -18,13 +18,15 @@ NhlErrorTypes cfftf_W( void )
 /*
  * Input array variables
  */
-  void *x;
+  void *xr, *xi;
   int *opt;
-  int size_x, ndims_x, dsizes_x[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_x;
-  NclScalar missing_x, missing_dx, missing_rx;
-  int has_missing_x;
-  double *tmp_x;
+  int size_x, ndims_xr, dsizes_xr[NCL_MAX_DIMENSIONS];
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS], is_scalar_xi;
+  NclBasicDataTypes type_xr, type_xi;
+  NclScalar missing_xr, missing_dxr, missing_rxr;
+  NclScalar missing_xi, missing_dxi;
+  int has_missing_xr, has_missing_xi, scalar_xi;
+  double *tmp_xr, *tmp_xi, *tmp_multid_xi, *tmp_scalar_xi;
 /*
  * Output array variables
  */
@@ -49,27 +51,51 @@ NhlErrorTypes cfftf_W( void )
  * various
  */
   double *work;
-  int i, npts, npts2, nwrk, index_x, index_cfb;
-  int found_missing, any_missing, size_leftmost, size_cf;
+  int i, npts, npts2, nwrk, index_x, index_cfb, size_leftmost, size_cf;
+  int found_missing_xr, found_missing_xi, any_missing;
 /*
  * Retrieve parameters
  *
  * Note any of the pointer parameters can be set to NULL, which
  * implies you don't care about its value.
  */
-  x = (void*)NclGetArgValue(
+  xr = (void*)NclGetArgValue(
            0,
-           2,
-           &ndims_x, 
-           dsizes_x,
-           &missing_x,
-           &has_missing_x,
-           &type_x,
+           3,
+           &ndims_xr, 
+           dsizes_xr,
+           &missing_xr,
+           &has_missing_xr,
+           &type_xr,
            2);
 
-  opt = (int*)NclGetArgValue(
+  xi = (void*)NclGetArgValue(
            1,
+           3,
+           &ndims_xi, 
+           dsizes_xi,
+           &missing_xi,
+           &has_missing_xi,
+           &type_xi,
+           2);
+
+  scalar_xi = is_scalar(ndims_xi,dsizes_xi);
+  if(!scalar_xi) {
+    if(ndims_xi != ndims_xr) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: xi must either be a scalar or the same size as xr");
+      return(NhlFATAL);
+    }
+    for( i = 0; i < ndims_xr; i++ ) {
+      if(dsizes_xr[i] != dsizes_xi[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: xi must either be a scalar or the same size as xr");
+        return(NhlFATAL);
+      }
+    }
+  }
+
+  opt = (int*)NclGetArgValue(
            2,
+           3,
            NULL,
            NULL,
            NULL,
@@ -77,17 +103,17 @@ NhlErrorTypes cfftf_W( void )
            NULL,
            2);
 /*
- * Calculate number of leftmost elements and dimension sizes of output
+ * Calculate number of leftmost elements and dimension sizes of output.
  */
-  ndims_cf     = ndims_x + 1;
+  ndims_cf     = ndims_xr + 1;
   dsizes_cf = (int *)malloc(ndims_cf*sizeof(int));
   dsizes_cf[0] = 2;
   size_leftmost = 1;
-  for( i = 0; i < ndims_x-1; i++ ) {
-    size_leftmost *= dsizes_x[i];
-    dsizes_cf[i+1] = dsizes_x[i];
+  for( i = 0; i < ndims_xr-1; i++ ) {
+    size_leftmost *= dsizes_xr[i];
+    dsizes_cf[i+1] = dsizes_xr[i];
   }
-  dsizes_cf[ndims_x] = npts = dsizes_x[ndims_x-1];
+  dsizes_cf[ndims_xr] = npts = dsizes_xr[ndims_xr-1];
 
 /* Calculate size of output array. */
   npts2   = 2*npts;
@@ -97,15 +123,36 @@ NhlErrorTypes cfftf_W( void )
 /*
  * Coerce missing values.
  */
-  coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
+  coerce_missing(type_xr,has_missing_xr,&missing_xr,&missing_dxr,&missing_rxr);
+  coerce_missing(type_xi,has_missing_xi,&missing_xi,&missing_dxi,NULL);
 /*
- * Create space for temporary input array if necessary.
+ * Create space for temporary input arrays if necessary.
  */
-  if(type_x != NCL_double) {
-    tmp_x = (double*)calloc(npts,sizeof(double));
-    if(tmp_x == NULL) {
+  if(type_xr != NCL_double) {
+    tmp_xr = (double*)calloc(npts,sizeof(double));
+    if(tmp_xr == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: Unable to allocate memory for coercing input array to double precision");
       return(NhlFATAL);
+    }
+  }
+/*
+ * Propagate xi to same size as xr if necessary.
+ */
+  if(scalar_xi) {
+    tmp_scalar_xi = coerce_input_double(xi,type_xi,1,0,NULL,NULL);
+    tmp_multid_xi = copy_scalar_to_array(tmp_scalar_xi,ndims_xi,dsizes_xi,size_x);
+    if(tmp_scalar_xi == NULL || tmp_multid_xi == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    if(type_xi != NCL_double) {
+      tmp_xi = (double*)calloc(npts,sizeof(double));
+      if(tmp_xi == NULL) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: Unable to allocate memory for coercing input array to double precision");
+        return(NhlFATAL);
+      }
     }
   }
 /*
@@ -122,17 +169,17 @@ NhlErrorTypes cfftf_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: Cannot allocate memory for temporary arrays" );
     return(NhlFATAL);
   }
-  if(type_x == NCL_double) {
+  if(type_xr == NCL_double || type_xi == NCL_double) {
     cf   = (void*)calloc(size_cf,sizeof(double));
     frq  = (void*)calloc(size_x,sizeof(double));
     type_cf = NCL_double;
-    if(has_missing_x) missing_cf = missing_dx;
+    if(has_missing_xr) missing_cf = missing_dxr;
   }
   else {
     cf   = (void*)calloc(size_cf,sizeof(float));
     frq  = (void*)calloc(size_x,sizeof(float));
     type_cf = NCL_float;
-    if(has_missing_x) missing_cf = missing_rx;
+    if(has_missing_xr) missing_cf = missing_rxr;
   }
   if ( cf == NULL || frq == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf: Cannot allocate memory for output arrays" );
@@ -146,27 +193,42 @@ NhlErrorTypes cfftf_W( void )
   index_cfb = size_x;
   any_missing = 0;
   for(i = 0; i < size_leftmost; i++) {
-    if(type_x != NCL_double) { 
-      coerce_subset_input_double(x,tmp_x,index_x,type_x,npts,0,NULL,NULL);
+    if(type_xr != NCL_double) { 
+      coerce_subset_input_double(xr,tmp_xr,index_x,type_xr,npts,0,NULL,NULL);
     }
     else {
-      tmp_x = &((double*)x)[index_x];
+      tmp_xr = &((double*)xr)[index_x];
     }
+    if(scalar_xi) {
+      tmp_xi = &tmp_multid_xi[index_x];
+    }
+    else{
+      if(type_xi != NCL_double) { 
+        coerce_subset_input_double(xi,tmp_xi,index_x,type_xi,npts,0,NULL,NULL);
+      }
+      else {
+        tmp_xi = &((double*)xi)[index_x];
+      }
+    }
+    
 /*
- * Check for missing values in x.  If any, then coerce that section of
+ * Check for missing values in xr/xi.  If any, then coerce that section of
  * the output to missing.
  */
-    found_missing = contains_missing(tmp_x,npts,has_missing_x,
-                                     missing_dx.doubleval);
-    if(found_missing) {
+    found_missing_xr = contains_missing(tmp_xr,npts,has_missing_xr,
+                                        missing_dxr.doubleval);
+    found_missing_xi = contains_missing(tmp_xi,npts,has_missing_xi,
+                                        missing_dxi.doubleval);
+    if(found_missing_xr || found_missing_xi) {
       any_missing++;
       set_subset_output_missing(cf,index_x,type_cf,npts,
-                                missing_dx.doubleval);
+                                missing_dxr.doubleval);
       set_subset_output_missing(cf,index_cfb,type_cf,npts,
-                                missing_dx.doubleval);
+                                missing_dxr.doubleval);
     }
     else {
-      NGCALLF(cfftfdriver,CFFTFDRIVER)(&npts,tmp_x,tmp_cfa,tmp_cfb,work,&nwrk);
+      NGCALLF(cfftfdriver,CFFTFDRIVER)(&npts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
+                                       work,&nwrk);
 /*
  * Copy results back into cf.
  */
@@ -180,7 +242,15 @@ NhlErrorTypes cfftf_W( void )
 /*
  * Free up memory.
  */
-  if(type_x != NCL_double) free(tmp_x);
+  if(type_xr != NCL_double) free(tmp_xr);
+  if(scalar_xi) {
+    free(tmp_scalar_xi);
+    free(tmp_multid_xi);
+  }
+  else {
+    if(type_xi != NCL_double) free(tmp_xi);
+  }
+    
   free(work);
   free(tmp_cfa);
   free(tmp_cfb);
@@ -317,7 +387,7 @@ NhlErrorTypes cfftb_W( void )
  * Output array variables
  */
   void *x;
-  double *tmp_x;
+  double *tmp_xr, *tmp_xi;
   int ndims_x, *dsizes_x;
   NclBasicDataTypes type_x;
   NclTypeClass type_x_class;
@@ -357,6 +427,11 @@ NhlErrorTypes cfftb_W( void )
            NULL,
            NULL,
            2);
+
+  if(*opt != 0 && *opt != 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftb: Invalid option value.");
+    return(NhlFATAL);
+  }
 
 /*
  * Calculate number of leftmost elements and dimension sizes of output
@@ -398,10 +473,11 @@ NhlErrorTypes cfftb_W( void )
 /*
  * Allocate space for other arrays.
  */
-  nwrk  = (4*npts) + 25;
-  work  = (double*)calloc(nwrk,sizeof(double));
-  tmp_x = (double*)calloc(npts,sizeof(double));
-  if ( tmp_x == NULL || work == NULL) {
+  nwrk   = (4*npts) + 25;
+  work   = (double*)calloc(nwrk,sizeof(double));
+  tmp_xr = (double*)calloc(npts,sizeof(double));
+  tmp_xi = (double*)calloc(npts,sizeof(double));
+  if ( tmp_xr == NULL || tmp_xi == NULL || work == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftb: Cannot allocate memory for temporary arrays" );
     return(NhlFATAL);
   }
@@ -449,11 +525,19 @@ NhlErrorTypes cfftb_W( void )
                                 missing_dcf.doubleval);
     }
     else {
-      NGCALLF(cfftbdriver,CFFTBDRIVER)(&npts,tmp_x,tmp_cfa,tmp_cfb,work,&nwrk);
+      NGCALLF(cfftbdriver,CFFTBDRIVER)(&npts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
+                                       work,&nwrk);
 /*
- * Copy results back into x.
+ * Copy real or complex results back into x. Note that *opt should have
+ * been checked above to be 0 or 1. Eventually, *opt may have other
+ * possible values.
  */
-      coerce_output_float_or_double(x,tmp_x,type_x,npts,index_cfa);
+      if(*opt == 0) {
+        coerce_output_float_or_double(x,tmp_xr,type_x,npts,index_cfa);
+      }
+      else {
+        coerce_output_float_or_double(x,tmp_xi,type_x,npts,index_cfa);
+      }
     }
     index_cfa += npts;
     index_cfb += npts;
@@ -471,7 +555,8 @@ NhlErrorTypes cfftb_W( void )
      free(tmp_cfb);
   }
   free(work);
-  free(tmp_x);
+  free(tmp_xr);
+  free(tmp_xi);
 
 /*
  * Set up variable to return.
@@ -808,4 +893,3 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
   return(NhlNOERROR);
 
 }
-
