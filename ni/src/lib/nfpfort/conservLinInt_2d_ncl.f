@@ -13,6 +13,7 @@ c                                               ! OUTPUT
 c tst double precision zo(mxo,nyo,ngrd)
 C NCLEND
 c                                               ! LOCAL
+c MH: The interface should allocate.
 c tst double precision xilft(mxi), xirgt(mxi), dxi(mxi)
 c tst double precision yibot(nyi), yitop(nyi), dyi(nyi)
 c tst double precision xolft(mxo), xorgt(mxo)
@@ -20,6 +21,21 @@ c tst double precision fracx(mxi,mxo), fracy(nyi,nyo)
 c tst double precision ziwrk(mxi,nyi), zowrk(mxo,nyo)
 c tst double precision xiwrk(mxi), yiwrk(nyi), xowrk(mxo), yowrk(nyo)
 c tst integer          indx(2,mxo), indy(2,nyo)
+
+c                  ! interface sets the following
+c tst ier    = 0
+c tst ncyc   = 0
+c tst debug  = 0
+c tst critpc = 100 ! this may change via attribi]ute
+
+c tst do n=1,nxi
+c tst    wxi(n) = 1.0d0   ! always
+c tst end do
+
+c tst                  ( if wyi is a scalar)
+c tst do n=1,nyi
+c tst    wyi(n) = 1.0d0
+c tst end do
 
 c tst call arealinint2da (mxi,nyi,ngrd,xi,yi,zi,wxi,wyi,zimsg
 c tst+                   ,mcyc,ncyc,mxo,nyo,xo,yo,zo,critpc,debug,ier
