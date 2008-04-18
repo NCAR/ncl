@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.2 2005-04-14 20:23:37 kennison Exp $
+#	$Id: yMakefile,v 1.3 2008-04-18 04:09:21 kennison Exp $
 #
 
 MYNAME	= ezmapC
@@ -29,7 +29,8 @@ SRCS =  c_mapblm.c c_mapdrw.c c_mapfst.c c_mapgrd.c c_mapgtc.c c_mapgti.c \
 	c_mdrggc.c c_mdrgsc.c c_mdritd.c c_mdutfd.c c_mdutfs.c c_mdutid.c \
 	c_mdutis.c c_mputfd.c c_mputfs.c c_mputid.c c_mputis.c c_mdutin.c \
 	c_mputin.c c_mdlach.c c_mdloch.c c_mdrgdl.c c_mdscal.c c_maplmm.c \
-	c_mdplmm.c
+	c_mdplmm.c c_maqini.c c_maqtra.c c_maqtri.c c_maqtrn.c c_mdqini.c \
+	c_mdqtra.c c_mdqtri.c c_mdqtrn.c
 
 OBJS =  c_mapblm.o c_mapdrw.o c_mapfst.o c_mapgrd.o c_mapgtc.o c_mapgti.o \
 	c_mapgtl.o c_mapgtr.o c_mapint.o c_mapiq.o  c_mapit.o  c_maplbl.o \
@@ -56,7 +57,8 @@ OBJS =  c_mapblm.o c_mapdrw.o c_mapfst.o c_mapgrd.o c_mapgtc.o c_mapgti.o \
 	c_mdrggc.o c_mdrgsc.o c_mdritd.o c_mdutfd.o c_mdutfs.o c_mdutid.o \
 	c_mdutis.o c_mputfd.o c_mputfs.o c_mputid.o c_mputis.o c_mdutin.o \
 	c_mputin.o c_mdlach.o c_mdloch.o c_mdrgdl.o c_mdscal.o c_maplmm.o \
-	c_mdplmm.o
+	c_mdplmm.o c_maqini.o c_maqtra.o c_maqtri.o c_maqtrn.o c_mdqini.o \
+	c_mdqtra.o c_mdqtri.o c_mdqtrn.o
 
 EXTRA_CDEFINES = $(OS_DEF)
 

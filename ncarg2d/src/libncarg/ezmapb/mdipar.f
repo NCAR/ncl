@@ -1,5 +1,5 @@
 C
-C $Id: mdipar.f,v 1.1 2001-08-16 23:10:47 kennison Exp $
+C $Id: mdipar.f,v 1.2 2008-04-18 04:09:21 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@ C
 C
         INTEGER IAIN
 C
-        PARAMETER (MNAI=6000)
+        PARAMETER (MNAI=8000)
 C
 C The value of MDIPAR(IAIN) is the area identifier of the parent of the
 C area whose area identifier is IAIN.  The parent of an an area is the

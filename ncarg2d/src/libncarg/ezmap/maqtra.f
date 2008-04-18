@@ -1,5 +1,5 @@
 C
-C $Id: mdipai.f,v 1.2 2008-04-18 04:09:21 kennison Exp $
+C $Id: maqtra.f,v 1.1 2008-04-18 04:09:20 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,43 +20,18 @@ C along with this software; if not, write to the Free Software
 C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 C USA.
 C
-      INTEGER FUNCTION MDIPAI (IAIN,IAIP)
-C
-        INTEGER IAIN,IAIP
-C
-        PARAMETER (MNAI=8000)
-C
-C The value of MDIPAI (IAIN,IAIP) is non-zero if and only if the area
-C with area identifier IAIN is a part of the area with area identifier
-C IAIP.
-C
-        COMMON /MAPCMX/  IATY(MNAI),ISCI(MNAI),IPAR(MNAI)
-        INTEGER          IATY,ISCI,IPAR
-        SAVE   /MAPCMX/
-C
-C Declare local variables.
-C
-        INTEGER          ITMP,NSTP
-C
-        MDIPAI=0
-C
-        IF (IAIP.LE.0) RETURN
-C
-        ITMP=IAIN
-        NSTP=0
-C
-  101   IF (ITMP.GE.1.AND.ITMP.LE.MNAI) THEN
-          IF (ITMP.NE.IAIP) THEN
-            IF (IPAR(ITMP).NE.0.AND.NSTP.LT.10) THEN
-              ITMP=IPAR(ITMP)
-              NSTP=NSTP+1
-              GO TO 101
-            END IF
-          ELSE
-            MDIPAI=1
-          END IF
+      SUBROUTINE MAQTRA (RLAT,RLON,UVAL,VVAL)
+        REAL   RLAT,RLON,UVAL,VVAL
+        DOUBLE PRECISION DUVL,DVVL
+        IF (ICFELL('MAQTRA - UNCLEARED PRIOR ERROR',1).NE.0) RETURN
+        CALL MDQTRA (DBLE(RLAT),DBLE(RLON),DUVL,DVVL)
+        IF (ICFELL('MAQTRA',2).NE.0) RETURN
+        IF (DUVL.NE.1.D12) THEN
+          UVAL=REAL(DUVL)
+          VVAL=REAL(DVVL)
+        ELSE
+          UVAL=1.E12
+          VVAL=1.E12
         END IF
-C
         RETURN
-C
       END

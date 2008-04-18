@@ -1,5 +1,5 @@
 C
-C $Id: mdiaty.f,v 1.1 2001-08-16 23:10:45 kennison Exp $
+C $Id: mdiaty.f,v 1.2 2008-04-18 04:09:21 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@ C
 C
         INTEGER IAIN
 C
-        PARAMETER (MNAI=6000)
+        PARAMETER (MNAI=8000)
 C
 C The value of MDIATY(IAIN) is the area type for the area whose area
 C identifier is IAIN.

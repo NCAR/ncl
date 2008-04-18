@@ -1,5 +1,5 @@
 C
-C $Id: mdlndr.f,v 1.4 2006-10-19 19:02:22 kennison Exp $
+C $Id: mdlndr.f,v 1.5 2008-04-18 04:09:22 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
         CHARACTER*(*) FLNM
         INTEGER       ILVL
 C
-        PARAMETER (MNAI=6000)
+        PARAMETER (MNAI=8000)
 C
 C This routine, given the name, FLNM, of a file of map data in the new
 C (as of 4/98) format and the level, ILVL, at which those data are to

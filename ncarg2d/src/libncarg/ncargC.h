@@ -1,5 +1,5 @@
 /*
- *  $Id: ncargC.h,v 1.23 2007-12-29 01:48:31 fred Exp $
+ *  $Id: ncargC.h,v 1.24 2008-04-18 04:09:19 kennison Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1541,6 +1541,39 @@ extern void c_mapvec(
 #endif
 );
 
+extern void c_maqini(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_maqtra(
+#ifdef NeedFuncProto
+    float rlat,
+    float rlon,
+    float *uval,
+    float *vval
+#endif
+);
+
+extern void c_maqtri(
+#ifdef NeedFuncProto
+    float uval,
+    float vval,
+    float *rlat,
+    float *rlon
+#endif
+);
+
+extern void c_maqtrn(
+#ifdef NeedFuncProto
+    float rlat,
+    float rlon,
+    float *u,
+    float *v
+#endif
+);
+
 extern char *c_mdfnme(
 #ifdef NeedFuncProto
     int iain,
@@ -2031,6 +2064,39 @@ extern void c_mdpvec(
 #ifdef NeedFuncProto
     double xlat,
     double xlon
+#endif
+);
+
+extern void c_mdqini(
+#ifdef  NeedFuncProto
+    void
+#endif
+);
+
+extern void c_mdqtra(
+#ifdef NeedFuncProto
+    double rlat,
+    double rlon,
+    double *uval,
+    double *vval
+#endif
+);
+
+extern void c_mdqtri(
+#ifdef NeedFuncProto
+    double uval,
+    double vval,
+    double *rlat,
+    double *rlon
+#endif
+);
+
+extern void c_mdqtrn(
+#ifdef NeedFuncProto
+    double rlat,
+    double rlon,
+    double *u,
+    double *v
 #endif
 );
 

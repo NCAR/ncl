@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.20 2007-01-24 23:39:41 kennison Exp $
+#       $Id: yMakefile,v 1.21 2008-04-18 04:09:20 kennison Exp $
 #
 
 MYNAME	= ezmap
@@ -24,7 +24,8 @@ GENERIC_SRCS = hlumapeod.f hlumapusr.f \
 	mpgeti.f mpgetl.f mpgetr.f mprset.f mpsetc.f mpsetd.f mpseti.f \
 	mpsetl.f mpsetr.f rbgdfe.f rbglen.f rbidfe.f supcon.f supmap.f \
 	rdpnaz.f rdpndw.f rdpntz.f rdpnuw.f mdlltd.f mdllnd.f mdgnid.f \
-        mdlacd.f mdlocd.f
+	mdlacd.f mdlocd.f maqini.f mdqini.f mdqin2.f maqtra.f mdqtra.f \
+	maqtri.f mdqtri.f maqtrn.f mdqtrn.f
 
 GENERIC_OBJS = hlumapeod.o hlumapusr.o \
 	idictl.o  mapbd.o mapdrw.o mapeod.o mapfst.o mapgci.o mapgrd.o \
@@ -46,7 +47,8 @@ GENERIC_OBJS = hlumapeod.o hlumapusr.o \
 	mpgeti.o mpgetl.o mpgetr.o mprset.o mpsetc.o mpsetd.o mpseti.o \
 	mpsetl.o mpsetr.o rbgdfe.o rbglen.o rbidfe.o supcon.o supmap.o \
 	rdpnaz.o rdpndw.o rdpntz.o rdpnuw.o mdlltd.o mdllnd.o mdgnid.o \
-        mdlacd.o mdlocd.o
+	mdlacd.o mdlocd.o maqini.o mdqini.o mdqin2.o maqtra.o mdqtra.o \
+	maqtri.o mdqtri.o maqtrn.o mdqtrn.o
 
 UNIX_SRCS = mpdbdi.f
 

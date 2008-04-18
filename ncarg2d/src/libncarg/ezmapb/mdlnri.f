@@ -1,5 +1,5 @@
 C
-C $Id: mdlnri.f,v 1.2 2006-10-19 19:02:22 kennison Exp $
+C $Id: mdlnri.f,v 1.3 2008-04-18 04:09:22 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,7 +24,7 @@ C
 C
         CHARACTER*(*) FLNM
 C
-        PARAMETER (MNAI=6000)
+        PARAMETER (MNAI=8000)
 C
 C This routine, given the name, FLNM, of a file of map data in the new
 C (as of 4/98) format, reads the ".names" file and stores information

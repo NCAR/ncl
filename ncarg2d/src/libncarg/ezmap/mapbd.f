@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.22 2008-04-04 21:02:46 kennison Exp $
+C $Id: mapbd.f,v 1.23 2008-04-18 04:09:19 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -31,7 +31,7 @@ C
 CNOSPLIT
       BLOCKDATA MAPBDX
 C
-        PARAMETER (MNAI=6000)
+        PARAMETER (MNAI=8000)
 C
 C The common block MAPCM0 contains mathematical constants.
 C
@@ -536,5 +536,73 @@ C
       DATA SALT,ALFA,BETA / 0.D0,0.D0,0.D0 /
 C
       DATA DSNA,DCSA,DSNB,DCSB / 0.D0,1.D0,0.D0,1.D0 /
+C
+      END
+CNOSPLIT
+      BLOCKDATA MAPBDQ
+C
+C The common block MAQCMN contains only those variables that are needed
+C for MDQTRA, MDQTRI, and MDQTRN to carry out the transformation that
+C was in effect at the time MDQINI was called.  All of them are copies
+C of variables in other common blocks and are described above, in the
+C commenting for BLOCKDATA MAPBDX.  They are given defalut values here
+C mostly to protect the transformation routines from blowing up if they
+C are erroneously called prior to a call to MDQINI.
+C
+        COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
+     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
+     +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
+     +                   ELPM
+        DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
+     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
+     +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
+C
+        INTEGER IPRF,IPRJ,IROD
+C
+        LOGICAL ELPM
+C
+        SAVE   /MAQCMN/
+C
+        DATA ALFA / 0.D0 /
+        DATA COSO / 1.D0 /
+        DATA COSR / 1.D0 /
+        DATA DCSA / 1.D0 /
+        DATA DCSB / 1.D0 /
+        DATA DSNA / 0.D0 /
+        DATA DSNB / 0.D0 /
+        DATA DTOR / .017453292519943D0 /
+        DATA DTRH / .008726646259971D0 /
+        DATA ELPM / .FALSE. /
+        DATA IPRJ / 12 /
+        DATA IROD / 1 /
+        DATA OOPI / .318309886183790D0 /
+        DATA PHOC / 0.D0 /
+        DATA PI   / 3.14159265358979D0 /
+        DATA PIOT / 1.57079632679489D0 /
+        DATA ROTA / 0.D0 /
+        DATA RTDD / 114.591559026165D0 /
+        DATA RTOD / 57.2957795130823D0 /
+        DATA SALT / 0.D0 /
+        DATA SINO / 0.D0 /
+        DATA SINR / 0.D0 /
+        DATA SRSS / 0.D0 /
+        DATA SSMO / 0.D0 /
+        DATA TOPI / .636619772367581D0 /
+        DATA UCNM / 0.D0 /
+        DATA UMNM / -180.000360D0 /
+        DATA UMXM / +180.000360D0 /
+        DATA UOFF / 0.D0 /
+        DATA URNM / 0.D0 /
+        DATA VCNM / 0.D0 /
+        DATA VMNM / -90.000180D0 /
+        DATA VMXM / +90.000180D0 /
+        DATA VOFF / 0.D0 /
+        DATA VRNM / 0.D0 /
+C
+        DATA IPRF / 0 /
+C
+        DATA UTPA / 15*0.D0 /
 C
       END

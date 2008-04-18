@@ -1,5 +1,5 @@
 C
-C $Id: mdipan.f,v 1.2 2006-10-19 19:02:22 kennison Exp $
+C $Id: mdipan.f,v 1.3 2008-04-18 04:09:21 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
         INTEGER       IAIN
         CHARACTER*(*) ANME
 C
-        PARAMETER (MNAI=6000)
+        PARAMETER (MNAI=8000)
 C
 C The value of MDIPAN (IAIN,ANME) is non-zero if and only if the area
 C with area identifier IAIN is a part of some area having the name ANME.
