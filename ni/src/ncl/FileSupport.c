@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.26 2007-01-12 20:09:34 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.27 2008-04-19 00:40:59 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1681,6 +1681,9 @@ NclQuark option;
 			NclFileOption *opt = &(fc->file_class.options[i]);
 			if (opt->name != _NclGetLower(option))
 				continue;
+			/* if format not specified then just report that the option is defined */
+			if (format == NrmNULLQUARK)
+				return 1;
 			if (! (_NclGetFormatFuncs(format) &&
 			       _NclGetFormatFuncs(format) == _NclGetFormatFuncs(opt->format)) )
 				continue;
