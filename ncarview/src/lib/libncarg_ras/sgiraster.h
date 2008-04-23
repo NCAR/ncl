@@ -1,5 +1,5 @@
 /* 
- * $Id: sgiraster.h,v 1.6 2000-08-22 03:30:25 haley Exp $
+ * $Id: sgiraster.h,v 1.7 2008-04-23 21:19:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,7 @@
 #ifndef	__SGIRASTER_H__
 #define	__SGIRASTER_H__
 
+#include <stdint.h>
 
 #define SGI_FORMAT_NAME		"sgi"
 #define SGI_MAGIC 		0732
@@ -65,18 +66,6 @@ SGI reserves 512 bytes for the header, but the structure itself
 is not (yet) that large.
 */
 
-#ifdef	alpha
-typedef	unsigned int	UInt32_T;
-typedef	unsigned short	UInt16_T;
-typedef	int		Int32_T;
-typedef	short		Int16_T;
-#else
-typedef	unsigned long	UInt32_T;
-typedef	unsigned short	UInt16_T;
-typedef	long		Int32_T;
-typedef	short		Int16_T;
-#endif
-
 #define RAS_SGI_RESERVED	512
 
 /*
@@ -84,15 +73,15 @@ typedef	short		Int16_T;
 **
 */
 typedef	struct	{
-	UInt16_T	imagic B16;
-	UInt16_T 	type B16;
-	UInt16_T 	dim B16;
-	UInt16_T 	xsize B16;
-	UInt16_T 	ysize B16;
-	UInt16_T 	zsize B16;
-	UInt32_T 	min B32;
-	UInt32_T 	max B32;
-	UInt32_T	wastebytes B32;	
+	uint16_t	imagic B16;
+	uint16_t 	type B16;
+	uint16_t 	dim B16;
+	uint16_t 	xsize B16;
+	uint16_t 	ysize B16;
+	uint16_t 	zsize B16;
+	uint32_t 	min B32;
+	uint32_t 	max B32;
+	uint32_t	wastebytes B32;	
 	char 		name[80];
 	SgiColormapType	colormap B32;
 } SGIFileHeader_T;

@@ -1,5 +1,5 @@
 /*
- *	$Id: sgiraster.c,v 1.12 2000-08-22 15:12:18 haley Exp $
+ *	$Id: sgiraster.c,v 1.13 2008-04-23 21:19:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -315,8 +315,8 @@ SGIRead(ras)
 		just to be safe.
 		*/
 
-		sgiinfo->tmpbuf = (UInt16_T *) ras_calloc(3*header->xsize, 1);
-		if (sgiinfo->tmpbuf == (UInt16_T *) NULL) {
+		sgiinfo->tmpbuf = (uint16_t *) ras_calloc(3*header->xsize, 1);
+		if (sgiinfo->tmpbuf == (uint16_t *) NULL) {
 			(void) ESprintf(errno, "malloc(%d)", (3*header->xsize));
 			return(RAS_ERROR);
 		}

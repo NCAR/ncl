@@ -1,5 +1,5 @@
 /*
- *	$Id: sunraster.h,v 1.9 2000-08-22 03:30:25 haley Exp $
+ *	$Id: sunraster.h,v 1.10 2008-04-23 21:19:55 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,13 +27,9 @@
 #ifndef _RASTER_SUN_
 #define _RASTER_SUN_
 
-#define RAS_SUN_ESC	128
+#include <stdint.h>
 
-#ifdef	alpha
-typedef	unsigned int	UInt32_T;
-#else
-typedef	unsigned long	UInt32_T;
-#endif
+#define RAS_SUN_ESC	128
 
 /* Sun image encoding types. */
 
@@ -55,14 +51,14 @@ typedef enum {
 #define SUN_HEADER_SIZE	32
 
 typedef struct SunInfoStruct {
-	UInt32_T	ras_magic B32;	/* magic number */
-	UInt32_T	ras_width B32;	/* width (pixels) of image */
-	UInt32_T	ras_height B32;	/* height (pixels) of image */
-	UInt32_T	ras_depth B32;	/* depth - 1,8,24 bits */
-	UInt32_T	ras_length B32;	/* length (bytes) of image */
+	uint32_t	ras_magic B32;	/* magic number */
+	uint32_t	ras_width B32;	/* width (pixels) of image */
+	uint32_t	ras_height B32;	/* height (pixels) of image */
+	uint32_t	ras_depth B32;	/* depth - 1,8,24 bits */
+	uint32_t	ras_length B32;	/* length (bytes) of image */
 	SunEncodingType	ras_type B32;
 	SunColormapType	ras_maptype B32;
-	UInt32_T	ras_maplength B32;/* length (bytes) of following map */
+	uint32_t	ras_maplength B32;/* length (bytes) of following map */
 } SunInfo;
 
 #define	RAS_MAGIC	0x59a66a95
