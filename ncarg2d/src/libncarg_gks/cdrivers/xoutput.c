@@ -1,5 +1,5 @@
 /*
- *      $Id: xoutput.c,v 1.9 2003-01-06 23:30:18 fred Exp $
+ *      $Id: xoutput.c,v 1.10 2008-04-24 21:21:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -621,7 +621,6 @@ static  cell_array
                 return(ERR_IMAGE_MEMORY);
         }
         data = ximage->data;
-        pad = ximage->bytes_per_line - image_width;
 
         if (ximage->bits_per_pixel % 8) {
                 ESprintf(ERR_PIXEL_SIZE, "Pixel size must be byte multiple");
@@ -629,6 +628,7 @@ static  cell_array
         }
 
         pixel_size = ximage->bits_per_pixel / 8;
+        pad = ximage->bytes_per_line - pixel_size*image_width;
 
  
         /*
