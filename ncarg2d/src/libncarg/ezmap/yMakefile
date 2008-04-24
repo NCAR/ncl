@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.21 2008-04-18 04:09:20 kennison Exp $
+#       $Id: yMakefile,v 1.22 2008-04-24 04:03:08 kennison Exp $
 #
 
 MYNAME	= ezmap
@@ -54,9 +54,18 @@ UNIX_SRCS = mpdbdi.f
 
 UNIX_OBJS = mpdbdi.o
 
-SOURCES = $(GENERIC_SRCS) $(UNIX_SRCS)
+#ifdef BuildPNG
+PNG_SRCS        =  mapnga.c mapngb.c
+PNG_OBJS        =  mapnga.o mapngb.o
+EXTRA_DEFINES   = -DBuildPNG
+#else
+#define PNG_SRCS
+#define PNG_OBJS
+#endif
 
-OBJECTS	= $(GENERIC_OBJS) $(UNIX_OBJS)
+SOURCES = $(GENERIC_SRCS) $(UNIX_SRCS) $(PNG_SRCS)
+
+OBJECTS	= $(GENERIC_OBJS) $(UNIX_OBJS) $(PNG_OBJS)
 
 PartialLibraryTarget(libncarg.a,$(OBJECTS))
 PartialSourceLibraryTarget($(MYNAME),srcncarg.a,$(SOURCES))
