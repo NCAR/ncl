@@ -36,7 +36,7 @@ extern void NGCALLF(gsvend,GSVEND)();
  * Global variables:
  */
 
-static int mgsv,ngsv,ninp,mcfa,ncfa;
+static int init=0,mgsv,ngsv,ninp,mcfa,ncfa;
 static char ptyp[3],ltyp[3];
 static float plat,plon,rota,salt,san1,san2;
 static float plm1[2],plm2[2],plm3[2],plm4[2];
@@ -102,6 +102,13 @@ void NGCALLF(mdpngr,MDPNGR)(flnm,lcfa)
  */
 
   if (c_icfell("MDPNGR - UNCLEARED PRIOR ERROR",1)) return;
+
+/*
+ * If a previous ".png" is still sitting in memory, force call that
+ * will discard it, along with any workspaces still allocated.
+ */
+
+  if (init) NGCALLF(mapngq,MAPNGQ)();
 
 /*
  * Open and read the ".png" file.
@@ -414,6 +421,14 @@ void NGCALLF(mdpngr,MDPNGR)(flnm,lcfa)
       free(fwrk),fwrk=(float*)NULL;
     }
   }
+ /*
+  * Set the flag that indicates initialization has been done.
+  */
+  init=1;
+ /*
+  * Done.
+  */
+  return;
 }
 
 
@@ -468,6 +483,15 @@ void NGCALLF(mdpngd,MDPNGD)(loca,iorc,igsc,ngsc)
   if (c_icfell("MDPNGD - UNCLEARED PRIOR ERROR",1)) return;
 
 /*
+ * Make sure the user has initialized this package.
+ */
+
+  if (!init) {
+    c_seter("MDPNGD - NO CALL TO MAPNGR/MDPNGR WAS DONE",2,1);
+    return;
+  }
+
+/*
  * Retrieve the limits of the EZMAP window.
  */
 
@@ -483,7 +507,7 @@ void NGCALLF(mdpngd,MDPNGD)(loca,iorc,igsc,ngsc)
   ndca=(int)sqrt(((float)(ycut-ycub)/(float)(xcur-xcul))*temp);
 
   if (!(icra=(int*)malloc(mdca*ndca*sizeof(int)))) {
-    c_seter("MDPNGD - CAN'T ALLOCATE CELL ARRAY SPACE",2,1);
+    c_seter("MDPNGD - CAN'T ALLOCATE CELL ARRAY SPACE",3,1);
     return;
   }
 
@@ -597,6 +621,12 @@ void NGCALLF(mdpngq,MDPNGQ)()
     if (xinp!=(float*)NULL) free(xinp),xinp=(float*)NULL;
     if (iwrk!=(int*)NULL) free(iwrk),iwrk=(int*)NULL;
     if (fwrk!=(float*)NULL) free(fwrk),fwrk=(float*)NULL;
+
+/*
+ * Turn off the initialization flag.
+ */
+
+    init=0;
 }
 
 
