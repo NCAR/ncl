@@ -26,8 +26,7 @@ void NGCALLF(mdpngq,MDPNGQ)();
 int irange(int imin,int imax,int ival);
 
 extern void NGCALLF(gsvini,GSVINI)(char* fnmp,int* mgsv,int* ngsv,
-                                   int* ired,int* igrn,char* qchr,
-                                   int* ierr);
+                                   int* ired,int* igrn,int* ierr);
 extern float NGCALLF(gsvalu,GSVALU)(int* ipix,int* jpix);
 extern void NGCALLF(gsvend,GSVEND)();
 
@@ -114,7 +113,7 @@ void NGCALLF(mdpngr,MDPNGR)(flnm,lcfa)
  * Open and read the ".png" file.
  */
 
-  NGCALLF(gsvini,GSVINI)(flnm,&mgsv,&ngsv,&ired,&igrn," ",&ista);
+  NGCALLF(gsvini,GSVINI)(flnm,&mgsv,&ngsv,&ired,&igrn,&ista);
 
   if (ista) {
     c_seter("MDPNGR - ERROR OPENING OR READING PNG FILE",2,1);
