@@ -1,5 +1,5 @@
 /*
- *	$Id: X11_class4.c,v 1.33 2000-08-22 15:11:40 haley Exp $
+ *	$Id: X11_class4.c,v 1.34 2008-04-24 22:00:21 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -488,7 +488,6 @@ static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 
 	data = ximage->data;
 
-	pad = ximage->bytes_per_line - image_width;
 
 	if (ximage->bits_per_pixel % 8) {
 		ESprintf(
@@ -499,6 +498,7 @@ static	int	x11_cell_array(c, color_pal, P, Q, R, nx, ny)
 	}
 
 	pixel_size = ximage->bits_per_pixel / 8;
+	pad = ximage->bytes_per_line - pixel_size*image_width;
 
  
 	/*
