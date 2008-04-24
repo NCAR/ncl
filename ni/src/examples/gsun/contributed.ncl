@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.154 2008-04-16 15:29:08 shea Exp $
+;      $Id: contributed.ncl,v 1.155 2008-04-24 17:18:35 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3290,6 +3290,7 @@ end
 ; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
 ; vars.  It adds the longitude and latitude coordinates.
 
+undef ("linint2_Wrap")
 function linint2_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
                       ,xo[*]:numeric,yo[*]:numeric, Opt)
 
