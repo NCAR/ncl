@@ -396,8 +396,8 @@ NhlErrorTypes cfftb_W( void )
  * various
  */
   double *work;
-  int i, j, ret, npts, npts2, nwrk, index_cfa, index_cfb;
-  int found_missing_cfa, found_missing_cfb, any_missing, size_leftmost, size_x;
+  int i, j, ret, npts, nwrk, index_cfa, index_cfb, size_xr, size_x;
+  int found_missing_cfa, found_missing_cfb, any_missing, size_leftmost;
 /*
  * Retrieve parameters
  *
@@ -428,32 +428,58 @@ NhlErrorTypes cfftb_W( void )
            NULL,
            2);
 
-  if(*opt != 0 && *opt != 1) {
+  if(*opt < 0 || *opt > 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftb: Invalid option value.");
     return(NhlFATAL);
   }
 
 /*
- * Calculate number of leftmost elements and dimension sizes of output
+ * Calculate number of leftmost elements and dimension sizes of output.
+ * If *opt is 0, then both real and imaginary parts are returned, so
+ * hence the extra leftmost dimension that will be equal to 2.
  */
   if(ndims_cf > 1) {
-    ndims_x = ndims_cf - 1;
+    if(!*opt) {
+      ndims_x = ndims_cf;
+    }
+    else {
+      ndims_x = ndims_cf - 1;
+    }
   }
   else {
-    ndims_x = 1;
+    if(!*opt) {
+      ndims_x = 2;
+    }
+    else {
+      ndims_x = 1;
+    }
   }
   dsizes_x = (int *)malloc(ndims_x*sizeof(int));
   size_leftmost = 1;
   for( i = 1; i < ndims_cf-1; i++ ) {
     size_leftmost *= dsizes_cf[i];
-    dsizes_x[i-1]  = dsizes_cf[i];
+    if(!*opt) {
+      dsizes_x[i]  = dsizes_cf[i];
+    }
+    else {
+      dsizes_x[i-1]  = dsizes_cf[i];
+    }
   }
   dsizes_x[ndims_x-1] = npts = dsizes_cf[ndims_cf-1];
+  if(!*opt) {
+    dsizes_x[0] = 2;
+  }
 
 /* Calculate size of output array. */
-  npts2   = 2*npts;
-  size_x  = size_leftmost * npts;
-  size_cf = 2 * size_x;
+
+  size_xr = size_leftmost * npts;
+  if(!*opt) {
+    size_x  = 2 * size_xr;
+  }
+  else {
+    size_x = size_xr;
+  }
+  size_cf = 2 * size_xr;
 
 /*
  * Coerce missing values.
@@ -500,7 +526,7 @@ NhlErrorTypes cfftb_W( void )
  * Call the f77 version of 'cfftbdriver' with the full argument list.
  */
   index_cfa = 0;
-  index_cfb = size_x;
+  index_cfb = size_xr;
   any_missing = 0;
   for(i = 0; i < size_leftmost; i++) {
     if(type_cf != NCL_double) { 
@@ -523,19 +549,27 @@ NhlErrorTypes cfftb_W( void )
       any_missing++;
       set_subset_output_missing(x,index_cfa,type_x,npts,
                                 missing_dcf.doubleval);
+      if(!*opt) {
+        set_subset_output_missing(x,index_cfb,type_x,npts,
+                                  missing_dcf.doubleval);
+      }
     }
     else {
       NGCALLF(cfftbdriver,CFFTBDRIVER)(&npts,tmp_xr,tmp_xi,tmp_cfa,tmp_cfb,
                                        work,&nwrk);
 /*
- * Copy real or complex results back into x. Note that *opt should have
- * been checked above to be 0 or 1. Eventually, *opt may have other
- * possible values.
+ * Copy real or complex results back into x. Note that opt should have
+ * been checked above to be between 0 and 2. Eventually, opt may have
+ * other possible values.
  */
-      if(*opt == 0) {
+      if(!*opt) {
+        coerce_output_float_or_double(x,tmp_xr,type_x,npts,index_cfa);
+        coerce_output_float_or_double(x,tmp_xi,type_x,npts,index_cfb);
+      }
+      else if(*opt == 1) {
         coerce_output_float_or_double(x,tmp_xr,type_x,npts,index_cfa);
       }
-      else {
+      else if(*opt == 2) {
         coerce_output_float_or_double(x,tmp_xi,type_x,npts,index_cfa);
       }
     }
