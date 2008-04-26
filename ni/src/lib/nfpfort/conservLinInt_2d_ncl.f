@@ -19,7 +19,7 @@ c tst double precision yibot(nyi), yitop(nyi), dyi(nyi)
 c tst double precision xolft(mxo), xorgt(mxo)
 c tst double precision fracx(mxi,mxo), fracy(nyi,nyo)  
 c tst double precision ziwrk(mxi,nyi), zowrk(mxo,nyo)
-c tst double precision xiwrk(mxi), yiwrk(nyi), xowrk(mxo), yowrk(nyo)
+c tst double precision yiwrk(nyi), yowrk(nyo)
 c tst integer          indx(2,mxo), indy(2,nyo)
 
 c                  ! interface sets the following
@@ -40,7 +40,7 @@ c tst end do
 c tst call arealinint2da (mxi,nyi,ngrd,xi,yi,zi,wxi,wyi,zimsg
 c tst+                   ,mcyc,ncyc,mxo,nyo,xo,yo,zo,critpc,debug,ier
 c tst+                   ,xilft,xirgt, yibot, yitop, dyi
-c tst+                   ,xolft, xorgt, xiwrk, yiwrk, xowrk, yowrk
+c tst+                   ,xolft, xorgt, yiwrk, yowrk
 c tst+                   ,fracx, fracy, ziwrk, zowrk, indx, indy)
 
 c tst return
@@ -51,7 +51,7 @@ C NCLFORTSTART
      +                        ,mcyc,ncyc,mxo,nyo,xo,yo,zo,critpc,debug
      +                        ,ier
      +                        ,xilft,xirgt, yibot, yitop, dyi
-     +                        ,xolft, xorgt, xiwrk, yiwrk, xowrk, yowrk
+     +                        ,xolft, xorgt, yiwrk, yowrk
      +                        ,fracx, fracy, ziwrk, zowrk, indx, indy)
       implicit none
 c                                               ! INPUT
@@ -66,7 +66,7 @@ c                                               ! INPUT
       double precision xolft(mxo), xorgt(mxo)
       double precision fracx(mxi,mxo), fracy(nyi,nyo)  
       double precision ziwrk(mxi,nyi), zowrk(mxo,nyo)
-      double precision xiwrk(mxi), yiwrk(nyi), xowrk(mxo), yowrk(nyo)
+      double precision yiwrk(nyi), yowrk(nyo)
       integer          indx(2,mxo), indy(2,nyo)
 c                                               ! OUTPUT
       double precision zo(mxo,nyo,ngrd)
@@ -105,7 +105,7 @@ c check to see if yi is monotonically increasing or decreasing
       if ((xi(2)-xi(1)).lt.0.0d0) then
           monoxi = -1
           ier    = -2
-          print *, "code does not handle monotonically decreasing xi"
+c          print *, "code does not handle monotonically decreasing xi"
           return
       end if
 
