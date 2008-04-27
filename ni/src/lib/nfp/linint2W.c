@@ -16,6 +16,16 @@ extern void NGCALLF(dlinint2pts,DLININT2PTS)(int *,double *,int *,double *,
                                              double *,double *,double *,
                                              double *,int *,double *,int *);
 
+extern void NGCALLF(arealinint2da,AREALININT2DA)(
+                                      int*, int*, int*, double*, double*,
+                                      double*, double*, double*, double*,
+                                      int*, int*, int*, int*, double*, 
+                                      double*, double*, double*, int*, int*,
+                                      double*, double*, double*, double*, 
+                                      double *, double*, double*, double*,
+                                      double*, double*, double*, double*,
+                                      double*, int*, int*);
+
 NhlErrorTypes linint1_W( void )
 {
 /*
@@ -886,6 +896,348 @@ NhlErrorTypes linint2_points_W( void )
  */
     ret = NclReturnValue(fo,ndims_fi-1,dsizes_fo,&missing_rfi,NCL_float,0);
   }
+  NclFree(dsizes_fo);
+  return(ret);
+}
+
+NhlErrorTypes area_hi2lores_W( void )
+{
+/*
+ * Input variables
+ */
+  void *xi, *yi, *fi, *wyi, *xo, *yo;
+  double *tmp_xi, *tmp_yi, *tmp_fi, *tmp_xo, *tmp_yo, *tmp_fo;
+  double *tmp1_wyi, *tmp_wyi;
+  int dsizes_xi[1], dsizes_yi[1], dsizes_wyi[0], dsizes_xo[0], dsizes_yo[0];
+  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi; 
+  NclScalar missing_fi, missing_dfi, missing_rfi;
+  logical *fi_cyclic_x, *fo_option;
+  NclBasicDataTypes type_xi, type_yi, type_fi, type_wyi, type_xo, type_yo;
+/*
+ * Variables to look for attributes attached to fo_option.
+ */
+  NclStackEntry stack_entry;
+  NclMultiDValData tmp_md = NULL;
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+/*
+ * Output variables.
+ */
+  void *fo;
+  int *dsizes_fo;
+  NclBasicDataTypes type_fo;
+  NclScalar missing_fo;
+/*
+ * Other variables
+ */
+  int i, ret, ncyc = 0, ier = 0, debug = 0;
+  int mxi, nyi, nfi, mxo, nyo, nfo, ngrd,  size_fi, size_fo;
+  double *critpc, *xilft, *xirgt, *yibot, *yitop, *xolft, *xorgt;
+  double *wxi, *dxi, *dyi, *fracx, *fracy;
+  double *ziwrk, *zowrk, *yiwrk, *yowrk;
+  int *indx, *indy;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+  xi = (void*)NclGetArgValue(
+          0,
+          8,
+          NULL,
+          dsizes_xi,
+          NULL,
+          NULL,
+          &type_xi,
+          2);
+
+  yi = (void*)NclGetArgValue(
+          1,
+          8,
+          NULL,
+          dsizes_yi,
+          NULL,
+          NULL,
+          &type_yi,
+          2);
+
+  fi = (void*)NclGetArgValue(
+          2,
+          8,
+          &ndims_fi,
+          dsizes_fi,
+          &missing_fi,
+          &has_missing_fi,
+          &type_fi,
+          2);
+
+  fi_cyclic_x = (logical*)NclGetArgValue(
+          3,
+          8,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+
+  wyi = (void*)NclGetArgValue(
+          4,
+          8,
+          NULL,
+          dsizes_wyi,
+          NULL,
+          NULL,
+          &type_wyi,
+          2);
+
+  xo = (void*)NclGetArgValue(
+          5,
+          8,
+          NULL,
+          dsizes_xo,
+          NULL,
+          NULL,
+          &type_xo,
+          2);
+
+  yo = (void*)NclGetArgValue(
+          6,
+          8,
+          NULL,
+          dsizes_yo,
+          NULL,
+          NULL,
+          &type_yo,
+          2);
+
+  fo_option = (logical*)NclGetArgValue(
+          7,
+          8,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          2);
+/*
+ * Check for "critpc" attribute.
+ */
+  critpc  = (double *)calloc(1,sizeof(double));
+  *critpc = 100.;
+  if(*fo_option) {
+    stack_entry = _NclGetArg(7,8,DONT_CARE);
+    switch(stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
+      }
+      else {
+/*
+ * att_id == -1, no attributes.
+ */
+        break;
+      }
+/* 
+ * Check attributes for "critpc". If none, then just proceed as normal.
+ */
+      if (attr_obj->att.n_atts == 0) {
+        break;
+      }
+      else {
+/* 
+ * att_n_atts > 0, retrieve optional arguments 
+ */
+        attr_list = attr_obj->att.att_list;
+        while (attr_list != NULL) {
+          if ((strcmp(attr_list->attname, "critpc")) == 0) {
+            *critpc = *(double*) attr_list->attvalue->multidval.val;
+          }
+          attr_list = attr_list->next;
+        }
+      }
+    default:
+      break;
+    }
+  }
+
+/*
+ * Compute the total number of elements in our arrays.
+ */
+  mxi  = dsizes_xi[0];
+  nyi  = dsizes_yi[0];
+  mxo  = dsizes_xo[0];
+  nyo  = dsizes_yo[0];
+  nfi  = mxi * nyi;
+  nfo  = mxo * nyo;
+  if(mxi < 2 || nyi < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: xi and yi must have at least two elements");
+    return(NhlFATAL);
+  }
+
+  if(dsizes_wyi[0] != nyi && dsizes_wyi[0] != 1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: wyi must be a scalar or the same length as yi");
+    return(NhlFATAL);
+  }
+/*
+ * Check dimensions of xi, yi, and fi. The last two dimensions of 
+ * fi must be nyi x mxi.
+ */
+  if(dsizes_fi[ndims_fi-2] != nyi && dsizes_fi[ndims_fi-1] != mxi) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: The rightmost dimensions of fi must be nyi x mxi, where nyi and mxi are the lengths of yi and xi respectively");
+    return(NhlFATAL);
+  }
+
+/*
+ * Compute the size of the leftmost dimensions and output array.
+ */
+  ngrd = 1;
+  for( i = 0; i < ndims_fi-2; i++ ) ngrd *= dsizes_fi[i];
+  size_fi = ngrd * nfi;
+  size_fo = ngrd * nfo;
+/*
+ * Coerce missing values for fi.
+ */
+  coerce_missing(type_fi,has_missing_fi,&missing_fi,&missing_dfi,
+                 &missing_rfi);
+/*
+ * Allocate space for output array.
+ */
+  if(type_fi == NCL_double) {
+    type_fo    = NCL_double;
+    missing_fo = missing_dfi;
+    fo         = (void*)calloc(size_fo,sizeof(double));
+    if(fo == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    tmp_fo = fo;
+  }
+  else {
+    type_fo    = NCL_float;
+    missing_fo = missing_rfi;
+    fo         = (void*)calloc(size_fo,sizeof(float));
+    tmp_fo     = (double*)calloc(size_fo,sizeof(double));
+    if(fo == NULL || tmp_fo == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  if(dsizes_fo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_fi-2; i++) dsizes_fo[i] = dsizes_fi[i];
+  dsizes_fo[ndims_fi-2] = nyo;
+  dsizes_fo[ndims_fi-1] = mxo;
+/*
+ * Coerce input arrays to double.
+ */
+  tmp_xi = coerce_input_double(xi,type_xi,mxi,0,NULL,NULL);
+  tmp_yi = coerce_input_double(yi,type_yi,nyi,0,NULL,NULL);
+  tmp_fi = coerce_input_double(fi,type_fi,size_fi,0,NULL,NULL);
+  tmp_xo = coerce_input_double(xo,type_xo,mxo,0,NULL,NULL);
+  tmp_yo = coerce_input_double(yo,type_yo,nyo,0,NULL,NULL);
+/*
+ * wyi can be a scalar, so copy it to array if necessary.
+ */
+  tmp1_wyi = coerce_input_double(wyi,type_wyi,dsizes_wyi[0],0,NULL,NULL);
+  if(dsizes_wyi[0] == 1) {
+    tmp_wyi = copy_scalar_to_array(tmp1_wyi,1,dsizes_wyi,nyi);
+  }
+  else {
+    tmp_wyi = tmp1_wyi;
+  }
+  
+
+/*
+ * Allocate space for work arrays. There's a ton of them here.
+ */
+  xilft = (double*)calloc(mxi,sizeof(double));
+  xirgt = (double*)calloc(mxi,sizeof(double));
+  yibot = (double*)calloc(nyi,sizeof(double));
+  yitop = (double*)calloc(nyi,sizeof(double));
+  xolft = (double*)calloc(mxo,sizeof(double));
+  xorgt = (double*)calloc(mxo,sizeof(double));
+  dxi   = (double*)calloc(mxi,sizeof(double));
+  dyi   = (double*)calloc(nyi,sizeof(double));
+  fracx = (double*)calloc(mxi*mxo,sizeof(double));
+  fracy = (double*)calloc(nyi*nyo,sizeof(double));
+  ziwrk = (double*)calloc(mxi*nyi,sizeof(double));
+  zowrk = (double*)calloc(mxo*nyo,sizeof(double));
+  yiwrk = (double*)calloc(nyi,sizeof(double));
+  yowrk = (double*)calloc(nyo,sizeof(double));
+  indx  = (int*)calloc(2*mxo,sizeof(int));
+  indy  = (int*)calloc(2*nyo,sizeof(int));
+  wxi   = (double*)calloc(mxi,sizeof(double));
+
+  if(xilft == NULL || xirgt == NULL || yibot == NULL || yitop == NULL || 
+     xolft == NULL || xorgt == NULL || dxi   == NULL || dyi   == NULL || 
+     fracx == NULL || fracy == NULL || ziwrk == NULL || zowrk == NULL || 
+     yiwrk == NULL || yowrk == NULL || indx  == NULL || indy  == NULL || 
+     wxi == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"area_hi2lores: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+  for(i = 0; i < mxi; i++) wxi[i] = 1.;
+
+/*
+ * Call Fortran function.
+ */
+  NGCALLF(arealinint2da,AREALININT2DA)(&mxi,&nyi,&ngrd,tmp_xi,tmp_yi,tmp_fi,
+                                       wxi,tmp_wyi,&missing_dfi.doubleval,
+                                       fi_cyclic_x,&ncyc,&mxo,&nyo,tmp_xo,
+                                       tmp_yo,tmp_fo,critpc,&debug,&ier,
+                                       xilft,xirgt,yibot,yitop,dyi,xolft,
+                                       xorgt,yiwrk,yowrk,fracx,fracy,
+                                       ziwrk,zowrk,indx,indy);
+
+  if(ier) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"area_hi2lores: xi, xo must be monotonically increasing");
+    set_subset_output_missing(fo,0,type_fo,size_fo,missing_dfi.doubleval);
+  }
+  else {
+    coerce_output_float_or_double(fo,tmp_fo,type_fo,size_fo,0);
+  }
+/*
+ * Free temp arrays.
+ */
+  if(type_xi != NCL_double) NclFree(tmp_xi);
+  if(type_yi != NCL_double) NclFree(tmp_yi);
+  if(type_fi != NCL_double) NclFree(tmp_fi);
+  if(type_xo != NCL_double) NclFree(tmp_xo);
+  if(type_yo != NCL_double) NclFree(tmp_yo);
+  if(type_fo != NCL_double) NclFree(tmp_fo);
+
+  NclFree(tmp1_wyi);
+  if(dsizes_wyi[0] == 1) {
+    NclFree(tmp_wyi);
+  }
+  NclFree(wxi);
+  NclFree(xilft);
+  NclFree(xirgt);
+  NclFree(yibot);
+  NclFree(yitop);
+  NclFree(xolft);
+  NclFree(xorgt);
+  NclFree(dxi);
+  NclFree(dyi);
+  NclFree(fracx);
+  NclFree(fracy);
+  NclFree(ziwrk);
+  NclFree(zowrk);
+  NclFree(yiwrk);
+  NclFree(yowrk);
+  NclFree(indx);
+  NclFree(indy);
+
+  ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0);
   NclFree(dsizes_fo);
   return(ret);
 }

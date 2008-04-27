@@ -384,6 +384,7 @@ extern NhlErrorTypes linmsg_W(void);
 extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint2_W(void);
 extern NhlErrorTypes linint2_points_W(void);
+extern NhlErrorTypes area_hi2lores_W(void);
 extern NhlErrorTypes rcm2rgrid_W(void);
 extern NhlErrorTypes rgrid2rcm_W(void);
 extern NhlErrorTypes rcm2points_W(void);
@@ -5410,6 +5411,25 @@ void NclAddUserFuncs(void)
 
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(linint2_points_W,args,"linint2_points",nargs);
+
+/*
+ * Register "area_hi2lores".
+ */
+    nargs = 0;
+    args = NewArgs(8);
+
+    dimsizes[0] = 1;
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(area_hi2lores_W,args,"area_hi2lores",nargs);
 
 /*
  * Register "rcm2rgrid".
