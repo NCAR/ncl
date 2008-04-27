@@ -74,7 +74,7 @@ C NCLEND
 c                                               ! LOCAL
       integer          ni, mi, ng, no, mo, kmsg, kbox,
      +                 nn, mm, niStrt, niLast, miStrt, miLast,
-     +                 monoxi, monoyi, monoyo 
+     +                 monoxi, monoyi, monoxo, monoyo 
       double precision sz, sw, dwf, boxpc
 
 c The rather cumbersome code below allows users to input
@@ -106,6 +106,14 @@ c check to see if yi is monotonically increasing or decreasing
           monoxi = -1
           ier    = -2
 c          print *, "code does not handle monotonically decreasing xi"
+          return
+      end if
+
+      monoxo = 1
+      if ((xo(2)-xo(1)).lt.0.0d0) then
+          monoxo = -1
+          ier    = -2
+c          print *, "code does not handle monotonically decreasing xo"
           return
       end if
 
