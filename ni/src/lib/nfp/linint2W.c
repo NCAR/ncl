@@ -932,10 +932,11 @@ NhlErrorTypes area_hi2lores_W( void )
  */
   int i, ret, ncyc = 0, ier = 0, debug = 0;
   int mxi, nyi, nfi, mxo, nyo, nfo, ngrd,  size_fi, size_fo;
-  double *critpc, *xilft, *xirgt, *yibot, *yitop, *xolft, *xorgt;
+  double *critpc = NULL, *xilft, *xirgt, *yibot, *yitop, *xolft, *xorgt;
   double *wxi, *dxi, *dyi, *fracx, *fracy;
   double *ziwrk, *zowrk, *yiwrk, *yowrk;
   int *indx, *indy;
+  NclBasicDataTypes type_critpc;
 /*
  * Retrieve parameters
  *
@@ -1024,8 +1025,6 @@ NhlErrorTypes area_hi2lores_W( void )
 /*
  * Check for "critpc" attribute.
  */
-  critpc  = (double *)calloc(1,sizeof(double));
-  *critpc = 100.;
   if(*fo_option) {
     stack_entry = _NclGetArg(7,8,DONT_CARE);
     switch(stack_entry.kind) {
@@ -1055,7 +1054,25 @@ NhlErrorTypes area_hi2lores_W( void )
         attr_list = attr_obj->att.att_list;
         while (attr_list != NULL) {
           if ((strcmp(attr_list->attname, "critpc")) == 0) {
-            *critpc = *(double*) attr_list->attvalue->multidval.val;
+            type_critpc = attr_list->attvalue->multidval.data_type;
+/*
+ * If "critpc" is already double, don't just point it to the attribute,
+ * because we need to return it later.
+ */
+            if(type_critpc == NCL_double) {
+              critpc  = (double *)calloc(1,sizeof(double));
+              *critpc = *(double*) attr_list->attvalue->multidval.val;
+            }
+            else if(type_critpc == NCL_int || type_critpc == NCL_float) {
+/*
+ * Coerce to double.
+ */
+              critpc = coerce_input_double(attr_list->attvalue->multidval.val,
+                                          type_critpc,1,0,NULL,NULL);
+            }
+            else {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"area_hi2lores: The 'critpc' attribute must be of type numeric. Defaulting to 100.");
+            }
           }
           attr_list = attr_list->next;
         }
@@ -1063,6 +1080,10 @@ NhlErrorTypes area_hi2lores_W( void )
     default:
       break;
     }
+  }
+  if(critpc == NULL) {
+    critpc  = (double *)calloc(1,sizeof(double));
+    *critpc = 100.;
   }
 
 /*
