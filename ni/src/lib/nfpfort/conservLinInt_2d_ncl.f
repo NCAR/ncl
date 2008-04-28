@@ -28,7 +28,7 @@ c tst ncyc   = 0
 c tst debug  = 0
 c tst critpc = 100 ! this may change via attribi]ute
 
-c tst do n=1,nxi
+c tst do n=1,mxi
 c tst    wxi(n) = 1.0d0   ! always
 c tst end do
 
@@ -74,7 +74,8 @@ C NCLEND
 c                                               ! LOCAL
       integer          ni, mi, ng, no, mo, kmsg, kbox,
      +                 nn, mm, niStrt, niLast, miStrt, miLast,
-     +                 monoxi, monoyi, monoxo, monoyo 
+     +                 monoxi, monoyi, monoxo, monoyo, 
+     +                 ierx, iery
       double precision sz, sw, dwf, boxpc
 
 c The rather cumbersome code below allows users to input
@@ -117,6 +118,7 @@ c          print *, "code does not handle monotonically decreasing xo"
           return
       end if
 
+
 c define area cells: take advantage of the fact that this is
 c .   regular rectilinear grid. The grid spacing may be unequal.   
 c If the 'y' direction is mono decreasing then reorder
@@ -157,6 +159,18 @@ c                       ! yiwrk and yowrk are both mono increasing
           do no=1,nyo
              print *,"indy: ",no,indy(1,no),indy(2,no) 
           end do
+      end if
+
+c check to make sure that the output grid is lower resolution
+c .   conchkres requires monotonic input
+c .   Return if either the 'xo' or 'yo' is higher
+c .   resolution than the input grid.
+
+      call conchkres (xi,mxi,xo,mxo,ierx) 
+      call conchkres (yiwrk,nyi,yowrk,nyo,iery) 
+      if (ierx.ne.0 .or. iery.ne.0) then
+          ier = -5
+          return
       end if
 
 c for each grid and  for each output point (mo,no,ng) 
@@ -387,6 +401,32 @@ c .    save the 'start' and 'end' subscripts
 
    20    continue                  ! if (xi(ni).gt. xorgt(no)) go to 20   
          end do                    ! end "no"
+
+      return
+      end
+
+
+      subroutine conchkres (zi,nzi,zo,nzo,ier)
+      implicit none
+      integer  nzi, nzo, ier
+      double precision zi(nzi), zo(nzo)
+
+      integer  n
+      double precision dzimin, dzomin
+
+      ier = 0
+
+      dzimin = 1d20 
+      do n=2,nzi
+         if (abs(zi(n)-zi(n-1)) .lt. dzimin) dzimin = abs(zi(n)-zi(n-1))
+      end do
+
+      dzomin = 1d20 
+      do n=2,nzo
+         if (abs(zo(n)-zo(n-1)) .lt. dzomin) dzomin = abs(zo(n)-zo(n-1))
+      end do
+
+      if (dzomin.lt.dzimin) ier = 5
 
       return
       end
