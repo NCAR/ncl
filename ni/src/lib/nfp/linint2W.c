@@ -908,7 +908,7 @@ NhlErrorTypes area_hi2lores_W( void )
   void *xi, *yi, *fi, *wyi, *xo, *yo;
   double *tmp_xi, *tmp_yi, *tmp_fi, *tmp_xo, *tmp_yo, *tmp_fo;
   double *tmp1_wyi, *tmp_wyi;
-  int dsizes_xi[1], dsizes_yi[1], dsizes_wyi[0], dsizes_xo[0], dsizes_yo[0];
+  int dsizes_xi[1], dsizes_yi[1], dsizes_wyi[1], dsizes_xo[1], dsizes_yo[1];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi; 
   NclScalar missing_fi, missing_dfi, missing_rfi;
   logical *fi_cyclic_x, *fo_option;
