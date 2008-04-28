@@ -1220,8 +1220,19 @@ NhlErrorTypes area_hi2lores_W( void )
                                        ziwrk,zowrk,indx,indy);
 
   if(ier) {
-    NhlPError(NhlWARNING,NhlEUNKNOWN,"area_hi2lores: xi, xo must be monotonically increasing");
-    set_subset_output_missing(fo,0,type_fo,size_fo,missing_dfi.doubleval);
+    if(ier == -2) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"area_hi2lores: xi, xo must be monotonically increasing");
+    }
+    else if(ier == -5) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"area_hi2lores: both dimensions of the output grid must be of lower resolution than the input high resolution grid.");
+    }
+    else {
+/*
+ * Note: we should never reach this point!  We should always know the
+ * possible return values for 'ier'.
+ */
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"area_hi2lores: unknown error, returning all missing values.");
+    }
   }
   else {
     coerce_output_float_or_double(fo,tmp_fo,type_fo,size_fo,0);
