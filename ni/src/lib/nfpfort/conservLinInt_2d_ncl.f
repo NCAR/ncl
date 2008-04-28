@@ -219,12 +219,12 @@ c c c                     sz = sz + zi(mm,nn,ng)*dwf
                           sw = sw + dwf
                       else
                           kmsg = kmsg+1
-c critpc=1.0 means all values must be present. Skip out at 1st msg value
-                          if (critpc.eq.1.0d0) go to 10
+c critpc=100.0 means all values must be present. Skip out at 1st msg value
+                          if (critpc.eq.100d0) go to 10
                       end if
                    end do
                  end do
-
+c boxpc: percent 'good' values 
                  boxpc = 100.0d0*(dble(kbox-kmsg)/dble(kbox))
 
 c compute the weighted area value for the output grid point
