@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.155 2008-04-24 17:18:35 haley Exp $
+;      $Id: contributed.ncl,v 1.156 2008-04-29 21:55:18 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8705,5 +8705,46 @@ local r
 begin
   r   = random_uniform(0,100,N)
   return( dim_pqsort(r, 1) )
+end
+
+; **********************************************************************
+; D. Shea
+; wrapper for NCL procedure "area_hi2lores": copies attributes and coordinate 
+; vars.  It adds the longitude and latitude coordinates.
+
+undef ("area_hi2lores_Wrap")
+function area_hi2lores_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric, wrapX:logical \
+                      ,wy[*]:numeric,xo[*]:numeric,yo[*]:numeric, Opt)
+
+; wrapper for NCL function "area_hi2lores"  that copies attributes and coordinate vars
+
+local fo, dimfi, nDim, nD
+begin
+  fo   = area_hi2lores (xi,yi,fi, wrapX, wy, xo,yo, Opt)  ; perform interp
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+
+  fo!(nDim-2) = "Y"                             ; default named dimensions
+  fo!(nDim-1) = "X"
+                                                ; override if possible
+  if (isdimnamed(xo,0) .and. isdimnamed(yo,0) ) then
+      fo!(nDim-2) = yo!0                        ; if present, use xo name
+      fo!(nDim-1) = xo!0                        ; if present, use xo name
+  else 
+      do nD=nDim-2,nDim-1                       ; two rightmost dimensions
+         if (.not.ismissing(fi!nD)) then
+             fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
+         end if                                 ; but change case
+      end do
+  end if
+
+  fo&$fo!(nDim-2)$ = yo                         ; create coordinate var 
+  fo&$fo!(nDim-1)$ = xo                         ; two rightmost dimensions
+
+  return (fo)
 end
 
