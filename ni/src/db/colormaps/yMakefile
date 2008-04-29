@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.8 2008-03-23 23:27:40 haley Exp $
+#       $Id: yMakefile,v 1.9 2008-04-29 01:59:45 haley Exp $
 #
 FILES		= \
 		3gauss.ncmap  \
@@ -46,6 +46,7 @@ FILES		= \
 		prcp_1.rgb \
 		prcp_2.rgb \
 		prcp_3.rgb \
+		radar.rgb \
 		radar_1.rgb \
 		rainbow.gp \
 		rainbow+gray.gp \
