@@ -663,6 +663,20 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
   p   = P(idx)          ; transfer non-msg values to local arrays
   tc  = TC(idx)         ; *generally* these local arrays are used
   tdc = TDC(idx)
+
+  if (any(p .gt. 1100.)) then
+    print ("skewT_PlotData: pressure values are out of range (must be in millibars).")
+    exit
+  end if
+  if (any(tc .gt. 150.)) then
+    print ("skewT_PlotData: temperature values are out of range for Fahrenheit or Celsius.")
+    exit
+  end if
+  if (any(tdc .gt. 150.)) then
+    print ("skewT_PlotData: dew point temperature values are out of range for Fahrenheit or Celsius.")
+    exit
+  end if
+
  ;print (" non-msg:  p="+p+"  tc="+tc+"  tdc="+tdc+ \
  ;       " other     Z="+Z(idx)+"  WSPD="+WSPD(idx)+"  WDIR="+WDIR(idx) )
 
