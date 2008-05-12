@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.156 2008-04-29 21:55:18 shea Exp $
+;      $Id: contributed.ncl,v 1.157 2008-05-12 18:14:37 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1725,6 +1725,39 @@ begin
    delete(x_str@_FillValue)
    x_str = x
    return(x_str)
+end
+
+; ********************************************************************
+; D. Shea
+; Convert *any* numeric type to integer with option for rounding
+
+undef("numeric2int")
+function numeric2int( x:numeric, opt[1]:integer)
+local t, i
+begin
+  t = typeof( x )
+  if (t.eq."integer") then
+      return( x )
+  end if
+  if (t.eq."float") then
+      if (opt.eq.0) then
+          return( floattoint(x) )       ; truncate
+      else
+          return( round(x,3) )
+      end if
+  end if
+  if (t.eq."double") then
+      if (opt.eq.0) then
+          return( doubletointeger(x) )  ; truncate
+      else
+          return( round(x,3) )
+      end if
+  end if
+  if (t.eq."short" .or. t.eq."byte") then
+      i = 0
+      i = x              ; promote to integer
+      return( i )
+  end if
 end
 
 ; ********************************************************************
