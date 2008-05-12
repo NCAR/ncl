@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.157 2008-05-12 18:14:37 shea Exp $
+;      $Id: contributed.ncl,v 1.158 2008-05-12 20:05:12 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1754,8 +1754,8 @@ begin
       end if
   end if
   if (t.eq."short" .or. t.eq."byte") then
-      i = 0
-      i = x              ; promote to integer
+      i = new( dimsizes(x), "integer", getFillValue(x))
+      i = x               ; promote to integer
       return( i )
   end if
 end
