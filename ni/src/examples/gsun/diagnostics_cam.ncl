@@ -1,0 +1,1281 @@
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;                MODEL DIAGNOSTICS 
+;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;
+;=============================================================
+;
+;-------------------------------------------------------------
+; Decompose a variable into symmetric and asymmetric parts
+;-------------------------------------------------------------
+undef("decompose2SymAsym")
+function decompose2SymAsym( z, iret[1] )
+; supports: z(lat,lon), z(time,lat,lon), z(time,lev,lat,lon) 
+
+; antisymmetric part is stored in one hemisphere [eg: Northern Hemisphere]  
+;          xOut( lat) = (x(lat)-x(-lat))/2
+; symmetric part is stored in other hemisphere [eg: Southern Hemisphere]
+;          xOut(-lat) = (x(lat)+x(-lat))/2
+
+local dimz, rankz, nlat, N2, N, nt, kl, ntim, klev, dec2SymAsym, PRTFLG
+begin
+
+  undef("dec2SymAsym")
+  function dec2SymAsym( x[*][*], nlat[1], N2[1], N[1] )   ; x(lat,lon)
+  ; ===> local to decompose2SymAsym [~ f90 'contains' w PRIVATE attribute]
+  ; This does the decomposition: called from driver 'decompose2SymAsym'.
+  local xsa, nl
+  begin
+    xsa   = (/ x /)              ; x(lat,lon)
+    do nl=0,N2-1
+       xsa(       nl,:) = 0.5*(x(nlat-1-nl,:) + x(nl,:))   ; SH => symmetric
+       xsa(nlat-1-nl,:) = 0.5*(x(nlat-1-nl,:) - x(nl,:))   ; NH => asymmetric
+    end do
+
+    return( xsa )
+  end
+  ; ==== 
+
+  dimz  = dimsizes( z )
+  rankz = dimsizes( dimz )
+
+  if (rankz.le.1 .or. rankz.ge.5) then
+      print("decompose2SymAsym: currently supports 2D, 3D, 4D: rank="+rankz+"D")
+      exit
+  end if
+
+  nlat = dimz(rankz-2)
+  N2   = nlat/2
+  N    = N2
+  if ((nlat%2).eq.1) then
+       N = N2+1             ; offset to handle the Equator
+  end if
+
+  zSymAsym = (/ z /)        ; return array has same size/shape/type
+                            ; values will be overwritten
+  if (rankz.eq.2) then
+      zSymAsym = dec2SymAsym( z, nlat, N2, N )
+  end if
+
+  if (rankz.eq.3) then
+      ntim = dimz(0)
+      do nt=0,ntim-1
+         zSymAsym(nt,:,:) = dec2SymAsym( z(nt,:,:), nlat, N2, N )
+      end do
+  end if
+
+  if (rankz.eq.4) then
+      ntim = dimz(0)
+      klev = dimz(1)
+      do nt=0,ntim-1
+        do kl=0,klev-1
+           zSymAsym(nt,kl,:,:) = dec2SymAsym( z(nt,kl,:,:), nlat, N2, N ) 
+        end do
+      end do
+  end if
+
+  zSymAsym@long_name = "antisymmetric & symmetric (separate hemispheres)"
+  if (isatt(z,"units")) then
+      zSymAsym@units = z@units
+  end if
+  copy_VarCoords( z, zSymAsym)
+  
+  if (iret.eq.0) 
+      return( zSymAsym )                                       ; (time,lat,lon)
+  else
+      dNam = getvardims( zSymAsym )
+      return( zSymAsym($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:) )  ; (lat,lon,time)
+  end if
+end
+
+;-------------------------------------------------------------
+; Prewhiten the data: eg remove the annual cycle.
+; Actually, this will remove all time periods less than
+;           ththise corresponding to 'fCrit'.
+; Note: The original code provided by JET did not remove
+;       the grid point means so .... rmvMeans=False
+;-------------------------------------------------------------
+undef("rmvAnnualCycle")
+function rmvAnnualCycle( z[*][*][*], spd[1], nDayTot[1]:integer
+                       , rmvMeans[1]:logical \
+                       , fCrit[1], iret[1]   )  ; z(time,lat,lon)
+local dimz, ntim, dNam, zt, cf, xbar
+begin
+  dimz = dimsizes( z )
+  ntim = dimz(0)
+
+  dNam = getvardims( z )                        ; input dimension names
+  zt   = z($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:) ; reorder: time fastest varying
+
+  cf   = ezfftf( zt )                           
+  cf!0 = "cmplx"                                ; dimension clarity
+  cf!1 = "lat"
+  cf!2 = "lon"
+  cf!3 = "freq"
+ 
+  cf&cmplx = (/ 0,1 /)
+  cf&lat   = z&lat
+  cf&lon   = z&lon
+                                                ; create freq dim values
+  freq     = fspan(1,nDayTot*spd/2,nDayTot*spd/2)/nDayTot
+  freq!0   = "freq"                             ; clarity
+  freq@units = "cycles/day"
+  cf&freq  = freq                               ; assign values, needed for {..}
+
+  cf(:,:,:,{:fCrit}) = 0.0                      ; cf at all freq < fcrit   = 0.0
+                                                ; eg       < 3/365 [6/730]
+  if (rmvMeans) then                            ; remove means for each lat,lon
+                                                ; cf@xbar = 0.0
+      xbar    = cf@xbar                         ; explicit retrieve
+      xbar    = 0.0                             ; set all means = 0.0
+      cf@xbar = xbar                            ; reassign new values
+  end if
+                                                ; reconstruct 
+  zt = (/ ezfftb(cf,cf@xbar) /)                 ; (/ ... /) avoid meta warning msg
+
+  if (iret.eq.0) then                           ; return in original order
+      return( zt($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) ) ; (time,lat,lon)
+  else                                          ; return in permuted order
+      return( zt )                                      ; (lat,lon,time)
+  end if
+end
+
+;-------------------------------------------------------------
+; Special reordering to resolve the Progressive and Retrogressive waves 
+; Reference: Hayashi, Y. 
+;    A Generalized Method of Resolving Disturbances into 
+;    Progressive and Retrogressive Waves by Space and  
+;    Fourier and TimeCross Spectral Analysis
+;    J. Meteor. Soc. Japan, 1971, 49: 125-128.
+;-------------------------------------------------------------
+
+undef("resolveWavesHayashi")
+function resolveWavesHayashi ( varfft[*][*][*], nDayWin[1], spd[1] )  ; (2,mlon,nSampWin)
+;
+; JET did the detailed documentation. The "I" refers to JET.
+;
+; Create array PEE(NL+1,NT+1) which contains the (real) power spectrum.
+; all the following assume indexing starting with 0
+; In this array, the negative wavenumbers will be from pn=0 to NL/2-1;
+; The positive wavenumbers will be for pn=NL/2+1 to NL.
+; Negative frequencies will be from pt=0 to NT/2-1
+; Positive frequencies will be from pt=NT/2+1 to NT  .
+; Information about zonal mean will be for pn=NL/2  .
+; Information about time mean will be for pt=NT/2  .
+; Information about the Nyquist Frequency is at pt=0 and pt=NT
+;
+; In PEE, I define the 
+; WESTWARD waves to be either +ve frequency
+;          and -ve wavenumber or -ve freq and +ve wavenumber.
+; EASTWARD waves are either +ve freq and +ve wavenumber 
+;          OR -ve freq and -ve wavenumber.
+
+; Note that frequencies are returned from fftpack are ordered like so
+;    input_time_pos [ 0    1   2    3     4      5    6   7  ]
+;    ouput_fft_coef [mean 1/7 2/7  3/7 nyquist -3/7 -2/7 -1/7]  
+;                    mean,pos freq to nyq,neg freq hi to lo
+;
+; Rearrange the coef array to give you power array of freq and wave number east/west
+; Note east/west wave number *NOT* eq to fft wavenumber see Hayashi '71 
+; Hence, NCL's 'cfftf_frq_reorder' can *not* be used.
+;
+; For ffts that return the coefficients as described above, here is the algorithm
+; coeff array varfft(2,n,t)   dimensioned (2,0:numlon-1,0:numtim-1)
+; new space/time pee(2,pn,pt) dimensioned (2,0:numlon  ,0:numtim  ) 
+;
+; NOTE: one larger in both freq/space dims
+; the initial index of 2 is for the real (indx 0) and imag (indx 1) parts of the array
+;
+;
+;      if  |  0 <= pn <= numlon/2-1    then    | numlon/2 <= n <= 1
+;          |  0 <= pt < numtim/2-1             | numtim/2 <= t <= numtim-1
+;
+;      if  |  0         <= pn <= numlon/2-1    then    | numlon/2 <= n <= 1
+;          |  numtime/2 <= pt <= numtim                | 0        <= t <= numtim/2
+;
+;      if  |  numlon/2  <= pn <= numlon    then    | 0  <= n <= numlon/2
+;          |  0         <= pt <= numtim/2          | numtim/2 <= t <= 0
+;
+;      if  |  numlon/2   <= pn <= numlon    then    | 0        <= n <= numlon/2
+;          |  numtim/2+1 <= pt <= numtim            | numtim-1 <= t <= numtim/2
+
+local dimvf, numlon, N, varspacetime, pee, wave, freq
+begin
+  dimvf  = dimsizes( varfft )
+  mlon   = dimvf(1)
+  N      = dimvf(2)
+
+  varspacetime = new((/2,mlon+1,N+1/),typeof(varfft),1e20)
+
+  varspacetime(:,:mlon/2-1,:N/2-1) = varfft(:,mlon/2:1,N/2:N-1)
+  varspacetime(:,:mlon/2-1,N/2:)   = varfft(:,mlon/2:1,:N/2)
+  varspacetime(:, mlon/2: ,:N/2)   = varfft(:,:mlon/2,N/2:0)
+  varspacetime(:, mlon/2: ,N/2+1:) = varfft(:,:mlon/2,N-1:N/2)
+ 
+;  Create the real power spectrum pee = sqrt(real^2+imag^2)^2
+ 
+  pee       = new((/mlon+1,N+1/),typeof(varfft),1e20)
+  pee       = (sqrt(varspacetime(0,:,:)^2+varspacetime(1,:,:)^2))^2
+
+            ; add meta data for use upon return
+  pee!0     = "wave"
+  pee!1     = "freq"
+            ; JET code 'wavep1'
+  wave      = ispan(-mlon/2,mlon/2,1)  
+  wave!0    = "wave"
+  wave&wave =  wave
+            ; JET code 'frqfftwin'
+  freq      = fspan(-1*nDayWin*spd/2,nDayWin*spd/2,nDayWin*spd+1)/nDayWin
+  freq!0    = "freq"
+  freq&freq =  freq
+
+  pee&wave  =  wave
+  pee&freq  =  freq
+
+  return( pee )
+end
+;---------------------------------------------------------------
+; dispersion curves
+;--------------------------------------------------------------
+undef("genDispersionCurves")
+procedure genDispersionCurves( nWaveType[1]:integer      \
+                             , nEquivDepth[1]:integer    \
+                             , nPlanetaryWave[1]:integer \
+                             , rlat[1]:numeric           \
+                             , Ahe[*]:numeric            \
+                             , Afreq[*][*][*]:numeric    \
+                             , Apzwn[*][*][*]:numeric    )
+local pi, re, g, omega, U, Un, ll, Beta, maxwn, ww, ed, wn, he \
+    , T, L, s, k, kn, del, deif, n, i, eif, P, dps, R, Rdeg, fillval 
+begin
+    pi    = 4.0*atan(1.0)
+    re    = 6.37122e06     ; [m]   average radius of earth
+    g     = 9.80665        ; [m/s] gravity at 45 deg lat used by the WMO
+    omega = 7.292e-05      ; [1/s] earth's angular vel
+    U     = 0.0
+    Un    = 0.0   ; since Un = U*T/L
+    ll    = 2.*pi*re*cos(abs(rlat))
+    Beta  = 2.*omega*cos(abs(rlat))/re
+    maxwn = nPlanetaryWave
+    fillval = 1e20
+    
+    do ww = 1, nWaveType      ; wave type 
+    
+      do ed = 1, nEquivDepth  ; equivalent depth
+        he = Ahe(ed-1)
+        T = 1./sqrt(Beta)*(g*he)^(0.25)
+        L = (g*he)^(0.25)/sqrt(Beta)
+    
+        do wn = 1, nPlanetaryWave     ; planetary wave number
+    
+          s  = -20.*(wn-1)*2./(nPlanetaryWave-1) + 20.
+          k  = 2.*pi*s/ll
+          kn = k*L
+    
+          ; Anti-symmetric curves
+    
+          if (ww.eq.1) then              ; MRG wave
+            if (k.lt.0.) then
+              del  = sqrt(1.+(4.*Beta)/(k^2*sqrt(g*he)))
+              deif = k*sqrt(g*he)*(0.5-0.5*del)
+            end if
+            if (k.eq.0.) then
+              deif = sqrt(sqrt(g*he)*Beta)
+            end if
+            if (k.gt.0.) then
+              deif = fillval
+            end if
+          end if
+          if (ww.eq.2) then              ; n=0 IG wave
+            if (k.lt.0.) then
+              deif = fillval
+            end if
+            if (k.eq.0.) then
+              deif = sqrt(sqrt(g*he)*Beta)
+            end if
+            if (k.gt.0.) then
+              del  = sqrt(1.+(4.0*Beta)/(k^2*sqrt(g*he)))
+              deif = k*sqrt(g*he)*(0.5+0.5*del)
+            end if
+          end if
+          if (ww.eq.3) then              ; n=2 IG wave
+            n=2.
+            del  = (Beta*sqrt(g*he))
+            deif = sqrt((2.*n+1.)*del + (g*he)*k^2)
+            ; do some corrections to the above calculated frequency.......
+            do i = 1,5
+             deif = sqrt((2.*n+1.)*del + (g*he)*k^2 + g*he*Beta*k/deif)
+            end do
+          end if
+    
+    
+          ; symmetric curves
+          if (ww.eq.4) then              ; n=1 ER wave
+            n=1.
+            if (k.lt.0.) then
+             del  = (Beta/sqrt(g*he))*(2.*n+1.)
+             deif = -Beta*k/(k^2 + del)
+            else
+             deif = fillval
+            end if
+          end if
+          if (ww.eq.5) then              ; Kelvin wave
+            deif = k*sqrt(g*he)
+          end if
+          if (ww.eq.6) then              ; n=1 IG wave
+            n=1.
+            del  = (Beta*sqrt(g*he))
+            deif = sqrt((2.*n+1.)*del + (g*he)*k^2)
+            ; do some corrections to the above calculated frequency.......
+            do i=1,5
+              deif = sqrt((2.*n+1.)*del + (g*he)*k^2 + g*he*Beta*k/deif)
+            end do
+          end if
+        
+          eif  = deif  ; + k*U since  U=0.0
+          P    = 2.*pi/(eif*24.*60.*60.)
+          dps  = deif/k
+          R    = L
+          Rdeg = (180.*R)/(pi*6.37e6)
+    
+          Apzwn(ww-1,ed-1,wn-1) = s
+          if (deif.ne.fillval) then
+            P = 2.*pi/(eif*24.*60.*60.)
+            Afreq(ww-1,ed-1,wn-1) = 1./P
+          else
+            Afreq(ww-1,ed-1,wn-1) = fillval
+          end if
+        end do
+      end do
+    end do
+end
+;-------------------------------------------------------------
+; Graphics Utility: add temporal info the freq[y]- wave[x] contour
+;                   freq is cpd [cycles per day]
+;-------------------------------------------------------------
+undef("addHorVertLines")
+procedure addHorVertLines(wks[1]:graphic, plot[1]:graphic \
+                         ,x1[*],x2[*],y1[*],y2[*],y3[*],y4[*] )
+; freq [y] axis:  Add horizontal lines that explicitly
+;                 print time in days. This assumes the units
+;                 of the freq axis are "cpd" [cycles per day]
+local gsres, tsres
+begin
+    gsres = True
+    gsres@gsLineDashPattern = 1
+
+    gsn_polyline(wks, plot, x1,y1,gsres)
+    gsn_polyline(wks, plot, x1,y2,gsres)
+    gsn_polyline(wks, plot, x1,y3,gsres)
+    gsn_polyline(wks, plot, x2,y4,gsres)
+
+    txres        = True
+    txres@txJust = "CenterLeft"
+    txres@txFontHeightF = 0.013
+
+    gsn_text(wks, plot, "3 days" ,-14.7,.345,txres)
+    gsn_text(wks, plot, "6 days" ,-14.7,.175,txres)
+    gsn_text(wks, plot, "30 days",-14.7,.045,txres)
+end
+;==================================================================
+; ====> Create Wheeler-Kiladis Space-Time  plots.  <====
+;==================================================================
+    
+undef("wkSpaceTime")
+procedure wkSpaceTime( diri[1]:string        \ ; input directory
+                     , fili[*]:string        \ ; input file
+                     , diro[1]:string        \ ; output directory [plots]
+                     , case[1]:string        \ ; case name
+                     , varName[1]:string     \ ; variable name
+                     , latBound[1]:numeric   \ ; NH lat bound [positive]
+                     , spd[1]:numeric        \ ; samples per day
+                     , level[1]:numeric      \ ; if 4D ... what level?
+                     , nDayWin[1]:integer    \ ; temporal window length [days]
+                     , nDaySkip[1]:integer   \ ; days between time windows 
+                     , opt[1]:logical        \ ; future options
+                     )
+;==================================================================
+; Note_1: The full logitudinal domain is used. 
+;         This means that every planetary
+;         wavenumber will be represented.
+; Note_2: Tapering in time is done to make the variable periodic.
+;         
+; The calculations are also only made for the latitudes
+; between '-latBound' and 'latBound'. 
+;
+;********************   REFERENCES  *******************************
+; Wheeler, M., G.N. Kiladis 
+;    Convectively Coupled Equatorial Waves: 
+;    Analysis of Clouds and Temperature in the 
+;    Wavenumber-Frequency Domain
+;    J. Atmos. Sci., 1999,  56: 374-399.
+;---
+; Hayashi, Y.
+;    A Generalized Method of Resolving Disturbances into
+;    Progressive and Retrogressive Waves by Space and
+;    Fourier and TimeCross Spectral Analysis
+;    J. Meteor. Soc. Japan, 1971, 49: 125-128.
+;==================================================================
+;
+;     ---- local declarations are *not* required ----
+local latN, latS, lonL, lonR, SPD, tskip, fCrit, tim_taper \
+    , lon_taper, pltType, debug, minwav4smth, maxfrq4plt   \
+    , minfrq4plt, maxfrq4plt, minwav4plt, maxwav4plt       \
+    , fillVal, nfil, f, rank,nMsg, x, dNam, flist, dNamx   \
+    , TIME, dimx, ntim, nlat, mlon, nDayTot, nSampTot      \
+    , nSampWin, nSampSkip, nWindow, N, dNam, work          \
+    , rmvMeans, xAS, q, peeAS, nl, ntStrt, ntLast, nw, nt  \
+    , ml, psumanti, psumsym, wv, wkdir, caseName           \
+    , frqfftwin, wavep1, minfrq, maxfrq, tmFontHgtF        \
+    , tiFontHgtF, lbFontHgtF, txFontHgtF, res, freq        \
+    , wavenumber, NWVN, dcres, txres, rlat, Ahe            \
+    , nWaveType, nPlanetaryWave, nEquivDepth, Apzwn, Afreq \
+    , asym, sym, x1, x2, y1, y2, y3, y4, wks, plot         \
+    , psumb, psumsym_nolog, psumanti_nolog,  tt, smthlen   \
+    , i, pt8cpd, spec, nCn
+
+begin 
+
+  latN    = latBound
+  latS    =-latBound ; make symmetric about the equator
+
+  lonL    = 0        ; -180
+  lonR    = 360      ;  180
+
+  fCrit   = 1./nDayWin  ; remove all contributions 'longer'
+ ;fCrit   = 3./365   ; remove all contributions 'longer'
+                     ; than this frequency [cycles/day]
+
+  tim_taper  = 0.1   ; time taper      [0.1   => 10%]  
+  lon_taper  = 0.0   ; longitude taper [0.0 for globe; only global supported]  
+
+                     ; OPTIONS
+  pltType = "ps"     ; default
+  if (opt .and. isatt(opt, "pltType") ) then
+      if (any(opt@pltType.eq.(/"ps", "eps", "x11", "ncgm", "png"/))) then
+          pltType = opt@pltType
+      end if
+  end if
+
+  debug   = False    ; default
+  if (opt .and. isatt(opt, "debug") ) then
+      debug = opt@debug
+  end if
+
+  pltTitle = case+" "+varName+" LOG[Power: "+latBound+"S-"+latBound+"N]"
+  if (opt .and. isatt(opt, "pltTitle") ) then
+      pltTitle = opt@pltTitle
+  end if
+
+  pltColorMap = "amwg_blueyellowred"
+  if (opt .and. isatt(opt, "pltColorMap") ) then
+      pltColorMap = opt@pltColorMap
+  end if
+
+  SPD   = spd
+  tskip = 1     ; used to skip samples on input
+  if (opt .and. isatt(opt, "spdSkip") .and. opt@spdSkip.gt.1 ) then
+      SPD     = spd/opt@spdSkip
+      tskip   = max( (/1,SPD/) )  
+  end if
+ 
+;-------------------------------------------------------------------
+; The following *smth and *4plt are variables set in the original code.
+;-------------------------------------------------------------------
+; smoothing parameters set these larger than the plotting
+; wavenumbers to avoid smoothing artifacts
+;-------------------------------------------------------------------
+  minwav4smth = -27
+  maxwav4smth =  27
+;-------------------------------------------------------------------
+; plotting parameters freq and wavenumbers to plot
+;-------------------------------------------------------------------
+  minfrq4plt =  0.
+  maxfrq4plt =  0.8
+  minwav4plt = -15
+  maxwav4plt =  15
+
+  fillVal    = 1e20           ; miscellaneous          
+;-------------------------------------------------------------------
+; Check for not allowed actions
+;-------------------------------------------------------------------
+
+  if (lon_taper.gt.0.0 .or. (lonR-lonL).ne.360.) then
+      print("Code does currently allow lon_taper>0 or (lonR-lonL)<360")
+      exit
+  end if
+
+;-------------------------------------------------------------------
+; Read data from file(s): maintain meta data and original dim names
+;-------------------------------------------------------------------
+
+  nfil = dimsizes(fili)
+  f    = addfile (diri+fili(0), "r")
+  rank = dimsizes( filevardimsizes(f,varName) )
+  if (rank.lt.3 .or. rank.gt.4) then
+      print("wkSpaceTime: only 3D and 4D supported: rank="+rank+"D")
+      exit
+  end if
+
+  if (nfil.eq.1) then                    ; SINGLE FILE    
+      if (rank.eq.3) then
+          x  = f->$varName$(::tskip,{latS:latN},{lonL:lonR})
+      else
+          x  = f->$varName$(::tskip,{level},{latS:latN},{lonL:lonR})
+      end if
+  else                                   ; MULTIPLE FILES
+      dNam   = getfilevardims(f,varName)
+                                                 ; needed for *large*
+      setfileoption("nc","SuppressClose",False)  ; number of files
+
+      flist  = addfiles( diri+fili, "r")
+                                             ; make TIME  [tedious]
+      TIME           = flist[:]->$dNam(0)$   ; values
+      if (isfilevaratt(flist[0],  dNam(0) ,  "units") ) then  
+          TIME@units = flist[0]->$dNam(0)$@units   ; assign units attribute
+      end if
+      if (isfilevarcoord( flist[0], dNam(0), dNam(0) ) ) then
+          TIME!0     = dNam(0)                     ; name the dimension
+          TIME&$dNam(0)$ = TIME                    ; assign values [coord]
+      end if
+
+      if (rank.eq.3) then
+          x   = flist[:]->$varName$(::tskip,{latS:latN},{lonL:lonR})
+          x!0 = dNam(0)
+          x!1 = dNam(1)
+          x!2 = dNam(2)
+      else
+          x   = flist[:]->$varName$(::tskip,{level},{latS:latN},{lonL:lonR})
+          x!0 = dNam(0)
+          x!1 = dNam(2)
+          x!2 = dNam(3)
+      end if
+                             ; NOT required but create meta data
+      dNamx  = getvardims(x)            
+
+      x&$dNamx(0)$ = TIME      ; assign coordinates
+      x&$dNamx(1)$ = flist[0]->$dNamx(1)$({latS:latN})
+      x&$dNamx(2)$ = flist[0]->$dNamx(2)$({lonL:lonR})
+      if (isfilevaratt( flist[0], varName, "long_name")) then
+          x@long_name = flist[0]->$varName$@long_name
+      end if
+      if (isfilevaratt( flist[0], varName, "units"    )) then  
+          x@units = flist[0]->$varName$@units
+      end if     
+  end if
+
+  if (isatt(x,"_FillValue")) then
+      nMsg = num(ismissing(x))
+      if (nMsg.gt.0) then
+          print("nMsg="+nMsg+"  User must preprocess to remove _FillValue")
+          print("               FFTs do not allow missing values!!       ")
+          exit
+      end if
+      delete(x@_FillValue)     ; avoid warning messages from fft
+  end if
+
+  if (debug) then
+      printVarSummary( x )
+      printMinMax( x, True )
+  end if
+
+  dimx = dimsizes(x)
+  ntim = dimx(0)               ; total number of temporal samples
+  nlat = dimx(1)
+  mlon = dimx(2)
+
+;-------------------------------------------------------------------
+; Create required temporal sampling variables
+;-------------------------------------------------------------------
+
+  nDayTot   = ntim/SPD         ; # of days (total) for input variable 
+  nSampTot  = nDayTot*SPD      ; # of samples (total)      
+  nSampWin  = nDayWin*SPD      ; # of samples per temporal window
+  nSampSkip = nDaySkip*SPD     ; # of samples to skip between window segments
+                               ;   neg means overlap
+  nWindow   = (nSampTot-nSampWin)/(nSampWin+nSampSkip)  + 1
+  N         =  nSampWin        ; convenience [historical]         
+
+  if (nDayTot.lt.nDayWin) then
+      print("nDayTot="+nDayTot+" is less the nDayWin="+nDayWin)
+      print("        This is not allowed !!       ")
+      exit
+  end if
+
+;-------------------------------------------------------------------
+; Remove dominant signals
+; (a) Explicitly remove *long term* linear trend
+;     For consistency with JET code keep the grid point means.
+;     This necessitates that 'dtrend_msg' be used because 'dtrend'
+;     always removes the mean(s).
+; (b) All variations >= approx 'nDayWin' days if full year available
+;-------------------------------------------------------------------
+
+  dNam = getvardims( x )
+  work = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)    ; reorder  (lat,lon,time)
+;;work = dtrend( work , False )   ; remove mean + overall long term temporal trend 
+  work = dtrend_msg(ispan(0,ntim-1,1)*1.0, work, False, False)  ; remove just  trend
+  if (isatt(work,"_FillValue")) then
+      delete(work@_FillValue)                  ; dtrend_msg adds this att
+  end if
+                                                         ; replace with detrended
+  x    = (/ work($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) /) ; values (time,lat,lon)
+  delete(work)
+
+  if (nDayTot.ge.365) then                     ; rmv dominant signals
+      rmvMeans = False                         ; original code did not remove
+      x = rmvAnnualCycle(x, SPD, nDayTot, rmvMeans, fCrit, 0)
+  end if
+
+  if (debug) then
+      print("===> Post removal of trend and signal <===")
+      printVarSummary( x )                     ; (time,lat,lon)
+      printMinMax( x, True )
+  end if
+
+;-------------------------------------------------------------------
+; Decompose to Symmetric and Asymmetric parts
+;-------------------------------------------------------------------
+  xAS  = decompose2SymAsym( x , 1 )          ; create Asym and Sym parts
+  if (debug) then
+      printVarSummary(xAS)                   ; xAS(lat,lon,time) [iret=1]
+      printMinMax(xAS, True)
+  end if
+
+  delete( x )                                ; no longer needed                
+
+;-------------------------------------------------------------------
+; Because there is the possibility of overlapping *temporal* segments,
+; we must use a less efficient approach and detrend/taper
+; each window segment as it arises. 
+;          t0   t1   t2   t3   t4  .................. t(N)
+; lon(0):  x00  x01  x02  x03  x04 .................. x0(N)
+;     :    :   :   :   :   :                     :
+; lon(M):  xM0  xM1  xM2  xM3  xM4 .................. xM(N)
+;-------------------------------------------------------------------
+; q     - temporary array to hold the 2D complex results
+;         for each longitude/time (lon,time) window that is fft'd.
+;         This is one instance [realization] of space-time decomposition.
+;
+; peeAS - symmetric and asymmetric power values in each latitude hemisphere.
+;         Add extra lon/time to match JET 
+;-------------------------------------------------------------------
+  q      = new((/2,mlon,nSampWin/)       ,typeof(xAS), "No_FillValue")
+  peeAS  = new((/nlat,mlon+1,nSampWin+1/),typeof(xAS), "No_FillValue")
+  peeAS  = 0.0                       ; initialize 
+
+;-------------------------------------------------------------------
+; Operate on the xAS array
+; NCL does not have a complex 2D FFT at this time.
+; Perform a "poorman's" complex 2D FFT by looping over time and space.
+; Loop over all latitudes and then perform summing/averaging 
+; on the spectral results.
+;-------------------------------------------------------------------
+
+  do nl=0,nlat-1 
+
+     ntStrt = 0
+     ntLast = nSampWin-1
+     if (debug) then
+         print("==============> nl="+nl+" <==============")
+     end if
+
+    do nw=0,nWindow-1                        ; temporal window          
+       if (debug .and. nl.eq.0) then         ; debug
+           print("nw="+nw+"  ntStrt="+ntStrt+"   ntLast="+ntLast)
+       end if
+       work = dtrend( xAS(:,:,ntStrt:ntLast), False )    ; detrend temporal window
+       work = taper ( work, tim_taper, 0)    ; taper in "time" [periodic] 
+                                             ; work(nlat,mlon,N)
+      do nt=0,nSampWin-1                     ; for each time perform complex fft in longitude
+         q(:,:,nt) = cfftf( work(nl,:,nt), 0.0, 0)   ; space 
+      end do                                  
+       q = q/mlon                                    ; normalize by # lon samples
+
+      do ml=0,mlon-1                         ; for each lon perform complex fft in time 
+         q(:,ml,:) = cfftf( q(0,ml,:), q(1,ml,:), 0) ; time 
+      end do
+       q = q/nSampWin                                ; normalize by # time samples
+
+;-------------------------------------------------------------------
+; At this point 'q(2,mlon,nSampWin)' contains the 
+; real and imaginary space-time spectrum for this latitude
+; ---
+; Use Hayashi method to resolve into Progressive [Eastward]
+;     and Retrogressive [Westward] Waves.
+;-------------------------------------------------------------------
+
+       pee = resolveWavesHayashi( q, nDayWin, SPD )        
+       peeAS(nl,:,:) = peeAS(nl,:,:) + (pee/nWindow)   ; sum window contribution 
+           
+       ntStrt = ntLast+nSampSkip+1           ; set index for next temporal window
+       ntLast = ntStrt+nSampWin-1    
+    end do                                   ; nw (windows)
+
+  end do                                     ; nl (lat)
+
+;-------------------------------------------------------------------
+; Add meta data to the Hayashi space-time symmetric and asymmetric power
+;-------------------------------------------------------------------
+
+  peeAS!0     = "lat"
+  peeAS!1     = "wave"
+  peeAS!2     = "freq"
+  peeAS&lat   = xAS&lat
+  peeAS&wave  = pee&wave
+  peeAS&freq  = pee&freq      
+  peeAS@long_name =  "symmetric and asymmetric components"
+
+  if (debug) then
+      printVarSummary( peeAS )                 
+      printMinMax( peeAS , True)
+  end if
+
+  delete(  q  )                              ; no longer needed
+  delete( pee )
+
+;-------------------------------------------------------------------
+; now that we have the power array for sym and asym: use to
+;    1) plot raw power spectrum (some smoothing)
+;    2) derive and plot the background spectrum (lots of smoothing)
+;    3) derive a denoised spectrum that is raw power/background power
+;-------------------------------------------------------------------
+; psumanti and psumsym will contain the symmetric and asymmetric power
+; summed over latitude
+;-------------------------------------------------------------------
+
+  psumanti   = new((/dimsizes(peeAS&wave),dimsizes(peeAS&freq)/),typeof(peeAS), 1e20 )
+  psumanti!0 = "wave"
+  psumanti!1 = "freq"
+  psumanti&wave = peeAS&wave
+  psumanti&freq = peeAS&freq
+
+  psumsym       = psumanti
+
+  psumanti@long_name = "Asymmetric summed over lat"
+  psumsym@long_name  = "Symmetric  summed over lat"
+
+  if (nlat%2.eq.0)    ; use named dimensions to reorder
+      psumanti = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|nlat/2:nlat-1))
+      psumsym  = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|0:nlat/2-1)   )
+  else
+      psumanti = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|nlat/2+1:nlat-1))
+      psumsym  = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|0:nlat/2)     )
+  end if
+    
+;-------------------------------------------------------------------
+; since summing over half the array (symmetric,asymmetric) the
+; total variance is 2x the half sum
+;-------------------------------------------------------------------
+  psumanti = 2.0*psumanti
+  psumsym  = 2.0*psumsym 
+
+;-------------------------------------------------------------------
+; set the mean to missing to match original code
+;-------------------------------------------------------------------
+;
+  psumanti(:,{0.0}) = (/ psumanti@_FillValue /)  
+  psumsym (:,{0.0}) = (/ psumsym@_FillValue /)
+
+  if (debug) then
+      printVarSummary( psumanti )         ; (wave,freq)
+      printMinMax( psumsym , True)
+  end if
+
+;-------------------------------------------------------------------
+; Apply smoothing to the spectrum. smooth over limited wave numbers
+; Smoothing in frequency only (check if mean should be smoothed not smoothing now)
+;-------------------------------------------------------------------
+    
+  do wv=minwav4smth,maxwav4smth
+     wk_smooth121( psumanti({wv},N/2+1:N-1) )
+     wk_smooth121( psumsym ({wv},N/2+1:N-1) )
+  end do
+
+;-------------------------------------------------------------------
+; Log10 scaling ..... following the original code
+;-------------------------------------------------------------------
+
+  psumanti_nolog = psumanti
+  psumsym_nolog  = psumsym
+
+  psumanti       = log10(psumanti)
+  psumsym        = log10(psumsym)
+
+  psumanti@long_name = "log10(Asymmetric)"
+  psumsym@long_name  = "log10(Symmetric)"
+
+  if (debug) then
+      printVarSummary( psumanti )             ; (wave,freq)                 
+      printMinMax( psumanti , True)
+      printVarSummary( psumsym )                 
+      printMinMax( psumsym , True)
+  end if
+
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+;        PLOT CODE follows 
+; --- set some 'plot variables
+; set frequency maximum for plotting
+; min(user specified frq, maxfrq in window)
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; The following allow DJS variable naming 
+; to be used with original plot code.
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  caseName       = case
+  wkdir          = diro
+
+  frqfftwin      = peeAS&freq
+  frqfftwin&freq = peeAS&freq
+
+  wavep1         = peeAS&wave
+  wavep1&wave    = peeAS&wave
+
+  if (debug) then
+      printVarSummary( frqfftwin )
+      printMinMax( frqfftwin, True )
+      printVarSummary( wavep1 )
+      printMinMax( wavep1, True )
+  end if
+    
+  minfrq     = minfrq4plt
+  maxfrq     = min((/maxfrq4plt,max(frqfftwin)/))
+    
+;=============================================================
+;             Start Common Graphics Resources
+;=============================================================
+   tmFontHgtF            = 0.015     ; not sure why
+   tiFontHgtF            = 0.018
+   lbFontHgtF            = 0.015
+   txFontHgtF            = 0.013
+
+   res = True
+   res@gsnFrame          = False
+   res@gsnMaximize       = True
+   res@gsnPaperOrientation = "portrait"
+
+   res@gsnLeftString     = "Westward"
+   res@gsnRightString    = "Eastward"
+
+  ;res@lbBoxMinorExtentF = 0.18
+   res@lbLabelFontHeightF= lbFontHgtF
+   res@lbOrientation     = "vertical"
+
+   res@cnFillOn          = True
+   res@cnLineThicknessF  = 0.5
+
+   res@tmYLMode          = "Explicit"
+   res@tmYLValues        = fspan(minfrq,maxfrq,9)
+   res@tmYLLabels        = fspan(minfrq,maxfrq,9)
+   res@tmYLMinorValues   = fspan(minfrq,maxfrq,17)
+
+   res@tmYLLabelFontHeightF = tmFontHgtF
+   res@tmXBLabelFontHeightF = tmFontHgtF
+
+   res@tiXAxisString     = "Zonal Wave Number"
+   res@tiXAxisFontHeightF= tiFontHgtF
+
+   res@tiYAxisString     = "Frequency (cpd)"
+   res@tiYAxisFontHeightF= res@tiXAxisFontHeightF
+ 
+   if (.not.(pltTitle.eq."" .or. pltTitle.eq." ")) then
+       res@tiMainString      = pltTitle
+       res@tiMainFontHeightF = tiFontHgtF
+   end if
+   res@txFontHeightF     = tiFontHgtF
+
+;------------------------------------------------------
+; Create a list of variable names that have predefined
+; contour intervals. 
+;------------------------------------------------------
+   varCnLevels = (/"FLUT" ,"OLR", "olr","U200","U850"   \
+                  ,"PRECT","OMEGA500" /)
+
+   if (any(varCnLevels.eq.varName)) then
+       res@cnLevelSelectionMode = "ExplicitLevels"
+   else
+       res@cnLevelSelectionMode = "AutomaticLevels"
+   end if
+   
+;-------------------------------
+; horizontal dashed lines and text for frequency axis [plot only]
+;-------------------------------
+
+   freq       = frqfftwin({freq|minfrq:maxfrq})
+   wavenumber = wavep1({wave|minwav4plt:maxwav4plt})
+   NWVN       = dimsizes(wavenumber)         ; number of wavenumbers
+
+   x1   = wavenumber 
+   x1!0 = "wave"
+   y1   = new (NWVN,float)
+   y1!0 = "freq"
+   y1   = 1./3.           ; 3 days
+   y2   = y1
+   y2   = 1./6.           ; 6 days
+   y3   = y1
+   y3   = 1./30.          ; 30 days 
+   x2   = new(25,float)
+   x2   = 0.0
+   y4   = fspan(0.0,1.0,25)
+
+;---------------------------------------------------------------
+; dispersion: curves 
+;---------------------------------------------------------------
+
+   rlat           = 0.0
+   Ahe            = (/50.,25.,12./)
+   nWaveType      = 6
+   nPlanetaryWave = 50
+   nEquivDepth    = dimsizes(Ahe)
+   Apzwn          = new((/nWaveType,nEquivDepth,nPlanetaryWave/),"double",fillVal)
+   Afreq          = Apzwn
+   genDispersionCurves(nWaveType, nEquivDepth, nPlanetaryWave, rlat, Ahe, Afreq, Apzwn )
+
+;---------------------------------------------------------------
+; dispersion curve and text plot resources
+;---------------------------------------------------------------
+   dcres = True
+   dcres@gsLineThicknessF  = 2.0
+   dcres@gsLineDashPattern = 0
+
+   txres = True
+   txres@txJust        = "CenterLeft"
+   txres@txPerimOn     = True
+   txres@txFontHeightF = 0.013
+   txres@txBackgroundFillColor = "Background"
+       
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+; plotting params for fig 1; subset for plot
+;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    
+                                              ; reorder so freq is "y"
+   asym       = psumanti({freq|minfrq:maxfrq},{wave|minwav4plt:maxwav4plt})
+   asym!0     = "freq"
+   asym&freq  =  freq 
+   asym!1     = "wave"
+   asym&wave  =  wavenumber
+   asym@long_name = "Fig_1: log10(Asymmetric)"
+
+   sym        = psumsym({freq|minfrq:maxfrq},{wave|minwav4plt:maxwav4plt})
+   sym@long_name  = "Fig_1: log10(Symmetric)"
+
+   if (debug) then
+       printVarSummary(asym)
+       printMinMax(asym, True)
+       printVarSummary(sym)
+       printMinMax(sym, True)
+   end if
+
+;------------------------------------------------------
+; Fig 1: Pre-defined contour levels [15]  for selected variables [non-log10]
+;------------------------------------------------------
+   nCn = 15
+
+   if (varName .eq. "FLUT" .or. varName .eq. "OLR" .or. varName .eq. "olr") then
+       res@cnLevels = (/-1.2,-1.1,-1.0,-0.8,-0.6,-0.4,-0.2     \ ; unequal
+                       , 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.1,1.2/)
+   end if
+   if (varName .eq. "PRECT") then
+       res@cnLevels = (/-18.2,-18.0,-17.8,-17.6,-17.5,-17.4,-17.3 \ ; unequal
+                       ,-17.2,-17.1,-17.0,-16.9,-16.8,-16.7,-16.6,-16.5/)
+   end if
+   if (varName .eq. "U200") then
+       res@cnLevels = fspan(-3.3, 0.9, nCn)
+   end if
+   if (varName .eq. "U850") then
+       res@cnLevels = fspan(-3.25, 0.25, nCn)
+   end if
+   if (varName .eq. "OMEGA500") then
+       res@cnLevels = fspan(-5.9, -4.5, nCn)
+   end if
+
+   if (opt .and. isatt(opt, "Fig_1")) then
+       res@cnLevelSelectionMode = "ExplicitLevels"
+       res@cnLevels = opt@Fig_1                    ; user specified limits
+   end if
+  
+;------------------------------------------------------
+; Fig 1: ANTI-SYMMETRIC
+;------------------------------------------------------
+  ;print("======> Fig 1a: ASYMMETRIC <=====")
+    
+   wks  = gsn_open_wks(pltType,wkdir+"/"+"Fig1.Asym."+caseName+"_"+varName)
+   gsn_define_colormap(wks,pltColorMap)
+   res@gsnCenterString = "Anti-Symmetric"
+   plot = gsn_csm_contour(wks,asym,res)
+   addHorVertLines(wks, plot, x1,x2,y1,y2,y3,y4 ) ; add dashed lines
+   frame(wks)
+   delete(wks)    ; not required 
+    
+;------------------------------------------------------
+; Fig 1: SYMMETRIC
+;------------------------------------------------------
+  ;print("======> Fig 1b: SYMMETRIC <=====")
+    
+   wks  = gsn_open_wks(pltType,wkdir+"/"+"Fig1.Sym."+caseName+"_"+varName)
+   gsn_define_colormap(wks,pltColorMap)
+   res@gsnCenterString = "Symmetric"
+   plot = gsn_csm_contour(wks,sym,res)
+   addHorVertLines(wks, plot, x1,x2,y1,y2,y3,y4 ) ; add dashed lines
+   frame(wks)
+   delete(wks)
+    
+;-----------------------------------------------------------------------------
+; ******  now derive and plot the background spectrum (red noise) ************
+; [1] Sum power over all latitude 
+; [2] Put fill value in mean
+; [3] Apply smoothing to the spectrum. This smoothing DOES include wavenumber zero.
+;-----------------------------------------------------------------------------
+  ;print("======> BACKGROUND <=====")
+    
+   psumb = dim_sum_Wrap(peeAS(wave|:,freq|:,lat|:))  ; sum over all latitudes
+   psumb@long_name = "Background Spectrum"
+    
+   psumb@_FillValue       = fillVal    
+   psumb(wave|:,freq|N/2) = fillVal
+   psumb@_FillValue       = fillVal
+
+   if (debug) then
+       printVarSummary(psumb)             ; (wave,freq)      
+       printMinMax(psumb, True)
+   end if
+    
+   do tt = N/2+1,N
+      smthlen = maxwav4smth-minwav4smth+1
+      if (frqfftwin(tt).lt.0.1) then
+        do i = 1,5
+          wk_smooth121( psumb(freq|tt,{wave|minwav4smth:maxwav4smth}) )
+        end do
+      end if
+      if (frqfftwin(tt).ge.0.1.and.frqfftwin(tt).lt.0.2) then
+        do i = 1,10
+          wk_smooth121( psumb(freq|tt,{wave|minwav4smth:maxwav4smth}) )
+        end do
+      end if
+      if (frqfftwin(tt).ge.0.2.and.frqfftwin(tt).lt.0.3) then
+        do i = 1,20
+          wk_smooth121( psumb(freq|tt,{wave|minwav4smth:maxwav4smth}) )
+        end do
+      end if
+
+      if (frqfftwin(tt).ge.0.3) then
+        do i = 1,40
+          wk_smooth121(psumb(freq|tt,{wave|minwav4smth:maxwav4smth}))
+        end do
+      end if
+   end do
+       
+   do nw = minwav4smth,maxwav4smth ; smth frequency up to .8 cycles per day
+      pt8cpd  = min((/closest_val(.8,frqfftwin),dimsizes(frqfftwin)-1/))
+      smthlen = pt8cpd-(N/2+1)+1
+     do i = 1,10
+        wk_smooth121( psumb({nw},N/2+1:pt8cpd) )
+     end do
+   end do    
+
+;----------------------------------------------------------------
+; [1] Put fill value in mean (again)
+; [2] SAVE the background spectrum for plotting Fig 3
+; [3] LOGARITHMIC SCALING for plotting the background spectrum 
+;----------------------------------------------------------------
+    
+   psumb(wave|:,freq|N/2) = fillVal
+   psumb_nolog = psumb
+   psumb       = log10(psumb)            ; LOG10
+   psumb@long_name = "log10( background spec )"
+   if (debug) then
+       print(" ===> Post multiple smoothing by wk_smooth121 <===")
+       printVarSummary(psumb_nolog)
+       printMinMax(psumb_nolog, True)
+
+       printVarSummary(psumb)
+       printMinMax(psumb, True)
+   end if
+    
+;----------------------------------------------------------------
+; set up for plotting  [ subset of frequencies: not necessary]
+;----------------------------------------------------------------
+    
+   freq      = frqfftwin({freq|minfrq:maxfrq})
+   spec      = psumb({freq|minfrq:maxfrq},{wave|minwav4plt:maxwav4plt})
+
+   if (debug) then
+       printVarSummary(spec)                 ; (freq,wave)
+       printMinMax(spec, True)
+   end if
+    
+;----------------------------------------------------------------
+; Fig 2: Predefined explicit contour levels BACKGROUND spectrum  [LOG10]
+;----------------------------------------------------------------
+
+   if (isatt(res,"cnLevels")) then
+       delete(res@cnLevels)       ; allow size to change
+   end if
+   
+   if (varName .eq. "FLUT" .or. varName .eq. "OLR" .or. varName .eq. "olr") then
+       res@cnLevels = (/-1.2,-1.1,-1.0,-0.8,-0.6,-0.4,-0.2 \     ; unequal 15
+                       , 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.1,1.2/)
+   end if
+   if (varName .eq. "PRECT") then
+       res@cnLevels = (/-18.2,-18.0,-17.8,-17.6,-17.5,-17.4,-17.3 \   ; unequal
+                       ,-17.2,-17.1,-17.0,-16.9,-16.8,-16.7,-16.6,-16.5/)
+   end if
+   if (varName .eq. "U200") then
+       res@cnLevels = fspan(-3.3, 0.9, nCn)
+   end if
+   if (varName .eq. "U850") then
+       res@cnLevels = fspan(-3.25, 0.25, nCn)
+   end if
+   if (varName .eq. "OMEGA500") then
+       res@cnLevels = fspan(-5.9,-4.5, nCn)
+   end if
+
+   if (opt .and. isatt(opt, "Fig_2")) then
+       res@cnLevelSelectionMode = "ExplicitLevels"
+       res@cnLevels = opt@Fig_2                   ; user specified 
+   end if
+   
+   wks  = gsn_open_wks(pltType,wkdir+"/Fig2."+caseName+"_"+varName)
+   gsn_define_colormap(wks,pltColorMap)
+
+   res@gsnCenterString = "Background Power"
+   plot = gsn_csm_contour(wks,spec,res)
+   addHorVertLines(wks, plot, x1,x2,y1,y2,y3,y4 ) ; add dashed lines
+   frame(wks)
+    
+;*********************************************************************************
+; Fig 3a, 3b:  psum_nolog/psumb_nolog  [ratio]
+;********************************************************************************
+    
+   psumsym_nolog  = psumsym_nolog /psumb_nolog   ; (wave,freq)
+   psumanti_nolog = psumanti_nolog/psumb_nolog
+
+   if (debug) then
+       printVarSummary(psumanti_nolog)           ; (freq,wave)
+       printMinMax(psumanti_nolog, True)
+       printVarSummary(psumsym_nolog)            ; (freq,wave)
+       printMinMax(psumsym_nolog, True)
+   end if
+
+;----------------------------------------------------------- 
+; ANTI-SYMMETRIC: RATIO ( subset to plot )
+;----------------------------------------------------------- 
+
+   asym = psumanti_nolog({freq|minfrq:maxfrq},{wave|minwav4plt:maxwav4plt})
+   sym  = psumsym_nolog({freq|minfrq:maxfrq},{wave|minwav4plt:maxwav4plt})
+
+   if (debug) then
+       printVarSummary(asym)                    ; (freq,wave)
+       printMinMax(asym, True)
+       printVarSummary(sym)                     ; (freq,wave)
+       printMinMax(sym, True)
+   end if
+
+   if (isatt(res,"cnLevels")) then
+       delete(res@cnLevels)                     ; allow size to change
+   end if
+
+   if (varName .eq. "FLUT" .or. varName .eq. "OLR".or. varName .eq. "olr") then
+       res@cnLevels = fspan(0.3, 1.7, nCn)
+   end if
+   if (varName .eq. "U200") then
+       res@cnLevels = fspan(0.4, 1.8, nCn)
+   end if
+   if (varName .eq. "U850") then
+       res@cnLevels = fspan(0.4, 1.8, nCn)
+   end if
+   if (varName .eq. "PRECT") then
+       res@cnLevels = (/0.6,0.7 ,0.8,0.9 ,1.0,1.1,1.15,1.2,1.25 \
+                       ,1.3,1.35,1.4,1.45,1.5,1.6/)
+   end if
+   if (varName .eq. "OMEGA500") then
+       res@cnLevels = (/0.6,0.7,0.8,0.9,1.0,1.1,1.15,1.2,1.25 \
+                       ,1.3,1.35,1.4,1.45,1.5,1.6/)
+   end if
+
+   if (opt .and. isatt(opt, "Fig_3a")) then
+       res@cnLevelSelectionMode = "ExplicitLevels"
+       res@cnLevels = opt@Fig_3a                  ; user specified 
+   end if
+   
+   wks  = gsn_open_wks(pltType,wkdir+"/Fig3.Asym."+caseName+"_"+varName)
+   gsn_define_colormap(wks,pltColorMap)
+   res@gsnCenterString = "Anti-Symmetric/Background"
+   plot = gsn_csm_contour(wks,asym,res)
+   addHorVertLines(wks, plot, x1,x2,y1,y2,y3,y4 ) ; add dashed lines
+
+; draw dispersion line
+
+   gsn_polyline(wks,plot,Apzwn(0,0,:),Afreq(0,0,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(0,1,:),Afreq(0,1,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(0,2,:),Afreq(0,2,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(1,0,:),Afreq(1,0,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(1,1,:),Afreq(1,1,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(1,2,:),Afreq(1,2,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(2,0,:),Afreq(2,0,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(2,1,:),Afreq(2,1,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(2,2,:),Afreq(2,2,:),dcres)
+
+; dispersion labels
+
+   gsn_text(wks,plot,"MRG",-10.0,.15,txres)
+   gsn_text(wks,plot,"n=2 IG",-3.0,.58,txres)
+   gsn_text(wks,plot,"n=0 EIG",9.5,.50,txres)
+   gsn_text(wks,plot,"h=50",-10.0,.78,txres)
+   gsn_text(wks,plot,"h=25",-10.0,.63,txres)
+   gsn_text(wks,plot,"h=12",-10.0,.51,txres)
+
+   frame(wks)
+   delete(wks)             ; not required
+
+;------------------------------------------------------------------
+; SYMMETRIC
+;------------------------------------------------------------------
+   if (isatt(res,"cnLevels")) then
+       delete(res@cnLevels)
+   end if
+
+   if (varName .eq. "FLUT" .or. varName .eq. "OLR".or. varName .eq. "olr") then
+       res@cnLevels = (/.3,.4,.5,.6,.7,.8,.9,1.,1.1,1.2,1.4,1.7,2.,2.4,2.8/)
+   end if
+   if (varName .eq. "U200") then
+       res@cnLevels = (/.4,.6,.8,1.,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.,2.2,2.4,2.6/)
+   end if
+   if (varName .eq. "U850") then
+       res@cnLevels = (/.4,.6,.8,1.,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.,2.2,2.4,2.6/)
+   end if
+   if (varName .eq. "PRECT") then
+       res@cnLevels = (/.6,.7,.8,.9,1.,1.1,1.15,1.2,1.25,1.3,1.35,1.4,1.45,1.5,1.6/)
+   end if
+   if (varName .eq. "OMEGA500") then
+       res@cnLevels = (/.6,.7,.8,.9,1.,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2./)
+   end if
+
+   if (opt .and. isatt(opt, "Fig_3b")) then
+       res@cnLevelSelectionMode = "ExplicitLevels"
+       res@cnLevels = opt@Fig_3b                  ; user specified 
+   end if
+
+   wks  = gsn_open_wks(pltType, wkdir+"/Fig3.Sym."+caseName+"_"+varName)
+   gsn_define_colormap(wks ,pltColorMap)
+   res@gsnCenterString = "Symmetric/Background"
+   plot = gsn_csm_contour(wks,sym,res)
+   addHorVertLines(wks, plot, x1,x2,y1,y2,y3,y4 ) ; add dashed lines
+
+   gsn_polyline(wks,plot,Apzwn(3,0,:),Afreq(3,0,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(3,1,:),Afreq(3,1,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(3,2,:),Afreq(3,2,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(4,0,:),Afreq(4,0,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(4,1,:),Afreq(4,1,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(4,2,:),Afreq(4,2,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(5,0,:),Afreq(5,0,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(5,1,:),Afreq(5,1,:),dcres)
+   gsn_polyline(wks,plot,Apzwn(5,2,:),Afreq(5,2,:),dcres)
+
+   gsn_text(wks,plot,"Kelvin",11.0,.40,txres)
+   gsn_text(wks,plot,"n=1 ER",-10.7,.07,txres)
+   gsn_text(wks,plot,"n=1 IG",-3.0,.45,txres)
+   gsn_text(wks,plot,"h=50",-14.0,.78,txres)
+   gsn_text(wks,plot,"h=25",-14.0,.60,txres)
+   gsn_text(wks,plot,"h=12",-14.0,.46,txres)
+   frame(wks)
+
+   print("********** FINISHED: Space-Time *****************")
+end
