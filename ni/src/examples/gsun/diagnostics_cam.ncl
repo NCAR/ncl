@@ -1,9 +1,3 @@
-;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-;                MODEL DIAGNOSTICS 
-;+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-;
-;=============================================================
-;
 ;-------------------------------------------------------------
 ; Decompose a variable into symmetric and asymmetric parts
 ;-------------------------------------------------------------
@@ -113,8 +107,8 @@ begin
   cf!3 = "freq"
  
   cf&cmplx = (/ 0,1 /)
-  cf&lat   = z&lat
-  cf&lon   = z&lon
+  cf&lat   = z&$dNam(1)$
+  cf&lon   = z&$dNam(2)$
                                                 ; create freq dim values
   freq     = fspan(1,nDayTot*spd/2,nDayTot*spd/2)/nDayTot
   freq!0   = "freq"                             ; clarity
@@ -720,7 +714,7 @@ begin
   peeAS!0     = "lat"
   peeAS!1     = "wave"
   peeAS!2     = "freq"
-  peeAS&lat   = xAS&lat
+  peeAS&lat   = xAS&$dNam(1)$     ; nominally, xAS&lat
   peeAS&wave  = pee&wave
   peeAS&freq  = pee&freq      
   peeAS@long_name =  "symmetric and asymmetric components"
