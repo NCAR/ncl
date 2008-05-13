@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.10 2007-07-12 19:41:37 haley Exp $
+#   $Id: yMakefile,v 1.11 2008-05-13 22:23:15 shea Exp $
 #
 #   Makefile for GSUN examples
 #
@@ -15,7 +15,7 @@ RESFILES = gsun08n.res gsun09n.res
 GSN_SCRIPTS = gsn_code.ncl gsn_csm.ncl
 
 OTHER_SCRIPTS = ccm_func.ncl contributed.ncl popRemap.ncl shea_util.ncl \
-	skewt_func.ncl wind_rose.ncl
+	skewt_func.ncl wind_rose.ncl diagnostics.ncl
  
 WRF_SCRIPTS = WRF_contributed.ncl WRFUserARW.ncl
 
