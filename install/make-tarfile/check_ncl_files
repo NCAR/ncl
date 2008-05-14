@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.14 2008-03-31 22:31:10 haley Exp $
+#   $Id: check_ncl_files,v 1.15 2008-05-14 03:25:14 haley Exp $
 #
 # Use check_files instead! This one is just for NCL.
 # 
@@ -1047,6 +1047,7 @@ lib/ncarg/nclex/xyplot/xy16n.ncl
 lib/ncarg/nclex/xyplot/xy17n.ncl
 lib/ncarg/nclscripts/csm/ccm_func.ncl
 lib/ncarg/nclscripts/csm/contributed.ncl
+lib/ncarg/nclscripts/csm/diagnostics.ncl
 lib/ncarg/nclscripts/csm/gsn_code.ncl
 lib/ncarg/nclscripts/csm/gsn_csm.ncl
 lib/ncarg/nclscripts/csm/popRemap.ncl
