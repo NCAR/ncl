@@ -1,5 +1,5 @@
 /*
- *      $Id: Transform.c,v 1.57 2004-01-23 22:46:53 dbrown Exp $
+ *      $Id: Transform.c,v 1.58 2008-05-14 23:19:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1794,11 +1794,11 @@ static NhlErrorTypes PolyDraw
 
 	for (i = 0; i < tfp->poly_draw_list->num_elements; i++) {
 		NhlLayer l = _NhlGetLayer(poly_ids[i]);
-		NhlGenArray x_arr,y_arr;
+		NhlGenArray x_arr = NULL,y_arr = NULL;
 		float *x,*y;
 		int tmp_gs,count;
 
-		if (! l) {
+		if (! (l && NhlIsClass(poly_ids[i],NhlprimitiveClass))) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,
 				  "%s: %s element %d is invalid",entry_name,
 				  NhlNtfPolyDrawList,i);
@@ -2615,6 +2615,7 @@ extern NhlErrorTypes _NhltfCheckCoordBounds
         
         return ret;
 }
+
 
 NhlErrorTypes NhlAddPrimitive
 #if	NhlNeedProto
