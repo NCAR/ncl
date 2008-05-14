@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.227 2008-03-17 22:48:50 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.228 2008-05-14 23:14:17 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -10330,6 +10330,7 @@ begin
   res3_new = True      ; Make sure this is True.
 
   res3_new@gsnFrame     = False
+  res3_new@xyMarkLineMode = "Lines"  ; Make sure not markers!
   res3_new@gsnDraw      = False
   res3_new@vpHeightF    = vph
   res3_new@vpWidthF     = 0.0001
