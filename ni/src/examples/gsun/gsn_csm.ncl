@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.228 2008-05-14 23:14:17 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.229 2008-05-15 15:24:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -10325,12 +10325,12 @@ begin
 ; of the previous  plot, outside of the tickmarks and labels.
 ;
   if(res3) then
-    res3_new = get_res_ne(res3,(/"am"/))
+    res3_new = get_res_ne(res3,(/"am","xy"/))
   end if
   res3_new = True      ; Make sure this is True.
 
   res3_new@gsnFrame     = False
-  res3_new@xyMarkLineMode = "Lines"  ; Make sure not markers!
+;  res3_new@xyMarkLineMode = "Lines"  ; Make sure not markers!
   res3_new@gsnDraw      = False
   res3_new@vpHeightF    = vph
   res3_new@vpWidthF     = 0.0001
