@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.158 2008-05-12 20:05:12 shea Exp $
+;      $Id: contributed.ncl,v 1.159 2008-05-15 13:35:42 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6583,6 +6583,32 @@ begin
 
   return(nam)
 end
+
+;*************************************************************************
+; D. Shea
+;Within a string:  replace one character with another
+; usage:   s = "apples are good"
+;          replaceSingleChar(s, " ", "_")   ; ==> s="apples_are_good""
+undef("replaceSingleChar")
+procedure replaceSingleChar (s[*]:string, oldStr[1]:string, newStr[1]:string)
+local cOld, cNew, ns, n, c, i
+begin
+  cOld = stringtochar( oldStr )
+  cNew = stringtochar( newStr )
+  ns   = dimsizes( s )
+
+  do n=0,ns-1
+     c  = stringtochar( s(n) )
+     i  = ind( c.eq.cOld(0)  )
+     if (.not.(any(ismissing(i)))) then
+         c(i) = cNew(0)
+         s(n) = chartostring( c )
+     end if
+     delete(i)   ;may change size next iteration
+     delete(c)  
+  end do
+end
+
 ;*************************************************************************
 ; D. Shea
 ; create symmetric min/max values for plots
