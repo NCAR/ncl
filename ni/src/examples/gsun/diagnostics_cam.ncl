@@ -1,3 +1,9 @@
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+;                  diagnostics.ncl                             
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+; gsn_code.ncl, gsn_csm.ncl, contributed.ncl  must be preloaded.
+;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+;
 ;-------------------------------------------------------------
 ; Decompose a variable into symmetric and asymmetric parts
 ;-------------------------------------------------------------
@@ -343,7 +349,7 @@ begin
     end do
 end
 ;-------------------------------------------------------------
-; Graphics Utility: add temporal info the freq[y]- wave[x] contour
+; Graphics Utility: Add temporal info the freq[y]- wave[x] contour 
 ;                   freq is cpd [cycles per day]
 ;-------------------------------------------------------------
 undef("addHorVertLines")
@@ -370,23 +376,66 @@ begin
     gsn_text(wks, plot, "6 days" ,-14.7,.175,txres)
     gsn_text(wks, plot, "30 days",-14.7,.045,txres)
 end
+
+;----------------------------------------------------------- 
+; Utility: Unix does not allow spaces in file names
+;          When 5.0.1 becomes available, delete this and
+;          use replaceSingleChar in contributed.ncl
+;----------------------------------------------------------- 
+undef("replaceChars")
+procedure replaceChars (s[1]:string, oldStr[1]:string, newStr[1]:string )
+local cOld, cNew, c, i
+begin
+  cOld = stringtochar( oldStr )
+  cNew = stringtochar( newStr )
+
+  c    = stringtochar( s )
+  i    = ind( c.eq.cOld(0)  )
+  if (.not.(any(ismissing(i)))) then
+      c(i) = cNew(0)
+      s    = chartostring( c )
+  end if
+end
+
+;----------------------------------------------------------- 
+; Graphics Utility: This info may be of use if users want 
+;                   to set there own plot limits
+; Activated if opt=True and (opt@debug=True or opt@Fig_3_statInfo=True)
+;----------------------------------------------------------- 
+undef("statAsymSym")
+procedure statAsymSym (x[*][*]:numeric, name[1]:string )
+local statx, work, nwork
+begin
+   statx    = new ( 7, typeof(x), 1e20) 
+   statx(0) = avg(x)                ; mean
+   statx(1) = stddev(x)             ; std. deviation
+   work     = ndtooned(x) 
+   nwork    = dimsizes(work)  
+   qsort( work )                    ; sort into ascending order
+   statx(2) = min ( work )
+   statx(3) = work( nwork/4  )      ; lower quartile
+   statx(4) = work( nwork/2  )      ; approx median
+   statx(5) = work( nwork*3/4)      ; upper quartile
+   statx(6) = max ( work )
+
+   print(" ")
+   print("   ===> Statistics: "+name+" <===")
+   print("        Mean="+statx(0)  ) 
+   print("      StdDev="+statx(1)  ) 
+   print("         Min="+statx(2)  ) 
+   print(" lowQuartile="+statx(3)  ) 
+   print("      Median="+statx(4)  ) 
+   print("highQuartile="+statx(5)  ) 
+   print("         Max="+statx(6)  ) 
+   print(" ")
+end
+   
+
 ;==================================================================
 ; ====> Create Wheeler-Kiladis Space-Time  plots.  <====
 ;==================================================================
-    
-undef("wkSpaceTime")
-procedure wkSpaceTime( diri[1]:string        \ ; input directory
-                     , fili[*]:string        \ ; input file
-                     , diro[1]:string        \ ; output directory [plots]
-                     , case[1]:string        \ ; case name
-                     , varName[1]:string     \ ; variable name
-                     , latBound[1]:numeric   \ ; NH lat bound [positive]
-                     , spd[1]:numeric        \ ; samples per day
-                     , level[1]:numeric      \ ; if 4D ... what level?
-                     , nDayWin[1]:integer    \ ; temporal window length [days]
-                     , nDaySkip[1]:integer   \ ; days between time windows 
-                     , opt[1]:logical        \ ; future options
-                     )
+
+
 ;==================================================================
 ; Note_1: The full logitudinal domain is used. 
 ;         This means that every planetary
@@ -409,155 +458,40 @@ procedure wkSpaceTime( diri[1]:string        \ ; input directory
 ;    Fourier and TimeCross Spectral Analysis
 ;    J. Meteor. Soc. Japan, 1971, 49: 125-128.
 ;==================================================================
-;
-;     ---- local declarations are *not* required ----
-local latN, latS, lonL, lonR, SPD, tskip, fCrit, tim_taper \
+
+procedure wkSpaceTime (x[*][*][*]:numeric                  \
+                      ,diro[1]:string                      \
+                      ,caseName[1]:string                  \
+                      ,varName[1]:string                   \
+                      ,latBound[1]:numeric                 \
+                      ,spd[1]:integer                      \
+                      ,nDayWin[1]:integer                  \
+                      ,nDaySkip[1]:integer                 \
+                      ,opt[1]:logical)
+
+local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
     , lon_taper, pltType, debug, minwav4smth, maxfrq4plt   \
     , minfrq4plt, maxfrq4plt, minwav4plt, maxwav4plt       \
-    , fillVal, nfil, f, rank,nMsg, x, dNam, flist, dNamx   \
-    , TIME, dimx, ntim, nlat, mlon, nDayTot, nSampTot      \
-    , nSampWin, nSampSkip, nWindow, N, dNam, work          \
+    , fillVal, nMsg, dimx, ntim, nlat, mlon, nDayTot       \
+    , nSampTot, nSampWin, nSampSkip, nWindow, N, dNam, work\
     , rmvMeans, xAS, q, peeAS, nl, ntStrt, ntLast, nw, nt  \
-    , ml, psumanti, psumsym, wv, wkdir, caseName           \
-    , frqfftwin, wavep1, minfrq, maxfrq, tmFontHgtF        \
+    , ml, psumanti, psumsym, wv, wkdir, caseName, pltFilTit\
+    , frqfftwin, wavep1, minfrq, maxfrq, tmFontHgtF, pltTit\
     , tiFontHgtF, lbFontHgtF, txFontHgtF, res, freq        \
     , wavenumber, NWVN, dcres, txres, rlat, Ahe            \
     , nWaveType, nPlanetaryWave, nEquivDepth, Apzwn, Afreq \
     , asym, sym, x1, x2, y1, y2, y3, y4, wks, plot         \
     , psumb, psumsym_nolog, psumanti_nolog,  tt, smthlen   \
-    , i, pt8cpd, spec, nCn
+    , i, pt8cpd, spec, nCn, nExtra
 
-begin 
-
-  latN    = latBound
-  latS    =-latBound ; make symmetric about the equator
-
-  lonL    = 0        ; -180
-  lonR    = 360      ;  180
-
-  fCrit   = 1./nDayWin  ; remove all contributions 'longer'
- ;fCrit   = 3./365   ; remove all contributions 'longer'
-                     ; than this frequency [cycles/day]
-
-  tim_taper  = 0.1   ; time taper      [0.1   => 10%]  
-  lon_taper  = 0.0   ; longitude taper [0.0 for globe; only global supported]  
-
-                     ; OPTIONS
-  pltType = "ps"     ; default
-  if (opt .and. isatt(opt, "pltType") ) then
-      if (any(opt@pltType.eq.(/"ps", "eps", "x11", "ncgm", "png"/))) then
-          pltType = opt@pltType
-      end if
-  end if
+  begin
 
   debug   = False    ; default
   if (opt .and. isatt(opt, "debug") ) then
       debug = opt@debug
   end if
 
-  pltTitle = case+" "+varName+" LOG[Power: "+latBound+"S-"+latBound+"N]"
-  if (opt .and. isatt(opt, "pltTitle") ) then
-      pltTitle = opt@pltTitle
-  end if
-
-  pltColorMap = "amwg_blueyellowred"
-  if (opt .and. isatt(opt, "pltColorMap") ) then
-      pltColorMap = opt@pltColorMap
-  end if
-
-  SPD   = spd
-  tskip = 1     ; used to skip samples on input
-  if (opt .and. isatt(opt, "spdSkip") .and. opt@spdSkip.gt.1 ) then
-      SPD     = spd/opt@spdSkip
-      tskip   = max( (/1,SPD/) )  
-  end if
- 
-;-------------------------------------------------------------------
-; The following *smth and *4plt are variables set in the original code.
-;-------------------------------------------------------------------
-; smoothing parameters set these larger than the plotting
-; wavenumbers to avoid smoothing artifacts
-;-------------------------------------------------------------------
-  minwav4smth = -27
-  maxwav4smth =  27
-;-------------------------------------------------------------------
-; plotting parameters freq and wavenumbers to plot
-;-------------------------------------------------------------------
-  minfrq4plt =  0.
-  maxfrq4plt =  0.8
-  minwav4plt = -15
-  maxwav4plt =  15
-
-  fillVal    = 1e20           ; miscellaneous          
-;-------------------------------------------------------------------
-; Check for not allowed actions
-;-------------------------------------------------------------------
-
-  if (lon_taper.gt.0.0 .or. (lonR-lonL).ne.360.) then
-      print("Code does currently allow lon_taper>0 or (lonR-lonL)<360")
-      exit
-  end if
-
-;-------------------------------------------------------------------
-; Read data from file(s): maintain meta data and original dim names
-;-------------------------------------------------------------------
-
-  nfil = dimsizes(fili)
-  f    = addfile (diri+fili(0), "r")
-  rank = dimsizes( filevardimsizes(f,varName) )
-  if (rank.lt.3 .or. rank.gt.4) then
-      print("wkSpaceTime: only 3D and 4D supported: rank="+rank+"D")
-      exit
-  end if
-
-  if (nfil.eq.1) then                    ; SINGLE FILE    
-      if (rank.eq.3) then
-          x  = f->$varName$(::tskip,{latS:latN},{lonL:lonR})
-      else
-          x  = f->$varName$(::tskip,{level},{latS:latN},{lonL:lonR})
-      end if
-  else                                   ; MULTIPLE FILES
-      dNam   = getfilevardims(f,varName)
-                                                 ; needed for *large*
-      setfileoption("nc","SuppressClose",False)  ; number of files
-
-      flist  = addfiles( diri+fili, "r")
-                                             ; make TIME  [tedious]
-      TIME           = flist[:]->$dNam(0)$   ; values
-      if (isfilevaratt(flist[0],  dNam(0) ,  "units") ) then  
-          TIME@units = flist[0]->$dNam(0)$@units   ; assign units attribute
-      end if
-      if (isfilevarcoord( flist[0], dNam(0), dNam(0) ) ) then
-          TIME!0     = dNam(0)                     ; name the dimension
-          TIME&$dNam(0)$ = TIME                    ; assign values [coord]
-      end if
-
-      if (rank.eq.3) then
-          x   = flist[:]->$varName$(::tskip,{latS:latN},{lonL:lonR})
-          x!0 = dNam(0)
-          x!1 = dNam(1)
-          x!2 = dNam(2)
-      else
-          x   = flist[:]->$varName$(::tskip,{level},{latS:latN},{lonL:lonR})
-          x!0 = dNam(0)
-          x!1 = dNam(2)
-          x!2 = dNam(3)
-      end if
-                             ; NOT required but create meta data
-      dNamx  = getvardims(x)            
-
-      x&$dNamx(0)$ = TIME      ; assign coordinates
-      x&$dNamx(1)$ = flist[0]->$dNamx(1)$({latS:latN})
-      x&$dNamx(2)$ = flist[0]->$dNamx(2)$({lonL:lonR})
-      if (isfilevaratt( flist[0], varName, "long_name")) then
-          x@long_name = flist[0]->$varName$@long_name
-      end if
-      if (isfilevaratt( flist[0], varName, "units"    )) then  
-          x@units = flist[0]->$varName$@units
-      end if     
-  end if
-
-  if (isatt(x,"_FillValue")) then
+  if (isatt(x,"_FillValue")) then   ; Check for _FillValue .... not allowed
       nMsg = num(ismissing(x))
       if (nMsg.gt.0) then
           print("nMsg="+nMsg+"  User must preprocess to remove _FillValue")
@@ -572,19 +506,83 @@ begin
       printMinMax( x, True )
   end if
 
+;-------------------------------------------------------------------
+; x sizes and dimension names
+;-------------------------------------------------------------------
+
   dimx = dimsizes(x)
   ntim = dimx(0)               ; total number of temporal samples
   nlat = dimx(1)
   mlon = dimx(2)
 
+  dNam = getvardims( x )
+
+;-------------------------------------------------------------------
+; check to make sure that "x" has full days of data
+;-------------------------------------------------------------------
+
+  if ((ntim%spd).ne.0) then
+      nExtra = ntim%spd          
+      print("nExtra="+nExtra+" input array must have complete days only ")
+      exit
+  end if
+
+;-------------------------------------------------------------------
+; Make input arguments into "internal" variables
+;-------------------------------------------------------------------
+  latN    = latBound
+  latS    =-latBound ; make symmetric about the equator
+
+  lonL    = 0        ; -180
+  lonR    = 360      ;  180
+
+  fCrit   = 1./nDayWin  ; remove all contributions 'longer'
+
+  tim_taper  = 0.1   ; time taper      [0.1   => 10%]  
+  lon_taper  = 0.0   ; longitude taper [0.0 for globe; only global supported]  
+
+;-------------------------------------------------------------------
+; Check for not allowed actions
+;-------------------------------------------------------------------
+
+  if (lon_taper.gt.0.0 .or. (lonR-lonL).ne.360.) then
+      print("Code does currently allow lon_taper>0 or (lonR-lonL)<360")
+      exit
+  end if
+
+;-------------------------------------------------------------------
+; OPTIONS
+;-------------------------------------------------------------------
+  pltType = "ps"     ; default
+  if (opt .and. isatt(opt, "pltType") ) then
+      if (any(opt@pltType.eq.(/"ps", "eps", "x11", "ncgm", "png"/))) then
+          pltType = opt@pltType
+      end if
+  end if
+
+  pltTit   = caseName+"_"+varName      
+  pltTitle = pltTit+" LOG[Power: "+latBound+"S-"+latBound+"N]"
+  if (opt .and. isatt(opt, "pltTitle") ) then
+      pltTitle = opt@pltTitle
+  end if
+
+  pltFilTit = pltTit
+  replaceChars( pltFilTit, " ", "_") ; spaces not allowed unix file names
+
+  pltColorMap = "amwg_blueyellowred"
+  if (opt .and. isatt(opt, "pltColorMap") ) then
+      pltColorMap = opt@pltColorMap
+  end if
+
+
 ;-------------------------------------------------------------------
 ; Create required temporal sampling variables
 ;-------------------------------------------------------------------
 
-  nDayTot   = ntim/SPD         ; # of days (total) for input variable 
-  nSampTot  = nDayTot*SPD      ; # of samples (total)      
-  nSampWin  = nDayWin*SPD      ; # of samples per temporal window
-  nSampSkip = nDaySkip*SPD     ; # of samples to skip between window segments
+  nDayTot   = ntim/spd         ; # of days (total) for input variable 
+  nSampTot  = nDayTot*spd      ; # of samples (total)      
+  nSampWin  = nDayWin*spd      ; # of samples per temporal window
+  nSampSkip = nDaySkip*spd     ; # of samples to skip between window segments
                                ;   neg means overlap
   nWindow   = (nSampTot-nSampWin)/(nSampWin+nSampSkip)  + 1
   N         =  nSampWin        ; convenience [historical]         
@@ -617,7 +615,7 @@ begin
 
   if (nDayTot.ge.365) then                     ; rmv dominant signals
       rmvMeans = False                         ; original code did not remove
-      x = rmvAnnualCycle(x, SPD, nDayTot, rmvMeans, fCrit, 0)
+      x = rmvAnnualCycle(x, spd, nDayTot, rmvMeans, fCrit, 0)
   end if
 
   if (debug) then
@@ -634,8 +632,6 @@ begin
       printVarSummary(xAS)                   ; xAS(lat,lon,time) [iret=1]
       printMinMax(xAS, True)
   end if
-
-  delete( x )                                ; no longer needed                
 
 ;-------------------------------------------------------------------
 ; Because there is the possibility of overlapping *temporal* segments,
@@ -698,7 +694,7 @@ begin
 ;     and Retrogressive [Westward] Waves.
 ;-------------------------------------------------------------------
 
-       pee = resolveWavesHayashi( q, nDayWin, SPD )        
+       pee = resolveWavesHayashi( q, nDayWin, spd )        
        peeAS(nl,:,:) = peeAS(nl,:,:) + (pee/nWindow)   ; sum window contribution 
            
        ntStrt = ntLast+nSampSkip+1           ; set index for next temporal window
@@ -707,6 +703,7 @@ begin
 
   end do                                     ; nl (lat)
 
+  delete(work)
 ;-------------------------------------------------------------------
 ; Add meta data to the Hayashi space-time symmetric and asymmetric power
 ;-------------------------------------------------------------------
@@ -778,7 +775,12 @@ begin
 ;-------------------------------------------------------------------
 ; Apply smoothing to the spectrum. smooth over limited wave numbers
 ; Smoothing in frequency only (check if mean should be smoothed not smoothing now)
+;--                                                                 
+; Smoothing parameters set these larger than the plotting
+; wavenumbers to avoid smoothing artifacts
 ;-------------------------------------------------------------------
+  minwav4smth = -27
+  maxwav4smth =  27
     
   do wv=minwav4smth,maxwav4smth
      wk_smooth121( psumanti({wv},N/2+1:N-1) )
@@ -786,7 +788,7 @@ begin
   end do
 
 ;-------------------------------------------------------------------
-; Log10 scaling ..... following the original code
+; Log10 scaling 
 ;-------------------------------------------------------------------
 
   psumanti_nolog = psumanti
@@ -814,7 +816,7 @@ begin
 ; The following allow DJS variable naming 
 ; to be used with original plot code.
 ;++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  caseName       = case
+ ;caseName       = case
   wkdir          = diro
 
   frqfftwin      = peeAS&freq
@@ -829,9 +831,19 @@ begin
       printVarSummary( wavep1 )
       printMinMax( wavep1, True )
   end if
+ 
+;-------------------------------------------------------------------
+; plotting parameters freq and wavenumbers to plot
+;-------------------------------------------------------------------
+  minfrq4plt =  0.
+  maxfrq4plt =  0.8
+  minwav4plt = -15
+  maxwav4plt =  15
     
   minfrq     = minfrq4plt
   maxfrq     = min((/maxfrq4plt,max(frqfftwin)/))
+
+  fillVal    = 1e20           ; miscellaneous
     
 ;=============================================================
 ;             Start Common Graphics Resources
@@ -854,7 +866,12 @@ begin
    res@lbOrientation     = "vertical"
 
    res@cnFillOn          = True
-   res@cnLineThicknessF  = 0.5
+   if (opt .and. isatt(opt, "cnLinesOn") \
+           .and. .not.opt@cnLinesOn) then   
+       res@cnLinesOn     = False
+   else
+       res@cnLineThicknessF  = 0.5
+   end if
 
    res@tmYLMode          = "Explicit"
    res@tmYLValues        = fspan(minfrq,maxfrq,9)
@@ -990,7 +1007,7 @@ begin
 ;------------------------------------------------------
   ;print("======> Fig 1a: ASYMMETRIC <=====")
     
-   wks  = gsn_open_wks(pltType,wkdir+"/"+"Fig1.Asym."+caseName+"_"+varName)
+   wks  = gsn_open_wks(pltType,wkdir+"/"+"Fig1.Asym."+pltFilTit)
    gsn_define_colormap(wks,pltColorMap)
    res@gsnCenterString = "Anti-Symmetric"
    plot = gsn_csm_contour(wks,asym,res)
@@ -1003,7 +1020,7 @@ begin
 ;------------------------------------------------------
   ;print("======> Fig 1b: SYMMETRIC <=====")
     
-   wks  = gsn_open_wks(pltType,wkdir+"/"+"Fig1.Sym."+caseName+"_"+varName)
+   wks  = gsn_open_wks(pltType,wkdir+"/"+"Fig1.Sym."+pltFilTit)
    gsn_define_colormap(wks,pltColorMap)
    res@gsnCenterString = "Symmetric"
    plot = gsn_csm_contour(wks,sym,res)
@@ -1126,7 +1143,7 @@ begin
        res@cnLevels = opt@Fig_2                   ; user specified 
    end if
    
-   wks  = gsn_open_wks(pltType,wkdir+"/Fig2."+caseName+"_"+varName)
+   wks  = gsn_open_wks(pltType,wkdir+"/Fig2."+pltFilTit)
    gsn_define_colormap(wks,pltColorMap)
 
    res@gsnCenterString = "Background Power"
@@ -1189,7 +1206,7 @@ begin
        res@cnLevels = opt@Fig_3a                  ; user specified 
    end if
    
-   wks  = gsn_open_wks(pltType,wkdir+"/Fig3.Asym."+caseName+"_"+varName)
+   wks  = gsn_open_wks(pltType,wkdir+"/Fig3.Asym."+pltFilTit)
    gsn_define_colormap(wks,pltColorMap)
    res@gsnCenterString = "Anti-Symmetric/Background"
    plot = gsn_csm_contour(wks,asym,res)
@@ -1247,7 +1264,7 @@ begin
        res@cnLevels = opt@Fig_3b                  ; user specified 
    end if
 
-   wks  = gsn_open_wks(pltType, wkdir+"/Fig3.Sym."+caseName+"_"+varName)
+   wks  = gsn_open_wks(pltType, wkdir+"/Fig3.Sym."+pltFilTit)
    gsn_define_colormap(wks ,pltColorMap)
    res@gsnCenterString = "Symmetric/Background"
    plot = gsn_csm_contour(wks,sym,res)
@@ -1271,5 +1288,125 @@ begin
    gsn_text(wks,plot,"h=12",-14.0,.46,txres)
    frame(wks)
 
-   print("********** FINISHED: Space-Time *****************")
+   if (debug .or. (opt .and. isatt(opt,"Fig_3_statInfo") \
+                       .and. opt@Fig_3_statInfo)       ) then
+       statAsymSym( asym, "Fig_3a" )
+       statAsymSym(  sym, "Fig_3b" )
+   end if
+
+   if (debug) then
+       print("********** FINISHED: Space-Time *****************")
+   end if
+end
+
+;-------------------------------------------------------------
+; CAM interface to wkSpaceTime 
+;-------------------------------------------------------------
+undef("wkSpaceTime_cam")
+procedure wkSpaceTime_cam                    \  
+                     ( diri[1]:string        \ ; input directory
+                     , fili[*]:string        \ ; input file
+                     , diro[1]:string        \ ; output directory [plots]
+                     , caseName[1]:string    \ ; case name
+                     , varName[1]:string     \ ; variable name
+                     , latBound[1]:numeric   \ ; NH lat bound [positive]
+                     , spd[1]:numeric        \ ; samples per day
+                     , level[1]:numeric      \ ; if 4D ... what level?
+                     , nDayWin[1]:integer    \ ; temporal window length [days]
+                     , nDaySkip[1]:integer   \ ; days between time windows 
+                     , opt[1]:logical        \ ; future options
+                     )
+;
+;     ---- local declarations are *not* required ----
+local latN, latS, lonL, lonR, SPD, tskip, debug, fillVal     \
+          , nfil, f, rank, nMsg, x, dNam, flist, dNamx       \
+          , TIME, pltId
+begin 
+  latN    = latBound
+  latS    =-latBound ; make symmetric about the equator
+
+  lonL    = 0        ; -180
+  lonR    = 360      ;  180
+
+                     ; OPTIONS
+  debug   = False    ; default
+  if (opt .and. isatt(opt, "debug") ) then
+      debug = opt@debug
+  end if
+
+  SPD   = spd        ; SPD *actual* "samples per day" 
+                     ; *after* possible 'decimation' 
+  tskip = 1          ; used to skip samples on input
+  if (opt .and. isatt(opt, "spdSkip") .and. opt@spdSkip.gt.1 ) then
+      SPD     = spd/opt@spdSkip
+      tskip   = max( (/1,SPD/) )      ; decimate
+  end if
+
+  fillVal    = 1e20           ; miscellaneous          
+
+;-------------------------------------------------------------------
+; Read data from file(s): maintain meta data and original dim names
+;-------------------------------------------------------------------
+
+  nfil = dimsizes(fili)
+  f    = addfile (diri+fili(0), "r")
+  rank = dimsizes( filevardimsizes(f,varName) )
+  if (rank.lt.3 .or. rank.gt.4) then
+      print("wkSpaceTime: only 3D and 4D supported: rank="+rank+"D")
+      exit
+  end if
+
+  if (nfil.eq.1) then                    ; SINGLE FILE    
+      if (rank.eq.3) then
+          x  = f->$varName$(::tskip,{latS:latN},{lonL:lonR})
+      else
+          x  = f->$varName$(::tskip,{level},{latS:latN},{lonL:lonR})
+      end if
+  else                                   ; MULTIPLE FILES
+      dNam   = getfilevardims(f,varName)
+                                                 ; needed for *large*
+      setfileoption("nc","SuppressClose",False)  ; number of files
+
+      flist  = addfiles( diri+fili, "r")
+                                             ; make TIME  [tedious]
+      TIME           = flist[:]->$dNam(0)$   ; values
+      if (isfilevaratt(flist[0],  dNam(0) ,  "units") ) then  
+          TIME@units = flist[0]->$dNam(0)$@units   ; assign units attribute
+      end if
+      if (isfilevarcoord( flist[0], dNam(0), dNam(0) ) ) then
+          TIME!0     = dNam(0)                     ; name the dimension
+          TIME&$dNam(0)$ = TIME                    ; assign values [coord]
+      end if
+
+      if (rank.eq.3) then
+          x   = flist[:]->$varName$(::tskip,{latS:latN},{lonL:lonR})
+          x!0 = dNam(0)
+          x!1 = dNam(1)
+          x!2 = dNam(2)
+      else
+          x   = flist[:]->$varName$(::tskip,{level},{latS:latN},{lonL:lonR})
+          x!0 = dNam(0)
+          x!1 = dNam(2)
+          x!2 = dNam(3)
+      end if
+                             ; NOT required but create meta data
+      dNamx  = getvardims(x)            
+
+      x&$dNamx(0)$ = TIME      ; assign coordinates
+      x&$dNamx(1)$ = flist[0]->$dNamx(1)$({latS:latN})
+      x&$dNamx(2)$ = flist[0]->$dNamx(2)$({lonL:lonR})
+      if (isfilevaratt( flist[0], varName, "long_name")) then
+          x@long_name = flist[0]->$varName$@long_name
+      end if
+      if (isfilevaratt( flist[0], varName, "units"    )) then  
+          x@units = flist[0]->$varName$@units
+      end if     
+  end if
+
+;-------------------------------------------------------------------
+; Call the procedure that will do the calculations and plots.
+;-------------------------------------------------------------------
+
+  wkSpaceTime (x, diro, caseName, varName             \
+              ,latBound, SPD, nDayWin, nDaySkip, opt  )  
 end
