@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.209 2008-04-01 21:53:36 haley Exp $
+;      $Id: gsn_code.ncl,v 1.210 2008-05-15 20:24:29 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1094,6 +1094,11 @@ begin
   nlevels = dimsizes(levels)
   if(nlevels.gt.1) then
     delta_levels = min( levels(1:nlevels-1) - levels(0:nlevels-2) )
+
+    if (ismissing(delta_levels)) then
+      return(levels)
+    end if
+
     if(delta_levels.ge.1e-5)
       do n=1,nlevels-2
         if(fabs(levels(n)).le.1.e-5.and.levels(n-1).lt.0..and.levels(n+1).gt.0.)
