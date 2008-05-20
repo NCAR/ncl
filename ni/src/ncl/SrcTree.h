@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.25 2003-06-10 00:20:22 dbrown Exp $
+ *      $Id: SrcTree.h,v 1.26 2008-05-20 23:10:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -148,7 +148,8 @@ typedef struct ncl_int {
 	char *file;
 	NclSrcTreeDestroyProc destroy_it;
 	NclReferenceTypes ref_type;
-	int integer;
+	long long integer;
+	char int_type;
 	int len;
 } NclInt;
 
@@ -855,7 +856,7 @@ extern void * _NclMakeLogicalExpr(
 );
 extern void * _NclMakeIntExpr(
 #if	NhlNeedProto
-	int /* integer */,
+	long long /* integer */,
 	char * /*string_rep*/
 #endif
 );

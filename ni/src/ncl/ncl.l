@@ -265,6 +265,8 @@ let	[_a-zA-Z]
 alnum   [_a-zA-Z0-9]
 white	[\t ]
 digit	[0-9]
+/*inttype [bBhHiIlLqQ]  - eventually */
+inttype [iblh] 
 %x incl
 %%
 	if(inc_line) {
@@ -507,78 +509,78 @@ digit	[0-9]
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return REAL;
 }
-{digit}+ {
-	sscanf(yytext,"%d",&(yylval.integer));
+{digit}+{inttype}? {
+	sscanf(yytext,"%lld",&(yylval.int_val));
 	printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
 	return INT;
 }
-{digit}+(".gt."|".GT.") {
+{digit}+{inttype}?(".gt."|".GT.") {
 	yyless(yyleng - strlen(".gt."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".lt."|".LT.") {
+{digit}+{inttype}?(".lt."|".LT.") {
 	yyless(yyleng - strlen(".lt."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".le."|".LE.") {
+{digit}+{inttype}?(".le."|".LE.") {
 	yyless(yyleng - strlen(".le."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".eq."|".EQ.") {
+{digit}+{inttype}?(".eq."|".EQ.") {
 	yyless(yyleng - strlen(".eq."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".ge."|".GE.") {
+{digit}+{inttype}?(".ge."|".GE.") {
 	yyless(yyleng - strlen(".ge."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".ne."|".NE.") {
+{digit}+{inttype}?(".ne."|".NE.") {
 	yyless(yyleng - strlen(".ne."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".and."|".AND.") {
+{digit}+{inttype}?(".and."|".AND.") {
 	yyless(yyleng - strlen(".and."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".or."|".OR.") {
+{digit}+{inttype}?(".or."|".OR.") {
 	yyless(yyleng - strlen(".or."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".xor."|".XOR.") {
+{digit}+{inttype}?(".xor."|".XOR.") {
 	yyless(yyleng - strlen(".xor."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;
 }
-{digit}+(".not."|".NOT.") {
+{digit}+{inttype}?(".not."|".NOT.") {
 	yyless(yyleng - strlen(".not."));
-	sscanf(yytext,"%d",&(yylval.integer));
+	sscanf(yytext,"%lld",&(yylval.int_val));
         printtoken(INT,yytext);
 	CopyIt(&cur_line_text_pos,&cur_line_length,yyleng,yytext);
         return INT;

@@ -1014,12 +1014,34 @@ if(groot != NULL) {
 		case Ncl_INT:
 		{
 			NclInt *integer = (NclInt*)root;
+			NclTypeClass tclass;
 
 			off1 = _NclPutInstr(PUSH_INT_LIT_OP,integer->line,integer->file);
-			tmp_val = NclMalloc(sizeof(int));
-			*(int*)tmp_val = integer->integer;
+			switch (integer->int_type) {
+			case 'i':
+				tmp_val = NclMalloc(sizeof(int));
+				*(int*)tmp_val = (int) integer->integer;
+				tclass = (NclTypeClass) nclTypeintClass;
+				break;
+			case 'l':
+				tmp_val = NclMalloc(sizeof(long));
+				*(long*)tmp_val = (long) integer->integer;
+				tclass = (NclTypeClass) nclTypelongClass;
+				break;
+			case 'h':
+				tmp_val = NclMalloc(sizeof(short));
+				*(short*)tmp_val = (short) integer->integer;
+				tclass = (NclTypeClass) nclTypeshortClass;
+				break;
+			case 'b':
+				tmp_val = NclMalloc(sizeof(short));
+				*(byte*)tmp_val = (byte) integer->integer;
+				tclass = (NclTypeClass) nclTypebyteClass;
+				break;
+			}
+
 			tmp_md = CreateConst(NULL, NULL,Ncl_MultiDValData,0, 
-				(void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,(NclTypeClass)nclTypeintClass);
+					     (void*)tmp_val,NULL,1,&dim_size, PERMANENT,NULL,tclass);
 			_NclPutIntInstr(tmp_md->obj.id,integer->line,integer->file);
 			break;
 		}

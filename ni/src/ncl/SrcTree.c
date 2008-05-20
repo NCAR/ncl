@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.41 2008-04-04 23:26:28 dbrown Exp $
+ *      $Id: SrcTree.c,v 1.42 2008-05-20 23:10:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1771,10 +1771,10 @@ char *string_rep;
  */
 void * _NclMakeIntExpr
 #if	NhlNeedProto
-(int integer,char* string_rep)
+(long long integer,char* string_rep)
 #else
 (integer,string_rep)
-int integer;
+long long integer;
 char* string_rep;
 #endif
 {
@@ -1792,8 +1792,14 @@ char* string_rep;
 	tmp->integer= integer;
 	tmp->ref_type = Ncl_READIT;
 	tmp->len = -1;
-	if(string_rep != NULL) 
+	tmp->int_type = 'i';
+	if (string_rep != NULL) { 
+		char *type = strpbrk(string_rep,"bBhHiIlLqQ");
+		if (type) {
+			tmp->int_type = *type;
+		}
 		tmp->len = strlen(string_rep);
+	}
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }

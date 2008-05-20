@@ -69,6 +69,7 @@ char *ncl_cur_func = NULL;
 
 %}
 %union {
+	long long int_val;
 	int integer;
 	double real;
 	char  str[NCL_MAX_STRING];
