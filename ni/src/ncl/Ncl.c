@@ -86,6 +86,8 @@ short   NCLnoCopyright = 0;     /* override copyright notice; non-advertised opt
 short   NCLnoPrintElem = 0;     /* don't enumerate values in print() */
 short   NCLnoSysPager = 0;      /* don't pipe commands to system() to PAGER */
 
+char    *nclf = NULL;           /* script of NCL commands, may or may not be provided */
+
 
 int
 main(int argc, char **argv) {
@@ -124,7 +126,6 @@ main(int argc, char **argv) {
     char    **cargs;
     int nargs = 0;
 
-    char    *nclf = NULL;
     struct stat sbuf;
     int sr;
 

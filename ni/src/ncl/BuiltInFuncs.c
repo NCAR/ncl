@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.227 2008-04-01 18:24:04 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.228 2008-05-20 22:16:37 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -65,9 +65,78 @@ extern "C" {
 #include <signal.h>
 #include <netcdf.h>
 
-
 extern int cmd_line;
 extern short NCLnoSysPager;
+extern char *nclf;
+
+
+NhlErrorTypes _NclIGetScriptPrefixName
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    int dimsz = 1,
+        ndims = 1;
+    string  script_name;
+    char    *lastdot = NULL,
+            *prefix_nclf = NULL;
+
+    if (nclf == (char *) NULL)
+        /* set to "missing" */
+        script_name = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+    else {
+        /* find last "dot" in the filename */
+        lastdot = strrchr(nclf, '.');
+        if (lastdot != (char *) NULL) {
+            prefix_nclf = (char *) NclCalloc(1, strlen(nclf) - strlen(lastdot) + 1);
+            if (prefix_nclf == (char *) NULL) {
+                NhlPError(NhlFATAL, NhlEUNKNOWN, "get_script_prefix_name: cannot allocate space");
+                return NhlFATAL;
+            }
+
+            (void) strncpy(prefix_nclf, nclf, strlen(nclf) - strlen(lastdot));
+            script_name = NrmStringToQuark(prefix_nclf);
+        } else {
+            /* no "dot tag" in filename */
+            script_name = NrmStringToQuark(nclf);
+        }
+    }
+
+    return NclReturnValue(&script_name,
+                            ndims,
+                            &dimsz,
+                            &((NclTypeClass) nclTypestringClass)->type_class.default_mis,
+                            NCL_string,
+                            1);
+}
+
+NhlErrorTypes _NclIGetScriptName
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    int dimsz = 1,
+        ndims = 1;
+    string  script_name;
+
+    if (nclf == (char *) NULL)
+        /* set to "missing" */
+        script_name = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+    else 
+        script_name = NrmStringToQuark(nclf);
+
+    return NclReturnValue(&script_name,
+                            ndims,
+                            &dimsz,
+                            &((NclTypeClass) nclTypestringClass)->type_class.default_mis,
+                            NCL_string,
+                            1);
+}
+
 
 NhlErrorTypes _NclIListHLUObjs
 #if	NhlNeedProto

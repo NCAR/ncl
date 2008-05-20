@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.81 2007-08-24 18:12:11 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.82 2008-05-20 22:16:38 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -736,6 +736,18 @@ void
 
 extern NhlErrorTypes _NclINhlGetErrorObjectId(
 #if     NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclIGetScriptName(
+#if NhlNeedProto
+void
+#endif
+);
+
+NhlErrorTypes _NclIGetScriptPrefixName(
+#if NhlNeedProto
 void
 #endif
 );
@@ -1862,6 +1874,16 @@ void _NclAddBuiltIns
     SetArgTemplate(args,nargs,NclANY,1,NclANY); nargs++;
     NclRegisterProc(_NclISetFileOption,args,"setfileoption",nargs);
     
+    nargs = 0;
+    args = NewArgs(0);
+    dimsizes[0] = 1;
+    NclRegisterFunc(_NclIGetScriptName, args, "get_script_name", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    dimsizes[0] = 1;
+    NclRegisterFunc(_NclIGetScriptPrefixName, args, "get_script_prefix_name", nargs);
+
 /*
 	nargs = 0;
 	args = NewArgs(1);
