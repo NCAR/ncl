@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.228 2008-05-20 22:16:37 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.229 2008-05-21 19:24:53 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -98,6 +98,8 @@ NhlErrorTypes _NclIGetScriptPrefixName
 
             (void) strncpy(prefix_nclf, nclf, strlen(nclf) - strlen(lastdot));
             script_name = NrmStringToQuark(prefix_nclf);
+
+            NclFree(prefix_nclf);
         } else {
             /* no "dot tag" in filename */
             script_name = NrmStringToQuark(nclf);
