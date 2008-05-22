@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.26 2008-05-20 23:10:39 dbrown Exp $
+ *      $Id: SrcTree.h,v 1.27 2008-05-22 22:56:26 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -751,7 +751,7 @@ NclSymbol*	/* param_type */
 
 extern void * _NclMakeDimSizeNode(
 #if	NhlNeedProto
-int /* size */
+long long /* size */
 #endif
 );
 

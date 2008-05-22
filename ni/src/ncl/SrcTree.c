@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.42 2008-05-20 23:10:39 dbrown Exp $
+ *      $Id: SrcTree.c,v 1.43 2008-05-22 22:56:25 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1115,10 +1115,10 @@ NclSymbol* param_type;
  */
 void * _NclMakeDimSizeNode
 #if	NhlNeedProto
-(int size)
+(long long size)
 #else
 (size)
-	int size;
+	long long size;
 #endif
 {
 	NclDimSizeListNode *tmp = (NclDimSizeListNode*)NclMalloc((unsigned)
@@ -1137,7 +1137,7 @@ void * _NclMakeDimSizeNode
 	} else {
 		tmp->any = 0;
 	}
-	tmp->size = size;
+	tmp->size = (int)size;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);
 }
@@ -1794,9 +1794,11 @@ char* string_rep;
 	tmp->len = -1;
 	tmp->int_type = 'i';
 	if (string_rep != NULL) { 
-		char *type = strpbrk(string_rep,"bBhHiIlLqQ");
+		/* char *type = strpbrk(string_rep,"bBhHiIlLqQ"); -- eventually */
+		char *type = strpbrk(string_rep,"iblh");
 		if (type) {
 			tmp->int_type = *type;
+			tmp->len = strlen(string_rep) - 1;
 		}
 		tmp->len = strlen(string_rep);
 	}

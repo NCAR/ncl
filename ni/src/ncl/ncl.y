@@ -69,8 +69,8 @@ char *ncl_cur_func = NULL;
 
 %}
 %union {
-	long long int_val;
 	int integer;
+	long long int_val;
 	double real;
 	char  str[NCL_MAX_STRING];
         char *sstr;
@@ -83,7 +83,8 @@ char *ncl_cur_func = NULL;
 %token	<void> EOLN 
 %token  <void> EOFF
 %token	<void> RP LP RBC LBC RBK LBK COLON ',' SEMI MARKER LPSLSH SLSHRP DIM_MARKER FSTRING EFSTRING ASTRING CSTRING
-%token <integer> INT DIMNUM
+%token <integer> DIMNUM
+%token <int_val> INT
 %token <real> REAL
 %token <str> DIM DIMNAME ATTNAME COORDV FVAR 
 %token <sstr> STRING
