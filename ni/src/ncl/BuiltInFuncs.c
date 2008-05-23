@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.229 2008-05-21 19:24:53 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.230 2008-05-23 18:15:42 grubin Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -82,11 +82,13 @@ NhlErrorTypes _NclIGetScriptPrefixName
     string  script_name;
     char    *lastdot = NULL,
             *prefix_nclf = NULL;
+    NclScalar   missing;
 
-    if (nclf == (char *) NULL)
+    if (nclf == (char *) NULL) {
         /* set to "missing" */
         script_name = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
-    else {
+        missing.stringval = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+    } else {
         /* find last "dot" in the filename */
         lastdot = strrchr(nclf, '.');
         if (lastdot != (char *) NULL) {
@@ -105,11 +107,12 @@ NhlErrorTypes _NclIGetScriptPrefixName
             script_name = NrmStringToQuark(nclf);
         }
     }
-
+ 
+    /* return a _FillValue only if no script name was provided */
     return NclReturnValue(&script_name,
                             ndims,
                             &dimsz,
-                            &((NclTypeClass) nclTypestringClass)->type_class.default_mis,
+                            (nclf == (char *) NULL ? &missing : NULL),
                             NCL_string,
                             1);
 }
@@ -124,17 +127,20 @@ NhlErrorTypes _NclIGetScriptName
     int dimsz = 1,
         ndims = 1;
     string  script_name;
+    NclScalar   missing;
 
-    if (nclf == (char *) NULL)
+    if (nclf == (char *) NULL) {
         /* set to "missing" */
         script_name = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
-    else 
+        missing.stringval = ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+    } else 
         script_name = NrmStringToQuark(nclf);
 
+    /* return a _FillValue only if no script name was provided */
     return NclReturnValue(&script_name,
                             ndims,
                             &dimsz,
-                            &((NclTypeClass) nclTypestringClass)->type_class.default_mis,
+                            (nclf == (char *) NULL ? &missing : NULL),
                             NCL_string,
                             1);
 }
