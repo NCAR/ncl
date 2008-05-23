@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.160 2008-05-22 21:33:05 shea Exp $
+;      $Id: contributed.ncl,v 1.161 2008-05-23 14:59:43 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -577,6 +577,66 @@ begin
   return (gwt)
 end
 
+; **********************************************************************
+; D. Shea
+; Generate [sin(lat+dlat/2)-sin(lat-dlat/2)] weights 
+; for equally spaced grids. Currently, only global grids
+; are supported.
+
+undef("latRegWgt")
+function latRegWgt(lat[*]:numeric, nType[1]:string, opt[1]:integer)
+; usage: wgt = latRegWgt(lat, "double", 0)
+;        wgt = latRegWgt(lat, "float" , 0)
+local nlat, rad, err, dlat, w, nl, dNam
+begin
+  nlat = dimsizes(lat)
+  rad  = 4.0d*atan(1.0d)/180.0d
+  err  = 1d20
+
+  dlat = abs(lat(2)-lat(1))             ; error check
+  if (.not.all( abs(lat(1:nlat-1)-lat(0:nlat-2)) .eq. dlat)) then
+      print("latRegWgt: Expecting equally spaced latitudes")
+      if (nType.eq."double") then
+          return(new(nlat,"double",err))
+      else
+          return(new(nlat,"float",doubletofloat(err)))
+      end if
+  end if
+  delete(dlat)
+
+  dlat = abs((lat(2)-lat(1))*rad)*0.5d
+
+  w    = new (nlat, "double", "No_FillValue")
+
+  do nl=0,nlat-1
+     w(nl) = abs( sin(lat(nl)*rad+dlat) - sin(lat(nl)*rad-dlat))
+  end do
+                                        ; poles
+  if (abs(lat(0)).gt.89.9999d) then
+      nl = 0
+      w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
+  end if
+  if (abs(lat(nlat-1)).gt.89.9999d) then
+      nl = nlat-1
+      w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
+  end if
+
+  dNam = getvardims( lat )
+  if (.not.ismissing(dNam)) then
+      w!0 = dNam
+      if (iscoord(lat, dNam)) then
+          w&$dNam$ = lat
+      end if
+  end if
+  w@long_name = "latitude weight"
+
+  if (nType.eq."double") then
+      return( w )
+  else
+      return(dble2flt(w))
+  end if
+end
+
 ; *****************************************************************
 ; Mark Stevens
 ; normalize the cosine wgts so that the sum is 2.0
@@ -586,12 +646,23 @@ undef("NormCosWgtGlobe")
 function NormCosWgtGlobe (lat:numeric)
 local deg_to_rad, wgt, tsum, nwgt
 begin
- deg_to_rad = acos(-1.0)/180.0
+
+ if (typeof(lat).eq."double") then
+     one = 1.0d
+     two = 2.0d
+     con = 180.0d
+ else
+     one = 1.0
+     two = 2.0
+     con = 180.0
+ end if
+
+ deg_to_rad = acos(-one)/con
  wgt  = lat
  wgt  = cos(lat*deg_to_rad)
  tsum = sum(wgt)
  nwgt = wgt                ; copy coordinates
- nwgt = (/2.*wgt/tsum/)    
+ nwgt = (/two*wgt/tsum/)    
  nwgt@long_name = "normalized cosine weights"
  nwgt@units     = "dimensionless"
  return(nwgt)             
@@ -8805,64 +8876,4 @@ begin
   fo&$fo!(nDim-1)$ = xo                         ; two rightmost dimensions
 
   return (fo)
-end
-
-; **********************************************************************
-; D. Shea
-; Generate [sin(lat+dlat/2)-sin(lat-dlat/2)] weights 
-; for equally spaced grids. Currently, only global grids
-; are supported.
-
-undef("generateSinWgt")
-function generateSinWgt(lat[*]:numeric, nType[1]:string, opt[1]:integer)
-; usage: wgt = gennerateSinWgt(lat, "double", 0)
-;        wgt = gennerateSinWgt(lat, "float" , 0)
-local nlat, rad, err, dlat, w, nl, dNam
-begin
-  nlat = dimsizes(lat)
-  rad  = 4.0d*atan(1.0d)/180.0d
-  err  = 1d20
-
-  dlat = abs(lat(2)-lat(1))             ; error check
-  if (.not.all( abs(lat(1:nlat-1)-lat(0:nlat-2)) .eq. dlat)) then
-      print("genSinWgt: Expecting equally spaced latitudes")
-      if (nType.eq."double") then
-          return(new(nlat,"double",err))
-      else
-          return(new(nlat,"float",doubletofloat(err)))
-      end if
-  end if
-  delete(dlat)
-
-  dlat = abs((lat(2)-lat(1))*rad)*0.5d
-
-  w    = new (nlat, "double", "No_FillValue")
-
-  do nl=0,nlat-1
-     w(nl) = abs( sin(lat(nl)*rad+dlat) - sin(lat(nl)*rad-dlat))
-  end do
-                                        ; poles
-  if (abs(lat(0)).gt.89.9999d) then
-      nl = 0
-      w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
-  end if
-  if (abs(lat(nlat-1)).gt.89.9999d) then
-      nl = nlat-1
-      w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
-  end if
-
-  dNam = getvardims( lat )
-  if (.not.ismissing(dNam)) then
-      w!0 = dNam
-      if (iscoord(lat, dNam)) then
-          w&$dNam$ = lat
-      end if
-  end if
-  w@long_name = "latitude weight"
-
-  if (nType.eq."double") then
-      return( w )
-  else
-      return(dble2flt(w))
-  end if
 end
