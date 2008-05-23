@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.70 2003-07-15 22:13:06 dbrown Exp $
+ *      $Id: Legend.c,v 1.71 2008-05-23 22:40:44 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3471,6 +3471,9 @@ static NhlErrorTypes    ManageItemPositionsArray
 		item_positions[0] = -1.0;
 		first_neg = 0;
 	}
+	else {
+		last_val = item_positions[0];
+	}
 
 	for (i=1; i<count;i++) {
 		if (item_positions[i] < 0.0) {
@@ -3483,12 +3486,9 @@ static NhlErrorTypes    ManageItemPositionsArray
 			if (item_positions[i] > 1.0 ||
 			    item_positions[i] < last_good_val) {
 				NhlPError(NhlINFO,NhlEUNKNOWN,
-	       "%s: Modifying out-of-range box fraction array element: %d",
+					  "%s: Modifying out-of-range box fraction array element: %d",
 					  entry_name,i);
-				ret = NhlINFO;
 				item_positions[i] = -1.0;
-				last_good_val = last_val;
-				first_neg = i;
 			}
 			else {
 				CreateIntermediates(item_positions, 
@@ -3501,8 +3501,8 @@ static NhlErrorTypes    ManageItemPositionsArray
 		else if (item_positions[i] > 1.0 ||
 			 (item_positions[i] < last_val)) {
 			NhlPError(NhlINFO,NhlEUNKNOWN,
-		   "%s:Modifying out-of-range box fraction array element: %d",
-				  i,entry_name);
+				  "%s:Modifying out-of-range box fraction array element: %d",
+				  entry_name,i);
 			ret = NhlINFO;
 			item_positions[i] = -1.0;
 			last_good_val = last_val;
