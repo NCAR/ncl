@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.c,v 1.71 2008-05-23 22:40:44 dbrown Exp $
+ *      $Id: Legend.c,v 1.72 2008-05-27 20:55:29 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,11 +23,13 @@
  */
 
 #include <math.h>
+#include <stdlib.h>
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/LegendP.h>
 #include <ncarg/hlu/WorkstationI.h>
 #include <ncarg/hlu/ConvertersP.h>
 #include <ncarg/hlu/hluutil.h>
+
 
 static char lgDefTitle[] = "NOTHING";
 
@@ -208,6 +210,10 @@ static NhlResource resources[] = {
 {NhlNlgItemPositions, NhlClgItemPositions, NhlTFloatGenArray,
 	 sizeof(NhlGenArray),
 	 NhlOffset(NhlLegendLayerRec,legend.item_positions),
+	 NhlTImmediate, _NhlUSET((NhlPointer) NULL ),0,NULL},
+{NhlNlgItemOrder, NhlClgItemOrder, NhlTIntegerGenArray,
+	 sizeof(NhlGenArray),
+	 NhlOffset(NhlLegendLayerRec,legend.item_order),
 	 NhlTImmediate, _NhlUSET((NhlPointer) NULL ),0,NULL},
 {NhlNlgMonoLineLabelFontColor, NhlClgMonoLineLabelFontColor, NhlTBoolean,
 	 sizeof(NhlBoolean), 
@@ -1719,6 +1725,62 @@ static NhlErrorTypes    InitializeDynamicArrays
 
 	lg_p->item_locs = (float *) 
 		NhlMalloc((lg_p->item_count+1) * sizeof(float));
+	if (! lg_p->item_locs) {
+		NhlPError(NhlFATAL,ENOMEM,NULL);
+		return NhlFATAL;
+	}
+
+/*=======================================================================*/
+/* 
+ * If an item order array has been passed in, copy it to the ga
+ * Note there is no default array, if not set it remains NULL
+ */
+	if (lg_p->item_order != NULL) {
+		count = lg_p->item_count;
+		if (lg_p->item_order->num_elements != count) {
+			lg_p->item_order = NULL;
+			e_text = "%s: %s must contain %d elements; ignoring";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgItemOrder,count);
+			ret = MIN(ret,NhlWARNING);
+			return ret;
+		}
+		i_p = (int *)lg_p->item_order->data;
+		for (i = 0; i < count; i++) {
+			int j, found = 0;
+			for (j = 0; j < count; j++) {
+				if (i_p[j] == i) {
+					found = 1;
+					break;
+				}
+			}
+			if (! found) {
+				lg_p->item_order = NULL;
+				e_text = "%s: %s must contain unique values 0 - %d; ignoring";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+					  NhlNlgItemOrder,count-1);
+				ret = MIN(ret,NhlWARNING);
+				return ret;
+			}
+		}
+		if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
+			e_text = "%s: error creating %s array";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgItemOrder);
+			return NhlFATAL;
+		}
+		memcpy(i_p,lg_p->item_order->data,count * sizeof(int));
+		if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
+				    sizeof(int),1,&count)) == NULL) {
+			e_text = "%s: error creating %s GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgItemOrder);
+			return NhlFATAL;
+		}
+		ga->my_data = True;
+		lg_p->item_order = ga;
+	}
+	     
 	
 	return (ret);
 }
@@ -2445,6 +2507,58 @@ static NhlErrorTypes    ManageDynamicArrays
 					   (lg_p->item_count+1) *
 					   sizeof(float));
 		}
+	}
+/*=======================================================================*/
+/*
+ * Allocate or reallocate the order array: 
+ */
+	if (_NhlArgIsSet(args,num_args,NhlNlgItemOrder)) {
+		NhlGenArray ga;
+		NhlFreeGenArray(olg_p->item_order);
+		olg_p->item_order = NULL;
+		count = lg_p->item_count;
+		if (lg_p->item_order->num_elements != count) {
+			lg_p->item_order = NULL;
+			e_text = "%s: %s must contain %d elements; ignoring";
+			NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgItemOrder,count);
+			ret = MIN(ret,NhlWARNING);
+			return ret;
+		}
+		i_p = (int *)lg_p->item_order->data;
+		for (i = 0; i < count; i++) {
+			int j, found = 0;
+			for (j = 0; j < count; j++) {
+				if (i_p[j] == i) {
+					found = 1;
+					break;
+				}
+			}
+			if (! found) {
+				lg_p->item_order = NULL;
+				e_text = "%s: %s must contain unique values 0 - %d; ignoring";
+				NhlPError(NhlWARNING,NhlEUNKNOWN,e_text,entry_name,
+					  NhlNlgItemOrder,count-1);
+				ret = MIN(ret,NhlWARNING);
+				return ret;
+			}
+		}
+		if ((i_p = (int *) NhlMalloc(count * sizeof(int))) == NULL) {
+			e_text = "%s: error creating %s array";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgItemOrder);
+			return NhlFATAL;
+		}
+		memcpy(i_p,lg_p->item_order->data,count * sizeof(int));
+		if ((ga = NhlCreateGenArray((NhlPointer)i_p,NhlTInteger,
+				    sizeof(int),1,&count)) == NULL) {
+			e_text = "%s: error creating %s GenArray";
+			NhlPError(NhlFATAL,NhlEUNKNOWN,e_text,entry_name,
+				  NhlNlgItemOrder);
+			return NhlFATAL;
+		}
+		ga->my_data = True;
+		lg_p->item_order = ga;
 	}
 	
 	return (ret);
@@ -3658,6 +3772,8 @@ static NhlErrorTypes    SetLabels
 	NhlBoolean label_locs_changed = False;
 	NhlSArg	sargs[24];
 	int	nargs = 0;
+	int *order;
+	char **olabels = NULL;
 
 	if (! lg_p->labels_on) {
 		lg_p->labels.lxtr = lg_p->labels.l;
@@ -3703,6 +3819,7 @@ static NhlErrorTypes    SetLabels
 	
 	lg_p->label_draw_count = count;
 	labels_p = (NhlString *)lg_p->label_strings->data;
+	order = lg_p->item_order ? (int *) lg_p->item_order->data : NULL;
 	if (lg_p->label_stride > 1) {
 		count = (count % lg_p->label_stride == 0) ?
 			count / lg_p->label_stride :  
@@ -3720,12 +3837,28 @@ static NhlErrorTypes    SetLabels
 			lg_p->max_label_stride_count = count;
 		}
 		labels_p = lg_p->stride_labels;
-		for (i=0,j=0; i<count; i++,j+=lg_p->label_stride) {
-			labels_p[i] = 
-				((NhlString *) lg_p->label_strings->data)[j];
+		if (order) {
+			for (i=0,j=0; i<count; i++,j+=lg_p->label_stride) {
+				labels_p[i] = 
+					((NhlString *) lg_p->label_strings->data)[order[j]];
+			}
+		}
+		else {
+			for (i=0,j=0; i<count; i++,j+=lg_p->label_stride) {
+				labels_p[i] = 
+					((NhlString *) lg_p->label_strings->data)[j];
+			}
 		}
 		lg_p->label_draw_count = count;
 	}
+	else if (order) {
+		olabels = (char **) NhlMalloc(count * sizeof(char *));
+		for (i=0; i<count; i++) {
+			olabels[i] = ((NhlString *) lg_p->label_strings->data)[order[i]];
+		}
+		labels_p = olabels;
+	}
+		
 
 /*
  * Now allocate the location array
@@ -4158,6 +4291,7 @@ static NhlErrorTypes    SetLabels
 	lg_p->labels.bxtr = y - height;
 	lg_p->labels.txtr = y;
 
+        if (olabels) NhlFree (olabels);
 	return (ret);
 }
 
@@ -5213,6 +5347,7 @@ static NhlErrorTypes    LegendDraw
 	NhlString *line_labels;
 	float back_dist, for_dist;
 	char *string;
+	int *order;
 
 	if (! lg_p->legend_on)
 		return(ret);
@@ -5310,6 +5445,7 @@ static NhlErrorTypes    LegendDraw
 	font_heights = (float *) lg_p->line_label_font_heights->data;
 	marker_sizes = (float *) lg_p->marker_sizes->data;
 	line_labels = (NhlString *) lg_p->line_labels->data;
+	order = lg_p->item_order == NULL ? NULL : lg_p->item_order->data;
 
 	if (lg_p->orient == NhlHORIZONTAL) {
 
@@ -5322,6 +5458,8 @@ static NhlErrorTypes    LegendDraw
 		back_dist = lg_p->item_locs[0] - lg_p->adj_bar.l;
 		
 		for (i=0; i<lg_p->item_count; i++) {
+
+			int nitem = order ? order[i] : i;
 
 			for_dist = lg_p->item_locs[i+1] - lg_p->item_locs[i];
 			for_dist = i < lg_p->item_count - 1 ? 
@@ -5338,64 +5476,65 @@ static NhlErrorTypes    LegendDraw
 			_NhlSetFillInfo(lgl->base.wkptr, layer);
 			_NhlWorkstationFill(lgl->base.wkptr,
 					    xpoints,ypoints,5);
-
+			
+			
 			if (lg_p->mono_item_type)
 				item_type = lg_p->item_type;
 			else
-				item_type = types[i];
+				item_type = types[nitem];
 
 			if (lg_p->mono_dash_index)
 				dash_index = lg_p->dash_index;
 			else
-				dash_index = dash_indexes[i];
+				dash_index = dash_indexes[nitem];
 
 			if (lg_p->mono_marker_index)
 				marker_index = lg_p->marker_index;
 			else
-				marker_index = marker_indexes[i];
+				marker_index = marker_indexes[nitem];
 
 			if (lg_p->mono_line_color)
 				line_color = lg_p->line_color;
 			else
-				line_color = line_colors[i];
+				line_color = line_colors[nitem];
 
 			if (lg_p->mono_marker_color)
 				marker_color = lg_p->marker_color;
 			else
-				marker_color = marker_colors[i];
+				marker_color = marker_colors[nitem];
 
 			if (lg_p->mono_line_label_color)
 				line_label_color = lg_p->line_label_color;
 			else
-				line_label_color = line_label_colors[i];
+				line_label_color = line_label_colors[nitem];
 
 			if (lg_p->mono_line_dash_seglen)
 				line_dash_seglen = lg_p->line_dash_seglen;
 			else
-				line_dash_seglen = line_dash_seglens[i];
+				line_dash_seglen = line_dash_seglens[nitem];
 			
 			if (lg_p->mono_line_thickness)
 				line_thickness = lg_p->line_thickness;
 			else
-				line_thickness = line_thicknesses[i];
+				line_thickness = line_thicknesses[nitem];
 			
 			if (lg_p->mono_marker_thickness)
 				marker_thickness = lg_p->marker_thickness;
 			else
-				marker_thickness = marker_thicknesses[i];
+				marker_thickness = marker_thicknesses[nitem];
 			
 			if (lg_p->mono_line_label_font_height)
 				line_label_font_height =
 					lg_p->line_label_font_height;
 			else
-				line_label_font_height = font_heights[i];
+				line_label_font_height = font_heights[nitem];
 
 			if (lg_p->mono_marker_size)
 				marker_size =  lg_p->marker_size;
 			else
-				marker_size = marker_sizes[i];
+				marker_size = marker_sizes[nitem];
 
-			string = lg_p->line_labels_on ? line_labels[i] : NULL;
+			string = lg_p->line_labels_on ? line_labels[nitem] : NULL;
 				
 			xpoints[0] = xpoints[0] + 
 					(xpoints[1] - xpoints[0]) / 2.0;
@@ -5450,6 +5589,8 @@ static NhlErrorTypes    LegendDraw
 		tcoord = xpoints[0] + (xpoints[1] - xpoints[0]) / 2.0;
 		back_dist = lg_p->item_locs[0] - lg_p->adj_bar.b;
 		for (i=0; i< lg_p->item_count; i++) {
+			int nitem = order ? order[i] : i;
+
 			for_dist = lg_p->item_locs[i+1] - lg_p->item_locs[i];
 			for_dist = i < lg_p->item_count - 1 ? 
 				for_dist/2.0 : for_dist;
@@ -5468,60 +5609,60 @@ static NhlErrorTypes    LegendDraw
 			if (lg_p->mono_item_type)
 				item_type = lg_p->item_type;
 			else
-				item_type = types[i];
+				item_type = types[nitem];
 
 			if (lg_p->mono_dash_index)
 				dash_index = lg_p->dash_index;
 			else
-				dash_index = dash_indexes[i];
+				dash_index = dash_indexes[nitem];
 
 			if (lg_p->mono_marker_index)
 				marker_index = lg_p->marker_index;
 			else
-				marker_index = marker_indexes[i];
+				marker_index = marker_indexes[nitem];
 
 			if (lg_p->mono_line_color)
 				line_color = lg_p->line_color;
 			else
-				line_color = line_colors[i];
+				line_color = line_colors[nitem];
 
 			if (lg_p->mono_marker_color)
 				marker_color = lg_p->marker_color;
 			else
-				marker_color = marker_colors[i];
+				marker_color = marker_colors[nitem];
 
 			if (lg_p->mono_line_label_color)
 				line_label_color = lg_p->line_label_color;
 			else
-				line_label_color = line_label_colors[i];
+				line_label_color = line_label_colors[nitem];
 
 			if (lg_p->mono_line_dash_seglen)
 				line_dash_seglen = lg_p->line_dash_seglen;
 			else
-				line_dash_seglen = line_dash_seglens[i];
+				line_dash_seglen = line_dash_seglens[nitem];
 			
 			if (lg_p->mono_line_thickness)
 				line_thickness = lg_p->line_thickness;
 			else
-				line_thickness = line_thicknesses[i];
+				line_thickness = line_thicknesses[nitem];
 			
 			if (lg_p->mono_marker_thickness)
 				marker_thickness = lg_p->marker_thickness;
 			else
-				marker_thickness = marker_thicknesses[i];
+				marker_thickness = marker_thicknesses[nitem];
 			
 			if (lg_p->mono_line_label_font_height)
 				line_label_font_height =
 					lg_p->line_label_font_height;
 			else
-				line_label_font_height = font_heights[i];
+				line_label_font_height = font_heights[nitem];
 
 			if (lg_p->mono_marker_size)
 				marker_size = lg_p->marker_size;
 			else
-				marker_size = marker_sizes[i];
+				marker_size = marker_sizes[nitem];
 
-			string = lg_p->line_labels_on ? line_labels[i] : NULL;
+			string = lg_p->line_labels_on ? line_labels[nitem] : NULL;
 
 			ypoints[0] = ypoints[0] + 
 					(ypoints[2] - ypoints[0]) / 2.0;
@@ -5701,6 +5842,7 @@ static NhlErrorTypes    LegendDestroy
 	NhlFreeGenArray(lg_p->line_label_font_heights);
 	NhlFreeGenArray(lg_p->marker_sizes);
 	NhlFreeGenArray(lg_p->item_positions);
+	NhlFreeGenArray(lg_p->item_order);
 
 	if (lg_p->labels_id >=0)
 		NhlDestroy(lg_p->labels_id);

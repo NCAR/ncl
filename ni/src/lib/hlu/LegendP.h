@@ -1,5 +1,5 @@
 /*
- *      $Id: LegendP.h,v 1.20 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: LegendP.h,v 1.21 2008-05-27 20:55:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -98,6 +98,7 @@ typedef struct _NhlLegendLayerPart {
 	NhlGenArray	marker_sizes;
 	NhlGenArray	label_strings;
 	NhlGenArray	item_positions;
+	NhlGenArray	item_order;
 
 	NhlBoolean 	mono_line_label_color;
 	NhlColorIndex	line_label_color;

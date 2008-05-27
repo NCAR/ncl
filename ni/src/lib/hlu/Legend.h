@@ -1,5 +1,5 @@
 /*
- *      $Id: Legend.h,v 1.21 2001-12-05 00:19:04 dbrown Exp $
+ *      $Id: Legend.h,v 1.22 2008-05-27 20:55:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -97,6 +97,7 @@ typedef enum _NhllgItemPlacementMode {
 
 #define NhlNlgLabelStrings		"lgLabelStrings"
 #define NhlNlgItemPositions		"lgItemPositions"
+#define NhlNlgItemOrder                 "lgItemOrder"
 
 #define NhlNlgMonoLineLabelFontColor	"lgMonoLineLabelFontColor"
 #define NhlNlgLineLabelFontColor	"lgLineLabelFontColor"
@@ -105,6 +106,7 @@ typedef enum _NhllgItemPlacementMode {
 #define NhlNlgMonoLineDashSegLen	"lgMonoLineDashSegLen"
 #define NhlNlgLineDashSegLenF		"lgLineDashSegLenF"
 #define NhlNlgLineDashSegLens		"lgLineDashSegLens"
+
 
 /*end of arrays */
 
@@ -211,11 +213,13 @@ typedef enum _NhllgItemPlacementMode {
 
 #define NhlClgLabelStrings		"LgLabelStrings"
 #define NhlClgItemPositions		"LgItemPositions"
+#define NhlClgItemOrder                 "LgItemOrder"
 #define NhlClgMonoLineLabelFontColor	"LgMonoLineLabelFontColor"
 #define NhlClgLineLabelFontColors	"LgLineLabelFontColors"
 
 #define NhlClgMonoLineDashSegLen	"LgMonoLineDashSegLen"
 #define NhlClgLineDashSegLens		"LgLineDashSegLens"
+
 
 /*end of arrays */
 
