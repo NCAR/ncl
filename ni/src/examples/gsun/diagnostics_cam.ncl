@@ -1402,11 +1402,147 @@ begin
           x@units = flist[0]->$varName$@units
       end if     
   end if
-
 ;-------------------------------------------------------------------
 ; Call the procedure that will do the calculations and plots.
 ;-------------------------------------------------------------------
-
   wkSpaceTime (x, diro, caseName, varName             \
               ,latBound, SPD, nDayWin, nDaySkip, opt  )  
 end
+;------------------------------------------------------- 
+; L2 error norms
+;------------------------------------------------------- 
+ undef("l2_norm_a")         ; EQUATION 17
+ function l2_norma( x[*][*][*][*]:numeric, wy[*], wz )
+ local dimx, dimwz, rankwz, ntim, l2a, nt, xzon, xzonc \
+     , dif2, wyc, wywz, wywzs
+ begin
+   dimx   = dimsizes( x )
+   dimwz  = dimsizes( wz )
+   rankwz = dimsizes( dimwz )
+   
+   ntim   = dimx(0)
+   l2a    = new ( ntim, typeof(x), getFillValue(x) )
+                                                       ; constant all times
+   wyc    =  conform(x(0,:,:,:), wy, 1)                ; (klev,nlat,mlon)
+ 
+   if (rankwz.eq.1) then                               ; constant weight
+       wywz  = wyc*conform( x(0,:,:,:), wz, 0 )        ; (klev,nlat,mlon)
+       wywzs = sum(wywz)                               ; scalar
+       delete( wyc )
+   end if
+ 
+   do nt=0,ntim-1
+      xzon    = dim_avg( x(nt,:,:,:) )                 ; (klev,nlat)
+      xzonc   = conform( x(nt,:,:,:), xzon, (/0,1/))   ; (klev,nlat,mlon)
+      dif2    = (x(nt,:,:,:)-xzonc)^2                  ; (klev,nlat,mlon)
+      if (rankwz.eq.1) then
+          l2a(nt) = sqrt( sum(dif2*wywz)/wywzs  )      ; (nt)
+      else                                             ; variable wgt (nt)
+          wywz    = wyc*wz(nt,:,:,:)                   ; (klev,nlat,mlon)
+          l2a(nt) = sqrt( sum(dif2*wywz)/sum(wywz)  )  ; (nt)
+      end if
+   end do
+ 
+   l2a@long_name = "l2" 
+   if (isatt(x, "units")) then
+      l2a@units = x@units
+   end if
+   
+   return( l2a ) 
+ end
+;------------------------------------------------------- 
+; L2 error norms
+;------------------------------------------------------- 
+ undef("l2_norm_b")         ; EQUATION 18
+ function l2_normb( x[*][*][*][*]:numeric, wy[*], wz )
+ local dimx, dimwz, rankwz, ntim, l2b, nt, xzon0, xzonc \
+     , dif2, wyc, wywz, wywz
+ begin
+   dimx    = dimsizes( x )
+   dimwz   = dimsizes( wz )
+   rankwz  = dimsizes( dimwz )
+                                                      ; time=0
+   xzon0   = dim_avg( x(0,:,:,:) )                    ; (klev,nlat)
+   xzon0c  = conform( x(0,:,:,:), xzon0, (/0,1/))     ; (klev,nlat,mlon)    
+   wyc     = conform( x(0,:,:,:), wy, 1)              ; (klev,nlat,mlon)
+ 
+   if (rankwz.eq.1) then
+       wywz  = wyc*conform( x(0,:,:,:), wz, 0 )       ; (klev,nlat,mlon)
+       wywzs = sum(wywz)                              ; scalar
+       delete( wyc )
+   end if
+   
+   ntim = dimx(0)
+   l2b  = new ( ntim, typeof(x), getFillValue(x) )
+ 
+   do nt=0,ntim-1
+      dif2    = (x(nt,:,:,:)-xzon0c)^2                ; (klev,nlat,mlon)
+      if (rankwz.eq.1) then
+          l2a(nt) = sqrt( sum(dif2*wywz)/wywzs  )     ; (nt)
+      else
+          wywz    = wyc*wz(nt,:,:,:)                  ; (klev,nlat,mlon)
+          l2b(nt) = sqrt( sum(dif2*wywz)/sum(wywz) )  ; (nt)
+      end if
+   end do
+ 
+   l2b@long_name = "l2" 
+   if (isatt(x, "units")) then
+      l2b@units = x@units
+   end if
+   l2b@info = "x(:,:,:,:)-dimavg(x(0,:,:,:))"
+   return( l2b ) 
+ end
+;------------------------------------------------------- 
+; Energy
+;------------------------------------------------------- 
+ function energy_a(u[*][*][*][*]:numeric,   v[*][*][*][*]:numeric\
+                  ,t[*][*][*][*]:numeric,phis[*][*][*]:numeric   \
+                  ,wy[*]:numeric, wz:numeric, opt[1]:integer )
+;------------------------------------------------------- 
+; energy  = SUM(0.5*(U^2+V^2) + cp*T + S )*wz
+;-------------------------------------------------------
+ local dimu, dimwz, rankwz, ntim, e, nt, x, wyc, wywz, wywzs
+ begin
+   dimu   = dimsizes( u )
+   dimwz  = dimsizes( wz )
+   rankwz = dimsizes( dimwz )
+   
+   ntim   = dimu(0)
+   e      = new ( ntim, typeof(u), getFillValue(u) )
+                                                    ; constant all times
+   wyc    =  conform(u(0,:,:,:), wy, 1)             ; (klev,nlat,mlon)
+ 
+   if (rankwz.eq.1) then                            ; constant weight
+       wywz  = wyc*conform( u(0,:,:,:), wz, 0 )     ; (klev,nlat,mlon)
+       wywzs = sum(wywz)                            ; scalar
+       delete( wyc )
+   end if
+
+   a     = 6.371229e6   ; m            
+   g     = 9.80616      ; m/s^2
+   cp    = 1004.64      ; J/(kg-K)
+   twopi = 4.*atan(1.0)
+
+   do nt=0,ntim-1
+      s = conform(u(nt,:,:,:), phis(nt,:,:), (/1,2/))
+      x = (0.5*(u(nt,:,:,:)^2+v(nt,:,:,:)^2) + cp*t(nt,:,:,:) + s )
+      if (rankwz.eq.1) then
+          e(nt) = sum(x*wywz)
+      else                                          ; variable wgt (nt)
+          wywz  = wyc*wz(nt,:,:,:)                  ; (klev,nlat,mlon)
+          e(nt) = sum(x*wywz)
+      end if
+   end do
+
+   e = (twopi*a*a/g)*e                              ; total energy e(t)
+
+   if (opt.eq.0) then
+       e@long_name = "E: eqn 155" 
+       e@units     = "J"                            ; ==>'kg m^2 / s^2'.
+   else
+       e = (e-e(0))/e(0)                            ; normalized
+       e@long_name = "Normalized Energy Difference"     
+       e@units     = "(E-E(0))/E(0)"                   
+   end if
+   return( e ) 
+ end
