@@ -30,7 +30,7 @@ c .   ztop < 0      is not allowed
           end do
         end do
       end do
-
+c select one grid pt for monoticity test
       nl = 1
       ml = 1
       do kl=1,klvl
@@ -116,45 +116,45 @@ c monotonically increasing?
 
 c initialize to nominal dzlvl
 
-      dzlvl(1)    = abs( (z(1)+z(2))*0.5d0 - ztop )
+      dzlvl(1)    = (z(1)+z(2))*0.5d0 - zsfc 
       do kl=2,klvl-1 
-         dzlvl(kl)= abs( (z(kl+1) - z(kl-1))*0.5d0 )
+         dzlvl(kl)= (z(kl+1) - z(kl-1))*0.5d0 
       end do
-      dzlvl(klvl) = abs( zsfc -(z(klvl)-z(klvl-1))*0.5d0 )
+      dzlvl(klvl) = ztop -(z(klvl)+z(klvl-1))*0.5d0 
+
+c if zsfc<z(1) and ztop>z(klvl) ... this is it
+
+      if (zsfc.lt.z(1) .and. ztop.gt.z(klvl)) go to 200
 
 c levels outside the range should be set to 0.0
 
       do kl=1,klvl 
-         if (z(kl).lt.ztop) dzlvl(kl) = 0.0d0
-         if (z(kl).gt.zsfc) dzlvl(kl) = 0.0d0
+         if (z(kl).lt.zsfc .or. z(kl).gt.ztop) dzlvl(kl) = 0.0d0 
       end do
 
 c modify the default dz
 
-      if (ztop.gt.0.0d0) then
-          do kl=1,klvl-1
-             if (ztop.ge.z(kl) .and. ztop.lt.z(kl+1)) then
-                 dzlvl(kl) =(z(kl)+z(kl+1))*0.5d0-ztop
+      if (ztop.lt.z(klvl)) then
+          do kl=klvl,2,-1
+             if (ztop.le.z(kl) .and. ztop.gt.z(kl-1)) then
+                 kll = kl-1
+                 dzlvl(kll) = ztop-(z(kll)+z(kll-1))*0.5d0
                  go to 100
              end if
           end do
       end if
 
-  100 if (zsfc.gt.z(klvl)) then
-          dzlvl(klvl) = zsfc -(z(klvl-1)+z(klvl))*0.5d0
-      else
-          do kl=1,klvl-1
+  100 if (zsfc.gt.z(1)) then
+          do kl=1,klvl-2
              if (zsfc.ge.z(kl) .and. zsfc.lt.z(kl+1)) then
-                 dzlvl(kl)= zsfc-(z(kl)+z(kl-1))*0.5d0
-                  do kll=(kl+1),klvl
-                     dzlvl(kll) = 0.0d0
-                  end do
-                  go to 200
+                 kll = kl+1
+                 dzlvl(kll)= (z(kll)+z(kll+1))*0.5d0 -zsfc
+                 go to 200
              end if
           end do
       end if
 
-  200 zspan = zsfc-ztop
+  200 zspan = ztop-zsfc
 
 c check to make sure:     sum(dz)=zspan
 c zeps could me much smaller [1e-5]
@@ -165,7 +165,8 @@ c should probably be a fatal error .... indicates something is wrong
          dzsum = dzsum + dzlvl(kl)
       end do
       if (dzsum.gt.(zspan+zeps) .or. dzsum.lt.(zspan-zeps) ) then
-          ier = ier-1
+          ier = -1
+c c c     print *,"ier=",ier,"  zspan=",zspan, "   dzsum=",dzsum
       end if
 
       return
@@ -181,21 +182,14 @@ C                                                ! output
 C                                                ! local 
       integer  kl 
 
-      do kl=1,klvl
-         print *,"dzmono=",kl, z(kl)
-      end do
-
       ier = 0
       do kl=2,klvl
          if (z(kl).ne.zmsg .and. z(kl-1).ne.zmsg) then
-                 print *,"DUBUG 1"
              if (z(kl).gt.z(kl-1)) then
                  mono =  1
-                 print *,"DUBUG 2: mono=", mono
                  return
              elseif(z(kl).lt.z(kl-1)) then
                  mono = -1
-                 print *,"DUBUG 3: mono=",mono
                  return
              else
                  mono = 0
