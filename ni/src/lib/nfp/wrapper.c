@@ -400,6 +400,7 @@ extern NhlErrorTypes sigma2hybrid_W(void);
 extern NhlErrorTypes pslhyp_W(void);
 extern NhlErrorTypes pslec_W(void);
 extern NhlErrorTypes pslhor_W(void);
+extern NhlErrorTypes dz_height_W(void);
 extern NhlErrorTypes gc_latlon_W(void);
 
 extern NhlErrorTypes monthday_W(void);
@@ -5641,6 +5642,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(pslhor_W,args,"pslhor",nargs);
+
+/*
+ * Register "dz_height".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",0,NclANY);nargs++;
+
+    NclRegisterFunc(dz_height_W,args,"dz_height",nargs);
 
 /*
  * Register "gc_latlon".
