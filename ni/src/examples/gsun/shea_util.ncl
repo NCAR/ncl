@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.27 2007-09-27 20:21:24 haley Exp $
+;      $Id: shea_util.ncl,v 1.28 2008-06-03 17:22:40 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2208,50 +2208,6 @@ begin
   yNew(N1)   = y(npt-1)
 
   return(yNew)
-end
-;*************************************************************************
-; Adam Philips
-
-undef("get_script_name")
-function get_script_name()
-local args, nargs, found, i, cstr, ncstr, script_name
-begin
-;  Entering retrieve program name section (compliments of Mary)
-   	args  = systemfunc("ps -o args") ;Find the string that starts with "ncl"
-   	nargs = dimsizes(args)	    ; This is the 1 that has the script name.
-   	found = False     ; logical indicatating whether we found "ncl " string.
-	i     = 0            ; "args" counter
-        do while (i.lt.nargs.and..not.found)
-           cstr = stringtochar(args(i)) ;Convert to character array so we can 		
-					;parse it.
-           ncstr = dimsizes(cstr)  ;Assume that the script is called "xxx.ncl"
-;           print(cstr)
-           if (ncstr.gt.4.and.chartostring(cstr(0:3)).eq."ncl ") then	
-              if (ncstr.gt.9) then     ;grabs "ncl file.ncl" 
-                 script_name = chartostring(cstr(4:ncstr-6))
-              else
-                 script_name = chartostring(cstr(4:))
-              end if
-              found = True           ; Found the "ncl " string.
-           end if
-           if (ncstr.gt.4.and.chartostring(cstr(0:3)).eq."ncl.") then	
-	      if (ncstr.gt.9) then	;grabs "ncl.*** file.ncl"
-                 script_name = chartostring(cstr(8:ncstr-6))
-              else
-	         script_name = chartostring(cstr(4:))
-	      end if
- 	      found = True           ; Found the "ncl.*" string.
-	   end if  
-           i = i + 1     ; increment "args" counter
-           delete(cstr)	; Delete cstr, changes sizes each time through
-   	end do
-
-   	if (found) then
-           return(script_name)
-    	else
-           print("No script name found, make sure script was run without the '<' character.")
-     	   return("missing")
-   	end if 
 end
 ; ----------------------------------------------------------
 ; Adam Phillips
