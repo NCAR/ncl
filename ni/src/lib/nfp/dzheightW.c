@@ -11,7 +11,7 @@ NhlErrorTypes dz_height_W( void )
  */
   void *z, *zsfc, *ztop;
   int *iopt;
-  double *tmp_z, *tmp_zsfc, *tmp_ztop;
+  double *tmp_z, *tmp_zsfc, *tmp1_zsfc, *tmp_ztop;
   int ndims_z, dsizes_z[NCL_MAX_DIMENSIONS];
   int ndims_zsfc, dsizes_zsfc[NCL_MAX_DIMENSIONS];
   int has_missing_zsfc, is_scalar_zsfc;
@@ -120,9 +120,9 @@ NhlErrorTypes dz_height_W( void )
 /*
  * Calculate other dimension sizes.
  */
-  nlatnlon     = nlat * nlon;
-  klvlnlatnlon = klvl * nlatnlon;
-  size_leftmost = 0;
+  nlatnlon      = nlat * nlon;
+  klvlnlatnlon  = klvl * nlatnlon;
+  size_leftmost = 1;
   for(i = 0; i < ndims_z-3; i++) size_leftmost *= dsizes_z[i];
   size_z = size_leftmost * klvlnlatnlon;
 
@@ -166,7 +166,18 @@ NhlErrorTypes dz_height_W( void )
     }
   }
 
-  if(type_zsfc != NCL_double) {
+/*
+ * If zsfc is a scalar, it must be copied to an nlat x nlon array.
+ */
+  if(is_scalar_zsfc) {
+    tmp1_zsfc = coerce_input_double(zsfc,type_zsfc,1,0,NULL,NULL);
+    tmp_zsfc  = (double*)calloc(nlatnlon,sizeof(double));
+    for(i = 0; i < nlatnlon; i++) tmp_zsfc[i] = *tmp1_zsfc;
+  }
+/*
+ * Otherwise, see if need to coerce it.
+ */
+  else if(type_zsfc != NCL_double) {
     if(ndims_zsfc == 2) {
       tmp_zsfc = coerce_input_double(zsfc,type_zsfc,nlatnlon,0,NULL,NULL);
     }
@@ -189,6 +200,7 @@ NhlErrorTypes dz_height_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dz_height: Unable to coerce input to double precision");
     return(NhlFATAL);
   }
+
 /*
  * Allocate space for output array.
  */
@@ -212,7 +224,6 @@ NhlErrorTypes dz_height_W( void )
 
   index_z = index_zsfc = 0;
   for(i = 0; i < size_leftmost; i++ ) {
-
 /*
  * Coerce subsection of z (tmp_z) to double, if necessary
  */
@@ -283,7 +294,13 @@ NhlErrorTypes dz_height_W( void )
 /*
  * Free memory.
  */
-  if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
+  if(is_scalar_zsfc) {
+    if(type_zsfc != NCL_double) NclFree(tmp1_zsfc);
+    NclFree(tmp_zsfc);
+  }
+  else {
+    if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
+  }
   if(type_z    != NCL_double) NclFree(tmp_z);
   if(type_ztop != NCL_double) NclFree(tmp_ztop);
   if(type_dz   != NCL_double) NclFree(tmp_dz);
