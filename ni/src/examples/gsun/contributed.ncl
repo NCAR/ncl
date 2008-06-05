@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.164 2008-06-05 20:01:46 shea Exp $
+;      $Id: contributed.ncl,v 1.165 2008-06-05 20:59:08 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8822,15 +8822,15 @@ end
 ; Generate [sin(lat+dlat/2)-sin(lat-dlat/2)] weights 
 ; for equally spaced grids. Currently, only global grids
 ; are supported.
-
 undef("latRegWgt")
 function latRegWgt(lat[*]:numeric, nType[1]:string, opt[1]:integer)
 ; usage: wgt = latRegWgt(lat, "double", 0)
 ;        wgt = latRegWgt(lat, "float" , 0)
-local nlat, rad, err, dlat, w, nl, dNam
+local nlat, pi, rad, err, dlat, w, nl, dNam
 begin
   nlat = dimsizes(lat)
-  rad  = 4.0d*atan(1.0d)/180.0d
+  pi   = 4.0d*atan(1.0d)
+  rad  = pi/180.0d
   err  = 1d20
 
   dlat = abs(lat(2)-lat(1))             ; error check
@@ -8855,13 +8855,13 @@ begin
   if (abs(lat(0)).gt.89.9999d) then
       nl = 0
     ;;w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
-    ;;weight_pole = abs { 1. - sin[pi/2 - (Delta_phi)/2 ]  ; CJ
-      w(nl) = abs ( 1. - sin(pi/2 - dlat))
+    ;;weight_pole = abs ( 1. - sin(pi/2 - (Delta_phi)/2 )  ; CJ
+      w(nl) = abs ( 1. - sin(pi/2 - dlat))  ; CJ
   end if
   if (abs(lat(nlat-1)).gt.89.9999d) then
       nl = nlat-1
     ;;w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
-    ;;weight_pole = abs { 1. - sin[pi/2 - (Delta_phi)/2 ]  ; CJ
+    ;;weight_pole = abs ( 1. - sin(pi/2 - (Delta_phi)/2 )  ; CJ
       w(nl) = abs ( 1. - sin(pi/2 - dlat))  ; CJ
   end if
 
