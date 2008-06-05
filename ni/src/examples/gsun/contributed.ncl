@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.163 2008-06-02 15:24:06 shea Exp $
+;      $Id: contributed.ncl,v 1.164 2008-06-05 20:01:46 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8854,13 +8854,15 @@ begin
                                         ; poles
   if (abs(lat(0)).gt.89.9999d) then
       nl = 0
-      w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
+    ;;w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
     ;;weight_pole = abs { 1. - sin[pi/2 - (Delta_phi)/2 ]  ; CJ
+      w(nl) = abs ( 1. - sin(pi/2 - dlat))
   end if
   if (abs(lat(nlat-1)).gt.89.9999d) then
       nl = nlat-1
-      w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
+    ;;w(nl) = abs( sin(lat(nl)*rad)- sin(lat(nl)*rad-dlat))
     ;;weight_pole = abs { 1. - sin[pi/2 - (Delta_phi)/2 ]  ; CJ
+      w(nl) = abs ( 1. - sin(pi/2 - dlat))  ; CJ
   end if
 
   dNam = getvardims( lat )
