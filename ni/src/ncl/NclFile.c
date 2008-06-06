@@ -3913,7 +3913,10 @@ int type;
 				if((has_missing)&&(value->multidval.missing_value.has_missing)) {
 					mis_md = FileReadVarAtt(thefile,var,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
 					_Ncleq(value->multidval.type,(void*)&(result),(void*)&(value->multidval.missing_value.value),(void*)(mis_md->multidval.val),NULL,NULL,1,1);
-					if((!result) &&(value->obj.status != PERMANENT)) {
+					if (result) {
+						tmp_md = value;
+					}
+					else if(value->obj.status != PERMANENT) {
 						tmp_md = value;
 						memcpy(&tmp_scalar,mis_md->multidval.val,mis_md->multidval.totalsize);
 						_NclResetMissingValue(tmp_md,(NclScalar*) &tmp_scalar);
