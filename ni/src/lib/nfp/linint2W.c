@@ -1246,8 +1246,7 @@ NhlErrorTypes area_hi2lores_W( void )
   if(type_xo != NCL_double) NclFree(tmp_xo);
   if(type_yo != NCL_double) NclFree(tmp_yo);
   if(type_fo != NCL_double) NclFree(tmp_fo);
-
-  NclFree(tmp1_wyi);
+  if(type_wyi != NCL_double) NclFree(tmp1_wyi);
   if(dsizes_wyi[0] == 1) {
     NclFree(tmp_wyi);
   }
