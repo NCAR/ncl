@@ -18,4 +18,10 @@ The URL is:
 If you have trouble accessing netlib files, please 
 send email to netlib_maintainers@netlib.org.
 
+----------------------------------------------------------------------
+
+6/10/2008: On bluefire, had to compile sdbm.c with -O1 and not -O3
+           (-qstrict is okay).
+
+----------------------------------------------------------------------
 
