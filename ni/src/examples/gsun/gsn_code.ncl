@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.210 2008-05-15 20:24:29 haley Exp $
+;      $Id: gsn_code.ncl,v 1.211 2008-06-13 14:50:48 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -6099,8 +6099,8 @@ begin
                               new_mno_length)
   end if
 
-  font_heightxl = get_res_value(res1,"tmXBFontHeight",new_font_height)
-  font_heightyl = get_res_value(res1,"tmYLFontHeight",new_font_height)
+  font_heightxl = get_res_value(res1,"tmXBFontHeightF",new_font_height)
+  font_heightyl = get_res_value(res1,"tmYLFontHeightF",new_font_height)
   font_heightx  = get_res_value(res1,"tiXAxisFontHeightF",new_font_height)
   font_heighty  = get_res_value(res1,"tiYAxisFontHeightF",new_font_height)
   main_font_height = get_res_value(res2,"tiMainFontHeightF", \
@@ -6137,8 +6137,8 @@ begin
       "tmXTMinorLengthF"        : mn_length
       "tmXTMinorOutwardLengthF" : mno_length
   
-      "tmXBLabelFontHeightF"    : font_heightx
-      "tmYLLabelFontHeightF"    : font_heighty
+      "tmXBLabelFontHeightF"    : font_heightxl
+      "tmYLLabelFontHeightF"    : font_heightyl
     end setvalues
   end if
 
@@ -6158,8 +6158,8 @@ begin
                                 new_mno_length)
   end if
 
-  font_heightxl = get_res_value(res2,"tmXBFontHeight",new_font_height)
-  font_heightyl = get_res_value(res2,"tmYLFontHeight",new_font_height)
+  font_heightxl = get_res_value(res2,"tmXBFontHeightF",new_font_height)
+  font_heightyl = get_res_value(res2,"tmYLFontHeightF",new_font_height)
   font_heightx  = get_res_value(res2,"tiXAxisFontHeightF",new_font_height)
   font_heighty  = get_res_value(res2,"tiYAxisFontHeightF",new_font_height)
   main_font_height = get_res_value(res2,"tiMainFontHeightF", \
@@ -6197,8 +6197,8 @@ begin
         "tmXTMinorLengthF"        : mn_length
         "tmXTMinorOutwardLengthF" : mno_length
   
-        "tmXBLabelFontHeightF"    : font_heightx
-        "tmYLLabelFontHeightF"    : font_heighty
+        "tmXBLabelFontHeightF"    : font_heightxl
+        "tmYLLabelFontHeightF"    : font_heightyl
       end setvalues
     end if
   end do
