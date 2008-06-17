@@ -1,5 +1,5 @@
 /*
- *      $Id: XyPlot.c,v 1.93 2006-07-20 00:21:01 dbrown Exp $
+ *      $Id: XyPlot.c,v 1.94 2008-06-17 00:01:48 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -296,6 +296,11 @@ static NhlResource resources[] = {
 	{ NhlNtrLineInterpolationOn,NhlCtrLineInterpolationOn,
 		  NhlTBoolean,sizeof(NhlBoolean),
 		  NhlOffset(NhlXyPlotLayerRec,trans.line_interpolation_on),
+		  NhlTImmediate,_NhlUSET((NhlPointer)False),
+	  	_NhlRES_INTERCEPTED,NULL},
+	{ NhlNvpClipOn,NhlCvpClipOn,
+		  NhlTBoolean,sizeof(NhlBoolean),
+		  NhlOffset(NhlXyPlotLayerRec,view.clip_on),
 		  NhlTImmediate,_NhlUSET((NhlPointer)False),
 	  	_NhlRES_INTERCEPTED,NULL},
 
@@ -2603,6 +2608,8 @@ DrawCurves
 	char		*llabel_func_codes = xlp->llabel_func_codes->data;
 	float			*tx,*ty;
 	int			size;
+        Gint		        err_ind;
+        Gclip           	clip_ind_rect;
 
 	/*
 	 * If there is no data, then don't do anything.
@@ -2628,6 +2635,9 @@ DrawCurves
 	NhlVASetValues(xlayer->base.wkptr->base.id,
 		_NhlNwkReset,	True,
 		NULL);
+
+	ginq_clip(&err_ind,&clip_ind_rect);
+        gset_clip_ind(xlayer->view.clip_on ? GIND_CLIP : GIND_NO_CLIP);
 
 
 	for(i=0;i < xlp->num_cpairs;i++){
@@ -2832,6 +2842,8 @@ DrawCurves
 
 	NhlFree(tx);
 	NhlFree(ty);
+
+	gset_clip_ind(clip_ind_rect.clip_ind);
 
 	return ret1;
 }
