@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.167 2008-06-19 17:26:19 shea Exp $
+;      $Id: contributed.ncl,v 1.168 2008-06-19 18:14:44 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8881,7 +8881,9 @@ begin
   end if
 end
 
-function quadform(a[1]:numeric, b[1]:numeric, c[1]:numeric)
+; **********************************************************************
+; D. Shea
+function quadroots(a[1]:numeric, b[1]:numeric, c[1]:numeric)
 ; solve quadratic formula
 local x, d, droot, dble, two, con, D
 begin
@@ -8900,9 +8902,9 @@ begin
 
   if (d.ge.0) then                     ; positive roots
       if (dble) then
-          x    = (/0.0d,0.0d/)
+          x    = (/0.0d,0.0d,0.0d0/)
       else
-          x    = (/0.0, 0.0/)
+          x    = (/0.0 , 0.0, 0.0 /)
       end if
 
       if (d.gt.0) then                 ; two distinct real roots
