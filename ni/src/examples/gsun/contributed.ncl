@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.166 2008-06-06 19:40:06 shea Exp $
+;      $Id: contributed.ncl,v 1.167 2008-06-19 17:26:19 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8881,3 +8881,54 @@ begin
   end if
 end
 
+function quadform(a[1]:numeric, b[1]:numeric, c[1]:numeric)
+; solve quadratic formula
+local x, d, droot, dble, two, con, D
+begin
+  if (typeof(a).eq."double" .or. typeof(b).eq."double" \
+                            .or. typeof(c).eq."double" ) then
+      d    = 0.0d
+      con  = 2.0d*a
+      dble = True
+  else
+      d    = 0.0
+      con  = 2.0*a
+      dble = False
+  end if
+
+  d = b^2 - 4*a*c                      ; discriminant
+
+  if (d.ge.0) then                     ; positive roots
+      if (dble) then
+          x    = (/0.0d,0.0d/)
+      else
+          x    = (/0.0, 0.0/)
+      end if
+
+      if (d.gt.0) then                 ; two distinct real roots
+          droot = sqrt(d)
+          x(0)  = (-b + droot)/con
+          x(1)  = (-b - droot)/con
+      else              
+          x     = -b/con               ; one distinct root  
+      end if                           ; return as double root
+
+      x@root         = "real"
+      x@discriminant = d
+     ;x@result1      = a*x(0)^2 + b*x(0) + c
+     ;x@result2      = a*x(1)^2 + b*x(1) + c
+      return (x)
+  end if
+
+  D      = sqrt(-d)/con                ; (4*a*c -b^2)/2a
+
+  x = new ( 3, typeof(d), "No_FillValue")
+  x(0) = -b/con                        ; real part
+                                       ; imaginary parts
+  x(1) =  D                            ; positive 
+  x(2) = -D                            ; negative 
+
+  x@root         = "complex"
+  x@discriminant = d
+  return (x)
+end
