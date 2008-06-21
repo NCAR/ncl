@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.143 2008-03-19 00:12:19 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.144 2008-06-21 00:17:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5099,6 +5099,8 @@ static NhlErrorTypes SetLabelScale
 
 	if (! init &&
 	    ! cnp->data_changed &&
+	    (cnp->min_level_val == ocnp->min_level_val) &&
+	    (cnp->max_level_val == ocnp->max_level_val) &&
 	    (cnp->label_scaling_mode == ocnp->label_scaling_mode) &&
 	    (cnp->label_scale_value == ocnp->label_scale_value) &&
 	    (cnp->max_data_format.fstring == ocnp->max_data_format.fstring))
@@ -5109,8 +5111,8 @@ static NhlErrorTypes SetLabelScale
 	if (cnp->max_data_format.left_sig_digit_flag == NhlffDYNAMIC) {
                 float test_val;
 
-		test_val = MAX(fabs(cnp->zmax),fabs(cnp->zmin)) 
-                        / cnp->label_scale_factor;
+		test_val = MIN(MAX(fabs(cnp->min_level_val),fabs(cnp->max_level_val)),
+			       MAX(fabs(cnp->zmin),fabs(cnp->zmax))) / cnp->label_scale_factor;
 		subret = _NhlGetScaleInfo(test_val,
 					  &divpwr,&sig_digits,entry_name);
 		cnp->max_data_format.left_sig_digit = divpwr - 1;
