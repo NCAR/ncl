@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.144 2008-06-21 00:17:31 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.145 2008-06-24 22:08:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -7315,6 +7315,15 @@ static char *ContourPlotFormat
 	float  value;
 	int    left_sig_digit = format->left_sig_digit;
 	NhlffStat left_sig_digit_flag = format->left_sig_digit_flag;
+	int *fwidth, *sig_digits, *md_left_sig_digit, *point_pos, *exp_switch_len, *exp_field_width;
+	NhlFormatRec *frec = &cnp->max_data_format;
+
+	fwidth = frec->field_width_flag == NhlffUNSPECED ? NULL : &frec->field_width;
+	sig_digits = frec->sig_digits_flag == NhlffUNSPECED ? NULL : &frec->sig_digits;
+	md_left_sig_digit = frec->left_sig_digit_flag == NhlffUNSPECED ? NULL : &frec->left_sig_digit;
+	point_pos =  frec->point_position_flag == NhlffUNSPECED ? NULL : &frec->point_position;
+	exp_switch_len = frec->exp_switch_flag == NhlffUNSPECED ? NULL : &frec->exp_switch_len;
+	exp_field_width = frec->exp_field_width_flag == NhlffUNSPECED ? NULL : &frec->exp_field_width;
 
 	switch (vtype) {
 
@@ -7345,10 +7354,11 @@ static char *ContourPlotFormat
 		value = 1e12;
 	}
 
-	cp = _NhlFormatFloat(format,value,NULL,
-			     &cnp->max_data_format.sig_digits,
-			     &cnp->max_data_format.left_sig_digit,
-                             NULL,NULL,NULL,func_code,entry_name);
+	cp = _NhlFormatFloat(format,value,
+			     fwidth, sig_digits,
+			     md_left_sig_digit, exp_field_width,
+			     exp_switch_len, point_pos,
+                             func_code,entry_name);
 
 	format->left_sig_digit_flag = left_sig_digit_flag;
 	format->left_sig_digit = left_sig_digit;
@@ -8374,6 +8384,8 @@ static NhlErrorTypes    ManageDynamicArrays
 		NhlString *sp = (NhlString *) ga->data;
 		NhlBoolean modified = False;
 		NhlString cp;
+		int *fwidth, *sig_digits, *left_sig_digit, *point_pos, *exp_switch_len, *exp_field_width;
+		NhlFormatRec *frec = &cnp->max_data_format;
 
 		fp = (float *) cnp->levels->data;
 
@@ -8386,16 +8398,21 @@ static NhlErrorTypes    ManageDynamicArrays
 		if (! cnp->explicit_line_labels_on) {
 			init_count = 0;
 		}
+		fwidth = frec->field_width_flag == NhlffUNSPECED ? NULL : &frec->field_width;
+		sig_digits = frec->sig_digits_flag == NhlffUNSPECED ? NULL : &frec->sig_digits;
+		left_sig_digit = frec->left_sig_digit_flag == NhlffUNSPECED ? NULL : &frec->left_sig_digit;
+		point_pos =  frec->point_position_flag == NhlffUNSPECED ? NULL : &frec->point_position;
+		exp_switch_len = frec->exp_switch_flag == NhlffUNSPECED ? NULL : &frec->exp_switch_len;
+		exp_field_width = frec->exp_field_width_flag == NhlffUNSPECED ? NULL : &frec->exp_field_width;
+
 		for (i=init_count; i<count; i++) {
 			float fval = fp[i] / cnp->label_scale_factor;
-			NhlFormatRec *frec = &cnp->max_data_format;
 
 			if (sp[i] != NULL) NhlFree(sp[i]);
 			cp = _NhlFormatFloat(&cnp->line_lbls.format,fval,
-                                             NULL,
-					     &frec->sig_digits,
-					     &frec->left_sig_digit,
-                                             NULL,NULL,NULL,
+					     fwidth, sig_digits,
+					     left_sig_digit, exp_field_width,
+					     exp_switch_len, point_pos,
 					     cnp->line_lbls.fcode[0],
 					     entry_name);
 			if (cp == NULL) return NhlFATAL;

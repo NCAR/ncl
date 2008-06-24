@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.11 2008-01-05 01:18:22 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.12 2008-06-24 22:08:41 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -4096,6 +4096,8 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 	char buf[128];
 	char *fstr,*sub;
 	float zdv;
+	NhlFormatRec *frec;
+	int *fwidth, *sig_digits, *left_sig_digit, *point_pos, *exp_switch_len, *exp_field_width;
 
 	if (Cnp == NULL) {
 		_NHLCALLF(ctchhl,CTCHHL)(iflg);
@@ -4110,6 +4112,22 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		       flx,frx,fby,fuy,wlx,wrx,wby,wuy); 
   	}
 #endif
+	switch (*iflg) {
+	case 1:
+	case 3:
+	case 5:
+	case 7:
+		frec = &Cnp->max_data_format;
+		fwidth = frec->field_width_flag == NhlffUNSPECED ? NULL : &frec->field_width;
+		sig_digits = frec->sig_digits_flag == NhlffUNSPECED ? NULL : &frec->sig_digits;
+		left_sig_digit = frec->left_sig_digit_flag == NhlffUNSPECED ? NULL : &frec->left_sig_digit;
+		point_pos =  frec->point_position_flag == NhlffUNSPECED ? NULL : &frec->point_position;
+		exp_switch_len = frec->exp_switch_flag == NhlffUNSPECED ? NULL : &frec->exp_switch_len;
+		exp_field_width = frec->exp_field_width_flag == NhlffUNSPECED ? NULL : &frec->exp_field_width;
+		/* drop through */
+	default:
+		break;
+	}
 	switch (*iflg) {
 	case 1:
 		if (! Cnp->high_lbls.on) {
@@ -4134,10 +4152,10 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		}
 		c_ctgetr("zdv",&zdv);
 		zdv /= Cnp->label_scale_factor;
-		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
-				       &Cnp->max_data_format.sig_digits,
-				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,
+		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,
+				       fwidth, sig_digits,
+				       left_sig_digit, exp_field_width,
+				       exp_switch_len, point_pos,
 				       Cnp->high_lbls.fcode[0],
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
@@ -4174,10 +4192,10 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		}
 		c_ctgetr("zdv",&zdv);
 		zdv /= Cnp->label_scale_factor;
-		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,NULL,
-				       &Cnp->max_data_format.sig_digits,
-				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,
+		fstr = _NhlFormatFloat(&Cnp->high_lbls.format,zdv,
+				       fwidth, sig_digits,
+				       left_sig_digit, exp_field_width,
+				       exp_switch_len, point_pos,
 				       Cnp->high_lbls.fcode[0],
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
@@ -4210,10 +4228,10 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		}
 		c_ctgetr("zdv",&zdv);
 		zdv /= Cnp->label_scale_factor;
-		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
-				       &Cnp->max_data_format.sig_digits,
-				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,
+		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,
+				       fwidth, sig_digits,
+				       left_sig_digit, exp_field_width,
+				       exp_switch_len, point_pos,
 				       Cnp->low_lbls.fcode[0],
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
@@ -4249,10 +4267,10 @@ void   (_NHLCALLF(hluctchhl,HLUCTCHHL))
 		}
 		c_ctgetr("zdv",&zdv);
 		zdv /= Cnp->label_scale_factor;
-		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,NULL,
-				       &Cnp->max_data_format.sig_digits,
-				       &Cnp->max_data_format.left_sig_digit,
-                                       NULL,NULL,NULL,
+		fstr = _NhlFormatFloat(&Cnp->low_lbls.format,zdv,
+				       fwidth, sig_digits,
+				       left_sig_digit, exp_field_width,
+				       exp_switch_len, point_pos,
 				       Cnp->low_lbls.fcode[0],
 				       "ContourPlotDraw");
 		Substitute(sub,5,fstr);
