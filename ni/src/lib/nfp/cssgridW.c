@@ -351,8 +351,8 @@ NhlErrorTypes csc2s_W(void)
                                has_missing[2],missing+2,missingd+2);
 
     if ( (has_missing[0] && (xid == missingd[0].doubleval)) ||
-         (has_missing[1] && (xid == missingd[1].doubleval)) ||
-         (has_missing[2] && (xid == missingd[2].doubleval))) {
+         (has_missing[1] && (yid == missingd[1].doubleval)) ||
+         (has_missing[2] && (zid == missingd[2].doubleval))) {
       if (dflag) {
         return_value_d[   i] = return_missing.doubleval;
         return_value_d[nt+i] = return_missing.doubleval;
@@ -1141,8 +1141,8 @@ NhlErrorTypes cssgrid_W(void)
  *  that has a missing value.
  */
       if ( (!has_missing[0] || (platd[i] !=  missingd[0].doubleval)) &&
-           (!has_missing[1] || (platd[i] !=  missingd[1].doubleval)) &&
-           (!has_missing[2] || (platd[i] !=  missingd[2].doubleval))) {
+           (!has_missing[1] || (plond[i] !=  missingd[1].doubleval)) &&
+           (!has_missing[2] || (fvald[i] !=  missingd[2].doubleval))) {
         platdt[num_points] = platd[i];
         plondt[num_points] = plond[i];
         fvaldt[num_points] = fvald[i];
