@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <udunits.h>
 #include "wrapper.h"
-
+#include <math.h>
 
 /*
  * Function for initializing Udunits package.  If UDUNITS_PATH is
@@ -120,7 +120,7 @@ NhlErrorTypes ut_calendar_W( void )
  * various
  */
   int i, total_size_x, total_size_date, index_date, return_missing, ret;
-
+  extern float truncf(float);
 /*
  * Before we do anything, initialize the Udunits package.
  */
@@ -373,7 +373,7 @@ NhlErrorTypes ut_calendar_W( void )
 		((int*)date)[index_date+2] = day;
 		((int*)date)[index_date+3] = hour;
 		((int*)date)[index_date+4] = minute;
-		((int*)date)[index_date+5] = truncf(second);
+		((int*)date)[index_date+5] = (int)truncf(second);
 		break;
 
 /*
