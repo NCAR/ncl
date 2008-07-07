@@ -167,11 +167,11 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Calculate size and dimensions for output array, and allocate
  * memory for output array.  The output size will vary depending
- * on what option the user has specified.  Only options -3 to 4
+ * on what option the user has specified.  Only options -3 to 5
  * are currently recognized.
  */
 
-  if(*option < -3 || *option > 4) {
+  if(*option < -3 || *option > 5) {
 	NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Unknown option, defaulting to 0.");
 	*option = 0;
   }
@@ -182,6 +182,13 @@ NhlErrorTypes ut_calendar_W( void )
 	missing_date    = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
 	ndims_date      = ndims_x + 1;
 	date            = (float *)calloc(total_size_date,sizeof(float));
+  }
+  else if(*option == 5) {
+	type_date       = NCL_int;
+	total_size_date = 6 * total_size_x;
+	missing_date    = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
+	ndims_date      = ndims_x + 1;
+	date            = (int *)calloc(total_size_date,sizeof(int));
   }
   else if(*option >= 1 && *option <= 4) {
 	type_date       = NCL_double;
@@ -211,7 +218,7 @@ NhlErrorTypes ut_calendar_W( void )
  * Calculate output dimension sizes.
  */
   for( i = 0; i < ndims_x; i++ ) dsizes_date[i] = dsizes_x[i];
-  if(*option == 0) {
+  if(*option == 0 || *option == 5) {
 	dsizes_date[ndims_x] = 6;
   }
 
@@ -300,6 +307,11 @@ NhlErrorTypes ut_calendar_W( void )
 		((float*)date)[i] = missing_date.floatval;
 	  }
 	}
+	else if(*option == 5) {
+	  for(i = 0; i < total_size_date; i++ ) {
+		((int*)date)[i] = missing_date.intval;
+	  }
+	}
 	else if(*option >= 1 && *option <= 4) {
 	  for(i = 0; i < total_size_date; i++ ) {
 		((double*)date)[i] = missing_date.doubleval;
@@ -353,6 +365,15 @@ NhlErrorTypes ut_calendar_W( void )
 		((float*)date)[index_date+3] = (float)hour;
 		((float*)date)[index_date+4] = (float)minute;
 		((float*)date)[index_date+5] = second;
+		break;
+
+	  case 5:
+		((int*)date)[index_date]   = year;
+		((int*)date)[index_date+1] = month;
+		((int*)date)[index_date+2] = day;
+		((int*)date)[index_date+3] = hour;
+		((int*)date)[index_date+4] = minute;
+		((int*)date)[index_date+5] = truncf(second);
 		break;
 
 /*
@@ -439,6 +460,15 @@ NhlErrorTypes ut_calendar_W( void )
 		((float*)date)[index_date+5] = missing_date.floatval;
 		break;
 
+	  case 5:
+		((int*)date)[index_date]   = missing_date.intval;
+		((int*)date)[index_date+1] = missing_date.intval;
+		((int*)date)[index_date+2] = missing_date.intval;
+		((int*)date)[index_date+3] = missing_date.intval;
+		((int*)date)[index_date+4] = missing_date.intval;
+		((int*)date)[index_date+5] = missing_date.intval;
+		break;
+
 	  case 1:
 	  case 2:
 	  case 3:
@@ -453,7 +483,7 @@ NhlErrorTypes ut_calendar_W( void )
 		break;
 	  }
     }
-    if(*option == 0) {
+    if(*option == 0 || *option == 5) {
 	  index_date += 6;
 	}
 	else {
