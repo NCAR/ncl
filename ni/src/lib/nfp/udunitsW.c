@@ -167,11 +167,11 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Calculate size and dimensions for output array, and allocate
  * memory for output array.  The output size will vary depending
- * on what option the user has specified.  Only options -3 to 5
- * are currently recognized.
+ * on what option the user has specified.  Only options -5 to 4
+ * are currently recognized. (option = -4 doesn't exist.)
  */
 
-  if(*option < -3 || *option > 5) {
+  if(*option < -5 || *option > 4 || *option == -4) {
 	NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Unknown option, defaulting to 0.");
 	*option = 0;
   }
@@ -183,7 +183,8 @@ NhlErrorTypes ut_calendar_W( void )
 	ndims_date      = ndims_x + 1;
 	date            = (float *)calloc(total_size_date,sizeof(float));
   }
-  else if(*option == 5) {
+  else if(*option == -5) {
+/* identical to option=0, except returns ints */
 	type_date       = NCL_int;
 	total_size_date = 6 * total_size_x;
 	missing_date    = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
@@ -218,7 +219,7 @@ NhlErrorTypes ut_calendar_W( void )
  * Calculate output dimension sizes.
  */
   for( i = 0; i < ndims_x; i++ ) dsizes_date[i] = dsizes_x[i];
-  if(*option == 0 || *option == 5) {
+  if(*option == 0 || *option == -5) {
 	dsizes_date[ndims_x] = 6;
   }
 
@@ -307,7 +308,8 @@ NhlErrorTypes ut_calendar_W( void )
 		((float*)date)[i] = missing_date.floatval;
 	  }
 	}
-	else if(*option == 5) {
+	else if(*option == -5) {
+/* identical to option=0, except returns ints */
 	  for(i = 0; i < total_size_date; i++ ) {
 		((int*)date)[i] = missing_date.intval;
 	  }
@@ -367,7 +369,8 @@ NhlErrorTypes ut_calendar_W( void )
 		((float*)date)[index_date+5] = second;
 		break;
 
-	  case 5:
+/* identical to option=0, except returns ints */
+	  case -5:
 		((int*)date)[index_date]   = year;
 		((int*)date)[index_date+1] = month;
 		((int*)date)[index_date+2] = day;
@@ -460,7 +463,8 @@ NhlErrorTypes ut_calendar_W( void )
 		((float*)date)[index_date+5] = missing_date.floatval;
 		break;
 
-	  case 5:
+/* identical to option=0, except returns ints */
+	  case -5:
 		((int*)date)[index_date]   = missing_date.intval;
 		((int*)date)[index_date+1] = missing_date.intval;
 		((int*)date)[index_date+2] = missing_date.intval;
@@ -483,7 +487,7 @@ NhlErrorTypes ut_calendar_W( void )
 		break;
 	  }
     }
-    if(*option == 0 || *option == 5) {
+    if(*option == 0 || *option == -5) {
 	  index_date += 6;
 	}
 	else {
