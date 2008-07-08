@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.19 2008-04-04 21:02:48 kennison Exp $
+C $Id: supmap.f,v 1.20 2008-07-08 21:03:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -122,9 +122,12 @@ C
         ELSE IF (IOUT.LT.400) THEN
           CALL MDLNDR ('Earth..3',MAX(1,MIN(5,MOD(IOUT,100))))
           IF (ICFELL('SUPMAP',15).NE.0) RETURN
+        ELSE IF (IOUT.LT.500) THEN
+          CALL MDLNDR ('Earth..4',MAX(1,MIN(5,MOD(IOUT,100))))
+          IF (ICFELL('SUPMAP',16).NE.0) RETURN
         ELSE
           CALL MDPLOT
-          IF (ICFELL('SUPMAP',16).NE.0) RETURN
+          IF (ICFELL('SUPMAP',17).NE.0) RETURN
         END IF
 C
 C All seems to have gone well - turn off the error flag.
