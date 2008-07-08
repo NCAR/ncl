@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.10 2005-06-22 21:44:24 kennison Exp $
+C $Id: EzmapDemo.f,v 1.11 2008-07-08 22:23:20 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
 C
 C Declarations required to do color fill.
 C
-        PARAMETER (LAMA=2000000,NCRA=100000,NGPS=10,LRWK=2*NCRA)
+        PARAMETER (LAMA=8000000,NCRA=400000,NGPS=10,LRWK=2*NCRA)
 C
         DIMENSION IAMA(LAMA),XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
 C
@@ -322,6 +322,7 @@ C
           CALL GSCR (IWID,105,.4,.6,.2)
           CALL GSCR (IWID,106,.2,.4,.6)
           CALL GSCR (IWID,107,.6,.6,.6)
+          CALL GSCR (IWID,108,.9,1.,1.)
           CALL GSCR (IWID,201,0.,0.,1.)  !  RANGS/GSHHS - Ocean
           CALL GSCR (IWID,202,0.,1.,0.)  !  RANGS/GSHHS - Land
           CALL GSCR (IWID,203,0.,1.,1.)  !  RANGS/GSHHS - Lake
@@ -499,10 +500,12 @@ C
         IF (ISTY.EQ.0) THEN
           CALL MAPGRD
           CALL MAPLBL
-          IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+          IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.
+     +        ODNM.EQ.'E3'.OR.ODNM.EQ.'E4') THEN
             IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
             IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
             IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+            IF (ODNM.EQ.'E4') CALL MPLNDR ('Earth..4',ILVL)
           ELSE IF (ODNM.EQ.'RG') THEN
             CALL MDRGOL (MOD(IRGL,5),RWRK,LRWK)
             IF (NERRO(NERR).NE.0) GO TO 901
@@ -513,19 +516,22 @@ C
           CALL DRSPGD (ISPG,IZN0,PLT0,PLN0,CLT0,CLN0,
      +                      IZN8,PLT8,PLN8,CLT8,CLN8,CHSZ)
         ELSE
-          IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+          IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.
+     +        ODNM.EQ.'E3'.OR.ODNM.EQ.'E4') THEN
             CALL MPSETI ('VS',20)
             CALL ARINAM (IAMA,LAMA)
             IF (NERRO(NERR).NE.0) GO TO 901
             IF (ODNM.EQ.'E1') CALL MPLNAM ('Earth..1',ILVL,IAMA)
             IF (ODNM.EQ.'E2') CALL MPLNAM ('Earth..2',ILVL,IAMA)
             IF (ODNM.EQ.'E3') CALL MPLNAM ('Earth..3',ILVL,IAMA)
+            IF (ODNM.EQ.'E4') CALL MPLNAM ('Earth..4',ILVL,IAMA)
             IF (NERRO(NERR).NE.0) GO TO 901
             CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORB)
             IF (NERRO(NERR).NE.0) GO TO 901
             IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
             IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
             IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+            IF (ODNM.EQ.'E4') CALL MPLNDR ('Earth..4',ILVL)
             CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
             IF (NERRO(NERR).NE.0) GO TO 901
             IAIC=IGETAI (IAMA,CFUX(.5),CFUY(.5),IAAI,IAGI,NGPS,NOGU,1)
@@ -2027,9 +2033,10 @@ C
             PRINT * , '  US => US outlines only'
             PRINT * , '  PS => Continental, political, and US outlines'
             PRINT * , '  PO => Continental and political outlines'
-            PRINT * , '  E1 => The new database "Earth..1"'
-            PRINT * , '  E2 => The new database "Earth..2"'
-            PRINT * , '  E3 => The new database "Earth..3"'
+            PRINT * , '  E1 => The database "Earth..1"'
+            PRINT * , '  E2 => The database "Earth..2"'
+            PRINT * , '  E3 => The database "Earth..3"'
+            PRINT * , '  E4 => The database "Earth..4"'
             PRINT * , '  RG => The RANGS/GSHHS database'
             PRINT * , ' '
             PRINT * , 'Current outline dataset selector: ',ODNM
@@ -2039,8 +2046,10 @@ C
             CALL MUPPER (CTMP)
             IF (CTMP.EQ.'NO'.OR.CTMP.EQ.'CO'.OR.CTMP.EQ.'US'.OR.
      +          CTMP.EQ.'PS'.OR.CTMP.EQ.'PO'.OR.CTMP.EQ.'E1'.OR.
-     +          CTMP.EQ.'E2'.OR.CTMP.EQ.'E3'.OR.CTMP.EQ.'RG') ODNM=CTMP
-            IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+     +          CTMP.EQ.'E2'.OR.CTMP.EQ.'E3'.OR.CTMP.EQ.'E4'.OR.
+     +          CTMP.EQ.'RG') ODNM=CTMP
+            IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.
+     +          ODNM.EQ.'E3'.OR.ODNM.EQ.'E4') THEN
               PRINT * , ' '
               PRINT * , 'Current database level specifier:',ILVL
               PRINT * , ' '
@@ -2244,6 +2253,7 @@ C
                 CALL GSCR (IWID,105,.4,.6,.2)
                 CALL GSCR (IWID,106,.2,.4,.6)
                 CALL GSCR (IWID,107,.6,.6,.6)
+                CALL GSCR (IWID,108,.9,1.,1.)
                 IF (IWID.NE.1) CALL GDAWK (IWID)
   107         CONTINUE
             END IF
@@ -2526,10 +2536,12 @@ C
             IF (ISTY.EQ.0) THEN
               CALL MAPGRD
               CALL MAPLBL
-              IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+              IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.
+     +            ODNM.EQ.'E3'.OR.ODNM.EQ.'E4') THEN
                 IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
                 IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
                 IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+                IF (ODNM.EQ.'E4') CALL MPLNDR ('Earth..4',ILVL)
               ELSE IF (ODNM.EQ.'RG') THEN
                 CALL MDRGOL (MOD(IRGL,5 ),RWRK,LRWK)
               ELSE
@@ -2538,16 +2550,19 @@ C
               CALL DRSPGD (ISPG,IZN0,PLT0,PLN0,CLT0,CLN0,
      +                          IZN8,PLT8,PLN8,CLT8,CLN8,CHSZ)
             ELSE
-              IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+              IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.
+     +            ODNM.EQ.'E3'.OR.ODNM.EQ.'E4') THEN
                 CALL MPSETI ('VS',20)
                 CALL ARINAM (IAMA,LAMA)
                 IF (ODNM.EQ.'E1') CALL MPLNAM ('Earth..1',ILVL,IAMA)
                 IF (ODNM.EQ.'E2') CALL MPLNAM ('Earth..2',ILVL,IAMA)
                 IF (ODNM.EQ.'E3') CALL MPLNAM ('Earth..3',ILVL,IAMA)
+                IF (ODNM.EQ.'E4') CALL MPLNAM ('Earth..4',ILVL,IAMA)
                 CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORB)
                 IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
                 IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
                 IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
+                IF (ODNM.EQ.'E4') CALL MPLNDR ('Earth..4',ILVL)
                 CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLB)
               ELSE IF (ODNM.EQ.'RG') THEN
                 CALL MDRGSF (MOD(IRGL,5),RWRK,LRWK,IAMA,LAMA)
@@ -2711,7 +2726,7 @@ C
   111                 CONTINUE
                       IF (IAI1.GT.0) THEN
                         IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.
-     +                                       ODNM.NE.'E3') THEN
+     +                      ODNM.NE.'E3'.AND.ODNM.NE.'E4') THEN
                           CALL GSFACI (MAPACI(IAI1)+100)
                         ELSE
                           CALL GSFACI (MPISCI(IAI1)+100)
@@ -3965,13 +3980,15 @@ C
         END IF
 C
         IF (IDSL.EQ.1) THEN
-          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.ODNM.NE.'E3') THEN
+          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.
+     +        ODNM.NE.'E3'.AND.ODNM.NE.'E4') THEN
             ODNM='CO'
           ELSE
             ILVL=1
           END IF
         ELSE
-          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.ODNM.NE.'E3') THEN
+          IF (ODNM.NE.'E1'.AND.ODNM.NE.'E2'.AND.
+     +        ODNM.NE.'E3'.AND.ODNM.NE.'E4') THEN
             ODNM='PS'
           ELSE
             ILVL=4
@@ -4125,7 +4142,8 @@ C
         PTLB(ILST+ 1:ILST+12)=' - Database '
         PTLB(ILST+13:ILST+14)=ODNM(1:2)
         ILST=ILST+14
-        IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.ODNM.EQ.'E3') THEN
+        IF (ODNM.EQ.'E1'.OR.ODNM.EQ.'E2'.OR.
+     +      ODNM.EQ.'E3'.OR.ODNM.EQ.'E4') THEN
           PTLB(ILST+1:ILST+10)=' at level '
           CALL PUTINT (PTLB(ILST+11:ILST+11),ILVL)
           ILST=ILST+11
