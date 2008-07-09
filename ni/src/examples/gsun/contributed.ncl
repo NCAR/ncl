@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.168 2008-06-19 18:14:44 shea Exp $
+;      $Id: contributed.ncl,v 1.169 2008-07-09 15:47:56 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8933,4 +8933,31 @@ begin
   x@root         = "complex"
   x@discriminant = d
   return (x)
+end
+
+; **********************************************************************
+; Contributed by Carl J. Schreck, III, July 2008
+;
+; Converts a time variable from one units to another
+;
+; Input variables:
+;   dateFrom: the original date
+;   unitsFrom: the original date units
+;   unitsTo:   the NEW date units
+; Return Value:
+;   retVal:   the date converted to its new units
+;***********************************************************************
+undef("ut_convert")
+function ut_convert( dateFrom:double, unitsFrom:string, unitsTo:string )
+local retVal, tempDate, utcDate
+begin
+ tempDate = dateFrom
+ tempDate@units = unitsFrom
+
+ utcDate = ut_calendar( tempDate, 0 )
+
+ retVal = ut_inv_calendar( utcDate(:,0), utcDate(:,1), utcDate(:,2), \\
+                           utcDate(:,3), utcDate(:,4), utcDate(:,5), \\
+                           unitsTo, 0 )
+ return( retVal )
 end
