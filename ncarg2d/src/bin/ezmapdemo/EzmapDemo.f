@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.11 2008-07-08 22:23:20 kennison Exp $
+C $Id: EzmapDemo.f,v 1.12 2008-07-09 16:49:07 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,7 +25,7 @@ C
 C
 C Declarations required to do color fill.
 C
-        PARAMETER (LAMA=8000000,NCRA=400000,NGPS=10,LRWK=2*NCRA)
+        PARAMETER (LAMA=7500000,NCRA=75000,NGPS=10,LRWK=2*NCRA)
 C
         DIMENSION IAMA(LAMA),XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
 C
@@ -54,6 +54,12 @@ C
         COMMON /EDRGDI/ USNM
           CHARACTER*60 USNM
         SAVE   /EDRGDI/
+C
+C Declare a common block in which to keep track of the largest fill
+C polygon generated.
+C
+        COMMON /RASIZE/ LLPG
+        SAVE   /RASIZE/
 C
 C Declare a couple of variables that determine what projection will be
 C used and how the portion of the projection to be shown is selected.
@@ -526,8 +532,12 @@ C
             IF (ODNM.EQ.'E3') CALL MPLNAM ('Earth..3',ILVL,IAMA)
             IF (ODNM.EQ.'E4') CALL MPLNAM ('Earth..4',ILVL,IAMA)
             IF (NERRO(NERR).NE.0) GO TO 901
+            LLPG=0
             CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORB)
             IF (NERRO(NERR).NE.0) GO TO 901
+            PRINT * , ' '
+            PRINT * , 'Area map length: ',LAMA-IAMA(6)+IAMA(5)+1
+            PRINT * , 'Longest polygon: ',LLPG
             IF (ODNM.EQ.'E1') CALL MPLNDR ('Earth..1',ILVL)
             IF (ODNM.EQ.'E2') CALL MPLNDR ('Earth..2',ILVL)
             IF (ODNM.EQ.'E3') CALL MPLNDR ('Earth..3',ILVL)
@@ -551,8 +561,12 @@ C
             CALL ARINAM (IAMA,LAMA)
             CALL MAPBLA (IAMA)
             IF (NERRO(NERR).NE.0) GO TO 901
+            LLPG=0
             CALL ARSCAM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,COLORA)
             IF (NERRO(NERR).NE.0) GO TO 901
+            PRINT * , ' '
+            PRINT * , 'Area map length: ',LAMA-IAMA(6)+IAMA(5)+1
+            PRINT * , 'Longest polygon: ',LLPG
             CALL MAPLOT
             IF (NERRO(NERR).NE.0) GO TO 901
             CALL MAPGRM (IAMA,XCRA,YCRA,NCRA,IAAI,IAGI,NGPS,DRAWLA)
@@ -2899,6 +2913,8 @@ C
 
       SUBROUTINE COLORA (XCRA,YCRA,NCRA,IAAI,IAGI,NGPS)
         DIMENSION XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
+        COMMON /RASIZE/ LLPG
+        SAVE   /RASIZE/
         IAI1=-1
         DO 101 IGRP=1,NGPS
           IF (IAGI(IGRP).EQ.1) IAI1=IAAI(IGRP)
@@ -2906,6 +2922,7 @@ C
         IF (IAI1.GT.0) THEN
           CALL GSFACI (MAPACI(IAI1)+100)
           CALL GFA    (NCRA-1,XCRA,YCRA)
+          LLPG=MAX(LLPG,NCRA-1)
         END IF
         RETURN
       END
@@ -2930,6 +2947,8 @@ C
 
       SUBROUTINE COLORB (XCRA,YCRA,NCRA,IAAI,IAGI,NGPS)
         DIMENSION XCRA(NCRA),YCRA(NCRA),IAAI(NGPS),IAGI(NGPS)
+        COMMON /RASIZE/ LLPG
+        SAVE   /RASIZE/
         IAI1=-1
         DO 101 IGRP=1,NGPS
           IF (IAGI(IGRP).EQ.1) IAI1=IAAI(IGRP)
@@ -2937,6 +2956,7 @@ C
         IF (IAI1.GT.0) THEN
           CALL GSFACI (MPISCI(IAI1)+100)
           CALL GFA    (NCRA-1,XCRA,YCRA)
+          LLPG=MAX(LLPG,NCRA-1)
         END IF
         RETURN
       END
