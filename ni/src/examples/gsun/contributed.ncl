@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.169 2008-07-09 15:47:56 haley Exp $
+;      $Id: contributed.ncl,v 1.170 2008-07-10 13:05:38 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8938,23 +8938,31 @@ end
 ; **********************************************************************
 ; Contributed by Carl J. Schreck, III, July 2008
 ;
-; Converts a time variable from one units to another
+; Converts a time variable from one units to another. The input
+; variable must contain a "units" attribute of the correct form.
 ;
 ; Input variables:
 ;   dateFrom: the original date
-;   unitsFrom: the original date units
-;   unitsTo:   the NEW date units
+;   unitsTo:  the NEW date units
 ; Return Value:
 ;   retVal:   the date converted to its new units
 ;***********************************************************************
 undef("ut_convert")
-function ut_convert( dateFrom:double, unitsFrom:string, unitsTo:string )
+function ut_convert( dateFrom:numeric, unitsTo:string )
 local retVal, tempDate, utcDate
 begin
- tempDate = dateFrom
- tempDate@units = unitsFrom
+ if(.not.isatt(dateFrom,"units")) then
+   print("ut_convert: 'dateFrom' contains no 'units' attribute.")
+   print("            Will return all missing values.")
+  
+   retVal = new(dimsizes(dateFrom),double)
+   return(retVal)
+ end if
 
- utcDate = ut_calendar( tempDate, 0 )
+ tempDate       = dateFrom
+ tempDate@units = dateFrom@units
+
+ utcDate = ut_calendar( tempDate, -5 )
 
  retVal = ut_inv_calendar( utcDate(:,0), utcDate(:,1), utcDate(:,2), \\
                            utcDate(:,3), utcDate(:,4), utcDate(:,5), \\
