@@ -58,6 +58,8 @@ void _NclAddFileFormats
 {
 	_NclRegisterFormat(NetCdfAddFileFormat,"cdf");
 	_NclRegisterFormat(NetCdfAddFileFormat,"nc");
+	_NclRegisterFormat(NetCdfAddFileFormat,"nc3");
+	_NclRegisterFormat(NetCdfAddFileFormat,"nc4");
 	_NclRegisterFormat(NetCdfAddFileFormat,"netcdf");
 	_NclRegisterFormat(HDFAddFileFormat,"hdf");
 #ifdef BuildHDFEOS
