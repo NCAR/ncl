@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.28 2008-06-03 17:22:40 haley Exp $
+;      $Id: shea_util.ncl,v 1.29 2008-07-15 21:20:34 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2478,7 +2478,6 @@ function boxplot (wks:graphic,x[*]:numeric,y[*][*]:numeric,boxOpts:logical,plotr
 begin
 	dimquery = dimsizes(y)
 	numbox = dimquery(0)
-
 	if (numbox.ne.dimsizes(x)) then
 	   print("Fatal: X must be one-dimensional and both X and Y must have the same rightmost dimension")
 	   exit
@@ -2512,6 +2511,9 @@ begin
 	labarr(0) = ""
 	labarr(numbox+1) = ""
 	labarr(1:numbox) = xAxis(1:numbox)	
+
+; Whether to maximize plot in frame.
+        maximize = get_res_value(plotres,"gsnMaximize",False) 
 
 	if (plotres) then
 	   print("Plot resources detected, accepting")
@@ -2633,6 +2635,12 @@ begin
 	if (isvar("xblab").eq."True") then							
 	   plotres@tmXBLabels = xblab		;reassign XBLabels for possible future plots	
 	end if				
+	if(maximize) then
+          mres = True
+          mres@gsnDraw  = False
+          mres@gsnFrame = False
+          maximize_output(wks,mres)
+        end if
 	return(plot)
 end
 
