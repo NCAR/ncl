@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.170 2008-07-10 13:05:38 haley Exp $
+;      $Id: contributed.ncl,v 1.171 2008-07-22 17:24:43 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -8883,6 +8883,7 @@ end
 
 ; **********************************************************************
 ; D. Shea
+undef("quadroots")
 function quadroots(a[1]:numeric, b[1]:numeric, c[1]:numeric)
 ; solve quadratic formula
 local x, d, droot, dble, two, con, D
