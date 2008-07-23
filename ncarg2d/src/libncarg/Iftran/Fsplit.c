@@ -1,5 +1,5 @@
 /*
- *      $Id: Fsplit.c,v 1.3 2008-03-26 02:14:50 kennison Exp $
+ *      $Id: Fsplit.c,v 1.4 2008-07-23 17:06:38 kennison Exp $
  */
 
 #include <stdio.h>
@@ -147,20 +147,7 @@ main(int argc, char **argv) {
               fprintf(pdst,"C        University Corporation for Atmospheric Research\n");
               fprintf(pdst,"C                All Rights Reserved\n");
               fprintf(pdst,"C\n");
-              fprintf(pdst,"C This file is free software; you can redistribute it and/or modify\n");
-              fprintf(pdst,"C it under the terms of the GNU General Public License as published\n");
-              fprintf(pdst,"C by the Free Software Foundation; either version 2 of the License, or\n");
-              fprintf(pdst,"C (at your option) any later version.\n");
-              fprintf(pdst,"C\n");
-              fprintf(pdst,"C This software is distributed in the hope that it will be useful, but\n");
-              fprintf(pdst,"C WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-              fprintf(pdst,"C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n");
-              fprintf(pdst,"C General Public License for more details.\n");
-              fprintf(pdst,"C\n");
-              fprintf(pdst,"C You should have received a copy of the GNU General Public License\n");
-              fprintf(pdst,"C along with this software; if not, write to the Free Software\n");
-              fprintf(pdst,"C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307\n");
-              fprintf(pdst,"C USA.\n");
+              fprintf(pdst,"C The use of this Software is governed by a License Agreement.\n");
               fprintf(pdst,"C\n");
             }
           }
