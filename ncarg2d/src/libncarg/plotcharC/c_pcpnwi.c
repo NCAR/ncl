@@ -1,5 +1,5 @@
 /*
- *	$Id: c_pcpnwi.c,v 1.5 2002-02-23 03:17:39 haley Exp $
+ *	$Id: c_pcpnwi.c,v 1.6 2008-07-23 15:07:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24,6 +24,7 @@
 *                                                                       *
 ************************************************************************/
 
+#include <stdlib.h>
 #include <ncarg/ncargC.h>
 
 char *c_pcpnwi
@@ -39,11 +40,12 @@ char *c_pcpnwi
 #endif
 {
     int len = 16;
-    char buff[17];
+    char *buff;
 #if defined(cray)
     _fcd cftwhch, ft_str;
     extern NGstring NGCALLF(pcpnwi,PCPNWI)(_fcd,_fcd,int*);
 
+    buff = (char *)malloc((len+1)*sizeof(char));
     ft_str = NGCstrToFstr(buff,len);
     cftwhch = NGCstrToFstr(whch,NGSTRLEN(whch));
     NGCALLF(pcpnwi,PCPNWI)(ft_str,cftwhch,&ipai);
