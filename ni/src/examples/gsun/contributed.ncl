@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.171 2008-07-22 17:24:43 shea Exp $
+;      $Id: contributed.ncl,v 1.172 2008-07-23 21:19:27 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3331,7 +3331,7 @@ begin
 end
 ; **********************************************************************
 ; D. Shea
-; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
+; wrapper for NCL function "linint2"  that copies attributes and coordinate 
 ; vars.  It adds the longitude and latitude coordinates.
 
 undef ("linint2_Wrap")
@@ -8970,3 +8970,43 @@ begin
                            unitsTo, 0 )
  return( retVal )
 end
+
+; **********************************************************************
+; D. Shea
+; wrapper for NCL function "triple2grid"  that copies attributes and coordinate
+; vars.  It adds the longitude and latitude coordinates.
+
+undef ("triple2grid_Wrap")
+function triple2grid_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
+                          ,xo[*]:numeric,yo[*]:numeric, Opt)
+
+; wrapper for NCL function "triple2grid"  that copies attributes and coordinate vars
+
+local fo, dimfi, nDim, nD
+begin
+  fo    = triple2grid (xi,yi,fi, xo,yo, Opt)     ; builtin
+  dimfi = dimsizes(fi)
+  nDimi = dimsizes(dimsizes(fi))                 ; number of in dimensions [rank]
+  nDimo = dimsizes(dimsizes(fo))
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+
+  fo!(nDimo-2) = "Y"                               ; default named dimensions
+  fo!(nDimo-1) = "X"
+                                             ; override if possible
+  if (isdimnamed(yo,0) ) then
+      fo!(nDimo-2)    = yo!0                   ; if present, use xo name
+      fo&$fo!(nDimo-2)$ = yo                     ; create coordinate var
+  end if
+  if (isdimnamed(xo,0)) then
+      fo!(nDimo-1)    = xo!0                   ; if present, use xo name
+      fo&$fo!(nDimo-1)$ = xo                     ; two rightmost dimensions
+  end if
+
+  if (nDimo.ge.2) then
+      copy_VarCoords_1 (fi,fo)
+  end if
+
+  return (fo)
+end
+
