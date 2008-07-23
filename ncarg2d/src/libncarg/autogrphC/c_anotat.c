@@ -1,5 +1,5 @@
 /*
- *	$Id: c_anotat.c,v 1.5 2000-08-22 15:02:26 haley Exp $
+ *	$Id: c_anotat.c,v 1.6 2008-07-23 15:06:21 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -60,13 +60,13 @@ void c_anotat
  *  dshl may only be one string
  */
     if( ndsh == 1 && dshl != NULL ) {
-        maxlen = strlen(dshl);
+        maxlen = strlen((char *)dshl);
         dshl2 = (char *)malloc(maxlen*sizeof(char));
         if( dshl2 == NULL ) {
             (void)fprintf( stderr, "\nc_anotat: Unable to create memory for array dshl2\n" );
             return;
         }
-        strncpy(dshl2,dshl,maxlen);
+        strncpy(dshl2,(char *)dshl,maxlen);
     }
 /*
  *  dshl may be multiple strings
