@@ -1,8 +1,8 @@
 #!/bin/csh -f
 #
-#       $Id: scrip_check_input,v 1.2 2007-10-30 03:17:37 fred Exp $
+#       $Id: scrip_check_input,v 1.3 2008-07-27 03:41:28 haley Exp $
 #
-#       Copyright (C) 2007
+#       Copyright (C) 2007-2008
 #       University Corporation for Atmospheric Research
 #       All Rights Reserved
 #

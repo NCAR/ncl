@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargpath.m,v 1.15 2007-02-27 18:20:03 haley Exp $
+.\"	$Id: ncargpath.m,v 1.16 2008-07-27 03:30:02 haley Exp $
 .\"
 .TH NCARGPATH 8NCARG "November 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -86,22 +86,8 @@ Online:
 .BR ncarg_env(5NCARG), ncarg_gks(3NCARG), ncargintro(5NCARG)
 .sp
 .SH COPYRIGHT
-Copyright (C) 1987-2007
+Copyright (C) 1987-2008
 .br
 University Corporation for Atmospheric Research
 .br
-
-This documentation is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License as published
-by the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This software is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this software; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-USA.
+The use of this Software is governed by a License Agreement.
