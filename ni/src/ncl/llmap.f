@@ -1,24 +1,11 @@
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MAPBD
 C
@@ -526,26 +513,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MAPPOS (ARG1,ARG2,ARG3,ARG4)
         REAL ARG1,ARG2,ARG3,ARG4
@@ -555,26 +529,13 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MAPROJ (ARG1,ARG2,ARG3,ARG4)
         CHARACTER*(*) ARG1
@@ -585,26 +546,13 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MAPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
         CHARACTER*(*) ARG1
@@ -623,26 +571,13 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MAPTRA (RLAT,RLON,UVAL,VVAL)
         REAL   RLAT,RLON,UVAL,VVAL
@@ -660,26 +595,13 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MAPTRI (UVAL,VVAL,RLAT,RLON)
         REAL   UVAL,VVAL,RLAT,RLON
@@ -697,26 +619,13 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MAPTRN (RLAT,RLON,UVAL,VVAL)
         REAL   RLAT,RLON,UVAL,VVAL
@@ -734,26 +643,13 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPCEM (IEM1,IEM2,IERR,IFLG)
 C
@@ -774,26 +670,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPIN1
 C
@@ -922,26 +805,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPIN2 (TST1,TST2,TST3)
         REAL TST1,TST2,TST3
@@ -951,26 +821,13 @@ C
         RETURN
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPINT
 C
@@ -1698,26 +1555,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPPOS (ARG1,ARG2,ARG3,ARG4)
 C
@@ -1768,26 +1612,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPROJ (ARG1,ARG2,ARG3,ARG4)
 C
@@ -1863,26 +1694,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPSET (ARG1,ARG2,ARG3,ARG4,ARG5)
 C
@@ -1950,26 +1768,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPTRI (UVAL,VVAL,RLAT,RLON)
 C
@@ -2345,26 +2150,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPTRN (RLAT,RLON,U,V)
 C
@@ -2684,26 +2476,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDSETD (WHCH,DVAL)
 C
@@ -2805,26 +2584,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       DOUBLE PRECISION FUNCTION RBGDFE (RLAT)
 C
@@ -2883,26 +2649,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       DOUBLE PRECISION FUNCTION RBGLEN (RLAT)
 C
@@ -2959,26 +2712,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       DOUBLE PRECISION FUNCTION RBIDFE (QDFE)
 C
@@ -3048,26 +2788,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       INTEGER FUNCTION IDICTL (ISTR,IDCT,NDCT)
 C
@@ -3098,26 +2825,13 @@ C
 C
       END
 C
-C $Id: llmap.f,v 1.3 2008-04-04 21:03:04 kennison Exp $
+C $Id: llmap.f,v 1.4 2008-07-27 04:05:25 haley Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
 C
-C This file is free software; you can redistribute it and/or modify
-C it under the terms of the GNU General Public License as published
-C by the Free Software Foundation; either version 2 of the License, or
-C (at your option) any later version.
-C
-C This software is distributed in the hope that it will be useful, but
-C WITHOUT ANY WARRANTY; without even the implied warranty of
-C MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-C General Public License for more details.
-C
-C You should have received a copy of the GNU General Public License
-C along with this software; if not, write to the Free Software
-C Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-C USA.
+C The use of this Software is governed by a License Agreement.
 C
       SUBROUTINE MDPTRA (RLAT,RLON,UVAL,VVAL)
 C
