@@ -16,11 +16,6 @@ C
       REAL ZDAT(NLON,NLAT),RWRK(LRWK)
       INTEGER IASF(13),IWRK(LIWK),ICRA(ICAM,ICAN)
       DATA IASF / 13*1 /
-C 
-C Print out a warning about how time consuming this example is
-C 
-      WRITE (6,*) ' WARNING: This example may take 20 minutes or'
-      WRITE (6,*) '          more to execute on some machines.'
 C
 C  Open GKS, open and activate a workstation.
 C
@@ -194,7 +189,7 @@ C
      2         MAX(0.,MIN(1.,1.-REAL(ABS(I- 9)/10.))),
      3         MAX(0.,MIN(1.,1.-REAL(ABS(I-15)/10.))))
  10   CONTINUE
-      CALL GSCR (IWKID,16,1.,0.,0)
+      CALL GSCR (IWKID,16,1.,0.,0.)
 C     Define color to be used outside the grid.
       CALL GSCR (IWKID,101,0.,0.,0.)
 C     Define color to be used in special-value areas.
