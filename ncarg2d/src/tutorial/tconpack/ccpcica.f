@@ -123,7 +123,7 @@ C
             ZDAT(I,J)=((ZDAT(I,J)-ZMIN)/(ZMAX-ZMIN))*130.-10.
  40      CONTINUE
  30   CONTINUE
-      DO 50 I=175,185
+      DO 50 I=20,60
          DO 60 J=85,95
             ZDAT(I,J)=1.E36
  60      CONTINUE
