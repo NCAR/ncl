@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.172 2008-07-23 21:19:27 shea Exp $
+;      $Id: contributed.ncl,v 1.173 2008-07-29 22:48:39 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1795,13 +1795,27 @@ end
 
 undef("decimalPlaces")
 function decimalPlaces (x:numeric, nDec:integer, Round:logical)
-local xType, shift, xTmp, iTmp
+local xType, shift, xTmp, iTmp, zero, half, one, HALF
 begin
   xType = typeof(x)
+
   if (xType.eq."float"  .or.  xType.eq."double") then
-      shift = 10.^nDec                  ; type float
+      if (xType.eq."double") then
+          zero = 0.0d
+          half = 0.5d
+          one  = 1.0d
+          shift = 10.d^nDec
+      else
+          zero  = 0.0
+          half  = 0.5
+          one   = 1.0
+          shift = 10.^nDec
+      end if
+
+      HALF = where(x.lt.zero, -half, half)
+
       if (Round) then
-          xTmp = (x + 0.5/shift)*shift  ; xTmp same type as x
+          xTmp = (x + HALF/shift)*shift  ; xTmp same type as x
       else
           xTmp = x*shift
       end if
@@ -1819,6 +1833,7 @@ begin
       return (x)                        ; must not be float or double
   end if
 end
+
 ; *******************************************************************
 ; D. Shea
 ; Compute a dimension average of "x" [x may have many dimensions]
