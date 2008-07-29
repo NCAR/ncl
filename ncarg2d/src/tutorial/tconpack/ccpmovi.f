@@ -16,11 +16,6 @@ C
       INTEGER IASF(13)
       DATA IASF / 13*1 /
 C 
-C Print out a warning about how time consuming this example is
-C 
-      WRITE (6,*) ' WARNING: This example may take 20 minutes or'
-      WRITE (6,*) '          more to execute on some machines.'
-C 
 C Open GKS, turn clipping off, and set up GKS flags.
 C Use workstation type 3 for use with Gflash.
 C 
@@ -111,7 +106,7 @@ C
             ZDAT(I,J)=((ZDAT(I,J)-ZMIN)/(ZMAX-ZMIN))*130.-10.
  40      CONTINUE
  30   CONTINUE
-      DO 50 I=175,185
+      DO 50 I=20,60
          DO 60 J=85,95
             ZDAT(I,J)=1.E36
  60      CONTINUE
