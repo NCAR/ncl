@@ -1,5 +1,5 @@
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-;                  diagnostics.ncl                             
+;                  diagnostics_cam.ncl                             
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 ; gsn_code.ncl, gsn_csm.ncl, contributed.ncl  must be preloaded.
 ;-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -1027,6 +1027,29 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
    addHorVertLines(wks, plot, x1,x2,y1,y2,y3,y4 ) ; add dashed lines
    frame(wks)
    delete(wks)
+
+;------------------------------------------------------
+; Is netCDF option set?
+;------------------------------------------------------
+   if (opt .and. isatt(opt,"netCDF") .and. opt@netCDF) then
+       if (isatt(opt,"dirNetCDF")) then
+           dirNetCDF = opt@dirNetCDF
+       else
+           dirNetCDF = "./" 
+       end if
+       if (isatt(opt,"filNetCDF")) then
+           filNetCDF = opt@filNetCDF
+       else
+           filNetCDF = "SpaceTime."+varName+".nc"
+       end if
+       fNam      = dirNetCDF+filNetCDF
+       system ("/bin/rm -f "+fNam)
+        
+       ncdf      = addfile(fNam, "c")
+
+       ncdf->FIG_1_SYM  =  sym
+       ncdf->FIG_1_ASYM = asym
+   end if
     
 ;-----------------------------------------------------------------------------
 ; ******  now derive and plot the background spectrum (red noise) ************
@@ -1294,6 +1317,15 @@ local latN, latS, lonL, lonR, spd, fCrit, tim_taper        \
        statAsymSym(  sym, "Fig_3b" )
    end if
 
+;------------------------------------------------------
+; Is netCDF option set?
+;------------------------------------------------------
+   if (opt .and. isatt(opt,"netCDF") .and. opt@netCDF) then
+       ncdf->FIG_3_BACK = spec
+       ncdf->FIG_3_SYM  =  sym
+       ncdf->FIG_3_ASYM = asym
+   end if
+
    if (debug) then
        print("********** FINISHED: Space-Time *****************")
    end if
@@ -1411,7 +1443,7 @@ end
 ;------------------------------------------------------- 
 ; L2 error norms
 ;------------------------------------------------------- 
- undef("l2_norm_a")         ; EQUATION 17
+ undef("l2_norm_a")        
  function l2_norma( x[*][*][*][*]:numeric, wy[*], wz )
  local dimx, dimwz, rankwz, ntim, l2a, nt, xzon, xzonc \
      , dif2, wyc, wywz, wywzs
@@ -1453,7 +1485,7 @@ end
 ;------------------------------------------------------- 
 ; L2 error norms
 ;------------------------------------------------------- 
- undef("l2_norm_b")         ; EQUATION 18
+ undef("l2_norm_b")         
  function l2_normb( x[*][*][*][*]:numeric, wy[*], wz )
  local dimx, dimwz, rankwz, ntim, l2b, nt, xzon0, xzonc \
      , dif2, wyc, wywz, wywz
@@ -1492,6 +1524,26 @@ end
    l2b@info = "x(:,:,:,:)-dimavg(x(0,:,:,:))"
    return( l2b ) 
  end
+;------------------------------------------------------- 
+; l2 norm written by Mark Taylor
+; function  || T || on 2D horizontal array
+;------------------------------------------------------- 
+function norml2 (varz[*][*]:numeric,gw[*]:numeric)
+local s2, gs, varl
+begin
+  s2 =  dimsizes(varz)
+  gs =  dimsizes(gw)
+
+  if ( s2(0) .ne. gs(0) ) then
+     print ("norml2: error: first dimension does not match weight dimension: " \
+            + s2(0) + " " + gs(0)
+ )
+  end if
+
+  varl = ( gw # (varz^2) )/sum(gw)
+  return( sqrt( sum(varl)/s2(1) ))
+end
+
 ;------------------------------------------------------- 
 ; Energy
 ;------------------------------------------------------- 
