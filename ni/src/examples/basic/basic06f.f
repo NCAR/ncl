@@ -206,7 +206,7 @@ C
       stop
       end
 
-      subroutine draw_plot(id,x,y,scale)
+      subroutine draw_plot(id,x,y,scale,ierr)
 C
 C This procedure takes the plot object with identifier 'id' and 
 C draws it centered at coordinate (x,y) and scaled by 'scale'.  
@@ -247,7 +247,7 @@ C
       return
       end
 
-      subroutine draw_text(id,x,y,height)
+      subroutine draw_text(id,x,y,height,ierr)
 C
 C This procedure takes the text string in the object identified by 'id'
 C and draws it centered at coordinate (x,y) with a height of 'height'.
