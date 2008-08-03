@@ -1,5 +1,5 @@
 C
-C      $Id: st04f.f,v 1.7 2003-03-03 16:33:53 grubin Exp $
+C      $Id: st04f.f,v 1.8 2008-08-03 18:38:33 fred Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -51,16 +51,16 @@ C
       external NhlFTextItemClass
       external NhlFMapPlotClass
 C
-C Depending on the value of the TIMESTEPS variable declared below,
+C Depending on the value of the ITIMESTEPS variable declared below,
 C this example example can generate up to 61 frames from the 64
 C timesteps in the data files. As shipped, only the first 20 frames 
 C are created. To see the complete plot uncomment the second 
-C assignment to TIMESTEPS. Some systems may not have enough physical
+C assignment to ITIMESTEPS. Some systems may not have enough physical
 C memory to allow all frames to be viewed as an animation.
 C
-C      parameter(TIMESTEPS=64)
+C      parameter(ITIMESTEPS=64)
 C
-      parameter(TIMESTEPS=20)
+      parameter(ITIMESTEPS=20)
       parameter(NLAT=33,NLON=36)
 
       integer NCGM, X11, PS, PDF
@@ -348,7 +348,7 @@ C
       cnt(1) = 8
       call ncvgtc(ncid(2),tmid,strt,cnt,rftime,8,ierr)
 
-      do 100 i=0,TIMESTEPS-1
+      do 100 i=0,ITIMESTEPS-1
          if (i .ne. 17 .and. i .ne. 36 .and. i .ne. 37) then
 C
 C Figure out the hour and day from the timestep, convert to strings
