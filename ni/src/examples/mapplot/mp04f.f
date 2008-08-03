@@ -27,7 +27,7 @@ C
 C
 C Define enough frames for a fairly smooth animation.
 C
-      parameter(FRAME_COUNT=36,NDIM=25)
+      parameter(IFRAME_COUNT=36,NDIM=25)
 
       character*50 name(NDIM)
       real lat(NDIM),lon(NDIM)
@@ -156,12 +156,12 @@ C
          call NhlFSetValues(am_ids(i),rlist,ierr)
  20   continue
 C
-C Create FRAME_COUNT plots, varying the center longitude by an equal
+C Create IFRAME_COUNT plots, varying the center longitude by an equal
 C amount each time.
 C
-      do 30 i = FRAME_COUNT,1,-1
+      do 30 i = IFRAME_COUNT,1,-1
          call NhlFRLClear(rlist)
-         call NhlFRLSetfloat(rlist,'mpCenterLonF',i*360.0/FRAME_COUNT,
+         call NhlFRLSetfloat(rlist,'mpCenterLonF',i*360.0/IFRAME_COUNT,
      1    ierr)
          call NhlFSetValues(mapid,rlist,ierr)
          call NhlFDraw(mapid,ierr)
