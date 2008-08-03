@@ -1,5 +1,5 @@
 /*
- *      $Id: vc08c.c,v 1.4 2003-03-03 20:20:54 grubin Exp $
+ *      $Id: vc08c.c,v 1.5 2008-08-03 01:06:06 fred Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -22,6 +22,7 @@
  */
 
 #include <math.h>
+#include <stdio.h>
 #include <ncarg/gks.h>
 #include <ncarg/ncargC.h>
 #include <ncarg/hlu/hlu.h>
@@ -58,6 +59,15 @@ main()
     char filename[256], recname[50];
     const char *dir = _NGGetNCARGEnv("data");
     char title[256], subtitle[256], txtstring[256];
+
+/*
+ * Initialize the char arrays.
+ */
+    for (i = 0; i < 256; i++) {
+      title[i] = '\0';
+      subtitle[i] = '\0';
+      txtstring[i] = '\0';
+    }
 /*
  * Open the netCDF file.
  */
