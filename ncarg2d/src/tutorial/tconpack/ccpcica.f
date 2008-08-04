@@ -1,5 +1,10 @@
-
       PROGRAM CCPCICA
+C
+C This program plots contours over a world map.  The subroutine
+C MKDAT generates some random data and sets values between longitudes
+C 121W and 161W and between latitudes 6S to 4N to the special value
+C 1.E36.  These special values will be plotted as gray, the color
+C so specified for this in subroutine COLOR.
 C
 C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID to be used in calls to GKS routines.
@@ -45,7 +50,8 @@ C Setup a map
 C 
       CALL SETMAP ('SV',40.,-105.)
 C 
-C Setup contour options
+C Setup contour options - in particular set the special value
+C to 1.E36 .
 C 
       CALL SETCTR (0,1,-180.,180.,-90.,90.,1.E36)
 C 
