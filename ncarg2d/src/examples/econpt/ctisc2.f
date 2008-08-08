@@ -2203,9 +2203,21 @@ C
               T3=SIGN(1.,A3*X0+B3*Y0+C3*Z0)
               IF (S1.EQ.T1.AND.S2.EQ.T2.AND.S3.EQ.T3) GO TO 103
             ELSE
-              D1=ABS(A1*X0+B1*Y0+C1*Z0)/SQRT(A1*A1+B1*B1+C1*C1)
-              D2=ABS(A2*X0+B2*Y0+C2*Z0)/SQRT(A2*A2+B2*B2+C2*C2)
-              D3=ABS(A3*X0+B3*Y0+C3*Z0)/SQRT(A3*A3+B3*B3+C3*C3)
+              T1=2.*((X0-X2)*(X3-X2)+(Y0-Y2)*(Y3-Y2)+(Z0-Z2)*(Z3-Z2))/
+     +              ((X3-X2)*(X3-X2)+(Y3-Y2)*(Y3-Y2)+(Z3-Z2)*(Z3-Z2))
+              T1=MAX(0.,MIN(1.,T1))
+              D1=(X2-X0+(X3-X2)*T1)**2+(Y2-Y0+(Y3-Y2)*T1)**2+
+     +                                 (Z2-Z0+(Z3-Z2)*T1)**2
+              T2=2.*((X0-X3)*(X1-X3)+(Y0-Y3)*(Y1-Y3)+(Z0-Z3)*(Z1-Z3))/
+     +              ((X1-X3)*(X1-X3)+(Y1-Y3)*(Y1-Y3)+(Z1-Z3)*(Z1-Z3))
+              T2=MAX(0.,MIN(1.,T2))
+              D2=(X3-X0+(X1-X3)*T2)**2+(Y3-Y0+(Y1-Y3)*T2)**2+
+     +                                 (Z3-Z0+(Z1-Z3)*T2)**2
+              T3=2.*((X0-X1)*(X2-X1)+(Y0-Y1)*(Y2-Y1)+(Z0-Z1)*(Z2-Z1))/
+     +              ((X2-X1)*(X2-X1)+(Y2-Y1)*(Y2-Y1)+(Z2-Z1)*(Z2-Z1))
+              T3=MAX(0.,MIN(1.,T3))
+              D3=(X1-X0+(X2-X1)*T3)**2+(Y1-Y0+(Y2-Y1)*T3)**2+
+     +                                 (Z1-Z0+(Z2-Z1)*T3)**2
               DIST=MIN(D1,D2,D3)
               IF (IBST.EQ.0.OR.DIST.LT.DBST) THEN
                 IBST=IPOS
