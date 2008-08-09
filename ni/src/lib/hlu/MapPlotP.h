@@ -1,5 +1,5 @@
 /*
- *      $Id: MapPlotP.h,v 1.27 2006-06-15 16:45:56 dbrown Exp $
+ *      $Id: MapPlotP.h,v 1.28 2008-08-09 00:25:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -36,7 +36,7 @@
 #define Nhl_mpDEF_DASH_SEGLEN	0.15
 #define Nhl_mpDEF_LABEL_HEIGHT  0.008
 #define Nhl_mpMAX_AREA_GROUPS	256
-#define Nhl_mpMIN_AREA_GROUPS	10
+#define Nhl_mpMIN_AREA_GROUPS	11
 #define mpALLOC_UNIT		128
 
 typedef struct _NhlmpLineAttrs {

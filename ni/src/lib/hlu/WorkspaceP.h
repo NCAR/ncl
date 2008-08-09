@@ -1,5 +1,5 @@
 /*
- *      $Id: WorkspaceP.h,v 1.8 1998-11-10 17:18:48 dbrown Exp $
+ *      $Id: WorkspaceP.h,v 1.9 2008-08-09 00:25:02 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -31,7 +31,7 @@
 #define NhlwsMIN_THRESHOLD	8096
 #define NhlwsMIN_MAXIMUM	262144
 #define NhlwsIDLE_REC_ALLOC	64
-#define NhlwsMAX_GKS_POINTS	200000
+#define NhlwsMAX_GKS_POINTS	500000
 #define NhlwsMAX_AREA_GROUPS	64
 #define DEBUG_WS		0
 
