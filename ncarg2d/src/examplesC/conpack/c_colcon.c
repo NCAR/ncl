@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 /*
  * Function prototypes for NCARG and NCARG-GKS routines
