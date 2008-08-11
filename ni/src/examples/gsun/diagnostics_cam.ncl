@@ -1536,8 +1536,7 @@ begin
 
   if ( s2(0) .ne. gs(0) ) then
      print ("norml2: error: first dimension does not match weight dimension: " \
-            + s2(0) + " " + gs(0)
- )
+            + s2(0) + " " + gs(0))
   end if
 
   varl = ( gw # (varz^2) )/sum(gw)
