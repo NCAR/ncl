@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.26 2007-09-26 22:52:19 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.27 2008-08-11 20:17:09 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2838,8 +2838,8 @@ static NhlErrorTypes mpSetUpAreamap
 	 * the default data set, which usually requires no more than
 	 * mpWORKSPACE_SIZE_REQ bytes in the workspace.
 	 */
-	req_size = MAX(100000,MIN(mpWORKSPACE_SIZE_REQ,
-		       (int) 4 * 65 * mv41p->data_set_point_count));
+	req_size = MAX(mpWORKSPACE_SIZE_REQ,
+		       (int) 4 * 16 * mv41p->data_set_point_count);
 #if 0
 	printf("point count %d req size %d\n",
 	       mv41p->data_set_point_count,req_size);
