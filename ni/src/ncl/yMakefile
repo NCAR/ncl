@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.141 2008-08-13 01:12:56 dbrown Exp $
+#      $Id: yMakefile,v 1.142 2008-08-14 16:17:59 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2008-08-13 01:12:56 $
+#	Date:		$Date: 2008-08-14 16:17:59 $
 #
 #	Description:	
 #
@@ -173,7 +173,7 @@ NIO_NCL_INCLUDES =  	DataSupport.h FileSupport.h NclData.h NclDataDefs.h NclFile
                         NclMdInc.h NclMultiDValData.h NclMultiDValHLUObjData.h NclMultiDVallistData.h \
 			NclMultiDValnclfileData.h NclOneDValCoordData.h NclType.h NclTypebyte.h NclTypechar.h \
 			NclTypedouble.h NclTypefloat.h NclTypeint.h NclTypelogical.h NclTypelong.h NclTypeobj.h \
-			NclTypeshort.h NclTypestring.h NclVar.h Nio.h Symbol.h TypeSupport.h defs.h
+			NclTypeshort.h NclTypestring.h NclVar.h nio.h Symbol.h TypeSupport.h defs.h
 PYNIO_SRC_DIR   =	$(TOP)/pynio
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
