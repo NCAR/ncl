@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.48 2008-02-20 00:33:57 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.49 2008-08-15 07:47:58 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1487,7 +1487,7 @@ long *stride;
 						stepdl = stepdl->next;
 					}
 					if(stepdl->dim_inq->is_unlimited) {
-						stepdl->dim_inq->size = finish[i] + 1;
+						stepdl->dim_inq->size = MAX(finish[i] + 1,stepdl->dim_inq->size);
 					}
 					
 				}
@@ -2223,6 +2223,7 @@ long* dim_sizes;
 #endif
 			}
 			if(ret < 0) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,(char*)nc_strerror(ret));
 				NclFree(the_data_type);
 				return(NhlFATAL);
 			} 
