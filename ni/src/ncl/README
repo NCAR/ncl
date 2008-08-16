@@ -67,25 +67,18 @@ n 1.0.0)
 
 
 
-1. There are weird problems with the "markers.ncl" script in
-ncargtest/nclscripts/plotting on some systems (seems to be with Linux
-systems running gcc4, so far). On jupiter, compiling HLUFunctions.c
-with optimization turned off makes it work.  The last line of the
-following script was causing a "fatal:Execute: Error occurred at or
-near line 15 in file script.ncl" error. (This is due to the "(/34/)"
-syntax. If I remove the "(/" and "/)" it works):
+1. There are weird problems with the 2-line script:
 
-appid = create "app" appClass defaultapp end create
-wks   = create "ps" psWorkstationClass defaultapp end create
+  wks = create "test" ncgmWorkstationClass defaultapp end create
+  nmark = NhlNewMarker(wks, "+", 4, 0.0, 0.0, 1.0, 0.1, 0.)
 
-letter = "u"
-xoff   = 0.0
-yoff   = 0.0
-ratio  = 1.0
-size   = 1.0
-angle  = 90
+on some systems (seems to be with Linux systems running gcc 4.1.2, so
+far). It was producing the error message:
 
-new_markers = NhlNewMarker(wks,letter,(/34/),xoff,yoff,ratio,size,angle)
+fatal:Execute: Error occurred at or near line 2 in file test.ncl
+
+On wedge.rap.ucar.edu, compiling HLUFunctions.c *and* Memory.c with
+optimization turned off makes it work.
 
 2. For same system as above, I also had to turn off optimization for
 "lib/hlu/Format.c" because it would cause the "tm04n.ncl" example to
