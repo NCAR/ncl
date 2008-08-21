@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.173 2008-07-29 22:48:39 shea Exp $
+;      $Id: contributed.ncl,v 1.174 2008-08-21 17:33:35 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9024,4 +9024,79 @@ begin
 
   return (fo)
 end
+;**************************************************************
+; Calculate the PDF of an array
+; Original source IDL code by Andrew Gettleman
 
+undef("pdfx")
+function pdfx(x:numeric, nbin[1]:integer, opt:logical)
+local nGood, nbins, xMin, xMax, mnmxint, xSpace \
+     ,bin, pdf, nTot
+begin
+  nGood = num(.not.ismissing(x))
+  if (nGood.lt.3) then
+      print("pdfx: nGood="+nGood+" : Need more non-missing points")
+      exit
+  end if
+
+  if (nbin.le.2) then
+      nbins = 50             ; default
+  else
+      nbins = nbin
+  end if
+
+  xMin = 0.0d     ; not required but done for test
+  xMax = 0.0d
+
+  if (opt .and. isatt(opt,"bin_min")) then  
+      xMin = opt@bin_min                    ; user set
+  else
+      xMin = min(x)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"bin_max")) then  
+      xMax = opt@bin_max                    ; user set
+  else
+      xMax = max(x)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"bin_nice")) then ; nice xMin, xMax
+      outside = False
+      if (isatt(opt,"bin_nice_outside")) then
+          outside = opt@bin_nice_outside
+      end if
+      mnmxint = nice_mnmxintvl( min(x), max(x), nbins, outside)
+      xMin    = mnmxint(0)
+      xMax    = mnmxint(1)
+      xSpace  = mnmxint(2)
+      nbins   = round( (xMax-xMin)/xSpace , 3) 
+  end if
+
+  binBound    = fspan(xMin,xMax,nbins+1)
+  pdf         = new( nbins, "double", getFillValue(x))
+  binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
+  pdf         = 0.0d
+
+  do nb=0,nbins-2
+     pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
+  end do
+
+  nTot = num(x.ge.xMin .and. x.le.xMax)   ; actual number used
+ ;nTot = nGood
+  pdf  = pdf/nTot              ; frequency
+
+  pdf@bin_center     = binCenter
+  pdf@bin_bounds     = binBound
+  pdf@bin_bound_min  = min(binBound)
+  pdf@bin_bound_max  = max(binBound)
+  pdf@bin_spacing    = binBound(2)-binBound(1)
+  pdf@nbins          = nbins
+
+  pdf@long_name      = "PDF"
+  if (isatt(x,"long_name")) then
+      pdf@long_name  = "PDF: "+x@long_name
+  end if
+  pdf@units          = "frequency"
+  
+  return( pdf )
+end
