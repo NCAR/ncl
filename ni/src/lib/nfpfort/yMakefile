@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.31 2008-06-03 05:08:59 shea Exp $
+#      $Id: yMakefile,v 1.32 2008-08-24 13:02:48 haley Exp $
 #
 
 MYNAME		=	libnfpfort
@@ -27,7 +27,8 @@ FOBJS = aam.o areaAve.o areaAve2.o areaRmse.o areaRmse2.o areaSum2.o	\
 	wrf_bint3d.o erf_sub.o dimavgwgt.o dimsumwgt.o wgtVertAvg_beta.o \
 	student_tprob.o dpres_plevel_dp.o fill_msg_grid.o sg_tools.o \
 	dcolconv.o cfft_driver.o wk_smooth121.o conservLinInt_2d_ncl.o \
-        dz_height.o
+        dz_height.o covcorm_driver.o
+
 
 LibraryTarget($(MYNAME),$(FOBJS))
 

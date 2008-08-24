@@ -48,7 +48,7 @@ c                                              ! input
       integer ntim, nvar, iopt, lvcm, ier
       double precision x(ntim,nvar), xmsg, trace
 c                                              ! output
-      double precision vcm(lvcm), trace
+      double precision vcm(lvcm)
 C NCLEND
 
       ier   = 0
