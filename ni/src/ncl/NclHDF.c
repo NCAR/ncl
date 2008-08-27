@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.27 2008-02-12 14:28:02 grubin Exp $
+ *      $Id: NclHDF.c,v 1.28 2008-08-27 18:39:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -268,6 +268,7 @@ static void *HDFMapFromNcl
 		*(nc_type*)out_type = NC_SHORT;
                 break;
 	case NCL_int:
+	case NCL_logical:
 		*(nc_type*)out_type = NC_LONG;
                 break;
 	case NCL_long:

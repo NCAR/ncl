@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.49 2008-08-15 07:47:58 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.50 2008-08-27 18:39:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -203,6 +203,7 @@ static void *NetMapFromNcl
 		*(nc_type*)out_type = NC_SHORT;
                 break;
 	case NCL_int:
+	case NCL_logical:
 		*(nc_type*)out_type = NC_LONG;
                 break;
 	case NCL_long:
