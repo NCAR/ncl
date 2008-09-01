@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.174 2008-08-21 17:33:35 shea Exp $
+;      $Id: contributed.ncl,v 1.175 2008-09-01 13:25:06 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9099,4 +9099,46 @@ begin
   pdf@units          = "frequency"
   
   return( pdf )
+end
+; ----
+undef ("genNormalDist")
+function genNormalDist(xAve[1]:numeric, xStd[1]:numeric, opt:logical) 
+; Usage:
+;   xAve = 100
+;   xStd =  10
+;   xNor = createNormal(xAve, xStd, False)
+local one, pi, spn, N, con, xVar, x, nor
+begin
+  if (typeof(xAve).eq."double" .or. typeof(xAve).eq."double") then
+      one  = 1.0d
+      pi   = 4.0d*atan(1.0d)/180.0d
+      spn  = 3.0d                    ; 99.7% of normal
+  else
+      one  = 1.0
+      pi   = 4.0*atan(1.0)/180.0
+      spn  = 3.0
+  end if
+
+  if (opt .and. isatt(opt,"std_span")) then
+      spn = opt@std_span
+  end if
+
+  if (opt .and. isatt(opt,"npts")) then
+      N = opt@npts
+  else
+      N = 100
+  end if
+
+  con  = one/(xStd*sqrt(2*pi))
+  xVar = xStd^2
+
+  x   = fspan( (xAve-spn*xStd), (xAve+spn*xStd), N)
+  nor = con*exp(-((x-xAve)^2/(2*xVar)) )
+  nor@long_name = "Normal Distribution"
+
+  if (isatt(xAve,"units")) then
+      x@units = xAve@units
+  end if
+  nor@x = x
+  return( nor )
 end
