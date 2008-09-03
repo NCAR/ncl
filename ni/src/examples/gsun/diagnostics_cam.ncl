@@ -1572,7 +1572,7 @@ end
    a     = 6.371229e6   ; m            
    g     = 9.80616      ; m/s^2
    cp    = 1004.64      ; J/(kg-K)
-   twopi = 4.*atan(1.0)
+   twopi = 8.*atan(1.0)
 
    do nt=0,ntim-1
       s = conform(u(nt,:,:,:), phis(nt,:,:), (/1,2/))
