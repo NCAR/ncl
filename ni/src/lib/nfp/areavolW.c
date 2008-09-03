@@ -857,6 +857,8 @@ NhlErrorTypes wgt_arearmse_W( void )
  */
     ret = NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_dq,NCL_double,0);
   }
+  NclFree(dsizes_rmse);
+  return(ret);
 }
 
 
@@ -884,7 +886,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_q, nx, ny, nxny, total_leftmost;
+  int i, index_q, nx, ny, nxny, total_leftmost, ret;
 
 /*
  * Retrieve arguments.
@@ -1075,14 +1077,16 @@ NhlErrorTypes wgt_arearmse2_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_rq,NCL_float,0));
+    ret = NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_rq,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_dq,NCL_double,0));
+    ret = NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_dq,NCL_double,0);
   }
+  NclFree(dsizes_rmse);
+  return(ret);
 }
 
 
@@ -1110,7 +1114,7 @@ NhlErrorTypes wgt_volave_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_x, nx, ny, nz, nxnynz, total_leftmost;
+  int i, index_x, nx, ny, nz, nxnynz, total_leftmost, ret;
 
 /*
  * Retrieve arguments.
@@ -1300,14 +1304,16 @@ NhlErrorTypes wgt_volave_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_rx,NCL_float,0));
+    ret = NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_dx,NCL_double,0));
+    ret = NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_ave);
+  return(ret);
 }
 
 
@@ -1335,7 +1341,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_x, nx, ny, nz, nxnynz, total_leftmost;
+  int i, index_x, nx, ny, nz, nxnynz, total_leftmost, ret;
 
 /*
  * Retrieve arguments.
@@ -1551,16 +1557,17 @@ NhlErrorTypes wgt_volave_ccm_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_rx,NCL_float,0));
+    ret = NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_rx,NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_dx,NCL_double,0));
+    ret = NclReturnValue(ave,ndims_ave,dsizes_ave,&missing_dx,NCL_double,0);
   }
+  NclFree(dsizes_ave);
+  return(ret);
 }
-
 
 
 NhlErrorTypes wgt_volrmse_W( void )
@@ -1589,7 +1596,7 @@ NhlErrorTypes wgt_volrmse_W( void )
 /*
  * Declare various variables for random purposes.
  */
-  int i, index_q, klev, nlon, nlat, klevnlatnlon, total_leftmost;
+  int i, index_q, klev, nlon, nlat, klevnlatnlon, total_leftmost, ret;
 
 /*
  * Retrieve arguments.
@@ -1823,16 +1830,18 @@ NhlErrorTypes wgt_volrmse_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_rq,
-                          NCL_float,0));
+    ret = NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_rq,
+                         NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_dq,
-                          NCL_double,0));
+    ret = NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_dq,
+                         NCL_double,0);
   }
+  NclFree(dsizes_rmse);
+  return(ret);
 }
 
 
@@ -2142,15 +2151,15 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
 /*
  * Return float values with missing value set.
  */
-    return(NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_rq,
-                          NCL_float,0));
+    ret = NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_rq,
+                         NCL_float,0);
   }
   else {
 /*
  * Return double values with missing value set.
  */
-    return(NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_dq,
-                          NCL_double,0));
+    ret = NclReturnValue(rmse,ndims_rmse,dsizes_rmse,&missing_dq,
+                         NCL_double,0);
   }
   NclFree(dsizes_rmse);
   return(ret);
