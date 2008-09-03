@@ -368,6 +368,7 @@ extern NhlErrorTypes lspoly_W(void);
 extern NhlErrorTypes fourier_info_W(void);
 extern NhlErrorTypes stdatmus_z2tdp_W(void);
 extern NhlErrorTypes stdatmus_p2tdz_W(void);
+extern NhlErrorTypes covcorm_W(void);
 
 extern NhlErrorTypes rdsstoi_W(void);
 extern NhlErrorTypes vibeta_W(void);
@@ -5240,7 +5241,19 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(rdsstoi_W,args,"rdsstoi",nargs);
 
-    dimsizes[0] = 1;
+/*
+ * Register "covcorm".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    dimsizes[0] = 2;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+    NclRegisterFunc(covcorm_W,args,"covcorm",nargs);
+
 /*
  * Register "vibeta".
  *
@@ -5248,6 +5261,8 @@ void NclAddUserFuncs(void)
  */
     nargs = 0;
     args = NewArgs(6);
+
+    dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
