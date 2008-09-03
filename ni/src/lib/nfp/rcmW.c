@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include "wrapper.h"
 
-extern void NGCALLF(drcm2rgrid,DRCM2RGRID)(int *,int *,double *,double *,
+extern void NGCALLF(drcm2rgrid,DRCM2RGRID)(int *,int *,int *,double *,double *,
                                            double *,int *,double *,int*,
                                            double *,double *,double*,
-                                           double *,int *);
+                                           int *,int *,int *);
 
-extern void NGCALLF(drgrid2rcm,DRGRID2RCM)(int *,int *,double *,double *,
+extern void NGCALLF(drgrid2rcm,DRGRID2RCM)(int *,int *,int *,double *,double *,
                                            double *,int *,int *,double *,
                                            double *,double *,double*,
-                                           double *,int *);
+                                           int *,int *,int *);
 
-extern void NGCALLF(drcm2points,DRCM2POINTS)(int *,int *,double *,double *,
-					     double *,int *,double *,
-					     double *,double *,double*,
-					     double *,int *);
+extern void NGCALLF(drcm2points,DRCM2POINTS)(int *,int *,int *,double *,
+                                             double *,double *,int *,double *,
+                                             double *,double *,double*,
+                                             int *,int *,int *);
 
 
 NhlErrorTypes rcm2rgrid_W( void )
@@ -24,9 +24,9 @@ NhlErrorTypes rcm2rgrid_W( void )
  */
   void *lat2d, *lon2d, *fi, *lat1d, *lon1d, *opt;
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
-  double *tmp_opt;
+  int tmp_opt, tmp_ncrit;
   int dsizes_lat2d[2], dsizes_lon2d[2], dsizes_lat1d[2], dsizes_lon1d[1];
-  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
+  int size_fi, ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   NclScalar missing_fi, missing_dfi, missing_rfi;
   NclBasicDataTypes type_lat2d, type_lon2d, type_lat1d, type_lon1d;
   NclBasicDataTypes type_fi, type_opt;
@@ -41,8 +41,8 @@ NhlErrorTypes rcm2rgrid_W( void )
 /*
  * Other variables
  */
-  int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier, ret;
+  int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fo;
+  int i, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -146,12 +146,12 @@ NhlErrorTypes rcm2rgrid_W( void )
     return(NhlFATAL);
   }
 /*
- * Compute the total size of the output array (minus the last two
- * dimensions).
+ * Compute the total size of the input/output arrays.
  */
-  size_leftmost = 1;
-  for( i = 0; i < ndims_fi-2; i++ ) size_leftmost *= dsizes_fi[i];
-  size_fo = size_leftmost * nfo;
+  ngrid = 1;
+  for( i = 0; i < ndims_fi-2; i++ ) ngrid *= dsizes_fi[i];
+  size_fi = ngrid * nfi;
+  size_fo = ngrid * nfo;
 /*
  * Coerce missing values.
  */
@@ -162,12 +162,13 @@ NhlErrorTypes rcm2rgrid_W( void )
  */
   if(type_fi == NCL_double) {
     fo      = (void*)calloc(size_fo,sizeof(double));
+    tmp_fo  = &((double*)fo)[0];
     type_fo = NCL_double;
     missing_fo.doubleval = missing_dfi.doubleval;
   }
   else {
     fo      = (void*)calloc(size_fo,sizeof(float));
-    tmp_fo  = (double*)calloc(nfo,sizeof(double));
+    tmp_fo  = (double*)calloc(size_fo,sizeof(double));
     type_fo = NCL_float;
     missing_fo.floatval = missing_rfi.floatval;
     if(tmp_fo == NULL) {
@@ -190,62 +191,40 @@ NhlErrorTypes rcm2rgrid_W( void )
   tmp_lat2d = coerce_input_double(lat2d,type_lat2d,nfi,0,NULL,NULL);
   tmp_lon2d = coerce_input_double(lon2d,type_lon2d,nfi,0,NULL,NULL);
   tmp_lat1d = coerce_input_double(lat1d,type_lat1d,nlat1d,0,NULL,NULL);
-  tmp_lon1d = coerce_input_double(lon1d,type_lon1d,nlon1d,0,NULL,NULL);
-  tmp_opt   = coerce_input_double(opt,type_opt,1,0,NULL,NULL);
+  tmp_lon1d = coerce_input_double(lon1d,type_lon1d,nlon1d,0,NULL,NULL); 
+  tmp_fi    = coerce_input_double(fi,type_fi,size_fi,has_missing_fi,
+                                  &missing_fi,&missing_dfi);
+
   if(tmp_lat2d == NULL || tmp_lon2d == NULL ||
-     tmp_lat1d == NULL || tmp_lon1d == NULL || tmp_opt == NULL) {
+     tmp_lat1d == NULL || tmp_lon1d == NULL || tmp_fi == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2rgrid: Unable to coerce input lat/lon arrays to double precision");
     return(NhlFATAL);
   }
-/*
- * Force opt to zero, since it's not used yet.
- */
-  *tmp_opt = 0.;
 
-  if(type_fi != NCL_double) {
-    tmp_fi = (double*)calloc(nfi,sizeof(double));
-    if(tmp_fi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2rgrid: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
+/*
+ * Force opt to zero and ncrit to 1, since they are not used yet.
+ */
+  tmp_opt   = 0;
+  tmp_ncrit = 1;
+
+  NGCALLF(drcm2rgrid,DRCM2RGRID)(&ngrid,&nlat2d,&nlon2d,tmp_lat2d,tmp_lon2d,
+                                 tmp_fi,&nlat1d,tmp_lat1d,&nlon1d,
+                                 tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
+                                 &tmp_ncrit,&tmp_opt,&ier);
+
+  if(ier) {
+    if(ier == 1) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2rgrid: not enough points in input/output array");
     }
-  }
-
-/*
- * Call Fortran function.
- */
-  index_fi = index_fo = 0;
-  for( i = 0; i < size_leftmost; i++ ) {
-/*
- * Either coerce a subset of the input to double, or point the temporary
- * array to the appropriate location in the double precision void array.
- */
-    if(type_fi != NCL_double) { 
-      coerce_subset_input_double(fi,tmp_fi,index_fi,type_fi,nfi,0,NULL,NULL);
-    }
-    else {
-      tmp_fi = &((double*)fi)[index_fi];
-    }
-/*
- * Point output array to necessary location in fo if necessary.
- */
-    if(type_fo == NCL_double) tmp_fo = &((double*)fo)[index_fo];
-
-    NGCALLF(drcm2rgrid,DRCM2RGRID)(&nlat2d,&nlon2d,tmp_lat2d,tmp_lon2d,
-                                   tmp_fi,&nlat1d,tmp_lat1d,&nlon1d,
-                                   tmp_lon1d,tmp_fo,&missing_dfi.doubleval,
-                                   tmp_opt,&ier);
-
-    if(ier) {
+    if(2 <= ier && ier <= 5) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2rgrid: lat2d, lon2d, lat1d, lon1d must be monotonically increasing");
-      set_subset_output_missing(fo,index_fo,type_fo,nfo,missing_dfi.doubleval);
     }
-    else {
-      if(type_fo != NCL_double) {
-	coerce_output_float_only(fo,tmp_fo,nfo,index_fo);
-      }
+    set_subset_output_missing(fo,0,type_fo,size_fo,missing_dfi.doubleval);
+  }
+  else {
+    if(type_fo != NCL_double) {
+      coerce_output_float_only(fo,tmp_fo,size_fo,0);
     }
-    index_fi += nfi;
-    index_fo += nfo;
   }
 /*
  * Free temp arrays.
@@ -255,7 +234,6 @@ NhlErrorTypes rcm2rgrid_W( void )
   if(type_lat1d != NCL_double) NclFree(tmp_lat1d);
   if(type_lon1d != NCL_double) NclFree(tmp_lon1d);
   if(type_fi    != NCL_double) NclFree(tmp_fi);
-  if(type_opt   != NCL_double) NclFree(tmp_opt);
   if(type_fo    != NCL_double) NclFree(tmp_fo);
 
 /*
@@ -274,7 +252,7 @@ NhlErrorTypes rgrid2rcm_W( void )
  */
   void *lat2d, *lon2d, *fi, *lat1d, *lon1d, *opt;
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
-  double *tmp_opt;
+  int tmp_opt, tmp_ncrit;
   int dsizes_lat2d[2], dsizes_lon2d[2], dsizes_lat1d[2], dsizes_lon1d[1];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   NclScalar missing_fi, missing_dfi, missing_rfi;
@@ -291,8 +269,8 @@ NhlErrorTypes rgrid2rcm_W( void )
 /*
  * Other variables
  */
-  int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier, ret;
+  int nlon2d, nlat2d, nfi, nlat1d, nlon1d, nfo, ngrid, size_fi, size_fo;
+  int i, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -396,12 +374,12 @@ NhlErrorTypes rgrid2rcm_W( void )
     return(NhlFATAL);
   }
 /*
- * Compute the leftmost size of the input array (minus the last two
- * dimensions) and use to figure out the size of the output array.
+ * Compute the total size of the input/output arrays.
  */
-  size_leftmost = 1;
-  for( i = 0; i < ndims_fi-2; i++ ) size_leftmost *= dsizes_fi[i];
-  size_fo = size_leftmost * nfo;
+  ngrid = 1;
+  for( i = 0; i < ndims_fi-2; i++ ) ngrid *= dsizes_fi[i];
+  size_fi = ngrid * nfi;
+  size_fo = ngrid * nfo;
 /*
  * Coerce missing values.
  */
@@ -412,11 +390,12 @@ NhlErrorTypes rgrid2rcm_W( void )
  */
   if(type_fi == NCL_double) {
     fo      = (void*)calloc(size_fo,sizeof(double));
+    tmp_fo  = &((double*)fo)[0];
     type_fo = NCL_double;
     missing_fo.doubleval = missing_dfi.doubleval;
   }
   else {
-    tmp_fo  = (double*)calloc(nfo,sizeof(double));
+    tmp_fo  = (double*)calloc(size_fo,sizeof(double));
     fo      = (void*)calloc(size_fo,sizeof(float));
     type_fo = NCL_float;
     missing_fo.floatval = missing_rfi.floatval;
@@ -441,61 +420,38 @@ NhlErrorTypes rgrid2rcm_W( void )
   tmp_lon2d = coerce_input_double(lon2d,type_lon2d,nfo,0,NULL,NULL);
   tmp_lat1d = coerce_input_double(lat1d,type_lat1d,nlat1d,0,NULL,NULL);
   tmp_lon1d = coerce_input_double(lon1d,type_lon1d,nlon1d,0,NULL,NULL);
-  tmp_opt   = coerce_input_double(opt,type_opt,1,0,NULL,NULL);
+  tmp_fi    = coerce_input_double(fi,type_fi,size_fi,has_missing_fi,
+                                  &missing_fi,&missing_dfi);
+
   if(tmp_lat2d == NULL || tmp_lon2d == NULL ||
-     tmp_lat1d == NULL || tmp_lon1d == NULL || tmp_opt == NULL) {
+     tmp_lat1d == NULL || tmp_lon1d == NULL || tmp_fi == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rgrid2rcm: Unable to coerce input lat/lon arrays to double precision");
     return(NhlFATAL);
   }
 /*
- * Force opt to zero, since it's not used yet.
+ * Force opt to zero and ncrit to 1, since they are not used yet.
  */
-  *tmp_opt = 0.;
+  tmp_opt   = 0;
+  tmp_ncrit = 1;
 
-  if(type_fi != NCL_double) {
-    tmp_fi = (double*)calloc(nfi,sizeof(double));
-    if(tmp_fi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rgrid2rcm: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
+  NGCALLF(drgrid2rcm,DRGRID2RCM)(&ngrid,&nlat1d,&nlon1d,tmp_lat1d,tmp_lon1d,
+                                 tmp_fi,&nlat2d,&nlon2d,tmp_lat2d,
+                                 tmp_lon2d,tmp_fo,&missing_dfi.doubleval,
+                                 &tmp_ncrit,&tmp_opt,&ier);
+
+  if(ier) {
+    if(ier == 1) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"rgrid2rcm: not enough points in input/output array");
     }
-  }
-
-/*
- * Call Fortran function.
- */
-  index_fi = index_fo = 0;
-  for( i = 0; i < size_leftmost; i++ ) {
-/*
- * Either coerce a subset of the input to double, or point the temporary
- * array to the appropriate location in the double precision void array.
- */
-    if(type_fi != NCL_double) { 
-      coerce_subset_input_double(fi,tmp_fi,index_fi,type_fi,nfi,0,NULL,NULL);
-    }
-    else {
-      tmp_fi = &((double*)fi)[index_fi];
-    }
-/*
- * Point output array to necessary location in fo if necessary.
- */
-    if(type_fo == NCL_double) tmp_fo = &((double*)fo)[index_fo];
-
-    NGCALLF(drgrid2rcm,DRGRID2RCM)(&nlat1d,&nlon1d,tmp_lat1d,tmp_lon1d,
-                                   tmp_fi,&nlat2d,&nlon2d,tmp_lat2d,
-                                   tmp_lon2d,tmp_fo,&missing_dfi.doubleval,
-                                   tmp_opt,&ier);
-
-    if(ier) {
+    if(2 <= ier && ier <= 5) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rgrid2rcm: lat2d, lon2d, lat1d, lon1d must be monotonically increasing");
-      set_subset_output_missing(fo,index_fo,type_fo,nfo,missing_dfi.doubleval);
     }
-    else {
-      if(type_fo != NCL_double) {
-	coerce_output_float_only(fo,tmp_fo,nfo,index_fo);
-      }
+    set_subset_output_missing(fo,0,type_fo,size_fo,missing_dfi.doubleval);
+  }
+  else {
+    if(type_fo != NCL_double) {
+      coerce_output_float_only(fo,tmp_fo,size_fo,0);
     }
-    index_fi += nfi;
-    index_fo += nfo;
   }
 /*
  * Free temp arrays.
@@ -505,7 +461,6 @@ NhlErrorTypes rgrid2rcm_W( void )
   if(type_lat1d != NCL_double) NclFree(tmp_lat1d);
   if(type_lon1d != NCL_double) NclFree(tmp_lon1d);
   if(type_fi    != NCL_double) NclFree(tmp_fi);
-  if(type_opt   != NCL_double) NclFree(tmp_opt);
   if(type_fo    != NCL_double) NclFree(tmp_fo);
 
   ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0);
@@ -521,7 +476,7 @@ NhlErrorTypes rcm2points_W( void )
  */
   void *lat2d, *lon2d, *fi, *lat1d, *lon1d, *opt;
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
-  double *tmp_opt;
+  int tmp_opt, tmp_ncrit;
   int dsizes_lat2d[2], dsizes_lon2d[2], dsizes_lat1d[2], dsizes_lon1d[1];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   NclScalar missing_fi, missing_dfi, missing_rfi;
@@ -538,8 +493,8 @@ NhlErrorTypes rcm2points_W( void )
 /*
  * Other variables
  */
-  int nlon2d, nlat2d, nfi, nlat1d, nfo, size_leftmost, size_fo;
-  int i, j, index_fi, index_fo, ier, ret;
+  int nlon2d, nlat2d, nfi, nlat1d, nfo, ngrid, size_fi, size_fo;
+  int i, ier, ret;
 /*
  * Retrieve parameters
  *
@@ -647,12 +602,13 @@ NhlErrorTypes rcm2points_W( void )
     return(NhlFATAL);
   }
 /*
- * Compute the leftmost size of the input array (minus the last two
- * dimensions) and use to figure out the size of the output array.
+ * Compute the sizes of the input/output arrays.
  */
-  size_leftmost = 1;
-  for( i = 0; i < ndims_fi-2; i++ ) size_leftmost *= dsizes_fi[i];
-  size_fo = size_leftmost * nfo;
+  ngrid = 1;
+  for( i = 0; i < ndims_fi-2; i++ ) ngrid *= dsizes_fi[i];
+  size_fi = ngrid * nfi;
+  size_fo = ngrid * nfo;
+
 /*
  * Coerce missing values.
  */
@@ -663,12 +619,13 @@ NhlErrorTypes rcm2points_W( void )
  */
   if(type_fi == NCL_double) {
     fo      = (void*)calloc(size_fo,sizeof(double));
+    tmp_fo  = &((double*)fo)[0];
     type_fo = NCL_double;
     missing_fo.doubleval = missing_dfi.doubleval;
   }
   else {
     fo      = (void*)calloc(size_fo,sizeof(float));
-    tmp_fo  = (double*)calloc(nfo,sizeof(double));
+    tmp_fo  = (double*)calloc(size_fo,sizeof(double));
     type_fo = NCL_float;
     missing_fo.floatval = missing_rfi.floatval;
     if(tmp_fo == NULL) {
@@ -692,61 +649,39 @@ NhlErrorTypes rcm2points_W( void )
   tmp_lon2d = coerce_input_double(lon2d,type_lon2d,nfi,0,NULL,NULL);
   tmp_lat1d = coerce_input_double(lat1d,type_lat1d,nlat1d,0,NULL,NULL);
   tmp_lon1d = coerce_input_double(lon1d,type_lon1d,nlat1d,0,NULL,NULL);
-  tmp_opt   = coerce_input_double(opt,type_opt,1,0,NULL,NULL);
+  tmp_fi    = coerce_input_double(fi,type_fi,size_fi,has_missing_fi,
+                                  &missing_fi,&missing_dfi);
+
   if(tmp_lat2d == NULL || tmp_lon2d == NULL ||
-     tmp_lat1d == NULL || tmp_lon1d == NULL || tmp_opt == NULL) {
+     tmp_lat1d == NULL || tmp_lon1d == NULL || tmp_fi == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2points: Unable to coerce input lat/lon arrays to double precision");
     return(NhlFATAL);
   }
-/*
- * Force opt to zero, since it's not used yet.
- */
-  *tmp_opt = 0.;
 
-  if(type_fi != NCL_double) {
-    tmp_fi = (double*)calloc(nfi,sizeof(double));
-    if(tmp_fi == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"rcm2points: Unable to allocate memory for coercing input array to double precision");
-      return(NhlFATAL);
+/*
+ * Force opt to zero and ncrit to 1, since they are not used yet.
+ */
+  tmp_opt   = 0;
+  tmp_ncrit = 1;
+
+  NGCALLF(drcm2points,DRCM2POINTS)(&ngrid,&nlat2d,&nlon2d,tmp_lat2d,tmp_lon2d,
+                                   tmp_fi,&nlat1d,tmp_lat1d,tmp_lon1d,
+                                   tmp_fo,&missing_dfi.doubleval,
+                                   &tmp_opt,&tmp_ncrit,&ier);
+
+  if(ier) {
+    if(ier == 1) {
+      NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: not enough points in input/output array");
     }
-  }
-
-/*
- * Call Fortran function.
- */
-  index_fi = index_fo = 0;
-  for( i = 0; i < size_leftmost; i++ ) {
-/*
- * Either coerce a subset of the input to double, or point the temporary
- * array to the appropriate location in the double precision void array.
- */
-    if(type_fi != NCL_double) { 
-      coerce_subset_input_double(fi,tmp_fi,index_fi,type_fi,nfi,0,NULL,NULL);
-    }
-    else {
-      tmp_fi = &((double*)fi)[index_fi];
-    }
-/*
- * Point output array to necessary location in fo if necessary.
- */
-    if(type_fo == NCL_double) tmp_fo = &((double*)fo)[index_fo];
-
-    NGCALLF(drcm2points,DRCM2POINTS)(&nlat2d,&nlon2d,tmp_lat2d,tmp_lon2d,
-				     tmp_fi,&nlat1d,tmp_lat1d,tmp_lon1d,
-				     tmp_fo,&missing_dfi.doubleval,
-				     tmp_opt,&ier);
-
-    if(ier) {
+    if(2 <= ier && ier <= 5) {
       NhlPError(NhlWARNING,NhlEUNKNOWN,"rcm2points: lat2d, lon2d, lat1d, lon1d must be monotonically increasing");
-      set_subset_output_missing(fo,index_fo,type_fo,nfo,missing_dfi.doubleval);
     }
-    else {
-      if(type_fo != NCL_double) {
-	coerce_output_float_only(fo,tmp_fo,nfo,index_fo);
-      }
+    set_subset_output_missing(fo,0,type_fo,size_fo,missing_dfi.doubleval);
+  }
+  else {
+    if(type_fo != NCL_double) {
+      coerce_output_float_only(fo,tmp_fo,size_fo,0);
     }
-    index_fi += nfi;
-    index_fo += nfo;
   }
 /*
  * Free temp arrays.
@@ -756,7 +691,6 @@ NhlErrorTypes rcm2points_W( void )
   if(type_lat1d != NCL_double) NclFree(tmp_lat1d);
   if(type_lon1d != NCL_double) NclFree(tmp_lon1d);
   if(type_fi    != NCL_double) NclFree(tmp_fi);
-  if(type_opt   != NCL_double) NclFree(tmp_opt);
   if(type_fo    != NCL_double) NclFree(tmp_fo);
 
 /*
@@ -766,5 +700,3 @@ NhlErrorTypes rcm2points_W( void )
   NclFree(dsizes_fo);
   return(ret);
 }
-
-
