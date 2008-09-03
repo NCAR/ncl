@@ -1,27 +1,15 @@
-c -----------------------------------------------------------
+c ----------------------------------------------------------- 
 C NCLFORTSTART
-      SUBROUTINE DRCM2POINTS(NYI,NXI,YI,XI,FI,NXYO,YO,XO,FO,XMSG,OPT, 
-     +     IER)
+      SUBROUTINE DRCM2POINTS(NGRD,NYI,NXI,YI,XI,FI,NXYO,YO,XO,FO
+     +                      ,XMSG,OPT,NCRIT,IER)
       IMPLICIT NONE
-      INTEGER NXI,NYI,NXYO,IER
-      DOUBLE PRECISION XI(NXI,NYI),YI(NXI,NYI),FI(NXI,NYI),OPT
-      DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO),XMSG
+      INTEGER NGRD,NXI,NYI,NXYO,OPT,NCRIT,IER
+      DOUBLE PRECISION XI(NXI,NYI),YI(NXI,NYI),FI(NXI,NYI,NGRD)
+      DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO,NGRD),XMSG
 C NCLEND
 
 C This is written  with GNU f77 acceptable extensions
 c .   This could be improved considerably with f90
-
-c NCL:  fo = rcm2points(lat2d,lon2d,fi, lat, lon iopt)
-c                        yi    xi   fi  yo   xo
-c
-c            fo is the same size xo, yo and same type as "fi"
-c            xmsg = fi@_FillValue
-c            opt unused option
-c
-c            The NCL wrapper should allow for multiple datasets
-c            so the user need only make one call to the function.
-
-c perform 2D interpolation allowing for missing data:  nothing fancy
 
 c nomenclature:
 c .   nxi,nyi - lengths of xi,yi and dimensions of fi (must be >= 2)
@@ -41,7 +29,7 @@ c .             =2/3; xi or yi are not monotonically increasing
 c .             =4/5; xo or yo are not monotonically increasing
 c
 c                              local
-      INTEGER NX,NY,NXY,NEXACT,IX,IY,M,N,NW,NER,K
+      INTEGER NG,NX,NY,NXY,NEXACT,IX,IY,M,N,NW,NER,K
       DOUBLE PRECISION FW(2,2),W(2,2),SUMF,SUMW,CHKLAT(NYI),CHKLON(NXI)
       DOUBLE PRECISION DGCDIST
 c                              error checking
@@ -69,8 +57,10 @@ c c c    print *,"chklon: nx=",nx,"  chklon=",chklon(nx)
       K = 2
 c c c k = opt
 
-      DO NXY = 1,NXYO
-          FO(NXY) = XMSG
+      DO NG = 1,NGRD
+        DO NXY = 1,NXYO
+           FO(NXY,NG) = XMSG
+        END DO
       END DO
 c                              main loop [exact matches]
       NEXACT = 0
@@ -80,8 +70,10 @@ c                              main loop [exact matches]
               DO IX = 1,NXI
                   IF (XO(NXY).EQ.XI(IX,IY) .AND.
      +                YO(NXY).EQ.YI(IX,IY)) THEN
-                      FO(NXY) = FI(IX,IY)
-                      NEXACT = NEXACT + 1
+                      DO NG = 1,NGRD
+                         FO(NXY,NG) = FI(IX,IY,NG)
+                         NEXACT     = NEXACT + 1
+                      END DO
                       GO TO 10
                   END IF
               END DO
@@ -93,28 +85,30 @@ c                              main loop [exact matches]
 c c c print *, "nexact=",nexact
 c                              main loop [interpolation]
       DO NXY = 1,NXYO
-          IF (FO(NXY).EQ.XMSG) THEN
 
               DO IY = 1,NYI - K
-                  DO IX = 1,NXI - K
-                      IF (XO(NXY).GE.XI(IX,IY) .AND.
-     +                    XO(NXY).LE.XI(IX+K,IY) .AND.
-     +                    YO(NXY).GE.YI(IX,IY) .AND.
-     +                    YO(NXY).LE.YI(IX,IY+K)) THEN
+                DO IX = 1,NXI - K
+                   IF (XO(NXY).GE.XI(IX,IY) .AND.
+     +                 XO(NXY).LE.XI(IX+K,IY) .AND.
+     +                 YO(NXY).GE.YI(IX,IY) .AND.
+     +                 YO(NXY).LE.YI(IX,IY+K)) THEN
 
-                          W(1,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
-     +                             YI(IX,IY),XI(IX,IY),2))**2
-                          W(2,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
-     +                             YI(IX+K,IY),XI(IX+K,IY),2))**2
-                          W(1,2) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
-     +                             YI(IX,IY+K),XI(IX,IY+K),2))**2
-                          W(2,2) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
-     +                             YI(IX+K,IY+K),XI(IX+K,IY+K),2))**2
+                       W(1,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                           YI(IX,IY),XI(IX,IY),2))**2
+                       W(2,1) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                           YI(IX+K,IY),XI(IX+K,IY),2))**2
+                       W(1,2) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                           YI(IX,IY+K),XI(IX,IY+K),2))**2
+                       W(2,2) = (1.D0/DGCDIST(YO(NXY),XO(NXY),
+     +                           YI(IX+K,IY+K),XI(IX+K,IY+K),2))**2
 
-                          FW(1,1) = FI(IX,IY)
-                          FW(2,1) = FI(IX+K,IY)
-                          FW(1,2) = FI(IX,IY+K)
-                          FW(2,2) = FI(IX+K,IY+K)
+                   DO NG = 1,NGRD
+                      IF (FO(NXY,NG).EQ.XMSG) THEN
+                          
+                          FW(1,1) = FI(IX,IY,NG)
+                          FW(2,1) = FI(IX+K,IY,NG)
+                          FW(1,2) = FI(IX,IY+K,NG)
+                          FW(2,2) = FI(IX+K,IY+K,NG)
 
                           NW = 0
                           SUMF = 0.0D0
@@ -129,17 +123,17 @@ c                              main loop [interpolation]
                               END DO
                           END DO
 c                                             nw >=3 arbitrary
-                          IF (NW.GE.3 .AND. SUMW.GT.0.D0) THEN
-                              FO(NXY) = SUMF/SUMW
+                          IF (NW.GE.NCRIT .AND. SUMW.GT.0.D0) THEN
+                              FO(NXY,NG) = SUMF/SUMW
                           END IF
-                          GO TO 20
                       END IF
-                  END DO
+                    END DO
+                    GO TO 20
+                  END IF
+                END DO
               END DO
 
    20         CONTINUE
-          END IF
-
       END DO
 
       RETURN
