@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.175 2008-09-01 13:25:06 shea Exp $
+;      $Id: contributed.ncl,v 1.176 2008-09-04 16:18:48 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3420,6 +3420,120 @@ begin
    
   return (fo)
 end
+; **********************************************************************
+; D. Shea
+; wrapper for NCL function "rcm2rgrid"  that copies attributes and coordinate 
+; vars.  It adds the longitude and latitude coordinates.
+
+undef ("rcm2rgrid_Wrap")
+function rcm2rgrid_Wrap (xi[*][*]:numeric,yi[*][*]:numeric, fi:numeric \
+                        ,xo[*]:numeric,yo[*]:numeric, Opt)
+
+; wrapper for NCL function "rcm2rgrid"  that copies attributes and coordinate vars
+
+local fo, dimfi, nDim, nD
+begin
+  fo   = rcm2rgrid (xi,yi,fi, xo,yo, Opt)  ; perform interpolation 
+                       
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+
+  fo!(nDim-2) = "Y"                             ; default named dimensions
+  fo!(nDim-1) = "X"
+                                                ; override if possible
+  if (isdimnamed(xo,0) .and. isdimnamed(yo,0) ) then
+      fo!(nDim-2) = yo!0                        ; if present, use xo name
+      fo!(nDim-1) = xo!0                        ; if present, use xo name
+  else 
+      do nD=nDim-2,nDim-1                       ; two rightmost dimensions
+         if (.not.ismissing(fi!nD)) then
+             fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
+         end if                                 ; but change case
+      end do
+  end if
+
+  fo&$fo!(nDim-2)$ = yo                         ; create coordinate var 
+  fo&$fo!(nDim-1)$ = xo                         ; two rightmost dimensions
+
+  fo@ncl = "rcm2rgrid used for interpolation"
+
+  return (fo)
+end
+
+
+; **********************************************************************
+; D. Shea
+; wrapper for NCL function "rcm2rgrid_points"  that copies attributes+coordinates
+; vars.  It creates a "pts" coord variable and creates two 1D
+; attributes that indicate the lat/lon associated with each point.
+undef ("rcm2rgrid_points_Wrap")
+function rcm2rgrid_points_Wrap \ 
+                      (xi[*][*]:numeric,yi[*][*]:numeric, fi:numeric \
+                      ,xo[*]:numeric,yo[*]:numeric, Opt)
+
+; wrapper for NCL function "rcm2rgrid_points"  that copies attributes and coordinate vars
+local fo, dimfi, nDim, pts
+begin
+  fo   = rcm2rgrid_points (xi,yi,fi, wrapX, xo,yo, Opt)  ; perform interpolation 
+                                               
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+
+  copy_VarAtts     (fi, fo)                     ; copy variable attributes
+  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+                                                ; except for 2 rightmost
+
+  nDim = dimsizes(dimsizes(fo))                 ; # output  dimensions 
+                                                
+  pts           = ispan(0,dimsizes(xo)-1,1)     ; linear   
+  pts@long_name = "Points"
+
+  fo!(nDim-1)   = "pts"                         ; default named dimensions
+  fo&pts        =  pts
+  fo@xcoord     =  xo            ; x/longitude points
+  fo@ycoord     =  yo            ; y/latitude  points
+  fo@ncl = "rgrid2points used for interpolation"
+   
+  return (fo)
+end
+; **********************************************************************
+; D. Shea
+; wrapper for NCL function "rgrid2rcm"  that copies attributes and coordinate 
+; vars.  
+
+undef ("rgrid2rcm_Wrap")
+function rgrid2rcm_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
+                        ,xo[*][*]:numeric,yo[*][*]:numeric, Opt)
+
+; wrapper for NCL function "rgrid2rcm"  that copies attributes and coordinate vars
+
+local fo, dimfi, nDim, nD
+begin
+  fo   = rgrid2rcm (xi,yi,fi, xo,yo, Opt)  ; perform interpolation 
+                       
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+
+  fo!(nDim-2) = "XLAT"                          ; default named dimensions
+  fo!(nDim-1) = "XLONG"
+                                                ; override if possible
+  if (isdimnamed(xo,0) ) then
+      fo!(nDim-2) = xo!0                        ; if present, use xo name
+  end if
+  if (isdimnamed(xo,1) ) then
+      fo!(nDim-2) = xo!1                        ; if present, use xo name
+  end if
+  fo@ncl = "rgrid2rcm used for interpolation"
+
+  return (fo)
+end
+
 ;****************************************************
 ; D. Shea
 ; Take a monthly climatology and make a daily climatology
