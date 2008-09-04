@@ -33,7 +33,7 @@ c     return
 c     end
 
 C NCLFORTSTART
-      subroutine dcovcormssm (ntim,nvar,x,xmsg,kopt
+      subroutine dcovcormssm (ntim,nvar,x,xmsg,iopt
      +                       ,vcm,lvcm,trace,ier)
 
 c This is a driver routine to a suite of subroutines that
@@ -41,7 +41,7 @@ c     will calculate covariance or correlation matrices
 c     x        - input data array  ( unchanged on output)
 c     ntim,nvar- exact dimensions of x in calling routine
 c     xmsg     - missing data code (if none set to some no. not encountered)
-c     kopt     - =0 return
+c     iopt     - =0 return
 c     vcm      - var-cov matrix
 c     trace    - sum of diagonal elements
 c                                              ! input
@@ -53,7 +53,7 @@ C NCLEND
 
       ier   = 0
 
-      if (kopt.eq.0) then
+      if (iopt.eq.0) then
           call dvcmssm (x,ntim,nvar,ntim,nvar,xmsg,vcm,lvcm,ier)
           nn    = 0
           trace = 0.0d0
@@ -71,7 +71,7 @@ C NCLEND
 
 
 C NCLFORTSTART
-      subroutine dcovcorm (ntim,nvar,x,xmsg, kopt, vcm, lvcm, trace,ier)
+      subroutine dcovcorm (ntim,nvar,x,xmsg, iopt, vcm, lvcm, trace,ier)
 c
 c This is a driver routine to a suite of subroutines that
 c     will calculate covariance or correlation matrices
@@ -90,7 +90,7 @@ C NCLEND
 
       ier = 0
 
-      if (kopt.eq.0) then
+      if (iopt.eq.0) then
           call dvcvmns (x,ntim,nvar,ntim,nvar,xmsg,vcm,lvcm,ier)
           trace = 0.0d0
           do nv=1,nvar
