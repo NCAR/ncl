@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.7 2008-07-27 00:17:03 haley Exp $
+C $Id: mdproj.f,v 1.8 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,6 +15,12 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        SAVE   /MAPCM0/
+C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
      +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
@@ -26,10 +32,14 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
-     +                   PDCL(14)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
+     +                   PDCL(18)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
+C
+        COMMON /MAPCMW/  CSLT
+        DOUBLE PRECISION CSLT
+        SAVE  /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -45,8 +55,8 @@ C
 C
 C Transfer the parameters defining the projection.
 C
-        I=IDICTL(ARG1,PDCT,14)
-        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,14)
+        I=IDICTL(ARG1,PDCT,18)
+        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,18)
         IF (I.EQ.0) GO TO 901
 C
         JPRJ=I-1
@@ -58,14 +68,16 @@ C
         IF (JPRJ.EQ.3) THEN
           CALL MDSETD ('SA',0.D0)
           IF (ICFELL('MDPROJ',2).NE.0) RETURN
-        ELSE IF (JPRJ.EQ.12) THEN
+        ELSE IF (JPRJ.EQ.15) THEN
+          IF (CSLT.LT.0.D0) CSLT=2.D0/PI
+        ELSE IF (JPRJ.EQ.16) THEN
           JPRJ=3
           IF (ABS(SALT).LE.1.D0) THEN
             CALL MDSETD ('SA',6.631D0)
             IF (ICFELL('MDPROJ',3).NE.0) RETURN
           END IF
-        ELSE IF (JPRJ.EQ.13) THEN
-          JPRJ=17
+        ELSE IF (JPRJ.EQ.17) THEN
+          JPRJ=25
           PHIA=0.D0
         END IF
 C

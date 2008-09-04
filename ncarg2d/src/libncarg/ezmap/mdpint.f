@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.9 2008-07-27 00:17:03 haley Exp $
+C $Id: mdpint.f,v 1.10 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -12,8 +12,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -52,6 +54,10 @@ C
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
 C
+        COMMON /MAPCMW/  CSLT
+        DOUBLE PRECISION CSLT
+        SAVE  /MAPCMW/
+C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         SAVE   /MAPSAT/
@@ -72,7 +78,7 @@ C
      +                   CVMA,CVMI,D,DLAT,DLON,DU,DV,E,F,R,RESL,RLAT,
      +                   RLN1,RLN2,RLON,RLT1,RLT2,SASQ,SUMA,SUMI,SVMA,
      +                   SVMI,TEM1,TEM2,TEM3,TEM4,TEM5,TEM6,TEM7,TEM8,
-     +                   U,V,XMAX,XMIN,XPOS,YMAX,YMIN,YPOS
+     +                   U,UTMP,V,XMAX,XMIN,XPOS,YMAX,YMIN,YPOS
         INTEGER          I,J,NLNS,NLTS
 C
 C Declare function types.
@@ -103,11 +109,15 @@ C
 C Set UMIN, UMAX, VMIN, and VMAX to correspond to the maximum useful
 C area produced by the projection.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
+C Projection:   US  LC  ST  OR  LE  GN  AE  
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
+C                       RM
 C
-        GO TO (100,101,102,101,102,102,103,104,103,105,106,107,
-     +                                     104,103,105,106,107,
-     +                                         108            ) , IPRJ+1
+        GO TO (100,101,102,101,102,102,103,
+     +             104,103,105,106,107,108,109,109,110,
+     +             104,103,105,106,107,108,109,109,110,
+     +                 111                            ) , IPRJ+1
 C
 C USGS transformations.  I have some doubts about the appropriateness of
 C setting UMIN, UMAX, VMIN, and VMAX in this way.
@@ -117,7 +127,7 @@ C
         VMIN=UVMN
         VMAX=UVMX
 C
-        GO TO 109
+        GO TO 112
 C
 C Lambert conformal conic and orthographic.  The quantity "R" which is
 C used below is the largest acceptable ratio of the lengths of the major
@@ -162,7 +172,7 @@ C
           END IF
         END IF
 C
-        GO TO 109
+        GO TO 112
 C
 C Stereographic, Lambert equal-area, and Gnomonic.
 C
@@ -170,7 +180,7 @@ C
         UMAX=+2.D0
         VMIN=-2.D0
         VMAX=+2.D0
-        GO TO 109
+        GO TO 112
 C
 C Azimuthal equidistant and Mercator.
 C
@@ -178,7 +188,7 @@ C
         UMAX=+PI
         VMIN=-PI
         VMAX=+PI
-        GO TO 109
+        GO TO 112
 C
 C Cylindrical equidistant.
 C
@@ -186,15 +196,15 @@ C
         UMAX=+180.D0
         VMIN= -90.D0
         VMAX= +90.D0
-        GO TO 109
+        GO TO 112
 C
-C Mollweide.
+C Mollweide type.
 C
   105   UMIN=-2.D0
         UMAX=+2.D0
         VMIN=-1.D0
         VMAX=+1.D0
-        GO TO 109
+        GO TO 112
 C
 C Robinson.
 C
@@ -202,7 +212,7 @@ C
         UMAX=+1.0000D0
         VMIN= -.5072D0
         VMAX= +.5072D0
-        GO TO 109
+        GO TO 112
 C
 C Cylindrical equal-area.
 C
@@ -210,20 +220,44 @@ C
         UMAX=+PI
         VMIN=-4.D0/3.D0
         VMAX=+4.D0/3.D0
-        GO TO 109
+        GO TO 112
+C
+C Aitoff.
+C
+  108   UMIN=-PI
+        UMAX=+PI
+        VMIN=-PIOT
+        VMAX=+PIOT
+        GO TO 112
+C
+C Hammer and true Mollweide.
+C
+  109   UMIN=-TSRT
+        UMAX=+TSRT
+        VMIN=-SROT
+        VMAX=+SROT
+        GO TO 112
+C
+C Winkel tripel.
+C
+  110   UMIN=-PIOT*(1.D0+CSLT)
+        UMAX=+PIOT*(1.D0+CSLT)
+        VMIN=-PIOT
+        VMAX=+PIOT
+        GO TO 112
 C
 C Rotated Mercator.
 C
-  108   UMIN=-PI/(ABS(SINR)+ABS(COSR))
+  111   UMIN=-PI/(ABS(SINR)+ABS(COSR))
         UMAX=+PI/(ABS(SINR)+ABS(COSR))
         VMIN=-PI/(ABS(SINR)+ABS(COSR))
         VMAX=+PI/(ABS(SINR)+ABS(COSR))
-        GO TO 109
+        GO TO 112
 C
 C Compute the quantity used by MAPIT in checking for crossover.  The
 C USGS and conical projections are oddballs.
 C
-  109   IF (IPRJ.EQ.0) THEN
+  112   IF (IPRJ.EQ.0) THEN
           IF (IPRF.EQ. 3.OR.IPRF.EQ. 4.OR.IPRF.EQ. 5.OR.IPRF.EQ. 7.OR.
      +        IPRF.EQ. 8.OR.IPRF.EQ.16.OR.IPRF.EQ.17.OR.IPRF.EQ.18.OR.
      +        IPRF.EQ.19.OR.IPRF.EQ.21) THEN
@@ -307,11 +341,15 @@ C
         CVMA=COS(AVMX*DTOR)
         SVMA=SIN(AVMX*DTOR)
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
+C Projection:   US  LC  ST  OR  LE  GN  AE
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
+C                       RM
 C
-        GO TO (401,903,402,403,404,405,406,407,408,409,410,411,
-     +                                     407,408,409,410,411,
-     +                                         412            ) , IPRJ+1
+        GO TO (401,903,402,403,404,405,406,
+     +             407,408,409,410,411,412,413,414,415,
+     +             407,408,409,410,411,412,413,414,415,
+     +                 416                            ) , IPRJ+1
 C
 C USGS transformations.  I have some doubts about the appropriateness of
 C setting UMIN, UMAX, VMIN, and VMAX in this way.
@@ -422,7 +460,7 @@ C
         VMAX=+LOG((1.D0+SVMA)/CVMA)
         GO TO 600
 C
-C Mollweide.
+C Mollweide type.
 C
   409   UMIN=-AUMN/90.D0
         UMAX=+AUMX/90.D0
@@ -446,11 +484,43 @@ C
         VMAX=+SVMA*4.D0/3.D0
         GO TO 600
 C
-C Rotated Mercator.  ???   The code here treats angular limit-setting as
+C Aitoff.
+C
+  412   UMIN=-AUMN*DTOR
+        UMAX=+AUMX*DTOR
+        VMIN=-AVMN*DTOR
+        VMAX=+AVMX*DTOR
+        GO TO 600
+C
+C Hammer.
+C
+  413   UMIN=-TSRT*SIN(DTOR*AUMN/2.D0)/SQRT(1.D0+COS(DTOR*AUMN/2.D0))
+        UMAX=+TSRT*SIN(DTOR*AUMX/2.D0)/SQRT(1.D0+COS(DTOR*AUMX/2.D0))
+        VMIN=-SROT*SVMI/SQRT(1.D0+CVMI)
+        VMAX=+SROT*SVMA/SQRT(1.D0+CVMA)
+        GO TO 600
+C
+C True Mollweide.
+C
+  414   UMIN=-SROT*AUMN/90.D0
+        UMAX=+SROT*AUMX/90.D0
+        CALL MOPROJ (-DTOR*AVMN,0.D0,UTMP,VMIN)
+        CALL MOPROJ (+DTOR*AVMX,0.D0,UTMP,VMAX)
+        GO TO 600
+C
+C Winkel tripel.
+C
+  415   UMIN=-(AUMN/2.D0)*DTOR*(1.D0+CSLT)
+        UMAX=+(AUMX/2.D0)*DTOR*(1.D0+CSLT)
+        VMIN=-AVMN*DTOR
+        VMAX=+AVMX*DTOR
+        GO TO 600
+C
+C Rotated Mercator.  The following code treats angular limit-setting as
 C equivalent to maximal limit-setting.  This is because I'm not sure how
 C to make angular limit-setting for this projection work.
 C
-  412   GO TO 600
+  416   GO TO 600
 C
 C ILTS=5    Values in the u/v plane are given.
 C ------
@@ -557,10 +627,11 @@ C
 C Jump if it's obvious that really is the case.  It is possible that
 C something else needs to be done here.
 C
-        IF (JPRJ.EQ.0) GO TO 701
+        IF (IPRJ.EQ.0) GO TO 701
 C
-        IF (ILTS.EQ.1.AND.(JPRJ.EQ.4.OR.JPRJ.EQ.6.OR.JPRJ.EQ.7.OR.
-     +                               JPRJ.EQ.9.OR.JPRJ.EQ.10)) GO TO 701
+        IF (ILTS.EQ.1.AND.(IPRJ.EQ.4.OR.IPRJ.EQ.6.OR.IPRJ.EQ.7.OR.
+     +       (IPRJ.GE.9.AND.JPRJ.LE.16).OR.(IPRJ.GE.18.AND.IPRJ.LE.24)))
+     +                                                         GO TO 701
 C
 C Otherwise, the whole globe is not being projected.  The first thing
 C to do is to find a point (CLAT,CLON) whose projection is known to be

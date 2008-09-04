@@ -1,5 +1,5 @@
 C
-C $Id: hlumapusr.f,v 1.9 2008-07-27 00:16:59 haley Exp $
+C $Id: hlumapusr.f,v 1.10 2008-09-04 19:56:57 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

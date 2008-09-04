@@ -1,5 +1,5 @@
 C
-C $Id: mdgcog.f,v 1.4 2008-07-27 00:17:01 haley Exp $
+C $Id: mdgcog.f,v 1.5 2008-09-04 19:56:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -19,8 +19,10 @@ C
 C
 C Declare common block containing math constants.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
 C Declare local variables.

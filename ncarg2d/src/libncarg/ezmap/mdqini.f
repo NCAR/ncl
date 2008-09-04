@@ -1,5 +1,5 @@
 C
-C $Id: mdqini.f,v 1.2 2008-07-27 00:17:04 haley Exp $
+C $Id: mdqini.f,v 1.3 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -31,8 +31,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD

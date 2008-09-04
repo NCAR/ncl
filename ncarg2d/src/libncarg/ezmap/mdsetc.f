@@ -1,5 +1,5 @@
 C
-C $Id: mdsetc.f,v 1.6 2008-07-27 00:17:05 haley Exp $
+C $Id: mdsetc.f,v 1.7 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,8 +32,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
-     +                   PDCL(14)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
+     +                   PDCL(18)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C

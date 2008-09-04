@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.7 2008-07-27 00:17:03 haley Exp $
+C $Id: mdplmb.f,v 1.8 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,8 +15,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -102,11 +104,15 @@ C
 C
 C Draw limb lines, the nature of which depends on the projection.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
+C Projection:   US  LC  ST  OR  LE  GN  AE
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
+C                       RM
 C
-        GO TO (100,101,110,104,105,110,106,112,112,107,112,112,
-     +                                     112,112,107,112,112,
-     +                                         112            ) , IPRJ+1
+        GO TO (100,101,110,104,105,110,106,
+     +             112,112,107,112,112,114,115,115,112,
+     +             112,112,107,112,112,114,115,115,112,
+     +                 112                            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -326,10 +332,26 @@ C
         RVTU=1.D0
         GO TO 108
 C
-C Mollweide.
+C Mollweide type.
 C
   107   URAD=2.D0
         RVTU=0.5D0
+        GO TO 108
+C
+C Aitoff.
+C
+  114   URAD=PI
+        RVTU=.5D0
+        GO TO 108
+C
+C Hammer and true Mollweide.
+C
+  115   URAD=TSRT
+        RVTU=.5D0
+        GO TO 108
+C
+C Limb is a ellipse.  URAD is half the length of the horizontal axis
+C and RVTU is the ratio of V to U.
 C
   108   UCIR=URAD
         VCIR=0.D0
@@ -388,41 +410,46 @@ C
 C
         GO TO 110
 C
-C Cylindrical equidistant, Mercator, Robinson, cylindrical equal-area.
+C Cylindrical equidistant, Mercator, Robinson, cylindrical equal-area,
+C Winkel tripel.
 C
   112   RLAT=-90.D0
         RLON=-180.D0
         IVIS=-1
 C
-        DO 113 I=1,361
-          IF (IPRJ.EQ.7.OR.IPRJ.EQ.12) THEN
+        DO 113 I=1,721
+          IF (IPRJ.EQ.7.OR.IPRJ.EQ.16) THEN
             U=RLON-UOFF
             V=RLAT-VOFF
-          ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.13.OR.IPRJ.EQ.17) THEN
+          ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.17.OR.IPRJ.EQ.25) THEN
             U=DTOR*RLON-UOFF
             V=LOG(TAN((MAX(-89.999999D0,
      +                 MIN(+89.999999D0,RLAT))+90.D0)*DTRH))-VOFF
-            IF (IPRJ.EQ.17) THEN
+            IF (IPRJ.EQ.25) THEN
               UTMP=U*COSR+V*SINR
               VTMP=V*COSR-U*SINR
               U=UTMP
               V=VTMP
             END IF
-          ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.16) THEN
+          ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.20) THEN
             U=DTOR*RLON-UOFF
             V=SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
+          ELSE IF (IPRJ.EQ.15.OR.IPRJ.EQ.24) THEN
+            CALL WTPROJ (DTOR*RLAT,DTOR*RLON,U,V)
+            U=U-UOFF
+            V=V-VOFF
           ELSE
             U=(RLON/180.D0)*RBGLEN(RLAT)-UOFF
             V=RBGDFE(RLAT)-VOFF
           END IF
-          IF (I.LE.90) THEN
-            RLON=RLON+4.D0
-          ELSE IF (I.LE.180) THEN
-            RLAT=RLAT+2.D0
-          ELSE IF (I.LE.270) THEN
-            RLON=RLON-4.D0
+          IF (I.LE.180) THEN
+            RLON=RLON+2.D0
           ELSE IF (I.LE.360) THEN
-            RLAT=RLAT-2.D0
+            RLAT=RLAT+1.D0
+          ELSE IF (I.LE.540) THEN
+            RLON=RLON-2.D0
+          ELSE IF (I.LE.720) THEN
+            RLAT=RLAT-1.D0
           END IF
           IF (.NOT.ELPF.AND.
      +        (U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX)) THEN

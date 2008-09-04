@@ -1,5 +1,5 @@
 C
-C $Id: mdqtrn.f,v 1.2 2008-07-27 00:17:04 haley Exp $
+C $Id: mdqtrn.f,v 1.3 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -63,7 +63,7 @@ C
 C If a fast-path projection is in use and the rotation angle is 180,
 C adjust U and V.
 C
-        IF (IPRJ.GE.12.AND.IPRJ.LE.16.AND.
+        IF (IPRJ.GE.16.AND.IPRJ.LE.24.AND.
      +      ABS(ROTA).GT.179.999999D0) THEN
           U=-U
           V=-V
@@ -71,7 +71,7 @@ C
 C
 C Take fast paths for simple cylindrical projections.
 C
-        IF (IPRJ-12) 100,197,114
+        IF (IPRJ-16) 100,197,118
 C
 C No fast path.  Sort out the USGS transformations and the Lambert
 C conformal conic from the rest.
@@ -154,9 +154,11 @@ C
 C
 C Jump to code appropriate for the chosen projection.
 C
-C Projection:   ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
+C Projection:   ST  OR  LE  GN  AE
+C               CE  ME  MT  RO  EA  AI  HA  MO  WT
 C
-        GO TO (104,105,106,107,108,109,110,111,112,113) , IPRJ-1
+        GO TO (104,105,106,107,108,
+     +         109,110,111,112,113,114,115,116,117) , IPRJ-1
 C
 C Stereographic.
 C
@@ -229,7 +231,7 @@ C
         V=LOG((1.D0+COSA)/SINA)
         GO TO 197
 C
-C Mollweide, arbitrary pole and orientation.
+C Mollweide type, arbitrary pole and orientation.
 C
   111   P=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)*TOPI
         U=P*SINA
@@ -249,42 +251,106 @@ C
         V=COSA*4.D0/3.D0
         GO TO 197
 C
+C Aitoff, arbitrary pole and orientation.
+C
+  114   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
+        TMP2=PIOT-ACOS(COSA)
+        CALL AIPROJ (TMP1,TMP2,U,V)
+        P=TMP1
+        GO TO 198
+C
+C Hammer, arbitrary pole and orientation.
+C
+  115   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
+        TMP2=PIOT-ACOS(COSA)
+        CALL HAPROJ (TMP1,TMP2,U,V)
+        P=TSRT*TMP1/PI
+        GO TO 198
+C
+C True Mollweide, arbitrary pole and orientation.
+C
+  116   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
+        TMP2=PIOT-ACOS(COSA)
+        CALL MOPROJ (TMP1,TMP2,U,V)
+        P=TSRT*TMP1/PI
+        GO TO 198
+C
+C Winkel tripel, arbitrary pole and orientation.
+C
+  117   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
+        TMP2=PIOT-ACOS(COSA)
+        CALL WTPROJ (TMP1,TMP2,U,V)
+        P=TMP1
+        GO TO 198
+C
 C Fast-path cylindrical projections (with PLAT=0, ROTA=0 or 180).
 C
-C Projection:   ME  MO  RO  EA  RM
+C Projection:   ME  MT  RO  EA  AI  HA  MO  WT  RM
 C
-  114   GO TO (115,116,117,118,119) , IPRJ-12
+  118   GO TO (119,120,121,122,123,124,125,126,127) , IPRJ-16
 C
 C Mercator, fast-path.
 C
-  115   IF (ABS(V).GT.89.999999D0) GO TO 200
+  119   IF (ABS(V).GT.89.999999D0) GO TO 200
         U=U*DTOR
         V=LOG(TAN((V+90.D0)*DTRH))
         GO TO 197
 C
-C Mollweide, fast-path.
+C Mollweide type, fast-path.
 C
-  116   P=U/90.D0
+  120   P=U/90.D0
         V=SIN(V*DTOR)
         U=P*SQRT(1.D0-V*V)
         GO TO 198
 C
 C Robinson, fast-path.
 C
-  117   P=U/180.D0
+  121   P=U/180.D0
         U=P*RBGLEN(V)
         V=RBGDFE(V)
         GO TO 198
 C
 C Cylindrical equal-area, fast-path.  ???
 C
-  118   U=U*DTOR
+  122   U=U*DTOR
         V=SIN(V*DTOR)*4.D0/3.D0
         GO TO 197
 C
+C Aitoff, fast-path.
+C
+  123   P=DTOR*U
+        TMP1=U*DTOR
+        TMP2=V*DTOR
+        CALL AIPROJ (TMP1,TMP2,U,V)
+        GO TO 198
+C
+C Hammer, fast-path.
+C
+  124   P=TSRT*U/180.D0
+        TMP1=U*DTOR
+        TMP2=V*DTOR
+        CALL HAPROJ (TMP1,TMP2,U,V)
+        GO TO 198
+C
+C True Mollweide, fast-path.
+C
+  125   P=TSRT*U/180.D0
+        TMP1=U*DTOR
+        TMP2=V*DTOR
+        CALL MOPROJ (TMP1,TMP2,U,V)
+        GO TO 198
+C
+C Winkel tripel, fast-path.
+C
+  126   P=DTOR*U
+        TMP1=U*DTOR
+        TMP2=V*DTOR
+        CALL WTPROJ (TMP1,TMP2,U,V)
+        GO TO 198
+C
 C Rotated Mercator.
 C
-  119   IF (ABS(V).GT.89.999999D0) GO TO 200
+  127   IF (ABS(V).GT.89.999999D0) GO TO 200
         UTM1=U*DTOR
         VTM1=LOG(TAN((V+90.D0)*DTRH))
         P=U

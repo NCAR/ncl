@@ -1,5 +1,5 @@
 C
-C $Id: mdpitd.f,v 1.5 2008-07-27 00:17:03 haley Exp $
+C $Id: mdpitd.f,v 1.6 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,8 +15,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -258,9 +260,9 @@ C The new point is visible; so was the old one.  If the projection type
 C is one of those for which "crossover" is not possible, just jump to
 C extend the line to the new point.
 C
-        IF (JPRJ.GE.2.AND.JPRJ.LE.6) GO TO 102
+        IF (IPRJ.GE.2.AND.IPRJ.LE.6) GO TO 102
 C
-        IF (JPRJ.EQ.0.AND.(IPRF.EQ. 6.OR.IPRF.EQ.10.OR.IPRF.EQ.11.OR.
+        IF (IPRJ.EQ.0.AND.(IPRF.EQ. 6.OR.IPRF.EQ.10.OR.IPRF.EQ.11.OR.
      +                     IPRF.EQ.12.OR.IPRF.EQ.13.OR.IPRF.EQ.14.OR.
      +                     IPRF.EQ.15.OR.IPRF.EQ.23)) GO TO 102
 C

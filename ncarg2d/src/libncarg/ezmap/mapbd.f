@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.24 2008-07-27 00:17:00 haley Exp $
+C $Id: mapbd.f,v 1.25 2008-09-04 19:56:57 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,15 +15,16 @@ C
         RETURN
 C
       END
-CNOSPLIT
       BLOCKDATA MAPBDX
 C
         PARAMETER (MNAI=8000)
 C
 C The common block MAPCM0 contains mathematical constants.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
 C The common block MAPCM1 contains transformation constants.
@@ -67,8 +68,8 @@ C
 C The common block MAPCM5 contains various lists ("dictionaries") of
 C two-character codes required by EZMAP for parameter-setting.
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
-     +                   PDCL(14)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
+     +                   PDCL(18)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -124,6 +125,13 @@ C
         INTEGER          ICIN
         SAVE   /MAPCMQ/
 C
+C The common block MAPCMW contains a constant affecting the definition
+C of the Winkel tripel projection.
+C
+        COMMON /MAPCMW/  CSLT
+        DOUBLE PRECISION CSLT
+        SAVE  /MAPCMW/
+C
 C The common blocks MAPCMX and MAPCMY contain variables used by the new
 C routines in EZMAPB (implementing access to the new dataset created in
 C early 1998).  MAPCMX contains integer variables and MAPCMY contains
@@ -163,9 +171,11 @@ C
 C COS1 is the cosine of 1 degree; DTOR is a conversion constant to go
 C from degrees to radians; DTRH is a conversion constant to go from
 C degrees to radians, halved; OOPI is one over pi; PI is pi; PIOT is
-C pi over two; RTDD is a conversion constant to go from radians to
-C degrees, doubled; RTOD is a conversion constant to go from radians
-C to degrees; SIN1 is the sine of 1 degree; and TOPI is two over pi.
+C pi over two; PIOF is pi over four; RTDD is a conversion constant to go
+C from radians to degrees, doubled; RTOD is a conversion constant to go
+C from radians to degrees; SIN1 is the sine of 1 degree; SROT is the
+C square root of two; TOPI is two over pi; and TSRT is two times the
+C square root of two.
 C
         DATA COS1 / .999847695156390D0 /
         DATA DTOR / .017453292519943D0 /
@@ -173,38 +183,53 @@ C
         DATA OOPI / .318309886183790D0 /
         DATA PI   / 3.14159265358979D0 /
         DATA PIOT / 1.57079632679489D0 /
+        DATA PIOF / .785398163397445D0 /
         DATA RTDD / 114.591559026165D0 /
         DATA RTOD / 57.2957795130823D0 /
         DATA SIN1 / .017452406437283D0 /
+        DATA SROT / 1.41421356237310D0 /
         DATA TOPI / .636619772367581D0 /
+        DATA TSRT / 2.82842712474619D0 /
 C
 C Variables in MAPCM1:
 C
-C IPRJ is an integer between 0 and 17, specifying what projection is
-C currently in use.  The values 12, 13, 14, 15, and 16 are fast-path
-C versions of the values 7, 8, 9, 10, and 11, respectively.  The
-C meanings of the various possible values of IPRJ are as follows:
+C IPRJ is an integer between 0 and 25, specifying what projection is
+C currently in use.  The following table defines the meanings of the
+C various possible values of IPRJ.  In the table, the word "arbitrary"
+C is used to indicate the the projection may be centered at any point
+C on the globe and the word "fast-path" is used to indicate that the
+C projection is centered at (0,0) on the globe (which usually speeds
+C up the evaluation of the equations).  Projections 16 through 24 are
+C fast-path versions of projections 7 through 15.
 C
-C     IPRJ    Projection Selected                    Type
-C     ----    -----------------------------------    -----------
-C       0     USGS transformations                   Various
-C       1     Lambert Conformal                      Conical
-C       2     Stereographic                          Azimuthal
-C       3     Orthographic (or Satellite)            Azimuthal
-C       4     Lambert Equal-Area                     Azimuthal
-C       5     Gnomonic                               Azimuthal
-C       6     Azimuthal Equidistant                  Azimuthal
-C       7     Cylindrical Equidistant (arbitrary)    Cylindrical
-C       8     Mercator (arbitrary)                   Cylindrical
-C       9     Mollweide (arbitrary)                  Cylindrical
-C      10     Robinson (arbitrary)                   Cylindrical
-C      11     Cylindrical Equal-Area (arbitrary)     Cylindrical
-C      12     Cylindrical Equidistant (fast-path)    Cylindrical
-C      13     Mercator (fast-path)                   Cylindrical
-C      14     Mollweide (fast-path)                  Cylindrical
-C      15     Robinson (fast-path)                   Cylindrical
-C      16     Cylindrical Equal-Area (fast-path)     Cylindrical
-C      17     Rotated Mercator (fast-path)           Cylindrical
+C     IPRJ    Projection Selected                         Type
+C     ----    ------------------------------------        -----------
+C       0     (UT) USGS transformations                   Various 
+C       1     (LC) Lambert Conformal                      Conical 
+C       2     (ST) Stereographic                          Azimuthal
+C       3     (OR or SA) Orthographic or Satellite        Azimuthal
+C       4     (LE) Lambert Equal-Area                     Azimuthal
+C       5     (GN) Gnomonic                               Azimuthal
+C       6     (AE) Azimuthal Equidistant                  Azimuthal
+C       7     (CE) Cylindrical Equidistant (arbitrary)    Cylindrical
+C       8     (ME) Mercator (arbitrary)                   Cylindrical
+C       9     (MT) Mollweide type (arbitrary)             Cylindrical
+C      10     (RO) Robinson (arbitrary)                   Cylindrical
+C      11     (EA) Cylindrical Equal-Area (arbitrary)     Cylindrical
+C      12     (AI) Aitoff (arbitrary)                     Mixed
+C      13     (HA) Hammer (arbitrary)                     Mixed
+C      14     (TM) True Mollweide (arbitrary)             Mixed
+C      15     (WT) Winkel tripel (arbitrary)              Mixed
+C      16     (CE) Cylindrical Equidistant (fast-path)    Cylindrical
+C      17     (ME) Mercator (fast-path)                   Cylindrical
+C      18     (MT) Mollweide type (fast-path)             Cylindrical
+C      19     (RO) Robinson (fast-path)                   Cylindrical
+C      20     (EA) Cylindrical Equal-Area (fast-path)     Cylindrical
+C      21     (AI) Aitoff (fast-path)                     Mixed
+C      22     (HA) Hammer (fast-path)                     Mixed
+C      23     (MO) True Mollweide (fast-path)             Mixed
+C      24     (WT) Winkel tripel (fast-path)              Mixed
+C      25     (RM) Rotated Mercator (fast-path)           Cylindrical
 C
 C PHOC is just a copy of PHIO, from the common block MAPCM4.  IROD is
 C a flag which, if non-zero, says that we have to use double precision
@@ -354,11 +379,11 @@ C
      +        / 'ma','co','po','an','li','gr' /
 C
       DATA PDCT
-     +        / 'UT','LC','ST','OR','LE','GN','AE','CE','ME','MO',
-     +          'RO','EA','SV','RM' /
+     +        / 'UT','LC','ST','OR','LE','GN','AE','CE','ME','MT',
+     +          'RO','EA','AI','HA','MO','WT','SV','RM' /
       DATA PDCL
-     +        / 'ut','lc','st','or','le','gn','ae','ce','me','mo',
-     +          'ro','ea','sv','rm' /
+     +        / 'ut','lc','st','or','le','gn','ae','ce','me','mt',
+     +          'ro','ea','ai','ha','mo','wt','sv','rm' /
 C
 C Variables in MAPCM6:
 C
@@ -447,6 +472,15 @@ C that color should not be set.
 C
       DATA ICIN / -1,-1,-1,-1,-1,-1,-1,-1 /
 C
+C Variables in MAPCMW:
+C
+C CSLT is the cosine of the standard parallel of the Winkel tripel, for
+C which Winkel used ACOS(2/PI); in EZMAP, though, it is allowed to vary.
+C A negative value is a signal to the routine MDPROJ that it should set
+C the value of CSLT to its standard default.
+C
+      DATA CSLT / -1. /
+C
 C Variables in MAPCMX and MAPCMY:
 C
 C For each I from 1 to MNAI, IATY(I), if non-zero, is the type of the
@@ -525,14 +559,13 @@ C
       DATA DSNA,DCSA,DSNB,DCSB / 0.D0,1.D0,0.D0,1.D0 /
 C
       END
-CNOSPLIT
       BLOCKDATA MAPBDQ
 C
 C The common block MAQCMN contains only those variables that are needed
 C for MDQTRA, MDQTRI, and MDQTRN to carry out the transformation that
 C was in effect at the time MDQINI was called.  All of them are copies
 C of variables in other common blocks and are described above, in the
-C commenting for BLOCKDATA MAPBDX.  They are given defalut values here
+C commenting for BLOCKDATA MAPBDX.  They are given default values here
 C mostly to protect the transformation routines from blowing up if they
 C are erroneously called prior to a call to MDQINI.
 C
@@ -562,7 +595,7 @@ C
         DATA DTOR / .017453292519943D0 /
         DATA DTRH / .008726646259971D0 /
         DATA ELPM / .FALSE. /
-        DATA IPRJ / 12 /
+        DATA IPRJ / 16 /
         DATA IROD / 1 /
         DATA OOPI / .318309886183790D0 /
         DATA PHOC / 0.D0 /

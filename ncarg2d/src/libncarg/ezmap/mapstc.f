@@ -1,5 +1,5 @@
 C
-C $Id: mapstc.f,v 1.17 2008-07-27 00:17:01 haley Exp $
+C $Id: mapstc.f,v 1.18 2008-09-04 19:56:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

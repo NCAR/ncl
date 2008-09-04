@@ -1,5 +1,5 @@
 C
-C $Id: mdgetd.f,v 1.5 2008-07-27 00:17:02 haley Exp $
+C $Id: mdgetd.f,v 1.6 2008-09-04 19:56:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,6 +15,12 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        SAVE   /MAPCM0/
+C
         COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
      +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
@@ -29,6 +35,10 @@ C
         COMMON /MAPCMA/  DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
+C
+        COMMON /MAPCMW/  CSLT
+        DOUBLE PRECISION CSLT
+        SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -84,6 +94,9 @@ C
           DVAL=BETA
         ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
           DVAL=SRCH
+        ELSE IF (WHCH(1:2).EQ.'WS'.OR.WHCH(1:2).EQ.'ws') THEN
+          IF (CSLT.LT.0.D0.OR.CSLT.GT.90.D0) CSLT=2.D0/PI
+          DVAL=MAX(0.D0,MIN(90.D0,RTOD*ACOS(CSLT)))
         ELSE IF (WHCH(1:2).EQ.'XL'.OR.WHCH(1:2).EQ.'xl') THEN
           DVAL=XLOW
         ELSE IF (WHCH(1:2).EQ.'XR'.OR.WHCH(1:2).EQ.'xr') THEN

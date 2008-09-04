@@ -1,5 +1,5 @@
 C
-C $Id: mdpgrd.f,v 1.7 2008-07-27 00:17:03 haley Exp $
+C $Id: mdpgrd.f,v 1.8 2008-09-04 19:56:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -12,8 +12,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -117,7 +119,7 @@ C
           IF (IPRJ.EQ.1) THEN
             RLON=GLON*CEIL((PHOC-179.999999D0)/GLON)
             XLON=GLON*FLOR((PHOC+179.999999D0)/GLON)
-          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.11) THEN
+          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.15) THEN
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
           END IF
@@ -126,8 +128,8 @@ C
 C OLAT is the latitude at which meridians that do not extend all the
 C way to the poles are to stop.
 C
-        IF (IPRJ.EQ.12.OR.IPRJ.EQ.13.OR.IPRJ.EQ.15.OR.IPRJ.EQ.16.OR.
-     +                                                IPRJ.EQ.17) THEN
+        IF (IPRJ.EQ.16.OR.IPRJ.EQ.17.OR.IPRJ.EQ.19.OR.IPRJ.EQ.20.OR.
+     +                                  IPRJ.EQ.24.OR.IPRJ.EQ.25) THEN
           OLAT=90.D0
         ELSE
           IF (DINT(GRPO/1000.D0).EQ.0.D0) THEN
@@ -170,7 +172,7 @@ C projection is in use and either or both of the poles is within the
 C (rectangular) perimeter, arrange for the parallels at -90 and/or +90
 C to be drawn.
 C
-        IF (IPRJ.EQ.12.OR.IPRJ.EQ.16) THEN
+        IF (IPRJ.EQ.16.OR.IPRJ.EQ.20) THEN
           CALL MDPTRN (-90.D0,PHOC,U,V)
           IF (ICFELL('MDPGRD',7).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)

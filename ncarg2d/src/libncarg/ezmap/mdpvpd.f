@@ -1,5 +1,5 @@
 C
-C $Id: mdpvpd.f,v 1.5 2008-07-27 00:17:04 haley Exp $
+C $Id: mdpvpd.f,v 1.6 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

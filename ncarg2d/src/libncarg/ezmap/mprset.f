@@ -1,5 +1,5 @@
 C
-C $Id: mprset.f,v 1.13 2008-07-27 00:17:05 haley Exp $
+C $Id: mprset.f,v 1.14 2008-09-04 19:57:00 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

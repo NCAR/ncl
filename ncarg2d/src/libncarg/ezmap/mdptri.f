@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.7 2008-07-27 00:17:03 haley Exp $
+C $Id: mdptri.f,v 1.8 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -14,8 +14,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -95,11 +97,15 @@ C
 C
 C Jump to the proper piece of code, depending on the projection type.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
+C Projection:   US  LC  ST  OR  LE  GN  AE
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT
+C                       ME
 C
-        GO TO (100,101,102,103,104,105,106,107,108,109,110,111,
-     +                                     112,113,114,115,116,
-     +                                         117            ) , IPRJ+1
+        GO TO (100,101,102,103,104,105,106,
+     +             107,108,109,110,111,112,113,114,115,
+     +             116,117,118,119,120,121,122,123,124,
+     +                 125                            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -245,7 +251,7 @@ C
         RCOSB=RSINU*SINR-RCOSU*COSR
         GO TO 199
 C
-C Mollweide, arbitrary pole and orientation.
+C Mollweide type, arbitrary pole and orientation.
 C
   109   IF (ABS(VTMP).GT.1.D0) GO TO 301
         RCOSA=VTMP
@@ -292,23 +298,79 @@ C
         RCOSB=RSINU*SINR-RCOSU*COSR
         GO TO 199
 C
+C Aitoff, arbitrary pole and orientation.
+C
+  112   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        ANGA=PIOT-RLAT
+        RSINA=SIN(ANGA)
+        RCOSA=COS(ANGA)
+        ANGU=RLON
+        RSINU=SIN(ANGU)
+        RCOSU=COS(ANGU)
+        RSINB=RSINU*COSR+RCOSU*SINR
+        RCOSB=RSINU*SINR-RCOSU*COSR
+        GO TO 199
+C
+C Hammer, arbitrary pole and orientation.
+C
+  113   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        ANGA=PIOT-RLAT
+        RSINA=SIN(ANGA)
+        RCOSA=COS(ANGA)
+        ANGU=RLON
+        RSINU=SIN(ANGU)
+        RCOSU=COS(ANGU)
+        RSINB=RSINU*COSR+RCOSU*SINR
+        RCOSB=RSINU*SINR-RCOSU*COSR
+        GO TO 199
+C
+C True Mollweide, arbitrary pole and orientation.
+C
+  114   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        ANGA=PIOT-RLAT
+        RSINA=SIN(ANGA)
+        RCOSA=COS(ANGA)
+        ANGU=RLON
+        RSINU=SIN(ANGU)
+        RCOSU=COS(ANGU)
+        RSINB=RSINU*COSR+RCOSU*SINR
+        RCOSB=RSINU*SINR-RCOSU*COSR
+        GO TO 199
+C
+C Winkel tripel, arbitrary pole and orientation.
+C
+  115   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        ANGA=PIOT-RLAT
+        RSINA=SIN(ANGA)
+        RCOSA=COS(ANGA)
+        ANGU=RLON
+        RSINU=SIN(ANGU)
+        RCOSU=COS(ANGU)
+        RSINB=RSINU*COSR+RCOSU*SINR
+        RCOSB=RSINU*SINR-RCOSU*COSR
+        GO TO 199
+C
 C Cylindrical equidistant, fast path.
 C
-  112   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
+  116   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
         RLAT=VTMP
         RLON=PHOC+UTMP
         GO TO 200
 C
 C Mercator, fast path.
 C
-  113   IF (ABS(UTMP).GT.PI) GO TO 301
+  117   IF (ABS(UTMP).GT.PI) GO TO 301
         RLAT=RTDD*ATAN(EXP(VTMP))-90.D0
         RLON=PHOC+RTOD*UTMP
         GO TO 200
 C
-C Mollweide, fast path.
+C Mollweide type, fast path.
 C
-  114   IF (ABS(VTMP).GT.1.D0) GO TO 301
+  118   IF (ABS(VTMP).GT.1.D0) GO TO 301
         RLAT=ASIN(VTMP)*RTOD
         IF (1.D0-VTMP*VTMP.NE.0.D0) THEN
           RLON=PHOC+90.D0*UTMP/SQRT(1.D0-VTMP*VTMP)
@@ -321,7 +383,7 @@ C
 C
 C Robinson, fast path.
 C
-  115   IF (ABS(VTMP).GT..5072D0) GO TO 301
+  119   IF (ABS(VTMP).GT..5072D0) GO TO 301
         VVTM=RBIDFE(VTMP)
         IF (ABS(UTMP).GT.RBGLEN(VVTM)) GO TO 301
         RLAT=VVTM
@@ -330,13 +392,46 @@ C
 C
 C Cylindrical equal-area, fast path.
 C
-  116   RLON=PHOC+RTOD*UTMP
+  120   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
+        RLON=PHOC+RTOD*UTMP
         RLAT=RTOD*ASIN(VTMP*3.D0/4.D0)
+        GO TO 200
+C
+C Aitoff, arbitrary pole and orientation.
+C
+  121   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        RLAT=RTOD*RLAT
+        RLON=RTOD*RLON
+        GO TO 200
+C
+C Hammer, arbitrary pole and orientation.
+C
+  122   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        RLAT=RTOD*RLAT
+        RLON=RTOD*RLON
+        GO TO 200
+C
+C True Mollweide, arbitrary pole and orientation.
+C
+  123   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        RLAT=RTOD*RLAT
+        RLON=RTOD*RLON
+        GO TO 200
+C
+C Winkel tripel, arbitrary pole and orientation.
+C
+  124   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
+        IF (RLAT.EQ.1.D12) GO TO 302
+        RLAT=RTOD*RLAT
+        RLON=RTOD*RLON
         GO TO 200
 C
 C Rotated Mercator.
 C
-  117   UTM1=UTMP*COSR-VTMP*SINR
+  125   UTM1=UTMP*COSR-VTMP*SINR
         VTM1=VTMP*COSR+UTMP*SINR
         RLAT=RTDD*ATAN(EXP(VTM1))-90.D0
         RLON=PHOC+RTOD*UTM1
@@ -394,13 +489,13 @@ C Done.
 C
   201   IF (ABS(RLON).GT.180.D0) RLON=RLON-SIGN(360.D0,RLON)
 C
-        RETURN
+        GO TO 302
 C
 C Inverse is not defined; return the values that signal that.
 C
   301   RLAT=1.D12
         RLON=1.D12
 C
-        RETURN
+  302   RETURN
 C
       END

@@ -1,5 +1,5 @@
 C
-C $Id: mapsav.f,v 1.15 2008-07-27 00:17:01 haley Exp $
+C $Id: mapsav.f,v 1.16 2008-09-04 19:56:58 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

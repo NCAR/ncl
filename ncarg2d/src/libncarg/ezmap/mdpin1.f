@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.6 2008-07-27 00:17:03 haley Exp $
+C $Id: mdpin1.f,v 1.7 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -12,8 +12,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -97,16 +99,18 @@ C
           SINO=SIN(TMP2)
           COSO=COS(TMP2)
 C
-C Compute constants required only by the cylindrical projections.
+C Compute constants required only by the cylindrical and mixed
+C projections.
 C
-          IF (IPRJ.GE.7.AND.IPRJ.LE.11) THEN
+          IF (IPRJ.GE.7.AND.IPRJ.LE.15) THEN
 C
 C See if fast-path transformations can be used (PLAT=0, ROTA=0 or 180).
 C
             IF (ABS(PHIA).GE..000001D0.OR.(ABS(ROTA).GE..000001D0.AND.
      +                                  ABS(ROTA).LE.179.999999D0)) THEN
 C
-C No.  Compute constants for the ordinary cylindrical projections.
+C No.  Compute constants for the ordinary cylindrical and mixed
+C projections.
 C
               SINT=COSO*COSR
               COST=SQRT(1.D0-SINT**2)
@@ -122,7 +126,7 @@ C
 C
 C Yes.  The fast paths are implemented as five additional projections.
 C
-              IPRJ=IPRJ+5
+              IPRJ=IPRJ+9
 C
             END IF
 C

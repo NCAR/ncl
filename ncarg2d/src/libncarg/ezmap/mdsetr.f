@@ -1,5 +1,5 @@
 C
-C $Id: mdsetr.f,v 1.6 2008-07-27 00:17:05 haley Exp $
+C $Id: mdsetr.f,v 1.7 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,8 +15,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM2/  BLAM,BLOM,PEPS,SLAM,SLOM,UCEN,UMAX,UMIN,UOFF,
@@ -44,6 +46,10 @@ C
         COMMON /MAPCMA/  DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
+C
+        COMMON /MAPCMW/  CSLT
+        DOUBLE PRECISION CSLT
+        SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -91,6 +97,13 @@ C
           INTF=.TRUE.
         ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
           SRCH=MAX(.001D0,MIN(10.D0,DBLE(RVAL)))
+          INTF=.TRUE.
+        ELSE IF (WHCH(1:2).EQ.'WS'.OR.WHCH(1:2).EQ.'ws') THEN
+          IF (RVAL.LT.0..OR.RVAL.GT.90.) THEN
+            CSLT=2.D0/PI
+          ELSE
+            CSLT=COS(DTOR*DBLE(RVAL))
+          END IF
           INTF=.TRUE.
         ELSE
           GO TO 901

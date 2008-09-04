@@ -1,5 +1,5 @@
 C
-C $Id: mpgetd.f,v 1.4 2008-07-27 00:17:05 haley Exp $
+C $Id: mpgetd.f,v 1.5 2008-09-04 19:56:59 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
