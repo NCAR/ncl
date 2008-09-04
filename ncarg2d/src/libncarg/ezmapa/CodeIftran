@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.8 2008-04-04 21:02:48 kennison Exp $
+I $Id: CodeIftran,v 1.9 2008-09-04 20:04:46 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -124,8 +124,10 @@ C
 C
 C Declare required common blocks.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -157,8 +159,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(14),
-     +                   PDCL(14)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
+     +                   PDCL(18)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -251,9 +253,9 @@ C
               XCRD=UCEN+TEMP*U
               YCRD=VCEN
               INVOKE (START-A-LINE)
-              FOR (I = 1 TO 360)
-                U=URNG*COS(DTOR*DBLE(I))
-                V=URNG*SIN(DTOR*DBLE(I))
+              FOR (I = 1 TO 720)
+                U=URNG*COS(DTOR*DBLE(I)/2.D0)
+                V=URNG*SIN(DTOR*DBLE(I)/2.D0)
                 XCRD=UCEN+TEMP*U
                 YCRD=VCEN+TEMP*V*VRNG/URNG
                 INVOKE (CONTINUE-THE-LINE)
@@ -301,11 +303,15 @@ C
 C
 C Limb line.
 C
-C Projection:     US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
+C Projection:     US  LC  ST  OR  LE  GN  AE
+C                     CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
+C                     CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
+C                         ME
 C
-          GO TO (100,101,108,102,103,108,104,107,107,105,107,107,
-     +                                       107,107,105,107,107,
-     +                                           107            ),IPRJ+1
+          GO TO (100,101,108,102,103,108,104,
+     +               107,107,105,107,107,109,110,110,107,
+     +               107,107,105,107,107,109,110,110,107,
+     +                   107                            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -437,7 +443,7 @@ C
             XAS2=XANP+VNS1*SIN(ALPH)+UNS1*COS(ALPH)
             YAS2=YANP+UNS1*SIN(ALPH)-VNS1*COS(ALPH)
             DIST=SQRT((XAS2-XAS1)*(XAS2-XAS1)+(YAS2-YAS1)*(YAS2-YAS1))
-            IF (VNS1.LT.0.D0) THEN
+            IF (VNS1.LT.0.D0)
               DEPS=-.001D0*DIST
               IDLT=-1
               IDRT= 0
@@ -563,10 +569,23 @@ C
           RVTU=1.D0
           GO TO 106
 C
-C Mollweide.
+C Mollweide type.
 C
   105     URAD=2.D0
           RVTU=0.5D0
+          GO TO 106
+C
+C Aitoff.
+C
+  109     URAD=3.14159265358979D0
+          RVTU=.5D0
+          GO TO 106
+C
+C Hammer and true Mollweide.
+C
+  110     URAD=2.82842712474619D0
+          RVTU=.5D0
+          GO TO 106
 C
   106     IF (ELPF.AND.ABS(UCEN).LT..0001D0.AND.
      +                 ABS(VCEN).LT..0001D0.AND.
@@ -579,9 +598,9 @@ C
             IDLT=0
             IDRT=-1
             IVIS=-1
-            FOR (I = 1 TO 361)
-              UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1))
-              VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1))
+            FOR (I = 1 TO 721)
+              UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1)/2.D0)
+              VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1)/2.D0)
               U=UCIR-UOFF
               V=RVTU*VCIR-VOFF
               IF (.NOT.ELPF.AND.
@@ -631,7 +650,8 @@ C
           END LOOP
           GO TO 108
 C
-C Cylindrical equidistant, Mercator, Robinson, cylindrical equal-area.
+C Cylindrical equidistant, Mercator, Robinson, cylindrical equal-area,
+C Winkel tripel.
 C
   107     TEMP=.9998D0
 C
@@ -641,36 +661,40 @@ C
             IVIS=-1
             RLAT=-90.D0
             RLON=-180.D0
-            FOR (I = 1 TO 361)
-              IF (IPRJ.EQ.7.OR.IPRJ.EQ.12)
+            FOR (I = 1 TO 720)
+              IF (IPRJ.EQ.7.OR.IPRJ.EQ.16)
                 U=TEMP*RLON-UOFF
                 V=TEMP*RLAT-VOFF
-              ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.13.OR.IPRJ.EQ.17)
+              ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.17.OR.IPRJ.EQ.25)
                 U=TEMP*DTOR*RLON-UOFF
                 V=TEMP*LOG(TAN((MAX(-89.999999D0,
      +                          MIN(+89.999999D0,RLAT))+
      +                                                90.D0)*DTRH))-VOFF
-                IF (IPRJ.EQ.17)
+                IF (IPRJ.EQ.25)
                   UTMP=U*COSR+V*SINR
                   VTMP=V*COSR-U*SINR
                   U=UTMP
                   V=VTMP
                 END IF
-              ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.16)
+              ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.20)
                 U=TEMP*DTOR*RLON-UOFF
                 V=TEMP*SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
+              ELSE IF (IPRJ.EQ.15.OR.IPRJ.EQ.24)
+                CALL WTPROJ (DTOR*RLAT,DTOR*RLON,U,V)
+                U=U-UOFF
+                V=V-VOFF
               ELSE
                 U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
                 V=TEMP*RBGDFE(RLAT)-VOFF
               END IF
-              IF (I.LE.90)
-                RLON=RLON+4.D0
-              ELSE IF (I.LE.180)
-                RLAT=RLAT+2.D0
-              ELSE IF (I.LE.270)
-                RLON=RLON-4.D0
+              IF (I.LE.180)
+                RLON=RLON+2.D0
               ELSE IF (I.LE.360)
-                RLAT=RLAT-2.D0
+                RLAT=RLAT+1.D0
+              ELSE IF (I.LE.540)
+                RLON=RLON-2.D0
+              ELSE IF (I.LE.720)
+                RLAT=RLAT-1.D0
               END IF
               IF (.NOT.ELPF.AND.
      +            (U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX))
@@ -1029,8 +1053,10 @@ C
 C
 C Declare required common blocks.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -1140,9 +1166,9 @@ C
               XCRD=UCEN+TEMP*U
               YCRD=VCEN
               INVOKE (START-A-LINE)
-              FOR (I = 1 TO 360)
-                U=URNG*COS(DTOR*DBLE(I))
-                V=URNG*SIN(DTOR*DBLE(I))
+              FOR (I = 1 TO 720)
+                U=URNG*COS(DTOR*DBLE(I)/2.D0)
+                V=URNG*SIN(DTOR*DBLE(I)/2.D0)
                 XCRD=UCEN+TEMP*U
                 YCRD=VCEN+TEMP*V*VRNG/URNG
                 INVOKE (CONTINUE-THE-LINE)
@@ -1184,11 +1210,15 @@ C
 C
 C Draw the limb line.
 C
-C Projection:   US  LC  ST  OR  LE  GN  AE  CE  ME  MO  RO  EA
+C Projection:   US  LC  ST  OR  LE  GN  AE
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
+C                       RM
 C
-        GO TO (100,101,108,102,103,108,104,107,107,105,107,107,
-     +                                     107,107,105,107,107,
-     +                                         107            ) , IPRJ+1
+        GO TO (100,101,108,102,103,108,104,
+     +             107,107,105,107,107,109,110,110,107,
+     +             107,107,105,107,107,109,110,110,107,
+     +                 107                            ) , IPRJ+1
 C
 C USGS transformations.
 C
@@ -1312,7 +1342,7 @@ C
           XAS2=XANP+VNS1*SIN(ALPH)+UNS1*COS(ALPH)
           YAS2=YANP+UNS1*SIN(ALPH)-VNS1*COS(ALPH)
           DIST=SQRT((XAS2-XAS1)*(XAS2-XAS1)+(YAS2-YAS1)*(YAS2-YAS1))
-          IF (VNS1.LT.0.D0) THEN
+          IF (VNS1.LT.0.D0)
             DEPS=-.001D0*DIST
           ELSE
             DEPS=+.001D0*DIST
@@ -1428,10 +1458,23 @@ C
         RVTU=1.D0
         GO TO 106
 C
-C Mollweide.
+C Mollweide type.
 C
   105   URAD=2.D0
         RVTU=0.5D0
+        GO TO 106
+C
+C Aitoff.
+C
+  109   URAD=3.14159265358979D0
+        RVTU=.5D0
+        GO TO 106
+C
+C Hammer and true Mollweide.
+C
+  110   URAD=2.82842712474619D0
+        RVTU=.5D0
+        GO TO 106
 C
   106   IF (ELPF.AND.ABS(UCEN).LT..0001D0.AND.
      +               ABS(VCEN).LT..0001D0.AND.
@@ -1442,9 +1485,9 @@ C
 C
         LOOP
           IVIS=-1
-          FOR (I = 1 TO 361)
-            UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1))
-            VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1))
+          FOR (I = 1 TO 721)
+            UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1)/2.D0)
+            VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1)/2.D0)
             U=UCIR-UOFF
             V=RVTU*VCIR-VOFF
             IF (.NOT.ELPF.AND.
@@ -1494,7 +1537,8 @@ C
         END LOOP
         GO TO 108
 C
-C Cylindrical equidistant, Mercator, or Robinson.
+C Cylindrical equidistant, Mercator, Robinson, cylindrical equal-area,
+C Winkel tripel.
 C
   107   TEMP=.9998D0
 C
@@ -1502,26 +1546,39 @@ C
           IVIS=-1
           RLAT=-90.D0
           RLON=-180.D0
-          FOR (I = 1 TO 361)
-            IF (IPRJ.EQ.7.OR.IPRJ.EQ.12)
+          FOR (I = 1 TO 720)
+            IF (IPRJ.EQ.7.OR.IPRJ.EQ.16)
               U=TEMP*RLON-UOFF
               V=TEMP*RLAT-VOFF
-            ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.13.OR.IPRJ.EQ.17)
+            ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.17.OR.IPRJ.EQ.25)
               U=TEMP*DTOR*RLON-UOFF
               V=TEMP*LOG(TAN((MAX(-89.999999D0,
      +                        MIN(+89.999999D0,RLAT))+90.D0)*DTRH))-VOFF
-              IF (IPRJ.EQ.17)
+              IF (IPRJ.EQ.25)
                 UTMP=U*COSR+V*SINR
                 VTMP=V*COSR-U*SINR
                 U=UTMP
                 V=VTMP
               END IF
-            ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.16) THEN
+            ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.20)
               U=TEMP*DTOR*RLON-UOFF
               V=TEMP*SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
+            ELSE IF (IPRJ.EQ.15.OR.IPRJ.EQ.24)
+              CALL WTPROJ (TEMP*DTOR*RLAT,TEMP*DTOR*RLON,U,V)
+              U=U-UOFF
+              V=V-VOFF
             ELSE
               U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
               V=TEMP*RBGDFE(RLAT)-VOFF
+            END IF
+            IF (I.LE.180)
+              RLON=RLON+2.D0
+            ELSE IF (I.LE.360)
+              RLAT=RLAT+1.D0
+            ELSE IF (I.LE.540)
+              RLON=RLON-2.D0
+            ELSE IF (I.LE.720)
+              RLAT=RLAT-1.D0
             END IF
             IF (.NOT.ELPF.AND.
      +          (U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX))
@@ -1738,8 +1795,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -1767,10 +1826,11 @@ C
 C
 C Declare local variables.
 C
-        DOUBLE PRECISION BLAT,BLON,DLAT,DLON,GLAT,GLON,OLAT,RLAT,RLON,
-     +                   SLAT,SLON,U,V,X,XLAT,XLON
+        DOUBLE PRECISION BLAT,BLON,DLAT,DLON,GLAT,GLON,OLAT,RLAT,
+     +                   RLON,SLAT,SLON,U,V,X,XLAT,XLON
 C
-C Declare arithmetic statement functions.
+C Declare the type of two local arithmetic statement functions and the
+C argument used with them.
 C
         DOUBLE PRECISION CEIL,FLOR
 C
@@ -1803,7 +1863,7 @@ C
         IF (GRLA.GT.0.D0) GLAT=GRLA
         IF (GRLO.GT.0.D0) GLON=GRLO
 C
-C Reset the color index and dash pattern for the grid.
+C Reset the color index, dotting, and dash pattern for the grid.
 C
         CALL MDPCHM (2,IDSH,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
         IF (ICFELL('MDPGRM',3).NE.0) RETURN
@@ -1811,10 +1871,10 @@ C
 C Transfer the latitude/longitude limits computed by MDPINT to local,
 C modifiable variables.
 C
-        SLAT=SLAM
         BLAT=BLAM
-        SLON=SLOM
         BLON=BLOM
+        SLAT=SLAM
+        SLON=SLOM
 C
 C For certain azimuthal projections centered at a pole, the latitude
 C limit furthest from the pole needs adjustment to make it projectable
@@ -1842,7 +1902,7 @@ C
           IF (IPRJ.EQ.1)
             RLON=GLON*CEIL((PHOC-179.999999D0)/GLON)
             XLON=GLON*FLOR((PHOC+179.999999D0)/GLON)
-          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.11)
+          ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.15)
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
           END IF
@@ -1851,11 +1911,11 @@ C
 C OLAT is the latitude at which meridians that do not extend all the
 C way to the poles are to stop.
 C
-        IF (IPRJ.EQ.12.OR.IPRJ.EQ.13.OR.IPRJ.EQ.15.OR.IPRJ.EQ.16.OR.
-     +                                                IPRJ.EQ.17)
+        IF (IPRJ.EQ.16.OR.IPRJ.EQ.17.OR.IPRJ.EQ.19.OR.IPRJ.EQ.20.OR.
+     +                                  IPRJ.EQ.24.OR.IPRJ.EQ.25)
           OLAT=90.D0
         ELSE
-          IF (INT(GRPO/1000.D0).EQ.0)
+          IF (DINT(GRPO/1000.D0).EQ.0D0)
             OLAT=GLAT*FLOR(89.999999D0/GLAT)
           ELSE
             OLAT=GLAT*FLOR(MIN(89.999999D0,DINT(GRPO/1000.D0))/GLAT)
@@ -1890,11 +1950,12 @@ C
         BLAT=GLAT*CEIL(BLAT/GLAT)
         IF (BLAT.GE.+90.D0) BLAT=BLAT-GLAT
 C
-C If a fast-path cylindrical equidistant projection is in use and either
-C or both of the poles is within the (rectangular) perimeter, arrange
-C for the parallels at -90 and/or +90 to be drawn.
+C If a fast-path cylindrical equidistant or cylindrical equal-area
+C projection is in use and either or both of the poles is within the
+C (rectangular) perimeter, arrange for the parallels at -90 and/or +90
+C to be drawn.
 C
-        IF (IPRJ.EQ.12.OR.IPRJ.EQ.16)
+        IF (IPRJ.EQ.16.OR.IPRJ.EQ.20)
           CALL MDPTRN (-90.D0,PHOC,U,V)
           IF (ICFELL('MDPGRM',7).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
@@ -2038,8 +2099,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -2126,19 +2189,19 @@ C that we already had (03/11/99).
 C
         IF ((IPRJ.EQ.0.AND.(IPRF.EQ. 3.OR.IPRF.EQ. 8.OR.
      +                      IPRF.EQ.11.OR.IPRF.EQ.12)).OR.
-     +      IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6) THEN
-          IF (IPRJ.EQ.0) THEN
-            IF (IPRF.EQ.3.OR.IPRF.EQ.8) THEN
+     +      IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6)
+          IF (IPRJ.EQ.0)
+            IF (IPRF.EQ.3.OR.IPRF.EQ.8)
               CPLT=0.D0
               SPLT=1.D0
               CPLN=1.D0
               SPLN=0.D0
-              IF (IPRF.EQ.8.AND.UTPA(9).EQ.0.D0) THEN
+              IF (IPRF.EQ.8.AND.UTPA(9).EQ.0.D0)
                 DTST=UTPA(3)
               ELSE
                 DTST=.5D0*UTPA(3)+UTPA(4)
               END IF
-              IF (DTST.GT.0.D0) THEN
+              IF (DTST.GT.0.D0)
                 DTST=90.D0-DTST
               ELSE
                 SPLT=-SPLT
@@ -2163,41 +2226,41 @@ C
           APTX=2.D0*RTOD*ASIN(SQRT((CXLT*CXLN-CPLT*CPLN)**2+
      +                             (CXLT*SXLN-CPLT*SPLN)**2+
      +                             (SXLT     -SPLT     )**2)/2.D0)
-          IF (IPRJ.EQ.0.AND.(IPRF.EQ.3.OR.IPRF.EQ.8)) THEN
-            IF (APTX.LE.DTST) THEN
+          IF (IPRJ.EQ.0.AND.(IPRF.EQ.3.OR.IPRF.EQ.8))
+            IF (APTX.LE.DTST)
               RMUL=MAX(1.D0,MIN(51.D0,51.D0*((DTST-APTX)/DTST)**8))
             ELSE
               RMUL=MAX(1.D0,MIN(51.D0,51.D0*((APTX-DTST)/
      +                                          (180.D0-DTST))**8))
             END IF
-          ELSE IF (IPRJ.EQ.2) THEN
-            IF (APTX.LE.179.999D0) THEN
+          ELSE IF (IPRJ.EQ.2)
+            IF (APTX.LE.179.999D0)
               RMUL=MIN(101.D0,1.D0/(1.D0+COS(DTOR*APTX)))
             ELSE
               RMUL=101.D0
             END IF
-          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.11).OR.IPRJ.EQ.4) THEN
-            IF (APTX.LE.179.999D0) THEN
+          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.11).OR.IPRJ.EQ.4)
+            IF (APTX.LE.179.999D0)
               RMUL=MIN(101.D0,2.D0/SQRT(2.D0*(1.D0+COS(DTOR*APTX))))
             ELSE
               RMUL=101.D0
             END IF
-          ELSE IF (IPRJ.EQ.5) THEN
-            IF (APTX.LT.89.999D0) THEN
+          ELSE IF (IPRJ.EQ.5)
+            IF (APTX.LT.89.999D0)
               RMUL=MIN(21.D0,1.D0/COS(DTOR*APTX))
             ELSE
               RMUL=21.D0
             END IF
-          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.12).OR.IPRJ.EQ.6) THEN
-            IF (APTX.LE..00001D0) THEN
+          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.12).OR.IPRJ.EQ.6)
+            IF (APTX.LE..00001D0)
               RMUL=1.D0
-            ELSE IF (APTX.LT.179.999D0) THEN
+            ELSE IF (APTX.LT.179.999D0)
               RMUL=MIN(101.D0,DTOR*APTX/SIN(DTOR*APTX))
             ELSE
               RMUL=101.D0
             END IF
           END IF
-          IF (IFST.NE.0) THEN
+          IF (IFST.NE.0)
             NOPI=MAX(0,MIN(50,INT(MAX(RMLO,RMUL))/2))
             IF (NOPI.NE.0)
      +                CALL MDPGCI (XLTO,XLNO,XLAT,XLON,NOPI,RLATI,RLONI)
@@ -2291,9 +2354,9 @@ C The new point is visible; so was the old one.  If the projection type
 C is one of those for which "crossover" is not possible, just jump to
 C extend the line to the new point.
 C
-        IF (JPRJ.GE.2.AND.JPRJ.LE.6) GO TO 102
+        IF (IPRJ.GE.2.AND.IPRJ.LE.6) GO TO 102
 C
-        IF (JPRJ.EQ.0.AND.(IPRF.EQ. 6.OR.IPRF.EQ.10.OR.IPRF.EQ.11.OR.
+        IF (IPRJ.EQ.0.AND.(IPRF.EQ. 6.OR.IPRF.EQ.10.OR.IPRF.EQ.11.OR.
      +                     IPRF.EQ.12.OR.IPRF.EQ.13.OR.IPRF.EQ.14.OR.
      +                     IPRF.EQ.15.OR.IPRF.EQ.23)) GO TO 102
 C
@@ -2399,8 +2462,10 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
-        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOT,RTDD,RTOD,SIN1,TOPI
+        COMMON /MAPCM0/  COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
+        DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
+     +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
         COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
@@ -2487,19 +2552,19 @@ C that we already had (03/11/99).
 C
         IF ((IPRJ.EQ.0.AND.(IPRF.EQ. 3.OR.IPRF.EQ. 8.OR.
      +                      IPRF.EQ.11.OR.IPRF.EQ.12)).OR.
-     +      IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6) THEN
-          IF (IPRJ.EQ.0) THEN
-            IF (IPRF.EQ.3.OR.IPRF.EQ.8) THEN
+     +      IPRJ.EQ.2.OR.IPRJ.EQ.4.OR.IPRJ.EQ.5.OR.IPRJ.EQ.6)
+          IF (IPRJ.EQ.0)
+            IF (IPRF.EQ.3.OR.IPRF.EQ.8)
               CPLT=0.D0
               SPLT=1.D0
               CPLN=1.D0
               SPLN=0.D0
-              IF (IPRF.EQ.8.AND.UTPA(9).EQ.0.D0) THEN
+              IF (IPRF.EQ.8.AND.UTPA(9).EQ.0.D0)
                 DTST=UTPA(3)
               ELSE
                 DTST=.5D0*UTPA(3)+UTPA(4)
               END IF
-              IF (DTST.GT.0.D0) THEN
+              IF (DTST.GT.0.D0)
                 DTST=90.D0-DTST
               ELSE
                 SPLT=-SPLT
@@ -2524,41 +2589,41 @@ C
           APTX=2.D0*RTOD*ASIN(SQRT((CXLT*CXLN-CPLT*CPLN)**2+
      +                             (CXLT*SXLN-CPLT*SPLN)**2+
      +                             (SXLT     -SPLT     )**2)/2.D0)
-          IF (IPRJ.EQ.0.AND.(IPRF.EQ.3.OR.IPRF.EQ.8)) THEN
-            IF (APTX.LE.DTST) THEN
+          IF (IPRJ.EQ.0.AND.(IPRF.EQ.3.OR.IPRF.EQ.8))
+            IF (APTX.LE.DTST)
               RMUL=MAX(1.D0,MIN(51.D0,51.D0*((DTST-APTX)/DTST)**8))
             ELSE
               RMUL=MAX(1.D0,MIN(51.D0,51.D0*((APTX-DTST)/
      +                                          (180.D0-DTST))**8))
             END IF
-          ELSE IF (IPRJ.EQ.2) THEN
-            IF (APTX.LE.179.999D0) THEN
+          ELSE IF (IPRJ.EQ.2)
+            IF (APTX.LE.179.999D0)
               RMUL=MIN(101.D0,1.D0/(1.D0+COS(DTOR*APTX)))
             ELSE
               RMUL=101.D0
             END IF
-          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.11).OR.IPRJ.EQ.4) THEN
-            IF (APTX.LE.179.999D0) THEN
+          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.11).OR.IPRJ.EQ.4)
+            IF (APTX.LE.179.999D0)
               RMUL=MIN(101.D0,2.D0/SQRT(2.D0*(1.D0+COS(DTOR*APTX))))
             ELSE
               RMUL=101.D0
             END IF
-          ELSE IF (IPRJ.EQ.5) THEN
-            IF (APTX.LT.89.999D0) THEN
+          ELSE IF (IPRJ.EQ.5)
+            IF (APTX.LT.89.999D0)
               RMUL=MIN(21.D0,1.D0/COS(DTOR*APTX))
             ELSE
               RMUL=21.D0
             END IF
-          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.12).OR.IPRJ.EQ.6) THEN
-            IF (APTX.LE..00001D0) THEN
+          ELSE IF ((IPRJ.EQ.0.AND.IPRF.EQ.12).OR.IPRJ.EQ.6)
+            IF (APTX.LE..00001D0)
               RMUL=1.D0
-            ELSE IF (APTX.LT.179.999D0) THEN
+            ELSE IF (APTX.LT.179.999D0)
               RMUL=MIN(101.D0,DTOR*APTX/SIN(DTOR*APTX))
             ELSE
               RMUL=101.D0
             END IF
           END IF
-          IF (IFST.NE.0) THEN
+          IF (IFST.NE.0)
             NOPI=MAX(0,MIN(50,INT(MAX(RMLO,RMUL))/2))
             IF (NOPI.NE.0)
      +                CALL MDPGCI (XLTO,XLNO,XLAT,XLON,NOPI,RLATI,RLONI)
@@ -2642,9 +2707,9 @@ C The new point is visible; so was the old one.  If the projection type
 C is one of those for which "crossover" is not possible, just jump to
 C extend the line to the new point.
 C
-        IF (JPRJ.GE.2.AND.JPRJ.LE.6) GO TO 102
+        IF (IPRJ.GE.2.AND.IPRJ.LE.6) GO TO 102
 C
-        IF (JPRJ.EQ.0.AND.(IPRF.EQ. 6.OR.IPRF.EQ.10.OR.IPRF.EQ.11.OR.
+        IF (IPRJ.EQ.0.AND.(IPRF.EQ. 6.OR.IPRF.EQ.10.OR.IPRF.EQ.11.OR.
      +                     IPRF.EQ.12.OR.IPRF.EQ.13.OR.IPRF.EQ.14.OR.
      +                     IPRF.EQ.15.OR.IPRF.EQ.23)) GO TO 102
 C
