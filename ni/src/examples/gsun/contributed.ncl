@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.176 2008-09-04 16:18:48 shea Exp $
+;      $Id: contributed.ncl,v 1.177 2008-09-04 16:25:01 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9240,7 +9240,7 @@ begin
   if (opt .and. isatt(opt,"npts")) then
       N = opt@npts
   else
-      N = 100
+      N = 101
   end if
 
   con  = one/(xStd*sqrt(2*pi))
