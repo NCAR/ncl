@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.23 2008-05-15 20:47:32 haley Exp $
+#       $Id: yMakefile,v 1.24 2008-09-04 20:02:20 kennison Exp $
 #
 
 MYNAME	= ezmap
@@ -25,7 +25,8 @@ GENERIC_SRCS = hlumapeod.f hlumapusr.f \
 	mpsetl.f mpsetr.f rbgdfe.f rbglen.f rbidfe.f supcon.f supmap.f \
 	rdpnaz.f rdpndw.f rdpntz.f rdpnuw.f mdlltd.f mdllnd.f mdgnid.f \
 	mdlacd.f mdlocd.f maqini.f mdqini.f mdqin2.f maqtra.f mdqtra.f \
-	maqtri.f mdqtri.f maqtrn.f mdqtrn.f
+	maqtri.f mdqtri.f maqtrn.f mdqtrn.f aiproj.f aiprin.f haproj.f \
+	haprin.f moproj.f moprin.f wtproj.f wtprin.f
 
 GENERIC_OBJS = hlumapeod.o hlumapusr.o \
 	idictl.o  mapbd.o mapdrw.o mapeod.o mapfst.o mapgci.o mapgrd.o \
@@ -48,7 +49,8 @@ GENERIC_OBJS = hlumapeod.o hlumapusr.o \
 	mpsetl.o mpsetr.o rbgdfe.o rbglen.o rbidfe.o supcon.o supmap.o \
 	rdpnaz.o rdpndw.o rdpntz.o rdpnuw.o mdlltd.o mdllnd.o mdgnid.o \
 	mdlacd.o mdlocd.o maqini.o mdqini.o mdqin2.o maqtra.o mdqtra.o \
-	maqtri.o mdqtri.o maqtrn.o mdqtrn.o
+	maqtri.o mdqtri.o maqtrn.o mdqtrn.o aiproj.o aiprin.o haproj.o \
+	haprin.o moproj.o moprin.o wtproj.o wtprin.o
 
 UNIX_SRCS = mpdbdi.f
 
