@@ -40,7 +40,7 @@
 51:51:Miami (RSMC/RAFC)
 52:52:National Hurricane Center, Miami
 53:53:Canadian Meteorological Service - Montreal (RSMC)
-#54:cwao:Canadian Meteorological Service - Montreal (RSMC)
+54:cwao:Canadian Meteorological Service - Montreal (RSMC)
 55:55:San Francisco
 57:57:U.S. Air Force - Global Weather Center
 58:fnmo:US Navy - Fleet Numerical Oceanography Center
@@ -76,7 +76,6 @@
 97:97:European Space Agency (ESA)
 98:ecmf:European Center for Medium-Range Weather Forecasts
 99:99:DeBilt, Netherlands
-#100:to:109 Reserved for centres in Region I which are not in the list above
 100:100:Brazzaville
 101:101:Abidjan
 102:102:Libyan Arab Jamahiriya (NMC)
