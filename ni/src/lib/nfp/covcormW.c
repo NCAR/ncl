@@ -27,7 +27,7 @@ NhlErrorTypes covcorm_W( void )
  */
   void  *vcm;
   double *dvcm;
-  int *dsizes_vcm, ndims_vcm;
+  int *dsizes_vcm, ndims_vcm, size_vcm;
   NclBasicDataTypes type_vcm;
   NclTypeClass type_vcm_class;
   NclScalar missing_vcm;
@@ -77,47 +77,50 @@ NhlErrorTypes covcorm_W( void )
 /*
  * Allocate space for input/output arrays.
  */
+  lvcm = (nvar*(nvar+1))/2;
   if(!iopt[0]) {
-    lvcm = (nvar*(nvar+1))/2;
+    size_vcm      = lvcm;
     ndims_vcm     = 1;
     dsizes_vcm    = (int*)malloc(sizeof(int));
-    dsizes_vcm[0] = lvcm;
+    dsizes_vcm[0] = size_vcm;
   }
   else {
-    lvcm = nvar*nvar;
+    size_vcm      = nvar*nvar;
     ndims_vcm     = 2;
     dsizes_vcm    = (int*)malloc(2*sizeof(int));
     dsizes_vcm[0] = nvar;
     dsizes_vcm[1] = nvar;
   }
-  dx     = coerce_input_double(x,type_x,size_x,0,NULL,NULL);
-  dvcm   = (double*)malloc(lvcm*sizeof(double));
-  dtrace = (double*)malloc(sizeof(double));
-
-  if( dx == NULL || dvcm == NULL || dtrace == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm: Unable to allocate memory for input/output arrays");
-    return(NhlFATAL);
-  }
+  dx = coerce_input_double(x,type_x,size_x,0,NULL,NULL);
 
   if(type_x == NCL_double) {
-    type_vcm    = NCL_double;
-    vcm         = dvcm;
-    trace       = (void*)dtrace;
-    missing_vcm = missing_dx;
+    type_vcm              = NCL_double;
+    vcm                   = (void*)malloc(size_vcm*sizeof(double));
+    trace                 = (void*)malloc(sizeof(double));
+    if(vcm == NULL || trace == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    dvcm                  = &((double*)vcm)[0];
+    dtrace                = &((double*)trace)[0];
+    missing_vcm.doubleval = missing_dx.doubleval;
   }
   else {
     type_vcm             = NCL_float;
-    vcm                  = (void*)malloc(lvcm*sizeof(float));
+    vcm                  = (void*)malloc(size_vcm*sizeof(float));
     trace                = (void*)malloc(sizeof(float));
+    dvcm                 = (double*)malloc(size_vcm*sizeof(double));
+    dtrace               = (double*)malloc(sizeof(double));
     missing_vcm.floatval = (float)missing_dx.doubleval;
-  }
-  if(vcm == NULL || trace == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm: Unable to allocate memory for output array");
-    return(NhlFATAL);
+    if(vcm == NULL || trace == NULL  || dvcm == NULL || dtrace == NULL ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"covcorm: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
   }
 
+
 /*
- * Depending on iopt(0), call one of two Fortran routines.
+ * Depending on iopt[0], call one of two Fortran routines.
  */
   if(!iopt[0]) {
     NGCALLF(dcovcormssm,DCOVCORMSSM)(&ntim,&nvar,dx,&missing_dx.doubleval,
@@ -132,9 +135,11 @@ NhlErrorTypes covcorm_W( void )
 /*
  * Need to coerce output array back to float before we return it.
  */
-    coerce_output_float_only(vcm,dvcm,lvcm,0);
+    coerce_output_float_only(vcm,dvcm,size_vcm,0);
     coerce_output_float_only(trace,dtrace,1,0);
+
     NclFree(dx);
+    NclFree(dvcm);
     NclFree(dtrace);
   }
 
