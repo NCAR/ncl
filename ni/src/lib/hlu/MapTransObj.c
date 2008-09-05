@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.60 2007-06-07 23:04:04 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.61 2008-09-05 00:31:51 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -550,7 +550,11 @@ static mpWinLimits Win_Limits[] = {
 	{ -1.0, 2.0, -1.0, 2.0 },
         { -1.0, 2.0, -0.5072, 2 * 0.5072 },
 	{ -mpPI, 2.0 * mpPI, -4.0/3.0, 2.0 * (4.0/3.0) },
-	{ 0.0,0.0,0.0,0.0 } /* depends on rotation angle */
+	{ 0.0,0.0,0.0,0.0 }, /* depends on rotation angle */
+	{ -mpPI, 2.0*mpPI, -mpPI/2.0, mpPI }, 
+	{ 0.0,0.0,0.0,0.0 }, /* needs square root of 2 */ 
+	{ 0.0,0.0,0.0,0.0 }, /* needs square root of 2 */ 
+	{ 0.0,0.0,0.0,0.0 }  /* requires cos,acos functions */
 
 };
 
@@ -672,8 +676,8 @@ NhlLayer parent;
 		h_angle_lim = v_angle_lim = 180;
 		ix = 4;
 		break;
-	case NhlMOLLWEIDE:
-		cproj = "MO";
+	case NhlPSEUDOMOLLWEIDE:
+		cproj = "MT";
 		h_angle_lim = 180;
 		v_angle_lim = 90;
 		ix = 5;
@@ -730,6 +734,42 @@ NhlLayer parent;
 		Win_Limits[ix].u_range = 2.0 * mpPI / denom;
 		Win_Limits[ix].v_min = -mpPI / denom;
 		Win_Limits[ix].v_range = 2.0 * mpPI / denom;
+		break;
+	case NhlAITOFF:
+		cproj = "AI";
+		h_angle_lim = 180;
+		v_angle_lim = 90;
+		ix = 13;
+		break;
+	case NhlHAMMER:
+		cproj = "HA";
+		h_angle_lim = 180;
+		v_angle_lim = 90;
+		ix = 14;
+		Win_Limits[ix].u_min = -2.0 * sqrt(2.0);
+		Win_Limits[ix].u_range = 4.0 * sqrt(2.0);
+		Win_Limits[ix].v_min = -sqrt(2.0);
+		Win_Limits[ix].v_range = 2.0 * sqrt(2.0);
+		break;
+	case NhlMOLLWEIDE:
+		cproj = "MO";
+		h_angle_lim = 180;
+		v_angle_lim = 90;
+		ix = 15;
+		Win_Limits[ix].u_min = -2.0 * sqrt(2.0);
+		Win_Limits[ix].u_range = 4.0 * sqrt(2.0);
+		Win_Limits[ix].v_min = -sqrt(2.0);
+		Win_Limits[ix].v_range = 2.0 * sqrt(2.0);
+		break;
+	case NhlWINKELTRIPEL:
+		cproj = "WT";
+		h_angle_lim = 180;
+		v_angle_lim = 90;
+		ix = 16;
+		Win_Limits[ix].u_min = -mpPI / 2.0 * (1 + 2.0 / mpPI);
+		Win_Limits[ix].u_range = mpPI * (1 + 2.0 / mpPI);
+		Win_Limits[ix].v_min = -mpPI / 2.0;
+		Win_Limits[ix].v_range = mpPI;
 		break;
 	default:
 		e_text = "%s: internal enumeration error - projection";
@@ -2056,7 +2096,7 @@ static NhlErrorTypes CheckMapLimits
 	case NhlAZIMUTHALEQUIDISTANT:
 		h_angle_lim = v_angle_lim = 180;
 		break;
-	case NhlMOLLWEIDE:
+	case NhlPSEUDOMOLLWEIDE:
 		h_angle_lim = v_angle_lim = 180;
 		break;
 	case NhlMERCATOR:
@@ -2090,6 +2130,13 @@ static NhlErrorTypes CheckMapLimits
 	case NhlROTATEDMERCATOR:
 		h_angle_lim = 180;
 		v_angle_lim = 85;
+		break;
+	case NhlAITOFF:
+	case NhlHAMMER:
+	case NhlMOLLWEIDE:
+	case NhlWINKELTRIPEL:
+		h_angle_lim = 180;
+		v_angle_lim = 90;
 		break;
 	default:
 		e_text = "%s: internal enumeration error - projection";
@@ -2343,13 +2390,17 @@ static NhlErrorTypes    MapTransClassInitialize
         {NhlGNOMONIC,			"Gnomonic"},
         {NhlAZIMUTHALEQUIDISTANT,	"AzimuthalEquidistant"},
         {NhlSATELLITE,      		"Satellite"},
-        {NhlMOLLWEIDE,			"Mollweide"},
+        {NhlPSEUDOMOLLWEIDE,		"PseudoMollweide"},
         {NhlMERCATOR,			"Mercator"},
         {NhlCYLINDRICALEQUIDISTANT,	"CylindricalEquidistant"},
         {NhlLAMBERTCONFORMAL,		"LambertConformal"},
 	{NhlROBINSON,			"Robinson"},
 	{NhlCYLINDRICALEQUALAREA,       "CylindricalEqualArea"},
-	{NhlROTATEDMERCATOR,            "RotatedMercator"}
+	{NhlROTATEDMERCATOR,            "RotatedMercator"},
+	{NhlAITOFF,            		"Aitoff"},
+	{NhlHAMMER,            		"Hammer"},
+	{NhlMOLLWEIDE,                  "Mollweide"},
+	{NhlWINKELTRIPEL,               "WinkelTripel"},
         };
 
         _NhlRegisterEnumType(NhlmapTransObjClass,NhlTMapLimitMode,limitmodelist,
