@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.25 2008-09-04 19:56:57 kennison Exp $
+C $Id: mapbd.f,v 1.26 2008-09-05 20:45:43 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,6 +15,7 @@ C
         RETURN
 C
       END
+CNOSPLIT
       BLOCKDATA MAPBDX
 C
         PARAMETER (MNAI=8000)
@@ -559,6 +560,7 @@ C
       DATA DSNA,DCSA,DSNB,DCSB / 0.D0,1.D0,0.D0,1.D0 /
 C
       END
+CNOSPLIT
       BLOCKDATA MAPBDQ
 C
 C The common block MAQCMN contains only those variables that are needed
