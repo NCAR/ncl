@@ -1,5 +1,5 @@
 C
-C $Id: mdqtrn.f,v 1.3 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdqtrn.f,v 1.4 2008-09-05 04:40:40 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -255,7 +255,7 @@ C Aitoff, arbitrary pole and orientation.
 C
   114   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
         TMP2=PIOT-ACOS(COSA)
-        CALL AIPROJ (TMP1,TMP2,U,V)
+        CALL AIPROJ (TMP2,TMP1,U,V)
         P=TMP1
         GO TO 198
 C
@@ -263,7 +263,7 @@ C Hammer, arbitrary pole and orientation.
 C
   115   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
         TMP2=PIOT-ACOS(COSA)
-        CALL HAPROJ (TMP1,TMP2,U,V)
+        CALL HAPROJ (TMP2,TMP1,U,V)
         P=TSRT*TMP1/PI
         GO TO 198
 C
@@ -271,7 +271,7 @@ C True Mollweide, arbitrary pole and orientation.
 C
   116   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
         TMP2=PIOT-ACOS(COSA)
-        CALL MOPROJ (TMP1,TMP2,U,V)
+        CALL MOPROJ (TMP2,TMP1,U,V)
         P=TSRT*TMP1/PI
         GO TO 198
 C
@@ -279,7 +279,7 @@ C Winkel tripel, arbitrary pole and orientation.
 C
   117   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
         TMP2=PIOT-ACOS(COSA)
-        CALL WTPROJ (TMP1,TMP2,U,V)
+        CALL WTPROJ (TMP2,TMP1,U,V)
         P=TMP1
         GO TO 198
 C
@@ -321,7 +321,7 @@ C
   123   P=DTOR*U
         TMP1=U*DTOR
         TMP2=V*DTOR
-        CALL AIPROJ (TMP1,TMP2,U,V)
+        CALL AIPROJ (TMP2,TMP1,U,V)
         GO TO 198
 C
 C Hammer, fast-path.
@@ -329,7 +329,7 @@ C
   124   P=TSRT*U/180.D0
         TMP1=U*DTOR
         TMP2=V*DTOR
-        CALL HAPROJ (TMP1,TMP2,U,V)
+        CALL HAPROJ (TMP2,TMP1,U,V)
         GO TO 198
 C
 C True Mollweide, fast-path.
@@ -337,7 +337,7 @@ C
   125   P=TSRT*U/180.D0
         TMP1=U*DTOR
         TMP2=V*DTOR
-        CALL MOPROJ (TMP1,TMP2,U,V)
+        CALL MOPROJ (TMP2,TMP1,U,V)
         GO TO 198
 C
 C Winkel tripel, fast-path.
@@ -345,7 +345,7 @@ C
   126   P=DTOR*U
         TMP1=U*DTOR
         TMP2=V*DTOR
-        CALL WTPROJ (TMP1,TMP2,U,V)
+        CALL WTPROJ (TMP2,TMP1,U,V)
         GO TO 198
 C
 C Rotated Mercator.

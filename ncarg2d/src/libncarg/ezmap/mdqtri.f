@@ -1,5 +1,5 @@
 C
-C $Id: mdqtri.f,v 1.3 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdqtri.f,v 1.4 2008-09-05 04:40:40 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -271,7 +271,7 @@ C
 C Aitoff, arbitrary pole and orientation.
 C
   112   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         ANGA=PIOT-RLAT
         RSINA=SIN(ANGA)
         RCOSA=COS(ANGA)
@@ -285,7 +285,7 @@ C
 C Hammer, arbitrary pole and orientation.
 C
   113   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         ANGA=PIOT-RLAT
         RSINA=SIN(ANGA)
         RCOSA=COS(ANGA)
@@ -299,7 +299,7 @@ C
 C True Mollweide, arbitrary pole and orientation.
 C
   114   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         ANGA=PIOT-RLAT
         RSINA=SIN(ANGA)
         RCOSA=COS(ANGA)
@@ -313,7 +313,7 @@ C
 C Winkel tripel, arbitrary pole and orientation.
 C
   115   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         ANGA=PIOT-RLAT
         RSINA=SIN(ANGA)
         RCOSA=COS(ANGA)
@@ -370,7 +370,7 @@ C
 C Aitoff, arbitrary pole and orientation.
 C
   121   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
         RLON=RTOD*RLON
         GO TO 200
@@ -378,7 +378,7 @@ C
 C Hammer, arbitrary pole and orientation.
 C
   122   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
         RLON=RTOD*RLON
         GO TO 200
@@ -386,7 +386,7 @@ C
 C True Mollweide, arbitrary pole and orientation.
 C
   123   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
         RLON=RTOD*RLON
         GO TO 200
@@ -394,7 +394,7 @@ C
 C Winkel tripel, arbitrary pole and orientation.
 C
   124   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (UTMP.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
         RLON=RTOD*RLON
         GO TO 200
