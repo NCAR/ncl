@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.8 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdplmb.f,v 1.9 2008-09-05 19:41:57 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -417,7 +417,7 @@ C
         RLON=-180.D0
         IVIS=-1
 C
-        DO 113 I=1,721
+        DO 113 I=1,361
           IF (IPRJ.EQ.7.OR.IPRJ.EQ.16) THEN
             U=RLON-UOFF
             V=RLAT-VOFF
@@ -442,14 +442,14 @@ C
             U=(RLON/180.D0)*RBGLEN(RLAT)-UOFF
             V=RBGDFE(RLAT)-VOFF
           END IF
-          IF (I.LE.180) THEN
-            RLON=RLON+2.D0
+          IF (I.LE.90) THEN
+            RLON=RLON+4.D0
+          ELSE IF (I.LE.180) THEN
+            RLAT=RLAT+2.D0
+          ELSE IF (I.LE.270) THEN
+            RLON=RLON-4.D0
           ELSE IF (I.LE.360) THEN
-            RLAT=RLAT+1.D0
-          ELSE IF (I.LE.540) THEN
-            RLON=RLON-2.D0
-          ELSE IF (I.LE.720) THEN
-            RLAT=RLAT-1.D0
+            RLAT=RLAT-2.D0
           END IF
           IF (.NOT.ELPF.AND.
      +        (U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX)) THEN
