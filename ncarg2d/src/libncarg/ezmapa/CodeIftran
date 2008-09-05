@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.9 2008-09-04 20:04:46 kennison Exp $
+I $Id: CodeIftran,v 1.10 2008-09-05 19:45:13 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -253,9 +253,9 @@ C
               XCRD=UCEN+TEMP*U
               YCRD=VCEN
               INVOKE (START-A-LINE)
-              FOR (I = 1 TO 720)
-                U=URNG*COS(DTOR*DBLE(I)/2.D0)
-                V=URNG*SIN(DTOR*DBLE(I)/2.D0)
+              FOR (I = 1 TO 360)
+                U=URNG*COS(DTOR*DBLE(I))
+                V=URNG*SIN(DTOR*DBLE(I))
                 XCRD=UCEN+TEMP*U
                 YCRD=VCEN+TEMP*V*VRNG/URNG
                 INVOKE (CONTINUE-THE-LINE)
@@ -598,9 +598,9 @@ C
             IDLT=0
             IDRT=-1
             IVIS=-1
-            FOR (I = 1 TO 721)
-              UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1)/2.D0)
-              VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1)/2.D0)
+            FOR (I = 1 TO 361)
+              UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1))
+              VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1))
               U=UCIR-UOFF
               V=RVTU*VCIR-VOFF
               IF (.NOT.ELPF.AND.
@@ -661,7 +661,7 @@ C
             IVIS=-1
             RLAT=-90.D0
             RLON=-180.D0
-            FOR (I = 1 TO 720)
+            FOR (I = 1 TO 361)
               IF (IPRJ.EQ.7.OR.IPRJ.EQ.16)
                 U=TEMP*RLON-UOFF
                 V=TEMP*RLAT-VOFF
@@ -680,21 +680,21 @@ C
                 U=TEMP*DTOR*RLON-UOFF
                 V=TEMP*SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
               ELSE IF (IPRJ.EQ.15.OR.IPRJ.EQ.24)
-                CALL WTPROJ (DTOR*RLAT,DTOR*RLON,U,V)
+                CALL WTPROJ (TEMP*DTOR*RLAT,TEMP*DTOR*RLON,U,V)
                 U=U-UOFF
                 V=V-VOFF
               ELSE
                 U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
                 V=TEMP*RBGDFE(RLAT)-VOFF
               END IF
-              IF (I.LE.180)
-                RLON=RLON+2.D0
+              IF (I.LE.90)
+                RLON=RLON+4.D0
+              ELSE IF (I.LE.180)
+                RLAT=RLAT+2.D0
+              ELSE IF (I.LE.270)
+                RLON=RLON-4.D0
               ELSE IF (I.LE.360)
-                RLAT=RLAT+1.D0
-              ELSE IF (I.LE.540)
-                RLON=RLON-2.D0
-              ELSE IF (I.LE.720)
-                RLAT=RLAT-1.D0
+                RLAT=RLAT-2.D0
               END IF
               IF (.NOT.ELPF.AND.
      +            (U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX))
@@ -1166,9 +1166,9 @@ C
               XCRD=UCEN+TEMP*U
               YCRD=VCEN
               INVOKE (START-A-LINE)
-              FOR (I = 1 TO 720)
-                U=URNG*COS(DTOR*DBLE(I)/2.D0)
-                V=URNG*SIN(DTOR*DBLE(I)/2.D0)
+              FOR (I = 1 TO 360)
+                U=URNG*COS(DTOR*DBLE(I))
+                V=URNG*SIN(DTOR*DBLE(I))
                 XCRD=UCEN+TEMP*U
                 YCRD=VCEN+TEMP*V*VRNG/URNG
                 INVOKE (CONTINUE-THE-LINE)
@@ -1485,9 +1485,9 @@ C
 C
         LOOP
           IVIS=-1
-          FOR (I = 1 TO 721)
-            UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1)/2.D0)
-            VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1)/2.D0)
+          FOR (I = 1 TO 361)
+            UCIR=TEMP*URAD*COS(DTOR*DBLE(I-1))
+            VCIR=TEMP*URAD*SIN(DTOR*DBLE(I-1))
             U=UCIR-UOFF
             V=RVTU*VCIR-VOFF
             IF (.NOT.ELPF.AND.
@@ -1546,7 +1546,7 @@ C
           IVIS=-1
           RLAT=-90.D0
           RLON=-180.D0
-          FOR (I = 1 TO 720)
+          FOR (I = 1 TO 361)
             IF (IPRJ.EQ.7.OR.IPRJ.EQ.16)
               U=TEMP*RLON-UOFF
               V=TEMP*RLAT-VOFF
@@ -1571,14 +1571,14 @@ C
               U=TEMP*(RLON/180.D0)*RBGLEN(RLAT)-UOFF
               V=TEMP*RBGDFE(RLAT)-VOFF
             END IF
-            IF (I.LE.180)
-              RLON=RLON+2.D0
+            IF (I.LE.90)
+              RLON=RLON+4.D0
+            ELSE IF (I.LE.180)
+              RLAT=RLAT+2.D0
+            ELSE IF (I.LE.270)
+              RLON=RLON-4.D0
             ELSE IF (I.LE.360)
-              RLAT=RLAT+1.D0
-            ELSE IF (I.LE.540)
-              RLON=RLON-2.D0
-            ELSE IF (I.LE.720)
-              RLAT=RLAT-1.D0
+              RLAT=RLAT-2.D0
             END IF
             IF (.NOT.ELPF.AND.
      +          (U.LT.UMIN.OR.U.GT.UMAX.OR.V.LT.VMIN.OR.V.GT.VMAX))
