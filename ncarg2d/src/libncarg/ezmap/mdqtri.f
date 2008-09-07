@@ -1,5 +1,5 @@
 C
-C $Id: mdqtri.f,v 1.4 2008-09-05 04:40:40 kennison Exp $
+C $Id: mdqtri.f,v 1.5 2008-09-07 04:14:32 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -363,8 +363,8 @@ C
 C Cylindrical equal-area, fast path.
 C
   120   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
-        RLON=PHOC+RTOD*UTMP
         RLAT=RTOD*ASIN(VTMP*3.D0/4.D0)
+        RLON=PHOC+RTOD*UTMP
         GO TO 200
 C
 C Aitoff, arbitrary pole and orientation.
@@ -372,7 +372,7 @@ C
   121   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
-        RLON=RTOD*RLON
+        RLON=PHOC+RTOD*RLON
         GO TO 200
 C
 C Hammer, arbitrary pole and orientation.
@@ -380,7 +380,7 @@ C
   122   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
-        RLON=RTOD*RLON
+        RLON=PHOC+RTOD*RLON
         GO TO 200
 C
 C True Mollweide, arbitrary pole and orientation.
@@ -388,7 +388,7 @@ C
   123   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
-        RLON=RTOD*RLON
+        RLON=PHOC+RTOD*RLON
         GO TO 200
 C
 C Winkel tripel, arbitrary pole and orientation.
@@ -396,7 +396,7 @@ C
   124   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 302
         RLAT=RTOD*RLAT
-        RLON=RTOD*RLON
+        RLON=PHOC+RTOD*RLON
         GO TO 200
 C
 C Rotated Mercator.
@@ -450,7 +450,7 @@ C rotation angle is 180, negate the output values of RLAT and RLON.
 C
   200   IF (ABS(ROTA).GT.179.999999D0) THEN
           RLAT=-RLAT
-          RLON=-RLON
+          RLON=PHOC-(RLON-PHOC)
         END IF
 C
         GO TO 201
