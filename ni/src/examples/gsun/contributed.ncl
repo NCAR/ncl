@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.177 2008-09-04 16:25:01 shea Exp $
+;      $Id: contributed.ncl,v 1.178 2008-09-08 22:46:30 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9256,3 +9256,37 @@ begin
   nor@x = x
   return( nor )
 end
+function relhum_ttd (t:numeric, td:numeric, opt:integer)
+;
+; Calculate relative humidity given temperature (K)
+; and dew point temperature (K)
+;
+; reference: John Dutton, Ceaseless Wind
+
+local gc, lhv, relhum 
+begin
+  rankt  = dimsizes( dimsizes(t ) )
+  ranktd = dimsizes( dimsizes(td) )
+  if (rankt.ne.ranktd) then
+      print("relhum_ttd: rank mismatch: fatal")
+      print("            rank(t )="+rankt )
+      print("            rank(td)="+ranktd)
+      exit
+  end if
+      
+  gc  = 461.5             ; [j/{kg-k}]   gas constant water vapor
+  gc  = gc/(1000.*4.186)  ; [cal/{g-k}]  change units
+                                       ; lhv=latent heat vap
+  lhv = ( 597.3-0.57*(t-273.) )        ; dutton top p273 [empirical]
+
+  relhum  = exp( (lhv/gc)*(1.0/t - 1.0/td) )
+  relhum@long_name = "relative humidity"
+  relhum@units     = "fraction"
+
+  if (opt.eq.0) then
+      relhum       = relhum*100.
+      relhum@units = "%"
+  end if
+  return (relhum)
+end
+
