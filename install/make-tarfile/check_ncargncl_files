@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.13 2008-07-31 22:41:14 haley Exp $
+#   $Id: check_ncargncl_files,v 1.14 2008-09-08 16:39:53 haley Exp $
 #
 # Use check_files instead! This one is just for NCL/NCARG.
 #
@@ -427,6 +427,9 @@ lib/ncarg/database/Earth..2.names
 lib/ncarg/database/Earth..3.areas
 lib/ncarg/database/Earth..3.lines
 lib/ncarg/database/Earth..3.names
+lib/ncarg/database/Earth..4.areas
+lib/ncarg/database/Earth..4.lines
+lib/ncarg/database/Earth..4.names
 lib/ncarg/database/ezmap_area_ids
 lib/ncarg/database/EzmapAreaInfo.CO
 lib/ncarg/database/EzmapAreaInfo.PO

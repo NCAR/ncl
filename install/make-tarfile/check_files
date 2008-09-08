@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.13 2008-07-31 22:41:14 haley Exp $
+#   $Id: check_files,v 1.14 2008-09-08 16:39:53 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -106,6 +106,9 @@ lib/ncarg/database/Earth..2.names
 lib/ncarg/database/Earth..3.areas
 lib/ncarg/database/Earth..3.lines
 lib/ncarg/database/Earth..3.names
+lib/ncarg/database/Earth..4.areas
+lib/ncarg/database/Earth..4.lines
+lib/ncarg/database/Earth..4.names
 lib/ncarg/database/EzmapAreaInfo.CO
 lib/ncarg/database/EzmapAreaInfo.PO
 lib/ncarg/database/EzmapAreaInfo.PS
