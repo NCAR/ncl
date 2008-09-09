@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.178 2008-09-08 22:46:30 shea Exp $
+;      $Id: contributed.ncl,v 1.179 2008-09-09 14:41:41 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3466,15 +3466,14 @@ end
 
 ; **********************************************************************
 ; D. Shea
-; wrapper for NCL function "rcm2rgrid_points"  that copies attributes+coordinates
+; wrapper for NCL function "rcm2points"  that copies attributes+coordinates
 ; vars.  It creates a "pts" coord variable and creates two 1D
 ; attributes that indicate the lat/lon associated with each point.
-undef ("rcm2rgrid_points_Wrap")
-function rcm2rgrid_points_Wrap \ 
+undef ("rcm2points_Wrap")
+function rcm2points_Wrap \ 
                       (xi[*][*]:numeric,yi[*][*]:numeric, fi:numeric \
                       ,xo[*]:numeric,yo[*]:numeric, Opt)
 
-; wrapper for NCL function "rcm2rgrid_points"  that copies attributes and coordinate vars
 local fo, dimfi, nDim, pts
 begin
   fo   = rcm2rgrid_points (xi,yi,fi, wrapX, xo,yo, Opt)  ; perform interpolation 
@@ -9261,7 +9260,7 @@ function relhum_ttd (t:numeric, td:numeric, opt:integer)
 ; Calculate relative humidity given temperature (K)
 ; and dew point temperature (K)
 ;
-; reference: John Dutton, Ceaseless Wind
+; reference: John Dutton, Ceaseless Wind, 1976
 
 local gc, lhv, relhum 
 begin
@@ -9279,7 +9278,7 @@ begin
                                        ; lhv=latent heat vap
   lhv = ( 597.3-0.57*(t-273.) )        ; dutton top p273 [empirical]
 
-  relhum  = exp( (lhv/gc)*(1.0/t - 1.0/td) )
+  relhum           = exp( (lhv/gc)*(1.0/t - 1.0/td) )
   relhum@long_name = "relative humidity"
   relhum@units     = "fraction"
 
