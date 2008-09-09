@@ -522,6 +522,9 @@ NhlErrorTypes triple2grid_W( void )
   NclFree(gxbig);
   NclFree(gybig);
   NclFree(gbig);
+  if(!has_distmx) NclFree(distmx);
+  if(!has_domain) NclFree(domain);
+
 /*
  * Return with missing value set no matter what, b/c even though input
  * may not have missing values, the output grid is bound to not have all
@@ -784,6 +787,7 @@ NhlErrorTypes triple2grid2d_W( void )
   if(type_gridx != NCL_double) NclFree(tmp_gridx);
   if(type_gridy != NCL_double) NclFree(tmp_gridy);
   if(type_grid  != NCL_double) NclFree(tmp_grid);
+  if(!has_distmx) NclFree(distmx);
 
 /*
  * Return with missing value set no matter what, b/c even though input
