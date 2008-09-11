@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.179 2008-09-09 14:41:41 shea Exp $
+;      $Id: contributed.ncl,v 1.180 2008-09-11 23:35:12 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5342,6 +5342,7 @@ begin
 
   if (N.gt.6) then
       print ("transpose: currently set up for a max of 6 dimensions")
+      exit
   end if
                                   ; is each dimension named?
   namedDim = getvardims(x)
@@ -5350,6 +5351,15 @@ begin
          x!n = "dim"+n 
      end if
   end do
+
+  if (N.eq.1) then
+      xx = onedtond(x, (/1,dimx/) )
+      xx!0 = "dumy"
+      xx!1 = x!0
+      xT = xx($xx!1$|:, $xx!0$|:)
+      delete(xT!1)
+      return(xT)
+  end if
 
   if (N.eq.2) then
       xT = x($x!N1$|:, $x!(N1-1)$|:)
@@ -5380,6 +5390,7 @@ begin
 
   return (xT)
 end
+
 ; ------------------------
  
 ; D Shea
@@ -6526,6 +6537,9 @@ begin
     do nmo=1,nmos
        YRM  = year*10000 + nmo*100
        nday = days_in_month(year, nmo)
+       if (nmo.eq.2 .and. isatt(yrStrt,"noLeapYear")) then
+           nday = 28
+       end if
       do ndy = 1,nday
          n = n+1
          tdum(n) = YRM + ndy
@@ -6536,6 +6550,11 @@ begin
   time      = tdum(0:n) ; cut out only filled in times
   time@long_name = "time"
   time@units     = "YYYYMMDD"
+
+  if (isatt(yrStrt,"noLeapYear")) then
+      time@calendar  = "noLeap"
+  end if
+
   time!0    = "time"
   time&time =  time
   return (time)
@@ -9255,6 +9274,7 @@ begin
   nor@x = x
   return( nor )
 end
+; ------------
 function relhum_ttd (t:numeric, td:numeric, opt:integer)
 ;
 ; Calculate relative humidity given temperature (K)
@@ -9287,5 +9307,19 @@ begin
       relhum@units = "%"
   end if
   return (relhum)
+end
+
+; ------------
+
+function crossp3(a[*][3]:numeric,b[*][3]:numeric)
+; calculate a cross product:   c = a x b
+begin
+  c      = new ( dimsizes(a), typeof(a), "No_FillValue")
+
+  c(:,0) = a(:,1)*b(:,2)-a(:,2)*b(:,1)
+  c(:,1) = a(:,2)*b(:,0)-a(:,0)*b(:,2)
+  c(:,2) = a(:,0)*b(:,1)-a(:,1)*b(:,0)
+
+  return(c)
 end
 
