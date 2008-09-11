@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.14 2008-09-04 20:16:03 kennison Exp $
+C $Id: EzmapDemo.f,v 1.15 2008-09-11 03:31:31 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -3220,7 +3220,7 @@ C
         ELSE IF (IPDP.EQ.10) THEN
           PRINT * , 'Example 10 shows an original EZMAP transformation'
           PRINT * , 'which is characterized as a "Mollweide type".'
-          PTYP='MO'
+          PTYP='MT'
         ELSE IF (IPDP.EQ.11) THEN
           PRINT * , 'Example 11 shows an original EZMAP transformation'
           PRINT * , 'called the Cylindrical Equidistant.'
@@ -3245,22 +3245,18 @@ C
           PRINT * , 'Example 14 shows an original EZMAP transformation'
           PRINT * , 'called the Aitoff.'
           PTYP='AI'
-          ILLB=-1
         ELSE IF (IPDP.EQ.15) THEN
           PRINT * , 'Example 15 shows an original EZMAP transformation'
           PRINT * , 'called the Hammer.'
           PTYP='HA'
-          ILLB=-1
         ELSE IF (IPDP.EQ.16) THEN
           PRINT * , 'Example 16 shows an original EZMAP transformation'
           PRINT * , 'called the Mollweide.'
           PTYP='MO'
-          ILLB=-1
         ELSE IF (IPDP.EQ.17) THEN
           PRINT * , 'Example 17 shows an original EZMAP transformation'
           PRINT * , 'called the Winkel tripel.'
           PTYP='WT'
-          ILLB=-1
         ELSE IF (IPDP.EQ.18) THEN
           PRINT * , 'Example 18 shows a USGS transformation called the'
           PRINT * , 'UTM system (UTM="Universal Transverse Mercator"),'
