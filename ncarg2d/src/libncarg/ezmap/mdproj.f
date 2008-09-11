@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.9 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdproj.f,v 1.10 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

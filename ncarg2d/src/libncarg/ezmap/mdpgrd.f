@@ -1,5 +1,5 @@
 C
-C $Id: mdpgrd.f,v 1.9 2008-09-11 04:11:36 kennison Exp $
+C $Id: mdpgrd.f,v 1.10 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,8 +18,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -117,8 +117,8 @@ C
 C
         IF (XLON-RLON.GT.359.999999D0) THEN
           IF (IPRJ.EQ.1) THEN
-            RLON=GLON*CEIL((PLNC-179.999999D0)/GLON)
-            XLON=GLON*FLOR((PLNC+179.999999D0)/GLON)
+            RLON=GLON*CEIL((PLNO-179.999999D0)/GLON)
+            XLON=GLON*FLOR((PLNO+179.999999D0)/GLON)
           ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.15) THEN
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
@@ -173,11 +173,11 @@ C (rectangular) perimeter, arrange for the parallels at -90 and/or +90
 C to be drawn.
 C
         IF (IPRJ.EQ.16.OR.IPRJ.EQ.20) THEN
-          CALL MDPTRN (-90.D0,PLNC,U,V)
+          CALL MDPTRN (-90.D0,PLNO,U,V)
           IF (ICFELL('MDPGRD',7).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    SLAT=SLAT-GLAT
-          CALL MDPTRN (+90.D0,PLNC,U,V)
+          CALL MDPTRN (+90.D0,PLNO,U,V)
           IF (ICFELL('MDPGRD',8).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    BLAT=BLAT+GLAT

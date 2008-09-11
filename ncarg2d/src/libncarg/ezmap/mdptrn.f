@@ -1,5 +1,5 @@
 C
-C $Id: mdptrn.f,v 1.11 2008-09-11 20:49:15 kennison Exp $
+C $Id: mdptrn.f,v 1.12 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -24,8 +24,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -85,7 +85,7 @@ C
 C Set up U and V for the fast paths.  U is a longitude, in degrees,
 C between -180. and +180., inclusive, and V is a latitude, in degrees.
 C
-        TEMP=RLON-PLNC
+        TEMP=RLON-PLNO
         U=TEMP+(SIGN(180.D0,180.D0-TEMP)-SIGN(180.D0,TEMP+180.D0))
         V=MAX(-90.D0,MIN(90.D0,RLAT))
 C

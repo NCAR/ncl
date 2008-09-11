@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.27 2008-09-11 04:11:35 kennison Exp $
+C $Id: mapbd.f,v 1.28 2008-09-11 22:53:32 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -30,8 +30,8 @@ C
 C
 C The common block MAPCM1 contains transformation constants.
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -232,10 +232,9 @@ C      23     (MO) True Mollweide (fast-path)             Mixed
 C      24     (WT) Winkel tripel (fast-path)              Mixed
 C      25     (RM) Rotated Mercator (fast-path)           Cylindrical
 C
-C PLNC is just a copy of PLNO, from the common block MAPCM4.  IROD is
-C a flag which, if non-zero, says that we have to use double precision
-C at selected points.  SINO, COSO, SINR, and COSR are projection
-C variables computed by MDPINT for use by MDPTRN.
+C IROD is a flag which, if non-zero, says that we have to use double
+C precision at selected points.  SINO, COSO, SINR, and COSR are
+C projection variables computed by MDPINT for use by MDPTRN.
 C
       DATA IROD / 0 /
 C
@@ -572,12 +571,12 @@ C mostly to protect the transformation routines from blowing up if they
 C are erroneously called prior to a call to MDQINI.
 C
         COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
      +                   ELPM
         DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
 C
@@ -600,7 +599,7 @@ C
         DATA IPRJ / 16 /
         DATA IROD / 1 /
         DATA OOPI / .318309886183790D0 /
-        DATA PLNC / 0.D0 /
+        DATA PLNO / 0.D0 /
         DATA PI   / 3.14159265358979D0 /
         DATA PIOT / 1.57079632679489D0 /
         DATA ROTA / 0.D0 /

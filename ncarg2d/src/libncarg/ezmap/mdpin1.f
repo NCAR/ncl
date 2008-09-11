@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.9 2008-09-11 20:49:15 kennison Exp $
+C $Id: mdpin1.f,v 1.10 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,8 +18,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -68,10 +68,9 @@ C
         END IF
 C
 C IPRJ equals JPRJ until we find out if fast-path projections are to be
-C used.  PLNC is just a copy of PLNO.
+C used.
 C
         IPRJ=JPRJ
-        PLNC=PLNO
 C
         IF (IPRJ.EQ.1) THEN
 C

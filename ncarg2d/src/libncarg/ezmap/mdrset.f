@@ -1,5 +1,5 @@
 C
-C $Id: mdrset.f,v 1.8 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdrset.f,v 1.9 2008-09-11 22:53:34 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -12,8 +12,8 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C

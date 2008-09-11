@@ -1,5 +1,5 @@
 C
-C $Id: mdpitd.f,v 1.7 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdpitd.f,v 1.8 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,8 +21,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -127,8 +127,8 @@ C
           ELSE
             CPLT=COS(DTOR*PLTO)
             SPLT=SIN(DTOR*PLTO)
-            CPLN=COS(DTOR*PLNC)
-            SPLN=SIN(DTOR*PLNC)
+            CPLN=COS(DTOR*PLNO)
+            SPLN=SIN(DTOR*PLNO)
           END IF
           CXLT=COS(DTOR*XLAT)
           SXLT=SIN(DTOR*XLAT)

@@ -1,5 +1,5 @@
 C
-C $Id: mdqini.f,v 1.4 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdqini.f,v 1.5 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -37,8 +37,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -94,7 +94,7 @@ C special common block used only by the transformation routines with
 C names of the form M[AD]QTR[AIN].
 C
         CALL MDQIN2 (ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +               OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +               OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +               SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +               VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
      +               ELPM)

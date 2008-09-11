@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.10 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdplmb.f,v 1.11 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,8 +21,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -259,7 +259,7 @@ C
 C Lambert conformal conic with two standard parallels.
 C
   101   DLAT=GRDR
-        RLON=PLNC+179.999999D0
+        RLON=PLNO+179.999999D0
         K=CEIL(180.D0/DLAT)
         DO 103 I=1,2
           RLAT=-90.D0
@@ -275,7 +275,7 @@ C
           IF (ICFELL('MDPLMB',28).NE.0) RETURN
           CALL MDPIQ
           IF (ICFELL('MDPLMB',29).NE.0) RETURN
-          RLON=PLNC-179.999999D0
+          RLON=PLNO-179.999999D0
   103   CONTINUE
         GO TO 110
 C
@@ -307,7 +307,7 @@ C
               SINP=SINA*COSB
             END IF
             RLAT=RTOD*ATAN2(SINP,COSP)
-            RLON=PLNC+RTOD*ATAN2(SINA*SINB,
+            RLON=PLNO+RTOD*ATAN2(SINA*SINB,
      +                           COSA*COSO-SINA*SINO*COSB)
             IF (ABS(RLON).GT.180.D0) RLON=RLON-SIGN(360.D0,RLON)
             CALL MDPIT (RLAT,RLON,IPEN)

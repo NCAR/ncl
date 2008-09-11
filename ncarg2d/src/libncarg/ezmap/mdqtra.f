@@ -1,5 +1,5 @@
 C
-C $Id: mdqtra.f,v 1.4 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdqtra.f,v 1.5 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -16,12 +16,12 @@ C MDQINI needs to set to make MDQTRA, MDQTRI, and MDQTRN carry out the
 C transformation in effect at the time MDQINI was called.
 C
         COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
      +                   ELPM
         DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
 C

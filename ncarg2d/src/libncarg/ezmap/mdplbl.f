@@ -1,5 +1,5 @@
 C
-C $Id: mdplbl.f,v 1.7 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdplbl.f,v 1.8 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,8 +18,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -90,7 +90,7 @@ C
 C
 C The equator.
 C
-          RLON=PLNC-10.D0
+          RLON=PLNO-10.D0
 C
           DO 101 ILON=1,36
             RLON=RLON+10.D0

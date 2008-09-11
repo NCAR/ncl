@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.11 2008-09-11 20:49:15 kennison Exp $
+C $Id: mdptri.f,v 1.12 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,8 +20,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -136,8 +136,8 @@ C
           TMP1=UTMP/R
           TMP2=-SINO*VTMP/R
         END IF
-        RLON=PLNC+RTOD*ATAN2(TMP1,TMP2)/COSO
-        IF (ABS(RLON-PLNC).GT.180.D0) GO TO 301
+        RLON=PLNO+RTOD*ATAN2(TMP1,TMP2)/COSO
+        IF (ABS(RLON-PLNO).GT.180.D0) GO TO 301
         GO TO 202
 C
 C Stereographic.
@@ -298,14 +298,14 @@ C Cylindrical equidistant, fast-path.
 C
   116   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
         RLAT=VTMP
-        RLON=PLNC+UTMP
+        RLON=PLNO+UTMP
         GO TO 201
 C
 C Mercator, fast-path.
 C
   117   IF (ABS(UTMP).GT.PI) GO TO 301
         RLAT=RTDD*ATAN(EXP(VTMP))-90.D0
-        RLON=PLNC+RTOD*UTMP
+        RLON=PLNO+RTOD*UTMP
         GO TO 201
 C
 C Mollweide-type, fast-path.
@@ -313,11 +313,11 @@ C
   118   IF (ABS(VTMP).GT.1.D0) GO TO 301
         RLAT=ASIN(VTMP)*RTOD
         IF (1.D0-VTMP*VTMP.NE.0.D0) THEN
-          RLON=PLNC+90.D0*UTMP/SQRT(1.D0-VTMP*VTMP)
-          IF (ABS(RLON-PLNC).GT.180.D0) GO TO 301
+          RLON=PLNO+90.D0*UTMP/SQRT(1.D0-VTMP*VTMP)
+          IF (ABS(RLON-PLNO).GT.180.D0) GO TO 301
         ELSE
           IF (UTMP.NE.0.D0) GO TO 301
-          RLON=PLNC
+          RLON=PLNO
         END IF
         GO TO 201
 C
@@ -327,14 +327,14 @@ C
         VVTM=RBIDFE(VTMP)
         IF (ABS(UTMP).GT.RBGLEN(VVTM)) GO TO 301
         RLAT=VVTM
-        RLON=PLNC+180.D0*UTMP/RBGLEN(VVTM)
+        RLON=PLNO+180.D0*UTMP/RBGLEN(VVTM)
         GO TO 201
 C
 C Cylindrical equal-area, fast-path.
 C
   120   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
         RLAT=RTOD*ASIN(VTMP*3.D0/4.D0)
-        RLON=PLNC+RTOD*UTMP
+        RLON=PLNO+RTOD*UTMP
         GO TO 201
 C
 C Aitoff, fast-path.
@@ -342,7 +342,7 @@ C
   121   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PLNC+RTOD*RLON
+        RLON=PLNO+RTOD*RLON
         GO TO 201
 C
 C Hammer, fast-path.
@@ -350,7 +350,7 @@ C
   122   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PLNC+RTOD*RLON
+        RLON=PLNO+RTOD*RLON
         GO TO 201
 C
 C True Mollweide, fast-path.
@@ -358,7 +358,7 @@ C
   123   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PLNC+RTOD*RLON
+        RLON=PLNO+RTOD*RLON
         GO TO 201
 C
 C Winkel tripel, fast-path.
@@ -366,7 +366,7 @@ C
   124   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
         IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PLNC+RTOD*RLON
+        RLON=PLNO+RTOD*RLON
         GO TO 201
 C
 C Rotated Mercator.
@@ -374,7 +374,7 @@ C
   125   UTM1=UTMP*COSR-VTMP*SINR
         VTM1=VTMP*COSR+UTMP*SINR
         RLAT=RTDD*ATAN(EXP(VTM1))-90.D0
-        RLON=PLNC+RTOD*UTM1
+        RLON=PLNO+RTOD*UTM1
         GO TO 202
 C
 C The following code is common to all of the azimuthal projections when
@@ -407,7 +407,7 @@ C
           RLAT=0.D0
         END IF
         IF (SINA*SINB.NE.0.D0.OR.COSA*COSO-SINA*SINO*COSB.NE.0.D0) THEN
-          RLON=PLNC+RTOD*ATAN2(SINA*SINB,COSA*COSO-SINA*SINO*COSB)
+          RLON=PLNO+RTOD*ATAN2(SINA*SINB,COSA*COSO-SINA*SINO*COSB)
         ELSE
           RLON=0.D0
         END IF
@@ -423,7 +423,7 @@ C
         ZVAL=(SIN(RLAP)*COSR+SIN(RLOP)*COS(RLAP)*SINR)*COSO+
      +                                          COS(RLOP)*COS(RLAP)*SINO
         RLAT=RTOD*ASIN(MAX(-1.D0,MIN(+1.D0,ZVAL)))
-        RLON=RTOD*ATAN2(YVAL,XVAL)+PLNC
+        RLON=RTOD*ATAN2(YVAL,XVAL)+PLNO
 C
         GO TO 202
 C
@@ -432,7 +432,7 @@ C rotation angle is 180, negate the output values of RLAT and RLON.
 C
   201   IF (ABS(ROTA).GT.179.999999D0) THEN
           RLAT=-RLAT
-          RLON=PLNC-(RLON-PLNC)
+          RLON=PLNO-(RLON-PLNO)
         END IF
 C
         GO TO 202

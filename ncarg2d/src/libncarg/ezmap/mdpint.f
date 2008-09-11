@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.11 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdpint.f,v 1.12 2008-09-11 22:53:33 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,8 +18,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -621,8 +621,8 @@ C At first, assume the whole globe will be projected.
 C
         SLAM=-90.D0
         BLAM=+90.D0
-        SLOM=PLNC-180.D0
-        BLOM=PLNC+180.D0
+        SLOM=PLNO-180.D0
+        BLOM=PLNO+180.D0
 C
 C Jump if it's obvious that really is the case.  It is possible that
 C something else needs to be done here.
@@ -638,7 +638,7 @@ C to do is to find a point (CLAT,CLON) whose projection is known to be
 C on the map.  First, try the pole of the projection.
 C
         CLAT=PLTO
-        CLON=PLNC
+        CLON=PLNO
         CALL MDPTRN (CLAT,CLON,U,V)
         IF (ICFELL('MDPINT',8).NE.0) GO TO 999
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
@@ -768,8 +768,8 @@ C
         IF (BLOM.LE.SLOM) BLOM=BLOM+360.D0
         GO TO 701
 C
-  651   SLOM=PLNC-180.D0
-        BLOM=PLNC+180.D0
+  651   SLOM=PLNO-180.D0
+        BLOM=PLNO+180.D0
         GO TO 701
 C
 C Control comes here if we didn't succeed in setting limits properly.
