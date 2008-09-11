@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.7 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdpin1.f,v 1.8 2008-09-11 04:11:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,17 +18,17 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PHOC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -41,11 +41,11 @@ C
 C Set up alternate names for a couple of variables in common.
 C
         DOUBLE PRECISION FLT1,FLT2
-        EQUIVALENCE      (PHIA,FLT1),(ROTA,FLT2)
+        EQUIVALENCE      (PLTO,FLT1),(ROTA,FLT2)
 C
 C Declare local variables.
 C
-        DOUBLE PRECISION CHI1,CHI2,COST,SINT,TMP1,TMP2
+        DOUBLE PRECISION CHI1,CHI2
         REAL             TST1,TST2,TST3
 C
 C Do a call forcing a BLOCKDATA to be loaded from a binary library.
@@ -68,10 +68,10 @@ C
         END IF
 C
 C IPRJ equals JPRJ until we find out if fast-path projections are to be
-C used.  PHOC is just a copy of PHIO.
+C used.  PLNC is just a copy of PLNO.
 C
         IPRJ=JPRJ
-        PHOC=PHIO
+        PLNC=PLNO
 C
         IF (IPRJ.EQ.1) THEN
 C
@@ -90,48 +90,39 @@ C
 C
         ELSE
 C
-C Compute quantities required for all the other projections.
+C See if fast-path transformations can by used (type cylindrical or
+C mixed, PLAT=0, and ROTA=0 or 180) and, if so, arrange for it.  If
+C not, compute required quantities that depend on PLAT and ROTA.
 C
-          TMP1=ROTA*DTOR
-          TMP2=PHIA*DTOR
-          SINR=SIN(TMP1)
-          COSR=COS(TMP1)
-          SINO=SIN(TMP2)
-          COSO=COS(TMP2)
-C
-C Compute constants required only by the cylindrical and mixed
-C projections.
-C
-          IF (IPRJ.GE.7.AND.IPRJ.LE.15) THEN
-C
-C See if fast-path transformations can be used (PLAT=0, ROTA=0 or 180).
-C
-            IF (ABS(PHIA).GE..000001D0.OR.(ABS(ROTA).GE..000001D0.AND.
-     +                                  ABS(ROTA).LE.179.999999D0)) THEN
-C
-C No.  Compute constants for the ordinary cylindrical and mixed
-C projections.
-C
-              SINT=COSO*COSR
-              COST=SQRT(1.D0-SINT**2)
-              TMP1=SINR/COST
-              TMP2=SINO/COST
-              PHOC=PHIO-ATAN2(TMP1,-COSR*TMP2)*RTOD
-              SINR=TMP1*COSO
-              COSR=-TMP2
-              SINO=SINT
-              COSO=COST
-C
-            ELSE
-C
-C Yes.  The fast paths are implemented as five additional projections.
-C
-              IPRJ=IPRJ+9
-C
-            END IF
-C
+          IF (IPRJ.GE.7.AND.IPRJ.LE.15.AND.
+     +         ABS(PLTO).LT.   .000001D0.AND.
+     +        (ABS(ROTA).LT.   .000001D0.OR.
+     +         ABS(ROTA).GT.179.999999D0)    ) THEN
+            IPRJ=IPRJ+9
+          ELSE
+            SINO=SIN(PLTO*DTOR)
+            COSO=COS(PLTO*DTOR)
+            SINR=SIN(ROTA*DTOR)
+            COSR=COS(ROTA*DTOR)
           END IF
 C
+C Note (09/10/2008): Originally, the arbitrary (non-fast-path) versions
+C of the cylindrical and mixed projections were done using a clumsy
+C technique involving code that appeared to be primarily intended for
+C use in doing azimuthal projections.  This clumsy technique required
+C some other variables to be computed at this point: SINT=COSO*COSR,
+C COST=SQRT(1.D0-SINT**2), PLNC=PLNO-ATAN2(SINR/COST,-COSR*SINO/COST)*
+C RTOD, SINR=SINR*COSO/COST, COSR=-SINO/COST, SINO=SINT, and COSO=COST.
+C As it turns out, these transformations can be done more efficiently,
+C simply, and logically (and in a manner that doesn't pose the risk of
+C dividing by zero), so I have changed the code for them in both the
+C forward and inverse transformation routines and removed the unneeded
+C code here.
+C
+C (This comment is for use in the unlikely event that the need arises
+C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
+C all comments about it.)
+C 
         END IF
 C
         RETURN

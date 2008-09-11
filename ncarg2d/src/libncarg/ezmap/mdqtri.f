@@ -1,5 +1,5 @@
 C
-C $Id: mdqtri.f,v 1.5 2008-09-07 04:14:32 kennison Exp $
+C $Id: mdqtri.f,v 1.6 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -16,12 +16,12 @@ C MDQINI needs to set to make MDQTRA, MDQTRI, and MDQTRN carry out the
 C transformation in effect at the time MDQINI was called.
 C
         COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
      +                   ELPM
         DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
 C
@@ -33,9 +33,9 @@ C
 C
 C Declare local variables.
 C
-        DOUBLE PRECISION ANGA,ANGU,RCOSA,RCOSB,RCOSLA,RCOSPH,RCOSU,
-     +                   RSINA,RSINB,RSINLA,RSINPH,RSINU,TMP1,TMP2,
-     +                   UTMP,UTM1,UTM2,UTM3,VTMP,VTM1,VTM2,VTM3,VVTM
+        DOUBLE PRECISION COSA,COSB,COSL,COSP,RLAP,RLOP,SINA,SINB,SINL,
+     +                   SINP,TMP1,TMP2,UTMP,UTM1,UTM2,UTM3,VTMP,VTM1,
+     +                   VTM2,VTM3,VVTM,XVAL,YVAL,ZVAL
 C
         DOUBLE PRECISION R
 C
@@ -68,8 +68,8 @@ C
 C Jump to the proper piece of code, depending on the projection type.
 C
 C Projection:   US  LC  ST  OR  LE  GN  AE
-C                   CE  ME  MT  RO  EA  AI  HA  MO  WT
-C                   CE  ME  MT  RO  EA  AI  HA  MO  WT
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
 C                       ME
 C
         GO TO (100,101,102,103,104,105,106,
@@ -91,7 +91,7 @@ C
         ELSE
           CALL MDUTID (UTMP,VTMP,RLAT,RLON)
         END IF
-        IF (RLAT.NE.1.D12) GO TO 201
+        IF (RLAT.NE.1.D12) GO TO 202
         RETURN
 C
 C Lambert conformal conic.
@@ -106,18 +106,18 @@ C
           TMP1=UTMP/R
           TMP2=-SINO*VTMP/R
         END IF
-        RLON=PHOC+RTOD*ATAN2(TMP1,TMP2)/COSO
-        IF (ABS(RLON-PHOC).GT.180.D0) GO TO 301
-        GO TO 201
+        RLON=PLNC+RTOD*ATAN2(TMP1,TMP2)/COSO
+        IF (ABS(RLON-PLNC).GT.180.D0) GO TO 301
+        GO TO 202
 C
 C Stereographic.
 C
   102   R=SQRT(UTMP*UTMP+VTMP*VTMP)
         IF (R.LT..000001D0) GO TO 198
-        RSINB=(UTMP*COSR-VTMP*SINR)/R
-        RCOSB=(UTMP*SINR+VTMP*COSR)/R
-        RSINA=2.D0*R/(1.D0+R*R)
-        RCOSA=(1.D0-R*R)/(1.D0+R*R)
+        SINB=(UTMP*COSR-VTMP*SINR)/R
+        COSB=(UTMP*SINR+VTMP*COSR)/R
+        SINA=2.D0*R/(1.D0+R*R)
+        COSA=(1.D0-R*R)/(1.D0+R*R)
         GO TO 199
 C
 C Orthographic or satellite-view (depending on the value of SALT).
@@ -125,15 +125,15 @@ C
   103   IF (ABS(SALT).LE.1.D0) THEN
           R=SQRT(UTMP*UTMP+VTMP*VTMP)
           IF (R.LT..000001D0) GO TO 198
-          RSINB=(UTMP*COSR-VTMP*SINR)/R
-          RCOSB=(UTMP*SINR+VTMP*COSR)/R
+          SINB=(UTMP*COSR-VTMP*SINR)/R
+          COSB=(UTMP*SINR+VTMP*COSR)/R
           IF (R.LE.1.D0) THEN
-            RSINA=R
-            RCOSA=SQRT(1.D0-RSINA*RSINA)
+            SINA=R
+            COSA=SQRT(1.D0-SINA*SINA)
           ELSE
             IF (SALT.GE.0.D0.OR.R.GT.2.D0) GO TO 301
-            RSINA=2.D0-R
-            RCOSA=-SQRT(1.D0-RSINA*RSINA)
+            SINA=2.D0-R
+            COSA=-SQRT(1.D0-SINA*SINA)
           END IF
           GO TO 199
         ELSE
@@ -151,17 +151,17 @@ C
           END IF
           R=SQRT(UTM1*UTM1+VTM1*VTM1)
           IF (R.LT..000001D0) GO TO 198
-          RSINB=(UTM1*COSR-VTM1*SINR)/R
-          RCOSB=(UTM1*SINR+VTM1*COSR)/R
+          SINB=(UTM1*COSR-VTM1*SINR)/R
+          COSB=(UTM1*SINR+VTM1*COSR)/R
           IF (R.LE.1.D0) THEN
-            RCOSA=(R*R*ABS(SALT)+SSMO*SQRT(1.D0-R*R))/(R*R+SSMO)
+            COSA=(R*R*ABS(SALT)+SSMO*SQRT(1.D0-R*R))/(R*R+SSMO)
           ELSE
             IF (SALT.GE.0.D0.OR.R.GT.2.D0) GO TO 301
             R=2.D0-R
-            RCOSA=(R*R*ABS(SALT)-SSMO*SQRT(1.D0-R*R))/(R*R+SSMO)
+            COSA=(R*R*ABS(SALT)-SSMO*SQRT(1.D0-R*R))/(R*R+SSMO)
           END IF
-          RCOSA=MAX(-1.D0,MIN(+1.D0,RCOSA))
-          RSINA=SQRT(1.D0-RCOSA*RCOSA)
+          COSA=MAX(-1.D0,MIN(+1.D0,COSA))
+          SINA=SQRT(1.D0-COSA*COSA)
           GO TO 199
         END IF
 C
@@ -170,20 +170,20 @@ C
   104   R=SQRT(UTMP*UTMP+VTMP*VTMP)
         IF (R.LT..000001D0) GO TO 198
         IF (R.GT.2.D0) GO TO 301
-        RSINB=(UTMP*COSR-VTMP*SINR)/R
-        RCOSB=(UTMP*SINR+VTMP*COSR)/R
-        RCOSA=MAX(-1.D0,MIN(+1.D0,1.D0-R*R/2.D0))
-        RSINA=SQRT(1.D0-RCOSA*RCOSA)
+        SINB=(UTMP*COSR-VTMP*SINR)/R
+        COSB=(UTMP*SINR+VTMP*COSR)/R
+        COSA=MAX(-1.D0,MIN(+1.D0,1.D0-R*R/2.D0))
+        SINA=SQRT(1.D0-COSA*COSA)
         GO TO 199
 C
 C Gnomonic.
 C
   105   R=SQRT(UTMP*UTMP+VTMP*VTMP)
         IF (R.LT..000001D0) GO TO 198
-        RSINB=(UTMP*COSR-VTMP*SINR)/R
-        RCOSB=(UTMP*SINR+VTMP*COSR)/R
-        RCOSA=MAX(-1.D0,MIN(+1.D0,1.D0/SQRT(1.D0+R*R)))
-        RSINA=SQRT(1.D0-RCOSA*RCOSA)
+        SINB=(UTMP*COSR-VTMP*SINR)/R
+        COSB=(UTMP*SINR+VTMP*COSR)/R
+        COSA=MAX(-1.D0,MIN(+1.D0,1.D0/SQRT(1.D0+R*R)))
+        SINA=SQRT(1.D0-COSA*COSA)
         GO TO 199
 C
 C Azimuthal equidistant.
@@ -191,273 +191,247 @@ C
   106   R=SQRT(UTMP*UTMP+VTMP*VTMP)
         IF (R.LT..000001D0) GO TO 198
         IF (R.GT.PI) GO TO 301
-        RSINB=(UTMP*COSR-VTMP*SINR)/R
-        RCOSB=(UTMP*SINR+VTMP*COSR)/R
-        RCOSA=COS(R)
-        RSINA=SQRT(1.D0-RCOSA*RCOSA)
+        SINB=(UTMP*COSR-VTMP*SINR)/R
+        COSB=(UTMP*SINR+VTMP*COSR)/R
+        COSA=COS(R)
+        SINA=SQRT(1.D0-COSA*COSA)
         GO TO 199
 C
 C Cylindrical equidistant, arbitrary pole and orientation.
 C
+C Note (09/10/2008): Originally, the code for this projection looked
+C quite different:
+C
+C 107  IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
+C      ANGA=DTOR*(90.D0-VTMP)
+C      SINA=SIN(ANGA)
+C      COSA=COS(ANGA)
+C      ANGU=DTOR*UTMP
+C      SINU=SIN(ANGU)
+C      COSU=COS(ANGU)
+C      SINB=SINU*COSR+COSU*SINR
+C      COSB=SINU*SINR-COSU*COSR
+C      GO TO 199
+C
+C This is because the technique for doing cylindrical and mixed
+C projections depended on the way in which azimuthal projections
+C were done.  This is no longer the case.
+C
+C (This comment is for use in the unlikely event that the need arises
+C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
+C all comments about it.)
+C
   107   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
-        ANGA=DTOR*(90.D0-VTMP)
-        RSINA=SIN(ANGA)
-        RCOSA=COS(ANGA)
-        ANGU=DTOR*UTMP
-        RSINU=SIN(ANGU)
-        RCOSU=COS(ANGU)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+        RLAP=VTMP*DTOR
+        RLOP=UTMP*DTOR
+        GO TO 200
 C
 C Mercator, arbitrary pole and orientation.
 C
   108   IF (ABS(UTMP).GT.PI) GO TO 301
-        RSINA=SIN(PI-2.D0*ATAN(EXP(VTMP)))
-        RCOSA=COS(PI-2.D0*ATAN(EXP(VTMP)))
-        RSINU=SIN(UTMP)
-        RCOSU=COS(UTMP)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+        RLAP=2.D0*ATAN(EXP(VTMP))-PIOT
+        RLOP=UTMP
+        GO TO 200
 C
-C Mollweide type, arbitrary pole and orientation.
+C Mollweide-type, arbitrary pole and orientation.
 C
   109   IF (ABS(VTMP).GT.1.D0) GO TO 301
-        RCOSA=VTMP
-        RSINA=SQRT(1.D0-RCOSA*RCOSA)
-        IF (RSINA.NE.0.D0) THEN
-          IF (ABS(UTMP/RSINA).GT.2.D0) GO TO 301
-          ANGU=PIOT*UTMP/RSINA
-          RSINU=SIN(ANGU)
-          RCOSU=COS(ANGU)
+        RLAP=ASIN(VTMP)
+        IF (1.D0-VTMP*VTMP.NE.0.D0) THEN
+          RLOP=PIOT*UTMP/SQRT(1.D0-VTMP*VTMP)
+          IF (RTOD*ABS(RLOP).GT.180.D0) GO TO 301
         ELSE
           IF (UTMP.NE.0.D0) GO TO 301
-          RSINU=0.D0
-          RCOSU=1.D0
+          RLOP=0.D0
         END IF
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+        GO TO 200
 C
 C Robinson, arbitrary pole and orientation.
 C
   110   IF (ABS(VTMP).GT..5072D0) GO TO 301
         VVTM=RBIDFE(VTMP)
         IF (ABS(UTMP).GT.RBGLEN(VVTM)) GO TO 301
-        ANGA=PIOT-DTOR*VVTM
-        RSINA=SIN(ANGA)
-        RCOSA=COS(ANGA)
-        ANGU=PI*UTMP/RBGLEN(VVTM)
-        RSINU=SIN(ANGU)
-        RCOSU=COS(ANGU)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+        RLAP=DTOR*VVTM
+        RLOP=PI*UTMP/RBGLEN(VVTM)
+        GO TO 200
 C
-C Cylindrical equal-area, arbitrary pole and orientation.  ???
+C Cylindrical equal-area, arbitrary pole and orientation.
 C
   111   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
-        ANGA=PIOT-ASIN(VTMP*3.D0/4.D0)
-        RSINA=SIN(ANGA)
-        RCOSA=COS(ANGA)
-        ANGU=UTMP
-        RSINU=SIN(ANGU)
-        RCOSU=COS(ANGU)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+        RLAP=ASIN(VTMP*3.D0/4.D0)
+        RLOP=UTMP
+        GO TO 200
 C
 C Aitoff, arbitrary pole and orientation.
 C
-  112   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
-        ANGA=PIOT-RLAT
-        RSINA=SIN(ANGA)
-        RCOSA=COS(ANGA)
-        ANGU=RLON
-        RSINU=SIN(ANGU)
-        RCOSU=COS(ANGU)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+  112   CALL AIPRIN (UTMP,VTMP,RLAP,RLOP)
+        IF (RLAP.EQ.1.D12) GO TO 301
+        GO TO 200
 C
 C Hammer, arbitrary pole and orientation.
 C
-  113   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
-        ANGA=PIOT-RLAT
-        RSINA=SIN(ANGA)
-        RCOSA=COS(ANGA)
-        ANGU=RLON
-        RSINU=SIN(ANGU)
-        RCOSU=COS(ANGU)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+  113   CALL HAPRIN (UTMP,VTMP,RLAP,RLOP)
+        IF (RLAP.EQ.1.D12) GO TO 301
+        GO TO 200
 C
 C True Mollweide, arbitrary pole and orientation.
 C
-  114   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
-        ANGA=PIOT-RLAT
-        RSINA=SIN(ANGA)
-        RCOSA=COS(ANGA)
-        ANGU=RLON
-        RSINU=SIN(ANGU)
-        RCOSU=COS(ANGU)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+  114   CALL MOPRIN (UTMP,VTMP,RLAP,RLOP)
+        IF (RLAP.EQ.1.D12) GO TO 301
+        GO TO 200
 C
 C Winkel tripel, arbitrary pole and orientation.
 C
-  115   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
-        ANGA=PIOT-RLAT
-        RSINA=SIN(ANGA)
-        RCOSA=COS(ANGA)
-        ANGU=RLON
-        RSINU=SIN(ANGU)
-        RCOSU=COS(ANGU)
-        RSINB=RSINU*COSR+RCOSU*SINR
-        RCOSB=RSINU*SINR-RCOSU*COSR
-        GO TO 199
+  115   CALL WTPRIN (UTMP,VTMP,RLAP,RLOP)
+        IF (RLAP.EQ.1.D12) GO TO 301
+        GO TO 200
 C
-C Cylindrical equidistant, fast path.
+C Cylindrical equidistant, fast-path.
 C
   116   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
         RLAT=VTMP
-        RLON=PHOC+UTMP
-        GO TO 200
+        RLON=PLNC+UTMP
+        GO TO 201
 C
-C Mercator, fast path.
+C Mercator, fast-path.
 C
   117   IF (ABS(UTMP).GT.PI) GO TO 301
         RLAT=RTDD*ATAN(EXP(VTMP))-90.D0
-        RLON=PHOC+RTOD*UTMP
-        GO TO 200
+        RLON=PLNC+RTOD*UTMP
+        GO TO 201
 C
-C Mollweide type, fast path.
+C Mollweide-type, fast-path.
 C
   118   IF (ABS(VTMP).GT.1.D0) GO TO 301
         RLAT=ASIN(VTMP)*RTOD
         IF (1.D0-VTMP*VTMP.NE.0.D0) THEN
-          RLON=PHOC+90.D0*UTMP/SQRT(1.D0-VTMP*VTMP)
-          IF (ABS(RLON-PHOC).GT.180.D0) GO TO 301
+          RLON=PLNC+90.D0*UTMP/SQRT(1.D0-VTMP*VTMP)
+          IF (ABS(RLON-PLNC).GT.180.D0) GO TO 301
         ELSE
           IF (UTMP.NE.0.D0) GO TO 301
-          RLON=PHOC
+          RLON=PLNC
         END IF
-        GO TO 200
+        GO TO 201
 C
-C Robinson, fast path.
+C Robinson, fast-path.
 C
   119   IF (ABS(VTMP).GT..5072D0) GO TO 301
         VVTM=RBIDFE(VTMP)
         IF (ABS(UTMP).GT.RBGLEN(VVTM)) GO TO 301
         RLAT=VVTM
-        RLON=PHOC+180.D0*UTMP/RBGLEN(VVTM)
-        GO TO 200
+        RLON=PLNC+180.D0*UTMP/RBGLEN(VVTM)
+        GO TO 201
 C
-C Cylindrical equal-area, fast path.
+C Cylindrical equal-area, fast-path.
 C
   120   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
         RLAT=RTOD*ASIN(VTMP*3.D0/4.D0)
-        RLON=PHOC+RTOD*UTMP
-        GO TO 200
+        RLON=PLNC+RTOD*UTMP
+        GO TO 201
 C
-C Aitoff, arbitrary pole and orientation.
+C Aitoff, fast-path.
 C
   121   CALL AIPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PHOC+RTOD*RLON
-        GO TO 200
+        RLON=PLNC+RTOD*RLON
+        GO TO 201
 C
-C Hammer, arbitrary pole and orientation.
+C Hammer, fast-path.
 C
   122   CALL HAPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PHOC+RTOD*RLON
-        GO TO 200
+        RLON=PLNC+RTOD*RLON
+        GO TO 201
 C
-C True Mollweide, arbitrary pole and orientation.
+C True Mollweide, fast-path.
 C
   123   CALL MOPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PHOC+RTOD*RLON
-        GO TO 200
+        RLON=PLNC+RTOD*RLON
+        GO TO 201
 C
-C Winkel tripel, arbitrary pole and orientation.
+C Winkel tripel, fast-path.
 C
   124   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
-        IF (RLAT.EQ.1.D12) GO TO 302
+        IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
-        RLON=PHOC+RTOD*RLON
-        GO TO 200
+        RLON=PLNC+RTOD*RLON
+        GO TO 201
 C
 C Rotated Mercator.
 C
   125   UTM1=UTMP*COSR-VTMP*SINR
         VTM1=VTMP*COSR+UTMP*SINR
         RLAT=RTDD*ATAN(EXP(VTM1))-90.D0
-        RLON=PHOC+RTOD*UTM1
-        GO TO 200
+        RLON=PLNC+RTOD*UTM1
+        GO TO 202
 C
 C The following code is common to all of the azimuthal projections when
 C the "radius" R is within epsilon of zero.
 C
-  198   RSINB=0.D0
-        RCOSB=1.D0
-        RSINA=0.D0
-        RCOSA=1.D0
+  198   SINB=0.D0
+        COSB=1.D0
+        SINA=0.D0
+        COSA=1.D0
 C
 C The following code is common to all of the azimuthal projections.
 C
-  199   RSINPH=RSINA*RSINB
-        RCOSPH=RCOSA*COSO-RSINA*SINO*RCOSB
-        RCOSLA=SQRT(RSINPH*RSINPH+RCOSPH*RCOSPH)
+  199   SINL=SINA*SINB
+        COSL=COSA*COSO-SINA*SINO*COSB
+        COSP=SQRT(SINL*SINL+COSL*COSL)
 C
-        IF (RCOSLA.NE.0.D0) THEN
-          RSINPH=RSINPH/RCOSLA
-          RCOSPH=RCOSPH/RCOSLA
+        IF (COSP.NE.0.D0) THEN
+          SINL=SINL/COSP
+          COSL=COSL/COSP
         END IF
         IF (ABS(SINO).GT..000001D0) THEN
-          RSINLA=(RCOSA-RCOSLA*RCOSPH*COSO)/SINO
+          SINP=(COSA-COSP*COSL*COSO)/SINO
         ELSE
-          RSINLA=RSINA*RCOSB
+          SINP=SINA*COSB
         END IF
 C
-        IF (RSINLA.NE.0.D0.OR.RCOSLA.NE.0.D0) THEN
-          RLAT=RTOD*ATAN2(RSINLA,RCOSLA)
+        IF (SINP.NE.0.D0.OR.COSP.NE.0.D0) THEN
+          RLAT=RTOD*ATAN2(SINP,COSP)
         ELSE
           RLAT=0.D0
         END IF
-        IF (RSINA*RSINB.NE.0.D0.OR.
-     +      RCOSA*COSO-RSINA*SINO*RCOSB.NE.0.D0) THEN
-          RLON=PHOC+RTOD*ATAN2(RSINA*RSINB,RCOSA*COSO-RSINA*SINO*RCOSB)
+        IF (SINA*SINB.NE.0.D0.OR.COSA*COSO-SINA*SINO*COSB.NE.0.D0) THEN
+          RLON=PLNC+RTOD*ATAN2(SINA*SINB,COSA*COSO-SINA*SINO*COSB)
         ELSE
           RLON=0.D0
         END IF
 C
-        GO TO 201
+        GO TO 202
+C
+C The following code is common to all of the cylindrical and mixed
+C projections.
+C
+  200   XVAL=COS(RLOP)*COS(RLAP)*COSO-
+     +                    (SIN(RLAP)*COSR+SIN(RLOP)*COS(RLAP)*SINR)*SINO
+        YVAL=SIN(RLOP)*COS(RLAP)*COSR-SIN(RLAP)*SINR
+        ZVAL=(SIN(RLAP)*COSR+SIN(RLOP)*COS(RLAP)*SINR)*COSO+
+     +                                          COS(RLOP)*COS(RLAP)*SINO
+        RLAT=RTOD*ASIN(MAX(-1.D0,MIN(+1.D0,ZVAL)))
+        RLON=RTOD*ATAN2(YVAL,XVAL)+PLNC
+C
+        GO TO 202
 C
 C The following code is common to all the fast-path projections.  If the
 C rotation angle is 180, negate the output values of RLAT and RLON.
 C
-  200   IF (ABS(ROTA).GT.179.999999D0) THEN
+  201   IF (ABS(ROTA).GT.179.999999D0) THEN
           RLAT=-RLAT
-          RLON=PHOC-(RLON-PHOC)
+          RLON=PLNC-(RLON-PLNC)
         END IF
 C
-        GO TO 201
+        GO TO 202
 C
 C Done.
 C
-  201   IF (ABS(RLON).GT.180.D0) RLON=RLON-SIGN(360.D0,RLON)
+  202   IF (ABS(RLON).GT.180.D0) RLON=RLON-SIGN(360.D0,RLON)
 C
         GO TO 302
 C

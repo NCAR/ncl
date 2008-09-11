@@ -1,5 +1,5 @@
 C
-C $Id: mdgeti.f,v 1.6 2008-09-04 19:56:58 kennison Exp $
+C $Id: mdgeti.f,v 1.7 2008-09-11 04:11:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,12 +15,12 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -105,9 +105,9 @@ C
           IVAL=0
           IF (PRMF) IVAL=1
         ELSE IF (WHCH(1:2).EQ.'PN'.OR.WHCH(1:2).EQ.'pn') THEN
-          IVAL=INT(PHIO)
+          IVAL=INT(PLNO)
         ELSE IF (WHCH(1:2).EQ.'PT'.OR.WHCH(1:2).EQ.'pt') THEN
-          IVAL=INT(PHIA)
+          IVAL=INT(PLTO)
         ELSE IF (WHCH(1:2).EQ.'P1'.OR.WHCH(1:2).EQ.'p1') THEN
           IVAL=INT(PLA1)
         ELSE IF (WHCH(1:2).EQ.'P2'.OR.WHCH(1:2).EQ.'p2') THEN
@@ -125,7 +125,7 @@ C
         ELSE IF (WHCH(1:2).EQ.'P8'.OR.WHCH(1:2).EQ.'p8') THEN
           IVAL=INT(PLB4)
         ELSE IF (WHCH(1:2).EQ.'RE'.OR.WHCH(1:2).EQ.'re') THEN
-          IVAL=INT(PLTR)
+          IVAL=INT(PDRE)
         ELSE IF (WHCH(1:2).EQ.'RO'.OR.WHCH(1:2).EQ.'ro') THEN
           IVAL=INT(ROTA)
         ELSE IF (WHCH(1:2).EQ.'RP'.OR.WHCH(1:2).EQ.'rp') THEN

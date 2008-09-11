@@ -1,5 +1,5 @@
 C
-C $Id: moprin.f,v 1.1 2008-09-04 20:02:20 kennison Exp $
+C $Id: moprin.f,v 1.2 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,9 +41,9 @@ C
 C
 C Do the math.
 C
-        THTA=ASIN(VVAL/SROT)
+        THTA=ASIN(MAX(-1.D0,MIN(+1.D0,VVAL/SROT)))
 C
-        DLAT=ASIN((2.D0*THTA+SIN(2.D0*THTA))/PI)
+        DLAT=ASIN(MAX(-1.D0,MIN(+1.D0,(2.D0*THTA+SIN(2.D0*THTA))/PI)))
         DLON=PI*UVAL/(TSRT*COS(THTA))
 C
         RETURN

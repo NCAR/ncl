@@ -1,5 +1,5 @@
 C
-C $Id: mdplbl.f,v 1.6 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdplbl.f,v 1.7 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,8 +18,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PHOC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -30,12 +30,12 @@ C
         INTEGER          ISSL
         SAVE   /MAPCM2/
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -90,7 +90,7 @@ C
 C
 C The equator.
 C
-          RLON=PHOC-10.D0
+          RLON=PLNC-10.D0
 C
           DO 101 ILON=1,36
             RLON=RLON+10.D0

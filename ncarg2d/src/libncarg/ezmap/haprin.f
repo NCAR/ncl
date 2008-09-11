@@ -1,5 +1,5 @@
 C
-C $Id: haprin.f,v 1.1 2008-09-04 20:02:20 kennison Exp $
+C $Id: haprin.f,v 1.2 2008-09-11 04:11:35 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -44,7 +44,7 @@ C
         SVAL=1.D0-.0625D0*UVAL**2-.25D0*VVAL**2
         TVAL=SQRT(SVAL)
 C
-        DLAT=ASIN(VVAL*TVAL)
+        DLAT=ASIN(MAX(-1.D0,MIN(+1.D0,VVAL*TVAL)))
         DLON=2.D0*ATAN2(UVAL*TVAL,4.D0*SVAL-2.D0)
 C
         RETURN

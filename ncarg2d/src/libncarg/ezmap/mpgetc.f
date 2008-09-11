@@ -1,5 +1,5 @@
 C
-C $Id: mpgetc.f,v 1.15 2008-09-04 19:56:59 kennison Exp $
+C $Id: mpgetc.f,v 1.16 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

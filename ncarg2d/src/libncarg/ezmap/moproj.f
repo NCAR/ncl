@@ -1,5 +1,5 @@
 C
-C $Id: moproj.f,v 1.1 2008-09-04 20:02:20 kennison Exp $
+C $Id: moproj.f,v 1.2 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,7 +33,7 @@ C
 C Near the poles, the following code doesn't work properly, so we have
 C to deal with that case separately:
 C
-        IF (ABS(DLAT)-PIOT.GT.1.D-12) THEN
+        IF (ABS(DLAT)-PIOT.GT.-1.D-12) THEN
           UVAL=0.D0
           VVAL=SIGN(SROT,DLAT)
           RETURN
@@ -42,7 +42,7 @@ C
 C We have to do a Newton-Raphson iteration to get a value for "theta".
 C Set up the iteration loop.  THTP is an initial guess (per MathWorld).
 C
-        THTP=2.D0*ASIN(DLAT/PIOT)
+        THTP=2.D0*ASIN(MAX(-1.D0,MIN(+1.D0,DLAT/PIOT)))
 C
 C NITR keeps track of the number of iterations performed.
 C

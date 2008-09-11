@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.8 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdproj.f,v 1.9 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,12 +21,12 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -61,8 +61,8 @@ C
 C
         JPRJ=I-1
 C
-        PHIA=MAX(-90.D0,MIN(90.D0,ARG2))
-        PHIO=ARG3+(SIGN(180.D0,180.D0-ARG3)-SIGN(180.D0,ARG3+180.D0))
+        PLTO=MAX(-90.D0,MIN(90.D0,ARG2))
+        PLNO=ARG3+(SIGN(180.D0,180.D0-ARG3)-SIGN(180.D0,ARG3+180.D0))
         ROTA=ARG4+(SIGN(180.D0,180.D0-ARG4)-SIGN(180.D0,ARG4+180.D0))
 C
         IF (JPRJ.EQ.3) THEN
@@ -78,7 +78,7 @@ C
           END IF
         ELSE IF (JPRJ.EQ.17) THEN
           JPRJ=25
-          PHIA=0.D0
+          PLTO=0.D0
         END IF
 C
 C Set the flag to indicate that initialization is now required.

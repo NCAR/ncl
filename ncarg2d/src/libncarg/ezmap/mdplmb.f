@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.9 2008-09-05 19:41:57 kennison Exp $
+C $Id: mdplmb.f,v 1.10 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -21,8 +21,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PHOC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -33,12 +33,12 @@ C
         INTEGER          ISSL
         SAVE   /MAPCM2/
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -65,11 +65,11 @@ C Declare local variables.
 C
         INTEGER          I,IPEN,IVIS,J,K
 C
-        DOUBLE PRECISION ALPH,CLAT,CLON,CRAD,DEPS,DIST,DLAT,DLON,RCOSA,
-     +                   RCOSB,RCOSLA,RCOSPH,RLAT,RLON,RSINA,RSINB,
-     +                   RSINLA,RSINPH,RVTU,SSLT,TLAT(361),TLON(361),U,
-     +                   UCIR,UEDG,UNS1,UOLD,URAD,UTMP,V,VCIR,VEDG,VNS1,
-     +                   VOLD,VTMP,X,XANP,XAS1,XAS2,YANP,YAS1,YAS2
+        DOUBLE PRECISION ALPH,CLAT,CLON,CRAD,DEPS,DIST,DLAT,DLON,COSA,
+     +                   COSB,COSL,COSP,RLAT,RLON,SINA,SINB,SINL,SINP,
+     +                   RVTU,SSLT,TLAT(361),TLON(361),U,UCIR,UEDG,UNS1,
+     +                   UOLD,URAD,UTMP,V,VCIR,VEDG,VNS1,VOLD,VTMP,X,
+     +                   XANP,XAS1,XAS2,YANP,YAS1,YAS2
 C
 C Declare arithmetic statement functions.
 C
@@ -259,7 +259,7 @@ C
 C Lambert conformal conic with two standard parallels.
 C
   101   DLAT=GRDR
-        RLON=PHOC+179.999999D0
+        RLON=PLNC+179.999999D0
         K=CEIL(180.D0/DLAT)
         DO 103 I=1,2
           RLAT=-90.D0
@@ -275,7 +275,7 @@ C
           IF (ICFELL('MDPLMB',28).NE.0) RETURN
           CALL MDPIQ
           IF (ICFELL('MDPLMB',29).NE.0) RETURN
-          RLON=PHOC-179.999999D0
+          RLON=PLNC-179.999999D0
   103   CONTINUE
         GO TO 110
 C
@@ -289,26 +289,26 @@ C
           SSLT=SALT
           SALT=-ABS(SALT)
           IPEN=0
-          RCOSA=1.D0/ABS(SALT)
-          RSINA=SQRT(1.D0-RCOSA*RCOSA)
+          COSA=1.D0/ABS(SALT)
+          SINA=SQRT(1.D0-COSA*COSA)
           DO 111 I=1,361
-            RCOSB=COS(DTOR*DBLE(I-1))
-            RSINB=SIN(DTOR*DBLE(I-1))
-            RSINPH=RSINA*RSINB
-            RCOSPH=RCOSA*COSO-RSINA*SINO*RCOSB
-            RCOSLA=SQRT(RSINPH*RSINPH+RCOSPH*RCOSPH)
-            IF (RCOSLA.NE.0.D0) THEN
-              RSINPH=RSINPH/RCOSLA
-              RCOSPH=RCOSPH/RCOSLA
+            COSB=COS(DTOR*DBLE(I-1))
+            SINB=SIN(DTOR*DBLE(I-1))
+            SINL=SINA*SINB
+            COSL=COSA*COSO-SINA*SINO*COSB
+            COSP=SQRT(SINL*SINL+COSL*COSL)
+            IF (COSP.NE.0.D0) THEN
+              SINL=SINL/COSP
+              COSL=COSL/COSP
             END IF
             IF (ABS(SINO).GT..000001D0) THEN
-              RSINLA=(RCOSA-RCOSLA*RCOSPH*COSO)/SINO
+              SINP=(COSA-COSP*COSL*COSO)/SINO
             ELSE
-              RSINLA=RSINA*RCOSB
+              SINP=SINA*COSB
             END IF
-            RLAT=RTOD*ATAN2(RSINLA,RCOSLA)
-            RLON=PHOC+RTOD*ATAN2(RSINA*RSINB,
-     +                           RCOSA*COSO-RSINA*SINO*RCOSB)
+            RLAT=RTOD*ATAN2(SINP,COSP)
+            RLON=PLNC+RTOD*ATAN2(SINA*SINB,
+     +                           COSA*COSO-SINA*SINO*COSB)
             IF (ABS(RLON).GT.180.D0) RLON=RLON-SIGN(360.D0,RLON)
             CALL MDPIT (RLAT,RLON,IPEN)
             IF (ICFELL('MDPLMB',30).NE.0) RETURN
@@ -332,7 +332,7 @@ C
         RVTU=1.D0
         GO TO 108
 C
-C Mollweide type.
+C Mollweide-type.
 C
   107   URAD=2.D0
         RVTU=0.5D0

@@ -1,5 +1,5 @@
 C
-C $Id: mditve.f,v 1.6 2008-09-04 19:56:58 kennison Exp $
+C $Id: mditve.f,v 1.7 2008-09-11 04:11:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

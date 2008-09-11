@@ -1,5 +1,5 @@
 C
-C $Id: mdqtrn.f,v 1.4 2008-09-05 04:40:40 kennison Exp $
+C $Id: mdqtrn.f,v 1.5 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -20,12 +20,12 @@ C MDQINI needs to set to make MDQTRA, MDQTRI, and MDQTRN carry out the
 C transformation in effect at the time MDQINI was called.
 C
         COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
      +                   ELPM
         DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
 C
@@ -37,9 +37,9 @@ C
 C
 C Declare local variables.
 C
-        DOUBLE PRECISION CHI,COSA,COSB,COSLA,COSPH,SINA,SINB,SINLA,
-     +                   SINPH,TCOS,TEMP,TMP1,TMP2,UTM1,UTM2,UTM3,
-     +                   VTM1,VTM2,VTM3
+        DOUBLE PRECISION CHI,COSA,COSB,COSL,COSP,RLAP,RLOP,SINA,SINB,
+     +                   SINL,SINP,TCOS,TEMP,TMP1,TMP2,UTM1,UTM2,UTM3,
+     +                   VTM1,VTM2,VTM3,XVAL,YVAL,ZVAL
 C
         DOUBLE PRECISION P,Q,R
 C
@@ -56,7 +56,7 @@ C
 C Set up U and V for the fast paths.  U is a longitude, in degrees,
 C between -180. and +180., inclusive, and V is a latitude, in degrees.
 C
-        TEMP=RLON-PHOC
+        TEMP=RLON-PLNC
         U=TEMP+(SIGN(180.D0,180.D0-TEMP)-SIGN(180.D0,TEMP+180.D0))
         V=MAX(-90.D0,MIN(90.D0,RLAT))
 C
@@ -128,34 +128,51 @@ C
 C Not Lambert conformal conic.  Calculate constants common to most of
 C the other projections.
 C
-  103   TMP1=U*DTOR
-        TMP2=V*DTOR
-        SINPH=SIN(TMP1)
-        SINLA=SIN(TMP2)
-        COSPH=COS(TMP1)
-        COSLA=COS(TMP2)
-        TCOS=COSLA*COSPH
-        COSA=MAX(-1.D0,MIN(+1.D0,SINLA*SINO+TCOS*COSO))
-        SINA=SQRT(1.D0-COSA*COSA)
-        IF (SINA.LT..000001D0) THEN
-          SINA=0.D0
-          IF (IPRJ.EQ.3.AND.ABS(SALT).GT.1.D0) THEN
-            SINB=0.D0
-            COSB=1.D0
-            GO TO 105
+C Note (09/10/2008): This code treats the azimuthal projections and the
+C cylindrical and mixed projections differently.  Originally, the code
+C for "IPRJ.GE.7" (the second block of the block-IF) wasn't there; the
+C statement "IF (COSA.LT. ... " read "IF (IPRJ.GE.7.OR.COSA.LT. ...".
+C This had the undesirable effect of treating certain points on the
+C globe as not projectable when, if fact, they were.
+C
+C (This comment is for use in the unlikely event that the need arises
+C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
+C all comments about it.)
+C
+  103   SINL=SIN(U*DTOR)
+        COSL=COS(U*DTOR)
+        SINP=SIN(V*DTOR)
+        COSP=COS(V*DTOR)
+        IF (IPRJ.LT.7) THEN
+          TCOS=COSP*COSL
+          COSA=MAX(-1.D0,MIN(+1.D0,SINP*SINO+TCOS*COSO))
+          SINA=SQRT(1.D0-COSA*COSA)
+          IF (SINA.LT..000001D0) THEN
+            SINA=0.D0
+            IF (IPRJ.EQ.3.AND.ABS(SALT).GT.1.D0) THEN
+              SINB=0.D0
+              COSB=1.D0
+              GO TO 105
+            END IF
+            IF (COSA.LT.0.D0) GO TO 200
+            U=0.D0
+            V=0.D0
+            GO TO 197
           END IF
-          IF (IPRJ.GE.7.OR.COSA.LT.0.D0) GO TO 200
-          U=0.D0
-          V=0.D0
-          GO TO 197
+          SINB=COSP*SINL/SINA
+          COSB=(SINP*COSO-TCOS*SINO)/SINA
+        ELSE
+          XVAL=COSL*COSP*COSO+SINP*SINO
+          YVAL=SINL*COSP*COSR+(SINP*COSO-COSL*COSP*SINO)*SINR
+          ZVAL=(SINP*COSO-COSL*COSP*SINO)*COSR-SINL*COSP*SINR
+          RLAP=ASIN(MAX(-1.D0,MIN(+1.D0,ZVAL)))
+          RLOP=ATAN2(YVAL,XVAL)
         END IF
-        SINB=COSLA*SINPH/SINA
-        COSB=(SINLA*COSO-TCOS*SINO)/SINA
 C
 C Jump to code appropriate for the chosen projection.
 C
 C Projection:   ST  OR  LE  GN  AE
-C               CE  ME  MT  RO  EA  AI  HA  MO  WT
+C               CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
 C
         GO TO (104,105,106,107,108,
      +         109,110,111,112,113,114,115,116,117) , IPRJ-1
@@ -221,71 +238,78 @@ C
 C
 C Cylindrical equidistant, arbitrary pole and orientation.
 C
-  109   U=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)*RTOD
-        V=90.D0-ACOS(COSA)*RTOD
+C Note (09/10/2008): Using the abandoned technique mentioned in other
+C notes in MDPIN1 and above, computing the cylindrical equidistant U
+C and V required the following statements:
+C
+C   U=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)*RTOD
+C   V=90.D0-ACOS(COSA)*RTOD.
+C
+C Similar code was required for the non-fast-path versions of all the
+C cylindrical and mixed projections.
+C
+C (This comment is for use in the unlikely event that the need arises
+C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
+C all comments about it.)
+C
+  109   U=RLOP*RTOD
+        V=RLAP*RTOD
         GO TO 197
 C
 C Mercator, arbitrary pole and orientation.
 C
-  110   U=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
-        V=LOG((1.D0+COSA)/SINA)
+  110   IF (ABS(RLAP*RTOD).GT.89.999999D0) GO TO 200
+        U=RLOP
+        V=LOG(TAN((RLAP+PIOT)/2.D0))
         GO TO 197
 C
-C Mollweide type, arbitrary pole and orientation.
+C Mollweide-type, arbitrary pole and orientation.
 C
-  111   P=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)*TOPI
-        U=P*SINA
-        V=COSA
+  111   P=RLOP*TOPI
+        V=SIN(RLAP)
+        U=P*SQRT(1.D0-V*V)
         GO TO 198
 C
 C Robinson, arbitrary pole and orientation.
 C
-  112   P=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)*OOPI
-        U=P*RBGLEN(90.D0-ACOS(COSA)*RTOD)
-        V=RBGDFE(90.D0-ACOS(COSA)*RTOD)
+  112   P=RLOP*OOPI
+        U=P*RBGLEN(RLAP*RTOD)
+        V=RBGDFE(RLAP*RTOD)
         GO TO 198
 C
-C Cylindrical equal-area, arbitrary pole and orientation.  ???
+C Cylindrical equal-area, arbitrary pole and orientation.
 C
-  113   U=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
-        V=COSA*4.D0/3.D0
+  113   U=RLOP
+        V=SIN(RLAP)*4.D0/3.D0
         GO TO 197
 C
 C Aitoff, arbitrary pole and orientation.
 C
-  114   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
-        TMP2=PIOT-ACOS(COSA)
-        CALL AIPROJ (TMP2,TMP1,U,V)
-        P=TMP1
+  114   CALL AIPROJ (RLAP,RLOP,U,V)
+        P=RLOP
         GO TO 198
 C
 C Hammer, arbitrary pole and orientation.
 C
-  115   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
-        TMP2=PIOT-ACOS(COSA)
-        CALL HAPROJ (TMP2,TMP1,U,V)
-        P=TSRT*TMP1/PI
+  115   CALL HAPROJ (RLAP,RLOP,U,V)
+        P=TSRT*RLOP/PI
         GO TO 198
 C
 C True Mollweide, arbitrary pole and orientation.
 C
-  116   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
-        TMP2=PIOT-ACOS(COSA)
-        CALL MOPROJ (TMP2,TMP1,U,V)
-        P=TSRT*TMP1/PI
+  116   CALL MOPROJ (RLAP,RLOP,U,V)
+        P=TSRT*RLOP/PI
         GO TO 198
 C
 C Winkel tripel, arbitrary pole and orientation.
 C
-  117   TMP1=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)
-        TMP2=PIOT-ACOS(COSA)
-        CALL WTPROJ (TMP2,TMP1,U,V)
-        P=TMP1
+  117   CALL WTPROJ (RLAP,RLOP,U,V)
+        P=RLOP
         GO TO 198
 C
 C Fast-path cylindrical projections (with PLAT=0, ROTA=0 or 180).
 C
-C Projection:   ME  MT  RO  EA  AI  HA  MO  WT  RM
+C Projection:   ME  MT  RO  EA  AI  HA  MO  WT  RM  (fast-path)
 C
   118   GO TO (119,120,121,122,123,124,125,126,127) , IPRJ-16
 C
@@ -296,7 +320,7 @@ C
         V=LOG(TAN((V+90.D0)*DTRH))
         GO TO 197
 C
-C Mollweide type, fast-path.
+C Mollweide-type, fast-path.
 C
   120   P=U/90.D0
         V=SIN(V*DTOR)
@@ -310,7 +334,7 @@ C
         V=RBGDFE(V)
         GO TO 198
 C
-C Cylindrical equal-area, fast-path.  ???
+C Cylindrical equal-area, fast-path.
 C
   122   U=U*DTOR
         V=SIN(V*DTOR)*4.D0/3.D0
@@ -319,33 +343,33 @@ C
 C Aitoff, fast-path.
 C
   123   P=DTOR*U
-        TMP1=U*DTOR
-        TMP2=V*DTOR
-        CALL AIPROJ (TMP2,TMP1,U,V)
+        RLAP=V*DTOR
+        RLOP=U*DTOR
+        CALL AIPROJ (RLAP,RLOP,U,V)
         GO TO 198
 C
 C Hammer, fast-path.
 C
   124   P=TSRT*U/180.D0
-        TMP1=U*DTOR
-        TMP2=V*DTOR
-        CALL HAPROJ (TMP2,TMP1,U,V)
+        RLAP=V*DTOR
+        RLOP=U*DTOR
+        CALL HAPROJ (RLAP,RLOP,U,V)
         GO TO 198
 C
 C True Mollweide, fast-path.
 C
   125   P=TSRT*U/180.D0
-        TMP1=U*DTOR
-        TMP2=V*DTOR
-        CALL MOPROJ (TMP2,TMP1,U,V)
+        RLAP=V*DTOR
+        RLOP=U*DTOR
+        CALL MOPROJ (RLAP,RLOP,U,V)
         GO TO 198
 C
 C Winkel tripel, fast-path.
 C
   126   P=DTOR*U
-        TMP1=U*DTOR
-        TMP2=V*DTOR
-        CALL WTPROJ (TMP2,TMP1,U,V)
+        RLAP=V*DTOR
+        RLOP=U*DTOR
+        CALL WTPROJ (RLAP,RLOP,U,V)
         GO TO 198
 C
 C Rotated Mercator.

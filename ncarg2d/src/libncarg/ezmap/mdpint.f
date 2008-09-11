@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.10 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdpint.f,v 1.11 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,8 +18,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PHOC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -30,12 +30,12 @@ C
         INTEGER          ISSL
         SAVE   /MAPCM2/
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -198,7 +198,7 @@ C
         VMAX= +90.D0
         GO TO 112
 C
-C Mollweide type.
+C Mollweide-type.
 C
   105   UMIN=-2.D0
         UMAX=+2.D0
@@ -460,7 +460,7 @@ C
         VMAX=+LOG((1.D0+SVMA)/CVMA)
         GO TO 600
 C
-C Mollweide type.
+C Mollweide-type.
 C
   409   UMIN=-AUMN/90.D0
         UMAX=+AUMX/90.D0
@@ -596,13 +596,13 @@ C
 C
 C Error if map has essentially zero area.
 C
-        IF (MIN(UROW-ULOW,VTOW-VBOW)*PLTR.LT.RESL) GO TO 902
+        IF (MIN(UROW-ULOW,VTOW-VBOW)*PDRE.LT.RESL) GO TO 902
 C
 C Compute the quantities used by MAPIT to see if points are far enough
 C apart to draw the line between them and the quantities used by MDPVP
 C to determine the number of dots to interpolate between two points.
 C
-        DSCA=(UROW-ULOW)*PLTR/DU
+        DSCA=(UROW-ULOW)*PDRE/DU
         DPSQ=DPLT*DPLT
         DSSQ=DSCA*DSCA
         DBTD=DDTS/DSCA
@@ -621,8 +621,8 @@ C At first, assume the whole globe will be projected.
 C
         SLAM=-90.D0
         BLAM=+90.D0
-        SLOM=PHOC-180.D0
-        BLOM=PHOC+180.D0
+        SLOM=PLNC-180.D0
+        BLOM=PLNC+180.D0
 C
 C Jump if it's obvious that really is the case.  It is possible that
 C something else needs to be done here.
@@ -637,8 +637,8 @@ C Otherwise, the whole globe is not being projected.  The first thing
 C to do is to find a point (CLAT,CLON) whose projection is known to be
 C on the map.  First, try the pole of the projection.
 C
-        CLAT=PHIA
-        CLON=PHOC
+        CLAT=PLTO
+        CLON=PLNC
         CALL MDPTRN (CLAT,CLON,U,V)
         IF (ICFELL('MDPINT',8).NE.0) GO TO 999
         IF ((.NOT.ELPF.AND.U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN
@@ -768,8 +768,8 @@ C
         IF (BLOM.LE.SLOM) BLOM=BLOM+360.D0
         GO TO 701
 C
-  651   SLOM=PHOC-180.D0
-        BLOM=PHOC+180.D0
+  651   SLOM=PLNC-180.D0
+        BLOM=PLNC+180.D0
         GO TO 701
 C
 C Control comes here if we didn't succeed in setting limits properly.

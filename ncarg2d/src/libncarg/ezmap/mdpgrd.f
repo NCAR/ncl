@@ -1,5 +1,5 @@
 C
-C $Id: mdpgrd.f,v 1.8 2008-09-04 19:56:58 kennison Exp $
+C $Id: mdpgrd.f,v 1.9 2008-09-11 04:11:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -18,8 +18,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PHOC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -30,12 +30,12 @@ C
         INTEGER          ISSL
         SAVE   /MAPCM2/
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -99,11 +99,11 @@ C and visible.  Otherwise, we have trouble with portions of meridians
 C disappearing.
 C
         IF (IPRJ.EQ.3.OR.IPRJ.EQ.4.OR.IPRJ.EQ.6) THEN
-          IF (PHIA.GT.+89.999999D0) THEN
+          IF (PLTO.GT.+89.999999D0) THEN
             SLAT=SLAT+SRCH
             IF (IPRJ.EQ.3) SLAT=SLAT+SRCH
           END IF
-          IF (PHIA.LT.-89.999999D0) THEN
+          IF (PLTO.LT.-89.999999D0) THEN
             BLAT=BLAT-SRCH
             IF (IPRJ.EQ.3) BLAT=BLAT-SRCH
           END IF
@@ -117,8 +117,8 @@ C
 C
         IF (XLON-RLON.GT.359.999999D0) THEN
           IF (IPRJ.EQ.1) THEN
-            RLON=GLON*CEIL((PHOC-179.999999D0)/GLON)
-            XLON=GLON*FLOR((PHOC+179.999999D0)/GLON)
+            RLON=GLON*CEIL((PLNC-179.999999D0)/GLON)
+            XLON=GLON*FLOR((PLNC+179.999999D0)/GLON)
           ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.15) THEN
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
@@ -173,11 +173,11 @@ C (rectangular) perimeter, arrange for the parallels at -90 and/or +90
 C to be drawn.
 C
         IF (IPRJ.EQ.16.OR.IPRJ.EQ.20) THEN
-          CALL MDPTRN (-90.D0,PHOC,U,V)
+          CALL MDPTRN (-90.D0,PLNC,U,V)
           IF (ICFELL('MDPGRD',7).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    SLAT=SLAT-GLAT
-          CALL MDPTRN (+90.D0,PHOC,U,V)
+          CALL MDPTRN (+90.D0,PLNC,U,V)
           IF (ICFELL('MDPGRD',8).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    BLAT=BLAT+GLAT

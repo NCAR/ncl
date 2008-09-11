@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.26 2008-09-05 20:45:43 kennison Exp $
+C $Id: mapbd.f,v 1.27 2008-09-11 04:11:35 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -30,8 +30,8 @@ C
 C
 C The common block MAPCM1 contains transformation constants.
 C
-        COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PHOC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -55,12 +55,12 @@ C
 C
 C The common block MAPCM4 contains most of the input parameters.
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -214,7 +214,7 @@ C       5     (GN) Gnomonic                               Azimuthal
 C       6     (AE) Azimuthal Equidistant                  Azimuthal
 C       7     (CE) Cylindrical Equidistant (arbitrary)    Cylindrical
 C       8     (ME) Mercator (arbitrary)                   Cylindrical
-C       9     (MT) Mollweide type (arbitrary)             Cylindrical
+C       9     (MT) Mollweide-type (arbitrary)             Cylindrical
 C      10     (RO) Robinson (arbitrary)                   Cylindrical
 C      11     (EA) Cylindrical Equal-Area (arbitrary)     Cylindrical
 C      12     (AI) Aitoff (arbitrary)                     Mixed
@@ -223,7 +223,7 @@ C      14     (TM) True Mollweide (arbitrary)             Mixed
 C      15     (WT) Winkel tripel (arbitrary)              Mixed
 C      16     (CE) Cylindrical Equidistant (fast-path)    Cylindrical
 C      17     (ME) Mercator (fast-path)                   Cylindrical
-C      18     (MT) Mollweide type (fast-path)             Cylindrical
+C      18     (MT) Mollweide-type (fast-path)             Cylindrical
 C      19     (RO) Robinson (fast-path)                   Cylindrical
 C      20     (EA) Cylindrical Equal-Area (fast-path)     Cylindrical
 C      21     (AI) Aitoff (fast-path)                     Mixed
@@ -232,7 +232,7 @@ C      23     (MO) True Mollweide (fast-path)             Mixed
 C      24     (WT) Winkel tripel (fast-path)              Mixed
 C      25     (RM) Rotated Mercator (fast-path)           Cylindrical
 C
-C PHOC is just a copy of PHIO, from the common block MAPCM4.  IROD is
+C PLNC is just a copy of PLNO, from the common block MAPCM4.  IROD is
 C a flag which, if non-zero, says that we have to use double precision
 C at selected points.  SINO, COSO, SINR, and COSR are projection
 C variables computed by MDPINT for use by MDPTRN.
@@ -254,7 +254,7 @@ C failure indicates that default values were used and that it is not
 C safe to take the efficient paths in MDPGRD.  PEPS is set by MDPINT
 C for use in MAPIT in testing for cross-over problems.  UMIN and UMAX
 C are given default values to prevent code in MDSETI and MDSETR from
-C blowing up when PLTR is set prior to the first call to MDPINT.
+C blowing up when PDRE is set prior to the first call to MDPINT.
 C (08/07/2001) UOFF and VOFF are being added to this common block to
 C support the use of U/V coordinates from which an offset has been
 C subtracted to avoid loss of resolution when zooming in on a small
@@ -294,12 +294,12 @@ C
 C INTF is a flag whose value at any given time indicates whether the
 C package EZMAP is in need of initialization (.TRUE.) or not (.FALSE.).
 C JPRJ is an integer between 0 and 13 indicating the type of projection
-C currently in use.  PHIA, PHIO, and ROTA are the pole latitude and
+C currently in use.  PLTO, PLNO, and ROTA are the pole latitude and
 C longitude and the rotation angle specified by the last user call to
 C MAPROJ.  ILTS is an integer between 1 and 6, specifying how the limits
 C of the map are to be chosen.  PLA1-4 and PLB1-4 are the values given
 C by the user for PLM1(1), PLM2(1), ..., PLM1(2), PLM2(2), ..., in the
-C last call to MAPSET.  PLTR is the plotter resolution - effectively,
+C last call to MAPSET.  PDRE is the plotter resolution - effectively,
 C the number of addressable points in the x direction.  GRID, if zero,
 C turns off the drawing of the lat/lon grid; if non-zero, it specifies
 C the desired default spacing between grid lines, in degrees.  IDSH is
@@ -346,10 +346,10 @@ C a map is less than OTOL times the absolute value of their sum, MDPINT
 C will initialize the projection to use offset values of U and V, thus
 C avoiding a loss of precision.
 C
-      DATA INTF,JPRJ,PHIA,PHIO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,PLB1,PLB2 /
+      DATA INTF,JPRJ,PLTO,PLNO,ROTA,ILTS,PLA1,PLA2,PLA3,PLA4,PLB1,PLB2 /
      1   .TRUE.,   7,0.D0,0.D0,0.D0,   1,0.D0,0.D0,0.D0,0.D0,0.D0,0.D0 /
 C
-      DATA PLB3,PLB4,    PLTR, GRID, IDSH,IDOT, LBLF , PRMF ,  ELPF  /
+      DATA PLB3,PLB4,    PDRE, GRID, IDSH,IDOT, LBLF , PRMF ,  ELPF  /
      1     0.D0,0.D0,32768.D0,10.D0,21845,   0,.TRUE.,.TRUE.,.FALSE. /
 C
       DATA IDTL,  OTOL /
@@ -405,7 +405,7 @@ C ULOW, UROW, VBOW, and VTOW define the fraction of the plotter frame
 C to be occupied by the map - they may be thought of as the first four
 C arguments of the SET call or, in the GKS scheme, as the viewport.
 C They are computed by MDPINT.  ULOW and UROW are given default values
-C to prevent code in MDSETI and MDSETR from blowing up when PLTR is
+C to prevent code in MDSETI and MDSETR from blowing up when PDRE is
 C set prior to the first call to MDPINT.
 C
       DATA ULOW,UROW / 0.D0,1.D0 /
@@ -429,8 +429,8 @@ C
 C DPLT is the mimimum vector length; MAPIT requires two points to be at
 C least DPLT plotter units apart before it will join them with a vector.
 C DDTS is the desired distance in plotter units between dots in a dotted
-C outline.  These values are relative to the "plotter resolution" PLTR;
-C DPLT/PLTR is a fraction of the plotter frame.  DSCA is the ratio of
+C outline.  These values are relative to the "plotter resolution" PDRE;
+C DPLT/PDRE is a fraction of the plotter frame.  DSCA is the ratio of
 C the length of a vector, measured in plotter units, to the length of
 C the same vector, measured in the u/v plane.  Thus, given a vector of
 C length D in the u/v plane, D*DSCA is its length in plotter units.
@@ -572,12 +572,12 @@ C mostly to protect the transformation routines from blowing up if they
 C are erroneously called prior to a call to MDQINI.
 C
         COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
      +                   ELPM
         DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PHOC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
+     +                   OOPI,PLNC,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
      +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
      +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
 C
@@ -600,7 +600,7 @@ C
         DATA IPRJ / 16 /
         DATA IROD / 1 /
         DATA OOPI / .318309886183790D0 /
-        DATA PHOC / 0.D0 /
+        DATA PLNC / 0.D0 /
         DATA PI   / 3.14159265358979D0 /
         DATA PIOT / 1.57079632679489D0 /
         DATA ROTA / 0.D0 /

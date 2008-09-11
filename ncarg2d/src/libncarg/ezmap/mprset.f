@@ -1,5 +1,5 @@
 C
-C $Id: mprset.f,v 1.14 2008-09-04 19:57:00 kennison Exp $
+C $Id: mprset.f,v 1.15 2008-09-11 04:11:38 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

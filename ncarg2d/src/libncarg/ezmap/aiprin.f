@@ -1,5 +1,5 @@
 C
-C $Id: aiprin.f,v 1.1 2008-09-04 20:02:20 kennison Exp $
+C $Id: aiprin.f,v 1.2 2008-09-11 04:11:35 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

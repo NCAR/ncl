@@ -1,5 +1,5 @@
 C
-C $Id: mdgcog.f,v 1.5 2008-09-04 19:56:58 kennison Exp $
+C $Id: mdgcog.f,v 1.6 2008-09-11 04:11:36 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -42,7 +42,7 @@ C
           WCRD=SIN(RLAT)
           CALL MDRITD (2,90.D0-CLAT,UCRD,VCRD,WCRD)
           CALL MDRITD (3,      CLON,UCRD,VCRD,WCRD)
-          ALAT(IPNT)=RTOD*ASIN(WCRD)
+          ALAT(IPNT)=RTOD*ASIN(MAX(-1.D0,MIN(+1.D0,WCRD)))
           ALON(IPNT)=RTOD*ATAN2(VCRD,UCRD)
   101   CONTINUE
 C

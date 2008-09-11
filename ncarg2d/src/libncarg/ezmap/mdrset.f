@@ -1,5 +1,5 @@
 C
-C $Id: mdrset.f,v 1.7 2008-09-04 19:56:59 kennison Exp $
+C $Id: mdrset.f,v 1.8 2008-09-11 04:11:37 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -12,8 +12,8 @@ C
 C Declare required common blocks.  See MAPBDX for descriptions of these
 C common blocks and the variables in them.
 C
-        COMMON /MAPCM1/  COSO,COSR,PHOC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PHOC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -30,12 +30,12 @@ C
         REAL             BLAG,SLAG,BLOG,SLOG,PNTS
         SAVE   /MAPCM3/
 C
-        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        COMMON /MAPCM4/  GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW,IDOT,IDSH,IDTL,ILCW,
      +                   ILTS,JPRJ,ELPF,INTF,LBLF,PRMF
-        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PHIA,PHIO,PLA1,
-     +                   PLA2,PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLTR,ROTA,
+        DOUBLE PRECISION GRDR,GRID,GRLA,GRLO,GRPO,OTOL,PDRE,PLA1,PLA2,
+     +                   PLA3,PLA4,PLB1,PLB2,PLB3,PLB4,PLNO,PLTO,ROTA,
      +                   SRCH,XLOW,XROW,YBOW,YTOW
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
@@ -101,8 +101,7 @@ C
         GRLA=0.D0
         GRLO=0.D0
         GRPO=90.D0
-        PHIA=0.D0
-        PHIO=0.D0
+        PDRE=32768.D0
         PLA1=0.D0
         PLA2=0.D0
         PLA3=0.D0
@@ -111,7 +110,8 @@ C
         PLB2=0.D0
         PLB3=0.D0
         PLB4=0.D0
-        PLTR=32768.D0
+        PLNO=0.D0
+        PLTO=0.D0
         ROTA=0.D0
         SRCH=1.D0
         XLOW=.05D0
