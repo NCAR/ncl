@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.10 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdptri.f,v 1.11 2008-09-11 20:49:15 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -228,28 +228,6 @@ C
         GO TO 199
 C
 C Cylindrical equidistant, arbitrary pole and orientation.
-C
-C Note (09/10/2008): Originally, the code for this projection looked
-C quite different:
-C
-C 107  IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
-C      ANGA=DTOR*(90.D0-VTMP)
-C      SINA=SIN(ANGA)
-C      COSA=COS(ANGA)
-C      ANGU=DTOR*UTMP
-C      SINU=SIN(ANGU)
-C      COSU=COS(ANGU)
-C      SINB=SINU*COSR+COSU*SINR
-C      COSB=SINU*SINR-COSU*COSR
-C      GO TO 199
-C
-C This is because the technique for doing cylindrical and mixed
-C projections depended on the way in which azimuthal projections
-C were done.  This is no longer the case.
-C
-C (This comment is for use in the unlikely event that the need arises
-C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
-C all comments about it.)
 C
   107   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
         RLAP=VTMP*DTOR

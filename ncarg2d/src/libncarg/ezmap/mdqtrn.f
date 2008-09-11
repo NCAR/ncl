@@ -1,5 +1,5 @@
 C
-C $Id: mdqtrn.f,v 1.5 2008-09-11 04:11:37 kennison Exp $
+C $Id: mdqtrn.f,v 1.6 2008-09-11 20:49:15 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -128,22 +128,26 @@ C
 C Not Lambert conformal conic.  Calculate constants common to most of
 C the other projections.
 C
-C Note (09/10/2008): This code treats the azimuthal projections and the
-C cylindrical and mixed projections differently.  Originally, the code
-C for "IPRJ.GE.7" (the second block of the block-IF) wasn't there; the
-C statement "IF (COSA.LT. ... " read "IF (IPRJ.GE.7.OR.COSA.LT. ...".
-C This had the undesirable effect of treating certain points on the
-C globe as not projectable when, if fact, they were.
-C
-C (This comment is for use in the unlikely event that the need arises
-C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
-C all comments about it.)
-C
   103   SINL=SIN(U*DTOR)
         COSL=COS(U*DTOR)
         SINP=SIN(V*DTOR)
         COSP=COS(V*DTOR)
+C
         IF (IPRJ.LT.7) THEN
+C
+C The following code is for the azimuthal projections.  It computes the
+C sines and cosines of two angles: A, which is the angular distance from
+C the point (PLAT,PLON) to the point (RLAT,RLON-PLON); and B, which is
+C the angle, in the projection plane, of the line from the origin of the
+C U/V plane to the projection of the point (RLAT,RLON-PLON), measured
+C clockwise from the positive V axis, prior to the rotation implied by
+C the value of ROTA.  These equations may be derived by expressing the
+C coordinates of (RLAT,RLON-PLON) in an XYZ system and then applying a
+C transformation carrying (PLAT,PLON) into the North Pole.  Computing
+C the sines and cosines of A and B then becomes relatively easy.  (The
+C only kind of difficult step is justifying the division by the sine of
+C A in the expressions for the sine and cosine of B.)
+C 
           TCOS=COSP*COSL
           COSA=MAX(-1.D0,MIN(+1.D0,SINP*SINO+TCOS*COSO))
           SINA=SQRT(1.D0-COSA*COSA)
@@ -161,12 +165,22 @@ C
           END IF
           SINB=COSP*SINL/SINA
           COSB=(SINP*COSO-TCOS*SINO)/SINA
+C
         ELSE
+C
+C The following code is for the cylindrical and mixed projections.  It
+C expresses the coordinates of (RLAT,RLON-PLON) in an XYZ system,
+C performs two rotations (one that rotates (PLAT,PLON) down to the
+C equator and another that rotates clockwise about the X axis by the
+C angle ROTA), and then recomputes the transformed latitude and
+C longitude (RLAP and RLOP) for use in the projection equations below.
+C
           XVAL=COSL*COSP*COSO+SINP*SINO
           YVAL=SINL*COSP*COSR+(SINP*COSO-COSL*COSP*SINO)*SINR
           ZVAL=(SINP*COSO-COSL*COSP*SINO)*COSR-SINL*COSP*SINR
           RLAP=ASIN(MAX(-1.D0,MIN(+1.D0,ZVAL)))
           RLOP=ATAN2(YVAL,XVAL)
+C
         END IF
 C
 C Jump to code appropriate for the chosen projection.
@@ -237,20 +251,6 @@ C
         GO TO 196
 C
 C Cylindrical equidistant, arbitrary pole and orientation.
-C
-C Note (09/10/2008): Using the abandoned technique mentioned in other
-C notes in MDPIN1 and above, computing the cylindrical equidistant U
-C and V required the following statements:
-C
-C   U=ATAN2(SINB*COSR+COSB*SINR,SINB*SINR-COSB*COSR)*RTOD
-C   V=90.D0-ACOS(COSA)*RTOD.
-C
-C Similar code was required for the non-fast-path versions of all the
-C cylindrical and mixed projections.
-C
-C (This comment is for use in the unlikely event that the need arises
-C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
-C all comments about it.)
 C
   109   U=RLOP*RTOD
         V=RLAP*RTOD
@@ -342,34 +342,34 @@ C
 C
 C Aitoff, fast-path.
 C
-  123   P=DTOR*U
-        RLAP=V*DTOR
+  123   RLAP=V*DTOR
         RLOP=U*DTOR
         CALL AIPROJ (RLAP,RLOP,U,V)
+        P=RLOP
         GO TO 198
 C
 C Hammer, fast-path.
 C
-  124   P=TSRT*U/180.D0
-        RLAP=V*DTOR
+  124   RLAP=V*DTOR
         RLOP=U*DTOR
         CALL HAPROJ (RLAP,RLOP,U,V)
+        P=TSRT*RLOP/PI
         GO TO 198
 C
 C True Mollweide, fast-path.
 C
-  125   P=TSRT*U/180.D0
-        RLAP=V*DTOR
+  125   RLAP=V*DTOR
         RLOP=U*DTOR
         CALL MOPROJ (RLAP,RLOP,U,V)
+        P=TSRT*RLOP/PI
         GO TO 198
 C
 C Winkel tripel, fast-path.
 C
-  126   P=DTOR*U
-        RLAP=V*DTOR
+  126   RLAP=V*DTOR
         RLOP=U*DTOR
         CALL WTPROJ (RLAP,RLOP,U,V)
+        P=RLOP
         GO TO 198
 C
 C Rotated Mercator.

@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.8 2008-09-11 04:11:36 kennison Exp $
+C $Id: mdpin1.f,v 1.9 2008-09-11 20:49:15 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -106,23 +106,6 @@ C
             COSR=COS(ROTA*DTOR)
           END IF
 C
-C Note (09/10/2008): Originally, the arbitrary (non-fast-path) versions
-C of the cylindrical and mixed projections were done using a clumsy
-C technique involving code that appeared to be primarily intended for
-C use in doing azimuthal projections.  This clumsy technique required
-C some other variables to be computed at this point: SINT=COSO*COSR,
-C COST=SQRT(1.D0-SINT**2), PLNC=PLNO-ATAN2(SINR/COST,-COSR*SINO/COST)*
-C RTOD, SINR=SINR*COSO/COST, COSR=-SINO/COST, SINO=SINT, and COSO=COST.
-C As it turns out, these transformations can be done more efficiently,
-C simply, and logically (and in a manner that doesn't pose the risk of
-C dividing by zero), so I have changed the code for them in both the
-C forward and inverse transformation routines and removed the unneeded
-C code here.
-C
-C (This comment is for use in the unlikely event that the need arises
-C to resurrect the technique.  Search for "C Note (09/10/2008)" to find
-C all comments about it.)
-C 
         END IF
 C
         RETURN
