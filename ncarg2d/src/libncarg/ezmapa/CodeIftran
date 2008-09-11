@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.11 2008-09-11 04:13:53 kennison Exp $
+I $Id: CodeIftran,v 1.12 2008-09-11 22:55:03 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -130,8 +130,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -473,7 +473,7 @@ C
 C Lambert conformal conic.
 C
   101     DLAT=GRDR
-          RLON=PLNC+179.999999D0
+          RLON=PLNO+179.999999D0
           IDLT=0
           IDRT=-1
           K=CEIL(180.D0/DLAT)
@@ -490,7 +490,7 @@ C
             CALL MDPITA (RLAT,RLON,2,IAMP,IGRP,IDLT,IDRT)
             CALL MDPIQA (            IAMP,IGRP,IDLT,IDRT)
             IF (ICFELL('MDPBLA',25).NE.0) RETURN
-            RLON=PLNC-179.999999D0
+            RLON=PLNO-179.999999D0
             IDLT=-1
             IDRT=0
           END DO
@@ -536,7 +536,7 @@ C
                   SINP=SINA*COSB
                 END IF
                 RLAT=RTOD*ATAN2(SINP,COSP)
-                RLON=PLNC+RTOD*ATAN2(SINA*SINB,
+                RLON=PLNO+RTOD*ATAN2(SINA*SINB,
      +                         COSA*COSO-SINA*SINO*COSB)
                 IF (ABS(RLON).GT.180.D0) RLON=RLON-SIGN(360.D0,RLON)
                 CALL MDPITA (RLAT,RLON,IPEN,IAMP,IGRP,IDLT,IDRT)
@@ -1059,8 +1059,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -1368,7 +1368,7 @@ C
 C Lambert conformal conic.
 C
   101   DLAT=GRDR
-        RLON=PLNC+179.999999D0
+        RLON=PLNO+179.999999D0
         K=CEIL(180.D0/DLAT)
         DO (I=1,2)
           RLAT=-90.D0
@@ -1382,7 +1382,7 @@ C
           RLAT=RLAT+DLAT
           CALL MDPITM (RLAT,RLON,2,IAM,XCS,YCS,MCS,IAI,IAG,MAI,LPR)
           IF (ICFELL('MDPBLM',28).NE.0) RETURN
-          RLON=PLNC-179.999999D0
+          RLON=PLNO-179.999999D0
         END DO
         INVOKE (TERMINATE-THE-LINE)
         GO TO 108
@@ -1424,7 +1424,7 @@ C
                 SINP=SINA*COSB
               END IF
               RLAT=RTOD*ATAN2(SINP,COSP)
-              RLON=PLNC+RTOD*ATAN2(SINA*SINB,
+              RLON=PLNO+RTOD*ATAN2(SINA*SINB,
      +                             COSA*COSO-SINA*SINO*COSB)
               IF (ABS(RLON).GT.180.D0) RLON=RLON-SIGN(360.D0,RLON)
               CALL MDPITM (RLAT,RLON,IPEN,
@@ -1801,8 +1801,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -1900,8 +1900,8 @@ C
 C
         IF (XLON-RLON.GT.359.999999D0)
           IF (IPRJ.EQ.1)
-            RLON=GLON*CEIL((PLNC-179.999999D0)/GLON)
-            XLON=GLON*FLOR((PLNC+179.999999D0)/GLON)
+            RLON=GLON*CEIL((PLNO-179.999999D0)/GLON)
+            XLON=GLON*FLOR((PLNO+179.999999D0)/GLON)
           ELSE IF (IPRJ.GE.2.AND.IPRJ.LE.15)
             XLON=XLON-GLON
             IF (XLON-RLON.GT.359.999999D0) XLON=XLON-GLON
@@ -1956,11 +1956,11 @@ C (rectangular) perimeter, arrange for the parallels at -90 and/or +90
 C to be drawn.
 C
         IF (IPRJ.EQ.16.OR.IPRJ.EQ.20)
-          CALL MDPTRN (-90.D0,PLNC,U,V)
+          CALL MDPTRN (-90.D0,PLNO,U,V)
           IF (ICFELL('MDPGRM',7).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    SLAT=SLAT-GLAT
-          CALL MDPTRN (+90.D0,PLNC,U,V)
+          CALL MDPTRN (+90.D0,PLNO,U,V)
           IF (ICFELL('MDPGRM',8).NE.0) RETURN
           IF (U.GE.UMIN.AND.U.LE.UMAX.AND.V.GE.VMIN.AND.V.LE.VMAX)
      +                                                    BLAT=BLAT+GLAT
@@ -2105,8 +2105,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -2216,8 +2216,8 @@ C
           ELSE
             CPLT=COS(DTOR*PLTO)
             SPLT=SIN(DTOR*PLTO)
-            CPLN=COS(DTOR*PLNC)
-            SPLN=SIN(DTOR*PLNC)
+            CPLN=COS(DTOR*PLNO)
+            SPLN=SIN(DTOR*PLNO)
           END IF
           CXLT=COS(DTOR*XLAT)
           SXLT=SIN(DTOR*XLAT)
@@ -2468,8 +2468,8 @@ C
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
 C
-        COMMON /MAPCM1/  COSO,COSR,PLNC,SINO,SINR,IPRJ,IROD
-        DOUBLE PRECISION COSO,COSR,PLNC,SINO,SINR
+        COMMON /MAPCM1/  COSO,COSR,SINO,SINR,IPRJ,IROD
+        DOUBLE PRECISION COSO,COSR,SINO,SINR
         INTEGER          IPRJ,IROD
         SAVE   /MAPCM1/
 C
@@ -2579,8 +2579,8 @@ C
           ELSE
             CPLT=COS(DTOR*PLTO)
             SPLT=SIN(DTOR*PLTO)
-            CPLN=COS(DTOR*PLNC)
-            SPLN=SIN(DTOR*PLNC)
+            CPLN=COS(DTOR*PLNO)
+            SPLN=SIN(DTOR*PLNO)
           END IF
           CXLT=COS(DTOR*XLAT)
           SXLT=SIN(DTOR*XLAT)
