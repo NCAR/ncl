@@ -517,6 +517,7 @@ extern NhlErrorTypes erfc_W(void);
 extern NhlErrorTypes write_matrix_W(void);
 extern NhlErrorTypes ctwrap_W(void);
 
+extern NhlErrorTypes kron_product_W(void);
 
 void NclAddUserFuncs(void)
 {
@@ -6722,6 +6723,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     
     NclRegisterFunc(erfc_W,args,"erfc",nargs);
+
+/*
+ * Register "kron_product".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(2);
+
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+
+        NclRegisterFunc(kron_product_W,args,"kron_product",nargs);
 
 /*
  *  Register ctwrap.
