@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV40DataHandler.c,v 1.13 2007-09-26 22:52:19 dbrown Exp $
+ *      $Id: MapV40DataHandler.c,v 1.14 2008-09-12 20:22:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3266,7 +3266,8 @@ static NhlErrorTypes mpGrid
 				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
 				    entry_name);
 		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
-
+		_NHLCALLF(mdplmb,MDPLMB)();
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 	}
 	if (mv40p->usstates_fill_mode != mpNOSET) {
 
@@ -3279,6 +3280,9 @@ static NhlErrorTypes mpGrid
 		subret = _NhlMapgrm(aws,
 				    (_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
 				    entry_name);
+		_NHLCALLF(mdplmb,MDPLMB)();
+		_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
+		
 		if ((ret = MIN(subret,ret)) < NhlWARNING) goto error_ret;
 
 	}

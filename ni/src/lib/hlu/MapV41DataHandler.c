@@ -1,5 +1,5 @@
 /*
- *      $Id: MapV41DataHandler.c,v 1.27 2008-08-11 20:17:09 dbrown Exp $
+ *      $Id: MapV41DataHandler.c,v 1.28 2008-09-12 20:22:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3124,6 +3124,8 @@ static NhlErrorTypes mpGrid
         subret = _NhlMapgrm(aws,(_NHLCALLF(hlumaskgrid,HLUMASKGRID)),
                             entry_name);
         if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
+	_NHLCALLF(mdplmb,MDPLMB)();
+	_NhlLLErrCheckPrnt(NhlWARNING,entry_name);
 
         subret = _NhlIdleWorkspace(aws);
         if ((ret = MIN(subret,ret)) < NhlWARNING) return ret;
