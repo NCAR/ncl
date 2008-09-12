@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.180 2008-09-11 23:35:12 shea Exp $
+;      $Id: contributed.ncl,v 1.181 2008-09-12 21:14:33 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9314,8 +9314,25 @@ end
 function crossp3(a[*][3]:numeric,b[*][3]:numeric)
 ; calculate a cross product:   c = a x b
 begin
-  c      = new ( dimsizes(a), typeof(a), "No_FillValue")
 
+  if (typeof(a).eq."double" .or. typeof(b).eq."double") then
+      if (typeof(a).eq."double") then
+          c = new ( dimsizes(a), "double", getFillValue(a))
+      else
+          c = new ( dimsizes(b), "double", getFillValue(b))
+      end if
+  else
+      if (typeof(a).eq."float" .or. typeof(b).eq."float") then
+          if (typeof(a).eq."float") then
+              c = new ( dimsizes(a), "float", getFillValue(a))
+          else
+              c = new ( dimsizes(b), "float", getFillValue(b))
+          end if
+      else
+          c = new ( dimsizes(a), "integer", getFillValue(a))
+      end if
+  end if
+  
   c(:,0) = a(:,1)*b(:,2)-a(:,2)*b(:,1)
   c(:,1) = a(:,2)*b(:,0)-a(:,0)*b(:,2)
   c(:,2) = a(:,0)*b(:,1)-a(:,1)*b(:,0)
