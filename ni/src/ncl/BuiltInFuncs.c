@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.230 2008-05-23 18:15:42 grubin Exp $
+ *      $Id: BuiltInFuncs.c,v 1.231 2008-09-15 23:01:17 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2175,13 +2175,15 @@ NhlErrorTypes _NclIDelete
 				case Ncl_CoordVar:
 					rlist = data.u.data_obj->obj.parents;
 					while(rlist != NULL) {
+						/* _NclDeleteCoordVar can free the rlist */
+                                                NclRefList *rnext = rlist->next;
 						pobj = _NclGetObj(rlist->pid);
 						if(pobj->obj.obj_type == Ncl_Var) {
 							_NclDeleteCoordVar((NclVar)pobj,NrmQuarkToString(data.u.data_var->var.var_quark));
 						} else {
 							_NclDelParent((NclObj)data.u.data_obj,(NclObj)pobj);
 						}
-						rlist = rlist->next;
+						rlist = rnext;
 					}
 					break;
 				default:
@@ -5409,7 +5411,6 @@ char **endptr;
 		tval = strtol(str,endptr,10);
 	return tval;
 }
-
 NhlErrorTypes _NclIushorttoint
 #if	NhlNeedProto
 (void)
