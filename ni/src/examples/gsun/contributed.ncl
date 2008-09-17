@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.181 2008-09-12 21:14:33 shea Exp $
+;      $Id: contributed.ncl,v 1.182 2008-09-17 23:06:56 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -249,6 +249,10 @@ local dimt, dimf, rfrom, rto, i, dName
 begin                      
   dimf  = dimsizes(var_from)            
   rfrom = dimsizes(dimf)      ; rank of var_from
+
+  if (rfrom.le.2) then
+      return
+  end if
 
   dName = getvardims(var_from)               ; Oct 18, 2005
 
@@ -3363,7 +3367,9 @@ begin
   nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
 
   copy_VarAtts (fi, fo)                         ; copy variable attributes
-  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+  if (nDim.gt.2) then
+      copy_VarCoords_2 (fi, fo)                 ; copy coord variables  
+  end if
 
   fo!(nDim-2) = "Y"                             ; default named dimensions
   fo!(nDim-1) = "X"
@@ -3405,7 +3411,9 @@ begin
   nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
 
   copy_VarAtts     (fi, fo)                     ; copy variable attributes
-  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+  if (nDim.gt.2) then
+      copy_VarCoords_2 (fi, fo)                 ; copy coord variables  
+  end if
                                                 ; except for 2 rightmost
 
   nDim = dimsizes(dimsizes(fo))                 ; # output  dimensions 
@@ -3420,9 +3428,10 @@ begin
    
   return (fo)
 end
+
 ; **********************************************************************
 ; D. Shea
-; wrapper for NCL function "rcm2rgrid"  that copies attributes and coordinate 
+; wrapper for NCL function "rcm2rgrid"  that copies attributes and coordinate
 ; vars.  It adds the longitude and latitude coordinates.
 
 undef ("rcm2rgrid_Wrap")
@@ -3433,30 +3442,39 @@ function rcm2rgrid_Wrap (xi[*][*]:numeric,yi[*][*]:numeric, fi:numeric \
 
 local fo, dimfi, nDim, nD
 begin
-  fo   = rcm2rgrid (xi,yi,fi, xo,yo, Opt)  ; perform interpolation 
-                       
+  fo   = rcm2rgrid (xi,yi,fi, xo,yo, Opt)  ; perform interpolation
+
   dimfi= dimsizes(fi)
-  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+  nDim = dimsizes(dimsizes(fi))            ; number of dimensions
 
-  copy_VarAtts (fi, fo)                         ; copy variable attributes
-  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+  copy_VarAtts (fi, fo)                    ; copy variable attributes
+  if (isatt(fo,"lat2d")) then
+      delete(fo@lat2d)
+  end if
+  if (isatt(fo,"lon2d")) then
+      delete(fo@lon2d)
+  end if
 
-  fo!(nDim-2) = "Y"                             ; default named dimensions
+  if (nDim.gt.2) then
+      copy_VarCoords_2 (fi, fo)            ; copy coord variables
+  end if
+
+  fo!(nDim-2) = "Y"                        ; default named dimensions
   fo!(nDim-1) = "X"
-                                                ; override if possible
+                                           ; override if possible
   if (isdimnamed(xo,0) .and. isdimnamed(yo,0) ) then
-      fo!(nDim-2) = yo!0                        ; if present, use xo name
-      fo!(nDim-1) = xo!0                        ; if present, use xo name
-  else 
-      do nD=nDim-2,nDim-1                       ; two rightmost dimensions
+      fo!(nDim-2) = xo!0                   ; if present, use xo name
+      fo!(nDim-1) = yo!0                   ; if present, use xo name
+  else
+      do nD=nDim-2,nDim-1                  ; two rightmost dimensions
          if (.not.ismissing(fi!nD)) then
-             fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
-         end if                                 ; but change case
+             fo!nD = changeCaseChar(fi!nD) ; if present, use same name
+         end if                            ; but change case
       end do
   end if
 
-  fo&$fo!(nDim-2)$ = yo                         ; create coordinate var 
-  fo&$fo!(nDim-1)$ = xo                         ; two rightmost dimensions
+  fo&$fo!(nDim-2)$ = xo                    ; create coordinate var
+  fo&$fo!(nDim-1)$ = yo                    ; two rightmost dimensions
 
   fo@ncl = "rcm2rgrid used for interpolation"
 
@@ -3482,8 +3500,9 @@ begin
   nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
 
   copy_VarAtts     (fi, fo)                     ; copy variable attributes
-  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
-                                                ; except for 2 rightmost
+  if (nDim.gt.2) then
+      copy_VarCoords_2 (fi, fo)                 ; copy coord variables  
+  end if                                        ; except for 2 rightmost
 
   nDim = dimsizes(dimsizes(fo))                 ; # output  dimensions 
                                                 
@@ -3517,7 +3536,9 @@ begin
   nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
 
   copy_VarAtts (fi, fo)                         ; copy variable attributes
-  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+  if (nDim.gt.2) then
+      copy_VarCoords_2 (fi, fo)                 ; copy coord variables  
+  end if                                        ; except for 2 rightmost
 
   fo!(nDim-2) = "XLAT"                          ; default named dimensions
   fo!(nDim-1) = "XLONG"
