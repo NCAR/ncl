@@ -1,5 +1,5 @@
 C
-C $Id: EzmapDemo.f,v 1.15 2008-09-11 03:31:31 kennison Exp $
+C $Id: EzmapDemo.f,v 1.16 2008-09-18 00:38:09 kennison Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -451,14 +451,6 @@ C
         PRINT * , ' '
         PRINT * , 'Drawing the map.'
 C
-        CALL MAPPOS (XVPL,XVPR,YVPB,YVPT)
-        CALL MAPROJ (PTYP,PLAT,PLON,ROTA)
-        IF (PTYP.EQ.'SV') THEN
-          CALL MPSETR ('SA',SALT)
-          CALL MPSETR ('S1',SAN1)
-          CALL MPSETR ('S2',SAN2)
-        END IF
-        CALL MAPSET (LTYP,PLM1,PLM2,PLM3,PLM4)
         CALL MPSETI ('PE',IPER)
         CALL MPSETI ('EL',IELL)
         CALL MPSETI ('LA',ILBL)
@@ -470,12 +462,26 @@ C
         CALL MPSETR ('GP',1000.*GLAT+GLON)
         CALL MPSETI ('II',1000*IINT+IINT)
         CALL MPSETI ('RP',IRPF)
-        CALL MPSETR ('WS',SLAT)
+        CALL MPSETR ('SL',SLAT)
+C
+        CALL MAPPOS (XVPL,XVPR,YVPB,YVPT)
+C
+        CALL MAPROJ (PTYP,PLAT,PLON,ROTA)
+C
+        IF (PTYP.EQ.'SV') THEN
+          CALL MPSETR ('SA',SALT)
+          CALL MPSETR ('S1',SAN1)
+          CALL MPSETR ('S2',SAN2)
+        END IF
+C
+        CALL MAPSET (LTYP,PLM1,PLM2,PLM3,PLM4)
+C
         IF (PTYP.NE.'UT') THEN
           CALL MAPINT
         ELSE
           CALL MPUTIN (IPRJ,IZON,ISPH,PARA,0.D0,0.D0,0.D0,0.D0)
         END IF
+C
         IF (NERRO(NERR).NE.0) GO TO 901
         CALL GETSET (RVPL,RVPR,RVPB,RVPT,XWDL,XWDR,YWDB,YWDT,LNLG)
         EPSI=1.E-6*MIN(RVPR-RVPL,RVPT-RVPB)
@@ -663,6 +669,7 @@ C
             PRINT * , '  AI => Aitoff'
             PRINT * , '  CE => Cylindrical Equidistant'
             PRINT * , '  EA => Cylindrical Equal-Area'
+            PRINT * , '  ER => Equirectangular'
             PRINT * , '  GN => Gnomonic'
             PRINT * , '  HA => Hammer'
             PRINT * , '  LC => Lambert Conformal Conic'
@@ -684,11 +691,12 @@ C
             READ  '(A2)', CTMP
             CALL MUPPER (CTMP)
             IF (CTMP.EQ.'AE'.OR.CTMP.EQ.'AI'.OR.CTMP.EQ.'CE'.OR.
-     +          CTMP.EQ.'EA'.OR.CTMP.EQ.'GN'.OR.CTMP.EQ.'HA'.OR.
-     +          CTMP.EQ.'LC'.OR.CTMP.EQ.'LE'.OR.CTMP.EQ.'ME'.OR.
-     +          CTMP.EQ.'MO'.OR.CTMP.EQ.'MT'.OR.CTMP.EQ.'OR'.OR.
-     +          CTMP.EQ.'RM'.OR.CTMP.EQ.'ST'.OR.CTMP.EQ.'SV'.OR.
-     +          CTMP.EQ.'RO'.OR.CTMP.EQ.'UT'.OR.CTMP.EQ.'WT') PTYP=CTMP
+     +          CTMP.EQ.'EA'.OR.CTMP.EQ.'ER'.OR.CTMP.EQ.'GN'.OR.
+     +          CTMP.EQ.'HA'.OR.CTMP.EQ.'LC'.OR.CTMP.EQ.'LE'.OR.
+     +          CTMP.EQ.'ME'.OR.CTMP.EQ.'MO'.OR.CTMP.EQ.'MT'.OR.
+     +          CTMP.EQ.'OR'.OR.CTMP.EQ.'RM'.OR.CTMP.EQ.'RO'.OR.
+     +          CTMP.EQ.'ST'.OR.CTMP.EQ.'SV'.OR.CTMP.EQ.'UT'.OR.
+     +          CTMP.EQ.'WT') PTYP=CTMP
             IF (PTYP.EQ.'LC') THEN
               PRINT * , ' '
               PRINT * , 'Current central meridian:      ',PLON
@@ -1844,6 +1852,25 @@ C
               PRINT * , 'Enter new satellite angle 2 (-180 to 180):'
               CALL EMRDRN (SAN2,SAN2)
               SAN2=MAX(-180.,MIN(180.,SAN2))
+            ELSE IF (PTYP.EQ.'EA'.OR.PTYP.EQ.'ER'.OR.PTYP.EQ.'WT') THEN
+              PRINT * , ' '
+              PRINT * , 'The exact nature of this projection depends on'
+              PRINT * , 'the position of a "standard parallel", which'
+              PRINT * , 'is determined by the value of its latitude.'
+              PRINT * , 'The parameter specifying this has the default'
+              PRINT * , 'value -1, allowing Ezmap to choose for itself'
+              PRINT * , 'where to put the standard parallel.'
+              PRINT * , ' '
+              PRINT * , 'Current latitude of standard parallel: ',SLAT
+              PRINT * , ' '
+              PRINT * , 'Be aware that, if you give this parameter a'
+              PRINT * , 'non-negative value, it affects the display of'
+              PRINT * , 'projections of types CE, EA, ER, and WT.'
+              PRINT * , ' '
+              PRINT * , 'Enter new value, between -1 and 90 (-1 to allow
+     + use of built-in defaults):'
+              CALL EMRDRN (SLAT,SLAT)
+              SLAT=MAX(-1.,MIN(90.,SLAT))
             END IF
           END IF
 C
@@ -1968,10 +1995,14 @@ C
                 PRINT * , 'U and V values should range from -pi to +pi.'
               ELSE IF (PTYP.EQ.'CE') THEN
                 PRINT * , 'U values should range from -180 to +180, V va
-     +lues from -90 to +90.'
+     +lues from -90/CSLS to +90/CSLS.'
+                PRINT * , '(CSLS is the square of the cosine of the curr
+     +ent value of the standard latitude.)'
               ELSE IF (PTYP.EQ.'EA') THEN
                 PRINT * , 'U values should range from -pi to +pi, V valu
-     +es from -4/3 to +4/3.'
+     +es from -1/CSLT to +1/CSLT.'
+                PRINT * , '(CSLT is the cosine of the current value of t
+     + he standard latitude.)'
               ELSE IF (PTYP.EQ.'MT') THEN
                 PRINT * , 'U values should range from -2 to +2, V values
      + from -1 to +1.'
@@ -1987,6 +2018,8 @@ C
               ELSE IF (PTYP.EQ.'WT') THEN
                 PRINT * , 'U values should range from -(1+pi/2) to +(1+p
      +i/2), V values from -pi/2 to +pi/2.'
+                PRINT * , '(The exact range depends on the current value
+     + of the standard latitude.)'
               ELSE IF (PTYP.EQ.'UT') THEN
                 PRINT * , ' '
                 PRINT * , 'The ranges of U and V values will depend on'
@@ -2166,7 +2199,7 @@ C
             PRINT * , 'Current longitude line spacing:   ',GSLO
             PRINT * , 'Current polar latitude control:   ',GLAT
             PRINT * , 'Current polar longitude control:  ',GLON
-            PRINT * , 'Current WT standard parallel:     ',SLAT
+            PRINT * , 'Current standard latitude:        ',SLAT
             PRINT * , 'Current RG interpolation control: ',IINT
             PRINT * , 'Current RG data processing flag:  ',IRPF
             PRINT * , ' '
@@ -2214,8 +2247,10 @@ C
             CALL EMRDRN (GLON,GLON)
             GLON=MAX(0.,MIN(90.,GLON))
             PRINT * , ' '
-            PRINT * , 'Enter Winkel tripel standard parallel, between -1
-     + and 90 (-1 for default):'
+            PRINT * , 'Current latitude of standard parallel: ',SLAT
+            PRINT * , ' '
+            PRINT * , 'Enter new value, between -1 and 90 (-1 to allow u
+     +se of built-in defaults):'
             CALL EMRDRN (SLAT,SLAT)
             SLAT=MAX(-1.,MIN(90.,SLAT))
             PRINT * , ' '
@@ -2551,7 +2586,7 @@ C
             CALL MPSETR ('GP',1000.*GLAT+GLON)
             CALL MPSETI ('II',1000*IINT+IINT)
             CALL MPSETI ('RP',IRPF)
-            CALL MPSETR ('WS',SLAT)
+            CALL MPSETR ('SL',SLAT)
             IF (PTYP.NE.'UT') THEN
               CALL MAPINT
             ELSE
@@ -4081,6 +4116,8 @@ C
           PTLB='"MOLLWEIDE-TYPE"'
         ELSE IF (PTYP.EQ.'CE') THEN
           PTLB='CYLINDRICAL EQUIDISTANT'
+        ELSE IF (PTYP.EQ.'ER') THEN
+          PTLB='EQUIRECTANGULAR'
         ELSE IF (PTYP.EQ.'EA') THEN
           PTLB='CYLINDRICAL EQUAL-AREA'
         ELSE IF (PTYP.EQ.'AI') THEN
