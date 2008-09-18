@@ -2,7 +2,7 @@
 .EL I
 
 I
-I $Id: CodeIftran,v 1.12 2008-09-11 22:55:03 kennison Exp $
+I $Id: CodeIftran,v 1.13 2008-09-18 00:39:48 kennison Exp $
 I
 
       FUNCTION MAPACI (IAI)
@@ -159,8 +159,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
-     +                   PDCL(18)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(19),
+     +                   PDCL(19)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -168,6 +168,11 @@ C
         INTEGER          IGI1,IGI2,NCRA,NOVS
         REAL             XCRA,YCRA
         SAVE   /MAPCMC/
+C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -664,7 +669,7 @@ C
             FOR (I = 1 TO 361)
               IF (IPRJ.EQ.7.OR.IPRJ.EQ.16)
                 U=TEMP*RLON-UOFF
-                V=TEMP*RLAT-VOFF
+                V=TEMP*RLAT/CSLT-VOFF
               ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.17.OR.IPRJ.EQ.25)
                 U=TEMP*DTOR*RLON-UOFF
                 V=TEMP*LOG(TAN((MAX(-89.999999D0,
@@ -678,9 +683,9 @@ C
                 END IF
               ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.20)
                 U=TEMP*DTOR*RLON-UOFF
-                V=TEMP*SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
+                V=TEMP*SIN(DTOR*RLAT)/CSLS-VOFF
               ELSE IF (IPRJ.EQ.15.OR.IPRJ.EQ.24)
-                CALL WTPROJ (TEMP*DTOR*RLAT,TEMP*DTOR*RLON,U,V)
+                CALL WTPROJ (TEMP*DTOR*RLAT,TEMP*DTOR*RLON,U,V,CSLT)
                 U=U-UOFF
                 V=V-VOFF
               ELSE
@@ -1092,6 +1097,11 @@ C
         INTEGER          IGI1,IGI2,NCRA,NOVS
         REAL             XCRA,YCRA
         SAVE   /MAPCMC/
+C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -1549,7 +1559,7 @@ C
           FOR (I = 1 TO 361)
             IF (IPRJ.EQ.7.OR.IPRJ.EQ.16)
               U=TEMP*RLON-UOFF
-              V=TEMP*RLAT-VOFF
+              V=TEMP*RLAT/CSLT-VOFF
             ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.17.OR.IPRJ.EQ.25)
               U=TEMP*DTOR*RLON-UOFF
               V=TEMP*LOG(TAN((MAX(-89.999999D0,
@@ -1562,9 +1572,9 @@ C
               END IF
             ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.20)
               U=TEMP*DTOR*RLON-UOFF
-              V=TEMP*SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
+              V=TEMP*SIN(DTOR*RLAT)/CSLS-VOFF
             ELSE IF (IPRJ.EQ.15.OR.IPRJ.EQ.24)
-              CALL WTPROJ (TEMP*DTOR*RLAT,TEMP*DTOR*RLON,U,V)
+              CALL WTPROJ (TEMP*DTOR*RLAT,TEMP*DTOR*RLON,U,V,CSLT)
               U=U-UOFF
               V=V-VOFF
             ELSE
