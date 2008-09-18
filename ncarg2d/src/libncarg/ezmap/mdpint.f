@@ -1,5 +1,5 @@
 C
-C $Id: mdpint.f,v 1.12 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdpint.f,v 1.13 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -54,8 +54,9 @@ C
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
 C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
         SAVE  /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -194,8 +195,8 @@ C Cylindrical equidistant.
 C
   104   UMIN=-180.D0
         UMAX=+180.D0
-        VMIN= -90.D0
-        VMAX= +90.D0
+        VMIN= -90.D0/CSLT
+        VMAX= +90.D0/CSLT
         GO TO 112
 C
 C Mollweide-type.
@@ -218,8 +219,8 @@ C Cylindrical equal-area.
 C
   107   UMIN=-PI
         UMAX=+PI
-        VMIN=-4.D0/3.D0
-        VMAX=+4.D0/3.D0
+        VMIN=-1./CSLS
+        VMAX=+1./CSLS
         GO TO 112
 C
 C Aitoff.
@@ -447,8 +448,8 @@ C Cylindrical equidistant.
 C
   407   UMIN=-AUMN
         UMAX=+AUMX
-        VMIN=-AVMN
-        VMAX=+AVMX
+        VMIN=-AVMN/CSLT
+        VMAX=+AVMX/CSLT
         GO TO 600
 C
 C Mercator.
@@ -480,8 +481,8 @@ C Cylindrical equal-area.
 C
   411   UMIN=-AUMN*DTOR
         UMAX=+AUMX*DTOR
-        VMIN=-SVMI*4.D0/3.D0
-        VMAX=+SVMA*4.D0/3.D0
+        VMIN=-SVMI/CSLS
+        VMAX=+SVMA/CSLS
         GO TO 600
 C
 C Aitoff.

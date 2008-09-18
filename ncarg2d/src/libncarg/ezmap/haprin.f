@@ -1,5 +1,5 @@
 C
-C $Id: haprin.f,v 1.3 2008-09-11 22:53:32 kennison Exp $
+C $Id: haprin.f,v 1.4 2008-09-18 00:42:16 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

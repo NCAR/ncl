@@ -1,5 +1,5 @@
 C
-C $Id: mdqtra.f,v 1.5 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdqtra.f,v 1.6 2008-09-18 00:42:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,15 +15,15 @@ C Declare a special common block, containing only those variables that
 C MDQINI needs to set to make MDQTRA, MDQTRI, and MDQTRN carry out the
 C transformation in effect at the time MDQINI was called.
 C
-        COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
-     +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
-     +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
-     +                   ELPM
-        DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
-     +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
-     +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
+        COMMON /MAQCMN/  ALFA,COSO,COSR,CSLS,CSLT,DCSA,DCSB,DSNA,DSNB,
+     +                   DTOR,DTRH,OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,
+     +                   SALT,SINO,SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,
+     +                   UOFF,URNM,VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,
+     +                   IPRJ,IROD,ELPM
+        DOUBLE PRECISION ALFA,COSO,COSR,CSLS,CSLT,DCSA,DCSB,DSNA,DSNB,
+     +                   DTOR,DTRH,OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,
+     +                   SALT,SINO,SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,
+     +                   UOFF,URNM,VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
 C
         INTEGER IPRF,IPRJ,IROD
 C

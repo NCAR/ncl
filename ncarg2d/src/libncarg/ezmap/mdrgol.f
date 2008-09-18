@@ -1,5 +1,5 @@
 C
-C $Id: mdrgol.f,v 1.11 2008-09-11 22:53:34 kennison Exp $
+C $Id: mdrgol.f,v 1.12 2008-09-18 00:42:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research

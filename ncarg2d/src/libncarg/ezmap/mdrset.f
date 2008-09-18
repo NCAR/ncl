@@ -1,5 +1,5 @@
 C
-C $Id: mdrset.f,v 1.9 2008-09-11 22:53:34 kennison Exp $
+C $Id: mdrset.f,v 1.10 2008-09-18 00:42:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -41,8 +41,8 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
-     +                   PDCL(18)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(19),
+     +                   PDCL(19)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -71,6 +71,11 @@ C
         COMMON /MAPCMQ/  ICIN(8)
         INTEGER          ICIN
         SAVE   /MAPCMQ/
+C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
 C
         COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
         INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
@@ -142,6 +147,10 @@ C
         DO 101 I=1,8
           ICIN(I)=-1
   101   CONTINUE
+        CSLT=1.D0
+        CSLS=1.D0
+        SLTD=0.D0
+        ISLT=0
         DO 102 I=1,5
           ICOL(I)=1
           ICSF(I)=MOD(I-1,2)

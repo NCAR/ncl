@@ -1,5 +1,5 @@
 C
-C $Id: wtprin.f,v 1.3 2008-09-11 22:53:34 kennison Exp $
+C $Id: wtprin.f,v 1.4 2008-09-18 00:42:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -7,9 +7,9 @@ C                All Rights Reserved
 C
 C The use of this Software is governed by a License Agreement.
 C
-      SUBROUTINE WTPRIN (UVAL,VVAL,DLAT,DLON)
+      SUBROUTINE WTPRIN (UVAL,VVAL,DLAT,DLON,CSLT)
 C
-        DOUBLE PRECISION UVAL,VVAL,DLAT,DLON
+        DOUBLE PRECISION UVAL,VVAL,DLAT,DLON,CSLT
 C
 C The subroutine WTPRIN implements the inverse of the Winkel tripel
 C projection, using an iterative algorithm due to Cengizhan Ipbuker,
@@ -22,6 +22,8 @@ C Computational Applications, September 4-6, 2002 (pp. 175-182).
 C
 C UVAL and VVAL are input values of U and V, in the projection plane.
 C DLAT and DLON are output values of latitude and longitude, in radians.
+C CSLT is the cosine of the standard parallel of the Winkel tripel, for
+C which Winkel used ACOS(2/PI); in EZMAP, though, it is allowed to vary.
 C
 C The common block MAPCM0 contains mathematical constants.
 C
@@ -30,13 +32,6 @@ C
         DOUBLE PRECISION COS1,DTOR,DTRH,OOPI,PI,PIOF,PIOT,RTDD,RTOD,
      +                   SROT,SIN1,TOPI,TSRT
         SAVE   /MAPCM0/
-C
-C CSLT is the cosine of the standard parallel of the Winkel tripel, for
-C which Winkel used ACOS(2/PI); in EZMAP, though, it is allowed to vary.
-C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
-        SAVE  /MAPCMW/
 C
 C Local variables.
 C

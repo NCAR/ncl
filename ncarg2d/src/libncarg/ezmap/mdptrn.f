@@ -1,5 +1,5 @@
 C
-C $Id: mdptrn.f,v 1.12 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdptrn.f,v 1.13 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -51,6 +51,11 @@ C
         DOUBLE PRECISION P,Q,R
         SAVE   /MAPCM8/
 C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
+C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         SAVE   /MAPSAT/
@@ -98,14 +103,17 @@ C
           V=-V
         END IF
 C
-C Take fast paths for simple cylindrical projections.
+C Jump to the proper piece of code, depending on the projection type.
 C
-        IF (IPRJ-16) 100,197,118
+C Projection:   US  LC  ST  OR  LE  GN  AE
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
+C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
+C                       RM
 C
-C No fast path.  Sort out the USGS transformations and the Lambert
-C conformal conic from the rest.
-C
-  100   IF (IPRJ-1) 101,102,103
+        GO TO (101,102,103,103,103,103,103,
+     +             103,103,103,103,103,103,103,103,103,
+     +             118,119,120,121,122,123,124,125,126,
+     +                 127                            ) , IPRJ+1
 C
 C USGS projections.
 C
@@ -282,7 +290,7 @@ C
 C Cylindrical equidistant, arbitrary pole and orientation.
 C
   109   U=RLOP*RTOD
-        V=RLAP*RTOD
+        V=RLAP*RTOD/CSLT
         GO TO 197
 C
 C Mercator, arbitrary pole and orientation.
@@ -309,7 +317,7 @@ C
 C Cylindrical equal-area, arbitrary pole and orientation.
 C
   113   U=RLOP
-        V=SIN(RLAP)*4.D0/3.D0
+        V=SIN(RLAP)/CSLS
         GO TO 197
 C
 C Aitoff, arbitrary pole and orientation.
@@ -332,15 +340,14 @@ C
 C
 C Winkel tripel, arbitrary pole and orientation.
 C
-  117   CALL WTPROJ (RLAP,RLOP,U,V)
+  117   CALL WTPROJ (RLAP,RLOP,U,V,CSLT)
         P=RLOP
         GO TO 198
 C
-C Fast-path cylindrical projections (with PLAT=0, ROTA=0 or 180).
+C Cylindrical equidistant, fast-path.
 C
-C Projection:   ME  MT  RO  EA  AI  HA  MO  WT  RM  (fast-path)
-C
-  118   GO TO (119,120,121,122,123,124,125,126,127) , IPRJ-16
+  118   V=V/CSLT
+        GO TO 197
 C
 C Mercator, fast-path.
 C
@@ -366,7 +373,7 @@ C
 C Cylindrical equal-area, fast-path.
 C
   122   U=U*DTOR
-        V=SIN(V*DTOR)*4.D0/3.D0
+        V=SIN(V*DTOR)/CSLS
         GO TO 197
 C
 C Aitoff, fast-path.
@@ -397,7 +404,7 @@ C Winkel tripel, fast-path.
 C
   126   RLAP=V*DTOR
         RLOP=U*DTOR
-        CALL WTPROJ (RLAP,RLOP,U,V)
+        CALL WTPROJ (RLAP,RLOP,U,V,CSLT)
         P=RLOP
         GO TO 198
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mdgetd.f,v 1.8 2008-09-11 22:53:32 kennison Exp $
+C $Id: mdgetd.f,v 1.9 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,8 +36,9 @@ C
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
 C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
         SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -95,8 +96,7 @@ C
         ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
           DVAL=SRCH
         ELSE IF (WHCH(1:2).EQ.'WS'.OR.WHCH(1:2).EQ.'ws') THEN
-          IF (CSLT.LT.0.D0.OR.CSLT.GT.90.D0) CSLT=2.D0/PI
-          DVAL=MAX(0.D0,MIN(90.D0,RTOD*ACOS(CSLT)))
+          DVAL=SLTD
         ELSE IF (WHCH(1:2).EQ.'XL'.OR.WHCH(1:2).EQ.'xl') THEN
           DVAL=XLOW
         ELSE IF (WHCH(1:2).EQ.'XR'.OR.WHCH(1:2).EQ.'xr') THEN

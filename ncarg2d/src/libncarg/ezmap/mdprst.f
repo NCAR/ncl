@@ -1,5 +1,5 @@
 C
-C $Id: mdprst.f,v 1.8 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdprst.f,v 1.9 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -44,6 +44,11 @@ C
         INTEGER          ICIN
         SAVE   /MAPCMQ/
 C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
+C
         COMMON /MAPRGD/  ICOL(5),ICSF(5),IDPF,LCRA,NILN,NILT,OLAT,OLON
         INTEGER          ICOL,ICSF,IDPF,LCRA,NILN,NILT
         REAL             OLAT,OLON
@@ -66,7 +71,8 @@ C
      +                              ILTS,JPRJ,ELPF,LBLF,PRMF,DDTS,DPLT,
      +                              IGI1,IGI2,NOVS,ICIN,ALFA,BETA,DCSA,
      +                              DCSB,DSNA,DSNB,SALT,SSMO,SRSS,ICOL,
-     +                              ICSF,NILN,NILT,IDPF
+     +                              ICSF,NILN,NILT,IDPF,ISLT,SLTD,CSLT,
+     +                              CSLS
 C
 C Re-initialize EZMAP.
 C

@@ -1,5 +1,5 @@
 C
-C $Id: mdsetd.f,v 1.9 2008-09-11 22:53:34 kennison Exp $
+C $Id: mdsetd.f,v 1.10 2008-09-18 00:42:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -47,8 +47,9 @@ C
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
 C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
         SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -85,6 +86,19 @@ C
             SRSS=SQRT(SSMO)
           END IF
           INTF=.TRUE.
+        ELSE IF (WHCH(1:2).EQ.'SL'.OR.WHCH(1:2).EQ.'sl') THEN
+          IF (DVAL.LT.0.D0.OR.DVAL.GT.90.D0) THEN
+            ISLT=0
+            SLTD=0.D0
+            CSLT=1.D0
+            CSLS=1.D0
+          ELSE
+            ISLT=1
+            SLTD=MAX(0.D0,MIN(90.D0,DVAL))
+            CSLT=COS(DTOR*SLTD)
+            CSLS=CSLT*CSLT
+          END IF
+          INTF=.TRUE.
         ELSE IF (WHCH(1:2).EQ.'S1'.OR.WHCH(1:2).EQ.'s1') THEN
           ALFA=ABS(DVAL)
           DSNA=SIN(DTOR*ALFA)
@@ -97,13 +111,6 @@ C
           INTF=.TRUE.
         ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
           SRCH=MAX(.001D0,MIN(10.D0,DVAL))
-          INTF=.TRUE.
-        ELSE IF (WHCH(1:2).EQ.'WS'.OR.WHCH(1:2).EQ.'ws') THEN
-          IF (DVAL.LT.0.D0.OR.DVAL.GT.90.D0) THEN
-            CSLT=2.D0/PI
-          ELSE
-            CSLT=COS(DTOR*DVAL)
-          END IF
           INTF=.TRUE.
         ELSE
           GO TO 901

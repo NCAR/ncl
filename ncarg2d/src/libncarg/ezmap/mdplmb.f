@@ -1,5 +1,5 @@
 C
-C $Id: mdplmb.f,v 1.11 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdplmb.f,v 1.12 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -47,6 +47,11 @@ C
         COMMON /MAPCMA/  DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
+C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -420,7 +425,7 @@ C
         DO 113 I=1,361
           IF (IPRJ.EQ.7.OR.IPRJ.EQ.16) THEN
             U=RLON-UOFF
-            V=RLAT-VOFF
+            V=RLAT/CSLT-VOFF
           ELSE IF (IPRJ.EQ.8.OR.IPRJ.EQ.17.OR.IPRJ.EQ.25) THEN
             U=DTOR*RLON-UOFF
             V=LOG(TAN((MAX(-89.999999D0,
@@ -433,9 +438,9 @@ C
             END IF
           ELSE IF (IPRJ.EQ.11.OR.IPRJ.EQ.20) THEN
             U=DTOR*RLON-UOFF
-            V=SIN(DTOR*RLAT)*4.D0/3.D0-VOFF
+            V=SIN(DTOR*RLAT)/CSLS-VOFF
           ELSE IF (IPRJ.EQ.15.OR.IPRJ.EQ.24) THEN
-            CALL WTPROJ (DTOR*RLAT,DTOR*RLON,U,V)
+            CALL WTPROJ (DTOR*RLAT,DTOR*RLON,U,V,CSLT)
             U=U-UOFF
             V=V-VOFF
           ELSE

@@ -1,5 +1,5 @@
 C
-C $Id: mdqini.f,v 1.5 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdqini.f,v 1.6 2008-09-18 00:42:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -69,6 +69,11 @@ C
         DOUBLE PRECISION P,Q,R
         SAVE   /MAPCM8/
 C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
+C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         SAVE   /MAPSAT/
@@ -93,11 +98,11 @@ C Call MDQIN2 to transfer variables from the common blocks above to a
 C special common block used only by the transformation routines with
 C names of the form M[AD]QTR[AIN].
 C
-        CALL MDQIN2 (ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +               OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
-     +               SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
-     +               VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
-     +               ELPM)
+        CALL MDQIN2 (ALFA,COSO,COSR,CSLS,CSLT,DCSA,DCSB,DSNA,DSNB,
+     +               DTOR,DTRH,OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,
+     +               SALT,SINO,SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,
+     +               UOFF,URNM,VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,
+     +               IPRJ,IROD,ELPM)
 C
 C Done.
 C

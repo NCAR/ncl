@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.10 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdpin1.f,v 1.11 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -33,6 +33,11 @@ C
         INTEGER          IDOT,IDSH,IDTL,ILCW,ILTS,JPRJ
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
+C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE  /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -88,6 +93,20 @@ C
           END IF
 C
         ELSE
+C
+C If an equirectangular or cylindrical equal-area projection is in use,
+C make sure the standard latitude is not too close to 90.  If it were
+C exactly 90, we'd get a divide by zero.  In any case, for values too
+C close to 90, we get a tall skinny projection that's pretty useless.
+C
+          IF (IPRJ.EQ.7.OR.IPRJ.EQ.11) THEN
+            IF (SLTD.GT.89.999D0) THEN
+              ISLT=0
+              SLTD=89.999D0
+              CSLT=COS(DTOR*SLTD)
+              CSLS=CSLT*CSLT
+            END IF
+          END IF
 C
 C See if fast-path transformations can by used (type cylindrical or
 C mixed, PLAT=0, and ROTA=0 or 180) and, if so, arrange for it.  If

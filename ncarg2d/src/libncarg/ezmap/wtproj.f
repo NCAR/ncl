@@ -1,5 +1,5 @@
 C
-C $Id: wtproj.f,v 1.3 2008-09-11 22:53:34 kennison Exp $
+C $Id: wtproj.f,v 1.4 2008-09-18 00:42:18 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -7,9 +7,9 @@ C                All Rights Reserved
 C
 C The use of this Software is governed by a License Agreement.
 C
-      SUBROUTINE WTPROJ (DLAT,DLON,UVAL,VVAL)
+      SUBROUTINE WTPROJ (DLAT,DLON,UVAL,VVAL,CSLT)
 C
-        DOUBLE PRECISION DLAT,DLON,UVAL,VVAL
+        DOUBLE PRECISION DLAT,DLON,UVAL,VVAL,CSLT
 C
 C The subroutine WTPROJ implements a closed form of the Winkel tripel
 C projection, using formulas identical to those given on various Web
@@ -19,13 +19,8 @@ C For efficiency, this function is incorporated into the local code.
 C
 C DLAT and DLON are input values of latitude and longitude, in radians.
 C UVAL and VVAL are output values of U and V, in the projection plane.
-C
 C CSLT is the cosine of the standard parallel of the Winkel tripel, for
 C which Winkel used ACOS(2/PI); in EZMAP, though, it is allowed to vary.
-C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
-        SAVE  /MAPCMW/
 C
 C Local variable.
 C

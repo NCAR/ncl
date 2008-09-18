@@ -1,5 +1,5 @@
 C
-C $Id: mdpio.f,v 1.11 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdpio.f,v 1.12 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -25,8 +25,8 @@ C
         REAL             BLAG,SLAG,BLOG,SLOG,PNTS
         SAVE   /MAPCM3/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
-     +                   PDCL(18)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(19),
+     +                   PDCL(19)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C

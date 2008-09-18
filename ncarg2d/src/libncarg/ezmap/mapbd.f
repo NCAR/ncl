@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.28 2008-09-11 22:53:32 kennison Exp $
+C $Id: mapbd.f,v 1.29 2008-09-18 00:42:16 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -69,8 +69,8 @@ C
 C The common block MAPCM5 contains various lists ("dictionaries") of
 C two-character codes required by EZMAP for parameter-setting.
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
-     +                   PDCL(18)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(19),
+     +                   PDCL(19)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
@@ -129,8 +129,9 @@ C
 C The common block MAPCMW contains a constant affecting the definition
 C of the Winkel tripel projection.
 C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
         SAVE  /MAPCMW/
 C
 C The common blocks MAPCMX and MAPCMY contain variables used by the new
@@ -380,10 +381,10 @@ C
 C
       DATA PDCT
      +        / 'UT','LC','ST','OR','LE','GN','AE','CE','ME','MT',
-     +          'RO','EA','AI','HA','MO','WT','SV','RM' /
+     +          'RO','EA','AI','HA','MO','WT','SV','ER','RM' /
       DATA PDCL
      +        / 'ut','lc','st','or','le','gn','ae','ce','me','mt',
-     +          'ro','ea','ai','ha','mo','wt','sv','rm' /
+     +          'ro','ea','ai','ha','mo','wt','sv','er','rm' /
 C
 C Variables in MAPCM6:
 C
@@ -474,12 +475,14 @@ C
 C
 C Variables in MAPCMW:
 C
-C CSLT is the cosine of the standard parallel of the Winkel tripel, for
-C which Winkel used ACOS(2/PI); in EZMAP, though, it is allowed to vary.
-C A negative value is a signal to the routine MDPROJ that it should set
-C the value of CSLT to its standard default.
+C SLTD is a "standard latitude" that affects the behavior of certain
+C projections: the cylindrical equidistant (or equirectangular), the
+C cylindrical equal-area, and the Winkel tripel.  CSLT is the cosine
+C of SLTD and CSLS is the square of CSLT.  ISLT is 0 if SLTD has been
+C set by default or as a side effect of using a particular projection,
+C 1 if SLTD has been set by the user.
 C
-      DATA CSLT / -1. /
+      DATA CSLS,CSLT,SLTD,ISLT / 1.D0,1.D0,0.D0,0 /
 C
 C Variables in MAPCMX and MAPCMY:
 C
@@ -570,15 +573,15 @@ C commenting for BLOCKDATA MAPBDX.  They are given default values here
 C mostly to protect the transformation routines from blowing up if they
 C are erroneously called prior to a call to MDQINI.
 C
-        COMMON /MAQCMN/  ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
-     +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
-     +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,IPRJ,IROD,
-     +                   ELPM
-        DOUBLE PRECISION ALFA,COSO,COSR,DCSA,DCSB,DSNA,DSNB,DTOR,DTRH,
-     +                   OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,SALT,SINO,
-     +                   SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,UOFF,URNM,
-     +                   VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
+        COMMON /MAQCMN/  ALFA,COSO,COSR,CSLS,CSLT,DCSA,DCSB,DSNA,DSNB,
+     +                   DTOR,DTRH,OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,
+     +                   SALT,SINO,SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,
+     +                   UOFF,URNM,VCNM,VMNM,VMXM,VOFF,VRNM,UTPA,IPRF,
+     +                   IPRJ,IROD,ELPM
+        DOUBLE PRECISION ALFA,COSO,COSR,CSLS,CSLT,DCSA,DCSB,DSNA,DSNB,
+     +                   DTOR,DTRH,OOPI,PLNO,  PI,PIOT,ROTA,RTDD,RTOD,
+     +                   SALT,SINO,SINR,SRSS,SSMO,TOPI,UCNM,UMNM,UMXM,
+     +                   UOFF,URNM,VCNM,VMNM,VMXM,VOFF,VRNM,UTPA(15)
 C
         INTEGER IPRF,IPRJ,IROD
 C
@@ -589,6 +592,8 @@ C
         DATA ALFA / 0.D0 /
         DATA COSO / 1.D0 /
         DATA COSR / 1.D0 /
+        DATA CSLS / 1.D0 /
+        DATA CSLT / 1.D0 /
         DATA DCSA / 1.D0 /
         DATA DCSB / 1.D0 /
         DATA DSNA / 0.D0 /

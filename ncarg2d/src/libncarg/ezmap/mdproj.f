@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.10 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdproj.f,v 1.11 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,13 +32,14 @@ C
         LOGICAL          ELPF,INTF,LBLF,PRMF
         SAVE   /MAPCM4/
 C
-        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(18),
-     +                   PDCL(18)
+        COMMON /MAPCM5/  DDCT(5),DDCL(5),LDCT(6),LDCL(6),PDCT(19),
+     +                   PDCL(19)
         CHARACTER*2      DDCT,DDCL,LDCT,LDCL,PDCT,PDCL
         SAVE   /MAPCM5/
 C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
         SAVE  /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -55,8 +56,8 @@ C
 C
 C Transfer the parameters defining the projection.
 C
-        I=IDICTL(ARG1,PDCT,18)
-        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,18)
+        I=IDICTL(ARG1,PDCT,19)
+        IF (I.EQ.0) I=IDICTL(ARG1,PDCL,19)
         IF (I.EQ.0) GO TO 901
 C
         JPRJ=I-1
@@ -68,8 +69,23 @@ C
         IF (JPRJ.EQ.3) THEN
           CALL MDSETD ('SA',0.D0)
           IF (ICFELL('MDPROJ',2).NE.0) RETURN
+        ELSE IF (JPRJ.EQ.7) THEN
+          ISLT=0
+          CSLT=1.D0
+          CSLS=1.D0
+          SLTD=0.D0
+        ELSE IF (JPRJ.EQ.11) THEN
+          IF (ISLT.EQ.0) THEN
+            SLTD=30.D0
+            CSLT=COS(DTOR*SLTD)
+            CSLS=CSLT*CSLT
+          END IF
         ELSE IF (JPRJ.EQ.15) THEN
-          IF (CSLT.LT.0.D0) CSLT=2.D0/PI
+          IF (ISLT.EQ.0) THEN
+            CSLT=2.D0/PI
+            CSLS=CSLT*CSLT
+            SLTD=RTOD*ACOS(CSLT)
+          END IF
         ELSE IF (JPRJ.EQ.16) THEN
           JPRJ=3
           IF (ABS(SALT).LE.1.D0) THEN
@@ -77,6 +93,13 @@ C
             IF (ICFELL('MDPROJ',3).NE.0) RETURN
           END IF
         ELSE IF (JPRJ.EQ.17) THEN
+          JPRJ=7
+          IF (ISLT.EQ.0) THEN
+            CSLT=2.D0/PI
+            CSLS=CSLT*CSLT
+            SLTD=RTOD*ACOS(CSLT)
+          END IF
+        ELSE IF (JPRJ.EQ.18) THEN
           JPRJ=25
           PLTO=0.D0
         END IF

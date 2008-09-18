@@ -1,5 +1,5 @@
 C
-C $Id: mdgetr.f,v 1.8 2008-09-11 22:53:32 kennison Exp $
+C $Id: mdgetr.f,v 1.9 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -36,8 +36,9 @@ C
         DOUBLE PRECISION DATL,DBTD,DDTS,DPLT,DPSQ,DSCA,DSSQ
         SAVE   /MAPCMA/
 C
-        COMMON /MAPCMW/  CSLT
-        DOUBLE PRECISION CSLT
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
         SAVE   /MAPCMW/
 C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
@@ -88,15 +89,14 @@ C
           RVAL=REAL(ROTA)
         ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
           RVAL=REAL(SALT)
+        ELSE IF (WHCH(1:2).EQ.'SL'.OR.WHCH(1:2).EQ.'sl') THEN
+          RVAL=REAL(SLTD)
         ELSE IF (WHCH(1:2).EQ.'S1'.OR.WHCH(1:2).EQ.'s1') THEN
           RVAL=REAL(ALFA)
         ELSE IF (WHCH(1:2).EQ.'S2'.OR.WHCH(1:2).EQ.'s2') THEN
           RVAL=REAL(BETA)
         ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
           RVAL=REAL(SRCH)
-        ELSE IF (WHCH(1:2).EQ.'WS'.OR.WHCH(1:2).EQ.'ws') THEN
-          IF (CSLT.LT.0.D0.OR.CSLT.GT.90.D0) CSLT=2.D0/PI
-          RVAL=MAX(0.,MIN(90.,REAL(RTOD*ACOS(CSLT))))
         ELSE IF (WHCH(1:2).EQ.'XL'.OR.WHCH(1:2).EQ.'xl') THEN
           RVAL=REAL(XLOW)
         ELSE IF (WHCH(1:2).EQ.'XR'.OR.WHCH(1:2).EQ.'xr') THEN

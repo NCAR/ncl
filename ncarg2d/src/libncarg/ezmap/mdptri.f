@@ -1,5 +1,5 @@
 C
-C $Id: mdptri.f,v 1.12 2008-09-11 22:53:33 kennison Exp $
+C $Id: mdptri.f,v 1.13 2008-09-18 00:42:17 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -52,6 +52,11 @@ C
         DOUBLE PRECISION P,Q,R
         SAVE   /MAPCM8/
 C
+        COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
+        DOUBLE PRECISION CSLS,CSLT,SLTD
+        INTEGER ISLT
+        SAVE   /MAPCMW/
+C
         COMMON /MAPSAT/  ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         DOUBLE PRECISION ALFA,BETA,DCSA,DCSB,DSNA,DSNB,SALT,SSMO,SRSS
         SAVE   /MAPSAT/
@@ -100,7 +105,7 @@ C
 C Projection:   US  LC  ST  OR  LE  GN  AE
 C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (arbitrary)
 C                   CE  ME  MT  RO  EA  AI  HA  MO  WT  (fast-path)
-C                       ME
+C                       RM
 C
         GO TO (100,101,102,103,104,105,106,
      +             107,108,109,110,111,112,113,114,115,
@@ -229,8 +234,8 @@ C
 C
 C Cylindrical equidistant, arbitrary pole and orientation.
 C
-  107   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
-        RLAP=VTMP*DTOR
+  107   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0/CSLT) GO TO 301
+        RLAP=CSLT*VTMP*DTOR
         RLOP=UTMP*DTOR
         GO TO 200
 C
@@ -265,8 +270,8 @@ C
 C
 C Cylindrical equal-area, arbitrary pole and orientation.
 C
-  111   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
-        RLAP=ASIN(VTMP*3.D0/4.D0)
+  111   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.1.D0/CSLS) GO TO 301
+        RLAP=ASIN(VTMP*CSLS)
         RLOP=UTMP
         GO TO 200
 C
@@ -290,14 +295,14 @@ C
 C
 C Winkel tripel, arbitrary pole and orientation.
 C
-  115   CALL WTPRIN (UTMP,VTMP,RLAP,RLOP)
+  115   CALL WTPRIN (UTMP,VTMP,RLAP,RLOP,CSLT)
         IF (RLAP.EQ.1.D12) GO TO 301
         GO TO 200
 C
 C Cylindrical equidistant, fast-path.
 C
-  116   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0) GO TO 301
-        RLAT=VTMP
+  116   IF (ABS(UTMP).GT.180.D0.OR.ABS(VTMP).GT.90.D0/CSLT) GO TO 301
+        RLAT=CSLT*VTMP
         RLON=PLNO+UTMP
         GO TO 201
 C
@@ -332,8 +337,8 @@ C
 C
 C Cylindrical equal-area, fast-path.
 C
-  120   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.4.D0/3.D0) GO TO 301
-        RLAT=RTOD*ASIN(VTMP*3.D0/4.D0)
+  120   IF (ABS(UTMP).GT.PI.OR.ABS(VTMP).GT.1.D0/CSLS) GO TO 301
+        RLAT=RTOD*ASIN(VTMP*CSLS)
         RLON=PLNO+RTOD*UTMP
         GO TO 201
 C
@@ -363,7 +368,7 @@ C
 C
 C Winkel tripel, fast-path.
 C
-  124   CALL WTPRIN (UTMP,VTMP,RLAT,RLON)
+  124   CALL WTPRIN (UTMP,VTMP,RLAT,RLON,CSLT)
         IF (RLAT.EQ.1.D12) GO TO 301
         RLAT=RTOD*RLAT
         RLON=PLNO+RTOD*RLON
