@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.30 2008-09-18 12:19:11 kennison Exp $
+C $Id: mapbd.f,v 1.31 2008-09-18 12:31:28 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -483,7 +483,7 @@ C square of CSLT.  When IPRJ is 7, ISLT is 0 if the cylindrical
 C equidistant projection is to be used or 1 if the equirectangular
 C projection is to be used.
 C
-      DATA CSLS,CSLT,SLTD,ISLT / 1.D0,1.D0,0.D0,0 /
+      DATA CSLS,CSLT,SLTD,ISLT / 1.D0,1.D0,-1.D0,0 /
 C
 C Variables in MAPCMX and MAPCMY:
 C
