@@ -1,5 +1,5 @@
 C
-C $Id: mdprst.f,v 1.9 2008-09-18 00:42:17 kennison Exp $
+C $Id: mdprst.f,v 1.10 2008-09-18 12:19:11 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -71,8 +71,8 @@ C
      +                              ILTS,JPRJ,ELPF,LBLF,PRMF,DDTS,DPLT,
      +                              IGI1,IGI2,NOVS,ICIN,ALFA,BETA,DCSA,
      +                              DCSB,DSNA,DSNB,SALT,SSMO,SRSS,ICOL,
-     +                              ICSF,NILN,NILT,IDPF,ISLT,SLTD,CSLT,
-     +                              CSLS
+     +                              ICSF,NILN,NILT,IDPF,CSLT,CSLS,SLTD,
+     +                              ISLT
 C
 C Re-initialize EZMAP.
 C

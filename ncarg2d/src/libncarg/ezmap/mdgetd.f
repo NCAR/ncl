@@ -1,5 +1,5 @@
 C
-C $Id: mdgetd.f,v 1.9 2008-09-18 00:42:17 kennison Exp $
+C $Id: mdgetd.f,v 1.10 2008-09-18 12:19:11 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -89,14 +89,14 @@ C
           DVAL=ROTA
         ELSE IF (WHCH(1:2).EQ.'SA'.OR.WHCH(1:2).EQ.'sa') THEN
           DVAL=SALT
+        ELSE IF (WHCH(1:2).EQ.'SL'.OR.WHCH(1:2).EQ.'sl') THEN
+          DVAL=SLTD
         ELSE IF (WHCH(1:2).EQ.'S1'.OR.WHCH(1:2).EQ.'s1') THEN
           DVAL=ALFA
         ELSE IF (WHCH(1:2).EQ.'S2'.OR.WHCH(1:2).EQ.'s2') THEN
           DVAL=BETA
         ELSE IF (WHCH(1:2).EQ.'SR'.OR.WHCH(1:2).EQ.'sr') THEN
           DVAL=SRCH
-        ELSE IF (WHCH(1:2).EQ.'WS'.OR.WHCH(1:2).EQ.'ws') THEN
-          DVAL=SLTD
         ELSE IF (WHCH(1:2).EQ.'XL'.OR.WHCH(1:2).EQ.'xl') THEN
           DVAL=XLOW
         ELSE IF (WHCH(1:2).EQ.'XR'.OR.WHCH(1:2).EQ.'xr') THEN

@@ -1,5 +1,5 @@
 C
-C $Id: mdsetd.f,v 1.10 2008-09-18 00:42:18 kennison Exp $
+C $Id: mdsetd.f,v 1.11 2008-09-18 12:19:11 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -87,17 +87,7 @@ C
           END IF
           INTF=.TRUE.
         ELSE IF (WHCH(1:2).EQ.'SL'.OR.WHCH(1:2).EQ.'sl') THEN
-          IF (DVAL.LT.0.D0.OR.DVAL.GT.90.D0) THEN
-            ISLT=0
-            SLTD=0.D0
-            CSLT=1.D0
-            CSLS=1.D0
-          ELSE
-            ISLT=1
-            SLTD=MAX(0.D0,MIN(90.D0,DVAL))
-            CSLT=COS(DTOR*SLTD)
-            CSLS=CSLT*CSLT
-          END IF
+          SLTD=MAX(-1.D0,MIN(91.D0,DVAL))
           INTF=.TRUE.
         ELSE IF (WHCH(1:2).EQ.'S1'.OR.WHCH(1:2).EQ.'s1') THEN
           ALFA=ABS(DVAL)

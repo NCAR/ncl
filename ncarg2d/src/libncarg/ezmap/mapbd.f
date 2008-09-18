@@ -1,5 +1,5 @@
 C
-C $Id: mapbd.f,v 1.29 2008-09-18 00:42:16 kennison Exp $
+C $Id: mapbd.f,v 1.30 2008-09-18 12:19:11 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -126,8 +126,9 @@ C
         INTEGER          ICIN
         SAVE   /MAPCMQ/
 C
-C The common block MAPCMW contains a constant affecting the definition
-C of the Winkel tripel projection.
+C The common block MAPCMW contains variables affecting the definitions
+C of the equirectangular, cylindrical equal-area, and Winkel tripel
+C projections.
 C
         COMMON /MAPCMW/  CSLS,CSLT,SLTD,ISLT
         DOUBLE PRECISION CSLS,CSLT,SLTD
@@ -475,12 +476,12 @@ C
 C
 C Variables in MAPCMW:
 C
-C SLTD is a "standard latitude" that affects the behavior of certain
-C projections: the cylindrical equidistant (or equirectangular), the
-C cylindrical equal-area, and the Winkel tripel.  CSLT is the cosine
-C of SLTD and CSLS is the square of CSLT.  ISLT is 0 if SLTD has been
-C set by default or as a side effect of using a particular projection,
-C 1 if SLTD has been set by the user.
+C SLTD is a "standard latitude" parameter affecting the behavior of
+C three projections: the equirectangular, the cylindrical equal-area,
+C and the Winkel tripel.  CSLT is the cosine of SLTD and CSLS is the
+C square of CSLT.  When IPRJ is 7, ISLT is 0 if the cylindrical
+C equidistant projection is to be used or 1 if the equirectangular
+C projection is to be used.
 C
       DATA CSLS,CSLT,SLTD,ISLT / 1.D0,1.D0,0.D0,0 /
 C

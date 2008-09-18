@@ -1,5 +1,5 @@
 C
-C $Id: mdproj.f,v 1.11 2008-09-18 00:42:17 kennison Exp $
+C $Id: mdproj.f,v 1.12 2008-09-18 12:19:11 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -71,21 +71,6 @@ C
           IF (ICFELL('MDPROJ',2).NE.0) RETURN
         ELSE IF (JPRJ.EQ.7) THEN
           ISLT=0
-          CSLT=1.D0
-          CSLS=1.D0
-          SLTD=0.D0
-        ELSE IF (JPRJ.EQ.11) THEN
-          IF (ISLT.EQ.0) THEN
-            SLTD=30.D0
-            CSLT=COS(DTOR*SLTD)
-            CSLS=CSLT*CSLT
-          END IF
-        ELSE IF (JPRJ.EQ.15) THEN
-          IF (ISLT.EQ.0) THEN
-            CSLT=2.D0/PI
-            CSLS=CSLT*CSLT
-            SLTD=RTOD*ACOS(CSLT)
-          END IF
         ELSE IF (JPRJ.EQ.16) THEN
           JPRJ=3
           IF (ABS(SALT).LE.1.D0) THEN
@@ -94,11 +79,7 @@ C
           END IF
         ELSE IF (JPRJ.EQ.17) THEN
           JPRJ=7
-          IF (ISLT.EQ.0) THEN
-            CSLT=2.D0/PI
-            CSLS=CSLT*CSLT
-            SLTD=RTOD*ACOS(CSLT)
-          END IF
+          ISLT=1
         ELSE IF (JPRJ.EQ.18) THEN
           JPRJ=25
           PLTO=0.D0

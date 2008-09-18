@@ -1,5 +1,5 @@
 C
-C $Id: mdpin1.f,v 1.11 2008-09-18 00:42:17 kennison Exp $
+C $Id: mdpin1.f,v 1.12 2008-09-18 12:19:11 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -94,18 +94,34 @@ C
 C
         ELSE
 C
-C If an equirectangular or cylindrical equal-area projection is in use,
-C make sure the standard latitude is not too close to 90.  If it were
-C exactly 90, we'd get a divide by zero.  In any case, for values too
-C close to 90, we get a tall skinny projection that's pretty useless.
+C Set the variables determining the effective standard parallel for
+C the cylindrical equidistant, the equirectangular, the cylindrical
+C equal-area, and the Winkel tripel projections.
 C
-          IF (IPRJ.EQ.7.OR.IPRJ.EQ.11) THEN
-            IF (SLTD.GT.89.999D0) THEN
-              ISLT=0
-              SLTD=89.999D0
+          IF (IPRJ.EQ.7.AND.ISLT.EQ.0) THEN
+            CSLT=1.D0
+            CSLS=1.D0
+          ELSE IF (IPRJ.EQ.7.AND.ISLT.NE.0) THEN
+            IF (SLTD.GE.0.D0.AND.SLTD.LE.89.999D0) THEN
               CSLT=COS(DTOR*SLTD)
-              CSLS=CSLT*CSLT
+            ELSE
+              CSLT=2.D0/PI
             END IF
+            CSLS=CSLT*CSLT
+          ELSE IF (IPRJ.EQ.11) THEN
+            IF (SLTD.GE.0.D0.AND.SLTD.LE.89.999D0) THEN
+              CSLT=COS(DTOR*SLTD)
+            ELSE
+              CSLT=SQRT(3.D0)/2.D0
+            END IF
+            CSLS=CSLT*CSLT
+          ELSE IF (IPRJ.EQ.15) THEN
+            IF (SLTD.GE.0.D0.AND.SLTD.LE.90.D0) THEN
+              CSLT=COS(DTOR*SLTD)
+            ELSE
+              CSLT=2.D0/PI
+            END IF
+              CSLS=CSLT*CSLT
           END IF
 C
 C See if fast-path transformations can by used (type cylindrical or
