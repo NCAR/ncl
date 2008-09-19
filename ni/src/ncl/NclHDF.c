@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.28 2008-08-27 18:39:00 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.29 2008-09-19 16:22:08 haley Exp $
  */
 /************************************************************************
 *									*
@@ -28,6 +28,25 @@
 #include "NclFileInterfaces.h"
 #include <math.h>
 #include <ctype.h>
+
+/*
+ * With newer versions of HDF4 (like 4.2r3), some of macro names now 
+ * have an H4 prepended.
+ *
+ * In order to accommodate multiple versions of HDF, Dave B suggested
+ * the following code.
+ */
+#ifndef MAX_VAR_DIMS
+#ifdef H4_MAX_VAR_DIMS
+#define MAX_VAR_DIMS H4_MAX_VAR_DIMS
+#define MAX_NC_NAME H4_MAX_NC_NAME
+#define MAX_NC_DIMS H4_MAX_NC_DIMS
+#else
+#define MAX_VAR_DIMS 32
+#define MAX_NC_NAME 256
+#define MAX_NC_DIMS 5000
+#endif
+#endif
 
 typedef struct _HDFFileRecord HDFFileRecord;
 typedef struct _HDFVarInqRec HDFVarInqRec;
