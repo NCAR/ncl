@@ -2415,6 +2415,93 @@ int* nrotatts;
 
 
 
+/* Grid template 90 */
+void g2GDSSVGrid
+#if NhlNeedProto
+(
+	Grib2ParamList* thevarrec, 
+	float** lat, 
+	int* n_dims_lat,
+	int** dimsizes_lat,
+	float** lon,
+	int* n_dims_lon,
+	int** dimsizes_lon,
+	float** rot,
+	int* n_dims_rot,
+	int **dimsizes_rot,
+	Grib2AttInqRecList** lat_att_list, 
+	int* nlatatts, 
+	Grib2AttInqRecList** lon_att_list, 
+	int* nlonatts,
+	Grib2AttInqRecList** rot_att_list,
+	int* nrotatts
+)
+#else
+(thevarrec, lat, n_dims_lat, dimsizes_lat, lon, n_dims_lon, dimsizes_lon,
+ rot, n_dims_rot, dimsizes_rot,
+ lat_att_list,nlatatts,lon_att_list, nlonatts, rot_att_list, nrotatts)
+GribParamList* thevarrec; 
+float** lat; 
+int* n_dims_lat;
+int** dimsizes_lat;
+float** lon;
+int* n_dims_lon;
+int** dimsizes_lon;
+float** rot;
+int* n_dims_rot;
+int **dimsizes_rot;
+GribAttInqRecList** lat_att_list; 
+int* nlatatts; 
+GribAttInqRecList** lon_att_list; 
+int* nlonatts;
+GribAttInqRecList** rot_att_list;
+int* nrotatts;
+#endif
+{
+	G2_GDS *gds;
+	int nlon,nlat;
+	g2SVTemplate *sv;
+
+	/* 
+	 * This can handle any grid that has the dimensions of the grid specified as 
+	 * elements 7 and 8 of the g2clib grid template -- whatever the dims happen to be called
+	 * currently includes templates 1,2,3, 31, 41, 42, 43, 90, and 110. 
+	 */
+	
+	*lat = NULL;
+	*lon = NULL;
+	*rot = NULL;
+	*n_dims_lat = 0;
+	*dimsizes_lat = NULL;
+	*n_dims_lon= 0;
+	*dimsizes_lon = NULL;
+	*n_dims_rot = 0;
+	*dimsizes_rot = NULL;
+	if((thevarrec->thelist == NULL)||(thevarrec->thelist->rec_inq == NULL)) 
+		return;
+
+	gds = (G2_GDS *) thevarrec->thelist->rec_inq->gds;
+	if (gds == NULL) {
+		return;
+	}
+	sv = (g2SVTemplate *) gds->grid_template;
+
+	nlon = sv->npts_along_x_axis;
+	nlat = sv->npts_along_y_axis;
+	if (nlon <= 1 || nlat <= 1 ) {
+		return;
+	}
+
+	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
+	*dimsizes_lon = (int*)NclMalloc(sizeof(int));
+	*(*dimsizes_lon) = nlon;
+	*(*dimsizes_lat) = nlat;
+	*n_dims_lat = 1;
+	*n_dims_lon = 1;
+
+	return;
+}
+
 static void _g2NewGridCache
 #if NhlNeedProto
 (Grib2FileRecord *therec,int grid_index,int grid_number,int n_dims_lat,int *dimsizes_lat,int n_dims_lon,int *dimsizes_lon)
@@ -6738,8 +6825,12 @@ static void _g2SetFileDimsAndCoordVars
 			break;
 
 		case 90:
+			g2GDSSVGrid(step, &tmp_lat, &n_dims_lat, &dimsizes_lat, &tmp_lon,
+					 &n_dims_lon,&dimsizes_lon, &tmp_rot, &n_dims_rot, &dimsizes_rot,
+				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
+				    &rot_att_list_ptr, &nrotatts);
 			name_suffix = "SV";
-			/* fall through */
+			break;
 		case 2:
 		case 3:
 		case 31:
@@ -8034,6 +8125,26 @@ static void Grib2FreeGrib2Rec
     return;
 }
 
+/*
+ * Note on _g2AdjustTimeAndStatProcVars function.
+ * This code adjust the time offset of each record to make them comparable as to
+ * statistical variable time duration. Then it tries to figure out whether new 
+ * variables need to be created for statistical variable records where the time
+ * periods are differect. There are a couple of gnarly details that make this
+ * not straightforward. 1) Distinguishing variables where the statistical time
+ * period increases in a regular way for each forcast time (i.e. the stat is
+ * always calculated from the initial time to the forecast time) from variables
+ * where there are different accumulation periods that are fixed for each forecast
+ * time. The second type need to be broken apart into separate variables depending
+ * on the statistical period. 2) Handling initialization records where both the 
+ * forecast time and the statistical period are zero. These should not be broken
+ * out into a variable of their own when breaking records up into separate variables
+ * depending on the statistical duration. However in the case where there is more
+ * than one duration it is arbitrary which variable to attach them to. This being
+ * the case, for convenience they are attached to the stat variable with the 
+ * longest duration.
+ */
+
 static Grib2ParamList  *
 _g2AdjustTimeAndStatProcVars
 #if    NhlNeedProto
@@ -8052,12 +8163,11 @@ Grib2ParamList  *g2plist;
 	int time_period_count;
 	int *time_periods;
 	int max_count;
-	int unique_zero_forecast_period;
-	int zero_forecast_period;
 	int max_period;
 	int i;
 	Grib2VarTraits *trp = &g2plist->traits;
 	Grib2ParamList  *newplist, *tplist, *ttplist;
+        int zero_offset_index;
 	
 	g2rlist = g2plist->thelist;
 
@@ -8079,13 +8189,12 @@ Grib2ParamList  *g2plist;
 	}
 
 	time_period_count = 0;
-	unique_zero_forecast_period = 0;
 	max_count = 10;
 	time_periods = NclMalloc(max_count * sizeof(int));
 	for (i = 0; i < max_count; i++) {
 		time_periods[i] = -999;
 	}
-	max_period = zero_forecast_period = -999;
+	max_period = -999;
 
 	while (g2rlist != NULL) {
 		if (! g2plist->variable_time_unit) {
@@ -8102,19 +8211,16 @@ Grib2ParamList  *g2plist;
 			if (g2rlist->rec_inq->time_period == time_periods[i])
 				break;
 		}
-		if (i < time_period_count && g2rlist->rec_inq->forecast_time != 0 &&
-		    time_periods[i] == zero_forecast_period) {
-			unique_zero_forecast_period = 0;
-		}
-		else if (i == time_period_count) {
+		if (i == time_period_count) {
 			if (time_period_count == max_count) {
 				max_count *= 2;
 				time_periods = NclRealloc(time_periods,max_count * sizeof(int));
 			}
 			time_periods[i] = g2rlist->rec_inq->time_period;
 			if (g2rlist->rec_inq->forecast_time == 0) {
-				unique_zero_forecast_period = 1;
-				zero_forecast_period = time_periods[i];
+				if (g2rlist->rec_inq->time_offset == 0 && time_periods[i] == 0) {
+					zero_offset_index = i;
+				}
 			}
 			if (time_periods[i] > max_period) {
 				max_period = time_periods[i];
@@ -8124,11 +8230,11 @@ Grib2ParamList  *g2plist;
 		g2rlist = g2rlist->next;
 	}
 	newplist = NULL;
-	if (unique_zero_forecast_period < 0) 
-		unique_zero_forecast_period = 0;
 	g2plist->time_period = max_period;
-	for (i = 0; i < time_period_count - unique_zero_forecast_period - 1; i++) {
-		if (time_periods[i] == max_period || time_periods[i] == unique_zero_forecast_period)
+
+	for (i = 0; i < time_period_count - 1; i++) {
+		/* keep the max period elements as the remaining elements for the original variables */
+		if (time_periods[i] == max_period) 
 			continue;
 		g2rlist = g2plist->thelist;
 		tplist = NULL;
@@ -8138,9 +8244,15 @@ Grib2ParamList  *g2plist;
 				prevrlist = g2rlist;
 				g2rlist = g2rlist->next;
 			}
+			/* zero offset elements (initialization records) get attached to the max period variable */
+			else if (i == zero_offset_index && g2rlist->rec_inq->time_offset == 0) {
+				prevrlist = g2rlist;
+				g2rlist = g2rlist->next;
+			}
 			else {
 				if (! tplist) {
 					tplist = _g2NewListNode(g2rlist->rec_inq);
+					g2frec->n_vars++;
 					memcpy(&tplist->var_info,&g2plist->var_info,sizeof(NclGrib2FVarRec));
 					tplist->forecast_time_iszero = 0;
 				}
@@ -8705,6 +8817,8 @@ static void *Grib2OpenFile
                         /* JMA -- use ECMWF for now */
                         /* FALLTHROUGH */
 
+		    case 254:
+			    /* EUMETSAT - fallthrought */
                     case 98:
                         /* ECMWF */
                         center = "ecmwf";

@@ -274,7 +274,7 @@ typedef struct _g2SVTemplate {   /* template 90 : space view perspective or orth
 	int yp_grid;            /* y-coordinate of sub-satellite point (units of 10-3 grid length as integer) */
 	int scan_mode_flags;
 	int orientation;        /* grid orientation (angle between the increasing y-axis and the sub-satellite point meridian */
-	int Nr_altitude;        /* altitude of camera from center of earth (units of earth radius at equator x 10-6)
+	int Nr_altitude;        /* altitude of camera from center of earth (units of earth radius at equator x 10-6) */
 	int x_origin;           /* x-coordinate of origin of sector image */
 	int y_origin;           /* y-coordinate of origin of sector image */
 } g2SVTemplate;
