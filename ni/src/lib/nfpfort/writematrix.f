@@ -62,6 +62,7 @@ c write to standard out
               end do
           end if
           print *," "
+          call flush(6)
       end if
 
       return
@@ -134,6 +135,7 @@ c write to standard out
               end do
           end if
           print *," "
+          call flush(6)
       end if
 
       return
@@ -205,6 +207,7 @@ c write to standard out
               end do
           end if
           print *," "
+          call flush(6)
       end if
 
       return
@@ -279,6 +282,7 @@ c write to standard out
               end do
           end if
           print *," "
+          call flush(6)
       end if
 
       return
@@ -354,6 +358,7 @@ c write to standard out
               end do
           end if
           print *," "
+          call flush(6)
       end if
 
       return
