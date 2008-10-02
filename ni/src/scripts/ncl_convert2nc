@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.11 2008-04-10 19:26:05 grubin Exp $
+#       $Id: ncl_convert2nc,v 1.12 2008-10-02 22:20:16 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -28,9 +28,13 @@
 #       [-e extension]        file type, defined by extension, to convert
 #       [-u time_name]        name of the NCL-named time dimension to be UNLIMITED
 #       [-U new_time_name]    if -u is specified, will rename the NCL-named time dimension for netCDF 
-#       [-sed sed1[,...]]     set single element record dimensions [default: None]
-#                             GRIB files only; choices are Initial_time, Forecast_time, Level,
-#                             Ensemble, Probability, All, None
+#       [-sed sed1[,...]]     GRIB files only; set single element dimensions [default: none]
+#                                choices are initial_time, forecast_time, level, ensemble,
+#                                probability, all, none"
+#       [-itime]              GRIB files only; set initial time as a single element dimension
+#                                (same as -sed initial_time)
+#       [-ftime]              GRIB files only; set forecast time as a single element dimension
+#                                  (same as -sed forecast_time)
 #       [-tps]                GRIB files only; remove suffix representing a time period (e.g. 2h)
 #                             from statistically processed variables, leaving only type of
 #                             processing as a suffix (e.g. _acc, _avg)
@@ -73,7 +77,10 @@ set ncdfcomment = ""
 set ncdflrgf_t = "classic"
 
 # Single Element Dimension variables
+set seDims_t = ""
+set singleElemDims = ""
 set sed_n = 0
+set sed_nt = 0
 set sed_args = ""
 set seds = ( '\(/'\\\"None\\\"'/\)' )
 
@@ -207,6 +214,17 @@ while ($#argv > 0)
             endif
             breaksw
 
+	case "-itime"
+            @ sed_n = ($sed_n + 1)
+            set seDims_t = `echo $seDims_t "initial_time"`
+            shift
+            breaksw
+ 
+        case "-ftime"
+             @ sed_n = ($sed_n + 1)
+             set seDims_t = `echo $seDims_t "forecast_time"`
+             shift
+             breaksw
 
         case "-sed":
         case "-singleelemdims":
@@ -215,8 +233,8 @@ while ($#argv > 0)
             set sed_args = "$1"
 
             # Determine number of args (count commas)
-            set sed_n = `echo $* | awk -F, '{print NF}'`
-            if ($sed_n == 0) then
+            set sed_nt = `echo $* | awk -F, '{print NF}'`
+            if ($sed_nt == 0) then
                 echo "${progname}: no single element dimension(s) specified." ; echo
                 breaksw
             endif
@@ -228,14 +246,15 @@ while ($#argv > 0)
             set sedline = `echo $sa | sed 's/,/ /g'`
             set seds = ( '\(/' )
             set n = 1
-            while ($n < $sed_n)
+            while ($n < $sed_nt)
                 set i  = `expr $n + 1`
                 set s = $sedline[$n]
                 set seds = ( $seds\\\"$s\\\"\',\' )
                 @ n = ($n + 1)
             end
-
-            set seds = ( $seds\\\"$sedline[$n]\\\"'/\)' )
+            set s = $sedline[$n]
+            set seds = ( $seds\\\"$s\\\" )
+	    
             breaksw
 
         case "-tps":
@@ -360,6 +379,29 @@ if ($?TMNM_set && ! $?tmnm_set) then
     echo "New netCDF time dimension '$TIME_NAME' specified but no NCL-named time"
     echo "dimension to rename was specified; ignoring '$TIME_NAME'."
 endif
+
+#
+# Single Element Dimensions
+# set_nt has the count from the -sed option sed_n has count of -itime and -ftime
+
+if ($sed_nt > 0 && $sed_n > 0) then
+    @ i = 1
+    while ($i <= $sed_n)
+        set seds = ( $seds\',\'\\\"$seDims_t[$i]\\\" )
+        @ i = ($i + 1)
+    end
+else if ($sed_n > 0) then
+    @ i = 1
+    set seds = ( '\(/'\\\"$seDims_t[$i]\\\" )
+    @ i = ($i + 1)
+    while ($i <= $sed_n)
+        set seds = ( $seds\',\'\\\"$seDims_t[$i]\\\" )
+        @ i = ($i + 1)
+    end
+else if ($sed_nt == 0) then
+    set seds = ( '\(/'\\\"none\\\" )
+endif
+set seds = ( $seds'/\)' )
 
 #
 # Split filenames into (full, relative) paths and filenames.  This will
@@ -1208,9 +1250,13 @@ echo "  [-o output_directory] location of output file(s) [default: current direc
 echo "  [-e extension]        file type, defined by extension, to convert [example: grb]"
 echo "  [-u time_name]        name of the NCL-named time dimension to be UNLIMITED"
 echo "  [-U new_time_name]    if -u is specified: new name of UNLIMITED variable and dimension"
-echo "  [-sed sed1[,...]]     set single element record dimensions [default: None]"
-echo "                        GRIB files only; choices are Initial_time, Forecast_time, Level,"
-echo "                          Ensemble, Probability, All, None"
+echo "  [-sed sed1[,...]]     GRIB files only; set single element dimensions [default: none]"
+echo "                          choices are initial_time, forecast_time, level, ensemble,"
+echo "                          probability, all, none"
+echo "  [-itime]              GRIB files only; set initial time as a single element dimension"
+echo "                          (same as -sed initial_time)"
+echo "  [-ftime]              GRIB files only; set forecast time as a single element dimension"
+echo "                          (same as -sed forecast_time)"
 echo "  [-tps]                GRIB files only; remove suffix representing a time period (e.g. 2h)"
 echo "                          from statistically processed variables, leaving only type of"
 echo "                          processing as a suffix (e.g. _acc, _avg)"
