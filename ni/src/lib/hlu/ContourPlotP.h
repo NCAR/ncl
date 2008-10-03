@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlotP.h,v 1.35 2007-10-26 23:36:27 dbrown Exp $
+ *      $Id: ContourPlotP.h,v 1.36 2008-10-03 19:40:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -230,6 +230,7 @@ typedef struct _NhlContourPlotLayerPart {
 	NhlAnnotationDisplayMode	display_tickmarks;
 	NhlGenArray	lbar_labels_res;
 	char		lbar_func_code;
+	NhlBoolean	lbar_alignment_set;
 	NhllbLabelAlignmentMode lbar_alignment;
 	NhlGenArray	lgnd_labels_res;
 	char		lgnd_func_code;

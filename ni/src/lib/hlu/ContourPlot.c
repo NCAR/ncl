@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.145 2008-06-24 22:08:41 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.146 2008-10-03 19:40:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -809,11 +809,13 @@ static NhlResource resources[] = {
 	{NhlNlbLabelFuncCode, NhlCTextFuncCode, NhlTCharacter,
 		 sizeof(char),Oset(lbar_func_code),
 		 NhlTString,_NhlUSET(":"),_NhlRES_INTERCEPTED,NULL },
+	{"no.res","No.res",NhlTBoolean,sizeof(NhlBoolean),
+		Oset(lbar_alignment_set),NhlTImmediate,
+		_NhlUSET((NhlPointer)True),_NhlRES_PRIVATE,NULL},
 	{NhlNlbLabelAlignment,NhlClbLabelAlignment,NhlTlbLabelAlignmentMode, 
 		 sizeof(NhllbLabelAlignmentMode), 
-		 Oset(lbar_alignment),NhlTImmediate,
-		 _NhlUSET((NhlPointer)NhlINTERIOREDGES),
-         	_NhlRES_INTERCEPTED,NULL},
+		 Oset(lbar_alignment),
+		 NhlTProcedure,_NhlUSET((NhlPointer)_NhlResUnset),_NhlRES_INTERCEPTED,NULL},
 		
 	{NhlNpmLegendDisplayMode,NhlCpmLegendDisplayMode,
 		  NhlTAnnotationDisplayMode,sizeof(NhlAnnotationDisplayMode),
@@ -2035,6 +2037,7 @@ ContourPlotInitialize
 			cnp->lbar_end_style = NhlINCLUDEOUTERBOXES;
 		}
 	}
+	if (! cnp->lbar_alignment_set) cnp->lbar_alignment = NhlINTERIOREDGES;
 
 /* Initialize private members */
 
@@ -2221,12 +2224,18 @@ ContourPlotInitialize
 	cnp->raster_mode_on_set = False;
 	cnp->fill_mode_set = False;
 	cnp->fill_on_set = False;
+	/* 
+	 * once set, lbar_alignment_set stays set until 
+	 * explcit label bar labels is turned off 
+	 */
+	if (! cnp->explicit_lbar_labels_on) cnp->lbar_alignment_set = False;
 
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
         cnew->trans.x_axis_type_set = cnew->trans.y_axis_type_set = False;
         cnew->trans.x_min_set = cnew->trans.y_min_set = False;
         cnew->trans.x_max_set = cnew->trans.y_max_set = False;
+
 
 	return ret;
 }
@@ -2441,6 +2450,8 @@ static NhlErrorTypes ContourPlotSetValues
 		cnp->lbar_end_labels_on_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnLabelBarEndStyle))
 		cnp->lbar_end_style_set = True;
+	if (_NhlArgIsSet(args,num_args,NhlNlbLabelAlignment))
+		cnp->lbar_alignment_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNlgLabelStrings))
 		cnp->lgnd_labels_res_set = True;
 	if (_NhlArgIsSet(args,num_args,NhlNcnLevels))
@@ -2606,12 +2617,18 @@ static NhlErrorTypes ContourPlotSetValues
 	cnp->raster_mode_on_set = False;
 	cnp->fill_mode_set = False;
 	cnp->fill_on_set = False;
+	/* 
+	 * once set, lbar_alignment_set stays set until 
+	 * explcit label bar labels is turned off 
+	 */
+	if (! cnp->explicit_lbar_labels_on) cnp->lbar_alignment_set = False;
 
         cnew->trans.x_reverse_set = cnew->trans.y_reverse_set = False;
         cnew->trans.x_log_set = cnew->trans.y_log_set = False;
         cnew->trans.x_axis_type_set = cnew->trans.y_axis_type_set = False;
         cnew->trans.x_min_set = cnew->trans.y_min_set = False;
         cnew->trans.x_max_set = cnew->trans.y_max_set = False;
+
 
 	return ret;
 }
@@ -6063,17 +6080,20 @@ static NhlErrorTypes ManageLabelBar
 	}
 
 	if (cnp->const_field) return ret;
-
-	if (init || cnp->lbar_end_style != ocnp->lbar_end_style) {
-		redo_lbar = True;
-		if (cnp->lbar_end_style == NhlINCLUDEMINMAXLABELS) {
-			cnp->lbar_alignment = NhlEXTERNALEDGES;
-		}
-		else if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES) {
-			cnp->lbar_alignment = NhlEXTERNALEDGES;
-		}
-		else {
-			cnp->lbar_alignment = NhlINTERIOREDGES;
+	
+        if (! (cnp->explicit_lbar_labels_on && cnp->lbar_alignment_set)) {
+		if (init || cnp->lbar_end_style != ocnp->lbar_end_style ||
+		    cnp->explicit_lbar_labels_on != ocnp->explicit_lbar_labels_on) {
+			redo_lbar = True;
+			if (cnp->lbar_end_style == NhlINCLUDEMINMAXLABELS) {
+				cnp->lbar_alignment = NhlEXTERNALEDGES;
+			}
+			else if (cnp->lbar_end_style == NhlEXCLUDEOUTERBOXES) {
+				cnp->lbar_alignment = NhlEXTERNALEDGES;
+			}
+			else {
+				cnp->lbar_alignment = NhlINTERIOREDGES;
+			}
 		}
 	}
 
