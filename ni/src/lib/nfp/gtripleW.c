@@ -10,6 +10,7 @@ extern void NGCALLF(triple2grid1,TRIPLE2GRID1)(int*,double*,double*,double*,
                                                double*,int*,int*,double*,
                                                double*,double*,double*,
                                                int*,int*,double*,int*,int*,
+                                               double*,double*,double*,
                                                double*,double*,double*,int*);
 
 extern void NGCALLF(triple2grid2d,TRIPLE2GRID2D)(double *,double *,double *,
@@ -207,7 +208,7 @@ NhlErrorTypes triple2grid_W( void )
 /*
  * Work arrays
  */
-  double *gbig, *gxbig, *gybig;
+  double *dx, *dy, *dz, *gbig, *gxbig, *gybig;
 /*
  * Various
  */
@@ -469,7 +470,11 @@ NhlErrorTypes triple2grid_W( void )
   gxbig = (double *)calloc(ngx2,sizeof(double));
   gybig = (double *)calloc(ngy2,sizeof(double));
   gbig  = (double *)calloc(ngxy2,sizeof(double));
-  if(gxbig == NULL || gybig == NULL || gbig == NULL) {
+  dx    = (double *)calloc(npts,sizeof(double));
+  dy    = (double *)calloc(npts,sizeof(double));
+  dz    = (double *)calloc(npts,sizeof(double));
+  if(gxbig == NULL || gybig == NULL || gbig == NULL || dx == NULL ||
+     dy == NULL || dz == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"triple2grid: Unable to create work arrays");
     return(NhlFATAL);
   }
@@ -499,7 +504,7 @@ NhlErrorTypes triple2grid_W( void )
                                        &missing_dz.doubleval,&ngx,&ngy,
                                        tmp_gridx,tmp_gridy,tmp_grid,domain,
                                        &loop,&method,distmx,&ngx2,&ngy2,
-                                       gxbig,gybig,gbig,&ier);
+                                       dx,dy,dz,gxbig,gybig,gbig,&ier);
 /*
  * Coerce grid back to float if necessary.
  *
@@ -522,6 +527,9 @@ NhlErrorTypes triple2grid_W( void )
   NclFree(gxbig);
   NclFree(gybig);
   NclFree(gbig);
+  NclFree(dx);
+  NclFree(dy);
+  NclFree(dz);
   if(!has_distmx) NclFree(distmx);
   if(!has_domain) NclFree(domain);
 
