@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.230 2008-10-07 17:04:51 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.231 2008-10-07 20:12:58 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2490,6 +2490,16 @@ begin
     print("fill_bw_xy: Error: The X array cannot contain any missing values")
     return(plot)
   end if
+
+  if(.not.res) then
+    return(plot)     ; No resources set, so just return.
+  end if
+
+  if(.not.isatt(res,"gsnXYFillColors").and. \
+     .not.isatt(res,"gsnXYAboveFillColors").and. \
+     .not.isatt(res,"gsnXYBelowFillColors")) then
+    return(plot)     ; No resources set, so just return.
+  end if
 ;
 ; Check resources. There are three possible resources:
 ;    gsnXYFillColors
@@ -2497,8 +2507,7 @@ begin
 ;    gsnXYBelowFillColors
 ;
 ; If the first one is set, it overwrites the second two. If
-; none of them are set, then the foreground color will be used 
-; as the fill color.
+; none of them are set, then no fill color will be used.
 ;
   res2 = res       ; Make a copy
   if(res2) then
@@ -2508,20 +2517,9 @@ begin
       dum               = get_res_value(res2,"gsnXYAboveFillColors",-1)
       dum               = get_res_value(res2,"gsnXYBelowFillColors",-1)
     else
-      if(isatt(res2,"gsnXYAboveFillColors")) then
-        above_fill_colors = get_res_value(res2,"gsnXYAboveFillColors",-1)
-      else
-        above_fill_colors = 1
-      end if
-      if(isatt(res2,"gsnXYBelowFillColors")) then
-        below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
-      else
-        below_fill_colors = 1
-      end if
+      above_fill_colors = get_res_value(res2,"gsnXYAboveFillColors",-1)
+      below_fill_colors = get_res_value(res2,"gsnXYBelowFillColors",-1)
     end if
-  else
-    above_fill_colors = 1
-    below_fill_colors = 1
   end if
 
   nacol = dimsizes(above_fill_colors)
