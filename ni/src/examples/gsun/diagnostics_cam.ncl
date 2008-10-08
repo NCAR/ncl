@@ -1597,3 +1597,480 @@ end
    end if
    return( e ) 
  end
+; ====================================================
+function band_pass_area_time \
+                 (x[*][*][*]:numeric, spd[1]:numeric   \
+                 ,bpf[3]:numeric                       \
+                 ,wy[*]:numeric, opt:logical)
+local nMsg, dimx, dimwy, ntim, bpfStrt, bpfLast, bpfNwgt     \
+    , dumy, save_FillValue, fca, fcb, ihp, sigma, xts    
+begin
+                                      ; error check
+  nMsg = num( ismissing(x) )
+  if (nMsg.gt.0) then
+      print("band_pass_area_time: currently, missing data not allowed: nMsg="+nMsg)
+      exit
+  end if
+
+  dimx    = dimsizes(x)
+  dimwy   = dimsizes(wy)
+  if (dimx(1).ne.dimwy(0)) then
+      print("band_pass_area_time: sizes of y/lat dimension do not match")
+      print("                     dimsizes(wy)="+dimwy)              
+      print("                     dimx(1)=nlat="+dimx(1))              
+      exit
+  end if
+
+  dimx    = dimsizes( x )
+  ntim    = dimx(0)
+
+  bpfStrt = bpf(0)                     ; days
+  bpfLast = bpf(1)
+  bpfNwgt = bpf(2)                     ; effective # weights 
+
+  bpfNwgt = (bpfNwgt/2)*2 + 1          ; make sure it is odd
+
+  if (bpfStrt.gt.bpfLast) then         ; safety check
+      dumy    = bpfLast
+      bpfLast = bpfStrt
+      bpfStrt = dumy
+  end if
+
+  fca  = 1.0/(spd*bpfLast)             ; freq start/end
+  fcb  = 1.0/(spd*bpfStrt)             ; bpf{Strt/Last}
+
+  if (typeof(x).eq."double" .or. typeof(wy).eq."double") then
+      xts  = new( (/3,ntim/), "double", getFillValue(x))
+  else
+      xts  = new( (/3,ntim/), "float" , getFillValue(x))
+  end if
+  xts!0 = "var"
+                                       ; weighted area averages
+  xts(1,:)  = wgt_areaave_Wrap(x, wy, 1., 0)    ; (time)
+
+  if (opt .and. isatt(opt,"detrend") .and. opt@detrend) then
+      if (isatt(xts,"_FillValue")) then
+          save_FillValue = x@_FillValue
+          delete(xts@_FillValue)           ; avoid annoying warning msg
+      end if                               ; from dtrend
+
+      xts(1,:) = dtrend(xts(1,:), False )  ; detrend 
+
+      if (isvar("save_FillValue")) then
+          xts@_FillValue = save_FillValue  ; reassign
+      end if
+  end if
+
+  ihp      = 2                             ; bpf=>band pass filter
+  sigma    = 1.0                           ; Lanczos sigma
+  bpfwgt   = filwgts_lanczos (bpfNwgt, ihp, fca, fcb, sigma )
+
+  xts(0,:) = wgt_runave_Wrap(xts(1,:), bpfwgt, 0)
+
+  if (opt .and. isatt(opt,"Nrun")) then
+      Nrun = (opt@Nrun/2)*2 + 1            ; make sure it is odd
+  else
+      Nrun = 101
+  end if
+
+  len  = (Nrun*spd)/2                      ; half total length
+  do n = len,ntim-(len+1)
+     xts(2,n) = variance(xts(0,n-len:n+len))  ; 'local' variance
+  end do
+
+  xts@bpfStrt = bpfStrt
+  xts@bpfLast = bpfLast 
+  xts@bpfNwgt = bpfNwgt
+
+  xts@var_0   = "band pass"
+  xts@var_1   = "raw areal means"
+  xts@var_2   = "local variances: Nrun="+Nrun
+
+  return( xts )
+end
+; =================================================================
+
+procedure band_pass_area_time_plot(           \ 
+          xts[3][*]:numeric, time[*]:numeric, \
+          diro[1]:string, pltType[1]:string,  \
+          pltName[1]:string, opt[1]:logical)
+begin
+  date   = ut_calendar(time, -3)
+  yrfrac = yyyymmddhh2yyyyFrac( date)
+  delete(yrfrac@long_name)
+
+  pltPath= diro+"/"+pltName
+  
+  wks  = gsn_open_wks(pltType , pltPath)   
+  gsn_merge_colormaps(wks,"amwg_blueyellowred","BlAqGrYeOrReVi200") 
+
+ ;gsn_draw_colormap(wks)                      ; draw color map
+
+  plot  = new ( 3, "graphic")
+ 
+; left variable
+  res                         = True 
+  res@gsnDraw                 = False
+  res@gsnFrame                = False
+
+  res@vpXF                    = 0.15   
+  res@vpYF                    = 0.3     
+  res@vpWidthF                = 0.65   
+  res@vpHeightF               = 0.18
+
+  res@tmXBLabelsOn            = False         ; do not draw bottom labels
+  res@tmXBOn                  = False         ; no bottom tickmarks
+
+  res@xyLineThicknessF        = 1.            ; 1 is default
+  res@tiYAxisString           = "Raw areal Avg"
+  plot(0) = gsn_csm_xy(wks,yrfrac,xts(1,:),res)
+
+  res@gsnYRefLine             =  0.   
+  res@gsnAboveYRefLineColor   = "Red"   
+  res@gsnBelowYRefLineColor   = "Blue" 
+  res@tiYAxisString           = "Band-Pass"
+  plot(1) = gsn_csm_xy(wks,yrfrac,xts(0,:),res)
+
+  delete(res@gsnAboveYRefLineColor)
+  delete(res@gsnBelowYRefLineColor)
+  delete(res@gsnYRefLine)
+
+  res@tmXBLabelsOn            = True
+  res@tmXBOn                  = True
+
+  res@xyLineColor             = "green"         
+  res@xyLineThicknessF        = 2.                  ; 1 is default
+
+  yrfrac@long_name            = "date as fraction of year"
+  res@tiYAxisString           = "Run Variance"
+  plot(2) = gsn_csm_xy(wks,yrfrac,xts(2,:),res)
+;************************************************
+  resP                     = True                ; modify the panel plot
+  resP@txString            = xts@long_name+": Areal Averaged & Filtered: "  \
+                            +xts@bpfStrt+"-"+xts@bpfLast+" days: nw="  \
+                            +xts@bpfNwgt 
+  resP@gsnMaximize         = True
+  resP@gsnPaperOrientation = "portrait"          ; force portrait
+  resP@gsnPanelBottom      = 0.05                ; add some space at bottom 
+  gsn_panel(wks,plot,(/3,1/),resP)     
+
+end
+; +++++
+procedure band_pass_area_time_plot_cam(          \ 
+          xts[3][*]:numeric, date[*]:integer, datesec[*]:integer, \
+          diro[1]:string, pltType[1]:string, pltName[1]:string)
+begin
+
+end
+
+; ==============>  prototype function  <================= 
+function band_pass_latlon_time \
+                 (x[*][*][*]:numeric, spd[1]:numeric   \
+                 ,bpf[3]:numeric                       \
+                 ,opt:logical)
+
+local nMsg, dimx, ntim, nlat, mlon, dNam, n, tim_taper \
+    , bpfStrt, bpfLast, bpfNwgt, fca, fcb, ihp, sigma    \
+    , bpfWgt, work, WORK, cf, WCF
+begin
+  nMsg = num( ismissing(x) )
+  if (nMsg.gt.0) then
+      print("band_pass_latlon_time: currently, missing data not allowed: nMsg="+nMsg)
+      exit
+  end if
+
+  dimx    = dimsizes(x)
+  ntim    = dimx(0)
+  nlat    = dimx(1)
+  mlon    = dimx(2)
+
+  bpfStrt = bpf(0)                     ; days
+  bpfLast = bpf(1)
+  bpfNwgt = bpf(2)                     ; effective # weights
+
+  bpfNwgt = (bpfNwgt/2)*2 + 1          ; make sure it is odd
+
+  if (bpfStrt.gt.bpfLast) then         ; safety check
+      dumy    = bpfLast
+      bpfLast = bpfStrt
+      bpfStrt = dumy
+  end if
+
+  fca  = 1.0/(spd*bpfLast)
+  fcb  = 1.0/(spd*bpfStrt)
+
+  dNam = getvardims(x)                 ; get dimension names
+  do n=0,2                             ; only used if detrending
+     if (ismissing(dNam(n))) then      ; or tapering in time
+         x!n  = "dim"+n                ; assign name
+         dNam =  x!n
+     end if
+  end do
+
+;;work   = x(lat|:,lon|:,time|:)       ; reorder so time is rightmost
+  work   = x($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)   ; generic
+
+                                       ; By default ... no detrend
+  if (opt .and.(isatt(opt,"detrend") .and. opt@detrend)) then
+      if (isatt(work,"_FillValue")) then
+          delete(work@_FillValue)         ; avoid annoying warning msg
+      end if                           
+      work  = dtrend(work, False )     ; detrend
+      work@detrend = "data detrended in time"        
+  end if
+
+  ihp    = 2                               ; bpf=>band pass filter
+  sigma  = 1.0                             ; Lanczos sigma
+  bpfwgt = filwgts_lanczos (bpfNwgt, ihp, fca, fcb, sigma )
+
+  if (opt .and. isatt(opt,"fft") .and. opt@fft) then 
+                                       ; By default ... no taper
+      if (isatt(opt,"taper")) then
+          tim_taper = opt@taper
+      else
+          tim_taper = 0.10             ; default taper is 10%
+      end if
+      work       = taper(work, tim_taper, 0) 
+      work@taper = "data tapered in time"        
+                                           ; fft in time
+      cf   = ezfftf (work)                 ; cf(2,nlat,mlon,ntim/2)
+                                           ; map response of digitial
+                                           ; filter to fft space
+      fcf  = fspan(0, 0.5, ntim/2)         ; fft freq
+      wcf  = linint1 (bpfwgt@freq, bpfwgt@resp, False, fcf, 0)
+      WCF  = conform(cf(0,:,:,:), wcf, 2)
+      delete(wcf)
+                               
+      cf(0,:,:,:) = cf(0,:,:,:)*WCF        ; apply response coef
+      cf(1,:,:,:) = cf(1,:,:,:)*WCF
+      delete(WCF)
+       
+      work = ezfftb(cf, 0.0)               ; fourier synthesis
+      delete(cf)
+      work@process  =  "FFT with digital respoonse mapped tp FFT space"
+  else
+      work   = wgt_runave_Wrap(work,bpfwgt,0)
+      work@process  =  "wgt_runave"
+  end if
+
+  work@band_pass_start = bpfStrt
+  work@band_pass_last  = bpfLast
+  work@band_pass_Nwgts = bpfNwgt
+
+  X      = work($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)   
+  copy_VarMeta (x, X)
+  X@long_name = "Band Pass: "
+  if (isatt(x,"long_name")) then
+      X@long_name = "Band Pass: "+x@long_name
+  end if
+  
+  return( X )
+end
+; ----------------------------------------------------
+
+function band_pass_hovmueller(                         \
+                  x[*][*][*]:numeric, spd[1]:numeric   \
+                 ,bpf[3]:numeric, wy[*]:numeric, opt:logical)
+
+local nMsg, dimx, ntim, nlat, mlon, dNam, n, saveFillV \
+    , bpfStrt, bpfLast, bpfNwgt, fca, fcb, ihp, sigma    \
+    , bpfWgt, wgty, work, WORK, cf, WCF
+begin
+
+  nMsg = num( ismissing(x) )            ; error check
+  if (nMsg.gt.0) then
+      print("band_pass_hovmueller: currently, missing data not allowed: nMsg="+nMsg)
+      exit
+  end if
+
+  dimx    = dimsizes(x)                 
+  dimwy   = dimsizes(wy)                ; size wy
+  if (dimwy.gt.1 .and. dimx(1).ne.dimwy(0)) then
+      print("band_pass_hovmueller: sizes of y/lat dimension do not match")
+      print("                      dimsizes(wy)="+dimwy)
+      print("                      dimx(1)     ="+dimx(1))
+      exit
+  end if
+      
+  if (dimwy.eq.1) then                  ; scalar
+      wgty = new( dimwy, typeof(wy), getFillValue(wy))
+  end if
+  wgty = wy
+
+  ntim = dimx(0)
+  nlat = dimx(1)
+  mlon = dimx(2)
+
+  bpfStrt = bpf(0)                     ; days
+  bpfLast = bpf(1)
+  bpfNwgt = bpf(2)                     ; effective # weights
+
+  bpfNwgt = (bpfNwgt/2)*2 + 1          ; make sure it is odd
+
+  if (bpfStrt.gt.bpfLast) then         ; safety check
+      dumy    = bpfLast
+      bpfLast = bpfStrt
+      bpfStrt = dumy
+  end if
+
+  fca  = 1.0/(spd*bpfLast)             ; frq corresponding to
+  fcb  = 1.0/(spd*bpfStrt)             ; bpfStrt and bpfLast
+
+  dNam = getvardims(x)                 ; get dimension names
+  do n=0,2                             ; only used if detrending
+     if (ismissing(dNam(n))) then     
+         x!n  = "dim"+n              
+         dNam =  x!n
+     end if
+  end do
+                                       ; weighted average at each (lon,time)
+  work = dim_avg_wgt_Wrap(x($dNam(2)$|:, $dNam(0)$|:, $dNam(1)$|:), wgty, 0) 
+                                       ; unweighted average at each (lon,time)
+ ;work = dim_avg_Wrap(x($dNam(2)$|:, $dNam(0)$|:, $dNam(1)$|:)) 
+
+                                       ; Remove overall mean 
+  work = work - avg(work)   
+                                       ; By default ... no detrend in time
+  if (opt .and.(isatt(opt,"detrend") .and. opt@detrend)) then
+      if (isatt(work,"_FillValue")) then
+          saveFillV = work@_FillValue  ; avoid annoying warning msg
+          delete(work@_FillValue)
+      end if                           
+
+      work  = dtrend(work, False )     ; detrend in time
+
+      if (isvar("saveFillV")) then
+          work@_FillValue = saveFillV  ; reassign 
+      end if
+      work@detrend = "data detrended in time"        
+  end if
+
+  ihp    = 2                               ; bpf=>band pass filter
+  sigma  = 1.0                             ; Lanczos sigma
+  bpfwgt = filwgts_lanczos (bpfNwgt, ihp, fca, fcb, sigma )
+
+  work   = wgt_runave_Wrap(work,bpfwgt,0) ; apply filter to time
+
+  work@band_pass_start = bpfStrt
+  work@band_pass_last  = bpfLast
+  work@band_pass_Nwgts = bpfNwgt
+
+  
+  return(  work($dNam(0)$|:, $dNam(2)$|:) )  ; (time,lon)
+end
+; ==============>  prototype plot procedure  <================= 
+; create Hovmueller plots
+; =============================================================
+procedure band_pass_hovmueller_plot( x[*][*]:numeric    \  ; (time,lon)
+                                   , diro[1]:string     \
+                                   , pltType[1]:string  \
+                                   , pltName[1]:string  \
+                                   , opt[1]:logical  )
+
+local date, yrfrac, TIME, ntim, yyyy, mm, dd, hh, pltPath \
+    , resH, hplt, nt, ntm, monNam, tValL, tLabL           \
+    , tValR, tLabR
+begin
+
+  pltPath = diro+"/"+pltName
+
+  wks     = gsn_open_wks(pltType , pltPath)
+  gsn_define_colormap(wks,"amwg_blueyellowred") 
+
+  resH                       = True     ; plot mods desired
+  resH@cnFillOn              = True     ; turn on color fill
+  resH@cnLinesOn             = False    ; turn of contour lines
+  resH@cnLineLabelsOn        = False    ; turn of contour line labels
+  resH@gsnSpreadColors       = True     ; use full range of color map
+  resH@gsnSpreadColorStart   =  2     
+  resH@gsnSpreadColorEnd     = 17    
+  resH@lbLabelAutoStride     = True     ; let NCL figure spacing
+  resH@pmLabelBarHeightF     = 0.1      ; default is taller
+
+  resH@trYReverse            = True     ; reverse the y (time) axis
+  resH@gsnMaximize           = True  
+  resH@gsnPaperOrientation   = "portrait"
+
+  symMinMaxPlt (x,16,False,resH)        ; nice symmetric range
+
+  resH@tmLabelAutoStride     = True     ; don't let labels overlap
+
+                                        ; TIME RELATED VARIABLES
+  time   = x&time                       ; clarity
+  date   = ut_calendar(x&time, -3)      ; gregorian calendar
+  yrfrac = yyyymmddhh2yyyyFrac( date)
+  delete(yrfrac@long_name)
+
+  TIME   = ut_calendar(x&time, 0 )      ; gregorian calendar
+  yyyy   = floattoint( TIME(:,0) )
+  mm     = floattoint( TIME(:,1) )
+  dd     = floattoint( TIME(:,2) )
+ ;hh     = floattoint( TIME(:,3) )
+  ntim   = dimsizes(date)
+                                        ; Left axis
+  if (opt .and. isatt(opt,"yearFraction")) then
+      resH@tmYLMode              = "Manual"
+      if (isatt(opt,"yearFractionSpacingF")) then
+          resH@tmYLTickSpacingF  = opt@yearFractionSpacingF
+      else
+          resH@tmYLTickSpacingF  = 0.25    ; 0, .25, .50, .75
+      end if
+    ;;resH@tmYLTickStartF = yyyy(0)
+    ;;resH@tmYLTickEndF   = yyyy(ntim-1)
+      x&time = yrfrac
+  else
+      monNam = (/"Jan","Feb","Mar","Apr","May","Jun" \
+                ,"Jul","Aug","Sep","Oct","Nov","Dec" /)
+      tValL = new(ntim, typeof(x&time) , "No_FillValue") ; bigger than
+      tLabL = new(ntim, "string", "No_FillValue")      ; needed
+     ;tValR = tValL
+     ;tLabR = tLabL
+ 
+      if (opt .and. isatt(opt,"monthLabels")) then
+          monthLabels = opt@monthLabels
+      else
+          monthLabels = (/1,4,7,10/)
+      end if
+
+      ntm   = -1
+      do nt=0,ntim-1
+         if (dd(nt).eq.1 .and. any(mm(nt).eq.monthLabels)) then
+             ntm        = ntm + 1
+             tValL(ntm) = x&time(nt)
+             tLabL(ntm) = monNam(mm(nt)-1)
+            ;tValR(ntm) = x&time(nt)
+             if (dd(nt).eq.1 .and. mm(nt).eq.1) then
+                 tLabL(ntm) = sprinti("%0.4i", yyyy(nt))+" "+tLabL(ntm)
+            ;    tLabL(ntm) = yyyy(nt)+" "+tLabL(ntm)
+            ;   ;tLabL(ntm) = tLabL(ntm)+"~C~"+yyyy(nt)
+            ;    tLabR(ntm) = yyyy(nt)
+            ;else
+            ;    tLabR(ntm) = ""
+             end if
+         end if
+      end do
+
+      resH@tmYLMode              = "Explicit"
+      resH@tmYLValues            = tValL(0:ntm)
+      resH@tmYLLabels            = tLabL(0:ntm)
+    
+     ;resH@tmYRLabelsOn          = True              ; use for year
+     ;resH@tmYUseLeft            = False
+     ;resH@tmYRMode              = "Explicit"
+     ;resH@tmYRValues            = tValR(0:ntm)
+     ;resH@tmYRLabels            = tLabR(0:ntm)
+
+  end if
+ ;resH@cnLevelSpacingF =  20
+ ;resH@cnMaxLevelValF  =  80
+ ;resH@cnMinLevelValF  = -80
+ ;resH@cnLevelSelectionMode = "ManualLevels"
+				    
+ ;hplt   = gsn_csm_hov(wks, x, resH)   
+  hplt   = gsn_csm_contour(wks, x, resH)   
+
+  if (isatt(resH,"tmYLMode") .and. resH@tmYLMode.eq."Manual") then
+      x&time = time   ; reassign original time coordinate variable
+  end if
+end
+
