@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.29 2008-07-15 21:20:34 haley Exp $
+;      $Id: shea_util.ncl,v 1.30 2008-10-13 21:26:44 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2272,7 +2272,8 @@ begin
       end if
 ;      print("yBot = "+yBot+", xLeft = "+xLeft+", xRight = "+xRight)
    end if
-   script_name = systemfunc("pwd")+"/"+get_script_name()+".ncl"
+ ;;script_name = systemfunc("pwd")+"/"+get_script_name()+".ncl"
+   script_name = systemfunc("pwd")+"/"+get_script_name()        ; 5.0.1
 
    txres               = True         ; additional info
    txres@txFontHeightF = chSize       ; size of meta data
