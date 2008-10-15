@@ -71,8 +71,6 @@ static float* zcfy=(float*)NULL;
  *   approximately equal to the ratio of the width of the PNG to its
  *   height.
  *
- *   IERR is an error flag, returned non-zero if an error occurs.
- *
  */
 
 void NGCALLF(mapngr,MAPNGR)(flnm,lcfa)
