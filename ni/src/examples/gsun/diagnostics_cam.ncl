@@ -458,7 +458,7 @@ end
 ;    Fourier and TimeCross Spectral Analysis
 ;    J. Meteor. Soc. Japan, 1971, 49: 125-128.
 ;==================================================================
-
+undef ("wkSpaceTime")
 procedure wkSpaceTime (x[*][*][*]:numeric                  \
                       ,diro[1]:string                      \
                       ,caseName[1]:string                  \
@@ -1528,6 +1528,7 @@ end
 ; l2 norm written by Mark Taylor
 ; function  || T || on 2D horizontal array
 ;------------------------------------------------------- 
+undef ("norml2")
 function norml2 (varz[*][*]:numeric,gw[*]:numeric)
 local s2, gs, varl
 begin
@@ -1546,6 +1547,7 @@ end
 ;------------------------------------------------------- 
 ; Energy
 ;------------------------------------------------------- 
+ undef ("energy_a")
  function energy_a(u[*][*][*][*]:numeric,   v[*][*][*][*]:numeric\
                   ,t[*][*][*][*]:numeric,phis[*][*][*]:numeric   \
                   ,wy[*]:numeric, wz:numeric, opt[1]:integer )
@@ -1598,6 +1600,7 @@ end
    return( e ) 
  end
 ; ====================================================
+undef ("band_pass_area_time")
 function band_pass_area_time \
                  (x[*][*][*]:numeric, spd[1]:numeric   \
                  ,bpf[3]:numeric                       \
@@ -1689,7 +1692,7 @@ begin
   return( xts )
 end
 ; =================================================================
-
+undef("band_pass_area_time_plot")
 procedure band_pass_area_time_plot(           \ 
           xts[3][*]:numeric, time[*]:numeric, \
           diro[1]:string, pltType[1]:string,  \
@@ -1756,6 +1759,7 @@ begin
 
 end
 ; +++++
+undef ("band_pass_area_time_plot_cam")
 procedure band_pass_area_time_plot_cam(          \ 
           xts[3][*]:numeric, date[*]:integer, datesec[*]:integer, \
           diro[1]:string, pltType[1]:string, pltName[1]:string)
@@ -1764,6 +1768,7 @@ begin
 end
 
 ; ==============>  prototype function  <================= 
+undef ("band_pass_latlon_time")
 function band_pass_latlon_time \
                  (x[*][*][*]:numeric, spd[1]:numeric   \
                  ,bpf[3]:numeric                       \
@@ -1868,6 +1873,7 @@ begin
 end
 ; ----------------------------------------------------
 
+undef ("band_pass_hovmueller")  
 function band_pass_hovmueller(                         \
                   x[*][*][*]:numeric, spd[1]:numeric   \
                  ,bpf[3]:numeric, wy[*]:numeric, opt:logical)
@@ -1961,6 +1967,7 @@ end
 ; ==============>  prototype plot procedure  <================= 
 ; create Hovmueller plots
 ; =============================================================
+undef ("band_pass_hovmueller_plot")
 procedure band_pass_hovmueller_plot( x[*][*]:numeric    \  ; (time,lon)
                                    , diro[1]:string     \
                                    , pltType[1]:string  \
