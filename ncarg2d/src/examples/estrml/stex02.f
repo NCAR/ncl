@@ -34,6 +34,11 @@ C
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
 C
+      CALL GSCR(IWKID, 0, 0.0, 0.00, 0.0)
+      CALL GSCR(IWKID, 1, 1.0, 1.00, 1.0)
+      CALL GSCR(IWKID, 3, 0.0, 1.00, 0.0)
+      CALL GSCR(IWKID, 7, 0.5, 0.15, 0.5)
+C
 C Invoke demo driver
 C
       CALL DOST02(IERR)
