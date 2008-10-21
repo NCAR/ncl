@@ -965,11 +965,11 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
       end if
   end if  ; end "PlotWindH"
 
-  skewt_bkgd@cape            = (/ cape /)
-  skewt_bkgd@precip_water    = pwat            ; cm
-  skewt_bkgd@showalter_index = shox
-  skewt_bkgd@plcl            = plcl  
-  skewt_bkgd@tlcl            = tlcl  
+  skewt_bkgd@Cape            = (/ cape /)
+  skewt_bkgd@Pwat            = pwat            ; cm
+  skewt_bkgd@Shox            = shox
+  skewt_bkgd@Plcl            = plcl  
+  skewt_bkgd@Tlcl            = tlcl  
 
   return (skewt_bkgd)
 
