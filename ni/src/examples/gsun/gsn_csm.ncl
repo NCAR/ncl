@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.231 2008-10-07 20:12:58 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.232 2008-10-21 04:51:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1364,7 +1364,7 @@ begin
       print("to the recognized names for 'hecto-pascals' or 'millibars', so")
       print("assuming pressure values are already converted to millibars.")
     end if
-    ptmp = tofloat(p)     ; Assume already converted to mb!
+    ptmp = tofloat_wunits(p)     ; Assume already converted to mb!
   end if
 
   nsa = 53
@@ -2136,9 +2136,9 @@ procedure set_pres_hgt_axes(pres:numeric,res:logical,add_hgt:logical)
 local hgt, hnice, pnice, ptmp
 begin
   if(pres(0).lt.pres(dimsizes(pres)-1))
-    ptmp = tofloat(pres(::-1))    ; reverse values so descending order
+    ptmp = tofloat_wunits(pres(::-1))    ; reverse values so descending order
   else
-    ptmp = tofloat(pres)          ; Make sure values are floating point.
+    ptmp = tofloat_wunits(pres)          ; Make sure values are floating point.
   end if
 
   if(.not.(isatt(res,"sfYCStartV").and.isatt(res,"sfYCEndV")))
@@ -11251,10 +11251,10 @@ begin
 ; reverse 'em.
 ;
       if(data&$data!0$(0).lt.data&$data!0$(npres-1))
-        pres = tofloat(data&$data!0$(::-1))  ; reverse the values
+        pres = tofloat_wunits(data&$data!0$(::-1))  ; reverse the values
         pres_reverse =  False          ; pres values weren't already reversed
        else
-        pres = tofloat(data&$data!0$)
+        pres = tofloat_units(data&$data!0$)
       end if
 ;
 ; Check the units.
@@ -11265,7 +11265,7 @@ begin
 ; If pressure values are Pascals, convert them to millibars.
 ;
         if(any(data&$data!0$@units.eq.get_allowed_pres_units_pa()))
-          pres = tofloat(data&$data!0$) * 0.01  ; convert to mb
+          pres = tofloat_wunits(data&$data!0$) * 0.01  ; convert to mb
           pres@units = "mb"
         end if
       else

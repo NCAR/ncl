@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.211 2008-06-13 14:50:48 haley Exp $
+;      $Id: gsn_code.ncl,v 1.212 2008-10-21 04:51:15 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -42,6 +42,7 @@ undef("smooth92d")
 undef("smooth93d")
 undef("hsv2rgb")
 undef("tofloat")
+undef("tofloat_wunits")
 undef("tointeger")
 undef("stringtoxxx")
 undef("lower_case")
@@ -359,6 +360,23 @@ begin
       delete(xf@_FillValue)
     end if
     xf = x
+  end if
+  return(xf)
+end
+
+;***********************************************************************;
+; function : tofloat_wunits                                             ;
+;                x:numeric                                              ;
+;                                                                       ;
+; Convert input to float and retain units attribute.                    ;
+;                                                                       ;
+;***********************************************************************;
+function tofloat_wunits(x:numeric)
+local xf
+begin
+  xf = tofloat(x)
+  if(isatt(x,"units").and..not.isatt(xf,"units")) then
+    xf@units = x@units
   end if
   return(xf)
 end
