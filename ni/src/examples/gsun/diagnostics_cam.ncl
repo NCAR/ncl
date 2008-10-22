@@ -2080,4 +2080,262 @@ begin
       x&time = time   ; reassign original time coordinate variable
   end if
 end
+; ====================================================
+undef("mjo_spectra_segment")
+function mjo_spectra_segment \
+                 (x[*][*][*]:numeric, date[*]:integer, wy[*]:numeric \
+                 ,seaName[1]:string, opt:logical)
 
+; MJO CLIVAR: perform segment averaging
+;             winter starts Nov 1  [180 days]
+;             summer starts May 1  [180 days]
+;             annual starts Jan 1  [365 days]
+
+local nMsg, dimx, dimwy, ntim, save_FillValue, xts, nr, ns   \
+    , nDay, nSea, iSea, mmdd, yyyy, mmddStrt, sdof, z1, smjo \
+    , spec, d, sm, pct, xtsVar, xvari
+begin
+                                      ; error check
+  nMsg = num( ismissing(x) )
+  if (nMsg.gt.0) then
+      print("mjo_spectra: currently, missing data not allowed: nMsg="+nMsg)
+      exit
+  end if
+
+  dimx  = dimsizes(x)
+  dimwy = dimsizes(wy)
+  if (dimx(1).ne.dimwy(0)) then
+      print("band_pass_area_time: sizes of y/lat dimension do not match")
+      print("                     dimsizes(wy)="+dimwy)              
+      print("                     dimx(1)=nlat="+dimx(1))              
+      exit
+  end if
+  ntim = dimx(0)
+  xts  = wgt_areaave_Wrap(x, wy, 1., 0)    ; (time)
+
+  if (opt .and. isatt(opt,"detrend") .and. opt@detrend) then
+      if (isatt(xts,"_FillValue")) then
+          save_FillValue = x@_FillValue
+          delete(xts@_FillValue)           ; avoid annoying warning msg
+      end if                               ; from dtrend
+
+      xts = dtrend(xts, False )  ; detrend 
+
+      if (isvar("save_FillValue")) then
+          xts@_FillValue = save_FillValue  ; reassign
+      end if
+  end if
+
+  nDay = 180
+  if (seaName.eq."winter") then
+      mmddStrt = 1101                      ; Nov 1
+  end if
+  if (seaName.eq."summer") then
+      mmddStrt =  501                      ; May 1
+  end if
+  if (seaName.eq."annual") then
+      nDay     = 365
+      mmddStrt = 101                       ; Jan 1
+  end if
+
+  yyyy = date/10000
+  mmdd = date - yyyy*10000
+  nSea = num(mmdd.eq.mmddStrt)             ; number of seasons
+  iSea = ind(mmdd.eq.mmddStrt) 
+  if (seaName.eq."winter") then
+      nSea = nSea-1                        ; last season not complete
+  end if
+
+;*****************************************************************
+; calculate spectrum via segment averaging
+; MJO Clivar says "no" to detrending/tapering
+;*****************************************************************
+  if (opt .and. isatt(opt,"detrend_seg") ) then
+      d   = opt@detrend_seg
+  else
+      d   = 0   ; detrending opt: 0=>remove mean 1=>remove mean and detrend
+  end if
+  if (opt .and. isatt(opt,"smooth_seg") ) then
+      sm  = opt@smooth_seg
+  else
+      sm  = 0   ; smooth periodogram: 0 mean no smooth [pure periodgram]
+  end if
+  if (opt .and. isatt(opt,"taper_seg") ) then
+      pct = opt@taper_seg
+  else
+      pct = 0.0 ; percent tapered: (0.0 <= pct <= 1.0) 0.10 common. 
+  end if
+
+  spec  = new ( nDay/2, typeof(x))
+  spec  = 0.0
+  z1    = 0.0                              
+  xtsVar= 0.0
+
+  do ns=0,nSea-1                           ; segment averaging
+     iStrt  = iSea(ns) 
+     iLast  = iSea(ns)+nDay-1 
+     sdof   = specx_anal(xts(iStrt:iLast),d,sm,pct)
+     spec   = spec + sdof@spcx
+     xtsVar = xtsVar + sdof@xvari
+     z1     = z1   + 0.5*log((1+sdof@xlag1)/(1-sdof@xlag1)) ; Fischer z-transform
+  end do
+
+  spec  = spec/nSea                         ; average spectra
+  z1    = z1/nSea                           ; mean z
+  xvari = xtsVar/nSea                       ; mean variance per segment
+
+  smjo       = (/ sdof /)
+  smjo       = 2*nSea                       ; # degrees freedom
+  smjo@bw    = sdof@bw
+  smjo@spcx  = spec
+  smjo@xvari = xvari       
+  smjo@frq   = sdof@frq
+  smjo@xlag1 = (exp(2*z1)-1)/(exp(2*z1)+1)  ; match specx_anal 
+
+  return( smjo )
+end
+;*******************************************************************
+undef("mjo_spectra")
+procedure mjo_spectra \
+                 (X[*][*][*]:numeric, date[*]:integer, wy[*]:numeric \
+                 ,latS[*]:numeric, latN[*]:numeric                   \
+                 ,lonL[*]:numeric, lonR[*]:numeric                   \
+                 ,nameRegion[*]:string, opt[1]:logical)
+
+; driver for MJO CLIVAR segment averaging
+
+; MJO CLIVAR:  http://climate.snu.ac.kr/mjo_diagnostics/index.htm
+;              Plot spectra with x-axis as frequency with log scaling and 
+;              y-axis as power times frequency
+
+local frqmnPlt, frqmxPlt, nameSeason, nSeason, r, resP, tiXAxisString \
+    , ns, nr, plot, x, pltName, pltType, pltPath, sMJO, splt          \
+    , ifrqmxPlt, nRegion
+begin
+
+  frqmxPlt   = 0.15         ; graphics X -axis  [frequency]
+  frqmnPlt   = 1./365.
+
+  nameSeason = (/ "winter", "summer", "annual" /)
+  nSeason = dimsizes(nameSeason)
+
+  nRegion = dimsizes(nameRegion)
+
+;*******************************************************************
+; general graphics resources
+;*******************************************************************
+  r                 = True                      ; plot mods desired
+  r@gsnDraw         = False                     ; do not draw
+  r@gsnFrame        = False                     ; do not advance frame
+  r@tiYAxisString   = "Power x freq"            ; yaxis
+  r@xyLineThicknesses   = (/2, 2, 1, 1/)        ; Define line thicknesses 
+  r@xyDashPatterns  = (/0, 0, 1, 1/)            ; Dash patterns 
+  r@xyLineColors    = (/"foreground","red","blue","blue"/)
+  r@vpHeightF       = 0.4               ; change aspect ratio of plot
+  r@vpWidthF 	    = 0.7
+
+  r@trXLog          = True                      ; default
+  if (opt .and. isatt(opt,"logXAxis") .and. .not.opt@logXAxis) then
+      delete(r@trXLog)                          ; linear x (freq) axis
+  end if
+  
+  if (opt .and. isatt(opt,"periodXAxis") .and. .not.opt@periodXAxis) then
+      tiXAxisString = "Frequency (cycles/day)"  ; x (freq) axis
+  else                                          
+      r@tmXBMode    = "Explicit"                ; default
+      r@tmXBValues  = (/0.1, 0.05, 0.0333, 0.0167, 0.01, frqmnPlt/)
+      r@tmXBLabels  = (/ 10,   20,   30  ,   60  ,  100,   365/)
+      tiXAxisString = "Period (days)"           ; xaxis
+  end if
+                                                ; linear Y is default
+  if (opt .and. isatt(opt,"logYAxis") .and. opt@logYAxis) then
+      r@trYLog  = True
+  end if
+
+  resP                  = True             
+  resP@gsnMaximize      = True            
+  resP@gsnStringFontHeightF = 0.025   
+  resP@gsnPanelBottom   = 0.05
+
+  plot = new ( nSeason, "graphic")
+
+  r@trXMaxF  = frqmxPlt                         ; X Axis [rightmost freq]
+
+  if (opt .and. isatt(opt,"pltType")) then
+      if (opt@pltType.eq."png") then
+           pltType = "eps"
+      else
+           pltType = opt@pltType
+      end if
+  else
+      pltType = "eps"                           ; default
+  end if
+
+  if (opt .and. isatt(opt,"pltDir")) then
+      pltDir  = opt@pltDir  
+  else
+      pltDir  = "./"                            ; default
+  end if
+
+  do nr=0,nRegion-1
+                                                ;  extract region 
+     x    = X(:,{latS(nr):latN(nr)},{lonL(nr):lonR(nr)}) 
+     wgty = wy({latS(nr):latN(nr)})
+
+     pltName  = "mjo_spectra_"+nameRegion(nr)        
+     wks      = gsn_open_wks(pltType, pltName)        
+
+    do ns=0,nSeason-1
+       sMJO     = mjo_spectra_segment(x, date, wgty, nameSeason(ns), opt)
+       splt     = specx_ci (sMJO, 0.05, 0.95)
+
+       ifrqmxPlt= ind(sMJO@frq .ge. frqmnPlt .and. sMJO@frq .le. frqmxPlt)
+       r@gsnCenterString = nameSeason(ns)
+
+       if (isatt(r,"trXLog") .and. r@trXLog) then
+           r@trXMinF  = frqmnPlt      
+       end if
+
+       if (isatt(r,"trYLog") .and. r@trYLog) then
+           r@trYMinF  = 0.95*min(splt(:,ifrqmxPlt))
+           r@trYMaxF  = 1.05*max(splt(:,ifrqmxPlt))
+       end if
+
+       if (ns.eq.(nSeason-1)) then
+           r@tiXAxisString = tiXAxisString
+       end if
+
+      ;plot(ns) = gsn_csm_xy(wks,sMJO@frq(ifrqmxPlt), splt(:,ifrqmxPlt),r)
+       work     = splt
+       work     = work*conform(work,sMJO@frq,1)
+       plot(ns) = gsn_csm_xy(wks,sMJO@frq(ifrqmxPlt), work(:,ifrqmxPlt),r)
+
+       if (ns.eq.(nSeason-1)) then
+           delete(r@tiXAxisString)
+       end if
+
+       delete(sMJO)
+       delete(splt)
+       delete(work)
+       delete(ifrqmxPlt)
+    end do    
+     resP@txString = nameRegion(nr)+": "+x@long_name
+     gsn_panel(wks,plot,(/3,1/),resP)   
+
+     if (opt .and. isatt(opt,"pltType") .and. opt@pltType.eq."png") then
+         if (isatt(opt,"pltConvert")) then 
+             pltConvert = opt@pltConvert    ; convert options
+         else
+             pltConvert = " "               ; default
+         end if
+
+         pltPath = pltDir+pltName+"."+pltType
+         system("convert "+pltConvert+" "+pltPath+" "+pltDir+pltName+".png")
+         system("/bin/rm -f "+pltPath)
+     end if
+
+     delete(x)
+     delete(wgty)
+  end do    
+
+end
