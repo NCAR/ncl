@@ -1,5 +1,5 @@
 C
-C $Id: supmap.f,v 1.25 2008-09-18 00:42:18 kennison Exp $
+C $Id: supmap.f,v 1.26 2008-10-22 20:14:55 kennison Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -23,9 +23,10 @@ C
 C
 C Declare local variables.
 C
-        INTEGER          I,INTF,LLTS(6),LPRJ(17)
+        INTEGER          I,INTF,LLTS(6),LPRJ(18)
 C
-        DATA LPRJ / 2,3,1,4,5,6,17,7,8,9,10,17,11,12,13,14,15 /
+        DATA LPRJ / 2,3,1,4,5,6,16,7,8,9,10,18,11,12,13,14,15,17 /
+C
         DATA LLTS / 1,2,5,4,3,6 /
 C
 C Set the error flag to indicate an error; if all goes well, this flag
