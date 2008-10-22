@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.232 2008-10-21 04:51:15 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.233 2008-10-22 19:11:04 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -11254,7 +11254,7 @@ begin
         pres = tofloat_wunits(data&$data!0$(::-1))  ; reverse the values
         pres_reverse =  False          ; pres values weren't already reversed
        else
-        pres = tofloat_units(data&$data!0$)
+        pres = tofloat_wunits(data&$data!0$)
       end if
 ;
 ; Check the units.
