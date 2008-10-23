@@ -57,18 +57,34 @@ C
       CALL GOPWK (IWKID, LUNIT, IWTYPE)
       CALL GACWK (IWKID)
 C
+C Define color table
+C
+      CALL COLOR(IWKID)
+C
+C Label the first plot.
+C
+      CALL GSTXCI (7)
+      CALL PLCHLQ (CFUX(.5),CFUY(.98),
+     +             'Crossing contours over the "Americas"',.015,0.,0.)
+C
 C Outline continents in red
 C
+      CALL GSPLCI (1)
       CALL CURVE (XGEO,YGEO,NMAP)
 C
 C Outline contours and perimeter in green
 C
+      CALL GSPLCI (2)
       CALL CURVE (XCNTR,YCNTR1,NPTS)
       CALL CURVE (XCNTR,YCNTR2,NPTS)
       CALL CURVE (XCNTR,YCNTR3,NPTS)
       CALL CURVE (XCNTR,YCNTR4,NPTS)
       CALL CURVE (XCNTR,YCNTR5,NPTS)
       CALL CURVE (XPERIM,YPERIM,5)
+C
+C Advance the frame.
+C
+      CALL FRAME
 C
 C Initialize Areas
 C
@@ -86,10 +102,13 @@ C
       CALL AREDAM (MAP, XCNTR, YCNTR4, NPTS, 3, 5, 4)
       CALL AREDAM (MAP, XCNTR, YCNTR5, NPTS, 3, 6, 5)
 C
+C Run debugging subroutine on group 1
+C
+      CALL ARDBPA (MAP,1,'ARDBPA output - group 1 - "Americas"')
+C
 C Run debugging subroutine on group 3
 C
-      CALL ARDBPA (MAP, 3, 'Crossing Contours')
-      CALL ARDBPA (MAP, 1, 'Crossing Contours')
+      CALL ARDBPA (MAP,3,'ARDBPA output - group 3 - Crossing Contours')
 C
 C Deactivate and close workstation, close GKS.
 C
@@ -98,4 +117,20 @@ C
       CALL GCLKS
  11   FORMAT ('A(',I1,')=',I1,' G(',I1,')=',I1)
       STOP
+      END
+
+      SUBROUTINE COLOR(IWKID)
+C
+C Define color table
+C
+      CALL GSCR(IWKID,0,0.,0.,0.)
+      CALL GSCR(IWKID,1,1.,0.,0.)
+      CALL GSCR(IWKID,2,0.,1.,0.)
+      CALL GSCR(IWKID,3,1.,1.,0.)
+      CALL GSCR(IWKID,4,0.,0.,1.)
+      CALL GSCR(IWKID,5,1.,0.,1.)
+      CALL GSCR(IWKID,6,0.,1.,1.)
+      CALL GSCR(IWKID,7,1.,1.,1.)
+      
+      RETURN
       END
