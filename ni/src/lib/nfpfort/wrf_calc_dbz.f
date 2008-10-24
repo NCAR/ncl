@@ -1,5 +1,5 @@
 C NCLFORTSTART
-      SUBROUTINE calc_dbz (mdbz, dbz, prs, tmk, qvp, qra, qsn, qgr
+      SUBROUTINE calcdbz (mdbz, dbz, prs, tmk, qvp, qra, qsn, qgr
      &          ,west_east_dim,south_north_dim,bottom_top_dim, ivarint)
 
 c     NCL:  
@@ -176,6 +176,6 @@ c f90 mdbz(:,:) = 0.0
         ENDDO
       ENDDO
 
-c f90 END SUBROUTINE calc_dbz
+c f90 END SUBROUTINE calcdbz
       return
       end
