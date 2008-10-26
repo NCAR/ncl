@@ -108,7 +108,7 @@ C Draw titles in white
 C
       CALL GETSET(VPL,VPR,VPB,VPT,WL,WR,WB,WT,LOG)
       CALL SET(0.,1.,0.,1.,0.,1.,0.,1.,1)
-      CALL GSPLCI (0)
+      CALL GSPLCI (1)
       CALL PLCHHQ (.3,VPT+.015,'Unsmoothed Contours',.015,0.,0.)
       CALL PLCHHQ (.75,VPT+.015,'Over Smoothed Contours',.015,0.,0.)
 C
