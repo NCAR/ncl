@@ -286,7 +286,7 @@ NhlErrorTypes ut_calendar_W( void )
  * Make sure cspec is a valid udunits string.
  */
           if(utScan(cspec, &unit) != 0) {
-            NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Invalid specification string");
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
             return_missing = 1;
           }
         }
