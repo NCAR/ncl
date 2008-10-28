@@ -1,9 +1,12 @@
-/* 
+/*
+ *
  * US National Weather Service - NCEP (WMC)
+ * For North American Regional Reanalysis
+ *
  * Center: 7
- * Subcenter: 0 
+ * Subcenter: 0
  * Parameter table version: 131
- */ 
+ */
 
 TBLE2 ncep_131_params[] = {
 {1, "Pressure", "Pa", "PRES"},
@@ -141,10 +144,10 @@ TBLE2 ncep_131_params[] = {
 {135, "Horizontal moisture divergence", "kg/kg/s", "MCONV"},
 {136, "Vertical speed shear", "1/s", "VWSH"},
 {139, "Potential vorticity (mass-weighted)", "1/s/m", "PVMW"},
-{140, "Categorical rain", "yes=1;no=0", "CRAIN"},
-{141, "Categorical freezing rain", "yes=1;no=0", "CFRZR"},
-{142, "Categorical ice pellets", "yes=1;no=0", "CICEP"},
-{143, "Categorical snow", "yes=1;no=0", "CSNOW"},
+{140, "Categorical rain [yes=1; no=0]", "non-dim", "CRAIN"},
+{141, "Categorical freezing rain [yes=1; no=0]", "non-dim", "CFRZR"},
+{142, "Categorical ice pellets [yes=1; no=0]", "non-dim", "CICEP"},
+{143, "Categorical snow [yes=1; no=0]", "non-dim", "CSNOW"},
 {144, "Volumetric soil moisture (frozen + liquid)", "fraction", "SOILW"},
 {145, "Potential evaporation rate", "W/m^2", "PEVPR"},
 {146, "Vegetation canopy temperature", "K", "VEGT"},
@@ -172,7 +175,7 @@ TBLE2 ncep_131_params[] = {
 {169, "Near IR diffuse downward solar flux", "W/m^2", "NDDSF"},
 {170, "Snow-free albedo", "%", "SNFALB"},
 {171, "Number of soil layers in root zone", "non-dim", "RLYRS"},
-{172, "Momentum flux", "N/m2", "MFLX"},
+{172, "Momentum flux", "N/m^2", "MFLX"},
 {173, "Mass point model surface", "non-dim", "LMH"},
 {174, "Velocity point model surface", "non-dim", "LMV"},
 {175, "Model layer number (from bottom up)", "non-dim", "MLYNO"},
@@ -185,12 +188,12 @@ TBLE2 ncep_131_params[] = {
 {182, "Leaf area index (0-9)", "non-dim", "LAI"},
 {183, "Roughness length for heat", "m", "SFCRH"},
 {184, "Snow albedo (over snow cover area only)", "%", "SALBD"},
-{187, "Normalized Difference Vegetation Index", "none", "NDVI"},
+{187, "Normalized Difference Vegetation Index", "non-dim", "NDVI"},
 {188, "Rate of water dropping from canopy to gnd", "kg/m^2", "DRIP"},
-{189, "Land cover (nearest neighbor)", "sea=0,land=1", "LANDN"},
+{189, "Land-sea coverage (nearest neighbor) [land=1, sea=0]", "non-dim", "LANDN"},
 {190, "Storm relative helicity", "m^2/s^2", "HLCY"},
-{191, "Latitude (nearest neigbhbor) (-90 to +90)", "deg", "NLATN"},
-{192, "East longitude (nearest neigbhbor) (0-360)", "deg", "ELONN"},
+{191, "Latitude (nearest neighbor) (-90 to +90)", "deg", "NLATN"},
+{192, "East longitude (nearest neighbor) (0-360)", "deg", "ELONN"},
 {194, "Prob. of frozen precipitation", "%", "CPOFP"},
 {196, "u-component of storm motion", "m/s", "USTM"},
 {197, "v-component of storm motion", "m/s", "VSTM"},
@@ -209,34 +212,34 @@ TBLE2 ncep_131_params[] = {
 {212, "Upward long wave radiation flux", "W/m^2", "ULWRF"},
 {213, "Non-convective cloud", "%", "CDLYR"},
 {214, "Convective precip. rate", "kg/m^2/s", "CPRAT"},
-{216, "Temp. tendency by all radiation", "K/s", "TTRAD"},
+{216, "Temperature tendency by all radiation", "K/s", "TTRAD"},
 {218, "Geopotential Height (nearest grid point)", "gpm", "HGTN"},
 {219, "Wilting point", "fraction", "WILT"},
 {220, "Field Capacity", "fraction", "FLDCP"},
 {221, "Planetary boundary layer height", "m", "HPBL"},
-{222, "Surface slope type", "Index", "SLTYP"},
+{222, "Surface slope type", "index", "SLTYP"},
 {223, "Plant canopy surface water", "kg/m^2", "CNWAT"},
-{224, "Soil type", "Index", "SOTYP"},
-{225, "Vegetation type", "Index", "VGTYP"},
+{224, "Soil type", "index", "SOTYP"},
+{225, "Vegetation type", "index", "VGTYP"},
 {226, "Blackadars mixing length scale", "m", "BMIXL"},
 {227, "Asymptotic mixing length scale", "m", "AMIXL"},
 {228, "Potential evaporation", "kg/m^2", "PEVAP"},
 {229, "Snow phase-change heat flux", "W/m^2", "SNOHF"},
 {230, "Transpiration stress-onset (soil moisture)", "fraction", "SMREF"},
 {231, "Direct evaporation cease (soil moisture)", "fraction", "SMDRY"},
-{232, "water vapor added by precip assimilation", "kg/m^2/s", "WVINC"},
-{233, "water condensate added by precip assimilaition", "kg/m^2/s", "WCINC"},
+{232, "water vapor added by precip assimilation", "kg/m^2", "WVINC"},
+{233, "water condensate added by precip assimilation", "kg/m^2", "WCINC"},
 {234, "Subsurface runoff (baseflow)", "kg/m^2", "BGRUN"},
 {235, "Surface runoff (non-infiltrating)", "kg/m^2", "SSRUN"},
-{237, "Water vapor flux convergence (vertical int)", "kg/m^2/s", "WVCONV"},
+{237, "Water vapor flux convergence (vertical int)", "kg/m^2", "WVCONV"},
 {238, "Snow cover", "%", "SNOWC"},
 {239, "Snow temperature", "K", "SNOT"},
 {240, "Soil porosity", "fraction", "POROS"},
-{241, "Water condensate flux convergence (vertical int)", "kg/m^2/s", "WCCONV"},
-{242, "Water vapor zonal flux (vertical int)", "kg/m/s", "WVUFLX"},
-{243, "Water vapor meridional flux (vertical int)", "kg/m/s", "WVVFLX"},
-{244, "Water condensate zonal flux (vertical int)", "kg/m/s", "WCUFLX"},
-{245, "Water condensate meridional flux (vertical int)", "kg/m/s", "WCVFLX"},
+{241, "Water condensate flux convergence (vertical int)", "kg/m^2", "WCCONV"},
+{242, "Water vapor zonal flux (vertical int)", "kg/m", "WVUFLX"},
+{243, "Water vapor meridional flux (vertical int)", "kg/m", "WVVFLX"},
+{244, "Water condensate zonal flux (vertical int)", "kg/m", "WCUFLX"},
+{245, "Water condensate meridional flux (vertical int)", "kg/m", "WCVFLX"},
 {246, "Solar parameter in canopy conductance", "fraction", "RCS"},
 {247, "Temperature parameter in canopy conductance", "fraction", "RCT"},
 {248, "Humidity parameter in canopy conductance", "fraction", "RCQ"},
@@ -245,5 +248,5 @@ TBLE2 ncep_131_params[] = {
 {251, "Longwave radiative heating", "K/s", "LWHR"},
 {252, "Surface drag coefficient", "non-dim", "CD"},
 {253, "Surface friction velocity", "m/s", "FRICV"},
-{254, "Richardson number", "non-dim", "RI"},
+{254, "Richardson number", "non-dim", "RI"}
 };

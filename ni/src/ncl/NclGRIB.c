@@ -42,10 +42,13 @@
 #include "ecmwf_200_gtb.h"
 #include "ncep_opn_gtb.h"
 #include "ncep_reanal_gtb.h"
+#include "ncep_128_gtb.h"
 #include "ncep_129_gtb.h"
 #include "ncep_130_gtb.h"
 #include "ncep_131_gtb.h"
-#include "omb_gtb.h"
+#include "ncep_133_gtb.h"
+#include "ncep_140_gtb.h"
+#include "ncep_141_gtb.h"
 #include "fsl0_gtb.h"
 #include "fsl1_gtb.h"
 #include "fsl2_gtb.h"
@@ -6395,9 +6398,11 @@ int wr_status;
 				}
 				if(grib_rec->version != 0) {
 					if(((int)grib_rec->pds[24] < 1)|| ((int)grib_rec->pds[15] > 24)||((int)grib_rec->pds[16] > 60)||((int)grib_rec->pds[13] > 12)||((int)grib_rec->pds[12] > 100)){
+						/*
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"NclGRIB: Corrupted record found. Time values out of appropriate ranges, skipping record");
 						NhlFree(grib_rec);
 						grib_rec = NULL;
+						*/
 
 					}
 				} else {
@@ -6688,8 +6693,8 @@ int wr_status;
 							
 							break;
 						case 128: /* ocean modeling branch */
-							ptable = &omb_params[0];
-							ptable_count = sizeof(omb_params)/sizeof(TBLE2);
+							ptable = &ncep_128_params[0];
+							ptable_count = sizeof(ncep_128_params)/sizeof(TBLE2);
 							break;
 						case 129: 
 							ptable = &ncep_129_params[0];
@@ -6702,6 +6707,18 @@ int wr_status;
 						case 131: 
 							ptable = &ncep_131_params[0];
 							ptable_count = sizeof(ncep_131_params)/sizeof(TBLE2);
+							break;
+						case 133: 
+							ptable = &ncep_133_params[0];
+							ptable_count = sizeof(ncep_133_params)/sizeof(TBLE2);
+							break;
+						case 140: 
+							ptable = &ncep_140_params[0];
+							ptable_count = sizeof(ncep_140_params)/sizeof(TBLE2);
+							break;
+						case 141: 
+							ptable = &ncep_141_params[0];
+							ptable_count = sizeof(ncep_141_params)/sizeof(TBLE2);
 							break;
 						}
 						break;
