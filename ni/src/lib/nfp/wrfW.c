@@ -50,6 +50,13 @@ extern void NGCALLF(dmaptform,DMAPTFORM)(double *,int *,int *, int *, double *,
                                          double *,double *,double *,double *,
                                          double *,double *,double *,int *);
 
+
+extern void NGCALLF(dcomputepv,DCOMPUTEPV)(double *, double *, double *, 
+                                           double *, double *, double *, 
+                                           double *, double *, double *, 
+                                           double *, double *, int *, int *, 
+                                           int *, int *, int *);
+
 extern void var_zero(double *, int);
 
 
@@ -4404,3 +4411,406 @@ void var_zero(double *tmp_var, int n)
   }
 }
 
+
+NhlErrorTypes wrf_pvo_W( void )
+{
+
+/*
+ * Input variables
+ *
+ * Argument # 0
+ */
+  void *u;
+  double *tmp_u;
+  int dsizes_u[3];
+  NclBasicDataTypes type_u;
+
+/*
+ * Argument # 1
+ */
+  void *v;
+  double *tmp_v;
+  int dsizes_v[3];
+  NclBasicDataTypes type_v;
+
+/*
+ * Argument # 2
+ */
+  void *th;
+  double *tmp_th;
+  int dsizes_th[3];
+  NclBasicDataTypes type_th;
+
+/*
+ * Argument # 3
+ */
+  void *p;
+  double *tmp_p;
+  int dsizes_p[3];
+  NclBasicDataTypes type_p;
+
+/*
+ * Argument # 4
+ */
+  void *msfu;
+  double *tmp_msfu;
+  int dsizes_msfu[2];
+  NclBasicDataTypes type_msfu;
+
+/*
+ * Argument # 5
+ */
+  void *msfv;
+  double *tmp_msfv;
+  int dsizes_msfv[2];
+  NclBasicDataTypes type_msfv;
+
+/*
+ * Argument # 6
+ */
+  void *msft;
+  double *tmp_msft;
+  int dsizes_msft[2];
+  NclBasicDataTypes type_msft;
+
+/*
+ * Argument # 7
+ */
+  void *cor;
+  double *tmp_cor;
+  int dsizes_cor[2];
+  NclBasicDataTypes type_cor;
+
+/*
+ * Argument # 8
+ */
+  int *opt;
+/*
+ * Return variable
+ */
+  void *pv;
+  double *tmp_pv;
+  NclBasicDataTypes type_pv;
+
+
+/*
+ * Various
+ */
+  int nx, ny, nz, nxp1, nyp1, ret;
+  int nznynxp1, nznyp1nx, nznynx, nynxp1, nxnyp1, nynx;
+  double dx, dy;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  u = (void*)NclGetArgValue(
+           0,
+           9,
+           NULL,
+           dsizes_u,
+           NULL,
+           NULL,
+           &type_u,
+           2);
+
+  nz   = dsizes_u[0];
+  ny   = dsizes_u[1];
+  nxp1 = dsizes_u[2];
+  nznynxp1 = nz * ny * nxp1;
+
+/*
+ * Get argument # 1
+ */
+  v = (void*)NclGetArgValue(
+           1,
+           9,
+           NULL,
+           dsizes_v,
+           NULL,
+           NULL,
+           &type_v,
+           2);
+  if(dsizes_v[0] != nz) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The rightmost dimension of v must be the same as the rightmost dimension of u");
+    return(NhlFATAL);
+  }
+  nyp1 = dsizes_v[1];
+  nx   = dsizes_v[2];
+  nznyp1nx = nz * nyp1 * nx;
+  nznynx   = nz * ny * nx;
+
+/*
+ * Get argument # 2
+ */
+  th = (void*)NclGetArgValue(
+           2,
+           9,
+           NULL,
+           dsizes_th,
+           NULL,
+           NULL,
+           &type_th,
+           2);
+  if(dsizes_th[0] != nz || dsizes_th[1] != ny || dsizes_th[2] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of th must be a combination of the dimensions of u and v (see documentation)");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 3
+ */
+  p = (void*)NclGetArgValue(
+           3,
+           9,
+           NULL,
+           dsizes_p,
+           NULL,
+           NULL,
+           &type_p,
+           2);
+  if(dsizes_p[0] != nz || dsizes_p[1] != ny || dsizes_p[2] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of p must be the same as the dimensions of th");
+    return(NhlFATAL);
+  }
+
+
+/*
+ * Get argument # 4
+ */
+  msfu = (void*)NclGetArgValue(
+           4,
+           9,
+           NULL,
+           dsizes_msfu,
+           NULL,
+           NULL,
+           &type_msfu,
+           2);
+  if(dsizes_msfu[0] != ny || dsizes_msfu[1] != nxp1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of msfu must be the same as the rightmost dimensions of u");
+    return(NhlFATAL);
+  }
+  nynxp1 = ny * nxp1;
+
+/*
+ * Get argument # 5
+ */
+  msfv = (void*)NclGetArgValue(
+           5,
+           9,
+           NULL,
+           dsizes_msfv,
+           NULL,
+           NULL,
+           &type_msfv,
+           2);
+  if(dsizes_msfv[0] != nx || dsizes_msfv[1] != nyp1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of msfv must be the same as the rightmost dimensions of v");
+    return(NhlFATAL);
+  }
+  nxnyp1 = nx * nyp1;
+
+/*
+ * Get argument # 6
+ */
+  msft = (void*)NclGetArgValue(
+           6,
+           9,
+           NULL,
+           dsizes_msft,
+           NULL,
+           NULL,
+           &type_msft,
+           2);
+  if(dsizes_msft[0] != ny || dsizes_msft[1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of msft must be the same as the rightmost dimensions of th");
+    return(NhlFATAL);
+  }
+  nynx = ny * nx;
+
+/*
+ * Get argument # 7
+ */
+  cor = (void*)NclGetArgValue(
+           7,
+           9,
+           NULL,
+           dsizes_cor,
+           NULL,
+           NULL,
+           &type_cor,
+           2);
+  if(dsizes_cor[0] != ny || dsizes_cor[1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of cor must be the same as the dimensions of msft");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 8
+ */
+  opt = (int*)NclGetArgValue(
+           8,
+           9,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * The output type defaults to float, unless any input array are double.
+ */
+  type_pv = NCL_float;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ */
+/*
+ * Allocate space for tmp_u.
+ */
+  tmp_u = coerce_input_double(u,type_u,nznynxp1,0,NULL,NULL);
+  if(tmp_u == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+/*
+ * Allocate space for tmp_v.
+ */
+  tmp_v = coerce_input_double(v,type_v,nznyp1nx,0,NULL,NULL);
+  if(tmp_v == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+/*
+ * Allocate space for tmp_th.
+ */
+  tmp_th = coerce_input_double(th,type_th,nznynx,0,NULL,NULL);
+  if(tmp_th == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+/*
+ * Allocate space for tmp_p.
+ */
+  tmp_p = coerce_input_double(p,type_p,nznynx,0,NULL,NULL);
+  if(tmp_p == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+/*
+ * Allocate space for tmp_msfu.
+ */
+  tmp_msfu = coerce_input_double(msfu,type_msfu,nynxp1,0,NULL,NULL);
+  if(tmp_msfu == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+/*
+ * Allocate space for tmp_msfv.
+ */
+  tmp_msfv = coerce_input_double(msfv,type_msfv,nxnyp1,0,NULL,NULL);
+  if(tmp_msfv == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+/*
+ * Allocate space for tmp_msft.
+ */
+  tmp_msft = coerce_input_double(msft,type_msft,nynx,0,NULL,NULL);
+  if(tmp_msft == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+/*
+ * Allocate space for tmp_cor.
+ */
+  tmp_cor = coerce_input_double(cor,type_cor,nynx,0,NULL,NULL);
+  if(tmp_cor == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+  else {
+    type_pv = NCL_double;
+  }
+
+/* 
+ * Allocate space for output array.
+ */
+  if(type_pv != NCL_double) {
+    pv     = (void *)calloc(nznynx, sizeof(float));
+    tmp_pv = (double *)calloc(nznynx,sizeof(double));
+    if(pv == NULL || tmp_pv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    pv = (void *)calloc(nznynx, sizeof(double));
+    if(pv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for output array");
+      return(NhlFATAL);
+    }
+    tmp_pv = (double*)pv;
+  }
+
+/*
+ * Call the Fortran routine.
+ */
+  NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_u, tmp_v, tmp_th, tmp_p, tmp_pv, 
+                                 tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
+                                 &dx, &dy, &nx, &ny, &nz, &nxp1, &nyp1);
+
+  if(type_pv != NCL_double) {
+    coerce_output_float(tmp_pv,pv,nznynx,1);
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if(type_u    != NCL_double) NclFree(tmp_u);
+  if(type_v    != NCL_double) NclFree(tmp_v);
+  if(type_th   != NCL_double) NclFree(tmp_th);
+  if(type_p    != NCL_double) NclFree(tmp_p);
+  if(type_msfu != NCL_double) NclFree(tmp_msfu);
+  if(type_msfv != NCL_double) NclFree(tmp_msfv);
+  if(type_msft != NCL_double) NclFree(tmp_msft);
+  if(type_cor  != NCL_double) NclFree(tmp_cor);
+  if(type_pv   != NCL_double) NclFree(tmp_pv);
+
+/*
+ * Return value back to NCL script.
+ */
+  ret = NclReturnValue(pv,3,dsizes_th,NULL,type_pv,0);
+  return(ret);
+}
