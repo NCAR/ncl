@@ -1695,14 +1695,14 @@ end
 undef("band_pass_area_time_plot")
 procedure band_pass_area_time_plot(           \ 
           xts[3][*]:numeric, time[*]:numeric, \
-          diro[1]:string, pltType[1]:string,  \
+          pltDir[1]:string, pltType[1]:string,\
           pltName[1]:string, opt[1]:logical)
 begin
   date   = ut_calendar(time, -3)
   yrfrac = yyyymmddhh2yyyyFrac( date)
   delete(yrfrac@long_name)
 
-  pltPath= diro+"/"+pltName
+  pltPath= pltDir+"/"+pltName
   
   wks  = gsn_open_wks(pltType , pltPath)   
   gsn_merge_colormaps(wks,"amwg_blueyellowred","BlAqGrYeOrReVi200") 
@@ -1762,7 +1762,7 @@ end
 undef ("band_pass_area_time_plot_cam")
 procedure band_pass_area_time_plot_cam(          \ 
           xts[3][*]:numeric, date[*]:integer, datesec[*]:integer, \
-          diro[1]:string, pltType[1]:string, pltName[1]:string)
+          pltDir[1]:string, pltType[1]:string, pltName[1]:string)
 begin
 
 end
@@ -1771,8 +1771,7 @@ end
 undef ("band_pass_latlon_time")
 function band_pass_latlon_time \
                  (x[*][*][*]:numeric, spd[1]:numeric   \
-                 ,bpf[3]:numeric                       \
-                 ,opt:logical)
+                 ,bpf[3]:numeric, opt:logical)
 
 local nMsg, dimx, ntim, nlat, mlon, dNam, n, tim_taper \
     , bpfStrt, bpfLast, bpfNwgt, fca, fcb, ihp, sigma    \
@@ -1969,7 +1968,7 @@ end
 ; =============================================================
 undef ("band_pass_hovmueller_plot")
 procedure band_pass_hovmueller_plot( x[*][*]:numeric    \  ; (time,lon)
-                                   , diro[1]:string     \
+                                   , pltDir[1]:string   \
                                    , pltType[1]:string  \
                                    , pltName[1]:string  \
                                    , opt[1]:logical  )
@@ -1979,7 +1978,7 @@ local date, yrfrac, TIME, ntim, yyyy, mm, dd, hh, pltPath \
     , tValR, tLabR
 begin
 
-  pltPath = diro+"/"+pltName
+  pltPath = pltDir+"/"+pltName
 
   wks     = gsn_open_wks(pltType , pltPath)
   gsn_define_colormap(wks,"amwg_blueyellowred") 
@@ -2192,6 +2191,11 @@ begin
   smjo@frq   = sdof@frq
   smjo@xlag1 = (exp(2*z1)-1)/(exp(2*z1)+1)  ; match specx_anal 
 
+  if (opt .and. isatt(opt,"smooth_seg") ) then
+      smjo      = smjo*opt@smooth_seg
+      smjo@bw   = (sdof@bw)*(opt@smooth_seg)
+  end if
+
   return( smjo )
 end
 ;*******************************************************************
@@ -2199,8 +2203,9 @@ undef("mjo_spectra")
 procedure mjo_spectra \
                  (X[*][*][*]:numeric, date[*]:integer, wy[*]:numeric \
                  ,latS[*]:numeric, latN[*]:numeric                   \
-                 ,lonL[*]:numeric, lonR[*]:numeric                   \
-                 ,nameRegion[*]:string, opt[1]:logical)
+                 ,lonL[*]:numeric, lonR[*]:numeric, nameRegion[*]:string \
+                 ,pltDir[1]:string, pltType[1]:string                \
+                 ,pltName[1]:string, opt[1]:logical)
 
 ; driver for MJO CLIVAR segment averaging
 
@@ -2209,8 +2214,8 @@ procedure mjo_spectra \
 ;              y-axis as power times frequency
 
 local frqmnPlt, frqmxPlt, nameSeason, nSeason, r, resP, tiXAxisString \
-    , ns, nr, plot, x, pltName, pltType, pltPath, sMJO, splt          \
-    , ifrqmxPlt, nRegion
+    , ns, nr, plot, x, pltNameLocal, pltTypeLocal, pltPath, sMJO, splt\
+    , ifrqmxPlt, nRegion, ciLow, ciHigh
 begin
 
   frqmxPlt   = 0.15         ; graphics X -axis  [frequency]
@@ -2261,20 +2266,29 @@ begin
 
   r@trXMaxF  = frqmxPlt                         ; X Axis [rightmost freq]
 
-  if (opt .and. isatt(opt,"pltType")) then
-      if (opt@pltType.eq."png") then
-           pltType = "eps"
-      else
-           pltType = opt@pltType
-      end if
+  if (pltType.eq."png") then
+      pltTypeLocal = "eps"
   else
-      pltType = "eps"                           ; default
+      pltTypeLocal = pltType
   end if
 
-  if (opt .and. isatt(opt,"pltDir")) then
-      pltDir  = opt@pltDir  
-  else
-      pltDir  = "./"                            ; default
+  ciLow  = 0.05                                 ; default
+  ciHigh = 0.95
+  if (opt .and. isatt(opt,"spcConLim")) then
+      if (dimsizes(opt@spcConLim).ne.2) then
+          print("mjo_spectra: spcConLim attribute must be size 2")
+          print("             dimsizes(spcConLim)="+dimsizes(opt@spcConLim))
+          exit
+      else
+          if (any(opt@spcConLim.lt.0 .or. opt@spcConLim.gt.1)) then
+              print("mjo_spectra: 0 < spcConLim < 1 violation")
+              print("spcConLim: "+opt@spcConLim)
+              exit
+          else
+              ciLow  = opt@spcConLim(0)         ; user specified bounds
+              ciHigh = opt@spcConLim(1)
+          end if
+      end if
   end if
 
   do nr=0,nRegion-1
@@ -2282,12 +2296,13 @@ begin
      x    = X(:,{latS(nr):latN(nr)},{lonL(nr):lonR(nr)}) 
      wgty = wy({latS(nr):latN(nr)})
 
-     pltName  = "mjo_spectra_"+nameRegion(nr)        
-     wks      = gsn_open_wks(pltType, pltName)        
+     pltNameLocal = pltName+"_"+nameRegion(nr)        
+     pltPath      = pltDir+pltNameLocal
+     wks          = gsn_open_wks(pltTypeLocal,pltPath)        
 
     do ns=0,nSeason-1
        sMJO     = mjo_spectra_segment(x, date, wgty, nameSeason(ns), opt)
-       splt     = specx_ci (sMJO, 0.05, 0.95)
+       splt     = specx_ci (sMJO, ciLow,ciHigh)
 
        ifrqmxPlt= ind(sMJO@frq .ge. frqmnPlt .and. sMJO@frq .le. frqmxPlt)
        r@gsnCenterString = nameSeason(ns)
@@ -2322,20 +2337,168 @@ begin
      resP@txString = nameRegion(nr)+": "+x@long_name
      gsn_panel(wks,plot,(/3,1/),resP)   
 
-     if (opt .and. isatt(opt,"pltType") .and. opt@pltType.eq."png") then
+     if (pltType.eq."png") then
          if (isatt(opt,"pltConvert")) then 
              pltConvert = opt@pltConvert    ; convert options
          else
              pltConvert = " "               ; default
          end if
-
-         pltPath = pltDir+pltName+"."+pltType
-         system("convert "+pltConvert+" "+pltPath+" "+pltDir+pltName+".png")
-         system("/bin/rm -f "+pltPath)
+         system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
+         system("/bin/rm -f "+pltPath+".eps")
      end if
 
      delete(x)
      delete(wgty)
   end do    
 
+end
+
+;*******************************************************************
+undef("mjo_xcor_lag")
+function mjo_xcor_lag(x[*]:numeric, y[*][*]:numeric, mxlag[1]:integer, opt[1]:logical) 
+; cross correlations at assorted lags
+local dNam, dimy, N, yNew, xNew, y_Lead_x, x_Lead_y, ccr
+begin
+  dNam     = getvardims(y)
+  dimy     = dimsizes(y)
+  N        = dimy(1)                         ; N = mlon or nlat
+
+  yNew     = y($dNam(1)$|:,$dNam(0)$|:)
+  xNew     = conform(yNew,x,1)                     
+
+  y_Lead_x = esccr(xNew,yNew,mxlag)          ; (N,mxlag+1)
+  x_Lead_y = esccr(yNew,xNew,mxlag)    
+
+  ccr      = new ( (/N,2*mxlag+1/), float)    
+  ccr(:,0:mxlag-1) = x_Lead_y(:,1:mxlag:-1)  ; "negative lag", -1 reverses order
+  ccr(:,mxlag:)    = y_Lead_x(:,0:mxlag)     ; "positive lag"
+
+  ccr      = where(ccr.gt. 1.0, 1.0, ccr)   
+  ccr      = where(ccr.lt.-1.0,-1.0, ccr)     
+
+  if (opt .and. isatt(opt,"smth9") ) then
+      if (abs(opt@smth9).eq.0.25) then
+          ccr  = smth9(ccr, 0.50, opt@smth9, False)
+      else
+          print("mjo_xcor_lag: opt@smth9 must be 0.25 or -0.25")
+          print("              opt@smth9="+opt@smth9)
+          print("              NO SMOOTHING PERFORMED")
+      end if
+  end if
+
+  ccr!0          = dNam(1)
+  ccr&$dNam(1)$  = y&$dNam(1)$
+  ccr!1          = "lag"
+  ccr&lag        = ispan(-mxlag,mxlag,1)
+  ccr&lag@units  = "lag (days)"
+  ccr@long_name  = "cross-correlation"
+
+  return(ccr(lag|:,$dNam(1)$|:))            
+end
+
+;**********************************************************************
+procedure mjo_xcor_lag_plot_ovly( \
+                   ccr_a[*][*]:numeric, ccr_b[*][*]:numeric \
+                  ,pltType[1]:string, pltDir[1]:string      \
+                  ,pltName[1]:string, opt[1]:logical)
+local pltPath, pltTypeLocal, res1, res2, CCR_a, CCR_b, plot_a, plot_b
+begin
+
+  pltPath = pltDir+"/"+pltName
+
+  if (pltType.eq."png") then
+      pltTypeLocal = "eps"
+  else
+      pltTypeLocal = pltType
+  end if
+
+  wks  = gsn_open_wks(pltTypeLocal,pltPath)  
+  if (opt .and. isatt(opt,"colorTable")) then
+     gsn_define_colormap(wks,opt@colorTable) 
+  else
+     gsn_define_colormap(wks,"BlWhRe") 
+  end if
+
+  res1                      = True          ; color precip     
+  res1@gsnDraw              = False
+  res1@gsnFrame             = False
+  res1@gsnMaximize          = True 
+  res1@gsnPaperOrientation  = "portrait"
+
+  res1@cnFillOn             = True          ; turn on color
+  res1@cnLinesOn            = False
+  res1@gsnSpreadColors      = True          ; use full range of colormap
+  res1@cnLevelSelectionMode = "ManualLevels"; set manual contour levels
+  res1@cnMinLevelValF       = -1.0          ; set min contour level
+  res1@cnMaxLevelValF       =  1.0          ; set max contour level
+  res1@cnLevelSpacingF      =  0.1          ; set contour spacing
+
+  res1@cnLabelBarEndLabelsOn= True
+  res1@cnLabelBarEndStyle   = "ExcludeOuterBoxes"
+
+  res1@lbLabelAutoStride    = True
+ 
+  res1@vpWidthF             = 0.6           ; change aspect ratio of plot
+  res1@vpHeightF            = 0.4
+
+ ;res1@gsnMajorLatSpacing   = 10            ; change maj lat tm spacing
+
+  res1@tiYAxisString        = "lag (days)"
+  if (isatt(opt,"tiMainString")) then
+      res1@tiMainString     = opt@tiMainString
+  end if
+  if (isatt(opt,"gsnLeftString")) then
+      res1@gsnLeftString    = opt@gsnLeftString
+  end if
+  if (isatt(opt,"gsnCenterString")) then
+      res1@gsnCenterString  = opt@gsnCenterString
+  end if
+  if (isatt(opt,"gsnRightString")) then
+      res1@gsnRightString   = opt@gsnRightString
+  end if
+
+;************************************************
+; resource list for second data array
+;************************************************
+  res2                      = True              ; U
+  res2@gsnDraw              = False
+  res2@gsnFrame             = False
+  res2@cnLevelSelectionMode = "ManualLevels"    ; set manual contour levels
+  res2@cnMinLevelValF       = -1.0
+  res2@cnMaxLevelValF       =  1.0
+  res2@cnLevelSpacingF      =  0.1
+  res2@cnLineLabelsOn       = True
+  res2@gsnContourZeroLineThicknessF = 0. 	; Eliminate 0 line
+  res2@gsnContourNegLineDashPattern = 1 	; negative contours dash pattern
+  res2@cnLineThicknessF     = 2.                ; line thickness
+  res2@cnInfoLabelOn        = False
+
+  CCR_a = ccr_a             ; possible smooth and delete of attribute
+  CCR_b = ccr_b
+ 
+  if (opt .and. isatt(opt,"smth9") .and. abs(opt@smth9).eq.0.25) then
+      CCR_a = smth9(CCR_a, 0.50, opt@smth9, False)
+  end if
+  delete(CCR_a@long_name)
+  plot_a = gsn_csm_contour(wks,CCR_a,res1)       ; contour the variable
+
+  if (opt .and. isatt(opt,"smth9") .and. abs(opt@smth9).eq.0.25) then
+      CCR_b = smth9(CCR_b, 0.50, opt@smth9, False)
+  end if
+  delete(CCR_b@long_name)
+  plot_b = gsn_csm_contour(wks,CCR_b,res2)       ; contour the variable
+
+  overlay(plot_a, plot_b)
+  draw(plot_a)     
+  frame(wks)
+
+  if (pltType.eq."png") then
+      if (isatt(opt,"pltConvert")) then 
+          pltConvert = opt@pltConvert    ; convert options
+      else
+          pltConvert = " "               ; default
+      end if
+      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
+      system("/bin/rm -f "+pltPath+".eps")
+  end if
 end
