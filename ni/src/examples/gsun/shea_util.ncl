@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.30 2008-10-13 21:26:44 shea Exp $
+;      $Id: shea_util.ncl,v 1.31 2008-10-31 16:41:01 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -2644,4 +2644,403 @@ begin
         end if
 	return(plot)
 end
+; ---------------------------------
+undef("SPECX_ANAL")
+function SPECX_ANAL(X[*]:numeric, iopt[1]:integer, jave[1]:integer, pct[1]:numeric)
+local x, N, xVari, xVaro, cf, cr, ci, px, spcx, total_area, df, frq
+    , wgts, sclVar, sdof, acr, tapcf
+begin
+   N     = dimsizes(X)
+   xVari = variance(X)*(N-1.)/N        ; input variance
+  
+   if (iopt.ge.0) then                 ; remove mean
+       x = X - avg(X)
+   else
+       x = X
+   end if
 
+   if (iopt.ge.1) then
+       x = dtrend(x,False)             ; step 1: detrend
+   end if
+                                       ; step 2: Calculate input sample variance 
+   xVaro = variance(x)*(N-1.)/N        ; variance after pre-whitening
+
+   x     = taper (x,pct,0)             ; step 3: taper the series
+                                       ; tapering correction factor
+   tapcf = 0.5*(128-93*pct)/(8-5*pct)^2; Bloomfield
+  
+   cf    = ezfftf(x)                   ; step 4: perform forward FFT
+   cr    = cf(0,:)                     ; clarity ... real coef
+   ci    = cf(1,:)                     ;             imag coef
+   delete( cf )
+
+   px    = cr^2 + ci^2                 ; step 5: periodogram of "x"
+  
+   wgts         = fspan(1,1,jave)
+   wgts(0)      = 0.5                  ; not sure why I did this
+   wgts(jave-1) = 0.5
+   wgts         = wgts/sum(wgts)       ; normalize sum of wgts to one 
+
+   spcx  = wgt_runave(px,wgts,1)       ; weighted run ave
+
+   delete(px)
+  
+  ;step 7: normalize the area under the curve [6] to the variance.
+  ;       Remember the first and last bandwidths are only 0.5*df
+   
+   df         = 1./N 
+   total_area = (spcx(0) + spcx(N/2-1))*(df/2) + sum(spcx(1:N/2-2))*df
+   sclVar     = xVaro/total_area
+   spcx       = spcx*sclVar
+  
+   frq        = fspan(df,0.5,N/2)
+  
+   sdof       = 2/(tapcf*sum(wgts^2))  ; sum squares of normalized wgts 
+                                       ; to calculate dof 
+   sdof@bw    = 0.5*sdof*df            ; bw: jones pg 202: murphy+katz
+   sdof@xvari = xVari
+   sdof@xvaro = xVaro
+   sdof@frq   = frq
+   sdof@spcx  = spcx
+   acr        = esacr(x,1)             ; lag-1 autocorrelation                 
+   sdof@xlag1 = acr(1) 
+  
+   return( sdof )
+end
+; ----------------------------------------------
+undef("SPECXY_ANAL")
+function SPECXY_ANAL(X[*]:numeric, Y[*]:numeric   \
+                    ,iopt[1]:integer, jave[1]:integer, pct[1]:numeric)
+local  x, y, N, xVari, xVaro, yVari, yVaro, wgts, sclVarx, sclVary \
+    ,  cf, cr, ci, px, spcx, py, spcy, total_area, df, frq, tapcf  \
+    ,  xr, xi, yr, yi, cospc, quspc, coher, phase, sclCQ, acr, sdof
+begin
+   N  = dimsizes(X)
+   if (N.ne.dimsizes(Y)) then
+       print("SPECXY_ANAL: x/y size mismatch")
+       exit
+   end if
+
+   xVari = variance(X)*(N-1.)/N        ; input variance
+   yVari = variance(Y)*(N-1.)/N    
+ 
+   if (iopt.ge.0) then                 ; remove mean
+       x = X - avg(X)
+       y = Y - avg(Y)
+   else
+       x = X
+       y = Y
+   end if
+
+   if (iopt.ge.1) then
+       x = dtrend(x,False)             ; step 1: detrend
+       y = dtrend(y,False)    
+   end if
+                                       ; Calculate variance 
+   xVaro  = variance(x)*(N-1.)/N
+   yVaro  = variance(y)*(N-1.)/N
+
+   x  = taper (x, pct, 0)    ; step 2: taper the detrended series
+   y  = taper (y, pct, 0)
+                             ; tapering correction factor
+   tapcf = 0.5*(128- 93*pct)/(8 -5*pct)^2   ; Bloomfield
+
+   cf     = ezfftf(x)                  ; step 4: perform forward FFT
+   xr     = cf(0,:)                    ; convenience/clarity
+   xi     = cf(1,:)               
+   px     = xr^2 + xi^2                ; step 5: periodogram
+
+   cf     = ezfftf(y)                  ; step 4: perform forward FFT
+   yr     = cf(0,:)      
+   yi     = cf(1,:)               
+   py     = yr^2 + yi^2 
+
+   delete(cf)
+
+   cospc = xr*yr + xi*yi               ; cospc periodogram
+   quspc = xi*yr - xr*yi               ; quspc periodgram
+
+;step 6: perform a running average over the periodogram values using 
+;        either runave or wrunave. This creates the spectrum
+
+   wgts  = fspan(1,1,jave)
+   wgts(0)      = 0.5                  ; not sure why I did this
+   wgts(jave-1) = 0.5
+
+   wgts  = wgts/sum(wgts)              ; normalize sum of wgts to one 
+   spcx  = wgt_runave(px,wgts,1) 
+   spcy  = wgt_runave(py,wgts,1) 
+   cospc = wgt_runave(cospc, wgts ,1) 
+   quspc = wgt_runave(quspc, wgts ,1) 
+
+   phase  = -atan2(quspc, cospc)*57.29578
+   coher  = ((cospc^2+quspc^2)/(spcx*spcy))
+
+;step 7: normalize the area under the curve [6] to the input variance.
+;       Remember the first and last bandwidths are only 0.5*df
+ 
+   df    = 1./N
+   x_total_area = (spcx(0) + spcx(N/2-1))*(df/2) + sum(spcx(1:N/2-2))*df
+   y_total_area = (spcy(0) + spcy(N/2-1))*(df/2) + sum(spcy(1:N/2-2))*df
+
+   sclVarx = xVaro/x_total_area
+   spcx    = spcx*sclVarx
+   sclVary = yVaro/y_total_area
+   spcy    = spcy*sclVary
+
+; normalized area
+
+   x_nml_area = (spcx(0) + spcx(N/2-1))*(df/2) + sum(spcx(1:N/2-2))*df
+   y_nml_area = (spcy(0) + spcy(N/2-1))*(df/2) + sum(spcy(1:N/2-2))*df
+
+   frq = fspan(df,0.5,N/2)
+
+   sclCQ = sqrt(sclVarx*sclVary)
+   cospc =  sclCQ*cospc
+   quspc = -sclCQ*quspc                ; match NAG values
+  
+   sdof       = 2./(tapcf*sum(wgts^2)) ; sum the square of the 
+                                       ; normalized wgts to calculate dof 
+   sdof@bw    = 0.5*sdof*df            ; see jones pg 202: murphy + katz
+   sdof@xvari = xVari
+   sdof@xvaro = xVaro
+   sdof@yvari = yVari
+   sdof@yvaro = yVaro
+   sdof@frq   = frq
+   sdof@spcx  = spcx
+   sdof@spcy  = spcy
+   sdof@cospc = cospc
+   sdof@quspc = quspc
+   sdof@coher = coher
+   sdof@phase = phase
+   acr        = esacr(x,1)             ; lag-1 autocorrelation                 
+   sdof@xlag1 = acr(1) 
+   acr        = esacr(y,1)             ; lag-1 autocorrelation                 
+   sdof@ylag1 = acr(1) 
+
+   return(sdof)
+end
+; -----------------------------------
+undef("FILWGTS")
+procedure FILWGTS (nwgt[*]:integer, ihp[1]:integer \
+                  ,fca[1]:numeric , fcb[1]:numeric , sigma[1]:numeric \
+                  ,pltType[1]:string, opt[1]:logical)
+;;  ---------- Sample Usage --------
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl" 
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl" 
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl" 
+;;  begin
+;;    sigma = 1
+;;    nwgt  = (/ 101, 365, 731 /)
+;;  
+;;    ihp   = 0
+;;    fca   = 1./100.
+;;    fcb   = -999.   
+;;  
+;;    FILWGTS (nwgt, ihp ,fca, fcb , sigma, "x11", False)
+;;  
+;;    ihp  = 2                ; bandpass          
+;;    fca  = 1./100.
+;;    fcb  = 1./20. 
+;;    FILWGTS (nwgt, ihp ,fca, fcb , sigma, "x11", False)
+;;  end
+begin
+  
+  fStop = 0.5             ; set to 0.5 except when plot subset wanted
+  if (ihp.eq.2) then
+      fStop = min( (/2.0*fcb, 0.5/) )        
+  end if
+  if (ihp.eq.0) then
+      fStop = min( (/2.0*fca, 0.5/) )
+  end if
+  if (isatt(opt,"frqPlotStop")) then
+      fStop = opt@frqPlotStop
+  end if
+
+  wksType = pltType   ; "x11", "ps", "ncgm", "eps", "pdf"
+
+  printWgts  = False               ; default
+  if (isatt(opt,"printWgts") ) then
+      printWgts  = opt@printWgts
+  end if
+
+  printResponse  = False               ; default
+  if (isatt(opt,"printResponse") ) then
+      printResponse  = opt@printResponse
+  end if
+
+  createFileIeee = False
+
+  createFileAscii= False
+  if (isatt(opt,"createFileAscii") ) then
+      createFileAscii = opt@createFileAscii
+      filDirAscii     = "./"
+      if (isatt(opt,"filDirAscii") ) then
+          filDirAscii = opt@filDirAscii
+      end if
+  end if
+        
+  pltDir  = "./"
+  if (isatt(opt,"pltDir") ) then
+      pltDir = opt@pltDir
+  end if
+
+; -------------- end user input
+  Nsig = dimsizes(sigma)
+
+  Nwgt = dimsizes(nwgt)           ; # of wgts to test
+  Nr   = 2*max(nwgt)+3            ; max # response pts
+  if (ihp.eq.2) then
+      Nmax = max((/6,Nr/))        ; max # of pts
+  else
+      Nmax = Nr
+  end if
+  
+  nCurve = Nwgt+1                ; # of curves
+  X      = new ( (/nCurve, Nmax/), float) ; curves to hold data
+  Y      = new ( (/nCurve, Nmax/), float) 
+  X!0 = "curve"
+  Y!0 = "curve"
+  X!1 = "freq"
+  Y!1 = "response"
+  
+ do ns=0,Nsig-1
+  do n=0,Nwgt-1
+     wgt  = filwgts_lancos (nwgt(n), ihp, fca, fcb, sigma(ns) )  
+     if (printWgts) then
+         print (wgt)
+     end if
+     if (printResponse) then
+         print (wgt@freq+"   "+wgt@resp)
+     end if
+     
+     nPts = 2*nwgt(n)+3
+     X(n+1,0:nPts-1) = wgt@freq
+     Y(n+1,0:nPts-1) = wgt@resp
+     if (printWgts) then
+         print ("======= nwgt="+nwgt(n)+" =======")  
+         print ("        wgt="+wgt)  
+     end if
+    ;if (createFileIeee) then
+    ;    filo = "wgtsIeee."+nwgt(n)+"_sigma"+sigma(ns) 
+    ;    system ("/bin/rm -f "+pltDir+filo)
+    ;    fbinrecwrite (pltDir+filo,-1,wgt)
+    ;end if
+     if (createFileAscii) then
+         filo = "wgtsAscii."+nwgt(n)+"_sigma"+sigma(ns) 
+         system ("/bin/rm -f "+pltDir+filo)
+         asciiwrite (pltDir+filo,sprintf("%10.9f", wgt) )
+     end if
+     delete (wgt)
+  end do
+
+  if (fStop.le.0.0 .or. fStop.gt.0.5) then
+      print ("Bad fStop: fStop="+fStop)
+      exit
+  end if
+                            ; ideal
+  if (ihp.eq.0)  then       ; LOW PASS
+      X(0,0) = 0.0                     
+      Y(0,0) = 1.0                     
+      X(0,1) = fca                   
+      Y(0,1) = 1.0                  
+      X(0,2) = fca                   
+      Y(0,2) = 0.0                  
+      X(0,3) = fStop                 
+      Y(0,3) = 0.0                  
+      gsnTitle  = "Low Pass"
+      gsnLeft   = "fca="+sprintf("%4.3f", fca)
+     ;gsnRight  = "pa="+sprintf("%4.1f", 1./fca)
+      gsnRight  = oneDtostring(nwgt)
+  end if
+  if (ihp.eq.1)  then       ; HIGH PASS 
+      X(0,0) = 0.0                     
+      Y(0,0) = 0.0                     
+      X(0,1) = fca                   
+      Y(0,1) = 0.0                  
+      X(0,2) = fca                   
+      Y(0,2) = 1.0                  
+      X(0,3) = fStop                 
+      Y(0,3) = 1.0                  
+      gsnTitle  = "High Pass"
+      gsnLeft   = "fca="+sprintf("%4.3f", fca)
+     ;gsnRight  = "pa="+sprintf("%4.1f", 1./fca)
+      gsnRight  = oneDtostring(nwgt)
+  end if
+  if (ihp.eq.2)  then       ; BAND-PASS 
+      X(0,0) = 0.0                     
+      Y(0,0) = 0.0                     
+      X(0,1) = fca                   
+      Y(0,1) = 0.0                  
+      X(0,2) = fca                   
+      Y(0,2) = 1.0                  
+      X(0,3) = fcb                   
+      Y(0,3) = 1.0                  
+      X(0,4) = fcb                   
+      Y(0,4) = 0.0                  
+      X(0,5) = fStop                 
+      Y(0,5) = 0.0                  
+      bLast  = 1./fca
+      bStrt  = 1./fcb
+      gsnTitle  = "Band Pass: "+bStrt+"-"+bLast
+      gsnLeft   = "fca="+sprintf("%6.5f", fca)+"; fcb="+sprintf("%6.5f", fcb)
+     ;gsnRight  = "pa="+sprintf("%4.1f", 1./fca)+"; pb="+sprintf("%4.1f", 1./fcb)
+      gsnRight  = oneDtostring(nwgt)
+  end if
+
+  X@long_name = "frequency"
+  Y@long_name = "response"
+  
+  xx = (/0.0,fStop/)   ; Create data for a polyline for marking
+  yy = (/0.0, 0.0 /)   ; the Y = 0.0 line in each graph.
+
+  if (Nsig.eq.1 .and.sigma(ns).eq.1) then
+      wks = gsn_open_wks (wksType, "RESP")
+  else
+      wks = gsn_open_wks (wksType, "RESP_"+sigma(ns))
+  end if
+
+  res = True
+  res@trYMinF = -0.1
+  res@trYMaxF =  1.1
+  res@trXMinF =  0.0
+  res@trXMaxF =  fStop
+  res@tiMainString    = gsnTitle + ":  sigma ="+sprintf("%3.2f", sigma(ns) )
+  res@gsnLeftString   = gsnLeft 
+  res@gsnRightString  = gsnRight 
+
+ ;res@xyLineThicknessF    = 2.                    ; choose line thickness
+ ;plot  = gsn_csm_xy (wks,X,Y,res)                ; create plot
+
+  res@gsnDraw  = False                            ; don't draw
+  res@gsnFrame = False                            ; don't advance frame
+
+ ;indStop = ind(X(0,:).ge.fStop)
+ ;print ("fStop="+fStop)
+ ;print (indStop)
+ ;print (X(0,:))
+ ;plot  = gsn_csm_xy (wks,X(0,:indStop),Y(0,:indStop),res)  ; create plot
+  plot  = gsn_csm_xy (wks,X(0,:),Y(0,:),res)  ; create plot
+           
+  resGs = True
+  resGs@gsLineThicknessF = 2.0
+
+  do n=1,nCurve-1
+     resGs@gsLineDashPattern = n-1                ; dash pattern
+     indStop = ind(X(n,:).eq.fStop)
+     if (.not.ismissing(indStop)) then
+         gsn_polyline(wks,plot,X(n,:indStop),Y(n,:indStop),resGs)  
+     else
+         N = 2*nwgt(n-1)-1 
+         indStop = ind(fStop.gt.X(n,0:N-2) .and. fStop.le.X(n,1:N-1))
+         iStop   = indStop(0)
+         gsn_polyline(wks,plot,X(n,:iStop),Y(n,:iStop),resGs)  
+     end if
+     delete(indStop)
+  end do
+
+  draw(plot)                                      ; draw
+  frame(wks)  
+ end do    ; sigma loop
+end
