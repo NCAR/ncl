@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.212 2008-10-21 04:51:15 haley Exp $
+;      $Id: gsn_code.ncl,v 1.213 2008-10-31 17:47:52 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8981,6 +8981,14 @@ begin
 ; 
     if(scale)
       gsnp_scale_plot(vector_object,"vf",resources)
+    end if
+
+;
+; If gsnShape was set to True, then resize the X or Y axis so that
+; the scales are proportionally correct.
+; 
+    if(shape)
+      gsnp_shape_plot(vector_object)
     end if
 
     draw_and_frame(wks,vector_object,calldraw,callframe,0,maxbb)
