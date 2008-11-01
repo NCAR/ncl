@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.164 2008-07-27 00:59:06 haley Exp $
+#   $Id: ncargex.csh,v 1.165 2008-11-01 19:02:21 fred Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -144,6 +144,9 @@ set autograph_flist = ($autograph_fex $autograph_ftst $autograph_ffnd)
 
 set autograph_cex   = (c_agex07)
 set autograph_clist = ($autograph_cex)
+
+set f_list = ($f_list $autograph_flist)
+set c_list = ($c_list $autograph_clist)
 
 #**********************#
 #                      #
