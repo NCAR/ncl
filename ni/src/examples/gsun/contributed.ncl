@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.183 2008-09-24 20:20:02 shea Exp $
+;      $Id: contributed.ncl,v 1.184 2008-11-01 18:53:00 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5185,6 +5185,78 @@ begin
   areaAve@wgt_areaave_op_ncl = "Area Average"
 
   return(areaAve)
+end
+; ******************************************************************
+undef("wgt_runave_leftdim")
+function wgt_runave_leftdim(x:numeric, wgt[*]:numeric, opt[1]:integer)
+;
+; utility routine ... makes for cleaner code
+; Reorder so time is rightmost; applies Lanczos weights, reorder back
+;
+local dimx, rank, dNam, xWork
+begin
+  dimx = dimsizes(x)
+  rank = dimsizes( dimx )
+
+  dNam = getvardims( x )
+
+  if (rank.eq.1) then
+      return( wgt_runave_Wrap( x, wgt, opt) )
+  end if
+  if (rank.eq.2) then
+      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(0)$|:), wgt, opt)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
+  end if
+  if (rank.eq.3) then
+      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:), wgt, opt)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
+  end if
+  if (rank.eq.4) then
+      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:), wgt, opt)
+      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
+  end if
+  if (rank.eq.5) then
+      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:), wgt, opt)
+      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
+  end if
+end
+;**********************************************************
+undef("dtrend_leftdim")
+function dtrend_leftdim(x:numeric, wgt[*]:numeric, opt[1]:integer)
+;
+; utility routine ... makes for cleaner code
+; Reorder so time is rightmost; detrend the time series, reorder back
+;
+local dimx, rank, dNam, x_dtrend, xWork
+begin
+  dimx = dimsizes(x)
+  rank = dimsizes( dimx )
+  dNam = getvardims( x )
+
+  if (rank.eq.1) then
+      x_dtrend = x                             ; retain meta data
+      x_dtrend = dtrend( x, False) 
+  end if
+  if (rank.eq.2) then
+      xWork = x($dNam(1)$|:,$dNam(0)$|:)       ; retain meta data
+      xWork = dtrend( xWork, False)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
+  end if
+  if (rank.eq.3) then
+      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)
+      xWork = dtrend( xWork, False)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
+  end if
+  if (rank.eq.4) then
+      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:)
+      xWork = dtrend( xWork, False)
+      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
+  end if
+  if (rank.eq.5) then
+      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:)
+      xWork = dtrend( xWork, False)
+      return (xWork )
+  end if
 end
 
 ; ******************************************************************
