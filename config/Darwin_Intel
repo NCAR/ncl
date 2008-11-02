@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin_Intel,v 1.1 2006-05-02 14:16:20 haley Exp $
+ *      $Id: Darwin_Intel,v 1.2 2008-11-02 12:42:14 haley Exp $
  */
 /************************************************************************
 *									*
@@ -22,15 +22,16 @@
  *			default setup.
  */
 #define HdfDefines  -DDARWIN
-#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped 
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
 #define ByteSwapped
 #define Cstatic 
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
-#define FCompiler   g95
-#define CcOptions      -ansi
-#define CtoFLibraries  -lf95
+#define FCompiler   gfortran
+#define CcOptions      -ansi -fPIC
+#define FcOptions      -fPIC
+#define CtoFLibraries  -lgfortran
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
