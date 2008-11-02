@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin_Intel.Intel,v 1.1 2008-01-18 16:37:56 haley Exp $
+ *      $Id: Darwin_Intel.g95,v 1.1 2008-11-02 13:08:38 haley Exp $
  */
 /************************************************************************
 *									*
@@ -9,31 +9,32 @@
 *									*
 ************************************************************************/
 /*
- *	File:		DARWIN_INTEL.Intel
- *
+ *	File:		Darwin_Intel.g95
  *	Author:		Mary Haley
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
  *
- *	Date:		Tue May  2 08:11:44 MDT 2006
+ *	Description:	This file contains the configuration for a
+ *                      g95/gcc build on an Intel Mac system. You
+ *                      may need to modify it to change or include
+ *                      options.
  *
- *	Description:	This file contains the configuration for an
- *                      ifort/gcc build.
+ *                      Copy this file over the "Darwin_Intel" file,
+ *                      which is the one that will get used to help
+ *                      create the NCL/NCAR Graphics Makefiles.
+ *
  */
 #define HdfDefines  -DDARWIN
-#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped 
+#define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
 #define ByteSwapped
 #define Cstatic 
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler      gcc
-#define FCompiler      ifort
-#define CcOptions      -ansi
-#define FcOptions      -m32
-#define CtoFLibraries  -lifcore -lsvml -limf -lirc
-#define LdCommand      gcc -bind_at_load
-#define XToolLibrary   -lXt -lSM -lICE
-#define BuildShared    NO
+#define CCompiler   gcc
+#define FCompiler   g95
+#define CcOptions      -ansi -fPIC
+#define FcOptions      -fPIC
+#define CtoFLibraries  -lf95
+#define XToolLibrary    -lXt -lSM -lICE
+#define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib -L/sw/lib

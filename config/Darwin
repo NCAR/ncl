@@ -1,5 +1,5 @@
 /*
- *      $Id: Darwin,v 1.11 2008-04-04 21:25:17 kennison Exp $
+ *      $Id: Darwin,v 1.12 2008-11-02 13:08:37 haley Exp $
  */
 /************************************************************************
 *									*
@@ -11,15 +11,20 @@
 /*
  *	File:		Darwin
  *
- *	Author:		Mary Haley
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
+ *	Description:	This file contains the configuration for a
+ *                      g77/gcc build on a PowerPC Mac system.
  *
- *	Date:		Sat Feb  9 14:23:43 MST 2002
+ *                      If you want to use a different Fortran
+ *                      compiler, like Absoft's "f90", see the file 
+ *                      "Darwin_Intel.absoft" in this directory for help
+ *                      in modifying this file.
+ * 
+ *                      To use "gfortran" in place of "g77", change the
+ *                      the following lines:
+ * 
+ *        #define FCompiler   gfortran
+ *        #define CtoFLibraries   -lgfortran
  *
- *	Description:	This file contains all the directives needed to
- *			tell ymake how Darwin is different from a
- *			default setup.
  */
 #define HdfDefines  -DDARWIN
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE
@@ -29,7 +34,8 @@
 #define CCompiler   gcc
 #define FCompiler   g77
 #define CtoFLibraries   -lg2c -lgcc
-#define CcOptions      -ansi
+#define CcOptions      -fPIC -ansi
+#define FcOptions      -fPIC
 
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
