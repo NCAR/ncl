@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.144 2008-10-28 00:45:51 dbrown Exp $
+#      $Id: yMakefile,v 1.145 2008-11-02 14:29:32 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2008-10-28 00:45:51 $
+#	Date:		$Date: 2008-11-02 14:29:32 $
 #
 #	Description:	
 #
@@ -32,7 +32,7 @@ MYLIB		=	libncl
 MYLIB_API	=	libnclapi
 MYLIB_IO        =       libnio
 YACC		=	$(NYACC)
-LEX			=	flex
+LEX			= $(NFLEX)
 
 #if defined(linux)
 EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
