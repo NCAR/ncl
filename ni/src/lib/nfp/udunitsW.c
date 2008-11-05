@@ -3,6 +3,10 @@
 #include "wrapper.h"
 #include <math.h>
 
+extern int utCalendar_cal( double val, utUnit *dataunits, int *year, 
+                           int *month, int *day, int *hour, int  *minute,
+                           float *second, char *calendar );
+
 /*
  * Function for initializing Udunits package.  If UDUNITS_PATH is
  * set, then this path is used for the "udunits.dat" file. Otherwise,
@@ -62,16 +66,22 @@ int utopen_ncl()
  *    the time coordinate variable below that may be used for this
  *    purpose.
  *
- * The ut_calendar function below depends on udunits, so it is the 
- * user's responsibility to make sure that the input refers to
- * the mixed Gregorian/Julian calendar.
+ * The ut_calendar function below depends on the udunits package,
+ * with a udunit enhancement provided by the David Pierce, the
+ * developer of "ncview".
  *
  * The NCL function below checks for a "calendar" attribute. If
  * it is not present or has the values "standard" or "gregorian",
  * then this function will return the dates as returned
- * from the udunits package. If the "calendar" attribute is present
- * and it has other values, i.e. "n kyr B.P.", "common_year",
- * "no_leap", "365_day", then _FillValue will be returned.
+ * from the udunits package.
+ *
+ * If the "calendar" attribute is present and it has values "noleap",
+ * "360_day", or "365_day", then the ncview's version of utCalendar 
+ * will be used.
+ * 
+ * For an unrecognized calendar like "kyr B.P." or "common_year",
+ * _FillValue will be returned.
+ *
  */
 
 NhlErrorTypes ut_calendar_W( void )
@@ -101,7 +111,7 @@ NhlErrorTypes ut_calendar_W( void )
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
   string *calendar;
-  char   *ccal;
+  char   *ccal = NULL;
 /*
  * Variables for Udunits package.
  */
@@ -233,7 +243,7 @@ NhlErrorTypes ut_calendar_W( void )
  * values will be returned.
  *
  * The "calendar" option may optionally be set, but it must be equal to
- * "standard" or "gregorian".
+ * one of the recognized calendars.
  */
   return_missing = 0;
 
@@ -274,8 +284,10 @@ NhlErrorTypes ut_calendar_W( void )
         if ((strcmp(attr_list->attname, "calendar")) == 0) {
           calendar = (string *) attr_list->attvalue->multidval.val;
           ccal     = NrmQuarkToString(*calendar);
-          if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian")) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to 'standard' or 'gregorian'. This function only understands a mixed Julian/Gregorian calendar. Returning all missing values.");
+          if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
+             strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
+             strcmp(ccal,"360_day")) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
             return_missing = 1;
           }
         }
@@ -285,7 +297,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Make sure cspec is a valid udunits string.
  */
-          if(utScan(cspec, &unit) != 0) {
+	  if(utScan(cspec, &unit) != 0) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
             return_missing = 1;
           }
@@ -351,9 +363,8 @@ NhlErrorTypes ut_calendar_W( void )
   for( i = 0; i < total_size_x; i++ ) {
     if(!has_missing_x ||
        (has_missing_x && tmp_x[i] != missing_dx.doubleval)) {
-      (void) utCalendar(tmp_x[i],&unit,&year,&month,&day,
-                        &hour,&minute,&second);
-    
+      (void) utCalendar_cal(tmp_x[i],&unit,&year,&month,&day,
+                            &hour,&minute,&second,ccal);
 /*
  * Calculate the return values, based on the input option.
  */
