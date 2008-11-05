@@ -33,7 +33,7 @@ static unsigned char *gsva=(unsigned char*)NULL;
  * GSVINI is called to read the PNG file whose name is "fnmp" and
  * extract from it a gray-scale array of dimension mgsv x nsgv, which
  * is placed in memory allocated by "malloc".  The input variables
- * "ired" and "igrn" specify weights to be used in the conversion to 
+ * "ired" and "igrn" specify weights to be used in the conversion to
  * gray-scale.  (Note that "iblu" = 100000-ired-igrn.)  If an error
  * occurs, "ierr" is returned non-zero.
  */
