@@ -1,3 +1,8 @@
+external wrf_user_ll_ij "./wrf_user_ll_ij.so"
+external wrf_user_dbz "./wrf_user_dbz.so"
+
+load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+
 ;--------------------------------------------------------------------------------
 ; function wrf_user_set_xy( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
 ;                           y1:numeric,angle:numeric ,opts )
@@ -9,6 +14,8 @@
 ; function wrf_user_list_times( nc_file:file )
 ; function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, 
 ;                                 longitude:numeric )
+; function wrf_user_ll_to_ij( nc_file:file, latitude:numeric, longitude:numeric \
+;                             opts:logical )
 ; function wrf_contour(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
 ;                      opt_args[1]:logical)
 ; function wrf_vector(nc_file:file,wks[1]: graphic, data_u[*][*]:numeric, \
@@ -199,14 +206,14 @@ end
 ;--------------------------------------------------------------------------------
  
 undef("wrf_user_intrp3d")
-function wrf_user_intrp3d( var3d:numeric, z:numeric, \
+function wrf_user_intrp3d( var3d:numeric, z_in:numeric, \
                            plot_type:string, \
                            loc_param:numeric, angle:numeric, opts:logical )
 
-; var3d      - field to inerpolate (all input fields must be unstaggered
-; z          - interpolate to this field (either p/z)
+; var3d      - 3d field to interpolate (all input fields must be unstaggered)
+; z_in       - interpolate to this field (either p/z)
 ; plot_type  - interpolate horizontally "h", or vertically "v"
-; loc_param  - level for horizontal plots (eg. 500hPa ; 3000m - scalar), 
+; loc_param  - level(s) for horizontal plots (eg. 500hPa ; 3000m - scalar), 
 ;              plane for vertical plots (2 values representing an xy point 
 ;              on the model domain through which the vertical plane will pass
 ;              OR 4 values specifying start and end values
@@ -218,13 +225,108 @@ begin
 
   if(plot_type .eq. "h" ) then   ;  horizontal cross section needed
 
-     var2d = wrf_interp_3d_z(var3d,z,loc_param)
+     dim_levs = dimsizes(loc_param)
+     dims = dimsizes(var3d)
+     nd = dimsizes(dims)
 
-     if ( z(1,1,1) .gt. 500.) then
-        var2d@PlotLevelID = loc_param + " hPa"
-     else
-        var2d@PlotLevelID = .001*loc_param + " km"
+
+     dimX = dims(nd-1)
+     dimY = dims(nd-2)
+     dimZ = dims(nd-3)
+     dimL = dim_levs
+     dim4 = 1
+     dim5 = 1
+     if ( nd .eq. 4 ) then
+       dim4 = dims(nd-4)
      end if
+     if ( nd .eq. 5 ) then
+       dim4 = dims(nd-4)
+       dim5 = dims(nd-5)
+     end if
+     var3  = new ( (/ dim5, dim4, dimZ, dimY, dimX /) , typeof(var3d) )
+     z     = new ( (/ dim5, dim4, dimZ, dimY, dimX /) , typeof(var3d) )
+     var2d = new ( (/ dim5, dim4, dimL, dimY, dimX /) , typeof(var3d) )
+
+     if ( nd .eq. 5 ) then
+       var3 = var3d
+          z =  z_in
+     end if
+     if ( nd .eq. 4 ) then
+       var3(0,:,:,:,:) = var3d(:,:,:,:)
+          z(0,:,:,:,:) =  z_in(:,:,:,:)
+     end if
+     if ( nd .eq. 3 ) then
+       var3(0,0,:,:,:) = var3d(:,:,:)
+          z(0,0,:,:,:) =  z_in(:,:,:)
+     end if
+
+
+     if ( z(0,0,0,0,0) .gt. 500.) then
+       ; We must be interpolating to pressure
+       ; This routine needs input field and level in hPa - lets make sure of this
+       if ( z(0,0,0,0,0) .gt. 2000. ) then
+         ; looks like we have Pa as input - make this hPa
+         z = z * 0.01
+       end if
+       if ( loc_param(0) .gt. 2000. ) then
+         ; looks like the input was specified in Pa - change this
+         loc_param = loc_param * 0.01
+       end if
+     end if
+
+
+
+     do i5 = 0,dim5-1
+       do i4 = 0,dim4-1
+         do il = 0,dimL-1
+           var = wrf_interp_3d_z(var3(i5,i4,:,:,:),z(i5,i4,:,:,:),loc_param(il))
+           var2d(i5,i4,il,:,:) = var(:,:)
+         end do
+       end do
+     end do
+
+
+     nn = nd-1
+     var2d!4 = var3d!nn
+     nn = nd-2
+     var2d!3 = var3d!nn
+     var2d!2 = "plevs"
+     if ( nd .ge. 4 ) then
+       nn = nd-4
+       var2d!1 = var3d!nn
+     end if
+     if ( nd .ge. 5 ) then
+       nn = nd-5
+       var2d!0 = var3d!nn
+     end if
+
+     if ( dimL .gt. 1 ) then
+       if ( nd .eq. 5 ) then
+         return( var2d )
+       end if
+       if ( nd .eq. 4 ) then
+         return( var2d(0,:,:,:,:) )
+       end if
+       if ( nd .eq. 3 ) then
+         return( var2d(0,0,:,:,:) )
+       end if
+     else
+       if ( nd .eq. 5 ) then
+         return( var2d(:,:,0,:,:) )
+       end if
+       if ( nd .eq. 4 ) then
+         return( var2d(0,:,0,:,:) )
+       end if
+       if ( nd .eq. 3 ) then
+         return( var2d(0,0,0,:,:) )
+       end if
+       if ( z(0,0,0,0,0) .gt. 500.) then
+          var2d@PlotLevelID = loc_param + " hPa"
+       else
+          var2d@PlotLevelID = .001*loc_param + " km"
+       end if
+     end if
+
 
   end if
 
@@ -233,6 +335,14 @@ begin
 
   if(plot_type .eq. "v" ) then   ;  vertical cross section needed
 
+     dims = dimsizes(var3d)
+
+     if ( dimsizes(dims) .eq. 4 ) then
+       z = z_in(0,:,:,:)
+     else
+       z = z_in
+     end if
+       
 ; set vertical cross section
      if (opts) then
        xy = wrf_user_set_xy( z, loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
@@ -243,36 +353,51 @@ begin
                                 0.0, 0.0, angle, opts )
      end if
      xp = dimsizes(xy)
-
-
-; first we interp the variable, then z
-     var2dtmp = wrf_interp_2d_xy( var3d, xy)
+  
+  
+; first we interp z
      var2dz   = wrf_interp_2d_xy( z, xy)
-
 
 ;  interp to constant z grid
      z_max = max(var2dz)
      z_min = min(var2dz)
      dz = 0.01*(z_max - z_min)
-     nlevels = 101
+     nlevels = tointeger(z_max/dz + 1.)
      z_var2d = new( (/nlevels/), typeof(var2dz))
      z_var2d(0) = z_min
-
-     var2d = new( (/nlevels, xp(0)/), typeof(var2dz))
- 
+  
      if(var2dz(0,0) .gt. var2dz(1,0) ) then  ; monotonically decreasing coordinate
         dz = -dz
         z_var2d(0) = z_max
      end if
-
-   
+  
      do i=1, nlevels-1
         z_var2d(i) = z_var2d(0)+i*dz
      end do
+  
 
-     do i=0,xp(0)-1
-        var2d(:,i) = wrf_interp_1d( var2dtmp(:,i), var2dz(:,i), z_var2d)
-     end do
+; interp the variable
+     if ( dimsizes(dims) .eq. 4 ) then
+       var2d = new( (/dims(0), nlevels, xp(0)/), typeof(var2dz))
+       do it = 0,dims(0)-1
+         var2dtmp = wrf_interp_2d_xy( var3d(it,:,:,:), xy)
+         do i=0,xp(0)-1
+            var2d(it,:,i) = wrf_interp_1d( var2dtmp(:,i), var2dz(:,i), z_var2d)
+         end do
+       end do
+       var2d!0 = var3d!0
+       var2d!1 = "Vertical"
+       var2d!2 = "Horizontal"
+     else
+       var2d = new( (/nlevels, xp(0)/), typeof(var2dz))
+       var2dtmp = wrf_interp_2d_xy( var3d, xy)
+       do i=0,xp(0)-1
+          var2d(:,i) = wrf_interp_1d( var2dtmp(:,i), var2dz(:,i), z_var2d)
+       end do
+       var2d!0 = "Vertical"
+       var2d!1 = "Horizontal"
+     end if
+
 
 
      st_x = tointeger(xy(0,0)) + 1
@@ -291,11 +416,10 @@ begin
                             ") ; angle=" + angle
      end if
 
+     return(var2d)
   end if
 
 
-
-  return(var2d)
 
 end
 
@@ -305,7 +429,7 @@ undef("wrf_user_intrp2d")
 function wrf_user_intrp2d( var2d:numeric, \
                            loc_param:numeric, angle:numeric, opts:logical )
 
-; var2d      - field to inerpolate 
+; var2d      - 2d field to interpolate 
 ; loc_param  - plane for vertical plots (2 values representing an xy point 
 ;              on the model domain through which the vertical plane will pass
 ;              OR 4 values specifying start and end values
@@ -316,10 +440,22 @@ function wrf_user_intrp2d( var2d:numeric, \
 begin
 
      dims = dimsizes(var2d)
-     var2dtmp = new( (/1,dims(0),dims(1)/), typeof(var2d))
-     var2dtmp(0,:,:) = var2d(:,:)
+     nd = dimsizes(dims)
+     dimX = dims(nd-1)
+     dimY = dims(nd-2)
+     dimT = 1
+     if ( nd .eq. 3 ) then
+       dimT = dims(nd-3)
+     end if
+     var2dtmp = new( (/ 1, dimY, dimX /), typeof(var2d) )
+     
 
 ; set vertical cross section
+     if ( nd .eq. 3 ) then
+       var2dtmp(0,:,:) = var2d(0,:,:)
+     else
+       var2dtmp(0,:,:) = var2d(:,:)
+     end if
      if (opts) then
        xy = wrf_user_set_xy( var2dtmp, \
                              loc_param(0)-1, loc_param(1)-1, \    ; the -1 is for NCL dimensions
@@ -332,96 +468,313 @@ begin
      end if
      xp = dimsizes(xy)
 
-     var1dtmp = wrf_interp_2d_xy( var2dtmp, xy)
+     var2dout = new( (/ dimT, xp(0) /), typeof(var2d) )
 
-     dims = dimsizes(var1dtmp)
-     var = new( (/dims(1)/), typeof(var1dtmp))
-     var(:) = var1dtmp(0,:)
+     var1dtmp = wrf_interp_2d_xy( var2dtmp, xy )
+     var2dout(0,:) = var1dtmp(0,:)
+     if ( dimT .eq. 1 ) then
+       var2dout!1 = "Horizontal"
+       return ( var2dout(0,:) )
+     end if
 
-  return(var)
+     do it = 1,dimT-1
+       var2dtmp(0,:,:) = var2d(it,:,:)
+       var1dtmp = wrf_interp_2d_xy( var2dtmp, xy )
+       var2dout(it,:) = var1dtmp(0,:)
+     end do
+     var2dout!0 = "Time"
+     var2dout!1 = "Horizontal"
+     return(var2dout)
 
 end
 
  
 undef("wrf_user_getvar")
-function wrf_user_getvar( nc_file:file, variable:string, time:integer )
+function wrf_user_getvar( nc_file:file, varin[*]:string, time:integer )
 
 begin
 
-  if( (variable .eq. "uvmet") ) then
+  variable = varin(0)
+
+  if( (variable .eq. "uvmet") .or. (variable .eq. "uvmet10") ) then
        ;; Calculate winds rotated to earth coord. 
-       ;; Return a 4D array where uvmet(0,:,:,:) is umet and 
-       ;; uvmet(1,:,:,:) is vmet
+       ;; Return an array for uvmet 
+       ;;   uvmet(t,0,z,y,x) is umet, and 
+       ;;   uvmet(t,1,z,y,x) is vmet
+       ;;   IF time was not -1 on input, then t falls away, making this a 4D variable
+       ;; Return an array for uvmet10 
+       ;;   uvmet10(t,0,y,x) is umet10, and 
+       ;;   uvmet10(t,1,y,x) is vmet10
+       ;;   IF time was not -1 on input, then t falls away, making this a 3D variable
 
        pii = 3.14159265
        radians_per_degree = pii/180.
 
-       v = nc_file->V(time,:,:,:)
-       dimv = dimsizes(v)
-       u = nc_file->U(time,:,:,:)
-       dimu = dimsizes(u)
+       if( (variable .eq. "uvmet") )  then
+         getU = "U" 
+         getV = "V" 
+         if(.not. isfilevar(nc_file,"U")) then
+           if(isfilevar(nc_file,"UU")) then
+             getU = "UU"
+             getV = "VV"
+           end if
+         end if
+         if ( time .eq. -1 ) then
+           u_in = nc_file->$getU$
+           v_in = nc_file->$getV$
+           nameX = u_in!3
+           nameY = u_in!2
+           nameZ = u_in!1
+           nameT = u_in!0
+             dd_in = dimsizes(v_in)
+             num_dd = dimsizes(dd_in)
+             dimX = dd_in(num_dd-1)
+             delete(dd_in)
+             dd_in = dimsizes(u_in)
+             num_dd = dimsizes(dd_in)
+             dimY = dd_in(num_dd-2)
+             dimZ = dd_in(num_dd-3)
+             dimT = dd_in(num_dd-4)
+             delete(dd_in)
+           u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
+           v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
+           u(:,:,:,:) = 0.5*(u_in(:,:,:,:dimX-1) + u_in(:,:,:,1:dimX))
+           v(:,:,:,:) = 0.5*(v_in(:,:,:dimY-1,:) + v_in(:,:,1:dimY,:))
+         else
+           u_in   = nc_file->$getU$(time,:,:,:)
+           v_in   = nc_file->$getV$(time,:,:,:)
+           nameX = u_in!2
+           nameY = u_in!1
+           nameZ = u_in!0
+           nameT = "Time"
+             dd_in = dimsizes(v_in)
+             num_dd = dimsizes(dd_in)
+             dimX = dd_in(num_dd-1)
+             delete(dd_in)
+             dd_in = dimsizes(u_in)
+             num_dd = dimsizes(dd_in)
+             dimY = dd_in(num_dd-2)
+             dimZ = dd_in(num_dd-3)
+             dimT = 1
+             delete(dd_in)
+           u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
+           v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
+           u(0,:,:,:) = 0.5*(u_in(:,:,:dimX-1) + u_in(:,:,1:dimX))
+           v(0,:,:,:) = 0.5*(v_in(:,:dimY-1,:) + v_in(:,1:dimY,:))
+         end if
+       end if  
+       if( (variable .eq. "uvmet10") )  then
+         if(isfilevar(nc_file,"U10")) then
+           if ( time .eq. -1 ) then
+             u_in   = nc_file->U10
+             v_in   = nc_file->V10
+             nameX = u_in!2
+             nameY = u_in!1
+             nameT = u_in!0
+             nameZ = "surface"
+               dd_in = dimsizes(u_in)
+               num_dd = dimsizes(dd_in)
+               dimX = dd_in(num_dd-1)
+               dimY = dd_in(num_dd-2)
+               dimZ = 1
+               dimT = dd_in(num_dd-3)
+               delete(dd_in)
+             dd_in = dimsizes(u_in)
+             u   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
+             v   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
+             u(:,0,:,:) = u_in
+             v(:,0,:,:) = v_in
+             delete(dd_in)
+           else
+             u_in  = nc_file->U10(time,:,:)
+             v_in  = nc_file->V10(time,:,:)
+             nameX = u_in!1
+             nameY = u_in!0
+             nameT = "Time"
+             nameZ = "surface"
+               dd_in = dimsizes(u_in)
+               num_dd = dimsizes(dd_in)
+               dimX = dd_in(num_dd-1)
+               dimY = dd_in(num_dd-2)
+               dimZ = 1
+               dimT = 1
+               delete(dd_in)
+             u   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
+             v   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
+             u(0,0,:,:) = u_in
+             v(0,0,:,:) = v_in
+           end if
+         else  ; may be a met file, so get lowest level of UU and VV
+           if(isfilevar(nc_file,"UU")) then
+             print("Assume this is a met_em file - getting lowest level from UU and VV fields")
+             if ( time .eq. -1 ) then
+               u_in  = nc_file->UU(:,0,:,:)
+               v_in  = nc_file->VV(:,0,:,:)
+               nameX = u_in!2
+               nameY = u_in!1
+               nameT = u_in!0
+               nameZ = "surface"
+                 dd_in = dimsizes(v_in)
+                 num_dd = dimsizes(dd_in)
+                 dimX = dd_in(num_dd-1)
+                 delete(dd_in)
+                 dd_in = dimsizes(u_in)
+                 num_dd = dimsizes(dd_in)
+                 dimY = dd_in(num_dd-2)
+                 dimZ = 1
+                 dimT = dd_in(num_dd-3)
+                 delete(dd_in)
+               u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
+               v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
+               u(:,0,:,:) = 0.5*(u_in(:,:,:dimX-1) + u_in(:,:,1:dimX))
+               v(:,0,:,:) = 0.5*(v_in(:,:dimY-1,:) + v_in(:,1:dimY,:))
+             else
+               u_in  = nc_file->UU(time,0,:,:)
+               v_in  = nc_file->VV(time,0,:,:)
+               nameX = u_in!1
+               nameY = u_in!0
+               nameT = "Time"
+               nameZ = "surface"
+                 dd_in = dimsizes(v_in)
+                 num_dd = dimsizes(dd_in)
+                 dimX = dd_in(num_dd-1)
+                 delete(dd_in)
+                 dd_in = dimsizes(u_in)
+                 num_dd = dimsizes(dd_in)
+                 dimY = dd_in(num_dd-2)
+                 dimZ = 1
+                 dimT = 1
+                 delete(dd_in)
+               u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
+               v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
+               u(0,0,:,:) = 0.5*(u_in(:,:dimX-1) + u_in(:,1:dimX))
+               v(0,0,:,:) = 0.5*(v_in(:dimY-1,:) + v_in(1:dimY,:))
+             end if
+           end if
+         end if  
+       end if  
 
-       uvmet = new( (/ 2, dimu(0), dimu(1), dimv(2)/), typeof(u))
+       uvmet = new( (/ dimT, 2, dimZ, dimY, dimX /), typeof(u))
+       uvmet@description = " u,v met velocity"
+       uvmet@units = "m/s"
 
        map_projection = nc_file@MAP_PROJ
 
 
-       if(map_projection .eq. 0) then  ; no projection
-           uvmet(0,:,:,:) = 0.5*(u(:,:,:dimv(2)-2) + u(:,:,1:dimv(2)-1))
-           uvmet(1,:,:,:) = 0.5*(v(:,:dimv(1)-2,:) + v(:,1:dimv(1)-1,:))
-           uvmet@description = " u,v met velocity"
-           uvmet@units = "m/s"
-           return(uvmet)
+       if( any(map_projection.eq.(/0,3,6/)) ) then  ; no rotation needed
+         uvmet(:,0,:,:,:) = u(:,:,:,:) 
+         uvmet(:,1,:,:,:) = v(:,:,:,:)
        end if
 
 
-       cen_lat  = nc_file@CEN_LAT
-       if(isatt(nc_file,"STAND_LON")) then
-           cen_long = nc_file@STAND_LON
-       else
-           cen_long = nc_file@CEN_LON
-       end if
-       true_lat1 = nc_file@TRUELAT1
-       true_lat2 = nc_file@TRUELAT2
-       if(isfilevar(nc_file,"XLAT"))
-         latitude  = nc_file->XLAT(0,:,:)
-         longitude = nc_file->XLONG(0,:,:)
-       else
-         latitude  = nc_file->XLAT_M(0,:,:)
-         longitude = nc_file->XLONG_M(0,:,:)
-       end if
-
-       cone = 1.
-       if( map_projection .eq. 1) then    ; Lambert Conformal mapping
-         if( (fabs(true_lat1 - true_lat2) .gt. 0.1) .and.  \
-             (fabs(true_lat2 - 90. )      .gt. 0.1)       ) then
-             cone = 10^(cos(true_lat1*radians_per_degree)) \
-                   -10^(cos(true_lat2*radians_per_degree))
-             cone = cone/(10^(tan(45. -fabs(true_lat1/2.)*radians_per_degree)) - \
-                          10^(tan(45. -fabs(true_lat2/2.)*radians_per_degree))   )
+       if( any(map_projection.eq.(/1,2/)) ) then  ; no rotation needed
+         cen_lat  = nc_file@CEN_LAT
+         if(isatt(nc_file,"STAND_LON")) then
+             cen_long = nc_file@STAND_LON
          else
-             cone = sin(fabs(true_lat1)*radians_per_degree)
+             cen_long = nc_file@CEN_LON
+         end if
+         true_lat1 = nc_file@TRUELAT1
+         true_lat2 = nc_file@TRUELAT2
+  
+         getLAT = "XLAT" 
+         getLON = "XLONG" 
+         if(.not. isfilevar(nc_file,"XLAT")) then
+           if(isfilevar(nc_file,"XLAT_M")) then
+             getLAT = "XLAT_M"
+             getLON = "XLONG_M"
+           end if
+         end if
+         if ( time .eq. -1 ) then
+           latitude   = nc_file->$getLAT$
+           longitude  = nc_file->$getLON$
+         else
+           lat   = nc_file->$getLAT$(time,:,:)
+           lon   = nc_file->$getLON$(time,:,:)
+           dd_in = dimsizes(lat)
+           latitude  = new ( (/ 1, dd_in(0), dd_in(1) /), typeof(lat) )
+           longitude = new ( (/ 1, dd_in(0), dd_in(1) /), typeof(lon) )
+           latitude(0,:,:)  = lat
+           longitude(0,:,:) = lon
+           delete(dd_in)
+         end if
+
+         cone = 1.
+         if( map_projection .eq. 1) then    ; Lambert Conformal mapping
+           if( (fabs(true_lat1 - true_lat2) .gt. 0.1) .and.  \
+               (fabs(true_lat2 - 90. )      .gt. 0.1)       ) then
+               cone = 10^(cos(true_lat1*radians_per_degree)) \
+                     -10^(cos(true_lat2*radians_per_degree))
+               cone = cone/(10^(tan(45. -fabs(true_lat1/2.)*radians_per_degree)) - \
+                            10^(tan(45. -fabs(true_lat2/2.)*radians_per_degree))   )
+           else
+               cone = sin(fabs(true_lat1)*radians_per_degree)
+           end if
+         end if
+         if(map_projection .eq. 2) then      ; polar stereographic
+           cone = 1.
+         end if
+         if(map_projection .eq. 3) then      ; Mercator
+           cone = 0.
+         end if
+
+         uvmet = wrf_uvmet( u, v, latitude, longitude, cen_long, cone )
+       end if  
+       uvmet!0 = nameT
+       uvmet!1 = "u_and_v"
+       uvmet!2 = nameZ
+       uvmet!3 = nameY
+       uvmet!4 = nameX
+
+       if( (variable .eq. "uvmet") ) then
+         if ( time .eq. -1 )
+           return(uvmet)
+         else
+           return(uvmet(0,:,:,:,:))
          end if
        end if
-       if(map_projection .eq. 2) then      ; polar steraographic
-         cone = 1.
-       end if
-       if(map_projection .eq. 3) then      ; Mercator
-         cone = 0.
+       if( (variable .eq. "uvmet10") ) then
+         if ( time .eq. -1 )
+           return(uvmet(:,:,0,:,:))
+         else
+           return(uvmet(0,:,0,:,:))
+         end if
        end if
 
-       uvmet = wrf_uvmet( u,v, latitude, longitude, cen_long, cone )
-
-     return(uvmet)
 
   end if
 
 
+
   if( variable .eq. "ua" ) then
-       ; U interpolated to mass points
-       U   = nc_file->U(time,:,:,:)
-       dim = dimsizes(U)
-       ua  = 0.5*(U(:,:,:dim(2)-2) + U(:,:,1:dim(2)-1))
+       ;  U interpolated to mass points
+       getTHIS = "U" 
+       if(.not. isfilevar(nc_file,"U")) then
+         if(isfilevar(nc_file,"UU")) then
+           getTHIS = "UU"
+         end if
+       end if
+
+       if ( time .eq. -1 ) then
+         U   = nc_file->$getTHIS$
+       else
+         U   = nc_file->$getTHIS$(time,:,:,:)
+       end if
+       dims = dimsizes(U)
+       n_dims = dimsizes(dims)
+       dimU = dims(n_dims-1)
+       if ( n_dims .eq. 4 ) then
+         ua  = 0.5*(U(:,:,:,:dimU-2) + U(:,:,:,1:dimU-1))
+         ua!3 = "west_east"
+         ua!2 = U!2
+         ua!1 = U!1
+         ua!0 = U!0
+       else
+         ua  = 0.5*(U(:,:,:dimU-2) + U(:,:,1:dimU-1))
+         ua!2 = "west_east"
+         ua!1 = U!1
+         ua!0 = U!0
+       end if
        ua@description = "u Velocity"
        ua@units       = "m/s"
        return(ua)
@@ -430,9 +783,33 @@ begin
 
   if( variable .eq. "va" ) then
        ; V interpolated to mass points
-       V   = nc_file->V(time,:,:,:)
-       dim = dimsizes(V)
-       va  = 0.5*(V(:,:dim(1)-2,:)+V(:,1:dim(1)-1,:))
+       getTHIS = "V" 
+       if(.not. isfilevar(nc_file,"V")) then
+         if(isfilevar(nc_file,"VV")) then
+           getTHIS = "VV"
+         end if
+       end if
+
+       if ( time .eq. -1 ) then
+         V   = nc_file->$getTHIS$
+       else
+         V   = nc_file->$getTHIS$(time,:,:,:)
+        end if
+       dims = dimsizes(V)
+       n_dims = dimsizes(dims)
+       dimV = dims(n_dims-2)
+       if ( n_dims .eq. 4 ) then
+         va  = 0.5*(V(:,:,:dimV-2,:)+V(:,:,1:dimV-1,:))
+         va!3 = V!3
+         va!2 = "south_north"
+         va!1 = V!1
+         va!0 = V!0
+       else
+         va  = 0.5*(V(:,:dimV-2,:)+V(:,1:dimV-1,:))
+         va!2 = V!2
+         va!1 = "south_north"
+         va!0 = V!0
+       end if
        va@description = "v Velocity"
        va@units       = "m/s"
        return(va)
@@ -441,9 +818,26 @@ begin
 
   if( variable .eq. "wa" ) then
        ; W interpolated to mass points
-       W   = nc_file->W(time,:,:,:)
-       dim = dimsizes(W)
-       wa  = 0.5*(W(0:dim(0)-2,:,:)+W(1:dim(0)-1,:,:))
+       if ( time .eq. -1 ) then
+         W   = nc_file->W
+       else
+         W   = nc_file->W(time,:,:,:)
+       end if
+       dims = dimsizes(W)
+       n_dims = dimsizes(dims)
+       dimW = dims(n_dims-3)
+       if ( n_dims .eq. 4 ) then
+         wa  = 0.5*(W(:,0:dimW-2,:,:)+W(:,1:dimW-1,:,:))
+         wa!3 = W!3
+         wa!2 = W!2
+         wa!1 = "bottom_top"
+         wa!0 = W!0
+       else
+         wa  = 0.5*(W(0:dimW-2,:,:)+W(1:dimW-1,:,:))
+         wa!2 = W!2
+         wa!1 = W!1
+         wa!0 = "bottom_top"
+       end if
        wa@description = "Vertical Velocity w"
        wa@units       = "m/s"
        return(wa)
@@ -452,148 +846,575 @@ begin
 
   if( variable .eq. "pressure" ) then
        ; Full model pressure [=base pressure (PB) + pertubation pressure (P)]
-       P  = nc_file->P(time,:,:,:)
-       PB = nc_file->PB(time,:,:,:)
-       pressure  = 0.01 * ( P + PB )
+       if(isfilevar(nc_file,"P")) then
+         if ( time .eq. -1 ) then
+           P  = nc_file->P
+           PB = nc_file->PB
+         else
+           P  = nc_file->P(time,:,:,:)
+           PB = nc_file->PB(time,:,:,:)
+         end if
+         pressure  = 0.01 * ( P + PB )
+       else
+         ;; may be a met_em file - see if we can get PRES
+         if(isfilevar(nc_file,"PRES")) then
+           if ( time .eq. -1 ) then
+             pressure = nc_file->PRES
+           else
+             pressure = nc_file->PRES(time,:,:,:)
+           end if
+           pressure = 0.01 * pressure
+         end if
+       end if
+       copy_VarCoords ( P , pressure )
        pressure@description = "Pressure"
        pressure@units       = "hPa"
        return(pressure)
   end if
 
 
-  if( variable .eq. "z" ) then
+  if( any( variable .eq. (/"geopt","z"/) ) ) then
        ; Height [=full geopotentail height / 9.81]
-       PH  = nc_file->PH(time,:,:,:)
-       PHB = nc_file->PHB(time,:,:,:)
-       var = ( PH + PHB ) / 9.81
-       dim = dimsizes(var)
-       z   = 0.5*(var(0:dim(0)-2,:,:)+var(1:dim(0)-1,:,:))
-       z@description = "Height"
-       z@units       = "m"
+       if(isfilevar(nc_file,"PH")) then
+         if ( time .eq. -1 ) then
+           PH  = nc_file->PH
+           PHB = nc_file->PHB
+         else
+           PH  = nc_file->PH(time,:,:,:)
+           PHB = nc_file->PHB(time,:,:,:)
+         end if
+         var = ( PH + PHB )
+         dims = dimsizes(var)
+         n_dims = dimsizes(dims)
+         dimW = dims(n_dims-3)
+         if ( n_dims .eq. 4 ) then
+           z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
+           z!3 = PH!3
+           z!2 = PH!2
+           z!1 = "bottom_top"
+           z!0 = PH!0
+         else
+           z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
+           z!2 = PH!2
+           z!1 = PH!1
+           z!0 = "bottom_top"
+         end if
+       else
+         ;; may be a met_em file - see if we can get GHT
+         if(isfilevar(nc_file,"GHT")) then
+           if ( time .eq. -1 ) then
+             z = nc_file->GHT
+           else
+             z = nc_file->GHT(time,:,:,:)
+           end if
+         end if
+       end if  
+
+       if ( variable .eq. "z" ) then
+         z = z / 9.81
+         z@description = "Height"
+         z@units       = "m"
+       else
+         z@description = "Geopotential Height"
+         z@units       = "m2 s-2"
+       end if
        return(z)
   end if
 
 
   if( variable .eq. "th" ) then
        ; Potentail Temperature is model output T + 300K
-       T  = nc_file->T(time,:,:,:)
+       if ( time .eq. -1 ) then
+         T  = nc_file->T
+       else
+         T  = nc_file->T(time,:,:,:)
+       end if  
        th = T + 300.
+       copy_VarCoords ( T , th )
        th@description = "Potential Temperature (theta) "
        th@units       = "K"
        return(th)
   end if
 
 
-  if( variable .eq. "tk" ) then
+  if( any( variable .eq. (/"tk","tc"/) ) ) then
        ;; function wrf_tk needs theta and pressure (Pa) on input and returns temperature in K on return
-       T  = nc_file->T(time,:,:,:)
-       th = T + 300.
-       P  = nc_file->P(time,:,:,:)
-       PB = nc_file->PB(time,:,:,:)
-       p  = P + PB
-       tk = wrf_tk( p , th )
-       return(tk)
-  end if
-
-
-  if( variable .eq. "tc" ) then
-       ;; function wrf_tk needs theta and pressure (Pa) on input and returns temperature in K on return
-       T  = nc_file->T(time,:,:,:)
-       th = T + 300.
-       P  = nc_file->P(time,:,:,:)
-       PB = nc_file->PB(time,:,:,:)
-       p  = P + PB
-       tc = wrf_tk( p , th )
-       tc = tc - 273.16
-       tc@units = "C"     ; Overwrite return units
-       return(tc)
+       if(isfilevar(nc_file,"T")) then
+         if ( time .eq. -1 ) then
+           T  = nc_file->T
+           P  = nc_file->P
+           PB = nc_file->PB
+         else
+           T  = nc_file->T(time,:,:,:)
+           P  = nc_file->P(time,:,:,:)
+           PB = nc_file->PB(time,:,:,:)
+         end if  
+         th = T + 300.
+         p  = P + PB
+         t = wrf_tk( p , th )
+       else
+         ;; may be a met_em file - see if we can get TT
+         if(isfilevar(nc_file,"TT")) then
+           if ( time .eq. -1 ) then
+             t  = nc_file->TT
+           else
+             t  = nc_file->TT(time,:,:,:)
+           end if  
+         end if  
+       end if  
+       if( variable .eq. "tc" ) then
+         t = t - 273.16
+         t@units = "C"     ; Overwrite return units
+       end if
+       copy_VarCoords ( T , t )
+       return(t)
   end if
 
 
   if( variable .eq. "td" ) then
        ;; function wrf_td needs qv and pressure (Pa) on input and returns dewpoint temperature on return
-       QVAPOR = nc_file->QVAPOR(time,:,:,:)
-       QVAPOR = QVAPOR > 0.0
-       P      = nc_file->P(time,:,:,:)
-       PB     = nc_file->PB(time,:,:,:)
+       if ( time .eq. -1 ) then
+         P      = nc_file->P
+         PB     = nc_file->PB
+         QVAPOR = nc_file->QVAPOR
+       else
+         P      = nc_file->P(time,:,:,:)
+         PB     = nc_file->PB(time,:,:,:)
+         QVAPOR = nc_file->QVAPOR(time,:,:,:)
+       end if
        p      = P + PB
+       QVAPOR = QVAPOR > 0.0
        td    = wrf_td( p , QVAPOR )
+       copy_VarCoords ( P , td )
        return(td)
   end if
 
 
   if( variable .eq. "td2" ) then
        ;; function wrf_td needs qv and pressure (Pa) on input and returns dewpoint temperature on return
-       Q2  = nc_file->Q2(time,:,:)
-       Q2  = Q2 > 0.0
-       P   = nc_file->P(time,0,:,:)      ; get only the lowest level, to match Q2
-       PB  = nc_file->PB(time,0,:,:)     ; get only the lowest level, to match Q2
+       if ( time .eq. -1 ) then
+         P   = nc_file->P(:,0,:,:)      ; get only the lowest level, to match Q2
+         PB  = nc_file->PB(:,0,:,:)     ; get only the lowest level, to match Q2
+         Q2  = nc_file->Q2
+       else
+         P   = nc_file->P(time,0,:,:)      ; get only the lowest level, to match Q2
+         PB  = nc_file->PB(time,0,:,:)     ; get only the lowest level, to match Q2
+         Q2  = nc_file->Q2(time,:,:)
+       end if
        p   = P + PB
+       Q2  = Q2 > 0.0
        td2 = wrf_td( p , Q2 )
        td2@description = "2m Dewpoint Temperature"   ; Overwrite return description
+       copy_VarCoords ( P , td2 )
        return(td2)
   end if
 
 
   if( variable .eq. "slp" ) then
-       ;; first compute theta
-       ;; function wrf_tk needs theta and pressure (Pa) on input
-       T  = nc_file->T(time,:,:,:)
-       th = T + 300.
-       P  = nc_file->P(time,:,:,:)
-       PB = nc_file->PB(time,:,:,:)
-       p  = P + PB
-       tk = wrf_tk( p , th )
+       if(isfilevar(nc_file,"T")) then
+         ;; first compute theta - function wrf_tk needs theta and pressure (Pa) on input
+         ;; THEN compute sea level pressure, from qv, p (Pa), tk, z
+         if ( time .eq. -1 ) then
+           T      = nc_file->T
+           P      = nc_file->P
+           PB     = nc_file->PB
+           QVAPOR = nc_file->QVAPOR
+           PH     = nc_file->PH
+           PHB    = nc_file->PHB
+         else
+           T      = nc_file->T(time,:,:,:)
+           P      = nc_file->P(time,:,:,:)
+           PB     = nc_file->PB(time,:,:,:)
+           QVAPOR = nc_file->QVAPOR(time,:,:,:)
+           PH     = nc_file->PH(time,:,:,:)
+           PHB    = nc_file->PHB(time,:,:,:)
+         end if
+         th = T + 300.
+         p  = P + PB
+         QVAPOR = QVAPOR > 0.000
+         var    = ( PH + PHB ) / 9.81
+         dims = dimsizes(var)
+         n_dims = dimsizes(dims)
+         dimW = dims(n_dims-3)
+         if ( n_dims .eq. 4 ) then
+           z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
+         else
+           z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
+         end if
+         tk = wrf_tk( p , th )    ; calculate TK
+         slp   = wrf_slp( z, tk, p, QVAPOR )  ; calculate slp
+         if ( n_dims .eq. 4 ) then
+            slp!2 = T!3
+            slp!1 = T!2
+            slp!0 = T!0
+         else
+            slp!1 = T!2
+            slp!0 = T!1
+         end if
+       else
+         ;; may be a met_em file - see if we can get PMSL
+         if(isfilevar(nc_file,"PMSL")) then
+           if ( time .eq. -1 ) then
+             slp = nc_file->PMSL
+           else
+             slp = nc_file->PMSL(time,:,:)
+           end if
+         end if
+       end if  
 
-       ;; now compute sea level pressure, from qv, p (Pa), tk, z
-       QVAPOR = nc_file->QVAPOR(time,:,:,:)
-       QVAPOR = QVAPOR > 0.000
-       PH     = nc_file->PH(time,:,:,:)
-       PHB    = nc_file->PHB(time,:,:,:)
-       var    = ( PH + PHB ) / 9.81
-       dim    = dimsizes(var)
-       z      = 0.5 * ( var(0:dim(0)-2,:,:) + var(1:dim(0)-1,:,:) )
-
-       ;; get slp
-       slp   = wrf_slp( z, tk, p, QVAPOR )
        return(slp)
   end if
 
 
   if( variable .eq. "rh" ) then
-       ;; first compuet tk
-       ;; function wrf_tk needs theta and pressure (Pa) on input
-       T  = nc_file->T(time,:,:,:)
-       th = T + 300.
-       P  = nc_file->P(time,:,:,:)
-       PB = nc_file->PB(time,:,:,:)
-       p  = P + PB
-       tk = wrf_tk( p , th )
-
-       ;; now compute rh, using tk, p (Pa), QVAPOR
-       QVAPOR = nc_file->QVAPOR(time,:,:,:)
-       QVAPOR = QVAPOR > 0.000
-       rh     = wrf_rh( QVAPOR, p, tk )
+       if(isfilevar(nc_file,"T")) then
+         ;; first compute theta - function wrf_tk needs theta and pressure (Pa) on input
+         ;; THEN compute rh, using tk, p (Pa), QVAPOR
+         if ( time .eq. -1 ) then
+           T      = nc_file->T
+           P      = nc_file->P
+           PB     = nc_file->PB
+           QVAPOR = nc_file->QVAPOR
+         else
+           T      = nc_file->T(time,:,:,:)
+           P      = nc_file->P(time,:,:,:)
+           PB     = nc_file->PB(time,:,:,:)
+           QVAPOR = nc_file->QVAPOR(time,:,:,:)
+         end if  
+         th = T + 300.
+         p  = P + PB
+         QVAPOR = QVAPOR > 0.000
+         tk = wrf_tk( p , th )
+         rh = wrf_rh( QVAPOR, p, tk )
+       else
+         ;; may be a met_em file - see if we can get RH
+         if(isfilevar(nc_file,"RH")) then
+           if ( time .eq. -1 ) then
+             rh = nc_file->RH
+           else
+             rh = nc_file->RH(time,:,:)
+           end if
+         end if
+       end if  
+       copy_VarCoords ( T , rh )
        return(rh)
   end if
 
 
+  if( variable .eq. "rh2" ) then
+       if(isfilevar(nc_file,"T2")) then
+         ;; THEN compute rh2, using T2, PSFC, Q2
+         if ( time .eq. -1 ) then
+           T2   = nc_file->T2
+           PSFC = nc_file->PSFC
+           Q2   = nc_file->Q2
+           dims = dimsizes(T2)
+           nd = dimsizes(dims)
+           t = new ( (/ dims(0), 1, dims(nd-2), dims(nd-1) /) , typeof(T2) )
+           p = new ( (/ dims(0), 1, dims(nd-2), dims(nd-1) /) , typeof(PSFC) )
+           q = new ( (/ dims(0), 1, dims(nd-2), dims(nd-1) /) , typeof(Q2) )
+           t(:,0,:,:) = T2(:,:,:)
+           p(:,0,:,:) = PSFC(:,:,:)
+           q(:,0,:,:) = Q2(:,:,:)
+           rh2 = new ( (/ dims(0), dims(nd-2), dims(nd-1) /) , typeof(T2) )
+         else
+           T2   = nc_file->T2(time,:,:)
+           PSFC = nc_file->PSFC(time,:,:)
+           Q2   = nc_file->Q2(time,:,:)
+           dims = dimsizes(T2)
+           nd = dimsizes(dims)
+           t = new ( (/ 1, dims(nd-2), dims(nd-1) /) , typeof(T2) )
+           p = new ( (/ 1, dims(nd-2), dims(nd-1) /) , typeof(PSFC) )
+           q = new ( (/ 1, dims(nd-2), dims(nd-1) /) , typeof(Q2) )
+           t(0,:,:) = T2(:,:)
+           p(0,:,:) = PSFC(:,:)
+           q(0,:,:) = Q2(:,:)
+           rh2 = new ( (/ dims(nd-2), dims(nd-1) /) , typeof(T2) )
+         end if  
+         q = q > 0.000
+         rh = wrf_rh( q, p, t )
+         if ( time .eq. -1 ) then
+           rh2(:,:,:) = rh(:,0,:,:)
+         else
+           rh2(:,:) = rh(0,:,:)
+         end if
+         copy_VarCoords ( T2 , rh2 )
+       else
+         ;; may be a met_em file - see if we can get RH
+         if(isfilevar(nc_file,"RH")) then
+           print("Probably a met_em file - get lowerst level from RH field")
+           if ( time .eq. -1 ) then
+             rh2 = nc_file->RH(:,0,:,:)
+           else
+             rh2 = nc_file->RH(time,0,:,:)
+           end if
+         end if
+       end if  
+       return(rh2)
+  end if
 
-;  end of diagnostic variable list - we must want a variable already in
-;  the file.  check variable dimensionality and pull proper time  out of file
 
-  ndims = dimsizes(filevardimsizes(nc_file,variable))
-  if( ndims .eq. 4) then
-    var = nc_file->$variable$(time,:,:,:)
+  if( variable .eq. "dbz" .or. variable .eq. "mdbz" ) then
+       ; calculate dbz
+       sn0 = 1
+       if ( time .eq. -1 ) then
+         T  = nc_file->T
+         P  = nc_file->P
+         PB = nc_file->PB
+         qv = nc_file->QVAPOR
+         qr = nc_file->QRAIN
+         if(isfilevar(nc_file,"QSNOW"))
+           qs = nc_file->QSNOW
+         else
+           qs = qv
+           qs = 0.0
+           sn0 = 0
+         end if
+         if(isfilevar(nc_file,"QGRAUP"))
+           qg = nc_file->QGRAUP
+         else
+           qg = qv
+           qg = 0.0
+         end if
+       else
+         T  = nc_file->T(time,:,:,:)
+         P  = nc_file->P(time,:,:,:)
+         PB = nc_file->PB(time,:,:,:)
+         qv = nc_file->QVAPOR(time,:,:,:)
+         qr = nc_file->QRAIN(time,:,:,:)
+         if(isfilevar(nc_file,"QSNOW"))
+           qs = nc_file->QSNOW(time,:,:,:)
+         else
+           qs = qv
+           qs = 0.0
+           sn0 = 0
+         end if
+         if(isfilevar(nc_file,"QGRAUP"))
+           qg = nc_file->QGRAUP(time,:,:,:)
+         else
+           qg = qv
+           qg = 0.0
+         end if
+       end if
+       th = T + 300.
+       p  = P + PB
+       tk = wrf_tk( p , th )
+
+       ivarint  = 0 
+       iliqskin = 0
+       dim_vars = dimsizes(varin)
+       do idims = 1,dim_vars-1
+         if ( idims .eq. 1 ) then
+           if ( varin(idims) .eq. "1" ) then
+             ivarint = 1
+           end if
+         end if
+         if ( idims .eq. 2 ) then
+           if ( varin(idims) .eq. "1" ) then
+             iliqskin = 1
+           end if
+         end if
+       end do
+
+       dim = dimsizes(tk)
+       dbz = new ( (/ dim(0), dim(1), dim(2) /), typeof(tk))
+       wrf_user_dbz :: calc_dbz ( dbz, p, tk, qv, qr, qs, qg, dim(2), dim(1), dim(0), sn0, ivarint, iliqskin)
+
+       if ( variable .eq. "mdbz") then
+         mdbz = new ( (/ dim(1), dim(2) /), typeof(tk))
+         mdbz = 0
+         do jj = 0,dim(1)-1
+         do ii = 0,dim(2)-1
+            mdbz(jj,ii) = max(dbz(:,jj,ii))
+         end do
+         end do
+         mdbz!1 = T!2
+         mdbz!0 = T!1
+         mdbz@description = "Max Reflectivity"
+         mdbz@units       = "dBZ"
+         return(mdbz)
+       else
+         copy_VarCoords ( T , dbz )
+         dbz@description = "Reflectivity"
+         dbz@units       = "dBZ"
+         return(dbz)
+       end if
+
   end if
-  if( ndims .eq. 3) then
-    var = nc_file->$variable$(time,:,:)
+
+
+
+  if( any( variable .eq. (/"cape_3d"/) ) ) then
+       ;; function wrf_tk needs theta and pressure (Pa) on input and returns temperature in K on return
+       if ( time .eq. -1 ) then
+         T  = nc_file->T
+         P  = nc_file->P
+         PB = nc_file->PB
+         QV = nc_file->QVAPOR
+         PH  = nc_file->PH
+         PHB = nc_file->PHB
+         HGT = nc_file->HGT
+         PSFC = nc_file->PSFC
+       else
+         T  = nc_file->T(time,:,:,:)
+         P  = nc_file->P(time,:,:,:)
+         PB = nc_file->PB(time,:,:,:)
+         QV = nc_file->QVAPOR(time,:,:,:)
+         PH  = nc_file->PH(time,:,:,:)
+         PHB = nc_file->PHB(time,:,:,:)
+         HGT = nc_file->HGT(time,:,:)
+         PSFC = nc_file->PSFC(time,:,:)
+       end if
+       th = T + 300.
+       p  = (P + PB) 
+       tk = wrf_tk( p , th )
+
+       var = ( PH + PHB )
+       dims = dimsizes(var)
+       n_dims = dimsizes(dims)
+       dimW = dims(n_dims-3)
+       p = p/100.
+       if ( n_dims .eq. 4 ) then
+         z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
+         z = z/9.81
+         p  = p(:,::-1,:,:)
+         tk = tk(:,::-1,:,:)
+         QV = QV(:,::-1,:,:)
+         z  = z(:,::-1,:,:)
+       else
+         z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
+         z = z/9.81
+         p  = p(::-1,:,:)
+         tk = tk(::-1,:,:)
+         QV = QV(::-1,:,:)
+         z  = z(::-1,:,:)
+       end if
+
+       cape3d = rip_cape_3d( p, tk, QV, z, HGT, PSFC , True )
+       if ( n_dims .eq. 4 ) then
+         cape3d!3 = T!3
+         cape3d!2 = T!2
+         cape3d!1 = T!0
+         cape3d!0 = "cape_cin"
+       else
+         cape3d!2 = T!2
+         cape3d!1 = T!1
+         cape3d!0 = "cape_cin"
+       end if
+
+       return(cape3d)
   end if
-  if( ndims .eq. 2) then
-    var = nc_file->$variable$(time,:)
+
+
+
+  if( any( variable .eq. (/"cape_2d"/) ) ) then
+       ;; function wrf_tk needs theta and pressure (Pa) on input and returns temperature in K on return
+       if ( time .eq. -1 ) then
+         T  = nc_file->T
+         P  = nc_file->P
+         PB = nc_file->PB
+         QV = nc_file->QVAPOR
+         PH  = nc_file->PH
+         PHB = nc_file->PHB
+         HGT = nc_file->HGT
+         PSFC = nc_file->PSFC
+       else
+         T  = nc_file->T(time,:,:,:)
+         P  = nc_file->P(time,:,:,:)
+         PB = nc_file->PB(time,:,:,:)
+         QV = nc_file->QVAPOR(time,:,:,:)
+         PH  = nc_file->PH(time,:,:,:)
+         PHB = nc_file->PHB(time,:,:,:)
+         HGT = nc_file->HGT(time,:,:)
+         PSFC = nc_file->PSFC(time,:,:)
+       end if
+       th = T + 300.
+       p  = (P + PB) 
+       tk = wrf_tk( p , th )
+
+       var = ( PH + PHB )
+       dims = dimsizes(var)
+       n_dims = dimsizes(dims)
+       dimW = dims(n_dims-3)
+       p = p/100.
+       if ( n_dims .eq. 4 ) then
+         z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
+         z = z/9.81
+         p  = p(:,::-1,:,:)
+         tk = tk(:,::-1,:,:)
+         QV = QV(:,::-1,:,:)
+         z  = z(:,::-1,:,:)
+       else
+         z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
+         z = z/9.81
+         p  = p(::-1,:,:)
+         tk = tk(::-1,:,:)
+         QV = QV(::-1,:,:)
+         z  = z(::-1,:,:)
+       end if
+
+       cape2d = rip_cape_2d( p, tk, QV, z, HGT, PSFC , True )
+       if ( n_dims .eq. 4 ) then
+         cape2d!3 = T!3
+         cape2d!2 = T!2
+         cape2d!1 = T!0
+         cape2d!0 = "mcape_mcin_lcl_lfc"
+       else
+         cape2d!2 = T!2
+         cape2d!1 = T!1
+         cape2d!0 = "mcape_mcin_lcl_lfc"
+       end if
+
+       return(cape2d)
   end if
-  if( ndims .eq. 1) then
-    var = nc_file->$variable$(time)
+
+
+
+
+  if( any( variable .eq. (/"ter","HGT","HGT_M"/) ) ) then
+    variable = "HGT" 
+    if(.not. isfilevar(nc_file,"HGT")) then
+      variable = "HGT_M"
+    end if
+  end if
+
+
+  if( any( variable .eq. (/"lat","XLAT","XLAT_M"/) ) ) then
+    variable = "XLAT" 
+    if(.not. isfilevar(nc_file,"XLAT")) then
+      variable = "XLAT_M"
+    end if
+  end if
+
+
+  if( any( variable .eq. (/"lon","XLONG","XLONG_M"/) ) ) then
+    variable = "XLONG" 
+    if(.not. isfilevar(nc_file,"XLONG")) then
+      variable = "XLONG_M"
+    end if
+  end if
+
+
+
+;  end of diagnostic variable list - we must want a variable already in the file.  
+
+  if ( time .eq. -1 ) then
+    var = nc_file->$variable$
+  else
+    ;  check variable dimensionality and pull proper time  out of file
+    ndims = dimsizes(filevardimsizes(nc_file,variable))
+    if( ndims .eq. 4) then
+      var = nc_file->$variable$(time,:,:,:)
+    end if
+    if( ndims .eq. 3) then
+      var = nc_file->$variable$(time,:,:)
+    end if
+    if( ndims .eq. 2) then
+      var = nc_file->$variable$(time,:)
+    end if
+    if( ndims .eq. 1) then
+      var = nc_file->$variable$(time)
+    end if
   end if
 
   return(var)
@@ -628,6 +1449,11 @@ function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, \
 
 begin
 
+  WE       = "WEST-EAST_GRID_DIMENSION"
+  SN       = "SOUTH-NORTH_GRID_DIMENSION"
+  wedim    = nc_file@$WE$
+  sndim    = nc_file@$SN$
+
   if(isfilevar(nc_file,"XLAT"))
     XLAT  = nc_file->XLAT(0,:,:)
     XLONG = nc_file->XLONG(0,:,:)
@@ -637,8 +1463,106 @@ begin
   end if
 
   loc = wrf_latlon_to_ij( XLAT, XLONG, latitude, longitude )
+  if ( loc(0) .le. 0 .or. loc(0) .ge. sndim ) then
+       loc = -999
+  else
+       if ( loc(1) .le. 0 .or. loc(1) .ge. wedim ) then
+            loc = -999
+       end if
+  end if
 
+  loc!0 = "j & i locations"
   return(loc)
+
+end
+
+;--------------------------------------------------------------------------------
+
+undef("wrf_user_ll_to_ij")
+function wrf_user_ll_to_ij( nc_file:file, latitude:numeric, longitude:numeric, \
+                            opts:logical )
+
+begin
+
+  useT  = get_res_value(opts,"useTime",0)
+  returnI= get_res_value(opts,"returnInt",True)
+
+  WE       = "WEST-EAST_GRID_DIMENSION"
+  SN       = "SOUTH-NORTH_GRID_DIMENSION"
+  wedim    = nc_file@$WE$
+  sndim    = nc_file@$SN$
+
+  map_proj = nc_file@MAP_PROJ
+  truelat1 = nc_file@TRUELAT1
+  truelat2 = nc_file@TRUELAT2
+  stdlon   = nc_file@STAND_LON
+  dx       = nc_file@DX
+  hemi     = 1.0
+  if ( truelat1 .lt. 0.0 ) then
+     hemi  = -1.0
+  end if
+
+
+  if(isfilevar(nc_file,"XLAT"))
+    XLAT  = nc_file->XLAT(useT,:,:)
+    XLONG = nc_file->XLONG(useT,:,:)
+  else
+    XLAT  = nc_file->XLAT_M(useT,:,:)
+    XLONG = nc_file->XLONG_M(useT,:,:)
+  end if
+
+
+  lat1 = XLAT(0,0)
+  lon1 = XLONG(0,0)
+  knowni   = 1.0
+  knownj   = 1.0
+
+  dummy_stdlon = stdlon
+  dummy_lon1 = lon1
+  if (dummy_stdlon .lt. -180.) then
+    dummy_stdlon = dummy_stdlon + 360.
+  end if
+  if (dummy_stdlon .gt. 180.) then
+    dummy_stdlon = dummy_stdlon - 360.
+  end if
+  if (dummy_lon1 .lt. -180.) then
+    dummy_lon1 = dummy_lon1 + 360.
+  end if
+  if (dummy_lon1 .gt.  180.) then
+    dummy_lon1 = dummy_lon1 - 360.
+  end if
+  stdlon = dummy_stdlon
+  lon1 = dummy_lon1
+
+
+  loc = new(2,float)
+  loc@_FillValue = -999
+
+  wrf_user_ll_ij :: ll_to_ij (map_proj,hemi,truelat1,truelat2,stdlon,lat1,lon1,knowni,knownj,dx,latitude,longitude,loc)
+
+  if ( loc(0) .lt. 0.5 .or. loc(0) .ge. sndim ) then
+       loc = -999
+  else
+       loc(0) = loc(0) - 1.
+       if ( loc(1) .lt. 0.5 .or. loc(1) .ge. wedim ) then
+            loc = -999
+       else
+            loc(1) = loc(1) - 1.
+       end if
+  end if
+
+  if ( returnI  ) then
+    loci = new(2,integer)
+    loci@_FillValue = -999
+    loci(0) = tointeger(loc(0)+.5)
+    loci(1) = tointeger(loc(1)+.5)
+    loci!0 = "j & i locations"
+    return(loci)
+  else
+    loc!0 = "j & i locations"
+    return(loc)
+  end if
+
 
 end
 
@@ -658,6 +1582,7 @@ begin
                  "NoHeaderFooter","TimeLabel","LevelLabel", \
                  "FieldTitle","UnitLabel","NumVectors","AspectRatio", \
                  "SubFieldTitle","PlotOrientation","PlotLevelID", \
+                 "mpNestTime", \
                  "ContourParameters","FontHeightF","Footer"/)
 
   do i=0,dimsizes(list_attrs)-1
@@ -1476,15 +2401,24 @@ begin
 ;
 ; Set some resources common to all three map projections.
 ;
-    if(any(in_file@MAP_PROJ.eq.(/1,2,3,6/))) then
+    opts@mpNestTime = get_res_value_keep(opts, "mpNestTime",0)
+    if(any(in_file@MAP_PROJ.eq.(/0,1,2,3,6/))) then
       if(isfilevar(in_file,"XLAT"))
-        lat = in_file->XLAT(0,:,:)
-        lon = in_file->XLONG(0,:,:)
+        lat = in_file->XLAT(opts@mpNestTime,:,:)
+        lon = in_file->XLONG(opts@mpNestTime,:,:)
       else
-        lat = in_file->XLAT_M(0,:,:)
-        lon = in_file->XLONG_M(0,:,:)
+        lat = in_file->XLAT_M(opts@mpNestTime,:,:)
+        lon = in_file->XLONG_M(opts@mpNestTime,:,:)
       end if
       dims = dimsizes(lat)
+
+      do ii = 0, dims(0)-1
+      do jj = 0, dims(1)-1
+        if ( lon(ii,jj) .lt. 0.0) then
+          lon(ii,jj) = lon(ii,jj) + 360.
+        end if
+      end do
+      end do
 ;
 ; "LowRes" is the default that NCL uses, so you don't need to
 ; set it here. However, if you want a higher resolution, use 
@@ -1556,8 +2490,8 @@ begin
       opts@mpGeophysicalLineThicknessF = get_res_value_keep(opts, "mpGeophysicalLineThicknessF",0.5)
       opts@mpGridLineColor             = get_res_value_keep(opts, "mpGridLineColor","Gray")
       opts@mpGridLineThicknessF        = get_res_value_keep(opts, "mpGridLineThicknessF",0.5)
-      opts@mpGridMaskMode              = get_res_value_keep(opts, "mpGridMaskMode",3)
-      opts@mpGridSpacingF              = get_res_value_keep(opts, "mpGridSpacingF",10)
+      ;opts@mpGridMaskMode              = get_res_value_keep(opts, "mpGridMaskMode",3)
+      opts@mpGridSpacingF              = get_res_value_keep(opts, "mpGridSpacingF",5)
       opts@mpLimbLineColor             = get_res_value_keep(opts, "mpLimbLineColor","Gray")
       opts@mpLimbLineThicknessF        = get_res_value_keep(opts, "mpLimbLineThicknessF",0.5)
       opts@mpNationalLineColor         = get_res_value_keep(opts, "mpNationalLineColor","Gray")
@@ -1653,6 +2587,7 @@ begin
 ;
     if(in_file@MAP_PROJ .eq. 0)
       projection          = "CylindricalEquidistant"
+      opts@mpGridSpacingF = 45
       opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
       if(isatt(in_file,"STAND_LON"))
         opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
@@ -1940,7 +2875,7 @@ begin
   end do
 
   if(.not.no_titles .or. com_title) then
-    font_height = get_res_value_keep(opts,"FontHeightF",0.01)
+    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
 
     txt = create "map_titles" textItemClass wks
       "txString"      : SubTitles
@@ -2115,7 +3050,7 @@ begin
   end do
 
   if(.not.no_titles) then
-    font_height = get_res_value_keep(opts,"FontHeightF",0.01)
+    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
     txt = create "map_titles" textItemClass wks
       "txString"      : SubTitles
       "txFontHeightF" : font_height
@@ -2266,7 +3201,7 @@ begin
   end do
 
   if(.not.no_titles) then
-    font_height = get_res_value_keep(opts,"FontHeightF",0.01)
+    font_height = get_res_value_keep(opt_arg,"FontHeightF",0.01)
 
     txt = create "map_titles" textItemClass wks
       "txString"      : SubTitles
