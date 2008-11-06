@@ -74,7 +74,6 @@ extern NhlErrorTypes wrf_uvmet_W(void);
 extern NhlErrorTypes wrf_pvo_W(void);
 extern NhlErrorTypes wrf_iclw_W(void);
 extern NhlErrorTypes wrf_bint_W(void);
-extern NhlErrorTypes wrf_maptform_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
 extern NhlErrorTypes gaus_lobat_W(void);
 extern NhlErrorTypes gaus_lobat_wgt_W(void);
@@ -1422,31 +1421,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(wrf_bint_W,args,"wrf_bint",nargs);
-/*
- * Register "wrf_maptform".
- *
- * Create private argument array.
- */
-    nargs = 0;
-    args = NewArgs(13);
 
-    dimsizes[0] = 1;
-
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
-
-    NclRegisterProc(wrf_maptform_W,args,"wrf_maptform",nargs);
 /*
  * Register "cape_thermo".
  *
@@ -7492,4 +7467,31 @@ NclScalar         *missing_fx
                NULL,
                typeclass_x);
   }
+}
+
+/*
+ * Retrieve the dimension names of a particular
+ * input argument to an NCL function or procedure.
+ */
+NclDimRec *get_dim_info(arg_num,num_args,ndims)
+int arg_num, num_args, ndims;
+{
+  NclStackEntry val;
+  int i;
+  NclDimRec *dim_info;
+  
+  val = _NclGetArg(arg_num,num_args,DONT_CARE);
+
+  if(val.kind == NclStk_VAR) {
+    dim_info = malloc(sizeof(NclDimRec)*ndims);
+    for(i = 0; i < ndims; i++) {
+      dim_info[i].dim_num   = i; 
+      dim_info[i].dim_quark = val.u.data_var->var.dim_info[i].dim_quark;
+      dim_info[i].dim_size  = val.u.data_var->var.dim_info[i].dim_size;
+    }
+  }
+  else {
+    dim_info = NULL;
+  }
+  return(dim_info);
 }

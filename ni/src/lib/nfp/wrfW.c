@@ -70,6 +70,10 @@ NhlErrorTypes wrf_tk_W( void )
   int ndims_p, ndims_theta;
   int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_theta[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_theta;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Output variable and attributes.
@@ -134,6 +138,7 @@ NhlErrorTypes wrf_tk_W( void )
       return(NhlFATAL);
     }
   }
+
 /*
  * Calculate size of leftmost dimensions.
  */
@@ -328,6 +333,12 @@ NhlErrorTypes wrf_tk_W( void )
              NULL
              );
     
+/*
+ * Retrieve dimension names from the "theta" variable, if any.
+ * These dimension names will be attached to the output variable.
+ */
+  dim_info = get_dim_info(1,2,ndims_p);
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -335,7 +346,7 @@ NhlErrorTypes wrf_tk_W( void )
                           0,
                           NULL,
                           return_md,
-                          NULL,
+                          dim_info,
                           att_id,
                           NULL,
                           RETURNVAR,
@@ -671,6 +682,10 @@ NhlErrorTypes wrf_rh_W( void )
   int dsizes_qv[NCL_MAX_DIMENSIONS], dsizes_p[NCL_MAX_DIMENSIONS];
   int dsizes_t[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qv, type_p, type_t;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Output variable and attributes.
@@ -961,6 +976,12 @@ NhlErrorTypes wrf_rh_W( void )
              NULL
              );
     
+/*
+ * Retrieve dimension names from the "t" variable, if any.
+ * These dimension names will be attached to the output variable.
+ */
+  dim_info = get_dim_info(2,3,ndims_t);
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -968,7 +989,7 @@ NhlErrorTypes wrf_rh_W( void )
                           0,
                           NULL,
                           return_md,
-                          NULL,
+                          dim_info,
                           att_id,
                           NULL,
                           RETURNVAR,
@@ -995,6 +1016,10 @@ NhlErrorTypes wrf_slp_W( void )
   int dsizes_z[NCL_MAX_DIMENSIONS], dsizes_t[NCL_MAX_DIMENSIONS];
   int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_q[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_z, type_t, type_p, type_q;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Output variable.
@@ -1356,6 +1381,12 @@ NhlErrorTypes wrf_slp_W( void )
              NULL
              );
     
+/*
+ * Retrieve dimension names from the "t" variable, if any.
+ * These dimension names will be attached to the output variable.
+ */
+  dim_info = get_dim_info(1,4,ndims_t);
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -1363,7 +1394,7 @@ NhlErrorTypes wrf_slp_W( void )
                           0,
                           NULL,
                           return_md,
-                          NULL,
+                          dim_info,
                           att_id,
                           NULL,
                           RETURNVAR,
@@ -2874,191 +2905,6 @@ NhlErrorTypes wrf_bint_W( void )
   return(ret);
 }
 
-NhlErrorTypes wrf_maptform_W( void )
-{
-/*
- * Input array variables
- */
-  void *dskmc, *xlatc, *xlonc, *riy, *rjx, *rlat, *rlon, *true1, *true2;
-  double *tmp_dskmc, *tmp_xlatc, *tmp_xlonc, *tmp_riy, *tmp_rjx;
-  double *tmp_rlat, *tmp_rlon, *tmp_true1, *tmp_true2;
-  int *miycors, *mjxcors, *nproj, *idir;
-
-  NclBasicDataTypes type_dskmc, type_xlatc, type_xlonc, type_riy, type_rjx;
-  NclBasicDataTypes type_rlat, type_rlon, type_true1, type_true2;
-
-/*
- * Retrieve parameters.
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value.
- */
-  dskmc = (void*)NclGetArgValue(
-           0,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_dskmc,
-           2);
-
-  miycors = (int*)NclGetArgValue(
-           1,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-
-  mjxcors = (int*)NclGetArgValue(
-           2,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-
-  nproj = (int*)NclGetArgValue(
-           3,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-
-  xlatc = (void*)NclGetArgValue(
-           4,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_xlatc,
-           2);
-
-  xlonc = (void*)NclGetArgValue(
-           5,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_xlonc,
-           2);
-
-  riy = (void*)NclGetArgValue(
-           6,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_riy,
-           2);
-
-  rjx = (void*)NclGetArgValue(
-           7,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_rjx,
-           2);
-
-  idir = (int*)NclGetArgValue(
-           8,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-
-  rlat = (void*)NclGetArgValue(
-           9,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_rlat,
-           2);
-
-  rlon = (void*)NclGetArgValue(
-           10,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_rlon,
-           2);
-
-  true1 = (void*)NclGetArgValue(
-           11,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_true1,
-           2);
-
-  true2 = (void*)NclGetArgValue(
-           12,
-           13,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_true2,
-           2);
-
-/* 
- * Coerce void input arrays to double if necessary.
- */
-  tmp_dskmc = coerce_input_double(dskmc, type_dskmc, 1, 0, NULL, NULL);
-  tmp_xlatc = coerce_input_double(xlatc, type_xlatc, 1, 0, NULL, NULL);
-  tmp_xlonc = coerce_input_double(xlonc, type_xlonc, 1, 0, NULL, NULL);
-  tmp_riy   = coerce_input_double(riy,   type_riy,   1, 0, NULL, NULL);
-  tmp_rjx   = coerce_input_double(rjx,   type_rjx,   1, 0, NULL, NULL);
-  tmp_rlat  = coerce_input_double(rlat,  type_rlat,  1, 0, NULL, NULL);
-  tmp_rlon  = coerce_input_double(rlon,  type_rlon,  1, 0, NULL, NULL);
-  tmp_true1 = coerce_input_double(true1, type_true1, 1, 0, NULL, NULL);
-  tmp_true2 = coerce_input_double(true2, type_true2, 1, 0, NULL, NULL);
-
-/*
- * Call Fortran routine.
- */
-    NGCALLF(dmaptform,DMAPTFORM)(tmp_dskmc,miycors,mjxcors,nproj,tmp_xlatc,
-                                 tmp_xlonc,tmp_true1,tmp_true2,tmp_riy,
-                                 tmp_rjx,tmp_rlat,tmp_rlon,idir); 
-
-
-/*
- * Free up memory.
- */
-  if(type_dskmc != NCL_double) NclFree(tmp_dskmc);
-  if(type_xlatc != NCL_double) NclFree(tmp_xlatc);
-  if(type_xlonc != NCL_double) NclFree(tmp_xlonc);
-  if(  type_riy != NCL_double) NclFree(tmp_riy);
-  if(  type_rjx != NCL_double) NclFree(tmp_rjx);
-  if( type_rlat != NCL_double) NclFree(tmp_rlat);
-  if( type_rlon != NCL_double) NclFree(tmp_rlon);
-  if(type_true1 != NCL_double) NclFree(tmp_true1);
-  if(type_true2 != NCL_double) NclFree(tmp_true2);
-
-  return(NhlNOERROR);
-}
 
 NhlErrorTypes wrf_smooth_2d_W( void )
 {
