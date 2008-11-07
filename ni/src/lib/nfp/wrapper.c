@@ -1375,22 +1375,22 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
         nargs = 0;
-        args = NewArgs(9);
+        args = NewArgs(10);
 
-        SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
-        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
         dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_pvo_W,args,"wrf_pvo",nargs);
-
 
 /*
  * Register "wrf_iclw".

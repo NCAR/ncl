@@ -2359,7 +2359,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
   nz_in  = dsizes_z_in[ndims_z_in-1];
   nz_out = dsizes_z_out[ndims_z_out-1];
   if(dsizes_v_in[ndims_v_in-1] != nz_in) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The rightmost dimesion of v_in and z_in must be the same");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The rightmost dimension of v_in and z_in must be the same");
     return(NhlFATAL);
   }
 
@@ -4352,7 +4352,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *u;
   double *tmp_u;
-  int dsizes_u[3];
+  int ndims_u, dsizes_u[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_u;
 
 /*
@@ -4360,7 +4360,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *v;
   double *tmp_v;
-  int dsizes_v[3];
+  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];;
   NclBasicDataTypes type_v;
 
 /*
@@ -4368,7 +4368,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *th;
   double *tmp_th;
-  int dsizes_th[3];
+  int ndims_th, dsizes_th[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_th;
 
 /*
@@ -4376,7 +4376,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *p;
   double *tmp_p;
-  int dsizes_p[3];
+  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p;
 
 /*
@@ -4384,7 +4384,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *msfu;
   double *tmp_msfu;
-  int dsizes_msfu[2];
+  int ndims_msfu, dsizes_msfu[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msfu;
 
 /*
@@ -4392,7 +4392,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *msfv;
   double *tmp_msfv;
-  int dsizes_msfv[2];
+  int ndims_msfv, dsizes_msfv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msfv;
 
 /*
@@ -4400,7 +4400,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *msft;
   double *tmp_msft;
-  int dsizes_msft[2];
+  int ndims_msft, dsizes_msft[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_msft;
 
 /*
@@ -4408,27 +4408,50 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *cor;
   double *tmp_cor;
-  int dsizes_cor[2];
+  int ndims_cor, dsizes_cor[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_cor;
 
 /*
  * Argument # 8
  */
+  void *ds;
+  double *tmp_ds;
+  NclBasicDataTypes type_ds;
+
+/*
+ * Argument # 9
+ */
   int *opt;
+
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
+
 /*
  * Return variable
  */
   void *pv;
   double *tmp_pv;
   NclBasicDataTypes type_pv;
-
+  NclObjClass type_obj_pv;
 
 /*
  * Various
  */
   int nx, ny, nz, nxp1, nyp1, ret;
-  int nznynxp1, nznyp1nx, nznynx, nynxp1, nxnyp1, nynx;
-  double dx, dy;
+  int nznynxp1, nznyp1nx, nznynx, nynxp1, nyp1nx, nynx;
+  int i, size_pv, size_leftmost;
+  int index_u, index_v, index_th, index_msfu, index_msfv, index_msft;
+
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 
 /*
  * Retrieve parameters.
@@ -4441,55 +4464,90 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   u = (void*)NclGetArgValue(
            0,
-           9,
-           NULL,
+           10,
+           &ndims_u,
            dsizes_u,
            NULL,
            NULL,
            &type_u,
            2);
 
-  nz   = dsizes_u[0];
-  ny   = dsizes_u[1];
-  nxp1 = dsizes_u[2];
-  nznynxp1 = nz * ny * nxp1;
+/*
+ * Error checking on dimensions.
+ */
+  if(ndims_u < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: u must have at least 3 dimensions");
+    return(NhlFATAL);
+  }
+  nz   = dsizes_u[ndims_u-3];
+  ny   = dsizes_u[ndims_u-2];
+  nxp1 = dsizes_u[ndims_u-1];
 
 /*
  * Get argument # 1
  */
   v = (void*)NclGetArgValue(
            1,
-           9,
-           NULL,
+           10,
+           &ndims_v,
            dsizes_v,
            NULL,
            NULL,
            &type_v,
            2);
-  if(dsizes_v[0] != nz) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The rightmost dimension of v must be the same as the rightmost dimension of u");
+
+/*
+ * Error checking on dimensions.
+ */
+  if(ndims_v != ndims_u) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: u and v must have the same number of dimensions");
     return(NhlFATAL);
   }
-  nyp1 = dsizes_v[1];
-  nx   = dsizes_v[2];
-  nznyp1nx = nz * nyp1 * nx;
-  nznynx   = nz * ny * nx;
+  if(dsizes_v[ndims_v-3] != nz) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The third-from-the-right dimension of v must be the same as the third-from-the-right dimension of u");
+    return(NhlFATAL);
+  }
+/*
+ * Error checking on leftmost dimension sizes.
+ */
+  for(i = 0; i < ndims_u-3; i++) {
+    if(dsizes_u[i] != dsizes_v[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of u and v must be the same");
+    }
+  }
+
+  nyp1     = dsizes_v[ndims_v-2];
+  nx       = dsizes_v[ndims_v-1];
 
 /*
  * Get argument # 2
  */
   th = (void*)NclGetArgValue(
            2,
-           9,
-           NULL,
+           10,
+           &ndims_th,
            dsizes_th,
            NULL,
            NULL,
            &type_th,
            2);
-  if(dsizes_th[0] != nz || dsizes_th[1] != ny || dsizes_th[2] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of th must be a combination of the dimensions of u and v (see documentation)");
+
+/*
+ * Error checking on dimensions.
+ */
+  if(dsizes_th[ndims_th-3] != nz || dsizes_th[ndims_th-2] != ny ||
+     dsizes_th[ndims_th-1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The rightmost dimensions of th must be a combination of the dimensions of u and v (see documentation)");
     return(NhlFATAL);
+  }
+
+/*
+ * Error checking on leftmost dimension sizes.
+ */
+  for(i = 0; i < ndims_u-3; i++) {
+    if(dsizes_th[i] != dsizes_u[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of th and u must be the same");
+    }
   }
 
 /*
@@ -4497,96 +4555,188 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   p = (void*)NclGetArgValue(
            3,
-           9,
-           NULL,
+           10,
+           &ndims_p,
            dsizes_p,
            NULL,
            NULL,
            &type_p,
            2);
-  if(dsizes_p[0] != nz || dsizes_p[1] != ny || dsizes_p[2] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of p must be the same as the dimensions of th");
+
+/*
+ * Error checking on dimensions.
+ */
+  if(ndims_p != ndims_u) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: p, u, and v must have the same number of dimensions");
     return(NhlFATAL);
   }
 
+/*
+ * Error checking on dimension sizes.
+ */
+  for(i = 0; i < ndims_th-1; i++) {
+    if(dsizes_p[i] != dsizes_u[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of p and th must be the same");
+    }
+  }
 
 /*
  * Get argument # 4
  */
   msfu = (void*)NclGetArgValue(
            4,
-           9,
-           NULL,
+           10,
+           &ndims_msfu,
            dsizes_msfu,
            NULL,
            NULL,
            &type_msfu,
            2);
-  if(dsizes_msfu[0] != ny || dsizes_msfu[1] != nxp1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of msfu must be the same as the rightmost dimensions of u");
+
+/*
+ * Error checking on dimensions.
+ */
+  if(ndims_msfu < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: msfu must have at least 2 dimensions");
     return(NhlFATAL);
   }
-  nynxp1 = ny * nxp1;
+  if(ndims_msfu !=2 && ndims_msfu != (ndims_u-1)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: msfu must be 2D or have one fewer dimensions than u");
+    return(NhlFATAL);
+  }
+  if(dsizes_msfu[ndims_msfu-2] != ny || dsizes_msfu[ndims_msfu-1] != nxp1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The rightmost 2 dimensions of msfu must be the same as the rightmost 2 dimensions of u");
+    return(NhlFATAL);
+  }
+
+/*
+ * Error checking on leftmost dimension sizes.
+ */
+  for(i = 0; i < ndims_u-3; i++) {
+    if(dsizes_msfu[i] != dsizes_u[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of msfu and u must be the same");
+    }
+  }
 
 /*
  * Get argument # 5
  */
   msfv = (void*)NclGetArgValue(
            5,
-           9,
-           NULL,
+           10,
+           &ndims_msfv,
            dsizes_msfv,
            NULL,
            NULL,
            &type_msfv,
            2);
-  if(dsizes_msfv[0] != nx || dsizes_msfv[1] != nyp1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of msfv must be the same as the rightmost dimensions of v");
+
+/*
+ * Error checking on dimensions.
+ */
+  if(ndims_msfv != ndims_msfu) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: msfu and msfv must have the same number of dimensions");
     return(NhlFATAL);
   }
-  nxnyp1 = nx * nyp1;
+  if(dsizes_msfv[ndims_msfv-2] != nx || dsizes_msfv[ndims_msfv-1] != nyp1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The rightmost 2 dimensions of msfv must be the same as the rightmost 2 dimensions of v");
+    return(NhlFATAL);
+  }
+
+/*
+ * Error checking on leftmost dimension sizes.
+ */
+  for(i = 0; i < ndims_msfu-2; i++) {
+    if(dsizes_msfv[i] != dsizes_msfu[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of msfv and msfu must be the same");
+    }
+  }
 
 /*
  * Get argument # 6
  */
   msft = (void*)NclGetArgValue(
            6,
-           9,
-           NULL,
+           10,
+           &ndims_msft,
            dsizes_msft,
            NULL,
            NULL,
            &type_msft,
            2);
-  if(dsizes_msft[0] != ny || dsizes_msft[1] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of msft must be the same as the rightmost dimensions of th");
+
+/*
+ * Error checking on dimensions.
+ */
+  if(ndims_msft != ndims_msfu) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: msft and msfu must have the same number of dimensions");
     return(NhlFATAL);
   }
-  nynx = ny * nx;
+  if(dsizes_msft[ndims_msft-2] != ny || dsizes_msft[ndims_msft-1] != nx) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The rightmost 2 dimensions of msft must be the same as the rightmost 2 dimensions of th");
+    return(NhlFATAL);
+  }
+
+/*
+ * Error checking on leftmost dimension sizes.
+ */
+  for(i = 0; i < ndims_msfu-2; i++) {
+    if(dsizes_msft[i] != dsizes_msfu[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The leftmost dimensions of msft and msfu must be the same");
+    }
+  }
 
 /*
  * Get argument # 7
  */
   cor = (void*)NclGetArgValue(
            7,
-           9,
-           NULL,
+           10,
+           &ndims_cor,
            dsizes_cor,
            NULL,
            NULL,
            &type_cor,
            2);
-  if(dsizes_cor[0] != ny || dsizes_cor[1] != nx) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of cor must be the same as the dimensions of msft");
+
+/*
+ * Error checking on dimensions.
+ */
+  if(ndims_cor != ndims_msfu) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: cor and msfu must have the same number of dimensions");
     return(NhlFATAL);
   }
 
 /*
- * Get argument # 8
+ * Error checking on dimension sizes.
+ */
+  for(i = 0; i < ndims_msft-1; i++) {
+    if(dsizes_cor[i] != dsizes_msft[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of cor and msft must be the same");
+    }
+  }
+
+
+/*
+ * Get argument # 9
+ */
+  ds = (void*)NclGetArgValue(
+           8,
+           10,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_ds,
+           2);
+  tmp_ds = coerce_input_double(ds,type_ds,1,0,NULL,NULL);
+
+/*
+ * Get argument # 9
  */
   opt = (int*)NclGetArgValue(
-           8,
            9,
+           10,
            NULL,
            NULL,
            NULL,
@@ -4594,10 +4744,31 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            2);
 
+  nynx     = ny * nx;
+  nznynx   = nz * nynx;
+  nynxp1   = ny * nxp1;
+  nyp1nx   = nyp1 * nx;
+  nznynxp1 = nz * nynxp1;
+  nznyp1nx = nz * nyp1nx;
+
 /*
- * The output type defaults to float, unless any input array are double.
+ * Calculate size of leftmost dimensions.
  */
-  type_pv = NCL_float;
+  size_leftmost = 1;
+  for(i = 0; i < ndims_u-3; i++) size_leftmost *= dsizes_u[i];
+  size_pv = size_leftmost * nznynx;
+
+/*
+ * Retrieve dimension names from the "th" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_wrf_dim_info(2,10,ndims_th,dsizes_th);
+
+/*
+ * The output type defaults to float, unless any input arrays are double.
+ */
+  type_pv     = NCL_float;
+  type_obj_pv = nclTypefloatClass;
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -4605,100 +4776,126 @@ NhlErrorTypes wrf_pvo_W( void )
  * temporary arrays, because we'll just change the pointer into
  * the void array appropriately.
  */
+
 /*
  * Allocate space for tmp_u.
  */
-  tmp_u = coerce_input_double(u,type_u,nznynxp1,0,NULL,NULL);
-  if(tmp_u == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_u != NCL_double) {
+    tmp_u = (double *)calloc(nznynxp1,sizeof(double));
+    if(tmp_u == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing u to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
+
 /*
  * Allocate space for tmp_v.
  */
-  tmp_v = coerce_input_double(v,type_v,nznyp1nx,0,NULL,NULL);
-  if(tmp_v == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_v != NCL_double) {
+    tmp_v = (double *)calloc(nznyp1nx,sizeof(double));
+    if(tmp_v == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing v to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_th.
  */
-  tmp_th = coerce_input_double(th,type_th,nznynx,0,NULL,NULL);
-  if(tmp_th == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_th != NCL_double) {
+    tmp_th = (double *)calloc(nznynx,sizeof(double));
+    if(tmp_th == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing th to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_p.
  */
-  tmp_p = coerce_input_double(p,type_p,nznynx,0,NULL,NULL);
-  if(tmp_p == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_p != NCL_double) {
+    tmp_p = (double *)calloc(nznynx,sizeof(double));
+    if(tmp_p == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing p to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_msfu.
  */
-  tmp_msfu = coerce_input_double(msfu,type_msfu,nynxp1,0,NULL,NULL);
-  if(tmp_msfu == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_msfu != NCL_double) {
+    tmp_msfu = (double*)calloc(nynxp1,sizeof(double));
+    if(tmp_msfu == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing msfu to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_msfv.
  */
-  tmp_msfv = coerce_input_double(msfv,type_msfv,nxnyp1,0,NULL,NULL);
-  if(tmp_msfv == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_msfv != NCL_double) {
+    tmp_msfv = (double*)calloc(nyp1nx,sizeof(double));
+    if(tmp_msfv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing msfv to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_msft.
  */
-  tmp_msft = coerce_input_double(msft,type_msft,nynx,0,NULL,NULL);
-  if(tmp_msft == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_msft != NCL_double) {
+    tmp_msft = (double*)calloc(nynx,sizeof(double));
+    if(tmp_msft == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing msft to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_cor.
  */
-  tmp_cor = coerce_input_double(cor,type_cor,nynx,0,NULL,NULL);
-  if(tmp_cor == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
+  if(type_cor != NCL_double) {
+    tmp_cor = (double *)calloc(nynx,sizeof(double));
+    if(tmp_cor == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for coercing cor to double");
+      return(NhlFATAL);
+    }
   }
   else {
-    type_pv = NCL_double;
+    type_pv     = NCL_double;
+    type_obj_pv = nclTypedoubleClass;
   }
 
 /* 
  * Allocate space for output array.
  */
   if(type_pv != NCL_double) {
-    pv     = (void *)calloc(nznynx, sizeof(float));
+    pv     = (void *)calloc(size_pv, sizeof(float));
     tmp_pv = (double *)calloc(nznynx,sizeof(double));
     if(pv == NULL || tmp_pv == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for output array");
@@ -4706,23 +4903,116 @@ NhlErrorTypes wrf_pvo_W( void )
     }
   }
   else {
-    pv = (void *)calloc(nznynx, sizeof(double));
+    pv = (void *)calloc(size_pv, sizeof(double));
     if(pv == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
-    tmp_pv = (double*)pv;
   }
 
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_u, tmp_v, tmp_th, tmp_p, tmp_pv, 
-                                 tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
-                                 &dx, &dy, &nx, &ny, &nz, &nxp1, &nyp1);
+  index_u = index_v = index_th = index_msfu = index_msfv = index_msft = 0;
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of u (tmp_u) to double if necessary.
+ */
+    if(type_u != NCL_double) {
+      coerce_subset_input_double(u,tmp_u,index_u,type_u,nznynxp1,0,NULL,NULL);
+    }
+    else {
+      tmp_u = &((double*)u)[index_u];
+    }
 
-  if(type_pv != NCL_double) {
-    coerce_output_float(tmp_pv,pv,nznynx,1);
+/*
+ * Coerce subsection of v (tmp_v) to double if necessary.
+ */
+    if(type_v != NCL_double) {
+      coerce_subset_input_double(v,tmp_v,index_v,type_v,nznyp1nx,0,NULL,NULL);
+    }
+    else {
+      tmp_v = &((double*)v)[index_v];
+    }
+
+/*
+ * Coerce subsection of th (tmp_th) to double if necessary.
+ */
+    if(type_th != NCL_double) {
+      coerce_subset_input_double(th,tmp_th,index_th,type_th,nznynx,0,NULL,NULL);
+    }
+    else {
+      tmp_th = &((double*)th)[index_th];
+    }
+
+/*
+ * Coerce subsection of p (tmp_p) to double if necessary.
+ */
+    if(type_p != NCL_double) {
+      coerce_subset_input_double(p,tmp_p,index_th,type_p,nznynx,0,NULL,NULL);
+    }
+    else {
+      tmp_p = &((double*)p)[index_th];
+    }
+
+/*
+ * Coerce subsection of msfu (tmp_msfu) to double if necessary.
+ */
+    if(type_msfu != NCL_double) {
+      coerce_subset_input_double(msfu,tmp_msfu,index_msfu,type_msfu,nynxp1,0,NULL,NULL);
+    }
+    else {
+      tmp_msfu = &((double*)msfu)[index_msfu];
+    }
+
+/*
+ * Coerce subsection of msfv (tmp_msfv) to double if necessary.
+ */
+    if(type_msfv != NCL_double) {
+      coerce_subset_input_double(msfv,tmp_msfv,index_msfv,type_msfv,nyp1nx,0,NULL,NULL);
+    }
+    else {
+      tmp_msfv = &((double*)msfv)[index_msfv];
+    }
+
+/*
+ * Coerce subsection of msft (tmp_msft) to double if necessary.
+ */
+    if(type_msft != NCL_double) {
+      coerce_subset_input_double(msft,tmp_msft,index_msft,type_msft,nynx,0,NULL,NULL);
+    }
+    else {
+      tmp_msft = &((double*)msft)[index_msft];
+    }
+
+/*
+ * Coerce subsection of cor (tmp_cor) to double if necessary.
+ */
+    if(type_cor != NCL_double) {
+      coerce_subset_input_double(cor,tmp_cor,index_msft,type_cor,nynx,0,NULL,NULL);
+    }
+    else {
+      tmp_cor = &((double*)cor)[index_msft];
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_pv == NCL_double) tmp_pv = &((double*)pv)[index_th];
+
+    NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_u, tmp_v, tmp_th, tmp_p, tmp_pv, 
+                                   tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
+                                   ds, ds, &nx, &ny, &nz, &nxp1, &nyp1);
+
+    if(type_pv != NCL_double) {
+      coerce_output_float_only(pv,tmp_pv,nznynx,index_th);
+    }
+    index_u    += nznynxp1;
+    index_v    += nznyp1nx;
+    index_th   += nznynx;
+    index_msfu += nynxp1;
+    index_msfv += nyp1nx;
+    index_msft += nynx;
   }
 
 /*
@@ -4739,10 +5029,45 @@ NhlErrorTypes wrf_pvo_W( void )
   if(type_pv   != NCL_double) NclFree(tmp_pv);
 
 /*
- * Return value back to NCL script.
+ * Set up return value.
  */
-  ret = NclReturnValue(pv,3,dsizes_th,NULL,type_pv,0);
-  return(ret);
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)pv,
+                            NULL,
+                            ndims_th,
+                            dsizes_th,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_pv
+                            );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
 
 /*
