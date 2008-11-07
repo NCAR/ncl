@@ -1,2 +1,45 @@
 See the README file in ../nfp on how to add a new built-in
 function to NCL.
+
+----------------------------------------------------------------------
+
+If you have problems building with xlf because of an undefined "flush",
+try "-qextname=flush" as an xlf option.
+
+http://www.arsc.edu/support/news/HPCnews/HPCnews321.shtml
+
+IBM has chosen to slightly altered the symbols of several Fortran
+subroutines to avoid linking ambiguities between user and Fortran
+libraries. If we look at the Fortran 90 library (xlf90_r.a) we see
+there is a "flush" symbol however it is ".flush_" rather than ".flush"
+
+  iceberg1 2% nm -e /usr/lib/libxlf90_r.a  | grep flush
+  .flush_              T      220408
+  flush_               D       46360          12
+
+The xlf compiler flag "-qextname" instructs the compiler to add an
+underscore to the end of externally defined symbols or the specified
+symbols. Adding "-qextname=flush" to the compile flags we see that
+linking now occurs successfully.
+
+  iceberg1 72% make
+         xlf90_r -qsuffix=f=f90 -qextname=flush myprogram.f90  -o
+  myprogram
+  ** myprogram   === End of Compilation 1 ===
+  1501-510  Compilation successful for file myprogram.f90.
+
+There are several other ways to do the same thing. As noted in HPC
+Newsletter 288, the trailing underscore could be added to the flush
+subroutine call. E.g.,
+
+  call flush(10)
+
+
+becomes
+
+  call flush_(10)
+
+This option isn't very graceful since it involves an unnecessary
+change to the source code.
+
+----------------------------------------------------------------------
