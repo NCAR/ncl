@@ -16,10 +16,10 @@ function decompose2SymAsym( z, iret[1] )
 ; symmetric part is stored in other hemisphere [eg: Southern Hemisphere]
 ;          xOut(-lat) = (x(lat)+x(-lat))/2
 
-local dimz, rankz, nlat, N2, N, nt, kl, ntim, klev, dec2SymAsym, PRTFLG
+local dimz, rankz, nlat, nl, N2, N, nt, kl, ntim, klev, dec2SymAsym, PRTFLG
 begin
 
-  undef("dec2SymAsym")
+  undef("dec2SymAsym")                                    ; private to this bloc
   function dec2SymAsym( x[*][*], nlat[1], N2[1], N[1] )   ; x(lat,lon)
   ; ===> local to decompose2SymAsym [~ f90 'contains' w PRIVATE attribute]
   ; This does the decomposition: called from driver 'decompose2SymAsym'.
@@ -38,12 +38,17 @@ begin
   dimz  = dimsizes( z )
   rankz = dimsizes( dimz )
 
-  if (rankz.le.1 .or. rankz.ge.5) then
-      print("decompose2SymAsym: currently supports 2D, 3D, 4D: rank="+rankz+"D")
+  if (rankz.ge.5) then
+      print("decompose2SymAsym: currently supports up to 4D: rank="+rankz+"D")
       exit
   end if
 
-  nlat = dimz(rankz-2)
+  if (rankz.eq.1) then
+      nlat = dimz(0)
+  else
+      nlat = dimz(rankz-2)
+  end if
+  
   N2   = nlat/2
   N    = N2
   if ((nlat%2).eq.1) then
@@ -52,6 +57,14 @@ begin
 
   zSymAsym = (/ z /)        ; return array has same size/shape/type
                             ; values will be overwritten
+  if (rankz.eq.1) then
+      do nl=0,N2-1
+       zSymAsym(       nl) = 0.5*(z(nlat-1-nl) + z(nl))   ; SH => symmetric
+       zSymAsym(nlat-1-nl) = 0.5*(x(nlat-1-nl) - x(nl))   ; NH => asymmetric
+      end do
+      return( zSymAsym )
+  end if
+
   if (rankz.eq.2) then
       zSymAsym = dec2SymAsym( z, nlat, N2, N )
   end if
@@ -80,10 +93,16 @@ begin
   copy_VarCoords( z, zSymAsym)
   
   if (iret.eq.0) 
-      return( zSymAsym )                                       ; (time,lat,lon)
+      return( zSymAsym )                      ; original order
   else
       dNam = getvardims( zSymAsym )
-      return( zSymAsym($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:) )  ; (lat,lon,time)
+      if (rankz.eq.3) then
+          return( zSymAsym($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)) ; (lat,lon,time)
+      end if
+      if (rankz.eq.4) then
+                                      ; return (lev,lat,lon,time)
+          return( zSymAsym($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:)) 
+      end if
   end if
 end
 
@@ -91,8 +110,9 @@ end
 ; Prewhiten the data: eg remove the annual cycle.
 ; Actually, this will remove all time periods less than
 ;           ththise corresponding to 'fCrit'.
-; Note: The original code provided by JET did not remove
+; Note: The original fortran code provided by JET did not remove
 ;       the grid point means so .... rmvMeans=False
+;       I assume that Matt Wheeler's code did that also.
 ;-------------------------------------------------------------
 undef("rmvAnnualCycle")
 function rmvAnnualCycle( z[*][*][*], spd[1], nDayTot[1]:integer
@@ -151,8 +171,6 @@ end
 undef("resolveWavesHayashi")
 function resolveWavesHayashi ( varfft[*][*][*], nDayWin[1], spd[1] )  ; (2,mlon,nSampWin)
 ;
-; JET did the detailed documentation. The "I" refers to JET.
-;
 ; Create array PEE(NL+1,NT+1) which contains the (real) power spectrum.
 ; all the following assume indexing starting with 0
 ; In this array, the negative wavenumbers will be from pn=0 to NL/2-1;
@@ -163,7 +181,7 @@ function resolveWavesHayashi ( varfft[*][*][*], nDayWin[1], spd[1] )  ; (2,mlon,
 ; Information about time mean will be for pt=NT/2  .
 ; Information about the Nyquist Frequency is at pt=0 and pt=NT
 ;
-; In PEE, I define the 
+; In PEE, define the 
 ; WESTWARD waves to be either +ve frequency
 ;          and -ve wavenumber or -ve freq and +ve wavenumber.
 ; EASTWARD waves are either +ve freq and +ve wavenumber 
@@ -219,11 +237,11 @@ begin
             ; add meta data for use upon return
   pee!0     = "wave"
   pee!1     = "freq"
-            ; JET code 'wavep1'
+            ; JET fortran code 'wavep1'
   wave      = ispan(-mlon/2,mlon/2,1)  
   wave!0    = "wave"
   wave&wave =  wave
-            ; JET code 'frqfftwin'
+            ; JET fortran code 'frqfftwin'
   freq      = fspan(-1*nDayWin*spd/2,nDayWin*spd/2,nDayWin*spd+1)/nDayWin
   freq!0    = "freq"
   freq&freq =  freq
@@ -1600,6 +1618,78 @@ end
    return( e ) 
  end
 ; ====================================================
+undef("mjo_ApplyLanczosWgt_LeftDim")
+function mjo_ApplyLanczosWgt_LeftDim(x:numeric, wgt[*]:numeric, opt[1]:integer)
+;
+; utility routine ... makes for cleaner code
+; Reorder so time is rightmost; applies Lanczos weights, reorder back
+;
+local dimx, rank, dNam, xBand
+begin
+  dimx = dimsizes(x)
+  rank = dimsizes( dimx )
+
+  dNam = getvardims( x )
+
+  if (rank.eq.1) then
+      return( wgt_runave_Wrap( x, wgt, opt) )
+  end if
+  if (rank.eq.2) then
+      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(0)$|:), wgt, opt)
+      return( xBand($dNam(0)$|:,$dNam(1)$|:) ) 
+  end if
+  if (rank.eq.3) then
+      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:), wgt, opt)
+      return( xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
+  end if
+  if (rank.eq.4) then
+      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:), wgt, opt)
+      return (xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
+  end if
+  if (rank.eq.5) then
+      xBand = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:), wgt, opt)
+      return (xBand($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
+  end if
+end
+; ====================================================
+undef("apply_dtrend_LeftDim")
+function apply_dtrend_LeftDim(x:numeric, wgt[*]:numeric, opt[1]:integer)
+;
+; utility routine ... makes for cleaner code
+; Reorder so time is rightmost; detrend the time series, reorder back
+;
+local dimx, rank, dNam, x_dtrend, xWork
+begin
+  dimx = dimsizes(x)
+  rank = dimsizes( dimx )
+  dNam = getvardims( x )
+
+  if (rank.eq.1) then
+      x_dtrend = x                             ; retain meta data
+      x_dtrend = dtrend( x, False) 
+  end if
+  if (rank.eq.2) then
+      xWork = x($dNam(1)$|:,$dNam(0)$|:)       ; retain meta data
+      xWork = dtrend( xWork, False)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
+  end if
+  if (rank.eq.3) then
+      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)
+      xWork = dtrend( xWork, False)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
+  end if
+  if (rank.eq.4) then
+      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:)
+      xWork = dtrend( xWork, False)
+      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
+  end if
+  if (rank.eq.5) then
+      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:)
+      xWork = dtrend( xWork, False)
+      return (xWork )
+  end if
+end
+; ====================================================
 undef ("band_pass_area_time")
 function band_pass_area_time \
                  (x[*][*][*]:numeric, spd[1]:numeric   \
@@ -2080,8 +2170,8 @@ begin
   end if
 end
 ; ====================================================
-undef("mjo_spectra_segment")
-function mjo_spectra_segment \
+undef("mjo_spectra_season")
+function mjo_spectra_season \
                  (x[*][*][*]:numeric, date[*]:integer, wy[*]:numeric \
                  ,seaName[1]:string, opt:logical)
 
@@ -2301,7 +2391,7 @@ begin
      wks          = gsn_open_wks(pltTypeLocal,pltPath)        
 
     do ns=0,nSeason-1
-       sMJO     = mjo_spectra_segment(x, date, wgty, nameSeason(ns), opt)
+       sMJO     = mjo_spectra_season(x, date, wgty, nameSeason(ns), opt)
        splt     = specx_ci (sMJO, ciLow,ciHigh)
 
        ifrqmxPlt= ind(sMJO@frq .ge. frqmnPlt .and. sMJO@frq .le. frqmxPlt)
@@ -2354,8 +2444,8 @@ begin
 end
 
 ;*******************************************************************
-undef("mjo_xcor_lag")
-function mjo_xcor_lag(x[*]:numeric, y[*][*]:numeric, mxlag[1]:integer, opt[1]:logical) 
+undef("mjo_xcor_lag_season")
+function mjo_xcor_lag_season(x[*]:numeric, y[*][*]:numeric, mxlag[1]:integer, opt[1]:logical) 
 ; cross correlations at assorted lags
 local dNam, dimy, N, yNew, xNew, y_Lead_x, x_Lead_y, ccr
 begin
@@ -2380,7 +2470,7 @@ begin
       if (abs(opt@smth9).eq.0.25) then
           ccr  = smth9(ccr, 0.50, opt@smth9, False)
       else
-          print("mjo_xcor_lag: opt@smth9 must be 0.25 or -0.25")
+          print("mjo_xcor_lag_season: opt@smth9 must be 0.25 or -0.25")
           print("              opt@smth9="+opt@smth9)
           print("              NO SMOOTHING PERFORMED")
       end if
@@ -2502,3 +2592,314 @@ begin
       system("/bin/rm -f "+pltPath+".eps")
   end if
 end
+;***********************************************************
+undef("mjo_xcor_lag")
+function mjo_xcor_lag (xio[*]:numeric , y[*][*]:numeric \ 
+                      ,date[*]:integer, mxlag[1]:integer, seaName:string, opt[1]:logical) 
+
+; driver to calculate mean seasonal lags
+local ns, ntim, dimy, ntmy, my, nDay, mmddStrt, yyyy, mmdd, nSea, iSea, rtyp
+    , rLag, nLag, rr, iStrt, iLast
+begin
+
+     ntim = dimsizes(xio) 
+     dimy = dimsizes(y)
+     ntmy = dimy(0)
+     my   = dimy(1)
+
+     if (ntim.ne.ntmy) then
+         print("mjo_xcor_lag: time dimensions do not match")
+         print("              ntim="+ntim+"  ntmy="+ntmy)
+         exit
+     end if
+   
+     nDay = 180
+     if (seaName.eq."winter") then
+         mmddStrt = 1101                      ; Nov 1
+     end if
+     if (seaName.eq."summer") then
+         mmddStrt =  501                      ; May 1
+     end if
+     if (seaName.eq."annual") then
+         nDay     = 365
+         mmddStrt = 101                       ; Jan 1
+     end if
+   
+     yyyy = date/10000
+     mmdd = date - yyyy*10000
+     nSea = num(mmdd.eq.mmddStrt)             ; number of 'seaNam' seasons
+     iSea = ind(mmdd.eq.mmddStrt) 
+     if (seaName.eq."winter") then
+         nSea = nSea-1                        ; last season not complete
+     end if
+     
+     rtyp = "float"
+     if (typeof(xio).eq."double" .or. typeof(y).eq."double") then 
+         rtyp = "double"
+     end if
+
+     nLag = 2*mxlag+1
+     rz   = new ( (/nLag,my/), rtyp, getFillValue(y) )
+     rz   = 0.0
+
+     do ns=0,nSea-1                           ; seasonal averaging
+        iStrt  = iSea(ns) 
+        iLast  = iSea(ns)+nDay-1 
+        if (iLast.gt.(ntim-1)) then
+            break
+        end if
+
+        rLag  = mjo_xcor_lag_season (xio(iStrt:iLast), y(iStrt:iLast,:) ,mxlag, opt)
+        rz    = rz   + 0.5*log((1+rLag)/(1-rLag)) ; Fischer z-transform
+     end do
+
+     rz  = rz/nSea                           ; mean Fischer-z
+     rz  = (exp(2*rz)-1)/(exp(2*rz)+1)       ; transform back  
+
+     copy_VarMeta(rLag, rz)
+     return( rz )
+end
+
+; ====================================================
+undef("mjo_wavenum_freq_season")
+function mjo_wavenum_freq_season \
+                 (X[*][*]:numeric, date[*]:integer \
+                 ,seaName[1]:string, opt:logical)
+;
+; For each 'seaName' (say, 'winter') over a number
+; of different years, calculate the
+; pooled space-time spectra
+
+; MJO CLIVAR: wavenumber-frequency spectra 
+;             winter starts Nov 1  [180 days]
+;             summer starts May 1  [180 days]
+;             annual starts Jan 1  [365 days]
+
+local nMsg, dimX, ntim, mlon, x,  N, pow, xAvg, xSeason       \
+    , nDay, ny, nYear, iSea, mmdd, yyyy, mmddStrt, work, work1\    
+    , d, sm, pct, xVarSea, kSea, wave, freq, iStrt, iLast
+begin
+                                      ; error check
+  nMsg = num( ismissing(X) )
+  if (nMsg.gt.0) then
+      print("mjo_wavenum_freq_season: currently, missing data not allowed: nMsg="+nMsg)
+      exit
+  end if
+
+  dimX = dimsizes(X)
+
+  ntim = dimX(0)                       ; total times
+  mlon = dimX(1)
+
+  x    = X                             ; local copy (time,lon)
+                                       ; x may change
+  if (isatt(x,"_FillValue")) then
+      delete(x@_FillValue)             ; avoid annoying warning msg
+  end if                               ; from dtrend
+
+  nDay = 180
+  if (seaName.eq."winter") then
+      mmddStrt = 1101                      ; Nov 1
+  end if
+  if (seaName.eq."summer") then
+      mmddStrt =  501                      ; May 1
+  end if
+  if (seaName.eq."annual") then
+      nDay     = 365
+      mmddStrt = 101                       ; Jan 1
+  end if
+
+  yyyy  = date/10000
+  mmdd  = date - yyyy*10000
+  nYear = num(mmdd.eq.mmddStrt)             ; number of seasons
+  iSea  = ind(mmdd.eq.mmddStrt) 
+
+;*****************************************************************
+; For a specific season, calculate spectra via averaging 
+; over each seasonal segment.
+; MJO Clivar says "no" to detrending/tapering.
+; Hence, the following are just 'place holders'
+;*****************************************************************
+ ;if (opt .and. isatt(opt,"detrend_seg") ) then
+ ;    d   = opt@detrend_seg
+ ;else
+ ;    d   = 0   ; detrending opt: 0=>remove mean 1=>remove mean and detrend
+ ;end if
+
+ ;if (opt .and. isatt(opt,"smooth_seg") ) then
+ ;    sm  = opt@smooth_seg
+ ;else
+ ;    sm  = 0   ; smooth periodogram: 0 mean no smooth [pure periodgram]
+ ;end if
+
+ ;if (opt .and. isatt(opt,"taper_seg") ) then
+ ;    pct = opt@taper_seg
+ ;else
+ ;    pct = 0.0 ; percent tapered: (0.0 <= pct <= 1.0) 0.10 common. 
+ ;end if
+  
+;;x       = dtrend_leftdim(x, False )       ; detrend overall series in time 
+
+  work    = new((/2,mlon  ,nDay  /), typeof(x), "No_FillValue")  
+          ; the +1 is for the 0-th  component 
+  pow     = new((/  mlon+1,nDay+1/), typeof(x), "No_FillValue")  
+  pow!0   = "wave"
+  pow!1   = "frq"  
+  pow     = 0.0
+  
+  xAvgSea = 0.0
+  xVarSea = 0.0
+  kSea    = 0                               ; count os seasons used
+  N       = nDay                            ; convenience
+
+; -------------------------------------------------------------------
+; NCL does not have a complex 2D FFT at this time.
+; Perform a "poorman's" complex 2D FFT by looping over time and space.
+; Also, makes the code more clear (IMHO)
+; -------------------------------------------------------------------
+
+  do ny=0,nYear-1                           ; season (segment) averaging
+     iStrt  = iSea(ny)                      ; start index for current season
+     iLast  = iSea(ny)+nDay-1               ; last
+     if (iLast.gt.(ntim-1)) then
+         break
+     end if
+    ;print("iStrt="+iStrt+" ("+yyyy(iStrt)+mmdd(iStrt)+");  " \
+    ;     +"iLast="+iLast+" ("+yyyy(iLast)+mmdd(iLast)+")"  )
+     
+     xAvg    = avg( x(iStrt:iLast,:) )     ; season (segment) average
+     xSeason = x(iStrt:iLast,:) - xAvg     ; remove season time-lon mean 
+     xVarSea = xVarSea + variance( xSeason )
+     kSea    = kSea + 1
+
+    do nt=0,nDay-1                         ; each time perform complex fft(lon)
+       work(:,:,nt) = cfftf( xSeason(nt,:), 0.0, 0)   ; space 
+    end do                                  
+     work = work/mlon                      ; normalize by # lon samples
+
+    do ml=0,mlon-1                         ; each lon perform complex fft(time)   
+       work(:,ml,:) = cfftf( work(0,ml,:), work(1,ml,:), 0) ; time 
+    end do
+     work = work/nDay                      ; normalize by # time samples
+                                           ; work(2,wave,freq)
+
+                                           ; unscramble fftpack + calculate power
+     pow  = pow + resolveWavesHayashi( work, nDay, 1)     ; (wave,freq)
+  end do
+
+  xVarSea   = xVarSea/kSea               ; pooled seasonal variance
+  pow       = pow/kSea                   ; pooled spectra
+ 
+  if (isatt(X,"long_name")) then
+      pow@long_name = x@long_name
+  end if
+            ; add meta data for use upon return
+  pow!0     = "wave"
+  pow!1     = "freq"
+          
+  wave      = ispan(-mlon/2,mlon/2,1) 
+  wave!0    = "wave"
+  wave@long_name= "zonal wavenumber"         ; for plot
+  wave&wave =  wave
+         
+  freq      = fspan(-1*nDay/2,nDay/2,nDay+1)/nDay
+  freq!0    = "freq"
+  freq@long_name= "frequency (cycles/day)"   ; for plot
+  freq@units= "cycles/day"
+  freq&freq =  freq
+
+  pow&wave  =  wave
+  pow&freq  =  freq
+   
+  return( pow )
+end
+;-------------------------------------------------------------------
+undef("mjo_wavenum_freq_season_plot")
+procedure mjo_wavenum_freq_season_plot (wf[*][*],seaName[1]:string\
+                     ,pltDir[1]:string, pltType[1]:string         \
+                     ,pltName[1]:string, opt[1]:logical)
+begin 
+  pltPath= pltDir+"/"+pltName+"."+seaName
+  
+  if (pltType.eq."png") then
+      pltTypeLocal = "eps"
+  else
+      pltTypeLocal = pltType
+  end if
+
+  wks  = gsn_open_wks(pltTypeLocal, pltPath)  
+  if (opt .and. isatt(opt,"colorTable")) then
+     gsn_define_colormap(wks,opt@colorTable) 
+  else
+     gsn_define_colormap(wks,"prcp_2") 
+  end if
+
+  res                     = True          ; plot mods desired
+  res@cnFillOn            = True          ; turn on color
+  res@gsnSpreadColors     = True          ; use full range of colormap
+  res@lbLabelAutoStride   = True
+  
+  if (isatt(opt,"tiMainString")) then
+      res@tiMainString    = opt@tiMainString
+  else 
+      res@tiMainString    = changeCase(seaName, "up")
+  end if
+  if (isatt(opt,"gsnLeftString")) then
+      res@gsnLeftString   = opt@gsnLeftString
+  end if
+  if (isatt(opt,"gsnCenterString")) then
+      res@gsnCenterString = opt@gsnCenterString
+  end if
+  if (isatt(opt,"gsnRightString")) then
+      res@gsnRightString  = opt@gsnRightString
+  end if
+  
+  NW = 6
+  if (isatt(opt,"maxWavePlot")) then     ; wave [Y] axis
+      NW  = opt@maxWavePlot
+  end if
+
+  fMin = -0.05  
+  fMax =  0.05
+  
+  if (isatt(opt,"minFreqPlot")) then
+      fMin  = opt@minFreqPlot
+  end if 
+  if (isatt(opt,"maxFreqPlot")) then
+      fMax  = opt@maxFreqPlot
+  end if
+  
+ ;res@trXMinF = fMin
+ ;res@trXMaxF = fMax  
+ 
+  work  = wf({0:NW},{fMin:fMax}) 
+  izero = ind(work&freq .eq. 0.0)
+  work(:,izero) = min(work)       ; 0th freq
+  
+  WORK  = work
+  if (opt .and. isatt(opt,"smth9") .and. opt@smth9) then
+      WORK = smth9(WORK, 0.50,  0.25, False)
+  end if
+  
+  plot = gsn_csm_contour(wks, WORK , res)
+  
+  if (pltType.eq."png") then
+      if (isatt(opt,"pltConvert")) then 
+          pltConvert = opt@pltConvert    ; convert options
+      else
+          pltConvert = " "               ; default
+      end if
+      
+      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
+      system("/bin/rm -f "+pltPath+".eps")
+  end if
+  
+  if (pltType.eq."x11" .and. isatt(opt,"debug") .and. opt@debug) then 
+      
+      res@gsnCenterString = "wf"
+      plot = gsn_csm_contour(wks, wf, res)
+      
+      res@gsnCenterString = "wf({-5:5},{-0.075:0.075})"
+      plot = gsn_csm_contour(wks, wf({-5:5},{-0.075:0.075}), res)
+  end if  
+end  
