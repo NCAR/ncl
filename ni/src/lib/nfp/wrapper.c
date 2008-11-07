@@ -7473,8 +7473,8 @@ NclScalar         *missing_fx
  * Retrieve the dimension name info of a particular
  * input argument to an NCL function or procedure.
  */
-NclDimRec *get_dim_info(arg_num,num_args,ndims)
-int arg_num, num_args, ndims;
+NclDimRec *get_dim_info(arg_num,num_args)
+int arg_num, num_args;
 {
   NclStackEntry tmp_var;
 

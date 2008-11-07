@@ -57,6 +57,8 @@ extern void NGCALLF(dcomputepv,DCOMPUTEPV)(double *, double *, double *,
                                            double *, double *, int *, int *, 
                                            int *, int *, int *);
 
+extern NclDimRec *get_wrf_dim_info(int,int,int,int*);
+
 extern void var_zero(double *, int);
 
 
@@ -142,7 +144,7 @@ NhlErrorTypes wrf_tk_W( void )
  * Retrieve dimension names from the "theta" variable, if any.
  * These dimension names will later be attached to the output variable.
  */
-  dim_info = get_dim_info(1,2,ndims_theta);
+  dim_info = get_wrf_dim_info(1,2,ndims_theta,dsizes_theta);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -446,7 +448,7 @@ NhlErrorTypes wrf_td_W( void )
  * Retrieve dimension names from the "qvapor" variable, if any.
  * These dimension names will later be attached to the output variable.
  */
-  dim_info = get_dim_info(1,2,ndims_qv);
+  dim_info = get_wrf_dim_info(1,2,ndims_qv,dsizes_qv);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -778,7 +780,7 @@ NhlErrorTypes wrf_rh_W( void )
  * Retrieve dimension names from the "t" variable, if any.
  * These dimension names will later be attached to the output variable.
  */
-  dim_info = get_dim_info(2,3,ndims_t);
+  dim_info = get_wrf_dim_info(2,3,ndims_t,dsizes_t);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -1135,46 +1137,39 @@ NhlErrorTypes wrf_slp_W( void )
     return(NhlFATAL);
   }
 /*
- * Get dimension info to see if we have named dimensions. This will be
- * used for return variable.
- */
-  dim_info_t = get_dim_info(1,4,ndims_t); 
-  if(dim_info_t != NULL) {
-    dim_info = malloc(sizeof(NclDimRec)*ndims_slp);
-    if(dim_info == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for holding dimension information");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    dim_info = NULL;
-  }
-/*
  * Set sizes for output array and calculate size of leftmost dimensions.
  * The output array will have one less dimension than the four input arrays.
- *
- * Also, set dimension names for output variable, if any.
  */
   size_leftmost = 1;
   for(i = 0; i < ndims_z-3; i++) {
     dsizes_slp[i] = dsizes_z[i];
     size_leftmost *= dsizes_z[i];
-    if(dim_info_t != NULL) {
-      dim_info[i] = dim_info_t[i];
-    }
   }
   nx = dsizes_z[ndims_z-1];
   ny = dsizes_z[ndims_z-2];
   nz = dsizes_z[ndims_z-3];
   dsizes_slp[ndims_slp-1] = nx;
   dsizes_slp[ndims_slp-2] = ny;
-  if(dim_info_t != NULL) {
-    dim_info[ndims_slp-1] = dim_info_t[ndims_t-1];
-    dim_info[ndims_slp-2] = dim_info_t[ndims_t-2];
-  }
   nxy  = nx * ny;
   nxyz = nxy * nz;
   size_slp = size_leftmost * nxy;
+/*
+ * Get dimension info to see if we have named dimensions.
+ * This will be used for return variable.
+ */
+  dim_info_t = get_wrf_dim_info(1,4,ndims_t,dsizes_t);
+  if(dim_info_t != NULL) {
+    dim_info = malloc(sizeof(NclDimRec)*ndims_slp);
+    if(dim_info == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for holding dimension information");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_z-3; i++) {
+      dim_info[i] = dim_info_t[i];
+    }
+    dim_info[ndims_slp-1] = dim_info_t[ndims_t-1];
+    dim_info[ndims_slp-2] = dim_info_t[ndims_t-2];
+  }
 
 /* 
  * Allocate space for coercing input arrays.  If the input q, p, or t
@@ -1461,6 +1456,10 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   int ndims_v3d, ndims_z, ndims_loc;
   int dsizes_v3d[NCL_MAX_DIMENSIONS], dsizes_z[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v3d, type_z, type_loc;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info_v3d, *dim_info;
 
 /*
  * Variables for retrieving attributes from "v3d".
@@ -1551,6 +1550,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
       return(NhlFATAL);
     }
   }
+
 /*
  * Check if v3d has any attributes, namely "description" or "units".
  * These attributes will be attached to the return variable v2d.
@@ -1630,6 +1630,24 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
   dsizes_v2d[ndims_v2d-1] = nx;
 
   size_v2d = size_leftmost * nxy;
+
+/*
+ * Retrieve dimension names from the "v3d" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info_v3d = get_wrf_dim_info(0,3,ndims_v3d,dsizes_v3d);
+  if(dim_info_v3d != NULL) {
+    dim_info = malloc(sizeof(NclDimRec)*ndims_v2d);
+    if(dim_info == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_3d_z: Unable to allocate memory for holding dimension information");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_v3d-3; i++) {
+      dim_info[i] = dim_info_v3d[i];
+    }
+    dim_info[ndims_v2d-1] = dim_info_v3d[ndims_v3d-1];
+    dim_info[ndims_v2d-2] = dim_info_v3d[ndims_v3d-2];
+  }
 
 /* 
  * Allocate space for coercing input arrays.  If the input v3d or z
@@ -1833,7 +1851,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
                           0,
                           NULL,
                           return_md,
-                          NULL,
+                          dim_info,
                           att_id,
                           NULL,
                           RETURNVAR,
@@ -1841,6 +1859,8 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
                           TEMPORARY
                           );
   NclFree(dsizes_v2d);
+  if(dim_info != NULL) NclFree(dim_info);
+
 /*
  * Return output grid and attributes to NCL.
  */
@@ -1861,6 +1881,10 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
   int ndims_v3d, ndims_xy;
   int dsizes_v3d[NCL_MAX_DIMENSIONS], dsizes_xy[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v3d, type_xy;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Variables for retrieving attributes from "v3d".
@@ -2250,6 +2274,11 @@ NhlErrorTypes wrf_interp_1d_W( void )
   int dsizes_z_out[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v_in, type_z_in, type_z_out;
 /*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
+
+/*
  * Variables for retrieving attributes from "v3d".
  */
   NclAttList  *attr_list;
@@ -2333,6 +2362,13 @@ NhlErrorTypes wrf_interp_1d_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_interp_1d: The rightmost dimesion of v_in and z_in must be the same");
     return(NhlFATAL);
   }
+
+/*
+ * Retrieve dimension names from the "v3d" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_wrf_dim_info(0,3,ndims_v_in,dsizes_v_in);
+
 /*
  * Check if v_in has any attributes, namely "description" or "units".
  * These attributes will be attached to the return variable v_out.
@@ -2632,7 +2668,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
                           0,
                           NULL,
                           return_md,
-                          NULL,
+                          dim_info,
                           att_id,
                           NULL,
                           RETURNVAR,
@@ -2954,6 +2990,10 @@ NhlErrorTypes wrf_smooth_2d_W( void )
   int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a;
   int *it;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Various
@@ -3008,6 +3048,12 @@ NhlErrorTypes wrf_smooth_2d_W( void )
            NULL,
            NULL,
            2);
+
+/*
+ * Retrieve dimension names from the "a" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_wrf_dim_info(0,1,ndims_a,dsizes_a);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -4698,3 +4744,54 @@ NhlErrorTypes wrf_pvo_W( void )
   ret = NclReturnValue(pv,3,dsizes_th,NULL,type_pv,0);
   return(ret);
 }
+
+/*
+ * Retrieve the dimension name info of a particular
+ * input argument to a WRF NCL function. If there are
+ * no named dimensions, *and* you have at least a 2D
+ * array, then set the last two dimension names to
+ * "south_north" x "west_east".
+ */
+NclDimRec *get_wrf_dim_info(arg_num,num_args,ndims_arg,dsizes_arg)
+int arg_num, num_args, ndims_arg, *dsizes_arg;
+{
+  NclDimRec *dim_info;
+  int i, is_named;
+
+  dim_info = get_dim_info(arg_num,num_args);
+
+  is_named = 0;
+  if(ndims_arg >= 2) {
+    if(dim_info != NULL) {
+/*
+ * Check if we actually have any named dimensions.
+ */
+      i = 0;
+      while(i < ndims_arg && !is_named ) {
+        if(dim_info[i++].dim_quark != -1) is_named = 1;
+      }
+    }
+    if(!is_named) {
+/*
+ * If we are here, then we know we have no named dimensions,
+ * and hence need to create some.
+ */
+      if(dim_info == NULL) {
+        dim_info = malloc(sizeof(NclDimRec)*ndims_arg);
+        if(dim_info == NULL) {
+          NhlPError(NhlWARNING,NhlEUNKNOWN,"wrf_get_dim_info: Unable to allocate memory for setting dimension names");
+          return(NULL);
+        }
+      }
+      for(i = 0; i < ndims_arg; i++ ) {
+        dim_info[i].dim_num   = i;
+        dim_info[i].dim_quark = -1;
+        dim_info[i].dim_size  = dsizes_arg[i];
+      }
+      dim_info[ndims_arg-2].dim_quark = NrmStringToQuark("south_north");
+      dim_info[ndims_arg-1].dim_quark = NrmStringToQuark("west_east");
+    }
+  }
+  return(dim_info);
+}
+

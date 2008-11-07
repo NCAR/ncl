@@ -67,4 +67,4 @@ extern void compute_nlatanlona(int *,int *,int,int,int *,int *,int *,int *,
 extern void print_minmax(void *,int,NclBasicDataTypes);
 
 
-extern NclDimRec *get_dim_info(int, int, int);
+extern NclDimRec *get_dim_info(int, int);
