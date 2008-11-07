@@ -2813,7 +2813,7 @@ begin
    
   return( pow )
 end
-;-------------------------------------------------------------------
+;--------------------------------------------------------------------
 undef("mjo_wavenum_freq_season_plot")
 procedure mjo_wavenum_freq_season_plot (wf[*][*],seaName[1]:string\
                      ,pltDir[1]:string, pltType[1]:string         \
@@ -2835,6 +2835,8 @@ begin
   end if
 
   res                     = True          ; plot mods desired
+  res@gsnFrame            = False
+ ;res@gsnDraw             = False
   res@cnFillOn            = True          ; turn on color
   res@gsnSpreadColors     = True          ; use full range of colormap
   res@lbLabelAutoStride   = True
@@ -2882,6 +2884,27 @@ begin
   end if
   
   plot = gsn_csm_contour(wks, WORK , res)
+
+  resp                  = True                      ; polyline mods desired
+ ;resp@gsLineThicknessF = 2.0                       ; thickness of lines
+  resp@gsLineDashPattern= 11
+
+  tres       =  True
+  tres@txFontHeightF = 0.0175
+
+  day   = 30
+  fline = 1./day
+ ;resp@gsLineLabelString= day+"d"                    ; adds a line label string
+  gsn_polyline(wks,plot,(/fline,fline/),(/ 0.,NW/), resp)      
+  gsn_text(wks,plot, (day+"d"),fline+0.005,0.93*NW,tres)
+
+  day   = 80 
+  fline = 1/day
+ ;resp@gsLineLabelString= day+"d"                    ; adds a line label string
+  gsn_polyline(wks,plot,(/fline,fline/),(/ 0.,NW/), resp)      
+  gsn_text(wks,plot, (day+"d"),fline+0.005,0.93*NW,tres)
+
+  frame(wks)
   
   if (pltType.eq."png") then
       if (isatt(opt,"pltConvert")) then 
