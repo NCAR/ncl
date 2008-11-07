@@ -124,7 +124,6 @@ NhlErrorTypes wrf_tk_W( void )
            NULL,
            &type_theta,
            2);
-
 /*
  * Error checking. Input variables must be same size.
  */
@@ -138,6 +137,12 @@ NhlErrorTypes wrf_tk_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Retrieve dimension names from the "theta" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_dim_info(1,2,ndims_theta);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -333,12 +338,6 @@ NhlErrorTypes wrf_tk_W( void )
              NULL
              );
     
-/*
- * Retrieve dimension names from the "theta" variable, if any.
- * These dimension names will be attached to the output variable.
- */
-  dim_info = get_dim_info(1,2,ndims_p);
-
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -353,6 +352,7 @@ NhlErrorTypes wrf_tk_W( void )
                           NULL,
                           TEMPORARY
                           );
+
 /*
  * Return output grid and attributes to NCL.
  */
@@ -373,6 +373,10 @@ NhlErrorTypes wrf_td_W( void )
   int ndims_p, ndims_qv;
   int dsizes_p[NCL_MAX_DIMENSIONS], dsizes_qv[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_p, type_qv;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Output variable and attributes.
@@ -437,6 +441,13 @@ NhlErrorTypes wrf_td_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Retrieve dimension names from the "qvapor" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_dim_info(1,2,ndims_qv);
+
 /*
  * Calculate size of leftmost dimensions.
  */
@@ -647,6 +658,7 @@ NhlErrorTypes wrf_td_W( void )
              NULL
              );
     
+
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -654,13 +666,14 @@ NhlErrorTypes wrf_td_W( void )
                           0,
                           NULL,
                           return_md,
-                          NULL,
+                          dim_info,
                           att_id,
                           NULL,
                           RETURNVAR,
                           NULL,
                           TEMPORARY
                           );
+
 /*
  * Return output grid and attributes to NCL.
  */
@@ -760,6 +773,13 @@ NhlErrorTypes wrf_rh_W( void )
       return(NhlFATAL);
     }
   }
+
+/*
+ * Retrieve dimension names from the "t" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_dim_info(2,3,ndims_t);
+
 /*
  * Calculate size of leftmost dimensions.
  */
@@ -976,12 +996,6 @@ NhlErrorTypes wrf_rh_W( void )
              NULL
              );
     
-/*
- * Retrieve dimension names from the "t" variable, if any.
- * These dimension names will be attached to the output variable.
- */
-  dim_info = get_dim_info(2,3,ndims_t);
-
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -996,6 +1010,7 @@ NhlErrorTypes wrf_rh_W( void )
                           NULL,
                           TEMPORARY
                           );
+
 /*
  * Return output grid and attributes to NCL.
  */
@@ -1019,7 +1034,7 @@ NhlErrorTypes wrf_slp_W( void )
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info;
+  NclDimRec *dim_info, *dim_info_t;
 
 /*
  * Output variable.
@@ -1111,25 +1126,52 @@ NhlErrorTypes wrf_slp_W( void )
     }
   }
 /*
- * Set sizes for output array and calculate size of leftmost dimensions.
- * The output array will have one less dimension than the four input arrays.
+ * Allocate space to set dimension sizes.
  */
-  ndims_slp = ndims_z-1;
+  ndims_slp  = ndims_z-1;
   dsizes_slp = (int*)calloc(ndims_slp,sizeof(int));  
-  if( dsizes_slp == NULL ) {
+  if( dsizes_slp == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
+/*
+ * Get dimension info to see if we have named dimensions. This will be
+ * used for return variable.
+ */
+  dim_info_t = get_dim_info(1,4,ndims_t); 
+  if(dim_info_t != NULL) {
+    dim_info = malloc(sizeof(NclDimRec)*ndims_slp);
+    if(dim_info == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_slp: Unable to allocate memory for holding dimension information");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    dim_info = NULL;
+  }
+/*
+ * Set sizes for output array and calculate size of leftmost dimensions.
+ * The output array will have one less dimension than the four input arrays.
+ *
+ * Also, set dimension names for output variable, if any.
+ */
   size_leftmost = 1;
   for(i = 0; i < ndims_z-3; i++) {
     dsizes_slp[i] = dsizes_z[i];
     size_leftmost *= dsizes_z[i];
+    if(dim_info_t != NULL) {
+      dim_info[i] = dim_info_t[i];
+    }
   }
   nx = dsizes_z[ndims_z-1];
   ny = dsizes_z[ndims_z-2];
   nz = dsizes_z[ndims_z-3];
   dsizes_slp[ndims_slp-1] = nx;
   dsizes_slp[ndims_slp-2] = ny;
+  if(dim_info_t != NULL) {
+    dim_info[ndims_slp-1] = dim_info_t[ndims_t-1];
+    dim_info[ndims_slp-2] = dim_info_t[ndims_t-2];
+  }
   nxy  = nx * ny;
   nxyz = nxy * nz;
   size_slp = size_leftmost * nxy;
@@ -1381,12 +1423,6 @@ NhlErrorTypes wrf_slp_W( void )
              NULL
              );
     
-/*
- * Retrieve dimension names from the "t" variable, if any.
- * These dimension names will be attached to the output variable.
- */
-  dim_info = get_dim_info(1,4,ndims_t);
-
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -1403,6 +1439,8 @@ NhlErrorTypes wrf_slp_W( void )
                           );
 
   NclFree(dsizes_slp);
+  if(dim_info != NULL) NclFree(dim_info);
+
 /*
  * Return output grid and attributes to NCL.
  */

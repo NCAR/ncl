@@ -7470,28 +7470,20 @@ NclScalar         *missing_fx
 }
 
 /*
- * Retrieve the dimension names of a particular
+ * Retrieve the dimension name info of a particular
  * input argument to an NCL function or procedure.
  */
 NclDimRec *get_dim_info(arg_num,num_args,ndims)
 int arg_num, num_args, ndims;
 {
-  NclStackEntry val;
-  int i;
-  NclDimRec *dim_info;
-  
-  val = _NclGetArg(arg_num,num_args,DONT_CARE);
+  NclStackEntry tmp_var;
 
-  if(val.kind == NclStk_VAR) {
-    dim_info = malloc(sizeof(NclDimRec)*ndims);
-    for(i = 0; i < ndims; i++) {
-      dim_info[i].dim_num   = i; 
-      dim_info[i].dim_quark = val.u.data_var->var.dim_info[i].dim_quark;
-      dim_info[i].dim_size  = val.u.data_var->var.dim_info[i].dim_size;
-    }
+  tmp_var = _NclGetArg(arg_num,num_args,DONT_CARE);
+
+  if(tmp_var.kind == NclStk_VAR) {
+    return(tmp_var.u.data_var->var.dim_info);
   }
   else {
-    dim_info = NULL;
+    return(NULL);
   }
-  return(dim_info);
 }
