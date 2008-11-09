@@ -5019,8 +5019,8 @@ NhlErrorTypes wrf_pvo_W( void )
     }
   }
 
-  nyp1     = dsizes_v[ndims_v-2];
-  nx       = dsizes_v[ndims_v-1];
+  nyp1 = dsizes_v[ndims_v-2];
+  nx   = dsizes_v[ndims_v-1];
 
 /*
  * Get argument # 2
@@ -5070,15 +5070,15 @@ NhlErrorTypes wrf_pvo_W( void )
  * Error checking on dimensions.
  */
   if(ndims_p != ndims_u) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: p, u, and v must have the same number of dimensions");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: u, v, and p must have the same number of dimensions");
     return(NhlFATAL);
   }
 
 /*
  * Error checking on dimension sizes.
  */
-  for(i = 0; i < ndims_th-1; i++) {
-    if(dsizes_p[i] != dsizes_u[i]) {
+  for(i = 0; i < ndims_th; i++) {
+    if(dsizes_p[i] != dsizes_th[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of p and th must be the same");
     }
   }
@@ -5141,7 +5141,7 @@ NhlErrorTypes wrf_pvo_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: msfu and msfv must have the same number of dimensions");
     return(NhlFATAL);
   }
-  if(dsizes_msfv[ndims_msfv-2] != nx || dsizes_msfv[ndims_msfv-1] != nyp1) {
+  if(dsizes_msfv[ndims_msfv-2] != nyp1 || dsizes_msfv[ndims_msfv-1] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The rightmost 2 dimensions of msfv must be the same as the rightmost 2 dimensions of v");
     return(NhlFATAL);
   }
@@ -5205,15 +5205,15 @@ NhlErrorTypes wrf_pvo_W( void )
 /*
  * Error checking on dimensions.
  */
-  if(ndims_cor != ndims_msfu) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: cor and msfu must have the same number of dimensions");
+  if(ndims_cor != ndims_msft) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: cor and msft must have the same number of dimensions");
     return(NhlFATAL);
   }
 
 /*
  * Error checking on dimension sizes.
  */
-  for(i = 0; i < ndims_msft-1; i++) {
+  for(i = 0; i < ndims_msft; i++) {
     if(dsizes_cor[i] != dsizes_msft[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_pvo: The dimensions of cor and msft must be the same");
     }
@@ -5731,8 +5731,8 @@ NhlErrorTypes wrf_avo_W( void )
     }
   }
 
-  nyp1     = dsizes_v[ndims_v-2];
-  nx       = dsizes_v[ndims_v-1];
+  nyp1 = dsizes_v[ndims_v-2];
+  nx   = dsizes_v[ndims_v-1];
 
 /*
  * Get argument # 2
@@ -5792,7 +5792,7 @@ NhlErrorTypes wrf_avo_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: msfu and msfv must have the same number of dimensions");
     return(NhlFATAL);
   }
-  if(dsizes_msfv[ndims_msfv-2] != nx || dsizes_msfv[ndims_msfv-1] != nyp1) {
+  if(dsizes_msfv[ndims_msfv-2] != nyp1 || dsizes_msfv[ndims_msfv-1] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: The rightmost 2 dimensions of msfv must be the same as the rightmost 2 dimensions of v");
     return(NhlFATAL);
   }
@@ -5856,15 +5856,15 @@ NhlErrorTypes wrf_avo_W( void )
 /*
  * Error checking on dimensions.
  */
-  if(ndims_cor != ndims_msfu) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: cor and msfu must have the same number of dimensions");
+  if(ndims_cor != ndims_msft) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: cor and msft must have the same number of dimensions");
     return(NhlFATAL);
   }
 
 /*
  * Error checking on dimension sizes.
  */
-  for(i = 0; i < ndims_msft-1; i++) {
+  for(i = 0; i < ndims_msft; i++) {
     if(dsizes_cor[i] != dsizes_msft[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: The dimensions of cor and msft must be the same");
     }
