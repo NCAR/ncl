@@ -59,6 +59,10 @@ extern void NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(double *, double *,
                                                      double *, int *, int *,
                                                      int *, int *, int *);
 
+extern void NGCALLF(calcdbz,CALCDBZ)(double *, double *, double *, double *,
+				     double *, double *, double *, int *, 
+				     int *, int *, int *, int *, int *);
+
 extern NclDimRec *get_wrf_dim_info(int,int,int,int*);
 
 extern void var_zero(double *, int);
@@ -4343,6 +4347,503 @@ void var_zero(double *tmp_var, int n)
   }
 }
 
+
+NhlErrorTypes wrf_dbz_W( void )
+{
+
+/*
+ * Input variables
+ */
+/*
+ * Argument # 0
+ */
+  void *prs;
+  double *tmp_prs;
+  int ndims_prs, dsizes_prs[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_prs;
+
+/*
+ * Argument # 1
+ */
+  void *tmk;
+  double *tmp_tmk;
+  int ndims_tmk, dsizes_tmk[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_tmk;
+
+/*
+ * Argument # 2
+ */
+  void *qvp;
+  double *tmp_qvp;
+  int ndims_qvp, dsizes_qvp[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_qvp;
+
+/*
+ * Argument # 3
+ */
+  void *qra;
+  double *tmp_qra;
+  int ndims_qra, dsizes_qra[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_qra;
+
+/*
+ * Argument # 4
+ */
+  void *qsn;
+  double *tmp_qsn;
+  int ndims_qsn, dsizes_qsn[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_qsn;
+
+/*
+ * Argument # 5
+ */
+  void *qgr;
+  double *tmp_qgr;
+  int ndims_qgr, dsizes_qgr[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_qgr;
+
+/*
+ * Argument # 6
+ */
+  int *sn0;
+/*
+ * Argument # 7
+ */
+  int *ivarint;
+/*
+ * Argument # 8
+ */
+  int *iliqskin;
+/*
+ * Return variable
+ */
+  void *dbz;
+  double *tmp_dbz;
+  NclBasicDataTypes type_dbz;
+
+
+/*
+ * Various
+ */
+  int btdim, sndim, wedim, nbtsnwe, index_dbz;
+  int i, size_leftmost, size_output, ret;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  prs = (void*)NclGetArgValue(
+           0,
+           9,
+           &ndims_prs,
+           dsizes_prs,
+           NULL,
+           NULL,
+           &type_prs,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_prs < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The prs array must have at least 3 dimensions");
+    return(NhlFATAL);
+  }
+  btdim = dsizes_prs[ndims_prs-3];
+  sndim = dsizes_prs[ndims_prs-2];
+  wedim = dsizes_prs[ndims_prs-1];
+  nbtsnwe = btdim * sndim * wedim;
+
+/*
+ * Get argument # 1
+ */
+  tmk = (void*)NclGetArgValue(
+           1,
+           9,
+           &ndims_tmk,
+           dsizes_tmk,
+           NULL,
+           NULL,
+           &type_tmk,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_tmk != ndims_prs) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The tmk array must have the same number of dimensions as the prs array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 2
+ */
+  qvp = (void*)NclGetArgValue(
+           2,
+           9,
+           &ndims_qvp,
+           dsizes_qvp,
+           NULL,
+           NULL,
+           &type_qvp,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_qvp != ndims_prs) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qvp array must have the same number of dimensions as the prs array");
+    return(NhlFATAL);
+  }
+
+
+/*
+ * Get argument # 3
+ */
+  qra = (void*)NclGetArgValue(
+           3,
+           9,
+           &ndims_qra,
+           dsizes_qra,
+           NULL,
+           NULL,
+           &type_qra,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_qra != ndims_prs) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qra array must have the same number of dimensions as the prs array");
+    return(NhlFATAL);
+  }
+
+
+/*
+ * Get argument # 4
+ */
+  qsn = (void*)NclGetArgValue(
+           4,
+           9,
+           &ndims_qsn,
+           dsizes_qsn,
+           NULL,
+           NULL,
+           &type_qsn,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_qsn != ndims_prs) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qsn array must have the same number of dimensions as the prs array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 5
+ */
+  qgr = (void*)NclGetArgValue(
+           5,
+           9,
+           &ndims_qgr,
+           dsizes_qgr,
+           NULL,
+           NULL,
+           &type_qgr,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_qgr != ndims_prs) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qgr array must have the same number of dimensions as the prs array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Check that the first 6 input arrays all have the same dimensionality.
+ */
+  for(i = 0; i < ndims_prs; i++) {
+    if(dsizes_tmk[i] != dsizes_prs[i] || dsizes_qvp[i] != dsizes_prs[i] || 
+       dsizes_qra[i] != dsizes_prs[i] || dsizes_qsn[i] != dsizes_prs[i] || 
+       dsizes_qgr[i] != dsizes_prs[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The prs, tmk, qvp, qra, qsn, and qgr arrays must have the same dimensions");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Get argument # 6
+ */
+  sn0 = (int*)NclGetArgValue(
+           6,
+           9,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+/*
+ * Get argument # 7
+ */
+  ivarint = (int*)NclGetArgValue(
+           7,
+           9,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+/*
+ * Get argument # 8
+ */
+  iliqskin = (int*)NclGetArgValue(
+           8,
+           9,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * Calculate size of leftmost dimensions.
+ */
+  size_leftmost  = 1;
+  for(i = 0; i < ndims_prs-3; i++) size_leftmost *= dsizes_prs[i];
+
+
+/*
+ * The output type defaults to float, unless this input array is double.
+ */
+  type_dbz = NCL_float;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ */
+/*
+ * Allocate space for tmp_prs.
+ */
+  if(type_prs != NCL_double) {
+    tmp_prs = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_prs == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_dbz = NCL_double;
+  }
+/*
+ * Allocate space for tmp_tmk.
+ */
+  if(type_tmk != NCL_double) {
+    tmp_tmk = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_tmk == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_dbz = NCL_double;
+  }
+/*
+ * Allocate space for tmp_qvp.
+ */
+  if(type_qvp != NCL_double) {
+    tmp_qvp = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_qvp == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_dbz = NCL_double;
+  }
+/*
+ * Allocate space for tmp_qra.
+ */
+  if(type_qra != NCL_double) {
+    tmp_qra = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_qra == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_dbz = NCL_double;
+  }
+/*
+ * Allocate space for tmp_qsn.
+ */
+  if(type_qsn != NCL_double) {
+    tmp_qsn = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_qsn == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_dbz = NCL_double;
+  }
+/*
+ * Allocate space for tmp_qgr.
+ */
+  if(type_qgr != NCL_double) {
+    tmp_qgr = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_qgr == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_dbz = NCL_double;
+  }
+
+/* 
+ * Allocate space for output array.
+ */
+  size_output = size_leftmost * nbtsnwe;
+
+  if(type_dbz != NCL_double) {
+    dbz = (void *)calloc(size_output, sizeof(float));
+    tmp_dbz = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_dbz == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    dbz = (void *)calloc(size_output, sizeof(double));
+  }
+  if(dbz == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop across leftmost dimensions and call the Fortran routine for each
+ * subsection of the input arrays.
+ */
+  index_dbz = 0;
+
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of prs (tmp_prs) to double if necessary.
+ */
+    if(type_prs != NCL_double) {
+      coerce_subset_input_double(prs,tmp_prs,index_dbz,type_prs,nbtsnwe,
+				 0,NULL,NULL);
+    }
+    else {
+      tmp_prs = &((double*)prs)[index_dbz];
+    }
+
+/*
+ * Coerce subsection of tmk (tmp_tmk) to double if necessary.
+ */
+    if(type_tmk != NCL_double) {
+      coerce_subset_input_double(tmk,tmp_tmk,index_dbz,type_tmk,nbtsnwe,
+				 0,NULL,NULL);
+    }
+    else {
+      tmp_tmk = &((double*)tmk)[index_dbz];
+    }
+
+/*
+ * Coerce subsection of qvp (tmp_qvp) to double if necessary.
+ */
+    if(type_qvp != NCL_double) {
+      coerce_subset_input_double(qvp,tmp_qvp,index_dbz,type_qvp,nbtsnwe,
+				 0,NULL,NULL);
+    }
+    else {
+      tmp_qvp = &((double*)qvp)[index_dbz];
+    }
+
+/*
+ * Coerce subsection of qra (tmp_qra) to double if necessary.
+ */
+    if(type_qra != NCL_double) {
+      coerce_subset_input_double(qra,tmp_qra,index_dbz,type_qra,nbtsnwe,
+				 0,NULL,NULL);
+    }
+    else {
+      tmp_qra = &((double*)qra)[index_dbz];
+    }
+
+/*
+ * Coerce subsection of qsn (tmp_qsn) to double if necessary.
+ */
+    if(type_qsn != NCL_double) {
+      coerce_subset_input_double(qsn,tmp_qsn,index_dbz,type_qsn,nbtsnwe,
+				 0,NULL,NULL);
+    }
+    else {
+      tmp_qsn = &((double*)qsn)[index_dbz];
+    }
+
+/*
+ * Coerce subsection of qgr (tmp_qgr) to double if necessary.
+ */
+    if(type_qgr != NCL_double) {
+      coerce_subset_input_double(qgr,tmp_qgr,index_dbz,type_qgr,nbtsnwe,
+				 0,NULL,NULL);
+    }
+    else {
+      tmp_qgr = &((double*)qgr)[index_dbz];
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_dbz == NCL_double) tmp_dbz = &((double*)dbz)[index_dbz];
+
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
+			     tmp_qsn, tmp_qgr, &wedim, &sndim, &btdim, 
+			     sn0, ivarint, iliqskin);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_dbz == NCL_float) {
+      coerce_output_float_only(dbz,tmp_dbz,nbtsnwe,index_dbz);
+    }
+    index_dbz += nbtsnwe;
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if(type_prs != NCL_double) NclFree(tmp_prs);
+  if(type_tmk != NCL_double) NclFree(tmp_tmk);
+  if(type_qvp != NCL_double) NclFree(tmp_qvp);
+  if(type_qra != NCL_double) NclFree(tmp_qra);
+  if(type_qsn != NCL_double) NclFree(tmp_qsn);
+  if(type_qgr != NCL_double) NclFree(tmp_qgr);
+  if(type_dbz != NCL_double) NclFree(tmp_dbz);
+
+/*
+ * Return value back to NCL script.
+ */
+  ret = NclReturnValue(dbz,ndims_tmk,dsizes_tmk,NULL,type_dbz,0);
+  return(ret);
+}
 
 NhlErrorTypes wrf_pvo_W( void )
 {
