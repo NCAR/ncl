@@ -60,7 +60,6 @@ extern NhlErrorTypes showal_skewt_W(void);
 extern NhlErrorTypes pw_skewt_W(void);
 extern NhlErrorTypes rip_cape_2d_W(void);
 extern NhlErrorTypes rip_cape_3d_W(void);
-extern NhlErrorTypes rip_reflectivity_W(void);
 extern NhlErrorTypes wrf_tk_W(void);
 extern NhlErrorTypes wrf_td_W(void);
 extern NhlErrorTypes wrf_rh_W(void);
@@ -1183,25 +1182,7 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
 
     NclRegisterFunc(pw_skewt_W,args,"pw_skewt",nargs);
-/*
- * Register "rip_reflectivity".
- *
- * Create private argument array
- */
-    nargs = 0;
-    args = NewArgs(8);
 
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-
-    NclRegisterFunc(rip_reflectivity_W,args,"rip_reflectivity",nargs);
 /*
  * Register "rip_cape_2d".
  *
