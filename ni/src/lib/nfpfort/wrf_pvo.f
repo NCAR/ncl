@@ -1,6 +1,6 @@
 c--------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DCOMPUTEPV(U,V,THETA,PRS,PV,MSFU,MSFV,MSFT,COR,DX,DY,
+      SUBROUTINE DCOMPUTEPV(PV,U,V,THETA,PRS,MSFU,MSFV,MSFT,COR,DX,DY,
      +                      NX,NY,NZ,NXP1,NYP1)
 
       IMPLICIT NONE
@@ -54,6 +54,7 @@ c               if(i.eq.300 .and. j.eq.300) then
 c                 print*,'avort,dudp,dvdp,dthdp,dthdx,dthdy,pv'
 c                 print*,avort,dudp,dvdp,dthdp,dthdx,dthdy,pv(i,j,k)
 c               endif
+                  PV(I,J,K) = PV(I,J,K)*1.D2
               END DO
           END DO
       END DO
@@ -62,7 +63,7 @@ c               endif
 
 c--------------------------------------------------------
 C NCLFORTSTART
-      SUBROUTINE DCOMPUTEABSVORT(U,V,AV,COR,MSFU,MSFV,MSFT,DX,DY,NX,NY,
+      SUBROUTINE DCOMPUTEABSVORT(AV,U,V,MSFU,MSFV,MSFT,COR,DX,DY,NX,NY,
      +                           NZ,NXP1,NYP1)
 
       IMPLICIT NONE
@@ -100,7 +101,7 @@ c         print *,j,i,u(i,jp1,k),msfu(i,jp1),u(i,jp1,k)/msfu(i,jp1)
      +                   V(IM1,J,K)/MSFV(IM1,J)-
      +                   V(IM1,J+1,K)/MSFV(IM1,J+1))/DSX*MM
                   AVORT = DVDX - DUDY + COR(I,J)
-                  AV(I,J,K) = AVORT
+                  AV(I,J,K) = AVORT*1.D5
               END DO
           END DO
       END DO
