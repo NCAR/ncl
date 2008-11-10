@@ -5523,7 +5523,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
     if(type_pv == NCL_double) tmp_pv = &((double*)pv)[index_th];
 
-    NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_u, tmp_v, tmp_th, tmp_p, tmp_pv, 
+    NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_pv, tmp_u, tmp_v, tmp_th, tmp_p, 
                                    tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
                                    dx, dy, &nx, &ny, &nz, &nxp1, &nyp1);
 
@@ -6141,8 +6141,8 @@ NhlErrorTypes wrf_avo_W( void )
  */
     if(type_av == NCL_double) tmp_av = &((double*)av)[index_cor];
 
-    NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_u, tmp_v, tmp_av, tmp_cor,
-                                             tmp_msfu, tmp_msfv, tmp_msft, dx,
+    NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_av, tmp_u, tmp_v, tmp_msfu,
+					     tmp_msfv, tmp_msft, tmp_cor,dx,
                                              dy, &nx, &ny, &nz, &nxp1, &nyp1);
 
     if(type_av != NCL_double) {
