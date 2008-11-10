@@ -1379,7 +1379,7 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
         nargs = 0;
-        args = NewArgs(10);
+        args = NewArgs(11);
 
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
@@ -1392,6 +1392,7 @@ void NclAddUserFuncs(void)
 
         dimsizes[0] = 1;
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_pvo_W,args,"wrf_pvo",nargs);
@@ -1402,7 +1403,7 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
         nargs = 0;
-        args = NewArgs(8);
+        args = NewArgs(9);
 
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
@@ -1412,6 +1413,7 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
 
         dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 

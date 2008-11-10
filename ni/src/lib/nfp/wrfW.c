@@ -4917,12 +4917,19 @@ NhlErrorTypes wrf_pvo_W( void )
 /*
  * Argument # 8
  */
-  void *ds;
-  double *tmp_ds;
-  NclBasicDataTypes type_ds;
+  void *dx;
+  double *tmp_dx;
+  NclBasicDataTypes type_dx;
 
 /*
  * Argument # 9
+ */
+  void *dy;
+  double *tmp_dy;
+  NclBasicDataTypes type_dy;
+
+/*
+ * Argument # 10
  */
   int *opt;
 
@@ -4967,7 +4974,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   u = (void*)NclGetArgValue(
            0,
-           10,
+           11,
            &ndims_u,
            dsizes_u,
            NULL,
@@ -4991,7 +4998,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   v = (void*)NclGetArgValue(
            1,
-           10,
+           11,
            &ndims_v,
            dsizes_v,
            NULL,
@@ -5027,7 +5034,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   th = (void*)NclGetArgValue(
            2,
-           10,
+           11,
            &ndims_th,
            dsizes_th,
            NULL,
@@ -5058,7 +5065,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   p = (void*)NclGetArgValue(
            3,
-           10,
+           11,
            &ndims_p,
            dsizes_p,
            NULL,
@@ -5088,7 +5095,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   msfu = (void*)NclGetArgValue(
            4,
-           10,
+           11,
            &ndims_msfu,
            dsizes_msfu,
            NULL,
@@ -5126,7 +5133,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   msfv = (void*)NclGetArgValue(
            5,
-           10,
+           11,
            &ndims_msfv,
            dsizes_msfv,
            NULL,
@@ -5160,7 +5167,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   msft = (void*)NclGetArgValue(
            6,
-           10,
+           11,
            &ndims_msft,
            dsizes_msft,
            NULL,
@@ -5194,7 +5201,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   cor = (void*)NclGetArgValue(
            7,
-           10,
+           11,
            &ndims_cor,
            dsizes_cor,
            NULL,
@@ -5219,27 +5226,40 @@ NhlErrorTypes wrf_pvo_W( void )
     }
   }
 
+/*
+ * Get argument # 8
+ */
+  dx = (void*)NclGetArgValue(
+           8,
+           11,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_dx,
+           2);
+  tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
 
 /*
  * Get argument # 9
  */
-  ds = (void*)NclGetArgValue(
-           8,
-           10,
+  dy = (void*)NclGetArgValue(
+           9,
+           11,
            NULL,
            NULL,
            NULL,
            NULL,
-           &type_ds,
+           &type_dy,
            2);
-  tmp_ds = coerce_input_double(ds,type_ds,1,0,NULL,NULL);
+  tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
 
 /*
- * Get argument # 9
+ * Get argument # 10
  */
   opt = (int*)NclGetArgValue(
-           9,
            10,
+           11,
            NULL,
            NULL,
            NULL,
@@ -5505,7 +5525,7 @@ NhlErrorTypes wrf_pvo_W( void )
 
     NGCALLF(dcomputepv,DCOMPUTEPV)(tmp_u, tmp_v, tmp_th, tmp_p, tmp_pv, 
                                    tmp_msfu, tmp_msfv, tmp_msft, tmp_cor, 
-                                   ds, ds, &nx, &ny, &nz, &nxp1, &nyp1);
+                                   dx, dy, &nx, &ny, &nz, &nxp1, &nyp1);
 
     if(type_pv != NCL_double) {
       coerce_output_float_only(pv,tmp_pv,nznynx,index_th);
@@ -5629,12 +5649,19 @@ NhlErrorTypes wrf_avo_W( void )
 /*
  * Argument # 6
  */
-  void *ds;
-  double *tmp_ds;
-  NclBasicDataTypes type_ds;
+  void *dx;
+  double *tmp_dx;
+  NclBasicDataTypes type_dx;
 
 /*
  * Argument # 7
+ */
+  void *dy;
+  double *tmp_dy;
+  NclBasicDataTypes type_dy;
+
+/*
+ * Argument # 8
  */
   int *opt;
 
@@ -5679,7 +5706,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   u = (void*)NclGetArgValue(
            0,
-           8,
+           9,
            &ndims_u,
            dsizes_u,
            NULL,
@@ -5703,7 +5730,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   v = (void*)NclGetArgValue(
            1,
-           8,
+           9,
            &ndims_v,
            dsizes_v,
            NULL,
@@ -5739,7 +5766,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   msfu = (void*)NclGetArgValue(
            2,
-           8,
+           9,
            &ndims_msfu,
            dsizes_msfu,
            NULL,
@@ -5777,7 +5804,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   msfv = (void*)NclGetArgValue(
            3,
-           8,
+           9,
            &ndims_msfv,
            dsizes_msfv,
            NULL,
@@ -5811,7 +5838,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   msft = (void*)NclGetArgValue(
            4,
-           8,
+           9,
            &ndims_msft,
            dsizes_msft,
            NULL,
@@ -5845,7 +5872,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   cor = (void*)NclGetArgValue(
            5,
-           8,
+           9,
            &ndims_cor,
            dsizes_cor,
            NULL,
@@ -5870,27 +5897,40 @@ NhlErrorTypes wrf_avo_W( void )
     }
   }
 
-
 /*
  * Get argument # 6
  */
-  ds = (void*)NclGetArgValue(
+  dx = (void*)NclGetArgValue(
            6,
-           8,
+           9,
            NULL,
            NULL,
            NULL,
            NULL,
-           &type_ds,
+           &type_dx,
            2);
-  tmp_ds = coerce_input_double(ds,type_ds,1,0,NULL,NULL);
+  tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
 
 /*
  * Get argument # 7
  */
+  dy = (void*)NclGetArgValue(
+           6,
+           9,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           &type_dy,
+           2);
+  tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
+
+/*
+ * Get argument # 8
+ */
   opt = (int*)NclGetArgValue(
            7,
-           8,
+           9,
            NULL,
            NULL,
            NULL,
@@ -6102,8 +6142,8 @@ NhlErrorTypes wrf_avo_W( void )
     if(type_av == NCL_double) tmp_av = &((double*)av)[index_cor];
 
     NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_u, tmp_v, tmp_av, tmp_cor,
-                                             tmp_msfu, tmp_msfv, tmp_msft, ds,
-                                             ds, &nx, &ny, &nz, &nxp1, &nyp1);
+                                             tmp_msfu, tmp_msfv, tmp_msft, dx,
+                                             dy, &nx, &ny, &nz, &nxp1, &nyp1);
 
     if(type_av != NCL_double) {
       coerce_output_float_only(av,tmp_av,nznynx,index_cor);
