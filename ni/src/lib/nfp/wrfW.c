@@ -6253,7 +6253,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  */
   NclAttList  *attr_list;
   NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
+  NclStackEntry stack_entry;
 
 /*
  * Variables that can be set via attributes.
@@ -6281,7 +6281,6 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   double *tmp_loc;
   int ndims_loc, *dsizes_loc;
   NclBasicDataTypes type_loc;
-
 
 /*
  * Various
@@ -6330,7 +6329,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 
   for(i = 0; i < ndims_lat; i++) {
     if(dsizes_lon[i] != dsizes_lat[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: lat and lon must have the same dimensionality");
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: lat and lon must have the same dimension sizes");
       return(NhlFATAL);
     }
   }
@@ -6355,49 +6354,13 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   for(i = 0; i < ndims_lat; i++) npts *= dsizes_lat[i];
 
 /*
- * The output type defaults to float, unless either of the lat/lon arrays
- * are double.
- */
-  type_loc = NCL_float;
-
-/* 
- * Allocate space for coercing input arrays.  If any of the input
- * is already double, then we don't need to allocate space for
- * temporary arrays, because we'll just change the pointer into
- * the void array appropriately.
- */
-/*
- * Allocate space for tmp_lat.
- */
-  if(type_lat != NCL_double) {
-    tmp_lat = (double *)calloc(npts,sizeof(double));
-    if(tmp_lat == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    type_loc = NCL_double;
-  }
-
-/*
- * Allocate space for tmp_lon.
- */
-  if(type_lon != NCL_double) {
-    tmp_lon = (double *)calloc(npts,sizeof(double));
-    if(tmp_lon == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    type_loc = NCL_double;
-  }
-
-/*
  * Start checking for attributes attached to "opt". Some are optional,
- * and some are not.
+ * and some are not.  We'll check them later.
  */
+
+  set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
+  set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
+  set_knowni = set_knownj = set_dx = set_dy = set_latinc = set_loninc = False;
 
   stack_entry = _NclGetArg(2, 3, DONT_CARE);
   switch (stack_entry.kind) {
@@ -6434,11 +6397,6 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  *   dx, dy
  *   latinc, loninc
  */
-      set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
-      set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
-      set_knowni = set_knownj = set_dx = set_dy = False;
-      set_latinc = set_loninc = False;
-
       while (attr_list != NULL) {
         if(!strcmp(attr_list->attname, "MAP_PROJ") || 
            !strcmp(attr_list->attname, "map_proj")) {
@@ -6531,9 +6489,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 
 /*
  * Check for attributes that need to be set, or set to a certain value.
- */
-
-/*
+ *
  * Check MAP_PROJ. Must be set.
  */
   if(!set_map_proj) {
@@ -6599,13 +6555,8 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   }
 
 /*
- * Check POLE_LAT/POLE_LON. Must be set in some cases.
+ * Check POLE_LAT/POLE_LON.
  */
-  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
-      (!set_pole_lat || !set_pole_lon)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The POLE_LAT/POLE_LON attributes must be set if MAP_PROJ is 1, 2, or 3");
-    return(NhlFATAL);
-  }
   if(!set_pole_lat) {
     tmp_pole_lat  = (double *)calloc(1,sizeof(double));
     *tmp_pole_lat = 90.;
@@ -6658,7 +6609,6 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
   }
 
-
 /*
  * Check LATINC/LONINC. Must be set in some cases.
  */
@@ -6680,6 +6630,46 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   }
   else {
     tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
+  }
+
+/*
+ * The output type defaults to float, unless either of the lat/lon arrays
+ * are double.
+ */
+  type_loc = NCL_float;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ */
+/*
+ * Allocate space for tmp_lat.
+ */
+  if(type_lat != NCL_double) {
+    tmp_lat = (double *)calloc(npts,sizeof(double));
+    if(tmp_lat == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
+  }
+
+/*
+ * Allocate space for tmp_lon.
+ */
+  if(type_lon != NCL_double) {
+    tmp_lon = (double *)calloc(npts,sizeof(double));
+    if(tmp_lon == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
   }
 
 /* 
@@ -6829,7 +6819,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  */
   NclAttList  *attr_list;
   NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
+  NclStackEntry stack_entry;
 
 /*
  * Variables that can be set via attributes.
@@ -6857,7 +6847,6 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   double *tmp_loc;
   int ndims_loc, *dsizes_loc;
   NclBasicDataTypes type_loc;
-
 
 /*
  * Various
@@ -6931,49 +6920,13 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   for(i = 0; i < ndims_iloc; i++) npts *= dsizes_iloc[i];
 
 /*
- * The output type defaults to float, unless either of the lat/lon arrays
- * are double.
- */
-  type_loc = NCL_float;
-
-/* 
- * Allocate space for coercing input arrays.  If any of the input
- * is already double, then we don't need to allocate space for
- * temporary arrays, because we'll just change the pointer into
- * the void array appropriately.
- */
-/*
- * Allocate space for tmp_iloc.
- */
-  if(type_iloc != NCL_double) {
-    tmp_iloc = (double *)calloc(npts,sizeof(double));
-    if(tmp_iloc == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    type_loc = NCL_double;
-  }
-
-/*
- * Allocate space for tmp_jloc.
- */
-  if(type_jloc != NCL_double) {
-    tmp_jloc = (double *)calloc(npts,sizeof(double));
-    if(tmp_jloc == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    type_loc = NCL_double;
-  }
-
-/*
  * Start checking for attributes attached to "opt". Some are optional,
- * and some are not.
+ * and some are not.  We'll check them later.
  */
+
+  set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
+  set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
+  set_knowni = set_knownj = set_dx = set_dy = set_latinc = set_loninc = False;
 
   stack_entry = _NclGetArg(2, 3, DONT_CARE);
   switch (stack_entry.kind) {
@@ -7010,11 +6963,6 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  *   dx, dy
  *   latinc, loninc
  */
-      set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
-      set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
-      set_knowni = set_knownj = set_dx = set_dy = False;
-      set_latinc = set_loninc = False;
-
       while (attr_list != NULL) {
         if(!strcmp(attr_list->attname, "MAP_PROJ") || 
            !strcmp(attr_list->attname, "map_proj")) {
@@ -7107,9 +7055,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 
 /*
  * Check for attributes that need to be set, or set to a certain value.
- */
-
-/*
+ *
  * Check MAP_PROJ. Must be set.
  */
   if(!set_map_proj) {
@@ -7139,7 +7085,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 /*
  * Check TRUELAT2. Must be set in some cases.
  */
-  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) && !set_truelat2) {
+  if( map_proj == 1 && !set_truelat2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The TRUELAT2 attribute must be set if MAP_PROJ is 1");
     return(NhlFATAL);
   }
@@ -7175,13 +7121,8 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   }
 
 /*
- * Check POLE_LAT/POLE_LON. Must be set in some cases.
+ * Check POLE_LAT/POLE_LON.
  */
-  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
-      (!set_pole_lat || !set_pole_lon)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The POLE_LAT/POLE_LON attributes must be set if MAP_PROJ is 1, 2, or 3");
-    return(NhlFATAL);
-  }
   if(!set_pole_lat) {
     tmp_pole_lat  = (double *)calloc(1,sizeof(double));
     *tmp_pole_lat = 90.;
@@ -7192,7 +7133,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 
   if(!set_pole_lon) {
     tmp_pole_lon  = (double *)calloc(1,sizeof(double));
-    *tmp_pole_lon = 90.;
+    *tmp_pole_lon = 0.;
   }
   else {
     tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
@@ -7234,13 +7175,11 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
   }
 
-
 /*
  * Check LATINC/LONINC. Must be set in some cases.
  */
-  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
-      (!set_latinc || !set_loninc)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The LATINC/LONINC attributes must be set if MAP_PROJ is 1, 2, or 3");
+  if( map_proj == 6 && (!set_latinc || !set_loninc)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The LATINC/LONINC attributes must be set if MAP_PROJ is 6");
     return(NhlFATAL);
   }
   if(!set_latinc) {
@@ -7257,6 +7196,46 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   }
   else {
     tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
+  }
+
+/*
+ * The output type defaults to float, unless either of the lat/lon arrays
+ * are double.
+ */
+  type_loc = NCL_float;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ */
+/*
+ * Allocate space for tmp_iloc.
+ */
+  if(type_iloc != NCL_double) {
+    tmp_iloc = (double *)calloc(npts,sizeof(double));
+    if(tmp_iloc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
+  }
+
+/*
+ * Allocate space for tmp_jloc.
+ */
+  if(type_jloc != NCL_double) {
+    tmp_jloc = (double *)calloc(npts,sizeof(double));
+    if(tmp_jloc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
   }
 
 /* 
