@@ -1,7 +1,7 @@
 C NCLFORTSTART
-      SUBROUTINE LL_TO_IJ(MAP_PROJ,TRUELAT1,TRUELAT2,STDLON,LAT1,LON1,
-     +                    POLE_LAT,POLE_LON,KNOWNI,KNOWNJ,DX,DY,LATINC,
-     +                    LONINC,LAT,LON,LOC)
+      SUBROUTINE DLLTOIJ(MAP_PROJ,TRUELAT1,TRUELAT2,STDLON,LAT1,LON1,
+     +                   POLE_LAT,POLE_LON,KNOWNI,KNOWNJ,DX,DY,LATINC,
+     +                   LONINC,LAT,LON,LOC)
       DOUBLE PRECISION DELTALON1
       DOUBLE PRECISION TL1R
 
@@ -167,16 +167,16 @@ ccc     !lat-lon
       ELSE IF (MAP_PROJ.EQ.6) THEN
 
           IF (POLE_LAT.NE.90.D0) THEN
-              CALL ROTATE_COORDS(LAT,LON,OLAT,OLON,POLE_LAT,POLE_LON,
-     +                           STDLON,-1)
+              CALL ROTATECOORDS(LAT,LON,OLAT,OLON,POLE_LAT,POLE_LON,
+     +                          STDLON,-1)
               LAT = OLAT
               LON = OLON + STDLON
           END IF
 
 c         ! make sure center lat/lon is good
           IF (POLE_LAT.NE.90.D0) THEN
-              CALL ROTATE_COORDS(LAT1,LON1,OLAT,OLON,POLE_LAT,POLE_LON,
-     +                           STDLON,-1)
+              CALL ROTATECOORDS(LAT1,LON1,OLAT,OLON,POLE_LAT,POLE_LON,
+     +                          STDLON,-1)
               LAT1N = OLAT
               LON1N = OLON + STDLON
               DELTALAT = LAT - LAT1N
@@ -207,9 +207,9 @@ c         ! Compute i/j
 
 
 C NCLFORTSTART
-      SUBROUTINE IJ_TO_LL(MAP_PROJ,TRUELAT1,TRUELAT2,STDLON,LAT1,LON1,
-     +                    POLE_LAT,POLE_LON,KNOWNI,KNOWNJ,DX,DY,LATINC,
-     +                    LONINC,AI,AJ,LOC)
+      SUBROUTINE DIJTOLL(MAP_PROJ,TRUELAT1,TRUELAT2,STDLON,LAT1,LON1,
+     +                   POLE_LAT,POLE_LON,KNOWNI,KNOWNJ,DX,DY,LATINC,
+     +                   LONINC,AI,AJ,LOC)
       DOUBLE PRECISION GI2
       DOUBLE PRECISION ARCCOS
       DOUBLE PRECISION DELTALON1
@@ -424,8 +424,8 @@ ccc       ! Compute deltalat and deltalon
           DELTALON = INEW*LONINC
 
           IF (POLE_LAT.NE.90.D0) THEN
-              CALL ROTATE_COORDS(LAT1,LON1,OLAT,OLON,POLE_LAT,POLE_LON,
-     +                           STDLON,-1)
+              CALL ROTATECOORDS(LAT1,LON1,OLAT,OLON,POLE_LAT,POLE_LON,
+     +                          STDLON,-1)
               LAT1N = OLAT
               LON1N = OLON + STDLON
               LAT = DELTALAT + LAT1N
@@ -438,8 +438,8 @@ ccc       ! Compute deltalat and deltalon
 
           IF (POLE_LAT.NE.90.D0) THEN
               LON = LON - STDLON
-              CALL ROTATE_COORDS(LAT,LON,OLAT,OLON,POLE_LAT,POLE_LON,
-     +                           STDLON,1)
+              CALL ROTATECOORDS(LAT,LON,OLAT,OLON,POLE_LAT,POLE_LON,
+     +                          STDLON,1)
               LAT = OLAT
               LON = OLON
           END IF
@@ -461,8 +461,8 @@ ccc       ! Compute deltalat and deltalon
 
 
 C NCLFORTSTART
-      SUBROUTINE ROTATE_COORDS(ILAT,ILON,OLAT,OLON,LAT_NP,LON_NP,LON_0,
-     +                         DIRECTION)
+      SUBROUTINE ROTATECOORDS(ILAT,ILON,OLAT,OLON,LAT_NP,LON_NP,LON_0,
+     +                        DIRECTION)
       DOUBLE PRECISION ILAT,ILON
       DOUBLE PRECISION OLAT,OLON
       DOUBLE PRECISION LAT_NP,LON_NP,LON_0
