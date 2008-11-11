@@ -6481,6 +6481,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
           type_loninc = attr_list->attvalue->multidval.data_type;
           set_loninc  = True;
         }
+        attr_list = attr_list->next;
       }
     default:
       break;
@@ -6508,7 +6509,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The TRUELAT1 attribute must be set if MAP_PROJ is 1, 2, or 3");
     return(NhlFATAL);
   }
-  if(!set_truelat1) {
+  if(set_truelat1) {
     tmp_truelat1 = coerce_input_double(truelat1,type_truelat1,1,0,NULL,NULL);
   }
   else {
@@ -6523,7 +6524,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The TRUELAT2 attribute must be set if MAP_PROJ is 1");
     return(NhlFATAL);
   }
-  if(!set_truelat2) {
+  if(set_truelat2) {
     tmp_truelat2 = coerce_input_double(truelat2,type_truelat2,1,0,NULL,NULL);
   }
   else {
@@ -6557,20 +6558,20 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 /*
  * Check POLE_LAT/POLE_LON.
  */
-  if(!set_pole_lat) {
+  if(set_pole_lat) {
+    tmp_pole_lat = coerce_input_double(pole_lat,type_pole_lat,1,0,NULL,NULL);
+  }
+  else {
     tmp_pole_lat  = (double *)calloc(1,sizeof(double));
     *tmp_pole_lat = 90.;
   }
-  else {
-    tmp_pole_lat = coerce_input_double(pole_lat,type_pole_lat,1,0,NULL,NULL);
-  }
 
-  if(!set_pole_lon) {
+  if(set_pole_lon) {
+    tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
+  }
+  else {
     tmp_pole_lon  = (double *)calloc(1,sizeof(double));
     *tmp_pole_lon = 0.;
-  }
-  else {
-    tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
   }
 
 /*
@@ -6593,20 +6594,20 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The DX/DY attributes must be set if MAP_PROJ is 1, 2, or 3");
     return(NhlFATAL);
   }
-  if(!set_dx) {
+  if(set_dx) {
+    tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
+  }
+  else {
     tmp_dx  = (double *)calloc(1,sizeof(double));
     *tmp_dx = 0.;
   }
-  else {
-    tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
-  }
 
-  if(!set_dy) {
+  if(set_dy) {
+    tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
+  }
+  else {
     tmp_dy  = (double *)calloc(1,sizeof(double));
     *tmp_dy = 0.;
-  }
-  else {
-    tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
   }
 
 /*
@@ -6616,20 +6617,20 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The LATINC/LONINC attributes must be set if MAP_PROJ is 6");
     return(NhlFATAL);
   }
-  if(!set_latinc) {
+  if(set_latinc) {
+    tmp_latinc = coerce_input_double(latinc,type_latinc,1,0,NULL,NULL);
+  }
+  else {
     tmp_latinc  = (double *)calloc(1,sizeof(double));
     *tmp_latinc = 0.;
   }
-  else {
-    tmp_latinc = coerce_input_double(latinc,type_latinc,1,0,NULL,NULL);
-  }
 
-  if(!set_loninc) {
+  if(set_loninc) {
+    tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
+  }
+  else {
     tmp_loninc  = (double *)calloc(1,sizeof(double));
     *tmp_loninc = 0.;
-  }
-  else {
-    tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
   }
 
 /*
@@ -7047,6 +7048,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
           type_loninc = attr_list->attvalue->multidval.data_type;
           set_loninc  = True;
         }
+        attr_list = attr_list->next;
       }
     default:
       break;
@@ -7074,7 +7076,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The TRUELAT1 attribute must be set if MAP_PROJ is 1, 2, or 3");
     return(NhlFATAL);
   }
-  if(!set_truelat1) {
+  if(set_truelat1) {
     tmp_truelat1 = coerce_input_double(truelat1,type_truelat1,1,0,NULL,NULL);
   }
   else {
@@ -7089,7 +7091,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The TRUELAT2 attribute must be set if MAP_PROJ is 1");
     return(NhlFATAL);
   }
-  if(!set_truelat2) {
+  if(set_truelat2) {
     tmp_truelat2 = coerce_input_double(truelat2,type_truelat2,1,0,NULL,NULL);
   }
   else {
@@ -7123,20 +7125,20 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 /*
  * Check POLE_LAT/POLE_LON.
  */
-  if(!set_pole_lat) {
+  if(set_pole_lat) {
+    tmp_pole_lat = coerce_input_double(pole_lat,type_pole_lat,1,0,NULL,NULL);
+  }
+  else {
     tmp_pole_lat  = (double *)calloc(1,sizeof(double));
     *tmp_pole_lat = 90.;
   }
-  else {
-    tmp_pole_lat = coerce_input_double(pole_lat,type_pole_lat,1,0,NULL,NULL);
-  }
 
-  if(!set_pole_lon) {
+  if(set_pole_lon) {
+    tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
+  }
+  else {
     tmp_pole_lon  = (double *)calloc(1,sizeof(double));
     *tmp_pole_lon = 0.;
-  }
-  else {
-    tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
   }
 
 /*
@@ -7159,20 +7161,20 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The DX/DY attributes must be set if MAP_PROJ is 1, 2, or 3");
     return(NhlFATAL);
   }
-  if(!set_dx) {
+  if(set_dx) {
+    tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
+  }
+  else {
     tmp_dx  = (double *)calloc(1,sizeof(double));
     *tmp_dx = 0.;
   }
-  else {
-    tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
-  }
 
-  if(!set_dy) {
+  if(set_dy) {
+    tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
+  }
+  else {
     tmp_dy  = (double *)calloc(1,sizeof(double));
     *tmp_dy = 0.;
-  }
-  else {
-    tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
   }
 
 /*
@@ -7182,20 +7184,20 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The LATINC/LONINC attributes must be set if MAP_PROJ is 6");
     return(NhlFATAL);
   }
-  if(!set_latinc) {
+  if(set_latinc) {
+    tmp_latinc = coerce_input_double(latinc,type_latinc,1,0,NULL,NULL);
+  }
+  else {
     tmp_latinc  = (double *)calloc(1,sizeof(double));
     *tmp_latinc = 0.;
   }
-  else {
-    tmp_latinc = coerce_input_double(latinc,type_latinc,1,0,NULL,NULL);
-  }
 
-  if(!set_loninc) {
+  if(set_loninc) {
+    tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
+  }
+  else {
     tmp_loninc  = (double *)calloc(1,sizeof(double));
     *tmp_loninc = 0.;
-  }
-  else {
-    tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
   }
 
 /*
