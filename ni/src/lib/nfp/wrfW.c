@@ -69,6 +69,12 @@ extern void NGCALLF(dlltoij,DLLTOIJ)(int *, double *, double *, double *,
                                      double *, double *, double *, double *, 
                                      double *);
 
+extern void NGCALLF(dijtoll,DIJTOLL)(int *, double *, double *, double *, 
+                                     double *, double *, double *, double *, 
+                                     double *, double *, double *, double *, 
+                                     double *, double *, double *, double *, 
+                                     double *);
+
 extern NclDimRec *get_wrf_dim_info(int,int,int,int*);
 
 extern void var_zero(double *, int);
@@ -6535,7 +6541,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     return(NhlFATAL);
   }
   else if(map_proj != 1 && map_proj != 2 && map_proj != 3 && map_proj != 6) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The MAP_PROJ attribute must be set TO 1, 2, 3, or 6");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The MAP_PROJ attribute must be set to 1, 2, 3, or 6");
     return(NhlFATAL);
   }
 
@@ -6557,7 +6563,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 /*
  * Check TRUELAT2. Must be set in some cases.
  */
-  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) && !set_truelat2) {
+  if( map_proj == 1 && !set_truelat2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The TRUELAT2 attribute must be set if MAP_PROJ is 1");
     return(NhlFATAL);
   }
@@ -6610,7 +6616,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 
   if(!set_pole_lon) {
     tmp_pole_lon  = (double *)calloc(1,sizeof(double));
-    *tmp_pole_lon = 90.;
+    *tmp_pole_lon = 0.;
   }
   else {
     tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
@@ -6656,9 +6662,8 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 /*
  * Check LATINC/LONINC. Must be set in some cases.
  */
-  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
-      (!set_latinc || !set_loninc)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The LATINC/LONINC attributes must be set if MAP_PROJ is 1, 2, or 3");
+  if( map_proj == 6 && (!set_latinc || !set_loninc)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The LATINC/LONINC attributes must be set if MAP_PROJ is 6");
     return(NhlFATAL);
   }
   if(!set_latinc) {
@@ -7112,7 +7117,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     return(NhlFATAL);
   }
   else if(map_proj != 1 && map_proj != 2 && map_proj != 3 && map_proj != 6) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The MAP_PROJ attribute must be set TO 1, 2, 3, or 6");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The MAP_PROJ attribute must be set to 1, 2, 3, or 6");
     return(NhlFATAL);
   }
 
@@ -7325,7 +7330,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(dlltoij,DLLTOIJ)(&map_proj, tmp_truelat1, tmp_truelat2, 
+    NGCALLF(dijtoll,DIJTOLL)(&map_proj, tmp_truelat1, tmp_truelat2, 
                              tmp_stand_lon, tmp_lat1, tmp_lon1, tmp_pole_lat,
                              tmp_pole_lon, tmp_knowni, tmp_knownj, tmp_dx,
                              tmp_dy, tmp_latinc, tmp_loninc, tmp_iloc, 
