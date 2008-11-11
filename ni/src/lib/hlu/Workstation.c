@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.c,v 1.107 2007-10-26 18:57:30 dbrown Exp $
+ *      $Id: Workstation.c,v 1.108 2008-11-11 01:38:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5934,43 +5934,46 @@ _NhlSetFillInfo
 	int			edge_dash_dollar_size;
 	
 
-	if (wkfp->edges_on && wkfp->edge_dash_pattern < 0) {
-		/* NhlWARNING - but it's a void function right now */
-		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "_NhlSetFillInfo: invalid edge dash pattern index");
-		wkfp->edge_dash_pattern = NhlSOLIDLINE;
-	}
-	else if (wkfp->edges_on && wkfp->edge_dash_pattern > 0) {
-		memset((void *) buffer, (char) 0, 80 * sizeof(char));
+	if (wkfp->edges_on) {
+		c_plotif(0.0,0.0,2); /* flush the buffer before any changes to line attributes */
 
-		c_plotif(0.0,0.0,2);
-
-		c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
-		if(_NhlLLErrCheckPrnt(NhlFATAL,func))
-			return;
-
-		x0 = fl;
-		x1 = fl + wkfp->edge_dash_seglen;
-		x0 = (float)c_kfpy(x0);
-		x1 = (float)c_kfpy(x1);
-	
-		if ((ix = wkfp->edge_dash_pattern) > wk_p->dash_table_len) {
-			/* NhlINFO - but it's a void function right now */
-			NhlPError(NhlINFO,NhlEUNKNOWN,
-	"_NhlSetFillInfo: using mod function on dash pattern index: %d", ix);
-
-			ix = 1 + (ix - 1) % wk_p->dash_table_len;
+		if (wkfp->edge_dash_pattern < 0) {
+			/* NhlWARNING - but it's a void function right now */
+			NhlPError(NhlWARNING,NhlEUNKNOWN,
+				  "_NhlSetFillInfo: invalid edge dash pattern index");
+			wkfp->edge_dash_pattern = NhlSOLIDLINE;
 		}
-		
-		edge_dash_dollar_size = (x1 - x0) /
-			strlen(wk_p->dash_table[ix]->dpat) + 0.5;
-		if(edge_dash_dollar_size < 1)
-                        edge_dash_dollar_size = 1;
-		
-		strcpy(buffer,wk_p->dash_table[ix]->dpat);
+		else if (wkfp->edges_on && wkfp->edge_dash_pattern > 0) {
+			memset((void *) buffer, (char) 0, 80 * sizeof(char));
 
-		c_dashdc(buffer,edge_dash_dollar_size,1);
-		(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+
+			c_getset(&fl,&fr,&fb,&ft,&ul,&ur,&ub,&ut,&ll);
+			if(_NhlLLErrCheckPrnt(NhlFATAL,func))
+				return;
+
+			x0 = fl;
+			x1 = fl + wkfp->edge_dash_seglen;
+			x0 = (float)c_kfpy(x0);
+			x1 = (float)c_kfpy(x1);
+	
+			if ((ix = wkfp->edge_dash_pattern) > wk_p->dash_table_len) {
+				/* NhlINFO - but it's a void function right now */
+				NhlPError(NhlINFO,NhlEUNKNOWN,
+					  "_NhlSetFillInfo: using mod function on dash pattern index: %d", ix);
+
+				ix = 1 + (ix - 1) % wk_p->dash_table_len;
+			}
+		
+			edge_dash_dollar_size = (x1 - x0) /
+				strlen(wk_p->dash_table[ix]->dpat) + 0.5;
+			if(edge_dash_dollar_size < 1)
+				edge_dash_dollar_size = 1;
+		
+			strcpy(buffer,wk_p->dash_table[ix]->dpat);
+
+			c_dashdc(buffer,edge_dash_dollar_size,1);
+			(void)_NhlLLErrCheckPrnt(NhlWARNING,func);
+		}
 	}
 		
 /*
