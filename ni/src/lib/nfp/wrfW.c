@@ -60,8 +60,14 @@ extern void NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(double *, double *,
                                                      int *, int *, int *);
 
 extern void NGCALLF(calcdbz,CALCDBZ)(double *, double *, double *, double *,
-				     double *, double *, double *, int *, 
-				     int *, int *, int *, int *, int *);
+                                     double *, double *, double *, int *, 
+                                     int *, int *, int *, int *, int *);
+
+extern void NGCALLF(dlltoij,DLLTOIJ)(int *, double *, double *, double *, 
+                                     double *, double *, double *, double *, 
+                                     double *, double *, double *, double *, 
+                                     double *, double *, double *, double *, 
+                                     double *);
 
 extern NclDimRec *get_wrf_dim_info(int,int,int,int*);
 
@@ -4745,7 +4751,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
     if(type_prs != NCL_double) {
       coerce_subset_input_double(prs,tmp_prs,index_dbz,type_prs,nbtsnwe,
-				 0,NULL,NULL);
+                                 0,NULL,NULL);
     }
     else {
       tmp_prs = &((double*)prs)[index_dbz];
@@ -4756,7 +4762,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
     if(type_tmk != NCL_double) {
       coerce_subset_input_double(tmk,tmp_tmk,index_dbz,type_tmk,nbtsnwe,
-				 0,NULL,NULL);
+                                 0,NULL,NULL);
     }
     else {
       tmp_tmk = &((double*)tmk)[index_dbz];
@@ -4767,7 +4773,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
     if(type_qvp != NCL_double) {
       coerce_subset_input_double(qvp,tmp_qvp,index_dbz,type_qvp,nbtsnwe,
-				 0,NULL,NULL);
+                                 0,NULL,NULL);
     }
     else {
       tmp_qvp = &((double*)qvp)[index_dbz];
@@ -4778,7 +4784,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
     if(type_qra != NCL_double) {
       coerce_subset_input_double(qra,tmp_qra,index_dbz,type_qra,nbtsnwe,
-				 0,NULL,NULL);
+                                 0,NULL,NULL);
     }
     else {
       tmp_qra = &((double*)qra)[index_dbz];
@@ -4789,7 +4795,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
     if(type_qsn != NCL_double) {
       coerce_subset_input_double(qsn,tmp_qsn,index_dbz,type_qsn,nbtsnwe,
-				 0,NULL,NULL);
+                                 0,NULL,NULL);
     }
     else {
       tmp_qsn = &((double*)qsn)[index_dbz];
@@ -4800,7 +4806,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
     if(type_qgr != NCL_double) {
       coerce_subset_input_double(qgr,tmp_qgr,index_dbz,type_qgr,nbtsnwe,
-				 0,NULL,NULL);
+                                 0,NULL,NULL);
     }
     else {
       tmp_qgr = &((double*)qgr)[index_dbz];
@@ -4815,8 +4821,8 @@ NhlErrorTypes wrf_dbz_W( void )
  * Call the Fortran routine.
  */
     NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
-			     tmp_qsn, tmp_qgr, &wedim, &sndim, &btdim, 
-			     sn0, ivarint, iliqskin);
+                             tmp_qsn, tmp_qgr, &wedim, &sndim, &btdim, 
+                             sn0, ivarint, iliqskin);
 
 /*
  * Coerce output back to float if necessary.
@@ -6142,7 +6148,7 @@ NhlErrorTypes wrf_avo_W( void )
     if(type_av == NCL_double) tmp_av = &((double*)av)[index_cor];
 
     NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_av, tmp_u, tmp_v, tmp_msfu,
-					     tmp_msfv, tmp_msft, tmp_cor,dx,
+                                             tmp_msfv, tmp_msft, tmp_cor,dx,
                                              dy, &nx, &ny, &nz, &nxp1, &nyp1);
 
     if(type_av != NCL_double) {
@@ -6207,6 +6213,1159 @@ NhlErrorTypes wrf_avo_W( void )
   _NclPlaceReturn(return_data);
   return(NhlNOERROR);
 
+}
+
+NhlErrorTypes wrf_ll_to_ij_W( void )
+{
+
+/*
+ * Input variables
+ */
+/*
+ * Argument # 0
+ */
+  void *lat;
+  double *tmp_lat;
+  int ndims_lat, dsizes_lat[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_lat;
+
+/*
+ * Argument # 1
+ */
+  void *lon;
+  double *tmp_lon;
+  int ndims_lon, dsizes_lon[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_lon;
+
+/*
+ * Argument # 2
+ */
+  logical *opt;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+
+/*
+ * Variables that can be set via attributes.
+ */
+  int map_proj;
+  void *truelat1, *truelat2, *stand_lon, *lat1, *lon1, *pole_lat, *pole_lon;
+  void *knowni, *knownj, *dx, *dy, *latinc, *loninc;
+
+  double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon, *tmp_lat1, *tmp_lon1;
+  double *tmp_pole_lat, *tmp_pole_lon, *tmp_knowni, *tmp_knownj, *tmp_dx;
+  double *tmp_dy, *tmp_latinc, *tmp_loninc;
+
+  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_lat1;
+  NclBasicDataTypes type_lon1, type_pole_lat, type_pole_lon, type_knowni;
+  NclBasicDataTypes type_knownj, type_dx, type_dy, type_latinc, type_loninc;
+
+  logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_lat1;
+  logical set_lon1, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
+  logical set_dx, set_dy, set_latinc, set_loninc;
+
+/*
+ * Return variable
+ */
+  void *loc;
+  double *tmp_loc;
+  int ndims_loc, *dsizes_loc;
+  NclBasicDataTypes type_loc;
+
+
+/*
+ * Various
+ */
+  int npts, index_loc, i, ret;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  lat = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_lat,
+           dsizes_lat,
+           NULL,
+           NULL,
+           &type_lat,
+           2);
+
+/*
+ * Get argument # 1
+ */
+  lon = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_lon,
+           dsizes_lon,
+           NULL,
+           NULL,
+           &type_lon,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_lon != ndims_lat) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: lat and lon must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+
+  for(i = 0; i < ndims_lat; i++) {
+    if(dsizes_lon[i] != dsizes_lat[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: lat and lon must have the same dimensionality");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Get argument # 2
+ */
+  opt = (logical*)NclGetArgValue(
+           2,
+           3,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * Calculate size of lat/lon dimensions.
+ */
+  npts = 1;
+  for(i = 0; i < ndims_lat; i++) npts *= dsizes_lat[i];
+
+/*
+ * The output type defaults to float, unless either of the lat/lon arrays
+ * are double.
+ */
+  type_loc = NCL_float;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ */
+/*
+ * Allocate space for tmp_lat.
+ */
+  if(type_lat != NCL_double) {
+    tmp_lat = (double *)calloc(npts,sizeof(double));
+    if(tmp_lat == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
+  }
+
+/*
+ * Allocate space for tmp_lon.
+ */
+  if(type_lon != NCL_double) {
+    tmp_lon = (double *)calloc(npts,sizeof(double));
+    if(tmp_lon == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
+  }
+
+/*
+ * Start checking for attributes attached to "opt". Some are optional,
+ * and some are not.
+ */
+
+  stack_entry = _NclGetArg(2, 3, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments.
+ */
+    if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. We are looking for:
+ *
+ *   map_proj
+ *   truelat1, truelat2
+ *   stand_lon
+ *   lat1, lon1
+ *   pole_lat, pole_lon
+ *   knowni, knownj
+ *   dx, dy
+ *   latinc, loninc
+ */
+      set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
+      set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
+      set_knowni = set_knownj = set_dx = set_dy = False;
+      set_latinc = set_loninc = False;
+
+      while (attr_list != NULL) {
+        if(!strcmp(attr_list->attname, "MAP_PROJ") || 
+           !strcmp(attr_list->attname, "map_proj")) {
+          map_proj = *(int *)attr_list->attvalue->multidval.val;
+          set_map_proj = True;
+        }
+        else if(!strcmp(attr_list->attname, "TRUELAT1") || 
+                !strcmp(attr_list->attname, "truelat1")) {
+          truelat1      = attr_list->attvalue->multidval.val;
+          type_truelat1 = attr_list->attvalue->multidval.data_type;
+          set_truelat1  = True;
+        }
+        else if(!strcmp(attr_list->attname, "TRUELAT2") || 
+                !strcmp(attr_list->attname, "truelat2")) {
+          truelat2      = attr_list->attvalue->multidval.val;
+          type_truelat2 = attr_list->attvalue->multidval.data_type;
+          set_truelat2  = True;
+        }
+        else if(!strcmp(attr_list->attname, "STAND_LON") || 
+                !strcmp(attr_list->attname, "stand_lon")) {
+          stand_lon      = attr_list->attvalue->multidval.val;
+          type_stand_lon = attr_list->attvalue->multidval.data_type;
+          set_stand_lon  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LAT1") || 
+                !strcmp(attr_list->attname, "lat1")) {
+          lat1      = attr_list->attvalue->multidval.val;
+          type_lat1 = attr_list->attvalue->multidval.data_type;
+          set_lat1  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LON1") || 
+                !strcmp(attr_list->attname, "lon1")) {
+          lon1      = attr_list->attvalue->multidval.val;
+          type_lon1 = attr_list->attvalue->multidval.data_type;
+          set_lon1  = True;
+        }
+        else if(!strcmp(attr_list->attname, "POLE_LAT") || 
+                !strcmp(attr_list->attname, "pole_lat")) {
+          pole_lat      = attr_list->attvalue->multidval.val;
+          type_pole_lat = attr_list->attvalue->multidval.data_type;
+          set_pole_lat  = True;
+        }
+        else if(!strcmp(attr_list->attname, "POLE_LON") || 
+                !strcmp(attr_list->attname, "pole_lon")) {
+          pole_lon      = attr_list->attvalue->multidval.val;
+          type_pole_lon = attr_list->attvalue->multidval.data_type;
+          set_pole_lon  = True;
+        }
+        else if(!strcmp(attr_list->attname, "KNOWNI") || 
+                !strcmp(attr_list->attname, "knowni")) {
+          knowni      = attr_list->attvalue->multidval.val;
+          type_knowni = attr_list->attvalue->multidval.data_type;
+          set_knowni  = True;
+        }
+        else if(!strcmp(attr_list->attname, "KNOWNJ") || 
+                !strcmp(attr_list->attname, "knownj")) {
+          knownj      = attr_list->attvalue->multidval.val;
+          type_knownj = attr_list->attvalue->multidval.data_type;
+          set_knownj  = True;
+        }
+        else if(!strcmp(attr_list->attname, "DX") || 
+                !strcmp(attr_list->attname, "dx")) {
+          dx      = attr_list->attvalue->multidval.val;
+          type_dx = attr_list->attvalue->multidval.data_type;
+          set_dx  = True;
+        }
+        else if(!strcmp(attr_list->attname, "DY") || 
+                !strcmp(attr_list->attname, "dy")) {
+          dy      = attr_list->attvalue->multidval.val;
+          type_dy = attr_list->attvalue->multidval.data_type;
+          set_dy  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LATINC") || 
+                !strcmp(attr_list->attname, "latinc")) {
+          latinc      = attr_list->attvalue->multidval.val;
+          type_latinc = attr_list->attvalue->multidval.data_type;
+          set_latinc  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LONINC") || 
+                !strcmp(attr_list->attname, "loninc")) {
+          loninc      = attr_list->attvalue->multidval.val;
+          type_loninc = attr_list->attvalue->multidval.data_type;
+          set_loninc  = True;
+        }
+      }
+    default:
+      break;
+    }
+  }
+
+/*
+ * Check for attributes that need to be set, or set to a certain value.
+ */
+
+/*
+ * Check MAP_PROJ. Must be set.
+ */
+  if(!set_map_proj) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The MAP_PROJ attribute must be set");
+    return(NhlFATAL);
+  }
+  else if(map_proj != 1 && map_proj != 2 && map_proj != 3 && map_proj != 6) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The MAP_PROJ attribute must be set TO 1, 2, 3, or 6");
+    return(NhlFATAL);
+  }
+
+/*
+ * Check TRUELAT1. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) && !set_truelat1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The TRUELAT1 attribute must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_truelat1) {
+    tmp_truelat1 = coerce_input_double(truelat1,type_truelat1,1,0,NULL,NULL);
+  }
+  else {
+    tmp_truelat1  = (double *)calloc(1,sizeof(double));
+    *tmp_truelat1 = 0.;
+  }
+
+/*
+ * Check TRUELAT2. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) && !set_truelat2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The TRUELAT2 attribute must be set if MAP_PROJ is 1");
+    return(NhlFATAL);
+  }
+  if(!set_truelat2) {
+    tmp_truelat2 = coerce_input_double(truelat2,type_truelat2,1,0,NULL,NULL);
+  }
+  else {
+    tmp_truelat2  = (double *)calloc(1,sizeof(double));
+    *tmp_truelat2 = 0.;
+  }
+
+/*
+ * Check STAND_LON. Must be set.
+ */
+  if(!set_stand_lon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The STAND_LON attribute must be set");
+    return(NhlFATAL);
+  }
+  else {
+    tmp_stand_lon = coerce_input_double(stand_lon,type_stand_lon,1,0,NULL,NULL);
+  }
+
+/*
+ * Check LAT1/LON1. Must be set.
+ */
+  if(!set_lat1 || !set_lon1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The LAT1/LAT2 attributes must be set");
+    return(NhlFATAL);
+  }
+  else {
+    tmp_lat1 = coerce_input_double(lat1,type_lat1,1,0,NULL,NULL);
+    tmp_lon1 = coerce_input_double(lon1,type_lon1,1,0,NULL,NULL);
+  }
+
+/*
+ * Check POLE_LAT/POLE_LON. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
+      (!set_pole_lat || !set_pole_lon)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The POLE_LAT/POLE_LON attributes must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_pole_lat) {
+    tmp_pole_lat  = (double *)calloc(1,sizeof(double));
+    *tmp_pole_lat = 90.;
+  }
+  else {
+    tmp_pole_lat = coerce_input_double(pole_lat,type_pole_lat,1,0,NULL,NULL);
+  }
+
+  if(!set_pole_lon) {
+    tmp_pole_lon  = (double *)calloc(1,sizeof(double));
+    *tmp_pole_lon = 90.;
+  }
+  else {
+    tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
+  }
+
+/*
+ * Check KNOWNI/KNOWNJ. Must be set.
+ */
+  if(!set_knowni || !set_knownj) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The KNOWNI/KNOWNJ attributes must be set");
+    return(NhlFATAL);
+  }
+  else {
+    tmp_knowni = coerce_input_double(knowni,type_knowni,1,0,NULL,NULL);
+    tmp_knownj = coerce_input_double(knownj,type_knownj,1,0,NULL,NULL);
+  }
+
+/*
+ * Check DX/DY. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
+      (!set_dx || !set_dy)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The DX/DY attributes must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_dx) {
+    tmp_dx  = (double *)calloc(1,sizeof(double));
+    *tmp_dx = 0.;
+  }
+  else {
+    tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
+  }
+
+  if(!set_dy) {
+    tmp_dy  = (double *)calloc(1,sizeof(double));
+    *tmp_dy = 0.;
+  }
+  else {
+    tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
+  }
+
+
+/*
+ * Check LATINC/LONINC. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
+      (!set_latinc || !set_loninc)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The LATINC/LONINC attributes must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_latinc) {
+    tmp_latinc  = (double *)calloc(1,sizeof(double));
+    *tmp_latinc = 0.;
+  }
+  else {
+    tmp_latinc = coerce_input_double(latinc,type_latinc,1,0,NULL,NULL);
+  }
+
+  if(!set_loninc) {
+    tmp_loninc  = (double *)calloc(1,sizeof(double));
+    *tmp_loninc = 0.;
+  }
+  else {
+    tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
+  }
+
+/* 
+ * Allocate space for output array.
+ */
+  if(type_loc != NCL_double) {
+    loc     = (void *)calloc(2*npts, sizeof(float));
+    tmp_loc = (double *)calloc(2,sizeof(double));
+    if(tmp_loc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    loc = (void *)calloc(2*npts, sizeof(double));
+  }
+  if(loc == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/* 
+ * Allocate space for output dimension sizes and set them.
+ */
+  if(is_scalar(ndims_lat,dsizes_lat)) {
+    ndims_loc = 1;
+  }
+  else {
+    ndims_loc = ndims_lat + 1;
+  }
+  dsizes_loc = (int*)calloc(ndims_loc,sizeof(int));  
+  if( dsizes_loc == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_loc-1; i++) dsizes_loc[i] = dsizes_lat[i];
+  dsizes_loc[ndims_loc-1] = 2;
+
+/*
+ * Loop across all lat/lon points and call the Fortran routine for each
+ * point.
+ */
+  index_loc = 0;
+
+  for(i = 0; i < npts; i++) {
+/*
+ * Coerce subsection of lat (tmp_lat) to double if necessary.
+ */
+    if(type_lat != NCL_double) {
+      coerce_subset_input_double(lat,tmp_lat,i,type_lat,1,0,NULL,NULL);
+    }
+    else {
+      tmp_lat = &((double*)lat)[i];
+    }
+
+/*
+ * Coerce subsection of lon (tmp_lon) to double if necessary.
+ */
+    if(type_lon != NCL_double) {
+      coerce_subset_input_double(lon,tmp_lon,i,type_lon,1,0,NULL,NULL);
+    }
+    else {
+      tmp_lon = &((double*)lon)[i];
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_loc == NCL_double) tmp_loc = &((double*)loc)[index_loc];
+
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(dlltoij,DLLTOIJ)(&map_proj, tmp_truelat1, tmp_truelat2, 
+                             tmp_stand_lon, tmp_lat1, tmp_lon1, tmp_pole_lat,
+                             tmp_pole_lon, tmp_knowni, tmp_knownj, tmp_dx,
+                             tmp_dy, tmp_latinc, tmp_loninc, tmp_lat, 
+                             tmp_lon, tmp_loc);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_loc == NCL_float) {
+      coerce_output_float_only(loc,tmp_loc,2,index_loc);
+    }
+    index_loc += 2;
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if(type_lat       != NCL_double) NclFree(tmp_lat);
+  if(type_lon       != NCL_double) NclFree(tmp_lon);
+  if(type_truelat1  != NCL_double) NclFree(tmp_truelat1);
+  if(type_truelat2  != NCL_double) NclFree(tmp_truelat2);
+  if(type_stand_lon != NCL_double) NclFree(tmp_stand_lon);
+  if(type_lat1      != NCL_double) NclFree(tmp_lat1);
+  if(type_lon1      != NCL_double) NclFree(tmp_lon1);
+  if(type_pole_lat  != NCL_double) NclFree(tmp_pole_lat);
+  if(type_pole_lon  != NCL_double) NclFree(tmp_pole_lon);
+  if(type_knowni    != NCL_double) NclFree(tmp_knowni);
+  if(type_knownj    != NCL_double) NclFree(tmp_knownj);
+  if(type_dx        != NCL_double) NclFree(tmp_dx);
+  if(type_dy        != NCL_double) NclFree(tmp_dy);
+  if(type_latinc    != NCL_double) NclFree(tmp_latinc);
+  if(type_loninc    != NCL_double) NclFree(tmp_loninc);
+  if(type_loc       != NCL_double) NclFree(tmp_loc);
+
+/*
+ * Return value back to NCL script.
+ */
+  ret = NclReturnValue(loc,ndims_loc,dsizes_loc,NULL,type_loc,0);
+  NclFree(dsizes_loc);
+  return(ret);
+}
+
+
+NhlErrorTypes wrf_ij_to_ll_W( void )
+{
+
+/*
+ * Input variables
+ */
+/*
+ * Argument # 0
+ */
+  void *iloc;
+  double *tmp_iloc;
+  int ndims_iloc, dsizes_iloc[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_iloc;
+
+/*
+ * Argument # 1
+ */
+  void *jloc;
+  double *tmp_jloc;
+  int ndims_jloc, dsizes_jloc[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_jloc;
+
+/*
+ * Argument # 2
+ */
+  logical *opt;
+
+/*
+ * Variables for retrieving attributes from "opt".
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+
+/*
+ * Variables that can be set via attributes.
+ */
+  int map_proj;
+  void *truelat1, *truelat2, *stand_lon, *lat1, *lon1, *pole_lat, *pole_lon;
+  void *knowni, *knownj, *dx, *dy, *latinc, *loninc;
+
+  double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon, *tmp_lat1, *tmp_lon1;
+  double *tmp_pole_lat, *tmp_pole_lon, *tmp_knowni, *tmp_knownj, *tmp_dx;
+  double *tmp_dy, *tmp_latinc, *tmp_loninc;
+
+  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_lat1;
+  NclBasicDataTypes type_lon1, type_pole_lat, type_pole_lon, type_knowni;
+  NclBasicDataTypes type_knownj, type_dx, type_dy, type_latinc, type_loninc;
+
+  logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_lat1;
+  logical set_lon1, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
+  logical set_dx, set_dy, set_latinc, set_loninc;
+
+/*
+ * Return variable
+ */
+  void *loc;
+  double *tmp_loc;
+  int ndims_loc, *dsizes_loc;
+  NclBasicDataTypes type_loc;
+
+
+/*
+ * Various
+ */
+  int npts, index_loc, i, ret;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  iloc = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_iloc,
+           dsizes_iloc,
+           NULL,
+           NULL,
+           &type_iloc,
+           2);
+
+/*
+ * Get argument # 1
+ */
+  jloc = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_jloc,
+           dsizes_jloc,
+           NULL,
+           NULL,
+           &type_jloc,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_jloc != ndims_iloc) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: lat and lon must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+
+  for(i = 0; i < ndims_iloc; i++) {
+    if(dsizes_jloc[i] != dsizes_iloc[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: lat and lon must have the same dimensionality");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Get argument # 2
+ */
+  opt = (logical*)NclGetArgValue(
+           2,
+           3,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
+
+/*
+ * Calculate size of lat/lon dimensions.
+ */
+  npts = 1;
+  for(i = 0; i < ndims_iloc; i++) npts *= dsizes_iloc[i];
+
+/*
+ * The output type defaults to float, unless either of the lat/lon arrays
+ * are double.
+ */
+  type_loc = NCL_float;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ */
+/*
+ * Allocate space for tmp_iloc.
+ */
+  if(type_iloc != NCL_double) {
+    tmp_iloc = (double *)calloc(npts,sizeof(double));
+    if(tmp_iloc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
+  }
+
+/*
+ * Allocate space for tmp_jloc.
+ */
+  if(type_jloc != NCL_double) {
+    tmp_jloc = (double *)calloc(npts,sizeof(double));
+    if(tmp_jloc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_loc = NCL_double;
+  }
+
+/*
+ * Start checking for attributes attached to "opt". Some are optional,
+ * and some are not.
+ */
+
+  stack_entry = _NclGetArg(2, 3, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no optional args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments.
+ */
+    if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them. We are looking for:
+ *
+ *   map_proj
+ *   truelat1, truelat2
+ *   stand_lon
+ *   lat1, lon1
+ *   pole_lat, pole_lon
+ *   knowni, knownj
+ *   dx, dy
+ *   latinc, loninc
+ */
+      set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
+      set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
+      set_knowni = set_knownj = set_dx = set_dy = False;
+      set_latinc = set_loninc = False;
+
+      while (attr_list != NULL) {
+        if(!strcmp(attr_list->attname, "MAP_PROJ") || 
+           !strcmp(attr_list->attname, "map_proj")) {
+          map_proj = *(int *)attr_list->attvalue->multidval.val;
+          set_map_proj = True;
+        }
+        else if(!strcmp(attr_list->attname, "TRUELAT1") || 
+                !strcmp(attr_list->attname, "truelat1")) {
+          truelat1      = attr_list->attvalue->multidval.val;
+          type_truelat1 = attr_list->attvalue->multidval.data_type;
+          set_truelat1  = True;
+        }
+        else if(!strcmp(attr_list->attname, "TRUELAT2") || 
+                !strcmp(attr_list->attname, "truelat2")) {
+          truelat2      = attr_list->attvalue->multidval.val;
+          type_truelat2 = attr_list->attvalue->multidval.data_type;
+          set_truelat2  = True;
+        }
+        else if(!strcmp(attr_list->attname, "STAND_LON") || 
+                !strcmp(attr_list->attname, "stand_lon")) {
+          stand_lon      = attr_list->attvalue->multidval.val;
+          type_stand_lon = attr_list->attvalue->multidval.data_type;
+          set_stand_lon  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LAT1") || 
+                !strcmp(attr_list->attname, "lat1")) {
+          lat1      = attr_list->attvalue->multidval.val;
+          type_lat1 = attr_list->attvalue->multidval.data_type;
+          set_lat1  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LON1") || 
+                !strcmp(attr_list->attname, "lon1")) {
+          lon1      = attr_list->attvalue->multidval.val;
+          type_lon1 = attr_list->attvalue->multidval.data_type;
+          set_lon1  = True;
+        }
+        else if(!strcmp(attr_list->attname, "POLE_LAT") || 
+                !strcmp(attr_list->attname, "pole_lat")) {
+          pole_lat      = attr_list->attvalue->multidval.val;
+          type_pole_lat = attr_list->attvalue->multidval.data_type;
+          set_pole_lat  = True;
+        }
+        else if(!strcmp(attr_list->attname, "POLE_LON") || 
+                !strcmp(attr_list->attname, "pole_lon")) {
+          pole_lon      = attr_list->attvalue->multidval.val;
+          type_pole_lon = attr_list->attvalue->multidval.data_type;
+          set_pole_lon  = True;
+        }
+        else if(!strcmp(attr_list->attname, "KNOWNI") || 
+                !strcmp(attr_list->attname, "knowni")) {
+          knowni      = attr_list->attvalue->multidval.val;
+          type_knowni = attr_list->attvalue->multidval.data_type;
+          set_knowni  = True;
+        }
+        else if(!strcmp(attr_list->attname, "KNOWNJ") || 
+                !strcmp(attr_list->attname, "knownj")) {
+          knownj      = attr_list->attvalue->multidval.val;
+          type_knownj = attr_list->attvalue->multidval.data_type;
+          set_knownj  = True;
+        }
+        else if(!strcmp(attr_list->attname, "DX") || 
+                !strcmp(attr_list->attname, "dx")) {
+          dx      = attr_list->attvalue->multidval.val;
+          type_dx = attr_list->attvalue->multidval.data_type;
+          set_dx  = True;
+        }
+        else if(!strcmp(attr_list->attname, "DY") || 
+                !strcmp(attr_list->attname, "dy")) {
+          dy      = attr_list->attvalue->multidval.val;
+          type_dy = attr_list->attvalue->multidval.data_type;
+          set_dy  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LATINC") || 
+                !strcmp(attr_list->attname, "latinc")) {
+          latinc      = attr_list->attvalue->multidval.val;
+          type_latinc = attr_list->attvalue->multidval.data_type;
+          set_latinc  = True;
+        }
+        else if(!strcmp(attr_list->attname, "LONINC") || 
+                !strcmp(attr_list->attname, "loninc")) {
+          loninc      = attr_list->attvalue->multidval.val;
+          type_loninc = attr_list->attvalue->multidval.data_type;
+          set_loninc  = True;
+        }
+      }
+    default:
+      break;
+    }
+  }
+
+/*
+ * Check for attributes that need to be set, or set to a certain value.
+ */
+
+/*
+ * Check MAP_PROJ. Must be set.
+ */
+  if(!set_map_proj) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The MAP_PROJ attribute must be set");
+    return(NhlFATAL);
+  }
+  else if(map_proj != 1 && map_proj != 2 && map_proj != 3 && map_proj != 6) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The MAP_PROJ attribute must be set TO 1, 2, 3, or 6");
+    return(NhlFATAL);
+  }
+
+/*
+ * Check TRUELAT1. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) && !set_truelat1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The TRUELAT1 attribute must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_truelat1) {
+    tmp_truelat1 = coerce_input_double(truelat1,type_truelat1,1,0,NULL,NULL);
+  }
+  else {
+    tmp_truelat1  = (double *)calloc(1,sizeof(double));
+    *tmp_truelat1 = 0.;
+  }
+
+/*
+ * Check TRUELAT2. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) && !set_truelat2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The TRUELAT2 attribute must be set if MAP_PROJ is 1");
+    return(NhlFATAL);
+  }
+  if(!set_truelat2) {
+    tmp_truelat2 = coerce_input_double(truelat2,type_truelat2,1,0,NULL,NULL);
+  }
+  else {
+    tmp_truelat2  = (double *)calloc(1,sizeof(double));
+    *tmp_truelat2 = 0.;
+  }
+
+/*
+ * Check STAND_LON. Must be set.
+ */
+  if(!set_stand_lon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The STAND_LON attribute must be set");
+    return(NhlFATAL);
+  }
+  else {
+    tmp_stand_lon = coerce_input_double(stand_lon,type_stand_lon,1,0,NULL,NULL);
+  }
+
+/*
+ * Check LAT1/LON1. Must be set.
+ */
+  if(!set_lat1 || !set_lon1) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The LAT1/LAT2 attributes must be set");
+    return(NhlFATAL);
+  }
+  else {
+    tmp_lat1 = coerce_input_double(lat1,type_lat1,1,0,NULL,NULL);
+    tmp_lon1 = coerce_input_double(lon1,type_lon1,1,0,NULL,NULL);
+  }
+
+/*
+ * Check POLE_LAT/POLE_LON. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
+      (!set_pole_lat || !set_pole_lon)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The POLE_LAT/POLE_LON attributes must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_pole_lat) {
+    tmp_pole_lat  = (double *)calloc(1,sizeof(double));
+    *tmp_pole_lat = 90.;
+  }
+  else {
+    tmp_pole_lat = coerce_input_double(pole_lat,type_pole_lat,1,0,NULL,NULL);
+  }
+
+  if(!set_pole_lon) {
+    tmp_pole_lon  = (double *)calloc(1,sizeof(double));
+    *tmp_pole_lon = 90.;
+  }
+  else {
+    tmp_pole_lon = coerce_input_double(pole_lon,type_pole_lon,1,0,NULL,NULL);
+  }
+
+/*
+ * Check KNOWNI/KNOWNJ. Must be set.
+ */
+  if(!set_knowni || !set_knownj) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The KNOWNI/KNOWNJ attributes must be set");
+    return(NhlFATAL);
+  }
+  else {
+    tmp_knowni = coerce_input_double(knowni,type_knowni,1,0,NULL,NULL);
+    tmp_knownj = coerce_input_double(knownj,type_knownj,1,0,NULL,NULL);
+  }
+
+/*
+ * Check DX/DY. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
+      (!set_dx || !set_dy)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The DX/DY attributes must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_dx) {
+    tmp_dx  = (double *)calloc(1,sizeof(double));
+    *tmp_dx = 0.;
+  }
+  else {
+    tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
+  }
+
+  if(!set_dy) {
+    tmp_dy  = (double *)calloc(1,sizeof(double));
+    *tmp_dy = 0.;
+  }
+  else {
+    tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
+  }
+
+
+/*
+ * Check LATINC/LONINC. Must be set in some cases.
+ */
+  if( (map_proj == 1 || map_proj == 2 || map_proj == 3) &&
+      (!set_latinc || !set_loninc)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The LATINC/LONINC attributes must be set if MAP_PROJ is 1, 2, or 3");
+    return(NhlFATAL);
+  }
+  if(!set_latinc) {
+    tmp_latinc  = (double *)calloc(1,sizeof(double));
+    *tmp_latinc = 0.;
+  }
+  else {
+    tmp_latinc = coerce_input_double(latinc,type_latinc,1,0,NULL,NULL);
+  }
+
+  if(!set_loninc) {
+    tmp_loninc  = (double *)calloc(1,sizeof(double));
+    *tmp_loninc = 0.;
+  }
+  else {
+    tmp_loninc = coerce_input_double(loninc,type_loninc,1,0,NULL,NULL);
+  }
+
+/* 
+ * Allocate space for output array.
+ */
+  if(type_loc != NCL_double) {
+    loc     = (void *)calloc(2*npts, sizeof(float));
+    tmp_loc = (double *)calloc(2,sizeof(double));
+    if(tmp_loc == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    loc = (void *)calloc(2*npts, sizeof(double));
+  }
+  if(loc == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/* 
+ * Allocate space for output dimension sizes and set them.
+ */
+  if(is_scalar(ndims_iloc,dsizes_iloc)) {
+    ndims_loc = 1;
+  }
+  else {
+    ndims_loc = ndims_iloc + 1;
+  }
+  dsizes_loc = (int*)calloc(ndims_loc,sizeof(int));  
+  if( dsizes_loc == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_loc-1; i++) dsizes_loc[i] = dsizes_iloc[i];
+  dsizes_loc[ndims_loc-1] = 2;
+
+/*
+ * Loop across all lat/lon points and call the Fortran routine for each
+ * point.
+ */
+  index_loc = 0;
+
+  for(i = 0; i < npts; i++) {
+/*
+ * Coerce subsection of iloc (tmp_iloc) to double if necessary.
+ */
+    if(type_iloc != NCL_double) {
+      coerce_subset_input_double(iloc,tmp_iloc,i,type_iloc,1,0,NULL,NULL);
+    }
+    else {
+      tmp_iloc = &((double*)iloc)[i];
+    }
+
+/*
+ * Coerce subsection of lon (tmp_jloc) to double if necessary.
+ */
+    if(type_jloc != NCL_double) {
+      coerce_subset_input_double(jloc,tmp_jloc,i,type_jloc,1,0,NULL,NULL);
+    }
+    else {
+      tmp_jloc = &((double*)jloc)[i];
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_loc == NCL_double) tmp_loc = &((double*)loc)[index_loc];
+
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(dlltoij,DLLTOIJ)(&map_proj, tmp_truelat1, tmp_truelat2, 
+                             tmp_stand_lon, tmp_lat1, tmp_lon1, tmp_pole_lat,
+                             tmp_pole_lon, tmp_knowni, tmp_knownj, tmp_dx,
+                             tmp_dy, tmp_latinc, tmp_loninc, tmp_iloc, 
+                             tmp_jloc, tmp_loc);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_loc == NCL_float) {
+      coerce_output_float_only(loc,tmp_loc,2,index_loc);
+    }
+    index_loc += 2;
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if(type_iloc      != NCL_double) NclFree(tmp_iloc);
+  if(type_jloc      != NCL_double) NclFree(tmp_jloc);
+  if(type_truelat1  != NCL_double) NclFree(tmp_truelat1);
+  if(type_truelat2  != NCL_double) NclFree(tmp_truelat2);
+  if(type_stand_lon != NCL_double) NclFree(tmp_stand_lon);
+  if(type_lat1      != NCL_double) NclFree(tmp_lat1);
+  if(type_lon1      != NCL_double) NclFree(tmp_lon1);
+  if(type_pole_lat  != NCL_double) NclFree(tmp_pole_lat);
+  if(type_pole_lon  != NCL_double) NclFree(tmp_pole_lon);
+  if(type_knowni    != NCL_double) NclFree(tmp_knowni);
+  if(type_knownj    != NCL_double) NclFree(tmp_knownj);
+  if(type_dx        != NCL_double) NclFree(tmp_dx);
+  if(type_dy        != NCL_double) NclFree(tmp_dy);
+  if(type_latinc    != NCL_double) NclFree(tmp_latinc);
+  if(type_loninc    != NCL_double) NclFree(tmp_loninc);
+  if(type_loc       != NCL_double) NclFree(tmp_loc);
+
+/*
+ * Return value back to NCL script.
+ */
+  ret = NclReturnValue(loc,ndims_loc,dsizes_loc,NULL,type_loc,0);
+  NclFree(dsizes_loc);
+  return(ret);
 }
 
 /*

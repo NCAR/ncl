@@ -73,6 +73,8 @@ extern NhlErrorTypes wrf_uvmet_W(void);
 extern NhlErrorTypes wrf_dbz_W(void);
 extern NhlErrorTypes wrf_pvo_W(void);
 extern NhlErrorTypes wrf_avo_W(void);
+extern NhlErrorTypes wrf_ll_to_ij_W(void);
+extern NhlErrorTypes wrf_ij_to_ll_W(void);
 extern NhlErrorTypes wrf_iclw_W(void);
 extern NhlErrorTypes wrf_bint_W(void);
 extern NhlErrorTypes cape_thermo_W(void);
@@ -1418,6 +1420,36 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_avo_W,args,"wrf_avo",nargs);
+
+/*
+ * Register "wrf_ll_to_ij".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_ll_to_ij_W,args,"wrf_ll_to_ij",nargs);
+
+/*
+ * Register "wrf_ij_to_ll".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+        NclRegisterFunc(wrf_ij_to_ll_W,args,"wrf_ij_to_ll",nargs);
 
 /*
  * Register "wrf_iclw".
