@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.184 2008-11-01 18:53:00 shea Exp $
+;      $Id: contributed.ncl,v 1.185 2008-11-12 16:12:04 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5134,38 +5134,52 @@ begin
 end
 ; ******************************************************************
 ; Dennis Shea
-
 ; wrapper for NCL function runave
 
 undef ("runave_Wrap")
-function runave_Wrap( x:numeric, nave:integer, kopt[1]:integer)
+function runave_Wrap( x:numeric, nave[1]:integer, kopt[1]:integer)
 local xRunAve
 begin
-  xRunAve = x
+ ;xRunAve = x                               ; 10 Nov 2008
   xRunAve = runave (x, nave, kopt)   
+  copy_VarMeta(x, xRunAve)                  ; 10 Nov 2008
   xRunAve@runave_op_ncl = "runave: nave="+nave 
 
   return(xRunAve)
 end
 ; ******************************************************************
 ; Dennis Shea
-
 ; wrapper for NCL function wgt_runave
 
 undef ("wgt_runave_Wrap")
 function wgt_runave_Wrap( x:numeric, wgt[*]:numeric, kopt[1]:integer)
 local wRunAve
 begin
-  wRunAve = x
+ ;wRunAve = x                               ; 10 Nov 2008
   wRunAve = wgt_runave (x, wgt, kopt)   
+  copy_VarMeta(x, wRunAve)                  ; 10 Nov 2008
   wRunAve@wgt_runave_op_ncl = "wgt_runave"
 
   return(wRunAve)
 end
+; ******************************************************************
+; Dennis Shea
+; wrapper for NCL function taper
+
+undef ("taper_Wrap")
+function taper_Wrap( x:numeric, pct[1]:numeric, kopt[1]:numeric)
+local xTaper 
+begin
+ ;xTaper = x            
+  xTaper = taper (x, pct, kopt)   
+  copy_VarMeta(x, xTaper)       
+  xTaper@taper_op_ncl = "taper: pct="+sprintf("%4.2f", pct)
+
+  return(xTaper)
+end
 
 ; ******************************************************************
 ; Dennis Shea
-
 ; wrapper for NCL function wgt_areaave
 
 undef ("wgt_areaave_Wrap")
@@ -5220,9 +5234,57 @@ begin
       return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
   end if
 end
+; ******************************************************************
+undef("taper_leftdim")
+function taper_leftdim(x:numeric, pct[1]:numeric, opt[1]:integer)
+;
+; utility routine ... makes for cleaner code
+; Reorder so time is rightmost; applies taper, reorder back
+;
+local dimx, rank, dNam, xWork
+begin
+  if (pct.le.0 .or. pct.gt.1) then
+      print("**************************************************")
+      print("taper_leftdim: no taper: bad input value: pct="+pct)
+      print("**************************************************")
+      return
+  end if
+
+  dimx = dimsizes(x)
+  rank = dimsizes( dimx )
+
+  if (rank.eq.1) then
+      return( taper_Wrap( x, PCT, opt) )
+  end if
+
+  dNam = getvardims( x )
+  do n=0,rank-1
+     if (ismissing(dNam(n))) then
+         dNam(n) = "ncl_"+n
+         x!n     = dNam(n)
+     end if
+  end do
+
+  if (rank.eq.2) then
+      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(0)$|:), pct, opt)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
+  end if
+  if (rank.eq.3) then
+      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:), pct, opt)
+      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
+  end if
+  if (rank.eq.4) then
+      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:), pct, opt)
+      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
+  end if
+  if (rank.eq.5) then
+      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:), pct, opt)
+      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
+  end if
+end
 ;**********************************************************
 undef("dtrend_leftdim")
-function dtrend_leftdim(x:numeric, wgt[*]:numeric, opt[1]:integer)
+function dtrend_leftdim(x:numeric, opt[1]:logical)
 ;
 ; utility routine ... makes for cleaner code
 ; Reorder so time is rightmost; detrend the time series, reorder back
@@ -9376,6 +9438,7 @@ begin
   return( nor )
 end
 ; ------------
+undef("relhum_ttd")
 function relhum_ttd (t:numeric, td:numeric, opt:integer)
 ;
 ; Calculate relative humidity given temperature (K)
@@ -9383,7 +9446,7 @@ function relhum_ttd (t:numeric, td:numeric, opt:integer)
 ;
 ; reference: John Dutton, Ceaseless Wind, 1976
 
-local gc, lhv, relhum 
+local gc, lhv, rh 
 begin
   rankt  = dimsizes( dimsizes(t ) )
   ranktd = dimsizes( dimsizes(td) )
@@ -9399,15 +9462,15 @@ begin
                                        ; lhv=latent heat vap
   lhv = ( 597.3-0.57*(t-273.) )        ; dutton top p273 [empirical]
 
-  relhum           = exp( (lhv/gc)*(1.0/t - 1.0/td) )
-  relhum@long_name = "relative humidity"
-  relhum@units     = "fraction"
+  rh           = exp( (lhv/gc)*(1.0/t - 1.0/td) )
+  rh@long_name = "relative humidity"
+  rh@units     = "fraction"
 
   if (opt.eq.0) then
-      relhum       = relhum*100.
-      relhum@units = "%"
+      rh       = rh*100.
+      rh@units = "%"
   end if
-  return (relhum)
+  return (rh)
 end
 
 ; ------------
