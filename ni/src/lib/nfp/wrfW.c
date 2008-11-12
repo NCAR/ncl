@@ -4969,7 +4969,6 @@ NhlErrorTypes wrf_pvo_W( void )
 /*
  * Variables for returning the output array with attributes attached.
  */
-  int att_id;
   int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
@@ -5297,7 +5296,7 @@ NhlErrorTypes wrf_pvo_W( void )
  * Retrieve dimension names from the "th" variable, if any.
  * These dimension names will later be attached to the output variable.
  */
-  dim_info = get_wrf_dim_info(2,10,ndims_th,dsizes_th);
+  dim_info = get_wrf_dim_info(2,11,ndims_th,dsizes_th);
 
 /*
  * The output type defaults to float, unless any input arrays are double.
@@ -5588,7 +5587,7 @@ NhlErrorTypes wrf_pvo_W( void )
                           NULL,
                           return_md,
                           dim_info,
-                          att_id,
+                          -1,
                           NULL,
                           RETURNVAR,
                           NULL,
@@ -5602,7 +5601,6 @@ NhlErrorTypes wrf_pvo_W( void )
   return_data.u.data_var = tmp_var;
   _NclPlaceReturn(return_data);
   return(NhlNOERROR);
-
 }
 
 NhlErrorTypes wrf_avo_W( void )
@@ -5687,6 +5685,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   void *av;
   double *tmp_av;
+  int *dsizes_av;
   NclBasicDataTypes type_av;
   NclObjClass type_obj_av;
 
@@ -5701,7 +5700,6 @@ NhlErrorTypes wrf_avo_W( void )
 /*
  * Variables for returning the output array with attributes attached.
  */
-  int att_id;
   int dsizes[1];
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
@@ -5958,11 +5956,24 @@ NhlErrorTypes wrf_avo_W( void )
   nznyp1nx = nz * nyp1nx;
 
 /*
- * Calculate size of leftmost dimensions.
+ * Calculate size of leftmost dimensions, and set
+ * dimension sizes for output array.
  */
+  dsizes_av = (int*)calloc(ndims_u,sizeof(int));  
+  if( dsizes_av == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_avo: Unable to allocate memory for holding dimension sizes");
+    return(NhlFATAL);
+  }
+
   size_leftmost = 1;
-  for(i = 0; i < ndims_u-3; i++) size_leftmost *= dsizes_u[i];
+  for(i = 0; i < ndims_u-3; i++) {
+    size_leftmost *= dsizes_u[i];
+    dsizes_av[i] = dsizes_u[i];
+  }
   size_av = size_leftmost * nznynx;
+  dsizes_av[ndims_u-1] = nx;
+  dsizes_av[ndims_u-2] = ny;
+  dsizes_av[ndims_u-3] = nz;
 
 /*
  * The output type defaults to float, unless any input arrays are double.
@@ -6189,8 +6200,8 @@ NhlErrorTypes wrf_avo_W( void )
                             0,
                             (void*)av,
                             NULL,
-                            ndims_cor,
-                            dsizes_cor,
+                            ndims_u,
+                            dsizes_av,
                             TEMPORARY,
                             NULL,
                             type_obj_av
@@ -6204,7 +6215,7 @@ NhlErrorTypes wrf_avo_W( void )
                           NULL,
                           return_md,
                           NULL,
-                          att_id,
+                          -1,
                           NULL,
                           RETURNVAR,
                           NULL,
