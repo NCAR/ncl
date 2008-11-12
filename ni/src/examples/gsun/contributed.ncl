@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.185 2008-11-12 16:12:04 shea Exp $
+;      $Id: contributed.ncl,v 1.186 2008-11-12 17:26:40 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9475,6 +9475,7 @@ end
 
 ; ------------
 
+undef("crossp3")
 function crossp3(a[*][3]:numeric,b[*][3]:numeric)
 ; calculate a cross product:   c = a x b
 begin
