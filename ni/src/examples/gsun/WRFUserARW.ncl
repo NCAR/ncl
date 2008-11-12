@@ -1,6 +1,3 @@
-external wrf_user_ll_ij "./wrf_user_ll_ij.so"
-external wrf_user_dbz "./wrf_user_dbz.so"
-
 load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 
 ;--------------------------------------------------------------------------------
@@ -1217,8 +1214,7 @@ begin
        end do
 
        dim = dimsizes(tk)
-       dbz = new ( (/ dim(0), dim(1), dim(2) /), typeof(tk))
-       wrf_user_dbz :: calc_dbz ( dbz, p, tk, qv, qr, qs, qg, dim(2), dim(1), dim(0), sn0, ivarint, iliqskin)
+       dbz = wrf_dbz ( p, tk, qv, qr, qs, qg, sn0, ivarint, iliqskin)
 
        if ( variable .eq. "mdbz") then
          mdbz = new ( (/ dim(1), dim(2) /), typeof(tk))
@@ -1492,13 +1488,14 @@ begin
   wedim    = nc_file@$WE$
   sndim    = nc_file@$SN$
 
-  map_proj = nc_file@MAP_PROJ
-  truelat1 = nc_file@TRUELAT1
-  truelat2 = nc_file@TRUELAT2
-  stdlon   = nc_file@STAND_LON
-  dx       = nc_file@DX
+  llres = True
+  llres@MAP_PROJ = nc_file@MAP_PROJ
+  llres@TRUELAT1 = nc_file@TRUELAT1
+  llres@TRUELAT2 = nc_file@TRUELAT2
+  llres@STAND_LON   = nc_file@STAND_LON
+  llres@DX       = nc_file@DX
   hemi     = 1.0
-  if ( truelat1 .lt. 0.0 ) then
+  if ( llres@TRUELAT1 .lt. 0.0 ) then
      hemi  = -1.0
   end if
 
@@ -1512,13 +1509,13 @@ begin
   end if
 
 
-  lat1 = XLAT(0,0)
-  lon1 = XLONG(0,0)
-  knowni   = 1.0
-  knownj   = 1.0
+  llres@LAT1 = XLAT(0,0)
+  llres@LON1 = XLONG(0,0)
+  llres@KNOWNI   = 1.0
+  llres@KNOWNJ   = 1.0
 
-  dummy_stdlon = stdlon
-  dummy_lon1 = lon1
+  dummy_stdlon = llres@STAND_LON
+  dummy_lon1 = llres@LON1
   if (dummy_stdlon .lt. -180.) then
     dummy_stdlon = dummy_stdlon + 360.
   end if
@@ -1531,14 +1528,11 @@ begin
   if (dummy_lon1 .gt.  180.) then
     dummy_lon1 = dummy_lon1 - 360.
   end if
-  stdlon = dummy_stdlon
-  lon1 = dummy_lon1
+  llres@STAND_LON = dummy_stdlon
+  llres@LON1 = dummy_lon1
 
-
-  loc = new(2,float)
+  loc = wrf_ll_to_ij (latitude,longitude,llres)
   loc@_FillValue = -999
-
-  wrf_user_ll_ij :: ll_to_ij (map_proj,hemi,truelat1,truelat2,stdlon,lat1,lon1,knowni,knownj,dx,latitude,longitude,loc)
 
   if ( loc(0) .lt. 0.5 .or. loc(0) .ge. sndim ) then
        loc = -999
