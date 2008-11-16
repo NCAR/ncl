@@ -4417,13 +4417,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Argument # 6
  */
-  int *sn0;
-/*
- * Argument # 7
- */
   int *ivarint;
 /*
- * Argument # 8
+ * Argument # 7
  */
   int *iliqskin;
 /*
@@ -4438,7 +4434,7 @@ NhlErrorTypes wrf_dbz_W( void )
  * Various
  */
   int btdim, sndim, wedim, nbtsnwe, index_dbz;
-  int i, size_leftmost, size_output, ret;
+  int i, j, sn0, size_leftmost, size_output, ret;
 
 /*
  * Retrieve parameters.
@@ -4451,7 +4447,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   prs = (void*)NclGetArgValue(
            0,
-           9,
+           8,
            &ndims_prs,
            dsizes_prs,
            NULL,
@@ -4476,7 +4472,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   tmk = (void*)NclGetArgValue(
            1,
-           9,
+           8,
            &ndims_tmk,
            dsizes_tmk,
            NULL,
@@ -4497,7 +4493,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   qvp = (void*)NclGetArgValue(
            2,
-           9,
+           8,
            &ndims_qvp,
            dsizes_qvp,
            NULL,
@@ -4519,7 +4515,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   qra = (void*)NclGetArgValue(
            3,
-           9,
+           8,
            &ndims_qra,
            dsizes_qra,
            NULL,
@@ -4541,7 +4537,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   qsn = (void*)NclGetArgValue(
            4,
-           9,
+           8,
            &ndims_qsn,
            dsizes_qsn,
            NULL,
@@ -4562,7 +4558,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   qgr = (void*)NclGetArgValue(
            5,
-           9,
+           8,
            &ndims_qgr,
            dsizes_qgr,
            NULL,
@@ -4593,9 +4589,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Get argument # 6
  */
-  sn0 = (int*)NclGetArgValue(
+  ivarint = (int*)NclGetArgValue(
            6,
-           9,
+           8,
            NULL,
            NULL,
            NULL,
@@ -4605,21 +4601,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Get argument # 7
  */
-  ivarint = (int*)NclGetArgValue(
-           7,
-           9,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           2);
-/*
- * Get argument # 8
- */
   iliqskin = (int*)NclGetArgValue(
+           7,
            8,
-           9,
            NULL,
            NULL,
            NULL,
@@ -4632,7 +4616,6 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   size_leftmost  = 1;
   for(i = 0; i < ndims_prs-3; i++) size_leftmost *= dsizes_prs[i];
-
 
 /*
  * The output type defaults to float, unless this input array is double.
@@ -4819,6 +4802,17 @@ NhlErrorTypes wrf_dbz_W( void )
     }
 
 /*
+ * Check values for q arrays. If all zero, then set sn0 to 0. Otherwise
+ * set sn0 to 1.
+ */
+    j   = 0;
+    sn0 = 0;
+    while(j < nbtsnwe && !sn0) {
+      if(tmp_qvp[j] != 0. || tmp_qra[j] != 0. || tmp_qsn[j] != 0. || 
+         tmp_qgr[j] != 0. ) sn0 = 1;
+      j++;
+    }
+/*
  * Point temporary output array to void output array if appropriate.
  */
     if(type_dbz == NCL_double) tmp_dbz = &((double*)dbz)[index_dbz];
@@ -4828,7 +4822,7 @@ NhlErrorTypes wrf_dbz_W( void )
  */
     NGCALLF(calcdbz,CALCDBZ)(tmp_dbz, tmp_prs, tmp_tmk, tmp_qvp, tmp_qra, 
                              tmp_qsn, tmp_qgr, &wedim, &sndim, &btdim, 
-                             sn0, ivarint, iliqskin);
+                             &sn0, ivarint, iliqskin);
 
 /*
  * Coerce output back to float if necessary.
@@ -5362,7 +5356,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   if(ndims_msfu == 2) {
     tmp_msfu = coerce_input_double(msfu,type_msfu,nynxp1,0,NULL,NULL);
-    tmp_msfv = coerce_input_double(msfv,type_msfu,nyp1nx,0,NULL,NULL);
+    tmp_msfv = coerce_input_double(msfv,type_msfv,nyp1nx,0,NULL,NULL);
     tmp_msft = coerce_input_double(msft,type_msft,nynx,0,NULL,NULL);
     tmp_cor  = coerce_input_double(cor,type_cor,nynx,0,NULL,NULL);
   }
@@ -6020,7 +6014,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   if(ndims_msfu == 2) {
     tmp_msfu = coerce_input_double(msfu,type_msfu,nynxp1,0,NULL,NULL);
-    tmp_msfv = coerce_input_double(msfv,type_msfu,nyp1nx,0,NULL,NULL);
+    tmp_msfv = coerce_input_double(msfv,type_msfv,nyp1nx,0,NULL,NULL);
     tmp_msft = coerce_input_double(msft,type_msft,nynx,0,NULL,NULL);
     tmp_cor  = coerce_input_double(cor,type_cor,nynx,0,NULL,NULL);
   }
@@ -6177,7 +6171,7 @@ NhlErrorTypes wrf_avo_W( void )
     NGCALLF(dcomputeabsvort,DCOMPUTEABSVORT)(tmp_av, tmp_u, tmp_v, tmp_msfu,
                                              tmp_msfv, tmp_msft, tmp_cor,
                                              tmp_dx, tmp_dy, &nx, &ny, &nz,
-					     &nxp1, &nyp1);
+                                             &nxp1, &nyp1);
 
     if(type_av != NCL_double) {
       coerce_output_float_only(av,tmp_av,nznynx,index_av);
@@ -7427,4 +7421,3 @@ int arg_num, num_args, ndims_arg, *dsizes_arg;
   }
   return(dim_info);
 }
-
