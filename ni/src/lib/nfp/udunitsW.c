@@ -7,6 +7,10 @@ extern int utCalendar_cal( double val, utUnit *dataunits, int *year,
                            int *month, int *day, int *hour, int  *minute,
                            float *second, char *calendar );
 
+extern int utInvCalendar_cal( int year, int month, int day, int hour, 
+                              int minute, double second, utUnit *unit,
+                              double *value, const char *calendar );
+
 /*
  * Function for initializing Udunits package.  If UDUNITS_PATH is
  * set, then this path is used for the "udunits.dat" file. Otherwise,
@@ -67,7 +71,7 @@ int utopen_ncl()
  *    purpose.
  *
  * The ut_calendar function below depends on the udunits package,
- * with a udunit enhancement provided by the David Pierce, the
+ * with a Udunits enhancement provided by the David Pierce, the
  * developer of "ncview".
  *
  * The NCL function below checks for a "calendar" attribute. If
@@ -76,11 +80,11 @@ int utopen_ncl()
  * from the udunits package.
  *
  * If the "calendar" attribute is present and it has values "noleap",
- * "360_day", or "365_day", then the ncview's version of utCalendar 
- * will be used.
+ * "360_day", "360", "365_day", or "365", then the ncview's version
+ * of utCalendar will be used.
  * 
  * For an unrecognized calendar like "kyr B.P." or "common_year",
- * _FillValue will be returned.
+ * _FillValue's will be returned.
  *
  */
 
@@ -105,7 +109,7 @@ NhlErrorTypes ut_calendar_W( void )
   double current_seconds_in_year, fraction_of_year;
 
 /*
- * Variables for retrieving attributes from "options".
+ * Variables for retrieving attributes from the first argument.
  */
   NclAttList  *attr_list;
   NclAtt  attr_obj;
@@ -259,14 +263,13 @@ NhlErrorTypes ut_calendar_W( void )
     }
     else {
 /*
- * att_id == -1 ==> no optional args given; use default calendar.
+ * att_id == -1 ==> no attributes specified; return all missing.
  */
       return_missing = 1;
       break;
     }
 /* 
- * Get optional arguments. If none are specified, then return
- * missing values.
+ * Check for attributes. If none are specified, then return missing values.
  */
     if (attr_obj->att.n_atts == 0) {
       return_missing = 1;
@@ -286,7 +289,8 @@ NhlErrorTypes ut_calendar_W( void )
           ccal     = NrmQuarkToString(*calendar);
           if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
              strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
-             strcmp(ccal,"360_day")) {
+             strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
+             strcmp(ccal,"360") ) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
             return_missing = 1;
           }
@@ -297,7 +301,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Make sure cspec is a valid udunits string.
  */
-	  if(utScan(cspec, &unit) != 0) {
+          if(utScan(cspec, &unit) != 0) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
             return_missing = 1;
           }
@@ -371,130 +375,130 @@ NhlErrorTypes ut_calendar_W( void )
       switch(*option) {
 
       case 0:
-	((float*)date)[index_date]   = (float)year;
-	((float*)date)[index_date+1] = (float)month;
-	((float*)date)[index_date+2] = (float)day;
-	((float*)date)[index_date+3] = (float)hour;
-	((float*)date)[index_date+4] = (float)minute;
-	((float*)date)[index_date+5] = second;
-	break;
+        ((float*)date)[index_date]   = (float)year;
+        ((float*)date)[index_date+1] = (float)month;
+        ((float*)date)[index_date+2] = (float)day;
+        ((float*)date)[index_date+3] = (float)hour;
+        ((float*)date)[index_date+4] = (float)minute;
+        ((float*)date)[index_date+5] = second;
+        break;
 
 /* identical to option=0, except returns ints */
       case -5:
-	((int*)date)[index_date]   = year;
-	((int*)date)[index_date+1] = month;
-	((int*)date)[index_date+2] = day;
-	((int*)date)[index_date+3] = hour;
-	((int*)date)[index_date+4] = minute;
-	((int*)date)[index_date+5] = (int)truncf(second);
-	break;
+        ((int*)date)[index_date]   = year;
+        ((int*)date)[index_date+1] = month;
+        ((int*)date)[index_date+2] = day;
+        ((int*)date)[index_date+3] = hour;
+        ((int*)date)[index_date+4] = minute;
+        ((int*)date)[index_date+5] = (int)truncf(second);
+        break;
 
 /*
  * YYYYMM
  */
       case -1:
-	((int*)date)[index_date] = (100*year) + month;
-	break;
+        ((int*)date)[index_date] = (100*year) + month;
+        break;
 
       case 1:
-	((double*)date)[index_date] = (double)(100*year) + (double)month;
-	break;
+        ((double*)date)[index_date] = (double)(100*year) + (double)month;
+        break;
 /*
  * YYYYMMDD
  */
       case -2:
-	((int*)date)[index_date] = (10000*year) + (100*month) + day;
-	break;
+        ((int*)date)[index_date] = (10000*year) + (100*month) + day;
+        break;
 
       case 2:
-	((double*)date)[index_date] = (double)(10000*year)
-	  + (double)(100*month) 
-	  + (double)day;
-	break;
+        ((double*)date)[index_date] = (double)(10000*year)
+          + (double)(100*month) 
+          + (double)day;
+        break;
 
 /*
  * YYYYMMDDHH
  */
       case -3:
-	((int*)date)[index_date] = (1000000*year) + (10000*month) 
-	  + (100*day) + hour;                
-	break;
+        ((int*)date)[index_date] = (1000000*year) + (10000*month) 
+          + (100*day) + hour;                
+        break;
                 
       case 3:
-	((double*)date)[index_date] = (double)(1000000*year) 
-	  + (double)(10000*month) 
-	  + (double)(100*day)
-	  + (double)hour;             
-	break;
+        ((double*)date)[index_date] = (double)(1000000*year) 
+          + (double)(10000*month) 
+          + (double)(100*day)
+          + (double)hour;             
+        break;
                 
 /*
  *  YYYY.fraction_of_year
  */
       case 4:
-	nsid             = 86400;      /* num seconds in a day */
-	total_seconds_in_year  = isleapyear(year) ? 366*nsid : 365*nsid;
-	doy                    = day_of_year(year,month,day);
-	if(doy > 1) {
-	  seconds_in_doy = (doy-1) * nsid;
-	}
-	else {
-	  seconds_in_doy = 0;
-	}
-	if(hour > 1) {
-	  seconds_in_hour  = (hour-1) * 3600;
-	}
-	else {
-	  seconds_in_hour  = 0;
-	}
-	if(minute > 1) {
-	  seconds_in_minute  = (minute-1) * 60;
-	}
-	else {
-	  seconds_in_minute  = 0;
-	}
-	current_seconds_in_year = seconds_in_doy + 
-	  seconds_in_hour + 
-	  seconds_in_minute + 
-	  second;
-	fraction_of_year = current_seconds_in_year/(double)total_seconds_in_year;
-	((double*)date)[index_date] = (double)year + fraction_of_year;
-	break;
+        nsid             = 86400;      /* num seconds in a day */
+        total_seconds_in_year  = isleapyear(year) ? 366*nsid : 365*nsid;
+        doy                    = day_of_year(year,month,day);
+        if(doy > 1) {
+          seconds_in_doy = (doy-1) * nsid;
+        }
+        else {
+          seconds_in_doy = 0;
+        }
+        if(hour > 1) {
+          seconds_in_hour  = (hour-1) * 3600;
+        }
+        else {
+          seconds_in_hour  = 0;
+        }
+        if(minute > 1) {
+          seconds_in_minute  = (minute-1) * 60;
+        }
+        else {
+          seconds_in_minute  = 0;
+        }
+        current_seconds_in_year = seconds_in_doy + 
+          seconds_in_hour + 
+          seconds_in_minute + 
+          second;
+        fraction_of_year = current_seconds_in_year/(double)total_seconds_in_year;
+        ((double*)date)[index_date] = (double)year + fraction_of_year;
+        break;
       }
     }
     else {
       switch(*option) {
 
       case 0:
-	((float*)date)[index_date]   = missing_date.floatval;
-	((float*)date)[index_date+1] = missing_date.floatval;
-	((float*)date)[index_date+2] = missing_date.floatval;
-	((float*)date)[index_date+3] = missing_date.floatval;
-	((float*)date)[index_date+4] = missing_date.floatval;
-	((float*)date)[index_date+5] = missing_date.floatval;
-	break;
+        ((float*)date)[index_date]   = missing_date.floatval;
+        ((float*)date)[index_date+1] = missing_date.floatval;
+        ((float*)date)[index_date+2] = missing_date.floatval;
+        ((float*)date)[index_date+3] = missing_date.floatval;
+        ((float*)date)[index_date+4] = missing_date.floatval;
+        ((float*)date)[index_date+5] = missing_date.floatval;
+        break;
 
 /* identical to option=0, except returns ints */
       case -5:
-	((int*)date)[index_date]   = missing_date.intval;
-	((int*)date)[index_date+1] = missing_date.intval;
-	((int*)date)[index_date+2] = missing_date.intval;
-	((int*)date)[index_date+3] = missing_date.intval;
-	((int*)date)[index_date+4] = missing_date.intval;
-	((int*)date)[index_date+5] = missing_date.intval;
-	break;
+        ((int*)date)[index_date]   = missing_date.intval;
+        ((int*)date)[index_date+1] = missing_date.intval;
+        ((int*)date)[index_date+2] = missing_date.intval;
+        ((int*)date)[index_date+3] = missing_date.intval;
+        ((int*)date)[index_date+4] = missing_date.intval;
+        ((int*)date)[index_date+5] = missing_date.intval;
+        break;
 
       case 1:
       case 2:
       case 3:
       case 4:
-	((double*)date)[index_date] = missing_date.doubleval;
-	break;
+        ((double*)date)[index_date] = missing_date.doubleval;
+        break;
 
       case -1:
       case -2:
       case -3:
-	((int*)date)[index_date] = missing_date.intval;
-	break;
+        ((int*)date)[index_date] = missing_date.intval;
+        break;
       }
     }
     if(*option == 0 || *option == -5) {
@@ -560,6 +564,14 @@ NhlErrorTypes ut_inv_calendar_W( void )
   int utopen_ncl();
   utUnit unit;
 /*
+ * Variables for retrieving attributes from last argument.
+ */
+  NclAttList  *attr_list;
+  NclAtt  attr_obj;
+  NclStackEntry   stack_entry;
+  string *calendar;
+  char   *ccal = NULL;
+/*
  * Output variables.
  */
   double *x;
@@ -577,7 +589,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * various
  */
-  int i, total_size_input, dsizes[1];
+  int i, total_size_input, dsizes[1], return_missing;
 /*
  * Before we do anything, initialize the Udunits package.
  */
@@ -742,6 +754,58 @@ NhlErrorTypes ut_inv_calendar_W( void )
   }
 
 /* 
+ * Check the "option" variable to see if it has the "calendar" option
+ * set. It must be equal to one of the recognized calendars.
+ */
+  return_missing = 0;
+
+  stack_entry = _NclGetArg(7, 8, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+        break;
+      }
+    }
+    else {
+/*
+ * att_id == -1 ==> no attributes specified args given.
+ */
+      break;
+    }
+/* 
+ * Get optional arguments.
+ */
+    if (attr_obj->att.n_atts > 0) {
+/*
+ * Get list of attributes.
+ */
+      attr_list = attr_obj->att.att_list;
+/*
+ * Loop through attributes and check them.
+ */
+      while (attr_list != NULL) {
+        if ((strcmp(attr_list->attname, "calendar")) == 0) {
+          calendar = (string *) attr_list->attvalue->multidval.val;
+          ccal     = NrmQuarkToString(*calendar);
+          if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
+             strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
+             strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
+             strcmp(ccal,"360") ) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
+            return_missing = 1;
+          }
+        }
+        attr_list = attr_list->next;
+      }
+    }
+  default:
+    break;
+  }
+
+
+/* 
  * Loop through each data value, and call Udunits routine.
  */ 
   for( i = 0; i < total_size_input; i++ ) {
@@ -770,8 +834,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
        (!has_missing_second ||
         (has_missing_second&& *tmp_second != missing_second.doubleval)) ) {
 
-       (void)utInvCalendar(year[i],month[i],day[i],hour[i],minute[i],
-                           *tmp_second,&unit,&x[i]);
+       (void)utInvCalendar_cal(year[i],month[i],day[i],hour[i],minute[i],
+                               *tmp_second,&unit,&x[i],ccal);
     }
     else {
       x[i]  = missing_x.doubleval;
