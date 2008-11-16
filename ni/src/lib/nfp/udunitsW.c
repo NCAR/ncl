@@ -114,7 +114,7 @@ NhlErrorTypes ut_calendar_W( void )
   NclAttList  *attr_list;
   NclAtt  attr_obj;
   NclStackEntry   stack_entry;
-  string *calendar;
+  string *scal;
   char   *ccal = NULL;
 /*
  * Variables for Udunits package.
@@ -130,10 +130,21 @@ NhlErrorTypes ut_calendar_W( void )
   int ndims_date, *dsizes_date;
   NclScalar missing_date;
   NclBasicDataTypes type_date;
+  NclObjClass type_date_t;
+/*
+ * Variables for returning "calendar" attribute.
+ */
+  int att_id;
+  NclQuark *calendar;
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
 /*
  * various
  */
-  int i, total_size_x, total_size_date, index_date, return_missing, ret;
+  int i, ret, return_missing, dsizes[1];
+  int total_size_x, total_size_date, index_date;
   extern float truncf(float);
 /*
  * Before we do anything, initialize the Udunits package.
@@ -191,7 +202,8 @@ NhlErrorTypes ut_calendar_W( void )
   }
 
   if(*option == 0) {
-        type_date       = NCL_float;
+        type_date   = NCL_float;
+	type_date_t = nclTypefloatClass;
         total_size_date = 6 * total_size_x;
         missing_date    = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
         ndims_date      = ndims_x + 1;
@@ -200,6 +212,7 @@ NhlErrorTypes ut_calendar_W( void )
   else if(*option == -5) {
 /* identical to option=0, except returns ints */
         type_date       = NCL_int;
+	type_date_t     = nclTypeintClass;
         total_size_date = 6 * total_size_x;
         missing_date    = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
         ndims_date      = ndims_x + 1;
@@ -207,6 +220,7 @@ NhlErrorTypes ut_calendar_W( void )
   }
   else if(*option >= 1 && *option <= 4) {
         type_date       = NCL_double;
+	type_date_t     = nclTypedoubleClass;
         total_size_date = total_size_x;
         missing_date    = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
         ndims_date      = ndims_x;
@@ -214,6 +228,7 @@ NhlErrorTypes ut_calendar_W( void )
   }
   else if(*option >= -3 && *option <= -1) {
         type_date       = NCL_int;
+	type_date_t     = nclTypeintClass;
         total_size_date = total_size_x;
         missing_date    = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
         ndims_date      = ndims_x;
@@ -285,8 +300,8 @@ NhlErrorTypes ut_calendar_W( void )
  */
       while (attr_list != NULL) {
         if ((strcmp(attr_list->attname, "calendar")) == 0) {
-          calendar = (string *) attr_list->attvalue->multidval.val;
-          ccal     = NrmQuarkToString(*calendar);
+          scal = (string *) attr_list->attvalue->multidval.val;
+          ccal = NrmQuarkToString(*scal);
           if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
              strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
              strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
@@ -522,16 +537,102 @@ NhlErrorTypes ut_calendar_W( void )
   utTerm();
 
 /*
- * Return.
- */ 
+ * Set up variable to return.
+ */
   if(has_missing_x) {
-    ret = NclReturnValue(date,ndims_date,dsizes_date,&missing_date,type_date,0);
+        return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            date,
+                            &missing_date,
+                            ndims_date,
+                            dsizes_date,
+                            TEMPORARY,
+                            NULL,
+                            type_date_t
+                            );
   }
   else {
-    ret = NclReturnValue(date,ndims_date,dsizes_date,NULL,type_date,0);
+        return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            date,
+                            NULL,
+                            ndims_date,
+                            dsizes_date,
+                            TEMPORARY,
+                            NULL,
+                            type_date_t
+                            );
   }
-  NclFree(dsizes_date);
-  return(ret);
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+  dsizes[0] = 1;
+
+/*
+ * Return "calendar" attribute.
+ *
+ * We can't just return "scal" here, because it's an NCL input
+ * parameter and this seems to screw things up if we try to
+ * return it as an attribute.
+ */
+  calendar = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  if(ccal != NULL) {
+    *calendar = NrmStringToQuark(ccal);
+  }
+  else {
+    *calendar = NrmStringToQuark("standard");
+  }
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)calendar,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "calendar",
+             att_md,
+             NULL
+             );
+
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          NULL,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+    NclFree(dsizes_date);
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 NhlErrorTypes ut_inv_calendar_W( void )
@@ -568,8 +669,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
  */
   NclAttList  *attr_list;
   NclAtt  attr_obj;
-  NclStackEntry   stack_entry;
-  string *calendar;
+  NclStackEntry stack_entry;
+  string *scal;
   char   *ccal = NULL;
 /*
  * Output variables.
@@ -578,9 +679,9 @@ NhlErrorTypes ut_inv_calendar_W( void )
   int has_missing_x;
   NclScalar missing_x;
 /*
- * Attribute variables
+ * Variables for returning "units" and "calendar" attributes.
  */
-  NclQuark *units;
+  NclQuark *units, *calendar;
   int att_id;
   NclMultiDValData att_md, return_md;
   NclVar tmp_var;
@@ -717,6 +818,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
            NULL,
            NULL,
            1);
+
 /*
  * Convert sspec to character string.
  */
@@ -729,6 +831,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Invalid specification string");
     return(NhlFATAL);
   }
+
 /*
  * Calculate total size of input arrays, and size and dimensions for
  * output array, and alloc memory for output array.
@@ -754,56 +857,58 @@ NhlErrorTypes ut_inv_calendar_W( void )
   }
 
 /* 
- * Check the "option" variable to see if it has the "calendar" option
- * set. It must be equal to one of the recognized calendars.
+ * Check the "option" variable to see if it is set to anything other than
+ * 0 and if it has the "calendar" option set. It must be equal to one of
+ * the recognized calendars.
  */
   return_missing = 0;
 
-  stack_entry = _NclGetArg(7, 8, DONT_CARE);
-  switch (stack_entry.kind) {
-  case NclStk_VAR:
-    if (stack_entry.u.data_var->var.att_id != -1) {
-      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-      if (attr_obj == NULL) {
-        break;
+  if(*option == 1) {
+    stack_entry = _NclGetArg(7, 8, DONT_CARE);
+    switch (stack_entry.kind) {
+    case NclStk_VAR:
+      if (stack_entry.u.data_var->var.att_id != -1) {
+	attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+	if (attr_obj == NULL) {
+	  break;
+	}
       }
-    }
-    else {
+      else {
 /*
  * att_id == -1 ==> no attributes specified args given.
  */
-      break;
-    }
+	break;
+      }
 /* 
  * Get optional arguments.
  */
-    if (attr_obj->att.n_atts > 0) {
+      if (attr_obj->att.n_atts > 0) {
 /*
  * Get list of attributes.
  */
-      attr_list = attr_obj->att.att_list;
+	attr_list = attr_obj->att.att_list;
 /*
  * Loop through attributes and check them.
  */
-      while (attr_list != NULL) {
-        if ((strcmp(attr_list->attname, "calendar")) == 0) {
-          calendar = (string *) attr_list->attvalue->multidval.val;
-          ccal     = NrmQuarkToString(*calendar);
-          if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
-             strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
-             strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
-             strcmp(ccal,"360") ) {
-            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-            return_missing = 1;
-          }
-        }
-        attr_list = attr_list->next;
+	while (attr_list != NULL) {
+	  if ((strcmp(attr_list->attname, "calendar")) == 0) {
+	    scal = (string *) attr_list->attvalue->multidval.val;
+	    ccal = NrmQuarkToString(*scal);
+	    if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
+	       strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
+	       strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
+	       strcmp(ccal,"360") ) {
+	      NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
+	      return_missing = has_missing_x = 1;
+	    }
+	  }
+	  attr_list = attr_list->next;
+	}
       }
+    default:
+      break;
     }
-  default:
-    break;
   }
-
 
 /* 
  * Loop through each data value, and call Udunits routine.
@@ -821,18 +926,18 @@ NhlErrorTypes ut_inv_calendar_W( void )
       tmp_second = &((double*)second)[i];
     }
 
-    if((!has_missing_year   ||
-        (has_missing_year  && year[i]    != missing_year.intval))   &&
-       (!has_missing_month  ||
-         (has_missing_month && month[i]  != missing_month.intval))  &&
-       (!has_missing_day    ||
-         (has_missing_day   && day[i]    != missing_day.intval))    &&
-       (!has_missing_hour   ||
-         (has_missing_hour  && hour[i]   != missing_hour.intval))   &&
+    if(!return_missing && (!has_missing_year   ||
+        (has_missing_year && year[i]       != missing_year.intval))   &&
+       (!has_missing_month ||
+         (has_missing_month && month[i]    != missing_month.intval))  &&
+       (!has_missing_day ||
+         (has_missing_day && day[i]        != missing_day.intval))    &&
+       (!has_missing_hour ||
+         (has_missing_hour  && hour[i]     != missing_hour.intval))   &&
        (!has_missing_minute ||
-         (has_missing_minute&& minute[i] != missing_minute.intval)) &&
+         (has_missing_minute && minute[i]  != missing_minute.intval)) &&
        (!has_missing_second ||
-        (has_missing_second&& *tmp_second != missing_second.doubleval)) ) {
+        (has_missing_second && *tmp_second != missing_second.doubleval)) ) {
 
        (void)utInvCalendar_cal(year[i],month[i],day[i],hour[i],minute[i],
                                *tmp_second,&unit,&x[i],ccal);
@@ -888,6 +993,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
   dsizes[0] = 1;
 
 /*
+ * Return "units" attribute.
+ *
  * We can't just return "sspec" here, because it's an NCL input
  * parameter and this seems to screw things up if we try to
  * return it as an attribute.
@@ -911,6 +1018,40 @@ NhlErrorTypes ut_inv_calendar_W( void )
   _NclAddAtt(
              att_id,
              "units",
+             att_md,
+             NULL
+             );
+
+/*
+ * Return "calendar" attribute.
+ *
+ * We can't just return "sspec" here, because it's an NCL input
+ * parameter and this seems to screw things up if we try to
+ * return it as an attribute.
+ */
+  calendar = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  if(ccal != NULL) {
+    *calendar = NrmStringToQuark(ccal);
+  }
+  else {
+    *calendar = NrmStringToQuark("standard");
+  }
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)calendar,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "calendar",
              att_md,
              NULL
              );
