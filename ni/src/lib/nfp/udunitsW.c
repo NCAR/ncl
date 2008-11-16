@@ -857,57 +857,54 @@ NhlErrorTypes ut_inv_calendar_W( void )
   }
 
 /* 
- * Check the "option" variable to see if it is set to anything other than
- * 0 and if it has the "calendar" option set. It must be equal to one of
- * the recognized calendars.
+ * Check the "option" variable to see if it contains a "calendar"
+ * attribute.
  */
   return_missing = 0;
 
-  if(*option == 1) {
-    stack_entry = _NclGetArg(7, 8, DONT_CARE);
-    switch (stack_entry.kind) {
-    case NclStk_VAR:
-      if (stack_entry.u.data_var->var.att_id != -1) {
-	attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-	if (attr_obj == NULL) {
-	  break;
-	}
+  stack_entry = _NclGetArg(7, 8, DONT_CARE);
+  switch (stack_entry.kind) {
+  case NclStk_VAR:
+    if (stack_entry.u.data_var->var.att_id != -1) {
+      attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+      if (attr_obj == NULL) {
+	break;
       }
-      else {
+    }
+    else {
 /*
  * att_id == -1 ==> no attributes specified args given.
  */
-	break;
-      }
+      break;
+    }
 /* 
  * Get optional arguments.
  */
-      if (attr_obj->att.n_atts > 0) {
+    if (attr_obj->att.n_atts > 0) {
 /*
  * Get list of attributes.
  */
-	attr_list = attr_obj->att.att_list;
+      attr_list = attr_obj->att.att_list;
 /*
  * Loop through attributes and check them.
  */
-	while (attr_list != NULL) {
-	  if ((strcmp(attr_list->attname, "calendar")) == 0) {
-	    scal = (string *) attr_list->attvalue->multidval.val;
-	    ccal = NrmQuarkToString(*scal);
-	    if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
-	       strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
-	       strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
-	       strcmp(ccal,"360") ) {
-	      NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-	      return_missing = has_missing_x = 1;
-	    }
+      while (attr_list != NULL) {
+	if ((strcmp(attr_list->attname, "calendar")) == 0) {
+	  scal = (string *) attr_list->attvalue->multidval.val;
+	  ccal = NrmQuarkToString(*scal);
+	  if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
+	     strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
+	     strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
+	     strcmp(ccal,"360") ) {
+	    NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
+	    return_missing = has_missing_x = 1;
 	  }
-	  attr_list = attr_list->next;
 	}
+	attr_list = attr_list->next;
       }
-    default:
-      break;
     }
+  default:
+    break;
   }
 
 /* 
