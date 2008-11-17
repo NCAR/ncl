@@ -83,6 +83,7 @@ extern NhlErrorTypes gaus_lobat_wgt_W(void);
 extern NhlErrorTypes linrood_latwgt_W(void);
 extern NhlErrorTypes linrood_wgt_W(void);
 extern NhlErrorTypes wgt_vert_avg_beta_W(void);
+extern NhlErrorTypes space_time_cross_segment_W(void);
 
 extern NhlErrorTypes rgbhsv_W(void);
 extern NhlErrorTypes hsvrgb_W(void);
@@ -1553,6 +1554,21 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(wgt_vert_avg_beta_W,args,"wgt_vert_avg_beta",nargs);
+
+/*
+ * Register "space_time_cross_segment".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+
+        NclRegisterFunc(space_time_cross_segment_W,args,"space_time_cross_segment",nargs);
 
 /*
  * Register "gc_onarc".
