@@ -4802,14 +4802,13 @@ NhlErrorTypes wrf_dbz_W( void )
     }
 
 /*
- * Check values for q arrays. If all zero, then set sn0 to 0. Otherwise
+ * Check values for qsn array. If all zero, then set sn0 to 0. Otherwise
  * set sn0 to 1.
  */
     j   = 0;
     sn0 = 0;
-    while(j < nbtsnwe && !sn0) {
-      if(tmp_qvp[j] != 0. || tmp_qra[j] != 0. || tmp_qsn[j] != 0. || 
-         tmp_qgr[j] != 0. ) sn0 = 1;
+    while( (j < nbtsnwe) && !sn0) {
+      if(tmp_qsn[j] != 0.) sn0 = 1;
       j++;
     }
 /*
