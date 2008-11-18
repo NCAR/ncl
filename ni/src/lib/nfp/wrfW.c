@@ -4948,8 +4948,11 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *pv;
   double *tmp_pv;
+  int att_id;
   NclBasicDataTypes type_pv;
   NclObjClass type_obj_pv;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
 
 /*
  * Various
@@ -5578,6 +5581,65 @@ NhlErrorTypes wrf_pvo_W( void )
                             type_obj_pv
                             );
 
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(20,sizeof(char));
+  strcpy(cdescription,"Potential Vorticity");
+  description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+
+  cunits       = (char *)calloc(4,sizeof(char));
+  strcpy(cunits,"PVU");
+  units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -5586,7 +5648,7 @@ NhlErrorTypes wrf_pvo_W( void )
                           NULL,
                           return_md,
                           dim_info,
-                          -1,
+                          att_id,
                           NULL,
                           RETURNVAR,
                           NULL,
@@ -5677,16 +5739,18 @@ NhlErrorTypes wrf_avo_W( void )
 /*
  * Variable for getting/setting dimension name info.
  */
-  NclDimRec *dim_info;
+  NclDimRec *dim_info, *dim_info_v;
 
 /*
  * Return variable
  */
   void *av;
   double *tmp_av;
-  int *dsizes_av;
+  int att_id, *dsizes_av;
   NclBasicDataTypes type_av;
   NclObjClass type_obj_av;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
 
 /*
  * Various
@@ -5978,6 +6042,21 @@ NhlErrorTypes wrf_avo_W( void )
   dsizes_av[ndims_u-2] = ny;
   dsizes_av[ndims_u-3] = nz;
 
+/*
+ * Retrieve dimension names from the "u" and "v" variables, if any.
+ *
+ * U's dimension names will be used for the output, except for the
+ * rightmost dimension which will be replaced by V's rightmost dimension
+ * name.
+ */
+  dim_info   = get_wrf_dim_info(0,9,ndims_u,dsizes_u);
+  dim_info_v = get_wrf_dim_info(1,9,ndims_v,dsizes_v);
+
+  dim_info[ndims_u-1].dim_size = nx;
+  dim_info[ndims_u-2].dim_size = ny;
+  dim_info[ndims_u-3].dim_size = nz;
+  dim_info[ndims_u-1].dim_quark = dim_info_v[ndims_v-1].dim_quark;
+
 /* 
  * Allocate space for coercing input arrays.  If any of the input
  * is already double, then we don't need to allocate space for
@@ -6213,6 +6292,65 @@ NhlErrorTypes wrf_avo_W( void )
                             type_obj_av
                             );
 
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(19,sizeof(char));
+  strcpy(cdescription,"Absolute Vorticity");
+  description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+
+  cunits       = (char *)calloc(9,sizeof(char));
+  strcpy(cunits,"10-5 s-1");
+  units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
   tmp_var = _NclVarCreate(
                           NULL,
                           NULL,
@@ -6220,8 +6358,8 @@ NhlErrorTypes wrf_avo_W( void )
                           0,
                           NULL,
                           return_md,
-                          NULL,
-                          -1,
+                          dim_info,
+                          att_id,
                           NULL,
                           RETURNVAR,
                           NULL,
@@ -6298,11 +6436,24 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   double *tmp_loc;
   int ndims_loc, *dsizes_loc;
   NclBasicDataTypes type_loc;
+  NclObjClass type_obj_loc;
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Various
  */
-  int npts, index_loc, i, ret;
+  int npts, index_loc, i;
 
 /*
  * Retrieve parameters.
@@ -6654,7 +6805,8 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  * The output type defaults to float, unless either of the lat/lon arrays
  * are double.
  */
-  type_loc = NCL_float;
+  type_loc     = NCL_float;
+  type_obj_loc = nclTypefloatClass;
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -6673,7 +6825,8 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     }
   }
   else {
-    type_loc = NCL_double;
+    type_loc     = NCL_double;
+    type_obj_loc = nclTypedoubleClass;
   }
 
 /*
@@ -6687,7 +6840,8 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     }
   }
   else {
-    type_loc = NCL_double;
+    type_loc     = NCL_double;
+    type_obj_loc = nclTypedoubleClass;
   }
 
 /* 
@@ -6796,12 +6950,59 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   if(type_loninc    != NCL_double) NclFree(tmp_loninc);
   if(type_loc       != NCL_double) NclFree(tmp_loc);
 
+  dim_info = malloc(sizeof(NclDimRec)*ndims_loc);
+  if(dim_info == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"wrf_ll_to_ij: Unable to allocate memory for setting dimension names");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_loc; i++ ) {
+    dim_info[i].dim_num   = i;
+    dim_info[i].dim_quark = -1;
+    dim_info[i].dim_size  = dsizes_loc[i];
+  }
+  dim_info[ndims_loc-1].dim_quark = NrmStringToQuark("j_i_location");
+
 /*
- * Return value back to NCL script.
+ * Set up return value.
  */
-  ret = NclReturnValue(loc,ndims_loc,dsizes_loc,NULL,type_loc,0);
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)loc,
+                            NULL,
+                            ndims_loc,
+                            dsizes_loc,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_loc
+                            );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          -1,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
   NclFree(dsizes_loc);
-  return(ret);
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 
@@ -6865,6 +7066,20 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   double *tmp_loc;
   int ndims_loc, *dsizes_loc;
   NclBasicDataTypes type_loc;
+  NclObjClass type_obj_loc;
+
+/*
+ * Variables for returning the output array with attributes attached.
+ */
+  int att_id;
+  int dsizes[1];
+  NclMultiDValData att_md, return_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Various
@@ -7221,7 +7436,8 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * The output type defaults to float, unless either of the lat/lon arrays
  * are double.
  */
-  type_loc = NCL_float;
+  type_loc     = NCL_float;
+  type_obj_loc = nclTypefloatClass;
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -7240,7 +7456,8 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     }
   }
   else {
-    type_loc = NCL_double;
+    type_loc     = NCL_double;
+    type_obj_loc = nclTypedoubleClass;
   }
 
 /*
@@ -7254,7 +7471,8 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     }
   }
   else {
-    type_loc = NCL_double;
+    type_loc     = NCL_double;
+    type_obj_loc = nclTypedoubleClass;
   }
 
 /* 
@@ -7363,12 +7581,59 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   if(type_loninc    != NCL_double) NclFree(tmp_loninc);
   if(type_loc       != NCL_double) NclFree(tmp_loc);
 
+  dim_info = malloc(sizeof(NclDimRec)*ndims_loc);
+  if(dim_info == NULL) {
+    NhlPError(NhlWARNING,NhlEUNKNOWN,"wrf_ij_to_ll: Unable to allocate memory for setting dimension names");
+    return(NhlFATAL);
+  }
+  for(i = 0; i < ndims_loc; i++ ) {
+    dim_info[i].dim_num   = i;
+    dim_info[i].dim_quark = -1;
+    dim_info[i].dim_size  = dsizes_loc[i];
+  }
+  dim_info[ndims_loc-1].dim_quark = NrmStringToQuark("lat_lon_location");
+
 /*
- * Return value back to NCL script.
+ * Set up return value.
  */
-  ret = NclReturnValue(loc,ndims_loc,dsizes_loc,NULL,type_loc,0);
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)loc,
+                            NULL,
+                            ndims_loc,
+                            dsizes_loc,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_loc
+                            );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          -1,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
   NclFree(dsizes_loc);
-  return(ret);
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
 }
 
 /*
