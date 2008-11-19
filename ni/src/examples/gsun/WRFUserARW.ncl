@@ -1153,7 +1153,6 @@ begin
 
   if( variable .eq. "dbz" .or. variable .eq. "mdbz" ) then
        ; calculate dbz
-       sn0 = 1
        if ( time .eq. -1 ) then
          T  = nc_file->T
          P  = nc_file->P
@@ -1165,7 +1164,6 @@ begin
          else
            qs = qv
            qs = 0.0
-           sn0 = 0
          end if
          if(isfilevar(nc_file,"QGRAUP"))
            qg = nc_file->QGRAUP
@@ -1184,7 +1182,6 @@ begin
          else
            qs = qv
            qs = 0.0
-           sn0 = 0
          end if
          if(isfilevar(nc_file,"QGRAUP"))
            qg = nc_file->QGRAUP(time,:,:,:)
@@ -1214,7 +1211,7 @@ begin
        end do
 
        dim = dimsizes(tk)
-       dbz = wrf_dbz ( p, tk, qv, qr, qs, qg, sn0, ivarint, iliqskin)
+       dbz = wrf_dbz ( p, tk, qv, qr, qs, qg, ivarint, iliqskin)
 
        if ( variable .eq. "mdbz") then
          mdbz = new ( (/ dim(1), dim(2) /), typeof(tk))
