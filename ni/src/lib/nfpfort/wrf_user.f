@@ -416,11 +416,11 @@ C Double precision version. If you make a change here, you
 C must make the same change below to filter2d.
 C
 C NCLFORTSTART
-      SUBROUTINE DFILTER2D(A,B,NX,NY,IT)
+      SUBROUTINE DFILTER2D(A,B,NX,NY,IT,MISSING)
       IMPLICIT NONE
 c     Estimate sea level pressure.
       INTEGER NX,NY,IT
-      DOUBLE PRECISION A(NX,NY),B(NX,NY)
+      DOUBLE PRECISION A(NX,NY),B(NX,NY),MISSING
 C NCLEND
 
       DOUBLE PRECISION COEF
@@ -434,14 +434,24 @@ C NCLEND
               END DO
           END DO
           DO J = 2,NY - 1
-              DO I = 1,NX
-                  A(I,J) = A(I,J) + COEF* (B(I,J-1)-2*B(I,J)+B(I,J+1))
-              END DO
+             DO I = 1,NX
+                IF ( B(I,J-1).EQ.MISSING .OR. B(I,J).EQ.MISSING .OR.
+     +               B(I,J+1).EQ.MISSING ) THEN
+                   A(I,J) = A(I,J)
+                ELSE
+                   A(I,J) = A(I,J) + COEF* (B(I,J-1)-2*B(I,J)+B(I,J+1))
+                END IF
+             END DO
           END DO
           DO J = 1,NY
-              DO I = 2,NX - 1
-                  A(I,J) = A(I,J) + COEF* (B(I-1,J)-2*B(I,J)+B(I+1,J))
-              END DO
+             DO I = 2,NX - 1
+                IF ( B(I-1,J).EQ.MISSING .OR. B(I,J).EQ.MISSING .OR.
+     +               B(I+1,J).EQ.MISSING ) THEN
+                   A(I,J) = A(I,J)
+                ELSE
+                   A(I,J) = A(I,J) + COEF* (B(I-1,J)-2*B(I,J)+B(I+1,J))
+                END IF
+             END DO
           END DO
 c        do j=1,ny
 c        do i=1,nx
@@ -467,11 +477,11 @@ C Single precision version. If you make a change here, you
 C must make the same change above to dfilter2d.
 C
 C NCLFORTSTART
-      SUBROUTINE filter2d( a, b, nx , ny , it)
+      SUBROUTINE filter2d( a, b, nx , ny , it, missing)
       IMPLICIT NONE
 c     Estimate sea level pressure.
       INTEGER nx , ny, it
-      REAL    a(nx,ny),b(nx,ny)
+      REAL    a(nx,ny),b(nx,ny), missing
 C NCLEND
 
       REAL coef
@@ -486,12 +496,22 @@ C NCLEND
         enddo
         do j=2,ny-1
         do i=1,nx
-          a(i,j) = a(i,j) + coef*(b(i,j-1)-2*b(i,j)+b(i,j+1))
+          if ( b(i,j-1).eq.missing .or. b(i,j).eq.missing .or.
+     +         b(i,j+1).eq.missing ) then
+             a(i,j) = a(i,j)
+          else
+             a(i,j) = a(i,j) + coef*(b(i,j-1)-2*b(i,j)+b(i,j+1))
+          end if
         enddo
         enddo
         do j=1,ny
         do i=2,nx-1
-          a(i,j) = a(i,j) + coef*(b(i-1,j)-2*b(i,j)+b(i+1,j))
+           if ( b(i-1,j).eq.missing .or. b(i,j).eq.missing .or.
+     +          b(i+1,j).eq.missing ) then
+              a(i,j) = a(i,j)
+           else
+              a(i,j) = a(i,j) + coef*(b(i-1,j)-2*b(i,j)+b(i+1,j))
+           end if
         enddo
         enddo
 c        do j=1,ny
