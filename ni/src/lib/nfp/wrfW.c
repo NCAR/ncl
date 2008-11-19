@@ -6501,18 +6501,17 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 /*
  * Argument # 0
  */
-  void *lat;
-  double *tmp_lat;
-  int ndims_lat, dsizes_lat[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_lat;
-
-/*
- * Argument # 1
- */
   void *lon;
   double *tmp_lon;
   int ndims_lon, dsizes_lon[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_lon;
+/*
+ * Argument # 1
+ */
+  void *lat;
+  double *tmp_lat;
+  int ndims_lat, dsizes_lat[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_lat;
 
 /*
  * Argument # 2
@@ -6580,27 +6579,27 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 /*
  * Get argument # 0
  */
-  lat = (void*)NclGetArgValue(
-           0,
-           3,
-           &ndims_lat,
-           dsizes_lat,
-           NULL,
-           NULL,
-           &type_lat,
-           2);
-
-/*
- * Get argument # 1
- */
   lon = (void*)NclGetArgValue(
-           1,
+           0,
            3,
            &ndims_lon,
            dsizes_lon,
            NULL,
            NULL,
            &type_lon,
+           2);
+
+/*
+ * Get argument # 1
+ */
+  lat = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_lat,
+           dsizes_lat,
+           NULL,
+           NULL,
+           &type_lat,
            2);
 
 /*
@@ -6682,85 +6681,71 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  *   latinc, loninc
  */
       while (attr_list != NULL) {
-        if(!strcmp(attr_list->attname, "MAP_PROJ") || 
-           !strcmp(attr_list->attname, "map_proj")) {
+        if(!strcasecmp(attr_list->attname, "map_proj")) {
           map_proj = *(int *)attr_list->attvalue->multidval.val;
           set_map_proj = True;
         }
-        else if(!strcmp(attr_list->attname, "TRUELAT1") || 
-                !strcmp(attr_list->attname, "truelat1")) {
+        else if(!strcasecmp(attr_list->attname, "truelat1")) {
           truelat1      = attr_list->attvalue->multidval.val;
           type_truelat1 = attr_list->attvalue->multidval.data_type;
           set_truelat1  = True;
         }
-        else if(!strcmp(attr_list->attname, "TRUELAT2") || 
-                !strcmp(attr_list->attname, "truelat2")) {
+        else if(!strcasecmp(attr_list->attname, "truelat2")) {
           truelat2      = attr_list->attvalue->multidval.val;
           type_truelat2 = attr_list->attvalue->multidval.data_type;
           set_truelat2  = True;
         }
-        else if(!strcmp(attr_list->attname, "STAND_LON") || 
-                !strcmp(attr_list->attname, "stand_lon")) {
+        else if(!strcasecmp(attr_list->attname, "stand_lon")) {
           stand_lon      = attr_list->attvalue->multidval.val;
           type_stand_lon = attr_list->attvalue->multidval.data_type;
           set_stand_lon  = True;
         }
-        else if(!strcmp(attr_list->attname, "LAT1") || 
-                !strcmp(attr_list->attname, "lat1")) {
+        else if(!strcasecmp(attr_list->attname, "lat1")) {
           lat1      = attr_list->attvalue->multidval.val;
           type_lat1 = attr_list->attvalue->multidval.data_type;
           set_lat1  = True;
         }
-        else if(!strcmp(attr_list->attname, "LON1") || 
-                !strcmp(attr_list->attname, "lon1")) {
+        else if(!strcasecmp(attr_list->attname, "lon1")) {
           lon1      = attr_list->attvalue->multidval.val;
           type_lon1 = attr_list->attvalue->multidval.data_type;
           set_lon1  = True;
         }
-        else if(!strcmp(attr_list->attname, "POLE_LAT") || 
-                !strcmp(attr_list->attname, "pole_lat")) {
+        else if(!strcasecmp(attr_list->attname, "pole_lat")) {
           pole_lat      = attr_list->attvalue->multidval.val;
           type_pole_lat = attr_list->attvalue->multidval.data_type;
           set_pole_lat  = True;
         }
-        else if(!strcmp(attr_list->attname, "POLE_LON") || 
-                !strcmp(attr_list->attname, "pole_lon")) {
+        else if(!strcasecmp(attr_list->attname, "pole_lon")) {
           pole_lon      = attr_list->attvalue->multidval.val;
           type_pole_lon = attr_list->attvalue->multidval.data_type;
           set_pole_lon  = True;
         }
-        else if(!strcmp(attr_list->attname, "KNOWNI") || 
-                !strcmp(attr_list->attname, "knowni")) {
+        else if(!strcasecmp(attr_list->attname, "knowni")) {
           knowni      = attr_list->attvalue->multidval.val;
           type_knowni = attr_list->attvalue->multidval.data_type;
           set_knowni  = True;
         }
-        else if(!strcmp(attr_list->attname, "KNOWNJ") || 
-                !strcmp(attr_list->attname, "knownj")) {
+        else if(!strcasecmp(attr_list->attname, "knownj")) {
           knownj      = attr_list->attvalue->multidval.val;
           type_knownj = attr_list->attvalue->multidval.data_type;
           set_knownj  = True;
         }
-        else if(!strcmp(attr_list->attname, "DX") || 
-                !strcmp(attr_list->attname, "dx")) {
+        else if(!strcasecmp(attr_list->attname, "dx")) {
           dx      = attr_list->attvalue->multidval.val;
           type_dx = attr_list->attvalue->multidval.data_type;
           set_dx  = True;
         }
-        else if(!strcmp(attr_list->attname, "DY") || 
-                !strcmp(attr_list->attname, "dy")) {
+        else if(!strcasecmp(attr_list->attname, "dy")) {
           dy      = attr_list->attvalue->multidval.val;
           type_dy = attr_list->attvalue->multidval.data_type;
           set_dy  = True;
         }
-        else if(!strcmp(attr_list->attname, "LATINC") || 
-                !strcmp(attr_list->attname, "latinc")) {
+        else if(!strcasecmp(attr_list->attname, "latinc")) {
           latinc      = attr_list->attvalue->multidval.val;
           type_latinc = attr_list->attvalue->multidval.data_type;
           set_latinc  = True;
         }
-        else if(!strcmp(attr_list->attname, "LONINC") || 
-                !strcmp(attr_list->attname, "loninc")) {
+        else if(!strcasecmp(attr_list->attname, "loninc")) {
           loninc      = attr_list->attvalue->multidval.val;
           type_loninc = attr_list->attvalue->multidval.data_type;
           set_loninc  = True;
@@ -7038,10 +7023,12 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
                              tmp_lon, tmp_loc);
 
 /*
- * Coerce output back to float if necessary.
+ * Coerce output back to float if necessary. What's returned is in
+ * j,i order, so be sure to return i,j order.
  */
     if(type_loc == NCL_float) {
-      coerce_output_float_only(loc,tmp_loc,2,index_loc);
+      coerce_output_float_only(loc,&tmp_loc[1],1,index_loc);
+      coerce_output_float_only(loc,&tmp_loc[0],1,index_loc+1);
     }
     index_loc += 2;
   }
@@ -7076,7 +7063,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
     dim_info[i].dim_quark = -1;
     dim_info[i].dim_size  = dsizes_loc[i];
   }
-  dim_info[ndims_loc-1].dim_quark = NrmStringToQuark("j_i_location");
+  dim_info[ndims_loc-1].dim_quark = NrmStringToQuark("i_j_location");
 
 /*
  * Set up return value.
@@ -7124,7 +7111,6 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
 
 NhlErrorTypes wrf_ij_to_ll_W( void )
 {
-
 /*
  * Input variables
  */
@@ -7313,85 +7299,71 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  *   latinc, loninc
  */
       while (attr_list != NULL) {
-        if(!strcmp(attr_list->attname, "MAP_PROJ") || 
-           !strcmp(attr_list->attname, "map_proj")) {
+        if(!strcasecmp(attr_list->attname, "map_proj")) {
           map_proj = *(int *)attr_list->attvalue->multidval.val;
           set_map_proj = True;
         }
-        else if(!strcmp(attr_list->attname, "TRUELAT1") || 
-                !strcmp(attr_list->attname, "truelat1")) {
+        else if(!strcasecmp(attr_list->attname, "truelat1")) {
           truelat1      = attr_list->attvalue->multidval.val;
           type_truelat1 = attr_list->attvalue->multidval.data_type;
           set_truelat1  = True;
         }
-        else if(!strcmp(attr_list->attname, "TRUELAT2") || 
-                !strcmp(attr_list->attname, "truelat2")) {
+        else if(!strcasecmp(attr_list->attname, "truelat2")) {
           truelat2      = attr_list->attvalue->multidval.val;
           type_truelat2 = attr_list->attvalue->multidval.data_type;
           set_truelat2  = True;
         }
-        else if(!strcmp(attr_list->attname, "STAND_LON") || 
-                !strcmp(attr_list->attname, "stand_lon")) {
+        else if(!strcasecmp(attr_list->attname, "stand_lon")) {
           stand_lon      = attr_list->attvalue->multidval.val;
           type_stand_lon = attr_list->attvalue->multidval.data_type;
           set_stand_lon  = True;
         }
-        else if(!strcmp(attr_list->attname, "LAT1") || 
-                !strcmp(attr_list->attname, "lat1")) {
+        else if(!strcasecmp(attr_list->attname, "lat1")) {
           lat1      = attr_list->attvalue->multidval.val;
           type_lat1 = attr_list->attvalue->multidval.data_type;
           set_lat1  = True;
         }
-        else if(!strcmp(attr_list->attname, "LON1") || 
-                !strcmp(attr_list->attname, "lon1")) {
+        else if(!strcasecmp(attr_list->attname, "lon1")) {
           lon1      = attr_list->attvalue->multidval.val;
           type_lon1 = attr_list->attvalue->multidval.data_type;
           set_lon1  = True;
         }
-        else if(!strcmp(attr_list->attname, "POLE_LAT") || 
-                !strcmp(attr_list->attname, "pole_lat")) {
+        else if(!strcasecmp(attr_list->attname, "pole_lat")) {
           pole_lat      = attr_list->attvalue->multidval.val;
           type_pole_lat = attr_list->attvalue->multidval.data_type;
           set_pole_lat  = True;
         }
-        else if(!strcmp(attr_list->attname, "POLE_LON") || 
-                !strcmp(attr_list->attname, "pole_lon")) {
+        else if(!strcasecmp(attr_list->attname, "pole_lon")) {
           pole_lon      = attr_list->attvalue->multidval.val;
           type_pole_lon = attr_list->attvalue->multidval.data_type;
           set_pole_lon  = True;
         }
-        else if(!strcmp(attr_list->attname, "KNOWNI") || 
-                !strcmp(attr_list->attname, "knowni")) {
+        else if(!strcasecmp(attr_list->attname, "knowni")) {
           knowni      = attr_list->attvalue->multidval.val;
           type_knowni = attr_list->attvalue->multidval.data_type;
           set_knowni  = True;
         }
-        else if(!strcmp(attr_list->attname, "KNOWNJ") || 
-                !strcmp(attr_list->attname, "knownj")) {
+        else if(!strcasecmp(attr_list->attname, "knownj")) {
           knownj      = attr_list->attvalue->multidval.val;
           type_knownj = attr_list->attvalue->multidval.data_type;
           set_knownj  = True;
         }
-        else if(!strcmp(attr_list->attname, "DX") || 
-                !strcmp(attr_list->attname, "dx")) {
+        else if(!strcasecmp(attr_list->attname, "dx")) {
           dx      = attr_list->attvalue->multidval.val;
           type_dx = attr_list->attvalue->multidval.data_type;
           set_dx  = True;
         }
-        else if(!strcmp(attr_list->attname, "DY") || 
-                !strcmp(attr_list->attname, "dy")) {
+        else if(!strcasecmp(attr_list->attname, "dy")) {
           dy      = attr_list->attvalue->multidval.val;
           type_dy = attr_list->attvalue->multidval.data_type;
           set_dy  = True;
         }
-        else if(!strcmp(attr_list->attname, "LATINC") || 
-                !strcmp(attr_list->attname, "latinc")) {
+        else if(!strcasecmp(attr_list->attname, "latinc")) {
           latinc      = attr_list->attvalue->multidval.val;
           type_latinc = attr_list->attvalue->multidval.data_type;
           set_latinc  = True;
         }
-        else if(!strcmp(attr_list->attname, "LONINC") || 
-                !strcmp(attr_list->attname, "loninc")) {
+        else if(!strcasecmp(attr_list->attname, "loninc")) {
           loninc      = attr_list->attvalue->multidval.val;
           type_loninc = attr_list->attvalue->multidval.data_type;
           set_loninc  = True;
@@ -7669,10 +7641,12 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
                              tmp_jloc, tmp_loc);
 
 /*
- * Coerce output back to float if necessary.
+ * Coerce output back to float if necessary. What's returned is in
+ * lat,lon (j,i) order, so be sure to return lon,lat (i,j) order.
  */
     if(type_loc == NCL_float) {
-      coerce_output_float_only(loc,tmp_loc,2,index_loc);
+      coerce_output_float_only(loc,&tmp_loc[1],1,index_loc);
+      coerce_output_float_only(loc,&tmp_loc[0],1,index_loc+1);
     }
     index_loc += 2;
   }
@@ -7707,7 +7681,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
     dim_info[i].dim_quark = -1;
     dim_info[i].dim_size  = dsizes_loc[i];
   }
-  dim_info[ndims_loc-1].dim_quark = NrmStringToQuark("lat_lon_location");
+  dim_info[ndims_loc-1].dim_quark = NrmStringToQuark("lon_lat_location");
 
 /*
  * Set up return value.
