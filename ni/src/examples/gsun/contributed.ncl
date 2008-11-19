@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.186 2008-11-12 17:26:40 haley Exp $
+;      $Id: contributed.ncl,v 1.187 2008-11-19 21:51:40 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -457,6 +457,9 @@ end
 ; D. Shea   
 ; Determine the number of rows (ie, number of records, lines)
 ; in an ascii file
+; This approach was suggested by: 
+; From: "Lunde, Bruce N CIV NAVOCEANO, NP1" <bruce.lunde@navy.mil>
+;
 ; Usage:   nrow = numAsciiRow ("/my/path/ascii_file") 
 
 undef ("numAsciiRow")
