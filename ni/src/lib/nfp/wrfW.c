@@ -22,10 +22,10 @@ extern void NGCALLF(dinterp1d,DINTERP1D)(double *,double *,double *,double *,
                                          int *, int *, double *);
 
 extern void NGCALLF(dfilter2d,DFILTER2D)(double *, double *, int *, int *, 
-                                         int *);
+                                         int *, double *);
 
 extern void NGCALLF(filter2d,FILTER2D)(float *, float *, int *, int *, 
-                                       int *);
+                                       int *, float *);
 
 extern void NGCALLF(dgetijlatlong,DGETIJLATLONG)(double *, double *, double *,
                                                  double *, int *, int *,
@@ -3005,13 +3005,10 @@ NhlErrorTypes wrf_smooth_2d_W( void )
  *
  */
   void *a;
-  int ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
+  int has_missing_a, ndims_a, dsizes_a[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_a;
+  NclScalar missing_a;
   int *it;
-/*
- * Variable for getting/setting dimension name info.
- */
-  NclDimRec *dim_info;
 
 /*
  * Various
@@ -3034,8 +3031,8 @@ NhlErrorTypes wrf_smooth_2d_W( void )
            2,
            &ndims_a,
            dsizes_a,
-           NULL,
-           NULL,
+           &missing_a,
+           &has_missing_a,
            &type_a,
            1);
 
@@ -3066,12 +3063,6 @@ NhlErrorTypes wrf_smooth_2d_W( void )
            NULL,
            NULL,
            2);
-
-/*
- * Retrieve dimension names from the "a" variable, if any.
- * These dimension names will later be attached to the output variable.
- */
-  dim_info = get_wrf_dim_info(0,1,ndims_a,dsizes_a);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -3106,10 +3097,12 @@ NhlErrorTypes wrf_smooth_2d_W( void )
 
   for(i = 0; i < size_leftmost; i++) {
     if(type_a == NCL_double) {
-      NGCALLF(dfilter2d,DFILTER2D)(&((double*)a)[index_a], db, &nx, &ny, it);
+      NGCALLF(dfilter2d,DFILTER2D)(&((double*)a)[index_a], db, &nx, &ny, it,
+                                   &missing_a.doubleval);
     }
     else {
-      NGCALLF(filter2d,FILTER2D)(&((float*)a)[index_a], fb, &nx, &ny, it);
+      NGCALLF(filter2d,FILTER2D)(&((float*)a)[index_a], fb, &nx, &ny, it,
+                                   &missing_a.floatval);
     }
     index_a += nynx;
   }
