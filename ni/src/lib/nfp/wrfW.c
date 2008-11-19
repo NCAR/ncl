@@ -4362,7 +4362,6 @@ void var_zero(double *tmp_var, int n)
 
 NhlErrorTypes wrf_dbz_W( void )
 {
-
 /*
  * Input variables
  */
@@ -4428,13 +4427,27 @@ NhlErrorTypes wrf_dbz_W( void )
   void *dbz;
   double *tmp_dbz;
   NclBasicDataTypes type_dbz;
+  NclObjClass type_obj_dbz;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
+/*
+ * Variables for returning the output array with dimension names attached.
+ */
+  int att_id, dsizes[1];
+  NclMultiDValData return_md, att_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
 
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
 
 /*
  * Various
  */
   int btdim, sndim, wedim, nbtsnwe, index_dbz;
-  int i, j, sn0, size_leftmost, size_output, ret;
+  int i, j, sn0, size_leftmost, size_output;
 
 /*
  * Retrieve parameters.
@@ -4620,7 +4633,8 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * The output type defaults to float, unless this input array is double.
  */
-  type_dbz = NCL_float;
+  type_dbz     = NCL_float;
+  type_obj_dbz = nclTypefloatClass;
 
 /* 
  * Allocate space for coercing input arrays.  If any of the input
@@ -4639,7 +4653,8 @@ NhlErrorTypes wrf_dbz_W( void )
     }
   }
   else {
-    type_dbz = NCL_double;
+    type_dbz     = NCL_double;
+    type_obj_dbz = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_tmk.
@@ -4652,7 +4667,8 @@ NhlErrorTypes wrf_dbz_W( void )
     }
   }
   else {
-    type_dbz = NCL_double;
+    type_dbz     = NCL_double;
+    type_obj_dbz = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_qvp.
@@ -4665,7 +4681,8 @@ NhlErrorTypes wrf_dbz_W( void )
     }
   }
   else {
-    type_dbz = NCL_double;
+    type_dbz     = NCL_double;
+    type_obj_dbz = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_qra.
@@ -4678,7 +4695,8 @@ NhlErrorTypes wrf_dbz_W( void )
     }
   }
   else {
-    type_dbz = NCL_double;
+    type_dbz     = NCL_double;
+    type_obj_dbz = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_qsn.
@@ -4691,7 +4709,8 @@ NhlErrorTypes wrf_dbz_W( void )
     }
   }
   else {
-    type_dbz = NCL_double;
+    type_dbz     = NCL_double;
+    type_obj_dbz = nclTypedoubleClass;
   }
 /*
  * Allocate space for tmp_qgr.
@@ -4704,7 +4723,8 @@ NhlErrorTypes wrf_dbz_W( void )
     }
   }
   else {
-    type_dbz = NCL_double;
+    type_dbz     = NCL_double;
+    type_obj_dbz = nclTypedoubleClass;
   }
 
 /* 
@@ -4844,10 +4864,113 @@ NhlErrorTypes wrf_dbz_W( void )
   if(type_dbz != NCL_double) NclFree(tmp_dbz);
 
 /*
+ * Retrieve dimension names from the "tmk" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_wrf_dim_info(1,8,ndims_tmk,dsizes_tmk);
+
+/*
+ * Set up return value.
+ */
+/*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(dbz,ndims_tmk,dsizes_tmk,NULL,type_dbz,0);
-  return(ret);
+
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)dbz,
+                            NULL,
+                            ndims_tmk,
+                            dsizes_tmk,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_dbz
+                            );
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(13,sizeof(char));
+  strcpy(cdescription,"Reflectivity");
+  description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+
+  cunits       = (char *)calloc(4,sizeof(char));
+  strcpy(cunits,"dBZ");
+  units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
 
 NhlErrorTypes wrf_pvo_W( void )
