@@ -6529,19 +6529,19 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  * Variables that can be set via attributes.
  */
   int map_proj;
-  void *truelat1, *truelat2, *stand_lon, *lat1, *lon1, *pole_lat, *pole_lon;
-  void *knowni, *knownj, *dx, *dy, *latinc, *loninc;
+  void *truelat1, *truelat2, *stand_lon, *ref_lat, *ref_lon;
+  void *pole_lat, *pole_lon, *knowni, *knownj, *dx, *dy, *latinc, *loninc;
 
-  double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon, *tmp_lat1, *tmp_lon1;
-  double *tmp_pole_lat, *tmp_pole_lon, *tmp_knowni, *tmp_knownj, *tmp_dx;
-  double *tmp_dy, *tmp_latinc, *tmp_loninc;
+  double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon;
+  double *tmp_ref_lat, *tmp_ref_lon, *tmp_pole_lat, *tmp_pole_lon;
+  double *tmp_knowni, *tmp_knownj, *tmp_dx, *tmp_dy, *tmp_latinc, *tmp_loninc;
 
-  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_lat1;
-  NclBasicDataTypes type_lon1, type_pole_lat, type_pole_lon, type_knowni;
+  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_ref_lat;
+  NclBasicDataTypes type_ref_lon, type_pole_lat, type_pole_lon, type_knowni;
   NclBasicDataTypes type_knownj, type_dx, type_dy, type_latinc, type_loninc;
 
-  logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_lat1;
-  logical set_lon1, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
+  logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_ref_lat;
+  logical set_ref_lon, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
   logical set_dx, set_dy, set_latinc, set_loninc;
 
 /*
@@ -6642,7 +6642,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  */
 
   set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
-  set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
+  set_ref_lat = set_ref_lon = set_pole_lat = set_pole_lon = False;
   set_knowni = set_knownj = set_dx = set_dy = set_latinc = set_loninc = False;
 
   stack_entry = _NclGetArg(2, 3, DONT_CARE);
@@ -6674,7 +6674,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  *   map_proj
  *   truelat1, truelat2
  *   stand_lon
- *   lat1, lon1
+ *   ref_lat, ref_lon
  *   pole_lat, pole_lon
  *   knowni, knownj
  *   dx, dy
@@ -6700,15 +6700,15 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
           type_stand_lon = attr_list->attvalue->multidval.data_type;
           set_stand_lon  = True;
         }
-        else if(!strcasecmp(attr_list->attname, "lat1")) {
-          lat1      = attr_list->attvalue->multidval.val;
-          type_lat1 = attr_list->attvalue->multidval.data_type;
-          set_lat1  = True;
+        else if(!strcasecmp(attr_list->attname, "ref_lat")) {
+          ref_lat      = attr_list->attvalue->multidval.val;
+          type_ref_lat = attr_list->attvalue->multidval.data_type;
+          set_ref_lat  = True;
         }
-        else if(!strcasecmp(attr_list->attname, "lon1")) {
-          lon1      = attr_list->attvalue->multidval.val;
-          type_lon1 = attr_list->attvalue->multidval.data_type;
-          set_lon1  = True;
+        else if(!strcasecmp(attr_list->attname, "ref_lon")) {
+          ref_lon      = attr_list->attvalue->multidval.val;
+          type_ref_lon = attr_list->attvalue->multidval.data_type;
+          set_ref_lon  = True;
         }
         else if(!strcasecmp(attr_list->attname, "pole_lat")) {
           pole_lat      = attr_list->attvalue->multidval.val;
@@ -6813,15 +6813,15 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   }
 
 /*
- * Check LAT1/LON1. Must be set.
+ * Check REF_LAT/REF_LON. Must be set.
  */
-  if(!set_lat1 || !set_lon1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The LAT1/LAT2 attributes must be set");
+  if(!set_ref_lat || !set_ref_lon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ll_to_ij: The REF_LAT/REF_LON attributes must be set");
     return(NhlFATAL);
   }
   else {
-    tmp_lat1 = coerce_input_double(lat1,type_lat1,1,0,NULL,NULL);
-    tmp_lon1 = coerce_input_double(lon1,type_lon1,1,0,NULL,NULL);
+    tmp_ref_lat = coerce_input_double(ref_lat,type_ref_lat,1,0,NULL,NULL);
+    tmp_ref_lon = coerce_input_double(ref_lon,type_ref_lon,1,0,NULL,NULL);
   }
 
 /*
@@ -7017,10 +7017,10 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
  * Call the Fortran routine.
  */
     NGCALLF(dlltoij,DLLTOIJ)(&map_proj, tmp_truelat1, tmp_truelat2, 
-                             tmp_stand_lon, tmp_lat1, tmp_lon1, tmp_pole_lat,
-                             tmp_pole_lon, tmp_knowni, tmp_knownj, tmp_dx,
-                             tmp_dy, tmp_latinc, tmp_loninc, tmp_lat, 
-                             tmp_lon, tmp_loc);
+                             tmp_stand_lon, tmp_ref_lat, tmp_ref_lon, 
+                             tmp_pole_lat, tmp_pole_lon, tmp_knowni,
+                             tmp_knownj, tmp_dx, tmp_dy, tmp_latinc, 
+                             tmp_loninc, tmp_lat, tmp_lon, tmp_loc);
 
 /*
  * Coerce output back to float if necessary. What's returned is in
@@ -7041,8 +7041,8 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
   if(type_truelat1  != NCL_double) NclFree(tmp_truelat1);
   if(type_truelat2  != NCL_double) NclFree(tmp_truelat2);
   if(type_stand_lon != NCL_double) NclFree(tmp_stand_lon);
-  if(type_lat1      != NCL_double) NclFree(tmp_lat1);
-  if(type_lon1      != NCL_double) NclFree(tmp_lon1);
+  if(type_ref_lat   != NCL_double) NclFree(tmp_ref_lat);
+  if(type_ref_lon   != NCL_double) NclFree(tmp_ref_lon);
   if(type_pole_lat  != NCL_double) NclFree(tmp_pole_lat);
   if(type_pole_lon  != NCL_double) NclFree(tmp_pole_lon);
   if(type_knowni    != NCL_double) NclFree(tmp_knowni);
@@ -7146,19 +7146,19 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * Variables that can be set via attributes.
  */
   int map_proj;
-  void *truelat1, *truelat2, *stand_lon, *lat1, *lon1, *pole_lat, *pole_lon;
-  void *knowni, *knownj, *dx, *dy, *latinc, *loninc;
+  void *truelat1, *truelat2, *stand_lon, *ref_lat, *ref_lon;
+  void *pole_lat, *pole_lon, *knowni, *knownj, *dx, *dy, *latinc, *loninc;
 
-  double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon, *tmp_lat1, *tmp_lon1;
-  double *tmp_pole_lat, *tmp_pole_lon, *tmp_knowni, *tmp_knownj, *tmp_dx;
-  double *tmp_dy, *tmp_latinc, *tmp_loninc;
+  double *tmp_truelat1, *tmp_truelat2, *tmp_stand_lon;
+  double *tmp_ref_lat, *tmp_ref_lon, *tmp_pole_lat, *tmp_pole_lon;
+  double *tmp_knowni, *tmp_knownj, *tmp_dx, *tmp_dy, *tmp_latinc, *tmp_loninc;
 
-  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_lat1;
-  NclBasicDataTypes type_lon1, type_pole_lat, type_pole_lon, type_knowni;
+  NclBasicDataTypes type_truelat1, type_truelat2, type_stand_lon, type_ref_lat;
+  NclBasicDataTypes type_ref_lon, type_pole_lat, type_pole_lon, type_knowni;
   NclBasicDataTypes type_knownj, type_dx, type_dy, type_latinc, type_loninc;
 
-  logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_lat1;
-  logical set_lon1, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
+  logical set_map_proj, set_truelat1, set_truelat2, set_stand_lon, set_ref_lat;
+  logical set_ref_lon, set_pole_lat, set_pole_lon,  set_knowni, set_knownj;
   logical set_dx, set_dy, set_latinc, set_loninc;
 
 /*
@@ -7260,7 +7260,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  */
 
   set_map_proj = set_truelat1 = set_truelat2 = set_stand_lon = False;
-  set_lat1 = set_lon1 = set_pole_lat = set_pole_lon = False;
+  set_ref_lat = set_ref_lon = set_pole_lat = set_pole_lon = False;
   set_knowni = set_knownj = set_dx = set_dy = set_latinc = set_loninc = False;
 
   stack_entry = _NclGetArg(2, 3, DONT_CARE);
@@ -7292,7 +7292,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  *   map_proj
  *   truelat1, truelat2
  *   stand_lon
- *   lat1, lon1
+ *   ref_lat, ref_lon
  *   pole_lat, pole_lon
  *   knowni, knownj
  *   dx, dy
@@ -7318,15 +7318,15 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
           type_stand_lon = attr_list->attvalue->multidval.data_type;
           set_stand_lon  = True;
         }
-        else if(!strcasecmp(attr_list->attname, "lat1")) {
-          lat1      = attr_list->attvalue->multidval.val;
-          type_lat1 = attr_list->attvalue->multidval.data_type;
-          set_lat1  = True;
+        else if(!strcasecmp(attr_list->attname, "ref_lat")) {
+          ref_lat      = attr_list->attvalue->multidval.val;
+          type_ref_lat = attr_list->attvalue->multidval.data_type;
+          set_ref_lat  = True;
         }
-        else if(!strcasecmp(attr_list->attname, "lon1")) {
-          lon1      = attr_list->attvalue->multidval.val;
-          type_lon1 = attr_list->attvalue->multidval.data_type;
-          set_lon1  = True;
+        else if(!strcasecmp(attr_list->attname, "ref_lon")) {
+          ref_lon      = attr_list->attvalue->multidval.val;
+          type_ref_lon = attr_list->attvalue->multidval.data_type;
+          set_ref_lon  = True;
         }
         else if(!strcasecmp(attr_list->attname, "pole_lat")) {
           pole_lat      = attr_list->attvalue->multidval.val;
@@ -7431,15 +7431,15 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   }
 
 /*
- * Check LAT1/LON1. Must be set.
+ * Check REF_LAT/REF_LON. Must be set.
  */
-  if(!set_lat1 || !set_lon1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The LAT1/LAT2 attributes must be set");
+  if(!set_ref_lat || !set_ref_lon) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_ij_to_ll: The REF_LAT/REF_LON attributes must be set");
     return(NhlFATAL);
   }
   else {
-    tmp_lat1 = coerce_input_double(lat1,type_lat1,1,0,NULL,NULL);
-    tmp_lon1 = coerce_input_double(lon1,type_lon1,1,0,NULL,NULL);
+    tmp_ref_lat = coerce_input_double(ref_lat,type_ref_lat,1,0,NULL,NULL);
+    tmp_ref_lon = coerce_input_double(ref_lon,type_ref_lon,1,0,NULL,NULL);
   }
 
 /*
@@ -7635,10 +7635,10 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
  * Call the Fortran routine.
  */
     NGCALLF(dijtoll,DIJTOLL)(&map_proj, tmp_truelat1, tmp_truelat2, 
-                             tmp_stand_lon, tmp_lat1, tmp_lon1, tmp_pole_lat,
-                             tmp_pole_lon, tmp_knowni, tmp_knownj, tmp_dx,
-                             tmp_dy, tmp_latinc, tmp_loninc, tmp_iloc, 
-                             tmp_jloc, tmp_loc);
+                             tmp_stand_lon, tmp_ref_lat, tmp_ref_lon, 
+                             tmp_pole_lat, tmp_pole_lon, tmp_knowni,
+                             tmp_knownj, tmp_dx, tmp_dy, tmp_latinc, 
+                             tmp_loninc, tmp_iloc, tmp_jloc, tmp_loc);
 
 /*
  * Coerce output back to float if necessary. What's returned is in
@@ -7659,8 +7659,8 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
   if(type_truelat1  != NCL_double) NclFree(tmp_truelat1);
   if(type_truelat2  != NCL_double) NclFree(tmp_truelat2);
   if(type_stand_lon != NCL_double) NclFree(tmp_stand_lon);
-  if(type_lat1      != NCL_double) NclFree(tmp_lat1);
-  if(type_lon1      != NCL_double) NclFree(tmp_lon1);
+  if(type_ref_lat   != NCL_double) NclFree(tmp_ref_lat);
+  if(type_ref_lon   != NCL_double) NclFree(tmp_ref_lon);
   if(type_pole_lat  != NCL_double) NclFree(tmp_pole_lat);
   if(type_pole_lon  != NCL_double) NclFree(tmp_pole_lon);
   if(type_knowni    != NCL_double) NclFree(tmp_knowni);
