@@ -302,10 +302,10 @@ NhlErrorTypes ut_calendar_W( void )
         if ((strcmp(attr_list->attname, "calendar")) == 0) {
           scal = (string *) attr_list->attvalue->multidval.val;
           ccal = NrmQuarkToString(*scal);
-          if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
-             strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
-             strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
-             strcmp(ccal,"360") ) {
+          if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
+             strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&
+             strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
+             strcasecmp(ccal,"360") ) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
             return_missing = 1;
           }
@@ -892,10 +892,10 @@ NhlErrorTypes ut_inv_calendar_W( void )
 	if ((strcmp(attr_list->attname, "calendar")) == 0) {
 	  scal = (string *) attr_list->attvalue->multidval.val;
 	  ccal = NrmQuarkToString(*scal);
-	  if(strcmp(ccal,"standard") && strcmp(ccal,"gregorian") &&
-	     strcmp(ccal,"noleap") && strcmp(ccal,"365_day") &&
-	     strcmp(ccal,"365") && strcmp(ccal,"360_day") && 
-	     strcmp(ccal,"360") ) {
+	  if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
+	     strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&
+	     strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
+	     strcasecmp(ccal,"360") ) {
 	    NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
 	    return_missing = has_missing_x = 1;
 	  }
