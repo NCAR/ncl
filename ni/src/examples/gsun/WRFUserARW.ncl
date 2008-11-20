@@ -11,12 +11,15 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ; function wrf_user_list_times( nc_file:file )
 ; function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, 
 ;                                 longitude:numeric )
-; function wrf_user_ll_to_ij( nc_file:file, latitude:numeric, longitude:numeric \
+; function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
+;                             opts:logical )
+; function wrf_user_ij_to_ll( nc_file:file, i:numeric, j:numeric \
 ;                             opts:logical )
 ; function wrf_contour(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
 ;                      opt_args[1]:logical)
 ; function wrf_vector(nc_file:file,wks[1]: graphic, data_u[*][*]:numeric, \
 ;                     data_v[*][*]:numeric, opt_args[1]:logical)
+; function wrf_wps_map(wks[1]:graphic,opt_args[1]:logical)   
 ; function wrf_map(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical)   
 ; function wrf_map_overlays(in_file[1]:file,wks:graphic,base[1]:graphic, \
 ;                           plots[*]:graphic,opt_arg[1]:logical,mp_arg[1]:logical)
@@ -68,6 +71,7 @@ begin
   return(xi)
 end
 
+;--------------------------------------------------------------------------------
 undef("wrf_user_set_xy")
 function wrf_user_set_xy( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
                           y1:numeric, angle:numeric, opts )
@@ -222,15 +226,14 @@ begin
 
   if(plot_type .eq. "h" ) then   ;  horizontal cross section needed
 
-     dim_levs = dimsizes(loc_param)
+     dimL = dimsizes(loc_param)
+
      dims = dimsizes(var3d)
      nd = dimsizes(dims)
-
 
      dimX = dims(nd-1)
      dimY = dims(nd-2)
      dimZ = dims(nd-3)
-     dimL = dim_levs
      dim4 = 1
      dim5 = 1
      if ( nd .eq. 4 ) then
@@ -240,6 +243,7 @@ begin
        dim4 = dims(nd-4)
        dim5 = dims(nd-5)
      end if
+
      var3  = new ( (/ dim5, dim4, dimZ, dimY, dimX /) , typeof(var3d) )
      z     = new ( (/ dim5, dim4, dimZ, dimY, dimX /) , typeof(var3d) )
      var2d = new ( (/ dim5, dim4, dimL, dimY, dimX /) , typeof(var3d) )
@@ -271,31 +275,24 @@ begin
        end if
      end if
 
-
-
-     do i5 = 0,dim5-1
-       do i4 = 0,dim4-1
-         do il = 0,dimL-1
-           var = wrf_interp_3d_z(var3(i5,i4,:,:,:),z(i5,i4,:,:,:),loc_param(il))
-           var2d(i5,i4,il,:,:) = var(:,:)
-         end do
-       end do
+     do il = 0,dimL-1
+       var = wrf_interp_3d_z(var3,z,loc_param(il))
+       var2d(:,:,il,:,:) = var(:,:,:,:)
      end do
+     copy_VarAtts(var3d,var3)
+     if(isatt(var3,"description")) then
+       delete_VarAtts(var3,(/"description"/))
+     end if
+     if(isatt(var3,"units")) then
+       delete_VarAtts(var3,(/"units"/))
+     end if
+     if(isatt(var3,"MemoryOrder")) then
+       delete_VarAtts(var3,(/"MemoryOrder"/))
+     end if
+     copy_VarAtts(var3,var2d)
 
-
-     nn = nd-1
-     var2d!4 = var3d!nn
      nn = nd-2
-     var2d!3 = var3d!nn
-     var2d!2 = "plevs"
-     if ( nd .ge. 4 ) then
-       nn = nd-4
-       var2d!1 = var3d!nn
-     end if
-     if ( nd .ge. 5 ) then
-       nn = nd-5
-       var2d!0 = var3d!nn
-     end if
+     var2d!nn = "plevs"
 
      if ( dimL .gt. 1 ) then
        if ( nd .eq. 5 ) then
@@ -751,31 +748,32 @@ begin
            getTHIS = "UU"
          end if
        end if
-
        if ( time .eq. -1 ) then
-         U   = nc_file->$getTHIS$
+         var = nc_file->$getTHIS$
        else
-         U   = nc_file->$getTHIS$(time,:,:,:)
+         var = nc_file->$getTHIS$(time,:,:,:)
        end if
-       dims = dimsizes(U)
-       n_dims = dimsizes(dims)
-       dimU = dims(n_dims-1)
-       if ( n_dims .eq. 4 ) then
-         ua  = 0.5*(U(:,:,:,:dimU-2) + U(:,:,:,1:dimU-1))
-         ua!3 = "west_east"
-         ua!2 = U!2
-         ua!1 = U!1
-         ua!0 = U!0
+
+       dims = dimsizes(var)
+       nd = dimsizes(dims)
+       dimU = dims(nd-1)
+       if ( nd .eq. 4 ) then
+         ua = 0.5*(var(:,:,:,:dimU-2) + var(:,:,:,1:dimU-1))
        else
-         ua  = 0.5*(U(:,:,:dimU-2) + U(:,:,1:dimU-1))
-         ua!2 = "west_east"
-         ua!1 = U!1
-         ua!0 = U!0
+         ua = 0.5*(var(:,:,:dimU-2) + var(:,:,1:dimU-1))
        end if
-       ua@description = "u Velocity"
-       ua@units       = "m/s"
+
+       do i = 0,nd-2
+         ua!i = var!i
+       end do
+       i = nd-1
+       ua!i = "west_east"
+       copy_VarAtts(var,ua)
+       ua@coordinates = "XLONG XLAT"
+       ua@stagger = " "
        return(ua)
   end if
+
 
 
   if( variable .eq. "va" ) then
@@ -786,116 +784,122 @@ begin
            getTHIS = "VV"
          end if
        end if
-
        if ( time .eq. -1 ) then
-         V   = nc_file->$getTHIS$
+         var = nc_file->$getTHIS$
        else
-         V   = nc_file->$getTHIS$(time,:,:,:)
+         var = nc_file->$getTHIS$(time,:,:,:)
         end if
-       dims = dimsizes(V)
-       n_dims = dimsizes(dims)
-       dimV = dims(n_dims-2)
-       if ( n_dims .eq. 4 ) then
-         va  = 0.5*(V(:,:,:dimV-2,:)+V(:,:,1:dimV-1,:))
-         va!3 = V!3
-         va!2 = "south_north"
-         va!1 = V!1
-         va!0 = V!0
+
+       dims = dimsizes(var)
+       nd = dimsizes(dims)
+       dimV = dims(nd-2)
+       if ( nd .eq. 4 ) then
+         va = 0.5*(var(:,:,:dimV-2,:)+var(:,:,1:dimV-1,:))
        else
-         va  = 0.5*(V(:,:dimV-2,:)+V(:,1:dimV-1,:))
-         va!2 = V!2
-         va!1 = "south_north"
-         va!0 = V!0
+         va = 0.5*(var(:,:dimV-2,:)+var(:,1:dimV-1,:))
        end if
-       va@description = "v Velocity"
-       va@units       = "m/s"
+
+       do i = 0,nd-1
+         va!i = var!i
+       end do
+       i = nd-2
+       va!i = "south_north"
+       copy_VarAtts(var,va)
+       va@coordinates = "XLONG XLAT"
+       va@stagger = " "
        return(va)
   end if
+
 
 
   if( variable .eq. "wa" ) then
        ; W interpolated to mass points
        if ( time .eq. -1 ) then
-         W   = nc_file->W
+         var = nc_file->W
        else
-         W   = nc_file->W(time,:,:,:)
+         var = nc_file->W(time,:,:,:)
        end if
-       dims = dimsizes(W)
-       n_dims = dimsizes(dims)
-       dimW = dims(n_dims-3)
-       if ( n_dims .eq. 4 ) then
-         wa  = 0.5*(W(:,0:dimW-2,:,:)+W(:,1:dimW-1,:,:))
-         wa!3 = W!3
-         wa!2 = W!2
-         wa!1 = "bottom_top"
-         wa!0 = W!0
+
+       dims = dimsizes(var)
+       nd = dimsizes(dims)
+       dimW = dims(nd-3)
+       if ( nd .eq. 4 ) then
+         wa = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
        else
-         wa  = 0.5*(W(0:dimW-2,:,:)+W(1:dimW-1,:,:))
-         wa!2 = W!2
-         wa!1 = W!1
-         wa!0 = "bottom_top"
+         wa = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
        end if
-       wa@description = "Vertical Velocity w"
-       wa@units       = "m/s"
+
+       do i = 0,nd-1
+         wa!i = var!i
+       end do
+       i = nd-3
+       wa!i = "bottom_top"
+       copy_VarAtts(var,wa)
+       wa@coordinates = "XLONG XLAT"
+       wa@stagger = " "
        return(wa)
   end if
 
 
-  if( variable .eq. "pressure" ) then
+
+  if( any( variable .eq. (/"p","pres","pressure"/) ) ) then
        ; Full model pressure [=base pressure (PB) + pertubation pressure (P)]
        if(isfilevar(nc_file,"P")) then
          if ( time .eq. -1 ) then
-           P  = nc_file->P
-           PB = nc_file->PB
+           var = nc_file->P
+           PB  = nc_file->PB
          else
-           P  = nc_file->P(time,:,:,:)
-           PB = nc_file->PB(time,:,:,:)
+           var = nc_file->P(time,:,:,:)
+           PB  = nc_file->PB(time,:,:,:)
          end if
-         pressure  = 0.01 * ( P + PB )
+         var = var + PB
        else
          ;; may be a met_em file - see if we can get PRES
          if(isfilevar(nc_file,"PRES")) then
            if ( time .eq. -1 ) then
-             pressure = nc_file->PRES
+             var = nc_file->PRES
            else
-             pressure = nc_file->PRES(time,:,:,:)
+             var = nc_file->PRES(time,:,:,:)
            end if
-           pressure = 0.01 * pressure
          end if
        end if
-       copy_VarCoords ( P , pressure )
-       pressure@description = "Pressure"
-       pressure@units       = "hPa"
-       return(pressure)
+       var@description = "Pressure"
+       return(var)
   end if
 
 
-  if( any( variable .eq. (/"geopt","z"/) ) ) then
+
+  if( any( variable .eq. (/"geopt","geopotential","z","height"/) ) ) then
        ; Height [=full geopotentail height / 9.81]
        if(isfilevar(nc_file,"PH")) then
          if ( time .eq. -1 ) then
-           PH  = nc_file->PH
+           var = nc_file->PH
            PHB = nc_file->PHB
          else
-           PH  = nc_file->PH(time,:,:,:)
+           var = nc_file->PH(time,:,:,:)
            PHB = nc_file->PHB(time,:,:,:)
          end if
-         var = ( PH + PHB )
+
+         var = var + PHB 
          dims = dimsizes(var)
-         n_dims = dimsizes(dims)
-         dimW = dims(n_dims-3)
-         if ( n_dims .eq. 4 ) then
-           z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
-           z!3 = PH!3
-           z!2 = PH!2
-           z!1 = "bottom_top"
-           z!0 = PH!0
+         nd = dimsizes(dims)
+         dimW = dims(nd-3)
+         if ( nd .eq. 4 ) then
+           z = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
          else
-           z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
-           z!2 = PH!2
-           z!1 = PH!1
-           z!0 = "bottom_top"
+           z = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
          end if
+
+         do i = 0,nd-1
+           z!i = var!i
+         end do
+         i = nd-3
+         z!i = "bottom_top"
+         copy_VarAtts(var,z)
+         z@coordinates = "XLONG XLAT"
+         z@stagger = " "
+         z@description = "Geopotential"
+
        else
          ;; may be a met_em file - see if we can get GHT
          if(isfilevar(nc_file,"GHT")) then
@@ -907,31 +911,28 @@ begin
          end if
        end if  
 
-       if ( variable .eq. "z" ) then
+       if( any( variable .eq. (/"z","height"/) ) ) then
          z = z / 9.81
          z@description = "Height"
          z@units       = "m"
-       else
-         z@description = "Geopotential Height"
-         z@units       = "m2 s-2"
        end if
        return(z)
   end if
 
 
-  if( variable .eq. "th" ) then
+
+  if( any( variable .eq. (/"th","theta"/) ) ) then
        ; Potentail Temperature is model output T + 300K
        if ( time .eq. -1 ) then
-         T  = nc_file->T
+         var = nc_file->T
        else
-         T  = nc_file->T(time,:,:,:)
+         var = nc_file->T(time,:,:,:)
        end if  
-       th = T + 300.
-       copy_VarCoords ( T , th )
-       th@description = "Potential Temperature (theta) "
-       th@units       = "K"
-       return(th)
+       var = var + 300.
+       var@description = "Potential Temperature (theta) "
+       return(var)
   end if
+
 
 
   if( any( variable .eq. (/"tk","tc"/) ) ) then
@@ -946,16 +947,18 @@ begin
            P  = nc_file->P(time,:,:,:)
            PB = nc_file->PB(time,:,:,:)
          end if  
-         th = T + 300.
-         p  = P + PB
-         t = wrf_tk( p , th )
+         T = T + 300.
+         P = P + PB
+         t = wrf_tk( P , T )
+         delete_VarAtts(T,(/"description"/))
+         copy_VarAtts(T,t)
        else
          ;; may be a met_em file - see if we can get TT
          if(isfilevar(nc_file,"TT")) then
            if ( time .eq. -1 ) then
-             t  = nc_file->TT
+             t = nc_file->TT
            else
-             t  = nc_file->TT(time,:,:,:)
+             t = nc_file->TT(time,:,:,:)
            end if  
          end if  
        end if  
@@ -963,9 +966,9 @@ begin
          t = t - 273.16
          t@units = "C"     ; Overwrite return units
        end if
-       copy_VarCoords ( T , t )
        return(t)
   end if
+
 
 
   if( variable .eq. "td" ) then
@@ -979,32 +982,31 @@ begin
          PB     = nc_file->PB(time,:,:,:)
          QVAPOR = nc_file->QVAPOR(time,:,:,:)
        end if
-       p      = P + PB
-       QVAPOR = QVAPOR > 0.0
-       td    = wrf_td( p , QVAPOR )
-       copy_VarCoords ( P , td )
+       P = P + PB
+       td  = wrf_td( P , QVAPOR )
+       delete_VarAtts(QVAPOR,(/"description","units"/))
+       copy_VarAtts(QVAPOR,td)
        return(td)
   end if
+
 
 
   if( variable .eq. "td2" ) then
        ;; function wrf_td needs qv and pressure (Pa) on input and returns dewpoint temperature on return
        if ( time .eq. -1 ) then
-         P   = nc_file->P(:,0,:,:)      ; get only the lowest level, to match Q2
-         PB  = nc_file->PB(:,0,:,:)     ; get only the lowest level, to match Q2
-         Q2  = nc_file->Q2
+         PSFC = nc_file->PSFC
+         Q2   = nc_file->Q2
        else
-         P   = nc_file->P(time,0,:,:)      ; get only the lowest level, to match Q2
-         PB  = nc_file->PB(time,0,:,:)     ; get only the lowest level, to match Q2
-         Q2  = nc_file->Q2(time,:,:)
+         PSFC = nc_file->PSFC(time,:,:) 
+         Q2   = nc_file->Q2(time,:,:)
        end if
-       p   = P + PB
-       Q2  = Q2 > 0.0
-       td2 = wrf_td( p , Q2 )
-       td2@description = "2m Dewpoint Temperature"   ; Overwrite return description
-       copy_VarCoords ( P , td2 )
-       return(td2)
+       td = wrf_td( PSFC , Q2 )
+       delete_VarAtts(Q2,(/"description","units"/))
+       copy_VarAtts(Q2,td)
+       td@description = "2m Dewpoint Temperature"   ; Overwrite return description
+       return(td)
   end if
+
 
 
   if( variable .eq. "slp" ) then
@@ -1026,28 +1028,22 @@ begin
            PH     = nc_file->PH(time,:,:,:)
            PHB    = nc_file->PHB(time,:,:,:)
          end if
-         th = T + 300.
-         p  = P + PB
+         T = T + 300.
+         P = P + PB
          QVAPOR = QVAPOR > 0.000
          var    = ( PH + PHB ) / 9.81
          dims = dimsizes(var)
-         n_dims = dimsizes(dims)
-         dimW = dims(n_dims-3)
-         if ( n_dims .eq. 4 ) then
+         nd = dimsizes(dims)
+         dimW = dims(nd-3)
+         if ( nd .eq. 4 ) then
            z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
          else
            z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
          end if
-         tk = wrf_tk( p , th )    ; calculate TK
-         slp   = wrf_slp( z, tk, p, QVAPOR )  ; calculate slp
-         if ( n_dims .eq. 4 ) then
-            slp!2 = T!3
-            slp!1 = T!2
-            slp!0 = T!0
-         else
-            slp!1 = T!2
-            slp!0 = T!1
-         end if
+         tk = wrf_tk( P , T )    ; calculate TK
+         slp   = wrf_slp( z, tk, P, QVAPOR )  ; calculate slp
+         delete_VarAtts(T,(/"description","units"/))
+         copy_VarAtts(T,slp)
        else
          ;; may be a met_em file - see if we can get PMSL
          if(isfilevar(nc_file,"PMSL")) then
@@ -1061,6 +1057,7 @@ begin
 
        return(slp)
   end if
+
 
 
   if( variable .eq. "rh" ) then
@@ -1078,64 +1075,46 @@ begin
            PB     = nc_file->PB(time,:,:,:)
            QVAPOR = nc_file->QVAPOR(time,:,:,:)
          end if  
-         th = T + 300.
-         p  = P + PB
+         T = T + 300.
+         P  = P + PB
          QVAPOR = QVAPOR > 0.000
-         tk = wrf_tk( p , th )
-         rh = wrf_rh( QVAPOR, p, tk )
+         tk = wrf_tk( P , T )
+         rh = wrf_rh( QVAPOR, P, tk )
+         delete_VarAtts(T,(/"description","units"/))
+         copy_VarAtts(T,rh)
        else
          ;; may be a met_em file - see if we can get RH
          if(isfilevar(nc_file,"RH")) then
            if ( time .eq. -1 ) then
              rh = nc_file->RH
            else
-             rh = nc_file->RH(time,:,:)
+             rh = nc_file->RH(time,:,:,:)
            end if
          end if
        end if  
-       copy_VarCoords ( T , rh )
        return(rh)
   end if
 
 
+
   if( variable .eq. "rh2" ) then
        if(isfilevar(nc_file,"T2")) then
-         ;; THEN compute rh2, using T2, PSFC, Q2
+         ;; Compute rh2, using T2, PSFC, Q2
          if ( time .eq. -1 ) then
            T2   = nc_file->T2
            PSFC = nc_file->PSFC
            Q2   = nc_file->Q2
-           dims = dimsizes(T2)
-           nd = dimsizes(dims)
-           t = new ( (/ dims(0), 1, dims(nd-2), dims(nd-1) /) , typeof(T2) )
-           p = new ( (/ dims(0), 1, dims(nd-2), dims(nd-1) /) , typeof(PSFC) )
-           q = new ( (/ dims(0), 1, dims(nd-2), dims(nd-1) /) , typeof(Q2) )
-           t(:,0,:,:) = T2(:,:,:)
-           p(:,0,:,:) = PSFC(:,:,:)
-           q(:,0,:,:) = Q2(:,:,:)
-           rh2 = new ( (/ dims(0), dims(nd-2), dims(nd-1) /) , typeof(T2) )
          else
            T2   = nc_file->T2(time,:,:)
            PSFC = nc_file->PSFC(time,:,:)
            Q2   = nc_file->Q2(time,:,:)
-           dims = dimsizes(T2)
-           nd = dimsizes(dims)
-           t = new ( (/ 1, dims(nd-2), dims(nd-1) /) , typeof(T2) )
-           p = new ( (/ 1, dims(nd-2), dims(nd-1) /) , typeof(PSFC) )
-           q = new ( (/ 1, dims(nd-2), dims(nd-1) /) , typeof(Q2) )
-           t(0,:,:) = T2(:,:)
-           p(0,:,:) = PSFC(:,:)
-           q(0,:,:) = Q2(:,:)
-           rh2 = new ( (/ dims(nd-2), dims(nd-1) /) , typeof(T2) )
          end if  
-         q = q > 0.000
-         rh = wrf_rh( q, p, t )
-         if ( time .eq. -1 ) then
-           rh2(:,:,:) = rh(:,0,:,:)
-         else
-           rh2(:,:) = rh(0,:,:)
-         end if
-         copy_VarCoords ( T2 , rh2 )
+         Q2 = Q2 > 0.000
+         tk = wrf_tk( PSFC , T2 )
+         rh = wrf_rh( Q2, PSFC, tk )
+         delete_VarAtts(T2,(/"description","units"/))
+         copy_VarAtts(T2,rh)
+         rh@description = "2m Relative Humidity"           
        else
          ;; may be a met_em file - see if we can get RH
          if(isfilevar(nc_file,"RH")) then
@@ -1147,53 +1126,77 @@ begin
            end if
          end if
        end if  
-       return(rh2)
+       return(rh)
   end if
+
+
+
+  if( variable .eq. "pvo" ) then
+       if ( time .eq. -1 ) then
+         U    = nc_file->U
+         V    = nc_file->V
+         T    = nc_file->T
+         P    = nc_file->P
+         PB   = nc_file->PB
+         MSFU = nc_file->MAPFAC_U
+         MSFV = nc_file->MAPFAC_V
+         MSFM = nc_file->MAPFAC_M
+         COR  = nc_file->F
+       else
+         U    = nc_file->U(time,:,:,:)
+         V    = nc_file->V(time,:,:,:)
+         T    = nc_file->T(time,:,:,:)
+         P    = nc_file->P(time,:,:,:)
+         PB   = nc_file->PB(time,:,:,:)
+         MSFU = nc_file->MAPFAC_U(time,:,:)
+         MSFV = nc_file->MAPFAC_V(time,:,:)
+         MSFM = nc_file->MAPFAC_M(time,:,:)
+         COR  = nc_file->F(time,:,:)
+       end if  
+       T = T + 300.
+       P = P + PB
+       DX = nc_file@DX
+       DY = nc_file@DY
+
+       pvo = wrf_pvo( U, V, T, P, MSFU, MSFV, MSFM, COR, DX, DY, 0)
+
+       delete_VarAtts(T,(/"description","units"/))
+       copy_VarAtts(T,pvo)
+       return(pvo)
+  end if
+
+
+
+  if( variable .eq. "avo" ) then
+       if ( time .eq. -1 ) then
+         U    = nc_file->U
+         V    = nc_file->V
+         MSFU = nc_file->MAPFAC_U
+         MSFV = nc_file->MAPFAC_V
+         MSFM = nc_file->MAPFAC_M
+         COR  = nc_file->F
+       else
+         U    = nc_file->U(time,:,:,:)
+         V    = nc_file->V(time,:,:,:)
+         MSFU = nc_file->MAPFAC_U(time,:,:)
+         MSFV = nc_file->MAPFAC_V(time,:,:)
+         MSFM = nc_file->MAPFAC_M(time,:,:)
+         COR  = nc_file->F(time,:,:)
+       end if  
+       DX = nc_file@DX
+       DY = nc_file@DY
+
+       avo = wrf_avo( U, V, MSFU, MSFV, MSFM, COR, DX, DY, 0)
+
+       delete_VarAtts(COR,(/"description","units"/))
+       copy_VarAtts(COR,avo)
+       return(avo)
+  end if
+
 
 
   if( variable .eq. "dbz" .or. variable .eq. "mdbz" ) then
        ; calculate dbz
-       if ( time .eq. -1 ) then
-         T  = nc_file->T
-         P  = nc_file->P
-         PB = nc_file->PB
-         qv = nc_file->QVAPOR
-         qr = nc_file->QRAIN
-         if(isfilevar(nc_file,"QSNOW"))
-           qs = nc_file->QSNOW
-         else
-           qs = qv
-           qs = 0.0
-         end if
-         if(isfilevar(nc_file,"QGRAUP"))
-           qg = nc_file->QGRAUP
-         else
-           qg = qv
-           qg = 0.0
-         end if
-       else
-         T  = nc_file->T(time,:,:,:)
-         P  = nc_file->P(time,:,:,:)
-         PB = nc_file->PB(time,:,:,:)
-         qv = nc_file->QVAPOR(time,:,:,:)
-         qr = nc_file->QRAIN(time,:,:,:)
-         if(isfilevar(nc_file,"QSNOW"))
-           qs = nc_file->QSNOW(time,:,:,:)
-         else
-           qs = qv
-           qs = 0.0
-         end if
-         if(isfilevar(nc_file,"QGRAUP"))
-           qg = nc_file->QGRAUP(time,:,:,:)
-         else
-           qg = qv
-           qg = 0.0
-         end if
-       end if
-       th = T + 300.
-       p  = P + PB
-       tk = wrf_tk( p , th )
-
        ivarint  = 0 
        iliqskin = 0
        dim_vars = dimsizes(varin)
@@ -1210,26 +1213,77 @@ begin
          end if
        end do
 
-       dim = dimsizes(tk)
-       dbz = wrf_dbz ( p, tk, qv, qr, qs, qg, ivarint, iliqskin)
+       if ( time .eq. -1 ) then
+         T  = nc_file->T
+         P  = nc_file->P
+         PB = nc_file->PB
+         qv = nc_file->QVAPOR
+         qr = nc_file->QRAIN
+         if(isfilevar(nc_file,"QSNOW"))
+           qs = nc_file->QSNOW
+         end if
+         if(isfilevar(nc_file,"QGRAUP"))
+           qg = nc_file->QGRAUP
+         end if
+       else
+         T  = nc_file->T(time,:,:,:)
+         P  = nc_file->P(time,:,:,:)
+         PB = nc_file->PB(time,:,:,:)
+         qv = nc_file->QVAPOR(time,:,:,:)
+         qr = nc_file->QRAIN(time,:,:,:)
+         if(isfilevar(nc_file,"QSNOW"))
+           qs = nc_file->QSNOW(time,:,:,:)
+         end if
+         if(isfilevar(nc_file,"QGRAUP"))
+           qg = nc_file->QGRAUP(time,:,:,:)
+         end if
+       end if
+       T  = T + 300.
+       P  = P + PB
+       tk = wrf_tk( P , T )
+
+       if ( .not. isvar("qs") ) then
+         qs = qv
+         qs = 0.0
+       end if
+       if ( .not. isvar("qg") ) then
+         qg = qv
+         qg = 0.0
+       end if
+
+       dbz = wrf_dbz ( P, tk, qv, qr, qs, qg, ivarint, iliqskin)
+       delete(qs)
+       delete(qg)
+
+       delete_VarAtts(T,(/"description","units"/))
+       copy_VarAtts(T,dbz)
+
 
        if ( variable .eq. "mdbz") then
-         mdbz = new ( (/ dim(1), dim(2) /), typeof(tk))
-         mdbz = 0
-         do jj = 0,dim(1)-1
-         do ii = 0,dim(2)-1
-            mdbz(jj,ii) = max(dbz(:,jj,ii))
-         end do
-         end do
-         mdbz!1 = T!2
-         mdbz!0 = T!1
+         dims = getvardims(dbz)
+         rank = dimsizes(dims)
+         if ( rank .eq. 5 ) then
+            mdbz = dim_max ( dbz($dims(0)$|:,$dims(1)$|:,$dims(3)$|:,$dims(4)$|:,$dims(2)$|:) )
+            mdbz!0 = dbz!0
+            mdbz!1 = dbz!1
+         end if
+         if ( rank .eq. 4 ) then
+            mdbz = dim_max ( dbz($dims(0)$|:,$dims(2)$|:,$dims(3)$|:,$dims(1)$|:) )
+            mdbz!0 = dbz!0
+         end if
+         if ( rank .eq. 3 ) then
+            mdbz = dim_max ( dbz($dims(1)$|:,$dims(2)$|:,$dims(0)$|:) )
+         end if
+         nn = rank-1
+         nm = rank-2
+         mdbz!nm = dbz!nn
+         nn = rank-2
+         nm = rank-3
+         mdbz!nm = dbz!nn
+         copy_VarAtts(dbz,mdbz)
          mdbz@description = "Max Reflectivity"
-         mdbz@units       = "dBZ"
          return(mdbz)
        else
-         copy_VarCoords ( T , dbz )
-         dbz@description = "Reflectivity"
-         dbz@units       = "dBZ"
          return(dbz)
        end if
 
@@ -1380,7 +1434,7 @@ begin
   end if
 
 
-  if( any( variable .eq. (/"lon","XLONG","XLONG_M"/) ) ) then
+  if( any( variable .eq. (/"lon","long","XLONG","XLONG_M"/) ) ) then
     variable = "XLONG" 
     if(.not. isfilevar(nc_file,"XLONG")) then
       variable = "XLONG_M"
@@ -1456,13 +1510,6 @@ begin
   end if
 
   loc = wrf_latlon_to_ij( XLAT, XLONG, latitude, longitude )
-  if ( loc(0) .le. 0 .or. loc(0) .ge. sndim ) then
-       loc = -999
-  else
-       if ( loc(1) .le. 0 .or. loc(1) .ge. wedim ) then
-            loc = -999
-       end if
-  end if
 
   loc!0 = "j & i locations"
   return(loc)
@@ -1472,28 +1519,33 @@ end
 ;--------------------------------------------------------------------------------
 
 undef("wrf_user_ll_to_ij")
-function wrf_user_ll_to_ij( nc_file:file, latitude:numeric, longitude:numeric, \
-                            opts:logical )
+function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
+                            opts_args:logical )
 
 begin
 
+  opts = opts_args
   useT  = get_res_value(opts,"useTime",0)
   returnI= get_res_value(opts,"returnInt",True)
 
-  WE       = "WEST-EAST_GRID_DIMENSION"
-  SN       = "SOUTH-NORTH_GRID_DIMENSION"
-  wedim    = nc_file@$WE$
-  sndim    = nc_file@$SN$
+  res = True
+  res@MAP_PROJ  = nc_file@MAP_PROJ
+  res@TRUELAT1  = nc_file@TRUELAT1
+  res@TRUELAT2  = nc_file@TRUELAT2
+  res@STAND_LON = nc_file@STAND_LON
+  res@DX        = nc_file@DX
+  res@DY        = nc_file@DY
 
-  llres = True
-  llres@MAP_PROJ = nc_file@MAP_PROJ
-  llres@TRUELAT1 = nc_file@TRUELAT1
-  llres@TRUELAT2 = nc_file@TRUELAT2
-  llres@STAND_LON   = nc_file@STAND_LON
-  llres@DX       = nc_file@DX
-  hemi     = 1.0
-  if ( llres@TRUELAT1 .lt. 0.0 ) then
-     hemi  = -1.0
+  if (res@MAP_PROJ .eq. 6) then
+    res@POLE_LAT  = nc_file@POLE_LAT
+    res@POLE_LON  = nc_file@POLE_LON
+    res@LATINC = (res@DY*360.)/2.0/3.141592653589793/6370000.
+    res@LONINC = (res@DX*360.)/2.0/3.141592653589793/6370000.
+  else
+    res@POLE_LAT = 90.0
+    res@POLE_LON =  0.0
+    res@LATINC = 0.0
+    res@LONINC = 0.0
   end if
 
 
@@ -1506,53 +1558,75 @@ begin
   end if
 
 
-  llres@LAT1 = XLAT(0,0)
-  llres@LON1 = XLONG(0,0)
-  llres@KNOWNI   = 1.0
-  llres@KNOWNJ   = 1.0
+  res@REF_LAT = XLAT(0,0)
+  res@REF_LON = XLONG(0,0)
+  res@KNOWNI  = 1.0
+  res@KNOWNJ  = 1.0
 
-  dummy_stdlon = llres@STAND_LON
-  dummy_lon1 = llres@LON1
-  if (dummy_stdlon .lt. -180.) then
-    dummy_stdlon = dummy_stdlon + 360.
-  end if
-  if (dummy_stdlon .gt. 180.) then
-    dummy_stdlon = dummy_stdlon - 360.
-  end if
-  if (dummy_lon1 .lt. -180.) then
-    dummy_lon1 = dummy_lon1 + 360.
-  end if
-  if (dummy_lon1 .gt.  180.) then
-    dummy_lon1 = dummy_lon1 - 360.
-  end if
-  llres@STAND_LON = dummy_stdlon
-  llres@LON1 = dummy_lon1
-
-  loc = wrf_ll_to_ij (latitude,longitude,llres)
-  loc@_FillValue = -999
-
-  if ( loc(0) .lt. 0.5 .or. loc(0) .ge. sndim ) then
-       loc = -999
-  else
-       loc(0) = loc(0) - 1.
-       if ( loc(1) .lt. 0.5 .or. loc(1) .ge. wedim ) then
-            loc = -999
-       else
-            loc(1) = loc(1) - 1.
-       end if
-  end if
+  loc = wrf_ll_to_ij (longitude, latitude, res)
 
   if ( returnI  ) then
     loci = new(2,integer)
     loci@_FillValue = -999
     loci(0) = tointeger(loc(0)+.5)
     loci(1) = tointeger(loc(1)+.5)
-    loci!0 = "j & i locations"
     return(loci)
   else
-    loc!0 = "j & i locations"
     return(loc)
   end if
+
+
+end
+
+;--------------------------------------------------------------------------------
+
+undef("wrf_user_ij_to_ll")
+function wrf_user_ij_to_ll( nc_file:file, i:numeric, j:numeric, \
+                            opts_args:logical )
+
+begin
+
+  opts = opts_args
+  useT  = get_res_value(opts,"useTime",0)
+
+  res = True
+  res@MAP_PROJ  = nc_file@MAP_PROJ
+  res@TRUELAT1  = nc_file@TRUELAT1
+  res@TRUELAT2  = nc_file@TRUELAT2
+  res@STAND_LON = nc_file@STAND_LON
+  res@DX        = nc_file@DX
+  res@DY        = nc_file@DY
+
+  if (res@MAP_PROJ .eq. 6) then
+    res@POLE_LAT  = nc_file@POLE_LAT
+    res@POLE_LON  = nc_file@POLE_LON
+    res@LATINC = (res@DY*360.)/2.0/3.141592653589793/6370000.
+    res@LONINC = (res@DX*360.)/2.0/3.141592653589793/6370000.
+  else
+    res@POLE_LAT = 90.0
+    res@POLE_LON =  0.0
+    res@LATINC = 0.0
+    res@LONINC = 0.0
+  end if
+
+
+  if(isfilevar(nc_file,"XLAT"))
+    XLAT  = nc_file->XLAT(useT,:,:)
+    XLONG = nc_file->XLONG(useT,:,:)
+  else
+    XLAT  = nc_file->XLAT_M(useT,:,:)
+    XLONG = nc_file->XLONG_M(useT,:,:)
+  end if
+
+
+  res@REF_LAT = XLAT(0,0)
+  res@REF_LON = XLONG(0,0)
+  res@KNOWNI  = 1.0
+  res@KNOWNJ  = 1.0
+
+  loc = wrf_ij_to_ll (i,j,res)
+
+  return(loc)
 
 
 end
@@ -1573,8 +1647,14 @@ begin
                  "NoHeaderFooter","TimeLabel","LevelLabel", \
                  "FieldTitle","UnitLabel","NumVectors","AspectRatio", \
                  "SubFieldTitle","PlotOrientation","PlotLevelID", \
-                 "mpNestTime", \
-                 "ContourParameters","FontHeightF","Footer"/)
+                 "mpNestTime","ContourParameters","FontHeightF","Footer", \
+                 "start_lat","start_lon","end_lat","end_lon", \
+                 "proj","map_proj","stand_lon","truelat1","truelat2","cenlat", \
+                 "pole_lat","pole_lon","ref_lat","ref_lon","ref_x","ref_y", \
+                 "e_we","e_sn","parent_id","parent_grid_ratio", \
+                 "i_parent_start","j_parent_start", \
+                 "dx","dy","max_dom" \
+                 /)
 
   do i=0,dimsizes(list_attrs)-1
     if(isatt(opts,list_attrs(i))) then
@@ -1826,6 +1906,72 @@ begin
 end
 ;--------------------------------------------------------------------------------
 ;--------------------------------------------------------------------------------
+undef("set_mp_resources")
+function set_mp_resources (res:logical)
+
+begin
+
+  opts = res
+
+; "LowRes" is the default that NCL uses, so you don't need to
+; set it here. However, if you want a higher resolution, use 
+; "MediumRes". If you want higher resolution for the coastlines,
+; then set it to "HighRes", but then you also need to download
+; the RANGS-GSHHS database.  Higher resolutions take longer to
+; draw.
+
+      opts@mpDataBaseVersion     = get_res_value_keep(opts, "mpDataBaseVersion","MediumRes")
+     ;opts@mpOutlineBoundarySets = get_res_value_keep(opts, "mpOutlineBoundarySets", "AllBoundaries")
+      opts@mpOutlineBoundarySets = get_res_value_keep(opts, "mpOutlineBoundarySets", "GeophysicalAndUSStates")
+      opts@mpPerimLineThicknessF = get_res_value_keep(opts, "mpPerimLineThicknessF", 1.0)
+      opts@tmXBLabelFontHeightF  = get_res_value_keep(opts, "tmXBLabelFontHeightF", 0.01)
+      opts@tmYLLabelFontHeightF  = get_res_value_keep(opts, "tmYLLabelFontHeightF", 0.01)
+
+; Select portion of the map to view.
+      opts@mpLimitMode           = get_res_value_keep(opts, "mpLimitMode","Corners")
+      opts@mpLeftCornerLatF      = get_res_value_keep(opts, "mpLeftCornerLatF", opts@start_lat)
+      opts@mpLeftCornerLonF      = get_res_value_keep(opts, "mpLeftCornerLonF", opts@start_lon)
+      opts@mpRightCornerLatF     = get_res_value_keep(opts, "mpRightCornerLatF",opts@end_lat)
+      opts@mpRightCornerLonF     = get_res_value_keep(opts, "mpRightCornerLonF",opts@end_lon)
+
+      if ( opts@mpRightCornerLonF .lt. 0.0 ) then
+        opts@mpRightCornerLonF  = opts@mpRightCornerLonF + 360.0
+      end if 
+
+; Set some other resources for line colors and grid spacing.
+
+      opts@mpGeophysicalLineColor      = get_res_value_keep(opts, "mpGeophysicalLineColor","Gray")
+      opts@mpGeophysicalLineThicknessF = get_res_value_keep(opts, "mpGeophysicalLineThicknessF",0.5)
+      opts@mpGridLineColor             = get_res_value_keep(opts, "mpGridLineColor","Gray")
+      opts@mpGridLineThicknessF        = get_res_value_keep(opts, "mpGridLineThicknessF",0.5)
+     ;opts@mpGridMaskMode              = get_res_value_keep(opts, "mpGridMaskMode",3)
+      opts@mpGridSpacingF              = get_res_value_keep(opts, "mpGridSpacingF",5)
+      opts@mpLimbLineColor             = get_res_value_keep(opts, "mpLimbLineColor","Gray")
+      opts@mpLimbLineThicknessF        = get_res_value_keep(opts, "mpLimbLineThicknessF",0.5)
+      opts@mpNationalLineColor         = get_res_value_keep(opts, "mpNationalLineColor","Gray")
+      opts@mpNationalLineThicknessF    = get_res_value_keep(opts, "mpNationalLineThicknessF",0.5)
+      opts@mpPerimLineColor            = get_res_value_keep(opts, "mpPerimLineColor","Gray")
+      opts@mpPerimOn                   = get_res_value_keep(opts, "mpPerimOn",True)
+      opts@mpUSStateLineColor          = get_res_value_keep(opts, "mpUSStateLineColor","Gray")
+      opts@mpUSStateLineThicknessF     = get_res_value_keep(opts, "mpUSStateLineThicknessF",0.5)
+      opts@pmTickMarkDisplayMode       = get_res_value_keep(opts, "pmTickMarkDisplayMode","Always")
+
+; Tick mark resources
+
+     ;opts@tmXBMajorLengthF      = get_res_value(opts, "tmXBMajorLengthF",-0.03)
+     ;opts@tmYLMajorLengthF      = get_res_value(opts, "tmYLMajorLengthF",-0.03)
+      opts@tmXTOn                = get_res_value(opts,"tmXTOn",False)
+      opts@tmYROn                = get_res_value(opts,"tmYROn",False)
+      opts@tmYRLabelsOn          = get_res_value(opts,"tmYRLabelsOn",True)
+      opts@tmXBBorderOn          = get_res_value(opts,"tmXBBorderOn",True)
+      opts@tmXTBorderOn          = get_res_value(opts,"tmXTBorderOn",True)
+      opts@tmYLBorderOn          = get_res_value(opts,"tmYLBorderOn",True)
+      opts@tmYRBorderOn          = get_res_value(opts,"tmYRBorderOn",True)
+
+  return(opts)
+end
+;--------------------------------------------------------------------------------
+;--------------------------------------------------------------------------------
 
 procedure _SetMainTitle(nc_file:file,wks[1]:graphic,cn[1]:graphic,opts)
  
@@ -1914,8 +2060,17 @@ begin
     end if
   end if
 
-  if( isatt(nc_file,"START_DATE") .and. opts@InitTime ) then
-    InitTime = "Init: " + nc_file@START_DATE
+  if( isatt(nc_file,"START_DATE") ) then
+     model_start_time = nc_file@START_DATE
+  else
+     if( isatt(nc_file,"SIMULATION_START_DATE") ) then
+       model_start_time = nc_file@SIMULATION_START_DATE
+     else
+       opts@InitTime = False
+     end if
+  end if   
+  if( opts@InitTime ) then
+    InitTime = "Init: " + model_start_time
     txt1 = create "InitTime" textItemClass wks
       "txString"      : InitTime
       "txFontHeightF" : font_height
@@ -1966,25 +2121,21 @@ begin
   if( opts@Footer ) then
     footer1 = nc_file@TITLE
     dis =  nc_file@DX / 1000.0
-    if(isatt(nc_file,"WEST-EAST_PATCH_END_UNSTAG"))
-      WE = "WEST-EAST_GRID_DIMENSION"
-      SN = "SOUTH-NORTH_GRID_DIMENSION"
-      BT = "BOTTOM-TOP_GRID_DIMENSION"
-      footer2 =  " Phys Opt = " + nc_file@MP_PHYSICS + \
-                 " ; PBL Opt = " + nc_file@BL_PBL_PHYSICS + \
-                 " ; Cu Opt = " + nc_file@CU_PHYSICS + \
-                 " ; WE = " + nc_file@$WE$ + \
-                 " ; SN = " + nc_file@$SN$ + \
-                 " ; Levels = " + nc_file@$BT$ + \
-                 " ; Dis = " + dis + "km"
-    else
-      WE = "WEST-EAST_GRID_DIMENSION"
-      SN = "SOUTH-NORTH_GRID_DIMENSION"
-      BT = "BOTTOM-TOP_GRID_DIMENSION"
-      footer2 =  " WE = " + nc_file@$WE$ + \
-                 " ; SN = " + nc_file@$SN$ + \
-                 " ; Levels = " + nc_file@$BT$ + \
-                 " ; Dis = " + dis + "km"
+    WE = "WEST-EAST_GRID_DIMENSION"
+    SN = "SOUTH-NORTH_GRID_DIMENSION"
+    BT = "BOTTOM-TOP_GRID_DIMENSION"
+    footer2 =  " WE = " + nc_file@$WE$ + \
+               " ; SN = " + nc_file@$SN$ + \
+               " ; Levels = " + nc_file@$BT$ + \
+               " ; Dis = " + dis + "km"
+    if ( isatt(nc_file,"MP_PHYSICS")) then
+      footer2 = footer2 +  " ; Phys Opt = " + nc_file@MP_PHYSICS 
+    end if
+    if ( isatt(nc_file,"BL_PBL_PHYSICS")) then
+      footer2 = footer2 +  " ; PBL Opt = " + nc_file@BL_PBL_PHYSICS 
+    end if
+    if ( isatt(nc_file,"CU_PHYSICS")) then
+      footer2 = footer2 +  " ; Cu Opt = " + nc_file@CU_PHYSICS 
     end if
     Footer = footer1 + "~C~" + footer2
    else
@@ -2347,9 +2498,298 @@ begin
   return(vct)                                     ; Return.
 end
 
+;--------------------------------------------------------------------------------
+undef("wrf_wps_map")
+function wrf_wps_map(wks[1]:graphic,opt_args[1]:logical)   
+
+begin
+;
+;   1. Make a copy of the resource list, and set some resources
+;      common to all map projections.
+;
+;   2. Determine the projection being used, and set resources based
+;      on that projection.
+;
+;   3. Create the map plot, and draw and advance the frame
+;      (if requested).
+
+    opts = opt_args      ; Make a copy of the resource list
+    opts  = True
+
+; Set some resources depending on what kind of map projection is 
+; chosen.
+;
+;   MAP_PROJ = 0 : "CylindricalEquidistant"
+;   MAP_PROJ = 1 : "LambertConformal"
+;   MAP_PROJ = 2 : "Stereographic"
+;   MAP_PROJ = 3 : "Mercator"
+;   MAP_PROJ = 6 : "Lat/Lon"
+
+;   CylindricalEquidistant
+      if(opts@map_proj .eq. 0)
+        projection          = "CylindricalEquidistant"
+        opts@mpGridSpacingF = 45
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        opts@mpCenterLonF   = get_res_value_keep(opts, "mpCenterLonF",opts@stand_lon)
+      end if
+
+;   LambertConformal projection
+      if(opts@map_proj .eq. 1)
+        projection               = "LambertConformal"
+        opts@mpLambertParallel1F = get_res_value_keep(opts, "mpLambertParallel1F",opts@truelat1)
+        opts@mpLambertParallel2F = get_res_value_keep(opts, "mpLambertParallel2F",opts@truelat2)
+        opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",opts@stand_lon)
+      end if
+  
+;   Stereographic projection
+      if(opts@map_proj .eq. 2)
+        projection          = "Stereographic"
+        if( isatt(opts,"cenlat") ) then
+          opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF",opts@cenlat)
+        else
+          opts@mpCenterLatF  = get_res_value_keep(opts, "mpCenterLatF",opts@ref_lat)
+        end if
+        opts@mpCenterLonF   = get_res_value_keep(opts, "mpCenterLonF",opts@stand_lon)
+      end if
+  
+;   Mercator projection
+      if(opts@map_proj .eq. 3)
+        projection          = "Mercator"
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        opts@mpCenterLonF   = get_res_value_keep(opts, "mpCenterLonF",opts@stand_lon)
+      end if
+  
+;    global WRF CylindricalEquidistant
+      if(opts@map_proj .eq. 6)
+        projection          = "CylindricalEquidistant"
+        opts@mpGridSpacingF = 45
+        if( isatt(opts,"cenlon") ) then
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",opts@cenlon)
+        else
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",opts@ref_lon)
+        end if
+        if( isatt(opts,"pole_lat") ) then
+          delete(opts@mpCenterLonF)
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", - 190. )
+          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - opts@pole_lat) 
+        else
+          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 0.0) 
+        end if
+      end if
+
+; Set some resources common to all map projections.
+  opts = set_mp_resources(opts)
+
+; The default is not to draw the plot or advance the frame, and
+; to maximize the plot in the frame.
+
+  opts@gsnDraw       = get_res_value_keep(opts,"gsnDraw",     False)
+  opts@gsnFrame      = get_res_value_keep(opts,"gsnFrame",    False)
+  opts@gsnMaximize   = get_res_value_keep(opts,"gsnMaximize", True)
+
+  delete_attrs(opts)                             ; Clean up.
+  mp = gsn_map(wks,projection,opts)              ; Create map plot.
+  return(mp)                                     ; Return.
+
+end
 
 ;--------------------------------------------------------------------------------
+undef("wrf_wps_dom")
+function wrf_wps_dom(wks[1]:graphic,opt_args[1]:logical,lnres[1]:logical,txres[1]:logical)   
 
+begin
+
+  mpres = opt_args
+
+  res = True
+  res@DX = mpres@dx
+  res@DY = mpres@dy
+  res@LATINC = 0.0
+  res@LONINC = 0.0
+  if ( mpres@map_proj .eq. "lambert") then
+    mpres@map_proj = 1
+    res@MAP_PROJ = 1
+  end if
+  if ( mpres@map_proj .eq. "polar") then
+    mpres@map_proj = 2
+    res@MAP_PROJ = 2
+  end if
+  if ( mpres@map_proj .eq. "mercator") then
+    mpres@map_proj = 3
+    res@MAP_PROJ = 3
+  end if
+  if ( mpres@map_proj .eq. "lat-lon") then
+    mpres@map_proj = 6
+    res@MAP_PROJ = 6
+    res@LATINC = mpres@dy
+    res@LONINC = mpres@dx
+  end if
+  res@TRUELAT1 = mpres@truelat1
+  res@TRUELAT2 = mpres@truelat2
+  res@STAND_LON = mpres@stand_lon
+
+  res@REF_LAT = mpres@ref_lat
+  res@REF_LON = mpres@ref_lon
+  if ( isatt(mpres,"ref_x") ) then
+    res@KNOWNI = mpres@ref_x
+  else
+    res@KNOWNI = int2flt(mpres@e_we(0))/2.
+  end if
+  if ( isatt(mpres,"ref_y") ) then
+    res@KNOWNJ = mpres@ref_y
+  else
+    res@KNOWNJ = int2flt(mpres@e_sn(0))/2.
+  end if
+
+  if ( isatt(mpres,"pole_lat") ) then
+    res@POLE_LAT = mpres@pole_lat
+  else
+    res@POLE_LAT = 90.0
+  end if
+  if ( isatt(mpres,"pole_lon") ) then
+    res@POLE_LON = mpres@pole_lon
+  else
+    res@POLE_LON = 0.0
+  end if
+
+  xx = 1.0
+  yy = 1.0
+  loc = wrf_ij_to_ll (xx,yy,res)
+  start_lat = loc(0)
+  start_lon = loc(1)
+  xx = int2flt(mpres@e_we(0))
+  yy = int2flt(mpres@e_sn(0))
+  loc = wrf_ij_to_ll (xx,yy,res)
+  end_lat = loc(0)
+  end_lon = loc(1)
+
+  mpres@start_lat   = start_lat
+  mpres@start_lon   = start_lon
+  mpres@end_lat     = end_lat
+  mpres@end_lon     = end_lon
+
+
+  mp = wrf_wps_map(wks,mpres)
+  draw(mp)
+
+
+  if ( mpres@max_dom .gt. 1 ) then
+
+    do idom = 1,mpres@max_dom-1
+
+      ; nest start and end points in large domain space
+      if ( mpres@parent_id(idom) .eq. 1) then
+        ; corner value
+        i_start = mpres@i_parent_start(idom)
+        j_start = mpres@j_parent_start(idom)
+        ; end point
+        i_end = (mpres@e_we(idom)-1)/mpres@parent_grid_ratio(idom) + i_start
+        j_end = (mpres@e_sn(idom)-1)/mpres@parent_grid_ratio(idom) + j_start
+      end if
+      if ( mpres@parent_id(idom) .ge. 2) then
+        ; corner value
+        nd = mpres@parent_id(idom)
+        i_points = ((mpres@e_we(idom)-1)/mpres@parent_grid_ratio(idom))
+        j_points = ((mpres@e_sn(idom)-1)/mpres@parent_grid_ratio(idom))
+        ai_start = mpres@i_parent_start(idom)*1.0
+        aj_start = mpres@j_parent_start(idom)*1.0
+        do while ( nd .gt. 1)
+          ai_start = ai_start/mpres@parent_grid_ratio(nd-1) + mpres@i_parent_start(nd-1)
+          aj_start = aj_start/mpres@parent_grid_ratio(nd-1) + mpres@j_parent_start(nd-1)
+          i_points = (i_points/mpres@parent_grid_ratio(nd-1))
+          j_points = (j_points/mpres@parent_grid_ratio(nd-1))
+          nd = nd - 1
+        end do
+        i_start = tointeger(ai_start + .5 )
+        j_start = tointeger(aj_start + .5 )
+        ; end point
+        i_end = i_points + i_start + 1
+        j_end = j_points + j_start + 1
+      end if
+      xx = int2flt(i_start)
+      yy = int2flt(j_start)
+      loc = wrf_ij_to_ll (xx,yy,res)
+      cor_lat = loc(0)
+      cor_lon = loc(1)
+
+      start_lat = cor_lat
+      start_lon = cor_lon
+      do ii = i_start, i_end
+        xx = int2flt(ii)
+        loc = wrf_ij_to_ll (xx,yy,res)
+        end_lat = loc(0)
+        end_lon = loc(1)
+        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
+          start_lon = start_lon - 360.0
+        end if
+        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
+          start_lon = start_lon + 360.0
+        end if
+        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
+        start_lat = end_lat
+        start_lon = end_lon
+      end do
+      do ii = j_start, j_end
+        yy = int2flt(ii)
+        loc = wrf_ij_to_ll (xx,yy,res)
+        end_lat = loc(0)
+        end_lon = loc(1)
+        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
+          start_lon = start_lon - 360.0
+        end if
+        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
+          start_lon = start_lon + 360.0
+        end if
+        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
+        start_lat = end_lat
+        start_lon = end_lon
+      end do
+
+      start_lat = cor_lat
+      start_lon = cor_lon
+      xx = int2flt(i_start)
+      do ii = j_start, j_end
+        yy = int2flt(ii)
+        loc = wrf_ij_to_ll (xx,yy,res)
+        end_lat = loc(0)
+        end_lon = loc(1)
+        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
+          end_lon = 0.0
+        end if
+        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
+          start_lon = start_lon + 360.0
+        end if
+        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
+        start_lat = end_lat
+        start_lon = end_lon
+      end do
+      idd = idom + 1
+      dom_text = "d0"+idd
+      gsn_text(wks,mp,dom_text,end_lon,end_lat,txres)
+      do ii = i_start, i_end
+        xx = int2flt(ii)
+        loc = wrf_ij_to_ll (xx,yy,res)
+        end_lat = loc(0)
+        end_lon = loc(1)
+        if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
+          start_lon = start_lon - 360.0
+        end if
+        if ( start_lon .lt. 0. .and. end_lon .gt. 0. ) then
+          start_lon = start_lon + 360.0
+        end if
+        gsn_polyline(wks,mp,(/start_lon,end_lon/),(/start_lat,end_lat/),lnres)
+        start_lat = end_lat
+        start_lon = end_lon
+      end do
+    end do
+
+  end if
+
+  return(mp)
+
+end
+
+;--------------------------------------------------------------------------------
 undef("wrf_map")
 function wrf_map(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical)   
 
@@ -2366,34 +2806,105 @@ begin
 ;
 ;   3. Create the map plot, and draw and advance the frame
 ;      (if requested).
-;
-  if(isatt(in_file,"MAP_PROJ"))
-;    if(in_file@MAP_PROJ .eq. 0)
-;      print("wrf_map: Error: attribute MAP_PROJ=0.")
-;      print("         Data does not have a valid map projection")
-;      return(new(1,graphic))
-;    end if
-;
-; There's a bug with map tickmarks that you can't set the length of
-; the tickmark to 0.0 in a setvalues call. You have to do it
-; during the create call.  Double-check, though, b/c the bug may have
-; been fixed by now.
-;
+
     opts = opt_args      ; Make a copy of the resource list
     opts  = True
-;
+
 ; Set some resources depending on what kind of map projection is 
 ; chosen.
 ;
+;   MAP_PROJ = 0 : "CylindricalEquidistant"
 ;   MAP_PROJ = 1 : "LambertConformal"
 ;   MAP_PROJ = 2 : "Stereographic"
 ;   MAP_PROJ = 3 : "Mercator"
 ;   MAP_PROJ = 6 : "Lat/Lon"
-;
-; Set some resources common to all three map projections.
-;
+
+    if(isatt(in_file,"MAP_PROJ"))
+
+;   CylindricalEquidistant
+      if(in_file@MAP_PROJ .eq. 0)
+        projection          = "CylindricalEquidistant"
+        opts@mpGridSpacingF = 45
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+
+;   LambertConformal projection
+      if(in_file@MAP_PROJ .eq. 1)
+        projection               = "LambertConformal"
+        opts@mpLambertParallel1F = get_res_value_keep(opts, "mpLambertParallel1F",in_file@TRUELAT1)
+        opts@mpLambertParallel2F = get_res_value_keep(opts, "mpLambertParallel2F",in_file@TRUELAT2)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+  
+;   Stereographic projection
+      if(in_file@MAP_PROJ .eq. 2)
+        projection          = "Stereographic"
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", in_file@CEN_LAT)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+  
+;   Mercator projection
+      if(in_file@MAP_PROJ .eq. 3)
+        projection          = "Mercator"
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+  
+;    global WRF CylindricalEquidistant
+      if(in_file@MAP_PROJ .eq. 6)
+        projection          = "CylindricalEquidistant"
+        opts@mpGridSpacingF = 45
+        opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+        if( isatt(in_file,"POLE_LAT") ) then
+          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
+          delete(opts@mpCenterLonF)
+          calcen = -190.
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", calcen )
+        end if
+      end if
+  
+    else
+  
+      print("wrf_map: Error: no MAP_PROJ attribute in input file")
+      return(new(1,graphic))
+  
+    end if
+
     opts@mpNestTime = get_res_value_keep(opts, "mpNestTime",0)
-    if(any(in_file@MAP_PROJ.eq.(/0,1,2,3,6/))) then
+
       if(isfilevar(in_file,"XLAT"))
         lat = in_file->XLAT(opts@mpNestTime,:,:)
         lon = in_file->XLONG(opts@mpNestTime,:,:)
@@ -2410,31 +2921,17 @@ begin
         end if
       end do
       end do
-;
-; "LowRes" is the default that NCL uses, so you don't need to
-; set it here. However, if you want a higher resolution, use 
-; "MediumRes". If you want higher resolution for the coastlines,
-; then set it to "HighRes", but then you also need to download
-; the RANGS-GSHHS database.  Higher resolutions take longer to
-; draw.
-;
-      opts@mpDataBaseVersion     = get_res_value_keep(opts, "mpDataBaseVersion","MediumRes")
-     ;opts@mpOutlineBoundarySets = get_res_value_keep(opts, "mpOutlineBoundarySets", "AllBoundaries")
-      opts@mpOutlineBoundarySets = get_res_value_keep(opts, "mpOutlineBoundarySets", "GeophysicalAndUSStates")
-      opts@mpPerimLineThicknessF = get_res_value_keep(opts, "mpPerimLineThicknessF", 1.0)
-      opts@tmXBLabelFontHeightF  = get_res_value_keep(opts, "tmXBLabelFontHeightF", 0.01)
-      opts@tmYLLabelFontHeightF  = get_res_value_keep(opts, "tmYLLabelFontHeightF", 0.01)
-;
-; Select portion of the map to view.
-;
-    ;if(any(in_file@MAP_PROJ.eq.(/1,2,3/))) then
-      opts@mpLimitMode           = get_res_value_keep(opts, "mpLimitMode","Corners")
-      opts@mpLeftCornerLatF      = get_res_value_keep(opts, "mpLeftCornerLatF",lat(0,0))
-      opts@mpLeftCornerLonF      = get_res_value_keep(opts, "mpLeftCornerLonF",lon(0,0))
-      opts@mpRightCornerLatF     = get_res_value_keep(opts, "mpRightCornerLatF", lat(dims(0)-1,dims(1)-1))
-      opts@mpRightCornerLonF     = get_res_value_keep(opts, "mpRightCornerLonF", lon(dims(0)-1,dims(1)-1))
-      if ( isatt(opts,"ZoomIn") .and. opts@ZoomIn ) then
 
+      opts@start_lat = lat(0,0)
+      opts@start_lon = lon(0,0)
+      opts@end_lat   = lat(dims(0)-1,dims(1)-1)
+      opts@end_lon   = lon(dims(0)-1,dims(1)-1)
+
+
+; Set some resources common to all map projections.
+  opts = set_mp_resources(opts)
+
+      if ( isatt(opts,"ZoomIn") .and. opts@ZoomIn ) then
         y1 = 0
         x1 = 0
         y2 = dims(0)-1
@@ -2465,140 +2962,17 @@ begin
         opts@mpRightCornerLatF     = lat(y2,x2)
         opts@mpRightCornerLonF     = lon(y2,x2)
 
+        if ( opts@mpRightCornerLonF .lt. 0.0 ) then
+          opts@mpRightCornerLonF  = opts@mpRightCornerLonF + 360.0
+        end if 
+
         delete(opts@ZoomIn)
       end if
 
-      if ( opts@mpRightCornerLonF .lt. 0.0 ) then
-        opts@mpRightCornerLonF  = opts@mpRightCornerLonF + 360.0
-        ;print(opts@mpLeftCornerLonF)
-        ;print(opts@mpRightCornerLonF)
-      end if 
-    ;end if
-;
-; Set some other resources for line colors and grid spacing.
-;
-      opts@mpGeophysicalLineColor      = get_res_value_keep(opts, "mpGeophysicalLineColor","Gray")
-      opts@mpGeophysicalLineThicknessF = get_res_value_keep(opts, "mpGeophysicalLineThicknessF",0.5)
-      opts@mpGridLineColor             = get_res_value_keep(opts, "mpGridLineColor","Gray")
-      opts@mpGridLineThicknessF        = get_res_value_keep(opts, "mpGridLineThicknessF",0.5)
-      ;opts@mpGridMaskMode              = get_res_value_keep(opts, "mpGridMaskMode",3)
-      opts@mpGridSpacingF              = get_res_value_keep(opts, "mpGridSpacingF",5)
-      opts@mpLimbLineColor             = get_res_value_keep(opts, "mpLimbLineColor","Gray")
-      opts@mpLimbLineThicknessF        = get_res_value_keep(opts, "mpLimbLineThicknessF",0.5)
-      opts@mpNationalLineColor         = get_res_value_keep(opts, "mpNationalLineColor","Gray")
-      opts@mpNationalLineThicknessF    = get_res_value_keep(opts, "mpNationalLineThicknessF",0.5)
-      opts@mpPerimLineColor            = get_res_value_keep(opts, "mpPerimLineColor","Gray")
-      opts@mpPerimOn                   = get_res_value_keep(opts, "mpPerimOn",True)
-      opts@mpUSStateLineColor          = get_res_value_keep(opts, "mpUSStateLineColor","Gray")
-      opts@mpUSStateLineThicknessF     = get_res_value_keep(opts, "mpUSStateLineThicknessF",0.5)
-      opts@pmTickMarkDisplayMode       = get_res_value_keep(opts, "pmTickMarkDisplayMode","Always")
 
-;
-; Tick mark resources
-; 
-     ;opts@tmXBMajorLengthF      = get_res_value(opts, "tmXBMajorLengthF",-0.03)
-     ;opts@tmYLMajorLengthF      = get_res_value(opts, "tmYLMajorLengthF",-0.03)
-      opts@tmXTOn                = get_res_value(opts,"tmXTOn",False)
-      opts@tmYROn                = get_res_value(opts,"tmYROn",False)
-      opts@tmYRLabelsOn          = get_res_value(opts,"tmYRLabelsOn",True)
-      opts@tmXBBorderOn          = get_res_value(opts,"tmXBBorderOn",True)
-      opts@tmXTBorderOn          = get_res_value(opts,"tmXTBorderOn",True)
-      opts@tmYLBorderOn          = get_res_value(opts,"tmYLBorderOn",True)
-      opts@tmYRBorderOn          = get_res_value(opts,"tmYRBorderOn",True)
-;
-    end if
-
-;
-; LambertConformal projection
-;
-    if(in_file@MAP_PROJ .eq. 1)
-      projection               = "LambertConformal"
-
-      opts@mpLambertParallel1F = get_res_value_keep(opts, "mpLambertParallel1F",in_file@TRUELAT1)
-      opts@mpLambertParallel2F = get_res_value_keep(opts, "mpLambertParallel2F",in_file@TRUELAT2)
-      if(isatt(in_file,"STAND_LON"))
-        opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@STAND_LON)
-      else
-        if(isatt(in_file,"CEN_LON"))
-          opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@CEN_LON)
-        else
-         print("ERROR: Found neither STAND_LON or CEN_LON in file")
-        end if
-      end if
-    end if
-
-;
-; Stereographic projection
-;
-    if(in_file@MAP_PROJ .eq. 2)
-      projection          = "Stereographic"
-      opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", in_file@CEN_LAT)
-      if(isatt(in_file,"STAND_LON"))
-        opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
-      else
-        if(isatt(in_file,"CEN_LON"))
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
-        else
-         print("ERROR: Found neither STAND_LON or CEN_LON in file")
-        end if
-      end if
-    end if
-
-;
-; Mercator projection
-;
-    if(in_file@MAP_PROJ .eq. 3)
-      projection          = "Mercator"
-      opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
-      if(isatt(in_file,"STAND_LON"))
-        opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
-      else
-        if(isatt(in_file,"CEN_LON"))
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
-        else
-         print("ERROR: Found neither STAND_LON or CEN_LON in file")
-        end if
-      end if
-    end if
-
-;
-;  global WRF CylindricalEquidistant
-;
-    if(in_file@MAP_PROJ .eq. 6)
-      projection          = "CylindricalEquidistant"
-      opts@mpGridSpacingF = 45
-      opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
-      if( isatt(in_file,"POLE_LAT") ) then
-        opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
-      end if
-    end if
-
-;
-; CylindricalEquidistant
-;
-    if(in_file@MAP_PROJ .eq. 0)
-      projection          = "CylindricalEquidistant"
-      opts@mpGridSpacingF = 45
-      opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
-      if(isatt(in_file,"STAND_LON"))
-        opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
-      else
-        if(isatt(in_file,"CEN_LON"))
-          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
-        else
-         print("ERROR: Found neither STAND_LON or CEN_LON in file")
-        end if
-      end if
-    end if
-  else
-    print("wrf_map: Error: no MAP_PROJ attribute in input file")
-    return(new(1,graphic))
-  end if
-
-;
 ; The default is not to draw the plot or advance the frame, and
 ; to maximize the plot in the frame.
-;
+
   opts@gsnDraw       = get_res_value_keep(opts,"gsnDraw",     False)
   opts@gsnFrame      = get_res_value_keep(opts,"gsnFrame",    False)
   opts@gsnMaximize   = get_res_value_keep(opts,"gsnMaximize", True)
