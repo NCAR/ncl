@@ -623,21 +623,26 @@ c we will just return the nearest point at present
 
 C NCLFORTSTART
       SUBROUTINE DCOMPUTEUVMET(U,V,UVMET,LONGCA,LONGCB,FLONG,FLAT,
-     +                         CEN_LONG,CONE,RPD,NX,NY,NZ,NXP1,NYP1)
+     +                         CEN_LONG,CONE,RPD,NX,NY,NXP1,NYP1,
+     +                         ISTAG)
       IMPLICIT NONE
-      INTEGER NX,NY,NZ,NXP1,NYP1,NL
-      DOUBLE PRECISION U(NXP1,NY,NZ),V(NX,NYP1,NZ)
-      DOUBLE PRECISION UVMET(NX,NY,NZ,2)
+
+C ISTAG should be 0 if the U,V grids are not staggered.
+C That is, NY = NYP1 and NX = NXP1.
+
+      INTEGER NX,NY,NXP1,NYP1,NL,ISTAG
+      DOUBLE PRECISION U(NXP1,NY),V(NX,NYP1)
+      DOUBLE PRECISION UVMET(NX,NY,2)
       DOUBLE PRECISION FLONG(NX,NY),FLAT(NX,NY)
       DOUBLE PRECISION LONGCB(NX,NY),LONGCA(NX,NY)
       DOUBLE PRECISION CEN_LONG,CONE,RPD
 C NCLEND
 
-      INTEGER I,J,K
+      INTEGER I,J
       DOUBLE PRECISION UK,VK
 
 
-c      WRITE (6,FMT=*) ' in compute_uvmet ',NX,NY,NZ,NXP1,NYP1
+c      WRITE (6,FMT=*) ' in compute_uvmet ',NX,NY,NXP1,NYP1,ISTAG
 
       DO J = 1,NY
           DO I = 1,NX
@@ -663,15 +668,18 @@ c      WRITE (6,FMT=*) ' in compute_uvmet ',NX,NY,NZ,NXP1,NYP1
 
 c      WRITE (6,FMT=*) ' computing velocities '
 
-      DO K = 1,NZ
-          DO J = 1,NY
-              DO I = 1,NX
-                  UK = 0.5D0* (U(I,J,K)+U(I+1,J,K))
-                  VK = 0.5D0* (V(I,J,K)+V(I,J+1,K))
-                  UVMET(I,J,K,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
-                  UVMET(I,J,K,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
-              END DO
-          END DO
+      DO J = 1,NY
+         DO I = 1,NX
+            IF (ISTAG.EQ.1) THEN
+               UK = 0.5D0* (U(I,J)+U(I+1,J))
+               VK = 0.5D0* (V(I,J)+V(I,J+1))
+            ELSE
+               UK = U(I,J)
+               VK = V(I,J)
+            END IF
+            UVMET(I,J,1) = VK*LONGCB(I,J) + UK*LONGCA(I,J)
+            UVMET(I,J,2) = VK*LONGCA(I,J) - UK*LONGCB(I,J)
+         END DO
       END DO
 
       RETURN
