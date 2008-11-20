@@ -4083,30 +4083,30 @@ NhlErrorTypes wrf_dbz_W( void )
     type_obj_dbz = nclTypedoubleClass;
   }
 /*
- * Allocate space for tmp_qra.
+ * Allocate space for tmp_qra no matter what, because qra might be
+ * changed by the Fortran routine, and we don't want those changes
+ * to propagate back here.
  */
-  if(type_qra != NCL_double) {
-    tmp_qra = (double *)calloc(nbtsnwe,sizeof(double));
-    if(tmp_qra == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
+  tmp_qra = (double *)calloc(nbtsnwe,sizeof(double));
+  if(tmp_qra == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
   }
-  else {
+  if(type_qra == NCL_double) {
     type_dbz     = NCL_double;
     type_obj_dbz = nclTypedoubleClass;
   }
 /*
- * Allocate space for tmp_qsn.
+ * Allocate space for tmp_qsn no matter what, because qsn might be
+ * changed by the Fortran routine, and we don't want those changes
+ * to propagate back here.
  */
-  if(type_qsn != NCL_double) {
-    tmp_qsn = (double *)calloc(nbtsnwe,sizeof(double));
-    if(tmp_qsn == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
+  tmp_qsn = (double *)calloc(nbtsnwe,sizeof(double));
+  if(tmp_qsn == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
   }
-  else {
+  if(type_qsn == NCL_double) {
     type_dbz     = NCL_double;
     type_obj_dbz = nclTypedoubleClass;
   }
@@ -4187,26 +4187,14 @@ NhlErrorTypes wrf_dbz_W( void )
     }
 
 /*
- * Coerce subsection of qra (tmp_qra) to double if necessary.
+ * Force the coercion qra and qsn to tmp_qra and tmp_qsn, because
+ * the original arrays may get changed by the Fortran routine,
+ * and we don't want those changes to propagate back here.
  */
-    if(type_qra != NCL_double) {
-      coerce_subset_input_double(qra,tmp_qra,index_dbz,type_qra,nbtsnwe,
-                                 0,NULL,NULL);
-    }
-    else {
-      tmp_qra = &((double*)qra)[index_dbz];
-    }
-
-/*
- * Coerce subsection of qsn (tmp_qsn) to double if necessary.
- */
-    if(type_qsn != NCL_double) {
-      coerce_subset_input_double(qsn,tmp_qsn,index_dbz,type_qsn,nbtsnwe,
-                                 0,NULL,NULL);
-    }
-    else {
-      tmp_qsn = &((double*)qsn)[index_dbz];
-    }
+    coerce_subset_input_double(qra,tmp_qra,index_dbz,type_qra,nbtsnwe,
+			       0,NULL,NULL);
+    coerce_subset_input_double(qsn,tmp_qsn,index_dbz,type_qsn,nbtsnwe,
+			       0,NULL,NULL);
 
 /*
  * Coerce subsection of qgr (tmp_qgr) to double if necessary.
@@ -4256,8 +4244,8 @@ NhlErrorTypes wrf_dbz_W( void )
   if(type_prs != NCL_double) NclFree(tmp_prs);
   if(type_tmk != NCL_double) NclFree(tmp_tmk);
   if(type_qvp != NCL_double) NclFree(tmp_qvp);
-  if(type_qra != NCL_double) NclFree(tmp_qra);
-  if(type_qsn != NCL_double) NclFree(tmp_qsn);
+  NclFree(tmp_qra);
+  NclFree(tmp_qsn);
   if(type_qgr != NCL_double) NclFree(tmp_qgr);
   if(type_dbz != NCL_double) NclFree(tmp_dbz);
 
