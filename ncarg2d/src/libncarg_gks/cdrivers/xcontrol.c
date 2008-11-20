@@ -1,5 +1,5 @@
 /*
- *      $Id: xcontrol.c,v 1.26 2008-07-23 17:28:02 haley Exp $
+ *      $Id: xcontrol.c,v 1.27 2008-11-20 00:32:28 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -896,7 +896,7 @@ X11_ActivateWorkstation
                 return(ERR_WIN_ATTRIB);
         }
 
-
+        XSync(dpy,False);
         /*
          *      Find out how big the window is; calculate the
          *      coordinate translation macros.
