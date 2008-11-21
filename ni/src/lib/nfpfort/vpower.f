@@ -1,13 +1,37 @@
-      SUBROUTINE SPCTIMCROSS2 (NL,NM,NT,X,Y,STC,NLP1,NT2P1,
-     +                         WSAVE1,LSAVE1,WSAVE2,LSAVE2)
+C NCLFORTSTART
+      SUBROUTINE SPCTIMCROSS1 (NL,NM,NT,X,Y,STC
+     +                        ,NLP1,NTP1,NT2P1)
+C INPUT
+      INTEGER  NL, NM, NT
+      DOUBLE PRECISION X(NL,NM,NT), Y(NL,NM,NT)
+C OUTPUT
+      DOUBLE PRECISION STC(NLP1,NT2P1,16)
+C NCLEND
+C NCL:    stc = spaceTimeCrossSegment(X,Y,NT,opt)
+
+C                        ; DIMSENSION SIZES
+      NLP1   = NL+1
+      NTP1   = NT+1
+      NT2M1  = NT/2-1
+      NT2P1  = NT/2+1
+      LSAVE1 = 4*NL+15
+      LSAVE2 = 4*NT+15
+
+      CALL SPCTIMCROSS2 (NL,NM,NT,X,Y,STC
+     +                  ,NLP1,NTP1,NT2M1,NT2P1,LSAVE1,LSAVE2)
+
+      RETURN
+      END
+c --------------------------------------
+      SUBROUTINE SPCTIMCROSS2 (NL,NM,NT,X,Y,STC 
+     +                        ,NLP1,NTP1,NT2M1,NT2P1,LSAVE1,LSAVE2)
       IMPLICIT NONE
-      INTEGER  NL, NM, NT, NLP1,NT2P1,LSAVE1,LSAVE2, TSTRT
+      INTEGER  NL, NM, NT, NLP1,NTP1,NT2M1,NT2P1,LSAVE1,LSAVE2, TSTRT
 C INPUT
       DOUBLE PRECISION X(NL,NM,NT), Y(NL,NM,NT)
-      DOUBLE PRECISION  WSAVE1(LSAVE1), WSAVE2(LSAVE2)
 C RETURN
       DOUBLE PRECISION STC(NLP1,NT2P1,16)
-
+ 
 c OUTPUT VARIABLES THAT WILL BE PLACED INTO "STC"
       DOUBLE PRECISION  PEE1SUM_SYM(NLP1,NT2P1), PEE2SUM_SYM(NLP1,NT2P1)
       DOUBLE PRECISION  PEE1SUM_ASY(NLP1,NT2P1), PEE2SUM_ASY(NLP1,NT2P1)
@@ -17,16 +41,15 @@ c OUTPUT VARIABLES THAT WILL BE PLACED INTO "STC"
       DOUBLE PRECISION  COH2_ASY(NLP1,NT2P1)   , PHAS_ASY(NLP1,NT2P1)
       DOUBLE PRECISION  V1_SYM(NLP1,NT2P1)     , V2_SYM(NLP1,NT2P1)
       DOUBLE PRECISION  V1_ASY(NLP1,NT2P1)     , V2_ASY(NLP1,NT2P1)
-
+ 
 c LOCAL VARIABLES ASSOCIATED WITH THE INTERNAL PROCESSING 
+      DOUBLE PRECISION  WSAVE1(LSAVE1), WSAVE2(LSAVE2)
       DOUBLE PRECISION  FRQ(NT2P1)
       DOUBLE COMPLEX    EE1(NL,NT), EEO1(NL,NT)
       DOUBLE COMPLEX    EE2(NL,NT), EEO2(NL,NT)
       DOUBLE COMPLEX    CEEA(NL)  , CEEB(NT)
 
 c djs DOUBLE PRECISION FF(NTP1), SS(NLP1)
-c     NTP1 = NT+1
-
 c
       INTEGER  IP, M , J, TT, N, T, PN, PT, PP
 
@@ -35,7 +58,7 @@ c EE(n,t) = the initial (real) data set that later becomes the
 c         (complex) space-time spectrum
 c ss() and ff() are arrays of wavenumbers and frequencies
 c         (cycles per day) corresponding to PEE( )
-
+ 
       IF (MOD(NT,2).NE.0) THEN
          WRITE (6, *) 'NT must be event way: NT=',NT
          STOP 
@@ -43,17 +66,17 @@ c         (cycles per day) corresponding to PEE( )
          WRITE (6, *) 'NL must be even: NL=', NL
          STOP 
       ENDIF
-
+ 
 c frequency and spatial wave number
 c djs: needed for GrADS binary: do in NCL
-
+ 
 c djs DO T = 1, NT + 1
 c djs    FF(T) = DBLE(T - 1 - NT/2)/DBLE(NT)
 c djs END DO
 c djs DO N = 1, NL + 1
 c djs    SS(N) = DBLE(N - 1 - NL/2)
 c djs END DO
-
+ 
 c Initialize SUM arrays
 c djs: This had an error (memory bounds) *DO T=1,NT+1*
 
@@ -63,7 +86,7 @@ c djs: This had an error (memory bounds) *DO T=1,NT+1*
             PEE2SUM_SYM(N,T) = 0.D0
             P12SUM_SYM(N,T)  = 0.D0
             Q12SUM_SYM(N,T)  = 0.D0
-
+ 
             PEE1SUM_ASY(N,T) = 0.D0
             PEE2SUM_ASY(N,T) = 0.D0
             P12SUM_ASY(N,T)  = 0.D0
@@ -88,7 +111,7 @@ c djs     DO T = 1,NT
 c djs         READ (11,REC= (IP-1)*NT+T) ((X(N,M,T),N=1,NL),M=1,NM)
 c djs         READ (12,REC= (IP-1)*NT+T) ((Y(N,M,T),N=1,NL),M=1,NM)
 c djs     END DO
-
+ 
 c Do a loop in latitude (M)!! - average
          DO M = 1, NM
             DO T = 1, NT
@@ -97,15 +120,15 @@ c Do a loop in latitude (M)!! - average
                   EE2(N,T) = Y(N,M,T)
                END DO
             END DO
-
+ 
 c Initialize FFTs
 c djs: this should be moved outside loop but keep during debug
             CALL CFFTI (NL, WSAVE1)
             CALL CFFTI (NT, WSAVE2)
-
+ 
 c--------------------------------------------------------------------
 c---------------COMPUTING SPACE-TIME SPECTRUM for EE1----------------
-
+ 
             DO T = 1, NT
                DO N = 1, NL
 c CEEa(n) contains the grid values around a latitude circle
@@ -117,10 +140,10 @@ c Normalize
                   EE1(N,T) = CEEA(N)/DBLE(NL)
                END DO
             END DO
-
+ 
 c Now the array EE(n,t) contains the Fourier coefficients (in planetary
 c wavenumber space) for each time.
-
+ 
             DO N = 1, NL
                DO T = 1, NT
 c CEEb(t) contains a time-series of the coefficients for a single
@@ -133,12 +156,12 @@ C Normalize
                   EE1(N,T) = CEEB(T)/DBLE(NT)
                END DO
             END DO
-
+ 
 c Now the array EE1(n,t) contains the space-time spectrum.
-
+ 
 c--------------------------------------------------------------------
 c---------------COMPUTING SPACE-TIME SPECTRUM for EE2----------------
-
+ 
             DO T = 1, NT
                DO N = 1, NL
 c CEEa(n) contains the grid values around a latitude circle
@@ -149,10 +172,10 @@ c CEEa(n) contains the grid values around a latitude circle
                   EE2(N,T) = CEEA(N)/DBLE(NL)
                END DO
             END DO
-
+ 
 c Now the array EE(n,t) contains the Fourier coefficients (in planetary
 c wavenumber space) for each time.
-
+ 
             DO N = 1, NL
                DO T = 1, NT
 c CEEb(t) contains a time-series of the coefficients for a single
@@ -164,11 +187,11 @@ c planetary zonal wavenumber
                   EE2(N,T) = CEEB(T)/DBLE(NT)
                END DO
             END DO
-
+ 
 c Now the array EE2(n,t) contains the space-time spectrum.
-
+ 
 c-------------------------------------------------------------------
-
+ 
 c Create array PEE(NL+1,NT+1) which contains the (real) power spectrum.
 c In this array, the negative wavenumbers will be from pn=1 to NL/2;
 c The positive wavenumbers will be for pn=NL/2+2 to NL+1.
@@ -181,7 +204,7 @@ c In PEE, I define the WESTWARD waves to be either +ve frequency
 c and -ve wavenumber or -ve freq and +ve wavenumber.
 c EASTWARD waves are either +ve freq and +ve wavenumber OR -ve
 c freq and -ve wavenumber.
-
+ 
 c original one
 c     do 191 pt=1,NT+1
 c      do 189 pn=1,NL+1
@@ -200,10 +223,10 @@ c        else
 c         t=NT+NT/2+2-pt
 c        endif
 c       endif
-
+ 
             DO PT = 1, NT/2 + 1
                DO PN = 1, NL + 1
-
+ 
                   IF (PN .LE. NL/2) THEN
                      N = NL/2 + 2 - PN
                      T = PT
@@ -218,37 +241,37 @@ c       endif
                         T = NT + 2 - PT
                      ENDIF
                   ENDIF
-
+ 
                   IF (M.GE.1 .AND. M.LE.NM/2+1) THEN
-
+ 
                      PEE1SUM_SYM(PN,PT) = PEE1SUM_SYM(PN,PT) 
      +                      + CDABS(EE1(N,T))**2/DBLE(PP*(NM/2+1))
                      PEE2SUM_SYM(PN,PT) = PEE2SUM_SYM(PN,PT) 
      +                      + CDABS(EE2(N,T))**2/DBLE(PP*(NM/2+1))
-
+ 
                      P12SUM_SYM(PN,PT) = P12SUM_SYM(PN,PT) 
      +           + DBLE(DCONJG(EE1(N,T))*EE2(N,T))/DBLE(PP*(NM/2+1))
                      Q12SUM_SYM(PN,PT) = Q12SUM_SYM(PN,PT) 
      +  + DBLE((0.D0,1.D0)*DCONJG(EE1(N,T))*EE2(N,T))/DBLE(PP*(NM/2+1))
-
+ 
                   ELSE
-
+ 
                      PEE1SUM_ASY(PN,PT) = PEE1SUM_ASY(PN,PT) 
      +                      + CDABS(EE1(N,T))**2/DBLE(PP*(NM/2))
                      PEE2SUM_ASY(PN,PT) = PEE2SUM_ASY(PN,PT) 
      +                      + CDABS(EE2(N,T))**2/DBLE(PP*(NM/2))
-
+ 
                      P12SUM_ASY(PN,PT) = P12SUM_ASY(PN,PT) 
      +           + DBLE(DCONJG(EE1(N,T))*EE2(N,T))/DBLE(PP*(NM/2))
                      Q12SUM_ASY(PN,PT) = Q12SUM_ASY(PN,PT) 
      +  + DBLE((0.D0,1.D0)*DCONJG(EE1(N,T))*EE2(N,T))/DBLE(PP*(NM/2))
-
+ 
                   ENDIF
-
+ 
                END DO
             END DO
-
-
+ 
+ 
 c     do pt=1,NT+1
 c     do pn=1,NL+1
 c      Coh2(pn,pt)=(P12sum(pn,pt)**2+Q12sum(pn,pt)**2)/
@@ -262,12 +285,68 @@ c                          END of IP loop
       END DO
 c***************END BIG LOOP HERE*****************************
 
+      DO T = 1, NT/2 + 1
+         DO N = 1, NL + 1
+            STC(N,T,1)  = PEE1SUM_SYM(N,T) 
+            STC(N,T,2)  = PEE1SUM_ASY(N,T) 
+            STC(N,T,3)  = PEE2SUM_SYM(N,T) 
+            STC(N,T,4)  = PEE2SUM_ASY(N,T) 
+            STC(N,T,5)  = P12SUM_SYM(N,T)  
+            STC(N,T,6)  = P12SUM_ASY(N,T)  
+            STC(N,T,7)  = Q12SUM_SYM(N,T)  
+            STC(N,T,8)  = Q12SUM_ASY(N,T)  
+         END DO
+      END DO
+ 
 c ********* APPLY SMOOTHING TO THE SPECTRUM ************************
 c Apply smoothing to PEE1,PEE2,P12, and Q12
-c before calculating Coh2 and Phase.
+c then calculate Coh2 and Phase.
+
+      CALL SPCTIMCROSS3 (NL,NM,NT,STC,NLP1,NTP1,NT2P1)
+
+      RETURN
+      END 
+c --------------------------------------
+C NCLFORTSTART
+      SUBROUTINE SPCTIMCROSS3 (NL,NM,NT,STC,NLP1,NTP1,NT2P1)  
+      IMPLICIT NONE
+      INTEGER  NL, NM, NT, NLP1,NTP1,NT2P1
+C INPUT (1 thru 8) and OUTPUT (9 to 16)
+      DOUBLE PRECISION STC(NLP1,NT2P1,16)
+C NCLEND
+
+C NCL:  
+
+c TEMPORARY VARIABLES THAT WILL BE PLACED EXTRACTED FROM "STC"
+      DOUBLE PRECISION  PEE1SUM_SYM(NLP1,NT2P1), PEE2SUM_SYM(NLP1,NT2P1)
+      DOUBLE PRECISION  PEE1SUM_ASY(NLP1,NT2P1), PEE2SUM_ASY(NLP1,NT2P1)
+      DOUBLE PRECISION  P12SUM_SYM (NLP1,NT2P1), Q12SUM_SYM(NLP1,NT2P1)
+      DOUBLE PRECISION  P12SUM_ASY(NLP1,NT2P1) , Q12SUM_ASY(NLP1,NT2P1)
+
+c LOCAL VARIABLES THAT WILL BE PLACED INTO "STC"
+      DOUBLE PRECISION  COH2_SYM(NLP1,NT2P1)   , PHAS_SYM(NLP1,NT2P1)
+      DOUBLE PRECISION  COH2_ASY(NLP1,NT2P1)   , PHAS_ASY(NLP1,NT2P1)
+      DOUBLE PRECISION  V1_SYM(NLP1,NT2P1)     , V2_SYM(NLP1,NT2P1)
+      DOUBLE PRECISION  V1_ASY(NLP1,NT2P1)     , V2_ASY(NLP1,NT2P1)
+
+      DOUBLE PRECISION  FRQ(NT2P1)
+      INTEGER  TSTRT, N, T
+      
+      DO T = 1, NT/2 + 1
+         DO N = 1, NL + 1
+            PEE1SUM_SYM(N,T) = STC(N,T,1) 
+            PEE1SUM_ASY(N,T) = STC(N,T,2)
+            PEE2SUM_SYM(N,T) = STC(N,T,3) 
+            PEE2SUM_ASY(N,T) = STC(N,T,4) 
+            P12SUM_SYM(N,T)  = STC(N,T,5)  
+            P12SUM_ASY(N,T)  = STC(N,T,6)  
+            Q12SUM_SYM(N,T)  = STC(N,T,7)  
+            Q12SUM_ASY(N,T)  = STC(N,T,8)  
+         END DO
+      END DO
 
 c Smoothing in frq only
-c djs not sure why this was not put into a subroutine
+c djs not sure smoothing was not put into a subroutine
 c djs not sure why the 4 offset TSTRT=4
 c     Several arguments were changed
       TSTRT = 1
@@ -280,7 +359,7 @@ c     Several arguments were changed
             PEE1SUM_SYM(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
       DO N = 1, NL + 1
          DO T = TSTRT, NT/2 + 1
             FRQ(T-TSTRT+1) = PEE2SUM_SYM(N,T)
@@ -290,7 +369,7 @@ c     Several arguments were changed
             PEE2SUM_SYM(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
       DO N = 1, NL + 1
          DO T = TSTRT, NT/2 + 1
             FRQ(T-TSTRT+1) = P12SUM_SYM(N,T)
@@ -300,7 +379,7 @@ c     Several arguments were changed
             P12SUM_SYM(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
       DO N = 1, NL + 1
          DO T = TSTRT, NT/2 + 1
             FRQ(T-TSTRT+1) = Q12SUM_SYM(N,T)
@@ -310,7 +389,7 @@ c     Several arguments were changed
             Q12SUM_SYM(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
 c asymmetric
       DO N = 1, NL + 1
          DO T = TSTRT, NT/2 + 1
@@ -321,7 +400,7 @@ c asymmetric
             PEE1SUM_ASY(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
       DO N = 1, NL + 1
          DO T = TSTRT, NT/2 + 1
             FRQ(T-TSTRT+1) = PEE2SUM_ASY(N,T)
@@ -331,7 +410,7 @@ c asymmetric
             PEE2SUM_ASY(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
       DO N = 1, NL + 1
          DO T = TSTRT, NT/2 + 1
             FRQ(T-TSTRT+1) = P12SUM_ASY(N,T)
@@ -341,7 +420,7 @@ c asymmetric
             P12SUM_ASY(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
       DO N = 1, NL + 1
          DO T = TSTRT, NT/2 + 1
             FRQ(T-TSTRT+1) = Q12SUM_ASY(N,T)
@@ -351,7 +430,7 @@ c asymmetric
             Q12SUM_ASY(N,T) = FRQ(T-TSTRT+1)
          END DO
       END DO
-
+ 
 c Calculate the Coherence-squared statistic and the phase.
       DO T = 1, NT/2 + 1
          DO N = 1, NL + 1
@@ -374,14 +453,14 @@ c       else
 c        Coh2_sym(n,t)=dmiss
 c        Phas_sym(n,t)=dmiss
 c       endif
-
+ 
             IF (COH2_SYM(N,T) .LT. 0.05D0) THEN
                V1_SYM(N,T) = 0.0D0
                V2_SYM(N,T) = 0.0D0
             ENDIF
          END DO
       END DO
-
+ 
       DO T = 1, NT/2 + 1
          DO N = 1, NL + 1
 c       if (PEE1sum_asy(n,t).ne.dmiss) then
@@ -393,7 +472,7 @@ c       if (PEE1sum_asy(n,t).ne.dmiss) then
                V1_ASY(N,T) = Q12SUM_ASY(N,T)/SQRT(Q12SUM_ASY(N,T)**2
      +                      +P12SUM_ASY(N,T)**2)
             ELSE
-               V1_ASY(N,T) = -1.D0*Q12SUM_ASY(N,T)/SQRT(Q12SUM_ASY(N,T)       
+               V1_ASY(N,T) = -1.D0*Q12SUM_ASY(N,T)/SQRT(Q12SUM_ASY(N,T) 
      +                        **2+P12SUM_ASY(N,T)**2)
                Q12SUM_ASY(N,T) = -1.D0*Q12SUM_ASY(N,T)
             ENDIF
@@ -406,23 +485,15 @@ c       if (PEE1sum_asy(n,t).ne.dmiss) then
             ENDIF
          END DO
       END DO
-
+      
       DO T = 1, NT/2 + 1
          DO N = 1, NL + 1
-            STC(N,T, 1)   = PEE1SUM_SYM(N,T) 
-            STC(N,T, 2)   = PEE1SUM_ASY(N,T) 
-            STC(N,T, 3)   = PEE2SUM_SYM(N,T) 
-            STC(N,T, 4)   = PEE2SUM_ASY(N,T) 
-            STC(N,T, 5)   = P12SUM_SYM(N,T)  
-            STC(N,T, 6)   = P12SUM_ASY(N,T)  
-            STC(N,T, 7)   = Q12SUM_SYM(N,T)  
-            STC(N,T, 8)   = Q12SUM_ASY(N,T)  
             STC(N,T, 9)   = COH2_SYM(N,T)  
             STC(N,T,10)   = COH2_ASY(N,T)  
             STC(N,T,11)   = PHAS_SYM(N,T)  
             STC(N,T,12)   = PHAS_ASY(N,T)  
             STC(N,T,13)   = V1_SYM(N,T)  
-            STC(N,T,14)   = V1_ASY(N,T)  
+            STC(N,T,14)   = V1_SYM(N,T)  
             STC(N,T,15)   = V2_SYM(N,T)  
             STC(N,T,16)   = V2_ASY(N,T)  
          END DO
@@ -430,7 +501,6 @@ c       if (PEE1sum_asy(n,t).ne.dmiss) then
 
       RETURN
       END 
-
 c--------------------------------------------------------
       SUBROUTINE SMTH121STCP(VV, VN, NN)
 c SpaceTimeCoherence2Phase (STCP)
@@ -441,19 +511,19 @@ c The routine also skips-over missing data (assigned to be
 c a value of -999.).
 c There are 'nn' pieces of useful information, which may be less
 c than or equal to 'vn'.
-
+ 
       IMPLICIT NONE
       INTEGER  NN, I, VN
       DOUBLE PRECISION  SPV, VV(VN), DUM(9999)
-
+ 
       IF (NN .GT. 5000) THEN
          WRITE (6, *) 'need to increase 9999 in smooth121.f'
          STOP 
       ENDIF
-
+ 
       SPV = -999.D0
       I = 0
- 10   CONTINUE
+   10 CONTINUE
       I = I + 1
       IF (VV(I) .EQ. SPV) THEN
          DUM(I) = SPV
@@ -465,7 +535,7 @@ c than or equal to 'vn'.
          DUM(I) = (VV(I-1)+2.D0*VV(I)+VV(I+1))/4.D0
       ENDIF
       IF (I .NE. NN) GO TO 10
-
+ 
       DO I = 1, NN
          VV(I) = DUM(I)
       END DO
