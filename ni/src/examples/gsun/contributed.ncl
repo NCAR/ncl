@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.187 2008-11-19 21:51:40 shea Exp $
+;      $Id: contributed.ncl,v 1.188 2008-11-23 20:48:36 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -496,6 +496,77 @@ begin
   ncol = stringtointeger( systemfunc("head -1 "+fNam+" | wc -w") )
   return(ncol)
 end
+;*******************************************************************************
+; HISTORY:
+;   08-02-05 Bruce Lunde. 
+;   08-02-06 Bruce Lunde. Generalized to awk versus gawk. Added option "start"
+;     for the "every" option, to allow starting the selecting of every Nth
+;     line starting with line 1 (opt@start=1). Otherwise, the first line
+;     selected is the Nth line in the file.
+; NOTES:
+;   * Set opt=True and add the following attributes:
+;       * opt@every=N ... To return every Nth line.
+;       * opt@line1,opt@line2 ... To print a range of lines (opt@line2 optional,
+;           defaults to End-of-File).
+;       *opt@list ... To print a list of line numbers. First line of file is
+;          numbered line 1. Input list is a 1D integer array.
+;   * Option priority is (1) line1,line2 (2) every (3) list
+;*******************************************************************************
+
+undef("extractAsciiRows")
+function extractAsciiRows(fName:string,opt:logical)
+local AOK, command, DBLQT, ii, ilist, numline
+begin
+  DBLQT = inttochar(34)
+  AOK   = False
+  if( opt )then
+    if( isatt(opt,"list") )then
+      AOK = True
+;;; print(1)
+      command = "awk -v LIST=" + DBLQT
+      ilist = opt@list
+      numline = dimsizes(ilist)
+      do ii=0,numline-1
+        command = command + ilist(ii) + " "
+      end do
+      command = command + DBLQT + " 'BEGIN{split(LIST,INDX); II=1}"
+      command = command + "{if( NR == INDX[II] ){print $0; II=II+1}}' " 
+      command = command + fName
+    end if
+
+    if( isatt(opt,"every") )then
+      AOK = True
+      START = "0"
+      if( isatt(opt,"start") )then
+        if( opt@start .eq. 1 )then
+          START = "1"
+        end if
+      end if
+;;; print(2)
+      command = "awk '(NR % " + opt@every + ") == " + START + "' " + fName 
+    end if
+
+;.. NOTE: Should check for line1 <= line2
+    if( isatt(opt,"line1") )then
+      AOK = True
+;;; print(3)
+      if( isatt(opt,"line2") )then
+        command = "awk 'NR==" + opt@line1 + ",NR==" + opt@line2
+      else
+        command = "awk 'NR>=" + opt@line1
+      end if
+      command = command + "' " + fName
+    end if
+;;; print("command = "+command)
+  end if
+
+  if( AOK )then
+    return( systemfunc(command) )
+  else
+    return( "ERROR" )
+  end if
+end ; END extractAsciiRows
+
 
 
 ;***************************************************************
