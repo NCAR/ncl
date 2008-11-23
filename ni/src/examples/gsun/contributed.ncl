@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.188 2008-11-23 20:48:36 shea Exp $
+;      $Id: contributed.ncl,v 1.189 2008-11-23 23:51:26 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -514,9 +514,16 @@ end
 ;*******************************************************************************
 
 undef("extractAsciiRows")
-function extractAsciiRows(fName:string,opt:logical)
-local AOK, command, DBLQT, ii, ilist, numline
+function extractAsciiRows(fName:string,OPT:logical)
+local AOK, command, DBLQT, ii, ilist, numline, opt
 begin
+
+  if (OPT) then
+      opt = OPT
+  else
+      return( asciiread(fName, -1, "string") )
+  end if
+
   DBLQT = inttochar(34)
   AOK   = False
   if( opt )then
