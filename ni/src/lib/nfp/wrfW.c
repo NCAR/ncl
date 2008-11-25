@@ -7473,14 +7473,14 @@ NhlErrorTypes wrf_cape_3d_W( void )
 
 /*
  * We need to coerce the pressure array once outside the loop to
- * check if the values are in descending order.
+ * check if the values are in ascending order.
  *
  * If not, we need to flip the leftmost dimension (p = p(::-1,:,:) in
  * NCL-ese), *and* flip the other 3 input arrays in the same fashion.
  */
   coerce_subset_input_double(p,tmp_p_orig,0,type_p,size_cape,0,NULL,NULL);
 
-  if(tmp_p_orig[0] < tmp_p_orig[(mkzh-1)*size_zsfc] ) {
+  if(tmp_p_orig[0] > tmp_p_orig[(mkzh-1)*size_zsfc] ) {
     flip = True;
     tmp_p    = (double *)calloc(size_cape,sizeof(double));
     tmp_t    = (double *)calloc(size_cape,sizeof(double));
@@ -8104,14 +8104,14 @@ NhlErrorTypes wrf_cape_2d_W( void )
 
 /*
  * We need to coerce the pressure array once outside the loop to
- * check if the values are in descending order.
+ * check if the values are in ascending order.
  *
  * If not, we need to flip the leftmost dimension (p = p(::-1,:,:) in
  * NCL-ese), *and* flip the other 3 input arrays in the same fashion.
  */
   coerce_subset_input_double(p,tmp_p_orig,0,type_p,size_cape,0,NULL,NULL);
 
-  if(tmp_p_orig[0] < tmp_p_orig[(mkzh-1)*size_zsfc] ) {
+  if(tmp_p_orig[0] > tmp_p_orig[(mkzh-1)*size_zsfc] ) {
     flip = True;
     tmp_p    = (double *)calloc(size_cape,sizeof(double));
     tmp_t    = (double *)calloc(size_cape,sizeof(double));
