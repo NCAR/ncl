@@ -60,6 +60,8 @@ extern NhlErrorTypes showal_skewt_W(void);
 extern NhlErrorTypes pw_skewt_W(void);
 extern NhlErrorTypes rip_cape_2d_W(void);
 extern NhlErrorTypes rip_cape_3d_W(void);
+extern NhlErrorTypes wrf_cape_2d_W(void);
+extern NhlErrorTypes wrf_cape_3d_W(void);
 extern NhlErrorTypes wrf_tk_W(void);
 extern NhlErrorTypes wrf_td_W(void);
 extern NhlErrorTypes wrf_rh_W(void);
@@ -1218,6 +1220,41 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
     NclRegisterFunc(rip_cape_3d_W,args,"rip_cape_3d",nargs);
+
+/*
+ * Register "wrf_cape_2d".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(7);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(wrf_cape_2d_W,args,"wrf_cape_2d",nargs);
+/*
+ * Register "wrf_cape_3d".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(7);
+
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(wrf_cape_3d_W,args,"wrf_cape_3d",nargs);
 /*
  * Register "wrf_tk".
  *
