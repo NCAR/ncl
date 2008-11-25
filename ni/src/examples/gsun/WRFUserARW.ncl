@@ -9,8 +9,6 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ;                            loc_param:numeric, angle:numeric, opts:logical )
 ; function wrf_user_getvar( nc_file:file, variable:string, time:integer )
 ; function wrf_user_list_times( nc_file:file )
-; function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, 
-;                                 longitude:numeric )
 ; function wrf_user_ll_to_ij( nc_file:file, longitude:numeric, latitude:numeric, \
 ;                             opts:logical )
 ; function wrf_user_ij_to_ll( nc_file:file, i:numeric, j:numeric \
@@ -19,15 +17,27 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ;                      opt_args[1]:logical)
 ; function wrf_vector(nc_file:file,wks[1]: graphic, data_u[*][*]:numeric, \
 ;                     data_v[*][*]:numeric, opt_args[1]:logical)
-; function wrf_wps_map(wks[1]:graphic,opt_args[1]:logical)   
 ; function wrf_map(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical)   
 ; function wrf_map_overlays(in_file[1]:file,wks:graphic,base[1]:graphic, \
 ;                           plots[*]:graphic,opt_arg[1]:logical,mp_arg[1]:logical)
 ; function wrf_overlays(in_file[1]:file,wks:graphic, plots[*]:graphic, \
 ;                       opt_arg[1]:logical)
 ;
-; These next three functions are obsolete as of version 5.0.1 of NCL.
-; Do not use them. Use wrf_overlays and wrf_map_overlays instead.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Thse functions are still experimental
+; function wrf_wps_dom(wks[1]:graphic,mpres[1]:logical,lnres[1]:logical,txres[1]:logical)   
+; function wrf_contour_ps(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
+;                         opt_args[1]:logical)
+; function wrf_vector_ps(nc_file:file,wks[1]: graphic, \
+;                        data_u[*][*]:numeric, data_v[*][*]:numeric, \
+;                        opt_args[1]:logical)
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; These functions/procedures are obsolete as of version 5.0.1 of NCL.
+; Do not use them. 
+; Use wrf_overlays instead of wrf_overlay
+; Use wrf_map_overlays instead of wrf_map_overlay
+; Use wrf_user_ll_to_ij instead of wrf_user_latlon_to_ij
 ;
 ; function wrf_map_zoom(wks[1]:graphic,in_file[1]:file,opt_args[1]:logical, \
 ;                       y1:integer,y2:integer,x1:integer,x2:integer)
@@ -36,10 +46,15 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ;                           opt_arg[1]:logical)
 ; procedure wrf_overlay(wks:graphic, plots[*]:graphic, \
 ;                           opt_arg[1]:logical)
+; function wrf_user_latlon_to_ij( nc_file:file, latitude:numeric, 
+;                                 longitude:numeric )
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; function add_white_space(str:string,maxlen:integer)
 ; procedure print_opts(opts_name,opts,debug)
 ; procedure print_header(icount:integer,debug)
+;
 ;--------------------------------------------------------------------------------
  
 ;***********************************************************************;
@@ -279,6 +294,7 @@ begin
        var = wrf_interp_3d_z(var3,z,loc_param(il))
        var2d(:,:,il,:,:) = var(:,:,:,:)
      end do
+
      copy_VarAtts(var3d,var3)
      if(isatt(var3,"description")) then
        delete_VarAtts(var3,(/"description"/))
@@ -288,6 +304,9 @@ begin
      end if
      if(isatt(var3,"MemoryOrder")) then
        delete_VarAtts(var3,(/"MemoryOrder"/))
+     end if
+     if(isatt(var3,"_FillValue")) then
+       delete_VarAtts(var3,(/"_FillValue"/))
      end if
      copy_VarAtts(var3,var2d)
 
@@ -305,6 +324,11 @@ begin
          return( var2d(0,0,:,:,:) )
        end if
      else
+       if ( z(0,0,0,0,0) .gt. 500.) then
+          var2d@PlotLevelID = loc_param + " hPa"
+       else
+          var2d@PlotLevelID = .001*loc_param + " km"
+       end if
        if ( nd .eq. 5 ) then
          return( var2d(:,:,0,:,:) )
        end if
@@ -313,11 +337,6 @@ begin
        end if
        if ( nd .eq. 3 ) then
          return( var2d(0,0,0,:,:) )
-       end if
-       if ( z(0,0,0,0,0) .gt. 500.) then
-          var2d@PlotLevelID = loc_param + " hPa"
-       else
-          var2d@PlotLevelID = .001*loc_param + " km"
        end if
      end if
 
@@ -332,10 +351,27 @@ begin
      dims = dimsizes(var3d)
 
      if ( dimsizes(dims) .eq. 4 ) then
+       if ( z_in(0,0,0,0) .gt. 500.) then
+         ; We must be interpolating to pressure
+           ; This routine needs input field and level in hPa - lets make sure of this
+         if ( z_in(0,0,0,0) .gt. 2000. ) then
+           ; looks like we have Pa as input - make this hPa
+           z_in = z_in * 0.01
+         end if
+       end if
        z = z_in(0,:,:,:)
      else
+       if ( z_in(0,0,0) .gt. 500.) then
+         ; We must be interpolating to pressure
+           ; This routine needs input field and level in hPa - lets make sure of this
+         if ( z_in(0,0,0) .gt. 2000. ) then
+           ; looks like we have Pa as input - make this hPa
+           z_in = z_in * 0.01
+         end if
+       end if
        z = z_in
      end if
+
        
 ; set vertical cross section
      if (opts) then
@@ -353,16 +389,21 @@ begin
      var2dz   = wrf_interp_2d_xy( z, xy)
 
 ;  interp to constant z grid
-     z_max = max(var2dz)
-     z_min = min(var2dz)
-     dz = 0.01*(z_max - z_min)
-     nlevels = tointeger(z_max/dz + 1.)
-     z_var2d = new( (/nlevels/), typeof(var2dz))
-     z_var2d(0) = z_min
-  
      if(var2dz(0,0) .gt. var2dz(1,0) ) then  ; monotonically decreasing coordinate
-        dz = -dz
+        z_max = floor(max(z)/10)*10     ; bottom value
+        z_min = ceil(min(z)/10)*10      ; top value
+        dz = 10
+        nlevels = tointeger( (z_max-z_min)/dz)
+        z_var2d = new( (/nlevels/), typeof(z))
         z_var2d(0) = z_max
+        dz = -dz
+     else
+        z_max = max(z)
+        z_min = 0.
+        dz = 0.01 * z_max
+        nlevels = tointeger( z_max/dz )
+        z_var2d = new( (/nlevels/), typeof(z))
+        z_var2d(0) = z_min
      end if
   
      do i=1, nlevels-1
@@ -482,6 +523,95 @@ begin
 
 end
 
+;--------------------------------------------------------------------------------
+
+undef("wrf_user_unstagger")
+function wrf_user_unstagger( varin:numeric, unstagDim:string )
+
+begin
+
+  if ( unstagDim .eq. " " .or. unstagDim .eq. "" ) then
+    return(varin)
+  end if
+
+  dims = dimsizes(varin)
+  nd = dimsizes(dims)
+
+  if ( unstagDim .eq. "X" ) then
+    dimU = dims(nd-1)
+    if ( nd .eq. 5 ) then
+      varout = 0.5*(varin(:,:,:,:,:dimU-2) + varin(:,:,:,:,1:dimU-1))
+    end if
+    if ( nd .eq. 4 ) then
+      varout = 0.5*(varin(:,:,:,:dimU-2) + varin(:,:,:,1:dimU-1))
+    end if
+    if ( nd .eq. 3 ) then
+      varout = 0.5*(varin(:,:,:dimU-2) + varin(:,:,1:dimU-1))
+    end if
+    if ( nd .eq. 2 ) then
+      varout = 0.5*(varin(:,:dimU-2) + varin(:,1:dimU-1))
+    end if
+    do i = 0,nd-2
+      varout!i = varin!i
+    end do
+    i = nd-1
+    varout!i = "west_east"
+    copy_VarAtts(varin,varout)
+    varout@coordinates = "XLONG XLAT"
+    varout@stagger = " "
+  end if
+
+  if ( unstagDim .eq. "Y" ) then
+    dimV = dims(nd-2)
+    if ( nd .eq. 5 ) then
+      varout = 0.5*(varin(:,:,:,:dimV-2,:)+varin(:,:,:,1:dimV-1,:))
+    end if
+    if ( nd .eq. 4 ) then
+      varout = 0.5*(varin(:,:,:dimV-2,:)+varin(:,:,1:dimV-1,:))
+    end if
+    if ( nd .eq. 3 ) then
+      varout = 0.5*(varin(:,:dimV-2,:)+varin(:,1:dimV-1,:))
+    end if
+    if ( nd .eq. 2 ) then
+      varout = 0.5*(varin(:dimV-2,:)+varin(1:dimV-1,:))
+    end if
+    do i = 0,nd-1
+      varout!i = varin!i
+    end do
+    i = nd-2
+    varout!i = "south_north"
+    copy_VarAtts(varin,varout)
+    varout@coordinates = "XLONG XLAT"
+    varout@stagger = " "
+  end if
+
+  if ( unstagDim .eq. "Z" ) then
+    dimW = dims(nd-3)
+    if ( nd .eq. 5 ) then
+      varout = 0.5*(varin(:,:,0:dimW-2,:,:)+varin(:,:,1:dimW-1,:,:))
+    end if
+    if ( nd .eq. 4 ) then
+      varout = 0.5*(varin(:,0:dimW-2,:,:)+varin(:,1:dimW-1,:,:))
+    end if
+    if ( nd .eq. 3 ) then
+      varout = 0.5*(varin(0:dimW-2,:,:)+varin(1:dimW-1,:,:))
+    end if
+    do i = 0,nd-1
+      varout!i = varin!i
+    end do
+    i = nd-3
+    varout!i = "bottom_top" 
+    copy_VarAtts(varin,varout)
+    varout@coordinates = "XLONG XLAT"
+    varout@stagger = " "
+  end if
+
+ return(varout) 
+
+end
+
+;--------------------------------------------------------------------------------
+
  
 undef("wrf_user_getvar")
 function wrf_user_getvar( nc_file:file, varin[*]:string, time:integer )
@@ -492,14 +622,6 @@ begin
 
   if( (variable .eq. "uvmet") .or. (variable .eq. "uvmet10") ) then
        ;; Calculate winds rotated to earth coord. 
-       ;; Return an array for uvmet 
-       ;;   uvmet(t,0,z,y,x) is umet, and 
-       ;;   uvmet(t,1,z,y,x) is vmet
-       ;;   IF time was not -1 on input, then t falls away, making this a 4D variable
-       ;; Return an array for uvmet10 
-       ;;   uvmet10(t,0,y,x) is umet10, and 
-       ;;   uvmet10(t,1,y,x) is vmet10
-       ;;   IF time was not -1 on input, then t falls away, making this a 3D variable
 
        pii = 3.14159265
        radians_per_degree = pii/180.
@@ -516,87 +638,28 @@ begin
          if ( time .eq. -1 ) then
            u_in = nc_file->$getU$
            v_in = nc_file->$getV$
-           nameX = u_in!3
-           nameY = u_in!2
-           nameZ = u_in!1
-           nameT = u_in!0
-             dd_in = dimsizes(v_in)
-             num_dd = dimsizes(dd_in)
-             dimX = dd_in(num_dd-1)
-             delete(dd_in)
-             dd_in = dimsizes(u_in)
-             num_dd = dimsizes(dd_in)
-             dimY = dd_in(num_dd-2)
-             dimZ = dd_in(num_dd-3)
-             dimT = dd_in(num_dd-4)
-             delete(dd_in)
-           u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
-           v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
-           u(:,:,:,:) = 0.5*(u_in(:,:,:,:dimX-1) + u_in(:,:,:,1:dimX))
-           v(:,:,:,:) = 0.5*(v_in(:,:,:dimY-1,:) + v_in(:,:,1:dimY,:))
+           u = wrf_user_unstagger(u_in,u_in@stagger)
+           v = wrf_user_unstagger(v_in,v_in@stagger)
          else
            u_in   = nc_file->$getU$(time,:,:,:)
            v_in   = nc_file->$getV$(time,:,:,:)
-           nameX = u_in!2
-           nameY = u_in!1
-           nameZ = u_in!0
-           nameT = "Time"
-             dd_in = dimsizes(v_in)
-             num_dd = dimsizes(dd_in)
-             dimX = dd_in(num_dd-1)
-             delete(dd_in)
-             dd_in = dimsizes(u_in)
-             num_dd = dimsizes(dd_in)
-             dimY = dd_in(num_dd-2)
-             dimZ = dd_in(num_dd-3)
-             dimT = 1
-             delete(dd_in)
-           u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
-           v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
-           u(0,:,:,:) = 0.5*(u_in(:,:,:dimX-1) + u_in(:,:,1:dimX))
-           v(0,:,:,:) = 0.5*(v_in(:,:dimY-1,:) + v_in(:,1:dimY,:))
+           u = wrf_user_unstagger(u_in,u_in@stagger)
+           v = wrf_user_unstagger(v_in,v_in@stagger)
          end if
        end if  
+
        if( (variable .eq. "uvmet10") )  then
          if(isfilevar(nc_file,"U10")) then
            if ( time .eq. -1 ) then
              u_in   = nc_file->U10
              v_in   = nc_file->V10
-             nameX = u_in!2
-             nameY = u_in!1
-             nameT = u_in!0
-             nameZ = "surface"
-               dd_in = dimsizes(u_in)
-               num_dd = dimsizes(dd_in)
-               dimX = dd_in(num_dd-1)
-               dimY = dd_in(num_dd-2)
-               dimZ = 1
-               dimT = dd_in(num_dd-3)
-               delete(dd_in)
-             dd_in = dimsizes(u_in)
-             u   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
-             v   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
-             u(:,0,:,:) = u_in
-             v(:,0,:,:) = v_in
-             delete(dd_in)
+             u = wrf_user_unstagger(u_in,u_in@stagger)
+             v = wrf_user_unstagger(v_in,v_in@stagger)
            else
              u_in  = nc_file->U10(time,:,:)
              v_in  = nc_file->V10(time,:,:)
-             nameX = u_in!1
-             nameY = u_in!0
-             nameT = "Time"
-             nameZ = "surface"
-               dd_in = dimsizes(u_in)
-               num_dd = dimsizes(dd_in)
-               dimX = dd_in(num_dd-1)
-               dimY = dd_in(num_dd-2)
-               dimZ = 1
-               dimT = 1
-               delete(dd_in)
-             u   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
-             v   = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
-             u(0,0,:,:) = u_in
-             v(0,0,:,:) = v_in
+             u = wrf_user_unstagger(u_in,u_in@stagger)
+             v = wrf_user_unstagger(v_in,v_in@stagger)
            end if
          else  ; may be a met file, so get lowest level of UU and VV
            if(isfilevar(nc_file,"UU")) then
@@ -604,60 +667,49 @@ begin
              if ( time .eq. -1 ) then
                u_in  = nc_file->UU(:,0,:,:)
                v_in  = nc_file->VV(:,0,:,:)
-               nameX = u_in!2
-               nameY = u_in!1
-               nameT = u_in!0
-               nameZ = "surface"
-                 dd_in = dimsizes(v_in)
-                 num_dd = dimsizes(dd_in)
-                 dimX = dd_in(num_dd-1)
-                 delete(dd_in)
-                 dd_in = dimsizes(u_in)
-                 num_dd = dimsizes(dd_in)
-                 dimY = dd_in(num_dd-2)
-                 dimZ = 1
-                 dimT = dd_in(num_dd-3)
-                 delete(dd_in)
-               u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
-               v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
-               u(:,0,:,:) = 0.5*(u_in(:,:,:dimX-1) + u_in(:,:,1:dimX))
-               v(:,0,:,:) = 0.5*(v_in(:,:dimY-1,:) + v_in(:,1:dimY,:))
+               u = wrf_user_unstagger(u_in,u_in@stagger)
+               v = wrf_user_unstagger(v_in,v_in@stagger)
              else
                u_in  = nc_file->UU(time,0,:,:)
                v_in  = nc_file->VV(time,0,:,:)
-               nameX = u_in!1
-               nameY = u_in!0
-               nameT = "Time"
-               nameZ = "surface"
-                 dd_in = dimsizes(v_in)
-                 num_dd = dimsizes(dd_in)
-                 dimX = dd_in(num_dd-1)
-                 delete(dd_in)
-                 dd_in = dimsizes(u_in)
-                 num_dd = dimsizes(dd_in)
-                 dimY = dd_in(num_dd-2)
-                 dimZ = 1
-                 dimT = 1
-                 delete(dd_in)
-               u = new ( (/ dimT, dimZ, dimY, dimX /), typeof(u_in) )
-               v = new ( (/ dimT, dimZ, dimY, dimX /), typeof(v_in) )
-               u(0,0,:,:) = 0.5*(u_in(:,:dimX-1) + u_in(:,1:dimX))
-               v(0,0,:,:) = 0.5*(v_in(:dimY-1,:) + v_in(1:dimY,:))
+               u = wrf_user_unstagger(u_in,u_in@stagger)
+               v = wrf_user_unstagger(v_in,v_in@stagger)
              end if
            end if
          end if  
        end if  
 
-       uvmet = new( (/ dimT, 2, dimZ, dimY, dimX /), typeof(u))
-       uvmet@description = " u,v met velocity"
-       uvmet@units = "m/s"
 
        map_projection = nc_file@MAP_PROJ
 
 
        if( any(map_projection.eq.(/0,3,6/)) ) then  ; no rotation needed
-         uvmet(:,0,:,:,:) = u(:,:,:,:) 
-         uvmet(:,1,:,:,:) = v(:,:,:,:)
+         dims = dimsizes(u)
+         nd = dimsizes(dims)
+         if ( nd .eq. 5 ) then
+           uvmet = new( (/ 2, dims(0), dims(1), dims(2), dims(3), dims(4) /), typeof(u))
+           uvmet(0,:,:,:,:,:) = u(:,:,:,:,:) 
+           uvmet(1,:,:,:,:,:) = v(:,:,:,:,:)
+         end if
+         if ( nd .eq. 4 ) then
+           uvmet = new( (/ 2, dims(0), dims(1), dims(2), dims(3) /), typeof(u))
+           uvmet(0,:,:,:,:) = u(:,:,:,:) 
+           uvmet(1,:,:,:,:) = v(:,:,:,:)
+         end if
+         if ( nd .eq. 3 ) then
+           uvmet = new( (/ 2, dims(0), dims(1), dims(2) /), typeof(u))
+           uvmet(0,:,:,:) = u(:,:,:) 
+           uvmet(1,:,:,:) = v(:,:,:)
+         end if
+         if ( nd .eq. 2 ) then
+           uvmet = new( (/ 2, dims(0), dims(1) /), typeof(u))
+           uvmet(0,:,:) = u(:,:) 
+           uvmet(1,:,:) = v(:,:)
+         end if
+         delete_VarAtts(u,(/"description","units"/))
+         copy_VarAtts(u,uvmet)
+         uvmet@description = " u,v met velocity"
+         uvmet!0 = "u_v"
        end if
 
 
@@ -680,17 +732,11 @@ begin
            end if
          end if
          if ( time .eq. -1 ) then
-           latitude   = nc_file->$getLAT$
-           longitude  = nc_file->$getLON$
+           latitude  = nc_file->$getLAT$
+           longitude = nc_file->$getLON$
          else
-           lat   = nc_file->$getLAT$(time,:,:)
-           lon   = nc_file->$getLON$(time,:,:)
-           dd_in = dimsizes(lat)
-           latitude  = new ( (/ 1, dd_in(0), dd_in(1) /), typeof(lat) )
-           longitude = new ( (/ 1, dd_in(0), dd_in(1) /), typeof(lon) )
-           latitude(0,:,:)  = lat
-           longitude(0,:,:) = lon
-           delete(dd_in)
+           latitude  = nc_file->$getLAT$(time,:,:)
+           longitude = nc_file->$getLON$(time,:,:)
          end if
 
          cone = 1.
@@ -713,28 +759,15 @@ begin
          end if
 
          uvmet = wrf_uvmet( u, v, latitude, longitude, cen_long, cone )
+         delete_VarAtts(u,(/"description","units"/))
+         copy_VarAtts(u,uvmet)
+
        end if  
-       uvmet!0 = nameT
-       uvmet!1 = "u_and_v"
-       uvmet!2 = nameZ
-       uvmet!3 = nameY
-       uvmet!4 = nameX
-
-       if( (variable .eq. "uvmet") ) then
-         if ( time .eq. -1 )
-           return(uvmet)
-         else
-           return(uvmet(0,:,:,:,:))
-         end if
+       
+       if( (variable .eq. "uvmet10") )  then
+         uvmet@description = " u10,v10 met velocity"
        end if
-       if( (variable .eq. "uvmet10") ) then
-         if ( time .eq. -1 )
-           return(uvmet(:,:,0,:,:))
-         else
-           return(uvmet(0,:,0,:,:))
-         end if
-       end if
-
+       return(uvmet)
 
   end if
 
@@ -754,23 +787,8 @@ begin
          var = nc_file->$getTHIS$(time,:,:,:)
        end if
 
-       dims = dimsizes(var)
-       nd = dimsizes(dims)
-       dimU = dims(nd-1)
-       if ( nd .eq. 4 ) then
-         ua = 0.5*(var(:,:,:,:dimU-2) + var(:,:,:,1:dimU-1))
-       else
-         ua = 0.5*(var(:,:,:dimU-2) + var(:,:,1:dimU-1))
-       end if
+       ua = wrf_user_unstagger(var,var@stagger)
 
-       do i = 0,nd-2
-         ua!i = var!i
-       end do
-       i = nd-1
-       ua!i = "west_east"
-       copy_VarAtts(var,ua)
-       ua@coordinates = "XLONG XLAT"
-       ua@stagger = " "
        return(ua)
   end if
 
@@ -788,25 +806,10 @@ begin
          var = nc_file->$getTHIS$
        else
          var = nc_file->$getTHIS$(time,:,:,:)
-        end if
-
-       dims = dimsizes(var)
-       nd = dimsizes(dims)
-       dimV = dims(nd-2)
-       if ( nd .eq. 4 ) then
-         va = 0.5*(var(:,:,:dimV-2,:)+var(:,:,1:dimV-1,:))
-       else
-         va = 0.5*(var(:,:dimV-2,:)+var(:,1:dimV-1,:))
        end if
 
-       do i = 0,nd-1
-         va!i = var!i
-       end do
-       i = nd-2
-       va!i = "south_north"
-       copy_VarAtts(var,va)
-       va@coordinates = "XLONG XLAT"
-       va@stagger = " "
+       va = wrf_user_unstagger(var,var@stagger)
+
        return(va)
   end if
 
@@ -820,23 +823,8 @@ begin
          var = nc_file->W(time,:,:,:)
        end if
 
-       dims = dimsizes(var)
-       nd = dimsizes(dims)
-       dimW = dims(nd-3)
-       if ( nd .eq. 4 ) then
-         wa = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
-       else
-         wa = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
-       end if
+       wa = wrf_user_unstagger(var,var@stagger)
 
-       do i = 0,nd-1
-         wa!i = var!i
-       end do
-       i = nd-3
-       wa!i = "bottom_top"
-       copy_VarAtts(var,wa)
-       wa@coordinates = "XLONG XLAT"
-       wa@stagger = " "
        return(wa)
   end if
 
@@ -864,6 +852,10 @@ begin
          end if
        end if
        var@description = "Pressure"
+       if( variable .eq. "pressure" ) then
+         var = var * 0.01
+         var@units = "hPa"
+       end if
        return(var)
   end if
 
@@ -881,23 +873,7 @@ begin
          end if
 
          var = var + PHB 
-         dims = dimsizes(var)
-         nd = dimsizes(dims)
-         dimW = dims(nd-3)
-         if ( nd .eq. 4 ) then
-           z = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
-         else
-           z = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
-         end if
-
-         do i = 0,nd-1
-           z!i = var!i
-         end do
-         i = nd-3
-         z!i = "bottom_top"
-         copy_VarAtts(var,z)
-         z@coordinates = "XLONG XLAT"
-         z@stagger = " "
+         z = wrf_user_unstagger(var,var@stagger)
          z@description = "Geopotential"
 
        else
@@ -1031,15 +1007,9 @@ begin
          T = T + 300.
          P = P + PB
          QVAPOR = QVAPOR > 0.000
-         var    = ( PH + PHB ) / 9.81
-         dims = dimsizes(var)
-         nd = dimsizes(dims)
-         dimW = dims(nd-3)
-         if ( nd .eq. 4 ) then
-           z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
-         else
-           z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
-         end if
+         PH    = ( PH + PHB ) / 9.81
+         z = wrf_user_unstagger(PH,PH@stagger)
+
          tk = wrf_tk( P , T )    ; calculate TK
          slp   = wrf_slp( z, tk, P, QVAPOR )  ; calculate slp
          delete_VarAtts(T,(/"description","units"/))
@@ -1566,10 +1536,10 @@ begin
   loc = wrf_ll_to_ij (longitude, latitude, res)
 
   if ( returnI  ) then
-    loci = new(2,integer)
+    loci = new(dimsizes(loc),integer)
     loci@_FillValue = -999
-    loci(0) = tointeger(loc(0)+.5)
-    loci(1) = tointeger(loc(1)+.5)
+    loci = tointeger(loc + .5)
+    loci!0 = loc!0
     return(loci)
   else
     return(loc)
@@ -2655,13 +2625,13 @@ begin
   xx = 1.0
   yy = 1.0
   loc = wrf_ij_to_ll (xx,yy,res)
-  start_lat = loc(0)
-  start_lon = loc(1)
+  start_lon = loc(0)
+  start_lat = loc(1)
   xx = int2flt(mpres@e_we(0))
   yy = int2flt(mpres@e_sn(0))
   loc = wrf_ij_to_ll (xx,yy,res)
-  end_lat = loc(0)
-  end_lon = loc(1)
+  end_lon = loc(0)
+  end_lat = loc(1)
 
   mpres@start_lat   = start_lat
   mpres@start_lon   = start_lon
@@ -2709,16 +2679,18 @@ begin
       xx = int2flt(i_start)
       yy = int2flt(j_start)
       loc = wrf_ij_to_ll (xx,yy,res)
-      cor_lat = loc(0)
-      cor_lon = loc(1)
+      cor_lon = loc(0)
+      cor_lat = loc(1)
 
+      delete(start_lat)
+      delete(start_lon)
       start_lat = cor_lat
       start_lon = cor_lon
       do ii = i_start, i_end
         xx = int2flt(ii)
         loc = wrf_ij_to_ll (xx,yy,res)
-        end_lat = loc(0)
-        end_lon = loc(1)
+        end_lon = loc(0)
+        end_lat = loc(1)
         if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
           start_lon = start_lon - 360.0
         end if
@@ -2732,8 +2704,8 @@ begin
       do ii = j_start, j_end
         yy = int2flt(ii)
         loc = wrf_ij_to_ll (xx,yy,res)
-        end_lat = loc(0)
-        end_lon = loc(1)
+        end_lon = loc(0)
+        end_lat = loc(1)
         if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
           start_lon = start_lon - 360.0
         end if
@@ -2745,14 +2717,16 @@ begin
         start_lon = end_lon
       end do
 
+      delete(start_lat)
+      delete(start_lon)
       start_lat = cor_lat
       start_lon = cor_lon
       xx = int2flt(i_start)
       do ii = j_start, j_end
         yy = int2flt(ii)
         loc = wrf_ij_to_ll (xx,yy,res)
-        end_lat = loc(0)
-        end_lon = loc(1)
+        end_lon = loc(0)
+        end_lat = loc(1)
         if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
           end_lon = 0.0
         end if
@@ -2769,8 +2743,8 @@ begin
       do ii = i_start, i_end
         xx = int2flt(ii)
         loc = wrf_ij_to_ll (xx,yy,res)
-        end_lat = loc(0)
-        end_lon = loc(1)
+        end_lon = loc(0)
+        end_lat = loc(1)
         if ( start_lon .gt. 0. .and. end_lon .lt. 0. ) then
           start_lon = start_lon - 360.0
         end if
