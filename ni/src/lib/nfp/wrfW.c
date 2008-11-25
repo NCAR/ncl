@@ -7745,7 +7745,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Output array variables
  */
   void *cape;
-  double *tmp_cape_orig, *tmp_cin_orig;
   double *tmp_cape, *tmp_cin;
   NclBasicDataTypes type_cape;
   NclObjClass type_obj_cape;
@@ -8043,9 +8042,9 @@ NhlErrorTypes wrf_cape_2d_W( void )
     type_obj_cape = nclTypefloatClass;
     cape          = (float *)calloc(size_output,sizeof(float));
   }
-  tmp_cape_orig = (double *)calloc(size_cape,sizeof(double));
-  tmp_cin_orig  = (double *)calloc(size_cape,sizeof(double));
-  if(cape == NULL || tmp_cape_orig == NULL || tmp_cin_orig == NULL) {
+  tmp_cape = (double *)calloc(size_cape,sizeof(double));
+  tmp_cin  = (double *)calloc(size_cape,sizeof(double));
+  if(cape == NULL || tmp_cape == NULL || tmp_cin == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for output arrays");
     return(NhlFATAL);
   }
@@ -8117,11 +8116,8 @@ NhlErrorTypes wrf_cape_2d_W( void )
     tmp_t    = (double *)calloc(size_cape,sizeof(double));
     tmp_q    = (double *)calloc(size_cape,sizeof(double));
     tmp_z    = (double *)calloc(size_cape,sizeof(double));
-    tmp_cape = (double *)calloc(size_cape,sizeof(double));
-    tmp_cin  = (double *)calloc(size_cape,sizeof(double));
 
-    if(tmp_p == NULL || tmp_t == NULL || tmp_q == NULL || tmp_z == NULL ||
-       tmp_cape == NULL || tmp_cin == NULL) {
+    if(tmp_p == NULL || tmp_t == NULL || tmp_q == NULL || tmp_z == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for flipping arrays");
       return(NhlFATAL);
     }
@@ -8132,8 +8128,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
     tmp_t    = tmp_t_orig;
     tmp_q    = tmp_q_orig;
     tmp_z    = tmp_z_orig;
-    tmp_cape = tmp_cape_orig;
-    tmp_cin  = tmp_cin_orig;
   }
 /*
  * Loop through time,nz and call the Fortran routine.
@@ -8225,18 +8219,13 @@ NhlErrorTypes wrf_cape_2d_W( void )
  * Call Fortran routine.
  */
     NGCALLF(dcapecalc3d,DCAPECALC3D)(tmp_p, tmp_t, tmp_q, tmp_z, tmp_zsfc,
-                                     tmp_psfc, tmp_cape_orig, tmp_cin_orig,
+                                     tmp_psfc, tmp_cape, tmp_cin,
                                      &miy, &mjx, &mkzh, &i3dflag, &iter,
                                      psa_file,strlen(psa_file));
 /*
- * If we flipped arrays before going into the Fortran routine, we need
- * to flip the output values as well.
- */
-    if(flip) {
-      flip_it(tmp_cape_orig,tmp_cape,mkzh,size_zsfc);
-      flip_it(tmp_cin_orig,tmp_cin,mkzh,size_zsfc);
-    }
-/*
+ * Even if we flipped arrays before going into the Fortran routine, do
+ * NOT flip them on the output.
+ *
  * Copy the values back out to the correct places in the "cape" array.
  *
  * This is a bit whacky, because the Fortran code is doing something
@@ -8274,15 +8263,13 @@ NhlErrorTypes wrf_cape_2d_W( void )
   if(type_z != NCL_double) NclFree(tmp_z_orig);
   if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
-  NclFree(tmp_cape_orig);
-  NclFree(tmp_cin_orig);
+  NclFree(tmp_cape);
+  NclFree(tmp_cin);
   if(flip) {
     NclFree(tmp_p);
     NclFree(tmp_t);
     NclFree(tmp_q);
     NclFree(tmp_z);
-    NclFree(tmp_cape);
-    NclFree(tmp_cin);
   }
 
 /*
