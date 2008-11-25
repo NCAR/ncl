@@ -22,6 +22,7 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ;                           plots[*]:graphic,opt_arg[1]:logical,mp_arg[1]:logical)
 ; function wrf_overlays(in_file[1]:file,wks:graphic, plots[*]:graphic, \
 ;                       opt_arg[1]:logical)
+; function wrf_user_unstagger( varin:numeric, unstagDim:string )
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Thse functions are still experimental
@@ -530,10 +531,6 @@ function wrf_user_unstagger( varin:numeric, unstagDim:string )
 
 begin
 
-  if ( unstagDim .eq. " " .or. unstagDim .eq. "" ) then
-    return(varin)
-  end if
-
   dims = dimsizes(varin)
   nd = dimsizes(dims)
 
@@ -606,7 +603,12 @@ begin
     varout@stagger = " "
   end if
 
- return(varout) 
+  if( any( unstagDim .eq. (/"X","Y","Z"/) ) ) then
+    return(varout) 
+  else
+    print("Warning: Input field was not unstaggered")
+    return(varin)
+  end if
 
 end
 
@@ -1261,8 +1263,7 @@ begin
 
 
 
-  if( any( variable .eq. (/"cape_3d"/) ) ) then
-       ;; function wrf_tk needs theta and pressure (Pa) on input and returns temperature in K on return
+  if( any( variable .eq. (/"cape_3d","cape_2d"/) ) ) then
        if ( time .eq. -1 ) then
          T  = nc_file->T
          P  = nc_file->P
@@ -1282,109 +1283,28 @@ begin
          HGT = nc_file->HGT(time,:,:)
          PSFC = nc_file->PSFC(time,:,:)
        end if
-       th = T + 300.
-       p  = (P + PB) 
-       tk = wrf_tk( p , th )
+       T = T + 300.
+       P  = P + PB 
+       tk = wrf_tk( P , T )
+       PH =  PH + PHB 
+       z = wrf_user_unstagger(PH,PH@stagger)
+       z = z/9.81
 
-       var = ( PH + PHB )
-       dims = dimsizes(var)
-       n_dims = dimsizes(dims)
-       dimW = dims(n_dims-3)
-       p = p/100.
-       if ( n_dims .eq. 4 ) then
-         z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
-         z = z/9.81
-         p  = p(:,::-1,:,:)
-         tk = tk(:,::-1,:,:)
-         QV = QV(:,::-1,:,:)
-         z  = z(:,::-1,:,:)
-       else
-         z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
-         z = z/9.81
-         p  = p(::-1,:,:)
-         tk = tk(::-1,:,:)
-         QV = QV(::-1,:,:)
-         z  = z(::-1,:,:)
+       if( variable .eq. "cape_3d" ) then
+         cape = wrf_cape_3d( P, tk, QV, z, HGT, PSFC, True )
+         cape@descriptsion = "cape ; cin"
        end if
-
-       cape3d = rip_cape_3d( p, tk, QV, z, HGT, PSFC , True )
-       if ( n_dims .eq. 4 ) then
-         cape3d!3 = T!3
-         cape3d!2 = T!2
-         cape3d!1 = T!0
-         cape3d!0 = "cape_cin"
-       else
-         cape3d!2 = T!2
-         cape3d!1 = T!1
-         cape3d!0 = "cape_cin"
+       if( variable .eq. "cape_2d" ) then
+         cape = wrf_cape_2d( P, tk, QV, z, HGT, PSFC, True )
+         delete_VarAtts(T,(/"MemoryOrder"/))
+         cape@MemoryOrder = "XY"
+         cape@descriptsion = "mcape ; mcin ; lcl ; lfc"
        end if
+       delete_VarAtts(T,(/"description","units"/))
+       copy_VarAtts(T,cape)
 
-       return(cape3d)
+       return(cape)
   end if
-
-
-
-  if( any( variable .eq. (/"cape_2d"/) ) ) then
-       ;; function wrf_tk needs theta and pressure (Pa) on input and returns temperature in K on return
-       if ( time .eq. -1 ) then
-         T  = nc_file->T
-         P  = nc_file->P
-         PB = nc_file->PB
-         QV = nc_file->QVAPOR
-         PH  = nc_file->PH
-         PHB = nc_file->PHB
-         HGT = nc_file->HGT
-         PSFC = nc_file->PSFC
-       else
-         T  = nc_file->T(time,:,:,:)
-         P  = nc_file->P(time,:,:,:)
-         PB = nc_file->PB(time,:,:,:)
-         QV = nc_file->QVAPOR(time,:,:,:)
-         PH  = nc_file->PH(time,:,:,:)
-         PHB = nc_file->PHB(time,:,:,:)
-         HGT = nc_file->HGT(time,:,:)
-         PSFC = nc_file->PSFC(time,:,:)
-       end if
-       th = T + 300.
-       p  = (P + PB) 
-       tk = wrf_tk( p , th )
-
-       var = ( PH + PHB )
-       dims = dimsizes(var)
-       n_dims = dimsizes(dims)
-       dimW = dims(n_dims-3)
-       p = p/100.
-       if ( n_dims .eq. 4 ) then
-         z  = 0.5*(var(:,0:dimW-2,:,:)+var(:,1:dimW-1,:,:))
-         z = z/9.81
-         p  = p(:,::-1,:,:)
-         tk = tk(:,::-1,:,:)
-         QV = QV(:,::-1,:,:)
-         z  = z(:,::-1,:,:)
-       else
-         z  = 0.5*(var(0:dimW-2,:,:)+var(1:dimW-1,:,:))
-         z = z/9.81
-         p  = p(::-1,:,:)
-         tk = tk(::-1,:,:)
-         QV = QV(::-1,:,:)
-         z  = z(::-1,:,:)
-       end if
-
-       cape2d = rip_cape_2d( p, tk, QV, z, HGT, PSFC , True )
-       if ( n_dims .eq. 4 ) then
-         cape2d!3 = T!3
-         cape2d!2 = T!2
-         cape2d!1 = T!0
-         cape2d!0 = "mcape_mcin_lcl_lfc"
-       else
-         cape2d!2 = T!2
-         cape2d!1 = T!1
-         cape2d!0 = "mcape_mcin_lcl_lfc"
-       end if
-
-       return(cape2d)
-  end if
-
 
 
 
