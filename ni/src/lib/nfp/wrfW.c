@@ -7556,17 +7556,6 @@ NhlErrorTypes wrf_cape_3d_W( void )
       tmp_z_orig = &((double*)z)[index_cape];
     }
 
-/*
- * If the pressure values need to be flipped, we also need to flip
- * the z, q, and t values in the same fashion.
- */
-    if(flip) {
-      flip_it(tmp_p_orig,tmp_p,mkzh,size_zsfc);
-      flip_it(tmp_t_orig,tmp_t,mkzh,size_zsfc);
-      flip_it(tmp_q_orig,tmp_q,mkzh,size_zsfc);
-      flip_it(tmp_z_orig,tmp_z,mkzh,size_zsfc);
-    }
-
     if(type_psfc != NCL_double) {
       coerce_subset_input_double(psfc,tmp_psfc,index_zsfc,type_psfc,
                                  size_zsfc,0,NULL,NULL);
@@ -7597,6 +7586,26 @@ NhlErrorTypes wrf_cape_3d_W( void )
       tmp_cin_orig  = &((double*)cape)[index_cin];
     }
     
+
+/*
+ * If the pressure values need to be flipped, we also need to flip
+ * the z, q, and t values in the same fashion.
+ */
+    if(flip) {
+      flip_it(tmp_p_orig,tmp_p,mkzh,size_zsfc);
+      flip_it(tmp_t_orig,tmp_t,mkzh,size_zsfc);
+      flip_it(tmp_q_orig,tmp_q,mkzh,size_zsfc);
+      flip_it(tmp_z_orig,tmp_z,mkzh,size_zsfc);
+    }
+    else {
+      tmp_p    = tmp_p_orig;
+      tmp_t    = tmp_t_orig;
+      tmp_q    = tmp_q_orig;
+      tmp_z    = tmp_z_orig;
+      tmp_cape = tmp_cape_orig;
+      tmp_cin  = tmp_cin_orig;
+    }
+
 /*
  * Call Fortran routine.
  */
@@ -7712,7 +7721,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
 
 /*
  * The wrf_cape_2d wrapper is for the case where I3DFLAG is set to
- * 0 in the Fortran ripo_cape.f file.  In this case, 4 2D arrays
+ * 0 in the Fortran rip_cape.f file.  In this case, 4 2D arrays
  * are returned: cape, cin, lcl, and lfc, but they are all returned 
  * in one big array whose leftmost dimension is 4:
  *
@@ -8111,11 +8120,11 @@ NhlErrorTypes wrf_cape_2d_W( void )
   coerce_subset_input_double(p,tmp_p_orig,0,type_p,size_cape,0,NULL,NULL);
 
   if(tmp_p_orig[0] > tmp_p_orig[(mkzh-1)*size_zsfc] ) {
-    flip = True;
-    tmp_p    = (double *)calloc(size_cape,sizeof(double));
-    tmp_t    = (double *)calloc(size_cape,sizeof(double));
-    tmp_q    = (double *)calloc(size_cape,sizeof(double));
-    tmp_z    = (double *)calloc(size_cape,sizeof(double));
+    flip  = True;
+    tmp_p = (double *)calloc(size_cape,sizeof(double));
+    tmp_t = (double *)calloc(size_cape,sizeof(double));
+    tmp_q = (double *)calloc(size_cape,sizeof(double));
+    tmp_z = (double *)calloc(size_cape,sizeof(double));
 
     if(tmp_p == NULL || tmp_t == NULL || tmp_q == NULL || tmp_z == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_2d: Unable to allocate memory for flipping arrays");
@@ -8123,11 +8132,11 @@ NhlErrorTypes wrf_cape_2d_W( void )
     }
   }
   else  {
-    flip     = False;
-    tmp_p    = tmp_p_orig;
-    tmp_t    = tmp_t_orig;
-    tmp_q    = tmp_q_orig;
-    tmp_z    = tmp_z_orig;
+    flip  = False;
+    tmp_p = tmp_p_orig;
+    tmp_t = tmp_t_orig;
+    tmp_q = tmp_q_orig;
+    tmp_z = tmp_z_orig;
   }
 /*
  * Loop through time,nz and call the Fortran routine.
@@ -8183,17 +8192,6 @@ NhlErrorTypes wrf_cape_2d_W( void )
       tmp_z_orig = &((double*)z)[index_cape];
     }
 
-/*
- * If the pressure values need to be flipped, we also need to flip
- * the z, q, and t values in the same fashion.
- */
-    if(flip) {
-      flip_it(tmp_p_orig,tmp_p,mkzh,size_zsfc);
-      flip_it(tmp_t_orig,tmp_t,mkzh,size_zsfc);
-      flip_it(tmp_q_orig,tmp_q,mkzh,size_zsfc);
-      flip_it(tmp_z_orig,tmp_z,mkzh,size_zsfc);
-    }
-
     if(type_psfc != NCL_double) {
       coerce_subset_input_double(psfc,tmp_psfc,index_zsfc,type_psfc,
                                  size_zsfc,0,NULL,NULL);
@@ -8215,6 +8213,23 @@ NhlErrorTypes wrf_cape_2d_W( void )
       tmp_zsfc = &((double*)zsfc)[index_zsfc];
     }
     
+/*
+ * If the pressure values need to be flipped, we also need to flip
+ * the z, q, and t values in the same fashion.
+ */
+    if(flip) {
+      flip_it(tmp_p_orig,tmp_p,mkzh,size_zsfc);
+      flip_it(tmp_t_orig,tmp_t,mkzh,size_zsfc);
+      flip_it(tmp_q_orig,tmp_q,mkzh,size_zsfc);
+      flip_it(tmp_z_orig,tmp_z,mkzh,size_zsfc);
+    }
+    else {
+      tmp_p = tmp_p_orig;
+      tmp_t = tmp_t_orig;
+      tmp_q = tmp_q_orig;
+      tmp_z = tmp_z_orig;
+    }
+
 /*
  * Call Fortran routine.
  */
