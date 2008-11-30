@@ -7314,32 +7314,32 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * Get sizes of input arrays.
  */
   if(ndims_p == 5) {
-    nz    = dsizes_p[0];          /* nz */
-    ntime = dsizes_p[1];          /* time */
-    mkzh  = dsizes_p[2];          /* lev */
-    mjx   = dsizes_p[3];          /* lat */
-    miy   = dsizes_p[4];          /* lon */
+    nz    = dsizes_p[0];       /* nz, serves as leftmost dimension */
+    ntime = dsizes_p[1];       /* time, also serves as leftmost dimension */
+    mkzh  = dsizes_p[2];       /* lev */
+    mjx   = dsizes_p[3];       /* lat */
+    miy   = dsizes_p[4];       /* lon */
   }
   else if(ndims_p == 4) {
     nz    = 1;
-    ntime = dsizes_p[0];          /* time, serves as a leftmost dimension */
-    mkzh  = dsizes_p[1];          /* lev */
-    mjx   = dsizes_p[2];          /* lat */
-    miy   = dsizes_p[3];          /* lon */
+    ntime = dsizes_p[0];       /* time, serves as a leftmost dimension */
+    mkzh  = dsizes_p[1];       /* lev */
+    mjx   = dsizes_p[2];       /* lat */
+    miy   = dsizes_p[3];       /* lon */
   }
   else if(ndims_p == 3) {
     nz    = 1;
     ntime = 1;
-    mkzh  = dsizes_p[0];           /* lev */
-    mjx   = dsizes_p[1];           /* lat */
-    miy   = dsizes_p[2];           /* lon */
+    mkzh  = dsizes_p[0];       /* lev */
+    mjx   = dsizes_p[1];       /* lat */
+    miy   = dsizes_p[2];       /* lon */
   }
   else if(ndims_p == 1) {
     nz    = 1;
     ntime = 1;
-    mkzh  = dsizes_p[0];           /* lev */
-    mjx   = 1;                     /* lat */
-    miy   = 1;                     /* lon */
+    mkzh  = dsizes_p[0];       /* lev */
+    mjx   = 1;                 /* lat */
+    miy   = 1;                 /* lon */
   }
 
 /*
@@ -7370,7 +7370,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * the size of p,t,q,z:
  *
  *  - p,t,q,z (nz,time,lev,lat,lon) and psfc,zsfc (nz,time,lat,lon)
- *       output array: (2,N,time,lev,lat,lon)
+ *       output array: (2,nz,time,lev,lat,lon)
  *  - p,t,q,z (time,lev,lat,lon) and psfc,zsfc (time,lat,lon)
  *       output array: (2,time,lev,lat,lon)
  *  - p,t,q,z (lev,lat,lon) and psfc,zsfc (lat,lon)
@@ -7394,9 +7394,9 @@ NhlErrorTypes wrf_cape_3d_W( void )
   size_output = 2 * size_cape * ntime * nz;
 
 /* 
- * Allocate space for output arrays.  If any of the input is already double,
- * then we don't need to allocate space for temporary arrays, because
- * we'll just change the pointer into the void array appropriately.
+ * Allocate space for output arrays. We are allocating space for 
+ * tmp_cape_orig and tmp_cin_orig even if the output will be double,
+ * because we may also need to flip the values before we're done.
  */
   if(type_p == NCL_double || type_t == NCL_double || type_q == NCL_double ||
      type_z == NCL_double) {
@@ -7412,12 +7412,12 @@ NhlErrorTypes wrf_cape_3d_W( void )
     type_cape     = NCL_float;
     type_obj_cape = nclTypefloatClass;
     cape          = (float *)calloc(size_output,sizeof(float));
-    tmp_cape_orig = (double *)calloc(size_cape,sizeof(double));
-    tmp_cin_orig  = (double *)calloc(size_cape,sizeof(double));
-    if(cape == NULL || tmp_cape_orig == NULL || tmp_cin_orig == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for output arrays");
-      return(NhlFATAL);
-    }
+  }
+  tmp_cape_orig = (double *)calloc(size_cape,sizeof(double));
+  tmp_cin_orig  = (double *)calloc(size_cape,sizeof(double));
+  if(cape == NULL || tmp_cape_orig == NULL || tmp_cin_orig == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_cape_3d: Unable to allocate memory for output arrays");
+    return(NhlFATAL);
   }
 
 /*
@@ -7481,7 +7481,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
   coerce_subset_input_double(p,tmp_p_orig,0,type_p,size_cape,0,NULL,NULL);
 
   if(tmp_p_orig[0] > tmp_p_orig[(mkzh-1)*size_zsfc] ) {
-    flip = True;
+    flip     = True;
     tmp_p    = (double *)calloc(size_cape,sizeof(double));
     tmp_t    = (double *)calloc(size_cape,sizeof(double));
     tmp_q    = (double *)calloc(size_cape,sizeof(double));
@@ -7578,16 +7578,6 @@ NhlErrorTypes wrf_cape_3d_W( void )
     }
     
 /*
- * Point tmp_cape and tmp_cin to appropriate location in cape
- * if necessary
- */
-    if(type_cape == NCL_double) {
-      tmp_cape_orig = &((double*)cape)[index_cape];
-      tmp_cin_orig  = &((double*)cape)[index_cin];
-    }
-    
-
-/*
  * If the pressure values need to be flipped, we also need to flip
  * the z, q, and t values in the same fashion.
  */
@@ -7598,12 +7588,10 @@ NhlErrorTypes wrf_cape_3d_W( void )
       flip_it(tmp_z_orig,tmp_z,mkzh,size_zsfc);
     }
     else {
-      tmp_p    = tmp_p_orig;
-      tmp_t    = tmp_t_orig;
-      tmp_q    = tmp_q_orig;
-      tmp_z    = tmp_z_orig;
-      tmp_cape = tmp_cape_orig;
-      tmp_cin  = tmp_cin_orig;
+      tmp_p = tmp_p_orig;
+      tmp_t = tmp_t_orig;
+      tmp_q = tmp_q_orig;
+      tmp_z = tmp_z_orig;
     }
 
 /*
@@ -7621,13 +7609,16 @@ NhlErrorTypes wrf_cape_3d_W( void )
       flip_it(tmp_cape_orig,tmp_cape,mkzh,size_zsfc);
       flip_it(tmp_cin_orig,tmp_cin,mkzh,size_zsfc);
     }
+    else {
+      tmp_cape = tmp_cape_orig;
+      tmp_cin  = tmp_cin_orig;
+    }
 /*
  * If the output is to be float, then do the coercion here.
  */
-    if(type_cape == NCL_float) {
-      coerce_output_float_only(cape,tmp_cape,size_cape,index_cape);
-      coerce_output_float_only(cape,tmp_cin,size_cape,index_cin);
-    }
+    coerce_output_float_or_double(cape,tmp_cape,type_cape,size_cape,index_cape);
+    coerce_output_float_or_double(cape,tmp_cin,type_cape,size_cape,index_cin);
+
 /*
  * Implement the pointers into the arrays.
  */
@@ -7639,13 +7630,13 @@ NhlErrorTypes wrf_cape_3d_W( void )
  * Free memory.
  */
   NclFree(tmp_p_orig);
+  NclFree(tmp_cape_orig);
+  NclFree(tmp_cin_orig);
   if(type_t != NCL_double) NclFree(tmp_t_orig);
   if(type_q != NCL_double) NclFree(tmp_q_orig);
   if(type_z != NCL_double) NclFree(tmp_z_orig);
   if(type_zsfc != NCL_double) NclFree(tmp_zsfc);
   if(type_psfc != NCL_double) NclFree(tmp_psfc);
-  if(type_cape != NCL_double) NclFree(tmp_cape_orig);
-  if(type_cape != NCL_double) NclFree(tmp_cin_orig);
   if(flip) {
     NclFree(tmp_p);
     NclFree(tmp_t);
