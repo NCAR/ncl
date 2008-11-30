@@ -6,6 +6,8 @@ extern void NGCALLF(spctimcross2,SPCTIMCROSS2)(int *, int *, int *, double *,
                                                int *, double *, int *,
                                                double *, int *);
 
+extern void NGCALLF(smth121stcp,SMTH121STCP)(double *, int *, int *);
+
 NhlErrorTypes mjo_cross_segment_W( void )
 {
 /*
@@ -140,9 +142,9 @@ NhlErrorTypes mjo_cross_segment_W( void )
  * Test for presence of missing values in tmp_x and tmp_y.
  */
   found_missing_x = contains_missing(tmp_x,ntml,has_missing_x,
-				     missing_dbl_x.doubleval);
+                                     missing_dbl_x.doubleval);
   found_missing_y = contains_missing(tmp_y,ntml,has_missing_y,
-				     missing_dbl_y.doubleval);
+                                     missing_dbl_y.doubleval);
 
 /* 
  * Allocate space for output array.
@@ -176,13 +178,13 @@ NhlErrorTypes mjo_cross_segment_W( void )
       if(type_stc == NCL_double) missing_stc = missing_dbl_x;
       else                       missing_stc = missing_flt_x;
       set_subset_output_missing(stc,0,type_stc,size_stc,
-				missing_dbl_x.doubleval);
+                                missing_dbl_x.doubleval);
     }
     else if(has_missing_y) {
       if(type_stc == NCL_double) missing_stc = missing_dbl_y;
       else                       missing_stc = missing_flt_y;
       set_subset_output_missing(stc,0,type_stc,size_stc,
-				missing_dbl_y.doubleval);
+                                missing_dbl_y.doubleval);
     }
 /*
  * Set all elements of stc to a missing value.
@@ -205,8 +207,8 @@ NhlErrorTypes mjo_cross_segment_W( void )
  * Call the Fortran routine.
  */
     NGCALLF(spctimcross2,SPCTIMCROSS2)(&nl, &nm, &nt, tmp_x, tmp_y, tmp_stc, 
-				       &nlp1, &nt2p1, wsave1, &lsave1,
-				       wsave2,&lsave2);
+                                       &nlp1, &nt2p1, wsave1, &lsave1,
+                                       wsave2,&lsave2);
 /*
  * Coerce output back to float if necessary.
  */
@@ -242,3 +244,75 @@ NhlErrorTypes mjo_cross_segment_W( void )
   return(ret);
 }
 
+NhlErrorTypes mjo_cross_coh2pha_W( void )
+{
+/*
+ * Input argument # 0
+ */
+  void *stc;
+  double *tmp_stc;
+  int dsizes_stc[1];
+  NclBasicDataTypes type_stc;
+
+/*
+ * Various
+ */
+  int nn;
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  stc = (void*)NclGetArgValue(
+           0,
+           1,
+           NULL,
+           dsizes_stc,
+           NULL,
+           NULL,
+           &type_stc,
+           2);
+
+  if(type_stc != NCL_float && type_stc != NCL_double) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_coh2pha: The input array must be float or double");
+    return(NhlFATAL);
+  }
+  nn = dsizes_stc[0];
+
+/* 
+ * Allocate space for coercing input array.  If the input array
+ * is already double, then we don't need to allocate space for
+ * it, because we'll just point to the void array.
+ *
+ * Allocate space for tmp_stc.
+ */
+  tmp_stc = coerce_input_double(stc,type_stc,nn,0,NULL,NULL);
+  if(tmp_stc == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_coh2pha: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
+  }
+
+/*
+ * Call the Fortran routine.
+ */
+  NGCALLF(smth121stcp,SMTH121STCP)(tmp_stc, &nn, &nn);
+
+/* 
+ * Coerce back to float if necessary.
+ */
+  if(type_stc == NCL_float) {
+    coerce_output_float_only(stc,tmp_stc,nn,0);
+/*
+ * Free unneeded memory.
+ */
+    NclFree(tmp_stc);
+  }
+/*
+ * This is a procedure, so no values are returned.
+ */
+  return(NhlNOERROR);
+}

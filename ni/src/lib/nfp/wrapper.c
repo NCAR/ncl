@@ -84,6 +84,7 @@ extern NhlErrorTypes linrood_latwgt_W(void);
 extern NhlErrorTypes linrood_wgt_W(void);
 extern NhlErrorTypes wgt_vert_avg_beta_W(void);
 extern NhlErrorTypes mjo_cross_segment_W(void);
+extern NhlErrorTypes mjo_cross_coh2pha_W(void);
 
 extern NhlErrorTypes rgbhsv_W(void);
 extern NhlErrorTypes hsvrgb_W(void);
@@ -1574,6 +1575,18 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterFunc(mjo_cross_segment_W,args,"mjo_cross_segment",nargs);
+
+/*
+ * Register "mjo_cross_coh2pha".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(1);
+
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+        NclRegisterProc(mjo_cross_coh2pha_W,args,"mjo_cross_coh2pha",nargs);
 
 /*
  * Register "gc_onarc".
