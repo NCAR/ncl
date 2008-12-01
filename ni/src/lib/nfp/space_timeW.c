@@ -6,7 +6,8 @@ extern void NGCALLF(spctimcross2,SPCTIMCROSS2)(int *, int *, int *, double *,
                                                int *, double *, int *,
                                                double *, int *);
 
-extern void NGCALLF(smth121stcp,SMTH121STCP)(double *, int *, int *);
+extern void NGCALLF(spctimcross3,SPCTIMCROSS3)(int *, int *, double *, 
+					       int *, int *, int *);
 
 NhlErrorTypes mjo_cross_segment_W( void )
 {
@@ -251,13 +252,18 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
  */
   void *stc;
   double *tmp_stc;
-  int dsizes_stc[1];
+  int dsizes_stc[3], size_stc;
   NclBasicDataTypes type_stc;
+
+/*
+ * Input argument # 1
+ */
+  int *opt;
 
 /*
  * Various
  */
-  int nn;
+  int nl, nt, nlp1, ntp1, nt2p1;
 /*
  * Retrieve parameters.
  *
@@ -269,7 +275,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
  */
   stc = (void*)NclGetArgValue(
            0,
-           1,
+           2,
            NULL,
            dsizes_stc,
            NULL,
@@ -281,7 +287,29 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_coh2pha: The input array must be float or double");
     return(NhlFATAL);
   }
-  nn = dsizes_stc[0];
+  if(dsizes_stc[0] != 16) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_coh2pha: The leftmost dimension of the input array must be 16");
+    return(NhlFATAL);
+  }
+  nt2p1 = dsizes_stc[1];
+  nlp1  = dsizes_stc[2];
+  nt    = (nt2p1-1)*2;
+  ntp1  = nt + 1;
+  nl    = nlp1 - 1;
+  size_stc = 16 * nt2p1 * nlp1;
+
+/*
+ * Get argument # 2
+ */
+  opt = (int*)NclGetArgValue(
+           1,
+           2,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           NULL,
+           2);
 
 /* 
  * Allocate space for coercing input array.  If the input array
@@ -290,7 +318,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
  *
  * Allocate space for tmp_stc.
  */
-  tmp_stc = coerce_input_double(stc,type_stc,nn,0,NULL,NULL);
+  tmp_stc = coerce_input_double(stc,type_stc,size_stc,0,NULL,NULL);
   if(tmp_stc == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_coh2pha: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
@@ -299,13 +327,13 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
 /*
  * Call the Fortran routine.
  */
-  NGCALLF(smth121stcp,SMTH121STCP)(tmp_stc, &nn, &nn);
+  NGCALLF(spctimcross3,SPCTIMCROSS3)(&nl,&nt,tmp_stc,&nlp1,&ntp1,&nt2p1);
 
 /* 
  * Coerce back to float if necessary.
  */
   if(type_stc == NCL_float) {
-    coerce_output_float_only(stc,tmp_stc,nn,0);
+    coerce_output_float_only(stc,tmp_stc,size_stc,0);
 /*
  * Free unneeded memory.
  */

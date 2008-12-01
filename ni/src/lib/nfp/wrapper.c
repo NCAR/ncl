@@ -1582,9 +1582,11 @@ void NclAddUserFuncs(void)
  * Create private argument array
  */
         nargs = 0;
-        args = NewArgs(1);
+        args = NewArgs(2);
 
-        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterProc(mjo_cross_coh2pha_W,args,"mjo_cross_coh2pha",nargs);
 
