@@ -3,11 +3,11 @@
 
 extern void NGCALLF(spctimcross2,SPCTIMCROSS2)(int *, int *, int *, double *,
                                                double *, double *, int *,
-                                               int *, double *, int *,
-                                               double *, int *);
+                                               int *, int *, int *, int *,
+                                               int *);
 
 extern void NGCALLF(spctimcross3,SPCTIMCROSS3)(int *, int *, double *, 
-					       int *, int *, int *);
+                                               int *, int *, int *);
 
 NhlErrorTypes mjo_cross_segment_W( void )
 {
@@ -48,8 +48,7 @@ NhlErrorTypes mjo_cross_segment_W( void )
 /*
  * Various
  */
-  double *wsave1, *wsave2;
-  int nt, nm, nl, ntml, nt2p1, nlp1, lsave1, lsave2;
+  int nt, nm, nl, ntml, nt2p1, nlp1, ntp1, nt2m1, lsave1, lsave2;
   int i, size_stc, ret, found_missing_x, found_missing_y;
 
 /*
@@ -193,29 +192,22 @@ NhlErrorTypes mjo_cross_segment_W( void )
   }
   else {
 /* 
- * Allocate space for work arrays.
+ * Size of work arrays that will be created in Fortran routine.
  */
     lsave1 = 4*nl + 15;
     lsave2 = 4*nt + 15;
-    wsave1 = (double *)calloc(lsave1, sizeof(double));
-    wsave2 = (double *)calloc(lsave2, sizeof(double));
-    if(wsave1 == NULL || wsave2 == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_segment: Unable to allocate memory for work arrays");
-      return(NhlFATAL);
-    }
-    
+    nt2m1 = nt/2 -1;
+    ntp1  = nt + 1;
 /*
  * Call the Fortran routine.
  */
     NGCALLF(spctimcross2,SPCTIMCROSS2)(&nl, &nm, &nt, tmp_x, tmp_y, tmp_stc, 
-                                       &nlp1, &nt2p1, wsave1, &lsave1,
-                                       wsave2,&lsave2);
+                                       &nlp1, &nt2p1, &nt2m1, &nt2p1,
+				       &lsave1, &lsave2);
 /*
  * Coerce output back to float if necessary.
  */
     if(type_stc == NCL_float) coerce_output_float_only(stc,tmp_stc,size_stc,0);
-    NclFree(wsave1);
-    NclFree(wsave2);
   }
 
 /*
