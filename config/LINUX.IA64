@@ -1,9 +1,9 @@
 /*
- *      $Id: LINUX.IA64.INTEL,v 1.4 2008-12-02 15:13:26 haley Exp $
+ *      $Id: LINUX.IA64,v 1.7 2008-12-02 15:13:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
-*                Copyright (C)  2004                                    *
+*                Copyright (C)  2008                                    *
 *        University Corporation for Atmospheric Research                *
 *                All Rights Reserved                                    *
 *                                                                       *
@@ -11,15 +11,9 @@
 /*
  *  File:       LINUX.IA64
  *
- *  Author:     Tim Fredrick
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
- *
- *  Date:       Wed Oct 25 14:56:41 MDT 1995
- *
  *	Description:	This file contains the configuration for a
  *                      build on a 64-bit Itanium Linux system using
- *                      the Intel ifort/icc compilers.
+ *                      the Intel ifort and GNU gcc compilers.
  *
  *                      You may need to modify it to change or include
  *                      options. Copy this file over the LINUX file
@@ -30,7 +24,8 @@
  *                      the "CtoFLibraries" line below and include a "-L"
  *                      path to help it. For example:
  *
- *     #define CtoFLibraries  -L/usr/common/intel/fc/10.1.012/lib
+ * #define CtoFLibraries -lm -L/usr/intel/fc/10.1.012/lib -lifcore -lifport
+ *
  *
  */
 
@@ -40,16 +35,14 @@
 #define Cstatic
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
-#define CCompiler   icc
+#define CCompiler   gcc
 #define FCompiler   ifort
 #define CtoFLibraries   -lm -lifcore -lifport
-#define CcOptions    -ansi  -size_lp64
-#define FcOptions     -size_lp64
-#define COptimizeFlag    -O2
-#define FOptimizeFlag    -O2
+#define CcOptions    -ansi -fPIC
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lX11 -lXext
+#define ExtraExportFlags -rdynamic
 
 #define ArchRecLibSearch    -L/usr/X11R6/lib
 #define ArchRecIncSearch    -I/usr/X11R6/include
