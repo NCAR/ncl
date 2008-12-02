@@ -376,7 +376,7 @@ procedure addHorVertLines(wks[1]:graphic, plot[1]:graphic \
 ; freq [y] axis:  Add horizontal lines that explicitly
 ;                 print time in days. This assumes the units
 ;                 of the freq axis are "cpd" [cycles per day]
-local gsres, tsres
+local gsres, txres
 begin
     gsres = True
     gsres@gsLineDashPattern = 1
@@ -2720,25 +2720,7 @@ begin
 ; MJO Clivar says "no" to detrending/tapering.
 ; Hence, the following are just 'place holders'
 ;*****************************************************************
- ;if (opt .and. isatt(opt,"detrend_seg") ) then
- ;    d   = opt@detrend_seg
- ;else
- ;    d   = 0   ; detrending opt: 0=>remove mean 1=>remove mean and detrend
- ;end if
-
- ;if (opt .and. isatt(opt,"smooth_seg") ) then
- ;    sm  = opt@smooth_seg
- ;else
- ;    sm  = 0   ; smooth periodogram: 0 mean no smooth [pure periodgram]
- ;end if
-
- ;if (opt .and. isatt(opt,"taper_seg") ) then
- ;    pct = opt@taper_seg
- ;else
- ;    pct = 0.0 ; percent tapered: (0.0 <= pct <= 1.0) 0.10 common. 
- ;end if
-  
-;;x       = dtrend_leftdim(x, False )       ; detrend overall series in time 
+  x       = dtrend_leftdim(x, False )       ; detrend overall series in time 
 
   work    = new((/2,mlon  ,nDay  /), typeof(x), "No_FillValue")  
           ; the +1 is for the 0-th  component 
@@ -2748,9 +2730,16 @@ begin
   pow     = 0.0
   
   xAvgSea = 0.0
-  xVarSea = 0.0
+  xVarSea = 0.0                             ; variance (raw)
+  xVarTap = 0.0                             ; variance after tapering
   kSea    = 0                               ; count os seasons used
   N       = nDay                            ; convenience
+
+  if (opt .and. isatt(opt,"taper_seg") ) then
+      pct = opt@taper_seg   ; over-ride default
+  else
+      pct = 0.10            ; default; taper 10% of series 
+  end if
 
 ; -------------------------------------------------------------------
 ; NCL does not have a complex 2D FFT at this time.
@@ -2767,27 +2756,32 @@ begin
     ;print("iStrt="+iStrt+" ("+yyyy(iStrt)+mmdd(iStrt)+");  " \
     ;     +"iLast="+iLast+" ("+yyyy(iLast)+mmdd(iLast)+")"  )
      
-     xAvg    = avg( x(iStrt:iLast,:) )     ; season (segment) average
-     xSeason = x(iStrt:iLast,:) - xAvg     ; remove season time-lon mean 
-     xVarSea = xVarSea + variance( xSeason )
+     xSeason = x(iStrt:iLast,:)            ; keep meta data
+     xAvg    = avg( xSeason )              ; season average all time/lon
+     xSeason = xSeason - xAvg              ; remove season time-lon mean 
+     xVarSea = xVarSea + variance( xSeason )    ; overall variance
      kSea    = kSea + 1
+                                           
+     xSeason = taper_leftdim( xSeason, pct, 0)  ; for each lon detrend in time
+     xVarTap = xVarTap + variance( xSeason )    ; variance after tapering
 
     do nt=0,nDay-1                         ; each time perform complex fft(lon)
        work(:,:,nt) = cfftf( xSeason(nt,:), 0.0, 0)   ; space 
     end do                                  
      work = work/mlon                      ; normalize by # lon samples
 
-    do ml=0,mlon-1                         ; each lon perform complex fft(time)   
+    do ml=0,mlon-1                         ; each lon perform complex fft(time)
        work(:,ml,:) = cfftf( work(0,ml,:), work(1,ml,:), 0) ; time 
     end do
      work = work/nDay                      ; normalize by # time samples
                                            ; work(2,wave,freq)
 
-                                           ; unscramble fftpack + calculate power
+                                           ; unscramble fft+ calculate power
      pow  = pow + resolveWavesHayashi( work, nDay, 1)     ; (wave,freq)
   end do
 
   xVarSea   = xVarSea/kSea               ; pooled seasonal variance
+  xVarTap   = xVarTap/kSea               ; pooled seasonal variance
   pow       = pow/kSea                   ; pooled spectra
  
   if (isatt(X,"long_name")) then
@@ -2874,14 +2868,14 @@ begin
  ;res@trXMinF = fMin
  ;res@trXMaxF = fMax  
  
-  work  = wf({0:NW},{fMin:fMax}) 
-  izero = ind(work&freq .eq. 0.0)
-  work(:,izero) = min(work)       ; 0th freq
+  WORK  = wf({0:NW},{fMin:fMax}) 
   
-  WORK  = work
   if (opt .and. isatt(opt,"smth9") .and. opt@smth9) then
       WORK = smth9(WORK, 0.50,  0.25, False)
   end if
+
+  izero = ind(WORK&freq .eq. 0.0)
+  WORK(:,izero) = min(WORK)       ; 0th freq
   
   plot = gsn_csm_contour(wks, WORK , res)
 
@@ -2926,3 +2920,505 @@ begin
       plot = gsn_csm_contour(wks, wf({-5:5},{-0.075:0.075}), res)
   end if  
 end  
+;----------------------------------------------------------------
+undef("mjo_cross")
+function mjo_cross (X[*][*][*]:numeric, Y[*][*][*]:numeric \
+                   ,segLen[1]:integer , segOverLap[1]:integer \
+                   ,opt:logical)
+
+local nMsgX, nMsgY, dimX, dimY, ntim, nlat, mlon, switc    \
+    , x, y, pct, STC, stc, namStc, kseg, freq, wave        \
+    , ntStrt, ntLast
+begin
+                                      ; error check
+  dimX = dimsizes(X)
+  dimY = dimsizes(Y)
+  if (.not.all(dimX.eq.dimY)) then
+      print("mjo_cross: X and Y must be same size")
+      print("           dimX="+dimX+"   dimY="+dimY)
+      exit
+  end if
+
+  nMsgX = num( ismissing(X) )
+  nMsgY = num( ismissing(Y) )
+ ;if ((nMsgX+nMsgY).gt.0) then  ; checked in builin function
+ ;    print("mjo_cross: currently, missing data not allowed: nMsgX="+nMsgX+"  nMsgY="+nMsgY)
+ ;    exit
+ ;end if
+
+  ntim = dimX(0)                       ; total times
+  nlat = dimX(1)
+  mlon = dimX(2)
+
+  x    = X                             ; local copy (time,lat,lon)
+  y    = Y            
+
+  x    = decompose2SymAsym( x, 0)      ; decompose     
+  y    = decompose2SymAsym( y, 0)
+                                       ; x may change
+  if (isatt(x,"_FillValue")) then
+      delete(x@_FillValue)             ; avoid annoying warning msg
+  end if                               ; from dtrend
+  if (isatt(y,"_FillValue")) then
+      delete(y@_FillValue)     
+  end if                      
+
+  x       = dtrend_leftdim(x, False )  ; detrend overall series in time 
+  y       = dtrend_leftdim(y, False )   
+
+  if (opt .and. isatt(opt,"taper_seg") ) then
+      pct = opt@taper_seg   ; over-ride default
+  else
+      pct = 0.10            ; default; taper 10% of series 
+  end if
+
+  x       = taper_leftdim(x, pct, 0 )  ; taper in time
+  y       = taper_leftdim(y, pct, 0 )  
+
+; -------------------------------------------------------------------
+
+
+  STC    = new ( (/16,segLen/2+1,mlon+1/), "double", 1d20)
+  STC    = 0.0
+
+  kseg   = 0
+  ntStrt = 0
+  switch = True
+  do while (switch)
+     ntLast = ntStrt + segLen-1 
+     if (ntLast.gt.(ntim-1)) then
+         switch = False
+         break
+     end if
+
+     XX     = taper_leftdim( x(ntStrt:ntLast,:,:), pct, 0)
+     YY     = taper_leftdim( y(ntStrt:ntLast,:,:), pct, 0)
+
+     kseg   = kseg+1
+     STC    = STC + mjo_cross_segment(XX,YY,0)
+
+     ntStrt = ntStrt + abs(segOverLap)
+  end do
+
+  STC    = STC/kseg                          ; average
+
+                                            ; use averaged power
+  mjo_cross_coh2pha(STC, 0)                 ; to get coh2 / phase
+
+  freq   = fspan(0,0.5,segLen/2+1)
+  freq@long_term = " frq (cycles per day)"   ; for plot
+  freq@units     = "cycles per day"
+  freq!0 = "freq"
+  wave   = fspan(-mlon/2,mlon/2,mlon+1)
+  wave@long_term = "zonal wavenumber"
+  wave@units     = "zonal wavenumber"
+  wave!0 = "wave"
+
+  STC!0  = "var"
+  STC!1  = "freq"
+  STC!2  = "wave"
+  STC&freq = freq
+  STC&wave = wave
+
+  STC@varName  = (/"PEE1_SYM"   , "PEE1_ASY"    \
+                  ,"PEE2_SYM"   , "PEE2_ASY"    \
+                  ,"P12_SYM"    , "P12_ASY"     \
+                  ,"Q12_SYM"    , "Q12_ASY"     \
+                  ,"COH2_SYM"   , "COH2_ASY"    \
+                  ,"PHAS_SYM"   , "PHAS_ASY"    \ 
+                  ,"V1_SYM"     , "V1_ASY"      \ 
+                  ,"V2_SYM"     , "V2_ASY"      /)
+
+  STC@segmentLength  = segLen
+  STC@segmentOverLap = segOverLap
+  STC@segmentRepeat  = segLen-segOverLap
+  STC@number_of_segments = kseg
+  STC@dof            = 2.667*kseg     ; conservative estimate   
+                                      ; 2.667 is for 1-2-1 smoother
+
+  p = (/0.80, 0.85, 0.90, 0.925, 0.95, 0.99/); probability levels
+  STC@prob       = p
+  STC@prob_coh2  = 1.-(1.-p^(0.5*STC@dof -1))
+         
+  return( STC )
+end
+; -----------
+undef("addHorVertLinesCross")
+function addHorVertLinesCross(wks[1]:graphic, plot[1]:graphic \
+                             ,nw[1], dumy[*]:graphic )
+; freq [y] axis:  Add horizontal lines that explicitly
+;                 print time in days. This assumes the units
+;                 of the freq axis are "cpd" [cycles per day]
+local gsres, txres, xx, dely, m\nwl, nwr
+begin
+    gsres = True
+    gsres@gsLineDashPattern = 1
+
+    nwl = -nw+3.5                   ; left
+    nwr =  nw                       ; right
+    dumy(0) = gsn_add_polyline(wks, plot, (/  0, 0/),(/ 0.0  , 0.5  /),gsres)
+    dumy(1) = gsn_add_polyline(wks, plot, (/nwl,nwr/),(/ 1./80, 1./80/),gsres)
+    dumy(2) = gsn_add_polyline(wks, plot, (/nwl,nwr/),(/ 1./20, 1./20/),gsres)
+    dumy(3) = gsn_add_polyline(wks, plot, (/nwl,nwr/),(/ 1./10, 1./10/),gsres)
+    dumy(4) = gsn_add_polyline(wks, plot, (/nwl,nwr/),(/ 1./5 , 1./5 /),gsres)
+    dumy(5) = gsn_add_polyline(wks, plot, (/nwl,nwr/),(/ 1./3 , 1./3 /),gsres)
+
+    txres         = True
+    txres@txJust  = "CenterLeft"
+    txres@txFontHeightF = 0.013
+
+    xx            = -nw+0.3
+    dely          = 0.000                                 ;    yy
+    dumy(6) = gsn_add_text(wks, plot, "3 days" , xx ,(1./3 +dely),txres)
+    dumy(7) = gsn_add_text(wks, plot, "5 days" , xx ,(1./5 +dely),txres)
+    dumy(8) = gsn_add_text(wks, plot, "10 days", xx ,(1./10+dely),txres)
+    dumy(9) = gsn_add_text(wks, plot, "20 days", xx ,(1./20+dely),txres)
+    dumy(10)= gsn_add_text(wks, plot, "80 days", xx ,(1./80+dely),txres)
+
+    return(plot)
+end
+; -----------
+undef("mjo_elimIsolatedValues")
+procedure mjo_elimIsolatedValues(c2, ph1, ph2, iopt)
+; cosmetic and arbitrary ... eliminate isolated points ... 
+; crude and not complete but 'good enough'
+local npts, dimc2, nfreq, nwave, nf, nw
+begin
+  i = iopt
+  if (iopt.le.0) then
+      i = 1
+  end if
+
+  npts  = 0
+  dimc2 = dimsizes(c2)
+  nfreq = dimc2(0)
+  nwave = dimc2(1)
+
+  do nf=i,nfreq-i-1
+    do nw=i,nwave-i-1
+       if (.not.ismissing(c2(nf,nw))) then
+           if (all(ismissing(c2(nf-i,nw  )).and.ismissing(c2(nf+i,nw  ))  .and.\
+                   ismissing(c2(nf  ,nw-i)).and.ismissing(c2(nf  ,nw+i)))) then
+               npts        = npts + 1
+               c2(nf,nw)  = c2@_FillValue
+               ph1(nf,nw) = ph1@_FillValue
+               ph2(nf,nw) = ph2@_FillValue
+           end if
+       end if
+    end do
+     nw = 0               ; left (freq) boundary
+     if (.not.ismissing(c2(nf,nw))) then
+         if (all(ismissing(c2(nf-i,nw  )).and.ismissing(c2(nf+i,nw  )) .and. \
+                 ismissing(c2(nf  ,nw+1)))) then
+             npts        = npts + 1
+             c2(nf,nw)  = c2@_FillValue
+             ph1(nf,nw) = ph1@_FillValue
+             ph2(nf,nw) = ph2@_FillValue
+         end if
+     end if
+     nw = nwave-1         ; right (freq) boundary
+     if (.not.ismissing(c2(nf,nw))) then
+         if (all(ismissing(c2(nf-1,nw  )).and.ismissing(c2(nf+i,nw  )) .and. \
+                 ismissing(c2(nf  ,nw-1)))) then
+             npts        = npts + 1
+             c2(nf,nw)  = c2@_FillValue
+             ph1(nf,nw) = ph1@_FillValue
+             ph2(nf,nw) = ph2@_FillValue
+         end if
+     end if
+
+  end do
+
+ ;print("***** elimIsolatedValues: npts = "+npts+" set to _FillValue")
+end
+; -----------
+undef("mjo_cross_plot")
+procedure mjo_cross_plot(STC[*][*][*]:numeric \
+                        ,pltDir[1]:string, pltType[1]:string \
+                        ,pltName[1]:string, opt[1]:logical   )
+local pltPath, pltTypeLocal,wks, res
+begin
+  pltPath= pltDir+"/"+pltName
+  
+  if (pltType.eq."png") then
+      pltTypeLocal = "eps"
+  else
+      pltTypeLocal = pltType
+  end if
+  wks  = gsn_open_wks(pltTypeLocal, pltPath)  
+  if (opt .and. isatt(opt,"colorTable")) then
+     gsn_define_colormap(wks,opt@colorTable) 
+  else
+     gsn_define_colormap(wks,"amwg") 
+  end if
+
+  plot = new ( 2, "graphic")
+
+  res                      = True          ; plot mods desired
+  res@gsnDraw              = False
+  res@gsnFrame             = False
+
+  res@cnFillOn             = True          ; turn on color
+  res@cnFillMode           = "RasterFill"  ; match WMO Clivar 
+
+  res@gsnSpreadColors      = True          ; use full range of colormap
+  if (opt .and. isatt(opt,"gsnSpreadColorStart") ) then
+      res@gsnSpreadColorStart = opt@gsnSpreadColorStart
+  end if
+  if (opt .and. isatt(opt,"gsnSpreadColorEnd") ) then
+      res@gsnSpreadColorEnd   = opt@gsnSpreadColorEnd
+  end if
+  res@cnLinesOn            = False
+  res@cnLineLabelsOn       = False
+  res@cnLevelSelectionMode = "ManualLevels"   
+  res@cnMinLevelValF       =  0.05
+  res@cnMaxLevelValF       =  0.65         ; correlation^2 = 0.8  
+  res@cnLevelSpacingF      =  0.05
+  res@cnInfoLabelOn        =  False 
+  res@lbLabelBarOn         =  False        ; no individual label bars
+
+  if (.not.opt .or. .not.isatt(opt,"pltPhase") .or. opt@pltPhase) then
+      plotPhase = True
+      res@vcRefMagnitudeF           = 1.0             ; define vector ref mag
+      res@vcRefLengthF              = 0.01            ; define length of vec ref
+      res@vcRefAnnoOrthogonalPosF   = -1.0            ; move ref vector
+      res@vcRefAnnoArrowLineColor   = "black"         ; change ref vector color
+      res@vcMinDistanceF            = 0.0075          ; thin out vectors
+      res@vcMapDirection            = False           ; 
+      res@vcRefAnnoOn               = False           ; do not draw
+      res@gsnScalarContour          = True            ; contours desired
+  else
+      plotPhase = False
+  end if
+
+  res@gsnLeftString = "Coh^2: Symmetric"
+  res@gsnRightString  = "10%="+sprintf("%3.2f", STC@prob_coh2(2))+" "\
+                      +"  5%="+sprintf("%3.2f", STC@prob_coh2(4))
+
+  if (opt .and. isatt(opt,"pltZonalWaveNumber") ) then
+      nWavePlt  = opt@pltZonalWaveNumber
+  else
+      nWavePlt  = 15                            ; default
+  end if
+
+;---------------------------------------------------------------
+; dispersion: curves 
+;---------------------------------------------------------------
+  rlat           = 0.0
+  Ahe            = (/50.,25.,12./)
+  nWaveType      = 6
+  nPlanetaryWave = 50
+  nEquivDepth    = dimsizes(Ahe)
+  Apzwn          = new((/nWaveType,nEquivDepth,nPlanetaryWave/),"double",1e20)
+  Afreq          = Apzwn
+  genDispersionCurves(nWaveType, nEquivDepth, nPlanetaryWave, rlat, Ahe, Afreq, Apzwn )
+
+;---------------------------------------------------------------
+; dispersion curve and text plot resources
+;---------------------------------------------------------------
+   dcres = True
+   dcres@gsLineThicknessF  = 2.0
+   dcres@gsLineDashPattern = 0
+
+   txres = True
+  ;txres@txJust        = "CenterLeft"
+   txres@txPerimOn     = True
+   txres@txFontHeightF = 0.013
+   txres@txBackgroundFillColor = "Background"
+
+;---------------------------------------------------------------
+; plot symmetric data      
+;---------------------------------------------------------------
+  n = 8
+
+  c2s = STC(n,:,{-nWavePlt:nWavePlt})                     
+  c2s@_FillValue = 1e20
+  c2s(0,:)       = c2s@_FillValue 
+  c2s = where(c2s.lt.0.05, c2s@_FillValue, c2s) ; mask
+
+  n = 12
+  phs1 = STC(n,:,{-nWavePlt:nWavePlt})
+  phs1@long_name  = "symmetric phase-1"
+  phs1@_FillValue = c2s@_FillValue
+  phs1(0,:)       = phs1@_FillValue
+  phs1 = where(c2s.lt.0.05, phs1@_FillValue, phs1) ; mask
+
+  n = 14
+  phs2 = STC(n,:,{-nWavePlt:nWavePlt})
+  phs2@long_name  = "symmetric phase-2"
+  phs2@_FillValue = c2s@_FillValue
+  phs2(0,:)       = phs2@_FillValue
+  phs2 = where(c2s.lt.0.05, phs2@_FillValue, phs2) ; mask
+
+  if (opt .and. isatt(opt,"pltProb") ) then
+      np  = ind(c2s@prob_coh2 .eq. opt@pltProb)
+      if (.not.ismissing(np)) then
+          c2s  = where(c2s.lt.STC@prob_coh2(np), c2s@_FillValue, c2s)
+          phs1 = where(ismissing(c2s), phs1@_FillValue, phs1)
+          phs2 = where(ismissing(c2s), phs2@_FillValue, phs2)
+      end if
+  end if
+
+  if (opt .and. isatt(opt,"coh2Cutoff") ) then
+      c2s  = where(c2s.lt.opt@coh2Cutoff, c2s@_FillValue, c2s)
+  end if
+
+  if (opt .and. isatt(opt,"phaseCutoff") ) then
+      phs1 = where(c2s.lt.opt@phaseCutoff, phs1@_FillValue, phs1)
+      phs2 = where(c2s.lt.opt@phaseCutoff, phs2@_FillValue, phs2)
+  end if
+  if (opt .and. isatt(opt,"elimIsoVals") .and. .not.opt@elimIsoVals) then
+      print("mjo_cross_plot: no values eliminated")
+  else
+      mjo_elimIsolatedValues (c2s, phs1, phs2, 1)
+      mjo_elimIsolatedValues (c2s, phs1, phs2, 2)
+  end if
+ 
+ ;res@gsnCenterString   = "var="+n+"  "+STC@varName(n)
+  if (plotPhase) then
+      scl_one = sqrt(1./(phs1^2 + phs2^2))
+      phs1    = scl_one*phs1
+      phs2    = scl_one*phs2
+      plot(0) = gsn_csm_vector_scalar(wks, phs1, phs2, c2s, res)       
+  else
+      plot(0) = gsn_csm_contour(wks, c2s, res)       
+  end if
+
+  dums    = new (25, "graphic")    ; for _add_ *s*ymmetric graphical objects
+  plot(0) = addHorVertLinesCross(wks, plot(0), nWavePlt, dums)
+
+  dumdcs     = new ( 25, "graphic") ; dispersion curves symmetric (dcs)
+  dumdcs( 0) = gsn_add_polyline(wks,plot(0),Apzwn(3,0,:),Afreq(3,0,:),dcres)
+  dumdcs( 1) = gsn_add_polyline(wks,plot(0),Apzwn(3,1,:),Afreq(3,1,:),dcres)
+  dumdcs( 2) = gsn_add_polyline(wks,plot(0),Apzwn(3,2,:),Afreq(3,2,:),dcres)
+  dumdcs( 3) = gsn_add_polyline(wks,plot(0),Apzwn(4,0,:),Afreq(4,0,:),dcres)
+  dumdcs( 4) = gsn_add_polyline(wks,plot(0),Apzwn(4,1,:),Afreq(4,1,:),dcres)
+  dumdcs( 5) = gsn_add_polyline(wks,plot(0),Apzwn(4,2,:),Afreq(4,2,:),dcres)
+  dumdcs( 6) = gsn_add_polyline(wks,plot(0),Apzwn(5,0,:),Afreq(5,0,:),dcres)
+  dumdcs( 7) = gsn_add_polyline(wks,plot(0),Apzwn(5,1,:),Afreq(5,1,:),dcres)
+  dumdcs( 8) = gsn_add_polyline(wks,plot(0),Apzwn(5,2,:),Afreq(5,2,:),dcres)
+
+  dumdcs( 9) = gsn_add_text(wks,plot(0),"Kelvin",11.5,.40,txres)
+  dumdcs(10) = gsn_add_text(wks,plot(0),"n=1 ER",-10.7,.07,txres)
+  dumdcs(11) = gsn_add_text(wks,plot(0),"n=1 IG",-3.0,.45,txres)
+  dumdcs(12) = gsn_add_text(wks,plot(0),"h=50",-14.0,.78,txres)
+  dumdcs(13) = gsn_add_text(wks,plot(0),"h=25",-14.0,.60,txres)
+  dumdcs(14) = gsn_add_text(wks,plot(0),"h=12",-14.0,.46,txres)
+
+;---------------------------------------------------------------
+; plot asymmetric data      
+;---------------------------------------------------------------
+
+  n = 9
+  res@gsnLeftString   = "Coh^2: Asymmetric"
+  res@gsnRightString  = "10%="+sprintf("%3.2f", STC@prob_coh2(2))+" "\
+                      +"  5%="+sprintf("%3.2f", STC@prob_coh2(4))
+  c2a = STC(n,:,{-nWavePlt:nWavePlt})
+  c2a@_FillValue = 1e20
+  c2a(0,:) = c2a@_FillValue 
+  c2a = where(c2a.lt.0.05, c2a@_FillValue, c2a) ; mask
+
+  n = 13
+  pha1 = STC(n,:,{-nWavePlt:nWavePlt})
+  pha1@long_name  = "asymmetric phase-1"
+  pha1@_FillValue = c2a@_FillValue
+  pha1(0,:)       = pha1@_FillValue
+ ;pha1 = where(c2a.lt.0.05, pha1@_FillValue, pha1) ; mask
+
+  n = 15
+  pha2 = STC(n,:,{-nWavePlt:nWavePlt})
+  pha2@long_name  = "asymmetric phase-2"
+  pha2@_FillValue = c2a@_FillValue
+  pha2(0,:)       = pha2@_FillValue
+  pha2 = where(c2a.lt.0.05, pha2@_FillValue, pha2) ; mask
+
+  if (opt .and. isatt(opt,"pltProb") ) then
+      np  = ind(c2a@prob_coh2 .eq. opt@pltProb)
+      if (.not.ismissing(np)) then
+          c2a  = where(c2a.lt.STC@prob_coh2(np), c2a@_FillValue, c2s)
+          pha1 = where(ismissing(c2a), pha1@_FillValue, pha1)
+          pha2 = where(ismissing(c2a), pha2@_FillValue, pha2)
+      end if
+  end if
+
+  if (opt .and. isatt(opt,"coh2Cutoff") ) then
+      c2a  = where(c2a.lt.opt@coh2Cutoff, c2s@_FillValue, c2s)
+  end if
+  if (opt .and. isatt(opt,"phaseCutoff") ) then
+      pha1 = where(c2a.lt.opt@phaseCutoff, pha1@_FillValue, pha1)
+      pha2 = where(c2a.lt.opt@phaseCutoff, pha2@_FillValue, pha2)
+  end if
+
+  if (opt .and. isatt(opt,"elimIsoVals") .and. .not.opt@elimIsoVals) then
+      mjo_elimIsolatedValues (c2a, pha1, pha2, 2)
+      mjo_elimIsolatedValues (c2a, pha1, pha2, 1)
+  end if
+
+  if (plotPhase) then
+      scl_one = sqrt(1./(pha1^2 + pha2^2))
+      pha1    = scl_one*pha1
+      pha2    = scl_one*pha2
+      plot(1) = gsn_csm_vector_scalar(wks, pha1, pha2, c2a, res)       
+  else
+      plot(1) = gsn_csm_contour(wks, c2a, res)       
+  end if
+
+  duma    = new (25, "graphic")    ; for _add_ *a*symmetric graphical objects
+  plot(1) = addHorVertLinesCross(wks, plot(1), nWavePlt, duma)
+
+  dumdca     = new ( 25, "graphic") ; dispersion curves asymmetric (dcs)
+  dumdca( 0) = gsn_add_polyline(wks,plot(1),Apzwn(0,0,:),Afreq(0,0,:),dcres)
+  dumdca( 1) = gsn_add_polyline(wks,plot(1),Apzwn(0,1,:),Afreq(0,1,:),dcres)
+  dumdca( 2) = gsn_add_polyline(wks,plot(1),Apzwn(0,2,:),Afreq(0,2,:),dcres)
+  dumdca( 3) = gsn_add_polyline(wks,plot(1),Apzwn(1,0,:),Afreq(1,0,:),dcres)
+  dumdca( 4) = gsn_add_polyline(wks,plot(1),Apzwn(1,1,:),Afreq(1,1,:),dcres)
+  dumdca( 5) = gsn_add_polyline(wks,plot(1),Apzwn(1,2,:),Afreq(1,2,:),dcres)
+  dumdca( 6) = gsn_add_polyline(wks,plot(1),Apzwn(2,0,:),Afreq(2,0,:),dcres)
+  dumdca( 7) = gsn_add_polyline(wks,plot(1),Apzwn(2,1,:),Afreq(2,1,:),dcres)
+  dumdca( 8) = gsn_add_polyline(wks,plot(1),Apzwn(2,2,:),Afreq(2,2,:),dcres)
+
+  dumdca(10) = gsn_add_text(wks,plot(1),"MRG",-10.0,.15,txres)
+  dumdca(11) = gsn_add_text(wks,plot(1),"n=2 IG",-3.0,.58,txres)
+  dumdca(12) = gsn_add_text(wks,plot(1),"n=0 EIG",6.5,.40,txres)
+  dumdca(13) = gsn_add_text(wks,plot(1),"h=50",-10.0,.78,txres)
+  dumdca(14) = gsn_add_text(wks,plot(1),"h=25",-10.0,.63,txres)
+  dumdca(15) = gsn_add_text(wks,plot(1),"h=12",-10.0,.51,txres)
+
+  resP = True
+  resP@gsnMaximize         = True
+  resP@gsnPanelLabelBar    = True
+ ;resP@lbLabelAutoStride   = True
+  resP@lbLabelStride       = 2                   ; every other one
+ ;resP@lbLabelFontHeightF  = 0.007               ; make labels smaller
+  resP@cnLabelBarEndLabelsOn= True
+  resP@cnLabelBarEndStyle   = "ExcludeOuterBoxes"
+
+  resP@cnLevelSelectionMode = res@cnLevelSelectionMode
+  resP@cnMinLevelValF       = res@cnMinLevelValF 
+  resP@cnMaxLevelValF       = res@cnMaxLevelValF    ; correlation^2 = 0.8  
+  resP@cnLevelSpacingF      = res@cnLevelSpacingF
+
+  if (opt .and. isatt(opt,"txString") ) then
+      resP@txString        = opt@txString
+  end if
+  if (opt .and. isatt(opt,"gsnPaperOrientation") ) then
+      resP@gsnPaperOrientation = opt@gsnPaperOrientation
+  end if
+
+  if (opt .and. isatt(opt,"lbOrientation") ) then
+      resP@lbOrientation =   "vertical"
+      gsn_panel(wks,plot,(/2,1/),resP)
+  else
+      gsn_panel(wks,plot,(/1,2/),resP)
+  end if
+
+  if (pltType.eq."png") then
+      if (isatt(opt,"pltConvert")) then
+          pltConvert = opt@pltConvert    ; convert options
+      else
+          pltConvert = "-rotate -90"               ; default
+      end if
+      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
+      system("/bin/rm -f "+pltPath+".eps")
+  end if
+end
