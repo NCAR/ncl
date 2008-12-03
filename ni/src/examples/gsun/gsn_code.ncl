@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.214 2008-12-03 00:07:11 haley Exp $
+;      $Id: gsn_code.ncl,v 1.215 2008-12-03 00:12:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1527,8 +1527,16 @@ begin
       new_plot@plot_type = "contour"
     else
       if(class(0).eq."vectorPlotClass") then
-        new_plot = plot(0)
-        new_plot@plot_type = "vector"
+;
+; Special case where vectors are overlaid on contours.
+;
+        if(isatt(plot,"contour")) then
+          new_plot = plot@contour
+          new_plot@plot_type = "contour"
+        else     
+          new_plot = plot(0)
+          new_plot@plot_type = "vector"
+        end if
       else
         if(class(0).eq."xyPlotClass") then
           new_plot = plot(0)

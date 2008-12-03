@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.234 2008-11-19 14:51:08 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.235 2008-12-03 00:12:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -28,116 +28,6 @@
 ;;
 
 ;***********************************************************************;
-; For every function and procedure defined in this script, undefine it  ;
-; with a call to "undef" so it doesn't clash with other functions and   ;
-; procedures with the same name.                                        ;
-;***********************************************************************;
-
-undef("xy_ref_interp")
-undef("ref_line_interp")
-undef("get_bar_widths")
-undef("outlined_bars")
-undef("filled_bars")
-undef("find_cross_xy")
-undef("get_valid_long_names")
-undef("get_valid_units")
-undef("get_valid_long_name_value")
-undef("get_valid_units_value")
-undef("get_csm_long_name_units_string")
-undef("check_for_subtitles")
-undef("set_right_subtitle")
-undef("set_left_subtitle")
-undef("set_axis_string")
-undef("set_subtitles_res")
-undef("is_valid_coord")
-undef("is_valid_latlon2d_attr")
-undef("is_tm_obj_valid")
-undef("check_for_coord_arrays")
-undef("check_class_name")
-undef("get_allowed_latnames")
-undef("get_allowed_lonnames")
-undef("get_allowed_pres_units_mb")
-undef("get_allowed_pres_units_pa")
-undef("get_allowed_pres_units_hpa")
-undef("get_allowed_pres_units")
-undef("get_allowed_lat_units")
-undef("get_allowed_lon_units")
-undef("is_valid_latlon_coord")
-undef("gsn_geop_hgt")
-undef("calculate_zonal_means")
-undef("check_for_y_lat_coord")
-undef("check_for_x_lat_coord")
-undef("check_for_lon_coord")
-undef("get_polar_type")
-undef("add_subtitles")
-undef("add_labelbar")
-undef("set_pres_hgt_axes")
-undef("fill_xy_ref")
-undef("fill_bw_xy")
-undef("fill_xy2")
-undef("get_lon_values")
-undef("get_lat_values")
-undef("get_lon_labels")
-undef("get_lat_labels")
-undef("add_lon_labels")
-undef("add_lat_labels_xaxis")
-undef("add_lat_labels_yaxis")
-undef("add_latlon_labels")
-undef("add_map_tickmarks")
-undef("gsn_add_cyclic_point")
-undef("pop_tick_locs")
-undef("pop_latlon_grid")
-undef("mask_lambert_conformal")
-undef("gsn_csm_xy")
-undef("gsn_csm_y")
-undef("gsn_csm_zonal_means")
-undef("gsn_csm_attach_zonal_means")
-undef("gsn_csm_map_ce")
-undef("gsn_csm_map_polar")
-undef("gsn_csm_map")
-undef("gsn_csm_map_other")
-undef("gsn_csm_contour_map_polar")
-undef("gsn_csm_contour_map_ce")
-undef("gsn_csm_contour_map_other")
-undef("gsn_csm_vector_map_ce")
-undef("gsn_csm_vector_map_polar")
-undef("gsn_csm_vector_map_other")
-undef("gsn_csm_streamline_map_ce")
-undef("gsn_csm_streamline_map_polar")
-undef("gsn_csm_streamline_map_other")
-undef("gsn_csm_streamline_contour_map_ce")
-undef("gsn_csm_streamline_contour_map_polar")
-undef("gsn_csm_streamline_contour_map_other")
-undef("gsn_csm_vector_scalar")
-undef("gsn_csm_vector_scalar_map_ce")
-undef("gsn_csm_vector_scalar_map_polar")
-undef("gsn_csm_vector_scalar_map_other")
-undef("gsn_csm_contour_map")
-undef("gsn_csm_streamline_map")
-undef("gsn_csm_vector_map")
-undef("gsn_csm_vector_scalar_map")
-undef("gsn_csm_streamline_contour_map")
-undef("gsn_csm_contour_map_overlay")
-undef("plot_x2y2")
-undef("plot_xy3")
-undef("plot_xy2")
-undef("plot_x2y")
-undef("gsn_csm_xy2")
-undef("gsn_csm_x2y")
-undef("gsn_csm_x2y2")
-undef("gsn_csm_xy3")
-undef("gsn_csm_contour")
-undef("gsn_csm_hov")
-undef("gsn_csm_lat_time")
-undef("gsn_csm_time_lat")
-undef("gsn_csm_pres_hgt")
-undef("gsn_csm_vector")
-undef("gsn_csm_pres_hgt_vector")
-undef("gsn_csm_streamline")
-undef("gsn_csm_pres_hgt_streamline")
-
-
-;***********************************************************************;
 ; Function : xy_ref_interp                                              ;
 ;                  x1: numeric                                          ;
 ;                  x2: numeric                                          ;
@@ -151,7 +41,7 @@ undef("gsn_csm_pres_hgt_streamline")
 ; call to "gsn_open_wks").  "resources" is an optional list of          ;
 ; resources. The Id of the map plot is returned.                        ;
 ;***********************************************************************;
-
+undef("xy_ref_interp")
 function xy_ref_interp(x1:numeric,x2:numeric,y1:numeric,y2:numeric, \
                        ref:numeric)
 begin
@@ -174,7 +64,7 @@ end
 ;                                                                       ;
 ; The dimension size of each interpolated set of points is returned.    ;
 ;***********************************************************************;
-
+undef("ref_line_interp")
 function ref_line_interp(x,y,xinterp,yinterp,ref_line)
 local ncurves, nref_lines, nlines, i, j, location, xnew, ynew, npts
 begin
@@ -258,7 +148,7 @@ end
 ; Given a set of x points, return a bar width for filled bars later.    ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("get_bar_widths")
 function get_bar_widths(x,ncurves,res2)
 local ncurves, npts, bar_widths, dx, nwidths
 begin
@@ -326,7 +216,7 @@ end
 ; Given a set of points represented by x and y, represent the y values  ;
 ; with bar outlines.                                                    ;
 ;***********************************************************************;
-
+undef("outlined_bars")
 procedure outlined_bars(x,y,xinterp,yinterp)
 local ndimsx, ndimsy, ncurves, dims, npts, nyb, bar_width
 begin
@@ -397,7 +287,7 @@ end
 ; Bars aren't filled in this routine. They are returned as threes sets  ;
 ; of polygons: those above, below, and equal to the reference lines.    ;
 ;***********************************************************************;
-
+undef("filled_bars")
 procedure filled_bars(x,y,xabove,yabove,xbelow,ybelow,xequal,yequal,\
                       nya,nyb,nye,iya,iyb,iye,yref_line,bar_widths)
 local ndimsx, ndimsy, ncurves, dims, npts
@@ -522,7 +412,7 @@ end
 ; compute the point at which the two curves cross.                      ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("find_cross_xy")
 function find_cross_xy(x1:numeric,x2:numeric,y11:numeric,y12:numeric, \
                        y21:numeric,y22:numeric)
 begin
@@ -549,6 +439,7 @@ end
 ; present, then long_name takes precedence over "Description".          ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_valid_long_names")
 function get_valid_long_names()
 begin
   return((/"long_name","standard_name","description","DESCRIPTION", \
@@ -562,6 +453,7 @@ end
 ; "units".                                                              ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_valid_units")
 function get_valid_units()
 begin
   return((/"units","Units","UNITS","unit","Unit","UNIT"/))
@@ -573,6 +465,7 @@ end
 ; This function returns the attribute and the attribute value of the    ;
 ; valid long_name, if it exists, and missing otherwise.                 ;
 ;***********************************************************************;
+undef("get_valid_long_name_value")
 function get_valid_long_name_value(data)
 local data_atts, n, found_valid_name, data_atts
 begin
@@ -602,6 +495,7 @@ end
 ; This function returns the attribute and the attribute value of the    ;
 ; valid units, if it exists, and missing otherwise.                     ;
 ;***********************************************************************;
+undef("get_valid_units_value")
 function get_valid_units_value(data)
 local data_atts, n, found_valid_name, data_atts
 begin
@@ -633,6 +527,7 @@ end
 ; and if so, constructs a string using them. A missing value is returned;
 ; otherwise.                                                            ;
 ;***********************************************************************;
+undef("get_csm_long_name_units_string")
 function get_csm_long_name_units_string(data)
 local lname, uname
 begin
@@ -668,6 +563,7 @@ end
 ; subtitles for the top of a plot.                                      ;
 ;***********************************************************************;
  
+undef("check_for_subtitles")
 procedure check_for_subtitles(res:logical,left:logical,center:logical,\
                               right:logical)
 begin
@@ -805,6 +701,7 @@ end
 ; This procedure checks if gsnRightString is set.  If not, then uses    ;
 ; data@units if it exists.                                              ;
 ;***********************************************************************;
+undef("set_right_subtitle")
 procedure set_right_subtitle(data:numeric,res:logical,newres:logical)
 begin
 ;
@@ -833,6 +730,7 @@ end
 ; This procedure checks if gsnLeftString is set.  If not, then uses     ;
 ; one of the valid "long_name" attributes, if they exist.               ;
 ;***********************************************************************;
+undef("set_left_subtitle")
 procedure set_left_subtitle(data:numeric,res:logical,newres:logical)
 begin
 ;
@@ -872,6 +770,7 @@ end
 ; 1-dimensional.                                                       ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("is_valid_coord")
 function is_valid_coord(data:numeric,axis:string)
 local dims
 begin
@@ -903,6 +802,7 @@ end
 ; This can mean that we are dealing with cell boundaries instead of cell;
 ; centers.                                                              ;
 ;***********************************************************************;
+undef("is_valid_latlon2d_attr")
 function is_valid_latlon2d_attr(data:numeric,lstring:string)
 local ldims, data_dims
 begin
@@ -931,6 +831,7 @@ end
 ; "TriangularMesh".                                                     ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("is_tm_obj_valid")
 function is_tm_obj_valid(pobj,tdata)
 local tr_grid_type
 begin
@@ -957,6 +858,7 @@ end
 ; This procedure sets the tiXAxisString or tiYAxisString resource       ;
 ; depending on current resource and/or attribute settings.              ;
 ;***********************************************************************;
+undef("set_axis_string")
 procedure set_axis_string(plot:graphic,res:logical,data:numeric,axis:string)
 local title, tires, is_xyplot
 begin
@@ -1014,6 +916,7 @@ end
 ; been set. If so, it adds them to plotres as resources so they can     ;
 ; be passed to another plotting function to be processed.               ;
 ;***********************************************************************;
+undef("set_subtitles_res")
 procedure set_subtitles_res(res:logical,plotres:logical)
 local valid_string_res
 begin
@@ -1058,6 +961,7 @@ end
 ; overlay the vectors/contours on a map, however.                       ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("check_for_coord_arrays")
 procedure check_for_coord_arrays(data:numeric,res:logical,type:string)
 local prefix, xstart_name, xend_name, ystart_name, yend_name, \
 xarray_name, yarray_name, valid_2dcoord_types
@@ -1139,7 +1043,7 @@ end
 ; part of it, it will return the contour plot.                          ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("check_class_name")
 function check_class_name(plot:graphic,plot_type:string)
 begin
   class_name = NhlClassName(plot)
@@ -1159,6 +1063,7 @@ end
 ; Get list of names allowed for a latitude coordinate array.            ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_latnames")
 function get_allowed_latnames()
 begin
   return((/"lat","Lat","Latitude","LAT","latitude","LATITUDE","hlat",\
@@ -1171,6 +1076,7 @@ end
 ; Get list of names allowed for a longitude coordinate array.           ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_lonnames")
 function get_allowed_lonnames()
 begin
   return((/"lon","Lon","Longitude","LON","longitude","LONGITUDE","hlon",\
@@ -1183,6 +1089,7 @@ end
 ; Get list of names allowed for pressure units in pascals.              ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_pres_units_pa")
 function get_allowed_pres_units_pa()
 begin
   return((/"Pa","pa","PA","Pascals","pascals","PASCALS"/))
@@ -1194,6 +1101,7 @@ end
 ; Get list of names allowed for pressure units in hecto-pascals.        ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_pres_units_hpa")
 function get_allowed_pres_units_hpa()
 begin
   return((/"hpa","hPa","HPA","hecto-pascals","HECTO-PASCALS"/))
@@ -1205,6 +1113,7 @@ end
 ; Get list of names allowed for pressure units in millibars.            ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_pres_units_mb")
 function get_allowed_pres_units_mb()
 begin
   return((/"mb","Mb","MB","millibar","millibars","MILLIBARS", \
@@ -1217,6 +1126,7 @@ end
 ; Get list of names allowed for pressure units.                         ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_pres_units")
 function get_allowed_pres_units()
 begin
   mb  = get_allowed_pres_units_mb()
@@ -1239,6 +1149,7 @@ end
 ; coordinate array.                                                     ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_lat_units")
 function get_allowed_lat_units()
 begin
   return((/"degrees_north","degrees-north","degree_north","degrees north",\
@@ -1253,6 +1164,7 @@ end
 ; coordinate array.                                                     ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_allowed_lon_units")
 function get_allowed_lon_units()
 begin
   return((/"degrees_east","degrees-east","degree_east","degrees east",\
@@ -1276,6 +1188,7 @@ end
 ; purposes. It is up to the calling routine to print an error if a False;
 ; value is returned.                                                    ;
 ;***********************************************************************;
+undef("is_valid_latlon_coord")
 function is_valid_latlon_coord(data:numeric,axis:string,latorlon:string,\
                                res:logical)
 begin
@@ -1349,6 +1262,7 @@ end
 ;                                                                       ;
 ;***********************************************************************;
  
+undef("gsn_geop_hgt")
 function gsn_geop_hgt( p[*]:numeric )
 local nsa,psa,zsa,ptmp,npres,found,i,j
  
@@ -1429,6 +1343,7 @@ end
 ;***********************************************************************;
 ; This function calculates the zonal means.                             ;
 ;***********************************************************************;
+undef("calculate_zonal_means")
 function calculate_zonal_means(data2,res2)
 local zms2, nmeans
 begin
@@ -1464,6 +1379,7 @@ end
 ; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("check_for_y_lat_coord")
 procedure check_for_y_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
 valid_2dcoord_types
@@ -1545,6 +1461,7 @@ end
 ; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("check_for_x_lat_coord")
 procedure check_for_x_lat_coord(data:numeric,res:logical,type:string)
 local latname, char_latname, array_name, start_name, end_name, \
 valid_2dcoord_types
@@ -1626,6 +1543,7 @@ end
 ; "contour*" or "vector*" to this coordinate array.                     ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("check_for_lon_coord")
 procedure check_for_lon_coord(data:numeric,res:logical,type:string)
 local lonname, char_lonname, array_name, start_name, end_name, \
 valid_2dcoord_types
@@ -1704,6 +1622,7 @@ end
 ;                                                                       ;
 ; The default will be northern ("NH") if none is set.                   ;
 ;***********************************************************************;
+undef("get_polar_type")
 function get_polar_type(res:logical)
 local polar_nh, polar_sh
 begin
@@ -1756,7 +1675,7 @@ end
 ; depending on whether the special resources gsnLeftString,             ;
 ; gsnCenterString, and/or gsnRightString had been set.                  ;
 ;***********************************************************************;
- 
+undef("add_subtitles")
 procedure add_subtitles(wks:graphic,plot:graphic,left_string:logical,\
                         center_string:logical,right_string:logical,\
                         res:logical)
@@ -1886,7 +1805,7 @@ end
 ; "type" is the type of plot ("ce", "polar", and so on) so the labelbar ;
 ; can be positioned differently depending on the plot.                  ;
 ;***********************************************************************;
- 
+undef("add_labelbar")
 procedure add_labelbar(wks:graphic,plot,zone:integer, \
                        font_height:numeric,type:string,res:logical)
 local anno, num_res, amres, lbres, labelbar_object, lbar_orient, \
@@ -2131,7 +2050,7 @@ end
 ; values, and the right for height values. The pressure values are      ;
 ; assumed to be in millibars.                                           ;
 ;***********************************************************************;
-
+undef("set_pres_hgt_axes")
 procedure set_pres_hgt_axes(pres:numeric,res:logical,add_hgt:logical)
 local hgt, hnice, pnice, ptmp
 begin
@@ -2232,7 +2151,7 @@ end
 ; they are above the ref line, and in another color if they are below   ;
 ; the ref line.                                                         ;
 ;***********************************************************************;
-
+undef("fill_xy_ref")
 function fill_xy_ref(wks:graphic,xy:graphic,xin[*]:numeric,yin[*]:numeric,\
                      ref:numeric,ref_line_above_color,ref_line_below_color)
 local npts, yabove_gon, ybelow_gon, i, gsresa, gsresb, gsresr, \
@@ -2464,6 +2383,7 @@ end
 ; curves can be filled differently if one is greater than another.      ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("fill_bw_xy")
 function fill_bw_xy(wks,plot,xi[*]:numeric,yi[*][*]:numeric,res:logical)
 local y1_gt_y2, y1, y2, i, ab, bpt, ept, x, y, color, first, last, \
 dsizes_y, rank_y, ncurves, npts, ppts, ppts2, res2, above_fill_colors, \
@@ -2708,6 +2628,7 @@ end
 ; different colors, depending on which curve is above the other one.    ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("fill_xy2")
 function fill_xy2(wks,plot,xi[*]:numeric,yi1[*]:numeric,yi2[*]:numeric, \
                   colora,colorb)
 local res, nx, ny1, ny2
@@ -2742,7 +2663,7 @@ end
 ; lon_spacing and mlon_spacing are the spacings to use for major and    ;
 ; minor tickmarks.                                                      ;
 ;***********************************************************************;
-
+undef("get_lon_values")
 function get_lon_values(min_lon:numeric,max_lon:numeric,lon_spacing:numeric,\
                         mlon_spacing:numeric,range_array,lonspacing_array, \
                         mlonspacing_array)
@@ -2830,7 +2751,7 @@ end
 ; lat_spacing and mlat_spacing are the spacings to use for major and    ;
 ; minor tickmarks.                                                      ;
 ;***********************************************************************;
-
+undef("get_lat_values")
 function get_lat_values(min_lat:numeric,max_lat:numeric,lat_spacing:numeric,\
                         mlat_spacing:numeric)
 local lat_range, lcheck_arr, lspcng_arr, mlspcng_arr, lat_spcng, mlat_spcng, \
@@ -2898,7 +2819,7 @@ end
 ;                                                                       ;
 ; Return some nice longitude labels given longitude values "lon_values".;
 ;***********************************************************************;
-
+undef("get_lon_labels")
 function get_lon_labels(lon_values:numeric)
 local lon_index
 begin
@@ -2969,7 +2890,7 @@ end
 ;                                                                       ;
 ; Return some nice latitude labels given latitude values "lat_values".  ;
 ;***********************************************************************;
-
+undef("get_lat_labels")
 function get_lat_labels(lat_values:numeric)
 local lat_index
 begin
@@ -3009,7 +2930,7 @@ end
 ;                                                                       ;
 ; Add "nice" longitude labels ("120W", "60E", etc) to the X axis.       ;
 ;***********************************************************************;
-
+undef("add_lon_labels")
 procedure add_lon_labels(plot:graphic,min_lon:numeric,max_lon:numeric,\
                          lon_spacing:numeric,mlon_spacing:numeric,\
                          range_array,lonspacing_array,mlonspacing_array, \
@@ -3054,7 +2975,7 @@ end
 ; Add "nice" latitude labels ("90S", "30N", etc) to the X axis in       ;
 ; "plot".                                                               ;
 ;***********************************************************************;
-
+undef("add_lat_labels_xaxis")
 procedure add_lat_labels_xaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
                                lat_spacing:numeric,mlat_spacing:numeric, \
                                res:logical)
@@ -3098,7 +3019,7 @@ end
 ; Add "nice" latitude labels ("90S", "30N", etc) to the Y axis in       ;
 ; "plot".                                                               ;
 ;***********************************************************************;
-
+undef("add_lat_labels_yaxis")
 procedure add_lat_labels_yaxis(plot:graphic,min_lat:numeric,max_lat:numeric,\
                                lat_spacing:numeric,mlat_spacing:numeric, \)
                                res:logical)
@@ -3138,6 +3059,7 @@ end
 ; axes if the appropriate lat/lon coordinate arrays exist.              ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("add_latlon_labels")
 procedure add_latlon_labels(plot:graphic,data:numeric,res:logical)
 local min_lat, max_lat, min_lon, max_lon, lat_spacing
 begin
@@ -3223,6 +3145,7 @@ end
 ;                                                                       ;
 ; This procedure adds tickmarks to a C.E. map projection.               ;
 ;***********************************************************************;
+undef("add_map_tickmarks")
 procedure add_map_tickmarks(wks:graphic,map:graphic,tmres:logical, \
                             lon_spacing,mlon_spacing,lat_spacing,\
                             mlat_spacing,point_outward)
@@ -3335,6 +3258,7 @@ end
 ; If a lat/lon coordinate doesn't exist, then the data is tested to see ;
 ; if it contains a lat2d/lon2d attribute, and uses this instead.        ;
 ;***********************************************************************;
+undef("gsn_add_cyclic_point")
 function gsn_add_cyclic_point(data:numeric)
 local dims, newdata, ny, mx, mx1, range, delta, first_val, second_val, \
 last_val
@@ -3429,7 +3353,7 @@ end
 ; plot that has a POP grid overlaid on it.                              ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("pop_tick_locs")
 function pop_tick_locs(lonorlat,locs)
 local ret, i, in, j1, j0
 begin
@@ -3452,7 +3376,7 @@ end
 ;                                                                       ;
 ; This procedure overlays a POP grid on a plot.                         ;
 ;***********************************************************************;
-
+undef("pop_latlon_grid")
 procedure pop_latlon_grid(wks:graphic,plot:graphic,popgrid:string)
 local latlon_res, tmplon, lat_object, lon_object, valid_popgrids, \
 popgrid_dir, popgrid_files, i, found 
@@ -3550,6 +3474,7 @@ end
 ;   will alter the min/max to be in that range.                         ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("mask_lambert_conformal")
 function mask_lambert_conformal(wks:graphic, maplc:graphic, minlat:numeric,\
                                 maxlat:numeric, minlon:numeric, \
                                 maxlon:numeric, maskoutln, res)
@@ -3949,7 +3874,7 @@ end
 ; set explicitly by the user.                                           ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_xy")
 function gsn_csm_xy(wks:graphic,x:numeric,y:numeric,resources:logical)
 local res, xy_object, res2, xfontf, yfontf, font_height, calldraw, nlines, \
 callframe, left_string, center_string, right_string, main_zone, ncurves, \
@@ -4961,6 +4886,7 @@ end
 ; X array, index values are used.                                       ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_csm_y")
 function gsn_csm_y(wks:graphic, y:numeric, resources:logical )
 local dsizes_y, npts, x, rank_y, xy
 begin
@@ -5012,6 +4938,7 @@ end
 ; This function creates a zonal means plot.                             ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_csm_zonal_means")
 function gsn_csm_zonal_means(wks,zdata,zres)
 local max_lat, zres2, zmeans
 begin
@@ -5056,6 +4983,7 @@ end
 ; given map object.                                                     ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_csm_attach_zonal_means")
 function gsn_csm_attach_zonal_means(wks,map_object,zdata,zres)
 local zres2, zres3
 begin
@@ -5181,7 +5109,7 @@ end
 ;       (in addition, the regular resource "tiMainString" can be set to ;
 ;       create a regular title).                                        ;
 ;***********************************************************************;
-
+undef("gsn_csm_map_ce")
 function gsn_csm_map_ce(wks:graphic,resources:logical)
 local i, res, map_object, tickmark_object, calldraw, callframe, \
 left_string, center_string, right_string, main_zone, min_lat, max_lat, \
@@ -5507,7 +5435,7 @@ end
 ;    6. gsnPolarLabelFont and gsnPolarLabelFontHeightF can be used to   ;
 ;       control the label font and heights of the lat/lon labels.       ;
 ;***********************************************************************;
-
+undef("gsn_csm_map_polar")
 function gsn_csm_map_polar(wks:graphic,resources:logical)
 local i, res, res2, map_object, main_zone, \
 calldraw, callframe, left_string, center_string, right_string, yoffset, \
@@ -5921,7 +5849,7 @@ end
 ;       set to False, then the lat/lon area of interest will not be     ;
 ;       outlined in the foreground color.                               ;
 ;***********************************************************************;
-
+undef("gsn_csm_map_other")
 function gsn_csm_map_other(wks:graphic,resources:logical)
 local i, res, map_object, calldraw, callframe, \
 left_string, center_string, right_string, main_zone, res2
@@ -6100,7 +6028,7 @@ end
 ; gsn_csm_map_polar depending on if gsnPolar is set, or how             ;
 ; mpProjection is set.                                                  ;
 ;***********************************************************************;
-
+undef("gsn_csm_map")
 function gsn_csm_map(wks:graphic,resources:logical)
 begin
   res2 = get_resources(resources)
@@ -6164,7 +6092,7 @@ end
 ;       to True then only the northern or southern hemisphere is        ;
 ;       displayed.                                                      ;
 ;***********************************************************************;
-
+undef("gsn_csm_contour_map_polar")
 function gsn_csm_contour_map_polar(wks:graphic,data:numeric,resources:logical)
 local i, contour_object, map_object, res, lbar_pos, lbar_zone, \
 lbar_on, calldraw, callframe, main_offset, datanew, res2, cnres, mpres, \
@@ -6364,7 +6292,7 @@ end
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
-
+undef("gsn_csm_contour_map_ce")
 function gsn_csm_contour_map_ce(wks:graphic,data:numeric,resources:logical)
 local i, contour_object, labelbar_object, xy_object, map_object, \
 calldraw, callframe, lbar_on, zonal_mean_plot, min_lat, max_lat, datanew, \
@@ -6674,7 +6602,7 @@ end
 ;   6a. In addition, if "gsnZonalMeanYRefLine" is set, then a vertical  ;
 ;       line is drawn at this value. Otherwise, a line is drawn at 0.   ;
 ;***********************************************************************;
-
+undef("gsn_csm_contour_map_other")
 function gsn_csm_contour_map_other(wks:graphic,data:numeric,\
                                    resources:logical)
 local i, contour_object, labelbar_object, xy_object, map_object, \
@@ -6946,7 +6874,7 @@ end
 ;    5. If the resource "vcMonoLineArrowColor" is set to False, then a  ;
 ;       labelbar is drawn.                                              ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_map_ce")
 function gsn_csm_vector_map_ce(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                                resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
@@ -7183,7 +7111,7 @@ end
 ;    4. If the resource "vcMonoLineArrowColor" is set to False, then a  ;
 ;       labelbar is drawn.                                              ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_map_polar")
 function gsn_csm_vector_map_polar(wks:graphic,u[*][*]:numeric, \
                                   v[*][*]:numeric,resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
@@ -7364,7 +7292,7 @@ end
 ;    3. If the resource "vcMonoLineArrowColor" is set to False, then a  ;
 ;       labelbar is drawn.                                              ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_map_other")
 function gsn_csm_vector_map_other(wks:graphic,u[*][*]:numeric,\
                                   v[*][*]:numeric,resources:logical)
 local i, vector_object, labelbar_object, xy_object, map_object, \
@@ -7532,7 +7460,7 @@ end
 ;       hasn't explicitly been set, then the value of this attribute    ;
 ;       is used for the right string title.                             ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_map_ce")
 function gsn_csm_streamline_map_ce(wks:graphic,u[*][*]:numeric,\
                                    v[*][*]:numeric,resources:logical)
 local i, stream_object, map_object, stres, calldraw, callframe, \
@@ -7706,7 +7634,7 @@ end
 ;       to True then only the northern or southern hemisphere is        ;
 ;       displayed.                                                      ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_map_polar")
 function gsn_csm_streamline_map_polar(wks:graphic,u[*][*]:numeric, \
                                       v[*][*]:numeric,resources:logical)
 local i, stream_object, map_object, res, res2, calldraw, stres, \
@@ -7841,7 +7769,7 @@ end
 ;       (in addition, the regular resource "tiMainString" can be set to ;
 ;       create a regular title).                                        ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_map_other")
 function gsn_csm_streamline_map_other(wks:graphic,u[*][*]:numeric,\
                                       v[*][*]:numeric,resources:logical)
 local i, stream_object, labelbar_object, xy_object, map_object, \
@@ -7961,7 +7889,7 @@ end
 ; This function is similar to gsn_csm_streamline_map_ce except it       ;
 ; overlays contours.                                                    ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_contour_map_ce")
 function gsn_csm_streamline_contour_map_ce(wks:graphic,u[*][*]:numeric,\
                    v[*][*]:numeric,data:numeric,resources:logical)
 local i, stream_object, map_object, res, res2, \
@@ -8211,7 +8139,7 @@ end
 ; This function is similar to gsn_csm_streamline_map_polar except it    ;
 ; overlays a contour plot.                                              ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_contour_map_polar")
 function gsn_csm_streamline_contour_map_polar(wks:graphic,u[*][*]:numeric, \
                                          v[*][*]:numeric,data:numeric,
                                          resources:logical)
@@ -8417,7 +8345,7 @@ end
 ; This function is similar to gsn_csm_streamline_map_other except       ;
 ; overlays a contour plot.                                              ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_contour_map_other")
 function gsn_csm_streamline_contour_map_other(wks:graphic,u[*][*]:numeric,\
                                         v[*][*]:numeric,data:numeric, \
                                         resources:logical)
@@ -8616,7 +8544,7 @@ end
 ; be drawn as a contour plot.  Otherwise, the vectors will be colored   ;
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_scalar")
 function gsn_csm_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric, \
                                data:numeric,resources:logical)
 local i, vector_object, res, res2, \
@@ -8910,7 +8838,7 @@ end
 ; be drawn as a contour plot.  Otherwise, the vectors will be colored   ;
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_scalar_map_ce")
 function gsn_csm_vector_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
                    v[*][*]:numeric,data:numeric,resources:logical)
 local i, vector_object, map_object, res, res2, \
@@ -9231,7 +9159,7 @@ end
 ; be drawn as a contour plot.  Otherwise, the vectors will be colored   ;
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_scalar_map_polar")
 function gsn_csm_vector_scalar_map_polar(wks:graphic,u[*][*]:numeric, \
                                          v[*][*]:numeric,data:numeric,
                                          resources:logical)
@@ -9474,7 +9402,7 @@ end
 ; be drawn as a contour plot.  Otherwise, the vectors will be colored   ;
 ; according to the scalar field. This resource defaults to False.       ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_scalar_map_other")
 function gsn_csm_vector_scalar_map_other(wks:graphic,u[*][*]:numeric,\
                                         v[*][*]:numeric,data:numeric, \
                                         resources:logical)
@@ -9714,7 +9642,7 @@ end
 ; gsn_csm_contour_map_polar or gsn_csm_contour_map_polar depending on   ;
 ; the map projection selected.                                          ;
 ;***********************************************************************;
-
+undef("gsn_csm_contour_map")
 function gsn_csm_contour_map(wks:graphic,data:numeric,resources:logical)
 local res
 begin
@@ -9755,7 +9683,7 @@ end
 ; gsn_csm_streamline_map_polar or gsn_csm_streamline_map_other          ;
 ; depending on the map projection selected.                             ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_map")
 function gsn_csm_streamline_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                                 resources:logical)
 local res
@@ -9796,7 +9724,7 @@ end
 ; gsn_csm_vector_map_polar or gsn_csm_vector_map_polar depending on the ;
 ; map projection selected.                                              ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_map")
 function gsn_csm_vector_map(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                             resources:logical)
 local res
@@ -9838,7 +9766,7 @@ end
 ; gsn_csm_vector_scalar_map_polar or gsn_csm_vector_scalar_map_other    ;
 ; depending on the map projection selected.                             ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector_scalar_map")
 function gsn_csm_vector_scalar_map(wks:graphic,u[*][*]:numeric, \
                                    v[*][*]:numeric,data:numeric, \
                                    resources:logical)
@@ -9882,7 +9810,7 @@ end
 ; gsn_csm_streamline_contour_map_other depending on the map projection  ;
 ; selected.                                                             ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline_contour_map")
 function gsn_csm_streamline_contour_map(wks:graphic,u[*][*]:numeric, \
                                    v[*][*]:numeric,data:numeric, \
                                    resources:logical)
@@ -9925,7 +9853,7 @@ end
 ; additional contour plot.                                              ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_contour_map_overlay")
 function gsn_csm_contour_map_overlay(wks:graphic,data1[*][*]:numeric,\
                                      data2[*][*]:numeric,res1:logical, \
                                      res2:logical)
@@ -10029,10 +9957,11 @@ end
 ; Modified by Mary Haley and made more generic so it can handle the X   ;
 ; or Y axis or both axes having multiple curves.                        ;
 ;***********************************************************************;
-function plot_x2y2 (wks:graphic, x1:numeric, x2:numeric, \
-                                 y1:numeric, y2:numeric, \
-                                 res1:logical, res2:logical, \
-                                 axis:string, plot_type:string)
+undef("plot_x2y2")
+function plot_x2y2(wks:graphic, x1:numeric, x2:numeric, \
+                                y1:numeric, y2:numeric, \
+                                res1:logical, res2:logical, \
+                                axis:string, plot_type:string)
 local locRes1, locRes2, Atts1, Atts2, xy1, xy2, calldraw, callframe, maxbb 
 begin
 ;
@@ -10341,9 +10270,10 @@ begin
 ; the right axis is labeled according to the y2 values.                 ;
 ;                                                                       ;
 ;***********************************************************************;
-function plot_xy3 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
-                   y3:numeric, res1:logical, res2:logical, res3:logical, \
-                   plot_type:string)
+undef("plot_xy3")
+function plot_xy3(wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                  y3:numeric, res1:logical, res2:logical, res3:logical, \
+                  plot_type:string)
 begin
 ;
 ; Make a copy of the resources
@@ -10570,8 +10500,9 @@ end
 ;    2. It's not a widely used routine, so I didn't think people would  ;
 ;       miss it.  They can just call "plot_xy2".                        ;
 ;***********************************************************************;
-function plot_xy2 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
-                   res1:logical, res2:logical)
+undef("plot_xy2")
+function plot_xy2(wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                  res1:logical, res2:logical)
 begin
 ;
 ; Create some dummy variables.
@@ -10609,8 +10540,9 @@ end
 ;    2. It's not a widely used routine, so I didn't think people would  ;
 ;       miss it.  They can just call "plot_x2y".                        ;
 ;***********************************************************************;
-function plot_x2y (wks:graphic, x1:numeric, x2:numeric, y1:numeric, \
-                   res1:logical, res2:logical)
+undef("plot_x2y")
+function plot_x2y(wks:graphic, x1:numeric, x2:numeric, y1:numeric, \
+                  res1:logical, res2:logical)
 begin
 ;
 ; Create some dummy variables.
@@ -10642,8 +10574,9 @@ end
 ; "gsn_csm_xy" is the underlying XY plotting routine called to generate ;
 ; the XY plots.                                                         ;
 ;***********************************************************************;
-function gsn_csm_xy2 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
-                                  res1:logical, res2:logical)
+undef("gsn_csm_xy2")
+function gsn_csm_xy2(wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                                 res1:logical, res2:logical)
 begin
 ;
 ; Create some dummy variables.
@@ -10674,8 +10607,9 @@ end
 ; "gsn_csm_xy" is the underlying XY plotting routine called to generate ;
 ; the XY plots.                                                         ;
 ;***********************************************************************;
-function gsn_csm_x2y (wks:graphic, x1:numeric, x2:numeric, y1:numeric, \
-                      res1:logical, res2:logical)
+undef("gsn_csm_x2y")
+function gsn_csm_x2y(wks:graphic, x1:numeric, x2:numeric, y1:numeric, \
+                     res1:logical, res2:logical)
 begin
 ;
 ; Create some dummy variables.
@@ -10706,8 +10640,9 @@ end
 ; "gsn_csm_xy" is the underlying XY plotting routine called to generate ;
 ; the XY plots.                                                         ;
 ;***********************************************************************;
-function gsn_csm_x2y2 (wks:graphic, x1:numeric, x2:numeric, \
-                       y1:numeric, y2:numeric, res1:logical, res2:logical)
+undef("gsn_csm_x2y2")
+function gsn_csm_x2y2(wks:graphic, x1:numeric, x2:numeric, \
+                      y1:numeric, y2:numeric, res1:logical, res2:logical)
 begin
 ;
 ; Call plot_x2y2 function.
@@ -10729,8 +10664,9 @@ end
 ;                                                                       ;
 ; This function calls plot_xy3 with a plot_type of "csm".               ;
 ;***********************************************************************;
-function gsn_csm_xy3 (wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
-                      y3:numeric, res1:logical, res2:logical, res3:logical)
+undef("gsn_csm_xy3")
+function gsn_csm_xy3(wks:graphic, x1:numeric, y1:numeric, y2:numeric, \
+                     y3:numeric, res1:logical, res2:logical, res3:logical)
 begin
 ;
 ; Call plot_xy3 function.
@@ -10764,7 +10700,7 @@ end
 ; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_contour")
 function gsn_csm_contour(wks:graphic,data:numeric,resources:logical)
 local res, contour_object, res2, xfontf, yfontf, font_height, lbar_on, \
 calldraw, callframe, left_string, center_string, right_string, \
@@ -10969,7 +10905,7 @@ end
 ; draws a specially-labelled longitude X axis.                          ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_hov")
 function gsn_csm_hov(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lon_spacing, contour_plot
@@ -11056,7 +10992,7 @@ end
 ;                                                                       ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_lat_time")
 function gsn_csm_lat_time(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lat_spacing
@@ -11129,7 +11065,7 @@ end
 ; draws a specially-labeled latitude X axis.                            ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_time_lat")
 function gsn_csm_time_lat(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, font_height, calldraw, callframe, \
 datanew, lat_spacing
@@ -11204,7 +11140,7 @@ end
 ; exists.                                                               ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_pres_hgt")
 function gsn_csm_pres_hgt(wks:graphic,data[*][*]:numeric,resources:logical)
 local res, contour_object, res2, xfontf, yfontf, font_height, \
 calldraw, callframe, add_hgt, contour_plot
@@ -11418,7 +11354,7 @@ end
 ; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_vector")
 function gsn_csm_vector(wks:graphic,u[*][*]:numeric,v[*][*],resources:logical)
 local res, vector_object, res2, xfontf, yfontf, font_height, lbar_on, \
 calldraw, callframe, left_string, center_string, right_string, \
@@ -11599,7 +11535,7 @@ end
 ; This function behaves like gsn_csm_pres_hgt, only it overlays a       ;
 ; vector plot as well.                                                  ;
 ;***********************************************************************;
-
+undef("gsn_csm_pres_hgt_vector")
 function gsn_csm_pres_hgt_vector(wks:graphic,data[*][*]:numeric, \
                                  u[*][*]:numeric, v[*][*]:numeric, \
                                  resources:logical)
@@ -11714,7 +11650,7 @@ end
 ; Tick marks will be made to point outwards.                            ;
 ;                                                                       ;
 ;***********************************************************************;
-
+undef("gsn_csm_streamline")
 function gsn_csm_streamline(wks:graphic,u[*][*]:numeric,v[*][*],\
                             resources:logical)
 local res, stream_object, res2, xfontf, yfontf, font_height, \
@@ -11876,7 +11812,7 @@ end
 ; This function behaves like gsn_csm_pres_hgt, only it overlays a       ;
 ; streamline plot as well.                                              ;
 ;***********************************************************************;
-
+undef("gsn_csm_pres_hgt_streamline")
 function gsn_csm_pres_hgt_streamline(wks:graphic,data[*][*]:numeric, \
                                      u[*][*]:numeric, v[*][*]:numeric, \
                                      resources:logical)
