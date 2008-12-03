@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.216 2008-12-03 00:18:09 haley Exp $
+;      $Id: gsn_code.ncl,v 1.217 2008-12-03 05:39:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1540,6 +1540,28 @@ begin
   return(new_plot)
 end
 
+;***********************************************************************;
+; function : get_plot_labelbar                                          ;
+;                plot:graphic                                           ;
+;                                                                       ;
+; This function is for gsn_panel, to help it determine which plot info  ;
+; to use to construct a labelbar.                                       ;
+;                                                                       ;
+;***********************************************************************;
+undef("get_plot_labelbar")
+function get_plot_labelbar(plot:graphic)
+begin
+  new_plot = new(1,graphic)
+
+  if(isatt(plot,"labelbar").and.isatt(plot,"labelbar_type")) then
+    new_plot           = plot@labelbar
+    new_plot@plot_type = plot@labelbar_type
+  else
+    new_plot = get_plot_not_loglin(plot)
+  end if
+  return(new_plot)
+end
+
 ;**********************************************************************;
 ; Function : maximize_bb                                               ;
 ;               plot : graphic                                         ;
@@ -1647,7 +1669,6 @@ end
 ; may be attached to the data array. You can't write 2D attributes to a ;
 ; netCDF file, so we write them as 1D with information that we can use  ;
 ; to reconstruct the 2D array later.                                    ;
-; increments the line counter.                                          ;
 ;***********************************************************************;
 undef("add_latlon2d_debug_info")
 procedure add_latlon2d_debug_info(data)
@@ -4937,12 +4958,56 @@ begin
 ; the vector or contour plot overlaid on it will be indicated
 ; by "plot@contour" or "plot@vector"
 ;
-  new_plot = get_plot_not_loglin(plot(valid_plot))
+  new_plot     = get_plot_not_loglin(plot(valid_plot))
+  new_plot_lab = get_plot_labelbar(plot(valid_plot))
 
 ;
 ; Get the font height.
 ;
   if(is_figure_strings.or.panel_labelbar) then
+    if(new_plot@plot_type.eq."contour") then
+      getvalues new_plot
+        "cnInfoLabelFontHeightF" : font_height
+      end getvalues
+    else
+      if(new_plot@plot_type.eq."vector") then
+        getvalues new_plot
+          "vcRefAnnoFontHeightF"     : font_height
+          "vcGlyphStyle"             : gstyle
+          "vcFillArrowsOn"           : fill_arrows_on
+          "vcMonoLineArrowColor"     : mono_line_color
+          "vcMonoFillArrowFillColor" : mono_fill_arrow
+        end getvalues
+      else
+        if(new_plot@plot_type.eq."xy") then
+          getvalues new_plot
+            "tiXAxisFontHeightF" : font_height
+          end getvalues
+          font_height = 0.6*font_height
+        else
+          font_height = 0.01
+          if((is_figure_strings.and. \
+              .not.isatt(res,"gsnPanelFigureStringsFontHeightF"))) then
+            print("Warning: gsn_panel: unrecognized plot type.")
+            print("Unable to get information for various font heights.")
+            print("Make sure your font heights look okay.")
+            print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
+          end if
+        end if
+      end if
+    end if
+;
+; Use this font height for the panel strings, if any, unless the user
+; has set gsnPanelFigureStringsFontHeightF.
+;
+    pfont_height = get_res_value(res,"gsnPanelFigureStringsFontHeightF",\
+                                 font_height)
+  end if
+
+;
+; Get labelbar information.
+;
+  if(panel_labelbar) then
 ;
 ; The cnLabelBarEndStyle resource is only available with contour 
 ; plots, and it is 0 by default (IncludeOuterBoxes). We need to check
@@ -4950,13 +5015,12 @@ begin
 ; the appropriate thing. IncludeMinMaxLabels is not currently supported.
 ;
     end_style = 0     ; IncludeOuterBoxes
-    if(new_plot@plot_type.eq."contour") then
-      getvalues new_plot
-        "cnInfoLabelFontHeightF" : font_height
-        "cnFillOn"               : fill_on
+    if(new_plot_lab@plot_type.eq."contour") then
+      getvalues new_plot_lab
+        "cnFillOn" : fill_on
       end getvalues
-      if(panel_labelbar.and.fill_on) then
-        getvalues new_plot
+      if(fill_on) then
+        getvalues new_plot_lab
           "cnFillColors"      : colors
           "cnFillPatterns"    : fill_patterns
           "cnFillScales"      : fill_scales
@@ -4970,68 +5034,33 @@ begin
         panel_labelbar = False
       end if
     else
-      if(new_plot@plot_type.eq."vector") then
-        getvalues new_plot
-          "vcRefAnnoFontHeightF"     : font_height
-          "vcGlyphStyle"             : gstyle
-          "vcFillArrowsOn"           : fill_arrows_on
-          "vcMonoLineArrowColor"     : mono_line_color
-          "vcMonoFillArrowFillColor" : mono_fill_arrow
-        end getvalues
-
-        if(panel_labelbar) then
+      if(new_plot_lab@plot_type.eq."vector") then
 ;
 ; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
 ;
-          if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
-              (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
-              (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
-              (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
+        if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
+            (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
+            (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
+            (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
 ;
 ; There are no fill patterns in VectorPlot, only solids.
 ;
-            mono_fill_pat = True
-            mono_fill_scl = True
-            mono_fill_col = False
-            getvalues new_plot
-              "vcLevels"      : levels
-              "vcLevelColors" : colors
-            end getvalues
-          else
-            panel_labelbar = False
-          end if
+          mono_fill_pat = True
+          mono_fill_scl = True
+          mono_fill_col = False
+          getvalues new_plot_lab
+            "vcLevels"      : levels
+            "vcLevelColors" : colors
+          end getvalues
+        else
+          panel_labelbar = False
         end if
       else
-        if(new_plot@plot_type.eq."xy") then
-          getvalues new_plot
-            "tiXAxisFontHeightF" : font_height
-          end getvalues
-          font_height = 0.6*font_height
-        else
-          font_height = 0.01
-          if((is_figure_strings.and. \
-              .not.isatt(res,"gsnPanelFigureStringsFontHeightF")).or. \
-             (panel_labelbar.and..not.isatt(res,"lbLabelFontHeightF"))) then
-            print("Warning: gsn_panel: unrecognized plot type.")
-            print("Unable to get information for various font heights.")
-            print("Make sure your font heights look okay.")
-            if(is_figure_strings.and..not.isatt(res,"gsnPanelFigureStringsFontHeightF"))
-              print("Set gsnPanelFigureStringsFontHeightF resource to control figure strings font height.")
-            end if
-
-            if(panel_labelbar.and..not.isatt(res,"lbLabelFontHeightF")) then
-              print("Set lbLabelFontHeightF resource to control labelbar font heights.")
-            end if
-          end if
+        if(.not.isatt(res,"lbLabelFontHeightF")) then
+          print("Set lbLabelFontHeightF resource to control labelbar font heights.")
         end if
       end if
     end if
-;
-; Use this font height for the panel strings, if any, unless the user
-; has set gsnPanelFigureStringsFontHeightF.
-;
-    pfont_height = get_res_value(res,"gsnPanelFigureStringsFontHeightF",\
-                                 font_height)
   end if
 
 ;

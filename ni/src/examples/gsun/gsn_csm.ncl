@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.235 2008-12-03 00:12:02 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.236 2008-12-03 05:39:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -8548,7 +8548,7 @@ undef("gsn_csm_vector_scalar")
 function gsn_csm_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric, \
                                data:numeric,resources:logical)
 local i, vector_object, res, res2, \
-calldraw, callframe, unew, vnew, datanew, vpwf, vphf, lbar_on
+calldraw, callframe, unew, vnew, datanew, vpwf, vphf, lbar_on, lbar_type
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -8563,6 +8563,7 @@ begin
     infolabel_on   = False
     refanno_on     = True
     lbar_on        = True
+    lbar_type      = ""
     res2 = get_resources(resources)
 ;
 ; Write data and plot resource information to a file so we can 
@@ -8639,6 +8640,7 @@ print("adding a cyclic point")
 ; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
 ; turned off.
       if(check_attr(res2,"cnFillOn",True,False))
+        lbar_type = "contour"
         set_attr(res2,"cnFillDrawOrder","Predraw")
         set_attr(res2,"cnInfoLabelOn",False)
         if(.not.isatt(lbres,"lbLabelBarOn").or.\
@@ -8816,8 +8818,9 @@ print("adding a cyclic point")
 
     vector_object@vfdata  = vector_object@vfdata
     vector_object@sfdata  = vector_object@sfdata
-    if(scalar_contour)
-      vector_object@contour = vector_object@contour
+    if(lbar_type.eq."contour") then
+      vector_object@labelbar      = vector_object@contour
+      vector_object@labelbar_type = lbar_type
     end if
     return(vector_object)
 end
@@ -8843,7 +8846,7 @@ function gsn_csm_vector_scalar_map_ce(wks:graphic,u[*][*]:numeric,\
                    v[*][*]:numeric,data:numeric,resources:logical)
 local i, vector_object, map_object, res, res2, \
 calldraw, callframe, min_lat, max_lat, unew, vnew, datanew, \
-map_vpwf, map_vphf, vpwf, vphf, lbar_on
+map_vpwf, map_vphf, vpwf, vphf, lbar_on, lbar_type
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -8857,6 +8860,7 @@ begin
     infolabel_on   = False
     refanno_on   = True
     lbar_on        = True
+    lbar_type      = ""
     mpres          = True
     res2           = get_resources(resources)
 ;
@@ -8957,6 +8961,7 @@ begin
 ; Turn on labelbar if cnFillOn is True and it wasn't explicitly 
 ; turned off.
       if(check_attr(res2,"cnFillOn",True,False))
+        lbar_type = "contour"
         set_attr(res2,"cnFillDrawOrder","Predraw")
         set_attr(res2,"cnInfoLabelOn",False)
         if(.not.isatt(lbres,"lbLabelBarOn").or.\
@@ -9131,6 +9136,11 @@ begin
 
 ; Return plot object and data object (as attribute of plot object).
 
+    if(lbar_type.eq."contour") then
+      map_object@labelbar      = vector_object@contour
+      map_object@labelbar_type = lbar_type
+    end if
+
     map_object@vfdata  = vector_object@vfdata
     map_object@sfdata  = vector_object@sfdata
     if(scalar_contour)
@@ -9139,6 +9149,7 @@ begin
     else
       map_object@vector  = vector_object
     end if
+
     return(map_object)
 end
 
@@ -9164,7 +9175,7 @@ function gsn_csm_vector_scalar_map_polar(wks:graphic,u[*][*]:numeric, \
                                          v[*][*]:numeric,data:numeric,
                                          resources:logical)
 local i, vector_object, map_object, res, res2, calldraw, vcres, \
-lbres, vpwf, vphf, callframe, lbar_on, lbar_zone, unew, vnew
+lbres, vpwf, vphf, callframe, lbar_on, lbar_type, lbar_zone, unew, vnew
 begin
 ;
 ; Make sure input data is 1D or 2D
@@ -9262,6 +9273,7 @@ begin
       check_for_lon_coord(datanew,res2,"contour_map")
     end if
 
+    lbar_type    = ""
     lbar_on      = get_res_value_keep(res2,"lbLabelBarOn",True)
     lbar_orient  = lower_case(get_res_value_keep(res2,"lbOrientation", \
                               "horizontal"))
@@ -9361,6 +9373,7 @@ begin
       lbres = get_res_eq(res2,(/"lb","pm"/))
 
       if(scalar_contour)
+        lbar_type = "contour"
         add_labelbar(wks,vector_object@contour,lbar_zone,font_height, \
                      "vector",lbres)
       else
@@ -9372,6 +9385,11 @@ begin
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
+
+    if(lbar_type.eq."contour") then
+      map_object@labelbar      = vector_object@contour
+      map_object@labelbar_type = lbar_type
+    end if
 
     map_object@vfdata  = vector_object@vfdata
     map_object@sfdata  = vector_object@sfdata
@@ -9407,7 +9425,7 @@ function gsn_csm_vector_scalar_map_other(wks:graphic,u[*][*]:numeric,\
                                         v[*][*]:numeric,data:numeric, \
                                         resources:logical)
 local i, vector_object, labelbar_object, map_object, \
-calldraw, callframe, lbar_on, min_lat, max_lat, datanew, \
+calldraw, callframe, lbar_on, lbar_type, min_lat, max_lat, datanew, \
 res, res2, lbres, mpres, vcres, levels, colors, \
 lbar_zone, lbar_orient, lbar_side, lbar_height, lbar_width, lbar_just, \
 map_vpwf, map_vphf, vphf 
@@ -9424,6 +9442,7 @@ begin
     infolabel_on   = False
     refanno_on     = True
     lbar_on        = False    ; Default is no labelbar.
+    lbar_type      = ""
     mpres          = True
 
     res2           = get_resources(resources)
@@ -9488,6 +9507,7 @@ begin
 ;
     if(scalar_contour)
       if(check_attr(res2,"cnFillOn",True,False))
+        lbar_type = "contour"
         set_attr(res2,"cnFillDrawOrder","Predraw")
         set_attr(res2,"cnLineLabelsOn",False)
         set_attr(res2,"cnLinesOn",False)
@@ -9619,6 +9639,11 @@ begin
     draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
 
 ; Return plot object and data object (as attribute of plot object).
+
+    if(lbar_type.eq."contour") then
+      map_object@labelbar      = vector_object@contour
+      map_object@labelbar_type = lbar_type
+    end if
 
     map_object@vfdata  = vector_object@vfdata
     map_object@sfdata  = vector_object@sfdata
