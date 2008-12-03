@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.213 2008-10-31 17:47:52 haley Exp $
+;      $Id: gsn_code.ncl,v 1.214 2008-12-03 00:07:11 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -33,130 +33,6 @@
 ;;
 
 ;***********************************************************************;
-; For every function and procedure defined in this script, undefine it  ;
-; with a call to "undef" so it doesn't clash with other functions and   ;
-; procedures with the same name.                                        ;
-;***********************************************************************;
-
-undef("smooth92d")
-undef("smooth93d")
-undef("hsv2rgb")
-undef("tofloat")
-undef("tofloat_wunits")
-undef("tointeger")
-undef("stringtoxxx")
-undef("lower_case")
-undef("get_long_name_units_string")
-undef("copy_var_atts")
-undef("cat_strings")
-undef("get_resources")
-undef("set_attr")
-undef("check_attr")
-undef("get_res_eq_replace")
-undef("get_res_eq")
-undef("get_res_ne")
-undef("get_res_value")
-undef("get_res_value_keep")
-undef("get_non_missing_pairs")
-undef("get_display_mode")
-undef("attsetvalues_check")
-undef("spread_colors")
-undef("check_for_irreg2loglin")
-undef("is_data_1d_or_2d")
-undef("overlay_irregular")
-undef("get_plot_not_loglin")
-undef("get_overlay_plot")
-undef("get_contour_levels")
-undef("get_contour_line_thicknesses")
-undef("fix_zero_contour")
-undef("set_zero_line_thickness")
-undef("set_line_thickness_scale")
-undef("set_pos_neg_line_pattern")
-undef("maximize_bb")
-undef("write_lines")
-undef("add_latlon2d_debug_info")
-undef("fix_latlon2d_debug_info")
-undef("write_latlon2d_lines")
-undef("write_debug_res_file")
-undef("gsnp_write_debug_info")
-undef("gsnp_turn_off_tickmarks")
-undef("gsnp_point_tickmarks_outward")
-undef("gsnp_uniform_tickmark_labels")
-undef("gsnp_shape_plot")
-undef("gsnp_scale_plot")
-undef("check_for_tickmarks_off")
-undef("compute_device_coords")
-undef("reset_device_coordinates")
-undef("maximize_output")
-undef("draw_and_frame")
-undef("gsn_blank_plot")
-undef("create_canvas")
-undef("get_bb_res")
-undef("gsn_open_ncgm")
-undef("gsn_open_x11")
-undef("create_labelbar")
-undef("gsn_open_ps")
-undef("gsn_open_pdf")
-undef("gsn_open_image")
-undef("gsn_open_wks")
-undef("gsn_add_annotation")
-undef("gsn_add_primitive")
-undef("gsn_primitive")
-undef("gsn_polygon")
-undef("gsn_add_polygon")
-undef("gsn_polygon_ndc")
-undef("gsn_polyline")
-undef("gsn_add_polyline")
-undef("gsn_polyline_ndc")
-undef("gsn_polymarker")
-undef("gsn_add_polymarker")
-undef("gsn_polymarker_ndc")
-undef("gsn_create_labelbar_ndc")
-undef("gsn_create_labelbar")
-undef("gsn_labelbar_ndc")
-undef("gsn_create_legend_ndc")
-undef("gsn_create_legend")
-undef("gsn_legend_ndc")
-undef("gsn_create_text_ndc")
-undef("gsn_create_text")
-undef("gsn_text_ndc")
-undef("gsn_text")
-undef("gsn_add_text")
-undef("draw_bb")
-undef("gsn_panel_return")
-undef("gsn_panel")
-undef("gsn_attach_plots")
-undef("get_rgb_values")
-undef("gsn_define_colormap")
-undef("gsn_retrieve_colormap")
-undef("gsn_reverse_colormap")
-undef("gsn_merge_colormaps")
-undef("scalar_field")
-undef("vector_field")
-undef("hist_columns")
-undef("compute_hist_vals")
-undef("gsn_histogram")
-undef("gsn_contour")
-undef("gsn_contour_map")
-undef("gsn_map")
-undef("gsn_streamline")
-undef("gsn_streamline_map")
-undef("gsn_draw_colormap")
-undef("gsn_draw_named_colors")
-undef("gsn_vector")
-undef("gsn_vector_contour")
-undef("gsn_streamline_contour")
-undef("gsn_vector_contour_map")
-undef("gsn_vector_map")
-undef("gsn_vector_scalar")
-undef("gsn_vector_scalar_map")
-undef("gsn_xy")
-undef("gsn_y")
-undef("gsn_contour_shade")
-undef("fill_res")
-undef("gsn_table")
-
-;***********************************************************************;
 ; function : smooth92d                                                  ;
 ;               var[*][*]:float                                         ;
 ;                       p:float                                         ;
@@ -165,6 +41,7 @@ undef("gsn_table")
 ; Performs smoothing on a 2-dimensional array.                          ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("smooth92d")
 function smooth92d(var[*][*]:float,p[1]:float,q[1]:float)
 local dims,output,coef,m,n,p4,q4,i
 begin
@@ -208,6 +85,7 @@ end
 ; Performs smoothing on a 3-dimensional array.                          ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("smooth93d")
 function smooth93d(var[*][*][*]:float,p[1]:float,q[1]:float)
 local dims,output,coef,m,n,p4,q4,i
 begin
@@ -265,6 +143,7 @@ end
 ; gsn_define_colormap.                                                  ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("hsv2rgb")
 function hsv2rgb (h_old[*]:float,s_old[*]:float,v_old[*]:float)
 begin
 ;
@@ -347,6 +226,7 @@ end
 ; Convert input to float.                                               ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("tofloat")
 function tofloat(x:numeric)
 local xf
 begin
@@ -371,6 +251,7 @@ end
 ; Convert input to float and retain units attribute.                    ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("tofloat_wunits")
 function tofloat_wunits(x:numeric)
 local xf
 begin
@@ -388,6 +269,7 @@ end
 ; Convert input to integer.                                             ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("tointeger")
 function tointeger(x:numeric)
 local xi
 begin
@@ -417,6 +299,7 @@ end
 ; Convert string to int, float or double, depending on type             ; 
 ;                                                                       ;
 ;***********************************************************************;
+undef("stringtoxxx")
 function stringtoxxx(str:string,type:string)
 begin
   if(type.eq."double")
@@ -439,6 +322,7 @@ end
 ;                                                                       ;
 ; Converts "name" to lowercase.                                         ;
 ;***********************************************************************;
+undef("lower_case")
 function lower_case(name:string)
 local lower, upper, lowc, upc, namec, i
 begin
@@ -468,6 +352,7 @@ end
 ; if so, constructs a string using them. A missing value is returned    ;
 ; otherwise.                                                            ;
 ;***********************************************************************;
+undef("get_long_name_units_string")
 function get_long_name_units_string(data)
 begin
   lu_string = new(1,string)
@@ -494,6 +379,7 @@ end
 ; This is almost identical to D Shea's "copy_VarAtts" routine, except   ;
 ; it allows you to specify which atts to copy.                          ;
 ;***********************************************************************;
+undef("copy_var_atts")
 procedure copy_var_atts(var_from,var_to,att_names)
 local i
 begin                                       
@@ -518,6 +404,7 @@ end
 ;                                                                       ;
 ; Takes an array of strings and cats them into a single string.         ;
 ;***********************************************************************;
+undef("cat_strings")
 function cat_strings(str_array)
 local i, slen
 begin
@@ -539,6 +426,7 @@ end
 ; resources are carried over, but res is set to True for future use.    ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_resources")
 function get_resources(res:logical)
 begin
   if(res) then
@@ -561,6 +449,7 @@ end
 ;                                                                       ;
 ; Add resource and its value to a resource list if it isn't already set.;
 ;***********************************************************************;
+undef("set_attr")
 procedure set_attr(res:logical,att_name:string,att_value)
 begin
   res = True
@@ -579,6 +468,7 @@ end
 ;                                                                       ;
 ; Checks if res@att_name exists and if it is equal to att_value.        ;
 ;***********************************************************************;
+undef("check_attr")
 function check_attr(res:logical,att_name:string,att_value, \
                     convert_lower:logical)
 local res2, new_att_value, is_att_value_string, is_att_name_string
@@ -628,6 +518,7 @@ end
 ; Get a list of resources that start with res_prefix, and replace them  ;
 ; with rep_prefix.                                                      ;
 ;***********************************************************************;
+undef("get_res_eq_replace")
 function get_res_eq_replace(res,res_prefix:string,rep_prefix:string)
 local i, j, ret_res, res2, attnames, res_index, nres2
 begin
@@ -678,6 +569,7 @@ end
 ;                                                                       ;
 ; Get a list of resources that start with res_prefix.                   ;
 ;***********************************************************************;
+undef("get_res_eq")
 function get_res_eq(res,res_prefix:string)
 local i, j, ret_res, res2, attnames, res_index
 begin
@@ -692,6 +584,7 @@ end
 ;                                                                       ;
 ; Get a list of resources that don't start with res_prefix.             ;
 ;***********************************************************************;
+undef("get_res_ne")
 function get_res_ne(res,res_prefix:string)
 local i, j, ret_res, res2, attnames, res_index
 begin
@@ -740,6 +633,7 @@ end
 ; Otherwise, it returns the default value which is the last argument    ;
 ; passed in.                                                            ;
 ;***********************************************************************;
+undef("get_res_value")
 function get_res_value(res,resname:string,default_val)
 local res_value
 begin
@@ -769,6 +663,7 @@ end
 ; passed in.                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_res_value_keep")
 function get_res_value_keep(res,resname:string,default_val)
 local res_value
 begin
@@ -791,6 +686,7 @@ end
 ; of indices that represent ranges of data values where there are no    ;
 ; missing values.                                                       ;
 ;***********************************************************************;
+undef("get_non_missing_pairs")
 function get_non_missing_pairs(x[*]:numeric,y[*]:numeric)
 local ibeg, iend, indices, ndimx, ndimy, is_missing
 begin
@@ -836,6 +732,7 @@ end
 ; This procedure checks if a DisplayMode resource is set, and returns   ;
 ; an integer value if it's set as a string.                             ;
 ;***********************************************************************;
+undef("get_display_mode")
 function get_display_mode(res:logical,name:string,value)
 local display_mode, new_display_mode 
 begin
@@ -873,6 +770,7 @@ end
 ; This procedure passes plot and res to attsetvalues only if res is     ;
 ; True and non-empty.                                                   ;
 ;***********************************************************************;
+undef("attsetvalues_check")
 procedure attsetvalues_check(plot:graphic,res:logical)
 begin
   if(res.and..not.any(ismissing(getvaratts(res))))
@@ -904,6 +802,7 @@ end
 ; already being set, and to issue a warning message (spread_colors will ;
 ; take precedence over cnFillColors.)                                   ;
 ;***********************************************************************;
+undef("spread_colors")
 function spread_colors(wks:graphic,plot:graphic,min_index:integer,\
                         max_index:integer,res:logical)
 local ncols, lcount, fcols, icols, minix, maxix, nc, fmin, fmax, class,\
@@ -1007,6 +906,7 @@ end
 ; Get a specified overlaid plot id. This function is based on Dennis'   ;
 ; original GetOverlayPlot function.                                     ;
 ;***********************************************************************;
+undef("get_overlay_plot")
 function get_overlay_plot(plot:graphic,class_name:string,plot_index:integer)
 begin
 ;
@@ -1052,6 +952,7 @@ end
 ; Get contour levels associated with "plot".                            ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_contour_levels")
 function get_contour_levels(plot:graphic)
 local overlay_plot
 begin
@@ -1079,6 +980,7 @@ end
 ; Get contour line thicknesses associated with "plot".                  ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_contour_line_thicknesses")
 function get_contour_line_thicknesses(plot:graphic)
 local overlay_plot
 begin
@@ -1107,6 +1009,7 @@ end
 ; and not a "0". Don't even bother with checking if the minimum         ;
 ; difference between the levels is less than 1e-5.                      ;
 ;***********************************************************************;
+undef("fix_zero_contour")
 function fix_zero_contour(levels)
 begin
   nlevels = dimsizes(levels)
@@ -1142,6 +1045,7 @@ end
 ; If thickness is equal to 0, then the line is just not drawn.          ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("set_zero_line_thickness")
 function set_zero_line_thickness(plot:graphic,zthickness,cthickness)
 begin
   levels  = get_contour_levels (plot)
@@ -1207,6 +1111,7 @@ end
 ; Scale the line thickness by the given numbers.                        ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("set_line_thickness_scale")
 function set_line_thickness_scale(plot:graphic,scale)
 begin
   thicknesses  = get_contour_line_thicknesses (plot)
@@ -1241,6 +1146,7 @@ end
 ; The user can use the cnLineDashPatterns resource to override this.    ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("set_pos_neg_line_pattern")
 function set_pos_neg_line_pattern(plot:graphic,ppattern,npattern)
 local set_pos, set_neg, levels, n, nlevels, patterns, overlay_plot
 begin
@@ -1310,6 +1216,7 @@ end
 ; procedure checks for these resources being set and sets some logical  ;
 ; variables accordingly.                                                ;
 ;***********************************************************************;
+undef("check_for_irreg2loglin")
 procedure check_for_irreg2loglin(res:logical,xlinear:logical, \
                                  ylinear:logical,\
                                  xlog:logical,ylog:logical)
@@ -1341,6 +1248,7 @@ end
 ; is not.                                                               ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("is_data_1d_or_2d")
 function is_data_1d_or_2d(data)
 begin
   dims = dimsizes(data)
@@ -1371,6 +1279,7 @@ end
 ; plot on an irregularPlotClass so that we can linearize or logize      ;
 ; the appropriate axis.                                                 ;
 ;***********************************************************************;
+undef("overlay_irregular")
 function overlay_irregular(wks,wksname,overlay_plot_object:graphic,\
                            data_object:graphic,xlinear:logical, \
                            ylinear:logical,xlog:logical,ylog:logical,\
@@ -1561,6 +1470,7 @@ end
 ; corresponding contour or vector plot.                                 ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_plot_not_loglin")
 function get_plot_not_loglin(plot:graphic)
 local class
 begin
@@ -1647,6 +1557,7 @@ end
 ;                     default is 0.02)                                 ;
 ;                                                                      ;
 ;**********************************************************************;
+undef("maximize_bb")
 function maximize_bb(plot[1]:graphic,res:logical)
 local coords, top, bot, lft, rgt, width, height, margin
 begin
@@ -1713,6 +1624,7 @@ end
 ; This procedure writes a series of strings to a given string array and ;
 ; increments the line counter.                                          ;
 ;***********************************************************************;
+undef("write_lines")
 procedure write_lines(strs, thelines, numlines)
 local nstrs
 begin
@@ -1737,6 +1649,7 @@ end
 ; to reconstruct the 2D array later.                                    ;
 ; increments the line counter.                                          ;
 ;***********************************************************************;
+undef("add_latlon2d_debug_info")
 procedure add_latlon2d_debug_info(data)
 local dims_lat, dims_lon
 begin
@@ -1766,6 +1679,7 @@ end
 ; removes attribute info that was added to a data array (all in support ;
 ; of the gsnp_write_debug_info procedure).                              ;
 ;***********************************************************************;
+undef("fix_latlon2d_debug_info")
 procedure fix_latlon2d_debug_info(ldata)
 begin
   if(isatt(ldata,"lat1d").and. \
@@ -1790,6 +1704,7 @@ end
 ; and gsnp_write_debug_info. It writes lines to an NCL script that      ;
 ; reconstructs lat2d and lon2d attribute information.                   ;
 ;***********************************************************************;
+undef("write_latlon2d_lines")
 procedure write_latlon2d_lines(ldata, ldata_name[1]:string, thelines, numlines)
 local nlines
 begin
@@ -1815,6 +1730,7 @@ end
 ; to helvetica, foreground/background colors to white/black, and the    ;
 ; function code to "~".                                                 ;
 ;***********************************************************************;
+undef("write_debug_res_file")
 procedure write_debug_res_file(resfname[1]:string)
 local reslines
 begin
@@ -1830,6 +1746,7 @@ end
 ; This procedure writes some debug info (data and plot resource values) ;
 ; to a netCDF file and creates an NCL file to plot the data.            ;
 ;***********************************************************************;
+undef("gsnp_write_debug_info")
 procedure gsnp_write_debug_info(data1,data2,data3,gsn_name[1]:string,\
                                 plot_res[1]:logical,ndfiles[1]:integer)
 begin
@@ -2122,6 +2039,7 @@ end
 ; drawing of tick marks.  This procedure just sets the resources        ;
 ; necessary in order to turn off tick marks.                            ;
 ;***********************************************************************;
+undef("gsnp_turn_off_tickmarks")
 procedure gsnp_turn_off_tickmarks(res:logical)
 begin
   set_attr(res,"tmXBBorderOn",False )
@@ -2150,6 +2068,7 @@ end
 ; tickmarks on both axes to be the same length if the major and/or minor;
 ; tickmarks lengths are != 0.                                           ;
 ;***********************************************************************;
+undef("gsnp_point_tickmarks_outward")
 procedure gsnp_point_tickmarks_outward(plot:graphic,res:logical, \
                               x_major_length, y_major_length, \
                               x_minor_length, y_minor_length, \
@@ -2230,6 +2149,7 @@ end
 ; This procedure makes the tickmark labels the same font height on both ;
 ; axes. If font_height <= 0., then a uniform font height is calculated. ;
 ;***********************************************************************;
+undef("gsnp_uniform_tickmark_labels")
 procedure gsnp_uniform_tickmark_labels(plot:graphic,res:logical, \
                                        font_height)
 local xbfont, ylfont, tmres
@@ -2267,6 +2187,7 @@ end
 ; If gsnShape is set to True, then the plot is scaled such that the X   ;
 ; and Y axes are proportional to each other.                            ;
 ;***********************************************************************;
+undef("gsnp_shape_plot")
 procedure gsnp_shape_plot(plot:graphic)
 local xf, yf, width, height, trxmin, trxmax, trymin, trymax, xrange, yrange, \
 new_xf, new_yf, new_width, new_height
@@ -2321,6 +2242,7 @@ end
 ; also need to make sure trGridType is TriangularMesh, otherwise we     ;
 ; can't have a tickmark object.                                         ;
 ;***********************************************************************;
+undef("gsnp_scale_plot")
 procedure gsnp_scale_plot(plot:graphic,scalar_prefix,res:logical)
 local xfont, yfont, xbfont, xlength, xmlength, ylfont, ylength, ymlength, \
 xresname, yresname, valid_tm, tr_grid_type
@@ -2395,6 +2317,7 @@ end
 ; drawing of tick marks.  This procedure checks for the setting of this ;
 ; resource, and then calls the routine that turns off tickmarks.        ;
 ;***********************************************************************;
+undef("check_for_tickmarks_off")
 procedure check_for_tickmarks_off(res:logical)
 local ticks_ons
 begin
@@ -2430,6 +2353,7 @@ end
 ;                        default is 0.5)                               ;
 ;                                                                      ;
 ;**********************************************************************;
+undef("compute_device_coords")
 function compute_device_coords(bb,res)
 local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin, \
       paper_width, paper_height, paper_margin
@@ -2640,6 +2564,7 @@ end
 ; NCL uses if none are set.                                             ;
 ;***********************************************************************;
 
+undef("reset_device_coordinates")
 procedure reset_device_coordinates(wks)
 begin
   setvalues wks
@@ -2663,6 +2588,7 @@ end
 ; coordinates back to the workstation. draw and frame happen by default ;
 ; unless otherwise specified.                                           ;
 ;***********************************************************************;
+undef("maximize_output")
 procedure maximize_output(wks:graphic,psres:logical)
 local bb, calldraw, callframe, class, res2
 begin
@@ -2743,6 +2669,7 @@ end
 ; If maxbb is True, then the plot is maximized in the NCGM, X11, PS     ;
 ; or PDF window.                                                        ; 
 ;***********************************************************************;
+undef("draw_and_frame")
 procedure draw_and_frame(wks:graphic,plot:graphic,calldraw:logical, \
                          callframe:logical,ispanel:logical,maxbb:logical)
 local nplots, class, coords 
@@ -2826,6 +2753,7 @@ end
 ; Get list of resources for use with maximizing the plots within an     ;
 ; X11, NCGM, PS or PDF window.                                          ;
 ;***********************************************************************;
+undef("get_bb_res")
 function get_bb_res(res:logical)
 begin
   maxbb                = get_res_value(res,"gsnMaximize", False) 
@@ -2869,6 +2797,7 @@ end
 ; drawing primitives.                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_blank_plot")
 function gsn_blank_plot(wks:graphic,res:logical)
 local res2
 begin
@@ -2920,6 +2849,7 @@ end
 ; primitives.                                                           ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("create_canvas")
 function create_canvas(wks:graphic)
 begin
 ;
@@ -2944,6 +2874,7 @@ end
 ; returns the workstation id. If "name" is an empty string, then the    ;
 ; NCGM is given its default name "gmeta".                               ;
 ;***********************************************************************;
+undef("gsn_open_ncgm")
 function gsn_open_ncgm(name[1]:string)
 local ncgm, res_file
 begin
@@ -2971,6 +2902,7 @@ end
 ; This function opens an X11 output window and returns the workstation  ;
 ; id.                                                                   ;
 ;***********************************************************************;
+undef("gsn_open_x11")
 function gsn_open_x11(name[1]:string)
 local window
 begin
@@ -3012,6 +2944,7 @@ end
 ; nbox and colors.                                                      ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("create_labelbar")
 function create_labelbar(wks:graphic, nbox:integer, colors, labels, \
 lbres:logical)
 local perim_on, mono_fill_pat, label_align, labelbar_object
@@ -3085,6 +3018,7 @@ end
 ; the workstation id. If "name" is an empty string, then the PostScript ;
 ; file is called "gmeta.ps".                                            ;
 ;***********************************************************************;
+undef("gsn_open_ps")
 function gsn_open_ps(type:string,name[1]:string)
 local ps, res_file, wkres, wkresnew, names, i
 begin
@@ -3159,6 +3093,7 @@ end
 ; the workstation id. If "name" is an empty string, then the PDF file   ;
 ; is called "gmeta.pdf".                                                ;
 ;***********************************************************************;
+undef("gsn_open_pdf")
 function gsn_open_pdf(type:string, name[1]:string)
 local pdf, res_file, wkres, wkresnew, names, i
 begin
@@ -3234,6 +3169,7 @@ end
 ; returns the workstation id. If "name" is an empty string, then the    ;
 ; NCGM is given a default name "gmeta.type".                            ;
 ;***********************************************************************;
+undef("gsn_open_image")
 function gsn_open_image(type:string,name[1]:string)
 local image, res_file
 begin
@@ -3275,6 +3211,7 @@ end
 ; it loads the resources defined in that file. This function returns    ;
 ; the workstation id.                                                   ;
 ;***********************************************************************;
+undef("gsn_open_wks")
 function gsn_open_wks(type[1]:string,name[1]:string)
 local i, wks, appusrdir, name_char, not_found, res_file, res_dir
 begin
@@ -3313,7 +3250,7 @@ begin
 ; If we had a case statement or an "elseif" in NCL, this next
 ; section would look better!
 ;
-    wks = new(1,graphic)
+    wks = new(1,graphic,"No_FillValue")
 
     if (lower_case(type2).eq."x11") then
       x_file = res_file
@@ -3433,6 +3370,7 @@ end
 ; if necessary.                                                         ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_add_annotation")
 function gsn_add_annotation(plot:graphic, anno:graphic, resources:logical)
 local res2, just, para, orth, just, zone, resize, maxbb, tmp_wks
 begin
@@ -3497,6 +3435,7 @@ end
 ; add (polymarker, polygon, or polyline)                                ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_add_primitive")
 function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,isndc:logical,polytype:string, \
                            resources:logical)
@@ -3694,6 +3633,7 @@ end
 ; "resources" is an optional list of resources.                         ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_primitive")
 procedure gsn_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
                         y[*]:numeric,isndc:logical,polytype:string, \
                         resources:logical)
@@ -3819,6 +3759,7 @@ end
 ; space as the data from "plotid". "resources" is an optional list of   ;
 ; resources.                                                            ;
 ;***********************************************************************;
+undef("gsn_polygon")
 procedure gsn_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
                       y[*]:numeric,resources:logical)
 local res2
@@ -3847,6 +3788,7 @@ end
 ; attaches the polygon to the plot. This means that if you resize or    ;
 ; move the plot, the polygon will stay with the plot.                   ;
 ;***********************************************************************;
+undef("gsn_add_polygon")
 function gsn_add_polygon(wks:graphic,plotid:graphic,x[*]:numeric,\
                          y[*]:numeric,resources:logical)
 begin
@@ -3867,6 +3809,7 @@ end
 ; space. "x" and "y" are the x and y locations of each point in the     ;
 ; polygon, and "resources" is an optional list of resources.            ;
 ;***********************************************************************;
+undef("gsn_polygon_ndc")
 procedure gsn_polygon_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                           resources:logical)
 local res2, dummy
@@ -3891,6 +3834,7 @@ end
 ; of each point in the line, and should be in the same data space as the;
 ; data from "plotid". "resources" is an optional list of resources.     ;
 ;***********************************************************************;
+undef("gsn_polyline")
 procedure gsn_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
                        y[*]:numeric,resources:logical)
 local res2
@@ -3918,6 +3862,7 @@ end
 ; attaches the line to the plot. This means that if you resize or move  ;
 ; the plot, the line will stay with the plot.                           ;
 ;***********************************************************************;
+undef("gsn_add_polyline")
 function gsn_add_polyline(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,resources:logical)
 local res2
@@ -3938,6 +3883,7 @@ end
 ; "x" and "y" are the x and y locations of each point in the line.      ;
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
+undef("gsn_polyline_ndc")
 procedure gsn_polyline_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                            resources:logical)
 local res2, dummy
@@ -3962,6 +3908,7 @@ end
 ; locations of each marker, and should be in the same data space as the ;
 ; data from "plotid". "resources" is an optional list of resources.     ;
 ;***********************************************************************;
+undef("gsn_polymarker")
 procedure gsn_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
                          y[*]:numeric,resources:logical)
 local res2
@@ -3989,6 +3936,7 @@ end
 ; attaches the markers to the plot. This means that if you resize or    ;
 ; move the plot, the markers will stay with the plot.                   ;
 ;***********************************************************************;
+undef("gsn_add_polymarker")
 function gsn_add_polymarker(wks:graphic,plotid:graphic,x[*]:numeric,\
                             y[*]:numeric,resources:logical)
 local res2
@@ -4010,6 +3958,7 @@ end
 ; space. "x" and "y" are the x and y locations of each marker in NDC    ;
 ; coordinates. "resources" is an optional list of resources.            ;
 ;***********************************************************************;
+undef("gsn_polymarker_ndc")
 procedure gsn_polymarker_ndc(wks:graphic,x[*]:numeric,y[*]:numeric,\
                              resources:logical)
 local res2, dummy
@@ -4031,7 +3980,7 @@ end
 ; This function is identical to gsn_create_labelbar, except the location;
 ; of the labelbar is passed in (NDC coordinate values).                 ;
 ;***********************************************************************;
-
+undef("gsn_create_labelbar_ndc")
 function gsn_create_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                                  x,y,resources:logical )
 local res2, lbres, wksname
@@ -4091,6 +4040,7 @@ end
 ; (the variable returned from a previous call to "gsn_open_wks").       ;
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
+undef("gsn_create_labelbar")
 function gsn_create_labelbar(wks:graphic, nbox:integer, labels:string, \
                              resources:logical )
 begin
@@ -4101,6 +4051,17 @@ begin
     return(labelbar)
 end
 
+;***********************************************************************;
+; Function : gsn_labelbar_ndc                                           ;
+;                   wks: workstation object                             ;
+;                  nbox: number of labelbar boxes                       ;
+;                labels: labels for boxes                               ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function is identical to gsn_create_labelbar_ndc except it draws ;
+; the labelbar that's created.                                          ;
+;***********************************************************************;
+undef("gsn_labelbar_ndc")
 procedure gsn_labelbar_ndc(wks:graphic, nbox:integer, labels:string, \
                            x,y,resources:logical )
 local labelbar
@@ -4123,6 +4084,7 @@ end
 ; returned from a previous call to "gsn_open_wks"). "resources" is an   ;
 ; optional list of resources.                                           ;
 ;***********************************************************************;
+undef("gsn_create_legend_ndc")
 function gsn_create_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                                x,y,resources:logical )
 local i, res2, lgres, wksname, lgres
@@ -4178,6 +4140,7 @@ end
 ;                                                                       ;
 ; This function creates a legend.                                       ;
 ;***********************************************************************;
+undef("gsn_create_legend")
 function gsn_create_legend(wks:graphic, nitems:integer, labels:string, \
                            resources:logical )
 begin
@@ -4201,6 +4164,7 @@ end
 ; returned from a previous call to "gsn_open_wks"). "resources" is an   ;
 ; optional list of resources.                                           ;
 ;***********************************************************************;
+undef("gsn_legend_ndc")
 procedure gsn_legend_ndc(wks:graphic, nitems:integer, labels:string, \
                          x,y,resources:logical )
 local legend
@@ -4224,6 +4188,7 @@ end
 ; specified in NDC space. "resources" is an optional list of resources. ;
 ; This function returns the text string created.                        ;
 ;***********************************************************************;
+undef("gsn_create_text_ndc")
 function gsn_create_text_ndc(wks:graphic, texto:string, xo:numeric, \
                              yo:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, res2, \
@@ -4353,6 +4318,7 @@ end
 ;                                                                       ;
 ; This function creates text strings.                                   ;
 ;***********************************************************************;
+undef("gsn_create_text")
 function gsn_create_text(wks:graphic, text:string, resources:logical )
 local x, y
 begin
@@ -4370,6 +4336,7 @@ end
 ; This procedure is the same as gsn_text, only it doesn't return        ;
 ; anything.                                                             ;
 ;***********************************************************************;
+undef("gsn_text_ndc")
 procedure gsn_text_ndc(wks:graphic, text:string, x:numeric, \
                        y:numeric, resources:logical )
 local txid
@@ -4398,6 +4365,7 @@ end
 ; specified in the same data space as the data space of "plotid".       ;
 ; "resources" is an optional list of resources.                         ;
 ;***********************************************************************;
+undef("gsn_text")
 procedure gsn_text(wks:graphic,plotid:graphic,texto:string,xo:numeric, \
                    yo:numeric, resources:logical )
 local i, txid, plot_object, res, tx_res_index, x2, y2, xf, yf, \
@@ -4517,6 +4485,7 @@ end
 ; the text to the plot. This means that if you resize or move the plot, ;
 ; the text will stay with the plot.                                     ;
 ;***********************************************************************;
+undef("gsn_add_text")
 function gsn_add_text(wks:graphic,plotid:graphic,texto:string, \
                       xo:numeric,yo:numeric, resources:logical )
 local txid, txres, amres, just, res2, wksname, am_ids
@@ -4655,6 +4624,7 @@ end
 ; This procedure draws a box around the bounding box of the given plot  ;
 ; objects.                                                              ; 
 ;***********************************************************************;
+undef("draw_bb")
 procedure draw_bb(plot:graphic,opts:logical)
 local wks, bb, top, bot, lft, rgt, gsres, drawit, frameit
 begin
@@ -4730,6 +4700,7 @@ end
 ;   gsnDraw                                                             ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_panel_return")
 function gsn_panel_return(wks:graphic,plot[*]:graphic,dims[*]:integer,\
                           resources:logical)
 local res, nrows, ncols, ddims, is_row_spec, row_spec, npanels, nplots, \
@@ -5646,6 +5617,7 @@ end
 ; procedure gsn_panel - same as gsn_panel_return, only it doesn't return;
 ;                       anything.                                       ;
 ;***********************************************************************;
+undef("gsn_panel")
 procedure gsn_panel(wks:graphic,plot[*]:graphic,dims[*]:integer,\
                     resources:logical)
 local res2
@@ -5721,6 +5693,7 @@ end
 ; this function.                                                        ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_attach_plots")
 function gsn_attach_plots(oldbaseplot:graphic,oldplots:graphic, \
                           plotres1:logical, plotres2:logical)
 local anno, width1, width2, height1, height2, font_height1, font_height2, \
@@ -6341,6 +6314,7 @@ end
 ; is returned.                                                          ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("get_rgb_values")
 function get_rgb_values(named_colors)
 begin
 ;
@@ -6404,6 +6378,7 @@ end
 ; variable returned from a previous call to "gsn_open_wks") using float ;
 ; RGB values or a pre-defined color name.                               ;
 ;***********************************************************************;
+undef("gsn_define_colormap")
 procedure gsn_define_colormap(wks:graphic, cmap)
 begin
   dim_cmap = dimsizes(cmap)
@@ -6428,6 +6403,7 @@ end
 ; gsn_open_wks.  The return variable will be an n x 3 array, where n is ;
 ; the number of colors, and the 3 represents the R, G, and B values.    ;
 ;***********************************************************************;
+undef("gsn_retrieve_colormap")
 function gsn_retrieve_colormap(wks:graphic)
 begin
     getvalues wks
@@ -6444,6 +6420,7 @@ end
 ; This function reverses the current color map in use for workstation   ;
 ; "wks". The foregound/background colors will stay the same.            ;
 ;***********************************************************************;
+undef("gsn_reverse_colormap")
 procedure gsn_reverse_colormap(wks:graphic)
 begin
   getvalues wks
@@ -6470,6 +6447,7 @@ end
 ; so the first two colors of the second color map are not included in   ;
 ; the new color map.                                                    ;
 ;***********************************************************************;
+undef("gsn_merge_colormaps")
 procedure gsn_merge_colormaps(wks:graphic,cmap1,cmap2)
 local dim_cmap1, dim_cmap2, new_cmap1, new_cmap2, len_cmap1, len_cmap2
 begin
@@ -6572,6 +6550,7 @@ end
 ;                                                                       ;
 ; This function creates a scalarField or meshScalarField object.        ;
 ;***********************************************************************;
+undef("scalar_field")
 function scalar_field(sfname:string,data:numeric,res2:logical)
 local dims, rank
 begin
@@ -6678,6 +6657,7 @@ end
 ;                                                                       ;
 ; This function creates a vectorField object.                           ;
 ;***********************************************************************;
+undef("vector_field")
 function vector_field(vfname:string,u:numeric,v:numeric,res2:logical)
 begin
 ;
@@ -6745,6 +6725,7 @@ end
 ; will represent the number of values in a bin and a percentage.        ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("hist_columns")
 function hist_columns(wks[1]:graphic,xy[1]:graphic,binvalues:numeric, \
                       barlocs[*]:numeric, bar2locs[*]:numeric, \
                       barwidth[*]:numeric, colors[*], gsres:logical)
@@ -6932,6 +6913,7 @@ end
 ;    range of the data.                                                 ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("compute_hist_vals")
 function compute_hist_vals(xx,binlocs,nbinlocs[1]:integer, \
                            bin_width:numeric,setinterval:logical, \
                            setdiscrete:logical, minmaxbins:logical, \
@@ -7216,6 +7198,7 @@ end
 ;15. Draw and advance frame.                                            ;
 ;16. Return histogram information.                                      ;
 ;***********************************************************************;
+undef("gsn_histogram")
 function gsn_histogram(wks[1]:graphic,xdata, resources:logical)
 local res2, calldraw, callframe, maxbb, ispercent, bins, nbars, \
       setdiscrete, setinterval,top, botton, left, right, lenc, tmp, \
@@ -7842,6 +7825,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_contour")
 function gsn_contour(wks:graphic, data:numeric, resources:logical )
 local i, data_object, plot_object, res, sf_res_index, \
 datares, cnres, llres, cn_res_index, ll_res_index, calldraw, callframe, \
@@ -8055,6 +8039,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_contour_map")
 function gsn_contour_map(wks:graphic,data:numeric,\
                          resources:logical)
 local i, data_object, contour_object, res, sf_res_index, \
@@ -8158,6 +8143,7 @@ end
 ;   gsnFrame                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_map")
 function gsn_map(wks:graphic, projection:string, resources:logical )
 local i, plot_object, res2, res3
 begin
@@ -8231,6 +8217,7 @@ end
 ;   gsnScale                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_streamline")
 function gsn_streamline(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                         resources:logical)
 local i, data_object,plot_object,res,vf_res_index,st_res_index, \
@@ -8343,6 +8330,7 @@ end
 ;   gsnScale                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_streamline_map")
 function gsn_streamline_map(wks:graphic,u[*][*]:numeric,\
                             v[*][*]:numeric,resources:logical)
 local i, data_object, contour_object, res, vf_res_index, \
@@ -8416,10 +8404,10 @@ end
 ; This procedure retrieves the current colormap and draws it.           ;
 ; wks is a variable returned from a previous call to "gsn_open_wks".    ;
 ;***********************************************************************;
+undef("gsn_draw_colormap")
 procedure gsn_draw_colormap(wks)
 local nrows, ncols, ncolors, maxcols, ntotal, offset, width, height, \
-xpos, ypos, xbox, ybox
-
+xpos, ypos, xbox, ybox, cmap, cmapnew
 begin
   nrows   = 16                   ; # of rows of colors per page.
   maxcols = 256                  ; max # of colors per color table.
@@ -8557,6 +8545,7 @@ end
 ; This procedure takes a named color array and draws it.                ;
 ; wks is a variable returned from a previous call to "gsn_open_wks".    ;
 ;***********************************************************************;
+undef("gsn_draw_named_colors")
 procedure gsn_draw_named_colors(wks:graphic,colors[*]:string, box[2]:integer)
 local ncolors, ntotal, nrows, ncols, offset, width, height, \
 xpos, ypos, xbox, ybox
@@ -8728,6 +8717,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_vector")
 function gsn_vector(wks:graphic, u[*][*]:numeric, v[*][*]:numeric, \
                     resources:logical )
 local i,data_object,plot_object,res,vf_res_index,vc_res_index, \
@@ -8852,6 +8842,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_vector_contour")
 function gsn_vector_contour(wks:graphic,u[*][*]:numeric,\
                             v[*][*]:numeric,data:numeric,\
                             resources:logical)
@@ -9027,6 +9018,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_streamline_contour")
 function gsn_streamline_contour(wks:graphic,u[*][*]:numeric,\
                                 v[*][*]:numeric,data:numeric,\
                                 resources:logical)
@@ -9194,6 +9186,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_vector_contour_map")
 function gsn_vector_contour_map(wks:graphic,u[*][*]:numeric,\
                                v[*][*]:numeric,data:numeric,\
                                resources:logical)
@@ -9367,6 +9360,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_vector_map")
 function gsn_vector_map(wks:graphic, u[*][*]:numeric, v[*][*]:numeric, \
                         resources:logical )
 local i, data_object, contour_object, res, vf_res_index, \
@@ -9466,6 +9460,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_vector_scalar")
 function gsn_vector_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
                            data:numeric, resources:logical )
 local i, vfdata_object, sfdata_object, plot_object, res, \
@@ -9607,6 +9602,7 @@ end
 ;   gsnSpreadColorEnd                                                   ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_vector_scalar_map")
 function gsn_vector_scalar_map(wks:graphic,u[*][*]:numeric,\
                                v[*][*]:numeric,data:numeric,\
                                resources:logical)
@@ -9720,6 +9716,7 @@ end
 ;   gsnScale                                                            ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_xy")
 function gsn_xy(wks:graphic, x:numeric, y:numeric, resources:logical )
 local i, attnames, data_object, plot_object, res, ca_res_index, \
 xy_res_index, xydp_res_index, dspec, res2, set_dash
@@ -9936,6 +9933,7 @@ end
 ; array, index values are used.                                         ;
 ;                                                                       ;
 ;***********************************************************************;
+undef("gsn_y")
 function gsn_y(wks:graphic, y:numeric, resources:logical )
 local dsizes_y, npts, x, rank_y, xy
 begin
@@ -9985,7 +9983,7 @@ end
 ;                                                                       ;
 ; This function was written by Adam Phillips, 2006                      ;
 ;***********************************************************************;
-
+undef("gsn_contour_shade")
 function gsn_contour_shade(plot:graphic,nval:numeric,pval:numeric,opt:logical) 
 
 local cnlvls, colist, i, N, shaden, shadep, shadem
@@ -10133,6 +10131,7 @@ begin
    return (plot)
 end
 
+undef("fill_res")
 procedure fill_res(res1:logical,res2:logical,ncr[2]:integer,attnames[*]:string)
 local natts, i, dsizes, rank, success, nrows, ncols
 begin
@@ -10223,6 +10222,7 @@ end
 ;                      or "tx" (for the text) resources.                ;
 ;          )                                                            ;
 ;***********************************************************************;
+undef("gsn_table")
 procedure gsn_table(wks:graphic,ncr[2]:integer,x[2]:numeric, \
                          y[2]:numeric,text:string,res:logical)
 local nrows, ncols, i, ii, txres, txres2, lnres, attnames, natts, text2d
