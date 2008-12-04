@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.189 2008-11-23 23:51:26 shea Exp $
+;      $Id: contributed.ncl,v 1.190 2008-12-04 20:29:35 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9585,4 +9585,29 @@ begin
 
   return(c)
 end
+; -----------------------------------------------------
+function region_ind(XLAT[*][*]:numeric, XLON[*][*]:numeric \
+                   ,latS[1]:numeric, latN[1]:numeric \
+                   ,lonW[1]:numeric, lonE[1]:numeric )
+; extract subscript indicies corresponding to region
+; described by curvilinear coordinates
+; WRF, NARR, REGCM, etc
+ 
+local  XLAT_1d, XLON_1d, nm_1d, nlml, ijsub
+begin
+ XLAT_1d  = ndtooned( XLAT )
+ XLON_1d  = ndtooned( XLON )  
 
+ nm_1d    = ind(XLAT_1d.ge.latS .and. XLAT_1d.le.latN .and. \
+                XLON_1d.ge.lonW .and. XLON_1d.le.lonE)
+ nlml     = ind_resolve(nm_1d, dimsizes(XLON))
+
+ ijsub    = new( 4, "integer", "No_FillValue")
+
+ ijsub(0) = min(nlml(:,0))   ; lat start index
+ ijsub(1) = max(nlml(:,0))   ; lat last  index
+ ijsub(2) = min(nlml(:,1))   ; lon start index
+ ijsub(3) = max(nlml(:,1))   ; lon Last  index
+
+ return(ijsub)
+end
