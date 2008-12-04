@@ -562,10 +562,10 @@ struct _Grib2ParamList {
     G2_GDS  *gds;
     int n_entries;
     int forecast_time_iszero;
-    int time_range_indicator;
     int time_period;            /* 0 unless ave,diff, or acc; then: (p2 - p1) */
-    int time_unit_indicator;
-    int variable_time_unit;
+    int forecast_time_units;
+    int time_period_units;
+    int variable_time_unit; /* boolean: is there more than a single time unit */
     int level_indicator;
     int has_bmap;
     int has_own_missing;
@@ -618,6 +618,7 @@ struct _Grib2RecordInqRec {
     int rec_size;
     int rec_num;
     int version;
+    NrmQuark qcenter_name;
 
     Grib2VarTraits traits;
     NclQuark    var_name_q;

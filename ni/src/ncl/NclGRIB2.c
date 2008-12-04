@@ -2887,6 +2887,62 @@ static int g2LVNotEqual( Grib2RecordInqRecList *s_1, Grib2RecordInqRecList *s_2)
 	} 
 }
 
+/* 
+ * These are the codes in GRIB 2 - Table 4.4 - for time units arranged in order from 
+ * short to long duration. The convert table below is the conversion from
+ * the shortest duration (second) to each of the other units. (For periods longer
+ * than a day there is inaccuracy because the periods vary depending on which which 
+ * month and/or year we are talking about. For now use average based on 365.25 days per year.
+ * This will need to be refined.
+ */
+
+static int Unit_Code_Order[] = { 13,0,1,10,11,12,2,3,4,5,6,7 };
+static double Unit_Convert[] = { 1.0, 60.0, 3600.0, 10800.0, 21600.0, /* 1 sec - 6 hr */
+				 43200.0,86400.0,2629800.0, 31557600.0, /* 12 hr - 1 yr */
+				 315576000.0,946728000.0,3155760000.0};   /* 10 yr - 100 yr */
+
+static int _g2GetShortestTimeUnit
+#if	NhlNeedProto
+(int unit1, int unit2)
+#else
+(unit1, unit2)
+int unit1;
+int unit2;
+#endif
+{
+	int uix1, uix2;
+
+	/* 
+	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
+	 * short to long duration. 
+	 */
+
+	if (unit1 < 0)
+		return unit2;
+	if (unit2 < 0)
+		return unit1;
+	for (uix1 = 0; uix1 < NhlNumber(Unit_Code_Order); uix1++) {
+		if (unit1  == Unit_Code_Order[uix1])
+			break;
+	}
+	for (uix2 = 0; uix2 < NhlNumber(Unit_Code_Order); uix2++) {
+		if (unit2 == Unit_Code_Order[uix2])
+			break;
+	}
+	if (uix1 >= NhlNumber(Unit_Code_Order) && uix2 >= NhlNumber(Unit_Code_Order)){
+		return -1;
+	}
+	else if (uix1 >= NhlNumber(Unit_Code_Order)) { 
+		return unit2;
+	}
+	else if (uix2 >= NhlNumber(Unit_Code_Order)) { 
+		return unit1;
+	}
+	else if (uix1 < uix2) { 
+		return unit1;
+	}
+	return unit2;
+}
 
 static void _g2SetCommonTimeUnit
 #if	NhlNeedProto
@@ -2897,36 +2953,31 @@ Grib2ParamList *node;
 Grib2RecordInqRec* grib_rec;
 #endif
 {
-	int cix, nix;
+	int cix, fix;
 	static int month_ix = 7;
-	/* 
-	 * These are the codes in ON388 - Table 4 - for time units arranged in order from 
-	 * short to long duration. 
-	 */
 
-	static int unit_code_order[] = { 13,0,1,10,11,12,2,3,4,5,6,7 };
-	for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
-		if (node->time_unit_indicator == unit_code_order[cix])
+	for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
+		if (node->forecast_time_units == Unit_Code_Order[cix])
 			break;
 	}
-	for (nix = 0; nix < NhlNumber(unit_code_order); nix++) {
-		if ((int)grib_rec->forecast_time_units == unit_code_order[nix])
+	for (fix = 0; fix < NhlNumber(Unit_Code_Order); fix++) {
+		if ((int)grib_rec->forecast_time_units == Unit_Code_Order[fix])
 			break;
 	}
-	if (nix >= NhlNumber(unit_code_order)) {
+	if (fix >= NhlNumber(Unit_Code_Order)) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
-			  "NclGRIB2: Unsupported time unit found for parameter (%s), continuing anyways.",
+			  "NclGRIB2: Unsupported time unit found for parameter (%s), continuing anyway.",
 			  NrmQuarkToString(grib_rec->var_name_q));
 	}
-	else if (cix >= NhlNumber(unit_code_order)) { 
+	else if (cix >= NhlNumber(Unit_Code_Order)) { 
 		/* current time units are unsupported so use the new unit */
-		node->time_unit_indicator = (int)grib_rec->forecast_time_units;
+		node->forecast_time_units = (int)grib_rec->forecast_time_units;
 	}
-	else if (unit_code_order[nix] < unit_code_order[cix]) { 
+	else if (Unit_Code_Order[fix] < Unit_Code_Order[cix]) { 
 		/* choose the shortest duration as the common unit */
-		node->time_unit_indicator = (int)grib_rec->forecast_time_units;
+		node->forecast_time_units = (int)grib_rec->forecast_time_units;
 	}
-	if (nix >= month_ix) {
+	if (fix >= month_ix) {
 		NhlPError(NhlWARNING,NhlEUNKNOWN,
 			  "NclGRIB2: Variable time unit codes representing time durations of a month or more in variable (%s): requires approximation to convert to common unit",
 			  NrmQuarkToString(grib_rec->var_name_q));
@@ -2938,7 +2989,7 @@ Grib2RecordInqRec* grib_rec;
 	return;
 }
 
-static int _g2GetConvertedTimeOffset 
+static int _g2GetConvertedTime
 #if	NhlNeedProto
 (int common_time_unit, int time_unit, int time_offset)
 #else
@@ -2950,34 +3001,21 @@ unsigned char *offset;
 #endif
 {
 	int cix,tix;
-	/* 
-	 * These are the codes in GRIB 2 - Table 4.4 - for time units arranged in order from 
-	 * short to long duration. The convert table below is the conversion from
-	 * the shortest duration (second) to each of the other units. (For periods longer
-	 * than a day there is inaccuracy because the periods vary depending on which which 
-	 * month and/or year we are talking about. For now use average based on 365.25 days per year.
-	 * This will need to be refined.
-	 */
 
 	double c_factor = 1.0;
-	static int unit_code_order[] = { 13,0,1,10,11,12,2,3,4,5,6,7 };
-	double unit_convert[] = { 1.0, 60.0, 3600.0, 10800.0, 21600.0, /* 1 sec - 6 hr */
-				  43200.0,86400.0,2629800.0, 31557600.0, /* 12 hr - 1 yr */
-				  315576000.0,946728000.0,3155760000.0};   /* 10 yr - 100 yr */
-
 
 	if (common_time_unit != time_unit) {
-		for (cix = 0; cix < NhlNumber(unit_code_order); cix++) {
-			if (common_time_unit == unit_code_order[cix])
+		for (cix = 0; cix < NhlNumber(Unit_Code_Order); cix++) {
+			if (common_time_unit == Unit_Code_Order[cix])
 				break;
 		}
-		for (tix = 0; tix < NhlNumber(unit_code_order); tix++) {
-			if (time_unit == unit_code_order[tix])
+		for (tix = 0; tix < NhlNumber(Unit_Code_Order); tix++) {
+			if (time_unit == Unit_Code_Order[tix])
 				break;
 		}
 		/* this condition must be met in order to do a valid conversion */
-		if (cix < NhlNumber(unit_code_order) && tix < NhlNumber(unit_code_order)) { 
-			c_factor = unit_convert[tix] / unit_convert[cix];
+		if (cix < NhlNumber(Unit_Code_Order) && tix < NhlNumber(Unit_Code_Order)) { 
+			c_factor = Unit_Convert[tix] / Unit_Convert[cix];
 		}
 	}
 	return ((int)(time_offset * c_factor));
@@ -3194,7 +3232,7 @@ int stat_type_only
 		return;
 	}
 
-	switch (param->time_unit_indicator) {
+	switch (param->time_period_units) {
 	case 0:
 		sprintf(&(buffer[strlen(buffer)]),"%dmin",param->time_period);
 		break;
@@ -3290,8 +3328,48 @@ int indicator;
 		sprintf(buf,"%d (unknown units)",period);
 		return;
 	}
+
 }
-		
+
+
+static NrmQuark ForecastTimeUnitsToQuark
+#if 	NhlNeedProto
+(int forecast_time_units)
+#else
+(forecast_time_units)
+ int forecast_time_units;
+#endif
+{
+	switch (forecast_time_units) {
+	case 0:
+		return (NrmStringToQuark("minutes"));
+	case 1:
+		return (NrmStringToQuark("hours"));
+	case 2:
+		return (NrmStringToQuark("days"));
+	case 3:
+		return (NrmStringToQuark("months"));
+	case 4:
+		return (NrmStringToQuark("years"));
+	case 5:
+		return (NrmStringToQuark("decades"));
+	case 6:
+		return (NrmStringToQuark("normals (30 years)"));
+	case 7:
+		return (NrmStringToQuark("centuries"));
+	case 10:
+		return (NrmStringToQuark("3 hours"));
+	case 11:
+		return (NrmStringToQuark("6 hours"));
+	case 12:
+		return (NrmStringToQuark("12 hours"));
+	case 13:
+		return (NrmStringToQuark("seconds"));
+	default:
+		return (NrmStringToQuark("unknown"));
+	}
+}
+
 static void _g2SetAttributeLists
 #if 	NhlNeedProto
 (Grib2FileRecord *therec)
@@ -3352,6 +3430,18 @@ Grib2FileRecord *therec;
 		 * don't create this att for observational data -- pds_templates 20 and 30 (as far as I can tell)
 		 */
 		if (step->forecast_time_isatt && step->traits.pds_template != 20 && step->traits.pds_template != 30 ) {
+			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
+			att_list_ptr->next = step->theatts;
+			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
+			att_list_ptr->att_inq->name = NrmStringToQuark("forecast_time_units");
+			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
+			*tmp_string = ForecastTimeUnitsToQuark(step->forecast_time_units);
+			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
+				_NclCreateVal( NULL, NULL, Ncl_MultiDValData, 0, 
+					       (void*)tmp_string, NULL, 1 , &tmp_dimsizes, PERMANENT, NULL, nclTypestringClass);
+			step->theatts = att_list_ptr;
+			step->n_atts++;
+
 			att_list_ptr = (Grib2AttInqRecList *) NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
 			att_list_ptr->next = step->theatts;
 			att_list_ptr->att_inq = (Grib2AttInqRec *) NclMalloc((unsigned)sizeof(Grib2AttInqRec));
@@ -3374,7 +3464,7 @@ Grib2FileRecord *therec;
 					sprintf(buf,"initial time to forecast time");
 				}
 				else {
-					SetTimePeriodString(buf,step->time_period,step->time_unit_indicator);
+					SetTimePeriodString(buf,step->time_period,step->time_period_units);
 					sprintf(&buf[strlen(buf)]," (ending at forecast time)");
 				}
 				if ((int)(therec->options[GRIB_TIME_PERIOD_SUFFIX_OPT].values) == 0)
@@ -3771,11 +3861,9 @@ Grib2FileRecord *therec;
 		att_list_ptr->next = step->theatts;
 		att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
 		att_list_ptr->att_inq->name = NrmStringToQuark("center");
-		if ((Grib2ReadCodeTable("", -1, "centers.table", grib_rec->traits.center, ct)) < NhlWARNING)
-			return;
 
 		tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-		*tmp_string = NrmStringToQuark(ct->descrip);		
+		*tmp_string = grib_rec->qcenter_name;
 		att_list_ptr->att_inq->thevalue = (NclMultiDValData)
 			_NclCreateVal(NULL, NULL,
 				      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
@@ -3783,24 +3871,6 @@ Grib2FileRecord *therec;
 		step->theatts = att_list_ptr;
 		step->n_atts++;
 	
-
-#if 0
-		/* subcenter */
-		if (grib_rec->sub_center != -1) {
-			att_list_ptr = (Grib2AttInqRecList*)NclMalloc((unsigned)sizeof(Grib2AttInqRecList));
-			att_list_ptr->next = step->theatts;
-			att_list_ptr->att_inq = (Grib2AttInqRec*)NclMalloc((unsigned)sizeof(Grib2AttInqRec));
-			att_list_ptr->att_inq->name = NrmStringToQuark("subcenter");
-			tmp_string = (NclQuark*)NclMalloc(sizeof(NclQuark));
-			*tmp_string = NrmStringToQuark(grib_rec->sub_center);
-			att_list_ptr->att_inq->thevalue = (NclMultiDValData)
-				_NclCreateVal(NULL, NULL,
-					      Ncl_MultiDValData, 0, (void *) tmp_string, NULL, 1, &tmp_dimsizes,
-					      PERMANENT, NULL, nclTypestringClass);
-			step->theatts = att_list_ptr;
-			step->n_atts++;
-		}
-#endif
 
 		step = step->next;
 
@@ -4373,7 +4443,7 @@ static Grib2ParamList *_g2NewListNode
 	tmp->minimum_it = grib_rec->initial_time;
 	tmp->forecast_time_iszero = (grib_rec->forecast_time == 0);
 	tmp->time_period = grib_rec->time_period;
-	tmp->time_unit_indicator = grib_rec->forecast_time_units;
+	tmp->forecast_time_units = grib_rec->forecast_time_units;
 	tmp->variable_time_unit = False;
 	tmp->prob_type = grib_rec->ens.prob_type;
 	tmp->levels = NULL;
@@ -4457,7 +4527,7 @@ Grib2RecordInqRec* grib_rec;
 		node->minimum_it = grib_rec->initial_time;
 	}
 
-    if (node->time_unit_indicator != grib_rec->forecast_time_units) {
+    if (node->forecast_time_units != grib_rec->forecast_time_units) {
 	    _g2SetCommonTimeUnit(node,grib_rec);
     }
 
@@ -4568,141 +4638,16 @@ Grib2RecordInqRec *grec;
 {
 	if (grec->time_period == 0)
 		return;
-	if (g2plist->time_unit_indicator == grec->time_period_units)
+	if (g2plist->forecast_time_units == grec->time_period_units)
 		grec->time_offset = grec->time_offset + grec->time_period;
 	else {
 		int period;
-		period = _g2GetConvertedTimeOffset(g2plist->time_unit_indicator,
-						   grec->time_period_units,
-						   grec->time_period);
+		period = _g2GetConvertedTime(g2plist->forecast_time_units,
+					     grec->time_period_units,
+					     grec->time_period);
 		grec->time_offset = grec->time_offset + period;
 	}
 }
-
-#if 0
-static int g2AdjustedTimePeriod
-#if	NhlNeedProto
-(Grib2RecordInqRec *grec, int time_period, int unit_code,char *buf)
-#else
-(grec, time_period, unit_code, buf)
-    Grib2RecordInqRec *grec;
-    int time_period;
-    int unit_code;
-    char *buf;
-#endif
-{
-	int days_per_month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-	int month, month_days;
-	int is_leap = 0;
-	int ix;
-
-    /*
-     * Negative time periods are considered to be modular values, and converted to
-     * positive values depending on the units. This is difficult for days, as well
-     * as for any units involving years, where there is no obvious modular value.
-     */
-    switch (unit_code) {
-        case 0: /* Minute */
-            while (time_period < 0)
-            time_period = 60 + time_period;
-            (void) sprintf(buf, "%dmin", time_period);
-            break;
-
-        case 1: /*Hour*/
-            while (time_period < 0)
-                time_period = 24 + time_period;
-            sprintf(buf, "%dh", time_period);
-            break;
-
-    	case 2: /* Day */
-            /*
-             * This oversimplifies and may need attention when there are users
-             * of such time periods
-             */
-            /* if time period in days == a month, then switch to months */
-            month = (int) grec->mon;
-            month_days = days_per_month[month - 1];
-            if (month == 2 && HeisLeapYear(grec->initial_time.year)) {
-                month_days++;
-                is_leap = 1;
-            }
-
-
-	    ix = month - 1;
-	    while (time_period < 0) {
-                    if (ix == 1 && is_leap) {
-			    time_period = days_per_month[ix] + 1 + time_period;
-                    } else {
-			    time_period = days_per_month[ix] + time_period;
-                    }
-
-                    ix = (ix + 1) % 12;
-                    if (ix == 0) {
-                        is_leap =  HeisLeapYear(grec->initial_time.year + 1);
-                    }
-	    }
-
-	    sprintf(buf, "%dd", time_period);
-
-		
-            break;
-
-	case 3: /*Month*/
-		while (time_period < 0)
-			time_period = 12 + time_period;
-		sprintf(buf,"%dm",time_period);
-		break;
-	case 4: /*Year*/
-		time_period = abs(time_period);
-		sprintf(buf,"%dy",time_period);
-		break;
-	case 5: /*Decade (10 years)*/
-		time_period = abs(time_period);
-		sprintf(buf,"%dy",time_period * 10);
-		break;
-	case 6: /*Normal (30 years)*/
-		time_period = abs(time_period);
-		sprintf(buf,"%dy",time_period * 30);
-		break;
-	case 7: /*Century*/
-		time_period = abs(time_period);
-		sprintf(buf,"%dy",time_period * 100);
-		break;
-	case 10: /*3 hours*/
-		time_period *= 3;
-		while (time_period < 0)
-			time_period = 24 + time_period;
-		sprintf(buf,"%dh",time_period);
-		time_period /= 3;
-		break;
-	case 11: /*6 hours*/
-		time_period *= 6;
-		while (time_period < 0)
-			time_period = 24 + time_period;
-		sprintf(buf,"%dh",time_period);
-		time_period /= 6;
-		break;
-	case 12: /*12 hours*/
-		time_period *= 12;
-		while (time_period < 0)
-			time_period = 24 + time_period;
-		sprintf(buf,"%dh",time_period);
-		time_period /= 12;
-		break;
-	case 254: /*Second*/
-		while (time_period < 0)
-			time_period = 60 + time_period;
-		sprintf(buf,"%dsec",time_period);
-		break;
-	default: /*unknown*/
-		time_period = abs(time_period);
-		sprintf(buf,"%d",time_period);
-		break;
-	}
-
-	return time_period;
-}
-#endif
 
 static NclMultiDValData  _Grib2GetInternalVar
 #if	NhlNeedProto
@@ -6364,7 +6309,7 @@ static void _g2SetFileDimsAndCoordVars
         if (!step->forecast_time_isatt) {
 			dstep = therec->ft_dims;
 			for (i = 0; i < therec->n_ft_dims; i++) {
-				if (dstep->dim_inq->grid_number == step->time_unit_indicator &&
+				if (dstep->dim_inq->grid_number == step->forecast_time_units &&
 				    dstep->dim_inq->size == step->forecast_time->multidval.dim_sizes[0]) {
 					tmp_md = _Grib2GetInternalVar(therec, dstep->dim_inq->dim_name, &test);
 					if (tmp_md != NULL) {
@@ -6400,7 +6345,7 @@ static void _g2SetFileDimsAndCoordVars
 				sprintf(buffer, "forecast_time%d", therec->n_ft_dims);
 				tmp->dim_name = NrmStringToQuark(buffer);
 				/* funky - but storing the forecast time unit in the grid_number member -- need a union I guess*/
-				tmp->grid_number = step->time_unit_indicator;
+				tmp->grid_number = step->forecast_time_units;
 				therec->total_dims++;
 				ptr = (Grib2DimInqRecList *) NclMalloc((unsigned) sizeof(Grib2DimInqRecList));
 				ptr->dim_inq = tmp;
@@ -8159,7 +8104,7 @@ Grib2ParamList  *g2plist;
 #endif /* NhlNeedProto */
 {
 	Grib2RecordInqRec   *g2inqrec;
-	Grib2RecordInqRecList *g2rlist, *prevrlist;
+	Grib2RecordInqRecList *g2rlist, *prevrlist, *g2rlist_max_period;
 	int time_period_count;
 	int *time_periods;
 	int max_count;
@@ -8168,6 +8113,8 @@ Grib2ParamList  *g2plist;
 	Grib2VarTraits *trp = &g2plist->traits;
 	Grib2ParamList  *newplist, *tplist, *ttplist;
         int zero_offset_index;
+	int common_time_perod_unit;
+	int max_period_original_units;
 	
 	g2rlist = g2plist->thelist;
 
@@ -8177,8 +8124,8 @@ Grib2ParamList  *g2plist;
 				g2rlist->rec_inq->time_offset = g2rlist->rec_inq->forecast_time;
 			}
 			else {
-				g2rlist->rec_inq->time_offset = _g2GetConvertedTimeOffset(
-					g2plist->time_unit_indicator,
+				g2rlist->rec_inq->time_offset = _g2GetConvertedTime(
+					g2plist->forecast_time_units,
 					g2rlist->rec_inq->forecast_time_units,
 					g2rlist->rec_inq->forecast_time);
 			}
@@ -8196,19 +8143,35 @@ Grib2ParamList  *g2plist;
 	}
 	max_period = -999;
 
+	/* 
+	 * get the shortest time period units
+	 */
+
+	common_time_perod_unit = -1;
+	g2rlist = g2plist->thelist;
 	while (g2rlist != NULL) {
+		common_time_perod_unit = _g2GetShortestTimeUnit(common_time_perod_unit,g2rlist->rec_inq->time_period_units);
+		g2rlist = g2rlist->next;
+	}		
+		
+	g2rlist = g2plist->thelist;
+	while (g2rlist != NULL) {
+		int time_period;
 		if (! g2plist->variable_time_unit) {
 			g2rlist->rec_inq->time_offset = g2rlist->rec_inq->forecast_time;
 		}
 		else {
-			g2rlist->rec_inq->time_offset = _g2GetConvertedTimeOffset(
-				g2plist->time_unit_indicator,
+			g2rlist->rec_inq->time_offset = _g2GetConvertedTime(
+				g2plist->forecast_time_units,
 				g2rlist->rec_inq->forecast_time_units,
 				g2rlist->rec_inq->forecast_time);
 		}
 		_g2AdjustTimeOffset(g2plist,g2rlist->rec_inq);
+		time_period = _g2GetConvertedTime(common_time_perod_unit,
+						  g2rlist->rec_inq->time_period_units,
+						  g2rlist->rec_inq->time_period);
 		for (i = 0; i < time_period_count; i++) {
-			if (g2rlist->rec_inq->time_period == time_periods[i])
+			if (time_period == time_periods[i])
 				break;
 		}
 		if (i == time_period_count) {
@@ -8216,7 +8179,7 @@ Grib2ParamList  *g2plist;
 				max_count *= 2;
 				time_periods = NclRealloc(time_periods,max_count * sizeof(int));
 			}
-			time_periods[i] = g2rlist->rec_inq->time_period;
+			time_periods[i] = time_period;
 			if (g2rlist->rec_inq->forecast_time == 0) {
 				if (g2rlist->rec_inq->time_offset == 0 && time_periods[i] == 0) {
 					zero_offset_index = i;
@@ -8224,23 +8187,34 @@ Grib2ParamList  *g2plist;
 			}
 			if (time_periods[i] > max_period) {
 				max_period = time_periods[i];
+				g2rlist_max_period = g2rlist;
 			}
 			time_period_count++;
 		}
 		g2rlist = g2rlist->next;
 	}
 	newplist = NULL;
-	g2plist->time_period = max_period;
+	g2plist->time_period = g2rlist_max_period->rec_inq->time_period;
+	g2plist->forecast_time_units = g2rlist_max_period->rec_inq->forecast_time_units;
+	g2plist->time_period_units = g2rlist_max_period->rec_inq->time_period_units;
+	g2plist->variable_time_unit = 0;
 
-	for (i = 0; i < time_period_count - 1; i++) {
-		/* keep the max period elements as the remaining elements for the original variables */
-		if (time_periods[i] == max_period) 
+        i = 0;
+	while (time_periods[i] != -999) {
+		/* keep the max period elements as the remaining elements for the original variable */
+		if (time_periods[i] == max_period) {
+			i++;
 			continue;
+		}
 		g2rlist = g2plist->thelist;
 		tplist = NULL;
 		prevrlist = NULL;
 		while (g2rlist != NULL) {
-			if (g2rlist->rec_inq->time_period != time_periods[i]) {
+			int time_period = _g2GetConvertedTime(common_time_perod_unit,
+							      g2rlist->rec_inq->time_period_units,
+							      g2rlist->rec_inq->time_period);
+
+			if (time_period != time_periods[i]) {
 				prevrlist = g2rlist;
 				g2rlist = g2rlist->next;
 			}
@@ -8281,8 +8255,37 @@ Grib2ParamList  *g2plist;
 			}
 			ttplist->next = tplist;
 		}
+		i++;
 	}
 	NclFree(time_periods);
+	/* readjust the time offset based on the units of the separated variables */
+	ttplist = g2plist;
+	while (ttplist != NULL) {
+		g2rlist = ttplist->thelist;
+		while (g2rlist != NULL) {
+			int time_period;
+			if (! ttplist->variable_time_unit) {
+				g2rlist->rec_inq->time_offset = g2rlist->rec_inq->forecast_time;
+			}
+			else {
+				g2rlist->rec_inq->time_offset = _g2GetConvertedTime(
+					ttplist->forecast_time_units,
+					g2rlist->rec_inq->forecast_time_units,
+					g2rlist->rec_inq->forecast_time);
+			}
+			_g2AdjustTimeOffset(ttplist,g2rlist->rec_inq);
+			ttplist->time_period_units = g2rlist->rec_inq->time_period_units;
+			g2rlist = g2rlist->next;
+		}
+		/* The original plist (variable record) is separated from the newly created 
+		 * plists at the moment; thus the following code:
+		 */
+		if (ttplist == g2plist) 
+			ttplist = newplist;
+		else
+			ttplist = ttplist->next;
+	}
+	
 	return newplist;
 }
 
@@ -8746,11 +8749,17 @@ static void *Grib2OpenFile
             }
 		    
 
-            g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(g2rec[nrecs]->sec1.center_name, ct->descrip);
+	    if (! ct->descrip) {
+		    g2rec[nrecs]->sec1.center_name = NclMalloc(strlen("Unknown Center ( )") + 5);
+		    sprintf( g2rec[nrecs]->sec1.center_name,"Unknown Center (%d)",sec1[0]);
+	    }
+	    else {
+		    g2rec[nrecs]->sec1.center_name = NclMalloc(strlen(ct->descrip) + 1);
+		    (void) strcpy(g2rec[nrecs]->sec1.center_name, ct->descrip);
+	    }
 
-            center_name = NclMalloc(strlen(ct->descrip) + 1);
-            (void) strcpy(center_name, ct->descrip);
+            center_name = NclMalloc(strlen(g2rec[nrecs]->sec1.center_name) + 1);
+            (void) strcpy(center_name, g2rec[nrecs]->sec1.center_name);
 
             /* if center has a "short name" */
             if (ct->shname != NULL) {
@@ -10413,6 +10422,7 @@ static void *Grib2OpenFile
 	    g2inqrec->traits.first_level_type = g2rec[i]->sec4[j]->prod_params->typeof_first_fixed_sfc;
 	    g2inqrec->traits.second_level_type =  g2rec[i]->sec4[j]->prod_params->typeof_second_fixed_sfc;
 
+	    g2inqrec->qcenter_name = NrmStringToQuark(g2rec[i]->sec1.center_name);
 
             if (((NrmQuark) g2frec->options[GRIB_THINNED_GRID_INTERPOLATION_OPT].values) ==
 		NrmStringToQuark("cubic"))
