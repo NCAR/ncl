@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.h,v 1.9 2000-02-15 16:46:43 ethan Exp $
+ *      $Id: NclVar.h,v 1.10 2008-12-06 01:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -219,6 +219,7 @@ typedef struct _NclVarPart {
 	_NhlCB				att_cb;
 	int coord_vars[NCL_MAX_DIMENSIONS];
 	NclSelectionRecord *sel_rec;
+	NclObj ref_var;  /* the referenced variable: used only inside func_proc calls */
 }NclVarPart;
  
 typedef struct _NclVarClassRec{

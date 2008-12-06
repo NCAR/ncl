@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.72 2006-10-27 00:37:13 dbrown Exp $
+ *      $Id: NclVar.c,v 1.73 2008-12-06 01:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -842,6 +842,7 @@ NclStatus status)
 		}
 	}
 	var_out->var.sel_rec = NULL;
+	var_out->var.ref_var = NULL;
 	return(var_out);
 }
 
@@ -1182,7 +1183,6 @@ char *dim_name;
 		dim_quark = NrmStringToQuark(dim_name);
 		if(self->var.dim_info[dim_num].dim_quark == -1) {
 			self->var.dim_info[dim_num].dim_quark = dim_quark;
-			return(NhlNOERROR);
 		} else {
 			if(self->var.dim_info[dim_num].dim_quark != dim_quark) {
 				self->var.dim_info[dim_num].dim_quark = dim_quark;
@@ -1195,8 +1195,12 @@ char *dim_name;
 				}
 					
 			} 
-			return(NhlNOERROR);
 		}
+		if (self->var.ref_var != NULL) {
+			NclVar rvar = (NclVar) self->var.ref_var;
+			rvar->var.dim_info[dim_num].dim_quark = dim_quark;
+		}
+		return(NhlNOERROR);
 	}  else if(dim_num >= self->var.n_dims){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Variable (%s) has (%d) dimensions can not write to dimension (%ld)",v_name,self->var.n_dims,dim_num);
 		return(NhlFATAL);

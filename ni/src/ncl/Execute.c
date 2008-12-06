@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.122 2007-10-26 18:39:18 dbrown Exp $
+ *      $Id: Execute.c,v 1.123 2008-12-06 01:35:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2543,6 +2543,7 @@ void CallCONVERT_TO_LOCAL(void) {
                                                                                 	data.u.data_var->var.coord_vars,
                                                                                 	PARAM,
                                                                                 	argsym->name,PERMANENT);
+										tmp_var->var.ref_var = (NclObj) data.u.data_var;
 									}
                                                         	}
                                                 		if(estatus != NhlFATAL) {
