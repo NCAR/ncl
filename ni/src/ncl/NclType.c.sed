@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c.sed,v 1.8 2003-05-12 23:37:38 dbrown Exp $
+ *      $Id: NclType.c.sed,v 1.9 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,15 +21,7 @@
  *	Description:	
  */
 
-#include <ncarg/hlu/hlu.h>
-#include <ncarg/hlu/NresDB.h>
-#include <ncarg/hlu/Convert.h>
-#include "defs.h"
-#include "NclTypedouble.h"
 #include "NclTypeDATATYPE.h"
-#include <math.h>
-#include "NclMultiDValData.h"
-#include "DataSupport.h"
 DSPECIFIC
 REPLACE
 

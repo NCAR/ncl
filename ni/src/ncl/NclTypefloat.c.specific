@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypefloat.c.specific,v 1.6 1999-02-23 23:32:19 ethan Exp $
+ *      $Id: NclTypefloat.c.specific,v 1.7 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,12 @@
  */
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
+
+#ifdef NIO_LIB_ONLY
+#include "cmpf.h"
+#else
 #include <ncarg/hlu/hluutil.h>
+#endif
 
 static NhlErrorTypes Ncl_Type_float_print
 #if     NhlNeedProto

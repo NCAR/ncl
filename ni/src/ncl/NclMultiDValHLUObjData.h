@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.h,v 1.7 1997-05-09 21:38:03 ethan Exp $
+ *      $Id: NclMultiDValHLUObjData.h,v 1.8 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,11 @@
  */
 #ifndef NclMultiDValHLUObjData_h
 #define NclMultiDValHLUObjData_h
+#ifdef NIO_LIB_ONLY
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/Callbacks.h>
+#endif
 #include "defs.h"
 #include "NclMultiDValData.h"
 

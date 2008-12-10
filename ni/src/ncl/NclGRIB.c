@@ -5,9 +5,15 @@
 #include <math.h>
 #include <ctype.h>
 #include <unistd.h>
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#endif
 #include "defs.h"
 #include <netcdf.h>
 #include "NclDataDefs.h"

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.9 2008-09-19 16:22:08 haley Exp $
+ *      $Id: NclHDFEOS.c,v 1.10 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,8 +19,13 @@
  *
  *	Description:	
  */
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #define HAVE_NETCDF
 #include <hdf/mfhdf.h>

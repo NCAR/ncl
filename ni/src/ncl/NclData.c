@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.21 2007-10-19 19:03:53 dbrown Exp $
+ *      $Id: NclData.c,v 1.22 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,8 +21,13 @@
  *	Description:	
  */
 #include <limits.h>
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include "NclData.h"
 #include "DataSupport.h"

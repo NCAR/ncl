@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.h.sed,v 1.1 1995-01-28 01:52:09 ethan Exp $
+ *      $Id: NclType.h.sed,v 1.2 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,7 +22,17 @@
  */
 #ifndef NclTypeDATATYPE_h
 #define NclTypeDATATYPE_h
+#ifdef NIO_LIB_ONLY
+#include "nioConvertP.h"
+#else
+#include <ncarg/hlu/ConvertP.h>
+#endif
+#include "defs.h"
 #include "NclType.h"
+#include "NclTypedouble.h"
+#include <math.h>
+#include "NclMultiDValData.h"
+#include "DataSupport.h"
 
 
 typedef struct _NclTypeDATATYPEClassPart {

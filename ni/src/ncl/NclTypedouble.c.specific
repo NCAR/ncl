@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypedouble.c.specific,v 1.8 2004-06-16 00:41:32 dbrown Exp $
+ *      $Id: NclTypedouble.c.specific,v 1.9 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,7 +23,12 @@
 #include <float.h>
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
+
+#ifdef NIO_LIB_ONLY
+#include "cmpf.h"
+#else
 #include <ncarg/hlu/hluutil.h>
+#endif
 
 static NhlErrorTypes Ncl_Type_double_print
 #if	NhlNeedProto

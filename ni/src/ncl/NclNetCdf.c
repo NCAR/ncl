@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.50 2008-08-27 18:39:00 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.51 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,8 +19,13 @@
  *
  *	Description:	
  */
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include <netcdf.h>
 #include "NclDataDefs.h"

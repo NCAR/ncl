@@ -1,6 +1,6 @@
 
 /*
- *      $Id: FileSupport.c,v 1.27 2008-04-19 00:40:59 dbrown Exp $
+ *      $Id: FileSupport.c,v 1.28 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,8 +21,13 @@
  *	Description:	
  */
 
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include "NclMultiDValData.h"
 #include "NclFile.h"

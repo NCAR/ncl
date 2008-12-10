@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeInitClassTemplate.c.sed,v 1.4 1996-08-29 23:39:22 ethan Exp $
+ *      $Id: TypeInitClassTemplate.c.sed,v 1.5 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,7 +20,7 @@
  *
  *	Description:	
  */
-#include <ncarg/hlu/ConvertP.h>
+
 /*ARGSUSED*/
 static NhlErrorTypes CvtHLUGENTYPEREPToNclData
 #if	NhlNeedProto

@@ -1,5 +1,5 @@
 /*
- *      $Id: NclTypestring.c.sed,v 1.16 2005-03-18 20:28:14 dbrown Exp $
+ *      $Id: NclTypestring.c.sed,v 1.17 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,9 +21,15 @@
  */
 
 #include <stdio.h>
+#ifdef NIO_LIB_ONLY
+#include "niohluP.h"
+#include "nioConvert.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/Convert.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include "Symbol.h"
 #include <errno.h>

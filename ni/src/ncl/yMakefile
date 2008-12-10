@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.145 2008-11-02 14:29:32 haley Exp $
+#      $Id: yMakefile,v 1.146 2008-12-10 20:12:17 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2008-11-02 14:29:32 $
+#	Date:		$Date: 2008-12-10 20:12:17 $
 #
 #	Description:	
 #
@@ -32,7 +32,7 @@ MYLIB		=	libncl
 MYLIB_API	=	libnclapi
 MYLIB_IO        =       libnio
 YACC		=	$(NYACC)
-LEX			= $(NFLEX)
+LEX		= $(NFLEX)
 
 #if defined(linux)
 EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
@@ -170,11 +170,36 @@ INSTALL_HDRS	= defs.h HluClasses.h NclApi.h ApiRecords.h NclVar.h \
 
 NIO_HDRS        =       nio.h 
 NIO_EXTRA_HDRS  =       nio_path.h
-NIO_NCL_INCLUDES =  	DataSupport.h FileSupport.h NclData.h NclDataDefs.h NclFile.h NclFileInterfaces.h \
-                        NclMdInc.h NclMultiDValData.h NclMultiDValHLUObjData.h NclMultiDVallistData.h \
-			NclMultiDValnclfileData.h NclOneDValCoordData.h NclType.h NclTypebyte.h NclTypechar.h \
-			NclTypedouble.h NclTypefloat.h NclTypeint.h NclTypelogical.h NclTypelong.h NclTypeobj.h \
-			NclTypeshort.h NclTypestring.h NclVar.h nio.h Symbol.h TypeSupport.h defs.h
+
+NIO_NCL_FILES   =       AddFileFormats.c ApiRecords.h AttSupport.c AttSupport.h DataSupport.c DataSupport.h \
+			FileSupport.c FileSupport.h Formats.c GetGrids.c HLUSupport.h InitData.c MatMulDValOp.c.sed \
+			Memory.c MultiDValOp.c.sed NclAtt.c NclAtt.h NclCCM.c NclCCM.h NclCallBacksI.h NclCoordVar.c \
+			NclCoordVar.h NclData.c NclData.h NclDataDefs.h NclFile.c NclFile.h NclFileInterfaces.h \
+			NclFileVar.c NclFileVar.h NclGRIB.c NclGRIB.h NclGRIB2.c NclGRIB2.h NclHDF.c NclHDFEOS.c \
+			NclHLUObj.h NclHLUVar.h NclList.h NclMdInc.h NclMultiDValData.c.sed NclMultiDValData.h \
+			NclMultiDValData.h.sed NclMultiDValHLUObjData.h NclMultiDVallistData.h NclMultiDValnclfileData.c \
+			NclMultiDValnclfileData.h NclNetCdf.c NclOneDValCoordData.c NclOneDValCoordData.h NclType.c \
+			NclType.c.sed NclType.h NclType.h.sed NclTypebyte.c.specific NclTypechar.c.specific \
+			NclTypedouble.c.specific NclTypefloat.c.specific NclTypeint.c.specific NclTypelist.c \
+			NclTypelist.h NclTypelogical.c.specific NclTypelong.c.specific NclTypeobj.c.specific \
+			NclTypeshort.c.specific NclTypestring.c.sed NclTypestring.c.specific NclVar.c NclVar.h \
+			Symbol.h TypeDivOpTemplate.c.sed TypeFunctionOpTemplate.c.sed TypeInitClassTemplate.c.sed \
+			TypeIsMonoFunc.c.sed TypeMatMulOpTemplate.c.sed TypeMonoOpTemplate.c.sed TypeResetMissing.c.sed \
+			TypeSelectOpTemplate.c.sed TypeSimpleOpTemplate.c.sed TypeSupport.c.sed TypeSupport.h.sed \
+			TypeSupportMatTemplate.c.sed TypeSupportMatTemplate.h.sed TypeSupportMonoOpTemplate.c.sed \
+			TypeSupportMonoOpTemplate.h.sed TypeSupportOpTemplate.c.sed TypeSupportOpTemplate.h.sed \
+			TypeXorOpTemplate.c.sed TypestringCompareOpTemplate.c.sed TypestringSelectOpTemplate.c.sed \
+			VarSupport.c VarSupport.h byte_data_c.sh ccmhdr.h char_data_c.sh cptec_254_gtb.h ctoiee.c \
+			data_h.sh date.c date.h defs.h double_data_c.sh dwd_002_gtb.h dwd_201_gtb.h dwd_202_gtb.h \
+			dwd_203_gtb.h dwd_204_gtb.h dwd_205_gtb.h dwd_206_gtb.h dwd_207_gtb.h ecmwf_128_gtb.h \
+			ecmwf_129_gtb.h ecmwf_130_gtb.h ecmwf_131_gtb.h ecmwf_132_gtb.h ecmwf_140_gtb.h ecmwf_150_gtb.h \
+			ecmwf_151_gtb.h ecmwf_160_gtb.h ecmwf_162_gtb.h ecmwf_170_gtb.h ecmwf_180_gtb.h ecmwf_190_gtb.h \
+			ecmwf_200_gtb.h float_data_c.sh fnmoc_gtb.h fsl0_gtb.h fsl1_gtb.h fsl2_gtb.h int_data_c.sh \
+			logical_data_c.sh long_data_c.sh math_funcs.sh multid_data_c.sh ncep_128_gtb.h ncep_129_gtb.h \
+			ncep_130_gtb.h ncep_131_gtb.h ncep_133_gtb.h ncep_140_gtb.h ncep_141_gtb.h ncep_opn_gtb.h \
+			ncep_reanal_gtb.h ncepcode.f nclfile_data_c.sh obj_data_c.sh op_funcs.sh qu2reg3.f rowina3.f \
+			scm0.f short_data_c.sh string_data_c.sh tables.h type_support_c.sh type_support_h.sh
+
 PYNIO_SRC_DIR   =	$(TOP)/pynio
 
 API_SRCS	=	NclApi.c scanapi.c parseapi.c 
@@ -306,8 +331,8 @@ all-local:: names]\
 ]\
 install-local:: names]\
 	@if (test -d dest_prefix); then \ ]\
-	(if (test ! -d dest); then ($(MKDIRHIER) $(PYNIO_SRC_DIR)/include); fi; \ ]\
-	echo "installing headers to $(PYNIO_SRC_DIR)"; \ ]\
+	(if (test ! -d dest); then ($(MKDIRHIER) $(PYNIO_SRC_DIR)/libsrc); fi; \ ]\
+	echo "installing NIO files to $(PYNIO_SRC_DIR)"; \ ]\
         for name in names; do \ ]\
         (echo "Installing $$name";\ ]\
         $(INSTALL) -m mode $$name dest); \ ]\
@@ -315,7 +340,7 @@ install-local:: names]\
 	fi
 #endif  /* ConditionalInstallTarget */
 
-ConditionalInstallTarget($(NIO_NCL_INCLUDES),$(INSTALL_INC),$(PYNIO_SRC_DIR),$(PYNIO_SRC_DIR)/include)
+ConditionalInstallTarget($(NIO_NCL_FILES),$(INSTALL_INC),$(PYNIO_SRC_DIR),$(PYNIO_SRC_DIR)/libsrc)
 
 includes:: $(HDRS)
 depend-local:: $(SRCS)

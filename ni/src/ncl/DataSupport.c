@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.48 2005-08-18 23:09:22 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.49 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,16 +20,24 @@
  *	Description:	
  */
 
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#endif
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"
 #include "NclTypelist.h"
-#include "parser.h"
 #include "OpsList.h"
 #include "DataSupport.h"
+#ifndef NIO_LIB_ONLY
+#include "parser.h"
+#endif
 
 
 typedef struct _ClassPointerList {
@@ -551,6 +559,9 @@ long _NclObjTypeToName
 		return(-1);
 	}
 }
+
+#ifndef NIO_LIB_ONLY
+
 NclObjTypes _NclKeywordToObjType
 #if	NhlNeedProto
 (struct _NclSymbol *keywd)
@@ -595,6 +606,8 @@ NclObjTypes _NclKeywordToObjType
 	}
 }
 
+#endif
+
 NclObjTypes _NclBasicDataTypeToObjType
 #if	NhlNeedProto
 (NclBasicDataTypes dt)
@@ -631,6 +644,7 @@ NclObjTypes _NclBasicDataTypeToObjType
 	}
 }
 
+#ifndef NIO_LIB_ONLY
 NclBasicDataTypes _NclKeywordToDataType
 #if	NhlNeedProto
 (struct _NclSymbol *keywd)
@@ -674,7 +688,7 @@ NclBasicDataTypes _NclKeywordToDataType
 		return(NCL_none);
 	}
 }
-
+#endif
 
 int _NclSizeOf
 #if	NhlNeedProto

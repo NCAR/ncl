@@ -1,5 +1,5 @@
 /*
- *      $Id: NclOneDValCoordData.c,v 1.13 2006-10-27 00:37:13 dbrown Exp $
+ *      $Id: NclOneDValCoordData.c,v 1.14 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,8 +21,13 @@
  */
 
 #include <stdio.h>
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include <errno.h>
 #include "NclFile.h"

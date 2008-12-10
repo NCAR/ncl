@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Memory.c,v 1.15 2003-05-12 23:37:32 dbrown Exp $
+ *      $Id: Memory.c,v 1.16 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,8 +23,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include <errno.h>
 #include "defs.h"
 #include "Symbol.h"

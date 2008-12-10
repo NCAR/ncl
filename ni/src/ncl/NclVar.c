@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.73 2008-12-06 01:35:30 dbrown Exp $
+ *      $Id: NclVar.c,v 1.74 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,9 +20,15 @@
  *
  *	Description:	
  */
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#endif
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMdInc.h"
@@ -34,7 +40,11 @@
 #include "NclCoordVar.h"
 #include "NclCallBacksI.h"
 #include <math.h>
+#ifdef NIO_LIB_ONLY
+#define UNDEF 255
+#else
 #include "parser.h"
+#endif
 
 static NhlErrorTypes VarWrite(
 #if 	NhlNeedProto

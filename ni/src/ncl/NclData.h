@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.h,v 1.13 2007-10-19 19:03:54 dbrown Exp $
+ *      $Id: NclData.h,v 1.14 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -24,7 +24,11 @@
 #define NclData_h
 
 #include "NclDataDefs.h"
+#ifdef NIO_LIB_ONLY
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/Callbacks.h>
+#endif
 
 typedef NhlErrorTypes (*NclDelParentFunction) (
 #if NhlNeedProto

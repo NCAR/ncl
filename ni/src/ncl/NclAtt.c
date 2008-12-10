@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.23 2007-09-05 00:20:50 dbrown Exp $
+ *      $Id: NclAtt.c,v 1.24 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,9 +19,15 @@
  *
  *	Description:	
  */
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#endif
 #include "defs.h"
 #include "Symbol.h"
 #include "NclAtt.h"

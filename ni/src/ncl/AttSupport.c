@@ -1,5 +1,5 @@
 /*
- *      $Id: AttSupport.c,v 1.5 1996-06-17 22:15:04 ethan Exp $
+ *      $Id: AttSupport.c,v 1.6 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -19,10 +19,15 @@
  *
  *	Description:	
  */
-
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Callbacks.h>
+#endif
 #include "defs.h"
 #include "NclAtt.h"
 #include "NclMultiDValData.h"

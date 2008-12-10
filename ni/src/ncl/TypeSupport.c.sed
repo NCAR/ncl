@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSupport.c.sed,v 1.4 2006-04-25 05:07:57 dbrown Exp $
+ *      $Id: TypeSupport.c.sed,v 1.5 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,8 +20,13 @@
  *
  *	Description:	
  */
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include "NclType.h"
 #include "TypeSupport.h"

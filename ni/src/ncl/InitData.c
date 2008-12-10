@@ -1,6 +1,6 @@
 
 /*
- *      $Id: InitData.c,v 1.3 2003-05-12 23:37:32 dbrown Exp $
+ *      $Id: InitData.c,v 1.4 2008-12-10 20:12:16 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -23,8 +23,13 @@
 
 
 #include <stdio.h>
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include "NclData.h"
 

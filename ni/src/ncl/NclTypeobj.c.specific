@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeobj.c.specific,v 1.10 2003-05-12 23:37:38 dbrown Exp $
+ *      $Id: NclTypeobj.c.specific,v 1.11 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,8 +20,15 @@
  *
  *	Description:	
  */
+#ifdef NIO_LIB_ONLY
+#include "nioBaseP.h"
+#include "nioCallbacks.h"
+#include "nioConvertP.h"
+#else
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/Callbacks.h>
+#include <ncarg/hlu/ConvertP.h>
+#endif
 #include "NclTypelogical.h"
 #include "NclHLUObj.h"
 #include "NclMultiDValHLUObjData.h"
@@ -55,7 +62,6 @@ void *val;
 }
 
 
-#include <ncarg/hlu/ConvertP.h>
 /*ARGSUSED*/
 static NhlErrorTypes CvtNhlTObjIdGenArrayToNclData
 #if	NhlNeedProto

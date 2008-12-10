@@ -1,6 +1,12 @@
+
 #include <stdio.h>
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include "NclFile.h"
 #include "NclFileInterfaces.h"

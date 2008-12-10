@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c,v 1.6 1998-02-04 00:18:00 ethan Exp $
+ *      $Id: NclType.c,v 1.7 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -21,9 +21,15 @@
  *	Description:	
  */
 
+#ifdef NIO_LIB_ONLY
+#include "niohluP.h"
+#include "nioNresDB.h"
+#include "nioConvert.h"
+#else
 #include <ncarg/hlu/hluP.h>
 #include <ncarg/hlu/NresDB.h>
 #include <ncarg/hlu/Convert.h>
+#endif
 #include "defs.h"
 #include "NclType.h"
 /*

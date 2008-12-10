@@ -1,5 +1,5 @@
 /*
- *      $Id: VarSupport.c,v 1.29 2006-10-27 00:37:14 dbrown Exp $
+ *      $Id: VarSupport.c,v 1.30 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -20,8 +20,13 @@
  *	Description:	
  */
 
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include "Symbol.h"
 #include "NclMultiDValData.h"

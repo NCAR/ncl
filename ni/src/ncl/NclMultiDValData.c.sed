@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.42 2007-01-12 02:39:02 haley Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.43 2008-12-10 20:12:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -22,8 +22,13 @@
  */
 
 #include <stdio.h>
+#ifdef NIO_LIB_ONLY
+#include "niohlu.h"
+#include "nioNresDB.h"
+#else
 #include <ncarg/hlu/hlu.h>
 #include <ncarg/hlu/NresDB.h>
+#endif
 #include "defs.h"
 #include <errno.h>
 #include "NclMultiDValData.h"
