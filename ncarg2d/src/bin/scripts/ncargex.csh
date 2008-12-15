@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.165 2008-11-01 19:02:21 fred Exp $
+#   $Id: ncargex.csh,v 1.166 2008-12-15 22:26:51 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -277,7 +277,8 @@ set c_list = ($c_list $dashpack_clist)
 #                      #
 #**********************#
 set ezmap_fex   = (mpex01 mpex02 mpex03 mpex04 mpex05 mpex06 mpex07 mpex08 \
-		  mpex09 mpex10 mpex11 mpex12 mpex13 mpex14 mpexfi eezmpa)
+		  mpex09 mpex10 mpex11 mpex12 mpex13 mpex14 mpex15 mpexfi \
+		  eezmpa)
 set ezmap_ftst  = (tezmap tezmpa tezmpb)
 set ezmap_fttr  = (cezmap1 cezmap2 cezmap3 cmpclr cmpdd cmpdrw cmpel \
                   cmpfil cmpgci cmpgrd cmpgrp cmpita cmpitm cmplab cmplbl \
@@ -1744,6 +1745,9 @@ switch ($name)
     case mpex10:
         set extra_src_files = (mpexcc.f)
     breaksw
+
+    case mpex15:
+	set other_data_files = (Europe.png Europe.pngi)
 
     case mpexfi:
 	set stdin_data_file = (mpexfi.dat)
