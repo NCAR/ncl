@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.166 2008-12-15 22:26:51 kennison Exp $
+#   $Id: ncargex.csh,v 1.167 2008-12-16 01:09:34 kennison Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -1748,6 +1748,7 @@ switch ($name)
 
     case mpex15:
 	set other_data_files = (Europe.png Europe.pngi)
+    breaksw
 
     case mpexfi:
 	set stdin_data_file = (mpexfi.dat)
