@@ -3422,3 +3422,112 @@ begin
       system("/bin/rm -f "+pltPath+".eps")
   end if
 end
+; ---------------------
+undef ("mjo_phase_background")
+function mjo_phase_background (wks:graphic , opt[1]:logical   )
+begin
+  axisExtent            =  4
+  nPhase                =  8
+
+  res                   = True   
+  res@gsnDraw           = False
+  res@gsnFrame          = False
+ ;res@gsnPaperOrientation =  "portrait"
+
+  res@vpXF              = 0.1            ; default=0.2
+  res@vpYF              = 0.8            ; default=0.8
+
+  res@trYMinF           = -axisExtent 
+  res@trYMaxF           =  axisExtent 
+  res@trXMinF           = -axisExtent 
+  res@trXMaxF           =  axisExtent + 0.05 
+
+  vpExtent              = 0.45           
+  res@vpWidthF          = vpExtent       ; default=0.6
+  res@vpHeightF         = vpExtent       ; default=0.6 
+
+  res@tmXBFormat        = "f"            ; integer, no decimal
+  res@tmYLFormat        = "f"            ; 3 rather than 3.0
+
+  res@tmXBLabelDeltaF   = -0.75          ; move label closer to tm
+  res@tmYLLabelDeltaF   = -0.75
+
+  labelFontHeightF      = 0.0167         ; default=0.0167
+  res@tiXAxisFontHeightF= labelFontHeightF 
+  res@tiYAxisFontHeightF= labelFontHeightF
+  res@tiDeltaF          =  1.25          ; default=1.5
+
+  res@xyLineThicknessF  = 1
+
+  rad   = 4.*atan(1.0)/180.
+  if (opt .and. isatt(opt,"radius") .and. opt@radius.gt.0) then 
+      radius = opt@radius
+  else
+      radius= 1.0                        ; unit length (default)
+  end if
+          
+  nCirc = 361
+  xCirc = radius*cos(fspan(0, 360, nCirc)*rad)
+  yCirc = radius*sin(fspan(0, 360, nCirc)*rad)
+
+  xCirc@long_name = "Phase 2 (Indian Ocean) Phase 3"
+  yCirc@long_name = "Phase 1 (Western Hem, Africa) Phase 8"
+
+ ;res@gsnCenterStringOrthogonalPosF = 
+  res@gsnCenterStringFontHeightF    = labelFontHeightF
+  res@gsnCenterString = "Phase 7 (Western Pacific) Phase 6"
+
+  if (opt .and. isatt(opt,"tiMainString")) then 
+      res@tiMainString = opt@tiMainString
+  end if
+
+  plt   = gsn_csm_xy (wks, xCirc, yCirc, res)  ; base plot
+
+  txres               = True             
+  txres@txFontHeightF = labelFontHeightF
+  txres@txAngleF      = -90
+  txid = gsn_create_text(wks, "Phase 5 (Maritime) Phase 4", txres)
+
+  amres                  = True 
+  amres@amParallelPosF   =  0.575  
+  amres@amOrthogonalPosF =  0.0   
+  amres@amJust           = "CenterCenter"
+  ann3  = gsn_add_annotation(plt, txid, amres)
+
+;************************************************
+; Add the phase separator lines.
+; Each line must be associated with a unique dummy variable. 
+; Draw each line separately. Each line must contain two 
+;      points (begin/end).
+;************************************************
+  plres                  = True      ; polyline mods desired
+ ;plres@gsLineColor      = "red"     ; color of lines
+  plres@gsLineThicknessF = 1.0       ; thickness of lines
+  if (opt .and. isatt(opt,"gsLineDashPattern")) then 
+      plres@gsLineDashPattern = opt@gsLineDashPattern
+  else
+      plres@gsLineDashPattern = 1
+  end if
+
+  c45  = radius*cos(45*rad)
+  E    = axisExtent               ; convenience
+  R    = radius
+
+  phaLine      = new ( (/nPhase,4/), "float", "No_FillValue")
+  phaLine(0,:) = (/   R,   E,   0,   0/) ; (xBegin,xEnd,yBegin,yEnd) 
+  phaLine(1,:) = (/ c45,   E, c45,   E/) 
+  phaLine(2,:) = (/   0,   0,   R,   E/) 
+  phaLine(3,:) = (/-c45,  -E, c45,   E/) 
+  phaLine(4,:) = (/  -R,  -E,   0,   0/) 
+  phaLine(5,:) = (/-c45,  -E,-c45,  -E/) 
+  phaLine(6,:) = (/   0,   0,  -R,  -E/) 
+  phaLine(7,:) = (/ c45,   E,-c45,  -E/) 
+
+  do i =0,nPhase-1
+     plt@$unique_string("dum")$ = gsn_add_polyline(wks,plt \
+                                 ,(/phaLine(i,0),phaLine(i,1)/) \
+                                 ,(/phaLine(i,2),phaLine(i,3)/) ,plres)      
+  end do
+
+  return(plt)
+end
