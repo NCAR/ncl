@@ -3426,7 +3426,11 @@ end
 undef ("mjo_phase_background")
 function mjo_phase_background (wks:graphic , opt[1]:logical   )
 begin
-  axisExtent            =  4
+  if (opt .and. isatt(opt,"axisExtent") .and. opt@axisExtent.gt.0) then 
+      axisExtent        = opt@axisExtent
+  else
+      axisExtent        =  4
+  end if
   nPhase                =  8
 
   res                   = True   
