@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.146 2008-12-10 20:12:17 dbrown Exp $
+#      $Id: yMakefile,v 1.147 2008-12-19 01:40:23 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2008-12-10 20:12:17 $
+#	Date:		$Date: 2008-12-19 01:40:23 $
 #
 #	Description:	
 #
@@ -182,7 +182,7 @@ NIO_NCL_FILES   =       AddFileFormats.c ApiRecords.h AttSupport.c AttSupport.h 
 			NclType.c.sed NclType.h NclType.h.sed NclTypebyte.c.specific NclTypechar.c.specific \
 			NclTypedouble.c.specific NclTypefloat.c.specific NclTypeint.c.specific NclTypelist.c \
 			NclTypelist.h NclTypelogical.c.specific NclTypelong.c.specific NclTypeobj.c.specific \
-			NclTypeshort.c.specific NclTypestring.c.sed NclTypestring.c.specific NclVar.c NclVar.h \
+			NclTypeshort.c.specific NclTypestring.c.sed NclTypestring.c.specific NclVar.c NclVar.h OpsList.h \
 			Symbol.h TypeDivOpTemplate.c.sed TypeFunctionOpTemplate.c.sed TypeInitClassTemplate.c.sed \
 			TypeIsMonoFunc.c.sed TypeMatMulOpTemplate.c.sed TypeMonoOpTemplate.c.sed TypeResetMissing.c.sed \
 			TypeSelectOpTemplate.c.sed TypeSimpleOpTemplate.c.sed TypeSupport.c.sed TypeSupport.h.sed \

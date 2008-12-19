@@ -3892,11 +3892,18 @@ int type;
 				}
 			}
 			if(value->multidval.kind != SCALAR) {
-				for(i = 0; i< n_dims_selection; i++) {
-					if(selection_dim_sizes[i] != value->multidval.dim_sizes[i]) {
+				for(i = 0, j = 0; i< n_dims_selection; i++) {
+					if (selection_dim_sizes[i] == 1 && value->multidval.dim_sizes[j] != 1)
+						continue;
+					else if (selection_dim_sizes[i] != 1 && value->multidval.dim_sizes[j] == 1) {
+						while (value->multidval.dim_sizes[j] == 1) 
+							j++;
+					}
+					if(selection_dim_sizes[i] != value->multidval.dim_sizes[j]) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Dimension sizes of left hand side do not match right hand side");
 						return(NhlFATAL);
 					}
+					j++;
 				}
 			} 
 			lhs_type = _NclBasicDataTypeToObjType(thefile->file.var_info[index]->data_type);
@@ -4748,35 +4755,44 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 				} 
 			} 
 		} else {
-			for(i = 0; i < tmp_var->var.n_dims; i++) {
-				if(tmp_var->var.dim_info[i].dim_quark > 0) {
-					if(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark != tmp_var->var.dim_info[i].dim_quark) {
+			for(i = 0, j = 0; i < thefile->file.var_info[index]->num_dimensions; i++) {
+				int file_dim_num = thefile->file.var_info[index]->file_dim_num[i];
+
+				if (thefile->file.file_dim_info[file_dim_num]->dim_size  == 1 && tmp_var->var.dim_info[j].dim_size != 1) 
+					continue;
+				else if (thefile->file.file_dim_info[file_dim_num]->dim_size != 1 && tmp_var->var.dim_info[j].dim_size == 1) {
+					while (tmp_var->var.dim_info[j].dim_size == 1)
+						j++;
+				}
+
+				if(tmp_var->var.dim_info[j].dim_quark > 0) {
+					if(thefile->file.file_dim_info[file_dim_num]->dim_name_quark != tmp_var->var.dim_info[j].dim_quark) {
 /*
 * Dimnames are unequal give warning then overwrite
 */
-						NhlPError(NhlWARNING,NhlEUNKNOWN,"Dimension names of left hand side and right hand side do not match, overwriting dimension (%s), use (/ .. /) if this is not the desired result",NrmQuarkToString(thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark) );
-						_NclFileWriteDim(thefile,thefile->file.file_dim_info[thefile->file.var_info[index]->file_dim_num[i]]->dim_name_quark,thefile->file.var_info[index]->file_dim_num[i]);
+						NhlPError(NhlWARNING,NhlEUNKNOWN,"Dimension names of left hand side and right hand side do not match, overwriting dimension (%s), use (/ .. /) if this is not the desired result",NrmQuarkToString(thefile->file.file_dim_info[file_dim_num]->dim_name_quark) );
+						_NclFileWriteDim(thefile,tmp_var->var.dim_info[j].dim_quark,file_dim_num);
 
 					} 
-					if(tmp_var->var.coord_vars[i] != -1) {
-						if (tmp_var->var.dim_info[i].dim_quark == NrmStringToQuark("ncl_scalar")) {
+					if(tmp_var->var.coord_vars[j] != -1) {
+						if (tmp_var->var.dim_info[j].dim_quark == NrmStringToQuark("ncl_scalar")) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Variable (%s) has coordinate variable named \"ncl_scalar\"; not writing coodinate variable to file (%s)",
 								  NrmQuarkToString(tmp_var->var.var_quark),NrmQuarkToString(thefile->file.fname));
 								  ret = NhlWARNING;
 								  continue;
 						}
-						tmp_coord_var = (NclVar)_NclGetObj(tmp_var->var.coord_vars[i]);
-						ret = FileWriteCoord(thefile,tmp_var->var.dim_info[i].dim_quark,_NclVarValueRead(tmp_coord_var,NULL,NULL),NULL);
+						tmp_coord_var = (NclVar)_NclGetObj(tmp_var->var.coord_vars[j]);
+						ret = FileWriteCoord(thefile,tmp_var->var.dim_info[j].dim_quark,_NclVarValueRead(tmp_coord_var,NULL,NULL),NULL);
 						if(ret < NhlWARNING) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not write coordinate variable (%s) to file (%s), continuing anyway",
-								  NrmQuarkToString(tmp_var->var.dim_info[i].dim_quark),NrmQuarkToString(thefile->file.fname));
+								  NrmQuarkToString(tmp_var->var.dim_info[j].dim_quark),NrmQuarkToString(thefile->file.fname));
 							ret = NhlWARNING;
 						} else {
 							if(tmp_coord_var->var.att_id != -1) {
 								theatt = (NclAtt)_NclGetObj(tmp_coord_var->var.att_id);
 								step = theatt->att.att_list;
 								while(step != NULL) {
-									ret = FileWriteVarAtt(thefile,tmp_var->var.dim_info[i].dim_quark,step->quark,step->attvalue,NULL);
+									ret = FileWriteVarAtt(thefile,tmp_var->var.dim_info[j].dim_quark,step->quark,step->attvalue,NULL);
 									if(ret < NhlWARNING){
 										NhlPError(NhlWARNING,NhlEUNKNOWN,"FileWriteVarVar: Could not attribute (%s) to file (%s), continuing anyway",NrmQuarkToString(step->quark),NrmQuarkToString(thefile->file.fname));
 										ret = NhlWARNING;
@@ -4786,7 +4802,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 								}
 							}
 						}
-					} else if(thefile->file.coord_vars[thefile->file.var_info[index]->file_dim_num[i]] != NULL) {
+					} else if(thefile->file.coord_vars[file_dim_num] != NULL) {
 
 /*
 * right hand side has no dimension name and hence no coordinate variable so give warning and proceed
@@ -4795,6 +4811,7 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 						ret = NhlWARNING;
 					}
 				}
+				j++;
 			}
 		}
 		return(ret);
