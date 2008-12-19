@@ -3812,16 +3812,16 @@ NhlErrorTypes wrf_dbz_W( void )
  * Argument # 4
  */
   void *qsn;
-  double *tmp_qsn;
-  int ndims_qsn, dsizes_qsn[NCL_MAX_DIMENSIONS];
+  double *tmp_qsn, *tmp1_qsn;
+  int is_scalar_qsn, ndims_qsn, dsizes_qsn[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qsn;
 
 /*
  * Argument # 5
  */
   void *qgr;
-  double *tmp_qgr;
-  int ndims_qgr, dsizes_qgr[NCL_MAX_DIMENSIONS];
+  double *tmp_qgr, *tmp1_qgr;
+  int is_scalar_qgr, ndims_qgr, dsizes_qgr[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_qgr;
 
 /*
@@ -3929,7 +3929,7 @@ NhlErrorTypes wrf_dbz_W( void )
  * Check dimension sizes.
  */
   if(ndims_qvp != ndims_prs) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qvp array must have the same number of dimensions as the prs array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qv array must have the same number of dimensions as the prs array");
     return(NhlFATAL);
   }
 
@@ -3951,7 +3951,7 @@ NhlErrorTypes wrf_dbz_W( void )
  * Check dimension sizes.
  */
   if(ndims_qra != ndims_prs) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qra array must have the same number of dimensions as the prs array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qr array must have the same number of dimensions as the prs array");
     return(NhlFATAL);
   }
 
@@ -3972,8 +3972,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Check dimension sizes.
  */
-  if(ndims_qsn != ndims_prs) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qsn array must have the same number of dimensions as the prs array");
+  is_scalar_qsn = is_scalar(ndims_qsn,dsizes_qsn);
+  if(!is_scalar_qsn && ndims_qsn != ndims_prs) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: qs must either be a scalar or have the same number of dimensions as the prs array");
     return(NhlFATAL);
   }
 
@@ -3993,8 +3994,9 @@ NhlErrorTypes wrf_dbz_W( void )
 /*
  * Check dimension sizes.
  */
-  if(ndims_qgr != ndims_prs) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The qgr array must have the same number of dimensions as the prs array");
+  is_scalar_qgr = is_scalar(ndims_qgr,dsizes_qgr);
+  if(!is_scalar_qgr && ndims_qgr != ndims_prs) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: qg must either be a scalar or have the same number of dimensions as the prs array");
     return(NhlFATAL);
   }
 
@@ -4003,9 +4005,10 @@ NhlErrorTypes wrf_dbz_W( void )
  */
   for(i = 0; i < ndims_prs; i++) {
     if(dsizes_tmk[i] != dsizes_prs[i] || dsizes_qvp[i] != dsizes_prs[i] || 
-       dsizes_qra[i] != dsizes_prs[i] || dsizes_qsn[i] != dsizes_prs[i] || 
-       dsizes_qgr[i] != dsizes_prs[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The prs, tmk, qvp, qra, qsn, and qgr arrays must have the same dimensions");
+       dsizes_qra[i] != dsizes_prs[i] || 
+      (!is_scalar_qsn && dsizes_qsn[i] != dsizes_prs[i]) || 
+      (!is_scalar_qgr && dsizes_qgr[i] != dsizes_prs[i])) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: The prs, tmk, qv, qr, qs, and qg arrays must have the same dimensions (qs and qg can be scalars)");
       return(NhlFATAL);
     }
   }
@@ -4113,11 +4116,24 @@ NhlErrorTypes wrf_dbz_W( void )
  * Allocate space for tmp_qsn no matter what, because qsn might be
  * changed by the Fortran routine, and we don't want those changes
  * to propagate back here.
+ *
+ * qsn could be a scalar. If so, we'll need to propagate it to a full
+ * array. We'll do this later inside the do loop where the Fortran
+ * routine is called.
  */
   tmp_qsn = (double *)calloc(nbtsnwe,sizeof(double));
   if(tmp_qsn == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
     return(NhlFATAL);
+  }
+  if(is_scalar_qsn) {
+    if(type_qsn != NCL_double) {
+      tmp1_qsn = coerce_input_double(qsn,type_qsn,1,0,NULL,NULL);
+    }
+    else {
+      tmp1_qsn  = (double*)malloc(sizeof(double));
+      *tmp1_qsn = ((double*)qsn)[0];
+    }
   }
   if(type_qsn == NCL_double) {
     type_dbz     = NCL_double;
@@ -4125,15 +4141,21 @@ NhlErrorTypes wrf_dbz_W( void )
   }
 /*
  * Allocate space for tmp_qgr.
+ *
+ * If it is a scalar, then propagate the scalar to an array.
  */
-  if(type_qgr != NCL_double) {
+  if(is_scalar_qgr || type_qgr != NCL_double) { 
     tmp_qgr = (double *)calloc(nbtsnwe,sizeof(double));
     if(tmp_qgr == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_dbz: Unable to allocate memory for coercing input array to double");
       return(NhlFATAL);
     }
   }
-  else {
+  if(is_scalar_qgr) {
+    tmp1_qgr = coerce_input_double(qgr,type_qgr,1,0,NULL,NULL);
+    for(i = 0; i < nbtsnwe; i++) tmp_qgr[i] = *tmp1_qgr;
+  }
+  if(type_qgr == NCL_double) {
     type_dbz     = NCL_double;
     type_obj_dbz = nclTypedoubleClass;
   }
@@ -4200,36 +4222,54 @@ NhlErrorTypes wrf_dbz_W( void )
     }
 
 /*
- * Force the coercion qra and qsn to tmp_qra and tmp_qsn, because
- * the original arrays may get changed by the Fortran routine,
- * and we don't want those changes to propagate back here.
+ * If qsn is a scalar, then propagate it to a full array.
  */
-    coerce_subset_input_double(qra,tmp_qra,index_dbz,type_qra,nbtsnwe,
-                               0,NULL,NULL);
-    coerce_subset_input_double(qsn,tmp_qsn,index_dbz,type_qsn,nbtsnwe,
-                               0,NULL,NULL);
-
-/*
- * Coerce subsection of qgr (tmp_qgr) to double if necessary.
- */
-    if(type_qgr != NCL_double) {
-      coerce_subset_input_double(qgr,tmp_qgr,index_dbz,type_qgr,nbtsnwe,
-                                 0,NULL,NULL);
+    if(is_scalar_qsn) {
+      for(j = 0; j < nbtsnwe; j++) tmp_qsn[j] = *tmp1_qsn;
+      if(*tmp1_qsn == 0.) {
+        sn0 = 0;
+      }
     }
     else {
-      tmp_qgr = &((double*)qgr)[index_dbz];
-    }
-
+/*
+ * Force the coercion of qsn to tmp_qsn, because the original arrays may
+ * get changed by the Fortran routine, and we don't want those changes to
+ * propagate back here.
+ */
+      coerce_subset_input_double(qsn,tmp_qsn,index_dbz,type_qsn,nbtsnwe,
+                                 0,NULL,NULL);
 /*
  * Check values for qsn array. If all zero, then set sn0 to 0. Otherwise
  * set sn0 to 1.
  */
-    j   = 0;
-    sn0 = 0;
-    while( (j < nbtsnwe) && !sn0) {
-      if(tmp_qsn[j] != 0.) sn0 = 1;
-      j++;
+      j   = 0;
+      sn0 = 0;
+      while( (j < nbtsnwe) && !sn0) {
+        if(tmp_qsn[j] != 0.) sn0 = 1;
+        j++;
+      }
     }
+
+/*
+ * Force the coercion of qra to tmp_qra, because the original arrays may
+ * get changed by the Fortran routine, and we don't want those changes to
+ * propagate back here.
+ */
+    coerce_subset_input_double(qra,tmp_qra,index_dbz,type_qra,nbtsnwe,
+                               0,NULL,NULL);
+/*
+ * Coerce subsection of qgr (tmp_qgr) to double if necessary.
+ */
+    if(!is_scalar_qgr) {
+      if(type_qgr != NCL_double) {
+        coerce_subset_input_double(qgr,tmp_qgr,index_dbz,type_qgr,nbtsnwe,
+                                   0,NULL,NULL);
+      }
+      else {
+        tmp_qgr = &((double*)qgr)[index_dbz];
+      }
+    }
+
 /*
  * Point temporary output array to void output array if appropriate.
  */
@@ -4259,8 +4299,10 @@ NhlErrorTypes wrf_dbz_W( void )
   if(type_qvp != NCL_double) NclFree(tmp_qvp);
   NclFree(tmp_qra);
   NclFree(tmp_qsn);
-  if(type_qgr != NCL_double) NclFree(tmp_qgr);
+  if(type_qgr != NCL_double)  NclFree(tmp_qgr);
   if(type_dbz != NCL_double) NclFree(tmp_dbz);
+  if(is_scalar_qsn) NclFree(tmp1_qsn);
+  if(is_scalar_qgr && type_qgr != NCL_double) NclFree(tmp1_qgr);
 
 /*
  * Retrieve dimension names from the "tmk" variable, if any.
