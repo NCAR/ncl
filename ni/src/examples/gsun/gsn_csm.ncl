@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.236 2008-12-03 05:39:51 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.237 2008-12-19 02:08:33 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3330,7 +3330,7 @@ begin
       new_lon2d(:,0:nlon-1) = lon2d
       new_lon2d(:,nlon)     = lon2d(:,0)
       new_lat2d(:,0:nlon-1) = lat2d
-      new_lat2d(:,nlon)     = (new_lat2d(:,0) + new_lat2d(:,nlon-1))/2.
+      new_lat2d(:,nlon)     = lat2d(:,0)
 
       delete(newdata@lon2d)
       delete(newdata@lat2d)
