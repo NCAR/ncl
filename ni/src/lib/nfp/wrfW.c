@@ -75,6 +75,9 @@ extern void NGCALLF(dijtoll,DIJTOLL)(int *, double *, double *, double *,
                                      double *, double *, double *, double *, 
                                      double *);
 
+extern void NGCALLF(eqthecalc,EQTHECALC)(double *, double *, double *,
+                                         double *, int *, int *, int *);
+
 extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk, 
                                              double *qvp, double *ght,
                                              double *ter, double *sfp, 
@@ -8437,6 +8440,403 @@ int arg_num, num_args, ndims_arg, *dsizes_arg;
     }
   }
   return(dim_info);
+}
+
+NhlErrorTypes wrf_eth_W( void )
+{
+/*
+ * Input variables
+ */
+/*
+ * Argument # 0
+ */
+  void *qv;
+  double *tmp_qv;
+  int ndims_qv, dsizes_qv[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_qv;
+
+/*
+ * Argument # 1
+ */
+  void *t;
+  double *tmp_t;
+  int ndims_t, dsizes_t[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_t;
+
+/*
+ * Argument # 2
+ */
+  void *p;
+  double *tmp_p;
+  int ndims_p, dsizes_p[NCL_MAX_DIMENSIONS];
+  NclBasicDataTypes type_p;
+
+/*
+ * Return variable
+ */
+  void *eth;
+  double *tmp_eth;
+  NclBasicDataTypes type_eth;
+  NclObjClass type_obj_eth;
+  NclQuark *description, *units;
+  char *cdescription, *cunits;
+
+/*
+ * Variables for returning the output array with dimension names attached.
+ */
+  int att_id, dsizes[1];
+  NclMultiDValData return_md, att_md;
+  NclVar tmp_var;
+  NclStackEntry return_data;
+
+/*
+ * Variable for getting/setting dimension name info.
+ */
+  NclDimRec *dim_info;
+
+/*
+ * Various
+ */
+  int btdim, sndim, wedim, nbtsnwe;
+  int index_eth, i, ndims_leftmost, size_leftmost, size_eth, ret;
+
+/*
+ * Retrieve parameters.
+ *
+ * Note any of the pointer parameters can be set to NULL, which
+ * implies you don't care about its value.
+ */
+/*
+ * Get argument # 0
+ */
+  qv = (void*)NclGetArgValue(
+           0,
+           3,
+           &ndims_qv,
+           dsizes_qv,
+           NULL,
+           NULL,
+           &type_qv,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_qv < 3) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: The qv array must have at least 3 dimensions");
+    return(NhlFATAL);
+  }
+  btdim = dsizes_qv[ndims_qv-3];
+  sndim = dsizes_qv[ndims_qv-2];
+  wedim = dsizes_qv[ndims_qv-1];
+  nbtsnwe = btdim * sndim * wedim;
+
+/*
+ * Get argument # 1
+ */
+  t = (void*)NclGetArgValue(
+           1,
+           3,
+           &ndims_t,
+           dsizes_t,
+           NULL,
+           NULL,
+           &type_t,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_t != ndims_qv) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: The qv and t arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+
+/*
+ * Get argument # 2
+ */
+  p = (void*)NclGetArgValue(
+           2,
+           3,
+           &ndims_p,
+           dsizes_p,
+           NULL,
+           NULL,
+           &type_p,
+           2);
+
+/*
+ * Check dimension sizes.
+ */
+  if(ndims_p != ndims_qv) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: The p and t arrays must have the same number of dimensions");
+    return(NhlFATAL);
+  }
+
+  for(i = 0; i < ndims_qv; i++) {
+    if(dsizes_t[i] != dsizes_qv[i] || dsizes_p[i] != dsizes_qv[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: The qv, t, and p arrays must have the same dimension sizes");
+      return(NhlFATAL);
+    }
+  }
+
+/*
+ * Calculate size of leftmost dimensions.
+ */
+  size_leftmost = 1;
+  for(i = 0; i < ndims_qv-3; i++) size_leftmost *= dsizes_qv[i];
+
+/*
+ * The output type defaults to float, unless any input arrays are double.
+ */
+  type_eth     = NCL_float;
+  type_obj_eth = nclTypefloatClass;
+
+/* 
+ * Allocate space for coercing input arrays.  If any of the input
+ * is already double, then we don't need to allocate space for
+ * temporary arrays, because we'll just change the pointer into
+ * the void array appropriately.
+ *
+ * Allocate space for tmp_qv.
+ */
+  if(type_qv != NCL_double) {
+    tmp_qv = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_qv == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_eth     = NCL_double;
+    type_obj_eth = nclTypedoubleClass;
+  }
+/*
+ * Allocate space for tmp_t.
+ */
+  if(type_t != NCL_double) {
+    tmp_t = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_t == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_eth     = NCL_double;
+    type_obj_eth = nclTypedoubleClass;
+  }
+/*
+ * Allocate space for tmp_p.
+ */
+  if(type_p != NCL_double) {
+    tmp_p = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_p == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: Unable to allocate memory for coercing input array to double");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    type_eth     = NCL_double;
+    type_obj_eth = nclTypedoubleClass;
+  }
+
+/*
+ * Calculate size of output array and allocate space for it.
+ */
+  size_eth = size_leftmost * nbtsnwe;
+
+  if(type_eth != NCL_double) {
+    eth = (void *)calloc(size_eth, sizeof(float));
+    tmp_eth = (double *)calloc(nbtsnwe,sizeof(double));
+    if(tmp_eth == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: Unable to allocate memory for temporary output array");
+      return(NhlFATAL);
+    }
+  }
+  else {
+    eth = (void *)calloc(size_eth, sizeof(double));
+  }
+  if(eth == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_eth: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop across leftmost dimensions and call the Fortran routine for each
+ * subsection of the input arrays.
+ */
+  index_eth = 0;
+
+  for(i = 0; i < size_leftmost; i++) {
+/*
+ * Coerce subsection of qv (tmp_qv) to double if necessary.
+ */
+    if(type_qv != NCL_double) {
+      coerce_subset_input_double(qv,tmp_qv,index_eth,type_qv,nbtsnwe,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_qv = &((double*)qv)[index_eth];
+    }
+
+/*
+ * Coerce subsection of t (tmp_t) to double if necessary.
+ */
+    if(type_t != NCL_double) {
+      coerce_subset_input_double(t,tmp_t,index_eth,type_t,nbtsnwe,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_t = &((double*)t)[index_eth];
+    }
+
+/*
+ * Coerce subsection of p (tmp_p) to double if necessary.
+ */
+    if(type_p != NCL_double) {
+      coerce_subset_input_double(p,tmp_p,index_eth,type_p,nbtsnwe,
+                                 0,NULL,NULL);
+    }
+    else {
+      tmp_p = &((double*)p)[index_eth];
+    }
+
+/*
+ * Point temporary output array to void output array if appropriate.
+ */
+    if(type_eth == NCL_double) tmp_eth = &((double*)eth)[index_eth];
+
+/*
+ * Call the Fortran routine.
+ */
+    NGCALLF(eqthecalc,EQTHECALC)(tmp_qv, tmp_t, tmp_p, tmp_eth, 
+                                 &wedim, &sndim, &btdim);
+
+/*
+ * Coerce output back to float if necessary.
+ */
+    if(type_eth == NCL_float) {
+      coerce_output_float_only(eth,tmp_eth,nbtsnwe,index_eth);
+    }
+    index_eth += nbtsnwe;
+  }
+
+/*
+ * Free unneeded memory.
+ */
+  if(type_qv  != NCL_double) NclFree(tmp_qv);
+  if(type_t   != NCL_double) NclFree(tmp_t);
+  if(type_p   != NCL_double) NclFree(tmp_p);
+  if(type_eth != NCL_double) NclFree(tmp_eth);
+
+/*
+ * Retrieve dimension names from the "t" variable, if any.
+ * These dimension names will later be attached to the output variable.
+ */
+  dim_info = get_wrf_dim_info(1,3,ndims_t,dsizes_t);
+
+/*
+ * Set up return value.
+ */
+/*
+ * Return value back to NCL script.
+ */
+
+  return_md = _NclCreateVal(
+                            NULL,
+                            NULL,
+                            Ncl_MultiDValData,
+                            0,
+                            (void*)eth,
+                            NULL,
+                            ndims_t,
+                            dsizes_t,
+                            TEMPORARY,
+                            NULL,
+                            type_obj_eth
+                            );
+/*
+ * Set up some attributes ("description" and "units") to return.
+ */
+  cdescription = (char *)calloc(33,sizeof(char));
+  strcpy(cdescription,"Equivalent Potential Temperature");
+  description  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *description = NrmStringToQuark(cdescription);
+
+  cunits       = (char *)calloc(2,sizeof(char));
+  strcpy(cunits,"K");
+  units        = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  *units       = NrmStringToQuark(cunits);
+
+/*
+ * Set up attributes to return.
+ */
+  att_id = _NclAttCreate(NULL,NULL,Ncl_Att,0,NULL);
+
+  dsizes[0] = 1;
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)description,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "description",
+             att_md,
+             NULL
+             );
+    
+  att_md = _NclCreateVal(
+                         NULL,
+                         NULL,
+                         Ncl_MultiDValData,
+                         0,
+                         (void*)units,
+                         NULL,
+                         1,
+                         dsizes,
+                         TEMPORARY,
+                         NULL,
+                         (NclObjClass)nclTypestringClass
+                         );
+  _NclAddAtt(
+             att_id,
+             "units",
+             att_md,
+             NULL
+             );
+    
+  tmp_var = _NclVarCreate(
+                          NULL,
+                          NULL,
+                          Ncl_Var,
+                          0,
+                          NULL,
+                          return_md,
+                          dim_info,
+                          att_id,
+                          NULL,
+                          RETURNVAR,
+                          NULL,
+                          TEMPORARY
+                          );
+
+/*
+ * Return output grid and attributes to NCL.
+ */
+  return_data.kind = NclStk_VAR;
+  return_data.u.data_var = tmp_var;
+  _NclPlaceReturn(return_data);
+  return(NhlNOERROR);
+
 }
 
 /*

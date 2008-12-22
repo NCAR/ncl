@@ -73,6 +73,7 @@ extern NhlErrorTypes wrf_smooth_2d_W(void);
 extern NhlErrorTypes wrf_latlon_to_ij_W(void);
 extern NhlErrorTypes wrf_uvmet_W(void);
 extern NhlErrorTypes wrf_dbz_W(void);
+extern NhlErrorTypes wrf_eth_W(void);
 extern NhlErrorTypes wrf_pvo_W(void);
 extern NhlErrorTypes wrf_avo_W(void);
 extern NhlErrorTypes wrf_ll_to_ij_W(void);
@@ -1411,6 +1412,20 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterFunc(wrf_dbz_W,args,"wrf_dbz",nargs);
+
+/*
+ * Register "wrf_eth".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(3);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+        NclRegisterFunc(wrf_eth_W,args,"wrf_eth",nargs);
 
 /*
  * Register "wrf_pvo".
