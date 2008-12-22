@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.14 2008-09-08 16:39:53 haley Exp $
+#   $Id: check_ncargncl_files,v 1.15 2008-12-22 23:24:08 haley Exp $
 #
 # Use check_files instead! This one is just for NCL/NCARG.
 #
@@ -710,6 +710,7 @@ lib/ncarg/examples/mpex11.f
 lib/ncarg/examples/mpex12.f
 lib/ncarg/examples/mpex13.f
 lib/ncarg/examples/mpex14.f
+lib/ncarg/examples/mpex15.f
 lib/ncarg/examples/mpexcc.f
 lib/ncarg/examples/mpexfi.dat
 lib/ncarg/examples/mpexfi.f
@@ -802,6 +803,8 @@ lib/ncarg/examples/wmex14.f
 lib/ncarg/examples/wmex15.f
 lib/ncarg/examples/wmex16.f
 lib/ncarg/examples/wmex17.f
+lib/ncarg/examples/Europe.png
+lib/ncarg/examples/Europe.pngi
 lib/ncarg/fontcaps/font1
 lib/ncarg/fontcaps/font10
 lib/ncarg/fontcaps/font11

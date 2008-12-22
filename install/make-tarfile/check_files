@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.14 2008-09-08 16:39:53 haley Exp $
+#   $Id: check_files,v 1.15 2008-12-22 23:24:07 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -1713,6 +1713,7 @@ lib/ncarg/examples/mpex11.f
 lib/ncarg/examples/mpex12.f
 lib/ncarg/examples/mpex13.f
 lib/ncarg/examples/mpex14.f
+lib/ncarg/examples/mpex15.f
 lib/ncarg/examples/mpexcc.f
 lib/ncarg/examples/mpexfi.dat
 lib/ncarg/examples/mpexfi.f
@@ -1805,6 +1806,8 @@ lib/ncarg/examples/wmex14.f
 lib/ncarg/examples/wmex15.f
 lib/ncarg/examples/wmex16.f
 lib/ncarg/examples/wmex17.f
+lib/ncarg/examples/Europe.png
+lib/ncarg/examples/Europe.pngi
 lib/ncarg/robj/ggkwdr_stub.o
 lib/ncarg/robj/libagupwrtx.o
 lib/ncarg/robj/libconraq.o
