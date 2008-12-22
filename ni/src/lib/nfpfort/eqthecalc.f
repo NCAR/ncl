@@ -58,9 +58,9 @@ c
       DO 1000 K = 1,MKZH
           DO 1000 J = 1,MJX - 1
               DO 1000 I = 1,MIY - 1
-                  Q = MAX(QVP(I,J,K),1.D-15)
+                  Q = MAX(QVP(I,J,K)*1000.,1.D-15)
                   T = TMK(I,J,K)
-                  P = PRS(I,J,K)
+                  P = PRS(I,J,K)/100.
                   E = Q*P/ (EPS+Q)
                   TLCL = TLCLC1/ (LOG(T**TLCLC2/E)-TLCLC3) + TLCLC4
                   ETH(I,J,K) = T* (1000.D0/P)**
