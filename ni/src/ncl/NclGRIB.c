@@ -59,6 +59,7 @@
 #include "fsl1_gtb.h"
 #include "fsl2_gtb.h"
 #include "fnmoc_gtb.h"
+#include "jma_3_gtb.h"
 
 #define NCL_GRIB_CACHE_SIZE  150
 /* 
@@ -6660,6 +6661,12 @@ int wr_status;
 						if (ptable_version == 254) {
 							ptable = &cptec_254_params[0];
 							ptable_count = sizeof(cptec_254_params)/sizeof(TBLE2);
+						}
+						break;
+					case 34: /* JMA */
+						if (ptable_version == 3) {
+							ptable = &jma_3_params[0];
+							ptable_count = sizeof(jma_3_params)/sizeof(TBLE2);
 						}
 						break;
 					case 8:
