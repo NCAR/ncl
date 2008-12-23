@@ -292,19 +292,19 @@ end
 if (($OS == Linux && $f90c == g77) || ($OS == Darwin && $f90c == g77) || $OS == FreeBSD) then 
   which g77 >! /dev/null
   if ($status) then
-    which g95 >! /dev/null
+    which gfortran >! /dev/null
     if ($status) then
-      which gfortran >! /dev/null
+      which g95 >! /dev/null
       if ($status) then
-        echo "FATAL ERROR: g77, g95, gfortran compilers NOT found."
+        echo "FATAL ERROR: g77, gfortran, g95 compilers NOT found."
         echo EXITING WRAPIT
         echo " "
         exit 1
       else
-        set f90c = gfortran
+        set f90c = g95
       endif
     else
-      set f90c = g95
+      set f90c = gfortran
     endif
   endif
 endif
