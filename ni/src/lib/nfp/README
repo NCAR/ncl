@@ -1,48 +1,81 @@
- Adding a Fortran routine as an NCL built-in:
- ------ - ------- ------- -- -- --- --------
+Adding a Fortran routine as an NCL built-in function
+----------------------------------------------------
+
+Assume the Fortran routine is in a file called "calc.f".  It must be a
+Fortran 77 file.
  
-   o  Add the routine to the nfpfort directory:
+The below instructions assume you already have NCARG/NCL source code
+checked out and built.
 
-        $NCARG/ni/src/lib/nfpfort
+   o  If there is an underscore in the Fortran routine name, then
+      g77 may add an extra underscore at the end of the name.  This
+      can cause load problems unless care is taken to account for this.
 
-      and do a "cvs add" on it.
+      Avoiding underscores in the Fortran routine names is advisable.
 
-      The routine should be a double precision version.
+      Rename the routine to not contain underscores.
+
+   o  The routine should be a double precision version.
+
       Instead of coding a double precision version 
-      directly it is less error prone to use 
+      directly, it is less error prone to use 
       the NAG single-to-double-precision converter.  This
       is on windom: /usr/local/NAGWare-4.1/bin/nag_apt .
 
       The default execution of nag_apt is to take a single
       precision .f file and convert it to double precision.
+
       The original file is backed up to a .orig file and 
       the input file is overwritten with the double precision
       version.
 
-      If there is an underscore in the Fortran routine name, then
-      g77 adds an extra underscore at the end of the name.  This
-      can cause load problems unless care is taken to account for this.
+         nag_apt -double calc.f
 
-      Avoiding underscores in the Fortran routine names is advisable.
+      If this command is successful, you will see something like
+      this:
 
-   o  Add the function reference to the yMakefile in the nfpfort
-      directory and do:
+       [nag_apt Normal Termination]
+       nag_apt: 'calc.f' backed up to 'calc.f.orig'
+
+      If it isn't successful, then "calc.f" will be unchanged. You
+      can look through the errors and usually it is pretty easy
+      to tell what needs to be fixed. For example, "nag_apt" doesn't
+      like "!" as a comment character, and will tell you this.
+
+   o  Add the routine to the nfpfort directory:
+
+        cp calc.f $NCARG/ni/src/lib/nfpfort/.
+        cd $NCARG/ni/src/lib/nfpfort
+        cvs add calc.f
+
+      Add the file to the yMakefile as well. Check these both into
+      CVS at this point, if you want:
+
+        cvs ci yMakefile calc.f
+
+   o  To make sure it compiles, type:
 
           cvs update 
           make me
           make
 
-      to make libnfpfort.a .
+      This should update the "libnfpfort.a" library with the new
+      Fortran routine.
 
-      Test compilations on all test machines.  This is not necessary
-      if you are super confident about the source. You can see a 
-      list of test machines at
+      Eventually test compilations on all test machines.  This is not
+      necessary if you are super confident about the source. You can
+      see a list of test machines at
 
       https://www.ncl.ucar.edu/internal/ncl-dev/systems.shtml
 
-   o  Go to directory $NCARG/ni/src/lib/nfp
+      You can also test later, *after* you've added the NCL wrapper.
 
-   o  Create the "W" file that calls the Fortran.
+   o  Change to directory $NCARG/ni/src/lib/nfp
+
+      Create the wrapper file that calls the Fortran. Generally,
+      call this file "calcW.c". Or, if it's similar to an existing
+      wrapper, you can add it to the end of the existing *W.c
+      file.
  
         --> Be sure to prototype the Fortran function/subroutine.
             Make sure the you are prototyping the
@@ -58,13 +91,14 @@
 
    o  Add the registration to wrapper.c 
 
-      Make sure the routine is properly registered as either a
-      function or procedure.                          
+      *Make sure the routine is properly registered as either a
+      function or procedure.*
 
       The registered NCL name will be the same as the "_W" name
       without the "_W".
 
-   o  Add the "W" file name to the yMakefile.
+   o  Add the "calcW.c" file name to the yMakefile (see how the other 
+      files are done).
 
    o  In the nfp directory do:
 
