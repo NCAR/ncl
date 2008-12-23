@@ -86,6 +86,7 @@ extern NhlErrorTypes linrood_wgt_W(void);
 extern NhlErrorTypes wgt_vert_avg_beta_W(void);
 extern NhlErrorTypes mjo_cross_segment_W(void);
 extern NhlErrorTypes mjo_cross_coh2pha_W(void);
+extern NhlErrorTypes bin_sum_util_W(void);
 
 extern NhlErrorTypes rgbhsv_W(void);
 extern NhlErrorTypes hsvrgb_W(void);
@@ -1605,6 +1606,24 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
         NclRegisterProc(mjo_cross_coh2pha_W,args,"mjo_cross_coh2pha",nargs);
+
+/*
+ * Register "bin_sum_util".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(7);
+
+        SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"integer",2,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+        NclRegisterProc(bin_sum_util_W,args,"bin_sum_util",nargs);
 
 /*
  * Register "gc_onarc".
