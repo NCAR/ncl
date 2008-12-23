@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ictrans.m,v 1.30 2008-07-27 03:36:20 haley Exp $
+.\"	$Id: ictrans.m,v 1.31 2008-12-23 00:04:15 haley Exp $
 .\"
 .\" ictrans 3.01 90/06/22 
 .TH ICTRANS 1NCARG "January 1993" NCARG "NCAR GRAPHICS"
@@ -687,7 +687,7 @@ Metafile frames written to an existing file via the
 command will be subject to the effects of any global "attribute elements"
 contained within the file.
 .SH COPYRIGHT
-Copyright (C) 1987-2008
+Copyright (C) 1987-2009
 .br
 University Corporation for Atmospheric Research
 .br

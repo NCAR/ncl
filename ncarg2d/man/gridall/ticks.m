@@ -54,7 +54,7 @@ periml,
 tick4,
 ncarg_cbind.
 .SH COPYRIGHT
-Copyright (C) 1987-2008
+Copyright (C) 1987-2009
 .br
 University Corporation for Atmospheric Research
 .br

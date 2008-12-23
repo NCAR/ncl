@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: wmstnm.m,v 1.12 2008-07-27 03:34:21 haley Exp $
+.\"	$Id: wmstnm.m,v 1.13 2008-12-23 00:03:11 haley Exp $
 .\"
 .TH WMSTNM 3NCARG "January 1995" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -42,7 +42,7 @@ Hardcopy:
 WMAP - A Package for Producing Daily Weather Maps and Plotting Station 
 Model Data
 .SH COPYRIGHT
-Copyright (C) 1987-2008
+Copyright (C) 1987-2009
 .br
 University Corporation for Atmospheric Research
 .br

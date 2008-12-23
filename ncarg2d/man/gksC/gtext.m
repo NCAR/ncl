@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: gtext.m,v 1.16 2008-07-27 03:34:06 haley Exp $
+.\"	$Id: gtext.m,v 1.17 2008-12-23 00:03:05 haley Exp $
 .\"
 .TH GTEXT 3NCARG "March 1993" UNIX "NCAR GRAPHICS"
 .SH NAME
@@ -46,7 +46,7 @@ Hardcopy:
 User's Guide for NCAR GKS-0A Graphics;
 NCAR Graphics Fundamentals, UNIX Version
 .SH COPYRIGHT
-Copyright (C) 1987-2008
+Copyright (C) 1987-2009
 .br
 University Corporation for Atmospheric Research
 .br

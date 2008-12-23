@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: ncargpath.m,v 1.16 2008-07-27 03:30:02 haley Exp $
+.\"	$Id: ncargpath.m,v 1.17 2008-12-23 00:03:53 haley Exp $
 .\"
 .TH NCARGPATH 8NCARG "November 1994" NCAR "NCAR GRAPHICS"
 .SH NAME
@@ -86,7 +86,7 @@ Online:
 .BR ncarg_env(5NCARG), ncarg_gks(3NCARG), ncargintro(5NCARG)
 .sp
 .SH COPYRIGHT
-Copyright (C) 1987-2008
+Copyright (C) 1987-2009
 .br
 University Corporation for Atmospheric Research
 .br

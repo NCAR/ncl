@@ -46,7 +46,7 @@ arinam, armvam, arpram, arscam, arseti, ncarg_cbind
 Hardcopy:
 NCAR Graphics Contouring and Mapping Tutorial
 .SH COPYRIGHT
-Copyright (C) 1987-2008
+Copyright (C) 1987-2009
 .br
 University Corporation for Atmospheric Research
 .br

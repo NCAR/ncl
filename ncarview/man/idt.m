@@ -1,5 +1,5 @@
 .\"
-.\"	$Id: idt.m,v 1.29 2008-07-27 03:36:20 haley Exp $
+.\"	$Id: idt.m,v 1.30 2008-12-23 00:04:16 haley Exp $
 .\"
 .\" NCAR View: idt.man,v 1.0 89/09/10 clyne 
 .\" Revision 3.01 90/11/15 clyne
@@ -493,7 +493,7 @@ is in animate mode.
 will use whatever color was most recently set in the animation segment
 for the entire segment.
 .SH COPYRIGHT
-Copyright (C) 1987-2008
+Copyright (C) 1987-2009
 .br
 University Corporation for Atmospheric Research
 .br
