@@ -6,12 +6,14 @@ C NCLFORTSTART
       DOUBLE PRECISION GLON(MLON),GLAT(NLAT)
       DOUBLE PRECISION ZLON(NZ),ZLAT(NZ),Z(NZ),ZMSG
 
-      DOUBLE PRECISION GBIN(MLON,NLAT),GKNT(MLON,NLAT)
+      DOUBLE PRECISION GBIN(MLON,NLAT)
+      INTEGER GKNT(MLON,NLAT)
 C NCLEND
 
 C
-C NCL: bindatasum(gbin[*][*],gknt[*][*],glat[*]:numeric,glon[*]:numeric
-C                 ,zlon[*]:numeric,zlat[*]:numeric,z[*]:numeric)
+C NCL: bin_sum_util(gbin[*][*]:numeric,gknt[*][*]:integer,glat[*]:numeric
+C                  ,glon[*]:numeric,zlon[*]:numeric,zlat[*]:numeric
+C                  ,z[*]:numeric)
 
       INTEGER K,NL,ML,IFLAG
       DOUBLE PRECISION DLAT,GLATBND,DLON,GLONBND
