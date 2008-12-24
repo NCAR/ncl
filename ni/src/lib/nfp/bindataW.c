@@ -224,17 +224,13 @@ NhlErrorTypes bin_sum_W( void )
   coerce_missing(type_z,has_missing_z,&missing_z,&missing_dbl_z,NULL);
 
 /*
- * Create temporary double array for output, if necessary.
+ * Create temporary double array for output, if necessary. gbin is
+ * an input/output variable, so make sure to carry the values over.
  */
-  if(type_gbin == NCL_float) {
-    tmp_gbin = (double*)calloc(nlatmlon,sizeof(double));
-    if(tmp_gbin == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_sum: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
-    }
-  }
-  else {
-    tmp_gbin = (double *)gbin;
+  tmp_gbin = coerce_input_double(gbin,type_gbin,nlatmlon,0,NULL,NULL);
+  if(tmp_gbin == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_sum: Unable to allocate memory for coercing input array to double");
+    return(NhlFATAL);
   }
 
 /* 
@@ -351,7 +347,7 @@ NhlErrorTypes bin_avg_W( void )
 /*
  * Argument # 5
  */
-  int *opt;
+  logical *opt;
 
 /*
  * Return variable
@@ -460,7 +456,7 @@ NhlErrorTypes bin_avg_W( void )
 /*
  * Get argument # 5
  */
-  opt = (int*)NclGetArgValue(
+  opt = (logical*)NclGetArgValue(
            5,
            6,
            NULL,

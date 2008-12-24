@@ -1640,7 +1640,7 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
         NclRegisterFunc(bin_avg_W,args,"bin_avg",nargs);
 
