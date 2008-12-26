@@ -1,5 +1,5 @@
 /*
- *      $Id: LINUX,v 1.21 2007-10-12 21:21:21 haley Exp $
+ *      $Id: LINUX,v 1.22 2008-12-26 14:01:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -18,9 +18,18 @@
  *  Date:       Wed Oct 25 14:56:41 MDT 1995
  *
  *  Description:    This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a LINUX
- *          system using the GNU compilers.
+ *                  tell ymake how to build NCAR Graphics on a LINUX
+ *                  system. 
+ *
+ *                  The default version of this file assumes you are
+ *                  using the GNU compilers, gcc and gfortran.
+ *
+ *                  You may need to modify it to change or include
+ *                  options. You can also look at the other LINUX* 
+ *                  files in this directory for help on how to configure
+ *                  this file.
  */
+
 #define HdfDefines  -DLINUX
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
 #define ByteSwapped
@@ -28,8 +37,8 @@
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
-#define FCompiler   g77
-#define CtoFLibraries   -lg2c -lgcc -lm
+#define FCompiler   gfortran
+#define CtoFLibraries   -lgfortran -lm
 #define CcOptions      -ansi -fPIC
 #define FcOptions      -fPIC -fno-second-underscore
 #define XToolLibrary    -lXt -lSM -lICE
