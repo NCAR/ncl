@@ -1,23 +1,5 @@
 /*
- *      $Id: Sun3,v 1.19 1994-04-08 18:37:16 boote Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		Sun3
- *
- *	Author:		Jeff W. Boote
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Mon May 3 14:45:51 MDT 1993
- *
- *	Description:	This is nolonger a supported architecture, so I
+ *	Description:	This is no longer a supported architecture, so I
  *			didn't test these things.
  */
 #define BuildSunViewctrans

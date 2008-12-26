@@ -1,26 +1,11 @@
 /*
- *      $Id: LINUX.ppc32.GNU,v 1.2 2007-04-21 20:35:00 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  2005                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:       LINUX.ppc32.GNU
- *
- *  Author:     Jim Edwards
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
- *
- *  Date:       Mon May  2 09:21:29 MDT 2005
- *
  *  Description:    This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a 32-bit ppc LINUX
- *          system using the GNU compilers. Note that this is a
- *          big-endian system.
+ *                  tell ymake how to build NCARG/NCL on a 32-bit
+ *                  ppc LINUX system using the GNU compilers. Note
+ *                  that this is a big-endian system.
+ * 
+ *                  Copy this file to the LINUX file in this directory
+ *                  before you start the NCL/NCARG build.
  */
 #define HdfDefines  -DLINUX
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE

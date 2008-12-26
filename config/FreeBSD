@@ -1,25 +1,12 @@
 /*
- *      $Id: FreeBSD,v 1.2 2005-05-01 21:49:23 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  2003                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:           FreeBSD
- *
- *  Author:         Rick Grubin 
- *          	    National Center for Atmospheric Research
- *          	    POB 3000, Boulder, Colorado
- *
- *  Date:           $Date: 2005-05-01 21:49:23 $ 
- *
  *  Description:    This file contains all the directives needed to
- *                  tell ymake how FreeBSD is different from a
- *                  default setup.
+ *                  tell ymake how to build NCAR Graphics on a FreeBSD
+ *                  system using GNU compilers. It hasn't been updated
+ *                  in awhile.
+ *
+ *                  You may need to modify it to change or include
+ *                  options, especially for the "CtoFLibraries" line
+ *                  and Compiler lines.
  */
 
 # define    HdfDefines  -DFreeBSD

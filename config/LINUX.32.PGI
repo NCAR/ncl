@@ -1,25 +1,10 @@
 /*
- *      $Id: LINUX.32.PGI,v 1.1 2007-06-22 22:04:01 grubin Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  2004                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *	File:		LINUX.64.PGI (64 bit)
- *
- *	Author:		Rick Grubin
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	$Date: 2007-06-22 22:04:01 $
- *
- *	Description:	This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a 64-bit LINUX
- *          system using the Portland Group compilers.
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how to build NCARG/NCL on a 32-bit
+ *                  LINUX system using the Portland Group compilers.
+ * 
+ *                  Copy this file to the LINUX file in this directory
+ *                  before you start the NCL/NCARG build.
  */
 #define HdfDefines  -DLINUX
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped

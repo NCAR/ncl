@@ -1,23 +1,10 @@
 /*
- *      $Id: Darwin.absoft,v 1.5 2008-11-02 13:08:38 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  2002			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		Darwin
- *
  *	Description:	This file contains the configuration for an
  *                      Absoft f90/gcc build on a PowerPC Mac system.
  *
  *                      Copy this file over the "Darwin" file,
  *                      which is the one that will get used to help
  *                      create the NCL/NCAR Graphics Makefiles.
- *
  */
 #define HdfDefines  -DDARWIN
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE

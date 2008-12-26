@@ -1,24 +1,6 @@
 /*
- *      $Id: LINUX,v 1.22 2008-12-26 14:01:20 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1993                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:       LINUX
- *
- *  Author:     Tim Fredrick
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
- *
- *  Date:       Wed Oct 25 14:56:41 MDT 1995
- *
  *  Description:    This file contains all the directives needed to
- *                  tell ymake how to build NCAR Graphics on a LINUX
+ *                  tell ymake how to build NCARG/NCL on a LINUX
  *                  system. 
  *
  *                  The default version of this file assumes you are

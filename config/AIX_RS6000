@@ -1,14 +1,10 @@
 /*
+ *  Description:  This file contains all the directives needed to
+ *                tell ymake how to build NCARG/NCL on a 64-bit
+ *                AIX system using the native AIX compilers.
  *
- *	Author:		Jeff W. Boote
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Mon May 3 13:16:08 MDT 1993
- *
- *	Description:	This file contains all the directives needed to
- *			tell ymake how the RS6k is different from a
- *			default setup.
+ *                See the AIX_RS6000.32 file if you need to build on
+ *                a 32-bit system.
  */
 #define HdfDefines    -DIBM6000 -DAIX5L64
 #define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT

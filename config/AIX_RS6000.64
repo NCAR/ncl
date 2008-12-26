@@ -1,25 +1,10 @@
 /*
- *      $Id: AIX_RS6000.64,v 1.9 2007-07-02 16:36:46 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		AIX_RS6000.64
-*
- *	Author:		Jeff W. Boote
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Mon May 3 13:16:08 MDT 1993
- *
- *	Description:	This file contains all the directives needed to
- *			tell ymake how the RS6k is different from a
- *			default setup.
+ *  Description:  This file contains all the directives needed to
+ *                tell ymake how to build NCARG/NCL on a 64-bit
+ *                AIX system using the native AIX compilers.
+ * 
+ *                Copy this file to the AIX_RS6000 file in this directory
+ *                before you start the NCL/NCARG build.
  */
 #define HdfDefines    -DIBM6000 -DAIX5L64
 #define StdDefines    -DSYSV -D_POSIX_SOURCE -DRS6000 -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT

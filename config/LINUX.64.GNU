@@ -1,25 +1,10 @@
 /*
- *      $Id: LINUX.64.GNU,v 1.4 2008-04-11 15:54:49 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1993                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:       LINUX.64.GNU
- *
- *  Author:     Tim Fredrick
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
- *
- *  Date:       Wed Oct 25 14:56:41 MDT 1995
- *
  *  Description:    This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a 64-bit LINUX
- *          system using the GNU compilers.
+ *                  tell ymake how to build NCARG/NCL on a 64-bit
+ *                  LINUX system using the GNU compilers.
+ * 
+ *                  Copy this file to the LINUX file in this directory
+ *                  before you start the NCL/NCARG build.
  */
 #define HdfDefines  -DLINUX64
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped

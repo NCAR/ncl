@@ -1,25 +1,13 @@
 /*
- *      $Id: CYGWIN,v 1.5 2005-05-01 21:49:22 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  2001			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		CYGWIN
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how to build NCARG/NCL on a Window
+ *                  system running Cygwin.
  *
- *	Author:		Mary Haley
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
+ *                  The default version of this file assumes you are
+ *                  using the GNU compilers, gcc and g77.
  *
- *	Date:		Sun Oct 07 09:39:29 MDT 2001
- *
- *	Description:	This file contains all the directives needed to
- *			tell ymake how CYGWIN is different from a
- *			default setup.
+ *                  You may need to modify it to change or include
+ *                  options.
  */
 #define HdfDefines      -DCygwin
 #define	StdDefines	-DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped

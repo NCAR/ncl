@@ -1,25 +1,10 @@
 /*
- *      $Id: LINUX.ppc64.xl,v 1.1 2007-10-06 02:05:31 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  2005                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:       LINUX.ppc64
- *
- *  Author:     Richard Grubin
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
- *
- *  Date:       Sun May  1 16:56:33 MDT 2005
- *
  *  Description:    This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a PPC 64-bit LINUX
- *          system using the xlf/xlc compilers
+ *                  tell ymake how to build NCARG/NCL on a PPC
+ *                  64-bit LINUX system using the xlf/xlc compilers.
+ * 
+ *                  Copy this file to the LINUX file in this directory
+ *                  before you start the NCL/NCARG build.
  */
 #define HdfDefines    -D_IBMR2
 #define StdDefines    -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED=1 -DNGLONG2XINT -Dppc64

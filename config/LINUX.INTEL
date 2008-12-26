@@ -1,25 +1,10 @@
 /*
- *      $Id: LINUX.INTEL,v 1.1 2004-12-17 06:52:26 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  1993                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:       LINUX.INTEL
- *
- *  Author:     Tim Fredrick
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
- *
- *  Date:       Wed Oct 25 14:56:41 MDT 1995
- *
- *  Description:    This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a Linux system
- *          using the INTEL compilers.
+ *  Description:   This file contains all the directives needed to
+ *                 tell ymake how to build NCARG/NCL on a Linux system
+ *                 using the INTEL compilers.
+ *  
+ *                 Copy this file to the LINUX file in this directory
+ *                 before you start the NCL/NCARG build.
  */
 #define HdfDefines  -DLINUX
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped

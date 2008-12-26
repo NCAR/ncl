@@ -1,25 +1,14 @@
 /*
- *      $Id: LINUX.GNU,v 1.3 2007-04-21 20:35:00 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  2004                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:       LINUX.GNU
+ *  Description:   This file contains all the directives needed to
+ *                 tell ymake how to build NCARG/NCL on a 32-bit LINUX
+ *                 system using the GNU "g77" and "gcc" compilers.
  *
- *  Author:     Tim Fredrick
- *          National Center for Atmospheric Research
- *          PO 3000, Boulder, Colorado
+ *                 In general, "g77" shouldn't be used anymore. It's been
+ *                 superceded by "gfortran", which is the compiler used
+ *                 in the "LINUX" file in this directory.
  *
- *  Date:       Wed Oct 25 14:56:41 MDT 1995
- *
- *  Description:    This file contains all the directives needed to
- *          tell ymake how to build NCAR Graphics on a 32-bit LINUX
- *          system using the GNU compilers.
+ *                 Copy this file to the LINUX file in this directory
+ *                 before you start the NCL/NCARG build.
  */
 #define HdfDefines  -DLINUX
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped

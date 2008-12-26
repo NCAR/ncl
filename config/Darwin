@@ -1,29 +1,20 @@
 /*
- *      $Id: Darwin,v 1.12 2008-11-02 13:08:37 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  2002			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		Darwin
- *
  *	Description:	This file contains the configuration for a
- *                      g77/gcc build on a PowerPC Mac system.
+ *                      gfortran/gcc build on a PowerPC Mac system.
  *
  *                      If you want to use a different Fortran
  *                      compiler, like Absoft's "f90", see the file 
  *                      "Darwin_Intel.absoft" in this directory for help
  *                      in modifying this file.
  * 
- *                      To use "gfortran" in place of "g77", change the
+ *                      To use "g77" in place of "gfortran", change the
  *                      the following lines:
  * 
- *        #define FCompiler   gfortran
- *        #define CtoFLibraries   -lgfortran
+ *        #define FCompiler   g77
+ *        #define CtoFLibraries   -lg2c -lgcc
+ *
+ *                      You may not need the second line if you have g77
+ *                      V4.x or later.
  *
  */
 #define HdfDefines  -DDARWIN
@@ -32,8 +23,8 @@
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
-#define FCompiler   g77
-#define CtoFLibraries   -lg2c -lgcc
+#define FCompiler   gfortran
+#define CtoFLibraries   -lgfortran -lm
 #define CcOptions      -fPIC -ansi
 #define FcOptions      -fPIC
 

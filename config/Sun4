@@ -1,25 +1,9 @@
 /*
- *      $Id: Sun4,v 1.27 2002-11-21 21:14:01 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		Sun4
- *
- *	Author:		Jeff W. Boote
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Mon May 3 13:14:05 MDT 1993
- *
  *	Description:	This file contains all the directives needed to
  *			tell ymake how the Sun4 is different from a
  *			default configuration.
+ *
+ * This is an old file, and probably not of much use. 
  */
 
 #ifdef	TryCodeCenter

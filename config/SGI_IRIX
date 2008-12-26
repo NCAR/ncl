@@ -1,23 +1,13 @@
 /*
- *      $Id: SGI_IRIX,v 1.5 2002-11-21 21:14:00 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1998			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		SGI_IRIX
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how to build NCARG/NCL on a 64-bit
+ *                  SGI system running IRIX. 
  *
- *	Author:		Mary Haley
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
+ *                  The default version of this file assumes you are
+ *                  using the native SGI compilers.
  *
- *	Date:		Thu Jan  8 08:25:00 MST 1998
- *
- *	Description:	
+ *                  You may need to modify it to change or include
+ *                  options, especially for the "CtoFLibraries" line.
  */
 
 #if	((MAJOR == 6) && (MINOR == 2))

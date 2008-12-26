@@ -1,24 +1,10 @@
 /*
- *      $Id: Cray,v 1.33 2007-08-22 04:40:23 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		Cray
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how to build NCARG/NCL on a Cray
+ *                  system. 
  *
- *	Author:		Jeff W. Boote
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
- *
- *	Date:		Mon May 3 14:33:36 MDT 1993
- *
- *	Description:	This file contains the directives necessary to
- *			describe the Cray running unicos.
+ *  Note that Cray is no longer a support system by us, and NCARG/NCL
+ *  will not likely build on this system without significant changes.
  */
 #define	HdfDefines	-DUNICOS
 #define	StdDefines	-DSYSV -DUNICOS -DUSG

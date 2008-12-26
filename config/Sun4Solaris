@@ -1,23 +1,13 @@
 /*
- *      $Id: Sun4Solaris,v 1.27 2006-10-20 17:24:20 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		Sun4Solaris
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how to build NCARG/NCL on a system
+ *                  running Solaris (not Solaris x86).
  *
- *	Author:		Jeff W. Boote
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
+ *                  The default version of this file assumes you are
+ *                  using the native Sun compilers.
  *
- *	Date:		Mon May 3 14:56:25 MDT 1993
- *
- *	Description:	
+ *                  You may need to modify it to change or include
+ *                  options, especially for the "CtoFLibraries" line.
  */
 /*
 #define	CtoFLibraries	-R/opt/SUNWspro/lib -lF77 -lM77 -lsunmath -lm

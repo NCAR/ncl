@@ -1,23 +1,13 @@
 /*
- *      $Id: HPUX_snake,v 1.19 2006-01-09 18:47:26 haley Exp $
- */
-/************************************************************************
-*									*
-*			     Copyright (C)  1993			*
-*	     University Corporation for Atmospheric Research		*
-*			     All Rights Reserved			*
-*									*
-************************************************************************/
-/*
- *	File:		HPUX_snake
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how to build NCAR Graphics on an HP
+ *                  system running HP-UX.
  *
- *	Author:		Jeff W. Boote
- *			National Center for Atmospheric Research
- *			PO 3000, Boulder, Colorado
+ *                  The default version of this file assumes you are
+ *                  using the native HP compilers.
  *
- *	Date:		Mon May 3 14:42:20 MDT 1993
- *
- *	Description:	
+ *                  You may need to modify it to change or include
+ *                  options, especially for the "CtoFLibraries" line.
  */
 #define	HdfDefines	-DHP9000
 #define	StdDefines	-DSYSV -D_HPUX_SOURCE

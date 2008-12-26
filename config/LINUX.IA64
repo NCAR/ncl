@@ -1,16 +1,4 @@
 /*
- *      $Id: LINUX.IA64,v 1.7 2008-12-02 15:13:26 haley Exp $
- */
-/************************************************************************
-*                                                                       *
-*                Copyright (C)  2008                                    *
-*        University Corporation for Atmospheric Research                *
-*                All Rights Reserved                                    *
-*                                                                       *
-************************************************************************/
-/*
- *  File:       LINUX.IA64
- *
  *	Description:	This file contains the configuration for a
  *                      build on a 64-bit Itanium Linux system using
  *                      the Intel ifort and GNU gcc compilers.
