@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.70 2008-01-18 18:13:53 dbrown Exp $
+ *      $Id: Symbol.c,v 1.71 2008-12-26 15:12:02 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -80,6 +80,12 @@ static int new_sym_i = 0;
  * Side Effect:	NONE
  */
 extern void NclAddUserHLUObjs(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern void NclAddUserBuiltInFuncs(
 #if NhlNeedProto
 void
 #endif
@@ -360,6 +366,7 @@ int _NclInitSymbol
 	}
 	_NclAddIntrinsics();
 	_NclAddBuiltIns();
+	NclAddUserBuiltInFuncs();
 	NclAddUserFuncs();
 	_NclAddHLUObjs();
 	NclAddUserHLUObjs();

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.148 2008-12-22 23:09:08 dbrown Exp $
+#      $Id: yMakefile,v 1.149 2008-12-26 15:12:02 huangwei Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2008-12-22 23:09:08 $
+#	Date:		$Date: 2008-12-26 15:12:02 $
 #
 #	Description:	
 #
@@ -288,6 +288,7 @@ STATIC_OBJS	=	AddBuiltIns.o AddHLUObjs.o \
 			NclHLUVar.o HLUSupport.o \
 			NclMultiDValHLUObjData.o \
 			BuiltInSupport.o BuiltInFuncs.o \
+			userAddProto.o userAddFuncs.o \
 			HLUFunctions.o yywrap.o craybin.o \
 			complete.o editline.o sysunix.o ListSupport.o \
 			NclList.o NclMultiDVallistData.o 
