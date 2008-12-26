@@ -13,8 +13,8 @@
 #define Cdynamic
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
-#define FCompiler   g77
-#define CtoFLibraries   -lg2c -lgcc -lm
+#define FCompiler   gfortran
+#define CtoFLibraries   -lgfortran
 #define CcOptions      -ansi -fPIC
 #define FcOptions      -fPIC -fno-f2c -fno-second-underscore
 #define XToolLibrary    -lXt -lSM -lICE
