@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.15 2008-11-02 14:00:08 haley Exp $
+#      $Id: yMakefile,v 1.16 2008-12-27 12:40:52 haley Exp $
 #
 #########################################################################
 #									#
@@ -21,6 +21,6 @@
 
 #if !defined(CRAY)
 #define	IHaveSubdirs
-SUBDIRS = nyacc nflex lib ncl mkwrap db scripts examples
+SUBDIRS = nyacc lib ncl mkwrap db scripts examples
 #endif
 
