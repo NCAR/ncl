@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.95 2008-12-04 20:21:48 haley Exp $
+ *      $Id: Project,v 1.96 2008-12-27 12:44:28 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2008-12-04 20:21:48 $
+ *	$Date: 2008-12-27 12:44:28 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -509,7 +509,6 @@ FONTC		= _UseProg($(FONTCSRC),fontc)
 IFTRAN      = $(NCARGLIBSRC)/Iftran/Iftran
 FSPLIT      = $(NCARGLIBSRC)/Iftran/Fsplit
 NYACC      = $(NISRC)/nyacc/nyacc
-NFLEX      = $(NISRC)/nflex/nflex
 
 #ifdef	BuildRasterNetcdf
 NETCDFLIB	= $(NCDFLIBS) $(XDRLIB)
