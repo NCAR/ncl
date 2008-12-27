@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.190 2008-12-04 20:29:35 shea Exp $
+;      $Id: contributed.ncl,v 1.191 2008-12-27 21:02:26 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9610,4 +9610,411 @@ begin
  ijsub(3) = max(nlml(:,1))   ; lon Last  index
 
  return(ijsub)
+end
+;-------------------------------------------------------------------------------
+function icObjAnal_1d(x[*],y[*],z[*],lon[*],lat[*],dcrit[*]:numeric,opt:logical)
+; This should *not* be invoked directly by the user.
+; It is called by "function icObjAnal"
+;
+; Nomenclature
+; x,y,z        - lon,lat,observation triplets
+; lat          - lat of returned grid. Need not be equally spaced.
+;                Should have the units attribute: lat@units="degrees_north"
+; lon          - lon of returned grid. Need not be equally spaced
+;                Should have the units attribute: lon@units="degrees_east"
+; dcrit        - 1D array containing successive radii of influence.
+;                Must be expressed in degrees latitude and should be
+;                monotonically decreasing.  eg: dcrit = (/10, 5, 3/)
+; opt          - variable to which optional attributes are attached
+;                @guess = user supplied 2D guess array [default is no 1st guess]
+;                         Must be same size and shape as grid defined by lat/lon
+;                @zonal = True: use zonal average of z as 1st guess
+;                @setmsg= True is default
+;                @timing= True   ; print elapsed time per iteration (scan)
+;                @count => Return number of observations used in each scan
+;                           @nObs ==> (nscan,:,:)
+;
+local nlat, mlon, nScan, G, dimG, rankG, zonavg, i, j, ij, ns, nl, ml \
+    , gcdist, diff, cf, nObs, dc2, nd, flag
+begin
+  nlat   = dimsizes(lat)
+  mlon   = dimsizes(lon)
+
+  nScan  = dimsizes(dcrit)
+  nObs   = new( (/nScan,nlat,mlon/), "integer", "No_FillValue" ) 
+  nObs   = 0
+
+  if (opt .and. isatt(opt,"guess")) then
+
+      G      = opt@guess                     ; 1st guess
+      dimG   = dimsizes(G)
+      rankG  = dimsizes(dimG)
+      if (.not.(rankG.eq.2)) then
+          print("icObjAnal_1d: rankG="+rankG+"  expecting 2D") 
+          exit
+      end if
+      if (.not.(nlat*mlon.ne.prod(dimG))) then
+          print("icObjAnal_1d: dimension sizes of G and nlat*mlon must match") 
+          print("icObjAnal_1d: dimG="+dimG) 
+          print("icObjAnal_1d: nlat="+nlat+"   mlon="+mlon) 
+          exit
+      end if
+      flag = 2
+  else
+
+      G  = new( (/nlat,mlon/), typeof(z), getFillValue(z) )    ; 1st guess
+
+      if (isatt(opt,"zonal") .and. opt@zonal) then       ; create zonal avg
+          dlat  = max(abs(lat(1:nlat-1)-lat(0:nlat-2)) ) ; nominal
+         ;dlat  = 2*dlat      ; expand to get more data for zonal average
+                                                         ; bigger range
+          zonavg = new( nlat, typeof(z), z@_FillValue)
+          do nl=0,nlat-1
+             i = ind(y.le.(lat(nl)+dlat) .and. y.ge.(lat(nl)-dlat))
+             if (.not.all(ismissing(i))) then
+                 zonavg(nl) = avg( z(i) )      ; zonal avg of all observations
+             end if
+             delete(i)
+          end do
+
+          if (any(ismissing(zonavg))) then
+              zonavg = linmsg(zonavg, -1)      ; linearly interpolate
+          end if
+         print("icObjAnal_1d: lat="+lat+"   zonavg="+zonavg)
+                                               ; arbitrary smooth
+        ;;zonavg = wgt_runave(zonavg, (/0.25, 0.50, 0.25/), 1)  
+          zonavg = wgt_runave(zonavg, filwgts_normal (7, 1.0, 0) , 1)  
+
+          do nl=0,nlat-1
+             G(nl,:) = zonavg(nl)
+          end do
+
+          delete(zonavg)
+          flag = 1
+      else
+          G    = 0.0                         ; direct ... no 1st guess
+          flag = 0
+      end if
+  end if
+
+  G!0   = "lat"
+  G!1   = "lon"
+  G&lat =  lat
+  G&lon =  lon
+
+  wcStrt = systemfunc("date")
+
+  do ns=0,nScan-1
+     nsStrt = systemfunc("date")
+     dc2    = dcrit(ns)^2
+
+    do nl=0,nlat-1
+       i = ind( abs(y-lat(nl)).le.dcrit(ns)) 
+       if (.not.ismissing(i(0)) ) then
+
+           do ml=0,mlon-1
+              if (ns.eq.0 .or. (ns.gt.0 .and.  nObs(ns-1,nl,ml).gt.0)) then
+                  gcdist = gc_latlon(lat(nl),lon(ml), y(i),x(i), 0,2)
+                  nd     = num(gcdist.le.dcrit(ns))
+                  nObs(ns,nl,ml) = nd     ; # observations within radius
+     
+                  if (nd.gt.0) then 
+                      j      = ind(gcdist.le.dcrit(ns))
+                      ij     = i(j)
+                      diff   = z(ij)-G(nl,ml)  ; normally interpolate G to z but ..... 
+                      wgt    = exp(-4*gcdist(j)^2/dc2)
+                      cf     = sum(wgt*diff)/sum(wgt)  ; correction factor
+                     ;print("ns="+ns+"   nl="+nl+"  ml="+ml+"  cf="+cf)
+         
+                      G(nl,ml) = G(nl,ml) + cf         ; update Guess
+                      
+                      delete(j)
+                      delete(ij)
+                      delete(cf)
+                      delete(wgt)
+                      delete(diff)
+                  end if             ; nd
+                  delete(gcdist)
+              end if
+           end do                    ; ml
+       end if
+       delete(i)
+    end do                           ; nl
+                                     ; default is to smooth
+    if (.not.isatt(opt,"smooth") .or. opt@smooth) then
+        if (ns.lt.(nScan-1)) then
+            G = smth9(G, 0.50,-0.25, 0)  ; light local smoother
+        else
+            G = smth9(G, 0.50, 0.25, 0)  ; heavy local smoother
+        end if
+    end if
+                                     ; set grid pts ouside of 
+    if (ns.eq.0) then                ; max radius to _FillValue
+        if (.not.isatt(opt,"setmsg") .or. opt@setmsg) then
+            G = where(nObs(ns,:,:).eq.0, G@_FillValue, G)
+        end if
+    end if
+
+    if (isatt(opt,"timing")) then
+        wallClockElapseTime(nsStrt,"icObjAnal_1d: ns="+ns, 0)
+    end if
+
+  end do                             ; ns`
+
+  if (isatt(opt,"timing")) then
+      wallClockElapseTime(wcStrt,"Total time: icObjAnal_1d: nScan="+nScan , 0)
+  end if
+
+  if (isatt(opt,"count")) then
+      G@nObs = nObs
+  end if
+
+  return(G)
+end
+;-----------------------------------------------------------------------------------
+function icObjAnal_2d(x[*],y[*],z[*],lon2d[*][*],lat2d[*][*],dcrit[*]:numeric,opt:logical)
+;
+; This should not be invoked directly by the user.
+; It is called by "function icObjAnal"
+;
+; Nomenclature
+; x,y,z        - lon,lat,observation triplets
+; lat2d        - lat of returned grid. 
+; lon2d        - lon of returned grid
+; dcrit        - 1D array containing successive radii of influence.
+;                Must be expressed in degrees latitude and should be
+;                monotonically de.  eg: dcrit = (/10, 5, 3/)
+; opt          - variable to which optional attributes are attached
+;                @guess = 2D guess array [default is no 1st guess]
+;                @timing = True   ; print times
+;                @count  => Return number of observations used in each scan
+;                           @nObs ==> (nscan,:,:)
+;
+local nlat, mlon, nScan, G, dimG, rankG, zonavg, i, j, ij, ns, nl, ml \
+    , gcdist, diff, cf, nObs, dc2, nd, dimlat, ranklt, LAT, LON, G1D
+begin
+  dimlat = dimsizes(lat2d)
+  nlat   = dimlat(0)
+  mlon   = dimlat(1)
+
+  nScan  = dimsizes(dcrit)
+  nObs   = new( (/nScan,nlat,mlon/), "integer", "No_FillValue" ) 
+  nObs   = 0
+
+  if (opt .and. isatt(opt,"guess")) then
+
+      G      = opt@guess                     ; 1st guess
+      dimG   = dimsizes(G)
+      rankG  = dimsizes(dimG)
+      ranklt = dimsizes(dimlat)
+      if (.not.(rankG.eq.ranklt)) then
+          print("icObjAnal_2d: rankG="+rankG+"  ranklt="+ranklt) 
+          exit
+      end if
+      if (.not.all(dimlat.eq.dimG)) then
+          print("icObjAnal_2d: all dimension sizes must be the same") 
+          print("icObjAnal_2d: dimltt="+dimlat+"   dimG="+dimG) 
+          exit
+      end if
+
+  else
+
+      G  = new( dimlat, typeof(z), getFillValue(z) )    ; 1st guess
+
+      if (isatt(opt,"zonal") .and. opt@zonal) then      ; create zonal avg
+          mnlat = min(lat2d)
+          mxlat = max(lat2d)
+          lat1d = fspan(mnlat,mxlat,nlat)               ; nominal
+          dlat  = (mxlat-mnlat)/(nlat-1)                ; nominal
+          dlat  = 4*dlat      ; expand to get more data for zonal average
+                                                         ; bigger range
+          zonavg = new( nlat, typeof(z), z@_FillValue)
+          do nl=0,nlat-1
+             i = ind(y.le.(lat1d(nl)+dlat) .and. y.ge.(lat1d(nl)-dlat))
+             if (.not.all(ismissing(i))) then
+                 zonavg(nl) = avg( z(i) )      ; zonal avg of all observations
+             end if
+             delete(i)
+          end do
+
+          if (any(ismissing(zonavg))) then
+              zonavg = linmsg(zonavg, -1)          ; linearly interpolate
+          end if
+
+        ;;zonavg = wgt_runave(zonavg, (/0.25, 0.50, 0.25/), 1)  ;smooth
+          zonavg = wgt_runave(zonavg, filwgts_normal (7, 1.0, 0) , 1)  ;smooth
+
+          LAT  = ndtooned(lat2d)
+          G1D  = ndtooned(G) 
+
+          do nl=0,nlat-1
+             i = ind(LAT.le.(lat1d(nl)+dlat) .and. LAT.ge.(lat1d(nl)-dlat))
+             G1D(i) = zonavg(nl)
+             delete(i)
+          end do
+
+          delete(zonavg)
+          delete(lat1d)
+          delete(LAT)
+
+          G = onedtond(G1D, dimlat)
+          delete(G1D)
+      else
+          G = 0.0                         ; direct ... no 1st guess
+      end if
+  end if
+
+  G@lat2d = lat2d
+  G@lon2d = lon2d
+
+  LAT    = ndtooned( lat2d )
+  LON    = ndtooned( lon2d )
+
+  wcStrt =  systemfunc("date")
+  do ns=0,nScan-1
+     nsStrt =  systemfunc("date")
+     dc2 = dcrit(ns)^2
+
+    do nl=0,nlat-1
+
+      do ml=0,mlon-1
+         if (ns.eq.0 .or. (ns.gt.0 .and. nObs(ns-1,nl,ml).gt.0)) then
+             i = ind( abs(y-lat2d(nl,ml)).le.dcrit(ns) ) 
+             if (.not.any(ismissing(i)) ) then
+                 gcdist = gc_latlon(lat2d(nl,ml),lon2d(nl,ml), y(i),x(i), 0,2)
+    
+                 nd     = num(gcdist.le.dcrit(ns))
+                 nObs(ns,nl,ml) = nd     ; # observations within radius
+    
+                 if (nd.gt.0) then 
+                     j      = ind(gcdist.le.dcrit(ns))
+                     ij     = i(j)
+                     diff   = z(ij)-G(nl,ml)  ; normally interpolate G to z but .....            
+                     wgt    = exp(-4*gcdist(j)^2/dc2)
+                     cf     = sum(wgt*diff)/sum(wgt) 
+                    ;print("ns="+ns+"   nl="+nl+"  ml="+ml+"  cf="+cf)
+        
+                     G(nl,ml) = G(nl,ml) + cf 
+                     
+                     delete(j)
+                     delete(ij)
+                     delete(cf)
+                     delete(wgt)
+                     delete(diff)
+                 end if
+                 delete(gcdist)
+             end if
+             delete(i)
+         end if
+      end do                         ; ml
+    end do                           ; nl
+                                     ; default is to smooth
+    if (.not.isatt(opt,"smooth") .or. opt@smooth) then
+        if (ns.lt.(nScan-1)) then
+            G = smth9(G, 0.50,-0.25, 0)  ; light local smoother
+        else
+            G = smth9(G, 0.50, 0.25, 0)  ; heavy local smoother
+        end if
+    end if
+
+    if (isatt(opt,"timing")) then
+        wallClockElapseTime(nsStrt,"icObjAnal_2d: ns="+ns , 0)
+    end if
+  end do                             ; ns`
+
+  if (isatt(opt,"count")) then
+      G@nObs = nObs
+  end if
+
+  if (isatt(opt,"timing")) then
+      wallClockElapseTime(wcStrt,"Total time: icObjAnal_2d: nScan="+nScan , 0)
+  end if
+
+  return(G)
+end
+;----------------------------------------------------------------------------
+function icObjAnal(X[*],Y[*],Z[*], lon:numeric,lat:numeric \
+                  ,dcrit[*]:numeric,opt:logical)
+; Perform Barnes [ Cressman ] type iterative correction objective analysis
+;
+; Nomenclature
+; x,y,z        - lon,lat,observation triplets
+; lat          - lat of returned grid. Need not be equally spaced
+;                but must be monotonically increasing. Should have the
+;                units attribute assigned: lat@units="degrees_north"
+; lon          - lon of returned grid. Need not be equally spaced
+;                but must be monotonically increasing. Should have the
+;                units attribute assigned: lon@units="degrees_east"
+; dcrit        - 1D array containing successive radii of influence.
+;                Must be expressed in degrees latitude and should be
+;                monotonically de.  eg: dcrit = (/10, 5, 3/)
+;                dims = dimsizes(dcrit)   , nscan = dims(0) 
+; opt          - variable to which optional attributes are attached
+;                @guess = 2D guess array  [input]
+;                @timing = print times    
+;                @count  = number of observation used in each scan
+;                          Return @nObs ==> (nscan,:,:)
+;
+local wcStrt, i, XX, YY, ZZ, k, x, y, z, dimLat, dimLon, rankLat, rankLon
+begin
+  wcStrt =  systemfunc("date")
+
+  if (.not.isatt(Z,"_FillValue")) then
+      Z@_FillVlaue = 1e20
+  end if
+                            ; eliminate missing values
+  i   = ind(.not.ismissing(Z))
+  if (ismissing(i(0))) then
+      print("icObjAnal: all input data are missing")
+  end if
+  XX  = X(i)
+  YY  = Y(i)
+  ZZ  = Z(i)
+  delete(i)
+                           
+ ;k   = dim_pqsort(YY, 1)   ; sort obs in ascending latitude order 
+ ;x   = XX(k)               ; not used here ... too lazy to change code
+ ;y   = YY(k)
+ ;z   = ZZ(k)
+ ;delete(k)
+
+ ;delete(XX)
+ ;delete(YY)
+ ;delete(ZZ)
+
+ ;print("icObjAnal:   z="+z+"  lon="+x+"  lat="+y )
+
+  dimLat  = dimsizes(lat)
+  dimLon  = dimsizes(lon)
+  rankLat = dimsizes(dimLat)
+  rankLon = dimsizes(dimLon)
+  if (rankLat.ne.rankLon) then
+      print("icObjAnal: ranks of lat and lon must match")
+      print("icObjAnal: rankLat="+rankLat)
+      print("icObjAnal: rankLon="+rankLon)
+  end if
+  if (rankLat.gt.2) then
+      print("icObjAnal: ranks of lat and lon must be 1 or 2")
+      print("icObjAnal: rankLat="+rankLat)
+  end if
+
+  if (rankLat.eq.1) then
+     ;zGrid = icObjAnal_1d(X ,Y , Z,lon,lat,dcrit,opt)
+      zGrid = icObjAnal_1d(XX,YY,ZZ,lon,lat,dcrit,opt)
+  else
+      zGrid = icObjAnal_2d(X ,Y , Z,lon,lat,dcrit,opt)
+     ;zGrid = icObjAnal_2d(XX,YY,ZZ,lon,lat,dcrit,opt)
+  end if
+  if (isatt(opt,"timing")) then
+      wallClockElapseTime(wcStrt,"icObjAnal", 0)
+  end if
+
+  if (isatt(Z,"long_name")) then
+      zGrid@long_name = Z@long_name
+  end if
+  if (isatt(Z,"units")) then
+      zGrid@units = Z@units
+  end if
+ 
+  return(zGrid)
 end
