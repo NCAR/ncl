@@ -12,7 +12,7 @@
 /*
 #define	CtoFLibraries	-R/opt/SUNWspro/lib -lF77 -lM77 -lsunmath -lm
 */
-#define	CtoFLibraries	 -R/opt/SUNWspro/lib -lf77compat -lfsu -lsunmath -lm
+#define	CtoFLibraries	 -R/opt/SUNWspro/lib -lf77compat -lfsu -lsunmath -lfui -lm
 #define HdfDefines	-DSUN
 #define	Cstatic	-Bstatic
 #define	Cdynamic -Bdynamic
