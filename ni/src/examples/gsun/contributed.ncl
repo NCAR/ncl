@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.191 2008-12-27 21:02:26 shea Exp $
+;      $Id: contributed.ncl,v 1.192 2008-12-27 21:40:15 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9765,7 +9765,7 @@ begin
       wallClockElapseTime(wcStrt,"Total time: icObjAnal_1d: nScan="+nScan , 0)
   end if
 
-  if (isatt(opt,"count")) then
+  if (opt .and. isatt(opt,"count") .and. opt@count) then
       G@nObs = nObs
   end if
 
