@@ -1,5 +1,5 @@
 /*
- *      $Id: wks.c,v 1.9 2008-07-27 01:15:51 haley Exp $
+ *      $Id: wks.c,v 1.10 2008-12-28 13:28:39 haley Exp $
  */
 /***********************************************************************
 *                                                                      *
@@ -88,11 +88,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#ifdef	FreeBSD
+#ifdef	__FreeBSD__
 #include <sys/filio.h>
 #else
 #include <sys/file.h>
-#endif	/* FreeBSD */
+#endif	/* __FreeBSD__ */
 #ifdef cray
 #include <fortran.h>
 #endif
