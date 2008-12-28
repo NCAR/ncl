@@ -1,5 +1,5 @@
 /*
- *      $Id: usleep.c,v 1.8 2008-07-27 12:23:46 haley Exp $
+ *      $Id: usleep.c,v 1.9 2008-12-28 13:25:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -32,10 +32,14 @@
 #include <sys/select.h>
 #endif
 
+/* BSD systems need this for usleep(3) */
+#include <sys/param.h>  
+#include <unistd.h>
+
 void	USleep(usec)
 	unsigned	usec;
 {
-#ifdef	SUN
+#if (defined(SUN) || defined(BSD4_3))
 	(void) usleep(usec);
 #else
 	struct timeval	tv;
