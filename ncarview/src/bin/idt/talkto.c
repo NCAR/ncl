@@ -1,5 +1,5 @@
 /*
- *	$Id: talkto.c,v 1.30 2008-07-27 03:18:38 haley Exp $
+ *	$Id: talkto.c,v 1.31 2008-12-28 13:30:29 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,6 +30,11 @@
 #include <string.h>
 #include <sys/time.h>
 #include "text.h"
+#include <sys/param.h>
+
+#ifdef	BSD4_4
+#include <sys/select.h>
+#endif
 
 #ifdef	Solaris
 #include <sys/select.h>
