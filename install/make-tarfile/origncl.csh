@@ -3,7 +3,7 @@
 # To use: source /contrib/bin/origncl.csh
 # To switch back to the test version: source /contrib/bin/testncl.csh
 
-set ngroot=/contrib/ncl-4.3.0
+set ngroot=/contrib/ncl-5.1.1-beta
 
 set sub=s:$ngroot/bin\\:::g
 set newpath=`echo $PATH | sed -e $sub`

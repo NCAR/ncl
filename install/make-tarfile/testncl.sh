@@ -3,7 +3,7 @@
 # To use: . /contrib/bin/testncl.sh
 # To switch back to original version: . /contrib/bin/origncl.sh
 
-export NCARG_ROOT=/contrib/ncl-4.3.0
+export NCARG_ROOT=/contrib/ncl-5.1.1-beta
 export PATH=$NCARG_ROOT/bin:$PATH
 
 version=`ncl -V`

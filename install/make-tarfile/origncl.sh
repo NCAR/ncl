@@ -3,7 +3,7 @@
 # To use: . /contrib/bin/origncl.sh
 # To switch back to test version: . /contrib/bin/testncl.sh
 
-ngroot=/contrib/ncl-4.3.0
+ngroot=/contrib/ncl-5.1.1-beta
 
 sub=s:$ngroot/bin\\:::g
 newpath=`echo $PATH | sed -e $sub`

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.18 2008-09-08 16:39:53 haley Exp $
+#   $Id: check_ncl_files,v 1.19 2008-12-28 13:41:04 haley Exp $
 #
 # Use check_files instead! This one is just for NCL.
 # 
@@ -12,7 +12,7 @@
 #
 # set echo verbose timestamp
 
-set version = "4.3.0"
+set version = "5.1.0"
 set pwddir  = `pwd`
 
 echo "Checking files for version $version in dir $pwddir..."

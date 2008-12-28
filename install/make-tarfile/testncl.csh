@@ -3,7 +3,7 @@
 # To use: source /contrib/bin/testncl.csh
 # To switch back to the original version: source /contrib/bin/origncl.csh
 
-setenv NCARG_ROOT /contrib/ncl-4.3.0
+setenv NCARG_ROOT /contrib/ncl-5.1.1-beta
 setenv PATH $NCARG_ROOT/bin:$PATH
 
 set version=`ncl -V`
