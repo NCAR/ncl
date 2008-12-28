@@ -1,5 +1,5 @@
 /*
- *	$Id: ictrans_wks.c,v 1.5 2008-07-27 03:18:45 haley Exp $
+ *	$Id: ictrans_wks.c,v 1.6 2008-12-28 13:31:53 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,11 +30,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#ifdef	FreeBSD
+#ifdef	__FreeBSD__
 #include <sys/filio.h>
 #else
 #include <sys/file.h>
-#endif	/* FreeBSD */
+#endif	/* __FreeBSD__ */
 #include <unistd.h>
 #ifdef cray
 #include <fortran.h>

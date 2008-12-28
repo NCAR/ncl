@@ -1,5 +1,5 @@
 /*
- *	$Id: cgm_tools.c,v 1.32 2008-07-27 03:18:42 haley Exp $
+ *	$Id: cgm_tools.c,v 1.33 2008-12-28 13:31:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -44,11 +44,11 @@
 #include	<fcntl.h>
 #include	<unistd.h>
 #include	<sys/types.h>
-#ifdef	FreeBSD
+#ifdef	__FreeBSD__
 #include	<sys/filio.h>
 #else
 #include	<sys/file.h>
-#endif	/* FreeBSD */
+#endif	/* __FreeBSD__ */
 #include	<ncarg/c.h>
 #include	"cgm_tools.h"
 #include	"cgmdef.h"

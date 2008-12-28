@@ -1,5 +1,5 @@
 /*
- *	$Id: in.c,v 1.16 2008-07-27 03:18:44 haley Exp $
+ *	$Id: in.c,v 1.17 2008-12-28 13:31:01 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -20,11 +20,11 @@
 
 #include	<stdio.h>
 #include	<sys/types.h>
-#ifdef	FreeBSD
+#ifdef	__FreeBSD__
 #include	<sys/filio.h>
 #else
 #include	<sys/file.h>
-#endif	/* FreeBSD */
+#endif	/* __FreeBSD__ */
 #include	<errno.h>
 #include	<ncarg/cgm_tools.h>
 #include	"in.h"
