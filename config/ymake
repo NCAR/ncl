@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ymake,v 1.48 2006-05-02 14:16:20 haley Exp $
+#	$Id: ymake,v 1.49 2008-12-28 13:27:18 haley Exp $
 #
 ######################################################################
 #
@@ -362,6 +362,7 @@ case    Linux:
         switch ("$mach")
         case    i*86:
         case    x*86:
+	case    amd64:
         case    i*64:
         case    x*64:
         case    p*64:

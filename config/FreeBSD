@@ -9,25 +9,24 @@
  *                  and Compiler lines.
  */
 
-# define    HdfDefines  -DFreeBSD
-# define    StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -DFreeBSD -DUNIX386 -D__EMX__
-# define    ByteSwapped
-# define    Cstatic
-# define    Cdynamic
-# define    CppCommand  '/usr/bin/cpp -traditional'
-# define    CCompiler   gcc
-# define    FCompiler   g77
-# define    CtoFLibraries   -lg2c -lgcc -lm
-# define    CcOptions       -ansi -Df2cFortran
-# define    XToolLibrary    -lXt -lSM -lICE
-# define    BuildShared NO
-# define    XLibrary    -lX11 -lXext
-# define ExtraExportFlags -rdynamic
+#define    HdfDefines  -DFreeBSD
+#define    StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
+#define    ByteSwapped
+#define    Cstatic
+#define    Cdynamic
+#define    CppCommand  '/usr/bin/cpp -traditional'
+#define    CCompiler   cc
+#define    FCompiler   f77
+#define    CtoFLibraries   -lg2c -lgcc -lm
+#define    CcOptions       -ansi
+#define    XToolLibrary    -lXt -lSM -lICE
+#define    BuildShared NO
+#define    XLibrary    -lX11 -lXext
 
-# define    ArchRecLibSearch    -L/usr/X11R6/lib -L/custom/lib
-# define    ArchRecIncSearch    -I/usr/X11R6/include -I/custom/include
+#define    ArchRecLibSearch    -L/usr/X11R6/lib -L/usr/local/lib
+#define    ArchRecIncSearch    -I/usr/X11R6/include -I/usr/local/include
 
-FC = $(F77)
+FC ?= $(F77)
 
 /*************** Redefine Macros from Rules ********************************/
 
@@ -37,6 +36,6 @@ FC = $(F77)
  * Description: This rule creates a directory - if a parent dir doesn't exist
  *              it attempts to create it.
  */
-# ifndef MakeDir
-# define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
-# endif /* MakeDir */
+#ifndef MakeDir
+#define MakeDir(dir)    @if (test ! -d dir); then ($(MKDIRHIER) dir); fi
+#endif /* MakeDir */
