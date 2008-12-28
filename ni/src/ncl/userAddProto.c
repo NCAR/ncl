@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddProto.c,v 1.1 2008-12-26 15:12:02 huangwei Exp $
+ *      $Id: userAddProto.c,v 1.2 2008-12-28 17:13:47 huangwei Exp $
  */
 /************************************************************************
 *                                                                   *
@@ -43,6 +43,24 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclgetColsFromString(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclremoveCharFromString(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclswitchCharInString(
+#if NhlNeedProto
+void
+#endif
+);
+
 void NclAddUserBuiltInFuncs
 #if     NhlNeedProto
 (void)
@@ -60,21 +78,41 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, 1, "string", 1, NclANY); nargs++;
     NclRegisterFunc(_NclgetColsInString, args, "getColsInString", nargs);
 
-      /*
-       * char **getArraySubString(char **arrayString, int rows, int col, const char *delim);
-       */
+  /*
+   * char **getArraySubString(char **arrayString, int rows, int col, const char *delim);
+   */
 
     nargs = 0;
-    args = NewArgs(4);
+    args = NewArgs(3);
+    SetArgTemplate(args, 0, "string", 1, NclANY); nargs++;
+    SetArgTemplate(args, 1, "numeric", 1, NclANY); nargs++;
+    SetArgTemplate(args, 2, "string", 1, NclANY); nargs++;
+    NclRegisterFunc(_NclgetArraySubString, args, "getArraySubString", nargs);
+    
+    nargs = 0;
+    args = NewArgs(3);
     SetArgTemplate(args, 0, "string", 1, NclANY); nargs++;
     SetArgTemplate(args, 1, "numeric", 1, NclANY); nargs++;
     SetArgTemplate(args, 2, "numeric", 1, NclANY); nargs++;
-    SetArgTemplate(args, 3, "string", 1, NclANY); nargs++;
-    NclRegisterFunc(_NclgetArraySubString, args, "getArraySubString", nargs);
+    NclRegisterFunc(_NclgetColsFromString, args, "getColsFromString", nargs);
     
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, 0, "string", 1, NclANY); nargs++;
+    SetArgTemplate(args, 1, "string", 1, NclANY); nargs++;
+    NclRegisterFunc(_NclremoveCharFromString, args, "removeCharFromString", nargs);
+    
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, 0, "string", 1, NclANY); nargs++;
+    SetArgTemplate(args, 1, "string", 1, NclANY); nargs++;
+    SetArgTemplate(args, 2, "string", 1, NclANY); nargs++;
+    NclRegisterFunc(_NclswitchCharInString, args, "switchCharInString", nargs);
+
     return;
 }
 
 #ifdef __cpluplus
 }
 #endif
+

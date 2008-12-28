@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.1 2008-12-26 15:12:02 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.2 2008-12-28 17:13:46 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -69,6 +69,7 @@ extern int cmd_line;
 extern short NCLnoSysPager;
 extern char *nclf;
 
+
 NhlErrorTypes _NclgetColsInString
 #if     NhlNeedProto
 (void)
@@ -87,11 +88,8 @@ NhlErrorTypes _NclgetColsInString
     NclScalar   missing_delim, ret_missing_delim;
     NclBasicDataTypes type_str, type_delim;
   
-    int sz = 0;
-    int i;
-
-    char *tmp_str;
-    char *tmp_delim;
+    char tmp_str[2048];
+    char tmp_delim[1024];
     char *result = NULL;
     int *cols;
     
@@ -105,28 +103,11 @@ NhlErrorTypes _NclgetColsInString
                         &type_str,
                         DONT_CARE);
 
-  /*
-   *printf("ndim_str is <%d>\n", ndim_str);
-   *printf("dimsz_str is <%d>\n", dimsz_str[0]);
-   *printf("missing_str is <%d>\n", missing_str);
-   *printf("has_missing_str is <%d>\n", has_missing_str);
-   *printf("type_str is <%d>\n", (int) type_str);
-   *printf("str is <%s>\n", (char *)str);
-   */
-
-    for (i = 0; i < ndim_str; i++)
-        sz += dimsz_str[i];
-
-    if (sz < 1)
+    if (str == NULL)
     {
         NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
         return NhlFATAL;
     }
-
-  /*
-   *sz = strlen(NrmQuarkToString(str[0]));
-   *printf("sz is <%d>\n", sz);
-   */
 
     delim = (string *) NclGetArgValue(
                         1,
@@ -138,34 +119,15 @@ NhlErrorTypes _NclgetColsInString
                         &type_delim,
                         DONT_CARE);
 
-  /*
-   *printf("ndim_delim is <%d>\n", ndim_delim);
-   *printf("dimsz_delim is <%d>\n", dimsz_delim[0]);
-   *printf("missing_delim is <%d>\n", missing_delim);
-   *printf("has_missing_delim is <%d>\n", has_missing_delim);
-   *printf("type_delim is <%d>\n", (int) type_delim);
-   *printf("delim is <%s>\n", delim);
-   */
-
-    sz = 0;
-    for (i = 0; i < ndim_delim; i++)
-        sz += dimsz_delim[i];
-
-    if (sz < 1)
+    if (delim == NULL)
     {
         NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
         return NhlFATAL;
     }
 
-    tmp_str = (char *) NrmQuarkToString(str[0]);
-  /*
-   *printf("tmp_str is <%s>\n", tmp_str);
-   */
+    strcpy(tmp_str, (char *) NrmQuarkToString(str[0]));
 
-    tmp_delim = (char *) NrmQuarkToString(delim[0]);
-  /*
-   *printf("tmp_delim is <%s>\n", tmp_delim);
-   */
+    strcpy(tmp_delim, (char *) NrmQuarkToString(delim[0]));
 
     cols = NclMalloc((unsigned int) sizeof(int));
     cols[0] = 0;
@@ -181,9 +143,6 @@ NhlErrorTypes _NclgetColsInString
         while(result != NULL)
         {
             cols[0] ++;
-          /*
-           *printf("str[%d] is <%s>\n", cols[0], result);
-           */
             result = strtok(NULL, tmp_delim);
         }
 
@@ -205,31 +164,28 @@ NhlErrorTypes _NclgetArraySubString
     string *delim;
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
-    int ndim_rows, dimsz_rows[NCL_MAX_DIMENSIONS];
     int ndim_cols, dimsz_cols[NCL_MAX_DIMENSIONS];
     int ndim_delim, dimsz_delim[NCL_MAX_DIMENSIONS];
     int has_missing_strs, found_missing_strs = 0;
-    int has_missing_rows, found_missing_rows = 0;
     int has_missing_cols, found_missing_cols = 0;
     int has_missing_delim, found_missing_delim = 0;
     NclScalar   missing_strs, ret_missing_strs;
-    NclScalar   missing_rows, ret_missing_rows;
     NclScalar   missing_cols, ret_missing_cols;
     NclScalar   missing_delim, ret_missing_delim;
-    NclBasicDataTypes type_strs, type_rows, type_cols, type_delim;
+    NclBasicDataTypes type_strs, type_cols, type_delim;
   
-    int i, n;
+    int i, j, k, n;
 
-    char *tmp_str;
-    char *tmp_delim;
+    char tmp_str[2048];
+    char tmp_delim[1024];
     char *result = NULL;
     string *arraySubString;
-    int *rows;
+    int str_size;
     int *cols;
     
     strs = (string *) NclGetArgValue(
                         0,
-                        4,
+                        3,
                         &ndim_strs,
                         dimsz_strs,
                         &missing_strs,
@@ -243,60 +199,15 @@ NhlErrorTypes _NclgetArraySubString
         return NhlFATAL;
     }
 
-  /*
-    printf("\n\n\n\n");
-    printf("ndim_strs is <%d>\n", ndim_strs);
-    printf("dimsz_strs is <%d>\n", dimsz_strs[0]);
-   *printf("missing_strs is <%d>\n", missing_strs);
-   *printf("has_missing_strs is <%d>\n", has_missing_strs);
-   *printf("type_strs is <%d>\n", (int) type_strs);
-   */
-
-    rows = (int *) NclGetArgValue(
-                        1,
-                        4,
-                        &ndim_rows,
-                        dimsz_rows,
-                        &missing_rows,
-                        &has_missing_rows,
-                        &type_rows,
-                        DONT_CARE);
-
-  /*
-    printf("\n\n");
-   *printf("ndim_rows is <%d>\n", ndim_rows);
-   *printf("dimsz_rows is <%d>\n", dimsz_rows[0]);
-   *printf("missing_rows is <%d>\n", missing_rows);
-   *printf("has_missing_rows is <%d>\n", has_missing_rows);
-   *printf("type_rows is <%d>\n", (int) type_rows);
-    printf("rows is <%d>\n", rows[0]);
-   */
-
-    if (rows == NULL)
-    {
-        NhlPError(NhlFATAL, errno, "getArraySubString: memory allocation error.");
-        return NhlFATAL;
-    }
-
     cols = (int *) NclGetArgValue(
-                        2,
-                        4,
+                        1,
+                        3,
                         &ndim_cols,
                         dimsz_cols,
                         &missing_cols,
                         &has_missing_cols,
                         &type_cols,
                         DONT_CARE);
-
-  /*
-    printf("\n\n");
-   *printf("ndim_cols is <%d>\n", ndim_cols);
-   *printf("dimsz_cols is <%d>\n", dimsz_cols[0]);
-   *printf("missing_cols is <%d>\n", missing_cols);
-   *printf("has_missing_cols is <%d>\n", has_missing_cols);
-   *printf("type_cols is <%d>\n", (int) type_cols);
-    printf("cols is <%d>\n", cols[0]);
-   */
 
     if (cols == NULL)
     {
@@ -305,8 +216,8 @@ NhlErrorTypes _NclgetArraySubString
     }
 
     delim = (string *) NclGetArgValue(
+                        2,
                         3,
-                        4,
                         &ndim_delim,
                         dimsz_delim,
                         &missing_delim,
@@ -320,19 +231,13 @@ NhlErrorTypes _NclgetArraySubString
         return NhlFATAL;
     }
 
-    tmp_delim = (char *) NrmQuarkToString(delim[0]);
+    strcpy(tmp_delim, (char *) NrmQuarkToString(delim[0]));
 
-  /*
-    printf("\n\n");
-   *printf("ndim_delim is <%d>\n", ndim_delim);
-   *printf("dimsz_delim is <%d>\n", dimsz_delim[0]);
-   *printf("missing_delim is <%d>\n", missing_delim);
-   *printf("has_missing_delim is <%d>\n", has_missing_delim);
-   *printf("type_delim is <%d>\n", (int) type_delim);
-    printf("tmp_delim is <%s>\n", tmp_delim);
-   */
+    str_size = 1;
+    for(k=0; k<ndim_strs; k++)
+        str_size *= dimsz_strs[k];
 
-    arraySubString = (string *) malloc(rows[0]*1024);
+    arraySubString = (string *) malloc(str_size*1024);
 
     if (has_missing_strs && found_missing_strs)
     {
@@ -341,12 +246,11 @@ NhlErrorTypes _NclgetArraySubString
     }
     else
     {
-        for(i=0; i<rows[0]; i++)
+        i = 0;
+        for(k=0; k<ndim_strs; k++)
+        for(j=0; j<dimsz_strs[k]; j++)
         {
-            tmp_str = (char *) NrmQuarkToString(strs[i]);
-          /*
-            printf("line %4d: tmp_str is <%s>\n", i, tmp_str);
-           */
+            strcpy(tmp_str, (char *) NrmQuarkToString(strs[i]));
             result = strtok(tmp_str, tmp_delim);
             n = 0;
             while(result != NULL)
@@ -355,24 +259,366 @@ NhlErrorTypes _NclgetArraySubString
                 if(n == cols[0])
                 {
                     arraySubString[i] = NrmStringToQuark(result);
-                  /*
-                    printf("colStrings[%d] is <%s>, transback: <%s>\n", i, result, NrmQuarkToString(arraySubString[i]));
-                   */
                     break;
                 }
                 result = strtok(NULL, tmp_delim);
             }
+
+            i++;
+        }
+
+        return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, NULL, NCL_string, 1);
+    }
+
+    NclFree(arraySubString);
+  /*
+    free(arraySubString);
+   */
+}
+
+
+NhlErrorTypes _NclgetColsFromString
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *strs;
+
+    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_start, dimsz_start[NCL_MAX_DIMENSIONS];
+    int ndim_end, dimsz_end[NCL_MAX_DIMENSIONS];
+    int has_missing_strs, found_missing_strs = 0;
+    int has_missing_start, found_missing_start = 0;
+    int has_missing_end, found_missing_end = 0;
+    NclScalar   missing_strs, ret_missing_strs;
+    NclScalar   missing_start, ret_missing_start;
+    NclScalar   missing_end, ret_missing_end;
+    NclBasicDataTypes type_strs, type_start, type_end;
+  
+    int i, j, k, m, n;
+
+    char tmp_str[2048];
+    char result[2048];
+    string *arraySubString;
+    int str_size;
+    int *startCol;
+    int *endCol;
+    
+    strs = (string *) NclGetArgValue(
+                        0,
+                        3,
+                        &ndim_strs,
+                        dimsz_strs,
+                        &missing_strs,
+                        &has_missing_strs,
+                        &type_strs,
+                        DONT_CARE);
+
+    if (strs == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getArraySubString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    startCol = (int *) NclGetArgValue(
+                        1,
+                        3,
+                        &ndim_start,
+                        dimsz_start,
+                        &missing_start,
+                        &has_missing_start,
+                        &type_start,
+                        DONT_CARE);
+
+    if (startCol == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getArraySubString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    endCol = (int *) NclGetArgValue(
+                        2,
+                        3,
+                        &ndim_end,
+                        dimsz_end,
+                        &missing_end,
+                        &has_missing_end,
+                        &type_end,
+                        DONT_CARE);
+
+    if (endCol == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    str_size = 1;
+    for(k=0; k<ndim_strs; k++)
+        str_size *= dimsz_strs[k];
+
+    arraySubString = (string *) malloc(str_size*1024);
+
+    if (has_missing_strs && found_missing_strs)
+    {
+        ret_missing_strs.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+        return NclReturnValue((void *) arraySubString, ndim_strs, dimsz_strs, &ret_missing_strs, NCL_int, 0);
+    }
+    else
+    {
+        i = 0;
+        for(k=0; k<ndim_strs; k++)
+        for(j=0; j<dimsz_strs[k]; j++)
+        {
+            strcpy(tmp_str, (char *) NrmQuarkToString(strs[i]));
+
+            if(startCol[0] < 1)
+            { startCol[0] = 1; }
+
+            m=0;
+            for(n=startCol[0]-1; n<endCol[0]; n++)
+            {
+                result[m++] = tmp_str[n];
+            }
+            result[m] = '\0';
+            arraySubString[i] = NrmStringToQuark(result);
+
+            i++;
         }
 
         return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, NULL, NCL_string, 1);
     }
 
     free(arraySubString);
-  /*
-    NclFree(arraySubString);
-   */
+}
+
+
+NhlErrorTypes _NclremoveCharFromString
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *str;
+    string *chr;
+
+    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_chr, dimsz_chr[NCL_MAX_DIMENSIONS];
+    int has_missing_str, found_missing_str = 0;
+    int has_missing_chr, found_missing_chr = 0;
+    NclScalar   missing_str, ret_missing_str;
+    NclScalar   missing_chr, ret_missing_chr;
+    NclBasicDataTypes type_str, type_chr;
+  
+    char tmp_str[2048];
+    char tmp_chr;
+    string *arrayString;
+    int i, j, k, m, n;
+    int str_size;
+    int cols;
+    
+    str = (string *) NclGetArgValue(
+                        0,
+                        2,
+                        &ndim_str,
+                        dimsz_str,
+                        &missing_str,
+                        &has_missing_str,
+                        &type_str,
+                        DONT_CARE);
+
+    if (str == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    chr = (string *) NclGetArgValue(
+                        1,
+                        2,
+                        &ndim_chr,
+                        dimsz_chr,
+                        &missing_chr,
+                        &has_missing_chr,
+                        &type_chr,
+                        DONT_CARE);
+
+    if (chr == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    strcpy(tmp_str, (char *) NrmQuarkToString(chr[0]));
+    tmp_chr = tmp_str[0];
+
+    str_size = 1;
+    for(k=0; k<ndim_str; k++)
+        str_size *= dimsz_str[k];
+
+    arrayString = (string *) malloc(str_size*1024);
+
+    if (has_missing_str && found_missing_str)
+    {
+        ret_missing_str.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+        return NclReturnValue((void *) arrayString, ndim_str, dimsz_str, &ret_missing_str, NCL_int, 0);
+    }
+    else
+    {
+        i = 0;
+        for(k=0; k<ndim_str; k++)
+        for(j=0; j<dimsz_str[k]; j++)
+        {
+            strcpy(tmp_str, (char *) NrmQuarkToString(str[i]));
+
+            cols = strlen(tmp_str);
+            m=0;
+            for(n=0; n<cols; n++)
+            {
+                if(tmp_str[n] != tmp_chr)
+                {
+                    tmp_str[m++] = tmp_str[n];
+                }
+            }
+            tmp_str[m] = '\0';
+            arrayString[i] = NrmStringToQuark(tmp_str);
+
+            i++;
+        }
+
+        return NclReturnValue(arrayString, ndim_str, dimsz_str, NULL, NCL_string, 1);
+    }
+
+    free(arrayString);
+
+}
+
+NhlErrorTypes _NclswitchCharInString
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *str;
+    string *o_c;
+    string *n_c;
+
+    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int ndim_o_c, dimsz_o_c[NCL_MAX_DIMENSIONS];
+    int ndim_n_c, dimsz_n_c[NCL_MAX_DIMENSIONS];
+    int has_missing_str, found_missing_str = 0;
+    int has_missing_o_c, found_missing_o_c = 0;
+    int has_missing_n_c, found_missing_n_c = 0;
+    NclScalar   missing_str, ret_missing_str;
+    NclScalar   missing_o_c, ret_missing_o_c;
+    NclScalar   missing_n_c, ret_missing_n_c;
+    NclBasicDataTypes type_str, type_o_c, type_n_c;
+  
+    char tmp_str[2048];
+    char tmp_o_c;
+    char tmp_n_c;
+    string *arrayString;
+    int i, j, k, n;
+    int str_size;
+    int cols;
+
+    str = (string *) NclGetArgValue(
+                        0,
+                        2,
+                        &ndim_str,
+                        dimsz_str,
+                        &missing_str,
+                        &has_missing_str,
+                        &type_str,
+                        DONT_CARE);
+
+    if (str == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    o_c = (string *) NclGetArgValue(
+                        1,
+                        2,
+                        &ndim_o_c,
+                        dimsz_o_c,
+                        &missing_o_c,
+                        &has_missing_o_c,
+                        &type_o_c,
+                        DONT_CARE);
+
+    if (o_c == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    strcpy(tmp_str, (char *) NrmQuarkToString(o_c[0]));
+    tmp_o_c = tmp_str[0];
+
+    n_c = (string *) NclGetArgValue(
+                        1,
+                        2,
+                        &ndim_n_c,
+                        dimsz_n_c,
+                        &missing_n_c,
+                        &has_missing_n_c,
+                        &type_n_c,
+                        DONT_CARE);
+
+    if (n_c == NULL)
+    {
+        NhlPError(NhlFATAL, errno, "getColsInString: memory allocation error.");
+        return NhlFATAL;
+    }
+
+    strcpy(tmp_str, (char *) NrmQuarkToString(n_c[0]));
+    tmp_n_c = tmp_str[0];
+
+    str_size = 1;
+    for(k=0; k<ndim_str; k++)
+        str_size *= dimsz_str[k];
+
+    arrayString = (string *) malloc(str_size*1024);
+
+    if (has_missing_str && found_missing_str)
+    {
+        ret_missing_str.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+        return NclReturnValue((void *) arrayString, ndim_str, dimsz_str, &ret_missing_str, NCL_int, 0);
+    }
+    else
+    {
+        i = 0;
+        for(k=0; k<ndim_str; k++)
+        for(j=0; j<dimsz_str[k]; j++)
+        {
+            strcpy(tmp_str, (char *) NrmQuarkToString(str[i]));
+
+            cols = strlen(tmp_str);
+            for(n=0; n<cols; n++)
+            {
+                if(tmp_str[n] != tmp_o_c)
+                {
+                    tmp_str[n] = tmp_n_c;
+                }
+            }
+            arrayString[i] = NrmStringToQuark(tmp_str);
+
+            i++;
+        }
+
+        return NclReturnValue(arrayString, ndim_str, dimsz_str, NULL, NCL_string, 1);
+    }
+
+    free(arrayString);
+
 }
 
 #ifdef __cplusplus
 }
 #endif
+
