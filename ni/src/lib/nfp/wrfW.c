@@ -75,8 +75,8 @@ extern void NGCALLF(dijtoll,DIJTOLL)(int *, double *, double *, double *,
                                      double *, double *, double *, double *, 
                                      double *);
 
-extern void NGCALLF(eqthecalc,EQTHECALC)(double *, double *, double *,
-                                         double *, int *, int *, int *);
+extern void NGCALLF(deqthecalc,DEQTHECALC)(double *, double *, double *,
+                                           double *, int *, int *, int *);
 
 extern void NGCALLF(dcapecalc3d,DCAPECALC3D)(double *prs, double *tmk, 
                                              double *qvp, double *ght,
@@ -8709,8 +8709,8 @@ NhlErrorTypes wrf_eth_W( void )
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(eqthecalc,EQTHECALC)(tmp_qv, tmp_t, tmp_p, tmp_eth, 
-                                 &wedim, &sndim, &btdim);
+    NGCALLF(deqthecalc,DEQTHECALC)(tmp_qv, tmp_t, tmp_p, tmp_eth, 
+                                   &wedim, &sndim, &btdim);
 
 /*
  * Coerce output back to float if necessary.
