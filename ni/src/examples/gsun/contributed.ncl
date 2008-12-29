@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.192 2008-12-27 21:40:15 shea Exp $
+;      $Id: contributed.ncl,v 1.193 2008-12-29 21:10:52 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9933,8 +9933,8 @@ begin
   return(G)
 end
 ;----------------------------------------------------------------------------
-function icObjAnal(X[*],Y[*],Z[*], lon:numeric,lat:numeric \
-                  ,dcrit[*]:numeric,opt:logical)
+function obj_anal_ic(X[*],Y[*],Z[*], lon:numeric,lat:numeric \
+                    ,dcrit[*]:numeric,opt:logical)
 ; Perform Barnes [ Cressman ] type iterative correction objective analysis
 ;
 ; Nomenclature
