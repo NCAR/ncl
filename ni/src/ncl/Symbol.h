@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.31 2008-01-08 21:56:15 grubin Exp $
+ *      $Id: Symbol.h,v 1.32 2008-12-30 16:52:47 haley Exp $
  */
 /************************************************************************
 *									*
@@ -527,9 +527,15 @@ FILE *fp
 #endif
 );
 
+#ifdef YY_CURRENT_BUFFER_LVALUE
+#define NCL_YY_CURRENT_BUFFER YY_CURRENT_BUFFER_LVALUE
+#else
+#define NCL_YY_CURRENT_BUFFER yy_current_buffer
+#endif
+
 #ifndef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
-        if ( yy_current_buffer->yy_is_interactive ) \
+        if ( NCL_YY_CURRENT_BUFFER->yy_is_interactive ) \
                 { \
                 int c = '*', n; \
                 for ( n = 0; n < max_size && \
