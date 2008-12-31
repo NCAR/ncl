@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.43 2008-06-20 19:41:25 haley Exp $
+#      $Id: Configure,v 1.44 2008-12-31 13:36:37 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2008-06-20 19:41:25 $
+#	$Date: 2008-12-31 13:36:37 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -887,14 +887,14 @@ endif
 #
 # Summarize configuration
 #
-cat <<"EOF"
+cat <<EOF
 
 	Every user of NCL and NCAR Graphics will need to set
 	the following environment variable:
 
         setenv NCARG_ROOT $parentdir
 
-"EOF"
+EOF
 	
 endif
 
