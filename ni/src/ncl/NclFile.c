@@ -4912,6 +4912,15 @@ struct _NclSelectionRecord * sel_ptr;
 					if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type)) == NULL)  {
 						if(value->multidval.data_type == NCL_string) {
 							tmp_md = _NclStringMdToCharMd(value);
+							/* 
+							 * simple hack to get rid of the null terminator, which should not be written to the output file
+							 */
+							tmp_md->multidval.totalelements--;
+							tmp_md->multidval.totalsize--;
+							tmp_md->multidval.dim_sizes[0]--;
+							/*
+							 * end hack
+							 */
 							ret = _NclFileWriteVarAtt(thefile,var,attname,tmp_md,sel_ptr);
 							_NclDestroyObj((NclObj)tmp_md);
 							return(ret);
@@ -5123,6 +5132,15 @@ struct _NclSelectionRecord *sel_ptr;
 				if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(value->multidval.data_type)) == NULL)  {
 					if(value->multidval.data_type == NCL_string) {
 						tmp_md = _NclStringMdToCharMd(value);
+						/* 
+						 * simple hack to get rid of the null terminator, which should not be written to the output file
+						 */
+						tmp_md->multidval.totalelements--;
+						tmp_md->multidval.totalsize--;
+						tmp_md->multidval.dim_sizes[0]--;
+						/*
+						 * end hack
+						 */
 						ret = _NclFileWriteAtt(thefile,attname,tmp_md,sel_ptr);
 						_NclDestroyObj((NclObj)tmp_md);
 						return(ret);
