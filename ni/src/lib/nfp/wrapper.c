@@ -88,6 +88,7 @@ extern NhlErrorTypes mjo_cross_segment_W(void);
 extern NhlErrorTypes mjo_cross_coh2pha_W(void);
 extern NhlErrorTypes bin_sum_W(void);
 extern NhlErrorTypes bin_avg_W(void);
+extern NhlErrorTypes trop_wmo_W(void);
 
 extern NhlErrorTypes rgbhsv_W(void);
 extern NhlErrorTypes hsvrgb_W(void);
@@ -1643,6 +1644,22 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
         NclRegisterFunc(bin_avg_W,args,"bin_avg",nargs);
+
+/*
+ * Register "trop_wmo".
+ *
+ * Create private argument array
+ */
+        nargs = 0;
+        args = NewArgs(4);
+
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+        NclRegisterFunc(trop_wmo_W,args,"trop_wmo",nargs);
 
 /*
  * Register "gc_onarc".
