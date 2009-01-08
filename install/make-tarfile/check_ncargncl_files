@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.15 2008-12-22 23:24:08 haley Exp $
+#   $Id: check_ncargncl_files,v 1.16 2009-01-08 18:29:14 haley Exp $
 #
 # Use check_files instead! This one is just for NCL/NCARG.
 #
@@ -259,7 +259,6 @@ lib/libnclapi.a
 lib/libnfp.a
 lib/libnfpfort.a
 lib/libngmath.a
-lib/libnio.a
 lib/ncarg/colormaps/3gauss.ncmap
 lib/ncarg/colormaps/3saw.ncmap
 lib/ncarg/colormaps/BkBlAqGrYeOrReViWh200.gp

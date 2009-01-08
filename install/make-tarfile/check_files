@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.16 2008-12-28 13:41:04 haley Exp $
+#   $Id: check_files,v 1.17 2009-01-08 18:29:14 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -379,7 +379,6 @@ lib/libncl.a
 lib/libnclapi.a
 lib/libnfp.a
 lib/libnfpfort.a
-lib/libnio.a
 lib/libsphere3.1_dp.a
 lib/ncarg/colormaps/3gauss.ncmap
 lib/ncarg/colormaps/3saw.ncmap
