@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.3 2007-10-23 21:36:38 haley Exp $
+#   $Id: create_src_dist,v 1.4 2009-01-08 16:13:20 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -61,6 +61,7 @@ endif
 #
 
 unset SCP
+set USE_CVS
 
 set NCARGNCL
 
@@ -113,6 +114,11 @@ while ($#argv > 0)
       shift
       breaksw
 
+    case "-x":
+      unset USE_CVS
+      shift
+      breaksw
+
     case "-h":
     case "-help":
       goto usage
@@ -144,8 +150,15 @@ set scpdir = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/$version"
 setenv CVSROOT $cvsroot
 setenv CVS_RSH $cvsrsh
 
-echo "I will be CVS checking out the source code in the directory"
-echo -n "'$parentdir'. Continue? (y/n) "
+
+if ($?USE_CVS) then
+  echo "I will be CVS checking out the source code in the directory"
+  echo -n "'$parentdir'. Continue? (y/n) "
+else
+  echo "I will be trying to use the 'ncarg' directory in"
+  echo -n "'$parentdir'. Continue? (y/n) "
+endif
+
 set answer="$<"
 if ("$answer" != "y") then
   exit
@@ -155,13 +168,14 @@ endif
 # What if there's already an "ncarg" directory?
 #
 cd $parentdir
-if (-e ncarg) then
+if ($?USE_CVS && -e ncarg) then
   echo "Directory $parentdir/ncarg already exists." 
   echo -n "Do you want me to remove it? (y/n) "
   set answer="$<"
   if ("$answer" != "y") then
     echo "Directory '$parentdir/ncarg' already exists and may not be"
-    echo "the correct source code. Can't continue."
+    echo "the correct source code. Use the '-x' option if it's okay to"
+    echo "use this directory."
     exit
   endif
   set cmd = "/bin/rm -rf $parentdir/ncarg"
@@ -172,14 +186,25 @@ endif
 # 
 # Check out all of $CVSROOT/ncarg
 #
-set cmd = "cvs co ncarg"
-echo "$cmd"
-$cmd
-if (! -e ncarg) then
-  echo "Directory '$parentdir/ncarg' does not exist. The CVS command might"
-  echo "have failed. Can't continue."
-  exit
+if ($?USE_CVS) then
+  set cmd = "cvs co ncarg"
+  echo "$cmd"
+  $cmd
+  if (! -e ncarg) then
+    echo "Directory '$parentdir/ncarg' does not exist. The CVS command might"
+    echo "have failed. Can't continue."
+    exit
+  endif
+else
+  if (! -e ncarg) then
+    echo "Directory '$parentdir/ncarg' does not exist. You either need" 
+    echo "to let this script try to check it out with CVS, or check it"
+    echo "out yourself. Don't use the '-x' option if you want this script
+    echo "to check it out for you."
+    exit
+  endif
 endif
+
 
 # 
 # Remove "CVS" directories
