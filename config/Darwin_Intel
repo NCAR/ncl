@@ -28,7 +28,7 @@
 #define CCompiler   gcc
 #define FCompiler   gfortran
 #define CcOptions      -ansi -fPIC
-#define FcOptions      -fPIC
+#define FcOptions      -fPIC -fno-range-check
 #define CtoFLibraries  -lgfortran
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
