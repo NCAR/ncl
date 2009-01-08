@@ -10,7 +10,7 @@
  *                  options.
  */
 #define HdfDefines      -DCygwin
-#define	StdDefines	-DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped
+#define	StdDefines	-DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
 #define ByteSwapped
 #define	Cstatic	-Wl,-Bstatic
 #define	Cdynamic -Wl,-Bdynamic
