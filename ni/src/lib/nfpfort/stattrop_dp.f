@@ -1,21 +1,22 @@
 C NCLFORTSTART
-      SUBROUTINE STATTROPX(NLEV,PFULL,TFULL,TMSG,PUNIT,PTROP,ITROP)
+      SUBROUTINE STATTROPX(NLEV,NLEVM,PFULL,TFULL,TMSG,LAPSEC,PUNIT
+     +                     ,PTROP,ITROP,LAPSE,PHALF,PMB)
       IMPLICIT NONE
 c                                                   ! INPUT
-      INTEGER NLEV, PUNIT
-      DOUBLE PRECISION PFULL(NLEV),TFULL(NLEV),TMSG
+      INTEGER NLEV, NLEVM, PUNIT
+      DOUBLE PRECISION PFULL(NLEV),TFULL(NLEV),TMSG,LAPSEC
 c                                                   ! OUTPUT
       DOUBLE PRECISION PTROP
       INTEGER ITROP
+c                                                   ! Work arrays
+      DOUBLE PRECISION LAPSE(NLEVM),PHALF(NLEVM)
+      DOUBLE PRECISION PMB(NLEV)
 C NCLEND
 
 c NCL  trop = trop_wmo(p,t,opt)
-c                                                   ! Work arrays
-      INTEGER N, NLEVM
-      DOUBLE PRECISION PMB(NLEV)
-      DOUBLE PRECISION LAPSE(NLEV+1),PHALF(NLEV+1)
+      INTEGER N
 
-      NLEVM = NLEV + 1
+C      NLEVM = NLEV + 1
 C                            DSTATTROP REQUIRES mb  [ hPa ]
       IF (PUNIT.EQ.0) THEN
           DO N=1,NLEV
@@ -27,7 +28,7 @@ C                            DSTATTROP REQUIRES mb  [ hPa ]
           END DO
       END IF
 
-      CALL DSTATTROP(NLEV,PMB,TFULL,TMSG,PTROP,ITROP
+      CALL DSTATTROP(NLEV,PMB,TFULL,TMSG,LAPSEC,PTROP,ITROP
      +              ,NLEVM,LAPSE,PHALF)
 
 C                                RETURN AS Pascals [ Pa ] if necessary
@@ -42,7 +43,7 @@ C SUBTRACT ONE FOR NCL 0-BASED INDEXING
       RETURN
       END
 
-      SUBROUTINE DSTATTROP(NLEV,PFULL,TFULL,TMSG,PTROP,ITROP
+      SUBROUTINE DSTATTROP(NLEV,PFULL,TFULL,TMSG,LAPSEC,PTROP,ITROP
      +                    ,NLEVM,LAPSE,PHALF)
 c
 c**********************************************************************
@@ -119,7 +120,7 @@ c**********************************************************************
       IMPLICIT NONE
 c                                                   ! INPUT
       INTEGER NLEV,NLEVM
-      DOUBLE PRECISION PFULL(NLEV),TFULL(NLEV),TMSG
+      DOUBLE PRECISION PFULL(NLEV),TFULL(NLEV),TMSG,LAPSEC
       DOUBLE PRECISION LAPSE(NLEVM),PHALF(NLEVM)
 c                                                   ! OUTPUT
       DOUBLE PRECISION PTROP
@@ -128,9 +129,9 @@ C NCLEND
 
       DOUBLE PRECISION PMIN, PMAX, P1, P2, WEIGHT
       DOUBLE PRECISION DELTAZ,P2KM,LAPSEAVG,LAPSESUM
-      DOUBLE PRECISION GRAV,RGAS,CONST,LAPSEC,RINVAL
+      DOUBLE PRECISION GRAV,RGAS,CONST,RINVAL
       PARAMETER (GRAV=9.80665D0,RGAS=287.04D0
-     +          ,CONST=1000.D0*GRAV/RGAS,LAPSEC=2.0D0)
+     +          ,CONST=1000.D0*GRAV/RGAS)
       INTEGER ILEV,ILEV1,KOUNT,L
       LOGICAL FOUND
 
