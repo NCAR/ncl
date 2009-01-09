@@ -1,6 +1,6 @@
 #
 #
-#	$Id: yMakefile,v 1.56 2008-12-28 13:25:36 haley Exp $
+#	$Id: yMakefile,v 1.57 2009-01-09 17:02:27 haley Exp $
 #
 #
 #	Makefile for libncarg_c -- NCAR G common utilities
@@ -96,6 +96,11 @@ usleep.o: usleep.c
 
 sdbm.o: sdbm.c
 	$(CC) $(CCOPTIONS) $(COPT) -c sdbm.c
+#endif
+
+#if defined(AIX)
+sdbm.o: sdbm.c
+	$(CC) $(CCOPTIONS) $(ALLDEFINES) -c sdbm.c
 #endif
 
 CleanFilesTarget(ncarg_path.c c.h)
