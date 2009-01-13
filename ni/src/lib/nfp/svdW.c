@@ -139,7 +139,7 @@ NhlErrorTypes svdcov_W( void )
  * The last dimension of x and y must be the same.
  */
   if( dsizes_x[1] != dsizes_y[1] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The last dimension of both input arrays must be the same size");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The rightmost dimension of both input arrays must be the same size");
     return(NhlFATAL);
   }
   ncolx  = dsizes_x[0];
@@ -162,12 +162,12 @@ NhlErrorTypes svdcov_W( void )
  */
   if( dsizes_homlft[0] != *nsvd || dsizes_hetlft[0] != *nsvd ||
       dsizes_homlft[1] != ncolx || dsizes_hetlft[1] != ncolx ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The second dimension of the homlft/hetlft arrays must be the same as the first dimension of x, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The rightmost dimension of the homlft/hetlft arrays must be the same as the leftmost dimension of x, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
   if( dsizes_homrgt[0] != *nsvd || dsizes_hetrgt[0] != *nsvd ||
       dsizes_homrgt[1] != ncoly || dsizes_hetrgt[1] != ncoly ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The second dimension of the homrgt/hetrgt arrays must be the same as the first dimension of y, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov: The rightmost dimension of the homrgt/hetrgt arrays must be the same as the leftmost dimension of y, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
 /*
@@ -609,7 +609,7 @@ NhlErrorTypes svdstd_W( void )
  * The last dimension of x and y must be the same.
  */
   if( dsizes_x[1] != dsizes_y[1] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The last dimension of both input arrays must be the same size");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The rightmost dimension of both input arrays must be the same size");
     return(NhlFATAL);
   }
   ncolx  = dsizes_x[0];
@@ -632,12 +632,12 @@ NhlErrorTypes svdstd_W( void )
  */
   if( dsizes_homlft[0] != *nsvd || dsizes_hetlft[0] != *nsvd ||
       dsizes_homlft[1] != ncolx || dsizes_hetlft[1] != ncolx ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The second dimension of the homlft/hetlft arrays must be the same as the first dimension of x, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The rightmost dimension of the homlft/hetlft arrays must be the same as the leftmost dimension of x, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
   if( dsizes_homrgt[0] != *nsvd || dsizes_hetrgt[0] != *nsvd ||
       dsizes_homrgt[1] != ncoly || dsizes_hetrgt[1] != ncoly ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The second dimension of the homrgt/hetrgt arrays must be the same as the first dimension of y, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd: The rightmost dimension of the homrgt/hetrgt arrays must be the same as the leftmost dimension of y, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
 /*
@@ -1054,7 +1054,7 @@ NhlErrorTypes svdcov_sv_W( void )
  * The rightmost dimensions must be the same.
  */
   if( dsizes_x[1] != dsizes_y[1] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: The last dimension of both input arrays must be the same size");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: The rightmost dimension of both input arrays must be the same size");
     return(NhlFATAL);
   }
   ncolx  = dsizes_x[0];
@@ -1067,12 +1067,12 @@ NhlErrorTypes svdcov_sv_W( void )
  * x (or y if it's the rgt arrays).
  */
   if( dsizes_svlft[0] != *nsvd || dsizes_svlft[1] != dsizes_x[0]) { 
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: The second dimension of the left array must be the same as the first dimension of x, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: The rightmost dimension of the left array must be the same as the leftmost dimension of x, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
   if( dsizes_svrgt[0] != *nsvd || 
       dsizes_svrgt[1] != dsizes_y[0]) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: The second dimension of the right array must be the same as the first dimension of y, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdcov_sv: The rightmost dimension of the right array must be the same as the leftmost dimension of y, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
 /*
@@ -1367,7 +1367,7 @@ NhlErrorTypes svdstd_sv_W( void )
  * The rightmost dimensions must be the same.
  */
   if( dsizes_x[1] != dsizes_y[1] ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: The last dimension of both input arrays must be the same size");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: The rightmost dimension of both input arrays must be the same size");
     return(NhlFATAL);
   }
   ncolx  = dsizes_x[0];
@@ -1380,12 +1380,12 @@ NhlErrorTypes svdstd_sv_W( void )
  * x (or y if it's the rgt arrays).
  */
   if( dsizes_svlft[0] != *nsvd || dsizes_svlft[1] != dsizes_x[0]) { 
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: The second dimension of the left array must be the same as the first dimension of x, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: The rightmost dimension of the left array must be the same as the leftmost dimension of x, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
   if( dsizes_svrgt[0] != *nsvd || 
       dsizes_svrgt[1] != dsizes_y[0]) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: The second dimension of the right array must be the same as the first dimension of y, and the first dimension must be nsvx");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"svdstd_sv: The rightmost dimension of the right array must be the same as the leftmost dimension of y, and the leftmost dimension must be nsvx");
     return(NhlFATAL);
   }
 /*
