@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.193 2008-12-29 21:10:52 shea Exp $
+;      $Id: contributed.ncl,v 1.194 2009-01-14 23:36:56 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3364,12 +3364,10 @@ begin
 
    days  = yyyyddd - (yyyyddd/1000)*1000      ; strip year info [yyyy]
 
-; quick error check
-
-   if (.not.all(days(0:ndys-2).eq.clmDay&year_day(0:ndys-2))) then
-       print("calcDayAnomTLL: day mismatch")
-       exit
-   end if
+; quick check [debug]
+  ;if (.not.all(days(0:ndys-2).eq.clmDay&year_day(0:ndys-2))) then
+  ;    print("calcDayAnomTLL: day mismatch")
+  ;end if
 
 ; loop on every day and compute difference. 
 
@@ -3391,6 +3389,27 @@ begin
 
    return(xAnom)
 end
+
+; **********************************************************************
+; D. Shea
+; create different view of variable
+
+undef("yyyymmdd_to_yyyyddd")
+function yyyymmdd_to_yyyyddd (yyyymmdd[*]:integer, opt[1]:logical)
+local yyyy, mmdd, mm, dd, yyyyddd
+begin
+ yyyy = yyyymmdd/10000
+ mmdd = yyyymmdd - (yyyy*10000)
+ mm   = mmdd/100
+ dd   = mmdd - (mm*100)
+
+ yyyyddd  = yyyy*1000 +day_of_year(yyyy, mm, dd)
+ copy_VarMeta(yyyymmdd, yyyyddd)
+ yyyyddd@long_name = "yyyy and day_of_year"
+ yyyyddd@units = "yyyyddd"
+ return(yyyyddd)
+end
+
 ; **********************************************************************
 ; D. Shea
 ; wrapper for NCL procedure "linint1"  that copies attributes and coordinate 
