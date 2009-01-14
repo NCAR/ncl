@@ -1,25 +1,56 @@
 /*
+/*
 This version of the utCalendar_cal routines is based on code from ncview version 1.93f
 http://meteora.ucsd.edu/~pierce/ncview
 
-These are drop-in replacements for utCalendar and utInvCalendar that
-take an additional character argument at the end that indicates the
-calendar to use.  The calendar string can be "standard", "noleap",
-"365_day", "365", "360_day", or "360" at the moment.  If the calendar
+These are drop-in replacements for utCalendar and utInvCalendar that take an additional
+character argument at the end that indicates the calendar to use.  The calendar string
+can be "standard", "noleap", "365_day", "360", or "360_day" at the moment.  If the calendar
 string is set to NULL, a standard calendar is used.
 
 Note that these routines call the udunits routines, so they have to be installed to use this!
 
-Version 2.03
+Version 2.15
 David W. Pierce
 dpierce@ucsd.edu
-2008-08-25
+2009-01-14
 
 Thanks to Christian Page' of CERFACS, France, for bug fixes!
+
+
+
+PLEASE READ: IMPORTANT DISCUSSION OF THE "YEAR 0" PROBLEM
+---------------------------------------------------------
+
+In our actual calendars there is no year 0, because the calendar
+goes from year 1 BC to year 1 AD, with no "year 0" in between.  Nevertheless,
+people often do mistakenly start their calendars from "year 0".  In particular,
+the NCAR CAM atmospheric model (and consequently, the CCSM3 coupled earth
+system model) bases dates on "year 0".
+
+The standard udunits library treats a units spec of the form "... since 0000-01-01"
+as if it instead specified ".... since 0001-01-01".  Ie., it treats a reference
+to a origin of year 0 with a reference to an origin of year 1.  This can be confusing 
+if the user expects, for example, that the dates "0 days since 0001-01-01" and 
+"0 days since 0000-01-01" are different.  To the udunits library, these are the same date.
+
+Particular headaches are caused when trying to understand CAM/CCSM3 model output
+based on ".... since 0000-01-01".  For the *model*, "23 days since 0000-01-01"
+is intended to be the date 0000-01-24.  However, for the *udunits library*, 
+"23 days since 0000-01-01" is the date 0001-01-24.  So, in essence, the udunits
+library adds 1 to the year of a CAM/CCSM3 file that uses ".... since 0000-01-01"
+as its date.
+
+This code is intended to be a simple "drop in" replacement of the standard
+udunits calls, and so DOES NOT MODIFY THE YEAR 0 BEHAVIOR in any way.  All
+origins that start at "year 0000" (which does not exist) are treated as if
+they had specified "year 0001".  Again, this is exactly what the standard
+udunits library does.
 */
 
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 #include "udunits.h"
 #include "utCalendar_cal.h"
 
@@ -42,12 +73,17 @@ static int utInvCalendar_noleap_inner( int year, int month, int day, int hour, i
                 double second, utUnit *unit, double *value, long *days_per_month );
 
 static int shown_proleptic_warning = 0;
+static int udu_lib_version = -1;	/* '1' is pre 1.12.9, '2' is >= 1.12.9 or so, don't exact rev this changed */
+
+/* Options
+	As of version 2.15, only the first option is used; if 1, then for non-standard calendars treat year 0 as year 1.  if 0, treat year 0 as 1 year before year 1.
+*/
 
 /******************************************************************************/
 static void dateify( int year, int month, int day, int hour, int minute, 
 		float second, char *buf )
 {
-	sprintf( buf, "%04d/%02d/%02d %02d:%02d:%.2f", year, month, day, hour, minute, second );
+	sprintf( buf, "%04d-%02d-%02d %02d:%02d:%.2f", year, month, day, hour, minute, second );
 }
 
 /******************************************************************************/
@@ -75,9 +111,14 @@ static void dateify( int year, int month, int day, int hour, int minute,
 int utCalendar_cal( double val, utUnit *dataunits, int *year, int *month, int *day, int *hour, 
 				int *minute, float *second, char *calendar ) 
 {
-	int err;
-	static int have_shown_warning = 0;
-	static int have_initted = 0;
+	int 	ii, err;
+	static 	int have_shown_warning = 0;
+	static 	int have_initted = 0;
+	double 	zero = 0.0;
+	static 	int ref_year, ref_month, ref_day, ref_hour, ref_minute;
+	static 	float ref_second;
+	char	ss[2048];
+	utUnit 	udu_ref_date_plus_1;
 
 #ifdef DEBUG
 	printf( "entering utCalendar_cal\n" );
@@ -103,6 +144,53 @@ int utCalendar_cal( double val, utUnit *dataunits, int *year, int *month, int *d
 			fprintf( stderr, "Error, could not decode internal date string for reference date!\n" );
 			return(-1);
 			}
+
+		/*----------------------------------------------------------------------------------------
+		 * Somewhere between version 1.12.4 and 1.12.9, the udunits library changed its behavior
+		 * w.r.t. how it records a user-specified time origin.  In the earlier method, a time origin
+		 * would be convereted to seconds and stored that way.  The "factor" (i.e., multiplicative
+		 * factor needed to convert from the ORIGINAL user-specified units to seconds) would still
+		 * be set on the basis of the original units however.  Perhaps the library maintainers 
+		 * found this to be slighly weird, because they later changed it so that the time origin
+		 * is stored in user-specified units instead of being converted to seconds.  The upshot
+		 * of all this is that we have to determine which behavior we are seeing, and adjust
+		 * what we do accordingly.
+		 *---------------------------------------------------------------------------------------*/
+		/* First step: get reference date being used by udunits library */
+		err = utCalendar( zero, &udu_origin_zero, &ref_year, &ref_month, &ref_day, &ref_hour, &ref_minute, &ref_second );
+#ifdef DEBUG
+		printf( "udunits libray is using the following internal reference date: %d-%02d-%02d %02d:%02d\n", 
+				ref_year, ref_month, ref_day, ref_hour, ref_minute );
+#endif
+		/* Now print out a string that has ONE DAY LATER than the reference date;
+		 * note that our user-specified units is "hours"
+		 */
+		sprintf( ss, "hours since %d-%02d-%02d %02d:%02d", ref_year, ref_month, ref_day+1, 
+			ref_hour, ref_minute );
+		/* convert this string to a udunits... */
+		/* err = utScan( ss, &udu_ref_date_plus_1 );*/
+		err = utScan( ss, &udu_ref_date_plus_1 );
+		if( err != 0 ) {
+			fprintf( stderr, "Internal error scanning ref date plus one day string \"%s\"\n", ss );
+			exit(-1);
+			}
+		if( fabs(udu_ref_date_plus_1.origin - 86400.0 ) < 0.1 ) 
+			udu_lib_version = 1;	/* orig version converts the one day to SECONDS */
+		else if( fabs(udu_ref_date_plus_1.origin - 24.0 ) < 0.1 ) 
+			udu_lib_version = 2;	/* new version leaves the one day in user-specified units (here, hours) */
+		else
+			{
+			fprintf( stderr, "Error, cannot determine behavior of the udunits library!\n" );
+			fprintf( stderr, "plus one origin (should be 24 hours or 86400 seconds) is: %lf\n",
+				udu_ref_date_plus_1.origin );
+			fprintf( stderr, "I will assume new version of udunits library, but this will likely give wrong dates\n" );
+			udu_lib_version = 2;
+			}
+#ifdef DEBUG
+		printf( "***** Version of udunits library: %d (1=old, before about 1.12.5; 2=new, >= 1.12.9 or so)\n", 
+			udu_lib_version );
+#endif
+
 		have_initted = 1;
 		}
 
@@ -112,16 +200,13 @@ int utCalendar_cal( double val, utUnit *dataunits, int *year, int *month, int *d
 #endif
 		return( utCalendar( val, dataunits, year, month, day, hour, minute, second ));
 		}
-	else if( (strncasecmp(calendar,"365_day",7)==0) ||
-		 (strncasecmp(calendar,"365",3)    ==0) ||
-		 (strncasecmp(calendar,"noleap",6) ==0) ) {
+	else if( (strncasecmp(calendar,"365_day",7)==0) || (strncasecmp(calendar,"noleap",6)==0) ) {
 #ifdef DEBUG
 		printf( "utCalendar_cal: using 365-day calendar\n" );
 #endif
 		return( utCalendar_noleap( val, dataunits, year, month, day, hour, minute, second ));
 		}
-	else if( (strncasecmp(calendar,"360_day",7)==0) || 
-		 (strncasecmp(calendar,"360",3)    ==0) ) {
+	else if( (strcmp(calendar,"360")==0) || (strncasecmp(calendar,"360_day",7)==0) ) {
 #ifdef DEBUG
 		printf( "utCalendar_cal: using 360-day calendar\n" );
 #endif
@@ -154,8 +239,9 @@ int utCalendar_cal( double val, utUnit *dataunits, int *year, int *month, int *d
 double udu_sec_since_ref_date( double val, utUnit *dataunits, int *yr0, int *mon0, 
 		int *day0, int *hr0, int *min0, float *sec0 )
 {
-	double retval;
+	double retval, origin2use;
 	int err;
+	char	buf[1024];
 
         /*---------------------------------------------------------------------
          * Use a bit of a trick to get the year, month, and day that the
@@ -170,9 +256,22 @@ double udu_sec_since_ref_date( double val, utUnit *dataunits, int *yr0, int *mon
          * udunits reference date, into a calendar date.  Voila!  We then
          * have the year, month, day, etc. that the user specified.
          *--------------------------------------------------------------------*/
-	/* err = utCalendar( dataunits->origin*dataunits->factor, &udu_origin_zero, yr0, */
-	err = utCalendar( dataunits->origin, &udu_origin_zero, yr0,
+	if( udu_lib_version == 1 )
+		origin2use = dataunits->origin;
+	else if( udu_lib_version == 2 )
+		origin2use = dataunits->origin * dataunits->factor;
+	else
+		{
+		fprintf( stderr, "Error, udu_lib_version not set to value value: %d\n", udu_lib_version );
+		exit( -1 );
+		}
+	err = utCalendar( origin2use, &udu_origin_zero, yr0,
 		mon0, day0, hr0, min0, sec0 );  /* note: all these yr0 etc values are RETURNED */
+#ifdef DEBUG
+	dateify( *yr0, *mon0, *day0, *hr0, *min0, *sec0, buf );
+	printf( "udu_sec_since_ref_date: here is the <<since date>> that the user specified: %s\n", buf );
+#endif
+
 
 	retval = val * dataunits->factor;
 
@@ -323,9 +422,7 @@ Similar to utInvCalendar, but takes an extra 'cal' argument that can be one of t
 following:
 	'noleap':	A calendar with no leap years, so just 365 days every year
 	'365_day': 	A synonym for noleap
-	'365':    	A synonym for noleap
 	'360_day':	A day with 360 days per year, arranged in 12 months of 30 days each
-	'360':          A synonym for "360_day"
 	'standard':	An ordinary, Gregorian calendar
 
 Check values:
@@ -386,9 +483,7 @@ int utInvCalendar_cal( int year, int month, int day, int hour, int minute,
 		return( utInvCalendar( year, month, day, hour, minute, second, unit, value ));
 		}
 
-	else if( (strncasecmp(calendar,"365_day",7)==0) || 
-		 (strncasecmp(calendar,"365",3)    ==0) ||
-		 (strncasecmp(calendar,"noleap",6) ==0) ) {
+	else if( (strncasecmp(calendar,"365_day",7)==0) || (strncasecmp(calendar,"noleap",6)==0) ) {
 #ifdef DEBUG
 		printf( "called utInvCalendar_cal with a noleap calendar\n" );
 #endif
@@ -396,8 +491,7 @@ int utInvCalendar_cal( int year, int month, int day, int hour, int minute,
 			days_per_month_reg_year ));
 		}
 
-	else if( (strncasecmp(calendar,"360_day",7)==0) ||
-		 (strncasecmp(calendar,"360",3)    ==0) )  {
+	else if( strncasecmp(calendar,"360_day",7)==0) {
 #ifdef DEBUG
 		printf( "called utInvCalendar_cal with a 360_day calendar\n" );
 #endif
