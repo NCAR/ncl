@@ -146,17 +146,23 @@ c
       DIMENSION R(*),WSAVE(*)
 c
       IF (N.EQ.1) RETURN
-      CALL DRFFTF1(N,R,WSAVE,WSAVE(N+1),WSAVE(2*N+1))
+      print *,'WSAVE(2*N+1) ',WSAVE(2*N+1)
+      CALL DRFFTF1OLD(N,R,WSAVE,WSAVE(N+1),WSAVE(2*N+1))
       RETURN
       END
 c
-      SUBROUTINE DRFFTF1(N,C,CH,WA,IFAC)
+      SUBROUTINE DRFFTF1OLD(N,C,CH,WA,IFAC)
       DOUBLE PRECISION C
       DOUBLE PRECISION CH
       DOUBLE PRECISION WA
       DIMENSION CH(*),C(*),WA(*),IFAC(*)
 
       NF = IFAC(2)
+      print *,'NF ',NF
+      DO K1 = 1,NF
+          KH = NF - K1
+          print*,'IFAC(KH+3) ',IFAC(KH+3)
+       END DO
       NA = 1
       L2 = N
       IW = N
@@ -395,12 +401,12 @@ c
       DIMENSION R(*),WSAVE(*)
 c
       IF (N.EQ.1) RETURN
-      CALL DRFFTB1(N,R,WSAVE,WSAVE(N+1),WSAVE(2*N+1))
+      CALL DRFFTB1OLD(N,R,WSAVE,WSAVE(N+1),WSAVE(2*N+1))
       RETURN
       END
 c
 c =====================================================================
-      SUBROUTINE DRFFTB1(N,C,CH,WA,IFAC)
+      SUBROUTINE DRFFTB1OLD(N,C,CH,WA,IFAC)
       DOUBLE PRECISION C
       DOUBLE PRECISION CH
       DOUBLE PRECISION WA
@@ -607,7 +613,7 @@ c
       DIMENSION WSAVE(*)
 c
       IF (N.EQ.1) RETURN
-      CALL DRFFTI1(N,WSAVE(N+1),WSAVE(2*N+1))
+      CALL DRFFTI1OLD(N,WSAVE(N+1),WSAVE(2*N+1))
       RETURN
       END
 c
@@ -619,7 +625,7 @@ c      pimach = 4.*atan(1.0)
 c      return
 c      end
 c
-      SUBROUTINE DRFFTI1(N,WA,IFAC)
+      SUBROUTINE DRFFTI1OLD(N,WA,IFAC)
       DOUBLE PRECISION WA
       DOUBLE PRECISION TPI
       DOUBLE PRECISION DPIMACH
