@@ -1,11 +1,10 @@
 /*
-/*
 This version of the utCalendar_cal routines is based on code from ncview version 1.93f
 http://meteora.ucsd.edu/~pierce/ncview
 
 These are drop-in replacements for utCalendar and utInvCalendar that take an additional
 character argument at the end that indicates the calendar to use.  The calendar string
-can be "standard", "noleap", "365_day", "360", or "360_day" at the moment.  If the calendar
+can be "standard", "noleap", "365", "365_day", "360", or "360_day" at the moment.  If the calendar
 string is set to NULL, a standard calendar is used.
 
 Note that these routines call the udunits routines, so they have to be installed to use this!
@@ -194,19 +193,23 @@ int utCalendar_cal( double val, utUnit *dataunits, int *year, int *month, int *d
 		have_initted = 1;
 		}
 
-	if( (calendar == NULL) || (strncasecmp(calendar,"standard",8)==0) || (strncasecmp(calendar,"gregorian",9)==0) ) {
+	if( (calendar == NULL) || (strncasecmp(calendar,"standard",8)==0) ||
+	    (strncasecmp(calendar,"gregorian",9)==0) ) {
 #ifdef DEBUG
 		printf( "utCalendar_cal: using standard calendar\n" );
 #endif
 		return( utCalendar( val, dataunits, year, month, day, hour, minute, second ));
 		}
-	else if( (strncasecmp(calendar,"365_day",7)==0) || (strncasecmp(calendar,"noleap",6)==0) ) {
+	else if( (strncasecmp(calendar,"365_day",7)==0) ||
+		 (strncasecmp(calendar,"365",3)    ==0) ||
+		 (strncasecmp(calendar,"noleap",6) ==0) ) {
 #ifdef DEBUG
 		printf( "utCalendar_cal: using 365-day calendar\n" );
 #endif
 		return( utCalendar_noleap( val, dataunits, year, month, day, hour, minute, second ));
 		}
-	else if( (strcmp(calendar,"360")==0) || (strncasecmp(calendar,"360_day",7)==0) ) {
+	else if( (strncasecmp(calendar,"360_day",7) ==0) ||
+		 (strncasecmp(calendar,"360",3)     ==0) ) {
 #ifdef DEBUG
 		printf( "utCalendar_cal: using 360-day calendar\n" );
 #endif
@@ -422,7 +425,9 @@ Similar to utInvCalendar, but takes an extra 'cal' argument that can be one of t
 following:
 	'noleap':	A calendar with no leap years, so just 365 days every year
 	'365_day': 	A synonym for noleap
+	'365':    	A synonym for noleap
 	'360_day':	A day with 360 days per year, arranged in 12 months of 30 days each
+	'360':          A synonym for "360_day"
 	'standard':	An ordinary, Gregorian calendar
 
 Check values:
@@ -483,7 +488,9 @@ int utInvCalendar_cal( int year, int month, int day, int hour, int minute,
 		return( utInvCalendar( year, month, day, hour, minute, second, unit, value ));
 		}
 
-	else if( (strncasecmp(calendar,"365_day",7)==0) || (strncasecmp(calendar,"noleap",6)==0) ) {
+	else if( (strncasecmp(calendar,"365_day",7)==0) || 
+		 (strncasecmp(calendar,"365",3)    ==0) ||
+		 (strncasecmp(calendar,"noleap",6) ==0) ) {
 #ifdef DEBUG
 		printf( "called utInvCalendar_cal with a noleap calendar\n" );
 #endif
@@ -491,7 +498,8 @@ int utInvCalendar_cal( int year, int month, int day, int hour, int minute,
 			days_per_month_reg_year ));
 		}
 
-	else if( strncasecmp(calendar,"360_day",7)==0) {
+	else if( (strncasecmp(calendar,"360_day",7)==0) ||
+		 (strncasecmp(calendar,"360",3)    ==0) )  {
 #ifdef DEBUG
 		printf( "called utInvCalendar_cal with a 360_day calendar\n" );
 #endif
