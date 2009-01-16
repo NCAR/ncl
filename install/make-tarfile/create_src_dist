@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.5 2009-01-12 21:34:01 haley Exp $
+#   $Id: create_src_dist,v 1.6 2009-01-16 18:51:25 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -49,6 +49,7 @@ set cvsrsh      = "ssh"
 set tardir1     = "/fs/scd/home1/ncargd/dist/tarfiles"
 set tardir2     = "/fis/scd/home/ncargd"
 set extra       = ""
+set extra2      = "wo_tri"      # Without Shewchuk Triangle code
 
 if (-e $tardir1) then
   set tardir = $tardir1
@@ -96,6 +97,7 @@ while ($#argv > 0)
 
     case "-t":
       set INC_TRI
+      set extra2 = "w_tri"      # With Shewchuk Triangle code
       shift
       breaksw
 
@@ -254,8 +256,28 @@ else
 endif
 set src_tar_dir = "$parentdir/$src_prefix"
  
+#
+# What if there's already a $src_prefix directory?
+#
+cd $parentdir
+if (-e $src_prefix) then
+  echo "Directory $parentdir/$src_prefix already exists." 
+  echo "I have to remove it, otherwise this script won't work."
+  echo -n "Do you want me to remove it? (y/n) "
+  set answer="$<"
+  if ("$answer" != "y") then
+    echo "I can't continue, since $src_prefix exists."
+    exit
+  endif
+  set cmd = "/bin/rm -rf $parentdir/$src_prefix"
+  echo "$cmd"
+  $cmd
+endif
+
 if ($extra != "") then
-  set tar_prefix = "{$tar_prefix}_{$extra}"
+  set tar_prefix = "{$tar_prefix}_{$extra2}_{$extra}"
+else 
+  set tar_prefix = "{$tar_prefix}_{$extra2}"
 endif
 
 set tar_filename = "$tar_prefix-$version.tar"
@@ -265,17 +287,21 @@ set tar_filename = "$tar_prefix-$version.tar"
 # want to give to the user).
 #
 
+set ni_stuff = "ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo"
+set ext_stuff = "external/fftpack5 external/sphere3.1 external/sphere3_dp"
+set tri_stuff = "ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h"
 set stuff_to_always_remove = "pynio"
-if ($?NCARGONLY) then
+
+if ($?NCARGONLY) then       # NCAR Graphics only, for users.
   set more_stuff_to_remove = "install ni external"
-else if ($?NCARGNCL) then
+else if ($?NCARGNCL) then   # NCL and NCAR Graphics, for users.
   if ($?INC_TRI) then
-    set more_stuff_to_remove = "install ni/src/ngi ni/src/lib/xcb external/fftpack5 external/sphere3.1 external/sphere3_dp"
+    set more_stuff_to_remove = "install $ext_stuff $ni_stuff"
   else 
-    set more_stuff_to_remove = "install ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h external/fftpack5 external/sphere3.1 external/sphere3_dp"
+    set more_stuff_to_remove = "install $ext_stuff $ni_stuff $tri_stuff"
   end if
-else
-  set more_stuff_to_remove = "ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo external/fftpack5 external/sphere3.1 external/sphere3_dp"
+else  # NCL and NCAR Graphics, for internal use, not for outside users
+  set more_stuff_to_remove = "$ext_stuff $ni_stuff"
 endif
 
 set stuff_to_remove = "$stuff_to_always_remove $more_stuff_to_remove"
@@ -333,6 +359,7 @@ echo ""
 echo "   Options:   -r : root directory"
 echo "              -d : tar file directory"
 echo "              -c : scp to windom.ucar.edu"
+echo "              -t : include triangle code in HLU directory"
 echo "              -v : version number"
 echo "              -e : extra string to include in tarfile name"
 echo "              -1 : tar up NCARG source files only"
