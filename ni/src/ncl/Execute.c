@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.123 2008-12-06 01:35:30 dbrown Exp $
+ *      $Id: Execute.c,v 1.124 2009-01-16 22:06:50 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -5403,6 +5403,15 @@ void CallASSIGN_VAR_VAR_OP(void) {
 								}
 							}
 						}
+						if(rhs_sel_ptr != NULL) {
+                                                        for(i = 0; i <  rhs_sel_ptr->n_entries; i++) {
+                                                                if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+                                                                        NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
+                                                                        rhs_sel_ptr->selection[i].u.vec.ind = NULL;
+                                                                }
+                                                        }
+                                                }
+
 /*
 *-----> end of questionable code
 */
@@ -5506,6 +5515,14 @@ void CallASSIGN_VAR_VAR_OP(void) {
 							estatus = ret;
 						}
 					} 
+                                       if(rhs_sel_ptr != NULL) {
+                                                for(i = 0; i <  rhs_sel_ptr->n_entries; i++) {
+                                                        if(rhs_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR){
+                                                                NclFree(rhs_sel_ptr->selection[i].u.vec.ind);
+                                                                rhs_sel_ptr->selection[i].u.vec.ind = NULL;
+                                                        }
+                                                }
+                                        }
 				} else {
 					estatus = NhlFATAL;
 					_NclCleanUpStack(rhs_nsubs);
