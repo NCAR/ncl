@@ -80,10 +80,15 @@ NhlErrorTypes dtrend_W( void )
  * message that this routine doesn't do anything special with missing
  * values, and will actually end up using these values, if they exist,
  * in calculations. 
+ *
+ * As of Jan 21, 2009, Dennis Shea decided he didn't want the warning
+ * message below, so it's been commented out.
  */
+/*
   if(has_missing_y) {
     NhlPError(NhlWARNING,NhlEUNKNOWN,"dtrend: 'y' contains a _FillValue attribute, which means your data may contain missing values.\nThis function doesn't check for missing values, and hence they will get used in the calculation.\nYou may want to consider using 'dtrend_msg' instead.");
   }
+*/
 /*
  * Coerce the missing value to both float and double so that when
  * we return the variable later, we can set the appropriate missing
