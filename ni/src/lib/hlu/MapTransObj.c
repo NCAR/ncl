@@ -1,5 +1,5 @@
 /*
-*      $Id: MapTransObj.c,v 1.61 2008-09-05 00:31:51 dbrown Exp $
+*      $Id: MapTransObj.c,v 1.62 2009-01-22 21:04:07 dbrown Exp $
 */
 /************************************************************************
 *									*
@@ -2635,8 +2635,8 @@ NhlBoolean *out_of_range;
 {
 	int i;
 	NhlBoolean clockwise = False;
-	float area = 0.0;
-	float lat0,lon0,lat1,lon1;
+	double area = 0.0;
+	double lat0,lon0,lat1,lon1;
 
 /*
  * From comp.graphics.algorithms FAQ: orientation is clockwise if 
