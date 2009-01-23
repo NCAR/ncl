@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.194 2009-01-14 23:36:56 shea Exp $
+;      $Id: contributed.ncl,v 1.195 2009-01-23 16:11:32 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -6258,18 +6258,24 @@ end
 ;                                                                  
 undef("yyyymm_to_yyyyfrac")
 function yyyymm_to_yyyyfrac (yyyymm[*]:numeric, mmOffset[1]:numeric)
-local year, mm, xmos, one      
+local YYYYMM, year, mm, xmos, one      
 begin                                                                                               
   if (typeof(yyyymm).eq."double" .or. typeof(mmOffset).eq."double") then 
       xmos = 12.d0                         
       one  = 1.0d0                        
+      YYYYMM = doubletoint(yyyymm)       ; numerical issue
   else                                   
       xmos = 12.0                       
       one  = 1.0                       
+      if (typeof(yyyymm).eq."float") then
+          YYYYMM = floattoint(yyyymm)    ; numerical issue
+      else
+          YYYYMM = yyyymm
+      end if
   end if                              
                                      
-  year   = yyyymm/100               
-  mm     = yyyymm-year*100         
+  year   = YYYYMM/100               
+  mm     = YYYYMM-year*100         
   yrFrac = year + ((mm+mmOffset)-one)/xmos  
                                            
   copy_VarMeta(yyyymm, yrFrac)            
