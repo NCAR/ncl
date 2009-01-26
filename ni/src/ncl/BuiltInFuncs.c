@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.231 2008-09-15 23:01:17 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.232 2009-01-26 15:10:36 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1797,7 +1797,7 @@ NhlErrorTypes _NclIDumpStk
 	} else {
 		tmp1_md = _NclCoerceData(tmp_md,Ncl_Typestring,NULL);
 		if(tmp1_md == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"dump: Unable to covert parameter to string representation for output filename");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"dump: Unable to convert parameter to string representation for output filename");
 			fp = NULL;
 			return(NhlFATAL);
 		} else {
@@ -4214,7 +4214,7 @@ NhlErrorTypes _NclIasciiread
 	if(tmp_md != NULL) {
 		thetype = _NclNameToTypeClass(*(NclQuark*)tmp_md->multidval.val);
 		if(thetype == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciinread: invalid type specified, can't continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"asciiread: invalid type specified, can't continue");
 			return(NhlFATAL);	
 		}
 	}
@@ -7049,7 +7049,7 @@ NhlErrorTypes _NclIstringtolong
 				val = NrmQuarkToString(value[i]);
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.longval;
 				}
@@ -7068,7 +7068,7 @@ NhlErrorTypes _NclIstringtolong
 			val = NrmQuarkToString(value[i]);
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
                                 "A bad value was passed to stringtolong, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.longval;
@@ -7139,7 +7139,7 @@ NhlErrorTypes _NclIstringtoshort
 				val = NrmQuarkToString(value[i]);
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,
                                         "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.shortval;
 				}
@@ -7157,7 +7157,7 @@ NhlErrorTypes _NclIstringtoshort
 			val = NrmQuarkToString(value[i]);
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
                                 "A bad value was passed to stringtoshort, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.shortval;
@@ -7231,7 +7231,7 @@ NhlErrorTypes _NclIstringtointeger
 				val = NrmQuarkToString(value[i]);
 				tval = _Nclstrtol(val,&end);
 				if (end == val) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,
                                         "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.intval;
 				}
@@ -7250,7 +7250,7 @@ NhlErrorTypes _NclIstringtointeger
 			val = NrmQuarkToString(value[i]);
 			tval = _Nclstrtol(val,&end);
 			if (end == val) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
                                 "A bad value was passed to stringtointeger, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.intval;
@@ -7359,7 +7359,7 @@ NhlErrorTypes _NclIstringtodouble
 				TransD2E(val);
 				tval = strtod(val,&end);
 				if (end == val) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.doubleval;
 				}
@@ -7383,7 +7383,7 @@ NhlErrorTypes _NclIstringtodouble
 			TransD2E(val);
 			tval = strtod(val,&end);
 			if (end == val) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
                                 "A bad value was passed to stringtodouble, input strings must contain numeric digits, replacing with missing value");
                                 has_missing = 1;
 				out_val[i] = missing2.doubleval;
@@ -7462,7 +7462,7 @@ NhlErrorTypes _NclIstringtofloat
 				tval = strtod(val,&end);
 				dtest = fabs(tval);
 				if (end == val) {
-                                        NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                        NhlPError(NhlWARNING,NhlEUNKNOWN,
 					"A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
                                         out_val[i] = missing2.floatval;
 				}
@@ -7485,7 +7485,7 @@ NhlErrorTypes _NclIstringtofloat
 			tval = strtod(val,&end);
 			dtest = fabs(tval);
 			if (end == val) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
 					  "A bad value was passed to stringtofloat, input strings must contain numeric digits, replacing with missing value");
 				has_missing = 1;
 				out_val[i] = missing2.floatval;
