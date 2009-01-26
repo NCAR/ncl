@@ -9,11 +9,13 @@ C Define the error file, the Fortran unit number, the workstation type,
 C and the workstation ID, to be used in calls to GKS routines.  Use one
 C of the following:
 C
-        PARAMETER (IERF=6,LUNI=2,IWTY=1 ,IWID=1)  !  NCGM
+C       PARAMETER (IERF=6,LUNI=2,IWTY=1 ,IWID=1)  !  NCGM
 C       PARAMETER (IERF=6,LUNI=2,IWTY=8 ,IWID=1)  !  X Windows
 C       PARAMETER (IERF=6,LUNI=2,IWTY=20,IWID=1)  !  PostScript
 C       PARAMETER (IERF=6,LUNI=2,IWTY=11,IWID=1)  !  PDF, Portrait
 C       PARAMETER (IERF=6,LUNI=2,IWTY=12,IWID=1)  !  PDF, Landscape
+C
+        PARAMETER (IERF=6,LUNI=2,IWTYPE=1,IWTY=IWTYPE,IWID=1)
 C
 C Define a parameter saying how many pieces each edge of an icosahedron
 C is to be broken into in forming the geodesic mesh.
