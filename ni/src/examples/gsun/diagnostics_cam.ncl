@@ -2849,6 +2849,12 @@ begin
   if (isatt(opt,"gsnRightString")) then
       res@gsnRightString  = opt@gsnRightString
   end if
+  if (isatt(opt,"cnLinesOn")) then
+      res@cnLinesOn    = opt@cnLinesOn
+      if (.not.res@cnLinesOn) then
+          res@cnLineLabelsOn = False
+      end if
+  end if
   
   NW = 6
   if (isatt(opt,"maxWavePlot")) then     ; wave [Y] axis
