@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.24 2008-12-10 20:12:16 dbrown Exp $
+ *      $Id: NclAtt.c,v 1.25 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -261,6 +261,9 @@ NclSelectionRecord * sel_ptr;
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
 				return(NhlFATAL);
 			} else {
+				if (att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT) && targetdat->multidval.type->type_class.data_type == NCL_logical) {
+					*(logical*)tmp_md->multidval.val = targetdat->multidval.type->type_class.default_mis.logicalval;
+				}
 				if((value->obj.status != PERMANENT)&&(value != tmp_md)) {
 /*
 * tmp_md is either equal to value or had to be coerced. In the event it

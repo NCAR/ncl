@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.49 2008-12-10 20:12:16 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.50 2009-02-05 03:42:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -309,7 +309,7 @@ NclMultiDValData str_md;
 	int i,n_dims;
 	string *value;
 	int max_len,tmp_len,to;
-	unsigned char *val = NULL;
+	char *val = NULL;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 	string missingQ;
 	NhlBoolean has_missing = False;
@@ -345,7 +345,7 @@ NclMultiDValData str_md;
 		dim_sizes[str_md->multidval.n_dims] = max_len;
 		n_dims = str_md->multidval.n_dims +1;
 	}
-	val = (unsigned char*)NclCalloc(max_len * str_md->multidval.totalelements,sizeof(char));
+	val = (char*)NclCalloc(max_len * str_md->multidval.totalelements,sizeof(char));
 	for(i = 0, to = 0; i < str_md->multidval.totalelements; i++) {
 		if (has_missing && value[i] == missingQ) {
 			val[to] = '\0';
@@ -795,7 +795,7 @@ NclBasicDataTypes totype;
 			*(double*)to = *(short*)from;
 			return(1);
 		case NCL_logical:
-			*(int*)to = *(short*)from;
+			*(logical*)to = (logical)(*(short*)from?1:0);
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",(int)*(short*)from);
@@ -819,7 +819,7 @@ NclBasicDataTypes totype;
 			*(double*)to = *(int*)from;
 			return(1);
                 case NCL_logical:
-			*(int*)to = *(int*)from;
+			*(logical*)to = (logical)(*(int*)from?1:0);
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",*(int*)from);
@@ -840,7 +840,7 @@ NclBasicDataTypes totype;
 			*(double*)to = *(long*)from;
 			return(1);
 		case NCL_logical:
-			*(int*)to = *(long*)from;
+			*(logical*)to = (logical)(*(long*)from?1:0);
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%ld",(long)*(long*)from);
@@ -857,6 +857,9 @@ NclBasicDataTypes totype;
 		case NCL_double:
 			*(double*)to = *(float*)from;
 			return(1);
+		case NCL_logical:
+			*(logical*)to = (logical)(*(float*)from?1:0);
+			return(1);
 		case NCL_string:
 			sprintf(buffer,"%g",*(float*)from);
 			*(string*)to = NrmStringToQuark(buffer);
@@ -872,6 +875,9 @@ NclBasicDataTypes totype;
 		case NCL_string:
 			sprintf(buffer,"%lg",*(double*)from);
 			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		case NCL_logical:
+			*(logical*)to = (logical)(*(double*)from?1:0);
 			return(1);
 		default:
 			return(0);
@@ -894,7 +900,7 @@ NclBasicDataTypes totype;
 			*(long*) to = *(char*)from;
 			return(1);
 		case NCL_logical:
-			*(logical*) to = *(char*)from;
+			*(logical*)to = (logical)(*(char*)from?1:0);
 			return(1);
 		case NCL_short:
 			*(short*) to = *(char*)from;
@@ -928,7 +934,7 @@ NclBasicDataTypes totype;
 			*(long*) to = *(byte*)from;
 			return(1);
 		case NCL_logical:
-			*(logical*) to = *(byte*)from;
+			*(logical*)to = (logical)(*(byte*)from?1:0);
 			return(1);
 		case NCL_short:
 			*(short*) to = *(byte*)from;
@@ -1269,6 +1275,36 @@ void _NclResetMissingValue
 	return;
 }
 
+struct _NclMultiDValDataRec *_NclCreateLMissing
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int first = 1;
+	static NclMultiDValData tval = NULL;
+
+	if(first) {
+		int *val = (int*)NclMalloc((unsigned)sizeof(int));
+		int dim_sizes = 1;
+		*val = -1;
+		tval = _NclCreateMultiDVal(
+			NULL,
+			nclMultiDValDataClass,
+			Ncl_MultiDValData,
+			Ncl_MultiDValData,
+			(void*)val,
+			NULL,
+			1,
+			&dim_sizes,
+			PERMANENT,
+			NULL,
+			(NclTypeClass)nclTypelogicalClass);
+		first = 0;
+	} 
+	return(tval);
+}
 struct _NclMultiDValDataRec *_NclCreateFalse
 #if NhlNeedProto
 (void)

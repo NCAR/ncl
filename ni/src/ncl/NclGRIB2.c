@@ -8155,6 +8155,7 @@ Grib2ParamList  *g2plist;
 	 */
 
 	common_time_perod_unit = -1;
+	zero_offset_index = -1;
 	g2rlist = g2plist->thelist;
 	while (g2rlist != NULL) {
 		common_time_perod_unit = _g2GetShortestTimeUnit(common_time_perod_unit,g2rlist->rec_inq->time_period_units);

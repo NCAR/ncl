@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypelogical.c.specific,v 1.5 1999-02-23 23:32:19 ethan Exp $
+ *      $Id: NclTypelogical.c.specific,v 1.6 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -35,12 +35,12 @@ void *val;
         logical *lp = (logical*)val;
 	int ret;
 
-	if(*lp == 1) {
-		ret =nclfprintf(fp,"True");
+	if(*lp == -1) {
+		ret =nclfprintf(fp,"Missing");
 	} else if(*lp == 0) {
 		ret =nclfprintf(fp,"False");
 	} else {
-        	ret =nclfprintf(fp,"%d",*lp);
+        	ret =nclfprintf(fp,"True");
 	}
 	if(ret < 0) {
                 return(NhlWARNING);
@@ -90,11 +90,31 @@ NclTypeClass fc;
 		tmp_mis = *to_m;
 	}
 
+
 	switch(fc->type_class.type) {
 	case Ncl_Typedouble: {
 		double *fl = (double*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
-
+		if((from_m == NULL)&&(to_m == NULL)) {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				*res = (logical)(*fl?1:0);
+			}
+		}
+		else {
+			for(i = 0; i < n;i++,res++,fl++)  {
+				tmp = 0;
+				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+				if(tmp) {
+					*res = tmp_mis.logicalval;
+				} else {
+					*res = (logical)(*fl?1:0);
+				}
+			}
+		}
+		return(NhlNOERROR);
+	}
+	case Ncl_Typefloat: {
+		float *fl = (float*)from;
+		if((from_m == NULL)&&(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				*res = (logical)(*fl?1:0);
 			}
@@ -111,30 +131,11 @@ NclTypeClass fc;
 		}
 		return(NhlNOERROR);
 	}
-	case Ncl_Typefloat: {
-		float *fl = (float*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (logical)*fl;
-			}
-		} else {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				tmp = 0;
-				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-				if(tmp) {
-					*res = tmp_mis.logicalval;
-				} else {
-					*res = (logical)(*fl?1:0);
-				}
-			}
-		}
-		return(NhlNOERROR);
-	}
 	case Ncl_Typelogical: {
 		logical *fl = (logical *)from;
-		if((from_m == NULL)||(to_m == NULL)) {
+		if((from_m == NULL)&&(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (logical)*fl;
+				*res = (logical)(*fl?1:0);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -151,9 +152,9 @@ NclTypeClass fc;
 	}
 	case Ncl_Typelong: {
 		long *fl = (long *)from;
-		if((from_m == NULL)||(to_m == NULL)) {
+		if((from_m == NULL)&&(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (logical)*fl;
+				*res = (logical)(*fl?1:0);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -170,9 +171,9 @@ NclTypeClass fc;
 	}
 	case Ncl_Typeint: {
 		int *fl = (int*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
+		if((from_m == NULL)&&(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (logical)*fl;
+				*res = (logical)(*fl?1:0);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -189,9 +190,9 @@ NclTypeClass fc;
 	}
 	case Ncl_Typeshort: {
 		short *fl = (short*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
+		if((from_m == NULL)&&(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (logical)*fl;
+				*res = (logical)(*fl?1:0);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -208,9 +209,9 @@ NclTypeClass fc;
 	}
 	case Ncl_Typebyte: {
 		byte *fl = (byte*)from;
-		if((from_m == NULL)||(to_m == NULL)) {
+		if((from_m == NULL)&&(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (logical)*fl;
+				*res = (logical)(*fl?1:0);
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {

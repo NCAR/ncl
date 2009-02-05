@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Machine.c,v 1.88 2006-12-19 01:57:24 dbrown Exp $
+ *      $Id: Machine.c,v 1.89 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -188,6 +188,7 @@ static void SetUpOpsStrings() {
 	ops_strings[TERM_LIST_OP] = "TERM_LIST_OP";
 	ops_strings[LIST_CLEAR_TMP_OP] = "LIST_CLEAR_TMP_OP";
 	ops_strings[LIST_ASSIGN_VERIFY_SUB] = "LIST_ASSIGN_VERIFY_SUB";
+	ops_strings[LIST_READ_FILEVAR_OP] = "LIST_READ_FILEVAR_OP";
 }
 
 static NhlErrorTypes IncreaseStackSize
@@ -1503,6 +1504,7 @@ void _NclPrintMachine
 				_NclPrintSymbol((NclSymbol*)*ptr,fp);
 				break;	
 			case LIST_READ_OP:
+		        case LIST_READ_FILEVAR_OP:
 				fprintf(fp,"%s\n",ops_strings[*ptr]);
 				ptr++;lptr++,fptr++;
 				fprintf(fp,"\t");

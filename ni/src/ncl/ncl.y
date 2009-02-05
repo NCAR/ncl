@@ -92,7 +92,7 @@ char *ncl_cur_func = NULL;
 %token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL LIST
 %token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL NCLEXTERNAL RETURN VSBLKGET NEW
-%token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE DLIB
+%token <sym> OBJVAR OBJTYPE RECORD VSBLKCREATE VSBLKSET LOCAL STOP NCLTRUE NCLFALSE NCLMISSING DLIB
 %token '='
 %token OR
 %token XOR
@@ -1602,15 +1602,10 @@ identifier : vname list_subscript 	{
 						}
 		  			}
 	| vname list_subscript filevarselector {
-						NclSymbol *tmp;
-						NclSymbol *tmp0;
 						if($2 == NULL) {
 							$$ = _NclMakeFileVarRef($1,$3,NULL,Ncl_FILEVAR);
 						} else {
-							tmp = _NclAddUniqueSym("tmp_list_",UNDEF);
-							tmp0 = _NclAddUniqueSym("tmp_list_var_",UNDEF);
-							
-							$$ = _NclMakeListRef(_NclMakeFileVarRef(tmp0,$3,NULL,Ncl_FILEVAR),tmp,$1,$2,tmp0);
+							$$ = _NclMakeFileVarListRef($1,$2,$3,NULL);
 						}
 			 		}
 	| vname list_subscript filevarselector MARKER		{
@@ -1635,6 +1630,7 @@ identifier : vname list_subscript 	{
 							$$ = _NclMakeListRef(_NclMakeFileVarRef(tmp0,$3,$5,Ncl_FILEVAR),tmp,$1,$2,tmp0);
 						}
 					}
+/*
 	| vname list_subscript filevarselector LP subscript_list RP	{	
 						NclSymbol *tmp;
 						NclSymbol *tmp0;
@@ -1646,6 +1642,15 @@ identifier : vname list_subscript 	{
 							$$ = _NclMakeListRef(_NclMakeFileVarRef(tmp0,$3,$5,Ncl_FILEVAR),tmp,$1,$2,tmp0);
 						}
 					}
+*/
+	| vname list_subscript filevarselector LP subscript_list RP	{	
+						if($2 == NULL) {
+							$$ = _NclMakeFileVarRef($1,$3,$5,Ncl_FILEVAR);
+						} else {
+							$$ = _NclMakeFileVarListRef($1,$2,$3,(NclSrcListNode *)$5);
+						}
+					}
+
 	| vname list_subscript filevarselector DIM_MARKER primary	{
 						NclSymbol *tmp0;
 						NclSymbol *tmp;
@@ -2307,6 +2312,9 @@ anysym : INTEGER {
 	| NCLFALSE {
 		$$ = $1;
 	}
+	| NCLMISSING {
+		$$ = $1;
+	}
 	| DLIB {
 		$$ = $1;
 	}
@@ -2329,6 +2337,9 @@ primary : REAL				{
 					}
 	| NCLFALSE 			{
 						$$ = _NclMakeIdnExpr(_NclMakeLogicalExpr(0,yytext));
+					}
+	| NCLMISSING 			{
+						$$ = _NclMakeIdnExpr(_NclMakeLogicalExpr(-1,yytext));
 					}
 	| STRING			{
 						$$ = _NclMakeIdnExpr(_NclMakeStringExpr($1));

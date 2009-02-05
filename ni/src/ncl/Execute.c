@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.124 2009-01-16 22:06:50 dbrown Exp $
+ *      $Id: Execute.c,v 1.125 2009-02-05 03:42:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -32,6 +32,7 @@ extern "C" {
 #include "defs.h"
 #include "Symbol.h"
 #include "NclVar.h"
+#include "NclCoordVar.h"
 #include "Machine.h"
 #include "NclFileInterfaces.h"
 #include "NclFile.h"
@@ -47,6 +48,7 @@ extern "C" {
 #include "NclAtt.h"
 #include "NclList.h"
 #include "NclHLUObj.h"
+#include "TypeSupport.h"
 #include "HLUSupport.h"
 #include "ListSupport.h"
 #include <errno.h>
@@ -175,6 +177,7 @@ void CallTERM_LIST_OP(void) {
 
 	return;
 }
+
 void CallLIST_READ_OP(void) {
 	NclSymbol *listsym;
 	NclSymbol *temporary;
@@ -183,9 +186,10 @@ void CallLIST_READ_OP(void) {
 	NclStackEntry data;
 	NclList list;
 	NclList newlist;
-	int subs,i;
+	int agg_subs,subs,i;
 	NclSelection *sel_ptr=NULL;
 	NclSelection sel;
+	NclSelection *agg_sel_ptr = NULL;
 	NclMultiDValData vect_md,tmp_md;
 	long *thevector;
 	
@@ -213,6 +217,7 @@ void CallLIST_READ_OP(void) {
 		estatus = NhlFATAL;
                 return;
 	}
+
 
 	if(subs) {
 		data = _NclPop();
@@ -347,6 +352,843 @@ void CallLIST_READ_OP(void) {
 	
 	return;
 }
+
+void CallLIST_READ_FILEVAR_OP(void) {
+	NclSymbol *listsym;
+	NclStackEntry *list_ptr;
+	NclStackEntry data;
+	NclStackEntry fvar;
+	NclQuark var;
+ 	NclList list;
+	NclList newlist;
+	int filevar_subs,subs,i;
+	NclSelection *sel_ptr=NULL, *fsel;
+	NclSelection sel;
+	NclSelectionRecord *filevar_sel_ptr = NULL;
+	NclMultiDValData vect_md,tmp_md,agg_coord_var_md,sub_agg_md,thevalue;
+	long *thevector;
+	int the_obj_id;
+	NclObj the_obj;
+	long *agg_dim_count = NULL;
+	int list_index;
+	long total_agg_dim_size, agg_start_index;
+	NrmQuark agg_dim_name;
+	NclFile *files = NULL;
+	NclVar var1, tvar, agg_coord_var;
+	NclMultiDValData agg_coord_md = NULL;
+	NclMultiDValData var_md;
+	NclDimRec dim_info;
+	int coords;
+	long agg_end_index;
+	int first;
+	long agg_sel_count;
+	NclMonoTypes mono_type;
+	int dir, ix_start, ix_end;
+	int var_offset;
+	long var_dim_sizes[32];
+
+
+	ptr++;lptr++;fptr++;
+	listsym = (NclSymbol*)(*ptr);
+	ptr++;lptr++;fptr++;
+	subs = *(int*)ptr;
+	ptr++;lptr++;fptr++;
+	filevar_subs = *(int*)ptr;
+
+	list_ptr = _NclRetrieveRec(listsym,DONT_CARE);
+	if(list_ptr != NULL) {
+		tmp_md = (NclMultiDValData)_NclGetObj(list_ptr->u.data_var->var.thevalue_id);
+		if((tmp_md != NULL)&&(tmp_md->multidval.data_type == NCL_list)){
+			list = (NclList)_NclGetObj(*(obj*)tmp_md->multidval.val);
+		} else {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"List subscripting used on non-list variable, can't continue");
+			estatus = NhlFATAL;
+                	return;
+		}
+	} else {
+		estatus = NhlFATAL;
+                return;
+	}
+
+
+	if(subs) {
+		data = _NclPop();
+		switch(data.u.sub_rec.sub_type) {
+			case INT_VECT:
+				vect_md = data.u.sub_rec.u.vec.vec;
+				if(!(vect_md->multidval.type->type_class.type & Ncl_Typelong)) {
+                        		tmp_md = _NclCoerceData(vect_md,Ncl_Typelong,NULL);
+                        		if(tmp_md == NULL) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce vector to long type can't perform subscripting");
+						estatus = NhlFATAL;
+                                		return;
+                        		}
+ 
+                		}  else {
+                        		tmp_md = vect_md;
+               			}
+		                thevector = (long*)NclMalloc((unsigned)vect_md->multidval.totalelements * sizeof(long));
+				if (thevector == NULL) {
+					NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+					estatus = NhlFATAL;
+					return;
+				}
+				memcpy((char*)thevector,(char*)tmp_md->multidval.val,tmp_md->multidval.totalelements * sizeof(long));
+				sel.sel_type = Ncl_VECSUBSCR;
+				sel.u.vec.n_ind = vect_md->multidval.totalelements;
+				sel.u.vec.min = thevector[0];
+				sel.u.vec.max = thevector[0];
+				sel.u.vec.ind = thevector;
+                		for(i = 0; i < sel.u.vec.n_ind; i++) {
+                        		if(thevector[i] > sel.u.vec.max) {
+                                		sel.u.vec.max = thevector[i];
+                        		}
+                        		if(thevector[i] < sel.u.vec.min) {
+                                		sel.u.vec.min = thevector[i];
+                        		}
+                		}
+                		if((tmp_md != vect_md)&&(tmp_md->obj.status != PERMANENT)) {
+               			         _NclDestroyObj((NclObj)tmp_md);
+		                }
+				break;
+			case INT_SINGLE:
+			case INT_RANGE:
+				sel.u.sub.is_single = data.u.sub_rec.u.range.is_single;
+				if(( data.u.sub_rec.u.range.start == NULL)&&( data.u.sub_rec.u.range.finish == NULL)) {
+					sel.sel_type = Ncl_SUB_ALL;
+					sel.u.sub.start = 0;
+					sel.u.sub.finish = 0;
+					sel.u.sub.stride = 1;
+				} else if(data.u.sub_rec.u.range.start == NULL) {
+					sel.sel_type = Ncl_SUB_DEF_VAL;
+					sel.u.sub.start = 0;
+		                        if(!_NclScalarCoerce(
+               			                 data.u.sub_rec.u.range.finish->multidval.val,
+                               			 data.u.sub_rec.u.range.finish->multidval.data_type,
+                                		&(sel.u.sub.finish),NCL_long)) {
+/*
+* This shouldn't happen but it can't hurt to have an extra check here
+*/
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                        		sel.u.sub.stride = 1;
+
+				} else if(data.u.sub_rec.u.range.finish == NULL) {
+                        		sel.sel_type = Ncl_SUB_VAL_DEF;
+ 
+                        		if(!_NclScalarCoerce(
+                                		data.u.sub_rec.u.range.start->multidval.val,
+                                		data.u.sub_rec.u.range.start->multidval.data_type,
+                                		&(sel.u.sub.start),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+		 
+                        		}
+		 
+                        		sel.u.sub.finish = 0;
+                        		sel.u.sub.stride = 1;
+
+				} else {
+		                        sel.sel_type = Ncl_SUBSCR;
+ 
+					if(!_NclScalarCoerce(
+						data.u.sub_rec.u.range.start->multidval.val,
+						data.u.sub_rec.u.range.start->multidval.data_type,
+						&(sel.u.sub.start),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                        		if(!_NclScalarCoerce(
+                                		data.u.sub_rec.u.range.finish->multidval.val,
+                                		data.u.sub_rec.u.range.finish->multidval.data_type,
+                                		&(sel.u.sub.finish),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                        		sel.u.sub.stride = 1;
+
+				}
+				if(data.u.sub_rec.u.range.stride != NULL) {
+                        		if(!_NclScalarCoerce(
+                                		data.u.sub_rec.u.range.stride->multidval.val,
+                                		data.u.sub_rec.u.range.stride->multidval.data_type,
+                                		&(sel.u.sub.stride),NCL_long)) {
+                                		NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not coerce subscript value to long data type");
+						estatus = NhlFATAL;
+                               	 		return;
+                        		}
+ 
+                		}
+
+				break;
+			default:
+				break;
+		}
+		sel_ptr = &sel;
+	} else {
+		sel_ptr = NULL;
+	}
+
+	newlist =_NclListSelect(list,sel_ptr);
+
+	if (sel.sel_type == Ncl_VECSUBSCR) {
+		NclFree(sel.u.vec.ind);
+	}
+
+	fvar = _NclPop();
+	var = NrmNULLQUARK;
+	switch(fvar.kind) {
+	case NclStk_VAL: 
+		thevalue = fvar.u.data_obj;
+		break;
+	case NclStk_VAR:
+		thevalue = _NclVarValueRead(fvar.u.data_var,NULL,NULL);
+		break;
+	default:
+		thevalue = NULL;
+		estatus = NhlFATAL;
+		break;
+	}
+	if((thevalue == NULL)||(thevalue->multidval.kind != SCALAR)&&(thevalue->multidval.type != (NclTypeClass)nclTypestringClass)) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"File Variable names must be scalar string values can't continue");
+		estatus = NhlFATAL;
+	} else {
+		var = *(NclQuark*)thevalue->multidval.val;
+		if(fvar.u.data_obj->obj.status != PERMANENT) {
+			_NclDestroyObj((NclObj)fvar.u.data_obj);
+		}
+	}
+
+	agg_coord_var = NULL; /* use to test for presence of coordinate variable */
+	agg_dim_count = NclMalloc(sizeof(long) * newlist->list.nelem);
+	files = NclMalloc (sizeof(NclFile) * newlist->list.nelem);
+	if (! (agg_dim_count && files)) {
+		NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+		estatus = NhlFATAL;
+	}
+
+	if (estatus == NhlFATAL) {
+		goto fatal_err;
+	}
+
+	first = 1;
+	if (newlist->list.list_type & NCL_JOIN) {
+		total_agg_dim_size = newlist->list.nelem;
+		agg_dim_name = NrmStringToQuark("ncl_join");
+		for (i = 0; i < total_agg_dim_size; i++) {
+			agg_dim_count[i] = 1;
+		}
+		list_index = newlist->list.nelem - 1;
+		while ((the_obj_id = _NclGetNext((NclObj)newlist)) != -1) {
+			NclMultiDValData file_md = NULL;
+			NclFile thefile = NULL;
+			int index;
+	
+			the_obj = _NclGetObj(the_obj_id);
+			if (the_obj && the_obj->obj.obj_type == Ncl_FileVar) {
+				file_md= (NclMultiDValData)_NclVarValueRead((NclVar)the_obj,NULL,NULL);
+				if (! file_md) {
+					NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
+				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
+				if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
+					int bad = 0;
+					struct _NclFVarRec *var_info = thefile->file.var_info[index];
+					if (first) { /* save the dimension sizes */
+						for (i = 0; i < var_info->num_dimensions; i++) {
+							var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
+						}
+						first = 0;
+					}
+					else {
+						for (i = 0; i < var_info->num_dimensions; i++) {
+							if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
+									  NrmQuarkToString(thefile->file.fpath));
+								bad = 1;
+								break;
+								
+							}
+						}
+					}
+					if (bad) {
+						files[list_index] = NULL;
+						agg_dim_count[i] = 0;
+						total_agg_dim_size--;
+						list_index--;
+					}
+					else {
+						files[list_index] = thefile;
+						list_index--;
+					}
+				}
+			
+			}
+		}
+	}
+	else {
+		total_agg_dim_size = 0;
+		list_index = newlist->list.nelem - 1;
+		while ((the_obj_id = _NclGetNext((NclObj)newlist)) != -1) {
+			NclMultiDValData file_md = NULL;
+			NclFile thefile = NULL;
+			int index;
+			int agg_dim;
+			int agg_dim_size;
+
+			the_obj = _NclGetObj(the_obj_id);
+			if (the_obj && the_obj->obj.obj_type == Ncl_FileVar) {
+				file_md= (NclMultiDValData)_NclVarValueRead((NclVar)the_obj,NULL,NULL);
+				if (! file_md) {
+					NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
+				thefile = (NclFile)_NclGetObj(*(obj*)file_md->multidval.val);
+				if (var != NrmNULLQUARK && ((index = _NclFileIsVar(thefile, var)) > -1)) {
+					int bad = 0;
+					struct _NclFVarRec *var_info = thefile->file.var_info[index];
+					if (first) { /* save the dimension sizes */
+						for (i = 0; i < var_info->num_dimensions; i++) {
+							var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
+						}
+						first = 0;
+					}
+					else {
+						for (i = 1; i < var_info->num_dimensions; i++) { /* dim 0 does not need to match */
+							if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
+								NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
+									  NrmQuarkToString(thefile->file.fpath));
+								bad = 1;
+								break;
+								
+							}
+						}
+					}
+					if (bad) {
+						files[list_index] = NULL;
+						agg_dim_count[i] = 0;
+						list_index--;
+					}
+					else {
+						agg_dim = thefile->file.var_info[index]->file_dim_num[0];
+						agg_dim_name = thefile->file.file_dim_info[agg_dim]->dim_name_quark;
+						total_agg_dim_size += thefile->file.file_dim_info[agg_dim]->dim_size;
+						agg_dim_count[list_index] = thefile->file.file_dim_info[agg_dim]->dim_size;
+						files[list_index] = thefile;
+						list_index--;
+					}
+				}
+			
+			}
+		}
+		if (_NclFileIsVar(files[0],agg_dim_name) > -1) {
+			agg_coord_md = _NclFileReadVarValue(files[0],agg_dim_name,NULL);
+			if (!agg_coord_md) {
+				NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+				estatus = NhlFATAL;
+				goto fatal_err;
+			}
+			if (agg_coord_md->multidval.n_dims != 1) {
+				_NclDestroyObj((NclObj)agg_coord_md);
+				agg_coord_md = NULL;
+			}
+			else {
+				/* sort of cheating -- expand the multidval */
+				int type_size = agg_coord_md->multidval.type->type_class.size;
+				agg_coord_md->multidval.val = NclRealloc(agg_coord_md->multidval.val,total_agg_dim_size * type_size);
+				if (! agg_coord_md->multidval.val) {
+					NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
+				agg_coord_md->multidval.dim_sizes[0] = total_agg_dim_size;
+				agg_coord_md->multidval.totalsize = total_agg_dim_size * agg_coord_md->multidval.type->type_class.size;
+				agg_coord_md->multidval.totalelements = total_agg_dim_size;
+				for (i = 1; i < newlist->list.nelem; i++) {
+					NclMultiDValData tmp_md;
+					if (files[i] && _NclFileIsVar(files[i],agg_dim_name) > -1) {
+						tmp_md  = _NclFileReadVarValue(files[i],agg_dim_name,NULL);
+						if (tmp_md) {
+							memcpy((char *)agg_coord_md->multidval.val + agg_dim_count[i-1] * type_size, 
+							       tmp_md->multidval.val, tmp_md->multidval.totalsize);
+						}
+						_NclDestroyObj((NclObj)tmp_md);
+					}				
+				}
+				/* create a coordinate variable -- I mean a variable with a coordinate variable */
+				dim_info.dim_quark = agg_dim_name;
+				dim_info.dim_num = 0;
+				dim_info.dim_size = total_agg_dim_size;
+				agg_coord_md->obj.status = PERMANENT;
+				tvar = _NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,agg_coord_md,&dim_info,-1,NULL,COORD,NrmQuarkToString(agg_dim_name),TEMPORARY);
+				agg_coord_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,agg_coord_md,&dim_info,-1,&tvar->obj.id,VAR,NrmQuarkToString(agg_dim_name),TEMPORARY);
+			}
+		}	
+	}	
+	/* Reuse the list sel_ptr for the aggregated dimensions selection */
+	sel_ptr = &sel;
+	filevar_sel_ptr = NULL;
+	if (! filevar_subs) {
+		agg_sel_count = total_agg_dim_size;
+		sel.sel_type = Ncl_SUB_ALL;
+		sel.dim_num = 0;
+		sel.u.sub.start = 0;
+		sel.u.sub.finish = total_agg_dim_size - 1;
+		sel.u.sub.stride = 1;
+		sel.u.sub.is_single = total_agg_dim_size > 1 ? 0 : 1;
+	}
+	else {
+		double start, finish, stride;
+		filevar_sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
+		if (! filevar_sel_ptr) {
+			NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+			estatus = NhlFATAL;
+			goto fatal_err;
+		}
+
+		long end_ix;
+		if (newlist->list.list_type & NCL_JOIN) {
+			filevar_sel_ptr->n_entries = filevar_subs - 1;
+			end_ix = 0;
+		}
+		else {
+			filevar_sel_ptr->n_entries = filevar_subs;
+			end_ix = 1;
+		}
+			
+		
+		for(i = filevar_sel_ptr->n_entries - 1; i >= end_ix; i--) {
+			data =_NclPop();
+			switch(data.u.sub_rec.sub_type) {
+			case INT_VECT:
+				_NclBuildFileVSelection(files[0],var,&data.u.sub_rec.u.vec,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				break;
+			case INT_SINGLE:
+			case INT_RANGE:
+				_NclBuildFileRSelection(files[0],var,&data.u.sub_rec.u.range,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				break;
+			case COORD_VECT:
+				_NclBuildFileCoordVSelection(files[0],var,&data.u.sub_rec.u.vec,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				break;
+			case COORD_SINGLE:
+			case COORD_RANGE:
+				 _NclBuildFileCoordRSelection(files[0],var,&data.u.sub_rec.u.range,&(filevar_sel_ptr->selection[i]),i,data.u.sub_rec.name);
+				break;
+			}
+			_NclFreeSubRec(&data.u.sub_rec);
+		}
+		data =_NclPop();
+		switch(data.u.sub_rec.sub_type) {
+		case INT_VECT:
+			_NclBuildVSelection(agg_coord_var,&data.u.sub_rec.u.vec,sel_ptr,0,data.u.sub_rec.name);
+			break;
+		case INT_SINGLE:
+		case INT_RANGE:
+			_NclBuildRSelection(agg_coord_var,&data.u.sub_rec.u.range,sel_ptr,0,data.u.sub_rec.name);
+			break;
+		case COORD_VECT:
+			_NclBuildCoordVSelection(agg_coord_var,&data.u.sub_rec.u.vec,sel_ptr,0,data.u.sub_rec.name);
+			break;
+		case COORD_SINGLE:
+		case COORD_RANGE:
+			_NclBuildCoordRSelection(agg_coord_var,&data.u.sub_rec.u.range,sel_ptr,0,data.u.sub_rec.name);
+			break;
+		}
+		_NclFreeSubRec(&data.u.sub_rec);
+		/*  Now adjust the start and finish such that start is always less than finish and the stride accounts for the direction of the subselection
+		 *  Note that NCL always ensures that the start element is included in any subselection, for any stride. This means making an adjustment to 
+		 *  one of the endpoints in some cases.
+                 *  Then get the count of the selected elements of the first dimension
+		 */
+		agg_sel_count = -1;
+		if (sel.sel_type == Ncl_VECSUBSCR) {
+			agg_sel_count = sel.u.vec.n_ind;
+		}
+		else {
+			if(sel.u.sub.stride == 0 ) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"Invalid stride: stride must be positive non-zero integer");
+				sel.u.sub.stride = 1;
+			}
+			switch (sel.sel_type) {
+			case Ncl_SUB_ALL:
+				finish = total_agg_dim_size - 1;
+				start  = 0;
+				stride = 1;
+				break;
+			case Ncl_SUB_VAL_DEF:
+				finish = total_agg_dim_size - 1;
+				start = sel.u.sub.start;
+				stride = sel.u.sub.stride;
+				sel.sel_type = Ncl_SUBSCR;
+				break;
+			case Ncl_SUB_DEF_VAL:
+				finish = sel.u.sub.finish;
+				start = 0;
+				stride = sel.u.sub.stride;
+				sel.sel_type = Ncl_SUBSCR;
+				break;
+			case Ncl_SUBSCR:
+				if (sel.u.sub.finish < sel.u.sub.start) {
+					start  = sel.u.sub.finish + (sel.u.sub.start - sel.u.sub.finish) % abs(sel.u.sub.stride);
+					finish = sel.u.sub.start;
+					stride = -sel.u.sub.stride;
+				}
+				else {
+					finish = sel.u.sub.finish;
+					start = sel.u.sub.start;
+					stride = sel.u.sub.stride;
+				}
+				break;
+			}
+			if (agg_sel_count < 0) {
+				agg_sel_count = (int) ((finish - start) / fabs(stride)) + 1;
+			}
+			sel.u.sub.start = start;
+			sel.u.sub.stride = stride;
+			sel.u.sub.finish = (int) finish - ((int) finish - (int) start) % abs((int)stride);
+		}
+	}
+
+	/* step through the files -- reading the correct elements of the first dimension */
+
+	first = 1;
+	var_offset = 0;
+	if (sel.sel_type == Ncl_SUBSCR) {
+		if (sel.u.sub.stride > 0) {
+			dir = 1;
+			ix_start = 0;
+			ix_end = newlist->list.nelem;
+			agg_end_index = -1;
+		}
+		else {
+			dir = -1;
+			ix_end = -1;
+			ix_start = newlist->list.nelem -1;
+			agg_end_index = total_agg_dim_size;
+		}
+	}
+	else if (sel.sel_type == Ncl_VECSUBSCR) {
+		long *ind = sel.u.vec.ind;
+		for (i = 1; i < sel.u.vec.n_ind; i++) {
+			if (ind[i] < ind[i-1]) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"Vector selection for list filevar must be monotonically increasing"); 
+				estatus = NhlFATAL;
+				goto fatal_err;
+			}
+		}
+		dir = 1;
+		ix_start = 0;
+		ix_end = newlist->list.nelem;
+		agg_end_index = -1;
+	}
+	else {
+		dir = 1;
+		ix_start = 0;
+		ix_end = newlist->list.nelem;
+		agg_end_index = -1;
+	}
+		
+	for (i = ix_start; i != ix_end; i+= dir) {
+		int j;
+		long agg_chunk_size;
+		long *vec = NULL;
+		long vcount;
+		int do_file = 0;
+		agg_start_index = agg_end_index + dir;
+		agg_end_index += dir * agg_dim_count[i];
+		int total_selected;
+		if (! files[i]) 
+			continue;
+
+		if (! filevar_subs)
+			do_file = 1;
+		else if (newlist->list.list_type & NCL_JOIN) {
+			switch (sel.sel_type) {
+			case Ncl_SUB_ALL:
+				do_file = 1;
+				break;
+			case Ncl_SUBSCR:
+				if (dir == 1) {
+					if (sel.u.sub.start > agg_end_index) {
+						break;
+					}
+					if (sel.u.sub.finish < agg_start_index) {
+						break;
+					}
+				}
+				else {
+					if (sel.u.sub.finish < agg_end_index) {
+						break;
+					}
+					if (sel.u.sub.start > agg_start_index) {
+						break;
+					}
+				}					
+				do_file = 1;
+				break;
+			case Ncl_VECSUBSCR:
+				if (sel.u.vec.min > agg_end_index) {
+					break;
+				}
+				if (sel.u.vec.max < agg_start_index) {
+					break;
+				}
+				for (j = 0; j < sel.u.vec.n_ind; j++) {
+					if (sel.u.vec.ind[j] == agg_end_index) {
+						do_file = 1;
+						break;
+					}
+				}
+				break;
+			}
+		}
+		else {
+			fsel = &(filevar_sel_ptr->selection[0]);
+			fsel->dim_num = 0;
+			switch (sel.sel_type) {
+			case Ncl_SUB_ALL:
+				do_file = 1;
+				fsel->sel_type = Ncl_SUB_ALL;
+				fsel->u.sub.stride = 1;
+				fsel->u.sub.start = 0;
+				fsel->u.sub.finish = agg_end_index - agg_start_index;
+				fsel->u.sub.is_single = 0; /* revisit */
+				break;
+			case Ncl_SUBSCR:
+				if (dir == 1) {
+					if (sel.u.sub.start > agg_end_index) {
+						break;
+					}
+					if (sel.u.sub.finish < agg_start_index) {
+						break;
+					}
+					fsel->u.sub.start = MAX(agg_start_index,sel.u.sub.start) - agg_start_index;
+					fsel->u.sub.finish = MIN(agg_end_index,sel.u.sub.finish) - agg_start_index;
+				}
+				else {
+					if (sel.u.sub.finish < agg_end_index) {
+						break;
+					}
+					if (sel.u.sub.start > agg_start_index) {
+						break;
+					}
+					fsel->u.sub.start = MAX(agg_end_index,sel.u.sub.start) - agg_end_index;
+					fsel->u.sub.finish = MIN(agg_start_index,sel.u.sub.finish) - agg_end_index;
+					fsel->u.sub.start += (fsel->u.sub.finish - fsel->u.sub.start) % abs(sel.u.sub.stride);
+				}					
+				fsel->u.sub.stride = sel.u.sub.stride; 
+				fsel->u.sub.is_single = 0; /* revisit */
+				fsel->sel_type = Ncl_SUBSCR;
+				do_file = 1;
+				break;
+			case Ncl_VECSUBSCR:
+				if (sel.u.vec.min > agg_end_index) {
+					break;
+				}
+				if (sel.u.vec.max < agg_start_index) {
+					break;
+				}
+				vec = NclMalloc(sizeof(long) * (agg_end_index - agg_start_index + 1));
+				if (! vec) {
+					NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
+
+				vcount = 0;
+				for (j = 0; j < sel.u.vec.n_ind; j++) {
+					if (sel.u.vec.ind[j] > agg_end_index)
+						break;
+					if (sel.u.vec.ind[j] >= agg_start_index) {
+						vec[vcount] = sel.u.vec.ind[j] - agg_start_index;
+					        vcount++;
+					}
+				}
+				if (vcount == 0) {
+					NclFree(vec);
+				}
+				else {
+					fsel->u.vec.n_ind = vcount;
+					fsel->u.vec.ind = vec;
+					fsel->u.vec.min = vec[0];
+					fsel->u.vec.max = vec[vcount - 1];
+					fsel->sel_type = Ncl_VECSUBSCR;
+					do_file = 1;
+				}
+				break;
+			}
+		}
+		if (! do_file)
+			continue;
+		if (first) {
+			int tsize;
+			NclVar sub_agg_coord_var;
+			NclSelectionRecord sel_rec;
+			var1 = _NclFileReadVar(files[i],var,filevar_sel_ptr);
+			if (! var1) {
+				NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+				estatus = NhlFATAL;
+				goto fatal_err;
+			}
+			first = False;
+			/* expand md_array */
+			tmp_md = (NclMultiDValData)_NclGetObj(var1->var.thevalue_id);
+			if (newlist->list.list_type & NCL_JOIN) {
+				/* need to add a dimension to the variable */
+				agg_chunk_size = tmp_md->multidval.totalsize;
+				var_offset = tmp_md->multidval.totalsize;
+				tsize = agg_chunk_size * agg_sel_count;
+				if (tsize > tmp_md->multidval.totalsize) {
+					tmp_md->multidval.val = NclRealloc(tmp_md->multidval.val,tsize);
+					if (! tmp_md->multidval.val) {
+						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+						estatus = NhlFATAL;
+						goto fatal_err;
+					}
+					tmp_md->multidval.totalelements = tmp_md->multidval.totalelements * agg_sel_count;
+					tmp_md->multidval.totalsize = tsize;
+					if (tmp_md->multidval.kind == SCALAR) { 
+						if (agg_sel_count > 1) {  /* selection produced a scalar */
+							tmp_md->multidval.kind = MULTID;
+							tmp_md->multidval.dim_sizes[0] = agg_sel_count;
+							var1->var.dim_info[0].dim_size = agg_sel_count;
+							var1->var.dim_info[0].dim_num = 0;
+							var1->var.dim_info[0].dim_quark = agg_dim_name;
+						}
+					}
+					else {
+						for (j = tmp_md->multidval.n_dims; j > 0; j--) {
+							tmp_md->multidval.dim_sizes[j] = tmp_md->multidval.dim_sizes[j-1];
+							var1->var.dim_info[j].dim_quark = var1->var.dim_info[j-1].dim_quark;
+							var1->var.dim_info[j].dim_size = var1->var.dim_info[j-1].dim_size;
+							var1->var.coord_vars[j] = var1->var.coord_vars[j-1];
+						}
+						tmp_md->multidval.n_dims++;
+						var1->var.n_dims++;
+						tmp_md->multidval.dim_sizes[0] = agg_sel_count;
+						var1->var.dim_info[0].dim_size = agg_sel_count;
+						var1->var.dim_info[0].dim_num = 0;
+						var1->var.dim_info[0].dim_quark = agg_dim_name;
+					}
+				}
+				
+			}
+			else {
+				agg_chunk_size = tmp_md->multidval.totalsize / tmp_md->multidval.dim_sizes[0];
+				var_offset = tmp_md->multidval.totalsize;
+				tsize = agg_chunk_size * agg_sel_count;
+				if (tsize > tmp_md->multidval.totalsize) {
+					tmp_md->multidval.val = NclRealloc(tmp_md->multidval.val,tsize);
+					if (! tmp_md->multidval.val) {
+						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+						estatus = NhlFATAL;
+						goto fatal_err;
+					}
+					tmp_md->multidval.totalelements = (tmp_md->multidval.totalelements / tmp_md->multidval.dim_sizes[0]) * agg_sel_count;
+					tmp_md->multidval.dim_sizes[0] = agg_sel_count;
+					tmp_md->multidval.totalsize = tsize;
+					var1->var.dim_info[0].dim_size = agg_sel_count;
+				}
+			}
+			memcpy(&(sel_rec.selection[0]),&sel,sizeof(NclSelection));
+			sel_rec.n_entries = 1;
+			if (agg_coord_var) {
+				sub_agg_coord_var = _NclReadCoordVar(agg_coord_var,NrmQuarkToString(agg_dim_name),NULL);
+				if (!sub_agg_coord_var) {
+					NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
+				sub_agg_md = _NclVarValueRead(sub_agg_coord_var,&sel_rec,NULL);
+				_NclDestroyObj((NclObj)agg_coord_var);
+				agg_coord_var = (NclVar)_NclGetObj(var1->var.coord_vars[0]);
+				agg_coord_var_md = (NclMultiDValData)_NclGetObj(agg_coord_var->var.thevalue_id);
+				if (sub_agg_md->multidval.totalelements > agg_coord_var_md->multidval.totalelements) {
+					agg_coord_var_md->multidval.val = NclRealloc(agg_coord_var_md->multidval.val,sub_agg_md->multidval.totalsize);
+					if (! agg_coord_var_md->multidval.val) {
+						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+						estatus = NhlFATAL;
+						goto fatal_err;
+					}
+					agg_coord_var_md->multidval.totalelements = sub_agg_md->multidval.totalelements;
+					agg_coord_var_md->multidval.dim_sizes[0] = agg_sel_count;
+					agg_coord_var_md->multidval.totalsize = sub_agg_md->multidval.totalsize;
+					memcpy(agg_coord_var_md->multidval.val,sub_agg_md->multidval.val,sub_agg_md->multidval.totalsize);
+				}
+			}
+		}
+		else {
+			int bad = 0;
+			var_md = _NclFileReadVarValue(files[i],var,filevar_sel_ptr);
+			if (!var_md) {
+				NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+				estatus = NhlFATAL;
+				goto fatal_err;
+			}
+			if (newlist->list.list_type & NCL_JOIN) {
+				if (var_md->multidval.totalsize != agg_chunk_size)
+					bad = 1;
+			}
+			else {
+				if ((var_md->multidval.totalsize /  var_md->multidval.dim_sizes[0]) != agg_chunk_size)
+					bad = 1;
+			}
+			if (bad) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,"incorrect size for list filevar subselection");
+				estatus = NhlFATAL;
+				goto fatal_err;
+			}
+			memcpy((char *)tmp_md->multidval.val + var_offset,var_md->multidval.val,var_md->multidval.totalsize);
+			var_offset += var_md->multidval.totalsize;
+			_NclDestroyObj((NclObj)var_md);
+		}
+		if (vec)  /* this is the aggregated dimension vector value passed to each file so it must be freed at each iteration */
+			NclFree(vec);
+	}
+
+
+	if (var1) {
+		data.kind = NclStk_VAR;
+		data.u.data_var = var1;
+		if(data.u.data_var != NULL) {
+			estatus = _NclPush(data);
+		} else {
+			estatus = NhlFATAL;
+		}
+	}
+
+ fatal_err:  /* could also be totally benign */
+
+	if (filevar_sel_ptr) {
+		for (i = 1; i < filevar_sel_ptr->n_entries; i++) {
+			if (filevar_sel_ptr->selection[i].sel_type == Ncl_VECSUBSCR) {
+				NclFree(filevar_sel_ptr->selection[i].u.vec.ind);
+			}
+		}
+		NclFree(filevar_sel_ptr);
+	}
+	if (sel.sel_type == Ncl_VECSUBSCR) {
+		NclFree(sel.u.vec.ind);
+	}
+	if (files)
+		NclFree(files);
+	if (agg_dim_count)
+		NclFree(agg_dim_count);
+	
+	return;
+}
+
 void CallSET_NEXT_OP(void) 
 {
 	NclSymbol *listsym;
@@ -2281,7 +3123,7 @@ void CallASSIGN_VAR_OP(void) {
 						}
 					}
 					if(estatus != NhlFATAL) {
-					rhs = _NclPop();	
+						rhs = _NclPop();	
 						if(rhs.kind == NclStk_VAL) {
 							rhs_md = rhs.u.data_obj;
 							if(rhs_md != NULL) {
@@ -5794,6 +6636,10 @@ NclExecuteReturnStatus _NclExecute
 ***************************/			
 			case LIST_READ_OP: {
 				CallLIST_READ_OP();
+			}
+			break;
+			case LIST_READ_FILEVAR_OP: {
+				CallLIST_READ_FILEVAR_OP();
 			}
 			break;
 			case VARVAL_READ_OP : {

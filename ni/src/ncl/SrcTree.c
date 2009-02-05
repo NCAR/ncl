@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.43 2008-05-22 22:56:25 dbrown Exp $
+ *      $Id: SrcTree.c,v 1.44 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -68,7 +68,7 @@ char *src_tree_names[] = {"Ncl_BLOCK", "Ncl_RETURN", "Ncl_IFTHEN",
 			"Ncl_BREAK", "Ncl_CONTINUE","Ncl_FILEVARATT",
 			"Ncl_FILEVARDIM",
 			"Ncl_FILECOORD","Ncl_NEW","Ncl_LOGICAL","Ncl_VARCOORDATT","Ncl_FILECOORDATT","Ncl_WILDCARDINDEX","Ncl_NULLNODE",
-			"Ncl_LIST","Ncl_EXPRNEW"
+			  "Ncl_LIST","Ncl_EXPRNEW","Ncl_FILEVARLIST"
 			};
 /*
 * These are the string equivalents of the attribute tags assigned to 
@@ -3232,7 +3232,7 @@ void *ref_node;
 NclSymbol *equiv_sym;
 NclSymbol *list;
 void *subscript_list;
-NclSymbol *tmp_var
+NclSymbol *tmp_var;
 #endif
 {
 	NclList * tmp = (NclList*)NclMalloc((unsigned)sizeof(NclList));
@@ -3251,8 +3251,58 @@ NclSymbol *tmp_var
 	tmp->sym = list;
 	tmp->tmp= equiv_sym;
 	tmp->tmp_var= tmp_var;
+	tmp->agg_subscript = NULL;
 	tmp->ref_node= ref_node;
 	tmp->subscript_list = subscript_list;
+	tmp->ref_type = Ncl_READIT;
+	_NclRegisterNode((NclGenericNode*)tmp);
+	return((void*)tmp);
+}
+
+void _NclFileVarListDestroy
+#if     NhlNeedProto
+(struct ncl_genericnode *thenode)
+#else
+(thenode)
+        struct ncl_genericnode *thenode;
+#endif
+{
+        NclFileVarList*tmp = (NclFileVarList*)thenode;
+        NclSrcListNode *step,*temp;
+        step = tmp->filevar_subscript;
+        while(step != NULL) {
+                temp = step;
+                step = step->next;
+                NclFree(temp);
+        }
+        NclFree((void*)tmp);
+}
+
+void *_NclMakeFileVarListRef
+#if	NhlNeedProto
+(NclSymbol *list, void *list_subscript, void * filevar, NclSrcListNode *filevar_subscript)
+#else
+(list, list_subscript, filevar, filevar_subscript)
+NclSymbol *list;
+void *list_subscript;
+void *filevar;
+NclSrcListNode *filevar_subscript;
+#endif
+{
+	NclFileVarList * tmp = (NclFileVarList*)NclMalloc((unsigned)sizeof(NclFileVarList));
+	if(tmp == NULL) {
+		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
+		return(NULL);
+	}
+	tmp->kind = Ncl_FILEVARLIST;
+	tmp->name = src_tree_names[Ncl_FILEVARLIST];
+	tmp->line = cur_line_number;
+	tmp->file = cur_load_file;
+	tmp->destroy_it = (NclSrcTreeDestroyProc)_NclFileVarListDestroy;
+	tmp->list = list;
+	tmp->list_subscript = list_subscript;
+	tmp->filevar = filevar;
+	tmp->filevar_subscript = filevar_subscript;
 	tmp->ref_type = Ncl_READIT;
 	_NclRegisterNode((NclGenericNode*)tmp);
 	return((void*)tmp);

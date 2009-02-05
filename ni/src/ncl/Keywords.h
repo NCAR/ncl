@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.14 1999-11-12 18:36:38 ethan Exp $
+ *      $Id: Keywords.h,v 1.15 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -75,6 +75,7 @@ static struct {
 "list",	LIST,
 "nclexternal",	NCLEXTERNAL,
 "null",	NCLNULL,
+"_Missing",      NCLMISSING,
 /*
 "objdata",	RKEY,
 */

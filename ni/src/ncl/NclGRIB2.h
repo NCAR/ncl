@@ -798,9 +798,11 @@ typedef struct codeTable {
     char    *units;         /* variable units (not always applicable) */
 } g2_codeTable;
 
+#if 0
 # define    G2_DEFAULT_MISSING_FLOAT \
         ((NclTypeClass) nclTypefloatClass)->type_class.default_mis.floatval
-
+#endif
+#define G2_DEFAULT_MISSING_FLOAT 1e20
 # define    G2_DEFAULT_MISSING_INT \
         ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval
 

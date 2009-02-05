@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclList.h,v 1.2 2000-10-17 19:55:12 ethan Exp $
+ *      $Id: NclList.h,v 1.3 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -114,6 +114,7 @@ typedef struct _NclListPart {
 	NclListObjList *first;
 	NclListObjList *last;
 	int nelem;
+	NclSelection *agg_sel_ptr;
 }NclListPart;
  
 typedef struct _NclListClassRec{

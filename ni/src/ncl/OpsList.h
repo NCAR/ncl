@@ -99,4 +99,5 @@
 #define TERM_LIST_OP				99
 #define LIST_CLEAR_TMP_OP			100
 #define LIST_ASSIGN_VERIFY_SUB 			101
-#define NUM_OPERATORS				102	
+#define LIST_READ_FILEVAR_OP                    102
+#define NUM_OPERATORS				103	

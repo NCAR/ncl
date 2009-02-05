@@ -413,6 +413,10 @@ typedef struct _GribTable {
 	char *name;
 } GribTable;
 
+#if 0
 #define DEFAULT_MISSING_FLOAT ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval
+#endif
+#define DEFAULT_MISSING_FLOAT 1e20
 #define DEFAULT_MISSING_INT ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval
+
 

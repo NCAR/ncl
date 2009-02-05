@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.13 2005-08-18 23:09:22 dbrown Exp $
+ *      $Id: DataSupport.h,v 1.14 2009-02-05 03:42:31 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -29,6 +29,11 @@ void
 #endif
 );
 extern struct _NclMultiDValDataRec *_NclCreateFalse(
+#if NhlNeedProto
+void
+#endif
+);
+extern struct _NclMultiDValDataRec *_NclCreateLMissing(
 #if NhlNeedProto
 void
 #endif

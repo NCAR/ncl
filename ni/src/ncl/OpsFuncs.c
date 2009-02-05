@@ -447,7 +447,10 @@ NhlErrorTypes _NclBuildArray
 		}
 		if((must_be_numeric==1)&&
 			( obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
-			if(result_type > (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
+			if ((result_type & Ncl_Typelogical) || (obj_type & Ncl_Typelogical)) {
+				result_type = Ncl_Typelogical;
+			}
+			else if (result_type > (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
 				result_type = (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | (int)Ncl_Typelogical));
 			}
 		} else if((must_be_numeric == 0)&&

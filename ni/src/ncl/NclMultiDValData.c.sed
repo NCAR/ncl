@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.43 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.44 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2110,10 +2110,10 @@ NclScalar *new_missing;
 							new_missing,
 							from_type) != NhlFATAL) {
 							if((self_md->multidval.missing_value.has_missing)&&(new_missing == NULL)) {
-
-								_NclScalarCoerce(&(self_md->multidval.missing_value.value),self_md->multidval.data_type,&tmp_missing, to_type->type_class.data_type);
-
-							
+					                        if((to_type->type_class.data_type == NCL_logical)||
+								   (!_NclScalarCoerce(&(self_md->multidval.missing_value.value),self_md->multidval.data_type,&tmp_missing, to_type->type_class.data_type))) {
+					                                tmp_missing = to_type->type_class.default_mis;
+					                        }
 								output_md = _NclCreateVal(
 									NULL,
 									NULL,

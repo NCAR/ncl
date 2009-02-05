@@ -219,6 +219,25 @@ static NclObj CreateFalseConst
 	return(tmp_obj);
 }
 
+static NclObj CreateLMissingConst
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	static int first = 1;
+	NclObj tmp_obj;
+	
+	if(first) {
+		number_of_constants++;
+		first = 0;
+	}
+	tmp_obj = (NclObj) _NclCreateLMissing();
+	tmp_obj->obj.is_constant = tmp_obj->obj.id+1;
+	return(tmp_obj);
+}
+
 
 
 
@@ -1002,7 +1021,10 @@ if(groot != NULL) {
 		{
 			NclInt *integer = (NclInt*)root;
 			off1 = _NclPutInstr(PUSH_LOGICAL_LIT_OP,integer->line,integer->file);
-			if(integer->integer) {
+			if(integer->integer == -1) {
+				tmp_md = CreateLMissingConst();
+			}
+			else if (integer->integer) {
 				tmp_md = CreateTrueConst();
 			} else {
 				tmp_md = CreateFalseConst();
@@ -2255,6 +2277,34 @@ Unneeded translations
 			off5 =_NclPutInstr(TERM_LIST_OP,list_op->line,list_op->file);
 			_NclPutInstr((NclValue)list_op->tmp,list_op->line,list_op->file);
 			_NclPutInstrAt(off3,off5,list_op->line,list_op->file);
+			break;
+		}
+		case Ncl_FILEVARLIST:
+		{
+			NclFileVarList *list_op = (NclFileVarList*)groot;
+			int nsubs = 0;
+
+			off1 = _NclPutInstr(ISDEFINED_OP,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->list,list_op->line,list_op->file);
+			if(list_op->filevar_subscript != NULL) {
+				step = list_op->filevar_subscript;
+				_NclTranslate(step->node,fp);
+				step = step->next;
+				nsubs = 1;
+				while(step != NULL) {
+					(void)_NclTranslate(step->node,fp);
+					step = step->next;
+					nsubs++;
+				}
+			}
+			_NclTranslate(list_op->filevar,fp);
+			if(list_op->list_subscript != NULL) {
+				(void)_NclTranslate(list_op->list_subscript,fp);
+			}
+			_NclPutInstr(LIST_READ_FILEVAR_OP,list_op->line,list_op->file);
+			_NclPutInstr((NclValue)list_op->list,list_op->line,list_op->file);
+			_NclPutIntInstr(list_op->list_subscript?1:0,list_op->line,list_op->file);
+			_NclPutIntInstr(nsubs,list_op->line,list_op->file);
 			break;
 		}
 		default:

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.h,v 1.27 2008-05-22 22:56:26 dbrown Exp $
+ *      $Id: SrcTree.h,v 1.28 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -50,7 +50,8 @@ typedef enum {Ncl_BLOCK, Ncl_RETURN, Ncl_IFTHEN, Ncl_IFTHENELSE,
 			Ncl_RESOURCE, Ncl_GETRESOURCE, Ncl_OBJ,
 			Ncl_BREAK, Ncl_CONTINUE, Ncl_FILEVARATT,
 			Ncl_FILEVARDIM,  Ncl_FILEVARCOORD, Ncl_NEW,
-			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT,Ncl_WILDCARDINDEX, Ncl_NULLNODE, Ncl_LIST,Ncl_EXPRNEW
+			Ncl_LOGICAL, Ncl_VARCOORDATT,Ncl_FILEVARCOORDATT,Ncl_WILDCARDINDEX, 
+	                Ncl_NULLNODE, Ncl_LIST, Ncl_EXPRNEW, Ncl_FILEVARLIST
                         } NclSrcTreeTypes;
 
 typedef enum { Ncl_READIT, Ncl_WRITEIT, Ncl_PARAMIT, Ncl_VALONLY } NclReferenceTypes;
@@ -269,9 +270,23 @@ typedef struct ncl_list{
 	NclSymbol *sym;
 	NclSymbol *tmp;
 	NclSymbol *tmp_var;
+	void *agg_subscript;
 	void *ref_node;
 	void *subscript_list;
 }NclList;
+
+typedef struct ncl_filevar_list{
+	NclSrcTreeTypes kind;
+	char *name;
+	int  line;
+	char *file;
+	NclSrcTreeDestroyProc destroy_it;
+	NclReferenceTypes ref_type;
+	NclSymbol *list;
+	void *list_subscript;
+	void *filevar;
+	NclSrcListNode *filevar_subscript;
+}NclFileVarList;
 
 typedef struct ncl_filecoord_att {
 	NclSrcTreeTypes kind;
@@ -928,12 +943,21 @@ extern void *_NclMakeFileAttRef(
 extern void *_NclMakeListRef(
 #if	NhlNeedProto
 	void * /*src_node*/,
-	NclSymbol * /* list*/,
+	NclSymbol * /* equiv_sym*/,
 	NclSymbol * /* list*/,
 	void * /* subscript_list */,
-	NclSymbol * /* list*/
+	NclSymbol * /* tmp_var*/
 #endif
 );	
+extern void *_NclMakeFileVarListRef(
+#if	NhlNeedProto
+	NclSymbol * /* list*/,
+	void * /* list_subscript */,
+	void *filevar,
+	NclSrcListNode *  /* filevar_subscript */
+#endif
+);	
+
 extern void *_NclMakeVarRef(
 #if	NhlNeedProto
 	NclSymbol * /* var */,

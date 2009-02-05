@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.10 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclHDFEOS.c,v 1.11 2009-02-05 03:42:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1402,6 +1402,21 @@ void *therec;
 		tmpvar = thevars;
 		thevars = thevars->next;
 		NclFree(tmpvar);
+	}
+	thedims = thefile->dims;
+	while (thedims != NULL) {
+		NclFree(thedims->dim_inq);
+		tmpdim = thedims;
+		thedims = thedims->next;
+		NclFree(tmpdim);
+	}
+	theatts = thefile->att_int_list;
+	while (theatts != NULL) {
+		NclFree(theatts->att_inq->value);
+		NclFree(theatts->att_inq);
+		tmpatt = theatts;
+		theatts = theatts->next;
+		NclFree(tmpatt);
 	}
 	NclFree(thefile);
 }

@@ -699,6 +699,7 @@ struct _NclObjRec *_NclListCreate(
 	my_inst->list.first = NULL;
 	my_inst->list.last= NULL;
 	my_inst->list.current_item= NULL;
+	my_inst->list.agg_sel_ptr = NULL;
 
 	return((NclObj)my_inst);
 	
