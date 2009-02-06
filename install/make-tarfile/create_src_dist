@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.6 2009-01-16 18:51:25 haley Exp $
+#   $Id: create_src_dist,v 1.7 2009-02-06 20:37:23 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -21,16 +21,21 @@
 #
 #   Description:  Tars up NCL and/or NCAR Graphics source for release to users.
 #
-# There are two types of releases possible:
+# There are three types of source possible:
 #
 #      - NCL and NCAR Graphics source code (default)
 #      - NCAR Graphics source code
+#      - NCL and NCAR Graphics source code and internal "install"
+#           directory
 #
 #   Options:   -r :  root directory
 #              -1 :  tar up just NCAR Graphics (not NCL)
 #              -i :  Tar up files for internal use. Includes "install"
 #                    directory
 #              -c :  scp to windom.ucar.edu
+#              -g :  Tag the code with the given version number
+#                    This can only be done if code is checked-out
+#                    with CVS.
 #              -t :  Include triangle code
 #              -v :  version number
 #              -x :  don't use CVS to get directory. Assume "ncarg"
@@ -86,6 +91,12 @@ while ($#argv > 0)
     case "-v":
       shift
       set version = "$1"
+      shift
+      breaksw
+
+    case "-g":
+      shift
+      set tag_version = "$1"
       shift
       breaksw
 
@@ -149,6 +160,11 @@ if (! -e $tardir) then
 endif
 
 # Set directory to scp source files to.
+
+if ($?tag_version && ! $?USE_CVS) then
+  echo "To tag this version, you must use the CVS check-out method."
+  exit 1
+endif
 
 set scpdir = "/fs/scd/home1/ncargd/dist/tarfiles/ncl/$version"
 
@@ -223,16 +239,6 @@ else
   endif
 endif
 
-
-# 
-# Remove "CVS" directories
-#
-cd $parentdir/ncarg
-set cmd = "find . -name 'CVS' -type d -exec /bin/rm -rf {} \;"
-echo "$cmd"
-find . -name 'CVS' -type d -exec /bin/rm -rf {} \;
-cd $parentdir
-
 #
 # Get the version, if not already set by user.
 #
@@ -287,7 +293,7 @@ set tar_filename = "$tar_prefix-$version.tar"
 # want to give to the user).
 #
 
-set ni_stuff = "ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo"
+set ni_stuff = "ni/src/ngi ni/src/lib/xcb ni/src/lib/ngo ni/src/ncl/.cvsignore"
 set ext_stuff = "external/fftpack5 external/sphere3.1 external/sphere3_dp"
 set tri_stuff = "ni/src/lib/hlu/triangle.c ni/src/lib/hlu/triangle.h"
 set stuff_to_always_remove = "pynio"
@@ -311,6 +317,24 @@ foreach f($stuff_to_remove)
   echo "$cmd"
   $cmd
 end
+
+#
+# If requseted, tag the directories as they are, before we remove the
+# "CVS" directories.
+#
+if ($?tag_version) then
+  cd $parentdir
+  cvs tag $tag_version ncarg
+endif
+  
+# 
+# Remove "CVS" directories.
+#
+cd $parentdir/ncarg
+set cmd = "find . -name 'CVS' -type d -exec /bin/rm -rf {} \;"
+echo "$cmd"
+find . -name 'CVS' -type d -exec /bin/rm -rf {} \;
+cd $parentdir
 
 #
 # Rename the parent "ncarg" directory to something that indicates
@@ -360,6 +384,8 @@ echo "   Options:   -r : root directory"
 echo "              -d : tar file directory"
 echo "              -c : scp to windom.ucar.edu"
 echo "              -t : include triangle code in HLU directory"
+echo "              -g : Tag the code with the given version number. This"
+echo "                   can only be done if code is checked-out with CVS."
 echo "              -v : version number"
 echo "              -e : extra string to include in tarfile name"
 echo "              -1 : tar up NCARG source files only"
