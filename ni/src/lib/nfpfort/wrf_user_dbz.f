@@ -95,6 +95,26 @@ c   Other constants
       PI = 3.141592653589793D0
       RD = 287.04D0
 
+c   Force all Q arrays to be 0.0 or greater.
+      DO K = 1,BTDIM
+         DO J = 1,SNDIM
+            DO I = 1,WEDIM
+               IF (QVP(I,J,K).LT.0.0) THEN
+                  QVP(I,J,K) = 0.0
+               END IF
+               IF (QRA(I,J,K).LT.0.0) THEN
+                  QRA(I,J,K) = 0.0
+               END IF
+               IF (QSN(I,J,K).LT.0.0) THEN
+                  QSN(I,J,K) = 0.0
+               END IF
+               IF (QGR(I,J,K).LT.0.0) THEN
+                  QGR(I,J,K) = 0.0
+               END IF
+            END DO
+         END DO
+      END DO
+
 c   Input pressure is Pa, but we need hPa in calculations
 
       IF (SN0.EQ.0) THEN
