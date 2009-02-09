@@ -1,4 +1,4 @@
-# $Id: udunits.dat,v 1.2 2004-10-14 15:03:39 haley Exp $
+# $Id: udunits.dat,v 1.3 2009-02-09 01:07:42 haley Exp $
 #
 # The first column is the unit name.  The second column indicates whether or
 # not the unit name has a plural form (i.e. with an 's' appended).  
@@ -280,7 +280,7 @@ month			P year/12		# on average
 #
 # UNITS OF PLANE ANGLE
 #
-#rad			P radian		# `rad' means `grey'
+#rad			P radian		# `rad' means `1e-2 gray'
 circle			P 2 pi radian
 angular_degree		P (pi/180) radian
 
@@ -528,7 +528,7 @@ voltampere		P volt ampere
 VA			S volt ampere
 boiler_horsepower	P 9.80950e3 watt
 shaft_horsepower	P 7.456999e2 watt
-metric_horsepower	P 7.35499 watt
+metric_horsepower	P 7.35499e2 watt
 electric_horsepower	P 7.460000e2 watt	# exact
 W			S watt
 water_horsepower	P 7.46043e2 watt
