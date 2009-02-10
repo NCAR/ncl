@@ -1,6 +1,6 @@
 
 /*
- *      $Id: MathTemplate2.c.sed,v 1.4 2007-01-12 02:39:02 haley Exp $
+ *      $Id: MathTemplate2.c.sed,v 1.5 2009-02-10 18:48:09 haley Exp $
  */
 /************************************************************************
 *									*
@@ -93,7 +93,8 @@ NhlErrorTypes _NclFUNCNAME
 						total0,
 						&missing0,
 						NULL,
-						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type0)));
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type0))));
+
 				dm0.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.floatval;
 			}
 			if(type1 == NCL_double) {
@@ -109,7 +110,7 @@ NhlErrorTypes _NclFUNCNAME
 						total1,
 						&missing1,
 						NULL,
-						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type1)));
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type1))));
 				dm1.doubleval = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis.doubleval;
 			}
 		
@@ -172,7 +173,7 @@ NhlErrorTypes _NclFUNCNAME
 						total0,
 						&missing0,
 						NULL,
-						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type0)));
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type0))));
 				dm0.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
 			}
 			if(type1 == NCL_float) {
@@ -188,7 +189,7 @@ NhlErrorTypes _NclFUNCNAME
 						total1,
 						&missing1,
 						NULL,
-						_NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type1)));
+						(NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type1))));
 				dm1.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
 			}
 		
