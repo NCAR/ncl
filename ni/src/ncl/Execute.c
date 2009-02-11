@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.125 2009-02-05 03:42:31 dbrown Exp $
+ *      $Id: Execute.c,v 1.126 2009-02-11 03:14:34 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -693,6 +693,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			}
 		}
 		if (_NclFileIsVar(files[0],agg_dim_name) > -1) {
+			long offset;
 			agg_coord_md = _NclFileReadVarValue(files[0],agg_dim_name,NULL);
 			if (!agg_coord_md) {
 				NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
@@ -715,15 +716,20 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				agg_coord_md->multidval.dim_sizes[0] = total_agg_dim_size;
 				agg_coord_md->multidval.totalsize = total_agg_dim_size * agg_coord_md->multidval.type->type_class.size;
 				agg_coord_md->multidval.totalelements = total_agg_dim_size;
+				offset = agg_dim_count[0] * type_size;
 				for (i = 1; i < newlist->list.nelem; i++) {
 					NclMultiDValData tmp_md;
 					if (files[i] && _NclFileIsVar(files[i],agg_dim_name) > -1) {
 						tmp_md  = _NclFileReadVarValue(files[i],agg_dim_name,NULL);
-						if (tmp_md) {
-							memcpy((char *)agg_coord_md->multidval.val + agg_dim_count[i-1] * type_size, 
-							       tmp_md->multidval.val, tmp_md->multidval.totalsize);
+						if (! tmp_md) {
+							NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+							estatus = NhlFATAL;
+							goto fatal_err;
 						}
+						memcpy((char *)agg_coord_md->multidval.val + offset, 
+						       tmp_md->multidval.val, tmp_md->multidval.totalsize);
 						_NclDestroyObj((NclObj)tmp_md);
+						offset += (agg_dim_count[i] * type_size);
 					}				
 				}
 				/* create a coordinate variable -- I mean a variable with a coordinate variable */
