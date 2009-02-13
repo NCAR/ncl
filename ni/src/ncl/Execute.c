@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.126 2009-02-11 03:14:34 dbrown Exp $
+ *      $Id: Execute.c,v 1.127 2009-02-13 02:02:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -386,6 +386,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	int dir, ix_start, ix_end;
 	int var_offset;
 	long var_dim_sizes[32];
+	int good_file_count;
 
 
 	ptr++;lptr++;fptr++;
@@ -580,6 +581,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	}
 
 	first = 1;
+	good_file_count = 0;
 	if (newlist->list.list_type & NCL_JOIN) {
 		total_agg_dim_size = newlist->list.nelem;
 		agg_dim_name = NrmStringToQuark("ncl_join");
@@ -629,6 +631,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					}
 					else {
 						files[list_index] = thefile;
+						good_file_count++;
 						list_index--;
 					}
 				}
@@ -686,6 +689,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						total_agg_dim_size += thefile->file.file_dim_info[agg_dim]->dim_size;
 						agg_dim_count[list_index] = thefile->file.file_dim_info[agg_dim]->dim_size;
 						files[list_index] = thefile;
+						good_file_count++;
 						list_index--;
 					}
 				}
@@ -742,6 +746,12 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			}
 		}	
 	}	
+	if (good_file_count == 0) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"No valid instance of variable %s found in file list", NrmQuarkToString(var));
+		estatus = NhlFATAL;
+		goto fatal_err;
+	}
+
 	/* Reuse the list sel_ptr for the aggregated dimensions selection */
 	sel_ptr = &sel;
 	filevar_sel_ptr = NULL;
@@ -1071,6 +1081,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 							var1->var.dim_info[0].dim_size = agg_sel_count;
 							var1->var.dim_info[0].dim_num = 0;
 							var1->var.dim_info[0].dim_quark = agg_dim_name;
+							var1->var.coord_vars[0] = -1;
 						}
 					}
 					else {
@@ -1086,6 +1097,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						var1->var.dim_info[0].dim_size = agg_sel_count;
 						var1->var.dim_info[0].dim_num = 0;
 						var1->var.dim_info[0].dim_quark = agg_dim_name;
+						var1->var.coord_vars[0] = -1;
 					}
 				}
 				
