@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.232 2009-01-26 15:10:36 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.233 2009-02-13 22:00:54 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2963,6 +2963,7 @@ NhlErrorTypes _NclIfbinnumrec
 			return(NhlFATAL);
 		}
 	}
+	close(fd);
 	return(NclReturnValue(
 		&i,
 		1,
@@ -3398,6 +3399,7 @@ NhlErrorTypes _NclIfbinrecread
 		close(fd);
 		return(ret);
 	} else {
+		close(fd);
 		return(NhlFATAL);
 	}
 	
@@ -3479,18 +3481,20 @@ NhlErrorTypes _NclIfbinread
 	default:
 		return(NhlFATAL);
 	}
-	if(tmp_md != NULL) {
-		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
-		if(path_string == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error in the file path was detected could not resolve file path");
-			return(NhlFATAL);
-		}
-		fd = open(path_string,O_RDONLY);
-		if(fd == -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "fbinread: could not open (%s) check path and permissions, can't continue",path_string);
-			return(NhlFATAL);
-		}
+	if(tmp_md == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: error retrieving the file path");
+		return(NhlFATAL);
+	}
+	path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+	if(path_string == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinread: An error in the file path was detected could not resolve file path");
+		return(NhlFATAL);
+	}
+	fd = open(path_string,O_RDONLY);
+	if(fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "fbinread: could not open (%s) check path and permissions, can't continue",path_string);
+		return(NhlFATAL);
 	}
 	tmp_md = NULL;
 	switch(dimensions.kind){
@@ -3564,7 +3568,8 @@ NhlErrorTypes _NclIfbinread
 		if (swap_bytes) {
 			_NclSwapBytes(NULL,tmp_ptr,totalsize / thetype->type_class.size,thetype->type_class.size);
 		}
-		
+
+
 		tmp_md = _NclCreateMultiDVal(
 			NULL,
 			NULL,
@@ -3581,9 +3586,11 @@ NhlErrorTypes _NclIfbinread
 			return(NhlFATAL);
 		data_out.kind = NclStk_VAL;
 		data_out.u.data_obj = tmp_md;
+		close(fd);
 		_NclPlaceReturn(data_out);
 		return(ret);
 	} 
+	close(fd);
 	return(NhlFATAL);
 }
 NhlErrorTypes _NclIasciiwrite
@@ -4913,18 +4920,20 @@ NhlErrorTypes _NclIfbinwrite
 	default:
 		return(NhlFATAL);
 	}
-	if(tmp_md != NULL) {
-		path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
-		if(path_string == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: An error in the file path was detected could not resolve file path");
-			return(NhlFATAL);
-		}
-		fd = open(path_string,(O_CREAT | O_RDWR),0666);
-		if(fd == -1) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "fbinwrite: could not open (%s) check path and permissions, can't continue",path_string);
+	if(tmp_md == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: error retrieving the file path");
 		return(NhlFATAL);
 	}
+	path_string = _NGResolvePath(NrmQuarkToString(*(NclQuark*)tmp_md->multidval.val));
+	if(path_string == NULL) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"fbinwrite: An error in the file path was detected could not resolve file path");
+		return(NhlFATAL);
+	}
+	fd = open(path_string,(O_CREAT | O_RDWR),0666);
+	if(fd == -1) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "fbinwrite: could not open (%s) check path and permissions, can't continue",path_string);
+		return(NhlFATAL);
 	}
 	tmp_md = NULL;
 	switch(value.kind){
