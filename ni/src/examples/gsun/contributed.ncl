@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.195 2009-01-23 16:11:32 shea Exp $
+;      $Id: contributed.ncl,v 1.196 2009-02-13 15:58:48 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9611,6 +9611,7 @@ begin
   return(c)
 end
 ; -----------------------------------------------------
+undef("region_ind")
 function region_ind(XLAT[*][*]:numeric, XLON[*][*]:numeric \
                    ,latS[1]:numeric, latN[1]:numeric \
                    ,lonW[1]:numeric, lonE[1]:numeric )
@@ -9637,6 +9638,7 @@ begin
  return(ijsub)
 end
 ;-------------------------------------------------------------------------------
+undef("icObjAnal_1d")
 function icObjAnal_1d(x[*],y[*],z[*],lon[*],lat[*],dcrit[*]:numeric,opt:logical)
 ; This should *not* be invoked directly by the user.
 ; It is called by "function icObjAnal"
@@ -9797,6 +9799,7 @@ begin
   return(G)
 end
 ;-----------------------------------------------------------------------------------
+undef("icObjAnal_2d")
 function icObjAnal_2d(x[*],y[*],z[*],lon2d[*][*],lat2d[*][*],dcrit[*]:numeric,opt:logical)
 ;
 ; This should not be invoked directly by the user.
@@ -9958,6 +9961,7 @@ begin
   return(G)
 end
 ;----------------------------------------------------------------------------
+undef("obj_anal_ic")
 function obj_anal_ic(X[*],Y[*],Z[*], lon:numeric,lat:numeric \
                     ,dcrit[*]:numeric,opt:logical)
 ; Perform Barnes [ Cressman ] type iterative correction objective analysis
