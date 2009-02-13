@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.7 2009-02-06 20:37:23 haley Exp $
+#   $Id: create_src_dist,v 1.8 2009-02-13 16:51:54 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -305,7 +305,7 @@ else if ($?NCARGNCL) then   # NCL and NCAR Graphics, for users.
     set more_stuff_to_remove = "install $ext_stuff $ni_stuff"
   else 
     set more_stuff_to_remove = "install $ext_stuff $ni_stuff $tri_stuff"
-  end if
+  endif
 else  # NCL and NCAR Graphics, for internal use, not for outside users
   set more_stuff_to_remove = "$ext_stuff $ni_stuff"
 endif
