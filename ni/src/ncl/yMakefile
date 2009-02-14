@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.152 2009-01-13 21:16:32 haley Exp $
+#      $Id: yMakefile,v 1.153 2009-02-14 00:58:26 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-01-13 21:16:32 $
+#	Date:		$Date: 2009-02-14 00:58:26 $
 #
 #	Description:	
 #
@@ -488,6 +488,8 @@ BuiltInFuncs.o:  BuiltInFuncs.c
 #if defined(linux)
 HLUFunctions.o: HLUFunctions.c
         $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c HLUFunctions.c
+Memory.o: Memory.c
+        $(CC) $(CCOPTIONS) $(ALLDEFINES) -g -c Memory.c
 
 #endif
 
