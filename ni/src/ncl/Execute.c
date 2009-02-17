@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.127 2009-02-13 02:02:21 dbrown Exp $
+ *      $Id: Execute.c,v 1.128 2009-02-17 23:54:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -979,7 +979,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				fsel->u.sub.stride = 1;
 				fsel->u.sub.start = 0;
 				fsel->u.sub.finish = agg_end_index - agg_start_index;
-				fsel->u.sub.is_single = 0; /* revisit */
+				fsel->u.sub.is_single = sel.u.sub.is_single;
 				break;
 			case Ncl_SUBSCR:
 				if (dir == 1) {
@@ -1004,7 +1004,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					fsel->u.sub.start += (fsel->u.sub.finish - fsel->u.sub.start) % abs(sel.u.sub.stride);
 				}					
 				fsel->u.sub.stride = sel.u.sub.stride; 
-				fsel->u.sub.is_single = 0; /* revisit */
+				fsel->u.sub.is_single = sel.u.sub.is_single;
 				fsel->sel_type = Ncl_SUBSCR;
 				do_file = 1;
 				break;
@@ -1100,7 +1100,29 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						var1->var.coord_vars[0] = -1;
 					}
 				}
+				else if (sel.sel_type != Ncl_VECSUBSCR && ! sel.u.sub.is_single) {
+					for (j = tmp_md->multidval.n_dims; j > 0; j--) {
+						tmp_md->multidval.dim_sizes[j] = tmp_md->multidval.dim_sizes[j-1];
+						var1->var.dim_info[j].dim_quark = var1->var.dim_info[j-1].dim_quark;
+						var1->var.dim_info[j].dim_size = var1->var.dim_info[j-1].dim_size;
+						var1->var.coord_vars[j] = var1->var.coord_vars[j-1];
+					}
+					tmp_md->multidval.n_dims++;
+					var1->var.n_dims++;
+					tmp_md->multidval.dim_sizes[0] = agg_sel_count;
+					var1->var.dim_info[0].dim_size = agg_sel_count;
+					var1->var.dim_info[0].dim_num = 0;
+					var1->var.dim_info[0].dim_quark = agg_dim_name;
+					var1->var.coord_vars[0] = -1;
+					break;
+				}
 				
+			}
+			else if (sel.sel_type != Ncl_VECSUBSCR && sel.u.sub.is_single) {
+				if (agg_coord_var) {
+					_NclDestroyObj((NclObj)agg_coord_var);
+				}
+				break;
 			}
 			else {
 				agg_chunk_size = tmp_md->multidval.totalsize / tmp_md->multidval.dim_sizes[0];
