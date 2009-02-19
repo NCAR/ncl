@@ -6819,6 +6819,8 @@ int wr_status;
 							break;
 						case 18:
 						case 26:
+						case 27:
+						case 30:
 						case 50:
 							grib_rec->is_ensemble = 1;
 							grib_rec->ens.id = grib_rec->pds[49];
