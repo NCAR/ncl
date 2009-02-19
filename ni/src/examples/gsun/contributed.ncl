@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.196 2009-02-13 15:58:48 haley Exp $
+;      $Id: contributed.ncl,v 1.197 2009-02-19 14:47:16 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1023,7 +1023,7 @@ end
 ; note that the values of cvWant must EXIST in cv
 
 undef("get1Dindex")
-function get1Dindex (cv[*]:numeric,  cvWant[*]:numeric)
+function get1Dindex (cv[*],  cvWant[*])
 local nWant, indWant, n
 begin
   nWant   = dimsizes (cvWant)
