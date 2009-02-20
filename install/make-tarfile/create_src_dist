@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_src_dist,v 1.8 2009-02-13 16:51:54 haley Exp $
+#   $Id: create_src_dist,v 1.9 2009-02-20 04:47:35 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -33,9 +33,11 @@
 #              -i :  Tar up files for internal use. Includes "install"
 #                    directory
 #              -c :  scp to windom.ucar.edu
+#              -d :  Set the tar directory
 #              -g :  Tag the code with the given version number
 #                    This can only be done if code is checked-out
 #                    with CVS.
+#              -D :  Remove the given CVS tag
 #              -t :  Include triangle code
 #              -v :  version number
 #              -x :  don't use CVS to get directory. Assume "ncarg"
@@ -97,6 +99,12 @@ while ($#argv > 0)
     case "-g":
       shift
       set tag_version = "$1"
+      shift
+      breaksw
+
+    case "-D":
+      shift
+      set remove_tag_version = "$1"
       shift
       breaksw
 
@@ -319,6 +327,15 @@ foreach f($stuff_to_remove)
 end
 
 #
+# If requseted, remove the given tag before we remove the
+# "CVS" directories.
+#
+if ($?remove_tag_version) then
+  cd $parentdir
+  cvs tag -d $tag_version ncarg
+endif
+  
+#
 # If requseted, tag the directories as they are, before we remove the
 # "CVS" directories.
 #
@@ -386,6 +403,7 @@ echo "              -c : scp to windom.ucar.edu"
 echo "              -t : include triangle code in HLU directory"
 echo "              -g : Tag the code with the given version number. This"
 echo "                   can only be done if code is checked-out with CVS."
+echo "              -D : Remove the given CVS tag"
 echo "              -v : version number"
 echo "              -e : extra string to include in tarfile name"
 echo "              -1 : tar up NCARG source files only"
