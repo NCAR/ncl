@@ -2671,7 +2671,7 @@ begin
   res2@cnLineLabelsOn       = True
   res2@gsnContourZeroLineThicknessF = 0. 	; Eliminate 0 line
   res2@gsnContourNegLineDashPattern = 1 	; negative contours dash pattern
-  res2@cnLineThicknessF     = 2.                ; line thickness
+ ;res2@cnLineThicknessF     = 2.                ; line thickness
   res2@cnInfoLabelOn        = False
 
   plot                      = new( 2, "graphic")
