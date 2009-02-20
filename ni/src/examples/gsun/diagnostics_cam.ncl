@@ -1857,7 +1857,7 @@ begin
 
 end
 
-; ==============>  prototype function  <================= 
+;=========================================
 undef ("band_pass_latlon_time")
 function band_pass_latlon_time \
                  (x[*][*][*]:numeric, spd[1]:numeric   \
@@ -2487,6 +2487,7 @@ begin
 end
 
 ;**********************************************************************
+undef("mjo_xcor_lag_plot_ovly")
 procedure mjo_xcor_lag_plot_ovly( \
                    ccr_a[*][*]:numeric, ccr_b[*][*]:numeric \
                   ,pltType[1]:string, pltDir[1]:string      \
@@ -2581,6 +2582,134 @@ begin
   overlay(plot_a, plot_b)
   draw(plot_a)     
   frame(wks)
+
+  if (pltType.eq."png") then
+      if (isatt(opt,"pltConvert")) then 
+          pltConvert = opt@pltConvert    ; convert options
+      else
+          pltConvert = " "               ; default
+      end if
+      system("convert "+pltConvert+" "+pltPath+".eps "+pltPath+".png")
+      system("/bin/rm -f "+pltPath+".eps")
+  end if
+end
+;**********************************************************************
+undef("mjo_xcor_lag_plot_ovly_panel")
+procedure mjo_xcor_lag_plot_ovly_panel( \
+                   ccr_a[*][*]:numeric, ccr_b[*][*]:numeric \
+                  ,ccr_c[*][*]:numeric, ccr_d[*][*]:numeric \
+                  ,pltType[1]:string, pltDir[1]:string      \
+                  ,pltName[1]:string, opt[1]:logical)
+local pltPath, pltTypeLocal, res1, res2, CCR1, CCR2 \
+    , plt1, plt2, resP, plot
+begin
+
+  pltPath = pltDir+"/"+pltName
+
+  if (pltType.eq."png") then
+      pltTypeLocal = "eps"
+  else
+      pltTypeLocal = pltType
+  end if
+
+  wks  = gsn_open_wks(pltTypeLocal,pltPath)  
+  if (opt .and. isatt(opt,"colorTable")) then
+     gsn_define_colormap(wks,opt@colorTable) 
+  else
+     gsn_define_colormap(wks,"BlWhRe") 
+  end if
+
+  res1                      = True          ; color precip     
+  res1@gsnDraw              = False
+  res1@gsnFrame             = False
+  res1@gsnMaximize          = True 
+  res1@gsnPaperOrientation  = "portrait"
+
+  res1@cnFillOn             = True          ; turn on color
+  res1@cnLinesOn            = False
+  res1@gsnSpreadColors      = True          ; use full range of colormap
+  res1@cnLevelSelectionMode = "ManualLevels"; set manual contour levels
+  res1@cnMinLevelValF       = -1.0          ; set min contour level
+  res1@cnMaxLevelValF       =  1.0          ; set max contour level
+  res1@cnLevelSpacingF      =  0.1          ; set contour spacing
+
+  res1@cnLabelBarEndLabelsOn= True
+  res1@cnLabelBarEndStyle   = "ExcludeOuterBoxes"
+  res1@cnInfoLabelOn        = False
+
+  res1@lbLabelBarOn         = False           ; turn off individual cb's
+
+  res1@vpWidthF             = 0.6           ; change aspect ratio of plot
+  res1@vpHeightF            = 0.4
+
+ ;res1@gsnMajorLatSpacing   = 10            ; change maj lat tm spacing
+
+  res1@tiYAxisString        = "lag (days)"
+  if (isatt(opt,"tiMainString")) then
+      res1@tiMainString     = opt@tiMainString
+  end if
+  if (isatt(opt,"gsnLeftString")) then
+      res1@gsnLeftString    = opt@gsnLeftString
+  end if
+  if (isatt(opt,"gsnCenterString")) then
+      res1@gsnCenterString  = opt@gsnCenterString
+  end if
+  if (isatt(opt,"gsnRightString")) then
+      res1@gsnRightString   = opt@gsnRightString
+  end if
+
+;************************************************
+; resource list for second data array
+;************************************************
+  res2                      = True              ; U
+  res2@gsnDraw              = False
+  res2@gsnFrame             = False
+  res2@cnLevelSelectionMode = "ManualLevels"    ; set manual contour levels
+  res2@cnMinLevelValF       = -1.0
+  res2@cnMaxLevelValF       =  1.0
+  res2@cnLevelSpacingF      =  0.1
+  res2@cnLineLabelsOn       = True
+  res2@gsnContourZeroLineThicknessF = 0. 	; Eliminate 0 line
+  res2@gsnContourNegLineDashPattern = 1 	; negative contours dash pattern
+  res2@cnLineThicknessF     = 2.                ; line thickness
+  res2@cnInfoLabelOn        = False
+
+  plot                      = new( 2, "graphic")
+
+  do np=0,1
+     if (np.eq.0) then
+         CCR1 = ccr_a             ; possible smooth and delete of attribute
+         CCR2 = ccr_b
+     else
+         CCR1 = ccr_c             ; possible smooth and delete of attribute
+         CCR2 = ccr_d
+     end if
+    
+     if (opt .and. isatt(opt,"smth9") .and. abs(opt@smth9).eq.0.25) then
+         CCR1 = smth9(CCR1, 0.50, opt@smth9, False)
+         CCR2 = smth9(CCR2, 0.50, opt@smth9, False)
+     end if
+     delete(CCR1@long_name)
+     plt1 = gsn_csm_contour(wks,CCR1,res1)       ; contour the variable
+   
+     delete(CCR2@long_name)
+     plt2 = gsn_csm_contour(wks,CCR2,res2)       ; contour the variable
+   
+     overlay(plt1, plt2)
+     plot(np) = plt1
+
+     delete(CCR1)                                 ; size may change
+     delete(CCR2)
+  end do
+
+  resP                      = True                ; panel
+  resP@lbLabelAutoStride    = True
+  resP@gsnPanelLabelBar     = True                ; add common colorbar
+ ;resP@lbLabelFontHeightF   = 0.007               ; make labels smaller
+  if (isatt(opt,"txString")) then
+      resP@txString = opt@txString
+  end if
+  gsn_panel(wks,plot,(/2,1/),resP)                ; now draw as one plot
 
   if (pltType.eq."png") then
       if (isatt(opt,"pltConvert")) then 
