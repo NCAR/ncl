@@ -2594,8 +2594,8 @@ begin
   end if
 end
 ;**********************************************************************
-undef("mjo_xcor_lag_plot_ovly_panel")
-procedure mjo_xcor_lag_plot_ovly_panel( \
+undef("mjo_xcor_lag_ovly_panel")
+procedure mjo_xcor_lag_ovly_panel( \
                    ccr_a[*][*]:numeric, ccr_b[*][*]:numeric \
                   ,ccr_c[*][*]:numeric, ccr_d[*][*]:numeric \
                   ,pltType[1]:string, pltDir[1]:string      \
