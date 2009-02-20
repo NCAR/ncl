@@ -20,20 +20,16 @@
  *                       whatever directory contains "libgfortran.so".
  */
 #define HdfDefines  -DDARWIN
-#define HDFlib  -lmfhdf -ldf /Users/haley/dev/lib/libjpeg.a /Users/haley/dev/lib/libz.a
-#define PNGlib  /Users/haley/dev/lib/libpng.a /Users/haley/dev/lib/libz.a
-#define GRIB2lib   -lgrib2c -ljasper /Users/haley/dev/lib/libpng.a /Users/haley/dev/lib/libz.a
 #define StdDefines  -DSYSV -D_POSIX_SOURCE -D_XOPEN_SOURCE -DByteSwapped -D__UNIXOS2__
 #define ByteSwapped
 #define Cstatic 
 #define Cdynamic 
 #define CppCommand '/usr/bin/cpp -traditional'
 #define CCompiler   gcc
-#define FCompiler   gfortran -fno-range-check 
-#define CcOptions      -ansi
-#define FOptimizeFlag
-#define COptimizeFlag
-#define CtoFLibraries  -L/usr/local/gfortran/lib -lgfortran
+#define FCompiler   gfortran
+#define CcOptions      -ansi -fPIC
+#define FcOptions      -fPIC -fno-range-check 
+#define CtoFLibraries  -lgfortran
 #define XToolLibrary    -lXt -lSM -lICE
 #define BuildShared NO
 #define XLibrary -lXpm -lX11 -lXext
