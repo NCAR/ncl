@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.128 2009-02-17 23:54:19 dbrown Exp $
+ *      $Id: Execute.c,v 1.129 2009-02-20 02:34:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1101,14 +1101,16 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					}
 				}
 				else if (sel.sel_type != Ncl_VECSUBSCR && ! sel.u.sub.is_single) {
-					for (j = tmp_md->multidval.n_dims; j > 0; j--) {
-						tmp_md->multidval.dim_sizes[j] = tmp_md->multidval.dim_sizes[j-1];
-						var1->var.dim_info[j].dim_quark = var1->var.dim_info[j-1].dim_quark;
-						var1->var.dim_info[j].dim_size = var1->var.dim_info[j-1].dim_size;
-						var1->var.coord_vars[j] = var1->var.coord_vars[j-1];
+					if (tmp_md->multidval.kind != SCALAR) { 
+						for (j = tmp_md->multidval.n_dims; j > 0; j--) {
+							tmp_md->multidval.dim_sizes[j] = tmp_md->multidval.dim_sizes[j-1];
+							var1->var.dim_info[j].dim_quark = var1->var.dim_info[j-1].dim_quark;
+							var1->var.dim_info[j].dim_size = var1->var.dim_info[j-1].dim_size;
+							var1->var.coord_vars[j] = var1->var.coord_vars[j-1];
+						}
+						tmp_md->multidval.n_dims++;
+						var1->var.n_dims++;
 					}
-					tmp_md->multidval.n_dims++;
-					var1->var.n_dims++;
 					tmp_md->multidval.dim_sizes[0] = agg_sel_count;
 					var1->var.dim_info[0].dim_size = agg_sel_count;
 					var1->var.dim_info[0].dim_num = 0;
