@@ -116,7 +116,7 @@ NhlErrorTypes wrf_tk_W( void )
   NclQuark *description, *units;
   char *cdescription, *cunits;
   double *tmp_t;
-  int size_t;
+  int size_tt;
   NclBasicDataTypes type_t;
   NclObjClass type_obj_t;
 /*
@@ -184,7 +184,7 @@ NhlErrorTypes wrf_tk_W( void )
   size_leftmost = 1;
   for(i = 0; i < ndims_p-1; i++) size_leftmost *= dsizes_p[i];
   nx = dsizes_p[ndims_p-1];
-  size_t = size_leftmost * nx;
+  size_tt = size_leftmost * nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or theta
@@ -225,14 +225,14 @@ NhlErrorTypes wrf_tk_W( void )
  * Allocate space for output array.
  */ 
   if(type_t == NCL_double) {
-    t = (double *)calloc(size_t,sizeof(double));
+    t = (double *)calloc(size_tt,sizeof(double));
     if(t == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
   else {
-    t     = (float *)calloc(size_t,sizeof(float));
+    t     = (float *)calloc(size_tt,sizeof(float));
     tmp_t = (double *)calloc(nx,sizeof(double));
     if(tmp_t == NULL || t == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_tk: Unable to allocate memory for output array");
@@ -419,7 +419,7 @@ NhlErrorTypes wrf_td_W( void )
   NclQuark *description, *units;
   char *cdescription, *cunits;
   double *tmp_t;
-  int size_t;
+  int size_tt;
   NclBasicDataTypes type_t;
   NclObjClass type_obj_t;
 /*
@@ -488,7 +488,7 @@ NhlErrorTypes wrf_td_W( void )
   size_leftmost = 1;
   for(i = 0; i < ndims_p-1; i++) size_leftmost *= dsizes_p[i];
   nx = dsizes_p[ndims_p-1];
-  size_t = size_leftmost * nx;
+  size_tt = size_leftmost * nx;
 
 /* 
  * Allocate space for coercing input arrays.  If the input p or qv
@@ -536,14 +536,14 @@ NhlErrorTypes wrf_td_W( void )
  * Allocate space for output array.
  */ 
   if(type_t == NCL_double) {
-    t = (double *)calloc(size_t,sizeof(double));
+    t = (double *)calloc(size_tt,sizeof(double));
     if(t == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for output array");
       return(NhlFATAL);
     }
   }
   else {
-    t     = (float *)calloc(size_t,sizeof(float));
+    t     = (float *)calloc(size_tt,sizeof(float));
     tmp_t = (double *)calloc(nx,sizeof(double));
     if(tmp_t == NULL || t == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"wrf_td: Unable to allocate memory for output array");
@@ -4435,7 +4435,7 @@ NhlErrorTypes wrf_pvo_W( void )
  */
   void *v;
   double *tmp_v;
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];;
+  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v;
 
 /*
@@ -5249,7 +5249,7 @@ NhlErrorTypes wrf_avo_W( void )
  */
   void *v;
   double *tmp_v;
-  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];;
+  int ndims_v, dsizes_v[NCL_MAX_DIMENSIONS];
   NclBasicDataTypes type_v;
 
 /*
