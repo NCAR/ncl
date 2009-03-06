@@ -6680,7 +6680,7 @@ int wr_status;
 						case 1:
 						case 2:
 						case 3:
-							if (subcenter == 1) { 
+							if (subcenter == 1) {
 								/* reanalysis */
 								ptable = &ncep_reanal_params[0];
 								ptable_count = sizeof(ncep_reanal_params)/sizeof(TBLE2);
@@ -6720,6 +6720,10 @@ int wr_status;
 						case 131: 
 							ptable = &ncep_131_params[0];
 							ptable_count = sizeof(ncep_131_params)/sizeof(TBLE2);
+							break;
+					        case 132:
+							ptable = &ncep_reanal_params[0];
+							ptable_count = sizeof(ncep_reanal_params)/sizeof(TBLE2);
 							break;
 						case 133: 
 							ptable = &ncep_133_params[0];

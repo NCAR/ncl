@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.51 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.52 2009-03-06 06:25:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -98,6 +98,9 @@ struct _NetCdfOptions {
 	int n_values;
 	void *values;
 };
+
+static NrmQuark Qmissing_val;
+static NrmQuark Qfill_val;
 
 #define NC_PREFILL_OPT 0
 #define NC_DEFINE_MODE_OPT 1
@@ -256,7 +259,7 @@ NetCdfAttInqRec* att_inq
 	if (att_inq->data_type < 1) {
 		att_inq->value = NULL;
 	}
-	else if(att_inq->data_type == NC_CHAR) {
+	else if(att_inq->data_type == NC_CHAR && !(att_inq->name == Qfill_val || att_inq->name == Qmissing_val)) {
 		tmp = (char*)NclMalloc(att_inq->len+1);
 		tmp[att_inq->len] = '\0';
 		ret = ncattget(ncid,att_inq->varid,NrmQuarkToString(att_inq->name),tmp);
@@ -442,6 +445,9 @@ NclFileFormatType *format;
 	NetCdfFileRecord *therec = NULL;
 	size_t blksize = getpagesize();
 
+	Qmissing_val = NrmStringToQuark("missing_value");
+	Qfill_val = NrmStringToQuark("_FillValue");
+
         /*nc_set_log_level(3);*/
 
 	ChunkSizeHint = 64 * blksize;
@@ -486,8 +492,6 @@ int wr_status;
 	NetCdfVarInqRecList *tmpvlptr;
 	NetCdfDimInqRecList **stepdlptr;
 	NetCdfDimInqRecList *tmpdlptr;
-	NrmQuark qmissing_val = NrmStringToQuark("missing_value");
-	NrmQuark qfill_val = NrmStringToQuark("_FillValue");
 	static int count = 0;
 
 	if(tmp == NULL) {
@@ -632,10 +636,10 @@ int wr_status;
 						(*stepalptr)->att_inq->att_num = j;
 						(*stepalptr)->att_inq->virtual = 0;
 						(*stepalptr)->att_inq->name = NrmStringToQuark(buffer);
-						if ((*stepalptr)->att_inq->name == qmissing_val) {
+						if ((*stepalptr)->att_inq->name == Qmissing_val) {
 							missing_val_recp = (*stepalptr)->att_inq;
 						}
-						if ((*stepalptr)->att_inq->name == qfill_val)
+						if ((*stepalptr)->att_inq->name == Qfill_val)
 							has_fill = 1;
 						(*stepalptr)->att_inq->varid = i;
 						ncattinq(cdfid,i,buffer,
@@ -658,7 +662,7 @@ int wr_status;
 							(*stepalptr)->next = NULL;
 							(*stepalptr)->att_inq->att_num = (*stepvlptr)->var_inq->natts;
 							(*stepvlptr)->var_inq->natts++;
-							(*stepalptr)->att_inq->name = qfill_val;
+							(*stepalptr)->att_inq->name = Qfill_val;
 							(*stepalptr)->att_inq->varid = i;
 							(*stepalptr)->att_inq->data_type =  missing_val_recp->data_type;
 							(*stepalptr)->att_inq->len = missing_val_recp->len;
@@ -1003,9 +1007,9 @@ NclQuark att_name_q;
 			tmp=(NclFAttRec*)NclMalloc((unsigned)sizeof(NclFAttRec));
 			tmp->att_name_quark = att_name_q;
 /*
-* For convenience I make all character attributes strings
+* For convenience I make all character attributes strings (except if its the _FillValue or missing_value of a character variable - dib 2009-03-05))
 */
-			if(stepal->att_inq->data_type == NC_CHAR) {
+			if(stepal->att_inq->data_type == NC_CHAR && !(att_name_q == Qfill_val || att_name_q == Qmissing_val))  {
 				tmp->data_type = NCL_string;
 				tmp->num_elements = 1;
 			} else {
@@ -1079,7 +1083,7 @@ NclQuark theatt;
 					tmp= (NclFAttRec*)NclMalloc((unsigned)
 						sizeof(NclFAttRec));
 					tmp->att_name_quark = theatt;
-					if(stepal->att_inq->data_type == NC_CHAR) {
+					if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 
 						tmp->data_type = NCL_string;
 						tmp->num_elements = 1;
@@ -1287,7 +1291,7 @@ void* storage;
 	while(stepal != NULL) {
 		if(stepal->att_inq->name == theatt) {
 			if (stepal->att_inq->value != NULL) {
-				if(stepal->att_inq->data_type == NC_CHAR) {
+				if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 					*(string*)storage = *(string*)(stepal->att_inq->value);
 				} else {
 					memcpy(storage,stepal->att_inq->value,
@@ -1314,7 +1318,7 @@ void* storage;
 				rec->define_mode = 0;
 			}
 			
-			if(stepal->att_inq->data_type == NC_CHAR) {
+			if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 				tmp = (char*)NclMalloc(stepal->att_inq->len+1);
 				tmp[stepal->att_inq->len] = '\0';
 				ret = ncattget(cdfid,NC_GLOBAL,NrmQuarkToString(theatt),tmp);
@@ -1376,7 +1380,7 @@ void* storage;
 			while(stepal != NULL) {
 				if(stepal->att_inq->name == theatt) {
 					if (stepal->att_inq->value != NULL) {
-						if(stepal->att_inq->data_type == NC_CHAR) {
+						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 							*(string*)storage = *(string*)(stepal->att_inq->value);
 						} else {
 							memcpy(storage,stepal->att_inq->value,
@@ -1410,7 +1414,7 @@ void* storage;
 						rec->open = 1;
 					}
 			
-					if(stepal->att_inq->data_type == NC_CHAR) {
+					if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt  == Qmissing_val)) {
 	
 						tmp = (char*)NclMalloc(stepal->att_inq->len + 1);
 						tmp[stepal->att_inq->len] = '\0';
@@ -1631,7 +1635,7 @@ void *data;
 					rec->define_mode = 0;
 					rec->open = 1;
 				}
-				if(stepal->att_inq->data_type == NC_CHAR) {
+				if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {
 					buffer = NrmQuarkToString(*(NclQuark*)data);
 					if(strlen(buffer)+1 > stepal->att_inq->len || stepal->att_inq->virtual) {
 						if (! rec->define_mode) {
@@ -1917,7 +1921,7 @@ void* data;
 							rec->define_mode = 0;
 							rec->open = 1;
 						}
-						if(stepal->att_inq->data_type == NC_CHAR) {	
+						if(stepal->att_inq->data_type == NC_CHAR && !(theatt == Qfill_val || theatt == Qmissing_val)) {	
 							buffer = NrmQuarkToString(*(NclQuark*)data);
 							if(strlen(buffer)+1 > stepal->att_inq->len || stepal->att_inq->virtual) {
 								if (! rec->define_mode) {
@@ -2511,7 +2515,7 @@ static void NetCacheAttValue
 	if (att_inq->data_type < 1 || value == NULL) {
 		att_inq->value = NULL;
 	}
-	else if (att_inq->data_type == NC_CHAR) {
+	else if (att_inq->data_type == NC_CHAR && !(att_inq->name == Qfill_val || att_inq->name == Qmissing_val)) {
 		char *tmp = NclMalloc(att_inq->len + 1);
 		strncpy(tmp,value,att_inq->len);
 		tmp[att_inq->len] = '\0';
