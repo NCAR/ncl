@@ -7093,7 +7093,12 @@ GribParamList* thevarrec;
 		} else{
 			*outdat = NULL;
 		}
-	} else {
+	} 
+	else if (second_order || additional_flags) {
+			*outdat = NULL;
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"GenericUnPack: NCL does not yet handle gridded data with complex packing: no valid values returned");
+	}
+	else {
 			*outdat = NULL;
 	}
 	NclFree(bds);
