@@ -1830,6 +1830,7 @@ begin
 
   res@tmXBLabelsOn            = True
   res@tmXBOn                  = True
+  res@tmXBFormat              = "f"                 ; remove trailing .0s
 
   res@xyLineColor             = "green"         
   res@xyLineThicknessF        = 2.                  ; 1 is default
