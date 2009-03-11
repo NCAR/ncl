@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.198 2009-03-11 20:52:32 shea Exp $
+;      $Id: contributed.ncl,v 1.199 2009-03-11 23:51:22 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3393,9 +3393,12 @@ end
 ; **********************************************************************
 ; D. Shea
 ; create different view of variable
+; The undocumented func had 2 arguments (yyyymmdd[*], opt[1]:logical)
+; This was changed when this function was made part of the official 
+; distribution 5.1.1
 
 undef("yyyymmdd_to_yyyyddd")
-function yyyymmdd_to_yyyyddd (yyyymmdd[*]:integer, opt[1]:logical)
+function yyyymmdd_to_yyyyddd (yyyymmdd[*]:integer)
 local yyyy, mmdd, mm, dd, yyyyddd
 begin
  yyyy = yyyymmdd/10000
