@@ -1863,6 +1863,7 @@ end
 ;--------------------------------------------------------------------------------
 ;--------------------------------------------------------------------------------
 
+undef("_SetMainTitle")
 procedure _SetMainTitle(nc_file:file,wks[1]:graphic,cn[1]:graphic,opts)
  
 ; This procedure checks the input data for certain attributes, and
@@ -2070,6 +2071,7 @@ end
 
 ;--------------------------------------------------------------------------------
 ;--------------------------------------------------------------------------------
+undef ("wrf_contour_ps")
 function wrf_contour_ps(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
                      opt_args[1]:logical)
 
@@ -2134,6 +2136,7 @@ begin
 return (cn)
 end
 ;--------------------------------------------------------------------------------
+undef ("wrf_vector_ps")
 function wrf_vector_ps(nc_file:file,wks[1]: graphic, \
                        data_u[*][*]:numeric, data_v[*][*]:numeric, \
                        opt_args[1]:logical)
