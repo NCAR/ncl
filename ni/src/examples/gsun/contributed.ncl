@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.197 2009-02-19 14:47:16 shea Exp $
+;      $Id: contributed.ncl,v 1.198 2009-03-11 20:52:32 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3408,6 +3408,64 @@ begin
  yyyyddd@long_name = "yyyy and day_of_year"
  yyyyddd@units = "yyyyddd"
  return(yyyyddd)
+end
+
+; **********************************************************************
+; D. Shea
+; create different view of variable
+
+undef("yyyyddd_to_yyyymmdd")
+function yyyyddd_to_yyyymmdd ( yyyyddd[*]:integer )
+; convert yyyyddd (year|day_of_year) to yyyymmdd
+
+local nTime, yyyy, ddd, days, yyyymmdd, nt, iyr \
+    , ndyr, skip, nmo, ndy, ndymo, foo
+begin
+  nTime    = dimsizes( yyyyddd )
+  yyyy     = yyyyddd/1000
+  ddd      = yyyyddd - yyyy*1000
+           ; non leap and leap
+  days     = (/ (/31,28,31,30,31,30,31,31,30,31,30,31/) \    ; [2] x [12]
+              , (/31,29,31,30,31,30,31,31,30,31,30,31/) /)
+
+  yyyymmdd = new (nTime, "integer", -999)
+
+  do nt=0,nTime-1
+     iyr   = 0
+     if (isleapyear(yyyy(nt))) then
+         iyr   = 1
+     end if
+
+     ndyr = 0            ; day of year
+     skip = False        ; use to bounce out of loops
+
+     do nmo=1,12
+       do ndymo=1,days(iyr,(nmo-1))
+          ndyr = ndyr+1      ; increment day of year
+          if (ndyr.eq.ddd(nt)) then
+              yyyymmdd(nt) = yyyy(nt)*10000 + nmo*100 + ndymo
+              skip = True
+              break      ; bounce out of ndy loop
+          end if
+       end do
+        foo = 1
+        if (skip) then
+            break        ; bounce out of nmo loop
+        end if
+     end do
+
+   end do
+
+   if (.not.any(ismissing(yyyymmdd))) then
+       delete(yyyymmdd@_FillValue)
+   end if
+
+   yyyymmdd!0 = "time"
+   yyyymmdd@long_name = "current date"
+   yyyymmdd@units     = "YYYYMMDD" 
+   yyyymmdd@info      = "converted from YYYYDDD" 
+
+   return(yyyymmdd) 
 end
 
 ; **********************************************************************
