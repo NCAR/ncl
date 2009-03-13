@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValData.c.sed,v 1.44 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: NclMultiDValData.c.sed,v 1.45 2009-03-13 18:43:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2110,8 +2110,15 @@ NclScalar *new_missing;
 							new_missing,
 							from_type) != NhlFATAL) {
 							if((self_md->multidval.missing_value.has_missing)&&(new_missing == NULL)) {
+#if 0
 					                        if((to_type->type_class.data_type == NCL_logical)||
 								   (!_NclScalarCoerce(&(self_md->multidval.missing_value.value),self_md->multidval.data_type,&tmp_missing, to_type->type_class.data_type))) {
+					                                tmp_missing = to_type->type_class.default_mis;
+					                        }
+#endif
+
+					                        if(!_NclScalarCoerce(&(self_md->multidval.missing_value.value),
+						 		   self_md->multidval.data_type,&tmp_missing, to_type->type_class.data_type)) {
 					                                tmp_missing = to_type->type_class.default_mis;
 					                        }
 								output_md = _NclCreateVal(
@@ -2173,9 +2180,15 @@ NclScalar * missing;
 	}
 
 	if(!self_md->multidval.missing_value.has_missing) {
-		self_md->multidval.missing_value.has_missing = 1;
-		self_md->multidval.missing_value.value = *missing;
-		return;
+		if (self_md->multidval.data_type == NCL_logical) {
+			self_md->multidval.missing_value.has_missing = 1;
+			self_md->multidval.missing_value.value.logicalval = -1;
+                }
+		else {
+			self_md->multidval.missing_value.has_missing = 1;
+			self_md->multidval.missing_value.value = *missing;
+			return;
+               }
 	}
 
 	if(self_md->multidval.type == NULL) return;

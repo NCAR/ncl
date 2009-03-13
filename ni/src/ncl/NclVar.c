@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.75 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: NclVar.c,v 1.76 2009-03-13 18:43:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -985,7 +985,7 @@ struct _NclSelectionRecord *sel_ptr;
 * inserted into the att_list
 */
 					value_md =  _NclCoerceData(value,thevalue->multidval.type->type_class.type ,NULL);
-					if(value_md == NULL) {
+						if(value_md == NULL) {
 
 /*
 * ALthough if _NclScalarCoerce succeds you shouldn't get this condition
@@ -995,6 +995,7 @@ struct _NclSelectionRecord *sel_ptr;
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Type Mismatch: The type of missing value could not be converted to type of variable (%s)",v_name);
 						return(NhlFATAL);
 					}
+#if 0
 					if (thevalue->multidval.type->type_class.type == Ncl_Typelogical) {
 						if (*(int*)value_md->multidval.val != -1) {
 							NhlPError(NhlWARNING,NhlEUNKNOWN,"Logical type variable (%s) missing value can only be set to Missing: setting to Missing",v_name);
@@ -1004,6 +1005,7 @@ struct _NclSelectionRecord *sel_ptr;
 							value_md = _NclCreateLMissing();
 						}
 					}
+#endif
 /*
 				_NclResetMissingValue(thevalue,&tmp_mis);	
 */
@@ -1013,6 +1015,7 @@ struct _NclSelectionRecord *sel_ptr;
 				}
 			} else {
 				value_md = value;
+#if 0
 				if (thevalue->multidval.type->type_class.type == Ncl_Typelogical) {
 					if (*(int*)value_md->multidval.val != -1) {
 						NhlPError(NhlWARNING,NhlEUNKNOWN,"Logical type variable (%s) missing value can only be set to Missing: setting to Missing",v_name);
@@ -1020,6 +1023,7 @@ struct _NclSelectionRecord *sel_ptr;
 					}
 				}
 				memcpy((void*)&tmp_mis,value->multidval.val,value->multidval.type->type_class.size);
+#endif
 /*
 				_NclResetMissingValue(thevalue,&tmp_mis);	
 */

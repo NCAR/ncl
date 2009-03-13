@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.129 2009-02-20 02:34:19 dbrown Exp $
+ *      $Id: Execute.c,v 1.130 2009-03-13 18:43:00 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -386,6 +386,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	int dir, ix_start, ix_end;
 	int var_offset;
 	long var_dim_sizes[32];
+        int var_ndims; /* non_aggregated natual var dim count */
 	int good_file_count;
 
 
@@ -607,19 +608,26 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					int bad = 0;
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
+						var_ndims = var_info->num_dimensions;
 						for (i = 0; i < var_info->num_dimensions; i++) {
 							var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
 						}
 						first = 0;
 					}
 					else {
-						for (i = 0; i < var_info->num_dimensions; i++) {
-							if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
-									  NrmQuarkToString(thefile->file.fpath));
-								bad = 1;
-								break;
-								
+						if (var_info->num_dimensions != var_ndims) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension count for variable  does not conform to others in list; skipping file",
+								  NrmQuarkToString(thefile->file.fpath));
+							bad = 1;
+						}
+						else {
+							for (i = 0; i < var_info->num_dimensions; i++) {
+								if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
+										  NrmQuarkToString(thefile->file.fpath));
+									bad = 1;
+									break;
+								}
 							}
 						}
 					}
@@ -775,7 +783,12 @@ void CallLIST_READ_FILEVAR_OP(void) {
 
 		long end_ix;
 		if (newlist->list.list_type & NCL_JOIN) {
-			filevar_sel_ptr->n_entries = filevar_subs - 1;
+			if (filevar_subs > var_ndims) {
+				filevar_sel_ptr->n_entries = filevar_subs - 1; 
+			}
+			else {
+				filevar_sel_ptr->n_entries = filevar_subs; 
+			}
 			end_ix = 0;
 		}
 		else {
@@ -804,24 +817,26 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			}
 			_NclFreeSubRec(&data.u.sub_rec);
 		}
-		data =_NclPop();
-		switch(data.u.sub_rec.sub_type) {
-		case INT_VECT:
-			_NclBuildVSelection(agg_coord_var,&data.u.sub_rec.u.vec,sel_ptr,0,data.u.sub_rec.name);
-			break;
-		case INT_SINGLE:
-		case INT_RANGE:
-			_NclBuildRSelection(agg_coord_var,&data.u.sub_rec.u.range,sel_ptr,0,data.u.sub_rec.name);
-			break;
-		case COORD_VECT:
-			_NclBuildCoordVSelection(agg_coord_var,&data.u.sub_rec.u.vec,sel_ptr,0,data.u.sub_rec.name);
-			break;
-		case COORD_SINGLE:
-		case COORD_RANGE:
-			_NclBuildCoordRSelection(agg_coord_var,&data.u.sub_rec.u.range,sel_ptr,0,data.u.sub_rec.name);
-			break;
+		if (filevar_subs > var_ndims) {
+			data =_NclPop();
+			switch(data.u.sub_rec.sub_type) {
+			case INT_VECT:
+				_NclBuildVSelection(agg_coord_var,&data.u.sub_rec.u.vec,sel_ptr,0,data.u.sub_rec.name);
+				break;
+			case INT_SINGLE:
+			case INT_RANGE:
+				_NclBuildRSelection(agg_coord_var,&data.u.sub_rec.u.range,sel_ptr,0,data.u.sub_rec.name);
+				break;
+			case COORD_VECT:
+				_NclBuildCoordVSelection(agg_coord_var,&data.u.sub_rec.u.vec,sel_ptr,0,data.u.sub_rec.name);
+				break;
+			case COORD_SINGLE:
+			case COORD_RANGE:
+				_NclBuildCoordRSelection(agg_coord_var,&data.u.sub_rec.u.range,sel_ptr,0,data.u.sub_rec.name);
+				break;
+			}
+			_NclFreeSubRec(&data.u.sub_rec);
 		}
-		_NclFreeSubRec(&data.u.sub_rec);
 		/*  Now adjust the start and finish such that start is always less than finish and the stride accounts for the direction of the subselection
 		 *  Note that NCL always ensures that the start element is included in any subselection, for any stride. This means making an adjustment to 
 		 *  one of the endpoints in some cases.
