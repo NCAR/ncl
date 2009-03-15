@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.233 2009-02-13 22:00:54 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.234 2009-03-15 21:35:18 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9031,6 +9031,178 @@ NhlErrorTypes _Ncldim_product
 
 }
 
+NhlErrorTypes _Ncldim_product_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val = NULL;
+        int *narg;
+	int *dimsizes = NULL;
+	logical *tmp = NULL;
+	int i,j,k;
+	int i_in_sz,i_out_sz;
+	int m,n,nr,nl,sz;
+	int nd;
+	NclScalar missing;
+
+/*
+ * Get dimension to do product across.
+ */
+	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+
+/*
+ * Read data values off stack (or not)
+ */
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_product_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the product across is "narg".
+ */
+	nr = nl = 1;
+	m  = tmp_md->multidval.dim_sizes[*narg];
+	if(tmp_md->multidval.n_dims > 1) {
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		for(i = 0; i < *narg ; i++) {
+			nl = nl*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+		}
+		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+			nr = nr*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+		}
+		nd = tmp_md->multidval.n_dims-1;
+	} else {
+		dimsizes = NclMalloc(sizeof(int));
+		*dimsizes = 1; 	
+		nd = 1;
+	}
+	n = nr * nl;
+/*
+ * "tmp" will be used to store locations where "m" chunks of the data
+ * are equal to missing.
+ */
+	tmp = (logical*)NclMalloc(sizeof(logical)*m);
+	sz = tmp_md->multidval.type->type_class.size;
+	out_val = (void*)NclMalloc(sz*n);
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+	      for(k = 0; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Ncleq(tmp_md->multidval.type,&tmp[k],
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),
+		       &(tmp_md->multidval.missing_value.value),NULL,NULL,1,1);
+	      }
+/*
+ * Loop through tmp to find the first non-missing value.
+ */
+	      k = 0;
+	      while((tmp[k])&&(k<m)) {
+		k++;
+	      }
+	      if(k==m) {
+/*
+ * All values were missing, so set the output to missing at this location.
+ */
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(tmp_md->multidval.missing_value.value),sz);
+	      } else {
+/*
+ * There's at least one non-missing value, so copy this value, and
+ * start multiplying the rest of the non-missing values.
+ */
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		k = k+1;
+		for(; k < m; k++) {
+		  if(!tmp[k]) {
+		    i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		    _Nclmultiply(tmp_md->multidval.type,
+			     &(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			     &(((char*)out_val)[i_out_sz]),NULL,NULL,1,1);
+		  }
+		}
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       &tmp_md->multidval.missing_value.value,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so 
+ * we don't need to look for missing values.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+
+	      /* k = 0 */
+	      memcpy(&(((char*)out_val)[i_out_sz]),
+		     &(((char*)tmp_md->multidval.val)[(i*(nr*m)+j)*sz]),sz);
+	      for(k = 1; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Nclmultiply(tmp_md->multidval.type,
+			     &(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			     &(((char*)out_val)[i_out_sz]),NULL,NULL,1,1);
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       NULL,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	}
+	if(tmp != NULL)
+	  NclFree(tmp);
+	NclFree(dimsizes);
+	return(ret);
+}
+
+
+
 NhlErrorTypes _Ncldim_sum
 #if	NhlNeedProto
 (void)
@@ -9128,6 +9300,177 @@ NhlErrorTypes _Ncldim_sum
 	return(ret);
 
 }
+
+
+NhlErrorTypes _Ncldim_sum_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val = NULL;
+        int *narg;
+	int *dimsizes = NULL;
+	logical *tmp = NULL;
+	int i,j,k;
+	int i_in_sz,i_out_sz;
+	int m,n,nr,nl,sz;
+	int nd;
+	NclScalar missing;
+
+/*
+ * Get dimension to do sum across.
+ */
+	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+
+/*
+ * Read data values off stack (or not)
+ */
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the sum across is "narg".
+ */
+	nr = nl = 1;
+	m  = tmp_md->multidval.dim_sizes[*narg];
+	if(tmp_md->multidval.n_dims > 1) {
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		for(i = 0; i < *narg ; i++) {
+			nl = nl*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+		}
+		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+			nr = nr*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+		}
+		nd = tmp_md->multidval.n_dims-1;
+	} else {
+		dimsizes = NclMalloc(sizeof(int));
+		*dimsizes = 1; 	
+		nd = 1;
+	}
+	n = nr * nl;
+/*
+ * "tmp" will be used to store locations where "m" chunks of the data
+ * are equal to missing.
+ */
+	tmp = (logical*)NclMalloc(sizeof(logical)*m);
+	sz = tmp_md->multidval.type->type_class.size;
+	out_val = (void*)NclMalloc(sz*n);
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+	      for(k = 0; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Ncleq(tmp_md->multidval.type,&tmp[k],
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),
+		       &(tmp_md->multidval.missing_value.value),NULL,NULL,1,1);
+	      }
+/*
+ * Loop through tmp to find the first non-missing value.
+ */
+	      k = 0;
+	      while((tmp[k])&&(k<m)) {
+		k++;
+	      }
+	      if(k==m) {
+/*
+ * All values were missing, so set the output to missing at this location.
+ */
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(tmp_md->multidval.missing_value.value),sz);
+	      } else {
+/*
+ * There's at least one non-missing value, so copy this value, and
+ * start summing the rest of the non-missing values.
+ */
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		k = k+1;
+		for(; k < m; k++) {
+		  if(!tmp[k]) {
+		    i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		    _Nclplus(tmp_md->multidval.type,
+			     &(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			     &(((char*)out_val)[i_out_sz]),NULL,NULL,1,1);
+		  }
+		}
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       &tmp_md->multidval.missing_value.value,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so 
+ * we don't need to look for missing values.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+
+	      /* k = 0 */
+	      memcpy(&(((char*)out_val)[i_out_sz]),
+		     &(((char*)tmp_md->multidval.val)[(i*(nr*m)+j)*sz]),sz);
+	      for(k = 1; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Nclplus(tmp_md->multidval.type,&(((char*)out_val)[i_out_sz]),
+			 &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			 &(((char*)out_val)[i_out_sz]),NULL,NULL,1,1);
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       NULL,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	}
+	if(tmp != NULL)
+	  NclFree(tmp);
+	NclFree(dimsizes);
+	return(ret);
+}
+
 
 NhlErrorTypes _Nclsum
 #if	NhlNeedProto
@@ -9363,6 +9706,207 @@ NhlErrorTypes _Ncldim_cumsum
 	return(ret);
 }
 
+NhlErrorTypes _Ncldim_cumsum_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NhlErrorTypes ret = NhlNOERROR;
+	NclStackEntry data0,data1;
+	NclMultiDValData tmp_md = NULL;
+	NclMultiDValData opt_md = NULL;
+	void *out_val = NULL;
+	int *narg;
+	logical *tmp = NULL;
+	int i,j,k;
+	int sz;
+	int m,n,nl,nr;
+	NclScalar *missing = NULL;
+	int opt;
+
+
+	data0 = _NclGetArg(0,3,DONT_CARE);
+	switch(data0.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data0.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data0.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	data1 = _NclGetArg(1,3,DONT_CARE);
+	switch(data1.kind) {
+		case NclStk_VAR:
+			opt_md = _NclVarValueRead(data1.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			opt_md = (NclMultiDValData)data1.u.data_obj;
+			break;
+	}
+	if(opt_md == NULL)
+		return(NhlFATAL);
+	opt = *((int*)opt_md->multidval.val);
+
+/*
+ * Get dimension to do cumulative sum across.
+ *
+ * Do some error checking to make sure input dimension is valid.
+ */
+	narg = (int *)NclGetArgValue(2,3,NULL,NULL,NULL,NULL,NULL,2);
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_cumsum_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+	m = tmp_md->multidval.dim_sizes[*narg];
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the cumsum across is "narg".
+ */
+	n = nr = nl = 1;
+	if(tmp_md->multidval.n_dims > 1) {
+	  for(i = 0; i < *narg ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	  }
+	}
+	n = nr * nl;
+	tmp = (logical*)NclMalloc(sizeof(logical)*m);
+	sz = tmp_md->multidval.type->type_class.size;
+	out_val = (void*)NclMalloc(sz * tmp_md->multidval.totalelements);
+
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      int goffset;
+	      int missing_flag = 0;
+	      int dim_offset = ((i*nr*m)+j)*sz;
+	      for(k = 0; k < m; k++) {
+		goffset = dim_offset + (nr*k)*sz;
+		_Ncleq(tmp_md->multidval.type,&tmp[k],
+		       ((char*)tmp_md->multidval.val) + goffset,
+		       &(tmp_md->multidval.missing_value.value),NULL,NULL,1,1);
+	      }
+	      switch (opt) {
+	      default:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"dim_cumsum_n: invalid value for opt argument: defaulting to 0");
+	      case 0: /* all values after first missing become missing */
+		memcpy((char*)out_val + dim_offset,
+		       (char*)tmp_md->multidval.val + dim_offset,sz);
+		if (tmp[0]) {
+		  missing_flag = 1;
+		}
+		for(k = 1; k < m; k++) {
+		  int last_offset = dim_offset + (nr*(k-1))*sz;
+		  int offset = dim_offset + (nr*k)*sz;
+		  if (missing_flag || tmp[k]) {
+		    missing_flag = 1;
+		    memcpy((char*)out_val + offset,
+			   &(tmp_md->multidval.missing_value.value),sz);
+		  }
+		  else {
+		    _Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+			     (char*)(tmp_md->multidval.val) + offset,
+			     (char*)out_val + last_offset,NULL,NULL,1,1);
+		  }
+		}
+		missing = &tmp_md->multidval.missing_value.value;
+		break;
+	      case 1: /* missing values are skipped */
+		for (k = 0; k < m && tmp[k]; k++) {
+		  int offset = dim_offset + (nr*k)*sz;
+		  memcpy((char*)out_val + offset,
+			 &(tmp_md->multidval.missing_value.value),sz);
+		}
+		if (k < m) {
+		  goffset = dim_offset + (nr*k)*sz;
+		  memcpy((char*)out_val + goffset,
+			 (char*)(tmp_md->multidval.val) + goffset,sz);
+		}
+		for(k++; k < m; k++) {
+		  int offset = dim_offset + (nr*k)*sz;
+		  if (tmp[k]) {
+		    memcpy((char*)out_val + offset,
+			   &(tmp_md->multidval.missing_value.value),sz);
+		  }
+		  else {
+		    _Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+			     (char*)(tmp_md->multidval.val) + offset,
+			     (char*)out_val + goffset,NULL,NULL,1,1);
+		    goffset = offset;
+		  }
+		}
+		missing = &tmp_md->multidval.missing_value.value;
+		break;
+	      case 2: /* missing values treated as 0 */
+		for (k = 0; k < m && tmp[k]; k++) {
+		  int offset = dim_offset + (nr*k)*sz;
+		  memset((char*)out_val + offset,0,sz);
+		}
+		if (k == 0) {
+		  memcpy((char*)out_val + dim_offset,
+			 (char*)tmp_md->multidval.val + dim_offset,sz);
+		  k++;
+		}
+		for(; k < m; k++) {
+		  int last_offset = dim_offset + (nr*(k-1))*sz;
+		  int offset = dim_offset + (k*nr)*sz;
+		  if (tmp[k]) {
+		    memcpy((char*)out_val + offset,
+			   (char*)out_val + last_offset,sz);
+		  }
+		  else {
+		    _Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+			     (char*)(tmp_md->multidval.val) + offset,
+			     (char*)out_val + last_offset,NULL,NULL,1,1);
+		  }
+		}
+		break;
+	      }
+	    }
+	  }
+	} else {
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      int dim_offset = ((i*nr*m)+j)*sz;
+	      memcpy((char*)out_val + dim_offset,
+		     (char*)tmp_md->multidval.val + dim_offset,sz);
+	      for(k = 1; k < m; k++) {
+		int last_offset = dim_offset + (nr*(k-1))*sz;
+		int offset = dim_offset + (nr*k)*sz;
+		_Nclplus(tmp_md->multidval.type,(char*)out_val + offset,
+			 (char*)(tmp_md->multidval.val) + offset,
+			 (char*)out_val + last_offset,NULL,NULL,1,1);
+	      }
+	    }
+	  }
+	}
+	if(tmp != NULL)
+	  NclFree(tmp);
+
+	ret = NclReturnValue(
+		out_val,
+		tmp_md->multidval.n_dims,
+		tmp_md->multidval.dim_sizes,
+		missing,
+		tmp_md->multidval.type->type_class.data_type,
+		0);
+	return(ret);
+}
+
 NhlErrorTypes _Nclcumsum
 #if	NhlNeedProto
 (void)
@@ -9532,7 +10076,7 @@ NhlErrorTypes _Ncldim_avg
 	NclScalar missing;
 	int did_coerce = 0;
 
-	
+
 
 	data = _NclGetArg(0,1,DONT_CARE);
 	switch(data.kind) {
@@ -9546,7 +10090,10 @@ NhlErrorTypes _Ncldim_avg
 	if(tmp_md == NULL)
 		return(NhlFATAL);
 
-
+/*
+ * Calculate size of all but rightmost dimension (n).
+ * The rightmost dimension is "m". The number of dimenions is "nd".
+ */
 	n = 1;
 	if(tmp_md->multidval.n_dims > 1) {
 		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
@@ -9562,6 +10109,9 @@ NhlErrorTypes _Ncldim_avg
 		m = tmp_md->multidval.dim_sizes[tmp_md->multidval.n_dims -1];
 		nd = 1;
 	}
+/*
+ * Determine output type, which will either be float or double.
+ */
 	data_type = NCL_double;
 	the_type = (NclTypeClass)nclTypedoubleClass;
 	if(tmp_md->multidval.data_type == NCL_double) {
@@ -9589,7 +10139,15 @@ NhlErrorTypes _Ncldim_avg
 	}
 	val = (double*)tmp_md->multidval.val;
 	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
 		for(i = 0; i < n ; i++) {
+/*
+ * Check if we have at least one non-missing value in the subset
+ * of rightmost values.
+ */
 			for(j = 0; j < m; j++) {
 				if(val[i*m+j] != tmp_md->multidval.missing_value.value.doubleval) {
 					break;
@@ -9598,12 +10156,20 @@ NhlErrorTypes _Ncldim_avg
 			count = 0;
 
 			if(j==m) {
+/*
+ * Values were all missing for this subset, so set output to
+ * missing for this location.
+ */
 				if(out_data_type == NCL_double) {
 					((double*)out_val)[i] = missing.doubleval;
 				} else {
 					((float*)out_val)[i] = (float)missing.doubleval;
 				}
 			} else {
+/*
+ * Values were NOT all missing for this subset, so do the average,
+ * starting with the first non-missing value (j).
+ */
 				count = 1;
 				sum_val = val[(i*m) + j];
 
@@ -9615,6 +10181,9 @@ NhlErrorTypes _Ncldim_avg
 					}
 				}
 				sum_val = sum_val/(double) count;
+/*
+ * Set to appropriate type for output.
+ */
 				if(out_data_type == NCL_double) {
                                         ((double*)out_val)[i] = sum_val;
                                 } else {
@@ -9636,6 +10205,10 @@ NhlErrorTypes _Ncldim_avg
 		if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
 		return(ret);
 	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so we 
+ * can proceed without worrying about missing values.
+ */
 		for(i = 0; i < n ; i++) {
 			sum_val = val[i*m];
 			for(j = 1; j< m; j++) {
@@ -9662,6 +10235,215 @@ NhlErrorTypes _Ncldim_avg
 		return(ret);
 	}
 
+}
+
+
+NhlErrorTypes _Ncldim_avg_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val = NULL;
+	int *narg; 
+	double sum_val ;
+	double *val = NULL;
+	int *dimsizes = NULL;
+	logical *tmp = NULL;
+	int i,j,k,sf;
+	int m,n,nr,nl,sz;
+	int nd,count;
+	short tmp1;
+	NclBasicDataTypes data_type;
+	NclBasicDataTypes out_data_type;
+	NclTypeClass the_type;
+	NclScalar missing;
+	int did_coerce = 0;
+
+/*
+ * Get dimension to do average across.
+ */
+	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+/*
+ * Read data values off stack (or not)
+ */
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the average across is "narg".
+ */
+	nl = nr = 1;
+	m  = tmp_md->multidval.dim_sizes[*narg];
+	if(tmp_md->multidval.n_dims > 1) {
+	  dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+	  for(i = 0; i < *narg ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  nd = tmp_md->multidval.n_dims-1;
+	} else {
+	  dimsizes = NclMalloc(sizeof(int));
+	  *dimsizes = 1;
+	  nd = 1;
+	}
+	n = nr * nl;
+/*
+ * Determine output type, which will either be float or double.
+ */
+	data_type = NCL_double;
+	the_type = (NclTypeClass)nclTypedoubleClass;
+	if(tmp_md->multidval.data_type == NCL_double) {
+	  sz = tmp_md->multidval.type->type_class.size;
+	  out_val = (void*)NclMalloc(sizeof(double)* n);
+	  out_data_type = NCL_double;
+	  sf = sizeof(double);
+	  if(tmp_md->multidval.missing_value.has_missing) {
+	    missing = tmp_md->multidval.missing_value.value;
+	  }
+	} else {
+	  out_val = (void*)NclMalloc(sizeof(float)* n);
+	  sf = sizeof(float);
+	  out_data_type = NCL_float;
+	  tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+	  if(tmp_md == NULL) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_n: Could not coerce input data to double, can't continue");
+	    return(NhlFATAL);
+	  } else if(tmp_md->multidval.missing_value.has_missing) {
+	    
+	    missing = tmp_md->multidval.missing_value.value;
+	  }
+	  did_coerce = 1;
+	  sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
+	}
+	val = (double*)tmp_md->multidval.val;
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+/*
+ * Check if we have at least one non-missing value in the subset
+ * of rightmost values.
+ */
+	      for(k = 0; k < m; k++) {
+		if(val[i*(nr*m)+(k*nr)+j] != tmp_md->multidval.missing_value.value.doubleval) {
+		  break;
+		}
+	      }
+	      count = 0;
+	      
+	      if(k==m) {
+/*
+ * Values were all missing for this subset, so set output to
+ * missing for this location.
+ */
+		if(out_data_type == NCL_double) {
+		  ((double*)out_val)[i*nr+j] = missing.doubleval;
+		} else {
+		  ((float*)out_val)[i*nr+j] = (float)missing.doubleval;
+		}
+	      } else {
+/*
+ * Values were NOT all missing for this subset, so do the average,
+ * starting with the first non-missing value.
+ */
+		count = 1;
+		sum_val = val[i*(nr*m)+(k*nr)+j];
+		
+		k = k+1;
+		for(; k<m;k++){
+		  if(val[i*(nr*m)+(k*nr)+j] != tmp_md->multidval.missing_value.value.doubleval) {
+		    sum_val+= val[i*(nr*m)+(k*nr)+j];
+		    count = count +1;
+		  }
+		}
+		sum_val = sum_val/(double) count;
+/*
+ * Set to appropriate type for output.
+ */
+		if(out_data_type == NCL_double) {
+		  ((double*)out_val)[i*nr+j] = sum_val;
+		} else {
+		  ((float*)out_val)[i*nr+j] = (float)sum_val;
+		}
+	      }
+	    }
+	  }
+	  if(out_data_type != NCL_double) {
+	    missing.floatval = (float)missing.doubleval;
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       &missing,
+			       out_data_type,
+			       0);
+	  NclFree(dimsizes);
+	  if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
+	  return(ret);
+	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so we 
+ * can proceed without worrying about missing values.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      sum_val = val[i*(nr*m)+j];
+	      for(k = 1; k< m; k++) {
+		sum_val += val[i*(nr*m)+(k*nr)+j];
+	      }
+	      sum_val = sum_val/(double)m;
+	      if(out_data_type == NCL_double) {
+		((double*)out_val)[i*nr+j] = sum_val;
+	      } else {
+		((float*)out_val)[i*nr+j] = (float)sum_val;
+	      }
+	    }
+	  }
+	
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       NULL,
+			       out_data_type,
+			       0);
+	  NclFree(dimsizes);
+	  if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
+	  return(ret);
+	}
 }
 
 
@@ -11881,6 +12663,188 @@ NhlErrorTypes _Ncldim_min
 	return(ret);
 
 }
+
+NhlErrorTypes _Ncldim_min_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val = NULL;
+        int *narg;
+	int *dimsizes = NULL;
+	logical *tmp = NULL;
+	logical result = 0;
+	int i,j,k;
+	int i_in_sz,i_out_sz;
+	int m,n,nr,nl,sz;
+	int nd;
+
+/*
+ * Get dimension to do minimum across.
+ */
+	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+
+/*
+ * Read data values off stack (or not)
+ */
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_min_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the minimum across is "narg".
+ */
+	nr = nl = 1;
+	m  = tmp_md->multidval.dim_sizes[*narg];
+	if(tmp_md->multidval.n_dims > 1) {
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		for(i = 0; i < *narg ; i++) {
+			nl = nl*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+		}
+		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+			nr = nr*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+		}
+		nd = tmp_md->multidval.n_dims-1;
+	} else {
+		dimsizes = NclMalloc(sizeof(int));
+		*dimsizes = 1; 	
+		nd = 1;
+	}
+	n = nr * nl;
+/*
+ * "tmp" will be used to store locations where "m" chunks of the data
+ * are equal to missing.
+ */
+	tmp = (logical*)NclMalloc(sizeof(logical)*m);
+	sz = tmp_md->multidval.type->type_class.size;
+	out_val = (void*)NclMalloc(sz*n);
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+	      for(k = 0; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Ncleq(tmp_md->multidval.type,&tmp[k],
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),
+		       &(tmp_md->multidval.missing_value.value),NULL,NULL,1,1);
+	      }
+/*
+ * Loop through tmp to find the first non-missing value.
+ */
+	      k = 0;
+	      while((tmp[k])&&(k<m)) {
+		k++;
+	      }
+	      if(k==m) {
+/*
+ * All values were missing, so set the output to missing at this location.
+ */
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(tmp_md->multidval.missing_value.value),sz);
+	      } else {
+/*
+ * There's at least one non-missing value, so copy this value, and
+ * start getting the minimum of the rest of the non-missing values.
+ */
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		k = k+1;
+		for(; k < m; k++) {
+		  if(!tmp[k]) {
+		    i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		    _Nclgt(tmp_md->multidval.type,&result,
+			     &(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			     NULL,NULL,1,1);
+		    if(result == 1) {
+		      memcpy(&(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		      result = 0;
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       &tmp_md->multidval.missing_value.value,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so 
+ * we don't need to look for missing values.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+
+	      /* k = 0 */
+	      memcpy(&(((char*)out_val)[i_out_sz]),
+		     &(((char*)tmp_md->multidval.val)[(i*(nr*m)+j)*sz]),sz);
+	      for(k = 1; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Nclgt(tmp_md->multidval.type,&result,
+			     &(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			     NULL,NULL,1,1);
+		if(result == 1) {
+		  memcpy(&(((char*)out_val)[i_out_sz]),
+			 &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		  result = 0;
+		}
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       NULL,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	}
+	if(tmp != NULL)
+	  NclFree(tmp);
+	NclFree(dimsizes);
+	return(ret);
+}
+
+
 NhlErrorTypes _Ncldim_max
 #if	NhlNeedProto
 (void)
@@ -11988,6 +12952,188 @@ NhlErrorTypes _Ncldim_max
 	return(ret);
 
 }
+
+NhlErrorTypes _Ncldim_max_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val = NULL;
+        int *narg;
+	int *dimsizes = NULL;
+	logical *tmp = NULL;
+	logical result = 0;
+	int i,j,k;
+	int i_in_sz,i_out_sz;
+	int m,n,nr,nl,sz;
+	int nd;
+
+/*
+ * Get dimension to do maximum across.
+ */
+	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+
+/*
+ * Read data values off stack (or not)
+ */
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_max_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the maximum across is "narg".
+ */
+	nr = nl = 1;
+	m  = tmp_md->multidval.dim_sizes[*narg];
+	if(tmp_md->multidval.n_dims > 1) {
+		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+		for(i = 0; i < *narg ; i++) {
+			nl = nl*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+		}
+		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+			nr = nr*tmp_md->multidval.dim_sizes[i];
+			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+		}
+		nd = tmp_md->multidval.n_dims-1;
+	} else {
+		dimsizes = NclMalloc(sizeof(int));
+		*dimsizes = 1; 	
+		nd = 1;
+	}
+	n = nr * nl;
+/*
+ * "tmp" will be used to store locations where "m" chunks of the data
+ * are equal to missing.
+ */
+	tmp = (logical*)NclMalloc(sizeof(logical)*m);
+	sz = tmp_md->multidval.type->type_class.size;
+	out_val = (void*)NclMalloc(sz*n);
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+	      for(k = 0; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Ncleq(tmp_md->multidval.type,&tmp[k],
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),
+		       &(tmp_md->multidval.missing_value.value),NULL,NULL,1,1);
+	      }
+/*
+ * Loop through tmp to find the first non-missing value.
+ */
+	      k = 0;
+	      while((tmp[k])&&(k<m)) {
+		k++;
+	      }
+	      if(k==m) {
+/*
+ * All values were missing, so set the output to missing at this location.
+ */
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(tmp_md->multidval.missing_value.value),sz);
+	      } else {
+/*
+ * There's at least one non-missing value, so copy this value, and
+ * start getting the maximum of the rest of the non-missing values.
+ */
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		memcpy(&(((char*)out_val)[i_out_sz]),
+		       &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		k = k+1;
+		for(; k < m; k++) {
+		  if(!tmp[k]) {
+		    i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		    _Ncllt(tmp_md->multidval.type,&result,
+			     &(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			     NULL,NULL,1,1);
+		    if(result == 1) {
+		      memcpy(&(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		      result = 0;
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       &tmp_md->multidval.missing_value.value,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so 
+ * we don't need to look for missing values.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out_sz = ((i*nr)+j)*sz;
+
+	      /* k = 0 */
+	      memcpy(&(((char*)out_val)[i_out_sz]),
+		     &(((char*)tmp_md->multidval.val)[(i*(nr*m)+j)*sz]),sz);
+	      for(k = 1; k < m; k++) {
+		i_in_sz = (i*(nr*m)+(k*nr)+j)*sz;
+		_Ncllt(tmp_md->multidval.type,&result,
+			     &(((char*)out_val)[i_out_sz]),
+			     &(((char*)tmp_md->multidval.val)[i_in_sz]),
+			     NULL,NULL,1,1);
+		if(result == 1) {
+		  memcpy(&(((char*)out_val)[i_out_sz]),
+			 &(((char*)tmp_md->multidval.val)[i_in_sz]),sz);
+		  result = 0;
+		}
+	      }
+	    }
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       NULL,
+			       tmp_md->multidval.type->type_class.data_type,
+			       0);
+	}
+	if(tmp != NULL)
+	  NclFree(tmp);
+	NclFree(dimsizes);
+	return(ret);
+}
+
+
 NhlErrorTypes _NclIIsInteger
 #if	NhlNeedProto
 (void)
