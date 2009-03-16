@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.83 2009-03-15 21:35:17 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.84 2009-03-16 03:06:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -135,6 +135,11 @@ extern NhlErrorTypes _NclIdim_stddev(
 void
 #endif
 );
+extern NhlErrorTypes _NclIdim_stddev_n(
+#if NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIstddev(
 #if NhlNeedProto
 void
@@ -147,6 +152,13 @@ extern NhlErrorTypes _NclIdim_variance(
 void
 #endif
 );
+
+extern NhlErrorTypes _NclIdim_variance_n(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _NclIvariance(
 #if NhlNeedProto
 void
@@ -1732,6 +1744,13 @@ void _NclAddBuiltIns
 	NclRegisterFunc(_NclIdim_variance,args,"dim_variance",nargs);
 
 	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1; 
+	SetArgTemplate(args,1,"integer",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIdim_variance_n,args,"dim_variance_n",nargs);
+
+	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIstddev,args,"stddev",nargs);
@@ -1740,6 +1759,13 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIdim_stddev,args,"dim_stddev",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+	SetArgTemplate(args,1,"integer",1,dimsizes);nargs++;
+	NclRegisterFunc(_NclIdim_stddev_n,args,"dim_stddev_n",nargs);
 
 	nargs = 0;
 	NclRegisterFunc(_NclINhlGetWorkspaceObjectId,args,"NhlGetWorkspaceObjectId",nargs);

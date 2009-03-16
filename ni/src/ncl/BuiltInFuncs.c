@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.234 2009-03-15 21:35:18 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.235 2009-03-16 03:06:11 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -10520,7 +10520,7 @@ NhlErrorTypes _NclIdim_variance
 		out_data_type = NCL_float;
 		tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 		if(tmp_md == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance: Could not coerce input data to double, can't continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance_n: Could not coerce input data to double, can't continue");
 			return(NhlFATAL);
 		} else if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
@@ -10548,7 +10548,6 @@ NhlErrorTypes _NclIdim_variance
 				count = 1;
 				start = j;
 				sum_val = val[(i*m) + j];
-	
 				j = j+1;
 				for(; j<m;j++){
 					if(val[(i*m) + j] != tmp_md->multidval.missing_value.value.doubleval) {
@@ -10620,6 +10619,233 @@ NhlErrorTypes _NclIdim_variance
 		return(ret);
 	}
 
+}
+NhlErrorTypes _NclIdim_variance_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val = NULL;
+        int *narg;
+	double sum_val ;
+	double sum_sqrd_val ;
+	double *val = NULL;
+	int *dimsizes = NULL;
+	logical *tmp = NULL;
+	int i,j,k,sf,i_in,i_out;
+	int m,n,nr,nl,sz;
+	int nd,count;
+	NclBasicDataTypes data_type;
+	NclBasicDataTypes out_data_type;
+	NclTypeClass the_type;
+	NclScalar missing;
+	int start;
+	int did_coerce = 0;
+
+/*
+ * Get dimension to do average across.
+ */
+	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+
+/*
+ * Read data values off stack (or not)
+ */
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the average across is "narg".
+ */
+	nl = nr = 1;
+	m  = tmp_md->multidval.dim_sizes[*narg];
+	if(tmp_md->multidval.n_dims > 1) {
+	  dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+	  for(i = 0; i < *narg ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  nd = tmp_md->multidval.n_dims-1;
+	} else {
+	  dimsizes = NclMalloc(sizeof(int));
+	  *dimsizes = 1;
+	  nd = 1;
+	}
+	n = nr * nl;
+/*
+ * Determine output type, which will either be float or double.
+ */
+	data_type = NCL_double;
+	the_type = (NclTypeClass)nclTypedoubleClass;
+	if(tmp_md->multidval.data_type == NCL_double) {
+	  sz = tmp_md->multidval.type->type_class.size;
+	  out_val = (void*)NclMalloc(sizeof(double)* n);
+	  out_data_type = NCL_double;
+	  sf = sizeof(double);
+	  if(tmp_md->multidval.missing_value.has_missing) {
+	    missing = tmp_md->multidval.missing_value.value;
+	  }
+	} else {
+	  out_val = (void*)NclMalloc(sizeof(float)* n);
+	  sf = sizeof(float);
+	  out_data_type = NCL_float;
+	  tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+	  if(tmp_md == NULL) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance_n: Could not coerce input data to double, can't continue");
+	    return(NhlFATAL);
+	  } else if(tmp_md->multidval.missing_value.has_missing) {
+	    missing = tmp_md->multidval.missing_value.value;
+	  }
+	  did_coerce = 1;
+	  sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
+	}
+	val = (double*)tmp_md->multidval.val;
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out = i*nr + j;
+/*
+ * Check if we have at least one non-missing value in the subset
+ * of rightmost values.
+ */
+	      for(k = 0; k < m; k++) {
+		i_in = i*(nr*m)+(k*nr)+j;
+		if(val[i_in] != tmp_md->multidval.missing_value.value.doubleval) {
+		  break;
+		}
+	      }
+	      count = 0;
+	      
+	      if(k==m) {
+		if(out_data_type == NCL_double) {
+		  ((double*)out_val)[i_out] = missing.doubleval;
+		} else {
+		  ((float*)out_val)[i_out] = (float)missing.doubleval;
+		}
+	      } else {
+/*
+ * Values were NOT all missing for this subset, so do the average,
+ * starting with the first non-missing value.
+ */
+		count = 1;
+		start = k;
+		sum_val = val[i_in];
+	
+		k = k+1;
+		for(; k<m;k++){
+		  i_in = i*(nr*m)+(k*nr)+j;
+		  if(val[i_in] != tmp_md->multidval.missing_value.value.doubleval) {
+		    sum_val+= val[i_in];
+		    count = count +1;
+		  }
+		}
+		if(count != 1) {
+		  sum_val = sum_val/(double) count;
+		  sum_sqrd_val = 0;
+		  for(k = start; k < m; k++) {
+		    i_in = i*(nr*m)+(k*nr)+j;
+		    if(val[i_in] != tmp_md->multidval.missing_value.value.doubleval) {        
+		      sum_sqrd_val += (val[i_in] - sum_val) * (val[i_in] - sum_val);
+		    }
+		  }
+		  sum_sqrd_val /= (double)(count-1);
+		} else {
+		  sum_sqrd_val = 0.0;
+		}
+/*
+ * Set to appropriate type for output.
+ */
+		if(out_data_type == NCL_double) {
+		  ((double*)out_val)[i_out] = sum_sqrd_val;
+		} else {
+		  ((float*)out_val)[i_out] = (float)sum_sqrd_val;
+		}
+	      }
+	    }
+	  }
+	  if(out_data_type != NCL_double) {
+	    missing.floatval = (float)missing.doubleval;
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       &missing,
+			       out_data_type,
+			       0);
+	  NclFree(dimsizes);
+	  if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
+	  return(ret);
+	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so we 
+ * can proceed without worrying about missing values.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out = i*nr + j;
+	      sum_val = val[i*(nr*m)+j];   /* k = 0 */
+	      for(k = 1; k< m; k++) {
+		i_in = i*(nr*m)+(k*nr)+j;
+		sum_val += val[i_in];
+	      }
+	      sum_val = sum_val/(double)m;
+	      sum_sqrd_val = 0;
+	      for(k = 0; k< m; k++) {
+		i_in = i*(nr*m)+(k*nr)+j;
+		sum_sqrd_val += (val[i_in] - sum_val) * (val[i_in] - sum_val);
+	      }
+	      sum_sqrd_val /= (double)(m-1);
+	      if(out_data_type == NCL_double) {
+		((double*)out_val)[i_out] = sum_sqrd_val;
+	      } else {
+		((float*)out_val)[i_out] = (float)sum_sqrd_val;
+	      }
+	    }	
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       NULL,
+			       out_data_type,
+			       0);
+	  NclFree(dimsizes);
+	  if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
+	  return(ret);
+	}
 }
 NhlErrorTypes _NclIvariance
 #if	NhlNeedProto
@@ -10975,6 +11201,236 @@ NhlErrorTypes _NclIdim_stddev
 		return(ret);
 	}
 
+}
+
+NhlErrorTypes _NclIdim_stddev_n
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NhlErrorTypes ret = NhlNOERROR;
+	NclMultiDValData tmp_md = NULL;
+	void *out_val = NULL;
+        int *narg;
+	double sum_val ;
+	double sum_sqrd_val ;
+	double *val = NULL;
+	int *dimsizes = NULL;
+	logical *tmp = NULL;
+	int i,j,k,sf,i_in,i_out;
+	int m,n,nr,nl,sz;
+	int nd,count;
+	NclBasicDataTypes data_type;
+	NclBasicDataTypes out_data_type;
+	NclTypeClass the_type;
+	NclScalar missing;
+	int start;
+	int did_coerce = 0;
+
+/*
+ * Get dimension to do average across.
+ */
+	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+
+/*
+ * Read data values off stack (or not)
+ */
+	data = _NclGetArg(0,2,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stddev_n: Invalid dimension argument, can't continue");
+	  return(NhlFATAL);
+	}
+
+/*
+ * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
+ * Calculate size of rightmost from the narg-th dimension (nr).
+ *
+ * The dimension to do the average across is "narg".
+ */
+	nl = nr = 1;
+	m  = tmp_md->multidval.dim_sizes[*narg];
+	if(tmp_md->multidval.n_dims > 1) {
+	  dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
+	  for(i = 0; i < *narg ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  nd = tmp_md->multidval.n_dims-1;
+	} else {
+	  dimsizes = NclMalloc(sizeof(int));
+	  *dimsizes = 1;
+	  nd = 1;
+	}
+	n = nr * nl;
+/*
+ * Determine output type, which will either be float or double.
+ */
+	data_type = NCL_double;
+	the_type = (NclTypeClass)nclTypedoubleClass;
+	if(tmp_md->multidval.data_type == NCL_double) {
+	  sz = tmp_md->multidval.type->type_class.size;
+	  out_val = (void*)NclMalloc(sizeof(double)* n);
+	  out_data_type = NCL_double;
+	  sf = sizeof(double);
+	  if(tmp_md->multidval.missing_value.has_missing) {
+	    missing = tmp_md->multidval.missing_value.value;
+	  }
+	} else {
+	  out_val = (void*)NclMalloc(sizeof(float)* n);
+	  sf = sizeof(float);
+	  out_data_type = NCL_float;
+	  tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
+	  if(tmp_md == NULL) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stddev_n: Could not coerce input data to double, can't continue");
+	    return(NhlFATAL);
+	  } else if(tmp_md->multidval.missing_value.has_missing) {
+	    missing = tmp_md->multidval.missing_value.value;
+	  }
+	  did_coerce = 1;
+	  sz = ((NclTypeClass)nclTypefloatClass)->type_class.size;
+	}
+	val = (double*)tmp_md->multidval.val;
+	if(tmp_md->multidval.missing_value.has_missing) {
+/*
+ * The input variable contains a _FillValue attribute, so we have
+ * to assume there might be missing values present.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out = i*nr + j;
+/*
+ * Check if we have at least one non-missing value in the subset
+ * of rightmost values.
+ */
+	      for(k = 0; k < m; k++) {
+		i_in = i*(nr*m)+(k*nr)+j;
+		if(val[i_in] != tmp_md->multidval.missing_value.value.doubleval) {
+		  break;
+		}
+	      }
+	      count = 0;
+
+	      if(k==m) {
+		if(out_data_type == NCL_double) {
+		  ((double*)out_val)[i_out] = missing.doubleval;
+		} else {
+		  ((float*)out_val)[i_out] = (float)missing.doubleval;
+		}
+	      } else {
+/*
+ * Values were NOT all missing for this subset, so do the variance,
+ * starting with the first non-missing value.
+ */
+		count = 1;
+		start = k;
+		sum_val = val[i_in];
+	
+		k = k+1;
+		for(; k<m;k++){
+		  i_in = i*(nr*m)+(k*nr)+j;
+		  if(val[i_in] != tmp_md->multidval.missing_value.value.doubleval) {
+		    sum_val+= val[i_in];
+		    count = count +1;
+		  }
+		}
+		if(count != 1) {
+		  sum_val = sum_val/(double) count;
+		  sum_sqrd_val = 0;
+		  for(k = start; k < m; k++) {
+		    i_in = i*(nr*m)+(k*nr)+j;
+		    if(val[i_in] != tmp_md->multidval.missing_value.value.doubleval) {        
+		      sum_sqrd_val += (val[i_in] - sum_val) * (val[i_in] - sum_val);
+		    }
+		  }
+		  sum_sqrd_val /= (double)(count-1);
+		  sum_sqrd_val = sqrt(sum_sqrd_val);
+		} else {
+		  sum_sqrd_val = 0.0;
+		}
+/*
+ * Set to appropriate type for output.
+ */
+		if(out_data_type == NCL_double) {
+		  ((double*)out_val)[i_out] = sum_sqrd_val;
+		} else {
+		  ((float*)out_val)[i_out] = (float)sum_sqrd_val;
+		}
+	      }
+	    }
+	  }
+	  if(out_data_type != NCL_double) {
+	    missing.floatval = (float)missing.doubleval;
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       &missing,
+			       out_data_type,
+			       0);
+	  NclFree(dimsizes);
+	  if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
+	  return(ret);
+	} else {
+/*
+ * The input variable doesn't contain a _FillValue attribute, so we 
+ * can proceed without worrying about missing values.
+ */
+	  for(i = 0; i < nl ; i++) {
+	    for(j = 0; j < nr ; j++) {
+	      i_out = i*nr + j;
+	      sum_val = val[i*(nr*m)+j];   /* k = 0 */
+	      for(k = 1; k< m; k++) {
+		i_in = i*(nr*m)+(k*nr)+j;
+		sum_val += val[i_in];
+	      }
+	      sum_val = sum_val/(double)m;
+	      sum_sqrd_val = 0;
+	      for(k = 0; k< m; k++) {
+		i_in = i*(nr*m)+(k*nr)+j;
+		sum_sqrd_val += (val[i_in] - sum_val) * (val[i_in] - sum_val);
+	      }
+	      sum_sqrd_val /= (double)(m-1);
+	      sum_sqrd_val = sqrt(sum_sqrd_val);
+	      if(out_data_type == NCL_double) {
+		((double*)out_val)[i_out] = sum_sqrd_val;
+	      } else {
+		((float*)out_val)[i_out] = (float)sum_sqrd_val;
+	      }
+	    }	
+	  }
+	  ret = NclReturnValue(
+			       out_val,
+			       nd,
+			       dimsizes,
+			       NULL,
+			       out_data_type,
+			       0);
+	  NclFree(dimsizes);
+	  if(did_coerce) _NclDestroyObj((NclObj)tmp_md);
+	  return(ret);
+	}
 }
 
 NhlErrorTypes _NclIstddev
