@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.199 2009-03-11 23:51:22 shea Exp $
+;      $Id: contributed.ncl,v 1.200 2009-03-16 03:23:36 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -269,6 +269,52 @@ begin
                 end if
             end  do
         end if
+  end if
+end
+;************************************************************
+; M. Haley
+; Copy the coordinate variables from one variable to another,
+;    except for the indicated dimension.  
+; Used internally, based on copy_VarCoords_1
+
+undef ("copy_VarCoords_n")
+procedure copy_VarCoords_n(var_from,var_to,narg[1]:integer)  
+local dimt, dimf, rfrom, rto, i, dName
+begin                      
+
+  dimf  = dimsizes(var_from)            
+  dimt  = dimsizes(var_to)
+  rfrom = dimsizes(dimf)      ; rank of var_from
+  rto   = dimsizes(dimt)      ; rank of var_to
+
+;  if(narg .ge. rto)
+;     print("ERROR: copy_VarCoords_n: input dimension argument not valid.")
+;  end if
+
+  dName = getvardims(var_from)               ; Oct 18, 2005
+
+  if (.not.all(ismissing(dName))) then
+       ;if (rto.eq.(rfrom-1)) then
+                do i = 0,narg-1            ; do not use narg-th dimension
+                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
+                        var_to!i = var_from!i
+                        if(iscoord(var_from,var_from!i))
+                                var_to&$var_to!i$ = var_from&$var_from!i$
+                        end if
+                   end if
+                end  do
+                do i = narg+1,rfrom-1       ; do not use narg-th dimension
+                   i1 = i-1
+                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i1)) then  
+                        var_to!i1 = var_from!i
+                        if(iscoord(var_from,var_from!i))
+                                var_to&$var_to!i1$ = var_from&$var_from!i$
+                        end if
+                   end if
+                end  do
+       ;else
+       ;        print("ERROR: copy_VarCoords_n: rank problem")
+       ;end if
   end if
 end
 ;****************************************
@@ -1923,7 +1969,7 @@ end
 ; D. Shea
 ; Compute a dimension average of "x" [x may have many dimensions]
 ; return with one less dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 
 
@@ -1934,8 +1980,6 @@ begin
 
  xave = dim_avg(x)          ; arithmetic ave [no meta data]
  
- copy_VarAtts (x, xave)     ; copy attributes
-                            ; copy dim  names and coord  variables
  dimx = dimsizes(x)         ; size of each dimension
  Ndx  = dimsizes(dimx)      ; number of dimensions
  copy_VarCoords_1 (x, xave) ; one less dimension 
@@ -1950,10 +1994,37 @@ begin
  return (xave)
 end
 ; *******************************************************************
+; M. Haley
+; Compute a dimension average of "x" [x may have many dimensions]
+; return with one less dimension. Based on dim_avg_Wrap.
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do average across
+
+undef ("dim_avg_n_Wrap")
+function dim_avg_n_Wrap (x:numeric,narg[1]:integer)
+local xave
+begin
+
+ xave = dim_avg_n(x,narg)   ; arithmetic ave [no meta data]
+ 
+ copy_VarAtts (x, xave)     ; copy attributes
+                            ; copy dim names and coord variables
+ copy_VarCoords_n (x, xave, narg)      ; one less dimension 
+                                       ; add an extra attribute
+ if (.not.ismissing(x!narg)) then   
+      xave@average_op_ncl= "dim_avg_n over dimension: "+x!narg
+ else
+      xave@average_op_ncl= "dim_avg_n function was applied"
+ end if
+ 
+ return (xave)
+end
+; *******************************************************************
 ; D. Shea
 ; Compute a wgted average of the rightmost dimension of "x" 
 ; return with one less dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 
 undef ("dim_avg_wgt_Wrap")
@@ -1978,11 +2049,40 @@ begin
  
  return (xave)
 end
+
+; *******************************************************************
+; M. Haley
+; Compute a wgted average of the narg-th dimension of "x" 
+; return with one less dimension. Based on dim_avg_wgt_Wrap.
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do wgted average across
+
+undef ("dim_avg_wgt_n_Wrap")
+function dim_avg_wgt_n_Wrap (x:numeric, w[*]:numeric, opt[1]:integer, \
+                             narg[1]:integer)
+local xave
+begin
+
+ xave = dim_avg_wgt_n(x,w,opt,narg); weighted ave [no meta data]
+ 
+ copy_VarAtts (x, xave)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ copy_VarCoords_n (x, xave, narg)      ; one less dimension 
+                                       ; add an extra attribute
+ if (.not.ismissing(x!narg)) then   
+      xave@average_op_ncl= "dim_avg_wgt_n over dimension: "+x!narg
+ else
+      xave@average_op_ncl= "dim_avg_wgt_n function was applied"
+ end if
+ 
+ return (xave)
+end
 ; *******************************************************************
 ; D. Shea
 ; Compute a dimension variance of "x" [x may have many dimensions]
 ; return with one less dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 
 
@@ -2009,10 +2109,37 @@ begin
  return (xvar)
 end
 ; *******************************************************************
+; M. Haley
+; Compute a dimension variance of "x" [x may have many dimensions]
+; return with one less dimension. Based on dim_variance_Wrap
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do variance across
+
+undef ("dim_variance_n_Wrap")
+function dim_variance_n_Wrap (x:numeric, narg[1]:integer)
+local xvar
+begin
+
+ xvar = dim_variance_n(x,narg)     ; arithmetic ave [no meta data]
+ 
+ copy_VarAtts (x, xvar)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ copy_VarCoords_n (x, xvar, narg) ; one less dimension 
+                                       ; add an extra attribute
+ if (.not.ismissing(x!narg)) then   
+      xvar@variance_op_ncl= "dim_variance_n over dimension: "+x!narg
+ else
+      xvar@variance_op_ncl= "dim_variance_n function was applied"
+ end if
+ 
+ return (xvar)
+end
+; *******************************************************************
 ; D. Shea
 ; Compute a dimension standard dev of "x" [x may have many dimensions]
 ; return with one less dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 
 
@@ -2039,10 +2166,37 @@ begin
  return (xstd)
 end
 ; *******************************************************************
+; M. Haley
+; Compute a dimension standard dev of "x" [x may have many dimensions]
+; return with one less dimension. Based on dim_stddev_Wrap
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do sum across
+
+undef ("dim_stddev_n_Wrap")
+function dim_stddev_n_Wrap (x:numeric,narg[1]:integer)
+local xstd
+begin
+
+ xstd = dim_stddev_n(x,narg); arithmetic ave [no meta data]
+ 
+ copy_VarAtts (x, xstd)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ copy_VarCoords_n (x, xstd, narg) ; one less dimension 
+                                  ; add an extra attribute
+ if (.not.ismissing(x!narg)) then   
+      xstd@stddev_op_ncl= "dim_stddev over dimension: "+x!narg
+ else
+      xstd@stddev_op_ncl= "dim_stddev function was applied"
+ end if
+ 
+ return (xstd)
+end
+; *******************************************************************
 ; D. Shea
 ; Compute a dimension sum of "x" [x may have many dimensions]
 ; return with one less dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 
 
@@ -2069,10 +2223,38 @@ begin
  return (xsum)
 end
 ; *******************************************************************
+; M. Haley
+; Compute a dimension sum of "x" [x may have many dimensions]
+; return with one less dimension. Based on dim_sum_Wrap.
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do sum across
+
+undef ("dim_sum_n_Wrap")
+function dim_sum_n_Wrap (x:numeric,narg[1]:integer)
+local xsum
+begin
+
+ xsum = dim_sum_n(x,narg)   ; arithmetic sum [no meta data]
+ 
+ copy_VarAtts (x, xsum)     ; copy attributes
+                            ; copy dim names and coord variables
+ copy_VarCoords_n (x, xsum, narg)      ; one less dimension 
+                                       ; add an extra attribute
+ if (.not.ismissing(x!narg)) then   
+      xsum@sum_op_ncl= "dim_sum_n over dimension: "+x!narg
+ else
+      xsum@sum_op_ncl= "dim_sum_n function was applied"
+ end if
+ 
+ return (xsum)
+end
+
+; *******************************************************************
 ; D. Shea
 ; Compute a dimension sum of "x" [x may have many dimensions]
 ; return with one less dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 
 
@@ -2099,9 +2281,37 @@ begin
  return (xsum)
 end
 ; *******************************************************************
+; M. Haley
+; Compute a dimension wgted sum of "x" [x may have many dimensions]
+; return with one less dimension. Based on dim_sum_wgt_Wrap
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do calculation on
+
+undef ("dim_sum_wgt_n_Wrap")
+function dim_sum_wgt_n_Wrap (x:numeric, w[*]:numeric, opt[1]:integer, \
+                            narg[1]:numeric )  
+local xsum
+begin
+
+ xsum = dim_sum_wgt_n(x, w, opt, narg) ; arithmetic weighted  sum 
+ 
+ copy_VarAtts (x, xsum)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ copy_VarCoords_n (x, xsum, narg) ; one less dimension 
+                                       ; add an extra attribute
+ if (.not.ismissing(x!narg)) then   
+      xsum@sum_op_ncl= "dim_sum_wgt_n over dimension: "+x!narg
+ else
+      xsum@sum_op_ncl= "dim_sum_wgt_n function was applied"
+ end if
+ 
+ return (xsum)
+end
+; *******************************************************************
 ; D. Shea
 ; Remove means of each rightmost dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 ;
 undef ("dim_rmvmean_Wrap")
@@ -2130,9 +2340,40 @@ begin
  return (xAnom)
 end
 ; *******************************************************************
+; M. Haley
+; Remove means of all but the narg-th dimension.
+;      Based on dim_rmvmean_n_Wrap
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do calculation on
+
+undef ("dim_rmvmean_n_Wrap")
+function dim_rmvmean_n_Wrap (x:numeric,narg[1]:integer)
+local xAnom
+begin
+
+ xAnom = dim_rmvmean_n(x,narg)
+ copy_VarAtts(x, xAnom)
+ copy_VarCoords(x, xAnom)
+ 
+ if (isatt(x,"long_name")) then
+     xAnom@long_name = "Anomalies: "+getLongName(x)
+ else
+     xAnom@long_name = "Deviation from mean"
+ end if
+ 
+ if (.not.ismissing(x!narg)) then   
+      xAnom@rmvmean_op_NCL= "dim_rmvmean over dimension: "+x!narg
+ else
+      xAnom@rmvmean_op_NCL= "dim_rmvmean function was applied"
+ end if
+
+ return (xAnom)
+end
+; *******************************************************************
 ; D. Shea
 ; Standardize by the st. dev of each rightmost dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 
 
@@ -2155,11 +2396,37 @@ begin
  return (xStd)
 end
 
+; *******************************************************************
+; M. Haley
+; Standardize by the st. dev of each narg-th dimension
+;    Based on dim_standardize_Wrap
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; narg - dimension to do calculation on
+
+
+undef ("dim_standardize_n_Wrap")
+function dim_standardize_n_Wrap (x:numeric, opt:integer, narg[1]:integer)
+local xStd
+begin
+
+ xStd = x
+ xStd = dim_standardize_n(x, opt, narg)
+ 
+ if (.not.ismissing(x!narg)) then   
+      xStd@standardize_op_ncl= "dim_standardize_n over dimension: "+x!narg
+ else
+      xStd@standardize_op_ncl= "dim_standardize_n function was applied"
+ end if
+ 
+ return (xStd)
+end
+
 ;**********************************************************
 ; D. Shea
 ; Compute average root-mean-square-difference between "x" and "y" 
 ; return with one less dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x,y    - 1D or multidimensional variables (must have same size) 
 
 undef ("dim_rmsd_Wrap")
@@ -2196,10 +2463,51 @@ begin
  end if
  
 end
+;**********************************************************
+; M. Haley
+; Compute average root-mean-square-difference between "x" and "y" 
+;      Based on dim_rmsd_Wrap
+; return with one less dimension
+; Copies over all the attributes and coordinate variables
+; x,y    - 1D or multidimensional variables (must have same size) 
+; narg - dimension to do calculation on
+
+undef ("dim_rmsd_n_Wrap")
+function dim_rmsd_n_Wrap (x:numeric, y:numeric, narg[1]:integer)
+local xrmsd, dimx, dimy
+begin
+ dimx  = dimsizes(x)
+ dimy  = dimsizes(y)
+ if (all(dimx.eq.dimy)) then
+
+     xrmsd = dim_rmsd_n(x,y,narg)     ; rmsd values only [no meta data]
+     
+     copy_VarAtts (x, xrmsd)    ; copy attributes
+     if (isatt(xrmsd,"long_name")) then
+         xrmsd@long_name = "RMSD: "+getLongName(x)
+     end if
+                                ; copy dim  names and coord  variables
+     copy_VarCoords_n (x, xrmsd, narg); one less dimension 
+                                           ; add an extra attribute
+     if (.not.ismissing(x!narg)) then   
+          xrmsd@rmsd_op_ncl= "dim_rmsd_n applied to dimension: "+x!narg
+     else
+          xrmsd@rmsd_op_ncl= "dim_rmsd_n function was applied "+Ndx1
+     end if
+
+     return (xrmsd)
+ else
+     print ("--------------------------------------------------------")
+     print ("---> dim_rmsd_n_Wrap: error: x,y dimension mismatch <---")
+     print ("--------------------------------------------------------")
+     exit
+ end if
+ 
+end
 ; *******************************************************************
 ; D. Shea
 ; returns cumulative sum of each rightmost dimension
-; Copies over all the attribures and coordinate variables
+; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 ; opt  - option argument, must be 0, 1, or 2
 ;
@@ -2209,6 +2517,32 @@ local xCumSum
 begin
 
  xCumSum = dim_cumsum(x,opt)
+ copy_VarAtts(x, xCumSum)
+ copy_VarCoords(x, xCumSum)
+ 
+ if (isatt(x,"long_name")) then
+     xCumSum@long_name = "Cumulative Sum: "+getLongName(x)
+ else
+     xCumSum@long_name = "Cumulative Sum"
+ end if
+ 
+ return (xCumSum)
+end
+; *******************************************************************
+; M. Haley
+; returns cumulative sum of each rightmost dimension
+;    Based on dim_cumsum_Wrap 
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; opt  - option argument, must be 0, 1, or 2
+; narg - dimension to do calculation on
+
+undef ("dim_cumsum_n_Wrap")
+function dim_cumsum_n_Wrap (x:numeric,opt:integer,narg[1]:integer)
+local xCumSum
+begin
+
+ xCumSum = dim_cumsum_n(x,opt,narg)
  copy_VarAtts(x, xCumSum)
  copy_VarCoords(x, xCumSum)
  
