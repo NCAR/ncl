@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.130 2009-03-13 18:43:00 dbrown Exp $
+ *      $Id: Execute.c,v 1.131 2009-03-16 21:20:01 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -413,6 +413,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	}
 
 
+	sel.dim_num = 0;
 	if(subs) {
 		data = _NclPop();
 		switch(data.u.sub_rec.sub_type) {
@@ -670,19 +671,26 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					int bad = 0;
 					struct _NclFVarRec *var_info = thefile->file.var_info[index];
 					if (first) { /* save the dimension sizes */
+						var_ndims = var_info->num_dimensions;
 						for (i = 0; i < var_info->num_dimensions; i++) {
 							var_dim_sizes[i] = thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size;
 						}
 						first = 0;
 					}
 					else {
-						for (i = 1; i < var_info->num_dimensions; i++) { /* dim 0 does not need to match */
-							if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
-								NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
-									  NrmQuarkToString(thefile->file.fpath));
-								bad = 1;
-								break;
-								
+						if (var_info->num_dimensions != var_ndims) {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension count for variable  does not conform to others in list; skipping file",
+								  NrmQuarkToString(thefile->file.fpath));
+							bad = 1;
+						}
+						else {
+							for (i = 1; i < var_info->num_dimensions; i++) { /* dim 0 does not need to match */
+								if (thefile->file.file_dim_info[var_info->file_dim_num[i]]->dim_size != var_dim_sizes[i]) {
+									NhlPError(NhlWARNING,NhlEUNKNOWN,"File %s dimension sizes do not conform to others in list; skipping file",
+										  NrmQuarkToString(thefile->file.fpath));
+									bad = 1;
+									break;
+								}
 							}
 						}
 					}
@@ -817,7 +825,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			}
 			_NclFreeSubRec(&data.u.sub_rec);
 		}
-		if (filevar_subs > var_ndims) {
+		if ((newlist->list.list_type & NCL_CONCAT) || (filevar_subs > var_ndims)) {
 			data =_NclPop();
 			switch(data.u.sub_rec.sub_type) {
 			case INT_VECT:
@@ -842,6 +850,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		 *  one of the endpoints in some cases.
                  *  Then get the count of the selected elements of the first dimension
 		 */
+		sel.dim_num = 0;
 		agg_sel_count = -1;
 		if (sel.sel_type == Ncl_VECSUBSCR) {
 			agg_sel_count = sel.u.vec.n_ind;
