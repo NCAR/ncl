@@ -534,7 +534,7 @@ begin
   dims = dimsizes(varin)
   nd = dimsizes(dims)
 
-  if ( unstagDim .eq. "X" ) then
+  if ( unstagDim .eq. "X" .or. unstagDim .eq. "U" ) then
     dimU = dims(nd-1)
     if ( nd .eq. 5 ) then
       varout = 0.5*(varin(:,:,:,:,:dimU-2) + varin(:,:,:,:,1:dimU-1))
@@ -558,7 +558,7 @@ begin
     varout@stagger = " "
   end if
 
-  if ( unstagDim .eq. "Y" ) then
+  if ( unstagDim .eq. "Y" .or. unstagDim .eq. "V" ) then
     dimV = dims(nd-2)
     if ( nd .eq. 5 ) then
       varout = 0.5*(varin(:,:,:,:dimV-2,:)+varin(:,:,:,1:dimV-1,:))
@@ -603,7 +603,7 @@ begin
     varout@stagger = " "
   end if
 
-  if( any( unstagDim .eq. (/"X","Y","Z"/) ) ) then
+  if( any( unstagDim .eq. (/"X","U","Y","V","Z"/) ) ) then
     return(varout) 
   else
     print("Warning: Input field was not unstaggered")
