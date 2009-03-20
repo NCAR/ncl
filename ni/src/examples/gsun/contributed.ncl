@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.202 2009-03-20 04:46:37 haley Exp $
+;      $Id: contributed.ncl,v 1.203 2009-03-20 15:47:24 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1321,17 +1321,17 @@ undef ("int2flt")
 function int2flt(i:integer)
 local dimi, fi
 begin
-  dimi = dimsizes(i)
-  fi   = new( dimi, "float")
-  fi   = i                    ; values + meta data
-  if (isatt(i,"_FillValue")) then
-      fi@_FillValue = i@_FillValue
-  else
-     delete(fi@_FillValue)
-  end if
-  return (fi)
+   dimi = dimsizes(i)
+   if (isatt(i,"_FillValue")) then
+     fi = new( dimi, "float", i@_FillValue)
+   else
+     fi = new( dimi, "float","No_FillValue")
+   end if
 
+   fi   = i                    ; values + meta data
+   return (fi)
 end
+
 
 ;*************************************************************
 ; D. Shea
