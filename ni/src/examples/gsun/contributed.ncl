@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.200 2009-03-16 03:23:36 haley Exp $
+;      $Id: contributed.ncl,v 1.201 2009-03-20 04:31:50 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -274,28 +274,25 @@ end
 ;************************************************************
 ; M. Haley
 ; Copy the coordinate variables from one variable to another,
-;    except for the indicated dimension.  
+;    except for the indicated dimension(s).  
 ; Used internally, based on copy_VarCoords_1
 
 undef ("copy_VarCoords_n")
-procedure copy_VarCoords_n(var_from,var_to,narg[1]:integer)  
-local dimt, dimf, rfrom, rto, i, dName
+procedure copy_VarCoords_n(var_from,var_to,dims[*]:integer)  
+local dimt, dimf, rfrom, rto, i, dName, ndims
 begin                      
 
   dimf  = dimsizes(var_from)            
   dimt  = dimsizes(var_to)
   rfrom = dimsizes(dimf)      ; rank of var_from
   rto   = dimsizes(dimt)      ; rank of var_to
-
-;  if(narg .ge. rto)
-;     print("ERROR: copy_VarCoords_n: input dimension argument not valid.")
-;  end if
+  ndims = dimsizes(dims)
 
   dName = getvardims(var_from)               ; Oct 18, 2005
 
   if (.not.all(ismissing(dName))) then
        ;if (rto.eq.(rfrom-1)) then
-                do i = 0,narg-1            ; do not use narg-th dimension
+                do i = 0,dims(0)-1            ; don't use dims' dimensions
                    if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
                         var_to!i = var_from!i
                         if(iscoord(var_from,var_from!i))
@@ -303,8 +300,8 @@ begin
                         end if
                    end if
                 end  do
-                do i = narg+1,rfrom-1       ; do not use narg-th dimension
-                   i1 = i-1
+                do i = dims(ndims-1)+1,rfrom-1  ; don't use dims' dimensions
+                   i1 = i-ndims
                    if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i1)) then  
                         var_to!i1 = var_from!i
                         if(iscoord(var_from,var_from!i))
@@ -1966,6 +1963,39 @@ begin
 end
 
 ; *******************************************************************
+; M. Haley
+; Constructs a string with dim names to return with the _Wrap fcns
+; str - name of function being used
+; val - variable containing possible dimension names
+; dims - dimensions whose dim names we want to use (if they exist)
+
+undef("dimWrapString")
+function dimWrapString(str[1]:string,val:numeric,dims[*]:integer)
+local any_valid_dims, i, strcat, dnames
+begin
+ dnames        = getvardims(val)
+ any_valid_dims = False
+ if(.not.all(ismissing(dnames))) then
+   strcat = str + " over dimension(s): "
+   do i=0,dimsizes(dims)-1
+     if(.not.ismissing(val!dims(i))) then   
+       if(.not.any_valid_dims) then
+         strcat = strcat + val!dims(i)
+         any_valid_dims = True
+       else
+         strcat = strcat + "," + val!dims(i)
+       end if
+      end if
+   end do
+ end if
+ if(any_valid_dims) then
+   return(strcat)
+ else
+   return(str + " function was applied")
+ end if
+end
+
+; *******************************************************************
 ; D. Shea
 ; Compute a dimension average of "x" [x may have many dimensions]
 ; return with one less dimension
@@ -1985,11 +2015,7 @@ begin
  copy_VarCoords_1 (x, xave) ; one less dimension 
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
- if (.not.ismissing(x!Ndx1)) then   
-      xave@average_op_ncl= "dim_avg over dimension: "+x!Ndx1
- else
-      xave@average_op_ncl= "dim_avg function was applied"
- end if
+ xave@average_op_ncl = dimWrapString("dim_avg",x,Ndx1)
  
  return (xave)
 end
@@ -1999,25 +2025,21 @@ end
 ; return with one less dimension. Based on dim_avg_Wrap.
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do average across
+; dims - dimension(s) to do average across
 
 undef ("dim_avg_n_Wrap")
-function dim_avg_n_Wrap (x:numeric,narg[1]:integer)
+function dim_avg_n_Wrap (x:numeric,dims[*]:integer)
 local xave
 begin
 
- xave = dim_avg_n(x,narg)   ; arithmetic ave [no meta data]
+ xave = dim_avg_n(x,dims)   ; arithmetic ave [no meta data]
  
  copy_VarAtts (x, xave)     ; copy attributes
                             ; copy dim names and coord variables
- copy_VarCoords_n (x, xave, narg)      ; one less dimension 
+ copy_VarCoords_n (x, xave, dims)
                                        ; add an extra attribute
- if (.not.ismissing(x!narg)) then   
-      xave@average_op_ncl= "dim_avg_n over dimension: "+x!narg
- else
-      xave@average_op_ncl= "dim_avg_n function was applied"
- end if
- 
+ xave@average_op_ncl = dimWrapString("dim_avg_n",x,dims)
+
  return (xave)
 end
 ; *******************************************************************
@@ -2041,41 +2063,33 @@ begin
  copy_VarCoords_1 (x, xave) ; one less dimension 
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
- if (.not.ismissing(x!Ndx1)) then   
-      xave@average_op_ncl= "dim_avg_wgt over dimension: "+x!Ndx1
- else
-      xave@average_op_ncl= "dim_avg_wgt function was applied"
- end if
+ xave@average_op_ncl =  dimWrapString("dim_avg_wgt",x,Ndx1)
  
  return (xave)
 end
 
 ; *******************************************************************
 ; M. Haley
-; Compute a wgted average of the narg-th dimension of "x" 
+; Compute a wgted average of the dims' dimensions of "x" 
 ; return with one less dimension. Based on dim_avg_wgt_Wrap.
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do wgted average across
+; dims - dimension(s) to do wgted average across
 
 undef ("dim_avg_wgt_n_Wrap")
 function dim_avg_wgt_n_Wrap (x:numeric, w[*]:numeric, opt[1]:integer, \
-                             narg[1]:integer)
+                             dims[*]:integer)
 local xave
 begin
 
- xave = dim_avg_wgt_n(x,w,opt,narg); weighted ave [no meta data]
+ xave = dim_avg_wgt_n(x,w,opt,dims); weighted ave [no meta data]
  
  copy_VarAtts (x, xave)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xave, narg)      ; one less dimension 
+ copy_VarCoords_n (x, xave, dims)
                                        ; add an extra attribute
- if (.not.ismissing(x!narg)) then   
-      xave@average_op_ncl= "dim_avg_wgt_n over dimension: "+x!narg
- else
-      xave@average_op_ncl= "dim_avg_wgt_n function was applied"
- end if
- 
+ xave@average_op_ncl = dimWrapString("dim_avg_wgt_n",x,dims)
+
  return (xave)
 end
 ; *******************************************************************
@@ -2100,11 +2114,7 @@ begin
  copy_VarCoords_1 (x, xvar) ; one less dimension 
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
- if (.not.ismissing(x!Ndx1)) then   
-      xvar@variance_op_ncl= "dim_variance over dimension: "+x!Ndx1
- else
-      xvar@variance_op_ncl= "dim_variance function was applied"
- end if
+ xvar@variance_op_ncl = dimWrapString("dim_variance",x,Ndx1)
  
  return (xvar)
 end
@@ -2114,25 +2124,21 @@ end
 ; return with one less dimension. Based on dim_variance_Wrap
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do variance across
+; dims - dimension(s) to do variance across
 
 undef ("dim_variance_n_Wrap")
-function dim_variance_n_Wrap (x:numeric, narg[1]:integer)
+function dim_variance_n_Wrap (x:numeric, dims[*]:integer)
 local xvar
 begin
 
- xvar = dim_variance_n(x,narg)     ; arithmetic ave [no meta data]
+ xvar = dim_variance_n(x,dims)     ; arithmetic ave [no meta data]
  
  copy_VarAtts (x, xvar)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xvar, narg) ; one less dimension 
+ copy_VarCoords_n (x, xvar, dims)
                                        ; add an extra attribute
- if (.not.ismissing(x!narg)) then   
-      xvar@variance_op_ncl= "dim_variance_n over dimension: "+x!narg
- else
-      xvar@variance_op_ncl= "dim_variance_n function was applied"
- end if
- 
+ xvar@variance_op_ncl = dimWrapString("dim_variance_n",x,dims)
+
  return (xvar)
 end
 ; *******************************************************************
@@ -2157,11 +2163,7 @@ begin
  copy_VarCoords_1 (x, xstd) ; one less dimension 
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
- if (.not.ismissing(x!Ndx1)) then   
-      xstd@stddev_op_ncl= "dim_stddev over dimension: "+x!Ndx1
- else
-      xstd@stddev_op_ncl= "dim_stddev function was applied"
- end if
+ xstd@stddev_op_ncl = dimWrapString("dim_stddev",x,Ndx1)
  
  return (xstd)
 end
@@ -2171,24 +2173,20 @@ end
 ; return with one less dimension. Based on dim_stddev_Wrap
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do sum across
+; dims - dimension(s) to do sum across
 
 undef ("dim_stddev_n_Wrap")
-function dim_stddev_n_Wrap (x:numeric,narg[1]:integer)
+function dim_stddev_n_Wrap (x:numeric,dims[*]:integer)
 local xstd
 begin
 
- xstd = dim_stddev_n(x,narg); arithmetic ave [no meta data]
+ xstd = dim_stddev_n(x,dims); arithmetic ave [no meta data]
  
  copy_VarAtts (x, xstd)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xstd, narg) ; one less dimension 
+ copy_VarCoords_n (x, xstd, dims) 
                                   ; add an extra attribute
- if (.not.ismissing(x!narg)) then   
-      xstd@stddev_op_ncl= "dim_stddev over dimension: "+x!narg
- else
-      xstd@stddev_op_ncl= "dim_stddev function was applied"
- end if
+ xstd@stddev_op_ncl = dimWrapString("dim_stddev_n",x,dims)
  
  return (xstd)
 end
@@ -2214,11 +2212,7 @@ begin
  copy_VarCoords_1 (x, xsum) ; one less dimension 
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
- if (.not.ismissing(x!Ndx1)) then   
-      xsum@sum_op_ncl= "dim_sum over dimension: "+x!Ndx1
- else
-      xsum@sum_op_ncl= "dim_sum function was applied"
- end if
+ xsum@sum_op_ncl = dimWrapString("dim_sum",x,Ndx1)
  
  return (xsum)
 end
@@ -2228,25 +2222,21 @@ end
 ; return with one less dimension. Based on dim_sum_Wrap.
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do sum across
+; dims - dimension(s) to do sum across
 
 undef ("dim_sum_n_Wrap")
-function dim_sum_n_Wrap (x:numeric,narg[1]:integer)
+function dim_sum_n_Wrap (x:numeric,dims[*]:integer)
 local xsum
 begin
 
- xsum = dim_sum_n(x,narg)   ; arithmetic sum [no meta data]
+ xsum = dim_sum_n(x,dims)   ; arithmetic sum [no meta data]
  
  copy_VarAtts (x, xsum)     ; copy attributes
                             ; copy dim names and coord variables
- copy_VarCoords_n (x, xsum, narg)      ; one less dimension 
+ copy_VarCoords_n (x, xsum, dims)
                                        ; add an extra attribute
- if (.not.ismissing(x!narg)) then   
-      xsum@sum_op_ncl= "dim_sum_n over dimension: "+x!narg
- else
-      xsum@sum_op_ncl= "dim_sum_n function was applied"
- end if
- 
+ xsum@sum_op_ncl = dimWrapString("dim_sum_n",x,dims)
+
  return (xsum)
 end
 
@@ -2272,11 +2262,7 @@ begin
  copy_VarCoords_1 (x, xsum) ; one less dimension 
                                        ; add an extra attribute
  Ndx1 = Ndx-1                          ; last dimension
- if (.not.ismissing(x!Ndx1)) then   
-      xsum@sum_op_ncl= "dim_sum_wgt over dimension: "+x!Ndx1
- else
-      xsum@sum_op_ncl= "dim_sum_wgt function was applied"
- end if
+ xsum@sum_op_ncl = dimWrapString("dim_sum_wgt",x,Ndx1)
  
  return (xsum)
 end
@@ -2286,25 +2272,21 @@ end
 ; return with one less dimension. Based on dim_sum_wgt_Wrap
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do calculation on
+; dims - dimension(s) to do calculation on
 
 undef ("dim_sum_wgt_n_Wrap")
 function dim_sum_wgt_n_Wrap (x:numeric, w[*]:numeric, opt[1]:integer, \
-                            narg[1]:numeric )  
+                            dims[*]:numeric )  
 local xsum
 begin
 
- xsum = dim_sum_wgt_n(x, w, opt, narg) ; arithmetic weighted  sum 
+ xsum = dim_sum_wgt_n(x, w, opt, dims) ; arithmetic weighted  sum 
  
  copy_VarAtts (x, xsum)     ; copy attributes
                             ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xsum, narg) ; one less dimension 
+ copy_VarCoords_n (x, xsum, dims) 
                                        ; add an extra attribute
- if (.not.ismissing(x!narg)) then   
-      xsum@sum_op_ncl= "dim_sum_wgt_n over dimension: "+x!narg
- else
-      xsum@sum_op_ncl= "dim_sum_wgt_n function was applied"
- end if
+ xsum@sum_op_ncl = dimWrapString("dim_sum_wgt_n",x,dims)
  
  return (xsum)
 end
@@ -2331,28 +2313,24 @@ begin
  
  dimx = dimsizes(x)
  Ndx  = dimsizes(dimx)      ; number of dimensions
- if (.not.ismissing(x!(Ndx-1))) then   
-      xAnom@rmvmean_op_NCL= "dim_rmvmean over dimension: "+x!(Ndx-1)
- else
-      xAnom@rmvmean_op_NCL= "dim_rmvmean function was applied"
- end if
+ xAnom@rmvmean_op_NCL = dimWrapString("dim_rmvmean",x,Ndx-1)
 
  return (xAnom)
 end
 ; *******************************************************************
 ; M. Haley
-; Remove means of all but the narg-th dimension.
+; Remove means of all but the dims' dimensions.
 ;      Based on dim_rmvmean_n_Wrap
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do calculation on
+; dims - dimension(s) to do calculation on
 
 undef ("dim_rmvmean_n_Wrap")
-function dim_rmvmean_n_Wrap (x:numeric,narg[1]:integer)
+function dim_rmvmean_n_Wrap (x:numeric,dims[*]:integer)
 local xAnom
 begin
 
- xAnom = dim_rmvmean_n(x,narg)
+ xAnom = dim_rmvmean_n(x,dims)
  copy_VarAtts(x, xAnom)
  copy_VarCoords(x, xAnom)
  
@@ -2361,12 +2339,8 @@ begin
  else
      xAnom@long_name = "Deviation from mean"
  end if
- 
- if (.not.ismissing(x!narg)) then   
-      xAnom@rmvmean_op_NCL= "dim_rmvmean over dimension: "+x!narg
- else
-      xAnom@rmvmean_op_NCL= "dim_rmvmean function was applied"
- end if
+   
+ xAnom@rmvmean_op_NCL = dimWrapString("dim_rmvmean_n",x,dims)
 
  return (xAnom)
 end
@@ -2383,41 +2357,42 @@ local xStd, dimx, Ndx
 begin
 
  xStd = x
- xStd = dim_standardize(x, opt)     
+ xStd = dim_standardize(x, opt)       ; arithmetic ave [no meta data]
  
- dimx = dimsizes(x)
+ copy_VarAtts (x, xStd)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ dimx = dimsizes(x)         ; size of each dimension
  Ndx  = dimsizes(dimx)      ; number of dimensions
- if (.not.ismissing(x!(Ndx-1))) then   
-      xStd@standardize_op_ncl= "dim_standardize over dimension: "+x!(Ndx-1)
- else
-      xStd@standardize_op_ncl= "dim_standardize function was applied"
- end if
+ copy_VarCoords_1 (x, xStd) ; one less dimension 
+                                       ; add an extra attribute
+ Ndx1 = Ndx-1                          ; last dimension
+ xStd@standardize_op_ncl = dimWrapString("dim_standardize",x,Ndx1)
  
  return (xStd)
 end
 
 ; *******************************************************************
 ; M. Haley
-; Standardize by the st. dev of each narg-th dimension
+; Standardize by the st. dev of each dims' dimensions
 ;    Based on dim_standardize_Wrap
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
-; narg - dimension to do calculation on
+; dims - dimension(s) to do calculation on
 
 
 undef ("dim_standardize_n_Wrap")
-function dim_standardize_n_Wrap (x:numeric, opt:integer, narg[1]:integer)
+function dim_standardize_n_Wrap (x:numeric, opt:integer, dims[*]:integer)
 local xStd
 begin
 
  xStd = x
- xStd = dim_standardize_n(x, opt, narg)
+ xStd = dim_standardize_n(x, opt, dims)
  
- if (.not.ismissing(x!narg)) then   
-      xStd@standardize_op_ncl= "dim_standardize_n over dimension: "+x!narg
- else
-      xStd@standardize_op_ncl= "dim_standardize_n function was applied"
- end if
+ copy_VarAtts (x, xStd)     ; copy attributes
+                            ; copy dim  names and coord  variables
+ copy_VarCoords_n (x, xStd, dims) 
+                                  ; add an extra attribute
+ xStd@standardize_op_ncl= dimWrapString("dim_standardize_n",x,dims)
  
  return (xStd)
 end
@@ -2448,11 +2423,7 @@ begin
      copy_VarCoords_1 (x, xrmsd); one less dimension 
                                            ; add an extra attribute
      Ndx1 = Ndx-1                          ; last dimension
-     if (.not.ismissing(x!Ndx1)) then   
-          xrmsd@rmsd_op_ncl= "dim_rmsd applied to dimension: "+x!Ndx1
-     else
-          xrmsd@rmsd_op_ncl= "dim_rmsd function was applied "+Ndx1
-     end if
+     xrmsd@rmsd_op_ncl = dimWrapString("dim_rmsd",x,Ndx1)
 
      return (xrmsd)
  else
@@ -2470,30 +2441,26 @@ end
 ; return with one less dimension
 ; Copies over all the attributes and coordinate variables
 ; x,y    - 1D or multidimensional variables (must have same size) 
-; narg - dimension to do calculation on
+; dims - dimension(s) to do calculation on
 
 undef ("dim_rmsd_n_Wrap")
-function dim_rmsd_n_Wrap (x:numeric, y:numeric, narg[1]:integer)
+function dim_rmsd_n_Wrap (x:numeric, y:numeric, dims[*]:integer)
 local xrmsd, dimx, dimy
 begin
  dimx  = dimsizes(x)
  dimy  = dimsizes(y)
  if (all(dimx.eq.dimy)) then
 
-     xrmsd = dim_rmsd_n(x,y,narg)     ; rmsd values only [no meta data]
+     xrmsd = dim_rmsd_n(x,y,dims)     ; rmsd values only [no meta data]
      
      copy_VarAtts (x, xrmsd)    ; copy attributes
      if (isatt(xrmsd,"long_name")) then
          xrmsd@long_name = "RMSD: "+getLongName(x)
      end if
                                 ; copy dim  names and coord  variables
-     copy_VarCoords_n (x, xrmsd, narg); one less dimension 
+     copy_VarCoords_n (x, xrmsd, dims)
                                            ; add an extra attribute
-     if (.not.ismissing(x!narg)) then   
-          xrmsd@rmsd_op_ncl= "dim_rmsd_n applied to dimension: "+x!narg
-     else
-          xrmsd@rmsd_op_ncl= "dim_rmsd_n function was applied "+Ndx1
-     end if
+     xrmsd@rmsd_op_ncl = dimWrapString("dim_rmsd_n",x,dims)
 
      return (xrmsd)
  else
@@ -2530,19 +2497,19 @@ begin
 end
 ; *******************************************************************
 ; M. Haley
-; returns cumulative sum of each rightmost dimension
+; returns cumulative sum at the given  dimension
 ;    Based on dim_cumsum_Wrap 
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 ; opt  - option argument, must be 0, 1, or 2
-; narg - dimension to do calculation on
+; dims - dimensions to do calculations on
 
 undef ("dim_cumsum_n_Wrap")
-function dim_cumsum_n_Wrap (x:numeric,opt:integer,narg[1]:integer)
+function dim_cumsum_n_Wrap (x:numeric,opt:integer,dims[1]:integer)
 local xCumSum
 begin
 
- xCumSum = dim_cumsum_n(x,opt,narg)
+ xCumSum = dim_cumsum_n(x,opt,dims)
  copy_VarAtts(x, xCumSum)
  copy_VarCoords(x, xCumSum)
  
