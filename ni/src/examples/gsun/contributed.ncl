@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.201 2009-03-20 04:31:50 haley Exp $
+;      $Id: contributed.ncl,v 1.202 2009-03-20 04:46:37 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2353,19 +2353,15 @@ end
 
 undef ("dim_standardize_Wrap")
 function dim_standardize_Wrap (x:numeric, opt:integer)     
-local xStd, dimx, Ndx
+local xStd, dimx, Ndx, Ndx1
 begin
 
- xStd = x
- xStd = dim_standardize(x, opt)       ; arithmetic ave [no meta data]
+ xStd = x                   ; copy metadata
+ xStd = dim_standardize(x, opt)
  
- copy_VarAtts (x, xStd)     ; copy attributes
-                            ; copy dim  names and coord  variables
  dimx = dimsizes(x)         ; size of each dimension
  Ndx  = dimsizes(dimx)      ; number of dimensions
- copy_VarCoords_1 (x, xStd) ; one less dimension 
-                                       ; add an extra attribute
- Ndx1 = Ndx-1                          ; last dimension
+ Ndx1 = Ndx-1               ; last dimension
  xStd@standardize_op_ncl = dimWrapString("dim_standardize",x,Ndx1)
  
  return (xStd)
@@ -2385,13 +2381,10 @@ function dim_standardize_n_Wrap (x:numeric, opt:integer, dims[*]:integer)
 local xStd
 begin
 
- xStd = x
+ xStd = x                   ; copy metadata
  xStd = dim_standardize_n(x, opt, dims)
  
- copy_VarAtts (x, xStd)     ; copy attributes
-                            ; copy dim  names and coord  variables
- copy_VarCoords_n (x, xStd, dims) 
-                                  ; add an extra attribute
+                            ; add an extra attribute
  xStd@standardize_op_ncl= dimWrapString("dim_standardize_n",x,dims)
  
  return (xStd)
