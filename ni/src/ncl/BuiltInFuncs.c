@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.235 2009-03-16 03:06:11 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.236 2009-03-20 02:01:32 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -9042,7 +9042,7 @@ NhlErrorTypes _Ncldim_product_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *narg;
+        int *dims, ndims;
 	int *dimsizes = NULL;
 	logical *tmp = NULL;
 	int i,j,k;
@@ -9052,9 +9052,9 @@ NhlErrorTypes _Ncldim_product_n
 	NclScalar missing;
 
 /*
- * Get dimension to do product across.
+ * Get dimensions to do product across.
  */
-	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 
 /*
  * Read data values off stack (or not)
@@ -9072,36 +9072,47 @@ NhlErrorTypes _Ncldim_product_n
 		return(NhlFATAL);
 
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_product_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_product_n: Invalid dimension sizes to do product across, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_product_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
 
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the product across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	nr = nl = 1;
-	m  = tmp_md->multidval.dim_sizes[*narg];
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
-		for(i = 0; i < *narg ; i++) {
-			nl = nl*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
-		}
-		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
-			nr = nr*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
-		}
-		nd = tmp_md->multidval.n_dims-1;
+	  nd       = tmp_md->multidval.n_dims-ndims;
+	  dimsizes = NclMalloc(nd * sizeof(int));
+	  for(i = 0; i < dims[0] ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
+	  }
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
+	  }
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
-		*dimsizes = 1; 	
-		nd = 1;
+	  dimsizes = NclMalloc(sizeof(int));
+	  *dimsizes = 1;
+	  nd = 1;
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
 /*
@@ -9313,7 +9324,7 @@ NhlErrorTypes _Ncldim_sum_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *narg;
+        int *dims, ndims;
 	int *dimsizes = NULL;
 	logical *tmp = NULL;
 	int i,j,k;
@@ -9323,9 +9334,9 @@ NhlErrorTypes _Ncldim_sum_n
 	NclScalar missing;
 
 /*
- * Get dimension to do sum across.
+ * Get dimension(s) to do sum across.
  */
-	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 
 /*
  * Read data values off stack (or not)
@@ -9343,36 +9354,47 @@ NhlErrorTypes _Ncldim_sum_n
 		return(NhlFATAL);
 
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_n: Invalid dimension sizes to do sum across, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
 
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the sum across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	nr = nl = 1;
-	m  = tmp_md->multidval.dim_sizes[*narg];
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
-		for(i = 0; i < *narg ; i++) {
-			nl = nl*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
-		}
-		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
-			nr = nr*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
-		}
-		nd = tmp_md->multidval.n_dims-1;
+	  nd       = tmp_md->multidval.n_dims-ndims;
+	  dimsizes = NclMalloc(nd * sizeof(int));
+	  for(i = 0; i < dims[0] ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
+	  }
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
+	  }
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
-		*dimsizes = 1; 	
-		nd = 1;
+	  dimsizes = NclMalloc(sizeof(int));
+	  *dimsizes = 1;
+	  nd = 1;
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
 /*
@@ -9718,7 +9740,7 @@ NhlErrorTypes _Ncldim_cumsum_n
 	NclMultiDValData tmp_md = NULL;
 	NclMultiDValData opt_md = NULL;
 	void *out_val = NULL;
-	int *narg;
+	int *dims, ndims;
 	logical *tmp = NULL;
 	int i,j,k;
 	int sz;
@@ -9726,6 +9748,15 @@ NhlErrorTypes _Ncldim_cumsum_n
 	NclScalar *missing = NULL;
 	int opt;
 
+/*
+ * Get dimension(s) to do cumulative sum across.
+ *
+ * This function is set up to allow multiple input dimensions,
+ * but I don't think this function makes much sense in that 
+ * context, so I'm going to register it to only allow one
+ * input dimension.
+ */
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
@@ -9753,33 +9784,43 @@ NhlErrorTypes _Ncldim_cumsum_n
 	opt = *((int*)opt_md->multidval.val);
 
 /*
- * Get dimension to do cumulative sum across.
- *
- * Do some error checking to make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	narg = (int *)NclGetArgValue(2,3,NULL,NULL,NULL,NULL,NULL,2);
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_cumsum_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_cumsum_n: Invalid dimension sizes to do cumulative sum across, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_cumsum_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
-	m = tmp_md->multidval.dim_sizes[*narg];
 
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the cumsum across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	n = nr = nl = 1;
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-	  for(i = 0; i < *narg ; i++) {
+	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	  }
-	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
+	  }
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
 	    nr = nr*tmp_md->multidval.dim_sizes[i];
 	  }
+	} else {
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
+
 	tmp = (logical*)NclMalloc(sizeof(logical)*m);
 	sz = tmp_md->multidval.type->type_class.size;
 	out_val = (void*)NclMalloc(sz * tmp_md->multidval.totalelements);
@@ -10249,7 +10290,7 @@ NhlErrorTypes _Ncldim_avg_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-	int *narg; 
+	int *dims, ndims;
 	double sum_val ;
 	double *val = NULL;
 	int *dimsizes = NULL;
@@ -10265,9 +10306,9 @@ NhlErrorTypes _Ncldim_avg_n
 	int did_coerce = 0;
 
 /*
- * Get dimension to do average across.
+ * Get dimension(s) to do average across.
  */
-	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 /*
  * Read data values off stack (or not)
  */
@@ -10284,36 +10325,46 @@ NhlErrorTypes _Ncldim_avg_n
 		return(NhlFATAL);
 
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_n: Invalid dimension sizes to do average across, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
-
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the average across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	nl = nr = 1;
-	m  = tmp_md->multidval.dim_sizes[*narg];
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-	  dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
-	  for(i = 0; i < *narg ; i++) {
+	  nd       = tmp_md->multidval.n_dims-ndims;
+	  dimsizes = NclMalloc(nd * sizeof(int));
+	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
 	  }
-	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
-	    nr = nr*tmp_md->multidval.dim_sizes[i];
-	    dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
 	  }
-	  nd = tmp_md->multidval.n_dims-1;
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
+	  }
 	} else {
 	  dimsizes = NclMalloc(sizeof(int));
 	  *dimsizes = 1;
 	  nd = 1;
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
 /*
@@ -10520,7 +10571,7 @@ NhlErrorTypes _NclIdim_variance
 		out_data_type = NCL_float;
 		tmp_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 		if(tmp_md == NULL) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance_n: Could not coerce input data to double, can't continue");
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance: Could not coerce input data to double, can't continue");
 			return(NhlFATAL);
 		} else if(tmp_md->multidval.missing_value.has_missing) {
 			missing = tmp_md->multidval.missing_value.value;
@@ -10631,7 +10682,7 @@ NhlErrorTypes _NclIdim_variance_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *narg;
+	int *dims, ndims;
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
@@ -10648,9 +10699,9 @@ NhlErrorTypes _NclIdim_variance_n
 	int did_coerce = 0;
 
 /*
- * Get dimension to do average across.
+ * Get dimension(s) to do average across.
  */
-	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 
 /*
  * Read data values off stack (or not)
@@ -10668,36 +10719,47 @@ NhlErrorTypes _NclIdim_variance_n
 		return(NhlFATAL);
 
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance_n: Invalid dimension sizes to do average across, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_variance_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
 
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the average across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	nl = nr = 1;
-	m  = tmp_md->multidval.dim_sizes[*narg];
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-	  dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
-	  for(i = 0; i < *narg ; i++) {
+	  nd       = tmp_md->multidval.n_dims-ndims;
+	  dimsizes = NclMalloc(nd * sizeof(int));
+	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
 	  }
-	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
-	    nr = nr*tmp_md->multidval.dim_sizes[i];
-	    dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
 	  }
-	  nd = tmp_md->multidval.n_dims-1;
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
+	  }
 	} else {
 	  dimsizes = NclMalloc(sizeof(int));
 	  *dimsizes = 1;
 	  nd = 1;
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
 /*
@@ -11214,7 +11276,7 @@ NhlErrorTypes _NclIdim_stddev_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *narg;
+        int *dims, ndims;
 	double sum_val ;
 	double sum_sqrd_val ;
 	double *val = NULL;
@@ -11231,9 +11293,9 @@ NhlErrorTypes _NclIdim_stddev_n
 	int did_coerce = 0;
 
 /*
- * Get dimension to do average across.
+ * Get dimension(s) to do average across.
  */
-	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 
 /*
  * Read data values off stack (or not)
@@ -11251,36 +11313,46 @@ NhlErrorTypes _NclIdim_stddev_n
 		return(NhlFATAL);
 
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stddev_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stddev_n: Invalid dimension sizes to do average across, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stddev_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
-
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the average across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	nl = nr = 1;
-	m  = tmp_md->multidval.dim_sizes[*narg];
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-	  dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
-	  for(i = 0; i < *narg ; i++) {
+	  nd       = tmp_md->multidval.n_dims-ndims;
+	  dimsizes = NclMalloc(nd * sizeof(int));
+	  for(i = 0; i < dims[0] ; i++) {
 	    nl = nl*tmp_md->multidval.dim_sizes[i];
 	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
 	  }
-	  for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
-	    nr = nr*tmp_md->multidval.dim_sizes[i];
-	    dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
 	  }
-	  nd = tmp_md->multidval.n_dims-1;
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
+	  }
 	} else {
 	  dimsizes = NclMalloc(sizeof(int));
 	  *dimsizes = 1;
 	  nd = 1;
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
 /*
@@ -13131,7 +13203,7 @@ NhlErrorTypes _Ncldim_min_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *narg;
+        int *dims, ndims;
 	int *dimsizes = NULL;
 	logical *tmp = NULL;
 	logical result = 0;
@@ -13143,7 +13215,7 @@ NhlErrorTypes _Ncldim_min_n
 /*
  * Get dimension to do minimum across.
  */
-	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 
 /*
  * Read data values off stack (or not)
@@ -13159,38 +13231,47 @@ NhlErrorTypes _Ncldim_min_n
 	}
 	if(tmp_md == NULL)
 		return(NhlFATAL);
-
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_min_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_min_n: Invalid dimension sizes to take minimum of, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_min_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
-
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the minimum across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	nr = nl = 1;
-	m  = tmp_md->multidval.dim_sizes[*narg];
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
-		for(i = 0; i < *narg ; i++) {
-			nl = nl*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
-		}
-		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
-			nr = nr*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
-		}
-		nd = tmp_md->multidval.n_dims-1;
+	  nd       = tmp_md->multidval.n_dims-ndims;
+	  dimsizes = NclMalloc(nd * sizeof(int));
+	  for(i = 0; i < dims[0] ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
+	  }
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
+	  }
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
-		*dimsizes = 1; 	
-		nd = 1;
+	  dimsizes = NclMalloc(sizeof(int));
+	  *dimsizes = 1;
+	  nd = 1;
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
 /*
@@ -13420,7 +13501,7 @@ NhlErrorTypes _Ncldim_max_n
 	NhlErrorTypes ret = NhlNOERROR;
 	NclMultiDValData tmp_md = NULL;
 	void *out_val = NULL;
-        int *narg;
+        int *dims, ndims;
 	int *dimsizes = NULL;
 	logical *tmp = NULL;
 	logical result = 0;
@@ -13432,7 +13513,7 @@ NhlErrorTypes _Ncldim_max_n
 /*
  * Get dimension to do maximum across.
  */
-	narg = (int *)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
 
 /*
  * Read data values off stack (or not)
@@ -13450,38 +13531,49 @@ NhlErrorTypes _Ncldim_max_n
 		return(NhlFATAL);
 
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-	if(*narg < 0 || *narg >= tmp_md->multidval.n_dims) {
-	  NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_max_n: Invalid dimension argument, can't continue");
-	  return(NhlFATAL);
+	for(i = 0; i < ndims; i++ ) {
+	  if(dims[i] < 0 || dims[i] >= tmp_md->multidval.n_dims) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_max_n: Invalid dimension sizes to take maximum across, can't continue");
+	    return(NhlFATAL);
+	  }
+	  if(i > 0 && dims[i] != (dims[i-1]+1)) {
+	    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_max_n: Input dimension sizes must be monotonically increasing, can't continue");
+	    return(NhlFATAL);
+	  }
 	}
-
 /*
- * Calculate size of leftmost dimensions up to the narg-th dimension (nl).
- * Calculate size of rightmost from the narg-th dimension (nr).
+ * Calculate size of leftmost dimensions (nl) up to the dims[0]-th
+ *   dimensions.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   ndims[ndims-1]-th dimension
  *
- * The dimension to do the maximum across is "narg".
+ * The dimension(s) to do the average across are "dims".
  */
-	nr = nl = 1;
-	m  = tmp_md->multidval.dim_sizes[*narg];
+	nl = nr = m = 1;
 	if(tmp_md->multidval.n_dims > 1) {
-		dimsizes = NclMalloc((tmp_md->multidval.n_dims -1) * sizeof(int));
-		for(i = 0; i < *narg ; i++) {
-			nl = nl*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i] = tmp_md->multidval.dim_sizes[i];
-		}
-		for(i = *narg+1; i < tmp_md->multidval.n_dims; i++) {
-			nr = nr*tmp_md->multidval.dim_sizes[i];
-			dimsizes[i-1] = tmp_md->multidval.dim_sizes[i];
-		}
-		nd = tmp_md->multidval.n_dims-1;
+	  nd       = tmp_md->multidval.n_dims-ndims;
+	  dimsizes = NclMalloc(nd * sizeof(int));
+	  for(i = 0; i < dims[0] ; i++) {
+	    nl = nl*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i] = tmp_md->multidval.dim_sizes[i];
+	  }
+	  for(i = 0; i < ndims ; i++) {
+	    m = m*tmp_md->multidval.dim_sizes[dims[i]];
+	  }
+	  for(i = dims[ndims-1]+1; i < tmp_md->multidval.n_dims; i++) {
+	    nr = nr*tmp_md->multidval.dim_sizes[i];
+	    dimsizes[i-ndims] = tmp_md->multidval.dim_sizes[i];
+	  }
 	} else {
-		dimsizes = NclMalloc(sizeof(int));
-		*dimsizes = 1; 	
-		nd = 1;
+	  dimsizes = NclMalloc(sizeof(int));
+	  *dimsizes = 1;
+	  nd = 1;
+	  m  = tmp_md->multidval.dim_sizes[dims[0]];
 	}
 	n = nr * nl;
+
 /*
  * "tmp" will be used to store locations where "m" chunks of the data
  * are equal to missing.

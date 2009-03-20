@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.84 2009-03-16 03:06:11 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.85 2009-03-20 02:01:32 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1440,7 +1440,7 @@ void _NclAddBuiltIns
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
 	NclRegisterFunc(_Ncldim_product_n,args,"dim_product_n",nargs);
 
 	nargs = 0;
@@ -1452,7 +1452,7 @@ void _NclAddBuiltIns
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
 	NclRegisterFunc(_Ncldim_sum_n,args,"dim_sum_n",nargs);
 
 	nargs = 0;
@@ -1495,8 +1495,7 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
-	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_avg_n,args,"dim_avg_n",nargs);
 
 	nargs = 0;
@@ -1581,7 +1580,7 @@ void _NclAddBuiltIns
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_max_n,args,"dim_max_n",nargs);
 
 	nargs = 0;
@@ -1593,7 +1592,7 @@ void _NclAddBuiltIns
 	args = NewArgs(2);
 	SetArgTemplate(args,nargs,"numeric",0,NclANY); nargs++;
 	dimsizes[0] = 1;
-	SetArgTemplate(args,nargs,"integer",1,dimsizes); nargs++;
+	SetArgTemplate(args,nargs,"integer",1,NclANY); nargs++;
 	NclRegisterFunc( _Ncldim_min_n,args,"dim_min_n",nargs);
 
 	nargs = 0;
@@ -1747,7 +1746,7 @@ void _NclAddBuiltIns
 	args = NewArgs(2);
 	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
         dimsizes[0] = 1; 
-	SetArgTemplate(args,1,"integer",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
 	NclRegisterFunc(_NclIdim_variance_n,args,"dim_variance_n",nargs);
 
 	nargs = 0;
@@ -1764,7 +1763,7 @@ void _NclAddBuiltIns
 	args = NewArgs(2);
 	SetArgTemplate(args,0,"numeric",0,NclANY);nargs++;
         dimsizes[0] = 1;
-	SetArgTemplate(args,1,"integer",1,dimsizes);nargs++;
+	SetArgTemplate(args,1,"integer",1,NclANY);nargs++;
 	NclRegisterFunc(_NclIdim_stddev_n,args,"dim_stddev_n",nargs);
 
 	nargs = 0;
