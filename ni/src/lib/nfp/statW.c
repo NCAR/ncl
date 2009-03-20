@@ -1057,7 +1057,7 @@ NhlErrorTypes dim_median_n_W( void )
  * Input array variables
  */
   void *x;
-  int *narg;
+  int *dims, ndims;
   double *tmp_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
@@ -1087,40 +1087,51 @@ NhlErrorTypes dim_median_n_W( void )
            &has_missing_x,
            &type_x,
            2);
-  narg = (int*)NclGetArgValue(
+  dims = (int*)NclGetArgValue(
            1,
            2,
            NULL,
-           NULL,
+           &ndims,
            NULL,
            NULL,
            NULL,
            2);
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-  if(*narg < 0 || *narg >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median_n: Invalid dimension argument, can't continue");
-    return(NhlFATAL);
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median_n: Invalid dimension sizes to do median across, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_median_n: Input dimension sizes must be monotonically increasing, can't continue");
+      return(NhlFATAL);
+    }
   }
 
 /*
  * Compute the total number of elements in output and input.
+ *
+ * The dimension(s) to do the median across are "dims".
  */
-  ndims_median = max(ndims_x-1,1);
+  ndims_median = max(ndims_x-ndims,1);
   dsizes_median[0] = 1;
 
-  total_nl = total_nr = total_elements = 1;
-  for(i = 0; i < *narg;   i++) {
+  npts = total_nl = total_nr = total_elements = 1;
+  for(i = 0; i < dims[0];   i++) {
     total_nl *= dsizes_x[i];
     dsizes_median[i] = dsizes_x[i];
   }
-  for(i = *narg+1; i < ndims_x; i++) {
+  for(i = 0; i < ndims ; i++) {
+    npts = npts*dsizes_x[dims[i]];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
-    dsizes_median[i-1] = dsizes_x[i];
+    dsizes_median[i-ndims] = dsizes_x[i];
   }
   total_elements = total_nr * total_nl;
-  npts           = dsizes_x[*narg];
+
 /*
  * Coerce missing values, if any.
  */
@@ -1319,7 +1330,7 @@ NhlErrorTypes dim_rmvmean_n_W( void )
  * Input array variables
  */
   void *x;
-  int *narg;
+  int *dims, ndims;
   double *tmp_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
@@ -1347,34 +1358,45 @@ NhlErrorTypes dim_rmvmean_n_W( void )
            &has_missing_x,
            &type_x,
            2);
-  narg = (int*)NclGetArgValue(
+  dims = (int*)NclGetArgValue(
            1,
            2,
            NULL,
-           NULL,
+           &ndims,
            NULL,
            NULL,
            NULL,
            2);
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-  if(*narg < 0 || *narg >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean_n: Invalid dimension argument, can't continue");
-    return(NhlFATAL);
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean_n: Invalid dimension sizes to remove mean across, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmean_n: Input dimension sizes must be monotonically increasing, can't continue");
+      return(NhlFATAL);
+    }
   }
+
 
 /*
  * Compute the total number of elements in output and input.
+ *
+ * The dimension(s) to remove the mean from are "dims".
  */
-  total_nl = total_nr = total_elements = 1;
-  for(i = 0; i < *narg; i++) {
+  npts = total_nl = total_nr = total_elements = 1;
+  for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
   }
-  for(i = *narg+1; i < ndims_x; i++) {
+  for(i = 0; i < ndims ; i++) {
+    npts = npts*dsizes_x[dims[i]];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
   }
-  npts           = dsizes_x[*narg];
   total_elements = total_nr * total_nl;
   total_size_x   = total_elements * npts;
 
@@ -1581,7 +1603,7 @@ NhlErrorTypes dim_rmvmed_n_W( void )
  * Input array variables
  */
   void *x;
-  int *narg;
+  int *dims, ndims;
   double *tmp_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
@@ -1609,34 +1631,44 @@ NhlErrorTypes dim_rmvmed_n_W( void )
            &has_missing_x,
            &type_x,
            2);
-  narg = (int*)NclGetArgValue(
+  dims = (int*)NclGetArgValue(
            1,
            2,
            NULL,
-           NULL,
+           &ndims,
            NULL,
            NULL,
            NULL,
            2);
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-  if(*narg < 0 || *narg >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed_n: Invalid dimension argument, can't continue");
-    return(NhlFATAL);
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed_n: Invalid dimension sizes to remove median from, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmvmed_n: Input dimension sizes must be monotonically increasing, can't continue");
+      return(NhlFATAL);
+    }
   }
 
 /*
- * Compute the total number of elements.
+ * Compute the total number of elements in output and input.
+ *
+ * The dimension(s) to remove the median from are "dims".
  */
-  total_nl = total_nr = total_elements = 1;
-  for(i = 0; i < *narg; i++) {
+  npts = total_nl = total_nr = total_elements = 1;
+  for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
   }
-  for(i = *narg+1; i < ndims_x; i++) {
+  for(i = 0; i < ndims ; i++) {
+    npts = npts*dsizes_x[dims[i]];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
   }
-  npts           = dsizes_x[*narg];
   total_elements = total_nr * total_nl;
   total_size_x   = total_elements * npts;
 
@@ -1853,7 +1885,7 @@ NhlErrorTypes dim_standardize_n_W( void )
  * Input array variables
  */
   void *x;
-  int *narg;
+  int *dims, ndims;
   double *tmp_x;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
@@ -1894,34 +1926,44 @@ NhlErrorTypes dim_standardize_n_W( void )
            NULL,
            NULL,
            2);
-  narg = (int*)NclGetArgValue(
+  dims = (int*)NclGetArgValue(
            2,
            3,
            NULL,
-           NULL,
+           &ndims,
            NULL,
            NULL,
            NULL,
            2);
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-  if(*narg < 0 || *narg >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_standardize_n: Invalid dimension argument, can't continue");
-    return(NhlFATAL);
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_standardize_n: Invalid dimension sizes to do standardization across, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_standardize_n: Input dimension sizes must be monotonically increasing, can't continue");
+      return(NhlFATAL);
+    }
   }
 
 /*
- * Compute the total number of elements.
+ * Compute the total number of elements in output and input.
+ *
+ * The dimension(s) to do the standardize across.
  */
-  total_nl = total_nr = total_elements = 1;
-  for(i = 0; i < *narg; i++) {
+  npts = total_nl = total_nr = total_elements = 1;
+  for(i = 0; i < dims[0]; i++) {
     total_nl *= dsizes_x[i];
   }
-  for(i = *narg+1; i < ndims_x; i++) {
+  for(i = 0; i < ndims ; i++) {
+    npts = npts*dsizes_x[dims[i]];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
   }
-  npts           = dsizes_x[*narg];
   total_elements = total_nr * total_nl;
   total_size_x   = total_elements * npts;
 
@@ -2198,7 +2240,7 @@ NhlErrorTypes dim_rmsd_n_W( void )
  * Output array variables
  */
   void *rmsd;
-  int *narg;
+  int *dims, ndims;
   double *tmp_rmsd;
   int dsizes_rmsd[NCL_MAX_DIMENSIONS];
   int nptused, ndims_rmsd;
@@ -2244,41 +2286,50 @@ NhlErrorTypes dim_rmsd_n_W( void )
     }
   }
 
-  narg = (int*)NclGetArgValue(
+  dims = (int*)NclGetArgValue(
            2,
            3,
            NULL,
-           NULL,
+           &ndims,
            NULL,
            NULL,
            NULL,
            2);
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-  if(*narg < 0 || *narg >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd_n: Invalid dimension argument, can't continue");
-    return(NhlFATAL);
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd_n: Invalid dimension sizes to calculate root-mean-square-difference across, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_rmsd_n: Input dimension sizes must be monotonically increasing, can't continue");
+      return(NhlFATAL);
+    }
   }
-
 
 /*
  * Compute the total number of elements in output and input.
+ *
+ * The dimension(s) to do the rmsd across are "dims".
  */
-  ndims_rmsd = max(ndims_x-1,1);
+  ndims_rmsd = max(ndims_x-ndims,1);
   dsizes_rmsd[0] = 1;
 
-  total_nl = total_nr = total_elements = 1;
-  for(i = 0; i < *narg;   i++) {
+  npts = total_nl = total_nr = total_elements = 1;
+  for(i = 0; i < dims[0];   i++) {
     total_nl *= dsizes_x[i];
     dsizes_rmsd[i] = dsizes_x[i];
   }
-  for(i = *narg+1; i < ndims_x; i++) {
+  for(i = 0; i < ndims ; i++) {
+    npts = npts*dsizes_x[dims[i]];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_x; i++) {
     total_nr *= dsizes_x[i];
-    dsizes_rmsd[i-1] = dsizes_x[i];
+    dsizes_rmsd[i-ndims] = dsizes_x[i];
   }
   total_elements = total_nr * total_nl;
-  npts           = dsizes_x[*narg];
 
 /*
  * Coerce missing values, if any.
@@ -3106,7 +3157,7 @@ NhlErrorTypes dim_num_W( void)
 NhlErrorTypes dim_num_n_W( void)
 {
   logical *input_var;
-  int *narg;
+  int *dims, ndims;
   int ndims_input, dsizes_input[NCL_MAX_DIMENSIONS];
   void *dim_num;
   int ndims_num, *dsizes_num, has_missing_input;
@@ -3128,41 +3179,50 @@ NhlErrorTypes dim_num_n_W( void)
            &has_missing_input,
            NULL,
            2);
-  narg = (int*)NclGetArgValue(
+  dims = (int*)NclGetArgValue(
            1,
            2,
            NULL,
-           NULL,
+           &ndims,
            NULL,
            NULL,
            NULL,
            2);
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-  if(*narg < 0 || *narg >= ndims_input) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_num_n: Invalid dimension argument, can't continue");
-    return(NhlFATAL);
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_input) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_num_n: Invalid dimension sizes to do count across, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_num_n: Input dimension sizes must be monotonically increasing, can't continue");
+      return(NhlFATAL);
+    }
   }
 
 /*
- * Calculate the product of the dimension sizes for all but the narg-th
- * dimension.
+ * Compute the total number of elements in output and input.
+ *
+ * The dimension(s) to do the count across are "dims".
  */
-  ndims_num     = max(ndims_input-1,1);
+  ndims_num     = max(ndims_input-ndims,1);
   dsizes_num    = (int*)calloc(ndims_num, sizeof(int));
   dsizes_num[0] = 1;
-  total_nl = total_nr = total_elements = 1;
-  for(i = 0; i < *narg;   i++) {
+  npts = total_nl = total_nr = total_elements = 1;
+  for(i = 0; i < dims[0];   i++) {
     total_nl *= dsizes_input[i];
     dsizes_num[i] = dsizes_input[i];
   }
-  for(i = *narg+1; i < ndims_input; i++) {
+  for(i = 0; i < ndims ; i++) {
+    npts = npts*dsizes_input[dims[i]];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_input; i++) {
     total_nr *= dsizes_input[i];
-    dsizes_num[i-1] = dsizes_input[i];
+    dsizes_num[i-ndims] = dsizes_input[i];
   }
   total_elements = total_nr * total_nl;
-  npts           = dsizes_input[*narg];
 
 /*
  * Allocate space for output (out_val).
@@ -3174,7 +3234,7 @@ NhlErrorTypes dim_num_n_W( void)
     return(NhlFATAL);
   }
 /*
- * Loop through dimensions, and count the number of narg
+ * Loop through dimensions, and count the number of dims'
  * elements that are True.
  */
   if(has_missing_input) {
@@ -3902,7 +3962,7 @@ NhlErrorTypes dim_stat4_n_W( void )
  * Input array variables
  */
   void *x;
-  int *narg;
+  int *dims, ndims;
   int ndims_x, dsizes_x[NCL_MAX_DIMENSIONS], has_missing_x;
   NclScalar missing_x, missing_dx, missing_rx;
   NclBasicDataTypes type_x;
@@ -3933,21 +3993,27 @@ NhlErrorTypes dim_stat4_n_W( void )
            &has_missing_x,
            &type_x,
            2);
-  narg = (int*)NclGetArgValue(
+  dims = (int*)NclGetArgValue(
            1,
            2,
            NULL,
-           NULL,
+           &ndims,
            NULL,
            NULL,
            NULL,
            2);
 /*
- * Some error checking. Make sure input dimension is valid.
+ * Some error checking. Make sure input dimensions are valid.
  */
-  if(*narg < 0 || *narg >= ndims_x) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4_n: Invalid dimension argument, can't continue");
-    return(NhlFATAL);
+  for(i = 0; i < ndims; i++ ) {
+    if(dims[i] < 0 || dims[i] >= ndims_x) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4_n: Invalid dimension sizes to calculate stats across, can't continue");
+      return(NhlFATAL);
+    }
+    if(i > 0 && dims[i] != (dims[i-1]+1)) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_stat4_n: Input dimension sizes must be monotonically increasing, can't continue");
+      return(NhlFATAL);
+    }
   }
 
 /*
@@ -3955,17 +4021,19 @@ NhlErrorTypes dim_stat4_n_W( void )
  */
   coerce_missing(type_x,has_missing_x,&missing_x,&missing_dx,&missing_rx);
 /*
- * Compute the total number of lefmost and rightmost elements in our x array.
+ * Compute the total number of leftmost and rightmost elements in our x array.
  */
-  npts = dsizes_x[*narg];
-  total_nl = total_nr = 1;
-  for(i = 0;       i < *narg;   i++) total_nl *= dsizes_x[i];
-  for(i = *narg+1; i < ndims_x; i++) total_nr *= dsizes_x[i];
+
+  npts = total_nl = total_nr = 1;
+  for(i = 0;       i < dims[0];   i++)       total_nl *= dsizes_x[i];
+  for(i = 0; i < ndims ; i++)                npts     *= dsizes_x[dims[i]];
+  for(i = dims[ndims-1]+1; i < ndims_x; i++) total_nr *= dsizes_x[i];
   total_n = total_nl * total_nr;
+
 /*
  * Calculate size of output arrays.
  */
-  dsizes_out = (int*)calloc(ndims_x,sizeof(int));
+  dsizes_out = (int*)calloc(ndims_x-ndims+1,sizeof(int));
   tmp_x      = (double*)calloc(npts,sizeof(double));
   if(type_x == NCL_double) {
     stat = (void*)calloc(4*total_n,sizeof(double));
@@ -3978,11 +4046,16 @@ NhlErrorTypes dim_stat4_n_W( void )
     return(NhlFATAL);
   }
 /*
- * The output array will be 4 x (all but *narg-th dimension of x)
+ * The output array will be 4 x (all but dims' dimensions of x)
  */
   dsizes_out[0] = 4;
-  for(i = 0;       i < *narg;   i++ ) dsizes_out[i+1] = dsizes_x[i];
-  for(i = *narg+1; i < ndims_x; i++ ) dsizes_out[i]   = dsizes_x[i];
+  for(i = 0; i < dims[0]; i++ ) {
+    dsizes_out[i+1] = dsizes_x[i];
+  }
+  for(i = dims[ndims-1]+1; i < ndims_x; i++ ) {
+    dsizes_out[i-ndims+1] = dsizes_x[i];
+  }
+
 /*
  * Loop across dimensions, and call the f77 version of 
  * 'dim_stat4_n' with the appropriate subset of 'x'.

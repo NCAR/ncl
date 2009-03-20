@@ -5111,8 +5111,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_stat4_n_W,args,"dim_stat4_n",nargs);
 /*
@@ -5147,8 +5146,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_median_n_W,args,"dim_median_n",nargs);
 /*
@@ -5169,8 +5167,7 @@ void NclAddUserFuncs(void)
     nargs = 0;
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_rmvmean_n_W,args,"dim_rmvmean_n",nargs);
 /*
@@ -5192,7 +5189,7 @@ void NclAddUserFuncs(void)
     args = NewArgs(2);
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_rmvmed_n_W,args,"dim_rmvmed_n",nargs);
 /*
@@ -5218,7 +5215,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_standardize_n_W,args,"dim_standardize_n",nargs);
 /*
@@ -5242,7 +5239,7 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
-    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
 
     NclRegisterFunc(dim_rmsd_n_W,args,"dim_rmsd_n",nargs);
 /*
