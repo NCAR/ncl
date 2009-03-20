@@ -1,21 +1,21 @@
 /*
- *      $Id: userAddFuncs.c,v 1.4 2009-03-20 17:12:23 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.5 2009-03-20 17:32:57 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
-*                   Copyright (C)  1995                                 *
+*                   Copyright (C)  2009                                 *
 *           University Corporation for Atmospheric Research             *
 *                   All Rights Reserved                                 *
 *                                                                       *
 ************************************************************************/
 /*
- *	File:		BuiltInFuncs.c
+ *	File:		userAddFuncs.c
  *
- *	Author:		Ethan Alpert
+ *	Author:		Wei Huang
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Tue Feb 7 12:12:21 MST 1995
+ *	Date:		Fri Mar 20 11:25:53 MDT 2009
  *
  *	Description:	
  */
