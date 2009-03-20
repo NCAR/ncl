@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.3 2009-03-19 20:38:41 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.4 2009-03-20 17:12:23 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1075,6 +1075,12 @@ NhlErrorTypes _Nclstr_left_strip
 
     for(i=0; i<str_size; i++)
     {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
         strcpy(result, (char *) NrmQuarkToString(str[i]));
         tmp_str = result;
 
@@ -1183,6 +1189,12 @@ NhlErrorTypes _Nclstr_right_strip
 
     for(i=0; i<str_size; i++)
     {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
         strcpy(result, (char *) NrmQuarkToString(str[i]));
         tmp_str = result;
 
@@ -1283,6 +1295,12 @@ NhlErrorTypes _Nclstr_strip
 
     for(i=0; i<str_size; i++)
     {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
         strcpy(result, (char *) NrmQuarkToString(str[i]));
         tmp_str = result;
 
@@ -1402,6 +1420,12 @@ NhlErrorTypes _Nclstr_squeeze
 
     for(i=0; i<str_size; i++)
     {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
         strcpy(result, (char *) NrmQuarkToString(str[i]));
         tmp_str = result;
 
@@ -1760,6 +1784,12 @@ NhlErrorTypes _Nclstr_upper
 
     for(i=0; i<str_size; i++)
     {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
         strcpy(result, (char *) NrmQuarkToString(str[i]));
 
       /*Strip off the ending space/TAB */
@@ -1856,6 +1886,12 @@ NhlErrorTypes _Nclstr_lower
 
     for(i=0; i<str_size; i++)
     {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
         strcpy(result, (char *) NrmQuarkToString(str[i]));
 
       /*Strip off the ending space/TAB */
@@ -1952,6 +1988,12 @@ NhlErrorTypes _Nclstr_switch
 
     for(i=0; i<str_size; i++)
     {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
         strcpy(result, (char *) NrmQuarkToString(str[i]));
 
       /*Strip off the ending space/TAB */
@@ -1962,6 +2004,123 @@ NhlErrorTypes _Nclstr_switch
                 result[n] += 'A' - 'a';
             else if((result[n] >= 'A') && (result[n] <= 'Z'))
                 result[n] += 'a' - 'A';
+        }
+
+        arrayOfString[i] = NrmStringToQuark(result);
+    }
+
+    NclFree(result);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+
+    NclFree(arrayOfString);
+}
+
+
+NhlErrorTypes _Nclstr_capital
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *str;
+
+    int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
+    int has_missing_str;
+    int has_missing = 0;
+    NclScalar   missing_str;
+    NclScalar   ret_missing;
+    NclBasicDataTypes type_str;
+  
+    char *tmp_str;
+    int i, n;
+    int str_size;
+
+    string *arrayOfString;
+    char *result;
+    int max_length = 0;
+    int capitalize = 1;
+
+    str = (string *) NclGetArgValue(
+                        0,
+                        1,
+                        &ndim_str,
+                        dimsz_str,
+                        &missing_str,
+                        &has_missing_str,
+                        &type_str,
+                        DONT_CARE);
+
+    if (str == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_squeeze: input string is null.");
+        return NhlFATAL;
+    }
+
+    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+
+    if(has_missing_str)
+    {
+        has_missing = 1;
+        ret_missing.stringval = missing_str.stringval;
+    }
+
+    str_size = 1;
+    for(i=0; i<ndim_str; i++)
+        str_size *= dimsz_str[i];
+
+    for(i=0; i<str_size; i++)
+    {
+        tmp_str = (char *) NrmQuarkToString(str[i]);
+        if (max_length < strlen(tmp_str))
+            max_length = strlen(tmp_str);
+    }
+    max_length ++;
+
+    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    if (! arrayOfString)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    result = (char *) NclMalloc(max_length);
+    if (! result)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        if (str[i] == missing_str.stringval)
+        {
+           arrayOfString[i] = str[i];
+           continue;
+        }
+
+        strcpy(result, (char *) NrmQuarkToString(str[i]));
+
+        capitalize = 1;
+        max_length = strlen(tmp_str);
+        for(n=0; n<max_length; n++)
+        {
+            switch (result[n])
+            {
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\f':
+                case '\r':
+                case '\v':
+                    capitalize = 1;
+                    continue;
+                default:
+                    if(capitalize)
+                        if((result[n] >= 'a') && (result[n] <= 'z'))
+                            result[n] += 'A' - 'a';
+                    capitalize = 0;
+            }
         }
 
         arrayOfString[i] = NrmStringToQuark(result);
