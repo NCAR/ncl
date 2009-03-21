@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.203 2009-03-20 15:47:24 shea Exp $
+;      $Id: contributed.ncl,v 1.204 2009-03-21 14:51:50 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9793,7 +9793,7 @@ begin
       nbins = nbin
   end if
 
-  xMin = 0.0d     ; not required but done for test
+  xMin = 0.0d     ; prototype as double
   xMax = 0.0d
 
   if (opt .and. isatt(opt,"bin_min")) then  
@@ -9825,7 +9825,7 @@ begin
   binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
   pdf         = 0.0d
 
-  do nb=0,nbins-2
+  do nb=0,nbins-1       ; was nbins-2
      pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
   end do
 
