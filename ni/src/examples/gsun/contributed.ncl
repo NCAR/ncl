@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.204 2009-03-21 14:51:50 shea Exp $
+;      $Id: contributed.ncl,v 1.205 2009-03-22 23:40:50 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2320,7 +2320,7 @@ end
 ; *******************************************************************
 ; M. Haley
 ; Remove means of all but the dims' dimensions.
-;      Based on dim_rmvmean_n_Wrap
+;      Based on dim_rmvmean_Wrap
 ; Copies over all the attributes and coordinate variables
 ; x    - multidimensional variable 
 ; dims - dimension(s) to do calculation on
@@ -2343,6 +2343,47 @@ begin
  xAnom@rmvmean_op_NCL = dimWrapString("dim_rmvmean_n",x,dims)
 
  return (xAnom)
+end
+; *******************************************************************
+; M. Haley
+; Remove median of all but the dims' dimensions.
+;      Based on dim_rmvmean_Wrap
+; Remove median of each rightmost dimension
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+;
+undef ("dim_rmvmed_Wrap")
+function dim_rmvmed_Wrap (x:numeric)     
+local xRmvMed, dimx, Ndx
+begin
+
+ xRmvMed = x                   ; copy metadata
+ xRmvMed = dim_rmvmed(x)     
+ 
+ dimx = dimsizes(x)
+ Ndx  = dimsizes(dimx)      ; number of dimensions
+ xRmvMed@rmvmed_op_NCL = dimWrapString("dim_rmvmed",x,Ndx-1)
+
+ return (xRmvMed)
+end
+; *******************************************************************
+; M. Haley
+; Remove median of all but the dims' dimensions.
+;      Based on dim_rmvmed_Wrap
+; Copies over all the attributes and coordinate variables
+; x    - multidimensional variable 
+; dims - dimension(s) to do calculation on
+undef ("dim_rmvmed_n_Wrap")
+function dim_rmvmed_n_Wrap (x:numeric,dims[*]:integer)
+local xRmvMed
+begin
+
+ xRmvMed = x                   ; copy metadata
+ xRmvMed = dim_rmvmed_n(x,dims)
+ 
+ xRmvMed@rmvmed_op_NCL = dimWrapString("dim_rmvmed_n",x,dims)
+
+ return (xRmvMed)
 end
 ; *******************************************************************
 ; D. Shea
