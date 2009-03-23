@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.206 2009-03-23 00:19:26 shea Exp $
+;      $Id: contributed.ncl,v 1.207 2009-03-23 14:03:28 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9822,16 +9822,19 @@ function pdfx(x:numeric, nbin[1]:integer, opt:logical)
 local nGood, nbins, xMin, xMax, mnmxint, xSpace \
      ,bin, pdf, nTot
 begin
-  nGood = num(.not.ismissing(x))
-  if (nGood.lt.3) then
-      print("pdfx: nGood="+nGood+" : Need more non-missing points")
-      exit
-  end if
 
   if (nbin.le.2) then
       nbins = 50             ; default
   else
       nbins = nbin
+  end if
+
+
+  nGood = num(.not.ismissing(x))
+  if (nGood.lt.3) then
+      print("pdfx: nGood="+nGood+" : Need more non-missing points")
+      pdf = new( nbins, "double", getFillValue(x))
+      return( pdf )
   end if
 
   xMin = 0.0d     ; prototype as double
@@ -9862,8 +9865,8 @@ begin
   end if
 
   binBound    = fspan(xMin,xMax,nbins+1)
-  pdf         = new( nbins, "double", getFillValue(x))
   binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
+  pdf         = new( nbins, "double", getFillValue(x))
   pdf         = 0.0d
 
   do nb=0,nbins-1       ; was nbins-2
@@ -9898,18 +9901,6 @@ local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
      ,outside, mnmxint, pdf2, nTot
 begin
-  nGood_x = num(.not.ismissing(x))
-  if (nGood_x.lt.3) then
-      print("pdfxy: nGood(x)="+nGood_x+" : Need more non-missing points")
-      exit
-  end if
-
-  nGood_y = num(.not.ismissing(y))
-  if (nGood_y.lt.3) then
-      print("pdfxy: nGood(y)="+nGood_y+" : Need more non-missing points")
-      exit
-  end if
-
 
   if (nbinx.le.2) then
       nbinsx = 30             ; default
@@ -9921,6 +9912,21 @@ begin
       nbinsy = 30             ; default
   else
       nbinsy = nbiny
+  end if
+
+  nGood_x = num(.not.ismissing(x))
+  if (nGood_x.lt.3) then
+      print("pdfxy: nGood(x)="+nGood_x+" : Need more non-missing points")
+  end if
+
+  nGood_y = num(.not.ismissing(y))
+  if (nGood_y.lt.3) then
+      print("pdfxy: nGood(y)="+nGood_y+" : Need more non-missing points")
+  end if
+
+  if (nGood_x.lt.3 .or. nGood_y.lt.3) then
+      pdf2 = new( (/nbinsy,nbinsx/), "double", 1d20)
+      return( pdf2 )
   end if
 
   xMin = 0.0d     ; prototype as "double"    
@@ -9999,7 +10005,6 @@ begin
 
   nTot = num(x.ge.xMin .and. x.le.xMax .and. \
              y.ge.yMin .and. y.le.yMax)      ; actual number used
-  print("DEBUG:  pdf2_sum="+pdf2_sum+"  nTot="+nTot)
   nTot = doubletoint(pdf2_sum)
 
   pdf2  = pdf2/nTot                          ; frequency
