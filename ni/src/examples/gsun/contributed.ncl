@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.205 2009-03-22 23:40:50 haley Exp $
+;      $Id: contributed.ncl,v 1.206 2009-03-23 00:19:26 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9888,6 +9888,142 @@ begin
   pdf@units          = "frequency"
   
   return( pdf )
+end
+;**************************************************************
+; Calculate the "joint PDF" of arrays "x" and "y"
+;**************************************************************
+undef("pdfxy")
+function pdfxy(x:numeric, y:numeric, nbinx[1]:integer, nbiny[1]:integer, opt:logical)
+local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
+     ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
+     ,outside, mnmxint, pdf2, nTot
+begin
+  nGood_x = num(.not.ismissing(x))
+  if (nGood_x.lt.3) then
+      print("pdfxy: nGood(x)="+nGood_x+" : Need more non-missing points")
+      exit
+  end if
+
+  nGood_y = num(.not.ismissing(y))
+  if (nGood_y.lt.3) then
+      print("pdfxy: nGood(y)="+nGood_y+" : Need more non-missing points")
+      exit
+  end if
+
+
+  if (nbinx.le.2) then
+      nbinsx = 30             ; default
+  else
+      nbinsx = nbinx
+  end if
+
+  if (nbiny.le.2) then
+      nbinsy = 30             ; default
+  else
+      nbinsy = nbiny
+  end if
+
+  xMin = 0.0d     ; prototype as "double"    
+  xMax = 0.0d
+
+  if (opt .and. isatt(opt,"binx_min")) then  
+      xMin = opt@binx_min                   ; user set
+  else
+      xMin = min(x)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"binx_max")) then  
+      xMax = opt@binx_max                   ; user set
+  else
+      xMax = max(x)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"biny_min")) then  
+      yMin = opt@biny_min                   ; user set
+  else
+      yMin = min(y)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"biny_max")) then  
+      yMax = opt@biny_max                   ; user set
+  else
+      yMax = max(y)                         ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"binx_nice")) then ; nice xMin, xMax
+      outside = False
+      if (isatt(opt,"binx_nice_outside")) then
+          outside = opt@binx_nice_outside
+      end if
+      mnmxint = nice_mnmxintvl( min(x), max(x), nbinsx, outside)
+      xMin    = mnmxint(0)
+      xMax    = mnmxint(1)
+      xSpace  = mnmxint(2)
+      nbinsx  = round( (xMax-xMin)/xSpace , 3) 
+      delete(mnmxint)
+  end if
+
+  if (opt .and. isatt(opt,"biny_nice")) then ; nice yMin, yMax
+      outside = False
+      if (isatt(opt,"biny_nice_outside")) then
+          outside = opt@biny_nice_outside
+      end if
+      mnmxint = nice_mnmxintvl( min(y), max(y), nbinsy, outside)
+      yMin    = mnmxint(0)
+      yMax    = mnmxint(1)
+      ySpace  = mnmxint(2)
+      nbinsy  = round( (yMax-yMin)/ySpace , 3) 
+      delete(mnmxint)
+  end if
+
+  binxBound   = fspan(xMin,xMax,nbinsx+1)
+  binxCenter  = (binxBound(0:nbinsx-1) + binxBound(1:nbinsx))*0.5d 
+  binyBound   = fspan(yMin,yMax,nbinsy+1)
+  binyCenter  = (binyBound(0:nbinsy-1) + binyBound(1:nbinsy))*0.5d 
+  pdf2        = new( (/nbinsy,nbinsx/), "double", 1d20)
+  pdf2        = 0.0d
+
+  do nby=0,nbinsy-1
+    do nbx=0,nbinsx-1
+       pdf2(nby,nbx) = num(x.ge.binxBound(nbx) .and. x.lt.binxBound(nbx+1) .and.\
+                           y.ge.binyBound(nby) .and. y.lt.binyBound(nby+1) )
+    end do
+  end do
+
+  pdf2!0   = "y"         ; arbitrary name
+  pdf2!1   = "x"
+  pdf2&x   =  binxCenter
+  pdf2&y   =  binyCenter
+
+  pdf2_sum = sum(pdf2)
+
+  nTot = num(x.ge.xMin .and. x.le.xMax .and. \
+             y.ge.yMin .and. y.le.yMax)      ; actual number used
+  print("DEBUG:  pdf2_sum="+pdf2_sum+"  nTot="+nTot)
+  nTot = doubletoint(pdf2_sum)
+
+  pdf2  = pdf2/nTot                          ; frequency
+
+  pdf2@binx_center     = binxCenter
+  pdf2@binx_bounds     = binxBound
+  pdf2@biny_center     = binyCenter
+  pdf2@biny_bounds     = binyBound
+  pdf2@biny_bound_min  = min(binyBound)
+  pdf2@biny_bound_max  = max(binyBound)
+  pdf2@binx_bound_min  = min(binxBound)
+  pdf2@binx_bound_max  = max(binxBound)
+  pdf2@binx_spacing    = binxBound(2)-binxBound(1)
+  pdf2@nbinsx          = nbinsx
+  pdf2@nbinsy          = nbinsy
+
+ ;pdf2@long_name      = "Joint PDF"
+ ;if (isatt(x,"long_name") .and. isatt(y,"long_name")) then
+ ;    pdf2@long_name  = "Joint PDF: "+x@long_name+" | " \
+ ;                                   +y@long_name
+ ;end if
+ ;pdf2@units          = "frequency"
+  
+  return( pdf2 )
 end
 ; ----
 undef ("genNormalDist")
