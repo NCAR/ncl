@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.131 2009-03-16 21:20:01 dbrown Exp $
+ *      $Id: Execute.c,v 1.132 2009-03-26 23:25:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1162,6 +1162,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						goto fatal_err;
 					}
 					tmp_md->multidval.totalelements = (tmp_md->multidval.totalelements / tmp_md->multidval.dim_sizes[0]) * agg_sel_count;
+					tmp_md->multidval.kind = MULTID;
 					tmp_md->multidval.dim_sizes[0] = agg_sel_count;
 					tmp_md->multidval.totalsize = tsize;
 					var1->var.dim_info[0].dim_size = agg_sel_count;
@@ -1187,6 +1188,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 						estatus = NhlFATAL;
 						goto fatal_err;
 					}
+					agg_coord_var_md->multidval.kind = MULTID;
 					agg_coord_var_md->multidval.totalelements = sub_agg_md->multidval.totalelements;
 					agg_coord_var_md->multidval.dim_sizes[0] = agg_sel_count;
 					agg_coord_var_md->multidval.totalsize = sub_agg_md->multidval.totalsize;
