@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.207 2009-03-23 14:03:28 shea Exp $
+;      $Id: contributed.ncl,v 1.208 2009-03-31 01:36:47 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9903,13 +9903,13 @@ local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
 begin
 
   if (nbinx.le.2) then
-      nbinsx = 30             ; default
+      nbinsx = 25             ; default
   else
       nbinsx = nbinx
   end if
 
   if (nbiny.le.2) then
-      nbinsy = 30             ; default
+      nbinsy = 25             ; default
   else
       nbinsy = nbiny
   end if
