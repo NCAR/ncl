@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.5 2009-03-20 17:32:57 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.6 2009-04-01 21:19:36 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -675,9 +675,6 @@ NhlErrorTypes _Nclstr_get_cols
                 {
                     ne = ie - 1;
                 }
-
-                printf("ms: <%d>, me: <%d>\n", ms, me);
-                printf("ns: <%d>, ne: <%d>\n", ns, ne);
 
                 m=0;
                 for(n=ne; n>=ns; n--)
@@ -2130,6 +2127,259 @@ NhlErrorTypes _Nclstr_capital
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
 
     NclFree(arrayOfString);
+}
+
+
+NhlErrorTypes _Nclstr_join
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *strs;
+    string *delim;
+
+    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int ndim_delim, dimsz_delim[NCL_MAX_DIMENSIONS];
+    int has_missing_strs;
+    int has_missing_delim;
+    NclScalar   missing_strs;
+    NclScalar   missing_delim;
+    NclScalar   ret_missing;
+    NclBasicDataTypes type_strs, type_delim;
+  
+    int i, n;
+
+    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    char *result;
+
+    char *tmp_str;
+    char *tmp_delim;
+    string *new_string;
+    int str_size;
+    int has_miss_field = 0;
+    int max_length = 1;
+    int total_length = 0;
+    
+    strs = (string *) NclGetArgValue(
+                        0,
+                        2,
+                        &ndim_strs,
+                        dimsz_strs,
+                        &missing_strs,
+                        &has_missing_strs,
+                        &type_strs,
+                        DONT_CARE);
+
+    if (strs == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_join: input string is null.");
+        return NhlFATAL;
+    }
+
+    delim = (string *) NclGetArgValue(
+                        1,
+                        2,
+                        &ndim_delim,
+                        dimsz_delim,
+                        &missing_delim,
+                        &has_missing_delim,
+                        &type_delim,
+                        DONT_CARE);
+
+    if (delim == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_join: delimitor is null.");
+        return NhlFATAL;
+    }
+
+    if(has_missing_strs)
+        ret_missing.stringval = missing_strs.stringval;
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+
+    str_size = 1;
+    for(i=0; i<ndim_strs; i++)
+        str_size *= dimsz_strs[i];
+
+    tmp_str = (char *) NrmQuarkToString(delim[0]);
+    n = strlen(tmp_str) + 2;
+    tmp_delim = (char *) NclMalloc(strlen(tmp_str));
+    if (! tmp_delim)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+    strcpy(tmp_delim, (char *) NrmQuarkToString(delim[0]));
+
+    total_length = str_size * n;
+    if(tmp_delim[0] < 1)
+        strcpy(tmp_delim, " ");
+
+    for(i=0; i<str_size; i++)
+    {
+        tmp_str = (char *) NrmQuarkToString(strs[i]);
+        total_length += strlen(tmp_str);
+        if (max_length < strlen(tmp_str))
+            max_length = strlen(tmp_str);
+    }
+    max_length ++;
+
+    result = (char *) NclMalloc(total_length);
+    if (! result)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    new_string = (string *) NclMalloc(total_length);
+    if (! new_string)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        if (i)
+            strcat(result, tmp_delim);
+
+        if (strs[i] == ret_missing.stringval)
+        {
+            if (i)
+                strcat(result, " ");
+            else
+                strcpy(result, " ");
+            has_missing_strs = 1;
+        }
+        else
+        {
+            if (i)
+                strcat(result, (char *) NrmQuarkToString(strs[i]));
+            else
+                strcpy(result, (char *) NrmQuarkToString(strs[i]));
+        }
+    }
+
+    new_string[0] = NrmStringToQuark(result);
+
+    NclFree(tmp_delim);
+    NclFree(result);
+
+    ndim = 1;
+    dimsz[0] = 1;
+    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 1);
+
+    NclFree(new_string);
+}
+
+
+NhlErrorTypes _Nclstr_concat
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    string *strs;
+    string *delim;
+
+    int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
+    int has_missing_strs;
+    NclScalar   missing_strs;
+    NclScalar   ret_missing;
+    NclBasicDataTypes type_strs;
+  
+    int i, n;
+
+    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    char *result;
+
+    char *tmp_str;
+    string *new_string;
+    int str_size;
+    int has_miss_field = 0;
+    int max_length = 1;
+    int total_length = 0;
+    
+    strs = (string *) NclGetArgValue(
+                        0,
+                        1,
+                        &ndim_strs,
+                        dimsz_strs,
+                        &missing_strs,
+                        &has_missing_strs,
+                        &type_strs,
+                        DONT_CARE);
+
+    if (strs == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_concat: input string is null.");
+        return NhlFATAL;
+    }
+
+    if(has_missing_strs)
+        ret_missing.stringval = missing_strs.stringval;
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+
+    str_size = 1;
+    for(i=0; i<ndim_strs; i++)
+        str_size *= dimsz_strs[i];
+
+    for(i=0; i<str_size; i++)
+    {
+        tmp_str = (char *) NrmQuarkToString(strs[i]);
+        total_length += strlen(tmp_str);
+        if (max_length < strlen(tmp_str))
+            max_length = strlen(tmp_str);
+    }
+    max_length ++;
+    total_length += str_size;
+
+    result = (char *) NclMalloc(total_length);
+    if (! result)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    new_string = (string *) NclMalloc(total_length);
+    if (! new_string)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    for(i=0; i<str_size; i++)
+    {
+        if (strs[i] == ret_missing.stringval)
+        {
+            if (i)
+                strcat(result, " ");
+            else
+                strcpy(result, " ");
+            has_missing_strs = 1;
+        }
+        else
+        {
+            if (i)
+                strcat(result, (char *) NrmQuarkToString(strs[i]));
+            else
+                strcpy(result, (char *) NrmQuarkToString(strs[i]));
+        }
+    }
+
+    new_string[0] = NrmStringToQuark(result);
+
+    NclFree(result);
+
+    ndim = 1;
+    dimsz[0] = 1;
+    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 1);
+
+    NclFree(new_string);
 }
 
 

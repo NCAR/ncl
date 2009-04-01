@@ -1,13 +1,13 @@
 /*
- *      $Id: userAddProto.c,v 1.5 2009-03-20 17:32:57 huangwei Exp $
+ *      $Id: userAddProto.c,v 1.6 2009-04-01 21:19:36 huangwei Exp $
  */
-/********************************************************************
+/************************************************************************
 *                                                                   *
 *            Copyright (C)  2009                                    *
 *       University Corporation for Atmospheric Research             *
 *           All Rights Reserved                                     *
 *                                                                   *
-*********************************************************************/
+************************************************************************/
 /*
  *    File:		userAddProto.c
  *
@@ -17,7 +17,7 @@
  *
  *    Date:		Fri March 20 11:24:07 MDT 2009
  *
- *	Description:	
+ *    Description:	
  */
 #ifdef __cplusplus
 extern "C" {
@@ -110,6 +110,18 @@ void
 );
 
 extern NhlErrorTypes _Nclstr_capital(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Nclstr_concat(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Nclstr_join(
 #if NhlNeedProto
 void
 #endif
@@ -213,8 +225,18 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_index_of_substr, args, "str_index_of_substr", nargs);
-    NclRegisterFunc(_Nclstr_index_of_substr, args, "str_ind_of_substr", nargs);
-    NclRegisterFunc(_Nclstr_index_of_substr, args, "str_idx_of_substr", nargs);
+
+    nargs = 0;
+    args = NewArgs(1);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    NclRegisterFunc(_Nclstr_concat, args, "str_concat", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_join, args, "str_join", nargs);
 
   /*
    */
