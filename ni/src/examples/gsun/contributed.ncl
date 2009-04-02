@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.208 2009-03-31 01:36:47 shea Exp $
+;      $Id: contributed.ncl,v 1.209 2009-04-02 01:28:06 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9819,16 +9819,15 @@ end
 
 undef("pdfx")
 function pdfx(x:numeric, nbin[1]:integer, opt:logical)
-local nGood, nbins, xMin, xMax, mnmxint, xSpace \
+local nGood, nbins, dbin, xMin, xMax, mnmxint, xSpace \
      ,bin, pdf, nTot
 begin
 
   if (nbin.le.2) then
-      nbins = 50             ; default
+      nbins = 50             ; default one more will be added
   else
       nbins = nbin
   end if
-
 
   nGood = num(.not.ismissing(x))
   if (nGood.lt.3) then
@@ -9864,17 +9863,18 @@ begin
       nbins   = round( (xMax-xMin)/xSpace , 3) 
   end if
 
-  binBound    = fspan(xMin,xMax,nbins+1)
+  dbin        = (xMax-xMin)/(nbins-1)
+  binBound    = xMin + ispan(0,nbins,1)*dbin
   binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
   pdf         = new( nbins, "double", getFillValue(x))
   pdf         = 0.0d
 
-  do nb=0,nbins-1       ; was nbins-2
+  do nb=0,nbins-1      
      pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
   end do
 
-  nTot = num(x.ge.xMin .and. x.le.xMax)   ; actual number used
- ;nTot = nGood
+ ;nTot = num(x.ge.xMin .and. x.le.xMax)   ; actual number used
+  nTot = 1.0d*sum(pdf)         ; make double
   pdf  = pdf/nTot              ; frequency
 
   pdf@bin_center     = binCenter
@@ -9892,6 +9892,7 @@ begin
   
   return( pdf )
 end
+
 ;**************************************************************
 ; Calculate the "joint PDF" of arrays "x" and "y"
 ;**************************************************************
@@ -9899,7 +9900,7 @@ undef("pdfxy")
 function pdfxy(x:numeric, y:numeric, nbinx[1]:integer, nbiny[1]:integer, opt:logical)
 local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
-     ,outside, mnmxint, pdf2, nTot
+     ,outside, mnmxint, pdf2, nTot, dbinx, dbiny
 begin
 
   if (nbinx.le.2) then
@@ -9982,9 +9983,11 @@ begin
       delete(mnmxint)
   end if
 
-  binxBound   = fspan(xMin,xMax,nbinsx+1)
+  dbinx       = (xMax-xMin)/(nbinsx-1)
+  binxBound   = xMin + ispan(0,nbinsx,1)*dbinx
   binxCenter  = (binxBound(0:nbinsx-1) + binxBound(1:nbinsx))*0.5d 
-  binyBound   = fspan(yMin,yMax,nbinsy+1)
+  dbiny       = (yMax-yMin)/(nbinsy-1)
+  binyBound   = yMin + ispan(0,nbinsy,1)*dbiny
   binyCenter  = (binyBound(0:nbinsy-1) + binyBound(1:nbinsy))*0.5d 
   pdf2        = new( (/nbinsy,nbinsx/), "double", 1d20)
   pdf2        = 0.0d
