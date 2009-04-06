@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.217 2008-12-03 05:39:51 haley Exp $
+;      $Id: gsn_code.ncl,v 1.218 2009-04-06 14:58:02 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3051,7 +3051,9 @@ begin
       wkres = True
       names = getvaratts(type)
       do i=0,dimsizes(names)-1
-        wkres@$names(i)$ = type@$names(i)$    
+        if(names(i).ne."_FillValue") then
+          wkres@$names(i)$ = type@$names(i)$
+        end if
       end do
 ;
 ; Grab only the ones that start with "wk".
@@ -3126,7 +3128,9 @@ begin
       wkres = True
       names = getvaratts(type)
       do i=0,dimsizes(names)-1
-        wkres@$names(i)$ = type@$names(i)$    
+        if(names(i).ne."_FillValue") then
+          wkres@$names(i)$ = type@$names(i)$    
+        end if
       end do
 ;
 ; Grab only the ones that start with "wk".
@@ -3326,7 +3330,8 @@ begin
   if(.not.any(ismissing(varatts))) then
     wks_res = True
     res_list = (/"wkColorMap","wkWidth","wkHeight","wkColorModel", \
-                 "wkPSResolution","wkPDFResolution","wkVisualType"/)
+                 "wkPSResolution","wkPDFResolution","wkVisualType", \
+                 "_FillValue"/)
     do i=0,dimsizes(varatts)-1
       if(all(varatts(i).ne.res_list)) then
         wks_res@$varatts(i)$ = type2@$varatts(i)$
