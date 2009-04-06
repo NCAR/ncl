@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.210 2009-04-02 16:19:54 shea Exp $
+;      $Id: contributed.ncl,v 1.211 2009-04-06 16:38:58 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9901,7 +9901,7 @@ undef("pdfxy")
 function pdfxy(x:numeric, y:numeric, nbinx[1]:integer, nbiny[1]:integer, opt:logical)
 local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
-     ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy
+     ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy, warnFlag
 begin
 
   if (nbinx.le.2) then
@@ -9916,21 +9916,28 @@ begin
       nbinsy = nbiny
   end if
                               ; error check
-  nGood_x = num(.not.ismissing(x))
-  if (nGood_x.lt.3) then
-      print("pdfxy: nGood(x)="+nGood_x+" : Need more non-missing points")
+  warnFlag = True             ; default ... print warning messages
+  if (opt .and. isatt(opt,"WarningMsg") .and. .not.opt@WarningMsg) then
+      warnFlag = False
   end if
 
-  nGood_y = num(.not.ismissing(y))
-  if (nGood_y.lt.3) then
-      print("pdfxy: nGood(y)="+nGood_y+" : Need more non-missing points")
-  end if
-
-  if (nGood_x.lt.3 .or. nGood_y.lt.3) then
-      print("pdfxy: exit error")
-      pdf2 = new( (/nbinsy,nbinsx/), "double", 1d20)
-      return( pdf2 )
-  end if
+  if (warnFlag) then
+      nGood_x = num(.not.ismissing(x))
+      if (nGood_x.lt.3) then
+          print("pdfxy: nGood(x)="+nGood_x+" : Need more non-missing points")
+      end if
+    
+      nGood_y = num(.not.ismissing(y))
+      if (nGood_y.lt.3) then
+          print("pdfxy: nGood(y)="+nGood_y+" : Need more non-missing points")
+      end if
+    
+      if (nGood_x.lt.3 .or. nGood_y.lt.3) then
+          print("pdfxy: exit error")
+          pdf2 = new( (/nbinsy,nbinsx/), "double", 1d20)
+          return( pdf2 )
+      end if
+  end if          ; warnFlag
 
   xMin = 0.0d     ; prototype as "double"    
   xMax = 0.0d
@@ -10616,3 +10623,105 @@ begin
  
   return(zGrid)
 end
+;----------------------------------------------------------------------------
+; Calculate a 'bunch' of dispersion statistics (25)
+; 
+undef("stat_dispersion")
+function stat_dispersion (x:numeric, opt[1]:logical )
+local statx, work, nwork, x1d, ivalid
+begin
+  
+   if (isatt(x,"_FillValue")) then  
+       sFillV = x@_FillValue
+       if (any(ismissing(x))) then
+           x1d    = ndtooned(x) 
+           ivalid = ind(.not.ismissing(x1d))
+           work   = x1d(ivalid)
+           delete(x1d)
+       else
+           work = ndtooned(x) 
+       end if
+   else
+       work  = ndtooned(x) 
+       if (typeof(x).eq."double") then
+           sFillV = 1d20
+       else
+           sFillV = 1e20
+       end if
+   end if
+
+   nwork    = dimsizes(work)  
+
+   statx    = new ( 25, typeof(x), sFillV) 
+   statx(0) = avg(x)                ; mean
+   statx(1) = stddev(x)             ; std. deviation
+
+   if (nwork.ge.10) then 
+       qsort( work )                    ; sort into ascending order
+       statx(2) = min ( work )
+       statx(3) = work( nwork/10 )      ; lower dectile
+       statx(4) = work( nwork/8  )      ; lower octtile
+       statx(5) = work( nwork/6  )      ; lower sextile
+       statx(6) = work( nwork/4  )      ; lower quartile
+       statx(7) = work( nwork/3  )      ; lower 3tile
+       if (nwork%2 .eq.1) then
+           statx(8) = work( nwork/2 )   ; median even [NCL is 0 based]
+       else
+           statx(8) = (work(nwork/2-1)+work(nwork/2))  ; median
+       end if
+       statx(9) = work((nwork*2)/3)     ; upper 3tile
+       statx(10)= work((nwork*3)/4)     ; upper quartile
+       statx(11)= work((nwork*5)/6)     ; upper sextile
+       statx(12)= work((nwork*7)/8)     ; upper octtile
+       statx(13)= work((nwork*9)/10)    ; upper dectile
+       statx(14)= max ( work )      
+       statx(15)= statx(14)-statx(2)    ; range
+       if (statx(1).gt.0) then
+           statx(16)= statx(15)/statx(1); a measure of dispersion
+       end if
+       statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
+   end if
+
+   statx@long_name = "Dispersion Statistics"
+   if (isatt(x,"long_name")) then
+       statx@long_name = statx@long_name+x@long_name
+   end if
+   if (isatt(x,"units")) then
+       statx@units     = x@units
+   end if
+
+   if (isatt(statx,"No_FillValue")) then
+       if (typeof(x).eq."double") then
+           statx@_FillValue = 1d20
+       else
+           statx@_FillValue = 1e20
+       end if
+   end if
+
+   if (opt .and. opt@PrintStat) then 
+       print(" ")
+       print("   ===>"+statx@long_name+" <===")
+       print("        Mean="+statx(0)  ) 
+       print("      StdDev="+statx(1)  ) 
+       print("         Min="+statx(2)  ) 
+       print("      LowDec="+statx(3)  ) 
+       print("      LowOct="+statx(4)  ) 
+       print("      LowSex="+statx(5)  ) 
+       print(" LowQuartile="+statx(6)  ) 
+       print("      LowTri="+statx(7)  ) 
+       print("      Median="+statx(8)  ) 
+       print("     HighTri="+statx(9)  ) 
+       print("HighQuartile="+statx(10) ) 
+       print("     HighSex="+statx(11) ) 
+       print("     HighOct="+statx(12) ) 
+       print("     HighDec="+statx(13) ) 
+       print("         Max="+statx(14) ) 
+       print("       Range="+statx(15) ) 
+       print("  Dispersion="+statx(16) ) 
+       print(" RMS Anomaly="+statx(17) ) 
+       print(" ")
+   end if
+
+   return(statx)
+end
+
