@@ -1,0 +1,26 @@
+This directory contains fonts to support cairo drivers.
+
+Vera.ttf - a Helvetica-like font
+VeraBd.ttf - Vera bold
+VeraIt.ttf - Vera Italic
+VeraBI.ttf - Vera bold Italic
+VeraMono.ttf - a Courier-like mono-spaced font
+VeraMoBd.ttf - Vera mono bold
+VeraMoIt.ttf - Vera mono Italic
+VeraMoBI.ttf - Vera mono bold Italic
+VeraSe.ttf - a times-like (Serif) font
+VeraSeBd.ttf - Vera Serif bold
+Aristarcoj2.ttf - Greek characters
+cmex10.ttf - math symbols
+cmsy10.ttf - some math, script
+
+
+The site:
+
+  http://www.freepremiumfonts.com/
+
+has an amazing number of free fonts.
+
+The Vera fonts are available with an open source license. See:
+
+  http://www.bitstream.com/font_rendering/products/dev_fonts/vera.html
