@@ -1,5 +1,5 @@
 C
-C	$Id: gztowk.f,v 1.17 2008-07-27 00:21:04 haley Exp $
+C	$Id: gztowk.f,v 1.18 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -34,11 +34,11 @@ C
           IF (ID(3) .EQ. GCGM) THEN
             CALL G01WDR(ID(1),GFNAME)
             RETURN
-          ELSE IF (ID(3).EQ.GXWC  .OR. ID(3).EQ.GXWE .OR. 
-     +             ID(3).EQ.GDMP  .OR. ID(3).EQ.GPIX .OR.
-     +            (ID(3).GE.GPSMIN .AND. ID(3).LE.GPSMAX) .OR.
-     +             ID(3).EQ.GPDFP .OR. ID(3).EQ.GPDFL) THEN
-      
+          ELSE IF (ID(3).EQ.GXWC   .OR.   ID(3).EQ.GXWE    .OR. 
+     +             ID(3).EQ.GDMP   .OR.   ID(3).EQ.GPIX    .OR.
+     +            (ID(3).GE.GPSMIN .AND.  ID(3).LE.GPSMAX) .OR.
+     +             ID(3).EQ.GPDFP  .OR.   ID(3).EQ.GPDFL   .OR.
+     +            (ID(3).GE.GCROMIN .AND.  ID(3).LE.GCROMAX) )THEN
             DO 200 J=1,IADIM
               ADESTR(J) = 0
   200       CONTINUE
@@ -58,7 +58,7 @@ C
             ID(7) = ID(8)
             ID(8) = ID(9)
             ID(9) = ID(10)
-            NUMP  = 8
+            NUMP  = 9
             CALL GGKWDR(IID,FCODE,0,NUMP,IL2,ID,IC1,IC2,IC,
      -                  RL1,RL2,RX,RY,STRL1,STRL2,ADESTR,RERR,XERMSG)
             IF (RERR .LE. -100) RETURN
@@ -129,7 +129,8 @@ C
             ELSE IF (SWKTP(I).EQ.GXWC  .OR. SWKTP(I).EQ.GXWE .OR.
      +               SWKTP(I).EQ.GDMP  .OR. SWKTP(I).EQ.GPIX .OR.
      +              (SWKTP(I).GE.GPSMIN .AND. SWKTP(I).LE.GPSMAX) .OR.
-     +               SWKTP(I).EQ.GPDFP .OR. SWKTP(I).EQ.GPDFL) THEN
+     +               SWKTP(I).EQ.GPDFP .OR. SWKTP(I).EQ.GPDFL .OR.
+     +         (SWKTP(I).GE.GCROMIN .AND. SWKTP(I).LE.GCROMAX) ) THEN
 C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.
@@ -197,7 +198,8 @@ C
             ELSE IF (ITYP.EQ.GXWC  .OR. ITYP.EQ.GXWE .OR.
      +               ITYP.EQ.GDMP  .OR. ITYP.EQ.GPIX .OR.
      +              (ITYP.GE.GPSMIN .AND. ITYP.LE.GPSMAX) .OR.
-     +               ITYP.EQ.GPDFP .OR. ITYP.EQ.GPDFL) THEN
+     +               ITYP.EQ.GPDFP .OR. ITYP.EQ.GPDFL .OR.
+     +            (ITYP.GE.GCROMIN .AND. ITYP.LE.GCROMAX) ) THEN
 C
 C  If CUFLAG is set, make the interface call only for the specific
 C  workstation.

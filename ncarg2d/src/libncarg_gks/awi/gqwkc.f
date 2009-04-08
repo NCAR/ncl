@@ -1,5 +1,5 @@
 C
-C	$Id: gqwkc.f,v 1.9 2008-07-27 00:21:01 haley Exp $
+C	$Id: gqwkc.f,v 1.10 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -48,7 +48,8 @@ C
       ELSE IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
      +         WTYPE.EQ.GXWE  .OR. WTYPE.EQ.GPIX  .OR.
      +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
-     +        (WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL)) THEN
+     +        (WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) .OR.
+     +        (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX)) THEN
         CONID = -1
       ELSE 
 C

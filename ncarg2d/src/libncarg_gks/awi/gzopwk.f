@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.11 2008-07-27 00:21:04 haley Exp $
+C	$Id: gzopwk.f,v 1.12 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -139,6 +139,19 @@ C
 C  Flag for portrait/landscape mode (0 or non-zero)
 C
           ID(11) = CPTLD
+        ELSE IF (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) THEN
+          IL1   = 7
+          IL2   = 7
+          ID(1) = WKID
+          ID(2) = CONID
+          ID(3) = WTYPE
+C
+C  Positioning coordinates for those workstations that can use them.
+C
+          ID(4) = CLLX
+          ID(5) = CLLY
+          ID(6) = CURX
+          ID(7) = CURY
 	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC .OR. 
      +           WTYPE.EQ.GPIX) THEN
 	  IL1   = 4
@@ -189,14 +202,14 @@ C  For an X window that does not currently exist, obtain the local
 C  window ID for all future calls; for an X window that already exists
 C  the connection ID is the window ID.  In the case of an X window
 C  that does not exist, the window ID is returned from the interface
-C  call in IL2 (non-standard usage of this parameter).  The
-C  PostScript drivers are treated the same as X windows for this
-C  purpose.
+C  call in IL2 (non-standard usage of this parameter).  All the
+C  other drivers will return a -1 in IL2.
 C
         IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR. 
      +      WTYPE.EQ.GXWE  .OR. WTYPE.EQ.GPIX  .OR.
-     +        (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR. 
-     +         WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
+     +     (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR. 
+     +      WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL .OR. 
+     +     (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) ) THEN
           LXWKID(NOPWK) = IL2
         ENDIF
 C

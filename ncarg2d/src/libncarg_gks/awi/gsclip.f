@@ -1,5 +1,5 @@
 C
-C	$Id: gsclip.f,v 1.5 2008-07-27 00:21:01 haley Exp $
+C	$Id: gsclip.f,v 1.6 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -43,11 +43,21 @@ C
       FCODE = 61
       CONT  = 0
       CALL GZROI(0)
-      IL1 = 1
-      IL2 = 1
+C
+C  Current transformation number increased by one so it can
+C  be used as an index.
+C
+      ICNT = CNT+1
+      IL1 = 2
+      IL2 = 2
       ID(1) = CLSW
+      ID(2) = CNT
       RL1   = 2
       RL2   = 2
+C
+C  Current transformation number increased by one so it can
+C  be used as an index.
+C
       ICNT = CNT+1
       RX(1) = NTVP(ICNT,1)
       RX(2) = NTVP(ICNT,2)

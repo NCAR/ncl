@@ -1,5 +1,5 @@
 C
-C	$Id: gqwkca.f,v 1.9 2008-07-27 00:21:01 haley Exp $
+C	$Id: gqwkca.f,v 1.10 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -32,6 +32,8 @@ C
       ELSE IF (WTYPE.EQ.GCGM) THEN
         WKCAT = GMO
       ELSE IF (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) THEN
+        WKCAT = GMO
+      ELSE IF (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) THEN
         WKCAT = GMO
       ELSE IF (WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
         WKCAT = GMO

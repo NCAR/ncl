@@ -1,5 +1,5 @@
 C
-C	$Id: gschup.f,v 1.6 2008-07-27 00:21:01 haley Exp $
+C	$Id: gschup.f,v 1.7 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -65,6 +65,7 @@ C  Construct a base vector perpendicular to the height vector.
 C
       XB =  YP
       YB = -XP
+ 
 C
 C  Transform the height and base vectors using the current normalization
 C  transformation.

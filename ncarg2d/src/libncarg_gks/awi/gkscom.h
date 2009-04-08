@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.26 2008-07-27 03:55:37 haley Exp $
+C $Id: gkscom.h,v 1.27 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -15,7 +15,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               RWKSP(IWDIM)  , GKSCLP
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
      +               SEGLEN, MXSREC, SEGDEL, GKSCLP
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(20)      ,
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(22)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
       COMMON/GKSTAT/ SOPWK(MXNWK)  , SACWK(MXNWK)  , CPLI  , CLN   ,
@@ -42,16 +42,18 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
       INTEGER IERNMS
       COMMON /GKETBC/ERMSGS(NUMERS)
       CHARACTER*210 ERMSGS
-      COMMON/GKEROR/ ERS   , ERF   , CUFLAG, XERMSG(160)   , MXERMG
-      INTEGER        ERS   , ERF   , CUFLAG, XERMSG        , MXERMG
-      COMMON/GKENUM/ GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
-     +               GPSMIN, GPSMAX, GPDFP , GPDFL , GPIX
-      INTEGER        GBUNDL, GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
-     +               GSGOP , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
-     +               GMI   , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
-     +               GPSMIN, GPSMAX, GPDFP , GPDFL , GPIX
+      COMMON/GKEROR/ ERS    , ERF   , CUFLAG, XERMSG(160)   , MXERMG
+      INTEGER        ERS    , ERF   , CUFLAG, XERMSG        , MXERMG
+      COMMON/GKENUM/ GBUNDL , GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
+     +               GSGOP  , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
+     +               GMI    , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
+     +               GPSMIN , GPSMAX, GPDFP , GPDFL , GPIX  , GCPS  ,       
+     +               GCROMIN, GCROMAX
+      INTEGER        GBUNDL , GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
+     +               GSGOP  , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
+     +               GMI    , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
+     +               GPSMIN , GPSMAX, GPDFP , GPDFL , GPIX  , GCPS  ,
+     +               GCROMIN, GCROMAX
       COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)  , GFNAME, GSEGRT
       CHARACTER      GNAM*6, SEGNAM*137    , GFNAME*256    ,
      +               GSEGRT*80

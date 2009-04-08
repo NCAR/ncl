@@ -1,5 +1,5 @@
 C
-C	$Id: gqlwk.f,v 1.8 2008-07-27 00:20:59 haley Exp $
+C	$Id: gqlwk.f,v 1.9 2009-04-08 23:18:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -46,6 +46,7 @@ C
       ENDIF
 C
       IF ((WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
+     +    (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) .OR.
      +     WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
         DCUNIT = 1
         MPLBTE = 0

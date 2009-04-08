@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.32 2008-07-27 00:20:58 haley Exp $
+C	$Id: gksbd.f,v 1.33 2009-04-08 23:18:20 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -159,6 +159,8 @@ C       GWISS  -- WORKSTATION INDEPENDENT SEGMENT STORAGE
 C       GMO    -- METAFILE OUTPUT WORKSTATION
 C       GMI    -- METAFILE INPUT WORKSTATION
 C       GCGM   -- WORKSTATION TYPE CGM
+C       GCROMIN -- MINIMUM TYPE FOR THE cairo DRIVERS
+C       GCROMAX -- MAXIMUM TYPE FOR THE cairo DRIVERS
 C       GWSS   -- WORKSTATION TYPE WISS
 C       GXWE   -- WORKSTATION TYPE EXISTING COLOUR X WINDOW
 C       GXWC   -- WORKSTATION TYPE COLOUR X WINDOW
@@ -209,13 +211,14 @@ C       RERR   -- RETURN VARIABLE FOR ERROR INDICATOR
 C       STR    -- CHARACTER VARIABLE FOR PASSING CHARACTERS
 C
 C-----------------------------------------------------------------------
-      DATA KSLEV,WK/0, 20/
+      DATA KSLEV,WK/0, 22/
 C**************************************************************************
 C******** Be sure and change the dimension of LSWK in gkscom.h when    ****
 C******** adding a new workstation type (as well as changing the value ****
 C******** of WK above to the same number).                              ****
 C**************************************************************************
-      DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31/       
+      DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31,       
+     +  40,41/
 C**************************************************************************
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/
@@ -226,6 +229,8 @@ C**************************************************************************
       DATA GOUTPT,GINPUT,GOUTIN,GWISS,GMO,GMI/0,1,2,3,4,5/
       DATA GCGM,GWSS,GXWE,GXWC,GPIX, GDMP,GPDFP,GPDFL,GPSMIN,GPSMAX
      +    /   1,   3,   7,   8,   9,   10,   11,   12,    20,    31/       
+      DATA GCROMIN, GCROMAX
+     +    /     40,      50/
       DATA NOPWK,NACWK,NUMSEG,CURSEG,SEGDEL,GKSCLP/0,0,0,-1,1,1/
       DATA NOPICT/-1/
       DATA GFNAME/'DEFAULT'/
