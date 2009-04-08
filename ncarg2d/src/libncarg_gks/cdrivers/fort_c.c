@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.c,v 1.11 2008-07-23 17:28:00 haley Exp $
+ *      $Id: fort_c.c,v 1.12 2009-04-08 23:25:41 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -49,7 +49,7 @@
 
 /*
  *  Original GKS workstation ID to be made available to the various
- *  drivers at open workstaiton time.
+ *  drivers at open workstation time.
  */
 int     orig_wks_id;
 

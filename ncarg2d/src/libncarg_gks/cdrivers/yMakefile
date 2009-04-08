@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.11 2008-02-07 00:20:28 haley Exp $
+#	$Id: yMakefile,v 1.12 2009-04-08 23:25:41 fred Exp $
 #
 
 MYNAME		= cdrivers
@@ -18,11 +18,21 @@ PIXSRC 		= pixcontrol.c     pixoutput.c pixdevice.c \
 #ifdef BuildPNG
 PNGSRC		=  pixwrite_png.c
 PNGOBJ		=  pixwrite_png.o
-EXTRA_DEFINES   = -DBuildPNG
+PNG_DEFINES  	=  -DBuildPNG
 #else
 #define PNGSRC
 #define PNGOBJ
 #endif
+
+#ifdef BuildCAIRO
+CAIROSRC	=  cro_device.c cro.c cro_conv.c
+CAIROOBJ	=  cro_device.o cro.o cro_conv.o
+CAIRO_DEFINES   =  -DBuildCAIRO
+#else
+#define CAIROSRC
+#define CAIROOBJ
+#endif
+
 BASICOBJ	= fort_c.o gks_device.o gksc.o transform.o gksP.o
 CTXTOBJ		= ctxt_device.o ctxt.o ctxt_conv.o
 XOBJ		= xdevice.o font.o text.o x_conv.o xattribute.o xcontrol.o \
@@ -34,10 +44,10 @@ PIXOBJ 		= pixcontrol.o     pixoutput.o pixdevice.o  \
 		pix_conv.o       pixattribute.o  pixinquiry.o \
 		pixwrite_xwd.o $(PNGOBJ)
 
-SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC) $(PDFSRC) $(PIXSRC) $(PNGSRC)
-OBJECTS		= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ) $(PNGOBJ)
+SOURCES		= $(BASICSRC) $(CTXTSRC) $(XSRC) $(PSSRC) $(PDFSRC) $(PIXSRC) $(PNGSRC) $(CAIROSRC)
+OBJECTS		= $(BASICOBJ) $(CTXTOBJ) $(XOBJ) $(PSOBJ) $(PDFOBJ) $(PIXOBJ) $(PNGOBJ) $(CAIROOBJ)
 
-EXTRA_CDEFINES	= $(OS_DEF) -DCTXT -DX11 -DPS -DPDF -DPIX
+EXTRA_CDEFINES	= $(OS_DEF) $(PNG_DEFINES) $(CAIRO_DEFINES) -DCTXT -DX11 -DPS -DPDF -DPIX
 
 PartialLibraryTarget(libncarg_gks.a,$(OBJECTS))
 PartialLibraryTarget(libbasegks.a,$(BASICOBJ))
