@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.44 2008-12-31 13:36:37 haley Exp $
+#      $Id: Configure,v 1.45 2009-04-09 21:20:15 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2008-12-31 13:36:37 $
+#	$Date: 2009-04-09 21:20:15 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -146,6 +146,8 @@ echo -n "..."
 set buildtriangle=`$makecmd TRIANGLESTUFF`
 echo -n "..."
 set buildpng=`$makecmd PNGSTUFF`
+echo -n "..."
+set buildcairo=`$makecmd CAIROSTUFF`
 echo -n "..."
 set buildhdf=`$makecmd HDFSTUFF`
 echo -n "..."
@@ -403,6 +405,33 @@ if ("$answer" == "q") goto cleanup
 if (("$answer" != "") && ("$answer" != "$buildpng")) then
 	set buildpng = $answer
 	set newbuildpng
+    set altered
+endif
+
+#
+# Cairo
+#
+if ($?verbose_option) then
+  cat <<"EOF"
+
+	If you want access to the cairo workstations, like PNG,
+	then you'll need to download several packages along with
+        cairo. This is experimental for now, so unless you know
+        what you're doing, answer "n" to this question.
+
+"EOF"
+endif
+
+echo ""
+echo "Build cairo support (optional) into GKS library? (we recommend 'n') ($buildcairo)"
+echo "(requires the cairo and other external libraries available from"
+echo "http://cairographics.org/) "
+echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+set answer="$<"
+if ("$answer" == "q") goto cleanup
+if (("$answer" != "") && ("$answer" != "$buildcairo")) then
+	set buildcairo = $answer
+	set newbuildcairo
     set altered
 endif
 
@@ -998,6 +1027,14 @@ if ($?newbuildpng) then
 	else
 		echo "#define BuildPNG FALSE" >> Site.local
 		echo "#define PNGlib" >> Site.local
+	endif
+endif
+
+if ($?newbuildcairo) then
+	if ("$buildcairo" == "y") then
+		echo "#define BuildCAIRO TRUE" >> Site.local
+	else
+		echo "#define BuildCAIRO FALSE" >> Site.local
 	endif
 endif
 

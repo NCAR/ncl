@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.39 2008-01-24 17:26:34 haley Exp $
+ *      $Id: yMakefile,v 1.40 2009-04-09 21:20:15 haley Exp $
  */
 /************************************************************************
 *									*
@@ -201,6 +201,14 @@ PNGSTUFF:
 	@echo "y"
 #else
 PNGSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildCAIRO
+CAIROSTUFF:
+	@echo "y"
+#else
+CAIROSTUFF:
 	@echo "n"
 #endif
 
