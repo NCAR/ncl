@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.96 2008-12-27 12:44:28 haley Exp $
+ *      $Id: Project,v 1.97 2009-04-09 21:46:45 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2008-12-27 12:44:28 $
+ *	$Date: 2009-04-09 21:46:45 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -180,6 +180,10 @@
 #ifndef	HDFEOSlib
 #define	HDFEOSlib   -lhdfeos -lGctp
 #endif	/* HDFEOSlib */
+
+#ifndef	GDALlib
+#define	GDALlib   -lgdal
+#endif	/* GDALlib */
 
 #ifndef	GRIB2lib
 #define       GRIB2lib   -lgrib2c -ljasper -lpng -lz
@@ -521,6 +525,7 @@ PNGLIB		= PNGlib
 HDFLIB		= HDFlib
 NETCDF4LIB      = NetCDF4lib
 HDFEOSLIB	= HDFEOSlib
+GDALLIB		= GDALlib
 GRIB2LIB	= GRIB2lib
 UDUNITSLIB	= UdUnitslib
 V5DLIB      = V5Dlib
