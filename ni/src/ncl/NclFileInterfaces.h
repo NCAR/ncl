@@ -53,7 +53,8 @@ typedef enum _NclFileFormat {
 	_NclHDF,
 	_NclHDFEOS,
 	_NclGRIB,
-	_NclGRIB2
+	_NclGRIB2,
+        _NclOGR
 } NclFileFormat;
 
 typedef void * (*NclInitializeFileRecFunc)(
