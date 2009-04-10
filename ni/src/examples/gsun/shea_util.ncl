@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.31 2008-10-31 16:41:01 shea Exp $
+;      $Id: shea_util.ncl,v 1.32 2009-04-10 15:45:16 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -3043,4 +3043,53 @@ begin
   draw(plot)                                      ; draw
   frame(wks)  
  end do    ; sigma loop
+end
+; -------------------------------
+; produce a nice plot for the output from 'pdfxy'
+;
+undef("plt_pdfxy")
+function plt_pdfxy(wks[1]:graphic, p[*][*], res[1])
+local plt, dimp, ny,mx, ny2,mx2, PDFXY, yAxis, xAxis
+begin
+  if (all(ismissing(p))) then
+      plt = gsn_csm_contour (wks, p, res)
+      return(plt)
+  end if
+
+  dimp = dimsizes(p)
+  ny   = dimp(0)
+  mx   = dimp(1)
+  ny2  = ny+2
+  mx2  = mx+2
+
+  PDFXY = new( (/ny2,mx2/), typeof(p), getFillValue(p))
+
+  PDFXY(1:ny2-2,1:mx2-2) = (/ p /)
+
+  PDFXY(    0,1:mx2-2) = (/ p(   0,:) /)      ; bottom row
+  PDFXY(ny2-1,1:mx2-2) = (/ p(ny-1,:) /)      ; top    row
+  PDFXY(1:ny2-2,0    ) = (/ p(   :,0) /)      ; left   column
+  PDFXY(1:ny2-2,mx2-2) = (/ p(   :,mx-1) /)   ; right  column
+
+  PDFXY(    0,1:mx2-1) = PDFXY@_FillValue
+  PDFXY(ny2-1,1:mx2-1) = PDFXY@_FillValue
+  PDFXY(1:ny2-1,0    ) = PDFXY@_FillValue
+  PDFXY(1:ny2-1,mx2-1) = PDFXY@_FillValue
+
+  xAxis   = fspan(p@binx_bound_min, p@binx_bound_max, mx2)
+  yAxis   = fspan(p@biny_bound_min, p@biny_bound_max, mx2)
+
+  PDFXY!0 = "Y"
+  PDFXY!1 = "X"
+  PDFXY&X = xAxis
+  PDFXY&Y = yAxis
+  if (isatt(p,"long_name")) then
+      PDFXY@long_name = p@long_name
+  end if
+  if (isatt(p,"units")) then
+      PDFXY@units = p@units
+  end if
+
+  plt = gsn_csm_contour (wks, PDFXY, res)
+  return( plt )
 end
