@@ -1,5 +1,5 @@
 /*
- *      $Id: VectorPlot.c,v 1.88 2006-08-22 18:48:12 dbrown Exp $
+ *      $Id: VectorPlot.c,v 1.89 2009-04-13 23:20:24 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -8287,6 +8287,12 @@ static NhlErrorTypes    SetupLevels
 		*modified = True;
                 vcp->levels_set = True;
 	}
+	else if (vcp->levels && 
+		 memcmp((*levels),vcp->levels->data,
+			vcp->levels->size * vcp->level_count)) {
+                *modified = True;
+                vcp->levels_set = True;
+        }
 	else if (*levels) {
 		NhlFree(*levels);
 		*levels = NULL;
