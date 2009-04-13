@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.211 2009-04-06 16:38:58 shea Exp $
+;      $Id: contributed.ncl,v 1.212 2009-04-13 20:32:52 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9816,27 +9816,26 @@ end
 ;**************************************************************
 ; Calculate the PDF of an array
 ; Original source IDL code by Andrew Gettleman
-
-undef("pdfx")
-function pdfx(x:numeric, nbin[1]:integer, opt:logical)
+; pdfx_v510 is to provide backward compatibility for the 5.1.0 version
+;
+undef("pdfx_v510")
+function pdfx_v510(x:numeric, nbin[1]:integer, opt:logical)
 local nGood, nbins, xMin, xMax, mnmxint, xSpace \
      ,bin, pdf, nTot
 begin
+  nGood = num(.not.ismissing(x))
+  if (nGood.lt.3) then
+      print("pdfx: nGood="+nGood+" : Need more non-missing points")
+      exit
+  end if
 
   if (nbin.le.2) then
-      nbins = 50             ; default 
+      nbins = 50             ; default
   else
       nbins = nbin
   end if
 
-  nGood = num(.not.ismissing(x))
-  if (nGood.lt.3) then
-      print("pdfx: nGood="+nGood+" : Need more non-missing points")
-      pdf = new( nbins, "double", getFillValue(x))
-      return( pdf )
-  end if
-
-  xMin = 0.0d     ; prototype as double
+  xMin = 0.0d     ; not required but done for test
   xMax = 0.0d
 
   if (opt .and. isatt(opt,"bin_min")) then  
@@ -9863,27 +9862,24 @@ begin
       nbins   = round( (xMax-xMin)/xSpace , 3) 
   end if
 
-  dbin        = (xMax-xMin)/(nbins-1)   
-  binBound    = xMin + ispan(0,nbins,1)*dbin
-  binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
+  binBound    = fspan(xMin,xMax,nbins+1)
   pdf         = new( nbins, "double", getFillValue(x))
+  binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
   pdf         = 0.0d
 
-  do nb=0,nbins-1      
+  do nb=0,nbins-2
      pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
   end do
 
- ;kTot = 1.0d*num(x.ge.xMin .and. x.le.xMax)   ; actual number used
-  nTot = 1.0d*sum(pdf)         ; make double
+  nTot = num(x.ge.xMin .and. x.le.xMax)   ; actual number used
+ ;nTot = nGood
   pdf  = pdf/nTot              ; frequency
-
- ;print("debug: kTot="+kTot+"   nTot="+nTot)
 
   pdf@bin_center     = binCenter
   pdf@bin_bounds     = binBound
   pdf@bin_bound_min  = min(binBound)
   pdf@bin_bound_max  = max(binBound)
-  pdf@bin_spacing    = dbin            ; binBound(2)-binBound(1)
+  pdf@bin_spacing    = binBound(2)-binBound(1)
   pdf@nbins          = nbins
 
   pdf@long_name      = "PDF"
@@ -9894,26 +9890,129 @@ begin
   
   return( pdf )
 end
+;***********************************************
+; binning consistent with the "pdfxy" function
+;
+undef("pdfx")
+function pdfx(x:numeric, nbin[1]:integer, opt:logical)
+local nGood, nbins, xMin, xMax, mnmxint, xSpace \
+     ,bin, pdf, nTot, XMIN, XMAX
+begin
+
+  if (opt .and. isatt(opt, "v510") .and. opt@v510) then
+      pdf = pdfx_v510(x, nbin, opt) ; different binning
+      return(pdf)
+  end if
+
+  if (nbin.le.2) then
+      nbins = 25             ; default 
+  else
+      nbins = nbin
+  end if
+
+  nGood = num(.not.ismissing(x))
+  if (nGood.lt.3) then
+      print("pdfx: nGood="+nGood+" : Need more non-missing points")
+      pdf = new( nbins, "double", getFillValue(x))
+      return( pdf )
+  end if
+
+  XMIN = min(x)*1d0   ; min/max for ENTIRE array             
+  XMAX = max(x)*1d0   ; force "double" [*1d0]
+
+  xMin = 0.0d         ; prototype as double
+  xMax = 0.0d
+
+  if (opt .and. isatt(opt,"bin_min")) then  
+      xMin = opt@bin_min                    ; user set
+  else
+      xMin = XMIN                           ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"bin_max")) then  
+      xMax = opt@bin_max                    ; user set
+  else
+      xMax = XMAX                           ; calculate
+  end if
+
+  if (opt .and. isatt(opt,"bin_nice")) then ; nice xMin, xMax
+      outside = False
+      if (isatt(opt,"bin_nice_outside")) then
+          outside = opt@bin_nice_outside
+      end if
+      mnmxint = nice_mnmxintvl( XMIN, XMAX, nbins, outside)
+      xMin    = mnmxint(0)
+      xMax    = mnmxint(1)
+      xSpace  = mnmxint(2)
+      nbins   = round( (xMax-xMin)/xSpace , 3) 
+  end if
+
+  dbin        = (xMax-xMin)/(nbins-1)   
+  binBound    = xMin + ispan(0,nbins,1)*dbin
+  binCenter   = (binBound(0:nbins-1) + binBound(1:nbins))*0.5d 
+
+  binBoundMin = binBound(0)          ; convenience
+  binBoundMax = binBound(nbins)   
+
+  pdf         = new( nbins, "double", getFillValue(x))
+  pdf         = 0.0d
+
+  do nb=0,nbins-1      
+     pdf(nb) = num( x.ge.binBound(nb) .and. x.lt.binBound(nb+1) )
+  end do
+
+  pdf!0    = "x"
+  pdf&x    = binCenter
+
+  nMax     = num(x.ge.XMIN .and. x.le.XMAX)
+                                             ; actual number used
+  nUse     = num(x.ge.binBoundMin .and. x.le.binBoundMax)
+
+ ;kTot = 1.0d*num(x.ge.xMin .and. x.le.xMax)   ; actual number used
+  nTot = 1.0d*sum(pdf)         ; make double
+  pdf  = pdf/nTot              ; frequency
+
+ ;print("debug: kTot="+kTot+"   nTot="+nTot)
+
+  pdf@bin_center     = binCenter
+  pdf@bin_bounds     = binBound
+  pdf@bin_bound_min  = binBoundMin
+  pdf@bin_bound_max  = binBoundMax
+  pdf@bin_spacing    = dbin            ; binBound(2)-binBound(1)
+  pdf@nbins          = nbins
+  pdf@nMax           = nMax
+  pdf@nUse           = nUse
+
+  pdf@long_name      = "PDF"
+  if (isatt(x,"long_name")) then
+      pdf@long_name  = "PDF: "+x@long_name
+  end if
+  pdf@units          = "frequency"
+  
+  return( pdf )
+end
 ;**************************************************************
-; Calculate the "joint PDF" of arrays "x" and "y"
+; Calculate the "joint PDF [%]" of arrays "x" and "y"
 ;**************************************************************
 undef("pdfxy")
 function pdfxy(x:numeric, y:numeric, nbinx[1]:integer, nbiny[1]:integer, opt:logical)
 local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
-     ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy, warnFlag
+     ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy, warnFlag\
+     ,xMIN, xMAX, yMIN, yMAX, binxBoundMin, binxBoundMax, binyBoundMin, binyBoundMax\
+     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut
 begin
 
   if (nbinx.le.2) then
       nbinsx = 25             ; default
   else
-      nbinsx = nbinx
+      nbinsx = nbinx          ; user sprecified
   end if
 
   if (nbiny.le.2) then
       nbinsy = 25             ; default
   else
-      nbinsy = nbiny
+      nbinsy = nbiny          ; user specified
   end if
                               ; error check
   warnFlag = True             ; default ... print warning messages
@@ -9937,41 +10036,48 @@ begin
           pdf2 = new( (/nbinsy,nbinsx/), "double", 1d20)
           return( pdf2 )
       end if
-  end if          ; warnFlag
+  end if              ; warnFlag
 
-  xMin = 0.0d     ; prototype as "double"    
+  xMIN = min(x)*1d0   ; min/max for ENTIRE array             
+  xMAX = max(x)*1d0   ; force "double" [*1d0]
+  yMIN = min(y)*1d0   
+  yMAX = max(y)*1d0  
+
+  xMin = 0.0d         ; prototype as "double"    
   xMax = 0.0d
-
+  yMin = 0.0d     
+  yMax = 0.0d
+                      ; User may want different min/max used
   if (opt .and. isatt(opt,"binx_min")) then  
-      xMin = opt@binx_min                   ; user set
+      xMin = opt@binx_min                   ; user
   else
-      xMin = min(x)                         ; calculate
+      xMin = xMIN                           ; calculated
   end if
 
   if (opt .and. isatt(opt,"binx_max")) then  
-      xMax = opt@binx_max                   ; user set
+      xMax = opt@binx_max                   ; user
   else
-      xMax = max(x)                         ; calculate
+      xMax = xMAX                                         
   end if
 
   if (opt .and. isatt(opt,"biny_min")) then  
-      yMin = opt@biny_min                   ; user set
+      yMin = opt@biny_min                   ; user
   else
-      yMin = min(y)                         ; calculate
+      yMin = yMIN
   end if
 
   if (opt .and. isatt(opt,"biny_max")) then  
-      yMax = opt@biny_max                   ; user set
+      yMax = opt@biny_max                   ; user
   else
-      yMax = max(y)                         ; calculate
+      yMax = yMAX  
   end if
-
-  if (opt .and. isatt(opt,"binx_nice")) then ; nice xMin, xMax
-      outside = False
+                                            
+  if (opt.and.isatt(opt,"binx_nice")) then  ; nice xMin, xMax
+      outside = False                       
       if (isatt(opt,"binx_nice_outside")) then
           outside = opt@binx_nice_outside
       end if
-      mnmxint = nice_mnmxintvl( min(x), max(x), nbinsx, outside)
+      mnmxint = nice_mnmxintvl( xMIN, xMAX, nbinsx, outside)
       xMin    = mnmxint(0)
       xMax    = mnmxint(1)
       xSpace  = mnmxint(2)
@@ -9984,7 +10090,7 @@ begin
       if (isatt(opt,"biny_nice_outside")) then
           outside = opt@biny_nice_outside
       end if
-      mnmxint = nice_mnmxintvl( min(y), max(y), nbinsy, outside)
+      mnmxint = nice_mnmxintvl( yMIN, yMAX, nbinsy, outside)
       yMin    = mnmxint(0)
       yMax    = mnmxint(1)
       ySpace  = mnmxint(2)
@@ -10000,8 +10106,13 @@ begin
   binyBound   = yMin + ispan(0,nbinsy,1)*dbiny
   binyCenter  = (binyBound(0:nbinsy-1) + binyBound(1:nbinsy))*0.5d 
 
+  binxBoundMin= binxBound(0)          ; convenience
+  binxBoundMax= binxBound(nbinsx)   
+  binyBoundMin= binyBound(0)   
+  binyBoundMax= binyBound(nbinsy)   
+
   pdf2        = new( (/nbinsy,nbinsx/), "double", 1d20)
-  pdf2        = 0.0d
+  pdf2        = 0.0d                  ; initialize
   
   dimx        = dimsizes(x)
   dimy        = dimsizes(y)
@@ -10016,6 +10127,7 @@ begin
                                y.ge.binyBound(nby) .and. y.lt.binyBound(nby+1) )
         end do
       end do
+
   else                    ; EFFICIENT when x and y 'conform'
       x1d = ndtooned(x)   ; requires more memory
       y1d = ndtooned(y)
@@ -10035,30 +10147,81 @@ begin
 
   pdf2!0   = "y"         ; arbitrary name
   pdf2!1   = "x"
-  pdf2&x   =  binxCenter
+  pdf2&x   =  binxCenter 
   pdf2&y   =  binyCenter
 
-  pdf2_sum = sum(pdf2)
+;;pdf2_sum = sum(pdf2)                       ; if ENTIRE array used
+                                             ; max number possible
+  nMax     = num(x.ge.xMIN .and. x.le.xMAX .and. \
+                 y.ge.yMIN .and. y.le.yMAX) 
+                                             ; actual number used
+  nUse     = num(x.ge.binxBoundMin .and. x.le.binxBoundMax .and. \
+                 y.ge.binyBoundMin .and. y.le.binyBoundMax)
 
-;;nTot = num(x.ge.xMin .and. x.le.xMax .and. \
-;;           y.ge.yMin .and. y.le.yMax)      ; actual number used
-;;nTot = doubletoint(pdf2_sum)
+  if (nMax.eq.nUse) then
+      nxLoOut  = 0
+      nxHiOut  = 0
+      nyLoOut  = 0
+      nyHiOut  = 0
+  else
+      nxLoOut  = num(x.lt.binxBoundMin)
+      nxHiOut  = num(x.ge.binxBoundMax)
+      nyLoOut  = num(y.lt.binyBoundMin)
+      nyHiOut  = num(y.ge.binyBoundMax)
+  end if
 
-  pdf2  = pdf2/pdf2_sum                      ; frequency
+  if (nMax.gt.0) then
+      pdf2             = 1d2*pdf2/nMax           ; frequency [%]
+  end if
+      
+  pdf2@nMax            = nMax
+  pdf2@nUse            = nUse
+  pdf2@nOut            = nxLoOut + nxHiOut + nyLoOut + nyHiOut
+  if (nMax.gt.0) then
+      pdf2@pcUse       = (1e2*nUse)/nMax         ; percent [pc]
+      pdf2@pcOut       = (1e2*pdf2@nOut)/nMax
+  else
+      pdf2@pcUse       = -999                                   
+      pdf2@pcOut       = -999
+  end if
+ ;print("nMax="+nMax+"  nUse="+nUse+" "+pdf2@pcUse +" "+pdf2@pcOut)
 
+  pdf2@xMIN            = xMIN 
+  pdf2@xMAX            = xMAX 
   pdf2@binx_center     = binxCenter
   pdf2@binx_bounds     = binxBound
-  pdf2@binx_bound_min  = min(binxBound)
-  pdf2@binx_bound_max  = max(binxBound)
+  pdf2@binx_bound_min  = binxBoundMin
+  pdf2@binx_bound_max  = binxBoundMax
   pdf2@binx_spacing    = dbinx   ; binxBound(2)-binxBound(1)
   pdf2@nbinsx          = nbinsx
+ ;pdf2@nxLoOut         = nxLoOut
+ ;pdf2@nxHiOut         = nxHiOut
+  
+  if (nMax.gt.0) then
+      pdf2@pcxLoOut    = (1e2*nxLoOut)/nMax         ; %
+      pdf2@pcxHiOut    = (1e2*nxHiOut)/nMax
+  else
+      pdf2@pcxLoOut    = -999
+      pdf2@pcxHiOut    = -999                
+  end if
 
+  pdf2@yMIN            = yMIN 
+  pdf2@yMAX            = yMAX 
   pdf2@biny_center     = binyCenter
   pdf2@biny_bounds     = binyBound
-  pdf2@biny_bound_min  = min(binyBound)
-  pdf2@biny_bound_max  = max(binyBound)
+  pdf2@biny_bound_min  = binyBoundMin
+  pdf2@biny_bound_max  = binyBoundMax
   pdf2@biny_spacing    = dbiny   ; binyBound(2)-binyBound(1)
   pdf2@nbinsy          = nbinsy
+ ;pdf2@nyLoOut         = nyLoOut
+ ;pdf2@nyHiOut         = nyHiOut
+  if (nMax.gt.0) then
+      pdf2@pcyLoOut        = (1e2*nyLoOut)/nMax         ; %
+      pdf2@pcyHiOut        = (1e2*nyHiOut)/nMax
+  else
+      pdf2@pcyLoOut        = -999
+      pdf2@pcyHiOut        = -999 
+  end if
 
  ;pdf2@long_name      = "Joint PDF"
  ;if (isatt(x,"long_name") .and. isatt(y,"long_name")) then
