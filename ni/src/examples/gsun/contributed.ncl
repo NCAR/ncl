@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.212 2009-04-13 20:32:52 shea Exp $
+;      $Id: contributed.ncl,v 1.213 2009-04-13 23:09:47 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9872,7 +9872,6 @@ begin
   end do
 
   nTot = num(x.ge.xMin .and. x.le.xMax)   ; actual number used
- ;nTot = nGood
   pdf  = pdf/nTot              ; frequency
 
   pdf@bin_center     = binCenter
@@ -9963,16 +9962,12 @@ begin
 
   pdf!0    = "x"
   pdf&x    = binCenter
-
+                                       ; max possible in data     
   nMax     = num(x.ge.XMIN .and. x.le.XMAX)
-                                             ; actual number used
+                                       ; actual number used
   nUse     = num(x.ge.binBoundMin .and. x.le.binBoundMax)
 
- ;kTot = 1.0d*num(x.ge.xMin .and. x.le.xMax)   ; actual number used
-  nTot = 1.0d*sum(pdf)         ; make double
-  pdf  = pdf/nTot              ; frequency
-
- ;print("debug: kTot="+kTot+"   nTot="+nTot)
+  pdf      = 1d2*pdf/nMax              ; percent frequency
 
   pdf@bin_center     = binCenter
   pdf@bin_bounds     = binBound
@@ -9987,7 +9982,7 @@ begin
   if (isatt(x,"long_name")) then
       pdf@long_name  = "PDF: "+x@long_name
   end if
-  pdf@units          = "frequency"
+  pdf@units          = "%"
   
   return( pdf )
 end
