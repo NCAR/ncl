@@ -1,5 +1,5 @@
 /*
- *      $Id: ContourPlot.c,v 1.146 2008-10-03 19:40:19 dbrown Exp $
+ *      $Id: ContourPlot.c,v 1.147 2009-04-13 23:15:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -9061,6 +9061,13 @@ static NhlErrorTypes    SetupLevels
 		*modified = True;
                 cnp->levels_set = True;
 	}
+	else if (cnp->levels && 
+		 memcmp((*levels),cnp->levels->data,
+			cnp->levels->size * cnp->level_count)) {
+                *modified = True;
+                cnp->levels_set = True;
+        }
+
 	/*
 	 * to do:
 	 * we might be able to elminate this call if *modified is False
