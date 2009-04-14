@@ -1,5 +1,5 @@
 /*
- *      $Id: yMakefile,v 1.40 2009-04-09 21:20:15 haley Exp $
+ *      $Id: yMakefile,v 1.41 2009-04-14 21:55:10 haley Exp $
  */
 /************************************************************************
 *									*
@@ -209,6 +209,14 @@ CAIROSTUFF:
 	@echo "y"
 #else
 CAIROSTUFF:
+	@echo "n"
+#endif
+
+#ifdef	BuildGDAL
+GDALSTUFF:
+	@echo "y"
+#else
+GDALSTUFF:
 	@echo "n"
 #endif
 
