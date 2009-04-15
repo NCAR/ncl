@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.32 2009-04-10 15:45:16 shea Exp $
+;      $Id: shea_util.ncl,v 1.33 2009-04-15 13:50:05 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -3092,4 +3092,13 @@ begin
 
   plt = gsn_csm_contour (wks, PDFXY, res)
   return( plt )
+end
+;-------
+undef("pdfxy_plt")
+function pdfxy_plt(wks[1]:graphic, p[*][*], res[1])
+; allow an alternative name for the plt_pdfxy function
+local plt
+begin
+  plt = plt_pdfxy(wks, p, res)
+  return( plt)
 end
