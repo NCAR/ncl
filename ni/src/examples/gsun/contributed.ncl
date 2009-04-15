@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.213 2009-04-13 23:09:47 shea Exp $
+;      $Id: contributed.ncl,v 1.214 2009-04-15 12:49:48 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -10124,19 +10124,21 @@ begin
       end do
 
   else                    ; EFFICIENT when x and y 'conform'
-      x1d = ndtooned(x)   ; requires more memory
-      y1d = ndtooned(y)
+      pdf2 = pdfxy_bin(x,y, binxBound,binyBound, 0, False)
+                          ; all NCL
+    ;;x1d  = ndtooned(x)  ; requires more memory
+    ;;y1d  = ndtooned(y)
 
-      do nby=0,nbinsy-1
-         iy = ind(y1d.ge.binyBound(nby) .and. y1d.lt.binyBound(nby+1))
-         if (.not.ismissing(iy(0))) then
-             do nbx=0,nbinsx-1
-                pdf2(nby,nbx) = num(x1d(iy).ge.binxBound(nbx) .and. \
-                                    x1d(iy).lt.binxBound(nbx+1)     )
-             end do
-         end if
-         delete(iy)      ; size may change
-      end do
+    ;;do nby=0,nbinsy-1
+    ;;   iy = ind(y1d.ge.binyBound(nby) .and. y1d.lt.binyBound(nby+1))
+    ;;   if (.not.ismissing(iy(0))) then
+    ;;       do nbx=0,nbinsx-1
+    ;;          pdf2(nby,nbx) = num(x1d(iy).ge.binxBound(nbx) .and. \
+    ;;                              x1d(iy).lt.binxBound(nbx+1)     )
+    ;;       end do
+    ;;   end if
+    ;;   delete(iy)      ; size may change
+    ;;end do
 
   end if
 
@@ -10144,8 +10146,6 @@ begin
   pdf2!1   = "x"
   pdf2&x   =  binxCenter 
   pdf2&y   =  binyCenter
-
-;;pdf2_sum = sum(pdf2)                       ; if ENTIRE array used
                                              ; max number possible
   nMax     = num(x.ge.xMIN .and. x.le.xMAX .and. \
                  y.ge.yMIN .and. y.le.yMAX) 
@@ -10179,7 +10179,6 @@ begin
       pdf2@pcUse       = -999                                   
       pdf2@pcOut       = -999
   end if
- ;print("nMax="+nMax+"  nUse="+nUse+" "+pdf2@pcUse +" "+pdf2@pcOut)
 
   pdf2@xMIN            = xMIN 
   pdf2@xMAX            = xMAX 
