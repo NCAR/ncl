@@ -1,5 +1,5 @@
 /*
- *      $Id: gks_device.c,v 1.10 2009-04-16 06:51:33 fred Exp $
+ *      $Id: gks_device.c,v 1.11 2009-04-16 19:06:09 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -71,6 +71,10 @@ GKSdev  *GKS_GetDevByName(name)
                 return GKS_GetPDFdev();
         else if(!strcmp(name,"PIX"))
                 return GKS_GetPIXdev();
+#ifdef BuildCAIRO
+        else if(!strcmp(name,"cro"))
+                return GKS_GetCROdev();
+#endif
         else if(!strcmp(name,"cro"))
                 return GKS_GetCROdev();
 
