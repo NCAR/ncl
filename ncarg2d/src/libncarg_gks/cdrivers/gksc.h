@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.16 2008-07-23 17:29:43 haley Exp $
+ *	$Id: gksc.h,v 1.17 2009-04-16 06:51:34 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -7,7 +7,20 @@
 *        University Corporation for Atmospheric Research                *
 *                All Rights Reserved                                    *
 *                                                                       *
-*    The use of this Software is governed by a License Agreement.       *
+* This file is free software; you can redistribute it and/or modify     *
+* it under the terms of the GNU General Public License as published     *
+* by the Free Software Foundation; either version 2 of the License, or  *
+* (at your option) any later version.                                   *
+*                                                                       *
+* This software is distributed in the hope that it will be useful, but  *
+* WITHOUT ANY WARRANTY; without even the implied warranty of            *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU     *
+* General Public License for more details.                              *
+*                                                                       *
+* You should have received a copy of the GNU General Public License     *
+* along with this software; if not, write to the Free Software          *
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307   *
+* USA.                                                                  *
 *                                                                       *
 ************************************************************************/
 
@@ -238,6 +251,13 @@ typedef	struct	GKSC_	{
 #define ERR_OPN_PNG        -451	/* error opening PNG output file        */
 #define ERR_PIX_MAP        -452	/* error reading pixmap                 */
 #define ERR_PIX_DPT        -453	/* unsupported pixmap, depth PNG output */
+
+/*
+ *  cairo driver errors
+ */
+#define ERR_CRO_MEMORY	   -501	/* error in device dependent table mem  */
+#define ERR_OPN_CRO        -502	/* error opening output file            */
+#define ERR_CRO_CHAR       -503	/* CPS char not available for requested */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto

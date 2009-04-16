@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.c,v 1.12 2009-04-08 23:25:41 fred Exp $
+ *      $Id: fort_c.c,v 1.13 2009-04-16 06:51:33 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -11,13 +11,6 @@
 *                                                                       *
 ************************************************************************/
 
-/************************************************************************
-*                                                                       *
-*                            Copyright (C)  1994                        *
-*            University Corporation for Atmospheric Research            *
-*                            All Rights Reserved                        *
-*                                                                       *
-************************************************************************/
 /*
  *      File:           fort_c.c
  *
@@ -49,7 +42,7 @@
 
 /*
  *  Original GKS workstation ID to be made available to the various
- *  drivers at open workstation time.
+ *  drivers at open workstaiton time.
  */
 int     orig_wks_id;
 
@@ -218,8 +211,16 @@ err_msg)
                  * decode device type
                  */
                 dev_type = ints[1];
+
+                /*
+                 * For driver codes that are variations on a common
+                 * set of functions, set dev_type to the generic name.
+                 */
                 if ((dev_type >= DEV_PS_MIN) && (dev_type <= DEV_PS_MAX)) {
                         dev_type = DEV_PS;
+                }
+                if ((dev_type >= DEV_CRO_MIN) && (dev_type <= DEV_CRO_MAX)) {
+                        dev_type = DEV_CRO;
                 }
                 switch (dev_type) {
                 case    DEV_CGM:
@@ -247,6 +248,9 @@ err_msg)
                 case    DEV_PDF_L:
                         dev_name = "pdf";
                         break;
+                case    DEV_CRO:
+                        dev_name = "cro";
+                        break;
                 default:
                         *status = ERR_OPN_DEV;
                         return(-1);
@@ -263,6 +267,7 @@ err_msg)
                 /*
                  * create a gksc for this device
                  */
+
                 if ((gksc = CreateGKSC((char*)dev_name)) == 0) {
                         *status = ErrGetNum();
                         c2f_strncpy((int*)err_msg, (char*)ErrGetMsg(),
@@ -323,42 +328,43 @@ err_msg)
         if(gksc->exec_gksc)
                 *status = (*(gksc->exec_gksc))(gksc);
         else
-                *status = (*(gksc->operations[gksc->opcode]))(gksc);
-        if (*status != 0) {
-                c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(), ERR_MSG_MAX);
+	      
+	        *status = (*(gksc->operations[gksc->opcode]))(gksc);
+		if (*status != 0) {
+			c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(), ERR_MSG_MAX);
 #ifdef cray
-                strncpy( _fcdtocp(err_msg_), err_msg, length );
+			strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif
-                ClearGKSC(gksc);
-                return(-1);
-        }
+			ClearGKSC(gksc);
+			return(-1);
+		}
 
-        /*
-         * if this is an inquiry function retreive the data now
-         */
-        if (*gks_opcode < -100) {       /* gks inquiry function */
-                *status = ReadFromGKSC(gksc, *gks_opcode, 
-                        total_i, num_i_sent, ints,
-                        total_x, num_x_sent, indexes,
-                        total_f, num_f_sent, fxs, fys,
-                        total_c, num_c_sent, chars);
+		/*
+		 * if this is an inquiry function retreive the data now
+		 */
+		if (*gks_opcode < -100) {       /* gks inquiry function */
+			*status = ReadFromGKSC(gksc, *gks_opcode, 
+				total_i, num_i_sent, ints,
+				total_x, num_x_sent, indexes,
+				total_f, num_f_sent, fxs, fys,
+				total_c, num_c_sent, chars);
 
-                if (*status != 0) {
-                        c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(),
-                                                                ERR_MSG_MAX);
+			if (*status != 0) {
+				c2f_strncpy((int*)err_msg,(char*)ErrGetMsg(),
+									ERR_MSG_MAX);
 #ifdef cray
-                        strncpy( _fcdtocp(err_msg_), err_msg, length );
+				strncpy( _fcdtocp(err_msg_), err_msg, length );
 #endif
-                }
-        }
-        ClearGKSC(gksc);
+			}
+		}
+		ClearGKSC(gksc);
 
-        /*
-         * if this was a close_workstation gks_opcodeuction free the gksc
-         */
-        if (*gks_opcode == GKS_CLOSE_WORKSTATION) {
-                FreeGKSC(gksc);
-        } 
+		/*
+		 * if this was a close_workstation gks_opcodeuction free the gksc
+		 */
+		if (*gks_opcode == GKS_CLOSE_WORKSTATION) {
+			FreeGKSC(gksc);
+		} 
 
-        return(0);
+		return(0);
 }

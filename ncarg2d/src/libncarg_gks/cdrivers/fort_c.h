@@ -1,5 +1,5 @@
 /*
- *      $Id: fort_c.h,v 1.9 2008-07-23 17:29:43 haley Exp $
+ *      $Id: fort_c.h,v 1.10 2009-04-16 06:51:33 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -43,6 +43,9 @@
 #define DEV_PS         20       /* generic id for all PS drivers */
 #define DEV_PS_MIN     20       /* smallest id for the PS drivers */
 #define DEV_PS_MAX     31       /* largest id for the PS drivers */
+#define DEV_CRO        40       /* generic id for the cairo drivers */
+#define DEV_CRO_MIN    40       /* smallest id for the cairo drivers */
+#define DEV_CRO_MAX    51       /* largest id for the cairo drivers */
 
 
 #define ERR_MSG_MAX     160     /* maximum error message size   */

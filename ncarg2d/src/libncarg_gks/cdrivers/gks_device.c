@@ -1,5 +1,5 @@
 /*
- *      $Id: gks_device.c,v 1.9 2008-07-23 17:28:00 haley Exp $
+ *      $Id: gks_device.c,v 1.10 2009-04-16 06:51:33 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -71,6 +71,8 @@ GKSdev  *GKS_GetDevByName(name)
                 return GKS_GetPDFdev();
         else if(!strcmp(name,"PIX"))
                 return GKS_GetPIXdev();
+        else if(!strcmp(name,"cro"))
+                return GKS_GetCROdev();
 
         /*
          * device not found
