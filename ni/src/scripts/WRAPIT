@@ -1,6 +1,6 @@
 #!/bin/csh -f
 # set echo verbose timestamp
-set version = 090115    # YYMMDD
+set version = 091416    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -58,10 +58,10 @@ echo "OPTION: -r8 is used to promote floats of real*4 to real*8."
 echo "OPTION: -fPIC is used to compile with the '-fPIC' option."
 echo " "
 echo "------------------------ Linux Compilers ---------------------------"
-echo "The default linux fortran compiler is the gnu g77 compiler. If your"
-echo "system has one of the supported linux fortran compilers you must"
+echo "The default linux fortran compiler is the GNU gfortran compiler. If"
+echo "your system has one of the supported linux fortran compilers you must"
 echo "specify which one you want to use by the appropriate command line"
-echo "option, otherwise the g77 compiler will be used. "
+echo "option, otherwise the gfortran compiler will be used. "
 echo "The supported linux fortran compilers are the Portland Group"
 echo "(pgf90), the Lahey/Fujitsu (lf95), and the g95 compiler (g95),"
 echo "and the Intel compiler (ifc/ifort)."
@@ -70,6 +70,7 @@ echo "OPTION: -lf  to specify the Lahey/Fujitsu compiler."
 echo "OPTION: -in  to specify the Intel compiler."
 echo "OPTION: -g95 to specify the g95 compiler."
 echo "OPTION: -gf  to specify the gfortran compiler."
+echo "OPTION: -g77 to specify the old g77 compiler."
 echo " " 
 echo "-------------------- Some Usage Examples ---------------------------"
 echo "One argument"
@@ -135,7 +136,7 @@ endif
 set real8 = 0     # off 
 set debug = 0     # off
 set nbits = 64    # default for AIX and IRIX
-set f90c  = g77   # default linux compiler
+set f90c  = gfortran   # default linux compiler
 set exfopts = ""   # default is no extra Fortran options
 set excopts = ""   # default is no extra C options
 
@@ -154,7 +155,7 @@ while ($#argv)
       which pgf90
       if ($status) then
         echo WARNING: Portland Group fortran compiler NOT found.
-        echo Using default GNU g77 compiler.
+        echo Using default GNU gfortran compiler.
       else
         set f90c = pgf90
       endif
@@ -166,7 +167,7 @@ while ($#argv)
       which lf95
       if ($status) then
         echo WARNING: Lahey/Fujitsu fortran compiler NOT found.
-        echo Using default gnu g77 compiler.
+        echo Using default GNU gfortran compiler.
       else
         set f90c = lf95 
       endif
@@ -178,7 +179,7 @@ while ($#argv)
       which g95
       if ($status) then
         echo WARNING: g95 fortran compiler NOT found.
-        echo Using default gnu g77 compiler.
+        echo Using default GNU gfortran compiler.
       else
         set f90c = g95
       endif
@@ -189,9 +190,17 @@ while ($#argv)
     which gfortran >! /dev/null
     if ($status) then
       echo WARNING: gfortran fortran compiler NOT found.
-      echo Will try gnu g77 or g95 compiler.
+      echo Will try GNU g77 or g95 compiler.
     else
       set f90c = gfortran
+    endif
+  else if ($arg:q == "-g77") then
+    which g77 >! /dev/null
+    if ($status) then
+      echo WARNING: g77 fortran compiler NOT found.
+      echo Will try GNU gfortran or g95 compiler.
+    else
+      set f90c = g77
     endif
   else if ($arg:q == "-in") then
     if ($OS == Linux) then
@@ -200,7 +209,7 @@ while ($#argv)
         which ifc              # older version (7.8)
         if ($status) then
           echo WARNING: Intel fortran compiler NOT found.
-          echo Using default gnu g77 compiler.
+          echo Using default GNU gfortran compiler.
         else
           set f90c = ifc
         endif
@@ -289,22 +298,22 @@ while ($#argv)
 end      
 
 # check for g77, gfortran, g95 compiler if needed
-if (($OS == Linux && $f90c == g77) || ($OS == Darwin && $f90c == g77) || $OS == FreeBSD) then 
-  which g77 >! /dev/null
+if (($OS == Linux || $OS == Darwin || $OS == FreeBSD) && $f90c == gfortran) then 
+  which gfortran >! /dev/null
   if ($status) then
-    which gfortran >! /dev/null
+    which g95 >! /dev/null
     if ($status) then
-      which g95 >! /dev/null
+      which g77 >! /dev/null
       if ($status) then
         echo "FATAL ERROR: g77, gfortran, g95 compilers NOT found."
         echo EXITING WRAPIT
         echo " "
         exit 1
       else
-        set f90c = g95
+        set f90c = g77
       endif
     else
-      set f90c = gfortran
+      set f90c = g95
     endif
   endif
 endif
@@ -397,15 +406,15 @@ switch ($OS)
      set fopts = "$fopts -r8"
    endif
    breaksw
- case Darwin:                                # MacOSX (g77)
-   if ($debug == 1 && $f90c == g77) then     # GNU g77
+ case Darwin:                                # MacOSX (g77/gfortran)
+   if ($debug == 1 && ($f90c == g77 || $f90c == gfortran)) then     # GNU 
      set fopts = "$fopts -v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
    else
      set fopts = "$fopts -c -O -fno-common -fno-second-underscore"
    endif
    breaksw
- case FreeBSD:                               # FreeBSD (g77)
-   if ($debug == 1 && $f90c == g77) then     # GNU g77
+ case FreeBSD:                               # FreeBSD
+   if ($debug == 1 && ($f90c == g77 || $f90c == gfortran)) then   # GNU
      set fopts = "$fopts -v -c -ffortran-bounds-check -fno-second-underscore"
    else
      set fopts = "$fopts -c -O -fno-second-underscore"
@@ -734,16 +743,19 @@ switch ($OS)
        echo $cmd
      endif
      $cmd     
-   else                            # GNU g77 or gfortran
+   else                            # GNU compilers
      if ($debug == 1) then
-       set cmd = "gcc -fPIC -shared $ld_suffix -lg2c"
+       set cmd = "gcc -fPIC -shared $ld_suffix"
      else
-       set cmd = "gcc -fPIC -shared $ld_suffix -lg2c"
+       set cmd = "gcc -fPIC -shared $ld_suffix"
      endif
-     if ($f90c == gfortran) then     # gfortran compiler
+     if ($f90c == g77) then       # g77 compiler
+       set cmd = "$cmd -lg2c"
+     endif
+     if ($f90c == gfortran) then  # gfortran compiler
        set cmd = "$cmd -lgfortran"
      endif
-     if ($f90c == g95) then     # g95 compiler
+     if ($f90c == g95) then       # g95 compiler
        set cmd = "$cmd -lf95"
      endif
      if ($debug == 1) then
@@ -754,15 +766,18 @@ switch ($OS)
    breaksw
  case FreeBSD:                     # FreeBSD
    if ($debug == 1) then
-     set cmd = "gcc -shared $ld_suffix -lg2c"
+     set cmd = "gcc -shared $ld_suffix"
      echo $cmd
    else
-     set cmd = "gcc -shared $ld_suffix -lg2c"
+     set cmd = "gcc -shared $ld_suffix"
    endif
-   if ($f90c == gfortran) then     # gfortran compiler
+   if ($f90c == g77) then         # g77 compiler
+     set cmd = "$cmd -lg2c"
+   endif
+   if ($f90c == gfortran) then    # gfortran compiler
      set cmd = "$cmd -lgfortran"
    endif
-   if ($f90c == g95) then     # g95 compiler
+   if ($f90c == g95) then         # g95 compiler
      set cmd = "$cmd -lf95"
    endif
    $cmd     
