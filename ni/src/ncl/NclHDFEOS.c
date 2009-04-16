@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS.c,v 1.11 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: NclHDFEOS.c,v 1.12 2009-04-16 17:51:51 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -814,7 +814,7 @@ int wr_status;
 							HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("Note"),
 									(void*)qval,1,NCL_string);
 							qval = (NrmQuark *)NclMalloc(sizeof(NrmQuark));
-							*qval = NrmStringToQuark("seconds since 1-1-1993 00:00:00");
+							*qval = NrmStringToQuark("seconds since 1993-1-1 00:00:00");
 							HDFEOSIntAddAtt(the_file->vars->var_inq,NrmStringToQuark("units"),
 									(void*)qval,1,NCL_string);
 							qval = (NrmQuark *)NclMalloc(sizeof(NrmQuark));
