@@ -1,5 +1,5 @@
 /*  
- *      $Id: cro.c,v 1.1 2009-04-08 23:25:41 fred Exp $
+ *      $Id: cro.c,v 1.2 2009-04-18 19:19:13 fred Exp $
  */
 /*
  *
@@ -1383,7 +1383,7 @@ int cro_Text(GKSC *gksc) {
  */
   CROPoint *pptr = (CROPoint *) gksc->p.list;
   CROddp   *psa = (CROddp *) gksc->ddp;
-  char     *sptr = (char *) gksc->s.list;
+  char     *sptr = (char *) gksc->s.list, *font_path, *font_name, *db_path;
   char     single_char[2];
   struct   color_value cval;
   float    base_mag, tcos, cprod, cang;
@@ -1436,16 +1436,29 @@ int cro_Text(GKSC *gksc) {
 /*
  *  Establish the default font faces.
  */
-    error = FT_New_Face( library,
-/*                       "/Users/fredclare/cairo_fonts/ttf/Vera.ttf", */
-                      "/Users/fredclare/cairo_fonts/ttf/script.ttf",
-                         0,
-                         &face );
+
+/*
+ * The following is strictly ad hoc.  Ultimately there should be a
+ * table associating font numbers (psa->attributes.text_font) with 
+ * font names, or some other way to associate such.  Here we are 
+ * just using Vera.ttf as the single available font.
+ *
+ * Also, should need to get the font database path only once.
+ */
+    font_name = "Vera.ttf";
+    db_path = (char *) GetNCARGPath("ftfonts");  /* Path for font database */
+    font_path = (char *)calloc(strlen(db_path) + strlen("/") + 
+                strlen(font_name) + 1, sizeof(char));
+    strcpy(font_path, db_path);
+    strcat(font_path, "/");
+    strcat(font_path, font_name);
+    error = FT_New_Face( library, font_path, 0, &face );
     if ( error == FT_Err_Unknown_File_Format )
     {
         printf("The font file could be opened and read, \n but it appears that its font format is unsupported\n");
         return 1;
     }
+    free(font_path);   
     kount++;
   }
 
