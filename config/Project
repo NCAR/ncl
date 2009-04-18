@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.97 2009-04-09 21:46:45 haley Exp $
+ *      $Id: Project,v 1.98 2009-04-18 19:14:39 fred Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2009-04-09 21:46:45 $
+ *	$Date: 2009-04-18 19:14:39 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -357,6 +357,7 @@ NGENV_DESCRIPT	= \
 		"sysresfile",NULL,"ncarg",NULL,NULL,		\
 		"sysappres",NULL,"ncarg",NULL,NULL,		\
 		"grib2_codetables","NIO_GRIB2_CODETABLES","ncarg",NULL,NULL, \
+		"ftfonts",NULL,"database",NULL,NULL,            \
 		NULL}
 
 NGENVDEF	=	-DENV_DEFS=$(NGENV_DESCRIPT)
