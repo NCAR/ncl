@@ -1,0 +1,12 @@
+#
+#       $Id: yMakefile,v 1.1 2009-04-18 19:17:25 fred Exp $
+#
+
+DBFILES = Vera.ttf VeraBI.ttf VeraBd.ttf VeraIt.ttf VeraMoBI.ttf          \
+	  VeraMoBd.ttf VeraMoIt.ttf VeraMono.ttf VeraSe.ttf VeraSeBd.ttf  \
+	  cmex10.ttf cmsy10.ttf Aristarcoj2.ttf
+
+InstallTarget($(DBFILES),$(INSTALL_DB),$(DBPATH)/ftfonts)
+#ifdef BuildPyNGL
+InstallTarget($(DBFILES),$(INSTALL_DB),$(PYNGLNCARGPATH)/$(DBDIR)/ftfonts)
+#endif
