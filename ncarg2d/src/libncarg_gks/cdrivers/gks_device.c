@@ -1,5 +1,5 @@
 /*
- *      $Id: gks_device.c,v 1.11 2009-04-16 19:06:09 fred Exp $
+ *      $Id: gks_device.c,v 1.12 2009-04-19 22:45:56 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -75,8 +75,6 @@ GKSdev  *GKS_GetDevByName(name)
         else if(!strcmp(name,"cro"))
                 return GKS_GetCROdev();
 #endif
-        else if(!strcmp(name,"cro"))
-                return GKS_GetCROdev();
 
         /*
          * device not found
