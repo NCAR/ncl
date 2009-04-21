@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.237 2008-12-19 02:08:33 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.238 2009-04-21 16:07:44 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -614,6 +614,18 @@ begin
                                           "gsnStringFontHeightF",0.0)
         end if 
       end if 
+;
+; Check for font color
+;
+      if(isatt(res,"gsnLeftStringFontColor")) then
+        left@gsnLeftStringFontColor = get_res_value(res, \
+                                        "gsnLeftStringFontColor",1)
+      else
+        if(isatt(res,"gsnStringFontColor")) then
+          left@gsnLeftStringFontColor = get_res_value_keep(res, \
+                                          "gsnStringFontColor",1)
+        end if 
+      end if 
       delete(res@gsnLeftString)
     end if
 ;
@@ -647,6 +659,18 @@ begin
         if(isatt(res,"gsnStringFontHeightF")) then
           center@gsnCenterStringFontHeightF = get_res_value_keep(res, \
                                              "gsnStringFontHeightF",0.0)
+        end if 
+      end if 
+;
+; Check for font color
+;
+      if(isatt(res,"gsnCenterStringFontColor")) then
+        center@gsnCenterStringFontColor = get_res_value(res, \
+                                           "gsnCenterStringFontColor",1)
+      else
+        if(isatt(res,"gsnStringFontColor")) then
+          center@gsnCenterStringFontColor = get_res_value_keep(res, \
+                                             "gsnStringFontColor",1)
         end if 
       end if 
       delete(res@gsnCenterString)
@@ -683,11 +707,26 @@ begin
                                            "gsnStringFontHeightF",0.0)
         end if 
       end if 
+;
+; Check for font color
+;
+      if(isatt(res,"gsnRightStringFontColor")) then
+        right@gsnRightStringFontColor = get_res_value(res, \
+                                         "gsnRightStringFontColor",1)
+      else
+        if(isatt(res,"gsnStringFontColor")) then
+          right@gsnRightStringFontColor = get_res_value_keep(res, \
+                                           "gsnStringFontColor",1)
+        end if 
+      end if 
       delete(res@gsnRightString)
     end if
   end if
   if(isatt(res,"gsnStringFontHeightF")) then
     delete(res@gsnStringFontHeightF)
+  end if
+  if(isatt(res,"gsnStringFontColor")) then
+    delete(res@gsnStringFontColor)
   end if
   return
 end
@@ -922,6 +961,8 @@ local valid_string_res
 begin
   valid_subttl_res = (/"gsnLeftString","gsnCenterString","gsnRightString",\
                        "gsnStringFont","gsnStringFontHeightF", \
+                       "gsnStringFontColor","gsnLeftStringFontColor", \
+                       "gsnCenterStringFontColor","gsnRightStringFontColor", \
                        "gsnLeftStringFontHeightF",      \
                        "gsnCenterStringFontHeightF",    \
                        "gsnRightStringFontHeightF",     \
@@ -1680,7 +1721,7 @@ procedure add_subtitles(wks:graphic,plot:graphic,left_string:logical,\
                         center_string:logical,right_string:logical,\
                         res:logical)
 local text_object, parallel_pos, anno, just, strings, txres, amres, \
-num_res, ablank, chararray, string_len
+num_res, ablank, chararray, string_len, colors, ss
 begin
   amres = False   ; Annotation resources
   txres = False   ; Text resources
@@ -1717,8 +1758,11 @@ begin
   just         = (/"left","center","right"/)
   fhghts       = (/0.,0.,0./)
   strings      = (/"","",""/)  
+  colors       = True  ;  We can't set to an array, because colors could
+                       ; be integers or strings. Instead, we'll use
+                       ; attributes to set the colors for each string.
 ;
-; Set the three strings and their fonts and font heights. 
+; Set the three strings and their fonts, colors, and font heights. 
 ;
   if(left_string)
     if(isatt(left_string,"gsnStringFont"))
@@ -1728,6 +1772,8 @@ begin
     fhghts(0)  = get_res_value_keep(left_string,"gsnLeftStringFontHeightF",\
                  get_res_value_keep(left_string,"gsnStringFontHeightF",\
                  get_res_value_keep(txres,"txFontHeightF",0.0)))
+    colors@s0  = get_res_value_keep(left_string,"gsnLeftStringFontColor",\
+                 get_res_value_keep(left_string,"gsnStringFontColor",1))
   end if
   if(center_string) 
     if(isatt(center_string,"gsnStringFont"))
@@ -1737,6 +1783,8 @@ begin
     fhghts(1)  = get_res_value_keep(center_string,"gsnCenterStringFontHeightF",\
                  get_res_value_keep(center_string,"gsnStringFontHeightF",\
                  get_res_value_keep(txres,"txFontHeightF",0.0)))
+    colors@s1  = get_res_value_keep(center_string,"gsnCenterStringFontColor",\
+                 get_res_value_keep(center_string,"gsnStringFontColor",1))
   end if
   if(right_string)
     if(isatt(right_string,"gsnStringFont"))
@@ -1746,6 +1794,8 @@ begin
     fhghts(2)  = get_res_value_keep(right_string,"gsnRightStringFontHeightF",\
                  get_res_value_keep(right_string,"gsnStringFontHeightF",\
                  get_res_value_keep(txres,"txFontHeightF",0.0)))
+    colors@s2  = get_res_value_keep(right_string,"gsnRightStringFontColor",\
+                 get_res_value_keep(right_string,"gsnStringFontColor",1))
   end if
 ;
 ; Remove the text font height, so it doesn't get applied at the end.
@@ -1764,9 +1814,11 @@ begin
       string_len = dimsizes(chararray)-1
 
       if(any(chararray(0:string_len-1).ne.ablank(0)))
+        ss = "s" + i
         text_object = create just(i)+"string" textItemClass wks
           "txString"      : strings(i)
           "txFontHeightF" : fhghts(i)
+          "txFontColor"   : colors@$ss$
         end create
 
         attsetvalues_check(text_object,txres)   ; Set some text resources.
