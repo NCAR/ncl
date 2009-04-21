@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.214 2009-04-15 12:49:48 shea Exp $
+;      $Id: contributed.ncl,v 1.215 2009-04-21 00:42:52 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9995,7 +9995,7 @@ local nGood_x, nbinsx, xMin, xMax, mnmxint, binx, binxBound, binxCenter, nbx \
      ,nGood_y, nbinsy, yMin, yMax, ySpace , biny, binyBound, binyCenter, nby \
      ,outside, mnmxint, pdf2, nTot, dimx, dimy, rankx, ranky, x1d, y1d, iy, warnFlag\
      ,xMIN, xMAX, yMIN, yMAX, binxBoundMin, binxBoundMax, binyBoundMin, binyBoundMax\
-     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut
+     ,nMax, nUse, nxLoOut, nxHiOut, nyLoOut, nyHiOut, popt
 begin
 
   if (nbinx.le.2) then
@@ -10124,7 +10124,9 @@ begin
       end do
 
   else                    ; EFFICIENT when x and y 'conform'
-      pdf2 = pdfxy_bin(x,y, binxBound,binyBound, 0, False)
+      popt          = True
+      popt@fraction = True
+      pdf2 = pdfxy_bin(x,y, binxBound,binyBound, popt)
                           ; all NCL
     ;;x1d  = ndtooned(x)  ; requires more memory
     ;;y1d  = ndtooned(y)
