@@ -2985,6 +2985,24 @@ begin
           res@cnLineLabelsOn = False
       end if
   end if
+  if (isatt(opt,"cnLevelSelectionMode")) then
+      res@cnLevelSelectionMode  = opt@cnLevelSelectionMode
+  end if
+  if (isatt(opt,"cnLevelSelectionMode")) then
+      res@cnLevelSelectionMode  = opt@cnLevelSelectionMode
+  end if
+  if (isatt(opt,"cnMinLevelValF")) then
+      res@cnMinLevelValF  = opt@cnMinLevelValF
+  end if
+  if (isatt(opt,"cnMaxLevelValF")) then
+      res@cnMaxLevelValF  = opt@cnMaxLevelValF
+  end if
+  if (isatt(opt,"cnLevelSpacingF")) then
+      res@cnLevelSpacingF  = opt@cnLevelSpacingF
+  end if
+  if (isatt(opt,"cnLevels")) then
+      res@cnLevels  = opt@cnLevels
+  end if
   
   NW = 6
   if (isatt(opt,"maxWavePlot")) then     ; wave [Y] axis
