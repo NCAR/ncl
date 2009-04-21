@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.215 2009-04-21 00:42:52 haley Exp $
+;      $Id: contributed.ncl,v 1.216 2009-04-21 23:34:56 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1652,11 +1652,11 @@ begin
      xF = xB*scale + offset 
  end if
 
- if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."short") then
+ if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."byte") then
      vrB = xB@valid_range
      vrF = new ( dimsizes(vrB), float)
      vrF = vrB*scale + offset 
-     delete(xF@valid_range)    ; delete the "short" valid_range
+     delete(xF@valid_range)    ; delete the "byte" valid_range
      xF@valid_range = vrF      ; recreate with float
  end if
 
@@ -1837,11 +1837,11 @@ begin
      xF = scale*(xB - offset) 
  end if
 
- if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."short") then
+ if (isatt(xB,"valid_range") .and. typeof(xB@valid_range).eq."byte") then
      vrB = xB@valid_range
      vrF = new ( dimsizes(vrB), float)
      vrF = vrB*scale + offset 
-     delete(xF@valid_range)    ; delete the "short" valid_range
+     delete(xF@valid_range)    ; delete the "byte" valid_range
      xF@valid_range = vrF      ; recreate with float
  end if
 
