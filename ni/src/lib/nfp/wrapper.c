@@ -190,9 +190,7 @@ extern NhlErrorTypes simpne_W(void);
 extern NhlErrorTypes poisson_grid_fill_W(void);
 extern NhlErrorTypes wk_smooth121_W(void);
 extern NhlErrorTypes spcorr_W(void);
-/*
 extern NhlErrorTypes pdfxy_bin_W(void);
-*/
 
 extern NhlErrorTypes nggcog_W(void);
 extern NhlErrorTypes ngritd_W(void);
@@ -2889,20 +2887,18 @@ void NclAddUserFuncs(void)
  *
  * Create private argument array
  */
-/*
         nargs = 0;
-        args = NewArgs(6);
+        args = NewArgs(5);
 
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
         dimsizes[0] = 1;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
-        SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+        SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
         NclRegisterFunc(pdfxy_bin_W,args,"pdfxy_bin",nargs);
-*/
+
 /*
  * Register "simpeq"
  *
