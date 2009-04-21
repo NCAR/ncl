@@ -52,20 +52,20 @@ NhlErrorTypes pdfxy_bin_W( void )
  * Argument # 4
  */
   logical *opt;
+
 /*
  * Return variable
  */
   void *pdf;
   double *tmp_pdf;
-  int ndims_pdf, *dsizes_pdf;
+  int dsizes_pdf[2];
   NclBasicDataTypes type_pdf;
 
 /*
  * Various
  */
   int nxy, mbxp1, nbyp1, nby, mbx, nbymbx;
-  int index_xy, index_pdf, ier;
-  int i, ndims_leftmost, size_leftmost, size_output, ret;
+  int i, size_xy, size_output, ier, ret;
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -114,7 +114,9 @@ NhlErrorTypes pdfxy_bin_W( void )
     return(NhlFATAL);
   }
 
+  size_xy = 1;
   for(i = 0; i < ndims_x; i++) {
+    size_xy *= dsizes_x[i];
     if(dsizes_x[i] != dsizes_y[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: The x and y arrays must have the same dimensionality");
       return(NhlFATAL);
@@ -237,19 +239,6 @@ NhlErrorTypes pdfxy_bin_W( void )
   coerce_missing(type_y,has_missing_y,&missing_y,&missing_dbl_y,NULL);
 
 /*
- * Calculate size of leftmost dimensions.
- */
-  if(ndims_x == 1) {
-    ndims_leftmost = 0;
-  }
-  else {
-    ndims_leftmost = ndims_x-1;
-  }
-  size_leftmost = 1;
-  for(i = 0; i < ndims_leftmost; i++) size_leftmost *= dsizes_x[i];
-
-
-/*
  * The output type defaults to float, unless any input arrays are double.
  */
   if(type_x       == NCL_double || type_y       == NCL_double ||
@@ -261,45 +250,26 @@ NhlErrorTypes pdfxy_bin_W( void )
   }
 
 /* 
- * Allocate space for coercing input arrays.  If any of the input
- * is already double, then we don't need to allocate space for
- * temporary arrays, because we'll just change the pointer into
- * the void array appropriately.
+ * Coerce input arrays to double if necessary.
  */
-/*
- * Allocate space for tmp_x.
- */
-  if(type_x != NCL_double) {
-    tmp_x = (double *)calloc(nxy,sizeof(double));
-    if(tmp_x == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing x to double");
-      return(NhlFATAL);
-    }
+  tmp_x = coerce_input_double(x,type_x,size_xy,0,NULL,NULL);
+  if(tmp_x == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing x to double");
+    return(NhlFATAL);
   }
 
-/*
- * Allocate space for tmp_y.
- */
-  if(type_y != NCL_double) {
-    tmp_y = (double *)calloc(nxy,sizeof(double));
-    if(tmp_y == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing y to double");
-      return(NhlFATAL);
-    }
+  tmp_y = coerce_input_double(y,type_y,size_xy,0,NULL,NULL);
+  if(tmp_y == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing y to double");
+    return(NhlFATAL);
   }
 
-/*
- * Allocate space for tmp_binxbnd.
- */
   tmp_binxbnd = coerce_input_double(binxbnd,type_binxbnd,mbxp1,0,NULL,NULL);
   if(tmp_binxbnd == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing binxbnd to double");
     return(NhlFATAL);
   }
 
-/*
- * Allocate space for tmp_binybnd.
- */
   tmp_binybnd = coerce_input_double(binybnd,type_binybnd,nbyp1,0,NULL,NULL);
   if(tmp_binybnd == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing binybnd to double");
@@ -310,13 +280,12 @@ NhlErrorTypes pdfxy_bin_W( void )
  * Calculate size of output array.
  */
   nbymbx = nby * mbx;
-  size_output = size_leftmost * nbymbx;
 
 /* 
  * Allocate space for output array.
  */
   if(type_pdf != NCL_double) {
-    pdf = (void *)calloc(size_output, sizeof(float));
+    pdf     = (void *)calloc(nbymbx, sizeof(float));
     tmp_pdf = (double *)calloc(nbymbx,sizeof(double));
     if(tmp_pdf == NULL) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for temporary output array");
@@ -324,75 +293,26 @@ NhlErrorTypes pdfxy_bin_W( void )
     }
   }
   else {
-    pdf = (void *)calloc(size_output, sizeof(double));
+    pdf = (void *)calloc(nbymbx, sizeof(double));
   }
   if(pdf == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
-
-/* 
- * Allocate space for output dimension sizes and set them.
- */
-  ndims_pdf = ndims_leftmost + 2;
-  dsizes_pdf = (int*)calloc(ndims_pdf,sizeof(int));  
-  if( dsizes_pdf == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for holding dimension sizes");
-    return(NhlFATAL);
-  }
-  for(i = 0; i < ndims_pdf-2; i++) dsizes_pdf[i] = dsizes_x[i];
-  dsizes_pdf[ndims_pdf-2] = nby;
-  dsizes_pdf[ndims_pdf-1] = mbx;
-
-/*
- * Loop across leftmost dimensions and call the Fortran routine for each
- * subsection of the input arrays.
- */
-  index_xy = index_pdf = 0;
-
-  for(i = 0; i < size_leftmost; i++) {
-/*
- * Coerce subsection of x (tmp_x) to double if necessary.
- */
-    if(type_x != NCL_double) {
-      coerce_subset_input_double(x,tmp_x,index_xy,type_x,nxy,0,NULL,NULL);
-    }
-    else {
-      tmp_x = &((double*)x)[index_xy];
-    }
-
-/*
- * Coerce subsection of y (tmp_y) to double if necessary.
- */
-    if(type_y != NCL_double) {
-      coerce_subset_input_double(y,tmp_y,index_xy,type_y,nxy,0,NULL,NULL);
-    }
-    else {
-      tmp_y = &((double*)y)[index_xy];
-    }
-
-/*
- * Point temporary output array to void output array if appropriate.
- */
-    if(type_pdf == NCL_double) tmp_pdf = &((double*)pdf)[index_pdf];
+  if(type_pdf == NCL_double) tmp_pdf = &((double*)pdf)[0];
 
 /*
  * Call the Fortran routine.
  */
-    NGCALLF(xy2pdf77,XY2PDF77)(&nxy, tmp_x, tmp_y, &missing_dbl_x.doubleval,
-                               &missing_dbl_y.doubleval, &nby, &mbx, 
-                               tmp_pdf, &mbxp1, &nbyp1, tmp_binxbnd, 
-                               tmp_binybnd, &ipcnt, &ier);
+  NGCALLF(xy2pdf77,XY2PDF77)(&nxy, tmp_x, tmp_y, &missing_dbl_x.doubleval,
+                             &missing_dbl_y.doubleval, &nby, &mbx, 
+                             tmp_pdf, &mbxp1, &nbyp1, tmp_binxbnd, 
+                             tmp_binybnd, &ipcnt, &ier);
 
 /*
  * Coerce output back to float if necessary.
  */
-    if(type_pdf == NCL_float) {
-      coerce_output_float_only(pdf,tmp_pdf,nbymbx,index_pdf);
-    }
-    index_xy  += nxy;
-    index_pdf += nbymbx;
-  }
+  if(type_pdf == NCL_float) coerce_output_float_only(pdf,tmp_pdf,nbymbx,0);
 
 /*
  * Free unneeded memory.
@@ -406,7 +326,8 @@ NhlErrorTypes pdfxy_bin_W( void )
 /*
  * Return value back to NCL script.
  */
-  ret = NclReturnValue(pdf,ndims_pdf,dsizes_pdf,NULL,type_pdf,0);
-  NclFree(dsizes_pdf);
+  dsizes_pdf[0] = nby;
+  dsizes_pdf[1] = mbx;
+  ret = NclReturnValue(pdf,2,dsizes_pdf,NULL,type_pdf,0);
   return(ret);
 }
