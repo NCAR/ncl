@@ -64,8 +64,8 @@ NhlErrorTypes pdfxy_bin_W( void )
 /*
  * Various
  */
-  int nxy, mbxp1, nbyp1, nby, mbx, nbymbx;
-  int i, size_xy, size_output, ier, ret;
+  int i, nxy, mbxp1, nbyp1, nby, mbx, nbymbx, ier, ret;
+
 
 /*
  * Variables for retrieving attributes from "opt".
@@ -95,7 +95,6 @@ NhlErrorTypes pdfxy_bin_W( void )
            &type_x,
            2);
 
-  nxy = dsizes_x[ndims_x-1];
 /*
  * Get argument # 1
  */
@@ -114,9 +113,9 @@ NhlErrorTypes pdfxy_bin_W( void )
     return(NhlFATAL);
   }
 
-  size_xy = 1;
+  nxy = 1;
   for(i = 0; i < ndims_x; i++) {
-    size_xy *= dsizes_x[i];
+    nxy *= dsizes_x[i];
     if(dsizes_x[i] != dsizes_y[i]) {
       NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: The x and y arrays must have the same dimensionality");
       return(NhlFATAL);
@@ -252,13 +251,13 @@ NhlErrorTypes pdfxy_bin_W( void )
 /* 
  * Coerce input arrays to double if necessary.
  */
-  tmp_x = coerce_input_double(x,type_x,size_xy,0,NULL,NULL);
+  tmp_x = coerce_input_double(x,type_x,nxy,0,NULL,NULL);
   if(tmp_x == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing x to double");
     return(NhlFATAL);
   }
 
-  tmp_y = coerce_input_double(y,type_y,size_xy,0,NULL,NULL);
+  tmp_y = coerce_input_double(y,type_y,nxy,0,NULL,NULL);
   if(tmp_y == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: Unable to allocate memory for coercing y to double");
     return(NhlFATAL);
