@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.236 2009-03-20 02:01:32 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.237 2009-04-22 22:23:27 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1057,7 +1057,7 @@ NhlErrorTypes _Nclstrlen
                         &missing,
                         &has_missing,
                         NULL,
-                        2);
+                        0);
 
     for (i = 0; i < ndims; i++)
         sz *= dimsz[i];
@@ -9054,7 +9054,7 @@ NhlErrorTypes _Ncldim_product_n
 /*
  * Get dimensions to do product across.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Read data values off stack (or not)
@@ -9336,7 +9336,7 @@ NhlErrorTypes _Ncldim_sum_n
 /*
  * Get dimension(s) to do sum across.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Read data values off stack (or not)
@@ -9756,7 +9756,7 @@ NhlErrorTypes _Ncldim_cumsum_n
  * context, so I'm going to register it to only allow one
  * input dimension.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 	data0 = _NclGetArg(0,3,DONT_CARE);
 	switch(data0.kind) {
@@ -10308,7 +10308,7 @@ NhlErrorTypes _Ncldim_avg_n
 /*
  * Get dimension(s) to do average across.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 /*
  * Read data values off stack (or not)
  */
@@ -10701,7 +10701,7 @@ NhlErrorTypes _NclIdim_variance_n
 /*
  * Get dimension(s) to do average across.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Read data values off stack (or not)
@@ -11295,7 +11295,7 @@ NhlErrorTypes _NclIdim_stddev_n
 /*
  * Get dimension(s) to do average across.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Read data values off stack (or not)
@@ -13215,7 +13215,7 @@ NhlErrorTypes _Ncldim_min_n
 /*
  * Get dimension to do minimum across.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Read data values off stack (or not)
@@ -13513,7 +13513,7 @@ NhlErrorTypes _Ncldim_max_n
 /*
  * Get dimension to do maximum across.
  */
-	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,2);
+	dims = (int *)NclGetArgValue(1,2,NULL,&ndims,NULL,NULL,NULL,0);
 
 /*
  * Read data values off stack (or not)
@@ -15250,7 +15250,7 @@ NhlErrorTypes sprinti_W( void )
 	   NULL,
 	   NULL,
            NULL,
-           2);
+           0);
 
   input_var = (int*)NclGetArgValue(
            1,
@@ -15260,7 +15260,7 @@ NhlErrorTypes sprinti_W( void )
 	   &missing_input_var,
 	   &has_missing_input_var,
            NULL,
-           2);
+           0);
   /*
   * compute total number of elements
   */
@@ -15329,7 +15329,7 @@ NhlErrorTypes sprintf_W(void)
         NULL,
         NULL,
         NULL,
-        2);
+        0);
 
     /*
      * Accept args of any numeric type and coerce as necessary.
@@ -15342,7 +15342,7 @@ NhlErrorTypes sprintf_W(void)
         &missing_input_var,
         &has_missing_input_var,
         &type, 
-        2);
+        0);
 
     /*
      * Compute total number of elements based on input and allocate
