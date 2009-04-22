@@ -34,24 +34,20 @@ c binning
       if (msgflg.eq.1) then
           do nb=1,nby
             do mb=1,mbx
-              do n=1,nxy 
-                 pdf(mb,nb) = count(x.ne.xmsg .and. y.ne.ymsg .and.    
-     *                              x.ge.binxbnd(mb)  .and.
-     *                              x.lt.binxbnd(mb+1).and. 
-     *                              y.ge.binybnd(nb)  .and.
-     *                              y.lt.binybnd(nb+1))
-              end do
+               pdf(mb,nb) = count(x.ne.xmsg .and. y.ne.ymsg .and.    
+     *                            x.ge.binxbnd(mb)  .and.
+     *                            x.lt.binxbnd(mb+1).and. 
+     *                            y.ge.binybnd(nb)  .and.
+     *                            y.lt.binybnd(nb+1))
             end do
           end do
       else
           do nb=1,nby
             do mb=1,mbx
-               do n=1,nxy 
-                  pdf(mb,nb) = count(x.ge.binxbnd(mb)  .and.
-     *                               x.lt.binxbnd(mb+1).and. 
-     *                               y.ge.binybnd(nb)  .and.
-     *                               y.lt.binybnd(nb+1))
-               end do
+               pdf(mb,nb) = count(x.ge.binxbnd(mb)  .and.
+     *                            x.lt.binxbnd(mb+1).and. 
+     *                            y.ge.binybnd(nb)  .and.
+     *                            y.lt.binybnd(nb+1))
             end do
           end do
       end if
