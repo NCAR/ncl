@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.216 2009-04-21 23:34:56 shea Exp $
+;      $Id: contributed.ncl,v 1.217 2009-04-22 16:22:38 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -10027,7 +10027,7 @@ begin
       end if
     
       if (nGood_x.lt.3 .or. nGood_y.lt.3) then
-          print("pdfxy: exit error")
+          print("pdfxy: exit error: not enough points")
           pdf2 = new( (/nbinsy,nbinsx/), "double", 1d20)
           return( pdf2 )
       end if
@@ -10037,6 +10037,15 @@ begin
   xMAX = max(x)*1d0   ; force "double" [*1d0]
   yMIN = min(y)*1d0   
   yMAX = max(y)*1d0  
+                                             ; max number possible
+  nMax = num(x.ge.xMIN .and. x.le.xMAX .and. \
+             y.ge.yMIN .and. y.le.yMAX) 
+
+  if (nMax.lt.3) then                        
+      print("pdfxy: exit error: nMax.lt.3")
+      pdf2 = new( (/nbinsy,nbinsx/), "double", 1d20)
+      return( pdf2 )
+  end if
 
   xMin = 0.0d         ; prototype as "double"    
   xMax = 0.0d
@@ -10114,20 +10123,10 @@ begin
   rankx       = dimsizes(dimx)
   ranky       = dimsizes(dimy)
 
-  if (rankx.ne.ranky .or. .not.all(dimx.eq.dimy)) then
-                          ; GENERAL and SIMPLE but slow for *large* arrays
-      do nby=0,nbinsy-1
-        do nbx=0,nbinsx-1
-           pdf2(nby,nbx) = num(x.ge.binxBound(nbx) .and. x.lt.binxBound(nbx+1) .and.\
-                               y.ge.binyBound(nby) .and. y.lt.binyBound(nby+1) )
-        end do
-      end do
-
-  else                    ; EFFICIENT when x and y 'conform'
-      popt          = True
-      popt@fraction = True
-      pdf2 = pdfxy_bin(x,y, binxBound,binyBound, popt)
-                          ; all NCL
+  popt          = True
+  popt@fraction = False     ; False means to return %
+  pdf2 = pdfxy_bin(x,y, binxBound,binyBound, popt)
+                          ; all NCL [original code]
     ;;x1d  = ndtooned(x)  ; requires more memory
     ;;y1d  = ndtooned(y)
 
@@ -10142,15 +10141,14 @@ begin
     ;;   delete(iy)      ; size may change
     ;;end do
 
+  if (popt .and. isatt(popt,"fraction") .and. popt@fraction) then
+      pdf2 = 1d2*pdf2                ; frequency [%]
   end if
 
   pdf2!0   = "y"         ; arbitrary name
   pdf2!1   = "x"
   pdf2&x   =  binxCenter 
   pdf2&y   =  binyCenter
-                                             ; max number possible
-  nMax     = num(x.ge.xMIN .and. x.le.xMAX .and. \
-                 y.ge.yMIN .and. y.le.yMAX) 
                                              ; actual number used
   nUse     = num(x.ge.binxBoundMin .and. x.le.binxBoundMax .and. \
                  y.ge.binyBoundMin .and. y.le.binyBoundMax)
@@ -10167,10 +10165,6 @@ begin
       nyHiOut  = num(y.ge.binyBoundMax)
   end if
 
-  if (nMax.gt.0) then
-      pdf2             = 1d2*pdf2/nMax           ; frequency [%]
-  end if
-      
   pdf2@nMax            = nMax
   pdf2@nUse            = nUse
   pdf2@nOut            = nxLoOut + nxHiOut + nyLoOut + nyHiOut
