@@ -1,5 +1,5 @@
 C
-C       $Id: stdraw.f,v 1.21 2008-07-27 00:17:28 haley Exp $
+C       $Id: stdraw.f,v 1.22 2009-04-22 19:26:37 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -90,7 +90,7 @@ C
      +                FZFS    ,FZFX    ,FZFY    ,IZFP    ,IZFC  ,
      +                FILS    ,FILX    ,FILY    ,IILP    ,IILC 
 C
-C Character variable declartions
+C Character variable declarations
 C
       CHARACTER*160 CSTR
       PARAMETER (IPCHSZ=80)
@@ -108,7 +108,7 @@ C IPNPTS - Number of points in the point buffer -- not less than 3
 C IPLSTL - Streamline-crossover-check circular list length
 C IPGRCT - Number of groups supported for area masking
 C
-      PARAMETER (IPNPTS = 256, IPLSTL = 750, IPGRCT = 64)
+      PARAMETER (IPNPTS = 256, IPLSTL = 1200, IPGRCT = 64)
 C
 C --------------------------------------------------------------------
 C
@@ -174,6 +174,7 @@ C IDR      - drawing direction 0 + direction 1 - direction
 C SGN      - multiplier to change sign based on drawing direction
 C IPC      - number of points currently in the point buffer
 C ICT      - count of iterations in current streamline
+C MCT      - maximum iteration count for a streamline
 C I,J      - Grid indices
 C UIJ,VIJ  - individual vector components
 C CVF      - component-wise vector normalizing factor
@@ -257,6 +258,7 @@ C
       IPD = 0
       ICN = 0
       ICA = 0
+      MCT = 0
 C
 C
 C Compute the X and Y normalized (and possibly transformed)
@@ -332,6 +334,7 @@ C
 C
 C First ensure that the point buffer is clear
 C
+      MCT = MAX(ICT,MCT)
       IF (IPC .LE. 2 .OR. (IPD .EQ. 0 .AND. DST .LE. PSMALL)) ICN = 1
       IF (ICN .EQ. 0) THEN
          CALL STLNSG(PX,PY,SV,IPC,IAM,STUMSL)
@@ -661,6 +664,14 @@ C (1) Are the new points on the grid?
 C (2) Check for missing data if msg data flag (ISVF) has been set.
 C (3) Is this box eligible for a directional arrow?
 C (4) Location of this entry versus other streamline entries
+C
+C  But first see if there is a danger of an infinite loop --
+C  the symptoms are the crossover check array is full and the 
+C  number of iterations is way over the norm.
+C
+         IF (LCU .EQ. IPLSTL .AND. ICT .GE. 20.0/DFMG) THEN
+            GOTO 50
+         END IF
 C
          I = INT(X)
          J = INT(Y)

@@ -1,5 +1,5 @@
 C
-C       $Id: stutil.f,v 1.4 2008-07-27 00:17:28 haley Exp $
+C       $Id: stutil.f,v 1.5 2009-04-22 19:26:37 dbrown Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -296,7 +296,7 @@ C
 C
       DIMENSION IAI(IPGRCT),IAG(IPGRCT)
       DIMENSION XO(IPNPTS), YO(IPNPTS)
-      DIMENSION IC(IPC)
+      DIMENSION IC(IPNPTS)
 C
       IF (ICTV .EQ. 0) THEN
          IF (IMSK.LT.1) THEN
