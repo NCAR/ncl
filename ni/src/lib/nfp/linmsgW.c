@@ -37,7 +37,7 @@ NhlErrorTypes linmsg_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           1,
@@ -47,7 +47,7 @@ NhlErrorTypes linmsg_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Compute the total number of elements in our x array.
  */

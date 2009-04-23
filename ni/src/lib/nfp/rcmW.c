@@ -57,7 +57,7 @@ NhlErrorTypes rcm2rgrid_W( void )
           NULL,
           NULL,
           &type_lat2d,
-          2);
+          DONT_CARE);
 
   lon2d = (void*)NclGetArgValue(
           1,
@@ -67,7 +67,7 @@ NhlErrorTypes rcm2rgrid_W( void )
           NULL,
           NULL,
           &type_lon2d,
-          2);
+          DONT_CARE);
 
   fi = (void*)NclGetArgValue(
           2,
@@ -77,7 +77,7 @@ NhlErrorTypes rcm2rgrid_W( void )
           &missing_fi,
           &has_missing_fi,
           &type_fi,
-          2);
+          DONT_CARE);
 
   lat1d = (void*)NclGetArgValue(
           3,
@@ -87,7 +87,7 @@ NhlErrorTypes rcm2rgrid_W( void )
           NULL,
           NULL,
           &type_lat1d,
-          2);
+          DONT_CARE);
 
   lon1d = (void*)NclGetArgValue(
           4,
@@ -97,7 +97,7 @@ NhlErrorTypes rcm2rgrid_W( void )
           NULL,
           NULL,
           &type_lon1d,
-          2);
+          DONT_CARE);
 
   opt = (void*)NclGetArgValue(
           5,
@@ -107,7 +107,7 @@ NhlErrorTypes rcm2rgrid_W( void )
           NULL,
           NULL,
           &type_opt,
-          2);
+          DONT_CARE);
 /*
  * Check the input lat/lon arrays. They must be the same size, and larger
  * than one element.
@@ -285,7 +285,7 @@ NhlErrorTypes rgrid2rcm_W( void )
           NULL,
           NULL,
           &type_lat1d,
-          2);
+          DONT_CARE);
 
   lon1d = (void*)NclGetArgValue(
           1,
@@ -295,7 +295,7 @@ NhlErrorTypes rgrid2rcm_W( void )
           NULL,
           NULL,
           &type_lon1d,
-          2);
+          DONT_CARE);
 
   fi = (void*)NclGetArgValue(
           2,
@@ -305,7 +305,7 @@ NhlErrorTypes rgrid2rcm_W( void )
           &missing_fi,
           &has_missing_fi,
           &type_fi,
-          2);
+          DONT_CARE);
 
   lat2d = (void*)NclGetArgValue(
           3,
@@ -315,7 +315,7 @@ NhlErrorTypes rgrid2rcm_W( void )
           NULL,
           NULL,
           &type_lat2d,
-          2);
+          DONT_CARE);
 
   lon2d = (void*)NclGetArgValue(
           4,
@@ -325,7 +325,7 @@ NhlErrorTypes rgrid2rcm_W( void )
           NULL,
           NULL,
           &type_lon2d,
-          2);
+          DONT_CARE);
 
   opt = (void*)NclGetArgValue(
           5,
@@ -335,7 +335,7 @@ NhlErrorTypes rgrid2rcm_W( void )
           NULL,
           NULL,
           &type_opt,
-          2);
+          DONT_CARE);
 /*
  * Check the output lat/lon arrays. They must be the same size, and larger
  * than one element.
@@ -509,7 +509,7 @@ NhlErrorTypes rcm2points_W( void )
           NULL,
           NULL,
           &type_lat2d,
-          2);
+          DONT_CARE);
 
   lon2d = (void*)NclGetArgValue(
           1,
@@ -519,7 +519,7 @@ NhlErrorTypes rcm2points_W( void )
           NULL,
           NULL,
           &type_lon2d,
-          2);
+          DONT_CARE);
 
   fi = (void*)NclGetArgValue(
           2,
@@ -529,7 +529,7 @@ NhlErrorTypes rcm2points_W( void )
           &missing_fi,
           &has_missing_fi,
           &type_fi,
-          2);
+          DONT_CARE);
 
   lat1d = (void*)NclGetArgValue(
           3,
@@ -539,7 +539,7 @@ NhlErrorTypes rcm2points_W( void )
           NULL,
           NULL,
           &type_lat1d,
-          2);
+          DONT_CARE);
 
   lon1d = (void*)NclGetArgValue(
           4,
@@ -549,7 +549,7 @@ NhlErrorTypes rcm2points_W( void )
           NULL,
           NULL,
           &type_lon1d,
-          2);
+          DONT_CARE);
 
   opt = (void*)NclGetArgValue(
           5,
@@ -559,7 +559,7 @@ NhlErrorTypes rcm2points_W( void )
           NULL,
           NULL,
           &type_opt,
-          2);
+          DONT_CARE);
 /*
  * Check the input lat/lon arrays. They must be the same size, and larger
  * than one element.

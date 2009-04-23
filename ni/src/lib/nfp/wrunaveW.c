@@ -45,7 +45,7 @@ NhlErrorTypes wgt_runave_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   wgt = (void*)NclGetArgValue(
           1,
@@ -55,7 +55,7 @@ NhlErrorTypes wgt_runave_W( void )
           NULL,
           NULL,
           &type_wgt,
-          2);
+          DONT_CARE);
 
   kopt = (int*)NclGetArgValue(
           2,
@@ -65,7 +65,7 @@ NhlErrorTypes wgt_runave_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check input dimension sizes.
  */
@@ -196,7 +196,7 @@ NhlErrorTypes runave_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   nave = (int*)NclGetArgValue(
           1,
@@ -206,7 +206,7 @@ NhlErrorTypes runave_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   kopt = (int*)NclGetArgValue(
           2,
@@ -216,7 +216,7 @@ NhlErrorTypes runave_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * x and wgt must have the same leftmost dimensions.
  */

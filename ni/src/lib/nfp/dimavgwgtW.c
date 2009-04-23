@@ -66,7 +66,7 @@ NhlErrorTypes dim_avg_wgt_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
 /*
  * Coerce missing value to double if necessary.
@@ -86,7 +86,7 @@ NhlErrorTypes dim_avg_wgt_W( void )
            NULL,
            NULL,
            &type_w,
-           2);
+           DONT_CARE);
 
   if(dsizes_w[0] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_avg_wgt: w must be length nx");
@@ -103,7 +103,7 @@ NhlErrorTypes dim_avg_wgt_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -299,7 +299,7 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
 /*
  * Coerce missing value to double if necessary.
@@ -318,7 +318,7 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
            NULL,
            NULL,
            &type_w,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 2
@@ -331,7 +331,7 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 3
@@ -344,7 +344,7 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Some error checking. Make sure input dimension is valid.
@@ -539,7 +539,7 @@ NhlErrorTypes dim_sum_wgt_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
 /*
  * Coerce missing value to double if necessary.
@@ -559,7 +559,7 @@ NhlErrorTypes dim_sum_wgt_W( void )
            NULL,
            NULL,
            &type_w,
-           2);
+           DONT_CARE);
 
   if(dsizes_w[0] != nx) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"dim_sum_wgt: w must be length nx");
@@ -576,7 +576,7 @@ NhlErrorTypes dim_sum_wgt_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -772,7 +772,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
 /*
  * Coerce missing value to double if necessary.
@@ -791,7 +791,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
            NULL,
            NULL,
            &type_w,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 2
@@ -804,7 +804,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 3
@@ -817,7 +817,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Some error checking. Make sure input dimension is valid.

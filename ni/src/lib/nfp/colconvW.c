@@ -53,7 +53,7 @@ NhlErrorTypes rgbhsv_W( void )
           NULL,
           NULL,
           &type_rgb,
-          2);
+          DONT_CARE);
 
 
 /*
@@ -180,7 +180,7 @@ NhlErrorTypes hsvrgb_W( void )
           NULL,
           NULL,
           &type_hsv,
-          2);
+          DONT_CARE);
 
 
 /*
@@ -307,7 +307,7 @@ NhlErrorTypes rgbhls_W( void )
           NULL,
           NULL,
           &type_rgb,
-          2);
+          DONT_CARE);
 
 
 /*
@@ -434,7 +434,7 @@ NhlErrorTypes hlsrgb_W( void )
           NULL,
           NULL,
           &type_hls,
-          2);
+          DONT_CARE);
 
 
 /*
@@ -561,7 +561,7 @@ NhlErrorTypes rgbyiq_W( void )
           NULL,
           NULL,
           &type_rgb,
-          2);
+          DONT_CARE);
 
 
 /*
@@ -688,7 +688,7 @@ NhlErrorTypes yiqrgb_W( void )
           NULL,
           NULL,
           &type_yiq,
-          2);
+          DONT_CARE);
 
 
 /*

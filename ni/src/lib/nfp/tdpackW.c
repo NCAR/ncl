@@ -44,7 +44,7 @@ NhlErrorTypes tdinit_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   orig = (float*)NclGetArgValue(
           1,
@@ -54,7 +54,7 @@ NhlErrorTypes tdinit_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   third = (float*)NclGetArgValue(
           2,
@@ -64,7 +64,7 @@ NhlErrorTypes tdinit_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   otep = (float*)NclGetArgValue(
           3,
@@ -74,7 +74,7 @@ NhlErrorTypes tdinit_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   c_tdinit(mid[0],mid[1],mid[2],orig[0],orig[1],orig[2],
            third[0],third[1],third[2],*otep);
@@ -104,7 +104,7 @@ NhlErrorTypes tdpara_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   v10 = (float*)NclGetArgValue(
           1,
@@ -114,7 +114,7 @@ NhlErrorTypes tdpara_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   v01 = (float*)NclGetArgValue(
           2,
@@ -124,7 +124,7 @@ NhlErrorTypes tdpara_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   c_tdpara(a00[0],a00[1],a00[2],v10[0],v10[1],v10[2],v01[0],v01[1],v01[2]);
 
@@ -151,13 +151,13 @@ NhlErrorTypes tdclrs_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
-  ibow =    (int*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,2);
-  shde =  (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,2);
-  shdr =  (float*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,2);
-  iofc =    (int*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
-  iolc =    (int*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
-  ilmt =    (int*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ibow =    (int*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  shde =  (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  shdr =  (float*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  iofc =    (int*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  iolc =    (int*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ilmt =    (int*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  *  Determine the NCL identifier for the graphic object in nid.
@@ -225,7 +225,7 @@ NhlErrorTypes tdgetp_W(void)
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
 
@@ -288,17 +288,17 @@ NhlErrorTypes tdgtrs_W( void )
  * Note that any of the pointer parameters can be set to NULL,
  * which implies you don't care about its value.
  */
-  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
-  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
-  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   c_tdgtrs(*irst,ifc1,ifc2,ifc3,ifc4,ilc1,ilc2,iltd,ustp,vstp,vstp);
 
@@ -351,7 +351,7 @@ NhlErrorTypes tdsetp_W(void)
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
  
@@ -384,7 +384,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -464,7 +464,7 @@ NhlErrorTypes pcsetp_W(void)
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
  
@@ -497,7 +497,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -556,17 +556,17 @@ NhlErrorTypes tdstrs_W( void )
  * Note that any of the pointer parameters can be set to NULL,
  * which implies you don't care about its value.
  */
-  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
-  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
-  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
-  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
-  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
+  irst =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc1 =   (int*)NclGetArgValue( 1,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc2 =   (int*)NclGetArgValue( 2,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc3 =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ifc4 =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ilc1 =   (int*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ilc2 =   (int*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  iltd =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ustp = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  vstp = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  wstp = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   c_tdstrs(*irst,*ifc1,*ifc2,*ifc3,*ifc4,*ilc1,*ilc2,*iltd,
            *ustp,*vstp,*vstp);
@@ -583,7 +583,7 @@ NhlErrorTypes tdprpt_W( void )
 /*
  * Retrieve parameter.
  */
-  uvw = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
+  uvw = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   c_tdprpt(uvw[0], uvw[1], uvw[2], &xy[0], &xy[1]);
   
@@ -600,7 +600,7 @@ NhlErrorTypes tdprpa_W( void )
 /*
  * Retrieve parameter.
  */
-  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
+  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   c_tdprpa(xy_in[0], xy_in[1], &xy_out[0], &xy_out[1]);
   
@@ -617,7 +617,7 @@ NhlErrorTypes tdprpi_W( void )
 /*
  * Retrieve parameter.
  */
-  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,2);
+  xy_in = (float*)NclGetArgValue(0,1,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   c_tdprpi(xy_in[0], xy_in[1], &xy_out[0], &xy_out[1]);
   
@@ -639,9 +639,9 @@ NhlErrorTypes tdline_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid =   (int*)NclGetArgValue(0,3,NULL,NULL,NULL,NULL,NULL,2);
-  uvw1 = (float*)NclGetArgValue(1,3,NULL,NULL,NULL,NULL,NULL,2);
-  uvw2 = (float*)NclGetArgValue(2,3,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =   (int*)NclGetArgValue(0,3,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvw1 = (float*)NclGetArgValue(1,3,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvw2 = (float*)NclGetArgValue(2,3,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  *  Determine the NCL identifier for the graphic object in nid.
@@ -682,9 +682,9 @@ NhlErrorTypes tdlnpa_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid =   (int*)NclGetArgValue(0,3,NULL,NULL,NULL,NULL,NULL,2);
-  uvw1 = (float*)NclGetArgValue(1,3,NULL,NULL,NULL,NULL,NULL,2);
-  uvw2 = (float*)NclGetArgValue(2,3,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =   (int*)NclGetArgValue(0,3,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvw1 = (float*)NclGetArgValue(1,3,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvw2 = (float*)NclGetArgValue(2,3,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  *  Determine the NCL identifier for the graphic object in nid.
@@ -726,13 +726,13 @@ NhlErrorTypes tdcurv_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid   =   (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
-  ucrv   = (float*)NclGetArgValue(1,7,NULL,dsizes_ucrv,NULL,NULL,NULL,2);
-  vcrv   = (float*)NclGetArgValue(2,7,NULL,dsizes_vcrv,NULL,NULL,NULL,2);
-  wcrv   = (float*)NclGetArgValue(3,7,NULL,dsizes_wcrv,NULL,NULL,NULL,2);
-  iarh   =   (int*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
-  arhl   = (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
-  arhw   = (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
+  nwid   =   (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ucrv   = (float*)NclGetArgValue(1,7,NULL,dsizes_ucrv,NULL,NULL,NULL,DONT_CARE);
+  vcrv   = (float*)NclGetArgValue(2,7,NULL,dsizes_vcrv,NULL,NULL,NULL,DONT_CARE);
+  wcrv   = (float*)NclGetArgValue(3,7,NULL,dsizes_wcrv,NULL,NULL,NULL,DONT_CARE);
+  iarh   =   (int*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  arhl   = (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  arhw   = (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   if(dsizes_ucrv[0] != dsizes_vcrv[0] || dsizes_ucrv[0] != dsizes_wcrv[0]) {
     NhlPError(NhlFATAL, NhlEUNKNOWN, "tdcurv: ucurv, vcurv, and wcurv must be the same length");
@@ -780,12 +780,12 @@ NhlErrorTypes tdgrds_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid   =   (int*)NclGetArgValue(0,6,NULL,NULL,NULL,NULL,NULL,2);
-  uvwmin = (float*)NclGetArgValue(1,6,NULL,NULL,NULL,NULL,NULL,2);
-  uvwmax = (float*)NclGetArgValue(2,6,NULL,NULL,NULL,NULL,NULL,2);
-  uvwstp = (float*)NclGetArgValue(3,6,NULL,NULL,NULL,NULL,NULL,2);
-  igrt   =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,2);
-  ihid   =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,2);
+  nwid   =   (int*)NclGetArgValue(0,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwmin = (float*)NclGetArgValue(1,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwmax = (float*)NclGetArgValue(2,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwstp = (float*)NclGetArgValue(3,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  igrt   =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ihid   =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  *  Determine the NCL identifier for the graphic object in nid.
@@ -827,14 +827,14 @@ NhlErrorTypes tdgrid_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid =   (int*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,2);
-  xbeg = (float*)NclGetArgValue(1,8,NULL,NULL,NULL,NULL,NULL,2);
-  xstp = (float*)NclGetArgValue(2,8,NULL,NULL,NULL,NULL,NULL,2);
-  noxs =   (int*)NclGetArgValue(3,8,NULL,NULL,NULL,NULL,NULL,2);
-  ybeg = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,2);
-  ystp = (float*)NclGetArgValue(5,8,NULL,NULL,NULL,NULL,NULL,2);
-  noys =   (int*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
-  igrd =   (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =   (int*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  xbeg = (float*)NclGetArgValue(1,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  xstp = (float*)NclGetArgValue(2,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  noxs =   (int*)NclGetArgValue(3,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ybeg = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ystp = (float*)NclGetArgValue(5,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  noys =   (int*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  igrd =   (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  *  Determine the NCL identifier for the graphic object in nid.
@@ -877,12 +877,12 @@ NhlErrorTypes tdlbls_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid  =    (int*)NclGetArgValue(0,6,NULL,NULL,NULL,NULL,NULL,2);
-  uvwmn =  (float*)NclGetArgValue(1,6,NULL,NULL,NULL,NULL,NULL,2);
-  uvwmx =  (float*)NclGetArgValue(2,6,NULL,NULL,NULL,NULL,NULL,2);
-  uvwn  = (string*)NclGetArgValue(3,6,NULL,NULL,NULL,NULL,NULL,2);
-  uvwi  = (string*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,2);
-  ipck  =    (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,2);
+  nwid  =    (int*)NclGetArgValue(0,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwmn =  (float*)NclGetArgValue(1,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwmx =  (float*)NclGetArgValue(2,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwn  = (string*)NclGetArgValue(3,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwi  = (string*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ipck  =    (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   cuvwn0 = NrmQuarkToString(uvwn[0]);
   cuvwi0 = NrmQuarkToString(uvwi[0]);
@@ -932,13 +932,13 @@ NhlErrorTypes tdlbla_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
-  iaxs =    (int*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,2);
-  ilbl = (string*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,2);
-  nlbl = (string*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,2);
-  xat  =  (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
-  yat  =  (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
-  angd =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  iaxs =    (int*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ilbl = (string*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  nlbl = (string*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  xat  =  (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  yat  =  (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  angd =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   cilbl = NrmQuarkToString(*ilbl);
   cnlbl = NrmQuarkToString(*nlbl);
@@ -984,13 +984,13 @@ NhlErrorTypes tdplch_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
-  xpos =  (float*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,2);
-  ypos =  (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,2);
-  chrs = (string*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,2);
-  size =  (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
-  angd =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
-  cntr =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =    (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  xpos =  (float*)NclGetArgValue(1,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  ypos =  (float*)NclGetArgValue(2,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  chrs = (string*)NclGetArgValue(3,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  size =  (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  angd =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  cntr =  (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   cchrs = NrmQuarkToString(*chrs);
 
@@ -1033,10 +1033,10 @@ NhlErrorTypes tddtri_W( void )
 /*
  * Retrieve parameters.
  */
-  nwid =   (int*)NclGetArgValue(0,4,NULL,NULL,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(1,4,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,2);
-  itwk =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,2);
+  nwid =   (int*)NclGetArgValue(0,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rtri = (float*)NclGetArgValue(1,4,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
+  ntri =   (int*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  itwk =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1077,12 +1077,12 @@ NhlErrorTypes tdstri_W( void )
 /*
  * Retrieve parameters.
  */
-  u    = (float*)NclGetArgValue(0,6,NULL,dsizes_u,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue(1,6,NULL,dsizes_v,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue(2,6,NULL,dsizes_w,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue(3,6,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,2);
+  u    = (float*)NclGetArgValue(0,6,NULL,dsizes_u,NULL,NULL,NULL,DONT_CARE);
+  v    = (float*)NclGetArgValue(1,6,NULL,dsizes_v,NULL,NULL,NULL,DONT_CARE);
+  w    = (float*)NclGetArgValue(2,6,NULL,dsizes_w,NULL,NULL,NULL,DONT_CARE);
+  rtri = (float*)NclGetArgValue(3,6,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
+  ntri =   (int*)NclGetArgValue(4,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  irst =   (int*)NclGetArgValue(5,6,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1117,14 +1117,14 @@ NhlErrorTypes tditri_W( void )
 /*
  * Retrieve parameters.
  */
-  u    = (float*)NclGetArgValue( 0,8,NULL,dsizes_u,NULL,NULL,NULL,2);
-  v    = (float*)NclGetArgValue( 1,8,NULL,dsizes_v,NULL,NULL,NULL,2);
-  w    = (float*)NclGetArgValue( 2,8,NULL,dsizes_w,NULL,NULL,NULL,2);
-  f    = (float*)NclGetArgValue( 3,8,NULL,dsizes_f,NULL,NULL,NULL,2);
-  fiso = (float*)NclGetArgValue( 4,8,NULL,NULL,NULL,NULL,NULL,2);
-  rtri = (float*)NclGetArgValue( 5,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue( 6,8,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue( 7,8,NULL,NULL,NULL,NULL,NULL,2);
+  u    = (float*)NclGetArgValue( 0,8,NULL,dsizes_u,NULL,NULL,NULL,DONT_CARE);
+  v    = (float*)NclGetArgValue( 1,8,NULL,dsizes_v,NULL,NULL,NULL,DONT_CARE);
+  w    = (float*)NclGetArgValue( 2,8,NULL,dsizes_w,NULL,NULL,NULL,DONT_CARE);
+  f    = (float*)NclGetArgValue( 3,8,NULL,dsizes_f,NULL,NULL,NULL,DONT_CARE);
+  fiso = (float*)NclGetArgValue( 4,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rtri = (float*)NclGetArgValue( 5,8,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
+  ntri =   (int*)NclGetArgValue( 6,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  irst =   (int*)NclGetArgValue( 7,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1162,14 +1162,14 @@ NhlErrorTypes tdmtri_W( void )
 /*
  * Retrieve parameters.
  */
-  imrk =     (int*)NclGetArgValue( 0,8,NULL,NULL,NULL,NULL,NULL,2);
-  uvw  =   (float*)NclGetArgValue( 1,8,NULL,NULL,NULL,NULL,NULL,2);
-  s    =   (float*)NclGetArgValue( 2,8,NULL,NULL,NULL,NULL,NULL,2);
-  rtri =   (float*)NclGetArgValue( 3,8,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =     (int*)NclGetArgValue( 4,8,NULL,NULL,NULL,NULL,NULL,2);
-  irst =     (int*)NclGetArgValue( 5,8,NULL,NULL,NULL,NULL,NULL,2);
-  uvwmin = (float*)NclGetArgValue( 6,8,NULL,NULL,NULL,NULL,NULL,2);
-  uvwmax = (float*)NclGetArgValue( 7,8,NULL,NULL,NULL,NULL,NULL,2);
+  imrk =     (int*)NclGetArgValue( 0,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvw  =   (float*)NclGetArgValue( 1,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  s    =   (float*)NclGetArgValue( 2,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rtri =   (float*)NclGetArgValue( 3,8,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
+  ntri =     (int*)NclGetArgValue( 4,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  irst =     (int*)NclGetArgValue( 5,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwmin = (float*)NclGetArgValue( 6,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwmax = (float*)NclGetArgValue( 7,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1199,20 +1199,20 @@ NhlErrorTypes tdttri_W( void )
 /*
  * Retrieve parameters.
  */
-  ucra = (float*)NclGetArgValue( 0,11,NULL,dsizes_ucra,NULL,NULL,NULL,2);
-  vcra = (float*)NclGetArgValue( 1,11,NULL,dsizes_vcra,NULL,NULL,NULL,2);
-  wcra = (float*)NclGetArgValue( 2,11,NULL,dsizes_wcra,NULL,NULL,NULL,2);
+  ucra = (float*)NclGetArgValue( 0,11,NULL,dsizes_ucra,NULL,NULL,NULL,DONT_CARE);
+  vcra = (float*)NclGetArgValue( 1,11,NULL,dsizes_vcra,NULL,NULL,NULL,DONT_CARE);
+  wcra = (float*)NclGetArgValue( 2,11,NULL,dsizes_wcra,NULL,NULL,NULL,DONT_CARE);
 
-  imrk =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,2);
-  rmrk = (float*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  smrk = (float*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
+  imrk =   (int*)NclGetArgValue( 3,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rmrk = (float*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  smrk = (float*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
-  rtri = (float*)NclGetArgValue( 6,11,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  irst =   (int*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue( 6,11,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
+  ntri =   (int*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  irst =   (int*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
-  uvwmin = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  uvwmax = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
+  uvwmin = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  uvwmax = (float*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1248,10 +1248,10 @@ NhlErrorTypes tdctri_W( void )
 /*
  * Retrieve parameters.
  */
-  rtri = (float*)NclGetArgValue(0,4,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(1,4,NULL,NULL,NULL,NULL,NULL,2);
-  iaxs =   (int*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,2);
-  rcut = (float*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(0,4,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
+  ntri =   (int*)NclGetArgValue(1,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  iaxs =   (int*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rcut = (float*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1281,10 +1281,10 @@ NhlErrorTypes tdotri_W( void )
 /*
  * Retrieve parameters.
  */
-  rtri = (float*)NclGetArgValue(0,4,NULL,dsizes_rtri,NULL,NULL,NULL,2);
-  ntri =   (int*)NclGetArgValue(1,4,NULL,NULL,NULL,NULL,NULL,2);
-  rtwk = (float*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,2);
-  iord =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,2);
+  rtri = (float*)NclGetArgValue(0,4,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
+  ntri =   (int*)NclGetArgValue(1,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rtwk = (float*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  iord =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
@@ -1318,8 +1318,8 @@ NhlErrorTypes tdsort_W( void )
 /*
  * Retrieve parameters.
  */
-  rwrk = (float*)NclGetArgValue(0,2,NULL,dsizes_rwrk,NULL,NULL,NULL,2);
-  iord =   (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+  rwrk = (float*)NclGetArgValue(0,2,NULL,dsizes_rwrk,NULL,NULL,NULL,DONT_CARE);
+  iord =   (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   nwrk = dsizes_rwrk[0];
 
   iwrk = (int*)calloc(nwrk,sizeof(int));
@@ -1356,14 +1356,14 @@ NhlErrorTypes tdez2d_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  nwid   = (int*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,2);
-  x      = (float*)NclGetArgValue(1,8, NULL, dsizes_x, NULL,NULL,NULL,2);
-  y      = (float*)NclGetArgValue(2,8, NULL, dsizes_y, NULL,NULL,NULL,2);
-  z      = (float*)NclGetArgValue(3,8, NULL, dsizes_z, NULL,NULL,NULL,2);
-  rmult  = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,2);
-  theta  = (float*)NclGetArgValue(5,8,NULL,NULL,NULL,NULL,NULL,2);
-  phi    = (float*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,2);
-  style  = (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,2);
+  nwid   = (int*)NclGetArgValue(0,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  x      = (float*)NclGetArgValue(1,8, NULL, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y      = (float*)NclGetArgValue(2,8, NULL, dsizes_y, NULL,NULL,NULL,DONT_CARE);
+  z      = (float*)NclGetArgValue(3,8, NULL, dsizes_z, NULL,NULL,NULL,DONT_CARE);
+  rmult  = (float*)NclGetArgValue(4,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  theta  = (float*)NclGetArgValue(5,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  phi    = (float*)NclGetArgValue(6,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  style  = (int*)NclGetArgValue(7,8,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Check input sizes.
@@ -1434,16 +1434,16 @@ NhlErrorTypes tdez3d_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  nwid  =  (int*)NclGetArgValue(0,10,NULL,NULL,NULL,NULL,NULL,2);
-  x     =  (float*)NclGetArgValue(1,10, NULL, dsizes_x, NULL,NULL,NULL,2);
-  y     =  (float*)NclGetArgValue(2,10, NULL, dsizes_y, NULL,NULL,NULL,2);
-  z     =  (float*)NclGetArgValue(3,10, NULL, dsizes_z, NULL,NULL,NULL,2);
-  u     =  (float*)NclGetArgValue(4,10, NULL, dsizes_u, NULL,NULL,NULL,2);
-  value = (float*)NclGetArgValue(5,10,NULL,NULL,NULL,NULL,NULL,2);
-  rmult = (float*)NclGetArgValue(6,10,NULL,NULL,NULL,NULL,NULL,2);
-  theta = (float*)NclGetArgValue(7,10,NULL,NULL,NULL,NULL,NULL,2);
-  phi   = (float*)NclGetArgValue(8,10,NULL,NULL,NULL,NULL,NULL,2);
-  style = (int*)NclGetArgValue(9,10,NULL,NULL,NULL,NULL,NULL,2);
+  nwid  =  (int*)NclGetArgValue(0,10,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  x     =  (float*)NclGetArgValue(1,10, NULL, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y     =  (float*)NclGetArgValue(2,10, NULL, dsizes_y, NULL,NULL,NULL,DONT_CARE);
+  z     =  (float*)NclGetArgValue(3,10, NULL, dsizes_z, NULL,NULL,NULL,DONT_CARE);
+  u     =  (float*)NclGetArgValue(4,10, NULL, dsizes_u, NULL,NULL,NULL,DONT_CARE);
+  value = (float*)NclGetArgValue(5,10,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rmult = (float*)NclGetArgValue(6,10,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  theta = (float*)NclGetArgValue(7,10,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  phi   = (float*)NclGetArgValue(8,10,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  style = (int*)NclGetArgValue(9,10,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Check input sizes.
@@ -1514,17 +1514,17 @@ NhlErrorTypes tdez1d_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  nwid   =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,2);
-  x      = (float*)NclGetArgValue( 1,11,NULL,dsizes_x,NULL,NULL,NULL,2);
-  y      = (float*)NclGetArgValue( 2,11,NULL,dsizes_y,NULL,NULL,NULL,2);
-  z      = (float*)NclGetArgValue( 3,11,NULL,dsizes_z,NULL,NULL,NULL,2);
-  imrk   =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,2);
-  rmrk   = (float*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,2);
-  smrk   = (float*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,2);
-  rmult  = (float*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,2);
-  theta  = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,2);
-  phi    = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,2);
-  style  =   (int*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,2);
+  nwid   =   (int*)NclGetArgValue( 0,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  x      = (float*)NclGetArgValue( 1,11,NULL,dsizes_x,NULL,NULL,NULL,DONT_CARE);
+  y      = (float*)NclGetArgValue( 2,11,NULL,dsizes_y,NULL,NULL,NULL,DONT_CARE);
+  z      = (float*)NclGetArgValue( 3,11,NULL,dsizes_z,NULL,NULL,NULL,DONT_CARE);
+  imrk   =   (int*)NclGetArgValue( 4,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rmrk   = (float*)NclGetArgValue( 5,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  smrk   = (float*)NclGetArgValue( 6,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rmult  = (float*)NclGetArgValue( 7,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  theta  = (float*)NclGetArgValue( 8,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  phi    = (float*)NclGetArgValue( 9,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  style  =   (int*)NclGetArgValue(10,11,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 /*
  * Check the input sizes.
  */

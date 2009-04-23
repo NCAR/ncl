@@ -67,7 +67,7 @@ NhlErrorTypes cfftf_W( void )
            &missing_xr,
            &has_missing_xr,
            &type_xr,
-           2);
+           DONT_CARE);
 
   xi = (void*)NclGetArgValue(
            1,
@@ -77,7 +77,7 @@ NhlErrorTypes cfftf_W( void )
            &missing_xi,
            &has_missing_xi,
            &type_xi,
-           2);
+           DONT_CARE);
 
   scalar_xi = is_scalar(ndims_xi,dsizes_xi);
   if(!scalar_xi) {
@@ -101,7 +101,7 @@ NhlErrorTypes cfftf_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Calculate number of leftmost elements and dimension sizes of output.
  */
@@ -412,7 +412,7 @@ NhlErrorTypes cfftb_W( void )
            &missing_cf,
            &has_missing_cf,
            &type_cf,
-           2);
+           DONT_CARE);
 
   if(dsizes_cf[0] != 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftb: Leftmost dimension of 'cf' must be 2");
@@ -426,7 +426,7 @@ NhlErrorTypes cfftb_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   if(*opt < 0 || *opt > 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftb: Invalid option value.");
@@ -661,7 +661,7 @@ NhlErrorTypes cfftf_frq_reorder_W( void )
            &missing_cf,
            &has_missing_cf,
            &type_cf,
-           2);
+           DONT_CARE);
 
   if(dsizes_cf[0] != 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"cfftf_frq_reorder: Leftmost dimension of 'cf' must be 2");

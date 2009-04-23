@@ -28,13 +28,14 @@ NhlErrorTypes NhlGetNamedColorIndex_W( void )
  *
  * Retrieve argument #1
  */
-  wks   = (int*)NclGetArgValue(0,2,&ndims_wks,dsizes_wks,NULL,NULL,NULL,2);
+  wks   = (int*)NclGetArgValue(0,2,&ndims_wks,dsizes_wks,NULL,NULL,NULL,
+                               DONT_CARE);
 
 /*
  * Retrieve argument #2
  */
   cname = (string *) NclGetArgValue(1,2,&ndims_cname,dsizes_cname,NULL,NULL,
-									NULL,2);
+						NULL,DONT_CARE);
 /*
  * Compute total number of elements in wks array.
  */

@@ -60,7 +60,7 @@ NhlErrorTypes pres_hybrid_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
   p0 = (void*)NclGetArgValue(
           1,
           4,
@@ -69,7 +69,7 @@ NhlErrorTypes pres_hybrid_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
   hya = (void*)NclGetArgValue(
           2,
           4,
@@ -78,7 +78,7 @@ NhlErrorTypes pres_hybrid_W( void )
           NULL,
           NULL,
           &type_hya,
-          2);
+          DONT_CARE);
   hyb = (void*)NclGetArgValue(
           3,
           4,
@@ -87,7 +87,7 @@ NhlErrorTypes pres_hybrid_W( void )
           NULL,
           NULL,
           &type_hyb,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -255,7 +255,7 @@ NhlErrorTypes dpres_hybrid_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
   p0 = (void*)NclGetArgValue(
           1,
           4,
@@ -264,7 +264,7 @@ NhlErrorTypes dpres_hybrid_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
   hya = (void*)NclGetArgValue(
           2,
           4,
@@ -273,7 +273,7 @@ NhlErrorTypes dpres_hybrid_W( void )
           NULL,
           NULL,
           &type_hya,
-          2);
+          DONT_CARE);
   hyb = (void*)NclGetArgValue(
           3,
           4,
@@ -282,7 +282,7 @@ NhlErrorTypes dpres_hybrid_W( void )
           NULL,
           NULL,
           &type_hyb,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -451,7 +451,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
           &missing_psfc,
           &has_missing_psfc,
           &type_psfc,
-          2);
+          DONT_CARE);
   p0 = (void*)NclGetArgValue(
           1,
           4,
@@ -460,7 +460,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
   hya = (void*)NclGetArgValue(
           2,
           4,
@@ -469,7 +469,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
           NULL,
           NULL,
           &type_hya,
-          2);
+          DONT_CARE);
   hyb = (void*)NclGetArgValue(
           3,
           4,
@@ -478,7 +478,7 @@ NhlErrorTypes pres_hybrid_ccm_W( void )
           NULL,
           NULL,
           &type_hyb,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -673,7 +673,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
           &missing_psfc,
           &has_missing_psfc,
           &type_psfc,
-          2);
+          DONT_CARE);
   p0 = (void*)NclGetArgValue(
           1,
           4,
@@ -682,7 +682,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
   hya = (void*)NclGetArgValue(
           2,
           4,
@@ -691,7 +691,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
           NULL,
           NULL,
           &type_hya,
-          2);
+          DONT_CARE);
   hyb = (void*)NclGetArgValue(
           3,
           4,
@@ -700,7 +700,7 @@ NhlErrorTypes dpres_hybrid_ccm_W( void )
           NULL,
           NULL,
           &type_hyb,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -895,7 +895,7 @@ NhlErrorTypes dpres_plevel_W( void )
           NULL,
           NULL,
           &type_plev,
-          2);
+          DONT_CARE);
 
   psfc = (void*)NclGetArgValue(
           1,
@@ -905,7 +905,7 @@ NhlErrorTypes dpres_plevel_W( void )
           &missing_psfc,
           &has_missing_psfc,
           &type_psfc,
-          2);
+          DONT_CARE);
     
   ptop = (void*)NclGetArgValue(
           2,
@@ -915,7 +915,7 @@ NhlErrorTypes dpres_plevel_W( void )
           NULL,
           NULL,
           &type_ptop,
-          2);
+          DONT_CARE);
 
   iopt = (int*)NclGetArgValue(
           3,
@@ -925,7 +925,7 @@ NhlErrorTypes dpres_plevel_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimension sizes for psfc.
  */
@@ -1117,7 +1117,7 @@ NhlErrorTypes sigma2hybrid_W( void )
           NULL,
           NULL,
           &type_x,
-          2);
+          DONT_CARE);
   sigma = (void*)NclGetArgValue(
           1,
           7,
@@ -1126,7 +1126,7 @@ NhlErrorTypes sigma2hybrid_W( void )
           NULL,
           NULL,
           &type_sigma,
-          2);
+          DONT_CARE);
   hya = (void*)NclGetArgValue(
           2,
           7,
@@ -1135,7 +1135,7 @@ NhlErrorTypes sigma2hybrid_W( void )
           NULL,
           NULL,
           &type_hya,
-          2);
+          DONT_CARE);
   hyb = (void*)NclGetArgValue(
           3,
           7,
@@ -1144,7 +1144,7 @@ NhlErrorTypes sigma2hybrid_W( void )
           NULL,
           NULL,
           &type_hyb,
-          2);
+          DONT_CARE);
   p0 = (void*)NclGetArgValue(
           4,
           7,
@@ -1153,7 +1153,7 @@ NhlErrorTypes sigma2hybrid_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
   psfc = (void*)NclGetArgValue(
           5,
           7,
@@ -1162,7 +1162,7 @@ NhlErrorTypes sigma2hybrid_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
   intyp = (int*)NclGetArgValue(
           6,
           7,
@@ -1171,7 +1171,7 @@ NhlErrorTypes sigma2hybrid_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions. hya and hyb must be the same size, and the
  * rightmost dimension of x must be the same as the length of sigma.
@@ -1381,7 +1381,7 @@ NhlErrorTypes pres2hybrid_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
   ps = (void*)NclGetArgValue(
           1,
           7,
@@ -1390,7 +1390,7 @@ NhlErrorTypes pres2hybrid_W( void )
           NULL,
           NULL,
           &type_ps,
-          2);
+          DONT_CARE);
   p0 = (void*)NclGetArgValue(
           2,
           7,
@@ -1399,7 +1399,7 @@ NhlErrorTypes pres2hybrid_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
   xi = (void*)NclGetArgValue(
           3,
           7,
@@ -1408,7 +1408,7 @@ NhlErrorTypes pres2hybrid_W( void )
           &missing_xi,
           &has_missing_xi,
           &type_xi,
-          2);
+          DONT_CARE);
   hyao = (void*)NclGetArgValue(
           4,
           7,
@@ -1417,7 +1417,7 @@ NhlErrorTypes pres2hybrid_W( void )
           NULL,
           NULL,
           &type_hyao,
-          2);
+          DONT_CARE);
   hybo = (void*)NclGetArgValue(
           5,
           7,
@@ -1426,7 +1426,7 @@ NhlErrorTypes pres2hybrid_W( void )
           NULL,
           NULL,
           &type_hybo,
-          2);
+          DONT_CARE);
 
   kflag = (int*)NclGetArgValue(
           6,
@@ -1436,7 +1436,7 @@ NhlErrorTypes pres2hybrid_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check # of dimensions.
  */

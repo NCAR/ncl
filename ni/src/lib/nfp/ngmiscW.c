@@ -34,7 +34,7 @@ NhlErrorTypes nggcog_W(void)
       NULL,
       NULL,
       NULL,
-      2);
+      DONT_CARE);
 
 /*
  *  Retrieve argument #2 (input)
@@ -47,7 +47,7 @@ NhlErrorTypes nggcog_W(void)
       NULL,
       NULL,
       NULL,
-      2);
+      DONT_CARE);
 
 /*
  *  Retrieve argument #3 (input)
@@ -60,7 +60,7 @@ NhlErrorTypes nggcog_W(void)
       NULL,
       NULL,
       NULL,
-      2);
+      DONT_CARE);
 
 /*
  *  Retrieve argument #4 (output)
@@ -154,7 +154,7 @@ NhlErrorTypes ngsetp_W(void)
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
  
@@ -193,7 +193,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -305,7 +305,7 @@ NhlErrorTypes nggetp_W(void)
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
 
@@ -396,7 +396,7 @@ NhlErrorTypes ngritd_W(void)
       NULL,
       NULL,
       NULL,
-      2);
+      DONT_CARE);
 
 /*
  *  Retrieve argument #2 (input)
@@ -409,7 +409,7 @@ NhlErrorTypes ngritd_W(void)
       NULL,
       NULL,
       NULL,
-      2);
+      DONT_CARE);
 
 /*
  *  Retrieve argument #3 (input)
@@ -422,7 +422,7 @@ NhlErrorTypes ngritd_W(void)
       NULL,
       NULL,
       NULL,
-      2);
+      DONT_CARE);
 
 /*
  *  Retrieve argument #4 (output)
@@ -435,7 +435,7 @@ NhlErrorTypes ngritd_W(void)
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
 
 /*
  *  Retrieve argument #5 (output)
@@ -448,7 +448,7 @@ NhlErrorTypes ngritd_W(void)
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
 /*
  *  Make the call to c_ngritd.
  */

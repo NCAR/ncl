@@ -32,7 +32,7 @@ NhlErrorTypes pop_remap_W( void )
           NULL,
           NULL,
           &type_dst_array,
-          2);
+          DONT_CARE);
 
   map_wts = (void*)NclGetArgValue(
           1,
@@ -42,7 +42,7 @@ NhlErrorTypes pop_remap_W( void )
           NULL,
           NULL,
           &type_map_wts,
-          2);
+          DONT_CARE);
 
   dst_add = (int*)NclGetArgValue(
           2,
@@ -52,7 +52,7 @@ NhlErrorTypes pop_remap_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   src_add = (int*)NclGetArgValue(
           3,
@@ -62,7 +62,7 @@ NhlErrorTypes pop_remap_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   src_array = (void*)NclGetArgValue(
           4,
@@ -72,7 +72,7 @@ NhlErrorTypes pop_remap_W( void )
           &missing_src_array,
           &has_missing_src_array,
           &type_src_array,
-          2);
+          DONT_CARE);
 /*
  * Check type of dst_array.
  */

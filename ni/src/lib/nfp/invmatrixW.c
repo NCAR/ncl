@@ -42,7 +42,7 @@ NhlErrorTypes inverse_matrix_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
   n  = dsizes_x[0];
   m  = dsizes_x[1];
@@ -164,7 +164,7 @@ NhlErrorTypes solve_linsys_W( void )
            NULL,
            NULL,
            &type_a,
-           2);
+           DONT_CARE);
 
   b = (void*)NclGetArgValue(
            1,
@@ -174,7 +174,7 @@ NhlErrorTypes solve_linsys_W( void )
            NULL,
            NULL,
            &type_b,
-           2);
+           DONT_CARE);
 
   n  = dsizes_a[0];
   if(ndims_b > 2) {

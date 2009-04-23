@@ -84,7 +84,7 @@ NhlErrorTypes wmsetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for argument #1.
@@ -131,7 +131,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -270,7 +270,7 @@ NhlErrorTypes wmgetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for argument #1.
@@ -387,14 +387,14 @@ NhlErrorTypes wmbarb_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,DONT_CARE);
   u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
-            &missing_u, &has_missing_u, &type_u, 2);
+            &missing_u, &has_missing_u, &type_u, DONT_CARE);
   v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
-            &missing_v, &has_missing_v, &type_v, 2);
+            &missing_v, &has_missing_v, &type_v, DONT_CARE);
 
 /*
  * Check that the input dimensions and dimension sizes are the same.
@@ -529,14 +529,14 @@ NhlErrorTypes wmbarbmap_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,DONT_CARE);
   u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
-            &missing_u, &has_missing_u, &type_u, 2);
+            &missing_u, &has_missing_u, &type_u, DONT_CARE);
   v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
-            &missing_v, &has_missing_v, &type_v, 2);
+            &missing_v, &has_missing_v, &type_v, DONT_CARE);
 
 /*
  * Coerce missing values to float.
@@ -685,14 +685,14 @@ NhlErrorTypes wmvect_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,DONT_CARE);
   u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
-            &missing_u, &has_missing_u, &type_u, 2);
+            &missing_u, &has_missing_u, &type_u, DONT_CARE);
   v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
-            &missing_v, &has_missing_v, &type_v, 2);
+            &missing_v, &has_missing_v, &type_v, DONT_CARE);
 
 /*
  * Check that the input dimensions and dimension sizes are the same.
@@ -830,14 +830,14 @@ NhlErrorTypes wmvectmap_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,5,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,5, &ndims_x, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y   = (float*) NclGetArgValue(2,5, &ndims_y, dsizes_y, NULL,NULL,NULL,DONT_CARE);
   u   = (float*) NclGetArgValue(3,5, &ndims_u, dsizes_u, 
-            &missing_u, &has_missing_u, &type_u, 2);
+            &missing_u, &has_missing_u, &type_u, DONT_CARE);
   v   = (float*) NclGetArgValue(4,5, &ndims_v, dsizes_v, 
-            &missing_v, &has_missing_v, &type_v, 2);
+            &missing_v, &has_missing_v, &type_v, DONT_CARE);
 
 /*
  * Check that the input dimensions and dimension sizes are the same.
@@ -935,10 +935,10 @@ NhlErrorTypes wmvlbl_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,3,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,3,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-  x   = (float*) NclGetArgValue(1,3, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,3, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,3, &ndims_x, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y   = (float*) NclGetArgValue(2,3, &ndims_y, dsizes_y, NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Check that the input dimensions and dimension sizes are the same.
@@ -1015,10 +1015,10 @@ NhlErrorTypes wmdrft_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,3,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,3,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-  x   = (float*) NclGetArgValue(1,3, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,3, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,3, &ndims_x, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y   = (float*) NclGetArgValue(2,3, &ndims_y, dsizes_y, NULL,NULL,NULL,DONT_CARE);
 /*
  * Check the input dimension sizes.
  */
@@ -1256,10 +1256,10 @@ NhlErrorTypes wmlabs_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,4,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,4,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-  x   = (float*) NclGetArgValue(1,4, &ndims_x, dsizes_x, NULL,NULL,NULL,2);
-  y   = (float*) NclGetArgValue(2,4, &ndims_y, dsizes_y, NULL,NULL,NULL,2);
+  x   = (float*) NclGetArgValue(1,4, &ndims_x, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y   = (float*) NclGetArgValue(2,4, &ndims_y, dsizes_y, NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Check the input dimension sizes.
@@ -1289,7 +1289,7 @@ NhlErrorTypes wmlabs_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for the symbol type.
@@ -1384,12 +1384,12 @@ NhlErrorTypes wmstnm_W( void )
  *  nwid points to the HLU identifier of the graphic object; this is
  *  converted to the NCL workstation identifier below.
  */
-  nwid = (int*)  NclGetArgValue(0,4,     NULL,     NULL, NULL,NULL,NULL,2);
+  nwid = (int*)  NclGetArgValue(0,4,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
   x   = (float*) NclGetArgValue(1,4, &ndims_x, dsizes_x,
-                         &missing_x, &has_missing_x, &type_x, 2);
+                         &missing_x, &has_missing_x, &type_x, DONT_CARE);
   y   = (float*) NclGetArgValue(2,4, &ndims_y, dsizes_y,
-                         &missing_y, &has_missing_y, &type_y, 2);
+                         &missing_y, &has_missing_y, &type_y, DONT_CARE);
 
 /*
  * Check the input dimension sizes.
@@ -1419,7 +1419,7 @@ NhlErrorTypes wmstnm_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 
 /*

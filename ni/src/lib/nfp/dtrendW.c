@@ -48,7 +48,7 @@ NhlErrorTypes dtrend_W( void )
           &missing_y,
           &has_missing_y,
           &type_y,
-          2);
+          DONT_CARE);
 
   return_slope = (logical*)NclGetArgValue(
           1,
@@ -58,7 +58,7 @@ NhlErrorTypes dtrend_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check input sizes.
  */
@@ -412,7 +412,7 @@ NhlErrorTypes dtrend_quadratic_W( void )
           &missing_y,
           &has_missing_y,
           &type_y,
-          2);
+          DONT_CARE);
 
   option = (int*)NclGetArgValue(
           1,
@@ -422,7 +422,7 @@ NhlErrorTypes dtrend_quadratic_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * "option" is not used yet, so we'll just set it to zero.
  */
@@ -568,7 +568,7 @@ NhlErrorTypes dtrend_msg_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   y = (void*)NclGetArgValue(
           1,
@@ -578,7 +578,7 @@ NhlErrorTypes dtrend_msg_W( void )
           &missing_y,
           &has_missing_y,
           &type_y,
-          2);
+          DONT_CARE);
 
   remove_mean = (logical*)NclGetArgValue(
           2,
@@ -588,7 +588,7 @@ NhlErrorTypes dtrend_msg_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   if(*remove_mean) {
     iremove_mean = 1;
@@ -605,7 +605,7 @@ NhlErrorTypes dtrend_msg_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check input sizes.
  */

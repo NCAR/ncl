@@ -57,7 +57,7 @@ NhlErrorTypes local_min_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -70,7 +70,7 @@ NhlErrorTypes local_min_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #3
  */
@@ -82,7 +82,7 @@ NhlErrorTypes local_min_W( void )
           NULL,
           NULL,
           &type_delta,
-          2);
+          DONT_CARE);
 /*
  * Get size of input array.
  */
@@ -348,7 +348,7 @@ NhlErrorTypes local_max_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -361,7 +361,7 @@ NhlErrorTypes local_max_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #3
  */
@@ -373,7 +373,7 @@ NhlErrorTypes local_max_W( void )
           NULL,
           NULL,
           &type_delta,
-          2);
+          DONT_CARE);
 /*
  * Get size of input array.
  */

@@ -53,7 +53,7 @@ NhlErrorTypes int2p_W( void )
           &missing_pin,
           &has_missing_pin,
           &type_pin,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #2
  */
@@ -65,7 +65,7 @@ NhlErrorTypes int2p_W( void )
           &missing_xin,
           &has_missing_xin,
           &type_xin,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #3
  */
@@ -77,7 +77,7 @@ NhlErrorTypes int2p_W( void )
           NULL,
           NULL,
           &type_pout,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #4
@@ -90,7 +90,7 @@ NhlErrorTypes int2p_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes for pin and xin. If any of them are multiple

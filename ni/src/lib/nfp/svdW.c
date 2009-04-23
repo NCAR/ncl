@@ -75,7 +75,7 @@ NhlErrorTypes svdcov_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            7,
@@ -84,7 +84,7 @@ NhlErrorTypes svdcov_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 
   nsvd = (int *)NclGetArgValue(
             2,
@@ -94,7 +94,7 @@ NhlErrorTypes svdcov_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
   homlft = (void*)NclGetArgValue(
            3,
            7,
@@ -103,7 +103,7 @@ NhlErrorTypes svdcov_W( void )
            NULL,
            NULL,
            &type_homlft,
-           2);
+           DONT_CARE);
 
   hetlft = (void*)NclGetArgValue(
            4,
@@ -113,7 +113,7 @@ NhlErrorTypes svdcov_W( void )
            NULL,
            NULL,
            &type_hetlft,
-           2);
+           DONT_CARE);
 
 
   homrgt = (void*)NclGetArgValue(
@@ -124,7 +124,7 @@ NhlErrorTypes svdcov_W( void )
            NULL,
            NULL,
            &type_homrgt,
-           2);
+           DONT_CARE);
 
   hetrgt = (void*)NclGetArgValue(
            6,
@@ -134,7 +134,7 @@ NhlErrorTypes svdcov_W( void )
            NULL,
            NULL,
            &type_hetrgt,
-           2);
+           DONT_CARE);
 /*
  * The last dimension of x and y must be the same.
  */
@@ -545,7 +545,7 @@ NhlErrorTypes svdstd_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            7,
@@ -554,7 +554,7 @@ NhlErrorTypes svdstd_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 
   nsvd = (int *)NclGetArgValue(
             2,
@@ -564,7 +564,7 @@ NhlErrorTypes svdstd_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
   homlft = (void*)NclGetArgValue(
            3,
            7,
@@ -573,7 +573,7 @@ NhlErrorTypes svdstd_W( void )
            NULL,
            NULL,
            &type_homlft,
-           2);
+           DONT_CARE);
 
   hetlft = (void*)NclGetArgValue(
            4,
@@ -583,7 +583,7 @@ NhlErrorTypes svdstd_W( void )
            NULL,
            NULL,
            &type_hetlft,
-           2);
+           DONT_CARE);
 
 
   homrgt = (void*)NclGetArgValue(
@@ -594,7 +594,7 @@ NhlErrorTypes svdstd_W( void )
            NULL,
            NULL,
            &type_homrgt,
-           2);
+           DONT_CARE);
 
   hetrgt = (void*)NclGetArgValue(
            6,
@@ -604,7 +604,7 @@ NhlErrorTypes svdstd_W( void )
            NULL,
            NULL,
            &type_hetrgt,
-           2);
+           DONT_CARE);
 /*
  * The last dimension of x and y must be the same.
  */
@@ -1012,7 +1012,7 @@ NhlErrorTypes svdcov_sv_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            5,
@@ -1021,7 +1021,7 @@ NhlErrorTypes svdcov_sv_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
   nsvd = (int *)NclGetArgValue(
             2,
             5, 
@@ -1030,7 +1030,7 @@ NhlErrorTypes svdcov_sv_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
   svlft = (void*)NclGetArgValue(
            3,
            5,
@@ -1039,7 +1039,7 @@ NhlErrorTypes svdcov_sv_W( void )
            NULL,
            NULL,
            &type_svlft,
-           2);
+           DONT_CARE);
 
   svrgt = (void*)NclGetArgValue(
            4,
@@ -1049,7 +1049,7 @@ NhlErrorTypes svdcov_sv_W( void )
            NULL,
            NULL,
            &type_svrgt,
-           2);
+           DONT_CARE);
 /*
  * The rightmost dimensions must be the same.
  */
@@ -1325,7 +1325,7 @@ NhlErrorTypes svdstd_sv_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            5,
@@ -1334,7 +1334,7 @@ NhlErrorTypes svdstd_sv_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
   nsvd = (int *)NclGetArgValue(
             2,
             5, 
@@ -1343,7 +1343,7 @@ NhlErrorTypes svdstd_sv_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
   svlft = (void*)NclGetArgValue(
            3,
            5,
@@ -1352,7 +1352,7 @@ NhlErrorTypes svdstd_sv_W( void )
            NULL,
            NULL,
            &type_svlft,
-           2);
+           DONT_CARE);
 
   svrgt = (void*)NclGetArgValue(
            4,
@@ -1362,7 +1362,7 @@ NhlErrorTypes svdstd_sv_W( void )
            NULL,
            NULL,
            &type_svrgt,
-           2);
+           DONT_CARE);
 /*
  * The rightmost dimensions must be the same.
  */
@@ -1638,7 +1638,7 @@ NhlErrorTypes svd_lapack_W( void )
            &missing_a,
            &has_missing_a,
            &type_a,
-           2);
+           DONT_CARE);
 
 /*
  * The grid coming in must be at least 2-dimensional.
@@ -1656,7 +1656,7 @@ NhlErrorTypes svd_lapack_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   jobv = (string*)NclGetArgValue(
            2,
@@ -1666,7 +1666,7 @@ NhlErrorTypes svd_lapack_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * This part not needed yet, because "S" and "S" are being hard-coded
  * for jobu and jobv.
@@ -1683,7 +1683,7 @@ NhlErrorTypes svd_lapack_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 
   u = (void*)NclGetArgValue(
            4,
@@ -1693,7 +1693,7 @@ NhlErrorTypes svd_lapack_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
 
   v = (void*)NclGetArgValue(
            5,
@@ -1703,7 +1703,7 @@ NhlErrorTypes svd_lapack_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * Check the dimensions of u and v against the dimensions of a.
@@ -1965,7 +1965,7 @@ NhlErrorTypes svdpar_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Coerce to double if necessary.
  */
@@ -1982,7 +1982,7 @@ NhlErrorTypes svdpar_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
   label2 = NrmQuarkToString(*label);
 /*
  * Call the Fortran version of 'dsvdpar' with the full argument list.

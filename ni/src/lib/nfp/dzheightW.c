@@ -43,7 +43,7 @@ NhlErrorTypes dz_height_W( void )
           NULL,
           NULL,
           &type_z,
-          2);
+          DONT_CARE);
 
   zsfc = (void*)NclGetArgValue(
           1,
@@ -53,7 +53,7 @@ NhlErrorTypes dz_height_W( void )
           &missing_zsfc,
           &has_missing_zsfc,
           &type_zsfc,
-          2);
+          DONT_CARE);
     
   ztop = (void*)NclGetArgValue(
           2,
@@ -63,7 +63,7 @@ NhlErrorTypes dz_height_W( void )
           NULL,
           NULL,
           &type_ztop,
-          2);
+          DONT_CARE);
 
   iopt = (int*)NclGetArgValue(
           3,
@@ -73,7 +73,7 @@ NhlErrorTypes dz_height_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimension sizes for z.
  */

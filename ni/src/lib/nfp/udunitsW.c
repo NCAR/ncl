@@ -168,7 +168,7 @@ NhlErrorTypes ut_calendar_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get option.
  */
@@ -714,7 +714,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
            &missing_year,
            &has_missing_year,
            NULL,
-           2);
+           DONT_CARE);
   month = (int*)NclGetArgValue(
            1,
            8,
@@ -723,7 +723,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
            &missing_month,
            &has_missing_month,
            NULL,
-           2);
+           DONT_CARE);
   day = (int*)NclGetArgValue(
            2,
            8,
@@ -732,7 +732,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
            &missing_day,
            &has_missing_day,
            NULL,
-           2);
+           DONT_CARE);
   hour = (int*)NclGetArgValue(
            3,
            8,
@@ -741,7 +741,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
            &missing_hour,
            &has_missing_hour,
            NULL,
-           2);
+           DONT_CARE);
   minute = (int*)NclGetArgValue(
            4,
            8,
@@ -750,7 +750,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
            &missing_minute,
            &has_missing_minute,
            NULL,
-           2);
+           DONT_CARE);
   second = (void*)NclGetArgValue(
            5,
            8,
@@ -759,7 +759,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
            &missing_second,
            &has_missing_second,
            &type_second,
-           2);
+           DONT_CARE);
 
   if(ndims_year != ndims_month || ndims_year != ndims_day    || 
      ndims_year != ndims_hour  || ndims_year != ndims_minute ||

@@ -36,7 +36,7 @@ NhlErrorTypes rhomb_trunC_W( void )
           NULL,
           NULL,
           &type_ab,
-          2);
+          DONT_CARE);
 /*
  * Get T
  */
@@ -48,7 +48,7 @@ NhlErrorTypes rhomb_trunC_W( void )
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * The grid coming in must be at least 3-dimensional.
  */
@@ -161,7 +161,7 @@ NhlErrorTypes tri_trunC_W( void )
           NULL,
           NULL,
           &type_ab,
-          2);
+          DONT_CARE);
 /*
  * Get T
  */
@@ -173,7 +173,7 @@ NhlErrorTypes tri_trunC_W( void )
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -289,7 +289,7 @@ NhlErrorTypes rhomb_trunc_W( void )
           NULL,
           NULL,
           &type_a,
-          2);
+          DONT_CARE);
 
   b = (void*)NclGetArgValue(
           1,
@@ -299,7 +299,7 @@ NhlErrorTypes rhomb_trunc_W( void )
           NULL,
           NULL,
           &type_b,
-          2);
+          DONT_CARE);
 /*
  * Get T
  */
@@ -311,7 +311,7 @@ NhlErrorTypes rhomb_trunc_W( void )
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional.
  */
@@ -434,7 +434,7 @@ NhlErrorTypes tri_trunc_W( void )
           NULL,
           NULL,
           &type_a,
-          2);
+          DONT_CARE);
 
   b = (void*)NclGetArgValue(
           1,
@@ -444,7 +444,7 @@ NhlErrorTypes tri_trunc_W( void )
           NULL,
           NULL,
           &type_b,
-          2);
+          DONT_CARE);
 /*
  * Get T
  */
@@ -456,7 +456,7 @@ NhlErrorTypes tri_trunc_W( void )
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional.
  */

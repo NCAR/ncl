@@ -40,7 +40,7 @@ NhlErrorTypes day_of_year_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #2
  */
@@ -52,7 +52,7 @@ NhlErrorTypes day_of_year_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #3
  */
@@ -64,7 +64,7 @@ NhlErrorTypes day_of_year_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions and calculate total size of arrays.
  */
@@ -130,7 +130,7 @@ NhlErrorTypes days_in_month_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #2
  */
@@ -142,7 +142,7 @@ NhlErrorTypes days_in_month_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions and calculate total size of arrays.
  */
@@ -207,7 +207,7 @@ NhlErrorTypes day_of_week_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   month = (int*)NclGetArgValue(
           1,
@@ -217,7 +217,7 @@ NhlErrorTypes day_of_week_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   day = (int*)NclGetArgValue(
           2,
@@ -227,7 +227,7 @@ NhlErrorTypes day_of_week_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions and calculate total size of arrays.
  */
@@ -293,7 +293,7 @@ NhlErrorTypes isleapyear_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Calculate total size of array.
  */
@@ -348,7 +348,7 @@ NhlErrorTypes monthday_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #2
  */
@@ -360,7 +360,7 @@ NhlErrorTypes monthday_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions and calculate total size of arrays.
  */

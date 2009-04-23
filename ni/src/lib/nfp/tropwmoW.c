@@ -78,7 +78,7 @@ NhlErrorTypes trop_wmo_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -96,7 +96,7 @@ NhlErrorTypes trop_wmo_W( void )
            NULL,
            NULL,
            &type_t,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -131,7 +131,7 @@ NhlErrorTypes trop_wmo_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 3
@@ -144,7 +144,7 @@ NhlErrorTypes trop_wmo_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /* 
  * Allocate space for output dimension sizes and set them.

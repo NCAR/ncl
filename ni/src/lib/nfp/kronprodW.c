@@ -63,7 +63,7 @@ NhlErrorTypes kron_product_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   nx1 = dsizes_x[0];
   nx2 = dsizes_x[1];
@@ -80,7 +80,7 @@ NhlErrorTypes kron_product_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * Coerce missing values to double if necessary.
  */

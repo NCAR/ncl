@@ -72,7 +72,7 @@ NhlErrorTypes wgt_areaave_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   wgty = (void*)NclGetArgValue(
           1,
@@ -82,7 +82,7 @@ NhlErrorTypes wgt_areaave_W( void )
           NULL,
           NULL,
           &type_wgty,
-          2);
+          DONT_CARE);
 
   wgtx = (void*)NclGetArgValue(
           2,
@@ -92,7 +92,7 @@ NhlErrorTypes wgt_areaave_W( void )
           NULL,
           NULL,
           &type_wgtx,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           3,
@@ -102,7 +102,7 @@ NhlErrorTypes wgt_areaave_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -282,7 +282,7 @@ NhlErrorTypes wgt_areaave2_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   wgt = (void*)NclGetArgValue(
           1,
@@ -292,7 +292,7 @@ NhlErrorTypes wgt_areaave2_W( void )
           NULL,
           NULL,
           &type_wgt,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           2,
@@ -302,7 +302,7 @@ NhlErrorTypes wgt_areaave2_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -463,7 +463,7 @@ NhlErrorTypes wgt_areasum2_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   wgt = (void*)NclGetArgValue(
           1,
@@ -473,7 +473,7 @@ NhlErrorTypes wgt_areasum2_W( void )
           NULL,
           NULL,
           &type_wgt,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           2,
@@ -483,7 +483,7 @@ NhlErrorTypes wgt_areasum2_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -648,7 +648,7 @@ NhlErrorTypes wgt_arearmse_W( void )
           &missing_q,
           &has_missing_q,
           &type_q,
-          2);
+          DONT_CARE);
 
   r = (void*)NclGetArgValue(
           1,
@@ -658,7 +658,7 @@ NhlErrorTypes wgt_arearmse_W( void )
           &missing_r,
           &has_missing_r,
           &type_r,
-          2);
+          DONT_CARE);
 
   wgty = (void*)NclGetArgValue(
           2,
@@ -668,7 +668,7 @@ NhlErrorTypes wgt_arearmse_W( void )
           NULL,
           NULL,
           &type_wgty,
-          2);
+          DONT_CARE);
 
   wgtx = (void*)NclGetArgValue(
           3,
@@ -678,7 +678,7 @@ NhlErrorTypes wgt_arearmse_W( void )
           NULL,
           NULL,
           &type_wgtx,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           4,
@@ -688,7 +688,7 @@ NhlErrorTypes wgt_arearmse_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -899,7 +899,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
           &missing_q,
           &has_missing_q,
           &type_q,
-          2);
+          DONT_CARE);
 
   r = (void*)NclGetArgValue(
           1,
@@ -909,7 +909,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
           &missing_r,
           &has_missing_r,
           &type_r,
-          2);
+          DONT_CARE);
 
   wgt = (void*)NclGetArgValue(
           2,
@@ -919,7 +919,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
           NULL,
           NULL,
           &type_wgt,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           3,
@@ -929,7 +929,7 @@ NhlErrorTypes wgt_arearmse2_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -1127,7 +1127,7 @@ NhlErrorTypes wgt_volave_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   wgtz = (void*)NclGetArgValue(
           1,
@@ -1137,7 +1137,7 @@ NhlErrorTypes wgt_volave_W( void )
           NULL,
           NULL,
           &type_wgtz,
-          2);
+          DONT_CARE);
 
   wgty = (void*)NclGetArgValue(
           2,
@@ -1147,7 +1147,7 @@ NhlErrorTypes wgt_volave_W( void )
           NULL,
           NULL,
           &type_wgty,
-          2);
+          DONT_CARE);
 
   wgtx = (void*)NclGetArgValue(
           3,
@@ -1157,7 +1157,7 @@ NhlErrorTypes wgt_volave_W( void )
           NULL,
           NULL,
           &type_wgtx,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           4,
@@ -1167,7 +1167,7 @@ NhlErrorTypes wgt_volave_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -1354,7 +1354,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   wgtz = (void*)NclGetArgValue(
           1,
@@ -1364,7 +1364,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
           NULL,
           NULL,
           &type_wgtz,
-          2);
+          DONT_CARE);
 
   wgty = (void*)NclGetArgValue(
           2,
@@ -1374,7 +1374,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
           NULL,
           NULL,
           &type_wgty,
-          2);
+          DONT_CARE);
 
   wgtx = (void*)NclGetArgValue(
           3,
@@ -1384,7 +1384,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
           NULL,
           NULL,
           &type_wgtx,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           4,
@@ -1394,7 +1394,7 @@ NhlErrorTypes wgt_volave_ccm_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -1609,7 +1609,7 @@ NhlErrorTypes wgt_volrmse_W( void )
           &missing_q,
           &has_missing_q,
           &type_q,
-          2);
+          DONT_CARE);
 
   r = (void*)NclGetArgValue(
           1,
@@ -1619,7 +1619,7 @@ NhlErrorTypes wgt_volrmse_W( void )
           &missing_r,
           &has_missing_r,
           &type_r,
-          2);
+          DONT_CARE);
 
   wgtz = (void*)NclGetArgValue(
           2,
@@ -1629,7 +1629,7 @@ NhlErrorTypes wgt_volrmse_W( void )
           NULL,
           NULL,
           &type_wgtz,
-          2);
+          DONT_CARE);
 
   wgty = (void*)NclGetArgValue(
           3,
@@ -1639,7 +1639,7 @@ NhlErrorTypes wgt_volrmse_W( void )
           NULL,
           NULL,
           &type_wgty,
-          2);
+          DONT_CARE);
 
   wgtx = (void*)NclGetArgValue(
           4,
@@ -1649,7 +1649,7 @@ NhlErrorTypes wgt_volrmse_W( void )
           NULL,
           NULL,
           &type_wgtx,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           5,
@@ -1659,7 +1659,7 @@ NhlErrorTypes wgt_volrmse_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */
@@ -1885,7 +1885,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
           &missing_q,
           &has_missing_q,
           &type_q,
-          2);
+          DONT_CARE);
 
   r = (void*)NclGetArgValue(
           1,
@@ -1895,7 +1895,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
           &missing_r,
           &has_missing_r,
           &type_r,
-          2);
+          DONT_CARE);
 
   wgtq = (void*)NclGetArgValue(
           2,
@@ -1905,7 +1905,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
           NULL,
           NULL,
           &type_wgtq,
-          2);
+          DONT_CARE);
 
   wgtr = (void*)NclGetArgValue(
           3,
@@ -1915,7 +1915,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
           NULL,
           NULL,
           &type_wgtr,
-          2);
+          DONT_CARE);
 
   wgty = (void*)NclGetArgValue(
           4,
@@ -1925,7 +1925,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
           NULL,
           NULL,
           &type_wgty,
-          2);
+          DONT_CARE);
 
   wgtx = (void*)NclGetArgValue(
           5,
@@ -1935,7 +1935,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
           NULL,
           NULL,
           &type_wgtx,
-          2);
+          DONT_CARE);
 
   iflag = (int*)NclGetArgValue(
           6,
@@ -1945,7 +1945,7 @@ NhlErrorTypes wgt_volrmse_ccm_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */

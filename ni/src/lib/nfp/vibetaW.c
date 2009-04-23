@@ -46,7 +46,7 @@ NhlErrorTypes vibeta_W( void )
                             NULL,
                             NULL,
                             &type_p,
-                            2);
+                            DONT_CARE);
 
   x = (void*)NclGetArgValue(
                             1,
@@ -56,7 +56,7 @@ NhlErrorTypes vibeta_W( void )
                             &missing_x,
                             &has_missing_x,
                             &type_x,
-                            2);
+                            DONT_CARE);
   linlog = (int*)NclGetArgValue(
                                 2,
                                 6,
@@ -65,7 +65,7 @@ NhlErrorTypes vibeta_W( void )
                                 NULL,
                                 NULL,
                                 NULL,
-                                2);
+                                DONT_CARE);
   psfc = (void*)NclGetArgValue(
                                3,
                                6,
@@ -74,7 +74,7 @@ NhlErrorTypes vibeta_W( void )
                                &missing_psfc,
                                &has_missing_psfc,
                                &type_psfc,
-                               2);
+                               DONT_CARE);
   pbot = (void*)NclGetArgValue(
                                4,
                                6,
@@ -83,7 +83,7 @@ NhlErrorTypes vibeta_W( void )
                                NULL,
                                NULL,
                                &type_pbot,
-                               2);
+                               DONT_CARE);
   ptop = (void*)NclGetArgValue(
                                5,
                                6,
@@ -92,7 +92,7 @@ NhlErrorTypes vibeta_W( void )
                                NULL,
                                NULL,
                                &type_ptop,
-                               2);
+                               DONT_CARE);
 /*
  * Some error checking.
  */

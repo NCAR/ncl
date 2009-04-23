@@ -61,7 +61,7 @@ NhlErrorTypes pslhyp_W( void )
           &missing_pres,
           &has_missing_pres,
           &type_pres,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -74,7 +74,7 @@ NhlErrorTypes pslhyp_W( void )
           NULL,
           NULL,
           &type_z,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #3
@@ -87,7 +87,7 @@ NhlErrorTypes pslhyp_W( void )
           NULL,
           NULL,
           &type_tv,
-          2);
+          DONT_CARE);
 /*
  * The input arrays must be at least two dimensions and the same dimension
  * sizes.
@@ -410,7 +410,7 @@ NhlErrorTypes pslec_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -423,7 +423,7 @@ NhlErrorTypes pslec_W( void )
           NULL,
           NULL,
           &type_phis,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #3
@@ -436,7 +436,7 @@ NhlErrorTypes pslec_W( void )
           NULL,
           NULL,
           &type_ps,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #4
@@ -449,7 +449,7 @@ NhlErrorTypes pslec_W( void )
           NULL,
           NULL,
           &type_pres,
-          2);
+          DONT_CARE);
 /*
  * The dimension sizes of the other three input variables must be the same
  * and must be at least two dimensions.
@@ -803,7 +803,7 @@ NhlErrorTypes pslhor_W( void )
           NULL,
           NULL,
           &type_z,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -816,7 +816,7 @@ NhlErrorTypes pslhor_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #3
@@ -829,7 +829,7 @@ NhlErrorTypes pslhor_W( void )
           NULL,
           NULL,
           &type_phis,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #4
@@ -842,7 +842,7 @@ NhlErrorTypes pslhor_W( void )
           NULL,
           NULL,
           &type_ps,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #5
@@ -855,7 +855,7 @@ NhlErrorTypes pslhor_W( void )
           NULL,
           NULL,
           &type_pres,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #6
@@ -868,7 +868,7 @@ NhlErrorTypes pslhor_W( void )
           NULL,
           NULL,
           &type_lats,
-          2);
+          DONT_CARE);
 
 /*
  * Check the dimension sizes of the six input variables. z, t, and pres

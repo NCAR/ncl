@@ -238,7 +238,7 @@ NhlErrorTypes dv2uvf_W( void )
            &missing_dv,
            &has_missing_dv,
            &type_dv,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -555,7 +555,7 @@ NhlErrorTypes dv2uvg_W( void )
            &missing_dv,
            &has_missing_dv,
            &type_dv,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -871,7 +871,7 @@ NhlErrorTypes dv2uvF_W( void )
            &missing_dv,
            &has_missing_dv,
            &type_dv,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -1150,7 +1150,7 @@ NhlErrorTypes dv2uvG_W( void )
            &missing_dv,
            &has_missing_dv,
            &type_dv,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -1433,7 +1433,7 @@ NhlErrorTypes gradsf_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -1759,7 +1759,7 @@ NhlErrorTypes gradsg_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -2084,7 +2084,7 @@ NhlErrorTypes igradsf_W( void )
            &missing_gzx,
            &has_missing_gzx,
            &type_gzx,
-           2);
+           DONT_CARE);
   gzy = (void*)NclGetArgValue(
            1,
            3,
@@ -2093,7 +2093,7 @@ NhlErrorTypes igradsf_W( void )
            &missing_gzy,
            &has_missing_gzy,
            &type_gzy,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -2409,7 +2409,7 @@ NhlErrorTypes igradsF_W( void )
            &missing_gzx,
            &has_missing_gzx,
            &type_gzx,
-           2);
+           DONT_CARE);
   gzy = (void*)NclGetArgValue(
            1,
            2,
@@ -2418,7 +2418,7 @@ NhlErrorTypes igradsF_W( void )
            &missing_gzy,
            &has_missing_gzy,
            &type_gzy,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and the same # of
  * dimensions.
@@ -2724,7 +2724,7 @@ NhlErrorTypes igradsg_W( void )
            &missing_gzx,
            &has_missing_gzx,
            &type_gzx,
-           2);
+           DONT_CARE);
   gzy = (void*)NclGetArgValue(
            1,
            3,
@@ -2733,7 +2733,7 @@ NhlErrorTypes igradsg_W( void )
            &missing_gzy,
            &has_missing_gzy,
            &type_gzy,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -3048,7 +3048,7 @@ NhlErrorTypes igradsG_W( void )
            &missing_gzx,
            &has_missing_gzx,
            &type_gzx,
-           2);
+           DONT_CARE);
   gzy = (void*)NclGetArgValue(
            1,
            2,
@@ -3057,7 +3057,7 @@ NhlErrorTypes igradsG_W( void )
            &missing_gzy,
            &has_missing_gzy,
            &type_gzy,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and the same # of
  * dimensions.
@@ -3363,7 +3363,7 @@ NhlErrorTypes ilapsf_W( void )
            &missing_zlap,
            &has_missing_zlap,
            &type_zlap,
-           2);
+           DONT_CARE);
   zlmbda = (void*)NclGetArgValue(
            1,
            3,
@@ -3372,7 +3372,7 @@ NhlErrorTypes ilapsf_W( void )
            &missing_zlmbda,
            &has_missing_zlmbda,
            &type_zlmbda,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -3701,7 +3701,7 @@ NhlErrorTypes ilapsF_W( void )
            &missing_zlap,
            &has_missing_zlap,
            &type_zlap,
-           2);
+           DONT_CARE);
   zlmbda = (void*)NclGetArgValue(
            1,
            2,
@@ -3710,7 +3710,7 @@ NhlErrorTypes ilapsF_W( void )
            &missing_zlmbda,
            &has_missing_zlmbda,
            &type_zlmbda,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be 1 and 3-dimensional.
  */
@@ -4030,7 +4030,7 @@ NhlErrorTypes ilapsg_W( void )
            &missing_zlap,
            &has_missing_zlap,
            &type_zlap,
-           2);
+           DONT_CARE);
   zlmbda = (void*)NclGetArgValue(
            1,
            3,
@@ -4039,7 +4039,7 @@ NhlErrorTypes ilapsg_W( void )
            &missing_zlmbda,
            &has_missing_zlmbda,
            &type_zlmbda,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -4370,7 +4370,7 @@ NhlErrorTypes ilapsG_W( void )
            &missing_zlap,
            &has_missing_zlap,
            &type_zlap,
-           2);
+           DONT_CARE);
   zlmbda = (void*)NclGetArgValue(
            1,
            2,
@@ -4379,7 +4379,7 @@ NhlErrorTypes ilapsG_W( void )
            &missing_zlmbda,
            &has_missing_zlmbda,
            &type_zlmbda,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be 1 and 3-dimensional.
  */
@@ -4699,7 +4699,7 @@ NhlErrorTypes ilapvf_W( void )
            &missing_ulap,
            &has_missing_ulap,
            &type_ulap,
-           2);
+           DONT_CARE);
   vlap = (void*)NclGetArgValue(
            1,
            4,
@@ -4708,7 +4708,7 @@ NhlErrorTypes ilapvf_W( void )
            &missing_vlap,
            &has_missing_vlap,
            &type_vlap,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -5058,7 +5058,7 @@ NhlErrorTypes ilapvg_W( void )
            &missing_ulap,
            &has_missing_ulap,
            &type_ulap,
-           2);
+           DONT_CARE);
   vlap = (void*)NclGetArgValue(
            1,
            4,
@@ -5067,7 +5067,7 @@ NhlErrorTypes ilapvg_W( void )
            &missing_vlap,
            &has_missing_vlap,
            &type_vlap,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -5415,7 +5415,7 @@ NhlErrorTypes lapsf_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -5691,7 +5691,7 @@ NhlErrorTypes lapsF_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -5950,7 +5950,7 @@ NhlErrorTypes lapsg_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -6224,7 +6224,7 @@ NhlErrorTypes lapsG_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -6483,7 +6483,7 @@ NhlErrorTypes lapvf_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (double*)NclGetArgValue(
            1,
            4,
@@ -6492,7 +6492,7 @@ NhlErrorTypes lapvf_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -6842,7 +6842,7 @@ NhlErrorTypes lapvg_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (double*)NclGetArgValue(
            1,
            4,
@@ -6851,7 +6851,7 @@ NhlErrorTypes lapvg_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -7200,7 +7200,7 @@ NhlErrorTypes uv2sfvpf_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            4,
@@ -7209,7 +7209,7 @@ NhlErrorTypes uv2sfvpf_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -7548,7 +7548,7 @@ NhlErrorTypes uv2sfvpF_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -7557,7 +7557,7 @@ NhlErrorTypes uv2sfvpF_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -7870,7 +7870,7 @@ NhlErrorTypes uv2sfvpg_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            4,
@@ -7879,7 +7879,7 @@ NhlErrorTypes uv2sfvpg_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -8218,7 +8218,7 @@ NhlErrorTypes uv2sfvpG_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -8227,7 +8227,7 @@ NhlErrorTypes uv2sfvpG_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -8541,7 +8541,7 @@ NhlErrorTypes lderuvf_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            4,
@@ -8550,7 +8550,7 @@ NhlErrorTypes lderuvf_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -8897,7 +8897,7 @@ NhlErrorTypes lderuvg_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            4,
@@ -8906,7 +8906,7 @@ NhlErrorTypes lderuvg_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -9252,7 +9252,7 @@ NhlErrorTypes uv2dvf_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            3,
@@ -9261,7 +9261,7 @@ NhlErrorTypes uv2dvf_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -9575,7 +9575,7 @@ NhlErrorTypes uv2dvF_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -9584,7 +9584,7 @@ NhlErrorTypes uv2dvF_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -9889,7 +9889,7 @@ NhlErrorTypes uv2dvg_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            3,
@@ -9898,7 +9898,7 @@ NhlErrorTypes uv2dvg_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -10212,7 +10212,7 @@ NhlErrorTypes uv2dvG_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -10221,7 +10221,7 @@ NhlErrorTypes uv2dvG_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -10523,7 +10523,7 @@ NhlErrorTypes uv2vrf_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            3,
@@ -10532,7 +10532,7 @@ NhlErrorTypes uv2vrf_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -10845,7 +10845,7 @@ NhlErrorTypes uv2vrF_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -10854,7 +10854,7 @@ NhlErrorTypes uv2vrF_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -11159,7 +11159,7 @@ NhlErrorTypes uv2vrg_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            3,
@@ -11168,7 +11168,7 @@ NhlErrorTypes uv2vrg_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -11480,7 +11480,7 @@ NhlErrorTypes uv2vrG_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -11489,7 +11489,7 @@ NhlErrorTypes uv2vrG_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -11792,7 +11792,7 @@ NhlErrorTypes uv2vrdvf_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            4,
@@ -11801,7 +11801,7 @@ NhlErrorTypes uv2vrdvf_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -12147,7 +12147,7 @@ NhlErrorTypes uv2vrdvF_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -12156,7 +12156,7 @@ NhlErrorTypes uv2vrdvF_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -12476,7 +12476,7 @@ NhlErrorTypes uv2vrdvg_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            4,
@@ -12485,7 +12485,7 @@ NhlErrorTypes uv2vrdvg_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -12833,7 +12833,7 @@ NhlErrorTypes uv2vrdvG_W( void )
            &missing_u,
            &has_missing_u,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -12842,7 +12842,7 @@ NhlErrorTypes uv2vrdvG_W( void )
            &missing_v,
            &has_missing_v,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -13159,7 +13159,7 @@ NhlErrorTypes vr2uvf_W( void )
            &missing_vort,
            &has_missing_vort,
            &type_vort,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -13473,7 +13473,7 @@ NhlErrorTypes vr2uvF_W( void )
            &missing_vort,
            &has_missing_vort,
            &type_vort,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -13751,7 +13751,7 @@ NhlErrorTypes vr2uvg_W( void )
            &missing_vort,
            &has_missing_vort,
            &type_vort,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -14066,7 +14066,7 @@ NhlErrorTypes vr2uvG_W( void )
            &missing_vort,
            &has_missing_vort,
            &type_vort,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -14345,7 +14345,7 @@ NhlErrorTypes vrdv2uvf_W( void )
            &missing_vr,
            &has_missing_vr,
            &type_vr,
-           2);
+           DONT_CARE);
   dv = (void*)NclGetArgValue(
            1,
            4,
@@ -14354,7 +14354,7 @@ NhlErrorTypes vrdv2uvf_W( void )
            &missing_dvo,
            &has_missing_dvo,
            &type_dv,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -14713,7 +14713,7 @@ NhlErrorTypes vrdv2uvF_W( void )
            &missing_vr,
            &has_missing_vr,
            &type_vr,
-           2);
+           DONT_CARE);
   dv = (void*)NclGetArgValue(
            1,
            2,
@@ -14722,7 +14722,7 @@ NhlErrorTypes vrdv2uvF_W( void )
            &missing_dv,
            &has_missing_dv,
            &type_dv,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -15048,7 +15048,7 @@ NhlErrorTypes vrdv2uvg_W( void )
            &missing_vr,
            &has_missing_vr,
            &type_vr,
-           2);
+           DONT_CARE);
   dv = (void*)NclGetArgValue(
            1,
            4,
@@ -15057,7 +15057,7 @@ NhlErrorTypes vrdv2uvg_W( void )
            &missing_dvo,
            &has_missing_dvo,
            &type_dv,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -15413,7 +15413,7 @@ NhlErrorTypes vrdv2uvG_W( void )
            &missing_vr,
            &has_missing_vr,
            &type_vr,
-           2);
+           DONT_CARE);
   dv = (void*)NclGetArgValue(
            1,
            2,
@@ -15422,7 +15422,7 @@ NhlErrorTypes vrdv2uvG_W( void )
            &missing_dv,
            &has_missing_dv,
            &type_dv,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
  * dimensions.
@@ -15747,7 +15747,7 @@ NhlErrorTypes sfvp2uvf_W( void )
            &missing_sf,
            &has_missing_sf,
            &type_sf,
-           2);
+           DONT_CARE);
   vp = (void*)NclGetArgValue(
            1,
            4,
@@ -15756,7 +15756,7 @@ NhlErrorTypes sfvp2uvf_W( void )
            &missing_vpo,
            &has_missing_vpo,
            &type_vp,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -16112,7 +16112,7 @@ NhlErrorTypes sfvp2uvg_W( void )
            &missing_sf,
            &has_missing_sf,
            &type_sf,
-           2);
+           DONT_CARE);
   vp = (void*)NclGetArgValue(
            1,
            4,
@@ -16121,7 +16121,7 @@ NhlErrorTypes sfvp2uvg_W( void )
            &missing_vpo,
            &has_missing_vpo,
            &type_vp,
-           2);
+           DONT_CARE);
 /*
  * Get output arrays.
  */
@@ -16472,7 +16472,7 @@ NhlErrorTypes vhaec_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            6,
@@ -16481,7 +16481,7 @@ NhlErrorTypes vhaec_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get in/output arrays.
  */
@@ -16720,7 +16720,7 @@ NhlErrorTypes vhaeC_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -16729,7 +16729,7 @@ NhlErrorTypes vhaeC_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -16923,7 +16923,7 @@ NhlErrorTypes vhagc_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            6,
@@ -16932,7 +16932,7 @@ NhlErrorTypes vhagc_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 /*
  * Get in/output arrays.
  */
@@ -17166,7 +17166,7 @@ NhlErrorTypes vhagC_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
   v = (void*)NclGetArgValue(
            1,
            2,
@@ -17175,7 +17175,7 @@ NhlErrorTypes vhagC_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -17368,7 +17368,7 @@ NhlErrorTypes vhsec_W( void )
            NULL,
            NULL,
            &type_br,
-           2);
+           DONT_CARE);
   bi = (void*)NclGetArgValue(
            1,
            6,
@@ -17377,7 +17377,7 @@ NhlErrorTypes vhsec_W( void )
            NULL,
            NULL,
            &type_bi,
-           2);
+           DONT_CARE);
   cr = (void*)NclGetArgValue(
            2,
            6,
@@ -17386,7 +17386,7 @@ NhlErrorTypes vhsec_W( void )
            NULL,
            NULL,
            &type_cr,
-           2);
+           DONT_CARE);
   ci = (void*)NclGetArgValue(
            3,
            6,
@@ -17395,7 +17395,7 @@ NhlErrorTypes vhsec_W( void )
            NULL,
            NULL,
            &type_ci,
-           2);
+           DONT_CARE);
 /*
  * Get in/output arrays.
  */
@@ -17588,7 +17588,7 @@ NhlErrorTypes vhseC_W( void )
            NULL,
            NULL,
            &type_bc,
-           2);
+           DONT_CARE);
   nlon = (int*)NclGetArgValue(
            1,
            2,
@@ -17597,7 +17597,7 @@ NhlErrorTypes vhseC_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -17773,7 +17773,7 @@ NhlErrorTypes vhsgc_W( void )
            NULL,
            NULL,
            &type_br,
-           2);
+           DONT_CARE);
   bi = (void*)NclGetArgValue(
            1,
            6,
@@ -17782,7 +17782,7 @@ NhlErrorTypes vhsgc_W( void )
            NULL,
            NULL,
            &type_bi,
-           2);
+           DONT_CARE);
   cr = (void*)NclGetArgValue(
            2,
            6,
@@ -17791,7 +17791,7 @@ NhlErrorTypes vhsgc_W( void )
            NULL,
            NULL,
            &type_cr,
-           2);
+           DONT_CARE);
   ci = (void*)NclGetArgValue(
            3,
            6,
@@ -17800,7 +17800,7 @@ NhlErrorTypes vhsgc_W( void )
            NULL,
            NULL,
            &type_ci,
-           2);
+           DONT_CARE);
 /*
  * Get in/output arrays.
  */
@@ -17995,7 +17995,7 @@ NhlErrorTypes vhsgC_W( void )
            NULL,
            NULL,
            &type_bc,
-           2);
+           DONT_CARE);
   nlon = (int*)NclGetArgValue(
            1,
            2,
@@ -18004,7 +18004,7 @@ NhlErrorTypes vhsgC_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -18177,7 +18177,7 @@ NhlErrorTypes shaec_W( void )
           NULL,
           NULL,
           &type_g,
-          2);
+          DONT_CARE);
 /*
  * Get coefficient arrays.
  */
@@ -18392,7 +18392,7 @@ NhlErrorTypes shagc_W( void )
           NULL,
           NULL,
           &type_g,
-          2);
+          DONT_CARE);
 /*
  * Get coefficient arrays.
  */
@@ -18608,7 +18608,7 @@ NhlErrorTypes shsec_W( void )
            NULL,
            NULL,
            &type_a,
-           2);
+           DONT_CARE);
   b = (void*)NclGetArgValue(
            1,
            3,
@@ -18617,7 +18617,7 @@ NhlErrorTypes shsec_W( void )
            NULL,
            NULL,
            &type_b,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -18798,7 +18798,7 @@ NhlErrorTypes shsgc_W( void )
            NULL,
            NULL,
            &type_a,
-           2);
+           DONT_CARE);
   b = (void*)NclGetArgValue(
            1,
            3,
@@ -18807,7 +18807,7 @@ NhlErrorTypes shsgc_W( void )
            NULL,
            NULL,
            &type_b,
-           2);
+           DONT_CARE);
 /*
  * Get output array.
  */
@@ -18981,7 +18981,7 @@ NhlErrorTypes shsgc_R42_W( void )
            NULL,
            NULL,
            &type_a,
-           2);
+           DONT_CARE);
   b = (void*)NclGetArgValue(
            1,
            2,
@@ -18990,7 +18990,7 @@ NhlErrorTypes shsgc_R42_W( void )
            NULL,
            NULL,
            &type_b,
-           2);
+           DONT_CARE);
 
 /*
  * The grids coming in must be at least 2-dimensional and have the same # of
@@ -19169,7 +19169,7 @@ NhlErrorTypes shaeC_W( void )
              NULL,
              NULL,
              &type_g,
-           2);
+           DONT_CARE);
 
 /*
  * The grid coming in must be at least 2-dimensional.
@@ -19355,7 +19355,7 @@ NhlErrorTypes shagC_W( void )
              NULL,
              NULL,
              &type_g,
-             2);
+             DONT_CARE);
 
 /*
  * The grid coming in must be at least 2-dimensional.
@@ -19543,7 +19543,7 @@ NhlErrorTypes shseC_W( void )
            NULL,
            NULL,
            &type_ab,
-           2);
+           DONT_CARE);
 /*
  * Get nlon
  */
@@ -19555,7 +19555,7 @@ NhlErrorTypes shseC_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -19733,7 +19733,7 @@ NhlErrorTypes shsgC_W( void )
            NULL,
            NULL,
            &type_ab,
-           2);
+           DONT_CARE);
 /*
  * Get nlon
  */
@@ -19745,7 +19745,7 @@ NhlErrorTypes shsgC_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * The grid coming in must be at least 3-dimensional.
@@ -19905,7 +19905,7 @@ NhlErrorTypes set_sphere_radius_W(void)
           NULL,
           NULL,
           &type_radius,
-          2);
+          DONT_CARE);
 
   _Nclcoerce((NclTypeClass)nclTypedoubleClass,&scale,radius,1,NULL,NULL,
      _NclTypeEnumToTypeClass(_NclBasicDataTypeToObjType(type_radius)));

@@ -42,7 +42,7 @@ NhlErrorTypes zonal_mpsi_W( void )
           &missing_v,
           &has_missing_v,
           &type_v,
-          2);
+          DONT_CARE);
   lat = (void*)NclGetArgValue(
           1,
           4,
@@ -51,7 +51,7 @@ NhlErrorTypes zonal_mpsi_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
   p = (void*)NclGetArgValue(
           2,
           4,
@@ -60,7 +60,7 @@ NhlErrorTypes zonal_mpsi_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
   ps = (void*)NclGetArgValue(
           3,
           4,
@@ -69,7 +69,7 @@ NhlErrorTypes zonal_mpsi_W( void )
           NULL,
           NULL,
           &type_ps,
-          2);
+          DONT_CARE) ;
 /*
  * Check dimensions.
  */

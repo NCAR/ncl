@@ -42,7 +42,7 @@ NhlErrorTypes shgrid_W(void)
        &missing_xi,
        &has_missing_xi,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * Retrieve argument #1 (y coordinates).
  */
@@ -54,7 +54,7 @@ NhlErrorTypes shgrid_W(void)
        &missing_yi,
        &has_missing_yi,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * Retrieve argument #2 (z coordinates).
  */
@@ -66,7 +66,7 @@ NhlErrorTypes shgrid_W(void)
        &missing_zi,
        &has_missing_zi,
        NULL,
-       2);
+       DONT_CARE);
 /*
  *  Retrieve argument #3 (input functional values)
  */
@@ -78,7 +78,7 @@ NhlErrorTypes shgrid_W(void)
          &missing_fval,
          &has_missing_fval,
          NULL,
-         2);
+         DONT_CARE);
 /*
  *  Retrieve argument #4 (output x coordinates)
  */
@@ -90,7 +90,7 @@ NhlErrorTypes shgrid_W(void)
        &missing_xo,
        &has_missing_xo,
        NULL,
-       2);
+       DONT_CARE);
 /*
  *  Retrieve argument #5 (output y coordinates)
  */
@@ -102,7 +102,7 @@ NhlErrorTypes shgrid_W(void)
        &missing_yo,
        &has_missing_yo,
        NULL,
-       2);
+       DONT_CARE);
 /*
  *  Retrieve argument #6 (output z coordinates)
  */
@@ -114,7 +114,7 @@ NhlErrorTypes shgrid_W(void)
        &missing_zo,
        &has_missing_zo,
        NULL,
-       2);
+       DONT_CARE);
 
 /*
  *  Check that all of the first four arguments are of the same size.
@@ -333,7 +333,7 @@ NhlErrorTypes shgetnp_W(void)
        &missing_px,
        &has_missing_px,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * Retrieve argument #1 (y coordinate of reference point).
  */
@@ -345,7 +345,7 @@ NhlErrorTypes shgetnp_W(void)
        &missing_py,
        &has_missing_py,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * Retrieve argument #2 (z coordinate of reference point).
  */
@@ -357,7 +357,7 @@ NhlErrorTypes shgetnp_W(void)
        &missing_pz,
        &has_missing_pz,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * Retrieve argument #3 (x coordinates of input data).
  */
@@ -369,7 +369,7 @@ NhlErrorTypes shgetnp_W(void)
        &missing_xi,
        &has_missing_xi,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * Retrieve argument #4 (y coordinates of input data).
  */
@@ -381,7 +381,7 @@ NhlErrorTypes shgetnp_W(void)
        &missing_yi,
        &has_missing_yi,
        NULL,
-       2);
+       DONT_CARE);
 /*
  * Retrieve argument #5 (z coordinates of input data).
  */
@@ -393,7 +393,7 @@ NhlErrorTypes shgetnp_W(void)
        &missing_zi,
        &has_missing_zi,
        NULL,
-       2);
+       DONT_CARE);
 /*
  *  Retrieve argument #6 (call flag)
  */
@@ -405,7 +405,7 @@ NhlErrorTypes shgetnp_W(void)
          NULL,
          NULL,
          NULL,
-         2);
+         DONT_CARE);
 
 /*
  *  Check that the input arrays are the same size.
@@ -554,7 +554,7 @@ NhlErrorTypes shsetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
  
@@ -581,7 +581,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -641,7 +641,7 @@ NhlErrorTypes shgetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
 

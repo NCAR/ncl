@@ -40,7 +40,7 @@ NhlErrorTypes dim_gbits_W( void )
                                 NULL,
                                 NULL,
                                 &type_npack,
-                                2);
+                                DONT_CARE);
 
 /*
  * Check type of npack.
@@ -69,7 +69,7 @@ NhlErrorTypes dim_gbits_W( void )
                               NULL,
                               NULL,
                               NULL,
-                              2);
+                              DONT_CARE);
 
   nbits = (int*)NclGetArgValue(2,
                                5,
@@ -78,7 +78,7 @@ NhlErrorTypes dim_gbits_W( void )
                                NULL,
                                NULL,
                                NULL,
-                               2);
+                               DONT_CARE);
 
   nskip = (int*)NclGetArgValue(3,
                                5,
@@ -87,7 +87,7 @@ NhlErrorTypes dim_gbits_W( void )
                                NULL,
                                NULL,
                                NULL,
-                               2);
+                               DONT_CARE);
 
   iter = (int*)NclGetArgValue(4,
                               5,
@@ -96,7 +96,7 @@ NhlErrorTypes dim_gbits_W( void )
                               NULL,
                               NULL,
                               NULL,
-                              2);
+                              DONT_CARE);
 
 /*
  * Compute total number of elements in npack and isam arrays.
@@ -245,7 +245,7 @@ NhlErrorTypes getbitsone_W( void )
                                 NULL,
                                 NULL,
                                 &type_npack,
-                                2);
+                                DONT_CARE);
 
 /*
  * Check type of npack.

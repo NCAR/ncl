@@ -27,7 +27,7 @@ NhlErrorTypes gaus_lobat_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   if( *npts < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"gaus_lobat: npts must be at least 1");
@@ -90,7 +90,7 @@ NhlErrorTypes gaus_lobat_wgt_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   npts = dsizes_lat[0];
 /*

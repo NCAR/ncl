@@ -57,11 +57,11 @@ NhlErrorTypes ctwrap_W( void )
 /*
  * Retrieve parameters.
  */
-  wks    =     (int*)NclGetArgValue(0,5, NULL, NULL,NULL,NULL,NULL,2);
-  lat    =   (float*)NclGetArgValue(1,5, NULL, dsizes_lat, NULL,NULL,NULL,2);
-  lon    =   (float*)NclGetArgValue(2,5, NULL, dsizes_lon, NULL,NULL,NULL,2);
-  data   =   (float*)NclGetArgValue(3,5, NULL, dsizes_data, NULL,NULL,NULL,2);
-  opt    = (logical*)NclGetArgValue(4,5, NULL,NULL,NULL,NULL,NULL,2);
+  wks    =     (int*)NclGetArgValue(0,5, NULL, NULL,NULL,NULL,NULL,DONT_CARE);
+  lat    =   (float*)NclGetArgValue(1,5, NULL, dsizes_lat, NULL,NULL,NULL,DONT_CARE);
+  lon    =   (float*)NclGetArgValue(2,5, NULL, dsizes_lon, NULL,NULL,NULL,DONT_CARE);
+  data   =   (float*)NclGetArgValue(3,5, NULL, dsizes_data, NULL,NULL,NULL,DONT_CARE);
+  opt    = (logical*)NclGetArgValue(4,5, NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
 /*
  * Check input sizes.

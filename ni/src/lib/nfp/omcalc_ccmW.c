@@ -57,7 +57,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_u,
-          2);
+          DONT_CARE);
 
   v = (void*)NclGetArgValue(
           1,
@@ -67,7 +67,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_v,
-          2);
+          DONT_CARE);
 
 
   div = (void*)NclGetArgValue(
@@ -78,7 +78,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_div,
-          2);
+          DONT_CARE);
 
   dpsl = (void*)NclGetArgValue(
           3,
@@ -88,7 +88,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_dpsl,
-          2);
+          DONT_CARE);
 
   dpsm = (void*)NclGetArgValue(
           4,
@@ -98,7 +98,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_dpsm,
-          2);
+          DONT_CARE);
 
   pmid = (void*)NclGetArgValue(
           5,
@@ -108,7 +108,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_pmid,
-          2);
+          DONT_CARE);
 
   pdel = (void*)NclGetArgValue(
           6,
@@ -118,7 +118,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_pdel,
-          2);
+          DONT_CARE);
 
   psfc = (void*)NclGetArgValue(
           7,
@@ -128,7 +128,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
 
   hybd = (void*)NclGetArgValue(
           8,
@@ -138,7 +138,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_hybd,
-          2);
+          DONT_CARE);
 
   hybm = (void*)NclGetArgValue(
           9,
@@ -148,7 +148,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           &type_hybm,
-          2);
+          DONT_CARE);
 
   nprlev = (int*)NclGetArgValue(
           10,
@@ -158,7 +158,7 @@ NhlErrorTypes omega_ccm_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Check the input dimension sizes.

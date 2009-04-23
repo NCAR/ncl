@@ -73,7 +73,7 @@ NhlErrorTypes stat2_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Coerce missing value.
  */
@@ -263,7 +263,7 @@ NhlErrorTypes stat_trim_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   ptrim = (void*)NclGetArgValue(
            1,
@@ -273,7 +273,7 @@ NhlErrorTypes stat_trim_W( void )
            NULL,
            NULL,
            &type_ptrim,
-           2);
+           DONT_CARE);
 
 /*
  * Coerce ptrim to double if it isn't already.
@@ -488,7 +488,7 @@ NhlErrorTypes stat4_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Coerce missing value.
  */
@@ -735,7 +735,7 @@ NhlErrorTypes stat_medrng_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Coerce missing value.
  */
@@ -954,7 +954,7 @@ NhlErrorTypes dim_median_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Compute the total number of elements in output and input.
  */
@@ -1086,7 +1086,7 @@ NhlErrorTypes dim_median_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   dims = (int*)NclGetArgValue(
            1,
            2,
@@ -1095,7 +1095,7 @@ NhlErrorTypes dim_median_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
@@ -1242,7 +1242,7 @@ NhlErrorTypes dim_rmvmean_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Compute the total number of elements in output and input.
  */
@@ -1357,7 +1357,7 @@ NhlErrorTypes dim_rmvmean_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   dims = (int*)NclGetArgValue(
            1,
            2,
@@ -1366,7 +1366,7 @@ NhlErrorTypes dim_rmvmean_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
@@ -1508,7 +1508,7 @@ NhlErrorTypes dim_rmvmed_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Compute the total number of elements.
  */
@@ -1630,7 +1630,7 @@ NhlErrorTypes dim_rmvmed_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   dims = (int*)NclGetArgValue(
            1,
            2,
@@ -1639,7 +1639,7 @@ NhlErrorTypes dim_rmvmed_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
@@ -1787,7 +1787,7 @@ NhlErrorTypes dim_standardize_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get second argument.
  */ 
@@ -1799,7 +1799,7 @@ NhlErrorTypes dim_standardize_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Compute the total number of elements minus the last dimension.
  */
@@ -1913,7 +1913,7 @@ NhlErrorTypes dim_standardize_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get second argument.
  */ 
@@ -1925,7 +1925,7 @@ NhlErrorTypes dim_standardize_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
   dims = (int*)NclGetArgValue(
            2,
            3,
@@ -1934,7 +1934,7 @@ NhlErrorTypes dim_standardize_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
@@ -2079,7 +2079,7 @@ NhlErrorTypes dim_rmsd_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            2,
@@ -2088,7 +2088,7 @@ NhlErrorTypes dim_rmsd_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * x and y must be the same size.
  */
@@ -2262,7 +2262,7 @@ NhlErrorTypes dim_rmsd_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            3,
@@ -2271,7 +2271,7 @@ NhlErrorTypes dim_rmsd_n_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * x and y must be the same size.
  */
@@ -2294,7 +2294,7 @@ NhlErrorTypes dim_rmsd_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
@@ -2457,7 +2457,7 @@ NhlErrorTypes esacr_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get second argument.
  */
@@ -2469,7 +2469,7 @@ NhlErrorTypes esacr_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Calculate size of input/output values.
  */
@@ -2631,7 +2631,7 @@ NhlErrorTypes esacv_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get second argument.
  */
@@ -2643,7 +2643,7 @@ NhlErrorTypes esacv_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Calculate size of input/output values.
  */
@@ -2812,7 +2812,7 @@ NhlErrorTypes esccr_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            3,
@@ -2821,7 +2821,7 @@ NhlErrorTypes esccr_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
   mxlag = (int*)NclGetArgValue(
            2,
            3,
@@ -2830,7 +2830,7 @@ NhlErrorTypes esccr_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * The last dimension of x and y must be the same.
  */
@@ -3102,7 +3102,7 @@ NhlErrorTypes dim_num_W( void)
            &missing_input,
            &has_missing_input,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Calculate the product of the dimension sizes for the first n-1 
  * dimensions (size_leftmost).
@@ -3178,7 +3178,7 @@ NhlErrorTypes dim_num_n_W( void)
            &missing_input,
            &has_missing_input,
            NULL,
-           2);
+           DONT_CARE);
   dims = (int*)NclGetArgValue(
            1,
            2,
@@ -3187,7 +3187,7 @@ NhlErrorTypes dim_num_n_W( void)
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */
@@ -3310,7 +3310,7 @@ NhlErrorTypes esccr_shields_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            3,
@@ -3319,7 +3319,7 @@ NhlErrorTypes esccr_shields_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
   mxlag = (int*)NclGetArgValue(
            2,
            3,
@@ -3328,7 +3328,7 @@ NhlErrorTypes esccr_shields_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * The last dimension of x and y must be the same.
  */
@@ -3557,7 +3557,7 @@ NhlErrorTypes esccv_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            3,
@@ -3566,7 +3566,7 @@ NhlErrorTypes esccv_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
   mxlag = (int*)NclGetArgValue(
            2,
            3,
@@ -3575,7 +3575,7 @@ NhlErrorTypes esccv_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * The last dimension of x and y must be the same.
  */
@@ -3860,7 +3860,7 @@ NhlErrorTypes dim_stat4_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Coerce missing values, if any.
  */
@@ -3992,7 +3992,7 @@ NhlErrorTypes dim_stat4_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   dims = (int*)NclGetArgValue(
            1,
            2,
@@ -4001,7 +4001,7 @@ NhlErrorTypes dim_stat4_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimensions are valid.
  */

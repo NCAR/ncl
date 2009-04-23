@@ -139,7 +139,7 @@ NhlErrorTypes bin_sum_W( void )
            NULL,
            NULL,
            &type_glon,
-           2);
+           DONT_CARE);
 
   if(dsizes_glon[0] != mlon) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_sum: The length of glon must be the same as the rightmost dimension of gbin");
@@ -157,7 +157,7 @@ NhlErrorTypes bin_sum_W( void )
            NULL,
            NULL,
            &type_glat,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -178,7 +178,7 @@ NhlErrorTypes bin_sum_W( void )
            NULL,
            NULL,
            &type_zlon,
-           2);
+           DONT_CARE);
 
   nz = dsizes_zlon[0];
 
@@ -193,7 +193,7 @@ NhlErrorTypes bin_sum_W( void )
            NULL,
            NULL,
            &type_zlat,
-           2);
+           DONT_CARE);
 
   if(dsizes_zlat[0] != nz) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_sum: zlat must be the same size as zlon");
@@ -211,7 +211,7 @@ NhlErrorTypes bin_sum_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 
   if(dsizes_z[0] != nz) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_sum: z must be the same size as zlat and zlon");
@@ -379,7 +379,7 @@ NhlErrorTypes bin_avg_W( void )
            NULL,
            NULL,
            &type_zlon,
-           2);
+           DONT_CARE);
 
   nz = dsizes_zlon[0];
 /*
@@ -393,7 +393,7 @@ NhlErrorTypes bin_avg_W( void )
            NULL,
            NULL,
            &type_zlat,
-           2);
+           DONT_CARE);
 
   if(dsizes_zlat[0] != nz) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_avg: zlat must be the same length as zlon");
@@ -411,7 +411,7 @@ NhlErrorTypes bin_avg_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 
   if(dsizes_z[0] != nz) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"bin_avg: z must be the same length as zlat and zlon");
@@ -434,7 +434,7 @@ NhlErrorTypes bin_avg_W( void )
            NULL,
            NULL,
            &type_glon,
-           2);
+           DONT_CARE);
 
   mlon = dsizes_glon[0];
 
@@ -449,7 +449,7 @@ NhlErrorTypes bin_avg_W( void )
            NULL,
            NULL,
            &type_glat,
-           2);
+           DONT_CARE);
 
   nlat = dsizes_glat[0];
 
@@ -464,7 +464,7 @@ NhlErrorTypes bin_avg_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * The output type defaults to float, unless this input array is double.

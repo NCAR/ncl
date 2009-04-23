@@ -36,7 +36,7 @@ NhlErrorTypes dim_pqsort_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   kflag = (void*)NclGetArgValue(
            1,
@@ -46,7 +46,7 @@ NhlErrorTypes dim_pqsort_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Input array must be integer, float, or double.
  */
@@ -163,7 +163,7 @@ NhlErrorTypes dim_pqsort_n_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   kflag = (int*)NclGetArgValue(
            1,
@@ -173,7 +173,7 @@ NhlErrorTypes dim_pqsort_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   dims = (int*)NclGetArgValue(
            2,
@@ -183,7 +183,7 @@ NhlErrorTypes dim_pqsort_n_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Some error checking. Make sure input dimension is valid.
  */

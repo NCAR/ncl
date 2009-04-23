@@ -1023,7 +1023,7 @@ for i in range(len(args)):
   else:
     w1file.write("           NULL,\n")
 
-  w1file.write("           2);\n")
+  w1file.write("           DONT_CARE);\n")
 
 #---------------------------------------------------------------------
 #

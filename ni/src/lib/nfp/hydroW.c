@@ -48,7 +48,7 @@ NhlErrorTypes hydro_W( void )
           &missing_p,
           &has_missing_p,
           &type_p,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -61,7 +61,7 @@ NhlErrorTypes hydro_W( void )
           &missing_tkv,
           &has_missing_tkv,
           &type_tkv,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #3
@@ -74,7 +74,7 @@ NhlErrorTypes hydro_W( void )
           &missing_zsfc,
           &has_missing_zsfc,
           &type_zsfc,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions and/or dimension sizes for p and tkv.

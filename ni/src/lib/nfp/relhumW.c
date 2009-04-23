@@ -44,7 +44,7 @@ NhlErrorTypes relhum_W( void )
           &missing_t,
           &has_missing_t,
           &type_t,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #2
  */
@@ -56,7 +56,7 @@ NhlErrorTypes relhum_W( void )
           &missing_w,
           &has_missing_w,
           &type_w,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #3
  */
@@ -68,7 +68,7 @@ NhlErrorTypes relhum_W( void )
           &missing_p,
           &has_missing_p,
           &type_p,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions and calculate total size of arrays.
  */

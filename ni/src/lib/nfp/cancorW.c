@@ -60,7 +60,7 @@ NhlErrorTypes cancor_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
   y = (void*)NclGetArgValue(
            1,
@@ -70,7 +70,7 @@ NhlErrorTypes cancor_W( void )
            NULL,
            NULL,
            &type_y,
-           2);
+           DONT_CARE);
 
   opt = (logical *)NclGetArgValue(
             2,
@@ -80,7 +80,7 @@ NhlErrorTypes cancor_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * Get array sizes.
  */

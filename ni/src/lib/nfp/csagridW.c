@@ -30,13 +30,13 @@ NhlErrorTypes csa1xs_W(void)
  * can be multi-dimensional, OR 1-dimensional.
  */
   xi = (float *) NclGetArgValue(0, 7, &ndims_xi, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (float *) NclGetArgValue(1, 7, &ndims_yi, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Either the dimensions of xi and yi must be the same, or if xi
@@ -73,7 +73,7 @@ NhlErrorTypes csa1xs_W(void)
  * Retrieve argument #2 (weights).
  */
   wts = (float *) NclGetArgValue(2, 7, NULL, dsizes_wts, NULL, 
-                                 NULL, NULL, 2);
+                                 NULL, NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -95,22 +95,22 @@ NhlErrorTypes csa1xs_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 7, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 7, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #4 (smoothing option).
  */
-  smth = (float *) NclGetArgValue(4, 7, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (float *) NclGetArgValue(4, 7, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (derivative flag).
  */
   nderiv = (int *) NclGetArgValue(5, 7, NULL, NULL, NULL, 
-                                  NULL, NULL, 2);
+                                  NULL, NULL, DONT_CARE);
 /*
  * Retrieve argument #6 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
   nxo = dsizes_xo[0];
 
@@ -177,13 +177,13 @@ NhlErrorTypes csa1s_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (float *) NclGetArgValue(0, 4, &ndims_xi, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (float *) NclGetArgValue(1, 4, &ndims_yi, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 
 /*
@@ -225,12 +225,12 @@ NhlErrorTypes csa1s_W(void)
 /*
  * Retrieve argument #2 (knots).
  */
-  knots = (int *) NclGetArgValue(2, 4, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(2, 4, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #3 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
   nxo = dsizes_xo[0];
 
@@ -299,12 +299,12 @@ NhlErrorTypes csa2s_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (float *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (float *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (float *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (float *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -321,7 +321,7 @@ NhlErrorTypes csa2s_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (float *) NclGetArgValue(2, 6, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -340,18 +340,18 @@ NhlErrorTypes csa2s_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #4 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
 
 /*
  * Retrieve argument #5 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
   nxonyo = nxo*nyo;
  
@@ -430,12 +430,12 @@ NhlErrorTypes csa2xs_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (float *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (float *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (float *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (float *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -452,7 +452,7 @@ NhlErrorTypes csa2xs_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (float *) NclGetArgValue(2, 9, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -473,7 +473,7 @@ NhlErrorTypes csa2xs_W(void)
  * Retrieve argument #3 (weights).
  */
   wts = (float *) NclGetArgValue(3, 9, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -491,28 +491,28 @@ NhlErrorTypes csa2xs_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (smoothing option).
  */
-  smth = (float *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (float *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #8 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
   nxonyo = nxo*nyo;
 
@@ -586,12 +586,12 @@ NhlErrorTypes csa2ls_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (float *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (float *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
 
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (float *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (float *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -608,7 +608,7 @@ NhlErrorTypes csa2ls_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (float *) NclGetArgValue(2, 6, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -628,18 +628,18 @@ NhlErrorTypes csa2ls_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #4 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #5 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 4 and 5.
@@ -725,12 +725,12 @@ NhlErrorTypes csa2lxs_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (float *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (float *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (float *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (float *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -747,7 +747,7 @@ NhlErrorTypes csa2lxs_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (float *) NclGetArgValue(2, 9, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 
 /*
@@ -769,7 +769,7 @@ NhlErrorTypes csa2lxs_W(void)
  * Retrieve argument #3 (weights).
  */
   wts = (float *) NclGetArgValue(3, 9, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
 
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -786,28 +786,28 @@ NhlErrorTypes csa2lxs_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (smoothing option).
  */
-  smth = (float *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (float *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #8 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 7 and 8.
@@ -899,19 +899,19 @@ NhlErrorTypes csa3xs_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (float *) NclGetArgValue(0, 11, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (float *) NclGetArgValue(1, 11, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (float *) NclGetArgValue(2, 11, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -928,7 +928,7 @@ NhlErrorTypes csa3xs_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (float *) NclGetArgValue(3, 11, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
 
 /*
  * Check last dimension of argument #3.
@@ -949,7 +949,7 @@ NhlErrorTypes csa3xs_W(void)
  * Retrieve argument #4 (weights).
  */
   wts = (float *) NclGetArgValue(4, 11, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -966,34 +966,34 @@ NhlErrorTypes csa3xs_W(void)
 /*
  * Retrieve argument #5 (knots).
  */
-  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (smoothing option).
  */
-  smth = (float *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (float *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #8 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
 
 /*
  * Retrieve argument #10 (output z coordinates).
  */
-  zo = (float *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (float *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
   nzo = dsizes_zo[0];
  
 /*
@@ -1074,19 +1074,19 @@ NhlErrorTypes csa3s_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (float *) NclGetArgValue(0, 8, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (float *) NclGetArgValue(1, 8, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
 
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (float *) NclGetArgValue(2, 8, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -1103,7 +1103,7 @@ NhlErrorTypes csa3s_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (float *) NclGetArgValue(3, 8, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -1123,24 +1123,24 @@ NhlErrorTypes csa3s_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
  
 /*
  * Retrieve argument #7 (output z coordinates).
  */
-  zo = (float *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (float *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
   nzo = dsizes_zo[0];
  
 /*
@@ -1223,19 +1223,19 @@ NhlErrorTypes csa3lxs_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (float *) NclGetArgValue(0, 11, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (float *) NclGetArgValue(1, 11, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (float *) NclGetArgValue(2, 11, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -1252,7 +1252,7 @@ NhlErrorTypes csa3lxs_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (float *) NclGetArgValue(3, 11, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -1273,7 +1273,7 @@ NhlErrorTypes csa3lxs_W(void)
  * Retrieve argument #4 (weights).
  */
   wts = (float *) NclGetArgValue(4, 11, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -1290,28 +1290,28 @@ NhlErrorTypes csa3lxs_W(void)
 /*
  * Retrieve argument #5 (knots).
  */
-  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (smoothing option).
  */
-  smth = (float *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (float *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #8 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 8 and 9.
@@ -1327,7 +1327,7 @@ NhlErrorTypes csa3lxs_W(void)
 /*
  * Retrieve argument #10 (output z coordinates).
  */
-  zo = (float *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (float *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 8 and 9.
@@ -1413,19 +1413,19 @@ NhlErrorTypes csa3ls_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (float *) NclGetArgValue(0, 8, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (float *) NclGetArgValue(1, 8, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (float *) NclGetArgValue(2, 8, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -1442,7 +1442,7 @@ NhlErrorTypes csa3ls_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (float *) NclGetArgValue(3, 8, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -1462,18 +1462,18 @@ NhlErrorTypes csa3ls_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (output x coordinates).
  */
-  xo = (float *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (float *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
  */
-  yo = (float *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (float *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 5 and 6.
@@ -1487,7 +1487,7 @@ NhlErrorTypes csa3ls_W(void)
 /*
  * Retrieve argument #7 (output z coordinates).
  */
-  zo = (float *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (float *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 5 and 7.
@@ -1569,13 +1569,13 @@ NhlErrorTypes csa1xd_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (double *) NclGetArgValue(0, 7, &ndims_xi, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (double *) NclGetArgValue(1, 7, &ndims_yi, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Either the dimensions of xi and yi must be the same, or if xi
@@ -1612,7 +1612,7 @@ NhlErrorTypes csa1xd_W(void)
  * Retrieve argument #2 (weights).
  */
   wts = (double *) NclGetArgValue(2, 7, NULL, dsizes_wts, NULL, 
-                                 NULL, NULL, 2);
+                                 NULL, NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -1634,22 +1634,22 @@ NhlErrorTypes csa1xd_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 7, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 7, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #4 (smoothing option).
  */
-  smth = (double *) NclGetArgValue(4, 7, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (double *) NclGetArgValue(4, 7, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (derivative flag).
  */
   nderiv = (int *) NclGetArgValue(5, 7, NULL, NULL, NULL, 
-                                  NULL, NULL, 2);
+                                  NULL, NULL, DONT_CARE);
 /*
  * Retrieve argument #6 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
   nxo = dsizes_xo[0];
 
@@ -1717,13 +1717,13 @@ NhlErrorTypes csa1d_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (double *) NclGetArgValue(0, 4, &ndims_xi, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (double *) NclGetArgValue(1, 4, &ndims_yi, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Either the dimensions of xi and yi must be the same, or if xi
@@ -1764,12 +1764,12 @@ NhlErrorTypes csa1d_W(void)
 /*
  * Retrieve argument #2 (knots).
  */
-  knots = (int *) NclGetArgValue(2, 4, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(2, 4, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #3 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
  
   nxo = dsizes_xo[0];
 
@@ -1838,12 +1838,12 @@ NhlErrorTypes csa2d_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (double *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (double *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (double *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (double *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -1860,7 +1860,7 @@ NhlErrorTypes csa2d_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (double *) NclGetArgValue(2, 6, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -1879,18 +1879,18 @@ NhlErrorTypes csa2d_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #4 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
 
 /*
  * Retrieve argument #5 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
   nxonyo = nxo*nyo;
  
@@ -1969,12 +1969,12 @@ NhlErrorTypes csa2xd_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (double *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (double *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (double *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (double *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -1991,7 +1991,7 @@ NhlErrorTypes csa2xd_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (double *) NclGetArgValue(2, 9, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -2012,7 +2012,7 @@ NhlErrorTypes csa2xd_W(void)
  * Retrieve argument #3 (weights).
  */
   wts = (double *) NclGetArgValue(3, 9, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -2030,28 +2030,28 @@ NhlErrorTypes csa2xd_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (smoothing option).
  */
-  smth = (double *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (double *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #8 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
   nxonyo = nxo*nyo;
 
@@ -2125,12 +2125,12 @@ NhlErrorTypes csa2ld_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (double *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (double *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
 
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (double *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (double *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -2147,7 +2147,7 @@ NhlErrorTypes csa2ld_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (double *) NclGetArgValue(2, 6, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -2167,18 +2167,18 @@ NhlErrorTypes csa2ld_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #4 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #5 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 4 and 5.
@@ -2264,12 +2264,12 @@ NhlErrorTypes csa2lxd_W(void)
 /*
  * Retrieve argument #0 (x coordinates).
  */
-  xi = (double *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, 2);
+  xi = (double *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
-  yi = (double *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, 2);
+  yi = (double *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -2286,7 +2286,7 @@ NhlErrorTypes csa2lxd_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (double *) NclGetArgValue(2, 9, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 
 /*
@@ -2308,7 +2308,7 @@ NhlErrorTypes csa2lxd_W(void)
  * Retrieve argument #3 (weights).
  */
   wts = (double *) NclGetArgValue(3, 9, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
 
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -2325,28 +2325,28 @@ NhlErrorTypes csa2lxd_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (smoothing option).
  */
-  smth = (double *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (double *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #8 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 7 and 8.
@@ -2438,19 +2438,19 @@ NhlErrorTypes csa3xd_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (double *) NclGetArgValue(0, 11, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (double *) NclGetArgValue(1, 11, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (double *) NclGetArgValue(2, 11, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -2467,7 +2467,7 @@ NhlErrorTypes csa3xd_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (double *) NclGetArgValue(3, 11, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
 
 /*
  * Check last dimension of argument #3.
@@ -2488,7 +2488,7 @@ NhlErrorTypes csa3xd_W(void)
  * Retrieve argument #4 (weights).
  */
   wts = (double *) NclGetArgValue(4, 11, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -2505,34 +2505,34 @@ NhlErrorTypes csa3xd_W(void)
 /*
  * Retrieve argument #5 (knots).
  */
-  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (smoothing option).
  */
-  smth = (double *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (double *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #8 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
 
 /*
  * Retrieve argument #10 (output z coordinates).
  */
-  zo = (double *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (double *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
   nzo = dsizes_zo[0];
  
 /*
@@ -2613,19 +2613,19 @@ NhlErrorTypes csa3d_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (double *) NclGetArgValue(0, 8, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (double *) NclGetArgValue(1, 8, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
 
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (double *) NclGetArgValue(2, 8, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -2642,7 +2642,7 @@ NhlErrorTypes csa3d_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (double *) NclGetArgValue(3, 8, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -2662,24 +2662,24 @@ NhlErrorTypes csa3d_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
   nyo = dsizes_yo[0];
  
 /*
  * Retrieve argument #7 (output z coordinates).
  */
-  zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
   nzo = dsizes_zo[0];
  
 /*
@@ -2762,19 +2762,19 @@ NhlErrorTypes csa3lxd_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (double *) NclGetArgValue(0, 11, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (double *) NclGetArgValue(1, 11, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (double *) NclGetArgValue(2, 11, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -2791,7 +2791,7 @@ NhlErrorTypes csa3lxd_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (double *) NclGetArgValue(3, 11, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -2812,7 +2812,7 @@ NhlErrorTypes csa3lxd_W(void)
  * Retrieve argument #4 (weights).
  */
   wts = (double *) NclGetArgValue(4, 11, NULL, dsizes_wts, NULL, NULL, 
-                                 NULL, 2);
+                                 NULL, DONT_CARE);
  
   scalar_wts = is_scalar(1,dsizes_wts);
 
@@ -2829,28 +2829,28 @@ NhlErrorTypes csa3lxd_W(void)
 /*
  * Retrieve argument #5 (knots).
  */
-  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (smoothing option).
  */
-  smth = (double *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  smth = (double *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #7 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #8 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #9 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 8 and 9.
@@ -2866,7 +2866,7 @@ NhlErrorTypes csa3lxd_W(void)
 /*
  * Retrieve argument #10 (output z coordinates).
  */
-  zo = (double *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (double *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 8 and 9.
@@ -2952,19 +2952,19 @@ NhlErrorTypes csa3ld_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (double *) NclGetArgValue(0, 8, NULL, dsizes_xi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #1 (y coordinates).
  */
   yi = (double *) NclGetArgValue(1, 8, NULL, dsizes_yi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Retrieve argument #2 (z coordinates).
  */
   zi = (double *) NclGetArgValue(2, 8, NULL, dsizes_zi, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -2981,7 +2981,7 @@ NhlErrorTypes csa3ld_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (double *) NclGetArgValue(3, 8, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                NULL, 2);
+                                NULL, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -3001,18 +3001,18 @@ NhlErrorTypes csa3ld_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (output x coordinates).
  */
-  xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, 2);
+  xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, NULL, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
  * Retrieve argument #6 (output y coordinates).
  */
-  yo = (double *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, 2);
+  yo = (double *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 5 and 6.
@@ -3026,7 +3026,7 @@ NhlErrorTypes csa3ld_W(void)
 /*
  * Retrieve argument #7 (output z coordinates).
  */
-  zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, 2);
+  zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Check sizes of arguments 5 and 7.
@@ -3111,9 +3111,9 @@ NhlErrorTypes csa1x_W(void)
  * Retrieve arguments #0 and 1.
  */
   xi = (void *) NclGetArgValue(0, 7, &ndims_xi, dsizes_xi, NULL, NULL, 
-                               &type_xi, 2);
+                               &type_xi, DONT_CARE);
   yi = (void *) NclGetArgValue(1, 7, &ndims_yi, dsizes_yi, NULL, NULL, 
-                               &type_yi, 2);
+                               &type_yi, DONT_CARE);
  
 /*
  * Either the dimensions of xi and yi must be the same, or if xi
@@ -3169,7 +3169,7 @@ NhlErrorTypes csa1x_W(void)
  * Retrieve argument #2 (weights).
  */
   wts = (void *) NclGetArgValue(2, 7, NULL, dsizes_wts, NULL, 
-                                NULL, &type_wts, 2);
+                                NULL, &type_wts, DONT_CARE);
  
 /*
  * wts can be a scalar or one-dimensional. If it is a scalar, 
@@ -3215,14 +3215,14 @@ NhlErrorTypes csa1x_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 7, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 7, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #4 (smoothing option) and coerce to double if
  * necessary.
  */
   smth     = (void *) NclGetArgValue(4, 7, NULL, NULL, NULL, NULL, 
-                                     &type_smth, 2);
+                                     &type_smth, DONT_CARE);
   tmp_smth = coerce_input_double(smth,type_smth,1,0,NULL,NULL);
 
   if(tmp_smth == NULL) {
@@ -3233,12 +3233,12 @@ NhlErrorTypes csa1x_W(void)
 /*
  * Retrieve argument #5 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(5, 7, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(5, 7, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
 /*
  * Retrieve argument #6 (output x coordinates).
  */
   xo = (void *) NclGetArgValue(6, 7, NULL, dsizes_xo, NULL, NULL, 
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   nxo = dsizes_xo[0];
 
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
@@ -3359,10 +3359,10 @@ NhlErrorTypes csa1_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (void *) NclGetArgValue(0, 4, &ndims_xi, dsizes_xi, NULL, NULL, 
-                               &type_xi, 2);
+                               &type_xi, DONT_CARE);
  
   yi = (void *) NclGetArgValue(1, 4, &ndims_yi, dsizes_yi, NULL, NULL, 
-                               &type_yi, 2);
+                               &type_yi, DONT_CARE);
  
 /*
  * Either the dimensions of xi and yi must be the same, or if xi
@@ -3423,13 +3423,13 @@ NhlErrorTypes csa1_W(void)
 /*
  * Retrieve argument #2 (knots).
  */
-  knots = (int *) NclGetArgValue(2, 4, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(2, 4, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #3 (output x coordinates).
  */
   xo = (void *) NclGetArgValue(3, 4, NULL, dsizes_xo, NULL, NULL, 
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   nxo = dsizes_xo[0];
   tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
 
@@ -3549,9 +3549,9 @@ NhlErrorTypes csa2_W(void)
  * Retrieve argument #0 and 1 (x/y coordinates).
  */
   xi = (void *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, 
-                               &type_xi, 2);
+                               &type_xi, DONT_CARE);
   yi = (void *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL,
-                               &type_yi, 2);
+                               &type_yi, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -3579,7 +3579,7 @@ NhlErrorTypes csa2_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (void *) NclGetArgValue(2, 6, &ndims_zi, dsizes_zi, NULL, NULL, 
-                               &type_zi, 2);
+                               &type_zi, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -3610,15 +3610,15 @@ NhlErrorTypes csa2_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve arguments #4 and 5 (output x/y coordinates).
  */
   xo = (void *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, 
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, 
-                               &type_yo, 2);
+                               &type_yo, DONT_CARE);
   nxo    = dsizes_xo[0];
   nyo    = dsizes_yo[0];
   nxonyo = nxo*nyo;
@@ -3736,9 +3736,9 @@ NhlErrorTypes csa2x_W(void)
  * Retrieve arguments #0 and 1 (x/y coordinates).
  */
   xi = (void *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, 
-                               &type_xi, 2);
+                               &type_xi, DONT_CARE);
   yi = (void *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL,
-                               &type_yi, 2);
+                               &type_yi, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -3766,7 +3766,7 @@ NhlErrorTypes csa2x_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (void *) NclGetArgValue(2, 9, &ndims_zi, dsizes_zi, NULL, NULL, 
-                               &type_zi, 2);
+                               &type_zi, DONT_CARE);
  
 /*
  * Check last dimension of argument #2.
@@ -3798,7 +3798,7 @@ NhlErrorTypes csa2x_W(void)
  * Retrieve argument #3 (weights).
  */
   wts = (void *) NclGetArgValue(3, 9, NULL, dsizes_wts, NULL, NULL, 
-                                &type_wts, 2);
+                                &type_wts, DONT_CARE);
 /*
  * wts can be a scalar or one-dimensional. If it is a scalar, 
  * then we need to construct an npts-sized wts array that 
@@ -3838,12 +3838,12 @@ NhlErrorTypes csa2x_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (smoothing option) and coerce if necessary.
  */
-  smth = (void *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, &type_smth, 2);
+  smth = (void *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, &type_smth, DONT_CARE);
   tmp_smth = coerce_input_double(smth,type_smth,1,0,NULL,NULL);
 
   if(tmp_smth == NULL) {
@@ -3854,15 +3854,15 @@ NhlErrorTypes csa2x_W(void)
 /*
  * Retrieve argument #6 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve arguments #7 and 8 (output x/y coordinates).
  */
   xo = (void *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL,
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL,
-                               &type_yo, 2);
+                               &type_yo, DONT_CARE);
 
   nxo    = dsizes_xo[0];
   nyo    = dsizes_yo[0];
@@ -3982,9 +3982,9 @@ NhlErrorTypes csa2l_W(void)
  * Retrieve arguments #0 and 1 (x/y coordinates).
  */
   xi = (void *) NclGetArgValue(0, 6, NULL, dsizes_xi, NULL, NULL, 
-                               &type_xi, 2);
+                               &type_xi, DONT_CARE);
   yi = (void *) NclGetArgValue(1, 6, NULL, dsizes_yi, NULL, NULL,
-                               &type_yi, 2);
+                               &type_yi, DONT_CARE);
 
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -4012,7 +4012,7 @@ NhlErrorTypes csa2l_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (double *) NclGetArgValue(2, 6, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                 &type_zi, 2);
+                                 &type_zi, DONT_CARE);
 /*
  * Check last dimension of argument #2.
  */
@@ -4042,15 +4042,15 @@ NhlErrorTypes csa2l_W(void)
 /*
  * Retrieve argument #3 (knots).
  */
-  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(3, 6, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve arguments #4 and 5 (output x/y coordinates).
  */
   xo = (void *) NclGetArgValue(4, 6, NULL, dsizes_xo, NULL, NULL, 
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(5, 6, NULL, dsizes_yo, NULL, NULL, 
-                               &type_yo, 2);
+                               &type_yo, DONT_CARE);
 /*
  * Check sizes of arguments 4 and 5.
  */
@@ -4175,9 +4175,9 @@ NhlErrorTypes csa2lx_W(void)
  * Retrieve arguments #0 and 1 (x/y coordinates).
  */
   xi = (double *) NclGetArgValue(0, 9, NULL, dsizes_xi, NULL, NULL, 
-                                 &type_xi, 2);
+                                 &type_xi, DONT_CARE);
   yi = (double *) NclGetArgValue(1, 9, NULL, dsizes_yi, NULL, NULL,
-                                 &type_yi, 2);
+                                 &type_yi, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0 and 1.
@@ -4204,7 +4204,7 @@ NhlErrorTypes csa2lx_W(void)
  * Retrieve argument #2 (z values).
  */
   zi = (double *) NclGetArgValue(2, 9, &ndims_zi, dsizes_zi, NULL, NULL, 
-                                 &type_zi, 2);
+                                 &type_zi, DONT_CARE);
 /*
  * Check last dimension of argument #2.
  */
@@ -4234,7 +4234,7 @@ NhlErrorTypes csa2lx_W(void)
  * Retrieve argument #3 (weights).
  */
   wts = (double *) NclGetArgValue(3, 9, NULL, dsizes_wts, NULL, NULL, 
-                                  &type_wts, 2);
+                                  &type_wts, DONT_CARE);
 /*
  * wts can be a scalar or one-dimensional. If it is a scalar, 
  * then we need to construct an npts-sized wts array that 
@@ -4276,13 +4276,13 @@ NhlErrorTypes csa2lx_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (smoothing option) and coerce if necessary.
  */
   smth = (double *) NclGetArgValue(5, 9, NULL, NULL, NULL, NULL, 
-                                   &type_smth, 2);
+                                   &type_smth, DONT_CARE);
   tmp_smth = coerce_input_double(smth,type_smth,1,0,NULL,NULL);
 
   if(tmp_smth == NULL) {
@@ -4293,15 +4293,15 @@ NhlErrorTypes csa2lx_W(void)
 /*
  * Retrieve argument #6 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(6, 9, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve arguments #7 and 8 (output x/ coordinates).
  */
   xo = (void *) NclGetArgValue(7, 9, NULL, dsizes_xo, NULL, NULL,
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(8, 9, NULL, dsizes_yo, NULL, NULL,
-                               &type_yo, 2);
+                               &type_yo, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*
@@ -4432,11 +4432,11 @@ NhlErrorTypes csa3x_W(void)
  * Retrieve arguments #0, 1, 2 (x/y/z coordinates).
  */
   xi = (void *) NclGetArgValue(0, 11, NULL, dsizes_xi, NULL, NULL, 
-                               &type_xi, 2);
+                               &type_xi, DONT_CARE);
   yi = (void *) NclGetArgValue(1, 11, NULL, dsizes_yi, NULL, NULL, 
-                               &type_yi, 2);
+                               &type_yi, DONT_CARE);
   zi = (void *) NclGetArgValue(2, 11, NULL, dsizes_zi, NULL, NULL, 
-                               &type_zi, 2);
+                               &type_zi, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -4464,7 +4464,7 @@ NhlErrorTypes csa3x_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (void *) NclGetArgValue(3, 11, &ndims_ui, dsizes_ui, NULL, NULL, 
-                               &type_ui, 2);
+                               &type_ui, DONT_CARE);
 /*
  * Check last dimension of argument #3.
  */
@@ -4495,7 +4495,7 @@ NhlErrorTypes csa3x_W(void)
  * Retrieve argument #4 (weights).
  */
   wts = (void *) NclGetArgValue(4, 11, NULL, dsizes_wts, NULL, NULL, 
-                                &type_wts, 2);
+                                &type_wts, DONT_CARE);
  
 /*
  * wts can be a scalar or one-dimensional. If it is a scalar, 
@@ -4536,13 +4536,13 @@ NhlErrorTypes csa3x_W(void)
 /*
  * Retrieve argument #5 (knots).
  */
-  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (smoothing option) and coerce if necessary.
  */
   smth = (void *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, 
-                                 &type_smth, 2);
+                                 &type_smth, DONT_CARE);
   tmp_smth = coerce_input_double(smth,type_smth,1,0,NULL,NULL);
 
   if(tmp_smth == NULL) {
@@ -4553,17 +4553,17 @@ NhlErrorTypes csa3x_W(void)
 /*
  * Retrieve argument #7 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #8, 9, 10 (output x/y/z coordinates).
  */
   xo = (void *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, 
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL,
-                               &type_yo, 2);
+                               &type_yo, DONT_CARE);
   zo = (void *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL,
-                               &type_zo, 2);
+                               &type_zo, DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = dsizes_zo[0];
@@ -4688,11 +4688,11 @@ NhlErrorTypes csa3_W(void)
  * Retrieve arguments #0, 1, 2 (x/y/z coordinates).
  */
   xi = (double *) NclGetArgValue(0, 8, NULL, dsizes_xi, NULL, NULL, 
-                                 &type_xi, 2);
+                                 &type_xi, DONT_CARE);
   yi = (double *) NclGetArgValue(1, 8, NULL, dsizes_yi, NULL, NULL, 
-                                 &type_yi, 2);
+                                 &type_yi, DONT_CARE);
   zi = (double *) NclGetArgValue(2, 8, NULL, dsizes_zi, NULL, NULL, 
-                                 &type_zi, 2);
+                                 &type_zi, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -4721,7 +4721,7 @@ NhlErrorTypes csa3_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (double *) NclGetArgValue(3, 8, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                 &type_ui, 2);
+                                 &type_ui, DONT_CARE);
 /*
  * Check last dimension of argument #3.
  */
@@ -4751,17 +4751,17 @@ NhlErrorTypes csa3_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL, 
-                                 &type_xo, 2);
+                                 &type_xo, DONT_CARE);
   yo = (double *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL,
-                                 &type_yo, 2);
+                                 &type_yo, DONT_CARE);
   zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL,
-                                 &type_zo, 2);
+                                 &type_zo, DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = dsizes_zo[0];
@@ -4884,11 +4884,11 @@ NhlErrorTypes csa3lx_W(void)
  * Retrieve arguments #0, 1, 2 (x/y/z coordinates).
  */
   xi = (void *) NclGetArgValue(0, 11, NULL, dsizes_xi, NULL, NULL, 
-                               &type_xi, 2);
+                               &type_xi, DONT_CARE);
   yi = (void *) NclGetArgValue(1, 11, NULL, dsizes_yi, NULL, NULL, 
-                               &type_yi, 2);
+                               &type_yi, DONT_CARE);
   zi = (void *) NclGetArgValue(2, 11, NULL, dsizes_zi, NULL, NULL, 
-                               &type_zi, 2);
+                               &type_zi, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -4916,7 +4916,7 @@ NhlErrorTypes csa3lx_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (double *) NclGetArgValue(3, 11, &ndims_ui, dsizes_ui, NULL, NULL, 
-                               &type_ui, 2);
+                               &type_ui, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -4948,7 +4948,7 @@ NhlErrorTypes csa3lx_W(void)
  * Retrieve argument #4 (weights).
  */
   wts = (double *) NclGetArgValue(4, 11, NULL, dsizes_wts, NULL, NULL, 
-                                  &type_wts, 2);
+                                  &type_wts, DONT_CARE);
  
 /*
  * wts can be a scalar or one-dimensional. If it is a scalar, 
@@ -4989,13 +4989,13 @@ NhlErrorTypes csa3lx_W(void)
 /*
  * Retrieve argument #5 (knots).
  */
-  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(5, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #6 (smoothing option).
  */
   smth = (void *) NclGetArgValue(6, 11, NULL, NULL, NULL, NULL, 
-                                 &type_smth, 2);
+                                 &type_smth, DONT_CARE);
   tmp_smth = coerce_input_double(smth,type_smth,1,0,NULL,NULL);
 
   if(tmp_smth == NULL) {
@@ -5006,17 +5006,17 @@ NhlErrorTypes csa3lx_W(void)
 /*
  * Retrieve argument #7 (derivative flag).
  */
-  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, 2);
+  nderiv = (int *) NclGetArgValue(7, 11, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #8 (output x coordinates).
  */
   xo = (void *) NclGetArgValue(8, 11, NULL, dsizes_xo, NULL, NULL, 
-                               &type_xo, 2);
+                               &type_xo, DONT_CARE);
   yo = (void *) NclGetArgValue(9, 11, NULL, dsizes_yo, NULL, NULL,
-                               &type_yo, 2);
+                               &type_yo, DONT_CARE);
   zo = (void *) NclGetArgValue(10, 11, NULL, dsizes_zo, NULL, NULL,
-                               &type_zo, 2);
+                               &type_zo, DONT_CARE);
   nxo = dsizes_xo[0];
 /*
  * Check sizes of arguments 8, 9, and 10.
@@ -5145,11 +5145,11 @@ NhlErrorTypes csa3l_W(void)
  * Retrieve argument #0 (x coordinates).
  */
   xi = (double *) NclGetArgValue(0, 8, NULL, dsizes_xi, NULL, NULL, 
-                                 &type_xi, 2);
+                                 &type_xi, DONT_CARE);
   yi = (double *) NclGetArgValue(1, 8, NULL, dsizes_yi, NULL, NULL, 
-                                 &type_yi, 2);
+                                 &type_yi, DONT_CARE);
   zi = (double *) NclGetArgValue(2, 8, NULL, dsizes_zi, NULL, NULL, 
-                                 &type_zi, 2);
+                                 &type_zi, DONT_CARE);
  
 /*
  * Check number of dimensions for arguments #0-2.
@@ -5178,7 +5178,7 @@ NhlErrorTypes csa3l_W(void)
  * Retrieve argument #3 (u values).
  */
   ui = (double *) NclGetArgValue(3, 8, &ndims_ui, dsizes_ui, NULL, NULL, 
-                                 &type_ui, 2);
+                                 &type_ui, DONT_CARE);
  
 /*
  * Check last dimension of argument #3.
@@ -5209,17 +5209,17 @@ NhlErrorTypes csa3l_W(void)
 /*
  * Retrieve argument #4 (knots).
  */
-  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, 2);
+  knots = (int *) NclGetArgValue(4, 8, NULL, NULL, NULL, NULL, NULL, DONT_CARE);
  
 /*
  * Retrieve argument #5 (output x coordinates).
  */
   xo = (double *) NclGetArgValue(5, 8, NULL, dsizes_xo, NULL, NULL,
-                                 &type_xo, 2);
+                                 &type_xo, DONT_CARE);
   yo = (double *) NclGetArgValue(6, 8, NULL, dsizes_yo, NULL, NULL,
-                                 &type_yo, 2);
+                                 &type_yo, DONT_CARE);
   zo = (double *) NclGetArgValue(7, 8, NULL, dsizes_zo, NULL, NULL,
-                                 &type_zo, 2);
+                                 &type_zo, DONT_CARE);
   nxo = dsizes_xo[0];
  
 /*

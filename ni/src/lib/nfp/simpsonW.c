@@ -42,7 +42,7 @@ NhlErrorTypes simpeq_W( void )
           &missing_f,
           &has_missing_f,
           &type_f,
-          2);
+          DONT_CARE);
 
   npts = dsizes_f[ndims_f-1];
 
@@ -54,7 +54,7 @@ NhlErrorTypes simpeq_W( void )
           NULL,
           NULL,
           &type_x,
-          2);
+          DONT_CARE);
 
 /*
  * Compute size of the output array (size_leftmost).
@@ -216,7 +216,7 @@ NhlErrorTypes simpne_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   y = (void*)NclGetArgValue(
           1,
@@ -226,7 +226,7 @@ NhlErrorTypes simpne_W( void )
           &missing_y,
           &has_missing_y,
           &type_y,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimensions of X and Y. They must either be the same size,

@@ -42,7 +42,7 @@ NhlErrorTypes prcwater_dp_W( void )
                             &missing_q,
                             &has_missing_q,
                             &type_q,
-                            2);
+                            DONT_CARE);
 
   dp = (void*)NclGetArgValue(
                             1,
@@ -52,7 +52,7 @@ NhlErrorTypes prcwater_dp_W( void )
                             &missing_dp,
                             &has_missing_dp,
                             &type_dp,
-                            2);
+                            DONT_CARE);
 /*
  * Some error checking. dp must either be a one-dimensional array with the
  * same length as the last dimension of q, or else dp must be the same

@@ -43,7 +43,7 @@ NhlErrorTypes z2geouv_W( void )
           &missing_z,
           &has_missing_z,
           &type_z,
-          2);
+          DONT_CARE);
   lat = (void*)NclGetArgValue(
           1,
           4,
@@ -52,7 +52,7 @@ NhlErrorTypes z2geouv_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
   lon = (void*)NclGetArgValue(
           2,
           4,
@@ -61,7 +61,7 @@ NhlErrorTypes z2geouv_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
   iopt = (void*)NclGetArgValue(
           3,
           4,
@@ -70,7 +70,7 @@ NhlErrorTypes z2geouv_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */

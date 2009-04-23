@@ -44,7 +44,7 @@ NhlErrorTypes betainc_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   a = (void*)NclGetArgValue(
           1,
@@ -54,7 +54,7 @@ NhlErrorTypes betainc_W( void )
           NULL,
           NULL,
           &type_a,
-          2);
+          DONT_CARE);
   b = (void*)NclGetArgValue(
           2,
           3,
@@ -63,7 +63,7 @@ NhlErrorTypes betainc_W( void )
           NULL,
           NULL,
           &type_b,
-          2);
+          DONT_CARE);
 /*
  * Check type of x, which must be float or double.
  */
@@ -253,7 +253,7 @@ NhlErrorTypes gammainc_W( void )
           NULL,
           NULL,
           &type_x,
-          2);
+          DONT_CARE);
 
   a = (void*)NclGetArgValue(
           1,
@@ -263,7 +263,7 @@ NhlErrorTypes gammainc_W( void )
           NULL,
           NULL,
           &type_a,
-          2);
+          DONT_CARE);
 
 
 /*

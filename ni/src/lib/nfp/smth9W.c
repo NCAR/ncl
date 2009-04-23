@@ -40,7 +40,7 @@ NhlErrorTypes smth9_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
   p = (void*)NclGetArgValue(
           1,
           4,
@@ -49,7 +49,7 @@ NhlErrorTypes smth9_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
   q = (void*)NclGetArgValue(
           2,
@@ -59,7 +59,7 @@ NhlErrorTypes smth9_W( void )
           NULL,
           NULL,
           &type_q,
-          2);
+          DONT_CARE);
 
   lwrap = (logical*)NclGetArgValue(
           3,
@@ -69,7 +69,7 @@ NhlErrorTypes smth9_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */

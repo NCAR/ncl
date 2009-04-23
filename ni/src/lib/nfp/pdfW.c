@@ -93,7 +93,7 @@ NhlErrorTypes pdfxy_bin_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 1
@@ -106,7 +106,7 @@ NhlErrorTypes pdfxy_bin_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 
   if(ndims_x != ndims_y) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"pdfxy_bin: The x and y arrays must have the same number of dimensions");
@@ -133,7 +133,7 @@ NhlErrorTypes pdfxy_bin_W( void )
            NULL,
            NULL,
            &type_binxbnd,
-           2);
+           DONT_CARE);
   mbxp1 = dsizes_binxbnd[0];
   mbx   = mbxp1 - 1;
   if(mbxp1 < 2) {
@@ -152,7 +152,7 @@ NhlErrorTypes pdfxy_bin_W( void )
            NULL,
            NULL,
            &type_binybnd,
-           2);
+           DONT_CARE);
   nbyp1 = dsizes_binybnd[0];
   nby   = nbyp1 - 1;
   if(nbyp1 < 2) {
@@ -171,7 +171,7 @@ NhlErrorTypes pdfxy_bin_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /* 
  * If "opt" is True, then check if any attributes have been set.

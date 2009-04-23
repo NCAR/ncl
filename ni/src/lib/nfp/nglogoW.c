@@ -29,14 +29,14 @@ NhlErrorTypes nglogo_W( void )
 	 *  nwid points to the HLU identifier of the graphic object; this is
 	 *  converted to the NCL workstation identifier below.
 	 */
-	nwid = (int*)  NclGetArgValue(0,7,     NULL,     NULL, NULL,NULL,NULL,2);
+	nwid = (int*)  NclGetArgValue(0,7,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
-	x       = (float*) NclGetArgValue(1,7, NULL, NULL, NULL,NULL,NULL,2);
-	y       = (float*) NclGetArgValue(2,7, NULL, NULL, NULL,NULL,NULL,2);
-	size    = (float*) NclGetArgValue(3,7, NULL, NULL, NULL,NULL,NULL,2);
-	itype   = (int*) NclGetArgValue(4,7, NULL, NULL, NULL,NULL,NULL,2);
-	icol1   = (int*) NclGetArgValue(5,7, NULL, NULL, NULL,NULL,NULL,2);
-	icol2   = (int*) NclGetArgValue(6,7, NULL, NULL, NULL,NULL,NULL,2);
+	x       = (float*) NclGetArgValue(1,7, NULL, NULL, NULL,NULL,NULL,DONT_CARE);
+	y       = (float*) NclGetArgValue(2,7, NULL, NULL, NULL,NULL,NULL,DONT_CARE);
+	size    = (float*) NclGetArgValue(3,7, NULL, NULL, NULL,NULL,NULL,DONT_CARE);
+	itype   = (int*) NclGetArgValue(4,7, NULL, NULL, NULL,NULL,NULL,DONT_CARE);
+	icol1   = (int*) NclGetArgValue(5,7, NULL, NULL, NULL,NULL,NULL,DONT_CARE);
+	icol2   = (int*) NclGetArgValue(6,7, NULL, NULL, NULL,NULL,NULL,DONT_CARE);
 
 	/*
 	 *  Determine the NCL identifier for the graphic object in nid.
@@ -87,7 +87,7 @@ NhlErrorTypes ngezlogo_W( void )
 	 *  nwid points to the HLU identifier of the graphic object; this is
 	 *  converted to the NCL workstation identifier below.
 	 */
-	nwid = (int*)  NclGetArgValue(0,1,     NULL,     NULL, NULL,NULL,NULL,2);
+	nwid = (int*)  NclGetArgValue(0,1,     NULL,     NULL, NULL,NULL,NULL,DONT_CARE);
 
 	/*
 	 *  Determine the NCL identifier for the graphic object in nid.

@@ -53,7 +53,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_ps,
-          2);
+          DONT_CARE);
 
   phis = (void*)NclGetArgValue(
           1,
@@ -63,7 +63,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_phis,
-          2);
+          DONT_CARE);
 
   tv = (void*)NclGetArgValue(
           2,
@@ -73,7 +73,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_tv,
-          2);
+          DONT_CARE);
 
   p0 = (void*)NclGetArgValue(
           3,
@@ -83,7 +83,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
 
   hyam = (void*)NclGetArgValue(
           4,
@@ -93,7 +93,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_hyam,
-          2);
+          DONT_CARE);
 
   hybm = (void*)NclGetArgValue(
           5,
@@ -103,7 +103,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_hybm,
-          2);
+          DONT_CARE);
 
   hyai = (void*)NclGetArgValue(
           6,
@@ -113,7 +113,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_hyai,
-          2);
+          DONT_CARE);
 
   hybi = (void*)NclGetArgValue(
           7,
@@ -123,7 +123,7 @@ NhlErrorTypes cz2ccm_W( void )
           NULL,
           NULL,
           &type_hybi,
-          2);
+          DONT_CARE);
 /*
  * ps must be at least two dimensions.
  */

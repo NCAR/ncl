@@ -43,7 +43,7 @@ NhlErrorTypes natgrids_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (float*)NclGetArgValue(
                              1,
                              5,
@@ -52,7 +52,7 @@ NhlErrorTypes natgrids_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
 /*
  * Check dimension sizes for x and y.
  */
@@ -74,7 +74,7 @@ NhlErrorTypes natgrids_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
   
 /*
  * Check rightmost dimension size for z.
@@ -104,7 +104,7 @@ NhlErrorTypes natgrids_W( void )
                               &missing_xo,
                               &has_missing_xo,
                               NULL,
-                              2);
+                              DONT_CARE);
   yo = (float*)NclGetArgValue(
                               4,
                               5,
@@ -113,7 +113,7 @@ NhlErrorTypes natgrids_W( void )
                               &missing_yo,
                               &has_missing_yo,
                               NULL,
-                              2);
+                              DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = nxo * nyo;
@@ -224,7 +224,7 @@ NhlErrorTypes natgridd_W( void )
                               &missing_x,
                               &has_missing_x,
                               NULL,
-                              2);
+                              DONT_CARE);
   y = (double*)NclGetArgValue(
                               1,
                               5,
@@ -233,7 +233,7 @@ NhlErrorTypes natgridd_W( void )
                               &missing_y,
                               &has_missing_y,
                               NULL,
-                              2);
+                              DONT_CARE);
 /*
  * Check dimension sizes for x and y.
  */
@@ -255,7 +255,7 @@ NhlErrorTypes natgridd_W( void )
                               &missing_z,
                               &has_missing_z,
                               NULL,
-                              2);
+                              DONT_CARE);
 
 /*
  * Check rightmost dimension size for z.
@@ -285,7 +285,7 @@ NhlErrorTypes natgridd_W( void )
                                &missing_xo,
                                &has_missing_xo,
                                NULL,
-                               2);
+                               DONT_CARE);
   yo = (double*)NclGetArgValue(
                                4,
                                5,
@@ -294,7 +294,7 @@ NhlErrorTypes natgridd_W( void )
                                &missing_yo,
                                &has_missing_yo,
                                NULL,
-                               2);
+                               DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = nxo * nyo;
@@ -422,7 +422,7 @@ NhlErrorTypes natgrid_W( void )
                               &missing_x,
                               &has_missing_x,
                               &type_x,
-                              2);
+                              DONT_CARE);
   y = (void*)NclGetArgValue(
                               1,
                               5,
@@ -431,7 +431,7 @@ NhlErrorTypes natgrid_W( void )
                               &missing_y,
                               &has_missing_y,
                               &type_y,
-                              2);
+                              DONT_CARE);
 /*
  * Check dimension sizes for x and y.
  */
@@ -453,7 +453,7 @@ NhlErrorTypes natgrid_W( void )
                               &missing_z,
                               &has_missing_z,
                               &type_z,
-                              2);
+                              DONT_CARE);
 /*
  * Check rightmost dimension size for z.
  */
@@ -474,7 +474,7 @@ NhlErrorTypes natgrid_W( void )
                                &missing_xo,
                                &has_missing_xo,
                                &type_xo,
-                               2);
+                               DONT_CARE);
   yo = (void*)NclGetArgValue(
                                4,
                                5,
@@ -483,7 +483,7 @@ NhlErrorTypes natgrid_W( void )
                                &missing_yo,
                                &has_missing_yo,
                                &type_yo,
-                               2);
+                               DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = nxo * nyo;
@@ -709,7 +709,7 @@ NhlErrorTypes nnsetp_W(void)
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
 
@@ -748,7 +748,7 @@ OK_NAME:  pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -847,7 +847,7 @@ NhlErrorTypes nngetp_W(void)
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
 
@@ -934,8 +934,8 @@ NhlErrorTypes nngetaspects_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   rtmp = (float*)NclMalloc(sizeof(float));
 /*
  * The following section allocates the work memory and calls the
@@ -972,8 +972,8 @@ NhlErrorTypes nngetaspectd_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   dtmp = (double*)NclMalloc(sizeof(double));
 /*
  * The following section allocates the work memory and calls the
@@ -1010,8 +1010,8 @@ NhlErrorTypes nngetslopes_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   rtmp = (float*)NclMalloc(sizeof(float));
 /*
  * The following section allocates the work memory and calls the
@@ -1048,8 +1048,8 @@ NhlErrorTypes nngetsloped_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+  i = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  j = (int*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   dtmp = (double*)NclMalloc(sizeof(double));
 /*
  * The following section allocates the work memory and calls the
@@ -1092,13 +1092,13 @@ NhlErrorTypes drwsrfc_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  gkswid = (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,2);
-  x = (float*)NclGetArgValue(1,7, NULL, dsizes_x, NULL,NULL,NULL,2);
-  y = (float*)NclGetArgValue(2,7, NULL, dsizes_y, NULL,NULL,NULL,2);
-  z = (float*)NclGetArgValue(3,7, NULL, dsizes_z, NULL,NULL,NULL,2 );
-  x1 = (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,2);
-  y1 = (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,2);
-  z1 = (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,2);
+  gkswid = (int*)NclGetArgValue(0,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  x = (float*)NclGetArgValue(1,7, NULL, dsizes_x, NULL,NULL,NULL,DONT_CARE);
+  y = (float*)NclGetArgValue(2,7, NULL, dsizes_y, NULL,NULL,NULL,DONT_CARE);
+  z = (float*)NclGetArgValue(3,7, NULL, dsizes_z, NULL,NULL,NULL,DONT_CARE);
+  x1 = (float*)NclGetArgValue(4,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  y1 = (float*)NclGetArgValue(5,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  z1 = (float*)NclGetArgValue(6,7,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 /*
  * This is the only dimension size check needed since the function
  * is registered to only accept single dimension parameters.
@@ -1140,9 +1140,9 @@ NhlErrorTypes drwvctc_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  gkswid = (int*)NclGetArgValue(0,3,NULL,NULL,NULL,NULL,NULL,2);
-  u = (float*)NclGetArgValue(1,3, NULL, dsizes_u, NULL,NULL,NULL,2);
-  v = (float*)NclGetArgValue(2,3, NULL, dsizes_v, NULL,NULL,NULL,2);
+  gkswid = (int*)NclGetArgValue(0,3,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  u = (float*)NclGetArgValue(1,3, NULL, dsizes_u, NULL,NULL,NULL,DONT_CARE);
+  v = (float*)NclGetArgValue(2,3, NULL, dsizes_v, NULL,NULL,NULL,DONT_CARE);
 /*
  * This is the only dimension size check needed since the function
  * is registered to only accept single dimension parameters.
@@ -1177,8 +1177,8 @@ NhlErrorTypes drwconc_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  gkswid = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  z = (float*)NclGetArgValue(1,2, NULL, dsizes_z, NULL,NULL,NULL,2);
+  gkswid = (int*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  z = (float*)NclGetArgValue(1,2, NULL, dsizes_z, NULL,NULL,NULL,DONT_CARE);
 /*
  * This is the only dimension size check needed since the function
  * is registered to only accept single dimension parameters.
@@ -1213,7 +1213,7 @@ NhlErrorTypes nnpntinits_W( void )
                                                          &missing_x,
                                                          &has_missing_x,
                                                          NULL,
-                                                         2);
+                                                         DONT_CARE);
   y = (float*)NclGetArgValue(
                                                          1,
                                                          3,
@@ -1222,7 +1222,7 @@ NhlErrorTypes nnpntinits_W( void )
                                                          &missing_y,
                                                          &has_missing_y,
                                                          NULL,
-                                                         2);
+                                                         DONT_CARE);
   z = (float*)NclGetArgValue(
                                                          2,
                                                          3,
@@ -1231,7 +1231,7 @@ NhlErrorTypes nnpntinits_W( void )
                                                          &missing_z,
                                                          &has_missing_z,
                                                          NULL,
-                                                         2);
+                                                         DONT_CARE);
 
 /*
  * Note any of the pointer parameters can be set to NULL, which
@@ -1302,7 +1302,7 @@ NhlErrorTypes nnpntinitd_W( void )
                                                          &missing_x,
                                                          &has_missing_x,
                                                          NULL,
-                                                         2);
+                                                         DONT_CARE);
   y = (double*)NclGetArgValue(
                                                          1,
                                                          3,
@@ -1311,7 +1311,7 @@ NhlErrorTypes nnpntinitd_W( void )
                                                          &missing_y,
                                                          &has_missing_y,
                                                          NULL,
-                                                         2);
+                                                         DONT_CARE);
   z = (double*)NclGetArgValue(
                                                          2,
                                                          3,
@@ -1320,7 +1320,7 @@ NhlErrorTypes nnpntinitd_W( void )
                                                          &missing_z,
                                                          &has_missing_z,
                                                          NULL,
-                                                         2);
+                                                         DONT_CARE);
 
 /*
  * Note any of the pointer parameters can be set to NULL, which
@@ -1392,7 +1392,7 @@ NhlErrorTypes nnpntinit_W( void )
                             &missing_x,
                             &has_missing_x,
                             &type_x,
-                            2);
+                            DONT_CARE);
   y = (void*)NclGetArgValue(
                             1,
                             3,
@@ -1401,7 +1401,7 @@ NhlErrorTypes nnpntinit_W( void )
                             &missing_y,
                             &has_missing_y,
                             &type_y,
-                            2);
+                            DONT_CARE);
   z = (void*)NclGetArgValue(
                             2,
                             3,
@@ -1410,7 +1410,7 @@ NhlErrorTypes nnpntinit_W( void )
                             &missing_z,
                             &has_missing_z,
                             &type_z,
-                            2);
+                            DONT_CARE);
 
 /*
  * Check sizes.
@@ -1476,8 +1476,8 @@ NhlErrorTypes nnpnts_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  x = (float*)NclGetArgValue(0,2,NULL,dsizes_x,NULL,NULL,NULL,2);
-  y = (float*)NclGetArgValue(1,2,NULL,dsizes_y,NULL,NULL,NULL,2);
+  x = (float*)NclGetArgValue(0,2,NULL,dsizes_x,NULL,NULL,NULL,DONT_CARE);
+  y = (float*)NclGetArgValue(1,2,NULL,dsizes_y,NULL,NULL,NULL,DONT_CARE);
 
   npts = dsizes_x[0];
   if(dsizes_y[0] != npts) {
@@ -1512,8 +1512,8 @@ NhlErrorTypes nnpntd_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  x = (double*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,2);
-  y = (double*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,2);
+  x = (double*)NclGetArgValue(0,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  y = (double*)NclGetArgValue(1,2,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
   z = (double*)NclMalloc(sizeof(double));
 /*
  * The following section allocates the work memory and calls the
@@ -1542,8 +1542,8 @@ NhlErrorTypes nnpnt_W( void )
  * the type parameter is set to NULL because the function
  * is later registered to only accept floating point numbers.
  */
-  x = (void*)NclGetArgValue(0,2,NULL,dsizes_x,NULL,NULL,&type_x,2);
-  y = (void*)NclGetArgValue(1,2,NULL,dsizes_y,NULL,NULL,&type_y,2);
+  x = (void*)NclGetArgValue(0,2,NULL,dsizes_x,NULL,NULL,&type_x,DONT_CARE);
+  y = (void*)NclGetArgValue(1,2,NULL,dsizes_y,NULL,NULL,&type_y,DONT_CARE);
 
   if(dsizes_x[0] != dsizes_y[0]) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"nnpnt: the dimension sizes of parameters x and y must be identical");

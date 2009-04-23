@@ -37,7 +37,7 @@ NhlErrorTypes output_gif_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   giffile = (string *)NclGetArgValue(
            1,
@@ -47,7 +47,7 @@ NhlErrorTypes output_gif_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   resltn = (int *)NclGetArgValue(
            2,
@@ -57,7 +57,7 @@ NhlErrorTypes output_gif_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   MaximizeBB = (int *)NclGetArgValue(
            3,
@@ -67,7 +67,7 @@ NhlErrorTypes output_gif_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   giffile2 = NrmQuarkToString(*giffile);
 /*

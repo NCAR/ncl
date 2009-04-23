@@ -63,7 +63,7 @@ NhlErrorTypes utm2latlon_W( void )
            &missing_xy,
            &has_missing_xy,
            &type_xy,
-           2);
+           DONT_CARE);
 
   if(dsizes_xy[0] != 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"utm2latlon: The leftmost dimension of 'xy' must be 2");
@@ -324,7 +324,7 @@ NhlErrorTypes latlon2utm_W( void )
            &missing_latlon,
            &has_missing_latlon,
            &type_latlon,
-           2);
+           DONT_CARE);
 
   if(dsizes_latlon[0] != 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"latlon2utm: The leftmost dimension of 'latlon' must be 2");
@@ -566,7 +566,7 @@ NhlErrorTypes latlon2utm_W( void )
  * Copyright (C) 1998 Massachusetts Institute of Technology
  *               All Rights Reserved
  *
- * RCS ID: $Id: convert_datum.c,v 1.5 2008-03-30 17:15:50 haley Exp $
+ * RCS ID: $Id: convert_datum.c,v 1.6 2009-04-23 21:37:06 haley Exp $
  */
 
 /*

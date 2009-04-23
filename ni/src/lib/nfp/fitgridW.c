@@ -44,7 +44,7 @@ NhlErrorTypes ftsetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
 
@@ -83,7 +83,7 @@ OK_NAME:  pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -183,7 +183,7 @@ NhlErrorTypes ftgetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
   arg1 = NrmQuarkToString(*pname);
 
@@ -288,7 +288,7 @@ NhlErrorTypes ftcurv_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[ndims_xi-1];
 
@@ -303,7 +303,7 @@ NhlErrorTypes ftcurv_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * If xi is not 1-dimensional, then it must be the same size as yi.
@@ -342,7 +342,7 @@ NhlErrorTypes ftcurv_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   nxo = dsizes_xo[0];
 
@@ -484,7 +484,7 @@ NhlErrorTypes ftcurvd_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[ndims_xi-1];
 
@@ -499,7 +499,7 @@ NhlErrorTypes ftcurvd_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * If xi is not 1-dimensional, then is must be the same size as yi.
@@ -537,7 +537,7 @@ NhlErrorTypes ftcurvd_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   nxo = dsizes_xo[0];
 
@@ -680,7 +680,7 @@ NhlErrorTypes ftcurvi_W(void)
           NULL,
           NULL,
           &type_xl,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -693,7 +693,7 @@ NhlErrorTypes ftcurvi_W(void)
           NULL,
           NULL,
           &type_xr,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve xi.
@@ -706,7 +706,7 @@ NhlErrorTypes ftcurvi_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[ndims_xi-1];
 
@@ -721,7 +721,7 @@ NhlErrorTypes ftcurvi_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * If xi is not 1-dimensional, then is must be the same size as yi.
@@ -897,7 +897,7 @@ NhlErrorTypes ftcurvp_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[ndims_xi-1];
 
@@ -912,7 +912,7 @@ NhlErrorTypes ftcurvp_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * If xi is not 1-dimensional, then is must be the same size as yi.
@@ -950,7 +950,7 @@ NhlErrorTypes ftcurvp_W(void)
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve xo.
@@ -963,7 +963,7 @@ NhlErrorTypes ftcurvp_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   nxo = dsizes_xo[0];
 
@@ -1110,7 +1110,7 @@ NhlErrorTypes ftcurvpi_W(void)
           NULL,
           NULL,
           &type_xl,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #2 (right integral limit).
@@ -1123,7 +1123,7 @@ NhlErrorTypes ftcurvpi_W(void)
           NULL,
           NULL,
           &type_xr,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #3 (The period)
@@ -1136,7 +1136,7 @@ NhlErrorTypes ftcurvpi_W(void)
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve xi (the X coordinate input values).
@@ -1149,7 +1149,7 @@ NhlErrorTypes ftcurvpi_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[ndims_xi-1];
 
@@ -1164,7 +1164,7 @@ NhlErrorTypes ftcurvpi_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * If xi is not 1-dimensional, then is must be the same size as yi.
@@ -1346,7 +1346,7 @@ NhlErrorTypes ftcurvs_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[ndims_xi-1];
 
@@ -1361,7 +1361,7 @@ NhlErrorTypes ftcurvs_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * If xi is not 1-dimensional, then is must be the same size as yi.
@@ -1399,7 +1399,7 @@ NhlErrorTypes ftcurvs_W(void)
           NULL,
           NULL,
           &type_d,
-          2);
+          DONT_CARE);
 
   if(dsizes_d[0] != npts && dsizes_d[0] != 1) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
@@ -1418,7 +1418,7 @@ NhlErrorTypes ftcurvs_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   nxo = dsizes_xo[0];
 
@@ -1569,7 +1569,7 @@ NhlErrorTypes ftcurvps_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[ndims_xi-1];
 
@@ -1584,7 +1584,7 @@ NhlErrorTypes ftcurvps_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * If xi is not 1-dimensional, then is must be the same size as yi.
@@ -1622,7 +1622,7 @@ NhlErrorTypes ftcurvps_W(void)
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #3 (The observation weights).
@@ -1635,7 +1635,7 @@ NhlErrorTypes ftcurvps_W(void)
           NULL,
           NULL,
           &type_d,
-          2);
+          DONT_CARE);
 
   if(dsizes_d[0] != npts && dsizes_d[0] != 1) {
     NhlPError(NhlFATAL, NhlEUNKNOWN,
@@ -1654,7 +1654,7 @@ NhlErrorTypes ftcurvps_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   nxo = dsizes_xo[0];
 
@@ -1796,7 +1796,7 @@ NhlErrorTypes ftkurv_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[0];
 
@@ -1811,7 +1811,7 @@ NhlErrorTypes ftkurv_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension of argument #1.
@@ -1833,7 +1833,7 @@ NhlErrorTypes ftkurv_W(void)
           NULL,
           NULL,
           &type_ti,
-          2);
+          DONT_CARE);
 
   mpts = dsizes_ti[0];
 
@@ -1848,7 +1848,7 @@ NhlErrorTypes ftkurv_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #5
@@ -1861,7 +1861,7 @@ NhlErrorTypes ftkurv_W(void)
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension of arguments #2, 3, and #4.
@@ -2003,7 +2003,7 @@ NhlErrorTypes ftkurvp_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   npts = dsizes_xi[0];
 
@@ -2018,7 +2018,7 @@ NhlErrorTypes ftkurvp_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension of argument #4.
@@ -2040,7 +2040,7 @@ NhlErrorTypes ftkurvp_W(void)
           NULL,
           NULL,
           &type_ti,
-          2);
+          DONT_CARE);
 
   mpts = dsizes_ti[0];
 
@@ -2055,7 +2055,7 @@ NhlErrorTypes ftkurvp_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #4
@@ -2068,7 +2068,7 @@ NhlErrorTypes ftkurvp_W(void)
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension of arguments #2, 3, and #4.
@@ -2195,14 +2195,14 @@ NhlErrorTypes ftkurvd_W(void)
 /*
  * Retrieve argument #0
  */
-  xi = (void *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,&type_xi,2);
+  xi = (void *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,&type_xi,DONT_CARE);
 
   npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #1
  */
-  yi = (void *) NclGetArgValue(1,9,NULL,dsizes_yi,NULL,NULL,&type_yi,2);
+  yi = (void *) NclGetArgValue(1,9,NULL,dsizes_yi,NULL,NULL,&type_yi,DONT_CARE);
 
 /*
  * Retrieve argument #2
@@ -2215,7 +2215,7 @@ NhlErrorTypes ftkurvd_W(void)
           NULL,
           NULL,
           &type_ti,
-          2);
+          DONT_CARE);
 
   mpts = dsizes_ti[0];
 
@@ -2230,7 +2230,7 @@ NhlErrorTypes ftkurvd_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #4
@@ -2243,7 +2243,7 @@ NhlErrorTypes ftkurvd_W(void)
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #5 - xd
@@ -2256,7 +2256,7 @@ NhlErrorTypes ftkurvd_W(void)
           NULL,
           NULL,
           &type_xd,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #6 - yd
@@ -2269,7 +2269,7 @@ NhlErrorTypes ftkurvd_W(void)
           NULL,
           NULL,
           &type_yd,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #8 - xdd
@@ -2282,7 +2282,7 @@ NhlErrorTypes ftkurvd_W(void)
           NULL,
           NULL,
           &type_xdd,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #9 - ydd
@@ -2295,7 +2295,7 @@ NhlErrorTypes ftkurvd_W(void)
           NULL,
           NULL,
           &type_ydd,
-          2);
+          DONT_CARE);
 
 /*
  * Coerce input and create space for output if necessary. If
@@ -2474,14 +2474,14 @@ NhlErrorTypes ftkurvpd_W(void)
 /*
  * Retrieve argument #1
  */
-  xi = (void *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,&type_xi,2);
+  xi = (void *) NclGetArgValue(0,9,NULL,dsizes_xi,NULL,NULL,&type_xi,DONT_CARE);
 
   npts = dsizes_xi[0];
 
 /*
  * Retrieve argument #2
  */
-  yi = (void *) NclGetArgValue(1,9,NULL,dsizes_yi,NULL,NULL,&type_yi,2);
+  yi = (void *) NclGetArgValue(1,9,NULL,dsizes_yi,NULL,NULL,&type_yi,DONT_CARE);
 
 /*
  * Retrieve argument #3
@@ -2494,7 +2494,7 @@ NhlErrorTypes ftkurvpd_W(void)
           NULL,
           NULL,
           &type_ti,
-          2);
+          DONT_CARE);
 
   mpts = dsizes_ti[0];
 
@@ -2509,7 +2509,7 @@ NhlErrorTypes ftkurvpd_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #5
@@ -2522,7 +2522,7 @@ NhlErrorTypes ftkurvpd_W(void)
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #6 - xd
@@ -2535,7 +2535,7 @@ NhlErrorTypes ftkurvpd_W(void)
           NULL,
           NULL,
           &type_xd,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #7 - yd
@@ -2548,7 +2548,7 @@ NhlErrorTypes ftkurvpd_W(void)
           NULL,
           NULL,
           &type_yd,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #7 - xdd
@@ -2561,7 +2561,7 @@ NhlErrorTypes ftkurvpd_W(void)
           NULL,
           NULL,
           &type_xdd,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #8 - ydd
@@ -2574,7 +2574,7 @@ NhlErrorTypes ftkurvpd_W(void)
           NULL,
           NULL,
           &type_ydd,
-          2);
+          DONT_CARE);
 
 /*
  * Coerce input and create space for output if necessary. If
@@ -2764,7 +2764,7 @@ NhlErrorTypes ftsurf_W(void)
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #1
  */
@@ -2776,7 +2776,7 @@ NhlErrorTypes ftsurf_W(void)
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #2
  */
@@ -2788,7 +2788,7 @@ NhlErrorTypes ftsurf_W(void)
           NULL,
           NULL,
           &type_zi,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for argument #2.  This argument must
@@ -2812,7 +2812,7 @@ NhlErrorTypes ftsurf_W(void)
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve argument #4
@@ -2825,7 +2825,7 @@ NhlErrorTypes ftsurf_W(void)
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
 /*
  * Save the sizes of the last two dimensions of the output array.

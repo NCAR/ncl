@@ -55,7 +55,7 @@ NhlErrorTypes spcorr_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
   n = dsizes_x[ndims_x-1];
 /*
@@ -69,7 +69,7 @@ NhlErrorTypes spcorr_W( void )
            NULL,
            NULL,
            &type_y,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.

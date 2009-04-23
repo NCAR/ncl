@@ -53,7 +53,7 @@ NhlErrorTypes center_finite_diff_W( void )
           &missing_q,
           &has_missing_q,
           &type_q,
-          2);
+          DONT_CARE);
 
   r = (void*)NclGetArgValue(
           1,
@@ -63,7 +63,7 @@ NhlErrorTypes center_finite_diff_W( void )
           &missing_r,
           &has_missing_r,
           &type_r,
-          2);
+          DONT_CARE);
 
   cyclic = (logical*)NclGetArgValue(
           2,
@@ -73,7 +73,7 @@ NhlErrorTypes center_finite_diff_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           3,
@@ -83,7 +83,7 @@ NhlErrorTypes center_finite_diff_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Get size of input array.
  */
@@ -312,7 +312,7 @@ NhlErrorTypes uv2vr_cfd_W( void )
           &missing_u,
           &has_missing_u,
           &type_u,
-          2);
+          DONT_CARE);
 
   v = (void*)NclGetArgValue(
           1,
@@ -322,7 +322,7 @@ NhlErrorTypes uv2vr_cfd_W( void )
           NULL,
           NULL,
           &type_v,
-          2);
+          DONT_CARE);
 
   lat = (void*)NclGetArgValue(
           2,
@@ -332,7 +332,7 @@ NhlErrorTypes uv2vr_cfd_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           3,
@@ -342,7 +342,7 @@ NhlErrorTypes uv2vr_cfd_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
   bound_opt = (int*)NclGetArgValue(
           4,
@@ -352,7 +352,7 @@ NhlErrorTypes uv2vr_cfd_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Get size of input array.
@@ -545,7 +545,7 @@ NhlErrorTypes uv2dv_cfd_W( void )
           &missing_u,
           &has_missing_u,
           &type_u,
-          2);
+          DONT_CARE);
 
   v = (void*)NclGetArgValue(
           1,
@@ -555,7 +555,7 @@ NhlErrorTypes uv2dv_cfd_W( void )
           NULL,
           NULL,
           &type_v,
-          2);
+          DONT_CARE);
 
   lat = (void*)NclGetArgValue(
           2,
@@ -565,7 +565,7 @@ NhlErrorTypes uv2dv_cfd_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           3,
@@ -575,7 +575,7 @@ NhlErrorTypes uv2dv_cfd_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
   bound_opt = (int*)NclGetArgValue(
           4,
@@ -585,7 +585,7 @@ NhlErrorTypes uv2dv_cfd_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Get size of input array.

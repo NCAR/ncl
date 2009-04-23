@@ -147,7 +147,7 @@ NhlErrorTypes wrf_tk_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
   theta = (void*)NclGetArgValue(
            1,
@@ -157,7 +157,7 @@ NhlErrorTypes wrf_tk_W( void )
            NULL,
            NULL,
            &type_theta,
-           2);
+           DONT_CARE);
 /*
  * Error checking. Input variables must be same size.
  */
@@ -450,7 +450,7 @@ NhlErrorTypes wrf_td_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
   qv = (void*)NclGetArgValue(
            1,
@@ -460,7 +460,7 @@ NhlErrorTypes wrf_td_W( void )
            NULL,
            NULL,
            &type_qv,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking. Input variables must be same size.
@@ -773,7 +773,7 @@ NhlErrorTypes wrf_rh_W( void )
            NULL,
            NULL,
            &type_qv,
-           2);
+           DONT_CARE);
 
   p = (void*)NclGetArgValue(
            1,
@@ -783,7 +783,7 @@ NhlErrorTypes wrf_rh_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
   t = (void*)NclGetArgValue(
            2,
@@ -793,7 +793,7 @@ NhlErrorTypes wrf_rh_W( void )
            NULL,
            NULL,
            &type_t,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking. Input variables must be same size.
@@ -1110,7 +1110,7 @@ NhlErrorTypes wrf_slp_W( void )
            NULL,
            NULL,
            &type_z,
-           2);
+           DONT_CARE);
 
   t = (void*)NclGetArgValue(
            1,
@@ -1120,7 +1120,7 @@ NhlErrorTypes wrf_slp_W( void )
            NULL,
            NULL,
            &type_t,
-           2);
+           DONT_CARE);
 
   p = (void*)NclGetArgValue(
            2,
@@ -1130,7 +1130,7 @@ NhlErrorTypes wrf_slp_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
   q = (void*)NclGetArgValue(
            3,
@@ -1140,7 +1140,7 @@ NhlErrorTypes wrf_slp_W( void )
            NULL,
            NULL,
            &type_q,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking. Input variables must be same size, and must have at least
@@ -1543,7 +1543,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
            NULL,
            NULL,
            &type_v3d,
-           2);
+           DONT_CARE);
 
   z = (void*)NclGetArgValue(
            1,
@@ -1553,7 +1553,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
            NULL,
            NULL,
            &type_z,
-           2);
+           DONT_CARE);
 
   loc = (void*)NclGetArgValue(
            2,
@@ -1563,7 +1563,7 @@ NhlErrorTypes wrf_interp_3d_z_W( void )
            NULL,
            NULL,
            &type_loc,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking. First two input variables must be same size.
@@ -1968,7 +1968,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
            NULL,
            NULL,
            &type_v3d,
-           2);
+           DONT_CARE);
 
   xy = (void*)NclGetArgValue(
            1,
@@ -1978,7 +1978,7 @@ NhlErrorTypes wrf_interp_2d_xy_W( void )
            NULL,
            NULL,
            &type_xy,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking.
@@ -2361,7 +2361,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
            NULL,
            NULL,
            &type_v_in,
-           2);
+           DONT_CARE);
 
   z_in = (void*)NclGetArgValue(
            1,
@@ -2371,7 +2371,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
            NULL,
            NULL,
            &type_z_in,
-           2);
+           DONT_CARE);
 
   z_out = (void*)NclGetArgValue(
            2,
@@ -2381,7 +2381,7 @@ NhlErrorTypes wrf_interp_1d_W( void )
            NULL,
            NULL,
            &type_z_out,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking.
@@ -2785,7 +2785,7 @@ NhlErrorTypes wrf_smooth_2d_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -2888,7 +2888,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
            NULL,
            NULL,
            &type_lat_array,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 1
@@ -2901,7 +2901,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
            NULL,
            NULL,
            &type_lon_array,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes of lat,lon arrays and calculate size of
@@ -2938,7 +2938,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
            NULL,
            NULL,
            &type_lat_loc,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 3
@@ -2951,7 +2951,7 @@ NhlErrorTypes wrf_latlon_to_ij_W( void )
            NULL,
            NULL,
            &type_lon_loc,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes of lat,lon locations.
@@ -3250,7 +3250,7 @@ NhlErrorTypes wrf_uvmet_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3274,7 +3274,7 @@ NhlErrorTypes wrf_uvmet_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3314,7 +3314,7 @@ NhlErrorTypes wrf_uvmet_W( void )
            NULL,
            NULL,
            &type_lat,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3365,7 +3365,7 @@ NhlErrorTypes wrf_uvmet_W( void )
            NULL,
            NULL,
            &type_lon,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes for lon. This should be easier than lat,
@@ -3393,7 +3393,7 @@ NhlErrorTypes wrf_uvmet_W( void )
            NULL,
            NULL,
            &type_cenlon,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 5
  */
@@ -3405,7 +3405,7 @@ NhlErrorTypes wrf_uvmet_W( void )
            NULL,
            NULL,
            &type_cone,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of leftmost dimensions. Note that u, v can have an
@@ -3880,7 +3880,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            &type_prs,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3905,7 +3905,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            &type_tmk,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3926,7 +3926,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            &type_qvp,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3948,7 +3948,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            &type_qra,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3970,7 +3970,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            &type_qsn,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -3992,7 +3992,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            &type_qgr,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -4027,7 +4027,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 7
  */
@@ -4039,7 +4039,7 @@ NhlErrorTypes wrf_dbz_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of leftmost dimensions.
@@ -4554,7 +4554,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4578,7 +4578,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4614,7 +4614,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_th,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4650,7 +4650,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4680,7 +4680,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_msfu,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4722,7 +4722,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_msfv,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4756,7 +4756,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_msft,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4790,7 +4790,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_cor,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -4820,7 +4820,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_dx,
-           2);
+           DONT_CARE);
   tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
 
 /*
@@ -4834,7 +4834,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            &type_dy,
-           2);
+           DONT_CARE);
   tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
 
 /*
@@ -4848,7 +4848,7 @@ NhlErrorTypes wrf_pvo_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   nynx     = ny * nx;
   nznynx   = nz * nynx;
@@ -5352,7 +5352,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_u,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -5376,7 +5376,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_v,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -5412,7 +5412,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_msfu,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -5454,7 +5454,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_msfv,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -5488,7 +5488,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_msft,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -5522,7 +5522,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_cor,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking on dimensions.
@@ -5552,7 +5552,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_dx,
-           2);
+           DONT_CARE);
   tmp_dx = coerce_input_double(dx,type_dx,1,0,NULL,NULL);
 
 /*
@@ -5566,7 +5566,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            &type_dy,
-           2);
+           DONT_CARE);
   tmp_dy = coerce_input_double(dy,type_dy,1,0,NULL,NULL);
 
 /*
@@ -5580,7 +5580,7 @@ NhlErrorTypes wrf_avo_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   nynx     = ny * nx;
   nznynx   = nz * nynx;
@@ -6038,7 +6038,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
            NULL,
            NULL,
            &type_lon,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 1
@@ -6051,7 +6051,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
            NULL,
            NULL,
            &type_lat,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -6079,7 +6079,7 @@ NhlErrorTypes wrf_ll_to_ij_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of lat/lon dimensions.
@@ -6637,7 +6637,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
            NULL,
            NULL,
            &type_iloc,
-           2);
+           DONT_CARE);
 
 /*
  * Get argument # 1
@@ -6650,7 +6650,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
            NULL,
            NULL,
            &type_jloc,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -6678,7 +6678,7 @@ NhlErrorTypes wrf_ij_to_ll_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of i/j dimensions.
@@ -7244,7 +7244,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
   t = (void*)NclGetArgValue(
           1,
@@ -7254,7 +7254,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
 
 
   q = (void*)NclGetArgValue(
@@ -7265,7 +7265,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           &type_q,
-          2);
+          DONT_CARE);
 
   z = (void*)NclGetArgValue(
           3,
@@ -7275,7 +7275,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           &type_z,
-          2);
+          DONT_CARE);
 
   zsfc = (void*)NclGetArgValue(
           4,
@@ -7285,7 +7285,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           &type_zsfc,
-          2);
+          DONT_CARE);
 
   psfc = (void*)NclGetArgValue(
           5,
@@ -7295,7 +7295,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
 
   ter_follow = (logical*)NclGetArgValue(
           6,
@@ -7305,7 +7305,7 @@ NhlErrorTypes wrf_cape_3d_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
   
   if(*ter_follow) iter = 1;
   else            iter = 0;
@@ -7860,7 +7860,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
   t = (void*)NclGetArgValue(
           1,
@@ -7870,7 +7870,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
 
 
   q = (void*)NclGetArgValue(
@@ -7881,7 +7881,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           &type_q,
-          2);
+          DONT_CARE);
 
   z = (void*)NclGetArgValue(
           3,
@@ -7891,7 +7891,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           &type_z,
-          2);
+          DONT_CARE);
 
   zsfc = (void*)NclGetArgValue(
           4,
@@ -7901,7 +7901,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           &type_zsfc,
-          2);
+          DONT_CARE);
 
   psfc = (void*)NclGetArgValue(
           5,
@@ -7911,7 +7911,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
 
   ter_follow = (logical*)NclGetArgValue(
           6,
@@ -7921,7 +7921,7 @@ NhlErrorTypes wrf_cape_2d_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
   
   if(*ter_follow) iter = 1;
   else            iter = 0;
@@ -8517,7 +8517,7 @@ NhlErrorTypes wrf_eth_W( void )
            NULL,
            NULL,
            &type_qv,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -8542,7 +8542,7 @@ NhlErrorTypes wrf_eth_W( void )
            NULL,
            NULL,
            &type_t,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -8563,7 +8563,7 @@ NhlErrorTypes wrf_eth_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -8887,7 +8887,7 @@ NhlErrorTypes wrf_bint_W( void )
            NULL,
            NULL,
            &type_data_in,
-           2);
+           DONT_CARE);
 
   obsii = (void*)NclGetArgValue(
            1,
@@ -8897,7 +8897,7 @@ NhlErrorTypes wrf_bint_W( void )
            NULL,
            NULL,
            &type_obsii,
-           2);
+           DONT_CARE);
 
   obsjj = (void*)NclGetArgValue(
            2,
@@ -8907,7 +8907,7 @@ NhlErrorTypes wrf_bint_W( void )
            NULL,
            NULL,
            &type_obsjj,
-           2);
+           DONT_CARE);
 
   icrs = (int*)NclGetArgValue(
            3,
@@ -8917,7 +8917,7 @@ NhlErrorTypes wrf_bint_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   jcrs = (int*)NclGetArgValue(
            4,
@@ -8927,7 +8927,7 @@ NhlErrorTypes wrf_bint_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Error checking.
@@ -9208,7 +9208,7 @@ NhlErrorTypes wrf_iclw_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -9234,7 +9234,7 @@ NhlErrorTypes wrf_iclw_W( void )
            NULL,
            NULL,
            &type_qc,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.

@@ -49,7 +49,7 @@ NhlErrorTypes erf_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
 /* 
  * Allocate space for coercing input to double if necessary.
@@ -192,7 +192,7 @@ NhlErrorTypes erfc_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
 /* 
  * Allocate space for coercing input to double if necessary.

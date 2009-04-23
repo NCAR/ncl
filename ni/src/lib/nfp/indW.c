@@ -37,7 +37,7 @@ NhlErrorTypes ind_resolve_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   dsizes = (int*)NclGetArgValue(
            1,
@@ -47,7 +47,7 @@ NhlErrorTypes ind_resolve_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Allocate space for output.
  */

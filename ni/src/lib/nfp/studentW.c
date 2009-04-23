@@ -58,7 +58,7 @@ NhlErrorTypes student_t_W( void )
            &missing_t,
            &has_missing_t,
            &type_t,
-           2);
+           DONT_CARE);
 
 /*
  * Coerce missing value to double if necessary.
@@ -77,7 +77,7 @@ NhlErrorTypes student_t_W( void )
            NULL,
            NULL,
            &type_df,
-           2);
+           DONT_CARE);
 
 /*  
  * Checked df's dimension sizes. It must be a scalar, or the same

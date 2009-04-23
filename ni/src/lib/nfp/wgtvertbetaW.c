@@ -86,7 +86,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 
 /*
  * Get size of level dimension.
@@ -109,7 +109,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
            &missing_datai,
            &has_missing_datai,
            &type_datai,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -158,7 +158,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
            NULL,
            NULL,
            &type_psfc,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -187,7 +187,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 4
  *
@@ -202,7 +202,7 @@ NhlErrorTypes wgt_vert_avg_beta_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   nopt = dsizes_opt[0];
   if(nopt != 1 && nopt != 3) {

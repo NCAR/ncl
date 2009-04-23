@@ -45,7 +45,7 @@ NhlErrorTypes stdatmus_z2tdp_W( void )
            NULL,
            NULL,
            &type_z,
-           2);
+           DONT_CARE);
 /*
  * Calculate size of leftmost dimensions, and set dimension sizes for 
  * output.
@@ -194,7 +194,7 @@ NhlErrorTypes stdatmus_p2tdz_W( void )
            NULL,
            NULL,
            &type_p,
-           2);
+           DONT_CARE);
 /*
  * Calculate size of leftmost dimensions, and set dimension sizes for 
  * output.

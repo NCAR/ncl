@@ -56,7 +56,7 @@ NhlErrorTypes g2gsh_W( void )
            &missing_Ta,
            &has_missing_Ta,
            &type_Ta,
-           2);
+           DONT_CARE);
 /*
  * Get sizes for output array.
  */
@@ -68,7 +68,7 @@ NhlErrorTypes g2gsh_W( void )
                 NULL,
                 NULL,
                 NULL,
-                2);
+                DONT_CARE);
 /*
  * Get optional wave truncation value.
  */
@@ -80,7 +80,7 @@ NhlErrorTypes g2gsh_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -307,7 +307,7 @@ NhlErrorTypes f2gsh_W( void )
            &missing_Ta,
            &has_missing_Ta,
            &type_Ta,
-           2);
+           DONT_CARE);
 /*
  * Get sizes for output array.
  */
@@ -319,7 +319,7 @@ NhlErrorTypes f2gsh_W( void )
                 NULL,
                 NULL,
                 NULL,
-                2);
+                DONT_CARE);
 /*
  * Get optional wave truncation value.
  */
@@ -331,7 +331,7 @@ NhlErrorTypes f2gsh_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -560,7 +560,7 @@ NhlErrorTypes g2fsh_W( void )
            &missing_Ta,
            &has_missing_Ta,
            &type_Ta,
-           2);
+           DONT_CARE);
 /*
  * Get sizes for output array.
  */
@@ -572,7 +572,7 @@ NhlErrorTypes g2fsh_W( void )
                 NULL,
                 NULL,
                 NULL,
-                2);
+                DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -801,7 +801,7 @@ NhlErrorTypes f2fsh_W( void )
            &missing_Ta,
            &has_missing_Ta,
            &type_Ta,
-           2);
+           DONT_CARE);
 /*
  * Get sizes for output array.
  */
@@ -813,7 +813,7 @@ NhlErrorTypes f2fsh_W( void )
                 NULL,
                 NULL,
                 NULL,
-                2);
+                DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -1038,7 +1038,7 @@ NhlErrorTypes fo2fsh_W( void )
            &missing_goff,
            &has_missing_goff,
            &type_goff,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -1248,7 +1248,7 @@ NhlErrorTypes f2fosh_W( void )
            &missing_greg,
            &has_missing_greg,
            &type_greg,
-           2);
+           DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */

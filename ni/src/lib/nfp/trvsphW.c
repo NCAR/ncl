@@ -61,7 +61,7 @@ NhlErrorTypes g2gshv_W( void )
            &missing_Ua,
            &has_missing_Ua,
            &type_Ua,
-           2);
+           DONT_CARE);
   Va = (void*)NclGetArgValue(
            1,
            5,
@@ -70,7 +70,7 @@ NhlErrorTypes g2gshv_W( void )
            &missing_Va,
            &has_missing_Va,
            &type_Va,
-           2);
+           DONT_CARE);
 /* 
  * Get output arrays
  */
@@ -103,7 +103,7 @@ NhlErrorTypes g2gshv_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and have the same
  * size.
@@ -374,7 +374,7 @@ NhlErrorTypes f2gshv_W( void )
            &missing_Ua,
            &has_missing_Ua,
            &type_Ua,
-           2);
+           DONT_CARE);
   Va = (void*)NclGetArgValue(
            1,
            5,
@@ -383,7 +383,7 @@ NhlErrorTypes f2gshv_W( void )
            &missing_Va,
            &has_missing_Va,
            &type_Va,
-           2);
+           DONT_CARE);
 /* 
  * Get output arrays
  */
@@ -416,7 +416,7 @@ NhlErrorTypes f2gshv_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional and have the same
  * size.
@@ -668,7 +668,7 @@ NhlErrorTypes g2fshv_W( void )
            &missing_Ua,
            &has_missing_Ua,
            &type_Ua,
-           2);
+           DONT_CARE);
   Va = (void*)NclGetArgValue(
            1,
            4,
@@ -677,7 +677,7 @@ NhlErrorTypes g2fshv_W( void )
            &missing_Va,
            &has_missing_Va,
            &type_Va,
-           2);
+           DONT_CARE);
 /* 
  * Get output arrays
  */
@@ -949,7 +949,7 @@ NhlErrorTypes f2fshv_W( void )
            &missing_Ua,
            &has_missing_Ua,
            &type_Ua,
-           2);
+           DONT_CARE);
   Va = (void*)NclGetArgValue(
            1,
            4,
@@ -958,7 +958,7 @@ NhlErrorTypes f2fshv_W( void )
            &missing_Va,
            &has_missing_Va,
            &type_Va,
-           2);
+           DONT_CARE);
 /* 
  * Get output arrays
  */
@@ -1226,7 +1226,7 @@ NhlErrorTypes fo2fshv_W( void )
            &missing_uoff,
            &has_missing_uoff,
            &type_uoff,
-           2);
+           DONT_CARE);
   voff = (void*)NclGetArgValue(
            1,
            4,
@@ -1235,7 +1235,7 @@ NhlErrorTypes fo2fshv_W( void )
            &missing_voff,
            &has_missing_voff,
            &type_voff,
-           2);
+           DONT_CARE);
 /* 
  * Get output arrays
  */
@@ -1497,7 +1497,7 @@ NhlErrorTypes f2foshv_W( void )
            &missing_ureg,
            &has_missing_ureg,
            &type_ureg,
-           2);
+           DONT_CARE);
   vreg = (void*)NclGetArgValue(
            1,
            4,
@@ -1506,7 +1506,7 @@ NhlErrorTypes f2foshv_W( void )
            &missing_vreg,
            &has_missing_vreg,
            &type_vreg,
-           2);
+           DONT_CARE);
 /* 
  * Get output arrays
  */

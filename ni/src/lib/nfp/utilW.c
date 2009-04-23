@@ -38,7 +38,7 @@ NhlErrorTypes round_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve iopt.  Currently, the value of iopt specifies the following:
@@ -56,7 +56,7 @@ NhlErrorTypes round_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   if(*iopt < 0 || *iopt > 3) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"round: 'iopt' can only have the values 0-3");
@@ -198,7 +198,7 @@ NhlErrorTypes isnan_ieee_W( void )
           NULL,
           NULL,
           &type_x,
-          2);
+          DONT_CARE);
 
   if(type_x != NCL_float && type_x != NCL_double) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"isnan_ieee: the input must be of type float or double");
@@ -286,7 +286,7 @@ NhlErrorTypes replace_ieeenan_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   if(type_x != NCL_float && type_x != NCL_double) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"replace_ieeenan: the first argument must be of type float or double");
@@ -301,7 +301,7 @@ NhlErrorTypes replace_ieeenan_W( void )
           NULL,
           NULL,
           &type_value,
-          2);
+          DONT_CARE);
 
   if(type_value != NCL_float && type_value != NCL_double) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"replace_ieeenan: the second argument must be of type float or double");
@@ -318,7 +318,7 @@ NhlErrorTypes replace_ieeenan_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Compute the total size of the input array.
  */
@@ -395,7 +395,7 @@ NhlErrorTypes generate_2d_array_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   mhigh = (int*)NclGetArgValue(
           1,
@@ -405,7 +405,7 @@ NhlErrorTypes generate_2d_array_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Retrieve minimum and maximum values that the data is supposed to have.
@@ -418,7 +418,7 @@ NhlErrorTypes generate_2d_array_W( void )
           NULL,
           NULL,
           &type_dlow,
-          2);
+          DONT_CARE);
 
   dhigh = (void*)NclGetArgValue(
           3,
@@ -428,7 +428,7 @@ NhlErrorTypes generate_2d_array_W( void )
           NULL,
           NULL,
           &type_dhigh,
-          2);
+          DONT_CARE);
 
 /*
  * Get size of output array.
@@ -441,7 +441,7 @@ NhlErrorTypes generate_2d_array_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Get size of output array.
  */
@@ -453,7 +453,7 @@ NhlErrorTypes generate_2d_array_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Error checking.

@@ -27,7 +27,7 @@ NhlErrorTypes linrood_latwgt_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   if( *npts < 1) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linrood_latwgt: npts must be at least 1");
@@ -84,7 +84,7 @@ NhlErrorTypes linrood_wgt_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Allocate space for output array

@@ -43,7 +43,7 @@ NhlErrorTypes lspoly_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   y = (void*)NclGetArgValue(
           1,
@@ -53,7 +53,7 @@ NhlErrorTypes lspoly_W( void )
           &missing_y,
           &has_missing_y,
           &type_y,
-          2);
+          DONT_CARE);
 
   wgt = (void*)NclGetArgValue(
           2,
@@ -63,7 +63,7 @@ NhlErrorTypes lspoly_W( void )
           NULL,
           NULL,
           &type_wgt,
-          2);
+          DONT_CARE);
 
   is_scalar_wgt = is_scalar(ndims_wgt,dsizes_wgt);
 
@@ -75,7 +75,7 @@ NhlErrorTypes lspoly_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Error checking.
  */

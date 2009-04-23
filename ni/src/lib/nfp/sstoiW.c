@@ -28,7 +28,7 @@ NhlErrorTypes rdsstoi_W( void )
                                NULL,
                                NULL,
                                NULL,
-                               2);
+                               DONT_CARE);
     nyrlast = (int*)NclGetArgValue(
                                1,
                                5,
@@ -37,7 +37,7 @@ NhlErrorTypes rdsstoi_W( void )
                                NULL,
                                NULL,
                                NULL,
-                               2);
+                               DONT_CARE);
     mlon= (int*)NclGetArgValue(
                                2,
                                5,
@@ -46,7 +46,7 @@ NhlErrorTypes rdsstoi_W( void )
                                NULL,
                                NULL,
                                NULL,
-                               2);
+                               DONT_CARE);
     nlat= (int*)NclGetArgValue(
                                3,
                                5,
@@ -55,7 +55,7 @@ NhlErrorTypes rdsstoi_W( void )
                                NULL,
                                NULL,
                                NULL,
-                               2);
+                               DONT_CARE);
     info = (int*)NclGetArgValue(
                                4,
                                5,

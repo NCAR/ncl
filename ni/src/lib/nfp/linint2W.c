@@ -64,7 +64,7 @@ NhlErrorTypes linint1_W( void )
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   fi = (void*)NclGetArgValue(
           1,
@@ -74,7 +74,7 @@ NhlErrorTypes linint1_W( void )
           &missing_fi,
           &has_missing_fi,
           &type_fi,
-          2);
+          DONT_CARE);
 
   wrap = (logical*)NclGetArgValue(
           2,
@@ -84,7 +84,7 @@ NhlErrorTypes linint1_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   xo = (void*)NclGetArgValue(
           3,
@@ -94,7 +94,7 @@ NhlErrorTypes linint1_W( void )
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           4,
@@ -104,7 +104,7 @@ NhlErrorTypes linint1_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Compute the total number of elements in our arrays and check them.
  */
@@ -320,7 +320,7 @@ NhlErrorTypes linint2_W( void )
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   yi = (void*)NclGetArgValue(
           1,
@@ -330,7 +330,7 @@ NhlErrorTypes linint2_W( void )
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
   fi = (void*)NclGetArgValue(
           2,
@@ -340,7 +340,7 @@ NhlErrorTypes linint2_W( void )
           &missing_fi,
           &has_missing_fi,
           &type_fi,
-          2);
+          DONT_CARE);
 
   wrap = (logical*)NclGetArgValue(
           3,
@@ -350,7 +350,7 @@ NhlErrorTypes linint2_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   xo = (void*)NclGetArgValue(
           4,
@@ -360,7 +360,7 @@ NhlErrorTypes linint2_W( void )
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   yo = (void*)NclGetArgValue(
           5,
@@ -370,7 +370,7 @@ NhlErrorTypes linint2_W( void )
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           6,
@@ -380,7 +380,7 @@ NhlErrorTypes linint2_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Compute the total number of elements in our arrays.
  */
@@ -629,7 +629,7 @@ NhlErrorTypes linint2_points_W( void )
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   yi = (void*)NclGetArgValue(
           1,
@@ -639,7 +639,7 @@ NhlErrorTypes linint2_points_W( void )
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
   fi = (void*)NclGetArgValue(
           2,
@@ -649,7 +649,7 @@ NhlErrorTypes linint2_points_W( void )
           &missing_fi,
           &has_missing_fi,
           &type_fi,
-          2);
+          DONT_CARE);
 
   wrap = (logical*)NclGetArgValue(
           3,
@@ -659,7 +659,7 @@ NhlErrorTypes linint2_points_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   xo = (void*)NclGetArgValue(
           4,
@@ -669,7 +669,7 @@ NhlErrorTypes linint2_points_W( void )
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   yo = (void*)NclGetArgValue(
           5,
@@ -679,7 +679,7 @@ NhlErrorTypes linint2_points_W( void )
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           6,
@@ -689,7 +689,7 @@ NhlErrorTypes linint2_points_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Compute the total number of elements in our arrays.
  */
@@ -951,7 +951,7 @@ NhlErrorTypes area_hi2lores_W( void )
           NULL,
           NULL,
           &type_xi,
-          2);
+          DONT_CARE);
 
   yi = (void*)NclGetArgValue(
           1,
@@ -961,7 +961,7 @@ NhlErrorTypes area_hi2lores_W( void )
           NULL,
           NULL,
           &type_yi,
-          2);
+          DONT_CARE);
 
   fi = (void*)NclGetArgValue(
           2,
@@ -971,7 +971,7 @@ NhlErrorTypes area_hi2lores_W( void )
           &missing_fi,
           &has_missing_fi,
           &type_fi,
-          2);
+          DONT_CARE);
 
   fi_cyclic_x = (logical*)NclGetArgValue(
           3,
@@ -981,7 +981,7 @@ NhlErrorTypes area_hi2lores_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   wyi = (void*)NclGetArgValue(
           4,
@@ -991,7 +991,7 @@ NhlErrorTypes area_hi2lores_W( void )
           NULL,
           NULL,
           &type_wyi,
-          2);
+          DONT_CARE);
 
   xo = (void*)NclGetArgValue(
           5,
@@ -1001,7 +1001,7 @@ NhlErrorTypes area_hi2lores_W( void )
           NULL,
           NULL,
           &type_xo,
-          2);
+          DONT_CARE);
 
   yo = (void*)NclGetArgValue(
           6,
@@ -1011,7 +1011,7 @@ NhlErrorTypes area_hi2lores_W( void )
           NULL,
           NULL,
           &type_yo,
-          2);
+          DONT_CARE);
 
   fo_option = (logical*)NclGetArgValue(
           7,
@@ -1021,7 +1021,7 @@ NhlErrorTypes area_hi2lores_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check for "critpc" attribute.
  */

@@ -39,7 +39,7 @@ NhlErrorTypes pres_sigma_W( void )
           NULL,
           NULL,
           &type_sigma,
-          2);
+          DONT_CARE);
 
   ps = (void*)NclGetArgValue(
           1,
@@ -49,7 +49,7 @@ NhlErrorTypes pres_sigma_W( void )
           NULL,
           NULL,
           &type_ps,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimensions.

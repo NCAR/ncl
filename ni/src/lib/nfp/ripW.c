@@ -93,7 +93,7 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
   t = (void*)NclGetArgValue(
           1,
@@ -103,7 +103,7 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
 
 
   q = (void*)NclGetArgValue(
@@ -114,7 +114,7 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           NULL,
           &type_q,
-          2);
+          DONT_CARE);
 
   z = (void*)NclGetArgValue(
           3,
@@ -124,7 +124,7 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           NULL,
           &type_z,
-          2);
+          DONT_CARE);
 
   zsfc = (void*)NclGetArgValue(
           4,
@@ -134,7 +134,7 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           NULL,
           &type_zsfc,
-          2);
+          DONT_CARE);
 
   psfc = (void*)NclGetArgValue(
           5,
@@ -144,7 +144,7 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
 
   ter_follow = (logical*)NclGetArgValue(
           6,
@@ -154,7 +154,7 @@ NhlErrorTypes rip_cape_3d_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
   
   if(*ter_follow) iter = 1;
   else            iter = 0;
@@ -545,7 +545,7 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
   t = (void*)NclGetArgValue(
           1,
@@ -555,7 +555,7 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
 
 
   q = (void*)NclGetArgValue(
@@ -566,7 +566,7 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           NULL,
           &type_q,
-          2);
+          DONT_CARE);
 
   z = (void*)NclGetArgValue(
           3,
@@ -576,7 +576,7 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           NULL,
           &type_z,
-          2);
+          DONT_CARE);
 
   zsfc = (void*)NclGetArgValue(
           4,
@@ -586,7 +586,7 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           NULL,
           &type_zsfc,
-          2);
+          DONT_CARE);
 
   psfc = (void*)NclGetArgValue(
           5,
@@ -596,7 +596,7 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           NULL,
           &type_psfc,
-          2);
+          DONT_CARE);
 
   ter_follow = (logical*)NclGetArgValue(
           6,
@@ -606,7 +606,7 @@ NhlErrorTypes rip_cape_2d_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
   
   if(*ter_follow) iter = 1;
   else            iter = 0;

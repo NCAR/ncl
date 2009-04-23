@@ -62,7 +62,7 @@ NhlErrorTypes ttest_W( void )
           &missing_ave1,
           &has_missing_ave1,
           &type_ave1,
-          2);
+          DONT_CARE);
 
   var1 = (void*)NclGetArgValue(
           1,
@@ -72,7 +72,7 @@ NhlErrorTypes ttest_W( void )
           &missing_var1,
           &has_missing_var1,
           &type_var1,
-          2);
+          DONT_CARE);
 
   s1 = (void*)NclGetArgValue(
           2,
@@ -82,7 +82,7 @@ NhlErrorTypes ttest_W( void )
           &missing_s1,
           &has_missing_s1,
           &type_s1,
-          2);
+          DONT_CARE);
 
   ave2 = (void*)NclGetArgValue(
           3,
@@ -92,7 +92,7 @@ NhlErrorTypes ttest_W( void )
           &missing_ave2,
           &has_missing_ave2,
           &type_ave2,
-          2);
+          DONT_CARE);
 
   var2 = (void*)NclGetArgValue(
           4,
@@ -102,7 +102,7 @@ NhlErrorTypes ttest_W( void )
           &missing_var2,
           &has_missing_var2,
           &type_var2,
-          2);
+          DONT_CARE);
 
   s2 = (void*)NclGetArgValue(
           5,
@@ -112,7 +112,7 @@ NhlErrorTypes ttest_W( void )
           &missing_s2,
           &has_missing_s2,
           &type_s2,
-          2);
+          DONT_CARE);
 
   iflag = (logical*)NclGetArgValue(
           6,
@@ -122,7 +122,7 @@ NhlErrorTypes ttest_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   tval_opt = (logical*)NclGetArgValue(
           7,
@@ -132,7 +132,7 @@ NhlErrorTypes ttest_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimensions.  The ave* and var* variables must be the same size,
@@ -582,7 +582,7 @@ NhlErrorTypes ftest_W( void )
           &missing_var1,
           &has_missing_var1,
           &type_var1,
-          2);
+          DONT_CARE);
 
   s1 = (void*)NclGetArgValue(
           1,
@@ -592,7 +592,7 @@ NhlErrorTypes ftest_W( void )
           NULL,
           NULL,
           &type_s1,
-          2);
+          DONT_CARE);
 
   var2 = (void*)NclGetArgValue(
           2,
@@ -602,7 +602,7 @@ NhlErrorTypes ftest_W( void )
           &missing_var2,
           &has_missing_var2,
           &type_var2,
-          2);
+          DONT_CARE);
 
   s2 = (void*)NclGetArgValue(
           3,
@@ -612,7 +612,7 @@ NhlErrorTypes ftest_W( void )
           NULL,
           NULL,
           &type_s2,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           4,
@@ -622,7 +622,7 @@ NhlErrorTypes ftest_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimensions.  The var* variables must be the same size,
@@ -914,7 +914,7 @@ NhlErrorTypes rtest_W( void )
           &missing_r,
           &has_missing_r,
           &type_r,
-          2);
+          DONT_CARE);
 
   n = (int*)NclGetArgValue(
           1,
@@ -924,7 +924,7 @@ NhlErrorTypes rtest_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           2,
@@ -934,7 +934,7 @@ NhlErrorTypes rtest_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -1093,7 +1093,7 @@ NhlErrorTypes equiv_sample_size_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   siglvl = (int*)NclGetArgValue(
           1,
@@ -1103,7 +1103,7 @@ NhlErrorTypes equiv_sample_size_W( void )
           NULL,
           NULL,
           &type_siglvl,
-          2);
+          DONT_CARE);
 
   opt = (int*)NclGetArgValue(
           2,
@@ -1113,7 +1113,7 @@ NhlErrorTypes equiv_sample_size_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   nx = dsizes_x[ndims_x-1];
 /*

@@ -45,7 +45,7 @@ NhlErrorTypes y_skewt_W( void )
           NULL,
           NULL,
           &type_pres,
-          2);
+          DONT_CARE);
 
   np = dsizes_pres[0];
 
@@ -125,7 +125,7 @@ NhlErrorTypes x_skewt_W( void )
           NULL,
           NULL,
           &type_temp,
-          2);
+          DONT_CARE);
   y = (void*)NclGetArgValue(
           1,
           2,
@@ -134,7 +134,7 @@ NhlErrorTypes x_skewt_W( void )
           NULL,
           NULL,
           &type_y,
-          2);
+          DONT_CARE);
 /*
  * temp and y must be the same size.
  */
@@ -220,7 +220,7 @@ NhlErrorTypes tmr_skewt_W( void )
           NULL,
           NULL,
           &type_w,
-          2);
+          DONT_CARE);
   p = (void*)NclGetArgValue(
           1,
           2,
@@ -229,7 +229,7 @@ NhlErrorTypes tmr_skewt_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 /*
  * Create temp arrays to hold subarray of w, y, and tmrskewt.
  */
@@ -306,7 +306,7 @@ NhlErrorTypes tda_skewt_W( void )
           NULL,
           NULL,
           &type_o,
-          2);
+          DONT_CARE);
   p = (void*)NclGetArgValue(
           1,
           2,
@@ -315,7 +315,7 @@ NhlErrorTypes tda_skewt_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 /*
  * Create temp arrays to hold subarray of o, y, and tdaskewt.
  */
@@ -392,7 +392,7 @@ NhlErrorTypes satlft_skewt_W( void )
           NULL,
           NULL,
           &type_thw,
-          2);
+          DONT_CARE);
   p = (void*)NclGetArgValue(
           1,
           2,
@@ -401,7 +401,7 @@ NhlErrorTypes satlft_skewt_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 /*
  * Create temp arrays to hold subarray of o, y, and satlftskewt.
  */
@@ -478,7 +478,7 @@ NhlErrorTypes ptlcl_skewt_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
   t = (void*)NclGetArgValue(
           1,
           5,
@@ -487,7 +487,7 @@ NhlErrorTypes ptlcl_skewt_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
   td = (void*)NclGetArgValue(
           2,
           5,
@@ -496,7 +496,7 @@ NhlErrorTypes ptlcl_skewt_W( void )
           NULL,
           NULL,
           &type_td,
-          2);
+          DONT_CARE);
   pc = (void*)NclGetArgValue(
           3,
           5,
@@ -505,7 +505,7 @@ NhlErrorTypes ptlcl_skewt_W( void )
           NULL,
           NULL,
           &type_pc,
-          2);
+          DONT_CARE);
   tc = (void*)NclGetArgValue(
           4,
           5,
@@ -514,7 +514,7 @@ NhlErrorTypes ptlcl_skewt_W( void )
           NULL,
           NULL,
           &type_tc,
-          2);
+          DONT_CARE);
 /*
  * Output variables must be float or double.
  */
@@ -603,7 +603,7 @@ NhlErrorTypes showal_skewt_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
   t = (void*)NclGetArgValue(
           1,
           3,
@@ -612,7 +612,7 @@ NhlErrorTypes showal_skewt_W( void )
           NULL,
           NULL,
           &type_t,
-          2);
+          DONT_CARE);
   td = (void*)NclGetArgValue(
           2,
           3,
@@ -621,7 +621,7 @@ NhlErrorTypes showal_skewt_W( void )
           NULL,
           NULL,
           &type_td,
-          2);
+          DONT_CARE);
 /*
  * input arrays must be the same size.
  */
@@ -713,7 +713,7 @@ NhlErrorTypes pw_skewt_W( void )
           NULL,
           NULL,
           &type_td,
-          2);
+          DONT_CARE);
   p = (void*)NclGetArgValue(
           1,
           2,
@@ -722,7 +722,7 @@ NhlErrorTypes pw_skewt_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 /*
  * input arrays must be the same size.
  */
@@ -823,7 +823,7 @@ NhlErrorTypes cape_thermo_W( void )
           NULL,
           NULL,
           &type_penv,
-          2);
+          DONT_CARE);
   tenv = (void*)NclGetArgValue(
           1,
           4,
@@ -832,7 +832,7 @@ NhlErrorTypes cape_thermo_W( void )
           &missing_tenv,
           &has_missing_tenv,
           &type_tenv,
-          2);
+          DONT_CARE);
   lclmb = (void*)NclGetArgValue(
           2,
           4,
@@ -841,7 +841,7 @@ NhlErrorTypes cape_thermo_W( void )
           NULL,
           NULL,
           &type_lclmb,
-          2);
+          DONT_CARE);
   iprint = (int*)NclGetArgValue(
           3,
           4,
@@ -850,7 +850,7 @@ NhlErrorTypes cape_thermo_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * tenv and penv must be the same size.
  */

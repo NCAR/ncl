@@ -51,7 +51,7 @@ NhlErrorTypes grid2triple_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
   y = (void*)NclGetArgValue(
            1,
@@ -61,7 +61,7 @@ NhlErrorTypes grid2triple_W( void )
            NULL,
            NULL,
            &type_y,
-           2);
+           DONT_CARE);
 
   z = (void*)NclGetArgValue(
            2,
@@ -71,7 +71,7 @@ NhlErrorTypes grid2triple_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 
   mx  = dsizes_x[0];
   ny  = dsizes_y[0];
@@ -236,7 +236,7 @@ NhlErrorTypes triple2grid_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
   y = (void*)NclGetArgValue(
            1,
@@ -246,7 +246,7 @@ NhlErrorTypes triple2grid_W( void )
            NULL,
            NULL,
            &type_y,
-           2);
+           DONT_CARE);
 
   z = (void*)NclGetArgValue(
            2,
@@ -256,7 +256,7 @@ NhlErrorTypes triple2grid_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 
   gridx = (void*)NclGetArgValue(
            3,
@@ -266,7 +266,7 @@ NhlErrorTypes triple2grid_W( void )
            NULL,
            NULL,
            &type_gridx,
-           2);
+           DONT_CARE);
 
   gridy = (void*)NclGetArgValue(
            4,
@@ -276,7 +276,7 @@ NhlErrorTypes triple2grid_W( void )
            NULL,
            NULL,
            &type_gridy,
-           2);
+           DONT_CARE);
 
   option = (logical*)NclGetArgValue(
            5,
@@ -286,7 +286,7 @@ NhlErrorTypes triple2grid_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Check sizes of x, y, and z arrays.
@@ -593,7 +593,7 @@ NhlErrorTypes triple2grid2d_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
   y = (void*)NclGetArgValue(
            1,
@@ -603,7 +603,7 @@ NhlErrorTypes triple2grid2d_W( void )
            NULL,
            NULL,
            &type_y,
-           2);
+           DONT_CARE);
 
   z = (void*)NclGetArgValue(
            2,
@@ -613,7 +613,7 @@ NhlErrorTypes triple2grid2d_W( void )
            &missing_z,
            &has_missing_z,
            &type_z,
-           2);
+           DONT_CARE);
 
   gridx = (void*)NclGetArgValue(
            3,
@@ -623,7 +623,7 @@ NhlErrorTypes triple2grid2d_W( void )
            NULL,
            NULL,
            &type_gridx,
-           2);
+           DONT_CARE);
 
   gridy = (void*)NclGetArgValue(
            4,
@@ -633,7 +633,7 @@ NhlErrorTypes triple2grid2d_W( void )
            NULL,
            NULL,
            &type_gridy,
-           2);
+           DONT_CARE);
 
   option = (logical*)NclGetArgValue(
            5,
@@ -643,7 +643,7 @@ NhlErrorTypes triple2grid2d_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Check sizes of x, y, and z arrays.

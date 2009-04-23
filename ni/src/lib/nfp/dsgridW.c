@@ -37,7 +37,7 @@ NhlErrorTypes dsgrid2s_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (float*)NclGetArgValue(
                              1,
                              5,
@@ -46,7 +46,7 @@ NhlErrorTypes dsgrid2s_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
 /*
  * Check dimension sizes for x and y.
  */
@@ -68,7 +68,7 @@ NhlErrorTypes dsgrid2s_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
 /*
  * Check rightmost dimension size for z.
@@ -90,7 +90,7 @@ NhlErrorTypes dsgrid2s_W( void )
                               &missing_xo,
                               &has_missing_xo,
                               NULL,
-                              2);
+                              DONT_CARE);
   yo = (float*)NclGetArgValue(
                               4,
                               5,
@@ -99,7 +99,7 @@ NhlErrorTypes dsgrid2s_W( void )
                               &missing_yo,
                               &has_missing_yo,
                               NULL,
-                              2);
+                              DONT_CARE);
 
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
@@ -219,7 +219,7 @@ NhlErrorTypes dsgrid2_W( void )
                              &missing_x,
                              &has_missing_x,
                              &type_x,
-                             2);
+                             DONT_CARE);
   y = (void*)NclGetArgValue(
                              1,
                              5,
@@ -228,7 +228,7 @@ NhlErrorTypes dsgrid2_W( void )
                              &missing_y,
                              &has_missing_y,
                              &type_y,
-                             2);
+                             DONT_CARE);
 /*
  * Check dimension sizes for x and y.
  */
@@ -250,7 +250,7 @@ NhlErrorTypes dsgrid2_W( void )
                              &missing_z,
                              &has_missing_z,
                              &type_z,
-                             2);
+                             DONT_CARE);
 /*
  * Check rightmost dimension size for z.
  */
@@ -271,7 +271,7 @@ NhlErrorTypes dsgrid2_W( void )
                               &missing_xo,
                               &has_missing_xo,
                               &type_xo,
-                              2);
+                              DONT_CARE);
   yo = (void*)NclGetArgValue(
                               4,
                               5,
@@ -280,7 +280,7 @@ NhlErrorTypes dsgrid2_W( void )
                               &missing_yo,
                               &has_missing_yo,
                               &type_yo,
-                              2);
+                              DONT_CARE);
 
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
@@ -486,7 +486,7 @@ NhlErrorTypes dsgrid2d_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (double*)NclGetArgValue(
                              1,
                              5,
@@ -495,7 +495,7 @@ NhlErrorTypes dsgrid2d_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
 /*
  * Check dimension sizes for x and y.
  */
@@ -517,7 +517,7 @@ NhlErrorTypes dsgrid2d_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
 /*
  * Check rightmost dimension size for z.
@@ -539,7 +539,7 @@ NhlErrorTypes dsgrid2d_W( void )
                                &missing_xo,
                                &has_missing_xo,
                                NULL,
-                               2);
+                               DONT_CARE);
   yo = (double*)NclGetArgValue(
                                4,
                                5,
@@ -548,7 +548,7 @@ NhlErrorTypes dsgrid2d_W( void )
                                &missing_yo,
                                &has_missing_yo,
                                NULL,
-                               2);
+                               DONT_CARE);
 
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
@@ -656,7 +656,7 @@ NhlErrorTypes dsgrid3s_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (float*)NclGetArgValue(
                              1,
                              7,
@@ -665,7 +665,7 @@ NhlErrorTypes dsgrid3s_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
   z = (float*)NclGetArgValue(
                              2,
                              7,
@@ -674,7 +674,7 @@ NhlErrorTypes dsgrid3s_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
 /*
  * Check dimension sizes for x, y, and z.
@@ -697,7 +697,7 @@ NhlErrorTypes dsgrid3s_W( void )
                              &missing_u,
                              &has_missing_u,
                              NULL,
-                             2);
+                             DONT_CARE);
 
 /*
  * Check rightmost dimension size for u.
@@ -727,7 +727,7 @@ NhlErrorTypes dsgrid3s_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              NULL,
-                             2);
+                             DONT_CARE);
   yo = (float*)NclGetArgValue(
                              5,
                              7,
@@ -736,7 +736,7 @@ NhlErrorTypes dsgrid3s_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              NULL,
-                             2);
+                             DONT_CARE);
   zo = (float*)NclGetArgValue(
                              6,
                              7,
@@ -745,7 +745,7 @@ NhlErrorTypes dsgrid3s_W( void )
                              &missing_zo,
                              &has_missing_zo,
                              NULL,
-                             2);
+                             DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = dsizes_zo[0];
@@ -864,7 +864,7 @@ NhlErrorTypes dsgrid3_W( void )
                              &missing_x,
                              &has_missing_x,
                              &type_x,
-                             2);
+                             DONT_CARE);
   y = (void*)NclGetArgValue(
                              1,
                              7,
@@ -873,7 +873,7 @@ NhlErrorTypes dsgrid3_W( void )
                              &missing_y,
                              &has_missing_y,
                              &type_y,
-                             2);
+                             DONT_CARE);
   z = (void*)NclGetArgValue(
                              2,
                              7,
@@ -882,7 +882,7 @@ NhlErrorTypes dsgrid3_W( void )
                              &missing_z,
                              &has_missing_z,
                              &type_z,
-                             2);
+                             DONT_CARE);
 
 /*
  * Check dimension sizes for x, y, and z.
@@ -905,7 +905,7 @@ NhlErrorTypes dsgrid3_W( void )
                              &missing_u,
                              &has_missing_u,
                              &type_u,
-                             2);
+                             DONT_CARE);
 
 /*
  * Check rightmost dimension size for u.
@@ -927,7 +927,7 @@ NhlErrorTypes dsgrid3_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              &type_xo,
-                             2);
+                             DONT_CARE);
   yo = (void*)NclGetArgValue(
                              5,
                              7,
@@ -936,7 +936,7 @@ NhlErrorTypes dsgrid3_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              &type_yo,
-                             2);
+                             DONT_CARE);
   zo = (void*)NclGetArgValue(
                              6,
                              7,
@@ -945,7 +945,7 @@ NhlErrorTypes dsgrid3_W( void )
                              &missing_zo,
                              &has_missing_zo,
                              &type_zo,
-                             2);
+                             DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = dsizes_zo[0];
@@ -1172,7 +1172,7 @@ NhlErrorTypes dsgrid3d_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (double*)NclGetArgValue(
                              1,
                              7,
@@ -1181,7 +1181,7 @@ NhlErrorTypes dsgrid3d_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
   z = (double*)NclGetArgValue(
                              2,
                              7,
@@ -1190,7 +1190,7 @@ NhlErrorTypes dsgrid3d_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
 /*
  * Check dimension sizes for x, y, and z.
@@ -1213,7 +1213,7 @@ NhlErrorTypes dsgrid3d_W( void )
                              &missing_u,
                              &has_missing_u,
                              NULL,
-                             2);
+                             DONT_CARE);
 /*
  * Check rightmost dimension size for u.
  */
@@ -1242,7 +1242,7 @@ NhlErrorTypes dsgrid3d_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              NULL,
-                             2);
+                             DONT_CARE);
   yo = (double*)NclGetArgValue(
                              5,
                              7,
@@ -1251,7 +1251,7 @@ NhlErrorTypes dsgrid3d_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   zo = (double*)NclGetArgValue(
                              6,
@@ -1261,7 +1261,7 @@ NhlErrorTypes dsgrid3d_W( void )
                              &missing_zo,
                              &has_missing_zo,
                              NULL,
-                             2);
+                             DONT_CARE);
   nxo = dsizes_xo[0];
   nyo = dsizes_yo[0];
   nzo = dsizes_zo[0];
@@ -1359,7 +1359,7 @@ NhlErrorTypes dssetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for argument #1.
@@ -1406,7 +1406,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -1501,7 +1501,7 @@ NhlErrorTypes dsgetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for argument #1.
@@ -1611,7 +1611,7 @@ NhlErrorTypes dspnt2s_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (float*)NclGetArgValue(
                              1,
                              6,
@@ -1620,7 +1620,7 @@ NhlErrorTypes dspnt2s_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
   z = (float*)NclGetArgValue(
                              2,
                              6,
@@ -1629,7 +1629,7 @@ NhlErrorTypes dspnt2s_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   xo = (float*)NclGetArgValue(
                              3,
@@ -1639,7 +1639,7 @@ NhlErrorTypes dspnt2s_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              NULL,
-                             2);
+                             DONT_CARE);
   yo = (float*)NclGetArgValue(
                              4,
                              6,
@@ -1648,7 +1648,7 @@ NhlErrorTypes dspnt2s_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              NULL,
-                             2);
+                             DONT_CARE);
   zo = (float*)NclGetArgValue(
                              5,
                              6,
@@ -1657,7 +1657,7 @@ NhlErrorTypes dspnt2s_W( void )
                              NULL,
                              NULL,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   npts  = dsizes_x[0];
   nptso = dsizes_xo[0];
@@ -1753,7 +1753,7 @@ NhlErrorTypes dspnt2d_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (double*)NclGetArgValue(
                              1,
                              6,
@@ -1762,7 +1762,7 @@ NhlErrorTypes dspnt2d_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
   z = (double*)NclGetArgValue(
                              2,
                              6,
@@ -1771,7 +1771,7 @@ NhlErrorTypes dspnt2d_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   xo = (double*)NclGetArgValue(
                              3,
@@ -1781,7 +1781,7 @@ NhlErrorTypes dspnt2d_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              NULL,
-                             2);
+                             DONT_CARE);
   yo = (double*)NclGetArgValue(
                              4,
                              6,
@@ -1790,7 +1790,7 @@ NhlErrorTypes dspnt2d_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              NULL,
-                             2);
+                             DONT_CARE);
   zo = (double*)NclGetArgValue(
                              5,
                              6,
@@ -1799,7 +1799,7 @@ NhlErrorTypes dspnt2d_W( void )
                              NULL,
                              NULL,
                              NULL,
-                             2);
+                             DONT_CARE);
   npts  = dsizes_x[0];
   nptso = dsizes_xo[0];
 /*
@@ -1895,7 +1895,7 @@ NhlErrorTypes dspnt2_W( void )
                             &missing_x,
                             &has_missing_x,
                             &type_x,
-                            2);
+                            DONT_CARE);
   y = (void*)NclGetArgValue(
                             1,
                             5,
@@ -1904,7 +1904,7 @@ NhlErrorTypes dspnt2_W( void )
                             &missing_y,
                             &has_missing_y,
                             &type_y,
-                            2);
+                            DONT_CARE);
   z = (void*)NclGetArgValue(
                             2,
                             5,
@@ -1913,7 +1913,7 @@ NhlErrorTypes dspnt2_W( void )
                             &missing_z,
                             &has_missing_z,
                             &type_z,
-                            2);
+                            DONT_CARE);
   
   xo = (void*)NclGetArgValue(
                              3,
@@ -1923,7 +1923,7 @@ NhlErrorTypes dspnt2_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              &type_xo,
-                             2);
+                             DONT_CARE);
   yo = (void*)NclGetArgValue(
                              4,
                              5,
@@ -1932,7 +1932,7 @@ NhlErrorTypes dspnt2_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              &type_yo,
-                             2);
+                             DONT_CARE);
   npts  = dsizes_x[0];
   nptso = dsizes_xo[0];
 
@@ -2153,7 +2153,7 @@ NhlErrorTypes dspnt3s_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (float*)NclGetArgValue(
                              1,
                              8,
@@ -2162,7 +2162,7 @@ NhlErrorTypes dspnt3s_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
   z = (float*)NclGetArgValue(
                              2,
                              8,
@@ -2171,7 +2171,7 @@ NhlErrorTypes dspnt3s_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   u = (float*)NclGetArgValue(
                              3,
@@ -2181,7 +2181,7 @@ NhlErrorTypes dspnt3s_W( void )
                              &missing_u,
                              &has_missing_u,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   xo = (float*)NclGetArgValue(
                              4,
@@ -2191,7 +2191,7 @@ NhlErrorTypes dspnt3s_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              NULL,
-                             2);
+                             DONT_CARE);
   yo = (float*)NclGetArgValue(
                              5,
                              8,
@@ -2200,7 +2200,7 @@ NhlErrorTypes dspnt3s_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              NULL,
-                             2);
+                             DONT_CARE);
   zo = (float*)NclGetArgValue(
                              6,
                              8,
@@ -2209,7 +2209,7 @@ NhlErrorTypes dspnt3s_W( void )
                              &missing_zo,
                              &has_missing_zo,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   uo = (float*)NclGetArgValue(
                              7,
@@ -2219,7 +2219,7 @@ NhlErrorTypes dspnt3s_W( void )
                              NULL,
                              NULL,
                              NULL,
-                             2);
+                             DONT_CARE);
   npts  = dsizes_x[0];
   nptso = dsizes_xo[0];
 /*
@@ -2321,7 +2321,7 @@ NhlErrorTypes dspnt3d_W( void )
                              &missing_x,
                              &has_missing_x,
                              NULL,
-                             2);
+                             DONT_CARE);
   y = (double*)NclGetArgValue(
                              1,
                              8,
@@ -2330,7 +2330,7 @@ NhlErrorTypes dspnt3d_W( void )
                              &missing_y,
                              &has_missing_y,
                              NULL,
-                             2);
+                             DONT_CARE);
   z = (double*)NclGetArgValue(
                              2,
                              8,
@@ -2339,7 +2339,7 @@ NhlErrorTypes dspnt3d_W( void )
                              &missing_z,
                              &has_missing_z,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   u = (double*)NclGetArgValue(
                              3,
@@ -2349,7 +2349,7 @@ NhlErrorTypes dspnt3d_W( void )
                              &missing_u,
                              &has_missing_u,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   xo = (double*)NclGetArgValue(
                              4,
@@ -2359,7 +2359,7 @@ NhlErrorTypes dspnt3d_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              NULL,
-                             2);
+                             DONT_CARE);
   yo = (double*)NclGetArgValue(
                              5,
                              8,
@@ -2368,7 +2368,7 @@ NhlErrorTypes dspnt3d_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              NULL,
-                             2);
+                             DONT_CARE);
   zo = (double*)NclGetArgValue(
                              6,
                              8,
@@ -2377,7 +2377,7 @@ NhlErrorTypes dspnt3d_W( void )
                              &missing_zo,
                              &has_missing_zo,
                              NULL,
-                             2);
+                             DONT_CARE);
 
   uo = (double*)NclGetArgValue(
                              7,
@@ -2387,7 +2387,7 @@ NhlErrorTypes dspnt3d_W( void )
                              NULL,
                              NULL,
                              NULL,
-                             2);
+                             DONT_CARE);
   npts  = dsizes_x[0];
   nptso = dsizes_xo[0];
 
@@ -2490,7 +2490,7 @@ NhlErrorTypes dspnt3_W( void )
                             &missing_x,
                             &has_missing_x,
                             &type_x,
-                            2);
+                            DONT_CARE);
 
   y = (void*)NclGetArgValue(
                             1,
@@ -2500,7 +2500,7 @@ NhlErrorTypes dspnt3_W( void )
                             &missing_y,
                             &has_missing_y,
                             &type_y,
-                            2);
+                            DONT_CARE);
 
   z = (void*)NclGetArgValue(
                             2,
@@ -2510,7 +2510,7 @@ NhlErrorTypes dspnt3_W( void )
                             &missing_z,
                             &has_missing_z,
                             &type_z,
-                            2);
+                            DONT_CARE);
   
   u = (void*)NclGetArgValue(
                             3,
@@ -2520,7 +2520,7 @@ NhlErrorTypes dspnt3_W( void )
                             &missing_u,
                             &has_missing_u,
                             &type_u,
-                            2);
+                            DONT_CARE);
   
   xo = (void*)NclGetArgValue(
                              4,
@@ -2530,7 +2530,7 @@ NhlErrorTypes dspnt3_W( void )
                              &missing_xo,
                              &has_missing_xo,
                              &type_xo,
-                             2);
+                             DONT_CARE);
   yo = (void*)NclGetArgValue(
                              5,
                              7,
@@ -2539,7 +2539,7 @@ NhlErrorTypes dspnt3_W( void )
                              &missing_yo,
                              &has_missing_yo,
                              &type_yo,
-                             2);
+                             DONT_CARE);
 
   zo = (void*)NclGetArgValue(
                              6,
@@ -2549,7 +2549,7 @@ NhlErrorTypes dspnt3_W( void )
                              &missing_zo,
                              &has_missing_zo,
                              &type_zo,
-                             2);
+                             DONT_CARE);
   npts  = dsizes_x[0];
   nptso = dsizes_xo[0];
 

@@ -40,7 +40,7 @@ NhlErrorTypes fluxEddy_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   y = (void*)NclGetArgValue(
           1,
@@ -50,7 +50,7 @@ NhlErrorTypes fluxEddy_W( void )
           &missing_y,
           &has_missing_y,
           &type_y,
-          2);
+          DONT_CARE);
 /*
  * x and y must have the same dimensions.
  */

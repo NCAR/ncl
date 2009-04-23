@@ -55,7 +55,7 @@ NhlErrorTypes hyi2hyo_W( void )
           NULL,
           NULL,
           &type_p0,
-          2);
+          DONT_CARE);
 
   hyai = (void*)NclGetArgValue(
           1,
@@ -65,7 +65,7 @@ NhlErrorTypes hyi2hyo_W( void )
           NULL,
           NULL,
           &type_hyai,
-          2);
+          DONT_CARE);
 
   hybi = (void*)NclGetArgValue(
           2,
@@ -75,7 +75,7 @@ NhlErrorTypes hyi2hyo_W( void )
           NULL,
           NULL,
           &type_hybi,
-          2);
+          DONT_CARE);
 
   ps = (void*)NclGetArgValue(
           3,
@@ -85,7 +85,7 @@ NhlErrorTypes hyi2hyo_W( void )
           NULL,
           NULL,
           &type_ps,
-          2);
+          DONT_CARE);
 
   xi = (void*)NclGetArgValue(
           4,
@@ -95,7 +95,7 @@ NhlErrorTypes hyi2hyo_W( void )
           &missing_xi,
           &has_missing_xi,
           &type_xi,
-          2);
+          DONT_CARE);
 
   hyao = (void*)NclGetArgValue(
           5,
@@ -105,7 +105,7 @@ NhlErrorTypes hyi2hyo_W( void )
           NULL,
           NULL,
           &type_hyao,
-          2);
+          DONT_CARE);
 
   hybo = (void*)NclGetArgValue(
           6,
@@ -115,7 +115,7 @@ NhlErrorTypes hyi2hyo_W( void )
           NULL,
           NULL,
           &type_hybo,
-          2);
+          DONT_CARE);
 
   option = (int*)NclGetArgValue(
           7,
@@ -125,7 +125,7 @@ NhlErrorTypes hyi2hyo_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimensions.

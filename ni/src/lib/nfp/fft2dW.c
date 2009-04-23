@@ -55,7 +55,7 @@ NhlErrorTypes fft2df_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 /* 
  * Allocate space for coercing input array. Since we have to copy
  * the input array to a bigger array (tmp_r), we will go ahead and
@@ -319,7 +319,7 @@ NhlErrorTypes fft2db_W( void )
            NULL,
            NULL,
            &type_coef,
-           2);
+           DONT_CARE);
 /*
  * First dimension must be 2.
  */

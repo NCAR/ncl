@@ -56,7 +56,7 @@ NhlErrorTypes gc_aangle_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           1,
@@ -66,7 +66,7 @@ NhlErrorTypes gc_aangle_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes. The arguments must be arrays with
@@ -222,7 +222,7 @@ NhlErrorTypes gc_qarea_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           1,
@@ -232,7 +232,7 @@ NhlErrorTypes gc_qarea_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes. The arguments must be arrays with
@@ -388,7 +388,7 @@ NhlErrorTypes gc_clkwise_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           1,
@@ -398,7 +398,7 @@ NhlErrorTypes gc_clkwise_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions.
@@ -566,7 +566,7 @@ NhlErrorTypes gc_tarea_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           1,
@@ -576,7 +576,7 @@ NhlErrorTypes gc_tarea_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes. The arguments must be arrays with
@@ -732,7 +732,7 @@ NhlErrorTypes gc_inout_W( void )
           NULL,
           NULL,
           &type_plat,
-          2);
+          DONT_CARE);
 
   plon = (void*)NclGetArgValue(
           1,
@@ -742,7 +742,7 @@ NhlErrorTypes gc_inout_W( void )
           NULL,
           NULL,
           &type_plon,
-          2);
+          DONT_CARE);
   lat = (void*)NclGetArgValue(
           2,
           4,
@@ -751,7 +751,7 @@ NhlErrorTypes gc_inout_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           3,
@@ -761,7 +761,7 @@ NhlErrorTypes gc_inout_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for lat and lon.
@@ -977,7 +977,7 @@ NhlErrorTypes gc_onarc_W( void )
           NULL,
           NULL,
           &type_plat,
-          2);
+          DONT_CARE);
 
   plon = (void*)NclGetArgValue(
           1,
@@ -987,7 +987,7 @@ NhlErrorTypes gc_onarc_W( void )
           NULL,
           NULL,
           &type_plon,
-          2);
+          DONT_CARE);
   lat = (void*)NclGetArgValue(
           2,
           4,
@@ -996,7 +996,7 @@ NhlErrorTypes gc_onarc_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           3,
@@ -1006,7 +1006,7 @@ NhlErrorTypes gc_onarc_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes. The lat and lon arguments must be
@@ -1197,7 +1197,7 @@ NhlErrorTypes gc_pnt2gc_W( void )
           NULL,
           NULL,
           &type_plat,
-          2);
+          DONT_CARE);
 
   plon = (void*)NclGetArgValue(
           1,
@@ -1207,7 +1207,7 @@ NhlErrorTypes gc_pnt2gc_W( void )
           NULL,
           NULL,
           &type_plon,
-          2);
+          DONT_CARE);
   lat = (void*)NclGetArgValue(
           2,
           4,
@@ -1216,7 +1216,7 @@ NhlErrorTypes gc_pnt2gc_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           3,
@@ -1226,7 +1226,7 @@ NhlErrorTypes gc_pnt2gc_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes. The lat and lon arguments must be
@@ -1428,7 +1428,7 @@ NhlErrorTypes gc_dangle_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           1,
@@ -1438,7 +1438,7 @@ NhlErrorTypes gc_dangle_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
 /*
  * Check dimension sizes. The arguments must be arrays with

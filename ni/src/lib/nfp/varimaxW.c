@@ -376,7 +376,7 @@ NhlErrorTypes eofunc_varimax_W( void )
            &missing_evec,
            &has_missing_evec,
            &type_evec,
-           2);
+           DONT_CARE);
 
   nfac = dsizes_evec[0];
 
@@ -392,7 +392,7 @@ NhlErrorTypes eofunc_varimax_W( void )
            NULL,
            NULL,
            &type_opt,
-           2);
+           DONT_CARE);
 
   if(type_opt != NCL_int && type_opt != NCL_logical) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc_varimax: 'opt' must be an integer or a logical scalar");

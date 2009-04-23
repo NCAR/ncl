@@ -58,7 +58,7 @@ NhlErrorTypes specx_anal_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   iopt = (int*)NclGetArgValue(
           1,
@@ -68,7 +68,7 @@ NhlErrorTypes specx_anal_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
   
   jave = (int*)NclGetArgValue(
           2,
@@ -78,7 +78,7 @@ NhlErrorTypes specx_anal_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 
   pct = (void*)NclGetArgValue(
@@ -89,7 +89,7 @@ NhlErrorTypes specx_anal_W( void )
           NULL,
           NULL,
           &type_pct,
-          2);
+          DONT_CARE);
 /*
  * Check input.
  */
@@ -496,7 +496,7 @@ NhlErrorTypes specxy_anal_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   y = (void*)NclGetArgValue(
           1,
@@ -506,7 +506,7 @@ NhlErrorTypes specxy_anal_W( void )
           &missing_y,
           &has_missing_y,
           &type_y,
-          2);
+          DONT_CARE);
 
   iopt = (int*)NclGetArgValue(
           2,
@@ -516,7 +516,7 @@ NhlErrorTypes specxy_anal_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   jave = (int*)NclGetArgValue(
           3,
@@ -526,7 +526,7 @@ NhlErrorTypes specxy_anal_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   pct = (void*)NclGetArgValue(
           4,
@@ -536,7 +536,7 @@ NhlErrorTypes specxy_anal_W( void )
           NULL,
           NULL,
           &type_pct,
-          2);
+          DONT_CARE);
 /*
  * Check input.
  */

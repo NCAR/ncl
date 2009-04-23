@@ -41,7 +41,7 @@ NhlErrorTypes cdfbin_p_W( void ) {
                 NULL,
                 NULL,
                 &type_s,
-                2);
+                DONT_CARE);
 
         xn = (void*) NclGetArgValue(
                 1,
@@ -51,7 +51,7 @@ NhlErrorTypes cdfbin_p_W( void ) {
                 NULL,
                 NULL,
                 &type_xn,
-                2);
+                DONT_CARE);
 
         pr = (void*) NclGetArgValue(
                 2,
@@ -61,7 +61,7 @@ NhlErrorTypes cdfbin_p_W( void ) {
                 NULL,
                 NULL,
                 &type_pr,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -177,7 +177,7 @@ NhlErrorTypes cdfbin_s_W( void ) {
                 NULL,
                 NULL,
                 &type_p,
-                2);
+                DONT_CARE);
 
         xn = (void*) NclGetArgValue(
                 1,
@@ -187,7 +187,7 @@ NhlErrorTypes cdfbin_s_W( void ) {
                 NULL,
                 NULL,
                 &type_xn,
-                2);
+                DONT_CARE);
 
         pr = (void*) NclGetArgValue(
                 2,
@@ -197,7 +197,7 @@ NhlErrorTypes cdfbin_s_W( void ) {
                 NULL,
                 NULL,
                 &type_pr,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -314,7 +314,7 @@ NhlErrorTypes cdfbin_xn_W( void ) {
                 NULL,
                 NULL,
                 &type_p,
-                2);
+                DONT_CARE);
 
         s = (void*) NclGetArgValue(
                 1,
@@ -324,7 +324,7 @@ NhlErrorTypes cdfbin_xn_W( void ) {
                 NULL,
                 NULL,
                 &type_s,
-                2);
+                DONT_CARE);
 
         pr = (void*) NclGetArgValue(
                 2,
@@ -334,7 +334,7 @@ NhlErrorTypes cdfbin_xn_W( void ) {
                 NULL,
                 NULL,
                 &type_pr,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -451,7 +451,7 @@ NhlErrorTypes cdfbin_pr_W( void ) {
                 NULL,
                 NULL,
                 &type_p,
-                2);
+                DONT_CARE);
 
         s = (void*) NclGetArgValue(
                 1,
@@ -461,7 +461,7 @@ NhlErrorTypes cdfbin_pr_W( void ) {
                 NULL,
                 NULL,
                 &type_s,
-                2);
+                DONT_CARE);
 
         xn = (void*) NclGetArgValue(
                 2,
@@ -471,7 +471,7 @@ NhlErrorTypes cdfbin_pr_W( void ) {
                 NULL,
                 NULL,
                 &type_xn,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -588,7 +588,7 @@ NhlErrorTypes cdfgam_p_W( void ) {
                 NULL,
                 NULL,
                 &type_x,
-                2);
+                DONT_CARE);
 
         shape = (void*) NclGetArgValue(
                 1,
@@ -598,7 +598,7 @@ NhlErrorTypes cdfgam_p_W( void ) {
                 NULL,
                 NULL,
                 &type_shape,
-                2);
+                DONT_CARE);
 
         scale = (void*) NclGetArgValue(
                 2,
@@ -608,7 +608,7 @@ NhlErrorTypes cdfgam_p_W( void ) {
                 NULL,
                 NULL,
                 &type_scale,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -725,7 +725,7 @@ NhlErrorTypes cdfgam_x_W( void ) {
                 NULL,
                 NULL,
                 &type_p,
-                2);
+                DONT_CARE);
 
         shape = (void*) NclGetArgValue(
                 1,
@@ -735,7 +735,7 @@ NhlErrorTypes cdfgam_x_W( void ) {
                 NULL,
                 NULL,
                 &type_shape,
-                2);
+                DONT_CARE);
 
         scale = (void*) NclGetArgValue(
                 2,
@@ -745,7 +745,7 @@ NhlErrorTypes cdfgam_x_W( void ) {
                 NULL,
                 NULL,
                 &type_scale,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -862,7 +862,7 @@ NhlErrorTypes cdfnor_p_W( void ) {
                 NULL,
                 NULL,
                 &type_x,
-                2);
+                DONT_CARE);
 
         mean = (void*) NclGetArgValue(
                 1,
@@ -872,7 +872,7 @@ NhlErrorTypes cdfnor_p_W( void ) {
                 NULL,
                 NULL,
                 &type_mean,
-                2);
+                DONT_CARE);
 
         sd = (void*) NclGetArgValue(
                 2,
@@ -882,7 +882,7 @@ NhlErrorTypes cdfnor_p_W( void ) {
                 NULL,
                 NULL,
                 &type_sd,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -999,7 +999,7 @@ NhlErrorTypes cdfnor_x_W( void ) {
                 NULL,
                 NULL,
                 &type_p,
-                2);
+                DONT_CARE);
 
         mean = (void*) NclGetArgValue(
                 1,
@@ -1009,7 +1009,7 @@ NhlErrorTypes cdfnor_x_W( void ) {
                 NULL,
                 NULL,
                 &type_mean,
-                2);
+                DONT_CARE);
 
         sd = (void*) NclGetArgValue(
                 2,
@@ -1019,7 +1019,7 @@ NhlErrorTypes cdfnor_x_W( void ) {
                 NULL,
                 NULL,
                 &type_sd,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -1134,7 +1134,7 @@ NhlErrorTypes cdfchi_p_W( void ) {
                 NULL,
                 NULL,
                 &type_x,
-                2);
+                DONT_CARE);
 
         df = (void*) NclGetArgValue(
                 1,
@@ -1144,7 +1144,7 @@ NhlErrorTypes cdfchi_p_W( void ) {
                 NULL,
                 NULL,
                 &type_df,
-                2);
+                DONT_CARE);
 
 
         /*
@@ -1261,7 +1261,7 @@ NhlErrorTypes cdft_t_W( void )
              NULL,
              NULL,
              &type_p,
-             2);
+             DONT_CARE);
 
   df = (void*) NclGetArgValue(
              1,
@@ -1271,7 +1271,7 @@ NhlErrorTypes cdft_t_W( void )
              NULL,
              NULL,
              &type_df,
-             2);
+             DONT_CARE);
 
 /*
  * Make sure all of the input arguments are of equal dimensions.
@@ -1418,7 +1418,7 @@ NhlErrorTypes cdft_p_W( void )
              NULL,
              NULL,
              &type_t,
-             2);
+             DONT_CARE);
 
   df = (void*) NclGetArgValue(
              1,
@@ -1428,7 +1428,7 @@ NhlErrorTypes cdft_p_W( void )
              NULL,
              NULL,
              &type_df,
-             2);
+             DONT_CARE);
 
 /*
  * Make sure all of the input arguments are of equal dimensions.

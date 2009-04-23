@@ -51,7 +51,7 @@ NhlErrorTypes mixhum_ptrh_W( void )
           &missing_p,
           &has_missing_p,
           &type_p,
-          2);
+          DONT_CARE);
 
   tk = (void*)NclGetArgValue(
           1,
@@ -61,7 +61,7 @@ NhlErrorTypes mixhum_ptrh_W( void )
           &missing_tk,
           &has_missing_tk,
           &type_tk,
-          2);
+          DONT_CARE);
 
   rh = (void*)NclGetArgValue(
           2,
@@ -71,7 +71,7 @@ NhlErrorTypes mixhum_ptrh_W( void )
           &missing_rh,
           &has_missing_rh,
           &type_rh,
-          2);
+          DONT_CARE);
 
   iswit = (int*)NclGetArgValue(
           3,
@@ -81,7 +81,7 @@ NhlErrorTypes mixhum_ptrh_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * All dimensions of all input arguments must be the same.
  */
@@ -283,7 +283,7 @@ NhlErrorTypes dewtemp_trh_W( void )
           &missing_tk,
           &has_missing_tk,
           &type_tk,
-          2);
+          DONT_CARE);
 
   rh = (void*)NclGetArgValue(
           1,
@@ -293,7 +293,7 @@ NhlErrorTypes dewtemp_trh_W( void )
           &missing_rh,
           &has_missing_rh,
           &type_rh,
-          2);
+          DONT_CARE);
 
 /*
  * Dimensions of input arguments must be the same.
@@ -476,7 +476,7 @@ NhlErrorTypes lclvl_W( void )
           &missing_p,
           &has_missing_p,
           &type_p,
-          2);
+          DONT_CARE);
 
   tk = (void*)NclGetArgValue(
           1,
@@ -486,7 +486,7 @@ NhlErrorTypes lclvl_W( void )
           &missing_tk,
           &has_missing_tk,
           &type_tk,
-          2);
+          DONT_CARE);
 
   tdk = (void*)NclGetArgValue(
           2,
@@ -496,7 +496,7 @@ NhlErrorTypes lclvl_W( void )
           &missing_tdk,
           &has_missing_tdk,
           &type_tdk,
-          2);
+          DONT_CARE);
 
 /*
  * All dimensions of all input arguments must be the same.
@@ -701,7 +701,7 @@ NhlErrorTypes mixhum_ptd_W( void )
           &missing_p,
           &has_missing_p,
           &type_p,
-          2);
+          DONT_CARE);
 
   tdk = (void*)NclGetArgValue(
           1,
@@ -711,7 +711,7 @@ NhlErrorTypes mixhum_ptd_W( void )
           &missing_tdk,
           &has_missing_tdk,
           &type_tdk,
-          2);
+          DONT_CARE);
 
   iswit = (int*)NclGetArgValue(
           2,
@@ -721,7 +721,7 @@ NhlErrorTypes mixhum_ptd_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * tdk and p must be same dimensioniality.

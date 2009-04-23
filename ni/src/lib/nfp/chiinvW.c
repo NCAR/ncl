@@ -42,7 +42,7 @@ NhlErrorTypes chiinv_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 /*
  * Retrieve argument #2
  */
@@ -54,7 +54,7 @@ NhlErrorTypes chiinv_W( void )
           NULL,
           NULL,
           &type_df,
-          2);
+          DONT_CARE);
 /*
  * Check number of dimensions and/or dimension sizes for arguments #1
  * and #2 .

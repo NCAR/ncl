@@ -45,7 +45,7 @@ NhlErrorTypes filwgts_lanczos_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   if(*nwgt < 3) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: nwgt must be >= 3");
@@ -67,7 +67,7 @@ NhlErrorTypes filwgts_lanczos_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   if(*ihp < 0 || *ihp > 2) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"filwgts_lanczos: ihp must be 0 <= ihp <= 2");
@@ -82,7 +82,7 @@ NhlErrorTypes filwgts_lanczos_W( void )
           NULL,
           NULL,
           &type_fca,
-          2);
+          DONT_CARE);
 
   fcb = (void*)NclGetArgValue(
           3,
@@ -92,7 +92,7 @@ NhlErrorTypes filwgts_lanczos_W( void )
           NULL,
           NULL,
           &type_fcb,
-          2);
+          DONT_CARE);
 
   nsigma = (void*)NclGetArgValue(
           4,
@@ -102,7 +102,7 @@ NhlErrorTypes filwgts_lanczos_W( void )
           NULL,
           NULL,
           &type_nsigma,
-          2);
+          DONT_CARE);
 
 /*
  * Coerce fca, fcb, and nsigma to double if necessary.
@@ -321,7 +321,7 @@ NhlErrorTypes filwgts_normal_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   sigma = (void*)NclGetArgValue(
           1,
@@ -331,7 +331,7 @@ NhlErrorTypes filwgts_normal_W( void )
           NULL,
           NULL,
           &type_sigma,
-          2);
+          DONT_CARE);
 
   option = (int*)NclGetArgValue(
           2,
@@ -341,7 +341,7 @@ NhlErrorTypes filwgts_normal_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Coerce sigma to double if necessary.

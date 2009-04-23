@@ -53,7 +53,7 @@ NhlErrorTypes regcoef_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            4,
@@ -62,7 +62,7 @@ NhlErrorTypes regcoef_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * Get output vars.
  */
@@ -435,7 +435,7 @@ NhlErrorTypes regCoef_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            2,
@@ -444,7 +444,7 @@ NhlErrorTypes regCoef_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * The x and y coming in can be any dimension, but there are certain rules
  * about having the same dimensions.
@@ -946,7 +946,7 @@ NhlErrorTypes regCoef_shields_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            2,
@@ -955,7 +955,7 @@ NhlErrorTypes regCoef_shields_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * The x and y coming in can be any dimension, but there are certain rules
  * about having the same dimensions.
@@ -1343,7 +1343,7 @@ NhlErrorTypes regline_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            2,
@@ -1352,7 +1352,7 @@ NhlErrorTypes regline_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * The x and y arrays coming in must have the same length.
  */
@@ -1824,7 +1824,7 @@ NhlErrorTypes reg_multlin_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 
   x = (void*)NclGetArgValue(
            1,
@@ -1834,7 +1834,7 @@ NhlErrorTypes reg_multlin_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   opt = (logical *)NclGetArgValue(
             2,
@@ -1844,7 +1844,7 @@ NhlErrorTypes reg_multlin_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The y and x coming in must be 1D and 2D respectively. The rightmost
  * dimension of x must be the same as y's dimension.

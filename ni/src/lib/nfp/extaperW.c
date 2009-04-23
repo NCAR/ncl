@@ -36,7 +36,7 @@ NhlErrorTypes exp_tapershC_W( void )
           NULL,
           NULL,
           &type_ab,
-          2);
+          DONT_CARE);
 /*
  * The grid coming in must be at least 3-dimensional.
  */
@@ -60,7 +60,7 @@ NhlErrorTypes exp_tapershC_W( void )
        NULL,
        NULL,
        &type_n0,
-       2);
+       DONT_CARE);
 
   rate = (int*)NclGetArgValue(
        2,
@@ -70,7 +70,7 @@ NhlErrorTypes exp_tapershC_W( void )
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
   
 /*
  * Compute the total number of elements in our array.
@@ -178,7 +178,7 @@ NhlErrorTypes exp_tapersh_W( void )
           NULL,
           NULL,
           &type_a,
-          2);
+          DONT_CARE);
 
   b = (void*)NclGetArgValue(
           1,
@@ -188,7 +188,7 @@ NhlErrorTypes exp_tapersh_W( void )
           NULL,
           NULL,
           &type_b,
-          2);
+          DONT_CARE);
 /*
  * The grids coming in must be at least 2-dimensional.
  */
@@ -214,7 +214,7 @@ NhlErrorTypes exp_tapersh_W( void )
        NULL,
        NULL,
        &type_n0,
-       2);
+       DONT_CARE);
 
   rate = (int*)NclGetArgValue(
        2,
@@ -224,7 +224,7 @@ NhlErrorTypes exp_tapersh_W( void )
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
   
 /*
  * Compute the total number of elements in our array.
@@ -349,7 +349,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Get n0 and rate.
  */
@@ -361,7 +361,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
        NULL,
        NULL,
        &type_n0,
-       2);
+       DONT_CARE);
 
   rate = (int*)NclGetArgValue(
        2,
@@ -371,7 +371,7 @@ NhlErrorTypes exp_tapersh_wgts_W( void )
        NULL,
        NULL,
        NULL,
-       2);
+       DONT_CARE);
 
 /*
  * Allocate space for output array.

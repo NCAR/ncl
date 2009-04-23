@@ -56,7 +56,7 @@ NhlErrorTypes ezfftf_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Calculate number of leftmost elements.
  */
@@ -337,7 +337,7 @@ NhlErrorTypes ezfftb_W( void )
            &missing_cf,
            &has_missing_cf,
            &type_cf,
-           2);
+           DONT_CARE);
   xbar = (void*)NclGetArgValue(
            1,
            2,
@@ -346,7 +346,7 @@ NhlErrorTypes ezfftb_W( void )
            NULL,
            NULL,
            &type_xbar,
-           2);
+           DONT_CARE);
 /*
  * Calculate number of leftmost elements.
  */

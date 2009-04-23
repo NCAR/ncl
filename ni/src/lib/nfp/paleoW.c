@@ -32,7 +32,7 @@ NhlErrorTypes paleo_outline_W( void )
           NULL,
           NULL,
           &type_oro,
-          2);
+          DONT_CARE);
 
   lat = (void*)NclGetArgValue(
           1,
@@ -42,7 +42,7 @@ NhlErrorTypes paleo_outline_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
 
   lon = (void*)NclGetArgValue(
           2,
@@ -52,7 +52,7 @@ NhlErrorTypes paleo_outline_W( void )
           NULL,
           NULL,
           &type_lon,
-          2);
+          DONT_CARE);
 
   landmask = (float*)NclGetArgValue(
           3,
@@ -62,7 +62,7 @@ NhlErrorTypes paleo_outline_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   name = (string*)NclGetArgValue(
           4,
@@ -72,7 +72,7 @@ NhlErrorTypes paleo_outline_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   cname = NrmQuarkToString(*name);
 

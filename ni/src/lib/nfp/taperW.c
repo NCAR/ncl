@@ -36,7 +36,7 @@ NhlErrorTypes taper_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   p = (void*)NclGetArgValue(
           1,
@@ -46,7 +46,7 @@ NhlErrorTypes taper_W( void )
           NULL,
           NULL,
           &type_p,
-          2);
+          DONT_CARE);
 
   option = (int*)NclGetArgValue(
           2,
@@ -56,7 +56,7 @@ NhlErrorTypes taper_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
   
 /*
  * Compute the total size of the output array.

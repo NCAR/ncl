@@ -53,7 +53,7 @@ NhlErrorTypes sindex_yrmo_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            3,
@@ -62,7 +62,7 @@ NhlErrorTypes sindex_yrmo_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
   iprnt = (int*)NclGetArgValue(
            2,
            3,
@@ -71,7 +71,7 @@ NhlErrorTypes sindex_yrmo_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * The grids coming in must be the same size.
  */
@@ -339,7 +339,7 @@ NhlErrorTypes snindex_yrmo_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            4,
@@ -348,7 +348,7 @@ NhlErrorTypes snindex_yrmo_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
   iprnt = (int*)NclGetArgValue(
            2,
            4,
@@ -357,7 +357,7 @@ NhlErrorTypes snindex_yrmo_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
   soi_noise = (void*)NclGetArgValue(
            3,
            4,

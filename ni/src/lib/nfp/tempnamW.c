@@ -32,7 +32,7 @@ NhlErrorTypes tempnam_W(void)
         NULL,
         NULL,
         NULL,
-        2);
+        DONT_CARE);
 
     /*
      * Retrieve prefix name.
@@ -45,7 +45,7 @@ NhlErrorTypes tempnam_W(void)
         NULL,
         NULL,
         NULL,
-        2);
+        DONT_CARE);
 
     /*
      * Convert to character strings.
@@ -93,7 +93,7 @@ NhlErrorTypes unique_string_W(void)
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Convert prefix to character string.
  */

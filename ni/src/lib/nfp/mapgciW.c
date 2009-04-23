@@ -93,7 +93,7 @@ NhlErrorTypes gc_latlon_W( void )
           NULL,
           NULL,
           &type_lat1,
-          2);
+          DONT_CARE);
 
   lon1 = (void*)NclGetArgValue(
           1,
@@ -103,7 +103,7 @@ NhlErrorTypes gc_latlon_W( void )
           NULL,
           NULL,
           &type_lon1,
-          2);
+          DONT_CARE);
 
   lat2 = (void*)NclGetArgValue(
           2,
@@ -113,7 +113,7 @@ NhlErrorTypes gc_latlon_W( void )
           NULL,
           NULL,
           &type_lat2,
-          2);
+          DONT_CARE);
 
   lon2 = (void*)NclGetArgValue(
           3,
@@ -123,7 +123,7 @@ NhlErrorTypes gc_latlon_W( void )
           NULL,
           NULL,
           &type_lon2,
-          2);
+          DONT_CARE);
 
   nlatlon = (int*)NclGetArgValue(
           4,
@@ -133,7 +133,7 @@ NhlErrorTypes gc_latlon_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   code = (int*)NclGetArgValue(
           5,
@@ -143,7 +143,7 @@ NhlErrorTypes gc_latlon_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   icode = abs(*code);
 

@@ -431,7 +431,7 @@ NhlErrorTypes cssetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for argument #1.
@@ -478,7 +478,7 @@ OK_NAME: pvalue = (void *) NclGetArgValue(
            NULL,
            NULL,
            &type_pvalue,
-           2);
+           DONT_CARE);
 
 /*
  *  Process the parameter if it has an integer value.
@@ -563,7 +563,7 @@ NhlErrorTypes csgetp_W(void)
           NULL,
           NULL,
           &type_pname,
-          2);
+          DONT_CARE);
 
 /*
  * Check number of dimensions for argument #1.

@@ -48,7 +48,7 @@ NhlErrorTypes angmom_atm_W( void )
           &missing_u,
           &has_missing_u,
           &type_u,
-          2);
+          DONT_CARE);
   dp = (void*)NclGetArgValue(
           1,
           4,
@@ -57,7 +57,7 @@ NhlErrorTypes angmom_atm_W( void )
           NULL,
           NULL,
           &type_dp,
-          2);
+          DONT_CARE);
   lat = (void*)NclGetArgValue(
           2,
           4,
@@ -66,7 +66,7 @@ NhlErrorTypes angmom_atm_W( void )
           NULL,
           NULL,
           &type_lat,
-          2);
+          DONT_CARE);
   wgt = (void*)NclGetArgValue(
           3,
           4,
@@ -75,7 +75,7 @@ NhlErrorTypes angmom_atm_W( void )
           NULL,
           NULL,
           &type_wgt,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions.
  */

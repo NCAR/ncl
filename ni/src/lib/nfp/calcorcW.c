@@ -55,7 +55,7 @@ NhlErrorTypes escorc_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            2,
@@ -64,7 +64,7 @@ NhlErrorTypes escorc_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * The last dimension of x and y both must be the same.
  */
@@ -410,7 +410,7 @@ NhlErrorTypes escovc_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
   y = (void*)NclGetArgValue(
            1,
            2,
@@ -419,7 +419,7 @@ NhlErrorTypes escovc_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 /*
  * The last dimension of x and y both must be the same.
  */

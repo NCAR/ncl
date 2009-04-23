@@ -60,7 +60,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           1);
 /*
  * Check the input type.
  */
@@ -97,7 +97,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 2
  */
@@ -109,7 +109,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 3
  */
@@ -121,7 +121,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 4
  */
@@ -133,7 +133,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
            NULL,
            NULL,
            &type_epsx,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 4
  */
@@ -145,7 +145,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
            NULL,
            NULL,
            &type_relc,
-           2);
+           DONT_CARE);
 /*
  * Get argument # 6
  */
@@ -157,7 +157,7 @@ NhlErrorTypes poisson_grid_fill_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Calculate size of leftmost dimensions.

@@ -146,7 +146,7 @@ NhlErrorTypes eof_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -158,7 +158,7 @@ NhlErrorTypes eof_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * Get option.
  */
@@ -170,7 +170,7 @@ NhlErrorTypes eof_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -1404,7 +1404,7 @@ NhlErrorTypes eof_ts_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   evec = (void*)NclGetArgValue(
            1,
@@ -1414,7 +1414,7 @@ NhlErrorTypes eof_ts_W( void )
            &missing_evec,
            &has_missing_evec,
            &type_evec,
-           2);
+           DONT_CARE);
 
   opt = (logical*)NclGetArgValue(
            2,
@@ -1424,7 +1424,7 @@ NhlErrorTypes eof_ts_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -1825,7 +1825,7 @@ NhlErrorTypes eofcov_tr_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -1837,7 +1837,7 @@ NhlErrorTypes eofcov_tr_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * Get option.
  */
@@ -1849,7 +1849,7 @@ NhlErrorTypes eofcov_tr_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -2603,7 +2603,7 @@ NhlErrorTypes eofcov_tr_old_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -2615,7 +2615,7 @@ NhlErrorTypes eofcov_tr_old_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * Get option.
  */
@@ -2627,7 +2627,7 @@ NhlErrorTypes eofcov_tr_old_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -3317,7 +3317,7 @@ NhlErrorTypes eofcor_tr_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -3329,7 +3329,7 @@ NhlErrorTypes eofcor_tr_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * Get option.
  */
@@ -3341,7 +3341,7 @@ NhlErrorTypes eofcor_tr_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -4017,7 +4017,7 @@ NhlErrorTypes eofcov_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -4029,7 +4029,7 @@ NhlErrorTypes eofcov_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -4442,7 +4442,7 @@ NhlErrorTypes eofcor_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -4454,7 +4454,7 @@ NhlErrorTypes eofcor_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -4868,7 +4868,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -4880,7 +4880,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 
   pcmsg = (void *)NclGetArgValue(
             2,
@@ -4890,7 +4890,7 @@ NhlErrorTypes eofcov_pcmsg_W( void )
             NULL,
             NULL,
             &type_pcmsg,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -5387,7 +5387,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 /*
  * Get number of eigenvalues and eigen vectors to be computed.
  */
@@ -5399,7 +5399,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
             NULL,
             NULL,
             NULL,
-            2);
+            DONT_CARE);
 
   pcmsg = (void *)NclGetArgValue(
             2,
@@ -5409,7 +5409,7 @@ NhlErrorTypes eofcor_pcmsg_W( void )
             NULL,
             NULL,
             &type_pcmsg,
-            2);
+            DONT_CARE);
 /*
  * The grid coming in must be at least 2-dimensional.
  */
@@ -5893,7 +5893,7 @@ NhlErrorTypes eofcov_ts_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   evec = (void*)NclGetArgValue(
            1,
@@ -5903,7 +5903,7 @@ NhlErrorTypes eofcov_ts_W( void )
            &missing_evec,
            &has_missing_evec,
            &type_evec,
-           2);
+           DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -6187,7 +6187,7 @@ NhlErrorTypes eofcor_ts_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   evec = (void*)NclGetArgValue(
            1,
@@ -6197,7 +6197,7 @@ NhlErrorTypes eofcor_ts_W( void )
            &missing_evec,
            &has_missing_evec,
            &type_evec,
-           2);
+           DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -6473,7 +6473,7 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   evec = (void*)NclGetArgValue(
            1,
@@ -6483,7 +6483,7 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
            &missing_evec,
            &has_missing_evec,
            &type_evec,
-           2);
+           DONT_CARE);
   pcmsg = (void *)NclGetArgValue(
             2,
             3, 
@@ -6492,7 +6492,7 @@ NhlErrorTypes eofcov_ts_pcmsg_W( void )
             NULL,
             NULL,
             &type_pcmsg,
-            2);
+            DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -6673,7 +6673,7 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
   evec = (void*)NclGetArgValue(
            1,
@@ -6683,7 +6683,7 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
            &missing_evec,
            &has_missing_evec,
            &type_evec,
-           2);
+           DONT_CARE);
   pcmsg = (void *)NclGetArgValue(
             2,
             3, 
@@ -6692,7 +6692,7 @@ NhlErrorTypes eofcor_ts_pcmsg_W( void )
             NULL,
             NULL,
             &type_pcmsg,
-            2);
+            DONT_CARE);
 /*
  * Check the input grids.  They both must be at least two dimensional and
  * have the same number of dimensions.  All but the last dimension of the
@@ -6870,7 +6870,7 @@ NhlErrorTypes eof2data_W( void )
            &missing_evec,
            &has_missing_evec,
            &type_evec,
-           2);
+           DONT_CARE);
   evects = (void*)NclGetArgValue(
            1,
            2,
@@ -6879,7 +6879,7 @@ NhlErrorTypes eof2data_W( void )
            NULL,
            NULL,
            &type_evects,
-           2);
+           DONT_CARE);
 /*
  * Check the input grids. The first one can be any dimension, but it must
  * be at least 2 dimensions.  The first dimension of both input arrays

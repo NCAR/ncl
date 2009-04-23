@@ -69,7 +69,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           &type_y,
-          2);
+          DONT_CARE);
 
   mother = (int*)NclGetArgValue(
           1,
@@ -79,7 +79,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   dt = (void*)NclGetArgValue(
           2,
@@ -89,7 +89,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           &type_dt,
-          2);
+          DONT_CARE);
 
   param = (void*)NclGetArgValue(
           3,
@@ -99,7 +99,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           &type_param,
-          2);
+          DONT_CARE);
 
   s0 = (void*)NclGetArgValue(
           4,
@@ -109,7 +109,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           &type_s0,
-          2);
+          DONT_CARE);
 
   dj = (void*)NclGetArgValue(
           5,
@@ -119,7 +119,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           &type_dj,
-          2);
+          DONT_CARE);
 
   jtot = (int*)NclGetArgValue(
           6,
@@ -129,7 +129,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   npad = (int*)NclGetArgValue(
           7,
@@ -139,7 +139,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   noise = (int*)NclGetArgValue(
           8,
@@ -149,7 +149,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   isigtest = (int*)NclGetArgValue(
           9,
@@ -159,7 +159,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   siglvl = (void*)NclGetArgValue(
           10,
@@ -169,7 +169,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           &type_siglvl,
-          2);
+          DONT_CARE);
 
 /*
  * nadof is ignored for now.  We'll create a dummy nadof variable and pass
@@ -183,7 +183,7 @@ NhlErrorTypes wavelet_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * We haven't implemented isigtest = 2, so default to 0 if it isn't.
  */
@@ -737,7 +737,7 @@ NhlErrorTypes wavelet_default_W( void )
           NULL,
           NULL,
           &type_y,
-          2);
+          DONT_CARE);
 
   mother = (int*)NclGetArgValue(
           1,
@@ -747,7 +747,7 @@ NhlErrorTypes wavelet_default_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Get size of input array.

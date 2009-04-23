@@ -40,7 +40,7 @@ NhlErrorTypes greg2jul_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   month = (int*)NclGetArgValue(
           1,
@@ -50,7 +50,7 @@ NhlErrorTypes greg2jul_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   day = (int*)NclGetArgValue(
           2,
@@ -60,7 +60,7 @@ NhlErrorTypes greg2jul_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   hour = (int*)NclGetArgValue(
           3,
@@ -70,7 +70,7 @@ NhlErrorTypes greg2jul_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check dimensions and calculate total size of arrays.
  */

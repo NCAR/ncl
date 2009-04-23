@@ -80,7 +80,7 @@ NhlErrorTypes conform_W( void )
            NULL,
            NULL,
            &type_x,
-           2);
+           DONT_CARE);
 
   data = _NclGetArg(1,3,DONT_CARE);
   switch(data.kind) {
@@ -100,7 +100,7 @@ NhlErrorTypes conform_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Check if we're dealing with the special case of where the second
@@ -304,7 +304,7 @@ NhlErrorTypes conform_dims_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
   data = _NclGetArg(1,3,DONT_CARE);
   switch(data.kind) {
@@ -324,7 +324,7 @@ NhlErrorTypes conform_dims_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * Check if we're dealing with the special case of where the second

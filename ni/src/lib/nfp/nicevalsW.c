@@ -43,7 +43,7 @@ NhlErrorTypes nice_mnmxintvl_W( void )
           &missing_xmin,
           &has_missing_xmin,
           &type_xmin,
-          2);
+          DONT_CARE);
 
   xmax = (void*)NclGetArgValue(
           1,
@@ -53,7 +53,7 @@ NhlErrorTypes nice_mnmxintvl_W( void )
           &missing_xmax,
           &has_missing_xmax,
           &type_xmax,
-          2);
+          DONT_CARE);
 
   max_levels = (int*)NclGetArgValue(
           2,
@@ -63,7 +63,7 @@ NhlErrorTypes nice_mnmxintvl_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   outside = (logical*)NclGetArgValue(
           3,
@@ -73,7 +73,7 @@ NhlErrorTypes nice_mnmxintvl_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 /*
  * Check for missing values.  We also want to create a float and double
  * precision version of the missing value in case we need it for the

@@ -68,7 +68,7 @@ NhlErrorTypes mjo_cross_segment_W( void )
            &missing_x,
            &has_missing_x,
            &type_x,
-           2);
+           DONT_CARE);
 
 /*
  * Coerce missing value to double if necessary.
@@ -92,7 +92,7 @@ NhlErrorTypes mjo_cross_segment_W( void )
            &missing_y,
            &has_missing_y,
            &type_y,
-           2);
+           DONT_CARE);
 
 /*
  * Check dimension sizes.
@@ -119,7 +119,7 @@ NhlErrorTypes mjo_cross_segment_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /*
  * The output type defaults to float, unless this input array is double.
@@ -273,7 +273,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
            NULL,
            NULL,
            &type_stc,
-           2);
+           DONT_CARE);
 
   if(type_stc != NCL_float && type_stc != NCL_double) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"mjo_cross_coh2pha: The input array must be float or double");
@@ -301,7 +301,7 @@ NhlErrorTypes mjo_cross_coh2pha_W( void )
            NULL,
            NULL,
            NULL,
-           2);
+           DONT_CARE);
 
 /* 
  * Allocate space for coercing input array.  If the input array

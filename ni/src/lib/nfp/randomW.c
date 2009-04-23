@@ -25,7 +25,7 @@ NhlErrorTypes random_setallseed_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   seed2 = (int*)NclGetArgValue(
           1,
@@ -35,7 +35,7 @@ NhlErrorTypes random_setallseed_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Call Fortran routine to set the seed.
@@ -76,7 +76,7 @@ NhlErrorTypes random_chi_W( void )
           NULL,
           NULL,
           &type_df,
-          2);
+          DONT_CARE);
 
   N = (int*)NclGetArgValue(
           1,
@@ -86,7 +86,7 @@ NhlErrorTypes random_chi_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Compute the total size of the input array.
@@ -173,7 +173,7 @@ NhlErrorTypes random_gamma_W( void )
           NULL,
           NULL,
           &type_locp,
-          2);
+          DONT_CARE);
 
   shape = (void*)NclGetArgValue(
           1,
@@ -183,7 +183,7 @@ NhlErrorTypes random_gamma_W( void )
           NULL,
           NULL,
           &type_shape,
-          2);
+          DONT_CARE);
 
   N = (int*)NclGetArgValue(
           2,
@@ -193,7 +193,7 @@ NhlErrorTypes random_gamma_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Compute the total size of the input array.
@@ -280,7 +280,7 @@ NhlErrorTypes random_normal_W( void )
           NULL,
           NULL,
           &type_av,
-          2);
+          DONT_CARE);
 
   sd = (void*)NclGetArgValue(
           1,
@@ -290,7 +290,7 @@ NhlErrorTypes random_normal_W( void )
           NULL,
           NULL,
           &type_sd,
-          2);
+          DONT_CARE);
 
   N = (int*)NclGetArgValue(
           2,
@@ -300,7 +300,7 @@ NhlErrorTypes random_normal_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Compute the total size of the input array.
@@ -388,7 +388,7 @@ NhlErrorTypes random_uniform_W( void )
           NULL,
           NULL,
           &type_low,
-          2);
+          DONT_CARE);
 
   high = (void*)NclGetArgValue(
           1,
@@ -398,7 +398,7 @@ NhlErrorTypes random_uniform_W( void )
           NULL,
           NULL,
           &type_high,
-          2);
+          DONT_CARE);
 
   N = (int*)NclGetArgValue(
           2,
@@ -408,7 +408,7 @@ NhlErrorTypes random_uniform_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
 /*
  * Compute the total size of the input array.

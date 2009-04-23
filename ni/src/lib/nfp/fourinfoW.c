@@ -45,7 +45,7 @@ NhlErrorTypes fourier_info_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   nhret = (int*)NclGetArgValue(
           1,
@@ -55,7 +55,7 @@ NhlErrorTypes fourier_info_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   sclphase = (void*)NclGetArgValue(
           2,
@@ -65,7 +65,7 @@ NhlErrorTypes fourier_info_W( void )
           NULL,
           NULL,
           &type_sclphase,
-          2);
+          DONT_CARE);
 
 /*
  * Check input sizes.

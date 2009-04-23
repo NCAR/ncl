@@ -53,7 +53,7 @@ NhlErrorTypes covcorm_W( void )
           &missing_x,
           &has_missing_x,
           &type_x,
-          2);
+          DONT_CARE);
 
   iopt = (int*)NclGetArgValue(
           1,
@@ -63,7 +63,7 @@ NhlErrorTypes covcorm_W( void )
           NULL,
           NULL,
           NULL,
-          2);
+          DONT_CARE);
 
   nvar = dsizes_x[0];
   ntim = dsizes_x[1];
