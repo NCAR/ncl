@@ -169,6 +169,7 @@ BuildSunViewctrans  NO
 BuildPNG            YES
 HDFlib          -lmfhdf -ldf -ljpeg -lz
 PNGlib          -lpng -lz
+CAIROlib        -lcairo
 HDFEOSlib       -lhdfeos -lGctp  
 NetCDFlib       -lnetcdf
 UdUnitslib      -ludunits
@@ -240,6 +241,7 @@ NETCDFLIB       used in raster libs
 NCDFLIBS        netcdf library
 HDFLIB          hdf library
 PNGLIB          png/zlib library
+CAIROLIB        cairo library
 XDRLIB          xdr library
 HDFDEFINES      hdf defines - set in arch files
 GKS_BUFFER_SIZE     GksBufferSize
