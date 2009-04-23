@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.6 2009-04-01 21:19:36 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.7 2009-04-23 21:53:34 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -938,7 +938,7 @@ NhlErrorTypes _Nclstr_is_blank
             {
                 if (strs[i] == missing_strs.stringval)
                 {
-                    tmp_val[i] = 1;
+                    tmp_val[i] = logical_missval;
                 }
                 else
                 {
