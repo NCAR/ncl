@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.154 2009-04-10 21:39:39 brownrig Exp $
+#      $Id: yMakefile,v 1.155 2009-04-23 23:39:12 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-04-10 21:39:39 $
+#	Date:		$Date: 2009-04-23 23:39:12 $
 #
 #	Description:	
 #
@@ -129,14 +129,14 @@ DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS)
 
 #if defined(SUN)
-# EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(SPHERELIB) $(FFTPACK5LIB) -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
-EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(EXTERNALLIBS) -lnsl -lintl -lsocket -ldl -lw
+# EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(SPHERELIB) $(FFTPACK5LIB) -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
+EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS) -lnsl -lintl -lsocket -ldl -lw
 #elif defined(AIX)
-EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(EXTERNALLIBS) -lxlf90 -lxlopt
+EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS) -lxlf90 -lxlopt
 #elif (defined(IRIX) || defined(IRIX64))
-EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(EXTERNALLIBS)
+EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS)
 #else
-EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(EXTERNALLIBS)
+EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(EXTERNALLIBS)
 #endif
 
 SYS_LIBS	=	$(XLIB) $(CTOFLIBS) -lm $(ARCH_LIBS) $(DYNAMIC_LIBS)
@@ -344,7 +344,7 @@ IOOBJS          =       $(IO_OBJS)
 
 LibraryTarget($(MYLIB),$(ALLOBJS))
 LibraryTarget($(MYLIB_API),$(APIOBJS))
-BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(NETCD4LIBS) $(HDFEOSLIB) $(HDFLIB) $(GRIB2LIB) $(GDALLIB) $(PNGLIB) $(UDUNITSLIB) $(V5DLIB) $(CTOFLIBS) -lm -lc)
+BuildSharedLibTarget(libNGncl,$(APIOBJS),1,0,$(NCDFLIBS) $(NETCD4LIBS) $(HDFEOSLIB) $(HDFLIB) $(GRIB2LIB) $(GDALLIB) $(PNGLIB) $(CAIROLIB) $(UDUNITSLIB) $(V5DLIB) $(CTOFLIBS) -lm -lc)
 CProgram($(MYBIN),$(EXEOBJS),$(DEPLIBS))
 InstallTarget(MakeNcl,$(INSTALL_BIN),$(BINPATH))
 BuildIncludes($(INSTALL_HDRS),ncarg/ncl,../..)
