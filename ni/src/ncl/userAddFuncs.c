@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.7 2009-04-23 21:53:34 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.8 2009-04-23 22:51:21 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -895,12 +895,12 @@ NhlErrorTypes _Nclstr_is_blank
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs = 0;
     NclScalar   missing_strs;
+    NclScalar   ret_missing;
     NclBasicDataTypes type_strs;
   
     char *tmp_str;
     int n, i;
     logical *tmp_val;
-    logical logical_missval = ((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval;
     int str_sz = 1;
     
     strs = (string *) NclGetArgValue(
@@ -934,11 +934,12 @@ NhlErrorTypes _Nclstr_is_blank
     {
         if(has_missing_strs)
         {
+            ret_missing.logicalval = ((NclTypeClass) nclTypelogicalClass)->type_class.default_mis.logicalval;
             for(i=0; i<str_sz; i++)
             {
                 if (strs[i] == missing_strs.stringval)
                 {
-                    tmp_val[i] = logical_missval;
+                    tmp_val[i] = ret_missing.logicalval;
                 }
                 else
                 {
@@ -962,7 +963,7 @@ NhlErrorTypes _Nclstr_is_blank
                     }
                 }
             }
-            return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, NULL, NCL_logical, 1);
+            return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, &ret_missing, NCL_logical, 1);
         }
         else
         {
