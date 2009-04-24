@@ -1,7 +1,11 @@
 #
-#	$Id: yMakefile,v 1.5 2002-03-29 16:28:03 haley Exp $
+#	$Id: yMakefile,v 1.6 2009-04-24 01:56:59 haley Exp $
 #
 
 #define IHaveSubdirs
 
+#ifdef BuildCAIRO
+SUBDIRS = ezmap plotchar pwritxnt ranfdata ftfonts
+#else
 SUBDIRS = ezmap plotchar pwritxnt ranfdata
+#endif
