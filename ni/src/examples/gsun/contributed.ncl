@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.217 2009-04-22 16:22:38 shea Exp $
+;      $Id: contributed.ncl,v 1.218 2009-04-24 18:57:21 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -10781,12 +10781,14 @@ end
 ; 
 undef("stat_dispersion")
 function stat_dispersion (x:numeric, opt[1]:logical )
-local statx, work, nwork, x1d, ivalid
+local nx, sFillV, nFill, statx, work, nwork, x1d, ivalid
 begin
-  
+   nx    = product(dimsizes(x))       ; number of elements in x  
+   nFill = 0
    if (isatt(x,"_FillValue")) then  
+       nFill  = num(ismissing(x))
        sFillV = x@_FillValue
-       if (any(ismissing(x))) then
+       if (nFill.gt.0) then
            x1d    = ndtooned(x) 
            ivalid = ind(.not.ismissing(x1d))
            work   = x1d(ivalid)
@@ -10835,6 +10837,8 @@ begin
        statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
    end if
 
+   statx(18) = (100.0*(nx-nFill)/nx)    ; % missing
+
    statx@long_name = "Dispersion Statistics"
    if (isatt(x,"long_name")) then
        statx@long_name = statx@long_name+x@long_name
@@ -10872,6 +10876,7 @@ begin
        print("       Range="+statx(15) ) 
        print("  Dispersion="+statx(16) ) 
        print(" RMS Anomaly="+statx(17) ) 
+       print("   % Missing="+statx(18) ) 
        print(" ")
    end if
 
