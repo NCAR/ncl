@@ -1,5 +1,5 @@
 /*  
- *      $Id: cro.c,v 1.2 2009-04-18 19:19:13 fred Exp $
+ *      $Id: cro.c,v 1.3 2009-04-27 14:35:05 haley Exp $
  */
 /*
  *
@@ -21,9 +21,9 @@
 #include <math.h>
 #include <time.h>
 
-#include <cairo.h>
-#include <cairo-ps.h>
-#include <cairo-ft.h>
+#include <cairo/cairo.h>
+#include <cairo/cairo-ps.h>
+#include <cairo/cairo-ft.h>
 
 #include <math.h>
 #include <stdlib.h>
