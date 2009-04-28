@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.9 2009-04-28 17:26:34 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.10 2009-04-28 19:19:53 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2723,6 +2723,32 @@ NhlErrorTypes _Nclstr_get_dq
     }
 
     new_string[0] = NrmStringToQuark("\"");
+
+    ndim = 1;
+    dimsz[0] = 1;
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 1);
+
+    NclFree(new_string);
+}
+
+NhlErrorTypes _Nclstr_get_nl
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    string *new_string;
+
+    new_string = (string *) NclMalloc(sizeof(string));
+    if (! new_string)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
+
+    new_string[0] = NrmStringToQuark("\n");
 
     ndim = 1;
     dimsz[0] = 1;

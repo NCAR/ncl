@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddProto.c,v 1.7 2009-04-28 17:26:33 huangwei Exp $
+ *      $Id: userAddProto.c,v 1.8 2009-04-28 19:19:53 huangwei Exp $
  */
 /************************************************************************
 *                                                                   *
@@ -138,6 +138,7 @@ extern NhlErrorTypes _Nclstr_get_space();
 extern NhlErrorTypes _Nclstr_get_tab();
 extern NhlErrorTypes _Nclstr_get_sq();
 extern NhlErrorTypes _Nclstr_get_dq();
+extern NhlErrorTypes _Nclstr_get_nl();
 
 void NclAddUserBuiltInFuncs
 #if     NhlNeedProto
@@ -279,6 +280,10 @@ void NclAddUserBuiltInFuncs
     nargs = 0;
     args = NewArgs(0);
     NclRegisterFunc(_Nclstr_get_dq, args, "str_get_dq", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_nl, args, "str_get_nl", nargs);
 
     return;
 }
