@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddProto.c,v 1.6 2009-04-01 21:19:36 huangwei Exp $
+ *      $Id: userAddProto.c,v 1.7 2009-04-28 17:26:33 huangwei Exp $
  */
 /************************************************************************
 *                                                                   *
@@ -127,6 +127,18 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclstr_insert(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Nclstr_get_comma();
+extern NhlErrorTypes _Nclstr_get_space();
+extern NhlErrorTypes _Nclstr_get_tab();
+extern NhlErrorTypes _Nclstr_get_sq();
+extern NhlErrorTypes _Nclstr_get_dq();
+
 void NclAddUserBuiltInFuncs
 #if     NhlNeedProto
 (void)
@@ -238,8 +250,35 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_join, args, "str_join", nargs);
 
-  /*
-   */
+
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_insert, args, "str_insert", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_comma, args, "str_get_comma", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_space, args, "str_get_space", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_tab, args, "str_get_tab", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_sq, args, "str_get_sq", nargs);
+
+    nargs = 0;
+    args = NewArgs(0);
+    NclRegisterFunc(_Nclstr_get_dq, args, "str_get_dq", nargs);
 
     return;
 }
