@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.218 2009-04-24 18:57:21 shea Exp $
+;      $Id: contributed.ncl,v 1.219 2009-04-28 16:09:55 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -10857,7 +10857,7 @@ begin
 
    if (opt .and. opt@PrintStat) then 
        print(" ")
-       print("   ===>"+statx@long_name+" <===")
+       print("   ===> "+statx@long_name+" <===")
        print("        Mean="+statx(0)  ) 
        print("      StdDev="+statx(1)  ) 
        print("         Min="+statx(2)  ) 
