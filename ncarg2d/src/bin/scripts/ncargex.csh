@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.167 2008-12-16 01:09:34 kennison Exp $
+#   $Id: ncargex.csh,v 1.168 2009-04-29 22:39:04 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -66,52 +66,78 @@ endif
 # messages, etc.                                  #
 #                                                 #
 # If new workstation types are added, this is     #
-# where you specify the name for it               #
+# where you specify the name for it.  The         #
+# position (index, starting at "1") of the        # 
+# workstation description in the following        #
+# lists corresponds to its associated integer     #
+# value.                                          #
 #                                                 #
 #*************************************************#
-set file_types     = (ncgm x11 text ps eps epsi pdf)
+set file_types     = (ncgm x11 text ps eps epsi pdf cps cpng)
 set orient_types = (port land)
 set color_types  = (color mono)
-set ws_types = (\
-                "ncgm.port.color" "" "" "" "" "" "" \
-                "x11.port.color" "" "text.port.color" \
-                "pdf.port.color" "pdf.land.color" \
-                "" "" "" "" "" "" "" \
+set ws_types = (                                                   \
+                "ncgm.port.color"                                  \
+                "" "" "" "" "" ""                                  \
+                "x11.port.color" "" "text.port.color"              \
+                "pdf.port.color" "pdf.land.color"                  \
+                "" "" "" "" "" "" ""                               \
                 "ps.port.color" "eps.port.color" "epsi.port.color" \
-                "ps.port.mono" "eps.port.mono" "epsi.port.mono" \
+                "ps.port.mono"  "eps.port.mono"  "epsi.port.mono"  \
                 "ps.land.color" "eps.land.color" "epsi.land.color" \
-                "ps.land.mono" "eps.land.mono" "epsi.land.mono")
-set suffix_names = (\
-                "ncgm" "" "" "" "" "" "" "" "" "txt" "pdf" \
-                "pdf" "" "" "" "" "" "" "" \
-                "ps" "eps" "epsi" "ps" "eps" "epsi" \
-                "ps" "eps" "epsi" "ps" "eps" "epsi")
-set default_files = (\
-                "gmeta" \
-                "" "" "" "" "" "" "" "" "" "gmeta1.pdf" "gmeta1.pdf" \
-                "" "" "" "" "" "" "" \
-                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi" "gmeta1.ps" \
-                "gmeta1.eps" "gmeta1.epsi" "gmeta1.ps" "gmeta1.eps" \
-                "gmeta1.epsi" "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi")
-set default_msgs = (\
-        "Metafile file is named" \
-        "" "" "" "" "" "" "" "" \
-        "Text dump file is named" \
-        "Color portrait PDF file is named" \
-        "Color landscape PDF file is named" \
-    "" "" "" "" "" "" "" \
-        "Color portrait PostScript file is named" \
-        "Color portrait encapsulated PostScript file is named" \
-        "Color portrait interchange encapsulated PostScript file is named" \
-        "Monochrome portrait PostScript file is named" \
-        "Monochrome portrait encapsulated PostScript file is named" \
-        "Monochrome portrait interchange encapsulated PostScript file is named" \
-        "Color landscape PostScript file is named" \
-        "Color landscape encapsulated PostScript file is named" \
-        "Color landscape interchange encapsulated PostScript file is named" \
-        "Monochrome landscape PostScript file is named" \
-        "Monochrome landscape encapsulated PostScript file is named" \
-        "Monochrome landscape interchange encapsulated PostScript file is named")
+                "ps.land.mono"  "eps.land.mono"  "epsi.land.mono"  \
+                "" "" "" "" "" "" "" ""                            \
+                "cps.port.color" "cpng.port.color"                 \
+               )
+set suffix_names = (                                               \
+                "ncgm"                                             \
+                "" "" "" "" "" ""                                  \
+                "" "" "txt"                                        \
+                "pdf" "pdf"                                        \
+                "" "" "" "" "" "" ""                               \
+                "ps" "eps" "epsi"                                  \
+                "ps" "eps" "epsi"                                  \
+                "ps" "eps" "epsi"                                  \
+                "ps" "eps" "epsi"                                  \
+                "" "" "" "" "" "" "" ""                            \
+                "ps" "png"                                         \
+                    )
+set default_files = (                                              \
+                "gmeta"                                            \
+                "" "" "" "" "" ""                                  \
+                "" "" ""                                           \
+                "gmeta1.pdf" "gmeta1.pdf"                          \
+                "" "" "" "" "" "" ""                               \
+                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
+                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
+                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
+                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
+                "" "" "" "" "" "" "" ""                            \
+                "gmeta1.ps" "gmeta.png"                            \
+                    )
+set default_msgs = (                                                       \
+  "Metafile file is named"                                                 \
+  "" "" "" "" "" ""                                                        \
+  "" "" "Text dump file is named"                                          \
+  "Color portrait PDF file is named"                                       \
+  "Color landscape PDF file is named"                                      \
+  "" "" "" "" "" "" ""                                                     \
+  "Color portrait PostScript file is named"                                \
+  "Color portrait encapsulated PostScript file is named"                   \
+  "Color portrait interchange encapsulated PostScript file is named"       \
+  "Monochrome portrait PostScript file is named"                           \
+  "Monochrome portrait encapsulated PostScript file is named"              \
+  "Monochrome portrait interchange encapsulated PostScript file is named"  \
+  "Color landscape PostScript file is named"                               \
+  "Color landscape encapsulated PostScript file is named"                  \
+  "Color landscape interchange encapsulated PostScript file is named"      \
+  "Monochrome landscape PostScript file is named"                          \
+  "Monochrome landscape encapsulated PostScript file is named"             \
+  "Monochrome landscape interchange encapsulated PostScript file is named" \
+  "" "" "" "" "" "" "" ""                                                  \
+  "cairo Postscript file is named cairo1.ps."                              \
+  "cairo PNG files are named cairo1.xxxxxx.png, where xxxxxx is the frame number."                    \
+)
 
 set f_list
 set c_list
@@ -1555,7 +1581,11 @@ if ("$ws_type" == "8" || "$ws_type" == "10" ) unset std_file
 set suffix = "$suffix_names[$ws_type]"
 set graphic_file = "$name.$suffix"
 set default_file = $default_files[$ws_type]
-set msg = "$default_msgs[$ws_type] $graphic_file."
+if ($ws_type == 40 || $ws_type == 41) then
+  set msg = "$default_msgs[$ws_type]"
+else
+  set msg = "$default_msgs[$ws_type] $graphic_file."
+endif
 if ($?fprog) then
   set main = "$name.f"
 else
@@ -1992,6 +2022,7 @@ if (! $?NoRunOption) then
     if (! $?std_file) set rename_option
     echo ""
     echo "Executing <$name>..."
+
     if ("$input" != "" ) then
       if ("$output" != "") then
         ncargrun $rename_option ./$name < $input > $output
