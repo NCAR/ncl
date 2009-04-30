@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargrun,v 1.5 2003-02-27 17:47:14 haley Exp $
+#	$Id: ncargrun,v 1.6 2009-04-30 02:26:10 haley Exp $
 #
 
 foreach arg ($argv)
@@ -24,6 +24,8 @@ foreach arg ($argv)
 			setenv NCARG_GKS_OUTPUT $arg
 			setenv NCARG_GKS_PSOUTPUT $arg
 			setenv NCARG_GKS_PDFOUTPUT $arg
+			setenv NCARG_GKS_CPSOUTPUT $arg
+			setenv NCARG_GKS_CPNGOUTPUT $arg
 			unset get_output
 		else
 			if ( ! $?program ) then
