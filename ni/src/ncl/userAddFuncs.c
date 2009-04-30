@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.10 2009-04-28 19:19:53 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.11 2009-04-30 17:45:37 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -834,7 +834,7 @@ NhlErrorTypes _Nclstr_substitute_str
     {
         if (str[i] == missing_str.stringval)
         {
-            arrayString[i] = missing_str.stringval;
+            arrayString[i] = ret_missing.stringval;
             has_missing = 1;
             continue;
         }
@@ -2268,19 +2268,12 @@ NhlErrorTypes _Nclstr_join
 
         if (strs[i] == ret_missing.stringval)
         {
-            if (i)
-                strcat(result, " ");
-            else
-                strcpy(result, " ");
             has_missing_strs = 1;
         }
+        if (i)
+            strcat(result, (char *) NrmQuarkToString(strs[i]));
         else
-        {
-            if (i)
-                strcat(result, (char *) NrmQuarkToString(strs[i]));
-            else
-                strcpy(result, (char *) NrmQuarkToString(strs[i]));
-        }
+            strcpy(result, (char *) NrmQuarkToString(strs[i]));
     }
 
     new_string[0] = NrmStringToQuark(result);
@@ -2377,19 +2370,12 @@ NhlErrorTypes _Nclstr_concat
     {
         if (strs[i] == ret_missing.stringval)
         {
-            if (i)
-                strcat(result, " ");
-            else
-                strcpy(result, " ");
             has_missing_strs = 1;
         }
+        if (i)
+            strcat(result, (char *) NrmQuarkToString(strs[i]));
         else
-        {
-            if (i)
-                strcat(result, (char *) NrmQuarkToString(strs[i]));
-            else
-                strcpy(result, (char *) NrmQuarkToString(strs[i]));
-        }
+            strcpy(result, (char *) NrmQuarkToString(strs[i]));
     }
 
     new_string[0] = NrmStringToQuark(result);
