@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.46 2009-04-14 21:55:11 haley Exp $
+#      $Id: Configure,v 1.47 2009-05-01 03:45:45 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2009-04-14 21:55:11 $
+#	$Date: 2009-05-01 03:45:45 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -1059,12 +1059,11 @@ if ($?newbuildpng) then
 	endif
 endif
 
-if ($?newbuildcairo) then
-	if ("$buildcairo" == "y") then
-		echo "#define BuildCAIRO TRUE" >> Site.local
-	else
-		echo "#define BuildCAIRO FALSE" >> Site.local
-	endif
+if ($?newbuildcairo  && "$buildcairo" == "y") then
+	echo "#define BuildCAIRO TRUE" >> Site.local
+else
+	echo "#define BuildCAIRO FALSE" >> Site.local
+	echo "#define CAIROlib" >> Site.local
 endif
 
 if ($?newbuildnetcdf4) then
@@ -1076,12 +1075,11 @@ if ($?newbuildnetcdf4) then
 	endif
 endif
 
-if ($?newbuildgdal) then
-	if ("$buildgdal" == "y") then
-		echo "#define BuildGDAL TRUE" >> Site.local
-	else
-		echo "#define BuildGDAL FALSE" >> Site.local
-	endif
+if ($?newbuildgdal && "$buildgdal" == "y") then
+	echo "#define BuildGDAL TRUE" >> Site.local
+else
+	echo "#define BuildGDAL FALSE" >> Site.local
+	echo "#define GDALlib" >> Site.local
 endif
 
 if ($?newbuildtriangle) then
