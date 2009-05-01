@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.219 2009-04-28 16:09:55 shea Exp $
+;      $Id: contributed.ncl,v 1.220 2009-05-01 19:25:58 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -10781,13 +10781,16 @@ end
 ; 
 undef("stat_dispersion")
 function stat_dispersion (x:numeric, opt[1]:logical )
-local nx, sFillV, nFill, statx, work, nwork, x1d, ivalid
+; Robust dispersion statistics
+; 
+local nStat, nx, sFillV, nFill, one, statx, work, nwork, x1d, ivalid
 begin
-   nx    = product(dimsizes(x))       ; number of elements in x  
+   nx = product( dimsizes(x) )
    nFill = 0
+  
    if (isatt(x,"_FillValue")) then  
-       nFill  = num(ismissing(x))
        sFillV = x@_FillValue
+       nFill  = num(ismissing(x))
        if (nFill.gt.0) then
            x1d    = ndtooned(x) 
            ivalid = ind(.not.ismissing(x1d))
@@ -10805,30 +10808,37 @@ begin
        end if
    end if
 
+   if (typeof(x).eq."double") then
+       one    = 1.0d
+   else
+       one    = 1.0
+   end if
+
    nwork    = dimsizes(work)  
 
-   statx    = new ( 25, typeof(x), sFillV) 
+   nStat    = 30
+   statx    = new ( nStat, typeof(sFillV), sFillV) 
    statx(0) = avg(x)                ; mean
    statx(1) = stddev(x)             ; std. deviation
-
    if (nwork.ge.10) then 
        qsort( work )                    ; sort into ascending order
        statx(2) = min ( work )
-       statx(3) = work( nwork/10 )      ; lower dectile
-       statx(4) = work( nwork/8  )      ; lower octtile
-       statx(5) = work( nwork/6  )      ; lower sextile
-       statx(6) = work( nwork/4  )      ; lower quartile
-       statx(7) = work( nwork/3  )      ; lower 3tile
-       if (nwork%2 .eq.1) then
-           statx(8) = work( nwork/2 )   ; median even [NCL is 0 based]
+                                        ; -1 ... NCL zero based 
+       statx(3) = work( nwork/10-1 )    ; lower dectile
+       statx(4) = work( nwork/8 -1 )    ; lower octtile
+       statx(5) = work( nwork/6 -1 )    ; lower sextile
+       statx(6) = work( nwork/4 -1 )    ; lower quartile
+       statx(7) = work( nwork/3 -1 )    ; lower 3tile
+       if (nwork%2 .eq.0) then          ; median even
+           statx(8) = (work(nwork/2-1)+work(nwork/2))*0.5  
        else
-           statx(8) = (work(nwork/2-1)+work(nwork/2))  ; median
+           statx(8) = work( nwork/2   ) ; median odd  
        end if
-       statx(9) = work((nwork*2)/3)     ; upper 3tile
-       statx(10)= work((nwork*3)/4)     ; upper quartile
-       statx(11)= work((nwork*5)/6)     ; upper sextile
-       statx(12)= work((nwork*7)/8)     ; upper octtile
-       statx(13)= work((nwork*9)/10)    ; upper dectile
+       statx(9) = work((nwork*2)/3 -1)  ; upper 3tile
+       statx(10)= work((nwork*3)/4 -1)  ; upper quartile
+       statx(11)= work((nwork*5)/6 -1)  ; upper sextile
+       statx(12)= work((nwork*7)/8 -1)  ; upper octtile
+       statx(13)= work((nwork*9)/10-1)  ; upper dectile
        statx(14)= max ( work )      
        statx(15)= statx(14)-statx(2)    ; range
        if (statx(1).gt.0) then
@@ -10836,12 +10846,18 @@ begin
        end if
        statx(17)= sqrt(sum((work-statx(0))^2)/nwork) ; root mean sq anomaly
    end if
+       statx(18)= nx
+       statx(19)= nwork
+       statx(20)= nFill
+       statx(21)= 100*(one - (one*(nx-nFill))/nx)
 
-   statx(18) = (100.0*(nx-nFill)/nx)    ; % missing
-
-   statx@long_name = "Dispersion Statistics"
+   statx@long_name = "Robust Dispersion Statistics"
    if (isatt(x,"long_name")) then
-       statx@long_name = statx@long_name+x@long_name
+       statx@long_name = statx@long_name +": "+ x@long_name
+   else
+       if (isatt(x,"hdfeos5_name")) then
+           statx@long_name = statx@long_name +": "+ x@hdfeos5_name
+       end if
    end if
    if (isatt(x,"units")) then
        statx@units     = x@units
@@ -10858,28 +10874,30 @@ begin
    if (opt .and. opt@PrintStat) then 
        print(" ")
        print("   ===> "+statx@long_name+" <===")
-       print("        Mean="+statx(0)  ) 
-       print("      StdDev="+statx(1)  ) 
-       print("         Min="+statx(2)  ) 
-       print("      LowDec="+statx(3)  ) 
-       print("      LowOct="+statx(4)  ) 
-       print("      LowSex="+statx(5)  ) 
-       print(" LowQuartile="+statx(6)  ) 
-       print("      LowTri="+statx(7)  ) 
-       print("      Median="+statx(8)  ) 
-       print("     HighTri="+statx(9)  ) 
-       print("HighQuartile="+statx(10) ) 
-       print("     HighSex="+statx(11) ) 
-       print("     HighOct="+statx(12) ) 
-       print("     HighDec="+statx(13) ) 
-       print("         Max="+statx(14) ) 
-       print("       Range="+statx(15) ) 
-       print("  Dispersion="+statx(16) ) 
-       print(" RMS Anomaly="+statx(17) ) 
-       print("   % Missing="+statx(18) ) 
+       print(" [0]            Mean="+statx(0)  ) 
+       print(" [1]          StdDev="+statx(1)  ) 
+       print(" [2]             Min="+statx(2)  ) 
+       print(" [3]          LowDec="+statx(3)  ) 
+       print(" [4]          LowOct="+statx(4)  ) 
+       print(" [5]          LowSex="+statx(5)  ) 
+       print(" [6]     LowQuartile="+statx(6)  ) 
+       print(" [7]          LowTri="+statx(7)  ) 
+       print(" [8]          Median="+statx(8)  ) 
+       print(" [9]         HighTri="+statx(9)  ) 
+       print(" [10]   HighQuartile="+statx(10) ) 
+       print(" [11]        HighSex="+statx(11) ) 
+       print(" [12]        HighOct="+statx(12) ) 
+       print(" [13]        HighDec="+statx(13) ) 
+       print(" [14]            Max="+statx(14) ) 
+       print(" [15]          Range="+statx(15) ) 
+       print(" [16]     Dispersion="+statx(16) ) 
+       print(" [17]    RMS Anomaly="+statx(17) ) 
+       print(" [18]      #   Total="+statx(18) ) 
+       print(" [19]      #    Used="+statx(19) ) 
+       print(" [20]      # Missing="+statx(20) ) 
+       print(" [21]      % Missing="+statx(21) ) 
        print(" ")
    end if
 
    return(statx)
 end
-
