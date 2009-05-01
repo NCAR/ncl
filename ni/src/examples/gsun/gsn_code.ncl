@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.218 2009-04-06 14:58:02 haley Exp $
+;      $Id: gsn_code.ncl,v 1.219 2009-05-01 20:59:09 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -4013,7 +4013,21 @@ local res2, lbres, wksname
 begin
     res2 = get_resources(resources)
 
+    lbres = get_res_eq(res2,(/"lb","vp"/))
+
     wksname = get_res_value_keep(wks,"name","gsnapp")
+;
+; A special test is needed for the resource lbLabelFontHeightF.
+; If it is set, then we need to turn off lbAutoManage. The
+; user can override this, of course.
+;
+    if(lbres.and..not.any(ismissing(getvaratts(lbres))).and.\
+        isatt(lbres,"lbLabelFontHeightF"))
+      auto_manage = get_res_value(lbres,"lbAutoManage",False)
+    else
+      auto_manage = get_res_value(lbres,"lbAutoManage",True)
+    end if
+
 ;
 ; If x,y < 0, this is invalid, and hence don't use these values.
 ; This was a special way to allow gsn_create_labelbar to call this
@@ -4023,6 +4037,7 @@ begin
       lbid = create wksname + "_labelbar" labelBarClass wks
         "lbBoxCount"     : nbox
         "lbLabelStrings" : labels
+        "lbAutoManage"   : auto_manage
       end create
     else
       lbid = create wksname + "_labelbar" labelBarClass wks
@@ -4030,23 +4045,11 @@ begin
         "vpYF"           : y
         "lbBoxCount"     : nbox
         "lbLabelStrings" : labels
+        "lbAutoManage"   : auto_manage
       end create
     end if
 
-    lbres = get_res_eq(res2,(/"lb","vp"/))
     if(lbres.and..not.any(ismissing(getvaratts(lbres))))
-
-; A special test is needed for the resource lbLabelFontHeightF.
-; If it is set, then we need to turn off lbAutoManage.
-
-      if(isatt(lbres,"lbLabelFontHeightF"))
-        setvalues lbid
-          "lbAutoManage"       : False
-          "lbLabelJust"        : "CenterCenter"
-          "lbLabelFontHeightF" : lbres@lbLabelFontHeightF
-        end setvalues
-        delete(lbres@lbLabelFontHeightF)
-      end if
       attsetvalues_check(lbid,lbres)
     end if
 
