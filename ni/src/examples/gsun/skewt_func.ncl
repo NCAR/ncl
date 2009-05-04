@@ -330,7 +330,11 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       txOpts@txFontHeightF     = xyOpts@tmYLLabelFontHeightF
       xlab                     = skewtx (53., skewty(1013.)) 
       ylab                     = skewty (350.)
-      gsn_text (wks,xy,zLabel,xlab,ylab,txOpts) ; label rhs
+      fooTextHeightScale = gsn_add_text (wks,xy,zLabel,xlab,ylab,txOpts) ; label rhs
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooTextHeightScale
+
       delete (txOpts)
   end if    ; DrawHeightScale
 
@@ -343,6 +347,9 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       end if
       color2 = "White"
       gsOpts = True
+
+      fooPolyColorAreaFill = new ( (ntemp-1),"graphic")
+
       do i=0,ntemp-2
          if (i%2 .eq. 0) then    ; alternate colors
              gsOpts@gsFillColor  = color1
@@ -376,18 +383,28 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
              sx(0:nx) = (/15.35 , 20.75 , 27.06, 27.06, 25.65 /)
          end if
 
-         gsn_polygon(wks, xy, sx(0:nx),sy(0:nx),gsOpts) 
+         fooPolyColorAreaFill(i) = gsn_add_polygon(wks, xy, sx(0:nx),sy(0:nx),gsOpts) 
       end do
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooPolyColorAreaFill
                                           ; special cases
       gsOpts@gsFillColor  = color2
       sy(0:2) = (/ 44.06, 44.06, 38.75 /) ; upper left triangle
       sx(0:2) = (/-14.04,-18.96,-18.86 /)
-      gsn_polygon(wks, xy, sx(0:2),sy(0:2),gsOpts) 
+      fooPolyColorULT = gsn_add_polygon(wks, xy, sx(0:2),sy(0:2),gsOpts) 
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooPolyColorULT
 
       gsOpts@gsFillColor  = color2
       sy(0:2) = (/ ymax, 0.13, ymax   /) ; lower right triangle
       sx(0:2) = (/ xmax, xmax, 26.15  /) ; skewtx(51.6,ymax)
-      gsn_polygon(wks, xy, sx(0:2),sy(0:2),gsOpts) 
+      fooPolyColorLRT = gsn_add_polygon(wks, xy, sx(0:2),sy(0:2),gsOpts) 
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooPolyColorLRT
+
       delete (gsOpts)
   end if
 
@@ -409,6 +426,9 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       txOpts@txFontHeightF     = 0.0140
       txOpts@txFontThicknessF  = 1.0
 
+      fooLineIsoTherm = new (dimsizes(temp)-2,"graphic")
+      fooTextIsoTherm = new (dimsizes(temp)-2,"graphic")
+
       do i=0,dimsizes(temp)-3
 
          yy(1) = skewty(rendt(i))
@@ -416,14 +436,19 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
          yy(0) = skewty(lendt(i))
          xx(0) = skewtx(temp(i),yy(0))
         ;gsOpts@gsLineLabelString  = floattointeger(temp(i))
-         gsn_polyline (wks,xy,xx,yy,gsOpts) 
+         fooLineIsoTherm(i) = gsn_add_polyline (wks,xy,xx,yy,gsOpts) 
 
          xlab  = xx(1)+0.625     
          ylab  = yy(1)+0.55     
          label = floattointeger(temp(i))
-         gsn_text(wks,xy,label,xlab,ylab,txOpts)
-
+         fooTextIsoTherm(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
       end do 
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooLineIsoTherm
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooTextIsoTherm
+
       delete (gsOpts)
       delete (txOpts)
   end if  ; DrawIsotherm
@@ -438,16 +463,21 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
      ;gsOpts@gsLineLabelFontColor    = colTan
      ;gsOpts@gsLineLabelFontHeightF  = 0.0125 
 
+      fooLineIsobar = new (npres,"graphic")
+
       do i=0,npres-1
          xx(0) = xpl(i)
          xx(1) = xpr(i)
          ypl   = skewty(pres(i))
          yy(0) = ypl
          yy(1) = ypl
-         gsn_polyline (wks,xy,xx,yy,gsOpts) 
+         fooLineIsobar(i) = gsn_add_polyline (wks,xy,xx,yy,gsOpts) 
       end do       ; end "i=1,npres"
       delete (gsOpts)
   end if       ; DrawIsobar
+
+  dumname = unique_string("dum")     ; for panel
+  xy@$dumname$ = fooLineIsobar
 
 ; --- draw saturation mixing ratio lines.  these lines run between 1050 and 400
 ; --- mb. the 20 line intersects the sounding below 400 mb, thus a special case 
@@ -469,6 +499,9 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       yy(1) = skewty(400.)  ; y at top [right end of slanted line]
       yy(0) = skewty(1000.) ; y at bottom of line [was 1050.]
 
+      fooLineMix = new (nmix,"graphic")
+      fooTextMix = new (nmix,"graphic")
+
       do i=0,nmix-1
          if (mixrat(i).eq.20.) then   
             yy(1) = skewty(440.)
@@ -483,13 +516,19 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
         ;tmix  = THERMO::tmr(mixrat(i),1000.) ; was 1050
          tmix  = tmr_skewt(mixrat(i),1000.) ; was 1050
          xx(0) = skewtx(tmix,yy(0))
-         gsn_polyline (wks,xy,xx,yy,gsOpts)   ; dashed green   
+         fooLineMix(i) = gsn_add_polyline (wks,xy,xx,yy,gsOpts)   ; dashed green   
 
          xlab  = xx(0)-0.25
          ylab  = yy(0)-0.45
          label = floattointeger(mixrat(i))
-         gsn_text(wks,xy,label,xlab,ylab,txOpts)
+         fooTextMix(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
       end do    ; end "i=0,nmix-1"
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooLineMix
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooTextMix
+
       delete (gsOpts)
       delete (txOpts)
   end if    ; DrawMixRatio
@@ -510,6 +549,8 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       txOpts@txFontThicknessF  = 1.0
 
       pinc = 10.
+      fooLineDry = new (ntheta,"graphic")
+      fooTextDry = new (ntheta,"graphic")
 
       do i=0,ntheta-1
          p = lendth(i)-pinc
@@ -528,21 +569,28 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
             t     = tda_skewt(theta(i),p)
             sx(j) = skewtx(t,sy(j))
          end do     ; end "j=0,dimsizes(sy)-1"
-        ;gsn_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts)   ; whole line  
+
+        ;fooLineDry(i) = gsn_add_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts)   ; whole line  
 
          if (theta(i).lt.170.) then
-             gsn_polyline (wks,xy,sx(1:j-1),sy(1:j-1),gsOpts); label room  
+             fooLineDry(i) = gsn_add_polyline (wks,xy,sx(1:j-1),sy(1:j-1),gsOpts); label room  
              ylab  = skewty(lendth(i)+5.)
             ;t     = THERMO::tda(theta(i),lendth(i)+5.)
              t     = tda_skewt(theta(i),lendth(i)+5.)
              xlab  = skewtx(t,ylab)
              label = floattointeger(theta(i))
-             gsn_text(wks,xy,label,xlab,ylab,txOpts)
+             fooTextDry(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
          else                                               ; no laabel
-             gsn_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts) ; whole line
+             fooLineDry(i) = gsn_add_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts) ; whole line
          end if
 
       end do        ; end "i=0,ntheta-1
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooLineDry
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooTextDry
+
       delete (gsOpts)
       delete (txOpts)
   end if    ; DryAdiabat
@@ -564,6 +612,9 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
 
       pinc = 10.
 
+      fooLinePseudo = new (npseudo,"graphic")
+      fooTextPseudo = new (npseudo,"graphic")
+
       do i=0,npseudo-1
          p = 1060.
          do j=0,dimsizes(sy)-1
@@ -578,16 +629,22 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
            ;print ("j="+j+"  p="+p+"  t="+t+"   sy(j)="+sy(j)+"  sx(j)="+sx(j) )  
          end do            ; end "j=0,dimsizes(sy)-1"
 
-         gsn_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts)  
+         fooLinePseudo(i) = gsn_add_polyline (wks,xy,sx(:j-1),sy(:j-1),gsOpts)  
 
          ylab  = skewty(p+0.5*pinc)
         ;t     = THERMO::satlft(pseudo(i),p+0.75*pinc)
          t     = satlft_skewt(pseudo(i),p+0.75*pinc)
          xlab  = skewtx(t,ylab)
          label = floattointeger(pseudo(i))        ; 9 Feb 99 fix 
-         gsn_text(wks,xy,label,xlab,ylab,txOpts)
+         fooTextPseudo(i) = gsn_add_text(wks,xy,label,xlab,ylab,txOpts)
   
       end do               ; end "i-0,dimsizes(pseudo)-1"
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooLinePseudo
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooTextPseudo
+
       delete (gsOpts)
       delete (txOpts)
   end if    ; DrawMoistAdiabat
@@ -603,7 +660,11 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
          sx(i) = skewtx (tsa(i), sy(i) )
       end do
  
-      gsn_polyline (wks,xy,sx(0:nlvl-1),sy(0:nlvl-1),gsOpts)  
+      fooLineStdAtm = gsn_add_polyline (wks,xy,sx(0:nlvl-1),sy(0:nlvl-1),gsOpts)
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooLineStdAtm
+
       delete (gsOpts)
   end if    ; DrawStandardAtm
 
@@ -617,13 +678,20 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       gsOpts@gsMarkerIndex     = 4   ; "hollow_circle"=> std pres
       gsOpts@gsMarkerColor     = "Foreground"
 
+
       presWind      = pres
       presWind(0)   = 1013.          ; override 1050
       xWind         = skewtx (45. , skewty(presWind(0)))
       sx(0:npres-1) = xWind            ; "x" location of wind plot
       sy(0:npres-1) = skewty(presWind)
-      gsn_polyline   (wks,xy,sx(0:npres-1),sy(0:npres-1),gsOpts)  
-      gsn_polymarker (wks,xy,sx(1:npres-1),sy(1:npres-1),gsOpts)
+
+      fooLineWindP = gsn_add_polyline   (wks,xy,sx(0:npres-1),sy(0:npres-1),gsOpts)  
+      fooPolyWindP = gsn_add_polymarker (wks,xy,sx(1:npres-1),sy(1:npres-1),gsOpts)
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooLineWindP
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooPolyWindP
                                      ; zwind => Pibal reports
       zftWind = (/ 0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10. \
                  ,12.,14.,16.,18.,20.,25.,30.,35.,40.,45.,50. /)
@@ -631,15 +699,20 @@ function skewT_BackGround (wks:graphic,  Opts:logical)
       pkmWind = ftcurv(zsa,psa,zkmWind)
       nzkmW   = dimsizes (zkmWind)
 
+
       sx(0:nzkmW-1)            = xWind  ; "x" location of wind plot
       sy(0:nzkmW-1)            = skewty(pkmWind)
       gsOpts@gsMarkerIndex     = 16     ; "circle_filled" -> Pibal
       gsOpts@gsMarkerSizeF     = 0.0035 ; 0.007 is default
       gsOpts@gsMarkerThicknessF= 0.5    ; 1.0 is default
-      gsn_polymarker (wks,xy,sx(0:nzkmW-1),sy(0:nzkmW-1),gsOpts)
+
+      fooPolyWindPZ = gsn_add_polymarker (wks,xy,sx(0:nzkmW-1),sy(0:nzkmW-1),gsOpts)
+
+      dumname = unique_string("dum")     ; for panel
+      xy@$dumname$ = fooPolyWindPZ
+
       delete (gsOpts)
   end if    ; DrawWind
-
 
   return (xy)      ; return object
 
@@ -762,7 +835,10 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
   if (isatt(localOpts,"lineThicknessTemperature")) then
       gsOpts@gsLineThicknessF = localOpts@lineThicknessTemperature
   end if
-  gsn_polyline  (wks,skewt_bkgd,xtc ,yp,gsOpts) 
+
+  fooLineTC = gsn_add_polyline  (wks,skewt_bkgd,xtc ,yp,gsOpts) 
+  dumname = unique_string("dum")
+  skewt_bkgd@$dumname$ = fooLineTC 
 
   xtdc = skewtx (tdc, yp)              ;Dew Pt-P plot
   gsOpts@gsLineColor        = colDewPt     
@@ -770,7 +846,9 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
   if (isatt(localOpts,"linePatternDewPt")) then
       gsOpts@gsLineDashPattern  = localOpts@linePatternDewPt
   end if
-  gsn_polyline  (wks,skewt_bkgd,xtdc,yp,gsOpts) 
+  fooLineTDC = gsn_add_polyline  (wks,skewt_bkgd,xtdc,yp,gsOpts) 
+  dumname = unique_string("dum")
+  skewt_bkgd@$dumname$ = fooLineTDC 
 
   delete (gsOpts)
 
@@ -814,7 +892,7 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
           yinfo = yinfo + localOpts@offsetThermoInfo
       end if
 
-      gsn_text_ndc (wks,info,xinfo,yinfo,txOpts) 
+   ;; gsn_text_ndc (wks,info,xinfo,yinfo,txOpts) 
       delete (txOpts)
 
       if (localOpts@Cape .and. cape.gt.0.) then
@@ -828,8 +906,11 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
 
           yp   = skewty (p)                    
           xtp  = skewtx (tpar, yp)
-          gsn_polyline  (wks,skewt_bkgd,xtp(nlLfc:nlCross)       \
-                                       , yp(nlLfc:nlCross),gsOpts) 
+         
+          fooLineCape = gsn_add_polyline(wks,skewt_bkgd,xtp(nlLfc:nlCross)\
+                                        , yp(nlLfc:nlCross),gsOpts) 
+          dumname = unique_string("dum")
+          skewt_bkgd@$dumname$ = fooLineCape
           delete (gsOpts)
       end if
 
@@ -846,14 +927,20 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
 
       yz = skewty (1000.) 
       xz = skewtx (-30., yz)           ; constant "x"
+
+      fooTextPrintZ = new (dimsizes(P), "graphic")
       do nl=0,dimsizes(P)-1            ; use input arrays
          if (.not.ismissing(P(nl)) .and. .not.ismissing(Z(nl)) .and. \
              any(Pprint.eq.P(nl))) then
              yz  = skewty (P(nl)) 
-             gsn_text (wks,skewt_bkgd,floattointeger(Z(nl)) \
-                          ,xz,yz,txOpts) 
+             fooTextPrintZ(nl) = gsn_add_text \
+                          (wks,skewt_bkgd,floattointeger(Z(nl)),xz,yz,txOpts) 
          end if
       end do          ; nl
+
+      dumname = unique_string("dum")
+      skewt_bkgd@$dumname$ = fooTextPrintZ
+
       delete (txOpts)
   end if
 
@@ -964,7 +1051,7 @@ function skewT_PlotData (wks:graphic, skewt_bkgd:graphic \
           print ("Opts@PlotWindH=True but dataOpts@Height/Hspd/Hdir msg")
       end if
   end if  ; end "PlotWindH"
-
+                             ; attach to object
   skewt_bkgd@Cape            = (/ cape /)
   skewt_bkgd@Pwat            = pwat            ; cm
   skewt_bkgd@Shox            = shox
