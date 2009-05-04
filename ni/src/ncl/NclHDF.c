@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.30 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.31 2009-05-04 19:23:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1175,6 +1175,8 @@ int* num_atts;
 	HDFAttInqRecList *stepal;
 	NclQuark *out_list = NULL;	
 	int i;
+
+	*num_atts = 0;
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
 		if(stepvl->var_inq->name== thevar) {

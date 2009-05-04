@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.132 2009-03-26 23:25:11 dbrown Exp $
+ *      $Id: Execute.c,v 1.133 2009-05-04 19:23:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -372,16 +372,17 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	long *agg_dim_count = NULL;
 	int list_index;
 	long total_agg_dim_size, agg_start_index;
+	long agg_end_index;
+	long agg_sel_count;
+	long agg_stride_index;
 	NrmQuark agg_dim_name;
 	NclFile *files = NULL;
-	NclVar var1, tvar, agg_coord_var;
+	NclVar var1 = NULL, tvar, agg_coord_var;
 	NclMultiDValData agg_coord_md = NULL;
 	NclMultiDValData var_md;
 	NclDimRec dim_info;
 	int coords;
-	long agg_end_index;
 	int first;
-	long agg_sel_count;
 	NclMonoTypes mono_type;
 	int dir, ix_start, ix_end;
 	int var_offset;
@@ -413,6 +414,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	}
 
 
+	/* this is the single subscript for the file list variable */
 	sel.dim_num = 0;
 	if(subs) {
 		data = _NclPop();
@@ -540,6 +542,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		sel_ptr = NULL;
 	}
 
+	/* get the selected files from the file list */
 	newlist =_NclListSelect(list,sel_ptr);
 
 	if (sel.sel_type == Ncl_VECSUBSCR) {
@@ -570,6 +573,11 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		}
 	}
 
+	/* Now create an array of files, with a NULL value for any file that does not have a conforming variable for the aggregation:
+         * the first file determines the dimensionality of the non-aggregated dimension that must be conformed to. For now the 
+	 * only the dimension size is checked, but maybe dimension names should be as well.
+	 * JOIN and CAT types are handled separately.
+         */
 	agg_coord_var = NULL; /* use to test for presence of coordinate variable */
 	agg_dim_count = NclMalloc(sizeof(long) * newlist->list.nelem);
 	files = NclMalloc (sizeof(NclFile) * newlist->list.nelem);
@@ -634,7 +642,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					}
 					if (bad) {
 						files[list_index] = NULL;
-						agg_dim_count[i] = 0;
+						agg_dim_count[list_index] = 0;
 						total_agg_dim_size--;
 						list_index--;
 					}
@@ -768,7 +776,8 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		goto fatal_err;
 	}
 
-	/* Reuse the list sel_ptr for the aggregated dimensions selection */
+	/* Reuse the list sel_ptr for the aggregated dimensions selection, which occurs next */
+	
 	sel_ptr = &sel;
 	filevar_sel_ptr = NULL;
 	if (! filevar_subs) {
@@ -788,9 +797,17 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			estatus = NhlFATAL;
 			goto fatal_err;
 		}
+		filevar_sel_ptr->n_entries = 0;
 
 		long end_ix;
 		if (newlist->list.list_type & NCL_JOIN) {
+			if (filevar_subs != var_ndims + 1) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "Number of subscripts on rhs do not match number of dimensions of aggregated join type variable, (%d) Subscripts used, (%d) Subscripts expected",
+					  filevar_subs, var_ndims + 1);
+				estatus = NhlFATAL;
+				goto fatal_err;
+			}
 			if (filevar_subs > var_ndims) {
 				filevar_sel_ptr->n_entries = filevar_subs - 1; 
 			}
@@ -800,6 +817,13 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			end_ix = 0;
 		}
 		else {
+			if (filevar_subs != var_ndims) {
+				NhlPError(NhlFATAL,NhlEUNKNOWN,
+					  "Number of subscripts on rhs do not match number of dimensions of aggregated cat type variable, (%d) Subscripts used, (%d) Subscripts expected",
+					  filevar_subs, var_ndims);
+				estatus = NhlFATAL;
+				goto fatal_err;
+			}
 			filevar_sel_ptr->n_entries = filevar_subs;
 			end_ix = 1;
 		}
@@ -864,7 +888,9 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			case Ncl_SUB_ALL:
 				finish = total_agg_dim_size - 1;
 				start  = 0;
-				stride = 1;
+				stride = sel.u.sub.stride;
+				if (stride != 1) 
+					sel.sel_type = Ncl_SUBSCR;
 				break;
 			case Ncl_SUB_VAL_DEF:
 				finish = total_agg_dim_size - 1;
@@ -900,7 +926,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		}
 	}
 
-	/* step through the files -- reading the correct elements of the first dimension */
+	/* step through the files -- reading the correct elements of the first dimension; this handles both JOIN and CAT 
+	 * in sub-branches. It would probably be wise to split them apart into separate routines. In fact this whole function
+	 * should be broken up into more tractable pieces.
+	 */
 
 	first = 1;
 	var_offset = 0;
@@ -910,40 +939,60 @@ void CallLIST_READ_FILEVAR_OP(void) {
 			ix_start = 0;
 			ix_end = newlist->list.nelem;
 			agg_end_index = -1;
+			agg_stride_index = sel.u.sub.start;
 		}
 		else {
 			dir = -1;
 			ix_end = -1;
 			ix_start = newlist->list.nelem -1;
 			agg_end_index = total_agg_dim_size;
+			agg_stride_index = sel.u.sub.finish;
 		}
 	}
 	else if (sel.sel_type == Ncl_VECSUBSCR) {
 		long *ind = sel.u.vec.ind;
-		for (i = 1; i < sel.u.vec.n_ind; i++) {
-			if (ind[i] < ind[i-1]) {
-				NhlPError(NhlFATAL,NhlEUNKNOWN,"Vector selection for list filevar must be monotonically increasing"); 
-				estatus = NhlFATAL;
-				goto fatal_err;
+		if (ind[0] > ind[sel.u.vec.n_ind -1]) { /* reversed */
+			for (i = 1; i < sel.u.vec.n_ind; i++) {
+				if (ind[i] >= ind[i-1]) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "Vector selection for the aggregated dimension of a list file variable must be monotonically increasing or decreasing"); 
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
 			}
+			dir = -1;
+			ix_end = -1;
+			ix_start = newlist->list.nelem -1;
+			agg_end_index = total_agg_dim_size;
 		}
-		dir = 1;
-		ix_start = 0;
-		ix_end = newlist->list.nelem;
-		agg_end_index = -1;
+		else {
+			for (i = 1; i < sel.u.vec.n_ind; i++) {
+				if (ind[i] <= ind[i-1]) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,
+						  "Vector selection for the aggregated dimension of a list file variable must be monotonically increasing or decreasing"); 
+					estatus = NhlFATAL;
+					goto fatal_err;
+				}
+			}
+			dir = 1;
+			ix_start = 0;
+			ix_end = newlist->list.nelem;
+			agg_end_index = -1;
+		}
 	}
 	else {
 		dir = 1;
 		ix_start = 0;
 		ix_end = newlist->list.nelem;
 		agg_end_index = -1;
+		agg_stride_index = sel.u.sub.start;
 	}
 		
 	for (i = ix_start; i != ix_end; i+= dir) {
 		int j;
 		long agg_chunk_size;
 		long *vec = NULL;
-		long vcount;
+		long vcount,vstart;
 		int do_file = 0;
 		agg_start_index = agg_end_index + dir;
 		agg_end_index += dir * agg_dim_count[i];
@@ -960,37 +1009,58 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				break;
 			case Ncl_SUBSCR:
 				if (dir == 1) {
-					if (sel.u.sub.start > agg_end_index) {
+					if (agg_stride_index > agg_end_index) {
 						break;
 					}
-					if (sel.u.sub.finish < agg_start_index) {
+					if (agg_stride_index < agg_start_index) {
 						break;
 					}
+					if (agg_stride_index < sel.u.sub.finish)
+						agg_stride_index += sel.u.sub.stride;
 				}
 				else {
-					if (sel.u.sub.finish < agg_end_index) {
+					if (agg_stride_index < agg_end_index) {
 						break;
 					}
-					if (sel.u.sub.start > agg_start_index) {
+					if (agg_stride_index > agg_start_index) {
 						break;
 					}
+					if (agg_stride_index > sel.u.sub.start)
+						agg_stride_index += sel.u.sub.stride;
 				}					
 				do_file = 1;
 				break;
 			case Ncl_VECSUBSCR:
-				if (sel.u.vec.min > agg_end_index) {
-					break;
-				}
-				if (sel.u.vec.max < agg_start_index) {
-					break;
-				}
-				for (j = 0; j < sel.u.vec.n_ind; j++) {
-					if (sel.u.vec.ind[j] == agg_end_index) {
-						do_file = 1;
+				if (dir == 1) {
+					if (sel.u.vec.min > agg_end_index) {
 						break;
 					}
+					if (sel.u.vec.max < agg_start_index) {
+						break;
+					}
+					for (j = 0; j < sel.u.vec.n_ind; j++) {
+						if (sel.u.vec.ind[j] == agg_end_index) {
+							do_file = 1;
+							break;
+						}
+					}
+					break;
 				}
-				break;
+				else {
+					if (sel.u.vec.max <  agg_end_index) {
+						break;
+					}
+					if (sel.u.vec.min > agg_start_index) {
+						break;
+					}
+					for (j = 0; j < sel.u.vec.n_ind; j++) {
+						if (sel.u.vec.ind[j] == agg_end_index) {
+							do_file = 1;
+							break;
+						}
+					}
+					break;
+				}
 			}
 		}
 		else {
@@ -1013,7 +1083,9 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					if (sel.u.sub.finish < agg_start_index) {
 						break;
 					}
-					fsel->u.sub.start = MAX(agg_start_index,sel.u.sub.start) - agg_start_index;
+					while (agg_stride_index < agg_start_index)
+						agg_stride_index += sel.u.sub.stride;
+					fsel->u.sub.start = MAX(agg_stride_index,sel.u.sub.start) - agg_start_index;
 					fsel->u.sub.finish = MIN(agg_end_index,sel.u.sub.finish) - agg_start_index;
 				}
 				else {
@@ -1023,8 +1095,10 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					if (sel.u.sub.start > agg_start_index) {
 						break;
 					}
+					while (agg_stride_index > agg_start_index)
+						agg_stride_index += sel.u.sub.stride;
 					fsel->u.sub.start = MAX(agg_end_index,sel.u.sub.start) - agg_end_index;
-					fsel->u.sub.finish = MIN(agg_start_index,sel.u.sub.finish) - agg_end_index;
+					fsel->u.sub.finish = MIN(agg_stride_index,sel.u.sub.finish) - agg_end_index;
 					fsel->u.sub.start += (fsel->u.sub.finish - fsel->u.sub.start) % abs(sel.u.sub.stride);
 				}					
 				fsel->u.sub.stride = sel.u.sub.stride; 
@@ -1033,40 +1107,92 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				do_file = 1;
 				break;
 			case Ncl_VECSUBSCR:
-				if (sel.u.vec.min > agg_end_index) {
-					break;
-				}
-				if (sel.u.vec.max < agg_start_index) {
-					break;
-				}
-				vec = NclMalloc(sizeof(long) * (agg_end_index - agg_start_index + 1));
-				if (! vec) {
-					NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
-					estatus = NhlFATAL;
-					goto fatal_err;
-				}
-
-				vcount = 0;
-				for (j = 0; j < sel.u.vec.n_ind; j++) {
-					if (sel.u.vec.ind[j] > agg_end_index)
+				if (dir == 1) {
+					if (sel.u.vec.min > agg_end_index) {
 						break;
-					if (sel.u.vec.ind[j] >= agg_start_index) {
-						vec[vcount] = sel.u.vec.ind[j] - agg_start_index;
-					        vcount++;
 					}
-				}
-				if (vcount == 0) {
-					NclFree(vec);
-				}
-				else {
+					if (sel.u.vec.max < agg_start_index) {
+						break;
+					}
+					vcount = 0;
+					vstart = -1;
+					for (j = 0; j < sel.u.vec.n_ind; j++) {
+						if (sel.u.vec.ind[j] > agg_end_index)
+							break;
+						if (sel.u.vec.ind[j] >= agg_start_index) {
+							if (vstart < 0) 
+								vstart = j;
+							vcount++;
+						}
+					}
+					if (vcount == 0)
+						break;
+
+					vec = NclMalloc(sizeof(long) * vcount);
+					if (! vec) {
+						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+						estatus = NhlFATAL;
+						goto fatal_err;
+					}
+					for (j = vstart; j < sel.u.vec.n_ind; j++) {
+						if (sel.u.vec.ind[j] > agg_end_index)
+							break;
+						vec[j - vstart] = sel.u.vec.ind[j] - agg_start_index;
+					}
 					fsel->u.vec.n_ind = vcount;
 					fsel->u.vec.ind = vec;
 					fsel->u.vec.min = vec[0];
 					fsel->u.vec.max = vec[vcount - 1];
 					fsel->sel_type = Ncl_VECSUBSCR;
 					do_file = 1;
+					break;
 				}
-				break;
+				else {
+					if (sel.u.vec.max < agg_end_index) {
+						break;
+					}
+					if (sel.u.vec.min > agg_start_index) {
+						break;
+					}
+					vec = NclMalloc(sizeof(long) * (agg_start_index - agg_end_index + 1));
+					if (! vec) {
+						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+						estatus = NhlFATAL;
+						goto fatal_err;
+					}
+
+					vcount = 0;
+					vstart = -1;
+					for (j = 0; j < sel.u.vec.n_ind; j++) {
+						if (sel.u.vec.ind[j] < agg_end_index)
+							break;
+						if (sel.u.vec.ind[j] <= agg_start_index) {
+							if (vstart < 0) 
+								vstart = j;
+							vcount++;
+						}
+					}
+					if (vcount == 0)
+						break;
+					vec = NclMalloc(sizeof(long) * vcount);
+					if (! vec) {
+						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
+						estatus = NhlFATAL;
+						goto fatal_err;
+					}
+					for (j = vstart; j < sel.u.vec.n_ind; j++) {
+						if (sel.u.vec.ind[j] < agg_end_index)
+							break;
+						vec[j - vstart] = sel.u.vec.ind[j] - agg_end_index;
+					}
+					fsel->u.vec.n_ind = vcount;
+					fsel->u.vec.ind = vec;
+					fsel->u.vec.min = vec[vcount -1];
+					fsel->u.vec.max = vec[0];
+					fsel->sel_type = Ncl_VECSUBSCR;
+					do_file = 1;
+					break;
+				}
 			}
 		}
 		if (! do_file)
@@ -1193,6 +1319,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					agg_coord_var_md->multidval.dim_sizes[0] = agg_sel_count;
 					agg_coord_var_md->multidval.totalsize = sub_agg_md->multidval.totalsize;
 					memcpy(agg_coord_var_md->multidval.val,sub_agg_md->multidval.val,sub_agg_md->multidval.totalsize);
+					agg_coord_var->var.dim_info[0].dim_size = agg_sel_count;
 				}
 			}
 		}

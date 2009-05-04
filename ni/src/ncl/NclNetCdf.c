@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.52 2009-03-06 06:25:28 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.53 2009-05-04 19:23:30 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1040,6 +1040,7 @@ int* num_atts;
 	NetCdfAttInqRecList *stepal;
 	NclQuark *out_list = NULL;	
 	int i;
+	*num_atts = 0;
 	stepvl = rec->vars;
 	while(stepvl != NULL) {
 		if(stepvl->var_inq->name== thevar) {
