@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.12 2009-05-05 14:32:56 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.13 2009-05-05 22:49:18 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -150,7 +150,7 @@ NhlErrorTypes _Nclstr_fields_count
     }
 
     tmp_str = (char *) NrmQuarkToString(delim[0]);
-    tmp_delim = (char *) NclMalloc(strlen(tmp_str));
+    tmp_delim = (char *) NclMalloc(strlen(tmp_str)+2);
     if (! tmp_delim)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -193,6 +193,7 @@ NhlErrorTypes _Nclstr_fields_count
         }
     }
 
+    NclFree(tmp_str);
     NclFree(tmp_delim);
 
     return NclReturnValue((void *) fields, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_int, 0);
@@ -293,7 +294,7 @@ NhlErrorTypes _Nclstr_get_field
         str_size *= dimsz_strs[i];
 
     tmp_str = (char *) NrmQuarkToString(delim[0]);
-    tmp_delim = (char *) NclMalloc(strlen(tmp_str));
+    tmp_delim = (char *) NclMalloc(strlen(tmp_str)+2);
     if (! tmp_delim)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -376,6 +377,7 @@ NhlErrorTypes _Nclstr_get_field
    *}
    */
 
+    NclFree(tmp_str);
     NclFree(tmp_delim);
     NclFree(field_record);
 
@@ -774,7 +776,7 @@ NhlErrorTypes _Nclstr_substitute_str
     }
 
     tmp_str = (char *) NrmQuarkToString(o_s[0]);
-    tmp_o_s = (char *) NclMalloc(strlen(tmp_str) + 1);
+    tmp_o_s = (char *) NclMalloc(strlen(tmp_str) + 2);
     if (! tmp_o_s)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -799,7 +801,7 @@ NhlErrorTypes _Nclstr_substitute_str
     }
 
     tmp_str = (char *) NrmQuarkToString(n_s[0]);
-    tmp_n_s = (char *) NclMalloc(strlen(tmp_str) + 1);
+    tmp_n_s = (char *) NclMalloc(strlen(tmp_str) + 2);
     if (! tmp_n_s)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2223,7 +2225,7 @@ NhlErrorTypes _Nclstr_join
 
     tmp_str = (char *) NrmQuarkToString(delim[0]);
     n = strlen(tmp_str) + 2;
-    tmp_delim = (char *) NclMalloc(strlen(tmp_str));
+    tmp_delim = (char *) NclMalloc(n);
     if (! tmp_delim)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2238,7 +2240,7 @@ NhlErrorTypes _Nclstr_join
     for(i=0; i<str_size; i++)
     {
         tmp_str = (char *) NrmQuarkToString(strs[i]);
-        total_length += strlen(tmp_str);
+        total_length += strlen(tmp_str) + 1;
         if (max_length < strlen(tmp_str))
             max_length = strlen(tmp_str);
     }
@@ -2342,7 +2344,7 @@ NhlErrorTypes _Nclstr_concat
     for(i=0; i<str_size; i++)
     {
         tmp_str = (char *) NrmQuarkToString(strs[i]);
-        total_length += strlen(tmp_str);
+        total_length += strlen(tmp_str) + 1;
         if (max_length < strlen(tmp_str))
             max_length = strlen(tmp_str);
     }
@@ -2477,7 +2479,7 @@ NhlErrorTypes _Nclstr_insert
         str_size *= dimsz_strs[i];
 
     tmp_str = (char *) NrmQuarkToString(insert[0]);
-    tmp_insert = (char *) NclMalloc(strlen(tmp_str));
+    tmp_insert = (char *) NclMalloc(strlen(tmp_str)+2);
     if (! tmp_insert)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2594,7 +2596,7 @@ NhlErrorTypes _Nclstr_get_comma
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string));
+    new_string = (string *) NclMalloc(sizeof(string)+1);
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2620,7 +2622,7 @@ NhlErrorTypes _Nclstr_get_space
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string));
+    new_string = (string *) NclMalloc(sizeof(string)+1);
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2646,7 +2648,7 @@ NhlErrorTypes _Nclstr_get_tab
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string));
+    new_string = (string *) NclMalloc(sizeof(string)+1);
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2672,7 +2674,7 @@ NhlErrorTypes _Nclstr_get_sq
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string));
+    new_string = (string *) NclMalloc(sizeof(string)+1);
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2698,7 +2700,7 @@ NhlErrorTypes _Nclstr_get_dq
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string));
+    new_string = (string *) NclMalloc(sizeof(string)+1);
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2724,7 +2726,7 @@ NhlErrorTypes _Nclstr_get_nl
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string));
+    new_string = (string *) NclMalloc(sizeof(string)+1);
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
