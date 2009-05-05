@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargrun,v 1.6 2009-04-30 02:26:10 haley Exp $
+#	$Id: ncargrun,v 1.7 2009-05-05 20:50:16 haley Exp $
 #
 
 foreach arg ($argv)
@@ -18,7 +18,7 @@ foreach arg ($argv)
 	default:
 		if ( $?get_output ) then
 #
-# Out of laziness, just set all three of these env. vars and
+# Out of laziness, just set all five of these env. vars and
 # not worry about which one actually gets used.
 #
 			setenv NCARG_GKS_OUTPUT $arg

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargex.csh,v 1.169 2009-04-30 02:26:10 haley Exp $
+#   $Id: ncargex.csh,v 1.170 2009-05-05 20:50:16 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -101,19 +101,6 @@ set suffix_names = (                                               \
                 "ps" "eps" "epsi"                                  \
                 "" "" "" "" "" "" "" ""                            \
                 "ps" "png"                                         \
-                    )
-set default_files = (                                              \
-                "gmeta"                                            \
-                "" "" "" "" "" ""                                  \
-                "" "" ""                                           \
-                "gmeta1.pdf" "gmeta1.pdf"                          \
-                "" "" "" "" "" "" ""                               \
-                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
-                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
-                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
-                "gmeta1.ps" "gmeta1.eps" "gmeta1.epsi"             \
-                "" "" "" "" "" "" "" ""                            \
-                "cairo1.ps" "gmeta.png"                            \
                     )
 set default_msgs = (                                                       \
   "Metafile file is named"                                                 \
@@ -1580,10 +1567,8 @@ if ("$ws_type" == "8" || "$ws_type" == "10" ) unset std_file
 #**************************************#
 set suffix = "$suffix_names[$ws_type]"
 set graphic_file = "$name.$suffix"
-set default_file = $default_files[$ws_type]
 if ($ws_type == 41) then
-  set n={$name}_1
-  set msg = "cairo PNG files are named $n.xxxxxx.png (xxxxxx is the frame #)"
+  set msg = "cairo PNG files are named $name.xxxxxx.png (xxxxxx is the frame #)"
 else
   set msg = "$default_msgs[$ws_type] $graphic_file."
 endif
