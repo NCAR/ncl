@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.220 2009-05-01 19:25:58 shea Exp $
+;      $Id: contributed.ncl,v 1.221 2009-05-05 04:43:16 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -829,6 +829,9 @@ end
 ; D.Shea
 ; Change case of each character in a string to the opposite case
 
+; This function was deprecated in V5.1.1 and replaced with
+; the built-in function "str_switch".
+
 ; input strings may be scalar [sample="An apple a day"]
 ;                   or 1D     [sample=new( 10, string) ]
 ;                              sample(0)="apple", (1)="ARTICHOKE", ...
@@ -840,52 +843,18 @@ end
 undef ("changeCaseChar")
 function changeCaseChar (x:string)
 
-local low, up, xc, lowc, upc, dimxc, ndim, i, j 
 begin
-  low  = (/"a","b","c","d","e","f","g","h","i","j","k","l","m" \
-          ,"n","o","p","q","r","s","t","u","v","w","x","y","z" /)
-  up   = (/"A","B","C","D","E","F","G","H","I","J","K","L","M" \
-          ,"N","O","P","Q","R","S","T","U","V","W","X","Y","Z" /)
-
-  xc    = stringtochar(x)
-  dimxc = dimsizes (xc)
-  ndim  = dimsizes (dimxc)
-
-  lowc = stringtochar (low) 
-  upc  = stringtochar (up) 
-
-  if (ndim.eq.1) then
-      do i=0,dimxc-2         ; ignore end-of-string character
-         if (any(lowc(:,0).eq.xc(i))) then
-             xc(i) = upc(ind(lowc(:,0).eq.xc(i)),0)
-         else
-             if (any(upc(:,0).eq.xc(i))) then
-                 xc(i) = lowc(ind(upc(:,0).eq.xc(i)),0)
-             end if
-         end if
-      end do
-  end if
-
-  if (ndim.eq.2) then
-      do i=0,dimxc(0)-1      ; loop thru each string
-       do j=0,dimxc(1)-1     ; loop thry each char in string
-          if (any(lowc(:,0).eq.xc(i,j))) then
-              xc(i,j) = upc(ind(lowc(:,0).eq.xc(i,j)),0)
-          else
-              if (any(upc(:,0).eq.xc(i,j))) then
-                  xc(i,j) = lowc(ind(upc(:,0).eq.xc(i,j)),0)
-              end if
-          end if
-       end do
-      end do
-  end if
-
-  return (chartostring(xc))
+  print("changeCaseChar: this function has been deprecated.")
+  print("                Will use str_switch.")
+  return(str_switch(x))
 end
 ; *****************************************************************
 ; D.Shea
 ; Change case: (1) "low" [change all to lower case] 
 ;              (2) "up"  [change all to upper case]
+
+; This function was deprecated in V5.1.1 and replaced with
+; the built-in functions "str_lower" and "str_upper".
 
 ; input strings may be scalar [sample="An apple a day"]
 ;                   or 1D     [sample=new( 10, string) ]
@@ -896,45 +865,14 @@ end
 undef ("changeCase")
 function changeCase (x:string, opt:string)
 
-local low, up, xc, dimxc, ndim, oldc, newc, i, j 
 begin
-  low  = (/"a","b","c","d","e","f","g","h","i","j","k","l","m" \
-          ,"n","o","p","q","r","s","t","u","v","w","x","y","z" /)
-  up   = (/"A","B","C","D","E","F","G","H","I","J","K","L","M" \
-          ,"N","O","P","Q","R","S","T","U","V","W","X","Y","Z" /)
-
-  xc   = stringtochar(x)
-  dimxc= dimsizes (xc)
-  ndim = dimsizes (dimxc)
-
-
+  print("changeCase: this function has been deprecated.")
+  print("            Will use str_lower or str_upper.")
   if (opt.eq."low") then
-      oldc = stringtochar (up)
-      newc = stringtochar (low)
-  else     ; must be upper-to-lower
-      oldc = stringtochar (low) 
-      newc = stringtochar (up) 
+    return (str_lower(x))
+  else
+    return (str_upper(x))
   end if
-
-  if (ndim.eq.1) then
-      do i=0,dimxc-2          ; ignore end-of-string character
-         if (any(oldc(:,0).eq.xc(i))) then
-             xc(i) = newc(ind(oldc(:,0).eq.xc(i)),0)
-         end if
-      end do
-  end if
-
-  if (ndim.eq.2) then
-      do i=0,dimxc(0)-1       ; loop thru each string
-        do j=0,dimxc(1)-1     ; loop thry each char in string
-           if (any(oldc(:,0).eq.xc(i,j))) then
-               xc(i,j) = newc(ind(oldc(:,0).eq.xc(i,j)),0)
-           end if
-        end do
-      end do
-  end if
-
-  return (chartostring(xc))
 end
 ; *****************************************************
 ; D. Shea
