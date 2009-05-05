@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.12 2008-10-02 22:20:16 dbrown Exp $
+#       $Id: ncl_convert2nc,v 1.13 2009-05-05 19:45:11 brownrig Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -529,6 +529,39 @@ while ($n <= $nfiles)
                 continue
                 breaksw
 
+            case shp:
+            case mif:
+            case gmt:
+            case rt1:   # The possible TIGER suffixes...
+            case rt2:
+            case rt3:
+            case rt4:
+            case rt5:
+            case rt6:
+            case rt7:
+            case rt8:
+            case rt9:
+            case rta:
+            case rtb:
+            case rtc:
+            case rte:
+            case rth:
+            case rti:
+            case rtm:
+            case rtp:
+            case rtr:
+            case rts:
+            case rtt:
+            case rtu:
+            case rtz:
+                set ftype = "OGR"
+                set if = $fil
+                set of = $fil:r
+
+                set valid_file = 1
+                goto VALID_FILE
+                breaksw
+
             default:
                 echo "${progname}: filetype '${lsfx}' not supported."
                 echo
@@ -605,6 +638,38 @@ while ($n <= $nfiles)
                 @ nbadf += 1
                 @ n += 1
                 continue
+                breaksw
+
+            case shp:
+            case mif:
+            case gmt:
+            case rt1:   # The possible TIGER suffixes...
+            case rt2:
+            case rt3:
+            case rt4:
+            case rt5:
+            case rt6:
+            case rt7:
+            case rt8:
+            case rt9:
+            case rta:
+            case rtb:
+            case rtc:
+            case rte:
+            case rth:
+            case rti:
+            case rtm:
+            case rtp:
+            case rtr:
+            case rts:
+            case rtt:
+            case rtu:
+            case rtz:
+                set ftype = "OGR"
+                set if = $fil:r.$lsfx
+                set of = $fil:r
+                set valid_file = 1
+                goto VALID_FILE
                 breaksw
         endsw
     endif
