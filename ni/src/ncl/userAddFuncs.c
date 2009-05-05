@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.11 2009-04-30 17:45:37 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.12 2009-05-05 14:32:56 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1810,8 +1810,7 @@ NhlErrorTypes _Nclstr_upper
 
         strcpy(result, (char *) NrmQuarkToString(str[i]));
 
-      /*Strip off the ending space/TAB */
-        max_length = strlen(tmp_str);
+        max_length = strlen(result);
         for(n=0; n<max_length; n++)
         {
             if((result[n] >= 'a') && (result[n] <= 'z'))
@@ -1912,8 +1911,7 @@ NhlErrorTypes _Nclstr_lower
 
         strcpy(result, (char *) NrmQuarkToString(str[i]));
 
-      /*Strip off the ending space/TAB */
-        max_length = strlen(tmp_str);
+        max_length = strlen(result);
         for(n=0; n<max_length; n++)
         {
             if((result[n] >= 'A') && (result[n] <= 'Z'))
@@ -2014,8 +2012,7 @@ NhlErrorTypes _Nclstr_switch
 
         strcpy(result, (char *) NrmQuarkToString(str[i]));
 
-      /*Strip off the ending space/TAB */
-        max_length = strlen(tmp_str);
+        max_length = strlen(result);
         for(n=0; n<max_length; n++)
         {
             if((result[n] >= 'a') && (result[n] <= 'z'))
