@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.221 2009-05-05 04:43:16 haley Exp $
+;      $Id: contributed.ncl,v 1.222 2009-05-05 16:49:25 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -899,6 +899,7 @@ begin
             end if
          end do
      end if
+     delete( chr )     ; size may change next iteration
   end do
   return(str)
 end
