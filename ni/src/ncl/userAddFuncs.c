@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.13 2009-05-05 22:49:18 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.14 2009-05-06 05:17:24 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -141,13 +141,9 @@ NhlErrorTypes _Nclstr_fields_count
     }
 
     if(has_missing_strs)
-    {
-      /*
-       *ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
-       */
-        ret_missing = missing_strs;
-        ret_missing.intval = -1;
-    }
+        ret_missing.stringval = missing_strs.stringval;
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     tmp_str = (char *) NrmQuarkToString(delim[0]);
     tmp_delim = (char *) NclMalloc(strlen(tmp_str)+2);
@@ -175,9 +171,10 @@ NhlErrorTypes _Nclstr_fields_count
 
     for(i=0; i<str_size; i++)
     {
-        if (strs[i] == missing_strs.stringval)
+        if (strs[i] == ret_missing.stringval)
         {
              fields[i] = -1;
+             has_missing_strs = 1;
              continue;
         }
 
@@ -436,9 +433,12 @@ NhlErrorTypes _Nclstr_get_cols
     }
 
     if(has_missing_strs)
+    {
         has_missing = 1;
-
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+        ret_missing.stringval = missing_strs.stringval;
+    }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     startCol = (int *) NclGetArgValue(
                         1,
@@ -513,9 +513,9 @@ NhlErrorTypes _Nclstr_get_cols
 
         for(i=0; i<str_size; i++)
         {
-            if (strs[i] == missing_strs.stringval)
+            if (strs[i] == ret_missing.stringval)
             {
-                arraySubString[i] = missing_strs.stringval;
+                arraySubString[i] = ret_missing.stringval;
                 has_missing = 1;
                 continue;
             }
@@ -557,9 +557,9 @@ NhlErrorTypes _Nclstr_get_cols
 
         for(i=0; i<str_size; i++)
         {
-            if (strs[i] == missing_strs.stringval)
+            if (strs[i] == ret_missing.stringval)
             {
-                arraySubString[i] = missing_strs.stringval;
+                arraySubString[i] = ret_missing.stringval;
                 has_missing = 1;
                 continue;
             }
@@ -593,9 +593,9 @@ NhlErrorTypes _Nclstr_get_cols
 
         for(i=0; i<str_size; i++)
         {
-            if (strs[i] == missing_strs.stringval)
+            if (strs[i] == ret_missing.stringval)
             {
-                arraySubString[i] = missing_strs.stringval;
+                arraySubString[i] = ret_missing.stringval;
                 has_missing = 1;
                 continue;
             }
@@ -834,7 +834,7 @@ NhlErrorTypes _Nclstr_substitute_str
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
             arrayString[i] = ret_missing.stringval;
             has_missing = 1;
@@ -1086,18 +1086,20 @@ NhlErrorTypes _Nclstr_left_strip
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
     if(has_missing_str)
     {
         has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
@@ -1200,18 +1202,20 @@ NhlErrorTypes _Nclstr_right_strip
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
     if(has_missing_str)
     {
         has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
@@ -1306,18 +1310,20 @@ NhlErrorTypes _Nclstr_strip
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
     if(has_missing_str)
     {
         has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
@@ -1404,13 +1410,13 @@ NhlErrorTypes _Nclstr_squeeze
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
-
     if(has_missing_str)
     {
         has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     str_size = 1;
     for(i=0; i<ndim_str; i++)
@@ -1440,9 +1446,10 @@ NhlErrorTypes _Nclstr_squeeze
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
@@ -1768,13 +1775,13 @@ NhlErrorTypes _Nclstr_upper
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
-
     if(has_missing_str)
     {
         has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     str_size = 1;
     for(i=0; i<ndim_str; i++)
@@ -1804,9 +1811,10 @@ NhlErrorTypes _Nclstr_upper
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
@@ -1869,13 +1877,13 @@ NhlErrorTypes _Nclstr_lower
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
-
     if(has_missing_str)
     {
         has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     str_size = 1;
     for(i=0; i<ndim_str; i++)
@@ -1905,9 +1913,10 @@ NhlErrorTypes _Nclstr_lower
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
@@ -1970,13 +1979,13 @@ NhlErrorTypes _Nclstr_switch
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
-
     if(has_missing_str)
     {
         has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
+    else
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     str_size = 1;
     for(i=0; i<ndim_str; i++)
@@ -2006,9 +2015,10 @@ NhlErrorTypes _Nclstr_switch
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
@@ -2110,9 +2120,10 @@ NhlErrorTypes _Nclstr_capital
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == missing_str.stringval)
+        if (str[i] == ret_missing.stringval)
         {
            arrayOfString[i] = str[i];
+           has_missing = 1;
            continue;
         }
 
