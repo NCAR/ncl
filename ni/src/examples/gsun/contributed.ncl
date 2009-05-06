@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.222 2009-05-05 16:49:25 shea Exp $
+;      $Id: contributed.ncl,v 1.223 2009-05-06 22:48:27 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7411,13 +7411,20 @@ begin
    
    return (sTF)
 end
-
+; ----------------------
 undef("indStrSubset")
 function indStrSubset(S[1]:string, s[1]:string)
 ; return the indices of the characters
 ; of "S" of which "s" is a subset. 
 local SC, sc, nsc, nSC, n, ii
 begin
+
+   if (ismissing(S) .or. ismissing(s)) then
+       print("indStrSubset: missing string")
+       ii = (/-999,-999/)
+       ii@_FillValue = -999
+       return(ii)
+   end if
 
    SC  = stringtochar(S)     ; main
    sc  = stringtochar(s)     ; subset
