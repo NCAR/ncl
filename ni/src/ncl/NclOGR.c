@@ -1,5 +1,5 @@
 /*
- *      $Id: NclOGR.c,v 1.1 2009-04-10 21:39:39 brownrig Exp $
+ *      $Id: NclOGR.c,v 1.2 2009-05-06 17:24:33 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -26,19 +26,18 @@
  *      more line segments, which in turn may represent polylines or polygons, etc.
  *      Geometry herein is thus encoded in the following "tables".
  *      
- *      For each "feature" in the OGR file, there is an entry in the "feature_info" table.
- *      These entries contain 3 items:
- *          feature_info(*, 0) = feature ID
- *          feature_info(*, 1) = index into segment_info table of first segment for the feature
- *          feature_info(*, 2) = the number of segments belonging to this feature.
+ *      For each "feature" in the OGR file, there is an entry in the "geometry" table.
+ *      These entries contain 2 items:
+ *          geometry(*, 0) = index into segments table of first segment for the feature
+ *          geometry(*, 1) = the number of segments belonging to this feature.
  *
- *      The "segment_info" table is a partially ordered list of segments (individual points,
+ *      The "segments" table is a partially ordered list of segments (individual points,
  *      polylines, polygons). There are one or more entries in this table per feature; the 
- *      feature_info table points to the first segment entry, and all entries belonging to 
- *      the feature directly follow the first. Entries in the segment_info table provide pointers
- *      to the actual geometry:
- *          segment_info(*, 0) = index into X, Y, Z arrays of first point of the segment
- *          segment_info(*, 1) = number of points in the segment.
+ *      geometry table points to the first segment entry, and all entries belonging to 
+ *      the feature directly follow the first. Entries in the segments table provide pointers
+ *      to the xy(z) coordinates:
+ *          segments(*, 0) = index into X, Y, Z arrays of first point of the segment
+ *          segments(*, 1) = number of points in the segment.
  *
  *      The actual geometry coordinates are stored in the "x", "y", and optional "z" arrays.
  *      These contain partially ordered lists of coordinates that make up the individual segments.
@@ -49,8 +48,8 @@
  *      Several global attributes are defined, mainly for convenience in the scripts. One encodes
  *      the "layer name", as extracted from the OGR file. Another denoted whether the set of 
  *      features in the file is comprised of Point, Polylines, or Polygons. The remaining 
- *      attributes are intended as symbolic names into the second index of the feature_info and
- *      segment_info tables.
+ *      attributes are intended as symbolic names into the second index of the geometry and
+ *      segments tables.
  *
  *      The OGC/OGR simple features implementation does not expose anything that could/might be
  *      used as variable attributes, so none are created for these file variables. The same is 
@@ -97,7 +96,7 @@ struct _OGRRecord {
         int              numAtts;
 
         /* pointers to the contents of the "geometry" variables */
-        int              *features;
+        int              *geometry;
         int              *segments;
         double           *x;
         double           *y;
@@ -108,28 +107,34 @@ struct _OGRRecord {
 };
 
 /* numerical indices for the geometry variables */
-#define GEOMVAR_FEATURES 0
+#define GEOMVAR_GEOMETRY 0
 #define GEOMVAR_SEGMENTS 1
 #define GEOMVAR_X        2
 #define GEOMVAR_Y        3
 #define GEOMVAR_Z        4
 
 /* numerical indices for the dimensions */
-#define DIM_FEATURE_INFO 0
-#define DIM_SEGMENT_INFO 1
+#define DIM_GEOMETRY     0
+#define DIM_SEGMENTS     1
 #define DIM_NUM_FEATURES 2
 #define DIM_NUM_SEGMENTS 3
 #define DIM_NUM_POINTS   4
 
-/* constants for number of columns in the features and segments tables */
-#define NUM_FEATURES_COLS 3
+/* constants for number of columns in the geometry and segments tables */
+#define NUM_GEOMETRY_COLS 2
 #define NUM_SEGMENTS_COLS 2
 
 static int OGRInitialized = 0;
 
-/* these macros provide convenient indexing into features & segments tables */
-#define FEATIDX(feature, i) (feature*NUM_FEATURES_COLS + i)
+/* these macros provide convenient indexing into geometry & segments tables */
+#define GEOMIDX(feature, i) (feature*NUM_GEOMETRY_COLS + i)
 #define SEGIDX(segment, i)  (segment*NUM_SEGMENTS_COLS + i)
+
+/* symbolic constants for use as second index into geometry and segments tables */
+#define GEOM_SEGINDEX 0
+#define GEOM_NUMSEGS  1
+#define SEGS_XYZINDEX 0
+#define SEGS_NUMXYZ   1
 
 /*
  * _is3DGeometry()
@@ -227,14 +232,14 @@ OGRRec *rec;
         /* Define our fixed set of dimensions */
         rec->dimensions = (NclFDimRec*)NclMalloc(sizeof(NclFDimRec) * 5);
 
-        /* the per-feature dimension in our features table */
-        rec->dimensions[0].dim_name_quark = NrmStringToQuark("feature_info");
-        rec->dimensions[0].dim_size = 3;
+        /* the per-feature dimension in our geometry table */
+        rec->dimensions[0].dim_name_quark = NrmStringToQuark("geometry");
+        rec->dimensions[0].dim_size = NUM_GEOMETRY_COLS;
         rec->dimensions[0].is_unlimited = 0;
 
         /* the per-segment dimension in our segments table */
-        rec->dimensions[1].dim_name_quark = NrmStringToQuark("segment_info");
-        rec->dimensions[1].dim_size = 2;
+        rec->dimensions[1].dim_name_quark = NrmStringToQuark("segments");
+        rec->dimensions[1].dim_size = NUM_SEGMENTS_COLS;
         rec->dimensions[1].is_unlimited = 0;
 
         /* the per-feature dimension  (fill in size later) */
@@ -292,34 +297,28 @@ OGRRec *rec;
         ++i;
 
         /* The remaining global-atts are "convenience constants" intended to be used 
-         * in scripting code to index into the feature_info and segment_info variables.
+         * in scripting code to index into the geometry and segments variables.
          */
 
-        rec->globalAtts[i].att_name_quark = NrmStringToQuark("fi_id");
+        rec->globalAtts[i].att_name_quark = NrmStringToQuark("geom_segIndex");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*) 0;  /* index 0  */
+        rec->globalAttsValues[i] = (void*) 0;   /* index zero */ 
         ++i;
 
-        rec->globalAtts[i].att_name_quark = NrmStringToQuark("fi_segIndex");
+        rec->globalAtts[i].att_name_quark = NrmStringToQuark("geom_numSegs");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*) 1;  
+        rec->globalAttsValues[i] = (void*)1;
         ++i;
 
-        rec->globalAtts[i].att_name_quark = NrmStringToQuark("fi_numSegs");
-        rec->globalAtts[i].data_type = NCL_int;
-        rec->globalAtts[i].num_elements = 1;
-        rec->globalAttsValues[i] = (void*)2;
-        ++i;
-
-        rec->globalAtts[i].att_name_quark = NrmStringToQuark("si_xyzIndex");
+        rec->globalAtts[i].att_name_quark = NrmStringToQuark("segs_xyzIndex");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
         rec->globalAttsValues[i] = (void*) 0;
         ++i;
 
-        rec->globalAtts[i].att_name_quark = NrmStringToQuark("si_numPnts");
+        rec->globalAtts[i].att_name_quark = NrmStringToQuark("segs_numPnts");
         rec->globalAtts[i].data_type = NCL_int;
         rec->globalAtts[i].num_elements = 1;
         rec->globalAttsValues[i] = (void*) 1;
@@ -333,7 +332,7 @@ OGRRec *rec;
  * _defineVariables()
 
  * Defines variables records for this OGR file. There is a predetermined set of variables, 
- * referred to collectively as the "geometry variables" ("feature_info", "segment_info", 
+ * referred to collectively as the "geometry variables" ("geometry", "segments", 
  * "x", "y", and optionally "z"). Then we create variables for each (non-spatial) field
  * associated with records in the OGR file.
  *
@@ -356,7 +355,7 @@ OGRRec *rec;
         
         numVars = OGR_FD_GetFieldCount(rec->layerDefn);
  	geomType = OGR_FD_GetGeomType(rec->layerDefn);
-        rec->numGeomVariables = 4;  /* minimally, the "feature_info", "segment_info" "x" "y" vars */
+        rec->numGeomVariables = 4;  /* minimally, the "geometry", "segments" "x" "y" vars */
         rec->is3DGeometry = 0;
         if (_is3DGeometry(geomType)) {
                 rec->numGeomVariables++;  /* add 1 for a "z" variable */
@@ -365,16 +364,16 @@ OGRRec *rec;
 
         rec->variables = (NclFVarRec*)NclMalloc(sizeof(NclFVarRec) * (numVars + rec->numGeomVariables));
 
-        /* the "feature_info" variable encodes each distinct feature in the file  */        
-        rec->variables[i].var_name_quark = NrmStringToQuark("feature_info");
+        /* the "geometry" variable encodes each distinct feature in the file  */        
+        rec->variables[i].var_name_quark = NrmStringToQuark("geometry");
         rec->variables[i].data_type = NCL_int;
         rec->variables[i].num_dimensions = 2;
         rec->variables[i].file_dim_num[0] = 2;  /* MUST ALIGN WITH DIMENSION DEFS */
         rec->variables[i].file_dim_num[1] = 0;  /* MUST ALIGN WITH DIMENSION DEFS */
         ++i;
 
-        /* the "segment_info" variable encodes the geometry of the features  */        
-        rec->variables[i].var_name_quark = NrmStringToQuark("segment_info");
+        /* the "segments" variable encodes the geometry of the features  */        
+        rec->variables[i].var_name_quark = NrmStringToQuark("segments");
         rec->variables[i].data_type = NCL_int;
         rec->variables[i].num_dimensions = 2;
         rec->variables[i].file_dim_num[0] = 3;  /* MUST ALIGN WITH DIMENSION DEFS */
@@ -406,7 +405,7 @@ OGRRec *rec;
 
         /* March through the layer definition to get the dataset-specific variable defns.
          * Note that these variables exist 1:1 with features, and are thus same length as 
-         * the feature_info table.
+         * the geometry table.
          */
         for (j=0; j<numVars; j++) {
                 OGRFieldDefnH fldDef = OGR_FD_GetFieldDefn(rec->layerDefn, j);
@@ -463,12 +462,12 @@ int         *numPoints;
 
 
 /*
- * _loadGeometry()
+ * _loadFeatureGeometry()
  *
  * Utility function used to recursively load OGRGeometry.
  *
  */
-static void _loadGeometry
+static void _loadFeatureGeometry
 #if	NhlNeedProto
 (OGRRecord *rec, OGRGeometryH geom, int *numSegments, int *numPoints)
 #else
@@ -489,8 +488,8 @@ int             *numPoints;
                         OGRErr err = OGR_G_Transform(geom, rec->xform);
                 }
                 int numSegPts = OGR_G_GetPointCount(geom);
-                rec->segments[SEGIDX(*numSegments, 0)] = *numPoints;
-                rec->segments[SEGIDX(*numSegments, 1)] = numSegPts;
+                rec->segments[SEGIDX(*numSegments, SEGS_XYZINDEX)] = *numPoints;
+                rec->segments[SEGIDX(*numSegments, SEGS_NUMXYZ)] = numSegPts;
                 
                 for (i=0; i<numSegPts; i++) {
                         rec->x[*numPoints] = OGR_G_GetX(geom, i);
@@ -508,20 +507,20 @@ int             *numPoints;
                 int i;  
                 for (i=0; i<geomCount; i++) {
                         subGeom = OGR_G_GetGeometryRef(geom, i);
-                         _loadGeometry(rec, subGeom, numSegments, numPoints);
+                         _loadFeatureGeometry(rec, subGeom, numSegments, numPoints);
                 }
         }
 }
 
 
 /*
- * _loadFeatures()
+ * _loadGeometry()
  *
  * Intended to be called once to load and cache all of the geometry variables, whenever
  * any one of them is asked for.
  *
  */
-static int _loadFeatures
+static int _loadGeometry
 #if	NhlNeedProto
 (OGRRecord *rec)
 #else
@@ -534,10 +533,10 @@ OGRRecord *rec;
         int segmentNum = 0;
         int pointNum = 0;
 
-        if (rec->features != NULL)
+        if (rec->geometry != NULL)
                 return 1;   /* already loaded */
 
-        rec->features = (int*) NclMalloc(sizeof(int) * NUM_FEATURES_COLS * 
+        rec->geometry = (int*) NclMalloc(sizeof(int) * NUM_GEOMETRY_COLS * 
             rec->dimensions[DIM_NUM_FEATURES].dim_size);
         rec->segments = (int*) NclMalloc(sizeof(int) * NUM_SEGMENTS_COLS * 
             rec->dimensions[DIM_NUM_SEGMENTS].dim_size);
@@ -545,7 +544,7 @@ OGRRecord *rec;
         rec->y = (double*) NclMalloc(sizeof(double) * rec->dimensions[DIM_NUM_POINTS].dim_size);
         if (rec->is3DGeometry) 
                 rec->z = (double*) NclMalloc(sizeof(double) * rec->dimensions[DIM_NUM_POINTS].dim_size);
-        if (rec->features == NULL || rec->segments == NULL || rec->x == NULL ||
+        if (rec->geometry == NULL || rec->segments == NULL || rec->x == NULL ||
             rec->y == NULL || (rec->is3DGeometry && rec->z == NULL))
         {
 		NhlPError(NhlFATAL,ENOMEM,NULL);
@@ -555,12 +554,12 @@ OGRRecord *rec;
         OGR_L_ResetReading(rec->layer);
         while( (feature = OGR_L_GetNextFeature(rec->layer)) != NULL ) {
                 OGRGeometryH geom = OGR_F_GetGeometryRef(feature);
-                rec->features[FEATIDX(featureNum, 0)] = featureNum;
-                rec->features[FEATIDX(featureNum, 1)] = segmentNum;
+                rec->geometry[GEOMIDX(featureNum, GEOM_SEGINDEX)] = segmentNum;
 
-                _loadGeometry(rec, geom, &segmentNum, &pointNum);
+                _loadFeatureGeometry(rec, geom, &segmentNum, &pointNum);
           
-                rec->features[FEATIDX(featureNum, 2)] = segmentNum - rec->features[FEATIDX(featureNum, 1)];
+                rec->geometry[GEOMIDX(featureNum, GEOM_NUMSEGS)] = 
+                    segmentNum - rec->geometry[GEOMIDX(featureNum, GEOM_SEGINDEX)];
                 OGR_F_Destroy(feature);
                 ++featureNum;
         }
@@ -592,7 +591,7 @@ void *storage;
          * under the premise that its quite likely a request for any of them is part of
          * a broader request for the geometry as a whole.
          */
-        if (!_loadFeatures(rec))
+        if (!_loadGeometry(rec))
                 return NULL;
 
         /* NOTE that we use explicit knowledge of the dimensions of these variables */
@@ -618,13 +617,13 @@ void *storage;
                 }
         }
 
-        else if (varNum == GEOMVAR_FEATURES) {
+        else if (varNum == GEOMVAR_GEOMETRY) {
                 int i, j;
                 int cols = (finish[1]-start[1]+1) / stride[1];
                 for (i=start[0]; i<=finish[0]; i+=stride[0]) {
                         for (j=start[1]; j<=finish[1]; j+=stride[1]) {
                                 *( ((int*)storage) + (i-start[0])*cols  + (j-start[1])) = 
-                                    *(rec->features + i*NUM_FEATURES_COLS + j);
+                                    *(rec->geometry + i*NUM_GEOMETRY_COLS + j);
                         }
                 }
         }
@@ -827,7 +826,7 @@ int wr_status;
         OGRLayerH layer;
         OGRFeatureH feature;
         OGRSpatialReferenceH sSrs;
-        int numFeatures = 0;
+        int numGeometry = 0;
         int numSegments = 0;
         int numPoints = 0;
 
@@ -885,17 +884,17 @@ int wr_status;
         _defineVariables(rec);
 
 
-        /* Read through the features to get the number of features, segments, and points... */
+        /* Read through the geometry to get the number of features, segments, and points... */
         OGR_L_ResetReading(layer);
         while( (feature = OGR_L_GetNextFeature(layer)) != NULL ) {
                 OGRGeometryH geom = OGR_F_GetGeometryRef(feature);
                 _countGeometry(geom, &numSegments, &numPoints);
                 OGR_F_Destroy(feature);
-                ++numFeatures;
+                ++numGeometry;
         }
 
         /* update our remaining dimensions... */
-        rec->dimensions[2].dim_size = numFeatures;
+        rec->dimensions[2].dim_size = numGeometry;
         rec->dimensions[3].dim_size = numSegments;
         rec->dimensions[4].dim_size = numPoints;
 
@@ -953,7 +952,7 @@ void *therec;
         if (rec->globalAttsValues) NclFree(rec->globalAttsValues);
         if (rec->variables)  NclFree(rec->variables);
 
-        if (rec->features) NclFree(rec->features);
+        if (rec->geometry) NclFree(rec->geometry);
         if (rec->segments) NclFree(rec->segments);
         if (rec->x) NclFree(rec->x);
         if (rec->y) NclFree(rec->y);
