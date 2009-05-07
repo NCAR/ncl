@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.14 2009-05-06 05:17:24 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.15 2009-05-07 05:34:07 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -314,7 +314,7 @@ NhlErrorTypes _Nclstr_get_field
         return NhlFATAL;
     }
 
-    arraySubString = (string *) NclMalloc(str_size*max_length);
+    arraySubString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arraySubString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -378,7 +378,7 @@ NhlErrorTypes _Nclstr_get_field
     NclFree(tmp_delim);
     NclFree(field_record);
 
-    return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arraySubString);
 }
@@ -484,7 +484,7 @@ NhlErrorTypes _Nclstr_get_cols
     }
     max_length ++;
 
-    arraySubString = (string *) NclMalloc(str_size*max_length);
+    arraySubString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arraySubString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -691,7 +691,7 @@ NhlErrorTypes _Nclstr_get_cols
 
     NclFree(result);
 
-    return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, ( has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, ( has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arraySubString);
 }
@@ -729,7 +729,6 @@ NhlErrorTypes _Nclstr_substitute_str
     int i, m, n, nf, nn;
     int str_size;
     int current_size = 0;
-    int pre_def_size = 0;
     int cols;
 
     str = (string *) NclGetArgValue(
@@ -818,8 +817,7 @@ NhlErrorTypes _Nclstr_substitute_str
     for(i=0; i<ndim_str; i++)
         str_size *= dimsz_str[i];
 
-    pre_def_size = str_size*NCL_INITIAL_STRING_LENGTH;
-    arrayString = (string *) NclMalloc(pre_def_size);
+    arrayString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -832,6 +830,7 @@ NhlErrorTypes _Nclstr_substitute_str
         return NhlFATAL;
     }
 
+    current_size = NCL_INITIAL_STRING_LENGTH;
     for(i=0; i<str_size; i++)
     {
         if (str[i] == ret_missing.stringval)
@@ -845,16 +844,10 @@ NhlErrorTypes _Nclstr_substitute_str
 
         cols = strlen(tmp_str);
         m = cols + strlen(tmp_n_s) - strlen(tmp_o_s);
-        current_size += m;
-        if(current_size > pre_def_size)
+        if(current_size <= m)
         {
-            pre_def_size += str_size*NCL_INITIAL_STRING_LENGTH;
-            arrayString = (string *) NclRealloc(arrayString, pre_def_size);
-        }
-
-        if(m > strlen(new_str))
-        {
-            new_str = (char *) NclRealloc(new_str, m+NCL_INITIAL_STRING_LENGTH);
+            current_size *= 2;
+            new_str = (char *) NclRealloc(new_str, current_size);
         }
 
         m = 0;
@@ -899,7 +892,7 @@ NhlErrorTypes _Nclstr_substitute_str
     NclFree(tmp_o_s);
     NclFree(tmp_n_s);
 
-    return NclReturnValue(arrayString, ndim_str, dimsz_str, ( has_missing ? &ret_missing : NULL ), NCL_string, 1);
+    return NclReturnValue(arrayString, ndim_str, dimsz_str, ( has_missing ? &ret_missing : NULL ), NCL_string, 0);
 
     NclFree(arrayString);
 }
@@ -950,7 +943,7 @@ NhlErrorTypes _Nclstr_is_blank
 
     if (strs == NULL)
     {
-        return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, NULL, NCL_logical, 1);
+        return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, NULL, NCL_logical, 0);
     }
     else
     {
@@ -985,7 +978,7 @@ NhlErrorTypes _Nclstr_is_blank
                     }
                 }
             }
-            return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, &ret_missing, NCL_logical, 1);
+            return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, &ret_missing, NCL_logical, 0);
         }
         else
         {
@@ -1011,7 +1004,7 @@ NhlErrorTypes _Nclstr_is_blank
                 }   
             }
 
-            return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, NULL, NCL_logical, 1);
+            return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, NULL, NCL_logical, 0);
         }
     }
 
@@ -1072,7 +1065,7 @@ NhlErrorTypes _Nclstr_left_strip
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1129,7 +1122,7 @@ NhlErrorTypes _Nclstr_left_strip
 
     NclFree(result);
 
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -1188,7 +1181,7 @@ NhlErrorTypes _Nclstr_right_strip
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1237,7 +1230,7 @@ NhlErrorTypes _Nclstr_right_strip
 
     NclFree(result);
 
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -1296,7 +1289,7 @@ NhlErrorTypes _Nclstr_strip
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1363,7 +1356,7 @@ NhlErrorTypes _Nclstr_strip
 
     NclFree(result);
 
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -1430,7 +1423,7 @@ NhlErrorTypes _Nclstr_squeeze
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1517,7 +1510,7 @@ NhlErrorTypes _Nclstr_squeeze
     }
 
     NclFree(result);
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -1679,7 +1672,7 @@ NhlErrorTypes _Nclstr_index_of_substr
         }
 
         dimsz_index[0] = 1;
-        return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 1);
+        return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 0);
         NclFree(index);
     }
 
@@ -1730,7 +1723,7 @@ NhlErrorTypes _Nclstr_index_of_substr
 
     index = (int *) NclRealloc(index, sizeof(int) * count);
     dimsz_index[0] = count;
-    return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 1);
+    return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 0);
 
     NclFree(index);
 }
@@ -1795,7 +1788,7 @@ NhlErrorTypes _Nclstr_upper
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1831,7 +1824,7 @@ NhlErrorTypes _Nclstr_upper
     }
 
     NclFree(result);
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -1897,7 +1890,7 @@ NhlErrorTypes _Nclstr_lower
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -1933,7 +1926,7 @@ NhlErrorTypes _Nclstr_lower
     }
 
     NclFree(result);
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -1999,7 +1992,7 @@ NhlErrorTypes _Nclstr_switch
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2037,7 +2030,7 @@ NhlErrorTypes _Nclstr_switch
     }
 
     NclFree(result);
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -2104,7 +2097,7 @@ NhlErrorTypes _Nclstr_capital
     }
     max_length ++;
 
-    arrayOfString = (string *) NclMalloc(str_size*max_length);
+    arrayOfString = (string *) NclMalloc(str_size*sizeof(string));
     if (! arrayOfString)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2155,7 +2148,7 @@ NhlErrorTypes _Nclstr_capital
     }
 
     NclFree(result);
-    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(arrayOfString);
 }
@@ -2264,7 +2257,7 @@ NhlErrorTypes _Nclstr_join
         return NhlFATAL;
     }
 
-    new_string = (string *) NclMalloc(total_length);
+    new_string = (string *) NclMalloc(str_size*sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2293,7 +2286,7 @@ NhlErrorTypes _Nclstr_join
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2369,7 +2362,7 @@ NhlErrorTypes _Nclstr_concat
         return NhlFATAL;
     }
 
-    new_string = (string *) NclMalloc(total_length);
+    new_string = (string *) NclMalloc(str_size*sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2394,7 +2387,7 @@ NhlErrorTypes _Nclstr_concat
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2506,7 +2499,7 @@ NhlErrorTypes _Nclstr_insert
     }
     max_length += 1+abs(position[0]) + strlen(tmp_insert);
 
-    new_string = (string *) NclMalloc(str_size*max_length);
+    new_string = (string *) NclMalloc(str_size*sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2592,7 +2585,7 @@ NhlErrorTypes _Nclstr_insert
     NclFree(tmp_insert);
     NclFree(tmp_str);
 
-    return NclReturnValue(new_string, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_string, 1);
+    return NclReturnValue(new_string, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2607,7 +2600,7 @@ NhlErrorTypes _Nclstr_get_comma
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string)+1);
+    new_string = (string *) NclMalloc(sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2618,7 +2611,7 @@ NhlErrorTypes _Nclstr_get_comma
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2633,7 +2626,7 @@ NhlErrorTypes _Nclstr_get_space
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string)+1);
+    new_string = (string *) NclMalloc(sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2644,7 +2637,7 @@ NhlErrorTypes _Nclstr_get_space
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2659,7 +2652,7 @@ NhlErrorTypes _Nclstr_get_tab
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string)+1);
+    new_string = (string *) NclMalloc(sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2670,7 +2663,7 @@ NhlErrorTypes _Nclstr_get_tab
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2685,7 +2678,7 @@ NhlErrorTypes _Nclstr_get_sq
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string)+1);
+    new_string = (string *) NclMalloc(sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2696,7 +2689,7 @@ NhlErrorTypes _Nclstr_get_sq
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2711,7 +2704,7 @@ NhlErrorTypes _Nclstr_get_dq
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string)+1);
+    new_string = (string *) NclMalloc(sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2722,7 +2715,7 @@ NhlErrorTypes _Nclstr_get_dq
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
 
     NclFree(new_string);
 }
@@ -2737,7 +2730,7 @@ NhlErrorTypes _Nclstr_get_nl
     int ndim, dimsz[NCL_MAX_DIMENSIONS];
     string *new_string;
 
-    new_string = (string *) NclMalloc(sizeof(string)+1);
+    new_string = (string *) NclMalloc(sizeof(string));
     if (! new_string)
     {
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
@@ -2748,7 +2741,7 @@ NhlErrorTypes _Nclstr_get_nl
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 1);
+    return NclReturnValue(new_string, ndim, dimsz, NULL, NCL_string, 0);
 
     NclFree(new_string);
 }
