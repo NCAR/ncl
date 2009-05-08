@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.224 2009-05-08 01:46:55 haley Exp $
+;      $Id: contributed.ncl,v 1.225 2009-05-08 04:23:14 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -7329,24 +7329,16 @@ end
 ;Within a string:  replace one character with another
 ; usage:   s = "apples are good"
 ;          replaceSingleChar(s, " ", "_")   ; ==> s="apples_are_good""
+
+; This function was deprecated in V5.1.1 and replaced with
+; the built-in function "str_sub_str".
+
 undef("replaceSingleChar")
 procedure replaceSingleChar (s[*]:string, oldStr[1]:string, newStr[1]:string)
-local cOld, cNew, ns, n, c, i
 begin
-  cOld = stringtochar( oldStr )
-  cNew = stringtochar( newStr )
-  ns   = dimsizes( s )
-
-  do n=0,ns-1
-     c  = stringtochar( s(n) )
-     i  = ind( c.eq.cOld(0)  )
-     if (.not.(any(ismissing(i)))) then
-         c(i) = cNew(0)
-         s(n) = chartostring( c )
-     end if
-     delete(i)   ;may change size next iteration
-     delete(c)  
-  end do
+  print("replaceSingChar: this function has been deprecated.")
+  print("                 Will use str_sub_str.")
+  s = str_sub_str(s,oldStr,newStr)
 end
 
 ;*************************************************************************
