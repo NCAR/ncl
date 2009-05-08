@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.225 2009-05-08 04:23:14 haley Exp $
+;      $Id: contributed.ncl,v 1.226 2009-05-08 20:41:49 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -10813,4 +10813,42 @@ begin
    end if
 
    return(statx)
+end
+; **********************************************************************
+; D. Shea
+; wrapper for NCL procedure "int2p"  that copies attributes and coordinate 
+; vars.  It adds the longitude and latitude coordinates.
+
+undef("int2p_Wrap")
+function int2p_Wrap (xi:numeric, fi:numeric, xo[*]:numeric, linlog[1]:integer)
+
+; wrapper for NCL function "int2p"  that copies attributes and coordinate vars.
+local fo, dimfi, nDim, n, nD
+begin
+
+  fo   = int2p (xi,fi, xo, linlog)              ; perform interpolation 
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fo))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_1 (fi, fo)                     ; copy coord variables  
+                                                ; except for rightmost
+
+  nD   = nDim-1                                 ; last dimension
+                                                ; create a new coord for
+  if (.not.ismissing(xo!0)) then
+      fo!nD = xo!0                              ; if present, use xo name
+  else 
+      if (.not.ismissing(fi!nD)) then
+          fo!nD = str_switch(fi!nD)             ; if present, use same name
+        ;;fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
+      else                                      ; but change case 
+          fo!nD = "X"                           ; default dimension name
+      end if                
+  end if
+                                                ; assign coordinates
+  fo&$fo!nD$ = xo                               ; rightmost dim
+   
+  return (fo)
 end
