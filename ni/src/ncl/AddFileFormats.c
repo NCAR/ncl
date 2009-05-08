@@ -99,28 +99,34 @@ void _NclAddFileFormats
         _NclRegisterFormat(OGRAddFileFormat, "shp");  /* shapefile */
         _NclRegisterFormat(OGRAddFileFormat, "mif");  /* mapinfo */
         _NclRegisterFormat(OGRAddFileFormat, "gmt");  /* GMT   */
+
+        /**** Although GDAL/OGR will recognize any of these TIGER suffixes, the sheer number 
+         **** is excessive, confusing, and not all of these file type will be present.
+         **** Since the "rt1" file is required, we'll adopt it as the conventional suffix.
+         **** -- RLB, 5/2009
+         ****/
         _NclRegisterFormat(OGRAddFileFormat, "rt1");  /* TIGER */
-        _NclRegisterFormat(OGRAddFileFormat, "rt2");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rt3");  /*   "   */  /* for pre-2002 files */
-        _NclRegisterFormat(OGRAddFileFormat, "rt4");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rt5");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rt6");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rt7");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rt8");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rt9");  /*   "   */  /* for pre-2002 files */
-        _NclRegisterFormat(OGRAddFileFormat, "rta");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtb");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtc");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rte");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rth");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rti");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtm");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtp");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtr");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rts");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtt");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtu");  /*   "   */
-        _NclRegisterFormat(OGRAddFileFormat, "rtz");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt2");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt3");  /*   "   */  /* for pre-2002 files */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt4");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt5");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt6");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt7");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt8");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rt9");  /*   "   */  /* for pre-2002 files */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rta");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtb");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtc");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rte");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rth");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rti");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtm");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtp");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtr");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rts");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtt");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtu");  /*   "   */
+        /** _NclRegisterFormat(OGRAddFileFormat, "rtz");  /*   "   */
         /* TIGER: see http://www.census.gov/geo/www/tiger/tiger2006se/tgr2006se.html */
 #endif
 
