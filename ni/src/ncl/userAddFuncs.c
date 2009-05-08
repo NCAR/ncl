@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.16 2009-05-08 03:41:08 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.17 2009-05-08 03:55:50 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -399,7 +399,7 @@ NhlErrorTypes _Nclstr_get_cols
     int has_missing_strs;
     int has_missing_start;
     int has_missing_end;
-    int has_missing = 1;
+    int has_missing = 0;
     NclScalar   missing_strs;
     NclScalar   missing_start;
     NclScalar   missing_end;
@@ -428,7 +428,7 @@ NhlErrorTypes _Nclstr_get_cols
 
     if (strs == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "getArraySubString: input string is null."));
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_get_cols: input string is null."));
         return NhlFATAL;
     }
 
@@ -452,7 +452,7 @@ NhlErrorTypes _Nclstr_get_cols
 
     if (startCol == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "getArraySubString: input start column is null.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_get_cols: input start column is null.");
         return NhlFATAL;
     }
 
@@ -697,7 +697,7 @@ NhlErrorTypes _Nclstr_get_cols
 }
 
 
-NhlErrorTypes _Nclstr_substitute_str
+NhlErrorTypes _Nclstr_sub_str
 #if     NhlNeedProto
 (void)
 #else
@@ -743,7 +743,7 @@ NhlErrorTypes _Nclstr_substitute_str
 
     if (str == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_substitute_str: input string is null.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_sub_str: input string is null.");
         return NhlFATAL;
     }
 
@@ -770,7 +770,7 @@ NhlErrorTypes _Nclstr_substitute_str
 
     if (o_s == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_substitute_str: input old string is null.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_sub_str: input old string is null.");
         return NhlFATAL;
     }
 
@@ -795,7 +795,7 @@ NhlErrorTypes _Nclstr_substitute_str
 
     if (n_s == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_substitute_str: input new string is null.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_sub_str: input new string is null.");
         return NhlFATAL;
     }
 
@@ -1563,7 +1563,7 @@ NhlErrorTypes _Nclstr_index_of_substr
 
     if (str == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_index_of_subsr: count sub-string in a NULL string is not allowed.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_index_of_substr: a NULL string is not allowed.");
         return NhlFATAL;
     }
 
@@ -1579,7 +1579,7 @@ NhlErrorTypes _Nclstr_index_of_substr
 
     if (substr == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_index_of_subsr: count NULL sub-string in a string is not allowed.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_index_of_subsr: input string is NULL.");
         return NhlFATAL;
     }
 

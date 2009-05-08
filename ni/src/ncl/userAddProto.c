@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddProto.c,v 1.9 2009-05-08 03:41:08 huangwei Exp $
+ *      $Id: userAddProto.c,v 1.10 2009-05-08 03:55:50 haley Exp $
  */
 /************************************************************************
 *                                                                   *
@@ -49,7 +49,7 @@ void
 #endif
 );
 
-extern NhlErrorTypes _Nclstr_substitute_str(
+extern NhlErrorTypes _Nclstr_sub_str(
 #if NhlNeedProto
 void
 #endif
@@ -183,8 +183,7 @@ void NclAddUserBuiltInFuncs
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
-    NclRegisterFunc(_Nclstr_substitute_str, args, "str_substitute_str", nargs);
-    NclRegisterFunc(_Nclstr_substitute_str, args, "str_sub_str", nargs);
+    NclRegisterFunc(_Nclstr_sub_str, args, "str_sub_str", nargs);
 
     nargs = 0;
     args = NewArgs(1);
