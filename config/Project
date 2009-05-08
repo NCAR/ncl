@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.105 2009-05-04 15:53:17 haley Exp $
+ *      $Id: Project,v 1.106 2009-05-08 21:21:10 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2009-05-04 15:53:17 $
+ *	$Date: 2009-05-08 21:21:10 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -84,14 +84,13 @@
 #endif /* BuildV5D */
 
 /* Cairo and GDAL support are not yet built by default. */
-#if    !BuildCAIRO
+#if !BuildCAIRO
 #undef BuildCAIRO
-#endif /* BuildCAIRO */
+#endif
 
-#if    !BuildGDAL
+#if !BuildGDAL
 #undef BuildGDAL
-#endif /* BuildGDAL */
-
+#endif
 
 #ifndef	BuildRasterHDF
 #define	BuildRasterHDF
@@ -195,17 +194,25 @@
 #define	PNGlib	-lpng -lz
 #endif	/* PNGlib */
 
-#ifndef	CAIROlib
-#define       CAIROlib  -lcairo -lfreetype
-#endif	/* CAIROlib */
+#ifdef BuildCAIRO
+#ifndef CAIROlib
+#define CAIROlib  -lcairo -lfreetype
+#endif
+#else
+#define CAIROlib
+#endif
 
 #ifndef	HDFEOSlib
 #define	HDFEOSlib   -lhdfeos -lGctp
 #endif	/* HDFEOSlib */
 
+#ifdef BuildGDAL
 #ifndef	GDALlib
 #define	GDALlib   -lgdal
-#endif	/* GDALlib */
+#endif
+#else
+#define GDALlib
+#endif
 
 #ifndef	GRIB2lib
 #define       GRIB2lib   -lgrib2c -ljasper -lpng -lz

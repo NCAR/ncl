@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.47 2009-05-01 03:45:45 haley Exp $
+#      $Id: Configure,v 1.48 2009-05-08 21:21:10 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2009-05-01 03:45:45 $
+#	$Date: 2009-05-08 21:21:10 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -1033,9 +1033,9 @@ echo "" >> Site.local
 
 if ($?newbuildncl) then
 	if ("$buildncl" == "y") then
-		echo "#define BuildNCL TRUE" >> Site.local
+		echo "#define BuildNCL 1" >> Site.local
 	else
-		echo "#define BuildNCL FALSE" >> Site.local
+		echo "#define BuildNCL 0" >> Site.local
 	endif
 endif
 
@@ -1043,106 +1043,100 @@ echo "" >> Site.local
 
 if ($?newbuildhdf) then
 	if ("$buildhdf" == "y") then
-		echo "#define BuildRasterHDF TRUE" >> Site.local
+		echo "#define BuildRasterHDF 1" >> Site.local
 	else
-		echo "#define BuildRasterHDF FALSE" >> Site.local
+		echo "#define BuildRasterHDF 0" >> Site.local
 		echo "#define HDFlib" >> Site.local
 	endif
 endif
 
 if ($?newbuildpng) then
 	if ("$buildpng" == "y") then
-		echo "#define BuildPNG TRUE" >> Site.local
+		echo "#define BuildPNG 1" >> Site.local
 	else
-		echo "#define BuildPNG FALSE" >> Site.local
+		echo "#define BuildPNG 0" >> Site.local
 		echo "#define PNGlib" >> Site.local
 	endif
 endif
 
 if ($?newbuildcairo  && "$buildcairo" == "y") then
-	echo "#define BuildCAIRO TRUE" >> Site.local
-else
-	echo "#define BuildCAIRO FALSE" >> Site.local
-	echo "#define CAIROlib" >> Site.local
+	echo "#define BuildCAIRO 1" >> Site.local
 endif
 
 if ($?newbuildnetcdf4) then
 	if ("$buildnetcdf4" == "y") then
-		echo "#define BuildNetCDF4 TRUE" >> Site.local
+		echo "#define BuildNetCDF4 1" >> Site.local
 	else
-		echo "#define BuildNetCDF4 FALSE" >> Site.local
+		echo "#define BuildNetCDF4 0" >> Site.local
 		echo "#define NetCDF4lib" >> Site.local
 	endif
 endif
 
 if ($?newbuildgdal && "$buildgdal" == "y") then
-	echo "#define BuildGDAL TRUE" >> Site.local
-else
-	echo "#define BuildGDAL FALSE" >> Site.local
-	echo "#define GDALlib" >> Site.local
+	echo "#define BuildGDAL 1" >> Site.local
 endif
 
 if ($?newbuildtriangle) then
 	if ("$buildtriangle" == "y") then
-		echo "#define BuildTRIANGLE TRUE" >> Site.local
+		echo "#define BuildTRIANGLE 1" >> Site.local
 	else
-		echo "#define BuildTRIANGLE FALSE" >> Site.local
+		echo "#define BuildTRIANGLE 0" >> Site.local
 	endif
 endif
 
 if ($?newbuildudunits) then
 	if ("$buildudunits" == "y") then
-		echo "#define BuildUdunits TRUE" >> Site.local
+		echo "#define BuildUdunits 1" >> Site.local
 	else
-		echo "#define BuildUdunits FALSE" >> Site.local
+		echo "#define BuildUdunits 0" >> Site.local
 		echo "#define UdUnitslib" >> Site.local
 	endif
 endif
 
 if ($?newbuildhdfeos) then
 	if ("$buildhdfeos" == "y") then
-		echo "#define BuildHDFEOS TRUE" >> Site.local
+		echo "#define BuildHDFEOS 1" >> Site.local
 	else
-		echo "#define BuildHDFEOS FALSE" >> Site.local
+		echo "#define BuildHDFEOS 0" >> Site.local
 		echo "#define HDFEOSlib" >> Site.local
 	endif
 endif
 
 if ($?newbuildgrib2) then
 	if ("$buildgrib2" == "y") then
-		echo "#define BuildGRIB2 TRUE" >> Site.local
+		echo "#define BuildGRIB2 1" >> Site.local
 	else
-		echo "#define BuildGRIB2 FALSE" >> Site.local
+		echo "#define BuildGRIB2 0" >> Site.local
 		echo "#define GRIB2lib" >> Site.local
 	endif
 endif
 
 if ($?newbuildv5d) then
 	if ("$buildv5d" == "y") then
-		echo "#define BuildV5D TRUE" >> Site.local
+		echo "#define BuildV5D 1" >> Site.local
 	else
-		echo "#define BuildV5D FALSE" >> Site.local
+		echo "#define BuildV5D 0" >> Site.local
 		echo "#define V5Dlib" >> Site.local
 	endif
 endif
 
 if ($?newbuilddods) then
 	if ("$builddods" == "y") then
-		echo "#define BuildDODS TRUE" >> Site.local
+		echo "#define BuildDODS 1" >> Site.local
 	else
-		echo "#define BuildDODS FALSE" >> Site.local
+		echo "#define BuildDODS 0" >> Site.local
 	endif
 endif
 
 if ($?newbuildpyngl) then
 	if ("$buildpyngl" == "y") then
-		echo "#define BuildPyNGL TRUE" >> Site.local
+		echo "#define BuildPyNGL 1" >> Site.local
 	else
-		echo "#define BuildPyNGL FALSE" >> Site.local
+		echo "#define BuildPyNGL 0" >> Site.local
 		echo "#define PYNGLlib" >> Site.local
 	endif
 	if ("$usenumpy" == 1) then
-		echo "#define UseNumpy TRUE" >> Site.local
+		echo "#define UseNumpy 1" >> Site.local
 	endif
 endif
 
