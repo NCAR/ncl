@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.15 2009-05-07 05:34:07 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.16 2009-05-08 03:41:08 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2441,24 +2441,8 @@ NhlErrorTypes _Nclstr_insert
         return NhlFATAL;
     }
 
-    position = (int *) NclGetArgValue(
-                        1,
-                        3,
-                        &ndim_position,
-                        dimsz_position,
-                        &missing_position,
-                        &has_missing_position,
-                        &type_position,
-                        DONT_CARE);
-
-    if (position == NULL)
-    {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_insert: position did not specify.");
-        return NhlFATAL;
-    }
-
     insert = (string *) NclGetArgValue(
-                        2,
+                        1,
                         3,
                         &ndim_insert,
                         dimsz_insert,
@@ -2470,6 +2454,22 @@ NhlErrorTypes _Nclstr_insert
     if (insert == NULL)
     {
         NhlPError(NhlFATAL, NhlEUNKNOWN, "str_insert: insert is null.");
+        return NhlFATAL;
+    }
+
+    position = (int *) NclGetArgValue(
+                        2,
+                        3,
+                        &ndim_position,
+                        dimsz_position,
+                        &missing_position,
+                        &has_missing_position,
+                        &type_position,
+                        DONT_CARE);
+
+    if (position == NULL)
+    {
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_insert: position did not specify.");
         return NhlFATAL;
     }
 

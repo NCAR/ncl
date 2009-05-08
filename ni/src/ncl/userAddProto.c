@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddProto.c,v 1.8 2009-04-28 19:19:53 huangwei Exp $
+ *      $Id: userAddProto.c,v 1.9 2009-05-08 03:41:08 huangwei Exp $
  */
 /************************************************************************
 *                                                                   *
@@ -256,9 +256,9 @@ void NclAddUserBuiltInFuncs
     args = NewArgs(3);
     SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
     dimsizes[0] = 1;
-    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
-    dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_insert, args, "str_insert", nargs);
 
     nargs = 0;
