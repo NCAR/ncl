@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.223 2009-05-06 22:48:27 shea Exp $
+;      $Id: contributed.ncl,v 1.224 2009-05-08 01:46:55 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -877,31 +877,17 @@ end
 ; *****************************************************
 ; D. Shea
 ; trim trailing (rightmost) blanks from one or more strings
+
+; This function was deprecated in V5.1.1 and replaced with
+; the built-in function "str_right_strip".
+
 ;
 undef("trimBlankRight")
 function trimBlankRight (s[*]:string)
-local nRow, str, cBlank, n, kChar
 begin
-  nRow = dimsizes(s)            ; # rows/strings
-  str  = new (nRow, "string")   ; return string(s)
-
-  cBlank = inttochar(32)        ; character blank
-  
-  do n=0,nRow-1
-     chr   = stringtochar(s(n))
-     kChar = dimsizes(chr)-2    ; ignore end-of-line
-     if (kChar.ge.0) then
-         do k=kChar,0,1
-           ;print ("k="+k+"  chr(k)="+chr(k)+"$ c2i="+chartoint(chr(k)))
-            if (chr(k).ne.cBlank) then
-                str(n) = chartostring(chr(0:k))
-                break
-            end if
-         end do
-     end if
-     delete( chr )     ; size may change next iteration
-  end do
-  return(str)
+  print("trimBlankRight: this function has been deprecated.")
+  print("                Will use str_right_strip.")
+  return(str_right_strip(s))
 end
 ; *****************************************************************
 ; D. Shea
@@ -7457,22 +7443,11 @@ function getSubString (s[*]:string, iStrt:integer, iLast:integer)
 ;     A = (/ "vorticity", "flux", "divergence" /)
 ;     As= getSubString(A, 0, 4)  ; ==> As = (/"vort","flux","dive"/)
 
-local N, sChr, sSub, n
+; This function was deprecated in V5.1.1 and replaced with
+; the built-in function "str_get_cols".
+
 begin
-  N   = dimsizes(s)
-  if (N.eq.1) then
-      sChr = stringtochar(s)
-      return( chartostring((/sChr(iStrt:iLast)/)) ) 
-  else
-      sSub = new ( N, "string")
-      delete(sSub@_FillValue)
-      do n=0,N-1
-         sChr = stringtochar(s(n))
-         sSub(n) = stringtochar( (/sChr(iStrt:iLast)/) )
-         delete(sChr)   ; size may change
-      end do
-      return (sSub)
-  end if
+  return(str_get_cols(s,iStrt,iLast))
 end
 
 undef("wallClockElapseTime")
