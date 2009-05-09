@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.76 2009-03-13 18:43:00 dbrown Exp $
+ *      $Id: NclVar.c,v 1.77 2009-05-09 00:22:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1227,6 +1227,10 @@ char *dim_name;
 		}
 		if (self->var.ref_var != NULL) {
 			NclVar rvar = (NclVar) self->var.ref_var;
+			while (rvar->var.ref_var) {
+				rvar->var.dim_info[dim_num].dim_quark = dim_quark;
+				rvar = (NclVar) rvar->var.ref_var;
+			}
 			rvar->var.dim_info[dim_num].dim_quark = dim_quark;
 		}
 		return(NhlNOERROR);
