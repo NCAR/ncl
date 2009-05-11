@@ -1,0 +1,35 @@
+# A sample of the env vars you might need to set to build
+# external software for NCL. Use build_external script to
+# actually build the software, though. This file is just a guide.
+#
+
+setenv CC gcc
+setenv CXX g++
+setenv FC gfortran
+setenv F77 gfortran
+setenv F90
+setenv CFLAGS -fPIC
+setenv FFLAGS -fPIC
+setenv F90FLAGS -fPIC
+setenv CXXFLAGS -fPIC
+setenv PERL ""
+
+unsetenv YMAKE_DEV_FILE
+setenv NCARG_ROOT /contrib/ncl-5.1.1
+setenv NCARG /contrib/ncl-5.1.1/src/ncl_ncarg-5.1.1
+set path=($NCARG_ROOT/bin $path)
+
+# If trouble building Udunits, might need -Df2cFortran, -DpgiFortran, etc.
+# setenv CFLAGS '-fPIC -Df2cFortran'
+
+# For large file support/HDF5 on 32-bit linux systems.
+setenv CPPFLAGS '-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE'
+
+# For linux builds of HDF-EOS
+setenv LINUX_BRAND linux32
+setenv LINUX_BRAND linux64
+
+# For building Vis5D on MacOS
+setenv CPPFLAGS '-I/Users/haley/tmp/5.1.0/vis5d+/include -I/sw/include -I/usr/X11R6/include'
+setenv LDFLAGS '-flat_namespace -L/Users/haley/tmp/5.1.0/vis5d+/lib -L/sw/lib -L/usr/X11R6/lib'
+
