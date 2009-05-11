@@ -1,0 +1,548 @@
+#!/bin/sh 
+# 
+# This script is attempt to make it easier to build and install all the
+# optional and non-optional external software packages needed for
+# NCL/NCAR Graphics V5.1.1.
+# 
+# You will need to read through the notes below, to:
+# 
+#   - set environment variables for your compilers and options,
+#   - indicate which packages you want to install,
+#   - edit some files by hand before you run this script.
+# 
+# Software packages to install:
+# 
+# NCL/NCARG:
+#   zlib-1.2.3             NCL:   required 
+#                          NCARG: optional (needed for PNG, HDF4.2r4,
+#                                           classic NetCDF-4)
+#
+#   jpeg-6b                NCL:   required 
+#                          NCARG: optional (needed for HDF4.2r4)
+# 
+#   libpng-1.2.34          NCL:   optional (needed for GRIB2 or PNG support)
+#                          NCARG: optional (needed for PNG)
+#                          
+#   HDF4.2r4               NCL:   required
+#                          NCARG: optional 
+# 
+# NCL only:
+#   hdf5-1.8.2             Required if you want classic NetCDF-4 support
+#   szip-2.1               Required if you want classic NetCDF-4 support
+#   jasper-1.900.1         Required if you want GRIB2 support
+#   g2clib-1.1.7           Required if you want GRIB2 support
+#   gdal-1.6.1             Required if you want GDAL support
+#   netcdf-4.0.1           Required (classic NetCDF-4 support is optional)
+#   proj-4.6.1             Required if you want GDAL support
+#   udunits-1.12.9         Required if you want ut_calendar/ut_inv_calendar
+#   HDF-EOS2.15v1.00       Required if you want HDF-EOS 2 support
+#   vis5d+-1.3.0           Required if you want v5d* functions
+
+# Location to install external software
+PREFIX=/Users/haley/tmp/5.1.0     # Parent directory for installing software
+
+# Set environment variables for building software
+export CC=gcc
+export CXX=g++
+export FC=g77
+export F77=g77
+export F90=""
+# Be sure to include extra flag for Udunits build.
+export CFLAGS='-fPIC -Df2cFortran'
+export FFLAGS=-fPIC
+export F90FLAGS=-fPIC
+export CXXFLAGS=-fPIC
+
+# This setting for CPPFLAGS may be needed for some systems (Linux 32-bit
+# was one). Only set it if the large file stuff doesn't work with NetCDF4.
+# export CPPFLAGS='-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE'.
+
+CLEANUP=1                           # Whether to remove local *.o files
+
+# Indicate which packages you want. These are listed in the order
+# they should generally be built in.
+INSTALL_ZLIB=1
+INSTALL_PNG=1
+INSTALL_JPEG=1
+INSTALL_JASPER=1
+INSTALL_SZIP=1
+INSTALL_HDF5=1
+INSTALL_HDF4=1
+#INSTALL_NETCDF=1   # If don't need classic NetCDF-4 support
+INSTALL_NETCDF4=1   # If need classic NetCDF-4 support
+INSTALL_PROJ4=1
+INSTALL_GDAL=1
+INSTALL_G2CLIB=1
+INSTALL_UDUNITS=1
+#INSTALL_VIS5DPLUS=1
+
+# HDF-EOS cannot be built by this script. It requires running
+# an interactive script, "bin/INSTALL-HDFEOS".  You can't use
+# the "configure" script with HDF-EOS, because it won't work
+# with the way HDF-4 needs to be built (--disable-netcdf).
+# INSTALL_HDFEOS=1
+
+#----------------------------------------------------------------------
+# End of user modification section.
+#----------------------------------------------------------------------
+
+# Set up file to hold build output.
+dd=`date +'%m%d%y'`
+un=`uname -n`
+make_output_file="make-output.$un.$dd"
+
+if [ ! -d "$PREFIX/lib" ]
+then
+  mkdir $PREFIX/lib
+fi
+if [ ! -d "$PREFIX/include" ]
+then
+  mkdir $PREFIX/include
+fi
+if [ ! -d "$PREFIX/bin" ]
+then
+  mkdir $PREFIX/bin
+fi
+if [ ! -d "$PREFIX/man" ]
+then
+  mkdir $PREFIX/man
+fi
+if [ ! -d "$PREFIX/man/man1" ]
+then
+  mkdir $PREFIX/man/man1
+fi
+
+#--------------------------------------------------------------------
+# Software directories, sorted alphabetically
+#--------------------------------------------------------------------
+
+G2CLIB_DIR="g2clib-1.1.7"
+GDAL_DIR="gdal-1.6.1"
+HDF4_DIR="HDF4.2r4"
+HDF5_DIR="hdf5-1.8.2"
+JASPER_DIR="jasper-1.900.1"
+JPEG_DIR="jpeg-6b"
+NETCDF_DIR="netcdf-4.0.1"
+PNG_DIR="libpng-1.2.34"
+PROJ4_DIR="proj-4.6.1"
+SZIP_DIR="szip-2.1"
+UDUNITS_DIR="udunits-1.12.9"
+VIS5DPLUS_DIR="vis5d+-1.3.0"
+ZLIB_DIR="zlib-1.2.3"
+
+# HDF-EOS cannot be built by this script. It requires running
+# an interactive script, "bin/INSTALL-HDFEOS".
+# HDFEOS_DIR="HDF-EOS2.15v1.00"
+#
+# Also, on LINUX systems, you will need to do one of :
+# export LINUX_BRAND linux32
+# export LINUX_BRAND linux64
+
+
+#
+# The following section should not need any modification by 
+# the user, unless there is a problem in the script.
+#
+
+#--------------------------------------------------------------------
+# zlib
+#--------------------------------------------------------------------
+if [ $INSTALL_ZLIB ]
+  then
+  if [ -d "$ZLIB_DIR" ]
+  then
+    cd $ZLIB_DIR
+    echo "Building $ZLIB_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$ZLIB_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$ZLIB_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $ZLIB_DIR doesn't exist"
+  fi
+else
+  echo "Not building zlib..."
+fi
+
+#--------------------------------------------------------------------
+# png
+#--------------------------------------------------------------------
+if [ $INSTALL_PNG ]
+  then
+  if [ -d "$PNG_DIR" ]
+  then
+    cd $PNG_DIR
+    cp $PREFIX/include/zlib.h .
+    cp $PREFIX/include/zconf.h .
+    export LIBS="-L$PREFIX/lib"
+    echo "Building $PNG_DIR..."
+    ./configure  --with-pic --disable-shared --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$PNG_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$PNG_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $PNG_DIR doesn't exist"
+  fi
+else
+  echo "Not building png..."
+fi
+
+#--------------------------------------------------------------------
+# jpeg
+#--------------------------------------------------------------------
+if [ $INSTALL_JPEG ]
+  then
+  if [ -d "$JPEG_DIR" ]
+  then
+    cd $JPEG_DIR
+    echo "Building $JPEG_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install install-lib install-headers
+    if [ $? ]
+    then
+      echo "$JPEG_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$JPEG_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $JPEG_DIR doesn't exist"
+  fi
+else
+  echo "Not building jpeg..."
+fi
+
+#--------------------------------------------------------------------
+# Jasper
+#--------------------------------------------------------------------
+if [ $INSTALL_JASPER ]
+  then
+  if [ -d "$JASPER_DIR" ]
+  then
+    cd $JASPER_DIR
+    echo "Building $JASPER_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$JASPER_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$JASPER_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $JASPER_DIR doesn't exist"
+  fi
+else
+  echo "Not building Jasper..."
+fi
+
+#--------------------------------------------------------------------
+# szip
+#--------------------------------------------------------------------
+if [ $INSTALL_SZIP ]
+  then
+  if [ -d "$SZIP_DIR" ]
+  then
+    cd $SZIP_DIR
+    echo "Building $SZIP_DIR..."
+    ./configure --disable-shared --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$SZIP_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$SZIP_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $SZIP_DIR doesn't exist"
+  fi
+else
+  echo "Not building szip..."
+fi
+
+#--------------------------------------------------------------------
+# HDF-5
+#--------------------------------------------------------------------
+if [ $INSTALL_HDF5 ]
+  then
+  if [ -d "$HDF5_DIR" ]
+  then
+    cd $HDF5_DIR
+    echo "Building $HDF5_DIR..."
+    ./configure --disable-shared --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$HDF5_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$HDF5_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $HDF5_DIR doesn't exist"
+  fi
+else
+  echo "Not building HDF5..."
+fi
+
+#--------------------------------------------------------------------
+# HDF-4
+#--------------------------------------------------------------------
+if [ $INSTALL_HDF4 ]
+  then
+  if [ -d "$HDF4_DIR" ]
+  then
+    cd $HDF4_DIR
+    echo "Building $HDF4_DIR..."
+    ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
+    make all install
+    if [ $? ]
+    then
+      echo "$HDF4_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$HDF4_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $HDF4_DIR doesn't exist"
+  fi
+else
+  echo "Not building HDF4..."
+fi
+
+
+#--------------------------------------------------------------------
+# NetCDF (this section handles regular NetCDF or classic NetCDF-4)
+#--------------------------------------------------------------------
+if [ "$INSTALL_NETCDF" -o "$INSTALL_NETCDF4" ]
+then
+  if [ -d "$NETCDF_DIR" ]
+  then
+    cd $NETCDF_DIR
+    echo "Building $NETCDF_DIR..."
+    if [ $INSTALL_NETCDF ]
+    then
+      ./configure --disable-f90 --prefix\=$PREFIX
+    else
+      ./configure --enable-netcdf-4 --disable-f90 --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+    fi
+    make all install
+    if [ $? ]
+    then
+      if [ $INSTALL_NETCDF ]
+      then
+        echo "$NETCDF_DIR build successful."
+      else
+        echo "$NETCDF_DIR (classic NetCDF-4) build successful."
+      fi      
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      if [ $INSTALL_NETCDF ]
+      then
+        echo "$NETCDF_DIR build NOT successful."
+      else
+        echo "$NETCDF_DIR (classic NetCDF-4) build NOT successful."
+      fi      
+    fi
+    cd ..
+  else
+    echo "Directory $NETCDF_DIR doesn't exist"
+  fi
+else
+  echo "Not building NetCDF..."
+fi
+
+#--------------------------------------------------------------------
+# g2clib (GRIB2)
+#
+# For 64-bit systems, you need to edit the Makefile and add
+# -D__64BIT__ on the DEFS line
+#--------------------------------------------------------------------
+if [ $INSTALL_G2CLIB ]
+  then
+  if [ -d "$G2CLIB_DIR" ]
+  then
+    export EXTRA_INC="-I$PREFIX/include"
+    echo "Building $G2CLIB_DIR..."
+    cd $G2CLIB_DIR
+    make all
+    if [ $? ]
+    then
+      mv libgrib2c.a $PREFIX/lib
+      cp grib2.h $PREFIX/include
+      echo "$G2CLIB_DIR build successful."
+# No clean check needed; this software is automatically
+# cleaned after each build.
+    else
+      echo "$G2CLIB_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $G2CLIB_DIR doesn't exist"
+  fi
+else
+  echo "Not building G2CLIB..."
+fi
+
+#--------------------------------------------------------------------
+# PROJ.4
+#--------------------------------------------------------------------
+if [ $INSTALL_PROJ4 ]
+  then
+  if [ -d "$PROJ4_DIR" ]
+  then
+    cd $PROJ4_DIR
+    echo "Building $PROJ4_DIR..."
+    ./configure ----enable-static=yes --enable-shared=no --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$PROJ4_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$PROJ4_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $PROJ4_DIR doesn't exist"
+  fi
+else
+  echo "Not building PROJ4..."
+fi
+
+#--------------------------------------------------------------------
+# GDAL
+#--------------------------------------------------------------------
+if [ $INSTALL_GDAL ]
+  then
+  if [ -d "$GDAL_DIR" ]
+  then
+    cd $GDAL_DIR
+    echo "Building $GDAL_DIR..."
+    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$GDAL_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$GDAL_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $GDAL_DIR doesn't exist"
+  fi
+else
+  echo "Not building GDAL..."
+fi
+
+
+#--------------------------------------------------------------------
+# Udunits
+#--------------------------------------------------------------------
+if [ $INSTALL_UDUNITS ]
+  then
+  if [ -d "$UDUNITS_DIR" ]
+  then
+    export PERL=""
+    cd $UDUNITS_DIR/src
+    echo "Building $UDUNITS_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$UDUNITS_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$UDUNITS_DIR build NOT successful."
+    fi
+    cd ../..
+  else
+    echo "Directory $UDUNITS_DIR doesn't exist"
+  fi
+else
+  echo "Not building UDUNITS..."
+fi
+
+
+#--------------------------------------------------------------------
+# Vis5D+
+#--------------------------------------------------------------------
+if [ $INSTALL_VIS5DPLUS ]
+  then
+  if [ -d "$VIS5DPLUS_DIR" ]
+  then
+    cd $VIS5DPLUS_DIR
+    echo "Building $VIS5DPLUS_DIR..."
+    ./configure --prefix\=$PREFIX --with-netcdf\=$PREFIX/lib/libnetcdf.a
+    make all install
+    if [ $? ]
+    then
+      echo "$VIS5DPLUS_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$VIS5DPLUS_DIR build NOT successful."
+    fi
+    cd ../..
+  else
+    echo "Directory $VIS5DPLUS_DIR doesn't exist"
+  fi
+else
+  echo "Not building VIS5DPLUS..."
+fi
+
