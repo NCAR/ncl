@@ -1,10 +1,10 @@
-NCL - UNIX Version 5.1.0
+NCL - UNIX Version 5.1.1
 Copyright (C) 2009
 University Corporation for Atmospheric Research
 
 NCL Source Code License
 
-Copyright (c) 2008 University Corporation for Atmospheric Research
+Copyright (c) 2009 University Corporation for Atmospheric Research
 (UCAR).  All rights reserved.  Developed by NCAR's Computational and
 Information Systems Laboratory, UCAR, www.cisl.ucar.edu, with the
 following contributions:
@@ -42,10 +42,10 @@ Copyright (c) 1998
 UCAR
 http://www.cisl.ucar.edu/css/software/spherepack/
 
-Udunits
+Udunits (V1.x)
 Copyright (c) 1992, 1995
 UCAR/Unidata
-http://www.unidata.ucar.edu/software/udunits/
+http://www.unidata.ucar.edu/software/udunits/udunits-1/
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
