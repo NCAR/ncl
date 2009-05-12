@@ -436,7 +436,7 @@ if [ $INSTALL_PROJ4 ]
   then
     cd $PROJ4_DIR
     echo "Building $PROJ4_DIR..."
-    ./configure ----enable-static=yes --enable-shared=no --prefix\=$PREFIX
+    ./configure --enable-static=yes --enable-shared=no --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
