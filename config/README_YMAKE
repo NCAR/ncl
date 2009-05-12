@@ -167,9 +167,12 @@ BuildRasterBinary   YES
 BuildXlibDependentCode  YES
 BuildSunViewctrans  NO
 BuildPNG            YES
+BuildCAIRO          NO
+BuildGDAL           NO
 HDFlib          -lmfhdf -ldf -ljpeg -lz
 PNGlib          -lpng -lz
-CAIROlib        -lcairo
+CAIROlib        -lcairo -lfreetype
+GDALlib         -lgdal
 HDFEOSlib       -lhdfeos -lGctp  
 NetCDFlib       -lnetcdf
 UdUnitslib      -ludunits
