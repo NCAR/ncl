@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.33 2009-04-15 13:50:05 shea Exp $
+;      $Id: shea_util.ncl,v 1.34 2009-05-13 17:13:48 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -3101,4 +3101,778 @@ local plt
 begin
   plt = plt_pdfxy(wks, p, res)
   return( plt)
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("AdvectGradient")
+function AdvectGradient (u:numeric, v:numeric, x:numeric \
+                        ,gridType[1]:integer, con[1]:numeric \
+                        ,long_name:string, units:string, iopt[1]:integer)
+;
+; linear advection of a scalar quantity: UV.GRADIENT(X)
+;                                      : U*(dX/dlon) + V*(dX/dlat)
+;
+; Requires that the grid be global cuz spherical harmonics are used
+;             dimension order ([time,[lev,]]lat,lon)
+; 
+; Nomenclature:
+;   u, v      - zonal and meridional wind components [m/s]
+;               rightmost dimensions must be ([...,]lat,lon)
+;   x         - scalar quantity to be advected 
+;               rightmost dimensions must be ([...,]lat,lon)
+;               eg: T, Z, divergence, vorticity, latent energy,..., whatever
+;   gridType  - type of grid: 0=gaussian, 1=fixed
+;   con       - constant which will multiply the final result
+;               usually  con=1
+;   long_name - descriptive name (eg: "Temperature Advection" )
+;   units     - units of result  (eg: "m-K/s" )
+;   iopt      - flag: =0 means input dimension names will be retained
+;                     =1 means input dimension names will be renamed
+;                      to "time", "lev", "lat", "lon" where appropriate.
+;   
+; Usage:
+;   f = addfile ("foo.nc", "r")
+;   u = f->U    ; (time,lev,lat,lon)
+;   v = f->V
+;   T = f->T
+;               ; linear advection of temperature
+;   Tadv = advect(u,v,T,0, 1.0,"linear advection of temperature","m-K/s",0)
+;
+begin
+                             ; ERROR CHECKING
+  dimu  = dimsizes(u)
+  dimv  = dimsizes(v)
+  dimx  = dimsizes(x)
+  ranku = dimsizes(dimu)
+  rankv = dimsizes(dimv)
+  rankx = dimsizes(dimx)
+
+  ier   = 0
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("advectGradient: unrecognized gridType: only 0 and 1 allowed")
+      print("           gridType="+gridType)
+      ier = 1
+  end if
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankx)) then
+      print("advectGradient: all input arguments must have the same rank")
+      print("           ranku="+ranku)
+      print("           rankv="+rankv)
+      print("           rankx="+rankx)
+      ier = ier + 10
+  end if
+  if (.not.(all(dimu.eq.dimv) .and. all(dimu.eq.dimx))) then
+      print("advectGradient: all input arguments must have the same dimension sizes")
+      print("           ranku="+ranku)
+      print("           rankv="+rankv)
+      print("           rankx="+rankx)
+      ier = ier + 100
+  end if
+  if (rankx.lt.2) then
+      print("advectGradient: variable rank must be at least 2D: ([time,[lev,]]lat,lon)")
+      print("advectGradient: rank="+rankx+"D")
+      ier = ier + 1000
+  end if
+
+  if (ier.ne.0) then
+      print("advectGradient: fatal error(s) encountered: ier="+ier)
+      exit
+  end if
+
+  x_grad_lon = new( dimx, typeof(x), getFillValue(x) )
+  x_grad_lat = new( dimx, typeof(x), getFillValue(x) )
+  if (gridType.eq.0) then
+      gradsg  (x, x_grad_lon, x_grad_lat)
+  end if
+  if (gridType.eq.1) then
+      gradsf  (x, x_grad_lon, x_grad_lat)
+  end if
+                                        ; advection
+  advect = con*(u*x_grad_lon + v*x_grad_lat)
+                                        ; add meta data
+  copy_VarCoords(x, advect)
+  advect@long_name = long_name
+  advect@units     = units
+
+  if (iopt.eq.1) then
+      if (rankx.eq.2) then
+          advec!0 = "lat"
+          advec!1 = "lon"
+      end if
+      if (rankx.eq.3) then
+          advec!0 = "lev"
+          advec!1 = "lat"
+          advec!2 = "lon"
+      end if
+      if (rankx.eq.4) then
+          advec!0 = "time"
+          advec!1 = "lev"
+          advec!2 = "lat"
+          advec!3 = "lon"
+      end if
+   end if
+
+  return(advect)
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("IntegrateHybrid")
+function IntegrateHybrid (X:numeric, dp:numeric, con[1]:numeric \
+                          ,long_name:string, units:string, iopt:integer)
+; 
+; Perform vertical integration over hybrid coordinates.
+; 
+; Requirement: X must have named dimensions and
+;              must be in the following order: ([time,],lev,lat,lon)
+;
+; Nomenclature:
+; X         - 3D or 4D array to be integrated
+;             dimension order ([time,],lev,lat,lon)
+; dp        - pressure thickness computed by "dpres_hybrid_ccm"
+;             Must be the same size/shape as X
+; con       - constant used to multiply the value after integration
+;             If none, set to 1
+; long_name - long name of the resultant integrand 
+; units     - units of the resultant integrand 
+; iopt      - flag: =0 means input dimension names will be retained
+;                   =1 means input dimension names will be renamed
+;                      to "time", "lat", "lon" where appropriate.
+;
+; Usage
+;        f = addfile("....", "r")
+;        hyai = f->hyai
+;        hybi = f->hybi
+;        p0   = f->P0                               ; p0=1000 or p0=100000
+;        ps   = f->PS
+;    
+;        dp   = dpres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
+;
+;        t    = f->T
+;        cp   = 1004.                               ; J/(K kg)     [ m2/(K s2) ]
+;        g    = 9.81                                ; m/s
+;
+;        con  = cp/g                                ; constant
+;        xvi  = IntegrateHybrid(t, dp, con \
+;                              ,"Vertically Integrated Internal Energy" \
+;                              , "kg/s2", 0) 
+;
+begin
+
+  dimX  = dimsizes( X )
+  dimDP = dimsizes( dp )
+  rankX = dimsizes( dimX )
+  if (.not.(rankX.eq.3 .or. rankX.eq.4)) then
+      print("integrate_hybrid: variable rank must be 3D or 4D")
+      print("integrate_hybrid: rank="+rankX+"D")
+      exit
+  end if
+
+  if (.not.all(dimDP.eq.dimX) ) then  ; error check
+      print("integrate_hybrid: dimension sizes are not equal")
+      print("integrate_hybrid:  dimX="+dimX)
+      print("integrate_hybrid: dimDP="+dimsizes(dp) )
+      exit
+  end if
+
+  dNamX = getvardims( X )                    ; get dimension names
+
+  Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
+  copy_VarCoords(X, Xdp)
+                                             ; sum vertically [ie integrate]
+                                             ; must make "lev" rightmost dimension
+  if (rankX.eq.3) then                       ; (lat,lon,lev)   ; after reorder
+      VI = dim_sum_Wrap( Xdp($dNamX(1)$|:,$dNamX(2)$|:,$dNamX(0)$|:) )  ; 2D result 
+     ;VI = dim_sum_n_Wrap( Xdp, 0 )  ; 2D result [5.1.1] 
+      if (iopt.eq.1) then
+          VI!0 = "lat"
+          VI!1 = "lon"
+      end if
+  end if
+  if (rankX.eq.4) then                       ; (time,lat,lon,lev) ; after reorder
+      VI = dim_sum_Wrap( Xdp($dNamX(0)$|:,$dNamX(2)$|:,$dNamX(3)$|:,$dNamX(1)$|:) ) ; 3D result 
+     ;VI = dim_sum_n_Wrap( Xdp, 1 ) ; 3D result  [5.1.1]
+      if (iopt.eq.1) then
+          VI!0 = "time"
+          VI!1 = "lat"
+          VI!2 = "lon"
+      end if
+  end if
+
+  VI   = con*VI 
+  VI@long_name = long_name
+  VI@units     = units
+
+  return( VI )
+  end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+
+undef("IntegratePlevel")
+function IntegratePlevel (X:numeric, dp:numeric, con[1]:numeric \
+                          ,long_name:string, units:string, iopt:integer)
+; 
+; Perform vertical integration over constant pressure coordinates.
+; 
+; Requirement: X must have named dimensions and
+;              must be in the following order: ([time,],lev,lat,lon)
+;
+; Nomenclature:
+; X         - 3D or 4D array to be integrated
+;             dimension order ([time,],lev,lat,lon)
+; dp        - pressure thickness computed by "dpres_plevel"
+;             Must be the same size/shape as X
+; con       - constant used to multiply the value after integration
+;             If none, set to 1
+; long_name - long name of the resultant integrand 
+; units     - units of the resultant integrand 
+; iopt      - flag: =0 means input dimension names will be retained
+;                   =1 means input dimension names will be renamed
+;                      to "time", "lat", "lon" where appropriate.
+;
+; Usage
+;        f   = addfile("....", "r")
+;        lev = f->lev  ; (/  1,  2,  3,  5,   7, 10, 20, 30, \   ; hPa 
+;                           50, 70,100,150, 200,250,300,400, \
+;                          500,600,700,775, 850,925,1000 /)
+;                      ; uniys of lev and psfc must match
+;        psfc= f->PS   ; PA         (time,lat,lon)
+;        lev = lev*100 ; make PA to match psfc       
+;        lev@units = "PA"
+;
+;        ptop= 0       ; integrate 0==>psfc at each grid point
+;
+;                      ; dp(ntim,klev,nlat,mlon)
+;        dp  = dpres_plevel(lev, psfc, ptop, 0)     ; Pa [kg/(m s2)]
+;
+;        t    = f->T                                ; (time,lev,lat,lon)
+;        cp   = 1004.                               ; J/(K kg)     [ m2/(K s2) ]
+;        g    = 9.81                                ; m/s
+;
+;        con  = cp/g                                ; constant
+;        xvi  = IntegratePlevel(t, dp, con \
+;                              ,"Vertically Integrated Internal Energy" \
+;                              , "kg/s2", 0) 
+begin
+
+  dimX  = dimsizes( X )
+  dimDP = dimsizes( dp )
+  rankX = dimsizes( dimX )
+  if (.not.(rankX.eq.3 .or. rankX.eq.4)) then
+      print("integrate_plevel: variable rank must be 3D or 4D")
+      print("integrate_plevel: rank="+rankX+"D")
+      exit
+  end if
+
+  if (.not.all(dimDP.eq.dimX) ) then  ; error check
+      print("integrate_plevel: dimension sizes are not equal")
+      print("integrate_plevel:  dimX="+dimX)
+      print("integrate_plevel: dimDP="+dimsizes(dp) )
+      exit
+  end if
+
+  dNamX = getvardims( X )                    ; get dimension names
+
+  Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
+  copy_VarCoords(X, Xdp)
+                                             ; sum vertically [ie integrate]
+                                             ; must make "lev" rightmost dimension
+  if (rankX.eq.3) then                       ; (lat,lon,lev) after reorder
+      VI = dim_sum_Wrap( Xdp($dNamX(1)$|:,$dNamX(2)$|:,$dNamX(0)$|:) )  ; 2D result 
+     ;VI = dim_sum_n_Wrap( Xdp, 0 )  ; 2D result  [5.1.1] 
+      if (iopt.eq.1) then
+          VI!0 = "lat"
+          VI!1 = "lon"
+      end if
+  end if
+  if (rankX.eq.4) then                       ; (time,lat,lon,lev) after reorder
+      VI = dim_sum_Wrap( Xdp($dNamX(0)$|:,$dNamX(2)$|:,$dNamX(3)$|:,$dNamX(1)$|:) ) ; 3D result 
+     ;VI = dim_sum_n_Wrap( Xdp,1 ) ; 3D result   [5.1.1]
+      if (iopt.eq.1) then
+          VI!0 = "time"
+          VI!1 = "lat"
+          VI!2 = "lon"
+      end if
+  end if
+
+  VI   = con*VI 
+  VI@long_name = long_name
+  VI@units     = units
+
+  return( VI )
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("PotTemp")
+function PotTemp (p:numeric, t:numeric, opt:integer)
+;
+; Compute potential temperature on constant pressure levels
+; Nomenclature
+;     p       - pressure levels (Pa)  [1D or 3D or 4D]
+;     t       - temperature (K)       [1D or 3D or 4D]          
+;                              (lev), (lev,lat,lon) , (time,lev,lat,lon)
+;     opt     - options: not used
+;
+local rank, npr, theta, p0
+begin
+  rankp  = dimsizes(dimsizes(p)) 
+  rankt  = dimsizes(dimsizes(t)) 
+
+  p0     = 100000.                  ; default [units = Pa]
+  if (isatt(p,"units") .and. (p@units.eq."mb"   .or. \
+                              p@units.eq."MB"   .or. \
+                              p@units.eq."millibar"    .or. \
+                              p@units.eq."millibars"   .or. \
+                              p@units.eq."hPa"  .or. \
+                              p@units.eq."HPA"  .or. \
+                              p@units.eq."hPA"  .or. \
+                              p@units.eq."hpa"  )    ) then
+      p0 = 1000.
+  end if
+
+  if (rankp.eq.rankt) then
+      theta = t*(p0/p)^0.286  
+  else
+      if (rankp.ne.1 .or. .not.(rankt.eq.3 .or. rankt.eq.4)) then
+          print("PotTemp: 1D pressure array expected: rankp="+rankp)
+          print("PotTemp: only 3D and 4D arrays allowed for temperature: rankt="+rankt)
+          exit
+      end if
+
+      if (rankt.eq.3) then
+          npr = 0     ; 3D
+      else                      
+          npr = 1     ; 4D
+      end if
+
+      theta = t*(p0/conform(t,p,npr))^0.286  
+  end if
+
+  theta@long_name = "Potential temperature"
+  theta@units     = "K"
+  copy_VarCoords(t, theta)
+
+  return( theta )
+
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("StaticStability") 
+function StaticStability (p:numeric, t:numeric, sopt)
+;
+; Compute Static Stability on constant pressure levels
+; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
+;            pg 197
+;            s = -T*d[log(theta)]/dp = -(T/theta)*d(theta)/dp
+;
+; Nomenclature
+;     p       - pressure levels (Pa)  [1D]
+;     t       - temperature (K)       [3D or 4D]          
+;                                     (lev,lat,lon) , (time,lev,lat,lon)
+;     sopt    - options         
+;               sopt=0  use ===>  -(T/theta)*d(theta)/dp
+;               sopt=1  use ===>  -T*d[log(theta)]/dp
+;               same answer should be returned: mainly used for debug
+;
+; Note: In a statically stable atmosphere: d(theta)/dp < 0, hence s > 0       
+;
+local theta, rankth, dNam, wrk
+begin
+  theta  = PotTemp(p, t, 0)      
+
+  rankp  = dimsizes(dimsizes(p))
+  rankt  = dimsizes(dimsizes(t))   ; rankt = rank(theta)
+
+  dNam   = getvardims( t )    ; dimension names
+
+  if (rankp.eq.1 .and. rankt.eq.1) then 
+      wrk   = theta
+      if (sopt.eq.1) then
+          wrk = log( wrk )
+      end if
+      dthdp = center_finite_diff (wrk,p,False,0)
+  end if
+
+  if (rankt.eq.3) then 
+      wrk   = theta($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+      if (rankp.eq.1) then
+          if (sopt.eq.1) then
+              wrk = log( wrk )
+          end if
+          wrk   = center_finite_diff (wrk,p,False,0)
+      end if
+      if (rankp.eq.3) then
+          wrkp    = p($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+          if (sopt.eq.1) then
+              wrk = log( wrk )
+          end if
+          wrk   = center_finite_diff (wrk,wrkp,False,0)
+      else
+          print("StaticStability: rankt=3: rankp="+rankp+": rankp must be 1 or 3")
+          exit
+      end if
+      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
+  end if
+  if (rankt.eq.4) then 
+      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+      if (rankp.eq.1) then
+          if (sopt.eq.1) then
+              wrk = log( wrk )
+          end if
+          wrk   = center_finite_diff (wrk,p,False,0)
+      end if
+      if (rankp.eq.4) then
+          wrkp   = p($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+          if (sopt.eq.1) then
+              wrk = log( wrk )
+          end if
+          wrk   = center_finite_diff (wrk,wrkp,False,0)
+      else
+          print("StaticStability: rankt=4: rankp="+rankp+": rankp must be 1 or 4")
+          exit
+      end if
+      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
+  end if
+  delete(wrk)
+
+  if (sopt.eq.0) then
+      s = -(t/theta)*dthdp
+  end if
+  if (sopt.eq.1) then
+      s = -t*dthdp                          
+  end if
+
+  s@long_name = "static stability"
+  s@units     = "K/Pa"       ; or "K-m-s2/kg" 
+  copy_VarCoords(t,s)
+
+  return(s)
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("PotVortHybrid")
+function PotVortHybrid\
+            (p:numeric, u:numeric, v:numeric, t:numeric
+            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
+;
+; Compute Isentropic Potential Vorticity on hybrid levels
+; CCM Processor User's Guide: May 1994: page B-19
+; Original source P Rasch and B Boville
+;
+; Nomenclature
+;     p       - pressure levels (Pa)  [3D or 4D]
+;     u       - zonal wind  (m/s)     [3D or 4D]          
+;     v       - meridional wind (m/s) [3D or 4D]          
+;     t       - temperature (K)       [3D or 4D]          
+;     gridType- grid type
+;               =0 means gaussian grid
+;               =1 means regular or fixed grid
+;     lat     - latitudes
+;     opt     - options: not used
+;
+; Note: u,v,t,p MUST:
+;    [1] be SOUTH-TO-NORTH 
+;    [2] be GLOBAL because spherical harmonics are used
+;    [3] have named dimensions because data are reordered
+;   
+; Usage:
+;   f    = addfile ("foo.nc", "r")
+;   U    = f->U    ; (time,lev,lat,lon) or (lev,lat,lon)
+;   V    = f->V
+;   T    = f->T
+;   lat  = f->lat
+;   hyai = f->hyai
+;   hybi = f->hybi
+;   p0   = f->P0  ; p0=100000
+;   ps   = f->PS  ; Pa
+;   p    = pres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
+;   copy_VarCoords(U,p)
+;
+;               ; Potential Vorticity
+;   PV = PotVortHybrid(p,u,v,t,lat, 0,  0)
+;
+; Note: A nice basic discussion of PV may be found at:
+; Mid-Latitude Atmospheric Dynamics: A First Course
+; Jonathan E. Martin, Wiley 2006,   QC880.M36   , pp276-onward
+; 
+local ranku, rankv, rankt, rankp, nlt, dNam, wrkp, wrk, dthdp  \
+    , dudp, dvdp ,theta, W, f, vr, dthdx, dthdy, G, W, rad, pv
+begin
+                                   ; ERROR CHECK
+  ranku  = dimsizes(dimsizes(u)) 
+  if (.not.(ranku.eq.3 .or. ranku.eq.4)) then
+      print("PotVorticityHybrid: only 3D and 4D arrays allowed: rank="+ranku)
+      exit
+  end if
+  rankv  = dimsizes(dimsizes(v)) 
+  rankt  = dimsizes(dimsizes(t)) 
+  rankp  = dimsizes(dimsizes(p)) 
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankt .and. ranku.eq.rankp)) then
+      print("PotVortHybrid: u, v, t, p must be the same rank: ranku=" \
+            +ranku+"  rankv="+rankv+"  rankt="+rankt+"  rankp="+rankp)
+      exit
+  end if
+
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("PotVortHybrid: unrecognized gridType: only 0 and 1 allowed")
+      print("               gridType="+gridType)
+      ier = 1
+  end if
+
+  if ((lat(1)-lat(0)).le.0) then
+      print("PotVortHybrid: data must be in S-N order")
+      exit
+  end if
+
+  if (ranku.eq.3) then
+      nlt = 1
+  end if
+  if (ranku.eq.4) then
+      nlt = 2
+  end if
+
+  theta  = t*(100000./p)^0.286  
+  theta@long_name = "Potential temperature"
+  theta@units     = "K"
+  copy_VarCoords(t, theta)
+ ;printVarSummary( theta )
+ ;printMinMax( theta, True )
+                              ; compute VERTICAL (pressure) derivatives
+  dNam   = getvardims( t )    ; dimension names
+
+  if (ranku.eq.3) then 
+            ;         lat          lon         lev
+      wrkp  = p($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+
+      wrk   = theta($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+      wrk   = center_finite_diff (wrk,wrkp,False,0)
+      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
+
+      wrk   = u($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+      wrk   = center_finite_diff (wrk,wrkp,False,0)
+      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
+
+      wrk   = v($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+      wrk   = center_finite_diff (wrk,wrkp,False,0)
+      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
+  end if
+
+  if (ranku.eq.4) then 
+            ;    time         lat         lon          lev
+      wrkp  = p($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+
+      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+      wrk   = center_finite_diff (wrk,wrkp,False,0)
+      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
+
+      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+      wrk   = center_finite_diff (wrk,wrkp,False,0)
+      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
+
+      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+      wrk   = center_finite_diff (wrk,wrkp,False,0)
+      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
+  end if
+  delete(wrk)
+  delete(wrkp)
+                              ; compute 
+                              ; (1) lat/lon temperature gradients [K/m]
+                              ; (2) relative vorticity            [1/s]
+
+  dthdx   = theta              ; create E-W gradient array
+  dthdy   = theta              ;        S-N        
+ ;dthx@long_name = "longitudinal gradient (derivative)"
+ ;dthdy@long_name = "latitudinal gradient (derivative)"
+ ;dthdx@units     = "K/m"
+ ;dthdy@units     = "K/m"
+  if (gridType.eq.0) then
+      gradsg (theta, dthdx, dthdy) 
+      vr = uv2vrG(u,v)
+  end if
+  if (gridType.eq.1) then
+      gradsf (theta, dthdx, dthdy) 
+      vr = uv2vrF(u,v)
+  end if
+
+  G   = 9.80665                    ; m/s2 ; gravity at 45 deg lat used by the WMO
+  W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
+  rad = 4.*atan(1.)/180.
+  f   = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+
+  vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
+                                   ; G used for commonly used units
+  pv    = -G*(vr*dthdp - (dthdx*dvdp-dthdy*dudp) )  
+  pv@long_name  = "potential vorticity"
+  pv@short_name = "PV"
+  pv@units      = "K m2/kg/s"      ; common units
+  copy_VarCoords(t,pv)
+
+  return(pv)
+end
+
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
+undef("PotVortIsobaric")
+function PotVortIsobaric\
+            (p[*]:numeric, u:numeric, v:numeric, t:numeric
+            ,lat[*]:numeric, gridType[1]:integer, opt:integer)
+;
+; Compute Potential Vorticity on constant pressure levels
+; Bluestein: Synoptic-Dynamic Meteorology in Midlatitudes
+;            pg 264  Eq 4.5.93
+;
+; Nomenclature
+;     p       - pressure levels (Pa)  [1D]
+;     u       - zonal wind  (m/s)     [3D or 4D]          
+;     v       - meridional wind (m/s) [3D or 4D]          
+;     t       - temperature (K)       [3D or 4D]          
+;     lat     - latitudes
+;     gridType- grid type
+;               =0 means gaussian grid
+;               =1 means regular or fixed grid
+;     opt     - options: not used
+;
+; Note: u,v,t MUST be SOUTH-TO-NORTH 
+;       and must be GLOBAL because spherical harmonics are used
+;   
+; Usage:
+;   f   = addfile ("foo.nc", "r")
+;   U   = f->U    ; (time,lev,lat,lon) or (lev,lat,lon)
+;   V   = f->V
+;   T   = f->T    ; K
+;   lat = f->lat
+;   lev = f->lev  
+;   lev = lev*100
+;   lev@units = "Pa"
+;               ; Potential Vorticity
+;   PV = PotVortIsobaric(lev,u,v,t,lat, 0, 0)
+;
+; Note: A nice basic discussion of PV may be found at:
+; Mid-Latitude Atmospheric Dynamics: A First Course
+; Jonathan E. Martin, Wiley 2006,   QC880.M36   , pp276-onward
+;
+local ranku, rankv, rankt, npr, nlt, dNam, wrk, dthdp, dudp, dvdp \
+     ,theta, s, con, R, W, f, vr, dtdx, dtdy, rad, pv
+begin
+                                   ; ERROR CHECK
+  ranku  = dimsizes(dimsizes(u)) 
+  if (.not.(ranku.eq.3 .or. ranku.eq.4)) then
+      print("StaticStabilityP: only 3D and 4D arrays allowed: rank="+ranku)
+      exit
+  end if
+  rankv  = dimsizes(dimsizes(v)) 
+  rankt  = dimsizes(dimsizes(t)) 
+  if (.not.(ranku.eq.rankv .and. ranku.eq.rankt)) then
+      print("PotVortIsobaric: u, v, t must be the same rank: ranku=" \
+            +ranku+"  rankv="+rankv+"  rankt="+rankt)
+      exit
+  end if
+
+  if (.not.(gridType.eq.0 .or. gridType.eq.1)) then
+      print("PotVortIsobaric: unrecognized gridType: only 0 and 1 allowed")
+      print("           gridType="+gridType)
+      ier = 1
+  end if
+
+  if ((lat(1)-lat(0)).le.0) then
+      print("PotVortIsobaric: data must be in S-N order")
+      exit
+  end if
+
+  if (ranku.eq.3) then
+      npr = 0
+      nlt = 1
+  end if
+  if (ranku.eq.4) then
+      npr = 1
+      nlt = 2
+  end if
+
+  theta  = t*(100000./conform(t,p,npr))^0.286  
+  theta@long_name = "Potential temperature"
+  theta@units     = "K"
+  copy_VarCoords(t, theta)
+ ;printVarSummary( theta )
+ ;printMinMax( theta, True )
+                              ; compute VERTICAL (pressure) derivatives
+  dNam   = getvardims( t )    ; dimension names
+
+  if (ranku.eq.3) then 
+            ;         lat          lon         lev
+      wrk   = theta($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+      wrk   = center_finite_diff (wrk,p,False,0)
+      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
+
+      wrk   = u($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+      wrk   = center_finite_diff (wrk,p,False,0)
+      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
+
+      wrk   = v($dNam(1)$|:, $dNam(2)$|:, $dNam(0)$|:)
+      wrk   = center_finite_diff (wrk,p,False,0)
+      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:)
+  end if
+
+  if (ranku.eq.4) then 
+            ;         time         lat         lon          lev
+      wrk   = theta($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+      wrk   = center_finite_diff (wrk,p,False,0)
+      dthdp = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
+
+      wrk   = u($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+      wrk   = center_finite_diff (wrk,p,False,0)
+      dudp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
+
+      wrk   = v($dNam(0)$|:,$dNam(2)$|:, $dNam(3)$|:, $dNam(1)$|:)
+      wrk   = center_finite_diff (wrk,p,False,0)
+      dvdp  = wrk($dNam(0)$|:, $dNam(1)$|:, $dNam(2)$|:, $dNam(3)$|:)
+  end if
+  delete(wrk)
+
+  s           = -(t/theta)*dthdp
+  s@long_name = "static stability"
+  s@units     = "K/Pa"       ; or "K-m-s2/kg" 
+  copy_VarCoords(t,s)
+ ;printVarSummary( s )
+ ;printMinMax( s, True )
+                              ; compute 
+                              ; (1) lat/lon temperature gradients [K/m]
+                              ; (2) relative vorticity            [1/s]
+
+  dtdx   = t                  ; create E-W gradient array
+  dtdy   = t                  ;        S-N        
+ ;dtdx@long_name = "longitudinal gradient (derivative)"
+ ;dtdy@long_name = "latitudinal gradient (derivative)"
+ ;dtdx@units     = "K/m"
+ ;dtdy@units     = "K/m"
+  if (gridType.eq.0) then
+      gradsg (t, dtdx, dtdy) 
+      vr = uv2vrG(u,v)
+  end if
+  if (gridType.eq.1) then
+      gradsf (t, dtdx, dtdy) 
+      vr = uv2vrF(u,v)
+  end if
+
+  G   = 9.80665                    ; m/s2 ; gravity at 45 deg lat used by the WMO
+  R   = 287.04                     ; m2/(s2-K) ; gas constant dry air
+  W   = 7.292e-5                   ; (1/s)     ; earth ang rotation
+  rad = 4.*atan(1.)/180.
+  f   = 2.*W*sin(lat*rad)          ; (1/s)     ; coriolis parameter
+
+  vr  = vr + conform(vr,f,nlt)     ; absolute vorticity   
+  con = R/(s*conform(t,p,npr))  
+                                   ; G* added to get common pv units
+  pv    = -G*(vr + con*(dvdp*dtdx-dudp*dtdy))*dthdp  
+  pv@long_name  = "potential vorticity"
+  pv@short_name = "PV"
+  pv@units      = "K m2/kg/s"      ; common units
+  copy_VarCoords(t,pv)
+
+  return( pv )
+
 end
