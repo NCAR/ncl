@@ -3039,20 +3039,29 @@ begin
 
   tres       =  True
   tres@txFontHeightF = 0.0175
-
-  if (opt .and. isatt(opt,"dayLine")) then
-       day = min(opt@dayLine)
+                                                    ; orig code rename
+  if (opt .and. (isatt(opt,"dayLine") .or. isatt(opt,"dayLines"))) then
+      if (opt .and. (isatt(opt,"dayLines"))) then
+          day = min(opt@dayLines)
+      else
+          day = min(opt@dayLine)
+      end if
   else
        day = 30         ; default 
   end if
   fline = 1./day
 
- ;resp@gsLineLabelString= day+"d"                    ; adds a line label string
+ ;resp@gsLineLabelString= day+"d"                   ; adds a line label string
   gsn_polyline(wks,plot,(/fline,fline/),(/ 0.,NW/), resp)      
   gsn_text(wks,plot, (day+"d"),fline+0.005,0.93*NW,tres)
 
-  if (opt .and. isatt(opt,"dayLine")) then
-       day = max(opt@dayLine)
+                                                    ; orig code rename
+  if (opt .and. (isatt(opt,"dayLine") .or. isatt(opt,"dayLines"))) then
+      if (opt .and. (isatt(opt,"dayLines"))) then
+          day = max(opt@dayLines)
+      else
+          day = max(opt@dayLine)
+      end if
   else
        day = 80  
   end if
