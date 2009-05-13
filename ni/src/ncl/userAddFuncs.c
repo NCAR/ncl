@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.17 2009-05-08 03:55:50 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.18 2009-05-13 19:53:40 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1634,7 +1634,9 @@ NhlErrorTypes _Nclstr_index_of_substr
    *printf("substr: <%s>\n", tmp_substr);
    */
 
-    if(strlen(tmp_substr) > strlen(tmp_str))
+    if((has_missing_str    && str[0]    == missing_str.stringval) || 
+       (has_missing_substr && substr[0] == missing_substr.stringval) ||
+       (strlen(tmp_substr) > strlen(tmp_str)))
     {
         dimsz_index[0] = 1;
         return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 0);
