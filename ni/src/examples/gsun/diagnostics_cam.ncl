@@ -3047,7 +3047,7 @@ begin
   gsn_text(wks,plot, (day+"d"),fline+0.005,0.93*NW,tres)
 
   day   = 80 
-  fline = 1/day
+  fline = 1./day
  ;resp@gsLineLabelString= day+"d"                    ; adds a line label string
   gsn_polyline(wks,plot,(/fline,fline/),(/ 0.,NW/), resp)      
   gsn_text(wks,plot, (day+"d"),fline+0.005,0.93*NW,tres)
