@@ -3040,10 +3040,10 @@ begin
   tres       =  True
   tres@txFontHeightF = 0.0175
 
-  if (opt .and. isatt(opt,dayLine)) then
-       day = min(dayLine)
+  if (opt .and. isatt(opt,"dayLine")) then
+       day = min(opt@dayLine)
   else
-       day = 30.0       ; default 
+       day = 30         ; default 
   end if
   fline = 1./day
 
@@ -3051,10 +3051,10 @@ begin
   gsn_polyline(wks,plot,(/fline,fline/),(/ 0.,NW/), resp)      
   gsn_text(wks,plot, (day+"d"),fline+0.005,0.93*NW,tres)
 
-  if (opt .and. isatt(opt,dayLine)) then
-       day = max(dayLine)
+  if (opt .and. isatt(opt,"dayLine")) then
+       day = max(opt@dayLine)
   else
-       day = 80.0
+       day = 80  
   end if
   fline = 1./day
 
