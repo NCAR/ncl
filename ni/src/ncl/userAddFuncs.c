@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.18 2009-05-13 19:53:40 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.19 2009-05-13 22:55:19 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -82,6 +82,7 @@ NhlErrorTypes _Nclstr_fields_count
     int ndim_delim, dimsz_delim[NCL_MAX_DIMENSIONS];
     int has_missing_strs = 0;
     int has_missing_delim = 0;
+    int has_missing_ret = 0;
     NclScalar   missing_strs;
     NclScalar   missing_delim;
     NclScalar   ret_missing;
@@ -104,18 +105,6 @@ NhlErrorTypes _Nclstr_fields_count
                         &has_missing_strs,
                         &type_strs,
                         DONT_CARE);
-
-    for(i=0; i<ndim_strs; i++)
-    {
-        str_size *= dimsz_strs[i];
-    }
-
-    fields = (int *) NclMalloc((unsigned int) sizeof(int) * str_size);
-    if (! fields)
-    {
-        NHLPERROR((NhlFATAL,ENOMEM,NULL));
-        return NhlFATAL;
-    }
 
     if (strs == NULL)
     {
@@ -140,10 +129,25 @@ NhlErrorTypes _Nclstr_fields_count
         return NhlFATAL;
     }
 
+/*
+ * If the input string possibly contains missing values,
+ * then the return array will possibly contain missing values.
+ * Get the default integer missing value here.
+ */
     if(has_missing_strs)
-        ret_missing.stringval = missing_strs.stringval;
-    else
-        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
+        ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+
+    for(i=0; i<ndim_strs; i++)
+    {
+        str_size *= dimsz_strs[i];
+    }
+
+    fields = (int *) NclMalloc((unsigned int) sizeof(int) * str_size);
+    if (! fields)
+    {
+        NHLPERROR((NhlFATAL,ENOMEM,NULL));
+        return NhlFATAL;
+    }
 
     tmp_str = (char *) NrmQuarkToString(delim[0]);
     tmp_delim = (char *) NclMalloc(strlen(tmp_str)+2);
@@ -156,9 +160,13 @@ NhlErrorTypes _Nclstr_fields_count
 
     for(i=0; i<str_size; i++)
     {
+      if(!has_missing_strs || 
+         (has_missing_strs && strs[i] != missing_strs.stringval)) {
         tmp_str = (char *) NrmQuarkToString(strs[i]);
+
         if (max_length < strlen(tmp_str))
             max_length = strlen(tmp_str);
+      }
     }
     max_length ++;
 
@@ -171,10 +179,10 @@ NhlErrorTypes _Nclstr_fields_count
 
     for(i=0; i<str_size; i++)
     {
-        if (strs[i] == ret_missing.stringval)
+        if (has_missing_strs && strs[i] == missing_strs.stringval)
         {
-             fields[i] = -1;
-             has_missing_strs = 1;
+             fields[i] = ret_missing.intval;
+             has_missing_ret = 1;
              continue;
         }
 
@@ -193,7 +201,9 @@ NhlErrorTypes _Nclstr_fields_count
     NclFree(tmp_str);
     NclFree(tmp_delim);
 
-    return NclReturnValue((void *) fields, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_int, 0);
+    return NclReturnValue((void *) fields, ndim_strs, dimsz_strs, 
+                          (has_missing_ret ? &ret_missing : NULL),
+                          NCL_int, 0);
 
     NclFree(fields);
 }
