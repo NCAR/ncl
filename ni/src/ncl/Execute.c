@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.133 2009-05-04 19:23:30 dbrown Exp $
+ *      $Id: Execute.c,v 1.134 2009-05-19 00:46:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -360,7 +360,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	NclStackEntry fvar;
 	NclQuark var;
  	NclList list;
-	NclList newlist;
+	NclList newlist = NULL;
 	int filevar_subs,subs,i;
 	NclSelection *sel_ptr=NULL, *fsel;
 	NclSelection sel;
@@ -1380,6 +1380,8 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		NclFree(files);
 	if (agg_dim_count)
 		NclFree(agg_dim_count);
+	if (newlist)
+		_NclDestroyObj(newlist);
 	
 	return;
 }

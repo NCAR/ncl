@@ -6782,6 +6782,15 @@ static void _g2SetFileDimsAndCoordVars
 				    &lat_att_list_ptr, &nlatatts, &lon_att_list_ptr, &nlonatts,
 				    &rot_att_list_ptr, &nrotatts);
 			name_suffix = "SV";
+			if (n_dims_lat == 0) {
+				is_err = NhlFATAL;
+			}
+			else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+					  "NCL does not yet fully support GRIB2 space view perspective grid (template %d), no coordinate variables will be supplied for this grid",
+					  step->grid_number);
+				is_err = NhlWARNING;
+			}
 			break;
 		case 2:
 		case 3:
@@ -6882,7 +6891,12 @@ static void _g2SetFileDimsAndCoordVars
 			/*
 			 * x (longitude) first
 			 */
-			(void) sprintf(buffer,"lon_%d",therec->n_grids);
+			if (tmp_lon) {
+				sprintf(buffer,"lon_%d",therec->n_grids);
+			}
+			else {
+				sprintf(buffer, "xgrid_%d", therec->n_grids);
+			}
 
 			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->dim_number = therec->total_dims + step->var_info.doff;
@@ -6916,7 +6930,12 @@ static void _g2SetFileDimsAndCoordVars
 
 			NclFree(dimsizes_lon);
 
-			sprintf(buffer,"lat_%d",therec->n_grids);
+			if (tmp_lat) {
+				sprintf(buffer,"lat_%d",therec->n_grids);
+			}
+			else {
+				sprintf(buffer, "ygrid_%d", therec->n_grids);
+			}
 			tmp = (Grib2DimInqRec*)NclMalloc((unsigned)sizeof(Grib2DimInqRec));
 			tmp->dim_number = therec->total_dims + (step->var_info.doff - 1);
 			tmp->size = dimsizes_lat[0];
