@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.134 2009-05-19 00:46:19 dbrown Exp $
+ *      $Id: Execute.c,v 1.135 2009-05-19 16:25:45 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1381,7 +1381,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	if (agg_dim_count)
 		NclFree(agg_dim_count);
 	if (newlist)
-		_NclDestroyObj(newlist);
+		_NclDestroyObj((NclObj)newlist);
 	
 	return;
 }
