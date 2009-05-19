@@ -1,8 +1,9 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.20 2009-05-11 16:05:42 haley Exp $
+#   $Id: check_ncl_files,v 1.21 2009-05-19 15:08:28 haley Exp $
 #
-# Use check_files instead! This one is just for NCL.
+# Use check_files instead! This one is just for NCL and hasn't
+# been updated in awhile
 # 
 # Check for existence of NCL files in a particular version of
 # a distribution.
