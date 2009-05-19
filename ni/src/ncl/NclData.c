@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.23 2009-05-19 16:25:45 dbrown Exp $
+ *      $Id: NclData.c,v 1.24 2009-05-19 16:30:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -722,7 +722,6 @@ FILE *fp;
 				fprintf(fp,"\n------%d------\n",objs[i].id);
 				fprintf(fp,"Index: %d\n",i);
 				fprintf(fp,"Object Class: %s\n",objs[i].theobj->obj.class_ptr->obj_class.class_name);
-				fprintf(fp,"Object address: %x\n",objs[i].theobj->obj.self);
 				fprintf(fp,"Object Status: %s\n",_NclStatusString(objs[i].theobj->obj.status));
 
 				/*(void) _NclPrint(objs[i].theobj,fp);*/
@@ -734,7 +733,6 @@ FILE *fp;
 				fprintf(fp,"\n------%d------\n",tmp->id);
 				fprintf(fp,"Index: %d\n",i);
 				fprintf(fp,"Object Class: %s\n",tmp->theobj->obj.class_ptr->obj_class.class_name);
-				fprintf(fp,"Object address: %x\n",tmp->theobj->obj.self);
 				fprintf(fp,"Object Status: %s\n",_NclStatusString(tmp->theobj->obj.status));
 	
 				/*(void)_NclPrint(tmp->theobj,fp);*/
