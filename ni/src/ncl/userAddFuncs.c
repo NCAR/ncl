@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.19 2009-05-13 22:55:19 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.20 2009-05-20 20:00:43 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -79,14 +79,12 @@ NhlErrorTypes _Nclstr_fields_count
     string *delim;
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
-    int ndim_delim, dimsz_delim[NCL_MAX_DIMENSIONS];
-    int has_missing_strs = 0;
-    int has_missing_delim = 0;
+    int has_missing_strs;
+    int has_missing_delim;
     int has_missing_ret = 0;
     NclScalar   missing_strs;
     NclScalar   missing_delim;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_strs, type_delim;
   
     char *tmp_str;
     char *tmp_delim;
@@ -103,24 +101,24 @@ NhlErrorTypes _Nclstr_fields_count
                         dimsz_strs,
                         &missing_strs,
                         &has_missing_strs,
-                        &type_strs,
+                        NULL,
                         DONT_CARE);
 
     if (strs == NULL)
     {
         NclFree(fields);
-        NHLPERROR((NhlFATAL,ENOMEM,"input strng is null."));
+        NHLPERROR((NhlFATAL,ENOMEM,"str_fields_count: input string is null."));
         return NhlFATAL;
     }
 
     delim = (string *) NclGetArgValue(
                         1,
                         2,
-                        &ndim_delim,
-                        dimsz_delim,
+                        NULL,
+                        NULL,
                         &missing_delim,
                         &has_missing_delim,
-                        &type_delim,
+                        NULL,
                         DONT_CARE);
 
     if (delim == NULL)
@@ -130,12 +128,12 @@ NhlErrorTypes _Nclstr_fields_count
     }
 
 /*
- * If the input string possibly contains missing values,
- * then the return array will possibly contain missing values.
- * Get the default integer missing value here.
+ * Get the default integer missing value.
+ *
+ * This will be used if "bad" data is input, like a missing input
+ * string or a missing delimiter.
  */
-    if(has_missing_strs)
-        ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
+    ret_missing.intval = (int) ((NclTypeClass) nclTypeintClass)->type_class.default_mis.intval;
 
     for(i=0; i<ndim_strs; i++)
     {
@@ -160,13 +158,14 @@ NhlErrorTypes _Nclstr_fields_count
 
     for(i=0; i<str_size; i++)
     {
-      if(!has_missing_strs || 
-         (has_missing_strs && strs[i] != missing_strs.stringval)) {
-        tmp_str = (char *) NrmQuarkToString(strs[i]);
+/*
+ * Let the missing value string length get included here, because
+ * it might be the longest string.
+ */
+      tmp_str = (char *) NrmQuarkToString(strs[i]);
 
-        if (max_length < strlen(tmp_str))
-            max_length = strlen(tmp_str);
-      }
+      if (max_length < strlen(tmp_str))
+          max_length = strlen(tmp_str);
     }
     max_length ++;
 
@@ -179,7 +178,8 @@ NhlErrorTypes _Nclstr_fields_count
 
     for(i=0; i<str_size; i++)
     {
-        if (has_missing_strs && strs[i] == missing_strs.stringval)
+        if ( (has_missing_strs  && strs[i]  == missing_strs.stringval) ||
+             (has_missing_delim && delim[0] == missing_delim.stringval) )
         {
              fields[i] = ret_missing.intval;
              has_missing_ret = 1;
@@ -204,8 +204,6 @@ NhlErrorTypes _Nclstr_fields_count
     return NclReturnValue((void *) fields, ndim_strs, dimsz_strs, 
                           (has_missing_ret ? &ret_missing : NULL),
                           NCL_int, 0);
-
-    NclFree(fields);
 }
 
 
@@ -220,16 +218,12 @@ NhlErrorTypes _Nclstr_get_field
     string *delim;
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
-    int ndim_field, dimsz_field[NCL_MAX_DIMENSIONS];
-    int ndim_delim, dimsz_delim[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
-    int has_missing_field;
     int has_missing_delim;
+    int has_missing_ret = 0;
     NclScalar   missing_strs;
-    NclScalar   missing_field;
     NclScalar   missing_delim;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_strs, type_field, type_delim;
   
     int i, n;
 
@@ -239,8 +233,12 @@ NhlErrorTypes _Nclstr_get_field
     string *arraySubString;
     int str_size;
     int *field;
-    int *field_record;
-    int has_miss_field = 0;
+/*
+ * I didn't see how these two variables were needed, so commenting out.
+ *
+ *    int *field_record;
+ *    int has_miss_field = 0;
+ */
     int max_length = 0;
     
     strs = (string *) NclGetArgValue(
@@ -250,7 +248,7 @@ NhlErrorTypes _Nclstr_get_field
                         dimsz_strs,
                         &missing_strs,
                         &has_missing_strs,
-                        &type_strs,
+                        NULL,
                         DONT_CARE);
 
     if (strs == NULL)
@@ -262,34 +260,39 @@ NhlErrorTypes _Nclstr_get_field
     field = (int *) NclGetArgValue(
                         1,
                         3,
-                        &ndim_field,
-                        dimsz_field,
-                        &missing_field,
-                        &has_missing_field,
-                        &type_field,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
                         DONT_CARE);
-
-    if (field == NULL)
-    {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_get_field: field did not specify.");
-        return NhlFATAL;
-    }
 
     delim = (string *) NclGetArgValue(
                         2,
                         3,
-                        &ndim_delim,
-                        dimsz_delim,
+                        NULL,
+                        NULL,
                         &missing_delim,
                         &has_missing_delim,
-                        &type_delim,
+                        NULL,
                         DONT_CARE);
 
-    if (delim == NULL)
+/*
+ * Error checking.  Commented out for now.
+ */
+/*
+    if(field[0] < 1)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_get_field: delimiter is null.");
-        return NhlFATAL;
+        NhlPError(NhlWARNING, NhlEUNKNOWN,
+                  "Input field number is less than one; missing string(s) will be returned");
+
     }
+    if(has_missing_delim && delim[0] == missing_delim.stringval)
+    {
+      NhlPError(NhlWARNING, NhlEUNKNOWN,
+                "Input delimiter string is missing; missing string(s) will be returned");
+    }
+*/
 
     if(has_missing_strs)
         ret_missing.stringval = missing_strs.stringval;
@@ -330,18 +333,12 @@ NhlErrorTypes _Nclstr_get_field
         NHLPERROR((NhlFATAL,ENOMEM,NULL));
         return NhlFATAL;
     }
-    field_record = (int *) NclMalloc(str_size*sizeof(int));
-    if (! field_record)
-    {
-        NHLPERROR((NhlFATAL,ENOMEM,NULL));
-        return NhlFATAL;
-    }
-
   /*
-   *if(field[0] < 1)
+   *field_record = (int *) NclMalloc(str_size*sizeof(int));
+   *if (! field_record)
    *{
-   *    NhlPError(NhlWARNING, NhlEUNKNOWN,
-   *             "Input field less than one, fields to NULL.", field[0]);
+   *    NHLPERROR((NhlFATAL,ENOMEM,NULL));
+   *    return NhlFATAL;
    *}
    */
 
@@ -349,14 +346,18 @@ NhlErrorTypes _Nclstr_get_field
     {
         arraySubString[i] = ret_missing.stringval;
 
-        if (strs[i] == ret_missing.stringval)
+        if (field[0] < 1 ||
+            (has_missing_delim && delim[0] == missing_delim.stringval) ||
+            (has_missing_strs && strs[i] == missing_strs.stringval))
         {
-            field_record[i] = ret_missing.stringval;
-            has_missing_strs = 1;
+            has_missing_ret = 1;
+            continue;
         }
         else
         {
-            field_record[i] = 1;
+          /*
+           * field_record[i] = 1;
+           */
             strcpy(tmp_str, (char *) NrmQuarkToString(strs[i]));
             result = strtok(tmp_str, tmp_delim);
             n = 0;
@@ -366,14 +367,22 @@ NhlErrorTypes _Nclstr_get_field
                 if(n == field[0])
                 {
                     arraySubString[i] = NrmStringToQuark(result);
-                    field_record[i] = 0;
+                  /*
+                   * field_record[i] = 0;
+                   */
                     break;
                 }
                 result = strtok(NULL, tmp_delim);
             }
 
-            has_miss_field += field_record[i];
-        }
+            if(n != field[0])
+            {
+              has_missing_ret = 1;
+            }
+          /*
+           * has_miss_field += field_record[i];
+           */
+      }
     }
 
   /*
@@ -386,11 +395,12 @@ NhlErrorTypes _Nclstr_get_field
 
     NclFree(tmp_str);
     NclFree(tmp_delim);
-    NclFree(field_record);
+   /*
+    *NclFree(field_record);
+    */
 
-    return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
+    return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, (has_missing_ret ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(arraySubString);
 }
 
 
@@ -404,17 +414,10 @@ NhlErrorTypes _Nclstr_get_cols
     string *strs;
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
-    int ndim_start, dimsz_start[NCL_MAX_DIMENSIONS];
-    int ndim_end, dimsz_end[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
-    int has_missing_start;
-    int has_missing_end;
     int has_missing = 0;
     NclScalar   missing_strs;
-    NclScalar   missing_start;
-    NclScalar   missing_end;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_strs, type_start, type_end;
   
     int i, m, n;
 
@@ -433,7 +436,7 @@ NhlErrorTypes _Nclstr_get_cols
                         dimsz_strs,
                         &missing_strs,
                         &has_missing_strs,
-                        &type_strs,
+                        NULL,
                         DONT_CARE);
 
     if (strs == NULL)
@@ -444,7 +447,6 @@ NhlErrorTypes _Nclstr_get_cols
 
     if(has_missing_strs)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_strs.stringval;
     }
     else
@@ -453,11 +455,11 @@ NhlErrorTypes _Nclstr_get_cols
     startCol = (int *) NclGetArgValue(
                         1,
                         3,
-                        &ndim_start,
-                        dimsz_start,
-                        &missing_start,
-                        &has_missing_start,
-                        &type_start,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
                         DONT_CARE);
 
     if (startCol == NULL)
@@ -469,11 +471,11 @@ NhlErrorTypes _Nclstr_get_cols
     endCol = (int *) NclGetArgValue(
                         2,
                         3,
-                        &ndim_end,
-                        dimsz_end,
-                        &missing_end,
-                        &has_missing_end,
-                        &type_end,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
                         DONT_CARE);
 
     if (endCol == NULL)
@@ -523,7 +525,7 @@ NhlErrorTypes _Nclstr_get_cols
 
         for(i=0; i<str_size; i++)
         {
-            if (strs[i] == ret_missing.stringval)
+            if (has_missing_strs && strs[i] == missing_strs.stringval)
             {
                 arraySubString[i] = ret_missing.stringval;
                 has_missing = 1;
@@ -567,7 +569,7 @@ NhlErrorTypes _Nclstr_get_cols
 
         for(i=0; i<str_size; i++)
         {
-            if (strs[i] == ret_missing.stringval)
+            if (has_missing_strs && strs[i] == missing_strs.stringval)
             {
                 arraySubString[i] = ret_missing.stringval;
                 has_missing = 1;
@@ -603,7 +605,7 @@ NhlErrorTypes _Nclstr_get_cols
 
         for(i=0; i<str_size; i++)
         {
-            if (strs[i] == ret_missing.stringval)
+            if (has_missing_strs && strs[i] == missing_strs.stringval)
             {
                 arraySubString[i] = ret_missing.stringval;
                 has_missing = 1;
@@ -633,9 +635,9 @@ NhlErrorTypes _Nclstr_get_cols
         {
             for(i=0; i<str_size; i++)
             {
-                if (strs[i] == missing_strs.stringval)
+                if (has_missing_strs && strs[i] == missing_strs.stringval)
                 {
-                    arraySubString[i] = missing_strs.stringval;
+                    arraySubString[i] = ret_missing.stringval;
                     has_missing = 1;
                     continue;
                 }
@@ -667,9 +669,9 @@ NhlErrorTypes _Nclstr_get_cols
         {
             for(i=0; i<str_size; i++)
             {
-                if (strs[i] == missing_strs.stringval)
+                if (has_missing_strs && strs[i] == missing_strs.stringval)
                 {
-                    arraySubString[i] = missing_strs.stringval;
+                    arraySubString[i] = ret_missing.stringval;
                     has_missing = 1;
                     continue;
                 }
@@ -703,7 +705,6 @@ NhlErrorTypes _Nclstr_get_cols
 
     return NclReturnValue(arraySubString, ndim_strs, dimsz_strs, ( has_missing ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(arraySubString);
 }
 
 
@@ -719,18 +720,15 @@ NhlErrorTypes _Nclstr_sub_str
     string *n_s;
 
     int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
-    int ndim_o_s, dimsz_o_s[NCL_MAX_DIMENSIONS];
-    int ndim_n_s, dimsz_n_s[NCL_MAX_DIMENSIONS];
     int has_missing_str;
     int has_missing_o_s;
     int has_missing_n_s;
-    int has_missing;
+    int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   missing_o_s;
     NclScalar   missing_n_s;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str, type_o_s, type_n_s;
-  
+
     char *tmp_str;
     char *new_str;
     char *tmp_o_s;
@@ -739,7 +737,7 @@ NhlErrorTypes _Nclstr_sub_str
     int i, m, n, nf, nn;
     int str_size;
     int current_size = 0;
-    int cols;
+    int cols, o_s_len, n_s_len;
 
     str = (string *) NclGetArgValue(
                         0,
@@ -748,7 +746,7 @@ NhlErrorTypes _Nclstr_sub_str
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -759,23 +757,21 @@ NhlErrorTypes _Nclstr_sub_str
 
     if(has_missing_str)
     {
-        has_missing = has_missing_str;
         ret_missing.stringval = missing_str.stringval;
     }
     else
     {
-        has_missing = 0;
         ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
     }
 
     o_s = (string *) NclGetArgValue(
                         1,
                         3,
-                        &ndim_o_s,
-                        dimsz_o_s,
+                        NULL,
+                        NULL,
                         &missing_o_s,
                         &has_missing_o_s,
-                        &type_o_s,
+                        NULL,
                         DONT_CARE);
 
     if (o_s == NULL)
@@ -796,11 +792,11 @@ NhlErrorTypes _Nclstr_sub_str
     n_s = (string *) NclGetArgValue(
                         2,
                         3,
-                        &ndim_n_s,
-                        dimsz_n_s,
+                        NULL,
+                        NULL,
                         &missing_n_s,
                         &has_missing_n_s,
-                        &type_n_s,
+                        NULL,
                         DONT_CARE);
 
     if (n_s == NULL)
@@ -817,6 +813,9 @@ NhlErrorTypes _Nclstr_sub_str
         return NhlFATAL;
     }
     strcpy(tmp_n_s, tmp_str);
+
+    o_s_len = strlen(tmp_o_s);
+    n_s_len = strlen(tmp_n_s);
 
   /*
    *printf("o_s: <%s>\n", tmp_o_s);
@@ -843,7 +842,7 @@ NhlErrorTypes _Nclstr_sub_str
     current_size = NCL_INITIAL_STRING_LENGTH;
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
             arrayString[i] = ret_missing.stringval;
             has_missing = 1;
@@ -852,8 +851,26 @@ NhlErrorTypes _Nclstr_sub_str
 
         tmp_str = (char *) NrmQuarkToString(str[i]);
 
+        if ( (has_missing_n_s && n_s[i] == missing_n_s.stringval) ||
+             (has_missing_o_s && o_s[i] == missing_o_s.stringval))
+        {
+          arrayString[i] = NrmStringToQuark(tmp_str);
+          continue;
+        }
+
         cols = strlen(tmp_str);
-        m = cols + strlen(tmp_n_s) - strlen(tmp_o_s);
+/*
+ * Special case where input string and o_s are both empty.
+ */
+        if(cols == 0 && o_s_len == 0) 
+        {
+          new_str = (char *) NclRealloc(new_str, n_s_len+1);
+          strncpy(new_str,tmp_n_s,n_s_len);
+          new_str[n_s_len] = '\0';
+          arrayString[i] = NrmStringToQuark(new_str);
+          continue;
+        }
+        m = cols + n_s_len - o_s_len;
         if(current_size <= m)
         {
             current_size *= 2;
@@ -871,7 +888,7 @@ NhlErrorTypes _Nclstr_sub_str
             }
 
             nf = n;
-            for(nn=0; nn<strlen(tmp_o_s); nn++)
+            for(nn=0; nn<o_s_len; nn++)
             {
                 if(tmp_o_s[nn] != tmp_str[n+nn])
                 {
@@ -882,11 +899,11 @@ NhlErrorTypes _Nclstr_sub_str
 
             if(nf > -1)
             {
-                for(nn=0; nn<strlen(tmp_n_s); nn++)
+                for(nn=0; nn<n_s_len; nn++)
                 {
                     new_str[m++] = tmp_n_s[nn];
                 }
-                n += strlen(tmp_o_s);
+                n += o_s_len;
                 continue;
             }
 
@@ -904,7 +921,6 @@ NhlErrorTypes _Nclstr_sub_str
 
     return NclReturnValue(arrayString, ndim_str, dimsz_str, ( has_missing ? &ret_missing : NULL ), NCL_string, 0);
 
-    NclFree(arrayString);
 }
 
 
@@ -921,7 +937,6 @@ NhlErrorTypes _Nclstr_is_blank
     int has_missing_strs = 0;
     NclScalar   missing_strs;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_strs;
   
     char *tmp_str;
     int n, i;
@@ -935,7 +950,7 @@ NhlErrorTypes _Nclstr_is_blank
                         dimsz_strs,
                         &missing_strs,
                         &has_missing_strs,
-                        &type_strs,
+                        NULL,
                         DONT_CARE);
 
     str_sz = 1;
@@ -962,7 +977,7 @@ NhlErrorTypes _Nclstr_is_blank
             ret_missing.logicalval = ((NclTypeClass) nclTypelogicalClass)->type_class.default_mis.logicalval;
             for(i=0; i<str_sz; i++)
             {
-                if (strs[i] == missing_strs.stringval)
+                if (has_missing_strs && strs[i] == missing_strs.stringval)
                 {
                     tmp_val[i] = ret_missing.logicalval;
                 }
@@ -1017,8 +1032,6 @@ NhlErrorTypes _Nclstr_is_blank
             return NclReturnValue((void *) tmp_val, ndim_strs, dimsz_strs, NULL, NCL_logical, 0);
         }
     }
-
-    NclFree(tmp_val);
 }
 
 
@@ -1036,7 +1049,6 @@ NhlErrorTypes _Nclstr_left_strip
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, m, n;
@@ -1054,7 +1066,7 @@ NhlErrorTypes _Nclstr_left_strip
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1091,15 +1103,12 @@ NhlErrorTypes _Nclstr_left_strip
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
-    else
-        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -1133,8 +1142,6 @@ NhlErrorTypes _Nclstr_left_strip
     NclFree(result);
 
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
-
-    NclFree(arrayOfString);
 }
 
 
@@ -1152,7 +1159,6 @@ NhlErrorTypes _Nclstr_right_strip
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, n;
@@ -1170,7 +1176,7 @@ NhlErrorTypes _Nclstr_right_strip
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1207,15 +1213,12 @@ NhlErrorTypes _Nclstr_right_strip
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
-    else
-        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -1241,8 +1244,6 @@ NhlErrorTypes _Nclstr_right_strip
     NclFree(result);
 
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
-
-    NclFree(arrayOfString);
 }
 
 
@@ -1260,7 +1261,6 @@ NhlErrorTypes _Nclstr_strip
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, m, n;
@@ -1278,7 +1278,7 @@ NhlErrorTypes _Nclstr_strip
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1315,15 +1315,12 @@ NhlErrorTypes _Nclstr_strip
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
-    else
-        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -1367,8 +1364,6 @@ NhlErrorTypes _Nclstr_strip
     NclFree(result);
 
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
-
-    NclFree(arrayOfString);
 }
 
 
@@ -1386,7 +1381,6 @@ NhlErrorTypes _Nclstr_squeeze
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, m, n;
@@ -1404,7 +1398,7 @@ NhlErrorTypes _Nclstr_squeeze
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1415,11 +1409,8 @@ NhlErrorTypes _Nclstr_squeeze
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
-    else
-        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     str_size = 1;
     for(i=0; i<ndim_str; i++)
@@ -1449,7 +1440,7 @@ NhlErrorTypes _Nclstr_squeeze
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -1521,8 +1512,6 @@ NhlErrorTypes _Nclstr_squeeze
 
     NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
-
-    NclFree(arrayOfString);
 }
 
 
@@ -1537,8 +1526,6 @@ NhlErrorTypes _Nclstr_index_of_substr
     string *substr;
 
     int ndim_str, dimsz_str[NCL_MAX_DIMENSIONS];
-    int ndim_substr, dimsz_substr[NCL_MAX_DIMENSIONS];
-    int ndim_range, dimsz_range[NCL_MAX_DIMENSIONS];
     int has_missing_str = 0;
     int has_missing_substr = 0;
     int has_missing_range = 0;
@@ -1546,7 +1533,6 @@ NhlErrorTypes _Nclstr_index_of_substr
     NclScalar   missing_substr;
     NclScalar   missing_range;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str, type_substr, type_range;
   
     char *tmp_str;
     char *tmp_substr;
@@ -1568,7 +1554,7 @@ NhlErrorTypes _Nclstr_index_of_substr
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1580,11 +1566,11 @@ NhlErrorTypes _Nclstr_index_of_substr
     substr = (string *) NclGetArgValue(
                         1,
                         3,
-                        &ndim_substr,
-                        dimsz_substr,
+                        NULL,
+                        NULL,
                         &missing_substr,
                         &has_missing_substr,
-                        &type_substr,
+                        NULL,
                         DONT_CARE);
 
     if (substr == NULL)
@@ -1596,11 +1582,11 @@ NhlErrorTypes _Nclstr_index_of_substr
     range = (int *) NclGetArgValue(
                         2,
                         3,
-                        &ndim_range,
-                        dimsz_range,
+                        NULL,
+                        NULL,
                         &missing_range,
                         &has_missing_range,
-                        &type_range,
+                        NULL,
                         DONT_CARE);
 
     if (range == NULL)
@@ -1650,7 +1636,6 @@ NhlErrorTypes _Nclstr_index_of_substr
     {
         dimsz_index[0] = 1;
         return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 0);
-        NclFree(index);
     }
 
     if(count < 0)
@@ -1685,7 +1670,6 @@ NhlErrorTypes _Nclstr_index_of_substr
 
         dimsz_index[0] = 1;
         return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 0);
-        NclFree(index);
     }
 
     count = 0;
@@ -1736,8 +1720,6 @@ NhlErrorTypes _Nclstr_index_of_substr
     index = (int *) NclRealloc(index, sizeof(int) * count);
     dimsz_index[0] = count;
     return NclReturnValue((void *) index, ndim_index, dimsz_index, &ret_missing, NCL_int, 0);
-
-    NclFree(index);
 }
 
 NhlErrorTypes _Nclstr_upper
@@ -1754,7 +1736,6 @@ NhlErrorTypes _Nclstr_upper
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, n;
@@ -1771,7 +1752,7 @@ NhlErrorTypes _Nclstr_upper
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1782,7 +1763,6 @@ NhlErrorTypes _Nclstr_upper
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
     else
@@ -1816,7 +1796,7 @@ NhlErrorTypes _Nclstr_upper
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -1838,7 +1818,6 @@ NhlErrorTypes _Nclstr_upper
     NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(arrayOfString);
 }
 
 
@@ -1856,7 +1835,6 @@ NhlErrorTypes _Nclstr_lower
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, n;
@@ -1873,7 +1851,7 @@ NhlErrorTypes _Nclstr_lower
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1884,7 +1862,6 @@ NhlErrorTypes _Nclstr_lower
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
     else
@@ -1918,7 +1895,7 @@ NhlErrorTypes _Nclstr_lower
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -1940,7 +1917,6 @@ NhlErrorTypes _Nclstr_lower
     NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(arrayOfString);
 }
 
 
@@ -1958,7 +1934,6 @@ NhlErrorTypes _Nclstr_switch
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, n;
@@ -1975,7 +1950,7 @@ NhlErrorTypes _Nclstr_switch
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -1986,7 +1961,6 @@ NhlErrorTypes _Nclstr_switch
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
     }
     else
@@ -2020,7 +1994,7 @@ NhlErrorTypes _Nclstr_switch
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -2044,7 +2018,6 @@ NhlErrorTypes _Nclstr_switch
     NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(arrayOfString);
 }
 
 
@@ -2062,7 +2035,6 @@ NhlErrorTypes _Nclstr_capital
     int has_missing = 0;
     NclScalar   missing_str;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_str;
   
     char *tmp_str;
     int i, n;
@@ -2080,7 +2052,7 @@ NhlErrorTypes _Nclstr_capital
                         dimsz_str,
                         &missing_str,
                         &has_missing_str,
-                        &type_str,
+                        NULL,
                         DONT_CARE);
 
     if (str == NULL)
@@ -2089,12 +2061,14 @@ NhlErrorTypes _Nclstr_capital
         return NhlFATAL;
     }
 
-    ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
 
     if(has_missing_str)
     {
-        has_missing = 1;
         ret_missing.stringval = missing_str.stringval;
+    }
+    else
+    {
+        ret_missing.stringval = (string) ((NclTypeClass) nclTypestringClass)->type_class.default_mis.stringval;
     }
 
     str_size = 1;
@@ -2125,7 +2099,7 @@ NhlErrorTypes _Nclstr_capital
 
     for(i=0; i<str_size; i++)
     {
-        if (str[i] == ret_missing.stringval)
+        if (has_missing_str && str[i] == missing_str.stringval)
         {
            arrayOfString[i] = str[i];
            has_missing = 1;
@@ -2162,7 +2136,6 @@ NhlErrorTypes _Nclstr_capital
     NclFree(result);
     return NclReturnValue(arrayOfString, ndim_str, dimsz_str, (has_missing ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(arrayOfString);
 }
 
 
@@ -2177,17 +2150,16 @@ NhlErrorTypes _Nclstr_join
     string *delim;
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
-    int ndim_delim, dimsz_delim[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
     int has_missing_delim;
+    int has_missing_ret = 0;
     NclScalar   missing_strs;
     NclScalar   missing_delim;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_strs, type_delim;
   
     int i, n;
 
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     char *result;
 
     char *tmp_str;
@@ -2205,7 +2177,7 @@ NhlErrorTypes _Nclstr_join
                         dimsz_strs,
                         &missing_strs,
                         &has_missing_strs,
-                        &type_strs,
+                        NULL,
                         DONT_CARE);
 
     if (strs == NULL)
@@ -2217,11 +2189,11 @@ NhlErrorTypes _Nclstr_join
     delim = (string *) NclGetArgValue(
                         1,
                         2,
-                        &ndim_delim,
-                        dimsz_delim,
+                        NULL,
+                        NULL,
                         &missing_delim,
                         &has_missing_delim,
-                        &type_delim,
+                        NULL,
                         DONT_CARE);
 
     if (delim == NULL)
@@ -2281,9 +2253,9 @@ NhlErrorTypes _Nclstr_join
         if (i)
             strcat(result, tmp_delim);
 
-        if (strs[i] == ret_missing.stringval)
+        if (has_missing_strs && strs[i] == missing_strs.stringval)
         {
-            has_missing_strs = 1;
+            has_missing_ret = 1;
         }
         if (i)
             strcat(result, (char *) NrmQuarkToString(strs[i]));
@@ -2298,9 +2270,8 @@ NhlErrorTypes _Nclstr_join
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
+    return NclReturnValue(new_string, ndim, dimsz, (has_missing_ret ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(new_string);
 }
 
 
@@ -2316,13 +2287,13 @@ NhlErrorTypes _Nclstr_concat
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
+    int has_missing_ret = 0;
     NclScalar   missing_strs;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_strs;
   
     int i, n;
 
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     char *result;
 
     char *tmp_str;
@@ -2339,7 +2310,7 @@ NhlErrorTypes _Nclstr_concat
                         dimsz_strs,
                         &missing_strs,
                         &has_missing_strs,
-                        &type_strs,
+                        NULL,
                         DONT_CARE);
 
     if (strs == NULL)
@@ -2383,9 +2354,9 @@ NhlErrorTypes _Nclstr_concat
 
     for(i=0; i<str_size; i++)
     {
-        if (strs[i] == ret_missing.stringval)
+        if (has_missing_strs && strs[i] == missing_strs.stringval)
         {
-            has_missing_strs = 1;
+            has_missing_ret = 1;
         }
         if (i)
             strcat(result, (char *) NrmQuarkToString(strs[i]));
@@ -2399,9 +2370,8 @@ NhlErrorTypes _Nclstr_concat
 
     ndim = 1;
     dimsz[0] = 1;
-    return NclReturnValue(new_string, ndim, dimsz, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
+    return NclReturnValue(new_string, ndim, dimsz, (has_missing_ret ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(new_string);
 }
 
 NhlErrorTypes _Nclstr_insert
@@ -2415,16 +2385,10 @@ NhlErrorTypes _Nclstr_insert
     string *insert;
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
-    int ndim_position, dimsz_position[NCL_MAX_DIMENSIONS];
-    int ndim_insert, dimsz_insert[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
-    int has_missing_position;
-    int has_missing_insert;
+    int has_missing_ret = 0;;
     NclScalar   missing_strs;
-    NclScalar   missing_position;
-    NclScalar   missing_insert;
     NclScalar   ret_missing;
-    NclBasicDataTypes type_strs, type_position, type_insert;
   
     int i, j, m, n;
 
@@ -2444,7 +2408,7 @@ NhlErrorTypes _Nclstr_insert
                         dimsz_strs,
                         &missing_strs,
                         &has_missing_strs,
-                        &type_strs,
+                        NULL,
                         DONT_CARE);
 
     if (strs == NULL)
@@ -2456,11 +2420,11 @@ NhlErrorTypes _Nclstr_insert
     insert = (string *) NclGetArgValue(
                         1,
                         3,
-                        &ndim_insert,
-                        dimsz_insert,
-                        &missing_insert,
-                        &has_missing_insert,
-                        &type_insert,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
                         DONT_CARE);
 
     if (insert == NULL)
@@ -2472,16 +2436,16 @@ NhlErrorTypes _Nclstr_insert
     position = (int *) NclGetArgValue(
                         2,
                         3,
-                        &ndim_position,
-                        dimsz_position,
-                        &missing_position,
-                        &has_missing_position,
-                        &type_position,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
                         DONT_CARE);
 
     if (position == NULL)
     {
-        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_insert: position did not specify.");
+        NhlPError(NhlFATAL, NhlEUNKNOWN, "str_insert: position is null.");
         return NhlFATAL;
     }
 
@@ -2534,9 +2498,9 @@ NhlErrorTypes _Nclstr_insert
 
     for(i=0; i<str_size; i++)
     {
-        if (strs[i] == ret_missing.stringval)
+        if (has_missing_strs && strs[i] == missing_strs.stringval)
         {
-            has_missing_strs = 1;
+            has_missing_ret = 1;
             new_string[i] = ret_missing.stringval;
         }
         else
@@ -2597,9 +2561,8 @@ NhlErrorTypes _Nclstr_insert
     NclFree(tmp_insert);
     NclFree(tmp_str);
 
-    return NclReturnValue(new_string, ndim_strs, dimsz_strs, (has_missing_strs ? &ret_missing : NULL), NCL_string, 0);
+    return NclReturnValue(new_string, ndim_strs, dimsz_strs, (has_missing_ret ? &ret_missing : NULL), NCL_string, 0);
 
-    NclFree(new_string);
 }
 
 NhlErrorTypes _Nclstr_get_comma
@@ -2609,7 +2572,7 @@ NhlErrorTypes _Nclstr_get_comma
 ()
 #endif
 {
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2635,7 +2598,7 @@ NhlErrorTypes _Nclstr_get_space
 ()
 #endif
 {
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2661,7 +2624,7 @@ NhlErrorTypes _Nclstr_get_tab
 ()
 #endif
 {
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2687,7 +2650,7 @@ NhlErrorTypes _Nclstr_get_sq
 ()
 #endif
 {
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2713,7 +2676,7 @@ NhlErrorTypes _Nclstr_get_dq
 ()
 #endif
 {
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
@@ -2739,7 +2702,7 @@ NhlErrorTypes _Nclstr_get_nl
 ()
 #endif
 {
-    int ndim, dimsz[NCL_MAX_DIMENSIONS];
+    int ndim, dimsz[1];
     string *new_string;
 
     new_string = (string *) NclMalloc(sizeof(string));
