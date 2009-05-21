@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.21 2009-05-21 15:13:31 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.22 2009-05-21 21:48:10 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -277,23 +277,6 @@ NhlErrorTypes _Nclstr_get_field
                         NULL,
                         DONT_CARE);
 
-/*
- * Error checking.  Commented out for now.
- */
-/*
-    if(field[0] < 1)
-    {
-        NhlPError(NhlWARNING, NhlEUNKNOWN,
-                  "Input field number is less than one; missing string(s) will be returned");
-
-    }
-    if(has_missing_delim && delim[0] == missing_delim.stringval)
-    {
-      NhlPError(NhlWARNING, NhlEUNKNOWN,
-                "Input delimiter string is missing; missing string(s) will be returned");
-    }
-*/
-
     if(has_missing_strs)
         ret_missing.stringval = missing_strs.stringval;
     else
@@ -344,13 +327,14 @@ NhlErrorTypes _Nclstr_get_field
 
     for(i=0; i<str_size; i++)
     {
-        arraySubString[i] = ret_missing.stringval;
+      /* Default to an empty string. */
+        arraySubString[i] = NrmStringToQuark("");
 
-        if (field[0] < 1 ||
-            (has_missing_delim && delim[0] == missing_delim.stringval) ||
+        if ((has_missing_delim && delim[0] == missing_delim.stringval) ||
             (has_missing_strs && strs[i] == missing_strs.stringval))
         {
             has_missing_ret = 1;
+	    arraySubString[i] = ret_missing.stringval;
             continue;
         }
         else
@@ -375,10 +359,6 @@ NhlErrorTypes _Nclstr_get_field
                 result = strtok(NULL, tmp_delim);
             }
 
-            if(n != field[0])
-            {
-              has_missing_ret = 1;
-            }
           /*
            * has_miss_field += field_record[i];
            */
