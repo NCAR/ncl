@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.135 2009-05-19 16:25:45 dbrown Exp $
+ *      $Id: Execute.c,v 1.136 2009-05-21 19:21:35 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -719,6 +719,11 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				}
 			
 			}
+		}
+		if (good_file_count == 0 || agg_dim_name < 0) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"No valid instance of variable %s found in file list", NrmQuarkToString(var));
+			estatus = NhlFATAL;
+			goto fatal_err;
 		}
 		if (_NclFileIsVar(files[0],agg_dim_name) > -1) {
 			long offset;
