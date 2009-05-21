@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.20 2009-05-20 20:00:43 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.21 2009-05-21 15:13:31 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -425,8 +425,8 @@ NhlErrorTypes _Nclstr_get_cols
     char *result;
     string *arraySubString;
     int str_size, ms, me, ns, ne, is, ie;
-    int *startCol;
-    int *endCol;
+    int *startCol, sC;
+    int *endCol, eC;
     int max_length = 0;
     
     strs = (string *) NclGetArgValue(
@@ -484,6 +484,13 @@ NhlErrorTypes _Nclstr_get_cols
         return NhlFATAL;
     }
 
+/*
+ * Make copies so they don't get changed before going back
+ * to calling routine. 
+ */
+    sC = startCol[0];
+    eC = endCol[0];
+
     str_size = 1;
     for(i=0; i<ndim_strs; i++)
         str_size *= dimsz_strs[i];
@@ -509,19 +516,19 @@ NhlErrorTypes _Nclstr_get_cols
         return NhlFATAL;
     }
 
-    ms = startCol[0];
-    me = endCol[0];
+    ms = sC;
+    me = eC;
 
-    if(startCol[0] < 0)
-        startCol[0] = INT_MAX;
+    if(sC < 0)
+        sC = INT_MAX;
 
-    if(endCol[0] < 0)
-        endCol[0] = INT_MAX;
+    if(eC < 0)
+        eC = INT_MAX;
 
-    if(endCol[0] < startCol[0])
+    if(eC < sC)
     {
-        is = startCol[0];
-        ne = endCol[0] - 1;
+        is = sC;
+        ne = eC - 1;
 
         for(i=0; i<str_size; i++)
         {
@@ -562,10 +569,10 @@ NhlErrorTypes _Nclstr_get_cols
        */
 
     }
-    else if(endCol[0] > startCol[0])
+    else if(eC > sC)
     {
-        ns = startCol[0];
-        ie = endCol[0];
+        ns = sC;
+        ie = eC;
 
         for(i=0; i<str_size; i++)
         {
@@ -600,8 +607,8 @@ NhlErrorTypes _Nclstr_get_cols
     }
     else if(ms > 0)
     {
-        ns = startCol[0];
-        ie = endCol[0];
+        ns = sC;
+        ie = eC;
 
         for(i=0; i<str_size; i++)
         {
