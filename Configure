@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.49 2009-05-11 16:41:35 haley Exp $
+#      $Id: Configure,v 1.50 2009-05-21 04:50:57 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2009-05-11 16:41:35 $
+#	$Date: 2009-05-21 04:50:57 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -587,7 +587,7 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
   echo "If you are using NetCDF V4.x, did you enable NetCDF-4 support ($buildnetcdf4)?"
   echo "(Requires compiling NetCDF-4 library available from"
   echo "http://www.unidata.ucar.edu/software/netcdf/"
-  echo "and building with '---enable-netcdf-4') "
+  echo "and building with '--enable-netcdf-4') "
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
   if ("$answer" == "q") goto cleanup
