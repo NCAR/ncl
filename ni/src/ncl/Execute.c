@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.136 2009-05-21 19:21:35 dbrown Exp $
+ *      $Id: Execute.c,v 1.137 2009-05-26 21:03:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1159,13 +1159,6 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					if (sel.u.vec.min > agg_start_index) {
 						break;
 					}
-					vec = NclMalloc(sizeof(long) * (agg_start_index - agg_end_index + 1));
-					if (! vec) {
-						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
-						estatus = NhlFATAL;
-						goto fatal_err;
-					}
-
 					vcount = 0;
 					vstart = -1;
 					for (j = 0; j < sel.u.vec.n_ind; j++) {
