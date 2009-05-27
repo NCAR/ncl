@@ -1670,6 +1670,11 @@ function skewT_BackGround_Panel (wks:graphic,  Opts:logical)
       delete (gsOpts)
   end if    ; DrawWind
 
+  fooOutline = gsn_add_polyline (wks,xy,xc,yc,False)   ; add outline
+
+  dumname = unique_string("dum")     ; for panel
+  xy@$dumname$ = fooOutline
+
   xy@Panel = True  ; flag
   return (xy)      ; return object
 
