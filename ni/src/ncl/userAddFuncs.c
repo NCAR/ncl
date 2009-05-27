@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.22 2009-05-21 21:48:10 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.23 2009-05-27 15:46:23 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -851,7 +851,9 @@ NhlErrorTypes _Nclstr_sub_str
  */
         if(cols == 0 && o_s_len == 0) 
         {
-          new_str = (char *) NclRealloc(new_str, n_s_len+1);
+	  if(n_s_len >= NCL_INITIAL_STRING_LENGTH) {
+	    new_str = (char *) NclRealloc(new_str, n_s_len+1);
+	  }
           strncpy(new_str,tmp_n_s,n_s_len);
           new_str[n_s_len] = '\0';
           arrayString[i] = NrmStringToQuark(new_str);
