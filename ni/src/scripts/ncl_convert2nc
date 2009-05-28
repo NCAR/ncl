@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.14 2009-05-28 20:05:49 haley Exp $
+#       $Id: ncl_convert2nc,v 1.15 2009-05-28 23:14:15 brownrig Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -1066,26 +1066,29 @@ begin
             end if
 
             varAtts = getfilevaratts(f, fVarNames(i))
-            nAtts   = dimsizes(varAtts)
+            if (.not. ismissing(varAtts)) then
+                nAtts   = dimsizes(varAtts)
 
-            dumAtts = new (1, varType(i))    ; dummy to attach varAtts 
-            delete(dumAtts@_FillValue)       ; delete auto assigned _FillValue
+                dumAtts = new (1, varType(i))    ; dummy to attach varAtts 
+                delete(dumAtts@_FillValue)       ; delete auto assigned _FillValue
 
-            do j = 0, nAtts - 1
-                dumAtts@$varAtts(j)$ = f->$fVarNames(i)$@$varAtts(j)$
-            end do
+                do j = 0, nAtts - 1
+                    dumAtts@$varAtts(j)$ = f->$fVarNames(i)$@$varAtts(j)$
+                end do
 
-            if (debug) then                    ; can lead to much output
-                print(varAtts)
-                print(nAtts)
-                print(dumAtts) 
+                if (debug) then                    ; can lead to much output
+                    print(varAtts)
+                    print(nAtts)
+                    print(dumAtts) 
+                end if
+
+                ; define variable attributes
+                filevarattdef(fnc, ncVarNames(i) , dumAtts)
+
+                delete(dumAtts)
             end if
-
-            ; define variable attributes
-            filevarattdef(fnc, ncVarNames(i) , dumAtts)
-
             delete(varAtts)
-            delete(dumAtts)
+
         end if
     end do
 
