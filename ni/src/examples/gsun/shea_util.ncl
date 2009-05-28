@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.34 2009-05-13 17:13:48 shea Exp $
+;      $Id: shea_util.ncl,v 1.35 2009-05-28 17:47:29 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -13,7 +13,14 @@
 ; ********************************************************
 ; Function/Procedures included here can call built-in functions
 ; and functions contained within the gsn*.ncl and contributed.ncl
-; libraries. 
+; libraries. Hence, they must be loaded prior to shea_util.ncl 
+; shea_util.ncl must be loaded last.
+;;EG:
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
+;;load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
+
 ; ------------------------------------------------------------
 undef("printVarInfo")
 procedure printVarInfo (x, xInfo:string)
