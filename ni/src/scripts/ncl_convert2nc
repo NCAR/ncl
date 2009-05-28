@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.15 2009-05-28 23:14:15 brownrig Exp $
+#       $Id: ncl_convert2nc,v 1.16 2009-05-28 23:52:11 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -1066,7 +1066,7 @@ begin
             end if
 
             varAtts = getfilevaratts(f, fVarNames(i))
-            if (.not. ismissing(varAtts)) then
+            if (.not. all(ismissing(varAtts))) then
                 nAtts   = dimsizes(varAtts)
 
                 dumAtts = new (1, varType(i))    ; dummy to attach varAtts 
