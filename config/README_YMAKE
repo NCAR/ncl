@@ -172,7 +172,7 @@ BuildGDAL           NO
 HDFlib          -lmfhdf -ldf -ljpeg -lz
 PNGlib          -lpng -lz
 CAIROlib        -lcairo -lfreetype
-GDALlib         -lgdal
+GDALlib         -lgdal -lproj
 HDFEOSlib       -lhdfeos -lGctp  
 NetCDFlib       -lnetcdf
 UdUnitslib      -ludunits

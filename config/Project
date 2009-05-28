@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.107 2009-05-11 16:00:49 haley Exp $
+ *      $Id: Project,v 1.108 2009-05-28 21:25:59 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2009-05-11 16:00:49 $
+ *	$Date: 2009-05-28 21:25:59 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -208,7 +208,7 @@
 
 #ifdef BuildGDAL
 #ifndef	GDALlib
-#define	GDALlib   -lgdal
+#define	GDALlib   -lgdal -lproj
 #endif
 #else
 #define GDALlib
