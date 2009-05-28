@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.228 2009-05-28 21:20:21 shea Exp $
+;      $Id: contributed.ncl,v 1.229 2009-05-28 21:25:49 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1440,8 +1440,7 @@ begin
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
            ,"Intercept", "intercept"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
-           ,"Scale_factor", "Slope" , "slope", "ScaleFactor" /)
-
+           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
 
  offset = 0.0   ; establish as type float
  scale  = 1.0
@@ -1528,7 +1527,7 @@ begin
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
            ,"Intercept", "intercept"/)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
-           ,"Scale_factor", "Slope" , "slope" /)
+           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
 
 
  offset = 0.0   ; establish as type float
