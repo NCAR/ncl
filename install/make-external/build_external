@@ -465,8 +465,9 @@ if [ $INSTALL_GDAL ]
   then
     cd $GDAL_DIR
     echo "Building $GDAL_DIR..."
-    ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX
+    ./configure --with-static-proj4=\=$PREFIX --prefix=\=$PREFIX --without-pam --with-png=internal --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg=internal --with-libz=internal --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --without-grib --disable-shared
     make all install
+    make install
     if [ $? ]
     then
       echo "$GDAL_DIR build successful."
