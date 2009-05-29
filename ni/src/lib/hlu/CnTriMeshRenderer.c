@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.12 2008-06-24 22:08:41 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.13 2009-05-29 01:10:23 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2147,6 +2147,45 @@ static NhlErrorTypes AddDataBoundToAreamap
 			tbox = gwuy < twuy;
 		}
 
+/*
+ * This code from 'added a hack' above to the end of 'if (! ezmap)' below was not working properly
+ * for log plots where the lower values get stretched by log scaling. It sometime resulted in 
+ * boxes that were big enough to be visible. The solution is to start with NDC values and convert them
+ * to data values using the current transformation. That is what the code below does. If it succeeds
+ * (st is 0) then the inside coordinates of the skinny boxes are replaced. (Are there situations where
+ * it would fail? -- it seems safest to allow for that possibility.
+ */
+		{
+			float xn[4],yn[4];
+			float xe,ye;
+			int st;
+			float oor;
+			float x,y,w,h;
+			x = cl->view.x;
+			y = cl->view.y;
+			w = cl->view.width;
+			h = cl->view.height;
+
+			xe = 1e-5 * w;
+			ye = 1e-5 * h;
+			xn[0] = x + xe;
+			xn[1] = x + w - xe;
+			xn[2] = xn[1];
+			xn[3] = xn[0];
+			yn[0] = y - h + ye;
+			yn[1] = yn[0];
+			yn[2] = y - ye;
+			yn[3] = yn[2];
+
+			NhlNDCToData(cl->base.id,xn,yn,4,xn,yn,NULL,NULL,&st,&oor);
+			if (! st) {
+				gwlx = xn[0];
+				gwrx = xn[1];
+				gwby = yn[0];
+				gwuy = yn[2];
+			}
+		}
+
 		if (lbox) {
 				
 			xa[0] = xa[1] = xa[4] = twlx;
@@ -2206,35 +2245,25 @@ static NhlErrorTypes AddDataBoundToAreamap
 
 		if (! cnp->fix_fill_bleed)
 			return NhlNOERROR;
-
-		xa[0] = xa[1] = xa[4] = cnp->xlb;
-		xa[2] = xa[3] = cnp->xub;
-		ya[0] = ya[3] = ya[4] = cnp->ylb;
-		ya[1] = ya[2] = cnp->yub;
+		xa[0] = xa[3] = xa[4] = cnp->xlb;
+		xa[1] = xa[2] = cnp->xub;
+		ya[0] = ya[1] = ya[4] = cnp->ylb;
+		ya[2] = ya[3] = cnp->yub;
 
 		for (i=0;  i < 4; i++) {
 			xinc = (xa[i+1] - xa[i]) / _cnMAPBOUNDINC;
 			yinc = (ya[i+1] - ya[i]) / _cnMAPBOUNDINC;
 			if (! started) {
 				_NhlMapita(cnp->aws,ya[i],xa[i],
-					   0,3,-1,0,entry_name);
-#if 0
-				c_mapit(ya[i],xa[i],0);
-#endif
+					   0,3,0,-1,entry_name);
 				started = True;
 			}
 			for (j = 0; j < _cnMAPBOUNDINC + 1; j++) {
 				_NhlMapita(cnp->aws,ya[i]+j*yinc,xa[i]+j*xinc,
-					   1,3,-1,0,entry_name);
-#if 0
-				c_mapit(ya[i]+j*yinc,xa[i]+j*xinc,1);
-#endif
+					   1,3,0,-1,entry_name);
 			}
 		}
-		_NhlMapiqa(cnp->aws,3,-1,0,entry_name);
-#if 0
-		c_mapiq();
-#endif
+		_NhlMapiqa(cnp->aws,3,0,-1,entry_name);
 
 		c_mpgetc("OU",cval,3);
 		c_mpsetc("OU","NO");
