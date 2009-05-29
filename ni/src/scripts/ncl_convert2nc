@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.16 2009-05-28 23:52:11 dbrown Exp $
+#       $Id: ncl_convert2nc,v 1.17 2009-05-29 01:39:15 haley Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -503,6 +503,7 @@ while ($n <= $nfiles)
                 breaksw
 
             case hdf:
+            case h4:
                 set ftype = "HDF"
                 set if = $fil
                 set of = $fil:r
@@ -618,6 +619,7 @@ while ($n <= $nfiles)
                 breaksw
 
             case hdf:
+            case h4:
                 set ftype = "HDF"
                 set if = $fil:r.$lsfx
                 set of = $fil:r
