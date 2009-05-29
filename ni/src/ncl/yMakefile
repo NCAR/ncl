@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.157 2009-05-28 22:55:51 haley Exp $
+#      $Id: yMakefile,v 1.158 2009-05-29 15:42:15 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-05-28 22:55:51 $
+#	Date:		$Date: 2009-05-29 15:42:15 $
 #
 #	Description:	
 #
@@ -384,7 +384,6 @@ ConditionalInstallTarget($(NIO_NCL_OTHER_FILES),$(INSTALL_INC),$(PYNIO_SRC_DIR),
 #ifndef IncludesCopyTarget
 #define IncludesCopyTarget(names, mode, dest_prefix,dest)\
 includes:: names]\
-]\
 	@if (test -d dest_prefix); then \ ]\
 	(if (test ! -d dest); then ($(MKDIRHIER) $(NILIBSRC)/nio); fi; \ ]\
 	echo "copying NIO files to $(NILIBSRC)/nio"; \ ]\
