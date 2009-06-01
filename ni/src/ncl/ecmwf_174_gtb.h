@@ -1,0 +1,47 @@
+/*
+ *
+ * European Centre for Medium-Range Weather Forecasts: Reading
+ * Non-ECMWF seasonal forecast model
+ *
+ * Center: 98
+ * Subcenter: 0
+ * Parameter table version: 174
+ */
+
+TBLE2 ecmwf_174_params[] = {
+{6, "Total soil moisture", "m", ""},
+{8, "Surface runoff", "kg m**-2", "SRO"},
+{9, "Sub-surface runoff", "kg m**-2", "SSRO"},
+{31, "Fraction of sea-ice in sea", "(0 - 1)", ""},
+{34, "Open-sea surface temperature", "K", ""},
+{39, "Volumetric soil water layer 1", "m**3 m**-3", ""},
+{40, "Volumetric soil water layer 2", "m**3 m**-3", ""},
+{41, "Volumetric soil water layer 3", "m**3 m**-3", ""},
+{42, "Volumetric soil water layer 4", "m**3 m**-3", ""},
+{49, "10 metre wind gust over last 24 hours", "m s**-1", ""},
+{55, "1.5m temperature - mean over last 24 hours", "K", ""},
+{83, "Net primary productivity", "kg C m**-2 s**-1", ""},
+{85, "10m U wind over land", "m s**-1", ""},
+{86, "10m V wind over land", "m s**-1", ""},
+{87, "1.5m temperature over land", "K", ""},
+{88, "1.5m dewpoint temperature over land", "K", ""},
+{89, "Top incoming solar radiation", "W m**-2 s", ""},
+{90, "Top outgoing solar radiation", "W m**-2 s", ""},
+{94, "Mean sea surface temperature", "K", ""},
+{95, "1.5m specific humidity", "kg kg**-1", ""},
+{98, "Sea-ice thickness", "m", ""},
+{99, "Liquid water potential temperature", "K", ""},
+{110, "Ocean ice concentration", "(0 - 1)", ""},
+{111, "Ocean mean ice depth", "m", ""},
+{139, "Soil temperature layer 1", "K", ""},
+{164, "Average potential temperature in upper 293.4m", "degrees C", ""},
+{167, "1.5m temperature", "K", ""},
+{168, "1.5m dewpoint temperature", "K", ""},
+{170, "Soil temperature layer 2", "K", ""},
+{172, "Fractional land mask", "(0 - 1)", ""},
+{175, "Average salinity in upper 293.4m", "psu", ""},
+{183, "Soil temperature layer 3", "K", ""},
+{201, "1.5m temperature - maximum over last 24 hours", "K", ""},
+{202, "1.5m temperature - minimum over last 24 hours", "K", ""},
+{236, "Soil temperature layer 4", "K", ""}
+};

@@ -1,12 +1,15 @@
-/* 
+/*
+ *
  * European Centre for Medium-Range Weather Forecasts: Reading
+ * ECMWF re-analysis statistics
+ *
  * Center: 98
  * Subcenter: 0
  * Parameter table version: 160
- * Usage: ECMWF re-analysis statistics
- */ 
+ */
 
 TBLE2 ecmwf_160_params[] = {
+{49, "10 metre wind gust during averaging time", "m s**-1", "10FG"},
 {127, "Atmospheric tide", "-", "AT"},
 {128, "Budget values", "-", "BV"},
 {129, "Geopotential", "m**2 s**-2", "Z"},
@@ -16,6 +19,7 @@ TBLE2 ecmwf_160_params[] = {
 {133, "Specific humidity", "kg kg**-1", "Q"},
 {134, "Surface pressure", "Pa", "SP"},
 {135, "Vertical velocity", "Pa s**-1", "W"},
+{136, "Total column water", "kg m**-2", "TCW"},
 {137, "Precipitable water content", "kg m**-2", "PWC"},
 {138, "Vorticity (relative)", "s**-1", "VO"},
 {139, "Soil temperature level 1", "K", "STL1"},
@@ -58,16 +62,16 @@ TBLE2 ecmwf_160_params[] = {
 {188, "High cloud cover", "(0 - 1)", "HCC"},
 {190, "East-West component of sub-gridscale orographic variance", "m**2", "EWOV"},
 {191, "North-South component of sub-gridscale orographic variance", "m**2", "NSOV"},
-{192, "m**2", "NWSE component sub-grid scale orographic variance", "NWOV"},
-{193, "m**2", "NESW component sub-grid scale orographic variance", "NEOV"},
+{192, "North-West/South-East component of sub-gridscale orographic variance", "m**2", "NWOV"},
+{193, "North-East/South-West component of sub-gridscale orographic variance", "m**2", "NEOV"},
 {195, "Latitudinal component of gravity wave stress", "N m**-2 s", "LGWS"},
 {196, "Meridional component of gravity wave stress", "N m**-2 s", "MGWS"},
 {197, "Gravity wave dissipation", "W m**-2 s", "GWD"},
 {198, "Skin reservoir content", "m of water", "SRC"},
 {199, "Percentage of vegetation", "%", "VEG"},
 {200, "Variance of sub-gridscale orography", "m**2", "VSO"},
-{201, "Maximum temperature at 2 metres", "K", "MX2T"},
-{202, "Minimum temperature at 2 metres", "K", "MN2T"},
+{201, "Maximum temperature at 2 metres during averaging time", "K", "MX2T"},
+{202, "Minimium temperature at 2 metres during averaging time", "K", "MN2T"},
 {204, "Precipitation analysis weights", "-", "PAW"},
 {205, "Runoff", "kg m**-2 s**-1", "RO"},
 {206, "Standard deviation of geopotential", "m**2 s**-2", "ZZ"},
@@ -97,7 +101,7 @@ TBLE2 ecmwf_160_params[] = {
 {231, "Instantaneous surface heat flux", "W m**-2", "ISHF"},
 {232, "Instantaneous moisture flux", "kg m**-2 s**-1", "IE"},
 {233, "Apparent surface humidity", "kg kg**-1", "ASQ"},
-{234, "Logarithm of surface roughness length for heat.", "-", "LSRH"},
+{234, "Logarithm of surface roughness length for heat", "-", "LSRH"},
 {235, "Skin temperature", "K", "SKT"},
 {236, "Soil temperature level 4", "K", "STL4"},
 {237, "Soil wetness level 4", "m", "SWL4"},
@@ -112,5 +116,5 @@ TBLE2 ecmwf_160_params[] = {
 {246, "10 metre wind speed", "m s**-1", "10WS"},
 {247, "Momentum flux", "N m**-2", "MOFL"},
 {249, "Gravity wave dissipation flux", "W m**-2", ""},
-{254, "Heaviside beta function", "(0 - 1)", "HSD"},
+{254, "Heaviside beta function", "(0 - 1)", "HSD"}
 };

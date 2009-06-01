@@ -1,12 +1,20 @@
-/* 
+/*
+ *
  * European Centre for Medium-Range Weather Forecasts: Reading
+ * Wave
+ *
  * Center: 98
  * Subcenter: 0
  * Parameter table version: 140
- * Usage: Wave
- */ 
+ */
 
 TBLE2 ecmwf_140_params[] = {
+{200, "Maximum of significant wave height", "m", "MAXSWH"},
+{215, "U-component stokes drift", "m s**-1", "UST"},
+{216, "V-component stokes drift", "m s**-1", "VST"},
+{217, "Period corresponding to maximum individual wave height", "s", "TMAX"},
+{218, "Maximum individual wave height", "m", "HMAX"},
+{219, "Model bathymetry", "m", "WMB"},
 {220, "Mean wave period based on first moment", "s", "MP1"},
 {221, "Mean wave period based on second moment", "s", "MP2"},
 {222, "Wave spectral directional width", "-", "WDW"},
@@ -24,9 +32,9 @@ TBLE2 ecmwf_140_params[] = {
 {234, "Significant height of wind waves", "m", "SHWW"},
 {235, "Mean direction of wind waves", "degrees", "MDWW"},
 {236, "Mean period of wind waves", "s", "MPWW"},
-{237, "Significant height of primary swell", "m", "SHPS"},
-{238, "Mean direction of primary swell", "degrees", "MDPS"},
-{239, "Mean period of primary swell", "s", "MPPS"},
+{237, "Significant height of total swell", "m", "SHTS"},
+{238, "Mean direction of total swell", "degrees", "MDTS"},
+{239, "Mean period of total swell", "s", "MPTS"},
 {240, "Standard deviation wave height", "m", "SDHS"},
 {241, "Mean of 10 metre wind speed", "m s**-1", "MU10"},
 {242, "Mean wind direction", "degrees", "MDWI"},
@@ -41,5 +49,5 @@ TBLE2 ecmwf_140_params[] = {
 {251, "2D wave spectra (single)", "m**2 s radian**-1", "2DFD"},
 {252, "Wave spectral kurtosis", "-", "WSK"},
 {253, "Benjamin-Feir index", "-", "BFI"},
-{254, "Wave spectral peakedness", "s**-1", "WSP"},
+{254, "Wave spectral peakedness", "s**-1", "WSP"}
 };

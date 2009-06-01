@@ -37,15 +37,27 @@
 #include "ecmwf_130_gtb.h"
 #include "ecmwf_131_gtb.h"
 #include "ecmwf_132_gtb.h"
+#include "ecmwf_133_gtb.h"
 #include "ecmwf_140_gtb.h"
 #include "ecmwf_150_gtb.h"
 #include "ecmwf_151_gtb.h"
 #include "ecmwf_160_gtb.h"
 #include "ecmwf_162_gtb.h"
 #include "ecmwf_170_gtb.h"
+#include "ecmwf_171_gtb.h"
+#include "ecmwf_172_gtb.h"
+#include "ecmwf_173_gtb.h"
+#include "ecmwf_174_gtb.h"
+#include "ecmwf_175_gtb.h"
 #include "ecmwf_180_gtb.h"
 #include "ecmwf_190_gtb.h"
 #include "ecmwf_200_gtb.h"
+#include "ecmwf_201_gtb.h"
+#include "ecmwf_210_gtb.h"
+#include "ecmwf_211_gtb.h"
+#include "ecmwf_228_gtb.h"
+#include "ecmwf_230_gtb.h"
+#include "ecmwf_234_gtb.h"
 #include "ncep_opn_gtb.h"
 #include "ncep_reanal_gtb.h"
 #include "ncep_128_gtb.h"
@@ -6066,9 +6078,10 @@ char *name;
 		if (cp) {
 			lcp = cp;
 			TOKENEND(lcp);
-			len = lcp - cp + 1;
+			len = MAX(0,lcp - cp + 1);
 			abrev = NclMalloc(len + 1);
-			strncpy(abrev,cp,len);
+			if (len > 0)
+				strncpy(abrev,cp,len);
 			abrev[len] = '\0';
 			cp = lcp + 1;
 			param->abrev = abrev;
@@ -6077,9 +6090,10 @@ char *name;
 		if (cp) {
 			lcp = cp;
 			TOKENEND(lcp);
-			len = lcp - cp + 1;
+			len = MAX(0,lcp - cp + 1);
 			units = NclMalloc(len + 1);
-			strncpy(units,cp,len);
+			if (len > 0)
+				strncpy(units,cp,len);
 			units[len] = '\0';
 			cp = lcp + 1;
 			param->units = units;
@@ -6088,9 +6102,10 @@ char *name;
 		if (cp) {
 			lcp = cp;
 			TOKENEND(lcp);
-			len = lcp - cp + 1;
+			len = MAX(0,lcp - cp + 1);
 			long_name = NclMalloc(len + 1);
-			strncpy(long_name,cp,len);
+			if (len > 0)
+				strncpy(long_name,cp,len);
 			long_name[len] = '\0';
 			cp = lcp + 1;
 			param->long_name = long_name;
@@ -6563,6 +6578,10 @@ int wr_status;
 							ptable = &ecmwf_132_params[0];
 							ptable_count = sizeof(ecmwf_132_params)/sizeof(TBLE2);
 							break;
+						case 133:
+							ptable = &ecmwf_133_params[0];
+							ptable_count = sizeof(ecmwf_133_params)/sizeof(TBLE2);
+							break;
 						case 140:
 							ptable = &ecmwf_140_params[0];
 							ptable_count = sizeof(ecmwf_140_params)/sizeof(TBLE2);
@@ -6587,6 +6606,27 @@ int wr_status;
 							ptable = &ecmwf_170_params[0];
 							ptable_count = sizeof(ecmwf_170_params)/sizeof(TBLE2);
 							break;
+						case 171:
+							ptable = &ecmwf_171_params[0];
+							ptable_count = sizeof(ecmwf_171_params)/sizeof(TBLE2);
+							break;
+						case 172:
+							ptable = &ecmwf_172_params[0];
+							ptable_count = sizeof(ecmwf_172_params)/sizeof(TBLE2);
+							break;
+						case 173:
+							ptable = &ecmwf_173_params[0];
+							ptable_count = sizeof(ecmwf_173_params)/sizeof(TBLE2);
+							break;
+						case 174:
+							ptable = &ecmwf_174_params[0];
+							ptable_count = sizeof(ecmwf_174_params)/sizeof(TBLE2);
+							break;
+						case 175:
+							ptable = &ecmwf_175_params[0];
+							ptable_count = sizeof(ecmwf_175_params)/sizeof(TBLE2);
+							break;
+
 						case 180:
 							ptable = &ecmwf_180_params[0];
 							ptable_count = sizeof(ecmwf_180_params)/sizeof(TBLE2);
@@ -6599,6 +6639,31 @@ int wr_status;
 							ptable = &ecmwf_200_params[0];
 							ptable_count = sizeof(ecmwf_200_params)/sizeof(TBLE2);
 							break;
+						case 201:
+							ptable = &ecmwf_201_params[0];
+							ptable_count = sizeof(ecmwf_201_params)/sizeof(TBLE2);
+							break;
+						case 210:
+							ptable = &ecmwf_210_params[0];
+							ptable_count = sizeof(ecmwf_210_params)/sizeof(TBLE2);
+							break;
+						case 211:
+							ptable = &ecmwf_211_params[0];
+							ptable_count = sizeof(ecmwf_211_params)/sizeof(TBLE2);
+							break;
+						case 228:
+							ptable = &ecmwf_228_params[0];
+							ptable_count = sizeof(ecmwf_228_params)/sizeof(TBLE2);
+							break;
+						case 230:
+							ptable = &ecmwf_230_params[0];
+							ptable_count = sizeof(ecmwf_230_params)/sizeof(TBLE2);
+							break;
+						case 234:
+							ptable = &ecmwf_234_params[0];
+							ptable_count = sizeof(ecmwf_234_params)/sizeof(TBLE2);
+							break;
+
 						}
 						break;
 					case 78: /* DWD */
@@ -6884,7 +6949,12 @@ int wr_status;
 						}
 					}
 
-					strcpy((char*)buffer,name_rec->abrev);
+					if (strlen(name_rec->abrev) > 0) {
+						strcpy((char*)buffer,name_rec->abrev);
+					}
+					else {
+						sprintf((char*)buffer,"VAR_%d",grib_rec->param_number);
+					}
 					if (grib_rec->ens.prob_param) {
 						sprintf((char*)&(buffer[strlen((char*)buffer)]),"_%s",grib_rec->ens.prob_param->abrev);
 					}
