@@ -86,7 +86,7 @@ TBLE2 ecmwf_171_params[] = {
 {145, "Boundary layer dissipation", "W m**-2 s", ""},
 {146, "Surface sensible heat flux", "W m**-2 s", ""},
 {147, "Surface latent heat flux", "W m**-2 s", ""},
-{148, "Charnock", "", ""},
+{148, "Charnock", "-", ""},
 {149, "Surface net radiation", "W m**-2 s", ""},
 {150, "Top net radiation", "-", ""},
 {151, "Mean sea level pressure anomaly", "Pa", "MSLA"},
