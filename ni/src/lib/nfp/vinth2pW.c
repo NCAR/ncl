@@ -67,7 +67,7 @@ NhlErrorTypes vinth2p_W
 	double *p0 = NULL;
 	NclBasicDataTypes p0_type;
 
-	int *ilev = NULL;
+	int *ilev = NULL, nlevi, nlevip1;
 	NclScalar ilev_missing;
 	int total;
 
@@ -349,7 +349,9 @@ NhlErrorTypes vinth2p_W
 /*
  * Calculate size for plevi that will be passed to Fortran routine.
  */
-	plevi = (double*)NclMalloc((datai_dimsizes[0]+1)*sizeof(double));
+	nlevi   = datai_dimsizes[0];
+	nlevip1 = nlevi+1;
+	plevi   = (double*)NclMalloc(nlevip1*sizeof(double));
 	if(not_double) {
 /*
  * Create space for datao array, and temporary input/output arrays
@@ -374,7 +376,7 @@ NhlErrorTypes vinth2p_W
 /*
  * Here's the call to the Fortran routine.
  */
-			NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,psfc_d,&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&(datai_dimsizes[0]),&(datai_dimsizes[0]),&(plevo_dimsizes));
+			NGCALLF(vinth2p,VINTH2P)(tmp_datai,tmp_datao,hbcofa,hbcofb,p0,plevi,plevo,intyp,ilev,psfc_d,&missing,kxtrp,&(datai_dimsizes[2]),&(datai_dimsizes[1]),&nlevi,&nlevip1,&(plevo_dimsizes));
 
 /*
  * Copy the output values back to the float array. 
