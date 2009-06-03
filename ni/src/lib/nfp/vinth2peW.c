@@ -1,6 +1,15 @@
 #include <stdio.h>
 #include "wrapper.h"
 
+extern void NGCALLF(vinth2pecmwf,VINTH2PECMWF)(double *dati, double *dato, 
+				     double *hbcofa, double *hbcofb, 
+				     double *p0, double *plevi, 
+				     double *plevo, int *intyp, int *ilev, 
+				     double *psfc, double *spvl, int *kxtrp,
+				     int *imax, int *nlat, int *nlevi, 
+				     int *nlevip1, int *nlevo, int *varflg,
+				     double *tbot, double *phis);
+
 NhlErrorTypes vinth2p_ecmwf_W
 #if NhlNeedProto
 (void)
