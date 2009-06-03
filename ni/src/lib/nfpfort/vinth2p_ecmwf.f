@@ -96,7 +96,7 @@ C
       INTEGER I,J,K,KP,KPI,IPRINT
 C
       DIMENSION DATI(IMAX,NLAT,NLEVI),DATO(IMAX,NLAT,NLEVO),
-     +          HBCOFA(NLEVIP1),HBCOFB(NLEVIP1),PLEVI(NLEVI),
+     +          HBCOFA(NLEVIP1),HBCOFB(NLEVIP1),PLEVI(NLEVIP1),
      +          PLEVO(NLEVO),PSFC(IMAX,NLAT)
 
       INTEGER VARFLG
@@ -244,7 +244,7 @@ C****     LOOP THROUGH INPUT LEVELS TILL YOU ARE BRACKETING
 C****     OUTPUT LEVEL
 C
                   ELSE
-                      KP = 1
+                      KP = 0
    20                 CONTINUE
                       KP = KP + 1
                       IF (PLEVO(K).LE.PLEVI(KP+1)) GO TO 30
