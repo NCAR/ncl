@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.15 2009-01-08 18:29:14 haley Exp $
+#   $Id: create_dist,v 1.16 2009-06-08 16:42:10 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -311,7 +311,7 @@ if ($?NCLONLY || $?NCARGNCL) then
 
   set ncl_inc_dirs  = "ncarg/hlu ncarg/ncl"
 
-  set ncl_lib_files = "libnclapi.a ncarg/sysresfile libhlu.a libncl.a libnfp.a libnfpfort.a libblas_ncl.a libfftpack5_dp.a liblapack_ncl.a libsphere3.1_dp.a"
+  set ncl_lib_files = "libnclapi.a ncarg/sysresfile libhlu.a libncl.a libnio.a libnfp.a libnfpfort.a libblas_ncl.a libfftpack5_dp.a liblapack_ncl.a libsphere3.1_dp.a"
 
   set ncl_lib_dirs  = "ncarg/data ncarg/colormaps ncarg/grib2_codetables ncarg/nclex ncarg/hluex ncarg/nclscripts ncarg/resfiles ncarg/udunits"
 endif
