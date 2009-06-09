@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.137 2009-05-26 21:03:21 dbrown Exp $
+ *      $Id: Execute.c,v 1.138 2009-06-09 20:36:32 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -796,6 +796,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 	}
 	else {
 		double start, finish, stride;
+		long end_ix;
 		filevar_sel_ptr = (NclSelectionRecord*)NclMalloc (sizeof(NclSelectionRecord));
 		if (! filevar_sel_ptr) {
 			NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
@@ -804,7 +805,6 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		}
 		filevar_sel_ptr->n_entries = 0;
 
-		long end_ix;
 		if (newlist->list.list_type & NCL_JOIN) {
 			if (filevar_subs != var_ndims + 1) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,
@@ -999,9 +999,9 @@ void CallLIST_READ_FILEVAR_OP(void) {
 		long *vec = NULL;
 		long vcount,vstart;
 		int do_file = 0;
+		int total_selected;
 		agg_start_index = agg_end_index + dir;
 		agg_end_index += dir * agg_dim_count[i];
-		int total_selected;
 		if (! files[i]) 
 			continue;
 

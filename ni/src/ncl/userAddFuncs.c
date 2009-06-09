@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.23 2009-05-27 15:46:23 haley Exp $
+ *      $Id: userAddFuncs.c,v 1.24 2009-06-09 20:36:32 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2375,7 +2375,7 @@ NhlErrorTypes _Nclstr_insert
 
     int ndim_strs, dimsz_strs[NCL_MAX_DIMENSIONS];
     int has_missing_strs;
-    int has_missing_ret = 0;;
+    int has_missing_ret = 0;
     NclScalar   missing_strs;
     NclScalar   ret_missing;
   
