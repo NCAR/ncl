@@ -1,5 +1,5 @@
 /*
- *	$Id: nioc.h,v 1.1 2009-05-15 00:49:28 dbrown Exp $
+ *	$Id: nioc.h.sed,v 1.1 2009-06-10 23:17:04 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#if 0
 /*
  * Fortran function macro.  This macro needs to surround any "C" reference
  * to a function that is written in fortran or is written in "C" to be
@@ -42,10 +41,9 @@
 
 #ifndef	NGCALLF
 
-#define NGCALLF(reg,caps)   reg##_
+#define NGCALLF(reg,caps)   SED_NGCALLF
 
 #endif	/* NGCALLF */
-#endif
 
 /*
  * The Absoft ProFortran compiler munges common block names
