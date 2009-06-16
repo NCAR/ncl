@@ -90,7 +90,7 @@ extern NclDimRec *get_wrf_dim_info(int,int,int,int*);
 
 extern void var_zero(double *, int);
 
-extern void convert_to_Pa(double *, int);
+extern void convert_to_hPa(double *, int);
 
 extern void flip_it(double *, double *, int, int);
 
@@ -7565,10 +7565,10 @@ NhlErrorTypes wrf_cape_3d_W( void )
                                  size_cape,0,NULL,NULL);
     }
 /*
- * Multiple pressure values by 0.01 to convert from hPa to Pa.
- * The assumption is that pressure values come in as hPa.
+ * Multiple pressure values by 0.01 to convert from Pa to hPa.
+ * The assumption is that pressure values come in as Pa.
  */
-    convert_to_Pa(tmp_p_orig,size_cape);
+    convert_to_hPa(tmp_p_orig,size_cape);
 
     if(type_t != NCL_double) {
       coerce_subset_input_double(t,tmp_t_orig,index_cape,type_t,
@@ -8192,10 +8192,10 @@ NhlErrorTypes wrf_cape_2d_W( void )
                                  size_cape,0,NULL,NULL);
     }
 /*
- * Multiple pressure values by 0.01 to convert from hPa to Pa.
- * The assumption is that pressure values come in as hPa.
+ * Multiple pressure values by 0.01 to convert from Pa to hPa.
+ * The assumption is that pressure values come in as Pa.
  */
-    convert_to_Pa(tmp_p_orig,size_cape);
+    convert_to_hPa(tmp_p_orig,size_cape);
 
     if(type_t != NCL_double) {
       coerce_subset_input_double(t,tmp_t_orig,index_cape,type_t,
@@ -9515,7 +9515,7 @@ void var_zero(double *tmp_var, int n)
 
 /* Converts from hPa to Pa. */
 
-void convert_to_Pa(double *pp, int np)
+void convert_to_hPa(double *pp, int np)
 {
   int i;
   for(i = 0; i < np; i++) pp[i] *= 0.01;
