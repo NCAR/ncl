@@ -1,5 +1,5 @@
 /*  
- *      $Id: cro.c,v 1.4 2009-05-08 05:50:31 fred Exp $
+ *      $Id: cro.c,v 1.5 2009-06-16 17:59:37 fred Exp $
  */
 /*
  *
@@ -1384,11 +1384,11 @@ int cro_Text(GKSC *gksc) {
   CROPoint *pptr = (CROPoint *) gksc->p.list;
   CROddp   *psa = (CROddp *) gksc->ddp;
   char     *sptr = (char *) gksc->s.list, *font_path, *font_name, *db_path;
-  char     single_char[2];
+  char     single_char[2], next_char[2];
   struct   color_value cval;
-  float    base_mag, tcos, cprod, cang;
-  int      slen, error;
-  double   *dashes, horiz_len, left_space, right_space;
+  float    base_mag, tcos, cprod, cang, cspace, up_down_string_width;
+  int      slen, error, i, char_num_mx;
+  double   *dashes, horiz_len, left_space, right_space, maximum_width=0.;
 
   float    xc, yc, xpos, ypos, X_height, scl, x_del, y_del;
   static   int kount=0;
@@ -1396,8 +1396,8 @@ int cro_Text(GKSC *gksc) {
   static FT_Library library;
   static FT_Face    face;
   cairo_font_face_t *font_face;
-  cairo_matrix_t fmatrix;
-  cairo_text_extents_t textents;
+  cairo_matrix_t fmatrix, scl_matrix;
+  cairo_text_extents_t textents, next_extents;
   cairo_font_extents_t fextents;
 
   cairo_text_extents(cairo_context, sptr, &textents);
@@ -1486,7 +1486,7 @@ int cro_Text(GKSC *gksc) {
   cairo_set_font_matrix(cairo_context,&fmatrix);
   cairo_text_extents(cairo_context, sptr, &textents);
 
-  slen = strlen(sptr);
+  slen = (int) strlen(sptr);
 
 /*
  *  Character color.
@@ -1496,12 +1496,45 @@ int cro_Text(GKSC *gksc) {
                           cval.red, cval.green, cval.blue, cval.alpha);
 
 /*
- *  Horizontal and vertical alignments.  Get the text extents and
- *  adjust the X and Y positions accordingly.  
+ *  Set the horizontal alignment for the "NORMAL" settings.
  */
-  if (psa->attributes.text_align_horiz <= NORMAL_ALIGNMENT_HORIZ || 
-      psa->attributes.text_align_horiz > RIGHT_ALIGNMENT_HORIZ) {
-    psa->attributes.text_align_horiz = LEFT_ALIGNMENT_HORIZ;
+  if (psa->attributes.text_align_horiz == NORMAL_ALIGNMENT_HORIZ) {
+    switch (psa->attributes.text_path) {
+      case RIGHT_TEXT_PATH: 
+        psa->attributes.text_align_horiz = LEFT_ALIGNMENT_HORIZ;
+        break;
+      case LEFT_TEXT_PATH:
+        psa->attributes.text_align_horiz = RIGHT_ALIGNMENT_HORIZ;
+        break;
+      case DOWN_TEXT_PATH:
+        psa->attributes.text_align_horiz = CENTER_ALIGNMENT_HORIZ;
+        break;
+      case UP_TEXT_PATH:
+        psa->attributes.text_align_horiz = CENTER_ALIGNMENT_HORIZ;
+        break;
+      default:
+        psa->attributes.text_align_horiz = LEFT_ALIGNMENT_HORIZ;
+        break;
+    }
+  }
+  if (psa->attributes.text_align_vert == NORMAL_ALIGNMENT_VERT) {
+    switch (psa->attributes.text_path) {
+      case RIGHT_TEXT_PATH: 
+        psa->attributes.text_align_vert = BASE_ALIGNMENT_VERT;
+        break;
+      case LEFT_TEXT_PATH:
+        psa->attributes.text_align_vert = BASE_ALIGNMENT_VERT;
+        break;
+      case DOWN_TEXT_PATH:
+        psa->attributes.text_align_vert = TOP_ALIGNMENT_VERT;
+        break;
+      case UP_TEXT_PATH:
+        psa->attributes.text_align_vert = BASE_ALIGNMENT_VERT;
+        break;
+      default:
+        psa->attributes.text_align_vert = BASE_ALIGNMENT_VERT;
+        break;
+    }
   }
 
   cairo_text_extents(cairo_context, sptr, &textents);
@@ -1526,17 +1559,17 @@ int cro_Text(GKSC *gksc) {
     x_del = -left_space;
   }
   else if (psa->attributes.text_align_horiz == CENTER_ALIGNMENT_HORIZ) {
-    x_del = - 0.5*horiz_len - left_space;
+    x_del = -0.5*horiz_len - left_space;
   }
   else if (psa->attributes.text_align_horiz == RIGHT_ALIGNMENT_HORIZ) {
-    x_del = - horiz_len - right_space;
+    x_del = -horiz_len - right_space;
   }
 
 /*
  *  Rotation angle.
  */
 /*
- *  Find the text angle for Plotchar based on the base vector 
+ *  Find the text angle based on the base vector 
  *  and its angle with the vector (1.,0.) using the dot product divided by
  *  the magnitudes to get the arccos.
  */
@@ -1556,28 +1589,205 @@ int cro_Text(GKSC *gksc) {
   cairo_move_to(cairo_context,xpos,ypos);
   cairo_rotate(cairo_context,-cang);
 
+/* 
+ *  Vertical alignments (NORMAL has been converted appropriately above).
+ */
   switch (psa->attributes.text_align_vert) {
-  case NORMAL_ALIGNMENT_VERT:
-    y_del = 0.;
-    break;
-  case TOP_ALIGNMENT_VERT:
-    y_del = -1.25*X_height;
-    break;
-  case CAP_ALIGNMENT_VERT:
-    y_del = -X_height;
-    break;
-  case HALF_ALIGNMENT_VERT:
-    y_del = -0.5*X_height;
-    break;
-  case BASE_ALIGNMENT_VERT:
-    y_del = 0.;
-    break;
-  case BOTTOM_ALIGNMENT_VERT:
-    y_del = 0.3*X_height;
-    break;
+    case TOP_ALIGNMENT_VERT:
+      y_del = -1.25*X_height;
+      break;
+    case CAP_ALIGNMENT_VERT:
+      y_del = -X_height;
+      break;
+    case HALF_ALIGNMENT_VERT:
+      y_del = -0.5*X_height;
+      break;
+    case BASE_ALIGNMENT_VERT:
+      y_del = 0.;
+      break;
+    case BOTTOM_ALIGNMENT_VERT:
+      y_del = 0.3*X_height;
+      break;
   }
-  cairo_rel_move_to(cairo_context,x_del,y_del);
-  cairo_show_text (cairo_context, sptr);
+
+/*
+ *  If the spacing, expansion factor, and path are all default, then
+ *  use the full string in sptr; otherwise the characters have to be
+ *  plotted one at a time.
+ */
+  if (psa->attributes.char_space == CHAR_SPACE_DEFAULT &&
+      psa->attributes.char_expan == CHAR_EXPAN_DEFAULT &&
+      psa->attributes.text_path  == TEXT_PATH_DEFAULT) {
+    cairo_rel_move_to(cairo_context,x_del,y_del);
+    cairo_show_text(cairo_context,sptr); 
+  }
+  else {
+/*
+ *  Intercharacter spacing.
+ */
+    cspace = X_height*(psa->attributes.char_space);
+/*
+ *  Effect the expansion factor.
+ */
+    if (psa->attributes.char_expan != CHAR_EXPAN_DEFAULT) {
+        cairo_get_font_matrix (cairo_context,&fmatrix);
+        scl_matrix = fmatrix;
+        cairo_matrix_scale (&scl_matrix, psa->attributes.char_expan, 1.);
+        cairo_set_font_matrix(cairo_context,&scl_matrix);
+    }
+/*
+ *  Deal with the non-standard text paths.
+ */
+    switch (psa->attributes.text_path) {
+      case LEFT_TEXT_PATH:    /* note fall through to RIGHT_TEXT_PATH */
+        reverse_chrs(sptr);
+      case RIGHT_TEXT_PATH:
+/*
+ *  Only need to handle the character spacings and expansion factors
+ *  that make this case different from the default RIGHT_TEXT_PATH.
+ */
+        cairo_text_extents(cairo_context, sptr, &textents);
+        if (psa->attributes.text_align_horiz == CENTER_ALIGNMENT_HORIZ) {
+          x_del = x_del*psa->attributes.char_expan;  /* Scale current pos. */
+          x_del = x_del-0.5*(slen-1)*cspace;
+        }
+        else if (psa->attributes.text_align_horiz == RIGHT_ALIGNMENT_HORIZ) {
+          x_del = x_del*psa->attributes.char_expan;
+          x_del = x_del-(slen-1)*cspace;
+        }
+        cairo_rel_move_to(cairo_context,x_del,y_del);
+        for (i = 0; i < strlen(sptr); i++) {
+          single_char[0] = *(sptr+i);
+          single_char[1] = 0;
+          cairo_text_extents(cairo_context, single_char, &textents);
+          cairo_show_text(cairo_context,single_char);
+          cairo_rel_move_to(cairo_context,cspace,0.);
+        }
+        break;
+      case UP_TEXT_PATH:
+        reverse_chrs(sptr);   /* note fall through to DOWN_TEXT_PATH */
+      case DOWN_TEXT_PATH:
+/*
+ *  Get the text extents for the first character to use for centering.
+ */
+        cairo_save(cairo_context);
+        single_char[0] = *(sptr);
+        single_char[1] = 0;
+        cairo_text_extents(cairo_context, single_char, &textents);
+/*
+ *  Rotate the string.
+ */
+        cairo_rotate(cairo_context,cang);
+        switch (psa->attributes.text_align_vert) {
+/*
+ *  Calculate the vertical adjustment (NORMAL has been converted to the 
+ *  appropriate alignmen above).
+ */
+          case TOP_ALIGNMENT_VERT:
+            y_del = -1.5*X_height;
+            break;
+          case CAP_ALIGNMENT_VERT:
+            y_del = -X_height;
+            break;
+          case HALF_ALIGNMENT_VERT:
+            y_del = (slen-2)*0.5*1.5*X_height+0.5*(slen-1)*cspace;
+            break;
+          case BASE_ALIGNMENT_VERT:
+            y_del = 1.5*X_height*(slen-1)+(slen-1)*cspace;
+            break;
+          case BOTTOM_ALIGNMENT_VERT:
+            y_del = (1.5+0.07)*X_height*(slen-1)+(slen-1)*cspace;
+            break;
+        }
+/*
+ *  Find the maximum width of the characters in the string to use for
+ *  horizonal adjustment.
+ */
+        maximum_width = 0.;
+        for (i = 0; i < strlen(sptr); i++) {
+          single_char[0] = *(sptr+i);
+          single_char[1] = 0;
+          cairo_text_extents(cairo_context, single_char, &textents);
+          if (textents.width > maximum_width) {
+            maximum_width = MAX(maximum_width,textents.width);
+            char_num_mx = i;         
+          }
+        }
+        single_char[0] = *(sptr+char_num_mx);
+        single_char[1] = 0;
+        cairo_text_extents(cairo_context, single_char, &textents);
+  
+/*
+ *  Translate to the string start point.
+ */
+        cairo_translate(cairo_context, 
+           (xc*psa->dspace.xspan), (yc*psa->dspace.yspan));
+        cairo_rotate(cairo_context,-cang);
+/*
+ *  Draw characters one at a time.
+ */
+        for (i = 0; i < strlen(sptr); i++) {
+          single_char[0] = *(sptr+i);
+          single_char[1] = 0;
+          cairo_text_extents(cairo_context, single_char, &textents);
+
+ /*
+  *  Quantities for the horizontal adjustments. ("NORMAL" horizontal
+  *  alignment has been converted to the appropriate alignment above).
+  */
+          switch (psa->attributes.text_align_horiz) {
+          case LEFT_ALIGNMENT_HORIZ:
+            x_del = 0.5*maximum_width; 
+            break;
+          case CENTER_ALIGNMENT_HORIZ:
+            x_del = 0.;
+            break;
+          case RIGHT_ALIGNMENT_HORIZ:
+            x_del = -0.5*maximum_width;
+            break;
+          }
+   
+/*
+ *  Draw characters.
+ */
+          single_char[0] = *(sptr+i);
+          single_char[1] = 0;
+          cairo_text_extents(cairo_context, single_char, &textents);
+/*
+ *  The quantity: 
+ *
+ *          x_del - textents.x_bearing - 0.5*textents.width
+ *
+ *  is the distance that an individual character has to be shifted
+ *  in order for its center to align with the center of the character
+ *  of maximum width.
+ */
+          if (i == 0) {
+            cairo_rel_move_to(cairo_context, 
+                   x_del - textents.x_bearing - 0.5*textents.width, y_del);
+            cairo_show_text(cairo_context,single_char); 
+/*
+ *  Move back to the base horizontal position.
+ */
+            cairo_rel_move_to(cairo_context, 
+               (0.5*textents.width + textents.x_bearing - x_del) - 
+                textents.x_advance, 0.);
+          }
+          else {
+            cairo_text_extents(cairo_context, single_char, &textents);
+            cairo_rel_move_to(cairo_context,
+                   x_del - textents.x_bearing - 0.5*textents.width, 
+                   -1.5*X_height-cspace);
+            cairo_show_text(cairo_context,single_char); 
+            cairo_rel_move_to(cairo_context, 
+                (0.5*textents.width + textents.x_bearing - x_del) -
+                textents.x_advance, 0.);
+          }
+        }
+        cairo_restore(cairo_context);
+        break;
+    } 
+  }
   cairo_restore(cairo_context);
 
   return(0);
@@ -2152,3 +2362,20 @@ static int ccompar(const void *p1, const void *p2)
         if (difference > 0.0) return ( 1);
         return (0);
 }
+
+/*
+ *  Function for reversing the characters in a string.
+ */
+void reverse_chrs(char *str)
+{
+        int     strl = strlen(str), i, index;
+        char    ctmp;
+
+        for (i = 0; i < strl/2; i++) {
+                index = strl-i-1;
+                strncpy(&ctmp, str+i, 1);
+                strncpy(str+i, str+index, 1);
+                strncpy(str+index, &ctmp, 1);
+        }
+}
+
