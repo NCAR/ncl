@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.108 2009-05-28 21:25:59 haley Exp $
+ *      $Id: Project,v 1.109 2009-06-23 14:04:54 haley Exp $
  */
 
 /************************************************************************
@@ -17,15 +17,15 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2009-05-28 21:25:59 $
+ *	$Date: 2009-06-23 14:04:54 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
  *			etc are in the Template file.
  */
 
-#define NcargVersion 5.1.1
-#define NclVersion 5.1.1
+#define NcargVersion 5.2.0-alpha
+#define NclVersion 5.2.0-alpha
 
 #ifndef	BuildNCL
 #define	BuildNCL
