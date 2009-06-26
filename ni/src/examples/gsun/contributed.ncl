@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.229 2009-05-28 21:25:49 shea Exp $
+;      $Id: contributed.ncl,v 1.230 2009-06-26 21:34:19 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9312,12 +9312,12 @@ begin
 
   return (tNew)
 end
+
 ; ******************************************************************
 ; D. Shea
 ; appends table data: ie (row,column) arrays
 ; adds additional columns
 ;
-; This *requires* that the dimensions be named for each table
 
 undef("table_attach_columns")
 function table_attach_columns (t1[*][*], t2[*][*], iopt:integer)
@@ -9347,12 +9347,27 @@ begin
       print ("                      typeof(t2)="+typeof(t2)) 
       exit
   end if
-
-  if (any(ismissing(dimNames_t1))  .or.  \
-      any(ismissing(dimNames_t2))) then 
-      print ("table_attach_columns: dimensions must be named")       
-      print ("                      dimNames_t1="+dimNames_t1)  
-      print ("                      dimNames_t2="+dimNames_t2)  
+                        
+  if (any(ismissing(dimNames_t1))) then
+      if (ismissing(dimNames_t1(0))) then
+          t1!0 = "row_1"
+          dimNames_t1(0) = t1!0
+      end if
+      if (ismissing(dimNames_t1(1))) then
+          t1!1 = "col_1"
+          dimNames_t1(1) = t1!1
+      end if
+  end if
+                        
+  if (any(ismissing(dimNames_t2))) then
+      if (ismissing(dimNames_t2(0))) then
+          t2!0 = "row_2"
+          dimNames_t2(0) = t2!0
+      end if
+      if (ismissing(dimNames_t2(1))) then
+          t2!1 = "col_2"
+          dimNames_t2(1) = t2!1
+      end if
   end if
                                    ; reverse order ... invoke row append
   trows = table_attach_rows(t1($dimNames_t1(1)$|:,$dimNames_t1(0)$|:) \
@@ -9361,7 +9376,6 @@ begin
                                    ; revert back to original order
   return (trows($dimNames(1)$|:,$dimNames(0)$|:) )
 end
-
 ;****************************************************************
 ; D Shea
 ; requires NCL version a034 or later
@@ -10850,4 +10864,46 @@ begin
   fo&$fo!nD$ = xo                               ; rightmost dim
    
   return (fo)
+end
+;------------------------------------------------
+undef("numBinOneRuns")
+function numBinOneRuns ( a[*]:integer, nCrit:integer)
+;
+; Give a binary series [0s and 1s], calculate the
+; number of 'runs' of 1s that meet lengths specified by 'nCrit'
+; Nomenclature:
+;      a[*]   => integer ... eg (/ 1,1,1,0,0,0,1,0,0,1,1,1,1 /)
+;      nCrit  => integer ... scalar [eg, 3] or of length 2 [eg: (/4,6/) ]
+;                scalar: count the number of runs .ge.3
+;                   [2]: count the number of runs .ge.4 and .le. 6
+;                      : if nCrit[0]=nCrit[1] ( eg : (/5,5/) ]
+;                   [2]: count the number of runs .ge.5 and .le. 5
+;                      : this would yield the number of runs of
+;                      ; exactly length 5
+;
+; Primary source:
+; David Allured: CU/CIRES Climate Diagnostics Center (CDC) 
+
+local inds, ni, deltas, starts, ends, lengths
+begin
+   dim_nCrit  = dimsizes(nCrit)
+   if (dim_nCrit.gt.2) then
+       print("numBinOneRuns: nCrit size must be .le. 2: nCrit="+dim_nCrit)
+       return(-999)
+   end if
+
+   inds    = ind (a .eq. 1)
+   ni      = dimsizes (inds)
+   deltas  = new (ni+1, integer)
+   deltas  = 0
+   deltas(1:ni-1) = (inds(1:ni-1) - inds(0:ni-2))
+   starts  = inds(ind (deltas(0:ni-1).ne.1 .and. deltas(1:ni).eq.1))
+   ends    = inds(ind (deltas(0:ni-1).eq.1 .and. deltas(1:ni).ne.1))
+   lengths = ends - starts + 1
+
+   if (dim_nCrit.eq.1) then
+       return(num (lengths.ge.nCrit) )
+   else
+       return(num (lengths.ge.nCrit(0) .and. lengths.le.nCrit(1)) )
+   end if
 end
