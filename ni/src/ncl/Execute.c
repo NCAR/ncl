@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.138 2009-06-09 20:36:32 dbrown Exp $
+ *      $Id: Execute.c,v 1.139 2009-06-30 22:33:53 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1130,8 +1130,22 @@ void CallLIST_READ_FILEVAR_OP(void) {
 							vcount++;
 						}
 					}
-					if (vcount == 0)
+					if (vcount == 0) {
 						break;
+					}
+					else if (vcount == 1 && sel.u.vec.n_ind > 1) {
+						/* 
+						 * In this case we have to switch to normal indexed subscripting because it is not possible to
+						 *  preserve single element dimensions using vector subscripting.
+						 */
+						fsel->u.sub.start = sel.u.vec.ind[vstart] - agg_start_index;
+						fsel->u.sub.finish = fsel->u.sub.start;
+						fsel->u.sub.stride = 1;
+						fsel->u.sub.is_single = agg_sel_count > 1 ? 0 : 1;
+						fsel->sel_type = Ncl_SUBSCR;
+						do_file = 1;
+						break;
+					}
 
 					vec = NclMalloc(sizeof(long) * vcount);
 					if (! vec) {
@@ -1170,8 +1184,23 @@ void CallLIST_READ_FILEVAR_OP(void) {
 							vcount++;
 						}
 					}
-					if (vcount == 0)
+					if (vcount == 0) {
 						break;
+					}
+					else if (vcount == 1 && sel.u.vec.n_ind > 1) {
+						/* 
+						 * In this case we have to switch to normal indexed subscripting because it is not possible to
+						 *  preserve single element dimensions using vector subscripting.
+						 */
+						fsel->u.sub.start = sel.u.vec.ind[vstart] - agg_end_index;
+						fsel->u.sub.finish = fsel->u.sub.start;
+						fsel->u.sub.stride = 1;
+						fsel->u.sub.is_single = agg_sel_count > 1 ? 0 : 1;
+						fsel->sel_type = Ncl_SUBSCR;
+						do_file = 1;
+						break;
+					}
+
 					vec = NclMalloc(sizeof(long) * vcount);
 					if (! vec) {
 						NhlPError(NhlFATAL,ENOMEM,"Memory allocation failure");
