@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.77 2009-05-09 00:22:10 dbrown Exp $
+ *      $Id: NclVar.c,v 1.78 2009-07-02 23:17:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2962,7 +2962,12 @@ if(rhs_md->multidval.totalelements !=1) {
 			if(_NclIsAtt(lhs->var.att_id,att_list->attname)) {
 				if(NrmStringToQuark(att_list->attname) != NrmStringToQuark(NCL_MISSING_VALUE_ATT))
 					_NclDeleteAtt(lhs->var.att_id,att_list->attname);
-				_NclAddAtt(lhs->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				/*
+				 * Don't allow the _FillValue of other types to be converted to the logical type.
+				 */
+				if (lhs_type != Ncl_Typelogical) {
+					_NclAddAtt(lhs->var.att_id,att_list->attname,att_list->attvalue,NULL);
+				}
 				att_list = att_list->next;
 			} else {
 				_NclAddAtt(lhs->var.att_id,att_list->attname,att_list->attvalue,NULL);

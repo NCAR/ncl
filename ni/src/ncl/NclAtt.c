@@ -1,5 +1,5 @@
 /*
- *      $Id: NclAtt.c,v 1.26 2009-03-13 18:43:00 dbrown Exp $
+ *      $Id: NclAtt.c,v 1.27 2009-07-02 23:17:36 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -261,18 +261,17 @@ NclSelectionRecord * sel_ptr;
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Attribute assignment type mismatch");
 				return(NhlFATAL);
 			} else {
-#if 0       
 				if (att_quark == NrmStringToQuark(NCL_MISSING_VALUE_ATT) && targetdat->multidval.type->type_class.data_type == NCL_logical) {
-					*(logical*)tmp_md->multidval.val = targetdat->multidval.type->type_class.default_mis.logicalval;
+					*(logical*)tmp_md->multidval.val = targetdat->multidval.missing_value.has_missing ? 
+						targetdat->multidval.missing_value.value.logicalval : targetdat->multidval.type->type_class.default_mis.logicalval;
 				}
-#endif
 				if((value->obj.status != PERMANENT)&&(value != tmp_md)) {
-/*
-* tmp_md is either equal to value or had to be coerced. In the event it
-* was coerced it must be freed. Therefore it will faile value != tmp_md
-* conditional
+                                        /*
+					 * tmp_md is either equal to value or had to be coerced. In the event it
+					 * was coerced it must be freed. Therefore it will faile value != tmp_md
+					 * conditional
 					_NclDestroyObj((NclObj)value);
-*/
+					*/
 				}
 			}
 		} else {
