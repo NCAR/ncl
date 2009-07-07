@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.159 2009-06-01 23:40:18 dbrown Exp $
+#      $Id: yMakefile,v 1.160 2009-07-07 15:49:12 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-06-01 23:40:18 $
+#	Date:		$Date: 2009-07-07 15:49:12 $
 #
 #	Description:	
 #
@@ -108,7 +108,7 @@ CC_LD		= g\+\+
 #if defined(sun)
 DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lstdc\+\+ -lssl -lpthread -lnsl
 CTOFLIBS += -L/opt/SUNWspro/prod/lib -lompstubs 
-#elif defined(AIX)
+elif defined(AIX)
 DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lrx -lxml2 -lpthread -lssl -liconv
 #elif defined(Darwin)
 DODS_LIBS	= -lnc-dap -ldap -ldapclient -lcurl -lxml2 -lpthread -lssl
@@ -136,7 +136,11 @@ API_DEFS	=	-DMAKEAPI
 PROG_LIBS	=	$(NFPLIBS) $(HLULIBS) $(NCARGLIBS) $(NGMATHLIB)
 DEPLIBS		=	$(DEPNFPLIBS) $(DEPHLULIBS) $(DEPNCARGLIBS) $(DEPNGMATHLIB)
 
+#if defined(CYGWIN)
+EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS) -Wl,-stack,0x400000
+#else
 EXTRA_CLDFLAGS = $(DEV_LIB_SEARCH) $(EXTRA_EXPORT_FLAGS)
+#endif
 
 #if defined(SUN)
 # EXTRA_LIBS      =	$(NCDFLIBS) $(NETCDF4LIB) $(HDFEOSLIB) $(HDFLIB) $(GDALLIB) $(UDUNITSLIB) $(V5DLIB) $(GRIB2LIB) $(PNGLIB) $(CAIROLIB) $(SPHERELIB) $(FFTPACK5LIB) -fast -xlic_lib=sunperf	-lnsl -lintl -lsocket -ldl -lw -lfui 
