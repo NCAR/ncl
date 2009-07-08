@@ -1981,7 +1981,7 @@ NclStackEntry missing_expr;
 		if(missing_md->multidval.kind != SCALAR) {
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"New: the missing value provided has more than one element, using the first one as the _FillValue");
 		}
-		if (*(NrmQuark*)missing_md->multidval.val == qnofill) {
+		if (missing_md->multidval.data_type == NCL_string && *(NrmQuark*)missing_md->multidval.val == qnofill) {
 			fill = 0;
 		}
 		else if(missing_md->multidval.type->type_class.type != the_obj_type) {

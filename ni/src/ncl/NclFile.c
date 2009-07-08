@@ -4888,7 +4888,10 @@ struct _NclSelectionRecord * sel_ptr;
 				return(ret);
 			} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
 				if(value->multidval.data_type == NCL_char) {	
-					tmp_md = _NclCharMdToStringMd(value);
+					if (attname != NrmStringToQuark(NCL_MISSING_VALUE_ATT))
+						tmp_md = _NclCharMdToStringMd(value);
+					else
+						tmp_md = value;
 					ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
 					if(ret < NhlWARNING) {
 						NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list",NrmQuarkToString(attname));

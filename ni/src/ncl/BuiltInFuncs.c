@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.237 2009-04-22 22:23:27 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.238 2009-07-08 21:03:04 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -15859,7 +15859,7 @@ NhlErrorTypes _NclIListGetType(void)
 	thelist = _NclGetObj(*list_id);
 	list_type = _NclListGetType(thelist);
 	i = 0;
-	ret_val = (string*)NclMalloc(sizeof(string));
+	ret_val = (string*)NclMalloc(2 * sizeof(string));
 	if(list_type & NCL_JOIN)  {
 		ret_val[i++] = NrmStringToQuark("join");
 	} else {
@@ -16618,7 +16618,7 @@ NhlErrorTypes   _NclIFileIsPresent
         }
     }
 
-    return NclReturnValue((void *) file_exists, ndims, dimsz, NULL, NCL_logical, 1);
+    return NclReturnValue((void *) file_exists, ndims, dimsz, NULL, NCL_logical, 0);
 }
 
 
