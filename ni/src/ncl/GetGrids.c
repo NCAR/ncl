@@ -6802,16 +6802,28 @@ GribParamList* thevarrec;
 					data = *outdat;
 				}
 				for(i = 0; i < total; i++) {
-					((int*)data)[i]= (int)reference_value;
+					if(is_gpoint(bms,i)) {
+						((int*)data)[i]= (int)reference_value;
+					}
+					else {
+                                                ((int*)data)[i] = DEFAULT_MISSING_INT;
+					}
 				}
 			} else {
+				float val;
 				if(*outdat == NULL) {
 					data = (void*)NclMalloc((unsigned)sizeof(float)*total);
 				} else {
 					data = *outdat;
 				}
+				val = (float) reference_value/pow(10.0,(double)(decimal_scale_factor));
 				for(i = 0; i < total; i++) {
-					((float*)data)[i]= reference_value/pow(10.0,(double)(decimal_scale_factor));
+					if(is_gpoint(bms,i)) {
+						((float*)data)[i]= val;
+					}
+					else {
+                                                ((float*)data)[i] = DEFAULT_MISSING_FLOAT;
+					}
 				}
 			}
 			*outdat = data;

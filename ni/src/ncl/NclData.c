@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclData.c,v 1.24 2009-05-19 16:30:40 dbrown Exp $
+ *      $Id: NclData.c,v 1.25 2009-07-09 22:40:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -921,5 +921,5 @@ void _NclObjsSize
 	FILE *fp;
 #endif
 {
-	fprintf(fp,"The size of objs list is %d elements of size %d with %ld elements used\n",current_size,sizeof(NclObjList),total_obj_count);
+	fprintf(fp,"The size of objs list is %d elements of size %d; %lld total objects have been created\n",current_size,sizeof(NclObjList),total_obj_count);
 }
