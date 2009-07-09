@@ -1,0 +1,17 @@
+----------------------------------------------------------------------
+If on a Mac system you get the following error when compiling
+w_display.c:
+
+  In file included from commands.h:17,
+                 from w_display.c:51:
+  /usr/include/signal.h:71: error: 'NSIG' undeclared here (not in a
+  function)
+  make[5]: *** [w_display.o] Error 1
+
+then try adding "-D_DARWIN_C_SOURCE" to the end of the STD_DEFINES
+line in the Makefile.
+
+This appears to be a Mac bug.
+
+----------------------------------------------------------------------
+
