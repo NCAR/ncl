@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeDivOpTemplate.c.sed,v 1.2 1996-05-02 23:30:56 ethan Exp $
+ *      $Id: TypeDivOpTemplate.c.sed,v 1.3 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -34,18 +34,18 @@ int nlhs;
 int nrhs;
 #endif
 {
-        DATATYPE *ls,*rs;
-	OUTDATATYPE *res;
+        LOCALTYPE *ls,*rs;
+	LOCALOUTTYPE *res;
 	int stopi = 1;
 	int linc = 0;
 	int rinc = 0;
 	int i;
 
-        rs = (DATATYPE*)rhs;
-	ls = (DATATYPE*)lhs;
-	res = (OUTDATATYPE*)result;
+        rs = (LOCALTYPE*)rhs;
+	ls = (LOCALTYPE*)lhs;
+	res = (LOCALOUTTYPE*)result;
         for(i = 0; i< nrhs ; i++) {
-                if((rs[i] == (DATATYPE)0)&&((rhs_m == NULL) || (rhs_m->DATATYPEval != rs[i]))) {
+                if((rs[i] == (LOCALTYPE)0)&&((rhs_m == NULL) || (rhs_m->DATATYPEval != rs[i]))) {
                         NhlPError(NhlFATAL,NhlEUNKNOWN,"FUNCNAME: Division by 0, Can't continue");
                         return(NhlFATAL);
                 }
@@ -66,19 +66,19 @@ int nrhs;
 
 	if((lhs_m == NULL)&&(rhs_m == NULL)) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(*ls THEOP *rs);
+			*res = (LOCALOUTTYPE)(*ls THEOP *rs);
 		}
 	} else if(rhs_m == NULL) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( LEFTMISSING ) : (*ls THEOP *rs));
+			*res = (LOCALOUTTYPE)(( lhs_m->DATATYPEval == *ls) ? ( LEFTMISSING ) : (*ls THEOP *rs));
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( rhs_m->DATATYPEval == *rs) ? ( RIGHTMISSING ) : (*ls THEOP *rs));
+			*res = (LOCALOUTTYPE)(( rhs_m->DATATYPEval == *rs) ? ( RIGHTMISSING ) : (*ls THEOP *rs));
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( LEFTMISSING ) : (*ls THEOP *rs));
+			*res = (LOCALOUTTYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( LEFTMISSING ) : (*ls THEOP *rs));
 		}
 	}
 	return(NhlNOERROR);

@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.c,v 1.43 1997-08-11 23:16:15 ethan Exp $
+ *      $Id: hlu.c,v 1.44 2009-07-10 19:54:04 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1512,6 +1512,7 @@ _NhlCopyToVal
 { 
     if      (size == sizeof(long)) dst->lngval = *(long*)src;
     else if (size == sizeof(short)) dst->shrtval = *(short*)src;
+    else if (size == sizeof(unsigned short)) dst->ushortval = *(unsigned short*)src;
     else if (size == sizeof(NhlPointer)) dst->ptrval = *(NhlPointer*)src;
     else if (size == sizeof(char))	dst->charval = *(char*)src;
     else if (size == sizeof(char*))	dst->strval = *(char**)src;

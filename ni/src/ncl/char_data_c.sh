@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: char_data_c.sh,v 1.6 1996-11-16 00:45:57 ethan Exp $
+#      $Id: char_data_c.sh,v 1.7 2009-07-10 19:54:06 huangwei Exp $
 #
 #########################################################################
 #									#
@@ -39,6 +39,7 @@ fi
 sed \
 -e 's/PRINTFORMAT/\%c\\n/' \
 -e 's/DATATYPE/char/g' \
+-e 's/LOCALTYPE/char/g' \
 -e 's/HLUTYPEREP/NhlTCharacter/g' \
 -e 's/HLUGENTYPEREP/NhlTCharacterGenArray/g' \
 -e 's/DEFAULT_MISS/'\0'/g' \

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Keywords.h,v 1.15 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: Keywords.h,v 1.16 2009-07-10 19:54:05 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -46,9 +46,12 @@ static struct {
 "Quit",         QUIT,
 "QUIT",         QUIT,
 "integer",      INTEGER,
+"uint",         UINT,
 "float",        FLOAT,
 "long",         LONG,
+"ulong",        ULONG,
 "short",        SHORT,
+"ushort",       USHORT,
 "double",       DOUBLE,
 "character",    CHARACTER,
 "string",    	STRNG,
@@ -57,6 +60,8 @@ static struct {
 "file",         FILETYPE,
 "numeric",      NUMERIC,
 "graphic",      GRAPHIC,
+"int64",     	INT64,
+"uint64",	UINT64,
 "return",       RETURN,
 "external",     EXTERNAL,
 "record",	RECORD,

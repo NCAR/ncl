@@ -10,6 +10,7 @@ fi
 sed \
 -e 's/PRINTFORMAT/\%g\\n/' \
 -e 's/DATATYPE/float/g' \
+-e 's/LOCALTYPE/float/g' \
 -e 's/HLUTYPEREP/NhlTFloat/g' \
 -e 's/HLUGENTYPEREP/NhlTFloatGenArray/g' \
 -e 's/DEFAULT_MISS/-9999.0/g' \

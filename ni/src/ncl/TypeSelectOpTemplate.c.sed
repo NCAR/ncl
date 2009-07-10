@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeSelectOpTemplate.c.sed,v 1.1 1995-01-28 01:53:01 ethan Exp $
+ *      $Id: TypeSelectOpTemplate.c.sed,v 1.2 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -34,16 +34,16 @@ int nlhs;
 int nrhs;
 #endif
 {
-        DATATYPE *ls,*rs;
-	OUTDATATYPE *res;
+        LOCALTYPE *ls,*rs;
+	LOCALOUTTYPE *res;
 	int stopi = 1;
 	int linc = 0;
 	int rinc = 0;
 	int i;
 
-	ls = (DATATYPE*)lhs;
-	rs = (DATATYPE*)rhs;
-	res= (OUTDATATYPE*)result;
+	ls = (LOCALTYPE*)lhs;
+	rs = (LOCALTYPE*)rhs;
+	res= (LOCALOUTTYPE*)result;
 
 	if(nlhs > nrhs) 
 		stopi = nlhs;
@@ -59,19 +59,19 @@ int nrhs;
 
 	if((lhs_m == NULL)&&(rhs_m == NULL)) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)((*ls THEOP *rs)? *ls:*rs);
+			*res = (LOCALOUTTYPE)((*ls THEOP *rs)? *ls:*rs);
 		}
 	} else if(rhs_m == NULL) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( lhs_m->DATATYPEval) : (*ls THEOP *rs)? *ls : *rs);
+			*res = (LOCALOUTTYPE)(( lhs_m->DATATYPEval == *ls) ? ( lhs_m->DATATYPEval) : (*ls THEOP *rs)? *ls : *rs);
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( rhs_m->DATATYPEval == *rs) ? ( rhs_m->DATATYPEval) : (*ls THEOP *rs)? *ls : *rs);
+			*res = (LOCALOUTTYPE)(( rhs_m->DATATYPEval == *rs) ? ( rhs_m->DATATYPEval) : (*ls THEOP *rs)? *ls : *rs);
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( lhs_m->DATATYPEval) : (*ls THEOP *rs)? *ls : *rs);
+			*res = (LOCALOUTTYPE)((( lhs_m->DATATYPEval == *ls)|| ( rhs_m->DATATYPEval == *rs)) ? ( lhs_m->DATATYPEval) : (*ls THEOP *rs)? *ls : *rs);
 		}
 	}
 	return(NhlNOERROR);

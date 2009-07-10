@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddProto.c,v 1.10 2009-05-08 03:55:50 haley Exp $
+ *      $Id: userAddProto.c,v 1.11 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *                                                                   *
@@ -38,6 +38,12 @@ void
 );
 
 extern NhlErrorTypes _Nclstr_get_field(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _Nclstr_split(
 #if NhlNeedProto
 void
 #endif
@@ -166,6 +172,14 @@ void NclAddUserBuiltInFuncs
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_get_field, args, "str_get_field", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclstr_split, args, "str_split", nargs);
     
     nargs = 0;
     args = NewArgs(3);

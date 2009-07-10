@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeResetMissing.c.sed,v 1.2 2006-10-19 22:57:10 dbrown Exp $
+ *      $Id: TypeResetMissing.c.sed,v 1.3 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -33,7 +33,7 @@ NclScalar * new_m;
 int nval;
 #endif
 {
-	DATATYPE *value = (DATATYPE*)val;
+	LOCALTYPE *value = (LOCALTYPE*)val;
 	int i;
 
 	if((old_m == NULL)||(new_m == NULL))

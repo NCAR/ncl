@@ -181,7 +181,7 @@ static int 	HandleSingle
 #endif
 {
 	int n =0;
-	char control_word[WORD_SIZE];
+	unsigned char control_word[WORD_SIZE];
 	int done = 0;
 	int total = 0;
 	int end_offset = eoff;
@@ -249,7 +249,7 @@ NhlErrorTypes _NclICrayBinNumRec
         int index = 0;
         char tmpc;
 	int done = 0;
-	char buffer[READ_SIZE];
+	unsigned char buffer[READ_SIZE];
 
 
 	fpath = (string*)NclGetArgValue(
@@ -366,7 +366,7 @@ NhlErrorTypes _NclICrayBinRecRead
 	NclStackEntry data;
 	int 	has_missing = 0;
 	NclTypeClass thetype;
-	char 	control_word[WORD_SIZE];
+	unsigned char 	control_word[WORD_SIZE];
 	void *value;
 	char *cbin_buf,*tmp;
 	int cb;

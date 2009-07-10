@@ -1,5 +1,5 @@
 /*
- *      $Id: xcbShells.c,v 1.5 1998-11-06 00:51:20 boote Exp $
+ *      $Id: xcbShells.c,v 1.6 2009-07-10 19:54:05 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -194,7 +194,7 @@ CFault
 	NhlArgVal	udata
 )
 {
-	Colormap	cmap = cbdata.ulngval;
+	Colormap	cmap = cbdata.ulongval;
 	XcbShellPart	*xp = (XcbShellPart*)udata.ptrval;
 	CompositePart	*cwp;
 	register int	i;

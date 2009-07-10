@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.85 2009-03-20 02:01:32 haley Exp $
+ *      $Id: AddBuiltIns.c,v 1.86 2009-07-10 19:54:05 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -366,6 +366,84 @@ void
 #endif
 );
 
+extern NhlErrorTypes _NclItochar(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclItobyte(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclItoshort(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclItoushort(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclItoint(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclItouint(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclItolong(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclItoulong(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclItoint64(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclItouint64(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclItofloat(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclItodouble(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclItostring(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclItostring_with_format(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _NclIfloattobyte(
 #if NhlNeedProto
 void
@@ -459,6 +537,36 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIstringtolong(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtoint64(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtouint64(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtoushort(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtouint(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtoulong(
+#if NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIstringtouint64(
 #if NhlNeedProto
 void
 #endif
@@ -633,6 +741,11 @@ void
 #endif
 );
 extern NhlErrorTypes _NclIIsLong(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsInt64(
 #if     NhlNeedProto
 void
 #endif
@@ -1197,6 +1310,87 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,"long",0,NclANY);nargs++;
 	NclRegisterFunc(_NclIlongtoint,args,"longtoint",nargs);
 
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItochar,args,"tochar",nargs);
+        NclRegisterFunc(_NclItochar,args,"tocharacter",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItobyte,args,"tobyte",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItoshort,args,"toshort",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItoushort,args,"toushort",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItoint,args,"tointeger",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItoint,args,"toint",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItouint,args,"touinteger",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItouint,args,"touint",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItolong,args,"tolong",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItoulong,args,"toulong",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItoint64,args,"toint64",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItouint64,args,"touint64",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItofloat,args,"tofloat",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItodouble,args,"todouble",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+        NclRegisterFunc(_NclItostring,args,"tostring",nargs);
+
+        nargs = 0;
+        args = NewArgs(2);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY);nargs++;
+	dimsizes[0] = 1;
+	SetArgTemplate(args,nargs, "string", 1, dimsizes);  nargs++;
+        NclRegisterFunc(_NclItostring_with_format,args,"tostring_with_format",nargs);
+
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"float",0,NclANY);nargs++;
@@ -1331,6 +1525,10 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtoshort,args,"stringtoshort",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
+        NclRegisterFunc( _NclIstringtoushort,args,"stringtoushort",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
@@ -1339,10 +1537,30 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtolong,args,"stringtolong",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
+        NclRegisterFunc( _NclIstringtoulong,args,"stringtoulong",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
+        NclRegisterFunc( _NclIstringtoint64,args,"stringtoint64",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
+        NclRegisterFunc( _NclIstringtouint64,args,"stringtouint64",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
 	NclRegisterFunc( _NclIstringtointeger,args,"stringtoint",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
+        NclRegisterFunc( _NclIstringtouint,args,"stringtouint",nargs);
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
+        NclRegisterFunc( _NclIstringtouint,args,"stringtouinteger",nargs);
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,"string",0,NclANY);nargs++;
@@ -1638,6 +1856,11 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsLong,args,"islong",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+        NclRegisterFunc( _NclIIsInt64,args,"isint64",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

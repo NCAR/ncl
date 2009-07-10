@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypeint.c.specific,v 1.6 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id: NclTypeuint.c.specific,v 1.2 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -12,18 +12,19 @@
 /*
  *	File:		
  *
- *	Author:		Ethan Alpert
+ *	Author:		Wei Huang
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Fri Jan 27 18:26:28 MST 1995
+ *	Date:		Tue Jan 13 18:26:28 MST 2009
  *
  *	Description:	
  */
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
+#include "NclTypeint.h"
 
-static NhlErrorTypes Ncl_Type_int_print
+static NhlErrorTypes Ncl_Type_uint_print
 #if     NhlNeedProto
 (FILE *fp, void * val)
 #else
@@ -32,10 +33,10 @@ FILE *fp;
 void *val;
 #endif
 {
-        int *ip = (int*)val;
+        unsigned int *ip = (unsigned int*)val;
 	int ret;
 
-        ret = nclfprintf(fp,"%d",*ip);
+        ret = nclfprintf(fp,"%u",*ip);
 	if(ret < 0) {
                 return(NhlWARNING);
         } else {
@@ -47,7 +48,7 @@ void *val;
 
 
 
-static NhlErrorTypes Ncl_Type_int_coerce
+static NhlErrorTypes Ncl_Type_uint_coerce
 #if	NhlNeedProto
 (void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
 #else
@@ -61,7 +62,7 @@ NclTypeClass fc;
 #endif
 {
 	int i;
-	int *res = (int*)result;
+	unsigned int *res = (unsigned int*)result;
 	logical tmp;
 	NclTypeOp eq;
 	NclScalar tmp_mis;
@@ -75,9 +76,9 @@ NclTypeClass fc;
                 eq = fc->type_class.eq;
 
         if(to_m == NULL){
-		tmp_mis.intval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.intval;
+		tmp_mis.uintval = ((NclTypeClass)nclTypeintClass)->type_class.default_mis.uintval;
         } else {
-		tmp_mis.intval = to_m->intval;
+		tmp_mis.uintval = to_m->uintval;
 	}
 
 	switch(fc->type_class.type) {
@@ -85,14 +86,14 @@ NclTypeClass fc;
 		int *fl = (int*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (int)*fl;
+				*res = (unsigned int)*fl;
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = tmp_mis.intval;
+					*res = tmp_mis.uintval;
 				} else {
 					*res = *fl;
 				}
@@ -100,20 +101,39 @@ NclTypeClass fc;
 		}
 		return(NhlNOERROR);
 	}
+        case Ncl_Typeuint: {
+                unsigned int *fl = (unsigned int*)from;
+                if((from_m == NULL)||(to_m == NULL)) {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                *res = (unsigned int)*fl;
+                        }
+                } else {
+                        for(i = 0; i < n;i++,res++,fl++)  {
+                                tmp = 0;
+                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
+                                if(tmp) {
+                                        *res = tmp_mis.uintval;
+                                } else {
+                                        *res = *fl;
+                                }
+                        }
+                }
+                return(NhlNOERROR);
+        }
 	case Ncl_Typeshort: {
 		short *fl = (short*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (int)*fl;
+				*res = (unsigned int)*fl;
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = tmp_mis.intval;
+					*res = tmp_mis.uintval;
 				} else {
-					*res = (int)*fl;
+					*res = (unsigned int)*fl;
 				}
 			}
 		}
@@ -123,16 +143,16 @@ NclTypeClass fc;
                 unsigned short *fl = (unsigned short*)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
-                                *res = (int)*fl;
+                                *res = (unsigned int)*fl;
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 tmp = 0;
                                 (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
                                 if(tmp) {
-                                        *res = tmp_mis.intval;
+                                        *res = tmp_mis.uintval;
                                 } else {
-                                        *res = (int)*fl;
+                                        *res = (unsigned int)*fl;
                                 }
                         }
                 }
@@ -143,7 +163,7 @@ NclTypeClass fc;
 
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (int)*fl;
+				*res = (unsigned int)*fl;
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
@@ -152,7 +172,7 @@ NclTypeClass fc;
 				if(tmp) {
 					*res = tmp_mis.byteval;
 				} else {
-					*res = (int)*fl;
+					*res = (unsigned int)*fl;
 				}
 			}
 		}
@@ -163,7 +183,7 @@ NclTypeClass fc;
 	}
 }
 
-static NhlErrorTypes Ncl_Type_int_cmpf
+static NhlErrorTypes Ncl_Type_uint_cmpf
 #if     NhlNeedProto
 (void *lhs, void* rhs, NclScalar* lhs_m, NclScalar *rhs_m,int digits, double* result)
 #else
@@ -177,12 +197,12 @@ double * result;
 #endif
 {
         
-        if((lhs_m != NULL)&&(lhs_m->intval == *(int*)lhs)) {
+        if((lhs_m != NULL)&&(lhs_m->uintval == *(unsigned int*)lhs)) {
                 return(NhlFATAL);
-        } else if((rhs_m != NULL)&&(rhs_m->intval == *(int*)rhs)) {
+        } else if((rhs_m != NULL)&&(rhs_m->uintval == *(unsigned int*)rhs)) {
                 return(NhlFATAL);
         } else {
-                *result =(double) (*(int*)lhs-*(int*)rhs);
+                *result =(double) (*(unsigned int*)lhs-*(unsigned int*)rhs);
                 return(NhlNOERROR);
         }
         

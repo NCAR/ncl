@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.160 2009-07-07 15:49:12 haley Exp $
+#      $Id: yMakefile,v 1.161 2009-07-10 19:54:06 huangwei Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-07-07 15:49:12 $
+#	Date:		$Date: 2009-07-10 19:54:06 $
 #
 #	Description:	
 #
@@ -33,6 +33,8 @@ MYLIB_API	=	libnclapi
 YACC		=	$(NYACC)
 LEX		= 	flex
 
+#define NCLDEBUG
+
 #if defined(linux)
 EXTRA_CCOPTIONS = -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -I/usr/local/include
 #endif
@@ -48,9 +50,9 @@ NETCDF4_DEFS = -DUSE_NETCDF4
 HDF4_NETCDF = -DH4_HAVE_NETCDF
 
 #ifdef BuildHDFEOS
-HDFEOS_DEFS = -DBuildHDFEOS $(HDF4_NETCDF)
-HDFEOS_SRCS = NclHDFEOS.c
-HDFEOS_OBJS = NclHDFEOS.o
+HDFEOS_DEFS = -DBuildHDFEOS -DBuildHDFEOS5 $(HDF4_NETCDF)
+HDFEOS_SRCS = NclHDFEOS.c NclHDFEOS5.c
+HDFEOS_OBJS = NclHDFEOS.o NclHDFEOS5.o
 #else
 #define HDFEOS_SRCS
 #define HDFEOS_OBJS
@@ -161,6 +163,8 @@ GEN_HDRS	=	NclTypeobj.h NclTypelogical.h \
 			NclTypedouble.h NclTypefloat.h \
 			NclTypeint.h NclTypelong.h \
 			NclTypeshort.h NclTypestring.h \
+			NclTypeushort.h NclTypeuint.h NclTypeulong.h \
+			NclTypeint64.h NclTypeuint64.h \
 			parser.h NclTypebyte.h NclTypechar.h TypeSupport.h \
 			MathFuncs.h 
 
@@ -229,13 +233,17 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		FileSupport.c Formats.c GetGrids.c InitData.c		\
 		MatMulDValOp.c.sed Memory.c MultiDValOp.c.sed NclAtt.c	\
 		NclCCM.c NclCoordVar.c NclData.c NclFile.c		\
-		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c NclHDFEOS.c	\
+		NclFileVar.c NclGRIB.c NclGRIB2.c NclHDF.c		\
+		NclHDFEOS.c NclHDFEOS5.c				\
 		NclMultiDValData.c.sed NclMultiDValnclfileData.c	\
 		NclNetCdf.c NclOneDValCoordData.c NclType.c NclOGR.c	\
 		NclType.c.sed NclTypebyte.c.specific			\
 		NclTypechar.c.specific NclTypedouble.c.specific		\
 		NclTypefloat.c.specific NclTypeint.c.specific		\
 		NclTypelist.c NclTypelogical.c.specific			\
+		NclTypeushort.c.specific NclTypeuint.c.specific		\
+		NclTypeulong.c.specific NclTypeint64.c.specific		\
+		NclTypeuint64.c.specific				\
 		NclTypelong.c.specific NclTypeobj.c.specific		\
 		NclTypeshort.c.specific NclTypestring.c.sed		\
 		NclTypestring.c.specific NclVar.c			\
@@ -276,6 +284,8 @@ GEN_TYPE_SRCS	=	NclTypedouble.c NclTypefloat.c \
 			NclTypeint.c NclTypelogical.c \
 			NclTypelong.c NclTypeobj.c \
 			NclTypeshort.c NclTypestring.c \
+			NclTypeint64.c NclTypeuint64.c \
+			NclTypeushort.c NclTypeuint.c NclTypeulong.c \
 			NclTypebyte.c NclTypechar.c TypeSupport.c \
 			NclMultiDValData.c 
 
@@ -315,6 +325,8 @@ GEN_TYPE_OBJS	=	NclTypedouble.o NclTypefloat.o \
 			NclTypeint.o NclTypelogical.o \
 			NclTypelong.o NclTypeobj.o \
 			NclTypeshort.o NclTypestring.o \
+			NclTypeint64.o NclTypeuint64.o \
+			NclTypeushort.o NclTypeuint.o NclTypeulong.o \
 			NclTypebyte.o NclTypechar.o TypeSupport.o \
 			NclMultiDValData.o 
 
@@ -504,6 +516,12 @@ NclTypeRule(string,$(STR_OP_TMPL))
 NclTypeRule(obj,$(NUM_OP_TMPL))
 NclTypeRule(char,$(NUM_OP_TMPL))
 NclTypeRule(byte,$(NUM_OP_TMPL))
+NclTypeRule(int64,$(NUM_OP_TMPL))
+NclTypeRule(ushort,$(NUM_OP_TMPL))
+NclTypeRule(uint,$(NUM_OP_TMPL))
+NclTypeRule(ulong,$(NUM_OP_TMPL))
+NclTypeRule(uint64,$(NUM_OP_TMPL))
+
 
 #if defined(CRAY)
 BuiltInFuncs.o:  BuiltInFuncs.c
@@ -534,6 +552,13 @@ NclHDFEOS.o: NclHDFEOS.c
 	  @echo Compiling NclHDFEOS.c will generate warning messages.
 	  @echo These can safely be ignored.
       $(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS.c
+	  @echo 
+
+NclHDFEOS5.o: NclHDFEOS5.c
+	  @echo 
+	  @echo Compiling NclHDFEOS5.c will generate warning messages.
+	  @echo These can safely be ignored.
+      $(CC) -c $(HDFDEFINES) $(HDF4_NETCDF) $(CFLAGS) NclHDFEOS5.c
 	  @echo 
 
 #

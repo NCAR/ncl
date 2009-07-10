@@ -10,6 +10,7 @@ fi
 sed \
 -e 's/PRINTFORMAT/\%c\\n/' \
 -e 's/DATATYPE/byte/g' \
+-e 's/LOCALTYPE/byte/g' \
 -e 's/HLUTYPEREP/NhlTByte/g' \
 -e 's/HLUGENTYPEREP/NhlTByteGenArray/g' \
 -e "s/DEFAULT_MISS/0/g" \

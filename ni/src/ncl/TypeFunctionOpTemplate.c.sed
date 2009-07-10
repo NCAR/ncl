@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeFunctionOpTemplate.c.sed,v 1.2 1996-05-02 23:30:58 ethan Exp $
+ *      $Id: TypeFunctionOpTemplate.c.sed,v 1.3 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -34,15 +34,15 @@ int nlhs;
 int nrhs;
 #endif
 {
-        DATATYPE *ls,*rs;
+        LOCALTYPE *ls,*rs;
 	OUTDATATYPE *res;
 	int stopi = 1;
 	int linc = 0;
 	int rinc = 0;
 	int i;
 
-	ls = (DATATYPE*)lhs;
-	rs = (DATATYPE*)rhs;
+	ls = (LOCALTYPE*)lhs;
+	rs = (LOCALTYPE*)rhs;
 	res = (OUTDATATYPE*)result;
 
 	if(nlhs > nrhs) 

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#      $Id: data_h.sh,v 1.2 1995-01-28 01:53:31 ethan Exp $
+#      $Id: data_h.sh,v 1.3 2009-07-10 19:54:06 huangwei Exp $
 #
 #########################################################################
 #									#
@@ -32,6 +32,7 @@
 sed \
 -e "s/FIELDNAME/${1}val/" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
 -e "/DSPECIFIC/d" \
 NclType.h.sed > NclType${1}.h
 

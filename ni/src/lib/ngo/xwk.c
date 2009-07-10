@@ -1,5 +1,5 @@
 /*
- *      $Id: xwk.c,v 1.31 2000-05-16 01:59:40 dbrown Exp $
+ *      $Id: xwk.c,v 1.32 2009-07-10 19:54:05 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -862,7 +862,7 @@ CFault
 	NhlArgVal	udata
 )
 {
-	Colormap	cmap = cbdata.ulngval;
+	Colormap	cmap = cbdata.ulongval;
 	NgXWk		xwk = (NgXWk)udata.ptrval;
 	NgXWkPart	*xp = &xwk->xwk;
 

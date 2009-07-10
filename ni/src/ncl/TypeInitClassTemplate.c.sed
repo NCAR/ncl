@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeInitClassTemplate.c.sed,v 1.5 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: TypeInitClassTemplate.c.sed,v 1.6 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -71,7 +71,7 @@ int nargs;
 		}
 	} else {
                 val = NclMalloc((unsigned)nclTypeDATATYPEClassRec.type_class.size);
-                *(DATATYPE*)(val) = nclTypeDATATYPEClassRec.type_class.default_mis.DATATYPEval;
+                *(LOCALTYPE*)(val) = nclTypeDATATYPEClassRec.type_class.default_mis.DATATYPEval;
                 tmp_md = _NclCreateMultiDVal(
                         NULL,NULL, Ncl_MultiDValData,
                         0,val,&nclTypeDATATYPEClassRec.type_class.default_mis,1,

@@ -1,5 +1,5 @@
 /*
- *      $Id: ResList.c,v 1.20 2003-05-29 00:25:59 dbrown Exp $
+ *      $Id: ResList.c,v 1.21 2009-07-10 19:54:04 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -42,6 +42,11 @@ static NrmQuark	charQ;
 static NrmQuark	byteQ;
 static NrmQuark	shortQ;
 static NrmQuark	doubleQ;
+static NrmQuark	int64Q;
+static NrmQuark	ushortQ;
+static NrmQuark	uintQ;
+static NrmQuark	ulongQ;
+static NrmQuark	uint64Q;
 
 static void InitRLList(
 #if	NhlNeedProto
@@ -641,13 +646,33 @@ NhlRLSet
 		value.shrtval = (short)va_arg(ap,int);
 		size = sizeof(short);
 	}
+	else if(_NhlIsSubtypeQ(ushortQ,typeQ)){
+		value.ushortval = (unsigned short)va_arg(ap,int);
+		size = sizeof(unsigned short);
+	}
 	else if(_NhlIsSubtypeQ(intQ,typeQ)){	/* gets all enumerated types */
 		value.intval = va_arg(ap,int);
 		size = sizeof(int);
 	}
+	else if(_NhlIsSubtypeQ(uintQ,typeQ)){	/* gets all enumerated types */
+		value.uintval = va_arg(ap,long);
+		size = sizeof(unsigned int);
+	}
 	else if(_NhlIsSubtypeQ(longQ,typeQ)){
 		value.lngval = va_arg(ap,long);
 		size = sizeof(long);
+	}
+	else if(_NhlIsSubtypeQ(ulongQ,typeQ)){
+		value.ulongval = va_arg(ap,long long);
+		size = sizeof(unsigned long);
+	}
+	else if(_NhlIsSubtypeQ(int64Q,typeQ)){
+		value.int64val = va_arg(ap,long long);
+		size = sizeof(long long);
+	}
+	else if(_NhlIsSubtypeQ(uint64Q,typeQ)){
+		value.uint64val = va_arg(ap,unsigned long long);
+		size = sizeof(unsigned long long);
 	}
 	else if(_NhlIsSubtypeQ(floatQ,typeQ)){
 		value.fltval = (float)va_arg(ap,double);
@@ -687,6 +712,70 @@ NhlRLSet
 }
 
 /*
+ * Function:    NhlRLSetShort
+ *
+ * Description: This function is used to set a resource with the value
+ *              specified as the given type.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:       global
+ * Returns:     NhlErrorTypes
+ * Side Effect:
+ */
+NhlErrorTypes
+NhlRLSetShort
+#if     NhlNeedProto
+(
+        int             id,
+        NhlString       name,
+        short           value
+)
+#else
+(id,name,value)
+        int             id;
+        NhlString       name;
+        short           value;
+#endif
+{
+        return NhlRLSet(id,name,NhlTShort,value);
+}
+
+/*
+ * Function:    NhlRLSetUshort
+ * 
+ * Description: This function is used to set a resource with the value
+ *              specified as the given type. 
+ *
+ * In Args:
+ * 
+ * Out Args:
+ * 
+ * Scope:       global
+ * Returns:     NhlErrorTypes
+ * Side Effect: 
+ */
+NhlErrorTypes
+NhlRLSetUshort
+#if     NhlNeedProto
+(
+        int             id,
+        NhlString       name,
+        unsigned short  value
+)
+#else
+(id,name,value)
+        int             id;
+        NhlString       name;
+        unsigned short  value;
+#endif
+{
+        return NhlRLSet(id,name,NhlTUshort,value);
+}
+
+/*
  * Function:	NhlRLSetInteger
  *
  * Description:	This function is used to set a resource with the value
@@ -719,6 +808,38 @@ NhlRLSetInteger
 }
 
 /*
+ * Function:    NhlRLSetUint
+ *
+ * Description: This function is used to set a resource with the value
+ *              specified as the given type.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:       global
+ * Returns:     NhlErrorTypes
+ * Side Effect:
+ */
+NhlErrorTypes
+NhlRLSetUint
+#if     NhlNeedProto
+(
+        int             id,
+        NhlString       name,
+        unsigned int    value
+)
+#else
+(id,name,value)
+        int             id;
+        NhlString       name;
+        unsigned int    value;
+#endif
+{
+        return NhlRLSet(id,name,NhlTUint,value);
+}
+
+/*
  * Function:	NhlRLSetLong
  *
  * Description:	This function is used to set a resource with the value
@@ -748,6 +869,102 @@ NhlRLSetLong
 #endif
 {
 	return NhlRLSet(id,name,NhlTLong,value);
+}
+
+/*
+ * Function:    NhlRLSetUlong
+ * 
+ * Description: This function is used to set a resource with the value
+ *              specified as the given type. 
+ *
+ * In Args:
+ * 
+ * Out Args:
+ * 
+ * Scope:       global
+ * Returns:     NhlErrorTypes
+ * Side Effect: 
+ */
+NhlErrorTypes
+NhlRLSetUlong
+#if     NhlNeedProto
+(
+        int             id,
+        NhlString       name,
+        unsigned long   value
+)
+#else
+(id,name,value)
+        int             id;
+        NhlString       name;
+        unsigned long   value;
+#endif
+{
+        return NhlRLSet(id,name,NhlTUlong,value);
+}
+
+/*
+ * Function:    NhlRLSetInt64
+ *
+ * Description: This function is used to set a resource with the value
+ *              specified as the given type.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:       global
+ * Returns:     NhlErrorTypes
+ * Side Effect:
+ */
+NhlErrorTypes
+NhlRLSetInt64
+#if     NhlNeedProto
+(
+        int             id,
+        NhlString       name,
+        long long       value
+)
+#else
+(id,name,value)
+        int             id;
+        NhlString       name;
+        long long       value;
+#endif
+{
+        return NhlRLSet(id,name,NhlTInt64,value);
+}
+
+/*
+ * Function:    NhlRLSetUint64
+ *
+ * Description: This function is used to set a resource with the value
+ *              specified as the given type.
+ *
+ * In Args:
+ *
+ * Out Args:
+ *
+ * Scope:       global
+ * Returns:     NhlErrorTypes
+ * Side Effect:
+ */
+NhlErrorTypes
+NhlRLSetUint64
+#if     NhlNeedProto
+(
+        int                id,
+        NhlString          name,
+        unsigned long long value
+)
+#else
+(id,name,value)
+        int                id;
+        NhlString          name;
+        unsigned long long value;
+#endif
+{
+        return NhlRLSet(id,name,NhlTUint64,value);
 }
 
 /*

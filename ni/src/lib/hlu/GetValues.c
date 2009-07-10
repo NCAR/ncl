@@ -1,5 +1,5 @@
 /*
- *      $Id: GetValues.c,v 1.24 1997-09-19 18:41:38 boote Exp $
+ *      $Id: GetValues.c,v 1.25 2009-07-10 19:54:04 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -367,6 +367,8 @@ CopyArgToArgptr
     if (size == 0)			return;
     else if (size == sizeof(long))	*(long *)dst = src.lngval;
     else if (size == sizeof(short))	*(short *)dst = src.shrtval;
+    else if (size == sizeof(unsigned short))
+					*(unsigned short *)dst = src.ushortval;
     else if (size == sizeof(NhlPointer))
 					*(NhlPointer *)dst = src.ptrval;
     else if (size == sizeof(char))	*(char *)dst = src.charval;

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclType.c.sed,v 1.9 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclType.c.sed,v 1.10 2009-07-10 19:54:05 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -46,7 +46,7 @@ NclTypeDATATYPEClassRec nclTypeDATATYPEClassRec = {
 	{
 /* NclObjTypes type 			*/ Ncl_TypeDATATYPE,
 /* NclBasicDataTypes 			*/ NCL_DATATYPE,
-/* int size 				*/ sizeof(DATATYPE),
+/* int size 				*/ sizeof(LOCALTYPE),
 /* char * hlu_rep_type			*/ {HLUTYPEREP,HLUGENTYPEREP},
 /* NclScalar	default_mis		*/ {DEFAULT_MISS},
 /* NclTypePrint print			*/ "DEFAULT_FORMAT",

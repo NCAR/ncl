@@ -10,6 +10,7 @@ fi
 sed \
 -e 's/PRINTFORMAT/\%d\\n/' \
 -e 's/DATATYPE/short/g' \
+-e 's/LOCALTYPE/short/g' \
 -e 's/HLUTYPEREP/NhlTShort/g' \
 -e 's/HLUGENTYPEREP/NhlTShortGenArray/g' \
 -e 's/DEFAULT_MISS/0/g' \

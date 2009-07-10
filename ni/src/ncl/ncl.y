@@ -88,7 +88,7 @@ char *ncl_cur_func = NULL;
 %token <real> REAL
 %token <str> DIM DIMNAME ATTNAME COORDV FVAR 
 %token <sstr> STRING
-%token <sym> INTEGER FLOAT LONG DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT LOGICAL
+%token <sym> INTEGER UINT FLOAT LONG ULONG INT64 UINT64 DOUBLE BYTE CHARACTER GRAPHIC STRNG NUMERIC FILETYPE SHORT USHORT LOGICAL
 %token <sym> UNDEF VAR WHILE DO QUIT  NPROC PIPROC IPROC UNDEFFILEVAR BREAK NOPARENT NCLNULL LIST
 %token <sym> BGIN END NFUNC IFUNC FDIM IF THEN VBLKNAME CONTINUE
 %token <sym> DFILE KEYFUNC KEYPROC ELSE EXTERNAL NCLEXTERNAL RETURN VSBLKGET NEW
@@ -1439,8 +1439,13 @@ pfname : IFUNC		{
 
 datatype : FLOAT	{ $$ = $1; }
 	| LONG		{ $$ = $1; }
+	| ULONG		{ $$ = $1; }
+	| INT64		{ $$ = $1; }
+	| UINT64	{ $$ = $1; }
 	| INTEGER	{ $$ = $1; }
+	| UINT		{ $$ = $1; }
 	| SHORT		{ $$ = $1; }
+	| USHORT	{ $$ = $1; }
 	| DOUBLE	{ $$ = $1; }
 	| CHARACTER	{ $$ = $1; }
 	| BYTE		{ $$ = $1; }
@@ -2162,13 +2167,25 @@ expr :  primary				{
 					}
 ;
 
-anysym : INTEGER {
+anysym : FLOAT {
 		$$ = $1;
 	}
-	| FLOAT {
+	| INTEGER {
+		$$ = $1;
+	}
+	| UINT {
 		$$ = $1;
 	}
 	| LONG {
+		$$ = $1;
+	}
+	| ULONG {
+		$$ = $1;
+	}
+	| INT64 {
+		$$ = $1;
+	}
+	| UINT64 {
 		$$ = $1;
 	}
 	| DOUBLE {
@@ -2193,6 +2210,9 @@ anysym : INTEGER {
 		$$ = $1;
 	}
 	| SHORT {
+		$$ = $1;
+	}
+	| USHORT {
 		$$ = $1;
 	}
 	| LOGICAL {

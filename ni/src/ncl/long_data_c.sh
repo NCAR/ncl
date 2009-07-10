@@ -10,6 +10,7 @@ fi
 sed \
 -e 's/PRINTFORMAT/\%ld\\n/' \
 -e 's/DATATYPE/long/g' \
+-e 's/LOCALTYPE/long/g' \
 -e 's/HLUTYPEREP/NhlTLong/g' \
 -e 's/HLUGENTYPEREP/NhlTLongGenArray/g' \
 -e 's/DEFAULT_MISS/-9999/g' \

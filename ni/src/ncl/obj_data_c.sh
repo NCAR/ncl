@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-#      $Id: obj_data_c.sh,v 1.5 1995-04-19 00:02:13 ethan Exp $
+#      $Id: obj_data_c.sh,v 1.6 2009-07-10 19:54:06 huangwei Exp $
 #
 #########################################################################
 #									#
@@ -40,6 +40,7 @@ sed \
 -e 's/PRINTFORMAT/\%d\\n/' \
 -e '/PRINTFORMAT/d' \
 -e 's/DATATYPE/obj/g' \
+-e 's/LOCALTYPE/obj/g' \
 -e 's/HLUTYPEREP/NULL/g' \
 -e 's/HLUGENTYPEREP/NULL/g' \
 -e 's/DEFAULT_MISS/-1/g' \

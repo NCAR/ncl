@@ -4,8 +4,25 @@
 # Begin "logical" section
 #
 
+if [[ $1 == "ushort" ]]; then
+    def_type="unsigned short"
+elif [[ $1 == "uint" ]]; then
+    def_type="unsigned int"
+elif [[ $1 == "ulong" ]]; then
+    def_type="unsigned long"
+elif [[ $1 == "int64" ]]; then
+    def_type="long long"
+elif [[ $1 == "uint64" ]]; then
+    def_type="unsigned long long"
+else
+    def_type=$1
+fi
+
+export def_type
+
 sed \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 TypeResetMissing.c.sed
 
 if [ $1 = "logical" ]
@@ -15,6 +32,7 @@ sed \
 -e "s/HLUGENTYPEREP/$3/g" \
 -e "s/HLUTYPEREP/$2/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 -e "s/DEFAULT_MISS/$4/g" \
 TypeInitClassTemplate.c.sed
 
@@ -22,6 +40,8 @@ TypeInitClassTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
 -e "s/THEOP/\&\&/g" \
@@ -32,6 +52,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/OUTMISSING/lhs_m->logicalval/g" \
 -e "s/THEOP/\!/g" \
 -e "s/OPER/\.not\./g" \
@@ -41,6 +63,8 @@ TypeMonoOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
 -e "s/THEOP/||/g" \
@@ -51,6 +75,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
 -e "s/OPER/\.xor\./g" \
@@ -60,6 +86,8 @@ TypeXorOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
 -e "s/THEOP/==/g" \
@@ -70,6 +98,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/logical/g" \
+-e "s/LOCALTYPE/logical/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/lhs_m->logicalval/g" \
 -e "s/RIGHTMISSING/rhs_m->logicalval/g" \
 -e "s/THEOP/!=/g" \
@@ -130,6 +160,8 @@ then
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/obj/g" \
+-e "s/LOCALTYPE/obj/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/THEOP/==/g" \
@@ -140,6 +172,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/obj/g" \
+-e "s/LOCALTYPE/obj/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/THEOP/!=/g" \
@@ -157,12 +191,15 @@ sed \
 -e "s/HLUGENTYPEREP/$3/g" \
 -e "s/HLUTYPEREP/$2/g" \
 -e "s/DATATYPE/char/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 -e "s/DEFAULT_MISS/$4/g" \
 TypeInitClassTemplate.c.sed
 
 sed  \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/THEOP/+/' \
@@ -173,6 +210,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/</' \
@@ -183,6 +222,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/>/' \
@@ -193,6 +234,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/<=/' \
@@ -203,6 +246,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/>=/' \
@@ -213,6 +258,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/==/' \
@@ -223,6 +270,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$1/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/!=/' \
@@ -233,6 +282,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e 's/THEOP/\</' \
 -e 's/OPER/\</' \
 -e 's/FUNCNAME/sel_lt/' \
@@ -241,6 +292,8 @@ TypeSelectOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e 's/THEOP/\>/' \
 -e 's/OPER/\>/' \
 -e 's/FUNCNAME/sel_gt/' \
@@ -248,6 +301,7 @@ TypeSelectOpTemplate.c.sed
 
 sed \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 TypeIsMonoFunc.c.sed
 
 
@@ -262,13 +316,15 @@ sed \
 -e "s/HLUGENTYPEREP/$3/g" \
 -e "s/HLUTYPEREP/$2/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 -e "s/DEFAULT_MISS/$4/g" \
 TypeInitClassTemplate.c.sed
-
 
 sed  \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 TypeMatMulOpTemplate.c.sed
@@ -276,6 +332,8 @@ TypeMatMulOpTemplate.c.sed
 sed  \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/THEOP/+/' \
@@ -286,6 +344,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/THEOP/-/' \
@@ -296,6 +356,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/THEOP/*/' \
@@ -306,6 +368,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/</' \
@@ -316,6 +380,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/>/' \
@@ -326,6 +392,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/<=/' \
@@ -336,6 +404,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/>=/' \
@@ -346,6 +416,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/==/' \
@@ -356,6 +428,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/!=/' \
@@ -366,6 +440,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/\&\&/' \
@@ -376,6 +452,8 @@ TypeSimpleOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/||/' \
@@ -385,13 +463,15 @@ TypeSimpleOpTemplate.c.sed
 
 sed \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 TypeIsMonoFunc.c.sed
 
-if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) ]
+if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) -o \( $1 = "uint" \) -o \( $1 = "ulong" \) -o \( $1 = "ushort" \) ]
 then
 sed \
 -e "s/OUTDATATYPE/float/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/FNAME/pow/' \
@@ -401,9 +481,27 @@ sed \
 -e 's/INCLUDE/math/' \
 TypeFunctionOpTemplate.c.sed
 else
+if [ \( $1 = "int64" \) -o \( $1 = "uint64" \) ]
+then
+
+sed \
+-e "s/OUTDATATYPE/double/g" \
+-e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LEFTMISSING/lhs_m->$1val/g" \
+-e "s/RIGHTMISSING/rhs_m->$1val/g" \
+-e 's/FNAME/pow/' \
+-e 's/OPER/\^/' \
+-e 's/FUNCNAME/exponent/' \
+-e 's/CAST/double/g' \
+-e 's/INCLUDE/math/' \
+TypeFunctionOpTemplate.c.sed
+else
+
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/FNAME/pow/' \
@@ -413,11 +511,14 @@ sed \
 -e 's/INCLUDE/math/' \
 TypeFunctionOpTemplate.c.sed
 fi
+fi
 
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/OUTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/THEOP/\!/' \
 -e 's/OPER/\.not\./' \
@@ -427,6 +528,8 @@ TypeMonoOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/OUTMISSING/lhs_m->$1val/g" \
 -e 's/THEOP/\-/' \
 -e 's/OPER/neg/' \
@@ -436,6 +539,8 @@ TypeMonoOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e 's/THEOP/\</' \
 -e 's/OPER/\</' \
 -e 's/FUNCNAME/sel_lt/' \
@@ -444,6 +549,8 @@ TypeSelectOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e 's/THEOP/\>/' \
 -e 's/OPER/\>/' \
 -e 's/FUNCNAME/sel_gt/' \
@@ -452,6 +559,8 @@ TypeSelectOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/logical/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/logical/g" \
 -e "s/LEFTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e "s/RIGHTMISSING/((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval/g" \
 -e 's/OPER/\.xor\./' \
@@ -461,18 +570,21 @@ TypeXorOpTemplate.c.sed
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/THEOP/\//' \
 -e 's/FUNCNAME/divide/' \
 TypeDivOpTemplate.c.sed
 
-
-if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) ]
+if [ \( $1 = "int" \) -o \( $1 = "long" \) -o \( $1 = "short" \) -o \( $1 = "int64" \) -o \( $1 = "uint" \) -o \( $1 = "ulong" \) -o \( $1 = "ushort" \) -o \( $1 = "uint64" \) ]
 then
 sed \
 -e "s/OUTDATATYPE/$1/g" \
 -e "s/DATATYPE/$1/g" \
+-e "s/LOCALTYPE/$def_type/g" \
+-e "s/LOCALOUTTYPE/$def_type/g" \
 -e "s/LEFTMISSING/lhs_m->$1val/g" \
 -e "s/RIGHTMISSING/rhs_m->$1val/g" \
 -e 's/THEOP/\%/' \

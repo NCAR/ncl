@@ -1,5 +1,5 @@
 /*
- *      $Id: xcb.c,v 1.9 1998-11-19 16:59:38 boote Exp $
+ *      $Id: xcb.c,v 1.10 2009-07-10 19:54:05 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1228,7 +1228,7 @@ _XcbCFault(
 	if(!xcb->rw){
 		xcb->my_cmap = True;
 
-		cbdata.ulngval = xcb->cmap = new_cmap;
+		cbdata.ulongval = xcb->cmap = new_cmap;
 		_NhlCBCallCallbacks(xcb->cfaultCBL,sel,cbdata);
 
 		return True;
@@ -1335,7 +1335,7 @@ _XcbCFault(
 		xcb->csort[i]->alloc = XcbMYCMAP;
 		
 	xcb->my_cmap = True;
-	cbdata.ulngval = xcb->cmap = new_cmap;
+	cbdata.ulongval = xcb->cmap = new_cmap;
 	_NhlCBCallCallbacks(xcb->cfaultCBL,sel,cbdata);
 
 	return True;
@@ -1395,7 +1395,7 @@ CFaultCB
 )
 {
 	NhlArgVal	sel;
-	Colormap	cmap = cbdata.ulngval;
+	Colormap	cmap = cbdata.ulongval;
 	Xcb		xcb = (Xcb)udata.ptrval;
 
 	if(xcb->my_cmap)

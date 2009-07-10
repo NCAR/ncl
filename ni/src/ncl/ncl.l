@@ -265,8 +265,7 @@ let	[_a-zA-Z]
 alnum   [_a-zA-Z0-9]
 white	[\t ]
 digit	[0-9]
-/*inttype [bBhHiIlLqQ]  - eventually */
-inttype [iblh] 
+inttype [bBhHiIlLqQ]
 %x incl
 %%
 	if(inc_line) {

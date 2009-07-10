@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeMatMulOpTemplate.c.sed,v 1.2 1998-12-23 18:31:36 ethan Exp $
+ *      $Id: TypeMatMulOpTemplate.c.sed,v 1.3 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -34,16 +34,16 @@ int nlhs;
 int nrhs;
 #endif
 {
-        DATATYPE *ls,*rs;
-	OUTDATATYPE *res;
+        LOCALTYPE *ls,*rs;
+	LOCALOUTTYPE *res;
 	int stopi = 1;
 	int stopk = 1;
 	int stopj = 1;
 	int i,j,k;
 
-	ls = (DATATYPE*)lhs;
-	rs = (DATATYPE*)rhs;
-	res = (OUTDATATYPE*)result;
+	ls = (LOCALTYPE*)lhs;
+	rs = (LOCALTYPE*)rhs;
+	res = (LOCALOUTTYPE*)result;
 
 	if((nrhs_dims == 2)&&(nlhs_dims ==2))  {
 		stopi = lhs_dimsizes[0];
@@ -67,12 +67,12 @@ int nrhs;
 	if((lhs_m == NULL)&&(rhs_m == NULL)) {
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
-				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopk]);
-				*res = (OUTDATATYPE)(*ls++ * *rs);
+				rs = (LOCALTYPE*)rhs + j;
+				ls = &(((LOCALTYPE*)lhs)[i * stopk]);
+				*res = (LOCALOUTTYPE)(*ls++ * *rs);
 				rs += stopj;
 				for(k = 1; k < stopk; k++,ls++,rs+=stopj) {
-					*res = *res + (OUTDATATYPE)(*ls * *rs);
+					*res = *res + (LOCALOUTTYPE)(*ls * *rs);
 				}
 				res++;
 			}
@@ -80,14 +80,14 @@ int nrhs;
 	} else if(rhs_m == NULL) {
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
-				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopk]);
+				rs = (LOCALTYPE*)rhs + j;
+				ls = &(((LOCALTYPE*)lhs)[i * stopk]);
 				if( lhs_m->DATATYPEval == *ls) {
 					*res = LEFTMISSING;
 					res++;
 					continue;
 				} else {
-					*res = (OUTDATATYPE)(*ls++ * *rs);
+					*res = (LOCALOUTTYPE)(*ls++ * *rs);
 					rs += stopj;
 				}
 				for(k = 1; k < stopk; k++,ls++,rs+=stopj) {
@@ -95,7 +95,7 @@ int nrhs;
 						*res = LEFTMISSING;
 						break;
 					} else 	{
-						*res = *res + (OUTDATATYPE)(*ls * *rs);
+						*res = *res + (LOCALOUTTYPE)(*ls * *rs);
 					}
 				}
 				res++;
@@ -104,14 +104,14 @@ int nrhs;
 	} else if(lhs_m == NULL ) {
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
-				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopk]);
+				rs = (LOCALTYPE*)rhs + j;
+				ls = &(((LOCALTYPE*)lhs)[i * stopk]);
 				if( rhs_m->DATATYPEval == *rs) {
 					*res = RIGHTMISSING;
 					res++;
 					continue;
 				} else {
-					*res = (OUTDATATYPE)(*ls++ * *rs);
+					*res = (LOCALOUTTYPE)(*ls++ * *rs);
 					rs += stopj;
 				}
 				for(k = 1; k < stopk; k++,ls++,rs+=stopj) {
@@ -119,7 +119,7 @@ int nrhs;
 						*res = RIGHTMISSING;
 						break;
 					} else 	{
-						*res = *res + (OUTDATATYPE)(*ls * *rs);
+						*res = *res + (LOCALOUTTYPE)(*ls * *rs);
 					}
 				}
 				res++;
@@ -128,14 +128,14 @@ int nrhs;
 	} else {
 		for(i = 0; i < stopi; i++) {
 			for(j = 0; j < stopj; j++){
-				rs = (DATATYPE*)rhs + j;
-				ls = &(((DATATYPE*)lhs)[i * stopk]);
+				rs = (LOCALTYPE*)rhs + j;
+				ls = &(((LOCALTYPE*)lhs)[i * stopk]);
 				if((rhs_m->DATATYPEval == *rs)||( lhs_m->DATATYPEval == *ls)) {
 					*res = LEFTMISSING;
 					res++;
 					continue;
 				} else {
-					*res = (OUTDATATYPE)(*ls++ * *rs);
+					*res = (LOCALOUTTYPE)(*ls++ * *rs);
 					rs += stopj;
 				}
 				for(k = 1; k < stopk; k++,ls++,rs+=stopj) {
@@ -143,7 +143,7 @@ int nrhs;
 						*res = LEFTMISSING;
 						break;
 					} else 	{
-						*res = *res + (OUTDATATYPE)(*ls * *rs);
+						*res = *res + (LOCALOUTTYPE)(*ls * *rs);
 					}
 				}
 				res++;

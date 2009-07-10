@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypefloat.c.specific,v 1.8 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id: NclTypeulong.c.specific,v 1.2 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -12,24 +12,20 @@
 /*
  *	File:		
  *
- *	Author:		Ethan Alpert
+ *	Author:		Wei Huang
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Fri Jan 27 18:26:19 MST 1995
+ *	Date:		Fri Jan 27 18:26:41 MST 1995
  *
  *	Description:	
  */
 #include "NclTypelogical.h"
 #include "NclTypefloat.h"
+#include "NclTypeint.h"
+#include "NclTypelong.h"
 
-#ifdef NIO_LIB_ONLY
-#include "cmpf.h"
-#else
-#include <ncarg/hlu/hluutil.h>
-#endif
-
-static NhlErrorTypes Ncl_Type_float_print
+static NhlErrorTypes Ncl_Type_ulong_print
 #if     NhlNeedProto
 (FILE *fp, void * val)
 #else
@@ -38,15 +34,16 @@ FILE *fp;
 void *val;
 #endif
 {
-        float *fpt = (float*)val;
+        unsigned long *lp = (unsigned long*)val;
 	int ret;
 
-        ret = nclfprintf(fp,"%2.7g",*fpt);
+        ret = nclfprintf(fp,"%lu",*lp);
 	if(ret < 0) {
                 return(NhlWARNING);
         } else {
                 return(NhlNOERROR);
         }
+
 }
 
 
@@ -54,8 +51,7 @@ void *val;
 
 
 
-
-static NhlErrorTypes Ncl_Type_float_coerce
+static NhlErrorTypes Ncl_Type_ulong_coerce
 #if	NhlNeedProto
 (void * result, void* from, int n, NclScalar* from_m, NclScalar *to_m,NclTypeClass fc)
 #else
@@ -69,7 +65,7 @@ NclTypeClass fc;
 #endif
 {
 	int i;
-	float *res = (float*)result;
+	unsigned long *res = (unsigned long*)result;
 	logical tmp;
 	NclTypeOp eq;
 	NclScalar tmp_mis;
@@ -82,25 +78,25 @@ NclTypeClass fc;
         else
                 eq = fc->type_class.eq;
 
-	if(to_m == NULL) {
-		tmp_mis.floatval = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis.floatval;
-	} else if(to_m != NULL) {
-		tmp_mis.floatval = to_m->floatval;
+        if(to_m == NULL){  
+		tmp_mis.ulongval = ((NclTypeClass)nclTypeulongClass)->type_class.default_mis.ulongval;
+        } else {
+		tmp_mis.ulongval = to_m->ulongval;
 	}
 
 	switch(fc->type_class.type) {
-	case Ncl_Typefloat: {
-		float *fl = (float*)from;
+	case Ncl_Typelong: {
+		long *fl = (long*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (float)*fl;
+				*res = (unsigned long)*fl;
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = tmp_mis.floatval;
+					*res = tmp_mis.ulongval;
 				} else {
 					*res = *fl;
 				}
@@ -108,77 +104,20 @@ NclTypeClass fc;
 		}
 		return(NhlNOERROR);
 	}
-        case Ncl_Typeint64: {
-                long long *fl = (long long *)from;
-                if((from_m == NULL)||(to_m == NULL)) {
-                        for(i = 0; i < n;i++,res++,fl++)  {
-                                *res = (float)*fl;
-                        }
-                } else {
-                        for(i = 0; i < n;i++,res++,fl++)  {
-                                tmp = 0;
-                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-                                if(tmp) {
-                                        *res = tmp_mis.floatval;
-                                } else {
-                                        *res = (float)*fl;
-                                }
-                        }
-                }
-                return(NhlNOERROR);
-        }
-        case Ncl_Typeuint64: {
-                unsigned long long *fl = (unsigned long long *)from;
-                if((from_m == NULL)||(to_m == NULL)) {
-                        for(i = 0; i < n;i++,res++,fl++)  {
-                                *res = (float)*fl;
-                        }
-                } else {
-                        for(i = 0; i < n;i++,res++,fl++)  {
-                                tmp = 0;
-                                (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-                                if(tmp) {
-                                        *res = tmp_mis.floatval;
-                                } else {
-                                        *res = (float)*fl;
-                                }
-                        }
-                }
-                return(NhlNOERROR);
-        }
-	case Ncl_Typelong: {
-		long *fl = (long *)from;
-		if((from_m == NULL)||(to_m == NULL)) {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (float)*fl;
-			}
-		} else {
-			for(i = 0; i < n;i++,res++,fl++)  {
-				tmp = 0;
-				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
-				if(tmp) {
-					*res = tmp_mis.floatval;
-				} else {
-					*res = (float)*fl;
-				}
-			}
-		}
-		return(NhlNOERROR);
-	}
         case Ncl_Typeulong: {
-                unsigned long *fl = (unsigned long *)from;
+                unsigned long *fl = (unsigned long*)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
-                                *res = (float)*fl;
+                                *res = (unsigned long)*fl;
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 tmp = 0;
                                 (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
                                 if(tmp) {
-                                        *res = tmp_mis.floatval;
+                                        *res = tmp_mis.ulongval;
                                 } else {
-                                        *res = (float)*fl;
+                                        *res = *fl;
                                 }
                         }
                 }
@@ -188,16 +127,16 @@ NclTypeClass fc;
 		int *fl = (int*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (float)*fl;
+				*res = (unsigned long)*fl;
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = tmp_mis.floatval;
+					*res = tmp_mis.ulongval;
 				} else {
-					*res = (float)*fl;
+					*res = (unsigned long)*fl;
 				}
 			}
 		}
@@ -207,16 +146,16 @@ NclTypeClass fc;
                 unsigned int *fl = (unsigned int*)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
-                                *res = (float)*fl;
+                                *res = (unsigned long)*fl;
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 tmp = 0;
                                 (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
                                 if(tmp) {
-                                        *res = tmp_mis.floatval;
+                                        *res = tmp_mis.ulongval;
                                 } else {
-                                        *res = (float)*fl;
+                                        *res = (unsigned long)*fl;
                                 }
                         }
                 }
@@ -226,16 +165,16 @@ NclTypeClass fc;
 		short *fl = (short*)from;
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (float)*fl;
+				*res = (unsigned long)*fl;
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = tmp_mis.floatval;
+					*res = tmp_mis.ulongval;
 				} else {
-					*res = (float)*fl;
+					*res = (unsigned long)*fl;
 				}
 			}
 		}
@@ -245,16 +184,16 @@ NclTypeClass fc;
                 unsigned short *fl = (unsigned short*)from;
                 if((from_m == NULL)||(to_m == NULL)) {
                         for(i = 0; i < n;i++,res++,fl++)  {
-                                *res = (float)*fl;
+                                *res = (unsigned long)*fl;
                         }
                 } else {
                         for(i = 0; i < n;i++,res++,fl++)  {
                                 tmp = 0;
                                 (*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
                                 if(tmp) {
-                                        *res = tmp_mis.floatval;
+                                        *res = tmp_mis.ulongval;
                                 } else {
-                                        *res = (float)*fl;
+                                        *res = (unsigned long)*fl;
                                 }
                         }
                 }
@@ -262,18 +201,19 @@ NclTypeClass fc;
         }
 	case Ncl_Typebyte: {
 		byte *fl = (byte*)from;
+
 		if((from_m == NULL)||(to_m == NULL)) {
 			for(i = 0; i < n;i++,res++,fl++)  {
-				*res = (float)*fl;
+				*res = (unsigned long)*fl;
 			}
 		} else {
 			for(i = 0; i < n;i++,res++,fl++)  {
 				tmp = 0;
 				(*eq)((void*)&tmp,(void*)fl,(void*)from_m,NULL,NULL,1,1);
 				if(tmp) {
-					*res = tmp_mis.floatval;
+					*res = tmp_mis.ulongval;
 				} else {
-					*res = (float)*fl;
+					*res = (unsigned long)*fl;
 				}
 			}
 		}
@@ -283,9 +223,7 @@ NclTypeClass fc;
 		return(NhlFATAL);
 	}
 }
-
-
-static NhlErrorTypes Ncl_Type_float_cmpf
+static NhlErrorTypes Ncl_Type_ulong_cmpf
 #if     NhlNeedProto
 (void *lhs, void* rhs, NclScalar* lhs_m, NclScalar *rhs_m,int digits, double* result)
 #else
@@ -295,16 +233,18 @@ void* rhs;
 NclScalar* lhs_m;
 NclScalar *rhs_m;
 int digits;
-double* result;
+double * result;
 #endif
 {
-	if((lhs_m != NULL)&&(lhs_m->intval == *(int*)lhs)) {
+        
+        if((lhs_m != NULL)&&(lhs_m->ulongval == *(unsigned long*)lhs)) {
                 return(NhlFATAL);
-        } else if((rhs_m != NULL)&&(rhs_m->intval == *(int*)rhs)) {
+        } else if((rhs_m != NULL)&&(rhs_m->ulongval == *(unsigned long*)rhs)) {
                 return(NhlFATAL);
         } else {
-		*result = (double)_NhlCmpFAny(*(float*)lhs,*(float*)rhs,7);
-	}
-	return(NhlFATAL);
+                *result = (double)(*(unsigned long*)lhs-*(unsigned long*)rhs);
+                return(NhlNOERROR);
+        }
+        
 }
 

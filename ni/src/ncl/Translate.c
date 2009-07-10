@@ -1040,6 +1040,16 @@ if(groot != NULL) {
 
 			off1 = _NclPutInstr(PUSH_INT_LIT_OP,integer->line,integer->file);
 			switch (integer->int_type) {
+			case 'b':
+				tmp_val = NclMalloc(sizeof(short));
+				*(byte*)tmp_val = (byte) integer->integer;
+				tclass = (NclTypeClass) nclTypebyteClass;
+				break;
+			case 'h':
+				tmp_val = NclMalloc(sizeof(short));
+				*(short*)tmp_val = (short) integer->integer;
+				tclass = (NclTypeClass) nclTypeshortClass;
+				break;
 			case 'i':
 				tmp_val = NclMalloc(sizeof(int));
 				*(int*)tmp_val = (int) integer->integer;
@@ -1050,15 +1060,35 @@ if(groot != NULL) {
 				*(long*)tmp_val = (long) integer->integer;
 				tclass = (NclTypeClass) nclTypelongClass;
 				break;
-			case 'h':
-				tmp_val = NclMalloc(sizeof(short));
-				*(short*)tmp_val = (short) integer->integer;
-				tclass = (NclTypeClass) nclTypeshortClass;
+			case 'q':
+				tmp_val = NclMalloc(sizeof(long long));
+				*(long long*)tmp_val = integer->integer;
+				tclass = (NclTypeClass) nclTypeint64Class;
 				break;
-			case 'b':
-				tmp_val = NclMalloc(sizeof(short));
-				*(byte*)tmp_val = (byte) integer->integer;
+			case 'B':
+				tmp_val = NclMalloc(sizeof(char));
+				*(char*)tmp_val = (char) integer->integer;
 				tclass = (NclTypeClass) nclTypebyteClass;
+				break;
+			case 'H':
+				tmp_val = NclMalloc(sizeof(unsigned short));
+				*(unsigned short*)tmp_val = (unsigned short) integer->integer;
+				tclass = (NclTypeClass) nclTypeushortClass;
+				break;
+			case 'I':
+				tmp_val = NclMalloc(sizeof(unsigned int));
+				*(unsigned int*)tmp_val = (unsigned int) integer->integer;
+				tclass = (NclTypeClass) nclTypeuintClass;
+				break;
+			case 'L':
+				tmp_val = NclMalloc(sizeof(unsigned long));
+				*(unsigned long*)tmp_val = (unsigned long) integer->integer;
+				tclass = (NclTypeClass) nclTypeulongClass;
+				break;
+			case 'Q':
+				tmp_val = NclMalloc(sizeof(unsigned long long));
+				*(unsigned long long*)tmp_val = (unsigned long long)integer->integer;
+				tclass = (NclTypeClass) nclTypeuint64Class;
 				break;
 			}
 

@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeIsMonoFunc.c.sed,v 1.2 1997-01-16 19:44:16 ethan Exp $
+ *      $Id: TypeIsMonoFunc.c.sed,v 1.3 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ NclScalar* val_m;
 int nval;
 #endif
 {
-	DATATYPE *value = (DATATYPE*)val;
+	LOCALTYPE *value = (LOCALTYPE*)val;
 	int i = 0,j = 1;
 
 	if(nval == 1) 

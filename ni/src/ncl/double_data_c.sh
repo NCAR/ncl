@@ -9,6 +9,7 @@ fi
 
 sed \
 -e 's/DATATYPE/double/g' \
+-e 's/LOCALTYPE/double/g' \
 -e 's/HLUTYPEREP/NhlTDouble/g' \
 -e 's/HLUGENTYPEREP/NhlTDoubleGenArray/g' \
 -e 's/DEFAULT_MISS/-9999.0/g' \

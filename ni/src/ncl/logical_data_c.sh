@@ -11,6 +11,7 @@ sed \
 -e 's/PRINTFORMAT/\%d\\n/' \
 -e '/PRINTFORMAT/d' \
 -e 's/DATATYPE/logical/g' \
+-e 's/LOCALTYPE/logical/g' \
 -e 's/HLUTYPEREP/NhlTBoolean/g' \
 -e 's/HLUGENTYPEREP/NhlTBooleanGenArray/g' \
 -e 's/DEFAULT_MISS/-1/g' \

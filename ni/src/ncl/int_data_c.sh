@@ -10,6 +10,7 @@ fi
 sed \
 -e 's/PRINTFORMAT/\%d\\n/' \
 -e 's/DATATYPE/int/g' \
+-e 's/LOCALTYPE/int/g' \
 -e 's/HLUTYPEREP/NhlTInteger/g' \
 -e 's/HLUGENTYPEREP/NhlTIntegerGenArray/g' \
 -e 's/DEFAULT_MISS/-9999/g' \

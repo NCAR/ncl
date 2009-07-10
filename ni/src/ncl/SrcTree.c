@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.44 2009-02-05 03:42:32 dbrown Exp $
+ *      $Id: SrcTree.c,v 1.45 2009-07-10 19:54:05 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -1794,8 +1794,7 @@ char* string_rep;
 	tmp->len = -1;
 	tmp->int_type = 'i';
 	if (string_rep != NULL) { 
-		/* char *type = strpbrk(string_rep,"bBhHiIlLqQ"); -- eventually */
-		char *type = strpbrk(string_rep,"iblh");
+		char *type = strpbrk(string_rep,"bBhHiIlLqQ");
 		if (type) {
 			tmp->int_type = *type;
 			tmp->len = strlen(string_rep) - 1;
@@ -2177,11 +2176,23 @@ void _NclPrintSymbol
 	case INTEGER:
 		fprintf(fp,"%s\t","INTEGER");
 		break;
+	case UINT:
+		fprintf(fp,"%s\t","UINT");
+		break;
 	case FLOAT:
 		fprintf(fp,"%s\t","FLOAT");
 		break;
 	case LONG:
 		fprintf(fp,"%s\t","LONG");
+		break;
+	case ULONG:
+		fprintf(fp,"%s\t","ULONG");
+		break;
+	case INT64:
+		fprintf(fp,"%s\t","INT64");
+		break;
+	case UINT64:
+		fprintf(fp,"%s\t","UINT64");
 		break;
 	case DOUBLE:
 		fprintf(fp,"%s\t","DOUBLE");
@@ -2200,6 +2211,9 @@ void _NclPrintSymbol
 		break;
 	case SHORT:
 		fprintf(fp,"%s\t","SHORT");
+		break;
+	case USHORT:
+		fprintf(fp,"%s\t","USHORT");
 		break;
 	case UNDEF:
 		fprintf(fp,"%s\t","UNDEF");
@@ -3734,7 +3748,7 @@ void *missing_expr;
 #endif
 {
 	NclNew *tmp= (NclNew*)NclMalloc((unsigned)sizeof(NclNew));
-	
+
 	if(tmp == NULL) {
 		NhlPError(NhlFATAL,errno,"Not enough memory for source tree construction");
 		return(NULL);

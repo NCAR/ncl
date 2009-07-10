@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncl_filedump,v 1.15 2009-05-29 01:39:15 haley Exp $
+#   $Id: ncl_filedump,v 1.16 2009-07-10 19:54:06 huangwei Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -189,7 +189,7 @@ endif
 # Make sure the file has an appropriate suffix so that NCL knows
 # what kind of file it is.
 #
-set valid_suffixes = ("nc" "cdf" "netcdf" "gr" "gr1" "grb" "grb1" "grib" "grib1" "gr2" "grb2" "grib2" "hdf" "h4" "hdfeos" "he2" "he4" "ccm" "shp" "mif" "gmt" "rt1" "rt2" "rt3" "rt4" "rt5" "rt6" "rt7" "rt8" "rt9" "rta" "rtb" "rtc" "rte" "rth" "rti" "rtm" "rtp" "rtr" "rts" "rtt" "rtu" "rtz")
+set valid_suffixes = ("nc" "cdf" "netcdf" "gr" "gr1" "grb" "grb1" "grib" "grib1" "gr2" "grb2" "grib2" "hdf" "h4" "hdfeos" "he2" "he4" "h5" "hdfeos5" "he5" "ccm" "shp" "mif" "gmt" "rt1" "rt2" "rt3" "rt4" "rt5" "rt6" "rt7" "rt8" "rt9" "rta" "rtb" "rtc" "rte" "rth" "rti" "rtm" "rtp" "rtr" "rts" "rtt" "rtu" "rtz")
 set no_suffix
 set psfx = "$file:e"
 set suffix = `echo $psfx | tr '[A-Z]' '[a-z]'`
@@ -269,6 +269,14 @@ switch ($suffix)
     case he2:
     case he4:
         set ftype = "HDFEOS"
+        breaksw
+
+    case he5:
+        set ftype = "HDFEOS5"
+        breaksw
+
+    case hdfeos5:
+        set ftype = "HDFEOS5"
         breaksw
 
     case ccm:
@@ -445,6 +453,7 @@ cat << 'EOF_NCL' >! $tmp_nclfile
             print(" ")
 
             do n = 0, nvars - 1
+                print("Variable No. " + n)
                 if (isfilevar(f, vars(n))) then
                     if ((getfilevartypes(f, vars(n))) .eq. "string") then
                         print(f->$vars(n)$)

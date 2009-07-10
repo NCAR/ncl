@@ -1,6 +1,6 @@
 
 /*
- *      $Id: TypeMonoOpTemplate.c.sed,v 1.2 1996-05-02 23:30:59 ethan Exp $
+ *      $Id: TypeMonoOpTemplate.c.sed,v 1.3 2009-07-10 19:54:06 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -35,16 +35,16 @@ int nlhs;
 int nrhs;
 #endif
 {
-        DATATYPE *ls,*rs;
-	OUTDATATYPE *res;
+        LOCALTYPE *ls,*rs;
+	LOCALOUTTYPE *res;
 	int stopi = 1;
 	int linc = 0;
 	int rinc = 0;
 	int i;
 	
 	rs = NULL;
-	ls = (DATATYPE*)lhs;
-	res = (OUTDATATYPE*)result;	
+	ls = (LOCALTYPE*)lhs;
+	res = (LOCALOUTTYPE*)result;	
 
 	if(nlhs > nrhs) 
 		stopi = nlhs;
@@ -60,11 +60,11 @@ int nrhs;
 
 	if((lhs_m == NULL)&&(rhs_m == NULL)) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(THEOP *ls);
+			*res = (LOCALOUTTYPE)(THEOP *ls);
 		}
 	} else {
 		for(i = 0; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (OUTDATATYPE)(( lhs_m->DATATYPEval == *ls) ? ( OUTMISSING ) : (THEOP *ls));
+			*res = (LOCALOUTTYPE)(( lhs_m->DATATYPEval == *ls) ? ( OUTMISSING ) : (THEOP *ls));
 		}
 	} 
 	return(NhlNOERROR);

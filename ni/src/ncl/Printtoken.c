@@ -99,11 +99,23 @@ void printtoken
 		case INTEGER:
 			fprintf(stdout,"INTEGER\n");
 			break;
+		case UINT:
+			fprintf(stdout,"UINT\n");
+			break;
 		case FLOAT:
 			fprintf(stdout,"FLOAT\n");
 			break;
 		case LONG:
 			fprintf(stdout,"LONG\n");
+			break;
+		case ULONG:
+			fprintf(stdout,"ULONG\n");
+			break;
+		case INT64:
+			fprintf(stdout,"INT64\n");
+			break;
+		case UINT64:
+			fprintf(stdout,"UINT64\n");
 			break;
 		case DOUBLE:
 			fprintf(stdout,"DOUBLE\n");
@@ -122,6 +134,9 @@ void printtoken
 			break;
 		case SHORT:
 			fprintf(stdout,"SHORT\n");
+			break;
+		case USHORT:
+			fprintf(stdout,"USHORT\n");
 			break;
 		case UNDEF:
 			fprintf(stdout,"UNDEF\n");

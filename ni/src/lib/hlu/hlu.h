@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.39 2003-04-04 18:34:08 dbrown Exp $
+ *      $Id: hlu.h,v 1.40 2009-07-10 19:54:04 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -85,6 +85,11 @@
 #define NhlTShort	"Short"
 #define NhlTInteger	"Integer"
 #define NhlTLong	"Long"
+#define NhlTInt64	"Int64"
+#define NhlTUshort	"Ushort"
+#define NhlTUint	"Uint"
+#define NhlTUlong	"Ulong"
+#define NhlTUint64	"Uint64"
 
 /* public real types supported */
 #define NhlTFloat	"Float"
@@ -111,6 +116,11 @@
 #define NhlTShortGenArray	"ShortGenArray"
 #define NhlTIntegerGenArray	"IntegerGenArray"
 #define NhlTLongGenArray	"LongGenArray"
+#define NhlTInt64GenArray	"Int64GenArray"
+#define NhlTUshortGenArray	"UshortGenArray"
+#define NhlTUintGenArray	"UintGenArray"
+#define NhlTUlongGenArray	"UlongGenArray"
+#define NhlTUint64GenArray	"Uint64GenArray"
 
 #define NhlTFloatGenArray	"FloatGenArray"
 #define NhlTDoubleGenArray	"DoubleGenArray"
@@ -155,7 +165,11 @@ union _NhlType_ {
 	float		fltval;
 	NhlString	strval;
 	double		dblval;
-	unsigned long	ulngval;/* no converter support */
+	long long	int64val;
+	unsigned short	        ushortval;
+	unsigned int		uintval;
+	unsigned long		ulongval;
+	unsigned long long	uint64val;
 };
 
 typedef	union _NhlType_	NhlArgVal;
