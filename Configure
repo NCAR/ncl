@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.50 2009-05-21 04:50:57 haley Exp $
+#      $Id: Configure,v 1.51 2009-07-14 17:21:00 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2009-05-21 04:50:57 $
+#	$Date: 2009-07-14 17:21:00 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -158,6 +158,9 @@ echo -n "..."
 set buildudunits=`$makecmd UDUNITSSTUFF`
 echo -n "..."
 set buildhdfeos=`$makecmd HDFEOSSTUFF`
+echo -n "..."
+echo -n "..."
+set buildhdfeos5=`$makecmd HDFEOS5STUFF`
 echo -n "..."
 set buildgrib2=`$makecmd GRIB2STUFF`
 echo -n "..."
@@ -521,7 +524,7 @@ if (("$buildhdf" == "y") || ("$buildhdf" == "Y")) then
 endif
 
 #
-# Only ask about NetCDF- UDUNITS, HDFEOS, Triangle, Vis5d+, and
+# Only ask about NetCDF- UDUNITS, HDFEOS, HDFEOS5, Triangle, Vis5d+, and
 # other external software support if we are actually planning to
 # build NCL.
 #
@@ -697,8 +700,7 @@ endif
 	The hdfeos library supports the HDF-EOS data format, and NCL
 	has some capability to read these files in. In order to have
 	this functionality, you must have the HDFEOS libraries
-	installed on your system.  A password may have to be obtained
-        to download this software. THIS LIBRARY IS NOT NEEDED FOR
+	installed on your system.  THIS LIBRARY IS NOT NEEDED FOR
 	BUILDING NCAR GRAPHICS.
 
 ======================================================================
@@ -715,6 +717,36 @@ endif
   if (("$answer" != "") && ("$answer" != "$buildhdfeos")) then
   	set buildhdfeos = $answer
   	set newbuildhdfeos
+        set altered
+  endif
+
+#
+# HDFEOS5
+#
+  if ($?verbose_option) then
+    cat <<"EOF"
+======================================================================
+
+	The hdfeos5 library supports the HDF-EOS5 data format, and NCL
+	has some capability to read these files in. In order to have
+	this functionality, you must have the HDFEOS5 library
+	installed on your system. THIS LIBRARY IS NOT NEEDED FOR
+	BUILDING NCAR GRAPHICS.
+
+======================================================================
+"EOF"
+  endif
+
+  echo ""
+  echo "Build HDFEOS5 support (optional) into NCL ($buildhdfeos)"
+  echo "(Requires the external HDFEOS5 library available from"
+  echo "ftp://edhs1.gsfc.nasa.gov/pub) "
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildhdfeos5")) then
+  	set buildhdfeos5 = $answer
+  	set newbuildhdfeos5
         set altered
   endif
 
@@ -789,6 +821,7 @@ endif
 
 else
   set buildhdfeos  = "n"
+  set buildhdfeos5 = "n"
   set buildnetcdf4 = "n"
   set buildtriangle = "n"
   set buildudunits = "n"
@@ -796,6 +829,7 @@ else
   set buildv5d = "n"
   set builddods = "n"
   set newbuildhdfeos
+  set newbuildhdfeos5
   set newbuildnetcdf4
   set newbuildtriangle
   set newbuildudunits
@@ -1157,6 +1191,15 @@ if ($?newbuildhdfeos) then
 	else
 		echo "#define BuildHDFEOS 0" >> Site.local
 		echo "#define HDFEOSlib" >> Site.local
+	endif
+endif
+
+if ($?newbuildhdfeos5) then
+	if ("$buildhdfeos5" == "y") then
+		echo "#define BuildHDFEOS5 1" >> Site.local
+	else
+		echo "#define BuildHDFEOS5 0" >> Site.local
+		echo "#define HDFEOS5lib" >> Site.local
 	endif
 endif
 
