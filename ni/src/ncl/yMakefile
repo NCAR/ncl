@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.162 2009-07-14 17:23:51 haley Exp $
+#      $Id: yMakefile,v 1.163 2009-07-15 21:57:51 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-07-14 17:23:51 $
+#	Date:		$Date: 2009-07-15 21:57:51 $
 #
 #	Description:	
 #
@@ -273,7 +273,8 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		multid_data_c.sh ncepcode.f nclfile_data_c.sh		\
 		obj_data_c.sh op_funcs.sh qu2reg3.f rowina3.f scm0.f	\
 		short_data_c.sh string_data_c.sh type_support_c.sh	\
-		type_support_h.sh
+		type_support_h.sh ushort_data_c.sh ulong_data_c.sh      \
+		uint_data_c.sh uint64_data_c.sh int64_data_c.sh
 
 PYNIO_SRC_DIR   =	$(TOP)/pynio
 NIO_SRC_DIR 	=	$(TOP)/ni/src/lib/nio
