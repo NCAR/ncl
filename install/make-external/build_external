@@ -26,6 +26,13 @@
 #   HDF4.2r4               NCL:   required
 #                          NCARG: optional 
 # 
+#   expat-2.0.1            NCL/NCARG: optional (needed for cairo support)
+#   freetype-2.3.9         NCL/NCARG: optional (needed for cairo support)
+#   fontconfig-2.6.0       NCL/NCARG: optional (needed for cairo support)
+#   pixman-0.15.2          NCL/NCARG: optional (needed for cairo support)
+#   pkg-config-0.23        NCL/NCARG: optional (needed for cairo support)
+#   cairo-1.8.6            NCL/NCARG: optional (needed for cairo support)
+#
 # NCL only:
 #   hdf5-1.8.2             Required if you want classic NetCDF-4 support
 #   szip-2.1               Required if you want classic NetCDF-4 support
@@ -76,7 +83,13 @@ INSTALL_PROJ4=1
 INSTALL_GDAL=1
 INSTALL_G2CLIB=1
 INSTALL_UDUNITS=1
-#INSTALL_VIS5DPLUS=1
+INSTALL_VIS5DPLUS=1
+INSTALL_EXPAT=1
+INSTALL_FREETYPE=1
+INSTALL_FONTCONFIG=1
+INSTALL_PIXMAN=1
+INSTALL_PKGCONFIG=1
+INSTALL_CAIRO=1
 
 # HDF-EOS cannot be built by this script. It requires running
 # an interactive script, "bin/INSTALL-HDFEOS".  You can't use
@@ -132,6 +145,12 @@ SZIP_DIR="szip-2.1"
 UDUNITS_DIR="udunits-1.12.9"
 VIS5DPLUS_DIR="vis5d+-1.3.0"
 ZLIB_DIR="zlib-1.2.3"
+EXPAT_DIR="expat-2.0.1"
+FREETYPE_DIR="freetype-2.3.9"
+FONTCONFIG_DIR="fontconfig-2.6.0"
+PIXMAN_DIR="pixman-0.15.2"
+PKGCONFIG_DIR="pkg-config-0.23"
+CAIRO_DIR="cairo-1.8.6"
 
 # HDF-EOS cannot be built by this script. It requires running
 # an interactive script, "bin/INSTALL-HDFEOS".
@@ -140,7 +159,6 @@ ZLIB_DIR="zlib-1.2.3"
 # Also, on LINUX systems, you will need to do one of :
 # export LINUX_BRAND linux32
 # export LINUX_BRAND linux64
-
 
 #
 # The following section should not need any modification by 
@@ -577,5 +595,181 @@ if [ $INSTALL_VIS5DPLUS ]
   fi
 else
   echo "Not building VIS5DPLUS..."
+fi
+
+#--------------------------------------------------------------------
+# Expat
+#--------------------------------------------------------------------
+if [ $INSTALL_EXPAT ]
+  then
+  if [ -d "$EXPAT_DIR" ]
+  then
+    cd $EXPAT_DIR
+    echo "Building $EXPAT_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$EXPAT_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$EXPAT_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $EXPAT_DIR doesn't exist"
+  fi
+else
+  echo "Not building expat..."
+fi
+
+#--------------------------------------------------------------------
+# FreeType
+#--------------------------------------------------------------------
+if [ $INSTALL_FREETYPE ]
+  then
+  if [ -d "$FREETYPE_DIR" ]
+  then
+    cd $FREETYPE_DIR
+    echo "Building $FREETYPE_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$FREETYPE_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$FREETYPE_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $FREETYPE_DIR doesn't exist"
+  fi
+else
+  echo "Not building FreeType..."
+fi
+
+
+#--------------------------------------------------------------------
+# fontconfig
+#--------------------------------------------------------------------
+if [ $INSTALL_FONTCONFIG ]
+  then
+  if [ -d "$FONTCONFIG_DIR" ]
+  then
+    cd $FONTCONFIG_DIR
+    echo "Building $FONTCONFIG_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$FONTCONFIG_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$FONTCONFIG_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $FONTCONFIG_DIR doesn't exist"
+  fi
+else
+  echo "Not building fontconfig..."
+fi
+
+#--------------------------------------------------------------------
+# pixman
+#--------------------------------------------------------------------
+if [ $INSTALL_PIXMAN ]
+  then
+  if [ -d "$PIXMAN_DIR" ]
+  then
+    cd $PIXMAN_DIR
+    echo "Building $PIXMAN_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$PIXMAN_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$PIXMAN_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $PIXMAN_DIR doesn't exist"
+  fi
+else
+  echo "Not building pixman..."
+fi
+
+#--------------------------------------------------------------------
+# pkg-config
+#--------------------------------------------------------------------
+if [ $INSTALL_PKGCONFIG ]
+  then
+  if [ -d "$PKGCONFIG_DIR" ]
+  then
+    cd $PKGCONFIG_DIR
+    echo "Building $PKGCONFIG_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$PKGCONFIG_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$PKGCONFIG_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $PKGCONFIG_DIR doesn't exist"
+  fi
+else
+  echo "Not building pkgconfig..."
+fi
+
+#--------------------------------------------------------------------
+# cairo
+#--------------------------------------------------------------------
+if [ $INSTALL_CAIRO ]
+  then
+  export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+  if [ -d "$CAIRO_DIR" ]
+  then
+    cd $CAIRO_DIR
+    echo "Building $CAIRO_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$CAIRO_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$CAIRO_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $CAIRO_DIR doesn't exist"
+  fi
+else
+  echo "Not building cairo..."
 fi
 
