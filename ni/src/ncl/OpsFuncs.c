@@ -388,12 +388,12 @@ NhlErrorTypes _NclBuildArray
 		_NclCleanUpStack(n_items);
 		return(NhlFATAL);
 	}
-	if(obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical)) {
+	if(obj_type & (NCL_SNUMERIC_TYPE_MASK | Ncl_Typelogical)) {
 		must_be_numeric =1;
-		result_type = (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | (int)Ncl_Typelogical));
-	} else if(obj_type & NCL_VAL_CHARSTR_MASK) {
+		result_type = (NclObjTypes)((int)obj_type & (NCL_SNUMERIC_TYPE_MASK | (int)Ncl_Typelogical));
+	} else if(obj_type & NCL_CHARSTR_TYPE_MASK) {
 		must_be_numeric =0;
-		result_type = (NclObjTypes)((int)obj_type & NCL_VAL_CHARSTR_MASK);
+		result_type = (NclObjTypes)((int)obj_type & NCL_CHARSTR_TYPE_MASK);
 	} else if(obj_type & Ncl_Typeobj) {
 		must_be_numeric =-1;
 		result_type = Ncl_Typeobj;
@@ -446,17 +446,17 @@ NhlErrorTypes _NclBuildArray
 			return(NhlFATAL);
 		}
 		if((must_be_numeric==1)&&
-			( obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
+			( obj_type & (NCL_SNUMERIC_TYPE_MASK | Ncl_Typelogical))) {
 			if ((result_type & Ncl_Typelogical) || (obj_type & Ncl_Typelogical)) {
 				result_type = Ncl_Typelogical;
 			}
-			else if (result_type > (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
-				result_type = (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | (int)Ncl_Typelogical));
+			else if (result_type > (NclObjTypes)((int)obj_type & (NCL_SNUMERIC_TYPE_MASK | Ncl_Typelogical))) {
+				result_type = (NclObjTypes)((int)obj_type & (NCL_SNUMERIC_TYPE_MASK | (int)Ncl_Typelogical));
 			}
 		} else if((must_be_numeric == 0)&&
-			(obj_type & NCL_VAL_CHARSTR_MASK)) {
-			if(result_type > (obj_type & NCL_VAL_CHARSTR_MASK)) {
-				result_type = (NclObjTypes)((int)obj_type & NCL_VAL_CHARSTR_MASK);
+			(obj_type & NCL_CHARSTR_TYPE_MASK)) {
+			if(result_type > (obj_type & NCL_CHARSTR_TYPE_MASK)) {
+				result_type = (NclObjTypes)((int)obj_type & NCL_CHARSTR_TYPE_MASK);
 			}
 		} else if((must_be_numeric == -1)&&
 			(obj_type & Ncl_Typeobj )) {
@@ -865,12 +865,12 @@ NhlErrorTypes _NclBuildConcatArray
 		_NclCleanUpStack(n_items);
 		return(NhlFATAL);
 	}
-	if(obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical)) {
+	if(obj_type & (NCL_SNUMERIC_TYPE_MASK | Ncl_Typelogical)) {
 		must_be_numeric =1;
-		result_type = (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | (int)Ncl_Typelogical));
-	} else if(obj_type & NCL_VAL_CHARSTR_MASK) {
+		result_type = (NclObjTypes)((int)obj_type & (NCL_SNUMERIC_TYPE_MASK | (int)Ncl_Typelogical));
+	} else if(obj_type & NCL_CHARSTR_TYPE_MASK) {
 		must_be_numeric =0;
-		result_type = (NclObjTypes)((int)obj_type & NCL_VAL_CHARSTR_MASK);
+		result_type = (NclObjTypes)((int)obj_type & NCL_CHARSTR_TYPE_MASK);
 	} else if(obj_type & Ncl_Typeobj) {
 		must_be_numeric =-1;
 		result_type = Ncl_Typeobj;
@@ -925,14 +925,14 @@ NhlErrorTypes _NclBuildConcatArray
 			return(NhlFATAL);
 		}
 		if((must_be_numeric==1)&&
-			( obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
-			if(result_type > (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | Ncl_Typelogical))) {
-				result_type = (NclObjTypes)((int)obj_type & (NCL_VAL_NUMERIC_MASK | (int)Ncl_Typelogical));
+			( obj_type & (NCL_SNUMERIC_TYPE_MASK | Ncl_Typelogical))) {
+			if(result_type > (NclObjTypes)((int)obj_type & (NCL_SNUMERIC_TYPE_MASK | Ncl_Typelogical))) {
+				result_type = (NclObjTypes)((int)obj_type & (NCL_SNUMERIC_TYPE_MASK | (int)Ncl_Typelogical));
 			}
 		} else if((must_be_numeric == 0)&&
-			(obj_type & NCL_VAL_CHARSTR_MASK)) {
-			if(result_type > (obj_type & NCL_VAL_CHARSTR_MASK)) {
-				result_type = (NclObjTypes)((int)obj_type & NCL_VAL_CHARSTR_MASK);
+			(obj_type & NCL_CHARSTR_TYPE_MASK)) {
+			if(result_type > (obj_type & NCL_CHARSTR_TYPE_MASK)) {
+				result_type = (NclObjTypes)((int)obj_type & NCL_CHARSTR_TYPE_MASK);
 			}
 		} else if((must_be_numeric == -1)&&
 			(obj_type & Ncl_Typeobj )) {
@@ -1945,7 +1945,7 @@ NclStackEntry missing_expr;
 	NclStackEntry data;
 	NclBasicDataTypes the_type;
 /*
-	unsigned int allowed_types = (NCL_VAL_NUMERIC_MASK | NCL_VAL_CHARSTR_MASK | NCL_HLU_MASK);
+	unsigned int allowed_types = (NCL_SNUMERIC_TYPE_MASK | NCL_CHARSTR_TYPE_MASK | NCL_HLU_MASK);
 */
 	NclScalar missing_val;
 	NclMultiDValData missing_md,tmp_md,size_md,tmp1_md;
@@ -1964,8 +1964,11 @@ NclStackEntry missing_expr;
 	the_type = _NclKeywordToDataType(data_type);
 	the_obj_type = _NclKeywordToObjType(data_type);
 	typec = (NclTypeClass)_NclTypeEnumToTypeClass(the_obj_type);
-	if(the_obj_type == NCL_VAL_NUMERIC_MASK) {
+	if(the_obj_type == NCL_NUMERIC_TYPE_MASK) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Keyword numeric is too general, can't determine the size of data");
+		return(NhlFATAL);
+	} else if(the_obj_type == NCL_SNUMERIC_TYPE_MASK) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Keyword snumeric is too general, can't determine the size of data");
 		return(NhlFATAL);
 	} else if(the_obj_type == Ncl_Var) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"New: Can not make arrays of vars without values and variable names");

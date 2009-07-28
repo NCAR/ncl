@@ -1,6 +1,6 @@
 
 /*
- *      $Id: SrcTree.c,v 1.45 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id: SrcTree.c,v 1.46 2009-07-28 16:29:41 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -2205,6 +2205,12 @@ void _NclPrintSymbol
 		break;
 	case NUMERIC:
 		fprintf(fp,"%s\t","NUMERIC");
+		break;
+	case ENUMERIC:
+		fprintf(fp,"%s\t","ENUMERIC");
+		break;
+	case SNUMERIC:
+		fprintf(fp,"%s\t","SNUMERIC");
 		break;
 	case FILETYPE:
 		fprintf(fp,"%s\t","FILETYPE");

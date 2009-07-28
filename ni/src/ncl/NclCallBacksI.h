@@ -1,34 +1,17 @@
+#include "NclDataDefs.h"
 
 #define NclAPICREATED 01
 #define NclAPIDESTROYED 02
 #define NclAPIMODIFIED 04
 
 typedef enum  {
-NCLNone =                      00,
-NCLObj = 			01,
-/* NCLData = 			02, */
-/* NCLMultiDValData = 		04, */
-/* NCLTypedouble =		010, */
-/* NCLTypefloat = 	  	020, */
-/* NCLTypelong = 	  		040, */
-/* NCLTypeint = 		 	0100, */
-/* NCLTypeshort = 	 	0200, */
-/* NCLTypebyte = 	 		0400, */
-/* NCLTypestring = 		01000, */
-/* NCLTypechar= 			02000, */
-/* NCLTypeobj= 			04000, */
-NCLVar = 			010000,
-/* NCLAtt = 			020000, */
-/* NCLTypelogical =    		040000, */
-NCLHLUObj = 			0100000,
-NCLFile = 			0200000,
-NCLFileVar = 			0400000,
-NCLHLUVar = 			01000000
-/* NCLCoordVar = 			02000000, */
-/* NCLType = 			04000000, */
-/* NCLMultiDValnclfileData =	010000000, */
-/* NCLMultiDValHLUObjData = 	020000000, */
-/* NCLOneDValCoordData = 		040000000 */
+NCLNone    = Ncl_None,
+NCLObj     = Ncl_Obj,
+NCLVar     = Ncl_Var,
+NCLHLUObj  = Ncl_HLUObj,
+NCLFile    = Ncl_File,
+NCLFileVar = Ncl_FileVar,
+NCLHLUVar  = Ncl_HLUVar
 } NclApiObjTypes;
 
 typedef enum { NclAPINORMAL, NclAPIVARSUBSEL , NclAPICOORD, NclAPICOORDSUBSEL, NclAPIFILEVAR, NclAPIFILEVARSUBSEL,NclAPIPARAM,NclAPIRETURNVAR,NclAPIHLUOBJ,NclAPIFUNCNORMAL } NclApiVarTypes;

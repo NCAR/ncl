@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.139 2009-06-30 22:33:53 dbrown Exp $
+ *      $Id: Execute.c,v 1.140 2009-07-28 16:29:40 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -2550,7 +2550,7 @@ void CallLOOP_VALIDATE_OP(void) {
 						if(tmp_md->multidval.kind != SCALAR) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop strides must be scalar, can't execute loop");
 							estatus = NhlFATAL;
-						} else if(tmp_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK) {
+						} else if(tmp_md->multidval.type->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
 							tmp2_md = _NclCoerceData(tmp_md,Ncl_Typedouble,NULL);
 							_Nclle(tmp2_md->multidval.type,&result,tmp2_md->multidval.val,&zero,NULL,NULL,1,1);
 							if(result) {
@@ -2567,14 +2567,14 @@ void CallLOOP_VALIDATE_OP(void) {
 						if(end_md->multidval.kind != SCALAR) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be scalar, can't execute loop");
 							estatus = NhlFATAL;
-						} else if(!(end_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
+						} else if(!(end_md->multidval.type->type_class.type & NCL_SNUMERIC_TYPE_MASK)) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop end must be numeric value, can't execute loop");
 							estatus = NhlFATAL;
 						}
 						if(inc_md->multidval.kind != SCALAR) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be scalar, can't execute loop");
 							estatus = NhlFATAL;
-						} else if(!(inc_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK)) {
+						} else if(!(inc_md->multidval.type->type_class.type & NCL_SNUMERIC_TYPE_MASK)) {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"Loop variable must be numeric value, can't execute loop");
 							estatus = NhlFATAL;
 						} 

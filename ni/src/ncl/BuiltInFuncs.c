@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.240 2009-07-21 14:35:17 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.241 2009-07-28 16:29:40 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -526,6 +526,8 @@ NhlErrorTypes _NclIGetFileVarNames
 	
 	tmp = NULL;
 	data = _NclGetArg(0,1,DONT_CARE);
+	fprintf(stderr, "\n\nEntering _NclIGetFileVarNames ...\n\n");
+	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 	switch(data.kind) {
 	case NclStk_VAR:
 		file_q = data.u.data_var->var.var_quark;
@@ -538,11 +540,13 @@ NhlErrorTypes _NclIGetFileVarNames
 		return(NhlFATAL);
 	}
 	if(file_q == -1) {
+		fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 
 		if(tmp_md==NULL) 
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
 		thefile = (NclFile)_NclGetObj(*(int*)tmp_md->multidval.val);
 		
+		fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 		var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->file.n_vars);
 		dimsize = thefile->file.n_vars;
 	
@@ -554,6 +558,7 @@ NhlErrorTypes _NclIGetFileVarNames
 			}
 		}
 	} else {
+		fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 
 		tmp = _NclGetFileVarInfoList(file_q);
 		if(tmp==NULL){
@@ -1421,6 +1426,9 @@ NhlErrorTypes _NclIAddFile
 	path =  _NclGetArg(0,2,DONT_CARE);
 	rw_status = _NclGetArg(1,2,DONT_CARE);
 
+	fprintf(stderr, "\n\nEntering _NclIAddFile ...\n\n");
+	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+
 	if(path.kind == NclStk_VAR) {
 		if(path.u.data_var != NULL) {
 			p_md = _NclVarValueRead(path.u.data_var,NULL,NULL);
@@ -1451,7 +1459,9 @@ NhlErrorTypes _NclIAddFile
 	} else {
 		rw_v = 0;
 	}
+	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 	file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)p_md->multidval.val,rw_v);
+	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 	if(file != NULL) {
 		*id = file->obj.id;
 		out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
@@ -1491,6 +1501,9 @@ NhlErrorTypes _NclIAddFile
 			return(NhlFATAL);
 		}
 	}
+
+	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
+	fprintf(stderr, "\n\nLeaving _NclIAddFile ...\n\n");
 }
 
 NhlErrorTypes _NclIAny
@@ -4260,11 +4273,12 @@ NhlErrorTypes _NclIasciiread
 			if(tmp_md == NULL) 
 				return(NhlFATAL);
 
-			if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+			if (thetype->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
 				char *end = "";
 				int lret;
 				int count;
 				char *rem;
+			        if (thetype->type_class.type & NCL_NUMERIC_TYPE_MASK) {
 				while (total < totalsize) {
 					if (*end == '\0') {
 						count = fread(buf,1,bufsize-1,fp);
@@ -4324,6 +4338,10 @@ NhlErrorTypes _NclIasciiread
 					} else {
 						continue;
 					}
+				}
+				}
+                                else {
+					fprintf(stdout, "Need to re-think of handling ENUMERICLs. file: %s, line: %d\n", __FILE__, __LINE__);
 				}
 			}
 			else if(thetype->type_class.type==Ncl_Typechar) {
@@ -4398,12 +4416,13 @@ NhlErrorTypes _NclIasciiread
 		}
 		tmp_ptr = NclMalloc(thetype->type_class.size);
 
-		if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+		if (thetype->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
 			char *end = "";
 			int lret;
 			int count;
 			char *rem;
 			totalsize = 0;
+			if (thetype->type_class.type & NCL_NUMERIC_TYPE_MASK) {
 			while (1) {
 				if (*end == '\0') {
 					count = fread(buf,1,bufsize-1,fp);
@@ -4456,6 +4475,10 @@ NhlErrorTypes _NclIasciiread
 				} else {
 					continue;
 				}
+			}
+			}
+                        else {
+				fprintf(stdout, "Need to re-think of handling ENUMERICLs. file: %s, line: %d\n", __FILE__, __LINE__);
 			}
 		}
 		else if(thetype->type_class.type==Ncl_Typechar) {
@@ -4517,11 +4540,12 @@ NhlErrorTypes _NclIasciiread
 		if(tmp_md == NULL) 
 			return(NhlFATAL);
 
-		if (thetype->type_class.type & NCL_TYPE_NUMERIC_MASK) {
+		if (thetype->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
 			char *end = "";
 			int lret;
 			int count;
 			char *rem;
+			if (thetype->type_class.type & NCL_NUMERIC_TYPE_MASK) {
 			while (total < totalsize) {
 				if (*end == '\0') {
 					count = fread(buf,1,bufsize-1,fp);
@@ -4576,6 +4600,10 @@ NhlErrorTypes _NclIasciiread
 				} else {
 					continue;
 				}
+			}
+			}
+                        else {
+				fprintf(stdout, "Need to re-think of handling ENUMERICLs. file: %s, line: %d\n", __FILE__, __LINE__);
 			}
 		}
 		else if(thetype->type_class.type==Ncl_Typechar) {
@@ -5646,10 +5674,6 @@ char **endptr;
         else
         {
                 tval = local_strtoll(str,endptr,10);
-              /*
-               *printf("str: <%s>\n", str);
-               *printf("val: <%lld>\n", tval);
-               */
         }
 
         return tval;
@@ -14914,7 +14938,7 @@ NhlErrorTypes _NclIIsNumeric
 		return(NhlFATAL);
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
-	if(tmp_md->multidval.type->type_class.type & NCL_VAL_NUMERIC_MASK) {
+	if(tmp_md->multidval.type->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
 		*out_val = 1;
 	} else {
 		*out_val = 0;
@@ -25790,7 +25814,6 @@ NhlErrorTypes _NclItochar
                 0
         ));
 }
-
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.51 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id: DataSupport.c,v 1.52 2009-07-28 16:29:40 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -624,7 +624,11 @@ NclObjTypes _NclKeywordToObjType
 		case STRNG:
 			return(Ncl_Typestring);
 		case NUMERIC:
-			return(NCL_TYPE_NUMERIC_MASK);
+			return(NCL_NUMERIC_TYPE_MASK);
+	       	case ENUMERIC:
+	                return(NCL_ENUMERIC_TYPE_MASK);
+		case SNUMERIC:
+			return(NCL_SNUMERIC_TYPE_MASK);
 		case GRAPHIC:
 			return(Ncl_MultiDValHLUObjData);
 		case LOGICAL:
@@ -729,6 +733,10 @@ NclBasicDataTypes _NclKeywordToDataType
 			return(NCL_string);
 		case NUMERIC:
 			return(NCL_numeric);
+	       	case ENUMERIC:
+	       	        return(NCL_enumeric);
+		case SNUMERIC:
+			return(NCL_snumeric);
 		case LOGICAL:
 			return(NCL_logical);
 		case LIST:
@@ -1293,7 +1301,6 @@ NclScalar *new_missing;
         int f_selection;
 
 	if((obj == NULL)||!(obj->obj.obj_type_mask & NCL_MD_MASK)) {
-                fprintf(stderr, "at line: %d, in file: <%s>\n", __LINE__, __FILE__);
                 return(NULL);
 	} else {
 		oc = (NclDataClass)obj->obj.class_ptr;

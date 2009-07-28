@@ -129,6 +129,12 @@ void printtoken
 		case NUMERIC:
 			fprintf(stdout,"NUMERIC\n");
 			break;
+		case ENUMERIC:
+			fprintf(stdout,"ENUMERIC\n");
+			break;
+		case SNUMERIC:
+			fprintf(stdout,"SNUMERIC\n");
+			break;
 		case FILETYPE:
 			fprintf(stdout,"FILETYPE\n");
 			break;

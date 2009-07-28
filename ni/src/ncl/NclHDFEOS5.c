@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.2 2009-07-10 19:54:06 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.3 2009-07-28 16:29:41 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -11,11 +11,11 @@
 /*
  *	File:		
  *
- *	Author:		Ethan Alpert
+ *	Author:		Wei Huang
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	Date:		Wed Mar 1 10:15:20 MDT 2001 
+ *	Date:		April 9, 2009
  *
  *	Description:	
  */
@@ -3344,41 +3344,41 @@ void* storage;
 }
 NclFormatFunctionRec HDFEOS5Rec = {
 /* NclInitializeFileRecFunc initialize_file_rec */      HDFEOS5InitializeFileRec,
-/* NclCreateFileFunc	   create_file; */		NULL,
-/* NclOpenFileFunc         open_file; */		HDFEOS5OpenFile,
-/* NclFreeFileRecFunc      free_file_rec; */		HDFEOS5FreeFileRec,
-/* NclGetVarNamesFu_nc      get_var_names; */		HDFEOS5GetVarNames,
-/* NclGetVarInfoFusd_nc       get_var_info; */		HDFEOS5GetVarInfo,
-/* NclGetDimNamesFusd_nc      get_dim_names; */		HDFEOS5GetDimNames,
-/* NclGetDimInfoFusd_nc       get_dim_info; */		HDFEOS5GetDimInfo,
-/* NclGetAttNamesFusd_nc      get_att_names; */		HDFEOS5GetAttNames,
-/* NclGetAttInfoFusd_nc       get_att_info; */		HDFEOS5GetAttInfo,
-/* NclGetVarAttNamesFusd_nc   get_var_att_names; */	HDFEOS5GetVarAttNames,
-/* NclGetVarAttInfoFusd_nc    get_var_att_info; */		HDFEOS5GetVarAttInfo,
-/* NclGetCoordInfoFusd_nc     get_coord_info; */		HDFEOS5GetCoordInfo,
-/* NclReadCoordFusd_nc        read_coord; */		HDFEOS5ReadCoord,
-/* NclReadCoordFusd_nc        read_coord; */		NULL,
-/* NclReadVarFusd_nc          read_var; */			HDFEOS5ReadVar,
-/* NclReadVarFusd_nc          read_var; */			NULL,
-/* NclReadAttFusd_nc          read_att; */			HDFEOS5ReadAtt,
-/* NclReadVarAttFusd_nc       read_var_att; */		HDFEOS5ReadVarAtt,
-/* NclWriteCoordFusd_nc       write_coord; */		NULL,
-/* NclWriteCoordFusd_nc       write_coord; */		NULL,
-/* NclWriteVarFusd_nc         write_var; */		NULL,
-/* NclWriteVarFusd_nc         write_var; */		NULL,
-/* NclWriteAttFusd_nc         write_att; */		NULL,
-/* NclWriteVarAttFusd_nc      write_var_att; */		NULL,
-/* NclAddDimFusd_nc           add_dim; */			NULL,
-/* NclAddDimFusd_nc           rename_dim; */		NULL,
-/* NclAddVarFusd_nc           add_var; */			NULL,
-/* NclAddVarFusd_nc           add_coord_var; */		NULL,
-/* NclAddAttFusd_nc           add_att; */			NULL,
-/* NclAddVarAttFusd_nc        add_var_att; */		NULL,
-/* NclMapFormatTypeToNcl   map_format_type_to_sd_ncl; */	NULL,
-/* NclMapNclTypeToFormat   map_sd_ncl_type_to_format; */	NULL,
-/* NclDelAttFusd_nc           del_att; */			NULL,
-/* NclDelVarAttFusd_nc        del_var_att; */	        NULL,
-/* NclSetOptionFunc           set_option;  */           NULL
+/* NclCreateFileFunc	    create_file; */		NULL,
+/* NclOpenFileFunc          open_file; */		HDFEOS5OpenFile,
+/* NclFreeFileRecFunc       free_file_rec; */		HDFEOS5FreeFileRec,
+/* NclGetVarNamesFunc       get_var_names; */		HDFEOS5GetVarNames,
+/* NclGetVarInfoFunc        get_var_info; */		HDFEOS5GetVarInfo,
+/* NclGetDimNamesFunc       get_dim_names; */		HDFEOS5GetDimNames,
+/* NclGetDimInfoFunc        get_dim_info; */		HDFEOS5GetDimInfo,
+/* NclGetAttNamesFunc       get_att_names; */		HDFEOS5GetAttNames,
+/* NclGetAttInfoFunc        get_att_info; */		HDFEOS5GetAttInfo,
+/* NclGetVarAttNamesFunc    get_var_att_names; */	HDFEOS5GetVarAttNames,
+/* NclGetVarAttInfoFunc     get_var_att_info; */	HDFEOS5GetVarAttInfo,
+/* NclGetCoordInfoFunc      get_coord_info; */		HDFEOS5GetCoordInfo,
+/* NclReadCoordFunc         read_coord; */		HDFEOS5ReadCoord,
+/* NclReadCoordFunc         read_coord; */		NULL,
+/* NclReadVarFunc           read_var; */		HDFEOS5ReadVar,
+/* NclReadVarFunc           read_var; */		NULL,
+/* NclReadAttFunc           read_att; */		HDFEOS5ReadAtt,
+/* NclReadVarAttFunc        read_var_att; */		HDFEOS5ReadVarAtt,
+/* NclWriteCoordFunc        write_coord; */		NULL,
+/* NclWriteCoordFunc        write_coord; */		NULL,
+/* NclWriteVarFunc          write_var; */		NULL,
+/* NclWriteVarFunc          write_var; */		NULL,
+/* NclWriteAttFunc          write_att; */		NULL,
+/* NclWriteVarAttFunc       write_var_att; */		NULL,
+/* NclAddDimFunc            add_dim; */			NULL,
+/* NclAddDimFunc            rename_dim; */		NULL,
+/* NclAddVarFunc            add_var; */			NULL,
+/* NclAddVarFunc            add_coord_var; */		NULL,
+/* NclAddAttFunc            add_att; */			NULL,
+/* NclAddVarAttFunc         add_var_att; */		NULL,
+/* NclMapFormatTypeToNcl    map_format_type_to_ncl; */	NULL,
+/* NclMapNclTypeToFormat    map_ncl_type_to_format; */	NULL,
+/* NclDelAttFunc            del_att; */			NULL,
+/* NclDelVarAttFunc         del_var_att; */	        NULL,
+/* NclSetOptionFunc         set_option;  */		NULL
 };
 NclFormatFunctionRecPtr HDFEOS5AddFileFormat 
 #if	NhlNeedProto
