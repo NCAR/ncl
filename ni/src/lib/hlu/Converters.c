@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.55 2009-07-20 19:55:07 huangwei Exp $
+ *      $Id: Converters.c,v 1.56 2009-07-28 15:49:02 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -35,21 +35,8 @@
 #include <floatingpoint.h>
 #endif	/* sun hack- strtod should be in stdlib.h but it's not */
 
-#ifndef LLONG_MAX
-/* Minimum and maximum values a `signed long long int' can hold.  */
-#   define LLONG_MAX    9223372036854775807LL
-#   define LLONG_MIN    (-LLONG_MAX - 1LL)
-#endif
-
-#ifndef ULLONG_MAX
-/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
-#   define ULLONG_MAX   18446744073709551615ULL
-#endif
-
 #define MAX_DIMENSIONS 50
 typedef enum { CHAR, LP, SPACE , RP , COMMA, ENDOFSTRING} _NhlTokens;
-
-long long local_strtoll(const char *nptr, char **endptr, int base);
 
 static NrmQuark intQ;
 static NrmQuark longQ;

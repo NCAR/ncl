@@ -1,5 +1,5 @@
 /*
- *      $Id: hlu.h,v 1.40 2009-07-10 19:54:04 huangwei Exp $
+ *      $Id: hlu.h,v 1.41 2009-07-28 15:49:02 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include <ncarg/hlu/defs.h>
 
@@ -133,6 +134,19 @@
  /* They are only supported in converters as a "from" type */
 #define	NhlTQuark		"Quark"
 #define	NhlTQuarkGenArray	"QuarkGenArray"
+
+#ifndef LLONG_MAX
+/* Minimum and maximum values a `signed long long int' can hold.  */
+#   define LLONG_MAX    9223372036854775807LL
+#   define LLONG_MIN    (-LLONG_MAX - 1LL)
+#endif
+
+#ifndef ULLONG_MAX
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
+#   define ULLONG_MAX   18446744073709551615ULL
+#endif
+
+extern long long local_strtoll(const char *nptr, char **endptr, int base);
 
 typedef	char	*NhlString;
 typedef	void	*NhlPointer;
