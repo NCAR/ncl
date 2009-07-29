@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.241 2009-07-28 16:29:40 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.242 2009-07-29 17:03:34 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -526,8 +526,6 @@ NhlErrorTypes _NclIGetFileVarNames
 	
 	tmp = NULL;
 	data = _NclGetArg(0,1,DONT_CARE);
-	fprintf(stderr, "\n\nEntering _NclIGetFileVarNames ...\n\n");
-	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 	switch(data.kind) {
 	case NclStk_VAR:
 		file_q = data.u.data_var->var.var_quark;
@@ -540,13 +538,10 @@ NhlErrorTypes _NclIGetFileVarNames
 		return(NhlFATAL);
 	}
 	if(file_q == -1) {
-		fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-
 		if(tmp_md==NULL) 
 			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
 		thefile = (NclFile)_NclGetObj(*(int*)tmp_md->multidval.val);
 		
-		fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 		var_names = (NclQuark*)NclMalloc((unsigned)sizeof(NclQuark)*thefile->file.n_vars);
 		dimsize = thefile->file.n_vars;
 	
@@ -558,8 +553,6 @@ NhlErrorTypes _NclIGetFileVarNames
 			}
 		}
 	} else {
-		fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-
 		tmp = _NclGetFileVarInfoList(file_q);
 		if(tmp==NULL){
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclIGetFileVarNames: file does not exist");
@@ -1426,9 +1419,6 @@ NhlErrorTypes _NclIAddFile
 	path =  _NclGetArg(0,2,DONT_CARE);
 	rw_status = _NclGetArg(1,2,DONT_CARE);
 
-	fprintf(stderr, "\n\nEntering _NclIAddFile ...\n\n");
-	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-
 	if(path.kind == NclStk_VAR) {
 		if(path.u.data_var != NULL) {
 			p_md = _NclVarValueRead(path.u.data_var,NULL,NULL);
@@ -1459,9 +1449,7 @@ NhlErrorTypes _NclIAddFile
 	} else {
 		rw_v = 0;
 	}
-	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 	file = _NclCreateFile(NULL,NULL,Ncl_File,0,TEMPORARY,*(NclQuark*)p_md->multidval.val,rw_v);
-	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
 	if(file != NULL) {
 		*id = file->obj.id;
 		out_md = _NclMultiDValnclfileDataCreate(NULL,NULL,Ncl_MultiDValnclfileData,0,id,NULL,1,&dim_size,TEMPORARY,NULL);
@@ -1501,9 +1489,6 @@ NhlErrorTypes _NclIAddFile
 			return(NhlFATAL);
 		}
 	}
-
-	fprintf(stderr, "file: %s, line: %d\n", __FILE__, __LINE__);
-	fprintf(stderr, "\n\nLeaving _NclIAddFile ...\n\n");
 }
 
 NhlErrorTypes _NclIAny
