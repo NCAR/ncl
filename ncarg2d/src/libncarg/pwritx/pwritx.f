@@ -1,5 +1,5 @@
 C
-C	$Id: pwritx.f,v 1.6 2008-07-27 00:17:21 haley Exp $
+C	$Id: pwritx.f,v 1.7 2009-08-06 20:55:14 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -675,7 +675,7 @@ C SHORT TEST IF ARRAYS IDD AND IND ARE LOADED CORRECTLY.
       IF (MODE .NE. 1) CALL CCHECK(LCHERR)
       IF (LCHERR .NE. 0) THEN
            CALL SETER
-     +     ('PWRX - ARRAY IND OR IDD NOT LOADED CORRECTLY',LCHERR,2)
+     +     ('PWRITX - ARRAY IND OR IDD NOT LOADED CORRECTLY',LCHERR,2)
       ENDIF
    99 CONTINUE
 C
