@@ -20,8 +20,8 @@ NhlErrorTypes ftsetp_W(void)
                       "df4", "df5", "df6", "df7", "df8",
                       "SF1", "SF2", "DF1", "DF2", "DF3",
                       "DF4", "DF5", "DF6", "DF7", "DF8"};
-  char *params_f[] = {"sig", "sl1", "sl2", "smt", "eps", 
-                      "SIG", "SL1", "SL2", "SMT", "EPS"};
+  char *params_f[] = {"sig", "sl1", "sln", "smt", "eps", 
+                      "SIG", "SL1", "SLN", "SMT", "EPS"};
   char *params_c[] = {"dum", "DUM"};
 
 /*
@@ -158,8 +158,8 @@ NhlErrorTypes ftgetp_W(void)
  *  all that needs to be done is add the names to this list.
  */
   char *params_i[] = {"sf1", "sf2", "SF1", "SF2"};
-  char *params_f[] = {"sig", "sl1", "sl2", "smt", "eps", 
-                      "SIG", "SL1", "SL2", "SMT", "EPS"};
+  char *params_f[] = {"sig", "sl1", "sln", "smt", "eps", 
+                      "SIG", "SL1", "SLN", "SMT", "EPS"};
   char *params_c[] = {"dum", "DUM"};
 
 /*
