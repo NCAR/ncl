@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclApi.h,v 1.20 1997-08-01 21:02:25 ethan Exp $
+ *      $Id: NclApi.h,v 1.21 2009-08-13 21:02:50 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -22,6 +22,8 @@
  */
 #ifndef _NCNclApi_h
 #define _NCNclApi_h
+
+#include "NclDataDefs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -147,18 +149,18 @@ typedef union _NclApiScalar {
         obj     objval;
 }NclApiScalar;
 
-#define NCLAPI_none	0
-#define NCLAPI_short 	01
-#define NCLAPI_int 	02
-#define NCLAPI_long 	04
-#define NCLAPI_float 	010
-#define NCLAPI_double 	020
-#define NCLAPI_char 	040
-#define NCLAPI_byte 	0100
-#define NCLAPI_string 	0200
-#define NCLAPI_numeric 	0400
-#define NCLAPI_logical 	01000
-#define NCLAPI_obj 	02000
+#define NCLAPI_none	NCL_none
+#define NCLAPI_short	NCL_short
+#define NCLAPI_int	NCL_int
+#define NCLAPI_long	NCL_long
+#define NCLAPI_float	NCL_float
+#define NCLAPI_double	NCL_double
+#define NCLAPI_char	NCL_char
+#define NCLAPI_byte	NCL_byte
+#define NCLAPI_string	NCL_string
+#define NCLAPI_numeric	NCL_numeric
+#define NCLAPI_logical	NCL_logical
+#define NCLAPI_obj	NCL_obj
 
 
 struct _NclExtValueRec {
