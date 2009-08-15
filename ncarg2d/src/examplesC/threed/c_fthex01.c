@@ -1,5 +1,5 @@
 /*
- *	$Id: c_fthex01.c,v 1.4 1995-06-14 14:00:13 haley Exp $
+ *	$Id: c_fthex01.c,v 1.5 2009-08-15 05:08:27 fred Exp $
  */
 #include <stdio.h>
 #include <math.h>
@@ -223,6 +223,11 @@ void color()
  */
 	rgb.rgb.red = 1.00; rgb.rgb.green = 1.00; rgb.rgb.blue = 1.00;
 	gset_colr_rep(WKID,WHITE,&rgb);
+/*
+ * Magenta
+ */
+	rgb.rgb.red = 1.00; rgb.rgb.green = 0.0; rgb.rgb.blue = 1.00;
+	gset_colr_rep(WKID,MAGENTA,&rgb);
 /*
  * Blue
  */
