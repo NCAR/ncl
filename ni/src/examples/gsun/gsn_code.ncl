@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.220 2009-08-15 04:56:40 haley Exp $
+;      $Id: gsn_code.ncl,v 1.221 2009-08-15 05:28:28 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -224,6 +224,8 @@ end
 ;                x:numeric                                              ;
 ;                                                                       ;
 ; Convert input to float and retain units attribute.                    ;
+;                                                                       ;
+; Note that after V5.1.1, a built-in version of "tofloat" was added.    ;
 ;                                                                       ;
 ;***********************************************************************;
 undef("tofloat_wunits")
