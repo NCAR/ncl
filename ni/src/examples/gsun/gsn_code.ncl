@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.219 2009-05-01 20:59:09 haley Exp $
+;      $Id: gsn_code.ncl,v 1.220 2009-08-15 04:56:40 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -220,31 +220,6 @@ end
 
 
 ;***********************************************************************;
-; function : tofloat                                                    ;
-;                x:numeric                                              ;
-;                                                                       ;
-; Convert input to float.                                               ;
-;                                                                       ;
-;***********************************************************************;
-undef("tofloat")
-function tofloat(x:numeric)
-local xf
-begin
-  if(typeof(x).eq."double")
-    xf = doubletofloat(x)
-  else
-    if(isatt(x,"_FillValue"))
-      xf = new(dimsizes(x),float,x@_FillValue)
-    else
-      xf = new(dimsizes(x),float)
-      delete(xf@_FillValue)
-    end if
-    xf = x
-  end if
-  return(xf)
-end
-
-;***********************************************************************;
 ; function : tofloat_wunits                                             ;
 ;                x:numeric                                              ;
 ;                                                                       ;
@@ -260,35 +235,6 @@ begin
     xf@units = x@units
   end if
   return(xf)
-end
-
-;***********************************************************************;
-; function : tointeger                                                  ;
-;                x:numeric                                              ;
-;                                                                       ;
-; Convert input to integer.                                             ;
-;                                                                       ;
-;***********************************************************************;
-undef("tointeger")
-function tointeger(x:numeric)
-local xi
-begin
-  if(typeof(x).eq."double")
-    xi = doubletointeger(x)
-  else
-    if(typeof(x).eq."float")
-      xi = floattointeger(x)
-    else
-      if(isatt(x,"_FillValue"))
-        xi = new(dimsizes(x),integer,x@_FillValue)
-      else
-        xi = new(dimsizes(x),integer)
-        delete(xi@_FillValue)
-      end if
-      xi = x
-    end if
-  end if
-  return(xi)
 end
 
 ;***********************************************************************;

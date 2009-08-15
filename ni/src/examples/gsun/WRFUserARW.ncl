@@ -58,35 +58,6 @@ load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/contributed.ncl"
 ;
 ;--------------------------------------------------------------------------------
  
-;***********************************************************************;
-; function : tointeger                                                  ;
-;                x:numeric                                              ;
-;                                                                       ;
-; Convert input to integer.                                             ;
-;                                                                       ;
-;***********************************************************************;
-undef("tointeger")
-function tointeger(x:numeric)
-local xi
-begin
-  if(typeof(x).eq."double")
-    xi = doubletointeger(x)
-  else
-    if(typeof(x).eq."float")
-      xi = floattointeger(x)
-    else
-      if(isatt(x,"_FillValue"))
-        xi = new(dimsizes(x),integer,x@_FillValue)
-      else
-        xi = new(dimsizes(x),integer)
-        delete(xi@_FillValue)
-      end if
-      xi = x
-    end if
-  end if
-  return(xi)
-end
-
 ;--------------------------------------------------------------------------------
 undef("wrf_user_set_xy")
 function wrf_user_set_xy( var:numeric, xp:numeric, yp:numeric, x1:numeric, \
