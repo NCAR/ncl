@@ -1,5 +1,5 @@
 /*
- *      $Id: croddi.h,v 1.1 2009-04-08 23:25:41 fred Exp $
+ *      $Id: croddi.h,v 1.2 2009-08-16 21:41:34 fred Exp $
  */
 /*
  *      File:           croddi.h
@@ -47,7 +47,8 @@ typedef struct  CROddi_ {
   int           pict_empty;
   int           page_number;
   int           suppress_flag;
-  float         color_map[1024];
+  int           max_color; 
+  unsigned int  *ctable;
   int           fonts_used[13];
   int           frame_count;
   CROattribute  attributes;
