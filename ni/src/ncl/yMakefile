@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.164 2009-07-17 00:46:01 dbrown Exp $
+#      $Id: yMakefile,v 1.165 2009-08-20 00:30:48 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-07-17 00:46:01 $
+#	Date:		$Date: 2009-08-20 00:30:48 $
 #
 #	Description:	
 #
@@ -44,10 +44,6 @@ NETCDF4_DEFS = -DUSE_NETCDF4
 #else
 #define NETCDF4LIB
 #endif
-
-# HDF4.2r2 requires this definition because we ask users to
-# build it w/o internal netCDF support
-HDF4_NETCDF = -DH4_HAVE_NETCDF
 
 #ifdef BuildHDFEOS
 HDFEOS_DEFS = -DBuildHDFEOS $(HDF4_NETCDF)
