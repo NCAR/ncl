@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.4 2009-07-17 00:47:34 dbrown Exp $
+#      $Id: yMakefile,v 1.5 2009-08-20 00:32:41 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -40,10 +40,6 @@ NETCDF4_DEFS = -DUSE_NETCDF4
 #else
 #define NETCDF4LIB
 #endif
-
-# HDF4.2r2 requires this definition because we ask users to
-# build it w/o internal netCDF support
-HDF4_NETCDF = -DH4_HAVE_NETCDF
 
 #ifdef BuildHDFEOS
 HDFEOS_DEFS = -DBuildHDFEOS $(HDF4_NETCDF)
