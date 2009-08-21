@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.242 2009-07-29 17:03:34 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.243 2009-08-21 15:18:19 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17576,7 +17576,7 @@ NhlErrorTypes _NclItoint
                         }
                         else
                         {
-                            output[i] = (int) ceil(val);
+                            output[i] = (int) val;
                             if(ret_missing.intval == output[i])
                             {
                                 has_missing = 1;
@@ -17635,7 +17635,7 @@ NhlErrorTypes _NclItoint
                         }
                         else
                         {
-                            output[i] = (int) ceilf(val);
+                            output[i] = (int) val;
                             if(ret_missing.intval == output[i])
                             {
                                 has_missing = 1;
@@ -18152,12 +18152,12 @@ NhlErrorTypes _NclItouint
                     double *ptr;
 
                     dmin = 0.0;
-                    dmax = (double) INT_MAX;
+                    dmax = (double) UINT_MAX;
 
                     if(has_missing)
                     {
                         if(missing.doubleval < dmax)
-                            ret_missing.uintval = (unsigned int) ceil(missing.doubleval);
+                            ret_missing.uintval = (unsigned int) missing.doubleval;
                     }
 
                     ptr = (double *) in_value;
@@ -18179,7 +18179,7 @@ NhlErrorTypes _NclItouint
                         }
                         else
                         {
-                            output[i] = (int) ceil(val);
+                            output[i] = (unsigned int) val;
                             if(ret_missing.uintval == output[i])
                             {
                                 has_missing = 1;
@@ -18213,7 +18213,7 @@ NhlErrorTypes _NclItouint
                     if(has_missing)
                     {
                         if(missing.floatval < fmax)
-                            ret_missing.uintval = (unsigned int) ceilf(missing.floatval);
+                            ret_missing.uintval = (unsigned int) missing.floatval;
                     }
 
                     ptr = (float *) in_value;
@@ -18235,7 +18235,7 @@ NhlErrorTypes _NclItouint
                         }
                         else
                         {
-                            output[i] = (int) ceilf(val);
+                            output[i] = (unsigned int) val;
                             if(ret_missing.uintval == output[i])
                             {
                                 has_missing = 1;
@@ -18822,7 +18822,7 @@ NhlErrorTypes _NclItolong
                         val = (double) missing.doubleval;
                         if((val < dmax) && (val > dmin))
                         {
-                            ret_missing.longval = (long) ceil(val);
+                            ret_missing.longval = (long) val;
                         }
                     }
 
@@ -18843,7 +18843,7 @@ NhlErrorTypes _NclItolong
                         }
                         else
                         {
-                            output[i] = (long) ceil(val);
+                            output[i] = (long) val;
                             if(ret_missing.longval == output[i])
                             {
                                 has_missing = 1;
@@ -18879,7 +18879,7 @@ NhlErrorTypes _NclItolong
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
                         {
-                            ret_missing.longval = (int) ceilf(val);
+                            ret_missing.longval = (long) val;
                         }
                     }
 
@@ -18902,7 +18902,7 @@ NhlErrorTypes _NclItolong
                         }
                         else
                         {
-                            output[i] = (long) ceilf(val);
+                            output[i] = (long) val;
                             if(ret_missing.longval == output[i])
                             {
                                 has_missing = 1;
@@ -19414,7 +19414,7 @@ NhlErrorTypes _NclItoulong
                         val = missing.doubleval;
                         if((val < dmax) && (val > dmin))
                         {
-                            ret_missing.intval = (unsigned long) ceil(val);
+                            ret_missing.intval = (unsigned long) val;
                         }
                     }
 
@@ -19435,7 +19435,7 @@ NhlErrorTypes _NclItoulong
                         }
                         else
                         {
-                            output[i] = (unsigned long) ceil(val);
+                            output[i] = (unsigned long) val;
                             if(ret_missing.ulongval == output[i])
                             {
                                 has_missing = 1;
@@ -19472,7 +19472,7 @@ NhlErrorTypes _NclItoulong
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
                         {
-                            ret_missing.ulongval = (unsigned long) ceilf(val);
+                            ret_missing.ulongval = (unsigned long) val;
                         }
                     }
 
@@ -19495,7 +19495,7 @@ NhlErrorTypes _NclItoulong
                         }
                         else
                         {
-                            output[i] = (unsigned long) ceilf(val);
+                            output[i] = (unsigned long) val;
                             if(ret_missing.ulongval == output[i])
                             {
                                 has_missing = 1;
@@ -20023,7 +20023,7 @@ NhlErrorTypes _NclItoint64
                         val = (double) missing.doubleval;
                         if((val < dmax) && (val > dmin))
                         {
-                            ret_missing.int64val = (long long) ceil(val);
+                            ret_missing.int64val = (long long) val;
                         }
                     }
 
@@ -20044,7 +20044,7 @@ NhlErrorTypes _NclItoint64
                         }
                         else
                         {
-                            output[i] = (long long) ceil(val);
+                            output[i] = (long long) val;
                             if(ret_missing.int64val == output[i])
                             {
                                 has_missing = 1;
@@ -20081,7 +20081,7 @@ NhlErrorTypes _NclItoint64
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
                         {
-                            ret_missing.int64val = (long long) ceilf(val);
+                            ret_missing.int64val = (long long) val;
                         }
                     }
 
@@ -20104,7 +20104,7 @@ NhlErrorTypes _NclItoint64
                         }
                         else
                         {
-                            output[i] = (long long) ceilf(val);
+                            output[i] = (long long) val;
                             if(ret_missing.int64val == output[i])
                             {
                                 has_missing = 1;
@@ -20536,7 +20536,7 @@ NhlErrorTypes _NclItouint64
                         val = missing.doubleval;
                         if((val < dmax) && (val > dmin))
                         {
-                            ret_missing.uint64val = (unsigned long long) ceil(val);
+                            ret_missing.uint64val = (unsigned long long) val;
                         }
                     }
 
@@ -20557,7 +20557,7 @@ NhlErrorTypes _NclItouint64
                         }
                         else
                         {
-                            output[i] = (unsigned long long) ceil(val);
+                            output[i] = (unsigned long long) val;
                             if(ret_missing.uint64val == output[i])
                             {
                                 has_missing = 1;
@@ -20594,7 +20594,7 @@ NhlErrorTypes _NclItouint64
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
                         {
-                            ret_missing.uint64val = (unsigned long long) ceilf(val);
+                            ret_missing.uint64val = (unsigned long long) val;
                         }
                     }
 
@@ -20617,7 +20617,7 @@ NhlErrorTypes _NclItouint64
                         }
                         else
                         {
-                            output[i] = (unsigned long long) ceilf(val);
+                            output[i] = (unsigned long long) val;
                             if(ret_missing.uint64val == output[i])
                             {
                                 has_missing = 1;
@@ -21151,7 +21151,7 @@ NhlErrorTypes _NclItoshort
                         val = missing.doubleval;
                         if((val < dmax) && (val > dmin))
                         {
-                            ret_missing.shortval = (short) ceil(val);
+                            ret_missing.shortval = (short) val;
                         }
                     }
 
@@ -21178,7 +21178,7 @@ NhlErrorTypes _NclItoshort
                             }
                             else
                             {
-                                output[i] = (short) ceil(val);
+                                output[i] = (short) val;
                             }
                         }
                     }
@@ -21211,7 +21211,7 @@ NhlErrorTypes _NclItoshort
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
                         {
-                            ret_missing.shortval = (short) ceilf(val);
+                            ret_missing.shortval = (short) val;
                         }
                     }
 
@@ -21238,7 +21238,7 @@ NhlErrorTypes _NclItoshort
                             }
                             else
                             {
-                                output[i] = (short) ceilf(val);
+                                output[i] = (short) val;
                             }
                         }
                     }
@@ -21815,7 +21815,7 @@ NhlErrorTypes _NclItoushort
                         val = missing.doubleval;
                         if((val < dmax) && (val > dmin))
                         {
-                            ret_missing.shortval = (short) ceil(val);
+                            ret_missing.ushortval = (unsigned short) val;
                         }
                     }
 
@@ -21842,7 +21842,7 @@ NhlErrorTypes _NclItoushort
                             }
                             else
                             {
-                                output[i] = (unsigned short) ceil(val);
+                                output[i] = (unsigned short) val;
                             }
                         }
                     }
@@ -21875,7 +21875,7 @@ NhlErrorTypes _NclItoushort
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
                         {
-                            ret_missing.shortval = (short) ceil(val);
+                            ret_missing.shortval = (unsigned short) val;
                         }
                     }
 
@@ -21902,7 +21902,7 @@ NhlErrorTypes _NclItoushort
                             }
                             else
                             {
-                                output[i] = (unsigned short) ceilf(val);
+                                output[i] = (unsigned short) val;
                             }
                         }
                     }
@@ -24444,14 +24444,14 @@ NhlErrorTypes _NclItobyte
                     double val, dmin, dmax;
                     double *ptr;
 
-                    dmin = (double) CHAR_MIN;
-                    dmax = (double) CHAR_MAX;
+                    dmin = 0.0;
+                    dmax = (double) UCHAR_MAX;
 
                     if(has_missing)
                     {
                         val = missing.doubleval;
                         if((val < dmax) && (val > dmin))
-                           ret_missing.byteval = (char) ceil(val);
+                           ret_missing.byteval = (unsigned char) val;
                     }
 
                     ptr = (double *) in_value;
@@ -24473,7 +24473,7 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) ceil(val);
+                            output[i] = (byte) val;
                             if(ret_missing.byteval == output[i])
                             {
                                 has_missing = 1;
@@ -24501,14 +24501,14 @@ NhlErrorTypes _NclItobyte
                     float val, fmin, fmax;
                     float *ptr;
 
-                    fmin = (float) CHAR_MIN;
-                    fmax = (float) CHAR_MAX;
+                    fmin = 0.0;
+                    fmax = (float) UCHAR_MAX;
 
                     if(has_missing)
                     {
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
-                           ret_missing.byteval = (char) ceilf(val);
+                           ret_missing.byteval = (unsigned char) val;
                     }
 
                     ptr = (float *) in_value;
@@ -24530,7 +24530,7 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            output[i] = (char) ceilf(val);
+                            output[i] = (unsigned char) val;
                             if(output[i] == ret_missing.byteval)
                             {
                                 has_missing = 1;
@@ -24571,8 +24571,8 @@ NhlErrorTypes _NclItobyte
                         }
                         else
                         {
-                            if((llval < CHAR_MAX) && (llval > CHAR_MIN))
-                                ret_missing.byteval = (char) llval;
+                            if((llval < UCHAR_MAX) && (llval >= 0))
+                                ret_missing.byteval = (unsigned char) llval;
                         }
                     }
 
@@ -24594,13 +24594,13 @@ NhlErrorTypes _NclItobyte
                                     "A bad value was passed to tobyte, input strings must contain numeric digits, replacing with missing value");
                                 output[i] = ret_missing.byteval;
                             }
-                            else if (llval > CHAR_MAX)
+                            else if (llval > UCHAR_MAX)
                             {
                                 has_missing = 1;
                                 overflowed ++;
                                 output[i] = ret_missing.byteval;
                             }
-                            else if (llval < CHAR_MIN)
+                            else if (llval < 0)
                             {
                                 has_missing = 1;
                                 underflowed ++;
@@ -24657,20 +24657,20 @@ NhlErrorTypes _NclItobyte
                 break;
             case NCL_char:
                 {
-                    unsigned char val;
-                    unsigned char *ptr;
+                    char val;
+                    char *ptr;
 
                     if(has_missing)
                     {
                         ret_missing.byteval = (char) missing.charval;
                     }
 
-                    ptr = (unsigned char *) in_value;
+                    ptr = (char *) in_value;
     
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val < 0)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24710,13 +24710,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < CHAR_MIN)
+                        else if(val < 0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -24763,7 +24763,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24803,13 +24803,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < CHAR_MIN)
+                        else if(val < 0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -24847,7 +24847,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if(missing.uintval <= CHAR_MAX)
+                        if(missing.uintval <= UCHAR_MAX)
                             ret_missing.byteval = (char) missing.uintval;
                     }
 
@@ -24856,7 +24856,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24896,13 +24896,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < CHAR_MIN)
+                        else if(val < 0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -24940,7 +24940,7 @@ NhlErrorTypes _NclItobyte
     
                     if(has_missing)
                     {
-                        if(missing.ulongval <= CHAR_MAX)
+                        if(missing.ulongval <= UCHAR_MAX)
                             ret_missing.byteval = (char) missing.ulongval;
                     }
 
@@ -24949,7 +24949,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -24989,13 +24989,13 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
                             output[i] = ret_missing.byteval;
                         }
-                        else if(val < CHAR_MIN)
+                        else if(val < 0)
                         {
                             has_missing = 1;
                             underflowed ++;
@@ -25033,7 +25033,7 @@ NhlErrorTypes _NclItobyte
 
                     if(has_missing)
                     {
-                        if(missing.uint64val <= CHAR_MAX)
+                        if(missing.uint64val <= UCHAR_MAX)
                             ret_missing.byteval = (char) missing.uint64val;
                     }
 
@@ -25042,7 +25042,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val > CHAR_MAX)
+                        if(val > UCHAR_MAX)
                         {
                             has_missing = 1;
                             overflowed ++;
@@ -25152,7 +25152,7 @@ NhlErrorTypes _NclItochar
                     {
                         val = missing.doubleval;
                         if((val < dmax) && (val > dmin))
-                           ret_missing.charval = (unsigned char) ceil(val);
+                           ret_missing.charval = (char) val;
                     }
 
                     ptr = (double *) in_value;
@@ -25174,7 +25174,7 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) ceil(val);
+                            output[i] = (char) val;
                             if(ret_missing.charval == output[i])
                             {
                                 has_missing = 1;
@@ -25209,7 +25209,7 @@ NhlErrorTypes _NclItochar
                     {
                         val = missing.floatval;
                         if((val < fmax) && (val > fmin))
-                           ret_missing.charval = (unsigned char) ceilf(val);
+                           ret_missing.charval = (char) val;
                     }
 
                     ptr = (float *) in_value;
@@ -25231,7 +25231,7 @@ NhlErrorTypes _NclItochar
                         }
                         else
                         {
-                            output[i] = (unsigned char) ceil(val);
+                            output[i] = (char) val;
                             if(ret_missing.charval == output[i])
                             {
                                 has_missing = 1;
