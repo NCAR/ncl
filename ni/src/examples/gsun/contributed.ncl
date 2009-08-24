@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.230 2009-06-26 21:34:19 shea Exp $
+;      $Id: contributed.ncl,v 1.231 2009-08-24 23:31:51 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -648,6 +648,35 @@ begin
  ;return (dimNames)
 
   return (getvardims(x))
+end
+
+;*************************************************************************
+; D. Shea
+; print Min and Max of a numeric variable using long_name [if present]
+;
+undef("printMinMax")
+procedure printMinMax (x:numeric,optSpace:logical)  
+;  Usage:   printMinMax (T,True)                   
+begin                                             
+          ; attribute names to check             
+   vLongName = (/"long_name", "description", "standard_name" /)
+   long_name = ""        
+   do n=0,dimsizes(vLongName)-1            
+      if (isatt(x,vLongName(n))) then     
+          long_name = x@$vLongName(n)$   
+          break
+      end if
+   end do
+        
+   if (optSpace) then
+       print (" ")  
+   end if          
+                  
+   if (long_name.ne."") then 
+       print (long_name+ ": min="+min(x)+"   max="+max(x)) 
+   else 
+       print ("min="+min(x)+"   max="+max(x))
+   end if 
 end
 
 ; *****************************************************************
@@ -1822,7 +1851,6 @@ begin
       return( i )
   end if
 end
-
 ; ********************************************************************
 ; D. Shea
 ; Truncate or Round "x" to the number of decimal places [nDec]
@@ -1844,7 +1872,6 @@ end
 ;   xRound = decimalPlaces(x, 2, False) ; x=12.345678 => 12.34
 ;   title  = "EOF: PerCent Variance="+decimalPlaces(pcvar(0), 2, True)
 
-
 undef("decimalPlaces")
 function decimalPlaces (x:numeric, nDec:integer, Round:logical)
 local xType, shift, xTmp, iTmp, zero, half, one, HALF
@@ -1856,33 +1883,51 @@ begin
           zero = 0.0d
           half = 0.5d
           one  = 1.0d
-          shift = 10.d^nDec
+          shift = 10.0d^nDec
+          local_FillValue = 1d30            ; local fill value
       else
           zero  = 0.0
           half  = 0.5
           one   = 1.0
-          shift = 10.^nDec
+          shift = 10.0^nDec
+          local_FillValue = 1e30            ; local fill value
       end if
 
-      HALF = where(x.lt.zero, -half, half)
+      HALF = where(x.lt.zero, -half, half)  ; arrray of half   
+
+      if (isatt(x,"_FillValue")) then
+          xFillOrig = (/ x@_FillValue /)    ; original _FillValue
+      end if
 
       if (Round) then
-          xTmp = (x + HALF/shift)*shift  ; xTmp same type as x
+          x@_FillValue = local_FillValue    ; use local fill value
+          xTmp = (x + HALF/shift)*shift    
       else
+          x@_FillValue = local_FillValue
           xTmp = x*shift
       end if
 
-      if (xType.eq."float") then
-          iTmp  = floattointeger(xTmp)  ; truncate temporary variable
-      else
-          iTmp  = doubletointeger(xTmp) ; truncate temporary variable
-      end if
+      xTmp  = where(x.ge.zero, floor(xTmp), ceil(xTmp)) ; simulate a 'truncate'
+                                                        ; without changing type
 
-      xTmp  = iTmp/shift                ; return original type
+      xTmp  = xTmp/shift             ; return original type
+
+      if (isvar("xFillOrig")) then
+          if (any(xTmp.eq.xFillOrig)) then
+              nOrig = num(xTmp.eq.xFillOrig)
+              print("decimalPlaces: WARNING: nOrig="+nOrig+" values were mapped into _FillValue")
+              print("                        The returned _FillValue is different from original")
+          else
+              xTmp@_FillValue = xFillOrig       
+          end if
+      else
+          delete(xTmp@_FillValue)           ; delete temporary
+      end if
+      
       return (xTmp)
   else
       print ("decimalPlaces: input is of type "+xType )
-      return (x)                        ; must not be float or double
+      return (x)                            ; must not be float or double
   end if
 end
 
@@ -7647,35 +7692,6 @@ begin
       system("/bin/rm "+tmpdir+tmpfile)
   end if
   return(table)
-end
-
-;*************************************************************************
-; D. Shea
-; print Min and Max of a numeric variable using long_name [if present]
-;
-undef("printMinMax")
-procedure printMinMax (x:numeric,optSpace:logical)  
-;  Usage:   printMinMax (T,True)                   
-begin                                             
-          ; attribute names to check             
-   vLongName = (/"long_name", "description", "standard_name" /)
-   long_name = ""        
-   do n=0,dimsizes(vLongName)-1            
-      if (isatt(x,vLongName(n))) then     
-          long_name = x@$vLongName(n)$   
-          break
-      end if
-   end do
-        
-   if (optSpace) then
-       print (" ")  
-   end if          
-                  
-   if (long_name.ne."") then 
-       print (long_name+ ": min="+min(x)+"   max="+max(x)) 
-   else 
-       print ("min="+min(x)+"   max="+max(x))
-   end if 
 end
 
 ;********************************************************************
