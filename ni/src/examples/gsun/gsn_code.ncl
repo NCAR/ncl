@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.221 2009-08-15 05:28:28 haley Exp $
+;      $Id: gsn_code.ncl,v 1.222 2009-08-27 12:33:51 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3191,6 +3191,7 @@ begin
     type2   = type          ; Make copy of type and its resources
     res_dir = "./"          ; Default resource directory.
     res_file = "gsnapp"     ; Default resource file name.
+    valid_type = False      ; Is type valid?
 ;
 ; Parse "name" to get the directory and the file prefix.
 ;
@@ -3231,6 +3232,7 @@ begin
         x_file@wkColorMap = type2@wkColorMap
       end if
       wks = gsn_open_x11(x_file)
+      valid_type = True
     end if
 
     if (lower_case(type2).eq."ps".or.lower_case(type2).eq."eps".or. \
@@ -3238,6 +3240,7 @@ begin
       ps_file = get_res_value(type2,"wkPSFileName",res_file + "." + type2)
       ps_file@res_file = res_file
       wks = gsn_open_ps(type2,res_dir+ps_file)
+      valid_type = True
     end if
 
     if (lower_case(type2).eq."ncgm") then
@@ -3248,6 +3251,7 @@ begin
         ncgm_file@wkColorMap = type2@wkColorMap
       end if
       wks = gsn_open_ncgm(ncgm_file)
+      valid_type = True
     end if
 
     if (lower_case(type2).eq."pdf") then
@@ -3255,16 +3259,18 @@ begin
                                res_file + "." + type2)
       pdf_file@res_file = res_file
       wks = gsn_open_pdf(type2, res_dir+pdf_file)
+      valid_type = True
     end if
 
     if (lower_case(type2).eq."xwd".or.lower_case(type2).eq."png") then
       image_file = get_res_value(type2,"wkImageFileName", res_file)
       image_file@res_file = res_file
       wks = gsn_open_image(type2, res_dir+image_file)
+      valid_type = True
     end if
 
-    if (ismissing(wks)) then
-      print("Error: gsn_open_wks: "+ type2 + " is an illegal workstation type.")
+    if (.not.valid_type.or.ismissing(wks)) then
+      print("Error: gsn_open_wks: '"+ type2 + "' is an invalid workstation type.")
       exit
     end if
 
@@ -6693,15 +6699,15 @@ end
 ;                    xy: graphic                                        ;
 ;             binvalues: numeric                                        ;
 ;               barlocs: numeric                                        ;
-;              bar2locs: numeric                                        ;
 ;              barwidth: numeric                                        ;
 ;                colors                                                 ;
+;               compare: logical                                        ;
 ;                 gsres: logical                                        ;
 ;                                                                       ;
 ;  xy        - xy plot id to draw columns on                            ;
 ;  bins      - the center of each bin range.                            ;
 ;  binvalues - the number of values in the corresponding bin            ;
-;  start     - the start of the bar in each bin (only for irreg axes)   ;
+;  barlocs   - the start of the first bar in each bin                   ;
 ;  width     - the width of the bar                                     ;
 ;  colors    - array of colors to use (ints or color names)             ; 
 ;  gsres     - optional primitive resources                             ;
@@ -6712,35 +6718,40 @@ end
 ;***********************************************************************;
 undef("hist_columns")
 function hist_columns(wks[1]:graphic,xy[1]:graphic,binvalues:numeric, \
-                      barlocs[*]:numeric, bar2locs[*]:numeric, \
-                      barwidth[*]:numeric, colors[*], gsres:logical)
-local i, nbins, dims, nbinvalues, gsres, xpoints, ypoints, compare
+                      barlocs[*][*]:numeric, barwidth[*]:numeric, \
+                      colors[*], compare:logical, gsres:logical)
+local i, nbins, dims, nbinvalues, gsres, xpoints, ypoints, multibars
 begin
-  nbars = dimsizes(barlocs)
-; 
-; If binvalues is 2-dimensional, then comparing two fields.
-;
-  dims  = dimsizes(binvalues)
-  if(dimsizes(dims).eq.2.and.dims(0).eq.2)
-    nbinvalues  = dims(1)
-    compare     = True
-  else
-    nbinvalues  = dims(0)
-    compare     = False
-  end if
+  dims       = dimsizes(barlocs)
+  nbarsinbin = dims(0)
+  nbars      = dims(1)
+  delete(dims)
 
+  dims = dimsizes(binvalues)
+  if(dimsizes(dims).eq.1) then
+    nbinvalues = dims(0)
+  else
+    nbinvalues = dims(1)
+  end if
+  delete(dims)
   if(nbars.ne.nbinvalues) then
     print("Error: hist_columns: Dimension sizes of bins (" + nbars+ ") and binvalues (" + nbinvalues + ") must be the same")
     return
   end if
+
+  if(nbarsinbin.ge.2)
+    multibars   = True
+  else
+    multibars   = False
+  end if
+
 ;
 ; Set up arrays to hold polygon points.
 ;
-  if(compare)
-    xpoints   = new((/2,nbars,5/),float)
-    ypoints   = new((/2,nbars,5/),float)
-    polygons0 = new(nbars,graphic)
-    polygons1 = new(nbars,graphic)
+  if(multibars) then
+    xpoints   = new((/nbarsinbin,nbars,5/),float)
+    ypoints   = new((/nbarsinbin,nbars,5/),float)
+    polygons  = new((/nbarsinbin,nbars/),graphic)
   else
     xpoints  = new((/nbars,5/),float)
     ypoints  = new((/nbars,5/),float)
@@ -6754,29 +6765,20 @@ begin
 ;
 ; Begin assigning polygon points.
 ;
-  if(compare)
-    ypoints(0,:,0) = (/0/)
-    ypoints(1,:,0) = (/0/)
-    ypoints(0,:,1) = (/binvalues(0,:)/)
-    ypoints(1,:,1) = (/binvalues(1,:)/)
-    ypoints(0,:,2) = (/ypoints(0,:,1)/)
-    ypoints(1,:,2) = (/ypoints(1,:,1)/)
-    ypoints(0,:,3) = (/0/)
-    ypoints(1,:,3) = (/0/)
-    ypoints(0,:,4) = (/0/)
-    ypoints(1,:,4) = (/0/)
+  if(multibars)
+    do i=0,nbarsinbin-1
+      ypoints(i,:,0) = (/0/)
+      ypoints(i,:,1) = (/binvalues(i,:)/)
+      ypoints(i,:,2) = (/ypoints(i,:,1)/)
+      ypoints(i,:,3) = (/0/)
+      ypoints(i,:,4) = (/0/)
 
-    xpoints(0,:,0) = (/barlocs/)
-    xpoints(0,:,1) = (/xpoints(0,:,0)/)
-    xpoints(0,:,2) = (/barlocs + barwidth/)
-    xpoints(0,:,3) = (/xpoints(0,:,2)/)
-    xpoints(0,:,4) = (/xpoints(0,:,0)/)
-;
-    xpoints(1,:,0) = (/bar2locs/)
-    xpoints(1,:,1) = (/xpoints(1,:,0)/)
-    xpoints(1,:,2) = (/bar2locs + barwidth/)
-    xpoints(1,:,3) = (/xpoints(1,:,2)/)
-    xpoints(1,:,4) = (/xpoints(1,:,0)/)
+      xpoints(i,:,0) = (/barlocs(i,:)/)
+      xpoints(i,:,1) = (/xpoints(i,:,0)/)
+      xpoints(i,:,2) = (/barlocs(i,:) + barwidth/)
+      xpoints(i,:,3) = (/xpoints(i,:,2)/)
+      xpoints(i,:,4) = (/xpoints(i,:,0)/)
+    end do
   else
     ypoints(:,0) = (/0/)
     ypoints(:,1) = (/binvalues/)
@@ -6784,51 +6786,57 @@ begin
     ypoints(:,3) = (/0/)
     ypoints(:,4) = (/0/)
 
-    xpoints(:,0) = (/barlocs/)
+    xpoints(:,0) = (/barlocs(0,:)/)
     xpoints(:,1) = (/xpoints(:,0)/)
-    xpoints(:,2) = (/barlocs + barwidth/)
+    xpoints(:,2) = (/barlocs(0,:) + barwidth/)
     xpoints(:,3) = (/xpoints(:,2)/)
     xpoints(:,4) = (/xpoints(:,0)/)
   end if
 
-  fillindex = get_res_value(gsres,"gsFillIndex",(/0,6/))
+  if(compare)
+    fillindex = get_res_value(gsres,"gsFillIndex",(/0,6/))
+  else
+    if(multibars) then
+      fillindex = get_res_value(gsres,"gsFillIndex",0)
+      if(dimsizes(dimsizes(fillindex)).eq.1) then
+         ftmp = new(nbarsinbin,typeof(fillindex))
+         ftmp = fillindex
+         delete(fillindex)
+         fillindex = ftmp
+         delete(ftmp)
+      end if
+    else
+      fillindex = get_res_value(gsres,"gsFillIndex",0)
+    end if
+  end if
 ;
 ; Make sure fill indices are between 0 and 17.
+; No more, because you have have added your own fill index.
 ;
-  fillindex1 = min((/max((/fillindex(0),0/)),17/))
-  if(dimsizes(fillindex).ge.2)
-    fillindex2 = min((/max((/fillindex(1),0/)),17/))
-  else
-    fillindex2 = fillindex1
-  end if
+;  fillindex = min((/max((/max(fillindex),0/)),17/))
 
   ncolors = dimsizes(colors)
   do i = 0, nbars - 1
     gsres@gsFillColor = colors(i % ncolors)
 
-    if(compare) 
+    if(multibars) 
 ;
-; Add the second histogram bars first, so that they will be drawn
-; first. The first histogram bars will thus be drawn on top.
+; Add the remaining histogram bars first, so that they will be drawn
+; second. The first histogram bars will thus be drawn on top, if
+; they are being stacked.
 ;
-      gsres@gsFillIndex = fillindex2
-      if(binvalues@horizontal) then
-        polygons1(i) = gsn_add_polygon(wks,xy,ypoints(1,i,:), \
-                                       xpoints(1,i,:), gsres)
-      else
-        polygons1(i) = gsn_add_polygon(wks,xy,xpoints(1,i,:), \
-                                       ypoints(1,i,:), gsres)
-      end if
-      gsres@gsFillIndex = fillindex1
-      if(binvalues@horizontal) then
-        polygons0(i) = gsn_add_polygon(wks,xy,ypoints(0,i,:), \
-                                       xpoints(0,i,:), gsres)
-      else
-        polygons0(i) = gsn_add_polygon(wks,xy,xpoints(0,i,:), \
-                                       ypoints(0,i,:), gsres)
-      end if
+      do j=nbarsinbin-1,0,1
+        gsres@gsFillIndex = fillindex(j)
+        if(binvalues@horizontal) then
+          polygons(j,i) = gsn_add_polygon(wks,xy,ypoints(j,i,:), \
+                                         xpoints(j,i,:), gsres)
+        else
+          polygons(j,i) = gsn_add_polygon(wks,xy,xpoints(j,i,:), \
+                                          ypoints(j,i,:), gsres)
+        end if
+      end do
     else
-      gsres@gsFillIndex = fillindex1
+      gsres@gsFillIndex = fillindex
       if(binvalues@horizontal) then
         polygons(i) = gsn_add_polygon(wks,xy,ypoints(i,:),xpoints(i,:),gsres)
       else
@@ -6841,15 +6849,8 @@ begin
 ; necessary, b/c otherwise the polygons will go away when you exit the
 ; function.
 ;
-  if(compare)
-    var_string0 = unique_string("hpolygons0")
-    var_string1 = unique_string("hpolygons1")
-    xy@$var_string0$ = polygons0
-    xy@$var_string1$ = polygons1
-  else
-    var_string = unique_string("hpolygons")
-    xy@$var_string$ = polygons
-  end if
+  var_string      = unique_string("hpolygons")
+  xy@$var_string$ = polygons
   return(xy)
 end
 
@@ -6865,6 +6866,7 @@ end
 ;             count_msg: logical                                        ;
 ;                isnice: integer                                        ;
 ;               compare: integer                                        ;
+;            sidebyside: integer                                        ;
 ;                                                                       ;
 ; By default, this routine calculates a nice set of ranges for "binning";
 ; the given data. The following cases are possible:                     ;
@@ -6902,13 +6904,15 @@ undef("compute_hist_vals")
 function compute_hist_vals(xx,binlocs,nbinlocs[1]:integer, \
                            bin_width:numeric,setinterval:logical, \
                            setdiscrete:logical, minmaxbins:logical, \
-                           count_msg:logical,isnice:logical,compare:logical)
+                           count_msg:logical,isnice:logical, \
+                           compare:logical,sidebyside:logical)
 local xmin, xmax, new_binlocs, nbars, buckets, x, i
 begin
   if(isnumeric(xx)) then
     xmin = tofloat(min(xx))
     xmax = tofloat(max(xx))
   end if
+
 ;
 ; If the bins are set, need to determine if you want to have the bins
 ; represent ranges of values or discrete values.
@@ -6916,6 +6920,7 @@ begin
   if(setdiscrete) then
     new_binlocs = binlocs
     nbars       = dimsizes(new_binlocs)   ; # of bars equals # of binlocs
+    nsets       = dimsizes(new_binlocs)   ; # of bars equals # of binlocs
   else
 ;
 ; Check if range values have been set by user, or if we need to
@@ -6937,7 +6942,6 @@ begin
       end if
       if(.not.setdiscrete) then
         if(isnice) then
-
 ;
 ; Based on min and max of data, compute a new min/max/step that will
 ; give us "nice" bin values.
@@ -6959,9 +6963,9 @@ begin
 ; Count number of values in a particular bin range, or exactly
 ; equal to a bin value if discrete.
 ;
-  if(compare) then
-    nsets = 2
+  if(compare.or.sidebyside) then
     dims  = dimsizes(xx)
+    nsets = dims(0)
     npts  = dims(1)
     x     = xx
   else
@@ -6970,6 +6974,7 @@ begin
     x      = new((/1,npts/),typeof(xx))
     x(0,:) = xx
   end if
+
 ;
 ; Set up variable to hold binned values. Binned values can have
 ; unequal spacing.
@@ -6987,7 +6992,7 @@ begin
   else
 ;
 ; Count the values in each bin interval. Bin intervals can be
-; oaf length 0, meaning an exact count is done.
+; of length 0, meaning an exact count is done.
 ;
     do j = 0,nsets-1
       do i = 0, nbars-1
@@ -7069,11 +7074,12 @@ begin
 ;
   npts_nomiss = npts - num_missing
 
-  if(compare) then
+  if(compare.or.sidebyside) then
     percs          = (100.*num_in_bins)/tofloat(npts)
-    percs_nomiss   = new((/2,nbars/),float)
-    percs_nomiss(0,:) = (100.*num_in_bins(0,:))/tofloat(npts_nomiss(0))
-    percs_nomiss(1,:) = (100.*num_in_bins(1,:))/tofloat(npts_nomiss(1))
+    percs_nomiss   = new((/nsets,nbars/),float)
+    do i=0,nsets-1
+      percs_nomiss(i,:) = (100.*num_in_bins(i,:))/tofloat(npts_nomiss(i))
+    end do
   else
     percs        = (100.*num_in_bins(0,:))/tofloat(npts)
     percs_nomiss = (100.*num_in_bins(0,:))/tofloat(npts_nomiss)
@@ -7087,7 +7093,7 @@ begin
   num_in_bins@percentages_nm = percs_nomiss
 
   delete(x)
-  if(compare) then
+  if(compare.or.sidebyside) then
     return(num_in_bins)
   else
     return(num_in_bins(0,:))
@@ -7102,7 +7108,7 @@ end
 ;                                                                       ;
 ; This function draws a histogram plot. The user can enter the bin      ;
 ;      ranges, discrete bin values, or let this function calculate ones ;
-;      automatically.  This function will also compare two sets of      ;
+;      automatically.  This function will also compare multiple sets of ;
 ;      histograms. If xdata is a string, then you must be using         ;
 ;      discrete values, and not ranges.                                 ;
 ;                                                                       ;
@@ -7186,7 +7192,7 @@ end
 undef("gsn_histogram")
 function gsn_histogram(wks[1]:graphic,xdata, resources:logical)
 local res2, calldraw, callframe, maxbb, ispercent, bins, nbars, \
-      setdiscrete, setinterval,top, botton, left, right, lenc, tmp, \
+      setdiscrete, setinterval,top, bottom, left, right, lenc, tmp, \
       colors, locs, lbs, compare
 begin
   dummy = new(1,graphic)      ; Dummy graphic to return if things go wrong.
@@ -7217,42 +7223,60 @@ begin
   percentsign= get_res_value(res2,"gsnHistogramPercentSign",False)
   isnice     = get_res_value(res2,"gsnHistogramSelectNiceIntervals",True)
   compare    = get_res_value(res2,"gsnHistogramCompare",False)
+  sidebyside = get_res_value(res2,"gsnHistogramSideBySide",False)
   horizontal = get_res_value(res2,"gsnHistogramHorizontal",False)
+  bar_spc_perc = get_res_value(res2,"gsnHistogramBarSpacingPercent",0.)
 
   setdiscrete= False
   setinterval= False
 ;
-; xdata can only be 1D or 2D. If it is 2D, then the first dimension
-; must be 2, and this routine kicks into "compare" mode. 
+; xdata can be nD. The left most dimension indicates the number of bars
+; per bin, and the rightmost dimension the data values.
+
+; In the case where the leftmost dimension is 2, there's
+; the special case of "comparing" histograms - that is, the bars
+; will be stacked (gsnHistogramCompare = True)
 ;
-; Also, if gsnHistogramCompare is already set to True, then 
+; If the leftmost dimension is > 2, then the bars will be 
+; side by side (sidebyside = True).
+;
+
+;
+; Also, if gsnHistogramCompare is set to True, then 
 ; double-check that data is correct size.
 ;
   dims = dimsizes(xdata)
   rank = dimsizes(dims)
-  if(rank.gt.2.or.(rank.eq.2.and.dims(0).ne.2)) then
-    print("gsn_histogram: the input data must be 1-dimensional or 2-dimensional. If it is 2-dimensional, then the first dimension size must be 2.")
-    print("No plot will be drawn.")
-    return(dummy)
+  if(rank.eq.1) then
+    nbars_per_bin = 1
+  else
+    nbars_per_bin = dims(0)
   end if
 
 ;
 ; If comparing two fields, then first dimension must be two.
 ;
   if(compare) then
-    if(dims(0).ne.2.or.rank.eq.1) then
+    if(nbars_per_bin.ne.2.or.rank.eq.1) then
       print("Error: gsn_histogram: If comparing two fields, then you must input a 2D array dimensioned 2 x npts.")
       print("No plot will be drawn.")
       return(dummy)
     end if
   else 
-    if(rank.eq.2) then
-      print("gsn_histogram: You input a 2D array dimensioned 2 x npts, so will go into compare mode.")
-      compare = True
+    if(rank.eq.2.and.dims(0).eq.2) then
+      if(.not.sidebyside) then
+        print("gsn_histogram: You input a 2D array dimensioned 2 x npts, so will go into compare mode.")
+        compare = True
+      end if
     end if
   end if    
-  delete(dims)
 
+;
+; If you have > 2 leftmost dimensions, then we are in "side-by-side" mode.
+;
+  if(rank.gt.1.and..not.compare) then
+    sidebyside = True
+  end if    
 ;
 ; Calculate the percentage of the bin width that the bar width should
 ; be.
@@ -7260,8 +7284,13 @@ begin
   if(compare) then
     bar_wdt_perc = 0.5
   else
-    bar_wdt_perc = 0.66667
+    if(sidebyside) then
+      bar_wdt_perc = 1./(nbars_per_bin+1)
+    else
+      bar_wdt_perc = 0.66667
+    end if
   end if
+  bar_wdt_perc_was_set = False
   if(isatt(res2,"gsnHistogramBarWidthPercent")) then
     if(res2@gsnHistogramBarWidthPercent.le.0.or. \
        res2@gsnHistogramBarWidthPercent.gt.100.) then
@@ -7269,6 +7298,7 @@ begin
       print("               Defaulting to " + bar_wdt_perc)
     else
       bar_wdt_perc = 0.01*res2@gsnHistogramBarWidthPercent
+      bar_wdt_perc_was_set = True
     end if
     delete(res2@gsnHistogramBarWidthPercent)
   end if
@@ -7358,7 +7388,7 @@ begin
 ;
   num_in_bins = compute_hist_vals(xdata,bins,nbins,xbin_width,setinterval, \
                                   setdiscrete,minmaxbins,count_msg, \
-                                  isnice,compare)
+                                  isnice,compare,sidebyside)
 
   if(all(ismissing(num_in_bins)))
     print("Error: gsn_histogram: Unable to calculate bin values. No plot will be drawn.")
@@ -7375,7 +7405,7 @@ begin
 ;    True, then this adds one extra bar.
 ;
   nbinlocs = dimsizes(num_in_bins@binlocs)
-  if(compare)
+  if(compare.or.sidebyside)
     dims  = dimsizes(num_in_bins)
     nbars = dims(1)
     delete(dims)
@@ -7385,7 +7415,8 @@ begin
 ;
 ; 4. Calculate width of histogram bins and bars in each bin. If 
 ;    comparing two fields, then the histogram bars must be slightly
-;    smaller in width to accomodate two bars.
+;    smaller in width to accomodate two bars. If doing side-by-side
+;    bars, then the bars need to be even smaller.
 ;    
 ;    A note about how the bin widths are calculated: the bin locations
 ;    (that is, the bin "tickmarks") will be placed along the X axis such
@@ -7420,7 +7451,38 @@ begin
 ; Calculate the width of the histogram bar. It needs to be smaller
 ; if we are comparing two histograms.
 ;
-  bar_width = bar_wdt_perc * bin_width 
+  if(sidebyside) then
+    if(bar_spc_perc.gt.0.and.bar_spc_perc.le.100) then
+      bar_spcng  = 0.01 * bar_spc_perc * bin_width
+      if(.not.bar_wdt_perc_was_set) then
+        bar_width  = (bin_width - (bar_spcng*nbars))/nbars
+      else
+        bar_width  = bar_wdt_perc * bin_width 
+      end if
+      if( ((bar_spcng*nbars) + (bar_width*nbars)).gt.bin_width)
+        print("Warning: gsn_histogram: The bar spacing and bar width combined is wider than the bin width.")
+        print("Will default to no spacing.")
+        bar_spc_perc = 0
+        bar_width  = (bin_width - (bar_spcng*nbars))/nbars
+      end if
+      lft_margin = 0.5*bar_spcng
+      if(bar_width.le.0) then
+        print("Warning: gsn_histogram: The bar spacing percentage selected is too large for the bin width.")
+        print("Will default to no spacing.")
+        bar_spc_perc = 0
+      end if
+    end if
+    if(bar_spc_perc.eq.0) then
+      bar_spcng  = 0.0
+      bar_width  = bar_wdt_perc * bin_width 
+      lft_margin = 0.5*(bin_width - (nbars*bar_width))
+    end if
+    if(setdiscrete) then
+      lft_margin = -lft_margin
+    end if
+  else
+    bar_width = bar_wdt_perc * bin_width 
+  end if
   if(compare.and.1.3333*bar_width.gt.bin_width) then
     print("Warning: gsn_histogram: The bar width percentage selected is too large for this comparison histogram.")
     print("       Resetting to " + 1/1.3333 + " for better results")
@@ -7434,25 +7496,29 @@ begin
   getvalues wks
     "wkColorMapLen" : lenc
   end getvalues
-  if(isatt(res2,"gsFillColor")) then
-    colors = get_res_value(res2,"gsFillColor",1)
-  else
-    tmp = (lenc-2)/nbars
-    if(tmp .eq. 0 )
-      print("Warning: gsn_histogram: not enough colors, using single color")
-      colors = new(nbars,integer)
-      colors = 2
-    else 
-      colors = new(nbars,integer)
-      tmpc   = ispan(2,lenc,tmp)
-      if(dimsizes(tmpc).ne.dimsizes(colors))
-        colors = tmpc(0:dimsizes(colors)-1)
-      else
-        colors = tmpc
+  if(isatt(res2,"gsnHistogramBarColors")) then
+    colors = get_res_value(res2,"gsnHistogramBarColors",1)
+  else 
+    if(isatt(res2,"gsFillColor")) then
+      colors = get_res_value(res2,"gsFillColor",1)
+    else
+      tmp = (lenc-2)/nbars
+      if(tmp .eq. 0 )
+        print("Warning: gsn_histogram: not enough colors, using single color")
+        colors = new(nbars,integer)
+        colors = 2
+      else 
+        colors = new(nbars,integer)
+        tmpc   = ispan(2,lenc,tmp)
+        if(dimsizes(tmpc).ne.dimsizes(colors))
+         colors = tmpc(0:dimsizes(colors)-1)
+        else
+          colors = tmpc
+        end if
+        delete(tmpc)
       end if
-      delete(tmpc)
-    end if
-    delete(tmp)
+      delete(tmp)
+    end if  
   end if  
 ;
 ; 6. Calculate axis limits for plot, and create plot.
@@ -7682,21 +7748,36 @@ begin
 ;     slightly to the right (or above for horizontal bars) of the
 ;     first set of bars.
 ;
-  if(setdiscrete) then
-    bar_locs = -.5*bar_width + bin_width * ispan(0,nbars-1,1)
-    if(compare) then
-      bar2_locs =  -.166667*bar_width + bin_width * ispan(0,nbars-1,1)
-    else
-      bar2_locs = 0
-    end if
+;     If doing side-by-side bars, then each new set of bars
+;     will start to the right of the previous bar. (This may
+;     change in future to allow some white space.)
+;
+  if(sidebyside) then 
+    bar_locs      = new((/nbars_per_bin,nbars/),float)
+    bar_locs(0,:) = lft_margin + ispan(0,nbars-1,1)*bin_width
+    do i=1,nbars_per_bin-1
+      bar_locs(i,:) = bar_locs(0,:) + i*(bar_width+bar_spcng)
+    end do
   else
-    if(compare) then
-       bar_locs = .5*(bin_width-(bar_width+0.3333*bar_width)) + \
-                      bin_width*ispan(0,nbars-1,1)
-       bar2_locs = bar_locs + 0.3333*bar_width
+    if(setdiscrete) then
+      if(compare) then
+        bar_locs      = new((/2,nbars/),float)
+        bar_locs(0,:) = -.5*bar_width + bin_width * ispan(0,nbars-1,1)
+        bar_locs(1,:) = -.166667*bar_width + bin_width * ispan(0,nbars-1,1)
+      else
+        bar_locs = new((/1,nbars/),float)
+        bar_locs = -.5*bar_width + bin_width * ispan(0,nbars-1,1)
+      end if
     else
-      bar_locs = .5*(bin_width-bar_width) + bin_width*ispan(0,nbars-1,1)
-      bar2_locs = 0
+      if(compare) then
+        bar_locs      = new((/2,nbars/),float)
+        bar_locs(0,:) = .5*(bin_width-(bar_width+0.3333*bar_width)) + \
+                         bin_width*ispan(0,nbars-1,1)
+        bar_locs(1,:) = bar_locs(0,:) + 0.3333*bar_width
+      else
+        bar_locs = new((/1,nbars/),float)
+        bar_locs = .5*(bin_width-bar_width) + bin_width*ispan(0,nbars-1,1)
+      end if
     end if
   end if
 ;
@@ -7756,8 +7837,8 @@ begin
   gsres = get_res_eq(res2,"gs")          ; Get GraphicStyle resources.
   num_in_bins@horizontal = horizontal    ; horizontal or vertical bars
 
-  histogram = hist_columns(wks,xy,num_in_bins,bar_locs,bar2_locs,bar_width, \
-              colors,gsres)
+  histogram = hist_columns(wks,xy,num_in_bins,bar_locs,bar_width, \
+              colors,compare,gsres)
 ;
 ; 15. Draw and advance frame.
 ;
@@ -7767,17 +7848,14 @@ begin
 ;
 ; Return begin, mid, and end point location of each bar.
 ;
-  if(compare) then
-      both_locs = new((/2,dimsizes(bar_locs)/),typeof(bar_locs))
-      both_locs(0,:) = bar_locs
-      both_locs(1,:) = bar2_locs
-      histogram@BeginBarLocs = both_locs
-      histogram@MidBarLocs   = both_locs + 0.5*bar_width
-      histogram@EndBarLocs   = both_locs + bar_width
+  if(compare.or.sidebyside) then
+    histogram@BeginBarLocs  = bar_locs
+    histogram@MidBarLocs    = bar_locs + 0.5*bar_width
+    histogram@EndBarLocs    = bar_locs + bar_width
   else
-    histogram@BeginBarLocs = bar_locs
-    histogram@MidBarLocs   = bar_locs + 0.5*bar_width
-    histogram@EndBarLocs   = bar_locs + bar_width
+    histogram@BeginBarLocs  = bar_locs(0,:)
+    histogram@MidBarLocs    = bar_locs(0,:) + 0.5*bar_width
+    histogram@EndBarLocs    = bar_locs(0,:) + bar_width
   end if
   histogram@BinLocs       = num_in_bins@binlocs
   histogram@NumInBins     = num_in_bins
