@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.243 2009-08-21 15:18:19 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.244 2009-08-28 20:56:42 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17686,7 +17686,7 @@ NhlErrorTypes _NclItoint
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
                             output[i] = ret_missing.intval;
                         }
