@@ -1,5 +1,5 @@
 C
-C	$Id: gputpt.f,v 1.4 2008-07-27 00:20:58 haley Exp $
+C	$Id: gputpt.f,v 1.5 2009-08-30 05:54:47 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -19,7 +19,7 @@ C
 C
       LOGICAL CNTINO
 C
-      INTEGER NOPNS, TNOPNS, TMAX, NBYTS, IOS, STATUS
+      INTEGER CONVAL, NOPNS, TNOPNS, TMAX, NBYTS, IOS, STATUS
       PARAMETER (MAXTMP=600,MAXTMH=300)
       INTEGER ITEMPS(MAXTMP)
       REAL TEMPP(MAXTMH),TEMPQ(MAXTMH)
