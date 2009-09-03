@@ -1,5 +1,5 @@
 /*
- *      $Id: Template,v 1.50 2009-09-03 14:56:37 haley Exp $
+ *      $Id: Template,v 1.51 2009-09-03 16:16:40 haley Exp $
  */
 /************************************************************************
 *									*
@@ -30,7 +30,7 @@ NGCOMM########################################################################
 #define NO 0
 
 SYSTEM_INCLUDE		= SystemIncludesName
-DATE                    = $(shell date +%Y%m%d%M)
+DATE                    = $(shell date +%Y%m%d%H%M)
 
 OS1_DEF		=	_OpSysDef
 OS2_DEF		=	_OpSys2Def
