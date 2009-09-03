@@ -1,6 +1,6 @@
 
 /*
- *      $Id: Symbol.h,v 1.32 2008-12-30 16:52:47 haley Exp $
+ *      $Id: Symbol.h,v 1.33 2009-09-03 06:41:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -250,6 +250,12 @@ int	/* type */
 extern int _NclGetCurrentScopeLevel(
 #if	NhlNeedProto
 void
+#endif
+);
+
+extern void _NclUndefSymbolsInScope(
+#if	NhlNeedProto
+NclScopeRec *thetable
 #endif
 );
 

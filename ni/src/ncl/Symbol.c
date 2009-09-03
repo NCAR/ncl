@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.71 2008-12-26 15:12:02 huangwei Exp $
+ *      $Id: Symbol.c,v 1.72 2009-09-03 06:41:18 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -998,6 +998,29 @@ char *name;
 		s = s->symnext;
 	}
 	return(NULL);
+}
+
+void _NclUndefSymbolsInScope
+#if	NhlNeedProto
+(NclScopeRec *thetable)
+#else
+(thetable)
+	NclScopeRec *thetable;
+#endif
+{
+	NclScopeRec *sr = thetable;
+	NclSymbol *s;
+        int i;
+
+	for(i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+		if(sr->this_scope[i].nelem != 0) {
+			s = sr->this_scope[i].thelist;
+			while (s != NULL) {
+				s->type = UNDEF;
+				s = s->symnext;
+			}
+		}
+	}
 }
 
 NclSymbol *_NclAddInScope
