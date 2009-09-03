@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.31 2009-05-04 19:23:30 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.32 2009-09-03 06:24:17 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1832,21 +1832,23 @@ void* data;
 							int redef = 0;
 							buffer = NrmQuarkToString(*(NclQuark*)data);
 							if(strlen(buffer)  > stepal->att_inq->len) {
-								ncredef(cdfid);
+								sd_ncredef(cdfid);
 								redef = 1;
 							}
 							ret = sd_ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,strlen(buffer),buffer);
 							if (redef)
-								ncendef(cdfid);
+								sd_ncendef(cdfid);
 
 							if (stepal->att_inq->value != NULL)
 								memcpy(stepal->att_inq->value,data,sizeof(NclQuark));
 						} else {
+							sd_ncredef(cdfid);
 							ret = sd_ncattput(cdfid,stepvl->var_inq->varid,NrmQuarkToString(theatt),stepal->att_inq->data_type,stepal->att_inq->len,data);
 							if (stepal->att_inq->value != NULL) {
 								memcpy(stepal->att_inq->value,data,
 								       nctypelen(stepal->att_inq->data_type)*stepal->att_inq->len);
 							}
+							sd_ncendef(cdfid);
 						}
 		
 						sd_ncclose(cdfid);
