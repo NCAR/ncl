@@ -353,6 +353,7 @@ if [ $INSTALL_HDFEOS5 ]
     echo "Building $HDFEOS5_DIR..."
     ./configure --enable-static --with-hdf\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
+    cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]
     then
       echo "$HDFEOS5_DIR build successful."
