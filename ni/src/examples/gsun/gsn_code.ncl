@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.222 2009-08-27 12:33:51 haley Exp $
+;      $Id: gsn_code.ncl,v 1.223 2009-09-04 20:24:01 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -5189,6 +5189,8 @@ begin
   num_plots_left = nplots
   nplot          = 0
   nr             = 0
+  added_anno     = False             ; For figure strings
+
   do while(num_plots_left.gt.0)
     vpy_new = ypos(nr)
     new_ncols = min((/num_plots_left,row_spec(nr)/))
@@ -5247,7 +5249,6 @@ begin
           "vpHeightF" : scale*old_vp(nplot,3)
         end setvalues
 
-        added_anno = False
         if(is_figure_strings) then
           if(nplot .lt. dimsizes(panel_strings).and. \
             panel_strings(nplot).ne."")
