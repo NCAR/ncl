@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.19 2009-05-19 15:08:28 haley Exp $
+#   $Id: check_files,v 1.20 2009-09-04 16:57:20 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -371,6 +371,48 @@ include/ncarg/ncl/NclFileInterfaces.h
 include/ncarg/ncl/NclVar.h
 include/ncarg/ncl/defs.h
 include/ncarg/ncl/nio.h
+include/ncarg/nio/DataSupport.h
+include/ncarg/nio/FileSupport.h
+include/ncarg/nio/NclData.h
+include/ncarg/nio/NclDataDefs.h
+include/ncarg/nio/NclFile.h
+include/ncarg/nio/NclFileInterfaces.h
+include/ncarg/nio/NclMdInc.h
+include/ncarg/nio/NclMultiDValData.h
+include/ncarg/nio/NclMultiDValHLUObjData.h
+include/ncarg/nio/NclMultiDVallistData.h
+include/ncarg/nio/NclMultiDValnclfileData.h
+include/ncarg/nio/NclOneDValCoordData.h
+include/ncarg/nio/NclType.h
+include/ncarg/nio/NclTypebyte.h
+include/ncarg/nio/NclTypechar.h
+include/ncarg/nio/NclTypedouble.h
+include/ncarg/nio/NclTypefloat.h
+include/ncarg/nio/NclTypeint.h
+include/ncarg/nio/NclTypeint64.h
+include/ncarg/nio/NclTypelogical.h
+include/ncarg/nio/NclTypelong.h
+include/ncarg/nio/NclTypeobj.h
+include/ncarg/nio/NclTypeshort.h
+include/ncarg/nio/NclTypestring.h
+include/ncarg/nio/NclTypeuint.h
+include/ncarg/nio/NclTypeuint64.h
+include/ncarg/nio/NclTypeulong.h
+include/ncarg/nio/NclTypeushort.h
+include/ncarg/nio/NclVar.h
+include/ncarg/nio/Symbol.h
+include/ncarg/nio/TypeSupport.h
+include/ncarg/nio/defs.h
+include/ncarg/nio/nio.h
+include/ncarg/nio/nioBase.h
+include/ncarg/nio/nioCallbacks.h
+include/ncarg/nio/nioConvert.h
+include/ncarg/nio/nioConvertP.h
+include/ncarg/nio/nioError.h
+include/ncarg/nio/nioNresDB.h
+include/ncarg/nio/nioc.h
+include/ncarg/nio/niohlu.h
+include/ncarg/nio/niohluP.h
 lib/libblas_ncl.a
 lib/libfftpack5_dp.a
 lib/libhlu.a
