@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.231 2009-08-24 23:31:51 shea Exp $
+;      $Id: contributed.ncl,v 1.232 2009-09-08 02:58:57 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9415,7 +9415,7 @@ begin
      dist   = gc_latlon(LAT(n),LON(n),lat1d,lon1d, 2,2)
      mndist = min( dist )
      ind1d  = ind(dist.eq.mndist)
-     if (.not.ismissing(ind1d)) then
+     if (.not.ismissing(ind1d(0))) then
          ij(n,:) = ind_resolve( ind1d(0), n2d )
      else
          print("getind_latlon2d: lat="+ LAT(n)+"  lon="+ LON(n)+" problem")
