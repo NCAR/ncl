@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.13 2009-05-29 01:10:23 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.14 2009-09-11 19:25:39 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2178,6 +2178,10 @@ static NhlErrorTypes AddDataBoundToAreamap
 			yn[3] = yn[2];
 
 			NhlNDCToData(cl->base.id,xn,yn,4,xn,yn,NULL,NULL,&st,&oor);
+			if (! st) {
+				_NhlDataToWin(cnp->trans_obj,xn,yn,
+					      4,xn,yn,&st,NULL,NULL);
+			}
 			if (! st) {
 				gwlx = xn[0];
 				gwrx = xn[1];
