@@ -1,0 +1,51 @@
+/*
+ *  Description:    This file contains all the directives needed to
+ *                  tell ymake how to build NCARG/NCL on an AMD64
+ *                  system running Solaris X86.
+ *
+ *                  You may need to modify it to change or include
+ *                  options, especially for the "CtoFLibraries" line.
+ */
+#define ByteSwapped
+/* #define HdfDefines   -DSUN */
+#define amd64
+#define Cstatic -Wl,-Bstatic
+#define Cdynamic -Wl,-Bdynamic
+#define ExtraSysLibraries       -Wl,-Bdynamic -lnsl -lintl -lsocket -ldl -lw
+
+#define CcOptions               -m64 -R/usr/local/lib/gcc-4.3.3
+#define FcOptions       -m64
+
+/*
+ * alkara removed the -fast optimization from Fcoptions because of the reason
+ * stated below.
+ * http://mail.opensolaris.org/pipermail/kde-discuss/2008-April/000871.html
+*/
+
+#define CppCommand      /usr/ccs/lib/cpp
+#define FCppCommand     /usr/ccs/lib/cpp
+#define DoesRanlib      NO
+#define LintCommand     alint
+#define StdDefines      -DSYSV -D_REENTRANT -DByteSwapped -Damd64 -D__64BIT__
+/*
+ * alkara removed the below stddefine from above option
+ *#-Di386 -D_POSIX_SOURCE -D_XOPEN_SOURCE
+*/
+
+#define XLibrary -lX11 -lXext
+#define XmotifLibrary -lXm
+
+#define UseCatDirs        YES
+
+#define CCompiler       cc
+#define FCompiler       f90
+#define XToolLibrary      -lXt -Wl,-Bdynamic -lSM -lICE
+
+#define CLoader         cc
+#define FLoader         f90
+
+#define ArchRecLibSearch      -L/usr/openwin/lib -L/usr/dt/lib
+#define ArchRecIncSearch      -I/usr/openwin/include -I/usr/dt/include
+#define CtoFLibraries  -lm -lsunmath
+
+#define RpathFlag  -R/usr/local/lib/gcc-4.3.3
