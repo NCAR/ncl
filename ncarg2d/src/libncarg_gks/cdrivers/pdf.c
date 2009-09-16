@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.26 2008-07-23 17:28:00 haley Exp $
+ *      $Id: pdf.c,v 1.27 2009-09-16 04:51:14 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -1822,6 +1822,16 @@ int PDFCloseWorkstation(GKSC *gksc)
 
   (void) fflush(fp);
   psa->pict_empty = TRUE;
+
+/*
+ *  Free allocated memory.
+ */
+  free(psa);                             
+  for (i = 0; i < maximum_lines; i++) {  
+    free(page_lines[i]);                
+  }                                    
+  free(page_lines);                   
+  free(object_pointer);              
   fclose(fp);
   return(0);
 }
