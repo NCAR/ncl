@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.223 2009-09-04 20:24:01 haley Exp $
+;      $Id: gsn_code.ncl,v 1.224 2009-09-17 20:26:29 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3419,14 +3419,25 @@ undef("gsn_add_primitive")
 function gsn_add_primitive(wks:graphic,plotid:graphic,x[*]:numeric,\
                            y[*]:numeric,isndc:logical,polytype:string, \
                            resources:logical)
-local res2, gsid, gsres, prim_object, dummy
+local res2, gsid, gsres, prim_object, dummy, tfres, vpx, vpy, vpw, vph
 begin
-  res2 = get_resources(resources)
-
   if(.not.any(polytype.eq.(/"polymarker","polygon","polyline"/)))
     print("Warning: gsn_add_primitive: Do not recognize primitive type '"+ polytype + "'.")
    return(0)
   end if
+
+  res2 = get_resources(resources)  ; Make a copy of resource list.
+
+;
+; After V5.1.1, this function was updated to recognize 
+; "tf*" resources, and have them applied to the plot
+; in question. This is especially important for the 
+; "tfPolyDrawOrder" resource, which allows you to control
+; the order which primitives are drawn.
+;
+  tfres = get_res_eq(res2,"tf")
+  attsetvalues_check(plotid,tfres)
+
 ;
 ; If in NDC space, make sure X and Y values are in the range 0 to 1 AND
 ; within the viewport of the polot.
