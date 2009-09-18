@@ -4868,9 +4868,9 @@ struct _NclSelectionRecord * sel_ptr;
 
 			att_id = thefile->file.var_att_ids[index];
 /*
-* Hereis the trick. It is easier to let the _NclAddAtt... functions deal
-* with the coercion than to figure out what it should be 
-*/
+ * Hereis the trick. It is easier to let the _NclAddAtt... functions deal
+ * with the coercion than to figure out what it should be 
+ */
 			exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
 			if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
 				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
@@ -4884,7 +4884,7 @@ struct _NclSelectionRecord * sel_ptr;
 					var,
 					attname,
 					tmp_att_md->multidval.val
-				);
+					);
 				return(ret);
 			} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
 				if(value->multidval.data_type == NCL_char) {	
@@ -4904,11 +4904,11 @@ struct _NclSelectionRecord * sel_ptr;
 						value->multidval.data_type,
 						value->multidval.totalelements,
 						value->multidval.val
-					);
-					if(ret > NhlWARNING) {
+						);
+					if(ret > NhlFATAL) {
 						AddAttInfoToList(&(thefile->file.var_att_info[index]), (*thefile->file.format_funcs->get_var_att_info)(thefile->file.private_rec,var,attname));
-						return(ret);
-					} else {
+					}
+					if (ret < NhlNOERROR) {
 						_NclDeleteAtt(att_id,NrmQuarkToString(attname));
 					}
 				} else {
@@ -4963,7 +4963,7 @@ struct _NclSelectionRecord * sel_ptr;
 						tmp_md->multidval.data_type,
 						tmp_md->multidval.totalelements,
 						tmp_md->multidval.val
-					);
+						);
 					if(ret > NhlWARNING) {
 						AddAttInfoToList(&(thefile->file.var_att_info[index]), (*thefile->file.format_funcs->get_var_att_info)(thefile->file.private_rec,var,attname));
 						return(ret);
@@ -5092,9 +5092,9 @@ struct _NclSelectionRecord *sel_ptr;
 		exists = _NclIsAtt(att_id,NrmQuarkToString(attname));
 		if((exists)&&(thefile->file.format_funcs->write_att != NULL))  {
 /*
-* Hereis the trick. It is easier to let the _NclAddAtt... functions deal
-* with the coercion than to figure out what it should be 
-*/
+ * Hereis the trick. It is easier to let the _NclAddAtt... functions deal
+ * with the coercion than to figure out what it should be 
+ */
 			ret = _NclAddAtt(att_id,NrmQuarkToString(attname),value,sel_ptr);
 			if(ret < NhlWARNING) {
 				NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
@@ -5105,30 +5105,30 @@ struct _NclSelectionRecord *sel_ptr;
 				thefile->file.private_rec,
 				attname,
 				tmp_att_md->multidval.val
-			);
+				);
 			return(ret);
 		} else if((!exists)&&(thefile->file.format_funcs->add_att != NULL)){
 			if(value->multidval.data_type == NCL_char) {
 				tmp_md = _NclCharMdToStringMd(value);
 				ret = _NclAddAtt(att_id,NrmQuarkToString(attname),tmp_md,sel_ptr);
        	        		if(ret < NhlWARNING) {
-       	                 	NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
-       	                 	return(NhlFATAL);
-       	         	}
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"Could not write attribute (%s) to attribute list", NrmQuarkToString(attname));
+					return(NhlFATAL);
+				}
 				ret = (*thefile->file.format_funcs->add_att)(
 					thefile->file.private_rec,
 					attname,
 					value->multidval.data_type,
 					value->multidval.totalelements,
 					value->multidval.val
-				);
-				if(ret > NhlWARNING) {
+					);
+				if(ret > NhlFATAL) {
 					thefile->file.file_atts[thefile->file.n_file_atts] = (*thefile->file.format_funcs->get_att_info)(thefile->file.private_rec,attname);
 					if(thefile->file.file_atts[thefile->file.n_file_atts] != NULL) {
 						thefile->file.n_file_atts++;
 					}
-					return(ret);
-				} else {
+				}
+				if (ret < NhlNOERROR) {
 					_NclDeleteAtt(att_id,NrmQuarkToString(attname));
 				}
 			} else {
@@ -5159,7 +5159,7 @@ struct _NclSelectionRecord *sel_ptr;
 						}
 						if((data_type = (*thefile->file.format_funcs->map_ncl_type_to_format)(to_type))==NULL)  {
 							NhlPError(NhlFATAL,NhlEUNKNOWN,"The type (%s) is not representable as an attribute in the file (%s)",_NclBasicDataTypeToName(to_type),NrmQuarkToString(thefile->file.fpath));
-       	                                          return(NhlFATAL);
+							return(NhlFATAL);
 	
 						} else {
 							NclFree(data_type);
@@ -5182,7 +5182,7 @@ struct _NclSelectionRecord *sel_ptr;
 					tmp_md->multidval.data_type,
 					tmp_md->multidval.totalelements,
 					tmp_md->multidval.val
-				);
+					);
 				if((tmp_md != value)&&(tmp_md->obj.status != PERMANENT)) {
 					_NclDestroyObj((NclObj)tmp_md);
 				}
