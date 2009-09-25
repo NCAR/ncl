@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.86 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id: AddBuiltIns.c,v 1.87 2009-09-25 18:16:49 dbrown Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -822,6 +822,12 @@ void
 );
 
 extern NhlErrorTypes _NclINhlGetWorkspaceObjectId(
+#if     NhlNeedProto
+void
+#endif
+);
+
+extern NhlErrorTypes _NclINhlGetClassResources(
 #if     NhlNeedProto
 void
 #endif
@@ -1996,6 +2002,13 @@ void _NclAddBuiltIns
 
 	nargs = 0;
 	NclRegisterFunc(_NclINhlGetErrorObjectId,args,"NhlGetErrorObjectId",nargs);
+
+	nargs = 0;
+	args = NewArgs(2);
+	SetArgTemplate(args,0,"string",0,NclANY);nargs++;
+        dimsizes[0] = 1;
+	SetArgTemplate(args,1,"string",1,NclANY);nargs++;
+	NclRegisterFunc(_NclINhlGetClassResources,args,"NhlGetClassResources",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

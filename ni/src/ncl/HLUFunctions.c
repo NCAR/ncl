@@ -8,6 +8,7 @@
 #include <ncarg/hlu/Callbacks.h>
 #include "defs.h"
 #include "Symbol.h"
+#include <regex.h>
 
 #include "NclDataDefs.h"
 #include "NclMdInc.h"
@@ -15,6 +16,8 @@
 #include "NclBuiltInSupport.h"
 #include "Machine.h"
 #include "HLUSupport.h"
+#include "HluClasses.h"
+
 
 NhlErrorTypes _NclINhlIsApp
 #if	NhlNeedProto
@@ -4379,4 +4382,173 @@ NhlErrorTypes _NclINhlGetErrorObjectId
                 &len_dims,TEMPORARY,NULL);
     _NclPlaceReturn(data_out);
     return ret;
+}
+
+NhlErrorTypes _NclINhlGetClassResources
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        int nargs = 2;
+        int has_missing,n_dims,dimsizes[NCL_MAX_DIMENSIONS];
+        NclBasicDataTypes type;
+        int i,j=0;
+        NclScalar missing;
+        void *arg0,*arg1;
+	NhlErrorTypes ret = NhlNOERROR, subret = NhlNOERROR;
+	NrmNameList resources;
+        int res_count;
+	static int first = 1;
+	static int hlu_class_count = 26;
+	static NhlClass NhlPublicClassList[26];
+	NhlClass class = NULL;
+	int filter = 0;
+	regex_t expr;
+	regmatch_t rm;
+
+	if (first)  {
+		NhlPublicClassList[0] =  NhltickMarkClass;
+		NhlPublicClassList[1] =  NhltitleClass;
+		NhlPublicClassList[2] =  NhlxWorkstationClass; 
+		NhlPublicClassList[3] =  NhlimageWorkstationClass;
+		NhlPublicClassList[4] =  NhlncgmWorkstationClass;
+		NhlPublicClassList[5] =  NhlcontourPlotClass; 
+		NhlPublicClassList[6] =  NhltextItemClass; 
+		NhlPublicClassList[7] =  NhlxyPlotClass;
+		NhlPublicClassList[8] =  NhllabelBarClass; 
+		NhlPublicClassList[9] =  NhllegendClass;
+		NhlPublicClassList[10] =  NhlcoordArraysClass; 
+		NhlPublicClassList[11] =  NhlscalarFieldClass;
+		NhlPublicClassList[12] =  NhlmeshScalarFieldClass;
+		NhlPublicClassList[13] =  NhlmapPlotClass;
+		NhlPublicClassList[14] =  NhllogLinPlotClass;
+		NhlPublicClassList[15] =  NhlirregularPlotClass;
+		NhlPublicClassList[16] =  NhlmapPlotClass;
+		NhlPublicClassList[17] =  NhlappClass;
+		NhlPublicClassList[18] =  NhlannoManagerClass;
+		NhlPublicClassList[19] =  NhlpsWorkstationClass;
+		NhlPublicClassList[20] =  NhlpdfWorkstationClass;
+		NhlPublicClassList[21] =  NhlvectorPlotClass;
+		NhlPublicClassList[22] =  NhlvectorFieldClass;
+		NhlPublicClassList[23] =  NhlstreamlinePlotClass;
+		NhlPublicClassList[24] =  NhlgraphicStyleClass;
+		NhlPublicClassList[25] =  NhlprimitiveClass;
+	}
+
+        arg0  = NclGetArgValue(
+                        0,
+                        nargs,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+	if (type == NCL_string) {
+		char *name = NrmQuarkToString(*(NrmQuark*)arg0);
+		for (i = 0; i < hlu_class_count; i++) {
+			int len = MIN(strlen(name),strlen(NhlPublicClassList[i]->base_class.class_name));
+			if (strncmp(name,NhlPublicClassList[i]->base_class.class_name,len))
+				continue;
+			class = NhlPublicClassList[i];
+			break;
+		}
+	}
+	if (! class) {
+		int count = 1;
+		NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetClassResources: Invalid class name");
+		ret = NclReturnValue(
+			(void*)&(((NclTypeClass)nclTypestringClass)->type_class.default_mis),
+			1,
+			&count,
+			(void*) &(((NclTypeClass)nclTypestringClass)->type_class.default_mis),
+			NCL_string,
+			1
+			);
+		return(MIN(ret,NhlWARNING));
+	}	
+        arg1  = NclGetArgValue(
+                        1,
+                        nargs,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+	if (type == NCL_string) {
+		char *reg_exp = NrmQuarkToString(*(NrmQuark*)arg1);
+		if (strlen(reg_exp) > 0) {
+			if (regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0) {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"NhlGetClassResources: Invalid filter expression");
+				subret = NhlWARNING;
+			}
+			else {
+				filter = 1;
+			}
+		}
+	}
+
+        resources = (NrmNameList) _NhlGetUserResources(class,&res_count);
+        for (i = 0; i < res_count; i++) {
+		char *name = NrmQuarkToString(resources[i]);
+                if (name[0] == '.')
+			continue;
+		for (j = i; j < res_count; j++) {
+			resources[j - i] = resources[j];
+		}
+		res_count -= i;
+		break;
+	}
+	if (filter) {
+		int new_res_count = 0;
+		NrmNameList new_resources;
+		for (i = 0; i < res_count; i++) {
+			char *res = NrmQuarkToString(resources[i]);
+			if (regexec(&expr,res,1,&rm,0) == 0) {
+				new_res_count++;
+				continue;
+			}
+			else {
+				resources[i] = NrmNULLQUARK;
+			}
+		}
+		if (new_res_count == 0) {
+			int count = 1;
+			ret = NclReturnValue(
+				(void*)&(((NclTypeClass)nclTypestringClass)->type_class.default_mis),
+				1,
+				&count,
+				(void*) &(((NclTypeClass)nclTypestringClass)->type_class.default_mis),
+				NCL_string,
+				1
+				);
+			return(MIN(ret,subret));
+				
+		}
+		else {
+			new_resources = NclMalloc(sizeof(NrmQuark) * new_res_count);
+			for (i = 0, j = 0; i < new_res_count; i++) {
+				while (resources[j] == NrmNULLQUARK)
+					j++;
+				new_resources[i] = resources[j];
+				j++;
+			}
+			NclFree(resources);
+			resources = new_resources;
+			res_count = new_res_count;
+		}
+	}	
+	ret = NclReturnValue(
+                (void*)resources,
+                1,
+                &res_count,
+                has_missing? &missing : &(((NclTypeClass)nclTypestringClass)->type_class.default_mis),
+		NCL_string,
+                0
+        );
+	return(ret);
 }
