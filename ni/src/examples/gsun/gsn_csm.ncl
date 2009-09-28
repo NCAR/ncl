@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.238 2009-04-21 16:07:44 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.239 2009-09-28 21:36:37 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1769,9 +1769,15 @@ begin
       txres@txFont = left_string@gsnStringFont
     end if
     strings(0) = left_string@sub_string
-    fhghts(0)  = get_res_value_keep(left_string,"gsnLeftStringFontHeightF",\
-                 get_res_value_keep(left_string,"gsnStringFontHeightF",\
-                 get_res_value_keep(txres,"txFontHeightF",0.0)))
+    if(isatt(left_string,"gsnLeftStringFontHeightF")) then
+      fhghts(0) = get_res_value_keep(left_string,"gsnLeftStringFontHeightF",0.)
+    else
+      if(isatt(left_string,"gsnStringFontHeightF")) then
+        fhghts(0) = get_res_value_keep(left_string,"gsnStringFontHeightF",0.)
+      else
+        fhghts(0) = get_res_value_keep(txres,"txFontHeightF",0.0)
+      end if
+    end if
     colors@s0  = get_res_value_keep(left_string,"gsnLeftStringFontColor",\
                  get_res_value_keep(left_string,"gsnStringFontColor",1))
   end if
@@ -1780,9 +1786,15 @@ begin
       txres@txFont = center_string@gsnStringFont
     end if
     strings(1) = center_string@sub_string
-    fhghts(1)  = get_res_value_keep(center_string,"gsnCenterStringFontHeightF",\
-                 get_res_value_keep(center_string,"gsnStringFontHeightF",\
-                 get_res_value_keep(txres,"txFontHeightF",0.0)))
+    if(isatt(center_string,"gsnCenterStringFontHeightF")) then
+      fhghts(1) = get_res_value_keep(center_string,"gsnCenterStringFontHeightF",0.)
+    else
+      if(isatt(center_string,"gsnStringFontHeightF")) then
+        fhghts(1) = get_res_value_keep(center_string,"gsnStringFontHeightF",0.)
+      else
+        fhghts(1) = get_res_value_keep(txres,"txFontHeightF",0.0)
+      end if
+    end if
     colors@s1  = get_res_value_keep(center_string,"gsnCenterStringFontColor",\
                  get_res_value_keep(center_string,"gsnStringFontColor",1))
   end if
@@ -1791,9 +1803,15 @@ begin
       txres@txFont = right_string@gsnStringFont
     end if
     strings(2) = right_string@sub_string
-    fhghts(2)  = get_res_value_keep(right_string,"gsnRightStringFontHeightF",\
-                 get_res_value_keep(right_string,"gsnStringFontHeightF",\
-                 get_res_value_keep(txres,"txFontHeightF",0.0)))
+    if(isatt(right_string,"gsnRightStringFontHeightF")) then
+      fhghts(2) = get_res_value_keep(right_string,"gsnRightStringFontHeightF",0.)
+    else
+      if(isatt(right_string,"gsnStringFontHeightF")) then
+        fhghts(2) = get_res_value_keep(right_string,"gsnStringFontHeightF",0.)
+      else
+        fhghts(2) = get_res_value_keep(txres,"txFontHeightF",0.0)
+      end if
+    end if
     colors@s2  = get_res_value_keep(right_string,"gsnRightStringFontColor",\
                  get_res_value_keep(right_string,"gsnStringFontColor",1))
   end if
