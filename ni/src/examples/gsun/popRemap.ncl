@@ -1,5 +1,5 @@
 ;
-;      $Id: popRemap.ncl,v 1.14 2008-04-10 19:11:40 shea Exp $
+;      $Id: popRemap.ncl,v 1.15 2009-09-29 18:38:12 shea Exp $
 ;
 ;===========================================================
 ; D. Shea
@@ -101,6 +101,7 @@ begin
     ;print ("nd="+nd+"  dirPOP="+dirPOP(nd))
      gridPOP = systemfunc("cd "+dirPOP(nd)+" ; ls map_*")
     ;print (gridPOP)
+
      indP    = ind(gridPOP.eq.rmpPOP)
      if (.not.ismissing(indP)) then   ; ?supported transformation?
          print ("create_rmpPopFileName: "+dirPOP(nd)+rmpPOP)
@@ -131,7 +132,7 @@ begin
   rotPOP  = (/ "POPX3","POP23" , "POP43", "gx1v3", "gx1v2" \
              , "gx3v3", "gx3v4", "gx3v5", "gx3v6", "gx3v7" \
              , "gx3Uum", "gx3uum"  \
-             , "gx3", "gx3p", "hx1", "crx3" /)
+             , "gx3", "gx3p", "hx1", "crx3", "tx0.1v2" /)
 
   indRot  = ind(gridSrc.eq.rotPOP)
   if (ismissing(indRot)) then
@@ -156,7 +157,6 @@ begin
 
   do nd=0,dimsizes(dirPOPV)-1
      gridROT = systemfunc("cd "+dirPOPV(nd)+" ; ls rot_*")
-    ;print (gridROT)
      indP    = ind(gridROT.eq.rotPOPV)
     ;print ("nd="+nd+"  indP="+indP)
      if (.not.ismissing(indP)) then   ; ?supported transformation?
@@ -239,7 +239,8 @@ begin
       gDst.eq."T42" .or. gDst.eq."T21" .or. \
       gDst.eq."TwoD" .or.gDst.eq."OneD".or. \
       gDst.eq."HlfD" .or.gDst.eq."1x1d".or. \
-      gDst.eq."T31"  .or.gDst.eq."1.9x2.5") then
+      gDst.eq."T31"  .or.gDst.eq."1.9x2.5" .or. \
+      gDst.eq."0.1x0.1") then
 
       if (gDst.eq."T170".or. gDst.eq."T85" .or. \
           gDst.eq."T63" .or. gDst.eq."T62" .or. \
@@ -267,8 +268,12 @@ begin
       if (gDst.eq."HlfD" ) then
           latStart = -89.75
       end if
+      if (gDst.eq."0.1x0.1" ) then
+          latStart = -89.95
+      end if
                                                 ; END OVERRIDE
-      if (gDst.eq."HlfD" .or. gDst.eq."OneD" .or. gDst.eq."TwoD" .or. gDst.eq."1x1d") then
+      if (gDst.eq."HlfD" .or. gDst.eq."OneD" .or. \
+          gDst.eq."TwoD" .or. gDst.eq."1x1d" .or. gDst.eq."0.1x0.1") then
           lat =  latStart + fspan (0,(nlat-1)*dlat, nlat); generate latitudes
       end if
 
@@ -283,6 +288,9 @@ begin
           lon@long_name = "longitude"   
           lon@units     = "degrees_east"
       end if
+
+printMinMax(lat, True)
+printMinMax(lon, True)
 ;                                    ; MAJOR kluge 3/16/2008
       if (gDst.eq."1.9x2.5") then 
           if (isvar("lat")) then
@@ -680,7 +688,6 @@ begin
                                   ,method, areaType , Date )
   fP      = addfile(rmpFile,"r")
 
-                                           
   dim_u   = dimsizes( u )               ; consistency check
   nDu     = dimsizes( dim_u )           ; rank [# dimensions]
   dim_src = fP->src_grid_dims            ; size source grid
@@ -795,7 +802,7 @@ begin
                                          ; REMAP
                                          ; uvNew will have extra dim
 
-  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "gx3v3",  "gx3v5",  "crx3"/)
+  types = (/"POP","gx3","gx3p","gx1v2","gx1v3", "gx3v3",  "gx3v5",  "crx3", "tx0.1v2"/)
  ;print(gridSrcType)
  ;print(types)
   if (nDu.eq.2) then
