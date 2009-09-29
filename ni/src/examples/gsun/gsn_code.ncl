@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.224 2009-09-17 20:26:29 haley Exp $
+;      $Id: gsn_code.ncl,v 1.225 2009-09-29 16:50:10 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2545,6 +2545,42 @@ begin
   end setvalues
 end
 
+
+;***********************************************************************;
+; Procedure : maximize_plot                                             ;
+;               plot:graphic                                            ;
+;              psres:logical                                            ;
+;                                                                       ;
+; This procedure takes a plot that probably has had some additional     ;
+; objects attached to it, like a labelbar, and maximizes it in the      ;
+; given PS or PDF workstation.                                          ;
+;***********************************************************************;
+undef("maximize_plot")
+procedure maximize_plot(plot,psres)
+local bb, coords, res2, tmp_wks
+begin
+  res2 = psres
+
+; Get bounding box of plot
+  bb = NhlGetBB(plot)
+  tmp_wks = NhlGetParentWorkstation(plot)
+;
+; Calculate device coords to maximize this plot on the PDF or PS 
+; workstation.
+;
+  coords = compute_device_coords(bb,res2)
+;
+; Using the coordinate values just calculated, set them in the
+; workstation (also set the orientation).
+;
+  setvalues tmp_wks
+    "wkDeviceLowerX" : coords(0)
+    "wkDeviceLowerY" : coords(1)
+    "wkDeviceUpperX" : coords(2)
+    "wkDeviceUpperY" : coords(3)
+    "wkOrientation"  : coords@gsnPaperOrientation
+  end setvalues
+end
 
 ;***********************************************************************;
 ; Procedure : maximize_output                                           ;
