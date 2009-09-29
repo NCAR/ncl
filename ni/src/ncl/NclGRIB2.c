@@ -1005,8 +1005,21 @@ void g2GDSRLLGrid
     lo1 = rll->ce.lon_first_gridpt * scale_factor;
     la2 = rll->ce.lat_last_gridpt * scale_factor;
     lo2 = rll->ce.lon_last_gridpt * scale_factor;
-    lasp = rll->lat_south_pole_proj;
-    losp = rll->lon_south_pole_proj;
+    /* 
+     * It does not seem to be completely consistent whether the following values have 
+     * the scale factor applied, so as a heuristic, check to see if the values
+     * are 'large'
+     */
+    if (fabs(rll->lat_south_pole_proj) > 100000) {
+	    lasp = rll->lat_south_pole_proj * scale_factor;
+	    losp = rll->lon_south_pole_proj * scale_factor;
+    }
+    else {
+	    lasp = rll->lat_south_pole_proj * scale_factor;
+	    losp = rll->lon_south_pole_proj * scale_factor;
+    }
+
+
 #if 0
     /* temp fix for test file */
     lo1 = -12.5;
