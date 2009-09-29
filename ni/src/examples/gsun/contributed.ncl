@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.234 2009-09-23 23:58:47 haley Exp $
+;      $Id: contributed.ncl,v 1.235 2009-09-29 21:40:55 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -10853,7 +10853,7 @@ end
 ; vars.  It adds the longitude and latitude coordinates.
 
 undef("int2p_Wrap")
-function int2p_Wrap (xi:numeric, fi:numeric, xo[*]:numeric, linlog[1]:integer)
+function int2p_Wrap (xi:numeric, fi:numeric, xo:numeric, linlog[1]:integer)
 
 ; wrapper for NCL function "int2p"  that copies attributes and coordinate vars.
 local fo, dimfi, nDim, n, nD
