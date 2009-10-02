@@ -972,11 +972,13 @@ function skewT_PlotData_Original \
       end if
   end if  ; end "PlotWindH"
 
-  skewt_bkgd@Cape            = (/ cape /)
-  skewt_bkgd@Pwat            = pwat            ; cm
-  skewt_bkgd@Shox            = shox
-  skewt_bkgd@Plcl            = plcl  
-  skewt_bkgd@Tlcl            = tlcl  
+  if (localOpts@ThermoInfo .and. isvar("cape") ) then
+      skewt_bkgd@Cape  = (/ cape /)
+      skewt_bkgd@Pwat  = pwat            ; cm
+      skewt_bkgd@Shox  = shox
+      skewt_bkgd@Plcl  = plcl  
+      skewt_bkgd@Tlcl  = tlcl  
+  end if
 
   return (skewt_bkgd)
 
@@ -2054,11 +2056,13 @@ function skewT_PlotData_Panel (wks:graphic, skewt_bkgd:graphic \
       end if
   end if  ; end "PlotWindH"
                              ; attach to object
-  skewt_bkgd@Cape            = (/ cape /)
-  skewt_bkgd@Pwat            = pwat            ; cm
-  skewt_bkgd@Shox            = shox
-  skewt_bkgd@Plcl            = plcl  
-  skewt_bkgd@Tlcl            = tlcl  
+  if (isvar("cape")) then
+      skewt_bkgd@Cape = (/ cape /)
+      skewt_bkgd@Pwat = pwat            ; cm
+      skewt_bkgd@Shox = shox
+      skewt_bkgd@Plcl = plcl  
+      skewt_bkgd@Tlcl = tlcl  
+  end if
 
   return (skewt_bkgd)
 
