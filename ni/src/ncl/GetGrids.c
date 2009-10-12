@@ -9194,7 +9194,8 @@ int* nrotatts;
 	int is_thinned_lat;
 	int is_thinned_lon;
 	int gds_type;
-	
+	static int failed_gds_types[5] = {-1,-1,-1,-1,-1};
+        static int failed_count = 0;
 	
 	*lat = NULL;
 	*n_dims_lat = 0;
@@ -9216,11 +9217,11 @@ int* nrotatts;
 	gds_type = (int) gds[5];
 	switch (gds_type) {
 	default:
-		NhlPError(NhlFATAL,NhlEUNKNOWN,
-			  "GdsUnsupportedGrid: Not enough known about grid %d to determine grid size or shape",
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+	  "GdsUnknownGrid: GDS grid %d is unknown and may not be decoded correctly; no coordinate variables will be supplied",
 			gds_type);
-		return;
-
+		/* we will try to at least get the dimension sizes, but no guarantee */
+		break;
 	case 10:
 	case 14:
 	case 20:
@@ -9228,6 +9229,10 @@ int* nrotatts;
 	case 30:
 	case 34:
 	case 90:
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+		  "NCL does not yet fully support GDS grid type %d, no coordinate variables will be supplied for this grid",
+			  gds_type);
+
 		/* we can at least get the x and y dimensions for these grids */
 		break;
 	}
@@ -9236,15 +9241,15 @@ int* nrotatts;
 	nlat = CnvtToDecimal(2,&(gds[8]));
 	is_thinned_lon = (nlon == 65535); /* all bits set indicates missing: missing means thinned */
 	is_thinned_lat = (nlat == 65535);
-	if (nlon <= 1 || nlat <= 1 || is_thinned_lon || is_thinned_lat) {
-		if (is_thinned_lon || is_thinned_lat) {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "GdsUnsupportedGrid: Cannot handle unsupported grid containing thinned lats or lons");
-		}
-		else {
-			NhlPError(NhlFATAL,NhlEUNKNOWN,
-				  "GdsUnknownGrid: Invalid grid detected");
-		}
+	if (is_thinned_lon || is_thinned_lat) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "GdsUnknownGrid: Cannot decode unsupported grid containing thinned lats or lons");
+	}
+	/* this is a purely heuristic test: passing it does not definitively mean the dimensions have been decoded correctly. */
+	else if (nlat <= 1 || nlon <= 1 || nlat > 15000 || nlon > 15000) {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,
+			  "GdsUnknownGrid: Not enough known about grid %d to determine grid size or shape",
+			gds_type);
 		return;
 	}
 	*dimsizes_lat = (int*)NclMalloc(sizeof(int));
@@ -9253,9 +9258,6 @@ int* nrotatts;
 	*(*dimsizes_lat) = nlat;
 	*n_dims_lat = 1;
 	*n_dims_lon = 1;
-	NhlPError(NhlWARNING,NhlEUNKNOWN,
-		  "NCL does not yet fully support GDS grid type %d, no coordinate variables will be supplied for this grid",
-		  gds_type);
 
 	return;
 }
