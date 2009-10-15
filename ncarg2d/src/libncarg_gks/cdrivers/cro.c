@@ -1,5 +1,5 @@
 /*  
- *      $Id: cro.c,v 1.6 2009-08-16 21:41:34 fred Exp $
+ *      $Id: cro.c,v 1.7 2009-10-15 01:47:05 fred Exp $
  */
 /*
  *
@@ -45,7 +45,7 @@
 #define NUM_CONTEXT 20  /* number of allowable contexts */
 
 char *GetCPSFileName(int, char *);
-char *GetCPNGFileName(int, int);
+char *GetCPNGFileName(int, int, char *);
 static void CROinit(CROddp *, int *);
 unsigned int pack_argb(struct color_value);
 struct color_value unpack_argb(unsigned int);
@@ -423,7 +423,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
   }
   else if (psa->wks_type == CPNG) {
     cairo_surface_write_to_png (cairo_surface[context_index(psa->wks_id)], 
-       GetCPNGFileName(psa->wks_id, psa->frame_count));
+       GetCPNGFileName(psa->wks_id, psa->frame_count, psa->output_file));
     psa->frame_count++;
   }
 
@@ -458,8 +458,40 @@ int cro_DeactivateWorkstation(GKSC *gksc) {
 }
 int cro_Esc(GKSC *gksc) {
 
+  CROddp  *psa = (CROddp *) gksc->ddp;
+
+  char    *sptr = (char *) gksc->s.list, *strng;
+  int     *iptr = (int *) gksc->i.list;
+
+  int     escape_id = iptr[0], plflag;
+  float   rscale, logox, logoy, logos;
+  static  int saved_color_index;
+
   if (getenv("CRO_TRACE")) {
     printf("Got to cro_Esc\n");
+  }
+
+  switch (escape_id) {
+    case -1521:  /* Corner points for positioning plot on the page */
+      rscale = 1./psa->scaling;
+      strng = strtok(sptr, " ");
+      psa->dspace.llx = (int) (rscale * (float) atoi(strng));
+      strng = strtok((char *) NULL, " ");
+      psa->dspace.lly = (int) (rscale * (float) atoi(strng));
+      strng = strtok((char *) NULL, " ");
+      psa->dspace.urx = (int) (rscale * (float) atoi(strng));
+      strng = strtok((char *) NULL, " ");
+      psa->dspace.ury = (int) (rscale * (float) atoi(strng));
+
+      psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
+      psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
+
+      psa->cro_clip.llx = psa->dspace.llx;
+      psa->cro_clip.lly = psa->dspace.lly;
+      psa->cro_clip.urx = psa->dspace.urx;
+      psa->cro_clip.ury = psa->dspace.ury;
+      psa->cro_clip.null = FALSE;
+      break;
   }
 
   return(0);
@@ -686,6 +718,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
           PNG_SCALE*612,PNG_SCALE*792);
     cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
     add_context_index(context_num, orig_wks_id);
+    psa->output_file = sptr;
   }
 
 /*
@@ -1855,17 +1888,39 @@ char *GetCPSFileName(int wkid, char *file_name) {
   }
 
 /*
- *  A setting of the environment variable NCARG_GKS_CPSOUTPUT
- *  takes precedence in establishing the root name of the
- *  output files, otherwise it is "cairo".  If the file name
- *  supplied by NCARG_GKS_CPSOUTPUT ends in ".ps" then the
- *  file name provided by NCARG_GKS_CPSOUTPUT will be used,
- *  otherwise the file name provided by NCARG_GKS_CPSOUTPUT
- *  will be used as the root name with a ".ps" appended.
+ *  There are three ways that the root name for an output file 
+ *  can be set: 
  *
- *  In the default case (i.e. NCARG_GKS_CPSOUTPUT is not set)
- *  the output file name will be "cairoX.ps" where "X" is the
- *  workstation ID.
+ *    1. default
+ *        In this case the root name will be "cairo" and the 
+ *        complete file name will be "cairoX.ps" where "X" is
+ *        the integer workstation ID.
+ *
+ *    2. set by a call to NGSETC('ME','root_name')
+ *        Setting the root name in this case will take precedence
+ *        over the default setting.  If "root_name" actually ends
+ *        in ".ps" then the file name will be "root_name", otherwise
+ *        it will be "root_name.ps".  Note well that the NGSETC call
+ *        must be made before a workstation is opened--it will apply
+ *        to the next opened workstation.  Multiple simultaneously
+ *        open Postscript workstations can be given different names
+ *        using this method.
+ *
+ *    3. set via the environment variable NCARG_GKS_CPSOUTPUT
+ *        A setting of the environment variable NCARG_GKS_CPSOUTPUT
+ *        takes precedence over methods 1.) and 2.) above in 
+ *        establishing the root name of the output file.  If 
+ *        the file name supplied by NCARG_GKS_CPSOUTPUT ends in ".ps" 
+ *        then the file name provided by NCARG_GKS_CPSOUTPUT will be used,
+ *        otherwise the file name provided by NCARG_GKS_CPSOUTPUT
+ *        will be used as the root name with a ".ps" appended.
+ *        Note well that a setting of the environment variable 
+ *        NCARG_GKS_CPSOUTPUT only makes sense in the case of having
+ *        a single Postscript output file.      
+ */
+
+/*  
+ *  Name set by a setting of "NCARG_GKS_CPSOUTPUT"
  */
   tch = getenv("NCARG_GKS_CPSOUTPUT");
   if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
@@ -1883,16 +1938,40 @@ char *GetCPSFileName(int wkid, char *file_name) {
     strcat(tname,".ps");
     return (tname);
   }
-  else {
+/*
+ *  Default
+ */
+  if ( (strncmp(file_name,"DEFAULT",7) == 0) || (strlen(file_name) == 0) ) {
     (void) sprintf(tname,"cairo%d.ps",wkid);
     return(tname);
-  } 
+  }
+/*
+ *  Name set by a call to NGMISC.
+ */
+  else {
+    tch = strtok(file_name, " ");
+    if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
+      if (strlen(tch) >= 3) {
+        if (strncmp(tch + strlen(tch) - 3, ".ps", 3) == 0) {
+          strncpy(tname, tch, strlen(tch) - 3);
+        }
+        else {
+          strncpy(tname, tch, strlen(tch));
+        }
+        strcat(tname,".ps");
+        return (tname);
+      }
+      strcat(tname,tch);
+      strcat(tname,".ps");
+      return (tname);
+    }
+  }
 }
 
 /*
  *  Set up the file name for the PNG output file.
  */
-char *GetCPNGFileName(int wks_id, int frame_count)
+char *GetCPNGFileName(int wks_id, int frame_count, char *file_name)
 {
   static char rname[257],ctmp[257];
   static char *tch;
@@ -1904,16 +1983,37 @@ char *GetCPNGFileName(int wks_id, int frame_count)
   }
 
 /*
- *  A setting of the environment variable NCARG_GKS_CPNGOUTPUT
- *  takes precedence in establishing the root name of the 
- *  output files, otherwise it is "cairo".  If the file name
- *  supplied by NCARG_GKS_CPNGOUTPUT ends in ".png" then the
- *  file name provided by NCARG_GKS_CPNGOUTPUT will be used,
- *  otherwise the file name provided by NCARG_GKS_CPNGOUTPUT
- *  will be used as the root name with a ".png" appended.
- *  The ultimate form of the output file names will be 
- *  cairoX.nnnnnn.png where "X" is the GKS workstation ID
- *  and "nnnnnn" is the frame number, starting with "1".
+ *  There are three ways that the root name for an output file
+ *  can be set:
+ *
+ *    1. default
+ *        In this case the root name will be "cairo" and the
+ *        ultimate form of the output file names will be 
+ *        cairoX.nnnnnn.png where "X" is the GKS workstation ID
+ *        and "nnnnnn" is the frame number, starting with "1".
+ *
+ *    2. set by a call to NGSETC('ME','root_name')
+ *        In this case the root name will be "root_name" and the
+ *        ultimate form of the output file names will be 
+ *        root_nameX.nnnnnn.png where "X" is the GKS workstation ID
+ *        and "nnnnnn" is the frame number, starting with "1".
+ *        Setting the root name in this case will take precedence
+ *        over the default setting.  Note well that the NGSETC
+ *        call must be made before a workstation is opened--the
+ *        name will apply to the next opened workstation.  
+ *        Multiple simultaneously open PNG workstations can 
+ *        be given different names using this method.
+ *
+ *    3. set via the environment variable NCARG_GKS_CPNGOUTPUT
+ *        A setting of the environment variable NCARG_GKS_CPNGOUTPUT
+ *        takes precedence over methods 1.) and 2.) above in
+ *        establishing the root name of the output file.  Note
+ *        well that this method of specifying the file name 
+ *        works only if there is a single PNG output file.  
+ *        Where "fname" is the name supplied by NCARG_GKS_CPNGOUTPUT,
+ *        whether it ends in ".png" or not, the ultimate form of the 
+ *        output file names will be "fname.nnnnnn.png" where "nnnnnn" 
+ *        is the frame number, starting with "1".
  */
   tch = getenv("NCARG_GKS_CPNGOUTPUT");
   if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
@@ -1935,9 +2035,31 @@ char *GetCPNGFileName(int wks_id, int frame_count)
       return (rname);
     }
   }
-  else {
+/*
+ *  Default
+ */
+  if ( (strncmp(file_name,"DEFAULT",7) == 0) || (strlen(file_name) == 0) ) {
     (void) sprintf(ctmp,"cairo%d.%06d.png",wks_id,frame_count+1);
     return ctmp;
+  }
+/*
+ *  Name set by a call to NGMISC.
+ */
+  else {
+    tch = strtok(file_name, " ");
+    if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
+      if (strlen(tch) >= 4) {
+        if (strncmp(tch + strlen(tch) - 4, ".png", 4) == 0) {
+          strncpy(rname, tch, strlen(tch) - 4);
+        }
+        else {
+          strncpy(rname, tch, strlen(tch));
+        }
+      }
+      (void) sprintf(ctmp,".%06d.png",frame_count+1);
+      strcat(rname,ctmp);
+      return (rname);
+    }
   }
 }
 
