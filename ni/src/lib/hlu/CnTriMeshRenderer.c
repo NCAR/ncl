@@ -1,5 +1,5 @@
 /*
- *      $Id: CnTriMeshRenderer.c,v 1.14 2009-09-11 19:25:39 dbrown Exp $
+ *      $Id: CnTriMeshRenderer.c,v 1.15 2009-10-15 14:29:07 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1126,7 +1126,7 @@ static NhlErrorTypes BuildDelaunayMesh
 		for (i = 0; i < mnop; i++) {
 			float xt,yt;
 			j = pcount * 2;
-			c_maptrn(rlat[i],rlon[i],&xt,&yt);
+			c_maptra(rlat[i],rlon[i],&xt,&yt);
 			if (xt > 1e10 || yt > 1e10)
 				continue;
 			points[j] = (double)xt;
