@@ -1,5 +1,5 @@
 /*  
- *      $Id: cro.c,v 1.7 2009-10-15 01:47:05 fred Exp $
+ *      $Id: cro.c,v 1.8 2009-10-16 19:15:21 fred Exp $
  */
 /*
  *
@@ -691,9 +691,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
       strcat(ctmp,"\"");
       strcat(ctmp+1,psa->output_file);
       strcat(ctmp+1+strlen(psa->output_file),"\"");
-      ESprintf(ERR_OPN_CRO, "CRO: fopen(%s, \"w\")", ctmp);
+      ESprintf(ERR_CRO_OPN, "CRO: fopen(%s, \"w\")", ctmp);
       free(ctmp);
-      return(ERR_OPN_CRO);
+      return(ERR_CRO_OPN);
     }
     psa->file_pointer = fp;
     cairo_surface[context_num] = 

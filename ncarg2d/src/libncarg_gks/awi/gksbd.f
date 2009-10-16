@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.33 2009-04-08 23:18:20 fred Exp $
+C	$Id: gksbd.f,v 1.34 2009-10-16 19:15:21 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -258,7 +258,7 @@ C
      +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
      +             2204,   90, -113, -400, -401, -402, -403, -404,
      +             -405, -406, -350, -351, -352, -353, -450, -451,
-     +             -452, -453, -354/
+     +             -452, -453, -354, -501, -502/
 C  Error 1
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
@@ -611,6 +611,12 @@ C  Error -354
       DATA ERMSGS(139)/' -- A dummy version of the interface function gg
      +kwdr has been called, most likely as a result of requesting output
      + other than an NCGM while having specified the -noX11 option.'/
+C  Error -501
+      DATA ERMSGS(140)/' -- cairo driver error: error in allocating memo
+     +ry for device dependent table'/
+C  Error -502
+      DATA ERMSGS(141)/' -- cairo driver error: error opening output fil
+     +e'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

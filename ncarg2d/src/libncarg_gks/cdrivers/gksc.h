@@ -1,5 +1,5 @@
 /*
- *	$Id: gksc.h,v 1.17 2009-04-16 06:51:34 fred Exp $
+ *	$Id: gksc.h,v 1.18 2009-10-16 19:15:21 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -256,8 +256,7 @@ typedef	struct	GKSC_	{
  *  cairo driver errors
  */
 #define ERR_CRO_MEMORY	   -501	/* error in device dependent table mem  */
-#define ERR_OPN_CRO        -502	/* error opening output file            */
-#define ERR_CRO_CHAR       -503	/* CPS char not available for requested */
+#define ERR_CRO_OPN        -502	/* error opening output file            */
 
 extern	GKSC    *CreateGKSC(
 #ifdef	NeedFuncProto
