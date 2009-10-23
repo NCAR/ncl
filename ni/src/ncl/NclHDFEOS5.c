@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.3 2009-07-28 16:29:41 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.4 2009-10-23 15:05:03 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -649,6 +649,7 @@ NclQuark path;
     long ndata = 0;
     long ndims;
     long nmaps;
+    long ngrp_atts;
 
     long str_buf_size;
     hsize_t *dimsizes;
@@ -753,6 +754,7 @@ NclQuark path;
 
         /* global attributes from file */
         natts = HE5_SWinqattrs(HE5_SWid,NULL,&str_buf_size);
+
         if(natts > 0 )
         {
             if (str_buf_size >= cur_buf_size)
@@ -777,6 +779,68 @@ NclQuark path;
                 {
                     tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
                     if(HE5_SWreadattr(HE5_SWid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                    {
+                        HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
+                                    tmp_value,(int) att_size,
+                                    HDFEOS5MapTypeNumber(att_type));
+
+                        if(strcmp("ScaleFactor", NrmQuarkToString(att_ncl_names[k])) == 0)
+                        {
+                            void *add_value;
+                            add_value = (void *)NclMalloc(sizeof(NclQuark));
+                            *(NclQuark *)add_value = NrmStringToQuark("scale_factor");
+
+                            att_size = strlen("scale_factor") - 1;
+                            tmp_value = (void*)NclMalloc(att_size + 1);
+                            strcpy((char *)tmp_value, "scale_factor");
+                            HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],
+                                    *(NclQuark *)add_value, tmp_value, (int) att_size,
+                                    HDFEOS5MapTypeNumber(att_type));
+                        }
+                        else if(strcmp("Offset", NrmQuarkToString(att_ncl_names[k])) == 0)
+                        {
+                            void *add_value;
+                            add_value = (void *)NclMalloc(sizeof(NclQuark));
+                            *(NclQuark *)add_value = NrmStringToQuark("scale_factor");
+                            att_size = strlen("add_offset") - 1;
+                            tmp_value = (void*)NclMalloc(att_size + 1);
+                            strcpy((char *)tmp_value, "add_offset");
+                            HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],
+                                    *(NclQuark *)add_value, tmp_value, (int) att_size,
+                                    HDFEOS5MapTypeNumber(att_type));
+                        }
+                    }
+                }
+            }
+        }
+
+        /* global attributes from file */
+        ngrp_atts = HE5_EHinqglbattrs(HE5_SWfid,NULL,&str_buf_size);
+
+        if(ngrp_atts > 0 )
+        {
+            if (str_buf_size >= cur_buf_size)
+            {
+                while(str_buf_size >= cur_buf_size)
+                    cur_buf_size *= 2;
+                buffer = NclRealloc(buffer, cur_buf_size);
+            }
+
+            ngrp_atts = HE5_EHinqglbattrs(HE5_SWfid,buffer,&str_buf_size);
+            if(ngrp_atts > max_att)
+            {
+                att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
+                att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
+            }
+
+            HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
+
+            for(k = 0; k < ngrp_atts; k++)
+            { 
+                if(HE5_EHglbattrinfo(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
+                {
+                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                    if(HE5_EHreadglbattr(HE5_SWfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
                     {
                         HDFEOS5IntFileAddAtt(the_file,sw_ncl_names[i],att_ncl_names[k],
                                     tmp_value,(int) att_size,
@@ -1291,6 +1355,7 @@ NclQuark path;
     long ndata = 0;
     long ndims;
     long nmaps;
+    long ngrp_atts;
 
     long str_buf_size;
     hsize_t *dimsizes;
@@ -1492,6 +1557,68 @@ NclQuark path;
                     {
                         HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],tmp_value,
                                     (int) att_size,HDFEOS5MapTypeNumber(att_type));
+                    }
+                }
+            }
+        }
+
+        /* global attributes from file */
+        ngrp_atts = HE5_EHinqglbattrs(HE5_GDfid,NULL,&str_buf_size);
+
+        if(ngrp_atts > 0 )
+        {
+            if (str_buf_size >= cur_buf_size)
+            {
+                while(str_buf_size >= cur_buf_size)
+                    cur_buf_size *= 2;
+                buffer = NclRealloc(buffer, cur_buf_size);
+            }
+
+            ngrp_atts = HE5_EHinqglbattrs(HE5_GDfid,buffer,&str_buf_size);
+            if(ngrp_atts > max_att)
+            {
+                att_hdf_names = (NclQuark *)NclRealloc(att_hdf_names, sizeof(NclQuark)*max_att);
+                att_ncl_names = (NclQuark *)NclRealloc(att_ncl_names, sizeof(NclQuark)*max_att);
+            }
+
+            HDFEOS5ParseName(buffer, att_hdf_names, att_ncl_names, ngrp_atts);
+
+            for(k = 0; k < ngrp_atts; k++)
+            { 
+                if(HE5_EHglbattrinfo(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),&att_type,&att_size)==0)
+                {
+                    tmp_value = (void*)NclMalloc(att_size * _NclSizeOf(HDFEOS5MapTypeNumber(att_type)));
+                    if(HE5_EHreadglbattr(HE5_GDfid,NrmQuarkToString(att_hdf_names[k]),tmp_value)==0 )
+                    {
+                        HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],att_ncl_names[k],
+                                    tmp_value,(int) att_size,
+                                    HDFEOS5MapTypeNumber(att_type));
+
+                        if(strcmp("ScaleFactor", NrmQuarkToString(att_ncl_names[k])) == 0)
+                        {
+                            void *add_value;
+                            add_value = (void *)NclMalloc(sizeof(NclQuark));
+                            *(NclQuark *)add_value = NrmStringToQuark("scale_factor");
+
+                            att_size = strlen("scale_factor") - 1;
+                            tmp_value = (void*)NclMalloc(att_size + 1);
+                            strcpy((char *)tmp_value, "scale_factor");
+                            HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],
+                                    *(NclQuark *)add_value, tmp_value, (int) att_size,
+                                    HDFEOS5MapTypeNumber(att_type));
+                        }
+                        else if(strcmp("Offset", NrmQuarkToString(att_ncl_names[k])) == 0)
+                        {
+                            void *add_value;
+                            add_value = (void *)NclMalloc(sizeof(NclQuark));
+                            *(NclQuark *)add_value = NrmStringToQuark("scale_factor");
+                            att_size = strlen("add_offset") - 1;
+                            tmp_value = (void*)NclMalloc(att_size + 1);
+                            strcpy((char *)tmp_value, "add_offset");
+                            HDFEOS5IntFileAddAtt(the_file,gd_ncl_names[i],
+                                    *(NclQuark *)add_value, tmp_value, (int) att_size,
+                                    HDFEOS5MapTypeNumber(att_type));
+                        }
                     }
                 }
             }
