@@ -396,6 +396,7 @@ extern NhlErrorTypes rdsstoi_W(void);
 extern NhlErrorTypes vibeta_W(void);
 extern NhlErrorTypes prcwater_dp_W(void);
 extern NhlErrorTypes int2p_W(void);
+extern NhlErrorTypes int2p_n_W(void);
 extern NhlErrorTypes zonal_mpsi_W(void);
 extern NhlErrorTypes taper_W(void);
 extern NhlErrorTypes hydro_W(void);
@@ -5646,6 +5647,18 @@ void NclAddUserFuncs(void)
     dimsizes[0] = 1;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(int2p_W,args,"int2p",nargs);
+/*
+ * Register "int2p_n".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(int2p_n_W,args,"int2p_n",nargs);
 /*
  * Register "zonal_mpsi".
  */
