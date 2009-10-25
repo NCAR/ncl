@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.235 2009-09-29 21:40:55 shea Exp $
+;      $Id: contributed.ncl,v 1.236 2009-10-25 13:50:08 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -275,6 +275,11 @@ end
 ; M. Haley
 ; Copy the coordinate variables from one variable to another,
 ;    except for the indicated dimension(s).  
+; Note that this makes the assumption that var_from has "dims"
+;     more dimensions than var_to.
+; If you want to copy var coords and skip a dimension, use
+;     copy_VarCoords_not_n.
+;
 ; Used internally, based on copy_VarCoords_1
 
 undef ("copy_VarCoords_n")
@@ -312,6 +317,54 @@ begin
        ;else
        ;        print("ERROR: copy_VarCoords_n: rank problem")
        ;end if
+  end if
+end
+;************************************************************
+; M. Haley
+; Copy the coordinate variables from one variable to another,
+;    skipping the indicated dimension(s).  
+; Note that this makes the assumption that var_from and
+;    var_to have the same dimensionality, except for the
+;    dimensions to skip.
+;
+; Used internally, based on copy_VarCoords_n
+; Added Oct 25, 2009
+
+undef ("copy_VarCoords_not_n")
+procedure copy_VarCoords_not_n(var_from,var_to,dims[*]:integer)  
+local dimt, dimf, rfrom, rto, i, dName, ndims
+begin                      
+
+  dimf  = dimsizes(var_from)            
+  dimt  = dimsizes(var_to)
+  rfrom = dimsizes(dimf)      ; rank of var_from
+  rto   = dimsizes(dimt)      ; rank of var_to
+  ndims = dimsizes(dims)
+
+  if(rfrom.ne.rto)
+    print("copy_VarCoords_not_n: var_from and var_to must be the same rank.")
+    return
+  end if
+
+  dName = getvardims(var_from)
+
+  if (.not.all(ismissing(dName))) then
+                do i = 0,dims(0)-1            ; don't use dims' dimensions
+                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
+                        var_to!i = var_from!i
+                        if(iscoord(var_from,var_from!i))
+                                var_to&$var_to!i$ = var_from&$var_from!i$
+                        end if
+                   end if
+                end  do
+                do i = dims(ndims-1)+1,rfrom-1  ; don't use dims' dimensions
+                   if (.not.ismissing(dName(i)).and.dimf(i).eq.dimt(i)) then  
+                        var_to!i = var_from!i
+                        if(iscoord(var_from,var_from!i))
+                                var_to&$var_to!i$ = var_from&$var_from!i$
+                        end if
+                   end if
+                end  do
   end if
 end
 ;****************************************
@@ -3799,10 +3852,10 @@ begin
 
   nD   = nDim-1                                 ; last dimension
                                                 ; create a new coord for
-  if (.not.ismissing(xo!0)) then
+  if (isdimnamed(xo,0)) then
       fo!nD = xo!0                              ; if present, use xo name
   else 
-      if (.not.ismissing(fi!nD)) then
+      if (isdimnamed(fi,nD)) then
           fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
       else                                      ; but change case [contributed]
           fo!nD = "X"                           ; default dimension name
@@ -10870,10 +10923,10 @@ begin
 
   nD   = nDim-1                                 ; last dimension
                                                 ; create a new coord for
-  if (.not.ismissing(xo!0)) then
+  if (isdimnamed(xo,0)) then
       fo!nD = xo!0                              ; if present, use xo name
   else 
-      if (.not.ismissing(fi!nD)) then
+      if (isdimnamed(fi,nD)) then
           fo!nD = str_switch(fi!nD)             ; if present, use same name
         ;;fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
       else                                      ; but change case 
@@ -10882,6 +10935,55 @@ begin
   end if
                                                 ; assign coordinates
   fo&$fo!nD$ = xo                               ; rightmost dim
+   
+  return (fo)
+end
+; **********************************************************************
+; M. Haley
+; wrapper for NCL procedure "int2p_n" that copies attributes and
+; coordinate  vars.  It adds the longitude and latitude coordinates.
+;
+; Based on int2p_Wrap.
+; Added Oct 25, 2009
+
+undef("int2p_n_Wrap")
+function int2p_n_Wrap (xi:numeric, fi:numeric, xo:numeric, \
+                       linlog[1]:integer, pdim[1]:integer)
+
+; wrapper for NCL function "int2p_n"  that copies attributes and 
+; coordinate vars.
+local fo, dimfi, nDim, n, nD
+begin
+
+  fo   = int2p_n (xi,fi, xo, linlog, pdim)      ; perform interpolation 
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fo))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_not_n (fi, fo, pdim)           ; copy coord variables  
+                                                ; except for pdim-th
+
+                                                ; create a new coord for
+                                                ; level dimension
+  dimxo = dimsizes(xo)                          ; check if multi-d
+  rnkxo = dimsizes(dimxo)
+  if (rnkxo.eq.1.and.isdimnamed(xo,0)) then
+    fo!pdim = xo!0                              ; if present, use xo name
+  else
+    if(rnkxo.gt.1.and.isdimnamed(xo,pdim)) then
+      fo!pdim = xo!pdim                         ; if present, use xo name
+    else 
+      if (isdimnamed(fi,pdim)) then
+        fo!pdim = str_switch(fi!pdim)           ; if present, use same name
+        ;;fo!pdim = changeCaseChar(fi!pdim)     ; if present, use same name
+      else                                      ; but change case 
+        fo!pdim = "X"                           ; default dimension name
+      end if                
+    end if
+  end if
+                                                ; assign coordinates
+  fo&$fo!pdim$ = xo                             ; rightmost dim
    
   return (fo)
 end
