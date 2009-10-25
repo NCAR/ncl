@@ -367,7 +367,7 @@ NhlErrorTypes int2p_n_W( void )
   double *tmp_pin, *tmp_xin, *tmp_pout;
   int *dim;
   int ndims_pin, dsizes_pin[NCL_MAX_DIMENSIONS];
-  NclScalar missing_pin, missing_xin, missing_dx, missing_rx;
+  NclScalar missing_pin, missing_xin, missing_dx, missing_rx, missing_xout;
   int has_missing_pin, has_missing_xin;
   int ndims_xin, dsizes_xin[NCL_MAX_DIMENSIONS];
   int ndims_pout, dsizes_pout[NCL_MAX_DIMENSIONS];
@@ -388,6 +388,7 @@ NhlErrorTypes int2p_n_W( void )
  * Declare various variables for random purposes.
  */
   int i, j, k, ii, npin, npout, ier = 0, ret;
+  int nrni, nrno, index_nri, index_nro, index_in, index_out;
   int nmiss = 0, nmono = 0;
 /*
  * Retrieve parameters
@@ -611,11 +612,13 @@ NhlErrorTypes int2p_n_W( void )
 
     xout     = (void*)calloc(size_xout,sizeof(float));
     tmp_xout = (double*)calloc(npout,sizeof(double));
+    missing_xout = missing_rx;
   }
   else {
     type_xout = NCL_double;
     xout     = (void*)calloc(size_xout,sizeof(double));
     tmp_xout = (double*)calloc(npout,sizeof(double));
+    missing_xout = missing_dx;
   }
   if(xout == NULL || tmp_xout == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"int2p_n: Unable to allocate memory for output array");
@@ -635,39 +638,40 @@ NhlErrorTypes int2p_n_W( void )
  * Call the Fortran version of this routine.
  *
  */
+  nrni = size_rightmost * npin;
+  nrno = size_rightmost * npout;
   for( i = 0; i < size_leftmost; i++ ) {
+    index_nri = i*nrni;
+    index_nro = i*nrno;
     for( j = 0; j < size_rightmost; j++ ) {
+      index_in  = index_nri + j;
+      index_out = index_nro + j;
       if(ndims_pin > 1) {
 /*
  * Coerce npin subsection of pin (tmp_pin) to double.
  */
-        for(k = 0; k < npin; k++) {
-          ii = (i*size_rightmost*npin) + (k*size_rightmost) + j;
-          coerce_subset_input_double(pin,&tmp_pin[k],ii,type_pin,
-                                     1,0,NULL,NULL);
-          coerce_subset_input_double(xin,&tmp_xin[k],ii,type_xin,
-                                     1,0,NULL,NULL);
-        }
+        coerce_subset_input_double_step(pin,tmp_pin,index_in,
+                                        size_rightmost,type_pin,
+                                        npin,0,NULL,NULL);
+        coerce_subset_input_double_step(xin,tmp_xin,index_in,
+                                        size_rightmost,type_xin,
+                                        npin,0,NULL,NULL);
       }
       else {
 /* 
  * pin is 1D, so do xin only.
  */
-        for(k = 0; k < npin; k++) {
-          ii = (i*size_rightmost*npin) + (k*size_rightmost) + j;
-          coerce_subset_input_double(xin,&tmp_xin[k],ii,type_xin,
-                                     1,0,NULL,NULL);
-        }
+        coerce_subset_input_double_step(xin,tmp_xin,index_in,
+                                        size_rightmost,type_xin,
+                                        npin,0,NULL,NULL);
       }
       if(ndims_pout > 1) {
 /*
  * Coerce npout subsection of pout (tmp_pout) to double.
  */
-        for(k = 0; k < npout; k++) {
-          ii = (i*size_rightmost*npout) + (k*size_rightmost) + j;
-          coerce_subset_input_double(pout,&tmp_pout[k],ii,type_pout,
-                                     1,0,NULL,NULL);
-        }
+        coerce_subset_input_double_step(pout,tmp_pout,index_out,
+                                        size_rightmost,type_pout,
+                                        npout,0,NULL,NULL);
       }
       NGCALLF(dint2p,DINT2P)(tmp_pin,tmp_xin,&p[0],&x[0],&npin,
                              tmp_pout,tmp_xout,&npout,linlog,
@@ -676,21 +680,15 @@ NhlErrorTypes int2p_n_W( void )
       if (ier) {
         if (ier >= 1000) nmiss++;
         else             nmono++;
-        for(k = 0; k < npout; k++) {
-          ii = (i*size_rightmost*npout) + (k*size_rightmost) + j;
-          set_subset_output_missing(xout,ii,type_xout,1,
-                                  missing_dx.doubleval);
-        }
+        set_subset_output_missing_step(xout,index_out,size_rightmost,
+                                       type_xout,npout,missing_dx.doubleval);
       }
       else {
 /*
  * Copy output values from temporary tmp_xout to xout.
  */
-        for(k = 0; k < npout; k++) {
-          ii = (i*size_rightmost*npout) + (k*size_rightmost) + j;
-          coerce_output_float_or_double(xout,&tmp_xout[k],type_xout,
-                                        1,ii);
-        }
+        coerce_output_float_or_double_step(xout,tmp_xout,type_xout,npout,
+                                           index_out,size_rightmost);
       }
     }
   }
@@ -706,27 +704,14 @@ NhlErrorTypes int2p_n_W( void )
   NclFree(p);
   NclFree(x);
   NclFree(tmp_xin);
-  if(ndims_pin  == 1 && type_pin  != NCL_double) NclFree(tmp_pin);
-  if(ndims_pout == 1 && type_pout != NCL_double) NclFree(tmp_pout);
+  if(ndims_pin  > 1 || type_pin  != NCL_double) NclFree(tmp_pin);
+  if(ndims_pout > 1 || type_pout != NCL_double) NclFree(tmp_pout);
   NclFree(tmp_xout);
 
 /*
  * Return values.
  */
-  if(type_xout != NCL_double) {
-/*
- * Return float values with missing value set.
- */
-    ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_rx,
-                          NCL_float,0);
-  }
-  else {
-/*
- * Return double values with missing value set.
- */
-    ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_dx,
-                          NCL_double,0);
-  }
+  ret = NclReturnValue(xout,ndims_xin,dsizes_xout,&missing_xout,type_xout,0);
   NclFree(dsizes_xout);
   return(ret);
 }

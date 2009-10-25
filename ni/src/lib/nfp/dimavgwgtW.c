@@ -279,8 +279,8 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
 /*
  * Various
  */
-  int nx, index_x, index_out, ret;
-  int i, j, k, total_nl, total_nr, size_output;
+  int nx, index_nrx, index_x, index_nr, index_out, ret;
+  int i, j, k, total_nl, total_nr, nrnx, size_output;
 
 /*
  * Retrieve parameters.
@@ -431,16 +431,18 @@ NhlErrorTypes dim_avg_wgt_n_W( void )
  * Loop across all but the narg-th dimension and call the Fortran routine
  * for each one-dimensional subsection.
  */
+  nrnx = total_nr * nx;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
+    index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
-      index_out = (i*total_nr) + j;
-      for(k = 0; k < nx; k++) {
-        index_x = (i*total_nr*nx) + (k*total_nr) + j;
+      index_x   = index_nrx + j;
+      index_out = index_nr + j;
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,1,0,NULL,NULL);
-      }
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      nx,0,NULL,NULL);
 /*
  * Call the Fortran routine.
  */
@@ -752,7 +754,7 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
 /*
  * Various
  */
-  int nx, index_x, index_out, ret;
+  int nx, nrnx, index_x, index_nrx, index_nr, index_out, ret;
   int i, j, k, total_nl, total_nr, size_output;
 
 /*
@@ -904,16 +906,18 @@ NhlErrorTypes dim_sum_wgt_n_W( void )
  * Loop across all but the narg-th dimension and call the Fortran routine
  * for each one-dimensional subsection.
  */
+  nrnx = total_nr * nx;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i * nrnx;
+    index_nr  = i * total_nr;
     for(j = 0; j < total_nr; j++) {
-      index_out = (i*total_nr) + j;
-      for(k = 0; k < nx; k++) {
-        index_x = (i*total_nr*nx) + (k*total_nr) + j;
+      index_out = index_nr + j;
+      index_x   = index_nrx + j;
 /*
  * Coerce subsection of x (tmp_x) to double if necessary.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,1,0,NULL,NULL);
-      }
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      nx,0,NULL,NULL);
 /*
  * Call the Fortran routine.
  */

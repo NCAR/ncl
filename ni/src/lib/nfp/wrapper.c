@@ -406,6 +406,7 @@ extern NhlErrorTypes dewtemp_trh_W(void);
 extern NhlErrorTypes lclvl_W(void);
 extern NhlErrorTypes linmsg_W(void);
 extern NhlErrorTypes linint1_W(void);
+extern NhlErrorTypes linint1_n_W(void);
 extern NhlErrorTypes linint2_W(void);
 extern NhlErrorTypes linint2_points_W(void);
 extern NhlErrorTypes area_hi2lores_W(void);
@@ -5757,6 +5758,23 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(linint1_W,args,"linint1",nargs);
 
 /*
+ * Register "linint1_n".
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(linint1_n_W,args,"linint1_n",nargs);
+
+/*
  * Register "linint2".
  */
     nargs = 0;
@@ -7342,7 +7360,7 @@ NclScalar         *missing_dx)
 }
 
 /*
- * Coerce a subset of the data to double.
+ * Coerce a contiguous subset of the data to double.
  */
 void coerce_subset_input_double(
 void              *x,
@@ -7387,6 +7405,63 @@ NclScalar         *missing_dx
                NULL,
                NULL,
                typeclass_x);
+  }
+}
+
+/*
+ * Coerce a non-contiguous subset of the data to double.
+ */
+void coerce_subset_input_double_step(
+void              *x,
+double            *tmp_x,
+int               index_x,
+int               step_x,
+NclBasicDataTypes type_x,
+int               size_x,
+int               has_missing_x,
+NclScalar         *missing_x,
+NclScalar         *missing_dx
+)
+{
+  int i, ii;
+  NclTypeClass typeclass_x;
+  
+/*
+ * typeclass_x is what allows us to get the size of the type of x.
+ */
+  typeclass_x = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(type_x)));
+/*
+ * Coerce x to double.
+ */
+  if(has_missing_x) {
+/*
+ * Coerce subset to double, with missing values.
+ */
+    for(i = 0; i < size_x; i++ ) {
+      ii = step_x*i;
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+		 &tmp_x[i],
+		 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
+		 1,
+		 missing_x,
+		 missing_dx,
+		 typeclass_x);
+    }
+  }
+  else {
+/*
+ * Coerce subset to double, with no missing values.
+ */
+    for(i = 0; i < size_x; i++ ) {
+      ii = step_x*i;
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+		 &tmp_x[i],
+		 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
+		 1,
+		 NULL,
+		 NULL,
+		 typeclass_x);
+    }
   }
 }
 
@@ -7596,6 +7671,29 @@ double            missing_x)
 }
 
 
+/*
+ * Sets a subset of non-contiguous output data to missing.
+ */
+void set_subset_output_missing_step(
+void              *x,
+int               index_x,
+int               step_x,
+NclBasicDataTypes type_x,
+int               size_x,
+double            missing_x)
+{
+  int i;
+  for(i = 0; i < size_x; i++) {
+    if(type_x != NCL_double) {
+      ((float*)x)[index_x + i*step_x] = (float)missing_x;
+    }
+    else {
+      ((double*)x)[index_x + i*step_x] = missing_x;
+    }
+  }
+}
+
+
 void compute_nlatnlon(
 int *dsizes,
 int ndims,
@@ -7716,6 +7814,30 @@ int    index_x
 }
 
 
+/*
+ * Copy double data back to double or float non-contiguous array,
+ * using a void array. 
+ */
+void coerce_output_float_or_double_step(
+void   *x,
+double *dx,
+NclBasicDataTypes type_x,
+int    size_x,
+int    index_x,
+int    step_x
+)
+{
+  int i;
+
+  if(type_x == NCL_double) {
+    for( i = 0; i < size_x; i++ ) ((double*)x)[index_x+(step_x*i)] = dx[i];
+  }
+  else {
+    for( i = 0; i < size_x; i++ ) ((float*)x)[index_x+(step_x*i)]  = (float)dx[i];
+  }
+}
+
+
 
 /*
  * Coerce data to float, or just return a pointer to it if
@@ -7765,7 +7887,7 @@ NclScalar         *missing_fx)
 }
 
 /*
- * Coerce a subset of the data to float.
+ * Coerce a contiguous subset of the data to float.
  */
 void coerce_subset_input_float(
 void              *x,

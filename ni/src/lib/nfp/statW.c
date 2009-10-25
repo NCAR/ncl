@@ -1072,7 +1072,7 @@ NhlErrorTypes dim_median_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_out, index_x;
+  int i, j, k, index_out, index_x, nrnx, index_nrx, index_nr;
   int total_nl, total_nr, total_elements, ier = 0, ier_count = 0, npts;
   double *work;
 /*
@@ -1166,16 +1166,19 @@ NhlErrorTypes dim_median_n_W( void )
 /*
  * Call the f77 double version of 'medmrng' with the full argument list.
  */
+  nrnx = total_nr * npts;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
+    index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
-      index_out = (i*total_nr) + j;
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
+      index_x   = index_nrx + j;
+      index_out = index_nr + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,1,0,NULL,NULL);
-      }
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      npts,0,NULL,NULL);
+
       if(type_x == NCL_double) tmp_xmedian = &((double*)xmedian)[index_out];
 
       NGCALLF(dmedmrng,DMEDMRNG)(tmp_x,work,&npts,&missing_dx.doubleval,
@@ -1342,7 +1345,7 @@ NhlErrorTypes dim_rmvmean_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_x;
+  int i, j, k, index_x, nrnx, index_nrx;
   int total_nl, total_nr, total_size_x, total_elements;
   int ier=0, ier_count=0, npts;
 
@@ -1430,22 +1433,21 @@ NhlErrorTypes dim_rmvmean_n_W( void )
 /*
  * Call the f77 double version of 'rmvmean' with the full argument list.
  */
+  nrnx = total_nr * npts;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
     for(j = 0; j < total_nr; j++) {
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
+      index_x   = index_nrx + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,1,0,NULL,NULL);
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      npts,0,NULL,NULL);
 
-      }
       NGCALLF(drmvmean,DRMVMEAN)(tmp_x,&npts,&missing_dx.doubleval,&ier);
 
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
-        coerce_output_float_or_double(rmvmean,&tmp_x[k],type_x,1,index_x);
-      }
+      coerce_output_float_or_double_step(rmvmean,tmp_x,type_x,npts,index_x,
+                                         total_nr);
       if (ier == 2) ier_count++;
     }
   }
@@ -1616,7 +1618,7 @@ NhlErrorTypes dim_rmvmed_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_x;
+  int i, j, k, index_x, nrnx, index_nrx;
   int total_nl, total_nr, total_size_x, total_elements;
   int ier=0, ier_count=0, npts;
 /*
@@ -1710,22 +1712,21 @@ NhlErrorTypes dim_rmvmed_n_W( void )
 /*
  * Call the f77 double version of 'rmvmed' with the full argument list.
  */
+  nrnx = total_nr * npts;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
     for(j = 0; j < total_nr; j++) {
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
+      index_x   = index_nrx + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,1,0,NULL,NULL);
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      npts,0,NULL,NULL);
 
-      }
       NGCALLF(drmvmed,DRMVMED)(tmp_x,work,&npts,&missing_dx.doubleval,&ier);
 
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
-        coerce_output_float_or_double(rmvmed,&tmp_x[k],type_x,1,index_x);
-      }
+      coerce_output_float_or_double_step(rmvmed,tmp_x,type_x,npts,index_x,
+                                         total_nr);
       if (ier == 2) ier_count++;
     }
   }
@@ -1898,7 +1899,7 @@ NhlErrorTypes dim_standardize_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_x;
+  int i, j, k, index_x, nrnx, index_nrx;
   int total_nl, total_nr, total_size_x, total_elements;
   int ier=0, ier_count=0, npts;
 
@@ -1997,22 +1998,21 @@ NhlErrorTypes dim_standardize_n_W( void )
 /*
  * Call the f77 double version of 'xstnd' with the full argument list.
  */
+  nrnx = total_nr * npts;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
     for(j = 0; j < total_nr; j++) {
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
+      index_x = index_nrx + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,1,0,NULL,NULL);
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      npts,0,NULL,NULL);
 
-      }
       NGCALLF(dxstnd,DXSTND)(tmp_x,&npts,&missing_dx.doubleval,opt,&ier);
 
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
-        coerce_output_float_or_double(standardize,&tmp_x[k],type_x,1,index_x);
-      }
+      coerce_output_float_or_double_step(standardize,tmp_x,type_x,npts,
+                                         index_x,total_nr);
       if (ier == 2) ier_count++;
     }
   }
@@ -2249,7 +2249,7 @@ NhlErrorTypes dim_rmsd_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_out, index_xy;
+  int i, j, k, index_out, index_xy, nrnx, index_nrx, index_nr;
   int total_nl, total_nr, total_elements, ier = 0, ier_count = 0, npts;
 /*
  * Retrieve parameters.
@@ -2372,19 +2372,20 @@ NhlErrorTypes dim_rmsd_n_W( void )
 /*
  * Call the f77 double version of 'rmsd' with the full argument list.
  */
+  nrnx = total_nr * npts;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
+    index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
-      index_out = (i*total_nr) + j;
-      for(k = 0; k < npts; k++) {
-        index_xy = (i*total_nr*npts) + (k*total_nr) + j;
+      index_out = index_nr + j;
+      index_xy  = index_nrx + j;
 /*
  * Coerce subsection of x/y (tmp_x/tmp_y) to double.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_xy,type_x,1,
-                                 has_missing_x,&missing_x,&missing_dx);
-        coerce_subset_input_double(y,&tmp_y[k],index_xy,type_y,1,
-                                   has_missing_y,&missing_y,&missing_dy);
-      }
+      coerce_subset_input_double_step(x,tmp_x,index_xy,total_nr,type_x,npts,
+                                      has_missing_x,&missing_x,&missing_dx);
+      coerce_subset_input_double_step(y,tmp_y,index_xy,total_nr,type_y,npts,
+                                      has_missing_y,&missing_y,&missing_dy);
       
       if(type_rmsd == NCL_double) tmp_rmsd = &((double*)rmsd)[index_out];
 
@@ -3975,7 +3976,7 @@ NhlErrorTypes dim_stat4_n_W( void )
 /*
  * various
  */
-  int i, j, k, total_nl, total_nr, total_n;
+  int i, j, k, total_nl, total_nr, total_n, nrnx, index_nrx, index_nr;
   int ier = 0, index_x, index_out, npts, ret, ier_count;
   double xsd, *tmp_x;
 /*
@@ -4061,17 +4062,19 @@ NhlErrorTypes dim_stat4_n_W( void )
  * 'dim_stat4_n' with the appropriate subset of 'x'.
  */
   ier_count = 0;
+  nrnx = total_nr * npts;
   for(i = 0; i < total_nl; i++) {
+    index_nrx = i*nrnx;
+    index_nr  = i*total_nr;
     for(j = 0; j < total_nr; j++) {
-      index_out = (i*total_nr) + j;
-      for(k = 0; k < npts; k++) {
-        index_x = (i*total_nr*npts) + (k*total_nr) + j;
+      index_out = index_nr + j;
+      index_x   = index_nrx + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
-        coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,
-                                   1,0,NULL,NULL);
-      }
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,
+                                      npts,0,NULL,NULL);
+
       NGCALLF(dstat4,DSTAT4)(tmp_x,&npts,&missing_dx.doubleval,&dxmean,&dxvar,
                              &xsd,&dxskew,&dxkurt,&nptused,&ier);
       if (ier == 2) {

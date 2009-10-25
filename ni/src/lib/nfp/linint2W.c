@@ -36,10 +36,10 @@ NhlErrorTypes linint1_W( void )
   int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_xo[NCL_MAX_DIMENSIONS];
   int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
   int *dsizes_fo;
-  NclScalar missing_fi, missing_dfi, missing_rfi;
+  NclScalar missing_fi, missing_dfi, missing_rfi, missing_fo;
   int *opt, iopt = 0;
   logical *wrap;
-  NclBasicDataTypes type_xi, type_fi, type_xo;
+  NclBasicDataTypes type_xi, type_fi, type_xo, type_fo;
 /*
  * Output variables.
  */
@@ -165,10 +165,14 @@ NhlErrorTypes linint1_W( void )
  */
   dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
   if(type_fi == NCL_double) {
-    fo = (void*)calloc(size_fo,sizeof(double));
+    fo         = (void*)calloc(size_fo,sizeof(double));
+    type_fo    = NCL_double;
+    missing_fo = missing_dfi;
   }
   else {
-    fo = (void*)calloc(size_fo,sizeof(float));
+    fo         = (void*)calloc(size_fo,sizeof(float));
+    type_fo    = NCL_float;
+    missing_fo = missing_rfi;
   }
   if(fo == NULL || dsizes_fo == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1: Unable to allocate memory for output array");
@@ -264,18 +268,290 @@ NhlErrorTypes linint1_W( void )
   NclFree(xiw);
   NclFree(fxiw);
 
-  if(type_fi == NCL_double) {
+  ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0);
+  NclFree(dsizes_fo);
+  return(ret);
+}
+
+NhlErrorTypes linint1_n_W( void )
+{
 /*
- * Return double values with missing value set.
+ * Input variables
  */
-    ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_dfi,NCL_double,0);
+  void *xi, *fi, *xo;
+  double *tmp_xi, *tmp_xo,*tmp_fi, *tmp_fo;
+  int ndims_xi, dsizes_xi[NCL_MAX_DIMENSIONS], dsizes_xo[NCL_MAX_DIMENSIONS];
+  int ndims_fi, dsizes_fi[NCL_MAX_DIMENSIONS], has_missing_fi;
+  int *dsizes_fo;
+  NclScalar missing_fi, missing_dfi, missing_rfi, missing_fo;
+  int *dim, *opt, iopt = 0;
+  logical *wrap;
+  NclBasicDataTypes type_xi, type_fi, type_xo, type_fo;
+/*
+ * Output variables.
+ */
+  void *fo;
+/*
+ * Other variables
+ */
+  int nxi, nxi2, nxo, nfo, nd, nr, nl, nrnxi, nrnxo, ntotal, size_fo;
+  int i, j, index_nri, index_nro, index_fi, index_fo, ier, ret;
+  double *xiw, *fxiw;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ */
+  xi = (void*)NclGetArgValue(
+          0,
+          6,
+          &ndims_xi,
+          dsizes_xi,
+          NULL,
+          NULL,
+          &type_xi,
+          DONT_CARE);
+
+  fi = (void*)NclGetArgValue(
+          1,
+          6,
+          &ndims_fi,
+          dsizes_fi,
+          &missing_fi,
+          &has_missing_fi,
+          &type_fi,
+          DONT_CARE);
+
+  wrap = (logical*)NclGetArgValue(
+          2,
+          6,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+  xo = (void*)NclGetArgValue(
+          3,
+          6,
+          NULL,
+          dsizes_xo,
+          NULL,
+          NULL,
+          &type_xo,
+          DONT_CARE);
+
+  opt = (int*)NclGetArgValue(
+          4,
+          6,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+  dim = (int*)NclGetArgValue(
+          5,
+          6,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+/*
+ * Some error checking. Make sure input dimension is valid.
+ */
+  if(*dim < 0 || *dim >= ndims_fi) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: Invalid dimension to do interpolation on, can't continue");
+    return(NhlFATAL);
+  }
+
+/*
+ * Compute the total number of elements in our arrays and check them.
+ */
+  nxi = dsizes_fi[*dim];
+  nxo = dsizes_xo[0];
+  nfo = nxo;
+
+  if(nxi < 2) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: xi must have at least 2 elements");
+    return(NhlFATAL);
+  }
+
+/*
+ * Check dimensions of xi and fi. If xi is not one-dimensional, then it 
+ * must be the same size as fi. Otherwise, the dims-th dimension of
+ * fi must be equal to the length of xi.
+ */
+  if(ndims_xi > 1) {
+    if(ndims_xi != ndims_fi) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: If xi is not one-dimensional, then it must be the same size as fi");
+      return(NhlFATAL);
+    }
+    for(i = 0; i < ndims_fi; i++) {
+      if(dsizes_xi[i] != dsizes_fi[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: If xi is not one-dimensional, then it must be the same size as fi");
+        return(NhlFATAL);
+      }
+    }
   }
   else {
-/*
- * Return float values with missing value set.
- */
-    ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_rfi,NCL_float,0);
+    if(dsizes_xi[0] != nxi) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: The dim-th dimension of fi must be the same length as xi");
+      return(NhlFATAL);
+    }
   }
+/*
+ * Calculate size of leftmost dimensions (nl) up to the dim-th
+ *   dimension.
+ * Calculate size of rightmost dimensions (nr) from the
+ *   dim-th dimension.
+ *
+ * The dimension to do the interpolation across is "dim".
+ */
+  nl = nr = 1;
+  if(ndims_fi > 1) {
+    nd = ndims_fi-1;
+    for(i = 0; i < *dim ; i++) {
+      nl = nl*dsizes_fi[i];
+    }
+    for(i = *dim+1; i < ndims_fi; i++) {
+      nr = nr*dsizes_fi[i];
+    }
+  }
+  else {
+    nd = 1;
+  }
+  ntotal  = nr * nl;
+  size_fo = ntotal * nfo;
+
+/*
+ * Coerce missing values.
+ */
+  coerce_missing(type_fi,has_missing_fi,&missing_fi,&missing_dfi,
+                 &missing_rfi);
+/*
+ * Allocate space for temporary output array.
+ */
+  tmp_fo = (double*)calloc(nfo,sizeof(double));
+  if(tmp_fo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: Unable to allocate memory for temporary arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  dsizes_fo = (int*)calloc(ndims_fi,sizeof(int));
+  if(type_fi == NCL_double) {
+    fo         = (void*)calloc(size_fo,sizeof(double));
+    type_fo    = NCL_double;
+    missing_fo = missing_dfi;
+  }
+  else {
+    fo         = (void*)calloc(size_fo,sizeof(float));
+    type_fo    = NCL_float;
+    missing_fo = missing_rfi;
+  }
+  if(fo == NULL || dsizes_fo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+/* 
+ * Go ahead and copy all dimesions, but then replace the dim-th one.
+ */
+  for(i = 0; i < ndims_fi; i++) dsizes_fo[i] = dsizes_fi[i];
+  dsizes_fo[*dim] = nxo;
+
+/*
+ * Allocate space for work arrays.
+ */
+  nxi2 = nxi + 2;
+  xiw  = (double*)calloc(nxi2,sizeof(double));
+  fxiw = (double*)calloc(nxi2,sizeof(double));
+  if(xiw == NULL || fxiw == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: Unable to allocate memory for work arrays");
+    return(NhlFATAL);
+  }
+
+/*
+ * Coerce output array to double if necessary.
+ */
+  tmp_xo = coerce_input_double(xo,type_xo,nxo,0,NULL,NULL);
+  if(tmp_xo == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: Unable to coerce output array to double precision");
+    return(NhlFATAL);
+  }
+
+  if(ndims_xi == 1) {
+    tmp_xi = coerce_input_double(xi,type_xi,nxi,0,NULL,NULL);
+  }
+  else {
+    tmp_xi = (double*)calloc(nxi,sizeof(double));
+    if(tmp_xi == NULL) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: Unable to allocate memory for coercing input array to double precision");
+      return(NhlFATAL);
+    }
+  }
+
+  tmp_fi = (double*)calloc(nxi,sizeof(double));
+  if(tmp_fi == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"linint1_n: Unable to allocate memory for coercing input array to double precision");
+    return(NhlFATAL);
+  }
+
+/*
+ * Loop through leftmost and rightmost dimensions and call Fortran
+ * routine for each array subsection.
+ */
+  nrnxi = nr*nxi;
+  nrnxo = nr*nxo;
+  for( i = 0; i < nl; i++ ) {
+    index_nri = i*nrnxi;
+    index_nro = i*nrnxo;
+    for( j = 0; j < nr; j++ ) {
+      index_fi = index_nri+j;
+      index_fo = index_nro+j;
+
+      if(ndims_xi > 1) {
+        coerce_subset_input_double_step(xi,tmp_xi,index_fi,nr,type_xi,
+                                        nxi,0,NULL,NULL);
+      }
+      coerce_subset_input_double_step(fi,tmp_fi,index_fi,nr,type_fi,
+                                      nxi,0,NULL,NULL);
+/*
+ * Call Fortran routine.
+ */
+      NGCALLF(dlinint1,DLININT1)(&nxi,tmp_xi,tmp_fi,wrap,&nxo,tmp_xo,tmp_fo,
+                                 xiw,fxiw,&nxi2,&missing_dfi.doubleval,
+                                 &iopt,&ier);
+
+      if(ier) {
+        NhlPError(NhlWARNING,NhlEUNKNOWN,"linint1_n: xi and xo must be monotonically increasing");
+        set_subset_output_missing_step(fo,index_fo,nr,type_fo,nfo,
+                                       missing_dfi.doubleval);
+      }
+      else {
+        coerce_output_float_or_double_step(fo,tmp_fo,type_fi,nfo,index_fo,nr);
+      }
+    }
+  }
+/*
+ * Free temp arrays.
+ */
+  if(ndims_xi > 1 || type_xi != NCL_double) NclFree(tmp_xi);
+  if(type_xo != NCL_double) NclFree(tmp_xo);
+  NclFree(tmp_fi);
+  NclFree(tmp_fo);
+  NclFree(xiw);
+  NclFree(fxiw);
+
+  ret = NclReturnValue(fo,ndims_fi,dsizes_fo,&missing_fo,type_fo,0);
+
   NclFree(dsizes_fo);
   return(ret);
 }

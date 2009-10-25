@@ -151,7 +151,7 @@ NhlErrorTypes dim_pqsort_n_W( void )
 /*
  * various
  */
-  int i, j, k, index_x, total_nl, total_nr, total_elements, ier = 0, ndim;
+  int i, j, k, inr, index_x, total_nl, total_nr, total_elements, ier = 0, ndim;
 /*
  * Retrieve parameter.
  */
@@ -241,19 +241,18 @@ NhlErrorTypes dim_pqsort_n_W( void )
  * Call the f77 double version of 'pqsort' with the full argument list.
  */
   for(i = 0; i < total_nl; i++) {
+    inr = i * total_nr * ndim;
     for(j = 0; j < total_nr; j++) {
-      for(k = 0; k < ndim; k++) {
-        index_x = (i*total_nr*ndim) + (k*total_nr) + j;
 /*
  * Coerce subsection of x (tmp_x) to double.
  */
-	coerce_subset_input_double(x,&tmp_x[k],index_x,type_x,1,0,NULL,NULL);
-      }
-      
+      index_x = inr + j;
+      coerce_subset_input_double_step(x,tmp_x,index_x,total_nr,type_x,ndim,
+				      0,NULL,NULL);
       NGCALLF(dpsortdriver,DPSORTDRIVER)(tmp_x,&ndim,tmp_iperm,kflag,&ier);
 
       for(k = 0; k < ndim; k++) {
-	index_x = (i*total_nr*ndim) + (k*total_nr) + j;
+	index_x = inr + j + (k*total_nr);
 
 	iperm[index_x] = tmp_iperm[k]; /* Output permutation vector */
 
