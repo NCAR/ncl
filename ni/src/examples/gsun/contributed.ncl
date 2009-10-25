@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.236 2009-10-25 13:50:08 haley Exp $
+;      $Id: contributed.ncl,v 1.237 2009-10-25 17:44:15 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3863,6 +3863,45 @@ begin
   end if
                                                 ; assign coordinates
   fo&$fo!nD$ = xo                               ; rightmost dim
+   
+  return (fo)
+end
+
+; **********************************************************************
+; M. Haley
+; wrapper for NCL procedure "linint1_n" that copies attributes and coordinate 
+; vars.  It adds the longitude and latitude coordinates.
+
+undef("linint1_n_Wrap")
+function linint1_n_Wrap (xi:numeric, fi:numeric, wrapX:logical \
+                        ,xo[*]:numeric, Opt, dim[1]:integer)
+
+; wrapper for NCL function "linint1_n" that copies attributes and coordinate vars.
+local fo, dimfi, nDim, n, nD
+begin
+
+  fo   = linint1_n (xi,fi, wrapX, xo, Opt, dim) ; perform interpolation 
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fo))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_not_n (fi, fo, dim)            ; copy coord variables  
+                                                ; except for dim-th
+
+                                                ; create a new coord for
+  nD   = dim                                    ; "dim"-th dimension
+  if (isdimnamed(xo,0)) then
+      fo!nD = xo!0                              ; if present, use xo name
+  else 
+      if (isdimnamed(fi,nD)) then
+          fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
+      else                                      ; but change case [contributed]
+          fo!nD = "X"                           ; default dimension name
+      end if                
+  end if
+                                                ; assign coordinates
+  fo&$fo!nD$ = xo                               ; "dim"-th dimension
    
   return (fo)
 end
