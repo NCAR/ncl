@@ -405,6 +405,7 @@ extern NhlErrorTypes mixhum_ptd_W(void);
 extern NhlErrorTypes dewtemp_trh_W(void);
 extern NhlErrorTypes lclvl_W(void);
 extern NhlErrorTypes linmsg_W(void);
+extern NhlErrorTypes linmsg_n_W(void);
 extern NhlErrorTypes linint1_W(void);
 extern NhlErrorTypes linint1_n_W(void);
 extern NhlErrorTypes linint2_W(void);
@@ -472,6 +473,7 @@ extern NhlErrorTypes filwgts_lancos_W(void);
 extern NhlErrorTypes filwgts_lanczos_W(void);
 extern NhlErrorTypes filwgts_normal_W(void);
 extern NhlErrorTypes dtrend_W(void);
+extern NhlErrorTypes dtrend_n_W(void);
 extern NhlErrorTypes dtrend_quadratic_W(void);
 extern NhlErrorTypes dtrend_msg_W(void);
 extern NhlErrorTypes local_min_W(void);
@@ -5742,6 +5744,16 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(linmsg_W,args,"linmsg",nargs);
 
 /*
+ * Register "linmsg_n".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    NclRegisterFunc(linmsg_n_W,args,"linmsg_n",nargs);
+
+/*
  * Register "linint1".
  */
     nargs = 0;
@@ -6370,6 +6382,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterFunc(dtrend_W,args,"dtrend",nargs);
+
+/*
+ * Register "dtrend_n".
+ */
+    nargs = 0;
+    args = NewArgs(3);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(dtrend_n_W,args,"dtrend_n",nargs);
 
 /*
  * Register "dtrend_quadratic".
