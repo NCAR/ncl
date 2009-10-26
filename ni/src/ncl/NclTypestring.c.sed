@@ -1,5 +1,5 @@
 /*
- *      $Id: NclTypestring.c.sed,v 1.17 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclTypestring.c.sed,v 1.18 2009-10-26 20:27:40 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -759,7 +759,7 @@ int nrhs;
 		}
 	} else if(lhs_m == NULL ) {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
-			*res = (logical)((lhs_m->stringval == *rs)?((logical)((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval)):!(*ls==*rs));
+			*res = (logical)((rhs_m->stringval == *rs)?((logical)((logical)((NclTypeClass)nclTypelogicalClass)->type_class.default_mis.logicalval)):!(*ls==*rs));
 		}
 	} else {
 		for(i = 0 ; i < stopi; i++, res++, ls += linc, rs += rinc) {
