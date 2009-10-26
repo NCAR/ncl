@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.18 2009-07-10 19:54:06 huangwei Exp $
+#       $Id: ncl_convert2nc,v 1.19 2009-10-26 18:49:30 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -13,15 +13,16 @@
 #       National Center for Atmospheric Research
 #       POB 3000, Boulder, Colorado
 
-# This script converts a NCL-supported file type (GRIB[1, 2], HDF, HDF-EOS) to a
-# netCDF-formatted file.
+# This script converts a NCL-supported file type (GRIB[1, 2], HDF, HDF-EOS) to a netCDF-formatted file.
+# It can also convert between several NetCDF formats - classic, 64-bit offset, and NetCDF4 classic.
+# In addition, it can be used to extract particular variables into a NetCDF file.
 # It does not handle CCM data.  See:  http://www.cgd.ucar.edu/cms/ccm3/tools.
 #
 # This script determines what data type it was invoked with based on the suffix of the data
 # file(s) provided to it.  Data must be of a type supported by NCL.  This information is
 # provided to the NCL portion of this script for data-dependent processing.
 #
-#   ncl_convert2nc inputFile [-i input_directory] [-o output_directory] [-v var1[,...]] [-t] [-c comment] [-d] [-h]
+#   ncl_convert2nc inputFile [-i input_directory] [-o output_directory] [-v var1[,...]] [-c comment] [-d] [-h] [other_options]
 #       inputFile             name of file [required]
 #       [-i input_directory]  location of input file  [default: current directory]
 #       [-o output_directory] location of output file [default: current directory]
@@ -40,6 +41,8 @@
 #                             processing as a suffix (e.g. _acc, _avg)
 #       [-v var1[,...]]       user specified subset of variables [default: all variables]
 #       [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]
+#       [-nc4c]               output a NetCDF 4 classic format file
+#       [-cl] <compression level>  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
 #       [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]
 #       [-B] <file>           suppress informational messages; redirect messages to <file> if present [default: /dev/null]
@@ -75,6 +78,8 @@ set nvars = 0
 
 set ncdfcomment = ""
 set ncdflrgf_t = "classic"
+set ncdf_type = "nc3"
+set compression_level = -1
 
 # Single Element Dimension variables
 set seDims_t = ""
@@ -311,6 +316,17 @@ while ($#argv > 0)
             shift
             breaksw
 
+        case "-nc4c":
+            set ncdf_type = "netcdf4classic"
+            shift
+            breaksw
+
+        case "-cl":
+            shift
+            set compression_level = $1
+            shift
+            breaksw
+
         case "-c":
         case "-comment":
             shift
@@ -404,6 +420,14 @@ endif
 set seds = ( $seds'/\)' )
 
 #
+# if the -nc4c option is set, it overrides the -L option
+#
+if ($ncdf_type != "nc3") then
+    set ncdflrgf_t = $ncdf_type
+endif
+
+
+#
 # Split filenames into (full, relative) paths and filenames.  This will
 # ensure that file arguments entered with full/relative paths are properly
 # accounted for.  Files without a path will be assigned the value given
@@ -485,6 +509,18 @@ while ($n <= $nfiles)
         # yes, does the suffix indicate requested data type?
         set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
         switch ($lsfx)
+	   case nc:
+	   case cdf:
+	   case nc3:
+	   case nc4:
+	   case netcdf:
+                set ftype = "NETCDF"
+                set if = $fil
+                set of = $fil:r
+
+                set valid_file = 1
+                goto VALID_FILE
+                breaksw
             case gr:
             case gr1:
             case grb:
@@ -612,6 +648,18 @@ while ($n <= $nfiles)
         set lsfx = `echo $psfx | tr '[A-Z]' '[a-z]'`
 
         switch ($lsfx)
+	   case nc:
+	   case cdf:
+	   case nc3:
+	   case nc4:
+	   case netcdf:
+                set ftype = "NETCDF"
+                set if = $fil
+                set of = $fil:r
+
+                set valid_file = 1
+                goto VALID_FILE
+                breaksw
             case gr:
             case gr1:
             case grb:
@@ -917,6 +965,29 @@ begin
     end if
 
 ;***************************************************
+;
+; Specify the type(s) of time record dimension
+; NOTE: valid for GRIB files only
+;***************************************************
+    if (ftype .eq. "GRIB") then
+;        setfileoption(f, "InitialTimeCoordinateType", "numeric")
+
+        sed = singleElemDims
+        if (debug) then
+            print("Setting file option: SingleElementDimensions: " + sed)
+        end if
+
+        setfileoption("grib", "SingleElementDimensions", sed)
+
+        tps = timePeriodSuffix
+        if (debug) then
+            print("Setting file option: TimePeriodSuffix: " + tps)
+        end if
+
+        setfileoption("grib", "TimePeriodSuffix", tps)
+    end if
+
+;***************************************************
 ; open file with appropriate extension
 ;***************************************************
     iFileName = diri + fili
@@ -970,12 +1041,25 @@ begin
 
 ;***************************************************
 ; open output netcdf file
-; Set for 'large file' netCDF support if specified
+; Set for 'large file' or netCDFclassic support if specified
 ;***************************************************
     netcdfSizeType = ncdfSize
     setfileoption("netcdf", "format", netcdfSizeType)
+    osuffix = ".nc"
+    if (netcdfSizeType .eq. "netcdf4classic") then
+        osuffix = ".nc4"
+        if (ncdfCompLevel .gt. -1) then
+            setfileoption("netcdf", "CompressionLevel", ncdfCompLevel)
+        end if 
+    end if
 
-    ncFileName = diro + filo + ".nc"      
+    ncFileName = diro + filo + osuffix 
+    ofile_i = str_get_field(systemfunc("ls -iL " + ncFileName + " 2>/dev/null"),1," ")
+    ifile_i = str_get_field(systemfunc("ls -iL " + iFileName  + " 2>/dev/null" ),1," ")
+    if (.not. ismissing(ofile_i) .and. ofile_i .eq. ifile_i) then
+	ncFileName = ncFileName + ".nc"
+    end if
+
     system("/bin/rm -f " + ncFileName)  ; remove pre-existing file (if any)
     fnc = addfile(ncFileName, "c")      ; "c"reate the netCDF file
 
@@ -997,12 +1081,20 @@ begin
         fAtt@grib_source   = fili
     end if
 
+    if (ftype .eq. "NETCDF") then
+        fAtt@netcdf_source   = fili
+    end if
+
     if (ftype .eq. "HDF") then
         fAtt@hdf_source   = fili
     end if
 
     if (ftype .eq. "HDFEOS") then
         fAtt@hdfeos_source   = fili
+    end if
+
+    if (ftype .eq. "HDFEOS5") then
+        fAtt@hdfeos5_source   = fili
     end if
 
     fAtt@conventions   = "None"
@@ -1030,6 +1122,11 @@ begin
 ; and types
 ;***********************************************
     dimNames = getvardims(f)
+    if (dimNames(0) .eq. "ncl_scalar") then
+	has_scalar_dim = True
+    else
+	has_scalar_dim = False
+    end if
     dimSizes = getfiledimsizes(f)
     dimUnlim = new(dimsizes(dimNames), "logical")
     dimUnlim = False
@@ -1046,7 +1143,14 @@ begin
             end if
         end if
     end if
-    filedimdef(fnc, dimNames, dimSizes, dimUnlim)
+;
+; if there is a scalar dimension then it should be the first one listed
+;
+    if (has_scalar_dim) then
+        filedimdef(fnc, dimNames(1:), dimSizes(1:), dimUnlim(1:))
+    else
+        filedimdef(fnc, dimNames, dimSizes, dimUnlim)
+    end if
 
     if (debug) then
         print(dimNames)
@@ -1284,17 +1388,17 @@ while ($n <= $nfiles)
     if ("$redirect" == 0) then
         echo "Processing file: $ifiles_r[$n]..."
         if ($?vars) then
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level 'singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
         else
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
         endif
     else
         # redirection requested
         (echo "Processing file: $ifiles_r[$n]..." >&! $f_rdir)
         if ($?vars) then
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout) >&! $f_rdir
         else
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout &) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout &) >&! $f_rdir
         endif
     endif
 
@@ -1360,6 +1464,8 @@ echo "                          processing as a suffix (e.g. _acc, _avg)"
 echo "  [-v var1[,...]]       user specified subset of variables [default: all variables]"
 echo "                        ncl_filedump can be used to determine desired variable names"
 echo "  [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]"
+echo "  [-nc4c]               output a NetCDF 4 classic format file"
+echo "  [-cl] <compression level>  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]"
 echo "  [-c comment]          text to be included in netCDF file attribute [default: no comment]"
 echo "  [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]"
 echo "  [-B] <file>           suppress informational messages; redirect messages to <file> if present [default: /dev/null]"

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncl_filedump,v 1.16 2009-07-10 19:54:06 huangwei Exp $
+#   $Id: ncl_filedump,v 1.17 2009-10-26 18:49:30 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -189,7 +189,7 @@ endif
 # Make sure the file has an appropriate suffix so that NCL knows
 # what kind of file it is.
 #
-set valid_suffixes = ("nc" "cdf" "netcdf" "gr" "gr1" "grb" "grb1" "grib" "grib1" "gr2" "grb2" "grib2" "hdf" "h4" "hdfeos" "he2" "he4" "h5" "hdfeos5" "he5" "ccm" "shp" "mif" "gmt" "rt1" "rt2" "rt3" "rt4" "rt5" "rt6" "rt7" "rt8" "rt9" "rta" "rtb" "rtc" "rte" "rth" "rti" "rtm" "rtp" "rtr" "rts" "rtt" "rtu" "rtz")
+set valid_suffixes = ("nc" "cdf" "netcdf" "nc3" "nc4" "gr" "gr1" "grb" "grb1" "grib" "grib1" "gr2" "grb2" "grib2" "hdf" "h4" "hdfeos" "he2" "he4" "h5" "hdfeos5" "he5" "ccm" "shp" "mif" "gmt" "rt1" "rt2" "rt3" "rt4" "rt5" "rt6" "rt7" "rt8" "rt9" "rta" "rtb" "rtc" "rte" "rth" "rti" "rtm" "rtp" "rtr" "rts" "rtt" "rtu" "rtz")
 set no_suffix
 set psfx = "$file:e"
 set suffix = `echo $psfx | tr '[A-Z]' '[a-z]'`
@@ -286,6 +286,8 @@ switch ($suffix)
     case nc:
     case cdf:
     case netcdf:
+    case nc3:
+    case nc4:
         set ftype = "netCDF"
         breaksw
 
