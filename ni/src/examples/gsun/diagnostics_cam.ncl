@@ -2780,6 +2780,10 @@ begin
         end if
 
         rLag  = mjo_xcor_lag_season (xio(iStrt:iLast), y(iStrt:iLast,:) ,mxlag, opt)
+
+        rLag  = where(rLag.gt.0.999, 0.999, rLag)        ; avoid rounding issue
+                                                         ; so (1-rLag) .ne. 0.0
+
         rz    = rz   + 0.5*log((1+rLag)/(1-rLag)) ; Fischer z-transform
      end do
 
