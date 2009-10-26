@@ -1,5 +1,5 @@
 /*  
- *      $Id: cro.c,v 1.8 2009-10-16 19:15:21 fred Exp $
+ *      $Id: cro.c,v 1.9 2009-10-26 03:26:40 fred Exp $
  */
 /*
  *
@@ -483,6 +483,7 @@ int cro_Esc(GKSC *gksc) {
       strng = strtok((char *) NULL, " ");
       psa->dspace.ury = (int) (rscale * (float) atoi(strng));
 
+
       psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
       psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
 
@@ -646,7 +647,6 @@ int cro_OpenWorkstation(GKSC *gksc) {
     printf("Got to cro_OpenWorkstation\n");
   }
 
-
 /*
  *  Provide the gksc with the device dependent data.
  */
@@ -718,7 +718,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
           PNG_SCALE*612,PNG_SCALE*792);
     cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
     add_context_index(context_num, orig_wks_id);
-    psa->output_file = sptr;
+    psa->output_file = (char *) calloc(257,sizeof(char));
+    strcpy(psa->output_file,sptr);
   }
 
 /*
@@ -810,7 +811,6 @@ int  cro_Polyline(GKSC *gksc) {
 /*
  *  Set the dash pattern based on the line type.
  */
-
   cval = unpack_argb((psa->ctable)[psa->attributes.line_colr_ind]);
   cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)],
                           cval.red, cval.green, cval.blue, cval.alpha);
@@ -1473,6 +1473,7 @@ int cro_Text(GKSC *gksc) {
 
   cairo_text_extents(cairo_context[context_index(psa->wks_id)], sptr, &textents);
 
+
   cairo_get_font_matrix (cairo_context[context_index(psa->wks_id)],&fmatrix);
 
   cairo_matrix_scale (&fmatrix,1.,-1.);
@@ -1485,7 +1486,6 @@ int cro_Text(GKSC *gksc) {
   if (psa->pict_empty) {
     CROpict_init(gksc);
   }
-
 
 /*
  *  Input coordinates are in NDC space.
