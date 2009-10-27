@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.238 2009-10-27 21:50:13 shea Exp $
+;      $Id: contributed.ncl,v 1.239 2009-10-27 23:36:15 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -4037,21 +4037,15 @@ begin
 
   return (fo)
 end
-
-
-; **********************************************************************
-; D. Shea
-; wrapper for NCL function "rcm2points"  that copies attributes+coordinates
-; vars.  It creates a "pts" coord variable and creates two 1D
-; attributes that indicate the lat/lon associated with each point.
+;-------------------------
 undef ("rcm2points_Wrap")
 function rcm2points_Wrap \ 
-                      (xi[*][*]:numeric,yi[*][*]:numeric, fi:numeric \
-                      ,xo[*]:numeric,yo[*]:numeric, Opt)
+                      (yi[*][*]:numeric,xi[*][*]:numeric, fi:numeric \
+                      ,yo[*]:numeric,xo[*]:numeric, Opt)
 
 local fo, dimfi, nDim, pts
 begin
-  fo   = rcm2rgrid_points (xi,yi,fi, wrapX, xo,yo, Opt)  ; perform interpolation 
+  fo   = rcm2points (xi,yi,fi, xo,yo, Opt)  ; perform interpolation 
                                                
   dimfi= dimsizes(fi)
   nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
@@ -4071,9 +4065,10 @@ begin
   fo@xcoord     =  xo            ; x/longitude points
   fo@ycoord     =  yo            ; y/latitude  points
   fo@ncl = "rgrid2points used for interpolation"
-   
+
   return (fo)
 end
+
 ; **********************************************************************
 ; D. Shea
 ; wrapper for NCL function "rgrid2rcm"  that copies attributes and coordinate 
