@@ -347,9 +347,9 @@ switch ($OS)
      endif
    else if ($f90c == ifc || $f90c == ifort) then     # Intel 
      if ($debug == 1) then
-       set fopts = "$fopts -c -CB -V"
+       set fopts = "$fopts -fPIC -c -CB -V"
      else
-       set fopts = "$fopts -c -O2"
+       set fopts = "$fopts -fPIC -c -O2"
      endif 
      if ($real8 == 1) then
        set fopts = "$fopts -r8"
@@ -549,12 +549,20 @@ switch ($OS)
    $cmd
    breaksw
  case Linux:                       # Linux
-   if ($f90c == pgf90 || $f90c == lf95 || $f90c == ifc || $f90c == ifort) then
+   if ($f90c == pgf90 || $f90c == lf95) then
      if ($debug == 1) then
        set cmd = "cc $copts -c -I${NCARG_ROOT}/include WRAPIT.c"
        echo $cmd
      else
        set cmd = "cc $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c"
+     endif
+     $cmd
+   else if ($f90c == ifc || $f90c == ifort) then
+     if ($debug == 1) then
+       set cmd = "cc $copts -fPIC -c -I${NCARG_ROOT}/include WRAPIT.c"
+       echo $cmd
+     else
+       set cmd = "cc $copts -fPIC -c -O -I${NCARG_ROOT}/include WRAPIT.c"
      endif
      $cmd
    else
