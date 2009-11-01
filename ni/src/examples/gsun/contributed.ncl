@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.240 2009-11-01 22:56:56 haley Exp $
+;      $Id: contributed.ncl,v 1.241 2009-11-01 23:13:23 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5839,46 +5839,17 @@ undef("dtrend_leftdim")
 function dtrend_leftdim(x:numeric, opt[1]:logical)
 ;
 ; utility routine ... makes for cleaner code
-; Reorder so time is rightmost; detrend the time series, reorder back
 ;
-local dimx, rank, dNam, x_dtrend, xWork
+; Pre V5.2.0: Reorder so time is rightmost; detrend the time series,
+;     reorder back
+;
+; Post V5.2.0: Updated 11/1/09 to use dtrend_n.
+;
+local x_dtrend
 begin
-  dimx = dimsizes(x)
-  rank = dimsizes( dimx )
-
-  if (rank.eq.1) then
-      x_dtrend = x                             ; retain meta data
-      x_dtrend = dtrend( x, opt) 
-      return(x_dtrend)
-  end if
-
-  dNam = getvardims( x )
-  if(any(ismissing(dNam))) then
-    print("dtrend_leftdim: All the dimensions must be named for this function to work")
-    print("                properly on multi-dimensional arrays.")
-    return
-  end if
-
-  if (rank.eq.2) then
-      xWork = x($dNam(1)$|:,$dNam(0)$|:)       ; retain meta data
-      xWork = dtrend( xWork, opt)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
-  end if
-  if (rank.eq.3) then
-      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:)
-      xWork = dtrend( xWork, opt)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
-  end if
-  if (rank.eq.4) then
-      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:)
-      xWork = dtrend( xWork, opt)
-      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
-  end if
-  if (rank.eq.5) then
-      xWork = x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:)
-      xWork = dtrend( xWork, opt)
-      return (xWork )
-  end if
+  x_dtrend = x                             ; retain meta data
+  x_dtrend = dtrend_n( x, opt, 0) 
+  return (x_dtrend)
 end
 
 ; ******************************************************************
