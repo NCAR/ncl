@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.241 2009-11-01 23:13:23 haley Exp $
+;      $Id: contributed.ncl,v 1.242 2009-11-02 00:39:00 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5731,6 +5731,23 @@ begin
 end
 
 ; ******************************************************************
+; Mary Haley
+; wrapper for NCL function taper_n, added 11/1/2009
+;
+undef ("taper_n_Wrap")
+function taper_n_Wrap( x:numeric, pct[1]:numeric, kopt[1]:numeric,  \
+                       dim[1]:integer)
+local xTaper 
+begin
+ ;xTaper = x            
+  xTaper = taper_n (x, pct, kopt, dim)
+  copy_VarMeta(x, xTaper)       
+  xTaper@taper_op_ncl = "taper: pct="+sprintf("%4.2f", pct)
+
+  return(xTaper)
+end
+
+; ******************************************************************
 ; Dennis Shea
 ; wrapper for NCL function wgt_areaave
 
@@ -5793,7 +5810,9 @@ function taper_leftdim(x:numeric, pct[1]:numeric, opt[1]:integer)
 ; utility routine ... makes for cleaner code
 ; Reorder so time is rightmost; applies taper, reorder back
 ;
-local dimx, rank, dNam, xWork
+; Updated 11/1/2009 to use taper_n_Wrap. No reordering needed.
+;
+local n, dimx, rank, dNam
 begin
   if (pct.le.0 .or. pct.gt.1) then
       print("**************************************************")
@@ -5817,22 +5836,7 @@ begin
      end if
   end do
 
-  if (rank.eq.2) then
-      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(0)$|:), pct, opt)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
-  end if
-  if (rank.eq.3) then
-      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:), pct, opt)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
-  end if
-  if (rank.eq.4) then
-      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:), pct, opt)
-      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
-  end if
-  if (rank.eq.5) then
-      xWork = taper_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:), pct, opt)
-      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
-  end if
+  return( taper_n_Wrap( x, pct, opt, 0) )
 end
 ;**********************************************************
 undef("dtrend_leftdim")
