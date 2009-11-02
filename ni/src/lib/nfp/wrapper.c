@@ -399,6 +399,7 @@ extern NhlErrorTypes int2p_W(void);
 extern NhlErrorTypes int2p_n_W(void);
 extern NhlErrorTypes zonal_mpsi_W(void);
 extern NhlErrorTypes taper_W(void);
+extern NhlErrorTypes taper_n_W(void);
 extern NhlErrorTypes hydro_W(void);
 extern NhlErrorTypes mixhum_ptrh_W(void);
 extern NhlErrorTypes mixhum_ptd_W(void);
@@ -476,6 +477,7 @@ extern NhlErrorTypes dtrend_W(void);
 extern NhlErrorTypes dtrend_n_W(void);
 extern NhlErrorTypes dtrend_quadratic_W(void);
 extern NhlErrorTypes dtrend_msg_W(void);
+extern NhlErrorTypes dtrend_msg_n_W(void);
 extern NhlErrorTypes local_min_W(void);
 extern NhlErrorTypes local_max_W(void);
 extern NhlErrorTypes fluxEddy_W(void);
@@ -5683,6 +5685,17 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(taper_W,args,"taper",nargs);
 /*
+ * Register "taper_n".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(taper_n_W,args,"taper_n",nargs);
+/*
  * Register "hydro".
  */
     nargs = 0;
@@ -6415,6 +6428,19 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
     NclRegisterFunc(dtrend_msg_W,args,"dtrend_msg",nargs);
+
+/*
+ * Register "dtrend_msg_n".
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(dtrend_msg_n_W,args,"dtrend_msg_n",nargs);
 
 /*
  * Register "local_min".
