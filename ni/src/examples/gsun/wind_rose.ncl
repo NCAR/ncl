@@ -1,5 +1,5 @@
 ;
-;      $Id: wind_rose.ncl,v 1.7 2006-07-19 02:12:21 haley Exp $
+;      $Id: wind_rose.ncl,v 1.8 2009-11-04 18:02:04 shea Exp $
 ;
 ; ******************************************************************
 ; *******  THERE IS NO SUPPORT FOR THE WIND ROSE FUNCTIONS *********
@@ -10,10 +10,10 @@
 ; *******  Good luck!
 ; ******************************************************************
 ; functions to draw variations of wind roses
-
-undef("WindRoseBasic")
-function WindRoseBasic (wks:graphic, wspd:numeric, wdir:numeric \
-                                   , numPetals:integer, circFr:float, wrRes:logical)
+;---------------------------------------
+undef("WindRoseBasicF")
+function WindRoseBasicF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
+                                   , numPetals[1]:integer, circFr[1]:numeric, wrRes[1]:logical)
 
 ; Plot a Basic Wind Rose [ie, frequency of wind direction + avg spd]
 ; Nomenclature
@@ -219,12 +219,11 @@ function WindRoseBasic (wks:graphic, wspd:numeric, wdir:numeric \
 
  end
 
-; ---------------------------------------------------
-
-undef("WindRoseColor")
-function WindRoseColor(wks:graphic, wspd:numeric, wdir:numeric \
-                      , numPetals:integer, circFr:float \
-                      , spdBounds:float, colorBounds:string, wrRes:logical)
+;---------------------------------------
+undef("WindRoseColorF")
+function WindRoseColorF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
+                                   , numPetals[1]:integer, circFr[1]:numeric \
+                                   , spdBounds[*]:float, colorBounds[*]:string, wrRes[1]:logical)
 
 ; Plot a Wind Rose [ie, frequency of wind direction + avg spd]
 ; Nomenclature
@@ -482,10 +481,10 @@ function WindRoseColor(wks:graphic, wspd:numeric, wdir:numeric \
 
 ; -------------------------------------------
 
-undef("WindRoseThickLine")
-function WindRoseThickLine(wks:graphic, wspd:numeric, wdir:numeric \
-                          , numPetals:integer, circFr:float \
-                          , spdBounds:float, wrRes:logical)
+undef("WindRoseThickLineF")
+function WindRoseThickLineF(wks:graphic, wspd[*]:numeric, wdir[*]:numeric \
+                          , numPetals[1]:integer, circFr[1]:float \
+                          , spdBounds[*]:numeric, wrRes[1]:logical)
 
 ; Plot a Wind Rose [ie, frequency of wind direction + avg spd]
 ; Nomenclature
@@ -736,8 +735,115 @@ function WindRoseThickLine(wks:graphic, wspd:numeric, wdir:numeric \
   return (plotWr)
 
  end
+;---------------------------------------
+undef("WindRoseBasic")
+function WindRoseBasic (wks:graphic, wspd:numeric, wdir:numeric \
+                                   , numPetals[1]:integer, circFr[1]:numeric, wrRes[1]:logical)
+; Error check interface; If needed, force one-dimensional 'wspd' and 'wdir' arrays 
+local dims, ranks, dimd, rankd, WSPD, WDIR
+begin
+  dims  = dimsizes(wspd)
+  ranks = dimsizes(dims)
+  dimd  = dimsizes(wdir)
+  rankd = dimsizes(dimd)
 
-;------------ following for example only!!!--------
+  if (ranks.ne.rankd) then
+      print("WindRoseBasic: wspd, wdir must be same size and shape")
+      print("               rank(wspd)="+ranks+"  rank(wdir)="+rankd)
+      exit
+  end if
+
+  if (dims(0).ne.dimd(0)) then
+      print("WindRoseBasic: wspd, wdir must be same size")
+      print("               dimsizes(wspd)="+dims(0)+"  dimsizes(wdir)="+dimd(0))
+      exit
+  end if
+
+  if (ranks.eq.1) then
+      return( WindRoseBasicF(wks, wspd, wdir, numPetals, circFr, wrRes) )
+  else
+      WSPD = ndtooned( wspd )
+      WDIR = ndtooned( wdir )
+      if (isatt(wspd, "units")) then
+          WSPD@units = wspd@units
+      end if
+      return( WindRoseBasicF(wks, WSPD, WDIR, numPetals, circFr, wrRes) )
+  end if
+end
+; ---------------------------------------------------
+undef("WindRoseColor")
+function WindRoseColor (wks:graphic, wspd:numeric, wdir:numeric \
+                                   , numPetals[1]:integer, circFr[1]:numeric \
+                                   , spdBounds[*]:numeric, colorBounds[*]:string, wrRes[1]:logical)
+; Error check interface; If needed, force one-dimensional 'wspd' and 'wdir' arrays 
+local dims, ranks, dimd, rankd, WSPD, WDIR
+begin
+  dims  = dimsizes(wspd)
+  ranks = dimsizes(dims)
+  dimd  = dimsizes(wdir)
+  rankd = dimsizes(dimd)
+
+  if (ranks.ne.rankd) then
+      print("WindRoseColor: wspd, wdir must be same size and shape")
+      print("               rank(wspd)="+ranks+"  rank(wdir)="+rankd)
+      exit
+  end if
+
+  if (dims(0).ne.dimd(0)) then
+      print("WindRoseColor: wspd, wdir must be same size")
+      print("               dimsizes(wspd)="+dims(0)+"  dimsizes(wdir)="+dimd(0))
+      exit
+  end if
+
+  if (ranks.eq.1) then
+      return(WindRoseColorF(wks, wspd, wdir, numPetals, circFr, spdBounds, colorBounds, wrRes) )
+  else
+      WSPD = ndtooned( wspd )
+      WDIR = ndtooned( wdir )
+      if (isatt(wspd, "units")) then
+          WSPD@units = wspd@units
+      end if
+      return(WindRoseColorF(wks, WSPD, WDIR, numPetals, circFr, spdBounds, colorBounds, wrRes) )
+  end if
+end
+;---------------------------------------
+undef("WindRoseThickLine")
+function WindRoseThickLine (wks:graphic, wspd:numeric, wdir:numeric \
+                           , numPetals[1]:integer, circFr[1]:numeric \
+                           , spdBounds[*]:numeric, wrRes[1]:logical)
+; Error check interface; If needed, force one-dimensional 'wspd' and 'wdir' arrays 
+local dims, ranks, dimd, rankd, WSPD, WDIR
+begin
+  dims  = dimsizes(wspd)
+  ranks = dimsizes(dims)
+  dimd  = dimsizes(wdir)
+  rankd = dimsizes(dimd)
+
+  if (ranks.ne.rankd) then
+      print("WindRoseThickLine: wspd, wdir must be same size and shape")
+      print("                   rank(wspd)="+ranks+"  rank(wdir)="+rankd)
+      exit
+  end if
+
+  if (dims(0).ne.dimd(0)) then
+      print("WindRoseThickLine: wspd, wdir must be same size")
+      print("                   dimsizes(wspd)="+dims(0)+"  dimsizes(wdir)="+dimd(0))
+      exit
+  end if
+
+  if (ranks.eq.1) then
+      return(WindRoseThickLineF(wks, wspd, wdir, numPetals, circFr, spdBounds, wrRes) )
+  else
+      WSPD = ndtooned( wspd )
+      WDIR = ndtooned( wdir )
+      if (isatt(wspd, "units")) then
+          WSPD@units = wspd@units
+      end if
+      return(WindRoseThickLineF(wks, WSPD, WDIR, numPetals, circFr, spdBounds, wrRes) )
+  end if
+end
+
+;------------ following for demo scripts only!!!--------
 ;        THIS IS ***NOT*** A GENERAL FUNCTION!!!!
 ;           DEVELOPED TO FACILITATE EXAMPLES
 
