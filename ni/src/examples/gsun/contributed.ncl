@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.243 2009-11-05 01:09:09 shea Exp $
+;      $Id: contributed.ncl,v 1.244 2009-11-05 17:16:35 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3703,7 +3703,8 @@ begin
 ;
    do ndy=0,ndys-2                                 ; ndy=0->364 ==> day of year 1->365       
       indx = ind( days.eq.(ndy+1) )       
-      clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
+     ;clmDay(ndy,:,:) = dim_avg(x(lat|:,lon|:,time|indx))
+      clmDay(ndy,:,:) = dim_avg_n(x(indx,:,:), 0)  ; 5 Nov 2009
       delete(indx)                  
    end do
                                                    ; nominal day 366 
@@ -8428,13 +8429,13 @@ begin
        nyr    = -1
        xAnnual= new ( (/nyrs,nn/), typeof(x), getFillValue(x)) ;  contributed.ncl
        do nt=0,ntim-1,NMOS
-          xTemp = x($dName(1)$|:,$dName(0)$|nt:nt+NMOS1)          ; cleaner code only
+          xTemp = x(nt:nt+NMOS1, :)       ; cleaner code only
           nyr   = nyr+1
 
           if (opt.eq.0) then
-              xAnnual(nyr,:) = dim_sum ( xTemp )
+              xAnnual(nyr,:) = dim_sum_n ( xTemp, 0 )
           else
-              xAnnual(nyr,:) = dim_avg ( xTemp )
+              xAnnual(nyr,:) = dim_avg_n ( xTemp, 0 )
           end if
 
           nMsg  = 0                             ; number of missing for current year (nyr)
@@ -8464,13 +8465,13 @@ begin
        nyr    = -1
        xAnnual= new ( (/nyrs,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
        do nt=0,ntim-1,NMOS
-          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+NMOS1) ; cleaner code only
+          xTemp = x(nt:nt+NMOS1,:,:) ; cleaner code only
           nyr   = nyr+1
 
           if (opt.eq.0) then
-              xAnnual(nyr,:,:) = dim_sum ( xTemp )
+              xAnnual(nyr,:,:) = dim_sum_n ( xTemp, 0 )
           else
-              xAnnual(nyr,:,:) = dim_avg ( xTemp )
+              xAnnual(nyr,:,:) = dim_avg_n ( xTemp, 0 )
           end if
 
           nMsg  = 0                             ; number of missing for current year (nyr)
@@ -8500,13 +8501,13 @@ begin
        nyr    = -1
        xAnnual= new ( (/nyrs,kz,ny,mx/), typeof(x), getFillValue(x)) ;  contributed.ncl
        do nt=0,ntim-1,NMOS
-          xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+NMOS1) 
+          xTemp = x(nt:nt+NMOS1,:,:,:) 
           nyr   = nyr+1
 
           if (opt.eq.0) then
-                  xAnnual(nyr,:,:,:) = dim_sum ( xTemp )
+                  xAnnual(nyr,:,:,:) = dim_sum_n ( xTemp, 0 )
           else
-                  xAnnual(nyr,:,:,:) = dim_avg ( xTemp )
+                  xAnnual(nyr,:,:,:) = dim_avg_n ( xTemp, 0 )
           end if
 
           nMsg  = 0                             ; number of missing for current year (nyr)
@@ -8637,7 +8638,7 @@ begin
       nyr    = -1
       do nt=0,ntim-1,12
          nyr     = nyr+1
-         xTemp   = x($dName(1)$|:,$dName(0)$|nt:nt+11)  
+         xTemp   = x(nt:nt+11,:)  
 
         ;nMsg = 0
         ;if (isatt(x,"_FillValue")) then
@@ -8645,10 +8646,10 @@ begin
         ;end if
 
         ;if (nMsg.eq.0) then
-             wgt            = conform(xTemp, dymon(nt:nt+11), 1)
+             wgt            = conform(xTemp, dymon(nt:nt+11), 0)
              xTemp          = xTemp*wgt                       ; values*wgt 
-             xAnnual(nyr,:) = dim_sum( xTemp )                ; opt=3
-             nAnnual        = dim_num (.not.ismissing(xTemp) )  
+             xAnnual(nyr,:) = dim_sum_n( xTemp, 0 )                ; opt=3
+             nAnnual        = dim_num_n(.not.ismissing(xTemp), 0 )  
 
              if (opt.eq.1) then                               
                  wgtSum = wSum_1
@@ -8687,7 +8688,7 @@ begin
 
       nyr    = -1
       do nt=0,ntim-1,12
-         xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(0)$|nt:nt+11) 
+         xTemp = x(nt:nt+11,:,:) 
 
          nyr   = nyr+1
 
@@ -8697,10 +8698,10 @@ begin
         ;end if
 
         ;if (nMsg.eq.0) then
-             wgt              = conform(xTemp, dymon(nt:nt+11), 2)
+             wgt              = conform(xTemp, dymon(nt:nt+11), 0)
              xTemp            = xTemp*wgt
-             xAnnual(nyr,:,:) = dim_sum ( xTemp )   ; opt=0
-             nAnnual          = dim_num (.not.ismissing(xTemp) )  
+             xAnnual(nyr,:,:) = dim_sum_n ( xTemp, 0 )   ; opt=0
+             nAnnual          = dim_num_n (.not.ismissing(xTemp), 0 )  
 
              if (opt.eq.1) then
                  wgtSum = wSum_1
@@ -8740,7 +8741,7 @@ begin
 
       nyr    = -1
       do nt=0,ntim-1,12
-         xTemp = x($dName(1)$|:,$dName(2)$|:,$dName(3)$|:,$dName(0)$|nt:nt+11) 
+         xTemp = x(nt:nt+11,:,:,:) 
 
          nyr   = nyr+1
 
@@ -8750,10 +8751,10 @@ begin
         ;end if
 
         ;if (nMsg.eq.0) then
-             wgt                = conform(xTemp, dymon(nt:nt+11),3)
+             wgt                = conform(xTemp, dymon(nt:nt+11),0)
              xTemp              = xTemp*wgt
-             xAnnual(nyr,:,:,:) = dim_sum ( xTemp )   ; opt=0
-             nAnnual            = dim_num (.not.ismissing(xTemp) )  
+             xAnnual(nyr,:,:,:) = dim_sum_n ( xTemp, 0 )   ; opt=0
+             nAnnual            = dim_num_n (.not.ismissing(xTemp), 0 )  
 
              if (opt.eq.1) then
                  wgtSum = wSum_1
