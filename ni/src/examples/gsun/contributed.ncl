@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.242 2009-11-02 00:39:00 haley Exp $
+;      $Id: contributed.ncl,v 1.243 2009-11-05 01:09:09 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3027,7 +3027,7 @@ end
 
 undef("clmMonTLL")
 function clmMonTLL (x[*][*][*]:numeric)
-local dimx, ntim, i, nmos, monAveLLT
+local dimx, ntim, nlat, mlon, i, nmo, nmos, monAveLLT
 begin
   dimx = dimsizes(x)
   ntim = dimx(0)
@@ -3036,15 +3036,39 @@ begin
   modCheck ("clmMonTLL", ntim, nmos)   ; error check
  ;rankCheck("clmMonTLL", x, 3)         ; not needed due to prototyping
       
-  do i=0,2
-     if (ismissing(x!i)) then
-         print("contributed.ncl: clmMonTLL: all dimensions must be named")
-         exit
-     end if
-  end do
+  nlat = dimx(1)
+  mlon = dimx(2)
+;
+; Compute all 12 monthly averages first. 
+;
+   aveMonth = new((/nmos,nlat,mlon/),typeof(x) \
+                                    ,getFillValue(x))
+   do nmo=0,nmos-1
+      aveMonth(nmo,:,:) = dim_avg_n( x(nmo:ntim-1:nmos,:,:), 0 )
+   end do
 
-  monAveLLT = clmMonLLT( x($x!1$|:,$x!2$|:,$x!0$|:) )
-  return ( monAveLLT(month|:,$x!1$|:,$x!2$|:) )   ; return (month,lat,lon)
+; copy attributes and add a couple of informational attributes
+; only need to do this if plotting or writing to netCDF file
+
+   copy_VarAtts (x,aveMonth)
+   aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
+   aveMonth@info    = "function clmMonLLT: contributed.ncl"
+
+; copy spatial (eg, lat/lon) coordinate variables
+
+   do i=1,2
+      if (.not.ismissing(x!i)) then
+          aveMonth!i = x!i
+          if (iscoord(x,x!i)) then
+              aveMonth&$aveMonth!i$ = x&$x!i$
+          end if
+      end if
+   end  do
+
+   aveMonth!0     = "month"           ; create a "month" named dim
+   aveMonth&month = ispan(0,nmos-1,1) ; create a month coord var
+
+   return (aveMonth)
 end
 ; ******************************************************************
 ; D. Shea
@@ -3059,10 +3083,9 @@ end
 ;
 ; Usage:  moStd = stdMonTLL (x)
 
-
 undef("stdMonTLL")
 function stdMonTLL (x[*][*][*]:numeric)
-local dimx, ntim, i, nmos, monStdLLT
+local dimx, ntim, nlat, mlon, i, nmo, nmos, stdMonth
 begin
   dimx = dimsizes(x)
   ntim = dimx(0)
@@ -3070,17 +3093,42 @@ begin
   nmos  = 12
   modCheck ("stdMonTLL", ntim, nmos)   ; error check
  ;rankCheck("stdMonTLL", x, 3)         ; not needed due to prototyping
+      
+  nlat = dimx(1)
+  mlon = dimx(2)
+;
+; Compute all 12 std deviations. 
+;
+   stdMonth = new((/nmos,nlat,mlon/),typeof(x) \
+                                    ,getFillValue(x))
+   do nmo=0,nmos-1
+      stdMonth(nmo,:,:) = dim_stddev_n( x(nmo:ntim-1:nmos,:,:), 0 )
+   end do
 
-  do i=0,2
-     if (ismissing(x!i)) then
-         print("contributed.ncl: stdMonTLL: all dimensions must be named")
-         exit
-     end if
-  end do
+; copy attributes and add a couple of informational attributes
+; only need to do this if plotting or writing to netCDF file
 
-  monStdLLT = stdMonLLT( x($x!1$|:,$x!2$|:,$x!0$|:) )
-  return ( monStdLLT(month|:,$x!1$|:,$x!2$|:) )      ; return (month,lat,lon)
+   copy_VarAtts (x,stdMonth)
+   stdMonth@time_op_ncl = "Monthly Standard Deviation: "+ (ntim/nmos) +" years"
+   stdMonth@info    = "function stdMonTLL: contributed.ncl"
+
+; copy spatial (eg, lat/lon) coordinate variables
+
+   do i=1,2
+      if (.not.ismissing(x!i)) then
+          stdMonth!i = x!i
+          if (iscoord(x,x!i)) then
+              stdMonth&$stdMonth!i$ = x&$x!i$
+          end if
+      end if
+   end  do
+
+   stdMonth!0     = "month"           ; create a "month" named dim
+   stdMonth&month = ispan(0,nmos-1,1) ; create a month coord var
+
+   return (stdMonth)
 end
+
 ;**********************************************************************
 ; D. Shea
 ; Calculate standardized anomalies from monthly data
@@ -3378,27 +3426,51 @@ end
 ; Usage:  moClm = clmMonTLLL (x)
 ; Output: moClm(12,lev,lat,lon)
 
-
 undef("clmMonTLLL")
 function clmMonTLLL (x[*][*][*][*]:numeric)
-local dimx, ntim, i, nmos, monAveLLLT
+local dimx, klvl, ntim, nlat, mlon, i, nmo, nmos, monAveLLT
 begin
   dimx = dimsizes(x)
   ntim = dimx(0)
 
   nmos  = 12
   modCheck ("clmMonTLLL", ntim, nmos)   ; error check
- ;rankCheck("clmMonTLLL", x, 4)         ; not needed due to prototyping
+ ;rankCheck("clmMonTLLL", x, 3)         ; not needed due to prototyping
       
-  do i=0,3
-     if (ismissing(x!i)) then
-         print("contributed.ncl: clmMonTLLL: all dimensions must be named")
-         exit
-     end if
-  end do
+  klvl = dimx(1)
+  nlat = dimx(2)
+  mlon = dimx(3)
+;
+; Compute all 12 monthly averages first. 
+;
+   aveMonth = new((/nmos,klvl,nlat,mlon/),typeof(x) \
+                                         ,getFillValue(x))
+   do nmo=0,nmos-1
+      aveMonth(nmo,:,:,:) = dim_avg_n( x(nmo:ntim-1:nmos,:,:,:), 0 )
+   end do
 
-  monAveLLLT = clmMonLLLT( x($x!1$|:,$x!2$|:,$x!3$|:,$x!0$|:) )
-  return ( monAveLLLT(month|:,$x!1$|:,$x!2$|:,$x!3$|:) )   ; return (month,lev,lat,lon)
+; copy attributes and add a couple of informational attributes
+; only need to do this if plotting or writing to netCDF file
+
+   copy_VarAtts (x,aveMonth)
+   aveMonth@time_op_ncl = "Climatology: "+ (ntim/nmos) +" years"
+   aveMonth@info    = "function clmMonLLLT: contributed.ncl"
+
+; copy spatial (eg, lat/lon) coordinate variables
+
+   do i=1,3
+      if (.not.ismissing(x!i)) then
+          aveMonth!i = x!i
+          if (iscoord(x,x!i)) then
+              aveMonth&$aveMonth!i$ = x&$x!i$
+          end if
+      end if
+   end  do
+
+   aveMonth!0     = "month"           ; create a "month" named dim
+   aveMonth&month = ispan(0,nmos-1,1) ; create a month coord var
+
+   return (aveMonth)
 end
 
 ; ******************************************************************
@@ -3414,25 +3486,50 @@ end
 
 undef("stdMonTLLL")
 function stdMonTLLL (x[*][*][*][*]:numeric)
-local dimx, ntim, i, nmos, monStdLLLT
+local dimx, klvl, ntim, nlat, mlon, i, nmo, nmos, stdMonth
 begin
   dimx = dimsizes(x)
   ntim = dimx(0)
 
   nmos  = 12
   modCheck ("stdMonTLLL", ntim, nmos)   ; error check
- ;rankCheck("stdMonTLLL", x, 4)         ; not needed due to prototyping
+ ;rankCheck("stdMonTLLL", x, 3)         ; not needed due to prototyping
+      
+  klvl = dimx(1)
+  nlat = dimx(2)
+  mlon = dimx(3)
+;
+; Compute all 12 standard deviations first. 
+;
+   stdMonth = new((/nmos,klvl,nlat,mlon/),typeof(x) \
+                                         ,getFillValue(x))
+   do nmo=0,nmos-1
+      stdMonth(nmo,:,:,:) = dim_stddev_n( x(nmo:ntim-1:nmos,:,:,:), 0 )
+   end do
 
-  do i=0,3
-     if (ismissing(x!i)) then
-         print("contributed.ncl: stdMonTLLL: all dimensions must be named")
-         exit
-     end if
-  end do
+; copy attributes and add a couple of informational attributes
+; only need to do this if plotting or writing to netCDF file
 
-  monStdLLLT = stdMonLLLT( x($x!1$|:,$x!2$|:,$x!3$|:,$x!0$|:) )
-  return ( monStdLLLT(month|:,$x!1$|:,$x!2$|:,$x!3$|:) ) ; return (month,lev,lat,lon)
-  end
+   copy_VarAtts (x,stdMonth)
+   stdMonth@time_op_ncl = "Monthly Standard Deviation: "+ (ntim/nmos) +" years"
+   stdMonth@info    = "function stdMonTLLL: contributed.ncl"
+
+; copy spatial (eg, lat/lon) coordinate variables
+
+   do i=1,3
+      if (.not.ismissing(x!i)) then
+          stdMonth!i = x!i
+          if (iscoord(x,x!i)) then
+              stdMonth&$stdMonth!i$ = x&$x!i$
+          end if
+      end if
+   end  do
+
+   stdMonth!0     = "month"           ; create a "month" named dim
+   stdMonth&month = ispan(0,nmos-1,1) ; create a month coord var
+
+   return (stdMonth)
+end
 ;**********************************************************************
 ; D. Shea
 ; Calculate anomalies from climatology [Remove annual cycle]
