@@ -1,5 +1,5 @@
 /*  
- *      $Id: cro.c,v 1.9 2009-10-26 03:26:40 fred Exp $
+ *      $Id: cro.c,v 1.10 2009-11-06 18:58:49 fred Exp $
  */
 /*
  *
@@ -419,7 +419,7 @@ int cro_ClearWorkstation(GKSC *gksc) {
   cairo_show_page(cairo_context[context_index(psa->wks_id)]);
   
   if (psa->wks_type == CPS) {
-    (void) fflush(psa->file_pointer);
+    cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
   }
   else if (psa->wks_type == CPNG) {
     cairo_surface_write_to_png (cairo_surface[context_index(psa->wks_id)], 
@@ -680,22 +680,6 @@ int cro_OpenWorkstation(GKSC *gksc) {
  */
   if (psa->wks_type == CPS) {
     psa->output_file = GetCPSFileName(psa->wks_id, sptr);
-    if (strncmp(psa->output_file, "stdout", 6) == 0) {
-      fp = stdout;
-    }
-    else {
-      fp = fopen(psa->output_file,"w");
-    }
-    if (fp == (FILE *) NULL) {
-      ctmp = (char *) calloc(strlen(psa->output_file)+3, 1);
-      strcat(ctmp,"\"");
-      strcat(ctmp+1,psa->output_file);
-      strcat(ctmp+1+strlen(psa->output_file),"\"");
-      ESprintf(ERR_CRO_OPN, "CRO: fopen(%s, \"w\")", ctmp);
-      free(ctmp);
-      return(ERR_CRO_OPN);
-    }
-    psa->file_pointer = fp;
     cairo_surface[context_num] = 
       cairo_ps_surface_create (psa->output_file, 612, 792);
     cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
@@ -1871,8 +1855,7 @@ int cro_UpdateWorkstation(GKSC *gksc) {
   if (getenv("CRO_TRACE")) {
     printf("Got to cro_UpdateWorkstation\n");
   }
-                 
-  (void) fflush(psa->file_pointer);
+  cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
   return(0);  
 }
 /*

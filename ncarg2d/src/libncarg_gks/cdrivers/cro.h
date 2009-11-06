@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.h,v 1.1 2009-04-08 23:25:41 fred Exp $
+ *      $Id: cro.h,v 1.2 2009-11-06 18:58:49 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -27,6 +27,8 @@
 #define CRO_FILL_SPACING 	.0005   /* default software fill line spacing */
 #define CRO_HATCH_SPACING       0.01    /* default spacing of hatch fill lines*/
 #define MAX_PATH            10000000    /* maximum number of points in a path,*/
+
+#define CRO_SCALE 		.04     /* coordinate scale factor */
 
 #define LLX_DEFAULT           36    /* default lower left X coordinate */
 #define URX_DEFAULT          576    /* default upper right X coordinate */

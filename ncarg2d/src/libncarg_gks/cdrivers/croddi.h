@@ -1,5 +1,5 @@
 /*
- *      $Id: croddi.h,v 1.2 2009-08-16 21:41:34 fred Exp $
+ *      $Id: croddi.h,v 1.3 2009-11-06 18:58:49 fred Exp $
  */
 /*
  *      File:           croddi.h
@@ -29,7 +29,6 @@ typedef struct  CROddi_ {
   TransSystem     tsystem;
   CRODeviceSpace  dspace;
   char          *output_file;
-  FILE          *file_pointer;
   cro_color     color;
   cro_orientation  orientation;
   char          *file_name;
