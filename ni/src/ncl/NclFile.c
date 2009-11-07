@@ -3092,11 +3092,10 @@ struct _NclSelectionRecord* sel_ptr;
 * Because some file may allow dimensions of size 1 special care must be taken here
 */
 			for(i = 0 ; i < tmp_md->multidval.n_dims; i++){
-				if(_NclFileVarIsCoord(thefile,
-					dim_info[i].dim_quark)!= -1) {
+				if(_NclFileVarIsCoord(thefile,dim_info[i].dim_quark)!= -1) {
 					tmp_var = _NclFileReadCoord(thefile,dim_info[i].dim_quark,NULL);
 					if(tmp_var != NULL) {
-                                		coords[i] = tmp_var->obj.id;
+						coords[i] = tmp_var->obj.id;
 					} else {
 						coords[i] = -1;
 					}
@@ -3624,7 +3623,8 @@ int rw_status;
 		for(i = 0; i < n_names; i++){
 			file_out->file.file_dim_info[i] = (*file_out->file.format_funcs->get_dim_info)(file_out->file.private_rec,name_list[i]);
 			index = FileIsVar(file_out,name_list[i]);
-			if(index > -1 && file_out->file.var_info[index]->num_dimensions == 1) {
+			if(index > -1 && file_out->file.var_info[index]->num_dimensions == 1 &&
+			   file_out->file.var_info[index]->file_dim_num[0] == i) {
 				file_out->file.coord_vars[i] = file_out->file.var_info[index];
 			}
 		}
