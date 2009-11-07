@@ -40,6 +40,7 @@ extern NhlErrorTypes eof2data_W(void);
 extern NhlErrorTypes eof_varimax_W(void);
 extern NhlErrorTypes eofunc_varimax_W(void);
 extern NhlErrorTypes center_finite_diff_W(void);
+extern NhlErrorTypes center_finite_diff_n_W(void);
 extern NhlErrorTypes uv2vr_cfd_W(void);
 extern NhlErrorTypes uv2dv_cfd_W(void);
 extern NhlErrorTypes svdcov_W(void);
@@ -89,6 +90,7 @@ extern NhlErrorTypes mjo_cross_coh2pha_W(void);
 extern NhlErrorTypes bin_sum_W(void);
 extern NhlErrorTypes bin_avg_W(void);
 extern NhlErrorTypes trop_wmo_W(void);
+extern NhlErrorTypes moc_globe_atl_W(void);
 
 extern NhlErrorTypes rgbhsv_W(void);
 extern NhlErrorTypes hsvrgb_W(void);
@@ -967,6 +969,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(center_finite_diff_W,args,"center_finite_diff",nargs);
 /*
+ * Register "center_finite_diff_n".
+ *
+ * Create private argument array.
+ */
+    nargs = 0;
+    args = NewArgs(5);
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(center_finite_diff_n_W,args,"center_finite_diff_n",nargs);
+/*
  * Register "uv2vr_cfd".
  *
  * Create private argument array.
@@ -1677,6 +1693,23 @@ void NclAddUserFuncs(void)
         SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
 
         NclRegisterFunc(trop_wmo_W,args,"trop_wmo",nargs);
+
+/*
+ * Register "moc_globe_atl".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(6);
+    
+    SetArgTemplate(args,nargs,"integer",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",3,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",2,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",3,NclANY);nargs++;
+
+    NclRegisterFunc(moc_globe_atl_W,args,"moc_globe_atl",nargs);
 
 /*
  * Register "gc_onarc".

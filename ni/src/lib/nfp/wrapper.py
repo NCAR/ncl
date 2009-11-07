@@ -1099,7 +1099,7 @@ for i in range(len(args)):
           w1file.write('  if(' + args[i].dsizes_name + '[' + str(j) + \
                        '] != ' + args[i].dsizes_names[j] + ') {\n')
           w1file.write(fatal_str + 'The #' + str(j) + \
-                       ' argument of ' + args[i].name + \
+                       ' dimension of ' + args[i].name + \
                        ' must be length ' + args[i].dsizes_names[j] + \
                        '");\n')
         elif args[i].ndims == 0:

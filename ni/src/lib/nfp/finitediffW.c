@@ -26,13 +26,14 @@ NhlErrorTypes center_finite_diff_W( void )
   int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS];
   int has_missing_q, has_missing_r;
   NclScalar missing_q, missing_dq, missing_rq;
-  NclScalar missing_r, missing_dr, missing_rr;
+  NclScalar missing_r, missing_dr;
   NclBasicDataTypes type_q, type_r, type_dqdr;
 /*
  * Output array variables
  */
   void *dqdr;
   double *tmp_dqdr;
+  NclScalar missing_dqdr;
 /*
  * Declare various variables for random purposes.
  */
@@ -119,7 +120,7 @@ NhlErrorTypes center_finite_diff_W( void )
  * Check for missing values.
  */
   coerce_missing(type_q,has_missing_q,&missing_q,&missing_dq,&missing_rq);
-  coerce_missing(type_r,has_missing_r,&missing_r,&missing_dr,&missing_rr);
+  coerce_missing(type_r,has_missing_r,&missing_r,&missing_dr,NULL);
 /*
  * Create arrays to hold temporary r and q values.
  */
@@ -176,6 +177,7 @@ NhlErrorTypes center_finite_diff_W( void )
   if(type_q == NCL_double || type_r == NCL_double) {
     type_dqdr = NCL_double;
     dqdr      = (void*)calloc(size_q,sizeof(double));
+    missing_dqdr = missing_dq;
   }
   else {
     type_dqdr = NCL_float;
@@ -185,6 +187,7 @@ NhlErrorTypes center_finite_diff_W( void )
       NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: Unable to allocate memory for temporary output array");
       return(NhlFATAL);
     }
+    missing_dqdr = missing_rq;
   }
   if( dqdr == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff: Unable to allocate memory for output array");
@@ -206,7 +209,7 @@ NhlErrorTypes center_finite_diff_W( void )
   for(i = 0; i < size_leftmost; i++ ) {
     if(type_q != NCL_double) {
 /*
- * Coerce delta (tmp_q) to double.
+ * Coerce q (tmp_q) to double.
  */
       coerce_subset_input_double(q,tmp_q,index_q,type_q,npts,0,NULL,NULL);
     }
@@ -219,7 +222,7 @@ NhlErrorTypes center_finite_diff_W( void )
     if(!r_one_d) {
       if(type_r != NCL_double) {
 /*
- * Coerce delta (tmp_r) to double.
+ * Coerce r (tmp_r) to double.
  */
         coerce_subset_input_double(r,tmp_r,index_q,type_r,npts,0,NULL,NULL);
       }
@@ -259,12 +262,269 @@ NhlErrorTypes center_finite_diff_W( void )
   NclFree(rr);
 
   if(has_missing_q) {
-    if(type_dqdr == NCL_double) {
-      return(NclReturnValue(dqdr,ndims_q,dsizes_q,&missing_dq,type_dqdr,0));
+    return(NclReturnValue(dqdr,ndims_q,dsizes_q,&missing_dqdr,type_dqdr,0));
+  }
+  else {
+    return(NclReturnValue(dqdr,ndims_q,dsizes_q,NULL,type_dqdr,0));
+  }
+}
+
+
+NhlErrorTypes center_finite_diff_n_W( void )
+{
+/*
+ * Input array variables
+ */
+  void *q, *r;
+  logical *cyclic;
+  int *opt, *dim, r_scalar, r_one_d;
+  double *tmp_q, *tmp_r;
+  int ndims_q, dsizes_q[NCL_MAX_DIMENSIONS];
+  int ndims_r, dsizes_r[NCL_MAX_DIMENSIONS];
+  int has_missing_q, has_missing_r;
+  NclScalar missing_q, missing_dq, missing_rq;
+  NclScalar missing_r, missing_dr;
+  NclBasicDataTypes type_q, type_r, type_dqdr;
+/*
+ * Output array variables
+ */
+  void *dqdr;
+  double *tmp_dqdr;
+  NclScalar missing_dqdr;
+
+/*
+ * Declare various variables for random purposes.
+ */
+  int i, j, npts, npts1, size_q, size_leftmost, size_rightmost, size_rl;
+  int index_nrnpts, index_q, iend, ier;
+  double *qq, *rr;
+/*
+ * Retrieve parameters
+ *
+ * Note that any of the pointer parameters can be set to NULL,
+ * which implies you don't care about its value.
+ *
+ */
+  q = (void*)NclGetArgValue(
+          0,
+          5,
+          &ndims_q,
+          dsizes_q,
+          &missing_q,
+          &has_missing_q,
+          &type_q,
+          DONT_CARE);
+
+  r = (void*)NclGetArgValue(
+          1,
+          5,
+          &ndims_r,
+          dsizes_r,
+          &missing_r,
+          &has_missing_r,
+          &type_r,
+          DONT_CARE);
+
+  cyclic = (logical*)NclGetArgValue(
+          2,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+  opt = (int*)NclGetArgValue(
+          3,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+
+  dim = (int*)NclGetArgValue(
+          4,
+          5,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          NULL,
+          DONT_CARE);
+/*
+ * Make sure "dim" is a valid dimension.
+ */
+  if (*dim < 0 || *dim >= ndims_q) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff_n: Invalid dimension index for calculating the center finite difference");
+    return(NhlFATAL);
+  }
+
+/*
+ * Set value for cyclic.
+ */
+  if(*cyclic) {
+    iend = 0;
+  }
+  else {
+    iend = 1;
+  }
+
+/*
+ * Get size of input array.
+ */
+  npts  = dsizes_q[*dim];
+  npts1 = npts + 1;
+
+  if((ndims_r == 1 && (dsizes_r[0] != npts && dsizes_r[0] != 1)) ||
+     (ndims_r > 1 && ndims_r != ndims_q)) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff_n: r must either be a scalar, a 1D array the same length as the dim-th dimemsion of q, or the same size as q");
+    return(NhlFATAL);
+  }
+
+  if(ndims_r > 1) {
+    for( i = 0; i < ndims_r; i++ ) {
+      if(dsizes_r[i] != dsizes_q[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff_n: r must either be a scalar, a 1D array the same length as the dim-th dimemsion of q, or the same size as q");
+        return(NhlFATAL);
+      }
     }
-    else {
-      return(NclReturnValue(dqdr,ndims_q,dsizes_q,&missing_rq,type_dqdr,0));
+  }
+/*
+ * Compute the total size of the q array.
+ */
+  size_rightmost = size_leftmost = 1;
+  for( i =      0; i < *dim;    i++ ) size_leftmost  *= dsizes_q[i];
+  for( i = *dim+1; i < ndims_q; i++ ) size_rightmost *= dsizes_q[i];
+  size_rl = size_leftmost * size_rightmost;
+  size_q = size_rl * npts;
+
+/*
+ * Check for missing values.
+ */
+  coerce_missing(type_q,has_missing_q,&missing_q,&missing_dq,&missing_rq);
+  coerce_missing(type_r,has_missing_r,&missing_r,&missing_dr,NULL);
+/*
+ * Create arrays to hold temporary r and q values.
+ */
+  qq = (double*)calloc(npts+2,sizeof(double));
+  rr = (double*)calloc(npts+2,sizeof(double));
+  if( qq == NULL || rr == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff_n: Unable to allocate memory for temporary arrays");
+    return(NhlFATAL);
+  }
+/*
+ * Create temporary arrays to hold double precision data.
+ */
+  tmp_q = (double*)calloc(npts,sizeof(double));
+  if( tmp_q == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff_n: Unable to allocate memory for coercing q to double precision");
+    return(NhlFATAL);
+  }
+/*
+ * 'r' can be a scalar, one-dimensional, or multi-dimensional.
+ *
+ * If it is a scalar, then we need to construct an npts-sized 'r'
+ * that is based on the scalar value.
+ * 
+ * If it is 1D, then we need to coerce it to double if necessary.
+ * 
+ * If it is nD, then we need to create a temporary 1D array so we
+ * can coerce the potentially non-contiguous 1D subsets to double.
+ */
+  if(ndims_r > 1) {
+    r_one_d = 0;
+  }
+  else {
+    r_one_d  = 1;
+    r_scalar = is_scalar(ndims_r,dsizes_r);
+  }
+
+/*
+ * Here are the three possible scenarios for "r": 
+ */
+  if(r_scalar) {
+    tmp_r = (double*)calloc(npts,sizeof(double));
+    coerce_subset_input_double(r,&tmp_r[0],0,type_r,1,0,NULL,NULL);
+/*
+ * Copy this scalar npts-1 times to rest of the array.
+ */
+    for(i = 1; i < npts; i++ ) tmp_r[i] = tmp_r[i-1] + tmp_r[0];
+  }
+  else if(r_one_d) {
+    tmp_r = coerce_input_double(r,type_r,npts,0,NULL,NULL);
+  }
+  else {
+    tmp_r = (double*)calloc(npts,sizeof(double));
+  }
+  if( tmp_r == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff_n: Unable to allocate memory for coercing r to double precision");
+    return(NhlFATAL);
+  }
+
+/*
+ * Allocate space for output array.
+ */
+  if(type_q == NCL_double || type_r == NCL_double) {
+    type_dqdr    = NCL_double;
+    dqdr         = (void*)calloc(size_q,sizeof(double));
+    missing_dqdr = missing_dq;
+  }
+  else {
+    type_dqdr    = NCL_float;
+    dqdr         = (void*)calloc(size_q,sizeof(float));
+    missing_dqdr = missing_rq;
+  }
+  tmp_dqdr = (double*)calloc(npts,sizeof(double));
+  if( dqdr == NULL || tmp_dqdr == NULL ) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"center_finite_diff_n: Unable to allocate memory for output array");
+    return(NhlFATAL);
+  }
+
+
+/*
+ * Loop through dimensions and call Fortran routine.
+ */
+  for( i = 0; i < size_leftmost; i++ ) {
+    index_nrnpts = i*size_rightmost * npts;
+    for( j = 0; j < size_rightmost; j++ ) {
+      index_q = index_nrnpts + j;
+/*
+ * Coerce q (tmp_q) to double.
+ */
+      coerce_subset_input_double_step(q,tmp_q,index_q,size_rightmost,
+                                      type_q,npts,0,NULL,NULL);
+      if(!r_one_d) {
+/*
+ * Coerce r (tmp_r) to double.
+ */
+        coerce_subset_input_double_step(r,tmp_r,index_q,size_rightmost,
+                                        type_r,npts,0,NULL,NULL);
+      }
+/*
+ * Call the Fortran routine.
+ */
+      NGCALLF(dcfindif,DCFINDIF)(tmp_q,tmp_r,&npts,&missing_dq.doubleval,
+                                 &missing_dr.doubleval,cyclic,&iend,
+                                 qq,rr,&npts1,tmp_dqdr,&ier);
+
+      coerce_output_float_or_double_step(dqdr,tmp_dqdr,type_dqdr,npts,index_q,
+                                         size_rightmost);
     }
+  }
+/*
+ * Free temp arrays.
+ */
+  if(type_r != NCL_double || r_scalar || !r_one_d) NclFree(tmp_r);
+  NclFree(tmp_q);
+  NclFree(tmp_dqdr);
+  NclFree(qq);
+  NclFree(rr);
+
+  if(has_missing_q) {
+    return(NclReturnValue(dqdr,ndims_q,dsizes_q,&missing_dqdr,type_dqdr,0));
   }
   else {
     return(NclReturnValue(dqdr,ndims_q,dsizes_q,NULL,type_dqdr,0));
