@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.9 2008-04-29 01:59:45 haley Exp $
+#       $Id: yMakefile,v 1.10 2009-11-08 19:55:46 haley Exp $
 #
 FILES		= \
 		3gauss.ncmap  \
@@ -77,7 +77,30 @@ FILES		= \
 		Cat12.rgb \
 		GreenMagenta16.rgb \
 		StepSeq25.rgb \
-		amwg_blueyellowred.rgb
+		amwg_blueyellowred.rgb \
+		hotcold_18lev.rgb \
+		hotcolr_19lev.rgb \
+		mch_default.rgb \
+		perc2_9lev.rgb \
+		percent_11lev.rgb \
+		precip2_15lev.rgb \
+		precip2_17lev.rgb \
+		precip3_16lev.rgb \
+		precip4_11lev.rgb \
+		precip4_diff_19lev.rgb \
+		precip_11lev.rgb \
+		precip_diff_12lev.rgb \
+		precip_diff_1lev.rgb \
+		rh_19lev.rgb \
+		spread_15lev.rgb \
+		sunshine_9lev.rgb \
+		sunshine_diff_12lev.rgb \
+		t2m_29lev.rgb \
+		temp_19lev.rgb \
+		temp_diff_18lev.rgb \
+		temp_diff_1lev.rgb \
+		topo_15lev.rgb \
+		wind_17lev.rgb
 
 
 CMPATH	= $(LIBNCARGPATH)/colormaps
