@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.245 2009-11-08 01:21:06 haley Exp $
+;      $Id: contributed.ncl,v 1.246 2009-11-08 01:47:58 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5906,32 +5906,10 @@ function wgt_runave_leftdim(x:numeric, wgt[*]:numeric, opt[1]:integer)
 ; utility routine ... makes for cleaner code
 ; Reorder so time is rightmost; applies Lanczos weights, reorder back
 ;
-local dimx, rank, dNam, xWork
+; Updated 11/7/2009 to use wgt_runave_n_Wrap
+;
 begin
-  dimx = dimsizes(x)
-  rank = dimsizes( dimx )
-
-  dNam = getvardims( x )
-
-  if (rank.eq.1) then
-      return( wgt_runave_Wrap( x, wgt, opt) )
-  end if
-  if (rank.eq.2) then
-      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(0)$|:), wgt, opt)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:) ) 
-  end if
-  if (rank.eq.3) then
-      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(0)$|:), wgt, opt)
-      return( xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:) )
-  end if
-  if (rank.eq.4) then
-      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(0)$|:), wgt, opt)
-      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:) )
-  end if
-  if (rank.eq.5) then
-      xWork = wgt_runave_Wrap( x($dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:,$dNam(0)$|:), wgt, opt)
-      return (xWork($dNam(0)$|:,$dNam(1)$|:,$dNam(2)$|:,$dNam(3)$|:,$dNam(4)$|:) )
-  end if
+  return( wgt_runave_n_Wrap( x, wgt, opt, 0) )
 end
 ; ******************************************************************
 undef("taper_leftdim")
