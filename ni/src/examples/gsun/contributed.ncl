@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.246 2009-11-08 01:47:58 haley Exp $
+;      $Id: contributed.ncl,v 1.247 2009-11-08 17:40:06 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5809,7 +5809,7 @@ begin
  ;xRunAve = x
   xRunAve = runave_n (x, nave, kopt, dim)   
   copy_VarMeta(x, xRunAve)
-  xRunAve@runave_n_op_ncl = "runave_n: nave="+nave 
+  xRunAve@runave_op_ncl = "runave_n: nave="+nave 
 
   return(xRunAve)
 end
@@ -5840,7 +5840,7 @@ begin
  ;wRunAve = x
   wRunAve = wgt_runave_n (x, wgt, kopt, dim)   
   copy_VarMeta(x, wRunAve)
-  wRunAve@wgt_runave_n_op_ncl = "wgt_runave_n"
+  wRunAve@wgt_runave_op_ncl = "wgt_runave_n"
 
   return(wRunAve)
 end
@@ -5872,7 +5872,7 @@ begin
  ;xTaper = x            
   xTaper = taper_n (x, pct, kopt, dim)
   copy_VarMeta(x, xTaper)       
-  xTaper@taper_op_ncl = "taper: pct="+sprintf("%4.2f", pct)
+  xTaper@taper_op_ncl = "taper_n: pct="+sprintf("%4.2f", pct)
 
   return(xTaper)
 end
