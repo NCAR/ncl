@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.244 2009-11-05 17:16:35 shea Exp $
+;      $Id: contributed.ncl,v 1.245 2009-11-08 01:21:06 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5798,6 +5798,22 @@ begin
   return(xRunAve)
 end
 ; ******************************************************************
+; Mary Haley
+; wrapper for NCL function runave_n
+
+undef ("runave_n_Wrap")
+function runave_n_Wrap( x:numeric, nave[1]:integer, kopt[1]:integer, \
+                        dim[1]:integer)
+local xRunAve
+begin
+ ;xRunAve = x
+  xRunAve = runave_n (x, nave, kopt, dim)   
+  copy_VarMeta(x, xRunAve)
+  xRunAve@runave_n_op_ncl = "runave_n: nave="+nave 
+
+  return(xRunAve)
+end
+; ******************************************************************
 ; Dennis Shea
 ; wrapper for NCL function wgt_runave
 
@@ -5809,6 +5825,22 @@ begin
   wRunAve = wgt_runave (x, wgt, kopt)   
   copy_VarMeta(x, wRunAve)                  ; 10 Nov 2008
   wRunAve@wgt_runave_op_ncl = "wgt_runave"
+
+  return(wRunAve)
+end
+; ******************************************************************
+; Mary Haley
+; wrapper for NCL function wgt_runave_n
+
+undef ("wgt_runave_n_Wrap")
+function wgt_runave_n_Wrap( x:numeric, wgt[*]:numeric, kopt[1]:integer, \
+                            dim[1]:integer)
+local wRunAve
+begin
+ ;wRunAve = x
+  wRunAve = wgt_runave_n (x, wgt, kopt, dim)   
+  copy_VarMeta(x, wRunAve)
+  wRunAve@wgt_runave_n_op_ncl = "wgt_runave_n"
 
   return(wRunAve)
 end
