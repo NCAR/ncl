@@ -462,7 +462,9 @@ extern NhlErrorTypes    v5d_missing_W(void);
 extern NhlErrorTypes angmom_atm_W(void);
 extern NhlErrorTypes relhum_W(void);
 extern NhlErrorTypes runave_W(void);
+extern NhlErrorTypes runave_n_W(void);
 extern NhlErrorTypes wgt_runave_W(void);
+extern NhlErrorTypes wgt_runave_n_W(void);
 extern NhlErrorTypes wgt_areaave_W(void);
 extern NhlErrorTypes wgt_areaave2_W(void);
 extern NhlErrorTypes wgt_areasum2_W(void);
@@ -6269,6 +6271,18 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(runave_W,args,"runave",nargs);
 
 /*
+ * Register "runave_n".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(runave_n_W,args,"runave_n",nargs);
+
+/*
  * Register "wgt_runave".
  */
     nargs = 0;
@@ -6278,6 +6292,18 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
     NclRegisterFunc(wgt_runave_W,args,"wgt_runave",nargs);
+
+/*
+ * Register "wgt_runave_n".
+ */
+    nargs = 0;
+    args = NewArgs(4);
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
+    NclRegisterFunc(wgt_runave_n_W,args,"wgt_runave_n",nargs);
 
 /*
  * Register "wgt_areaave".
