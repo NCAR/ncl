@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.247 2009-11-08 17:40:06 haley Exp $
+;      $Id: contributed.ncl,v 1.248 2009-11-09 21:43:02 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -2032,6 +2032,8 @@ begin
 
  xave = dim_avg(x)          ; arithmetic ave [no meta data]
  
+ copy_VarAtts (x, xave)     ; copy attributes
+
  dimx = dimsizes(x)         ; size of each dimension
  Ndx  = dimsizes(dimx)      ; number of dimensions
  copy_VarCoords_1 (x, xave) ; one less dimension 
