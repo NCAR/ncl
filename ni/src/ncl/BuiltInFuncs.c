@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.245 2009-09-10 17:48:55 dbrown Exp $
+ *      $Id: BuiltInFuncs.c,v 1.246 2009-11-09 19:56:20 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12881,8 +12881,8 @@ NhlErrorTypes _Nclispan
 		return(NhlFATAL);
 
 	if(_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
-		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)||
-		_NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
+	   _NclIsMissing(tmp_md1,tmp_md1->multidval.val)||
+	   _NclIsMissing(tmp_md2,tmp_md2->multidval.val)) {
 
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"ispan: Missing value detected in input, can't continue");
 		return(NhlFATAL);
@@ -12995,9 +12995,9 @@ NhlErrorTypes _Nclfspan
     if (tmp_md2 == NULL)
         return NhlFATAL;
 
-    if (_NclIsMissing(tmp_md0,tmp_md0->multidval.val)
-            || _NclIsMissing(tmp_md0,tmp_md0->multidval.val)
-            || _NclIsMissing(tmp_md0,tmp_md0->multidval.val)) {
+    if (_NclIsMissing(tmp_md0,tmp_md0->multidval.val) ||
+	_NclIsMissing(tmp_md1,tmp_md0->multidval.val) ||
+	_NclIsMissing(tmp_md2,tmp_md0->multidval.val)) {
 
         NhlPError(NhlFATAL, NhlEUNKNOWN, "fspan: Missing value detected in input, can't continue");
         return NhlFATAL;
