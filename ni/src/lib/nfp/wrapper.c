@@ -431,6 +431,7 @@ extern NhlErrorTypes pslec_W(void);
 extern NhlErrorTypes pslhor_W(void);
 extern NhlErrorTypes dz_height_W(void);
 extern NhlErrorTypes gc_latlon_W(void);
+extern NhlErrorTypes span_W(void);
 
 extern NhlErrorTypes monthday_W(void);
 extern NhlErrorTypes day_of_year_W(void);
@@ -6129,6 +6130,20 @@ void NclAddUserFuncs(void)
     SetArgTemplate(args,nargs,"integer",1,dimsizes);nargs++;
 
     NclRegisterFunc(gc_latlon_W,args,"gc_latlon",nargs);
+/*
+ * Register "span".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(3);
+
+    dimsizes[0] = 1;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,dimsizes);nargs++;
+
+    NclRegisterFunc(span_W,args,"span",nargs);
 /*
  * Register "monthday".
  */

@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.119 2009-11-07 22:44:25 haley Exp $
+#      $Id: yMakefile,v 1.120 2009-11-10 03:22:47 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -15,7 +15,7 @@
 #                               National Center for Atmospheric Research
 #                               POB 3000, Boulder, Colorado
 #
-#       $Date: 2009-11-07 22:44:25 $
+#       $Date: 2009-11-10 03:22:47 $
 #
 #       Description:    
 
@@ -61,7 +61,7 @@ CSRCS = areavolW.c betaincW.c bytesW.c calcorcW.c cancorW.c cdf_dpW.c chiinvW.c 
         lspolyW.c wgtvertbetaW.c dimavgwgtW.c studentW.c fft2dW.c                       \
         sg_toolsW.c colconvW.c convert_datum.c cfftW.c wksmoothW.c dzheightW.c          \
 	covcormW.c kronprodW.c space_timeW.c spcorrW.c  bindataW.c tropwmoW.c pdfW.c    \
-	mocloopsW.c
+	mocloopsW.c spanW.c
 
 COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o         \
         conformW.o csagridW.o cssgridW.o ctwrapW.o cz2ccmW.o datesW.o                   \
@@ -80,7 +80,7 @@ COBJS = areavolW.o betaincW.o bytesW.o calcorcW.o cancorW.o cdf_dpW.o chiinvW.o 
         lspolyW.o wgtvertbetaW.o dimavgwgtW.o studentW.o fft2dW.o poissonW.o            \
         sg_toolsW.o colconvW.o convert_datum.o cfftW.o wksmoothW.o dzheightW.o          \
 	covcormW.o kronprodW.o space_timeW.o spcorrW.o bindataW.o tropwmoW.o pdfW.o     \
-	mocloopsW.o
+	mocloopsW.o spanW.o
 
 OBJS = $(COBJS) $(UDUNITS_OBJS) $(V5D_OBJS)
 
