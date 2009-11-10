@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.33 2009-09-18 22:47:36 dbrown Exp $
+ *      $Id: NclHDF.c,v 1.34 2009-11-10 22:57:28 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -220,6 +220,44 @@ static void HDFCacheAttValue
 	return;
 }
 
+static NclBasicDataTypes HDFMapToNcl_Dave_Original
+#if     NhlNeedProto
+(void* the_type)
+#else
+(the_type)
+        void *the_type;
+#endif
+{
+        static int first = 1;
+        static NclBasicDataTypes long_type;
+        if(first) {
+                if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
+                        long_type = NCL_int;
+                } else if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
+                        long_type = NCL_long;
+                }
+                else {
+                        long_type = NCL_none;
+                }
+                first = 0;
+        }
+        switch(*(nc_type*)the_type) {
+        case NC_BYTE:
+                return(NCL_byte);
+        case NC_CHAR:
+                return(NCL_char);
+        case NC_SHORT:
+                return(NCL_short);
+        case NC_LONG:
+                return(long_type);
+        case NC_FLOAT:
+                return(NCL_float);
+        case NC_DOUBLE:
+                return(NCL_double);
+        default:
+                return(NCL_none);
+        }
+}
 
 static NclBasicDataTypes HDFMapToNcl 
 #if	NhlNeedProto
@@ -231,36 +269,134 @@ static NclBasicDataTypes HDFMapToNcl
 {
 	static int first = 1;
 	static NclBasicDataTypes long_type;
+	static NclBasicDataTypes ulong_type;
 	if(first) {
 		if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
 			long_type = NCL_int;
+			ulong_type = NCL_uint;
 		} else if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
 			long_type = NCL_long;
+			ulong_type = NCL_ulong;
 		} 
 		else {
 			long_type = NCL_none;
 		}
 		first = 0;
 	}
-	switch(*(nc_type*)the_type) {
-	case NC_BYTE:
+
+	switch(*(nc_type*)the_type)
+	{
+	case DFNT_UINT8:
+	case DFNT_UCHAR:
 		return(NCL_byte);
-	case NC_CHAR:
+	case DFNT_INT8:
 		return(NCL_char);
-	case NC_SHORT:
+	case DFNT_CHAR:
+		return(NCL_string);
+	case DFNT_INT16:
 		return(NCL_short);
-	case NC_LONG:
+	case DFNT_UINT16:
+		return(NCL_ushort);
+	case DFNT_INT32:
 		return(long_type);
-	case NC_FLOAT:
+	case DFNT_UINT32:
+		return(ulong_type);
+	case DFNT_INT64:
+		return(NCL_int64);
+	case DFNT_UINT64:
+		return(NCL_uint64);
+	case DFNT_FLOAT:
 		return(NCL_float);
-	case NC_DOUBLE:
+	case DFNT_DOUBLE:
 		return(NCL_double);
 	default:
+                fprintf(stdout, "file: %s, line, %d\n", __FILE__, __LINE__);
+                fprintf(stdout, "UNKNOWN the_type: %d\n", *(nc_type*)the_type);
+                NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type.");
 		return(NCL_none);
 	}
 }
 
 static void *HDFMapFromNcl
+#if	NhlNeedProto
+(NclBasicDataTypes the_type)
+#else
+(the_type)
+	NclBasicDataTypes the_type;
+#endif
+{
+	static int first = 1;
+	static NclBasicDataTypes long_type;
+	static NclBasicDataTypes ulong_type;
+	void *out_type = (void*)NclMalloc((unsigned)sizeof(nc_type));;
+	if(first) {
+		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
+			long_type = NCL_long;
+			ulong_type = NCL_ulong;
+		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
+			long_type = NCL_int;
+			ulong_type = NCL_uint;
+		} else {
+			long_type = NCL_none;
+		}
+		first = 0;
+	}
+
+	switch(the_type) {
+	case NCL_byte:
+		*(nc_type*)out_type = DFNT_UINT8;
+		*(nc_type*)out_type = DFNT_UCHAR;
+		*(nc_type*)out_type = NC_BYTE;
+                break;
+	case NCL_char:
+		*(nc_type*)out_type = DFNT_CHAR;
+		*(nc_type*)out_type = NC_CHAR;
+                break;
+	case NCL_ushort:
+		*(nc_type*)out_type = DFNT_UINT16;
+	case NCL_short:
+		*(nc_type*)out_type = DFNT_INT16;
+		*(nc_type*)out_type = NC_SHORT;
+                break;
+	case NCL_uint:
+		*(nc_type*)out_type = DFNT_UINT32;
+	case NCL_int:
+		*(nc_type*)out_type = DFNT_INT32;
+	case NCL_logical:
+		*(nc_type*)out_type = NC_LONG;
+                break;
+	case NCL_ulong:
+		*(nc_type*)out_type = DFNT_UINT32;
+	case NCL_long:
+		*(nc_type*)out_type = DFNT_INT32;
+		if(long_type == the_type) {
+			*(nc_type*)out_type = NC_LONG;
+		} else {
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type, HDF 4 does not support 64 bit longs: try converting to integer or double");
+			NclFree(out_type);
+			out_type = NULL;
+		}
+		break;
+	case NCL_uint64:
+		*(nc_type*)out_type = DFNT_UINT64;
+	case NCL_int64:
+		*(nc_type*)out_type = DFNT_INT64;
+	case NCL_float:
+		*(nc_type*)out_type = DFNT_FLOAT;
+		*(nc_type*)out_type = NC_FLOAT;
+		break;
+	case NCL_double:
+		*(nc_type*)out_type = DFNT_DOUBLE;
+		*(nc_type*)out_type = NC_DOUBLE;
+		break;
+        default:
+		NclFree(out_type);
+		out_type = NULL;
+	}
+	return(out_type);
+}
+
+static void *HDFMapFromNcl_Dave_Original
 #if	NhlNeedProto
 (NclBasicDataTypes the_type)
 #else
@@ -751,6 +887,7 @@ int wr_status;
 		int32 sds_id;
 		for(i = 0 ; i < nvars; i++) {
 			int dim_sizes[32];
+
 			*stepvlptr = (HDFVarInqRecList*)NclMalloc(
 					(unsigned) sizeof(HDFVarInqRecList));
 			(*stepvlptr)->var_inq = (HDFVarInqRec*)NclMalloc(
@@ -763,19 +900,18 @@ int wr_status;
 				((*stepvlptr)->var_inq->dim),
 				&((*stepvlptr)->var_inq->natts)
 				);
+
 			sds_id = SDselect(sd_id,i);
 			(*stepvlptr)->var_inq->id_ref = SDidtoref(sds_id);
 			(*stepvlptr)->var_inq->vg_ref = -1;
 			(*stepvlptr)->var_inq->var_path = NrmNULLQUARK;
 			(*stepvlptr)->var_inq->name = NrmNULLQUARK;
 			(*stepvlptr)->var_inq->hdf_name = NrmStringToQuark(buffer);
-			/*
 			status = SDgetinfo(sds_id,buffer,
 					   &((*stepvlptr)->var_inq->n_dims),
 					   dim_sizes,
 					   &((*stepvlptr)->var_inq->data_type),
 					   &((*stepvlptr)->var_inq->natts));
-			*/
 
 			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
 				tmp_size = 0;
