@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.248 2009-11-09 21:43:02 haley Exp $
+;      $Id: contributed.ncl,v 1.249 2009-11-10 03:03:48 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -3172,7 +3172,8 @@ begin
 
    xStiz = x          ; variable to variable copy [meta data]
    do nmo=0,ntim-1,nmos
-      xStiz(nmo:ntim-1:nmos,:,:) = dim_standardize(x(namd1|:,namd2|:,namd0|nmo:ntim-1:nmos), opt)
+     ;xStiz(nmo:ntim-1:nmos,:,:) = dim_standardize(x(namd1|:,namd2|:,namd0|nmo:ntim-1:nmos), opt)
+      xStiz(nmo:ntim-1:nmos,:,:) = dim_standardize_n(x(nmo:ntim-1:nmos,:,:), opt, 0 )  ; Nov 9, 2009
    end do
    if (isatt(x,"long_name") .or. isatt(x,"description") .or. \
        isatt(x,"standard_name") ) then
