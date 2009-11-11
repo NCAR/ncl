@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.19 2009-10-26 18:49:30 dbrown Exp $
+#       $Id: ncl_convert2nc,v 1.20 2009-11-11 01:30:46 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -43,7 +43,10 @@
 #       [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]
 #       [-nc4c]               output a NetCDF 4 classic format file
 #       [-cl] <compression level>  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]
+#       [-th] <size in megabytes> theshold size: variables larger than specified size will be written incrementally
+#                             in order to limit in-core memory requirements; 0 (the default) means no threshold
 #       [-c comment]          text to be included in netCDF file attribute [default: no comment]
+#       [-l]                  list information about each variable as it is copied
 #       [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]
 #       [-B] <file>           suppress informational messages; redirect messages to <file> if present [default: /dev/null]
 #       [-h]                  usage message
@@ -80,6 +83,8 @@ set ncdfcomment = ""
 set ncdflrgf_t = "classic"
 set ncdf_type = "nc3"
 set compression_level = -1
+set threshold_level = 0
+set list = 0
 
 # Single Element Dimension variables
 set seDims_t = ""
@@ -327,10 +332,22 @@ while ($#argv > 0)
             shift
             breaksw
 
+        case "-th":
+            shift
+            set threshold_level = $1
+            shift
+            breaksw
+
         case "-c":
         case "-comment":
             shift
             set ncdfcomment = "$1"
+            shift
+            breaksw
+
+        case "-l":
+        case "-list":
+            set list = 1
             shift
             breaksw
 
@@ -425,7 +442,6 @@ set seds = ( $seds'/\)' )
 if ($ncdf_type != "nc3") then
     set ncdflrgf_t = $ncdf_type
 endif
-
 
 #
 # Split filenames into (full, relative) paths and filenames.  This will
@@ -788,7 +804,6 @@ unset ifiles_t
 #
 set tmp_nclf = "$tmpdir/tmp$$.ncl"
 /bin/rm $tmp_nclf >& /dev/null
-
 cat << 'EOF_NCL' >! $tmp_nclf
 
 ;***************************************************
@@ -1231,7 +1246,7 @@ begin
 ; Hopefully that is a rare occurence -- certainly it would be very rare in GRIB files. *
 ;***************************************************************************************
     fvar_types = getfilevartypes(f,fVarNames)
-    threshold_size = 250000000
+    threshold_size = threshold_level * 1000000
     do i = 0, nfNames - 1
         if (varType(i) .ne. "string") then
             if (debug) then
@@ -1250,14 +1265,14 @@ begin
             end if
             end if
 
-            tsize = product(dsizes) * type_size
-            if (debug) then
+            tsize = product(dsizes) * type_size	    
+            if (debug.or.verbose) then
                 print(fVarNames(i) + " : " + tsize  + " (size in bytes) :  " + dimsizes(dsizes) + " (number of dimensions)")
             end if
 
             ndims = dimsizes(dsizes)
             ; no special handling for ndims greater than 6 or less than 3
-            if (tsize .lt. threshold_size .or. ndims .gt. 7 .or. ndims .lt. 3) then
+            if (threshold_size .eq. 0 .or. tsize .lt. threshold_size .or. ndims .gt. 7 .or. ndims .lt. 3) then
                 fnc->$ncVarNames(i)$ = (/ f->$fVarNames(i)$ /)
             else
                 if (ndims .eq. 7) then
@@ -1380,6 +1395,7 @@ begin
  end 
 'EOF_NCL'
 
+
 #
 # Loop over input file(s), executing NCL script
 #
@@ -1388,17 +1404,17 @@ while ($n <= $nfiles)
     if ("$redirect" == 0) then
         echo "Processing file: $ifiles_r[$n]..."
         if ($?vars) then
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level 'singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         else
-            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf
+            eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf
         endif
     else
         # redirection requested
         (echo "Processing file: $ifiles_r[$n]..." >&! $f_rdir)
         if ($?vars) then
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" nvars=$nvars vars=$vars 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         else
-            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' $tmp_nclf >! $fout &) >&! $f_rdir
+            (eval ncl $noCN -n pname=\\\"$progname\\\" ftype=\\\"$ftypes[$n]\\\" fili=\\\"$ifiles[$n]\\\" diri=\\\"$idirs[$n]\\\" diro=\\\"$dirout\\\" filo=\\\"$ofiles[$n]\\\" 'ncdfSize=\""$ncdflrgf_t"\"' ncdfCompLevel=$compression_level threshold_level=$threshold_level singleElemDims=$seds 'timePeriodSuffix=$tps' 'time_name=\""$time_name"\"' 'TIME_NAME=\""$TIME_NAME"\"' 'comment=\""$ncdfcomment"\"' verbose=$list $tmp_nclf >! $fout) >&! $f_rdir
         endif
     endif
 
@@ -1432,6 +1448,7 @@ end
 #
 # Clean up
 #
+#echo $tmp_nclf
 if ("$redirect" == 0) then
     /bin/rm -f $tmp_nclf
 endif
@@ -1445,7 +1462,7 @@ exit 1
 
 USAGE:
 echo "${progname} inputFile(s) OPTIONS"
-echo "  inputFile(s)          name(s) of data file(s) [required] [valid types: GRIB1 GRIB2 HDF HDF-EOS]"
+echo "  inputFile(s)          name(s) of data file(s) [required] [valid types: GRIB1 GRIB2 HDF HDF-EOS NETCDF]"
 echo "  [-i input_directory]  location of input file(s)  [default: current directory]"
 echo "  [-o output_directory] location of output file(s) [default: current directory]"
 echo "  [-e extension]        file type, defined by extension, to convert [example: grb]"
@@ -1466,7 +1483,10 @@ echo "                        ncl_filedump can be used to determine desired vari
 echo "  [-L]                  support for writing large (>2Gb) netCDF files [default: no largefile support]"
 echo "  [-nc4c]               output a NetCDF 4 classic format file"
 echo "  [-cl] <compression level>  compression level 0 - 9 [ default 0 - only meaningful for NetCDF 4 output]"
+echo "  [-th] <size in megabytes> theshold size: variables larger than specified size will be written incrementally"
+echo "                        in order to limit in-core memory requirements; 0 (the default) means no threshold"
 echo "  [-c comment]          text to be included in netCDF file attribute [default: no comment]"
+echo "  [-l]                  list some information about each variable as it is copied"
 echo "  [-d]                  upon exit: print contents of each netCDF file [like ncdump -h]"
 echo "  [-B] <file>           suppress informational messages; redirect messages to <file> if present [default: /dev/null]"
 echo "  [-h]                  this usage message"
