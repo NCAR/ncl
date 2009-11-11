@@ -1955,6 +1955,7 @@ NclStackEntry missing_expr;
 	int dim_sizes[NCL_MAX_DIMENSIONS];
 	short tmp_missing = NCL_DEFAULT_MISSING_VALUE;
 	long *dim_size_list,total;
+	long long ll_total;
 	int i,j;
 	char *tp;
 	NclTypeClass typec = NULL;
@@ -2041,10 +2042,10 @@ NclStackEntry missing_expr;
 				}
 			}
 		}
-		total = 1;
+		ll_total = 1;
 		j = 0;
 		if((tmp1_md->multidval.dim_sizes[0] == 1)&&(dim_size_list[0] > 0)) {
-			total *= dim_size_list[0];
+			ll_total *= dim_size_list[0];
 			dim_sizes[0] = (int)dim_size_list[0];
 			j++;
 		} else {
@@ -2052,12 +2053,8 @@ NclStackEntry missing_expr;
 				if(dim_size_list[i] < 1) {	
 					NhlPError(NhlFATAL,NhlEUNKNOWN,"New: a zero or negative value has been passed in in the dimension size parameter");
 					return(NhlFATAL);
-/*
-				} else if(dim_size_list[i] == 1) {
-					NhlPError(NhlWARNING,NhlEUNKNOWN,"New: NCL values can not have dimension sizes of 1 unless they are scalar, ignoring dimension and continuing");
-*/
 				} else {
-					total *= dim_size_list[i];
+					ll_total *= dim_size_list[i];
 					dim_sizes[j] = (int)dim_size_list[i];
 					j++;
 				}
@@ -2067,7 +2064,13 @@ NclStackEntry missing_expr;
 			dim_sizes[0] = 1;
 			j = 1;
 		}
-		tmp_val = (void*)NclMalloc((unsigned int)total*_NclSizeOf(the_type));
+		ll_total *= _NclSizeOf(the_type);
+		if (ll_total > INT_MAX) {
+			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: requested size of variable (%lld bytes) exceeds the current maximum allowed on this system",ll_total);
+			return(NhlFATAL);
+		}
+		total = ll_total;
+		tmp_val = (void*)NclMalloc((unsigned int)total);
 		if (! tmp_val) {
 			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
 			return(NhlFATAL);
