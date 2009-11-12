@@ -4,15 +4,15 @@
 # Begin "logical" section
 #
 
-if [ $1 == "ushort" ]; then
+if [ $1 = "ushort" ]; then
     def_type="unsigned short"
-elif [ $1 == "uint" ]; then
+elif [ $1 = "uint" ]; then
     def_type="unsigned int"
-elif [ $1 == "ulong" ]; then
+elif [ $1 = "ulong" ]; then
     def_type="unsigned long"
-elif [ $1 == "int64" ]; then
+elif [ $1 = "int64" ]; then
     def_type="long long"
-elif [ $1 == "uint64" ]; then
+elif [ $1 = "uint64" ]; then
     def_type="unsigned long long"
 else
     def_type=$1
