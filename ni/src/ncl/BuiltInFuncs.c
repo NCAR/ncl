@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.246 2009-11-09 19:56:20 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.247 2009-11-12 14:54:51 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -12996,8 +12996,8 @@ NhlErrorTypes _Nclfspan
         return NhlFATAL;
 
     if (_NclIsMissing(tmp_md0,tmp_md0->multidval.val) ||
-	_NclIsMissing(tmp_md1,tmp_md0->multidval.val) ||
-	_NclIsMissing(tmp_md2,tmp_md0->multidval.val)) {
+	_NclIsMissing(tmp_md1,tmp_md1->multidval.val) ||
+	_NclIsMissing(tmp_md2,tmp_md2->multidval.val)) {
 
         NhlPError(NhlFATAL, NhlEUNKNOWN, "fspan: Missing value detected in input, can't continue");
         return NhlFATAL;
