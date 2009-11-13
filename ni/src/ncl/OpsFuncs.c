@@ -2064,13 +2064,13 @@ NclStackEntry missing_expr;
 			dim_sizes[0] = 1;
 			j = 1;
 		}
+		total = (long) ll_total;
 		ll_total *= _NclSizeOf(the_type);
 		if (ll_total > INT_MAX) {
 			NhlPError(NhlFATAL,NhlEUNKNOWN,"New: requested size of variable (%lld bytes) exceeds the current maximum allowed on this system",ll_total);
 			return(NhlFATAL);
 		}
-		total = ll_total;
-		tmp_val = (void*)NclMalloc((unsigned int)total);
+		tmp_val = (void*)NclMalloc((unsigned int)ll_total);
 		if (! tmp_val) {
 			NhlPError(NhlFATAL,ENOMEM,"New: could not create new array");
 			return(NhlFATAL);
