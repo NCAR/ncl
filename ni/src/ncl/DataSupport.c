@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.52 2009-07-28 16:29:40 huangwei Exp $
+ *      $Id: DataSupport.c,v 1.53 2009-11-17 00:03:15 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -979,7 +979,7 @@ NclBasicDataTypes totype;
                         *(double*)to = *(long long*)from;
                         return(1);
                 case NCL_logical:
-                        *(int*)to = *(long long*)from;
+			*(logical*)to = (logical)(*(long long*)from?1:0);
                         return(1);
                 case NCL_string:
                         sprintf(buffer,"%ld",(long long)*(long long*)from);
@@ -1021,7 +1021,7 @@ NclBasicDataTypes totype;
 			*(double*)to = *(unsigned short*)from;
 			return(1);
 		case NCL_logical:
-			*(int*)to = *(unsigned short*)from;
+			*(logical*)to = (logical)(*(unsigned short*)from?1:0);
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",(int)*(unsigned short*)from);
@@ -1057,7 +1057,7 @@ NclBasicDataTypes totype;
 			*(double*)to = *(unsigned int*)from;
 			return(1);
                 case NCL_logical:
-			*(int*)to = *(unsigned int*)from;
+			*(logical*)to = (logical)(*(unsigned int*)from?1:0);
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%d",*(unsigned int*)from);
@@ -1087,7 +1087,7 @@ NclBasicDataTypes totype;
 			*(double*)to = *(unsigned long*)from;
 			return(1);
 		case NCL_logical:
-			*(int*)to = *(unsigned long*)from;
+			*(logical*)to = (logical)(*(unsigned long*)from?1:0);
 			return(1);
 		case NCL_string:
 			sprintf(buffer,"%ld",(unsigned long)*(unsigned long*)from);
@@ -1117,7 +1117,7 @@ NclBasicDataTypes totype;
                         *(double*)to = *(unsigned long long*)from;
                         return(1);
                 case NCL_logical:
-                        *(int*)to = *(unsigned long long*)from;
+			*(logical*)to = (logical)(*(unsigned long long*)from?1:0);
                         return(1);
                 case NCL_string:
                         sprintf(buffer,"%ld",(unsigned long long)*(unsigned long long*)from);
