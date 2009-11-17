@@ -2056,8 +2056,17 @@ int vtype;
 		if(FileIsVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT))!=-1){
 			mis_md = FileReadVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
 			if(mis_md != NULL) {
-				memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
 				has_missing = 1;
+				if (mis_md->multidval.data_type == thefile->file.var_info[index]->data_type) {
+					memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
+				}
+				else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						  "FileReadVar: _FillValue attribute type differs from variable (%s) type in file (%s), forcing type conversion; may result in overflow and/or loss of precision",
+						  NrmQuarkToString(var_name),NrmQuarkToString(thefile->file.fname));
+					_NclScalarForcedCoerce(mis_md->multidval.val,mis_md->multidval.data_type,
+							       (void*)&missing_value,thefile->file.var_info[index]->data_type);
+				}
 			}
 		} 
 		if(vtype == FILE_COORD_VAR_ACCESS) {
@@ -2991,8 +3000,18 @@ int vtype;
 	if(FileIsVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT))!=-1){
 		mis_md = FileReadVarAtt(thefile,var_name,NrmStringToQuark(NCL_MISSING_VALUE_ATT),NULL);
 		if(mis_md != NULL) {
-			memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
 			has_missing = 1;
+			if (mis_md->multidval.data_type == thefile->file.var_info[index]->data_type) {
+				memcpy((void*)&missing_value,mis_md->multidval.val,_NclSizeOf(mis_md->multidval.data_type));
+			}
+			else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,
+	      "FileReadVar: _FillValue attribute type differs from variable (%s) type in file (%s), forcing type conversion; may result in overflow and/or loss of precision",
+					  NrmQuarkToString(var_name),NrmQuarkToString(thefile->file.fname));
+				_NclScalarForcedCoerce(mis_md->multidval.val,mis_md->multidval.data_type,
+						       (void*)&missing_value,thefile->file.var_info[index]->data_type);
+			}
+
 		}
 	} 
 	if(vtype == FILE_COORD_VAR_ACCESS) {
@@ -3082,10 +3101,24 @@ struct _NclSelectionRecord* sel_ptr;
 			LoadVarAtts(thefile,var_name);
 		att_id = thefile->file.var_att_ids[index];
 		att_obj = (NclObj)_NclCopyAtt((NclAtt)_NclGetObj(att_id),NULL);
-		if(att_obj != NULL) {
-			att_id = att_obj->obj.id;
-		} else {
+		if(! att_obj) {
 			att_id = -1;
+		}
+		else {
+			att_id = att_obj->obj.id;
+			if (_NclIsAtt(att_id,"_FillValue")) {
+				tmp_att_md = _NclGetAtt(att_id,"_FillValue",NULL);
+				if (tmp_att_md->multidval.data_type != tmp_md->multidval.data_type) {
+					int tmp_size = 1;
+					NclScalar *tmp_mis = (NclScalar*)NclMalloc((unsigned)sizeof(NclScalar));
+					*tmp_mis = tmp_md->multidval.missing_value.value;
+					tmp_att_md = _NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,
+									 (void*)tmp_mis,NULL,1,&tmp_size,TEMPORARY,NULL,
+									 tmp_md->multidval.type);
+					_NclDeleteAtt(att_id,"_FillValue");
+					_NclAddAtt(att_id,"_FillValue",tmp_att_md,NULL);
+				}
+			}
 		}
 		if(sel_ptr == NULL) {
 /*

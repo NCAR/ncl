@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.53 2009-11-17 00:03:15 huangwei Exp $
+ *      $Id: DataSupport.c,v 1.54 2009-11-17 20:10:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1240,6 +1240,612 @@ NclBasicDataTypes totype;
 		case NCL_string:
 			buffer[0] = *(byte*)from;
 			buffer[1] = '\0';
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_string:
+		switch(totype) {
+		case NCL_string:
+			*(string*)to = *(string*)from;
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_logical:
+	default:
+		return(0);
+	}
+}
+
+int _NclScalarForcedCoerce
+#if	NhlNeedProto
+(void *from,NclBasicDataTypes frtype,void *to,NclBasicDataTypes totype)
+#else
+(from,frtype,to,totype)
+void *from;
+NclBasicDataTypes frtype;
+void *to;
+NclBasicDataTypes totype;
+#endif
+{
+	char buffer[80];
+
+	switch(frtype) {
+	case NCL_char:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(char*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(char*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(char*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(char*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(char*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(char*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(char*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(char*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(char*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(char*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(char*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(char*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(char*)from?1:0);
+			return(1);
+		case NCL_string:
+			buffer[0] = *(char*)from;
+			buffer[1] = '\0';
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_byte:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(byte*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(byte*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(byte*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(byte*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(byte*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(byte*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(byte*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(byte*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(byte*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(byte*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(byte*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(byte*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(byte*)from?1:0);
+			return(1);
+		case NCL_string:
+			buffer[0] = *(byte*)from;
+			buffer[1] = '\0';
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_short:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(short*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(short*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(short*)from;
+			return(1);
+		case NCL_int:
+			*(int*)to = *(short*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(short*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(short*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(short*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(short*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(short*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(short*)from;
+                        return(1);
+		case NCL_float:
+			*(float*)to = *(short*)from;
+			return(1);
+		case NCL_double:
+			*(double*)to = *(short*)from;
+			return(1);
+		case NCL_logical:
+			*(logical*)to = (logical)(*(short*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%d",(int)*(short*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_int:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(int*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(int*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(int*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(int*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(int*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(int*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to = *(int*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(int*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(int*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(int*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(int*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(int*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(int*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%d",*(int*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_long:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(long*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(long*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(long*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(long*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(long*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(long*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to = *(long*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(long*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(long*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(long*)from;
+                        return(1);
+		case NCL_float:
+			*(float*)to = *(long*)from;
+			return(1);
+		case NCL_double:
+			*(double*)to = *(long*)from;
+			return(1);
+		case NCL_logical:
+			*(logical*)to = (logical)(*(long*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%ld",(long)*(long*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+        case NCL_int64:
+                switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(long long*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(long long*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(long long*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(long long*)from;
+			return(1);
+                case NCL_long:
+                        *(long*)to = *(long long*)from;
+                        return(1);
+                case NCL_int64:
+                        *(long long*)to = *(long long*)from;
+                        return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to = *(long long*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(long long*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(long long*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(long long*)from;
+                        return(1);
+                case NCL_float:
+                        *(float*)to = *(long long*)from;
+                        return(1);
+                case NCL_double:
+                        *(double*)to = *(long long*)from;
+                        return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(long long*)from?1:0);
+                        return(1);
+                case NCL_string:
+                        sprintf(buffer,"%ld",(long long)*(long long*)from);
+                        *(string*)to = NrmStringToQuark(buffer);
+                        return(1);
+                default:
+                        return(0);
+                }
+	case NCL_ushort:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(unsigned short*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(unsigned short*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(unsigned short*)from;
+			return(1);
+		case NCL_int:
+			*(int*)to = *(unsigned short*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(unsigned short*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(unsigned short*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(unsigned short*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(unsigned short*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(unsigned short*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(unsigned short*)from;
+                        return(1);
+		case NCL_float:
+			*(float*)to = *(unsigned short*)from;
+			return(1);
+		case NCL_double:
+			*(double*)to = *(unsigned short*)from;
+			return(1);
+		case NCL_logical:
+			*(logical*)to = (logical)(*(unsigned short*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%d",(int)*(unsigned short*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_uint:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(unsigned int*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(unsigned int*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(unsigned int*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(unsigned int*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(unsigned int*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(unsigned int*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(unsigned int*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(unsigned int*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(unsigned int*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(unsigned int*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(unsigned int*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(unsigned int*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(unsigned int*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%d",*(unsigned int*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_ulong:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(unsigned long*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(unsigned long*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(unsigned long*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(unsigned long*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(unsigned long*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(unsigned long*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(unsigned long*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(unsigned long*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(unsigned long*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(unsigned long*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(unsigned long*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(unsigned long*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(unsigned long*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%ld",(unsigned long)*(unsigned long*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+        case NCL_uint64:
+                switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(unsigned long long*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(unsigned long long*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(unsigned long long*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(unsigned long long*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(unsigned long long*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(unsigned long long*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(unsigned long long*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(unsigned long long*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(unsigned long long*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(unsigned long long*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(unsigned long long*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(unsigned long long*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(unsigned long long*)from?1:0);
+			return(1);
+                case NCL_string:
+                        sprintf(buffer,"%ld",(unsigned long long)*(unsigned long long*)from);
+                        *(string*)to = NrmStringToQuark(buffer);
+                        return(1);
+                default:
+                        return(0);
+                }
+	case NCL_float:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(float*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(float*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(float*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(float*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(float*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(float*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(float*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(float*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(float*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(float*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(float*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(float*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(float*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%g",*(float*)from);
+			*(string*)to = NrmStringToQuark(buffer);
+			return(1);
+		default:
+			return(0);
+		}
+	case NCL_double:
+		switch(totype) {
+		case NCL_byte:
+			*(byte*)to= *(double*)from;
+			return(1);
+		case NCL_char:
+			*(char*) to = *(double*)from;
+			return(1);
+		case NCL_short:
+			*(short*)to= *(double*)from;
+			return(1);
+                case NCL_int:
+			*(int*)to = *(double*)from;
+			return(1);
+		case NCL_long:
+			*(long*)to = *(double*)from;
+			return(1);
+		case NCL_int64:
+			*(long long*)to = *(double*)from;
+			return(1);
+                case NCL_ushort:
+                        *(unsigned short*)to= *(double*)from;
+                        return(1);
+                case NCL_uint:
+                        *(unsigned int*)to = *(double*)from;
+                        return(1);
+                case NCL_ulong:
+                        *(unsigned long*)to = *(double*)from;
+                        return(1);
+                case NCL_uint64:
+                        *(unsigned long long*)to = *(double*)from;
+                        return(1);
+                case NCL_float:
+			*(float*)to = *(double*)from;
+			return(1);
+                case NCL_double:
+			*(double*)to = *(double*)from;
+			return(1);
+                case NCL_logical:
+			*(logical*)to = (logical)(*(double*)from?1:0);
+			return(1);
+		case NCL_string:
+			sprintf(buffer,"%lg",*(double*)from);
 			*(string*)to = NrmStringToQuark(buffer);
 			return(1);
 		default:

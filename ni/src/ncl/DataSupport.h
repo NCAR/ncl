@@ -1,6 +1,6 @@
 
 /*
- *      $Id: DataSupport.h,v 1.14 2009-02-05 03:42:31 dbrown Exp $
+ *      $Id: DataSupport.h,v 1.15 2009-11-17 20:10:11 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -169,6 +169,15 @@ NclScalar * /* missing*/
 );
 
 extern int _NclScalarCoerce(
+#if  NhlNeedProto
+void * /*from*/,
+NclBasicDataTypes /*frtype*/,
+void * /*to*/,
+NclBasicDataTypes /*totype*/
+#endif
+);
+
+extern int _NclScalarForcedCoerce(
 #if  NhlNeedProto
 void * /*from*/,
 NclBasicDataTypes /*frtype*/,
