@@ -26,7 +26,7 @@ C
       EPS   = SQRT(2./S)
       CALL CURVS(IDIM,X,Y,D,ISW,S,EPS,YS,YSP,SIGMA,TEMP,IERR)       
 C
-C  Call CURVP2 and calculate the interpolated values and the integrals.
+C  Call CURV2 and calculate the interpolated values and the integrals.
 C
       XR =  5.
       XL = -1.
