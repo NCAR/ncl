@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.54 2009-11-17 20:10:10 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.55 2009-11-21 01:32:46 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -2185,18 +2185,20 @@ struct _NclMultiDValDataRec *_NclCreateLMissing
 {
 	static int first = 1;
 	static NclMultiDValData tval = NULL;
+	static NclScalar missing;
 
 	if(first) {
 		int *val = (int*)NclMalloc((unsigned)sizeof(int));
 		int dim_sizes = 1;
 		*val = -1;
+		missing.logicalval = (logical)-1;
 		tval = _NclCreateMultiDVal(
 			NULL,
 			nclMultiDValDataClass,
 			Ncl_MultiDValData,
 			Ncl_MultiDValData,
 			(void*)val,
-			NULL,
+			&missing,
 			1,
 			&dim_sizes,
 			PERMANENT,

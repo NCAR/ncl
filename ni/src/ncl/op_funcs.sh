@@ -1,8 +1,5 @@
 #!/bin/sh
 
-#
-# Begin "logical" section
-#
 
 if [ $1 = "ushort" ]; then
     def_type="unsigned short"
@@ -24,6 +21,10 @@ sed \
 -e "s/DATATYPE/$1/g" \
 -e "s/LOCALTYPE/$def_type/g" \
 TypeResetMissing.c.sed
+
+#
+# Begin "logical" section
+#
 
 if [ $1 = "logical" ]
 then
@@ -47,7 +48,7 @@ sed \
 -e "s/THEOP/\&\&/g" \
 -e "s/OPER/\.and\./g" \
 -e "s/FUNCNAME/and/g" \
-TypeSimpleOpTemplate.c.sed
+TypeAndOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
@@ -70,7 +71,7 @@ sed \
 -e "s/THEOP/||/g" \
 -e "s/OPER/\.or\./g" \
 -e "s/FUNCNAME/or/g" \
-TypeSimpleOpTemplate.c.sed
+TypeOrOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
@@ -447,7 +448,7 @@ sed \
 -e 's/THEOP/\&\&/' \
 -e 's/OPER/\.and\./' \
 -e 's/FUNCNAME/and/' \
-TypeSimpleOpTemplate.c.sed
+TypeAndOpTemplate.c.sed
 
 sed \
 -e "s/OUTDATATYPE/logical/g" \
@@ -459,7 +460,7 @@ sed \
 -e 's/THEOP/||/' \
 -e 's/OPER/\.or\./' \
 -e 's/FUNCNAME/or/' \
-TypeSimpleOpTemplate.c.sed
+TypeOrOpTemplate.c.sed
 
 sed \
 -e "s/DATATYPE/$1/g" \

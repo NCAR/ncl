@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.165 2009-08-20 00:30:48 dbrown Exp $
+#      $Id: yMakefile,v 1.166 2009-11-21 01:32:46 dbrown Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-08-20 00:30:48 $
+#	Date:		$Date: 2009-11-21 01:32:46 $
 #
 #	Description:	
 #
@@ -261,6 +261,7 @@ NIO_NCL_OTHER_FILES = AddFileFormats.c AttSupport.c DataSupport.c	\
 		TypeSupportMatTemplate.c.sed				\
 		TypeSupportMonoOpTemplate.c.sed				\
 		TypeSupportOpTemplate.c.sed TypeXorOpTemplate.c.sed	\
+		TypeAndOpTemplate.c.sed TypeOrOpTemplate.c.sed          \
 		TypestringCompareOpTemplate.c.sed			\
 		TypestringSelectOpTemplate.c.sed VarSupport.c		\
 		byte_data_c.sh char_data_c.sh ctoiee.c data_h.sh	\
@@ -503,7 +504,9 @@ NUM_OP_TMPL	=	TypeDivOpTemplate.c.sed \
 			TypeXorOpTemplate.c.sed \
 			TypeInitClassTemplate.c.sed \
 			NclType.c.sed \
-			NclType.h.sed
+			NclType.h.sed \
+			TypeAndOpTemplate.c.sed \
+			TypeOrOpTemplate.c.sed 
 
 STR_OP_TMPL	=	TypestringCompareOpTemplate.c.sed \
 			TypestringSelectOpTemplate.c.sed \
