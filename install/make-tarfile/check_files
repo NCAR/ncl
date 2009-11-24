@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.20 2009-09-04 16:57:20 haley Exp $
+#   $Id: check_files,v 1.21 2009-11-24 16:23:38 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -466,23 +466,41 @@ lib/ncarg/colormaps/gui_default.rgb
 lib/ncarg/colormaps/helix.ncmap
 lib/ncarg/colormaps/helix1.ncmap
 lib/ncarg/colormaps/hlu_default.rgb
+lib/ncarg/colormaps/hotcold_18lev.rgb
+lib/ncarg/colormaps/hotcolr_19lev.rgb
 lib/ncarg/colormaps/hotres.ncmap
+lib/ncarg/colormaps/mch_default.rgb
 lib/ncarg/colormaps/ncview_default.ncmap
 lib/ncarg/colormaps/nrl_sirkes.rgb
 lib/ncarg/colormaps/nrl_sirkes_nowhite.rgb
+lib/ncarg/colormaps/perc2_9lev.rgb
+lib/ncarg/colormaps/percent_11lev.rgb
 lib/ncarg/colormaps/posneg_1.rgb
 lib/ncarg/colormaps/posneg_2.rgb
 lib/ncarg/colormaps/prcp_1.rgb
 lib/ncarg/colormaps/prcp_2.rgb
 lib/ncarg/colormaps/prcp_3.rgb
-lib/ncarg/colormaps/radar_1.rgb
+lib/ncarg/colormaps/precip2_15lev.rgb
+lib/ncarg/colormaps/precip2_17lev.rgb
+lib/ncarg/colormaps/precip3_16lev.rgb
+lib/ncarg/colormaps/precip4_11lev.rgb
+lib/ncarg/colormaps/precip4_diff_19lev.rgb
+lib/ncarg/colormaps/precip_11lev.rgb
+lib/ncarg/colormaps/precip_diff_12lev.rgb
+lib/ncarg/colormaps/precip_diff_1lev.rgb
 lib/ncarg/colormaps/radar.rgb
+lib/ncarg/colormaps/radar_1.rgb
 lib/ncarg/colormaps/rainbow+gray.gp
 lib/ncarg/colormaps/rainbow+white+gray.gp
 lib/ncarg/colormaps/rainbow+white.gp
 lib/ncarg/colormaps/rainbow.gp
+lib/ncarg/colormaps/rh_19lev.rgb
 lib/ncarg/colormaps/so4_21.gp
 lib/ncarg/colormaps/so4_23.gp
+lib/ncarg/colormaps/spread_15lev.rgb
+lib/ncarg/colormaps/sunshine_9lev.rgb
+lib/ncarg/colormaps/sunshine_diff_12lev.rgb
+lib/ncarg/colormaps/t2m_29lev.rgb
 lib/ncarg/colormaps/tbrAvg1.rgb
 lib/ncarg/colormaps/tbrStd1.gp
 lib/ncarg/colormaps/tbrStd1.rgb
@@ -494,10 +512,15 @@ lib/ncarg/colormaps/tbr_stdev_0-30.gp
 lib/ncarg/colormaps/tbr_stdev_0-30.rgb
 lib/ncarg/colormaps/tbr_var_0-500.gp
 lib/ncarg/colormaps/tbr_var_0-500.rgb
+lib/ncarg/colormaps/temp_19lev.rgb
+lib/ncarg/colormaps/temp_diff_18lev.rgb
+lib/ncarg/colormaps/temp_diff_1lev.rgb
 lib/ncarg/colormaps/testcmap.rgb
 lib/ncarg/colormaps/thelix.rgb
+lib/ncarg/colormaps/topo_15lev.rgb
 lib/ncarg/colormaps/wgne15.rgb
 lib/ncarg/colormaps/wh-bl-gr-ye-re.gp
+lib/ncarg/colormaps/wind_17lev.rgb
 lib/ncarg/colormaps/wxpEnIR.rgb
 lib/ncarg/data/asc/climdivcorr.txt
 lib/ncarg/data/asc/cn03f.asc
