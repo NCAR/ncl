@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.21 2009-11-24 16:23:38 haley Exp $
+#   $Id: check_files,v 1.22 2009-11-24 16:28:30 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -370,7 +370,6 @@ include/ncarg/ncl/NclDataDefs.h
 include/ncarg/ncl/NclFileInterfaces.h
 include/ncarg/ncl/NclVar.h
 include/ncarg/ncl/defs.h
-include/ncarg/ncl/nio.h
 include/ncarg/nio/DataSupport.h
 include/ncarg/nio/FileSupport.h
 include/ncarg/nio/NclData.h
