@@ -4670,9 +4670,21 @@ struct _NclSelectionRecord *rhs_sel_ptr;
 			dim_names[i] = tmp_var->var.dim_info[i].dim_quark;
 			if (dim_names[i] == NrmStringToQuark("ncl_scalar"))
 				continue;
-			if (FileIsDim(thefile,dim_names[i]) < 0) {
+			else if (FileIsDim(thefile,dim_names[i]) != -1) {
 				ret = FileAddDim(thefile,dim_names[i],tmp_var->var.dim_info[i].dim_size,False);
 			}
+			else {
+				char buffer[32];
+				if (tmp_md->multidval.totalelements == 1) {
+					dim_names[i] = NrmStringToQuark("ncl_scalar");
+				}
+				else {
+					sprintf(buffer,"ncl%d",thefile->file.n_file_dims);
+					ret = FileAddDim(thefile,NrmStringToQuark(buffer),tmp_var->var.dim_info[i].dim_size,False);
+					dim_names[i] = NrmStringToQuark(buffer);
+				}
+			}
+
 		}
 		index = FileIsVar(thefile,lhs_var);
 		if (index < 0) {
