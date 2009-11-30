@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.34 2009-11-10 22:57:28 huangwei Exp $
+ *      $Id: NclHDF.c,v 1.35 2009-11-30 17:45:25 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -309,6 +309,11 @@ static NclBasicDataTypes HDFMapToNcl
 		return(NCL_float);
 	case DFNT_DOUBLE:
 		return(NCL_double);
+	case DFNT_VERSION:
+	      /*
+	       *This is added to handle HDF version info. Wei Nov. 30, 2009
+	       */
+		return(NCL_string);
 	default:
                 fprintf(stdout, "file: %s, line, %d\n", __FILE__, __LINE__);
                 fprintf(stdout, "UNKNOWN the_type: %d\n", *(nc_type*)the_type);
