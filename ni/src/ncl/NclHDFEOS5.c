@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.4 2009-10-23 15:05:03 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.5 2009-11-30 20:56:02 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -478,8 +478,9 @@ NclBasicDataTypes type;
 static void HDFEOS5IntFileAddAtt(HDFEOS5FileRecord *the_file,NclQuark sw_ncl_name,NclQuark att_ncl_name,void *value,int n_elem, NclBasicDataTypes type)
 {
 	HDFEOS5AttInqRecList *tmp_node = (HDFEOS5AttInqRecList*)NclMalloc(sizeof(HDFEOS5AttInqRecList));
-	char buffer[HDFEOS5_BUF_SIZE];
 	NrmQuark *tmp_quark;
+	int lenbuf = n_elem + 2 + HDFEOS5_BUF_SIZE;
+	char *buffer = (char *) NclMalloc(lenbuf);
 
 	strcpy(buffer,NrmQuarkToString(att_ncl_name));
 	strcat(buffer,"_");
@@ -499,6 +500,7 @@ static void HDFEOS5IntFileAddAtt(HDFEOS5FileRecord *the_file,NclQuark sw_ncl_nam
 		tmp_node->att_inq->value = (void*)tmp_quark;
 		tmp_node->att_inq->n_elem = 1;
 		NclFree(value);
+		NclFree(buffer);
                 break;
 	    default:
 		tmp_node->att_inq->value = value;
