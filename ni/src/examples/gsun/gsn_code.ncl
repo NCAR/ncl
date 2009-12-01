@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.225 2009-09-29 16:50:10 haley Exp $
+;      $Id: gsn_code.ncl,v 1.226 2009-12-01 18:50:18 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -1498,15 +1498,82 @@ end
 ;***********************************************************************;
 undef("get_plot_labelbar")
 function get_plot_labelbar(plot:graphic)
+local found, id_class, i, ids, nids
 begin
   new_plot = new(1,graphic)
 
   if(isatt(plot,"labelbar").and.isatt(plot,"labelbar_type")) then
     new_plot           = plot@labelbar
     new_plot@plot_type = plot@labelbar_type
-  else
-    new_plot = get_plot_not_loglin(plot)
+    return(new_plot)
   end if
+;
+; This code was added after V5.1.1. It is better to use the
+; overlay ids to detect what overlay plots there are, and
+; then figure out from resources set which ones might 
+; potentially require a labelbar.
+;
+; Note that this test will favor contour plots over
+; vector over streamline plots, and it will use the
+; first plot that it finds.
+;
+  getvalues plot
+    "pmOverlaySequenceIds" : ids
+  end getvalues
+  nids = dimsizes(ids)
+  found = False
+  i = 0
+  do while(.not.found.and.i.lt.nids) 
+    id_class = NhlClassName(ids(i))
+    if(id_class.eq."contourPlotClass") then
+      getvalues ids(i)
+        "cnFillOn" : cn_fillon
+      end getvalues 
+      if(cn_fillon) then
+        found = True
+        new_plot = ids(i)
+        new_plot@plot_type = "contour"
+      end if
+    end if
+    if(id_class.eq."vectorPlotClass") then
+;
+;  Glyph styles:
+     ; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
+;
+      getvalues ids(i)
+        "vcGlyphStyle"             : vc_glyphstyle
+        "vcMonoFillArrowFillColor" : vc_monofillarrowfillcolor
+        "vcMonoLineArrowColor"     : vc_monolinearrowcolor
+        "vcMonoWindBarbColor"      : vc_monowindbarbcolor
+      end getvalues
+      if( (vc_glyphstyle.eq.0.and.vc_monolinearrowcolor) .or.\
+          (vc_glyphstyle.eq.1.and.vc_monofillarrowcolor) .or. \
+          (vc_glyphstyle.eq.2.and.vc_monowindbarbcolor)  .or. \
+          (vc_glyphstyle.eq.3.and.vc_monolinearrowcolor)) then
+        found = True
+        new_plot = ids(i)
+        new_plot@plot_type = "vector"
+      end if
+    end if
+    if(id_class.eq."streamlinePlotClass") then
+      getvalues ids(i)
+        "stMonoLineColor"     : st_monolinecolor
+      end getvalues
+      if(st_monolinecolor) then
+        found = True
+        new_plot = ids(i)
+        new_plot@plot_type = "streamline"
+      end if
+    end if
+    i = i + 1
+  end do
+  if(found) then
+    return(new_plot)
+  end if
+;
+; If all else fails, do it the "old" way before V5.2.0.
+;
+  new_plot = get_plot_not_loglin(plot)
   return(new_plot)
 end
 
@@ -4982,10 +5049,6 @@ begin
       if(new_plot@plot_type.eq."vector") then
         getvalues new_plot
           "vcRefAnnoFontHeightF"     : font_height
-          "vcGlyphStyle"             : gstyle
-          "vcFillArrowsOn"           : fill_arrows_on
-          "vcMonoLineArrowColor"     : mono_line_color
-          "vcMonoFillArrowFillColor" : mono_fill_arrow
         end getvalues
       else
         if(new_plot@plot_type.eq."xy") then
@@ -5012,9 +5075,8 @@ begin
     pfont_height = get_res_value(res,"gsnPanelFigureStringsFontHeightF",\
                                  font_height)
   end if
-
 ;
-; Get labelbar information.
+; Get labelbar info.
 ;
   if(panel_labelbar) then
 ;
@@ -5044,12 +5106,20 @@ begin
       end if
     else
       if(new_plot_lab@plot_type.eq."vector") then
+        getvalues new_plot_lab
+          "vcGlyphStyle"             : gstyle
+          "vcFillArrowsOn"           : fill_arrows_on
+          "vcMonoLineArrowColor"     : mono_line_color
+          "vcMonoFillArrowFillColor" : mono_fill_arrow
+          "vcMonoWindBarbColor"      : mono_wind_barb
+        end getvalues
 ;
 ; 0 = linearrow, 1 = fillarrow, 2 = windbarb, 3 = curlyvector
 ;
         if(    (fill_arrows_on .and. .not.mono_fill_arrow)     .or. \
             (.not.fill_arrows_on .and. .not.mono_line_color)   .or. \
             (gstyle.eq.1 .and. .not.mono_fill_arrow)  .or. \
+            (gstyle.eq.2 .and. .not.mono_wind_barb)  .or. \
             (gstyle.eq.0 .or. gstyle.eq.3) .and. .not.mono_line_color) then
 ;
 ; There are no fill patterns in VectorPlot, only solids.
