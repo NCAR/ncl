@@ -33,12 +33,6 @@ extern int grib_version;
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
 #define NCLFILE_VEC 0
-NclQuark FileGetDimName(
-#if	NhlNeedProto
-NclFile /* thefile */,
-int /*num*/
-#endif
-);
 
 static NclObjTypes FileVarRepValue(
 #if	NhlNeedProto

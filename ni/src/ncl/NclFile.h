@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclFile.h,v 1.23 2008-02-22 00:52:26 dbrown Exp $
+ *      $Id: NclFile.h,v 1.24 2009-12-04 23:44:35 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -369,6 +369,13 @@ extern NclFile _NclCreateFile(
 	NclStatus /*status*/,
 	NclQuark /*path */,
 	int 	/*rw_status*/
+#endif
+);
+
+extern NclQuark FileGetDimName(
+#if     NhlNeedProto
+NclFile /* thefile */,
+int /*num*/
 #endif
 );
 
