@@ -33,7 +33,7 @@ extern int grib_version;
 #define NCLFILE_INC -1
 #define NCLFILE_DEC -2
 #define NCLFILE_VEC 0
-static NclQuark FileGetDimName(
+NclQuark FileGetDimName(
 #if	NhlNeedProto
 NclFile /* thefile */,
 int /*num*/
@@ -5564,7 +5564,7 @@ struct _NclSelectionRecord* sel_ptr;
 
 	
 
-static NclQuark FileGetDimName
+NclQuark FileGetDimName
 #if	NhlNeedProto
 (NclFile thefile, int num)
 #else

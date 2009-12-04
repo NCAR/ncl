@@ -1,5 +1,5 @@
 /*
- *      $Id: Symbol.c,v 1.72 2009-09-03 06:41:18 dbrown Exp $
+ *      $Id: Symbol.c,v 1.73 2009-12-04 15:23:07 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -86,6 +86,12 @@ void
 );
 
 extern void NclAddUserBuiltInFuncs(
+#if NhlNeedProto
+void
+#endif
+);
+
+extern void NclAddJavaBuiltInFuncs(
 #if NhlNeedProto
 void
 #endif
@@ -367,6 +373,7 @@ int _NclInitSymbol
 	_NclAddIntrinsics();
 	_NclAddBuiltIns();
 	NclAddUserBuiltInFuncs();
+	NclAddJavaBuiltInFuncs();
 	NclAddUserFuncs();
 	_NclAddHLUObjs();
 	NclAddUserHLUObjs();
