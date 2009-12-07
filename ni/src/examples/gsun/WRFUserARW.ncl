@@ -584,14 +584,13 @@ begin
 end
 
 ;--------------------------------------------------------------------------------
-
- 
 undef("wrf_user_getvar")
-function wrf_user_getvar( nc_file:file, varin[*]:string, time:integer )
+function wrf_user_getvar( nc_file:file, varin[*]:string, time_in:integer )
 
 begin
 
   variable = varin(0)
+  time = time_in(0)
 
   if( (variable .eq. "uvmet") .or. (variable .eq. "uvmet10") ) then
        ;; Calculate winds rotated to earth coord. 
@@ -614,8 +613,8 @@ begin
            u = wrf_user_unstagger(u_in,u_in@stagger)
            v = wrf_user_unstagger(v_in,v_in@stagger)
          else
-           u_in   = nc_file->$getU$(time,:,:,:)
-           v_in   = nc_file->$getV$(time,:,:,:)
+           u_in   = nc_file->$getU$(time_in,:,:,:)
+           v_in   = nc_file->$getV$(time_in,:,:,:)
            u = wrf_user_unstagger(u_in,u_in@stagger)
            v = wrf_user_unstagger(v_in,v_in@stagger)
          end if
@@ -629,8 +628,8 @@ begin
              u = wrf_user_unstagger(u_in,u_in@stagger)
              v = wrf_user_unstagger(v_in,v_in@stagger)
            else
-             u_in  = nc_file->U10(time,:,:)
-             v_in  = nc_file->V10(time,:,:)
+             u_in  = nc_file->U10(time_in,:,:)
+             v_in  = nc_file->V10(time_in,:,:)
              u = wrf_user_unstagger(u_in,u_in@stagger)
              v = wrf_user_unstagger(v_in,v_in@stagger)
            end if
@@ -643,8 +642,8 @@ begin
                u = wrf_user_unstagger(u_in,u_in@stagger)
                v = wrf_user_unstagger(v_in,v_in@stagger)
              else
-               u_in  = nc_file->UU(time,0,:,:)
-               v_in  = nc_file->VV(time,0,:,:)
+               u_in  = nc_file->UU(time_in,0,:,:)
+               v_in  = nc_file->VV(time_in,0,:,:)
                u = wrf_user_unstagger(u_in,u_in@stagger)
                v = wrf_user_unstagger(v_in,v_in@stagger)
              end if
@@ -708,8 +707,8 @@ begin
            latitude  = nc_file->$getLAT$
            longitude = nc_file->$getLON$
          else
-           latitude  = nc_file->$getLAT$(time,:,:)
-           longitude = nc_file->$getLON$(time,:,:)
+           latitude  = nc_file->$getLAT$(time_in,:,:)
+           longitude = nc_file->$getLON$(time_in,:,:)
          end if
 
          cone = 1.
@@ -757,7 +756,7 @@ begin
        if ( time .eq. -1 ) then
          var = nc_file->$getTHIS$
        else
-         var = nc_file->$getTHIS$(time,:,:,:)
+         var = nc_file->$getTHIS$(time_in,:,:,:)
        end if
 
        ua = wrf_user_unstagger(var,var@stagger)
@@ -778,7 +777,7 @@ begin
        if ( time .eq. -1 ) then
          var = nc_file->$getTHIS$
        else
-         var = nc_file->$getTHIS$(time,:,:,:)
+         var = nc_file->$getTHIS$(time_in,:,:,:)
        end if
 
        va = wrf_user_unstagger(var,var@stagger)
@@ -793,7 +792,7 @@ begin
        if ( time .eq. -1 ) then
          var = nc_file->W
        else
-         var = nc_file->W(time,:,:,:)
+         var = nc_file->W(time_in,:,:,:)
        end if
 
        wa = wrf_user_unstagger(var,var@stagger)
@@ -810,8 +809,8 @@ begin
            var = nc_file->P
            PB  = nc_file->PB
          else
-           var = nc_file->P(time,:,:,:)
-           PB  = nc_file->PB(time,:,:,:)
+           var = nc_file->P(time_in,:,:,:)
+           PB  = nc_file->PB(time_in,:,:,:)
          end if
          var = var + PB
        else
@@ -820,7 +819,7 @@ begin
            if ( time .eq. -1 ) then
              var = nc_file->PRES
            else
-             var = nc_file->PRES(time,:,:,:)
+             var = nc_file->PRES(time_in,:,:,:)
            end if
          end if
        end if
@@ -841,8 +840,8 @@ begin
            var = nc_file->PH
            PHB = nc_file->PHB
          else
-           var = nc_file->PH(time,:,:,:)
-           PHB = nc_file->PHB(time,:,:,:)
+           var = nc_file->PH(time_in,:,:,:)
+           PHB = nc_file->PHB(time_in,:,:,:)
          end if
 
          var = var + PHB 
@@ -855,7 +854,7 @@ begin
            if ( time .eq. -1 ) then
              z = nc_file->GHT
            else
-             z = nc_file->GHT(time,:,:,:)
+             z = nc_file->GHT(time_in,:,:,:)
            end if
          end if
        end if  
@@ -875,7 +874,7 @@ begin
        if ( time .eq. -1 ) then
          var = nc_file->T
        else
-         var = nc_file->T(time,:,:,:)
+         var = nc_file->T(time_in,:,:,:)
        end if  
        var = var + 300.
        var@description = "Potential Temperature (theta) "
@@ -892,9 +891,9 @@ begin
            P  = nc_file->P
            PB = nc_file->PB
          else
-           T  = nc_file->T(time,:,:,:)
-           P  = nc_file->P(time,:,:,:)
-           PB = nc_file->PB(time,:,:,:)
+           T  = nc_file->T(time_in,:,:,:)
+           P  = nc_file->P(time_in,:,:,:)
+           PB = nc_file->PB(time_in,:,:,:)
          end if  
          T = T + 300.
          P = P + PB
@@ -907,7 +906,7 @@ begin
            if ( time .eq. -1 ) then
              t = nc_file->TT
            else
-             t = nc_file->TT(time,:,:,:)
+             t = nc_file->TT(time_in,:,:,:)
            end if  
          end if  
        end if  
@@ -927,9 +926,9 @@ begin
          PB     = nc_file->PB
          QVAPOR = nc_file->QVAPOR
        else
-         P      = nc_file->P(time,:,:,:)
-         PB     = nc_file->PB(time,:,:,:)
-         QVAPOR = nc_file->QVAPOR(time,:,:,:)
+         P      = nc_file->P(time_in,:,:,:)
+         PB     = nc_file->PB(time_in,:,:,:)
+         QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
        end if
        P = P + PB
        td  = wrf_td( P , QVAPOR )
@@ -946,8 +945,8 @@ begin
          PSFC = nc_file->PSFC
          Q2   = nc_file->Q2
        else
-         PSFC = nc_file->PSFC(time,:,:) 
-         Q2   = nc_file->Q2(time,:,:)
+         PSFC = nc_file->PSFC(time_in,:,:) 
+         Q2   = nc_file->Q2(time_in,:,:)
        end if
        td = wrf_td( PSFC , Q2 )
        delete_VarAtts(Q2,(/"description","units"/))
@@ -970,12 +969,12 @@ begin
            PH     = nc_file->PH
            PHB    = nc_file->PHB
          else
-           T      = nc_file->T(time,:,:,:)
-           P      = nc_file->P(time,:,:,:)
-           PB     = nc_file->PB(time,:,:,:)
-           QVAPOR = nc_file->QVAPOR(time,:,:,:)
-           PH     = nc_file->PH(time,:,:,:)
-           PHB    = nc_file->PHB(time,:,:,:)
+           T      = nc_file->T(time_in,:,:,:)
+           P      = nc_file->P(time_in,:,:,:)
+           PB     = nc_file->PB(time_in,:,:,:)
+           QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
+           PH     = nc_file->PH(time_in,:,:,:)
+           PHB    = nc_file->PHB(time_in,:,:,:)
          end if
          T = T + 300.
          P = P + PB
@@ -993,7 +992,7 @@ begin
            if ( time .eq. -1 ) then
              slp = nc_file->PMSL
            else
-             slp = nc_file->PMSL(time,:,:)
+             slp = nc_file->PMSL(time_in,:,:)
            end if
          end if
        end if  
@@ -1013,10 +1012,10 @@ begin
            PB     = nc_file->PB
            QVAPOR = nc_file->QVAPOR
          else
-           T      = nc_file->T(time,:,:,:)
-           P      = nc_file->P(time,:,:,:)
-           PB     = nc_file->PB(time,:,:,:)
-           QVAPOR = nc_file->QVAPOR(time,:,:,:)
+           T      = nc_file->T(time_in,:,:,:)
+           P      = nc_file->P(time_in,:,:,:)
+           PB     = nc_file->PB(time_in,:,:,:)
+           QVAPOR = nc_file->QVAPOR(time_in,:,:,:)
          end if  
          T = T + 300.
          P  = P + PB
@@ -1031,7 +1030,7 @@ begin
            if ( time .eq. -1 ) then
              rh = nc_file->RH
            else
-             rh = nc_file->RH(time,:,:,:)
+             rh = nc_file->RH(time_in,:,:,:)
            end if
          end if
        end if  
@@ -1048,13 +1047,12 @@ begin
            PSFC = nc_file->PSFC
            Q2   = nc_file->Q2
          else
-           T2   = nc_file->T2(time,:,:)
-           PSFC = nc_file->PSFC(time,:,:)
-           Q2   = nc_file->Q2(time,:,:)
+           T2   = nc_file->T2(time_in,:,:)
+           PSFC = nc_file->PSFC(time_in,:,:)
+           Q2   = nc_file->Q2(time_in,:,:)
          end if  
          Q2 = Q2 > 0.000
-         tk = wrf_tk( PSFC , T2 )
-         rh = wrf_rh( Q2, PSFC, tk )
+         rh = wrf_rh( Q2, PSFC, T2 )
          delete_VarAtts(T2,(/"description","units"/))
          copy_VarAtts(T2,rh)
          rh@description = "2m Relative Humidity"           
@@ -1065,7 +1063,7 @@ begin
            if ( time .eq. -1 ) then
              rh2 = nc_file->RH(:,0,:,:)
            else
-             rh2 = nc_file->RH(time,0,:,:)
+             rh2 = nc_file->RH(time_in,0,:,:)
            end if
          end if
        end if  
@@ -1086,15 +1084,15 @@ begin
          MSFM = nc_file->MAPFAC_M
          COR  = nc_file->F
        else
-         U    = nc_file->U(time,:,:,:)
-         V    = nc_file->V(time,:,:,:)
-         T    = nc_file->T(time,:,:,:)
-         P    = nc_file->P(time,:,:,:)
-         PB   = nc_file->PB(time,:,:,:)
-         MSFU = nc_file->MAPFAC_U(time,:,:)
-         MSFV = nc_file->MAPFAC_V(time,:,:)
-         MSFM = nc_file->MAPFAC_M(time,:,:)
-         COR  = nc_file->F(time,:,:)
+         U    = nc_file->U(time_in,:,:,:)
+         V    = nc_file->V(time_in,:,:,:)
+         T    = nc_file->T(time_in,:,:,:)
+         P    = nc_file->P(time_in,:,:,:)
+         PB   = nc_file->PB(time_in,:,:,:)
+         MSFU = nc_file->MAPFAC_U(time_in,:,:)
+         MSFV = nc_file->MAPFAC_V(time_in,:,:)
+         MSFM = nc_file->MAPFAC_M(time_in,:,:)
+         COR  = nc_file->F(time_in,:,:)
        end if  
        T = T + 300.
        P = P + PB
@@ -1119,12 +1117,12 @@ begin
          MSFM = nc_file->MAPFAC_M
          COR  = nc_file->F
        else
-         U    = nc_file->U(time,:,:,:)
-         V    = nc_file->V(time,:,:,:)
-         MSFU = nc_file->MAPFAC_U(time,:,:)
-         MSFV = nc_file->MAPFAC_V(time,:,:)
-         MSFM = nc_file->MAPFAC_M(time,:,:)
-         COR  = nc_file->F(time,:,:)
+         U    = nc_file->U(time_in,:,:,:)
+         V    = nc_file->V(time_in,:,:,:)
+         MSFU = nc_file->MAPFAC_U(time_in,:,:)
+         MSFV = nc_file->MAPFAC_V(time_in,:,:)
+         MSFM = nc_file->MAPFAC_M(time_in,:,:)
+         COR  = nc_file->F(time_in,:,:)
        end if  
        DX = nc_file@DX
        DY = nc_file@DY
@@ -1169,16 +1167,16 @@ begin
            qg = nc_file->QGRAUP
          end if
        else
-         T  = nc_file->T(time,:,:,:)
-         P  = nc_file->P(time,:,:,:)
-         PB = nc_file->PB(time,:,:,:)
-         qv = nc_file->QVAPOR(time,:,:,:)
-         qr = nc_file->QRAIN(time,:,:,:)
+         T  = nc_file->T(time_in,:,:,:)
+         P  = nc_file->P(time_in,:,:,:)
+         PB = nc_file->PB(time_in,:,:,:)
+         qv = nc_file->QVAPOR(time_in,:,:,:)
+         qr = nc_file->QRAIN(time_in,:,:,:)
          if(isfilevar(nc_file,"QSNOW"))
-           qs = nc_file->QSNOW(time,:,:,:)
+           qs = nc_file->QSNOW(time_in,:,:,:)
          end if
          if(isfilevar(nc_file,"QGRAUP"))
-           qg = nc_file->QGRAUP(time,:,:,:)
+           qg = nc_file->QGRAUP(time_in,:,:,:)
          end if
        end if
        T  = T + 300.
@@ -1245,14 +1243,14 @@ begin
          HGT = nc_file->HGT
          PSFC = nc_file->PSFC
        else
-         T  = nc_file->T(time,:,:,:)
-         P  = nc_file->P(time,:,:,:)
-         PB = nc_file->PB(time,:,:,:)
-         QV = nc_file->QVAPOR(time,:,:,:)
-         PH  = nc_file->PH(time,:,:,:)
-         PHB = nc_file->PHB(time,:,:,:)
-         HGT = nc_file->HGT(time,:,:)
-         PSFC = nc_file->PSFC(time,:,:)
+         T  = nc_file->T(time_in,:,:,:)
+         P  = nc_file->P(time_in,:,:,:)
+         PB = nc_file->PB(time_in,:,:,:)
+         QV = nc_file->QVAPOR(time_in,:,:,:)
+         PH  = nc_file->PH(time_in,:,:,:)
+         PHB = nc_file->PHB(time_in,:,:,:)
+         HGT = nc_file->HGT(time_in,:,:)
+         PSFC = nc_file->PSFC(time_in,:,:)
        end if
        T = T + 300.
        P  = P + PB 
@@ -1303,6 +1301,22 @@ begin
   end if
 
 
+  if( any( variable .eq. (/"times"/) ) ) then
+    if ( time .eq. -1 ) then
+      var = nc_file->Times
+    else
+      var = nc_file->Times(time_in,:)
+    end if
+    dims = dimsizes(var)
+    times = new(dims(0),string)
+    do i=0,dims(0)-1
+      times(i) = chartostring(var(i,:))
+    end do
+    times@description = "times in file"
+    return (times)
+  end if
+
+
 
 ;  end of diagnostic variable list - we must want a variable already in the file.  
 
@@ -1312,22 +1326,187 @@ begin
     ;  check variable dimensionality and pull proper time  out of file
     ndims = dimsizes(filevardimsizes(nc_file,variable))
     if( ndims .eq. 4) then
-      var = nc_file->$variable$(time,:,:,:)
+      var = nc_file->$variable$(time_in,:,:,:)
     end if
     if( ndims .eq. 3) then
-      var = nc_file->$variable$(time,:,:)
+      var = nc_file->$variable$(time_in,:,:)
     end if
     if( ndims .eq. 2) then
-      var = nc_file->$variable$(time,:)
+      var = nc_file->$variable$(time_in,:)
     end if
     if( ndims .eq. 1) then
-      var = nc_file->$variable$(time)
+      var = nc_file->$variable$(time_in)
     end if
   end if
 
   return(var)
 
 end
+
+
+;--------------------------------------------------------------------------------
+undef("wrf_user_getvar_from_files")
+function wrf_user_getvar_from_files( nc_files:string, varin[*]:string, time[*]:integer, opts_args:logical )
+
+begin
+
+  numFiles = dimsizes(nc_files)
+  f = addfiles(nc_files,"r")
+
+  var_tmp = wrf_user_getvar(f[0],varin,-1)
+  varDims = dimsizes(var_tmp)
+  varRank = dimsizes(varDims)
+  time_req = 0
+  time_inc = 1
+  time_end = varDims(0)*numFiles
+  if ( dimsizes(time) .eq. 1 ) then
+    if ( time(0) .ge. 0 ) then
+      numTimes = 1
+      time_req = time(0)
+      time_end = time(0)
+      time_inc = 1
+    else
+      numTimes = varDims(0)*numFiles
+    end if
+  end if
+  if ( dimsizes(time) .eq. 2 ) then
+    if ( time(0) .ge. 0 ) then
+      numTimes = (time(1)-time(0))+1
+      time_req = time(0)
+      time_end = time(1)
+      time_inc = 1
+    else
+      numTimes = varDims(0)*numFiles
+    end if
+  end if
+  if ( dimsizes(time) .eq. 3 ) then
+    if ( time(0) .ge. 0 ) then
+      numTimes = ((time(1)-time(0))+1)/time(2)
+      time_req = time(0)
+      time_end = time(1)
+      time_inc = time(2)
+    else
+      numTimes = varDims(0)*numFiles
+    end if
+  end if
+  outtime = 0
+  outtime_avail = 0
+
+
+  if ( varRank .eq. 4 )
+    varout = new ( (/numTimes,varDims(1),varDims(2),varDims(3)/), typeof(var_tmp) )
+    varout = 0
+    do it = 0,varDims(0)-1
+      if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+        varout(outtime,:,:,:) = var_tmp(it,:,:,:)
+        outtime = outtime + 1
+        time_req = time_req + time_inc
+      end if
+      outtime_avail = outtime_avail + 1
+    end do
+    delete(var_tmp)
+    do ifil = 1,numFiles-1
+      var_tmp = wrf_user_getvar(f[ifil],varin,-1)
+      dimLoop = dimsizes(var_tmp)
+      do it = 0,dimLoop(0)-1
+        if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+          varout(outtime,:,:,:) = var_tmp(it,:,:,:)
+          outtime = outtime + 1
+          time_req = time_req + time_inc
+        end if
+        outtime_avail = outtime_avail + 1
+      end do
+      delete(var_tmp)
+    end do
+  end if
+  if ( varRank .eq. 3 )
+    varout = new ( (/numTimes,varDims(1),varDims(2)/), typeof(var_tmp) )
+    varout = 0
+    do it = 0,varDims(0)-1
+      if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+        varout(outtime,:,:) = var_tmp(it,:,:)
+        outtime = outtime + 1
+        time_req = time_req + time_inc
+      end if
+      outtime_avail = outtime_avail + 1
+    end do
+    delete(var_tmp)
+    do ifil = 1,numFiles-1
+      var_tmp = wrf_user_getvar(f[ifil],varin,-1)
+      dimLoop = dimsizes(var_tmp)
+      do it = 0,dimLoop(0)-1
+        if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+          varout(outtime,:,:) = var_tmp(it,:,:)
+          outtime = outtime + 1
+          time_req = time_req + time_inc
+        end if
+        outtime_avail = outtime_avail + 1
+      end do
+      delete(var_tmp)
+    end do
+  end if
+  if ( varRank .eq. 2 )
+    varout = new ( (/numTimes,varDims(1)/), typeof(var_tmp) )
+    if ( typeof(var_tmp) .eq. "float" .or. typeof(var_tmp) .eq. "integer" ) then
+      varout = 0
+    end if
+    do it = 0,varDims(0)-1
+      if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+        varout(outtime,:) = var_tmp(it,:)
+        outtime = outtime + 1
+        time_req = time_req + time_inc
+      end if
+      outtime_avail = outtime_avail + 1
+    end do
+    delete(var_tmp)
+    do ifil = 1,numFiles-1
+      var_tmp = wrf_user_getvar(f[ifil],varin,-1)
+      dimLoop = dimsizes(var_tmp)
+      do it = 0,dimLoop(0)-1
+        if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+          varout(outtime,:) = var_tmp(it,:)
+          outtime = outtime + 1
+          time_req = time_req + time_inc
+        end if
+        outtime_avail = outtime_avail + 1
+      end do
+      delete(var_tmp)
+    end do
+  end if
+  if ( varRank .eq. 1 )
+    varout = new ( (/numTimes/), typeof(var_tmp) )
+    if ( typeof(var_tmp) .eq. "float" .or. typeof(var_tmp) .eq. "integer" ) then
+      varout = 0
+    end if
+    do it = 0,varDims(0)-1
+      if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+        varout(outtime) = var_tmp(it)
+        outtime = outtime + 1
+        time_req = time_req + time_inc
+      end if
+      outtime_avail = outtime_avail + 1
+    end do
+    delete(var_tmp)
+    do ifil = 1,numFiles-1
+      var_tmp = wrf_user_getvar(f[ifil],varin,-1)
+      dimLoop = dimsizes(var_tmp)
+      do it = 0,dimLoop(0)-1
+        if ( (outtime_avail.eq.time_req) .and. (time_req.le.time_end) ) then
+          varout(outtime) = var_tmp(it)
+          outtime = outtime + 1
+          time_req = time_req + time_inc
+        end if
+        outtime_avail = outtime_avail + 1
+      end do
+      delete(var_tmp)
+    end do
+  end if
+
+  return(varout)
+end
+
+
+
 
 ;--------------------------------------------------------------------------------
 
@@ -2042,7 +2221,113 @@ end
 
 ;--------------------------------------------------------------------------------
 ;--------------------------------------------------------------------------------
-undef ("wrf_contour_ps")
+;--------------------------------------------------------------------------------
+undef("set_mp_wrf_map_resources")
+function set_mp_wrf_map_resources(in_file[1]:file,opt_args[1]:logical)   
+
+begin
+;
+    opts = opt_args      ; Make a copy of the resource list
+
+; Set some resources depending on what kind of map projection is 
+; chosen.
+;
+;   MAP_PROJ = 0 : "CylindricalEquidistant"
+;   MAP_PROJ = 1 : "LambertConformal"
+;   MAP_PROJ = 2 : "Stereographic"
+;   MAP_PROJ = 3 : "Mercator"
+;   MAP_PROJ = 6 : "Lat/Lon"
+
+    if(isatt(in_file,"MAP_PROJ"))
+
+;   CylindricalEquidistant
+      if(in_file@MAP_PROJ .eq. 0)
+        projection          = "CylindricalEquidistant"
+        opts@mpProjection = projection
+        opts@mpGridSpacingF = 45
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+
+;   LambertConformal projection
+      if(in_file@MAP_PROJ .eq. 1)
+        projection               = "LambertConformal"
+        opts@mpProjection = projection
+        opts@mpLambertParallel1F = get_res_value_keep(opts, "mpLambertParallel1F",in_file@TRUELAT1)
+        opts@mpLambertParallel2F = get_res_value_keep(opts, "mpLambertParallel2F",in_file@TRUELAT2)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpLambertMeridianF  = get_res_value_keep(opts, "mpLambertMeridianF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+  
+;   Stereographic projection
+      if(in_file@MAP_PROJ .eq. 2)
+        projection          = "Stereographic"
+        opts@mpProjection = projection
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", in_file@CEN_LAT)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+  
+;   Mercator projection
+      if(in_file@MAP_PROJ .eq. 3)
+        projection          = "Mercator"
+        opts@mpProjection = projection
+        opts@mpCenterLatF   = get_res_value_keep(opts, "mpCenterLatF", 0.0)
+        if(isatt(in_file,"STAND_LON"))
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@STAND_LON)
+        else
+          if(isatt(in_file,"CEN_LON"))
+            opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+          else
+           print("ERROR: Found neither STAND_LON or CEN_LON in file")
+          end if
+        end if
+      end if
+  
+;    global WRF CylindricalEquidistant
+      if(in_file@MAP_PROJ .eq. 6)
+        projection          = "CylindricalEquidistant"
+        opts@mpProjection = projection
+        opts@mpGridSpacingF = 45
+        opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF",in_file@CEN_LON)
+        if( isatt(in_file,"POLE_LAT") ) then
+          opts@mpCenterRotF = get_res_value_keep(opts, "mpCenterRotF", 90.0 - in_file@POLE_LAT) 
+          delete(opts@mpCenterLonF)
+          calcen = -190.
+          opts@mpCenterLonF  = get_res_value_keep(opts, "mpCenterLonF", calcen )
+        end if
+      end if
+  
+    end if
+
+  return(opts)                                     ; Return.
+
+end
+;--------------------------------------------------------------------------------
+
+undef("wrf_contour_ps")
 function wrf_contour_ps(nc_file:file,wks[1]: graphic, data[*][*]:numeric, \
                      opt_args[1]:logical)
 
@@ -2107,7 +2392,7 @@ begin
 return (cn)
 end
 ;--------------------------------------------------------------------------------
-undef ("wrf_vector_ps")
+undef("wrf_vector_ps")
 function wrf_vector_ps(nc_file:file,wks[1]: graphic, \
                        data_u[*][*]:numeric, data_v[*][*]:numeric, \
                        opt_args[1]:logical)
