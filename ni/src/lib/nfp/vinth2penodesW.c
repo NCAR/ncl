@@ -486,15 +486,23 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
-  if(!has_missing_datai && has_missing_psfc) {
+  if(has_missing_datai) {
+    if(type_datao == NCL_double) missing_datao = missing_dbl_datai;
+    else                         missing_datao = missing_flt_datai;
+    missing_dbl_datao =          missing_dbl_datai;
+  }
+  else if(has_missing_psfc) {
     if(type_datao == NCL_double) missing_datao = missing_dbl_psfc;
     else                         missing_datao = missing_flt_psfc;
     missing_dbl_datao =          missing_dbl_psfc;
   }
   else {
-    if(type_datao == NCL_double) missing_datao = missing_dbl_datai;
-    else                         missing_datao = missing_flt_datai;
-    missing_dbl_datao =          missing_dbl_datai;
+/*
+ * Don't use NCL default of -999 or -9999.
+ */
+    if(type_datao == NCL_double) missing_datao.doubleval = 1.e20;
+    else                         missing_datao.floatval  = 1.e20;
+    missing_dbl_datao.doubleval = 1.e20;
   }
 /* 
  * Allocate space for output dimension sizes and set them.
@@ -573,7 +581,7 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
                                          tmp_hbcofa, tmp_hbcofb, tmp_p0, 
                                          plevi, tmp_plevo, intyp, ilev,
                                          tmp_psfc, 
-                                         &missing_dbl_datai.doubleval, kxtrp,
+                                         &missing_dbl_datao.doubleval, kxtrp,
   	                                 &npts, &nlevi, &nlevip1, &nlevo,
 	                                 varflg, tmp_tbot, tmp_phis);
 
