@@ -1,5 +1,5 @@
-/*  
- *      $Id: cro.c,v 1.10 2009-11-06 18:58:49 fred Exp $
+/*
+ *      $Id: cro.c,v 1.11 2009-12-08 20:22:36 brownrig Exp $
  */
 /*
  *
@@ -11,7 +11,7 @@
  *
  *      Date:           Thu Feb 28 18:03:09 MST 2008
  *
- *      Description:    This file contains the cairo device driver 
+ *      Description:    This file contains the cairo device driver
  *                      functions.
  */
 #include <stdio.h>
@@ -23,6 +23,7 @@
 
 #include <cairo/cairo.h>
 #include <cairo/cairo-ps.h>
+#include <cairo/cairo-pdf.h>
 #include <cairo/cairo-ft.h>
 
 #include <math.h>
@@ -44,14 +45,18 @@
 #define PNG_SCALE 1.5
 #define NUM_CONTEXT 20  /* number of allowable contexts */
 
-char *GetCPSFileName(int, char *);
-char *GetCPNGFileName(int, int, char *);
+static char *getFileNameRoot(int, char*, char*);
+static char *getCPSFileName(int, char *);
+static char *getCPNGFileName(int, int, char *);
+static char *getCPDFFileName(int, char *);
+static void setSurfaceTransform(CROddp *psa);
 static void CROinit(CROddp *, int *);
 unsigned int pack_argb(struct color_value);
 struct color_value unpack_argb(unsigned int);
 static int ccompar(const void *p1, const void *p2);
 static void cascsrt(float xa[], int ip[], int n);
 static float *csort_array;
+static void reverse_chrs(char*);
 
 extern void cro_SoftFill (GKSC *gksc, float angle, float spl);
 /*
@@ -62,7 +67,7 @@ cairo_t *cairo_context[NUM_CONTEXT];
 FILE   *fp;
 
 /*
- *  Functions for mapping workstation IDs into indices for the 
+ *  Functions for mapping workstation IDs into indices for the
  *  cario_context array.
  */
 int context_indices[NUM_CONTEXT];
@@ -106,7 +111,7 @@ CROpict_init(GKSC *gksc) {
  */
   cval = unpack_argb((psa->ctable)[0]);
   cairo_set_source_rgba (cairo_context[context_index(psa->wks_id)], cval.red, cval.green, cval.blue, cval.alpha);
-  
+
 /*
  *  Set the clipping rectangle to the surface area.
  */
@@ -127,7 +132,7 @@ CROpict_init(GKSC *gksc) {
                   psa->dspace.ury - psa->dspace.lly);
   cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,psa->dspace.ury - psa->dspace.lly);
   cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-  
+
   cairo_fill(cairo_context[context_index(psa->wks_id)]);
 
 /*
@@ -153,7 +158,12 @@ void CROset_dashpattern (CROddp *psa)
 {
   float nominal_dash_size = 1., dash_size, dot_size, gap_size;
   double *dashes = (double *) NULL;
-                
+
+  if (getenv("CRO_TRACE")) {
+    printf("Got to CRset_dashpattern\n");
+  }
+
+
   dash_size =  6. * nominal_dash_size;
   dot_size  =  1. * nominal_dash_size;
   gap_size  =  4. * nominal_dash_size;
@@ -238,7 +248,7 @@ int cro_ActivateWorkstation (GKSC *gksc) {
  *    *rows           : row[i] specifies number of pixels for a cell in row i
  *    *cols           : col[i] specifies number of pixels for a cell in col i
  */
-static void get_cell_pixel_multiples(int image_width, int image_height, 
+static void get_cell_pixel_multiples(int image_width, int image_height,
                           int *rows, int *cols, int nx, int ny) {
   int     i;
   int     left, right;
@@ -248,7 +258,7 @@ static void get_cell_pixel_multiples(int image_width, int image_height,
  * map cell array onto available pixels. Use current IEEE
  * rounding rules to determine whether a cell boundry includes
  * a boundry pixel or not. rows[i] and cols[j] contain
- * the number of pixels that make up cell[i,j] 
+ * the number of pixels that make up cell[i,j]
  */
   inc = (double) image_width / (double) nx;
   for( right = 0, tmp = 0.0,i = 0; i < nx; i++) { /* map cols*/
@@ -338,7 +348,7 @@ int cro_Cellarray(GKSC *gksc) {
 
   double x_offset, y_offset;
 
-  Gfloat tred, tgreen, tblue, talpha;
+  double tred, tgreen, tblue, talpha;
   struct color_value cval;
   cairo_pattern_t *pattern;
 
@@ -350,7 +360,7 @@ int cro_Cellarray(GKSC *gksc) {
  *  Save current color.
  */
   pattern = cairo_get_source(cairo_context[context_index(psa->wks_id)]);
-  if (cairo_pattern_get_rgba(pattern,&tred,&tgreen,&tblue,&talpha) !=        
+  if (cairo_pattern_get_rgba(pattern,&tred,&tgreen,&tblue,&talpha) !=
            CAIRO_STATUS_SUCCESS) {
     printf("cro_Text: can only retrieve current color for solid patterns\n");
     return(1);
@@ -394,7 +404,7 @@ int cro_Cellarray(GKSC *gksc) {
                  CAIRO_FORMAT_ARGB32,image_width,image_height,
                  4*image_width);
   stat = cairo_surface_status(cell_image);
- 
+
   cairo_set_source_surface (cairo_context[context_index(psa->wks_id)], cell_image, x_offset, y_offset);
   cairo_surface_destroy(cell_image);
   cairo_paint(cairo_context[context_index(psa->wks_id)]);
@@ -405,8 +415,10 @@ int cro_Cellarray(GKSC *gksc) {
   cairo_set_source_rgba(cairo_context[context_index(psa->wks_id)],
                           cval.red, cval.green, cval.blue, cval.alpha);
   return(0);
-} 
+}
 int cro_ClearWorkstation(GKSC *gksc) {
+
+  char* outputFile;
 
   if (getenv("CRO_TRACE")) {
     printf("Got to cro_ClearWorkstation\n");
@@ -417,14 +429,15 @@ int cro_ClearWorkstation(GKSC *gksc) {
 
   cairo_stroke(cairo_context[context_index(psa->wks_id)]);
   cairo_show_page(cairo_context[context_index(psa->wks_id)]);
-  
-  if (psa->wks_type == CPS) {
+
+  if (psa->wks_type == CPS || psa->wks_type == CPDF) {
     cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
   }
   else if (psa->wks_type == CPNG) {
-    cairo_surface_write_to_png (cairo_surface[context_index(psa->wks_id)], 
-       GetCPNGFileName(psa->wks_id, psa->frame_count, psa->output_file));
+    outputFile = getCPNGFileName(psa->wks_id, psa->frame_count, psa->output_file);
+    cairo_surface_write_to_png (cairo_surface[context_index(psa->wks_id)], outputFile);
     psa->frame_count++;
+    free(outputFile);
   }
 
   psa->pict_empty = TRUE;
@@ -440,9 +453,8 @@ int cro_CloseWorkstation(GKSC *gksc) {
   }
 
   psa->pict_empty = TRUE;
-  if (psa->wks_type == CPS) {
-    fclose(fp);
-  }
+  if (psa->output_file)
+      free(psa->output_file);
 
   cairo_destroy(cairo_context[context_index(psa->wks_id)]);
 
@@ -473,7 +485,8 @@ int cro_Esc(GKSC *gksc) {
 
   switch (escape_id) {
     case -1521:  /* Corner points for positioning plot on the page */
-      rscale = 1./psa->scaling;
+      /** RLB - Not clear what this should be.  Its currently never set anywhere.
+      rscale = 1./psa->scaling;  **/  rscale = 1.0;
       strng = strtok(sptr, " ");
       psa->dspace.llx = (int) (rscale * (float) atoi(strng));
       strng = strtok((char *) NULL, " ");
@@ -492,6 +505,22 @@ int cro_Esc(GKSC *gksc) {
       psa->cro_clip.urx = psa->dspace.urx;
       psa->cro_clip.ury = psa->dspace.ury;
       psa->cro_clip.null = FALSE;
+
+      setSurfaceTransform(psa);
+      break;
+
+    case -1525:  /* Specify portrait/landscape mode */
+      strng = strtok(sptr, " ");
+      strng = strtok((char *) NULL, " ");
+      plflag = (int) atoi(strng);
+      if (plflag == 0) {
+        psa->orientation = PORTRAIT;
+      }
+      else {
+        psa->orientation = LANDSCAPE;
+      }
+
+      setSurfaceTransform(psa);
       break;
   }
 
@@ -501,7 +530,7 @@ int cro_FillArea(GKSC *gksc) {
   CROPoint *pptr = (CROPoint *) gksc->p.list;
   CROddp   *psa = (CROddp *) gksc->ddp;
   int      npoints = gksc->p.num, i;
-  
+
   float  clwidth;
   struct color_value cval;
 
@@ -557,29 +586,29 @@ int cro_FillArea(GKSC *gksc) {
     case HATCH_FILL:
       switch (psa->attributes.fill_style_ind) {
         case HORIZONTAL_HATCH:
-          cro_SoftFill (gksc, 0., psa->hatch_spacing);  
+          cro_SoftFill (gksc, 0., psa->hatch_spacing);
           cairo_stroke(cairo_context[context_index(psa->wks_id)]);
           break;
         case VERTICAL_HATCH:
-          cro_SoftFill (gksc, 90., psa->hatch_spacing);  
+          cro_SoftFill (gksc, 90., psa->hatch_spacing);
           cairo_stroke(cairo_context[context_index(psa->wks_id)]);
           break;
         case POSITIVE_HATCH:
-          cro_SoftFill (gksc, 45., psa->hatch_spacing);  
+          cro_SoftFill (gksc, 45., psa->hatch_spacing);
           cairo_stroke(cairo_context[context_index(psa->wks_id)]);
           break;
         case NEGATIVE_HATCH:
-          cro_SoftFill (gksc, 135., psa->hatch_spacing);  
+          cro_SoftFill (gksc, 135., psa->hatch_spacing);
           cairo_stroke(cairo_context[context_index(psa->wks_id)]);
           break;
         case HORIZ_VERT_HATCH:
-          cro_SoftFill (gksc, 0., psa->hatch_spacing);  
-          cro_SoftFill (gksc, 90., psa->hatch_spacing);  
+          cro_SoftFill (gksc, 0., psa->hatch_spacing);
+          cro_SoftFill (gksc, 90., psa->hatch_spacing);
           cairo_stroke(cairo_context[context_index(psa->wks_id)]);
           break;
         case POS_NEG_HATCH:
-          cro_SoftFill (gksc, 45., psa->hatch_spacing);  
-          cro_SoftFill (gksc, 135., psa->hatch_spacing);  
+          cro_SoftFill (gksc, 45., psa->hatch_spacing);
+          cro_SoftFill (gksc, 135., psa->hatch_spacing);
           cairo_stroke(cairo_context[context_index(psa->wks_id)]);
           break;
         default:
@@ -661,7 +690,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
   psa->wks_type = *(pint+1);
   psa->wks_id = orig_wks_id;
 
-  
+
 /*
  *  Initialize all transformations as well as the device coordinate
  *  space (store these in the device dependent data).
@@ -671,39 +700,48 @@ int cro_OpenWorkstation(GKSC *gksc) {
   TransformSetNDScreenSpace(&(psa->tsystem),0.0, 0.0, 1.0, 1.0);
   TransformSetScreenSpace(&(psa->tsystem),0.0, 0.0, 1.0, 1.0);
   psa->transform = TransformGetTransform(&psa->tsystem);
-  
+
 
   CROinit(psa, pint+2);       /* Initialize local data. */
 
-/*
- *  Create the Postscript workstation.
- */
   if (psa->wks_type == CPS) {
-    psa->output_file = GetCPSFileName(psa->wks_id, sptr);
-    cairo_surface[context_num] = 
+    /*
+     *  Create a Postscript workstation.
+     */
+    psa->output_file = getCPSFileName(psa->wks_id, sptr);
+    cairo_surface[context_num] =
       cairo_ps_surface_create (psa->output_file, 612, 792);
     cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
     add_context_index(context_num, orig_wks_id);
-  } 
-/*
- *  Create a PNG workstation.
- */
+  }
+
   else if (psa->wks_type == CPNG) {
-/*
- *  Ultimately should provide a user-settable scale factor instead
- *  of using PNG_SCALE  for width and height here.  The numbers below are
- *  the default PS page limits of (612,792) scaled by PNG_SCALE.  The
- *  translation offsets and scale factor for PNG output below also
- *  reflect this scale factor (default offsets for PS are (36,666)).
- *
- */
-    cairo_surface[context_num] = 
-        cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 
+      /*
+       *  Create a PNG workstation.
+       *  Ultimately should provide a user-settable scale factor instead
+       *  of using PNG_SCALE  for width and height here.  The numbers below are
+       *  the default PS page limits of (612,792) scaled by PNG_SCALE.  The
+       *  translation offsets and scale factor for PNG output below also
+       *  reflect this scale factor (default offsets for PS are (36,666)).
+       *
+       */
+    cairo_surface[context_num] = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
           PNG_SCALE*612,PNG_SCALE*792);
     cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
     add_context_index(context_num, orig_wks_id);
-    psa->output_file = (char *) calloc(257,sizeof(char));
-    strcpy(psa->output_file,sptr);
+    psa->output_file = (char*) malloc(strlen(sptr)+1);
+    strcpy(psa->output_file, sptr);
+  }
+
+  else if (psa->wks_type == CPDF) {
+      /*
+       *  Create a PDF workstation.
+       */
+      psa->output_file = getCPDFFileName(psa->wks_id, sptr);
+      cairo_surface[context_num] =
+        cairo_pdf_surface_create (psa->output_file, 612, 792);
+      cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
+      add_context_index(context_num, orig_wks_id);
   }
 
 /*
@@ -723,37 +761,25 @@ int cro_OpenWorkstation(GKSC *gksc) {
  */
   cairo_set_line_width(cairo_context[context_num], psa->attributes.linewidth);
 
+
 /*
  *  Set clipping rectangle to max.
  */
   cairo_new_path(cairo_context[context_num]);
   cairo_move_to(cairo_context[context_num], psa->dspace.llx, psa->dspace.lly);
-  cairo_line_to(cairo_context[context_num], psa->dspace.llx + 
+  cairo_line_to(cairo_context[context_num], psa->dspace.llx +
                     psa->dspace.xspan, psa->dspace.lly);
-  cairo_line_to(cairo_context[context_num], psa->dspace.llx + 
+  cairo_line_to(cairo_context[context_num], psa->dspace.llx +
                     psa->dspace.xspan, psa->dspace.lly + psa->dspace.yspan);
-  cairo_line_to(cairo_context[context_num], psa->dspace.llx, 
+  cairo_line_to(cairo_context[context_num], psa->dspace.llx,
                                psa->dspace.lly + psa->dspace.yspan);
   cairo_line_to(cairo_context[context_num], psa->dspace.llx, psa->dspace.lly);
   cairo_clip(cairo_context[context_num]);
 
-
-/*
- *  Translate and flip (since GKS origin is at bottom left) to center the plot.
- *  Since the final plot is to be flipped top to bottom, we want
- *  to translate in the Y direction to the original top.
- */
-  if (psa->wks_type == CPS) {
-    cairo_translate(cairo_context[context_num],psa->dspace.llx,psa->dspace.ury);
-    cairo_scale(cairo_context[context_num],1.,-1.);
-  }
-  else if (psa->wks_type == CPNG) {
-    cairo_translate(cairo_context[context_num],PNG_SCALE*psa->dspace.llx,
-                                  PNG_SCALE*psa->dspace.ury);
-    cairo_scale(cairo_context[context_num],PNG_SCALE,-PNG_SCALE);
-  }
-
   rect = GetCROClipping(psa);
+
+  setSurfaceTransform(psa);
+
 
 /*
  *  Initialize color table for this workstation.
@@ -854,7 +880,7 @@ int cro_Polymarker(GKSC *gksc) {
 
 /*
  *  Retrieve current line color index so we can reset it
- *  at the end, since we will be using Polylines for the 
+ *  at the end, since we will be using Polylines for the
  *  markers.
  */
   current_line_color = psa->attributes.line_colr_ind;
@@ -873,8 +899,8 @@ int cro_Polymarker(GKSC *gksc) {
   cairo_set_line_width(cairo_context[context_index(psa->wks_id)], 1.0);
 
   switch (marker_type) {
-  case    DOT_MARKER: 
-    
+  case    DOT_MARKER:
+
 /*
  *  Dot markers cannot be scaled.
  */
@@ -1054,7 +1080,7 @@ int cro_SetClipIndicator(GKSC *gksc) {
   }
 
   clip_flag = iptr[0];
-  
+
   pllx      = pptr[0].x;
   plly      = pptr[0].y;
   purx      = pptr[1].x;
@@ -1110,7 +1136,7 @@ int cro_SetColorRepresentation(GKSC *gksc) {
   }
 
   if (psa->max_color < index+1) {
-    psa->ctable = 
+    psa->ctable =
        (unsigned int*) realloc(psa->ctable,(index+1)*sizeof(unsigned int));
 /*
  *  Set any color table entries that are between index+1 and psa->max_color
@@ -1127,24 +1153,28 @@ int cro_SetColorRepresentation(GKSC *gksc) {
   cval.blue  = (float) rgbptr[0].b;
 
   (psa->ctable)[index] = pack_argb(cval);
+
+#if 0 /* RLB:  No, clearing is managed through calls to CROpict_init. Performing it here can (and does) happen
+  any time colormap changes or is resent. */
 /*
  *  Setting index 0 specifies the background color, so fill the
  *  plotting area with that color.
  */
+
   if (index == 0) {
 /*
  *  Save the current clip extents and reset the clipping rectangle to max.
  */
-    cairo_clip_extents(cairo_context[context_index(psa->wks_id)], 
+    cairo_clip_extents(cairo_context[context_index(psa->wks_id)],
        &xl, &yt, &xr, &yb);
     cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
 
 /*
  *  Set the source to the background color.
  */
-    cairo_set_source_rgba (cairo_context[context_index(psa->wks_id)], 
+    cairo_set_source_rgba (cairo_context[context_index(psa->wks_id)],
        cval.red, cval.green, cval.blue, cval.alpha);
-  
+
 /*
  *  Set the clipping rectangle to the surface area.
  */
@@ -1158,12 +1188,12 @@ int cro_SetColorRepresentation(GKSC *gksc) {
        psa->dspace.ury - psa->dspace.lly);
     cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
     cairo_clip(cairo_context[context_index(psa->wks_id)]);
-  
+
 /*
  *  Fill the surface clip region with the background color.
  */
     cairo_move_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)], 
+    cairo_line_to(cairo_context[context_index(psa->wks_id)],
        psa->dspace.urx - psa->dspace.llx,0.);
     cairo_line_to(cairo_context[context_index(psa->wks_id)],
        psa->dspace.urx - psa->dspace.llx,
@@ -1184,6 +1214,7 @@ int cro_SetColorRepresentation(GKSC *gksc) {
     cairo_line_to(cairo_context[context_index(psa->wks_id)],xl,yt);
     cairo_clip(cairo_context[context_index(psa->wks_id)]);
   }
+#endif
 
   return(0);
 }
@@ -1195,7 +1226,7 @@ int cro_SetFillAreaColorIndex(GKSC *gksc) {
   int *xptr = (int *) gksc->x.list;
 
   if (getenv("CRO_TRACE")) {
-    printf("Got to cro_SetFillAreaColorIndex\n");
+    printf("Got to cro_SetFillAreaColorIndex: %d\n", (unsigned int) xptr[0]);
   }
   psa->attributes.fill_colr_ind = (unsigned int) xptr[0];
   return(0);
@@ -1215,7 +1246,7 @@ int cro_SetFillAreaInteriorStyle(GKSC *gksc) {
 }
 int cro_SetFillAreaStyleIndex(GKSC *gksc) {
   CROddp *psa = (CROddp *) gksc->ddp;
-  
+
   int    *iptr = (int *) gksc->i.list;
 
   if (getenv("CRO_TRACE")) {
@@ -1228,7 +1259,7 @@ int cro_SetFillAreaStyleIndex(GKSC *gksc) {
 int cro_SetLineWidthScaleFactor(GKSC *gksc) {
 
 
-  CROddp *psa = (CROddp *) gksc->ddp; 
+  CROddp *psa = (CROddp *) gksc->ddp;
   float  *fptr = (float *) gksc->f.list;
 
   if (getenv("CRO_TRACE")) {
@@ -1352,7 +1383,7 @@ int cro_SetTextFontAndPrecision(GKSC *gksc) {
   if (getenv("CRO_TRACE")) {
     printf("Got to cro_SetTextFontAndPrecision\n");
   }
-  
+
   if (ifst == 0) {
     psa->attributes.text_font = 0;
     ifst++;
@@ -1494,15 +1525,15 @@ int cro_Text(GKSC *gksc) {
 
 /*
  * The following is strictly ad hoc.  Ultimately there should be a
- * table associating font numbers (psa->attributes.text_font) with 
- * font names, or some other way to associate such.  Here we are 
+ * table associating font numbers (psa->attributes.text_font) with
+ * font names, or some other way to associate such.  Here we are
  * just using Vera.ttf as the single available font.
  *
  * Also, should need to get the font database path only once.
  */
     font_name = "Vera.ttf";
     db_path = (char *) GetNCARGPath("ftfonts");  /* Path for font database */
-    font_path = (char *)calloc(strlen(db_path) + strlen("/") + 
+    font_path = (char *)calloc(strlen(db_path) + strlen("/") +
                 strlen(font_name) + 1, sizeof(char));
     strcpy(font_path, db_path);
     strcat(font_path, "/");
@@ -1513,7 +1544,7 @@ int cro_Text(GKSC *gksc) {
         printf("The font file could be opened and read, \n but it appears that its font format is unsupported\n");
         return 1;
     }
-    free(font_path);   
+    free(font_path);
     kount++;
   }
 
@@ -1525,7 +1556,7 @@ int cro_Text(GKSC *gksc) {
 /*
  *  Character height.
  */
-  cairo_set_font_size (cairo_context[context_index(psa->wks_id)], 
+  cairo_set_font_size (cairo_context[context_index(psa->wks_id)],
       (psa->attributes.char_ht * psa->dspace.yspan/.728));
   cairo_get_font_matrix (cairo_context[context_index(psa->wks_id)],&fmatrix);
 
@@ -1555,7 +1586,7 @@ int cro_Text(GKSC *gksc) {
  */
   if (psa->attributes.text_align_horiz == NORMAL_ALIGNMENT_HORIZ) {
     switch (psa->attributes.text_path) {
-      case RIGHT_TEXT_PATH: 
+      case RIGHT_TEXT_PATH:
         psa->attributes.text_align_horiz = LEFT_ALIGNMENT_HORIZ;
         break;
       case LEFT_TEXT_PATH:
@@ -1574,7 +1605,7 @@ int cro_Text(GKSC *gksc) {
   }
   if (psa->attributes.text_align_vert == NORMAL_ALIGNMENT_VERT) {
     switch (psa->attributes.text_path) {
-      case RIGHT_TEXT_PATH: 
+      case RIGHT_TEXT_PATH:
         psa->attributes.text_align_vert = BASE_ALIGNMENT_VERT;
         break;
       case LEFT_TEXT_PATH:
@@ -1624,13 +1655,13 @@ int cro_Text(GKSC *gksc) {
  *  Rotation angle.
  */
 /*
- *  Find the text angle based on the base vector 
+ *  Find the text angle based on the base vector
  *  and its angle with the vector (1.,0.) using the dot product divided by
  *  the magnitudes to get the arccos.
  */
-  base_mag = sqrt(psa->attributes.char_base_vec_x * 
+  base_mag = sqrt(psa->attributes.char_base_vec_x *
                   psa->attributes.char_base_vec_x +
-                  psa->attributes.char_base_vec_y * 
+                  psa->attributes.char_base_vec_y *
                   psa->attributes.char_base_vec_y);
   tcos = psa->attributes.char_base_vec_x/base_mag;
   if (tcos > 1.) tcos = 1.;
@@ -1644,7 +1675,7 @@ int cro_Text(GKSC *gksc) {
   cairo_move_to(cairo_context[context_index(psa->wks_id)],xpos,ypos);
   cairo_rotate(cairo_context[context_index(psa->wks_id)],-cang);
 
-/* 
+/*
  *  Vertical alignments (NORMAL has been converted appropriately above).
  */
   switch (psa->attributes.text_align_vert) {
@@ -1674,7 +1705,7 @@ int cro_Text(GKSC *gksc) {
       psa->attributes.char_expan == CHAR_EXPAN_DEFAULT &&
       psa->attributes.text_path  == TEXT_PATH_DEFAULT) {
     cairo_rel_move_to(cairo_context[context_index(psa->wks_id)],x_del,y_del);
-    cairo_show_text(cairo_context[context_index(psa->wks_id)],sptr); 
+    cairo_show_text(cairo_context[context_index(psa->wks_id)],sptr);
   }
   else {
 /*
@@ -1735,7 +1766,7 @@ int cro_Text(GKSC *gksc) {
         cairo_rotate(cairo_context[context_index(psa->wks_id)],cang);
         switch (psa->attributes.text_align_vert) {
 /*
- *  Calculate the vertical adjustment (NORMAL has been converted to the 
+ *  Calculate the vertical adjustment (NORMAL has been converted to the
  *  appropriate alignmen above).
  */
           case TOP_ALIGNMENT_VERT:
@@ -1765,17 +1796,17 @@ int cro_Text(GKSC *gksc) {
           cairo_text_extents(cairo_context[context_index(psa->wks_id)], single_char, &textents);
           if (textents.width > maximum_width) {
             maximum_width = MAX(maximum_width,textents.width);
-            char_num_mx = i;         
+            char_num_mx = i;
           }
         }
         single_char[0] = *(sptr+char_num_mx);
         single_char[1] = 0;
         cairo_text_extents(cairo_context[context_index(psa->wks_id)], single_char, &textents);
-  
+
 /*
  *  Translate to the string start point.
  */
-        cairo_translate(cairo_context[context_index(psa->wks_id)], 
+        cairo_translate(cairo_context[context_index(psa->wks_id)],
            (xc*psa->dspace.xspan), (yc*psa->dspace.yspan));
         cairo_rotate(cairo_context[context_index(psa->wks_id)],-cang);
 /*
@@ -1792,7 +1823,7 @@ int cro_Text(GKSC *gksc) {
   */
           switch (psa->attributes.text_align_horiz) {
           case LEFT_ALIGNMENT_HORIZ:
-            x_del = 0.5*maximum_width; 
+            x_del = 0.5*maximum_width;
             break;
           case CENTER_ALIGNMENT_HORIZ:
             x_del = 0.;
@@ -1801,7 +1832,7 @@ int cro_Text(GKSC *gksc) {
             x_del = -0.5*maximum_width;
             break;
           }
-   
+
 /*
  *  Draw characters.
  */
@@ -1809,7 +1840,7 @@ int cro_Text(GKSC *gksc) {
           single_char[1] = 0;
           cairo_text_extents(cairo_context[context_index(psa->wks_id)], single_char, &textents);
 /*
- *  The quantity: 
+ *  The quantity:
  *
  *          x_del - textents.x_bearing - 0.5*textents.width
  *
@@ -1818,30 +1849,30 @@ int cro_Text(GKSC *gksc) {
  *  of maximum width.
  */
           if (i == 0) {
-            cairo_rel_move_to(cairo_context[context_index(psa->wks_id)], 
+            cairo_rel_move_to(cairo_context[context_index(psa->wks_id)],
                    x_del - textents.x_bearing - 0.5*textents.width, y_del);
-            cairo_show_text(cairo_context[context_index(psa->wks_id)],single_char); 
+            cairo_show_text(cairo_context[context_index(psa->wks_id)],single_char);
 /*
  *  Move back to the base horizontal position.
  */
-            cairo_rel_move_to(cairo_context[context_index(psa->wks_id)], 
-               (0.5*textents.width + textents.x_bearing - x_del) - 
+            cairo_rel_move_to(cairo_context[context_index(psa->wks_id)],
+               (0.5*textents.width + textents.x_bearing - x_del) -
                 textents.x_advance, 0.);
           }
           else {
             cairo_text_extents(cairo_context[context_index(psa->wks_id)], single_char, &textents);
             cairo_rel_move_to(cairo_context[context_index(psa->wks_id)],
-                   x_del - textents.x_bearing - 0.5*textents.width, 
+                   x_del - textents.x_bearing - 0.5*textents.width,
                    -1.5*X_height-cspace);
-            cairo_show_text(cairo_context[context_index(psa->wks_id)],single_char); 
-            cairo_rel_move_to(cairo_context[context_index(psa->wks_id)], 
+            cairo_show_text(cairo_context[context_index(psa->wks_id)],single_char);
+            cairo_rel_move_to(cairo_context[context_index(psa->wks_id)],
                 (0.5*textents.width + textents.x_bearing - x_del) -
                 textents.x_advance, 0.);
           }
         }
         cairo_restore(cairo_context[context_index(psa->wks_id)]);
         break;
-    } 
+    }
   }
   cairo_restore(cairo_context[context_index(psa->wks_id)]);
 
@@ -1856,200 +1887,154 @@ int cro_UpdateWorkstation(GKSC *gksc) {
     printf("Got to cro_UpdateWorkstation\n");
   }
   cairo_surface_flush(cairo_surface[context_index(psa->wks_id)]);
-  return(0);  
-}
-/*
- *  Set up the file name for the Postscript output file.
- */
-char *GetCPSFileName(int wkid, char *file_name) {
-  static char tname[257];
-  static char *tch;
-  int i;
-
-  for (i = 0; i < 257; i++) {
-    tname[i] = 0;
-  }
-
-/*
- *  There are three ways that the root name for an output file 
- *  can be set: 
- *
- *    1. default
- *        In this case the root name will be "cairo" and the 
- *        complete file name will be "cairoX.ps" where "X" is
- *        the integer workstation ID.
- *
- *    2. set by a call to NGSETC('ME','root_name')
- *        Setting the root name in this case will take precedence
- *        over the default setting.  If "root_name" actually ends
- *        in ".ps" then the file name will be "root_name", otherwise
- *        it will be "root_name.ps".  Note well that the NGSETC call
- *        must be made before a workstation is opened--it will apply
- *        to the next opened workstation.  Multiple simultaneously
- *        open Postscript workstations can be given different names
- *        using this method.
- *
- *    3. set via the environment variable NCARG_GKS_CPSOUTPUT
- *        A setting of the environment variable NCARG_GKS_CPSOUTPUT
- *        takes precedence over methods 1.) and 2.) above in 
- *        establishing the root name of the output file.  If 
- *        the file name supplied by NCARG_GKS_CPSOUTPUT ends in ".ps" 
- *        then the file name provided by NCARG_GKS_CPSOUTPUT will be used,
- *        otherwise the file name provided by NCARG_GKS_CPSOUTPUT
- *        will be used as the root name with a ".ps" appended.
- *        Note well that a setting of the environment variable 
- *        NCARG_GKS_CPSOUTPUT only makes sense in the case of having
- *        a single Postscript output file.      
- */
-
-/*  
- *  Name set by a setting of "NCARG_GKS_CPSOUTPUT"
- */
-  tch = getenv("NCARG_GKS_CPSOUTPUT");
-  if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
-    if (strlen(tch) >= 3) {
-      if (strncmp(tch + strlen(tch) - 3, ".ps", 3) == 0) {
-        strncpy(tname, tch, strlen(tch) - 3);
-      }
-      else {
-        strncpy(tname, tch, strlen(tch));
-      }
-      strcat(tname,".ps");
-      return (tname);
-    }
-    strcat(tname,tch);
-    strcat(tname,".ps");
-    return (tname);
-  }
-/*
- *  Default
- */
-  if ( (strncmp(file_name,"DEFAULT",7) == 0) || (strlen(file_name) == 0) ) {
-    (void) sprintf(tname,"cairo%d.ps",wkid);
-    return(tname);
-  }
-/*
- *  Name set by a call to NGMISC.
- */
-  else {
-    tch = strtok(file_name, " ");
-    if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
-      if (strlen(tch) >= 3) {
-        if (strncmp(tch + strlen(tch) - 3, ".ps", 3) == 0) {
-          strncpy(tname, tch, strlen(tch) - 3);
-        }
-        else {
-          strncpy(tname, tch, strlen(tch));
-        }
-        strcat(tname,".ps");
-        return (tname);
-      }
-      strcat(tname,tch);
-      strcat(tname,".ps");
-      return (tname);
-    }
-  }
+  return(0);
 }
 
-/*
- *  Set up the file name for the PNG output file.
- */
-char *GetCPNGFileName(int wks_id, int frame_count, char *file_name)
-{
-  static char rname[257],ctmp[257];
-  static char *tch;
-  int i;
-
-  for (i = 0; i < 257; i++) {
-    ctmp[i] = 0;
-    rname[i] = 0;
-  }
 
 /*
+ *  getFileNameRoot()
+ *
+ *  Returns a filename root.  NOTE that caller does not own the memory,
+ *  and should make a copy of the returned string.
+ *
  *  There are three ways that the root name for an output file
  *  can be set:
  *
  *    1. default
- *        In this case the root name will be "cairo" and the
- *        ultimate form of the output file names will be 
- *        cairoX.nnnnnn.png where "X" is the GKS workstation ID
- *        and "nnnnnn" is the frame number, starting with "1".
+ *        In this case the root name will be "cairoX", where "X" is
+ *        the integer workstation ID.
  *
  *    2. set by a call to NGSETC('ME','root_name')
- *        In this case the root name will be "root_name" and the
- *        ultimate form of the output file names will be 
- *        root_nameX.nnnnnn.png where "X" is the GKS workstation ID
- *        and "nnnnnn" is the frame number, starting with "1".
  *        Setting the root name in this case will take precedence
- *        over the default setting.  Note well that the NGSETC
- *        call must be made before a workstation is opened--the
- *        name will apply to the next opened workstation.  
- *        Multiple simultaneously open PNG workstations can 
- *        be given different names using this method.
+ *        over the default setting. Note well that the NGSETC call
+ *        must be made before a workstation is opened--it will apply
+ *        to the next opened workstation.  Multiple simultaneously
+ *        open workstations can be given different names
+ *        using this method.
  *
- *    3. set via the environment variable NCARG_GKS_CPNGOUTPUT
- *        A setting of the environment variable NCARG_GKS_CPNGOUTPUT
+ *    3. set via an environment variable, if the argument "envVar" is
+ *        not null and is the name of an environment variable at runtime.
+ *        A setting of the environment variable
  *        takes precedence over methods 1.) and 2.) above in
- *        establishing the root name of the output file.  Note
- *        well that this method of specifying the file name 
- *        works only if there is a single PNG output file.  
- *        Where "fname" is the name supplied by NCARG_GKS_CPNGOUTPUT,
- *        whether it ends in ".png" or not, the ultimate form of the 
- *        output file names will be "fname.nnnnnn.png" where "nnnnnn" 
- *        is the frame number, starting with "1".
+ *        establishing the root name of the output file.
+ *        Note well that using an environment variable to specify a filename
+ *        only makes sense in the case of having a single output file for
+ *        a given workstation type (i.e., postscript, pdf, png, etc.)
  */
-  tch = getenv("NCARG_GKS_CPNGOUTPUT");
-  if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
-    if (strlen(tch) >= 4) {
-      if (strncmp(tch + strlen(tch) - 4, ".png", 4) == 0) {
-        strncpy(rname, tch, strlen(tch) - 4);
-      }
-      else {
-        strncpy(rname, tch, strlen(tch));
-      }
-      (void) sprintf(ctmp,".%06d.png",frame_count+1);
-      strcat(rname,ctmp);
-      return (rname);
+char *getFileNameRoot(int wkid, char *file_name, char *envVar) {
+    static char tname[257];
+    static char *tch;
+
+    /*
+     *  Name set by an environment variable
+     */
+    if (envVar != NULL) {
+        tch = getenv(envVar);
+        if (tch != NULL)
+            return tch;
     }
-    else {
-      (void) sprintf(ctmp,".%06d.png",frame_count+1);
-      strcat(rname,tch);
-      strcat(rname,ctmp);
-      return (rname);
+
+    /*
+     *  Name set by a call to NGMISC.
+     */
+    if (file_name != NULL && strlen(file_name) > 0 && strncmp(file_name, "DEFAULT", 7) != 0) {
+        tch = strtok(file_name, " ");
+        if (tch)
+            return tch;
     }
-  }
+
+    /*
+     *  Default
+     */
+    memset(tname, 0, 257);
+    (void) sprintf(tname, "cairo%d", wkid);
+    return (tname);
+}
+
 /*
- *  Default
+ * getCPSFileName()
+ *
+ * Returns a suitable filename for a postscript file.
+ * Caller is responsible for free-ing the returned string.
+ *
  */
-  if ( (strncmp(file_name,"DEFAULT",7) == 0) || (strlen(file_name) == 0) ) {
-    (void) sprintf(ctmp,"cairo%d.%06d.png",wks_id,frame_count+1);
-    return ctmp;
-  }
+char *getCPSFileName(int wks_id, char *file_name) {
+
+    /* get a root name */
+    char* root = getFileNameRoot(wks_id, file_name, "NCARG_GKS_CPSOUTPUT");
+    int rootLen = strlen(root);
+
+    /* we append a ".ps" suffix below, but file_name may already have it */
+    if (rootLen >= 3 && strncmp(root + strlen(root)-3, ".ps", 3) == 0)
+        rootLen -= 3;
+
+    char* name = (char*) calloc(rootLen+4, 1); /* 4 = ".ps" + null */
+    strncpy(name, root, rootLen);
+    strcat(name, ".ps");
+
+    return name;
+}
+
 /*
- *  Name set by a call to NGMISC.
+ * getCPNGFileName()
+ *
+ *  Set up the file name for the PNG output file. Caller is responsible for
+ *  freeing the returned string.
+ *
  */
-  else {
-    tch = strtok(file_name, " ");
-    if ( (tch != (char *) NULL) && (strlen(tch) > 0)) {
-      if (strlen(tch) >= 4) {
-        if (strncmp(tch + strlen(tch) - 4, ".png", 4) == 0) {
-          strncpy(rname, tch, strlen(tch) - 4);
-        }
-        else {
-          strncpy(rname, tch, strlen(tch));
-        }
-      }
-      (void) sprintf(ctmp,".%06d.png",frame_count+1);
-      strcat(rname,ctmp);
-      return (rname);
-    }
-  }
+char *getCPNGFileName(int wks_id, int frame_count, char *file_name)
+{
+    char tmp[12];
+
+    /* get a root name */
+    char* root = getFileNameRoot(wks_id, file_name, "NCARG_GKS_CPNGOUTPUT");
+    int rootLen = strlen(root);
+
+    /* we append a ".png" suffix below, but file_name may already have it */
+    if (rootLen >= 4 && strncmp(root + strlen(root)-4, ".png", 4) == 0)
+        rootLen -= 4;
+
+    char* name = (char*) calloc(rootLen+12, 1); /* 12 = ".nnnnnn.png" + null */
+    sprintf(tmp,".%06d.png",frame_count+1);
+
+    strncpy(name, root, rootLen);
+    strcat(name, tmp);
+    return name;
+}
+
+/*
+ * getCPDFFileName()
+ *
+ *  Set up the file name for the PDF output file. Caller is responsible for
+ *  freeing the returned string.
+ *
+ */
+char *getCPDFFileName(int wks_id, char *file_name)
+{
+
+    /* get a root name */
+    char* root = getFileNameRoot(wks_id, file_name, "NCARG_GKS_CPDFOUTPUT");
+    int rootLen = strlen(root);
+
+    /* we append a ".ps" suffix below, but file_name may already have it */
+    if (rootLen >= 4 && strncmp(root + strlen(root)-4, ".pdf", 4) == 0)
+        rootLen -= 4;
+
+    char* name = (char*) calloc(rootLen+5, 1); /* 5 = ".pdf" + null */
+    strncpy(name, root, rootLen);
+    strcat(name, ".pdf");
+
+    return name;
 }
 
 static void CROinit(CROddp *psa, int *coords)
 {
   int     i, cllx, clly, curx, cury;
   float   rscale;
+
+  if (getenv("CRO_TRACE")) {
+    printf("Got to CROinit\n");
+  }
 
   psa->hatch_spacing = CRO_HATCH_SPACING;
   psa->path_size = MAX_PATH;
@@ -2071,7 +2056,7 @@ static void CROinit(CROddp *psa, int *coords)
   clly = *(coords+1);
   curx = *(coords+2);
   cury = *(coords+3);
-  if ((cllx != -9999) && (clly != -9999) && 
+  if ((cllx != -9999) && (clly != -9999) &&
       (curx != -9999) && (cury != -9999)) {
     psa->dspace.llx = (int) (((float) cllx));
     psa->dspace.urx = (int) (((float) curx));
@@ -2150,6 +2135,42 @@ struct color_value unpack_argb(unsigned int argb) {
   cval.alpha = ((float) ((argb >> 24) & 255)/255.);
   return cval;
 }
+
+void setSurfaceTransform(CROddp *psa)
+{
+    /*
+     *  Translate and flip (since GKS origin is at bottom left) to center the plot.
+     *  Since the final plot is to be flipped top to bottom, we want
+     *  to translate in the Y direction to the original top.
+     */
+
+    double angle, tx, ty;
+    if (psa->orientation == LANDSCAPE) {
+        angle = PI/2.0;
+        tx = psa->dspace.lly;
+        ty = -psa->dspace.llx;
+    }
+    else {
+        angle = 0.;
+        tx = psa->dspace.llx;
+        ty = psa->dspace.ury;
+    }
+
+    double scale = 1.0;
+
+    if (psa->wks_type == CPNG) {
+        scale *= PNG_SCALE;
+        tx *= PNG_SCALE;
+        ty *= PNG_SCALE;
+    }
+
+    cairo_t* ctx = cairo_context[context_index(psa->wks_id)];
+    cairo_identity_matrix(ctx);
+    cairo_rotate(ctx, angle);
+    cairo_translate(ctx, tx, ty);
+    cairo_scale(ctx, scale, -scale);
+}
+
 /*
  *      File:           cro_fill.c
  *
@@ -2174,7 +2195,11 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
   int     i, isp, ipx, lnd, ip1, ip2, in1, in2, jn1, jn2, jnt;
   int     ocounter, counter_inc=3;
   CROPoint *points, opoint;
+
   CROddp   *psa;
+  if (getenv("CRO_TRACE")) {
+    printf("Got to cro_SoftFill\n");
+  }
 
   psa = (CROddp *) gksc->ddp;
   points = (CROPoint *) (gksc->p).list;
@@ -2183,16 +2208,16 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
   rangle = 0.017453292519943 * angle;   /* converts angle to radians */
 
 /*
- *  Allocate memory.  
+ *  Allocate memory.
  *
- *    rst --  The first nra elements of the rst array are used to 
+ *    rst --  The first nra elements of the rst array are used to
  *            store the directed distances of the points in the given
- *            polygon from the base line "xco*x+yco*y=0" (see code below 
- *            for the computation of xco and yco).  The second nra 
- *            elements (starting with rst[nra]) of rst are used to 
- *            store the points of intersection of the current fill line 
- *            with the line segments of the polygon (only one number is 
- *            required since we know the distance of the current fill 
+ *            polygon from the base line "xco*x+yco*y=0" (see code below
+ *            for the computation of xco and yco).  The second nra
+ *            elements (starting with rst[nra]) of rst are used to
+ *            store the points of intersection of the current fill line
+ *            with the line segments of the polygon (only one number is
+ *            required since we know the distance of the current fill
  *            line from the base line).
  *
  *    ind --  The first nra elements of ind are used to store a permutation
@@ -2212,29 +2237,29 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
   ind = (int   *) malloc (3 * nra * sizeof(int  ));
   nnd = 3*nra;
 
-/* 
+/*
  *  Compute the constants "xco" and "yco" such that any line having an
  *  equation of the form "xco*x+yco*y=c" will have the desired angle.
  */
   xco = (float) (-sin ((double) rangle));
   yco = (float) ( cos ((double) rangle));
 
-/* 
+/*
  *  Compute the directed distances of the given points from the line
  *  "xco*x+yco*y=0".
  */
   for (i = 0; i < nra; ++i)
     rst[i] = xco * points[i].x + yco * points[i].y;
 
-/* 
+/*
  *  Generate a list of indices of the distances, sorted by increasing
- *  distance.  rst[ind[1]], rst[ind[2]], ... rst[ind[nra]] 
- *  is a list of the directed distances of the given points, in increasing 
+ *  distance.  rst[ind[1]], rst[ind[2]], ... rst[ind[nra]]
+ *  is a list of the directed distances of the given points, in increasing
  *  numerical order.
  */
   cascsrt (rst, ind, nra);
 
-/* 
+/*
  *  Draw lines at distances "spi" from the line "xco*x+yco*y=0" which are
  *  multiples of "spl" between the smallest and largest point distances.
  *  jnd points to the index of that point having the greatest distance
@@ -2246,7 +2271,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
   jnd = -1;
   knd = nnd;
 
-/* 
+/*
  *  ipt is the index of the next point past the last line drawn and ipe
  *  is the index of the last point.
  */
@@ -2259,7 +2284,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
   {
     spi = (float) isp * spl;
 
-/* 
+/*
  *  Advance jnd to reflect the number of points passed over by the
  *  algorithm and update the list of pointers to intersecting lines.
  */
@@ -2271,7 +2296,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
       {
         ipx = previous_point;
 
-/* 
+/*
  *  Remove intersecting line
  */
         if (knd < nnd)
@@ -2290,7 +2315,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
       else if (rst[previous_point] > rst[ipt])
       {
 
-/* 
+/*
  *  Add an intersecting line.
  */
         ipx = previous_point;
@@ -2301,7 +2326,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
       {
         ipx = ipt;
 
-/* 
+/*
  *  Remove intersecting line
  */
         if (knd < nnd)
@@ -2320,7 +2345,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
       else if (rst[ipt] < rst[following_point])
       {
 
-        /* 
+        /*
          *  Add an intersecting line.
          */
         ipx = ipt;
@@ -2330,7 +2355,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
       ++jnd;
       ipt = ind[jnd + 1];
     }
-/* 
+/*
  *  Compute a set of values representing the intersection points of the
  *  current line with the line segments of the polygon.
  */
@@ -2344,7 +2369,7 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
           ip1 = ind[i];
           ip2 = (ind[i] + 1) % nra;
           ++lnd;
-          tmp = xco * (points[ip2].x - points[ip1].x) 
+          tmp = xco * (points[ip2].x - points[ip1].x)
                 + yco * (points[ip2].y - points[ip1].y);
           if (fabs(tmp) > smalld)
           {
@@ -2364,8 +2389,8 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
           ip1 = ind[i];
           ip2 = (ind[i] + 1) % nra;
           ++lnd;
-          tmp = xco * (points[ip2].x - points[ip1].x) 
-                + yco * (points[ip2].y - points[ip1].y); 
+          tmp = xco * (points[ip2].x - points[ip1].x)
+                + yco * (points[ip2].y - points[ip1].y);
           if (fabs(tmp) > smalld)
           {
             rst[lnd] = (spi * (points[ip2].x - points[ip1].x) + yco *
@@ -2374,17 +2399,17 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
           else
           {
             rst[lnd] = .5*(points[ip1].x+points[ip2].x);
-          } 
+          }
         }
       }
 
-/* 
- *  Put these values in ascending order.  Actually, once again, 
+/*
+ *  Put these values in ascending order.  Actually, once again,
  *  we set up an index array specifying the order.
  */
       cascsrt (rst + nra, ind + nra, lnd - nra + 1);
 
-/* 
+/*
  *  Draw the line segments specified by the list.
  */
       in1 = nra;
@@ -2462,9 +2487,9 @@ void cro_SoftFill (GKSC *gksc, float angle, float spl)
 
 
 /*
- *  Given an array of  n  floating values in  xa, 
+ *  Given an array of  n  floating values in  xa,
  *  cascsrt returns a permutation vector ip such that
- * 
+ *
  *   xa[ip[i]] <= xa[ip[j]]
  *         for all i,j such that  1 <= i <= j <= n .
  *

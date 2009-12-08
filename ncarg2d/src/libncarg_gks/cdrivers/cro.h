@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.h,v 1.2 2009-11-06 18:58:49 fred Exp $
+ *      $Id: cro.h,v 1.3 2009-12-08 20:22:36 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -41,7 +41,7 @@
 #define MITER_LIMIT_DEFAULT    10.
 #define SUPPRESS_FLAG           0
 
-#define LINETYPE_DEFAULT        1       
+#define LINETYPE_DEFAULT        1
 #define LINEWIDTH_DEFAULT       1.0
 #define LINE_COLR_DEFAULT       1
 #define MARKER_TYPE_DEFAULT             3
@@ -125,6 +125,7 @@
 /* cairo workstation types */
 #define CPS 				40  /* cairo Postscript  */
 #define CPNG				41  /* cairo PNG         */
+#define CPDF                42  /* cairo PDF */
 
 typedef enum {MONO, COLOR} cro_color;
 
@@ -203,7 +204,7 @@ typedef struct  CROattribute_ {
         unsigned int fill_colr_ind;
         int     clip_ind;
         unsigned int cro_colr_ind;  /*  Index of current CRO color */
-        int     norm_tran;          /*  GKS normalization transformation number */ 
+        int     norm_tran;          /*  GKS normalization transformation number */
         } CROattribute;
 
 struct color_value {
