@@ -8,7 +8,7 @@ extern void NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
                                      double *plevo, int *intyp, int *ilev, 
                                      double *psfc, double *spvl, int *kxtrp,
                                      int *npts, int *nlevi, int *nlevip1, 
-  				     int *nlevo,int *varflg, double *tbot,
+                                     int *nlevo,int *varflg, double *tbot,
                                      double *phis);
 
 
@@ -117,7 +117,7 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
 /*
  * Various
  */
-  int nlevi, npts, nlevinpts, nlevip1, nlevo, nlevonpts;
+  int ncase, ntime, nlevi, npts, nlevinpts, nlevip1, nlevo, nlevonpts;
   int index_datai, index_psfc, index_datao;
   double *plevi;
   int i, ndims_leftmost, size_leftmost, size_output, ret;
@@ -144,8 +144,8 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
 /*
  * Check dimension sizes.
  */
-  if(ndims_datai < 2) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The datai array must have at least 2 dimensions");
+  if(ndims_datai < 2 || ndims_datai > 4) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The datai array must have at least 2 dimensions and no more than 4 dimensions");
     return(NhlFATAL);
   }
 
@@ -155,9 +155,23 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
   coerce_missing(type_datai,has_missing_datai,&missing_datai,
                  &missing_dbl_datai,&missing_flt_datai);
 
-  nlevi = dsizes_datai[ndims_datai-2];
-  npts  = dsizes_datai[ndims_datai-1];
-  nlevinpts = nlevi * npts;
+  nlevi         = dsizes_datai[ndims_datai-2];
+  npts          = dsizes_datai[ndims_datai-1];
+  nlevinpts     = nlevi * npts;
+  size_leftmost = 1;
+
+/*
+ * Calculate number of leftmost dimensions.
+ */
+  if(ndims_datai >= 3) {
+    ntime         = dsizes_datai[ndims_datai-3];
+    size_leftmost = ntime;
+  }
+  if(ndims_datai >= 4) {
+    ncase          = dsizes_datai[ndims_datai-4];
+    size_leftmost *= ncase;
+  }
+  ndims_leftmost = ndims_datai-2;
 
 /*
  * Get argument # 1
@@ -233,6 +247,16 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The rightmost dimension of psfc must be of length npts");
     return(NhlFATAL);
   }
+/*
+ * Check dimensions of psfc.
+ */
+  for(i = 0; i < ndims_leftmost; i++) {
+    if(dsizes_psfc[i] != dsizes_datai[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The leftmost dimensions of datai and psfc must be the same");
+      return(NhlFATAL);
+    }
+  }
+
 /*
  * Coerce missing value to double if necessary.
  */
@@ -347,19 +371,6 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
   }
 
 /*
- * Calculate size of leftmost dimensions.
- */
-  size_leftmost  = 1;
-  ndims_leftmost = ndims_datai-2;
-  for(i = 0; i < ndims_leftmost; i++) {
-    if(dsizes_psfc[i] != dsizes_datai[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The leftmost dimensions of datai and psfc must be the same");
-      return(NhlFATAL);
-    }
-    size_leftmost *= dsizes_datai[i];
-  }
-
-/*
  * The output type defaults to float, unless one of two input array
  * are double.
  */
@@ -465,7 +476,7 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
 /*
  * Calculate size of output array.
  */
-  nlevonpts = nlevo * npts;
+  nlevonpts   = nlevo * npts;
   size_output = size_leftmost * nlevonpts;
 
 /* 
@@ -507,15 +518,18 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  ndims_datao = ndims_leftmost + 2;
+  ndims_datao = ndims_datai;
   dsizes_datao = (int*)calloc(ndims_datao,sizeof(int));  
   if( dsizes_datao == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
-  for(i = 0; i < ndims_datao-2; i++) dsizes_datao[i] = dsizes_datai[i];
+/* 
+ * All dimensions of datai and datao are same except for second-to-last 
+ * one.
+ */
+  for(i = 0; i < ndims_datao; i++) dsizes_datao[i] = dsizes_datai[i];
   dsizes_datao[ndims_datao-2] = nlevo;
-  dsizes_datao[ndims_datao-1] = npts;
 
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
@@ -582,8 +596,8 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
                                          plevi, tmp_plevo, intyp, ilev,
                                          tmp_psfc, 
                                          &missing_dbl_datao.doubleval, kxtrp,
-  	                                 &npts, &nlevi, &nlevip1, &nlevo,
-	                                 varflg, tmp_tbot, tmp_phis);
+                                         &npts, &nlevi, &nlevip1, &nlevo,
+                                         varflg, tmp_tbot, tmp_phis);
 
 /*
  * Coerce output back to float if necessary.

@@ -92,7 +92,7 @@ NhlErrorTypes vinth2p_nodes_W( void )
 /*
  * Various
  */
-  int nlevi, npts, nlevinpts, nlevip1, nlevo, nlevonpts;
+  int ncase, ntime, nlevi, npts, nlevinpts, nlevip1, nlevo, nlevonpts;
   int index_datai, index_psfc, index_datao;
   double *plevi;
   int i, ndims_leftmost, size_leftmost, size_output, ret;
@@ -133,6 +133,20 @@ NhlErrorTypes vinth2p_nodes_W( void )
   nlevi = dsizes_datai[ndims_datai-2];
   npts  = dsizes_datai[ndims_datai-1];
   nlevinpts = nlevi * npts;
+  size_leftmost = 1;
+
+/*
+ * Calculate number of leftmost dimensions.
+ */
+  if(ndims_datai >= 3) {
+    ntime         = dsizes_datai[ndims_datai-3];
+    size_leftmost = ntime;
+  }
+  if(ndims_datai >= 4) {
+    ncase          = dsizes_datai[ndims_datai-4];
+    size_leftmost *= ncase;
+  }
+  ndims_leftmost = ndims_datai-2;
 
 /*
  * Get argument # 1
@@ -209,6 +223,16 @@ NhlErrorTypes vinth2p_nodes_W( void )
     return(NhlFATAL);
   }
 /*
+ * Calculate size of leftmost dimensions.
+ */
+  for(i = 0; i < ndims_leftmost; i++) {
+    if(dsizes_psfc[i] != dsizes_datai[i]) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_nodes: The leftmost dimensions of datai and psfc must be the same");
+      return(NhlFATAL);
+    }
+  }
+
+/*
  * Coerce missing value to double if necessary.
  */
   coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
@@ -262,19 +286,6 @@ NhlErrorTypes vinth2p_nodes_W( void )
            NULL,
            NULL,
            DONT_CARE);
-
-/*
- * Calculate size of leftmost dimensions.
- */
-  size_leftmost  = 1;
-  ndims_leftmost = ndims_datai-2;
-  for(i = 0; i < ndims_leftmost; i++) {
-    if(dsizes_psfc[i] != dsizes_datai[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_nodes: The leftmost dimensions of datai and psfc must be the same");
-      return(NhlFATAL);
-    }
-    size_leftmost *= dsizes_datai[i];
-  }
 
 /*
  * The output type defaults to float, unless one of two input array
@@ -360,7 +371,7 @@ NhlErrorTypes vinth2p_nodes_W( void )
 /*
  * Calculate size of output array.
  */
-  nlevonpts = nlevo * npts;
+  nlevonpts   = nlevo * npts;
   size_output = size_leftmost * nlevonpts;
 
 /* 
@@ -402,15 +413,18 @@ NhlErrorTypes vinth2p_nodes_W( void )
 /* 
  * Allocate space for output dimension sizes and set them.
  */
-  ndims_datao = ndims_leftmost + 2;
+  ndims_datao = ndims_datai;
   dsizes_datao = (int*)calloc(ndims_datao,sizeof(int));  
   if( dsizes_datao == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_nodes: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
-  for(i = 0; i < ndims_datao-2; i++) dsizes_datao[i] = dsizes_datai[i];
+/* 
+ * All dimensions of datai and datao are same except for second-to-last 
+ * one.
+ */
+  for(i = 0; i < ndims_datao; i++) dsizes_datao[i] = dsizes_datai[i];
   dsizes_datao[ndims_datao-2] = nlevo;
-  dsizes_datao[ndims_datao-1] = npts;
 
 /*
  * Loop across leftmost dimensions and call the Fortran routine for each
@@ -450,7 +464,6 @@ NhlErrorTypes vinth2p_nodes_W( void )
 /*
  * Call the Fortran routine.
  */
-    printf("msg = %g\n", missing_dbl_datai.doubleval);
     NGCALLF(dvinth2pnodes,DVINTH2PNODES)(tmp_datai, tmp_datao, tmp_hbcofa, 
                                          tmp_hbcofb, tmp_p0, plevi, tmp_plevo,
                                          intyp, ilev, tmp_psfc, 
