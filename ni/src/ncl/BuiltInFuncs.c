@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.247 2009-11-12 14:54:51 haley Exp $
+ *      $Id: BuiltInFuncs.c,v 1.248 2009-12-08 21:07:08 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -14559,6 +14559,47 @@ NhlErrorTypes _NclIIsInteger
 	));
 }
 
+NhlErrorTypes _NclIIsUint
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	logical *out_val;
+	int dimsizes = 1;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
+	if(tmp_md->multidval.data_type == NCL_uint) {
+		*out_val = 1;
+	} else {
+		*out_val = 0;
+	}
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+		0
+	));
+}
+
 NhlErrorTypes _NclIIsShort
 #if	NhlNeedProto
 (void)
@@ -14591,6 +14632,47 @@ NhlErrorTypes _NclIIsShort
 	}
 
 
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+		0
+	));
+}
+
+NhlErrorTypes _NclIIsUshort
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	logical *out_val;
+	int dimsizes = 1;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
+	if(tmp_md->multidval.data_type == NCL_ushort) {
+		*out_val = 1;
+	} else {
+		*out_val = 0;
+	}
 
 	return(NclReturnValue(
 		out_val,
@@ -14645,6 +14727,47 @@ NhlErrorTypes _NclIIsLong
 	));
 }
 
+NhlErrorTypes _NclIIsUlong
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	logical *out_val;
+	int dimsizes = 1;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
+	if(tmp_md->multidval.data_type == NCL_ulong) {
+		*out_val = 1;
+	} else {
+		*out_val = 0;
+	}
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+		0
+	));
+}
+
 NhlErrorTypes _NclIIsInt64
 #if     NhlNeedProto
 (void)
@@ -14676,7 +14799,46 @@ NhlErrorTypes _NclIIsInt64
                 *out_val = 0;
         }
 
+        return(NclReturnValue(
+                out_val,
+                1,
+                &dimsizes,
+                NULL,
+                ((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+                0
+        ));
+}
 
+NhlErrorTypes _NclIIsUint64
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        NclStackEntry data;
+        NclMultiDValData tmp_md = NULL;
+        logical *out_val;
+        int dimsizes = 1;
+
+        data = _NclGetArg(0,1,DONT_CARE);
+        switch(data.kind) {
+                case NclStk_VAR:
+                        tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+                        break;
+                case NclStk_VAL:
+                        tmp_md = (NclMultiDValData)data.u.data_obj;
+                        break;
+        }
+        if(tmp_md == NULL)
+                return(NhlFATAL);
+
+        out_val = (logical*)NclMalloc(sizeof(logical));
+        if(tmp_md->multidval.data_type == NCL_uint64) {
+                *out_val = 1;
+        } else {
+                *out_val = 0;
+        }
 
         return(NclReturnValue(
                 out_val,

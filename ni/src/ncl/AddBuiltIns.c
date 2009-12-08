@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.87 2009-09-25 18:16:49 dbrown Exp $
+ *      $Id: AddBuiltIns.c,v 1.88 2009-12-08 21:07:08 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -745,7 +745,17 @@ extern NhlErrorTypes _NclIIsLong(
 void
 #endif
 );
+extern NhlErrorTypes _NclIIsUlong(
+#if     NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIIsInt64(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsUint64(
 #if     NhlNeedProto
 void
 #endif
@@ -755,7 +765,17 @@ extern NhlErrorTypes _NclIIsShort(
 void
 #endif
 );
+extern NhlErrorTypes _NclIIsUshort(
+#if     NhlNeedProto
+void
+#endif
+);
 extern NhlErrorTypes _NclIIsInteger(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsUint(
 #if     NhlNeedProto
 void
 #endif
@@ -1848,6 +1868,16 @@ void _NclAddBuiltIns
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsInteger,args,"isinteger",nargs);
 
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+        NclRegisterFunc( _NclIIsUint,args,"isuint",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+        NclRegisterFunc( _NclIIsUint,args,"isuinteger",nargs);
+
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
@@ -1861,12 +1891,27 @@ void _NclAddBuiltIns
 	nargs = 0;
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsUshort,args,"isushort",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsLong,args,"islong",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsUlong,args,"isulong",nargs);
 
         nargs = 0;
         args = NewArgs(1);
         SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
         NclRegisterFunc( _NclIIsInt64,args,"isint64",nargs);
+
+        nargs = 0;
+        args = NewArgs(1);
+        SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+        NclRegisterFunc( _NclIIsUint64,args,"isuint64",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);
