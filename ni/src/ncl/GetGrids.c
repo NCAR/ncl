@@ -8243,7 +8243,7 @@ int* nrotatts;
 	int is_thinned_lon = 0;
 	int idir;
 	int ix;
-	int try = 0;
+
 
 
 	if((thevarrec->thelist != NULL)&&(thevarrec->thelist->rec_inq != NULL)) {
@@ -8256,14 +8256,15 @@ int* nrotatts;
 		
 		/* 
 		 * this is a hack for certain IPCC data that does not have the correct info in gds[25+]. 
-		 * I hope it doesn't screw anything else up.
+		 * nlat can legitimately be larger than the lat dimension size if a non-global grid is being constructed, but it would not make sense for it to be orders of magnitude larger
 		 */
-		
-		if (nlat > (*dimsizes_lat)[0]) {
+
+		if (nlat > 5 * (*dimsizes_lat)[0]) {
 			nlat = (*dimsizes_lat)[0];
  			NhlPError(NhlWARNING,NhlEUNKNOWN,
 			"GdsGAGrid: Invalid value for Gaussian LatLon grid in GDS octets 26-27; inferring N from octets 9-10 (See GRIB Section 2 documentation)");
 		}
+
 		theta = (double*)NclMalloc(sizeof(double)*nlat);
 		wts = (double*)NclMalloc(sizeof(double)*nlat);
 		lwork = 4 * nlat*(nlat+1)+2;
@@ -8271,12 +8272,7 @@ int* nrotatts;
 		*lat = (float*)NclMalloc(sizeof(float)*nlat);
 /*
  * These come out south to north
- * The conditional that goes to TRY2 is also part of the IPCC hack.
  */
-	TRY2:
-		NGCALLF(gaqdnio,GAQDNIO)(&nlat,theta,wts,work,&lwork,&ierror);
-
-
 
 		tmpc[0] = thevarrec->thelist->rec_inq->gds[10] & (char)0177;
 		tmpc[1] = thevarrec->thelist->rec_inq->gds[11];
@@ -8287,27 +8283,61 @@ int* nrotatts;
 		tmpc[2] = thevarrec->thelist->rec_inq->gds[19];
 		ila2 = ((thevarrec->thelist->rec_inq->gds[17] & (char)0200) ? -1:1)*(int)UnsignedCnvtToDecimal(3,tmpc);
 
+		NGCALLF(gaqdnio,GAQDNIO)(&nlat,theta,wts,work,&lwork,&ierror);
+
 		if(!(thevarrec->thelist->rec_inq->gds[27] & (char)0100)) {
-/* -j direction implies north to south*/
-			i = nlat -1;
-			while(i >= 0) {
-				if((ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
-					break;
-				} else {
-					i--;	
+                        /* -j direction implies north to south*/
+			int done = 0;
+			int redo_nlat = 0;
+			i = nlat - 1;
+			while (! done) {
+				if (ila1 > (int)(rtod*theta[i] * 1000.0 + .5) - 90000) {
+					if (nlat < (*dimsizes_lat)[0]) {
+						redo_nlat = 1;
+					}
+					else {
+						NhlPError(NhlWARNING,NhlEUNKNOWN,
+							  "GdsGAGrid: GRIB attributes La1 and/or La2 are incorrectly out of range of the gaussian latitude array (See GRIB Section 2 documentation)");
+					}
 				}
-			}
-			if (i == 0 && try < 1 && nlat != (*dimsizes_lat)[0]) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  "GdsGAGrid: Invalid value for Gaussian LatLon grid in GDS octets 26-27; inferring N from octets 9-10 (See GRIB Section 2 documentation)");
-				try++;
-				nlat = (*dimsizes_lat)[0];
-				theta = (double*)NclRealloc(theta,sizeof(double)*nlat);
-				wts = (double*)NclRealloc(wts,sizeof(double)*nlat);
-				lwork = 4 * nlat*(nlat+1)+2;
-				work = (double*)NclRealloc(work,sizeof(double)*lwork);
-				*lat = (float*)NclRealloc(*lat,sizeof(float)*nlat);
-				goto TRY2;
+				else {
+					/* 
+					 * nlat can legitimately be larger than the size of the lat array if the grid is not global 
+					 */
+					while(i >= 0) {
+						if((ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
+							break;
+						} else {
+							i--;
+						}
+					}
+					/*if (2 + 2 * i - nlat != (*dimsizes_lat)[0]) {   nlat - 2((nlat -1) - i : might be invalid to assume symmetry in the subselection of gaussian coordinates */
+					if (i < (*dimsizes_lat)[0] - 1) { /* this is the only thing that is clearly going to generate some undefined values */
+						if (nlat != *(dimsizes_lat)[0]) {
+							redo_nlat = 1;
+						}
+						else {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,
+								  "GdsGAGrid: Possible error generating Gaussian latitude coordinates: continuing anyway");
+						}
+					}
+				}
+				if (! redo_nlat) {
+					done = 1;
+				}
+				else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						  "GdsGAGrid: Invalid value for Gaussian LatLon grid in GDS octets 26-27; inferring N from octets 9-10 (See GRIB Section 2 documentation)");
+					nlat = (*dimsizes_lat)[0];
+					theta = (double*)NclRealloc(theta,sizeof(double)*nlat);
+					wts = (double*)NclRealloc(wts,sizeof(double)*nlat);
+					lwork = 4 * nlat*(nlat+1)+2;
+					work = (double*)NclRealloc(work,sizeof(double)*lwork);
+					*lat = (float*)NclRealloc(*lat,sizeof(float)*nlat);
+					NGCALLF(gaqdnio,GAQDNIO)(&nlat,theta,wts,work,&lwork,&ierror);
+					redo_nlat = 0;
+					i = nlat - 1;
+				}
 			}
 			k = 0;
 			while((k<(*dimsizes_lat)[0])&&(i>=0)) {
@@ -8323,26 +8353,57 @@ int* nrotatts;
 			}
 	
 		} else {
-/* +j direction implies south to north*/
+                        /* +j direction implies south to north*/
+			int done = 0;
+			int redo_nlat = 0;
 			i = 0;
-			while(i<nlat) {
-				if((ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)) {
-					break;
-				} else {
-					i++;		
+			while (! done) {
+				if (ila1 <  (int)(rtod*theta[i] * 1000.0) - 90000) {
+					if (nlat < (*dimsizes_lat)[0]) {
+						redo_nlat = 1;
+					}
+					else {
+						NhlPError(NhlWARNING,NhlEUNKNOWN,
+							  "GdsGAGrid: GRIB attributes La1 and/or La2 are incorrectly out of range of the gaussian latitude array (See GRIB Section 2 documentation)");
+					}
 				}
-			}
-			if (i == nlat && try < 1 && nlat != (*dimsizes_lat)[0]) {
-				NhlPError(NhlWARNING,NhlEUNKNOWN,
-					  "GdsGAGrid: Invalid value for Gaussian LatLon grid in GDS octets 26-27; inferring N from octets 9-10 (See GRIB Section 2 documentation)");
-				try++;
-				nlat = (*dimsizes_lat)[0];
-				theta = (double*)NclRealloc(theta,sizeof(double)*nlat);
-				wts = (double*)NclRealloc(wts,sizeof(double)*nlat);
-				lwork = 4 * nlat*(nlat+1)+2;
-				work = (double*)NclRealloc(work,sizeof(double)*lwork);
-				*lat = (float*)NclRealloc(*lat,sizeof(float)*nlat);
-				goto TRY2;
+				else {
+					/* 
+					 * nlat can legitimately be larger than the size of the lat array if the grid is not global 
+					 */
+					while(i < nlat) {
+						if((ila1 == (int)(rtod*theta[i] * 1000.0) - 90000)||(ila1 == (int)(rtod*theta[i] * 1000.0 + .5) - 90000)) {
+							break;
+						} else {
+							i++;
+						}
+					}
+					if (nlat - i < (*dimsizes_lat)[0]) {
+						if (nlat != *(dimsizes_lat)[0]) {
+							redo_nlat = 1;
+						}
+						else {
+							NhlPError(NhlWARNING,NhlEUNKNOWN,
+								  "GdsGAGrid: Possible error generating Gaussian latitude coordinates: continuing anyway");
+						}
+					}
+				}
+				if (! redo_nlat) {
+					done = 1;
+				}
+				else {
+					NhlPError(NhlWARNING,NhlEUNKNOWN,
+						  "GdsGAGrid: Invalid value for Gaussian LatLon grid in GDS octets 26-27; inferring N from octets 9-10 (See GRIB Section 2 documentation)");
+					nlat = (*dimsizes_lat)[0];
+					theta = (double*)NclRealloc(theta,sizeof(double)*nlat);
+					wts = (double*)NclRealloc(wts,sizeof(double)*nlat);
+					lwork = 4 * nlat*(nlat+1)+2;
+					work = (double*)NclRealloc(work,sizeof(double)*lwork);
+					*lat = (float*)NclRealloc(*lat,sizeof(float)*nlat);
+					NGCALLF(gaqdnio,GAQDNIO)(&nlat,theta,wts,work,&lwork,&ierror);
+					redo_nlat = 0;
+					i = 0;
+				}
 			}
 			k = 0;
 			while((i<nlat)&&(k<(*dimsizes_lat)[0])) {
