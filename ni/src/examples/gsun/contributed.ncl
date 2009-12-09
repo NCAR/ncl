@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.249 2009-11-10 03:03:48 shea Exp $
+;      $Id: contributed.ncl,v 1.250 2009-12-09 19:47:24 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1914,7 +1914,10 @@ end
 ; ==> The NCL function "sprintf" has much of the same functionality
 ; ==> as this function. "decimalPlaces" is kept for backward
 ; ==> compatibility reasons.
-
+;
+; It was upgraded by D Shea in Dec 2009 to use "round" and to
+; return metadata.
+;
 ; x     - float or double only
 ; nDec  - number of decimal places to the right of decimal point
 ; Round - round or truncate
@@ -1926,61 +1929,39 @@ end
 ;   title  = "EOF: PerCent Variance="+decimalPlaces(pcvar(0), 2, True)
 
 undef("decimalPlaces")
-function decimalPlaces (x:numeric, nDec:integer, Round:logical)
-local xType, shift, xTmp, iTmp, zero, half, one, HALF
+function decimalPlaces(x:numeric, nDec:integer, Round:logical)
+local xType, shift, xTmp, _FillValue
 begin
   xType = typeof(x)
 
   if (xType.eq."float"  .or.  xType.eq."double") then
       if (xType.eq."double") then
-          zero = 0.0d
-          half = 0.5d
-          one  = 1.0d
           shift = 10.0d^nDec
-          local_FillValue = 1d30            ; local fill value
       else
-          zero  = 0.0
-          half  = 0.5
-          one   = 1.0
           shift = 10.0^nDec
-          local_FillValue = 1e30            ; local fill value
       end if
 
-      HALF = where(x.lt.zero, -half, half)  ; arrray of half   
-
-      if (isatt(x,"_FillValue")) then
-          xFillOrig = (/ x@_FillValue /)    ; original _FillValue
+      xTmp = x                            
+      if (isatt(xTmp,"_FillValue")) then
+          FillValue = xTmp@_FillValue
+          delete(xTmp@_FillValue)
+          xTmp@_FillValue = FillValue*shift       ; shifted _FillValue
       end if
 
-      if (Round) then
-          x@_FillValue = local_FillValue    ; use local fill value
-          xTmp = (x + HALF/shift)*shift    
-      else
-          x@_FillValue = local_FillValue
-          xTmp = x*shift
+      xTmp = xTmp*shift               
+      xTmp = round(xTmp, 0)
+      xTmp = xTmp/shift
+     ;xTmp = (/ round(x*shift)/shift /)
+
+      if (isvar("FillValue")) then
+          xTmp@_FillValue = FillValue              ; original _FillValue
       end if
 
-      xTmp  = where(x.ge.zero, floor(xTmp), ceil(xTmp)) ; simulate a 'truncate'
-                                                        ; without changing type
-
-      xTmp  = xTmp/shift             ; return original type
-
-      if (isvar("xFillOrig")) then
-          if (any(xTmp.eq.xFillOrig)) then
-              nOrig = num(xTmp.eq.xFillOrig)
-              print("decimalPlaces: WARNING: nOrig="+nOrig+" values were mapped into _FillValue")
-              print("                        The returned _FillValue is different from original")
-          else
-              xTmp@_FillValue = xFillOrig       
-          end if
-      else
-          delete(xTmp@_FillValue)           ; delete temporary
-      end if
-      
-      return (xTmp)
+      return(xTmp)
   else
       print ("decimalPlaces: input is of type "+xType )
-      return (x)                            ; must not be float or double
+      print ("               only float or double is allowed")
+      return (x)           
   end if
 end
 
