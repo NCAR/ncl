@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.226 2009-12-01 18:50:18 haley Exp $
+;      $Id: gsn_code.ncl,v 1.227 2009-12-10 22:54:23 brownrig Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2771,7 +2771,8 @@ begin
 
     class = NhlClassName(wks)
     if((class(0).eq."psWorkstationClass").or. \
-       (class(0).eq."pdfWorkstationClass")) then
+       (class(0).eq."pdfWorkstationClass").or. \
+       (class(0).eq."cairoWorkstationClass")) then
 ;
 ; Keep track of whether device coordinates were recalculated.
 ;
@@ -3237,6 +3238,82 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_open_cairo                                             ;
+;               name : name of cairo file/device                        ;
+;                                                                       ;
+; This function opens a cairo file or device and returns                ;
+; the workstation id.                                                   ; 
+;***********************************************************************;
+undef("gsn_open_cairo")
+function gsn_open_cairo(type:string, name[1]:string)
+local cairo, res_file, wkres, wkresnew, names, i
+
+begin
+;
+; If there are resources, copy them over to a logical variable,
+; and only grab the ones that start with "wk".
+;
+    if(.not.any(ismissing(getvaratts(type))))
+      wkres = True
+      names = getvaratts(type)
+      do i=0,dimsizes(names)-1
+        if(names(i).ne."_FillValue") then
+          wkres@$names(i)$ = type@$names(i)$    
+        end if
+      end do
+;
+; Grab only the ones that start with "wk".
+;
+      wkresnew = get_res_eq(wkres,"wk")
+      delete(wkres)
+      delete(names)
+    else
+      wkresnew = False
+    end if
+
+    res_file = get_res_value_keep(name,"res_file","gsnapp")
+;
+; These PDF resources are ones that must be set at the time
+; the workstation is created. This means that these resources
+; will override whatever setting you might have in a resource
+; file or your .hluresfile.
+;
+    cmodel   = get_res_value(wkresnew,"wkColorModel","rgb")
+    resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
+    visualt  = get_res_value(wkresnew,"wkVisualType","color")
+
+; Be sure to add any resources set here to "res_list" in gsn_open_wks
+; so they don't get set again.
+
+    cairo = create res_file cairoWorkstationClass defaultapp
+      "wkPDFResolution" : resltn
+      "wkCairoFileName"   : name
+      "wkCairoFormat"     : type
+    end create
+
+;
+; Set resources, if any.
+;
+    attsetvalues_check(cairo,wkresnew)
+    delete(wkresnew)
+
+;
+; Retrieve the device coordinates and the orientation so we can
+; reset them later if necessary.
+;
+    getvalues cairo
+      "wkOrientation"  : cairo@wkOrientation
+      "wkDeviceLowerX" : cairo@wkDeviceLowerX
+      "wkDeviceLowerY" : cairo@wkDeviceLowerY
+      "wkDeviceUpperX" : cairo@wkDeviceUpperX
+      "wkDeviceUpperY" : cairo@wkDeviceUpperY
+    end getvalues
+
+    return(cairo)
+end
+
+
+;***********************************************************************;
 ; Function : gsn_open_image                                             ;
 ;               type : type of image file                               ;
 ;               name : name of output image file                        ;
@@ -3362,6 +3439,13 @@ begin
                                res_file + "." + type2)
       pdf_file@res_file = res_file
       wks = gsn_open_pdf(type2, res_dir+pdf_file)
+      valid_type = True
+    end if
+
+    if (lower_case(type2).eq."cps".or.lower_case(type2).eq."cpng".or.lower_case(type2).eq."cpdf") then
+      cairo_file = get_res_value(type2,"wkCairoFileName", res_file)
+      cairo_file@res_file = res_file
+      wks = gsn_open_cairo(type2, res_dir+cairo_file)
       valid_type = True
     end if
 
