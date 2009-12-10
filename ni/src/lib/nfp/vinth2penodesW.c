@@ -11,630 +11,953 @@ extern void NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
                                      int *nlevo,int *varflg, double *tbot,
                                      double *phis);
 
-
-NhlErrorTypes vinth2p_ecmwf_nodes_W( void )
+NhlErrorTypes vinth2p_ecmwf_nodes_W
+#if NhlNeedProto
+(void)
+#else
+()
+#endif
 {
-/*
- * Input variables
- */
-/*
- * Argument # 0
- */
-  void *datai;
-  double *tmp_datai;
-  int ndims_datai, dsizes_datai[NCL_MAX_DIMENSIONS];
-  int has_missing_datai;
-  NclScalar missing_datai, missing_flt_datai, missing_dbl_datai;
-  NclBasicDataTypes type_datai;
+    int i, j, nc, nt, sz,nblk,nblk_out,psf_blk, index_phis;
+    NclVar  tmp_var;
+    NclMultiDValData x_coord_md;
+    NclVar lev_coord_var;
+    NclMultiDValData lev_coord_md;
+    int ids[4];
+    NclDimRec dim_info[4];
 
-/*
- * Argument # 1
- */
-  void *hbcofa;
-  double *tmp_hbcofa;
-  int dsizes_hbcofa[1];
-  NclBasicDataTypes type_hbcofa;
-
-/*
- * Argument # 2
- */
-  void *hbcofb;
-  double *tmp_hbcofb;
-  int dsizes_hbcofb[1];
-  NclBasicDataTypes type_hbcofb;
-
-/*
- * Argument # 3
- */
-  void *plevo;
-  double *tmp_plevo;
-  int dsizes_plevo[1];
-  NclBasicDataTypes type_plevo;
-
-/*
- * Argument # 4
- */
-  void *psfc;
-  double *tmp_psfc;
-  int ndims_psfc, dsizes_psfc[NCL_MAX_DIMENSIONS];
-  int has_missing_psfc;
-  NclScalar missing_psfc, missing_flt_psfc, missing_dbl_psfc;
-  NclBasicDataTypes type_psfc;
-
-/*
- * Argument # 5
- */
-  int *intyp;
-/*
- * Argument # 6
- */
-  void *p0;
-  double *tmp_p0;
-  NclBasicDataTypes type_p0;
-
-/*
- * Argument # 7
- */
-  int *ilev;
-/*
- * Argument # 8
- */
-  logical *kxtrp;
-
-/*
- * Argument # 9
- */
-  int *varflg;
-
-/*
- * Argument # 10
- */
-  void *tbot;
-  double *tmp_tbot;
-  int ndims_tbot, dsizes_tbot[NCL_MAX_DIMENSIONS];
-  int has_missing_tbot;
-  NclBasicDataTypes type_tbot;
-
-/*
- * Argument # 11
- */
-  void *phis;
-  double *tmp_phis;
-  int ndims_phis, dsizes_phis[NCL_MAX_DIMENSIONS];
-  NclBasicDataTypes type_phis;
-
-/*
- * Return variable
- */
-  void *datao;
-  double *tmp_datao;
-  int ndims_datao, *dsizes_datao;
-  int has_missing_datao;
-  NclScalar missing_datao, missing_flt_datao, missing_dbl_datao;
-  NclBasicDataTypes type_datao;
+    NclStackEntry data,val,plevo_val;
+    NclMultiDValData tmp_md,datai_md;
+    char *datai = NULL,*datao;
+    int datao_dimsizes[4];
+    int datai_n_dims,datai_has_missing;
+    NclBasicDataTypes datai_type;
+    NclScalar datai_missing;
+    NclQuark plevo_quark;
+    double *tmp_datao;
+    double *tmp_datai;
 
 
-/*
- * Various
- */
-  int ncase, ntime, nlevi, npts, nlevinpts, nlevip1, nlevo, nlevonpts;
-  int index_datai, index_psfc, index_datao;
-  double *plevi;
-  int i, ndims_leftmost, size_leftmost, size_output, ret;
+    double *hbcofa = NULL;
+    void *hbcofa_ptr = NULL;
+    int hbcofa_n_dims,hbcofa_has_missing;
+    NclBasicDataTypes hbcofa_type;
+    int hbcofa_dimsizes;
+    NclScalar hbcofa_missing;
 
-/*
- * Retrieve parameters.
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value.
- */
-/*
- * Get argument # 0
- */
-  datai = (void*)NclGetArgValue(
-           0,
-           12,
-           &ndims_datai,
-           dsizes_datai,
-           &missing_datai,
-           &has_missing_datai,
-           &type_datai,
-           DONT_CARE);
+    double *hbcofb = NULL;
+    void *hbcofb_ptr = NULL;
+    int hbcofb_n_dims,hbcofb_has_missing;
+    NclBasicDataTypes hbcofb_type;
+    int hbcofb_dimsizes;
+    NclScalar hbcofb_missing;
 
-/*
- * Check dimension sizes.
- */
-  if(ndims_datai < 2 || ndims_datai > 4) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The datai array must have at least 2 dimensions and no more than 4 dimensions");
-    return(NhlFATAL);
-  }
-
-/*
- * Coerce missing value to double if necessary.
- */
-  coerce_missing(type_datai,has_missing_datai,&missing_datai,
-                 &missing_dbl_datai,&missing_flt_datai);
-
-  nlevi         = dsizes_datai[ndims_datai-2];
-  npts          = dsizes_datai[ndims_datai-1];
-  nlevinpts     = nlevi * npts;
-  size_leftmost = 1;
-
-/*
- * Calculate number of leftmost dimensions.
- */
-  if(ndims_datai >= 3) {
-    ntime         = dsizes_datai[ndims_datai-3];
-    size_leftmost = ntime;
-  }
-  if(ndims_datai >= 4) {
-    ncase          = dsizes_datai[ndims_datai-4];
-    size_leftmost *= ncase;
-  }
-  ndims_leftmost = ndims_datai-2;
-
-/*
- * Get argument # 1
- */
-  hbcofa = (void*)NclGetArgValue(
-          1,
-          12,
-          NULL,
-          dsizes_hbcofa,
-          NULL,
-          NULL,
-          &type_hbcofa,
-          DONT_CARE);
-
-  nlevip1 = dsizes_hbcofa[0];
-  if(nlevip1 != (nlevi+1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The length of hbcofa/hbcofb must be nlevi+1");
-    return(NhlFATAL);
-  }
+    char *plevo = NULL;
+    char *plevo2 = NULL;
+    int plevo_n_dims,plevo_has_missing;
+    NclBasicDataTypes plevo_type;
+    int nlevo;
+    NclScalar plevo_missing;
+    int plevo_was_val = 0;
     
 
+    int *intyp = NULL;
+    int intyp_has_missing;
+    NclScalar intyp_missing;
+
+    void *psfc = NULL;
+    double *psfc_d = NULL;
+    int psfc_n_dims,psfc_has_missing;
+    NclBasicDataTypes psfc_type;
+    int psfc_dimsizes[4];
+    NclScalar psfc_missing;
+
+    void *p0_ptr = NULL;
+    double *p0 = NULL;
+    int p0_has_missing;
+    NclScalar p0_missing;
+    NclBasicDataTypes p0_type;
+
+    int *ilev = NULL;
+    int ilev_has_missing;
+    NclScalar ilev_missing;
+    int total;
+
+    logical* kxtrp = NULL;
+    int kxtrp_has_missing;
+    NclScalar kxtrp_missing;
+
+    int *varflg = NULL;
+
+    void *tbot = NULL;
+    double *tbot_d = NULL;
+    int tbot_n_dims;
+    NclBasicDataTypes tbot_type;
+    int tbot_dimsizes[4];
+
+    void *phis = NULL;
+    double *phis_d = NULL;
+    int phis_n_dims;
+    NclBasicDataTypes phis_type;
+    int phis_dimsizes[4];
+
+    double *plevi;
+    NclScalar missing;
+    NclScalar out_missing;
+    int was_val = 0;
+    int not_double = 0;
+    int psf_elem, phis_elem;
+    NclTypeClass plevo_type_class;
+    
+    int ncase, ntime, nlevi, nodes;  /* The 4 possible dims of datai */
+    int nlevi_nodes, nlevip1;
+
+    val = _NclGetArg(0,12,DONT_CARE);
 /*
- * Get argument # 2
- */
-  hbcofb = (void*)NclGetArgValue(
-           2,
-           12,
-           NULL,
-           dsizes_hbcofb,
-           NULL,
-           NULL,
-           &type_hbcofb,
-           DONT_CARE);
-
-  if(dsizes_hbcofb[0] != nlevip1) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The length of hbcofb must be the same as hbcofa");
-    return(NhlFATAL);
-  }
-/*
- * Get argument # 3
- */
-  plevo = (void*)NclGetArgValue(
-           3,
-           12,
-           NULL,
-           dsizes_plevo,
-           NULL,
-           NULL,
-           &type_plevo,
-           DONT_CARE);
-
-  nlevo = dsizes_plevo[0];
-
-/*
- * Get argument # 4
- */
-  psfc = (void*)NclGetArgValue(
-           4,
-           12,
-           &ndims_psfc,
-           dsizes_psfc,
-           &missing_psfc,
-           &has_missing_psfc,
-           &type_psfc,
-           DONT_CARE);
-
-  if(ndims_psfc != (ndims_datai-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: psfc must have one fewer dimensions than datai");
-    return(NhlFATAL);
-  }
-
-  if(dsizes_psfc[ndims_psfc-1] != npts) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The rightmost dimension of psfc must be of length npts");
-    return(NhlFATAL);
-  }
-/*
- * Check dimensions of psfc.
- */
-  for(i = 0; i < ndims_leftmost; i++) {
-    if(dsizes_psfc[i] != dsizes_datai[i]) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The leftmost dimensions of datai and psfc must be the same");
-      return(NhlFATAL);
-    }
-  }
-
-/*
- * Coerce missing value to double if necessary.
- */
-  coerce_missing(type_psfc,has_missing_psfc,&missing_psfc,
-                 &missing_dbl_psfc,&missing_flt_psfc);
-
-/*
- * Get argument # 5
- */
-  intyp = (int*)NclGetArgValue(
-           5,
-           12,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 6
- */
-  p0 = (void*)NclGetArgValue(
-           6,
-           12,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           &type_p0,
-           DONT_CARE);
-/*
- * Get argument # 7
- */
-  ilev = (int*)NclGetArgValue(
-           7,
-           12,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 8
- */
-  kxtrp = (logical*)NclGetArgValue(
-           8,
-           12,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-
-/*
- * Get argument # 9
- */
-  varflg = (int*)NclGetArgValue(
-           9,
-           12,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-/*
- * Get argument # 10
- */
-  tbot = (void*)NclGetArgValue(
-           10,
-           12,
-           &ndims_tbot,
-           dsizes_tbot,
-           NULL,
-           NULL,
-           &type_tbot,
-           DONT_CARE);
-
-  if(ndims_tbot != (ndims_datai-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: tbot must have one fewer dimensions than datai");
-    return(NhlFATAL);
-  }
-
-  if(dsizes_tbot[ndims_tbot-1] != npts) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The rightmost dimension of tbot must be of length npts");
-    return(NhlFATAL);
-  }
-
-/*
- * Get argument # 11
- */
-  phis = (void*)NclGetArgValue(
-           11,
-           12,
-           &ndims_phis,
-           dsizes_phis,
-           NULL,
-           NULL,
-           &type_phis,
-           DONT_CARE);
-
-  if(ndims_phis != (ndims_datai-1)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: phis must have one fewer dimensions than datai");
-    return(NhlFATAL);
-  }
-
-  if(dsizes_phis[ndims_phis-1] != npts) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: The rightmost dimension of phis must be of length npts");
-    return(NhlFATAL);
-  }
-
-/*
- * The output type defaults to float, unless one of two input array
- * are double.
- */
-  if(type_datai == NCL_double || type_psfc == NCL_double) {
-    type_datao = NCL_double;
-  }
-  else {
-    type_datao = NCL_float;
-  }
-
+* Should be constrained to be a SCALAR md
+*/
+    switch(val.kind) {
+    case NclStk_VAL:
 /* 
- * Allocate space for coercing input arrays.  If any of the input
- * is already double, then we don't need to allocate space for
- * temporary arrays, because we'll just change the pointer into
- * the void array appropriately.
+ * If NclStk_VAL, then this means that the data variable coming in 
+ * has no coordinate information attached to it. This is possibly
+ * because in the call to vinth2p, an arithmetic expression was used
+ * for the input rather than just a variable.
  */
+      was_val = 1;
+      datai_md= val.u.data_obj;
+      datai_type = datai_md->multidval.data_type;
+      datai_n_dims = datai_md->multidval.n_dims;
+      if((datai_n_dims < 2)||(datai_n_dims>4)) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: requires a minimum of 2 dimensions [lev]x[nodes] and a maximum of 4 dimensions [case]x[time]x[lev]x[nodes], %d dimensions passed in",datai_n_dims);
+        return(NhlFATAL);
+      } else {
 /*
- * Allocate space for tmp_datai.
+ * 'total' is the size of the leftmost dimensions (minus the 2
+ * rightmost dimensions).
  */
-  if(type_datai != NCL_double) {
-    tmp_datai = (double *)calloc(nlevinpts,sizeof(double));
-    if(tmp_datai == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
+        if(datai_n_dims == 3)  {
+          ncase = 1;
+          ntime = 1;
+          nlevi = datai_md->multidval.dim_sizes[0];
+          nodes = datai_md->multidval.dim_sizes[1];
+        }
+        else if(datai_n_dims == 3)  {
+          ncase = 1;
+          ntime = datai_md->multidval.dim_sizes[0];
+          nlevi = datai_md->multidval.dim_sizes[1];
+          nodes = datai_md->multidval.dim_sizes[2];
+        }
+        else {                                  /* datai_n_dims better be 4 */ 
+          ncase = datai_md->multidval.dim_sizes[0];
+          ntime = datai_md->multidval.dim_sizes[1];
+          nlevi = datai_md->multidval.dim_sizes[2];
+          nodes = datai_md->multidval.dim_sizes[3];
+        }
+        total       = ntime * ncase;
+        nlevi_nodes = nlevi * nodes;
+      }
+/*
+ * Save the missing value, if any.
+ */
+      datai_has_missing = datai_md->multidval.missing_value.has_missing;
+      datai_missing = datai_md->multidval.missing_value.value;
+      break;
+    case NclStk_VAR:
+/*
+ * If NclStk_VAR, then this means that the data variable coming in 
+ * probably has coordinate information attached to it. 
+ */
+      datai_md = _NclVarValueRead(val.u.data_var,NULL,NULL);
+      datai_n_dims = datai_md->multidval.n_dims;
+      if((datai_n_dims < 2)||(datai_n_dims>4)) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: requires a minimum of 2 dimensions [lev]x[nodes] and a maximum of 4 dimensions [case]x[time]x[lev]x[nodes], %d dimensions passed in",datai_n_dims);
+        return(NhlFATAL);
+      } else {
+/*
+ * 'total' is the size of the leftmost dimensions (minus the 2
+ * rightmost dimensions).
+ */
+        if(datai_n_dims == 2)  {
+          ncase = 1;
+          ntime = 1;
+          nlevi = datai_md->multidval.dim_sizes[0];
+          nodes = datai_md->multidval.dim_sizes[1];
+        }
+        else if(datai_n_dims == 3)  {
+          ncase = 1;
+          ntime = datai_md->multidval.dim_sizes[0];
+          nlevi = datai_md->multidval.dim_sizes[1];
+          nodes = datai_md->multidval.dim_sizes[2];
+        }
+        else {                                  /* datai_n_dims better be 4 */ 
+          ncase = datai_md->multidval.dim_sizes[0];
+          ntime = datai_md->multidval.dim_sizes[1];
+          nlevi = datai_md->multidval.dim_sizes[2];
+          nodes = datai_md->multidval.dim_sizes[3];
+        }
+        total       = ncase * ntime;
+        nlevi_nodes = nlevi * nodes;
+      }
+/*
+ * Save the missing value, if any.
+ */
+      datai_has_missing = datai_md->multidval.missing_value.has_missing;
+      datai_missing = datai_md->multidval.missing_value.value;
+      datai_type = datai_md->multidval.data_type;
+      break;
+    default:
       return(NhlFATAL);
     }
-  }
-
-/*
- * Allocate space for tmp_hbcofa.
- */
-  tmp_hbcofa = coerce_input_double(hbcofa,type_hbcofa,nlevip1,0,NULL,NULL);
-  if(tmp_hbcofa == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_hbcofb.
- */
-  tmp_hbcofb = coerce_input_double(hbcofb,type_hbcofb,nlevip1,0,NULL,NULL);
-  if(tmp_hbcofb == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_plevo.
- */
-  tmp_plevo = coerce_input_double(plevo,type_plevo,nlevo,0,NULL,NULL);
-  if(tmp_plevo == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
-  }
-/*
- * Allocate space for tmp_psfc.
- */
-  if(type_psfc != NCL_double) {
-    tmp_psfc = (double *)calloc(npts,sizeof(double));
-    if(tmp_psfc == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
+    if(datai_md != NULL) {
+      nblk = nlevi_nodes;
+      switch(datai_type) {
+      case NCL_double:
+        datai = (char*)datai_md->multidval.val;
+        sz = sizeof(double);
+        break;
+      default:
+        datai = (char*)datai_md->multidval.val;
+        sz = datai_md->multidval.type->type_class.size;
+        not_double = 1;
+        break;
+      }
     }
-  }
-
-/*
- * Allocate space for tmp_p0.
- */
-  tmp_p0 = coerce_input_double(p0,type_p0,1,0,NULL,NULL);
-  if(tmp_p0 == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
-    return(NhlFATAL);
-  }
-
-/*
- * Allocate space for tmp_tbot.
- */
-  if(type_tbot != NCL_double) {
-    tmp_tbot = (double *)calloc(npts,sizeof(double));
-    if(tmp_tbot == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
+    hbcofa_ptr = (void*)NclGetArgValue(
+                        1,
+                        12,
+                        &hbcofa_n_dims,
+                        &hbcofa_dimsizes,
+                        &hbcofa_missing,
+                        &hbcofa_has_missing,
+                        &hbcofa_type,
+                        0);
+    if(hbcofa_type != NCL_double ) {
+      hbcofa = (double*)NclMalloc(sizeof(double) * hbcofa_dimsizes);
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)hbcofa,
+                 (void*)hbcofa_ptr,hbcofa_dimsizes,NULL,NULL,
+                 (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(hbcofa_type))));
+    } else {
+      hbcofa = (double*) hbcofa_ptr;
     }
-  }
-
-/*
- * Allocate space for tmp_phis.
- */
-  if(type_phis != NCL_double) {
-    tmp_phis = (double *)calloc(npts,sizeof(double));
-    if(tmp_phis == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for coercing input array to double");
-      return(NhlFATAL);
+    hbcofb_ptr = (void*)NclGetArgValue(
+                        2,
+                        12,
+                        &hbcofb_n_dims,
+                        &hbcofb_dimsizes,
+                        &hbcofb_missing,
+                        &hbcofb_has_missing,
+                        &hbcofb_type,
+                        0);
+    if(hbcofb_type != NCL_double ) {
+      hbcofb = (double*)NclMalloc(sizeof(double) * hbcofb_dimsizes);
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)hbcofb,
+                 (void*)hbcofb_ptr,hbcofb_dimsizes,NULL,NULL,
+                 (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(hbcofb_type))));
+    } else {
+      hbcofb = (double*) hbcofb_ptr;
     }
-  }
-
-/*
- * Allocate space for plevi.
- */
-  plevi = (double *)calloc(nlevip1,sizeof(double));
-  if(plevi == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for plevi array");
-    return(NhlFATAL);
-  }
-  
-/*
- * Calculate size of output array.
- */
-  nlevonpts   = nlevo * npts;
-  size_output = size_leftmost * nlevonpts;
-
-/* 
- * Allocate space for output array.
- */
-  if(type_datao != NCL_double) {
-    datao     = (void *)calloc(size_output, sizeof(float));
-    tmp_datao = (double *)calloc(nlevonpts,sizeof(double));
-    if(tmp_datao == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for temporary output array");
-      return(NhlFATAL);
+    plevo_val = _NclGetArg(3,12,DONT_CARE);
+    switch(plevo_val.kind) {
+    case NclStk_VAL:
+      plevo_was_val = 1;
+      plevo_n_dims = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.n_dims;
+      nlevo = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.dim_sizes[0];
+      plevo_missing = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.missing_value.value;
+      plevo_has_missing = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.missing_value.has_missing;
+      plevo_type = ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.data_type;
+      plevo_quark = NrmStringToQuark("lev_p");
+      plevo_type_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(plevo_type)));
+      if(plevo_type != NCL_double ) {
+        plevo = (char*)NclMalloc(sizeof(double) * nlevo);
+        _Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)plevo,
+                   ((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val,
+                   nlevo,NULL,NULL,
+                   (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(plevo_type))));
+      } else {
+        plevo = (char*)((NclMultiDValData)(plevo_val.u.data_obj))->multidval.val;
+      }
+      tmp_md = plevo_val.u.data_obj;
+      break;
+    case NclStk_VAR:
+      plevo_was_val = 0;
+      tmp_md = _NclVarValueRead(plevo_val.u.data_var,NULL,NULL);
+      plevo_n_dims = ((NclVarRec*)(plevo_val.u.data_var))->var.n_dims;
+      nlevo = ((NclVarRec*)(plevo_val.u.data_var))->var.dim_info[0].dim_size;
+      plevo_missing = tmp_md->multidval.missing_value.value;
+      plevo_has_missing = tmp_md->multidval.missing_value.has_missing;
+      plevo_type = tmp_md->multidval.data_type;
+      plevo_quark = ((NclVarRec*)(plevo_val.u.data_var))->var.dim_info[0].dim_quark;
+      if(plevo_quark == -1) {
+        plevo_quark = NrmStringToQuark("lev_p");
+      }
+      plevo_type_class = (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(plevo_type)));
+      if(plevo_type != NCL_double ) {
+        plevo = (char*)NclMalloc(sizeof(double) * nlevo);
+        _Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)plevo,
+                   tmp_md->multidval.val,nlevo,NULL,NULL,
+                   (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(plevo_type))));
+      } else {
+        plevo = (char*)tmp_md->multidval.val;
+      }
+      break;
     }
-  }
-  else {
-    datao = (void *)calloc(size_output, sizeof(double));
-  }
-  if(datao == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for output array");
-    return(NhlFATAL);
-  }
-  if(has_missing_datai) {
-    if(type_datao == NCL_double) missing_datao = missing_dbl_datai;
-    else                         missing_datao = missing_flt_datai;
-    missing_dbl_datao =          missing_dbl_datai;
-  }
-  else if(has_missing_psfc) {
-    if(type_datao == NCL_double) missing_datao = missing_dbl_psfc;
-    else                         missing_datao = missing_flt_psfc;
-    missing_dbl_datao =          missing_dbl_psfc;
-  }
-  else {
-/*
- * Don't use NCL default of -999 or -9999.
- */
-    if(type_datao == NCL_double) missing_datao.doubleval = 1.e20;
-    else                         missing_datao.floatval  = 1.e20;
-    missing_dbl_datao.doubleval = 1.e20;
-  }
-/* 
- * Allocate space for output dimension sizes and set them.
- */
-  ndims_datao = ndims_datai;
-  dsizes_datao = (int*)calloc(ndims_datao,sizeof(int));  
-  if( dsizes_datao == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Unable to allocate memory for holding dimension sizes");
-    return(NhlFATAL);
-  }
-/* 
- * All dimensions of datai and datao are same except for second-to-last 
- * one.
- */
-  for(i = 0; i < ndims_datao; i++) dsizes_datao[i] = dsizes_datai[i];
-  dsizes_datao[ndims_datao-2] = nlevo;
-
-/*
- * Loop across leftmost dimensions and call the Fortran routine for each
- * subsection of the input arrays.
- */
-  index_datai = index_psfc = index_datao = 0;
-
-  for(i = 0; i < size_leftmost; i++) {
-/*
- * Coerce subsection of datai (tmp_datai) to double if necessary.
- */
-    if(type_datai != NCL_double) {
-      coerce_subset_input_double(datai,tmp_datai,index_datai,type_datai,
-                                 nlevinpts,0,NULL,NULL);
+    if(plevo_type != NCL_double) {
+      plevo2 = (char*)NclMalloc(tmp_md->multidval.totalsize);
+      memcpy(plevo2,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+    } else {
+      plevo2 = (char*)NclMalloc(tmp_md->multidval.totalsize);
+      memcpy(plevo2,tmp_md->multidval.val,tmp_md->multidval.totalsize);
+    }
+    nblk_out = nlevo * nodes;
+    
+    psfc = (void*)NclGetArgValue(
+                        4,
+                        12,
+                        &psfc_n_dims,
+                        psfc_dimsizes,
+                        &psfc_missing,
+                        &psfc_has_missing,
+                        &psfc_type,
+                        0);
+    if(psfc_has_missing) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,
+                 (void*)&missing,(void*)&psfc_missing,1,NULL,NULL,
+                 (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(psfc_type))));
+      out_missing = psfc_missing;
+    } else if(datai_has_missing) {
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)&missing,
+                 (void*)&datai_missing,1,NULL,NULL,
+                 (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(psfc_type))));
+      out_missing = datai_missing;
+    } else {
+      missing = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
+      if(not_double) {
+        out_missing.floatval = (float)missing.doubleval;
+      } else {
+        out_missing= missing;
+      }
+    }
+    
+    if(psfc_n_dims != datai_n_dims -1) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Surface pressure must have same number of case, time, and nodes elements as input, number of dimensions does not match.");
+      return(NhlFATAL);
     }
     else {
-      tmp_datai = &((double*)datai)[index_datai];
+      if(datai_n_dims == 4) {
+        if(psfc_dimsizes[0] != ncase || psfc_dimsizes[1] != ntime) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Surface pressure must have same number of case and time elements as input.");
+          return(NhlFATAL);
+        }
+      }
+      if(datai_n_dims == 3) {
+        if(psfc_dimsizes[0] != ntime) {
+          NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Surface pressure must have same number of time elements as input.");
+          return(NhlFATAL);
+        }
+      }
+      if(psfc_dimsizes[psfc_n_dims-1] != nodes) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Surface pressure must have same number of nodes elements as input.");
+        return(NhlFATAL);
+      }
+    }
+    psf_blk = nodes;
+    psf_elem = 1;
+    for(i = 0; i < psfc_n_dims; i++) {
+      psf_elem *= psfc_dimsizes[i];
+    }
+    
+    intyp = (int*)NclGetArgValue(
+                        5,
+                        12,
+                        NULL,
+                        NULL,
+                        &intyp_missing,
+                        &intyp_has_missing,
+                        NULL,
+                        0);
+    p0_ptr = (void*)NclGetArgValue(
+                        6,
+                        12,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        &p0_type,
+                        0);
+    if(p0_type != NCL_double ) {
+      p0  = (double*)NclMalloc(sizeof(double));
+      _Nclcoerce((NclTypeClass)nclTypedoubleClass,(void*)p0,(void*)p0_ptr,1,
+                 NULL,NULL,
+                 (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(p0_type))));
+    } else {
+      p0 = (double*) p0_ptr;
+    }
+    ilev = (int*)NclGetArgValue(
+                        7,
+                        12,
+                        NULL,
+                        NULL,
+                        &ilev_missing,
+                        &ilev_has_missing,
+                        NULL,
+                        0);
+    kxtrp = (logical*)NclGetArgValue(
+                        8,
+                        12,
+                        NULL,
+                        NULL,
+                        &kxtrp_missing,
+                        &kxtrp_has_missing,
+                        NULL,
+                        0);
+
+
+    varflg = (int*)NclGetArgValue(
+                        9,
+                        12,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        NULL,
+                        0);
+
+    tbot = (void*)NclGetArgValue(
+                        10,
+                        12,
+                        &tbot_n_dims,
+                        tbot_dimsizes,
+                        NULL,
+                        NULL,
+                        &tbot_type,
+                        0);
+
+
+    if(psfc_n_dims != tbot_n_dims ) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Temperature at the lowest temperature level must have the same number of dimensions as surface pressure.");
+      return(NhlFATAL);
+    }
+    
+    for(i = 0; i < psfc_n_dims; i++) {
+      if(psfc_dimsizes[i] != tbot_dimsizes[i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Temperature at the lowest temperature level must have the same dimension sizes as surface pressure.");
+        return(NhlFATAL);
+      }
+    }
+    
+    phis = (void*)NclGetArgValue(
+                        11,
+                        12,
+                        &phis_n_dims,
+                        phis_dimsizes,
+                        NULL,
+                        NULL,
+                        &phis_type,
+                        0);
+    if(phis_n_dims < 1 || phis_n_dims > 3 || phis_n_dims > psfc_n_dims) {
+      NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Surface geopotential must either be a 1, 2, or 3-dimensional array, and must have the same or fewer dimensions than surface pressure");
+    }
+    for(i = 0; i < phis_n_dims; i++) {
+      if(phis_dimsizes[i] != psfc_dimsizes[psfc_n_dims-phis_n_dims+i]) {
+        NhlPError(NhlFATAL,NhlEUNKNOWN,"vinth2p_ecmwf_nodes: Surface geopotential must have the same dimension sizes as the rightmost dimensions of surface pressure.");
+        return(NhlFATAL);
+      }
+    }
+    phis_elem = 1;
+    for(i = 0; i < phis_n_dims; i++) {
+      phis_elem *= phis_dimsizes[i];
     }
 
+    nlevip1 = nlevi+1;
+    plevi = (double*)NclMalloc(nlevip1*sizeof(double));
+    if(not_double) {
+      datao = (char*)NclMalloc(total * nblk_out * sizeof(float));
+      tmp_datai = (double*)NclMalloc(nblk * sizeof(double));
+      tmp_datao = (double*)NclMalloc(nblk_out* sizeof(double));
+      psfc_d = (double*) NclMalloc(psf_blk*sizeof(double));
+      tbot_d = (double*) NclMalloc(psf_blk*sizeof(double));
+      phis_d = (double*) NclMalloc(psf_blk*sizeof(double));
+      if(phis_n_dims == 2) {
+        _Nclcoerce((NclTypeClass)nclTypedoubleClass, phis_d,
+                   ((char*)phis),psf_blk,NULL,NULL,
+                   (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
+      }
 /*
- * Coerce subsection of psfc (tmp_psfc) to double if necessary.
+ * Loop across leftmost dimensions and pass subsections of the input
+ * arrays to the Fortran routine.  Since phis can be 2 to 4
+ * dimensions, and psfc, tbot, datai can be 3 to 5 dimensions, we
+ * have to loop separately across number of cases and times so
+ * we can correctly deal with the subsections of phis, psfc, tbot, datai.
  */
-    if(type_psfc != NCL_double) {
-            coerce_subset_input_double(psfc,tmp_psfc,index_psfc,type_psfc,npts,
-                                       0,NULL,NULL);
+      i = index_phis = 0;
+      for(nc = 0; nc < ncase ; nc++) {
+        for(nt = 0; nt < ntime ; nt++) {
+/*
+ * The input is not double, so we have to coerce it.
+ */
+          _Nclcoerce((NclTypeClass)nclTypedoubleClass, tmp_datai,
+                     (datai+i*sz*nblk),nblk,NULL,NULL,datai_md->multidval.type);
+          _Nclcoerce((NclTypeClass)nclTypedoubleClass, psfc_d,
+                     ((char*)psfc+sz*psf_blk*i),psf_blk,NULL,NULL,
+                     (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(psfc_type))));
+          _Nclcoerce((NclTypeClass)nclTypedoubleClass, tbot_d,
+                     ((char*)tbot+sz*psf_blk*i),psf_blk,NULL,NULL,
+                     (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(tbot_type))));
+          if(phis_n_dims >= 2) {
+            _Nclcoerce((NclTypeClass)nclTypedoubleClass, phis_d,
+                       ((char*)phis+sz*psf_blk*index_phis),psf_blk,NULL,NULL,
+                       (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
+          }
+          NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(tmp_datai,tmp_datao,
+                                             hbcofa,hbcofb,p0,plevi,plevo,
+                                             intyp,ilev,psfc_d,
+                                             &missing,kxtrp,
+                                             &nodes,&nlevi,&nlevip1,
+                                             &nlevo,varflg,
+                                             tbot_d,phis_d);
+          for(j = 0; j< nblk_out; j++) {
+            ((float*)datao)[i*nblk_out + j] = (float)tmp_datao[j];
+          }
+          i++;
+          index_phis++;
+        }
+        if(phis_n_dims == 2) {
+          index_phis = 0;
+        }
+      }
+      NclFree(psfc_d);
+      NclFree(tbot_d);
+      NclFree(phis_d);
+      NclFree(tmp_datai);
+      NclFree(tmp_datao);
+      
+    } else {
+/*
+ * The input is already double, which makes the code a little "simpler"
+ * here.
+ *
+ * Create space for datao return array.
+ */
+      datao = (char*)NclMalloc(total * nblk_out * sizeof(double));
+      if(psfc_type != NCL_double) {
+        psfc_d = (double*) NclMalloc(psf_elem*sizeof(double));
+        _Nclcoerce((NclTypeClass)nclTypedoubleClass, psfc_d, 
+                   (char*)psfc,psf_elem,NULL,NULL,
+                   (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(psfc_type))));
+      } else {
+        psfc_d =(double*) psfc;
+      }
+      if(tbot_type != NCL_double) {
+        tbot_d = (double*) NclMalloc(psf_elem*sizeof(double));
+        _Nclcoerce((NclTypeClass)nclTypedoubleClass, tbot_d, (char*)tbot,
+                   psf_elem,NULL,NULL,
+                   (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(tbot_type))));
+      } else {
+        tbot_d =(double*) tbot;
+      }
+      if(phis_type != NCL_double) {
+        phis_d = (double*) NclMalloc(phis_elem*sizeof(double));
+        _Nclcoerce((NclTypeClass)nclTypedoubleClass, phis_d,(char*)phis,
+                   phis_elem,NULL,NULL,
+                   (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
+      } else {
+        phis_d =(double*) phis;
+      }
+/*
+ * Loop across leftmost dimensions and pass subsections of the input
+ * arrays to the Fortran routine.  Since phis can 1 to 3 
+ * dimensions, and psfc, tbot, datai can be 2 to 4 dimensions, we
+ * have to loop separately across number of cases and times so
+ * we can correctly deal with the subsections of phis, psfc, tbot, datai.
+ */
+      i = index_phis = 0;
+      for(nc = 0; nc < ncase ; nc++) {
+        for(nt = 0; nt < ntime ; nt++) {
+          if(phis_n_dims >= 2) {
+/*
+ * phis_n_dims is 2D and needs to be coerced.
+ */
+            NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
+                                               (datai+sizeof(double)*i*nblk),
+                                               (((char*)datao)+
+                                               sizeof(double)*nblk_out*i),
+                                               hbcofa,hbcofb,p0,plevi,plevo,
+                                               intyp,ilev,
+                                               (((char*)psfc_d)+
+                                                sizeof(double)*psf_blk*i),
+                                               &missing,kxtrp,
+                                               &nodes,&nlevi,&nlevip1,
+                                               &nlevo,varflg,
+                                               (((char*)tbot_d)+
+                                                sizeof(double)*psf_blk*i),
+                                               (((char*)phis_d)+
+                                                sizeof(double)*psf_blk*index_phis));
+          }
+          else {
+/*
+ * phis_n_dims is 1D and has already been coerced.
+ */
+            NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(
+                                               (datai+sizeof(double)*i*nblk),
+                                               (((char*)datao)+
+                                                sizeof(double)*nblk_out*i),
+                                               hbcofa,hbcofb,p0,plevi,plevo,
+                                               intyp,ilev,
+                                               (((char*)psfc_d)+
+                                                sizeof(double)*psf_blk*i),
+                                               &missing,kxtrp,
+                                               &nodes,&nlevi,&nlevip1,
+                                               &nlevo,varflg,
+                                               (((char*)tbot_d)+
+                                                sizeof(double)*psf_blk*i),
+                                               phis_d);
+          }
+          i++;
+          index_phis++;
+        }
+        if(phis_n_dims == 2) {
+          index_phis = 0;
+        }
+      }
+      if((void*)psfc_d != psfc) {
+        NclFree(psfc_d);
+      }
+      if((void*)tbot_d != tbot) {
+        NclFree(tbot_d);
+      }
+      if((void*)phis_d != phis) {
+        NclFree(phis_d);
+      }
     }
-    else {
-      tmp_psfc = &((double*)psfc)[index_psfc];
+    
+
+    NclFree(plevi);
+
+
+    if(tmp_md->multidval.val != plevo) {
+      NclFree(plevo);
     }
-
-/*
- * Coerce subsection of tbot (tmp_tbot) to double if necessary.
- */
-    if(type_tbot != NCL_double) {
-            coerce_subset_input_double(tbot,tmp_tbot,index_psfc,type_tbot,npts,
-                                       0,NULL,NULL);
+    if((void*)hbcofa != hbcofa_ptr) {
+      NclFree(hbcofa);
     }
-    else {
-      tmp_tbot = &((double*)tbot)[index_psfc];
+    if((void*)hbcofb != hbcofb_ptr) {
+      NclFree(hbcofb);
     }
-
-/*
- * Coerce subsection of phis (tmp_phis) to double if necessary.
- */
-    if(type_phis != NCL_double) {
-            coerce_subset_input_double(phis,tmp_phis,index_psfc,type_phis,npts,
-                                       0,NULL,NULL);
+    if((void*)p0 != p0_ptr) {
+      NclFree(p0);
     }
-    else {
-      tmp_phis = &((double*)phis)[index_psfc];
+    if(was_val) {
+/*
+ * If the original input array didn't have coordinate information,
+ * then we have to define it here. 
+ *
+ * There are three different cases here, depending on whether the
+ * input was 2D, 3D, or 4D.
+ *
+ * Start with the 4D case.
+ */
+      if(datai_n_dims == 4 ) {
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = NrmStringToQuark("case"); 
+        dim_info[0].dim_size  = ncase;
+        
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = NrmStringToQuark("time"); 
+        dim_info[1].dim_size  = ntime;
+        
+        dim_info[2].dim_num   = 2;
+        dim_info[2].dim_quark = plevo_quark; 
+        dim_info[2].dim_size  = nlevo;
+        
+        dim_info[3].dim_num   = 3;
+        dim_info[3].dim_quark = NrmStringToQuark("nodes");
+        dim_info[3].dim_size  = nodes;
+                  
+        lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&nlevo,TEMPORARY,NULL,(NclObjClass)plevo_type_class);
+        lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,&(dim_info[2]),-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
+        if(!plevo_was_val) {
+          _NclAttCopyWrite(lev_coord_var,plevo_val.u.data_var);
+        }
+        ids[0] = -1;
+        ids[1] = -1;
+        ids[2] = lev_coord_var->obj.id;
+        ids[3] = -1;
+
+        datao_dimsizes[0] = ncase;
+        datao_dimsizes[1] = ntime;
+        datao_dimsizes[2] = nlevo;
+        datao_dimsizes[3] = nodes;
+        
+        tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,datao,
+                               &out_missing,4,datao_dimsizes,TEMPORARY,NULL,
+                               not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
+      }
+      else if(datai_n_dims == 3 ) {
+/*
+ * Here's the 3D case.
+ */
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = NrmStringToQuark("time"); 
+        dim_info[0].dim_size  = ntime;
+
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = plevo_quark; 
+        dim_info[1].dim_size  = nlevo;
+
+        dim_info[2].dim_num   = 2;
+        dim_info[2].dim_quark = NrmStringToQuark("nodes");
+        dim_info[2].dim_size  = nodes;
+
+        lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&nlevo,TEMPORARY,NULL,(NclObjClass)plevo_type_class);
+        lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,&(dim_info[1]),-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
+        if(!plevo_was_val) {
+          _NclAttCopyWrite(lev_coord_var,plevo_val.u.data_var);
+        }
+        ids[0] = -1;
+        ids[1] = lev_coord_var->obj.id;
+        ids[2] = -1;
+
+        datao_dimsizes[0] = ntime;
+        datao_dimsizes[1] = nlevo;
+        datao_dimsizes[2] = nodes;
+
+        tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,datao,
+                               &out_missing,3,datao_dimsizes,TEMPORARY,NULL,
+                               not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
+      } else {
+/*
+ * Here's the 2D case.
+ */
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = plevo_quark; 
+        dim_info[0].dim_size  = nlevo;
+
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = NrmStringToQuark("nodes");
+        dim_info[1].dim_size  = nodes;
+
+        lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,
+                                     NULL,1,&nlevo,TEMPORARY,NULL,
+                                     (NclObjClass)plevo_type_class);
+        lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,
+                                                   NULL,lev_coord_md,dim_info,
+                                                   -1,NULL,COORD,
+                                                   NrmQuarkToString(plevo_quark),
+                                                   TEMPORARY);
+        if(!plevo_was_val) {
+          _NclAttCopyWrite(lev_coord_var,plevo_val.u.data_var);
+        }
+        ids[0] = lev_coord_var->obj.id;
+        ids[1] = -1;
+        datao_dimsizes[0] = nlevo;
+        datao_dimsizes[1] = nodes;
+        tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,datao,
+                               &out_missing,2,datao_dimsizes,TEMPORARY,NULL,
+                               not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
+        
+      }
+      data.u.data_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,
+                                      dim_info,-1,ids,RETURNVAR,NULL,
+                                      TEMPORARY);
+      data.kind = NclStk_VAR;
+      _NclPlaceReturn(data);
+    } else {
+/*
+ * The input data may or may not have coordinate information attached
+ * to it.
+ *
+ * There are three different cases here, depending on whether the
+ * input was 2D, 3D, or 4D.
+ *
+ * Start with the 4D case.
+ */
+      if(datai_n_dims == 4) {
+        dim_info[0].dim_num   = 0; 
+        dim_info[0].dim_quark = val.u.data_var->var.dim_info[0].dim_quark;
+        dim_info[0].dim_size  = ncase;
+        
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = val.u.data_var->var.dim_info[1].dim_quark;
+        dim_info[1].dim_size  = ntime;
+                  
+        dim_info[2].dim_num   = 2;
+        dim_info[2].dim_quark = plevo_quark;
+        dim_info[2].dim_size  = nlevo;
+                  
+        dim_info[3].dim_num   = 3;
+        dim_info[3].dim_quark = val.u.data_var->var.dim_info[3].dim_quark;
+        dim_info[3].dim_size  = nodes;
+                  
+        lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,
+                                     NULL,1,&nlevo,TEMPORARY,NULL,
+                                     (NclObjClass)plevo_type_class);
+        lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,
+                                                   NULL,lev_coord_md,
+                                                   &(dim_info[2]),-1,NULL,
+                                                   COORD,
+                                                   NrmQuarkToString(plevo_quark),
+                                                   TEMPORARY);
+        if(!plevo_was_val) {
+          _NclAttCopyWrite(lev_coord_var,plevo_val.u.data_var);
+        }
+        ids[0] = -1;
+        ids[1] = -1;
+        ids[2] = lev_coord_var->obj.id;
+        ids[3] = -1;
+        datao_dimsizes[0] = ncase;
+        datao_dimsizes[1] = ntime;
+        datao_dimsizes[2] = nlevo;
+        datao_dimsizes[3] = nodes;
+        
+        tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,datao,
+                               &out_missing,4,datao_dimsizes,TEMPORARY,NULL,
+                               not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
+        data.u.data_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,
+                                        dim_info,-1,ids,RETURNVAR,NULL,
+                                        TEMPORARY);
+
+/*
+ * Here's where we check if the input variable had any dimension
+ * information attached to it. If so, use it to return it with the
+ * return output.
+ *
+ * Since this is the 4D case, we need to check dimensions 0, 1, and 3.
+ * (The 2-th dimension is the level dimension that we've already dealt
+ * with above.)
+ */
+        if((val.u.data_var->var.dim_info[0].dim_quark != -1) &&
+           (_NclIsCoord(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[0].dim_quark)))) {
+          tmp_var = _NclReadCoordVar(val.u.data_var,
+                                     NrmQuarkToString(val.u.data_var->var.dim_info[0].dim_quark),NULL);
+          _NclWriteCoordVar(data.u.data_var,
+                            _NclVarValueRead(tmp_var,NULL,NULL),
+                            NrmQuarkToString(data.u.data_var->var.dim_info[0].dim_quark),NULL);
+          if(data.u.data_var->var.coord_vars[0] != -1) {
+            _NclAttCopyWrite((NclVar)_NclGetObj(data.u.data_var->var.coord_vars[0]),tmp_var);
+          }
+        }
+                  
+        if((val.u.data_var->var.dim_info[1].dim_quark != -1) &&
+           (_NclIsCoord(val.u.data_var,
+           NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark)))) {
+          tmp_var = _NclReadCoordVar(val.u.data_var,
+                                     NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark),NULL);
+          _NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),
+                            NrmQuarkToString(data.u.data_var->var.dim_info[1].dim_quark),NULL);
+          if(data.u.data_var->var.coord_vars[1] != -1) {
+            _NclAttCopyWrite((NclVar)_NclGetObj(data.u.data_var->var.coord_vars[1]),tmp_var);
+          }
+        }
+                  
+        if((val.u.data_var->var.dim_info[3].dim_quark != -1) &&
+           (_NclIsCoord(val.u.data_var,
+           NrmQuarkToString(val.u.data_var->var.dim_info[3].dim_quark)))) {
+          tmp_var = _NclReadCoordVar(val.u.data_var,
+                                     NrmQuarkToString(val.u.data_var->var.dim_info[3].dim_quark),NULL);
+          _NclWriteCoordVar(data.u.data_var,
+                            _NclVarValueRead(tmp_var,NULL,NULL),
+                            NrmQuarkToString(data.u.data_var->var.dim_info[3].dim_quark),NULL);
+          if(data.u.data_var->var.coord_vars[3] != -1) {
+            _NclAttCopyWrite((NclVar)_NclGetObj(data.u.data_var->var.coord_vars[3]),tmp_var);
+          }
+        }
+      }
+      else if(datai_n_dims == 3) {
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = val.u.data_var->var.dim_info[0].dim_quark;
+        dim_info[0].dim_size  = ntime;
+
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = plevo_quark;
+        dim_info[1].dim_size  = nlevo;
+
+        dim_info[2].dim_num   = 2;
+        dim_info[2].dim_quark = val.u.data_var->var.dim_info[2].dim_quark;
+        dim_info[2].dim_size  = nodes;
+
+        lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,
+                                     NULL,1,&nlevo,TEMPORARY,NULL,
+                                     (NclObjClass)plevo_type_class);
+        lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,
+                                                   NULL,lev_coord_md,
+                                                   &(dim_info[1]),-1,NULL,
+                                                   COORD,
+                                                   NrmQuarkToString(plevo_quark),
+                                                   TEMPORARY);
+        if(!plevo_was_val) {
+          _NclAttCopyWrite(lev_coord_var,plevo_val.u.data_var);
+        }
+        ids[0] = -1;
+        ids[1] = lev_coord_var->obj.id;
+        ids[2] = -1;
+
+        datao_dimsizes[0] = ntime;
+        datao_dimsizes[1] = nlevo;
+        datao_dimsizes[2] = nodes;
+
+        tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,datao,
+                               &out_missing,3,datao_dimsizes,TEMPORARY,NULL,
+                               not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
+        data.u.data_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,
+                                        dim_info,-1,ids,RETURNVAR,NULL,
+                                        TEMPORARY);
+        
+        if((val.u.data_var->var.dim_info[0].dim_quark != -1) &&
+           (_NclIsCoord(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[0].dim_quark)))) {
+          tmp_var = _NclReadCoordVar(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[0].dim_quark),NULL);
+          _NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),
+                            NrmQuarkToString(data.u.data_var->var.dim_info[0].dim_quark),NULL);
+          if(data.u.data_var->var.coord_vars[0] != -1) {
+            _NclAttCopyWrite((NclVar)_NclGetObj(data.u.data_var->var.coord_vars[0]),tmp_var);
+          }
+        }
+        
+        if((val.u.data_var->var.dim_info[2].dim_quark != -1) &&
+           (_NclIsCoord(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[2].dim_quark)))) {
+          tmp_var = _NclReadCoordVar(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[2].dim_quark),NULL);
+          _NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),NrmQuarkToString(data.u.data_var->var.dim_info[2].dim_quark),NULL);
+          if(data.u.data_var->var.coord_vars[2] != -1) {
+            _NclAttCopyWrite((NclVar)_NclGetObj(data.u.data_var->var.coord_vars[2]),tmp_var);
+          }
+        }
+      } else {
+        dim_info[0].dim_num   = 0;
+        dim_info[0].dim_quark = plevo_quark;
+        dim_info[0].dim_size  = nlevo; 
+
+        dim_info[1].dim_num   = 1;
+        dim_info[1].dim_quark = val.u.data_var->var.dim_info[1].dim_quark;
+        dim_info[1].dim_size  = nodes;
+
+        lev_coord_md = _NclCreateVal(NULL,NULL,Ncl_OneDValCoordData,0,plevo2,NULL,1,&nlevo,TEMPORARY,NULL,(NclObjClass)plevo_type_class);
+        lev_coord_var = (NclVar)_NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,lev_coord_md,dim_info,-1,NULL,COORD,NrmQuarkToString(plevo_quark),TEMPORARY);
+        if(!plevo_was_val) {
+          _NclAttCopyWrite(lev_coord_var,plevo_val.u.data_var);
+        }
+        ids[0] = lev_coord_var->obj.id;
+        ids[1] = -1;
+
+        datao_dimsizes[0] = nlevo;
+        datao_dimsizes[1] = nodes;
+
+        tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValData,0,datao,
+                               &out_missing,2,datao_dimsizes,TEMPORARY,NULL,
+                               not_double ? (NclObjClass)nclTypefloatClass : (NclObjClass)nclTypedoubleClass);
+        data.u.data_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,tmp_md,
+                                        dim_info,-1,ids,RETURNVAR,NULL,
+                                        TEMPORARY);
+        
+        if((val.u.data_var->var.dim_info[1].dim_quark != -1)&&(_NclIsCoord(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark)))) {
+          tmp_var = _NclReadCoordVar(val.u.data_var,NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark),NULL);
+          _NclWriteCoordVar(data.u.data_var,_NclVarValueRead(tmp_var,NULL,NULL),NrmQuarkToString(val.u.data_var->var.dim_info[1].dim_quark),NULL);
+          if(data.u.data_var->var.coord_vars[1] != -1) {
+            _NclAttCopyWrite((NclVar)_NclGetObj(data.u.data_var->var.coord_vars[1]),tmp_var);
+          }
+        }
+      }
+      data.kind = NclStk_VAR;
+      _NclPlaceReturn(data);
     }
-
-/*
- * Point temporary output array to void output array if appropriate.
- */
-    if(type_datao == NCL_double) tmp_datao = &((double*)datao)[index_datao];
-
-
-/*
- * Call the Fortran routine.
- */
-    NGCALLF(dvinth2pecmwfnodes,DVINTH2PECMWFNODES)(tmp_datai, tmp_datao,
-                                         tmp_hbcofa, tmp_hbcofb, tmp_p0, 
-                                         plevi, tmp_plevo, intyp, ilev,
-                                         tmp_psfc, 
-                                         &missing_dbl_datao.doubleval, kxtrp,
-                                         &npts, &nlevi, &nlevip1, &nlevo,
-                                         varflg, tmp_tbot, tmp_phis);
-
-/*
- * Coerce output back to float if necessary.
- */
-    if(type_datao == NCL_float) {
-      coerce_output_float_only(datao,tmp_datao,nlevonpts,index_datao);
-    }
-    index_datai += nlevinpts;
-    index_psfc  += npts;
-    index_datao += nlevonpts;
-  }
-
-/*
- * Free unneeded memory.
- */
-  if(type_datai  != NCL_double) NclFree(tmp_datai);
-  if(type_hbcofa != NCL_double) NclFree(tmp_hbcofa);
-  if(type_hbcofb != NCL_double) NclFree(tmp_hbcofb);
-  if(type_plevo  != NCL_double) NclFree(tmp_plevo);
-  if(type_psfc   != NCL_double) NclFree(tmp_psfc);
-  if(type_p0     != NCL_double) NclFree(tmp_p0);
-  if(type_datao  != NCL_double) NclFree(tmp_datao);
-  if(type_tbot   != NCL_double) NclFree(tmp_tbot);
-  if(type_phis   != NCL_double) NclFree(tmp_phis);
-  NclFree(plevi);
-
-/*
- * Return value back to NCL script.
- */
-  if(type_datao == NCL_double) {
-     ret = NclReturnValue(datao,ndims_datao,dsizes_datao,
-                          &missing_dbl_datao,type_datao,0);
-  }
-  else {
-     ret = NclReturnValue(datao,ndims_datao,dsizes_datao,
-                          &missing_flt_datao,type_datao,0);
-  }
-  NclFree(dsizes_datao);
-  return(ret);
+    return(NhlNOERROR);
 }
