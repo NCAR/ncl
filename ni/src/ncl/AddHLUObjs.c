@@ -1,5 +1,5 @@
 /*
- *      $Id: AddHLUObjs.c,v 1.21 2004-07-23 21:26:23 dbrown Exp $
+ *      $Id: AddHLUObjs.c,v 1.22 2009-12-10 22:52:04 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -69,6 +69,9 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhlstreamlinePlotClass->base_class.class_name,NhlstreamlinePlotClass);
 	_NclAddSingleObj(NhlgraphicStyleClass->base_class.class_name,NhlgraphicStyleClass);
 	_NclAddSingleObj(NhlprimitiveClass->base_class.class_name,NhlprimitiveClass);
+#ifdef BuildCAIRO
+	_NclAddSingleObj(NhlcairoWorkstationClass->base_class.class_name, NhlcairoWorkstationClass);
+#endif
 	return;
 	
 }

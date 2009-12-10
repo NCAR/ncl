@@ -1,5 +1,5 @@
 /*
- *      $Id: HluClasses.h,v 1.2 2004-07-23 21:26:23 dbrown Exp $
+ *      $Id: HluClasses.h,v 1.3 2009-12-10 22:52:04 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -48,3 +48,6 @@ extern NhlClass NhlvectorFieldClass;
 extern NhlClass NhlstreamlinePlotClass;
 extern NhlClass NhlgraphicStyleClass;
 extern NhlClass NhlprimitiveClass;
+#ifdef BuildCAIRO
+extern NhlClass NhlcairoWorkstationClass;
+#endif

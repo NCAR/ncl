@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.167 2009-12-04 15:23:07 huangwei Exp $
+#      $Id: yMakefile,v 1.168 2009-12-10 22:52:04 brownrig Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-12-04 15:23:07 $
+#	Date:		$Date: 2009-12-10 22:52:04 $
 #
 #	Description:	
 #
@@ -89,6 +89,12 @@ GDAL_OBJS = NclOGR.o
 #define GDALLIB
 #endif
 
+#ifdef BuildCAIRO
+CAIRO_DEFS = -DBuildCAIRO
+#else
+#define CAIRO_DEFS
+#endif
+
 #if !defined(BuildUdunits)
 #endif
 
@@ -137,7 +143,7 @@ HACKOBJS	=	hphack.o
 DYNAMIC_LIBS	=	-ldl
 #endif
 
-EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDFEOS5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) 
+EXTRA_CDEFINES = $(OS1_DEF) $(MAJOR_DEF) $(NETCDF4_DEFS) $(HDFEOS_DEFS) $(HDFEOS5_DEFS) $(GRIB2_DEFS) $(GDAL_DEFS) $(UDUNITS_DEFS) $(V5D_DEFS) $(CAIRO_DEFS)
 
 API_DEFS	=	-DMAKEAPI
 
