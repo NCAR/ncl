@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.79 2008-02-07 00:23:19 haley Exp $
+#      $Id: yMakefile,v 1.80 2009-12-10 22:31:41 brownrig Exp $
 #
 #########################################################################
 #                                                                       #
@@ -38,7 +38,19 @@ TRIANGLE_OBJ = triangle.o
 #define TRIANGLE_OBJ
 #endif 
 
-EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF)
+#ifdef BuildCAIRO
+CAIRO_DEF   =  -DBuildCAIRO
+CAIRO_HDR   =  CairoWorkstation.h CairoWorkstationP.h
+CAIRO_SRC   =  CairoWorkstation.c
+CAIRO_OBJ   =  CairoWorkstation.o 
+#else
+#define CAIRO_DEF
+#define CAIRO_HDR
+#define CAIRO_SRC
+#define CAIRO_OBJ
+#endif
+
+EXTRA_CDEFINES	=	$(OS_DEF) $(TRIANGLE_DEF) $(PNG_DEF) $(CAIRO_DEF)
 
 HDRS1   	= Base.h BaseI.h BaseP.h Convert.h ConvertP.h ConvertersP.h\
 		CoordApprox.h Error.h ErrorI.h ErrorP.h IrregularTransObj.h \
@@ -80,8 +92,7 @@ HDRS2           = FortranP.h ScalarField.h ScalarFieldP.h ScalarFieldFloatP.h \
 		ImageWorkstation.h ImageWorkstationP.h \
 		MeshScalarField.h MeshScalarFieldP.h 
 
-
-HDRS            = $(HDRS1) $(HDRS2) $(TRIANGLE_HDR)
+HDRS            = $(HDRS1) $(HDRS2) $(TRIANGLE_HDR) $(CAIRO_HDR)
 
 CSRCS1   	= Base.c BoundingBox.c Close.c Convert.c Converters.c \
 		Create.c Destroy.c Draw.c Error.c GetValues.c \
@@ -104,9 +115,9 @@ CSRCS2          = MapPlot.c XyPlot.c ResList.c Workspace.c Fortran.c Futil.c \
 		cmpf.c nicevals.c \
 	        PDFWorkstation.c CnRenderer.c CnStdRenderer.c \
 		CnTriMeshRenderer.c TriMeshTransObj.c ImageWorkstation.c \
-		MeshScalarField.c
+		MeshScalarField.c 
 
-CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC)
+CSRCS            = $(CSRCS1) $(CSRCS2) $(TRIANGLE_SRC) $(CAIRO_SRC)
 
 COBJS1    	= Base.o BoundingBox.o Close.o Convert.o Converters.o \
 		Create.o Destroy.o Draw.o Error.o GetValues.o \
@@ -129,9 +140,9 @@ COBJS2          = ScalarField.o AnnoManager.o Format.o App.o PSWorkstation.o \
 		cmpf.o nicevals.o \
 	        PDFWorkstation.o CnRenderer.o CnStdRenderer.o \
 		CnTriMeshRenderer.o TriMeshTransObj.o ImageWorkstation.o \
-		MeshScalarField.o
+		MeshScalarField.o 
 
-COBJS           = $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ)
+COBJS           = $(COBJS1) $(COBJS2) $(TRIANGLE_OBJ) $(CAIRO_OBJ)
 
 FSRCS		= DATACOMMF.f ERRORF.f HLUF.f PLOTMANAGERF.f RLGEN.f RLSET.f \
 		RLGET.f TRANSFORMF.f VIEWF.f WORKSPACEF.f WORKSTATIONF.f \
