@@ -1,6 +1,6 @@
 
 /*
- *      $Id: AddBuiltIns.c,v 1.88 2009-12-08 21:07:08 huangwei Exp $
+ *      $Id: AddBuiltIns.c,v 1.89 2009-12-10 23:49:14 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -701,6 +701,16 @@ void
 );
 
 extern NhlErrorTypes _NclIIsNumeric(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsENumeric(
+#if     NhlNeedProto
+void
+#endif
+);
+extern NhlErrorTypes _NclIIsSNumeric(
 #if     NhlNeedProto
 void
 #endif
@@ -1937,6 +1947,16 @@ void _NclAddBuiltIns
 	args = NewArgs(1);
 	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
 	NclRegisterFunc( _NclIIsNumeric,args,"isnumeric",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsENumeric,args,"isenumeric",nargs);
+
+	nargs = 0;
+	args = NewArgs(1);
+	SetArgTemplate(args,nargs,NclANY,0,NclANY); nargs++;
+	NclRegisterFunc( _NclIIsSNumeric,args,"issnumeric",nargs);
 
 	nargs = 0;
 	args = NewArgs(1);

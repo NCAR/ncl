@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh ulong NhlTUlong NhlTUlongGenArray -999999 > .tmp.$$
+sh op_funcs.sh ulong NhlTUlong NhlTUlongGenArray 0 > .tmp.$$
 
 if [ ! $? ]
 then
@@ -13,7 +13,7 @@ sed \
 -e 's/LOCALTYPE/unsigned long/g' \
 -e 's/HLUTYPEREP/NhlTUlong/g' \
 -e 's/HLUGENTYPEREP/NhlTUlongGenArray/g' \
--e 's/DEFAULT_MISS/-999999999999/g' \
+-e 's/DEFAULT_MISS/0/g' \
 -e 's/DEFAULT_FORMAT/%ld/g' \
 -e "/REPLACE/r .tmp.$$" \
 -e '/REPLACE/d' \

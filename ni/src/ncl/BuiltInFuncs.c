@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.248 2009-12-08 21:07:08 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.249 2009-12-10 23:49:14 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -15061,6 +15061,7 @@ NhlErrorTypes _NclIIsChar
 		0
 	));
 }
+
 NhlErrorTypes _NclIIsNumeric
 #if	NhlNeedProto
 (void)
@@ -15086,7 +15087,91 @@ NhlErrorTypes _NclIIsNumeric
 		return(NhlFATAL);
 
 	out_val = (logical*)NclMalloc(sizeof(logical));
+	if(tmp_md->multidval.type->type_class.type & NCL_NUMERIC_TYPE_MASK) {
+		*out_val = 1;
+	} else {
+		*out_val = 0;
+	}
+
+
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+		0
+	));
+}
+
+NhlErrorTypes _NclIIsSNumeric
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	logical *out_val;
+	int dimsizes = 1;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
 	if(tmp_md->multidval.type->type_class.type & NCL_SNUMERIC_TYPE_MASK) {
+		*out_val = 1;
+	} else {
+		*out_val = 0;
+	}
+
+	return(NclReturnValue(
+		out_val,
+		1,
+		&dimsizes,
+		NULL,
+		((NclTypeClass)nclTypelogicalClass)->type_class.data_type,
+		0
+	));
+}
+
+NhlErrorTypes _NclIIsENumeric
+#if	NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+	NclStackEntry data;
+	NclMultiDValData tmp_md = NULL;
+	logical *out_val;
+	int dimsizes = 1;
+
+	data = _NclGetArg(0,1,DONT_CARE);
+	switch(data.kind) {
+		case NclStk_VAR:
+			tmp_md = _NclVarValueRead(data.u.data_var,NULL,NULL);
+			break;
+		case NclStk_VAL:
+			tmp_md = (NclMultiDValData)data.u.data_obj;
+			break;
+	}
+	if(tmp_md == NULL)
+		return(NhlFATAL);
+
+	out_val = (logical*)NclMalloc(sizeof(logical));
+	if(tmp_md->multidval.type->type_class.type & NCL_ENUMERIC_TYPE_MASK) {
 		*out_val = 1;
 	} else {
 		*out_val = 0;

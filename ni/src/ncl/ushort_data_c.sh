@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh op_funcs.sh ushort NhlTUshort NhlTUshortGenArray -99 > .tmp.$$
+sh op_funcs.sh ushort NhlTUshort NhlTUshortGenArray 0 > .tmp.$$
 
 if [ ! $? ]
 then
