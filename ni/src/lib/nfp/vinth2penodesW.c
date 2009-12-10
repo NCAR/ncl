@@ -93,13 +93,13 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
     double *tbot_d = NULL;
     int tbot_n_dims;
     NclBasicDataTypes tbot_type;
-    int tbot_dimsizes[4];
+    int tbot_dimsizes[3];
 
     void *phis = NULL;
     double *phis_d = NULL;
     int phis_n_dims;
     NclBasicDataTypes phis_type;
-    int phis_dimsizes[4];
+    int phis_dimsizes[3];
 
     double *plevi;
     NclScalar missing;
@@ -478,14 +478,14 @@ NhlErrorTypes vinth2p_ecmwf_nodes_W
       psfc_d = (double*) NclMalloc(psf_blk*sizeof(double));
       tbot_d = (double*) NclMalloc(psf_blk*sizeof(double));
       phis_d = (double*) NclMalloc(psf_blk*sizeof(double));
-      if(phis_n_dims == 2) {
+      if(phis_n_dims == 1) {
         _Nclcoerce((NclTypeClass)nclTypedoubleClass, phis_d,
                    ((char*)phis),psf_blk,NULL,NULL,
                    (NclTypeClass)_NclNameToTypeClass(NrmStringToQuark(_NclBasicDataTypeToName(phis_type))));
       }
 /*
  * Loop across leftmost dimensions and pass subsections of the input
- * arrays to the Fortran routine.  Since phis can be 2 to 4
+ * arrays to the Fortran routine.  Since phis can be 1 to 3
  * dimensions, and psfc, tbot, datai can be 3 to 5 dimensions, we
  * have to loop separately across number of cases and times so
  * we can correctly deal with the subsections of phis, psfc, tbot, datai.
