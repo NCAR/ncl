@@ -1,6 +1,6 @@
 C
-C $Id: gkscom.h,v 1.28 2009-10-16 19:15:21 fred Exp $
-C                                                                      
+C $Id: gkscom.h,v 1.29 2009-12-10 17:42:22 brownrig Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -15,7 +15,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               RWKSP(IWDIM)  , GKSCLP
       INTEGER        NOPWK , NACWK , WCONID, NUMSEG, SEGS  , CURSEG,
      +               SEGLEN, MXSREC, SEGDEL, GKSCLP
-      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(22)      ,
+      COMMON/GKOPDT/ OPS   , KSLEV , WK    , LSWK(23)      ,
      +               MOPWK , MACWK , MNT
       INTEGER        OPS   , WK
       COMMON/GKSTAT/ SOPWK(MXNWK)  , SACWK(MXNWK)  , CPLI  , CLN   ,
@@ -47,7 +47,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
       COMMON/GKENUM/ GBUNDL , GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP  , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
      +               GMI    , GCGM  , GWSS  , GXWE  , GXWC  , GDMP  ,
-     +               GPSMIN , GPSMAX, GPDFP , GPDFL , GPIX  , GCPS  ,       
+     +               GPSMIN , GPSMAX, GPDFP , GPDFL , GPIX  , GCPS  ,
      +               GCROMIN, GCROMAX
       INTEGER        GBUNDL , GINDIV, GGKCL , GGKOP , GWSOP , GWSAC ,
      +               GSGOP  , GOUTPT, GINPUT, GOUTIN, GWISS , GMO   ,
@@ -57,7 +57,7 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
       COMMON/GKSNAM/ GNAM(109)     , SEGNAM(NSEG)  , GFNAME, GSEGRT
       CHARACTER      GNAM*6, SEGNAM*137    , GFNAME*256    ,
      +               GSEGRT*80
-      COMMON/GKSIN1/ FCODE , CONT  , 
+      COMMON/GKSIN1/ FCODE , CONT  ,
      +               IL1   , IL2   , ID(128)       ,
      +               IC1   , IC2   , IC(128)       ,
      +               RL1   , RL2   , RX(128)       , RY(128)       ,

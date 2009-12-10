@@ -1,6 +1,6 @@
 C
-C	$Id: gksbd.f,v 1.34 2009-10-16 19:15:21 fred Exp $
-C                                                                      
+C	$Id: gksbd.f,v 1.35 2009-12-10 17:42:22 brownrig Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -128,20 +128,20 @@ C
 C     GKEROR:  GKS ERROR STATE LIST
 C       ERS    --  ERROR STATE
 C       ERF    --  ERROR FILE
-C       CUFLAG --  A UTILITY FLAG THAT IS USED TO MARK THAT A PARTICULAR 
-C                  WORKSTATION IS BEING ADDRESSED IN THE INTERFACE.  IF 
-C                  CUFLAG IS POSITIVE, THEN IT IS EQUAL TO THE 
-C                  WORKSTATION ID OF THE PARTICULAR WORKSTATION FOR 
-C                  WHICH INSTRUCTIONS ARE TARGETED; IF CUFLAG = -1, THEN 
+C       CUFLAG --  A UTILITY FLAG THAT IS USED TO MARK THAT A PARTICULAR
+C                  WORKSTATION IS BEING ADDRESSED IN THE INTERFACE.  IF
+C                  CUFLAG IS POSITIVE, THEN IT IS EQUAL TO THE
+C                  WORKSTATION ID OF THE PARTICULAR WORKSTATION FOR
+C                  WHICH INSTRUCTIONS ARE TARGETED; IF CUFLAG = -1, THEN
 C                  INSTRUCTIONS SHOULD GO TO ALL APPROPRIAT WORKSTATIONS.
 C       MXERMG --  MAXIMUM NUMBER OF ERROR MESSAGES TO ISSUE BEFORE ABORT
-C                   
+C
 C-----------------------------------------------------------------------
 C
 C     GKETBI:
 C       IERNMS --  AN ARRAY CONTAINING THE NCAR GKS ERROR NUMERS
 C     GKETBC:
-C       ERMSGS --  AN ARRAY CONTAINING THE NCAR GKS ERROR MESSAGE STRINGS     
+C       ERMSGS --  AN ARRAY CONTAINING THE NCAR GKS ERROR MESSAGE STRINGS
 C-----------------------------------------------------------------------
 C
 C     GKENUM: GKS ENUMERATION TYPE VARIABLES
@@ -211,14 +211,14 @@ C       RERR   -- RETURN VARIABLE FOR ERROR INDICATOR
 C       STR    -- CHARACTER VARIABLE FOR PASSING CHARACTERS
 C
 C-----------------------------------------------------------------------
-      DATA KSLEV,WK/0, 22/
+      DATA KSLEV,WK/0, 23/
 C**************************************************************************
 C******** Be sure and change the dimension of LSWK in gkscom.h when    ****
 C******** adding a new workstation type (as well as changing the value ****
 C******** of WK above to the same number).                              ****
 C**************************************************************************
-      DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31,       
-     +  40,41/
+      DATA LSWK/1,3,7,8,9,10,11,12,20,21,22,23,24,25,26,27,28,29,30,31,
+     +  40,41,42/
 C**************************************************************************
       DATA MOPWK,MACWK,MNT
      +    /   15,   15,  1/
@@ -228,7 +228,7 @@ C**************************************************************************
       DATA GGKCL,GGKOP,GWSOP,GWSAC,GSGOP/0,1,2,3,4/
       DATA GOUTPT,GINPUT,GOUTIN,GWISS,GMO,GMI/0,1,2,3,4,5/
       DATA GCGM,GWSS,GXWE,GXWC,GPIX, GDMP,GPDFP,GPDFL,GPSMIN,GPSMAX
-     +    /   1,   3,   7,   8,   9,   10,   11,   12,    20,    31/       
+     +    /   1,   3,   7,   8,   9,   10,   11,   12,    20,    31/
       DATA GCROMIN, GCROMAX
      +    /     40,      50/
       DATA NOPWK,NACWK,NUMSEG,CURSEG,SEGDEL,GKSCLP/0,0,0,-1,1,1/
@@ -272,19 +272,19 @@ C  Error 4
       DATA ERMSGS(  4)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E SGOP'/
 C  Error 5
-      DATA ERMSGS(  5)/' --GKS NOT IN PROPER STATE: GKS SHALL BE EITHER 
+      DATA ERMSGS(  5)/' --GKS NOT IN PROPER STATE: GKS SHALL BE EITHER
      +IN THE STATE WSAC OR IN THE STATE SGOP'/
 C  Error 6
-      DATA ERMSGS(  6)/' --GKS NOT IN PROPER STATE: GKS SHALL BE EITHER 
+      DATA ERMSGS(  6)/' --GKS NOT IN PROPER STATE: GKS SHALL BE EITHER
      +IN THE STATE WSOP OR IN THE STATE WSAC'/
 C  Error 7
-      DATA ERMSGS(  7)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN ONE 
+      DATA ERMSGS(  7)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN ONE
      +OF THE STATES  WSOP, WSAC, OR SGOP'/
 C  Error 8
-      DATA ERMSGS(  8)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN ONE 
+      DATA ERMSGS(  8)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN ONE
      +OF THE STATES  GKOP, WSOP, WSAC, OR SGOP'/
 C  Error 20
-      DATA ERMSGS(  9)/' --SPECIFIED WORKSTATION IDENTIFIER IS INVALID  
+      DATA ERMSGS(  9)/' --SPECIFIED WORKSTATION IDENTIFIER IS INVALID
      +'/
 C  Error 21
       DATA ERMSGS( 10)/' --SPECIFIED CONNECTION IDENTIFIER IS INVALID'/
@@ -299,7 +299,7 @@ C  Error 25
 C  Error 26
       DATA ERMSGS( 15)/' --SPECIFIED WORKSTATION CANNOT BE OPENED'/
 C  Error 27
-      DATA ERMSGS( 16)/' --WORKSTATION INDEPENDENT SEGMENT STORAGE IS NO       
+      DATA ERMSGS( 16)/' --WORKSTATION INDEPENDENT SEGMENT STORAGE IS NO
      +T OPEN'/
 C  Error 28
       DATA ERMSGS( 17)/' --WORKSTATION INDEPENDENT SEGMENT STORAGE IS AL
@@ -317,17 +317,17 @@ C  Error 34
 C  Error 35
       DATA ERMSGS( 23)/' --SPECIFIED WORKSTATION IS OF CATEGORY INPUT'/
 C  Error 36
-      DATA ERMSGS( 24)/' --SPECIFIED WORKSTATION IS WORKSTATION INDEPEND       
+      DATA ERMSGS( 24)/' --SPECIFIED WORKSTATION IS WORKSTATION INDEPEND
      +ENT SEGMENT STORAGE'/
 C  Error 38
-      DATA ERMSGS( 25)/' --SPECIFIED WORKSTATION IS NEITHER OF CATEGORY 
+      DATA ERMSGS( 25)/' --SPECIFIED WORKSTATION IS NEITHER OF CATEGORY
      +INPUT NOR OF CATEGORY OUTIN'/
 C  Error 50
       DATA ERMSGS( 26)/' --TRANSFORMATION NUMBER IS INVALID'/
 C  Error 51
       DATA ERMSGS( 27)/' --RECTANGLE DEFINITION IS INVALID'/
 C  Error 52
-      DATA ERMSGS( 28)/' --VIEWPORT IS NOT WITHIN THE NORMALIZED DEVICE 
+      DATA ERMSGS( 28)/' --VIEWPORT IS NOT WITHIN THE NORMALIZED DEVICE
      +COORDINATE UNIT SQUARE'/
 C  Error 53
       DATA ERMSGS( 29)/' --WORKSTATION WINDOW IS NOT WITHIN THE NORMALIZ
@@ -374,13 +374,13 @@ C  Error 93
       DATA ERMSGS( 47)/' --COLOR INDEX IS INVALID'/
 C  Error 96
       DATA ERMSGS( 48)/' --COLOR IS OUTSIDE RANGE ZERO TO ONE INCLUSIVE'
-     +/      
+     +/
 C  Error 100
       DATA ERMSGS( 49)/' --NUMBER OF POINTS IS INVALID'/
 C  Error 101
       DATA ERMSGS( 50)/' --INVALID CODE IN STRING'/
 C  Error 102
-      DATA ERMSGS( 51)/' --GENERALIZED DRAWING PRIMITIVE IDENTIFIER IS I       
+      DATA ERMSGS( 51)/' --GENERALIZED DRAWING PRIMITIVE IDENTIFIER IS I
      +NVALID'/
 C  Error 103
       DATA ERMSGS( 52)/' --CONTENT OF GENERALIZED DRAWING PRIMITIVE DATA
@@ -420,7 +420,7 @@ C  Error 300
       DATA ERMSGS( 67)/' --STORAGE OVERFLOW HAS OCCURRED IN GKS'/
 C  Error 302
       DATA ERMSGS( 68)/' --INPUT/OUTPUT ERROR HAS OCCURRED WHILE READING
-     +'/     
+     +'/
 C  Error 303
       DATA ERMSGS( 69)/' --INPUT/OUTPUT ERROR HAS OCCURRED WHILE WRITING
      +'/
@@ -449,7 +449,7 @@ C  Error 2003
 C  Error -100
       DATA ERMSGS( 79)/' --UNKNOWN ERROR CODE'/
 C  Error -101
-      DATA ERMSGS( 80)/' --NO ADDITIONAL WORKSTATIONS MAY BE ACTIVATED'/       
+      DATA ERMSGS( 80)/' --NO ADDITIONAL WORKSTATIONS MAY BE ACTIVATED'/
 C  Error -102
       DATA ERMSGS( 81)/' --GKS SYSTEM ERROR--IMPROPER CONTINUATION SEQUE
      +NCE'/
@@ -474,7 +474,7 @@ C  Error -110
 C  Error -111
       DATA ERMSGS( 89)/' --SYSTEM ERROR'/
 C  Error -112
-      DATA ERMSGS( 90)/' --ONLY ONE METAFILE WORKSTATION CAN BE OPEN AT 
+      DATA ERMSGS( 90)/' --ONLY ONE METAFILE WORKSTATION CAN BE OPEN AT
      +A TIME'/
 C  Error -200
       DATA ERMSGS( 91)/' --X driver error: memory allocation in processi
@@ -498,7 +498,7 @@ C  Error -207
       DATA ERMSGS( 98)/' --X driver error: error in allocating memory fo
      +r device dependent table'/
 C  Error -208
-      DATA ERMSGS( 99)/' --X driver error: DISPLAY environment variable 
+      DATA ERMSGS( 99)/' --X driver error: DISPLAY environment variable
      +not set'/
 C  Error -209
       DATA ERMSGS(100)/' --X driver error: error opening display'/
@@ -508,7 +508,7 @@ C  Error -210
 C  Error -211
       DATA ERMSGS(102)/' --X driver error: error creating pixmap'/
 C  Error -212
-      DATA ERMSGS(103)/' --X driver error: cell array has zero width or 
+      DATA ERMSGS(103)/' --X driver error: cell array has zero width or
      +height'/
 C  Error -213
       DATA ERMSGS(104)/' --X driver error: memory allocation error in pr
@@ -525,7 +525,7 @@ C  Error -300
       DATA ERMSGS(108)/' --PostScript error: Encapsulated PostScript can
      + have only one page'/
 C  Error -301
-      DATA ERMSGS(109)/' --PostScript error: error in allocating memory 
+      DATA ERMSGS(109)/' --PostScript error: error in allocating memory
      +for device dependent table'/
 C  Error -302
       DATA ERMSGS(110)/' --PostScript error: error opening output file'/
@@ -548,10 +548,10 @@ C  Error -221
       DATA ERMSGS(116)/' --X driver warning: unable to change color mode
      +l'/
 C  Error 2200
-      DATA ERMSGS(117)/' --C-binding specific error: buffer overflow in 
+      DATA ERMSGS(117)/' --C-binding specific error: buffer overflow in
      +input or inquiry function'/
 C  Error 2201
-      DATA ERMSGS(118)/' --C-binding specific error: start index out of 
+      DATA ERMSGS(118)/' --C-binding specific error: start index out of
      +range'/
 C  Error 2202
       DATA ERMSGS(119)/' --C-binding specific error: enumeration type ou
@@ -583,10 +583,10 @@ C  Error -404
       DATA ERMSGS(128)/' --Workstation identifier already open in metafi
      +le reopen'/
 C  Error -405
-      DATA ERMSGS(129)/' --Maximum number of open workstations exceeded 
+      DATA ERMSGS(129)/' --Maximum number of open workstations exceeded
      +in metafile reopen'/
 C  Error -406
-      DATA ERMSGS(130)/' --cannot have more than one NCAR CGM open at a 
+      DATA ERMSGS(130)/' --cannot have more than one NCAR CGM open at a
      +given time'/
 C  Error -350
       DATA ERMSGS(131)/' --PDF error: error in allocating memory for dev
