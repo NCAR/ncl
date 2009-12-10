@@ -1,5 +1,5 @@
 /*
- *      $Id: DataSupport.c,v 1.55 2009-11-21 01:32:46 dbrown Exp $
+ *      $Id: DataSupport.c,v 1.56 2009-12-10 23:46:40 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -2539,7 +2539,7 @@ NclBasicDataTypes dt;
 	case NCL_obj:
 		return(NrmQuarkToString(quarks[11]));
 	case NCL_list:
-		return(NrmQuarkToString(quarks[13]));
+		return(NrmQuarkToString(quarks[12]));
 	case NCL_int64:
 		return(NrmQuarkToString(quarks[13]));
 	case NCL_ushort:
