@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#       $Id: ncl_convert2nc,v 1.20 2009-11-11 01:30:46 dbrown Exp $
+#       $Id: ncl_convert2nc,v 1.21 2009-12-15 00:17:22 dbrown Exp $
 
 #       Copyright (C) 2005
 #       University Corporation for Atmospheric Research
@@ -1071,7 +1071,7 @@ begin
     ncFileName = diro + filo + osuffix 
     ofile_i = str_get_field(systemfunc("ls -iL " + ncFileName + " 2>/dev/null"),1," ")
     ifile_i = str_get_field(systemfunc("ls -iL " + iFileName  + " 2>/dev/null" ),1," ")
-    if (.not. ismissing(ofile_i) .and. ofile_i .eq. ifile_i) then
+    if (.not. ismissing(ofile_i) .and. .not. ismissing(ifile_i) .and. ofile_i .eq. ifile_i) then
 	ncFileName = ncFileName + ".nc"
     end if
 
