@@ -1,5 +1,5 @@
 #
-#   $Id: yMakefile,v 1.12 2008-07-31 14:54:25 haley Exp $
+#   $Id: yMakefile,v 1.13 2009-12-17 22:24:02 haley Exp $
 #
 #   Makefile for GSUN examples
 #
@@ -28,3 +28,14 @@ InstallTarget($(WRF_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/wrf)
 InstallTarget($(RESFILES),$(INSTALL_LIB),$(RESFILEROOT)/$(MYNAME))
 #endif
 
+#ifdef BuildCAIRO
+gsn_code.ncl: gsn_code.ncl.sed
+	@sed \
+	-e 's+SED_CAIRO++' \
+	< gsn_code.ncl.sed > gsn_code.ncl
+#else
+gsn_code.ncl: gsn_code.ncl.sed
+	@sed \
+	-e 's+SED_CAIRO+\;+' \
+	< gsn_code.ncl.sed > gsn_code.ncl
+#endif
