@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.c,v 1.1 2009-12-10 18:07:01 brownrig Exp $
+ *      $Id: CairoWorkstation.c,v 1.2 2009-12-18 23:15:50 brownrig Exp $
  */
 
 # include   <stdio.h>
@@ -23,7 +23,7 @@ static NhlResource resources[] = {
         sizeof(NhlWorkOrientation),Oset(orientation),NhlTImmediate,
         (NhlPointer)NhlPORTRAIT,_NhlRES_DEFAULT,NULL},
     {NhlNwkPDFResolution,NhlCwkPDFResolution,NhlTInteger,
-        sizeof(int),Oset(resolution),NhlTImmediate,
+        sizeof(int),Oset(dpi),NhlTImmediate,
         (NhlPointer)1800,_NhlRES_NOSACCESS,NULL},
     {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
         sizeof(int),Oset(lower_x),NhlTImmediate,
@@ -37,6 +37,12 @@ static NhlResource resources[] = {
     {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
         sizeof(int),Oset(upper_y),NhlTImmediate,
         (NhlPointer)666,_NhlRES_DEFAULT,NULL},
+    {NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),
+        Oset(xres),NhlTImmediate,
+        (NhlPointer)512,_NhlRES_DEFAULT,NULL},
+    {NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
+        Oset(yres),NhlTImmediate,
+        (NhlPointer)512,_NhlRES_DEFAULT,NULL},
 
 #if 0
     {NhlNwkVisualType,NhlCwkVisualType,NhlTVisualType,sizeof(NhlVisualType),
@@ -298,12 +304,19 @@ CairoWorkstationClassInitialize(void)
 static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, NhlLayer new, _NhlArgList args, int num_args)
 {
     char    func[]= "CairoWorkstationInitialize";
-    NhlCairoWorkstationLayer  newCairo = (NhlCairoWorkstationLayer) new;  /*RLB was wnew */
-    NhlCairoWorkstationLayerPart  *cairo = &newCairo->cairo;   /*RLB was np */
+    NhlCairoWorkstationLayer  newCairo = (NhlCairoWorkstationLayer) new;
+    NhlCairoWorkstationLayerPart  *cairo = &newCairo->cairo;
     char    *tfname = NULL;
     char    buff[_NhlMAXFNAMELEN];
     NhlErrorTypes   ret = NhlNOERROR;
 
+#ifndef BuildCAIRO
+
+    NhlPError(NhlFATAL,NhlEUNKNOWN,
+        "%s:CairoWorkstation support was not built into NCL", func);
+    return NhlFATAL;
+
+#else
     /*
      * Set gkswkstype
      */
@@ -391,6 +404,7 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
     cairo->dev_bounds_updated = False;
 
     return ret;
+#endif
 }
 
 /*
@@ -549,7 +563,7 @@ CairoWorkstationOpen(NhlLayer l)
     int su = 0;
 
     c_ngsetc("me", pp->filename);
-    c_ngseti("co", (pp->resolution/72 + 1));
+    c_ngseti("co", (pp->dpi/72 + 1));
 
     ret = (*NhlworkstationClassRec.work_class.open_work)(l);
 
@@ -563,7 +577,7 @@ CairoWorkstationOpen(NhlLayer l)
     w = pp->upper_x - pp->lower_x;
     h = pp->upper_y - pp->lower_y;
     d = MAX(w, h);
-    work->work.vswidth_dev_units = d/72*pp->resolution;
+    work->work.vswidth_dev_units = d/72*pp->dpi;
     return ret;
 }
 
@@ -604,7 +618,7 @@ CairoWorkstationActivate(NhlLayer l)
     w = pp->upper_x - pp->lower_x;
     h = pp->upper_y - pp->lower_y;
     d = MAX(w, h);
-    wp->vswidth_dev_units = d/72 * pp->resolution;
+    wp->vswidth_dev_units = d/72 * pp->dpi;
 
     return (*(lc->work_class.activate_work))(l);
 }

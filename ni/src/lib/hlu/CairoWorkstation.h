@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.h,v 1.1 2009-12-10 18:07:01 brownrig Exp $
+ *      $Id: CairoWorkstation.h,v 1.2 2009-12-18 23:15:50 brownrig Exp $
  */
 
 # ifndef    _NCarioWorkstation_h
@@ -16,6 +16,12 @@
 
 # define    NhlNwkPDFResolution   "wkPDFResolution"
 # define    NhlCwkPDFResolution   "WkPDFResolution"
+
+/* These next 4 are duplicated in XWorkstation; should probably be refactored into Workstation -- RLB 12/2009 */
+# define NhlNwkWidth              "wkWidth"
+# define NhlCwkWidth              "WkWidth"
+# define NhlNwkHeight             "wkHeight"
+# define NhlCwkHeight             "WkHeight"
 
 /*
  * See: Workstation.h for common, shared resources for visual type,

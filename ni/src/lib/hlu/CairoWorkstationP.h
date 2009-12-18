@@ -1,5 +1,5 @@
 /*
- *  $Id: CairoWorkstationP.h,v 1.1 2009-12-10 18:07:01 brownrig Exp $
+ *  $Id: CairoWorkstationP.h,v 1.2 2009-12-18 23:15:50 brownrig Exp $
  */
 
 # ifndef    _NCairoWorkstationP_h
@@ -21,7 +21,9 @@ typedef struct _NhlCairoWorkstationLayerPart {
     NhlCairoFormat     format;             /* CPS, CPNG, CPDF, etc. */
     NhlString          filename;
     NhlWorkOrientation orientation;        /* PORTRAIT or LANDSCAPE */
-    int resolution;
+    int dpi;                               /* dots/inch for postscript/PDF output */
+    int xres;                              /* resolution of image-based formats */
+    int yres;                              /*                "                  */
     int lower_x;
     int lower_y;
     int upper_x;
