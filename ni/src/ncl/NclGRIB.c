@@ -6315,6 +6315,7 @@ int wr_status;
 
 	if (! Ptables) {
 		InitPtables();
+		_DateInit();
 	}
 
 	therec->n_vars = 0;

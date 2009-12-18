@@ -8651,8 +8651,12 @@ static void *Grib2OpenFile
                     *g2plist_tmp = NULL;
     G2_TBLE2    *g2name_rec = NULL,
                 *g2tmp_name_rec = NULL;
+    static int first = True;
 
-
+    if (first) {
+	    _DateInit();
+	    first = False;
+    }
 
     /* read-only access at this time */
     if (wr_status <= 0) {
