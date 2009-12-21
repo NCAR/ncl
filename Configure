@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.51 2009-07-14 17:21:00 haley Exp $
+#      $Id: Configure,v 1.52 2009-12-21 19:16:42 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2009-07-14 17:21:00 $
+#	$Date: 2009-12-21 19:16:42 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -433,9 +433,8 @@ if (("$answer" != "") && ("$answer" != "$buildpng")) then
 endif
 
 #
-# Cairo. This is turned off for now.
+# Cairo.
 #
-if (0) then
 if ($?verbose_option) then
   cat <<"EOF"
 ======================================================================
@@ -450,7 +449,7 @@ if ($?verbose_option) then
 endif
 
 echo ""
-echo "Build cairo support (optional) into GKS library? (we recommend 'n') ($buildcairo)"
+echo "Build cairo support (optional) into GKS library? ($buildcairo)"
 echo "(Requires the cairo and other external libraries available from"
 echo "http://cairographics.org/) "
 echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
@@ -460,7 +459,6 @@ if (("$answer" != "") && ("$answer" != "$buildcairo")) then
 	set buildcairo = $answer
 	set newbuildcairo
     set altered
-endif
 endif
 
 #
@@ -1149,10 +1147,8 @@ if ($?newbuildpng) then
 endif
 
 /* This is turned off for now. */
-if (0) then
 if ($?newbuildcairo  && "$buildcairo" == "y") then
 	echo "#define BuildCAIRO 1" >> Site.local
-endif
 endif
 
 if ($?newbuildnetcdf4) then
