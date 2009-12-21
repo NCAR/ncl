@@ -2,7 +2,7 @@
 #include "wrapper.h"
 
 extern void NGCALLF(mocloops,MOCLOOPS)(int *, int *, int *, int *, int *,
-                                       double *, int *, int *, double *,
+                                       double *, double *, int *, double *,
                                        double *, double *, double *, double *,
                                        double *, double *);
 
@@ -15,8 +15,10 @@ NhlErrorTypes moc_globe_atl_W( void )
 /*
  * Argument # 0
  */
-  int *lat_aux_grid;
+  void *lat_aux_grid;
+  double *tmp_lat_aux_grid;
   int dsizes_lat_aux_grid[1];
+  NclBasicDataTypes type_lat_aux_grid;
 /*
  * Argument # 1
  */
@@ -80,14 +82,14 @@ NhlErrorTypes moc_globe_atl_W( void )
 /*
  * Get argument # 0
  */
-  lat_aux_grid = (int*)NclGetArgValue(
+  lat_aux_grid = (void*)NclGetArgValue(
            0,
            6,
            NULL,
            dsizes_lat_aux_grid,
            NULL,
            NULL,
-           NULL,
+           &type_lat_aux_grid,
            DONT_CARE);
 
 /*
@@ -194,38 +196,45 @@ NhlErrorTypes moc_globe_atl_W( void )
 /*
  * Coerce input arrays to double if necassary.
  */
+  tmp_lat_aux_grid = coerce_input_double(lat_aux_grid,type_lat_aux_grid,nyaux,
+					 0,NULL,NULL);
+  if(tmp_lat_aux_grid == NULL) {
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing lat_aux_grid to double");
+    return(NhlFATAL);
+  }
+
   tmp_a_wvel = coerce_input_double(a_wvel,type_a_wvel,kdepnlatmlon,
                                    has_missing_a_wvel,&missing_a_wvel,
                                    &missing_dbl_a_wvel);
 
   if(tmp_a_wvel == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing a_wvel to double");
     return(NhlFATAL);
   }
 
   tmp_a_bolus = coerce_input_double(a_bolus,type_a_bolus,kdepnlatmlon,0,
                                     NULL,NULL);
   if(tmp_a_bolus == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing a_bolus to double");
     return(NhlFATAL);
   }
 
   tmp_a_submeso = coerce_input_double(a_submeso,type_a_submeso,kdepnlatmlon,
                                       0,NULL,NULL);
   if(tmp_a_submeso == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing a_submeso to double");
     return(NhlFATAL);
   }
 
   tmp_tlat = coerce_input_double(tlat,type_tlat,nlatmlon,0,NULL,NULL);
   if(tmp_tlat == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing input array to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing tlat to double");
     return(NhlFATAL);
   }
 
 
 /*
- * The output will be float unless any of the first three arguments
+ * The output will be float unless any of the first four arguments
  * are double.
  */
   if(type_a_wvel == NCL_double || type_a_submeso == NCL_double ||
@@ -282,7 +291,7 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   nrx = 2;
   NGCALLF(mocloops,MOCLOOPS)(&nyaux, &mlon, &nlat, &kdep, &nrx, tmp_tlat, 
-                             lat_aux_grid, rmlak, tmp_a_wvel, tmp_a_bolus, 
+                             tmp_lat_aux_grid, rmlak, tmp_a_wvel, tmp_a_bolus, 
                              tmp_a_submeso, &missing_dbl_a_wvel.doubleval, 
                              dtmp1, dtmp2, dtmp3);
 
@@ -295,6 +304,7 @@ NhlErrorTypes moc_globe_atl_W( void )
 /*
  * Free unneeded memory.
  */
+  if(type_lat_aux_grid != NCL_double) NclFree(tmp_lat_aux_grid);
   if(type_a_wvel    != NCL_double) NclFree(tmp_a_wvel);
   if(type_a_bolus   != NCL_double) NclFree(tmp_a_bolus);
   if(type_a_submeso != NCL_double) NclFree(tmp_a_submeso);
