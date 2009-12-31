@@ -1,5 +1,5 @@
 /*
- *      $Id: Converters.c,v 1.56 2009-07-28 15:49:02 huangwei Exp $
+ *      $Id: Converters.c,v 1.57 2009-12-31 18:01:29 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -3706,7 +3706,7 @@ CvtArgs
                 return NhlFATAL;
         }
 
-        togen = _NhlConvertCreateGenArray(toval,NhlTLong,sizeof(long long),
+        togen = _NhlConvertCreateGenArray(toval,NhlTInt64,sizeof(long long),
                         fromgen->num_dimensions,fromgen->len_dimensions);
         if(togen == NULL){
                 NhlPError(NhlFATAL,ENOMEM,"%s",func);
