@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.250 2009-12-09 19:47:24 haley Exp $
+;      $Id: contributed.ncl,v 1.251 2010-01-04 20:44:46 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11014,6 +11014,8 @@ end
 ; D. Shea
 ; wrapper for NCL procedure "int2p"  that copies attributes and coordinate 
 ; vars.  It adds the longitude and latitude coordinates.
+;
+; Modified by Seah 1/1/2010 to handle multi-d xo.
 
 undef("int2p_Wrap")
 function int2p_Wrap (xi:numeric, fi:numeric, xo:numeric, linlog[1]:integer)
@@ -11030,21 +11032,35 @@ begin
   copy_VarAtts (fi, fo)                         ; copy variable attributes
   copy_VarCoords_1 (fi, fo)                     ; copy coord variables  
                                                 ; except for rightmost
+  nD    = nDim-1                              ; last dimension (rightmost)
+  rnkxo = dimsizes( dimsizes(xo) )
 
-  nD   = nDim-1                                 ; last dimension
-                                                ; create a new coord for
-  if (isdimnamed(xo,0)) then
-      fo!nD = xo!0                              ; if present, use xo name
-  else 
-      if (isdimnamed(fi,nD)) then
-          fo!nD = str_switch(fi!nD)             ; if present, use same name
-        ;;fo!nD = changeCaseChar(fi!nD)         ; if present, use same name
-      else                                      ; but change case 
-          fo!nD = "X"                           ; default dimension name
-      end if                
+  if (rnkxo.eq.1) then
+      if (isdimnamed(xo,0)) then                ; create a new coord for
+          fo!nD      = xo!0                     ; if present, use xo name
+      else 
+          if (isdimnamed(fi,nD)) then
+              fo!nD = str_switch(fi!nD)         ; if present, use same name
+            ;;fo!nD = changeCaseChar(fi!nD)     ; if present, use same name
+          else                                  ; but change case 
+              fo!nD = "X"                       ; default dimension name
+          end if                
+      end if
+
+      fo&$fo!nD$ = xo                           ; assign coords [1D only]
+
+  else                                          ; must be multi-d
+      if (isdimnamed(xo,nD)) then               ; is xo rightmost named?
+         fo!nD   = xo!nD                        ; if present, use xo name
+      else 
+         if (isdimnamed(fi,nD)) then
+             fo!nD = str_switch(fi!nD)          ; if present, use same name
+           ;;fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
+         else                                   ; but change case 
+             fo!nD = "X"                        ; default dimension name
+         end if                
+      end if
   end if
-                                                ; assign coordinates
-  fo&$fo!nD$ = xo                               ; rightmost dim
    
   return (fo)
 end
