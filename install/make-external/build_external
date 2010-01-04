@@ -2,7 +2,7 @@
 # 
 # This script is attempt to make it easier to build and install all the
 # optional and non-optional external software packages needed for
-# NCL/NCAR Graphics V5.1.1.
+# NCL/NCAR Graphics V5.2.0.
 # 
 # You will need to read through the notes below, to:
 # 
@@ -17,43 +17,49 @@
 #                          NCARG: optional (needed for PNG, HDF4.2r4,
 #                                           classic NetCDF-4)
 #
-#   jpeg-6b                NCL:   required 
+#   jpeg-7                 NCL:   required 
 #                          NCARG: optional (needed for HDF4.2r4)
 # 
-#   libpng-1.2.34          NCL:   optional (needed for GRIB2 or PNG support)
+#   libpng-1.2.41          NCL:   optional (needed for GRIB2 or PNG support)
 #                          NCARG: optional (needed for PNG)
 #                          
 #   HDF4.2r4               NCL:   required
 #                          NCARG: optional 
 # 
 #   expat-2.0.1            NCL/NCARG: optional (needed for cairo support)
-#   freetype-2.3.9         NCL/NCARG: optional (needed for cairo support)
-#   fontconfig-2.6.0       NCL/NCARG: optional (needed for cairo support)
-#   pixman-0.15.2          NCL/NCARG: optional (needed for cairo support)
+#   freetype-2.3.11        NCL/NCARG: optional (needed for cairo support)
+#   fontconfig-2.8.0       NCL/NCARG: optional (needed for cairo support)
+#   pixman-0.16.4          NCL/NCARG: optional (needed for cairo support)
 #   pkg-config-0.23        NCL/NCARG: optional (needed for cairo support)
 #   cairo-1.8.6            NCL/NCARG: optional (needed for cairo support)
 #
 # NCL only:
-#   hdf5-1.8.2             Required if you want classic NetCDF-4 support
+#   hdf5-1.8.4             Required if you want classic NetCDF-4 support
 #   szip-2.1               Required if you want classic NetCDF-4 support
 #   jasper-1.900.1         Required if you want GRIB2 support
-#   g2clib-1.1.7           Required if you want GRIB2 support
-#   gdal-1.6.1             Required if you want GDAL support
+#   g2clib-1.1.9           Required if you want GRIB2 support
+#   gdal-1.6.3             Required if you want GDAL support
 #   netcdf-4.0.1           Required (classic NetCDF-4 support is optional)
-#   proj-4.6.1             Required if you want GDAL support
+#   proj-4.7.0             Required if you want GDAL support
 #   udunits-1.12.9         Required if you want ut_calendar/ut_inv_calendar
-#   HDF-EOS2.15v1.00       Required if you want HDF-EOS 2 support
-#   HDF-EOS5.1.11          Required if you want HDF-EOS 5 support
+#   HDF-EOS2.16v1.00       Required if you want HDF-EOS 2 support
+#   HDF-EOS5.1.12          Required if you want HDF-EOS 5 support
 #   vis5d+-1.3.0           Required if you want v5d* functions
+#
+#   openssl-0.9.8l         Required if you want OPeNDAP support
+#   curl-7.19.7            Required if you want OPeNDAP support
+#   libxml2-2.7.6          Required if you want OPeNDAP support
+#   libdap-3.8.2           Required if you want OPeNDAP support
+#   libnc-dap-3.7.4        Required if you want OPeNDAP support
 
 # Location to install external software
-PREFIX=/Users/haley/tmp/5.1.0     # Parent directory for installing software
+PREFIX=/Users/haley/tmp/5.2.0     # Parent directory for installing software
 
 # Set environment variables for building software
 export CC=gcc
 export CXX=g++
-export FC=g77
-export F77=g77
+export FC=gfortran
+export F77=gfortran
 export F90=""
 # Be sure to include extra flag for Udunits build.
 export CFLAGS='-fPIC -Df2cFortran'
@@ -65,7 +71,7 @@ export CXXFLAGS=-fPIC
 # was one). Only set it if the large file stuff doesn't work with NetCDF4.
 # export CPPFLAGS='-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE'.
 
-CLEANUP=1                           # Whether to remove local *.o files
+#CLEANUP=1                           # Whether to remove local *.o files
 
 # Indicate which packages you want. These are listed in the order
 # they should generally be built in.
@@ -90,6 +96,11 @@ INSTALL_FONTCONFIG=1
 INSTALL_PIXMAN=1
 INSTALL_PKGCONFIG=1
 INSTALL_CAIRO=1
+#INSTALL_OPENSSL=1
+#INSTALL_CURL=1
+#INSTALL_XML2=1
+#INSTALL_DAP=1
+#INSTALL_NCDAP=1
 
 # HDF-EOS cannot be built by this script. It requires running
 # an interactive script, "bin/INSTALL-HDFEOS".  You can't use
@@ -131,30 +142,36 @@ fi
 # Software directories, sorted alphabetically
 #--------------------------------------------------------------------
 
-G2CLIB_DIR="g2clib-1.1.7"
-GDAL_DIR="gdal-1.6.1"
+G2CLIB_DIR="g2clib-1.1.9"
+GDAL_DIR="gdal-1.6.3"
 HDF4_DIR="HDF4.2r4"
-HDF5_DIR="hdf5-1.8.2"
-HDFEOS5_DIR="hdfeos5"
+HDF5_DIR="hdf5-1.8.4"
+HDFEOS5_DIR="HDF-EOS5.1.12"
 JASPER_DIR="jasper-1.900.1"
-JPEG_DIR="jpeg-6b"
-NETCDF_DIR="netcdf-4.0.1"
-PNG_DIR="libpng-1.2.34"
-PROJ4_DIR="proj-4.6.1"
+JPEG_DIR="jpeg-7"
+NETCDF_DIR="netcdf-4.1-beta2"
+#NETCDF_DIR="netcdf-4.0.1"
+PNG_DIR="libpng-1.2.41"
+PROJ4_DIR="proj-4.7.0"
 SZIP_DIR="szip-2.1"
 UDUNITS_DIR="udunits-1.12.9"
 VIS5DPLUS_DIR="vis5d+-1.3.0"
 ZLIB_DIR="zlib-1.2.3"
 EXPAT_DIR="expat-2.0.1"
-FREETYPE_DIR="freetype-2.3.9"
-FONTCONFIG_DIR="fontconfig-2.6.0"
-PIXMAN_DIR="pixman-0.15.2"
+FREETYPE_DIR="freetype-2.3.11"
+FONTCONFIG_DIR="fontconfig-2.8.0"
+PIXMAN_DIR="pixman-0.16.4"
 PKGCONFIG_DIR="pkg-config-0.23"
-CAIRO_DIR="cairo-1.8.6"
+CAIRO_DIR="cairo-1.8.8"
+OPENSSL_DIR="openssl-0.9.8l"
+CURL_DIR="curl-7.19.7"
+XML2_DIR="libxml2-2.7.6"
+DAP_DIR="libdap-3.8.2"
+NC_DIR="libnc-dap-3.7.4"
 
 # HDF-EOS cannot be built by this script. It requires running
 # an interactive script, "bin/INSTALL-HDFEOS".
-# HDFEOS_DIR="HDF-EOS2.15v1.00"
+# HDFEOS_DIR="HDF-EOS2.16v1.00"
 #
 # Also, on LINUX systems, you will need to do one of :
 # export LINUX_BRAND linux32
@@ -235,8 +252,8 @@ if [ $INSTALL_JPEG ]
   then
     cd $JPEG_DIR
     echo "Building $JPEG_DIR..."
-    ./configure --prefix\=$PREFIX
-    make all install install-lib install-headers
+    ./configure --disable-shared --prefix\=$PREFIX
+    make all install
     if [ $? ]
     then
       echo "$JPEG_DIR build successful."
@@ -415,6 +432,9 @@ then
     then
       ./configure --disable-f90 --prefix\=$PREFIX
     else
+# This is for NetCDF-4.1 when it is released.
+#      ./configure --enable-netcdf-4 --enable-opendap --with-udunits --disable-f90 --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+# This is for NetCDF-4.0.1.
       ./configure --enable-netcdf-4 --disable-f90 --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     fi
     make all install
@@ -607,6 +627,8 @@ if [ $INSTALL_EXPAT ]
   then
     cd $EXPAT_DIR
     echo "Building $EXPAT_DIR..."
+# This doesn't seem to work, but maybe we don't need expat...
+#    ./configure --disable-shared --prefix\=$PREFIX
     ./configure --prefix\=$PREFIX
     make all install
     if [ $? ]
@@ -772,5 +794,150 @@ if [ $INSTALL_CAIRO ]
   fi
 else
   echo "Not building cairo..."
+fi
+
+#--------------------------------------------------------------------
+# Open SSL
+#--------------------------------------------------------------------
+if [ $INSTALL_OPENSSL ]
+  then
+  if [ -d "$OPENSSL_DIR" ]
+  then
+    cd $OPENSSL_DIR
+    echo "Building $OPENSSL_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$OPENSSL_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$OPENSSL_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $OPENSSL_DIR doesn't exist"
+  fi
+else
+  echo "Not building Open SSL..."
+fi
+
+#--------------------------------------------------------------------
+# libcurl
+#--------------------------------------------------------------------
+if [ $INSTALL_CURL ]
+  then
+  if [ -d "$CURL_DIR" ]
+  then
+    cd $CURL_DIR
+    echo "Building $CURL_DIR..."
+    ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic
+    make all install
+    if [ $? ]
+    then
+      echo "$CURL_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$CURL_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $CURL_DIR doesn't exist"
+  fi
+else
+  echo "Not building libcurl..."
+fi
+
+#--------------------------------------------------------------------
+# libxml2
+#--------------------------------------------------------------------
+if [ $INSTALL_XML2 ]
+  then
+  if [ -d "$XML2_DIR" ]
+  then
+    cd $XML2_DIR
+    echo "Building $XML2_DIR..."
+    ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic
+    make all install
+    if [ $? ]
+    then
+      echo "$XML2_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$XML2_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $XML2_DIR doesn't exist"
+  fi
+else
+  echo "Not building libxml2..."
+fi
+
+#--------------------------------------------------------------------
+# libdap
+#--------------------------------------------------------------------
+if [ $INSTALL_DAP ]
+  then
+  if [ -d "$DAP_DIR" ]
+  then
+    cd $DAP_DIR
+    echo "Building $DAP_DIR..."
+    ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic
+    make all install
+    if [ $? ]
+    then
+      echo "$DAP_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$DAP_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $DAP_DIR doesn't exist"
+  fi
+else
+  echo "Not building libdap..."
+fi
+
+#--------------------------------------------------------------------
+# libncdap
+#--------------------------------------------------------------------
+if [ $INSTALL_NCDAP ]
+  then
+  if [ -d "$NCDAP_DIR" ]
+  then
+    cd $NCDAP_DIR
+    echo "Building $NCDAP_DIR..."
+    ./configure --prefix\=$PREFIX --enable-64bit --with-pic
+    make all install
+    if [ $? ]
+    then
+      echo "$NCDAP_DIR build successful."
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$NCDAP_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $NCDAP_DIR doesn't exist"
+  fi
+else
+  echo "Not building libncdap..."
 fi
 
