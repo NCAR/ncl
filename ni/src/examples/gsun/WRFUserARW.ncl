@@ -1675,6 +1675,145 @@ end
 ;--------------------------------------------------------------------------------
 ;--------------------------------------------------------------------------------
 
+undef("write_wrf_debug_info")
+procedure write_wrf_debug_info(wks[1]:graphic,data1,data2, \
+                               debug_file[1]:string, \
+                               wrf_opts,wrf_func_name[1]:string)
+
+; This procedure writes resources and data files to a NetCDF
+; file so this file can be read in later to create an NCL
+; script that creates a WRF plot. This is for debug purposes,
+; so a user can just send you this debug script and data.
+
+begin
+  if(.not.isatt(wks,"WRFDebug")) then
+    first_time = True
+    wks@WRFDebug = True
+  else
+    first_time = False
+  end if
+;
+; The default will be "wrfdebug.ncl" and "wrfdebug.nc" 
+; unless otherwise specified.
+;
+  cdf_debug_file = debug_file +  ".nc"
+  ncl_debug_file = debug_file +  ".ncl"
+  res_debug_file = debug_file +  ".res"
+
+;
+; If this is the first time writing debug information to the file,
+; then create the file and add the first set of information.
+;
+; Make sure the files don't already exist.
+;
+  if(first_time) then
+    if(isfilepresent(cdf_debug_file).or.isfilepresent(ncl_debug_file).or.\
+       isfilepresent(res_debug_file)) then
+      print("write_wrf_debug_info: error: debug files '" + cdf_debug_file + "',")
+      print("'" + ncl_debug_file + "' and/or " + res_debug_file + " exist.")
+      print("Please remove file(s) and start script again.")
+      exit
+    end if
+    dfile = addfile(cdf_debug_file,"c")
+  else
+;
+; If this is not the first time, open the file as read/write.
+;
+    dfile = addfile(cdf_debug_file,"w")
+  end if
+
+;
+; If this is not the first time, then we need to append the information.
+;  
+  if(.not.first_time) then
+;
+; The variables should be wrf_var_1, wrf_var_2, etc. We need to get the
+; highest one, so we can create one higher.
+;
+    wrf_debug_vars = getfilevarnames(dfile)
+    max_num = max(stringtointeger(str_get_field(wrf_debug_vars,3,"_"))) + 1
+  else
+    max_num = 1
+  end if
+
+  wrf_res_name  = "wrf_res_" + max_num
+
+;
+; Write the plot data to the netCDF file.  If the data contains the
+; special 2D lat2d/lon2d arrays, we have to write these as 1D arrays
+; and reconstruct them as 2D later.
+;
+  if(typeof(data1).ne."logical".and.typeof(data2).eq."logical") then
+    wrf_data_name = "wrf_data_" + max_num
+    add_latlon2d_debug_info(data1)
+    dfile->$wrf_data_name$ = (/data1/)           ; Write the data
+  end if
+  if(typeof(data1).ne."logical".and.typeof(data2).ne."logical") then
+    add_latlon2d_debug_info(data1)
+    add_latlon2d_debug_info(data2)
+    wrf_data_name = "wrf_udata_" + max_num
+    dfile->$wrf_data_name$ = (/data1/)           ; Write the U data
+    wrf_data_name = "wrf_vdata_" + max_num
+    dfile->$wrf_data_name$ = (/data2/)           ; Write the V data
+  end if
+
+; Retain the name of the wrf function that called this routine.
+  tmp = "wrf_func_name_" + max_num
+  dfile@$tmp$ = wrf_func_name
+
+;
+; Get plot resources, if any.
+;
+  wattnames = getvaratts(wrf_opts)
+  if(.not.any(ismissing(wattnames))) then
+    natt = dimsizes(wattnames)
+  else
+    natt = 0
+  end if
+
+;
+; Check if any of the plot attributes are ones that can contain
+; big data arrays, like sfXArray, vfYArray, etc.
+;
+; If so, then write these to the netCDF file. Otherwise, write them
+; to the file as attributes.
+;
+  array_resources = (/"sfXArray","sfYArray","vfXArray","vfYArray"/)
+
+  if(natt.gt.0) then
+    tmp_opts = 1
+    do i=0,natt-1
+      if(any(wattnames(i).eq.array_resources)) then
+        tmp = "wrf_data_coord_name_" + wattnames(i) + "_" + max_num
+        dfile->$tmp$ = wrf_opts@$wattnames(i)$
+      else
+; Can't write "logical" to a NetCDF file.
+        if(typeof(wrf_opts@$wattnames(i)$).eq."logical") then
+          if(wrf_opts@$wattnames(i)$) then
+            tmp_opts@$wattnames(i)$ = 1
+          else
+            tmp_opts@$wattnames(i)$ = 0
+          end if
+        else
+; Just write the resource.
+          tmp_opts@$wattnames(i)$ = wrf_opts@$wattnames(i)$
+        end if
+      end if
+    end do
+    dfile->$wrf_res_name$ = tmp_opts
+  end if
+
+; Close the NetCDF file
+  delete(dfile)
+end
+
+undef("write_wrf_debug_script")
+procedure write_wrf_debug_script(wks,debug_file,wrf_func_name)
+begin
+  dfile = addfile(debug_file+".nc","r")
+  print(getvaratts(dfile))
+end
+
 undef("delete_attrs")
 procedure delete_attrs(opts:logical)
 
@@ -2480,6 +2619,10 @@ local dims
 begin
   opts = opt_args      ; Make a copy of the resource list.
 
+  if(opts.and.isatt(opts,"gsnDebugWriteFileName")) then
+    wrf_debug_file = get_res_value(opts,"gsnDebugWriteFileName",  "")    
+  end if
+    
   if(opts.and.isatt(opts,"mpOutlineBoundarySets")) then
     delete(opts@mpOutlineBoundarySets)
   end if
@@ -2550,6 +2693,9 @@ begin
   cn = gsn_contour(wks,data,opts2)          ; Create the plot.
   _SetMainTitle(nc_file,wks,cn,opts)        ; Set some titles
 
+  if(isvar("wrf_debug_file")) then
+    write_wrf_debug_info(wks,data,False,wrf_debug_file,opts2,"wrf_contour")
+  end if
 
   opts2@gsnDraw     = get_res_value_keep(opts2,"gsnDraw",     False)
   opts2@gsnFrame    = get_res_value_keep(opts2,"gsnFrame",    False)
@@ -2580,6 +2726,10 @@ function wrf_vector(nc_file:file,wks[1]: graphic, data_u[*][*]:numeric, \
 local dims
 begin
   opts = opt_args      ; Make a copy of the resource list.
+
+  if(opts.and.isatt(opts,"gsnDebugWriteFileName")) then
+    wrf_debug_file = get_res_value(opts,"gsnDebugWriteFileName",  "")    
+  end if
 
   if(opts.and.isatt(opts,"mpOutlineBoundarySets")) then
     delete(opts@mpOutlineBoundarySets)
@@ -2637,6 +2787,10 @@ begin
   delete_attrs(opts2)                             ; Clean up.
   vct = gsn_vector(wks,data_u,data_v,opts2)       ; Create vector plot.
   _SetMainTitle(nc_file,wks,vct,opts) 
+
+  if(isvar("wrf_debug_file")) then
+    write_wrf_debug_info(wks,data_u,data_v,wrf_debug_file,opts2,"wrf_vector")
+  end if
 
   opts2@gsnDraw     = get_res_value_keep(opts,"gsnDraw",     False)
   opts2@gsnFrame    = get_res_value_keep(opts,"gsnFrame",    False)
@@ -2738,6 +2892,7 @@ begin
 
   delete_attrs(opts)                             ; Clean up.
   mp = gsn_map(wks,projection,opts)              ; Create map plot.
+
   return(mp)                                     ; Return.
 
 end
@@ -2960,6 +3115,10 @@ begin
 ;   3. Create the map plot, and draw and advance the frame
 ;      (if requested).
 
+    if(opt_args.and.isatt(opt_args,"gsnDebugWriteFileName")) then
+      wrf_debug_file = get_res_value(opt_args,"gsnDebugWriteFileName",  "")    
+    end if
+
     opts = opt_args      ; Make a copy of the resource list
     opts  = True
 
@@ -3132,6 +3291,12 @@ begin
 
   delete_attrs(opts)                             ; Clean up.
   mp = gsn_map(wks,projection,opts)              ; Create map plot.
+
+  if(isvar("wrf_debug_file")) then
+    opts@mpProjection = projection
+    write_wrf_debug_info(wks,False,False,wrf_debug_file,opts,"wrf_map")
+  end if
+
   return(mp)                                     ; Return.
 
 end
@@ -3176,10 +3341,17 @@ function wrf_map_overlays(in_file[1]:file, \
 ;
 begin
 
-  ; Let's make the map first
-  base = wrf_map(wks,in_file,opt_mp)
+  opts     = opt_arg         ; Make a copy of the resource lists
+  opt_mp_2 = opt_mp      
 
-  opts = opt_arg      ; Make a copy of the resource list
+  if(opts.and.isatt(opts,"gsnDebugWriteFileName")) then
+    opt_mp_2@gsnDebugWriteFileName = get_res_value(opts, \
+                                            "gsnDebugWriteFileName",  "")    
+    wrf_debug_file = opt_mp_2@gsnDebugWriteFileName
+  end if
+
+  ; Let's make the map first
+  base = wrf_map(wks,in_file,opt_mp_2)
 
   no_titles  = get_res_value(opts,"NoTitles",False)     ; Do we want field titles?
   com_title  = get_res_value(opts,"CommonTitle",False)     ; Do we have a common title?
@@ -3277,6 +3449,11 @@ begin
         print("                        Nothing to remove.")
       end if
     end do
+  end if
+
+  if(isvar("wrf_debug_file")) then
+print("!!!!!here")
+    write_wrf_debug_script(wks,wrf_debug_file,"wrf_map_overlays")
   end if
 
   if(.not.no_titles.and..not.panel_plot) then

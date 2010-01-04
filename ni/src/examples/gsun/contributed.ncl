@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.251 2010-01-04 20:44:46 haley Exp $
+;      $Id: contributed.ncl,v 1.252 2010-01-04 23:04:51 haley Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11109,7 +11109,9 @@ begin
     end if
   end if
                                                 ; assign coordinates
-  fo&$fo!pdim$ = xo                             ; rightmost dim
+  if (rnkxo.eq.1) then
+    fo&$fo!pdim$ = xo
+  end if
    
   return (fo)
 end
