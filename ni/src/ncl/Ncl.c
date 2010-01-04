@@ -231,7 +231,7 @@ main(int argc, char **argv) {
      */
     if (!NCLnoCopyright) 
         (void) fprintf(stdout,
-            " Copyright (C) 1995-2009 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
+            " Copyright (C) 1995-2010 - All Rights Reserved\n University Corporation for Atmospheric Research\n NCAR Command Language Version %s\n The use of this software is governed by a License Agreement.\n See http://www.ncl.ucar.edu/ for more details.\n", GetNCLVersion());
 
     /* Process any user-defined arguments */
     for (i = optind; i < argc; i++) {
