@@ -204,6 +204,8 @@ screen width, for the regional temperature labels.
 .IP "\'UNT\'   -   Integer   -   0"
 Flags whether imperial units (the default) or metric units
 are used.
+.IP "\'VVC\'   -   Integer   -   0"
+Flags whether the raw SYNOP codes are plotted for surface visibility (default is not to).
 .IP "\'WBA\'   -   Real   -   62."
 Angle (in degrees) that the wind barb ticks make with the 
 wind barb shafts.
