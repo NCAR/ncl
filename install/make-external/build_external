@@ -26,11 +26,11 @@
 #   HDF4.2r4               NCL:   required
 #                          NCARG: optional 
 # 
+#   pkg-config-0.23        NCL/NCARG: optional (needed for cairo support)
 #   expat-2.0.1            NCL/NCARG: optional (needed for cairo support)
 #   freetype-2.3.11        NCL/NCARG: optional (needed for cairo support)
 #   fontconfig-2.8.0       NCL/NCARG: optional (needed for cairo support)
 #   pixman-0.16.4          NCL/NCARG: optional (needed for cairo support)
-#   pkg-config-0.23        NCL/NCARG: optional (needed for cairo support)
 #   cairo-1.8.6            NCL/NCARG: optional (needed for cairo support)
 #
 # NCL only:
@@ -66,6 +66,9 @@ export CFLAGS='-fPIC -Df2cFortran'
 export FFLAGS=-fPIC
 export F90FLAGS=-fPIC
 export CXXFLAGS=-fPIC
+# These two might be needed for cairo stuff.
+export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+export PATH="$PREFIX/bin:$PATH"
 
 # This setting for CPPFLAGS may be needed for some systems (Linux 32-bit
 # was one). Only set it if the large file stuff doesn't work with NetCDF4.
@@ -90,11 +93,11 @@ INSTALL_GDAL=1
 INSTALL_G2CLIB=1
 INSTALL_UDUNITS=1
 INSTALL_VIS5DPLUS=1
+INSTALL_PKGCONFIG=1
 INSTALL_EXPAT=1
 INSTALL_FREETYPE=1
 INSTALL_FONTCONFIG=1
 INSTALL_PIXMAN=1
-INSTALL_PKGCONFIG=1
 INSTALL_CAIRO=1
 #INSTALL_OPENSSL=1
 #INSTALL_CURL=1
@@ -157,11 +160,11 @@ SZIP_DIR="szip-2.1"
 UDUNITS_DIR="udunits-1.12.9"
 VIS5DPLUS_DIR="vis5d+-1.3.0"
 ZLIB_DIR="zlib-1.2.3"
+PKGCONFIG_DIR="pkg-config-0.23"
 EXPAT_DIR="expat-2.0.1"
 FREETYPE_DIR="freetype-2.3.11"
 FONTCONFIG_DIR="fontconfig-2.8.0"
 PIXMAN_DIR="pixman-0.16.4"
-PKGCONFIG_DIR="pkg-config-0.23"
 CAIRO_DIR="cairo-1.8.8"
 OPENSSL_DIR="openssl-0.9.8l"
 CURL_DIR="curl-7.19.7"
@@ -619,6 +622,37 @@ else
 fi
 
 #--------------------------------------------------------------------
+# pkg-config
+#--------------------------------------------------------------------
+if [ $INSTALL_PKGCONFIG ]
+  then
+  if [ -d "$PKGCONFIG_DIR" ]
+  then
+    cd $PKGCONFIG_DIR
+    echo "Building $PKGCONFIG_DIR..."
+    ./configure --prefix\=$PREFIX
+    make all install
+    if [ $? ]
+    then
+      echo "$PKGCONFIG_DIR build successful."
+      export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+      export PATH="$PREFIX/bin:$PATH"
+      if [ $CLEANUP ]
+      then
+        make distclean
+      fi
+    else
+      echo "$PKGCONFIG_DIR build NOT successful."
+    fi
+    cd ..
+  else
+    echo "Directory $PKGCONFIG_DIR doesn't exist"
+  fi
+else
+  echo "Not building pkgconfig..."
+fi
+
+#--------------------------------------------------------------------
 # Expat
 #--------------------------------------------------------------------
 if [ $INSTALL_EXPAT ]
@@ -688,6 +722,10 @@ if [ $INSTALL_FONTCONFIG ]
   then
     cd $FONTCONFIG_DIR
     echo "Building $FONTCONFIG_DIR..."
+# You might need these two settings.
+    export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
+    export PATH="$PREFIX/bin:$PATH"
+
     ./configure --prefix\=$PREFIX
     make all install
     if [ $? ]
@@ -735,35 +773,6 @@ if [ $INSTALL_PIXMAN ]
   fi
 else
   echo "Not building pixman..."
-fi
-
-#--------------------------------------------------------------------
-# pkg-config
-#--------------------------------------------------------------------
-if [ $INSTALL_PKGCONFIG ]
-  then
-  if [ -d "$PKGCONFIG_DIR" ]
-  then
-    cd $PKGCONFIG_DIR
-    echo "Building $PKGCONFIG_DIR..."
-    ./configure --prefix\=$PREFIX
-    make all install
-    if [ $? ]
-    then
-      echo "$PKGCONFIG_DIR build successful."
-      if [ $CLEANUP ]
-      then
-        make distclean
-      fi
-    else
-      echo "$PKGCONFIG_DIR build NOT successful."
-    fi
-    cd ..
-  else
-    echo "Directory $PKGCONFIG_DIR doesn't exist"
-  fi
-else
-  echo "Not building pkgconfig..."
 fi
 
 #--------------------------------------------------------------------
