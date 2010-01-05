@@ -18,5 +18,5 @@ Error: Arithmetic overflow converting INTEGER(8) to INTEGER(4) at (1)
 make: *** [tlocal32.o] Error 1
 
 then add "-fno-range-check" to your gfortran compile line.
-You can do this using "CcOptions" in the configuration file
+You can do this using "FcOptions" in the configuration file
 in $NCARG/config.
