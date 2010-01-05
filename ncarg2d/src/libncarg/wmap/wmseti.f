@@ -1,5 +1,5 @@
 C
-C	$Id: wmseti.f,v 1.17 2008-07-27 00:17:37 haley Exp $
+C	$Id: wmseti.f,v 1.18 2010-01-05 03:52:14 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -485,6 +485,14 @@ C
       ELSE IF (CNP(1:3).EQ.'VLB' .OR. CNP(1:3).EQ.'vlb' .OR.
      +         CNP(1:3).EQ.'Vlb') THEN
         VLBLBC = IVP
+        GO TO 120
+C
+C  VVC - Flags whether to plot the visibility parameter VV as the
+C        raw two-character SYNOP codes.
+C
+      ELSE IF (CNP(1:3).EQ.'VVC' .OR. CNP(1:3).EQ.'vvc' .OR.
+     +         CNP(1:3).EQ.'Vvc') THEN
+        IVVCOD = IVP
         GO TO 120
       ELSE
         CTM(1:36) = 'WMSETI - Parameter name not known - '

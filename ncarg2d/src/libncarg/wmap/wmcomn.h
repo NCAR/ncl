@@ -1,5 +1,5 @@
 C
-C	$Id: wmcomn.h,v 1.18 2008-07-27 03:54:15 haley Exp $
+C	$Id: wmcomn.h,v 1.19 2010-01-05 03:52:14 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -137,6 +137,7 @@ C    RSMOTH  SMT   Smoothing parameter for the smoothing spline routines.
 C    IUNITS  UNT   Flags use of imperial units or metric units.
 C    BRBLWD  BLW   Linewidth scale factor for drawing wind barbs.
 C    OBSERR  OER   Observational weights for data for smoothing spline routines.
+C    IVVCOD  VVC   Flags plotting raw SYNOP code for visibility.
 C    RSMRET  ---   Used to return the default setting of RSMOTH.
 C    OBSRET  ---   Used to return the default setting of OBSERR.
 C
@@ -154,7 +155,7 @@ C
      +        IHIGC3, ILOWC1, ILOWC2, ILOWC3, IRGLC1, IRGLC2, IRGLC3,        
      +        IRGLC4, IDOTBG, IAROWC, IARSHC, IRLLSC, IRLOUC, IRLBKC, 
      +        IHIGC4, IAROUC, IRGLC5, ITRO1C, ITRO2C, ILOWC4, IEZFLG,
-     +        ISMOTH, IUNITS, VCCOLR, VLBLFC, VLBLBC, ISTYPE 
+     +        ISMOTH, IUNITS, VCCOLR, VLBLFC, VLBLBC, ISTYPE, IVVCOD
       COMMON /WMCOMI/ SYMWID, BEGDST, ENDDST, BETDST, MAXSYM, IARNDX, 
      +                IFRONT, CRVLEN, ISLFLG, SLOPE1, SLOPE2, SLOPEL,
      +                SLOPER, IALOFT, RLINWD, IWDTYP, SLINWD, ICOLOR,
@@ -171,7 +172,7 @@ C
      +                IRGLC5, ITRO1C, ITRO2C, ILOWC4, IEZFLG, TNSION, 
      +                ISMOTH, RSMOTH, OBSERR, RSMRET, OBSRET, IUNITS,
      +                BRBLWD, VCNREF, VCUREF, VCHSIZ, VCCOLR, VCWDIR, 
-     +                VCLWID, VCSIZE, VHDANG, VLBLFC, VLBLBC,
+     +                VCLWID, VCSIZE, VHDANG, VLBLFC, VLBLBC, IVVCOD,
      +                ISTYPE(ISDIM)
 C
 C  WMARRS contains arrray space.

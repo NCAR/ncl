@@ -1,5 +1,5 @@
 C
-C	$Id: wmstnm.f,v 1.16 2008-07-27 00:17:37 haley Exp $
+C	$Id: wmstnm.f,v 1.17 2010-01-05 03:52:14 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -971,6 +971,17 @@ C
 C
 C   Horizontal visibility at surface.
 C
+C   If IVVCOD equals 1, then just plot the raw SYNOP two-character
+C   code.  Otherwise, convert to mph (if IUNITS equals 0) or km
+C   (if IUNITS equals 1) and plot.
+C
+      IF (IVVCOD .EQ. 1) THEN
+        IF (VV .LE. 50. .OR. VV .GE. 56.) THEN
+          CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),IMDAT(1)(4:5),SIZ,0.,0.)
+        ENDIF
+        GO TO 150
+      ENDIF
+C   
 C
 C   Imperial units if IUNITS .EQ. 0.
 C
@@ -985,13 +996,11 @@ C
             IFR = MOD(VV,16)
           ENDIF
         ELSE IF (VV.GE.56 .AND. VV.LE.80) THEN
-          IVV = 60+10*(VV-56)
-          IWH = IVV/16
-          IFR = MOD(IVV,16)
+          IWH = NINT((6. + (VV-56))*0.6213712)
+          IFR = 0
         ELSE IF (VV.GT.80 .AND. VV.LT.90) THEN
-          IVV = 300+50*(VV-80)
-          IWH = IVV/16
-          IFR = MOD(IVV,16)
+          IWH = NINT(30. + 5.*(VV-80)*0.6213712)
+          IFR = 0
         ELSE IF (VV.EQ.90) THEN
           IWH = 0
         ELSE IF (VV.EQ.91) THEN
@@ -1026,6 +1035,10 @@ C
         ENDIF 
         ASIZ = .67*SIZ
         BOFF = .33*SIZ
+C
+C  The NOAA chart "Explanation of the Weather Map indicates that 
+C  visibilities above 10 should be omitted from the map.
+C
         IF (IPRSNT(5).EQ.1 .AND. IWH.LE.10 .AND. IPLFLG.EQ.1) THEN
 C
 C  If the fraction of a mile is 0, then plot the whole mile number.
@@ -1037,7 +1050,7 @@ C
             CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),CHR3(LL:3),SIZ,0.,0.)
 C
 C  Plot the fractional part (the whole part will be plotted after
-C  this whold IF block.
+C  this whole IF block.
 C
           ELSE
             CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'/',SIZ,0.,0.)
@@ -1212,6 +1225,8 @@ C
           CALL PLCHHQ(SYMPOS(1,5),SYMPOS(2,5),'>50.',SIZ,0.,0.)
         ENDIF
       ENDIF
+C
+  150 CONTINUE
 C     
 C  Present weather
 C

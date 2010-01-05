@@ -1,5 +1,5 @@
 C
-C	$Id: wmblda.f,v 1.17 2008-07-27 00:17:36 haley Exp $
+C	$Id: wmblda.f,v 1.18 2010-01-05 03:52:14 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -273,5 +273,11 @@ C
 C    http://weather.unisys.com/wxp/Appendices/Formats/SYNOP.html
 C
       DATA IUNITS/0/
+C
+C  If IVVCOD equals 1, then plot the surface visibility as per
+C  the raw two-character SYNOP codes, otherwise convert and plot
+C  as mph or km as per the setting of IUNITS.
+C
+      DATA IVVCOD/0/
 C
       END
