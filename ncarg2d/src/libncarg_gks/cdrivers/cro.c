@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.c,v 1.12 2010-01-07 23:07:17 brownrig Exp $
+ *      $Id: cro.c,v 1.13 2010-01-07 23:28:28 brownrig Exp $
  */
 /*
  *
@@ -57,7 +57,11 @@ static int ccompar(const void *p1, const void *p2);
 static void cascsrt(float xa[], int ip[], int n);
 static float *csort_array;
 static void reverse_chrs(char*);
-static void cro_SoftFill (GKSC *gksc, float angle, float spl);
+
+/* this looks like it should be static, but there's a pattern where the SoftFill() routines
+ * are declared external for this, the PS, and the PDF drivers. Leaving it for now.  --RLB 1/2010.
+ */
+void cro_SoftFill (GKSC *gksc, float angle, float spl);
 
 /*
  *  Globals
