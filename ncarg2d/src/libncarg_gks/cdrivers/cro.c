@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.c,v 1.11 2009-12-08 20:22:36 brownrig Exp $
+ *      $Id: cro.c,v 1.12 2010-01-07 23:07:17 brownrig Exp $
  */
 /*
  *
@@ -42,7 +42,6 @@
 
 #define PI 3.1415926
 #define RINT(A) ((A) > 0 ? (int) ((A) + 0.5) : -(int) (0.5 - (A)))
-#define PNG_SCALE 1.5
 #define NUM_CONTEXT 20  /* number of allowable contexts */
 
 static char *getFileNameRoot(int, char*, char*);
@@ -51,14 +50,15 @@ static char *getCPNGFileName(int, int, char *);
 static char *getCPDFFileName(int, char *);
 static void setSurfaceTransform(CROddp *psa);
 static void CROinit(CROddp *, int *);
-unsigned int pack_argb(struct color_value);
-struct color_value unpack_argb(unsigned int);
+static void CROpict_init(GKSC *gksc);
+static unsigned int pack_argb(struct color_value);
+static struct color_value unpack_argb(unsigned int);
 static int ccompar(const void *p1, const void *p2);
 static void cascsrt(float xa[], int ip[], int n);
 static float *csort_array;
 static void reverse_chrs(char*);
+static void cro_SoftFill (GKSC *gksc, float angle, float spl);
 
-extern void cro_SoftFill (GKSC *gksc, float angle, float spl);
 /*
  *  Globals
  */
@@ -85,70 +85,89 @@ int context_index(int wkid) {
 }
 
 /*
- *  Picture initialization.
+ *  Picture initialization.  Called once by the first drawing routine (polyline, polymarker, fill, cell, text)
+ *  that gets invoked.
+ *
  */
-CROpict_init(GKSC *gksc) {
+void CROpict_init(GKSC *gksc) {
 /*
  *  Put out background.
  */
   CROddp *psa = (CROddp *) gksc->ddp;
 
   struct color_value cval;
-  double xl, yt, xr, yb;
 
   if (getenv("CRO_TRACE")) {
     printf("Got to CROpict_init\n");
   }
 
-/*
- *  Save the current clip extents and reset the clipping rectangle to max.
- */
-  cairo_clip_extents(cairo_context[context_index(psa->wks_id)], &xl, &yt, &xr, &yb);
-  cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
 
-/*
- *  Get the background color and set the source to the background color.
- */
+  /*
+   *  Get the background color and set the source to the background color.
+   */
   cval = unpack_argb((psa->ctable)[0]);
   cairo_set_source_rgba (cairo_context[context_index(psa->wks_id)], cval.red, cval.green, cval.blue, cval.alpha);
 
-/*
- *  Set the clipping rectangle to the surface area.
- */
-  cairo_move_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,0.);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,
-                  psa->dspace.ury - psa->dspace.lly);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,psa->dspace.ury - psa->dspace.lly);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-  cairo_clip(cairo_context[context_index(psa->wks_id)]);
+  /* NOTE: This is likely not quite right, but I don't understand the use of the clipping rectangle below. In any case,
+   * the code that does the Right Thing for PS/PDF does not result in a complete fill for image-based formats,
+   * so we proceed differently  --RLB
+   */
+  if (psa->wks_type == CPS || psa->wks_type == CPDF) {
+      double xl, yt, xr, yb;
 
-/*
- *  Fill the surface clip region with the background color.
- */
-  cairo_move_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,0.);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,
-                  psa->dspace.ury - psa->dspace.lly);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,psa->dspace.ury - psa->dspace.lly);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
+      /*
+       *  Save the current clip extents and reset the clipping rectangle to max.
+       */
+      cairo_clip_extents(cairo_context[context_index(psa->wks_id)], &xl, &yt, &xr, &yb);
+      cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
 
-  cairo_fill(cairo_context[context_index(psa->wks_id)]);
+      /*
+       *  Set the clipping rectangle to the surface area.
+       */
+      cairo_move_to(cairo_context[context_index(psa->wks_id)],0.,0.);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,0.);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,
+              psa->dspace.ury - psa->dspace.lly);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,psa->dspace.ury - psa->dspace.lly);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
+      cairo_clip(cairo_context[context_index(psa->wks_id)]);
 
-/*
- *  Restore the clipping rectangle to what it was on entry.
- *  cairo_clip clears the path.
- */
-  cairo_move_to(cairo_context[context_index(psa->wks_id)],xl,yt);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],xr,yt);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],xr,yb);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],xl,yb);
-  cairo_line_to(cairo_context[context_index(psa->wks_id)],xl,yt);
-  cairo_clip(cairo_context[context_index(psa->wks_id)]);
+      /*
+       *  Fill the surface clip region with the background color.
+       */
+      cairo_move_to(cairo_context[context_index(psa->wks_id)],0.,0.);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,0.);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],psa->dspace.urx - psa->dspace.llx,
+              psa->dspace.ury - psa->dspace.lly);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,psa->dspace.ury - psa->dspace.lly);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
+
+      cairo_fill(cairo_context[context_index(psa->wks_id)]);
+
+      /*
+       *  Restore the clipping rectangle to what it was on entry.
+       *  cairo_clip clears the path.
+       */
+      cairo_move_to(cairo_context[context_index(psa->wks_id)],xl,yt);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],xr,yt);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],xr,yb);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],xl,yb);
+      cairo_line_to(cairo_context[context_index(psa->wks_id)],xl,yt);
+      cairo_clip(cairo_context[context_index(psa->wks_id)]);
+  }
+  else {
+      /* code for image-based formats */
+      cairo_save(cairo_context[context_index(psa->wks_id)]);
+      cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
+      cairo_identity_matrix(cairo_context[context_index(psa->wks_id)]);
+      cairo_rectangle(cairo_context[context_index(psa->wks_id)], 0, 0, psa->image_width, psa->image_height);
+      cairo_fill(cairo_context[context_index(psa->wks_id)]);
+      cairo_restore(cairo_context[context_index(psa->wks_id)]);
+  }
 
   psa->pict_empty = FALSE;
 
-  return(0);
+  return;
 }
 
 /*
@@ -474,6 +493,8 @@ int cro_Esc(GKSC *gksc) {
 
   char    *sptr = (char *) gksc->s.list, *strng;
   int     *iptr = (int *) gksc->i.list;
+  _NGCesc *cesc = (_NGCesc*)gksc->native;
+  _NGCPixConfig *pixconf;
 
   int     escape_id = iptr[0], plflag;
   float   rscale, logox, logoy, logos;
@@ -522,6 +543,15 @@ int cro_Esc(GKSC *gksc) {
 
       setSurfaceTransform(psa);
       break;
+
+    case NGESC_CNATIVE:  /* C-escape mechanism;  get resolution of image-based output formats */
+      switch(cesc->type){
+        case NGC_PIXCONFIG:
+          pixconf = (_NGCPixConfig*)cesc;
+          psa->image_width = pixconf->width;
+          psa->image_height = pixconf->height;
+          break;
+      }
   }
 
   return(0);
@@ -710,7 +740,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
      */
     psa->output_file = getCPSFileName(psa->wks_id, sptr);
     cairo_surface[context_num] =
-      cairo_ps_surface_create (psa->output_file, 612, 792);
+      cairo_ps_surface_create (psa->output_file, PSPDF_PAGESIZE_X, PSPDF_PAGESIZE_Y);
     cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
     add_context_index(context_num, orig_wks_id);
   }
@@ -718,15 +748,9 @@ int cro_OpenWorkstation(GKSC *gksc) {
   else if (psa->wks_type == CPNG) {
       /*
        *  Create a PNG workstation.
-       *  Ultimately should provide a user-settable scale factor instead
-       *  of using PNG_SCALE  for width and height here.  The numbers below are
-       *  the default PS page limits of (612,792) scaled by PNG_SCALE.  The
-       *  translation offsets and scale factor for PNG output below also
-       *  reflect this scale factor (default offsets for PS are (36,666)).
-       *
        */
     cairo_surface[context_num] = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-          PNG_SCALE*612,PNG_SCALE*792);
+          psa->image_width, psa->image_height);
     cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
     add_context_index(context_num, orig_wks_id);
     psa->output_file = (char*) malloc(strlen(sptr)+1);
@@ -739,7 +763,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
        */
       psa->output_file = getCPDFFileName(psa->wks_id, sptr);
       cairo_surface[context_num] =
-        cairo_pdf_surface_create (psa->output_file, 612, 792);
+        cairo_pdf_surface_create (psa->output_file, PSPDF_PAGESIZE_X, PSPDF_PAGESIZE_Y);
       cairo_context[context_num] = cairo_create (cairo_surface[context_num]);
       add_context_index(context_num, orig_wks_id);
   }
@@ -1153,68 +1177,6 @@ int cro_SetColorRepresentation(GKSC *gksc) {
   cval.blue  = (float) rgbptr[0].b;
 
   (psa->ctable)[index] = pack_argb(cval);
-
-#if 0 /* RLB:  No, clearing is managed through calls to CROpict_init. Performing it here can (and does) happen
-  any time colormap changes or is resent. */
-/*
- *  Setting index 0 specifies the background color, so fill the
- *  plotting area with that color.
- */
-
-  if (index == 0) {
-/*
- *  Save the current clip extents and reset the clipping rectangle to max.
- */
-    cairo_clip_extents(cairo_context[context_index(psa->wks_id)],
-       &xl, &yt, &xr, &yb);
-    cairo_reset_clip(cairo_context[context_index(psa->wks_id)]);
-
-/*
- *  Set the source to the background color.
- */
-    cairo_set_source_rgba (cairo_context[context_index(psa->wks_id)],
-       cval.red, cval.green, cval.blue, cval.alpha);
-
-/*
- *  Set the clipping rectangle to the surface area.
- */
-    cairo_move_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],
-       psa->dspace.urx - psa->dspace.llx,0.);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],
-       psa->dspace.urx - psa->dspace.llx,
-       psa->dspace.ury - psa->dspace.lly);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,
-       psa->dspace.ury - psa->dspace.lly);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-    cairo_clip(cairo_context[context_index(psa->wks_id)]);
-
-/*
- *  Fill the surface clip region with the background color.
- */
-    cairo_move_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],
-       psa->dspace.urx - psa->dspace.llx,0.);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],
-       psa->dspace.urx - psa->dspace.llx,
-       psa->dspace.ury - psa->dspace.lly);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,
-       psa->dspace.ury - psa->dspace.lly);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],0.,0.);
-    cairo_fill(cairo_context[context_index(psa->wks_id)]);
-
-/*
- *  Restore the clipping rectangle to what it was on entry.
- *  cairo_clip clears the path.
- */
-    cairo_move_to(cairo_context[context_index(psa->wks_id)],xl,yt);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],xr,yt);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],xr,yb);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],xl,yb);
-    cairo_line_to(cairo_context[context_index(psa->wks_id)],xl,yt);
-    cairo_clip(cairo_context[context_index(psa->wks_id)]);
-  }
-#endif
 
   return(0);
 }
@@ -2016,7 +1978,7 @@ char *getCPDFFileName(int wks_id, char *file_name)
     char* root = getFileNameRoot(wks_id, file_name, "NCARG_GKS_CPDFOUTPUT");
     int rootLen = strlen(root);
 
-    /* we append a ".ps" suffix below, but file_name may already have it */
+    /* we append a ".pdf" suffix below, but file_name may already have it */
     if (rootLen >= 4 && strncmp(root + strlen(root)-4, ".pdf", 4) == 0)
         rootLen -= 4;
 
@@ -2029,7 +1991,6 @@ char *getCPDFFileName(int wks_id, char *file_name)
 
 static void CROinit(CROddp *psa, int *coords)
 {
-  int     i, cllx, clly, curx, cury;
   float   rscale;
 
   if (getenv("CRO_TRACE")) {
@@ -2047,36 +2008,13 @@ static void CROinit(CROddp *psa, int *coords)
   psa->sfill_spacing   = CRO_FILL_SPACING;
   psa->frame_count     = 0;
 
+#if 0 /* THIS IS NOT HANDED DOWN FROM HLU LAYER; coords+6 is undefined -- RLB*/
 /*
  *  Flag to suppress putting out background color rectangle.
  */
   psa->suppress_flag = *(coords+6);
+#endif
 
-  cllx = *coords;
-  clly = *(coords+1);
-  curx = *(coords+2);
-  cury = *(coords+3);
-  if ((cllx != -9999) && (clly != -9999) &&
-      (curx != -9999) && (cury != -9999)) {
-    psa->dspace.llx = (int) (((float) cllx));
-    psa->dspace.urx = (int) (((float) curx));
-    psa->dspace.lly = (int) (((float) clly));
-    psa->dspace.ury = (int) (((float) cury));
-  }
-  else {
-    psa->dspace.llx = (int) (((float) LLX_DEFAULT));
-    psa->dspace.urx = (int) (((float) URX_DEFAULT));
-    psa->dspace.lly = (int) (((float) LLY_DEFAULT));
-    psa->dspace.ury = (int) (((float) URY_DEFAULT));
-  }
-  psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
-  psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
-
-  psa->cro_clip.llx = psa->dspace.llx;
-  psa->cro_clip.lly = psa->dspace.lly;
-  psa->cro_clip.urx = psa->dspace.urx;
-  psa->cro_clip.ury = psa->dspace.ury;
-  psa->cro_clip.null = FALSE;
 
   psa->background = FALSE;
   psa->pict_empty = TRUE;
@@ -2108,6 +2046,50 @@ static void CROinit(CROddp *psa, int *coords)
   psa->attributes.fill_colr_ind    = FILL_COLR_IND_DEFAULT;
   psa->attributes.cro_colr_ind     = CRO_COLR_IND_DEFAULT;
   psa->attributes.clip_ind         = CLIP_IND_DEFAULT;
+
+  psa->image_width = DEFAULT_IMAGE_WIDTH;
+  psa->image_height = DEFAULT_IMAGE_HEIGHT;
+
+  /* apply any escapes */
+  _NGCesc       *cesc;
+  _NGCPixConfig *pixc;
+  while (cesc = _NGGetCEscInit()) {
+      switch (cesc->type) {
+          case NGC_PIXCONFIG:
+              pixc = (_NGCPixConfig*)cesc;
+              psa->image_width = pixc->width;
+              psa->image_height = pixc->height;
+              break;
+      }
+  }
+
+  /* set up page/image layout and transformations */
+  int cllx, clly, curx, cury;
+  cllx = *coords;
+  clly = *(coords + 1);
+  curx = *(coords + 2);
+  cury = *(coords + 3);
+  if ((cllx != -9999) && (clly != -9999) && (curx != -9999)
+          && (cury != -9999)) {
+      psa->dspace.llx = (int) (((float) cllx));
+      psa->dspace.urx = (int) (((float) curx));
+      psa->dspace.lly = (int) (((float) clly));
+      psa->dspace.ury = (int) (((float) cury));
+  } else {
+      psa->dspace.llx = (int) (((float) LLX_DEFAULT));
+      psa->dspace.urx = (int) (((float) URX_DEFAULT));
+      psa->dspace.lly = (int) (((float) LLY_DEFAULT));
+      psa->dspace.ury = (int) (((float) URY_DEFAULT));
+  }
+
+  psa->dspace.xspan = ((psa->dspace.urx) - (psa->dspace.llx));
+  psa->dspace.yspan = ((psa->dspace.ury) - (psa->dspace.lly));
+
+  psa->cro_clip.llx = psa->dspace.llx;
+  psa->cro_clip.lly = psa->dspace.lly;
+  psa->cro_clip.urx = psa->dspace.urx;
+  psa->cro_clip.ury = psa->dspace.ury;
+  psa->cro_clip.null = FALSE;
 
 }
 
@@ -2145,7 +2127,8 @@ void setSurfaceTransform(CROddp *psa)
      */
 
     double angle, tx, ty;
-    if (psa->orientation == LANDSCAPE) {
+    /* Landscape is only supported for PS/PDF, not for image-based formats. */
+    if (psa->orientation == LANDSCAPE && (psa->wks_type == CPS || psa->wks_type == CPDF)) {
         angle = PI/2.0;
         tx = psa->dspace.lly;
         ty = -psa->dspace.llx;
@@ -2158,12 +2141,6 @@ void setSurfaceTransform(CROddp *psa)
 
     double scale = 1.0;
 
-    if (psa->wks_type == CPNG) {
-        scale *= PNG_SCALE;
-        tx *= PNG_SCALE;
-        ty *= PNG_SCALE;
-    }
-
     cairo_t* ctx = cairo_context[context_index(psa->wks_id)];
     cairo_identity_matrix(ctx);
     cairo_rotate(ctx, angle);
@@ -2172,8 +2149,6 @@ void setSurfaceTransform(CROddp *psa)
 }
 
 /*
- *      File:           cro_fill.c
- *
  *      Author:         Fred Clare
  *                      National Center for Atmospheric Research
  *                      PO 3000, Boulder, Colorado

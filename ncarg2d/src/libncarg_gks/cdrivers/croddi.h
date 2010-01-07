@@ -1,5 +1,5 @@
 /*
- *      $Id: croddi.h,v 1.4 2009-12-08 20:22:36 brownrig Exp $
+ *      $Id: croddi.h,v 1.5 2010-01-07 23:07:17 brownrig Exp $
  */
 /*
  *      File:           croddi.h
@@ -30,7 +30,7 @@ typedef struct  CROddi_ {
   CRODeviceSpace  dspace;
   char          *output_file;
   cro_color     color;
-  cro_orientation  orientation;
+  cro_orientation  orientation;    /* applicable only to PS/PDF formats */
   float         sfill_spacing;
   float         hatch_spacing;
   linejoin_type line_join;
@@ -41,6 +41,8 @@ typedef struct  CROddi_ {
   float         nominal_width_scale;
   int           full_background;
   float         scaling;
+  int           image_width;       /* resolution, for image-based output formats only */
+  int           image_height;      /*                     "                           */
   int           background;
   int           pict_empty;
   int           page_number;

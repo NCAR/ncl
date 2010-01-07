@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.h,v 1.3 2009-12-08 20:22:36 brownrig Exp $
+ *      $Id: cro.h,v 1.4 2010-01-07 23:07:17 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -30,10 +30,17 @@
 
 #define CRO_SCALE 		.04     /* coordinate scale factor */
 
+/* postscript/pdf page defaults */
 #define LLX_DEFAULT           36    /* default lower left X coordinate */
 #define URX_DEFAULT          576    /* default upper right X coordinate */
 #define LLY_DEFAULT          126    /* default lower left Y coordinate */
 #define URY_DEFAULT          666    /* default upper right Y coordinate */
+#define PSPDF_PAGESIZE_X     612    /* page size in points, at 72 points/inch */
+#define PSPDF_PAGESIZE_Y     792    /*                  "                     */
+
+/* image-based formats defaults */
+#define DEFAULT_IMAGE_WIDTH 1000
+#define DEFAULT_IMAGE_HEIGHT 1000
 
 #define DEFAULT_CLIPPING_RECT   0
 #define CRO_CLIPPING_RECT       1
@@ -125,7 +132,7 @@
 /* cairo workstation types */
 #define CPS 				40  /* cairo Postscript  */
 #define CPNG				41  /* cairo PNG         */
-#define CPDF                42  /* cairo PDF */
+#define CPDF                42  /* cairo PDF         */
 
 typedef enum {MONO, COLOR} cro_color;
 
@@ -181,7 +188,7 @@ typedef struct  CROattribute_ {
         int     linetype;
         int     linetype_set;       /*  Linetype actually existing in file */
         float   linewidth;
-        int     linewidth_set;      /*  Linewidth actually esixting in file  */
+        int     linewidth_set;      /*  Linewidth actually existing in file  */
         unsigned int line_colr_ind;
         int     marker_type;
         float   marker_size;
