@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.227 2009-12-10 22:54:23 brownrig Exp $
+;      $Id: gsn_code.ncl,v 1.228 2010-01-07 23:09:32 brownrig Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2772,7 +2772,7 @@ begin
     class = NhlClassName(wks)
     if((class(0).eq."psWorkstationClass").or. \
        (class(0).eq."pdfWorkstationClass").or. \
-       (class(0).eq."cairoWorkstationClass")) then
+       (class(0).eq."cairoPSPDFWorkstationClass")) then
 ;
 ; Keep track of whether device coordinates were recalculated.
 ;
@@ -3272,42 +3272,47 @@ begin
     end if
 
     res_file = get_res_value_keep(name,"res_file","gsnapp")
-;
-; These PDF resources are ones that must be set at the time
-; the workstation is created. This means that these resources
-; will override whatever setting you might have in a resource
-; file or your .hluresfile.
-;
-    cmodel   = get_res_value(wkresnew,"wkColorModel","rgb")
-    resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
-    visualt  = get_res_value(wkresnew,"wkVisualType","color")
 
-; Be sure to add any resources set here to "res_list" in gsn_open_wks
-; so they don't get set again.
+;
+; We need to distinguish between PS/PDF versus image-based output formats
+;
+    if (type.eq."cps".or.type.eq."cpdf")
+        resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
+        cairo = create res_file cairoPSPDFWorkstationClass defaultapp
+          "wkCairoFileName"   : name
+          "wkCairoFormat"     : type
+          "wkPDFResolution"   : resltn
+        end create
 
-    cairo = create res_file cairoWorkstationClass defaultapp
-      "wkPDFResolution" : resltn
-      "wkCairoFileName"   : name
-      "wkCairoFormat"     : type
-    end create
+       ; Retrieve the device coordinates and the orientation so we can
+       ; reset them later if necessary.
+
+        getvalues cairo
+          "wkOrientation"  : cairo@wkOrientation
+          "wkDeviceLowerX" : cairo@wkDeviceLowerX
+          "wkDeviceLowerY" : cairo@wkDeviceLowerY
+          "wkDeviceUpperX" : cairo@wkDeviceUpperX
+          "wkDeviceUpperY" : cairo@wkDeviceUpperY
+        end getvalues
+
+    else
+        ; image-based formats
+        imageWidth = get_res_value(wkresnew,"wkWidth",1000)
+        imageHeight = get_res_value(wkresnew,"wkHeight",800)
+
+        cairo = create res_file cairoImageWorkstationClass defaultapp
+          "wkCairoFileName"   : name
+          "wkCairoFormat"     : type
+          "wkWidth"           : imageWidth
+          "wkHeight"          : imageHeight
+        end create
+    end if
 
 ;
 ; Set resources, if any.
 ;
     attsetvalues_check(cairo,wkresnew)
     delete(wkresnew)
-
-;
-; Retrieve the device coordinates and the orientation so we can
-; reset them later if necessary.
-;
-    getvalues cairo
-      "wkOrientation"  : cairo@wkOrientation
-      "wkDeviceLowerX" : cairo@wkDeviceLowerX
-      "wkDeviceLowerY" : cairo@wkDeviceLowerY
-      "wkDeviceUpperX" : cairo@wkDeviceUpperX
-      "wkDeviceUpperY" : cairo@wkDeviceUpperY
-    end getvalues
 
     return(cairo)
 end
