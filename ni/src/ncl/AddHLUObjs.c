@@ -1,5 +1,5 @@
 /*
- *      $Id: AddHLUObjs.c,v 1.23 2009-12-18 23:12:48 brownrig Exp $
+ *      $Id: AddHLUObjs.c,v 1.24 2010-01-07 23:05:10 brownrig Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17,7 +17,7 @@
  *
  *	Date:		Mon Feb 7 11:07:41 MST 1994
  *
- *	Description:	
+ *	Description:
  */
 
 #ifdef __cpluplus
@@ -69,9 +69,10 @@ void _NclAddHLUObjs
 	_NclAddSingleObj(NhlstreamlinePlotClass->base_class.class_name,NhlstreamlinePlotClass);
 	_NclAddSingleObj(NhlgraphicStyleClass->base_class.class_name,NhlgraphicStyleClass);
 	_NclAddSingleObj(NhlprimitiveClass->base_class.class_name,NhlprimitiveClass);
-	_NclAddSingleObj(NhlcairoWorkstationClass->base_class.class_name, NhlcairoWorkstationClass);
+	_NclAddSingleObj(NhlcairoPSPDFWorkstationClass->base_class.class_name, NhlcairoPSPDFWorkstationClass);
+    _NclAddSingleObj(NhlcairoImageWorkstationClass->base_class.class_name, NhlcairoImageWorkstationClass);
 	return;
-	
+
 }
 
 #ifdef __cpluplus

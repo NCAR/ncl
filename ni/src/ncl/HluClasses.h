@@ -1,5 +1,5 @@
 /*
- *      $Id: HluClasses.h,v 1.4 2009-12-18 23:12:48 brownrig Exp $
+ *      $Id: HluClasses.h,v 1.5 2010-01-07 23:05:10 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -9,7 +9,7 @@
 *									*
 ************************************************************************/
 /*
- *	File:		
+ *	File:
  *
  *	Author:		Mary Haley
  *			National Center for Atmospheric Research
@@ -48,4 +48,5 @@ extern NhlClass NhlvectorFieldClass;
 extern NhlClass NhlstreamlinePlotClass;
 extern NhlClass NhlgraphicStyleClass;
 extern NhlClass NhlprimitiveClass;
-extern NhlClass NhlcairoWorkstationClass;
+extern NhlClass NhlcairoPSPDFWorkstationClass;
+extern NhlClass NhlcairoImageWorkstationClass;
