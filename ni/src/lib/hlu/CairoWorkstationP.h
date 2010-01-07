@@ -1,5 +1,5 @@
 /*
- *  $Id: CairoWorkstationP.h,v 1.2 2009-12-18 23:15:50 brownrig Exp $
+ *  $Id: CairoWorkstationP.h,v 1.3 2010-01-07 23:06:01 brownrig Exp $
  */
 
 # ifndef    _NCairoWorkstationP_h
@@ -7,6 +7,7 @@
 
 # include   <ncarg/hlu/WorkstationP.h>
 # include   <ncarg/hlu/CairoWorkstation.h>
+# include   <ncarg/gksP.h>
 
 /*
  * CAIRO workstation type identifiers start at 40.
@@ -17,20 +18,27 @@
 # define    CPNG        (41)
 # define    CPDF        (42)
 
+/* We are creating distinct workstation objects for PS/PDF versus image-based cairo output formats.
+ * However, we'll use common methods and structs. In the struct below, some fields are applicable
+ * to only one or the other workstation type.
+ */
 typedef struct _NhlCairoWorkstationLayerPart {
     NhlCairoFormat     format;             /* CPS, CPNG, CPDF, etc. */
     NhlString          filename;
-    NhlWorkOrientation orientation;        /* PORTRAIT or LANDSCAPE */
-    int dpi;                               /* dots/inch for postscript/PDF output */
-    int xres;                              /* resolution of image-based formats */
-    int yres;                              /*                "                  */
     int lower_x;
     int lower_y;
     int upper_x;
     int upper_y;
+
+    /* fields for PS/PDF workstations */
+    NhlWorkOrientation orientation;               /* PORTRAIT or LANDSCAPE */
+    int dpi;                                      /* dots/inch */
+
+    /* fields for image-based workstations */
+    _NGCPixConfig      pixconfig;
+
     /* Private internal fields */
     NhlBoolean  dev_bounds_updated;
-
 } NhlCairoWorkstationLayerPart;
 
 typedef struct  _NhlCairoWorkstationLayerRec {
@@ -53,6 +61,7 @@ typedef struct _NhlCairoWorkstationLayerRec   *NhlCairoWorkstationLayer;
 typedef struct _NhlCairoWorkstationClassRec   *NhlCairoWorkstationClass;
 
 
-extern NhlCairoWorkstationClassRec    NhlcairoWorkstationClassRec;
+extern NhlCairoWorkstationClassRec    NhlcairoPSPDFWorkstationClassRec;
+extern NhlCairoWorkstationClassRec    NhlcairoImageWorkstationClassRec;
 
 # endif /* _NCairoWorkstationP_h */

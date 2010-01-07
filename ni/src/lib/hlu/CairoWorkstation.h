@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.h,v 1.2 2009-12-18 23:15:50 brownrig Exp $
+ *      $Id: CairoWorkstation.h,v 1.3 2010-01-07 23:06:01 brownrig Exp $
  */
 
 # ifndef    _NCarioWorkstation_h
@@ -41,7 +41,8 @@ typedef enum _NhlCairoFormat {
     NhlCPDF = 2,
 } NhlCairoFormat;
 
-extern NhlClass NhlcairoWorkstationClass;
+extern NhlClass NhlcairoPSPDFWorkstationClass;
+extern NhlClass NhlcairoImageWorkstationClass;
 
 
 # endif /* _NCairoWorkstation_h */

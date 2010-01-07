@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.c,v 1.2 2009-12-18 23:15:50 brownrig Exp $
+ *      $Id: CairoWorkstation.c,v 1.3 2010-01-07 23:06:01 brownrig Exp $
  */
 
 # include   <stdio.h>
@@ -8,6 +8,7 @@
 # include   <ncarg/hlu/ConvertersP.h>
 
 
+# define    NO_RES          "no.res"
 # define    Oset(field)     NhlOffset(NhlCairoWorkstationLayerRec, cairo.field)
 
 static NhlResource resources[] = {
@@ -37,12 +38,19 @@ static NhlResource resources[] = {
     {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
         sizeof(int),Oset(upper_y),NhlTImmediate,
         (NhlPointer)666,_NhlRES_DEFAULT,NULL},
+
+    /* Resources for image-based output formats. We'll use the existing NGC_PIXCONFIG struct
+     * for this purpose, but not all of its fields will be utilized.
+     */
+    {NO_RES,NO_RES,NhlTInteger,sizeof(int),Oset(pixconfig.type),
+        NhlTImmediate,(NhlPointer)NGC_PIXCONFIG,
+        _NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
     {NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),
-        Oset(xres),NhlTImmediate,
-        (NhlPointer)512,_NhlRES_DEFAULT,NULL},
+        Oset(pixconfig.width),NhlTImmediate,
+        (NhlPointer)1024,_NhlRES_DEFAULT,NULL},
     {NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
-        Oset(yres),NhlTImmediate,
-        (NhlPointer)512,_NhlRES_DEFAULT,NULL},
+        Oset(pixconfig.height),NhlTImmediate,
+        (NhlPointer)768,_NhlRES_DEFAULT,NULL},
 
 #if 0
     {NhlNwkVisualType,NhlCwkVisualType,NhlTVisualType,sizeof(NhlVisualType),
@@ -127,17 +135,26 @@ static NhlErrorTypes CairoWorkstationGetValues(
  * CairoWorkstation work_class method declarations
  */
 
-static NhlErrorTypes CairoWorkstationOpen(
+static NhlErrorTypes CairoPSPDFWorkstationOpen(
     NhlLayer    /* instance */
 );
 
-static NhlErrorTypes CairoWorkstationActivate(
+static NhlErrorTypes CairoImageWorkstationOpen(
+    NhlLayer    /* instance */
+);
+
+static NhlErrorTypes CairoPSPDFWorkstationActivate(
     NhlLayer    l   /* instance */
 );
 
-NhlCairoWorkstationClassRec NhlcairoWorkstationClassRec = {
+static NhlErrorTypes CairoImageWorkstationActivate(
+    NhlLayer    l   /* instance */
+);
+
+/* class-record for PS/PDF output formats */
+NhlCairoWorkstationClassRec NhlcairoPSPDFWorkstationClassRec = {
     {
-        /* class_name           */  "cairoWorkstationClass",
+        /* class_name           */  "cairoPSPDFWorkstationClass",
         /* nrm_class            */  NrmNULLQUARK,
         /* layer_size           */  sizeof(NhlCairoWorkstationLayerRec),
         /* class_inited         */  False,
@@ -178,9 +195,9 @@ NhlCairoWorkstationClassRec NhlcairoWorkstationClassRec = {
         /* def_background    */     {1.0,1.0,1.0},
         /* rgb_dbm           */     NULL,
         /* pal               */     NhlInheritPalette,
-        /* open_work         */     CairoWorkstationOpen,
+        /* open_work         */     CairoPSPDFWorkstationOpen,
         /* close_work        */     NhlInheritClose,
-        /* activate_work     */     CairoWorkstationActivate,
+        /* activate_work     */     CairoPSPDFWorkstationActivate,
         /* deactivate_work   */     NhlInheritDeactivate,
         /* alloc_colors      */     NhlInheritAllocateColors,
         /* update_work       */     NhlInheritUpdate,
@@ -198,10 +215,75 @@ NhlCairoWorkstationClassRec NhlcairoWorkstationClassRec = {
 
 };
 
-NhlClass NhlcairoWorkstationClass = (NhlClass) &NhlcairoWorkstationClassRec;
+/* class-record for image-based output formats */
+NhlCairoWorkstationClassRec NhlcairoImageWorkstationClassRec = {
+    {
+        /* class_name           */  "cairoImageWorkstationClass",
+        /* nrm_class            */  NrmNULLQUARK,
+        /* layer_size           */  sizeof(NhlCairoWorkstationLayerRec),
+        /* class_inited         */  False,
+        /* superclass           */  (NhlClass)&NhlworkstationClassRec,
+        /* cvt_table            */  NULL,
+
+        /* layer_resources      */  resources,
+        /* num_resources        */  NhlNumber(resources),
+        /* all_resources        */  NULL,
+        /* callbacks            */  NULL,
+        /* num_callbacks        */  0,
+        /* class_callbacks      */  NULL,
+        /* num_class_callbacks  */  0,
+
+        /* class_part_initialize */     CairoWorkstationClassPartInitialize,
+        /* class_initialize      */     CairoWorkstationClassInitialize,
+        /* layer_initialize      */     CairoWorkstationInitialize,
+        /* layer_set_values      */     CairoWorkstationSetValues,
+        /* layer_set_values_hook */     NULL,
+        /* layer_get_values      */     CairoWorkstationGetValues,
+        /* layer_reparent        */     NULL,
+        /* layer_destroy         */     CairoWorkstationDestroy,
+
+        /* child_resources       */     NULL,
+
+        /* layer_draw            */     NULL,
+
+        /* layer_pre_draw        */     NULL,
+        /* layer_draw_segonly    */     NULL,
+        /* layer_post_draw       */     NULL,
+        /* layer_clear           */     NULL
+    },
+
+    {
+        /* current_wks_count */     NhlInheritCurrentWksCount,
+        /* gks_wks_recs      */     NhlInheritGksWksRecs,
+        /* hlu_wks_flag      */     NhlInheritHluWksFlag,
+        /* def_background    */     {1.0,1.0,1.0},
+        /* rgb_dbm           */     NULL,
+        /* pal               */     NhlInheritPalette,
+        /* open_work         */     CairoImageWorkstationOpen,
+        /* close_work        */     NhlInheritClose,
+        /* activate_work     */     CairoImageWorkstationActivate,
+        /* deactivate_work   */     NhlInheritDeactivate,
+        /* alloc_colors      */     NhlInheritAllocateColors,
+        /* update_work       */     NhlInheritUpdate,
+        /* clear_work        */     NhlInheritClear,
+        /* lineto_work       */     NhlInheritLineTo,
+        /* fill_work         */     NhlInheritFill,
+        /* marker_work       */     NhlInheritMarker,
+        /* notify_work       */     NULL,
+    /* update_drawbb     */      NULL
+    },
+
+    {
+        /* foo  */          0
+    }
+
+};
+
+NhlClass NhlcairoPSPDFWorkstationClass = (NhlClass) &NhlcairoPSPDFWorkstationClassRec;
+NhlClass NhlcairoImageWorkstationClass = (NhlClass) &NhlcairoImageWorkstationClassRec;
 
 /*
- * Function:    nhlfcairoworkstationclass
+ * Function:    nhlfcairopspdfworkstationclass
  *
  * Description: fortran ref to this class
  *
@@ -215,12 +297,21 @@ NhlClass NhlcairoWorkstationClass = (NhlClass) &NhlcairoWorkstationClassRec;
  */
 
 NhlClass
-_NHLCALLF(nhlfcairoworkstationclass, NHLFCAIROWORKSTATIONCLASS)
+_NHLCALLF(nhlfcairopspdfworkstationclass, NHLFCAIROPSPDFWORKSTATIONCLASS)
 (
     void
 )
 {
-    return NhlcairoWorkstationClass;
+    return NhlcairoPSPDFWorkstationClass;
+}
+
+NhlClass
+_NHLCALLF(nhlfcairoimageworkstationclass, NHLFCAIROIMAGEWORKSTATIONCLASS)
+(
+    void
+)
+{
+    return NhlcairoImageWorkstationClass;
 }
 
 /*
@@ -263,10 +354,13 @@ static NrmQuark fnameQ = NrmNULLQUARK;
 static NhlErrorTypes
 CairoWorkstationClassInitialize(void)
 {
-    _NhlEnumVals    fmtvals[] = {
+    _NhlEnumVals    psPdfFormats[] = {
         {NhlCPS,     "CPS"},
-        {NhlCPNG,    "CPNG"},
         {NhlCPDF,    "CPDF"}
+    };
+
+    _NhlEnumVals    imageFormats[] = {
+        {NhlCPNG,    "CPNG"}
     };
 
     _NhlEnumVals    orientvals[] = {
@@ -275,10 +369,13 @@ CairoWorkstationClassInitialize(void)
     };
 
 
-    (void) _NhlRegisterEnumType(NhlcairoWorkstationClass,NhlTCairoFormat,
-        fmtvals,NhlNumber(fmtvals));
+    (void) _NhlRegisterEnumType(NhlcairoPSPDFWorkstationClass,NhlTCairoFormat,
+        psPdfFormats,NhlNumber(psPdfFormats));
 
-    (void) _NhlRegisterEnumType(NhlcairoWorkstationClass,NhlTWorkOrientation,
+    (void) _NhlRegisterEnumType(NhlcairoImageWorkstationClass,NhlTCairoFormat,
+        imageFormats,NhlNumber(imageFormats));
+
+    (void) _NhlRegisterEnumType(NhlcairoPSPDFWorkstationClass,NhlTWorkOrientation,
         orientvals,NhlNumber(orientvals));
 
     fnameQ = NrmStringToQuark(NhlNwkCairoFileName);
@@ -540,7 +637,7 @@ CairoWorkstationDestroy(NhlLayer l)
 }
 
 /*
- * Function:    CairoWorkstationOpen
+ * Function:    CairoXXXXXWorkstationOpen
  *
  * Description:
  *
@@ -554,35 +651,76 @@ CairoWorkstationDestroy(NhlLayer l)
  */
 
 static NhlErrorTypes
-CairoWorkstationOpen(NhlLayer l)
+CairoPSPDFWorkstationOpen(NhlLayer l)
 {
+    char func[]              = "CairoPSPDFWorkstationOpen";
     NhlWorkstationLayer work = (NhlWorkstationLayer)l;
     NhlCairoWorkstationLayerPart  *pp = &((NhlCairoWorkstationLayer)l)->cairo;
+    Gescape_in_data gesc_in_pixconf;
     NhlErrorTypes   ret;
     int d, w, h;
     int su = 0;
 
+    /* Note that these can be set for the "next" workstation */
     c_ngsetc("me", pp->filename);
     c_ngseti("co", (pp->dpi/72 + 1));
-
-    ret = (*NhlworkstationClassRec.work_class.open_work)(l);
-
-    c_ngseti("wo", _NhlWorkstationId(l));
     c_ngseti("lx", pp->lower_x);
     c_ngseti("ux", pp->upper_x);
     c_ngseti("ly", pp->lower_y);
     c_ngseti("uy", pp->upper_y);
+
+    ret = (*NhlworkstationClassRec.work_class.open_work)(l);
+
+    /* these have to be set after the workstation is opened... */
+    c_ngseti("wo", _NhlWorkstationId(l));
     c_ngseti("pl", pp->orientation);
 
     w = pp->upper_x - pp->lower_x;
     h = pp->upper_y - pp->lower_y;
     d = MAX(w, h);
     work->work.vswidth_dev_units = d/72*pp->dpi;
+
+    return ret;
+}
+
+static NhlErrorTypes
+CairoImageWorkstationOpen(NhlLayer l)
+{
+    char func[]              = "CairoImageWorkstationOpen";
+    NhlWorkstationLayer work = (NhlWorkstationLayer)l;
+    NhlCairoWorkstationLayerPart  *pp = &((NhlCairoWorkstationLayer)l)->cairo;
+    Gescape_in_data gesc_in_pixconf;
+    NhlErrorTypes   ret;
+
+    /* we need to calculate the NDC frame within the image... */
+    int minRange = (pp->pixconfig.width < pp->pixconfig.height) ? pp->pixconfig.width : pp->pixconfig.height;
+    int adjust = (pp->pixconfig.width - minRange) / 2;
+    pp->lower_x = adjust;
+    pp->upper_x = pp->pixconfig.width - adjust;
+    adjust = (pp->pixconfig.height - minRange) / 2;
+    pp->lower_y = adjust;
+    pp->upper_y = pp->pixconfig.height - adjust;
+
+    /* Note that these can be set for the "next" workstation */
+    c_ngsetc("me", pp->filename);
+    c_ngseti("lx", pp->lower_x);
+    c_ngseti("ux", pp->upper_x);
+    c_ngseti("ly", pp->lower_y);
+    c_ngseti("uy", pp->upper_y);
+
+    /* image width/height must be set before opening workstation */
+    pp->pixconfig.work_id = -1;  /* part of the escape mechanism; -1 means "apply to *next* workstation */
+    gesc_in_pixconf.escape_r1.data = &pp->pixconfig;
+    gesc_in_pixconf.escape_r1.size = sizeof(pp->pixconfig);
+    gescape(NGESC_CNATIVE,&gesc_in_pixconf,NULL,NULL);
+
+    ret = (*NhlworkstationClassRec.work_class.open_work)(l);
+
     return ret;
 }
 
 /*
- * Function:    CairoWorkstationActivate
+ * Function:    CairoXXXXXWorkstationActivate
  *
  * Description:
  *
@@ -595,11 +733,10 @@ CairoWorkstationOpen(NhlLayer l)
  * Returns: NhlErrorTypes
  * Side Effect:
  */
-
 static NhlErrorTypes
-CairoWorkstationActivate(NhlLayer l)
+CairoPSPDFWorkstationActivate(NhlLayer l)
 {
-    char    func[] = "CairoWorkstationClear";
+    char    func[] = "CairoPSPDFWorkstationActivate";
     NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
     NhlWorkstationLayerPart *wp = &((NhlWorkstationLayer)l)->work;
     NhlCairoWorkstationLayerPart *pp = &((NhlCairoWorkstationLayer)l)->cairo;
@@ -620,5 +757,13 @@ CairoWorkstationActivate(NhlLayer l)
     d = MAX(w, h);
     wp->vswidth_dev_units = d/72 * pp->dpi;
 
+    return (*(lc->work_class.activate_work))(l);
+}
+
+static NhlErrorTypes
+CairoImageWorkstationActivate(NhlLayer l)
+{
+    char    func[] = "CairoImageWorkstationActivate";
+    NhlWorkstationClass lc = (NhlWorkstationClass) NhlworkstationClass;
     return (*(lc->work_class.activate_work))(l);
 }
