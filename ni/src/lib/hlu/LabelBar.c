@@ -1,5 +1,5 @@
 /*
- *      $Id: LabelBar.c,v 1.73 2005-08-24 22:06:30 dbrown Exp $
+ *      $Id: LabelBar.c,v 1.74 2010-01-11 22:02:14 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -3103,6 +3103,7 @@ static NhlErrorTypes    SetLabels
 				 NhlNtxFontColor,lb_p->label_color,
 				 NhlNtxFontThicknessF,lb_p->label_thickness,
 				 NhlNtxFuncCode,lb_p->label_func_code,    
+				 NhlNtxFontQuality,lb_p->label_quality,    
 				 NULL);
 		if ((ret = MIN(ret,subret)) < NhlWARNING) {
 			e_text = "%s: Error creating MultiText object";
@@ -3159,6 +3160,9 @@ static NhlErrorTypes    SetLabels
 		if (lb_p->label_func_code != olb_p->label_func_code)
 			NhlSetSArg(&sargs[nargs++],NhlNtxFuncCode,
 				   lb_p->label_func_code);
+		if (lb_p->label_quality != olb_p->label_quality)
+			NhlSetSArg(&sargs[nargs++],NhlNtxFontQuality,
+				   lb_p->label_quality);
 		if (lb_p->label_auto_stride != olb_p->label_auto_stride)
 			NhlSetSArg(&sargs[nargs++],NhlNMtextAutoStride,
 				   lb_p->label_auto_stride);
