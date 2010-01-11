@@ -1988,7 +1988,14 @@ NclStackEntry missing_expr;
 			NhlPError(NhlWARNING,NhlEUNKNOWN,"New: the missing value provided has more than one element, using the first one as the _FillValue");
 		}
 		if (missing_md->multidval.data_type == NCL_string && *(NrmQuark*)missing_md->multidval.val == qnofill) {
-			fill = 0;
+			if (the_obj_type != Ncl_MultiDValnclfileData) {
+				fill = 0;
+			}
+			else {
+				NhlPError(NhlWARNING,NhlEUNKNOWN,"New: file variables cannot be created as an undefined value, setting default _FillValue");
+				fill = 1;
+				missing_val.objval = (obj)tmp_missing;
+			}
 		}
 		else if(missing_md->multidval.type->type_class.type != the_obj_type) {
 			tmp_md = _NclCoerceData(missing_md,the_obj_type,NULL);
@@ -2091,6 +2098,27 @@ NclStackEntry missing_expr;
 			tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
 							  Ncl_MultiDValData:the_obj_type),0,tmp_val,
 					       &missing_val,j,dim_sizes,TEMPORARY,NULL,
+					       (NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
+							     _NclTypeEnumToTypeClass(the_obj_type):NULL));
+		}
+		else if (the_obj_type == Ncl_MultiDValHLUObjData) {
+			/* this type must have a defined value: if no missing value is supplied then set them to -1, which is out of the range of NCL object ids. */
+			int fill_val = -1;
+			tp = (char *) tmp_val;
+			i = 1;
+			tsize = _NclSizeOf(the_type);
+			memcpy((void*)tp,(void*)&fill_val,tsize);
+			while (i <= total / 2) {
+				memcpy(tp+i*tsize,tp,tsize * i);
+				i *= 2;
+			}
+			if (total - i > 0) {
+				memcpy(tp+i*tsize,tp,tsize * (total - i));
+			}
+
+			tmp_md = _NclCreateVal(NULL,NULL,((the_obj_type & NCL_VAL_TYPE_MASK) ?
+							  Ncl_MultiDValData:the_obj_type),0,tmp_val,
+					       NULL,j,dim_sizes,TEMPORARY,NULL,
 					       (NclObjClass)((the_obj_type & NCL_VAL_TYPE_MASK) ?
 							     _NclTypeEnumToTypeClass(the_obj_type):NULL));
 		}

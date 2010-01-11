@@ -53,6 +53,11 @@ int level;
 	NclHLUObj tmp_ho;
 	int id;
 
+	if (ncl_id < 0) {
+		/* missing or undefined */
+		return NhlNOERROR;
+	}
+
 	if(first) {
 		first = 0;
 		for(i = 0 ; i < NCL_SYM_TAB_SIZE; i++) {
@@ -67,6 +72,7 @@ int level;
 	if(tmp_ho != NULL) {
 		id = tmp_ho->hlu.hlu_id;
 	} else {
+		NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclAddHLURef: internal error: ncl object %d does not exist for vname %s",ncl_id,NrmQuarkToString(vq));
 		return(NhlFATAL);
 	}
 	index = id % NCL_SYM_TAB_SIZE;
@@ -77,6 +83,25 @@ int level;
 		tmp = &hlu_tab[index];
 		while(tmp != NULL) {
 			if(tmp->hlu_id == id) {
+				if (tmp->ncl_hlu_id != ncl_id) {
+					NclObj obj;
+					obj = _NclGetObj(tmp->ncl_hlu_id);
+					if (obj) {
+						NhlPError(NhlFATAL,NhlEUNKNOWN,"_NclAddHLURef: internal error: NCL object %d exists but is different from %d, both have hlu object id %d, vname %s",
+							  tmp->ncl_hlu_id,ncl_id,tmp->hlu_id,NrmQuarkToString(vq));
+						return NhlFATAL;
+					}
+					else {
+						/* this means that an hlu object was deleted but it did not get removed from the list */
+						for(i = 0; i < tmp->n_entries; i++) {
+							NclFree(tmp->ref_list[i].refs);
+						}
+						NclFree(tmp->ref_list);
+						tmp->n_entries = 0;
+						tmp->ref_list = NULL;
+						tmp->ncl_hlu_id = ncl_id;
+					}
+				}
 				for(i = 0; i < tmp->n_entries; i++) {
 					if((tmp->ref_list[i].vq == vq)&&(tmp->ref_list[i].aq == aq)&&(tmp->ref_list[i].level == level)) {
 						for(j = 0; j < tmp->ref_list[i].n_refs; j++ ) {
@@ -149,6 +174,7 @@ int level;
 			prev->next->ref_list[0].refs = NclMalloc(sizeof(int)*REF_LIST_SIZE);
 			prev->next->ref_list[0].refs[0] = off;
 			prev->next->next =  NULL;
+			/*printf("%d  hlu id %d  ncl id added: %s %s\n", id, ncl_id,NhlClassName(id),NhlName(id));*/
 			return(NhlNOERROR);
 		}
 	} else {
@@ -165,6 +191,7 @@ int level;
 		hlu_tab[index].ref_list[0].refs = NclMalloc(sizeof(int)*REF_LIST_SIZE);
 		hlu_tab[index].ref_list[0].refs[0] = off;
 		hlu_tab[index].next = NULL;
+		/*printf("%d  hlu id %d  ncl id added: %s %s\n", id, ncl_id,NhlClassName(id),NhlName(id));*/
 		return(NhlNOERROR);
 	}
 }
@@ -208,17 +235,37 @@ int level;
 	NclHLUObj tmp_ho;
 	int id;
 
+	if (ncl_id < 0) {
+		/* missing or undefined */
+		return NhlNOERROR;
+	}
 
 	tmp_ho = (NclHLUObj)_NclGetObj(ncl_id);
 	if(tmp_ho != NULL) {
 		id = tmp_ho->hlu.hlu_id;
 	} else {
-		return(NhlFATAL);
+		/* the object has already been deleted from the NCL object table so see if the ncl_id is still present in the HLU table */
+		id = -9999;
+		for (i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+			tmp = &hlu_tab[i];
+			while (tmp) {
+				if (tmp->ncl_hlu_id == ncl_id) {
+					id = tmp->hlu_id;
+					break;
+				}
+				tmp = tmp->next;
+			}
+			if (id != -9999)
+				break;
+		}
+		if (id == -9999)
+			return(NhlNOERROR);
 	}
 	index = id % NCL_SYM_TAB_SIZE;
 	tmp = &hlu_tab[index];
 	while(tmp != NULL) {
 		if(tmp->hlu_id == id) {
+			/*printf("%d  hlu id %d  ncl id deleted %s %s\n", id, ncl_id,NhlClassName(id),NhlName(id));*/
 			for(i = 0; i < tmp->n_entries; i++) {
 				if((tmp->ref_list[i].vq == vq)&&(tmp->ref_list[i].aq == aq)) {
 					for(j = 0; j < tmp->ref_list[i].n_refs; j++) {
@@ -256,12 +303,14 @@ int level;
 					}
 				}
 			}
+			/*printf("%d  hlu id %d  ncl id delete failed\n", id, ncl_id,NhlClassName(id),NhlName(id));*/
 			return(NhlFATAL);
 		} else {
 			prev = tmp;
 			tmp = tmp->next;
 		}
 	}
+	/*printf("%d  hlu id %d  ncl id delete failed\n", id, ncl_id,NhlClassName(id),NhlName(id));*/
 	return(NhlFATAL);
 }
 
@@ -279,6 +328,10 @@ NhlErrorTypes _NclRemoveAllRefs
 	NclHLUObj tmp_obj;
 	int id;
 	
+	if (ncl_id < 0) {
+		/* missing or undefined */
+		return NhlNOERROR;
+	}
 
 	tmp_obj = (NclHLUObj)_NclGetObj(ncl_id);	
 	if(tmp_obj == NULL) {
@@ -394,5 +447,25 @@ int nclhlu_id;
 		}
 	}
 	return(NhlFATAL);
+}
+
+void _NclPrintHLURefs
+#if	NhlNeedProto
+(void)
+#else
+(void)
+#endif
+{
+	int i;
+        NclHLULookUpTable *tmp = NULL;
+
+	for (i = 0; i < NCL_SYM_TAB_SIZE; i++) {
+		tmp = &hlu_tab[i];
+		while (tmp) {
+			if (tmp->hlu_id > -1) 
+				printf("hlu_id %d, ncl_hlu_id %d, %s %s\n", tmp->hlu_id,tmp->ncl_hlu_id,NhlClassName(tmp->hlu_id),NhlName(tmp->hlu_id));
+			tmp = tmp->next;
+		}
+	}
 }
 

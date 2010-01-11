@@ -1,6 +1,6 @@
 
 /*
- *      $Id: BuiltInSupport.c,v 1.6 2009-07-10 19:54:05 huangwei Exp $
+ *      $Id: BuiltInSupport.c,v 1.7 2010-01-11 21:36:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -139,6 +139,10 @@ int copy_data;
 					}
 				}
 				theobj = _NclGetObj(((obj*)value)[i]);
+				if (! theobj) {
+					NhlPError(NhlFATAL,NhlEUNKNOWN,"NclReturnValue: internal error: invalid return value fromm builtin function");
+					return(NhlFATAL);
+				}				
 				switch(theobj->obj.obj_type) {
 				case Ncl_HLUObj:
 					tmp_md = _NclCreateVal(NULL,NULL,Ncl_MultiDValHLUObjData,0,tmp,missing,n_dims,dimsizes,TEMPORARY,NULL,(NclObjClass)tc);

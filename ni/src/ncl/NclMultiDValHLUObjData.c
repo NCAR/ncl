@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclMultiDValHLUObjData.c,v 1.24 2007-12-21 00:49:23 dbrown Exp $
+ *      $Id: NclMultiDValHLUObjData.c,v 1.25 2010-01-11 21:36:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1088,7 +1088,10 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 		for(i = 0; i < n_dims_target;i++) {
 			to = to + (current_index[i] * multiplier[i]);
 		}
-		if(!(target_md->multidval.missing_value.has_missing)||(((obj*)target_md->multidval.val)[to] != target_md->multidval.missing_value.value.objval)) {
+/*		if(!(target_md->multidval.missing_value.has_missing)||
+		   (((obj*)target_md->multidval.val)[to] != target_md->multidval.missing_value.value.objval)) {
+*/
+		if (((obj*)target_md->multidval.val)[to] != target_md->multidval.missing_value.value.objval) {
 			tmp_ho = (NclHLUObj)_NclGetObj((int)((obj*)target_md->multidval.val)[to]);
 			if((tmp_ho != NULL) &&(tmp_ho->obj.obj_type_mask & Ncl_HLUObj)){
 				if(target_md->multi_obj.cbs[to] != NULL) {
@@ -1122,6 +1125,7 @@ static NhlErrorTypes MultiDVal_HLUObj_s_WriteSection
 		((obj*)target_md->multidval.val)[to] = *val;
 		selector.lngval = HLUVALCHANGE;
 		_NhlCBCallCallbacks(target_md->obj.cblist,selector,cbdata);
+		/*_NclPrintHLURefs();*/
 		if(compare_sel[n_dims_target-1] <0) {
 			current_index[n_dims_target -1 ] += strider[n_dims_target-1];
 		} else {

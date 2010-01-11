@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: NclHLUVar.c,v 1.15 2007-10-26 18:39:18 dbrown Exp $
+ *      $Id: NclHLUVar.c,v 1.16 2010-01-11 21:36:19 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -211,7 +211,8 @@ NhlArgVal udata;
 	NclHLUUData *ud = (NclHLUUData*)udata.ptrval;
 	NclHLUCbData *cb = (NclHLUCbData*)cbdata.ptrval;
 
-	_NclDelHLURef(cb->prev_id,ud->vq,ud->aq,cb->off,ud->level);
+	if (cb->prev_id > 0 && _NclGetObj(cb->prev_id) != NULL)
+		_NclDelHLURef(cb->prev_id,ud->vq,ud->aq,cb->off,ud->level);
 	if(!cb->kind) {
 		_NclAddHLURef(cb->ncl_id,ud->vq,ud->aq,cb->off,ud->level);
 	}
