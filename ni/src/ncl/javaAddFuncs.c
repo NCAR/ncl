@@ -1,5 +1,5 @@
 /*
- *      $Id: javaAddFuncs.c,v 1.2 2009-12-04 15:23:07 huangwei Exp $
+ *      $Id: javaAddFuncs.c,v 1.3 2010-01-11 16:47:02 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -405,7 +405,7 @@ NhlErrorTypes _NclIgenerateVarList
     {
         strcpy(var_name, NrmQuarkToString(thefile->file.file_dim_info[i]->dim_name_quark));
         n = thefile->file.file_dim_info[i]->dim_size;
-        fprintf(fd, "%s %d\n", var_name, n);
+        fprintf(fd, "%s\t%d\n", var_name, n);
     }
     fclose(fd);
 
@@ -429,13 +429,13 @@ NhlErrorTypes _NclIgenerateVarList
         {
             strcpy(var_name, NrmQuarkToString(thefile->file.var_info[i]->var_name_quark));
             strcpy(var_type, _NclBasicDataTypeToName(thefile->file.var_info[i]->data_type));
-            fprintf(fm,"%s %s", var_name, var_type);
+            fprintf(fm,"%s\t%s", var_name, var_type);
 
             for(j=0; j<thefile->file.var_info[i]->num_dimensions; j++)
             {
                 /* Here var_type represents dim name. */
                 strcpy(var_type, NrmQuarkToString(FileGetDimName(thefile,thefile->file.var_info[i]->file_dim_num[j])));
-                fprintf(fm," %s", var_type);
+                fprintf(fm,"\t%s", var_type);
             }
             fprintf(fm,"\n");
 
