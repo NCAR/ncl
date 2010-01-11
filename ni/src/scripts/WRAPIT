@@ -1,6 +1,6 @@
 #!/bin/csh -f
 # set echo verbose timestamp
-set version = 091416    # YYMMDD
+set version = 100111    # YYMMDD
 echo " " 
 echo "WRAPIT Version: "$version 
 if ($#argv == 0) then
@@ -112,6 +112,7 @@ exit 1
 endif
 #---------------------------------------------------------------------- 
 set OS = `uname`
+set mach = `uname -m`
 
 if ($OS != "SunOS" && $OS != "IRIX64" && $OS != "IRIX" && $OS != "AIX" \
  && $OS != "Linux" && $OS != "OSF1" && $OS != "Darwin" && $OS != "HP-UX" \
@@ -136,6 +137,21 @@ endif
 set real8 = 0     # off 
 set debug = 0     # off
 set nbits = 64    # default for AIX and IRIX
+if ($OS == Linux || $OS == Darwin) then
+  switch ("$mach")
+    case    i*86:
+    case    x*86:
+    case    i*64:
+    case    x*64:
+    case    p*64:
+      set nbits   = 64
+    breaksw
+    default:
+      set nbits   = 32
+    breaksw
+  endsw
+endif
+
 set f90c  = gfortran   # default linux compiler
 set exfopts = ""   # default is no extra Fortran options
 set excopts = ""   # default is no extra C options
@@ -223,6 +239,10 @@ while ($#argv)
     set exfopts = "-fPIC"
     set excopts = "-fPIC"
   else if ($arg:q == "-q32") then
+    set nbits = 32
+  else if ($arg:q == "-m64") then
+    set nbits = 64
+  else if ($arg:q == "-m32") then
     set nbits = 32
   else if ($arg:q == "-r8") then
     set real8 = 1
@@ -362,9 +382,9 @@ switch ($OS)
      endif 
    else                              # gfortran or g95
      if ($debug == 1) then
-       set fopts = "$fopts -fPIC -v -c -fno-second-underscore" 
+       set fopts = "$fopts -m{$nbits} -fPIC -v -c -fno-second-underscore" 
      else
-       set fopts = "$fopts -fPIC -c -O -fno-second-underscore"
+       set fopts = "$fopts -m{$nbits} -fPIC -c -O -fno-second-underscore"
      endif 
    endif  
    breaksw
@@ -408,16 +428,16 @@ switch ($OS)
    breaksw
  case Darwin:                                # MacOSX (g77/gfortran)
    if ($debug == 1 && ($f90c == g77 || $f90c == gfortran)) then     # GNU 
-     set fopts = "$fopts -v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
+     set fopts = "$fopts -m{$nbits} -v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
    else
-     set fopts = "$fopts -c -O -fno-common -fno-second-underscore"
+     set fopts = "$fopts -m{$nbits} -c -O -fno-common -fno-second-underscore"
    endif
    breaksw
  case FreeBSD:                               # FreeBSD
    if ($debug == 1 && ($f90c == g77 || $f90c == gfortran)) then   # GNU
-     set fopts = "$fopts -v -c -ffortran-bounds-check -fno-second-underscore"
+     set fopts = "$fopts -m{$nbits} -v -c -ffortran-bounds-check -fno-second-underscore"
    else
-     set fopts = "$fopts -c -O -fno-second-underscore"
+     set fopts = "$fopts -m{$nbits} -c -O -fno-second-underscore"
    endif
    breaksw
  case HP-UX:                         # HP-UX
@@ -454,7 +474,7 @@ endsw
 
 if ($debug == 1) then
   echo "OPERATING SYSTEM: "$OS
-  if ($OS == AIX || $OS == IRIX) then
+  if ($OS == AIX || $OS == IRIX || $OS == Linux) then
     echo "nbits = "{$nbits}
   endif
   if ($OS == Linux || $OS == FreeBSD || $OS == Darwin) then
@@ -532,10 +552,10 @@ switch ($OS)
    breaksw
  case Darwin:
    if ($debug == 1) then
-     set cmd = "gcc $copts -c -fno-common -I${NCARG_ROOT}/include WRAPIT.c"
+     set cmd = "gcc -m{$nbits} $copts -c -fno-common -I${NCARG_ROOT}/include WRAPIT.c"
      echo $cmd
    else
-     set cmd = "gcc $copts -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c"
+     set cmd = "gcc -m{$nbits} $copts -c -fno-common -O -I${NCARG_ROOT}/include WRAPIT.c"
    endif
    $cmd
    breaksw
@@ -567,10 +587,10 @@ switch ($OS)
      $cmd
    else
      if ($debug == 1) then
-       set cmd = "gcc -fPIC -c -I${NCARG_ROOT}/include WRAPIT.c"
+       set cmd = "gcc -fPIC -m{$nbits} -c -I${NCARG_ROOT}/include WRAPIT.c"
        echo $cmd
      else
-       set cmd = "gcc -fPIC $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c"
+       set cmd = "gcc -fPIC -m{$nbits} $copts -c -O -I${NCARG_ROOT}/include WRAPIT.c"
      endif
      $cmd
    endif
@@ -753,9 +773,9 @@ switch ($OS)
      $cmd     
    else                            # GNU compilers
      if ($debug == 1) then
-       set cmd = "gcc -fPIC -shared $ld_suffix"
+       set cmd = "gcc -m{$nbits} -fPIC -shared $ld_suffix"
      else
-       set cmd = "gcc -fPIC -shared $ld_suffix"
+       set cmd = "gcc -m{$nbits} -fPIC -shared $ld_suffix"
      endif
      if ($f90c == g77) then       # g77 compiler
        set cmd = "$cmd -lg2c"
@@ -774,10 +794,10 @@ switch ($OS)
    breaksw
  case FreeBSD:                     # FreeBSD
    if ($debug == 1) then
-     set cmd = "gcc -shared $ld_suffix"
+     set cmd = "gcc -m{$nbits} -shared $ld_suffix"
      echo $cmd
    else
-     set cmd = "gcc -shared $ld_suffix"
+     set cmd = "gcc -m{$nbits} -shared $ld_suffix"
    endif
    if ($f90c == g77) then         # g77 compiler
      set cmd = "$cmd -lg2c"
@@ -802,9 +822,9 @@ switch ($OS)
    breaksw
  case Darwin:                      # MacOSX
    if (-e /sw/lib/libg2c.a) then
-     set cmd = "gcc -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c"
+     set cmd = "gcc -m{$nbits} -bundle -flat_namespace -undefined suppress $ld_suffix -L/sw/lib -lg2c"
    else
-     set cmd = "gcc -bundle -flat_namespace -undefined suppress $ld_suffix"
+     set cmd = "gcc -m{$nbits} -bundle -flat_namespace -undefined suppress $ld_suffix"
    endif
    if ($f90c == gfortran) then     # gfortran compiler
        set cmd = "$cmd -lgfortran"
