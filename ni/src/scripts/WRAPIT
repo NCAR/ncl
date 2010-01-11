@@ -139,8 +139,6 @@ set debug = 0     # off
 set nbits = 64    # default for AIX and IRIX
 if ($OS == Linux || $OS == Darwin) then
   switch ("$mach")
-    case    i*86:
-    case    x*86:
     case    i*64:
     case    x*64:
     case    p*64:
@@ -426,12 +424,20 @@ switch ($OS)
      set fopts = "$fopts -r8"
    endif
    breaksw
- case Darwin:                                # MacOSX (g77/gfortran)
-   if ($debug == 1 && ($f90c == g77 || $f90c == gfortran)) then     # GNU 
-     set fopts = "$fopts -m{$nbits} -v -c -fno-common -ffortran-bounds-check -fno-second-underscore"
-   else
-     set fopts = "$fopts -m{$nbits} -c -O -fno-common -fno-second-underscore"
-   endif
+ case Darwin:                                # MacOSX (g77/gfortran/g95)
+   if ($f90c == g77) then            # g77
+     if ($debug == 1) then
+       set fopts = "$fopts -fPIC -v -c -ffortran-bounds-check -fno-second-underscore" 
+     else
+       set fopts = "$fopts -fPIC -c -O -fno-second-underscore"
+     endif 
+   else                              # gfortran or g95
+     if ($debug == 1) then
+       set fopts = "$fopts -m{$nbits} -fPIC -v -c -fno-second-underscore" 
+     else
+       set fopts = "$fopts -m{$nbits} -fPIC -c -O -fno-second-underscore"
+     endif 
+   endif 
    breaksw
  case FreeBSD:                               # FreeBSD
    if ($debug == 1 && ($f90c == g77 || $f90c == gfortran)) then   # GNU
