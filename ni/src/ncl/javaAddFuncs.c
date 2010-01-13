@@ -1,5 +1,5 @@
 /*
- *      $Id: javaAddFuncs.c,v 1.3 2010-01-11 16:47:02 huangwei Exp $
+ *      $Id: javaAddFuncs.c,v 1.4 2010-01-13 20:15:24 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -66,6 +66,18 @@ extern "C"
 #include "NclFileInterfaces.h"
 #include <signal.h>
 #include <netcdf.h>
+
+NhlErrorTypes _JavaMin(
+#if    NhlNeedProto
+NclMultiDValData tmp_md, FILE *fr
+#endif
+);
+
+NhlErrorTypes _JavaMax(
+#if    NhlNeedProto
+NclMultiDValData tmp_md, FILE *fr
+#endif
+);
 
 NclQuark FileGetDimName(
 #if     NhlNeedProto
@@ -420,6 +432,9 @@ NhlErrorTypes _NclIgenerateVarList
    *    }
    *}
    *fclose(fv);
+
+    fprintf(stdout, "\n\n\nhit _NclIgenerateVarList. file: %s, line: %d\n", __FILE__, __LINE__);
+    fprintf(stdout, "\tthefile->file.n_vars: %d\n", thefile->file.n_vars);
    */
 
     fm = fopen(".ncl_var_info", "w");
