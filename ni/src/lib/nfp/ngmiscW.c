@@ -122,10 +122,12 @@ NhlErrorTypes ngsetp_W(void)
                       "fu", "ig", "jo", "lb", "lc", "lt", 
                       "lx", "ly", "mc", "pa", "pc", "pe", 
                       "sc", "ss", "st", "ux", "uy", "wo",
+                      "ph", "pw",
                       "CA", "CL", "CM", "CO", "CT", "ER", 
                       "FU", "IG", "JO", "LB", "LC", "LT", 
                       "LX", "LY", "MC", "PA", "PC", "PE", 
-                      "SC", "SS", "ST", "UX", "UY", "WO"
+                      "SC", "SS", "ST", "UX", "UY", "WO",
+                      "PH", "PW"
                      };
 
   char *params_f[] = {"fi", "ha", "mi", "no", "os", "ox", "oy", 
@@ -272,10 +274,12 @@ NhlErrorTypes nggetp_W(void)
                       "fu", "ig", "jo", "lb", "lc", "lt", 
                       "lx", "ly", "mc", "pa", "pc", "pe", 
                       "sc", "ss", "st", "ux", "uy", "wo",
+                      "ph", "pw",
                       "CA", "CL", "CM", "CO", "CT", "ER", 
                       "FU", "IG", "JO", "LB", "LC", "LT", 
                       "LX", "LY", "MC", "PA", "PC", "PE", 
-                      "SC", "SS", "ST", "UX", "UY", "WO"
+                      "SC", "SS", "ST", "UX", "UY", "WO",
+                      "PH", "PW"
                      };
 
   char *params_f[] = {"fi", "ha", "mi", "no", "os", "ox", "oy", 
