@@ -1,5 +1,5 @@
 /*
- *      $Id: pdf.c,v 1.27 2009-09-16 04:51:14 fred Exp $
+ *      $Id: pdf.c,v 1.28 2010-01-15 05:15:48 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -431,7 +431,8 @@ void PDFpreamble (PDFddp *psa, preamble_type type)
  */
     object_number = starting_page_object_number + 2*(psa->page_number) - 1;
     object_pointer[object_number] = byte_count;
-    byte_count += PDFPutStreamDict(fp, object_number, object_number+1);
+    byte_count += PDFPutStreamDict(fp, object_number, object_number+1,
+                                   psa->paper_width, psa->paper_height);
 
 /*
  *  Begin the stream for this page.
@@ -748,6 +749,9 @@ static void PDFinit(PDFddp *psa, int *coords)
   psa->background = FALSE;
   psa->pict_empty = TRUE;
   psa->page_number = 1;
+
+  psa->paper_width = *(coords+8);
+  psa->paper_height = *(coords+9);
 
   for (i = 0; i < NUM_PDF_FONTS; i++) {
     psa->fonts_used[i] = 0;
@@ -3404,6 +3408,16 @@ int PDFEsc(GKSC *gksc)
     logos = (float) atof(strng);
     PDFNcarLogo(gksc,logox,logoy,logos); 
     break;
+  case -1529:  /* Paper width */
+    strng = strtok(sptr, " ");
+    strng = strtok((char *) NULL, " ");
+    psa->paper_width = (int) atoi(strng);
+    break;
+  case -1530:  /* Paper width */
+    strng = strtok(sptr, " ");
+    strng = strtok((char *) NULL, " ");
+    psa->paper_height = (int) atoi(strng);
+    break;
   default:
     return ERR_INV_ESCAPE;
   }
@@ -3539,8 +3553,11 @@ int PDFPutObject(FILE *fp, int object_number, int num_lines, char *guts[]) {
  *  Write out a stream dictionary for page streams.  Returns
  *  the byte count.
  */
-int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num) {
+int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num, int width, 
+                     int height) {
   int tbcnt=0;
+  static char ctmp[29];
+  int itmp;
 
   fprintf(fp,"%6d 0 obj\n<<\n",obj_num);
   tbcnt += 16;
@@ -3548,8 +3565,8 @@ int PDFPutStreamDict(FILE *fp, int obj_num, int obj_contents_num) {
   tbcnt += 12;
   fprintf(fp,"/Parent 1 0 R\n");
   tbcnt += 14;
-  fprintf(fp,"/MediaBox [0 0 612 792]\n");
-  tbcnt += 24;
+  fprintf(fp,"/MediaBox [0 0 %05d %05d]\n",width,height);
+  tbcnt += 28;
 /*
  *  Have commented out the rotation, since this interferes with
  *  user-set changes in orientation at the beginning of pictures.

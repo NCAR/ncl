@@ -1,5 +1,5 @@
 /*
- *	$Id: pdfddi.h,v 1.2 2008-07-23 17:29:43 haley Exp $
+ *	$Id: pdfddi.h,v 1.3 2010-01-15 05:15:48 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -57,6 +57,8 @@ typedef	struct	PDFddi_	{
 	int		pict_empty;
 	int		page_number;
         int             suppress_flag;
+        int             paper_height;
+        int             paper_width;
 	float		color_map[1024];
 	int		fonts_used[13];
 	PDFattribute	attributes;
