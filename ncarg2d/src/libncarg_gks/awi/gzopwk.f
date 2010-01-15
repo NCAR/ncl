@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.12 2009-04-08 23:18:21 fred Exp $
+C	$Id: gzopwk.f,v 1.13 2010-01-15 05:13:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -111,8 +111,8 @@ C
         CALL GZROI(0)
         IF ((WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
      +       WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
-          IL1   = 11
-          IL2   = 11
+          IL1   = 13
+          IL2   = 13
           ID(1) = WKID
           ID(2) = CONID
           ID(3) = WTYPE
@@ -139,6 +139,14 @@ C
 C  Flag for portrait/landscape mode (0 or non-zero)
 C
           ID(11) = CPTLD
+C
+C  Specification for page width in PDF files.
+C
+          ID(12) = PDFWTH
+C
+C  Specification for page height in PDF files.
+C
+          ID(13) = PDFHGT
         ELSE IF (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) THEN
           IL1   = 7
           IL2   = 7

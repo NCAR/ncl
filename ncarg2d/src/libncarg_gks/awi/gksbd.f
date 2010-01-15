@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.35 2009-12-10 17:42:22 brownrig Exp $
+C	$Id: gksbd.f,v 1.36 2010-01-15 05:13:05 fred Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -123,6 +123,8 @@ C       CSUPR  -- Flag for suppressing background color and/or bounding
 C                 box for PS output.
 C       CPTLD  -- Flag for portrait PS mode (=0), or landscape (non-zero)
 C       COLMOD -- Color Model for X color allocation
+C       PDFHGT -- Height of PDF to be specified in the MediaBox
+C       PDFWTH -- Width of PDF to be specified in the MediaBox
 C-----------------------------------------------------------------------
 C
 C     GKEROR:  GKS ERROR STATE LIST
@@ -240,6 +242,8 @@ C**************************************************************************
       DATA CSUPR/0/
       DATA CPTLD/1/
       DATA COLMOD/-1/
+      DATA PDFHGT/792/
+      DATA PDFWTH/612/
 C
       DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,
      +               20,   21,   22,   23,   24,   25,   26,   27,
@@ -258,7 +262,7 @@ C
      +             -218, -219, -220, -221, 2200, 2201, 2202, 2203,
      +             2204,   90, -113, -400, -401, -402, -403, -404,
      +             -405, -406, -350, -351, -352, -353, -450, -451,
-     +             -452, -453, -354, -501, -502/
+     +             -452, -453, -354, -501, -502, -355, -356/
 C  Error 1
       DATA ERMSGS(  1)/' --GKS NOT IN PROPER STATE: GKS SHALL BE IN STAT
      +E GKCL'/
@@ -617,6 +621,12 @@ C  Error -501
 C  Error -502
       DATA ERMSGS(141)/' -- cairo driver error: error opening output fil
      +e'/
+C  Error -355
+      DATA ERMSGS(142)/' -- PDF driver error, incorrect paper width speci
+     +fication.'/
+C  Error -356
+      DATA ERMSGS(143)/' -- PDF driver error, incorrect paper height spec
+     +ification.'/
 C
       DATA GNAM(001),GNAM(002),GNAM(003)/'GOPKS' ,'GCLKS' ,'GOPWK' /
       DATA GNAM(004),GNAM(005),GNAM(006)/'GCLWK' ,'GACWK' ,'GDAWK' /

@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.21 2008-07-27 00:17:18 haley Exp $
+C	$Id: ngseti.f,v 1.22 2010-01-15 05:12:10 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -668,6 +668,24 @@ C
       ELSE IF (CNP(1:2).EQ.'CT' .OR. CNP(1:2).EQ.'ct' .OR.
      +         CNP(1:2).EQ.'Ct') THEN
         ICDFLG = MIN(IVP,1)
+        GO TO 120
+C
+C  PH - Sets the page height (in 1/72" coordinates) for the PDF media box.
+C
+      ELSE IF (CNP(1:2).EQ.'PH' .OR. CNP(1:2).EQ.'ph' .OR.
+     +         CNP(1:2).EQ.'Ph') THEN
+        IPGHGT = IVP
+        WRITE(IDR(1: 5), 500) IVP
+        CALL GESC(-1530,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  PW - Sets the page width (in 1/72" coordinates) for the PDF media box.
+C
+      ELSE IF (CNP(1:2).EQ.'PW' .OR. CNP(1:2).EQ.'pw' .OR.
+     +         CNP(1:2).EQ.'Pw') THEN
+        IPGWTH = IVP
+        WRITE(IDR(1: 5), 500) IVP
+        CALL GESC(-1529,1,IDR,1,IDUM,CDUM)
         GO TO 120
       ELSE
         CTM(1:36) = 'NGSETI - Parameter name not known - '

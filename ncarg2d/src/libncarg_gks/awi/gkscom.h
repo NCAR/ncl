@@ -1,5 +1,5 @@
 C
-C $Id: gkscom.h,v 1.29 2009-12-10 17:42:22 brownrig Exp $
+C $Id: gkscom.h,v 1.30 2010-01-15 05:13:05 fred Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -8,7 +8,7 @@ C
 C The use of this Software is governed by a License Agreement.
 C
 C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
-      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=141)
+      PARAMETER(MXNWK=15,NSEG=100,IWDIM=10000,NUMERS=143)
       COMMON/GKINTR/ NOPWK , NACWK , WCONID, NUMSEG,
      +               SEGS(NSEG)    , CURSEG, SEGLEN(NSEG)  , MXSREC,
      +               SEGT(NSEG,2,3), CURTM(2,3)            , SEGDEL,
@@ -28,7 +28,8 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CNT   , LSNT(2)       , NTWN(2,4)     , NTVP(2,4),
      +               CCLIP , SWKTP(MXNWK)  , NOPICT, NWKTP ,
      +               LXWKID(MXNWK) , ECONID, CLLX  , CLLY  , CURX  ,
-     +               CURY  , CPSCL , CCMDL,  COLMOD, CSUPR , CPTLD
+     +               CURY  , CPSCL , CCMDL,  COLMOD, CSUPR , CPTLD ,
+     +               PDFWTH, PDFHGT
       INTEGER        SOPWK , SACWK , CPLI  , CLN   , CPLCI , CLNA  ,
      +               CLWSCA, CPLCIA, CPMI  , CMK   , CPMCI , CMKA  ,
      +               CMKSA , CPMCIA, CTXI  , CTXFP , CTXCI , CTXFPA,
@@ -36,7 +37,8 @@ C  Details on all GKS COMMON variables are in the GKS BLOCKDATA.
      +               CFAIS , CFASI , CFACI , CFAISA, CFASIA, CFACIA,
      +               CNT   , LSNT  , CCLIP , SWKTP , NOPICT, NWKTP ,
      +               LXWKID, ECONID, CLLX  , CLLY  , CURX  , CURY  ,
-     +               CPSCL , CCMDL,  COLMOD, CSUPR , CPTLD
+     +               CPSCL , CCMDL,  COLMOD, CSUPR , CPTLD,  PDFWTH,
+     +               PDFHGT
       REAL           NTWN  , NTVP
       COMMON /GKETBI/IERNMS(NUMERS)
       INTEGER IERNMS

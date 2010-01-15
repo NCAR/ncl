@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.38 2008-07-27 00:20:57 haley Exp $
+C	$Id: gesc.f,v 1.39 2010-01-15 05:13:05 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -92,7 +92,7 @@ C                 modes.  From "mixed" you can switch to "private".  If you
 C                 are already using "private" you can not switch.  -1400
 C                 is only used if -1402 is "shared".
 C
-C  PostScript specific escapes:
+C  PostScript/PDF specific escapes (-1530 to -1510):
 C
 C      -1510  --  Flags beginning of segment copy for PS workstations.
 C      -1511  --  Flags end of segment copy for PS workstations.
@@ -119,6 +119,8 @@ C                   or in the middle of a picture.
 C
 C      -1527  --  Produce an NCAR logo.
 C      -1528  --  Bounding box coordinates for EPS/EPSI files.
+C      -1529  --  Width for PDF MediaBox
+C      -1530  --  Height for PDF MediaBox
 C
       IF (FCTID .EQ. -1399) THEN
 C
@@ -730,6 +732,23 @@ C
           CUFLAG = IWKID
         ENDIF 
 C
+C
+C  Width for PDF MediaBox in 1/72" units.
+C
+        IF (FCTID .EQ. -1529) THEN
+          READ(IDR(1)(1:5),501) PDFWTH
+          CUFLAG = -1
+          RETURN
+        ENDIF 
+C
+C  Height for PDF MediaBox in 1/72" units.
+C
+        IF (FCTID .EQ. -1530) THEN
+          READ(IDR(1)(1:5),501) PDFHGT
+          CUFLAG = -1
+          RETURN
+        ENDIF 
+C
 C  Return if not a PostScript or PDF workstation, unless FCTID = -1521
 C  or FCTID = -1525, or FCTID = -1526.
 C
@@ -738,7 +757,7 @@ C
           IF (ITYP.GT.GPSMAX .OR. ITYP.LT.GPSMIN) THEN
             CUFLAG = -1
             IF (FCTID.NE.-1521 .AND. FCTID.NE.-1525 .AND.
-     +        FCTID.NE.-1526) RETURN
+     +          FCTID.NE.-1526) RETURN
           ENDIF
         ENDIF
 C

@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.17 2008-07-27 00:17:17 haley Exp $
+C	$Id: ngblda.f,v 1.18 2010-01-15 05:12:10 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -123,4 +123,7 @@ C  Default X,Y NDC coordinate position for logos, and the default  size.
 C
       DATA OXLOGO,OYLOGO,OLSIZE/0.93,0.05,0.07/
 C
+C  Defaults for the PDF bounding media box in 1/72" units.
+C
+      DATA IPGHGT,IPGWTH/792,612/
       END
