@@ -179,6 +179,8 @@ percentage) is selected.  The "nearest color" is the one in the current
 color table that is closest using the normal distance metric in the
 RGB color cube.  The percentage error is measured as a percentage of
 lenght of a diagonal of the RGB color cube.
+.IP "\'PH\'   -   Integer     -   792"
+Specification, in points, of the PDF output page height.
 .IP "\'PI\'   -   Character   -   blanks"
 A character string that will be used for the picture name of the current
 picture in the PICTURE NAME element of an ncgm file.  The first picture 
@@ -186,6 +188,8 @@ must be named before the ncgm workstation is opened and subsequent
 pictures must be named immediately after creating the previous picture.  
 Not all pictures need be named and any picture that is not assigned a
 specific name is assigned blanks in the PICTURE NAME field of the ncgm.
+.IP "\'PW\'   -   Integer     -   612"
+Specification, in points, of the PDF output page width.
 .IP "\'SC\'   -   Integer     -   depends on the workstation type" 
 The X11 workstation indicated by the integer should use a "shared" X color
 model.  (-1) indicates the next X11 workstation created.
