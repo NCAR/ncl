@@ -14,10 +14,10 @@ had in the udunits-1 library.
 
 Note that these routines call the udunits-2 routines, so they have to be installed to use this!
 
-Version 3.0	(versions < 2 are for the udunits-1 library, >=3 are for udunits-2 library)
+Version 3.01	(versions < 2 are for the udunits-1 library, >=3 are for udunits-2 library)
 David W. Pierce
 dpierce@ucsd.edu
-2010-09-19
+2010-01-13
 
 Thanks to Christian Page' of CERFACS, France, for bug fixes!
 
@@ -81,7 +81,12 @@ static void err_mess_not_t_convertible( ut_unit *unit );
 
 static int shown_proleptic_warning = 0;
 static int shown_julian_warning    = 0;
-static int have_initted		   = 0;
+
+/*
+ * Mary removed the have_initted flag, because we want to initialize
+ * every time. 
+ * static int have_initted		   = 0;
+ */
 
 #ifdef DEBUG
 static void dateify( int year, int month, int day, int hour, int minute, double second, char *buf );
@@ -169,12 +174,15 @@ int utCalendar2_cal( double val, ut_unit *dataunits, int *year, int *month, int 
 	printf( "Input value: %lf  Input calendar: %s\n", val, calendar );
 #endif
 
+/*
 	if( have_initted == 0 ) {
 		make_udu_origin_zero( dataunits );
 		have_initted = 1;
 		}
+ */
+	  make_udu_origin_zero( dataunits );
 
-	if( (calendar == NULL) || (strncasecmp(calendar,"standard",8)==0) || (strncasecmp(calendar,"gregorian",9)==0) ) {
+	if( (calendar == NULL) || (strlen(calendar)==0) || (strncasecmp(calendar,"standard",8)==0) || (strncasecmp(calendar,"gregorian",9)==0) ) {
 #ifdef DEBUG
 		printf( "utCalendar_cal: using standard calendar\n" );
 #endif
@@ -260,10 +268,13 @@ int utCalendar2( double value, ut_unit *unit, int *year, int *month, int *day, i
 	if( unit == NULL )
 		return( UT_ENOINIT );
 
+/*
 	if( ! have_initted ) {
 		make_udu_origin_zero( unit );
 		have_initted = 1;
 		}
+ */
+	make_udu_origin_zero( unit );
 
 	if( (last_unit == NULL) || (ut_compare(unit, last_unit) != 0)) {
 
@@ -306,10 +317,13 @@ int utInvCalendar2( int year, int month, int day, int hour, int minute, double s
 	if( unit == NULL )
 		return( UT_ENOINIT );
 
+/*
 	if( have_initted == 0 ) {
 		make_udu_origin_zero( unit );
 		have_initted = 1;
 		}
+ */
+	make_udu_origin_zero( unit );
 
 	/* First turn the date into a time w.r.t. the udunits library's internal 
 	 * reference date and units (which as of this writing is seconds since
@@ -626,12 +640,15 @@ int utInvCalendar2_cal( int year, int month, int day, int hour, int minute,
 	printf( "called utInvCalendar_cal with date to convert=%s\n", buf );
 #endif
 
+/*
 	if( have_initted == 0 ) {
 		make_udu_origin_zero( unit );
 		have_initted = 1;
 		}
+ */
+	make_udu_origin_zero( unit );
 
-	if( (calendar == NULL) || (strncasecmp(calendar,"standard",8)==0) || (strncasecmp(calendar,"gregorian",9)==0) ) {
+	if( (calendar == NULL) || (strlen(calendar) == 0) || (strncasecmp(calendar,"standard",8)==0) || (strncasecmp(calendar,"gregorian",9)==0) ) {
 #ifdef DEBUG
 		printf( "called utInvCalendar_cal with a standard calendar\n" );
 #endif
@@ -885,3 +902,4 @@ static int utInvCalendar2_noleap_inner( int year, int month, int day, int hour, 
 #endif
 	return(0);
 }
+

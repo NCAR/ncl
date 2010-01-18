@@ -1,15 +1,9 @@
 #include <stdio.h>
-#include <udunits.h>
 #include "wrapper.h"
+#include <udunits2.h>
+#include <udunits.h>
+#include "utCalendar2_cal.h"
 #include <math.h>
-
-extern int utCalendar_cal( double val, utUnit *dataunits, int *year, 
-                           int *month, int *day, int *hour, int  *minute,
-                           float *second, char *calendar );
-
-extern int utInvCalendar_cal( int year, int month, int day, int hour, 
-                              int minute, double second, utUnit *unit,
-                              double *value, const char *calendar );
 
 /*
  * Function for initializing Udunits package.  If UDUNITS_PATH is
@@ -17,43 +11,30 @@ extern int utInvCalendar_cal( int year, int month, int day, int hour,
  * the path within NCL ($NCARG_ROOT/lib/ncarg/udunits/) is used.
  */
 
-int utopen_ncl()
+ut_system *utopen_ncl()
 {
-  const char *path = NULL;
-  char udunits_file[_NhlMAXFNAMELEN];
-  int utret;
+  ut_system *us;
+
+  /* Turn annoying "override" errors off */
+  ut_set_error_message_handler( ut_ignore );
+
+  /* Init udunits-2 lib */
+  us = ut_read_xml(NULL);
+
+  /* Turn errors back on */
+  ut_set_error_message_handler( ut_write_to_stderr );
+
+  return(us);
+}
+
 /*
- * Initialize the Udunits package.
- *
- * The default is to use $NCARG_ROOT/lib/ncarg/udunits/udunits.dat
- * for the initialization file, unless UDUNITS_PATH is set by the
- * user, then it will try to use this path. 
+ * Function for closing up Udunits-2.
  */
-  path = getenv("UDUNITS_PATH");
-  if ((void *)path == (void *)NULL) {
-    path = _NGGetNCARGEnv("udunits");
-    if ((void *)path != (void *)NULL) {
-      strcpy(udunits_file,path);
-      strcat(udunits_file,_NhlPATHDELIMITER);
-      strcat(udunits_file,"udunits.dat");
-      utret = utInit(udunits_file);
-    }
-    else {
-/*
- * Use path built-in at compile time. It's not a good thing if we reach
- * this point, because the "_NGGetNCARGEnv" call above should have
- * returned a valid path.
- */
-      utret = utInit("");
-    }
-  }
-  else {
-/*
- * Use UDUNITS_PATH.
- */
-    utret = utInit(path);
-  }
-  return(utret);
+
+void *utclose_ncl(ut_system *us)
+{
+    ut_free_system(us);
+    us = NULL;
 }
 
 /*
@@ -61,7 +42,7 @@ int utopen_ncl()
  *
  *    The calendar calculations done by the udunits package use a mixed
  *    Gregorian/Julian calendar, i.e., dates prior to 1582-10-15 are
- *    assumed to use the Julian calendar. Time coordinates that use
+ *    Assumed to use the Julian calendar. Time coordinates that use
  *    other calendars are thus not able to make use of the udunits
  *    library for this purpose. However, it is still required to use the
  *    time unit format described above as this contains all the
@@ -119,13 +100,13 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Variables for Udunits package.
  */
-  int utopen_ncl();
-  utUnit unit;
+  ut_system *utopen_ncl(), *unit_system;
+  ut_unit *utunit;
 /*
  * Output variables.
  */
   int year, month, day, hour, minute;
-  float second;
+  double second;
   void *date;
   int ndims_date, *dsizes_date;
   NclScalar missing_date;
@@ -146,13 +127,12 @@ NhlErrorTypes ut_calendar_W( void )
   int i, ret, return_missing, dsizes[1];
   int total_size_x, total_size_date, index_date;
   extern float truncf(float);
+  ut_system *unitSystem;
+
 /*
  * Before we do anything, initialize the Udunits package.
  */
-  if (utopen_ncl() != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_calendar: Could not initialize Udunits package.");
-    return(NhlFATAL);
-  }
+  unit_system = utopen_ncl();
 
 /*
  * Retrieve parameters
@@ -316,7 +296,8 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Make sure cspec is a valid udunits string.
  */
-          if(utScan(cspec, &unit) != 0) {
+          utunit = ut_parse(unit_system, cspec, UT_ASCII);
+	  if(utunit == NULL) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
             return_missing = 1;
           }
@@ -356,11 +337,6 @@ NhlErrorTypes ut_calendar_W( void )
           }
         }
 /*
- * Close up Udunits.
- */
-    utTerm();
-
-/*
  * Return all missing values.
  */
     ret = NclReturnValue(date,ndims_date,dsizes_date,
@@ -382,8 +358,8 @@ NhlErrorTypes ut_calendar_W( void )
   for( i = 0; i < total_size_x; i++ ) {
     if(!has_missing_x ||
        (has_missing_x && tmp_x[i] != missing_dx.doubleval)) {
-      (void) utCalendar_cal(tmp_x[i],&unit,&year,&month,&day,
-                            &hour,&minute,&second,ccal);
+      (void) utCalendar2_cal(tmp_x[i],utunit,&year,&month,&day,
+                             &hour,&minute,&second,ccal);
 /*
  * Calculate the return values, based on the input option.
  */
@@ -533,8 +509,7 @@ NhlErrorTypes ut_calendar_W( void )
 /*
  * Close up Udunits.
  */
-
-  utTerm();
+  utclose_ncl(unit_system);
 
 /*
  * Set up variable to return.
@@ -662,8 +637,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * Variables for Udunits package.
  */
-  int utopen_ncl();
-  utUnit unit;
+  ut_system *utopen_ncl(), *unit_system;
+  ut_unit *utunit;
 /*
  * Variables for retrieving attributes from last argument.
  */
@@ -694,10 +669,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * Before we do anything, initialize the Udunits package.
  */
-  if (utopen_ncl() != 0) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Could not initialize Udunits package.");
-    return(NhlFATAL);
-  }
+  unit_system = utopen_ncl();
 
 /*
  * Retrieve parameters
@@ -825,9 +797,10 @@ NhlErrorTypes ut_inv_calendar_W( void )
   cspec = NrmQuarkToString(*sspec);
 
 /*
- * Make sure cspec is a valid Udunits string.
+ * Make sure cspec is a valid udunits string.
  */
-  if(utScan(cspec, &unit) != 0) {
+  utunit = ut_parse(unit_system, cspec, UT_ASCII);
+  if(utunit == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"ut_inv_calendar: Invalid specification string");
     return(NhlFATAL);
   }
@@ -936,8 +909,8 @@ NhlErrorTypes ut_inv_calendar_W( void )
        (!has_missing_second ||
         (has_missing_second && *tmp_second != missing_second.doubleval)) ) {
 
-       (void)utInvCalendar_cal(year[i],month[i],day[i],hour[i],minute[i],
-                               *tmp_second,&unit,&x[i],ccal);
+       (void)utInvCalendar2_cal(year[i],month[i],day[i],hour[i],
+                                minute[i],*tmp_second,utunit,&x[i],ccal);
     }
     else {
       x[i]  = missing_x.doubleval;
@@ -947,7 +920,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
 /*
  * Close up Udunits.
  */
-  utTerm();
+  utclose_ncl(unit_system);
 
 /*
  * Set up variable to return.

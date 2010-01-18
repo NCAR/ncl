@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.121 2009-12-07 02:44:14 haley Exp $
+#      $Id: yMakefile,v 1.122 2010-01-18 21:13:49 haley Exp $
 #
 #########################################################################
 #                                                                       #
@@ -15,7 +15,7 @@
 #                               National Center for Atmospheric Research
 #                               POB 3000, Boulder, Colorado
 #
-#       $Date: 2009-12-07 02:44:14 $
+#       $Date: 2010-01-18 21:13:49 $
 #
 #       Description:    
 
@@ -28,8 +28,8 @@ HDRS = wrapper.h
 
 #ifdef BuildUdunits
 UDUNITS_DEFS = -DBuildUdunits
-UDUNITS_SRCS = udunitsW.c utCalendar_cal.c
-UDUNITS_OBJS = udunitsW.o utCalendar_cal.o
+UDUNITS_SRCS = udunitsW.c utCalendar2_cal.c
+UDUNITS_OBJS = udunitsW.o utCalendar2_cal.o
 #else
 #define UDUNITS_SRCS
 #define UDUNITS_OBJS
