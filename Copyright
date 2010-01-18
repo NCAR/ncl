@@ -14,12 +14,12 @@ The University of Texas, M.D. Anderson Cancer Center
 http://www.netlib.org/random/
 
 FFTPACK5
-Copyright (c) 1995-2004
+Copyright (c) 2004
 UCAR
 http://www.cisl.ucar.edu/css/software/fftpack5/
 
 GRIBEX
-Copyright (c) 1981-2008
+Copyright (c) 1981-2010
 European Centre for Medium-Range Weather Forecast
 http://www.ecmwf.int/products/data/software/grib.html
 
@@ -37,15 +37,10 @@ Dr. Rainer Feistel
 Baltic Sea Research Institute Warnemunde
 http://www.io-warnemuende.de/homepages/rfeistel/
 
-Spherepack
+Spherepack (V3.1)
 Copyright (c) 1998
 UCAR
 http://www.cisl.ucar.edu/css/software/spherepack/
-
-Udunits (V1.x)
-Copyright (c) 1992, 1995
-UCAR/Unidata
-http://www.unidata.ucar.edu/software/udunits/udunits-1/
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
