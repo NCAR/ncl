@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.252 2010-01-04 23:04:51 haley Exp $
+;      $Id: contributed.ncl,v 1.253 2010-01-20 23:38:15 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9739,15 +9739,20 @@ undef("latRegWgt")
 function latRegWgt(lat[*]:numeric, nType[1]:string, opt[1]:integer)
 ; usage: wgt = latRegWgt(lat, "double", 0)
 ;        wgt = latRegWgt(lat, "float" , 0)
-local nlat, pi, rad, err, dlat, w, nl, dNam
+local nlat, pi, rad, err, eps, dlat, dlat_low, dlat_hgh, diff, nl, dNam
 begin
   nlat = dimsizes(lat)
   pi   = 4.0d*atan(1.0d)
   rad  = pi/180.0d
   err  = 1d20
+  eps  = 0.001                          ; arbitrary
 
   dlat = abs(lat(2)-lat(1))             ; error check
-  if (.not.all( abs(lat(1:nlat-1)-lat(0:nlat-2)) .eq. dlat)) then
+  dlat_low = dlat-eps
+  dlat_hgh = dlat+eps
+  diff     = all(abs(lat(1:nlat-1)-lat(0:nlat-2)) .ge. dlat_low) .and. \
+             all(abs(lat(1:nlat-1)-lat(0:nlat-2)) .le. dlat_hgh)        
+  if (.not.diff) then
       print("latRegWgt: Expecting equally spaced latitudes")
       if (nType.eq."double") then
           return(new(nlat,"double",err))
