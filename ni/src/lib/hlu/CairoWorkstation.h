@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.h,v 1.3 2010-01-07 23:06:01 brownrig Exp $
+ *      $Id: CairoWorkstation.h,v 1.4 2010-01-21 22:16:48 brownrig Exp $
  */
 
 # ifndef    _NCarioWorkstation_h
@@ -8,11 +8,11 @@
 # include   <ncarg/hlu/Workstation.h>
 
 
-# define    NhlNwkCairoFormat     "wkCairoFormat"
-# define    NhlCwkCairoFormat     "WkCairoFormat"
+# define    NhlNwkFormat     "wkFormat"
+# define    NhlCwkFormat     "WkFormat"
 
-# define    NhlNwkCairoFileName   "wkCairoFileName"
-# define    NhlCwkCairoFileName   "WkCairoFileName"
+# define    NhlNwkFileName   "wkFileName"
+# define    NhlCwkFileName   "WkFileName"
 
 # define    NhlNwkPDFResolution   "wkPDFResolution"
 # define    NhlCwkPDFResolution   "WkPDFResolution"

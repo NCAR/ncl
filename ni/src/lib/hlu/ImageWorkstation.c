@@ -1,5 +1,5 @@
 /*
- *      $Id: ImageWorkstation.c,v 1.4 2008-02-20 23:14:03 haley Exp $
+ *      $Id: ImageWorkstation.c,v 1.5 2010-01-21 22:16:48 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -140,7 +140,7 @@ static NrmQuark Qfilename = NrmNULLQUARK;
 
 NhlImageWorkstationClassRec NhlimageWorkstationClassRec = {
         {
-/* class_name			*/	"imageWorkstationClass",
+/* class_name			*/	"xwdimageWorkstationClass",
 /* nrm_class			*/	NrmNULLQUARK,
 /* layer_size			*/	sizeof(NhlImageWorkstationLayerRec),
 /* class_inited			*/	False,
@@ -175,7 +175,7 @@ NhlImageWorkstationClassRec NhlimageWorkstationClassRec = {
 /* layer_clear			*/	NULL
         },
         {
-/* current_wks_count	*/	NhlInheritCurrentWksCount, 
+/* current_wks_count	*/	NhlInheritCurrentWksCount,
 /* gks_wks_recs		*/	NhlInheritGksWksRecs,
 /* hlu_wks_flag		*/	NhlInheritHluWksFlag,
 /* def_background	*/	{0.0,0.0,0.0},
@@ -206,13 +206,13 @@ NhlClass NhlimageWorkstationClass = (NhlClass)&NhlimageWorkstationClassRec;
  *
  * Description:	Fortran ref function for imagework class.
  *
- * In Args:	
+ * In Args:
  *
- * Out Args:	
+ * Out Args:
  *
  * Scope:	global Fortran
  * Returns:	NhlClass
- * Side Effect:	
+ * Side Effect:
  */
 NhlClass
 _NHLCALLF(nhlfimageworkstationclass,NHLFIMAGEWORKSTATIONCLASS)
@@ -230,15 +230,15 @@ _NHLCALLF(nhlfimageworkstationclass,NHLFIMAGEWORKSTATIONCLASS)
 /*
  * Function:	ImageWorkstationClassInitialize
  *
- * Description:	
+ * Description:
  *
- * In Args:	
+ * In Args:
  *
- * Out Args:	
+ * Out Args:
  *
- * Scope:	
- * Returns:	
- * Side Effect:	
+ * Scope:
+ * Returns:
+ * Side Effect:
  */
 static NhlErrorTypes
 ImageWorkstationClassInitialize
@@ -307,7 +307,7 @@ static NhlErrorTypes ImageWorkstationInitialize
         NhlLayer	req;
         NhlLayer	new;
         _NhlArgList	args;
-        int		num_args; 
+        int		num_args;
 #endif
 {
 	char			*error_lead="ImageWorkstationInitialize";
@@ -316,7 +316,7 @@ static NhlErrorTypes ImageWorkstationInitialize
 				&((NhlWorkstationClass)class)->work_class;
 	NhlErrorTypes		ret = NhlNOERROR;
 	char			*tstr = NULL;
-        
+
 	if(*wcp->current_wks_count >= MAX_OPEN_WKS){
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
               "%s: Limit reached for number of simultaneous GKS Workstations",
@@ -359,15 +359,15 @@ static NhlErrorTypes ImageWorkstationInitialize
 /*
  * Function:	ImageWorkstationDestroy
  *
- * Description:	
+ * Description:
  *
- * In Args:	
+ * In Args:
  *
- * Out Args:	
+ * Out Args:
  *
- * Scope:	
- * Returns:	
- * Side Effect:	
+ * Scope:
+ * Returns:
+ * Side Effect:
  */
 static NhlErrorTypes
 ImageWorkstationDestroy
@@ -409,7 +409,7 @@ static NhlErrorTypes ImageWorkstationSetValues
 (old,reference,new,args,num_args)
         NhlLayer old;
         NhlLayer reference;
-        NhlLayer new; 
+        NhlLayer new;
         _NhlArgList args;
         int num_args;
 #endif
@@ -453,15 +453,15 @@ static NhlErrorTypes ImageWorkstationSetValues
 /*
  * Function:	ImageWorkstationGetValues
  *
- * Description:	
+ * Description:
  *
- * In Args:	
+ * In Args:
  *
- * Out Args:	
+ * Out Args:
  *
- * Scope:	
- * Returns:	
- * Side Effect:	
+ * Scope:
+ * Returns:
+ * Side Effect:
  */
 static NhlErrorTypes
 ImageWorkstationGetValues
@@ -483,7 +483,7 @@ ImageWorkstationGetValues
 	NhlImageWorkstationLayerPart *xp = &((NhlImageWorkstationLayer)l)->imagework;
 	int			i,size;
         NhlString		string,res;
-        
+
 	for(i=0;i<nargs;i++){
                 string = NULL;
 		if((args[i].quark == Qfilename) && xp->pixconfig.filename){
@@ -514,14 +514,14 @@ ImageWorkstationGetValues
  *		this function was needed was to impliment the pause
  *		for default X driver use.
  *
- * In Args:	
+ * In Args:
  *		NhlLayer	l	workstation layer to clear
  *
- * Out Args:	
+ * Out Args:
  *
  * Scope:	static
  * Returns:	NhlErrorTypes
- * Side Effect:	
+ * Side Effect:
  */
 static NhlErrorTypes
 ImageWorkstationClear
@@ -608,8 +608,8 @@ ImageWorkstationOpen
 	if(xl->work.gkswkstype == NhlFATAL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,"Unknown workstation type");
 		return(NhlFATAL);
-		
-	} 
+
+	}
 	if(xl->work.gkswksconid == NhlFATAL) {
 		NhlPError(NhlFATAL,NhlEUNKNOWN,
 			"Unknown workstation connection id");

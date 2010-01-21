@@ -1,5 +1,5 @@
 /*
- *      $Id: CairoWorkstation.c,v 1.3 2010-01-07 23:06:01 brownrig Exp $
+ *      $Id: CairoWorkstation.c,v 1.4 2010-01-21 22:16:48 brownrig Exp $
  */
 
 # include   <stdio.h>
@@ -14,10 +14,10 @@
 static NhlResource resources[] = {
 		/* Begin-documented-resources */
 
-    {NhlNwkCairoFormat,NhlCwkCairoFormat,NhlTCairoFormat,sizeof(NhlCairoFormat),
+    {NhlNwkFormat,NhlCwkFormat,NhlTCairoFormat,sizeof(NhlCairoFormat),
         Oset(format),NhlTImmediate,(NhlPointer)NhlCPS,
         _NhlRES_NOSACCESS,NULL},
-    {NhlNwkCairoFileName,NhlCwkCairoFileName,NhlTString,
+    {NhlNwkFileName,NhlCwkFileName,NhlTString,
         sizeof(NhlString),Oset(filename),NhlTImmediate,
         (NhlPointer)NULL,_NhlRES_NOSACCESS,(NhlFreeFunc)NhlFree},
     {NhlNwkOrientation,NhlCwkOrientation,NhlTWorkOrientation,
@@ -50,7 +50,7 @@ static NhlResource resources[] = {
         (NhlPointer)1024,_NhlRES_DEFAULT,NULL},
     {NhlNwkHeight,NhlCwkHeight,NhlTInteger,sizeof(int),
         Oset(pixconfig.height),NhlTImmediate,
-        (NhlPointer)768,_NhlRES_DEFAULT,NULL},
+        (NhlPointer)1024,_NhlRES_DEFAULT,NULL},
 
 #if 0
     {NhlNwkVisualType,NhlCwkVisualType,NhlTVisualType,sizeof(NhlVisualType),
@@ -154,7 +154,7 @@ static NhlErrorTypes CairoImageWorkstationActivate(
 /* class-record for PS/PDF output formats */
 NhlCairoWorkstationClassRec NhlcairoPSPDFWorkstationClassRec = {
     {
-        /* class_name           */  "cairoPSPDFWorkstationClass",
+        /* class_name           */  "documentWorkstationClass",
         /* nrm_class            */  NrmNULLQUARK,
         /* layer_size           */  sizeof(NhlCairoWorkstationLayerRec),
         /* class_inited         */  False,
@@ -218,7 +218,7 @@ NhlCairoWorkstationClassRec NhlcairoPSPDFWorkstationClassRec = {
 /* class-record for image-based output formats */
 NhlCairoWorkstationClassRec NhlcairoImageWorkstationClassRec = {
     {
-        /* class_name           */  "cairoImageWorkstationClass",
+        /* class_name           */  "imageWorkstationClass",
         /* nrm_class            */  NrmNULLQUARK,
         /* layer_size           */  sizeof(NhlCairoWorkstationLayerRec),
         /* class_inited         */  False,
@@ -355,12 +355,13 @@ static NhlErrorTypes
 CairoWorkstationClassInitialize(void)
 {
     _NhlEnumVals    psPdfFormats[] = {
-        {NhlCPS,     "CPS"},
-        {NhlCPDF,    "CPDF"}
+        {NhlCPS,     "NEWPS"},
+        {NhlCPDF,    "NEWPDF"}
     };
 
     _NhlEnumVals    imageFormats[] = {
-        {NhlCPNG,    "CPNG"}
+        {NhlCPNG,    "NEWPNG"},
+        {NhlCPNG,    "PNG"}
     };
 
     _NhlEnumVals    orientvals[] = {
@@ -378,7 +379,7 @@ CairoWorkstationClassInitialize(void)
     (void) _NhlRegisterEnumType(NhlcairoPSPDFWorkstationClass,NhlTWorkOrientation,
         orientvals,NhlNumber(orientvals));
 
-    fnameQ = NrmStringToQuark(NhlNwkCairoFileName);
+    fnameQ = NrmStringToQuark(NhlNwkFileName);
 
     return NhlNOERROR;
 }
@@ -442,7 +443,7 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
         if (!tfname) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,
                 "%s:Unable to resolve path name for \"%s\", defaulting %s",
-                func, cairo->filename, NhlNwkCairoFileName);
+                func, cairo->filename, NhlNwkFileName);
             ret = NhlWARNING;
         }
     }
