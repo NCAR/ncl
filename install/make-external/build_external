@@ -41,7 +41,7 @@
 #   gdal-1.6.3             Required if you want GDAL support
 #   netcdf-4.0.1           Required (classic NetCDF-4 support is optional)
 #   proj-4.7.0             Required if you want GDAL support
-#   udunits-1.12.9         Required if you want ut_calendar/ut_inv_calendar
+#   udunits-2.1.12         Required if you want ut_calendar/ut_inv_calendar
 #   HDF-EOS2.16v1.00       Required if you want HDF-EOS 2 support
 #   HDF-EOS5.1.12          Required if you want HDF-EOS 5 support
 #   vis5d+-1.3.0           Required if you want v5d* functions
@@ -157,7 +157,7 @@ NETCDF_DIR="netcdf-4.1-beta2"
 PNG_DIR="libpng-1.2.41"
 PROJ4_DIR="proj-4.7.0"
 SZIP_DIR="szip-2.1"
-UDUNITS_DIR="udunits-1.12.9"
+UDUNITS_DIR="udunits-2.1.12"
 VIS5DPLUS_DIR="vis5d+-1.3.0"
 ZLIB_DIR="zlib-1.2.3"
 PKGCONFIG_DIR="pkg-config-0.23"
@@ -569,9 +569,9 @@ if [ $INSTALL_UDUNITS ]
   if [ -d "$UDUNITS_DIR" ]
   then
     export PERL=""
-    cd $UDUNITS_DIR/src
+    cd $UDUNITS_DIR
     echo "Building $UDUNITS_DIR..."
-    ./configure --prefix\=$PREFIX
+    ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
