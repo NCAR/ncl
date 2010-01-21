@@ -6620,6 +6620,7 @@ GribParamList* thevarrec;
 	int lat_size, lon_size;
 	int j;
 	int has_missing, operio, oveggy;
+	double bin_scale, dec_scale;
 	
 	if (therec->has_gds) {
 		nlon = CnvtToDecimal(2,&(therec->gds[6]));
@@ -6703,6 +6704,8 @@ GribParamList* thevarrec;
 	if(bds[4] & (char)0200) {
 		binary_scale_factor = -binary_scale_factor;
 	}
+	bin_scale = pow(2.0,(double)binary_scale_factor);
+	dec_scale = pow(10.0,(double)decimal_scale_factor);
 	sign  = (bds[6] & (char) 0200)? 1 : 0;
 /*
 * Compute exponent GRIB docs specify 7 bit exponent
@@ -6723,7 +6726,7 @@ GribParamList* thevarrec;
 	lat_size =  thevarrec->var_info.dim_sizes[thevarrec->var_info.num_dimensions-2];
 	grid_size = is_staggered_grid ? lon_size * lat_size / 2 : lon_size * lat_size;
 
-	if((!spherical_harm)&&(!second_order)&&(!additional_flags) && (!is_thinned_lat)) {
+	if((!spherical_harm)&&(!second_order) && (!is_thinned_lat)) {
 		if(integer) {
 			*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
 			*(int*)(*missing_value) = DEFAULT_MISSING_INT;
@@ -6758,13 +6761,13 @@ GribParamList* thevarrec;
 					X = X >> (isize - number_of_bits);
 					if(integer) {
 						((int*)data)[(*index_func)(index,lon_size,lat_size,ijswap,is_uv)] = 
-							(int)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+							(int)(reference_value + (X * bin_scale))/dec_scale;
 						index++;
 						dnum++;
 
 					} else {
 						((float*)data)[(*index_func)(index,lon_size,lat_size,ijswap,is_uv)] = 
-							    (float)(reference_value + (X * pow(2.0,(double)binary_scale_factor)))/pow(10.0,(double)(decimal_scale_factor));
+							(float)(reference_value + (X * bin_scale)) / dec_scale;
 						index++;
 						dnum++;
 					}
@@ -7106,9 +7109,166 @@ GribParamList* thevarrec;
 			*outdat = NULL;
 		}
 	} 
-	else if (second_order || additional_flags) {
+	else if (second_order) {
+		int n1_first_order_start;
+		int n2_second_order_start;
+		int secondary_bit_maps;
+		int second_order_variable_width;  /* variable or constant width for the second order values */
+		int second_order_width = 0;
+		int *second_order_widths = NULL;
+		int extended_second_order_packing;
+		int boustrophedonic_ordering;
+		int spatial_differencing; /* 0 -none, 1 - 1st order, 2 - 2nd order, 3 - 3rd order */
+		int p1_num_sub_sections;
+		int p2_num_second_order;
+		int *p1_widths;
+		int i;
+		unsigned char *sec_bm = NULL;
+		int sec_bm_size = 0;
+		int *first_order_vals = NULL;
+		
+
+		n1_first_order_start = UnsignedCnvtToDecimal(2, &(bds[11]));
+		n2_second_order_start = UnsignedCnvtToDecimal(2, &(bds[14]));
+		p1_num_sub_sections = UnsignedCnvtToDecimal(2, &(bds[16]));
+		p2_num_second_order = UnsignedCnvtToDecimal(2, &(bds[18]));
+		secondary_bit_maps = (bds[13] & (char)0040) ? 1 : 0;
+		second_order_variable_width = (bds[13] & (char)0020) ? 1 : 0;
+		extended_second_order_packing = (bds[13] & (char)0010) ? 1 : 0;
+		boustrophedonic_ordering = (bds[13] & (char)04) ? 1 : 0;
+		spatial_differencing = (int) (bds[13] & (char)03);
+		
+
+		if(integer) {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(int));
+			*(int*)(*missing_value) = DEFAULT_MISSING_INT;
+		} else {
+			*missing_value= (void*)NclMalloc((unsigned)sizeof(float));
+			*(float*)(*missing_value) = DEFAULT_MISSING_FLOAT;
+		}
+		if (! second_order_variable_width) {
+			second_order_width = UnsignedCnvtToDecimal(1, &(bds[21]));
+		}
+		else {
+			second_order_widths = NclMalloc(p1_num_sub_sections * sizeof(int));
+			for (i = 0; i < p1_num_sub_sections; i++) {
+				second_order_widths[i] = (int) UnsignedCnvtToDecimal(1, &(bds[21 + i]));
+			}
+			
+		}
+		if (secondary_bit_maps) {
+			sec_bm_size = p2_num_second_order / 8 +  (p2_num_second_order % 8 == 0 ? 0 : 1);
+			sec_bm_size += sec_bm_size % 2;
+			sec_bm = bds + 21 + p1_num_sub_sections;
+			/*
+			if (bds + n1_first_order_start != sec_bm + sec_bm_size) {
+				printf("not correct yet\n");
+			}
+			*/
+		}
+		first_order_vals = NclMalloc(p1_num_sub_sections * sizeof(int));
+		
+		if (first_order_vals) {
+			if (number_of_bits == 0) {
+				for (i = 0; i < p1_num_sub_sections; i++) {
+					first_order_vals[i] = 0;
+				}
+			}
+			else {
+				int bit_offset = 0;
+				int tbits = 0;
+				int cix = 0;
+				unsigned char *start = bds + n1_first_order_start - 1;
+				for (i = 0; i < p1_num_sub_sections; i++) {
+					X = UnsignedCnvtToDecimal(4,start + cix);
+					X = X << bit_offset;
+					X = X >> (isize - number_of_bits);
+					first_order_vals[i] = X;
+					tbits += number_of_bits;
+					cix = tbits / 8;
+					bit_offset = tbits % 8;
+				}
+			}
+		}
+		if(integer) {
+			if(*outdat == NULL) {
+				data = (void*)NclMalloc((unsigned)sizeof(int)*grid_size);
+			} else {
+				data = *outdat;
+			}
+		} else {
+			if(*outdat == NULL) {
+				data = (void*)NclMalloc((unsigned)sizeof(float)*grid_size);
+			} else {
+				data = *outdat;
+			}
+		}
+		has_missing = 0;
+		index = 0;  /* this indexes the output data array */
+		if (! secondary_bit_maps && first_order_vals) {  /* packing is by row or column depending on ijswap  */
+			unsigned char *dstart = bds + n2_second_order_start -1;
+			int num_per_subsection = ijswap ? lat_size : lon_size;
+			int bit_offset = 0;
+			int tbits = 0;
+			int cix = 0;
+			for (i = 0; i < p1_num_sub_sections; i++) {
+				int bit_width = second_order_widths ? second_order_widths[i] : second_order_width;
+				int first_order_val = first_order_vals[i];
+				if (bit_width == 0) {
+					for (j = 0; j < num_per_subsection; j++) {
+						if (! is_gpoint(bms,index)) {
+                                                        has_missing = 1;                                                        
+							if(integer) {
+                                                                ((int*)data)[index] = DEFAULT_MISSING_INT;
+                                                        } else {
+                                                                ((float*)data)[index] = DEFAULT_MISSING_FLOAT;                                                        
+							}
+							index++;
+                                                        continue;
+                                                }
+						if(integer) {
+							((int*)data)[index] = (int) (reference_value + first_order_val * bin_scale) / dec_scale;
+						} else {
+							((float*)data)[index] = (float) (reference_value + first_order_val * bin_scale) / dec_scale;
+						}
+						index++;
+					}
+				}
+				else {
+					for (j = 0; j < num_per_subsection; j++) {
+						if (! is_gpoint(bms,index)) {
+							has_missing = 1;
+							if(integer) {
+								((int*)data)[index] = DEFAULT_MISSING_INT;
+							} else {
+								((float*)data)[index] = DEFAULT_MISSING_FLOAT;
+							}
+							index++;
+							continue;
+						}
+						X = UnsignedCnvtToDecimal(4,dstart + cix);
+						X = X << bit_offset;
+						X = X >> (isize - bit_width);
+						if(integer) {
+							((int*)data)[index] = (int) (reference_value + (first_order_val + X) * bin_scale) / dec_scale;
+						} else {
+							((float*)data)[index] = (float) (reference_value + (first_order_val + X) * bin_scale) / dec_scale;
+						}
+						tbits += bit_width;
+						cix = tbits / 8;
+						bit_offset = tbits % 8;
+						index++;
+					}
+				}
+			}
+
+		}
+		else { /* don't know how to do secondary bit maps yet */
 			*outdat = NULL;
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"GenericUnPack: NCL does not yet handle gridded data with complex packing: no valid values returned");
+			NhlPError(NhlWARNING,NhlEUNKNOWN,"GenericUnPack: NCL does not yet handle gridded data using secondary bitmaps with complex packing : no valid values returned");
+		}
+		if (first_order_vals)
+			NhlFree(first_order_vals);
 	}
 	else {
 			*outdat = NULL;
