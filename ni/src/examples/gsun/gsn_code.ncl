@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.228 2010-01-07 23:09:32 brownrig Exp $
+;      $Id: gsn_code.ncl,v 1.229 2010-01-21 22:19:03 brownrig Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2772,7 +2772,7 @@ begin
     class = NhlClassName(wks)
     if((class(0).eq."psWorkstationClass").or. \
        (class(0).eq."pdfWorkstationClass").or. \
-       (class(0).eq."cairoPSPDFWorkstationClass")) then
+       (class(0).eq."documentWorkstationClass")) then
 ;
 ; Keep track of whether device coordinates were recalculated.
 ;
@@ -3276,11 +3276,11 @@ begin
 ;
 ; We need to distinguish between PS/PDF versus image-based output formats
 ;
-    if (type.eq."cps".or.type.eq."cpdf")
+    if (type.eq."newps".or.type.eq."newpdf")
         resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
-        cairo = create res_file cairoPSPDFWorkstationClass defaultapp
-          "wkCairoFileName"   : name
-          "wkCairoFormat"     : type
+        cairo = create res_file documentWorkstationClass defaultapp
+          "wkFileName"        : name
+          "wkFormat"          : type
           "wkPDFResolution"   : resltn
         end create
 
@@ -3300,9 +3300,9 @@ begin
         imageWidth = get_res_value(wkresnew,"wkWidth",1000)
         imageHeight = get_res_value(wkresnew,"wkHeight",800)
 
-        cairo = create res_file cairoImageWorkstationClass defaultapp
-          "wkCairoFileName"   : name
-          "wkCairoFormat"     : type
+        cairo = create res_file imageWorkstationClass defaultapp
+          "wkFileName"        : name
+          "wkFormat"          : type
           "wkWidth"           : imageWidth
           "wkHeight"          : imageHeight
         end create
@@ -3336,7 +3336,7 @@ begin
     wkheight = get_res_value_keep(type,"wkHeight",512)
 
     if(isatt(name,"wkColorMap"))
-      image = create res_file imageWorkstationClass defaultapp 
+      image = create res_file xwdimageWorkstationClass defaultapp 
         "wkImageFileName" : name
         "wkImageFormat"   : type
         "wkColorMap"      : name@wkColorMap
@@ -3344,7 +3344,7 @@ begin
         "wkHeight"        : wkheight
       end create
     else
-      image = create res_file imageWorkstationClass defaultapp 
+      image = create res_file xwdimageWorkstationClass defaultapp 
         "wkImageFileName" : name
         "wkImageFormat"   : type
         "wkWidth"         : wkwidth
@@ -3447,14 +3447,15 @@ begin
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."cps".or.lower_case(type2).eq."cpng".or.lower_case(type2).eq."cpdf") then
+    if (lower_case(type2).eq."newps".or.lower_case(type2).eq."newpdf" \
+          .or.lower_case(type2).eq."newpng".or.lower_case(type2).eq."png") then
       cairo_file = get_res_value(type2,"wkCairoFileName", res_file)
       cairo_file@res_file = res_file
       wks = gsn_open_cairo(type2, res_dir+cairo_file)
       valid_type = True
     end if
 
-    if (lower_case(type2).eq."xwd".or.lower_case(type2).eq."png") then
+    if (lower_case(type2).eq."xwd") then
       image_file = get_res_value(type2,"wkImageFileName", res_file)
       image_file@res_file = res_file
       wks = gsn_open_image(type2, res_dir+image_file)
