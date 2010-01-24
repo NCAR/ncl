@@ -519,6 +519,7 @@ extern NhlErrorTypes wavelet_default_W(void);
 extern NhlErrorTypes grid2triple_W(void);
 extern NhlErrorTypes triple2grid_W(void);
 extern NhlErrorTypes triple2grid2d_W(void);
+extern NhlErrorTypes obj_anal_ic_W(void);
 
 extern NhlErrorTypes random_setallseed_W(void);
 extern NhlErrorTypes random_chi_W(void);
@@ -6926,6 +6927,24 @@ void NclAddUserFuncs(void)
 
     NclRegisterFunc(triple2grid2d_W, args, "triple2grid2d", nargs);
 
+/*
+ * Register "obj_anal_ic".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(7);
+
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 0, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    SetArgTemplate(args, nargs, "numeric", 1, NclANY);  nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "logical", 1, dimsizes);  nargs++;
+
+    NclRegisterFunc(obj_anal_ic_W,args,"obj_anal_ic",nargs);
 /*
  *  Register paleo_outline.
  */
