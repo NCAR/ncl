@@ -1,6 +1,7 @@
 C NCLFORTSTART
       subroutine dobjanlx(plon,plat,pval,ntim,npts,grid,mlon,nlat
-     &                   ,xmsg,pmsg ,rscan,nscan,glat,glon,opt,ier)        
+     &                   ,xmsg,pmsg ,rscan,nscan,glat,glon,smwgt,opt
+     &                   ,ier)        
       implicit none
 c                                                                               
 c Objective Analysis via 'iterative improvement'  [driver]
@@ -35,7 +36,8 @@ c
 c                                                   INPUT
       integer   ntim,npts,mlon,nlat,nscan,ier
       double precision  plat(npts), plon(npts), pval(npts,ntim)
-      double precision  rscan(nscan),glat(nlat),glon(mlon), xmsg, pmsg
+      double precision  rscan(nscan),glat(nlat),glon(mlon)
+      double precision  smwgt(nscan), xmsg, pmsg
       logical   opt
 c                                                   OUTPUT
       double precision  grid(mlon,nlat,ntim) 
@@ -47,9 +49,13 @@ c                                                   DYNAMIC
 c                                                   DEFAULT SETTING
       integer nscmax, kpts, lwork, k, n, nt, i, ker 
       parameter (nscmax=10)                                   
-      double precision smwgt(nscmax)
+c
+c 'smwgt' is being passed in by C driver here, so this 
+c  code is commented out.
+c
+c      double precision smwgt(nscmax)
 c completely arbitrary. use for 'blending' previous and current values
-      data smwgt/1.0d0, 0.85d0, 0.70d0, 0.50d0, 6*0.25d0/             
+c      data smwgt/1.0d0, 0.85d0, 0.70d0, 0.50d0, 6*0.25d0/             
 
 c sort the 'plat' into ascending latitude order: ip = permutation vector
 
@@ -78,7 +84,7 @@ c eliminate bad or missing locations
 c opt if (opt .and. isatt(opt,"blend_wgt")) then
 c opt     ier = 0
 c opt     do n=1,nscan
-c opt        smwgt(n) = opt@wgt_blend(n)
+c opt        smwgt(n) = opt@blend_wgt(n)
 c opt        if (smwgt(n).lt.0.0do .or. smwgt(n).gt.1.0d0) ier = -77
 c opt     end do
 c opt     if (ier.lt.0) return
@@ -125,8 +131,8 @@ c .                  rscan(nscan) should be .ge. the grid spacing.
 c .   xmsg         - value to which grid points with no data                    
 c .                  within rscan(1) degrees will be set                        
 c .   work         - work vector of length 2*npts                               
-c .   lwork        - length of work vectoe = 2*npts or greater
-c .   smwgt        - vector of length 10 containing blending weights 
+c .   lwork        - length of work vector = 2*npts or greater
+c .   smwgt        - vector of length nscan containing blending weights 
 c .                  0.0 < smwgt <=1.0
 c .   iopt         - future option flag
 c .   ier          - error code                                                 
@@ -135,7 +141,7 @@ c
       double precision  plat(npts), plon(npts), pval(npts,ntim), xmsg 
       double precision  rscan(nscan),work(lwork),glat(nlat),glon(mlon)
       double precision  grid(mlon,nlat,ntim) 
-      double precision  smwgt(10)
+      double precision  smwgt(nscan)
                                                                
       integer nscmax, n, nstrt, nlast, ns, nt, nl, ml, nptlat, nptscan  
       parameter (nscmax=10)                                   
