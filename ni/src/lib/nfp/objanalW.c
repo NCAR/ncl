@@ -39,7 +39,7 @@ NhlErrorTypes obj_anal_ic_W( void )
  */
   void *pval;
   double *tmp_pval;
-  int ndims_pval, dsizes_pval[NCL_MAX_DIMENSIONS];
+  int ndims_pval, dsizes_pval[NCL_MAX_DIMENSIONS], size_pval;
   int has_missing_pval;
   NclScalar missing_pval, missing_flt_pval, missing_dbl_pval;
   NclBasicDataTypes type_pval;
@@ -92,7 +92,7 @@ NhlErrorTypes obj_anal_ic_W( void )
   int set_wgts;
   double *wgts;
   double def_wgts[NSCANMX] = {1.0, 0.85, 0.70, 0.50, 0.25,0.25,0.25,0.25,
-			      0.25,0.25};
+                              0.25,0.25};
   NclBasicDataTypes type_wgts;
 /*
  * Various
@@ -241,7 +241,6 @@ NhlErrorTypes obj_anal_ic_W( void )
   ntim = 1;
   for(i = 0; i < ndims_pval-1; i++) ntim *= dsizes_pval[i];
 
-
 /* 
  * Convert plat/plon to double if necessary.
  */
@@ -269,8 +268,9 @@ NhlErrorTypes obj_anal_ic_W( void )
   mlon        = dsizes_glon[0];
   nlat        = dsizes_glat[0];
   size_output = ntim * nlat * mlon;
+  size_pval   = ntim * npts;
 
-  tmp_pval = coerce_input_double(pval,type_pval,size_output,has_missing_pval,
+  tmp_pval = coerce_input_double(pval,type_pval,size_pval,has_missing_pval,
                                  &missing_pval,&missing_dbl_pval);
   if(tmp_pval == NULL) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"obj_anal_ic: Unable to coerce pval to double");
@@ -358,46 +358,46 @@ NhlErrorTypes obj_anal_ic_W( void )
     switch (stack_entry.kind) {
     case NclStk_VAR:
       if (stack_entry.u.data_var->var.att_id != -1) {
-	attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
-	if (attr_obj == NULL) {
-	  break;
-	}
+        attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
+        if (attr_obj == NULL) {
+          break;
+        }
       }
       else {
 /*
  * att_id == -1 ==> no attributes specified; return all missing.
  */
-	break;
+        break;
       }
 /* 
  * Check for attributes. If none are specified, then return missing values.
  */
       if (attr_obj->att.n_atts == 0) {
-	break;
+        break;
       }
       else {
 /*
  * Get list of attributes.
  */
-	attr_list = attr_obj->att.att_list;
+        attr_list = attr_obj->att.att_list;
 /*
  * Loop through attributes and check them.
  */
-	while (attr_list != NULL) {
-	  if ((strcmp(attr_list->attname, "blend_wgt")) == 0) {
-	    if(attr_list->attvalue->multidval.dim_sizes[0] != nscan) {
-	      NhlPError(NhlWARNING,NhlEUNKNOWN,"obj_anal_ic: The 'blend_wgt' attribute must have 'nscan' weights");
-	      NhlPError(NhlWARNING,NhlEUNKNOWN,"             Will use default weights.");
-	    }
-	    else {
-	      type_wgts = attr_list->attvalue->multidval.data_type;
-	      wgts = coerce_input_double(attr_list->attvalue->multidval.val,
-					 type_wgts,nscan,0,NULL,NULL);
-	      set_wgts = 1;
-	    }
-	  }
-	  attr_list = attr_list->next;
-	}
+        while (attr_list != NULL) {
+          if ((strcmp(attr_list->attname, "blend_wgt")) == 0) {
+            if(attr_list->attvalue->multidval.dim_sizes[0] != nscan) {
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"obj_anal_ic: The 'blend_wgt' attribute must have 'nscan' weights");
+              NhlPError(NhlWARNING,NhlEUNKNOWN,"             Will use default weights.");
+            }
+            else {
+              type_wgts = attr_list->attvalue->multidval.data_type;
+              wgts = coerce_input_double(attr_list->attvalue->multidval.val,
+                                         type_wgts,nscan,0,NULL,NULL);
+              set_wgts = 1;
+            }
+          }
+          attr_list = attr_list->next;
+        }
       }
     default:
       break;
