@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclVar.c,v 1.79 2009-07-19 06:22:04 dbrown Exp $
+ *      $Id: NclVar.c,v 1.80 2010-01-27 00:20:21 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -1227,11 +1227,17 @@ char *dim_name;
 		}
 		if (self->var.ref_var != NULL) {
 			NclVar rvar = (NclVar) self->var.ref_var;
-			while (rvar->var.ref_var) {
+			while (rvar) {
 				rvar->var.dim_info[dim_num].dim_quark = dim_quark;
+				if (rvar->var.coord_vars[dim_num] != -1) {
+					tmp_var = (NclVar)_NclGetObj(rvar->var.coord_vars[dim_num]);
+					if(tmp_var != NULL) {
+						tmp_var->var.var_quark = dim_quark;
+						tmp_var->var.dim_info[0].dim_quark = dim_quark;
+					}
+				}
 				rvar = (NclVar) rvar->var.ref_var;
 			}
-			rvar->var.dim_info[dim_num].dim_quark = dim_quark;
 		}
 		return(NhlNOERROR);
 	}  else if(dim_num >= self->var.n_dims){
