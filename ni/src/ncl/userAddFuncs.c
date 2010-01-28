@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.26 2010-01-28 15:33:19 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.27 2010-01-28 18:26:00 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2979,8 +2979,12 @@ NhlErrorTypes _Nclgetstrings
         output_strs = (string *) NclRealloc(output_strs, output_str_size*sizeof(string));
     else
     {
+        has_missing = 1;
         output_strs = (string *) NclRealloc(output_strs, sizeof(string));
-        output_strs[output_str_size] = NrmStringToQuark("NO MATCH");
+        output_strs[output_str_size] = ret_missing.stringval;
+      /*
+       *output_strs[output_str_size] = NrmStringToQuark("NO MATCH");
+       */
         output_str_size = 1;
     }
 
