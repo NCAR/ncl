@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddProto.c,v 1.11 2009-07-10 19:54:06 huangwei Exp $
+ *      $Id: userAddProto.c,v 1.12 2010-01-28 15:33:19 huangwei Exp $
  */
 /************************************************************************
 *                                                                   *
@@ -139,6 +139,12 @@ void
 #endif
 );
 
+extern NhlErrorTypes _Nclgetstrings(
+#if NhlNeedProto
+void
+#endif
+);
+
 extern NhlErrorTypes _Nclstr_get_comma();
 extern NhlErrorTypes _Nclstr_get_space();
 extern NhlErrorTypes _Nclstr_get_tab();
@@ -273,6 +279,14 @@ void NclAddUserBuiltInFuncs
     dimsizes[0] = 1;
     SetArgTemplate(args, nargs, "numeric", 1, dimsizes); nargs++;
     NclRegisterFunc(_Nclstr_insert, args, "str_insert", nargs);
+
+    nargs = 0;
+    args = NewArgs(2);
+    SetArgTemplate(args, nargs, "string", 0, NclANY); nargs++;
+    dimsizes[0] = 1;
+    SetArgTemplate(args, nargs, "string", 1, dimsizes); nargs++;
+    NclRegisterFunc(_Nclgetstrings, args, "getstrings", nargs);
+
 
     nargs = 0;
     args = NewArgs(0);
