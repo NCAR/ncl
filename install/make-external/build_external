@@ -583,7 +583,7 @@ if [ $INSTALL_UDUNITS ]
     else
       echo "$UDUNITS_DIR build NOT successful."
     fi
-    cd ../..
+    cd ..
   else
     echo "Directory $UDUNITS_DIR doesn't exist"
   fi
