@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.27 2010-01-28 18:26:00 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.28 2010-02-01 22:28:48 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2833,7 +2833,7 @@ NhlErrorTypes _Nclstr_get_nl
     NclFree(new_string);
 }
 
-NhlErrorTypes _Nclgetstrings
+NhlErrorTypes _Nclstr_match
 #if     NhlNeedProto
 (void)
 #else
