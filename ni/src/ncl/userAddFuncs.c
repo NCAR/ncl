@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.28 2010-02-01 22:28:48 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.29 2010-02-01 23:26:49 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2891,6 +2891,7 @@ NhlErrorTypes _Nclstr_match
     if(has_missing_input_strs)
     {
         ret_missing.stringval = missing_input_strs.stringval;
+        has_missing = 1;
     }
     else
     {
