@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.249 2009-12-10 23:49:14 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.250 2010-02-02 18:51:32 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17963,6 +17963,10 @@ NhlErrorTypes _NclItoint
                             else
                             {
                                 output[i] = (int) llval;
+                                if(output[i] == ret_missing.intval)
+                                {
+                                    has_missing = 1;
+                                }
                             }
                         }
                     }
@@ -18005,6 +18009,10 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
+                            if(output[i] == ret_missing.intval)
+                            {
+                                has_missing = 1;
+                            }
                         }
                     }
                 }
@@ -18045,13 +18053,10 @@ NhlErrorTypes _NclItoint
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(ret_missing.intval == val)
+                        output[i] = (int) val;
+                        if(output[i] == ret_missing.intval)
                         {
-                            output[i] = ret_missing.intval;
-                        }
-                        else
-                        {
-                            output[i] = (int) val;
+                            has_missing = 1;
                         }
                     }
                 }
@@ -18071,11 +18076,11 @@ NhlErrorTypes _NclItoint
                     for(i = 0; i < total_elements; i++)
                     {
                         ival = (int) ptr[i];
+                        output[i] = ival;
                         if(ret_missing.intval == ival)
                         {
                             has_missing = 1;
                         }
-                        output[i] = ival;
                     }
                 }
                 break;
@@ -18141,7 +18146,7 @@ NhlErrorTypes _NclItoint
 
                     if(has_missing)
                     {
-                        if(missing.longval < INT_MAX)
+                        if((missing.longval <= INT_MAX) &&(missing.longval >= INT_MIN))
                             ret_missing.intval = (int) missing.longval;
                     }
 
@@ -18194,7 +18199,7 @@ NhlErrorTypes _NclItoint
     
                     if(has_missing)
                     {
-                        if(missing.ulongval < INT_MAX)
+                        if(missing.ulongval <= INT_MAX)
                             ret_missing.intval = (int) missing.ulongval;
                     }
 
@@ -18234,7 +18239,7 @@ NhlErrorTypes _NclItoint
 
                     if(has_missing)
                     {
-                        if(missing.int64val < INT_MAX)
+                        if((missing.int64val <= INT_MAX) && (missing.int64val >= INT_MIN))
                             ret_missing.intval = (int) missing.int64val;
                     }
 
@@ -18287,7 +18292,7 @@ NhlErrorTypes _NclItoint
 
                     if(has_missing)
                     {
-                        if(missing.uint64val < INT_MAX)
+                        if(missing.uint64val <= INT_MAX)
                             ret_missing.intval = (int) missing.uint64val;
                     }
 
@@ -18597,7 +18602,7 @@ NhlErrorTypes _NclItouint
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(missing.charval == val)
+                        if(ret_missing.charval == val)
                         {
                             has_missing = 1;
                             output[i] = ret_missing.uintval;
@@ -18631,7 +18636,7 @@ NhlErrorTypes _NclItouint
                             output[i] = ret_missing.uintval;
                         }
                         else
-                        if(missing.byteval == val)
+                        if(ret_missing.byteval == val)
                         {
                             has_missing = 1;
                             output[i] = ret_missing.uintval;
@@ -18740,13 +18745,10 @@ NhlErrorTypes _NclItouint
                             }
                             else
                             {
-                                if(missing.intval == val)
+                                output[i] = (unsigned int) val;
+                                if(ret_missing.uintval == val)
                                 {
-                                    output[i] = ret_missing.uintval;
-                                }
-                                else
-                                {
-                                    output[i] = (unsigned int) val;
+                                    has_missing = 1;
                                 }
                             }
                         }
@@ -19231,6 +19233,10 @@ NhlErrorTypes _NclItolong
                             else
                             {
                                 output[i] = (long) llval;
+                                if(ret_missing.longval == output[i])
+                                {
+                                    has_missing = 1;
+                                }
                             }
                         }
                     }
@@ -19488,7 +19494,7 @@ NhlErrorTypes _NclItolong
 
                     if(has_missing)
                     {
-                        if(missing.int64val <= LONG_MAX)
+                        if((missing.int64val <= LONG_MAX) && (missing.int64val >= LONG_MIN))
                             ret_missing.longval = (long) missing.int64val;
                     }
 
@@ -20464,14 +20470,10 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(missing.byteval == val)
+                        output[i] = (long long) val;
+                        if(output[i] == ret_missing.int64val)
                         {
                             has_missing = 1;
-                            output[i] = ret_missing.int64val;
-                        }
-                        else
-                        {
-                            output[i] = (long long) val;
                         }
                     }
                 }
@@ -20491,14 +20493,10 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(ret_missing.int64val == val)
+                        output[i] = (long long) val;
+                        if(ret_missing.int64val == output[i])
                         {
                             has_missing = 1;
-                            output[i] = ret_missing.int64val;
-                        }
-                        else
-                        {
-                            output[i] = (long long) val;
                         }
                     }
                 }
@@ -21032,44 +21030,22 @@ NhlErrorTypes _NclItouint64
                     {
                         if(missing.shortval >= 0)
                             ret_missing.uint64val = (unsigned long long) missing.shortval;
-   
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val < 0)
-                            {
-                                underflowed ++;
-                                output[i] = ret_missing.uint64val;
-                            }
-                            else if(missing.shortval == val)
-                            {
-                                output[i] = ret_missing.uint64val;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned long long) val;
-                            }
-                        }
                     }
-                    else
+   
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
+                        val = ptr[i];
+                        if(val < 0)
                         {
-                            val = ptr[i];
-                            if(val < 0)
+                            underflowed ++;
+                            output[i] = ret_missing.uint64val;
+                        }
+                        else
+                        {
+                            output[i] = (unsigned long long) val;
+                            if(output[i] == ret_missing.uint64val)
                             {
                                 has_missing = 1;
-                                underflowed ++;
-                                output[i] = ret_missing.uint64val;
-                            }
-                            else
-                            {
-                                ullval = (unsigned long long) val;
-                                if(ret_missing.uint64val == ullval)
-                                {
-                                    has_missing = 1;
-                                }
-                                output[i] = ullval;
                             }
                         }
                     }
@@ -21358,7 +21334,7 @@ NhlErrorTypes _NclItoshort
         NclScalar missing;
         NclScalar ret_missing;
         NclBasicDataTypes type;
-        int has_missing;
+        int has_missing = 0;
         int i;
         short *output;
 
@@ -21411,22 +21387,21 @@ NhlErrorTypes _NclItoshort
                         if(val > dmax)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else if(val < dmin)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.doubleval == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21471,22 +21446,21 @@ NhlErrorTypes _NclItoshort
                         if(val > fmax)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else if(val < fmin)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.floatval == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21564,6 +21538,10 @@ NhlErrorTypes _NclItoshort
                             else
                             {
                                 output[i] = (short) llval;
+                                if(output[i] == ret_missing.shortval)
+                                {
+                                    has_missing = 1;
+                                }
                             }
                         }
                     }
@@ -21665,17 +21643,15 @@ NhlErrorTypes _NclItoshort
                         if(val > SHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.ushortval == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21707,22 +21683,21 @@ NhlErrorTypes _NclItoshort
                         if(val > SHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else if(val < SHRT_MIN)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.intval == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21761,17 +21736,15 @@ NhlErrorTypes _NclItoshort
                         if(val > SHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.uintval == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21803,22 +21776,21 @@ NhlErrorTypes _NclItoshort
                         if(val > SHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else if(val < SHRT_MIN)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.longval == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21857,17 +21829,15 @@ NhlErrorTypes _NclItoshort
                         if(val > SHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.ulongval == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21899,22 +21869,21 @@ NhlErrorTypes _NclItoshort
                         if(val > SHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else if(val < SHRT_MIN)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.int64val == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -21953,17 +21922,15 @@ NhlErrorTypes _NclItoshort
                         if(val > SHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.shortval;
                         }
                         else
                         {
-                            if(missing.uint64val == val)
+                            output[i] = (short) val;
+                            if(output[i] == ret_missing.shortval)
                             {
-                                output[i] = ret_missing.shortval;
-                            }
-                            else
-                            {
-                                output[i] = (short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -22075,22 +22042,21 @@ NhlErrorTypes _NclItoushort
                         if(val > dmax)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else if(val < dmin)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else
                         {
-                            if(missing.doubleval == val)
+                            output[i] = (unsigned short) val;
+                            if(output[i] == ret_missing.ushortval)
                             {
-                                output[i] = ret_missing.ushortval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -22135,22 +22101,21 @@ NhlErrorTypes _NclItoushort
                         if(val > fmax)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else if(val < fmin)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else
                         {
-                            if(missing.floatval == val)
+                            output[i] = (unsigned short) val;
+                            if(output[i] == ret_missing.ushortval)
                             {
-                                output[i] = ret_missing.ushortval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -22198,9 +22163,10 @@ NhlErrorTypes _NclItoushort
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(missing.stringval == ptr[i])
+                        if(has_missing && (missing.stringval == ptr[i]))
                         {
                             output[i] = ret_missing.ushortval;
+                            has_missing = 1;
                         }
                         else
                         {
@@ -22214,16 +22180,22 @@ NhlErrorTypes _NclItoushort
                             else if (llval > USHRT_MAX)
                             {
                                 overflowed ++;
+                                has_missing = 1;
                                 output[i] = ret_missing.ushortval;
                             }
                             else if (llval < 0)
                             {
                                 underflowed ++;
+                                has_missing = 1;
                                 output[i] = ret_missing.ushortval;
                             }
                             else
                             {
                                 output[i] = (unsigned short) llval;
+                                if(output[i] == ret_missing.ushortval)
+                                {
+                                    has_missing = 1;
+                                }
                             }
                         }
                     }
@@ -22322,11 +22294,16 @@ NhlErrorTypes _NclItoushort
                         if(val < 0)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else
                         {
                             output[i] = (unsigned short) val;
+                            if(output[i] == ret_missing.ushortval)
+                            {
+                                has_missing = 1;
+                            }
                         }
                     }
 
@@ -22473,22 +22450,21 @@ NhlErrorTypes _NclItoushort
                         if(val > USHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else if(val < 0)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else
                         {
-                            if(missing.longval == val)
+                            output[i] = (unsigned short) val;
+                            if(output[i] == ret_missing.ushortval)
                             {
-                                output[i] = ret_missing.ushortval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -22527,17 +22503,15 @@ NhlErrorTypes _NclItoushort
                         if(val > USHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else
                         {
-                            if(missing.ulongval == val)
+                            output[i] = (unsigned short) val;
+                            if(output[i] == ret_missing.ushortval)
                             {
-                                output[i] = ret_missing.ushortval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -22569,22 +22543,21 @@ NhlErrorTypes _NclItoushort
                         if(val > USHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else if(val < 0)
                         {
                             underflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else
                         {
-                            if(missing.int64val == val)
+                            output[i] = (unsigned short) val;
+                            if(output[i] == ret_missing.ushortval)
                             {
-                                output[i] = ret_missing.ushortval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -22623,17 +22596,15 @@ NhlErrorTypes _NclItoushort
                         if(val > USHRT_MAX)
                         {
                             overflowed ++;
+                            has_missing = 1;
                             output[i] = ret_missing.ushortval;
                         }
                         else
                         {
-                            if(missing.uint64val == val)
+                            output[i] = (unsigned short) val;
+                            if(output[i] == ret_missing.ushortval)
                             {
-                                output[i] = ret_missing.ushortval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned short) val;
+                                has_missing = 1;
                             }
                         }
                     }
@@ -22859,13 +22830,11 @@ NhlErrorTypes _NclItofloat
                                 }
                                 else if (dval > FLT_MAX)
                                 {
-                                    has_missing = 1;
                                     overflowed ++;
                                     output[i] = ret_missing.floatval;
                                 }
                                 else if (dval < (-FLT_MAX))
                                 {
-                                    has_missing = 1;
                                     underflowed ++;
                                     output[i] = ret_missing.floatval;
                                 }
@@ -22895,6 +22864,7 @@ NhlErrorTypes _NclItofloat
                             {
                                 NhlPError(NhlFATAL,NhlEUNKNOWN,
                                     "A bad value was passed to (string) tofloat, input strings must contain numeric digits, replacing with missing value");
+                                has_missing = 1;
                                 output[i] = ret_missing.floatval;
                             }
                             else if (dval > FLT_MAX)
