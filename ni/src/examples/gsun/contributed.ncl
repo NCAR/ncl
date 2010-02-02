@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.255 2010-02-02 00:58:17 shea Exp $
+;      $Id: contributed.ncl,v 1.256 2010-02-02 01:21:18 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5745,16 +5745,37 @@ undef("natgrid_Wrap")
 function natgrid_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
                       ,xo[*]:numeric,yo[*]:numeric)
 
-local fo, dimfi, nDim
+local fo, dimfi, nDimi, nDimo
 begin
   fo = natgrid (xi,yi,fi, xo,yo)            ; perform interpolation 
                                              
   dimfi= dimsizes(fi)
-  nDim = dimsizes(dimsizes(fi))                 ; rank: # of dimensions
+  nDimi= dimsizes(dimsizes(fi))                 ; rank: # of dimensions
 
   copy_VarAtts (fi, fo)                         ; copy variable attributes
-  if (nDim.ge.2) then                           ; copy coord vars
+  if (nDimi.ge.2) then                          ; copy coord vars
       copy_VarCoords_1(fi,fo)                   ; except for rightmost dim
+  end if
+
+  nDimo = dimsizes(dimsizes(fo))
+
+  dNam = getvardims( yo )
+  if (.not.ismissing(dNam)) then
+      fo!(nDimo-2) = dNam
+      fo&$dNam$    = yo
+  else
+      fo!(nDimo-2) = "y"
+      fo&y         = yo
+  end if
+  delete(dNam)
+
+  dNam = getvardims( xo )
+  if (.not.ismissing(dNam)) then
+      fo!(nDimo-1) = dNam
+      fo&$dNam$    = xo
+  else
+      fo!(nDimo-1) = "x"
+      fo&x         = xo
   end if
 
   return (fo)
@@ -5768,16 +5789,37 @@ function obj_anal_ic_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
                           ,xo[*]:numeric,yo[*]:numeric,rscan[*]:numeric \
                           ,opt[1]:logical)
 
-local fo, dimfi, nDim
+local fo, dimfi, nDimi, nDimo
 begin
   fo = obj_anal_ic (xi,yi,fi, xo,yo,rscan,opt)  ; perform interpolation 
                                              
-  dimfi= dimsizes(fi)
-  nDim = dimsizes(dimsizes(fi))                 ; rank: # of dimensions
+  dimfi = dimsizes(fi)
+  nDimi = dimsizes(dimsizes(fi))                ; rank: # of dimensions
 
   copy_VarAtts (fi, fo)                         ; copy variable attributes
-  if (nDim.ge.2) then                           ; copy coord vars
+  if (nDimi.ge.2) then                          ; copy coord vars
       copy_VarCoords_1(fi,fo)                   ; except for rightmost dim
+  end if
+
+  nDimo = dimsizes(dimsizes(fo))
+
+  dNam = getvardims( yo )
+  if (.not.ismissing(dNam)) then
+      fo!(nDimo-2) = dNam
+      fo&$dNam$    = yo
+  else
+      fo!(nDimo-2) = "y"
+      fo&y         = yo
+  end if
+  delete(dNam)
+
+  dNam = getvardims( xo )
+  if (.not.ismissing(dNam)) then
+      fo!(nDimo-1) = dNam
+      fo&$dNam$    = xo
+  else
+      fo!(nDimo-1) = "x"
+      fo&x         = xo
   end if
 
   return (fo)
