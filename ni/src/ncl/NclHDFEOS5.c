@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDFEOS5.c,v 1.5 2009-11-30 20:56:02 huangwei Exp $
+ *      $Id: NclHDFEOS5.c,v 1.6 2010-02-02 15:59:37 huangwei Exp $
  */
 /************************************************************************
 *									*
@@ -741,6 +741,9 @@ NclQuark path;
     tmp_ncl_names = (NclQuark *)NclMalloc(sizeof(NclQuark)*max_tmp);
 
     nsw = HE5_SWinqswath(NrmQuarkToString(path),buffer,&str_buf_size);
+
+    buffer[str_buf_size] = '\0';
+
     HE5_SWfid = HE5_SWopen(NrmQuarkToString(path),H5F_ACC_RDONLY);
 
     HDFEOS5ParseName(buffer,sw_hdf_names,sw_ncl_names,nsw);
