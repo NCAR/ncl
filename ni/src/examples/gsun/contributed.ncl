@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.254 2010-01-24 23:11:41 haley Exp $
+;      $Id: contributed.ncl,v 1.255 2010-02-02 00:58:17 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -5741,13 +5741,6 @@ end
 ; ******************************************************************
 ; Dennis Shea
 
-; wrapper for NCL functions "natgrds" and "natgrdd"
-; Note: The natgrd[s/d] functions are two of the few
-;       that require that all types be the same.
-; Note: because the (xi,yi) and/or (xo,yo) are no
-;       required to be monotonic, they may or may
-;       nor be coordinate variables.
-
 undef("natgrid_Wrap")
 function natgrid_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
                       ,xo[*]:numeric,yo[*]:numeric)
@@ -5755,6 +5748,29 @@ function natgrid_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
 local fo, dimfi, nDim
 begin
   fo = natgrid (xi,yi,fi, xo,yo)            ; perform interpolation 
+                                             
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; rank: # of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  if (nDim.ge.2) then                           ; copy coord vars
+      copy_VarCoords_1(fi,fo)                   ; except for rightmost dim
+  end if
+
+  return (fo)
+end
+
+; ******************************************************************
+; Dennis Shea
+
+undef("obj_anal_ic_Wrap")
+function obj_anal_ic_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
+                          ,xo[*]:numeric,yo[*]:numeric,rscan[*]:numeric \
+                          ,opt[1]:logical)
+
+local fo, dimfi, nDim
+begin
+  fo = obj_anal_ic (xi,yi,fi, xo,yo,rscan,opt)  ; perform interpolation 
                                              
   dimfi= dimsizes(fi)
   nDim = dimsizes(dimsizes(fi))                 ; rank: # of dimensions
@@ -11231,40 +11247,75 @@ begin
              if (rankx.eq.1) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      xReturn(NT) = dim_avg_n(x(ii) , nDim)
-                 else   ; default is "sum"
+                 end if
+                 if (arith.eq."sum") then
                      xReturn(NT) = dim_sum_n(x(ii) , nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xReturn(NT) = dim_min_n(x(ii) , nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xReturn(NT) = dim_max_n(x(ii) , nDim)
                  end if
              end if
 
              if (rankx.eq.2) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      xReturn(NT,:) = dim_avg_n(x(ii,:) , nDim)
-                 else   ; default is "sum"
+                 end if
+                 if (arith.eq."sum") then
                      xReturn(NT,:) = dim_sum_n(x(ii,:) , nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xReturn(NT,:) = dim_min_n(x(ii,:) , nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xReturn(NT,:) = dim_max_n(x(ii,:) , nDim)
                  end if
              end if
 
              if (rankx.eq.3) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      xReturn(NT,:,:) = dim_avg_n(x(ii,:,:) , nDim)
-                 else   ; default is "sum"
+                 end if
+                 if (arith.eq."sum") then
                      xReturn(NT,:,:) = dim_sum_n(x(ii,:,:) , nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xReturn(NT,:,:) = dim_min_n(x(ii,:,:) , nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xReturn(NT,:,:) = dim_max_n(x(ii,:,:) , nDim)
                  end if
              end if
 
              if (rankx.eq.4) then
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      xReturn(NT,:,:,:) = dim_avg_n(x(ii,:,:,:) , nDim)
-                 else   ; default is "sum"
+                 end if
+                 if (arith.eq."sum") then
                      xReturn(NT,:,:,:) = dim_sum_n(x(ii,:,:,:) , nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xReturn(NT,:,:,:) = dim_min_n(x(ii,:,:,:) , nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xReturn(NT,:,:,:) = dim_max_n(x(ii,:,:,:) , nDim)
                  end if
              end if
 
              if (rankx.eq.5) then        ; note the location of time
                  if (arith.eq."avg" .or. arith.eq."ave") then
                      xReturn(:,NT,:,:,:) = dim_avg_n(x(:,ii,:,:,:) , nDim)
-                 else   ; default is "sum"
+                 end if
+                 if (arith.eq."sum") then
                      xReturn(:,NT,:,:,:) = dim_sum_n(x(:,ii,:,:,:) , nDim)
+                 end if
+                 if (arith.eq."min") then
+                     xReturn(:,NT,:,:,:) = dim_min_n(x(:,ii,:,:,:) , nDim)
+                 end if
+                 if (arith.eq."max") then
+                     xReturn(:,NT,:,:,:) = dim_max_n(x(:,ii,:,:,:) , nDim)
                  end if
              end if
          end if
