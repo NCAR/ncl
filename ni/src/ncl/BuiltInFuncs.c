@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.250 2010-02-02 18:51:32 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.251 2010-02-03 17:11:35 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -17825,10 +17825,6 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
-                            if(ret_missing.intval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -17884,10 +17880,6 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
-                            if(ret_missing.intval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -17934,40 +17926,29 @@ NhlErrorTypes _NclItoint
                     {
                         str = NrmQuarkToString(ptr[i]);
     
-                        if(has_missing && (missing.stringval == ptr[i]))
+                        llval = _Nclstrtoll(str,&end);
+                        if (strcmp(end, str) == 0)
                         {
+                            has_missing = 1;
+                            NhlPError(NhlFATAL,NhlEUNKNOWN,
+                                "A bad value was passed to (string) tointeger, input strings must contain numeric digits, replacing with missing value");
+                            output[i] = ret_missing.intval;
+                        }
+                        else if (llval > INT_MAX)
+                        {
+                            has_missing = 1;
+                            overflowed ++;
+                            output[i] = ret_missing.intval;
+                        }
+                        else if (llval < INT_MIN)
+                        {
+                            has_missing = 1;
+                            underflowed ++;
                             output[i] = ret_missing.intval;
                         }
                         else
                         {
-                            llval = _Nclstrtoll(str,&end);
-                            if (strcmp(end, str) == 0)
-                            {
-                                has_missing = 1;
-                                NhlPError(NhlFATAL,NhlEUNKNOWN,
-                                    "A bad value was passed to (string) tointeger, input strings must contain numeric digits, replacing with missing value");
-                                output[i] = ret_missing.intval;
-                            }
-                            else if (llval > INT_MAX)
-                            {
-                                has_missing = 1;
-                                overflowed ++;
-                                output[i] = ret_missing.intval;
-                            }
-                            else if (llval < INT_MIN)
-                            {
-                                has_missing = 1;
-                                underflowed ++;
-                                output[i] = ret_missing.intval;
-                            }
-                            else
-                            {
-                                output[i] = (int) llval;
-                                if(output[i] == ret_missing.intval)
-                                {
-                                    has_missing = 1;
-                                }
-                            }
+                            output[i] = (int) llval;
                         }
                     }
     
@@ -18001,19 +17982,7 @@ NhlErrorTypes _NclItoint
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(missing.charval == val)
-                        {
-                            has_missing = 1;
-                            output[i] = ret_missing.intval;
-                        }
-                        else
-                        {
-                            output[i] = (int) val;
-                            if(output[i] == ret_missing.intval)
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (int) val;
                     }
                 }
                 break;
@@ -18031,10 +18000,6 @@ NhlErrorTypes _NclItoint
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(ret_missing.intval == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -18054,10 +18019,6 @@ NhlErrorTypes _NclItoint
                     {
                         val = ptr[i];
                         output[i] = (int) val;
-                        if(output[i] == ret_missing.intval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -18077,10 +18038,6 @@ NhlErrorTypes _NclItoint
                     {
                         ival = (int) ptr[i];
                         output[i] = ival;
-                        if(ret_missing.intval == ival)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -18094,8 +18051,6 @@ NhlErrorTypes _NclItoint
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(output[i] == ret_missing.intval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -18124,10 +18079,6 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
-                            if(output[i] == ret_missing.intval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -18170,10 +18121,6 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
-                            if(ret_missing.intval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -18217,10 +18164,6 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
-                            if(ret_missing.intval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
    
@@ -18263,10 +18206,6 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
-                            if(ret_missing.intval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -18310,10 +18249,6 @@ NhlErrorTypes _NclItoint
                         else
                         {
                             output[i] = (int) val;
-                            if(ret_missing.intval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -18433,10 +18368,6 @@ NhlErrorTypes _NclItouint
                         else
                         {
                             output[i] = (unsigned int) val;
-                            if(ret_missing.uintval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -18489,10 +18420,6 @@ NhlErrorTypes _NclItouint
                         else
                         {
                             output[i] = (unsigned int) val;
-                            if(ret_missing.uintval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -18567,8 +18494,6 @@ NhlErrorTypes _NclItouint
                         else
                         {
                             output[i] = (unsigned int) llval;
-                            if(output[i] == ret_missing.uintval)
-                                has_missing = 1;
                         }
                     }
     
@@ -18602,15 +18527,7 @@ NhlErrorTypes _NclItouint
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(ret_missing.charval == val)
-                        {
-                            has_missing = 1;
-                            output[i] = ret_missing.uintval;
-                        }
-                        else
-                        {
-                            output[i] = (unsigned int) val;
-                        }
+                        output[i] = (unsigned int) val;
                     }
                 }
                 break;
@@ -18633,12 +18550,6 @@ NhlErrorTypes _NclItouint
                         {
                             has_missing = 1;
                             underflowed ++;
-                            output[i] = ret_missing.uintval;
-                        }
-                        else
-                        if(ret_missing.byteval == val)
-                        {
-                            has_missing = 1;
                             output[i] = ret_missing.uintval;
                         }
                         else
@@ -18679,15 +18590,7 @@ NhlErrorTypes _NclItouint
                         }
                         else
                         {
-                            if(ret_missing.uintval == val)
-                            {
-                                has_missing = 1;
-                                output[i] = ret_missing.uintval;
-                            }
-                            else
-                            {
-                                output[i] = (unsigned int) val;
-                            }
+                            output[i] = (unsigned int) val;
                         }
                     }
 
@@ -18714,10 +18617,6 @@ NhlErrorTypes _NclItouint
                     for(i = 0; i < total_elements; i++)
                     {
                         uival = (unsigned int) ptr[i];
-                        if(ret_missing.uintval == uival)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = uival;
                     }
                 }
@@ -18746,10 +18645,6 @@ NhlErrorTypes _NclItouint
                             else
                             {
                                 output[i] = (unsigned int) val;
-                                if(ret_missing.uintval == val)
-                                {
-                                    has_missing = 1;
-                                }
                             }
                         }
                     }
@@ -18793,8 +18688,6 @@ NhlErrorTypes _NclItouint
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(ret_missing.uintval == output[i])
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -18829,10 +18722,6 @@ NhlErrorTypes _NclItouint
                         else
                         {
                             output[i] = (unsigned int) val;
-                            if(ret_missing.uintval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -18876,10 +18765,6 @@ NhlErrorTypes _NclItouint
                         else
                         {
                             output[i] = (unsigned int) val;
-                            if(ret_missing.uintval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -18922,10 +18807,6 @@ NhlErrorTypes _NclItouint
                         else
                         {
                             output[i] = (unsigned int) val;
-                            if(ret_missing.uintval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -18969,10 +18850,6 @@ NhlErrorTypes _NclItouint
                         else
                         {
                             output[i] = (unsigned int) val;
-                            if(ret_missing.uintval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -19094,10 +18971,6 @@ NhlErrorTypes _NclItolong
                         else
                         {
                             output[i] = (long) val;
-                            if(ret_missing.longval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -19153,10 +19026,6 @@ NhlErrorTypes _NclItolong
                         else
                         {
                             output[i] = (long) val;
-                            if(ret_missing.longval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -19233,10 +19102,6 @@ NhlErrorTypes _NclItolong
                             else
                             {
                                 output[i] = (long) llval;
-                                if(ret_missing.longval == output[i])
-                                {
-                                    has_missing = 1;
-                                }
                             }
                         }
                     }
@@ -19271,15 +19136,7 @@ NhlErrorTypes _NclItolong
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(ret_missing.longval == val)
-                        {
-                            has_missing = 1;
-                            output[i] = ret_missing.longval;
-                        }
-                        else
-                        {
-                            output[i] = (long) val;
-                        }
+                        output[i] = (long) val;
                     }
                 }
                 break;
@@ -19298,15 +19155,7 @@ NhlErrorTypes _NclItolong
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(ret_missing.longval == val)
-                        {
-                            has_missing = 1;
-                            output[i] = ret_missing.longval;
-                        }
-                        else
-                        {
-                            output[i] = (long) val;
-                        }
+                        output[i] = (long) val;
                     }
                 }
                 break;
@@ -19325,15 +19174,7 @@ NhlErrorTypes _NclItolong
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(ret_missing.longval == val)
-                        {
-                            has_missing = 1;
-                            output[i] = ret_missing.longval;
-                        }
-                        else
-                        {
-                            output[i] = (long) val;
-                        }
+                        output[i] = (long) val;
                     }
                 }
                 break;
@@ -19352,10 +19193,6 @@ NhlErrorTypes _NclItolong
                     for(i = 0; i < total_elements; i++)
                     {
                         val = (long) ptr[i];
-                        if(ret_missing.longval == val)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = val;
                     }
                 }
@@ -19375,10 +19212,6 @@ NhlErrorTypes _NclItolong
                     for(i = 0; i < total_elements; i++)
                     {
                         val = (long) ptr[i];
-                        if(ret_missing.longval == val)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = val;
                     }
                 }
@@ -19410,10 +19243,6 @@ NhlErrorTypes _NclItolong
                         else
                         {
                             output[i] = (long) val;
-                            if(ret_missing.longval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -19440,10 +19269,6 @@ NhlErrorTypes _NclItolong
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(output[i] == ret_missing.longval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -19472,10 +19297,6 @@ NhlErrorTypes _NclItolong
                         else
                         {
                             output[i] = (long) val;
-                            if(ret_missing.longval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -19518,10 +19339,6 @@ NhlErrorTypes _NclItolong
                         else
                         {
                             output[i] = (long) val;
-                            if(output[i] == ret_missing.longval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -19565,10 +19382,6 @@ NhlErrorTypes _NclItolong
                         else
                         {
                             output[i] = (long) val;
-                            if(output[i] == ret_missing.longval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -19690,10 +19503,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) val;
-                            if(ret_missing.ulongval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -19750,10 +19559,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) val;
-                            if(ret_missing.ulongval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -19829,8 +19634,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) llval;
-                            if(output[i] == ret_missing.ulongval)
-                                has_missing = 1;
                         }
                     }
     
@@ -19863,10 +19666,6 @@ NhlErrorTypes _NclItoulong
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned long) ptr[i];
-                        if(output[i] == ret_missing.ulongval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -19894,10 +19693,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) val;
-                            if(output[i] == ret_missing.ulongval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -19935,10 +19730,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             ulval = (unsigned long) sval;
-                            if(ret_missing.ulongval == ulval)
-                            {
-                                has_missing = 1;
-                            }
                             output[i] = ulval;
                         }
                     }
@@ -19966,10 +19757,6 @@ NhlErrorTypes _NclItoulong
                     for(i = 0; i < total_elements; i++)
                     {
                         ulval = (unsigned long) ptr[i];
-                        if(ret_missing.ulongval == ulval)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = ulval;
                     }
                 }
@@ -19999,10 +19786,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) val;
-                            if(output[i] == ret_missing.ulongval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
    
@@ -20028,10 +19811,6 @@ NhlErrorTypes _NclItoulong
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned long) ptr[i];
-                        if(output[i] == ret_missing.ulongval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20060,10 +19839,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) val;
-                            if(output[i] == ret_missing.ulongval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
   
@@ -20089,10 +19864,6 @@ NhlErrorTypes _NclItoulong
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(output[i] == ret_missing.ulongval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20127,10 +19898,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) val;
-                            if(output[i] == ret_missing.ulongval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -20174,10 +19941,6 @@ NhlErrorTypes _NclItoulong
                         else
                         {
                             output[i] = (unsigned long) val;
-                            if(output[i] == ret_missing.ulongval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -20299,10 +20062,6 @@ NhlErrorTypes _NclItoint64
                         else
                         {
                             output[i] = (long long) val;
-                            if(ret_missing.int64val == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -20359,10 +20118,6 @@ NhlErrorTypes _NclItoint64
                         else
                         {
                             output[i] = (long long) val;
-                            if(ret_missing.int64val == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -20435,8 +20190,6 @@ NhlErrorTypes _NclItoint64
                         else
                         {
                             output[i] = (long long) llval;
-                            if(output[i] == ret_missing.int64val)
-                                has_missing = 1;
                         }
                     }
     
@@ -20471,10 +20224,6 @@ NhlErrorTypes _NclItoint64
                     {
                         val = ptr[i];
                         output[i] = (long long) val;
-                        if(output[i] == ret_missing.int64val)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20494,10 +20243,6 @@ NhlErrorTypes _NclItoint64
                     {
                         val = ptr[i];
                         output[i] = (long long) val;
-                        if(ret_missing.int64val == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20516,10 +20261,6 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         llval = (long long) ptr[i];
-                        if(ret_missing.int64val == llval)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = llval;
                     }
                 }
@@ -20539,10 +20280,6 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         llval = (long long) ptr[i];
-                        if(ret_missing.int64val == llval)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = llval;
                     }
                 }
@@ -20561,10 +20298,6 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (long long) ptr[i];
-                        if(ret_missing.int64val == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20582,10 +20315,6 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (long long) ptr[i];
-                        if(ret_missing.int64val == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20603,10 +20332,6 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (long long) ptr[i];
-                        if(ret_missing.int64val == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20626,10 +20351,6 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (long long) ptr[i];
-                        if(ret_missing.int64val == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20647,10 +20368,6 @@ NhlErrorTypes _NclItoint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(ret_missing.int64val == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -20679,10 +20396,6 @@ NhlErrorTypes _NclItoint64
                         else
                         {
                             output[i] = (long long) val;
-                            if(ret_missing.int64val == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -20804,10 +20517,6 @@ NhlErrorTypes _NclItouint64
                         else
                         {
                             output[i] = (unsigned long long) val;
-                            if(ret_missing.uint64val == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -20864,10 +20573,6 @@ NhlErrorTypes _NclItouint64
                         else
                         {
                             output[i] = (unsigned long long) val;
-                            if(ret_missing.uint64val == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -20937,8 +20642,6 @@ NhlErrorTypes _NclItouint64
                             else
                             {
                                 output[i] = (unsigned long long) llval;
-                                if(output[i] == ret_missing.uint64val)
-                                    has_missing = 1;
                             }
                         }
                     }
@@ -20982,10 +20685,6 @@ NhlErrorTypes _NclItouint64
                         else
                         {
                             output[i] = (unsigned long long) val;
-                            if(output[i] == ret_missing.uint64val)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -21011,10 +20710,6 @@ NhlErrorTypes _NclItouint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned long long) ptr[i];
-                        if(output[i] == ret_missing.uint64val)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -21043,10 +20738,6 @@ NhlErrorTypes _NclItouint64
                         else
                         {
                             output[i] = (unsigned long long) val;
-                            if(output[i] == ret_missing.uint64val)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -21073,10 +20764,6 @@ NhlErrorTypes _NclItouint64
                     for(i = 0; i < total_elements; i++)
                     {
                         val = (unsigned long long) ptr[i];
-                        if(ret_missing.uint64val == val)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = val;
                     }
                 }
@@ -21128,10 +20815,6 @@ NhlErrorTypes _NclItouint64
                             else
                             {
                                 output[i] = (unsigned long long) val;
-                                if(ret_missing.uint64val == output[i])
-                                {
-                                    has_missing = 1;
-                                }
                             }
                         }
                     }
@@ -21158,10 +20841,6 @@ NhlErrorTypes _NclItouint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned long long) ptr[i];
-                        if(output[i] == ret_missing.uint64val)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -21190,10 +20869,6 @@ NhlErrorTypes _NclItouint64
                         else
                         {
                             output[i] = (unsigned long long) val;
-                            if(output[i] == ret_missing.uint64val)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -21219,10 +20894,6 @@ NhlErrorTypes _NclItouint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned long long) ptr[i];
-                        if(output[i] == ret_missing.uint64val)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -21251,10 +20922,6 @@ NhlErrorTypes _NclItouint64
                         else
                         {
                             output[i] = (unsigned long long) val;
-                            if(output[i] == ret_missing.uint64val)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -21281,10 +20948,6 @@ NhlErrorTypes _NclItouint64
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned long long) ptr[i];
-                        if(output[i] == ret_missing.uint64val)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -21399,10 +21062,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -21458,10 +21117,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -21538,10 +21193,6 @@ NhlErrorTypes _NclItoshort
                             else
                             {
                                 output[i] = (short) llval;
-                                if(output[i] == ret_missing.shortval)
-                                {
-                                    has_missing = 1;
-                                }
                             }
                         }
                     }
@@ -21575,10 +21226,6 @@ NhlErrorTypes _NclItoshort
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (short) ptr[i];
-                        if(output[i] == ret_missing.shortval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -21596,10 +21243,6 @@ NhlErrorTypes _NclItoshort
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (short) ptr[i];
-                        if(output[i] == ret_missing.shortval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -21617,10 +21260,6 @@ NhlErrorTypes _NclItoshort
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (short) ptr[i];
-                        if(output[i] == ret_missing.shortval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -21649,10 +21288,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
   
@@ -21695,10 +21330,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
    
@@ -21742,10 +21373,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -21788,10 +21415,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -21835,10 +21458,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -21881,10 +21500,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -21928,10 +21543,6 @@ NhlErrorTypes _NclItoshort
                         else
                         {
                             output[i] = (short) val;
-                            if(output[i] == ret_missing.shortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22054,10 +21665,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22113,10 +21720,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22192,10 +21795,6 @@ NhlErrorTypes _NclItoushort
                             else
                             {
                                 output[i] = (unsigned short) llval;
-                                if(output[i] == ret_missing.ushortval)
-                                {
-                                    has_missing = 1;
-                                }
                             }
                         }
                     }
@@ -22239,10 +21838,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -22268,10 +21863,6 @@ NhlErrorTypes _NclItoushort
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = (unsigned short) ptr[i];
-                        if(output[i] == ret_missing.ushortval)
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -22300,10 +21891,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -22330,10 +21917,6 @@ NhlErrorTypes _NclItoushort
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(val == ret_missing.ushortval)
-                        {
-                            has_missing = 1;
-                        }
                         output[i] = val;
                     }
                 }
@@ -22369,10 +21952,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(ret_missing.ushortval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
    
@@ -22416,10 +21995,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(ret_missing.ushortval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22462,10 +22037,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22509,10 +22080,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22555,10 +22122,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -22602,10 +22165,6 @@ NhlErrorTypes _NclItoushort
                         else
                         {
                             output[i] = (unsigned short) val;
-                            if(output[i] == ret_missing.ushortval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22736,11 +22295,6 @@ NhlErrorTypes _NclItofloat
                                 output[i] = 0.0;
                             else
                                 output[i] = (float) val;
-
-                            if(ret_missing.floatval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -22773,10 +22327,6 @@ NhlErrorTypes _NclItofloat
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(ret_missing.floatval == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
@@ -22889,8 +22439,6 @@ NhlErrorTypes _NclItofloat
                                 else
                                 {
                                     output[i] = (float) dval;
-                                    if(output[i] == ret_missing.floatval)
-                                        has_missing = 1;
                                 }
                             }
                         }
@@ -22921,30 +22469,11 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.byteval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.byteval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(output[i] == ret_missing.floatval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
@@ -22958,36 +22487,16 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.charval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.charval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(output[i] == ret_missing.floatval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
             case NCL_short:
                 {
-                    short val;
                     short *ptr;
 
                     ptr = (short *) in_value;
@@ -22995,36 +22504,16 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.shortval;
-    
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.shortval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(output[i] == ret_missing.floatval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
             case NCL_ushort:
                 {
-                    unsigned short val;
                     unsigned short *ptr;
 
                     ptr = (unsigned short *) in_value;
@@ -23032,36 +22521,16 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.ushortval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.ushortval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(output[i] == ret_missing.floatval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
             case NCL_int:
                 {
-                    int val;
                     int *ptr;
 
                     ptr = (int *) in_value;
@@ -23069,36 +22538,16 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.intval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.intval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(ret_missing.floatval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
             case NCL_uint:
                 {
-                    unsigned int val;
                     unsigned int *ptr;
 
                     ptr = (unsigned int *) in_value;
@@ -23106,36 +22555,16 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.uintval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.uintval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            { 
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(ret_missing.floatval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
             case NCL_long:
                 {
-                    long val;
                     long *ptr;
 
                     ptr = (long *) in_value;
@@ -23143,30 +22572,11 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.longval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.longval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(ret_missing.floatval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
@@ -23180,36 +22590,17 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.ulongval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.ulongval)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(ret_missing.floatval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        val = ptr[i];
+                        output[i] = (float) val;
                     }
                 }
                 break;
             case NCL_int64:
                 {
-                    long long val;
                     long long *ptr;
 
                     ptr = (long long *) in_value;
@@ -23217,30 +22608,11 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.int64val;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.int64val)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(ret_missing.floatval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
@@ -23254,30 +22626,11 @@ NhlErrorTypes _NclItofloat
                     if(has_missing)
                     {
                         ret_missing.floatval = (float) missing.uint64val;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.uint64val)
-                            {
-                               output[i] = ret_missing.floatval;
-                            }
-                            else
-                            {
-                               output[i] = (float) val;
-                            }
-                        } 
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (float) ptr[i];
-                            if(ret_missing.floatval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (float) ptr[i];
                     }
                 }
                 break;
@@ -23379,8 +22732,6 @@ NhlErrorTypes _NclItostring
                         strout = (char *) NclMalloc(strlen(strin) + 1);
                         sprintf(strout, "%s", strin);
                         output[i] = NrmStringToQuark(strout);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                         NclFree(strout);
                     }
                 }
@@ -23401,8 +22752,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%f", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23422,8 +22771,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%f", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23443,8 +22790,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%d", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23464,8 +22809,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%c", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23485,8 +22828,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%hd", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23506,8 +22847,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%hu", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23527,8 +22866,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%d", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23548,8 +22885,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%u", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23569,8 +22904,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%ld", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23590,8 +22923,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%lu", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23611,8 +22942,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%lld", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23632,8 +22961,6 @@ NhlErrorTypes _NclItostring
                     {
                         sprintf(buffer, "%llu", ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23751,8 +23078,6 @@ NhlErrorTypes _NclItostring_with_format
                         strout = (char *) NclMalloc(strlen(strin) + 1);
                         sprintf(strout, fmt, strin);
                         output[i] = NrmStringToQuark(strout);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                         NclFree(strout);
                     }
                 }
@@ -23773,8 +23098,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23794,8 +23117,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23815,8 +23136,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23836,8 +23155,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23857,8 +23174,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23878,8 +23193,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23899,8 +23212,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23920,8 +23231,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23941,8 +23250,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23962,8 +23269,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -23983,8 +23288,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -24004,8 +23307,6 @@ NhlErrorTypes _NclItostring_with_format
                     {
                         sprintf(buffer, fmt, ptr[i]);
                         output[i] = NrmStringToQuark(buffer);
-                        if(output[i] == ret_missing.stringval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -24101,16 +23402,11 @@ NhlErrorTypes _NclItodouble
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(ret_missing.doubleval == output[i])
-                        {
-                            has_missing = 1;
-                        }
                     }
                 }
                 break;
             case NCL_float:
                 {
-                    float val;
                     float *ptr;
 
                     ptr = (float *) in_value;
@@ -24118,27 +23414,11 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.floatval;
-                   
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(missing.floatval == val)
-                            {
-                                has_missing = 1;
-                            }
-                            output[i] = (double) val;
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(ret_missing.doubleval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
@@ -24214,7 +23494,6 @@ NhlErrorTypes _NclItodouble
                 break;
             case NCL_byte:
                 {
-                    char val;
                     char *ptr;
 
                     ptr = (char *) in_value;
@@ -24222,36 +23501,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.byteval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.byteval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(output[i] == ret_missing.doubleval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_char:
                 {
-                    unsigned char val;
                     unsigned char *ptr;
 
                     ptr = (unsigned char *) in_value;
@@ -24259,37 +23518,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.charval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.charval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
-                    {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
 
-                            if(output[i] == ret_missing.doubleval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_short:
                 {
-                    short val;
                     short *ptr;
 
                     ptr = (short *) in_value;
@@ -24297,36 +23535,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.shortval;
-    
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.shortval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(output[i] == ret_missing.doubleval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_ushort:
                 {
-                    unsigned short val;
                     unsigned short *ptr;
 
                     ptr = (unsigned short *) in_value;
@@ -24334,36 +23552,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.ushortval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.ushortval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(output[i] == ret_missing.doubleval)
-                            {
-                               has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_int:
                 {
-                    int val;
                     int *ptr;
 
                     ptr = (int *) in_value;
@@ -24371,36 +23569,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.intval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.intval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(ret_missing.doubleval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_uint:
                 {
-                    unsigned int val;
                     unsigned int *ptr;
 
                     ptr = (unsigned int *) in_value;
@@ -24408,36 +23586,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.uintval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.uintval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            { 
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(ret_missing.doubleval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_long:
                 {
-                    long val;
                     long *ptr;
 
                     ptr = (long *) in_value;
@@ -24445,36 +23603,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.longval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.longval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(ret_missing.doubleval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_ulong:
                 {
-                    unsigned long val;
                     unsigned long *ptr;
     
                     ptr = (unsigned long *) in_value;
@@ -24482,36 +23620,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.ulongval;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.ulongval)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(ret_missing.doubleval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_int64:
                 {
-                    long long val;
                     long long *ptr;
 
                     ptr = (long long *) in_value;
@@ -24519,36 +23637,16 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.int64val;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.int64val)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        }
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(ret_missing.doubleval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
             case NCL_uint64:
                 {
-                    unsigned long long val;
                     unsigned long long *ptr;
 
                     ptr = (unsigned long long *) in_value;
@@ -24556,30 +23654,11 @@ NhlErrorTypes _NclItodouble
                     if(has_missing)
                     {
                         ret_missing.doubleval = (double) missing.uint64val;
-
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            val = ptr[i];
-                            if(val == missing.uint64val)
-                            {
-                               output[i] = ret_missing.doubleval;
-                            }
-                            else
-                            {
-                               output[i] = (double) val;
-                            }
-                        } 
                     }
-                    else
+
+                    for(i = 0; i < total_elements; i++)
                     {
-                        for(i = 0; i < total_elements; i++)
-                        {
-                            output[i] = (double) ptr[i];
-                            if(ret_missing.doubleval == output[i])
-                            {
-                                has_missing = 1;
-                            }
-                        }
+                        output[i] = (double) ptr[i];
                     }
                 }
                 break;
@@ -24692,10 +23771,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (byte) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -24749,10 +23824,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.byteval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -24861,15 +23932,7 @@ NhlErrorTypes _NclItobyte
                     for(i = 0; i < total_elements; i++)
                     {
                         val = ptr[i];
-                        if(ret_missing.byteval == val)
-                        {
-                            has_missing = 1;
-                            output[i] = ret_missing.byteval;
-                        }
-                        else
-                        {
-                            output[i] = val;
-                        }
+                        output[i] = val;
                     }
                 }
                 break;
@@ -24897,10 +23960,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -24943,10 +24002,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(output[i] == ret_missing.byteval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -24990,10 +24045,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(output[i] == ret_missing.byteval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
   
@@ -25036,10 +24087,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
    
@@ -25083,10 +24130,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25129,10 +24172,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25176,10 +24215,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25222,10 +24257,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -25269,10 +24300,6 @@ NhlErrorTypes _NclItobyte
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.byteval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25393,10 +24420,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.charval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25450,10 +24473,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (char) val;
-                            if(ret_missing.charval == output[i])
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25533,10 +24552,6 @@ NhlErrorTypes _NclItochar
                             else
                             {
                                 output[i] = (unsigned char) lval;
-                                if(ret_missing.charval == output[i])
-                                {
-                                    has_missing = 1;
-                                }
                             }
                         }
                     }
@@ -25570,8 +24585,6 @@ NhlErrorTypes _NclItochar
                     for(i = 0; i < total_elements; i++)
                     {
                         output[i] = ptr[i];
-                        if(output[i] == ret_missing.charval)
-                            has_missing = 1;
                     }
                 }
                 break;
@@ -25599,10 +24612,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -25645,10 +24654,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -25692,10 +24697,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
   
@@ -25738,10 +24739,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
    
@@ -25785,10 +24782,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25831,10 +24824,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25878,10 +24867,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
@@ -25924,10 +24909,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
 
@@ -25972,10 +24953,6 @@ NhlErrorTypes _NclItochar
                         else
                         {
                             output[i] = (unsigned char) val;
-                            if(output[i] == ret_missing.charval)
-                            {
-                                has_missing = 1;
-                            }
                         }
                     }
     
