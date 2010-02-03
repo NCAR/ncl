@@ -370,8 +370,10 @@ if [ $INSTALL_HDFEOS5 ]
   if [ -d "$HDFEOS5_DIR" ]
   then
     cd $HDFEOS5_DIR
+    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
     echo "Building $HDFEOS5_DIR..."
-    ./configure --enable-static --with-hdf\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+#    ./configure --enable-static --with-hdf\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+    ./configure --with-hdf5=\=$PREFIX CFLAGS\=$CFLAGS_HE5 --with-szlib=\=$PREFIX --prefix\=$PREFIX
     make all install
     cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]
@@ -661,9 +663,7 @@ if [ $INSTALL_EXPAT ]
   then
     cd $EXPAT_DIR
     echo "Building $EXPAT_DIR..."
-# This doesn't seem to work, but maybe we don't need expat...
-#    ./configure --disable-shared --prefix\=$PREFIX
-    ./configure --prefix\=$PREFIX
+    ./configure --disable-shared --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
@@ -692,7 +692,7 @@ if [ $INSTALL_FREETYPE ]
   then
     cd $FREETYPE_DIR
     echo "Building $FREETYPE_DIR..."
-    ./configure --prefix\=$PREFIX
+    ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
@@ -726,7 +726,7 @@ if [ $INSTALL_FONTCONFIG ]
     export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
     export PATH="$PREFIX/bin:$PATH"
 
-    ./configure --prefix\=$PREFIX
+    ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
@@ -755,7 +755,7 @@ if [ $INSTALL_PIXMAN ]
   then
     cd $PIXMAN_DIR
     echo "Building $PIXMAN_DIR..."
-    ./configure --prefix\=$PREFIX
+    ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
@@ -785,7 +785,7 @@ if [ $INSTALL_CAIRO ]
   then
     cd $CAIRO_DIR
     echo "Building $CAIRO_DIR..."
-    ./configure --prefix\=$PREFIX
+    ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
