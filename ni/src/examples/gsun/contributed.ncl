@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.256 2010-02-02 01:21:18 shea Exp $
+;      $Id: contributed.ncl,v 1.257 2010-02-03 21:31:50 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11396,3 +11396,109 @@ begin
     return( xReturn ) 
 end
  
+;**********************************************************
+undef("mergeLevelSfc")
+function mergeLevelSfc (x, xsfc, levind[1]:integer)
+; levind .ge. 0 top-to-bot ordering
+; levind .lt. 0 bot-to-top ordering
+;
+; rank 1: x(lev),  xsfc(1)
+; rank 2: x(time,lev),  xsfc(time)
+; rank 3: x(lev,lat,lon),  xsfc(lat,lon)
+; rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
+;
+local dimx, dimxs, rankx, rankxs, klev, k1, k2
+begin
+  dimx   = dimsizes(x)
+  rankx  = dimsizes(dimx)
+  dimxs  = dimsizes(xsfc)
+  rankxs = dimsizes(dimxs)
+
+;     rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
+  if (rankx.eq.4 .and. rankxs.eq.3) then
+      klev    = dimx(1)+1
+      dimx(1) = klev
+      xNew    = new( dimx, typeof(x), getFillValue(x) )
+      if (levind.lt.0) then
+          xNew(:, 1:  ,:,:) = (/ x /)
+          xNew(:, 0:0 ,:,:) = (/ xsfc /)
+      else
+          k1  = klev-1
+          k2  = klev-2
+          xNew(:, 0:k2,:,:) = (/ x /)
+          xNew(:,k1:k1,:,:) = (/ xsfc /)
+      end if
+
+      xNew!0  = x!0
+      xNew!1  = str_switch(x!1)   ; new name
+      xNew!2  = x!2
+      xNew!3  = x!3
+      xNew&$xNew!0$ = x&$x!0$     ; time
+      xNew&$xNew!2$ = x&$x!2$     ; lat
+      xNew&$xNew!3$ = x&$x!3$     ; lon
+  end if
+
+;     rank 3: x(lev,lat,lon),  xsfc(lat,lon)
+  if (rankx.eq.3 .and. rankxs.eq.2) then
+      klev    = dimx(0)+1
+      dimx(0) = klev
+      xNew    = new( dimx, typeof(x), getFillValue(x) )
+      if (levind.lt.0) then
+          xNew( 1:  ,:,:) = (/ x /)
+          xNew( 0:0 ,:,:) = (/ xsfc /)
+      else
+          k1  = klev-1
+          k2  = klev-2
+          xNew( 0:k2,:,:) = (/ x /)
+          xNew(k1:k1,:,:) = (/ xsfc /)
+      end if
+
+      xNew!0  = str_switch(x!0)   ; new name
+      xNew!1  = x!1
+      xNew!2  = x!2
+      xNew&$xNew!1$ = x&$x!1$     ; lat
+      xNew&$xNew!2$ = x&$x!2$     ; lon
+  end if
+
+;     rank 1: x(lev),  xsfc(1)
+  if (rankx.eq.1 .and. rankxs.eq.1) then
+      klev    = dimx(0)+1
+      dimx(0) = klev
+      xNew    = new( dimx, typeof(x), getFillValue(x) )
+      if (levind.lt.0) then
+          xNew( 1:  ) = (/ x /)
+          xNew( 0:0 ) = (/ xsfc /)
+      else
+          k1  = klev-1
+          k2  = klev-2
+          xNew( 0:k2) = (/ x /)
+          xNew(k1:k1) = (/ xsfc /)
+      end if
+
+      xNew!0  = str_switch(x!0)   ; new name
+  end if
+
+;     rank 2: x(time,lev),  xsfc(time)
+  if (rankx.eq.2 .and. rankxs.eq.1) then
+      klev    = dimx(1)+1
+      dimx(1) = klev
+      xNew    = new( dimx, typeof(x), getFillValue(x) )
+      if (levind.lt.0) then
+          xNew(:, 1:  ) = (/ x /)
+          xNew(:, 0:0 ) = (/ xsfc /)
+      else
+          k1  = klev-1
+          k2  = klev-2
+          xNew(:, 0:k2) = (/ x /)
+          xNew(:,k1:k1) = (/ xsfc /)
+      end if
+
+      xNew!0  = x!0
+      xNew!1  = str_switch(x!1)   ; new name
+      xNew&$xNew!0$ = x&$x!0$     ; time
+  end if
+
+  copy_VarAtts(x, xNew)
+
+  return(xNew)
+end
