@@ -92,7 +92,8 @@ c
 c
 c Sanity checks
 c
-      if(bin_factor .lt. 0.05d0) then
+c djs if(bin_factor .lt. 0.05d0) then
+      if(bin_factor .lt. 1.00d0) then
          write(6,*) 'ERROR ("BINNING"): binning factor out of range'
          write(6,*) 'bin_factor = ', bin_factor
          call abort
