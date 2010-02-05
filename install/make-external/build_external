@@ -149,7 +149,7 @@ G2CLIB_DIR="g2clib-1.1.9"
 GDAL_DIR="gdal-1.6.3"
 HDF4_DIR="HDF4.2r4"
 HDF5_DIR="hdf5-1.8.4"
-HDFEOS5_DIR="HDF-EOS5.1.12"
+HDFEOS5_DIR="hdfeos5-1.12"
 JASPER_DIR="jasper-1.900.1"
 JPEG_DIR="jpeg-7"
 NETCDF_DIR="netcdf-4.1-beta2"
@@ -174,7 +174,7 @@ NC_DIR="libnc-dap-3.7.4"
 
 # HDF-EOS cannot be built by this script. It requires running
 # an interactive script, "bin/INSTALL-HDFEOS".
-# HDFEOS_DIR="HDF-EOS2.16v1.00"
+# HDFEOS_DIR="hdfeos-1.16"
 #
 # Also, on LINUX systems, you will need to do one of :
 # export LINUX_BRAND linux32
