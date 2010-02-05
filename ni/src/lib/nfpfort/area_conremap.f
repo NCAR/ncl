@@ -1,7 +1,7 @@
 C NCLFORTSTART
-      subroutine binning(plev   ,plato   ,plono   ,plat    ,plon ,
-     1                   xx     ,yy      ,clat    ,clon    ,clato,
-     2                   clono  ,nlat    ,nlato   ,bin_factor    )
+      subroutine cremapbin(plev   ,plato   ,plono   ,plat    ,plon ,
+     1                     xx     ,yy      ,clat    ,clon    ,clato,
+     2                     clono  ,nlat    ,nlato   ,bin_factor    )
 c
 c--------1---------2---------3---------4---------5---------6---------7--
 c
@@ -94,28 +94,28 @@ c Sanity checks
 c
 c djs if(bin_factor .lt. 0.05d0) then
       if(bin_factor .lt. 1.00d0) then
-         write(6,*) 'ERROR ("BINNING"): binning factor out of range'
+         write(6,*) 'ERROR ("CREMAPBIN"): binning factor out of range'
          write(6,*) 'bin_factor = ', bin_factor
          call abort
       end if
       if(clat(3) - clat(2) .lt. zero) then
-         write(6,*) 'ERROR ("BINNING"): Input latitudes oriented N->S'
-         write(6,*) '                   Should be S->N'
+         write(6,*) 'ERROR ("CREMAPBIN"): Input latitudes oriented'
+         write(6,*) '                     N->S. Should be S->N'
          call abort
       end if
       if(clato(3) - clato(2) .lt. zero) then
-         write(6,*) 'ERROR ("BINNING"):  Output latitudes oriented N->S'
-         write(6,*) '                    Should be S->N'
+         write(6,*) 'ERROR ("CREMAPBIN"):  Output latitudes oriented'
+         write(6,*) '                      N->S. Should be S->N'
          call abort
       end if
       if(clon(3) - clon(2) .lt. zero) then
-         write(6,*) 'ERROR ("BINNING"): Input longitudes oriented E->W'
-         write(6,*) '                   Should be W->E'
+         write(6,*) 'ERROR ("CREMAPBIN"): Input longitudes oriented'
+         write(6,*) '                     E->W. Should be W->E'
          call abort
       end if
       if(clono(3) - clono(2) .lt. zero) then
-         write(6,*) 'ERROR ("BINNING"): Output longitudes oriented E->W'
-         write(6,*) '                   Should be W->E'
+         write(6,*) 'ERROR ("CREMAPBIN"): Output longitudes oriented'
+         write(6,*) '                     E->W. Should be W->E'
          call abort
       end if
 c
@@ -138,7 +138,7 @@ c
       allocate( gw_glob  (nlat) )
       if(grid_flag .eq. 1) then
          if(nlat .lt. plat) then
-            write(6,*) 'ERROR ("BINNING"): number of latitudes for '
+            write(6,*) 'ERROR ("CREMAPBIN"): number of latitudes for '
             write(6,*) 'the input grid cannot be greater than the  '
             write(6,*) 'global number of latitudes for that grid   '
             write(6,*) 'resolution'
@@ -152,7 +152,7 @@ c
       allocate( gwo_glob  (nlato) )
       if(grido_flag .eq. 1) then
          if(nlato .lt. plato) then
-            write(6,*) 'ERROR ("BINNING"): number of latitudes for '
+            write(6,*) 'ERROR ("CREMAPBIN"): number of latitudes for '
             write(6,*) 'the output grid cannot be greater than the '
             write(6,*) 'global number of latitudes for that grid   '
             write(6,*) 'resolution'
@@ -260,7 +260,7 @@ c
      &         edgeo_e( i) .gt. edge_w (ii) ) then
                nx = nx + 1
                if(nx .gt. max_segs) then
-                  write(6,*) 'ERROR  ("BINNING"):  number of box'
+                  write(6,*) 'ERROR  ("CREMAPBIN"):  number of box'
                   write(6,*) 'segments greater than "max_segs"'
                   call abort
                end if
@@ -284,7 +284,7 @@ c
      &         edgeo_n( j) .gt. edge_s (jj) ) then
                ny = ny + 1
                if(ny .gt. max_segs) then
-                  write(6,*) 'ERROR  ("BINNING"):  number of box'
+                  write(6,*) 'ERROR  ("CREMAPBIN"):  number of box'
                   write(6,*) 'segments greater than "max_segs"'
                   call abort
                end if
@@ -391,9 +391,9 @@ c
       pio2 = 2.d0*atan(1.d0)
 c
       if(nlat .le. 2) then
-         write(6,*) 'Error in "binning":  Not enough Gaussian latitudes'
-         write(6,*) 'nlat = ', nlat
-         call abort
+        write(6,*) 'Error in "cremapbin": Not enough Gaussian latitudes'
+        write(6,*) 'nlat = ', nlat
+        call abort
       end if
 c
       lwork = 4*nlat*(nlat+1)+2
@@ -466,13 +466,13 @@ c
       end do
 c
       if(.not. found) then
-         write(6,*) 'Error in "binning":'
+         write(6,*) 'Error in "cremapbin":'
          write(6,*) "Could not map global lat array into grid array"
          call abort
       end if
 c
       if(plat+jfirst-1 .gt. nlat) then
-         write(6,*) 'Error in "binning":'
+         write(6,*) 'Error in "cremapbin":'
          write(6,*) "Stepping out of bounds of the global lat array"
          call abort
       end if
@@ -481,7 +481,7 @@ c Test that subsequent grid lats all match the global lat array
 c
       do j = 2,plat
          if( abs(flat_glob(j+jfirst-1) - flat(j)) .gt. eps ) then
-            write(6,*) 'Error in "binning":'
+            write(6,*) 'Error in "cremapbin":'
             write(6,*) "Gaussian latitudes in grid array do not"
             write(6,*) "match those in the global array"
             call abort
