@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.53 2010-01-18 21:43:31 haley Exp $
+#      $Id: Configure,v 1.54 2010-02-06 13:55:32 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2010-01-18 21:43:31 $
+#	$Date: 2010-02-06 13:55:32 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -237,17 +237,17 @@ if (-e ni) then
 ======================================================================
 
 	The NCAR Command Language (NCL) is a free interpreted language
-        designed specifically for scientific data processing and
-        visualization. NCL has robust file input and output. It can
-        read in netCDF, HDF4, HDF-EOS2, HDF-EOS5,  GRIB 1/2, binary
-        and ASCII data.
+	designed specifically for scientific data processing and
+	visualization. NCL has robust file input and output. It can
+	read in netCDF, HDF4, HDF-EOS2, HDF-EOS5,  GRIB 1/2, binary
+	and ASCII data.
 
-        It requires several external packages (like netCDF and HDF4),
-        and has several optional packages you can build in (UDUNITS2,
-        Triangle, HDF-EOS2, HDF-EOS5, and Vis5D functions).
+	It requires several external packages (like netCDF and HDF4),
+	and has several optional packages you can build in (UDUNITS2,
+	Triangle, HDF-EOS2, HDF-EOS5, and Vis5D functions).
 
-        NCL is a separate software package from NCAR Graphics. You
-        don't don't need it in order to build or use NCAR Graphics.
+	NCL is a separate software package from NCAR Graphics. You
+	don't don't need it in order to build or use NCAR Graphics.
 
 ======================================================================
 "EOF"
@@ -283,9 +283,9 @@ if ($?verbose_option) then
 ======================================================================
 
 	The NCL/NCAR Graphics software must be installed in a parent 
-        directory containing subdirectiries 'bin', 'include', 'lib',
-        and 'man'. This procedure will make sure that these
-        directories are writable by the installation process.
+	directory containing subdirectiries 'bin', 'include', 'lib',
+	and 'man'. This procedure will make sure that these
+	directories are writable by the installation process.
 
 ======================================================================
 "EOF"
@@ -445,10 +445,10 @@ if ($?verbose_option) then
 ======================================================================
 
 	If you want access to the cairo workstations, which will
-        give you PNG and smaller PDF files, then you'll need to
-        download several packages along with cairo. This is
-        experimental for now, so unless you know what you're doing,
-        answer "n" to this question.
+	give you PNG and smaller PDF files, then you'll need to
+	download several packages along with cairo. This is
+	experimental for now, so unless you know what you're doing,
+	answer "n" to this question.
 
 ======================================================================
 "EOF"
@@ -542,14 +542,14 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 ======================================================================
 
 	The Triangle code is what allows you to generate triangular
-        meshes so that you can contour non-uniform grids.
+	meshes so that you can contour non-uniform grids.
 	In order to have this functionality, you must download the
-        Triangle code from http://www.cs.cmu.edu/~quake/triangle.html
-        and agree to Jonathan Shewchuk's license restrictions that
-        are mentioned on that page. Once you download the code
-        ('triangle.c' and 'triangle.h'), put these two files in the 
-        ni/src/lib/hlu subdirectory, answer "y" to this question,
-        and you should be set.
+	Triangle code from http://www.cs.cmu.edu/~quake/triangle.html
+	and agree to Jonathan Shewchuk's license restrictions that
+	are mentioned on that page. Once you download the code
+	('triangle.c' and 'triangle.h'), put these two files in the 
+	ni/src/lib/hlu subdirectory, answer "y" to this question,
+	and you should be set.
 
 ======================================================================
 "EOF"
@@ -579,15 +579,18 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 ======================================================================
 
 	Linking with the netCDF-4 enabled library currently provides
-        you with compression support, and the ability to write netCDF-4
-        classic files. Not all aspects of netCDF-4 files are fully
-        supported yet, like multiple-unlimited dimensions and
-        new types.
+	you with compression support, and the ability to write netCDF-4
+	classic files. Not all aspects of netCDF-4 files are fully
+	supported yet, like multiple-unlimited dimensions and
+	new types.
 
-        THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+	If you built NetCDF V4.1, then you additionally can get
+	Udunits and OPeNDAP support.
 
-        If you built your NetCDF-4 library with the "--enable-netcdf-4"
-        option, then you should answer "y" to this question.
+	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+
+	If you built your NetCDF-4 library with the "--enable-netcdf-4"
+	option, then you should answer "y" to this question.
 
 ======================================================================
 "EOF"
@@ -607,34 +610,68 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
         set altered
   endif
 
+  if ($?verbose_option) then
+    cat <<"EOF"
+======================================================================
+
+	OPeNDAP is a protocol for requesting and transporting data
+	across the web.  The current OPeNDAP Data Access Protocol
+	(DAP) simplifies all aspects of scientific data networking,
+	allowing simple access to remote data. Local data can be made
+	accessible to remote locations regardless of local storage
+	format.  In order to have this functionality, you must have
+	built NetCDF V4.1 or later with OPeNDAP support enabled (the
+	default).
+
+	If you built the NetCDF-4.1 software library with OPeNDAP
+	support explicitly turned off, you should answer "y" to this
+	question.
+
+======================================================================
+"EOF"
+  endif
+
+  set netcdfwithoutdap = "n"
+  echo ""
+  echo "If you built NetCDF V4.1 or later, did you DISABLE OPeNDAP support ($netcdfwithoutdap)?"
+  echo "(OPeNDAP support is on by default when you build NetCDF V4.1.)"
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$netcdfwithoutdap")) then
+      set netcdfwithoutdap = "$answer"
+      set netcdflib = "-lnetcdf"
+  endif
+
+
 #
 # GDAL
 #
-if ($?verbose_option) then
-  cat <<"EOF"
+  if ($?verbose_option) then
+    cat <<"EOF"
 ======================================================================
 
 	If you want to be able to read shapefiles, then you'll need to
-        download GDAL and supporting packages (PROJ4).
+	download GDAL and supporting packages (PROJ4).
 
 	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
 
 ======================================================================
 "EOF"
-endif
+  endif
 
-echo ""
-echo "Build GDAL support (optional) into NCL? ($buildgdal)"
-echo "(Requires GDAL and PROJ4 from http://www.gdal.org/ and "
-echo "http://trac.osgeo.org/proj/) "
-echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-set answer="$<"
-if ("$answer" == "q") goto cleanup
-if (("$answer" != "") && ("$answer" != "$buildgdal")) then
-	set buildgdal = $answer
-	set newbuildgdal
-    set altered
-endif
+  echo ""
+  echo "Build GDAL support (optional) into NCL? ($buildgdal)"
+  echo "(Requires GDAL and PROJ4 from http://www.gdal.org/ and "
+  echo "http://trac.osgeo.org/proj/) "
+  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
+  set answer="$<"
+  if ("$answer" == "q") goto cleanup
+  if (("$answer" != "") && ("$answer" != "$buildgdal")) then
+      set buildgdal = $answer
+      set newbuildgdal
+      set altered
+  endif
 
 #
 # Udunits
@@ -647,6 +684,9 @@ endif
 	some of its functionality is available as built-in functions
 	in NCL. In order to have this functionality, you must have the
 	V2.x (not V1.x) libudunits2.a library installed on your system.
+
+	This library is now built as part of NetCDF V4.1 and later
+	if --with-udunits is set.
 
 	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
 
@@ -712,7 +752,7 @@ endif
 	this functionality, you must have the HDF-EOS2 libraries
 	installed on your system.
 
-        THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
 
 ======================================================================
 "EOF"
@@ -743,7 +783,7 @@ endif
 	this functionality, you must have the HDF-EOS5 library
 	installed on your system. 
 
-        THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+	THIS LIBRARY IS NOT NEEDED FOR BUILDING NCAR GRAPHICS.
 
 ======================================================================
 "EOF"
@@ -769,10 +809,10 @@ endif
     cat <<"EOF"
 ======================================================================
 
-    In order to have support for reading GRIB2 files with NCL, you
-    must have both the NCEP GRIB2 decoder library and the jasper
-    JPEG2000 library installed on your system.  THESE LIBRARIES ARE
-    NOT NEEDED FOR BUILDING NCAR GRAPHICS.
+	In order to have support for reading GRIB2 files with NCL, you
+	must have both the NCEP GRIB2 decoder library and the jasper
+	JPEG2000 library installed on your system.  THESE LIBRARIES ARE
+	NOT NEEDED FOR BUILDING NCAR GRAPHICS.
 
 ======================================================================
 "EOF"
@@ -791,45 +831,6 @@ endif
   	set newbuildgrib2
         set altered
   endif
-
-#
-# OPeNDAP enabled NCL
-#
-  if ($?verbose_option) then
-    cat <<"EOF"
-======================================================================
-
-	OPeNDAP is a protocol for requesting and transporting data
-	across the web.  The current OPeNDAP Data Access Protocol
-	(DAP) simplifies all aspects of scientific data networking,
-	allowing simple access to remote data. Local data can be made
-	accessible to remote locations regardless of local storage
-	format.  In order to have this functionality, you must have
-	the Unidata-supplied OPeNDAP-enabled netCDF libraries
-	installed on your system, which are available from this site:
-	http://www.opendap.org
-
-        This can be a difficult package to build, so only select this
-        option if you really need this support.
-
-        THIS LIBRARY IS NOT NEEDED FOR BUILDING	NCAR GRAPHICS.
-
-======================================================================
-"EOF"
-  endif
-
-  echo ""
-  echo "Build OPeNDAP support (optional) into NCL ($builddods)"
-  echo "(Requires the external netCDF software available from Unidata) "
-  echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
-  set answer="$<"
-  if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$builddods")) then
-	set builddods = $answer
-	set newbuilddods
-        set altered
-  endif
-
 else
   set buildhdfeos  = "n"
   set buildhdfeos5 = "n"
@@ -1050,7 +1051,7 @@ cat <<EOF
 	Every user of NCL and NCAR Graphics will need to set
 	the following environment variable:
 
-        setenv NCARG_ROOT $parentdir
+	setenv NCARG_ROOT $parentdir
 
 EOF
 	
@@ -1102,6 +1103,11 @@ if ($?newtmp) then
 endif
 
 echo "" >> Site.local
+
+if ("$netcdfwithoutdap" == "n") then
+    echo "#define NetCDFlib $netcdflib" >> Site.local
+    echo "" >> Site.local
+endif
 
 if ("$hdfwithszip" == "y") then
     echo "#define HDFlib $hdflib" >> Site.local
@@ -1287,7 +1293,7 @@ cat <<"EOF"
 
 		make Everything >& make-output &
 
-    You can watch the output with:
+	You can watch the output with:
 
 		tail -f make-output
 
