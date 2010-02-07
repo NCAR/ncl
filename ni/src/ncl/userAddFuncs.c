@@ -1,5 +1,5 @@
 /*
- *      $Id: userAddFuncs.c,v 1.29 2010-02-01 23:26:49 huangwei Exp $
+ *      $Id: userAddFuncs.c,v 1.30 2010-02-07 01:34:26 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -2878,13 +2878,13 @@ NhlErrorTypes _Nclstr_match
 
     if (input_strs == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "getstrings: input string is null."));
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: input string is null."));
         return NhlFATAL;
     }
 
     if(type != NCL_string)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "getstrings: Invalid input string."));
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: Invalid input string."));
         return NhlFATAL;
     }
 
@@ -2910,7 +2910,7 @@ NhlErrorTypes _Nclstr_match
 
     if (input_expr == NULL)
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "getstrings: input expression is null."));
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: input expression is null."));
         return NhlFATAL;
     }
 
@@ -2925,14 +2925,14 @@ NhlErrorTypes _Nclstr_match
         {
             if(regcomp(&expr,reg_exp,REG_ICASE|REG_EXTENDED) != 0)
             {
-                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"getstrings: Invalid expression"));
+                NHLPERROR((NhlWARNING,NhlEUNKNOWN,"str_match: Invalid expression"));
                 return NhlFATAL;
             }
         }
     }
     else
     {
-        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "getstrings: input expression is not a string."));
+        NHLPERROR((NhlFATAL, NhlEUNKNOWN, "str_match: input expression is not a string."));
         return NhlFATAL;
     }
 
