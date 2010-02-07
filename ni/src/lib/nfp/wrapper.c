@@ -416,6 +416,7 @@ extern NhlErrorTypes linint1_n_W(void);
 extern NhlErrorTypes linint2_W(void);
 extern NhlErrorTypes linint2_points_W(void);
 extern NhlErrorTypes area_hi2lores_W(void);
+extern NhlErrorTypes area_conserve_remap_W(void);
 extern NhlErrorTypes rcm2rgrid_W(void);
 extern NhlErrorTypes rgrid2rcm_W(void);
 extern NhlErrorTypes rcm2points_W(void);
@@ -5938,6 +5939,23 @@ void NclAddUserFuncs(void)
     NclRegisterFunc(area_hi2lores_W,args,"area_hi2lores",nargs);
 
 /*
+ * Register "area_conserve_remap".
+ *
+ * Create private argument array
+ */
+    nargs = 0;
+    args = NewArgs(6);
+
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",0,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"numeric",1,NclANY);nargs++;
+    SetArgTemplate(args,nargs,"logical",1,dimsizes);nargs++;
+
+    NclRegisterFunc(area_conserve_remap_W,args,"area_conserve_remap",nargs);
+
+/*
  * Register "rcm2rgrid".
  */
     nargs = 0;
@@ -7628,12 +7646,12 @@ NclScalar         *missing_dx
     for(i = 0; i < size_x; i++ ) {
       ii = step_x*i;
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-		 &tmp_x[i],
-		 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
-		 1,
-		 missing_x,
-		 missing_dx,
-		 typeclass_x);
+                 &tmp_x[i],
+                 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
+                 1,
+                 missing_x,
+                 missing_dx,
+                 typeclass_x);
     }
   }
   else {
@@ -7643,12 +7661,12 @@ NclScalar         *missing_dx
     for(i = 0; i < size_x; i++ ) {
       ii = step_x*i;
       _Nclcoerce((NclTypeClass)nclTypedoubleClass,
-		 &tmp_x[i],
-		 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
-		 1,
-		 NULL,
-		 NULL,
-		 typeclass_x);
+                 &tmp_x[i],
+                 (void*)((char*)x+(index_x+ii)*(typeclass_x->type_class.size)),
+                 1,
+                 NULL,
+                 NULL,
+                 typeclass_x);
     }
   }
 }

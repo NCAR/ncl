@@ -365,12 +365,12 @@ NhlErrorTypes obj_anal_ic_W( void )
       }
       else {
 /*
- * att_id == -1 ==> no attributes specified; return all missing.
+ * att_id == -1 ==> no attributes specified
  */
         break;
       }
 /* 
- * Check for attributes. If none are specified, then return missing values.
+ * Check for attributes. If none are set, then use default values.
  */
       if (attr_obj->att.n_atts == 0) {
         break;
