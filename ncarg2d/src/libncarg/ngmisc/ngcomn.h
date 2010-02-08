@@ -1,5 +1,5 @@
 C
-C $Id: ngcomn.h,v 1.21 2010-01-15 05:12:10 fred Exp $
+C $Id: ngcomn.h,v 1.22 2010-02-08 05:58:44 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -58,6 +58,8 @@ C   OYLOGO   -  Logo Y coordinate position in NDC.
 C   OLSIZE   -  Logo size.
 C   IPGHGT   -  Page height for PDF media box.
 C   IPGWTH   -  Page width for PDF media box.
+C   IPSHGT   -  Page height for PS PageSize
+C   IPSWTH   -  Page width for PS PageSize
 C
       COMMON /NGCOMI/  IWKID, IFULLB,   IXPS,  ISTKMX,  IPTHMX, 
      +                ILJOIN, ILCAP,    ILLX,    ILLY,    IURX,
@@ -67,6 +69,7 @@ C
      +                  ISUP, NLLX,     NLLY,    NURX,    NURY,
      +               LOGOTYP, LOGOCOL, LOGOSND       ,  OXLOGO,
      +                OYLOGO, OLSIZE, ISVSEG,  IPGHGT,  IPGWTH,
-     +                  MLLX,   MLLY,   MURX,    MURY
+     +                  MLLX,   MLLY,   MURX,    MURY,  IPSWTH,
+     +                IPSHGT
       COMMON /NGCOMC/ CFILNM, CPICNM, CSEGNM
       CHARACTER CFILNM*256, CPICNM*80, CSEGNM*15

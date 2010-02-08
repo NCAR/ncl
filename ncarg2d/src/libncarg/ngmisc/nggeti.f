@@ -1,5 +1,5 @@
 C
-C	$Id: nggeti.f,v 1.18 2010-01-15 05:12:10 fred Exp $
+C	$Id: nggeti.f,v 1.19 2010-02-08 05:58:44 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -182,6 +182,14 @@ C
       ELSE IF (CNP(1:2).EQ.'PW' .OR. CNP(1:2).EQ.'pw' .OR. 
      +    CNP(1:2).EQ.'Pw') THEN
         IVP = IPGWTH
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'SH' .OR. CNP(1:2).EQ.'sh' .OR. 
+     +    CNP(1:2).EQ.'Sh') THEN
+        IVP = IPSHGT
+        GO TO 110
+      ELSE IF (CNP(1:2).EQ.'SW' .OR. CNP(1:2).EQ.'sw' .OR. 
+     +    CNP(1:2).EQ.'Sw') THEN
+        IVP = IPSWTH
         GO TO 110
       ELSE
         CTM(1:36) = 'NGGETI - Parameter name not known - '

@@ -1,5 +1,5 @@
 C
-C	$Id: ngseti.f,v 1.22 2010-01-15 05:12:10 fred Exp $
+C	$Id: ngseti.f,v 1.23 2010-02-08 05:58:44 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -686,6 +686,24 @@ C
         IPGWTH = IVP
         WRITE(IDR(1: 5), 500) IVP
         CALL GESC(-1529,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  SH - Sets the page height (in 1/72" coordinates) for PS PageSize
+C
+      ELSE IF (CNP(1:2).EQ.'SH' .OR. CNP(1:2).EQ.'sh' .OR.
+     +         CNP(1:2).EQ.'Sh') THEN
+        IPSHGT = IVP
+        WRITE(IDR(1: 5), 500) IVP
+        CALL GESC(-1532,1,IDR,1,IDUM,CDUM)
+        GO TO 120
+C
+C  SW - Sets the page width (in 1/72" coordinates) for the PS PageSize
+C
+      ELSE IF (CNP(1:2).EQ.'SW' .OR. CNP(1:2).EQ.'sw' .OR.
+     +         CNP(1:2).EQ.'Sw') THEN
+        IPSWTH = IVP
+        WRITE(IDR(1: 5), 500) IVP
+        CALL GESC(-1531,1,IDR,1,IDUM,CDUM)
         GO TO 120
       ELSE
         CTM(1:36) = 'NGSETI - Parameter name not known - '

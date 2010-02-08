@@ -1,5 +1,5 @@
 C
-C	$Id: ngblda.f,v 1.18 2010-01-15 05:12:10 fred Exp $
+C	$Id: ngblda.f,v 1.19 2010-02-08 05:58:44 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -126,4 +126,9 @@ C
 C  Defaults for the PDF bounding media box in 1/72" units.
 C
       DATA IPGHGT,IPGWTH/792,612/
+C
+C  Defaults for the PS paper size in for the setpagedevice, in 1/72" units.
+C
+      DATA IPSHGT,IPSWTH/792,612/
+C
       END
