@@ -1,5 +1,5 @@
 C
-C	$Id: gzopwk.f,v 1.13 2010-01-15 05:13:05 fred Exp $
+C	$Id: gzopwk.f,v 1.14 2010-02-08 06:01:29 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -111,8 +111,8 @@ C
         CALL GZROI(0)
         IF ((WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
      +       WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL) THEN
-          IL1   = 13
-          IL2   = 13
+          IL1   = 15
+          IL2   = 15
           ID(1) = WKID
           ID(2) = CONID
           ID(3) = WTYPE
@@ -147,6 +147,15 @@ C
 C  Specification for page height in PDF files.
 C
           ID(13) = PDFHGT
+C
+C  Specification for page width in PS files.
+C
+          ID(14) = PSWTH
+C
+C  Specification for page height in PDF files.
+C
+          ID(15) = PSHGT
+      
         ELSE IF (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) THEN
           IL1   = 7
           IL2   = 7

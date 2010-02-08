@@ -1,5 +1,5 @@
 C
-C	$Id: gksbd.f,v 1.36 2010-01-15 05:13:05 fred Exp $
+C	$Id: gksbd.f,v 1.37 2010-02-08 06:01:29 fred Exp $
 C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -125,6 +125,8 @@ C       CPTLD  -- Flag for portrait PS mode (=0), or landscape (non-zero)
 C       COLMOD -- Color Model for X color allocation
 C       PDFHGT -- Height of PDF to be specified in the MediaBox
 C       PDFWTH -- Width of PDF to be specified in the MediaBox
+C       PSHGT  -- Height of PS paper to be specified in the setpagedevice
+C       PSWTH  -- Width of PS paper to be specified in the setpagedevice
 C-----------------------------------------------------------------------
 C
 C     GKEROR:  GKS ERROR STATE LIST
@@ -244,6 +246,8 @@ C**************************************************************************
       DATA COLMOD/-1/
       DATA PDFHGT/792/
       DATA PDFWTH/612/
+      DATA PSHGT/792/
+      DATA PSWTH/612/
 C
       DATA IERNMS/    1,    2,    3,    4,    5,    6,    7,    8,
      +               20,   21,   22,   23,   24,   25,   26,   27,

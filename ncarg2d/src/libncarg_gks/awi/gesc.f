@@ -1,5 +1,5 @@
 C
-C	$Id: gesc.f,v 1.39 2010-01-15 05:13:05 fred Exp $
+C	$Id: gesc.f,v 1.40 2010-02-08 06:01:29 fred Exp $
 C                                                                      
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
@@ -92,7 +92,7 @@ C                 modes.  From "mixed" you can switch to "private".  If you
 C                 are already using "private" you can not switch.  -1400
 C                 is only used if -1402 is "shared".
 C
-C  PostScript/PDF specific escapes (-1530 to -1510):
+C  PostScript/PDF specific escapes (-1532 to -1510):
 C
 C      -1510  --  Flags beginning of segment copy for PS workstations.
 C      -1511  --  Flags end of segment copy for PS workstations.
@@ -121,6 +121,8 @@ C      -1527  --  Produce an NCAR logo.
 C      -1528  --  Bounding box coordinates for EPS/EPSI files.
 C      -1529  --  Width for PDF MediaBox
 C      -1530  --  Height for PDF MediaBox
+C      -1531  --  Width for PS PageSize
+C      -1532  --  Height for PS PageSize
 C
       IF (FCTID .EQ. -1399) THEN
 C
@@ -652,7 +654,7 @@ C
 C
 C  PostScript and PDF escapes.
 C
-      ELSE IF (FCTID.GE.-1530 .AND. FCTID.LE.-1510) THEN
+      ELSE IF (FCTID.GE.-1532 .AND. FCTID.LE.-1510) THEN
 C
 C  Decode the workstation ID.
 C
@@ -745,6 +747,23 @@ C  Height for PDF MediaBox in 1/72" units.
 C
         IF (FCTID .EQ. -1530) THEN
           READ(IDR(1)(1:5),501) PDFHGT
+          CUFLAG = -1
+          RETURN
+        ENDIF 
+C
+C
+C  Width for PS paper size width in 1/72" units.
+C
+        IF (FCTID .EQ. -1531) THEN
+          READ(IDR(1)(1:5),501) PSWTH
+          CUFLAG = -1
+          RETURN
+        ENDIF 
+C
+C  Height for PS paper size hight in 1/72" units.
+C
+        IF (FCTID .EQ. -1532) THEN
+          READ(IDR(1)(1:5),501) PSHGT
           CUFLAG = -1
           RETURN
         ENDIF 
