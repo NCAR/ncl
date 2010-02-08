@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.39 2008-07-23 17:28:01 haley Exp $
+ *      $Id: ps.c,v 1.40 2010-02-08 06:03:12 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -836,6 +836,11 @@ void PSpreamble (PSddp *psa, preamble_type type)
 
                 (void) fprintf(fp, "%%%%EndProlog\n\n");
 
+                (void) fprintf(fp, "%%%%BeginSetup\n");
+                (void) fprintf(fp, "<</PageSize [%05d %05d]>> setpagedevice\n",
+                                       psa->paper_width, psa->paper_height);
+                (void) fprintf(fp, "%%%%EndSetup\n\n");
+
                 DefaultColorTable(psa);
 
 
@@ -1078,6 +1083,9 @@ static void PSinit(PSddp *psa, int *coords)
         psa->background = FALSE;
         psa->pict_empty = TRUE;
         psa->page_number = 1;
+        
+        psa->paper_width = *(coords+10);
+        psa->paper_height = *(coords+11);
 
         for (i = 0; i < NUM_PS_FONTS; i++) {
                 psa->fonts_used[i] = 0;
@@ -8644,6 +8652,16 @@ int ps_Esc(gksc)
                 strng = strtok((char *) NULL, " ");
                 psa->bspace.ury = atoi(strng);
                 break;
+        case -1531:  /* Paper width */
+          strng = strtok(sptr, " ");
+          strng = strtok((char *) NULL, " ");
+          psa->paper_width = (int) atoi(strng);
+          break;
+        case -1532:  /* Paper height */
+          strng = strtok(sptr, " ");
+          strng = strtok((char *) NULL, " ");
+          psa->paper_height = (int) atoi(strng);
+          break;
         default:
                 return ERR_INV_ESCAPE;
         }

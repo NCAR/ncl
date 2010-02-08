@@ -1,5 +1,5 @@
 /*
- *	$Id: psddi.h,v 1.6 2008-07-23 17:29:43 haley Exp $
+ *	$Id: psddi.h,v 1.7 2010-02-08 06:03:13 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -58,6 +58,8 @@ typedef	struct	PSddi_	{
 	int		pict_empty;
 	int		page_number;
         int             suppress_flag;
+        int             paper_height;
+        int             paper_width;
 	float		color_map[1024];
 	int		fonts_used[13];
 	PSattribute	attributes;
