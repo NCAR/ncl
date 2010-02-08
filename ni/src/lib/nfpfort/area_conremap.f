@@ -1,7 +1,8 @@
 C NCLFORTSTART
       subroutine cremapbin(plev   ,plato   ,plono   ,plat    ,plon ,
      1                     xx     ,yy      ,clat    ,clon    ,clato,
-     2                     clono  ,nlat    ,nlato   ,bin_factor    )
+     2                     clono  ,nlat    ,nlato   ,bin_factor    ,
+     3                     xxmsg                                   )
 c
 c--------1---------2---------3---------4---------5---------6---------7--
 c
@@ -34,6 +35,7 @@ c                                           ! oriented W->E
       integer nlato                         ! Number of Global Gaussian latitudes (output)
       double precision bin_factor           ! bin-box area expansion/contraction factor
 c                                           ! relative to output grid-box area.
+      double precision xxmsg
 c
 c-----------------------------------------------------------------------
 c
@@ -358,6 +360,26 @@ c
       deallocate( flato_glob )
       deallocate( gwo_glob   )
 c
+c CRUDE .... 
+c .   At any level where the input "xx" has a missing value
+c .   set the corresponding "yy" level to missing.
+c
+      do k = 1,plev
+         do j = 1,plat
+            do i = 1,plon 
+               if (xx(i,j,k).eq.xxmsg) then
+                   do jj = 1,plato
+                      do ii = 1,plono
+                         yy(ii,jj,k) = xxmsg
+                      end do
+                   end do
+               end if
+               go to 100
+            end do
+         end do
+  100    continue
+      end do
+    
       return
       end
 c
