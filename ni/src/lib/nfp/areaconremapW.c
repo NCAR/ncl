@@ -4,7 +4,7 @@
 extern void NGCALLF(cremapbin,cremapbin)(int *, int *, int *, int *, int *,
                                          double *, double *, double *, 
                                          double *, double *, double *, int *,
-                                         int *, double *);
+                                         int *, double *, double *);
 
 NhlErrorTypes area_conserve_remap_W( void )
 {
@@ -383,7 +383,8 @@ NhlErrorTypes area_conserve_remap_W( void )
  */
   NGCALLF(cremapbin,CREMAPBIN)(&nlevi, &nlato, &nlono, &nlati, &nloni, 
                                tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
-                               tmp_lono, &NLATi, &NLATo, bin_factor);
+                               tmp_lono, &NLATi, &NLATo, bin_factor, 
+			       &missing_dbl_fi);
 
 /*
  * Coerce output back to float if necessary.
