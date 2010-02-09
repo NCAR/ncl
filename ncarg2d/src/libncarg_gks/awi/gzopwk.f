@@ -1,6 +1,6 @@
 C
-C	$Id: gzopwk.f,v 1.14 2010-02-08 06:01:29 fred Exp $
-C                                                                      
+C	$Id: gzopwk.f,v 1.15 2010-02-09 23:19:57 brownrig Exp $
+C
 C                Copyright (C)  2000
 C        University Corporation for Atmospheric Research
 C                All Rights Reserved
@@ -155,10 +155,10 @@ C
 C  Specification for page height in PDF files.
 C
           ID(15) = PSHGT
-      
+
         ELSE IF (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) THEN
-          IL1   = 7
-          IL2   = 7
+          IL1   = 9
+          IL2   = 9
           ID(1) = WKID
           ID(2) = CONID
           ID(3) = WTYPE
@@ -169,7 +169,12 @@ C
           ID(5) = CLLY
           ID(6) = CURX
           ID(7) = CURY
-	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC .OR. 
+C
+C  Specification for page size in document-oriented files.
+C
+          ID(8) = PDFWTH
+          ID(9) = PDFHGT
+	ELSE IF (WTYPE.EQ.GXWE .OR. WTYPE.EQ.GXWC .OR.
      +           WTYPE.EQ.GPIX) THEN
 	  IL1   = 4
 	  IL2   = 4
@@ -203,7 +208,7 @@ C
       SWKTP(NOPWK) = WTYPE
 C
 C  Set the file name for an MO workstation back to default; set the
-C  positioning coordinates back to defaults; set the PostScript 
+C  positioning coordinates back to defaults; set the PostScript
 C  coordinate scale factor back to the default; set the X color model
 C  back to default.
 C
@@ -215,17 +220,17 @@ C
         CPSCL = -1
         COLMOD = -1
 C
-C  For an X window that does not currently exist, obtain the local 
+C  For an X window that does not currently exist, obtain the local
 C  window ID for all future calls; for an X window that already exists
 C  the connection ID is the window ID.  In the case of an X window
 C  that does not exist, the window ID is returned from the interface
 C  call in IL2 (non-standard usage of this parameter).  All the
 C  other drivers will return a -1 in IL2.
 C
-        IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR. 
+        IF (WTYPE.EQ.GXWC  .OR. WTYPE.EQ.GDMP  .OR.
      +      WTYPE.EQ.GXWE  .OR. WTYPE.EQ.GPIX  .OR.
-     +     (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR. 
-     +      WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL .OR. 
+     +     (WTYPE.GE.GPSMIN .AND. WTYPE.LE.GPSMAX) .OR.
+     +      WTYPE.EQ.GPDFP .OR. WTYPE.EQ.GPDFL .OR.
      +     (WTYPE.GE.GCROMIN .AND. WTYPE.LE.GCROMAX) ) THEN
           LXWKID(NOPWK) = IL2
         ENDIF
