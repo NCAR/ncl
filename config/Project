@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.113 2010-02-06 13:54:42 haley Exp $
+ *      $Id: Project,v 1.114 2010-02-09 00:24:22 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2010-02-06 13:54:42 $
+ *	$Date: 2010-02-09 00:24:22 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -204,7 +204,7 @@
 
 #ifdef BuildCAIRO
 #ifndef CAIROlib
-#define CAIROlib  -lcairo -lfreetype -lpixman-1 -lfontconfig
+#define CAIROlib  -lcairo -lfontconfig -lpixman-1 -lfreetype
 #endif
 #else
 #define CAIROlib
