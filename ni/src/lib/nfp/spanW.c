@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "wrapper.h"
 
-NhlErrorTypes span_W( void )
+NhlErrorTypes testspan_W( void )
 {
 
 /*
@@ -102,7 +102,7 @@ NhlErrorTypes span_W( void )
       _NclIsMissing(finish,finish->multidval.val) ||
       _NclIsMissing(spacing,spacing->multidval.val)) {
 
-    NhlPError(NhlFATAL, NhlEUNKNOWN, "fspan: Missing value detected in input, can't continue");
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "testspan: Missing value detected in input, can't continue");
     return NhlFATAL;
   }
 
@@ -121,7 +121,7 @@ NhlErrorTypes span_W( void )
                                     1,0,NULL,NULL);
 
   if(tmp_start == NULL || tmp_finish == NULL || tmp_spacing == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"span: Unable to allocate memory for coercing input values to double");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"testspan: Unable to allocate memory for coercing input values to double");
     return(NhlFATAL);
   }
   if(type_start == NCL_double || type_finish == NCL_double || 
@@ -141,7 +141,7 @@ NhlErrorTypes span_W( void )
     xspan = (void *)calloc(npts, sizeof(float));
   }
   if(xspan == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"span: Unable to allocate memory for output array");
+    NhlPError(NhlFATAL,NhlEUNKNOWN,"testspan: Unable to allocate memory for output array");
     return(NhlFATAL);
   }
   
