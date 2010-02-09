@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.257 2010-02-03 21:31:50 shea Exp $
+;      $Id: contributed.ncl,v 1.258 2010-02-09 17:32:24 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9746,6 +9746,68 @@ begin
   r   = random_uniform(0,100,N)
   return( dim_pqsort(r, 1) )
 end
+; **********************************************************************
+; D. Shea
+;
+undef("is_equal_space")
+function is_equal_space(z[*]:numeric, epsz[1]:numeric)
+local nz, dz, dz_low, dz_high, diff
+begin
+  nz = dimsizes(z)
+  if (nz.le.1) then
+      print("is_equal_space: input array  must be > 2")
+      exit
+  end if
+  dz     = abs(z(1)-z(0))             ; error check 
+  dz_low = dz-epsz
+  dz_hgh = dz+epsz
+  diff   = all(abs(z(1:nz-1)-z(0:nz-2)) .ge. dz_low) .and. \
+           all(abs(z(1:nz-1)-z(0:nz-2)) .le. dz_hgh)      
+  return (diff)
+end
+
+; **********************************************************************
+; D. Shea
+; wrapper for NCL procedure "area_hi2lores": copies attributes and coordinate 
+; vars.  It adds the longitude and latitude coordinates.
+;
+undef ("area_conserve_remap_Wrap")
+function area_conserve_remap_Wrap (xi[*]:numeric,yi[*]:numeric, fi:numeric \
+                                  ,xo[*]:numeric,yo[*]:numeric, opt)
+
+; wrapper for NCL function "area_conserve_remap" 
+; that copies attributes and coordinate vars
+
+local fo, dimfi, nDim, nD
+begin
+  fo   = area_conserve_remap (xi,yi,fi, xo,yo, opt)  ; perform interp
+                                                ; shea_misc functions
+  dimfi= dimsizes(fi)
+  nDim = dimsizes(dimsizes(fi))                 ; number of dimensions
+
+  copy_VarAtts (fi, fo)                         ; copy variable attributes
+  copy_VarCoords_2 (fi, fo)                     ; copy coord variables  
+
+  fo!(nDim-2) = "Y"                             ; default named dimensions
+  fo!(nDim-1) = "X"
+                                                ; override if possible
+  if (isdimnamed(xo,0) .and. isdimnamed(yo,0) ) then
+      fo!(nDim-2) = yo!0                        ; if present, use xo name
+      fo!(nDim-1) = xo!0                        ; if present, use xo name
+  else 
+      do nD=nDim-2,nDim-1                       ; two rightmost dimensions
+         if (.not.ismissing(fi!nD)) then
+            ;fo!nD = changeCaseChar(fi!nD)      ; if present, use same name
+             fo!nD = str_switch(fi!nD)          ; if present, use same name
+         end if                                 ; but change case
+      end do
+  end if
+
+  fo&$fo!(nDim-2)$ = yo                         ; create coordinate var 
+  fo&$fo!(nDim-1)$ = xo                         ; two rightmost dimensions
+
+  return (fo)
+end
 
 ; **********************************************************************
 ; D. Shea
@@ -9791,8 +9853,8 @@ end
 ; **********************************************************************
 ; D. Shea
 ; Generate [sin(lat+dlat/2)-sin(lat-dlat/2)] weights 
-; for equally spaced grids. Currently, only global grids
-; are supported.
+; for equally spaced grids. Currently, only global grids are supported.
+;
 undef("latRegWgt")
 function latRegWgt(lat[*]:numeric, nType[1]:string, opt[1]:integer)
 ; usage: wgt = latRegWgt(lat, "double", 0)
