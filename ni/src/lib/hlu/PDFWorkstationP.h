@@ -1,5 +1,5 @@
 /*
- *  $Id: PDFWorkstationP.h,v 1.2 2003-03-06 23:22:50 grubin Exp $
+ *  $Id: PDFWorkstationP.h,v 1.3 2010-02-09 23:12:44 brownrig Exp $
  */
 
 # ifndef    _NPDFWorkstationP_h
@@ -30,6 +30,9 @@ typedef struct _NhlPDFWorkstationLayerPart {
 
     int resolution;
 
+    NhlString paper_size;   /* standard paper name, e.g., "legal", "A2", etc. */
+    float page_width;       /*  inches  */
+    float page_height;      /*    "     */
     int lower_x;
     int lower_y;
     int upper_x;
@@ -41,7 +44,7 @@ typedef struct _NhlPDFWorkstationLayerPart {
 
     /* Private internal fields */
     NhlBoolean  dev_bounds_updated;
-    
+
 } NhlPDFWorkstationLayerPart;
 
 typedef struct  _NhlPDFWorkstationLayerRec {

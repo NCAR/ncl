@@ -1,5 +1,5 @@
 /*
- *      $Id: PSWorkstationP.h,v 1.8 2003-11-25 22:41:18 dbrown Exp $
+ *      $Id: PSWorkstationP.h,v 1.9 2010-02-09 23:12:44 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -17,7 +17,7 @@
  *
  *	Date:		Fri Mar 24 00:40:46 MST 1995
  *
- *	Description:	
+ *	Description:
  */
 #ifndef _NPSWorkstationP_h
 #define _NPSWorkstationP_h
@@ -61,6 +61,9 @@ typedef struct _NhlPSWorkstationLayerPart {
 
 	int			resolution;
 
+	NhlString   paper_size;  /* standard paper name, e.g., "legal", "A2", etc. */
+    float       page_width;  /*  inches  */
+    float       page_height; /*    "     */
 	int			lower_x;
 	int			lower_y;
 	int			upper_x;

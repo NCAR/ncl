@@ -1,5 +1,5 @@
 /*
- *  $Id: CairoWorkstationP.h,v 1.3 2010-01-07 23:06:01 brownrig Exp $
+ *  $Id: CairoWorkstationP.h,v 1.4 2010-02-09 23:12:44 brownrig Exp $
  */
 
 # ifndef    _NCairoWorkstationP_h
@@ -31,8 +31,11 @@ typedef struct _NhlCairoWorkstationLayerPart {
     int upper_y;
 
     /* fields for PS/PDF workstations */
-    NhlWorkOrientation orientation;               /* PORTRAIT or LANDSCAPE */
-    int dpi;                                      /* dots/inch */
+    NhlString          paper_size;      /* standard paper name, e.g., "legal", "A2", etc. */
+    NhlWorkOrientation orientation;     /* PORTRAIT or LANDSCAPE */
+    int                dpi;             /* dots/inch */
+    float              page_width;      /* inches */
+    float              page_height;
 
     /* fields for image-based workstations */
     _NGCPixConfig      pixconfig;

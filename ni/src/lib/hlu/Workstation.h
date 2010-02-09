@@ -1,5 +1,5 @@
 /*
- *      $Id: Workstation.h,v 1.38 2003-11-25 22:41:34 dbrown Exp $
+ *      $Id: Workstation.h,v 1.39 2010-02-09 23:12:44 brownrig Exp $
  */
 /************************************************************************
 *									*
@@ -232,6 +232,22 @@ typedef enum _NhlColorModel {
 #define	NhlNwkSuppressBBInfo	"wkSuppressBBInfo"
 #define	NhlCwkSuppressBBInfo	"WkSuppressBBInfo"
 
+/* Resources shared by the PS, PDF, and cairo-based document workstations */
+#define NhlNwkPaperWidthF   "wkPaperWidthF"
+#define NhlCwkPaperWidthF   "WkPaperWidthF"
+
+#define NhlNwkPaperHeightF  "wkPaperHeightF"
+#define NhlCwkPaperHeightF  "WkPaperHeightF"
+
+#define NhlNwkPaperSize     "wkPaperSize"
+#define NhlCwkPaperSize     "WkPaperSize"
+
+/* Resources shared by the XWorkstation and Cairo-based ImageWorkstation */
+#define NhlNwkWidth         "wkWidth"
+#define NhlCwkWidth         "WkWidth"
+
+#define NhlNwkHeight        "wkHeight"
+#define NhlCwkHeight        "WkHeight"
 
 /*
  * Public access functions to support Workstation Class
@@ -319,10 +335,10 @@ extern NhlBoolean NhlIsAllocatedColor(
 
 extern int NhlNewMarker(
 #if	NhlNeedProto
-	int instance, 
-	char *marker_string, 
+	int instance,
+	char *marker_string,
 	int  font,
-	float x_off, 
+	float x_off,
 	float y_off,
 	float aspect_adj,
 	float size_adj,
@@ -332,11 +348,11 @@ extern int NhlNewMarker(
 
 extern NhlErrorTypes NhlSetMarker(
 #if	NhlNeedProto
-	int instance, 
+	int instance,
 	int	index,
-	char	*marker_string, 
+	char	*marker_string,
 	int     font,
-	float	x_off, 
+	float	x_off,
 	float	y_off,
 	float	aspect_adj,
 	float	size_adj,
@@ -346,14 +362,14 @@ extern NhlErrorTypes NhlSetMarker(
 
 extern int NhlNewDashPattern(
 #if  NhlNeedProto
-	int	wid, 
+	int	wid,
 	char	*dash_string
 #endif
 );
 
 extern NhlErrorTypes NhlSetDashPattern(
 #if	NhlNeedProto
-	int instance, 
+	int instance,
 	int	index,
 	char	*dash_string
 #endif

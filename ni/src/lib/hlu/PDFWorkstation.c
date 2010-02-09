@@ -1,11 +1,12 @@
 /*
- *      $Id: PDFWorkstation.c,v 1.3 2003-11-25 22:41:18 dbrown Exp $
+ *      $Id: PDFWorkstation.c,v 1.4 2010-02-09 23:12:44 brownrig Exp $
  */
 
 # include   <stdio.h>
 # include   <string.h>
 # include   <ncarg/hlu/PDFWorkstationP.h>
 # include   <ncarg/hlu/ConvertersP.h>
+# include   <ncarg/hlu/pageutil.h>
 
 # define    Oset(field)     NhlOffset(NhlPDFWorkstationLayerRec, pdf.field)
 
@@ -27,18 +28,6 @@ static NhlResource resources[] = {
     {NhlNwkPDFResolution,NhlCwkPDFResolution,NhlTInteger,
         sizeof(int),Oset(resolution),NhlTImmediate,
         (NhlPointer)1800,_NhlRES_NOSACCESS,NULL},
-    {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
-        sizeof(int),Oset(lower_x),NhlTImmediate,
-        (NhlPointer)36,_NhlRES_DEFAULT,NULL},
-    {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
-        sizeof(int),Oset(lower_y),NhlTImmediate,
-        (NhlPointer)126,_NhlRES_DEFAULT,NULL},
-    {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
-        sizeof(int),Oset(upper_x),NhlTImmediate,
-        (NhlPointer)576,_NhlRES_DEFAULT,NULL},
-    {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
-        sizeof(int),Oset(upper_y),NhlTImmediate,
-        (NhlPointer)666,_NhlRES_DEFAULT,NULL},
     {NhlNwkFullBackground,NhlCwkFullBackground,NhlTBoolean,
         sizeof(NhlBoolean),Oset(full_background),NhlTImmediate,
         (NhlPointer)False,_NhlRES_DEFAULT,NULL},
@@ -52,6 +41,32 @@ static NhlResource resources[] = {
     {NhlNwkSuppressBBInfo,NhlCwkSuppressBBInfo,NhlTBoolean,
         sizeof(NhlBoolean),Oset(suppress_bbinfo),NhlTImmediate,
         (NhlPointer)False,_NhlRES_NOSACCESS,NULL},
+
+    /* these page size and margins are initialized as "-1" here, and are given appropriate
+     * values when the workstation is opened, depending upon which resources are actually
+     * available at that time.
+     */
+    {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
+        sizeof(NhlString),Oset(paper_size),NhlTImmediate,
+        NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+    {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
+        sizeof(float), Oset(page_width), NhlTString,
+        _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
+    {NhlNwkPaperHeightF, NhlCwkPaperHeightF, NhlTFloat,
+        sizeof(float), Oset(page_height), NhlTString,
+        _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
+    {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
+        sizeof(int),Oset(lower_x),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+    {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
+        sizeof(int),Oset(lower_y),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+    {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
+        sizeof(int),Oset(upper_x),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
+    {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
+        sizeof(int),Oset(upper_y),NhlTImmediate,
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
 
 /* End-documented-resources */
 };
@@ -160,7 +175,7 @@ NhlPDFWorkstationClassRec NhlpdfWorkstationClassRec = {
 
     {
         /* current_wks_count */     NhlInheritCurrentWksCount,
-        /* gks_wks_recs      */     NhlInheritGksWksRecs, 
+        /* gks_wks_recs      */     NhlInheritGksWksRecs,
         /* hlu_wks_flag      */     NhlInheritHluWksFlag,
         /* def_background    */     {1.0,1.0,1.0},
         /* rgb_dbm           */     NULL,
@@ -186,19 +201,19 @@ NhlPDFWorkstationClassRec NhlpdfWorkstationClassRec = {
 };
 
 NhlClass NhlpdfWorkstationClass = (NhlClass) &NhlpdfWorkstationClassRec;
- 
+
 /*
  * Function:    nhlfpdfworkstationclass
  *
  * Description: fortran ref to this class
  *
- * In Args: 
+ * In Args:
  *
- * Out Args:    
+ * Out Args:
  *
  * Scope:   global Fortran
  * Returns: NhlClass
- * Side Effect: 
+ * Side Effect:
  */
 
 NhlClass
@@ -217,15 +232,15 @@ _NHLCALLF(nhlfpdfworkstationclass, NHLFPDFWORKSTATIONCLASS)
 /*
  * Function:    PDFWorkstationClassPartInitialize
  *
- * Description: 
+ * Description:
  *
- * In Args: 
+ * In Args:
  *
- * Out Args:    
+ * Out Args:
  *
- * Scope:   
- * Returns: 
- * Side Effect: 
+ * Scope:
+ * Returns:
+ * Side Effect:
  */
 
 static NhlErrorTypes
@@ -250,15 +265,15 @@ static NrmQuark fnameQ = NrmNULLQUARK;
 /*
  * Function:    PDFWorkstationClassInitialize
  *
- * Description: 
+ * Description:
  *
- * In Args: 
+ * In Args:
  *
- * Out Args:    
+ * Out Args:
  *
- * Scope:   
- * Returns: 
- * Side Effect: 
+ * Scope:
+ * Returns:
+ * Side Effect:
  */
 
 static NhlErrorTypes
@@ -289,7 +304,7 @@ PDFWorkstationClassInitialize
         {NhlCMYK,   "CMYK"},
         {NhlRGB,    "RGB"}
     };
-    
+
 
     (void) _NhlRegisterEnumType(NhlpdfWorkstationClass,NhlTVisualType,
         visvals,NhlNumber(visvals));
@@ -329,7 +344,7 @@ static NhlErrorTypes PDFWorkstationInitialize
         NhlLayer req;
         NhlLayer new;
         _NhlArgList args;
-        int num_args; 
+        int num_args;
 # endif
 {
     char    func[]= "PDFWorkstationInitialize";
@@ -339,7 +354,7 @@ static NhlErrorTypes PDFWorkstationInitialize
     char    buff[_NhlMAXFNAMELEN];
     NhlErrorTypes   ret = NhlNOERROR;
 
-    /* 
+    /*
      * Set gkswkstype
      * For PDF, only PORTRAIT and LANDSCAPE make sense
      */
@@ -396,7 +411,17 @@ static NhlErrorTypes PDFWorkstationInitialize
     }
     strcpy(np->filename,tfname);
 
-    if (np->lower_x >= np->upper_x) {
+    if (np->paper_size) {
+        char* tmpStr = np->paper_size;
+        np->paper_size = NhlMalloc(strlen(tmpStr) + 1);
+        if (!np->paper_size) {
+            NHLPERROR((NhlFATAL,ENOMEM,NULL));
+            return NhlFATAL;
+        }
+        strcpy(np->paper_size, tmpStr);
+    }
+
+    if (np->lower_x > 0 && np->upper_x > 0 && np->lower_x >= np->upper_x ) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,
             "%s:Device X Coordinates invalid, defaulting",func);
         ret = NhlWARNING;
@@ -404,7 +429,7 @@ static NhlErrorTypes PDFWorkstationInitialize
         np->upper_x = 576;
     }
 
-    if (np->lower_y >= np->upper_y) {
+    if (np->lower_y > 0 && np->upper_y > 0 && np->lower_y >= np->upper_y) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,
             "%s:Device Y Coordinates invalid, defaulting",func);
         ret = NhlWARNING;
@@ -488,15 +513,15 @@ static NhlErrorTypes PDFWorkstationSetValues
 /*
  * Function:    PDFWorkstationGetValues
  *
- * Description: 
+ * Description:
  *
- * In Args: 
+ * In Args:
  *
- * Out Args:    
+ * Out Args:
  *
- * Scope:   
- * Returns: 
- * Side Effect: 
+ * Scope:
+ * Returns:
+ * Side Effect:
  */
 
 static NhlErrorTypes
@@ -606,8 +631,31 @@ PDFWorkstationOpen
     int d, w, h;
     int su = 0;
 
+    /* make use of a shared utility method that contains all the page-sizing logic common to cairo-document,
+     * postscript, and PDF workstations. See pageutil.c
+     */
+    NhlPageInfo pageInfo;
+    pageInfo.paperSize = pp->paper_size;
+    pageInfo.paperSizeResName = NhlNwkPaperSize;
+    pageInfo.paperWidthIn = pp->page_width;
+    pageInfo.paperWidthResName = NhlNwkPaperWidthF;
+    pageInfo.paperHeightIn = pp->page_height;
+    pageInfo.paperHeightResName = NhlNwkPaperHeightF;
+
+    ret = nhlGetPaperSize(&pageInfo);
+
+    /* unbundle returned values */
+    pp->page_width = pageInfo.paperWidthIn;
+    pp->page_height = pageInfo.paperHeightIn;
+    pp->lower_x = (pp->lower_x < 0) ? pageInfo.leftMargin : pp->lower_x;
+    pp->upper_x = (pp->upper_x < 0) ? pageInfo.rightMargin: pp->upper_x;
+    pp->lower_y = (pp->lower_y < 0) ? pageInfo.bottomMargin : pp->lower_y;
+    pp->upper_y = (pp->upper_y < 0) ? pageInfo.topMargin : pp->upper_y;
+
 
     c_ngsetc("me", pp->filename);
+    c_ngseti("pw", pageInfo.pageWidthPts);
+    c_ngseti("ph", pageInfo.pageHeightPts);
     c_ngseti("co", (pp->resolution/72 + 1));
     c_ngseti("cm", pp->color_model);
 
@@ -641,27 +689,27 @@ PDFWorkstationOpen
 /*
  * Function:    PDFWorkstationActivate
  *
- * Description: 
+ * Description:
  *
- * In Args: 
+ * In Args:
  *      NhlLayer    l
  *
- * Out Args:    
+ * Out Args:
  *
  * Scope:   static
  * Returns: NhlErrorTypes
- * Side Effect: 
+ * Side Effect:
  */
 
 static NhlErrorTypes
 PDFWorkstationActivate
 # if    NhlNeedProto
 (
-    NhlLayer    l   
+    NhlLayer    l
 )
 # else
 (l)
-    NhlLayer    l;  
+    NhlLayer    l;
 # endif
 {
     char    func[] = "PDFWorkstationClear";

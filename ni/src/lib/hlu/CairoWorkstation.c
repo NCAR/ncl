@@ -1,14 +1,13 @@
 /*
- *      $Id: CairoWorkstation.c,v 1.4 2010-01-21 22:16:48 brownrig Exp $
+ *      $Id: CairoWorkstation.c,v 1.5 2010-02-09 23:12:44 brownrig Exp $
  */
 
 # include   <stdio.h>
 # include   <string.h>
 # include   <ncarg/hlu/CairoWorkstationP.h>
 # include   <ncarg/hlu/ConvertersP.h>
+# include   <ncarg/hlu/pageutil.h>
 
-
-# define    NO_RES          "no.res"
 # define    Oset(field)     NhlOffset(NhlCairoWorkstationLayerRec, cairo.field)
 
 static NhlResource resources[] = {
@@ -26,23 +25,37 @@ static NhlResource resources[] = {
     {NhlNwkPDFResolution,NhlCwkPDFResolution,NhlTInteger,
         sizeof(int),Oset(dpi),NhlTImmediate,
         (NhlPointer)1800,_NhlRES_NOSACCESS,NULL},
+
+    /* these page size and margins are initialized as "-1" here, and are given appropriate
+     * values when the workstation is opened, depending upon which resources are actually
+     * available at that time.
+     */
+    {NhlNwkPaperSize,NhlCwkPaperSize,NhlTString,
+        sizeof(NhlString),Oset(paper_size),NhlTImmediate,
+        NULL,_NhlRES_DEFAULT,(NhlFreeFunc)NhlFree},
+    {NhlNwkPaperWidthF, NhlCwkPaperWidthF, NhlTFloat,
+        sizeof(float), Oset(page_width), NhlTString,
+        _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
+    {NhlNwkPaperHeightF, NhlCwkPaperHeightF, NhlTFloat,
+        sizeof(float), Oset(page_height), NhlTString,
+        _NhlUSET("-1."), _NhlRES_DEFAULT, NULL},
     {NhlNwkDeviceLowerX,NhlCwkDeviceLowerX,NhlTInteger,
         sizeof(int),Oset(lower_x),NhlTImmediate,
-        (NhlPointer)36,_NhlRES_DEFAULT,NULL},
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceLowerY,NhlCwkDeviceLowerY,NhlTInteger,
         sizeof(int),Oset(lower_y),NhlTImmediate,
-        (NhlPointer)126,_NhlRES_DEFAULT,NULL},
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperX,NhlCwkDeviceUpperX,NhlTInteger,
         sizeof(int),Oset(upper_x),NhlTImmediate,
-        (NhlPointer)576,_NhlRES_DEFAULT,NULL},
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
     {NhlNwkDeviceUpperY,NhlCwkDeviceUpperY,NhlTInteger,
         sizeof(int),Oset(upper_y),NhlTImmediate,
-        (NhlPointer)666,_NhlRES_DEFAULT,NULL},
+        (NhlPointer)-1,_NhlRES_DEFAULT,NULL},
 
     /* Resources for image-based output formats. We'll use the existing NGC_PIXCONFIG struct
      * for this purpose, but not all of its fields will be utilized.
      */
-    {NO_RES,NO_RES,NhlTInteger,sizeof(int),Oset(pixconfig.type),
+    {_NhlNwkPixConf,_NhlCwkPixConf,NhlTInteger,sizeof(int),Oset(pixconfig.type),
         NhlTImmediate,(NhlPointer)NGC_PIXCONFIG,
         _NhlRES_NOACCESS|_NhlRES_PRIVATE,NULL},
     {NhlNwkWidth,NhlCwkWidth,NhlTInteger,sizeof(int),
@@ -484,7 +497,17 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
     }
     strcpy(cairo->filename,tfname);
 
-    if (cairo->lower_x >= cairo->upper_x) {
+    if (cairo->paper_size) {
+        char* tmpStr = cairo->paper_size;
+        cairo->paper_size = NhlMalloc(strlen(tmpStr) + 1);
+        if (!cairo->paper_size) {
+            NHLPERROR((NhlFATAL,ENOMEM,NULL));
+            return NhlFATAL;
+        }
+        strcpy(cairo->paper_size, tmpStr);
+    }
+
+    if (cairo->lower_x > 0 && cairo->upper_x > 0 && cairo->lower_x >= cairo->upper_x) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,
             "%s:Device X Coordinates invalid, defaulting",func);
         ret = NhlWARNING;
@@ -492,7 +515,7 @@ static NhlErrorTypes CairoWorkstationInitialize(NhlClass lclass, NhlLayer req, N
         cairo->upper_x = 576;
     }
 
-    if (cairo->lower_y >= cairo->upper_y) {
+    if (cairo->lower_y > 0 && cairo->upper_y > 0 && cairo->lower_y >= cairo->upper_y) {
         NhlPError(NhlWARNING,NhlEUNKNOWN,
             "%s:Device Y Coordinates invalid, defaulting",func);
         ret = NhlWARNING;
@@ -662,8 +685,31 @@ CairoPSPDFWorkstationOpen(NhlLayer l)
     int d, w, h;
     int su = 0;
 
+    /* make use of a shared utility method that contains all the page-sizing logic common to cairo-document,
+     * postscript, and PDF workstations. See pageutil.c
+     */
+    NhlPageInfo pageInfo;
+    pageInfo.paperSize = pp->paper_size;
+    pageInfo.paperSizeResName = NhlNwkPaperSize;
+    pageInfo.paperWidthIn = pp->page_width;
+    pageInfo.paperWidthResName = NhlNwkPaperWidthF;
+    pageInfo.paperHeightIn = pp->page_height;
+    pageInfo.paperHeightResName = NhlNwkPaperHeightF;
+
+    ret = nhlGetPaperSize(&pageInfo);
+
+    /* unbundle returned values */
+    pp->page_width = pageInfo.paperWidthIn;
+    pp->page_height = pageInfo.paperHeightIn;
+    pp->lower_x = (pp->lower_x < 0) ? pageInfo.leftMargin : pp->lower_x;
+    pp->upper_x = (pp->upper_x < 0) ? pageInfo.rightMargin: pp->upper_x;
+    pp->lower_y = (pp->lower_y < 0) ? pageInfo.bottomMargin : pp->lower_y;
+    pp->upper_y = (pp->upper_y < 0) ? pageInfo.topMargin : pp->upper_y;
+
     /* Note that these can be set for the "next" workstation */
     c_ngsetc("me", pp->filename);
+    c_ngseti("pw", pageInfo.pageWidthPts);
+    c_ngseti("ph", pageInfo.pageHeightPts);
     c_ngseti("co", (pp->dpi/72 + 1));
     c_ngseti("lx", pp->lower_x);
     c_ngseti("ux", pp->upper_x);
