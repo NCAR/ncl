@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.15 2009-04-23 23:47:51 haley Exp $
+#       $Id: yMakefile,v 1.16 2010-02-09 17:14:36 haley Exp $
 #
 
 MYNAME  = nnalg
@@ -8,9 +8,9 @@ SRCS = nadisp.f  nadraw.f  naskln.f  nasort.f
 OBJS = nadisp.o  nadraw.o  naskln.o  nasort.o
 
 #if defined(Darwin)
-PROG_LIBS	=	$(NCARGLIBS) $(CTOFLIBS) $(PNGLIB) $(CAIROLIB)
+PROG_LIBS	=	$(NCARGLIBS) $(CTOFLIBS) $(CAIROLIB) $(PNGLIB)
 #else
-PROG_LIBS	=	$(NCARGLIBS) $(PNGLIB) $(CAIROLIB)
+PROG_LIBS	=	$(NCARGLIBS) $(CAIROLIB) $(PNGLIB)
 #endif
 
 DEP_LIBS = $(DEPNCARGLIBS)

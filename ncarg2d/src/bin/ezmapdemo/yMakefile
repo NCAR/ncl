@@ -1,5 +1,5 @@
 #
-#       $Id: yMakefile,v 1.8 2009-04-23 23:46:25 haley Exp $
+#       $Id: yMakefile,v 1.9 2010-02-09 17:13:48 haley Exp $
 #
 
 MYNAME  = ezmapdemo
@@ -7,7 +7,7 @@ MYNAME  = ezmapdemo
 SRC    = EzmapDemo.f
 OBJ    = EzmapDemo.o
 
-PROG_LIBS =	$(NCARGLIBS) $(PNGLIB) $(CAIROLIB)
+PROG_LIBS =	$(NCARGLIBS) $(CAIROLIB) $(PNGLIB)
 DEP_LIBS =	$(DEPNCARGLIBS)
 SYS_LIBS	= $(XLIB)
 
