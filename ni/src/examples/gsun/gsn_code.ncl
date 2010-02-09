@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.229 2010-01-21 22:19:03 brownrig Exp $
+;      $Id: gsn_code.ncl,v 1.230 2010-02-09 23:13:33 brownrig Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -3127,6 +3127,9 @@ begin
     cmodel   = get_res_value(wkresnew,"wkColorModel","rgb")
     resltn   = get_res_value(wkresnew,"wkPSResolution",1800)
     visualt  = get_res_value(wkresnew,"wkVisualType","color")
+    paperSize = get_res_value(wkresnew,"wkPaperSize","")
+    paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
+    paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
 
 ; Be sure to add any resources set here to "res_list" in gsn_open_wks
 ; so they don't get set again.
@@ -3137,6 +3140,9 @@ begin
       "wkPSFileName"   : name
       "wkPSFormat"     : type
       "wkVisualType"   : visualt
+      "wkPaperSize"     : paperSize
+      "wkPaperWidthF"   : paperW
+      "wkPaperHeightF"  : paperH
     end create
 
 ;
@@ -3155,6 +3161,8 @@ begin
       "wkDeviceLowerY" : ps@wkDeviceLowerY
       "wkDeviceUpperX" : ps@wkDeviceUpperX
       "wkDeviceUpperY" : ps@wkDeviceUpperY
+      "wkPaperWidthF"  : ps@wkPaperWidthF
+      "wkPaperHeightF" : ps@wkPaperHeightF
     end getvalues
 
     return(ps)
@@ -3204,6 +3212,9 @@ begin
     cmodel   = get_res_value(wkresnew,"wkColorModel","rgb")
     resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
     visualt  = get_res_value(wkresnew,"wkVisualType","color")
+    paperSize = get_res_value(wkresnew,"wkPaperSize","")
+    paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
+    paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
 
 ; Be sure to add any resources set here to "res_list" in gsn_open_wks
 ; so they don't get set again.
@@ -3214,6 +3225,9 @@ begin
       "wkPDFFileName"   : name
       "wkPDFFormat"     : type
       "wkVisualType"    : visualt
+      "wkPaperSize"     : paperSize
+      "wkPaperWidthF"   : paperW
+      "wkPaperHeightF"  : paperH
     end create
 
 ;
@@ -3232,6 +3246,8 @@ begin
       "wkDeviceLowerY" : pdf@wkDeviceLowerY
       "wkDeviceUpperX" : pdf@wkDeviceUpperX
       "wkDeviceUpperY" : pdf@wkDeviceUpperY
+      "wkPaperWidthF"  : pdf@wkPaperWidthF
+      "wkPaperHeightF" : pdf@wkPaperHeightF
     end getvalues
 
     return(pdf)
@@ -3278,10 +3294,16 @@ begin
 ;
     if (type.eq."newps".or.type.eq."newpdf")
         resltn   = get_res_value(wkresnew,"wkPDFResolution",1800)
+        paperSize   = get_res_value(wkresnew,"wkPaperSize","")
+        paperW = get_res_value(wkresnew,"wkPaperWidthF", -1.)
+        paperH = get_res_value(wkresnew,"wkPaperHeightF", -1.)
         cairo = create res_file documentWorkstationClass defaultapp
           "wkFileName"        : name
           "wkFormat"          : type
           "wkPDFResolution"   : resltn
+          "wkPaperSize"       : paperSize
+          "wkPaperWidthF"      : paperW
+          "wkPaperHeightF"     : paperH
         end create
 
        ; Retrieve the device coordinates and the orientation so we can
@@ -3293,8 +3315,9 @@ begin
           "wkDeviceLowerY" : cairo@wkDeviceLowerY
           "wkDeviceUpperX" : cairo@wkDeviceUpperX
           "wkDeviceUpperY" : cairo@wkDeviceUpperY
+          "wkPaperWidthF"  : cairo@wkPaperWidthF
+          "wkPaperHeightF" : cairo@wkPaperHeightF
         end getvalues
-
     else
         ; image-based formats
         imageWidth = get_res_value(wkresnew,"wkWidth",1000)

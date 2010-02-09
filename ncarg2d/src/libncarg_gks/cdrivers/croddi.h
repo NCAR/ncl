@@ -1,5 +1,5 @@
 /*
- *      $Id: croddi.h,v 1.5 2010-01-07 23:07:17 brownrig Exp $
+ *      $Id: croddi.h,v 1.6 2010-02-09 23:16:19 brownrig Exp $
  */
 /*
  *      File:           croddi.h
@@ -43,6 +43,8 @@ typedef struct  CROddi_ {
   float         scaling;
   int           image_width;       /* resolution, for image-based output formats only */
   int           image_height;      /*                     "                           */
+  int           paper_width;       /* paper size, for document-based formats only     */
+  int           paper_height;      /*                     "                           */
   int           background;
   int           pict_empty;
   int           page_number;

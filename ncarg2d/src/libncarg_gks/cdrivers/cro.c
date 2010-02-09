@@ -1,5 +1,5 @@
 /*
- *      $Id: cro.c,v 1.14 2010-01-22 16:50:51 brownrig Exp $
+ *      $Id: cro.c,v 1.15 2010-02-09 23:16:19 brownrig Exp $
  */
 /*
  *
@@ -563,6 +563,16 @@ int cro_Esc(GKSC *gksc) {
         setSurfaceTransform(psa);
         break;
 
+    case -1529:  /* paper width, in points */
+        strng = strtok(sptr, " ");
+        psa->paper_width = atoi(strng);
+        break;
+
+    case -1530:  /* paper height, in points */
+        strng = strtok(sptr, " ");
+        psa->paper_height = atoi(strng);
+        break;
+
     case NGESC_CNATIVE: /* C-escape mechanism;  get resolution of image-based output formats */
         switch (cesc->type) {
         case NGC_PIXCONFIG:
@@ -776,7 +786,8 @@ int cro_OpenWorkstation(GKSC *gksc) {
          */
         psa->output_file = getCPSFileName(psa->wks_id, sptr);
         cairo_surface[context_num] = cairo_ps_surface_create(psa->output_file,
-                PSPDF_PAGESIZE_X, PSPDF_PAGESIZE_Y);
+                psa->paper_width, psa->paper_height);
+        cairo_ps_surface_set_size(cairo_surface[context_num], psa->paper_width, psa->paper_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
     }
@@ -799,7 +810,7 @@ int cro_OpenWorkstation(GKSC *gksc) {
          */
         psa->output_file = getCPDFFileName(psa->wks_id, sptr);
         cairo_surface[context_num] = cairo_pdf_surface_create(psa->output_file,
-                PSPDF_PAGESIZE_X, PSPDF_PAGESIZE_Y);
+                psa->paper_width, psa->paper_height);
         cairo_context[context_num] = cairo_create(cairo_surface[context_num]);
         add_context_index(context_num, orig_wks_id);
     }
@@ -2168,6 +2179,15 @@ static void CROinit(CROddp *psa, int *coords) {
 
     psa->image_width = DEFAULT_IMAGE_WIDTH;
     psa->image_height = DEFAULT_IMAGE_HEIGHT;
+    psa->paper_width = PSPDF_PAGESIZE_X;
+    psa->paper_height = PSPDF_PAGESIZE_Y;
+
+    int paperWidth = *(coords+4);
+    int paperHeight = *(coords+5);
+    if (paperWidth != 0 && paperWidth != -9999 && paperHeight != 0 && paperHeight != -9999) {
+        psa->paper_width = paperWidth;
+        psa->paper_height = paperHeight;
+    }
 
     /* apply any escapes */
     _NGCesc *cesc;
