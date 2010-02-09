@@ -384,7 +384,7 @@ NhlErrorTypes area_conserve_remap_W( void )
   NGCALLF(cremapbin,CREMAPBIN)(&nlevi, &nlato, &nlono, &nlati, &nloni, 
                                tmp_fi, tmp_fo, tmp_lati, tmp_loni, tmp_lato,
                                tmp_lono, &NLATi, &NLATo, bin_factor, 
-			       &missing_dbl_fi);
+			       &missing_dbl_fi.doubleval);
 
 /*
  * Coerce output back to float if necessary.
