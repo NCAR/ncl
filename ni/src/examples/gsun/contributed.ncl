@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.258 2010-02-09 17:32:24 shea Exp $
+;      $Id: contributed.ncl,v 1.259 2010-02-10 18:30:10 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -9749,8 +9749,8 @@ end
 ; **********************************************************************
 ; D. Shea
 ;
-undef("is_equal_space")
-function is_equal_space(z[*]:numeric, epsz[1]:numeric)
+undef("isEqualSpace")
+function isEqualSpace(z[*]:numeric, epsz[1]:numeric)
 local nz, dz, dz_low, dz_high, diff
 begin
   nz = dimsizes(z)
@@ -9764,6 +9764,13 @@ begin
   diff   = all(abs(z(1:nz-1)-z(0:nz-2)) .ge. dz_low) .and. \
            all(abs(z(1:nz-1)-z(0:nz-2)) .le. dz_hgh)      
   return (diff)
+end
+; ---
+undef("isConstantSpace")
+; old name
+function isConstantSpace(z[*]:numeric, epsz[1]:numeric)
+begin
+  return(isEqualSpace(z,epsz))
 end
 
 ; **********************************************************************
