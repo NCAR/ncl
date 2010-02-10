@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.259 2010-02-10 18:30:10 shea Exp $
+;      $Id: contributed.ncl,v 1.260 2010-02-10 19:09:00 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11466,8 +11466,8 @@ begin
 end
  
 ;**********************************************************
-undef("mergeLevelSfc")
-function mergeLevelSfc (x, xsfc, levind[1]:integer)
+undef("merge_levels_sfc")
+function merge_levels_sfc (x, xsfc, levind[1]:integer)
 ; levind .ge. 0 top-to-bot ordering
 ; levind .lt. 0 bot-to-top ordering
 ;
@@ -11475,6 +11475,7 @@ function mergeLevelSfc (x, xsfc, levind[1]:integer)
 ; rank 2: x(time,lev),  xsfc(time)
 ; rank 3: x(lev,lat,lon),  xsfc(lat,lon)
 ; rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
+; rank 5: x(case,time,lev,lat,lon),  xsfc(case,time,lat,lon)
 ;
 local dimx, dimxs, rankx, rankxs, klev, k1, k2
 begin
@@ -11482,6 +11483,39 @@ begin
   rankx  = dimsizes(dimx)
   dimxs  = dimsizes(xsfc)
   rankxs = dimsizes(dimxs)
+
+  if (.not.(rankx.eq.(rankxs+1))) then
+      print("merge_levels_sfc: xsfc must have one less dimension than x")
+      print("                  rank(x)="+rankx+"  rank(xs)="+rankxs )
+      exit
+  end if
+
+;     rank 5: x(case,time,lev,lat,lon),  xsfc(case,time,lat,lon)
+  if (rankx.eq.5 .and. rankxs.eq.4) then
+      klev    = dimx(2)+1
+      dimx(2) = klev
+      xNew    = new( dimx, typeof(x), getFillValue(x) )
+      if (levind.lt.0) then
+          xNew(:,:, 1:  ,:,:) = (/ x /)
+          xNew(:,:, 0:0 ,:,:) = (/ xsfc /)
+      else
+          k1  = klev-1
+          k2  = klev-2
+          xNew(:,:, 0:k2,:,:) = (/ x /)
+          xNew(:,:,k1:k1,:,:) = (/ xsfc /)
+      end if
+
+      xNew!0  = x!0
+      xNew!1  = x!1
+      xNew!2  = str_switch(x!2)   ; new name
+      xNew!3  = x!3
+      xNew!4  = x!4
+      xNew&$xNew!0$ = x&$x!0$     ; case
+      xNew&$xNew!1$ = x&$x!1$     ; time
+      xNew&$xNew!2$ = x&$x!2$     ; time
+      xNew&$xNew!3$ = x&$x!3$     ; lat
+      xNew&$xNew!4$ = x&$x!4$     ; lon
+  end if
 
 ;     rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
   if (rankx.eq.4 .and. rankxs.eq.3) then
