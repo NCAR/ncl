@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.54 2010-02-06 13:55:32 haley Exp $
+#      $Id: Configure,v 1.55 2010-02-11 23:28:55 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2010-02-06 13:55:32 $
+#	$Date: 2010-02-11 23:28:55 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -961,8 +961,9 @@ if ($?verbose_option) then
 
 	Please enter the list of local libraries you wish to have
 	on your library search path.  If building X applications,
-	include the pathname of your X11 libraries.  Enter each
-	library pathname with a space between.
+	include the pathname of your X11 libraries.  If building
+        support for any other packages, like HDF-EOS5, cairo, etc, 
+        then enter each	library pathname with a space between.
 
 "EOF"
 endif
@@ -1004,11 +1005,15 @@ endif
 if ($?verbose_option) then
   cat <<"EOF"
 
-	Please enter the list of local include paths you wish to
-	have on your include search path.  If building X
-	applications, include the pathname to your X11 include
-	files.  Enter each include pathname with a space between.
+	Please enter the list of local include paths you wish to have
+	on your include search path.  If building X applications,
+	include the pathname to your X11 include files. If building
+	support for any other packages, like HDF-EOS5, cairo, etc,
+	then enter each include pathname with a space between.
 
+        If including cairo support, be sure to include the path
+        to the freetype2 include files, for example,
+        "/usr/local/include/freetype2".
 "EOF"
 endif
 
