@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.261 2010-02-11 00:40:48 shea Exp $
+;      $Id: contributed.ncl,v 1.262 2010-02-11 18:54:16 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11477,7 +11477,7 @@ function merge_levels_sfc (x, xsfc, levind[1]:integer)
 ; rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
 ; rank 5: x(case,time,lev,lat,lon),  xsfc(case,time,lat,lon)
 ;
-local dimx, dimxs, rankx, rankxs, klev, k1, k2
+local dimx, dimxs, rankx, rankxs, klev, k1, k2, mono
 begin
   dimx   = dimsizes(x)
   rankx  = dimsizes(dimx)
@@ -11496,21 +11496,35 @@ begin
       exit
   end if
 
+  momo = 1
+
 ;     rank 5: x(case,time,lev,lat,lon),  xsfc(case,time,lat,lon)
   if (rankx.eq.5 .and. rankxs.eq.4) then
       klev    = dimx(2)+1
+
+      if (iscoord(x, x!2) ) then
+          lv    = x&$x!2$
+          mono  = isMonotonic(lv)
+          lvNew = new (klev, typeof(lv))
+      else
+          lv    = ispan(0,klev-2,1)
+          lvNew = ispan(0,klev-1,1)
+      end if
+
       dimx(2) = klev
       xNew    = new( dimx, typeof(x), getFillValue(x) )
       if (levind.lt.0) then
           xNew(:,:, 1:  ,:,:) = (/ x /)
           xNew(:,:, 0:0 ,:,:) = (/ xsfc /)
+          lvNew(1:)           = (/ lv /)
       else
           k1  = klev-1
           k2  = klev-2
           xNew(:,:, 0:k2,:,:) = (/ x /)
           xNew(:,:,k1:k1,:,:) = (/ xsfc /)
+          lvNew(0:k2)         = (/ lv /)
       end if
-
+      copy_VarAtts(lv, lvNew)
        
       if (isdimnamed(x, 0)) then
           xNew!0  = x!0
@@ -11528,6 +11542,10 @@ begin
       if (iscoord(x, x!1) ) then
           xNew&$xNew!1$ = x&$x!1$ ; time
       end if
+      if (iscoord(x, x!2) ) then
+          xNew&$xNew!2$ = lvNew   ; level of merged 
+          print(lvNew)
+      end if
       if (iscoord(x, x!3) ) then
           xNew&$xNew!3$ = x&$x!3$ ; lat
       end if
@@ -11539,17 +11557,29 @@ begin
 ;     rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
   if (rankx.eq.4 .and. rankxs.eq.3) then
       klev    = dimx(1)+1
+      if (iscoord(x, x!1) ) then
+          lv    = x&$x!1$
+          mono  = isMonotonic(lv)
+          lvNew = new (klev, typeof(lv))
+      else
+          lv    = ispan(0,klev-2,1)
+          lvNew = ispan(0,klev-1,1)
+      end if
+
       dimx(1) = klev
       xNew    = new( dimx, typeof(x), getFillValue(x) )
       if (levind.lt.0) then
           xNew(:, 1:  ,:,:) = (/ x /)
           xNew(:, 0:0 ,:,:) = (/ xsfc /)
+          lvNew(1:)         = (/ lv /)
       else
           k1  = klev-1
           k2  = klev-2
           xNew(:, 0:k2,:,:) = (/ x /)
           xNew(:,k1:k1,:,:) = (/ xsfc /)
+          lvNew(0:k2)       = (/ lv /)
       end if
+      copy_VarAtts(lv, lvNew)
 
       xNew!0  = x!0
       xNew!1  = str_switch(x!1)   ; new name
@@ -11557,6 +11587,10 @@ begin
       xNew!3  = x!3
       if (iscoord(x, x!0) ) then
           xNew&$xNew!0$ = x&$x!0$ ; time
+      end if
+      if (iscoord(x, x!1) ) then
+          xNew&$xNew!1$ = lvNew   ; level of merged 
+          print(lvNew)
       end if
       if (iscoord(x, x!2) ) then
           xNew&$xNew!2$ = x&$x!2$ ; lat
@@ -11569,21 +11603,36 @@ begin
 ;     rank 3: x(lev,lat,lon),  xsfc(lat,lon)
   if (rankx.eq.3 .and. rankxs.eq.2) then
       klev    = dimx(0)+1
+      if (iscoord(x, x!0) ) then
+          lv    = x&$x!0$
+          mono  = isMonotonic(lv)
+          lvNew = new (klev, typeof(lv))
+      else
+          lv    = ispan(0,klev-2,1)
+          lvNew = ispan(0,klev-1,1)
+      end if
+
       dimx(0) = klev
       xNew    = new( dimx, typeof(x), getFillValue(x) )
       if (levind.lt.0) then
           xNew( 1:  ,:,:) = (/ x /)
           xNew( 0:0 ,:,:) = (/ xsfc /)
+          lvNew(1:)       = (/ lv /)
       else
           k1  = klev-1
           k2  = klev-2
           xNew( 0:k2,:,:) = (/ x /)
           xNew(k1:k1,:,:) = (/ xsfc /)
+          lvNew(0:k2)     = (/ lv /)
       end if
+      copy_VarAtts(lv, lvNew)
 
       xNew!0  = str_switch(x!0)   ; new name
       xNew!1  = x!1
       xNew!2  = x!2
+      if (iscoord(x, x!0) ) then
+          xNew&$xNew!0$ = lvNew   ; level of merged 
+      end if
       if (iscoord(x, x!1) ) then
           xNew&$xNew!1$ = x&$x!1$ ; lat
       end if
@@ -11595,40 +11644,69 @@ begin
 ;     rank 1: x(lev),  xsfc(1)
   if (rankx.eq.1 .and. rankxs.eq.1) then
       klev    = dimx(0)+1
+      if (iscoord(x, x!0) ) then
+          lv    = x&$x!0$
+          mono  = isMonotonic(lv)
+          lvNew = new (klev, typeof(lv))
+      else
+          lv    = ispan(0,klev-2,1)
+          lvNew = ispan(0,klev-1,1)
+      end if
+
       dimx(0) = klev
       xNew    = new( dimx, typeof(x), getFillValue(x) )
       if (levind.lt.0) then
           xNew( 1:  ) = (/ x /)
           xNew( 0:0 ) = (/ xsfc /)
+          lvNew(1:)   = (/ lv /)
       else
           k1  = klev-1
           k2  = klev-2
           xNew( 0:k2) = (/ x /)
           xNew(k1:k1) = (/ xsfc /)
+          lvNew(0:k2) = (/ lv /)
       end if
+      copy_VarAtts(lv, lvNew)
 
       xNew!0  = str_switch(x!0)   ; new name
+      if (iscoord(x, x!0) ) then
+          xNew&$xNew!0$ = lvNew   ; level of merged 
+      end if
   end if
 
 ;     rank 2: x(time,lev),  xsfc(time)
   if (rankx.eq.2 .and. rankxs.eq.1) then
       klev    = dimx(1)+1
+      if (iscoord(x, x!1) ) then
+          lv    = x&$x!1$
+          mono  = isMonotonic(lv)
+          lvNew = new (klev, typeof(lv))
+      else
+          lv    = ispan(0,klev-2,1)
+          lvNew = ispan(0,klev-1,1)
+      end if
+
       dimx(1) = klev
       xNew    = new( dimx, typeof(x), getFillValue(x) )
       if (levind.lt.0) then
           xNew(:, 1:  ) = (/ x /)
           xNew(:, 0:0 ) = (/ xsfc /)
+          lvNew(1:)     = (/ lv /)
       else
           k1  = klev-1
           k2  = klev-2
           xNew(:, 0:k2) = (/ x /)
           xNew(:,k1:k1) = (/ xsfc /)
+          lvNew(0:k2)   = (/ lv /)
       end if
 
       xNew!0  = x!0
       xNew!1  = str_switch(x!1)   ; new name
       if (iscoord(x, x!0) ) then
           xNew&$xNew!0$ = x&$x!0$ ; time
+      end if
+      if (iscoord(x, x!1) ) then
+          xNew&$xNew!1$ = lvNew   ; level of merged 
       end if
   end if
 
