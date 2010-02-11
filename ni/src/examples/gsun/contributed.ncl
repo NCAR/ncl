@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.260 2010-02-10 19:09:00 shea Exp $
+;      $Id: contributed.ncl,v 1.261 2010-02-11 00:40:48 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11484,9 +11484,15 @@ begin
   dimxs  = dimsizes(xsfc)
   rankxs = dimsizes(dimxs)
 
-  if (.not.(rankx.eq.(rankxs+1))) then
+  if (rankx.gt.1 .and. .not.(rankx.eq.(rankxs+1)) ) then
       print("merge_levels_sfc: xsfc must have one less dimension than x")
       print("                  rank(x)="+rankx+"  rank(xs)="+rankxs )
+      exit
+  end if
+
+  if (rankx.eq.1 .and. (rankxs.ne.1 .or. dimxs(0).gt.1) ) then
+      print("merge_levels_sfc: For x[*], then xsfc must be a scalar")
+      print("                  rank(x)="+rankx+"  rank(xs)="+rankxs+"  dimxs="+dimxs )
       exit
   end if
 
@@ -11505,16 +11511,29 @@ begin
           xNew(:,:,k1:k1,:,:) = (/ xsfc /)
       end if
 
-      xNew!0  = x!0
+       
+      if (isdimnamed(x, 0)) then
+          xNew!0  = x!0
+      else
+          xNew!0  = "case"
+      end if
       xNew!1  = x!1
       xNew!2  = str_switch(x!2)   ; new name
       xNew!3  = x!3
       xNew!4  = x!4
-      xNew&$xNew!0$ = x&$x!0$     ; case
-      xNew&$xNew!1$ = x&$x!1$     ; time
-      xNew&$xNew!2$ = x&$x!2$     ; time
-      xNew&$xNew!3$ = x&$x!3$     ; lat
-      xNew&$xNew!4$ = x&$x!4$     ; lon
+
+      if (iscoord(x, x!0) ) then
+          xNew&$xNew!0$ = x&$x!0$ ; case
+      end if
+      if (iscoord(x, x!1) ) then
+          xNew&$xNew!1$ = x&$x!1$ ; time
+      end if
+      if (iscoord(x, x!3) ) then
+          xNew&$xNew!3$ = x&$x!3$ ; lat
+      end if
+      if (iscoord(x, x!4) ) then
+          xNew&$xNew!4$ = x&$x!4$ ; lon
+      end if
   end if
 
 ;     rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
@@ -11536,9 +11555,15 @@ begin
       xNew!1  = str_switch(x!1)   ; new name
       xNew!2  = x!2
       xNew!3  = x!3
-      xNew&$xNew!0$ = x&$x!0$     ; time
-      xNew&$xNew!2$ = x&$x!2$     ; lat
-      xNew&$xNew!3$ = x&$x!3$     ; lon
+      if (iscoord(x, x!0) ) then
+          xNew&$xNew!0$ = x&$x!0$ ; time
+      end if
+      if (iscoord(x, x!2) ) then
+          xNew&$xNew!2$ = x&$x!2$ ; lat
+      end if
+      if (iscoord(x, x!3) ) then
+          xNew&$xNew!3$ = x&$x!3$ ; lon
+      end if
   end if
 
 ;     rank 3: x(lev,lat,lon),  xsfc(lat,lon)
@@ -11559,8 +11584,12 @@ begin
       xNew!0  = str_switch(x!0)   ; new name
       xNew!1  = x!1
       xNew!2  = x!2
-      xNew&$xNew!1$ = x&$x!1$     ; lat
-      xNew&$xNew!2$ = x&$x!2$     ; lon
+      if (iscoord(x, x!1) ) then
+          xNew&$xNew!1$ = x&$x!1$ ; lat
+      end if
+      if (iscoord(x, x!2) ) then
+          xNew&$xNew!2$ = x&$x!2$ ; lon
+      end if
   end if
 
 ;     rank 1: x(lev),  xsfc(1)
@@ -11598,7 +11627,9 @@ begin
 
       xNew!0  = x!0
       xNew!1  = str_switch(x!1)   ; new name
-      xNew&$xNew!0$ = x&$x!0$     ; time
+      if (iscoord(x, x!0) ) then
+          xNew&$xNew!0$ = x&$x!0$ ; time
+      end if
   end if
 
   copy_VarAtts(x, xNew)
