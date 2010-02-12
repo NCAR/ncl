@@ -1,5 +1,5 @@
 /*
- *      $Id: NclNetCdf.c,v 1.54 2009-11-05 02:18:02 dbrown Exp $
+ *      $Id: NclNetCdf.c,v 1.55 2010-02-12 23:47:10 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -442,11 +442,15 @@ static void *NetInitializeFileRec
 NclFileFormatType *format;
 #endif
 {
+	static int first = True;
 	NetCdfFileRecord *therec = NULL;
 	size_t blksize = getpagesize();
 
-	Qmissing_val = NrmStringToQuark("missing_value");
-	Qfill_val = NrmStringToQuark("_FillValue");
+	if (first) {
+		Qmissing_val = NrmStringToQuark("missing_value");
+		Qfill_val = NrmStringToQuark("_FillValue");
+		first = False;
+	}
 
         /*nc_set_log_level(3);*/
 

@@ -8822,7 +8822,11 @@ int* nrotatts;
 	do_rot = 1;
 	grid_oriented = ((unsigned char)010 & (unsigned char)gds[16])?1:0;
 
-#if 0
+#if 1
+	if (do_rot) {
+		*rot = NhlMalloc(nx * ny * sizeof(float));
+	}
+	
 	if(north) {
 		InitMapTrans("ST",90.0,lov,0.0);
 /*
@@ -8848,6 +8852,10 @@ int* nrotatts;
 				float tmpy = ny0 + jdir * j * deltay;
 				NGCALLF(maptri,MAPTRI)
 				(&tmpx,&tmpy,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
+				if (do_rot) {
+					gridrot(lov,(*lon)[j * nx + i],&((*rot)[j * nx + i]));
+				}
+
 			}
 		}
 	} else {
@@ -8875,12 +8883,15 @@ int* nrotatts;
 				float tmpy = ny0 + jdir * j * deltay;
 				NGCALLF(maptri,MAPTRI)
 				(&tmpx,&tmpy,&((*lat)[j * nx + i]),&((*lon)[j * nx + i]));
+				if (do_rot) {
+					gridrot(lov,(*lon)[j * nx + i],&((*rot)[j * nx + i]));
+				}
 			}
 		}
 	}
 #endif
 
-#if 1
+#if 0
 	{
 		int kgds[32];
 		int iopt;
