@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.262 2010-02-11 18:54:16 shea Exp $
+;      $Id: contributed.ncl,v 1.263 2010-02-12 18:57:41 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11477,7 +11477,7 @@ function merge_levels_sfc (x, xsfc, levind[1]:integer)
 ; rank 4: x(time,lev,lat,lon),  xsfc(time,lat,lon)
 ; rank 5: x(case,time,lev,lat,lon),  xsfc(case,time,lat,lon)
 ;
-local dimx, dimxs, rankx, rankxs, klev, k1, k2, mono
+local dimx, dimxs, rankx, rankxs, klev, k1, k2, mono, fudge
 begin
   dimx   = dimsizes(x)
   rankx  = dimsizes(dimx)
@@ -11496,7 +11496,8 @@ begin
       exit
   end if
 
-  momo = 1
+  momo  = 1
+  fudge = 1.02    ; completely arbitrary > 1
 
 ;     rank 5: x(case,time,lev,lat,lon),  xsfc(case,time,lat,lon)
   if (rankx.eq.5 .and. rankxs.eq.4) then
@@ -11507,8 +11508,8 @@ begin
           mono  = isMonotonic(lv)
           lvNew = new (klev, typeof(lv))
       else
-          lv    = ispan(0,klev-2,1)
-          lvNew = ispan(0,klev-1,1)
+          lv    = ispan(0,klev-2,1)*1.0
+          lvNew = ispan(0,klev-1,1)*1.0
       end if
 
       dimx(2) = klev
@@ -11517,18 +11518,23 @@ begin
           xNew(:,:, 1:  ,:,:) = (/ x /)
           xNew(:,:, 0:0 ,:,:) = (/ xsfc /)
           lvNew(1:)           = (/ lv /)
+         ;lvNew(0 )           =  lv(0)*fudge  
+          lvNew(0 )           =  2*lv(0) - lv(1)  
       else
           k1  = klev-1
           k2  = klev-2
           xNew(:,:, 0:k2,:,:) = (/ x /)
           xNew(:,:,k1:k1,:,:) = (/ xsfc /)
           lvNew(0:k2)         = (/ lv /)
+         ;lvNew(k1)           =  lv(k2)*fudge  
+          lvNew(k1)           =  2*lv(k2) - lv(k2-1)  
       end if
       copy_VarAtts(lv, lvNew)
        
       if (isdimnamed(x, 0)) then
           xNew!0  = x!0
       else
+          x!0     = "case"
           xNew!0  = "case"
       end if
       xNew!1  = x!1
@@ -11544,7 +11550,6 @@ begin
       end if
       if (iscoord(x, x!2) ) then
           xNew&$xNew!2$ = lvNew   ; level of merged 
-          print(lvNew)
       end if
       if (iscoord(x, x!3) ) then
           xNew&$xNew!3$ = x&$x!3$ ; lat
@@ -11572,12 +11577,16 @@ begin
           xNew(:, 1:  ,:,:) = (/ x /)
           xNew(:, 0:0 ,:,:) = (/ xsfc /)
           lvNew(1:)         = (/ lv /)
+         ;lvNew(0)          =  lv(0)*fudge  
+          lvNew(0 )         =  2*lv(0) - lv(1)  
       else
           k1  = klev-1
           k2  = klev-2
           xNew(:, 0:k2,:,:) = (/ x /)
           xNew(:,k1:k1,:,:) = (/ xsfc /)
           lvNew(0:k2)       = (/ lv /)
+         ;lvNew(k1)         =  lv(k2)*fudge  
+          lvNew(k1)         =  2*lv(k2) - lv(k2-1)  
       end if
       copy_VarAtts(lv, lvNew)
 
@@ -11590,7 +11599,6 @@ begin
       end if
       if (iscoord(x, x!1) ) then
           xNew&$xNew!1$ = lvNew   ; level of merged 
-          print(lvNew)
       end if
       if (iscoord(x, x!2) ) then
           xNew&$xNew!2$ = x&$x!2$ ; lat
@@ -11618,12 +11626,16 @@ begin
           xNew( 1:  ,:,:) = (/ x /)
           xNew( 0:0 ,:,:) = (/ xsfc /)
           lvNew(1:)       = (/ lv /)
+         ;lvNew(0)        =  lv(0)*fudge  
+          lvNew(0 )       =  2*lv(0) - lv(1)  
       else
           k1  = klev-1
           k2  = klev-2
           xNew( 0:k2,:,:) = (/ x /)
           xNew(k1:k1,:,:) = (/ xsfc /)
           lvNew(0:k2)     = (/ lv /)
+         ;lvNew(k1)       =  lv(k2)*fudge  
+          lvNew(k1)       =  2*lv(k2) - lv(k2-1)  
       end if
       copy_VarAtts(lv, lvNew)
 
@@ -11659,12 +11671,16 @@ begin
           xNew( 1:  ) = (/ x /)
           xNew( 0:0 ) = (/ xsfc /)
           lvNew(1:)   = (/ lv /)
+         ;lvNew(0)    =  lv(0)*fudge  
+          lvNew(0 )   =  2*lv(0) - lv(1)  
       else
           k1  = klev-1
           k2  = klev-2
           xNew( 0:k2) = (/ x /)
           xNew(k1:k1) = (/ xsfc /)
           lvNew(0:k2) = (/ lv /)
+         ;lvNew(k1)   =  lv(k2)*fudge  
+          lvNew(k1)   =  2*lv(k2) - lv(k2-1)  
       end if
       copy_VarAtts(lv, lvNew)
 
@@ -11692,12 +11708,16 @@ begin
           xNew(:, 1:  ) = (/ x /)
           xNew(:, 0:0 ) = (/ xsfc /)
           lvNew(1:)     = (/ lv /)
+         ;lvNew(0)      =  lv(0)*fudge  
+          lvNew(0 )     =  2*lv(0) - lv(1)  
       else
           k1  = klev-1
           k2  = klev-2
           xNew(:, 0:k2) = (/ x /)
           xNew(:,k1:k1) = (/ xsfc /)
           lvNew(0:k2)   = (/ lv /)
+         ;lvNew(k1)     =  lv(k2)*fudge  
+          lvNew(k1)     =  2*lv(k2) - lv(k2-1)  
       end if
 
       xNew!0  = x!0
