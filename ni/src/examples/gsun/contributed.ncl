@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.263 2010-02-12 18:57:41 shea Exp $
+;      $Id: contributed.ncl,v 1.264 2010-02-16 16:47:26 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -1702,9 +1702,10 @@ begin
 
           ; names to check
  oNames = (/"add_offset", "offset", "OFFSET", "Offset", "_offset" \
-           ,"Intercept", "intercept"/)
+           ,"Intercept", "intercept", "scalingIntercept" /)
  sNames = (/"scale", "SCALE", "Scale", "_scale", "scale_factor" \
-           ,"Scale_factor", "Slope" , "slope", "ScaleFactor", "Scale_Factor" /)
+           ,"Scale_factor", "Slope" , "slope", "ScaleFactor"      \
+           ,"Scale_Factor", "scalingSlope" /)
 
 
  offset = 0.0   ; establish as type float
@@ -11290,14 +11291,16 @@ begin
    end if
 end
 ;---------------------------------
+; undocumented
+;
 undef ("calculate_monthly_values")
 function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt[1]:logical)
 
-; calculate monthly values [avg, sum]
+; calculate monthly values [avg, sum, min, max]
 ; x: numeric array of 4D or less [eg: time,lev,lat,lon]
 ;    *must* have time coordinate recognized by ut_calendar
 ;    if 5D [case,time,lev,lat,lon]
-; arith: "avg" [also, "ave"], or "sum"     others may be added later
+; arith: "avg" [also, "ave"], "sum","min","max"     others may be added later
 ; nDim : scalar integer that specifies the 'time' dimension [generally, 0]
 ; opt  : option ... not used here 
 local dimx, rankx, utc_date, year, month, day, hour, ntim \
@@ -11461,6 +11464,8 @@ begin
     if (rankx.eq.5) then
         copy_VarCoords(x(:,0,0,:,:), xReturn(:,0,0,:,:))
     end if
+
+    xReturn@operation_tag = "calculate_monthly_values: "+arith
 
     return( xReturn ) 
 end
