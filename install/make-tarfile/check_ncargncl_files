@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.17 2009-05-19 15:08:28 haley Exp $
+#   $Id: check_ncargncl_files,v 1.18 2010-02-16 15:36:30 haley Exp $
 #
 # Use check_files instead! This one is just for NCL/NCARG and
 # hasn't been updated in awhile.
@@ -1654,6 +1654,7 @@ lib/ncarg/nclex/xyplot/xy14n.ncl
 lib/ncarg/nclex/xyplot/xy15n.ncl
 lib/ncarg/nclex/xyplot/xy16n.ncl
 lib/ncarg/nclex/xyplot/xy17n.ncl
+lib/ncarg/nclscripts/contrib/calendar_decode2.ncl
 lib/ncarg/nclscripts/csm/ccm_func.ncl
 lib/ncarg/nclscripts/csm/contributed.ncl
 lib/ncarg/nclscripts/csm/diagnostics_cam.ncl
