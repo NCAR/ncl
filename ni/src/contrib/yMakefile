@@ -1,0 +1,7 @@
+#
+#	$Id: yMakefile,v 1.1 2010-02-16 15:35:13 haley Exp $
+#
+CONTRIB_SCRIPTS = calendar_decode2.ncl
+
+InstallTarget($(CONTRIB_SCRIPTS),$(INSTALL_LIB),$(LIBNCARGROOT)/nclscripts/contrib)
+
