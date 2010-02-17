@@ -5,6 +5,7 @@
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/XWorkstation.h>
 #include "wrapper.h"
+#include <ncarg/ncargC.h>
 
 extern void NGCALLF(tdcurv,tdcurv)(float *,float *,float*,int *,int *, float *,
 				   float *);
@@ -19,6 +20,8 @@ extern void NGCALLF(tditri,tditri)(float *,int *,float *,int *, float *,int *,
 
 extern void NGCALLF(tdstri,TDSTRI)(float *,int *,float *,int *,float *,int *,
                                    float *,int *,int *,int *);
+
+extern void NGCALLF(tdotri,TDOTRI)(float *,int *,int *,float *,int *,int *);
 
 extern void NGCALLF(tdez1d,TDEZ1D)(int *,float *,float *,float*,int *,float *,
                                    float *,float *,float *,float *,int *);
@@ -1271,7 +1274,7 @@ NhlErrorTypes tdctri_W( void )
 
 NhlErrorTypes tdotri_W( void )
 {
-  int *ntri, mtri, *iord, dsizes_rtri[2], dsizes_itwk[1];
+  int *ntri, mtri, *iord, dsizes_rtri[2], dsizes_rtwk[2], dsizes_itwk[1];
   float *rtri;
 /*
  * Work arrays.
@@ -1283,12 +1286,17 @@ NhlErrorTypes tdotri_W( void )
  */
   rtri = (float*)NclGetArgValue(0,4,NULL,dsizes_rtri,NULL,NULL,NULL,DONT_CARE);
   ntri =   (int*)NclGetArgValue(1,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
-  rtwk = (float*)NclGetArgValue(2,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
+  rtwk = (float*)NclGetArgValue(2,4,NULL,dsizes_rtwk,NULL,NULL,NULL,DONT_CARE);
   iord =   (int*)NclGetArgValue(3,4,NULL,NULL,NULL,NULL,NULL,DONT_CARE);
 
   mtri = dsizes_rtri[0];
   if(dsizes_rtri[1] != 10) {
     NhlPError(NhlFATAL, NhlEUNKNOWN, "tdotri: the second dimension of ntri must be 10");
+    return(NhlFATAL);
+  }
+
+  if(dsizes_rtwk[0] != 2 || dsizes_rtwk[1] != mtri) {
+    NhlPError(NhlFATAL, NhlEUNKNOWN, "tdotri: the dimensions of rtwk must be 2 x mtri");
     return(NhlFATAL);
   }
 
@@ -1298,7 +1306,7 @@ NhlErrorTypes tdotri_W( void )
     return(NhlFATAL);
   }
 
-  c_tdotri(rtri, mtri, ntri, rtwk, itwk, *iord);
+  NGCALLF(tdotri,TDOTRI)(rtri, &mtri, ntri, rtwk, itwk, iord);
 
   if(*ntri == mtri) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"tdotri: triangle list overflow");
@@ -1306,7 +1314,6 @@ NhlErrorTypes tdotri_W( void )
   }
 
   dsizes_itwk[0] = mtri;
-
   ret = NclReturnValue(itwk,1,dsizes_itwk,NULL,NCL_int,0);
 }
 
