@@ -1,5 +1,5 @@
 /*
- *      $Id: ps.c,v 1.40 2010-02-08 06:03:12 fred Exp $
+ *      $Id: ps.c,v 1.41 2010-02-17 02:35:07 fred Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -836,10 +836,16 @@ void PSpreamble (PSddp *psa, preamble_type type)
 
                 (void) fprintf(fp, "%%%%EndProlog\n\n");
 
-                (void) fprintf(fp, "%%%%BeginSetup\n");
-                (void) fprintf(fp, "<</PageSize [%05d %05d]>> setpagedevice\n",
+/*
+ *  Put out page size information only for regulare PS files.
+ */
+                if (psa->type == RPS) {
+
+                  (void)fprintf(fp, "%%%%BeginSetup\n");
+                  (void)fprintf(fp, "<</PageSize [%05d %05d]>> setpagedevice\n",
                                        psa->paper_width, psa->paper_height);
-                (void) fprintf(fp, "%%%%EndSetup\n\n");
+                  (void) fprintf(fp, "%%%%EndSetup\n\n");
+                }
 
                 DefaultColorTable(psa);
 
