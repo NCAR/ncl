@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.56 2010-02-18 17:29:54 haley Exp $
+#      $Id: Configure,v 1.57 2010-02-18 21:23:17 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2010-02-18 17:29:54 $
+#	$Date: 2010-02-18 21:23:17 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -624,8 +624,8 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 	default).
 
 	If you built the NetCDF-4.1 software library with OPeNDAP
-	support explicitly turned off, you should answer "y" to this
-	question.
+	support explicitly turned off, or if you built NetCDF 4.0.x
+        or earlier, you should answer "n" to this question.
 
 ======================================================================
 "EOF"
