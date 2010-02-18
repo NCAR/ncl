@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#      $Id: Configure,v 1.55 2010-02-11 23:28:55 haley Exp $
+#      $Id: Configure,v 1.56 2010-02-18 17:29:54 haley Exp $
 #
 #########################################################################
 #																		#
@@ -15,7 +15,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	$Date: 2010-02-11 23:28:55 $
+#	$Date: 2010-02-18 17:29:54 $
 #
 #	Description:	I took pieces of the old configure script to
 #					build this one.
@@ -631,15 +631,15 @@ if ("$buildncl" == "y" || "$buildncl" == "Y") then
 "EOF"
   endif
 
-  set netcdfwithoutdap = "n"
+  set netcdfwithdap = "y"
   echo ""
-  echo "If you built NetCDF V4.1 or later, did you DISABLE OPeNDAP support ($netcdfwithoutdap)?"
-  echo "(OPeNDAP support is on by default when you build NetCDF V4.1.)"
+  echo "Did you build NetCDF with OPeNDAP support ($netcdfwithdap)?"
+  echo "(OPeNDAP support is only available for NetCDF 4.1 or later)"
   echo -n "Enter Return (default), y(yes), n(no), or q(quit) > "
   set answer="$<"
   if ("$answer" == "q") goto cleanup
-  if (("$answer" != "") && ("$answer" != "$netcdfwithoutdap")) then
-      set netcdfwithoutdap = "$answer"
+  if (("$answer" != "") && ("$answer" != "$netcdfwithdap")) then
+      set netcdfwithdap = "$answer"
       set netcdflib = "-lnetcdf"
   endif
 
@@ -1109,7 +1109,7 @@ endif
 
 echo "" >> Site.local
 
-if ("$netcdfwithoutdap" == "n") then
+if ("$netcdfwithdap" == "n") then
     echo "#define NetCDFlib $netcdflib" >> Site.local
     echo "" >> Site.local
 endif
