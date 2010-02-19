@@ -72,7 +72,9 @@ C*PL*ERROR* Too many continuation lines generated
 
       DRELHUM = (W* (P-0.378D0*ES)/ (0.622D0*ES))*100.D0
 
-      IF (DRELHUM.GT.100.D0) DRELHUM = 100.D0
+C This line commented out in V5.2.0 b/c "it prevents instances
+C where "super saturation" can occur".
+C     IF (DRELHUM.GT.100.D0) DRELHUM = 100.D0
       IF (DRELHUM.LT.0.D0)   DRELHUM = 0.0001D0
 
       RETURN
