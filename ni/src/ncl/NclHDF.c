@@ -1,5 +1,5 @@
 /*
- *      $Id: NclHDF.c,v 1.35 2009-11-30 17:45:25 huangwei Exp $
+ *      $Id: NclHDF.c,v 1.36 2010-02-19 22:58:52 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -86,6 +86,7 @@ struct _HDFVarInqRec {
 	NclQuark class_name;
 	NclQuark var_path;
 	nc_type	data_type;
+	int     hdf_type;
 	int	n_dims;
 	int	dim[MAX_VAR_DIMS];
 	int	natts;
@@ -106,6 +107,7 @@ struct _HDFAttInqRec {
 	NclQuark hdf_name;
 	int	varid;
 	nc_type data_type;
+	int     hdf_type;
 	int	len;
 	void *value;
 	int attr_ix;
@@ -220,44 +222,6 @@ static void HDFCacheAttValue
 	return;
 }
 
-static NclBasicDataTypes HDFMapToNcl_Dave_Original
-#if     NhlNeedProto
-(void* the_type)
-#else
-(the_type)
-        void *the_type;
-#endif
-{
-        static int first = 1;
-        static NclBasicDataTypes long_type;
-        if(first) {
-                if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
-                        long_type = NCL_int;
-                } else if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
-                        long_type = NCL_long;
-                }
-                else {
-                        long_type = NCL_none;
-                }
-                first = 0;
-        }
-        switch(*(nc_type*)the_type) {
-        case NC_BYTE:
-                return(NCL_byte);
-        case NC_CHAR:
-                return(NCL_char);
-        case NC_SHORT:
-                return(NCL_short);
-        case NC_LONG:
-                return(long_type);
-        case NC_FLOAT:
-                return(NCL_float);
-        case NC_DOUBLE:
-                return(NCL_double);
-        default:
-                return(NCL_none);
-        }
-}
 
 static NclBasicDataTypes HDFMapToNcl 
 #if	NhlNeedProto
@@ -269,55 +233,31 @@ static NclBasicDataTypes HDFMapToNcl
 {
 	static int first = 1;
 	static NclBasicDataTypes long_type;
-	static NclBasicDataTypes ulong_type;
 	if(first) {
 		if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
 			long_type = NCL_int;
-			ulong_type = NCL_uint;
 		} else if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
 			long_type = NCL_long;
-			ulong_type = NCL_ulong;
 		} 
 		else {
 			long_type = NCL_none;
 		}
 		first = 0;
 	}
-
-	switch(*(nc_type*)the_type)
-	{
-	case DFNT_UINT8:
-	case DFNT_UCHAR:
+	switch(*(nc_type*)the_type) {
+	case NC_BYTE:
 		return(NCL_byte);
-	case DFNT_INT8:
+	case NC_CHAR:
 		return(NCL_char);
-	case DFNT_CHAR:
-		return(NCL_string);
-	case DFNT_INT16:
+	case NC_SHORT:
 		return(NCL_short);
-	case DFNT_UINT16:
-		return(NCL_ushort);
-	case DFNT_INT32:
+	case NC_LONG:
 		return(long_type);
-	case DFNT_UINT32:
-		return(ulong_type);
-	case DFNT_INT64:
-		return(NCL_int64);
-	case DFNT_UINT64:
-		return(NCL_uint64);
-	case DFNT_FLOAT:
+	case NC_FLOAT:
 		return(NCL_float);
-	case DFNT_DOUBLE:
+	case NC_DOUBLE:
 		return(NCL_double);
-	case DFNT_VERSION:
-	      /*
-	       *This is added to handle HDF version info. Wei Nov. 30, 2009
-	       */
-		return(NCL_string);
 	default:
-                fprintf(stdout, "file: %s, line, %d\n", __FILE__, __LINE__);
-                fprintf(stdout, "UNKNOWN the_type: %d\n", *(nc_type*)the_type);
-                NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type.");
 		return(NCL_none);
 	}
 }
@@ -332,85 +272,6 @@ static void *HDFMapFromNcl
 {
 	static int first = 1;
 	static NclBasicDataTypes long_type;
-	static NclBasicDataTypes ulong_type;
-	void *out_type = (void*)NclMalloc((unsigned)sizeof(nc_type));;
-	if(first) {
-		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
-			long_type = NCL_long;
-			ulong_type = NCL_ulong;
-		} else if(sizeof(nclong) == _NclSizeOf(NCL_int)) {
-			long_type = NCL_int;
-			ulong_type = NCL_uint;
-		} else {
-			long_type = NCL_none;
-		}
-		first = 0;
-	}
-
-	switch(the_type) {
-	case NCL_byte:
-		*(nc_type*)out_type = DFNT_UINT8;
-		*(nc_type*)out_type = DFNT_UCHAR;
-		*(nc_type*)out_type = NC_BYTE;
-                break;
-	case NCL_char:
-		*(nc_type*)out_type = DFNT_CHAR;
-		*(nc_type*)out_type = NC_CHAR;
-                break;
-	case NCL_ushort:
-		*(nc_type*)out_type = DFNT_UINT16;
-	case NCL_short:
-		*(nc_type*)out_type = DFNT_INT16;
-		*(nc_type*)out_type = NC_SHORT;
-                break;
-	case NCL_uint:
-		*(nc_type*)out_type = DFNT_UINT32;
-	case NCL_int:
-		*(nc_type*)out_type = DFNT_INT32;
-	case NCL_logical:
-		*(nc_type*)out_type = NC_LONG;
-                break;
-	case NCL_ulong:
-		*(nc_type*)out_type = DFNT_UINT32;
-	case NCL_long:
-		*(nc_type*)out_type = DFNT_INT32;
-		if(long_type == the_type) {
-			*(nc_type*)out_type = NC_LONG;
-		} else {
-			NhlPError(NhlWARNING,NhlEUNKNOWN,"Can't map type, HDF 4 does not support 64 bit longs: try converting to integer or double");
-			NclFree(out_type);
-			out_type = NULL;
-		}
-		break;
-	case NCL_uint64:
-		*(nc_type*)out_type = DFNT_UINT64;
-	case NCL_int64:
-		*(nc_type*)out_type = DFNT_INT64;
-	case NCL_float:
-		*(nc_type*)out_type = DFNT_FLOAT;
-		*(nc_type*)out_type = NC_FLOAT;
-		break;
-	case NCL_double:
-		*(nc_type*)out_type = DFNT_DOUBLE;
-		*(nc_type*)out_type = NC_DOUBLE;
-		break;
-        default:
-		NclFree(out_type);
-		out_type = NULL;
-	}
-	return(out_type);
-}
-
-static void *HDFMapFromNcl_Dave_Original
-#if	NhlNeedProto
-(NclBasicDataTypes the_type)
-#else
-(the_type)
-	NclBasicDataTypes the_type;
-#endif
-{
-	static int first = 1;
-	static NclBasicDataTypes long_type;
 	void *out_type = (void*)NclMalloc((unsigned)sizeof(nc_type));;
 	if(first) {
 		if(sizeof(nclong) == _NclSizeOf(NCL_long)) {
@@ -422,7 +283,6 @@ static void *HDFMapFromNcl_Dave_Original
 		}
 		first = 0;
 	}
-
 	switch(the_type) {
 	case NCL_byte:
 		*(nc_type*)out_type = NC_BYTE;
@@ -892,7 +752,8 @@ int wr_status;
 		int32 sds_id;
 		for(i = 0 ; i < nvars; i++) {
 			int dim_sizes[32];
-
+			int n_dims;
+			int n_atts;
 			*stepvlptr = (HDFVarInqRecList*)NclMalloc(
 					(unsigned) sizeof(HDFVarInqRecList));
 			(*stepvlptr)->var_inq = (HDFVarInqRec*)NclMalloc(
@@ -905,7 +766,6 @@ int wr_status;
 				((*stepvlptr)->var_inq->dim),
 				&((*stepvlptr)->var_inq->natts)
 				);
-
 			sds_id = SDselect(sd_id,i);
 			(*stepvlptr)->var_inq->id_ref = SDidtoref(sds_id);
 			(*stepvlptr)->var_inq->vg_ref = -1;
@@ -913,10 +773,10 @@ int wr_status;
 			(*stepvlptr)->var_inq->name = NrmNULLQUARK;
 			(*stepvlptr)->var_inq->hdf_name = NrmStringToQuark(buffer);
 			status = SDgetinfo(sds_id,buffer,
-					   &((*stepvlptr)->var_inq->n_dims),
+					   &n_dims,
 					   dim_sizes,
-					   &((*stepvlptr)->var_inq->data_type),
-					   &((*stepvlptr)->var_inq->natts));
+					   &((*stepvlptr)->var_inq->hdf_type),
+					   &n_atts);
 
 			for(j = 0; j < ((*stepvlptr)->var_inq->n_dims); j++) {
 				tmp_size = 0;
@@ -954,6 +814,9 @@ int wr_status;
 							sd_ncattname(cdfid,i,j,buffer);
 							(*stepalptr)->att_inq->hdf_name = NrmStringToQuark(buffer);
 							(*stepalptr)->att_inq->name = HDFToNCLName(buffer,NULL,False);
+							SDattrinfo(sds_id,j,buffer,
+									 &((*stepalptr)->att_inq->hdf_type),
+									 &((*stepalptr)->att_inq->len));
 							sd_ncattinq(cdfid,i,buffer,
 								    &((*stepalptr)->att_inq->data_type),
 								    &((*stepalptr)->att_inq->len));
@@ -1035,6 +898,9 @@ int wr_status;
 			(*stepalptr)->att_inq->name = HDFToNCLName(buffer,NULL,False);
 			(*stepalptr)->att_inq->varid = NC_GLOBAL;
 			(*stepalptr)->att_inq->attr_ix = SDfindattr(sd_id,buffer);
+			SDattrinfo(sd_id,i,buffer,
+				   &((*stepalptr)->att_inq->hdf_type),
+				   &((*stepalptr)->att_inq->len));
 			sd_ncattinq(cdfid,NC_GLOBAL,buffer,
 					&((*stepalptr)->att_inq->data_type),
                                 	&((*stepalptr)->att_inq->len));
@@ -1744,6 +1610,7 @@ void *data;
 						NhlPError(NhlWARNING,NhlEUNKNOWN,
                                       "HDF: The HDF library does not currently allow empty strings as attribute values; attribute (%s) in file (%s) not modified",
 							  NrmQuarkToString(theatt),NrmQuarkToString(rec->file_path_q));
+						sd_ncclose(cdfid);
 						return (NhlWARNING);
 					}
 					redef = 0;
@@ -1982,6 +1849,7 @@ void* data;
 								NhlPError(NhlWARNING,NhlEUNKNOWN,
                                       "HDF: The HDF library does not currently allow empty strings as attribute values; attribute (%s) of variable (%s) in file (%s) not modified",
 									  NrmQuarkToString(theatt),NrmQuarkToString(thevar),NrmQuarkToString(rec->file_path_q));
+								sd_ncclose(cdfid);
 								return (NhlWARNING);
 							}
 							redef = 0;

@@ -374,7 +374,7 @@ NclQuark *dimnames;
 						return(NhlFATAL);
 					}
 				} else {
-					dim_sizes[i] = thefile->file.file_dim_info[i]->dim_size;
+					dim_sizes[i] = thefile->file.file_dim_info[dindex]->dim_size;
 				}
 					
 			}
@@ -3283,10 +3283,31 @@ struct _NclSelectionRecord *sel_ptr;
 
 	aindex = FileIsVarAtt(thefile,var,attname);
 	if(aindex > -1) {
+		NclMultiDValData new_tmp_md;
+		NclScalar missing_value;
+		int dim_size = 1;
+		char *type_name;
+		NclTypeClass type_class;
+
 		index = FileIsVar(thefile,var);
 		if(thefile->file.var_att_ids[index] == -1) 
 			LoadVarAtts(thefile,var);
-		return(_NclGetAtt(thefile->file.var_att_ids[index],NrmQuarkToString(attname),sel_ptr));
+		tmp_md = _NclGetAtt(thefile->file.var_att_ids[index],NrmQuarkToString(attname),sel_ptr);
+		if (attname != NrmStringToQuark("_FillValue")) 
+			return (tmp_md);
+		else if (tmp_md->multidval.data_type == thefile->file.var_info[index]->data_type) 
+			return (tmp_md);
+
+		NhlPError(NhlWARNING,NhlEUNKNOWN,
+			  "FileReadVarAtt: _FillValue attribute type differs from variable (%s) type in file (%s), forcing type conversion; may result in overflow and/or loss of precision",
+			  NrmQuarkToString(var),NrmQuarkToString(thefile->file.fname));
+		_NclScalarForcedCoerce(tmp_md->multidval.val,tmp_md->multidval.data_type,
+				       (void*)&missing_value,thefile->file.var_info[index]->data_type);
+		
+		/*_NclDestroyObj((NclObj)tmp_md);*/
+		type_name = _NclBasicDataTypeToName(thefile->file.var_info[index]->data_type);
+		type_class = _NclNameToTypeClass(NrmStringToQuark(type_name));
+		return (_NclCreateMultiDVal(NULL,NULL,Ncl_MultiDValData,0,(void*)&missing_value,NULL,1,&dim_size,PERMANENT,NULL,type_class));
 	}
 	NhlPError(NhlWARNING,NhlEUNKNOWN,"FileReadVarAtt: (%s) is not an attribute of (%s)",NrmQuarkToString(attname),NrmQuarkToString(var));
 	return(_NclCreateMissing());
