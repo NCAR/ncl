@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.231 2010-02-19 21:21:54 haley Exp $
+;      $Id: gsn_code.ncl,v 1.232 2010-02-19 23:23:20 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2393,18 +2393,31 @@ end
 undef("compute_device_coords")
 function compute_device_coords(plot,res)
 local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin, \
-      paper_width, paper_height, paper_margin, bb, tmp_wks
+      paper_width, paper_height, paper_margin, bb, tmp_wks, wks_ph, wks_pw, def_margin
 begin
-; Get workstation parent of plot
+  def_margin =  0.5    ; Default margin, in inches.
+  def_orient =  "auto" ; Best possible orientation will be used, by default.
+
+; Get workstation parent of plot, and retrieve paper size and width.
   tmp_wks = NhlGetParentWorkstation(plot)
+  getvalues tmp_wks
+    "wkPaperWidthF"  : wks_pw
+    "wkPaperHeightF" : wks_ph
+  end getvalues
+
 ;
 ; Get resources.
 ;
-  paper_height = get_res_value_keep(res,"gsnPaperHeight",11.0)
-  paper_width  = get_res_value_keep(res,"gsnPaperWidth",8.5)
-  paper_margin = get_res_value_keep(res,"gsnPaperMargin",0.5)
-  paper_orient = get_res_value_keep(res,"gsnPaperOrientation","auto")
+  paper_height = get_res_value_keep(res,"gsnPaperHeight",wks_ph)
+  paper_width  = get_res_value_keep(res,"gsnPaperWidth",wks_pw)
+  paper_margin = get_res_value_keep(res,"gsnPaperMargin",def_margin)
+  paper_orient = get_res_value_keep(res,"gsnPaperOrientation",def_orient)
   is_debug     = get_res_value_keep(res,"gsnDebug",False)
+
+  if(is_debug)
+    print("    Paper width/height = " + paper_width + "/" + paper_height)
+  end if
+
 ;
 ; Check to see if any panel resources have been set.  No defaults
 ; will be assumed for these. They are only used if they have been
@@ -2500,7 +2513,7 @@ begin
 ; Debug prints
 ;
   if(is_debug)
-    print("-------Bounding box values for PostScript-------")
+    print("-------Bounding box values for PS/PDF-------")
     print("    top = " + top + " bot = " + bot + \
           "    lft = " + lft + " rgt = " + rgt)
   end if
