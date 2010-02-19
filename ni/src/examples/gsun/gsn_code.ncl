@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.230 2010-02-09 23:13:33 brownrig Exp $
+;      $Id: gsn_code.ncl,v 1.231 2010-02-19 21:21:54 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2368,17 +2368,14 @@ end
 
 ;**********************************************************************;
 ; Function : compute_device_coords                                     ;
-;                bb(:,4) : float                                       ;
-;                  res : logical                                       ;
+;                  plot : graphic                                      ;
+;                  res  : logical                                      ;
 ;                                                                      ;
-; This function computes the PostScript device coordinates needed to   ;
+; This function computes the PDF/PS device coordinates needed to       ;
 ; make a plot fill up the full page.                                   ;
 ;                                                                      ;
-; bb     : bounding box that contains all graphical objects. It should ;
-;          be a n x 4 float array with values between 0 and 1.         ;
-;            (top,bottom,left,right)                                   ;
-;                                                                      ;
-; res : list of optional resources. Ones accepted include:             ;
+; plot : the plot or the workstation                                   ;
+; res  : list of optional resources. Ones accepted include:            ;
 ;                                                                      ;
 ; "gsnPaperOrientation" - orientation of paper. Can be "landscape",    ;
 ;                         "portrait", or "auto". Default is "auto".    ;
@@ -2388,12 +2385,18 @@ end
 ;       "gsnPaperMargin" - margin to leave around plots (in inches,    ;
 ;                        default is 0.5)                               ;
 ;                                                                      ;
+; In V5.2.0, new paper size resources were added, and this function    ;
+; was updated to recognize them.                                       ;
+;                                                                      ;
+;                                                                      ;
 ;**********************************************************************;
 undef("compute_device_coords")
-function compute_device_coords(bb,res)
+function compute_device_coords(plot,res)
 local coords, top, bot, lft, rgt, dpi, dpi_pw, dpi_ph, dpi_margin, \
-      paper_width, paper_height, paper_margin
+      paper_width, paper_height, paper_margin, bb, tmp_wks
 begin
+; Get workstation parent of plot
+  tmp_wks = NhlGetParentWorkstation(plot)
 ;
 ; Get resources.
 ;
@@ -2434,6 +2437,7 @@ begin
 ; negative, and we need to keep these negative values in our calculations
 ; later to preserve the aspect ratio.
 ;
+  bb    = NhlGetBB(plot)
   dimbb = dimsizes(bb)
   if(dimsizes(dimbb).eq.1) then
 ;
@@ -2628,14 +2632,12 @@ local bb, coords, res2, tmp_wks
 begin
   res2 = psres
 
-; Get bounding box of plot
-  bb = NhlGetBB(plot)
   tmp_wks = NhlGetParentWorkstation(plot)
 ;
 ; Calculate device coords to maximize this plot on the PDF or PS 
 ; workstation.
 ;
-  coords = compute_device_coords(bb,res2)
+  coords = compute_device_coords(plot,res2)
 ;
 ; Using the coordinate values just calculated, set them in the
 ; workstation (also set the orientation).
@@ -2662,7 +2664,7 @@ end
 ;***********************************************************************;
 undef("maximize_output")
 procedure maximize_output(wks:graphic,psres:logical)
-local bb, calldraw, callframe, class, res2
+local calldraw, callframe, class, res2
 begin
   res2 = psres
 ;
@@ -2680,15 +2682,10 @@ begin
      (class.eq."pdfWorkstationClass")) then
     max_device = True
 ;
-; Get bounding box of everything on the frame.
-;
-    bb = NhlGetBB(wks)
-
-;
 ; Calculate device coords to maximize these plots on the PDF or PS 
 ; workstation.
 ;
-    coords = compute_device_coords(bb,res2)
+    coords = compute_device_coords(wks,res2)
 
 ;
 ; Using the coordinate values just calculated, set them in the
@@ -2780,9 +2777,7 @@ begin
 ;
 ; Compute device coordinates that will make plot fill the whole page.
 ;
-; NhlGetBB(plot) will work on an array of plots as well.
-;
-      coords = compute_device_coords(NhlGetBB(plot),maxbb)
+      coords = compute_device_coords(plot,maxbb)
 ;
 ; Set device coordinates to new ones.
 ;
