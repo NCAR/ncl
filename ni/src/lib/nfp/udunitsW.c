@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "wrapper.h"
 #include <udunits2.h>
 #include <udunits.h>
@@ -27,7 +28,6 @@ ut_system *utopen_ncl()
     strcat(udunits_file,_NhlPATHDELIMITER);
     strcat(udunits_file,"udunits2.xml");
     setenv("UDUNITS2_XML_PATH",udunits_file,0);
-    free(path);
   }
   /* Turn annoying "override" errors off */
   ut_set_error_message_handler( ut_ignore );
