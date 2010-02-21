@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.19 2010-02-18 18:28:07 haley Exp $
+#   $Id: check_ncargncl_files,v 1.20 2010-02-21 23:49:28 haley Exp $
 #
 # Use check_files instead! This one is just for NCL/NCARG and
 # hasn't been updated in awhile.
@@ -1897,7 +1897,12 @@ lib/ncarg/tutorial/cmpusr.f
 lib/ncarg/tutorial/colcon.f
 lib/ncarg/tutorial/cpmpxy1.dat
 lib/ncarg/tutorial/ggdini.f
-lib/ncarg/udunits/udunits.dat
+lib/ncarg/udunits/udunits2-accepted.xml
+lib/ncarg/udunits/udunits2-base.xml
+lib/ncarg/udunits/udunits2-common.xml
+lib/ncarg/udunits/udunits2-derived.xml
+lib/ncarg/udunits/udunits2-prefixes.xml
+lib/ncarg/udunits/udunits2.xml
 lib/ncarg/xapp/Idt
 'EOF'
 

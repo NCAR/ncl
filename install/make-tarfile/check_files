@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.25 2010-02-18 18:28:07 haley Exp $
+#   $Id: check_files,v 1.26 2010-02-21 23:49:28 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -1472,7 +1472,12 @@ lib/ncarg/resfiles/xyplot/xy10.res
 lib/ncarg/resfiles/xyplot/xy13.res
 lib/ncarg/resfiles/xyplot/xy15.res
 lib/ncarg/sysresfile
-lib/ncarg/udunits/udunits.dat
+lib/ncarg/udunits/udunits2-accepted.xml
+lib/ncarg/udunits/udunits2-base.xml
+lib/ncarg/udunits/udunits2-common.xml
+lib/ncarg/udunits/udunits2-derived.xml
+lib/ncarg/udunits/udunits2-prefixes.xml
+lib/ncarg/udunits/udunits2.xml
 'EOF'
 endif
 
