@@ -6,15 +6,29 @@
 #include <math.h>
 
 /*
- * Function for initializing Udunits package.  If UDUNITS_PATH is
- * set, then this path is used for the "udunits.dat" file. Otherwise,
- * the path within NCL ($NCARG_ROOT/lib/ncarg/udunits/) is used.
+ * Function for initializing Udunits-2 package.
  */
 
 ut_system *utopen_ncl()
 {
   ut_system *us;
+  const char *path = NULL;
+  char udunits_file[_NhlMAXFNAMELEN];
 
+/*
+ *  If UDUNITS2_XML_PATH is set, then this path is used for the
+ * "udunits2.xml" file. Otherwise, the path within NCL
+ * ($NCARG_ROOT/lib/ncarg/udunits/) is used.
+ */
+  path = getenv("UDUNITS2_XML_PATH");
+  if ((void *)path == (void *)NULL) {
+    path = _NGGetNCARGEnv("udunits");
+    strcpy(udunits_file,path);
+    strcat(udunits_file,_NhlPATHDELIMITER);
+    strcat(udunits_file,"udunits2.xml");
+    setenv("UDUNITS2_XML_PATH",udunits_file,0);
+    free(path);
+  }
   /* Turn annoying "override" errors off */
   ut_set_error_message_handler( ut_ignore );
 
@@ -183,7 +197,7 @@ NhlErrorTypes ut_calendar_W( void )
 
   if(*option == 0) {
         type_date   = NCL_float;
-	type_date_t = nclTypefloatClass;
+        type_date_t = nclTypefloatClass;
         total_size_date = 6 * total_size_x;
         missing_date    = ((NclTypeClass)nclTypefloatClass)->type_class.default_mis;
         ndims_date      = ndims_x + 1;
@@ -192,7 +206,7 @@ NhlErrorTypes ut_calendar_W( void )
   else if(*option == -5) {
 /* identical to option=0, except returns ints */
         type_date       = NCL_int;
-	type_date_t     = nclTypeintClass;
+        type_date_t     = nclTypeintClass;
         total_size_date = 6 * total_size_x;
         missing_date    = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
         ndims_date      = ndims_x + 1;
@@ -200,7 +214,7 @@ NhlErrorTypes ut_calendar_W( void )
   }
   else if(*option >= 1 && *option <= 4) {
         type_date       = NCL_double;
-	type_date_t     = nclTypedoubleClass;
+        type_date_t     = nclTypedoubleClass;
         total_size_date = total_size_x;
         missing_date    = ((NclTypeClass)nclTypedoubleClass)->type_class.default_mis;
         ndims_date      = ndims_x;
@@ -208,7 +222,7 @@ NhlErrorTypes ut_calendar_W( void )
   }
   else if(*option >= -3 && *option <= -1) {
         type_date       = NCL_int;
-	type_date_t     = nclTypeintClass;
+        type_date_t     = nclTypeintClass;
         total_size_date = total_size_x;
         missing_date    = ((NclTypeClass)nclTypeintClass)->type_class.default_mis;
         ndims_date      = ndims_x;
@@ -297,7 +311,7 @@ NhlErrorTypes ut_calendar_W( void )
  * Make sure cspec is a valid udunits string.
  */
           utunit = ut_parse(unit_system, cspec, UT_ASCII);
-	  if(utunit == NULL) {
+          if(utunit == NULL) {
             NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_calendar: Invalid specification string. Missing values will be returned.");
             return_missing = 1;
           }
@@ -841,7 +855,7 @@ NhlErrorTypes ut_inv_calendar_W( void )
     if (stack_entry.u.data_var->var.att_id != -1) {
       attr_obj = (NclAtt) _NclGetObj(stack_entry.u.data_var->var.att_id);
       if (attr_obj == NULL) {
-	break;
+        break;
       }
     }
     else {
@@ -862,18 +876,18 @@ NhlErrorTypes ut_inv_calendar_W( void )
  * Loop through attributes and check them.
  */
       while (attr_list != NULL) {
-	if ((strcmp(attr_list->attname, "calendar")) == 0) {
-	  scal = (string *) attr_list->attvalue->multidval.val;
-	  ccal = NrmQuarkToString(*scal);
-	  if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
-	     strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&
-	     strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
-	     strcasecmp(ccal,"360") ) {
-	    NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
-	    return_missing = has_missing_x = 1;
-	  }
-	}
-	attr_list = attr_list->next;
+        if ((strcmp(attr_list->attname, "calendar")) == 0) {
+          scal = (string *) attr_list->attvalue->multidval.val;
+          ccal = NrmQuarkToString(*scal);
+          if(strcasecmp(ccal,"standard") && strcasecmp(ccal,"gregorian") &&
+             strcasecmp(ccal,"noleap") && strcasecmp(ccal,"365_day") &&
+             strcasecmp(ccal,"365") && strcasecmp(ccal,"360_day") && 
+             strcasecmp(ccal,"360") ) {
+            NhlPError(NhlWARNING,NhlEUNKNOWN,"ut_inv_calendar: the 'calendar' attribute is not equal to a recognized calendar. Returning all missing values.");
+            return_missing = has_missing_x = 1;
+          }
+        }
+        attr_list = attr_list->next;
       }
     }
   default:
