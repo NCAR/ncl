@@ -1,5 +1,5 @@
 /*
- *      $Id: BuiltInFuncs.c,v 1.251 2010-02-03 17:11:35 huangwei Exp $
+ *      $Id: BuiltInFuncs.c,v 1.252 2010-02-22 17:41:33 huangwei Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -24994,6 +24994,509 @@ NhlErrorTypes _NclItochar
                 0
         ));
 }
+
+NhlErrorTypes _NclItosigned
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        void *in_value;
+        int total_elements = 1;
+        int n_dims = 0;
+        int dimsizes[NCL_MAX_DIMENSIONS];
+        NclScalar missing;
+        NclScalar ret_missing;
+        NclBasicDataTypes type, out_type;
+        int has_missing;
+        int i;
+        void *output;
+
+        in_value = (void *)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+        for(i = 0; i < n_dims; i++)
+        {
+            total_elements *= dimsizes[i];
+        }
+
+        if(has_missing)
+        {
+            ret_missing = missing;
+        }
+
+        switch(type)
+        {
+            case NCL_char:
+                {
+                    unsigned char *ptr;
+                    char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    out_ptr = output;
+
+                    if(has_missing)
+                    {
+                        ret_missing.byteval = (char) missing.charval;
+                    }
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (char) ptr[i];
+                    }
+                    out_type = NCL_byte;
+                }
+                break;
+            case NCL_byte:
+                {
+                    char *ptr;
+                    char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(char)*total_elements);
+                    out_ptr = output;
+
+                    ptr = (char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_byte;
+                }
+                break;
+            case NCL_short:
+                {
+                    short *ptr;
+                    short *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(short)*total_elements);
+                    out_ptr = output;
+    
+                    ptr = (short *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_short;
+                }
+                break;
+            case NCL_ushort:
+                {
+                    unsigned short *ptr;
+                    short *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(short)*total_elements);
+                    out_ptr = output;
+    
+                    if(has_missing)
+                    {
+                         ret_missing.shortval = (short) missing.ushortval;
+                    }
+
+                    ptr = (unsigned short *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (short) ptr[i];
+                    }
+                    out_type = NCL_short;
+                }
+                break;
+            case NCL_int:
+                {
+                    int *ptr;
+                    int *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(int)*total_elements);
+                    out_ptr = output;
+
+                    ptr = (int *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_int;
+                }
+                break;
+            case NCL_uint:
+                {
+                    unsigned int *ptr;
+                    int *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(int)*total_elements);
+                    out_ptr = output;
+
+                    if(has_missing)
+                    {
+                        ret_missing.intval = (int) missing.uintval;
+                    }
+
+                    ptr = (unsigned int *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (int) ptr[i];
+                    }
+                    out_type = NCL_int;
+                }
+                break;
+            case NCL_long:
+                {
+                    long *ptr;
+                    long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(long)*total_elements);
+                    out_ptr = output;
+
+                    ptr = (long *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_long;
+                }
+                break;
+            case NCL_ulong:
+                {
+                    unsigned long *ptr;
+                    long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(long)*total_elements);
+                    out_ptr = output;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.longval = (long) missing.ulongval;
+                    }
+
+                    ptr = (unsigned long *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (long) ptr[i];
+                    }
+                    out_type = NCL_long;
+                }
+                break;
+            case NCL_int64:
+                {
+                    long long *ptr;
+                    long long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(long long)*total_elements);
+                    out_ptr = output;
+
+                    ptr = (long long *) in_value;
+   
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_int64;
+                }
+                break;
+            case NCL_uint64:
+                {
+                    unsigned long long *ptr;
+                    long long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(long long)*total_elements);
+                    out_ptr = output;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.int64val = (long long) missing.uint64val;
+                    }
+
+                    ptr = (unsigned long long *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (long long) ptr[i];
+                    }
+                    out_type = NCL_int64;
+                }
+                break;
+            default:
+                NhlPError(NhlFATAL, errno, "Don't know how to convert type to singed.");
+                return NhlFATAL;
+        }
+
+        return(NclReturnValue(
+                (void*)output,
+                n_dims,
+                dimsizes,
+                (has_missing ? &ret_missing : NULL),
+                out_type,
+                0
+        ));
+}
+
+
+NhlErrorTypes _NclItounsigned
+#if     NhlNeedProto
+(void)
+#else
+()
+#endif
+{
+        void *in_value;
+        int total_elements = 1;
+        int n_dims = 0;
+        int dimsizes[NCL_MAX_DIMENSIONS];
+        NclScalar missing;
+        NclScalar ret_missing;
+        NclBasicDataTypes type, out_type;
+        int has_missing;
+        int i;
+        void *output;
+
+        in_value = (void *)NclGetArgValue(
+                        0,
+                        1,
+                        &n_dims,
+                        dimsizes,
+                        &missing,
+                        &has_missing,
+                        &type,
+                        0);
+
+        for(i = 0; i < n_dims; i++)
+        {
+            total_elements *= dimsizes[i];
+        }
+
+        if(has_missing)
+        {
+            ret_missing = missing;
+        }
+
+        switch(type)
+        {
+            case NCL_byte:
+                {
+                    char *ptr;
+                    unsigned char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    out_ptr = output;
+
+                    if(has_missing)
+                    {
+                        ret_missing.charval = (unsigned char) missing.byteval;
+                    }
+
+                    ptr = (char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (unsigned char) ptr[i];
+                    }
+                    out_type = NCL_char;
+                }
+                break;
+            case NCL_char:
+                {
+                    unsigned char *ptr;
+                    unsigned char *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned char)*total_elements);
+                    out_ptr = output;
+
+                    ptr = (unsigned char *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_char;
+                }
+                break;
+            case NCL_ushort:
+                {
+                    unsigned short *ptr;
+                    unsigned short *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
+                    out_ptr = output;
+    
+                    ptr = (unsigned short *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_ushort;
+                }
+                break;
+            case NCL_short:
+                {
+                    short *ptr;
+                    unsigned short *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned short)*total_elements);
+                    out_ptr = output;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.ushortval = (unsigned short) missing.shortval;
+                    }
+
+                    ptr = (short *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (unsigned short) ptr[i];
+                    }
+                    out_type = NCL_ushort;
+                }
+                break;
+            case NCL_uint:
+                {
+                    unsigned int *ptr;
+                    unsigned int *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
+                    out_ptr = output;
+    
+                    ptr = (unsigned int *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_int;
+                }
+                break;
+            case NCL_int:
+                {
+                    int *ptr;
+                    unsigned int *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned int)*total_elements);
+                    out_ptr = output;
+
+                    if(has_missing)
+                    {
+                        ret_missing.uintval = (unsigned int) missing.intval;
+                    }
+
+                    ptr = (int *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (unsigned int) ptr[i];
+                    }
+                    out_type = NCL_uint;
+                }
+                break;
+            case NCL_ulong:
+                {
+                    unsigned long *ptr;
+                    unsigned long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
+                    out_ptr = output;
+
+                    ptr = (unsigned long *) in_value;
+
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_ulong;
+                }
+                break;
+            case NCL_long:
+                {
+                    long *ptr;
+                    unsigned long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned long)*total_elements);
+                    out_ptr = output;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.ulongval = (unsigned long) missing.longval;
+                    }
+
+                    ptr = (long *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = (unsigned long) ptr[i];
+                    }
+                    out_type = NCL_ulong;
+                }
+                break;
+            case NCL_uint64:
+                {
+                    unsigned long long *ptr;
+                    unsigned long long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
+                    out_ptr = output;
+   
+                    ptr = (unsigned long long *) in_value;
+   
+                    for(i = 0; i < total_elements; i++)
+                    {
+                        out_ptr[i] = ptr[i];
+                    }
+                    out_type = NCL_uint64;
+                }
+                break;
+            case NCL_int64:
+                {
+                    long long *ptr;
+                    unsigned long long *out_ptr;
+
+                    output = (void *)NclMalloc(sizeof(unsigned long long)*total_elements);
+                    out_ptr = output;
+    
+                    if(has_missing)
+                    {
+                        ret_missing.uint64val = (unsigned long long) missing.int64val;
+                    }
+
+                    ptr = (long long *) in_value;
+    
+                    for(i = 0; i < total_elements; i++)
+                    {
+                       out_ptr[i] = (unsigned long long) ptr[i];
+                    }
+                    out_type = NCL_uint64;
+                }
+                break;
+            default:
+                NhlPError(NhlFATAL, errno, "Don't know how to convert type to singed.");
+                return NhlFATAL;
+        }
+
+        return(NclReturnValue(
+                (void*)output,
+                n_dims,
+                dimsizes,
+                (has_missing ? &ret_missing : NULL),
+                out_type,
+                0
+        ));
+}
+
+
 
 #ifdef __cplusplus
 }
