@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.114 2010-02-09 00:24:22 haley Exp $
+ *      $Id: Project,v 1.115 2010-02-22 05:38:45 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2010-02-09 00:24:22 $
+ *	$Date: 2010-02-22 05:38:45 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -91,6 +91,11 @@
 #endif
 #endif /* BuildV5D */
 
+/* No longer build the old PNG driver since we have the new cairo one. */
+#if !BuildPNG
+#undef	BuildPNG
+#endif
+
 /* Cairo and GDAL support are not yet built by default. */
 #if !BuildCAIRO
 #undef BuildCAIRO
@@ -107,14 +112,6 @@
 #undef	BuildRasterHDF
 #endif
 #endif	/* BuildRasterHDF */
-
-#ifndef	BuildPNG
-#define	BuildPNG
-#else
-#if	!BuildPNG
-#undef	BuildPNG
-#endif
-#endif	/* BuildPNG */
 
 #ifndef	BuildRasterHPPCL
 #define	BuildRasterHPPCL
