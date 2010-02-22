@@ -1,5 +1,5 @@
 ;
-;      $Id: contributed.ncl,v 1.264 2010-02-16 16:47:26 shea Exp $
+;      $Id: contributed.ncl,v 1.265 2010-02-22 18:14:25 shea Exp $
 ;
 ;
 ; -------------- added Feb 14 2002
@@ -11303,6 +11303,13 @@ function calculate_monthly_values (x:numeric, arith:string, nDim[1]:integer, opt
 ; arith: "avg" [also, "ave"], "sum","min","max"     others may be added later
 ; nDim : scalar integer that specifies the 'time' dimension [generally, 0]
 ; opt  : option ... not used here 
+;
+; Sample usage:  x(time,lat,lon) where time are n-hrly or daily values.
+;        xMonthAvg = calculate_monthly_values(x, "avg", 0, False)
+;        xMonthSum = calculate_monthly_values(x, "sum", 0, False)
+;        xMonthMin = calculate_monthly_values(x, "min", 0, False)
+;        xMonthMax = calculate_monthly_values(x, "max", 0, False)
+;
 local dimx, rankx, utc_date, year, month, day, hour, ntim \
     , yrStrt, yrLast, nyrs, NTIM, dAvg, xReturn, xMonth \
     , NT, nmo, ii 
