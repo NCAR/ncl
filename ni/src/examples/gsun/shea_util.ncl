@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.37 2010-02-25 02:27:32 shea Exp $
+;      $Id: shea_util.ncl,v 1.38 2010-02-25 20:52:15 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -3233,8 +3233,8 @@ function vertint (X:numeric, dp:numeric, con[1]:numeric \
 ; Requirement: X must be in the following order: ([time,],lev,lat,lon)
 ;
 ; Nomenclature:
-; X         - 3D or 4D array to be integrated. No missing data allowed
-;             dimension order ([time,],lev,lat,lon)
+; X         - 3D , 4D or 5D array to be integrated. No missing data allowed
+;             dimension order ([[case,]time,],lev,lat,lon)
 ; dp        - pressure thickness computed by "dpres_hybrid_ccm" or "dpres_plevel"
 ;             Must be the same size/shape as X
 ;             No missing data allowed.
@@ -3273,10 +3273,10 @@ function vertint (X:numeric, dp:numeric, con[1]:numeric \
 ; Use the 'dp' from above
 ;        t    = f->T                                ; (time,lev,lat,lon)
 ;        cp   = 1004.                               ; J/(K kg)     [ m2/(K s2) ]
-;        g    = 9.81                                ; m/s
+;        g    = 9.81                                ; m/s2
 ;
 ;        con  = cp/g                                ; constant
-;        xvi  = vi_plevel(t, dp, con \
+;        xvi  = vertint(t, dp, con \
 ;                        ,"Vertically Integrated Internal Energy" \
 ;                        ,"kg/s2", 0) 
 
@@ -3287,8 +3287,8 @@ begin
   dimDP = dimsizes( dp )
   rankX = dimsizes( dimX )
 
-  if (.not.(rankX.eq.3 .or. rankX.eq.4)) then
-      print("vertint: variable rank must be 3D or 4D")
+  if (rankX.le.2 .or. rankX.ge.6)) then
+      print("vertint: variable rank must be 3D or 4D or 5D")
       print("vertint: rank="+rankX+"D")
       exit
   end if
@@ -3317,8 +3317,12 @@ begin
 
   if (rankX.eq.3) then                       ;   0   1   2
       lev_dim = 0                            ; (lev,lat,lon) 
-  else                                       ;   0    1   2   3 
+  end if
+  if (rankX.eq.4) then                       ;   0   1   2  ,3
       lev_dim = 1                            ; (time,lev,lat,lon)
+  end if
+  if (rankX.eq.5) then                       ;   0    1    2 , 3 , 4
+      lev_dim = 2                            ; (case,time,lev,lat,lon)
   end if
 
   VI = dim_sum_n_Wrap( Xdp, lev_dim )        ; sum vertically [ie integrate]
@@ -3326,10 +3330,17 @@ begin
       if (rankX.eq.3) then   
           VI!0 = "lat"
           VI!1 = "lon"
-      else
+      end if
+      if (rankX.eq.4) then   
           VI!0 = "time"
           VI!1 = "lat"
           VI!2 = "lon"
+      end if
+      if (rankX.eq.5) then   
+          VI!0 = "case"
+          VI!1 = "time"
+          VI!2 = "lat"
+          VI!3 = "lon"
       end if
   end if
 
