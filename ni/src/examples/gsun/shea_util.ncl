@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.36 2009-12-23 18:53:45 shea Exp $
+;      $Id: shea_util.ncl,v 1.37 2010-02-25 02:27:32 shea Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -3224,20 +3224,20 @@ end
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
-undef("IntegrateHybrid")
-function IntegrateHybrid (X:numeric, dp:numeric, con[1]:numeric \
-                          ,long_name:string, units:string, iopt:integer)
+undef("vertint")
+function vertint (X:numeric, dp:numeric, con[1]:numeric \
+                   ,long_name:string, units:string, iopt:integer)
 ; 
-; Perform vertical integration over hybrid coordinates.
+; Perform vertical integration:  dim_sum_n(X*dp,lind) 
 ; 
-; Requirement: X must have named dimensions and
-;              must be in the following order: ([time,],lev,lat,lon)
+; Requirement: X must be in the following order: ([time,],lev,lat,lon)
 ;
 ; Nomenclature:
-; X         - 3D or 4D array to be integrated
+; X         - 3D or 4D array to be integrated. No missing data allowed
 ;             dimension order ([time,],lev,lat,lon)
-; dp        - pressure thickness computed by "dpres_hybrid_ccm"
+; dp        - pressure thickness computed by "dpres_hybrid_ccm" or "dpres_plevel"
 ;             Must be the same size/shape as X
+;             No missing data allowed.
 ; con       - constant used to multiply the value after integration
 ;             If none, set to 1
 ; long_name - long name of the resultant integrand 
@@ -3246,7 +3246,7 @@ function IntegrateHybrid (X:numeric, dp:numeric, con[1]:numeric \
 ;                   =1 means input dimension names will be renamed
 ;                      to "time", "lat", "lon" where appropriate.
 ;
-; Usage
+; Usage for hybrid levels
 ;        f = addfile("....", "r")
 ;        hyai = f->hyai
 ;        hybi = f->hybi
@@ -3254,52 +3254,79 @@ function IntegrateHybrid (X:numeric, dp:numeric, con[1]:numeric \
 ;        ps   = f->PS
 ;    
 ;        dp   = dpres_hybrid_ccm (ps,p0,hyai,hybi)  ; Pa [kg/(m s2)]
+;--------------------
+; Usage for pressure levels
+;        f   = addfile("....", "r")
+;        lev = f->lev  ; (/  1,  2,  3,  5,   7, 10, 20, 30, \   ; hPa 
+;                           50, 70,100,150, 200,250,300,400, \
+;                          500,600,700,775, 850,925,1000 /)
+;                      ; uniys of lev and psfc must match
+;        psfc= f->PS   ; PA         (time,lat,lon)
+;        lev = lev*100 ; make PA to match psfc       
+;        lev@units = "PA"
 ;
-;        t    = f->T
+;        ptop= 0       ; integrate 0==>psfc at each grid point
+;
+;                      ; dp(klev,nlat,mlon) or dp(ntim,klev,nlat,mlon)
+;        dp  = dpres_plevel(lev, psfc, ptop, 0)     ; Pa [kg/(m s2)]
+;--------------------
+; Use the 'dp' from above
+;        t    = f->T                                ; (time,lev,lat,lon)
 ;        cp   = 1004.                               ; J/(K kg)     [ m2/(K s2) ]
 ;        g    = 9.81                                ; m/s
 ;
 ;        con  = cp/g                                ; constant
-;        xvi  = IntegrateHybrid(t, dp, con \
-;                              ,"Vertically Integrated Internal Energy" \
-;                              , "kg/s2", 0) 
-;
+;        xvi  = vi_plevel(t, dp, con \
+;                        ,"Vertically Integrated Internal Energy" \
+;                        ,"kg/s2", 0) 
+
+local dimX, dimDP, rankX, Xdp, lev_dim, VI
 begin
 
   dimX  = dimsizes( X )
   dimDP = dimsizes( dp )
   rankX = dimsizes( dimX )
+
   if (.not.(rankX.eq.3 .or. rankX.eq.4)) then
-      print("integrate_hybrid: variable rank must be 3D or 4D")
-      print("integrate_hybrid: rank="+rankX+"D")
+      print("vertint: variable rank must be 3D or 4D")
+      print("vertint: rank="+rankX+"D")
       exit
   end if
 
   if (.not.all(dimDP.eq.dimX) ) then  ; error check
-      print("integrate_hybrid: dimension sizes are not equal")
-      print("integrate_hybrid:  dimX="+dimX)
-      print("integrate_hybrid: dimDP="+dimsizes(dp) )
+      print("vertint: dimension sizes are not equal")
+      print("vertint:  dimX="+dimX)
+      print("vertint: dimDP="+dimsizes(dp) )
       exit
   end if
 
-  dNamX = getvardims( X )                    ; get dimension names
+  if (isatt(X,"_FillValue") .and. any(ismissing(X)) ) then  ; error check
+      print("vertint: No _FillValue allowed")
+      print("vertint: X: nFill="+num(ismissing(X)))
+      exit
+  end if
+
+  if (isatt(dp,"_FillValue") .and. any(ismissing(dp)) ) then  ; error check
+      print("vertint: No _FillValue allowed")
+      print("vertint: dp: nFill="+num(ismissing(dp)))
+      exit
+  end if
 
   Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
   copy_VarCoords(X, Xdp)
-                                             ; sum vertically [ie integrate]
-                                             ; must make "lev" rightmost dimension
-  if (rankX.eq.3) then                       ; (lat,lon,lev)   ; after reorder
-      VI = dim_sum_Wrap( Xdp($dNamX(1)$|:,$dNamX(2)$|:,$dNamX(0)$|:) )  ; 2D result 
-     ;VI = dim_sum_n_Wrap( Xdp, 0 )  ; 2D result [5.1.1] 
-      if (iopt.eq.1) then
+
+  if (rankX.eq.3) then                       ;   0   1   2
+      lev_dim = 0                            ; (lev,lat,lon) 
+  else                                       ;   0    1   2   3 
+      lev_dim = 1                            ; (time,lev,lat,lon)
+  end if
+
+  VI = dim_sum_n_Wrap( Xdp, lev_dim )        ; sum vertically [ie integrate]
+  if (iopt.eq.1) then
+      if (rankX.eq.3) then   
           VI!0 = "lat"
           VI!1 = "lon"
-      end if
-  end if
-  if (rankX.eq.4) then                       ; (time,lat,lon,lev) ; after reorder
-      VI = dim_sum_Wrap( Xdp($dNamX(0)$|:,$dNamX(2)$|:,$dNamX(3)$|:,$dNamX(1)$|:) ) ; 3D result 
-     ;VI = dim_sum_n_Wrap( Xdp, 1 ) ; 3D result  [5.1.1]
-      if (iopt.eq.1) then
+      else
           VI!0 = "time"
           VI!1 = "lat"
           VI!2 = "lon"
@@ -3315,99 +3342,29 @@ begin
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
 ;----------------------------------------------------------------------------
+undef("IntegrateHybrid")
+function IntegrateHybrid (X:numeric, dp:numeric, con[1]:numeric \
+                         ,long_name:string, units:string, iopt:integer)
+;
+; Old interface
+; Perform vertical integration over hybrid coordinates.
+; 
+begin
+  return( vertint(X, dp, con, long_name, units, iopt) )  ; contributed.ncl
+end
+;----------------------------------------------------------------------------
+;----------------------- Unsupported: DJS -----------------------------------
+;----------------------------------------------------------------------------
 
 undef("IntegratePlevel")
 function IntegratePlevel (X:numeric, dp:numeric, con[1]:numeric \
-                          ,long_name:string, units:string, iopt:integer)
+                         ,long_name:string, units:string, iopt:integer)
 ; 
+; Old interface:
 ; Perform vertical integration over constant pressure coordinates.
 ; 
-; Requirement: X must have named dimensions and
-;              must be in the following order: ([time,],lev,lat,lon)
-;
-; Nomenclature:
-; X         - 3D or 4D array to be integrated
-;             dimension order ([time,],lev,lat,lon)
-; dp        - pressure thickness computed by "dpres_plevel"
-;             Must be the same size/shape as X
-; con       - constant used to multiply the value after integration
-;             If none, set to 1
-; long_name - long name of the resultant integrand 
-; units     - units of the resultant integrand 
-; iopt      - flag: =0 means input dimension names will be retained
-;                   =1 means input dimension names will be renamed
-;                      to "time", "lat", "lon" where appropriate.
-;
-; Usage
-;        f   = addfile("....", "r")
-;        lev = f->lev  ; (/  1,  2,  3,  5,   7, 10, 20, 30, \   ; hPa 
-;                           50, 70,100,150, 200,250,300,400, \
-;                          500,600,700,775, 850,925,1000 /)
-;                      ; uniys of lev and psfc must match
-;        psfc= f->PS   ; PA         (time,lat,lon)
-;        lev = lev*100 ; make PA to match psfc       
-;        lev@units = "PA"
-;
-;        ptop= 0       ; integrate 0==>psfc at each grid point
-;
-;                      ; dp(ntim,klev,nlat,mlon)
-;        dp  = dpres_plevel(lev, psfc, ptop, 0)     ; Pa [kg/(m s2)]
-;
-;        t    = f->T                                ; (time,lev,lat,lon)
-;        cp   = 1004.                               ; J/(K kg)     [ m2/(K s2) ]
-;        g    = 9.81                                ; m/s
-;
-;        con  = cp/g                                ; constant
-;        xvi  = IntegratePlevel(t, dp, con \
-;                              ,"Vertically Integrated Internal Energy" \
-;                              , "kg/s2", 0) 
 begin
-
-  dimX  = dimsizes( X )
-  dimDP = dimsizes( dp )
-  rankX = dimsizes( dimX )
-  if (.not.(rankX.eq.3 .or. rankX.eq.4)) then
-      print("integrate_plevel: variable rank must be 3D or 4D")
-      print("integrate_plevel: rank="+rankX+"D")
-      exit
-  end if
-
-  if (.not.all(dimDP.eq.dimX) ) then  ; error check
-      print("integrate_plevel: dimension sizes are not equal")
-      print("integrate_plevel:  dimX="+dimX)
-      print("integrate_plevel: dimDP="+dimsizes(dp) )
-      exit
-  end if
-
-  dNamX = getvardims( X )                    ; get dimension names
-
-  Xdp  = X*dp                                ; [? kg/(m s2)]   (temporary variable)
-  copy_VarCoords(X, Xdp)
-                                             ; sum vertically [ie integrate]
-                                             ; must make "lev" rightmost dimension
-  if (rankX.eq.3) then                       ; (lat,lon,lev) after reorder
-      VI = dim_sum_Wrap( Xdp($dNamX(1)$|:,$dNamX(2)$|:,$dNamX(0)$|:) )  ; 2D result 
-     ;VI = dim_sum_n_Wrap( Xdp, 0 )  ; 2D result  [5.1.1] 
-      if (iopt.eq.1) then
-          VI!0 = "lat"
-          VI!1 = "lon"
-      end if
-  end if
-  if (rankX.eq.4) then                       ; (time,lat,lon,lev) after reorder
-      VI = dim_sum_Wrap( Xdp($dNamX(0)$|:,$dNamX(2)$|:,$dNamX(3)$|:,$dNamX(1)$|:) ) ; 3D result 
-     ;VI = dim_sum_n_Wrap( Xdp,1 ) ; 3D result   [5.1.1]
-      if (iopt.eq.1) then
-          VI!0 = "time"
-          VI!1 = "lat"
-          VI!2 = "lon"
-      end if
-  end if
-
-  VI   = con*VI 
-  VI@long_name = long_name
-  VI@units     = units
-
-  return( VI )
+  return( vertint(X, dp, con, long_name, units, iopt) )  ; contributed.ncl
 end
 ;----------------------------------------------------------------------------
 ;----------------------- Unsupported: DJS -----------------------------------
