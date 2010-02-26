@@ -1,5 +1,5 @@
 #
-#      $Id: yMakefile,v 1.169 2009-12-18 23:12:48 brownrig Exp $
+#      $Id: yMakefile,v 1.170 2010-02-26 17:30:55 haley Exp $
 #
 ###########################################################################
 #			   Copyright (C)  1993			 	  #
@@ -14,7 +14,7 @@
 #				National Center for Atmospheric Research
 #				POB 3000, Boulder, Colorado
 #
-#	Date:		$Date: 2009-12-18 23:12:48 $
+#	Date:		$Date: 2010-02-26 17:30:55 $
 #
 #	Description:	
 #
@@ -66,7 +66,7 @@ HDFEOS5_OBJS = NclHDFEOS5.o
 #endif
 
 #ifdef BuildGRIB2
-#if defined(IRIX64) || defined(x86_64) || defined(ia64)
+#if defined(IRIX64) || defined(x86_64) || defined(ia64) || defined(__LP64__)
 GRIB2_DEFS = -DBuildGRIB2 -D__64BIT__
 #else
 GRIB2_DEFS = -DBuildGRIB2
