@@ -1,7 +1,7 @@
 
 
 /*
- *      $Id: Execute.c,v 1.140 2009-07-28 16:29:40 huangwei Exp $
+ *      $Id: Execute.c,v 1.141 2010-02-27 01:24:28 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -336,6 +336,7 @@ void CallLIST_READ_OP(void) {
 				break;
 		}
 		sel_ptr = &sel;
+		_NclFreeSubRec(&data.u.sub_rec);
 	} else {
 		sel_ptr = NULL;
 	}
@@ -538,6 +539,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				break;
 		}
 		sel_ptr = &sel;
+		_NclFreeSubRec(&data.u.sub_rec);
 	} else {
 		sel_ptr = NULL;
 	}
@@ -771,6 +773,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 				dim_info.dim_size = total_agg_dim_size;
 				agg_coord_md->obj.status = PERMANENT;
 				tvar = _NclCoordVarCreate(NULL,NULL,Ncl_CoordVar,0,NULL,agg_coord_md,&dim_info,-1,NULL,COORD,NrmQuarkToString(agg_dim_name),TEMPORARY);
+				agg_coord_md->obj.status = TEMPORARY;
 				agg_coord_var = _NclVarCreate(NULL,NULL,Ncl_Var,0,NULL,agg_coord_md,&dim_info,-1,&tvar->obj.id,VAR,NrmQuarkToString(agg_dim_name),TEMPORARY);
 			}
 		}	
@@ -1348,6 +1351,7 @@ void CallLIST_READ_FILEVAR_OP(void) {
 					memcpy(agg_coord_var_md->multidval.val,sub_agg_md->multidval.val,sub_agg_md->multidval.totalsize);
 					agg_coord_var->var.dim_info[0].dim_size = agg_sel_count;
 				}
+				_NclDestroyObj((NclObj)sub_agg_md);
 			}
 		}
 		else {
