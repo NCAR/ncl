@@ -17,8 +17,9 @@
 #                          NCARG: optional (needed for PNG, HDF4.2r4,
 #                                           classic NetCDF-4)
 #
-#   jpeg-7                 NCL:   required 
+#   jpeg-6b                NCL:   required 
 #                          NCARG: optional (needed for HDF4.2r4)
+#      Note: jpeg-7 is being warned against by HDF4 folks
 # 
 #   libpng-1.2.41          NCL:   optional (needed for GRIB2 or PNG support)
 #                          NCARG: optional (needed for PNG)
@@ -34,14 +35,14 @@
 #   cairo-1.8.6            NCL/NCARG: optional (needed for cairo support)
 #
 # NCL only:
-#   hdf5-1.8.4             Required if you want classic NetCDF-4 support
+#   hdf5-1.8.4-patch1      Required if you want classic NetCDF-4 support
 #   szip-2.1               Required if you want classic NetCDF-4 support
 #   jasper-1.900.1         Required if you want GRIB2 support
 #   g2clib-1.1.9           Required if you want GRIB2 support
 #   gdal-1.6.3             Required if you want GDAL support
-#   netcdf-4.1             Required (classic NetCDF-4 support is optional)
+#   netcdf-4.1.1-rc1       Required (classic NetCDF-4 support is optional)
 #   proj-4.7.0             Required if you want GDAL support
-#   udunits-2.1.12         Required if you want ut_calendar/ut_inv_calendar
+#   udunits-2.1.14         Required if you want ut_calendar/ut_inv_calendar
 #   HDF-EOS2.16v1.00       Required if you want HDF-EOS 2 support
 #   HDF-EOS5.1.12          Required if you want HDF-EOS 5 support
 #   vis5d+-1.3.0           Required if you want v5d* functions
@@ -57,8 +58,8 @@
 #   libdap-3.8.2           Required if you want OPeNDAP support
 #   libnc-dap-3.7.4        Required if you want OPeNDAP support
 
-# Location to install external software
-PREFIX=/usr/local     # Parent directory for installing software
+# Parent location for installing external software
+PREFIX=/usr/local
 
 # Set environment variables for building software
 export CC=gcc
@@ -80,7 +81,8 @@ export PATH="$PREFIX/bin:$PATH"
 # was one). Only set it if the large file stuff doesn't work with NetCDF4.
 # export CPPFLAGS='-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE'.
 
-#CLEANUP=1                           # Whether to remove local *.o files
+#CLEAN_BEFORE=1                      # Whether to clean before making
+#CLEAN_AFTER=1                       # Whether to clean after making
 
 # Indicate which packages you want. These are listed in the order
 # they should generally be built in.
@@ -97,7 +99,7 @@ INSTALL_NETCDF4=1   # If need classic NetCDF-4 support
 INSTALL_PROJ4=1
 INSTALL_GDAL=1
 INSTALL_G2CLIB=1
-# INSTALL_UDUNITS NOT NEEDED B/C PART OF NETCDF-4.1
+INSTALL_UDUNITS=1
 INSTALL_VIS5DPLUS=1
 INSTALL_PKGCONFIG=1
 INSTALL_EXPAT=1
@@ -154,15 +156,15 @@ fi
 G2CLIB_DIR="g2clib-1.1.9"
 GDAL_DIR="gdal-1.6.3"
 HDF4_DIR="HDF4.2r4"
-HDF5_DIR="hdf5-1.8.4"
+HDF5_DIR="hdf5-1.8.4-patch1"
 HDFEOS5_DIR="hdfeos5-1.12"
 JASPER_DIR="jasper-1.900.1"
-JPEG_DIR="jpeg-7"
-NETCDF_DIR="netcdf-4.1"
+JPEG_DIR="jpeg-6b"
+NETCDF_DIR="netcdf-4.1.1-rc1"
 PNG_DIR="libpng-1.2.41"
 PROJ4_DIR="proj-4.7.0"
 SZIP_DIR="szip-2.1"
-UDUNITS_DIR="udunits-2.1.12"
+UDUNITS_DIR="udunits-2.1.14"
 VIS5DPLUS_DIR="vis5d+-1.3.0"
 ZLIB_DIR="zlib-1.2.3"
 PKGCONFIG_DIR="pkg-config-0.23"
@@ -198,15 +200,23 @@ if [ $INSTALL_ZLIB ]
   if [ -d "$ZLIB_DIR" ]
   then
     cd $ZLIB_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $ZLIB_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $ZLIB_DIR..."
     ./configure --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
       echo "$ZLIB_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $ZLIB_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$ZLIB_DIR build NOT successful."
@@ -227,6 +237,12 @@ if [ $INSTALL_PNG ]
   if [ -d "$PNG_DIR" ]
   then
     cd $PNG_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $PNG_DIR before making..."
+      make distclean
+      make clean
+    fi
     cp $PREFIX/include/zlib.h .
     cp $PREFIX/include/zconf.h .
     export LIBS="-L$PREFIX/lib"
@@ -236,9 +252,11 @@ if [ $INSTALL_PNG ]
     if [ $? ]
     then
       echo "$PNG_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $PNG_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$PNG_DIR build NOT successful."
@@ -259,15 +277,26 @@ if [ $INSTALL_JPEG ]
   if [ -d "$JPEG_DIR" ]
   then
     cd $JPEG_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $JPEG_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $JPEG_DIR..."
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
+# Need this for jpeg-6b
+    make install-lib
+    make install-headers
     if [ $? ]
     then
       echo "$JPEG_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $JPEG_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$JPEG_DIR build NOT successful."
@@ -288,15 +317,23 @@ if [ $INSTALL_JASPER ]
   if [ -d "$JASPER_DIR" ]
   then
     cd $JASPER_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $JASPER_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $JASPER_DIR..."
     ./configure --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
       echo "$JASPER_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $JASPER_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$JASPER_DIR build NOT successful."
@@ -317,15 +354,23 @@ if [ $INSTALL_SZIP ]
   if [ -d "$SZIP_DIR" ]
   then
     cd $SZIP_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $SZIP_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $SZIP_DIR..."
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
       echo "$SZIP_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $SZIP_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$SZIP_DIR build NOT successful."
@@ -346,15 +391,23 @@ if [ $INSTALL_HDF5 ]
   if [ -d "$HDF5_DIR" ]
   then
     cd $HDF5_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $HDF5_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $HDF5_DIR..."
     ./configure --disable-shared --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
       echo "$HDF5_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $HDF5_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$HDF5_DIR build NOT successful."
@@ -375,16 +428,27 @@ if [ $INSTALL_HDFEOS5 ]
   if [ -d "$HDFEOS5_DIR" ]
   then
     cd $HDFEOS5_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $HDFEOS5_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $HDFEOS5_DIR..."
+#    export CFLAGS_HE5="$CFLAGS -DH5_USE_16_API"
+#    ./configure --enable-static --with-hdf\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+#    ./configure --with-hdf5\=$PREFIX CFLAGS\=$CFLAGS_HE5 --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     ./configure CC\=$PREFIX/bin/h5cc --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     make all install
     cp include/HE5_HdfEosDef.h include/HE5_GctpFunc.h $PREFIX/include/.
     if [ $? ]
     then
       echo "$HDFEOS5_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $HDFEOS5_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$HDFEOS5_DIR build NOT successful."
@@ -405,15 +469,28 @@ if [ $INSTALL_HDF4 ]
   if [ -d "$HDF4_DIR" ]
   then
     cd $HDF4_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $HDF4_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $HDF4_DIR..."
     ./configure  --disable-netcdf --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=$PREFIX/include/hdf
+# This is for MacOS 10.6 systems
+#    export MACOSX_DEPLOYMENT_TARGET=10.6
+#    export CFLAGS_HDF4="$CFLAGS -Os -arch i386 -arch ppc -arch x86_64 -arch ppc64"
+#    export CFLAGS_HDF4="$CFLAGS -Os -arch x86_64"
+#    ./configure --disable-netcdf --disable-dependency-tracking CFLAGS\=$CFLAGS_\HDF4 --with-zlib\=$PREFIX --with-jpeg\=$PREFIX --prefix\=$PREFIX --includedir\=\$PREFIX/include/hdf
     make all install
     if [ $? ]
     then
       echo "$HDF4_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $HDF4_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$HDF4_DIR build NOT successful."
@@ -435,12 +512,21 @@ then
   if [ -d "$NETCDF_DIR" ]
   then
     cd $NETCDF_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $NETCDF_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $NETCDF_DIR..."
     if [ $INSTALL_NETCDF ]
     then
       ./configure --disable-f90 --prefix\=$PREFIX
     else
-      ./configure --enable-netcdf-4 --enable-opendap --with-udunits --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+# This is for NetCDF 4.1.1.
+      ./configure --enable-netcdf-4 --enable-opendap --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
+# This is for NetCDF 4.0.1.
+#      ./configure --enable-netcdf-4 --disable-f90 --disable-shared --with-hdf5\=$PREFIX --with-zlib\=$PREFIX --with-szlib\=$PREFIX --prefix\=$PREFIX
     fi
     make all install
 # This extra install needed b/c build sometimes fails on missing TeX pieces.
@@ -453,9 +539,11 @@ then
       else
         echo "$NETCDF_DIR (classic NetCDF-4) build successful."
       fi      
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $NETCDF_DIR after making..."
         make distclean
+        make clean
       fi
     else
       if [ $INSTALL_NETCDF ]
@@ -484,6 +572,10 @@ if [ $INSTALL_G2CLIB ]
   if [ -d "$G2CLIB_DIR" ]
   then
     export EXTRA_INC="-I$PREFIX/include"
+#
+# No clean check needed; this software is automatically
+# cleaned after each build.
+#
     echo "Building $G2CLIB_DIR..."
     cd $G2CLIB_DIR
     make all
@@ -492,8 +584,10 @@ if [ $INSTALL_G2CLIB ]
       mv libgrib2c.a $PREFIX/lib
       cp grib2.h $PREFIX/include
       echo "$G2CLIB_DIR build successful."
+#
 # No clean check needed; this software is automatically
 # cleaned after each build.
+#
     else
       echo "$G2CLIB_DIR build NOT successful."
     fi
@@ -513,15 +607,23 @@ if [ $INSTALL_PROJ4 ]
   if [ -d "$PROJ4_DIR" ]
   then
     cd $PROJ4_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $PROJ4_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $PROJ4_DIR..."
     ./configure --enable-static=yes --enable-shared=no --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
       echo "$PROJ4_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $PROJ4_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$PROJ4_DIR build NOT successful."
@@ -542,6 +644,12 @@ if [ $INSTALL_GDAL ]
   if [ -d "$GDAL_DIR" ]
   then
     cd $GDAL_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $GDAL_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $GDAL_DIR..."
     ./configure --with-static-proj4\=$PREFIX --prefix\=$PREFIX --without-pam --with-png\=$PREFIX --with-gif=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg\=$PREFIX --with-libz\=$PREFIX --with-sqlite3=no --with-expat=no --with-curl=no --without-ld-shared --with-hdf4=no --with-hdf5=no --with-pg=no --without-grib --disable-shared
     make all install
@@ -549,9 +657,11 @@ if [ $INSTALL_GDAL ]
     if [ $? ]
     then
       echo "$GDAL_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $GDAL_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$GDAL_DIR build NOT successful."
@@ -575,15 +685,23 @@ if [ $INSTALL_UDUNITS ]
   then
     export PERL=""
     cd $UDUNITS_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $UDUNITS_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $UDUNITS_DIR..."
     ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
       echo "$UDUNITS_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $UDUNITS_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$UDUNITS_DIR build NOT successful."
@@ -605,15 +723,23 @@ if [ $INSTALL_VIS5DPLUS ]
   if [ -d "$VIS5DPLUS_DIR" ]
   then
     cd $VIS5DPLUS_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $VIS5DPLUS_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $VIS5DPLUS_DIR..."
     ./configure --prefix\=$PREFIX --with-netcdf\=$PREFIX/lib/libnetcdf.a
     make all install
     if [ $? ]
     then
       echo "$VIS5DPLUS_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $VIS5DPLUS_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$VIS5DPLUS_DIR build NOT successful."
@@ -634,6 +760,12 @@ if [ $INSTALL_PKGCONFIG ]
   if [ -d "$PKGCONFIG_DIR" ]
   then
     cd $PKGCONFIG_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $PKGCONFIG_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $PKGCONFIG_DIR..."
     ./configure --prefix\=$PREFIX
     make all install
@@ -642,9 +774,11 @@ if [ $INSTALL_PKGCONFIG ]
       echo "$PKGCONFIG_DIR build successful."
       export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
       export PATH="$PREFIX/bin:$PATH"
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $PKGCONFIG_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$PKGCONFIG_DIR build NOT successful."
@@ -665,15 +799,23 @@ if [ $INSTALL_EXPAT ]
   if [ -d "$EXPAT_DIR" ]
   then
     cd $EXPAT_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $EXPAT_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $EXPAT_DIR..."
     ./configure --disable-shared --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
       echo "$EXPAT_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $EXPAT_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$EXPAT_DIR build NOT successful."
@@ -694,15 +836,23 @@ if [ $INSTALL_FREETYPE ]
   if [ -d "$FREETYPE_DIR" ]
   then
     cd $FREETYPE_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $FREETYPE_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $FREETYPE_DIR..."
     ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
       echo "$FREETYPE_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $FREETYPE_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$FREETYPE_DIR build NOT successful."
@@ -724,6 +874,12 @@ if [ $INSTALL_FONTCONFIG ]
   if [ -d "$FONTCONFIG_DIR" ]
   then
     cd $FONTCONFIG_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $FONTCONFIG_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $FONTCONFIG_DIR..."
 # You might need these two settings.
     export PKG_CONFIG_PATH="$PREFIX/lib/pkgconfig"
@@ -734,9 +890,11 @@ if [ $INSTALL_FONTCONFIG ]
     if [ $? ]
     then
       echo "$FONTCONFIG_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $FONTCONFIG_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$FONTCONFIG_DIR build NOT successful."
@@ -757,15 +915,23 @@ if [ $INSTALL_PIXMAN ]
   if [ -d "$PIXMAN_DIR" ]
   then
     cd $PIXMAN_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $PIXMAN_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $PIXMAN_DIR..."
     ./configure --prefix\=$PREFIX --disable-shared
     make all install
     if [ $? ]
     then
       echo "$PIXMAN_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $PIXMAN_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$PIXMAN_DIR build NOT successful."
@@ -787,15 +953,26 @@ if [ $INSTALL_CAIRO ]
   if [ -d "$CAIRO_DIR" ]
   then
     cd $CAIRO_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $CAIRO_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $CAIRO_DIR..."
     ./configure --prefix\=$PREFIX --disable-shared
+# This is for MacOS systems
+#    ./configure --prefix\=$PREFIX --enable-quartz-font=no --enable-quartz=no --enable-shared=no --enable-static=yes
+
     make all install
     if [ $? ]
     then
       echo "$CAIRO_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $CAIRO_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$CAIRO_DIR build NOT successful."
@@ -817,15 +994,23 @@ if [ $INSTALL_OPENSSL ]
   if [ -d "$OPENSSL_DIR" ]
   then
     cd $OPENSSL_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $OPENSSL_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $OPENSSL_DIR..."
     ./configure --prefix\=$PREFIX
     make all install
     if [ $? ]
     then
       echo "$OPENSSL_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $OPENSSL_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$OPENSSL_DIR build NOT successful."
@@ -847,15 +1032,23 @@ if [ $INSTALL_CURL ]
   if [ -d "$CURL_DIR" ]
   then
     cd $CURL_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $CURL_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $CURL_DIR..."
     ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic
     make all install
     if [ $? ]
     then
       echo "$CURL_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $CURL_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$CURL_DIR build NOT successful."
@@ -878,15 +1071,23 @@ if [ $INSTALL_XML2 ]
   if [ -d "$XML2_DIR" ]
   then
     cd $XML2_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $XML2_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $XML2_DIR..."
     ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic
     make all install
     if [ $? ]
     then
       echo "$XML2_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $XML2_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$XML2_DIR build NOT successful."
@@ -908,15 +1109,23 @@ if [ $INSTALL_DAP ]
   if [ -d "$DAP_DIR" ]
   then
     cd $DAP_DIR
+    if [ $CLEAN_BEFORE ]
+    then
+      echo "Cleaning $DAP_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $DAP_DIR..."
     ./configure --prefix\=$PREFIX --with-zlib\=$PREFIX --with-pic
     make all install
     if [ $? ]
     then
       echo "$DAP_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $DAP_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$DAP_DIR build NOT successful."
@@ -938,15 +1147,23 @@ if [ $INSTALL_NCDAP ]
   if [ -d "$NCDAP_DIR" ]
   then
     cd $NCDAP_DIR
+    if [ $CLEAN_AFTER ]
+    then
+      echo "Cleaning $NCDAP_DIR before making..."
+      make distclean
+      make clean
+    fi
     echo "Building $NCDAP_DIR..."
     ./configure --prefix\=$PREFIX --enable-64bit --with-pic
     make all install
     if [ $? ]
     then
       echo "$NCDAP_DIR build successful."
-      if [ $CLEANUP ]
+      if [ $CLEAN_AFTER ]
       then
+        echo "Cleaning $NCDAP_DIR after making..."
         make distclean
+        make clean
       fi
     else
       echo "$NCDAP_DIR build NOT successful."
