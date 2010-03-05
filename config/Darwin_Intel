@@ -1,6 +1,11 @@
 /*
  *	Description:	This file contains the configuration for a
- *                      gfortran/gcc build on an Intel Mac system.
+ *                      gfortran/gcc build on a *32 bit* Intel Mac system.
+ *
+ *                      If you have Mac OS 10.6 or later, you may have
+ *                      a 64-bit system, and hence you should copy
+ *                      Darwin_Intel.64 over this file.
+ *
  *                      You may need to modify it to change or include
  *                      options.
  *
