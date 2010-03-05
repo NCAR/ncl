@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.232 2010-02-19 23:23:20 haley Exp $
+;      $Id: gsn_code.ncl,v 1.233 2010-03-05 22:01:14 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -758,7 +758,8 @@ levelcountres
 begin
   class = NhlClassName(plot)
   if(.not.any(class.eq.(/"contourPlotClass","logLinPlotClass",\
-                         "irregularPlotClass","vectorPlotClass"/)))
+                         "irregularPlotClass","vectorPlotClass", \
+                         "streamlinePlotClass"/)))
     print("spread_colors: invalid plot: defaulting")
     return(ispan(2,255,1))
   end if
@@ -773,12 +774,22 @@ begin
     end if
     levelcountres = "cnLevelCount"
   else
-    levelcountres = "vcLevelCount"
-    if(isatt(res,"vcLevelolors")) then
-       print("spread_colors: warning: you are setting both vcLevelColors and")
-       print("               gsnSpreadColors. Your vcLevelColors resource will")
-       print("               be ignored. If this is not desired, delete the")
-       print("               setting of gsnSpreadColors or set it to False.")
+    if (class.eq."vectorPlotClass") then
+      levelcountres = "vcLevelCount"
+      if(isatt(res,"vcLevelolors")) then
+         print("spread_colors: warning: you are setting both vcLevelColors and")
+         print("               gsnSpreadColors. Your vcLevelColors resource will")
+         print("               be ignored. If this is not desired, delete the")
+         print("               setting of gsnSpreadColors or set it to False.")
+      end if
+    else
+      levelcountres = "stLevelCount"
+      if(isatt(res,"stLevelColors")) then
+         print("spread_colors: warning: you are setting both stLevelColors and")
+         print("               gsnSpreadColors. Your stLevelColors resource will")
+         print("               be ignored. If this is not desired, delete the")
+         print("               setting of gsnSpreadColors or set it to False.")
+      end if
     end if
   end if
 
@@ -786,7 +797,8 @@ begin
     "wkColorMapLen" : ncols
   end getvalues
 
-  if (class.eq."contourPlotClass".or.class.eq."vectorPlotClass")
+  if (class.eq."contourPlotClass".or.class.eq."vectorPlotClass".or. \
+      class.eq."streamlinePlotClass")
     getvalues plot
       levelcountres : lcount
     end getvalues
@@ -1822,8 +1834,9 @@ begin
                 "gsn_streamline", "gsn_streamline_contour", \
                 "gsn_streamline_map", "gsn_vector", \
                 "gsn_vector_contour", "gsn_vector_contour_map", \
-                "gsn_vector_map", "gsn_vector_scalar", \
-                "gsn_vector_scalar_map", "gsn_xy", "gsn_y"/)
+                "gsn_vector_map", "gsn_vector_scalar", "gsn_streamline_scalar", \
+                "gsn_vector_scalar_map", "gsn_streamline_scalar_map", \
+                "gsn_xy", "gsn_y"/)
 
   if(.not.any(gsn_name.eq.gsn_names)) then
     print("gsnp_write_debug_info: error: do not recognize " + gsn_name + " as a")
@@ -9879,6 +9892,147 @@ begin
 end
 
 ;***********************************************************************;
+; Function : gsn_streamline_scalar                                      ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional U array                          ;
+;                     v: 2-dimensional V array                          ;
+;                  data: 2-dimensional scalar field                     ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates and draws a streamline plot to the workstation  ;
+; "wks"; (the variable returned from a previous call to "gsn_open_wks").;
+; "u" and "v" are the 2-dimensional vector arrays, and "data" is the    ;
+; scalar field that the streamlines are colored by. "resources" is an   ;
+; optional list of resources. The id of the streamline plot is returned.;
+;                                                                       ;
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
+;   gsnShape                                                            ;
+;   gsnScale                                                            ;
+;   gsnSpreadColors                                                     ;
+;   gsnSpreadColorStart                                                 ;
+;   gsnSpreadColorEnd                                                   ;
+;                                                                       ;
+;***********************************************************************;
+undef("gsn_streamline_scalar")
+function gsn_streamline_scalar(wks:graphic,u[*][*]:numeric,v[*][*]:numeric,\
+                           data:numeric, resources:logical )
+local i, vfdata_object, sfdata_object, plot_object, res, \
+force_x_linear, force_y_linear, force_x_log, force_y_log, \
+trxmin, trxmax, trymin, trymax, ll_res_index, llres, vf_res_index, \
+st_res_index, sf_res_index, res2, sprdcols
+begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_streamline_scalar: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
+    llres = False
+    res2  = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(isatt(res2,"gsnDebugWriteFileName")) then
+      gsnp_write_debug_info(u,v,data,"gsn_streamline_scalar",res2,3)
+    end if
+
+    force_x_linear = False
+    force_y_linear = False
+    force_x_log    = False
+    force_y_log    = False
+
+; Create the scalar and vector field data object.
+
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    vfdata_object = vector_field(wksname+"_vfdata",u,v,res2)
+    sfdata_object = scalar_field(wksname+"_sfdata",data,res2);
+
+; Create plot object.
+
+    plot_object = create wksname + "_streamline" streamlinePlotClass wks
+        "stVectorFieldData"     : vfdata_object
+        "stScalarFieldData"     : sfdata_object
+        "stUseScalarArray"      : True
+        "stMonoLineColor"       : False
+    end create
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+    shape     = get_res_value(res2,"gsnShape",False)
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    check_for_irreg2loglin(res2,force_x_linear,force_y_linear,\
+                                force_x_log,force_y_log)
+    check_for_tickmarks_off(res2)
+
+    vfres = get_res_eq(res2,"vf")
+    sfres = get_res_eq(res2,"sf")
+    stres = get_res_ne(res2,(/"sf","vf"/))
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      llres = get_res_eq(res2,(/"tr","vp"/))
+    end if
+
+    attsetvalues_check(vfdata_object,vfres)
+    attsetvalues_check(sfdata_object,sfres)
+    attsetvalues_check(plot_object,stres)
+    if(sprdcols)
+      stres2 = True
+      set_attr(stres2,"stLevelColors",\
+               spread_colors(wks,plot_object,min_index,max_index,res2))
+      attsetvalues(plot_object,stres2)
+    end if
+;
+; If gsnShape was set to True, then resize the X or Y axis so that
+; the scales are proportionally correct.
+; 
+    if(shape)
+      gsnp_shape_plot(plot_object)
+    end if
+
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+; 
+    if(scale)
+      gsnp_scale_plot(plot_object,"vf",resources)
+    end if
+
+; Check if we need to force the X or Y axis to be linear or log.
+; If so, then we have to overlay it on a LogLin Plot.
+
+    if(force_x_linear.or.force_x_log.or.force_y_linear.or.force_y_log)
+      overlay_plot_object = plot_object
+      delete(plot_object)
+
+      plot_object = overlay_irregular(wks,wksname,overlay_plot_object,\
+                                      data_object,force_x_linear,\
+                                      force_y_linear,force_x_log, \
+                                      force_y_log,"vector",llres)
+    end if
+
+    draw_and_frame(wks,plot_object,calldraw,callframe,0,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    plot_object@vfdata = vfdata_object
+    plot_object@sfdata = sfdata_object
+    return(plot_object)
+end
+
+;***********************************************************************;
 ; Function : gsn_vector_scalar_map                                      ;
 ;                   wks: workstation object                             ;
 ;                     u: 2-dimensional U data                           ;
@@ -9994,6 +10148,125 @@ begin
     map_object@vfdata = vfdata_object
     map_object@sfdata = sfdata_object
     map_object@vector = vector_object
+    return(map_object)
+end
+
+;***********************************************************************;
+; Function : gsn_streamline_scalar_map                                  ;
+;                   wks: workstation object                             ;
+;                     u: 2-dimensional U data                           ;
+;                     v: 2-dimensional V data                           ;
+;                  data: 2-dimensional scalar field                     ;
+;               resources: optional resources                           ;
+;                                                                       ;
+; This function creates and draws a streamline plot over a map plot to  ; 
+; the workstation "wks" (the variable returned from a previous call to  ;
+; "gsn_open_wks").  "u" and "v" are the 2-dimensional streamline arrays,;
+; and "data" is the scalar field that the streamlines are colored by.   ;
+; "resources" is an optional list of resources. The id of the map plot  ; 
+; is returned.                                                          ;
+;                                                                       ;
+; Special resources ("gsn" prefix) allowed:                             ;
+;                                                                       ;
+;   gsnDraw                                                             ;
+;   gsnFrame                                                            ;
+;   gsnShape                                                            ;
+;   gsnScale                                                            ;
+;   gsnSpreadColors                                                     ;
+;   gsnSpreadColorStart                                                 ;
+;   gsnSpreadColorEnd                                                   ;
+;                                                                       ;
+;***********************************************************************;
+undef("gsn_streamline_scalar_map")
+function gsn_streamline_scalar_map(wks:graphic,u[*][*]:numeric,\
+                                   v[*][*]:numeric,data:numeric,\
+                                   resources:logical)
+local i, vfdata_object, sfdata_object, contour_object, res, \
+vf_res_index, st_res_index, sf_res_index, mp_res_index, map_object, res2, \
+sprdcols
+begin
+;
+; Make sure input data is 1D or 2D
+;
+    if(.not.is_data_1d_or_2d(data)) then
+      print("gsn_streamline_scalar_map: Fatal: the input data array must be 1D or 2D")
+      return
+    end if
+
+    res2 = get_resources(resources)
+;
+; Write data and plot resource information to a file so we can 
+; reconstruct plot if desired, without all the computational
+; code beforehand.
+;
+    if(isatt(res2,"gsnDebugWriteFileName")) then
+      gsnp_write_debug_info(u,v,data,"gsn_streamline_scalar_map",res2,3)
+    end if
+
+;
+; Create the streamline and scalar field object.
+;
+    wksname = get_res_value_keep(wks,"name","gsnapp")
+
+    vfdata_object = vector_field(wksname+"_vfdata",u,v,res2)
+    sfdata_object = scalar_field(wksname+"_sfdata",data,res2);
+
+; Create plot object.
+
+    streamline_object = create wksname + "_streamline" streamlinePlotClass wks
+        "stVectorFieldData"     : vfdata_object
+        "stScalarFieldData"     : sfdata_object
+        "stUseScalarArray"      : True
+        "stMonoLineColor"       : False
+    end create
+
+; Create map object.
+
+    map_object = create wksname + "_map" mapPlotClass wks end create
+
+    calldraw  = get_res_value(res2,"gsnDraw", True)
+    callframe = get_res_value(res2,"gsnFrame",True)
+    maxbb     = get_bb_res(res2)
+    shape     = get_res_value(res2,"gsnShape",False)
+    scale     = get_res_value(res2,"gsnScale",shape)
+    sprdcols  = get_res_value(res2,"gsnSpreadColors",False)
+    min_index = get_res_value(res2,"gsnSpreadColorStart",2)
+    max_index = get_res_value(res2,"gsnSpreadColorEnd",-1)
+
+    vfres = get_res_eq(res2,"vf")
+    sfres = get_res_eq(res2,"sf")
+    mpres = get_res_eq(res2,(/"mp","vp","pmA","pmO","pmT","tm"/))
+    stres = get_res_ne(res2,(/"mp","sf","vf","vp"/))
+
+    attsetvalues_check(vfdata_object,vfres)
+    attsetvalues_check(sfdata_object,sfres)
+    attsetvalues_check(map_object,mpres)
+    attsetvalues_check(streamline_object,stres)
+
+    if(sprdcols)
+      stres2 = True
+      set_attr(stres2,"stLevelColors",\
+               spread_colors(wks,streamline_object,min_index,max_index,res2))
+      attsetvalues(streamline_object,stres2)
+    end if
+
+    overlay(map_object,streamline_object)
+
+;
+; If gsnScale was set to True, then make sure the X and Y axis labels
+; and tick marks are the same size.
+; 
+    if(scale)
+      gsnp_scale_plot(streamline_object,"vf",resources)
+    end if
+
+    draw_and_frame(wks,map_object,calldraw,callframe,0,maxbb)
+
+; Return plot object and data object (as attribute of plot object).
+
+    map_object@vfdata = vfdata_object
+    map_object@sfdata = sfdata_object
+    map_object@streamline = streamline_object
     return(map_object)
 end
 
