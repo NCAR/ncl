@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_csm.ncl,v 1.240 2009-12-04 03:01:47 haley Exp $
+;      $Id: gsn_csm.ncl,v 1.241 2010-03-05 15:28:07 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -9979,8 +9979,8 @@ end
 ;***********************************************************************;
 ; Function : gsn_csm_contour_map_overlay                                ;
 ;                   wks: workstation object                             ;
-;                 data1: 2-dimensional data                             ;
-;                 data2: 2-dimensional data                             ;
+;                 data1: first data to contour                          ;
+;                 data2: second data to contour                         ;
 ;                  res1: optional resources                             ;
 ;                  res2: optional resources                             ;
 ;                                                                       ;
@@ -9989,11 +9989,18 @@ end
 ;                                                                       ;
 ;***********************************************************************;
 undef("gsn_csm_contour_map_overlay")
-function gsn_csm_contour_map_overlay(wks:graphic,data1[*][*]:numeric,\
-                                     data2[*][*]:numeric,res1:logical, \
-                                     res2:logical)
+function gsn_csm_contour_map_overlay(wks:graphic,data1:numeric,data2:numeric, \
+                                     res1:logical,res2:logical)
 local calldraw, callframe, res1_tmp, res2_tmp
 begin
+;
+; Make sure input data is 1D or 2D
+;
+  if(.not.is_data_1d_or_2d(data1).or..not.is_data_1d_or_2d(data2)) then
+    print("gsn_csm_contour_map_overlay: Fatal: the input data arrays must be 1D or 2D")
+    return
+  end if
+
   res1_tmp  = get_resources(res1)   ; Transfer attributes
   res2_tmp  = get_resources(res2)   ; Transfer attributes
   res1_tmp  = True 
