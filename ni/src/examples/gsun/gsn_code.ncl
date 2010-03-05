@@ -1,5 +1,5 @@
 ;
-;      $Id: gsn_code.ncl,v 1.233 2010-03-05 22:01:14 haley Exp $
+;      $Id: gsn_code.ncl,v 1.234 2010-03-05 22:53:56 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -2412,7 +2412,7 @@ begin
   def_orient =  "auto" ; Best possible orientation will be used, by default.
 
 ; Get workstation parent of plot, and retrieve paper size and width.
-  tmp_wks = NhlGetParentWorkstation(plot)
+  tmp_wks = NhlGetParentWorkstation(plot(0))
   getvalues tmp_wks
     "wkPaperWidthF"  : wks_pw
     "wkPaperHeightF" : wks_ph
