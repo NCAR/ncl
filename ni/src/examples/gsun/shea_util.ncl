@@ -1,5 +1,5 @@
 ;
-;      $Id: shea_util.ncl,v 1.38 2010-02-25 20:52:15 shea Exp $
+;      $Id: shea_util.ncl,v 1.39 2010-03-08 19:45:31 haley Exp $
 ;
 ; ******************** NOTE *******************************
 ; These are my personal functions/procedures. They do things
@@ -3287,7 +3287,7 @@ begin
   dimDP = dimsizes( dp )
   rankX = dimsizes( dimX )
 
-  if (rankX.le.2 .or. rankX.ge.6)) then
+  if (rankX.le.2 .or. rankX.ge.6) then
       print("vertint: variable rank must be 3D or 4D or 5D")
       print("vertint: rank="+rankX+"D")
       exit
