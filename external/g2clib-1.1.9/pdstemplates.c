@@ -265,6 +265,18 @@ gtemplate *extpdstemplate(g2int number,g2int *list)
                  new->ext[l+4]=4;
               }
            }
+           else if ( number == 31 ) {
+              new->extlen=list[4]*5;
+              new->ext=(g2int *)malloc(sizeof(g2int)*new->extlen);
+              for (i=0;i<list[4];i++) {
+                 l=i*5;
+                 new->ext[l]=2;
+                 new->ext[l+1]=2;
+                 new->ext[l+2]=2;
+                 new->ext[l+3]=1;
+                 new->ext[l+4]=4;
+              }
+           }
            return(new);
 
 }
