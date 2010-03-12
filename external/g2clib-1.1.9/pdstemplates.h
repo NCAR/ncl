@@ -33,7 +33,7 @@
 //
 //$$$
 
-      #define MAXPDSTEMP 24           // maximum number of templates
+      #define MAXPDSTEMP 29           // maximum number of templates
       #define MAXPDSMAPLEN 200        // maximum template map length
 
       struct pdstemplate 
@@ -90,12 +90,29 @@
              // 4.14: Derived Fcst based on Ensemble cluster over circular
              //       area at Horiz Level/Layer in a time interval
          {14,44,1, {1,1,1,1,1,2,1,1,4,1,-1,-4,1,-1,-4,1,1,1,1,1,1,1,-4,4,4,1,-1,4,-1,4,2,1,1,1,1,1,1,4,1,1,1,4,1,4} },
+             // 4.15: Average, accumulation, extreme values or other statistically-processed values over a
+             // spatial area at a horizontal level or in a horizontal layer at a point in time
+         {15,18,0, {1,1,1,1,1,2,1,1,4,1,-1,-4,1,-1,-4,1,1,1} },
              // 4.20: Radar Product
          {20,19,0, {1,1,1,1,1,-4,4,2,4,2,1,1,1,1,1,2,1,3,2} },
              // 4.30: Satellite Product
          {30,5,1, {1,1,1,1,1} },
              // 4.31: Satellite Product
          {31,5,1, {1,1,1,1,1} },
+             // 4.40: Analysis or forecast at a horizontal level or in a horizontal layer 
+	     // at a point in time for atmospheric chemical constituents
+         {40,16,0, {1,1,2,1,1,1,2,1,1,4,1,-1,-4,1,-1,-4} },
+             // 4.41: Individual ensemble forecast, control and perturbed, at a horizontal level or 
+	     // in a horizontal layer at a point in time for atmospheric chemical constituents
+         {41,19,0, {1,1,2,1,1,1,2,1,1,4,1,-1,-4,1,-1,-4,1,1,1} },
+             // 4.42: Average, accumulation, and/or extreme values or other statistically-processed values
+             // at a horizontal level or in a horizontal layer in a continuous or non-continuous
+             // time interval for atmospheric chemical constituents
+         {42,24,1, {1,1,2,1,1,1,2,1,1,4,1,-1,-4,1,-1,-4,2,1,1,1,1,1,1,4} },
+             // 4.43: Individual ensemble forecast, control and perturbed, at a horizontal level 
+	     // or in a horizontal layer in a continuous or non-continuous 
+             // time interval for atmospheric chemical constituents
+         {43,27,1, {1,1,2,1,1,1,2,1,1,4,1,-1,-4,1,-1,-4,1,1,2,1,1,1,1,1,1,4} },
              // 4.254: CCITT IA5 Character String
          {254,3,0, {1,1,4} },
              // 4.1000: Cross section of analysis or forecast

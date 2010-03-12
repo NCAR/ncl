@@ -277,6 +277,33 @@ gtemplate *extpdstemplate(g2int number,g2int *list)
                  new->ext[l+4]=4;
               }
            }
+           else if ( number == 42 ) {
+              new->extlen=list[22]*12;
+              new->ext=(g2int *)malloc(sizeof(g2int)*new->extlen);
+              for (i=0;i<list[22];i++) {
+                 l=i*12;
+                 new->ext[l]=1;
+                 new->ext[l+1]=1;
+                 new->ext[l+2]=1;
+                 new->ext[l+3]=4;
+                 new->ext[l+4]=1;
+                 new->ext[l+4]=4;
+              }
+           }
+           else if ( number == 43 ) {
+              new->extlen=list[25]*12;
+              new->ext=(g2int *)malloc(sizeof(g2int)*new->extlen);
+              for (i=0;i<list[25];i++) {
+                 l=i*12;
+                 new->ext[l]=1;
+                 new->ext[l+1]=1;
+                 new->ext[l+2]=1;
+                 new->ext[l+3]=4;
+                 new->ext[l+4]=1;
+                 new->ext[l+4]=4;
+              }
+           }
+	   
            return(new);
 
 }
