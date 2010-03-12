@@ -1,6 +1,6 @@
 
 /*
- *      $Id: NclTypelist.c,v 1.3 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -38,7 +38,7 @@
 #include "DataSupport.h"
 
 /*
- *      $Id: NclTypelist.c,v 1.3 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -58,8 +58,14 @@
  *
  *	Description:	
  */
+#ifdef NIO_LIB_ONLY
+#include "nioBaseP.h"
+#include "nioCallbacks.h"
+#else
 #include <ncarg/hlu/BaseP.h>
 #include <ncarg/hlu/Callbacks.h>
+#endif
+
 #include "NclTypelogical.h"
 #include "NclHLUObj.h"
 #include "NclMultiDValHLUObjData.h"
@@ -107,7 +113,7 @@ static NhlErrorTypes Ncl_Type_list_InitClass
 
 
 /*
- *      $Id: NclTypelist.c,v 1.3 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -156,7 +162,7 @@ int nval;
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.3 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
  */
 /************************************************************************
 *									*
@@ -244,7 +250,7 @@ NclTypeClass Ncl_Type_list_eq_type
 }
 
 /*
- *      $Id: NclTypelist.c,v 1.3 2008-12-10 20:12:17 dbrown Exp $
+ *      $Id: NclTypelist.c,v 1.4 2010-03-12 18:33:47 dbrown Exp $
  */
 /************************************************************************
 *									*
