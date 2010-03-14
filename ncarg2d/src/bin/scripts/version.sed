@@ -1,9 +1,9 @@
 #!/bin/csh -f
 #
-#	$Id: version.sed,v 1.26 2008-12-22 23:49:51 haley Exp $
+#	$Id: version.sed,v 1.27 2010-03-14 16:32:51 haley Exp $
 #
 
-set year = "2009"
+set year = "2010"
 set sitefile = `ncargpath NCARGDIR`/NCARGSITEFILE
 if (-f $sitefile) then
   set sitenum = `head -1 $sitefile`
