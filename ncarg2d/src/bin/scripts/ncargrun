@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargrun,v 1.7 2009-05-05 20:50:16 haley Exp $
+#	$Id: ncargrun,v 1.8 2010-03-14 21:35:06 haley Exp $
 #
 
 foreach arg ($argv)
@@ -25,6 +25,7 @@ foreach arg ($argv)
 			setenv NCARG_GKS_PSOUTPUT $arg
 			setenv NCARG_GKS_PDFOUTPUT $arg
 			setenv NCARG_GKS_CPSOUTPUT $arg
+			setenv NCARG_GKS_CPDFOUTPUT $arg
 			setenv NCARG_GKS_CPNGOUTPUT $arg
 			unset get_output
 		else

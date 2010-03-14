@@ -1,5 +1,5 @@
 #
-#	$Id: yMakefile,v 1.53 2010-03-14 19:32:15 haley Exp $
+#	$Id: yMakefile,v 1.54 2010-03-14 21:35:06 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
@@ -7,10 +7,13 @@ SRC_SCRIPTS	=	ncargsrc ncargsrcy
 #endif
 
 #ifdef BuildCAIRO
-SCRIPTS = ncargcc ncargf90 ncargf77 ncargcc_cairo ncargf90_cairo ncargf77_cairo
+SCRIPTS = ncargfile ncargversion ncargrun ncargex pre2ncgm $(SRC_SCRIPTS) \
+	ncargcc ncargf90 ncargf77 ncargcc_cairo ncargf90_cairo ncargf77_cairo
 #else
-SCRIPTS = ncargcc ncargf90 ncargf77
+SCRIPTS = ncargfile ncargversion ncargrun ncargex pre2ncgm $(SRC_SCRIPTS) \
+	ncargcc ncargf90 ncargf77
 #endif
+
 
 FILES = ngurl
 

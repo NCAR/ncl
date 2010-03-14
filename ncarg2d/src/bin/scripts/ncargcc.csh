@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: ncargcc.csh,v 1.51 2010-03-14 19:32:15 haley Exp $
+#	$Id: ncargcc.csh,v 1.52 2010-03-14 21:35:06 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -51,7 +51,7 @@ set super    = "$ro/libdashsupr.o $ro/libconrcspr.o $ro/libconras.o"
 # set up default libraries
 #
 set libncarg    = "-lncarg"
-set libgks      = "-lncarg_gks"
+set libgks     = "-lSED_LIBNCARG_GKS"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
 
