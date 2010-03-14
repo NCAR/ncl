@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: create_dist,v 1.16 2009-06-08 16:42:10 haley Exp $
+#   $Id: create_dist,v 1.17 2010-03-14 16:54:15 haley Exp $
 #
 #######################################################################
 #                                                                     #
@@ -410,13 +410,15 @@ endif
 # and nhlf90 and remove *~ files that shouldn't be there.
 #
 if ($?NCLONLY) then
-  emacs bin/nhlcc bin/nhlf77 bin/nhlf90 
+  emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/nhlcc_cairo bin/nhlf77_cairo bin/nhlf90_cairo 
 else if ($?NCARGONLY) then
-  emacs bin/ncargcc bin/ncargf77 bin/ncargf90
-  chmod gou+x bin/ncargcc bin/ncargf77 bin/ncargf90
+  emacs bin/ncargcc bin/ncargf77 bin/ncargf90 bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
+  chmod gou+x bin/ncargcc bin/ncargf77 bin/ncargf90 bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
 else
   emacs bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
+  emacs bin/nhlcc_cairo bin/nhlf77_cairo bin/nhlf90_cairo bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
   chmod gou+x bin/nhlcc bin/nhlf77 bin/nhlf90 bin/ncargcc bin/ncargf77 bin/ncargf90
+  chmod gou+x bin/nhlcc_cairo bin/nhlf77_cairo bin/nhlf90_cairo bin/ncargcc_cairo bin/ncargf77_cairo bin/ncargf90_cairo
 endif
 /bin/rm bin/*~
 /bin/rm lib/ncarg/xapp/Idt.bak
