@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_files,v 1.29 2010-03-14 16:54:15 haley Exp $
+#   $Id: check_files,v 1.30 2010-03-14 19:52:46 haley Exp $
 #
 # Check for existence of NCARG/NCL files in a particular version of
 # a distribution.
@@ -63,7 +63,7 @@ if ($?NCLONLY && $?NCARGONLY) then
 endif
 
 
-set nclversion = "5.1.1"
+set nclversion = "5.2.0"
 set pwddir  = `pwd`
 
 if ($?NCARGNCL) then
@@ -225,8 +225,11 @@ bin/ncl_filedump
 bin/ncl_grib2nc
 bin/ng4ex
 bin/nhlcc
+bin/nhlcc_cairo
 bin/nhlf77
+bin/nhlf77_cairo
 bin/nhlf90
+bin/nhlf90_cairo
 bin/scrip_check_input
 bin/wrapit77
 include/ncarg/hlu/AnnoManager.h
@@ -431,6 +434,7 @@ include/ncarg/nio/niohluP.h
 lib/libblas_ncl.a
 lib/libfftpack5_dp.a
 lib/libhlu.a
+lib/libhlu_cairo.a
 lib/liblapack_ncl.a
 lib/libncl.a
 lib/libnclapi.a
@@ -1497,9 +1501,12 @@ bin/fontc
 bin/gcaps
 bin/graphc
 bin/ncargcc
+bin/ncargcc_cairo
 bin/ncargex
 bin/ncargf77
+bin/ncargf77_cairo
 bin/ncargf90
+bin/ncargf90_cairo
 bin/ncargfile
 bin/ncargrun
 bin/ncargversion
@@ -1536,6 +1543,7 @@ lib/libcgm.a
 lib/libncarg.a
 lib/libncarg_c.a
 lib/libncarg_gks.a
+lib/libncarg_gks_cairo.a
 lib/libncarg_ras.a
 lib/libngmath.a
 

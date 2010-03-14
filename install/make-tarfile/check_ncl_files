@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncl_files,v 1.27 2010-03-14 16:54:15 haley Exp $
+#   $Id: check_ncl_files,v 1.28 2010-03-14 19:52:46 haley Exp $
 #
 # Use check_files instead! This one is just for NCL and hasn't
 # been updated in awhile
@@ -13,7 +13,7 @@
 #
 # set echo verbose timestamp
 
-set version = "5.1.1"
+set version = "5.2.0"
 set pwddir  = `pwd`
 
 echo "Checking files for version $version in dir $pwddir..."
@@ -39,8 +39,11 @@ bin/ncl_filedump
 bin/ncl_grib2nc
 bin/ng4ex
 bin/nhlcc
+bin/nhlcc_cairo
 bin/nhlf77
+bin/nhlf77_cairo
 bin/nhlf90
+bin/nhlf90_cairo
 bin/psplit
 bin/scrip_check_input
 bin/WRAPIT

@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: check_ncargncl_files,v 1.23 2010-03-14 16:54:15 haley Exp $
+#   $Id: check_ncargncl_files,v 1.24 2010-03-14 19:52:46 haley Exp $
 #
 # Use check_files instead! This one is just for NCL/NCARG and
 # hasn't been updated in awhile.
@@ -42,9 +42,12 @@ bin/idt
 bin/MakeNcl
 bin/med
 bin/ncargcc
+bin/ncargcc_cairo
 bin/ncargex
 bin/ncargf77
+bin/ncargf77_cairo
 bin/ncargf90
+bin/ncargf90_cairo
 bin/ncargfile
 bin/ncargpath
 bin/ncargrun
@@ -60,8 +63,11 @@ bin/ncl_filedump
 bin/ncl_grib2nc
 bin/ng4ex
 bin/nhlcc
+bin/nhlcc_cairo
 bin/nhlf77
+bin/nhlf77_cairo
 bin/nhlf90
+bin/nhlf90_cairo
 bin/nnalg
 bin/pre2ncgm
 bin/pre2ncgm.prog
@@ -252,9 +258,11 @@ include/ncarg/ncl/nio.h
 include/ncarg/ngmath.h
 lib/libcgm.a
 lib/libhlu.a
+lib/libhlu_cairo.a
 lib/libncarg.a
 lib/libncarg_c.a
 lib/libncarg_gks.a
+lib/libncarg_gks_cairo.a
 lib/libncarg_ras.a
 lib/libncl.a
 lib/libnclapi.a
