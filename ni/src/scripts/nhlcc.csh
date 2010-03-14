@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#	$Id: nhlcc.csh,v 1.3 2008-02-07 00:22:03 haley Exp $
+#	$Id: nhlcc.csh,v 1.4 2010-03-14 19:47:22 haley Exp $
 #
 
 #*********************************************#
@@ -15,7 +15,7 @@ if ($status != 0) then
 endif
 
 set xlibs = "SED_XLIB"
-set pnglib = "SED_PNGLIB"
+set cairolib = "SED_CAIROLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set cc       = "SED_CC"
 set defines  = "SED_STDDEF SED_PROJDEF"
@@ -34,10 +34,10 @@ set incpath = "-I$incdir $sysincdir"
 # set up default libraries
 #
 set libncarg    = "-lncarg"
-set libgks      = "-lncarg_gks"
+set libgks      = "-lSED_LIBNCARG_GKS"
 set libmath     = ""
 set libncarg_c  = "-lncarg_c"
-set libhlu      = "-lhlu"
+set libhlu      = "-lSED_LIBHLU"
 set ncarbd      = "$ro/libncarbd.o"
 set ngmathbd    = "$ro/libngmathbd.o"
 set extra_libs
@@ -94,7 +94,7 @@ endif
 
 set ncarg_libs = "$libhlu $libncarg $libgks $libncarg_c $libmath"
 
-set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $pnglib $f77libs"
+set newargv = "$newargv $libpath $incpath $extra_libs $robjs $ncarg_libs $xlibs $cairolib $f77libs"
 
 echo $newargv
 eval $newargv
