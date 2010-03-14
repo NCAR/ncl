@@ -1,5 +1,5 @@
 /*
- *      $Id: Project,v 1.118 2010-03-14 18:30:26 haley Exp $
+ *      $Id: Project,v 1.119 2010-03-14 18:35:53 haley Exp $
  */
 
 /************************************************************************
@@ -17,7 +17,7 @@
  *			National Center for Atmospheric Research
  *			PO 3000, Boulder, Colorado
  *
- *	$Date: 2010-03-14 18:30:26 $
+ *	$Date: 2010-03-14 18:35:53 $
  *
  *	Description:	This file sets up defaults for all variables specific
  *			to the ncarg project.  System defaults - ie compilers
@@ -255,12 +255,17 @@
 #define GksBufferSize 0
 #endif	/* GksBufferSize */
 
+#ifdef BETA
+NGVERSION       = NcargVersion-BETA
+NCLVERSION      = NclVersion-BETA
+#else
 #ifdef DEVEL
 NGVERSION       = NcargVersion-$(DATE)
 NCLVERSION      = NclVersion-$(DATE)
 #else
 NGVERSION       = NcargVersion
 NCLVERSION      = NclVersion
+#endif
 #endif
 
 NCARGDIR		= ncarg
