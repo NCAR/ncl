@@ -1,20 +1,23 @@
 #
-#	$Id: yMakefile,v 1.52 2009-04-25 00:07:12 haley Exp $
+#	$Id: yMakefile,v 1.53 2010-03-14 19:32:15 haley Exp $
 #
 
 #ifdef	BuildNCARGSourceLibrary
 SRC_SCRIPTS	=	ncargsrc ncargsrcy
 #endif
 
-SCRIPTS = ncargfile ncargcc ncargversion ncargrun ncargex \
-	pre2ncgm $(SRC_SCRIPTS) ncargf90 ncargf77
+#ifdef BuildCAIRO
+SCRIPTS = ncargcc ncargf90 ncargf77 ncargcc_cairo ncargf90_cairo ncargf77_cairo
+#else
+SCRIPTS = ncargcc ncargf90 ncargf77
+#endif
 
 FILES = ngurl
 
 InstallTarget($(SCRIPTS),$(INSTALL_BIN),$(BINPATH))
 InstallTarget($(FILES),$(INSTALL_LIB),$(WWWPATH))
 
-CleanFilesTarget(ncargf77 ncargf90 ncargcc ncargex ncargsrc ncargsrcy ncargversion ncargfile)
+CleanFilesTarget(ncargf77 ncargf90 ncargcc ncargex ncargsrc ncargsrcy ncargversion ncargfile ncargf77_cairo ncargf90_cairo ncargcc_cairo)
 
 ncargversion:	version.sed
 	@sed \
@@ -30,12 +33,12 @@ EXTRA_SYS_LIBS =
 ncargf77: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
+	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_PNGLIB+$(PNGLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_CAIROLIB++' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
@@ -45,12 +48,12 @@ ncargf77: ncargf77.csh Makefile
 ncargf90: ncargf77.csh Makefile
 	@sed \
 	-e 's+SED_FC+$(F77)+' \
+	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_PNGLIB+$(PNGLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_CAIROLIB++' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
@@ -60,20 +63,71 @@ ncargf90: ncargf77.csh Makefile
 ncargcc: ncargcc.csh Makefile
 	@sed \
 	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_LIBNCARG_GKS+ncarg_gks+' \
 	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
 	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
 	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
 	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
 	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
 	-e 's+SED_XLIB+$(XLIB)+' \
-	-e 's+SED_PNGLIB+$(PNGLIB)+' \
-	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_CAIROLIB++' \
 	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
 	-e 's+SED_LIBDIR+$(LIBDIR)+' \
 	-e 's+SED_INCDIR+$(INCDIR)+' \
 	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
 	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
 	<ncargcc.csh >ncargcc
+
+#ifdef BuildCAIRO
+ncargf77_cairo: ncargf77.csh Makefile
+	@sed \
+	-e 's+SED_FC+$(F77)+' \
+	-e 's+SED_LIBNCARG_GKS+ncarg_gks_cairo+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<ncargf77.csh > ncargf77_cairo
+
+ncargf90_cairo: ncargf77.csh Makefile
+	@sed \
+	-e 's+SED_FC+$(F77)+' \
+	-e 's+SED_LIBNCARG_GKS+ncarg_gks_cairo+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_LDFLAGS+$(FC_LDOPTIONS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_LIBEXTRA+$(EXTRA_SYS_LIBS)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<ncargf77.csh > ncargf90_cairo
+
+ncargcc_cairo: ncargcc.csh Makefile
+	@sed \
+	-e 's+SED_CC+$(CC)+' \
+	-e 's+SED_LIBNCARG_GKS+ncarg_gks_cairo+' \
+	-e 's+SED_LIBSEARCH+$(LIBSEARCH)+' \
+	-e 's+SED_STDDEF+$(STD_DEFINES)+' \
+	-e 's+SED_PROJDEF+$(PROJECTDEFINES)+' \
+	-e 's+SED_LDCFLAGS+$(CC_LDOPTIONS)+' \
+	-e 's+SED_SYSTEM_INCLUDE+$(SYSTEM_INCLUDE)+' \
+	-e 's+SED_XLIB+$(XLIB)+' \
+	-e 's+SED_CAIROLIB+$(CAIROLIB)+' \
+	-e 's+SED_CTOFLIBS+$(CTOFLIBS)+' \
+	-e 's+SED_LIBDIR+$(LIBDIR)+' \
+	-e 's+SED_INCDIR+$(INCDIR)+' \
+	-e 's+SED_NCARGDIR+$(NCARGDIR)+' \
+	-e 's+SED_ROBJDIR+$(ROBJDIR)+' \
+	<ncargcc.csh >ncargcc_cairo
+
+#endif
 
 ncargex: ncargex.csh Makefile
 	@sed \

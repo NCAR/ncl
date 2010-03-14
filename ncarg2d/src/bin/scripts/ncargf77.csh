@@ -1,6 +1,6 @@
 #!/bin/csh -f
 #
-#   $Id: ncargf77.csh,v 1.38 2009-04-25 00:07:12 haley Exp $
+#   $Id: ncargf77.csh,v 1.39 2010-03-14 19:32:15 haley Exp $
 #                                                                      
 #                Copyright (C)  2000
 #        University Corporation for Atmospheric Research
@@ -22,7 +22,6 @@ endif
 
 set syslibdir = "SED_LIBSEARCH"
 set xlib     = "SED_XLIB"
-set pnglib   = "SED_PNGLIB"
 set cairolib = "SED_CAIROLIB"
 set system   = "SED_SYSTEM_INCLUDE"
 set fortran  = "SED_FC"
@@ -47,7 +46,7 @@ set stub_file   = ""
 # set up default libraries
 #
 set libncarg  =  "-lncarg"
-set libgks     = "-lncarg_gks"
+set libgks     = "-lSED_LIBNCARG_GKS"
 set libncarg_c = "-lncarg_c"
 set libmath  = ""
 
@@ -190,7 +189,7 @@ if ($?NGMATH_LD && $?NGMATH_BLOCKD_LD) then
 endif
 
 set ncarg_libs  = "$libncarg $libgks $libncarg_c $libmath"
-set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $pnglib $cairolib $libextra"
+set newargv = "$newargv $stub_file $libpath $ctrans_libs $robjs $ncarg_libs $xlib $cairolib $libextra"
 
 echo $newargv
 eval $newargv
