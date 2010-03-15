@@ -1,5 +1,5 @@
 ;
-;      $Id: nm21n.ncl,v 1.6 2003-03-01 00:42:50 grubin Exp $
+;      $Id: nm21n.ncl,v 1.7 2010-03-15 04:34:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -413,21 +413,19 @@ begin
             (/ 0., .8, 0. /),    \
             (/ .65, .65, .65 /)  \
          /)
-  NCGM=1
-  X11=0
-  PS=0
-  PDF=0
 
-  if (NCGM .eq. 1) then
+  wks_type = "ncgm"
+
+  if (str_lower(wks_type).eq."ncgm") then
     wks = gsn_open_wks("ncgm","nm21n")
   end if
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
     wks = gsn_open_wks("x11","nm21n")
   end if
-  if (PS .eq. 1) then
+  if (str_lower(wks_type).eq."ps") then
     wks = gsn_open_wks("ps","nm21n")
   end if
-  if (PDF .eq. 1) then
+  if (str_lower(wks_type).eq."pdf") then
     wks = gsn_open_wks("pdf","nm21n")
   end if
   gsn_define_colormap(wks,cmap)

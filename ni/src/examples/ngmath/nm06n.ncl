@@ -79,12 +79,9 @@ do i=0,NX-1
 end do
 
 
-NCGM=1
-X11=0
-PS=0
-PDF=0
+wks_type = "ncgm"
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -92,7 +89,7 @@ if (NCGM .eq. 1) then
       "wkMetaName" : "nm06n.ncgm"
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -100,7 +97,7 @@ else
       "wkPause" : "True"
     end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -108,7 +105,7 @@ else
         "wkPSFileName" : "nm06n.ps"
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

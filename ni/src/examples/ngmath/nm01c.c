@@ -1,5 +1,5 @@
 /*
- *      $Id: nm01c.c,v 1.4 2003-03-01 00:42:49 grubin Exp $
+ *      $Id: nm01c.c,v 1.5 2010-03-15 04:34:53 haley Exp $
  */
 /************************************************************************
 *                                                                       *
@@ -35,6 +35,8 @@
 #include <ncarg/hlu/NcgmWorkstation.h>
 #include <ncarg/hlu/PSWorkstation.h>
 #include <ncarg/hlu/PDFWorkstation.h>
+#include <ncarg/hlu/CairoWorkstation.h>
+#include <ncarg/hlu/ImageWorkstation.h>
 
 #define Npts    6
 #define NumXOut 21
@@ -54,7 +56,7 @@ main(int argc, char *argv[])
     int    appid,wid,gkswid;
     int    srlist, grlist;
     int    i,j;
-    int    NCGM=1, X11=0, PS=0, PDF=0;
+    const char *wks_type = "ncgm";
 
 /*
  * Initialize the high level utility library
@@ -71,7 +73,7 @@ main(int argc, char *argv[])
     NhlRLSetString(srlist,NhlNappUsrDir,"./");
     NhlCreate(&appid,"nm01",NhlappClass,NhlDEFAULT_APP,srlist);
 
-    if (NCGM) {
+    if (!strcmp(wks_type,"ncgm") || !strcmp(wks_type,"NCGM")) {
 /*
  * Create a meta file workstation.
  */
@@ -80,7 +82,7 @@ main(int argc, char *argv[])
         NhlCreate(&wid,"nm01Work",
                   NhlncgmWorkstationClass,NhlDEFAULT_APP,srlist);
     }
-    else if (X11) {
+    else if (!strcmp(wks_type,"x11") || !strcmp(wks_type,"X11")) {
 /*
  * Create an X workstation.
  */
@@ -88,7 +90,7 @@ main(int argc, char *argv[])
         NhlRLSetInteger(srlist,NhlNwkPause,True);
         NhlCreate(&wid,"nm01Work",NhlxWorkstationClass,NhlDEFAULT_APP,srlist);
     }
-    else if (PS) {
+    else if (!strcmp(wks_type,"ps") || !strcmp(wks_type,"PS")) {
 /*
  * Create a PS workstation.
  */
@@ -96,7 +98,7 @@ main(int argc, char *argv[])
         NhlRLSetString(srlist,NhlNwkPSFileName,"./nm01c.ps");
         NhlCreate(&wid,"nm01Work",NhlpsWorkstationClass,NhlDEFAULT_APP,srlist);
     }
-    else if (PDF) {
+    else if (!strcmp(wks_type,"pdf") || !strcmp(wks_type,"PDF")) {
 /*
  * Create a PDF workstation.
  */

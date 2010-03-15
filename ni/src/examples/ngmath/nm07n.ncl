@@ -1,5 +1,5 @@
 ;
-;      $Id: nm07n.ncl,v 1.5 2003-03-01 00:42:49 grubin Exp $
+;      $Id: nm07n.ncl,v 1.6 2010-03-15 04:34:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                      ;
@@ -67,7 +67,7 @@ xo = fspan(0.,xr,npts)
 ;
 ftsetp("sf1",0)
 ftsetp("sl1", 0.0)
-ftsetp("sl2", 0.0)
+ftsetp("sln", 0.0)
 
 ;
 ; Interpolate
@@ -101,12 +101,9 @@ cmap = (/ (/1.0,1.0,1.0/), \
 ;
 ; Default is to display output to an X workstation
 ;
-NCGM=1
-X11=0
-PS=0
-PDF=0
+  wks_type = "ncgm"
 
-if (NCGM .eq. 1) then
+if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -115,7 +112,7 @@ if (NCGM .eq. 1) then
       "wkColorMap" : cmap
   end create
 else
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -124,7 +121,7 @@ else
       "wkColorMap" : cmap
   end create
   else
-    if (PS .eq. 1) then
+    if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -133,7 +130,7 @@ else
         "wkColorMap" : cmap
       end create
     else
-      if (PDF .eq. 1) then
+      if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

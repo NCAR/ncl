@@ -1,5 +1,5 @@
 C
-C      $Id: nm02f.f,v 1.4 2003-03-04 17:42:27 grubin Exp $
+C      $Id: nm02f.f,v 1.5 2010-03-15 04:34:53 haley Exp $
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                       C
@@ -23,6 +23,8 @@ C
       external NhlFNcgmWorkstationClass
       external NhlFPSWorkstationClass
       external NhlFPDFWorkstationClass
+      external NhlFCairoPSPDFWorkstationClass
+      external NhlFCairoImageWorkstationClass
       external NhlFXWorkstationClass
       external NhlFscalarFieldClass
       external NhlFcontourPlotClass
@@ -42,14 +44,11 @@ C
       integer appid,wid,gkswid
       integer srlist, grlist
       integer i
-      integer NCGM, X11, PS, PDF
+      character*7  wks_type
 C
 C Default is to display output to an NCGM workstation.
 C
-      NCGM=0
-      X11=1
-      PS=0
-      PDF=0
+      wks_type = "ncgm"
 C
 C Initialize the high level utility library
 C
@@ -67,7 +66,7 @@ C
       call NhlFRLSetString(srlist,'appUsrDir','./',ierr)
       call NhlFCreate(appid,'nm02',NhlFAppClass,0,srlist,ierr)
 
-      if (NCGM.eq.1) then
+      if (wks_type.eq."ncgm".or.wks_type.eq."NCGM") then
 C
 C Create an NCGM workstation.
 C
@@ -75,7 +74,7 @@ C
          call NhlFRLSetString(srlist,'wkMetaName','./nm02f.ncgm',ierr)
          call NhlFCreate(wid,'nm01Work',
      +        NhlFNcgmWorkstationClass,0,srlist,ierr)
-      else if (X11.eq.1) then
+      else if (wks_type.eq."x11".or.wks_type.eq."X11") then
 C
 C Create an xworkstation object.
 C
@@ -83,7 +82,7 @@ C
          call NhlFRLSetString(srlist,'wkPause','True',ierr)
          call NhlFCreate(wid,'nm01Work',NhlFXWorkstationClass,
      +        0,srlist,ierr)
-      else if (PS.eq.1) then
+      else if (wks_type.eq."ps".or.wks_type.eq."PS") then
 C
 C Create a PostScript workstation.
 C
@@ -91,7 +90,7 @@ C
          call NhlFRLSetString(srlist,'wkPSFileName','./nm02f.ps',ierr)
          call NhlFCreate(wid,'nm01Work',
      +        NhlFPSWorkstationClass,0,srlist,ierr)
-      else if (PDF.eq.1) then
+      else if (wks_type.eq."pdf".or.wks_type.eq."PDF") then
 C
 C Create a PDF workstation.
 C

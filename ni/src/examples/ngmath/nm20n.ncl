@@ -1,5 +1,5 @@
 ;
-;      $Id: nm20n.ncl,v 1.7 2003-03-01 00:42:50 grubin Exp $
+;      $Id: nm20n.ncl,v 1.8 2010-03-15 04:34:53 haley Exp $
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                                       ;
@@ -120,21 +120,18 @@ begin
 ;
 ; Create a workstation.
 ;
-  NCGM=1
-  X11=0
-  PS=0
-  PDF=0
+  wks_type = "ncgm"
 
-  if (NCGM .eq. 1) then
+  if (str_lower(wks_type).eq."ncgm") then
     wks = gsn_open_wks("ncgm","nm20n")
   end if
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
     wks = gsn_open_wks("x11","nm20n")
   end if
-  if (PS .eq. 1) then
+  if (str_lower(wks_type).eq."ps") then
     wks = gsn_open_wks("ps","nm20n")
   end if
-  if (PDF .eq. 1) then
+  if (str_lower(wks_type).eq."pdf") then
     wks = gsn_open_wks("pdf","nm20n")
   end if
 

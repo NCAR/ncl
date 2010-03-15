@@ -43,21 +43,18 @@ begin
 
 ;---- Open workstation, define color map ---------------------------
 
-  NCGM=1
-  X11=0
-  PS=0
-  PDF=0
+  wks_type = "ncgm"
 
-  if (NCGM .eq. 1) then
+  if (str_lower(wks_type).eq."ncgm") then
     wks = gsn_open_wks("ncgm","nm13n")
   end if
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
     wks = gsn_open_wks("x11","nm13n")
   end if
-  if (PS .eq. 1) then
+  if (str_lower(wks_type).eq."ps") then
     wks = gsn_open_wks("ps","nm13n")
   end if
-  if (PDF .eq. 1) then
+  if (str_lower(wks_type).eq."pdf") then
     wks = gsn_open_wks("pdf","nm13n")
   end if
 

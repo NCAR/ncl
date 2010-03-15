@@ -47,12 +47,9 @@ zo = ftsurf(xi,yi,zi,xo,yo)
 ;
 ; Create workstation object.
 ;
-  NCGM=1
-  X11=0
-  PS=0
-  PDF=0
+  wks_type = "ncgm"
  
-  if (NCGM .eq. 1) then
+  if (str_lower(wks_type).eq."ncgm") then
 ;
 ; Create an ncgmWorkstation object.
 ;
@@ -60,7 +57,7 @@ zo = ftsurf(xi,yi,zi,xo,yo)
         "wkMetaName" : "nm12n.ncgm"
     end create
   else
-    if (X11 .eq. 1) then
+    if (str_lower(wks_type).eq."x11") then
 ;
 ; Create an XWorkstation object.
 ;
@@ -68,7 +65,7 @@ zo = ftsurf(xi,yi,zi,xo,yo)
         "wkPause" : True
       end create
     else
-      if (PS .eq. 1) then
+      if (str_lower(wks_type).eq."ps") then
 ;
 ; Create a PSWorkstation object.
 ;
@@ -76,7 +73,7 @@ zo = ftsurf(xi,yi,zi,xo,yo)
           "wkPSFileName" : "nm12n.ps"
         end create
       else
-        if (PDF .eq. 1) then
+        if (str_lower(wks_type).eq."pdf") then
 ;
 ; Create a PDFWorkstation object.
 ;

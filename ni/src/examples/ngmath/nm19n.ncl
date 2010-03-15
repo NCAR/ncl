@@ -72,21 +72,18 @@ zo2 = onedtond(zo,(/nx,ny/))
 ;
 ; Create workstation object.
 ;
-  NCGM=1
-  X11=0
-  PS=0
-  PDF=0
+  wks_type = "ncgm"
  
-  if (NCGM .eq. 1) then
+  if (str_lower(wks_type).eq."ncgm") then
     wid = gsn_open_wks("ncgm","nm19n")
   end if
-  if (X11 .eq. 1) then
+  if (str_lower(wks_type).eq."x11") then
     wid = gsn_open_wks("x11","nm19n")
   end if
-  if (PS .eq. 1) then
+  if (str_lower(wks_type).eq."ps") then
     wid = gsn_open_wks("ps","nm19n")
   end if
-  if (PDF .eq. 1) then
+  if (str_lower(wks_type).eq."pdf") then
     wid = gsn_open_wks("pdf","nm19n")
   end if
 
